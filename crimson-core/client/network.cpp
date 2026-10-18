@@ -470,6 +470,14 @@ LeaderboardNetwork::Event LeaderboardNetwork::perform(const Request &request) {
       if (card.ok && card.status == 200 && object(card.body, details)) {
         if (const Json *name = details.field("name", Json::STRING))
           event.runner = name->text;
+        // A co-op run's players, "A & B", as the game's boards name them.
+        if (const Json *team = details.field("team", Json::ARRAY)) {
+          event.runner.clear();
+          for (size_t i = 0; i < team->items.size(); ++i) {
+            const Json *seat = team->items[i].field("name", Json::STRING);
+            event.runner += (i ? " & " : "") + (seat ? seat->text : "?");
+          }
+        }
         if (const Json *rank = details.field("rank", Json::NUMBER);
             rank && rank->number >= 0 && rank->number <= INT32_MAX &&
             rank->number == floor(rank->number))

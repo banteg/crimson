@@ -33,7 +33,7 @@ whose replay is downloaded when the row is pinned
 | A board run still downloading | "Downloading the run..." |
 | A board run no longer on the board | "This run is no longer on the leaderboard" |
 | A failed download | "Could not download this run" |
-| Web and native: co-op, Typ-o or the Tutorial | "This run needs the Python port" |
+| Web and native: Typ-o, the Tutorial, or three or four players | "This run needs the Python port" |
 | Web and native: a screen other than 1024x768 | "Watching needs the 1024x768 screen" |
 
 A tick the simulation refuses stops the run there: the end screen says "This
@@ -97,8 +97,8 @@ pass noted it starting: scrubbing within the run never restarts it, Watch Again
 fades the game over tune out, and before the first hit an in-game tune already
 playing plays on.
 
-`checks/game_seek.mjs` seeks across a fixture in a shuffled order and requires
-the verifier's world at every tick; a native capture of a seek and of straight
+`checks/game_seek.mjs` seeks across a fixture, then the service's co-op runs,
+in a shuffled order and requires the verifier's world at every tick; a native capture of a seek and of straight
 play to the same tick match pixel for pixel.
 
 ## The viewer
@@ -120,7 +120,8 @@ play to the same tick match pixel for pixel.
   score is from, the day, the score and its rank, the time, the weapon used
   most, frags and hits. Watch on the high score screen shows the row's own
   record; a link to a run builds it from the replay's result, under the name,
-  rank and day the site gives.
+  rank and day the site gives (a co-op run's players as "A & B", as the
+  game's boards name them).
 - **Keys**: Space pauses (or, at the end, plays again), period and comma step a
   tick while paused, `[` and `]` change the speed from 0.25x to 32x and `1`
   resets it, Left and Right go 5 seconds, Page Up and Page Down 30, Home and End
@@ -129,6 +130,22 @@ play to the same tick match pixel for pixel.
 A frame with no tick (paused, or between ticks at slow speeds) shows the last
 drawn frame again (`host_frame_hold`) under the viewer, and ticks give the
 cursor back to the viewer after they move it to the replay's aim.
+
+## Co-op runs
+
+A co-op run's replay plays as the run did: both players' inputs each tick and
+each perk pick by the player who asked for the menu, through the same
+preparing pass, keyframes and seeks. The world is the original's for two
+players: the camera on the midpoint of the living players (on the survivor
+once one dies, where it was once both have), and both players' HUD. The pick
+box and a pick's mark on the scrub bar name the picker ("Level 5 - Player 2").
+Take over plays one player's live input, so a co-op run's bar says "One player
+only" in its place.
+
+`checks/game_watch.mjs` and `checks/game_seek.mjs` watch and seek the
+service's co-op vectors (a Survival run and a custom quest's clear) to the
+verifier's world, and `checks/game_coop_live.mjs` watches runs two games played
+together, perk picks from both seats among them.
 
 ## Links
 

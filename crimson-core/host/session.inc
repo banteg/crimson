@@ -149,9 +149,10 @@ static void game_music_start(int track, bool in_game);
 #include "ranked.inc"
 
 // Runs a single player plays in Survival, Rush or Quests, at the resolution the
-// verifier simulates (1024x768); the rest play as the original.
-static bool live_eligible() {
-  return game_original && config_blob.player_count == 1 && config_blob.screen_width == 1024 &&
+// verifier simulates (1024x768); the rest play as the original. A replay's
+// run has its own players.
+static bool live_eligible(int players = 1) {
+  return game_original && config_blob.player_count == players && config_blob.screen_width == 1024 &&
          config_blob.screen_height == 768 &&
          (config_blob.game_mode == GAME_MODE_SURVIVAL || config_blob.game_mode == GAME_MODE_RUSH ||
           config_blob.game_mode == GAME_MODE_QUEST);
@@ -646,7 +647,7 @@ void game_state_set(game_state_id_t state) {
   // A co-op session's screens (host/coop_live.inc).
   bool coop = coop_screen_set(state);
   // A replay plays from the run its Watch starts; any other screen drops it.
-  bool watches = watch.armed && state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
+  bool watches = watch.armed && state == GAME_STATE_GAMEPLAY && !run_active && live_eligible(watch_players());
   if (watch.armed && !watches)
     watch_disarm();
   // The player's own run comes before a replay a link asked for; one that waits

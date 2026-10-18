@@ -1,6 +1,7 @@
 // Watches replays in the game module (host/watch.inc), as a link to a run
 // plays one: a replay asked for as the game boots skips the intro and plays,
-// then every recorded fixture the module can play starts from the menus,
+// then every recorded fixture the module can play, and the service's co-op
+// runs (a Survival run and a custom quest's clear), starts from the menus,
 // plays a while at normal speed, holds still while paused and moves one tick
 // on a step, then skips to its end, which must be the result it recorded, with
 // the world where the verifier leaves it, though the host reads another replay
@@ -103,9 +104,13 @@ for (let frames = 0; game.game_state() !== HIGHSCORES; ++frames) {
 for (let i = 0; i < 60; ++i) frame();
 const before = files().sort().join("\n");
 const core = loadCore(coreWasm);
+const vectors = JSON.parse(fs.readFileSync(path.join(ROOT, "service/test/vectors.json"))).coop_run;
+const coop = { "coop-survival.crd": vectors.file, "coop-quest.crd": vectors.quest_file };
+const replays = fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).sort();
 let played = 0;
-for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).sort()) {
-  fs.copyFileSync(path.join(fixtures, name), path.join(watched, name));
+for (const name of [...replays, ...Object.keys(coop)]) {
+  if (coop[name]) fs.writeFileSync(path.join(watched, name), Buffer.from(coop[name], "base64"));
+  else fs.copyFileSync(path.join(fixtures, name), path.join(watched, name));
   memory().write(`watched/${name}\0`, game.game_replay_path(), "latin1");
   if (!game.game_replay_open()) continue; // one the Python port plays (game_replay_read.mjs)
   const recording = Buffer.from(memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size()));
@@ -163,7 +168,7 @@ for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).so
   if (game.game_state() !== HIGHSCORES) throw Error(`${name}: the high scores close on their own`);
   ++played;
 }
-if (played < 2) throw Error(`only ${played} fixtures played`);
+if (played < 2 + Object.keys(coop).length) throw Error(`only ${played} replays played`);
 game.game_close();
 try {
   frame();

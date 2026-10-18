@@ -122,7 +122,9 @@ static const char *viewer_mark_label(const WatchMark &mark, char *out, size_t si
     snprintf(out, size, "Energizer");
   else {
     const WatchPick &pick = watch.picks[mark.value];
-    snprintf(out, size, "Level %d: %s", pick.level, perk_meta_table[pick.offered[pick.chosen]].name);
+    int n = snprintf(out, size, "Level %d: %s", pick.level, perk_meta_table[pick.offered[pick.chosen]].name);
+    if (pick.picker >= 0)
+      snprintf(out + n, size - n, " - Player %d", pick.picker + 1);
   }
   return out;
 }
@@ -285,6 +287,13 @@ static bool viewer_card(const WatchPick &pick, const char *header, bool in, floa
   grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
   return true;
 }
+// A pick card's header: the level, and in a co-op run the player picking, who
+// may still be choosing (`picking`).
+static void viewer_card_header(const WatchPick &pick, bool picking, char *out, size_t size) {
+  int n = snprintf(out, size, "Level %d", pick.level);
+  if (pick.picker >= 0)
+    snprintf(out + n, size - n, picking ? " - Player %d picking..." : " - Player %d", pick.picker + 1);
+}
 // The last pick playback passed, for WATCH_PICK_SECONDS of play.
 static void viewer_watch_card(float dt) {
   if (watch.card < 0)
@@ -292,8 +301,8 @@ static void viewer_watch_card(float dt) {
   if (!watch.paused)
     watch.card_left -= dt;
   const WatchPick &pick = watch.picks[watch.card];
-  char header[16];
-  snprintf(header, sizeof header, "Level %d", pick.level);
+  char header[48];
+  viewer_card_header(pick, false, header, sizeof header);
   if (!viewer_card(pick, header, watch.card_left > 0, dt) && watch.card_left <= 0)
     watch.card = -1;
 }

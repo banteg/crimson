@@ -41,10 +41,10 @@ static struct {
   bool fire_held;  // fire held as play resumes under a banner: let go first
   ui_button_t resume, leave;
   // The partner's perk menu on the card (viewer_card): its offers from the
-  // tick that opened it (pick.tick), and the choice once the next tick took it.
+  // tick that opened it (pick.tick), its picker, and the choice once the next
+  // tick took it.
   bool card, picking;
   WatchPick pick;
-  int picker;
   float left; // the card's seconds, once picked
 } coop_ui;
 
@@ -474,9 +474,8 @@ static void coop_card(float dt) {
   if (perk_menu_open && perk_picker != coop.local && coop.confirmed >= open &&
       !(coop_ui.card && coop_ui.pick.tick == open)) {
     int offered = coop_offered();
-    coop_ui.pick = {open, player_state_table[0].level, -1, offered, {}};
+    coop_ui.pick = {open, player_state_table[0].level, -1, offered, {}, perk_picker};
     memcpy(coop_ui.pick.offered, perk_choice_ids, offered * sizeof(int));
-    coop_ui.picker = perk_picker;
     coop_ui.card = coop_ui.picking = true;
   }
   if (!coop_ui.card)
@@ -490,8 +489,7 @@ static void coop_card(float dt) {
   if (!coop_ui.picking && !wire.paused)
     coop_ui.left -= dt;
   char header[48];
-  snprintf(header, sizeof header, coop_ui.picking ? "Level %d - Player %d picking..." : "Level %d - Player %d",
-           coop_ui.pick.level, coop_ui.picker + 1);
+  viewer_card_header(coop_ui.pick, coop_ui.picking, header, sizeof header);
   bool in = coop_ui.picking || coop_ui.left > 0;
   coop_ui.card = viewer_card(coop_ui.pick, header, in, dt) || in;
 }

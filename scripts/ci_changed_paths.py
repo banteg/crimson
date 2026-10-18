@@ -107,8 +107,16 @@ SUITES = {
         ),
         CORE_GATE,
     ),
+    # The game checks watch the service's co-op vectors too.
     "core-game": Suite(
-        (*GAME_BUILD, *CORE_CORPUS, *CORE_GAME, "tests/fixtures/replays/", ".github/workflows/core.yml"),
+        (
+            *GAME_BUILD,
+            *CORE_CORPUS,
+            *CORE_GAME,
+            "tests/fixtures/replays/",
+            "service/test/vectors.json",
+            ".github/workflows/core.yml",
+        ),
         CORE_GAME,
     ),
     # The oracles resolve the original executable's symbols from the name and data maps.

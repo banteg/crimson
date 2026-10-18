@@ -50,6 +50,9 @@ int main(int argc, char **argv) {
     if (net.poll(event)) {
       printf("%d %d\n", event.ok, event.status);
       fwrite(event.body.data(), 1, event.body.size(), stdout);
+      // A link's replay path, then the runner its card names.
+      if (kind == LeaderboardNetwork::LINK)
+        printf("\n%s", event.runner.c_str());
       fprintf(stderr, "%s\n", event.error.c_str());
       return 0;
     }

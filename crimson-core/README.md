@@ -27,8 +27,8 @@ everything it adds lives here.
 
 - One or two players at a fixed 60 Hz in Rush, Survival, all 50 Quests and
   custom quests ([`CustomQuest`](../src/crimson/quests/custom.py)); two
-  players are the groundwork for [network co-op](../docs/rewrite/network-coop.md).
-  The game module's live play, replays and the service stay one-player.
+  players are [network co-op](../docs/rewrite/network-coop.md)'s, whose runs
+  the game module plays, records and watches and the service ranks.
 - Every movement scheme (relative, static, dual action pad, point-click and
   computer) and aim scheme (mouse, keyboard, joystick, mouse-relative, pad and
   computer), read from each tick's flags as Python does; see

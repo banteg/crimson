@@ -891,6 +891,8 @@
     Module.ccall("client_replay_downloaded", null, ["number"], [result]);
   }
   let watching = null;
+  // Who played a run: its runner, or a co-op run's players, "A & B", as the game's boards name them.
+  const runners = (run) => (run.team ? run.team.map((seat) => seat.name ?? "?").join(" & ") : run.name);
   // The run's summary, which its card waits for: null when there is none.
   const summary =
     linked && /^[A-Za-z0-9_-]{1,64}$/.test(linked)
@@ -900,8 +902,8 @@
       : Promise.resolve(null);
   summary.then((run) => {
     if (!run) return;
-    const score = run.board === "survival" ? `${run.score.toLocaleString("en-US")} xp` : `${(run.score / 1000).toFixed(2)} s`;
-    watching = `${run.name}'s ${run.title} run, ${score}`;
+    const score = run.board.startsWith("survival") ? `${run.score.toLocaleString("en-US")} xp` : `${(run.score / 1000).toFixed(2)} s`;
+    watching = `${runners(run)}'s ${run.title} run, ${score}`;
     if (!document.getElementById("ready").hidden) say(watching);
   });
   const questSummary =
@@ -961,7 +963,7 @@
       const why = Module.ccall("client_watch", "string", ["string", "string", "string", "number", "number", "number", "number"], [
         path,
         run,
-        details?.name ?? "",
+        details ? runners(details) : "",
         details?.rank ?? 0,
         day ? day.getDate() : 0,
         day ? day.getMonth() + 1 : 0,

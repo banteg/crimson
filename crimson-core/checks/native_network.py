@@ -213,11 +213,19 @@ class NativeNetwork(unittest.TestCase):
             self.assertEqual(done, b"")
 
     def test_linked_download(self):
-        self.reply = b"replay"
-        ok, _, path = self.request(5, RUN)
-        self.assertTrue(ok)
-        self.assertEqual(path, f"replays/online/{RUN}.crd".encode())
-        self.assertEqual([call[1] for call in self.calls], [f"/runs/{RUN}.crd", f"/api/runs/{RUN}"])
+        # One reply answers both requests, the replay's bytes and the run's details: its card names the runner, or a
+        # co-op run's players ("?" for a deleted one's seat).
+        for details, runner in (
+            ({"name": "solo", "team": None}, "solo"),
+            ({"name": "one", "team": [{"name": "one"}, {"name": "two"}]}, "one & two"),
+            ({"name": "one", "team": [{"name": "one"}, {"name": None}]}, "one & ?"),
+        ):
+            self.calls.clear()
+            self.reply = json.dumps(details).encode()
+            ok, _, answer = self.request(5, RUN)
+            self.assertTrue(ok)
+            self.assertEqual(answer, f"replays/online/{RUN}.crd\n{runner}".encode())
+            self.assertEqual([call[1] for call in self.calls], [f"/runs/{RUN}.crd", f"/api/runs/{RUN}"])
 
     def test_profile_challenge(self):
         self.reply = json.dumps({"challenge": RUN}).encode()

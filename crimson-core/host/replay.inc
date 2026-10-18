@@ -426,12 +426,14 @@ struct MsgpackReader {
 };
 
 // A replay read for playback: the session's recording of it (the config, then
-// each tick's input and commands, as live.replay holds a run), the rules and
-// build it was recorded with, or why this module cannot play it; and the
-// result it recorded, as its bytes (replay_result writes them alike) and as
+// each tick's inputs, one a player, and commands, as live.replay holds a run),
+// the player each command is for (as live.pickers holds a co-op run's), the
+// rules and build it was recorded with, or why this module cannot play it; and
+// the result it recorded, as its bytes (replay_result writes them alike) and as
 // the end of a watch shows it.
 struct LoadedReplay {
   std::vector<uint8_t> recording, result;
+  std::vector<int> pickers;
   int rules = 0, ticks = 0;
   std::string game_version, reason, outcome, quest_title, quest_author;
   int64_t elapsed_ms = 0, quest_final_ms = -1, kills = 0, experience = 0;
@@ -580,8 +582,10 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
           r.ok = false;
       }
     } else if (key == "player_count") {
+      // The format holds one to four players; the session plays one or two.
       config.players = (uint32_t)r.integer();
-      if (config.players != 1) out.reason = "This run needs the Python port";
+      if (config.players < 1 || config.players > 4) r.ok = false;
+      else if (config.players > 2) out.reason = "This run needs the Python port";
     } else if (key == "hardcore") config.hardcore = r.boolean();
     else if (key == "preserve_bugs") config.preserve_bugs = r.boolean();
     else if (key == "quest_fail_retry_count") config.retry = (uint32_t)r.integer();
@@ -652,21 +656,35 @@ static void replay_read_result(MsgpackReader &r, LoadedReplay &out) {
   out.result.assign(start, r.at);
 }
 
-static void replay_read_ticks(MsgpackReader &r, LoadedReplay &out) {
+// The ticks, each with the same number of inputs (`players`, which the run's
+// player count must match) and commands for players below the highest it names
+// (`picker`).
+static void replay_read_ticks(MsgpackReader &r, LoadedReplay &out, uint32_t &players, int64_t &picker) {
   uint32_t n = r.array();
   out.ticks = (int)n;
   for (; r.ok && n && out.reason.empty(); --n) {
-    if (r.array() != 2 || r.array() != 1 || r.array() != 5)
+    if (r.array() != 2)
+      return void(r.ok = false);
+    uint32_t inputs = r.array();
+    if (inputs > 2)
       return void(out.reason = "This run needs the Python port");
-    // Inputs are float32 values, stored as float64 (docs/formats/replay.md).
-    float axes[4];
-    for (float &axis : axes) {
-      double value = r.real();
-      axis = (float)value;
-      if (!std::isfinite(value) || (double)axis != value)
-        r.ok = false;
+    if (players && inputs != players)
+      return void(r.ok = false);
+    players = inputs;
+    PortableInput input[2];
+    for (uint32_t p = 0; r.ok && p < inputs; ++p) {
+      if (r.array() != 5)
+        return void(r.ok = false);
+      // Inputs are float32 values, stored as float64 (docs/formats/replay.md).
+      float axes[4];
+      for (float &axis : axes) {
+        double value = r.real();
+        axis = (float)value;
+        if (!std::isfinite(value) || (double)axis != value)
+          r.ok = false;
+      }
+      input[p] = {axes[0], axes[1], axes[2], axes[3], (uint32_t)r.integer()};
     }
-    PortableInput input = {axes[0], axes[1], axes[2], axes[3], (uint32_t)r.integer()};
     uint32_t count = r.array();
     // A tick carries at most portable_step_many's commands (checks/replay.py).
     if (!r.ok || count > 16)
@@ -684,15 +702,19 @@ static void replay_read_ticks(MsgpackReader &r, LoadedReplay &out) {
         else r.skip();
       }
       // Kind 1 picks a perk, kind 2 opens the menu (crimson-core/checks/replay.py); Typ-o's need the Python port.
-      if (player != 0) return void(out.reason = "This run needs the Python port");
       if (type == "perk_pick") command = {1, choice};
       else if (type == "perk_menu_open") command = {2, 0};
       else return void(out.reason = "This run needs the Python port");
+      if (player < 0)
+        return void(r.ok = false);
+      picker = std::max(picker, player);
+      out.pickers.push_back((int)player);
     }
     const auto append = [&](const void *data, size_t size) {
       out.recording.insert(out.recording.end(), (const uint8_t *)data, (const uint8_t *)data + size);
     };
-    append(&input, sizeof input), append(&count, sizeof count), append(commands.data(), count * sizeof(PortableCommand));
+    append(input, inputs * sizeof *input), append(&count, sizeof count);
+    append(commands.data(), count * sizeof(PortableCommand));
   }
 }
 
@@ -705,6 +727,8 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
   int format = 0;
   bool run = false, has_seat_keys = false, named_seats = false;
   std::vector<std::string> seat_keys;
+  uint32_t players = 0;
+  int64_t picker = 0;
   out.recording.resize(sizeof config);
   for (uint32_t n = payload.empty() ? (r.ok = false, 0) : r.map(); r.ok && n && out.reason.empty(); --n) {
     std::string key = r.str();
@@ -720,7 +744,7 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
       }
     } else if (key == "run") replay_read_run(r, config, out), run = true;
     else if (key == "result") replay_read_result(r, out);
-    else if (key == "ticks") replay_read_ticks(r, out);
+    else if (key == "ticks") replay_read_ticks(r, out, players, picker);
     else r.skip();
   }
   // Format 30 had no rules; its replays play under rules 1 (docs/formats/replay.md).
@@ -733,10 +757,11 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
     for (size_t j = 0; j < i; ++j)
       seats = seats && seat_keys[i] != seat_keys[j];
   }
-  // A whole replay: its run, its result, a tick, and nothing after its map.
+  // A whole replay: its run, its result, a tick of its players' inputs and
+  // commands for them, and nothing after its map.
   size_t head = sizeof config + (config.mode == GAME_MODE_QUEST && !config.major && !config.minor ? sizeof(PortableQuest) : 0);
   bool whole = r.at == r.end && run && !out.result.empty() && out.recording.size() > head &&
-               !out.game_version.empty() && seats;
+               !out.game_version.empty() && seats && players == config.players && picker < players;
   // Formats 30 to this build's read alike: each adds a field (docs/formats/replay.md).
   if (out.reason.empty() && (!r.ok || !whole || format < 30 || format > CRIMSON_REPLAY_FORMAT || !replay_config_valid(config)))
     out.reason = "This version cannot read its replay";
@@ -775,5 +800,9 @@ __attribute__((export_name("game_replay_recording"))) const uint8_t *game_replay
 }
 __attribute__((export_name("game_replay_recording_size"))) int game_replay_recording_size() {
   return (int)replay_loaded.recording.size();
+}
+// The player the recording's `command`th command is for, or -1 past its last.
+__attribute__((export_name("game_replay_picker"))) int game_replay_picker(int command) {
+  return command >= 0 && command < (int)replay_loaded.pickers.size() ? replay_loaded.pickers[command] : -1;
 }
 }

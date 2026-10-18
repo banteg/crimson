@@ -30,8 +30,9 @@ too (`crimson-core/checks/wasmtime_check.py`); no gate runs Firefox's
 SpiderMonkey or Safari's JavaScriptCore, so a session with either browser is
 untested.
 Two-player online co-op plays in the browser with rollback, records standard
-replays and ranks under the site's [ranked rules](ranked-rules.md) on its own
-boards (Section 5.3, `M3`). Four players remain a research question of
+replays, which the game watches as it watches one player's, and ranks under
+the site's [ranked rules](ranked-rules.md) on its own boards (Section 5.3,
+`M3`). Four players remain a research question of
 [issue #632](https://github.com/banteg/crimson/issues/632): the verdict says
 what a 4-player step must measure before that scope is committed to.
 
@@ -406,9 +407,9 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     confirmed tick writes `[in[0], in[1]]` and its derived commands:
     `perk_menu_open { player_index: perk_picker }` on $T_{\text{open}}$ and
     `perk_pick { player_index: perk_picker, choice_index }` on
-    $T_{\text{open}} + 1$ (Section 5.1). `replay.inc` writes `player_count`
-    inputs per tick (`M3`); its reader, and so the watch path, takes one-player
-    replays only and refuses a co-op one (`M3`'s status).
+    $T_{\text{open}} + 1$ (Section 5.1). `replay.inc` writes and reads
+    `player_count` inputs per tick, each command with its picker (`M3`), and
+    `watch.inc` plays them.
     `checks/game_coop.mjs` and desync diagnostics read the same `.crd`.
 
 #### 5. Between-tick `gameplay_render_world()` side effects & local state in `game_run_spans`
@@ -2015,12 +2016,13 @@ whose page reports.
 
 ### Milestone `M3`: Co-op replays & boards
 
-1. **Files**: `crimson-core/host/replay.inc`, `crimson-core/host/coop_ranked.inc`,
-   `crimson-core/host/ranked.inc`, `src/crimson/replay/ranked.py`,
+1. **Files**: `crimson-core/host/replay.inc`, `crimson-core/host/watch.inc`,
+   `crimson-core/host/coop_ranked.inc`, `crimson-core/host/ranked.inc`, `src/crimson/replay/ranked.py`,
    `service/src/runs.ts`, `service/src/verify.ts`, `service/src/coop.ts`,
    `docs/rewrite/ranked-rules.md`, `docs/formats/replay.md`.
 
-2. **Changes**: a `player_count`-wide replay record in crimson-core; the ranked
+2. **Changes**: a `player_count`-wide replay record in crimson-core, which its
+   reader and Watch take too; the ranked
    profile with `player_count = 2` and the co-op boards in `ranked.py` and the
    service; uploads carrying both players' signatures. These rules keep
    `replay.inc`, `service/src/verify.ts` and Python's `build_run_result`
@@ -2052,8 +2054,8 @@ whose page reports.
    in `crimson replay verify`, and in the Python port, and ranks on its co-op
    board crediting both players.
 
-4. **Status**: ranked co-op has landed, end to end; watching a co-op replay
-   has not. The service verifies a 2-player run on crimson-core as it does a
+4. **Status**: ranked co-op has landed, end to end, and so has watching a co-op
+   replay. The service verifies a 2-player run on crimson-core as it does a
    one-player run, every seat's controls and aim included, and ranks it on
    `survival-coop`, `quests-coop` or `quests-hardcore-coop` under both
    players' names. It takes a co-op upload only with a signature from each
@@ -2083,14 +2085,20 @@ whose page reports.
    and cover the refusals (a missing or misplaced seat signature, keys the room
    did not issue the seed to, a replay without `seat_keys`).
 
-   Remaining: crimson-core plays one-player replays only. Its replay reader
-   refuses a 2-player `.crd` with "This run needs the Python port"
-   ([replay viewer](replay-viewer.md#watch)), so a co-op row's Watch in the
-   game's high scores, and the Watch on the site's co-op boards and run pages
-   (which opens the game at `/play/?watch=<run>`), show that note instead of
-   the run. The replay downloads from its run page and plays in the Python
-   port (`crimson replay play`). Watching co-op runs needs the reader and the
-   viewer widened to `player_count` inputs per tick, with the 2P camera.
+   The game watches a co-op run as it watches one player's
+   ([replay viewer](replay-viewer.md#co-op-runs)): a co-op row's Watch in the
+   game's high scores and the Watch on the site's co-op boards and run pages
+   (`/play/?watch=<run>`) play it with the original's two-player camera and HUD,
+   each perk pick's box naming its picker, and the card naming both players.
+   `crimson-core/host/replay.inc` reads `player_count` inputs a tick and each
+   perk command's `player_index`; a run of three or four players, which the
+   format allows, says it needs the Python port. `checks/game_replay_read.mjs`,
+   `checks/game_watch.mjs` and `checks/game_seek.mjs` read, watch and seek the
+   service's co-op vectors (a Survival run and a custom quest's clear) to the
+   verifier's world, and `checks/game_coop_live.mjs` watches the first
+   Survival run (both players' picks) and the first quest the two machines
+   recorded, seeking across each to the state straight play reaches and ending
+   as recorded.
 
 ### Mandatory acceptance matrix (`checks/game_coop.mjs` & `M1`/`M2`)
 

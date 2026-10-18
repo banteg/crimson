@@ -145,8 +145,10 @@
 // its picker's); after every frame each machine shows the newest tick it ran, a
 // perk screen or an end screen only once that tick is confirmed; each mouse aim
 // the first tick took reads through the two players' midpoint, in either seat;
-// neither player's save or settings took anything from the sessions, whatever
-// saved them.
+// the first Survival run's replay (both players' picks) and the first quest's
+// play in a game booted afresh, as a link to them plays them, seek to straight
+// play's state and end as recorded; neither player's save or settings took
+// anything from the sessions, whatever saved them.
 //
 //   node crimson-core/checks/game_coop_live.mjs <game directory> [game.wasm]
 import assert from "node:assert/strict";
@@ -157,8 +159,8 @@ import os from "node:os";
 import path from "node:path";
 import zlib from "node:zlib";
 import { coopStats, Link, prng } from "./coop_link.mjs";
-import { CONFIG_BYTES, CORE, field, init, INPUT_BYTES, names, state } from "./engine.mjs";
-import { loadGame } from "./game_compare.mjs";
+import { CONFIG_BYTES, CORE, decode, field, init, INPUT_BYTES, names, state, step } from "./engine.mjs";
+import { loadGame, PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT, sevenTunes } from "./game_host.mjs";
 
 const [given, gameWasm = new URL("build/game/game.wasm", CORE).pathname] = process.argv.slice(2);
@@ -666,7 +668,8 @@ function player(peer) {
 }
 
 // The solo engine, headless, which plays a run from the records the machines played; and for the Host's machine
-// inside an original booted afresh from a copy of the Host's game directory as it began, with its tunes.
+// inside an original booted afresh from a copy of the Host's game directory as it began, with its tunes (the run,
+// in `directory`).
 const headless = loadGame(gameWasm);
 const oracles = fs.mkdtempSync(path.join(os.tmpdir(), "crimson-coop-heard-"));
 process.on("exit", () => fs.rmSync(oracles, { recursive: true, force: true }));
@@ -677,12 +680,13 @@ function afresh() {
   const run = bootGame(gameWasm, directory, 3);
   // The startup sequence ends after about 14 s.
   for (let frame = 0; frame < 1000; frame++) run.frame(16);
-  return run.game;
+  run.directory = directory;
+  return run;
 }
 // A run as `peer` played it to tick `last`: every tick's digests are the solo engine's from its records, and the
 // Host's machine's music what its run played without predictions.
 function replayed(peer, last) {
-  const [solo, names] = peer === host ? [afresh(), HEARD] : [headless, DIGESTS];
+  const [solo, names] = peer === host ? [afresh().game, HEARD] : [headless, DIGESTS];
   init(solo, peer.config);
   assert.equal(solo.game_coop_start(-1, 2, 0, 1), 1);
   const write = (at, t, seat) =>
@@ -1661,6 +1665,51 @@ play(idle, () => host.gone, "the Host's close");
 // Each machine's replay of the run it quit ends on the last tick it confirmed, its result that tick's, whatever it
 // ran past it on predictions.
 for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
+// A co-op run's replay `file` watched in a game booted afresh, as a link to it plays one: its perk commands
+// (`commands`, as the Python port reads them) each read as their picker's; the world after seeks to its first tick,
+// the ticks after its commands, its middle and its end, the end first and then backwards, is where the solo
+// engine's straight play from its recording leaves it; and at its end it played to the result it recorded.
+function watchedAlone(file, commands) {
+  const run = afresh(), g = run.game;
+  const memory = () => Buffer.from(g.memory.buffer);
+  fs.mkdirSync(path.join(run.directory, "watched"));
+  fs.copyFileSync(file, path.join(run.directory, "watched/coop.crd"));
+  memory().write("watched/coop.crd\0", g.game_replay_path(), "latin1");
+  assert.equal(g.game_replay_open(), 1, `${file} reads`);
+  const pickers = commands ? commands.split(" ").map((command) => +command.split(":")[1]) : [];
+  assert.deepEqual(pickers.map((_, i) => g.game_replay_picker(i)), pickers, "the commands' players");
+  const recording = memory().subarray(g.game_replay_recording(), g.game_replay_recording() + g.game_replay_recording_size());
+  const { config, records } = decode(Buffer.from(recording));
+  assert.equal(g.game_watch(0, 0, 0, 2000), 1);
+  for (let frames = 0; !g.game_watch_ticks(); ++frames) {
+    assert.ok(frames < 2000, "the co-op replay was never prepared");
+    run.frame(16);
+  }
+  const ticks = g.game_watch_ticks();
+  assert.equal(ticks, records.length);
+  const after = records.flatMap((record, t) => (record.readUInt32LE(2 * INPUT_BYTES) ? [t + 1] : []));
+  const targets = [...new Set([1, ...after, ticks >> 1, ticks])].sort((a, b) => b - a);
+  const straight = loadGame(gameWasm);
+  init(straight, config);
+  const expected = new Map();
+  for (let t = 0; t <= ticks; ++t) {
+    if (targets.includes(t)) expected.set(t, Buffer.from(state(straight)));
+    if (t < ticks) assert.equal(step(straight, records[t]), 1, `straight play's tick ${t}`);
+  }
+  for (const target of targets) {
+    g.game_watch_seek(target);
+    run.frame(16);
+    assert.equal(g.game_watch_tick(), target);
+    const a = expected.get(target), b = state(g);
+    const off = names.filter((name, i) => !PRESENTATION.has(name) && a.readUInt32LE(i * 4) !== b.readUInt32LE(i * 4));
+    assert.deepEqual(off, [], `after a seek to ${target} of ${ticks}`);
+  }
+  g.game_watch_seek(ticks);
+  run.frame(16);
+  assert.equal(g.game_watch_status(), 1, "the co-op replay played as recorded");
+  return { ticks, commands: pickers.length, seeks: targets.length };
+}
+const watchedRuns = [watchedAlone(firstFile, first.commands), watchedAlone(questFile, quest.commands)];
 // Neither save nor either player's settings took anything from the sessions: every save wrote each player's own.
 for (const peer of peers) {
   peer.g.game_exit();
@@ -1701,4 +1750,6 @@ const m2 = profiled.map(({ profile, ticks, delay, drift, pace, played, stats }) 
   resimulated: stats.map((s) => s.frame_resimulated),
   revised: stats.map((s) => [s.revised_deaths, s.revised_wipes]),
 }));
-console.log(JSON.stringify({ first, second, quest, failed, again, retry, stalled, desync: desync[0], seeds: room.seeds.length, ranked, m2 }));
+console.log(
+  JSON.stringify({ first, second, quest, failed, again, retry, stalled, desync: desync[0], seeds: room.seeds.length, ranked, watched: watchedRuns, m2 }),
+);

@@ -33,10 +33,10 @@ extern sfx_volume_table_t music_track_volume;
 extern music_fade_out_flags_t music_fade_out_flags;
 }
 
-// A perk pick as the menu showed it: when, its choices, the one taken, and the
-// level it came with.
+// A perk pick as the menu showed it: when, its choices, the one taken, the
+// level it came with, and in a co-op run the player picking, else -1.
 struct WatchPick {
-  int tick, level, chosen, count, offered[7];
+  int tick, level, chosen, count, offered[7], picker;
 };
 // A mark on the scrub bar: a Survival milestone wave (its stage), an Energizer
 // drop, or a perk pick (its index in the picks).
@@ -99,6 +99,7 @@ static struct {
   std::vector<WatchTune> tunes; // the tunes the run starts, which a seek plays (watch_tune)
   int stage;              // the Survival spawn stage before the tick (the pass)
   bool energizer[16];     // bonus slots holding an Energizer before the tick (the pass)
+  size_t commands;        // the commands the pass played, by which the replay names their players
   size_t next_pick;       // the first pick still ahead of playback
   int card;               // the pick the card shows, or -1
   float card_left;        // the card's seconds
@@ -138,7 +139,7 @@ static WatchCard watch_card(const LoadedReplay &replay, const char *name, int ra
 
 #include "viewer.inc"
 
-// The replay's run is the menu's: its mode, quest and difficulty, one player.
+// The replay's run is the menu's: its mode, quest, difficulty and players.
 // Watch pressed again before the run starts keeps the player's menu settings.
 static void watch_arm(const LoadedReplay &replay, const WatchCard &card, const std::string &id = {}) {
   watch.replay = replay;
@@ -150,7 +151,7 @@ static void watch_arm(const LoadedReplay &replay, const WatchCard &card, const s
     watch.menu = menu_shown();
   config_blob.game_mode = (decltype(config_blob.game_mode))recorded.mode;
   config_blob.hardcore = (decltype(config_blob.hardcore))recorded.hardcore;
-  config_blob.player_count = 1;
+  config_blob.player_count = (decltype(config_blob.player_count))recorded.players;
   if (recorded.mode == GAME_MODE_QUEST) {
     quest_stage_major = (int)recorded.major;
     quest_stage_minor = (int)recorded.minor;
@@ -168,6 +169,12 @@ static void watch_start(const LoadedReplay &replay, const WatchCard &card, const
   music_fade_out_all(music_track_shortie_monk_id);
   music_fade_out_all(music_track_game_playlist);
   screen_fade_ramp_flag = 1;
+}
+// The players of the replay Watch was pressed for.
+static int watch_players() {
+  PortableConfig recorded;
+  memcpy(&recorded, watch.replay.recording.data(), sizeof recorded);
+  return (int)recorded.players;
 }
 static void watch_disarm() {
   menu_install(watch.menu);
@@ -226,6 +233,7 @@ static void watch_begin() {
   watch.keys.clear();
   watch.key_ticks = WATCH_KEY_TICKS;
   watch.key_bytes = 0;
+  watch.commands = 0;
   watch.picks.clear();
   watch.marks.clear();
   watch.tunes.clear();
@@ -296,9 +304,9 @@ static void watch_judge(const char *stopped) {
 }
 
 // The pass's marks for the tick just played.
-static void watch_mark(int chosen, int choices) {
+static void watch_mark(int chosen, int choices, int picker) {
   if (chosen >= 0) {
-    WatchPick pick = {watch.tick, player_state_table[0].level, chosen, choices, {}};
+    WatchPick pick = {watch.tick, player_state_table[0].level, chosen, choices, {}, cfg.players > 1 ? picker : -1};
     memcpy(pick.offered, perk_choice_ids, choices * sizeof(int));
     watch.marks.push_back({watch.tick, WATCH_PICK, (int)watch.picks.size()});
     watch.picks.push_back(pick);
@@ -320,16 +328,21 @@ static bool watch_tick() {
   if (watch.phase == WATCH_PREPARING ? watch.at >= recording.size() : watch.tick >= watch.ticks)
     return false;
   uint32_t count;
-  memcpy(&in[0], &recording[watch.at], sizeof in[0]);
-  memcpy(&count, &recording[watch.at + sizeof in[0]], sizeof count);
-  memcpy(commands, &recording[watch.at + sizeof in[0] + sizeof count], count * sizeof(PortableCommand));
+  size_t inputs = cfg.players * sizeof(PortableInput);
+  memcpy(in, &recording[watch.at], inputs);
+  memcpy(&count, &recording[watch.at + inputs], sizeof count);
+  memcpy(commands, &recording[watch.at + inputs + sizeof count], count * sizeof(PortableCommand));
   // The menu's choices, as portable_step_many counts them, before the pick can
-  // add one (Perk Expert, Perk Master); of a tick's picks, the card shows the last.
+  // add one (Perk Expert, Perk Master); of a tick's picks, the card shows the
+  // last, and its player.
   const int *counts = player_state_table[0].perk_counts;
-  int choices = counts[PERK_ID_PERK_MASTER] > 0 ? 7 : counts[PERK_ID_PERK_EXPERT] > 0 ? 6 : 5, chosen = -1;
+  int choices = counts[PERK_ID_PERK_MASTER] > 0 ? 7 : counts[PERK_ID_PERK_EXPERT] > 0 ? 6 : 5, chosen = -1, picker = 0;
   for (uint32_t i = 0; i < count; ++i)
-    if (commands[i].type == 1)
+    if (commands[i].type == 1) {
       chosen = commands[i].argument;
+      if (watch.phase == WATCH_PREPARING)
+        picker = watch.replay.pickers[watch.commands + i];
+    }
   // The perk menu the replay opens stays shut: its pick comes with a later tick.
   live.requested = GAME_STATE_PENDING_IDLE_SENTINEL;
   if (!live_step(count)) {
@@ -338,10 +351,12 @@ static bool watch_tick() {
     watch_judge(stopped);
     return false;
   }
-  watch.at += sizeof in[0] + sizeof count + count * sizeof(PortableCommand);
+  watch.at += inputs + sizeof count + count * sizeof(PortableCommand);
   ++watch.tick;
-  if (watch.phase == WATCH_PREPARING)
-    watch_mark(chosen, choices);
+  if (watch.phase == WATCH_PREPARING) {
+    watch.commands += count;
+    watch_mark(chosen, choices, picker);
+  }
   live_timeline();
   if (ui_elements_timeline < 0)
     ui_elements_timeline = 0;

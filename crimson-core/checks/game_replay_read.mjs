@@ -1,6 +1,7 @@
 // The game module reads replays for playback (host/replay.inc): every recorded
-// fixture it can play reads as checks/replay.py converts it, the session's own
-// recording layout, and the rest say they need the Python port.
+// fixture it can play, and the service's co-op runs, read as checks/replay.py
+// converts them, the session's own recording layout, each command for the
+// player it names; the rest say they need the Python port.
 //
 // Usage: node game_replay_read.mjs <game directory> [game.wasm]
 
@@ -20,31 +21,49 @@ const memory = () => Buffer.from(game.memory.buffer);
 const fixtures = path.join(ROOT, "tests/fixtures/replays");
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "replay-read-"));
 fs.mkdirSync(path.join(directory, "replays"), { recursive: true });
-let read = 0;
-for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).sort()) {
-  fs.copyFileSync(path.join(fixtures, name), path.join(directory, "replays", name));
+// The service's co-op runs (service/test/vectors.json): a Survival run, and a custom quest's clear with and without
+// the seats' keys.
+const vectors = JSON.parse(fs.readFileSync(path.join(ROOT, "service/test/vectors.json"))).coop_run;
+const coop = { "coop-survival.crd": vectors.file, "coop-quest.crd": vectors.quest_file, "coop-quest-unkeyed.crd": vectors.unkeyed_quest_file };
+for (const [name, file] of Object.entries(coop)) fs.writeFileSync(path.join(scratch, name), Buffer.from(file, "base64"));
+const replays = [
+  ...fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).sort().map((name) => path.join(fixtures, name)),
+  ...Object.keys(coop).map((name) => path.join(scratch, name)),
+];
+const open = (name) => {
   memory().write(`replays/${name}\0`, game.game_replay_path(), "latin1");
-  const playable = game.game_replay_open();
-  const reason = memory().toString("latin1", game.game_replay_reason(), memory().indexOf(0, game.game_replay_reason()));
+  return game.game_replay_open();
+};
+const reason = () => memory().toString("latin1", game.game_replay_reason(), memory().indexOf(0, game.game_replay_reason()));
+const pickers = () => {
+  const players = [];
+  for (let picker; (picker = game.game_replay_picker(players.length)) >= 0; ) players.push(picker);
+  return players;
+};
+let read = 0;
+for (const source of replays) {
+  const name = path.basename(source);
+  fs.copyFileSync(source, path.join(directory, "replays", name));
+  const playable = open(name);
   const expected = path.join(scratch, `${name}.rsi`);
   let converted = true;
   try {
-    execFileSync("uv", ["run", "--no-sync", "python", path.join(CORE, "checks/replay.py"), path.join(fixtures, name), "--out", expected], { stdio: "pipe" });
+    execFileSync("uv", ["run", "--no-sync", "python", path.join(CORE, "checks/replay.py"), source, "--out", expected], { stdio: "pipe" });
   } catch {
-    converted = false; // the core plays one player in Rush, Survival or Quests
+    converted = false; // the core plays one or two players in Rush, Survival or Quests
   }
   if (!converted) {
-    if (playable || reason !== "This run needs the Python port") throw Error(`${name}: read as playable (${reason})`);
+    if (playable || reason() !== "This run needs the Python port") throw Error(`${name}: read as playable (${reason()})`);
     continue;
   }
-  if (!playable) throw Error(`${name}: ${reason}`);
+  if (!playable) throw Error(`${name}: ${reason()}`);
   const recording = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
   if (!recording.equals(fs.readFileSync(expected))) throw Error(`${name}: reads differently from checks/replay.py`);
   ++read;
 }
-// A fixture rewritten as `expression` (Python over its decoded `wire`) at replays/rewritten.crd.
+// A fixture (or a co-op run) rewritten as `expression` (Python over its decoded `wire`) at replays/rewritten.crd.
 const fixture = "survival-135302.crd";
-const rewrite = (expression) => {
+const rewrite = (expression, source = path.join(fixtures, fixture)) => {
   const script =
     "import sys, msgspec, zstandard; data = open(sys.argv[1], 'rb').read(); " +
     "wire = msgspec.msgpack.decode(zstandard.ZstdDecompressor().decompress(data)); " +
@@ -53,9 +72,8 @@ const rewrite = (expression) => {
     "'recorder': wire['recorder'], 'pilot': None, 'seat_keys': seat_keys, " +
     "**{key: wire[key] for key in ('run', 'result', 'ticks')}}); " +
     `open(sys.argv[2], 'wb').write(${expression})`;
-  execFileSync("uv", ["run", "--no-sync", "python", "-c", script, path.join(fixtures, fixture), path.join(directory, "replays", "rewritten.crd")]);
-  memory().write("replays/rewritten.crd\0", game.game_replay_path(), "latin1");
-  return game.game_replay_open();
+  execFileSync("uv", ["run", "--no-sync", "python", "-c", script, source, path.join(directory, "replays", "rewritten.crd")]);
+  return open("rewritten.crd");
 };
 // Format 34 names each seat's key, or none: either reads as the fixture does.
 const fixtureRecording = path.join(scratch, "fixture.rsi");
@@ -66,6 +84,11 @@ for (const [name, expression] of Object.entries(seated)) {
   const recording = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
   if (!recording.equals(fs.readFileSync(fixtureRecording))) throw Error(`a replay with ${name} reads differently from its fixture`);
 }
+// The run with the perk menu opened on its second tick and a pick on its third, both for `picker`.
+const commands = (picker) =>
+  `[{'type': 'perk_menu_open', 'player_index': ${picker}}], [{'type': 'perk_pick', 'player_index': ${picker}, 'choice_index': 0}]`;
+const picked = (picker) =>
+  `pack({**wire, 'ticks': [[t[0], c] for t, c in zip(wire['ticks'], [[], ${commands(picker)}])] + wire['ticks'][3:]})`;
 // Broken replays read as unreadable, and never trap the module.
 const broken = {
   truncated: "data[: len(data) // 2]",
@@ -80,8 +103,28 @@ const broken = {
   "a key per two seats": "v34([bytes(32), bytes(range(32))])",
   "a short seat key": "v34([bytes(31)])",
   "a seat key as text": "v34(['k' * 32])",
+  "player two's perk commands": picked(1),
 };
 for (const [name, expression] of Object.entries(broken))
   if (rewrite(expression)) throw Error(`a replay with ${name} reads as playable`);
+// A co-op run's perk commands each name their player: player two's menu and pick read as player two's.
+const coopRun = path.join(scratch, "coop-survival.crd");
+if (!rewrite(picked(1), coopRun) || pickers().join() !== "1,1") throw Error(`player two's perk commands read as ${pickers()}`);
+// Broken co-op runs read as unreadable too; three players, which the format allows, need the Python port.
+const coopBroken = {
+  "a third player's perk command": picked(2),
+  "a negative player index": picked(-1),
+  "one player's inputs a tick": "pack({**wire, 'ticks': [[t[0][:1], t[1]] for t in wire['ticks']]})",
+  "no players": "pack({**wire, 'run': {**wire['run'], 'player_count': 0}, 'seat_keys': None})",
+  "five players": "pack({**wire, 'run': {**wire['run'], 'player_count': 5}, 'seat_keys': None})",
+};
+for (const [name, expression] of Object.entries(coopBroken)) {
+  if (rewrite(expression, coopRun)) throw Error(`a co-op run with ${name} reads as playable`);
+  if (reason() !== "This version cannot read its replay") throw Error(`a co-op run with ${name}: ${reason()}`);
+}
+const three = "pack({**wire, 'run': {**wire['run'], 'player_count': 3}, 'seat_keys': None, 'ticks': [[t[0] + t[0][:1], t[1]] for t in wire['ticks']]})";
+if (rewrite(three, coopRun) || reason() !== "This run needs the Python port") throw Error(`three players: ${reason()}`);
 fs.rmSync(scratch, { recursive: true });
-console.log(JSON.stringify({ read, seated: Object.keys(seated).length, broken: Object.keys(broken).length }));
+console.log(
+  JSON.stringify({ read, seated: Object.keys(seated).length, broken: Object.keys(broken).length, coop_broken: Object.keys(coopBroken).length }),
+);

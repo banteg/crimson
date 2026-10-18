@@ -26,6 +26,9 @@ static const char *practice_reason() {
     return "";
   if (coop_on())
     return "Not during co-op";
+  // The branch plays one player's live input.
+  if (cfg.players > 1)
+    return "One player only";
   if (watch.phase == WATCH_PREPARING)
     return "Preparing";
   if (watch.seek || viewer.dragging)
