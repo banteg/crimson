@@ -1,6 +1,6 @@
 import { type Accessor, createSignal, For, type Setter, Show, untrack } from "solid-js";
 import { render } from "solid-js/web";
-import { BOARDS, type Role } from "../../src/api-types";
+import type { Role } from "../../src/api-types";
 import { questPage, survivalPage } from "../../src/paths";
 import { get } from "./api";
 import { GameButton } from "./button";
@@ -40,26 +40,22 @@ function slideOut(panels: Shown[]): number {
   return panels.length ? SLIDE_MS + (panels.length - 1) * STAGGER_MS : 0;
 }
 
-// Whether a page shows one of a co-op pair's boards, Survival or quests.
-function coopPage(path: string): boolean {
-  const board = survivalPage(path) ?? questPage(path)?.board;
-  return board !== undefined && board !== null && BOARDS[board].players > 1;
-}
+// A leaderboard page: Survival's or the quests', one player's or a co-op pair's.
+const boardPage = (path: string) => survivalPage(path) !== null || questPage(path) !== null;
 
-// Play leaves the site's app for the game's own page.
-const MENU: { label: string; href: string; native?: boolean; on: (path: string) => boolean }[] = [
-  { label: "Play", href: "/play/", native: true, on: () => false },
-  { label: "Survival", href: "/survival", on: (path) => path === "/survival" },
-  { label: "Quests", href: "/quests", on: (path) => questPage(path) !== null && !coopPage(path) },
-  { label: "Co-op", href: "/survival/coop", on: coopPage },
-  { label: "Custom", href: "/custom", on: (path) => path === "/custom" || path.startsWith("/custom/") },
-  { label: "About", href: "/about", on: (path) => path === "/about" },
+// Play leaves the site's app for the game's own page. Leaderboards opens the board last looked at.
+const MENU: { label: string; href: (board: string) => string; native?: boolean; on: (path: string) => boolean }[] = [
+  { label: "Play", href: () => "/play/", native: true, on: () => false },
+  { label: "Leaderboards", href: (board) => board, on: boardPage },
+  { label: "Custom", href: () => "/custom", on: (path) => path === "/custom" || path.startsWith("/custom/") },
+  { label: "About", href: () => "/about", on: (path) => path === "/about" },
 ];
 
 function App() {
   const [panels, setPanels] = createSignal<Shown[]>([]);
   const [grounds, setGrounds] = createSignal<Layer[]>([]);
   const [path, setPath] = createSignal(location.pathname);
+  const [board, setBoard] = createSignal(boardPage(location.pathname) ? location.pathname : "/survival");
   const [me, setMe] = createSignal<{ account: number | null; role: Role }>({ account: null, role: "" });
   let navigation = 0;
   let groundKey: string | null = null;
@@ -84,6 +80,7 @@ function App() {
     if (history_ === "push") history.pushState(null, "", url);
     else if (history_ === "replace") history.replaceState(null, "", url);
     setPath(url.pathname);
+    if (boardPage(url.pathname)) setBoard(url.pathname);
     void get<{ account: number | null; role: Role }>("/api/me").then((answer) => setMe(answer!));
     const moving = animate && motion();
     const old = panels();
@@ -135,14 +132,8 @@ function App() {
       </For>
       <header>
         <nav class="menu buttons">
-          <For each={MENU}>{(item) => <GameButton label={item.label} href={item.href} native={item.native} on={item.on(path())} />}</For>
+          <For each={MENU}>{(item) => <GameButton label={item.label} href={item.href(board())} native={item.native} on={item.on(path())} />}</For>
           <Show when={me().account}>{(id) => <GameButton label="Profile" href={`/players/${id()}`} on={path() === `/players/${id()}`} />}</Show>
-          <Show when={me().role}>
-            <GameButton label="Mod" href="/mod" on={path() === "/mod"} />
-          </Show>
-          <Show when={me().role === "admin"}>
-            <GameButton label="Analytics" href="/analytics" on={path() === "/analytics"} />
-          </Show>
         </nav>
         <a class="sign" href="/">
           <img src="/ui/sign.png" width="512" height="128" alt="Crimsonland" />
@@ -162,6 +153,15 @@ function App() {
           <a href={DOCS}>Docs</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">GitHub</a> ·{" "}
           <a href="https://t.me/+NEHzXtv5_fphZDYy">Telegram</a>
         </p>
+        <Show when={me().role}>
+          <p class="staff">
+            <a href="/mod">Moderation</a>
+            <Show when={me().role === "admin"}>
+              {" · "}
+              <a href="/analytics">Analytics</a>
+            </Show>
+          </p>
+        </Show>
         <p class="credit">
           a fan project by <a href="https://banteg.xyz">banteg</a>. not affiliated with 10tons.
         </p>

@@ -16,7 +16,7 @@ import {
   type Role,
   type RunDetailView,
 } from "../../src/api-types";
-import { boardFor, boardPath, questPage, type QuestPage, questsPath, type SurvivalBoard, survivalPage } from "../../src/paths";
+import { boardFor, boardPath, type QuestBoard, questPage, type QuestPage, questsPath, type SurvivalBoard, survivalPage } from "../../src/paths";
 import { get, moderate, post } from "./api";
 import { formatLongDuration, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
@@ -399,19 +399,37 @@ function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
   ];
 }
 
-// Co-op pairs rank on boards of their own; each co-op page leads to the other.
-const coopLinks = (here: "survival" | "quests") => () => (
-  <p class="muted">
-    Two players online, ranked as a pair.{" "}
-    {here === "survival" ? <a href="/quests/coop">Co-op quests</a> : <a href="/survival/coop">Co-op Survival</a>}
-  </p>
-);
+// The leaderboards' switch: Survival or the quests, one player's boards or a co-op pair's. Each switch keeps the
+// other, and on the quests the stage or quest and the hardcore box too.
+function BoardSwitch(props: { board: Board; at?: number | string }) {
+  const quests = BOARDS[props.board].quests, coop = BOARDS[props.board].players > 1;
+  const to = (inQuests: boolean, inCoop: boolean) =>
+    inQuests
+      ? questsPath(boardFor(true, BOARDS[props.board].hardcore, inCoop) as QuestBoard, quests ? (props.at ?? 1) : 1)
+      : boardPath(boardFor(false, false, inCoop), "");
+  return (
+    <>
+      <nav class="board-switch">
+        <span class="buttons">
+          <GameButton label="Survival" href={to(false, coop)} on={!quests} />
+          <GameButton label="Quests" href={to(true, coop)} on={quests} />
+        </span>
+        <span class="buttons">
+          <GameButton label="Solo" href={to(quests, false)} on={!coop} />
+          <GameButton label="Co-op" href={to(quests, true)} on={coop} />
+        </span>
+      </nav>
+      <Show when={coop}>
+        <p class="muted">Two players online, ranked as a pair.</p>
+      </Show>
+    </>
+  );
+}
 
 async function survival(board: SurvivalBoard): Promise<Screen> {
   const path = boardPath(board, "");
   const [humans, bots] = await Promise.all([get<BoardView>(`/api${path}`), get<BoardView>(`/api${path}?category=bot`)]);
-  const panels = boardPanels(humans!, bots!);
-  return { title: humans!.title, quest: null, panels: BOARDS[board].players > 1 ? [coopLinks("survival"), ...panels] : panels };
+  return { title: humans!.title, quest: null, panels: [() => <BoardSwitch board={board} />, ...boardPanels(humans!, bots!)] };
 }
 
 // A stage's quest menu, and with a quest, its boards.
@@ -424,7 +442,7 @@ async function quests(page: QuestPage): Promise<Screen> {
   ]);
   const menuPanel = keep("quest-menu", { menu: menu!, quest: page.quest ?? undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />);
   const coop = BOARDS[page.board].players > 1;
-  const panel = coop ? [coopLinks("quests"), menuPanel] : [menuPanel];
+  const panel = [() => <BoardSwitch board={page.board} at={page.quest ?? page.stage} />, menuPanel];
   if (!humans || !bots) return { title: `Quests ${STAGES[page.stage - 1]}${coop ? " · co-op" : ""}`, quest: `${page.stage}.1`, panels: panel };
   return { title: humans.title, quest: page.quest, panels: [...panel, ...boardPanels(humans, bots)] };
 }
