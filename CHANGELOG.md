@@ -2,6 +2,13 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.19.1
+
+### For players
+
+- **Profile** shows on Play Game whether or not Ranked is ticked, so a player who has only joined co-op sessions can sign in to the site and gets its Profile tab.
+- During a co-op session, Play Game no longer shows the Ranked box. Co-op runs always play under the ranked rules, so ticking it changed nothing for the run and only narrowed the Host's menu.
+
 ## 0.19.0
 
 ### For players
