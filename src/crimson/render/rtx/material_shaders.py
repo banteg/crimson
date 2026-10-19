@@ -9,10 +9,9 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 out vec4 finalColor;
 
-uniform sampler2D texture0;       // Ground Albedo RT
 uniform sampler2D u_surface_tex;  // R=specularity, G=wet amount at epoch, B=volume, A=substrate height
 uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a second blood tint
-uniform sampler2D u_material_tex; // Ordered RGB coverage: blood, corpse, brass
+uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass, ice
 
 uniform vec2 u_ground_size;
 uniform float u_time_s; // Seconds relative to the wetness epoch
@@ -46,7 +45,7 @@ void main() {
     vec2 dH_macro = vec2(sL2.a - sR2.a, sU2.a - sD2.a) * 1.15;
 
     // Explicit ordered material coverage, independent of the painted albedo hue.
-    vec3 weights = texture(u_material_tex, ground_uv).rgb;
+    vec4 weights = texture(u_material_tex, ground_uv);
     float heme_c = weights.r;
     float amount_l1 = sL1.b * texture(u_material_tex, ground_uv + vec2(-step_fine.x, 0)).r;
     float amount_r1 = sR1.b * texture(u_material_tex, ground_uv + vec2( step_fine.x, 0)).r;
@@ -90,7 +89,7 @@ void main() {
     if (u_debug == 4) { finalColor = vec4(vec3(blood_amount), 1.); return; }
     float is_metal = weights.b;
     float is_chitin = weights.g;
-    float is_ice = smoothstep(.80, .92, surf.r) * (1.0 - is_metal) * (1.0 - heme_c);
+    float is_ice = weights.a;
     float blood_smooth = mix(0.52, 0.91, freshness);
     float smoothness = max(0.12 * (1.0 - wet_film), mix(wet_film * 0.68 * freshness, blood_smooth, deep_pool));
     smoothness = max(smoothness, max(is_ice * .90, max(is_metal * 0.88, is_chitin * 0.42)));
@@ -100,12 +99,23 @@ void main() {
     float daylight_ndl = clamp(dot(N_sub, normalize(vec3(-0.38, -0.48, 0.79))), 0.0, 1.0);
     vec3 ambient_term = vec3(0.94 + 0.08 * daylight_ndl);
     vec3 sky_reflection = pow(vec3(0.22, 0.25, 0.30), vec3(2.2));
-    vec3 direct_light = vec3(0.0);
+    float soil_lum = dot(albedo_tex.rgb, vec3(0.299, 0.587, 0.114));
+    vec3 base_substrate = mix(albedo_tex.rgb, vec3(soil_lum * 1.04, soil_lum * 0.98, soil_lum * 0.92), wet_film * 0.85);
+    vec3 wetted_substrate = base_substrate * mix(1.0, 0.38, wet_film);
+
+    // Beer-Lambert double-pass optical path through hemoglobin layer (older coagulated blood darkens further):
+    float coag_darken = mix(1.25, 1.0, freshness);
+    vec3 absorption = optical_depth * (0.85 + 1.15 * deep_pool) * coag_darken * vec3(1.35, 9.50, 12.50);
+    // Ambient transmission never depends on the dynamic emitter list or its intensity.
+    vec3 ambient_transmittance = exp(-absorption * (0.90 + 0.35 / 0.55));
+
+    float ruby_shallows = sin(clamp(pool_amount, 0.0, 1.0) * 3.14159);
+    vec3 erythrocyte_sss = vec3(0.08 * mix(0.65, 1.0, freshness), 0.00003, 0.00005) * (ruby_shallows * 0.78 + deep_pool * 0.22);
+
+    vec3 diffuse_lit = (wetted_substrate * ambient_transmittance + erythrocyte_sss) * ambient_term;
+
     vec3 V = normalize(vec3(0.0, 0.0, 1.0));
     vec3 spec_accum = vec3(0.0);
-    float normal_relief_accum = 0.0;
-    float normal_weight = 0.0;
-    float mean_mu_i = 0.0;
 
     for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
         if (i >= u_spec_light_count) break;
@@ -141,13 +151,11 @@ void main() {
         vec3 L = normalize(vec3(to_l.x, to_l.y, max(12.0, sp_pos.w)));
         float ndl_sub = clamp(dot(N_sub, L), 0.0, 1.0);
         float flat_ndl = L.z;
-        direct_light += sp_col.rgb * atten * ndl_sub * 0.22;
-
+        // Each light has its own optical path and relief; fading it cannot recolor other light.
+        vec3 transmittance = exp(-absorption * (0.90 + 0.35 / clamp(flat_ndl, 0.22, 1.0)));
+        vec3 direct_albedo = wetted_substrate * transmittance + erythrocyte_sss;
         float relief = clamp((ndl_sub + 0.18) / (flat_ndl + 0.18), 0.64, 1.55);
-        float w = atten * dot(sp_col.rgb, vec3(0.333));
-        normal_relief_accum += relief * w;
-        normal_weight += w;
-        mean_mu_i += flat_ndl * w;
+        diffuse_lit += direct_albedo * sp_col.rgb * (atten * ndl_sub * 0.22 * relief);
 
         // Specular reflection uses N_fluid (smooth coalesced liquid sheet inside pools + wet rock facets):
         float z_refl = max(44.0, sp_pos.w * 3.2);
@@ -178,9 +186,6 @@ void main() {
         spec_accum += sp_col.rgb * spec_tint * (spec_brdf * atten);
     }
 
-    float mean_relief = (normal_weight > 0.001) ? (normal_relief_accum / normal_weight) : 1.0;
-    float mu_eff = (normal_weight > 0.001) ? clamp(mean_mu_i / normal_weight, 0.22, 1.0) : 0.55;
-
     // Subtle cold moonlit sky reflection across smooth liquid pools (stronger on fresh blood)
     vec3 H_sky = normalize(vec3(-0.15, -0.20, 0.96));
     float ndh_sky = max(0.0, dot(N_fluid, H_sky));
@@ -188,24 +193,6 @@ void main() {
 
     // Visibility/shadows are a separate lighting follow-up. Never gate all lights with one mean shadow.
     vec3 reflected_light = spec_accum + sky_wet_spec;
-    float soil_lum = dot(albedo_tex.rgb, vec3(0.299, 0.587, 0.114));
-    vec3 base_substrate = mix(albedo_tex.rgb, vec3(soil_lum * 1.04, soil_lum * 0.98, soil_lum * 0.92), wet_film * 0.85);
-    vec3 wetted_substrate = base_substrate * mix(1.0, 0.38, wet_film);
-
-    // Beer-Lambert double-pass optical path through hemoglobin layer (older coagulated blood darkens further):
-    float coag_darken = mix(1.25, 1.0, freshness);
-    float optical_path = optical_depth * (0.85 + 1.15 * deep_pool) * coag_darken * (0.90 + 0.35 / mu_eff);
-    vec3 transmittance = exp(-optical_path * vec3(1.35, 9.50, 12.50));
-
-    float ruby_shallows = sin(clamp(pool_amount, 0.0, 1.0) * 3.14159);
-    vec3 erythrocyte_sss = vec3(0.08 * mix(0.65, 1.0, freshness), 0.00003, 0.00005) * (ruby_shallows * 0.78 + deep_pool * 0.22);
-
-    vec3 material_albedo = wetted_substrate * transmittance + erythrocyte_sss;
-
-    // Diffuse relief always follows the substrate; pool contours affect specular only.
-    float diffuse_relief = mean_relief;
-
-    vec3 diffuse_lit = material_albedo * (ambient_term + direct_light * diffuse_relief);
     // HdrRenderer owns the only display shoulder; preserve highlights above 1 here.
     finalColor = vec4(pow(max(diffuse_lit + reflected_light, vec3(0.0)), vec3(1.0 / 2.2)), 1.0);
 }
@@ -244,6 +231,8 @@ void main() {
     }
     float spec = u_kind == 2 ? .28 : (u_kind == 3 ? .96 : (u_kind == 5 ? .92 : .01));
     float height = u_kind == 2 ? (.045 + .075 * lum) : (u_kind == 3 || u_kind == 5 ? .14 : 0.);
+    // Pass 2 accumulates relief: H' = H + (1-H)*height*a, rather than replacing terrain height.
+    // Corpses/casings rise above the substrate while inheriting some of its texture; scorch adds no relief.
     finalColor = u_pass == 1 ? vec4(spec, 0., 0., a) : vec4(0., 0., 0., height * a);
 }
 """

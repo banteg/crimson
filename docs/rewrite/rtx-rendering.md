@@ -102,8 +102,10 @@ resolution and world coordinates, including texture scale and DPI:
 - `RGBA32F`: specularity, volume-weighted wetness, accumulated liquid volume,
   substrate height. Wetness uses a periodically rebased epoch to keep long-run
   calculations bounded.
-- `RGBA8`: ordered blood, corpse, and brass coverage. Later corpses cover old blood;
-  later blood coats corpses again. Scorches remove gloss and ice uses a dielectric response.
+- `RGBA8`: ordered blood, corpse, brass, and ice coverage in RGBA. Separate RGB/alpha
+  blend factors let ice accumulate coverage while every later material occludes it.
+  Normal `0.35`-alpha freeze shards receive an ice response without requiring repeated
+  deposits. Later corpses cover old blood; later blood coats corpses again. Scorches remove gloss.
 - A separate clean substrate color target receives terrain, corpses, casings, ice,
   and scorches, but no blood RGB. Absorption therefore never re-tints the original
   blood-painted albedo. The latter stays intact for classic.
@@ -131,6 +133,12 @@ resolution and world coordinates, including texture scale and DPI:
   back into the legacy compositor. Material output stays unclamped
   until the existing HDR shoulder. No extra material
   tonemapper, exposure reduction, or full-screen darkness is applied.
+- Ambient blood absorption uses a stable incidence. Each dynamic emitter computes
+  its own transmission and diffuse relief before contributing radiance, so a faint
+  light cannot darken the ambient film or recolor another emitter's contribution.
+- Corpse/casing height is accumulated relief, `H′ = H + (1 − H) × height × alpha`,
+  which raises the surface while retaining some terrain texture. It is not absolute
+  replacement height; changing that appearance requires separate visual tuning.
 
 Companions and shaders allocate only on the first RTX draw. Pending terrain bakes
 are encoded into a temporary spool that spills to disk beyond 1 MiB, allowing a
@@ -165,20 +173,22 @@ inputs, and native/browser rendering are unchanged.
 
 A synchronized OpenGL comparison on an Apple M1 Pro at 960×540, using the Survival
 fixture at ticks 4395/5115/6255 (30 warmed draws each), measured median whole-world
-RTX draw times of 3.88/3.16/3.35 ms before materials and 4.06/3.30/3.83 ms with them.
+RTX draw times of 3.95/3.59/3.53 ms before materials and 4.24/3.79/3.82 ms with them.
 These small samples include CPU submission and GPU completion, exclude simulation
 and new decal bakes, and are not a general performance guarantee.
 
 A separate queued-bake benchmark used a 1024² terrain target inside a 960×540 target,
 400 batches containing 4,934 mixed blood/casing/scorch/corpse stamps, and six synchronized
 runs (first discarded). Pass-major stamping reduced the warm median from 1,568 ms
-at `502e0994d` to 678 ms (2.3× faster). Initialization and queue encoding were outside
+at `502e0994d` to 571 ms (2.7× faster). Initialization and queue encoding were outside
 the timed region. Continuous play normally bakes only new deposits; first-activation
 latency still depends on the accumulated backlog.
 
 GPU tests cover ordered composition and equivalence between incremental and pass-major
 bakes, actual shader normal outputs, thin/deep meniscus behavior, volume-weighted freshness
-at ten hours, linear HDR emitter response, clean substrate color, sampler binding,
+at ten hours, linear HDR emitter response, continuity at a fading light's boundary,
+independent light contributions, actual expired-shard ice response and ordered occlusion,
+clean substrate color, sampler binding,
 regeneration, and teardown. CPU tests cover spool rollover/cleanup and view-centered
 co-op light selection. Existing seek/reset lifecycle checks remain; RTX replay
 optimization is deferred.

@@ -63,6 +63,24 @@ def _shader(fragment: str) -> rl.Shader:
     return shader
 
 
+@contextmanager
+def _coverage_blend(*, ice: bool) -> Iterator[None]:
+    # RGB stores alpha-over material weights. A stores ice coverage, not blend opacity:
+    # ice contributes a, other materials contribute zero, and all occlude previous ice by (1-a).
+    factors = (
+        rd.RL_SRC_ALPHA, rd.RL_ONE_MINUS_SRC_ALPHA,
+        rd.RL_ONE if ice else rd.RL_ZERO, rd.RL_ONE_MINUS_SRC_ALPHA,
+        rd.RL_FUNC_ADD, rd.RL_FUNC_ADD,
+    )
+    rl.rl_set_blend_factors_separate(*factors)
+    rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM_SEPARATE)
+    rl.rl_set_blend_factors_separate(*factors)
+    try:
+        yield
+    finally:
+        rl.end_blend_mode()
+
+
 class _MaterialStamp(NamedTuple):
     texture: rl.Texture
     src: rl.Rectangle
@@ -207,14 +225,18 @@ class MaterialGroundRenderer(GroundRenderer):
                                 rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
                             )
                         if pass_id == 0:
-                            mask, src, dst = (True, True, True, False), rd.RL_SRC_ALPHA, rd.RL_ONE_MINUS_SRC_ALPHA
+                            mask = (True, True, True, True)
+                            blend = _coverage_blend(ice=kind == 5)
                         elif pass_id == 1:
                             mask = (kind != 1, True, True, False)
-                            src, dst = (rd.RL_ONE if kind == 1 else rd.RL_SRC_ALPHA), rd.RL_ONE_MINUS_SRC_ALPHA
+                            blend = blend_custom(
+                                rd.RL_ONE if kind == 1 else rd.RL_SRC_ALPHA, rd.RL_ONE_MINUS_SRC_ALPHA, rd.RL_FUNC_ADD,
+                            )
                         else:
-                            mask, src, dst = (False, False, False, True), rd.RL_ONE, rd.RL_ONE_MINUS_SRC_ALPHA
+                            mask = (False, False, False, True)
+                            blend = blend_custom(rd.RL_ONE, rd.RL_ONE_MINUS_SRC_ALPHA, rd.RL_FUNC_ADD)
                         rl.rl_color_mask(*mask)
-                        with blend_custom(src, dst, rd.RL_FUNC_ADD):
+                        with blend:
                             for command in group:
                                 rl.draw_texture_pro(
                                     command.texture,

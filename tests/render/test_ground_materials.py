@@ -333,7 +333,7 @@ def test_pass_major_stamps_match_incremental_mixed_decal_order(ground_material) 
         entries = tuple(msgspec.structs.replace(
             blood(0).decals[0], effect_id=kind, color=RGBA(0 if kind == 16 else 1, 0, 0, .6),
             pos=Vec2(25 + i, 25 + i), rotation=i * .1,
-        ) for kind in (3, 4, 7, 18, 16, 7))
+        ) for kind in (3, 4, 7, 8, 18, 16, 7))
         corpses = (FxQueueRotatedEntry(top_left=Vec2(20, 20), scale=18, color=RGBA(1, 1, 1, .6)),) if i % 2 else ()
         batches.append(TerrainFxBatch(decals=entries, corpses=corpses, elapsed_s=100 + i))
     ground.material_batches.extend(batches)
@@ -360,3 +360,98 @@ def test_shader_treats_emitter_rgb_as_linear_radiance(ground_material, mocker) -
     assert tuple(c - b for b, c in zip(values[1], values[2], strict=True)) == pytest.approx(
         tuple(b - a for a, b in zip(values[0], values[1], strict=True)), rel=.015,
     )
+
+
+def uniform_fresh_film(ground, texture) -> None:
+    ground.bake_materials(texture, texture)
+    # Flat, uniform film isolates absorption from relief and meniscus effects.
+    with texture_mode(ground.surface):
+        rl.clear_background(rl.Color(10, 102, 102, 115))
+    with texture_mode(ground.coverage):
+        rl.clear_background(rl.Color(128, 0, 0, 0))
+
+
+def test_weak_light_cannot_darken_ambient_blood_or_create_a_boundary_ring(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_fresh_film(ground, texture)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+    center = 32 * 64 + 32
+    baseline = debug_pixels(ground, texture, mode=0)[center][:3]
+    rgb = (.62, .92, 1.4)
+    # Cross the former normal_weight=0.001 branch with an almost extinguished light.
+    crossing = 175 * (1 - math.sqrt(.001 / (sum(rgb) * .333)))
+    values = []
+    for distance in (crossing - .002, crossing + .002, 175, 175.01):
+        collector.return_value = [MaterialLight(Vec2(32.5 + distance, 31.5), 175, rgb, height=18)]
+        value = debug_pixels(ground, texture, mode=0)[center][:3]
+        assert all(channel >= ambient - .0001 for channel, ambient in zip(value, baseline, strict=True))
+        values.append(value)
+    assert values[0] == pytest.approx(values[1], abs=.0002)
+    assert values[-1] == baseline
+
+
+def test_each_light_adds_its_own_absorbed_radiance(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_fresh_film(ground, texture)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights")
+    high = MaterialLight(Vec2(32, 32), 175, (.8, .7, .6), height=40)
+    low = MaterialLight(Vec2(112, 32), 175, (.4, .9, 1.4), height=18)
+    values = []
+    for lights in ([], [high], [low], [high, low]):
+        collector.return_value = lights
+        encoded = debug_pixels(ground, texture, mode=0)[32 * 64 + 32][:3]
+        values.append(tuple(channel ** 2.2 for channel in encoded))
+    expected = tuple(a + b - ambient for ambient, a, b in zip(*values[:3], strict=True))
+    assert values[3] == pytest.approx(expected, rel=.004, abs=.0001)
+
+
+def test_single_expired_freeze_shard_has_ice_coverage_and_reflection(ground_material, mocker) -> None:
+    from crimson.effects import EffectPool, FxQueue
+    from grim.rand import Crand
+
+    ground, texture = ground_material
+    pool, queue = EffectPool(), FxQueue()
+    pool.spawn_freeze_shard(pos=Vec2(32, 32), angle=0, rng=Crand(0), detail_preset=5, preserve_bugs=False)
+    pool.update(1, fx_queue=queue)
+    assert queue.count == 1
+    shard = queue.iter_active()[0]
+    assert shard.color.a == pytest.approx(.35)
+    ground.material_batches.append(TerrainFxBatch(decals=(shard,)))
+    ground.bake_materials(texture, texture)
+    coverage = pixels(ground.coverage)
+    assert max(pixel[3] for pixel in coverage) == pytest.approx(shard.color.to_rl().a / 255, abs=1 / 255)
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(32, 32), 150, (4, 4, 4), height=30),
+    ])
+    icy = debug_pixels(ground, texture, mode=0)
+    # Remove only ice coverage: substrate color, relief, specularity and lights stay identical.
+    with texture_mode(ground.coverage):
+        rl.rl_color_mask(False, False, False, True)
+        try:
+            rl.clear_background(rl.BLANK)
+        finally:
+            rl.rl_color_mask(True, True, True, True)
+    dry = debug_pixels(ground, texture, mode=0)
+    assert max(max(a[:3]) - max(b[:3]) for a, b in zip(icy, dry, strict=True)) > .01
+
+
+@pytest.mark.parametrize("kind", [7, 16, 18, None])
+def test_later_deposits_cover_ice_in_order(ground_material, kind) -> None:
+    ground, texture = ground_material
+    ice = msgspec.structs.replace(blood(0).decals[0], effect_id=8, color=RGBA(1, 1, 1, .35))
+    ground.material_batches.append(TerrainFxBatch(decals=(ice,)))
+    ground.bake_materials(texture, texture)
+    n = ground.coverage.texture.width
+    center = n // 2 * n + n // 2
+    before = pixels(ground.coverage)[center][3]
+    assert before > .3
+    if kind is None:
+        batch = TerrainFxBatch(corpses=(
+            FxQueueRotatedEntry(top_left=Vec2(16, 16), scale=32, color=RGBA(1, 1, 1, .5)),
+        ))
+    else:
+        entry = msgspec.structs.replace(ice, effect_id=kind, color=RGBA(0, 0, 0, .5))
+        batch = TerrainFxBatch(decals=(entry,))
+    ground.material_batches.append(batch)
+    ground.bake_materials(texture, texture)
+    assert pixels(ground.coverage)[center][3] == pytest.approx(before * .5, abs=2 / 255)
