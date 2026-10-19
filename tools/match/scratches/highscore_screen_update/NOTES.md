@@ -856,39 +856,25 @@ a write-order change with identical final state. Canonical inputs and 804/810
 coverage remain unchanged; full UI execution and a new function match remain
 unproved.
 
-## 1.9.8 (C2 9044), open (2026-10-18)
+## 1.9.8 (C2 9044, 2026-10-19)
 
-92.24% under `--build 1.9.8`, 1925/1926 instructions, references 618/0/2;
-1.9.93 stays exact. Three shared store orders, byte-neutral for 1.9.93, follow
-1.9.8: the score scrollbar's `items` before `item_count`, the date list's
-`items` before `item_count`, and `game_mode = GAME_MODE_QUEST` before
-`quest_stage_major` in the batch-sync quest step.
+100.0% under `--build 1.9.8`, 1926/1926 instructions, 634/0/0 references,
+`body_byte_exact=true`; 1.9.93 stays 2004/2004 exact. Three shared store
+orders, byte-neutral for 1.9.93, follow 1.9.8: the score scrollbar's `items`
+before `item_count`, the date list's `items` before `item_count`, and
+`game_mode = GAME_MODE_QUEST` before `quest_stage_major` in the batch-sync
+quest step.
 
-Two differences have no shared spelling (each breaks 1.9.93):
+Guarded 1.9.8 differences (`CL_BUILD == 10908`):
 
 - Both "Play a game" arms store `ui_transition_direction`, `focus_disabled`,
-  `run_active` in that order in 1.9.8 (the two mismatched references).
+  `run_active` in that order in 1.9.8.
 - 1.9.8 computes `right_panel.y + 114/28/70` once into float locals
   (`profile_y`, `player_count_y`, `date_y`) and reuses them for the label
-  (`- 14.0f`) and the widget position. With both changes guarded the body is
-  1926/1926 and identical with stack offsets masked, but the frame is 0x8c
-  against native 0x88.
-
-Native frame, from paired stack operands (offsets from the frame bottom):
-`position` 0, `arrow_hovered` 11, a slot at 12 shared by the initial panel
-vector (the slot-33 sum, a separate object from `right_panel` in 1.9.8),
-`game_mode_x`, `selected_score`, `option_label_y`, `widget_position`,
-`profile_position` and the game-mode list position (also not `right_panel`);
-`right_panel` and `date_y` at 20; `player_count_y`/`profile_y` at 28; the
-notice/separator/checkbox/scrollbar/back slot at 32; `left_panel` 40; a
-16-byte slot at 48 with `player_count_items`, the detail/update positions and
-the two colour temporaries; `filter_x`/`date_position` 64;
-`player_count_x`/`title_width`/`player_count_position` 72; `quest_color` 80;
-`date_items` 96; `game_mode_items` 116 (0x88). The frame exceeds 0x80, so
-slots are density-sorted, and these memberships sort in native order. A
-separate panel-origin vector and game-mode position reproduce the 12/20 split,
-but `player_count_position` and `player_count_items` still pack into newer
-slots: native needs them to interfere with the `right_panel`/`date_y` and
-game-mode-position slots. Sixteen placements of the date, player-count and
-game-mode vectors and the item array give frames from 0x84 to 0x98, never
-0x88.
+  (`- 14.0f`) and the widget position, keeps the initial slot-33 panel sum in a
+  separate `panel_origin` vector, copies `right_panel.y` through a float local
+  into `widget_position`, hoists `player_count_list` setup before its nested
+  block, and passes a scoped `game_mode_position` vector to the game-mode
+  dropdown call. Under C2 9044's `pack_stack_slots` (`0x1074764f`) and density
+  sort (`0x1076fc94`) this reproduces the exact native `0x88` frame and all
+  1926 instructions.

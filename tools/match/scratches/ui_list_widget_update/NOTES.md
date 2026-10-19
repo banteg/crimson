@@ -127,11 +127,23 @@ respectively; they were restored. The retained vector-offset form is exact:
 **100.00%**, **403/403 instructions**, prefix **403**, and references
 `50/0/0`.
 
-## 1.9.8 row offset (2026-10-16, open)
+## 1.9.8 row offset (2026-10-19, open)
 
-1.9.8 native keeps the strength-reduced `row_index * 16` IV only in memory (the
-dead `xy` argument slot, loaded into ECX each iteration); the shared source
-colours it in EBX with a store-copy for the `fild`, as 1.9.93 native does.
-No improvement under 9044 (all neutral except the worse named offset): a named row offset, `(row_index + 1) * 16`, a per-iteration
-`row_y`, hoisted declarations, operand order, and the earlier ui_focus_*
-bodies of the 1.9.8 unit ahead of the function.
+1.9.8 native (`0x0043e670`, 1405 bytes, 395 instructions) keeps the
+strength-reduced `row_index * 16` IV (`lr 68`) only in memory (the dead `xy`
+argument slot `[esp+0x30]`, loaded into ECX each iteration); the shared source
+colours it in EBX with a store-copy for the `fild` (394 instructions,
+`95.82%`, prefix 307), as 1.9.93 native does.
+
+`priority_trace.py --build 1.9.8` on C2 9044 (`global_color_registers`
+`0x1073122d`, `build_interference_and_pressure_splits` `0x10708af7`) shows that
+both `C2 8966` and `C2 9044` score `lr 68` (`prio 17, benefit 4, allowed {ebx}`)
+and `(int)width` (`lr 60`, `prio -25, benefit 6, allowed {ebx}`) identically,
+and that peak integer register pressure inside the row loop (`blocks 39..45`)
+reaches 6 (`esi, edi, ebp` + `lr 45` + `#888` vtable + `#887/#716` item load)
+against threshold `k = 7`. Forcing a pressure split in `block 40, 41, 44, or
+45` during `lr 45/42/44/43` splits `lr 68`, `lr 60`, `lr 19` (`focused`), and
+`const 1.0f` and reproduces the 1.9.8 native binary byte-for-byte (`395/395`
+instructions, `1405/1405` bytes). No C++ spelling or TU prefix tested under C2
+9044 raises the loop's non-call tuple pressure from 6 to 7 without also
+emitting a 7th register (`ebx`) in the loop body.

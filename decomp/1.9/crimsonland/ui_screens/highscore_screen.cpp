@@ -469,14 +469,28 @@ extern "C" void highscore_screen_update(void)
                 }
             }
 quest_game_allowed:
+            // Code-generation guard (both arms): 1.9.8 stores these flags in
+            // the opposite order; neither order matches both builds.
+#if CL_BUILD == 10908
+            ui_transition_direction = 0;
+            ui_sign_crimson.focus_disabled = 0;
+            run_active = 0;
+#else
             run_active = 0;
             ui_sign_crimson.focus_disabled = 0;
             ui_transition_direction = 0;
+#endif
             game_state_pending = GAME_STATE_GAMEPLAY;
         } else {
+#if CL_BUILD == 10908
+            ui_transition_direction = 0;
+            ui_sign_crimson.focus_disabled = 0;
+            run_active = 0;
+#else
             run_active = 0;
             ui_sign_crimson.focus_disabled = 0;
             ui_transition_direction = 0;
+#endif
             game_state_pending = config_blob.game_mode == GAME_MODE_TYPO_SHOOTER
                 ? GAME_STATE_TYPO_GAMEPLAY
                 : GAME_STATE_GAMEPLAY;
@@ -534,16 +548,32 @@ play_game_done:
         }
     }
 
+    // Code-generation guards in this panel (1.9.8): C2 9044 packs its 0x88
+    // frame only with a separate origin vector, the panel's y offsets in float
+    // locals, the player-count list set up before its block and a scoped
+    // game-mode position; 1.9.93's C2 needs the reused right_panel.
+#if CL_BUILD == 10908
+    highscore_vec2_t panel_origin =
+        *(highscore_vec2_t *)&ui_element_slot_33.pos_x
+        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x
+        + highscore_vec2_t(300.0f, 40.0f);
+    position = panel_origin;
+#else
     highscore_vec2_t right_panel =
         *(highscore_vec2_t *)&ui_element_slot_33.pos_x
         + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x
         + highscore_vec2_t(300.0f, 40.0f);
     position = right_panel;
+#endif
     position.x = ui_element_slot_33.render_offset_x - 16.0f + position.x - 224.0f;
     position.y += 10.0f;
     highscore_vec2_t notice_position(
         position.x + 32.0f, position.y + 364.0f);
+#if CL_BUILD == 10908
+    highscore_vec2_t right_panel = position;
+#else
     right_panel = position;
+#endif
     right_panel.y -= 8.0f;
     right_panel.x -= 16.0f;
     if (config_blob.screen_width <= 640) {
@@ -560,7 +590,12 @@ play_game_done:
             static highscore_checkbox_t online_scores_checkbox;
             float x_value = right_panel.x;
             filter_x = x_value;
+#if CL_BUILD == 10908
+            float y_value = right_panel.y;
+            highscore_vec2_t widget_position(filter_x, y_value);
+#else
             highscore_vec2_t widget_position(filter_x, right_panel.y);
+#endif
             online_scores_checkbox.label = "Show internet scores";
             online_scores_checkbox.checked = config_blob.show_online_scores;
             if (ui_checkbox_update(
@@ -588,12 +623,21 @@ play_game_done:
             memcpy(&label_x, &right_panel.x, sizeof label_x);
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, 0.800000012f);
+#if CL_BUILD == 10908
+            float profile_y = right_panel.y + 114.0f;
+            grim_interface_ptr->grim_draw_text_small(
+                label_x,
+                profile_y - 14.0f,
+                "Selected score list:");
+            highscore_vec2_t profile_position(filter_x, profile_y);
+#else
             grim_interface_ptr->grim_draw_text_small(
                 label_x,
                 right_panel.y + 114.0f - 14.0f,
                 "Selected score list:");
             highscore_vec2_t profile_position(
                 filter_x, right_panel.y + 114.0f);
+#endif
             ui_profile_menu_update(
                 (float *)&profile_position, ui_profile_menu_enabled);
         } else {
@@ -603,7 +647,12 @@ play_game_done:
         date_filter_list.selected_index = (signed char)config_blob.highscore_date_mode;
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, 0.800000012f);
+#if CL_BUILD == 10908
+        float player_count_y = right_panel.y + 28.0f;
+        float option_label_y = player_count_y - 14.0f;
+#else
         float option_label_y = right_panel.y + 28.0f - 14.0f;
+#endif
         float player_count_x = right_panel.x + 2.0f;
         grim_interface_ptr->grim_draw_text_small(
             player_count_x,
@@ -614,15 +663,27 @@ play_game_done:
             game_mode_x,
             option_label_y,
             "Game mode");
+#if CL_BUILD == 10908
+        float date_y = right_panel.y + 70.0f;
+        grim_interface_ptr->grim_draw_text_small(
+            label_x,
+            date_y - 14.0f,
+            "Show scores:");
+#else
         grim_interface_ptr->grim_draw_text_small(
             label_x,
             right_panel.y + 70.0f - 14.0f,
             "Show scores:");
+#endif
 
         int selected;
         {
+#if CL_BUILD == 10908
+            highscore_vec2_t date_position(filter_x, date_y);
+#else
             highscore_vec2_t date_position(
                 filter_x, right_panel.y + 70.0f);
+#endif
             selected = ui_list_widget_update(
                 (float *)&date_position,
                 (ui_list_widget_t *)&date_filter_list);
@@ -647,12 +708,22 @@ play_game_done:
             }
         }
 
+#if CL_BUILD != 10908
         float player_count_y;
+#endif
         char *player_count_items[2] = {
             "1 player",
             "2 players",
         };
         static highscore_list_widget_t player_count_list;
+#if CL_BUILD == 10908
+        player_count_list.items = player_count_items;
+        player_count_list.item_count = 2;
+        player_count_list.selected_index = config_blob.player_count - 1;
+        grim_interface_ptr->grim_set_color(
+            1.0f, 1.0f, 1.0f, 0.810000002f);
+        {
+#else
         {
             player_count_list.items = player_count_items;
             player_count_list.item_count = 2;
@@ -660,6 +731,7 @@ play_game_done:
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, 0.810000002f);
             player_count_y = right_panel.y + 28.0f;
+#endif
             highscore_vec2_t player_count_position(player_count_x, player_count_y);
             selected = ui_list_widget_update(
                 (float *)&player_count_position,
@@ -722,11 +794,20 @@ play_game_done:
 
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, 0.810000002f);
+#if CL_BUILD == 10908
+        {
+            highscore_vec2_t game_mode_position(game_mode_x, player_count_y);
+            selected = ui_list_widget_update(
+                (float *)&game_mode_position,
+                (ui_list_widget_t *)&game_mode_list);
+        }
+#else
         right_panel.x = game_mode_x;
         right_panel.y = player_count_y;
         selected = ui_list_widget_update(
             (float *)&right_panel,
             (ui_list_widget_t *)&game_mode_list);
+#endif
         if ((online_sync_status == 6 || online_sync_status == 0)
             && selected > -2
             && (input_primary_just_pressed()

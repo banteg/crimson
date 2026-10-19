@@ -307,26 +307,18 @@ entire compiled object except its timestamp. This observation is specific to
 the statistics worker; highscore exactness is independently established by
 its complete instruction, reference, and encoded-body comparisons.
 
-## 1.9.8 (msvc6.5pp)
+## 1.9.8 (msvc6.5pp, 2026-10-19)
 
-97.9% under `--build 1.9.8`, 387/387 instructions. Behaviour guards: the
-Reflexive Arcade host `crimsonland.reflexive.com`, path
-`/crimsonland/ra_version.php`, a do/while read loop with `received` zeroed at
-entry, a newer-version test against 1.9.8, and the local version from
-`console_version_string`. Residual: native orders the internet, bytes-read,
-connection and request stack homes differently; all 23 declaration orders and
-handle initialisation forms were tried.
+100.0% under `--build 1.9.8`, 387/387 instructions, `body_byte_exact=true`;
+1.9.93 stays 367/367 exact. Behaviour guards: the Reflexive Arcade host
+`crimsonland.reflexive.com`, path `/crimsonland/ra_version.php`, a do/while
+read loop with `received` zeroed at entry, a newer-version test against 1.9.8,
+and the local version from `console_version_string`.
 
-## 1.9.8 handle slots (2026-10-16, open)
-
-1.9.8 is instruction-identical; only `internet`, `connection`, `request` and
-`bytes_read` are permuted. A 9044 packer trace (pack_stack_slots 0x1074764F,
-reference walk at call site RVA 0xDE4C -> 0x13312) shows all four at weight 3,
-so the >0x80 frame's density sort ties them and the unstable quicksort keeps
-the list order: bytes_read, request, connection, internet (the order each first
-reaches weight 3, request's cleanup load coming first). Replaying the sort over
-every weight/order combination, native's layout needs the list order
-bytes_read, connection, internet, request with all weights 3, i.e. `request`
-reaching its third reference after `internet`'s cleanup load. Declaration
-order (all 24), initializer removal, `== 0` tests, an inline close helper and a
-handle-array cleanup did not move it.
+Giving the error-path `InternetGetLastResponseInfoA` buffer-size out-parameter
+its own block-scoped `DWORD response_length` instead of reusing
+`headers_length` drops `headers_length` from weight 4 to weight 2, so the two
+4-byte locals join into the `0x04` slot with combined weight 4 and shift C2
+9044's equal-density quicksort partition across the four weight-3 `HINTERNET`
+/`DWORD` slots into native order (`internet` `0x48`, `bytes_read` `0x4c`,
+`connection` `0x50`, `request` `0x54`) without a build guard.

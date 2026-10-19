@@ -153,27 +153,29 @@ region, loses 285.45 fuzzy-weighted bytes and three resolved references, and
 does not recover the native X-store-before-Y-load order. The accessor boundary
 was recorded as a negative at that split-global stage.
 
-## 1.9.8 (msvc6.5pp)
+## 1.9.8 (msvc6.5pp, 2026-10-19)
 
-83.1% under `--build 1.9.8` (from 48.1%), 1345/1347 instructions; canonical
-stays exact. Behaviour guards: full-version checks through Grim slot 0x08, no
-`play_time_get` refresh, one fixed analog axis pair (0x141, 0x155) for the menu
-cursor, birthday balloons on the dates that preload `balloon.tga`, holiday
-snow from 24 December, an hour-or-five-minute shareware bar with a
-non-tutorial play counter, and recheck calls through Grim slot 0x04(0..2).
-The residual is stack-slot assignment (0x40 frame against native 0x34) and
-one x87 operand order in the analog cursor update.
+100.0% under `--build 1.9.8`, 1345/1345 instructions, `body_byte_exact=true`;
+1.9.93 stays 905/905 exact. Behaviour guards: full-version checks through Grim
+slot 0x08, no `play_time_get` refresh, one fixed analog axis pair (0x141,
+0x155) for the menu cursor, birthday balloons on the dates that preload
+`balloon.tga`, holiday snow from 24 December, an hour-or-five-minute shareware
+bar with a non-tutorial play counter, and recheck calls through Grim slot
+0x04(0..2).
 
-A C2 9044 `pack_stack_slots` trace (2026-10-16) explains the frame. Native's
-0x34 frame is a 16-byte slot at 0x0 shared by the fades, snow alpha, ratio,
-the balloon qword temporary and `banner_color`; 4-byte slots at 0x10 (balloon
-`i`, `banner_x`) and 0x14 (int-to-float temporaries, the cursor pair); an
-8-byte slot at 0x1c shared by `banner_xy`, `bar_position` and the balloon
-qword temporaries; and `bar_color` at 0x24. In ours `banner_xy` joins the
-0x0 slot (it interferes with nothing there), which pushes `banner_color` and
-the balloon temporary into new slots (0x40). Native needs `banner_xy` to
-conflict with one of the 0x0 objects, and `cursor_delta` to sort before it
-(weight 6 or more against our 4). No source shape for that was found;
-operand-order and named/unnamed cursor scale spellings leave the x87 pop
-unchanged.
+Three C2 9044 codegen details close the frame and instruction schedule:
+
+- `double cursor_scale = config_blob.mouse_sensitivity * frame_dt` with
+  `(float)(cursor_scale * cursor_delta.x) * 540.0f` keeps `cursor_scale` on x87
+  and emits one `FROUND` before the `float` multiply by `540.0f`, matching the
+  1345-instruction analog-cursor update.
+- Passing temporary `frame_vec2_t` and `frame_color_t` rvalues directly to the
+  birthday-banner and shareware-bar `grim_draw_rect_filled` /
+  `grim_draw_rect_outline` calls (instead of mutating named block-scoped
+  locals with `.set(...)`) gives each call its own temporary object so C2
+  9044's `pack_stack_slots` (`0x1074764f`) reproduces the native `0x34` frame.
+- Explicit `(float)((float)(unsigned int)game_time_ms * 0.00031415926f)` inside
+  `seasonal_banner_pulse`'s `sin` call adds the single `0x162` (`FROUND`) tuple
+  that shifts C2 9044's 81-node scheduler window by one instruction so
+  `push 0x40a00000` schedules inside the first window as in native.
 

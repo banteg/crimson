@@ -201,8 +201,9 @@ extern "C" void statistics_update_check_worker(void *)
                 console_printf(
                     &console_log_queue, "Version Check: InternetReadFile failed.\n");
                 console_printf(&console_log_queue, "Reason: %d\n", GetLastError());
-                headers_length = 0x8000;
-                InternetGetLastResponseInfoA(&response_error, data, &headers_length);
+                DWORD response_length;
+                response_length = 0x8000;
+                InternetGetLastResponseInfoA(&response_error, data, &response_length);
                 console_printf(&console_log_queue, "Or: %s\n", data);
                 goto cleanup;
 

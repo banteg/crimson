@@ -367,9 +367,17 @@ extern "C" unsigned char game_frame_update(void)
     }
     if (game_state_id != GAME_STATE_GAMEPLAY
         && ui_analog_cursor_active == 1) {
+        // 1.9.8 keeps the cursor scale in double precision and rounds each
+        // product to float before the 540 scale.
+#if CL_BUILD == 10908
+        double cursor_scale = config_blob.mouse_sensitivity * frame_dt;
+        ui_mouse_x += (float)(cursor_scale * cursor_delta.x) * 540.0f;
+        ui_mouse_y += (float)(cursor_scale * cursor_delta.y) * 540.0f;
+#else
         float cursor_scale = config_blob.mouse_sensitivity * frame_dt;
         ui_mouse_x += cursor_scale * cursor_delta.x * 540.0f;
         ui_mouse_y += cursor_scale * cursor_delta.y * 540.0f;
+#endif
     } else {
         ui_mouse_x += grim_interface_ptr->grim_get_mouse_dx()
             * config_blob.mouse_sensitivity * 2.0f;
@@ -550,24 +558,21 @@ extern "C" unsigned char game_frame_update(void)
         grim_interface_ptr->grim_end_batch();
 
         seasonal_banner_pulse = (float)sin(
-            (float)(unsigned int)game_time_ms * 0.00031415926f);
+            (float)((float)(unsigned int)game_time_ms * 0.00031415926f));
         seasonal_banner_pulse *= seasonal_banner_pulse;
         float banner_x = (float)(config_blob.screen_width
             - grim_interface_ptr->grim_measure_text_width(
                 "What a Nice Day For a Birth Day!")
             - 9) * seasonal_banner_pulse;
-        frame_color_t banner_color(0.0f, 0.0f, 0.0f, 0.5f);
-        frame_vec2_t banner_xy(banner_x, 4.0f);
         grim_interface_ptr->grim_draw_rect_filled(
-            (float *)&banner_xy,
+            (float *)&frame_vec2_t(banner_x, 4.0f),
             (float)(grim_interface_ptr->grim_measure_text_width(
                 "What a Nice Day For a Birth Day!") + 8),
             16.0f,
-            (float *)&banner_color);
+            (float *)&frame_color_t(0.0f, 0.0f, 0.0f, 0.5f));
         grim_interface_ptr->grim_set_color(0.1f, 0.4f, 0.7f, 0.9f);
-        banner_xy.set(banner_x, 4.0f);
         grim_interface_ptr->grim_draw_rect_outline(
-            (float *)&banner_xy,
+            (float *)&frame_vec2_t(banner_x, 4.0f),
             (float)(grim_interface_ptr->grim_measure_text_width(
                 "What a Nice Day For a Birth Day!") + 8),
             16.0f);
@@ -664,28 +669,24 @@ extern "C" unsigned char game_frame_update(void)
             ratio = 1.0f;
         }
 
-        frame_color_t bar_color(0.0f, 0.0f, 0.0f, 0.5f);
-        frame_vec2_t bar_position(
-            0.0f, (float)(config_blob.screen_height - 7));
         grim_interface_ptr->grim_draw_rect_filled(
-            (float *)&bar_position,
+            (float *)&frame_vec2_t(
+                0.0f, (float)(config_blob.screen_height - 7)),
             (float)config_blob.screen_width,
             8.0f,
-            (float *)&bar_color);
+            (float *)&frame_color_t(0.0f, 0.0f, 0.0f, 0.5f));
 
         float denominator = ratio * 4.0f + 1.0f;
-        bar_color.set(
-            ratio,
-            0.9f / denominator,
-            (float)(0.5 / denominator),
-            0.5f);
-        bar_position.set(
-            2.0f, (float)(config_blob.screen_height - 5));
         grim_interface_ptr->grim_draw_rect_filled(
-            (float *)&bar_position,
+            (float *)&frame_vec2_t(
+                2.0f, (float)(config_blob.screen_height - 5)),
             (float)(config_blob.screen_width - 4) * ratio,
             3.0f,
-            (float *)&bar_color);
+            (float *)&frame_color_t(
+                ratio,
+                0.9f / denominator,
+                (float)(0.5 / denominator),
+                0.5f));
     }
 
     if (demo_mode_active && game_state_pending == GAME_STATE_MAIN_MENU) {
