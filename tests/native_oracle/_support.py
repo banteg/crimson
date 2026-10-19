@@ -393,6 +393,45 @@ def mismatch_report(mismatches: list[Mismatch], *, total_cases: int, limit: int 
 _GRIM_HEADER = Path(__file__).resolve().parents[2] / "tools" / "match" / "include" / "grim2d_cpp.h"
 
 
+_CANONICAL_CL_BUILD = 10993
+
+
+def _canonical_lines(text: str) -> str:
+    """The header as 1.9.93 (`CL_BUILD == 10993`) compiles it; other conditionals stay included."""
+
+    kept = []
+    stack: list[tuple[bool, bool]] = []  # (branch active, some branch taken)
+    for line in text.splitlines():
+        directive = re.match(r"\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)", line)
+        active = all(branch for branch, _ in stack)
+        if directive is None:
+            if active:
+                kept.append(line)
+            continue
+        kind, condition = directive[1], directive[2].strip()
+        if kind in ("if", "ifdef", "ifndef"):
+            value = _cl_build_condition(condition) if kind == "if" else True
+            stack.append((value, value))
+        elif kind == "elif":
+            taken = stack[-1][1]
+            value = not taken and _cl_build_condition(condition)
+            stack[-1] = (value, taken or value)
+        elif kind == "else":
+            stack[-1] = (not stack[-1][1], True)
+        else:
+            stack.pop()
+    return "\n".join(kept)
+
+
+def _cl_build_condition(condition: str) -> bool:
+    if "CL_BUILD" not in condition:
+        return True
+    expression = condition.replace("CL_BUILD", str(_CANONICAL_CL_BUILD)).replace("&&", " and ").replace("||", " or ")
+    if re.fullmatch(r"[\d\s<>=!()andor]+", expression) is None:
+        raise ValueError(f"unsupported CL_BUILD condition: {condition}")
+    return bool(eval(expression))
+
+
 def _grim_vtable() -> list[tuple[str, int]]:
     """`IGrim2D_cpp`'s 1.9.93 virtual methods in slot order, with their callee-popped bytes.
 
@@ -400,9 +439,8 @@ def _grim_vtable() -> list[tuple[str, int]]:
     hidden pointer); variadic methods are `__cdecl`.
     """
 
-    header = _GRIM_HEADER.read_text()
+    header = _canonical_lines(_GRIM_HEADER.read_text())
     body = header[header.index("class IGrim2D_cpp") :]
-    body = re.sub(r"#if CL_BUILD == 10908.*?#endif", "", body, flags=re.DOTALL)
     methods = []
     for returns, name, params in re.findall(r"virtual\s+([\w\s*]+?)\s*(\w+)\s*\(([^)]*)\)", body):
         args = [arg.strip() for arg in params.split(",") if arg.strip() not in ("", "void")]
