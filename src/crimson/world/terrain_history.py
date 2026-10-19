@@ -123,6 +123,6 @@ class TerrainHistory:
             return
         if isinstance(ground, MaterialGroundRenderer):
             ground.reset_materials()
-            ground.material_batches = list(preparation.bakes.read(0, shot.bakes))
+            ground.material_batches.extend(preparation.bakes.read(0, shot.bakes))
         _copy(ground.render_target, shot.target)
         self._bake(ground, preparation, shot.bakes, bakes)

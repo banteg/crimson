@@ -105,7 +105,7 @@ def draw_background(
     assert ground is not None, "ground renderer must be initialized before live world draw"
     rl.clear_background(clear_color)
     if isinstance(ground, MaterialGroundRenderer) and render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
-        with ground.material_scope(render_ctx.frame):
+        with ground.material_scope(render_ctx.frame, view_center=screen_size * 0.5 - camera):
             ground.draw_view(
                 camera, screen_w=screen_size.x, screen_h=screen_size.y, out_w=out_size.x, out_h=out_size.y,
             )

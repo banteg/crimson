@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import struct
 from pathlib import Path
 from typing import Any, cast
@@ -10,6 +11,7 @@ import pytest
 from crimson.creatures.runtime import CreaturePool
 from crimson.effects import FxQueueEntry, FxQueueRotatedEntry
 from crimson.render.frame import RenderFrame
+from crimson.render.rtx import materials as ground_materials
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.materials import MaterialGroundRenderer, _integer, _uniform
 from crimson.render.rtx.mode import RtxRenderMode
@@ -69,7 +71,7 @@ def test_lazy_materials_order_volume_clock_and_no_diffuse_bevel(ground_material)
     center = (n // 2) * n + n // 2
     dry = pixels(ground.surface)[0]
     first = pixels(ground.surface)[center]
-    assert first[1] == pytest.approx(1200.25)
+    assert first[1] / first[2] == pytest.approx(1.)
     assert 0.3 < first[2] < 0.7
     # Blood leaves the entire substrate height field untouched, including its boundaries.
     assert {p[3] for p in pixels(ground.surface)} == {dry[3]}
@@ -78,7 +80,9 @@ def test_lazy_materials_order_volume_clock_and_no_diffuse_bevel(ground_material)
     ground.bake_materials(texture, texture)
     second = pixels(ground.surface)[center]
     assert second[2] > first[2]
-    assert second[1] == pytest.approx(1202.5)
+    assert math.exp(-(1202.5 - ground.wetness_epoch) / 45) * second[1] / second[2] == pytest.approx(
+        (second[2] - first[2] * (1 - first[2]) * (1 - math.exp(-2.25 / 45))) / second[2],
+    )
     corpse = TerrainFxBatch(
         corpses=(FxQueueRotatedEntry(top_left=Vec2(16, 16), scale=32, color=RGBA(1, 1, 1, 1), creature_type_id=0),),
     )
@@ -89,7 +93,8 @@ def test_lazy_materials_order_volume_clock_and_no_diffuse_bevel(ground_material)
     ground.material_batches.append(blood(1300))
     ground.bake_materials(texture, texture)
     assert pixels(ground.coverage)[center][:3] == pytest.approx((1, 0, 0))
-    assert pixels(ground.surface)[center][1] == 1300
+    last = pixels(ground.surface)[center]
+    assert math.exp(-(1300 - ground.wetness_epoch) / 45) * last[1] / last[2] == pytest.approx(1.)
     # Baking companions must never change the classic albedo target.
     assert pixels(ground.render_target) == albedo
 
@@ -109,7 +114,7 @@ def test_fresh_blood_reflects_hdr_then_dries(ground_material) -> None:
         _uniform(sh, "u_spec_dir[0]", [0, 0, 0, 0])
         values = []
         for time in (1200, 1290):
-            _uniform(sh, "u_time_s", [time])
+            _uniform(sh, "u_time_s", [time - ground.wetness_epoch])
             with texture_mode(target), opaque_blend():
                 rl.begin_shader_mode(sh)
                 try:
@@ -168,8 +173,8 @@ def test_real_material_scope_keeps_auxiliary_samplers_across_ground_blend_switch
         bonus_anim_phase=0,
         rtx_mode=RtxRenderMode.RTX,
     )
-    mocker.patch(
-        "crimson.render.rtx.materials.collect_material_lights",
+    mocker.patch.object(
+        ground_materials, "collect_material_lights",
         return_value=[MaterialLight(Vec2(32, 32), 150, (4, 4, 4), height=30)],
     )
     target = load_float_render_texture(64, 64)
@@ -188,12 +193,13 @@ def test_clean_substrate_avoids_double_blood_tint_and_rebuild_matches(ground_mat
     before = pixels(ground.render_target)
     resources.bake_terrain_fx_batch(blood(300), ground)
     assert pixels(ground.render_target) != before  # original red sprite is still baked for classic
+    history = list(ground.material_batches)
     ground.bake_materials(texture, texture)
+    assert not ground.material_batches
     assert pixels(ground.substrate.render_target) == before
     surface, coverage = pixels(ground.surface), pixels(ground.coverage)
-    history = list(ground.material_batches)
     ground.reset_materials()
-    ground.material_batches = history
+    ground.material_batches.extend(history)
     ground.bake_materials(texture, texture)
     assert pixels(ground.surface) == surface
     assert pixels(ground.coverage) == coverage
@@ -220,8 +226,8 @@ def test_fresh_soft_edges_and_nonblood_materials_do_not_age_with_match_clock(gro
         bonus_anim_phase=0,
         rtx_mode=RtxRenderMode.RTX,
     )
-    mocker.patch(
-        "crimson.render.rtx.materials.collect_material_lights",
+    mocker.patch.object(
+        ground_materials, "collect_material_lights",
         return_value=[MaterialLight(Vec2(32, 32), 150, (4, 4, 4), height=30)],
     )
     target = load_float_render_texture(67, 67)  # nonintegral sampling exercises filtering at empty edges
@@ -231,7 +237,7 @@ def test_fresh_soft_edges_and_nonblood_materials_do_not_age_with_match_clock(gro
             ground.reset_materials()
             batch = blood(time)
             entry = msgspec.structs.replace(batch.decals[0], effect_id=effect_id, color=RGBA(1, 0, 0, 0.1))
-            ground.material_batches = [msgspec.structs.replace(batch, decals=(entry,))]
+            ground.material_batches.append(msgspec.structs.replace(batch, decals=(entry,)))
             with texture_mode(target), ground.material_scope(msgspec.structs.replace(frame, elapsed_ms=time * 1000)):
                 ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=67, out_h=67)
             renders.append(pixels(target))
@@ -252,5 +258,105 @@ def test_partial_scorch_removes_film_without_diluting_its_age(ground_material) -
     ground.bake_materials(texture, texture)
     after = pixels(ground.surface)[center]
     assert after[2] < before[2] * 0.6
-    assert after[1] == before[1]
+    assert after[1] / after[2] == pytest.approx(before[1] / before[2])
     assert pixels(ground.coverage)[center][0] < 0.6
+
+
+def debug_pixels(ground, texture, *, mode: int, time: float = 0) -> list[tuple[float, float, float, float]]:
+    class Textures:
+        def texture(self, _texture_id):
+            return texture
+
+    frame = RenderFrame(
+        config=None, camera=Vec2(), ground=ground, state=GameplayState(), players=[], creatures=CreaturePool(),
+        resources=cast(Any, Textures()), elapsed_ms=time * 1000, bonus_anim_phase=0, rtx_mode=RtxRenderMode.RTX,
+    )
+    target = load_float_render_texture(64, 64)
+    try:
+        with texture_mode(target), ground.material_scope(frame, debug=mode):
+            ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
+        return pixels(target)
+    finally:
+        rl.unload_render_texture(target)
+
+
+def test_shader_substrate_normal_is_independent_of_blood_depth(ground_material) -> None:
+    ground, texture = ground_material
+    ground.bake_materials(texture, texture)
+    # A raised nonblood patch makes this a meaningful normal test, not a flat-field identity.
+    ground.material_batches.append(TerrainFxBatch(corpses=(
+        FxQueueRotatedEntry(top_left=Vec2(16, 16), scale=20, color=RGBA(1, 1, 1, 1)),
+    )))
+    before = debug_pixels(ground, texture, mode=1)
+    assert len(set(before)) > 1
+    ground.material_batches.extend([blood(0)] * 8)
+    after = debug_pixels(ground, texture, mode=1)
+    assert after == before  # Samples actual N_sub, including pool boundaries.
+
+
+def test_shader_meniscus_requires_deep_blood_not_just_sprite_coverage(ground_material) -> None:
+    ground, texture = ground_material
+    # Repeated faint mist saturates coverage before it accumulates much liquid.
+    entry = msgspec.structs.replace(blood(0).decals[0], color=RGBA(1, 0, 0, .1))
+    ground.material_batches.extend([TerrainFxBatch(decals=(entry,))] * 6)
+    thin = debug_pixels(ground, texture, mode=2)
+    assert all(p[:3] == pytest.approx((.5, .5, 1.)) for p in thin)
+    amount = debug_pixels(ground, texture, mode=4)
+    assert 0 < max(p[0] for p in amount) < .38
+    ground.material_batches.extend([blood(0)] * 8)
+    deep = debug_pixels(ground, texture, mode=2)
+    assert any(abs(p[0] - .5) > .01 or abs(p[1] - .5) > .01 for p in deep)
+
+
+def test_faint_spray_refreshes_only_its_share_of_an_old_pool(ground_material) -> None:
+    ground, texture = ground_material
+    ground.material_batches.extend([blood(0)] * 8)
+    dry = debug_pixels(ground, texture, mode=3, time=36000.25)
+    center = 32 * 64 + 32
+    assert dry[center][0] == 0
+    thin = msgspec.structs.replace(blood(36000.25).decals[0], color=RGBA(1, 0, 0, .1))
+    ground.material_batches.append(TerrainFxBatch(decals=(thin,), elapsed_s=36000.25))
+    mixed = debug_pixels(ground, texture, mode=3, time=36000.25)
+    assert .02 < mixed[center][0] < .1
+    ground.reset_materials()
+    ground.material_batches.append(TerrainFxBatch(decals=(thin,), elapsed_s=36000.25))
+    fresh = debug_pixels(ground, texture, mode=3, time=36000.25)
+    aged = debug_pixels(ground, texture, mode=3, time=36045.25)
+    assert fresh[center][0] == pytest.approx(1.)
+    assert aged[center][0] == pytest.approx(math.exp(-1), abs=.001)
+
+
+def test_pass_major_stamps_match_incremental_mixed_decal_order(ground_material) -> None:
+    ground, texture = ground_material
+    batches = []
+    for i in range(9):
+        entries = tuple(msgspec.structs.replace(
+            blood(0).decals[0], effect_id=kind, color=RGBA(0 if kind == 16 else 1, 0, 0, .6),
+            pos=Vec2(25 + i, 25 + i), rotation=i * .1,
+        ) for kind in (3, 4, 7, 18, 16, 7))
+        corpses = (FxQueueRotatedEntry(top_left=Vec2(20, 20), scale=18, color=RGBA(1, 1, 1, .6)),) if i % 2 else ()
+        batches.append(TerrainFxBatch(decals=entries, corpses=corpses, elapsed_s=100 + i))
+    ground.material_batches.extend(batches)
+    ground.bake_materials(texture, texture)
+    expected = [pixels(t) for t in (ground.surface, ground.coverage, ground.substrate.render_target)]
+    ground.reset_materials()
+    for batch in batches:
+        ground.material_batches.append(batch)
+        ground.bake_materials(texture, texture)
+        assert not ground.material_batches
+    actual = [pixels(t) for t in (ground.surface, ground.coverage, ground.substrate.render_target)]
+    assert actual == expected
+
+
+def test_shader_treats_emitter_rgb_as_linear_radiance(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    ground.material_batches.extend([blood(0)] * 6)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights")
+    values = []
+    for intensity in (1, 2, 3):
+        collector.return_value = [MaterialLight(Vec2(32, 32), 150, (intensity, intensity, intensity), height=30)]
+        encoded = debug_pixels(ground, texture, mode=0)[32 * 64 + 32]
+        values.append(tuple(channel ** 2.2 for channel in encoded[:3]))
+    assert tuple(c - b for b, c in zip(values[1], values[2], strict=True)) == pytest.approx(
+        tuple(b - a for a, b in zip(values[0], values[1], strict=True)), rel=.015,
+    )

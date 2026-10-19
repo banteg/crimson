@@ -76,10 +76,10 @@ def test_copies_of_the_terrain_spread_out_past_the_cap_and_a_rebuild_bakes_the_l
 
     ground = resources.ground
     assert isinstance(ground, MaterialGroundRenderer)
-    assert ground.material_batches == list(prep.bakes.read(0, key.bakes))
+    assert list(ground.material_batches) == list(prep.bakes.read(0, key.bakes))
     assert ground.surface is None and ground.coverage is None  # seeking in classic stays GPU-lazy
     assert all(batch.elapsed_s > 0 for batch in ground.material_batches)
     earlier = prep.keys[len(prep.keys) // 2]
     history.rebuild(prep, earlier.bakes)
-    assert ground.material_batches == list(prep.bakes.read(0, earlier.bakes))
+    assert list(ground.material_batches) == list(prep.bakes.read(0, earlier.bakes))
     assert max(batch.elapsed_s for batch in ground.material_batches) <= earlier.clock.elapsed_ms * .001

@@ -99,35 +99,45 @@ Implementation: `src/crimson/render/rtx/materials.py`, `material_shaders.py`, an
 `material_lights.py`. The material target follows the albedo target's allocated
 resolution and world coordinates, including texture scale and DPI:
 
-- `RGBA32F`: specularity, blood deposit time in seconds, accumulated liquid volume,
-  substrate height. Full precision avoids the study's four-minute clock saturation.
+- `RGBA32F`: specularity, volume-weighted wetness, accumulated liquid volume,
+  substrate height. Wetness uses a periodically rebased epoch to keep long-run
+  calculations bounded.
 - `RGBA8`: ordered blood, corpse, and brass coverage. Later corpses cover old blood;
   later blood coats corpses again. Scorches remove gloss and ice uses a dielectric response.
 - A separate clean substrate color target receives terrain, corpses, casings, ice,
   and scorches, but no blood RGB. Absorption therefore never re-tints the original
   blood-painted albedo. The latter stays intact for classic.
-- Blood amount accumulates with screen blending; absorption recovers optical depth
-  with `-log(1 - amount)` and an artistic scale. Deposits refresh the timestamp
-  wherever their alpha passes the cutoff. Sampling takes the latest timestamp across
-  the bilinear footprint so empty neighbors cannot make fresh edges old; the clock advances with presentation time,
-  including slow motion, and pauses with the run.
-- Diffuse normals come only from pristine terrain/corpse/casing height. Blood never
-  adds a diffuse edge bevel. Separate liquid normals suppress fine dirt relief inside
-  deep pools and add a filtered meniscus for reflections.
+- Blood volume accumulates with screen blending; absorption recovers optical depth
+  from volume × coverage with `-log(1 - amount)` and an artistic scale. Wetness
+  accumulates with the same blend weights as volume. Their filtered ratio keeps
+  newly deposited thin spray fresh without letting it rejuvenate an entire old pool.
+  Nonblood decals attenuate both channels equally, preserving the remaining blood's age.
+  The clock follows presentation time, including slow motion, and pauses with the run.
+- Diffuse normals come only from pristine terrain/corpse/casing height. Blood
+  changes neither this normal nor its diffuse relief. Separate liquid normals suppress
+  fine dirt relief inside deep pools and add a filtered meniscus from volume × coverage,
+  rather than tracing thin spray outlines. `material_scope(debug=...)` exposes the
+  shader's substrate normal (1), liquid normal (2), freshness (3), and blood amount (4).
 - Wet soil darkening, wavelength-dependent absorption, red subsurface color, and
   two specular lobes reproduce the study's smooth liquid appearance. Freshness decays
   exponentially with a 45-second time constant; this is gradual drying, not a switch
   at 45 seconds. These are artistic approximations, not calibrated optical constants.
 - Up to 16 nearby energetic muzzle, Ion/Fire/Gauss/plasma, and detonation lights feed
-  the ground pass. Beam lights use a tapered segment; the view vector is orthographic
+  the ground pass, ranked around the actual view center rather than player one.
+  Beam lights use a tapered segment; the view vector is orthographic
   so moving the player does not drag the reflection viewpoint around the arena.
-- Material color inputs are decoded from approximate gamma 2.2, shaded in linear
-  RGB, and encoded back into the legacy compositor. Material output stays unclamped
+- Substrate color inputs are decoded from approximate gamma 2.2; emitter colors are
+  already linear radiance, so lifetime gain stays linear. Shading is encoded once
+  back into the legacy compositor. Material output stays unclamped
   until the existing HDR shoulder. No extra material
   tonemapper, exposure reduction, or full-screen darkness is applied.
 
-Companions and shaders allocate only on the first RTX draw. A CPU history of the
-terrain's render batches supports switching to RTX after playing in classic. Replay
+Companions and shaders allocate only on the first RTX draw. Pending terrain bakes
+are encoded into a temporary spool that spills to disk beyond 1 MiB, allowing a
+late classic-to-RTX toggle without an unbounded Python object list. Applied batches
+are discarded once their state resides on the GPU. Stamping runs pass-major in
+bounded chunks, preserving each channel's decal order; cached uniforms and atlas-local
+UVs allow consecutive blood quads to batch. Replay
 seeks restore that history from the existing preparation log, discard stale companions,
 and rebuild lazily. New terrain and `RenderResources.close()` release the targets.
 Presentation metadata carries deposit time; gameplay state, RNG consumption, replay
@@ -142,28 +152,36 @@ inputs, and native/browser rendering are unchanged.
 - The strongest-16 selection can change abruptly in dense fights. Spatial clustering
   or temporal selection would improve continuity. Flame particles, chain arcs, and
   rocket exhaust are not independent ground emitters yet.
-- Coverage, depth, and the latest timestamp are per pixel, not a multilayer fluid
-  simulation. Small fresh deposits refresh old pools where they overlap. Drying,
-  roughness, meniscus width, and blood absorption still need broader art tuning.
+- Coverage, depth, and weighted wetness are per pixel, not a multilayer fluid
+  simulation. Drying, roughness, meniscus width, and blood absorption still need
+  broader art tuning.
 - The first RTX draw after a long classic session or a seek replays the material
-  history synchronously and can hitch. This CPU history grows with terrain deposits.
-  GPU companions and clean substrate cost 32 bytes per terrain pixel including the coverage target's
-  depth attachment (32 MiB at 1024², 128 MiB at 2048²), including both RGBA8 targets' depth attachments.
+  history synchronously and can hitch. Pending spool disk usage still grows with
+  deposits until RTX consumes it, terrain resets, or the run closes.
+  GPU companions and clean substrate cost 32 bytes per terrain pixel
+  (32 MiB at 1024², 128 MiB at 2048²), including both RGBA8 targets' depth attachments.
   Packing channels, removing the unused depth attachment, and incremental reconstruction
   are worthwhile follow-ups.
 
 A synchronized OpenGL comparison on an Apple M1 Pro at 960×540, using the Survival
 fixture at ticks 4395/5115/6255 (30 warmed draws each), measured median whole-world
-RTX draw times of 3.46/2.88/3.09 ms before materials and 3.94/3.21/3.70 ms with them.
+RTX draw times of 3.88/3.16/3.35 ms before materials and 4.06/3.30/3.83 ms with them.
 These small samples include CPU submission and GPU completion, exclude simulation
-and new decal bakes, and are not a general performance guarantee. The cold first draw
-at tick 4395 replayed 369 batches in about 0.89 seconds. Continuous play normally
-bakes only new deposits; late activation/seek latency remains a known limitation.
+and new decal bakes, and are not a general performance guarantee.
 
-GPU tests cover ordered composition, depth accumulation, clocks beyond four minutes,
-fresh/aged reflections above SDR white, unchanged diffuse height across blood borders,
-actual ground-pass sampler binding, regeneration, and teardown. Replay tests verify
-that backward seeks restore the corresponding deposit history and time.
+A separate queued-bake benchmark used a 1024² terrain target inside a 960×540 target,
+400 batches containing 4,934 mixed blood/casing/scorch/corpse stamps, and six synchronized
+runs (first discarded). Pass-major stamping reduced the warm median from 1,568 ms
+at `502e0994d` to 678 ms (2.3× faster). Initialization and queue encoding were outside
+the timed region. Continuous play normally bakes only new deposits; first-activation
+latency still depends on the accumulated backlog.
+
+GPU tests cover ordered composition and equivalence between incremental and pass-major
+bakes, actual shader normal outputs, thin/deep meniscus behavior, volume-weighted freshness
+at ten hours, linear HDR emitter response, clean substrate color, sampler binding,
+regeneration, and teardown. CPU tests cover spool rollover/cleanup and view-centered
+co-op light selection. Existing seek/reset lifecycle checks remain; RTX replay
+optimization is deferred.
 
 ## Render mode controls
 

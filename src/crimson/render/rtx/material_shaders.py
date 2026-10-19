@@ -10,27 +10,17 @@ in vec4 fragColor;
 out vec4 finalColor;
 
 uniform sampler2D texture0;       // Ground Albedo RT
-uniform sampler2D u_surface_tex;  // R=specularity, G=deposit seconds, B=volume, A=substrate height
+uniform sampler2D u_surface_tex;  // R=specularity, G=wet amount at epoch, B=volume, A=substrate height
 uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a second blood tint
 uniform sampler2D u_material_tex; // Ordered RGB coverage: blood, corpse, brass
 
 uniform vec2 u_ground_size;
-uniform float u_time_s;
+uniform float u_time_s; // Seconds relative to the wetness epoch
+uniform int u_debug; // 0 shaded, 1 substrate normal, 2 liquid normal, 3 freshness, 4 amount
 uniform int u_spec_light_count;
 uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z_height
 uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = shape (0=point/cone, 1=capsule)
 uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = focus, w = capsule_h
-
-// Latest-deposit semantics across the bilinear footprint. Empty neighbors never dilute a timestamp.
-float deposit_time(vec2 uv) {
-    ivec2 size = textureSize(u_surface_tex, 0);
-    ivec2 p = ivec2(floor(uv * vec2(size) - .5));
-    float t = 0.;
-    for (int y = 0; y < 2; ++y)
-        for (int x = 0; x < 2; ++x)
-            t = max(t, texelFetch(u_surface_tex, clamp(p + ivec2(x,y), ivec2(0), size - 1), 0).g);
-    return t;
-}
 
 void main() {
     vec2 ground_uv = fragTexCoord;
@@ -58,14 +48,14 @@ void main() {
     // Explicit ordered material coverage, independent of the painted albedo hue.
     vec3 weights = texture(u_material_tex, ground_uv).rgb;
     float heme_c = weights.r;
-    float heme_l1 = texture(u_material_tex, ground_uv + vec2(-step_fine.x, 0)).r;
-    float heme_r1 = texture(u_material_tex, ground_uv + vec2( step_fine.x, 0)).r;
-    float heme_d1 = texture(u_material_tex, ground_uv + vec2(0, -step_fine.y)).r;
-    float heme_u1 = texture(u_material_tex, ground_uv + vec2(0,  step_fine.y)).r;
-    float heme_l2 = texture(u_material_tex, ground_uv + vec2(-step_med.x, 0)).r;
-    float heme_r2 = texture(u_material_tex, ground_uv + vec2( step_med.x, 0)).r;
-    float heme_d2 = texture(u_material_tex, ground_uv + vec2(0, -step_med.y)).r;
-    float heme_u2 = texture(u_material_tex, ground_uv + vec2(0,  step_med.y)).r;
+    float amount_l1 = sL1.b * texture(u_material_tex, ground_uv + vec2(-step_fine.x, 0)).r;
+    float amount_r1 = sR1.b * texture(u_material_tex, ground_uv + vec2( step_fine.x, 0)).r;
+    float amount_d1 = sD1.b * texture(u_material_tex, ground_uv + vec2(0, -step_fine.y)).r;
+    float amount_u1 = sU1.b * texture(u_material_tex, ground_uv + vec2(0,  step_fine.y)).r;
+    float amount_l2 = sL2.b * texture(u_material_tex, ground_uv + vec2(-step_med.x, 0)).r;
+    float amount_r2 = sR2.b * texture(u_material_tex, ground_uv + vec2( step_med.x, 0)).r;
+    float amount_d2 = sD2.b * texture(u_material_tex, ground_uv + vec2(0, -step_med.y)).r;
+    float amount_u2 = sU2.b * texture(u_material_tex, ground_uv + vec2(0,  step_med.y)).r;
 
     float blood_amount = clamp(surf.b * heme_c, 0.0, 0.999);
     float pool_amount = clamp(blood_amount * 1.65, 0.0, 1.0);
@@ -78,22 +68,26 @@ void main() {
 
     // DUAL-NORMAL LAYERED FLUID MODEL:
     // (A) Substrate Normal N_sub (drives DIFFUSE lighting ONLY):
-    vec2 slope_sub = dH_fine * mix(1.0, 0.15, deep_pool) + dH_macro * mix(0.85, 0.35, deep_pool);
+    vec2 slope_sub = dH_fine + dH_macro * 0.85;
     vec3 N_sub = normalize(vec3(slope_sub.x, slope_sub.y, 1.0));
 
     // (B) Top-Surface Fluid Normal N_fluid (drives DIELECTRIC SPECULAR ONLY):
-    float poolL = smoothstep(0.38, 0.80, 0.45 * heme_l1 + 0.55 * heme_l2);
-    float poolR = smoothstep(0.38, 0.80, 0.45 * heme_r1 + 0.55 * heme_r2);
-    float poolD = smoothstep(0.38, 0.80, 0.45 * heme_d1 + 0.55 * heme_d2);
-    float poolU = smoothstep(0.38, 0.80, 0.45 * heme_u1 + 0.55 * heme_u2);
+    float poolL = smoothstep(0.38, 0.80, 0.45 * amount_l1 + 0.55 * amount_l2);
+    float poolR = smoothstep(0.38, 0.80, 0.45 * amount_r1 + 0.55 * amount_r2);
+    float poolD = smoothstep(0.38, 0.80, 0.45 * amount_d1 + 0.55 * amount_d2);
+    float poolU = smoothstep(0.38, 0.80, 0.45 * amount_u1 + 0.55 * amount_u2);
     vec2 dPool_smooth = vec2(poolL - poolR, poolU - poolD) * (1.0 - 0.65 * deep_pool);
 
     vec2 slope_fluid = dH_macro * mix(1.35, 0.24, deep_pool) + dH_fine * mix(0.45, 0.04, deep_pool) + dPool_smooth * 0.42;
     vec3 N_fluid = normalize(vec3(slope_fluid.x, slope_fluid.y, 1.0));
 
-    // Absolute seconds in RGBA32F: no four-minute saturation or half-float clock quantization.
-    float blood_age_s = max(0.0, u_time_s - deposit_time(ground_uv));
-    float freshness = exp(-blood_age_s / 45.0);
+    // G and B are filtered with identical weights. Their ratio keeps bare thin spray fresh,
+    // but only its contribution refreshes an older pool. Epoch rebasing prevents overflow.
+    float freshness = surf.b > 1e-8 ? clamp(surf.g / surf.b * exp(-max(0., u_time_s) / 45.), 0., 1.) : 0.;
+    if (u_debug == 1) { finalColor = vec4(N_sub * .5 + .5, 1.); return; }
+    if (u_debug == 2) { finalColor = vec4(N_fluid * .5 + .5, 1.); return; }
+    if (u_debug == 3) { finalColor = vec4(vec3(freshness), 1.); return; }
+    if (u_debug == 4) { finalColor = vec4(vec3(blood_amount), 1.); return; }
     float is_metal = weights.b;
     float is_chitin = weights.g;
     float is_ice = smoothstep(.80, .92, surf.r) * (1.0 - is_metal) * (1.0 - heme_c);
@@ -117,7 +111,6 @@ void main() {
         if (i >= u_spec_light_count) break;
         vec4 sp_pos = u_spec_pos[i];
         vec4 sp_col = u_spec_color[i];
-        sp_col.rgb = pow(max(sp_col.rgb, vec3(0.)), vec3(2.2));
         vec4 sp_dir = u_spec_dir[i];
 
         vec2 light_xy = sp_pos.xy;
@@ -209,10 +202,8 @@ void main() {
 
     vec3 material_albedo = wetted_substrate * transmittance + erythrocyte_sss;
 
-    // - Dry dirt & thin stains use full surface normal relief (mean_relief)
-    // - Deep liquid pools scatter red light volumetrically inside the fluid (diffuse_relief -> 1.0),
-    //   while top-surface dielectric specular (N_fluid) carries the sleek wet liquid reflections!
-    float diffuse_relief = mix(mean_relief, 1.0, deep_pool * 0.85);
+    // Diffuse relief always follows the substrate; pool contours affect specular only.
+    float diffuse_relief = mean_relief;
 
     vec3 diffuse_lit = material_albedo * (ambient_term + direct_light * diffuse_relief);
     // HdrRenderer owns the only display shoulder; preserve highlights above 1 here.
@@ -226,11 +217,11 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 uniform sampler2D texture0;
 uniform int u_kind; // 0 terrain, 1 blood, 2 corpse, 3 brass, 4 scorch, 5 ice
-uniform int u_pass; // 0 weights, 1 properties/volume, 2 timestamp/height
-uniform float u_time;
-uniform vec4 u_cell;
+uniform int u_pass; // 0 coverage, 1 specularity/wetness/volume, 2 substrate height, 3 wetness rebase
+uniform float u_wetness; // exp((deposit - epoch) / 45), or multiplicative rebase factor
 out vec4 finalColor;
 void main() {
+    if (u_pass == 3) { finalColor = vec4(0., u_wetness, 0., 0.); return; }
     vec4 t = texture(texture0, fragTexCoord);
     float a = t.a * fragColor.a;
     if (a <= 4.0 / 255.0) discard;
@@ -244,10 +235,11 @@ void main() {
         return;
     }
     if (u_kind == 1) {
-        vec2 q = (fragTexCoord - u_cell.xy) / u_cell.zw * 2. - 1.;
+        // All five blood sprites occupy the atlas's 8x8 grid. Local UV needs no per-decal uniform.
+        vec2 q = fract(fragTexCoord * 8.) * 2. - 1.;
         float radial = 1. - smoothstep(.10, 1., min(1., dot(q, q)));
         float volume = clamp(a * (.34 + .26 * radial), 0., .62);
-        finalColor = u_pass == 1 ? vec4(0., 0., volume, volume) : vec4(0., u_time, 0., 1.);
+        finalColor = vec4(0., volume * u_wetness, volume, volume);
         return;
     }
     float spec = u_kind == 2 ? .28 : (u_kind == 3 ? .96 : (u_kind == 5 ? .92 : .01));

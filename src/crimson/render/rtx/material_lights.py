@@ -21,7 +21,7 @@ MAX_MATERIAL_LIGHTS = 16
 class MaterialLight(msgspec.Struct, frozen=True):
     pos: Vec2
     radius: float
-    rgb: tuple[float, float, float]
+    rgb: tuple[float, float, float]  # Linear radiance, including intensity and lifetime gain
     height: float = 18.0
     direction: Vec2 = Vec2()
     length: float = 0.0
@@ -42,7 +42,7 @@ _ORBS = {
 }
 
 
-def collect_material_lights(frame: RenderFrame) -> list[MaterialLight]:
+def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[MaterialLight]:
     lights: list[MaterialLight] = []
     for player in frame.players:
         gain = max(0.0, min(1.0, float(player.muzzle_flash_alpha)))
@@ -113,7 +113,7 @@ def collect_material_lights(frame: RenderFrame) -> list[MaterialLight]:
                 ),
             )
     # Stable sort; prefer nearby energetic emitters over bright offscreen shots.
-    center = frame.players[0].pos if frame.players else frame.camera * -1.0
+    center = view_center
     lights.sort(
         key=lambda light: (
             max(light.rgb) / (1.0 + (light.pos - center).length_sq() / (light.radius + light.length * 0.5) ** 2)

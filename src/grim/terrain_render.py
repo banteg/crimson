@@ -120,6 +120,16 @@ class GroundRenderer(msgspec.Struct):
         self._ensure_render_target(texture_scale)
         if self.render_target is None:
             return
+        self._render_pristine_layers(layers)
+
+    def render_pristine(self, layers: TerrainLayers, *, target_size: tuple[int, int]) -> None:
+        """Rebuild clean terrain at explicit allocated dimensions, independent of the current display DPI."""
+        if not self._load_render_target(*target_size):
+            raise RuntimeError("pristine terrain framebuffer allocation failed")
+        self._render_pristine_layers(layers)
+
+    def _render_pristine_layers(self, layers: TerrainLayers) -> None:
+        assert self.render_target is not None
         self._render_target_ready = False
         with texture_mode(self.render_target):
             rl.clear_background(TERRAIN_CLEAR_COLOR)
