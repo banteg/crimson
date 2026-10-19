@@ -3,9 +3,6 @@
 extern "C" float cos(float angle);
 extern "C" float sin(float angle);
 
-#if CL_BUILD < 10400
-extern "C" int particle_alloc_slot(void);
-#endif
 typedef struct particle_color_t {
     float color_r;
     float color_g;
@@ -20,9 +17,6 @@ extern "C" int fx_spawn_particle(
     float intensity)
 {
     particle_color_t color;
-#if CL_BUILD < 10400
-    int index = particle_alloc_slot();
-#else
     int index;
     for (index = 0; index < 0x80; index++) {
         if (!particle_pool[index].active) {
@@ -33,7 +27,6 @@ extern "C" int fx_spawn_particle(
 
 found:
     ;
-#endif
     color.color_r = 1.0f;
     color.color_g = 1.0f;
     color.color_b = 1.0f;
@@ -48,9 +41,7 @@ found:
     particle_pool[index].angle = angle;
     particle_pool[index].rotation = (float)(crt_rand() % 0x274) * 0.01f;
     particle_pool[index].in_flight = 1;
-#if CL_BUILD >= 10300
     particle_pool[index].style_id = 0;
-#endif
 
     return index;
 }

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from copy import deepcopy
 from itertools import pairwise
+from pathlib import Path
 
 import pytest
 
@@ -46,12 +47,13 @@ def test_committed_build_maps_bind_canonical_names_to_the_pinned_image(image: ma
     metadata = json.loads(target.metadata_path.read_text(encoding="utf-8"))
     assert (metadata["sha256"], metadata["canonical_sha256"]) == (image.sha256, canonical.sha256)
 
+    identity = REGISTRY.identity(image).target
     canonical_addresses = {
         function.name: function.address
         for function in matchlib.load_function_manifest(
-            canonical.target.functions_path,
-            metadata_path=canonical.target.metadata_path,
-            image_name=canonical.target.image_name,
+            identity.functions_path,
+            metadata_path=identity.metadata_path,
+            image_name=identity.image_name,
             scope="all",
         ).functions
     }
@@ -173,7 +175,7 @@ def test_cross_build_catalog_keeps_colocated_object_and_member_names() -> None:
 @pytest.mark.skipif(not REGISTRY.image("1.9.8", "grim.dll").path.is_file(), reason="requires pinned game images")
 def test_198_virtual_slots_are_paired_from_the_actual_dll_vtables() -> None:
     assert REGISTRY.image("1.9.8", "grim.dll").state() == "ok"
-    slots = match_builds._grim_slot_offsets("1.9.8")
+    slots = match_builds._grim_slot_offsets("1.9.93", "1.9.8")
     assert slots[0x4C] == 0x54  # flush input, after two legacy methods
     assert slots[0x114] == 0x10C  # set color, after removing four state-slot methods
     assert not {0x88, 0x8C, 0x90, 0x94} & slots.keys()
@@ -207,8 +209,10 @@ def test_virtual_slot_pairing_requires_the_grim_receiver_without_clobbers(middle
 def test_freeware_scratches_use_the_original_image_and_donor_maps(build: str) -> None:
     image = REGISTRY.image(build, "crimsonland.exe")
     assert image.name == "crimson.exe"
-    assert image.canonical_build is None
-    assert REGISTRY.canonical(image) == REGISTRY.image("1.9.93", "crimsonland.exe")
+    # The freeware family maps its executables through 1.4.0; names still come from 1.9.93.
+    assert image.canonical_build == "1.4.0"
+    assert REGISTRY.canonical(image) == REGISTRY.image("1.4.0", "crimson.exe")
+    assert REGISTRY.identity(image) == REGISTRY.image("1.9.93", "crimsonland.exe")
     assert image == REGISTRY.image(build, "crimson.exe")
     config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/console_init")
     built, = image.scratch_configs(config)
@@ -232,3 +236,39 @@ def test_order_candidates_inside_verified_bodies_cannot_split_functions() -> Non
         0x2100: match_builds._body(matchlib.LoadedImage(code[:31] + b"\xc3", 0x2100, 32), 0x2100, 32),
     }
     assert mapper.boundaries() == [0x1000, 0x1040, 0x1060]
+
+
+FAMILY_LAYOUTS = sorted(
+    path for path in (matchlib.REPO_ROOT / "decomp").glob("*/*/layout.json")
+    if json.loads(path.read_text(encoding="utf-8"))["kind"] == "crimson-family-source-layout"
+)
+
+
+@pytest.mark.parametrize("layout_path", FAMILY_LAYOUTS, ids=lambda path: path.parent.name)
+def test_family_layout_places_each_source_in_its_native_object(layout_path: Path) -> None:
+    payload = json.loads(layout_path.read_text(encoding="utf-8"))
+    root = (matchlib.REPO_ROOT / payload["root"]).resolve()
+    assert root == layout_path.parent.resolve()
+    image = REGISTRY.image(payload["build"], payload["image"])
+    assert image.family == payload["family"]
+    mapped = {
+        row["name"]: int(row["address"], 16)
+        for row in json.loads(image.target.functions_path.read_text(encoding="utf-8"))
+    }
+    seen: set[Path] = set()
+    previous_end = 0
+    for module in payload["modules"]:
+        ranges = [(int(start, 16), int(end, 16)) for start, end in module["ranges"]]
+        for start, end in ranges:
+            assert previous_end <= start < end
+            previous_end = end
+        for row in module["sources"]:
+            source = (matchlib.REPO_ROOT / row["path"]).resolve()
+            assert source.is_relative_to(root) and source.is_file() and source not in seen
+            seen.add(source)
+            for config_dir in row["configs"]:
+                config = matchlib.load_scratch_config(matchlib.REPO_ROOT / config_dir)
+                assert (config.directory / dict(config.family_sources)[payload["family"]]).resolve() == source
+                if config.function in mapped:
+                    assert any(start <= mapped[config.function] < end for start, end in ranges)
+    assert seen == {path.resolve() for path in root.rglob("*") if path.suffix in {".c", ".cpp"}}

@@ -16,21 +16,6 @@ extern "C" IGrim2D_cpp *grim_load_interface(char *dll_name)
         return 0;
     }
 
-#if CL_BUILD < 10300
-    grim_get_interface_t get_interface =
-        (grim_get_interface_t)GetProcAddress(
-            grim_dll_module_handle, "Grim_GetInterface");
-    if (get_interface == 0) {
-        return 0;
-    }
-#elif CL_BUILD < 10900
-    grim_get_interface_t get_interface =
-        (grim_get_interface_t)GetProcAddress(
-            grim_dll_module_handle, "GRIM__GetInterface");
-    if (get_interface == 0) {
-        return 0;
-    }
-#else
     grim_get_interface_t get_interface =
         (grim_get_interface_t)GetProcAddress(
             grim_dll_module_handle, "GRIM__GetInterface");
@@ -38,6 +23,5 @@ extern "C" IGrim2D_cpp *grim_load_interface(char *dll_name)
     if (get_interface == 0) {
         return 0;
     }
-#endif
     return get_interface();
 }

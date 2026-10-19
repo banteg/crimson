@@ -1,18 +1,18 @@
 [
   {
     "address": "0x00401000",
-    "canonical_address": "0x00401000",
+    "canonical_address": "0x0041DF70",
     "end": "0x00401005",
     "evidence": "exact",
-    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401010",
-    "canonical_address": "0x00401010",
+    "canonical_address": "0x0041E080",
     "end": "0x00401025",
-    "evidence": "referenced",
-    "name": "unused_console_prefix_vec2_global_init",
+    "evidence": "exact",
+    "name": "render_tint_color_global_init",
     "size": 21
   },
   {
@@ -120,18 +120,18 @@
   },
   {
     "address": "0x00401150",
-    "canonical_address": "0x0041E170",
+    "canonical_address": "0x00401000",
     "end": "0x00401155",
     "evidence": "exact",
-    "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
+    "name": "unused_console_prefix_vec2_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401160",
-    "canonical_address": "0x0041E180",
+    "canonical_address": "0x00401010",
     "end": "0x0040116B",
     "evidence": "referenced",
-    "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+    "name": "unused_console_prefix_vec2_global_init",
     "size": 11
   },
   {
@@ -255,6 +255,14 @@
     "size": 1
   },
   {
+    "address": "0x00401370",
+    "canonical_address": "0x0041E750",
+    "end": "0x00401375",
+    "evidence": "exact",
+    "name": "projectile_pool_global_init_thunk",
+    "size": 5
+  },
+  {
     "address": "0x00401380",
     "canonical_address": "0x0041E760",
     "end": "0x004013A3",
@@ -303,11 +311,19 @@
     "size": 45
   },
   {
+    "address": "0x00401470",
+    "canonical_address": "0x0041F1A0",
+    "end": "0x004015FF",
+    "evidence": "ordered",
+    "name": "config_load_presets",
+    "size": 399
+  },
+  {
     "address": "0x00401600",
-    "canonical_address": "0x0041E8F0",
+    "canonical_address": "0x0041F580",
     "end": "0x00401624",
     "evidence": "ordered",
-    "name": "input_aim_pov_right_active",
+    "name": "bonus_alloc_slot",
     "size": 36
   },
   {
@@ -320,10 +336,10 @@
   },
   {
     "address": "0x004016B0",
-    "canonical_address": "0x0041F430",
+    "canonical_address": "0x0041F5B0",
     "end": "0x004017F2",
     "evidence": "ordered",
-    "name": "angle_approach",
+    "name": "bonus_spawn_at",
     "size": 322
   },
   {
@@ -336,10 +352,10 @@
   },
   {
     "address": "0x004018F0",
-    "canonical_address": "0x0041F580",
+    "canonical_address": "0x0041FC60",
     "end": "0x00401935",
-    "evidence": "ordered",
-    "name": "bonus_alloc_slot",
+    "evidence": "exact",
+    "name": "weapon_name_get",
     "size": 69
   },
   {
@@ -352,10 +368,10 @@
   },
   {
     "address": "0x00401A40",
-    "canonical_address": "0x0041FC80",
+    "canonical_address": "0x0041FED0",
     "end": "0x00401C07",
     "evidence": "ordered",
-    "name": "player_reset_all",
+    "name": "effect_uv_tables_init",
     "size": 455
   },
   {
@@ -367,20 +383,12 @@
     "size": 107
   },
   {
-    "address": "0x00402230",
-    "canonical_address": "0x0041FED0",
-    "end": "0x0040234E",
-    "evidence": "ordered",
-    "name": "effect_uv_tables_init",
-    "size": 286
-  },
-  {
-    "address": "0x004029A0",
+    "address": "0x00402940",
     "canonical_address": "0x00420040",
-    "end": "0x00402A3D",
+    "end": "0x00402998",
     "evidence": "ordered",
     "name": "creature_find_nearest",
-    "size": 157
+    "size": 88
   },
   {
     "address": "0x00402A90",
@@ -415,28 +423,63 @@
     "size": 105
   },
   {
+    "address": "0x00402CA0",
+    "canonical_address": "0x00420B90",
+    "end": "0x004037AF",
+    "evidence": "ordered",
+    "name": "projectile_update",
+    "size": 2831
+  },
+  {
     "address": "0x004037B0",
-    "canonical_address": "0x00426220",
+    "canonical_address": "0x00422C70",
     "end": "0x00404AB7",
     "evidence": "ordered",
-    "name": "creature_update_all",
+    "name": "projectile_render",
     "size": 4871
   },
   {
     "address": "0x00404AC0",
-    "canonical_address": "0x00427840",
+    "canonical_address": "0x00425D80",
     "end": "0x00404B63",
     "evidence": "ordered",
-    "name": "fx_queue_add_rotated",
+    "name": "plaguebearer_spread_infection",
     "size": 163
   },
   {
+    "address": "0x00404B70",
+    "canonical_address": "0x00425E50",
+    "end": "0x0040508C",
+    "evidence": "ordered",
+    "name": "player_take_damage",
+    "size": 1308
+  },
+  {
     "address": "0x00405090",
-    "canonical_address": "0x00427920",
+    "canonical_address": "0x00426220",
     "end": "0x004058C7",
     "evidence": "ordered",
-    "name": "fx_queue_render",
+    "name": "creature_update_all",
     "size": 2103
+  },
+  {
+    "address": "0x004058D0",
+    "canonical_address": "0x00427700",
+    "end": "0x00405902",
+    "evidence": "exact",
+    "name": "fx_queue_add_random",
+    "size": 50
+  },
+  {
+    "address": "0x00405910",
+    "canonical_address": "0x00427830",
+    "end": "0x0040594B",
+    "evidence": "exact",
+    "name": "fx_queue_random_color_destroy",
+    "size": 59,
+    "aliases": [
+      "$E2"
+    ]
   },
   {
     "address": "0x00405950",
@@ -488,10 +531,10 @@
   },
   {
     "address": "0x00407E80",
-    "canonical_address": "0x0042E080",
+    "canonical_address": "0x00428210",
     "end": "0x00407E99",
     "evidence": "ordered",
-    "name": "effect_free",
+    "name": "creatures_none_active",
     "size": 25
   },
   {
@@ -504,11 +547,19 @@
   },
   {
     "address": "0x00407EC0",
-    "canonical_address": "0x00434250",
+    "canonical_address": "0x00428240",
     "end": "0x0040803F",
     "evidence": "ordered",
-    "name": "quest_spawn_timeline_update",
+    "name": "creature_spawn",
     "size": 383
+  },
+  {
+    "address": "0x00408040",
+    "canonical_address": "0x00428390",
+    "end": "0x004097C5",
+    "evidence": "ordered",
+    "name": "player_render",
+    "size": 6021
   },
   {
     "address": "0x004097D0",
@@ -544,10 +595,10 @@
   },
   {
     "address": "0x0040B180",
-    "canonical_address": "0x0043C590",
+    "canonical_address": "0x0042A7C0",
     "end": "0x0040B25C",
     "evidence": "ordered",
-    "name": "music_stream_fill",
+    "name": "console_cmd_set_resource_paq",
     "size": 220
   },
   {
@@ -576,10 +627,10 @@
   },
   {
     "address": "0x0040C0D0",
-    "canonical_address": "0x00441220",
+    "canonical_address": "0x0042A930",
     "end": "0x0040C10D",
     "evidence": "ordered",
-    "name": "highscore_card_draw_vertical_divider",
+    "name": "console_cmd_snd_freq_adjustment",
     "size": 61
   },
   {
@@ -592,10 +643,10 @@
   },
   {
     "address": "0x0040EDA0",
-    "canonical_address": "0x004413A0",
+    "canonical_address": "0x0042B290",
     "end": "0x0040F877",
     "evidence": "ordered",
-    "name": "ui_text_input_render",
+    "name": "game_startup_init",
     "size": 2775
   },
   {
@@ -775,24 +826,21 @@
   },
   {
     "address": "0x0041096E",
-    "canonical_address": "0x0045E73E",
+    "canonical_address": "0x0044FC70",
     "end": "0x0041098C",
     "evidence": "ordered",
-    "name": "x3d_matrix_inverse",
-    "size": 30,
-    "aliases": [
-      "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
-    ]
+    "name": "ui_menu_main_click_buy_full_version",
+    "size": 30
   },
   {
     "address": "0x0041098C",
-    "canonical_address": "0x00460CD0",
+    "canonical_address": "0x004553F4",
     "end": "0x004109C4",
     "evidence": "ordered",
-    "name": "crt_cfltcvt_init",
+    "name": "d3dx_c_plane_from_point_normal",
     "size": 56,
     "aliases": [
-      "__cfltcvt_init"
+      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
     ]
   },
   {
@@ -832,7 +880,7 @@
     "address": "0x00410AA3",
     "canonical_address": "0x00460D08",
     "end": "0x00410B10",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_onexit",
     "size": 109
   },
@@ -876,6 +924,28 @@
     ]
   },
   {
+    "address": "0x00410C45",
+    "canonical_address": "0x00460DD2",
+    "end": "0x00410C4F",
+    "evidence": "ordered",
+    "name": "crt_atol",
+    "size": 10,
+    "aliases": [
+      "_atol"
+    ]
+  },
+  {
+    "address": "0x00410C4F",
+    "canonical_address": "0x00461746",
+    "end": "0x00410C6D",
+    "evidence": "exact",
+    "name": "crt_rand",
+    "size": 30,
+    "aliases": [
+      "rand"
+    ]
+  },
+  {
     "address": "0x00410C70",
     "canonical_address": "0x00461054",
     "end": "0x00410C97",
@@ -888,13 +958,13 @@
   },
   {
     "address": "0x00410C97",
-    "canonical_address": "0x00460E8E",
+    "canonical_address": "0x00460E5D",
     "end": "0x00410CED",
-    "evidence": "ordered",
-    "name": "crt_fclose_lk",
+    "evidence": "exact",
+    "name": "crt_fclose",
     "size": 86,
     "aliases": [
-      "__fclose_lk"
+      "fclose"
     ]
   },
   {
@@ -903,7 +973,10 @@
     "end": "0x00410DF7",
     "evidence": "exact",
     "name": "crt_fwrite_nolock",
-    "size": 266
+    "size": 266,
+    "aliases": [
+      "crt_fwrite"
+    ]
   },
   {
     "address": "0x00410DF7",
@@ -917,7 +990,7 @@
     "address": "0x00410E83",
     "canonical_address": "0x0046100E",
     "end": "0x00410EA3",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_fsopen",
     "size": 32
   },
@@ -977,32 +1050,35 @@
   },
   {
     "address": "0x004111CD",
-    "canonical_address": "0x00462173",
+    "canonical_address": "0x00456EEC",
     "end": "0x00411299",
-    "evidence": "exact",
-    "name": "crt_toupper_l",
-    "size": 204
+    "evidence": "called",
+    "name": "d3dx_x86_vec3_normalize",
+    "size": 204,
+    "aliases": [
+      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00411299",
-    "canonical_address": "0x004623B2",
+    "canonical_address": "0x00463431",
     "end": "0x00411370",
     "evidence": "ordered",
-    "name": "crt_time",
+    "name": "crt_call_se_translator",
     "size": 215,
     "aliases": [
-      "_time"
+      "?_CallSETranslator@@YAHPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAX2PBU_s_FuncInfo@@H1@Z"
     ]
   },
   {
     "address": "0x00411370",
-    "canonical_address": "0x0046248E",
+    "canonical_address": "0x004636C8",
     "end": "0x0041138F",
-    "evidence": "ordered",
-    "name": "crt_getcwd",
+    "evidence": "exact",
+    "name": "seh_prolog",
     "size": 31,
     "aliases": [
-      "getcwd"
+      "__EH_prolog"
     ]
   },
   {
@@ -1086,7 +1162,7 @@
     "address": "0x0041154F",
     "canonical_address": "0x0046385E",
     "end": "0x00411653",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_cftoe",
     "size": 260,
     "aliases": [
@@ -1097,7 +1173,7 @@
     "address": "0x00411653",
     "canonical_address": "0x00463981",
     "end": "0x00411731",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_cftof",
     "size": 222,
     "aliases": [
@@ -1108,7 +1184,7 @@
     "address": "0x00411731",
     "canonical_address": "0x00463A7D",
     "end": "0x004117CC",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_cftog",
     "size": 155,
     "aliases": [
@@ -1119,7 +1195,7 @@
     "address": "0x004117CC",
     "canonical_address": "0x004638BF",
     "end": "0x004117F3",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_fp_format_exp",
     "size": 39
   },
@@ -1127,7 +1203,7 @@
     "address": "0x004117F3",
     "canonical_address": "0x004639D6",
     "end": "0x00411816",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_fp_format_fixed",
     "size": 35
   },
@@ -1154,7 +1230,7 @@
     "address": "0x0041188C",
     "canonical_address": "0x00464268",
     "end": "0x004119A1",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_flsbuf",
     "size": 277
   },
@@ -1304,9 +1380,17 @@
     "address": "0x0041237C",
     "canonical_address": "0x004625C1",
     "end": "0x004123E5",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_free_base",
     "size": 105
+  },
+  {
+    "address": "0x00412685",
+    "canonical_address": "0x00463DA5",
+    "end": "0x004126B2",
+    "evidence": "ordered",
+    "name": "crt_lock_file",
+    "size": 45
   },
   {
     "address": "0x004126B2",
@@ -1331,7 +1415,7 @@
     "address": "0x004126D4",
     "canonical_address": "0x00462EFF",
     "end": "0x0041276D",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_doexit",
     "size": 153
   },
@@ -1369,7 +1453,7 @@
     "address": "0x00412826",
     "canonical_address": "0x00462A17",
     "end": "0x0041289A",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_heap_alloc",
     "size": 116,
     "aliases": [
@@ -1380,15 +1464,26 @@
     "address": "0x0041289A",
     "canonical_address": "0x00465F48",
     "end": "0x004128EB",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_terminate",
     "size": 81
+  },
+  {
+    "address": "0x004128EB",
+    "canonical_address": "0x004620D0",
+    "end": "0x004128F0",
+    "evidence": "ordered",
+    "name": "crt_allmul",
+    "size": 5,
+    "aliases": [
+      "__allmul"
+    ]
   },
   {
     "address": "0x004128F0",
     "canonical_address": "0x00463E49",
     "end": "0x004129A3",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_close",
     "size": 179
   },
@@ -1415,7 +1510,7 @@
     "address": "0x00412ADB",
     "canonical_address": "0x00465652",
     "end": "0x00412C88",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_write",
     "size": 429
   },
@@ -1431,7 +1526,7 @@
     "address": "0x00412FC5",
     "canonical_address": "0x004663F9",
     "end": "0x0041305F",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_lseek",
     "size": 154
   },
@@ -1445,20 +1540,17 @@
   },
   {
     "address": "0x00413327",
-    "canonical_address": "0x00464BE7",
+    "canonical_address": "0x004641A0",
     "end": "0x0041339F",
-    "evidence": "ordered",
-    "name": "crt_fltin2",
-    "size": 120,
-    "aliases": [
-      "__fltin2"
-    ]
+    "evidence": "exact",
+    "name": "crt_getstream",
+    "size": 120
   },
   {
     "address": "0x0041339F",
     "canonical_address": "0x00463F54",
     "end": "0x00413478",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_filbuf",
     "size": 217
   },
@@ -1466,7 +1558,7 @@
     "address": "0x00413478",
     "canonical_address": "0x00465FFF",
     "end": "0x0041366E",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_read",
     "size": 502
   },
@@ -1662,27 +1754,30 @@
     "address": "0x00414020",
     "canonical_address": "0x00463C74",
     "end": "0x00414095",
-    "evidence": "exact",
+    "evidence": "called",
     "name": "crt_isctype",
     "size": 117
   },
   {
     "address": "0x00414095",
-    "canonical_address": "0x004668E9",
+    "canonical_address": "0x00469BAE",
     "end": "0x004141D6",
     "evidence": "ordered",
-    "name": "crt_exception_filter",
-    "size": 321
+    "name": "crt_build_catch_object",
+    "size": 321,
+    "aliases": [
+      "?BuildCatchObject@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PBU_s_HandlerType@@PBU_s_CatchableType@@@Z"
+    ]
   },
   {
     "address": "0x004141D6",
-    "canonical_address": "0x00466A27",
+    "canonical_address": "0x00469E00",
     "end": "0x00414219",
     "evidence": "ordered",
-    "name": "crt_xcptlookup",
+    "name": "crt_call_setting_frame",
     "size": 67,
     "aliases": [
-      "_xcptlookup"
+      "__CallSettingFrame@12"
     ]
   },
   {
@@ -1764,7 +1859,7 @@
     "address": "0x00414A5F",
     "canonical_address": "0x00468DDC",
     "end": "0x00414BB2",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_report_runtime_error",
     "size": 339
   },
@@ -1969,7 +2064,7 @@
     "address": "0x00415337",
     "canonical_address": "0x0046A415",
     "end": "0x0041539B",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_fp_to_string",
     "size": 100
   },
@@ -2004,6 +2099,17 @@
     "size": 351
   },
   {
+    "address": "0x00415620",
+    "canonical_address": "0x0046A8C5",
+    "end": "0x00415800",
+    "evidence": "ordered",
+    "name": "crt_fptrap",
+    "size": 480,
+    "aliases": [
+      "__fptrap"
+    ]
+  },
+  {
     "address": "0x00415800",
     "canonical_address": "0x00464C70",
     "end": "0x0041587B",
@@ -2025,10 +2131,10 @@
   {
     "address": "0x004158C8",
     "canonical_address": "0x0046B08C",
-    "end": "0x004159A7",
-    "evidence": "called",
+    "end": "0x004158EE",
+    "evidence": "exact",
     "name": "crt_isatty",
-    "size": 223,
+    "size": 38,
     "aliases": [
       "__isatty"
     ]
@@ -2037,7 +2143,7 @@
     "address": "0x004159A7",
     "canonical_address": "0x0046B10E",
     "end": "0x00415A0F",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "crt_wctomb_lk",
     "size": 104,
     "aliases": [
@@ -2217,10 +2323,59 @@
     "size": 27
   },
   {
+    "address": "0x00416D3B",
+    "canonical_address": "0x00465D20",
+    "end": "0x00416DA2",
+    "evidence": "exact",
+    "name": "crt_dosmaperr",
+    "size": 103
+  },
+  {
+    "address": "0x00416DA2",
+    "canonical_address": "0x0046AA17",
+    "end": "0x00416E37",
+    "evidence": "exact",
+    "name": "crt_fcloseall",
+    "size": 149,
+    "aliases": [
+      "__fcloseall"
+    ]
+  },
+  {
+    "address": "0x00416E37",
+    "canonical_address": "0x0046ABBB",
+    "end": "0x00416EAE",
+    "evidence": "exact",
+    "name": "crt_set_osfhnd",
+    "size": 119,
+    "aliases": [
+      "__set_osfhnd"
+    ]
+  },
+  {
+    "address": "0x00416EAE",
+    "canonical_address": "0x0046AC37",
+    "end": "0x00416F28",
+    "evidence": "exact",
+    "name": "crt_free_osfhnd",
+    "size": 122,
+    "aliases": [
+      "__free_osfhnd"
+    ]
+  },
+  {
+    "address": "0x00416F28",
+    "canonical_address": "0x0046ACB6",
+    "end": "0x00416F65",
+    "evidence": "exact",
+    "name": "crt_get_osfhandle",
+    "size": 61
+  },
+  {
     "address": "0x00416FBC",
     "canonical_address": "0x0046ADBD",
     "end": "0x00417275",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_sopen",
     "size": 697
   },
@@ -2445,7 +2600,7 @@
     "address": "0x0041848A",
     "canonical_address": "0x0046D1EF",
     "end": "0x00418623",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_setmbcp",
     "size": 409
   },
@@ -2518,6 +2673,17 @@
     "size": 520
   },
   {
+    "address": "0x00418A90",
+    "canonical_address": "0x00460E8E",
+    "end": "0x00418A95",
+    "evidence": "exact",
+    "name": "crt_fclose_lk",
+    "size": 5,
+    "aliases": [
+      "__fclose_lk"
+    ]
+  },
+  {
     "address": "0x00418AA0",
     "canonical_address": "0x00460EF0",
     "end": "0x00418B5C",
@@ -2525,7 +2691,8 @@
     "name": "crt_strchr",
     "size": 188,
     "aliases": [
-      "_strchr"
+      "_strchr",
+      "strchr"
     ]
   },
   {
@@ -2622,7 +2789,7 @@
     "address": "0x00418F4F",
     "canonical_address": "0x0046B265",
     "end": "0x004193F0",
-    "evidence": "exact",
+    "evidence": "referenced",
     "name": "crt_fp_parse",
     "size": 1185
   },
@@ -2641,7 +2808,7 @@
     "address": "0x004197BC",
     "canonical_address": "0x0046DD16",
     "end": "0x004198E9",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "crt_chsize",
     "size": 301
   },
@@ -2671,7 +2838,7 @@
     "address": "0x00419F3E",
     "canonical_address": "0x0046953D",
     "end": "0x00419F64",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_set_errno",
     "size": 38,
     "aliases": [
@@ -2759,7 +2926,7 @@
     "address": "0x0041A299",
     "canonical_address": "0x0046E0D7",
     "end": "0x0041A30F",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "crt_getenv_lk",
     "size": 118,
     "aliases": [
@@ -2768,11 +2935,14 @@
   },
   {
     "address": "0x0041A310",
-    "canonical_address": "0x0046E968",
+    "canonical_address": "0x0046E920",
     "end": "0x0041A316",
     "evidence": "exact",
-    "name": "RtlUnwind",
-    "size": 6
+    "name": "ov_pcm_seek",
+    "size": 6,
+    "aliases": [
+      "HlinkNavigateString"
+    ]
   },
   {
     "address": "0x0041A316",

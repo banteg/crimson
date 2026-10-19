@@ -4249,6 +4249,8 @@ SCRATCH_CONFIG_KEYS = frozenset(
 
 
 BUILD_REFERENCE_ALIASES_RE = re.compile(r"REFERENCE_ALIASES_(\d+)")
+# The source another build family compiles for this function (decomp/<family>).
+FAMILY_SOURCE_RE = re.compile(r"SOURCE_(\d+(?:\.\d+)*)")
 
 
 @dataclass(frozen=True, slots=True)
@@ -4264,6 +4266,7 @@ class ScratchConfig:
     note: str
     reference_aliases: tuple[tuple[str, str], ...] = ()
     build_reference_aliases: tuple[tuple[int, tuple[tuple[str, str], ...]], ...] = ()
+    family_sources: tuple[tuple[str, str], ...] = ()
     recovery: str | None = None
     residuals: tuple[str, ...] = ()
     archive: str | None = None
@@ -4650,7 +4653,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             raise ValueError(
                 f"{directory}/scratch.conf has invalid assignment {token!r}",
             )
-        if key not in SCRATCH_CONFIG_KEYS and not BUILD_REFERENCE_ALIASES_RE.fullmatch(key):
+        if key not in SCRATCH_CONFIG_KEYS and not (BUILD_REFERENCE_ALIASES_RE.fullmatch(key) or FAMILY_SOURCE_RE.fullmatch(key)):
             allowed = ", ".join(sorted(SCRATCH_CONFIG_KEYS))
             raise ValueError(
                 f"{directory}/scratch.conf has unknown field {key!r}; use {allowed}",
@@ -4677,6 +4680,10 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         (int(match[1]), parse_aliases(key))
         for key in sorted(values)
         if (match := BUILD_REFERENCE_ALIASES_RE.fullmatch(key))
+    )
+
+    family_sources = tuple(
+        (match[1], values[key]) for key in sorted(values) if (match := FAMILY_SOURCE_RE.fullmatch(key))
     )
 
     recovery = values.get("RECOVERY")
@@ -4836,6 +4843,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         note=values.get("NOTE", ""),
         reference_aliases=reference_aliases,
         build_reference_aliases=build_reference_aliases,
+        family_sources=family_sources,
         recovery=recovery,
         residuals=residuals,
         archive=archive,

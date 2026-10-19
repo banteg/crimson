@@ -9,22 +9,19 @@
   },
   {
     "address": "0x00401030",
-    "canonical_address": "0x0041DD90",
+    "canonical_address": "0x0041DF70",
     "end": "0x00401035",
-    "evidence": "ordered",
-    "name": "vorbis_mem_close_callback",
+    "evidence": "exact",
+    "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401040",
-    "canonical_address": "0x0041DDB0",
+    "canonical_address": "0x0041E080",
     "end": "0x00401055",
-    "evidence": "ordered",
-    "name": "vorbis_pcm_seek",
-    "size": 21,
-    "aliases": [
-      "?pcm_seek@vorbis_stream_t@@QAEHI@Z"
-    ]
+    "evidence": "exact",
+    "name": "render_tint_color_global_init",
+    "size": 21
   },
   {
     "address": "0x00401060",
@@ -176,6 +173,22 @@
     "evidence": "recovered",
     "name": "perk_meta_table_destroy",
     "size": 20
+  },
+  {
+    "address": "0x004013F0",
+    "canonical_address": "0x00401000",
+    "end": "0x004013F5",
+    "evidence": "exact",
+    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00401400",
+    "canonical_address": "0x00401010",
+    "end": "0x0040140B",
+    "evidence": "referenced",
+    "name": "unused_console_prefix_vec2_global_init",
+    "size": 11
   },
   {
     "address": "0x00401410",
@@ -373,7 +386,7 @@
     "address": "0x00403340",
     "canonical_address": "0x0041E840",
     "end": "0x004033C3",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "fx_queue_add",
     "size": 131
   },
@@ -395,26 +408,34 @@
   },
   {
     "address": "0x00403510",
-    "canonical_address": "0x0041F1A0",
+    "canonical_address": "0x0041E910",
     "end": "0x004037C6",
-    "evidence": "ordered",
-    "name": "config_load_presets",
+    "evidence": "called",
+    "name": "creature_handle_death",
     "size": 694
   },
   {
     "address": "0x004037D0",
-    "canonical_address": "0x0041F430",
+    "canonical_address": "0x0041EC60",
     "end": "0x004038A5",
-    "evidence": "ordered",
-    "name": "angle_approach",
+    "evidence": "exact",
+    "name": "config_sync_from_grim",
     "size": 213
   },
   {
+    "address": "0x004038B0",
+    "canonical_address": "0x0041F130",
+    "end": "0x0040395A",
+    "evidence": "ordered",
+    "name": "config_ensure_file",
+    "size": 170
+  },
+  {
     "address": "0x00403960",
-    "canonical_address": "0x0041F5B0",
+    "canonical_address": "0x0041F1A0",
     "end": "0x00403AE4",
     "evidence": "ordered",
-    "name": "bonus_spawn_at",
+    "name": "config_load_presets",
     "size": 388
   },
   {
@@ -434,6 +455,22 @@
     "size": 499
   },
   {
+    "address": "0x00403EE0",
+    "canonical_address": "0x0041F430",
+    "end": "0x00404012",
+    "evidence": "ordered",
+    "name": "angle_approach",
+    "size": 306
+  },
+  {
+    "address": "0x00404020",
+    "canonical_address": "0x0041F580",
+    "end": "0x0040403E",
+    "evidence": "ordered",
+    "name": "bonus_alloc_slot",
+    "size": 30
+  },
+  {
     "address": "0x00404040",
     "canonical_address": "0x0041FBB0",
     "end": "0x004040D0",
@@ -445,7 +482,7 @@
     "address": "0x004040D0",
     "canonical_address": "0x0041FC60",
     "end": "0x00404115",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "weapon_name_get",
     "size": 69
   },
@@ -453,7 +490,7 @@
     "address": "0x00404120",
     "canonical_address": "0x0041FC80",
     "end": "0x00404329",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "player_reset_all",
     "size": 521
   },
@@ -547,19 +584,46 @@
   },
   {
     "address": "0x00409C80",
-    "canonical_address": "0x00427920",
+    "canonical_address": "0x00425E50",
     "end": "0x0040A3B8",
     "evidence": "ordered",
-    "name": "fx_queue_render",
+    "name": "player_take_damage",
     "size": 1848
   },
   {
-    "address": "0x0040AA80",
-    "canonical_address": "0x00428140",
-    "end": "0x0040AAFA",
+    "address": "0x0040A3C0",
+    "canonical_address": "0x00426220",
+    "end": "0x0040A9FE",
     "evidence": "ordered",
+    "name": "creature_update_all",
+    "size": 1598
+  },
+  {
+    "address": "0x0040AA00",
+    "canonical_address": "0x00427700",
+    "end": "0x0040AA32",
+    "evidence": "exact",
+    "name": "fx_queue_add_random",
+    "size": 50
+  },
+  {
+    "address": "0x0040AA40",
+    "canonical_address": "0x00427830",
+    "end": "0x0040AA7B",
+    "evidence": "exact",
+    "name": "fx_queue_random_color_destroy",
+    "size": 59,
+    "aliases": [
+      "$E2"
+    ]
+  },
+  {
+    "address": "0x0040B4E0",
+    "canonical_address": "0x00428140",
+    "end": "0x0040B50E",
+    "evidence": "exact",
     "name": "creature_alloc_slot",
-    "size": 122
+    "size": 46
   },
   {
     "address": "0x0040B510",
@@ -587,10 +651,10 @@
   },
   {
     "address": "0x0040BA70",
-    "canonical_address": "0x0042B090",
+    "canonical_address": "0x00428240",
     "end": "0x0040BC09",
     "evidence": "ordered",
-    "name": "game_startup_init_prelude",
+    "name": "creature_spawn",
     "size": 409
   },
   {
@@ -611,19 +675,27 @@
   },
   {
     "address": "0x0040CF60",
-    "canonical_address": "0x00439230",
+    "canonical_address": "0x00428390",
     "end": "0x0040E2BF",
     "evidence": "ordered",
-    "name": "quest_database_init",
+    "name": "player_render",
     "size": 4959
   },
   {
     "address": "0x0040E2C0",
-    "canonical_address": "0x0043C3A0",
+    "canonical_address": "0x00413540",
     "end": "0x0040E42F",
     "evidence": "ordered",
-    "name": "music_entry_load_ogg",
+    "name": "player_heading_approach_target",
     "size": 367
+  },
+  {
+    "address": "0x0040E430",
+    "canonical_address": "0x00429580",
+    "end": "0x00410DA4",
+    "evidence": "ordered",
+    "name": "bonus_label_for_entry",
+    "size": 10612
   },
   {
     "address": "0x00411610",
@@ -635,10 +707,10 @@
   },
   {
     "address": "0x00411820",
-    "canonical_address": "0x0043D730",
+    "canonical_address": "0x0042A5F0",
     "end": "0x0041185D",
     "evidence": "ordered",
-    "name": "audio_suspend_channels",
+    "name": "audio_resume_all",
     "size": 61
   },
   {
@@ -667,10 +739,10 @@
   },
   {
     "address": "0x004183F0",
-    "canonical_address": "0x004413A0",
+    "canonical_address": "0x0042B290",
     "end": "0x0041920F",
     "evidence": "ordered",
-    "name": "ui_text_input_render",
+    "name": "game_startup_init",
     "size": 3615
   },
   {
@@ -680,14 +752,6 @@
     "evidence": "ordered",
     "name": "ui_update_notice_update",
     "size": 656
-  },
-  {
-    "address": "0x004194A0",
-    "canonical_address": "0x00445380",
-    "end": "0x004196EE",
-    "evidence": "ordered",
-    "name": "typo_target_name_assign_random",
-    "size": 590
   },
   {
     "address": "0x004196F0",
@@ -723,57 +787,53 @@
   },
   {
     "address": "0x0041B7E0",
-    "canonical_address": "0x00452EF0",
+    "canonical_address": "0x0043AEB0",
     "end": "0x0041B802",
-    "evidence": "ordered",
-    "name": "float_near_equal",
-    "size": 34,
-    "aliases": [
-      "?WithinEpsilon@@YAHMM@Z"
-    ]
+    "evidence": "exact",
+    "name": "highscore_compare_survival_score_desc",
+    "size": 34
   },
   {
     "address": "0x0041B810",
-    "canonical_address": "0x00452F1D",
+    "canonical_address": "0x0043B8C0",
     "end": "0x0041B823",
-    "evidence": "ordered",
-    "name": "d3dx_init_vec2_normalize",
-    "size": 19,
-    "aliases": [
-      "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
-    ]
+    "evidence": "exact",
+    "name": "buffer_reader_skip",
+    "size": 19
+  },
+  {
+    "address": "0x0041B840",
+    "canonical_address": "0x00445380",
+    "end": "0x0041BA49",
+    "evidence": "exact",
+    "name": "typo_target_name_assign_random",
+    "size": 521
   },
   {
     "address": "0x0041BA50",
-    "canonical_address": "0x00452F30",
+    "canonical_address": "0x00447420",
     "end": "0x0041BA7E",
-    "evidence": "ordered",
-    "name": "d3dx_init_vec2_hermite",
-    "size": 46,
-    "aliases": [
-      "?init_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
-    ]
+    "evidence": "exact",
+    "name": "ui_menu_click_back_contextual",
+    "size": 46
   },
   {
     "address": "0x0041BA80",
-    "canonical_address": "0x00452FE8",
+    "canonical_address": "0x0044FC70",
     "end": "0x0041BAA5",
-    "evidence": "ordered",
-    "name": "d3dx_init_vec2_catmull_rom",
-    "size": 37,
-    "aliases": [
-      "?init_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
-    ]
+    "evidence": "exact",
+    "name": "ui_menu_main_click_buy_full_version",
+    "size": 37
   },
   {
     "address": "0x0041BAB0",
-    "canonical_address": "0x00453133",
+    "canonical_address": "0x004534EA",
     "end": "0x0041BAC1",
-    "evidence": "ordered",
-    "name": "d3dx_init_vec2_transform",
+    "evidence": "exact",
+    "name": "d3dx_init_vec3_project",
     "size": 17,
     "aliases": [
-      "?init_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+      "?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ]
   },
   {
@@ -921,24 +981,24 @@
   },
   {
     "address": "0x0041BB1E",
-    "canonical_address": "0x0045E73E",
+    "canonical_address": "0x00454417",
     "end": "0x0041BB3C",
     "evidence": "ordered",
-    "name": "x3d_matrix_inverse",
+    "name": "d3dx_init_matrix_rotation_x",
     "size": 30,
     "aliases": [
-      "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+      "?init_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ]
   },
   {
     "address": "0x0041BB3C",
-    "canonical_address": "0x00460CD0",
+    "canonical_address": "0x004553F4",
     "end": "0x0041BB74",
-    "evidence": "exact",
-    "name": "crt_cfltcvt_init",
+    "evidence": "called",
+    "name": "d3dx_c_plane_from_point_normal",
     "size": 56,
     "aliases": [
-      "__cfltcvt_init"
+      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
     ]
   },
   {
@@ -978,7 +1038,7 @@
     "address": "0x0041BC53",
     "canonical_address": "0x00460D08",
     "end": "0x0041BCC0",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_onexit",
     "size": 109
   },
@@ -1010,14 +1070,14 @@
     "size": 94
   },
   {
-    "address": "0x0041BDDF",
-    "canonical_address": "0x00460D98",
-    "end": "0x0041BDE9",
-    "evidence": "ordered",
-    "name": "crt_onexit_init",
-    "size": 10,
+    "address": "0x0041BDE9",
+    "canonical_address": "0x00461746",
+    "end": "0x0041BE07",
+    "evidence": "exact",
+    "name": "crt_rand",
+    "size": 30,
     "aliases": [
-      "___onexitinit"
+      "rand"
     ]
   },
   {
@@ -1030,13 +1090,13 @@
   },
   {
     "address": "0x0041BE15",
-    "canonical_address": "0x00460E8E",
+    "canonical_address": "0x00460E5D",
     "end": "0x0041BE6B",
-    "evidence": "ordered",
-    "name": "crt_fclose_lk",
+    "evidence": "exact",
+    "name": "crt_fclose",
     "size": 86,
     "aliases": [
-      "__fclose_lk"
+      "fclose"
     ]
   },
   {
@@ -1051,7 +1111,7 @@
     "address": "0x0041BF53",
     "canonical_address": "0x0046100E",
     "end": "0x0041BF73",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_fsopen",
     "size": 32
   },
@@ -1083,7 +1143,10 @@
     "end": "0x0041C0B9",
     "evidence": "exact",
     "name": "crt_fwrite_nolock",
-    "size": 266
+    "size": 266,
+    "aliases": [
+      "crt_fwrite"
+    ]
   },
   {
     "address": "0x0041C0C0",
@@ -1122,19 +1185,22 @@
   },
   {
     "address": "0x0041C435",
-    "canonical_address": "0x00461DBD",
+    "canonical_address": "0x0046135D",
     "end": "0x0041C4C1",
     "evidence": "ordered",
-    "name": "crt_fseek_nolock",
+    "name": "crt_strtok",
     "size": 140
   },
   {
     "address": "0x0041C4C1",
-    "canonical_address": "0x00462173",
+    "canonical_address": "0x00456EEC",
     "end": "0x0041C58D",
-    "evidence": "exact",
-    "name": "crt_toupper_l",
-    "size": 204
+    "evidence": "called",
+    "name": "d3dx_x86_vec3_normalize",
+    "size": 204,
+    "aliases": [
+      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0041C58D",
@@ -1214,7 +1280,7 @@
     "address": "0x0041C6CD",
     "canonical_address": "0x00463431",
     "end": "0x0041C781",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "crt_call_se_translator",
     "size": 180,
     "aliases": [
@@ -1307,6 +1373,29 @@
     ]
   },
   {
+    "address": "0x0041C962",
+    "canonical_address": "0x004688BE",
+    "end": "0x0041CA39",
+    "evidence": "ordered",
+    "name": "crt_scan_inc",
+    "size": 215,
+    "aliases": [
+      "__inc",
+      "fgetc"
+    ]
+  },
+  {
+    "address": "0x0041CA39",
+    "canonical_address": "0x004636C8",
+    "end": "0x0041CA58",
+    "evidence": "exact",
+    "name": "seh_prolog",
+    "size": 31,
+    "aliases": [
+      "__EH_prolog"
+    ]
+  },
+  {
     "address": "0x0041CA58",
     "canonical_address": "0x0046312E",
     "end": "0x0041CA7A",
@@ -1315,17 +1404,6 @@
     "size": 34,
     "aliases": [
       "__amsg_exit"
-    ]
-  },
-  {
-    "address": "0x0041CA7D",
-    "canonical_address": "0x004636C8",
-    "end": "0x0041CAA1",
-    "evidence": "ordered",
-    "name": "seh_prolog",
-    "size": 36,
-    "aliases": [
-      "__EH_prolog"
     ]
   },
   {
@@ -1387,7 +1465,7 @@
     "address": "0x0041CC18",
     "canonical_address": "0x0046385E",
     "end": "0x0041CD1C",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_cftoe",
     "size": 260,
     "aliases": [
@@ -1398,7 +1476,7 @@
     "address": "0x0041CD1C",
     "canonical_address": "0x00463981",
     "end": "0x0041CDFA",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_cftof",
     "size": 222,
     "aliases": [
@@ -1409,7 +1487,7 @@
     "address": "0x0041CDFA",
     "canonical_address": "0x00463A7D",
     "end": "0x0041CE95",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_cftog",
     "size": 155,
     "aliases": [
@@ -1420,7 +1498,7 @@
     "address": "0x0041CE95",
     "canonical_address": "0x004638BF",
     "end": "0x0041CEBC",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_fp_format_exp",
     "size": 39
   },
@@ -1428,7 +1506,7 @@
     "address": "0x0041CEBC",
     "canonical_address": "0x004639D6",
     "end": "0x0041CEDF",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_fp_format_fixed",
     "size": 35
   },
@@ -1455,7 +1533,7 @@
     "address": "0x0041CF55",
     "canonical_address": "0x00464268",
     "end": "0x0041D06A",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_flsbuf",
     "size": 277
   },
@@ -1550,9 +1628,17 @@
     "address": "0x0041D954",
     "canonical_address": "0x004625C1",
     "end": "0x0041D9BD",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_free_base",
     "size": 105
+  },
+  {
+    "address": "0x0041DC5D",
+    "canonical_address": "0x00463DA5",
+    "end": "0x0041DC8A",
+    "evidence": "exact",
+    "name": "crt_lock_file",
+    "size": 45
   },
   {
     "address": "0x0041DC8A",
@@ -1577,7 +1663,7 @@
     "address": "0x0041DCAC",
     "canonical_address": "0x00462EFF",
     "end": "0x0041DD45",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_doexit",
     "size": 153
   },
@@ -1615,7 +1701,7 @@
     "address": "0x0041DDFE",
     "canonical_address": "0x00462A17",
     "end": "0x0041DE72",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_heap_alloc",
     "size": 116,
     "aliases": [
@@ -1626,7 +1712,7 @@
     "address": "0x0041DE72",
     "canonical_address": "0x00465F48",
     "end": "0x0041DEC3",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_terminate",
     "size": 81
   },
@@ -1642,7 +1728,7 @@
     "address": "0x0041DF1E",
     "canonical_address": "0x00463E49",
     "end": "0x0041DFD1",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_close",
     "size": 179
   },
@@ -1669,7 +1755,7 @@
     "address": "0x0041E109",
     "canonical_address": "0x00463F54",
     "end": "0x0041E1E2",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_filbuf",
     "size": 217
   },
@@ -1677,7 +1763,7 @@
     "address": "0x0041E1E2",
     "canonical_address": "0x00465FFF",
     "end": "0x0041E3D8",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_read",
     "size": 502
   },
@@ -1699,20 +1785,17 @@
   },
   {
     "address": "0x0041E885",
-    "canonical_address": "0x00464BE7",
+    "canonical_address": "0x004641A0",
     "end": "0x0041E8FD",
-    "evidence": "ordered",
-    "name": "crt_fltin2",
-    "size": 120,
-    "aliases": [
-      "__fltin2"
-    ]
+    "evidence": "exact",
+    "name": "crt_getstream",
+    "size": 120
   },
   {
     "address": "0x0041E8FD",
     "canonical_address": "0x00465652",
     "end": "0x0041EAAA",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_write",
     "size": 429
   },
@@ -1897,7 +1980,7 @@
     "address": "0x0041F3BC",
     "canonical_address": "0x004663F9",
     "end": "0x0041F456",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_lseek",
     "size": 154
   },
@@ -1924,7 +2007,7 @@
     "address": "0x0041F6A5",
     "canonical_address": "0x00463C74",
     "end": "0x0041F71A",
-    "evidence": "exact",
+    "evidence": "called",
     "name": "crt_isctype",
     "size": 117
   },
@@ -1940,7 +2023,7 @@
     "address": "0x0041F7B5",
     "canonical_address": "0x00469696",
     "end": "0x0041F95C",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_find_handler",
     "size": 423,
     "aliases": [
@@ -1951,7 +2034,7 @@
     "address": "0x0041F95C",
     "canonical_address": "0x00469849",
     "end": "0x0041FA04",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "?FindHandlerForForeignException@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@HH1@Z",
     "size": 168
   },
@@ -2003,10 +2086,10 @@
   {
     "address": "0x0041FB90",
     "canonical_address": "0x00469A69",
-    "end": "0x0041FC56",
-    "evidence": "referenced",
+    "end": "0x0041FC36",
+    "evidence": "exact",
     "name": "crt_call_catch_block",
-    "size": 198,
+    "size": 166,
     "aliases": [
       "?CallCatchBlock@@YAPAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PBU_s_FuncInfo@@PAXHK@Z"
     ]
@@ -2355,7 +2438,7 @@
     "address": "0x00421067",
     "canonical_address": "0x0046A415",
     "end": "0x004210CB",
-    "evidence": "called",
+    "evidence": "exact",
     "name": "crt_fp_to_string",
     "size": 100
   },
@@ -2390,6 +2473,17 @@
     "size": 351
   },
   {
+    "address": "0x00421350",
+    "canonical_address": "0x0046A8C5",
+    "end": "0x00421530",
+    "evidence": "ordered",
+    "name": "crt_fptrap",
+    "size": 480,
+    "aliases": [
+      "__fptrap"
+    ]
+  },
+  {
     "address": "0x00421530",
     "canonical_address": "0x00464C70",
     "end": "0x004215AB",
@@ -2411,10 +2505,10 @@
   {
     "address": "0x004215F8",
     "canonical_address": "0x0046B08C",
-    "end": "0x004216D7",
-    "evidence": "called",
+    "end": "0x0042161E",
+    "evidence": "exact",
     "name": "crt_isatty",
-    "size": 223,
+    "size": 38,
     "aliases": [
       "__isatty"
     ]
@@ -2423,7 +2517,7 @@
     "address": "0x004216D7",
     "canonical_address": "0x0046B10E",
     "end": "0x0042173F",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "crt_wctomb_lk",
     "size": 104,
     "aliases": [
@@ -2604,31 +2698,58 @@
   },
   {
     "address": "0x00422A6B",
-    "canonical_address": "0x0046C862",
+    "canonical_address": "0x00465D20",
     "end": "0x00422AD2",
-    "evidence": "called",
-    "name": "crt_is_in_dst",
-    "size": 103,
+    "evidence": "exact",
+    "name": "crt_dosmaperr",
+    "size": 103
+  },
+  {
+    "address": "0x00422AD2",
+    "canonical_address": "0x0046AA17",
+    "end": "0x00422B67",
+    "evidence": "exact",
+    "name": "crt_fcloseall",
+    "size": 149,
     "aliases": [
-      "__isindst"
+      "__fcloseall"
+    ]
+  },
+  {
+    "address": "0x00422B67",
+    "canonical_address": "0x0046ABBB",
+    "end": "0x00422BDE",
+    "evidence": "exact",
+    "name": "crt_set_osfhnd",
+    "size": 119,
+    "aliases": [
+      "__set_osfhnd"
+    ]
+  },
+  {
+    "address": "0x00422BDE",
+    "canonical_address": "0x0046AC37",
+    "end": "0x00422C58",
+    "evidence": "exact",
+    "name": "crt_free_osfhnd",
+    "size": 122,
+    "aliases": [
+      "__free_osfhnd"
     ]
   },
   {
     "address": "0x00422C58",
-    "canonical_address": "0x0046C5AD",
+    "canonical_address": "0x0046ACB6",
     "end": "0x00422C95",
-    "evidence": "called",
-    "name": "crt_tzset",
-    "size": 61,
-    "aliases": [
-      "___tzset"
-    ]
+    "evidence": "exact",
+    "name": "crt_get_osfhandle",
+    "size": 61
   },
   {
     "address": "0x00422CEC",
     "canonical_address": "0x0046ADBD",
     "end": "0x00422FA5",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_sopen",
     "size": 697
   },
@@ -2899,7 +3020,7 @@
     "address": "0x004242F6",
     "canonical_address": "0x0046D1EF",
     "end": "0x0042448F",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_setmbcp",
     "size": 409
   },
@@ -2972,6 +3093,17 @@
     "size": 520
   },
   {
+    "address": "0x00424900",
+    "canonical_address": "0x00460E8E",
+    "end": "0x00424905",
+    "evidence": "exact",
+    "name": "crt_fclose_lk",
+    "size": 5,
+    "aliases": [
+      "__fclose_lk"
+    ]
+  },
+  {
     "address": "0x00424910",
     "canonical_address": "0x00460EF0",
     "end": "0x004249CC",
@@ -2979,7 +3111,8 @@
     "name": "crt_strchr",
     "size": 188,
     "aliases": [
-      "_strchr"
+      "_strchr",
+      "strchr"
     ]
   },
   {
@@ -3095,7 +3228,7 @@
     "address": "0x0042562C",
     "canonical_address": "0x0046DD16",
     "end": "0x00425759",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "crt_chsize",
     "size": 301
   },
@@ -3125,7 +3258,7 @@
     "address": "0x00425DAE",
     "canonical_address": "0x0046953D",
     "end": "0x00425DD4",
-    "evidence": "referenced",
+    "evidence": "exact",
     "name": "crt_set_errno",
     "size": 38,
     "aliases": [
@@ -3213,7 +3346,7 @@
     "address": "0x00426109",
     "canonical_address": "0x0046E0D7",
     "end": "0x0042617F",
-    "evidence": "ordered",
+    "evidence": "exact",
     "name": "crt_getenv_lk",
     "size": 118,
     "aliases": [
@@ -3226,7 +3359,10 @@
     "end": "0x00426186",
     "evidence": "exact",
     "name": "ov_pcm_seek",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "HlinkNavigateString"
+    ]
   },
   {
     "address": "0x00426186",

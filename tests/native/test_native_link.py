@@ -466,7 +466,10 @@ def test_cluster_preserves_an_existing_encoding_residual(tmp_path: Path) -> None
     _validate_cluster_match(baseline, replace(baseline, body_byte_exact=True), translation_unit="probe-island")
 
 
-RECOVERED_LAYOUTS = sorted((matchlib.REPO_ROOT / "decomp").glob("*/*/layout.json"))
+RECOVERED_LAYOUTS = sorted(
+    path for path in (matchlib.REPO_ROOT / "decomp").glob("*/*/layout.json")
+    if json.loads(path.read_text(encoding="utf-8"))["kind"] == "crimson-recovered-source-layout"
+)
 
 
 @pytest.mark.parametrize(

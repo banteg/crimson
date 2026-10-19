@@ -36,25 +36,6 @@ extern "C" float angle_approach(float *angle, float target, float rate)
     if (amount > 1.0f) {
         amount = 1.0f;
     }
-#if CL_BUILD < 10900
-    if (direct > wrapped) {
-        if (target < *angle) {
-            *angle += frame_dt * amount * 5.0f;
-            return amount;
-        } else {
-            *angle -= frame_dt * amount * 5.0f;
-            return amount;
-        }
-    } else {
-        if (target > *angle) {
-            *angle += frame_dt * amount * 5.0f;
-            return amount;
-        } else {
-            *angle -= frame_dt * amount * 5.0f;
-            return amount;
-        }
-    }
-#else
     if (direct > wrapped) {
         *angle = target < *angle
             ? frame_dt * amount * rate + *angle
@@ -66,5 +47,4 @@ extern "C" float angle_approach(float *angle, float target, float rate)
             : *angle - frame_dt * amount * rate;
         return amount;
     }
-#endif
 }

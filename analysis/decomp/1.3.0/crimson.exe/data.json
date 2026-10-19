@@ -256,6 +256,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00427ad0",
+      "name": "console_empty_arg",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x0042b638",
       "name": "__FPmtterm",
       "program": "1.3.0/crimson.exe"
@@ -586,6 +591,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00433928",
+      "name": "unused_aim64_prefix_color",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00433f18",
       "name": "unused_fx_queue_random_prefix_vec2",
       "program": "1.3.0/crimson.exe"
@@ -628,6 +638,11 @@
     {
       "address": "0x00447754",
       "name": "grim_interface_ptr",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447758",
+      "name": "run_elapsed_ms",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -1036,5 +1051,5 @@
       "program": "1.3.0/crimson.exe"
     }
   ],
-  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees. Reviewed native identities also retain their pinned instruction references in recovered.json."
+  "notes": "Globals named by exact 1.4.0 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees. Reviewed native identities also retain their pinned instruction references in recovered.json."
 }

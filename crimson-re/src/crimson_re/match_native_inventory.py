@@ -24,7 +24,7 @@ def _digest(data: bytes) -> str:
 
 
 def _library_owners(image: match_builds.BuildImage) -> dict[int, str]:
-    source = match_builds.load_registry().canonical(image)
+    source = match_builds.load_registry().identity(image)
     scope = matchlib._load_matching_scope_definition("port")
     provenance = json.loads((matchlib.REPO_ROOT / "analysis/library_provenance.json").read_text())
     regions = [

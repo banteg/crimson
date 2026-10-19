@@ -20,21 +20,11 @@ struct fx_color_t {
 
 extern "C" void fx_queue_global_init(void)
 {
-#if CL_BUILD < 10400
-    int remaining = 32;
-#elif CL_BUILD < 10900
-    int remaining = 64;
-#else
     int remaining = 128;
-#endif
     fx_queue_entry_t *entry = fx_queue;
 
     do {
-#if CL_BUILD < 10900
-        entry->effect_id = -1;
-#else
         entry->effect_id = 0;
-#endif
         entry->rotation = 0.0f;
         *(fx_vec2_t *)&entry->position = fx_vec2_t(0.0f, 0.0f);
         entry->height = 0.0f;

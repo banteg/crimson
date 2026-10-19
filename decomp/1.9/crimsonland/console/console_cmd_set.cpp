@@ -9,17 +9,9 @@ extern "C" void console_cmd_set(void)
 
     console_cvar_entry_t *entry = console_log_queue.console_register_cvar(
         console_cmd_name[1], console_cmd_name[2]);
-#if CL_BUILD < 10900
-    console_printf(
-        &console_log_queue,
-        "'%s' set to '%s'",
-        entry->name,
-        entry->string_value);
-#else
     console_printf(
         &console_log_queue,
         "'%s' set to '%s'\n",
         entry->name,
         entry->string_value);
-#endif
 }

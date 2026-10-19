@@ -12,46 +12,6 @@ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
     return distance;
 }
 
-#if CL_BUILD < 10900
-extern "C" int creature_find_in_radius(
-    const vec2f_t *pos,
-    float radius)
-{
-    int index = 0;
-
-#if CL_BUILD < 10300
-    while (index < 0x80) {
-        if (creature_pool[index].active
-            && vec2_distance(
-                   &creature_pool[index].position,
-                   pos)
-                    - radius
-                < creature_pool[index].size * 0.14285715f
-            && creature_pool[index].death_timer > 5.0f) {
-            goto found;
-        }
-        ++index;
-    }
-#else
-    while (index < 0x200) {
-        if (creature_pool[index].active
-            && vec2_distance(
-                   &creature_pool[index].position,
-                   pos)
-                    - radius
-                < creature_pool[index].size * 0.14285715f + 2.0f
-            && creature_pool[index].death_timer > 5.0f) {
-            goto found;
-        }
-        ++index;
-    }
-#endif
-    return -1;
-
-found:
-    return index;
-}
-#else
 extern "C" int creature_find_in_radius(
     const vec2f_t *pos,
     float radius,
@@ -76,4 +36,3 @@ extern "C" int creature_find_in_radius(
 found:
     return index;
 }
-#endif

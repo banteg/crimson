@@ -14,7 +14,11 @@ decomp/
   builds.json      every known build: package, image pins, compilers, family
   1.9/             family 1.9: builds 1.9.1, 1.9.8, 1.9.9, 1.9.92, 1.9.93 (canonical)
     crimsonland/   crimsonland.exe, one directory per inferred translation unit
-    grim/          grim.dll, one directory per inferred subsystem
+    grim/          grim.dll, one directory per inferred subsystem; also builds
+                   every freeware grim.dll
+  1.4/             family 1.4: freeware builds 1.0.2, 1.3.0, 1.4.0 (reference)
+    crimson/       crimson.exe bodies that differ from 1.9, one directory per
+                   1.4.0 object
 ```
 
 Each image tree has a `layout.json` that records how strong the evidence for
@@ -35,9 +39,9 @@ rebuilds the trees from them and checks every image against its pin. 1.9.93 is t
 
 | Build | Linked | Game exe | Game C++ objects | Family |
 |---|---|---|---|---|
-| 1.0.2 | 2002-05 | `crimson.exe` | 1 (C2 8966) | unassigned |
-| 1.3.0 | 2002-07 | `crimson.exe` | 2 (C2 8966) | unassigned |
-| 1.4.0 | 2002-09 | `crimson.exe` | 7 (C2 8966) | unassigned |
+| 1.0.2 | 2002-05 | `crimson.exe` | 1 (C2 8966) | 1.4 |
+| 1.3.0 | 2002-07 | `crimson.exe` | 2 (C2 8966) | 1.4 |
+| 1.4.0 | 2002-09 | `crimson.exe` | 7 (C2 8966) | 1.4 |
 | 1.9.1 | 2003-06 | `crimsonland.exe` | 23 (C2 8966) | 1.9 |
 | 1.9.8 | 2003-08 | `crimsonland.exe` | 24 (C2 9044) | 1.9 |
 | 1.9.9 | 2008-10 | `crimsonland.RWG`, unwrapped | 36 (C2 9782, with runtime) | 1.9 |
@@ -48,9 +52,8 @@ The game grew from one C++ object into two dozen source files, and it never
 had a C object: every build before 1.9.9 takes its runtime from an older
 compiler build, and none links a C object from the game's compiler. The
 freeware builds share their compiler with 1.9.1 but little of its code (see
-[other builds](#other-builds)), so they belong to no family yet. Their image-level `mapping_source` entries
-bootstrap comparisons from 1.9.93 without claiming that the whole source tree
-or its layouts describe freeware.
+[other builds](#other-builds)), so they form their own family, 1.4 (see
+[freeware](#freeware-setup)).
 
 Two build quirks are recorded in `builds.json`:
 
@@ -155,6 +158,24 @@ uv run crimson match scratch tools/match/scratches/console_clear_log --build 1.4
 uv run crimson match probe tools/match/scratches/console_clear_log --build 1.4.0 --source /tmp/candidate.cpp
 ```
 
+### The 1.4 family
+
+The three freeware builds are family 1.4, with 1.4.0 as its reference: they
+share a compiler and keep `crimson.obj`'s function order, while 1.4.0 and 1.9.93
+share under a quarter of their game functions. Names still come from 1.9.93, so
+1.4.0's `crimson.exe` maps from 1.9.93, and 1.0.2's and 1.3.0's map from 1.4.0
+(`mapping_source`) and then fill in from 1.9.93 whatever 1.4.0 does not name.
+Every freeware `grim.dll` maps from 1.9.93's and compiles `decomp/1.9/grim`
+with `CL_BUILD` guards: its game functions are a strict subset of 1.9.93's.
+
+A function whose freeware body differs from 1.9's has its own file under
+`decomp/1.4/crimson/<object>/`, named by the scratch's `SOURCE_1.4`; the 1.9
+file keeps only the 1.9 builds' code. `CL_BUILD` guards there separate 1.0.2,
+1.3.0 and 1.4.0. [crimson/layout.json](1.4/crimson/layout.json) places each
+file in the 1.4.0 object whose address range holds its function: `console`,
+`grim_loader`, and `crimson` (the main game object, grouped by subsystem).
+Shared headers still carry the freeware structure layouts behind guards.
+
 The [freeware setup record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/FREEWARE-SETUP-2026-09-30.md)
 holds the initial compiler baseline.
 
@@ -182,9 +203,7 @@ uv run crimson match report --refresh -j 8
 ```
 
 The exporter preserves reviewed ownership boundaries and checks their byte pins.
-Stage any new inventory inputs before refreshing reports. The shared source
-remains under `decomp/1.9`; a freeware source family/layout still needs separate
-native grouping evidence.
+Stage any new inventory inputs before refreshing reports.
 
 ## Scope
 

@@ -441,6 +441,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x004208c8",
+      "name": "sprite_effect_pool",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00420a28",
       "name": "__pow10neg",
       "program": "1.0.2/crimson.exe"
@@ -466,6 +471,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x004220e0",
+      "name": "highscore_record_shots_fired",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00422128",
       "name": "projectile_pool",
       "program": "1.0.2/crimson.exe"
@@ -476,6 +486,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x004244e0",
+      "name": "unused_aim64_prefix_color",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00424ac0",
       "name": "unused_fx_queue_random_prefix_vec2",
       "program": "1.0.2/crimson.exe"
@@ -483,6 +498,16 @@
     {
       "address": "0x00424bc8",
       "name": "perk_meta_table",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428674",
+      "name": "config_blob",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004287b4",
+      "name": "run_elapsed_ms",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -876,5 +901,5 @@
       "program": "1.0.2/crimson.exe"
     }
   ],
-  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees. Reviewed native identities also retain their pinned instruction references in recovered.json."
+  "notes": "Globals named by exact 1.4.0 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees. Reviewed native identities also retain their pinned instruction references in recovered.json."
 }

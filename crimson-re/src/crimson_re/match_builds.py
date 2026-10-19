@@ -19,6 +19,7 @@ import math
 import re
 import struct
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from functools import cache
 from itertools import pairwise
@@ -59,13 +60,16 @@ class BuildImage:
     source_image: str | None = None
     native_inventory: Path | None = None
 
+    family: str | None = None
+
     @property
     def source_build(self) -> str | None:
-        return self.mapping_build or self.canonical_build
+        return self.mapping_build or (None if self.is_canonical else self.canonical_build)
 
     @property
     def is_canonical(self) -> bool:
-        return self.build == self.canonical_build
+        # A family's reference build that maps from another build is not an identity root.
+        return self.build == self.canonical_build and self.mapping_build is None
 
     @property
     def map_dir(self) -> Path:
@@ -103,6 +107,8 @@ class BuildImage:
                 image=self.name,
                 compiler=compiler,
                 cflags=cflags,
+                # A family with its own tree compiles its own body for the function.
+                source=dict(config.family_sources).get(self.family or "", config.source),
                 # END_VA is a canonical address; this build's map carries its own extent.
                 end_va=None,
                 # An alias to a global this build's maps do not name leaves the reference unresolved.
@@ -162,7 +168,7 @@ class Registry:
         if name in images:
             return images[name]
         # A canonical scratch names its donor image; retain the target's actual filename.
-        aliases = [image for image in images.values() if image.source_image == name]
+        aliases = [image for image in images.values() if not image.is_canonical and self.identity(image).name == name]
         if len(aliases) == 1:
             return aliases[0]
         raise ValueError(f"build {build} has no unambiguous image {name!r}")
@@ -171,6 +177,12 @@ class Registry:
         if image.source_build is None:
             raise ValueError(f"build {image.build} has no mapping source")
         return self.builds[image.source_build][image.source_image or image.name]
+
+    def identity(self, image: BuildImage) -> BuildImage:
+        """The curated image whose functions name this one, through any chain of mapping sources."""
+        while not image.is_canonical:
+            image = self.canonical(image)
+        return image
 
 
 def load_registry(path: Path = REGISTRY_PATH) -> Registry:
@@ -186,6 +198,7 @@ def load_registry(path: Path = REGISTRY_PATH) -> Registry:
                 image["name"]: BuildImage(
                     build=row["id"],
                     canonical_build=canonical.get(row["family"]),
+                    family=row["family"],
                     cl_build=row["cl_build"],
                     name=image["name"],
                     path=matchlib.REPO_ROOT / row["tree"] / image["name"],
@@ -396,9 +409,39 @@ def map_build_image(image: BuildImage, canonical: BuildImage) -> dict[str, Any]:
         for row in (recovery or {}).get("functions", ())
     }
     payload = _Mapper(image, canonical, pinned).run()
+    if not canonical.is_canonical:
+        # A chained source names only what it maps itself; the identity root still finds the rest.
+        _merge_root_map(payload, _Mapper(image, load_registry().identity(canonical), pinned).run())
     if recovery is not None:
         apply_recovered_map(image, canonical, payload, recovery)
     return payload
+
+
+def _merge_root_map(payload: dict[str, Any], root: dict[str, Any]) -> None:
+    """Add the identity root's placements of functions and globals the chained source does not name."""
+    rows = payload["functions"]
+    names = {row["name"] for row in rows}
+    spans = sorted((matchlib.parse_int(row["address"]), matchlib.parse_int(row["end"])) for row in rows)
+    starts = [start for start, _ in spans]
+
+    def free(start: int, end: int) -> bool:
+        index = bisect.bisect_right(starts, start)
+        return all(not (left < end and start < right) for left, right in spans[max(index - 1, 0) : index + 1])
+
+    for row in root["functions"]:
+        start, end = matchlib.parse_int(row["address"]), matchlib.parse_int(row["end"])
+        if row["name"] not in names and free(start, end):
+            rows.append(row)
+            names.add(row["name"])
+            bisect.insort(spans, (start, end))
+            starts = [left for left, _ in spans]
+    rows.sort(key=lambda row: matchlib.parse_int(row["address"]))
+    entries = payload["data"]["entries"]
+    data_names = {row["name"] for row in entries}
+    entries.extend(row for row in root["data"]["entries"] if row["name"] not in data_names)
+    entries.sort(key=lambda row: (matchlib.parse_int(row["address"]), row["name"]))
+    payload["summary"].update({evidence: sum(row["evidence"] == evidence for row in rows) for evidence in EVIDENCE})
+    payload["summary"]["data"] = len(entries)
 
 
 def apply_recovered_map(
@@ -434,7 +477,8 @@ def apply_recovered_map(
         row = dict(rows.get(function.name, {}))
         row.update(
             address=f"0x{start:08X}", end=f"0x{end:08X}", size=end - start,
-            canonical_address=f"0x{function.address:08X}", name=function.name, evidence="recovered",
+            canonical_address=f"0x{_identity_addresses(canonical)(function.address):08X}", name=function.name,
+            evidence="recovered",
         )
         rows[function.name] = row
     entries = {row["name"]: row for row in payload["data"]["entries"]}
@@ -481,11 +525,20 @@ def apply_recovered_map(
     payload["summary"]["data"] = len(entries)
 
 
-def _grim_slot_offsets(build: str) -> dict[int, int]:
-    """Pair interface slots by the actual DLL pointers and their mapped functions."""
+def _identity_addresses(canonical: BuildImage) -> Callable[[int], int]:
+    """Translate the mapping source's addresses to its identity root's, through the source's own map."""
+    if canonical.is_canonical:
+        return lambda address: address
+    rows = json.loads(canonical.target.functions_path.read_text(encoding="utf-8"))
+    identities = {matchlib.parse_int(row["address"]): matchlib.parse_int(row["canonical_address"]) for row in rows}
+    return identities.__getitem__
+
+
+def _grim_slot_offsets(source_build: str, build: str) -> dict[int, int]:
+    """Pair the source build's interface slots with this build's by the DLL pointers' identities."""
     registry = load_registry()
     engine = registry.image(build, "grim.dll")
-    canonical = registry.canonical(engine)
+    source = registry.image(source_build, "grim.dll")
 
     def slots(image: BuildImage) -> dict[int, int]:
         catalog = _reference_catalog(image)
@@ -512,7 +565,7 @@ def _grim_slot_offsets(build: str) -> dict[int, int]:
     target_slots = slots(engine)
     return {
         offset: destinations[0]
-        for offset, identity in slots(canonical).items()
+        for offset, identity in slots(source).items()
         if len(destinations := [slot for slot, target in target_slots.items() if target == identity]) == 1
     }
 
@@ -604,7 +657,7 @@ class _Mapper:
         self.functions = sorted(manifest.functions, key=lambda function: function.address)
         self.by_address = {function.address: function for function in self.functions}
         by_name = {function.name: function.address for function in self.functions}
-        self.pinned = {by_name[name]: extent for name, extent in (pinned or {}).items()}
+        self.pinned = {by_name[name]: extent for name, extent in (pinned or {}).items() if name in by_name}
         self.starts = [function.address for function in self.functions]
         self.bodies = {
             function.address: _body(self.source, function.address, function.size) for function in self.functions
@@ -646,7 +699,11 @@ class _Mapper:
         self.call_votes: dict[int, set[int]] = defaultdict(set)
         self.data_votes: dict[str, set[int]] = defaultdict(set)
         self.paired_calls: set[int] = set()
-        self.grim_slots = _grim_slot_offsets(image.build) if (image.source_image or image.name) == "crimsonland.exe" else {}
+        self.grim_slots = (
+            _grim_slot_offsets(canonical.build, image.build)
+            if load_registry().identity(canonical).name == "crimsonland.exe" else {}
+        )
+        self.identity_address = _identity_addresses(canonical)
         self.grim_address = next(
             (address for address, names in self.data_rows if "grim_interface_ptr" in names), None,
         )
@@ -995,7 +1052,7 @@ class _Mapper:
             end = target + self.bodies[address].size if evidence in {"exact", "interface"} else self.changed_end(target)
             rows[target] = {
                 "address": f"0x{target:08X}",
-                "canonical_address": f"0x{address:08X}",
+                "canonical_address": f"0x{self.identity_address(address):08X}",
                 "end": f"0x{end:08X}",
                 "evidence": evidence,
                 "name": function.name,

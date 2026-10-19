@@ -1,0 +1,248 @@
+{
+  "schema": 1,
+  "kind": "crimson-family-source-layout",
+  "family": "1.4",
+  "build": "1.4.0",
+  "image": "crimson.exe",
+  "root": "decomp/1.4/crimson",
+  "modules": [
+    {
+      "name": "console",
+      "object": "console.obj",
+      "evidence": "1.4.0's second C++ object; its two $E1 initializers open the range.",
+      "ranges": [
+        [
+          "0x4018c0",
+          "0x402fa4"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.4/crimson/console/console_cmd_exec.cpp",
+          "configs": [
+            "tools/match/scratches/console_cmd_exec"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/console/console_cmd_set.cpp",
+          "configs": [
+            "tools/match/scratches/console_cmd_set"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/console/console_exec_line.cpp",
+          "configs": [
+            "tools/match/scratches/console_exec_line"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/console/console_flush_log.cpp",
+          "configs": [
+            "tools/match/scratches/console_flush_log"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/console/console_init.cpp",
+          "configs": [
+            "tools/match/scratches/console_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/console/console_printf.cpp",
+          "configs": [
+            "tools/match/scratches/console_printf"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/console/console_register_cvar.cpp",
+          "configs": [
+            "tools/match/scratches/console_register_cvar"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/console/console_set_open.cpp",
+          "configs": [
+            "tools/match/scratches/console_set_open"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "grim_loader",
+      "object": "grim_loader.obj",
+      "evidence": "The Grim2D DLL loader between the console and HTTP objects.",
+      "ranges": [
+        [
+          "0x402fb0",
+          "0x402ffb"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.4/crimson/grim_loader/grim_load_interface.cpp",
+          "configs": [
+            "tools/match/scratches/grim_load_interface"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "crimson",
+      "object": "crimson.obj",
+      "evidence": "The main game object: its $E1/$E2 initializers, then the game code after level.obj; one object in every freeware build, so its sources are grouped by subsystem only.",
+      "ranges": [
+        [
+          "0x403230",
+          "0x403fc0"
+        ],
+        [
+          "0x404ec0",
+          "0x4216c2"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.4/crimson/crimson/console/console_cmd_open_url.cpp",
+          "configs": [
+            "tools/match/scratches/console_cmd_open_url"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/console/console_cmd_snd_freq_adjustment.cpp",
+          "configs": [
+            "tools/match/scratches/console_cmd_snd_freq_adjustment"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/console/console_cmd_tell_time_survived.cpp",
+          "configs": [
+            "tools/match/scratches/console_cmd_tell_time_survived"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_find_in_radius.cpp",
+          "configs": [
+            "tools/match/scratches/creature_find_in_radius"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_pool_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/creature_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_reset_all.cpp",
+          "configs": [
+            "tools/match/scratches/creature_reset_all"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creatures_none_active.cpp",
+          "configs": [
+            "tools/match/scratches/creatures_none_active"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/plaguebearer_spread_infection.cpp",
+          "configs": [
+            "tools/match/scratches/plaguebearer_spread_infection"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_queue_add.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_add"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_queue_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_spawn_particle.cpp",
+          "configs": [
+            "tools/match/scratches/fx_spawn_particle"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_spawn_secondary_projectile.cpp",
+          "configs": [
+            "tools/match/scratches/fx_spawn_secondary_projectile"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_spawn_sprite.cpp",
+          "configs": [
+            "tools/match/scratches/fx_spawn_sprite"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/particle_pool_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/particle_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/perks/perk_meta.cpp",
+          "configs": [
+            "tools/match/scratches/perk_meta_global_construct_and_register",
+            "tools/match/scratches/perk_meta_register_atexit",
+            "tools/match/scratches/perk_meta_table_destroy",
+            "tools/match/scratches/perk_meta_table_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/perks/perk_meta_entry_init.cpp",
+          "configs": [
+            "tools/match/scratches/perk_meta_entry_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/perks/wrap_text_to_width_alloc.cpp",
+          "configs": [
+            "tools/match/scratches/wrap_text_to_width_alloc"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/player/angle_approach.cpp",
+          "configs": [
+            "tools/match/scratches/angle_approach"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/player/player_heading_approach_target.cpp",
+          "configs": [
+            "tools/match/scratches/player_heading_approach_target"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/player/player_state_table_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/player_state_table_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/projectiles/projectile_pool_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/projectile_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/projectiles/projectile_spawn.cpp",
+          "configs": [
+            "tools/match/scratches/projectile_spawn"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/projectiles/secondary_projectile_pool_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/secondary_projectile_pool_global_init"
+          ]
+        }
+      ]
+    }
+  ]
+}

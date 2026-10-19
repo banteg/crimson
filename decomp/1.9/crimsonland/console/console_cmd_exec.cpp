@@ -33,9 +33,6 @@ extern "C" void console_cmd_exec(void)
             *newline = 0;
         }
         console_exec_line_buf[511] = 0;
-#if CL_BUILD < 10900
-        console_log_queue.exec_line(console_exec_line_buf);
-#else
         if (console_exec_line_buf[0] != '/'
             && console_exec_line_buf[1] != '/'
             && console_exec_line_buf[0] != '\n'
@@ -43,7 +40,6 @@ extern "C" void console_cmd_exec(void)
             && console_exec_line_buf[0] != '#') {
             console_log_queue.exec_line(console_exec_line_buf);
         }
-#endif
     }
     crt_fclose(fp);
 }

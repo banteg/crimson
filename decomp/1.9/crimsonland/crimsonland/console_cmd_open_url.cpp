@@ -29,14 +29,8 @@ extern "C" void console_cmd_open_url(void)
         return;
     }
 
-#if CL_BUILD < 10900
-    console_printf(
-        &console_log_queue,
-        "Launching web browser..\n");
-#else
     console_printf(
         &console_log_queue,
         "Launching web browser (%s)..\n",
         console_cmd_arg_get(1));
-#endif
 }

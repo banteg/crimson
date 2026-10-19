@@ -5,11 +5,9 @@ extern "C" double crt_atof_l(char *text);
 
 inline console_cvar_entry_t::console_cvar_entry_t(char *entry_name)
 {
-#if CL_BUILD >= 10900
     mod_id = 0;
     mod_string_value = 0;
     mod_float_value = 0;
-#endif
     name = strdup_malloc(entry_name);
     next = 0;
     unknown_08 = 0;
@@ -29,9 +27,7 @@ console_cvar_entry_t *console_queue_t::console_register_cvar(
         }
         entry->string_value = 0;
         entry->string_value = strdup_malloc(value_text);
-#if CL_BUILD >= 10900
         entry->value = (float)crt_atof_l(value_text);
-#endif
         return entry;
     }
 
@@ -42,16 +38,12 @@ console_cvar_entry_t *console_queue_t::console_register_cvar(
         }
         tail->next = new console_cvar_entry_t(name);
         tail->next->string_value = strdup_malloc(value_text);
-#if CL_BUILD >= 10900
         tail->next->value = (float)crt_atof_l(value_text);
-#endif
         return tail->next;
     }
 
     cvar_head = new console_cvar_entry_t(name);
     cvar_head->string_value = strdup_malloc(value_text);
-#if CL_BUILD >= 10900
     cvar_head->value = (float)crt_atof_l(value_text);
-#endif
     return cvar_head;
 }
