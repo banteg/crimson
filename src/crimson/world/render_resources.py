@@ -11,6 +11,7 @@ from grim.terrain_render import GroundRenderer
 from grim.terrain_stamps import TerrainLayers
 
 from ..creatures.anim import creature_corpse_frame_for_type
+from ..render.rtx.hdr import HdrRenderer
 from ..render.terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..sim.state_types import TERRAIN_SIZE
 from ..sim.terrain_fx import TerrainFxBatch
@@ -22,6 +23,7 @@ class RenderResources(msgspec.Struct):
 
     ground: GroundRenderer | None = None
     fx_textures: FxQueueTextures | None = None
+    hdr: HdrRenderer = msgspec.field(default_factory=HdrRenderer)
     _pending_terrain_fx_batches: list[TerrainFxBatch] = msgspec.field(default_factory=list)
     _resources: RuntimeResources | None = None
 
@@ -105,6 +107,7 @@ class RenderResources(msgspec.Struct):
         if self.ground is not None:
             self.ground.close()
         self.ground = None
+        self.hdr.close()
 
         self._resources = None
         self.fx_textures = None

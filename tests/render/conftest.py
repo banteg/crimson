@@ -44,9 +44,13 @@ def _can_init_raylib() -> bool:
 
 
 @pytest.fixture(scope="module")
-def raylib_context() -> Iterator[None]:
+def raylib_display() -> None:
     if not _can_init_raylib():
         pytest.skip("raylib requires a display accessible to this process (check sandbox access)")
+
+
+@pytest.fixture(scope="module")
+def raylib_context(raylib_display) -> Iterator[None]:
     rl.set_config_flags(int(rl.ConfigFlags.FLAG_WINDOW_HIDDEN | rl.ConfigFlags.FLAG_WINDOW_HIGHDPI))
     rl.init_window(128, 96, "render-tests")
     try:

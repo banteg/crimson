@@ -385,6 +385,7 @@ def cmd_replay_play(
     width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
+    rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -428,7 +429,14 @@ def cmd_replay_play(
         day=datetime.fromtimestamp(replay_path.stat().st_mtime, tz=UTC).astimezone().date(),
     )
     view = ReplayViewer(
-        ctx, replay=replay, config=boot.config, console=boot.console, card=card, audio=audio, leave_label="Close",
+        ctx,
+        replay=replay,
+        config=boot.config,
+        console=boot.console,
+        card=card,
+        audio=audio,
+        leave_label="Close",
+        rtx=bool(rtx),
     )
     title = f"Replay — {replay_path.name}"
 
@@ -439,7 +447,11 @@ def cmd_replay_play(
             height=boot.height,
             title=title,
             fps=fps,
-            hooks=RunViewHooks(should_close=view.should_close, consume_screenshot_request=view.consume_screenshot_request),
+            hooks=RunViewHooks(
+                wants_edr=(lambda: True) if rtx else None,
+                should_close=view.should_close,
+                consume_screenshot_request=view.consume_screenshot_request,
+            ),
         )
     finally:
         shutdown_audio(audio)

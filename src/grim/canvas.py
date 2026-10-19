@@ -5,6 +5,7 @@ from collections.abc import Callable
 import msgspec
 
 from .blend import opaque_blend
+from .edr import HDR_PIXEL_FORMAT, edr_active, edr_available, load_float_render_texture
 from .raylib_api import rl, rl_rectangle, rl_vector2
 from .texture_mode import texture_mode
 
@@ -117,7 +118,9 @@ class Canvas:
 
     def draw(self, draw_frame: Callable[[], None]) -> None:
         box = _letterbox
-        if box is None:
+        # A reserved float window must still composite classic through RGBA8,
+        # preserving its per-draw saturation and quantization before presentation.
+        if box is None and (edr_active() or not edr_available()):
             draw_frame()
             return
         dst = frame_rect()
@@ -126,7 +129,7 @@ class Canvas:
         target = self._ensure_target(round(dst.width * dpi.x), round(dst.height * dpi.y))
         target_w = target.texture.width
         target_h = target.texture.height
-        with texture_mode(target, scale_x=target_w / box.width, scale_y=target_h / box.height):
+        with texture_mode(target, scale_x=target_w / self.width, scale_y=target_h / self.height):
             rl.clear_background(rl.BLACK)
             draw_frame()
         rl.clear_background(rl.BLACK)
@@ -141,13 +144,23 @@ class Canvas:
             )
 
     def _ensure_target(self, target_w: int, target_h: int) -> rl.RenderTexture:
+        use_float = edr_active()
+        expected_format = int(HDR_PIXEL_FORMAT) if use_float else int(rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
         target = self._target
-        if target is not None and (target.texture.width, target.texture.height) == (target_w, target_h):
+        if (
+            target is not None
+            and (target.texture.width, target.texture.height) == (target_w, target_h)
+            and int(target.texture.format) == expected_format
+        ):
             return target
-        if target is not None:
-            rl.unload_render_texture(target)
-        target = rl.load_render_texture(target_w, target_h)
-        rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+        previous = target
+        if use_float:
+            target = load_float_render_texture(target_w, target_h)
+        else:
+            target = rl.load_render_texture(target_w, target_h)
+            rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+        if previous is not None:
+            rl.unload_render_texture(previous)
         self._target = target
         return target
 

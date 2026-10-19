@@ -18,7 +18,7 @@ from ..debug import set_debug_enabled
 from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_code_name, player_gamepad_index
 from ..leaderboard import Leaderboard
 from ..persistence.save_status import ensure_game_status
-from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
+from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
 from ..runtime_boot import boot_runtime
 from ..screens.quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .loop_view import GameLoopView
@@ -250,6 +250,7 @@ def run_game(config: GameConfig) -> None:
             window_state=window_state,
             exit_key=rl.KeyboardKey.KEY_NULL,
             hooks=RunViewHooks(
+                wants_edr=lambda: state.rtx_mode is RtxRenderMode.RTX,
                 should_close=view.should_close,
                 consume_screenshot_request=view.consume_screenshot_request,
                 fullscreen_changed=lambda fullscreen: _save_windowed(cfg, windowed=not fullscreen),

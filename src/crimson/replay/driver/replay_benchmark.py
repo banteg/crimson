@@ -15,6 +15,7 @@ from tqdm import tqdm
 from grim.audio import AudioState, shutdown_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
+from grim.edr import activate_macos_edr_window, macos_float_backbuffer, reset_edr_window
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -106,7 +107,6 @@ def run_replay_render_benchmark(
     show_progress: bool = False,
 ) -> ReplayBenchmarkResult:
     from grim.assets import load_runtime_resources, unload_runtime_resources
-    from grim.raylib_api import rl
 
     from ...runtime_boot import boot_runtime
 
@@ -132,7 +132,10 @@ def run_replay_render_benchmark(
     resources = None
     window_open = False
     try:
-        rl.init_window(int(render_width), int(render_height), f"Replay Benchmark - {Path(replay_path).name}")
+        reset_edr_window()
+        with macos_float_backbuffer(enabled=rtx):
+            rl.init_window(int(render_width), int(render_height), f"Replay Benchmark - {Path(replay_path).name}")
+        activate_macos_edr_window(rtx)
         window_open = True
     except RuntimeError as exc:
         raise ReplayBenchmarkError(f"render benchmark could not initialize window: {exc}") from exc
@@ -177,6 +180,7 @@ def run_replay_render_benchmark(
             shutdown_audio(audio)
         unload_runtime_resources(resources)
         if window_open:
+            reset_edr_window()
             rl.close_window()
 
     return _benchmark_result(tick_total, measured)
@@ -352,6 +356,7 @@ def _run_render_once(
         step_dt = REPLAY_TICK_DT
         while not bool(mode.finished):
             mode.update(float(step_dt))
+            activate_macos_edr_window(rtx)
             rl.begin_drawing()
             try:
                 mode.draw()

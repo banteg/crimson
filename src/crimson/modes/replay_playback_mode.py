@@ -17,7 +17,7 @@ from grim.view import ViewContext
 
 from ..camera import CameraUpdate
 from ..game_modes import GameMode
-from ..render.rtx.mode import mode_from_rtx_flag
+from ..render.rtx.mode import RtxRenderMode, mode_from_rtx_flag
 from ..replay import (
     REPLAY_TICK_DT,
     REPLAY_TICK_RATE,
@@ -111,6 +111,11 @@ class ReplayPlaybackMode:
         self._stopped_tick: int | None = None
         # At the end: whether the run reached the result it recorded.
         self.played_as_recorded: bool | None = None
+
+    def set_rtx_mode(self, mode: RtxRenderMode) -> None:
+        self._rtx = mode is RtxRenderMode.RTX
+        if self._runtime is not None:
+            self._runtime.rtx_mode = mode
 
     @property
     def tick_index(self) -> int:

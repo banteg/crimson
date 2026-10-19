@@ -219,3 +219,31 @@ def test_raylib_sees_the_screenshot_key_only_after_the_frame_ends(mocker) -> Non
         (rl.KeyboardKey.KEY_F12, press),
         (rl.KeyboardKey.KEY_F12, release),
     ]
+
+
+def test_run_view_updates_edr_after_mode_changes_and_resets_on_close(mocker) -> None:
+    from contextlib import nullcontext
+
+    fake_rl = _FakeRl()
+    view = _ViewSpy()
+    mocker.patch.object(grim_app, "rl", fake_rl)
+    mocker.patch.object(grim_app, "Canvas", _CanvasStub)
+    mocker.patch.object(grim_app, "WindowSink")
+    mocker.patch.object(grim_app, "RaylibDrawScope")
+    mocker.patch.object(grim_app, "RenderPipeline", _PipelineSpy)
+    mocker.patch.object(fake_rl, "window_should_close", side_effect=[False, False, True])
+    reserve = mocker.patch.object(grim_app, "macos_float_backbuffer", return_value=nullcontext())
+    activate = mocker.patch.object(grim_app, "activate_macos_edr_window")
+    reset = mocker.patch.object(grim_app, "reset_edr_window")
+    requested = False
+
+    def update(_dt: float) -> None:
+        nonlocal requested
+        requested = not requested
+
+    mocker.patch.object(view, "update", side_effect=update)
+    grim_app.run_view(view, hooks=grim_app.RunViewHooks(wants_edr=lambda: requested))
+    reserve.assert_called_once_with(enabled=True)
+    # Initial classic, then RTX and classic again; the new mode applies to that frame.
+    assert activate.call_args_list == [mocker.call(False), mocker.call(True), mocker.call(False)]
+    assert reset.call_count == 2

@@ -33,6 +33,7 @@ from ..input_codes import PadCode, pad_nav_pressed
 from ..modes.replay_playback_mode import ReplayPlaybackMode
 from ..perks.ids import perk_display_name
 from ..persistence.highscores import HighScoreRecord
+from ..render.rtx.mode import RtxRenderMode
 from ..replay.driver.prepare import Mark, MarkKind, Pick, ReplayPreparation
 from ..replay.types import Replay
 from ..sim.run_result import RunOutcome
@@ -129,6 +130,7 @@ class ReplayViewer:
         audio: AudioState | None = None,
         leave_label: str = "High scores",
         background: bool = True,
+        rtx: bool = False,
     ) -> None:
         self._replay = replay
         self._config = config
@@ -136,7 +138,7 @@ class ReplayViewer:
         self._card = card
         self._background = background
         self.player = ReplayPlaybackMode(
-            ctx, replay=replay, config=config, console=console, audio=audio, plays_music=False,
+            ctx, replay=replay, config=config, console=console, audio=audio, rtx=rtx, plays_music=False,
         )
         self.preparation: ReplayPreparation | None = None
         self._history: TerrainHistory | None = None
@@ -181,6 +183,9 @@ class ReplayViewer:
             self._history.close()
             self._history = None
         self.player.close()
+
+    def set_rtx_mode(self, mode: RtxRenderMode) -> None:
+        self.player.set_rtx_mode(mode)
 
     def take_action(self) -> ScreenAction | None:
         if not self.close_requested:

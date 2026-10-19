@@ -158,7 +158,12 @@ class WorldRuntime:
 
     def draw(self, *, entity_alpha: float = 1.0) -> None:
         self.render_resources.process_ground_pending()
-        draw_world(self._render_ctx(), entity_alpha=entity_alpha)
+        render_ctx = self._render_ctx()
+        if self.rtx_mode is RtxRenderMode.RTX:
+            with self.render_resources.hdr.scope(out_size=render_ctx.view.out_size):
+                draw_world(render_ctx, entity_alpha=entity_alpha)
+        else:
+            draw_world(render_ctx, entity_alpha=entity_alpha)
 
     def draw_aim_indicators(self, *, show_aim: bool, aim_enhancement_fade: float, entity_alpha: float = 1.0) -> None:
         ui_render_aim_indicators(

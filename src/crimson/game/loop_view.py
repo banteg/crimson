@@ -7,8 +7,9 @@ from grim import canvas
 from grim.assets import load_runtime_resources, unload_runtime_resources
 from grim.audio import init_audio_state, resume_audio, shutdown_audio, suspend_audio
 from grim.blend import opaque_blend
+from grim.edr import HDR_PIXEL_FORMAT, edr_active, load_float_render_texture
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
-from grim.texture_mode import texture_mode
+from grim.texture_mode import current_target_size, texture_mode
 
 from ..debug import debug_enabled
 from ..game_states import GameStateId
@@ -51,12 +52,15 @@ in vec4 fragColor;
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 uniform float u_gamma_gain;
+uniform float u_edr_enabled;
 
 out vec4 finalColor;
 
 void main() {
     vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
-    texel.rgb = clamp(texel.rgb * max(u_gamma_gain, 0.0), 0.0, 1.0);
+    // Preserve HDR highlights, while ordinary scene/UI pixels retain SDR gamma behavior.
+    vec3 ceiling = u_edr_enabled > 0.5 ? max(texel.rgb, vec3(1.0)) : vec3(1.0);
+    texel.rgb = clamp(texel.rgb * max(u_gamma_gain, 0.0), vec3(0.0), ceiling);
     finalColor = texel;
 }
 """
@@ -79,6 +83,7 @@ class GameLoopView:
         self._focus_screen: object | None = None
         self._gamma_shader: rl.Shader | None = None
         self._gamma_gain_loc = -1
+        self._gamma_edr_loc = -1
         self._gamma_target: rl.RenderTexture | None = None
 
     def open(self) -> None:
@@ -217,6 +222,10 @@ class GameLoopView:
         gameplay = self.state.screens.gameplay
         if gameplay is not None:
             gameplay.set_rtx_mode(self.state.rtx_mode)
+        active = self.state.screens.active
+        set_rtx_mode = getattr(active, "set_rtx_mode", None)
+        if callable(set_rtx_mode):
+            set_rtx_mode(self.state.rtx_mode)
 
     def consume_screenshot_request(self) -> bool:
         requested = self._screenshot_requested
@@ -242,13 +251,24 @@ class GameLoopView:
                 raise
             self._gamma_shader = shader
             self._gamma_gain_loc = gain_loc
+            self._gamma_edr_loc = rl.get_shader_location(shader, "u_edr_enabled")
+        use_float = edr_active()
+        expected_format = int(HDR_PIXEL_FORMAT) if use_float else int(rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
         target = self._gamma_target
-        if target is not None and target.texture.width == width and target.texture.height == height:
+        if (
+            target is not None
+            and target.texture.width == width
+            and target.texture.height == height
+            and int(target.texture.format) == expected_format
+        ):
             return
-        candidate = rl.load_render_texture(width, height)
-        if candidate.id <= 0 or not rl.rl_framebuffer_complete(candidate.id):
-            rl.unload_render_texture(candidate)
-            raise RuntimeError("gamma render target is incomplete")
+        if use_float:
+            candidate = load_float_render_texture(width, height)
+        else:
+            candidate = rl.load_render_texture(width, height)
+            if candidate.id <= 0 or not rl.rl_framebuffer_complete(candidate.id):
+                rl.unload_render_texture(candidate)
+                raise RuntimeError("gamma render target is incomplete")
         if target is not None:
             rl.unload_render_texture(target)
         self._gamma_target = candidate
@@ -261,6 +281,7 @@ class GameLoopView:
             rl.unload_shader(self._gamma_shader)
             self._gamma_shader = None
         self._gamma_gain_loc = -1
+        self._gamma_edr_loc = -1
 
     def _draw_with_gamma(self) -> None:
         gamma_gain = max(0.0, float(self.state.gamma_ramp))
@@ -269,7 +290,7 @@ class GameLoopView:
             return
 
         screen_w, screen_h = canvas.width(), canvas.height()
-        render_w, render_h = rl.get_render_width(), rl.get_render_height()
+        render_w, render_h = current_target_size()
         if min(screen_w, screen_h, render_w, render_h) <= 0:
             return
         self._ensure_gamma_resources(render_w, render_h)
@@ -282,6 +303,10 @@ class GameLoopView:
             rl.clear_background(rl.BLACK)
             self._draw_scene_layers()
         _set_gamma_ramp_gain(shader, self._gamma_gain_loc, gamma_gain)
+        rl.set_shader_value(
+            shader, self._gamma_edr_loc, rl.ffi.new("float *", float(edr_active())),
+            rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
+        )
         rl.begin_shader_mode(shader)
         try:
             with opaque_blend():

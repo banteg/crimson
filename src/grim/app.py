@@ -11,6 +11,7 @@ from PIL import Image
 from grim.raylib_api import rl, rl_rectangle
 
 from .canvas import Canvas, frame_rect
+from .edr import activate_macos_edr_window, macos_float_backbuffer, reset_edr_window
 from .render_pipeline import RaylibDrawScope, RenderPipeline, WindowSink
 from .view import View
 
@@ -33,6 +34,8 @@ def _ignore_screenshot(_path: Path) -> None:
 
 
 class RunViewHooks(msgspec.Struct, frozen=True):
+    # None keeps ordinary/debug windows on their original SDR pixel format.
+    wants_edr: Callable[[], bool] | None = None
     should_close: Callable[[], bool] = _not_requested
     consume_screenshot_request: Callable[[], bool] = _not_requested
     fullscreen_changed: Callable[[bool], None] = _ignore_window_change
@@ -111,18 +114,22 @@ def run_view(
     screenshot_dir: Path = SCREENSHOT_DIR,
 ) -> None:
     """Run a Raylib window with a pluggable debug view drawn on a `width` x `height` canvas."""
+    run_hooks = hooks if hooks is not None else RunViewHooks()
+    reset_edr_window()
     rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
-    rl.init_window(width, height, title)
+    with macos_float_backbuffer(enabled=run_hooks.wants_edr is not None):
+        rl.init_window(width, height, title)
     if window_state:
         # Borderless windowed only applies to an open window, so it can't go through set_config_flags.
         rl.set_window_state(window_state)
+    if run_hooks.wants_edr is not None:
+        activate_macos_edr_window(run_hooks.wants_edr())
     canvas = Canvas(width, height)
     canvas.fit()
     screenshot_key = _HeldKey(SCREENSHOT_KEY)
     if exit_key is not None:
         rl.set_exit_key(exit_key)
     rl.set_target_fps(fps)
-    run_hooks = hooks if hooks is not None else RunViewHooks()
     render_pipeline = RenderPipeline(
         sink=WindowSink(),
         draw_scope=RaylibDrawScope(raylib=rl),
@@ -146,6 +153,8 @@ def run_view(
             # Skip the update that would also see this frame's Enter press.
             if not toggle_fullscreen and focused and was_focused:
                 view.update(dt)
+            if run_hooks.wants_edr is not None:
+                activate_macos_edr_window(run_hooks.wants_edr())
             take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
             if run_hooks.consume_screenshot_request():
                 take_screenshot = True
@@ -177,5 +186,6 @@ def run_view(
         finally:
             canvas.close()
             render_pipeline.close()
+            reset_edr_window()
             rl.close_window()
 

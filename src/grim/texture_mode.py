@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from contextlib import contextmanager
 
+from .edr import HDR_PIXEL_FORMAT, edr_headroom
 from .raylib_api import rl
 
 # raylib has no render target stack: EndTextureMode always returns to the window.
@@ -16,6 +17,19 @@ def _bind(target: rl.RenderTexture, scale_x: float, scale_y: float) -> None:
     # BeginTextureMode resets the modelview; scale logical coordinates into target pixels.
     rl.rl_scalef(scale_x, scale_y, 1.0)
 
+
+def current_target_size() -> tuple[int, int]:
+    if _stack:
+        target = _stack[-1][0]
+        return int(target.texture.width), int(target.texture.height)
+    return int(rl.get_render_width()), int(rl.get_render_height())
+
+
+def current_target_edr_headroom() -> float:
+    # Every enclosing compositing pass must preserve extended values.
+    if any(int(target.texture.format) != int(HDR_PIXEL_FORMAT) for target, _, _ in _stack):
+        return 1.0
+    return edr_headroom()
 
 @contextmanager
 def texture_mode(target: rl.RenderTexture, *, scale_x: float = 1.0, scale_y: float = 1.0) -> Iterator[None]:

@@ -11,6 +11,7 @@ from ..modes.rush_mode import RushMode
 from ..modes.survival_mode import SurvivalMode
 from ..modes.tutorial_mode import TutorialMode
 from ..modes.typo_mode import TypoShooterMode
+from ..render.rtx.mode import RtxRenderMode
 from ..screens.actions import Route, ScreenAction, ShowQuestOutcome, ShowScores, StartRun, WatchReplay
 from ..screens.boot import BootView
 from ..screens.high_scores_view import HighScoresView
@@ -59,6 +60,7 @@ class ScreenNavigator:
                     console=state.console,
                     card=WatchCard(record, rank),
                     audio=state.audio,
+                    rtx=state.rtx_mode is RtxRenderMode.RTX,
                 )
                 screens.push(ScreenEntry(viewer))
             case ShowQuestOutcome(outcome=outcome):
