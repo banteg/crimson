@@ -54,6 +54,7 @@ class DeterministicPresentationPlan(msgspec.Struct, frozen=True):
     play_quest_completion_music: bool = False
     reflex_boost_timer: float = 0.0
     sfx_dt: float = 0.0
+    dt_sim: float = 0.0
     camera: CameraUpdate | None = None
 
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+import msgspec
+
 from .presentation_step import DeterministicPresentationPlan
 
 if TYPE_CHECKING:
@@ -17,7 +19,9 @@ def apply_presentation_plans(
     if not plans:
         return
 
+    elapsed_s = runtime.presentation.elapsed_ms * 0.001 - sum(plan.dt_sim for plan in plans)
     for plan in plans:
+        elapsed_s += plan.dt_sim
         # Capture the viewport before this tick's post-step camera update.
         # Camera updates carry tick-local focus/shake, so batched application
         # never reads positions from a later simulation world.
@@ -30,7 +34,9 @@ def apply_presentation_plans(
         if plan.camera is not None:
             runtime.update_camera(plan.camera)
         if not plan.terrain_fx.is_empty():
-            runtime.render_resources.consume_terrain_fx_batch(plan.terrain_fx)
+            runtime.render_resources.consume_terrain_fx_batch(
+                msgspec.structs.replace(plan.terrain_fx, elapsed_s=elapsed_s),
+            )
         runtime.audio_bridge.apply_post_plan(
             plan=plan,
             camera=view.camera,

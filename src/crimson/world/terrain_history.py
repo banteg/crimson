@@ -15,6 +15,7 @@ from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.terrain_render import GroundRenderer
 from grim.texture_mode import texture_mode
 
+from ..render.rtx.materials import MaterialGroundRenderer
 from ..replay.driver.prepare import ReplayPreparation
 from ..sim.terrain_generate import TerrainSetup
 from .render_resources import RenderResources
@@ -120,5 +121,8 @@ class TerrainHistory:
         shot = next((shot for shot in reversed(self.shots) if shot.bakes <= bakes), None)
         if ground is None or ground.render_target is None or shot is None:
             return
+        if isinstance(ground, MaterialGroundRenderer):
+            ground.reset_materials()
+            ground.material_batches = list(preparation.bakes.read(0, shot.bakes))
         _copy(ground.render_target, shot.target)
         self._bake(ground, preparation, shot.bakes, bakes)

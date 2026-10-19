@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.render.rtx.materials import MaterialGroundRenderer
 from crimson.render.terrain_fx import FxQueueTextures
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.prepare import ReplayPreparation
@@ -15,7 +16,6 @@ from crimson.world.render_resources import RenderResources
 from crimson.world.terrain_history import TerrainHistory
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import record_replay
 
@@ -38,7 +38,7 @@ def resources(mocker) -> RenderResources:
     mocker.patch.object(rl, "set_texture_filter")
     mocker.patch.object(rl, "set_texture_wrap")
     mocker.patch.object(rl, "get_window_scale_dpi", return_value=rl.Vector2(1.0, 1.0))
-    ground = GroundRenderer(texture=rl.Texture(), overlay=rl.Texture(), overlay_detail=rl.Texture(), width=64, height=64)
+    ground = MaterialGroundRenderer(texture=rl.Texture(), overlay=rl.Texture(), overlay_detail=rl.Texture(), width=64, height=64)
     ground.render_target = _target(ids)
     ground._render_target_ready = True
     return RenderResources(
@@ -73,3 +73,13 @@ def test_copies_of_the_terrain_spread_out_past_the_cap_and_a_rebuild_bakes_the_l
 
     assert [call.args[1] for call in bake.call_args_list] == list(prep.bakes.read(shot.bakes, key.bakes))
     assert all(call.args[2] is resources.ground for call in bake.call_args_list)
+
+    ground = resources.ground
+    assert isinstance(ground, MaterialGroundRenderer)
+    assert ground.material_batches == list(prep.bakes.read(0, key.bakes))
+    assert ground.surface is None and ground.coverage is None  # seeking in classic stays GPU-lazy
+    assert all(batch.elapsed_s > 0 for batch in ground.material_batches)
+    earlier = prep.keys[len(prep.keys) // 2]
+    history.rebuild(prep, earlier.bakes)
+    assert ground.material_batches == list(prep.bakes.read(0, earlier.bakes))
+    assert max(batch.elapsed_s for batch in ground.material_batches) <= earlier.clock.elapsed_ms * .001

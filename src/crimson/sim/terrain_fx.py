@@ -17,6 +17,8 @@ class TerrainFxBatch(msgspec.Struct, frozen=True):
 
     decals: tuple[FxQueueEntry, ...] = ()
     corpses: tuple[FxQueueRotatedEntry, ...] = ()
+    # Render-only deposit clock, filled at presentation/prepare time (never part of simulation state).
+    elapsed_s: float = 0.0
 
     def is_empty(self) -> bool:
         return not self.decals and not self.corpses

@@ -156,7 +156,7 @@ class _PreparingPass:
         self._focus = self._players_focus() or self._focus
         plan = payload.presentation
         if not plan.terrain_fx.is_empty():
-            self._bakes.append(plan.terrain_fx)
+            self._bakes.append(msgspec.structs.replace(plan.terrain_fx, elapsed_s=self._clock.elapsed_ms * 0.001))
         level = self._driver.world.players[0].level
         for pick in payload.perk_picks:
             self._marks.append(Mark(played, MarkKind.PICK, self._pick_total + len(self._picks)))

@@ -19,8 +19,10 @@ _edr_active = False
 _headroom = 1.0
 
 
-def load_float_render_texture(width: int, height: int) -> rl.RenderTexture:
-    texture_id = int(rl.rl_load_texture(ffi.NULL, int(width), int(height), HDR_PIXEL_FORMAT, 1))
+def load_float_render_texture(
+    width: int, height: int, *, pixel_format: int = HDR_PIXEL_FORMAT,
+) -> rl.RenderTexture:
+    texture_id = int(rl.rl_load_texture(ffi.NULL, int(width), int(height), pixel_format, 1))
     if texture_id <= 0:
         raise RuntimeError("float render target texture allocation failed")
     framebuffer = int(rl.rl_load_framebuffer())
@@ -37,8 +39,8 @@ def load_float_render_texture(width: int, height: int) -> rl.RenderTexture:
     if not rl.rl_framebuffer_complete(framebuffer):
         rl.rl_unload_framebuffer(framebuffer)
         rl.rl_unload_texture(texture_id)
-        raise RuntimeError("half-float framebuffer is incomplete")
-    texture = rl.Texture(texture_id, int(width), int(height), 1, HDR_PIXEL_FORMAT)
+        raise RuntimeError("float framebuffer is incomplete")
+    texture = rl.Texture(texture_id, int(width), int(height), 1, pixel_format)
     rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
     return rl.RenderTexture(framebuffer, texture, rl.Texture(0, 0, 0, 0, 0))

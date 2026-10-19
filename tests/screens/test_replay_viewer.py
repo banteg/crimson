@@ -203,10 +203,19 @@ def test_a_seek_forward_bakes_every_tick_it_passes(open_viewer: OpenViewer, mock
     viewer.seek(59)
 
     stepped = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False)
-    fx_by_tick = [stepped.step_tick(tick).payload.presentation.terrain_fx for tick in range(59)]
+    clock = PresentationClock()
+    fx_by_tick = []
+    for tick in range(59):
+        payload = stepped.step_tick(tick).payload
+        clock.advance(payload.dt_sim)
+        fx_by_tick.append(msgspec.structs.replace(payload.presentation.terrain_fx, elapsed_s=clock.elapsed_ms * .001))
     expected = [fx for fx in fx_by_tick[50:] if not fx.is_empty()]
     assert expected
-    assert [call.args[1] for call in consume.call_args_list] == expected
+    actual = [call.args[1] for call in consume.call_args_list]
+    assert [msgspec.structs.replace(batch, elapsed_s=0) for batch in actual] == [
+        msgspec.structs.replace(batch, elapsed_s=0) for batch in expected
+    ]
+    assert [batch.elapsed_s for batch in actual] == pytest.approx([batch.elapsed_s for batch in expected])
 
 
 def test_the_end_says_whether_the_run_played_as_recorded_and_watch_again_starts_over(open_viewer: OpenViewer, mocker) -> None:

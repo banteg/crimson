@@ -16,6 +16,8 @@ from ...effects_atlas import EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...ui.cursor import draw_aim_cursor
+from ..rtx.materials import MaterialGroundRenderer
+from ..rtx.mode import RtxRenderMode
 from . import viewport
 from .atlas import effect_cell_src_inset
 from .bonuses import draw_bonus_hover_labels, draw_bonus_pickups
@@ -102,6 +104,12 @@ def draw_background(
     ground = render_ctx.frame.ground
     assert ground is not None, "ground renderer must be initialized before live world draw"
     rl.clear_background(clear_color)
+    if isinstance(ground, MaterialGroundRenderer) and render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
+        with ground.material_scope(render_ctx.frame):
+            ground.draw_view(
+                camera, screen_w=screen_size.x, screen_h=screen_size.y, out_w=out_size.x, out_h=out_size.y,
+            )
+        return
     ground.draw_view(
         camera,
         screen_w=screen_size.x,

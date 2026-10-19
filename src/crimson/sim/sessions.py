@@ -280,6 +280,7 @@ class DeterministicSession(msgspec.Struct):
             play_quest_completion_music=quest_spawn is not None and quest_spawn.play_completion_music,
             reflex_boost_timer=float(state.bonuses.reflex_boost),
             sfx_dt=timing.dt_audio,
+            dt_sim=timing.dt_sim,
             camera=camera_update_for_players(self.world.players, state.camera_shake_offset),
         )
         # `quest_mode_update` saves the status on each frame of its `timer > 2500` branch.

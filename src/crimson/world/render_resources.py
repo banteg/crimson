@@ -12,6 +12,7 @@ from grim.terrain_stamps import TerrainLayers
 
 from ..creatures.anim import creature_corpse_frame_for_type
 from ..render.rtx.hdr import HdrRenderer
+from ..render.rtx.materials import MaterialGroundRenderer
 from ..render.terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..sim.state_types import TERRAIN_SIZE
 from ..sim.terrain_fx import TerrainFxBatch
@@ -52,7 +53,7 @@ class RenderResources(msgspec.Struct):
     ) -> None:
         self.clear_pending_terrain_fx()
         if self.ground is None:
-            self.ground = GroundRenderer(
+            self.ground = MaterialGroundRenderer(
                 texture=base,
                 overlay=overlay,
                 overlay_detail=detail,
@@ -120,6 +121,8 @@ class RenderResources(msgspec.Struct):
         """Bakes a tick's decals and corpses into `ground`: the run's, or another copy of its terrain."""
         if self.fx_textures is None or batch.is_empty():
             return
+        if isinstance(ground, MaterialGroundRenderer):
+            ground.material_batches.append(batch)
         bake_terrain_fx_batch(
             ground,
             batch=batch,
