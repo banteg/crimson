@@ -449,7 +449,7 @@
     "source_sha256": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "status": "passed"
   },
-  "audit_digest": "76a90d7611d8c42ab5cefcde47ef97206d56f5f6158710d526037ddff050b15b",
+  "audit_digest": "430cd2d8ce54699242821ea2a23b5cc4b9b6648019a62e99528f24f8eb80cfad",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -127947,7 +127947,7 @@
         {
           "path": "decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp",
           "repository_relative": true,
-          "sha256": "6d335ff4d53ce8816ab93e6a3f7e8c231c9a74ed611dc18498421fa28700c7d9"
+          "sha256": "bcce0dd163c7d0284088256ed04e5becc7998d4e779b4d467386b9faf3637293"
         },
         {
           "path": "tools/match/scratches/ui_list_widget_update/scratch.conf",
@@ -127965,19 +127965,9 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
-          "path": "third_party/headers/crimsonland_types.h",
-          "repository_relative": true,
-          "sha256": "6aaecb9b5567a94a38050ae51ebc5346e791580c270956b06fc7a7969a177aa1"
-        },
-        {
           "path": "tools/match/include/cl_build.h",
           "repository_relative": true,
           "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
-        },
-        {
-          "path": "tools/match/include/crimsonland_ui.h",
-          "repository_relative": true,
-          "sha256": "a803083591d339fbf41b4d7535fc7eed96347f736742a30c23c1810488fed439"
         },
         {
           "path": "tools/match/include/grim2d_cpp.h",
@@ -127998,10 +127988,10 @@
           "canonical_config_sha256": "f2afdd16b722398a987a4ff3b5af171da8f95dd65e62ac25f9f44b166bd72e57",
           "canonical_scratch": "tools/match/scratches/ui_list_widget_update",
           "canonical_source": "decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp",
-          "canonical_source_sha256": "6d335ff4d53ce8816ab93e6a3f7e8c231c9a74ed611dc18498421fa28700c7d9",
+          "canonical_source_sha256": "bcce0dd163c7d0284088256ed04e5becc7998d4e779b4d467386b9faf3637293",
           "effective_end": 4453708,
           "end": 4453708,
-          "experiment_epoch": "1c00194b87db95df79a60485a7dd8c62a5d0b20c91766ef7bd053cc7a87487cf",
+          "experiment_epoch": "4b8e69dc9c324fc7a226e3af4952a95a3f378bd31428ad775bbeec3c350da903",
           "function": "ui_list_widget_update",
           "match": {
             "body_byte_exact": true,
@@ -128042,7 +128032,7 @@
       "object_sha256": "6cb5385ba287270309039644f0b6eeca0db13825196faee6557eaaf99e875bd1",
       "scratch": "tools/match/scratches/ui_list_widget_update",
       "source": "decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp",
-      "source_sha256": "6d335ff4d53ce8816ab93e6a3f7e8c231c9a74ed611dc18498421fa28700c7d9",
+      "source_sha256": "bcce0dd163c7d0284088256ed04e5becc7998d4e779b4d467386b9faf3637293",
       "target_size": 1420,
       "translation_unit": {
         "kind": "isolated",

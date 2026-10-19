@@ -127,7 +127,7 @@ respectively; they were restored. The retained vector-offset form is exact:
 **100.00%**, **403/403 instructions**, prefix **403**, and references
 `50/0/0`.
 
-## 1.9.8 row offset (2026-10-19, open)
+## 1.9.8 row offset investigation (2026-10-19)
 
 1.9.8 native (`0x0043e670`, 1405 bytes, 395 instructions) keeps the
 strength-reduced `row_index * 16` IV (`lr 68`) only in memory (the dead `xy`
@@ -147,3 +147,47 @@ against threshold `k = 7`. Forcing a pressure split in `block 40, 41, 44, or
 instructions, `1405/1405` bytes). No C++ spelling or TU prefix tested under C2
 9044 raises the loop's non-call tuple pressure from 6 to 7 without also
 emitting a 7th register (`ebx`) in the loop body.
+
+## 1.9.8 exact closure: hit-test return declaration (2026-10-19)
+
+The residual above came from the caller's declaration of
+`ui_mouse_inside_rect_with_padding`, not a different row loop. The shared
+`crimsonland_ui.h` declared an `int` result that this widget explicitly narrowed
+to `unsigned char`. Declaring the result as `bool` instead makes the unmodified
+C2 9044 allocate the row offset in memory and reproduces the entire native body.
+The redundant call-site casts are removed. The non-padded hit test uses the
+same Boolean caller declaration as the neighboring button, menu-item, slider,
+and text-input sources.
+
+This is a recovered caller contract: the native callers consume AL and the
+helpers return 0 or 1 in EAX. Their independently matched `int` definitions
+remain unchanged. Changing those definitions to a byte return would change
+native instructions. `bool`, `char`, and `unsigned char` declarations all
+reproduce this caller, so the bytes establish the return width, not the exact
+original C++ type spelling. `bool` follows the existing widget sources. No
+build guard, compiler modification, volatile access, or forced spill is needed.
+
+Controls:
+
+- Changing only the non-padded test's declaration leaves the 1.9.8 residual.
+- Changing only the padded test's declaration to any of the three byte types
+  closes it; declaring both tests as Boolean and removing the casts stays exact.
+- Loop/index spellings, vector operator forms, focus-result types, and tested
+  preceding-function contexts did not close the residual.
+- Changing the helper definitions themselves to a byte return loses their
+  instruction identity, so those changes were rejected.
+
+Final source validation:
+
+| Build | Instructions / full prefix | Encoded body | References |
+| --- | --- | --- | --- |
+| 1.9.8 | 395/395 | 1405/1405 bytes | 49/0/0 |
+| 1.9.93 | 403/403 | 1420/1420 bytes | 50/0/0 |
+| 1.9.9 | 403/403 | exact | 50/0/0 |
+| 1.9.92 | 403/403 | exact | 50/0/0 |
+
+All four have `exact=true` and `body_byte_exact=true`. The 1.9.1 partial
+result remains unchanged at 94.2928%, with prefix 21 and 50 clean references.
+The freeware maps do not place this function. This closes the last unmatched
+function in 1.9.8's mapped Game & Engine inventory; it does not claim recovery
+of unmapped executable bytes, data, libraries, or a byte-identical linked image.

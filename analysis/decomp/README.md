@@ -156,6 +156,15 @@ source-built storage at its original address; a source grouping alone earns none
 
 ## 1.9.8
 
+1.9.8's mapped **Game & Engine** inventory reaches 100% normalized matching:
+all 850 functions (351,622 code bytes) have identical normalized instructions
+and clean positional references. The final function, `ui_list_widget_update`,
+also matches its encoded body. Four previously matched functions still differ
+by one SIB byte each: the two config-default initializers, `config_sync_from_grim`,
+and `highscore_sync_worker`. Their interchangeable base/index encodings leave
+encoded-body credit at 347,034/351,622 bytes (98.70%). Unmapped executable bytes,
+libraries, data and linking retain the separate accounting described below.
+
 1.9.8 is measured with the same credit rules, from the same sources, compiled as
 1.9.8: the build's compiler profile (the Processor Pack, C2 9044) and
 `/DCL_BUILD=10908`. Its `grim.dll` is an incremental build, so each of its
