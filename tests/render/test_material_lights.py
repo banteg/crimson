@@ -45,3 +45,17 @@ def test_muzzle_radiance_fades_linearly() -> None:
     player.muzzle_flash_alpha = .5
     faded = collect_material_lights(snapshot, view_center=Vec2())[0]
     assert faded.rgb == pytest.approx(tuple(channel * .5 for channel in bright.rgb))
+
+
+@pytest.mark.parametrize("kind, height", [(ProjectileTemplateId.ION_RIFLE, 40.), (ProjectileTemplateId.PLASMA_RIFLE, 18.)])
+def test_projectile_emitter_height_preserves_beam_reflection_offset(kind, height) -> None:
+    snapshot = frame()
+    projectile = snapshot.state.projectiles.entries[0]
+    projectile.active = True
+    projectile.type_id = kind
+    projectile.life_timer = .4
+    projectile.origin = Vec2(10, 20)
+    projectile.pos = Vec2(110, 20)
+    light = collect_material_lights(snapshot, view_center=Vec2(60, 20))[0]
+    assert light.height == height
+    assert light.length == (100 if kind == ProjectileTemplateId.ION_RIFLE else 0)

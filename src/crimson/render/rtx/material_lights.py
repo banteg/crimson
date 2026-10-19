@@ -95,6 +95,7 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                 proj.pos - direction * (span * 0.5),
                 radius,
                 (rgb[0] * gain, rgb[1] * gain, rgb[2] * gain),
+                height=40.0 if beam is not None else 18.0,
                 direction=direction,
                 length=span,
             ),

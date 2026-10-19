@@ -15,7 +15,7 @@ uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass
 
 uniform vec2 u_ground_size;
 uniform float u_time_s; // Seconds relative to the wetness epoch
-uniform int u_debug; // 0 shaded, 1 substrate normal, 2 liquid normal, 3 freshness, 4 amount
+uniform int u_debug; // 0 shaded, 1 substrate normal, 2 liquid normal, 3 freshness, 4 amount, 5 dynamic specular
 uniform int u_spec_light_count;
 uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z_height
 uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = shape (0=point/cone, 1=capsule)
@@ -64,13 +64,12 @@ void main() {
     float amount_u2 = blood_below_ice(sU2, texture(u_material_tex, ground_uv + vec2(0,  step_med.y)));
 
     float blood_amount = blood_below_ice(surf, weights);
-    float pool_amount = clamp(blood_amount * 1.65, 0.0, 1.0);
     float optical_depth = -log(1.0 - blood_amount) * 0.65;
 
     // - wet_film: any blood-wetted surface (thin spatter soaked into dirt or pool)
     // - deep_pool: thick coalesced pool where surface tension forms a smooth, continuous liquid sheet
-    float wet_film  = smoothstep(0.04, 0.36, pool_amount);
-    float deep_pool = smoothstep(0.42, 0.82, pool_amount);
+    float wet_film  = smoothstep(0.04, 0.36, clamp(blood_amount * 1.65, 0.0, 1.0));
+    float deep_pool = smoothstep(0.12, 0.95, blood_amount);
 
     // DUAL-NORMAL LAYERED FLUID MODEL:
     // (A) Substrate Normal N_sub (drives DIFFUSE lighting ONLY):
@@ -78,13 +77,13 @@ void main() {
     vec3 N_sub = normalize(vec3(slope_sub.x, slope_sub.y, 1.0));
 
     // (B) Top-Surface Fluid Normal N_fluid (drives DIELECTRIC SPECULAR ONLY):
-    float poolL = smoothstep(0.38, 0.80, 0.45 * amount_l1 + 0.55 * amount_l2);
-    float poolR = smoothstep(0.38, 0.80, 0.45 * amount_r1 + 0.55 * amount_r2);
-    float poolD = smoothstep(0.38, 0.80, 0.45 * amount_d1 + 0.55 * amount_d2);
-    float poolU = smoothstep(0.38, 0.80, 0.45 * amount_u1 + 0.55 * amount_u2);
+    float poolL = smoothstep(0.12, 0.95, 0.45 * amount_l1 + 0.55 * amount_l2);
+    float poolR = smoothstep(0.12, 0.95, 0.45 * amount_r1 + 0.55 * amount_r2);
+    float poolD = smoothstep(0.12, 0.95, 0.45 * amount_d1 + 0.55 * amount_d2);
+    float poolU = smoothstep(0.12, 0.95, 0.45 * amount_u1 + 0.55 * amount_u2);
     vec2 dPool_smooth = vec2(poolL - poolR, poolU - poolD) * (1.0 - 0.65 * deep_pool);
 
-    vec2 slope_fluid = dH_macro * mix(1.35, 0.24, deep_pool) + dH_fine * mix(0.45, 0.04, deep_pool) + dPool_smooth * 0.42;
+    vec2 slope_fluid = dH_macro * mix(1.35, 0.24, deep_pool) + dH_fine * mix(0.45, 0.04, deep_pool) + dPool_smooth * 0.18;
     vec3 N_fluid = normalize(vec3(slope_fluid.x, slope_fluid.y, 1.0));
 
     // G and B are filtered with identical weights. Their ratio keeps bare thin spray fresh,
@@ -116,13 +115,18 @@ void main() {
     // Ambient transmission never depends on the dynamic emitter list or its intensity.
     vec3 ambient_transmittance = exp(-absorption * (0.90 + 0.35 / 0.55));
 
-    float ruby_shallows = sin(clamp(pool_amount, 0.0, 1.0) * 3.14159);
-    vec3 erythrocyte_sss = vec3(0.08 * mix(0.65, 1.0, freshness), 0.00003, 0.00005) * (ruby_shallows * 0.78 + deep_pool * 0.22);
+    // Fresh pools keep a red body; age and depth are separate artistic controls.
+    // A continuous transition avoids outlining pools with a bright shallow-water band.
+    float body_weight = wet_film * mix(0.78, mix(0.22, 0.48, freshness), deep_pool);
+    vec3 blood_body_color = vec3(mix(0.05, 0.16, freshness), 0.00003, 0.00005) * body_weight;
 
     // Exposed ice keeps its substrate/sprite color instead of passing through the blood pigment.
-    vec3 diffuse_lit = mix(wetted_substrate * ambient_transmittance + erythrocyte_sss, albedo_tex.rgb, is_ice) * ambient_term;
+    vec3 diffuse_lit = mix(wetted_substrate * ambient_transmittance + blood_body_color, albedo_tex.rgb, is_ice) * ambient_term;
 
-    vec3 V = normalize(vec3(0.0, 0.0, 1.0));
+    // Fixed 30-degree backward virtual eye: reflections land below their emitters.
+    // This affects specular only; neither the camera nor player positions steer it.
+    vec3 V = normalize(vec3(0.0, 0.57735, 1.0));
+    vec3 R = reflect(-V, N_spec);
     vec3 spec_accum = vec3(0.0);
 
     for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
@@ -161,41 +165,47 @@ void main() {
         float flat_ndl = L.z;
         // Each light has its own optical path and relief; fading it cannot recolor other light.
         vec3 transmittance = exp(-absorption * (0.90 + 0.35 / clamp(flat_ndl, 0.22, 1.0)));
-        vec3 direct_albedo = mix(wetted_substrate * transmittance + erythrocyte_sss, albedo_tex.rgb, is_ice);
+        vec3 direct_albedo = mix(wetted_substrate * transmittance + blood_body_color, albedo_tex.rgb, is_ice);
         float relief = clamp((ndl_sub + 0.18) / (flat_ndl + 0.18), 0.64, 1.55);
         diffuse_lit += direct_albedo * sp_col.rgb * (atten * ndl_sub * 0.22 * relief);
 
-        // Specular reflection uses N_fluid (smooth coalesced liquid sheet inside pools + wet rock facets):
-        float z_refl = max(44.0, sp_pos.w * 3.2);
-        vec3 L_refl = normalize(vec3(to_l.x, to_l.y, z_refl));
-        vec3 H = normalize(L_refl + V);
-        float ndh = max(0.0, dot(N_spec, H));
-
-        // Dual-Lobe Wet GGX:
-        // 1. Tight liquid mirror core (a2_core) on coalesced pools & light-facing meniscus
-        float a = roughness * roughness;
-        float a2 = max(0.0022, a * a);
-        float denom = (ndh * ndh) * (a2 - 1.0) + 1.0;
-        float D_core = a2 / (3.14159 * denom * denom);
-
-        // 2. Smooth glossy liquid sheen (a2_sheen = 0.018) that gives continuous, non-sparkly wet body across pools
-        float denom_sheen = (ndh * ndh) * (0.018 - 1.0) + 1.0;
-        float D_sheen = 0.018 / (3.14159 * denom_sheen * denom_sheen);
-
-        float fresnel = 0.03 + 0.97 * pow(clamp(1.0 - L_refl.z, 0.0, 1.0), 2.2);
-        float fresh_spec_scale = mix(0.42, 1.0, freshness);
-        float wet_response = clamp(wet_film * 0.45 + deep_pool * 0.78, 0.0, 1.0) * fresh_spec_scale * (1.0 - is_ice);
-        float material_response = is_metal + is_chitin * 0.4 + is_ice * 0.75;
-        float wet_gate = mix(0.012, 0.94, clamp(wet_response + material_response, 0.0, 1.0));
-        float D_combined = min(5.5, D_core * 0.65 + D_sheen * (0.35 + 0.55 * deep_pool));
-        float spec_brdf = D_combined * (0.30 + 0.70 * fresnel) * wet_gate * 0.46;
-
-        vec3 spec_tint = mix(vec3(1.0), vec3(1.0, 0.85, 0.52), is_metal);
-        spec_accum += sp_col.rgb * spec_tint * (spec_brdf * atten);
+        // Reflect the virtual eye ray into a finite source at the emitter's height.
+        // This is an artistic rough-reflection approximation, not a calibrated BRDF.
+        if (R.z > 0.02) {
+            float height = max(12., sp_pos.w);
+            vec2 reflected_hit = world + R.xy * height / R.z;
+            bool beam = sp_col.w > 0.5 && sp_dir.w > 0.0 && dot(sp_dir.xy, sp_dir.xy) > 0.0001;
+            float source_gain = 1.0;
+            vec2 on_source = sp_pos.xy;
+            if (beam) {
+                vec2 axis = normalize(sp_dir.xy);
+                float along = clamp(dot(reflected_hit - sp_pos.xy, axis), -sp_dir.w * .5, sp_dir.w * .5);
+                on_source += axis * along;
+                float source_t = clamp(along / sp_dir.w + .5, 0.0, 1.0);
+                source_gain = mix(.18, 1.0, source_t);
+            }
+            float source_distance = length(reflected_hit - on_source);
+            float source_width = 3.0;
+            float blur_width = source_width + roughness * roughness * height * 1.8 / R.z;
+            float blur_gain = source_width / blur_width;
+            // A point source spreads across two dimensions; a beam spreads mostly across its width.
+            float footprint = exp(-.5 * pow(source_distance / blur_width, 2.0)) *
+                (beam ? blur_gain : blur_gain * blur_gain);
+            // Fade at finite light support rather than cutting off a displaced reflection.
+            float support = 1.0 - smoothstep(rad * .8, rad, d2d);
+            float NoV = clamp(dot(N_spec, V), 0.0, 1.0);
+            float F = .03 + .97 * pow(1. - NoV, 5.);
+            float blood_gate = clamp(wet_film*.45 + deep_pool*.78, 0., 1.) * mix(.25, 1., freshness) * (1.-is_ice);
+            float material_gate = clamp(blood_gate + is_ice*.75 + is_metal + is_chitin*.25, 0., 1.);
+            vec3 tint = mix(vec3(1.), vec3(1., .85, .52), is_metal);
+            spec_accum += sp_col.rgb * tint * (F * 24. * footprint * source_gain * material_gate * support);
+        }
     }
 
+    if (u_debug == 5) { finalColor = vec4(spec_accum, 1.0); return; }
+
     // Subtle cold moonlit sky reflection across smooth liquid pools (stronger on fresh blood)
-    vec3 H_sky = normalize(vec3(-0.15, -0.20, 0.96));
+    vec3 H_sky = normalize(normalize(vec3(-0.30, -0.40, 0.86)) + V);
     float ndh_sky = max(0.0, dot(N_spec, H_sky));
     vec3 sky_wet_spec = sky_reflection * pow(ndh_sky, 20.0) *
         ((wet_film * 0.12 + deep_pool * 0.30) * mix(0.45, 1.0, freshness) * (1.0 - is_ice) + is_ice * .30);

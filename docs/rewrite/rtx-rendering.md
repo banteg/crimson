@@ -123,15 +123,27 @@ resolution and world coordinates, including texture scale and DPI:
   changes neither this normal nor its diffuse relief. Separate liquid normals suppress
   fine dirt relief inside deep pools and add a filtered meniscus from volume × coverage,
   rather than tracing thin spray outlines. `material_scope(debug=...)` exposes the
-  shader's substrate normal (1), liquid normal (2), freshness (3), and blood amount (4).
-- Wet soil darkening, wavelength-dependent absorption, red subsurface color, and
-  two specular lobes reproduce the study's smooth liquid appearance. Freshness decays
-  exponentially with a 45-second time constant; this is gradual drying, not a switch
-  at 45 seconds. These are artistic approximations, not calibrated optical constants.
+  shader's substrate normal (1), liquid normal (2), freshness (3), blood amount (4),
+  and linear dynamic specular contribution (5).
+- Fresh blood has a richer red body, including deep centers. The red body coefficient
+  interpolates from `0.16` when fresh to `0.05` when aged; the deep-pool body weight
+  similarly changes from `0.48` to `0.22`. A broad depth transition replaces the
+  bright shallow band, and the gentler liquid slope avoids an embossed pool outline.
+  Wet soil darkening and absorption still distinguish depth from age.
+  Freshness decays exponentially with a 45-second time constant: about 37% remains
+  at 45 seconds, 14% at 90 seconds, and 2% at 180 seconds. Color and reflections
+  fade gradually; blood coverage remains. These are artistic controls, not
+  calibrated optical constants.
 - Up to 16 nearby energetic muzzle, Ion/Fire/Gauss/plasma, and detonation lights feed
   the ground pass, ranked around the actual view center rather than player one.
-  Beam lights use a tapered segment; the view vector is orthographic
-  so moving the player does not drag the reflection viewpoint around the arena.
+  A fixed orthographic virtual eye tilts backward by 30 degrees for specular only,
+  placing reflections below their sources without moving the camera or dimming the arena.
+  Moving players do not steer this viewpoint. The reflected eye ray intersects an
+  emitter-height plane; distance to a finite tapered beam or point source determines
+  the highlight. Roughness broadens and weakens its footprint instead of adding a
+  broad second sheen lobe. Beam emitters sit at 40 world units; other sources retain
+  their individual heights. Point-source blur spreads energy in two dimensions,
+  degenerate segments fall back to points, and finite light support fades smoothly.
 - Substrate color inputs are decoded from approximate gamma 2.2; emitter colors are
   already linear radiance, so lifetime gain stays linear. Shading is encoded once
   back into the legacy compositor. Material output stays unclamped
@@ -191,7 +203,8 @@ latency still depends on the accumulated backlog.
 GPU tests cover ordered composition and equivalence between incremental and pass-major
 bakes, actual shader normal outputs, thin/deep meniscus behavior, volume-weighted freshness
 at ten hours, linear HDR emitter response, continuity at a fading light's boundary,
-independent light contributions, actual expired-shard ice response, ice-over-blood color
+independent light contributions, backward reflection displacement, point/beam shape,
+finite degenerate emitters, fresh/deep color and reflection aging, actual expired-shard ice response, ice-over-blood color
 and depth, and blood-over-ice ordering,
 clean substrate color, sampler binding,
 regeneration, and teardown. CPU tests cover spool rollover/cleanup and view-centered

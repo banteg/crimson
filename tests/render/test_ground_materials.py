@@ -109,7 +109,7 @@ def test_fresh_blood_reflects_hdr_then_dries(ground_material) -> None:
     try:
         _uniform(sh, "u_ground_size", [64, 64])
         _integer(sh, "u_spec_light_count", 1)
-        _uniform(sh, "u_spec_pos[0]", [32, 32, 150, 30])
+        _uniform(sh, "u_spec_pos[0]", [32, 14, 150, 30])
         _uniform(sh, "u_spec_color[0]", [4, 4, 4, 0])
         _uniform(sh, "u_spec_dir[0]", [0, 0, 0, 0])
         values = []
@@ -175,7 +175,7 @@ def test_real_material_scope_keeps_auxiliary_samplers_across_ground_blend_switch
     )
     mocker.patch.object(
         ground_materials, "collect_material_lights",
-        return_value=[MaterialLight(Vec2(32, 32), 150, (4, 4, 4), height=30)],
+        return_value=[MaterialLight(Vec2(32, 14), 150, (4, 4, 4), height=30)],
     )
     target = load_float_render_texture(64, 64)
     try:
@@ -228,7 +228,7 @@ def test_fresh_soft_edges_and_nonblood_materials_do_not_age_with_match_clock(gro
     )
     mocker.patch.object(
         ground_materials, "collect_material_lights",
-        return_value=[MaterialLight(Vec2(32, 32), 150, (4, 4, 4), height=30)],
+        return_value=[MaterialLight(Vec2(32, 14), 150, (4, 4, 4), height=30)],
     )
     target = load_float_render_texture(67, 67)  # nonintegral sampling exercises filtering at empty edges
     renders = []
@@ -300,7 +300,8 @@ def test_shader_meniscus_requires_deep_blood_not_just_sprite_coverage(ground_mat
     entry = msgspec.structs.replace(blood(0).decals[0], color=RGBA(1, 0, 0, .1))
     ground.material_batches.extend([TerrainFxBatch(decals=(entry,))] * 6)
     thin = debug_pixels(ground, texture, mode=2)
-    assert all(p[:3] == pytest.approx((.5, .5, 1.)) for p in thin)
+    # The broad transition permits tiny slopes, but must not outline mist like a deep pool.
+    assert all(p[:3] == pytest.approx((.5, .5, 1.), abs=.001) for p in thin)
     amount = debug_pixels(ground, texture, mode=4)
     assert 0 < max(p[0] for p in amount) < .38
     ground.material_batches.extend([blood(0)] * 8)
@@ -354,7 +355,7 @@ def test_shader_treats_emitter_rgb_as_linear_radiance(ground_material, mocker) -
     collector = mocker.patch.object(ground_materials, "collect_material_lights")
     values = []
     for intensity in (1, 2, 3):
-        collector.return_value = [MaterialLight(Vec2(32, 32), 150, (intensity, intensity, intensity), height=30)]
+        collector.return_value = [MaterialLight(Vec2(32, 14), 150, (intensity, intensity, intensity), height=30)]
         encoded = debug_pixels(ground, texture, mode=0)[32 * 64 + 32]
         values.append(tuple(channel ** 2.2 for channel in encoded[:3]))
     assert tuple(c - b for b, c in zip(values[1], values[2], strict=True)) == pytest.approx(
@@ -421,7 +422,7 @@ def test_single_expired_freeze_shard_has_ice_coverage_and_reflection(ground_mate
     coverage = pixels(ground.coverage)
     assert max(pixel[3] for pixel in coverage) == pytest.approx(shard.color.to_rl().a / 255, abs=1 / 255)
     mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
-        MaterialLight(Vec2(32, 32), 150, (4, 4, 4), height=30),
+        MaterialLight(Vec2(32, 14), 150, (4, 4, 4), height=30),
     ])
     icy = debug_pixels(ground, texture, mode=0)
     # Remove only ice coverage: substrate color, relief, specularity and lights stay identical.
@@ -491,11 +492,15 @@ def test_ice_color_is_not_absorbed_by_older_blood_but_new_blood_can_cover_it(gro
     rl.unload_image(image)
     center = 32 * 64 + 32
     try:
+        underlying = debug_pixels(ground, texture, mode=0)[center]
         ice = msgspec.structs.replace(blood(0).decals[0], effect_id=8, color=RGBA(1, 1, 1, .35))
         ground.material_batches.append(TerrainFxBatch(decals=(ice,)))
         ground.bake_materials(icy_texture, texture)
         blue = debug_pixels(ground, texture, mode=0)[center]
-        assert blue[2] > blue[0] + .04
+        # The shard is translucent: bright fresh blood can remain visible through it.
+        # Its blue contribution must survive absorption rather than become a red cutout.
+        assert blue[2] > underlying[2] + .1
+        assert blue[2] - blue[0] > underlying[2] - underlying[0] + .1
         ground.material_batches.extend([blood(1)] * 8)
         red = debug_pixels(ground, texture, mode=0, time=1)[center]
         assert red[0] > red[2]
@@ -504,3 +509,62 @@ def test_ice_color_is_not_absorbed_by_older_blood_but_new_blood_can_cover_it(gro
         assert pixels(ground.coverage)[n // 2 * n + n // 2][3] == 0
     finally:
         rl.unload_texture(icy_texture)
+
+
+def uniform_deep_film(ground, texture) -> None:
+    uniform_fresh_film(ground, texture)
+    with texture_mode(ground.surface):
+        rl.clear_background(rl.Color(10, 230, 230, 115))
+    with texture_mode(ground.coverage):
+        rl.clear_background(rl.Color(255, 0, 0, 0))
+
+
+@pytest.mark.parametrize("length", [0., 28.])
+def test_reflection_is_below_source_and_preserves_point_or_beam_shape(ground_material, mocker, length) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(32, 16), 150, (1, 1, 1), height=18, direction=Vec2(1, 0), length=length),
+    ])
+    rendered = debug_pixels(ground, texture, mode=5)
+    energy = sum(p[0] for p in rendered)
+    assert energy > 1
+    # Readback starts at the bottom; convert it back to top-down world coordinates.
+    center_y = sum((63.5 - i // 64) * p[0] for i, p in enumerate(rendered)) / energy
+    assert center_y == pytest.approx(16 + 18 * math.tan(math.pi / 6), abs=.15)
+    center_x = sum((i % 64 + .5) * p[0] for i, p in enumerate(rendered)) / energy
+    var_x = sum((i % 64 + .5 - center_x) ** 2 * p[0] for i, p in enumerate(rendered)) / energy
+    var_y = sum((63.5 - i // 64 - center_y) ** 2 * p[0] for i, p in enumerate(rendered)) / energy
+    if length:
+        assert var_x > var_y * 4
+        assert center_x > 34  # The beam head remains brighter than the tail.
+    else:
+        assert var_x == pytest.approx(var_y, rel=.01)
+        assert center_x == pytest.approx(32, abs=.01)
+
+
+def test_degenerate_beam_direction_uses_finite_point_reflection(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights")
+    images = []
+    for length in (0., 28.):
+        collector.return_value = [MaterialLight(Vec2(32, 16), 150, (1, 1, 1), height=18, length=length)]
+        images.append(debug_pixels(ground, texture, mode=5))
+    assert images[0] == images[1]
+    assert all(math.isfinite(channel) for pixel in images[1] for channel in pixel)
+    assert max(p[0] for p in images[1]) > .1
+
+
+def test_fresh_deep_blood_has_red_body_and_loses_color_and_reflection_with_age(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+    colors = [debug_pixels(ground, texture, mode=0, time=t)[32 * 64 + 32] for t in (0, 45, 180)]
+    assert colors[0][0] > colors[2][0] * 1.3
+    assert colors[0][0] > colors[0][2] * 1.3
+    assert colors[0][0] > colors[1][0] > colors[2][0]
+    collector.return_value = [MaterialLight(Vec2(32, 16), 150, (1, 1, 1), height=18)]
+    peaks = [max(p[0] for p in debug_pixels(ground, texture, mode=5, time=t)) for t in (0, 45, 180)]
+    assert peaks[0] > peaks[1] > peaks[2]
+    assert peaks[2] < peaks[0] * .25
