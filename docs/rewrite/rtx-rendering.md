@@ -105,7 +105,11 @@ resolution and world coordinates, including texture scale and DPI:
 - `RGBA8`: ordered blood, corpse, brass, and ice coverage in RGBA. Separate RGB/alpha
   blend factors let ice accumulate coverage while every later material occludes it.
   Normal `0.35`-alpha freeze shards receive an ice response without requiring repeated
-  deposits. Later corpses cover old blood; later blood coats corpses again. Scorches remove gloss.
+  deposits. Ice occlusion is factored out when estimating the underlying film depth,
+  preventing a shard from cutting a false liquid meniscus. Exposed ice retains the
+  clean substrate/sprite color and its solid-surface reflection normal; blood deposited
+  later reduces that ice coverage again. Later corpses cover old blood; later blood
+  coats corpses again. Scorches remove gloss.
 - A separate clean substrate color target receives terrain, corpses, casings, ice,
   and scorches, but no blood RGB. Absorption therefore never re-tints the original
   blood-painted albedo. The latter stays intact for classic.
@@ -171,7 +175,7 @@ inputs, and native/browser rendering are unchanged.
   Packing channels, removing the unused depth attachment, and incremental reconstruction
   are worthwhile follow-ups.
 
-A synchronized OpenGL comparison on an Apple M1 Pro at 960×540, using the Survival
+A synchronized OpenGL comparison at `031f97307` on an Apple M1 Pro at 960×540, using the Survival
 fixture at ticks 4395/5115/6255 (30 warmed draws each), measured median whole-world
 RTX draw times of 3.95/3.59/3.53 ms before materials and 4.24/3.79/3.82 ms with them.
 These small samples include CPU submission and GPU completion, exclude simulation
@@ -187,7 +191,8 @@ latency still depends on the accumulated backlog.
 GPU tests cover ordered composition and equivalence between incremental and pass-major
 bakes, actual shader normal outputs, thin/deep meniscus behavior, volume-weighted freshness
 at ten hours, linear HDR emitter response, continuity at a fading light's boundary,
-independent light contributions, actual expired-shard ice response and ordered occlusion,
+independent light contributions, actual expired-shard ice response, ice-over-blood color
+and depth, and blood-over-ice ordering,
 clean substrate color, sampler binding,
 regeneration, and teardown. CPU tests cover spool rollover/cleanup and view-centered
 co-op light selection. Existing seek/reset lifecycle checks remain; RTX replay

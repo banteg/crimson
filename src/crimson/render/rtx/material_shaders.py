@@ -21,6 +21,13 @@ uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z
 uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = shape (0=point/cone, 1=capsule)
 uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = focus, w = capsule_h
 
+float blood_below_ice(vec4 surface, vec4 coverage) {
+    // Ice occludes the film; it does not thin it into a new red meniscus.
+    // Both stored volume and blood coverage have been attenuated by the ice opacity.
+    float exposed = max(1.0 - coverage.a, 0.001);
+    return clamp(surface.b * coverage.r / (exposed * exposed), 0.0, 0.999);
+}
+
 void main() {
     vec2 ground_uv = fragTexCoord;
     vec2 world = vec2(ground_uv.x, 1.0 - ground_uv.y) * u_ground_size;
@@ -46,17 +53,17 @@ void main() {
 
     // Explicit ordered material coverage, independent of the painted albedo hue.
     vec4 weights = texture(u_material_tex, ground_uv);
-    float heme_c = weights.r;
-    float amount_l1 = sL1.b * texture(u_material_tex, ground_uv + vec2(-step_fine.x, 0)).r;
-    float amount_r1 = sR1.b * texture(u_material_tex, ground_uv + vec2( step_fine.x, 0)).r;
-    float amount_d1 = sD1.b * texture(u_material_tex, ground_uv + vec2(0, -step_fine.y)).r;
-    float amount_u1 = sU1.b * texture(u_material_tex, ground_uv + vec2(0,  step_fine.y)).r;
-    float amount_l2 = sL2.b * texture(u_material_tex, ground_uv + vec2(-step_med.x, 0)).r;
-    float amount_r2 = sR2.b * texture(u_material_tex, ground_uv + vec2( step_med.x, 0)).r;
-    float amount_d2 = sD2.b * texture(u_material_tex, ground_uv + vec2(0, -step_med.y)).r;
-    float amount_u2 = sU2.b * texture(u_material_tex, ground_uv + vec2(0,  step_med.y)).r;
+    float is_ice = weights.a;
+    float amount_l1 = blood_below_ice(sL1, texture(u_material_tex, ground_uv + vec2(-step_fine.x, 0)));
+    float amount_r1 = blood_below_ice(sR1, texture(u_material_tex, ground_uv + vec2( step_fine.x, 0)));
+    float amount_d1 = blood_below_ice(sD1, texture(u_material_tex, ground_uv + vec2(0, -step_fine.y)));
+    float amount_u1 = blood_below_ice(sU1, texture(u_material_tex, ground_uv + vec2(0,  step_fine.y)));
+    float amount_l2 = blood_below_ice(sL2, texture(u_material_tex, ground_uv + vec2(-step_med.x, 0)));
+    float amount_r2 = blood_below_ice(sR2, texture(u_material_tex, ground_uv + vec2( step_med.x, 0)));
+    float amount_d2 = blood_below_ice(sD2, texture(u_material_tex, ground_uv + vec2(0, -step_med.y)));
+    float amount_u2 = blood_below_ice(sU2, texture(u_material_tex, ground_uv + vec2(0,  step_med.y)));
 
-    float blood_amount = clamp(surf.b * heme_c, 0.0, 0.999);
+    float blood_amount = blood_below_ice(surf, weights);
     float pool_amount = clamp(blood_amount * 1.65, 0.0, 1.0);
     float optical_depth = -log(1.0 - blood_amount) * 0.65;
 
@@ -89,10 +96,10 @@ void main() {
     if (u_debug == 4) { finalColor = vec4(vec3(blood_amount), 1.); return; }
     float is_metal = weights.b;
     float is_chitin = weights.g;
-    float is_ice = weights.a;
     float blood_smooth = mix(0.52, 0.91, freshness);
     float smoothness = max(0.12 * (1.0 - wet_film), mix(wet_film * 0.68 * freshness, blood_smooth, deep_pool));
-    smoothness = max(smoothness, max(is_ice * .90, max(is_metal * 0.88, is_chitin * 0.42)));
+    smoothness = mix(max(smoothness, max(is_metal * 0.88, is_chitin * 0.42)), .90, is_ice);
+    vec3 N_spec = normalize(mix(N_fluid, N_sub, is_ice));
     float roughness = clamp(1.0 - smoothness, 0.09, 0.92);
 
     // Readable daylight floor: lighting adds to the scene, never blacks out its unlit regions.
@@ -112,7 +119,8 @@ void main() {
     float ruby_shallows = sin(clamp(pool_amount, 0.0, 1.0) * 3.14159);
     vec3 erythrocyte_sss = vec3(0.08 * mix(0.65, 1.0, freshness), 0.00003, 0.00005) * (ruby_shallows * 0.78 + deep_pool * 0.22);
 
-    vec3 diffuse_lit = (wetted_substrate * ambient_transmittance + erythrocyte_sss) * ambient_term;
+    // Exposed ice keeps its substrate/sprite color instead of passing through the blood pigment.
+    vec3 diffuse_lit = mix(wetted_substrate * ambient_transmittance + erythrocyte_sss, albedo_tex.rgb, is_ice) * ambient_term;
 
     vec3 V = normalize(vec3(0.0, 0.0, 1.0));
     vec3 spec_accum = vec3(0.0);
@@ -153,7 +161,7 @@ void main() {
         float flat_ndl = L.z;
         // Each light has its own optical path and relief; fading it cannot recolor other light.
         vec3 transmittance = exp(-absorption * (0.90 + 0.35 / clamp(flat_ndl, 0.22, 1.0)));
-        vec3 direct_albedo = wetted_substrate * transmittance + erythrocyte_sss;
+        vec3 direct_albedo = mix(wetted_substrate * transmittance + erythrocyte_sss, albedo_tex.rgb, is_ice);
         float relief = clamp((ndl_sub + 0.18) / (flat_ndl + 0.18), 0.64, 1.55);
         diffuse_lit += direct_albedo * sp_col.rgb * (atten * ndl_sub * 0.22 * relief);
 
@@ -161,7 +169,7 @@ void main() {
         float z_refl = max(44.0, sp_pos.w * 3.2);
         vec3 L_refl = normalize(vec3(to_l.x, to_l.y, z_refl));
         vec3 H = normalize(L_refl + V);
-        float ndh = max(0.0, dot(N_fluid, H));
+        float ndh = max(0.0, dot(N_spec, H));
 
         // Dual-Lobe Wet GGX:
         // 1. Tight liquid mirror core (a2_core) on coalesced pools & light-facing meniscus
@@ -176,7 +184,7 @@ void main() {
 
         float fresnel = 0.03 + 0.97 * pow(clamp(1.0 - L_refl.z, 0.0, 1.0), 2.2);
         float fresh_spec_scale = mix(0.42, 1.0, freshness);
-        float wet_response = clamp(wet_film * 0.45 + deep_pool * 0.78, 0.0, 1.0) * fresh_spec_scale;
+        float wet_response = clamp(wet_film * 0.45 + deep_pool * 0.78, 0.0, 1.0) * fresh_spec_scale * (1.0 - is_ice);
         float material_response = is_metal + is_chitin * 0.4 + is_ice * 0.75;
         float wet_gate = mix(0.012, 0.94, clamp(wet_response + material_response, 0.0, 1.0));
         float D_combined = min(5.5, D_core * 0.65 + D_sheen * (0.35 + 0.55 * deep_pool));
@@ -188,8 +196,9 @@ void main() {
 
     // Subtle cold moonlit sky reflection across smooth liquid pools (stronger on fresh blood)
     vec3 H_sky = normalize(vec3(-0.15, -0.20, 0.96));
-    float ndh_sky = max(0.0, dot(N_fluid, H_sky));
-    vec3 sky_wet_spec = sky_reflection * pow(ndh_sky, 20.0) * (wet_film * 0.12 + deep_pool * 0.30) * mix(0.45, 1.0, freshness);
+    float ndh_sky = max(0.0, dot(N_spec, H_sky));
+    vec3 sky_wet_spec = sky_reflection * pow(ndh_sky, 20.0) *
+        ((wet_film * 0.12 + deep_pool * 0.30) * mix(0.45, 1.0, freshness) * (1.0 - is_ice) + is_ice * .30);
 
     // Visibility/shadows are a separate lighting follow-up. Never gate all lights with one mean shadow.
     vec3 reflected_light = spec_accum + sky_wet_spec;

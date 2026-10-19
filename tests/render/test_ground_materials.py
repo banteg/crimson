@@ -455,3 +455,52 @@ def test_later_deposits_cover_ice_in_order(ground_material, kind) -> None:
     ground.material_batches.append(batch)
     ground.bake_materials(texture, texture)
     assert pixels(ground.coverage)[center][3] == pytest.approx(before * .5, abs=2 / 255)
+
+
+def test_translucent_ice_occludes_blood_without_cutting_a_liquid_meniscus(ground_material) -> None:
+    ground, texture = ground_material
+    uniform_fresh_film(ground, texture)
+    with texture_mode(ground.surface):
+        rl.clear_background(rl.Color(10, 204, 204, 115))
+    with texture_mode(ground.coverage):
+        rl.clear_background(rl.Color(255, 0, 0, 0))
+    before = debug_pixels(ground, texture, mode=4)
+    ice = msgspec.structs.replace(blood(0).decals[0], effect_id=8, color=RGBA(1, 1, 1, .35))
+    ground.material_batches.append(TerrainFxBatch(decals=(ice,)))
+    ground.bake_materials(texture, texture)
+    after = debug_pixels(ground, texture, mode=4)
+    # Coverage hides the film without changing its optical depth, including filtered edges.
+    assert max(abs(a[0] - b[0]) for a, b in zip(before, after, strict=True)) < .005
+    # Remove the legitimate raised-ice relief to isolate spurious liquid-outline normals.
+    with texture_mode(ground.surface):
+        rl.rl_color_mask(False, False, False, True)
+        try:
+            rl.clear_background(rl.Color(0, 0, 0, 115))
+        finally:
+            rl.rl_color_mask(True, True, True, True)
+    normals = debug_pixels(ground, texture, mode=2)
+    assert all(p[:3] == pytest.approx((.5, .5, 1.), abs=.001) for p in normals)
+
+
+def test_ice_color_is_not_absorbed_by_older_blood_but_new_blood_can_cover_it(ground_material) -> None:
+    ground, texture = ground_material
+    ground.material_batches.extend([blood(0)] * 8)
+    ground.bake_materials(texture, texture)
+    image = rl.gen_image_color(128, 128, rl.Color(70, 170, 255, 255))
+    icy_texture = rl.load_texture_from_image(image)
+    rl.unload_image(image)
+    center = 32 * 64 + 32
+    try:
+        ice = msgspec.structs.replace(blood(0).decals[0], effect_id=8, color=RGBA(1, 1, 1, .35))
+        ground.material_batches.append(TerrainFxBatch(decals=(ice,)))
+        ground.bake_materials(icy_texture, texture)
+        blue = debug_pixels(ground, texture, mode=0)[center]
+        assert blue[2] > blue[0] + .04
+        ground.material_batches.extend([blood(1)] * 8)
+        red = debug_pixels(ground, texture, mode=0, time=1)[center]
+        assert red[0] > red[2]
+        assert red[2] < blue[2] * .6
+        n = ground.coverage.texture.width
+        assert pixels(ground.coverage)[n // 2 * n + n // 2][3] == 0
+    finally:
+        rl.unload_texture(icy_texture)
