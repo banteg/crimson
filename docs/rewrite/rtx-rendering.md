@@ -5,10 +5,12 @@ tags:
   - modules
 ---
 
-# Beam rendering (classic + RTX)
+# RTX rendering
 
-This page documents the rewrite's current beam projectile rendering path and
-the promoted RTX fast path for beam bodies and heads.
+RTX is the Python port's alternative rendering mode. It combines analytic beam
+shaders with HDR world rendering and macOS extended dynamic range (EDR) output.
+This page covers those paths, their controls, and how they differ from classic
+rendering.
 
 ## Background: how the original renders beams
 
@@ -60,8 +62,8 @@ Integration behavior:
 - Fire Bullets overlays and Ion chain behavior remain on the shared existing
   path
 
-So the current RTX promotion is intentionally scoped to beam **streak/head**
-acceleration while preserving established overlay/chain semantics.
+The analytic beam optimization covers streaks and heads while preserving
+shared overlay and chain behavior. The HDR pass below applies to the whole world.
 
 
 ## RTX HDR world target and tonemapping
@@ -85,8 +87,6 @@ This integration is limited to the Python port. The native/browser ports are unc
 
 In-game PNG screenshots still use an 8-bit SDR readback. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
 
-Run `uv run python scripts/experiments/edr_compare.py` on macOS for the two-window comparison using the same window setup. It checks the actual backbuffer format and float pixel readback; **E** toggles Cocoa EDR in the extended-range window. The patch labels are shader output components, not nits or linear-light ratios.
-
 ## Render mode controls
 
 Render mode enum and helpers: `src/crimson/render/rtx/mode.py` (`classic|rtx`).
@@ -106,5 +106,5 @@ Benchmark controls:
 ## Future direction
 
 `crimson.render.rtx` is intended as the home for non-classic render
-enhancements (beam acceleration and HDR additive tonemapping now, advanced
-lighting next), while keeping `classic` as the parity reference path.
+enhancements (beam acceleration, HDR additive tonemapping, and EDR output now,
+advanced lighting next), while keeping `classic` as the parity reference path.

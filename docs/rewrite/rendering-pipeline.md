@@ -265,6 +265,6 @@ Practical consequences:
 ## Related docs
 
 - [Terrain (rewrite)](terrain.md)
-- [Beam rendering (classic + RTX)](beam-rendering.md)
+- [RTX rendering](rtx-rendering.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Original exe rendering notes](../crimsonland-exe/rendering.md)

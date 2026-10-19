@@ -37,7 +37,7 @@ address-keyed source evidence, a native-oracle test, or the core gate. See [evid
 - Exact multiplayer parity targets the native 1/2-player paths. The 3/4-player
   extension must preserve those outcomes; see [local multiplayer](local-multiplayer.md).
 - Rendering has explicit options and sampling differences; see [terrain](terrain.md)
-  and [beam rendering](beam-rendering.md).
+  and [RTX rendering](rtx-rendering.md).
 - Mods are out of scope in every version: the original's mods are DLL plugins, so the port and the web and
   native clients offer no Mods entry.
 - The original's Other Games advertisement flows and its
