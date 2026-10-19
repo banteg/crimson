@@ -408,10 +408,6 @@ def _draw_streak(
 
     head_rgb = (1.0, 1.0, 0.7) if life >= 0.4 else (0.5, 0.6, 1.0)
     if rtx:
-        # RTX keeps ion heads in the same blue family as their trails and arcs.
-        # Classic retains the original renderer's explicit warm head tint.
-        if chain:
-            head_rgb = streak_rgb
         draw_beam_fast_stamped_head(
             center_screen=screen,
             rotation_rad=float(proj.angle),

@@ -55,7 +55,6 @@ The promoted RTX implementation lives in `src/crimson/render/rtx/beam.py`:
 Integration behavior:
 
 - when render mode is `rtx`, beam body and head use the promoted shader paths
-- RTX ion heads share their trails' blue tint; classic retains the original renderer's explicit warm head tint. This is an RTX visual adjustment, not a classified original bug.
 - if shader compilation/load is unavailable, rendering fails fast (runtime
   error) instead of silently falling back to classic
 - Fire Bullets overlays and Ion chain behavior remain on the shared existing
