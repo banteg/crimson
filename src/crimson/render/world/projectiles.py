@@ -406,7 +406,11 @@ def _draw_streak(
             )
             along += step
 
-    head_rgb = (1.0, 1.0, 0.7) if life >= 0.4 else (0.5, 0.6, 1.0)
+    # Original bug 41: shared heads use yellow in flight and ion blue on impact,
+    # ignoring the weapon-specific trail color in both phases.
+    head_rgb = streak_rgb
+    if frame.state.preserve_bugs:
+        head_rgb = (1.0, 1.0, 0.7) if life >= 0.4 else (0.5, 0.6, 1.0)
     if rtx:
         draw_beam_fast_stamped_head(
             center_screen=screen,

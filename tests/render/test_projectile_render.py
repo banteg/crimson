@@ -282,3 +282,43 @@ def test_zero_length_ion_impact_still_chains_to_creatures(mocker) -> None:
     )
     world_projectiles.projectile_render(render_ctx, alpha=1.0)
     assert ("quads_end", TextureId.PROJS) in draws.events()
+
+
+@pytest.mark.parametrize("rtx_mode", [RtxRenderMode.CLASSIC, RtxRenderMode.RTX])
+@pytest.mark.parametrize("preserve_bugs", [False, True])
+@pytest.mark.parametrize("life", [0.4, 0.2])
+@pytest.mark.parametrize("distance", [0.0, 200.0])
+@pytest.mark.parametrize(
+    ("type_id", "weapon_rgb"),
+    [
+        (ProjectileTemplateId.ION_RIFLE, (0.5, 0.6, 1.0)),
+        (ProjectileTemplateId.ION_MINIGUN, (0.5, 0.6, 1.0)),
+        (ProjectileTemplateId.ION_CANNON, (0.5, 0.6, 1.0)),
+        (ProjectileTemplateId.FIRE_BULLETS, (1.0, 0.6, 0.1)),
+    ],
+)
+def test_streak_head_color_follows_weapon_and_bug_policy(
+    mocker, rtx_mode, preserve_bugs, life, distance, type_id, weapon_rgb,
+) -> None:
+    draws = _Draws(mocker)
+    mocker.patch.object(world_projectiles, "draw_beam_fast_stamped_body")
+    head = mocker.patch.object(world_projectiles, "draw_beam_fast_stamped_head")
+    ctx = _render_ctx(rtx_mode=rtx_mode)
+    ctx.frame.state.preserve_bugs = preserve_bugs
+    _place(ctx, [Projectile(type_id=type_id, origin=Vec2(100, 100 + distance), pos=Vec2(100, 100), life_timer=life)])
+
+    world_projectiles.projectile_render(ctx, alpha=1.0)
+
+    expected = weapon_rgb
+    if preserve_bugs:
+        expected = (1.0, 1.0, 0.7) if life == 0.4 else (0.5, 0.6, 1.0)
+    if rtx_mode is RtxRenderMode.RTX:
+        head.assert_called_once()
+        assert head.call_args.kwargs["head_rgb"] == expected
+        assert head.call_args.kwargs["base_alpha"] == pytest.approx(life * 2.5)
+    else:
+        # The head follows the trail's PROJS sprites; Fire Bullets' extra glow
+        # uses PARTICLES and must not be mistaken for the head.
+        sprites = [call for call in draws.calls.draw_texture_pro.call_args_list if call.args[0].id == TextureId.PROJS]
+        tint = sprites[-1].args[-1]
+        assert (tint.r, tint.g, tint.b, tint.a) == tuple(int(v * 255 + 0.5) for v in (*expected, life * 2.5))

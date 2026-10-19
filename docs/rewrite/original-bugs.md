@@ -1119,3 +1119,39 @@ Rewrite behavior:
 Evidence: `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp` (the
 manual reload condition), `src/crimson/gameplay.py` (`_player_tick_reload`)
 and [`crimson-core/patches/40-coop-manual-reload.patch`](../../crimson-core/patches/40-coop-manual-reload.patch).
+
+
+## 41) Ion and Fire Bullets heads ignore their weapon colors
+
+Native behavior:
+
+- The shared `projectile_render` branch gives Ion Rifle, Ion Minigun and Ion
+  Cannon trails a blue `(0.5, 0.6, 1.0)` tint, and Fire Bullets trails an orange
+  `(1.0, 0.6, 0.1)` tint, in both flight and post-hit fade.
+- The head after each trail loop does not branch on weapon type: every flying
+  head is warm yellow `(1.0, 1.0, 0.7)`, and every fading head is ion blue
+  `(0.5, 0.6, 1.0)`. The glow sprite itself is neutral white.
+
+Why it's likely a bug:
+
+- The trail distinguishes ion from fire in both phases, but the shared head
+  does not. Ion gains a yellow nose in flight; Fire Bullets switches to blue
+  after impact while its trail stays orange. These opposite mismatches point
+  to missing weapon selection in the shared head draws.
+- Additive SDR clipping can hide the mismatch where the head overlaps a bright
+  trail; the forward fringe and HDR rendering make it easier to see.
+
+Rewrite behavior:
+
+- Default: heads use their trail's weapon color in both phases: blue for ion,
+  orange for Fire Bullets. This applies to Python classic/RTX and the recovered
+  game module shared by desktop and browser renderers.
+- `--preserve-bugs`: retain the original yellow flight heads and blue fading
+  heads for both weapon families. Alpha, geometry and trail colors are unchanged.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp`
+(`0x00422c70`, the two shared head draws),
+`tests/native_oracle/test_projectile_render.py` (original executable draw capture),
+`tests/render/test_projectile_render.py`,
+`crimson-core/checks/projectile_colors.py` (adapted renderer draw capture), and
+[`41-projectile-head-colors.patch`](../../crimson-core/game/patches/41-projectile-head-colors.patch).

@@ -304,7 +304,7 @@ def _port_draws(
     for name, args, _ in draws.calls.mock_calls:
         if name != "draw_texture_pro" or _NATIVE_HANDLES.get(args[0].id) not in textures:
             continue
-        texture, src, dst, _origin, angle, _tint = args
+        texture, src, dst, _origin, angle, tint = args
         result.append(
             {
                 "texture": _NATIVE_HANDLES[texture.id],
@@ -317,6 +317,7 @@ def _port_draws(
                 "size": dst.width,
                 "center": (dst.x, dst.y),
                 "angle": angle,
+                "rgba": (tint.r / 255, tint.g / 255, tint.b / 255, tint.a / 255),
             },
         )
     return result
@@ -359,6 +360,23 @@ def test_primary_projectile_sprite_selection_matches_original(mocker, native_dra
         assert actual["texture"] == expected["texture"]
         assert actual["uv"] == pytest.approx(expected["uv"])
         assert actual["size"] == pytest.approx(expected["size"], abs=1e-4)
+
+
+@pytest.mark.parametrize(
+    "type_id",
+    [ProjectileTemplateId.ION_RIFLE, ProjectileTemplateId.ION_MINIGUN, ProjectileTemplateId.ION_CANNON, ProjectileTemplateId.FIRE_BULLETS],
+)
+@pytest.mark.parametrize("life", [0.4, 0.2])
+def test_shared_head_tints_are_original_bug_41(mocker, native_draws, type_id, life):
+    shots = [Projectile(active=True, type_id=type_id, life_timer=life, pos=Vec2(100, 100), origin=Vec2(100, 140))]
+    native = [q for q in native_draws.render(shots) if q["texture"] == 103][-1]
+    original_rgb = (1.0, 1.0, 0.7) if life == 0.4 else (0.5, 0.6, 1.0)
+    assert native["rgba"] == pytest.approx((*original_rgb, life * 2.5))
+    preserved = _port_draws(mocker, shots, textures=(103,), preserve_bugs=True)[-1]
+    assert preserved["rgba"] == pytest.approx(native["rgba"], abs=1 / 255)
+    fixed = _port_draws(mocker, shots, textures=(103,), preserve_bugs=False)[-1]
+    weapon_rgb = (1.0, 0.6, 0.1) if type_id is ProjectileTemplateId.FIRE_BULLETS else (0.5, 0.6, 1.0)
+    assert fixed["rgba"] == pytest.approx((*weapon_rgb, life * 2.5), abs=1 / 255)
 
 
 @pytest.mark.parametrize(

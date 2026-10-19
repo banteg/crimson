@@ -428,6 +428,7 @@ verifier stays byte-identical:
 | 34 | Each Fire Bullets shot glows, and nothing else does |
 | 35 | Rocket detonation flashes draw the soft glow cell |
 | 36 | Ion chain arcs close in round end caps |
+| 41 | Ion and Fire Bullets heads retain their weapon color in flight and after impact |
 
 The client's live input ([`host/session.inc`](host/session.inc)) keeps a resting
 pad aim stick on its last direction (31). The other entries are out of the

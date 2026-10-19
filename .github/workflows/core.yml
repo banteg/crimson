@@ -245,6 +245,7 @@ jobs:
       - name: Boot, play by mouse and by pad, go back by pad, rank, read, watch, seek, and load online scores
         run: |
           uv run --no-sync python crimson-core/checks/effect_overflow.py
+          uv run --no-sync python crimson-core/checks/projectile_colors.py
           uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
           fresh() { rm -rf "$RUNNER_TEMP/run" && cp -R "$RUNNER_TEMP/game" "$RUNNER_TEMP/run" && echo "$RUNNER_TEMP/run"; }
           node crimson-core/checks/game_boot.mjs "$(fresh)"
