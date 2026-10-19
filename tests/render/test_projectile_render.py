@@ -257,7 +257,7 @@ def test_streaks_use_the_stamped_rtx_beam_only_in_rtx_mode(mocker, rtx_mode: Rtx
     ],
 )
 @pytest.mark.parametrize("life", [0.4, 0.2])
-def test_streak_head_survives_a_zero_length_trail(mocker, rtx_mode, type_id, life) -> None:
+def test_streak_head_retains_its_color_without_a_trail(mocker, rtx_mode, type_id, life) -> None:
     draws = _Draws(mocker)
     mocker.patch.object(world_projectiles, "draw_beam_fast_stamped_body")
     head = mocker.patch.object(world_projectiles, "draw_beam_fast_stamped_head")
@@ -266,9 +266,17 @@ def test_streak_head_survives_a_zero_length_trail(mocker, rtx_mode, type_id, lif
     world_projectiles.projectile_render(render_ctx, alpha=1.0)
     if rtx_mode is RtxRenderMode.RTX:
         head.assert_called_once()
+        expected_rgb = (
+            (1.0, 1.0, 0.7) if type_id is ProjectileTemplateId.FIRE_BULLETS and life >= 0.4 else (0.5, 0.6, 1.0)
+        )
+        assert head.call_args.kwargs["head_rgb"] == expected_rgb
     else:
         sprites = [payload for kind, payload in draws.events() if kind == "sprite" and payload[0] == TextureId.PROJS]
         assert len(sprites) == 1
+        tint = next(
+            call.args[-1] for call in draws.calls.draw_texture_pro.call_args_list if call.args[0].id == TextureId.PROJS
+        )
+        assert (tint.r, tint.g, tint.b) == ((255, 255, 179) if life >= 0.4 else (128, 153, 255))
 
 
 def test_zero_length_ion_impact_still_chains_to_creatures(mocker) -> None:

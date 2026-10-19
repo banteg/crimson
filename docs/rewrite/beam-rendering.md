@@ -55,6 +55,7 @@ The promoted RTX implementation lives in `src/crimson/render/rtx/beam.py`:
 Integration behavior:
 
 - when render mode is `rtx`, beam body and head use the promoted shader paths
+- RTX ion heads share their trails' blue tint; the classic warm head tint is retained only in classic mode, where SDR clipping largely hides its yellow fringe
 - if shader compilation/load is unavailable, rendering fails fast (runtime
   error) instead of silently falling back to classic
 - Fire Bullets overlays and Ion chain behavior remain on the shared existing
@@ -82,6 +83,8 @@ When render mode is `rtx`, `WorldRuntime.draw()` wraps `draw_world()` in `HdrRen
 - other platforms, unavailable float surfaces, and displays with headroom `1.0` use SDR tonemapping; an SDR ancestor target also forces SDR output for capture/compositing
 
 This integration is limited to the Python port. The native/browser ports are unchanged.
+
+In-game PNG screenshots still use an 8-bit SDR readback. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
 
 Run `uv run python scripts/experiments/edr_compare.py` on macOS for the two-window comparison using the same window setup. It checks the actual backbuffer format and float pixel readback; **E** toggles Cocoa EDR in the extended-range window. The patch labels are shader output components, not nits or linear-light ratios.
 

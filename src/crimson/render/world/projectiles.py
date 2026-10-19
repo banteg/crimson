@@ -408,6 +408,10 @@ def _draw_streak(
 
     head_rgb = (1.0, 1.0, 0.7) if life >= 0.4 else (0.5, 0.6, 1.0)
     if rtx:
+        # Classic's warm head tint becomes a yellow fringe without SDR clipping.
+        # Keep ion heads in the same blue family as their trails and impact arcs.
+        if chain:
+            head_rgb = streak_rgb
         draw_beam_fast_stamped_head(
             center_screen=screen,
             rotation_rad=float(proj.angle),
