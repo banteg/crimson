@@ -41,6 +41,13 @@ The original Direct3D8 renderer applies a small bias of 1/512 to the U/V values
 to reduce bleeding. The Raylib/OpenGL port intentionally omits that inset
 because it visibly crops the small-font glyphs on this backend.
 
+The Python port uses bilinear atlas filtering with a pixel-coverage shader: only
+texel boundaries blend, over one physical output pixel. This keeps the original
+layout and advances at fractional fullscreen or HiDPI scales while avoiding
+nearest-neighbor's uneven strokes. Aligned integer scales preserve the original
+texels. Coverage is derived from texture-coordinate derivatives, so it follows
+the active render target without caching a window or DPI scale.
+
 ### Identification (font source)
 
 The small font glyphs match **Pixel Arial 11**. The closest match we found is

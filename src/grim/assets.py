@@ -35,7 +35,7 @@ TEXTURE_SPECS: Final[dict[TextureId, TextureSpec]] = {
     TextureId.SPLASH_10TONS: TextureSpec("load/splash10tons.jaz"),
     TextureId.SPLASH_REFLEXIVE: TextureSpec("load/splashReflexive.jpg"),
     TextureId.DEFAULT_FONT_COURIER: TextureSpec("load/default_font_courier.tga"),
-    TextureId.SMALL_WHITE: TextureSpec("load/smallWhite.tga", point_filter=True),
+    TextureId.SMALL_WHITE: TextureSpec("load/smallWhite.tga"),
     TextureId.TROOPER: TextureSpec("game/trooper.jaz"),
     TextureId.ZOMBIE: TextureSpec("game/zombie.jaz"),
     TextureId.SPIDER_SP1: TextureSpec("game/spider_sp1.jaz"),
@@ -114,6 +114,7 @@ class RuntimeResources(msgspec.Struct):
 
     def unload(self) -> None:
         self.alpha_test.close()
+        self.small_font.pixel_coverage.close()
         seen: set[int] = set()
         for texture in self.textures.values():
             texture_id = int(texture.id)

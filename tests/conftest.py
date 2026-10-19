@@ -200,6 +200,8 @@ def headless_window(mocker: MockerFixture) -> Mock:
     for name in dir(rl):
         if name.startswith(("draw_", "begin_", "end_", "rl_")) or name == "clear_background":
             draws.attach_mock(mocker.patch.object(rl, name), name)
+    mocker.patch.object(rl, "get_shader_location", return_value=0)
+    mocker.patch.object(rl, "set_shader_value")
     return draws
 
 
