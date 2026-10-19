@@ -39873,13 +39873,13 @@
       "canonical_address": 4452288,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "ui_list_widget_update",
       "proof": {
-        "body_byte_exact": false,
-        "candidate_instructions": 394,
-        "candidate_object_sha256": "c1cff693751dc71687e857eb1535845d54c86d28f401acc998d987fbb8773a01",
-        "candidate_padding_bytes": 9,
+        "body_byte_exact": true,
+        "candidate_instructions": 395,
+        "candidate_object_sha256": "a1c1371fdebd9fc6d7b1ae124dcaa4f7ba9eb8099970b5de42825a6bae24ef68",
+        "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
             4449904,
@@ -39890,15 +39890,15 @@
         "references": {
           "mismatched": 0,
           "ok": 49,
-          "positional": false,
+          "positional": true,
           "unresolved": 0
         },
-        "state": "wip",
+        "state": "match",
         "target_instructions": 395,
         "target_size": 1405,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.9581749049429658,
+      "ratio": 1.0,
       "size": 1405,
       "source": "decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp"
     },
@@ -77338,7 +77338,7 @@
     "decomp/1.9/crimsonland/ui_widgets/ui_focus_draw.cpp": "bf9522d2e6da3ee348ba509c2402686c0415189f7b95c297e53858f335a4ad1b",
     "decomp/1.9/crimsonland/ui_widgets/ui_focus_set.cpp": "dd69acd88bba7425bd983a85ff88529c14dceaf27038621f8e9dcf6ccdb4075a",
     "decomp/1.9/crimsonland/ui_widgets/ui_focus_update.cpp": "6a78760e33abac4da7e29d1d45654ecc30ecce406cec5b6005fe6da5dc8bb3cd",
-    "decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp": "6d335ff4d53ce8816ab93e6a3f7e8c231c9a74ed611dc18498421fa28700c7d9",
+    "decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp": "bcce0dd163c7d0284088256ed04e5becc7998d4e779b4d467386b9faf3637293",
     "decomp/1.9/crimsonland/ui_widgets/ui_menu_item_update.cpp": "4c257a09c0f9768dba53e5b1d2852fef75f21a3360143fe527fffe715b8eb3a2",
     "decomp/1.9/crimsonland/ui_widgets/ui_scrollbar_update.cpp": "dc3ad5656272a78a02db86e7d51c7dc9030afd39f9609559413c19967c8543e7",
     "decomp/1.9/crimsonland/ui_widgets/ui_segmented_slider_update.cpp": "b7f48c68605368c613cc7333c50e92f32768f8ed78a879f3f3bf7c924737e497",
