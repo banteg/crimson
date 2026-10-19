@@ -113,17 +113,17 @@
   },
   {
     "address": "0x100010E0",
-    "canonical_address": "0x10001AD0",
+    "canonical_address": "0x10002120",
     "end": "0x100014D2",
-    "evidence": "ordered",
-    "name": "grim_parental_lock_dialog_proc",
+    "evidence": "recovered",
+    "name": "grim_config_dialog_proc",
     "size": 1010
   },
   {
     "address": "0x100014E0",
     "canonical_address": "0x10002680",
     "end": "0x1000169A",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_window_create",
     "size": 442
   },
@@ -131,34 +131,50 @@
     "address": "0x100016A0",
     "canonical_address": "0x10002880",
     "end": "0x100016CC",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_window_destroy",
     "size": 44
   },
   {
-    "address": "0x100017F0",
-    "canonical_address": "0x10002FC0",
-    "end": "0x100018BB",
-    "evidence": "ordered",
-    "name": "grim_app_init",
-    "size": 203,
+    "address": "0x100016D0",
+    "canonical_address": "0x10001160",
+    "end": "0x100016D1",
+    "evidence": "recovered",
+    "name": "grim_noop",
+    "size": 1,
     "aliases": [
-      "?init@MyApp@@QAE_NXZ"
+      "?on_tick@MyApp@@QAEXXZ"
     ]
   },
   {
+    "address": "0x100016E0",
+    "canonical_address": "0x100028D0",
+    "end": "0x100017E7",
+    "evidence": "recovered",
+    "name": "grim_backup_textures",
+    "size": 263
+  },
+  {
+    "address": "0x100017F0",
+    "canonical_address": "0x10002B40",
+    "end": "0x100018BB",
+    "evidence": "recovered",
+    "name": "grim_restore_textures",
+    "size": 203
+  },
+  {
     "address": "0x100018C0",
-    "canonical_address": "0x100030B0",
-    "end": "0x10001B92",
-    "evidence": "ordered",
-    "name": "grim_restore_device_after_activation",
-    "size": 722
+    "canonical_address": "0x100033B0",
+    "end": "0x10001C0A",
+    "evidence": "recovered",
+    "name": "grim_window_proc",
+    "size": 842
   },
   {
     "address": "0x10001C10",
     "canonical_address": "0x10003C00",
     "end": "0x10001E91",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "grim_run_loop",
     "size": 641
   },
@@ -166,7 +182,7 @@
     "address": "0x10001EA0",
     "canonical_address": "0x10003E60",
     "end": "0x1000221A",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_d3d_init",
     "size": 890
   },
@@ -182,7 +198,7 @@
     "address": "0x100022F0",
     "canonical_address": "0x10004350",
     "end": "0x10002398",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_create_geometry_buffers",
     "size": 168
   },
@@ -198,7 +214,7 @@
     "address": "0x100023E0",
     "canonical_address": "0x10004520",
     "end": "0x1000263D",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_apply_render_state",
     "size": 605
   },
@@ -220,11 +236,19 @@
   },
   {
     "address": "0x10002770",
-    "canonical_address": "0x10004970",
+    "canonical_address": "0x10004920",
     "end": "0x10002835",
-    "evidence": "ordered",
-    "name": "grim_timing_update",
+    "evidence": "recovered",
+    "name": "grim_timing_init",
     "size": 197
+  },
+  {
+    "address": "0x10002840",
+    "canonical_address": "0x10004970",
+    "end": "0x10002996",
+    "evidence": "recovered",
+    "name": "grim_timing_update",
+    "size": 342
   },
   {
     "address": "0x100029A0",
@@ -241,7 +265,7 @@
     "address": "0x10002A00",
     "canonical_address": "0x10004AB0",
     "end": "0x10002A2E",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "grim_texture_release",
     "size": 46,
     "aliases": [
@@ -252,7 +276,7 @@
     "address": "0x10002A30",
     "canonical_address": "0x10004EC0",
     "end": "0x10002AE5",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "grim_texture_load_file",
     "size": 181,
     "aliases": [
@@ -263,7 +287,7 @@
     "address": "0x10002AF0",
     "canonical_address": "0x10005110",
     "end": "0x10002B3F",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "grim_texture_name_equals",
     "size": 79
   },
@@ -295,7 +319,7 @@
     "address": "0x10002CC0",
     "canonical_address": "0x100052F0",
     "end": "0x1000302C",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_state_init",
     "size": 876
   },
@@ -303,7 +327,7 @@
     "address": "0x10003030",
     "canonical_address": "0x10005A40",
     "end": "0x100030BC",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_lookup_blob_load",
     "size": 140
   },
@@ -335,7 +359,7 @@
     "address": "0x10003210",
     "canonical_address": "0x10005CA0",
     "end": "0x10003217",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_get_version",
     "size": 7
   },
@@ -350,16 +374,16 @@
   {
     "address": "0x100032B0",
     "canonical_address": "0x10005D40",
-    "end": "0x10003458",
-    "evidence": "ordered",
+    "end": "0x10003469",
+    "evidence": "recovered",
     "name": "grim_apply_config",
-    "size": 424
+    "size": 441
   },
   {
     "address": "0x10003470",
     "canonical_address": "0x10005EB0",
     "end": "0x100036DF",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_init_system",
     "size": 623
   },
@@ -367,7 +391,7 @@
     "address": "0x100036E0",
     "canonical_address": "0x10005FF0",
     "end": "0x10003706",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_shutdown",
     "size": 38
   },
@@ -380,10 +404,18 @@
     "size": 8
   },
   {
+    "address": "0x10003720",
+    "canonical_address": "0x10006580",
+    "end": "0x10003AB9",
+    "evidence": "recovered",
+    "name": "grim_set_config_var",
+    "size": 921
+  },
+  {
     "address": "0x10003AC0",
     "canonical_address": "0x10006C30",
     "end": "0x10003B04",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_get_config_var",
     "size": 68
   },
@@ -399,7 +431,7 @@
     "address": "0x10003B20",
     "canonical_address": "0x10006CB0",
     "end": "0x10003BA9",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_clear_color",
     "size": 137
   },
@@ -407,7 +439,7 @@
     "address": "0x10003BB0",
     "canonical_address": "0x10006D50",
     "end": "0x10003C97",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_set_render_target",
     "size": 231
   },
@@ -415,17 +447,25 @@
     "address": "0x10003CA0",
     "canonical_address": "0x10006E40",
     "end": "0x10003CA7",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_get_time_ms",
     "size": 7
   },
   {
     "address": "0x10003CB0",
-    "canonical_address": "0x10006E60",
+    "canonical_address": "0x10006E50",
     "end": "0x10003CDC",
-    "evidence": "ordered",
-    "name": "grim_get_frame_dt",
+    "evidence": "recovered",
+    "name": "grim_set_time_ms",
     "size": 44
+  },
+  {
+    "address": "0x10003CE0",
+    "canonical_address": "0x10006E60",
+    "end": "0x10003CE7",
+    "evidence": "recovered",
+    "name": "grim_get_frame_dt",
+    "size": 7
   },
   {
     "address": "0x10003CF0",
@@ -445,10 +485,10 @@
   },
   {
     "address": "0x10003D10",
-    "canonical_address": "0x10007330",
+    "canonical_address": "0x10007390",
     "end": "0x10003D5B",
-    "evidence": "ordered",
-    "name": "grim_flush_input",
+    "evidence": "recovered",
+    "name": "grim_was_key_pressed",
     "size": 75
   },
   {
@@ -463,7 +503,7 @@
     "address": "0x10003D90",
     "canonical_address": "0x10007440",
     "end": "0x10003E0F",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_was_mouse_button_pressed",
     "size": 127
   },
@@ -591,32 +631,40 @@
     "address": "0x10004070",
     "canonical_address": "0x10007830",
     "end": "0x100040A7",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_bind_texture",
     "size": 55
   },
   {
     "address": "0x100040B0",
-    "canonical_address": "0x10007870",
+    "canonical_address": "0x10007AC0",
     "end": "0x10004129",
-    "evidence": "ordered",
-    "name": "grim_draw_fullscreen_quad",
+    "evidence": "recovered",
+    "name": "grim_begin_batch",
     "size": 121
   },
   {
     "address": "0x10004130",
     "canonical_address": "0x10007B20",
     "end": "0x1000419C",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_end_batch",
     "size": 108
   },
   {
+    "address": "0x100041A0",
+    "canonical_address": "0x10007F30",
+    "end": "0x100041C8",
+    "evidence": "recovered",
+    "name": "grim_set_rotation",
+    "size": 40
+  },
+  {
     "address": "0x100041D0",
-    "canonical_address": "0x100080B0",
+    "canonical_address": "0x10007F90",
     "end": "0x1000424A",
-    "evidence": "ordered",
-    "name": "grim_draw_line",
+    "evidence": "recovered",
+    "name": "grim_set_color",
     "size": 122
   },
   {
@@ -629,10 +677,10 @@
   },
   {
     "address": "0x100042C0",
-    "canonical_address": "0x10008230",
+    "canonical_address": "0x10008350",
     "end": "0x10004340",
-    "evidence": "ordered",
-    "name": "grim_set_atlas_frame",
+    "evidence": "recovered",
+    "name": "grim_set_uv",
     "size": 128
   },
   {
@@ -645,35 +693,43 @@
   },
   {
     "address": "0x10004360",
-    "canonical_address": "0x10008680",
+    "canonical_address": "0x100083C0",
     "end": "0x100043E8",
-    "evidence": "ordered",
-    "name": "grim_submit_vertices_offset",
+    "evidence": "recovered",
+    "name": "grim_flush_batch",
     "size": 136
   },
   {
     "address": "0x100043F0",
-    "canonical_address": "0x10008750",
+    "canonical_address": "0x10008B10",
     "end": "0x10004774",
-    "evidence": "ordered",
-    "name": "grim_draw_quad_rotated_matrix",
+    "evidence": "recovered",
+    "name": "grim_draw_quad",
     "size": 900
   },
   {
     "address": "0x10004780",
-    "canonical_address": "0x10008B10",
+    "canonical_address": "0x10009080",
     "end": "0x10004A3C",
-    "evidence": "ordered",
-    "name": "grim_draw_quad",
+    "evidence": "recovered",
+    "name": "grim_draw_quad_points",
     "size": 700
   },
   {
     "address": "0x10004A40",
-    "canonical_address": "0x10008F10",
+    "canonical_address": "0x100092B0",
     "end": "0x10004B9D",
-    "evidence": "ordered",
-    "name": "grim_draw_rect_outline",
+    "evidence": "recovered",
+    "name": "grim_draw_text_mono",
     "size": 349
+  },
+  {
+    "address": "0x10004BA0",
+    "canonical_address": "0x100099C0",
+    "end": "0x10004BBD",
+    "evidence": "recovered",
+    "name": "GRIM__GetInterface",
+    "size": 29
   },
   {
     "address": "0x10004BC0",
@@ -741,11 +797,19 @@
   },
   {
     "address": "0x10004E70",
-    "canonical_address": "0x1000A4A0",
+    "canonical_address": "0x1000A390",
     "end": "0x10004F30",
-    "evidence": "ordered",
-    "name": "grim_keyboard_poll",
+    "evidence": "recovered",
+    "name": "grim_keyboard_init",
     "size": 192
+  },
+  {
+    "address": "0x10004F30",
+    "canonical_address": "0x1000A4A0",
+    "end": "0x10004F8E",
+    "evidence": "recovered",
+    "name": "grim_keyboard_poll",
+    "size": 94
   },
   {
     "address": "0x10004F90",
@@ -764,11 +828,19 @@
     "size": 14
   },
   {
-    "address": "0x100050A0",
+    "address": "0x10004FE0",
     "canonical_address": "0x1000A5A0",
-    "end": "0x10005162",
-    "evidence": "ordered",
+    "end": "0x100050A0",
+    "evidence": "recovered",
     "name": "grim_mouse_init",
+    "size": 192
+  },
+  {
+    "address": "0x100050A0",
+    "canonical_address": "0x1000A670",
+    "end": "0x10005162",
+    "evidence": "recovered",
+    "name": "grim_mouse_poll",
     "size": 194
   },
   {
@@ -831,7 +903,7 @@
     "address": "0x10005A58",
     "canonical_address": "0x1000A8FA",
     "end": "0x10005A7F",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "_ftol",
     "size": 39
   },

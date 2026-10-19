@@ -35,7 +35,7 @@ def _library_owners(image: match_builds.BuildImage) -> dict[int, str]:
     excluded = {row.address for row in scope.function_dispositions[source.name] if row.disposition == "third-party"}
     result = {}
     for row in json.loads(image.target.functions_path.read_text()):
-        if row["evidence"] != "exact":
+        if row["evidence"] not in {"exact", "interface", "recovered"}:
             continue
         canonical = matchlib.parse_int(row["canonical_address"])
         owners = {owner for lo, hi, owner in regions if lo <= canonical < hi}
@@ -53,7 +53,7 @@ def _partition(
 ) -> list[dict[str, Any]]:
     by_address = {matchlib.parse_int(row["address"]): row for row in mapped}
     verified = sorted(
-        (start, matchlib.parse_int(row["end"])) for start, row in by_address.items() if row["evidence"] == "exact"
+        (start, matchlib.parse_int(row["end"])) for start, row in by_address.items() if row["evidence"] in {"exact", "interface", "recovered"}
     )
     protected_starts = [start for start, _ in verified]
     functions = {row["address"]: row for row in discovered}
@@ -86,7 +86,7 @@ def _partition(
             end = min(max(block["end"] for block in native["blocks"]),
                       section_starts[index + 1] if index + 1 < len(section_starts) else section_end)
             identity = by_address.get(start)
-            if identity is not None and identity["evidence"] == "exact":
+            if identity is not None and identity["evidence"] in {"exact", "interface", "recovered"}:
                 end = matchlib.parse_int(identity["end"])
             if not cursor <= start < end <= section_end:
                 raise ValueError("overlapping or invalid native function partition")

@@ -1,3 +1,4 @@
+#include "cl_build.h"
 #include <windows.h>
 
 struct GrimGuid {
@@ -24,10 +25,14 @@ struct GrimDirectInputVtable {
 
 struct GrimKeyboardDeviceVtable {
     void *slots0[6];
+#if CL_BUILD >= 10400
     long (__stdcall *SetProperty)(
         GrimKeyboardDevice *self,
         const GrimGuid *property,
         const void *header);
+#else
+    void *SetProperty;
+#endif
     long (__stdcall *Acquire)(GrimKeyboardDevice *self);
     void *slots1[3];
     long (__stdcall *SetDataFormat)(
@@ -102,11 +107,18 @@ bool grim_keyboard_init(HWND hwnd)
             return 0;
         }
         result = grim_keyboard_device->vtable->SetCooperativeLevel(
+#if CL_BUILD < 10400
+            grim_keyboard_device, hwnd, 5);
+#elif CL_BUILD == 10400
+            grim_keyboard_device, hwnd, 0x15);
+#else
             grim_keyboard_device, hwnd, 0x16);
+#endif
         if (result < 0) {
             return 0;
         }
 
+#if CL_BUILD >= 10400
         GrimPropertyDword property;
         property.header.size = sizeof(property);
         property.header.header_size = sizeof(property.header);
@@ -115,7 +127,7 @@ bool grim_keyboard_init(HWND hwnd)
         property.data = 10;
         grim_keyboard_device->vtable->SetProperty(
             grim_keyboard_device, (const GrimGuid *)1, &property.header);
-
+#endif
         if (grim_keyboard_device != 0) {
             grim_keyboard_device->vtable->Acquire(grim_keyboard_device);
         }

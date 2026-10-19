@@ -2,11 +2,13 @@
 
 bool grim_load_texture_internal(char *name, char *path)
 {
+#if CL_BUILD >= 10300
     int handle = grim_find_free_texture_slot();
     if (handle == -1) {
         grim_error_text = "All texture slots are used.";
         return false;
     }
+#endif
 
     if (grim_find_texture_by_name(name) != -1) {
         grim_error_text = "D3D: Texture slot not free.";
@@ -21,6 +23,9 @@ bool grim_load_texture_internal(char *name, char *path)
         return false;
     }
 
+#if CL_BUILD < 10300
+    int handle = grim_find_free_texture_slot();
+#endif
     grim_texture_slots[handle] = texture;
     if (handle > grim_texture_slot_max_index) {
         grim_texture_slot_max_index = handle;

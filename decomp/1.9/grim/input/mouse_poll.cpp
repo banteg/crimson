@@ -1,3 +1,4 @@
+#include "cl_build.h"
 #include <string.h>
 
 typedef unsigned long DWORD;
@@ -38,6 +39,26 @@ extern "C" void grim_noop(char *message, ...);
 
 bool grim_mouse_poll(void)
 {
+#if CL_BUILD < 10900
+    if (grim_mouse_device != 0) {
+        memset(&grim_mouse_state, 0, sizeof(grim_mouse_state));
+        long result = grim_mouse_device->vtable->GetDeviceState(
+            grim_mouse_device, sizeof(grim_mouse_state), &grim_mouse_state);
+        if (result < 0) {
+            result = grim_mouse_device->vtable->Acquire(grim_mouse_device);
+            while (result == DIERR_INPUTLOST) {
+                result = grim_mouse_device->vtable->Acquire(grim_mouse_device);
+            }
+            return 1;
+        }
+        grim_mouse_dx = (float)grim_mouse_state.lX;
+        grim_mouse_dy = (float)grim_mouse_state.lY;
+        grim_mouse_wheel_delta = (float)grim_mouse_state.lZ;
+        grim_mouse_x += grim_mouse_dx;
+        grim_mouse_y += grim_mouse_dy;
+        grim_mouse_wheel += grim_mouse_wheel_delta;
+    }
+#else
     if (grim_mouse_device != 0) {
         int iterations = 0;
         grim_mouse_dx = grim_mouse_dy = grim_mouse_wheel_delta = 0.0f;
@@ -75,5 +96,6 @@ bool grim_mouse_poll(void)
             result = grim_mouse_device->vtable->Acquire(grim_mouse_device);
         }
     }
+#endif
     return 1;
 }

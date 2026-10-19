@@ -1,6 +1,7 @@
 #ifndef GRIM_TEXTURE_H
 #define GRIM_TEXTURE_H
 
+#include "cl_build.h"
 #include "grim_d3d8.h"
 
 struct GrimTexture {
@@ -18,7 +19,13 @@ struct GrimTexture {
     bool grim_texture_load_file(char *path);
 };
 
-extern GrimTexture *grim_texture_slots[256];
+#if CL_BUILD < 10300
+#define GRIM_TEXTURE_SLOT_CAPACITY 128
+#else
+#define GRIM_TEXTURE_SLOT_CAPACITY 256
+#endif
+
+extern GrimTexture *grim_texture_slots[GRIM_TEXTURE_SLOT_CAPACITY];
 extern int grim_texture_slot_max_index;
 extern IDirect3D8 *grim_d3d8;
 extern IDirect3DDevice8 *grim_d3d_device;

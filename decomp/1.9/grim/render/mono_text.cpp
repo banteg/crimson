@@ -1,4 +1,7 @@
 #include "grim2d_cpp.h"
+#if CL_BUILD < 10400
+#include "grim_d3d8.h"
+#endif
 
 struct GrimPoint {
     float x;
@@ -35,8 +38,18 @@ extern unsigned long grim_color_slot1;
 extern unsigned long grim_color_slot2;
 extern unsigned long grim_color_slot3;
 extern GrimUV grim_uv_u0[4];
+#if CL_BUILD < 10900
+extern unsigned short grim_vertex_count;
+#else
 extern unsigned long grim_vertex_count;
+#endif
 extern unsigned int grim_vertex_capacity;
+#if CL_BUILD < 10400
+extern IDirect3DDevice8 *grim_d3d_device;
+extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
+extern IDirect3DIndexBuffer8 *grim_index_buffer;
+extern unsigned short *grim_index_write_ptr;
+#endif
 
 void IGrim2D_cpp::grim_draw_quad_points(
     float x0,
@@ -50,9 +63,15 @@ void IGrim2D_cpp::grim_draw_quad_points(
 {
     GrimPoint point;
 
+#if CL_BUILD < 10400
+    if (!grim_device_ready) {
+        return;
+    }
+#else
     if (grim_render_disabled || !grim_device_ready) {
         return;
     }
+#endif
 
     if (!grim_batch_active) {
         grim_begin_batch();
@@ -90,10 +109,45 @@ void IGrim2D_cpp::grim_draw_quad_points(
     grim_vertex_write_ptr->uv = grim_uv_u0[3];
     ++grim_vertex_write_ptr;
 
+#if CL_BUILD < 10400
+    *grim_index_write_ptr++ = grim_vertex_count;
+    *grim_index_write_ptr++ = grim_vertex_count + 1;
+    *grim_index_write_ptr++ = grim_vertex_count + 2;
+    *grim_index_write_ptr++ = grim_vertex_count + 2;
+    *grim_index_write_ptr++ = grim_vertex_count + 3;
+    *grim_index_write_ptr++ = grim_vertex_count;
+#endif
+#if CL_BUILD < 10900
+    grim_vertex_count += 4;
+    if (grim_vertex_count >= grim_vertex_capacity) {
+#if CL_BUILD < 10300
+        grim_vertex_buffer->Unlock();
+        grim_index_buffer->Unlock();
+        grim_d3d_device->DrawIndexedPrimitive(
+            D3DPT_TRIANGLELIST, 0, grim_vertex_count, 0, grim_vertex_count >> 1);
+        if (grim_vertex_buffer->Lock(
+                0,
+                0,
+                (unsigned char **)&grim_vertex_write_ptr,
+                D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK) >= 0) {
+            if (grim_index_buffer->Lock(
+                    0,
+                    0,
+                    (unsigned char **)&grim_index_write_ptr,
+                    D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK) >= 0) {
+                grim_vertex_count = 0;
+            }
+        }
+#else
+        grim_flush_batch();
+#endif
+    }
+#else
     *(unsigned short *)&grim_vertex_count += 4;
     if ((unsigned short)grim_vertex_count >= grim_vertex_capacity) {
         grim_flush_batch();
     }
+#endif
 }
 
 #include <string.h>
@@ -118,9 +172,15 @@ extern GrimMonoPoint grim_font2_uv_u[];
 
 void IGrim2D_cpp::grim_draw_text_mono(float x, float y, char *text)
 {
+#if CL_BUILD < 10400
+    if (text == 0) {
+        return;
+    }
+#else
     if (grim_render_disabled || text == 0) {
         return;
     }
+#endif
 
     if (!grim_font_texture_bound) {
         grim_d3d_device->SetTexture(0, grim_font_texture);
@@ -133,6 +193,23 @@ void IGrim2D_cpp::grim_draw_text_mono(float x, float y, char *text)
     grim_set_rotation(0.0f);
     grim_begin_batch();
 
+#if CL_BUILD < 10900
+    int length = strlen(text);
+    for (int index = 0; index < length; ++index) {
+        char character = text[index];
+        int glyph = character;
+        GrimMonoPoint uv = grim_font2_uv_u[glyph];
+        GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);
+        cursor.x += scale * 16.0f;
+        if (character == '\n') {
+            cursor.x = origin.x;
+            cursor.y += scale * 28.0f;
+        } else {
+            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);
+            grim_draw_quad(cursor.x, cursor.y, scale * 32.0f, scale * 32.0f);
+        }
+    }
+#else
     float cell_size = scale * 32.0f;
     float advance = scale * 16.0f;
     int length = strlen(text);
@@ -196,6 +273,7 @@ void IGrim2D_cpp::grim_draw_text_mono(float x, float y, char *text)
             grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);
         }
     }
+#endif
 
     grim_end_batch();
 }

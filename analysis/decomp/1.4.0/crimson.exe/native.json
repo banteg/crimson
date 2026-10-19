@@ -3081,6 +3081,17 @@
       ]
     },
     {
+      "address": 4207168,
+      "name": "native_function_00403240",
+      "blocks": [
+        {
+          "address": 4207168,
+          "end": 4207209,
+          "sha256": "74df0b1bed04c77dde0d98f6a15a415bf2392b2fdee5ab573cbeea0d03daeafb"
+        }
+      ]
+    },
+    {
       "address": 4207216,
       "name": "native_function_00403270",
       "blocks": [
@@ -3089,6 +3100,17 @@
           "end": 4207221,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4207232,
+          "end": 4207273,
+          "sha256": "16cb952c691e81dd54f77653eac667e28261d09b5f08928303fa1ea6e9e02ddf"
+        }
+      ]
+    },
+    {
+      "address": 4207232,
+      "name": "native_function_00403280",
+      "blocks": [
         {
           "address": 4207232,
           "end": 4207273,
@@ -3113,6 +3135,17 @@
       ]
     },
     {
+      "address": 4207296,
+      "name": "native_function_004032c0",
+      "blocks": [
+        {
+          "address": 4207296,
+          "end": 4207337,
+          "sha256": "6b0ebb025053402662aa641316e4508db6c7eb18b3bacef5d5ff1e6d446f6320"
+        }
+      ]
+    },
+    {
       "address": 4207344,
       "name": "native_function_004032f0",
       "blocks": [
@@ -3129,6 +3162,17 @@
       ]
     },
     {
+      "address": 4207360,
+      "name": "native_function_00403300",
+      "blocks": [
+        {
+          "address": 4207360,
+          "end": 4207401,
+          "sha256": "31f04f007838d430732aea31ba453aaf1256e033adf493169d87b84acd1c0221"
+        }
+      ]
+    },
+    {
       "address": 4207408,
       "name": "native_function_00403330",
       "blocks": [
@@ -3137,6 +3181,17 @@
           "end": 4207413,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4207424,
+          "end": 4207445,
+          "sha256": "2468eb2b0320aef5a0eccb167bd83e9cfb9991137230702f569ee25a09ba9486"
+        }
+      ]
+    },
+    {
+      "address": 4207424,
+      "name": "native_function_00403340",
+      "blocks": [
         {
           "address": 4207424,
           "end": 4207445,
@@ -3188,6 +3243,17 @@
       ]
     },
     {
+      "address": 4207504,
+      "name": "native_function_00403390",
+      "blocks": [
+        {
+          "address": 4207504,
+          "end": 4207545,
+          "sha256": "557845d2a565ea22de44c5ac8533da9907451d25216eb6c12cc54e423760dcfe"
+        }
+      ]
+    },
+    {
       "address": 4207552,
       "name": "native_function_004033c0",
       "blocks": [
@@ -3196,6 +3262,17 @@
           "end": 4207557,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4207568,
+          "end": 4207589,
+          "sha256": "d6fddf94d259032dda6a9621ad9c92df0b8d33f14d9815dd38700c1141cea981"
+        }
+      ]
+    },
+    {
+      "address": 4207568,
+      "name": "native_function_004033d0",
+      "blocks": [
         {
           "address": 4207568,
           "end": 4207589,
@@ -3220,6 +3297,17 @@
       ]
     },
     {
+      "address": 4207616,
+      "name": "native_function_00403400",
+      "blocks": [
+        {
+          "address": 4207616,
+          "end": 4207637,
+          "sha256": "ac6257b6893549aaae5de5b794d777749c0939b5d999aa70146238e8c1998031"
+        }
+      ]
+    },
+    {
       "address": 4207648,
       "name": "native_function_00403420",
       "blocks": [
@@ -3228,6 +3316,17 @@
           "end": 4207653,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4207664,
+          "end": 4207685,
+          "sha256": "46afc0a04d3cdbb0c40eac3fe3877cfa2cd4c72051d4df110faa9d2357a5fc68"
+        }
+      ]
+    },
+    {
+      "address": 4207664,
+      "name": "native_function_00403430",
+      "blocks": [
         {
           "address": 4207664,
           "end": 4207685,
@@ -3262,6 +3361,27 @@
       ]
     },
     {
+      "address": 4207712,
+      "name": "native_function_00403460",
+      "blocks": [
+        {
+          "address": 4207712,
+          "end": 4207794,
+          "sha256": "8a5d42ec814d0e8cbc4bb8c1e36f2020a4e44a94a172677e0fed139c0817ec95"
+        },
+        {
+          "address": 4207794,
+          "end": 4207855,
+          "sha256": "1c4fd54b387e53bb0fce6ba9bd1e6b41d11364b85c8a4a0106522023124e6fdc"
+        },
+        {
+          "address": 4207855,
+          "end": 4207863,
+          "sha256": "64d0e2e217569f3bb4a4c4004e25494a6c714068c7d98156761b4882f9498f8d"
+        }
+      ]
+    },
+    {
       "address": 4207872,
       "name": "native_function_00403500",
       "blocks": [
@@ -3270,6 +3390,17 @@
           "end": 4207877,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4207888,
+          "end": 4208145,
+          "sha256": "845a912537953a4e5a8b3938983c982b8c2fc0cd1f84c78658e82da3828b0529"
+        }
+      ]
+    },
+    {
+      "address": 4207888,
+      "name": "native_function_00403510",
+      "blocks": [
         {
           "address": 4207888,
           "end": 4208145,
@@ -3294,6 +3425,17 @@
       ]
     },
     {
+      "address": 4208176,
+      "name": "native_function_00403630",
+      "blocks": [
+        {
+          "address": 4208176,
+          "end": 4208177,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
       "address": 4208192,
       "name": "native_function_00403640",
       "blocks": [
@@ -3302,6 +3444,17 @@
           "end": 4208197,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4208208,
+          "end": 4208269,
+          "sha256": "7cf9acbb1886befb255f8d91360abde02bb8f075cdaffe179d7eb4e7723247d1"
+        }
+      ]
+    },
+    {
+      "address": 4208208,
+      "name": "native_function_00403650",
+      "blocks": [
         {
           "address": 4208208,
           "end": 4208269,
@@ -3417,6 +3570,17 @@
       ]
     },
     {
+      "address": 4208464,
+      "name": "native_function_00403750",
+      "blocks": [
+        {
+          "address": 4208464,
+          "end": 4208475,
+          "sha256": "7a308cdaaa34655d25d8a240c57bda61d52d6f26c1a9140a51fb04ad3b1fa24a"
+        }
+      ]
+    },
+    {
       "address": 4208480,
       "name": "native_function_00403760",
       "blocks": [
@@ -3460,6 +3624,17 @@
       ]
     },
     {
+      "address": 4208544,
+      "name": "native_function_004037a0",
+      "blocks": [
+        {
+          "address": 4208544,
+          "end": 4208555,
+          "sha256": "809319c207dc493da9b01e5b06f94969047fdc681e4069d5e0504f2ccac68132"
+        }
+      ]
+    },
+    {
       "address": 4208560,
       "name": "native_function_004037b0",
       "blocks": [
@@ -3468,6 +3643,27 @@
           "end": 4208565,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4208576,
+          "end": 4208588,
+          "sha256": "a5d45900694cc5d17e83ab28b19c99f81cfc568a96eb814e92494bb16eea2b69"
+        },
+        {
+          "address": 4208588,
+          "end": 4208609,
+          "sha256": "5a6f84448771b7585134172ec0a0eda0d5fc26af8ab165faffe03c030a9763d9"
+        },
+        {
+          "address": 4208609,
+          "end": 4208610,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
+      "address": 4208576,
+      "name": "native_function_004037c0",
+      "blocks": [
         {
           "address": 4208576,
           "end": 4208588,
@@ -3588,6 +3784,27 @@
           "end": 4208933,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4208944,
+          "end": 4208956,
+          "sha256": "04116d6a19a419723966a53685c7722866ff8540aa5319609d6b5f2a8bbd78bd"
+        },
+        {
+          "address": 4208956,
+          "end": 4208985,
+          "sha256": "6501bc6ddddcf15df042b0df8d32e8cf17d9fb63689878ae91f474f45ff8c0af"
+        },
+        {
+          "address": 4208985,
+          "end": 4208986,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
+      "address": 4208944,
+      "name": "native_function_00403930",
+      "blocks": [
         {
           "address": 4208944,
           "end": 4208956,
@@ -3740,6 +3957,27 @@
       ]
     },
     {
+      "address": 4209136,
+      "name": "native_function_004039f0",
+      "blocks": [
+        {
+          "address": 4209136,
+          "end": 4209151,
+          "sha256": "a5ce311c037c08d9ceebb08b0aad8a6abb764fac834d4cbd97f8563aa32d0fda"
+        },
+        {
+          "address": 4209151,
+          "end": 4209170,
+          "sha256": "15931df19891059f889977aeda1c3c2ae2c46a4c40fbb060070f42acd3369f59"
+        },
+        {
+          "address": 4209170,
+          "end": 4209171,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
       "address": 4209184,
       "name": "native_function_00403a20",
       "blocks": [
@@ -3748,6 +3986,27 @@
           "end": 4209189,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4209200,
+          "end": 4209212,
+          "sha256": "4eab8cf37c38b0ffb419eb1a3457fd03d675a6c4c2bd26155350dc30ef3686a5"
+        },
+        {
+          "address": 4209212,
+          "end": 4209298,
+          "sha256": "257031319c2188bc0bbe84f9df05d06ca211d1b2958d81cbaf0b75d4ee549bf1"
+        },
+        {
+          "address": 4209298,
+          "end": 4209299,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
+      "address": 4209200,
+      "name": "native_function_00403a30",
+      "blocks": [
         {
           "address": 4209200,
           "end": 4209212,
@@ -7288,6 +7547,27 @@
           "end": 4222869,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4222880,
+          "end": 4222895,
+          "sha256": "190fca710bbaa29d0e11c70bf5bba9bdfce1b549d336a0a95ea4e9af0c9ea5ee"
+        },
+        {
+          "address": 4222895,
+          "end": 4222944,
+          "sha256": "b8dff86bb9d8fb013c50693d3b0585d7d78c548097c0dcef44774ad5efac11e7"
+        },
+        {
+          "address": 4222944,
+          "end": 4222948,
+          "sha256": "e2f8cc83e68b6c30bec3ab3d825d0d8649e6061c8713ae0fb0e8ae9279cb712f"
+        }
+      ]
+    },
+    {
+      "address": 4222880,
+      "name": "native_function_00406fa0",
+      "blocks": [
         {
           "address": 4222880,
           "end": 4222895,
@@ -21495,17 +21775,6 @@
           "address": 4317899,
           "end": 4317924,
           "sha256": "0c84a57e5d69ec994f04a3d90be0c9bee57029db70e32e5e990959826d083061"
-        }
-      ]
-    },
-    {
-      "address": 4317976,
-      "name": "native_function_0041e318",
-      "blocks": [
-        {
-          "address": 4317976,
-          "end": 4317985,
-          "sha256": "9939426416359ea7cb7a9109be59f16f1af35f5d46b724c430907f0a29925e04"
         }
       ]
     },
@@ -47062,8 +47331,7 @@
     }
   ],
   "verified_starts": [
-    4198992,
-    4199008,
+    4198400,
     4199040,
     4199072,
     4200688,
@@ -47073,44 +47341,68 @@
     4200752,
     4200768,
     4200848,
+    4201376,
     4201584,
     4201616,
     4201680,
     4201760,
     4201840,
+    4202096,
     4202672,
     4202864,
+    4203072,
+    4203152,
     4203168,
+    4203280,
+    4205232,
     4205488,
     4205584,
     4205760,
     4205936,
     4206048,
     4206144,
+    4206320,
     4206432,
+    4206512,
     4207152,
+    4207168,
     4207216,
+    4207232,
     4207280,
+    4207296,
+    4207344,
+    4207360,
+    4207408,
     4207456,
     4207472,
     4207488,
+    4207504,
     4207552,
+    4207568,
     4207600,
+    4207616,
     4207648,
+    4207664,
     4207696,
-    4208192,
+    4207712,
+    4208160,
+    4208176,
+    4208272,
+    4208288,
+    4208320,
     4208352,
     4208400,
-    4208448,
+    4208416,
     4208480,
     4208496,
-    4208528,
     4208560,
+    4208576,
     4208624,
     4208640,
     4208752,
     4208768,
     4208928,
+    4208944,
     4208992,
     4209008,
     4209024,
@@ -47120,12 +47412,33 @@
     4209088,
     4209104,
     4209120,
+    4209136,
     4209184,
+    4209200,
     4209312,
     4209328,
+    4217984,
+    4218320,
+    4218352,
+    4220032,
+    4221600,
+    4225200,
     4231184,
     4231456,
+    4231744,
+    4232000,
+    4232240,
+    4232288,
+    4249600,
+    4257296,
+    4257328,
+    4269424,
     4324416,
+    4324592,
+    4325680,
+    4326848,
+    4326976,
+    4327120,
     4332000,
     4332352,
     4332417,
@@ -47312,7 +47625,8 @@
     4375020,
     4375264,
     4375270,
-    4375276
+    4375276,
+    4207424
   ],
   "ownership_ranges": [
     {
@@ -47323,5 +47637,5 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "d5a77e33fd09f5c7d8a5d9858e788f58b6445335dd49bf95802f57fcf0689e4a"
+  "maps_sha256": "c2fcd20a8ba249272daf52f8b59deff0e94722d73eed4661395ad78c61f4e2f8"
 }

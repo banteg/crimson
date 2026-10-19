@@ -25,7 +25,7 @@ void grim_d3d_shutdown(void)
         }
     }
 
-    for (i = 0; i < 256; ++i) {
+    for (i = 0; i < GRIM_TEXTURE_SLOT_CAPACITY; ++i) {
         if (grim_texture_slots[i] != 0) {
             delete grim_texture_slots[i];
             grim_texture_slots[i] = 0;

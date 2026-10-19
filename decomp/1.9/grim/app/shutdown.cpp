@@ -14,7 +14,9 @@ void IGrim2D_cpp::grim_shutdown(void)
     grim_lookup_blob_load(&grim_empty_string);
     grim_mouse_shutdown();
     grim_keyboard_shutdown();
+#if CL_BUILD >= 10300
     grim_joystick_shutdown();
+#endif
     grim_d3d_shutdown();
     grim_window_destroy();
 }

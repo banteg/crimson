@@ -1,3 +1,4 @@
+#include "cl_build.h"
 #include <stdio.h>
 
 #include "grim_d3dx8.h"
@@ -17,6 +18,120 @@ unsigned char *grim_decode_jaz_texture(
 
 bool GrimTexture::grim_texture_load_file(char *path)
 {
+#if CL_BUILD < 10400
+    if (this->texture != 0) {
+        this->texture->Release();
+    }
+    this->texture = 0;
+
+    bool found_in_lookup = false;
+    unsigned char *source_data = 0;
+    if (grim_lookup_blob_loaded) {
+        source_data = (unsigned char *)grim_lookup_blob_find(path);
+        found_in_lookup = source_data != 0;
+    }
+
+    if (grim_lookup_blob_loaded && found_in_lookup) {
+        unsigned int source_size = grim_lookup_blob_size_for_path(path);
+        if (D3DXCreateTextureFromFileInMemoryEx(
+                grim_d3d_device,
+                source_data,
+                source_size,
+                0xffffffff,
+                0xffffffff,
+                1,
+                0,
+                grim_preferred_texture_format,
+                D3DPOOL_MANAGED,
+                0xffffffff,
+                0xffffffff,
+                0,
+                0,
+                0,
+                &this->texture) < 0) {
+            return false;
+        }
+        return true;
+    }
+
+    if (D3DXCreateTextureFromFileExA(
+            grim_d3d_device,
+            path,
+            0xffffffff,
+            0xffffffff,
+            1,
+            0,
+            grim_preferred_texture_format,
+            D3DPOOL_MANAGED,
+            0xffffffff,
+            0xffffffff,
+            0,
+            0,
+            0,
+            &this->texture) < 0) {
+        return false;
+    }
+    return true;
+#elif CL_BUILD < 10900
+    if (this->texture != 0) {
+        this->texture->Release();
+    }
+    this->texture = 0;
+
+    bool found_in_lookup = false;
+    unsigned char *source_data = 0;
+    if (grim_lookup_blob_loaded) {
+        source_data = (unsigned char *)grim_lookup_blob_find(path);
+        found_in_lookup = source_data != 0;
+    }
+
+    GrimD3dxImageInfo source_info;
+    if (grim_lookup_blob_loaded && found_in_lookup) {
+        unsigned int source_size = grim_lookup_blob_size_for_path(path);
+        if (D3DXCreateTextureFromFileInMemoryEx(
+                grim_d3d_device,
+                source_data,
+                source_size,
+                0xffffffff,
+                0xffffffff,
+                1,
+                0,
+                grim_preferred_texture_format,
+                D3DPOOL_MANAGED,
+                0xffffffff,
+                0xffffffff,
+                0,
+                &source_info,
+                0,
+                &this->texture) < 0) {
+            return false;
+        }
+        this->width = source_info.width;
+        this->height = source_info.height;
+        return true;
+    }
+
+    if (D3DXCreateTextureFromFileExA(
+            grim_d3d_device,
+            path,
+            0xffffffff,
+            0xffffffff,
+            1,
+            0,
+            grim_preferred_texture_format,
+            D3DPOOL_MANAGED,
+            0xffffffff,
+            0xffffffff,
+            0,
+            &source_info,
+            0,
+            &this->texture) < 0) {
+        return false;
+    }
+    this->width = source_info.width;
+    this->height = source_info.height;
+    return true;
+#else
     if (path == 0) {
         return false;
     }
@@ -139,4 +254,5 @@ bool GrimTexture::grim_texture_load_file(char *path)
     this->width = source_info.width;
     this->height = source_info.height;
     return true;
+#endif
 }

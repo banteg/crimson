@@ -10,7 +10,9 @@ extern "C" void secondary_projectile_pool_global_init(void)
         entry->fields.type_id = SECONDARY_PROJECTILE_TYPE_ROCKET;
         entry->life_timer = 0.0f;
         entry->fields.trail_distance = 0.0f;
+#if CL_BUILD >= 10900
         entry->fields.unused_0x28 = (unsigned int)-100;
+#endif
         ++entry;
     } while (--remaining != 0);
 }

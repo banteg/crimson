@@ -1,3 +1,4 @@
+#include "cl_build.h"
 #include "grim_d3d8.h"
 
 extern IDirect3D8 *grim_d3d8_probe;
@@ -15,6 +16,7 @@ extern GrimInterface *grim_interface_instance;
 
 extern "C" GrimInterface *GRIM__GetInterface(void)
 {
+#if CL_BUILD >= 10400
     IDirect3D8 *probe = Direct3DCreate8(D3D_SDK_VERSION);
     grim_d3d8_probe = probe;
     if (probe == 0) {
@@ -29,8 +31,13 @@ extern "C" GrimInterface *GRIM__GetInterface(void)
     }
 
     probe->Release();
+#endif
     grim_state_init();
 
+#if CL_BUILD < 10900
+    return new GrimInterface;
+#else
     grim_interface_instance = new GrimInterface;
     return grim_interface_instance;
+#endif
 }

@@ -12,7 +12,11 @@ extern "C" int crt_fclose(FILE *fp);
 
 unsigned char console_queue_t::flush_log(char *filename)
 {
+#if CL_BUILD < 10900
+    FILE *fp = crt_fopen(filename, "wt");
+#else
     FILE *fp = crt_fopen(game_build_path(filename), "wt");
+#endif
     if (fp == 0) {
         return 0;
     }
@@ -24,7 +28,9 @@ unsigned char console_queue_t::flush_log(char *filename)
         }
         crt_fwrite(entry->text, strlen(entry->text), 1, fp);
     }
+#if CL_BUILD >= 10900
     crt_fflush(fp);
+#endif
     crt_fclose(fp);
     return 1;
 }

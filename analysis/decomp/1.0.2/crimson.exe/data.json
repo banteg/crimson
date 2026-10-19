@@ -1,6 +1,121 @@
 {
   "entries": [
     {
+      "address": "0x00401040",
+      "name": "unused_global_noop_init",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004010b0",
+      "name": "?0perk_meta_cpp_t",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004010c0",
+      "name": "?1perk_meta_cpp_t",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00401130",
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004011b0",
+      "name": "particle_pool_global_init",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00401260",
+      "name": "unused_fx_queue_random_prefix_vec2_global_init",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004012d0",
+      "name": "creature_pool_global_init",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00401300",
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00401320",
+      "name": "crimson_crt_empty_initializer_slot_38",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00401340",
+      "name": "crimson_crt_empty_initializer_slot_39",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00401360",
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00401380",
+      "name": "projectile_pool_global_init",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004013c0",
+      "name": "player_state_table_global_init",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00401430",
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00402a50",
+      "name": "projectile_alloc_slot",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00402a70",
+      "name": "particle_alloc_slot",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00410a16",
+      "name": "?_L",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00410b10",
+      "name": "atexit",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00410b51",
+      "name": "?_M",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00410c4f",
+      "name": "crt_rand",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00410f9e",
+      "name": "?2",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0041b034",
+      "name": "GetProcAddress",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0041b038",
+      "name": "LoadLibraryA",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x0041b3b8",
       "name": "$T318",
       "program": "1.0.2/crimson.exe"
@@ -333,6 +448,41 @@
     {
       "address": "0x00420a28",
       "name": "crt_pow10_negative",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00420b88",
+      "name": "unused_effect_uv16_prefix_vec2",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00421e90",
+      "name": "player_state_table",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004220cc",
+      "name": "grim_dll_module_handle",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00422128",
+      "name": "projectile_pool",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00422d28",
+      "name": "particle_pool",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00424ac0",
+      "name": "unused_fx_queue_random_prefix_vec2",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00424bc8",
+      "name": "perk_meta_table",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -726,5 +876,5 @@
       "program": "1.0.2/crimson.exe"
     }
   ],
-  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees."
+  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees. Reviewed native identities also retain their pinned instruction references in recovered.json."
 }

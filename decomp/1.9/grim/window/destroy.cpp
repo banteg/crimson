@@ -1,3 +1,4 @@
+#include "cl_build.h"
 #include <windows.h>
 
 extern HWND grim_main_window_hwnd;
@@ -11,9 +12,11 @@ BOOL grim_window_destroy(void)
     if (grim_main_window_hwnd != 0) {
         DestroyWindow(grim_main_window_hwnd);
     }
+#if CL_BUILD >= 10400
     if (grim_device_window_override != 0) {
         DestroyWindow(grim_main_window_hwnd);
     }
+#endif
     return UnregisterClassA(
         grim_window_class_name, grim_window_class_hinstance);
 }

@@ -70,7 +70,7 @@ def game_header(path, text):
 
     if path.name == "grim2d_cpp.h":
         # Recovered Grim defines every interface method itself.
-        text = sub(path, r"\) = 0;", ");", text, 62)
+        text = sub(path, r"\) = 0;", ");", text, 64)
     return prototypes(path, text, GAME_PROTOTYPES)
 
 

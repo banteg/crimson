@@ -1,3 +1,4 @@
+#include "cl_build.h"
 #include <string.h>
 
 typedef unsigned long DWORD;
@@ -39,6 +40,23 @@ extern unsigned char grim_keyboard_state[256];
 
 bool grim_keyboard_poll(void)
 {
+#if CL_BUILD < 10400
+    if (grim_keyboard_device != 0) {
+        memset(grim_keyboard_state, 0, sizeof(grim_keyboard_state));
+        long result = grim_keyboard_device->vtable->GetDeviceState(
+            grim_keyboard_device, 0x100, grim_keyboard_state);
+        if (result < 0) {
+            result = grim_keyboard_device->vtable->Acquire(grim_keyboard_device);
+            while (result == DIERR_INPUTLOST || result == DIERR_NOTACQUIRED) {
+                result = grim_keyboard_device->vtable->Acquire(grim_keyboard_device);
+            }
+            if (result < 0) {
+                return 0;
+            }
+        }
+        return 1;
+    }
+#else
     if (grim_keyboard_device != 0) {
         long result = grim_keyboard_device->vtable->Acquire(grim_keyboard_device);
         while (result == DIERR_INPUTLOST || result == DIERR_NOTACQUIRED) {
@@ -64,5 +82,6 @@ bool grim_keyboard_poll(void)
             return 1;
         }
     }
+#endif
     return 0;
 }

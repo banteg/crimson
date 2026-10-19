@@ -7,6 +7,13 @@ extern float grim_key_repeat_delay;
 
 bool IGrim2D_cpp::grim_was_key_pressed(unsigned int key)
 {
+#if CL_BUILD < 10400
+    bool pressed = grim_keyboard_key_down(key) &&
+        grim_key_repeat_first_press[(unsigned char)key];
+    grim_key_repeat_first_press[(unsigned char)key] =
+        !grim_keyboard_key_down(key);
+    return pressed;
+#else
     if (grim_keyboard_key_down(key)) {
         if (grim_key_repeat_timers[(unsigned char)key] == 0.0f) {
             float delay = grim_key_repeat_delay;
@@ -22,4 +29,5 @@ bool IGrim2D_cpp::grim_was_key_pressed(unsigned int key)
         grim_key_repeat_first_press[(unsigned char)key] = 1;
     }
     return false;
+#endif
 }

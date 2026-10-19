@@ -4,9 +4,11 @@
 
 inline console_cvar_entry_t::console_cvar_entry_t(char *entry_name)
 {
+#if CL_BUILD >= 10900
     mod_id = 0;
     mod_string_value = 0;
     mod_float_value = 0;
+#endif
     name = strdup_malloc(entry_name);
     next = 0;
     unknown_08 = 0;

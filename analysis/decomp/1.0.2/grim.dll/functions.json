@@ -105,17 +105,17 @@
   },
   {
     "address": "0x100010D0",
-    "canonical_address": "0x10001E90",
-    "end": "0x100012C0",
-    "evidence": "ordered",
-    "name": "grim_config_dialog_populate_display_modes",
-    "size": 496
+    "canonical_address": "0x10002120",
+    "end": "0x100012BF",
+    "evidence": "recovered",
+    "name": "grim_config_dialog_proc",
+    "size": 495
   },
   {
     "address": "0x100012C0",
     "canonical_address": "0x10002680",
     "end": "0x1000147A",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_window_create",
     "size": 442
   },
@@ -123,44 +123,60 @@
     "address": "0x10001480",
     "canonical_address": "0x10002880",
     "end": "0x100014AC",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_window_destroy",
     "size": 44
   },
   {
-    "address": "0x100015B0",
-    "canonical_address": "0x10002FC0",
-    "end": "0x10001672",
-    "evidence": "ordered",
-    "name": "grim_app_init",
-    "size": 194,
+    "address": "0x100014B0",
+    "canonical_address": "0x10001160",
+    "end": "0x100014B1",
+    "evidence": "recovered",
+    "name": "grim_noop",
+    "size": 1,
     "aliases": [
-      "?init@MyApp@@QAE_NXZ"
+      "?on_tick@MyApp@@QAEXXZ"
     ]
   },
   {
+    "address": "0x100014C0",
+    "canonical_address": "0x100028D0",
+    "end": "0x100015AD",
+    "evidence": "recovered",
+    "name": "grim_backup_textures",
+    "size": 237
+  },
+  {
+    "address": "0x100015B0",
+    "canonical_address": "0x10002B40",
+    "end": "0x10001672",
+    "evidence": "recovered",
+    "name": "grim_restore_textures",
+    "size": 194
+  },
+  {
     "address": "0x10001680",
-    "canonical_address": "0x100030B0",
-    "end": "0x10001961",
-    "evidence": "ordered",
-    "name": "grim_restore_device_after_activation",
-    "size": 737
+    "canonical_address": "0x100033B0",
+    "end": "0x100019DA",
+    "evidence": "recovered",
+    "name": "grim_window_proc",
+    "size": 858
   },
   {
     "address": "0x100019E0",
     "canonical_address": "0x10003C00",
     "end": "0x10001CB2",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "grim_run_loop",
     "size": 722
   },
   {
     "address": "0x10001CC0",
     "canonical_address": "0x10003E60",
-    "end": "0x10002040",
-    "evidence": "ordered",
+    "end": "0x10002036",
+    "evidence": "recovered",
     "name": "grim_d3d_init",
-    "size": 896
+    "size": 886
   },
   {
     "address": "0x10002040",
@@ -174,7 +190,7 @@
     "address": "0x10002110",
     "canonical_address": "0x10004350",
     "end": "0x100021B8",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_create_geometry_buffers",
     "size": 168
   },
@@ -190,7 +206,7 @@
     "address": "0x10002200",
     "canonical_address": "0x10004520",
     "end": "0x1000245D",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "grim_apply_render_state",
     "size": 605
   },
@@ -212,11 +228,19 @@
   },
   {
     "address": "0x10002590",
-    "canonical_address": "0x10004970",
+    "canonical_address": "0x10004920",
     "end": "0x10002655",
-    "evidence": "ordered",
-    "name": "grim_timing_update",
+    "evidence": "recovered",
+    "name": "grim_timing_init",
     "size": 197
+  },
+  {
+    "address": "0x10002660",
+    "canonical_address": "0x10004970",
+    "end": "0x100027B6",
+    "evidence": "recovered",
+    "name": "grim_timing_update",
+    "size": 342
   },
   {
     "address": "0x100027C0",
@@ -233,7 +257,7 @@
     "address": "0x10002820",
     "canonical_address": "0x10004AB0",
     "end": "0x1000284E",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "grim_texture_release",
     "size": 46,
     "aliases": [
@@ -241,10 +265,21 @@
     ]
   },
   {
+    "address": "0x10002850",
+    "canonical_address": "0x10004EC0",
+    "end": "0x10002905",
+    "evidence": "recovered",
+    "name": "grim_texture_load_file",
+    "size": 181,
+    "aliases": [
+      "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z"
+    ]
+  },
+  {
     "address": "0x10002910",
     "canonical_address": "0x10005110",
     "end": "0x1000295F",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "grim_texture_name_equals",
     "size": 79
   },
@@ -268,7 +303,7 @@
     "address": "0x100029D0",
     "canonical_address": "0x100051E0",
     "end": "0x10002AB1",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "grim_load_texture_internal",
     "size": 225
   },
@@ -276,7 +311,7 @@
     "address": "0x10002AC0",
     "canonical_address": "0x100052F0",
     "end": "0x10002DD9",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_state_init",
     "size": 793
   },
@@ -284,7 +319,7 @@
     "address": "0x10002DE0",
     "canonical_address": "0x10005A40",
     "end": "0x10002E6C",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_lookup_blob_load",
     "size": 140
   },
@@ -314,17 +349,25 @@
   },
   {
     "address": "0x10002FC0",
-    "canonical_address": "0x10005EB0",
+    "canonical_address": "0x10005D40",
     "end": "0x100030A7",
-    "evidence": "ordered",
-    "name": "grim_init_system",
+    "evidence": "recovered",
+    "name": "grim_apply_config",
     "size": 231
+  },
+  {
+    "address": "0x100030B0",
+    "canonical_address": "0x10005EB0",
+    "end": "0x100032EB",
+    "evidence": "recovered",
+    "name": "grim_init_system",
+    "size": 571
   },
   {
     "address": "0x100032F0",
     "canonical_address": "0x10005FF0",
     "end": "0x10003311",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_shutdown",
     "size": 33
   },
@@ -337,10 +380,18 @@
     "size": 8
   },
   {
+    "address": "0x10003330",
+    "canonical_address": "0x10006580",
+    "end": "0x100036A9",
+    "evidence": "recovered",
+    "name": "grim_set_config_var",
+    "size": 889
+  },
+  {
     "address": "0x100036B0",
     "canonical_address": "0x10006C30",
     "end": "0x100036F4",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_get_config_var",
     "size": 68
   },
@@ -356,7 +407,7 @@
     "address": "0x10003710",
     "canonical_address": "0x10006CB0",
     "end": "0x10003799",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_clear_color",
     "size": 137
   },
@@ -364,7 +415,7 @@
     "address": "0x100037A0",
     "canonical_address": "0x10006D50",
     "end": "0x10003887",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_set_render_target",
     "size": 231
   },
@@ -372,17 +423,25 @@
     "address": "0x10003890",
     "canonical_address": "0x10006E40",
     "end": "0x10003897",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_get_time_ms",
     "size": 7
   },
   {
     "address": "0x100038A0",
-    "canonical_address": "0x10006E60",
+    "canonical_address": "0x10006E50",
     "end": "0x100038CC",
-    "evidence": "ordered",
-    "name": "grim_get_frame_dt",
+    "evidence": "recovered",
+    "name": "grim_set_time_ms",
     "size": 44
+  },
+  {
+    "address": "0x100038D0",
+    "canonical_address": "0x10006E60",
+    "end": "0x100038D7",
+    "evidence": "recovered",
+    "name": "grim_get_frame_dt",
+    "size": 7
   },
   {
     "address": "0x100038E0",
@@ -402,10 +461,10 @@
   },
   {
     "address": "0x10003900",
-    "canonical_address": "0x10007330",
+    "canonical_address": "0x10007390",
     "end": "0x1000394B",
-    "evidence": "ordered",
-    "name": "grim_flush_input",
+    "evidence": "recovered",
+    "name": "grim_was_key_pressed",
     "size": 75
   },
   {
@@ -420,7 +479,7 @@
     "address": "0x10003980",
     "canonical_address": "0x10007440",
     "end": "0x100039FF",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_was_mouse_button_pressed",
     "size": 127
   },
@@ -508,32 +567,40 @@
     "address": "0x10003C10",
     "canonical_address": "0x10007830",
     "end": "0x10003C47",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_bind_texture",
     "size": 55
   },
   {
     "address": "0x10003C50",
-    "canonical_address": "0x10007870",
+    "canonical_address": "0x10007AC0",
     "end": "0x10003CC9",
-    "evidence": "ordered",
-    "name": "grim_draw_fullscreen_quad",
+    "evidence": "recovered",
+    "name": "grim_begin_batch",
     "size": 121
   },
   {
     "address": "0x10003CD0",
     "canonical_address": "0x10007B20",
     "end": "0x10003D3C",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "grim_end_batch",
     "size": 108
   },
   {
+    "address": "0x10003D40",
+    "canonical_address": "0x10007F30",
+    "end": "0x10003D68",
+    "evidence": "recovered",
+    "name": "grim_set_rotation",
+    "size": 40
+  },
+  {
     "address": "0x10003D70",
-    "canonical_address": "0x100080B0",
+    "canonical_address": "0x10007F90",
     "end": "0x10003DEA",
-    "evidence": "ordered",
-    "name": "grim_draw_line",
+    "evidence": "recovered",
+    "name": "grim_set_color",
     "size": 122
   },
   {
@@ -546,10 +613,10 @@
   },
   {
     "address": "0x10003E60",
-    "canonical_address": "0x10008230",
+    "canonical_address": "0x10008350",
     "end": "0x10003EE0",
-    "evidence": "ordered",
-    "name": "grim_set_atlas_frame",
+    "evidence": "recovered",
+    "name": "grim_set_uv",
     "size": 128
   },
   {
@@ -562,35 +629,43 @@
   },
   {
     "address": "0x10003F00",
-    "canonical_address": "0x10008680",
+    "canonical_address": "0x100083C0",
     "end": "0x10003F88",
-    "evidence": "ordered",
-    "name": "grim_submit_vertices_offset",
+    "evidence": "recovered",
+    "name": "grim_flush_batch",
     "size": 136
   },
   {
     "address": "0x10003F90",
-    "canonical_address": "0x10008750",
+    "canonical_address": "0x10008B10",
     "end": "0x1000437F",
-    "evidence": "ordered",
-    "name": "grim_draw_quad_rotated_matrix",
+    "evidence": "recovered",
+    "name": "grim_draw_quad",
     "size": 1007
   },
   {
     "address": "0x10004380",
-    "canonical_address": "0x10008B10",
+    "canonical_address": "0x10009080",
     "end": "0x100046AB",
-    "evidence": "ordered",
-    "name": "grim_draw_quad",
+    "evidence": "recovered",
+    "name": "grim_draw_quad_points",
     "size": 811
   },
   {
     "address": "0x100046B0",
-    "canonical_address": "0x10008F10",
+    "canonical_address": "0x100092B0",
     "end": "0x10004807",
-    "evidence": "ordered",
-    "name": "grim_draw_rect_outline",
+    "evidence": "recovered",
+    "name": "grim_draw_text_mono",
     "size": 343
+  },
+  {
+    "address": "0x10004810",
+    "canonical_address": "0x100099C0",
+    "end": "0x1000482D",
+    "evidence": "recovered",
+    "name": "GRIM__GetInterface",
+    "size": 29
   },
   {
     "address": "0x10004830",
@@ -602,19 +677,27 @@
   },
   {
     "address": "0x10004860",
-    "canonical_address": "0x1000A310",
     "end": "0x10004873",
-    "evidence": "exact",
-    "name": "grim_joystick_button_down",
-    "size": 19
+    "size": 19,
+    "canonical_address": "0x1000A370",
+    "name": "grim_keyboard_key_down",
+    "evidence": "recovered"
   },
   {
     "address": "0x10004880",
-    "canonical_address": "0x1000A4A0",
+    "canonical_address": "0x1000A390",
     "end": "0x10004940",
-    "evidence": "ordered",
-    "name": "grim_keyboard_poll",
+    "evidence": "recovered",
+    "name": "grim_keyboard_init",
     "size": 192
+  },
+  {
+    "address": "0x10004940",
+    "canonical_address": "0x1000A4A0",
+    "end": "0x1000499E",
+    "evidence": "recovered",
+    "name": "grim_keyboard_poll",
+    "size": 94
   },
   {
     "address": "0x100049A0",
@@ -633,11 +716,19 @@
     "size": 14
   },
   {
-    "address": "0x10004AB0",
+    "address": "0x100049F0",
     "canonical_address": "0x1000A5A0",
-    "end": "0x10004B72",
-    "evidence": "ordered",
+    "end": "0x10004AB0",
+    "evidence": "recovered",
     "name": "grim_mouse_init",
+    "size": 192
+  },
+  {
+    "address": "0x10004AB0",
+    "canonical_address": "0x1000A670",
+    "end": "0x10004B72",
+    "evidence": "recovered",
+    "name": "grim_mouse_poll",
     "size": 194
   },
   {
@@ -650,10 +741,10 @@
   },
   {
     "address": "0x10004BC0",
-    "canonical_address": "0x1000A8E2",
+    "canonical_address": "0x1000A8EE",
     "end": "0x10004BC6",
     "evidence": "exact",
-    "name": "__CxxFrameHandler",
+    "name": "__CxxLongjmpUnwind",
     "size": 6
   },
   {
@@ -7136,10 +7227,10 @@
   },
   {
     "address": "0x10032730",
-    "canonical_address": "0x1003A980",
+    "canonical_address": "0x100398C0",
     "end": "0x10032736",
-    "evidence": "exact",
-    "name": "HlinkNavigateString",
+    "evidence": "recovered",
+    "name": "DirectInput8Create",
     "size": 6
   },
   {
@@ -7181,65 +7272,65 @@
     "address": "0x10032840",
     "canonical_address": "0x1000A8D6",
     "end": "0x1003284B",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "??3@YAXPAX@Z",
     "size": 11
   },
   {
     "address": "0x1003284B",
     "canonical_address": "0x1000A8DC",
-    "end": "0x10032859",
-    "evidence": "referenced",
+    "end": "0x10032879",
+    "evidence": "recovered",
     "name": "??2@YAPAXI@Z",
-    "size": 14
-  },
-  {
-    "address": "0x10032859",
-    "canonical_address": "0x1003ABC0",
-    "end": "0x1003288D",
-    "evidence": "ordered",
-    "name": "grim_jpeg_emit_message",
-    "size": 52
+    "size": 46
   },
   {
     "address": "0x1003289B",
-    "canonical_address": "0x1003D000",
-    "end": "0x10032920",
+    "canonical_address": "0x1003ACD0",
+    "end": "0x100328EA",
     "evidence": "ordered",
-    "name": "grim_jpeg_read_restart_marker",
-    "size": 133
-  },
-  {
-    "address": "0x10032920",
-    "canonical_address": "0x1003D580",
-    "end": "0x10032999",
-    "evidence": "ordered",
-    "name": "grim_jpeg_request_virt_sarray",
-    "size": 121,
+    "name": "grim_jpeg_init_input_controller",
+    "size": 79,
     "aliases": [
-      "request_virt_sarray"
+      "jinit_input_controller"
     ]
   },
   {
+    "address": "0x100328EA",
+    "canonical_address": "0x1000A8E2",
+    "end": "0x10032919",
+    "evidence": "recovered",
+    "name": "__CxxFrameHandler",
+    "size": 47
+  },
+  {
+    "address": "0x10032920",
+    "canonical_address": "0x1003D000",
+    "end": "0x10032999",
+    "evidence": "ordered",
+    "name": "grim_jpeg_read_restart_marker",
+    "size": 121
+  },
+  {
     "address": "0x10032999",
-    "canonical_address": "0x1003D7E0",
+    "canonical_address": "0x1003D0D0",
     "end": "0x10032AC4",
     "evidence": "ordered",
-    "name": "grim_jpeg_access_virt_sarray",
+    "name": "grim_jpeg_init_memory_mgr",
     "size": 299,
     "aliases": [
-      "access_virt_sarray"
+      "jinit_memory_mgr"
     ]
   },
   {
     "address": "0x10032AC4",
-    "canonical_address": "0x1003D930",
+    "canonical_address": "0x1003D580",
     "end": "0x10032B3F",
     "evidence": "ordered",
-    "name": "grim_jpeg_do_sarray_io",
+    "name": "grim_jpeg_request_virt_sarray",
     "size": 123,
     "aliases": [
-      "do_sarray_io"
+      "request_virt_sarray"
     ]
   },
   {
@@ -7378,7 +7469,7 @@
     "address": "0x10033044",
     "canonical_address": "0x1000A8FA",
     "end": "0x1003306B",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "_ftol",
     "size": 39
   },

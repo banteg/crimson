@@ -34,6 +34,7 @@ bool grim_create_geometry_buffers(void)
         return false;
     }
 
+#if CL_BUILD >= 10400
     if (grim_index_buffer->Lock(
             0,
             0,
@@ -55,6 +56,7 @@ bool grim_create_geometry_buffers(void)
     }
 
     grim_index_buffer->Unlock();
+#endif
     grim_d3d_device->SetStreamSource(
         0, grim_vertex_buffer, 28);
     grim_d3d_device->SetIndices(grim_index_buffer, 0);

@@ -117,7 +117,7 @@
       }
     }
   ],
-  "audit_digest": "14bb39d30a2047370e81cd0054d30329ebffdb6c2292c69df88d66dbd0b13e2a",
+  "audit_digest": "1ae71810d5894d696b606477446c08407de04ef5dd065cbc8382dfb462d9fb3d",
   "entry": {
     "symbol": "DllMain"
   },
@@ -517,7 +517,7 @@
           "note": "The exact recovered input initializers retain the SDK data-format references.",
           "path": "decomp/1.9/grim/input/mouse_init.cpp",
           "repository_relative": true,
-          "sha256": "2f58bbb38ce662212666e66c2ac5022fef32f2c37995660864e364910241eaec"
+          "sha256": "796b9eb3b5218ffb8164942ffbc5ea716cfbb693f3a43fb9f4540bdad894f180"
         }
       ],
       "kind": "static-library",
@@ -543,7 +543,7 @@
           "note": "The exact recovered input initializers retain the SDK GUID and data-format references.",
           "path": "decomp/1.9/grim/input/mouse_init.cpp",
           "repository_relative": true,
-          "sha256": "2f58bbb38ce662212666e66c2ac5022fef32f2c37995660864e364910241eaec"
+          "sha256": "796b9eb3b5218ffb8164942ffbc5ea716cfbb693f3a43fb9f4540bdad894f180"
         }
       ],
       "kind": "static-library",
@@ -1348,7 +1348,7 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "16f663f32b6ce652c686d7a54080091428ddbb163ebfb2aac9440377937684b0"
+          "sha256": "01fb8bb99ccd5af37f235470001c94023ba908117fcf059c1a2f8ec0d3a6830a"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",

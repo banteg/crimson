@@ -1,6 +1,8 @@
 #ifndef CRIMSONLAND_CONSOLE_H
 #define CRIMSONLAND_CONSOLE_H
 
+#include "cl_build.h"
+
 #ifdef __cplusplus
 
 extern "C" char *strdup_malloc(char *src);
@@ -12,9 +14,11 @@ struct console_cvar_entry_t {
     float value;
     char *string_value;
     int unknown_14;
+#if CL_BUILD >= 10900
     char *mod_id;
     char *mod_string_value;
     float *mod_float_value;
+#endif
 
     console_cvar_entry_t(char *entry_name);
     ~console_cvar_entry_t(void);

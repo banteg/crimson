@@ -1,0 +1,687 @@
+{
+  "schema": 1,
+  "sha256": "e068f330ea4e9f1a060d99a9c8f53d77f4b89e7dd187d6858cdc6c6d1fbb4e10",
+  "functions": [
+    {
+      "name": "grim_config_dialog_proc",
+      "address": "0x100010d0",
+      "end": "0x100012bf",
+      "body_sha256": "49934fe26c26ee9f0f70c2f967d1ff900867f1714dde6c1b8a6e6adce1e6ed51"
+    },
+    {
+      "name": "grim_window_create",
+      "address": "0x100012c0",
+      "end": "0x1000147a",
+      "body_sha256": "12342f30fc83fea3198e88900227b4106e5e0062d267b13c791457db19bdfa89"
+    },
+    {
+      "name": "grim_window_destroy",
+      "address": "0x10001480",
+      "end": "0x100014ac",
+      "body_sha256": "acb424ec39cc28a4fd04553c16c2175a761e3153181ad77f29570ae42943ecbd"
+    },
+    {
+      "name": "grim_noop",
+      "address": "0x100014b0",
+      "end": "0x100014b1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "grim_backup_textures",
+      "address": "0x100014c0",
+      "end": "0x100015ad",
+      "body_sha256": "f1b74fbb0d48ce4411a40c2db75b2893e6de62099f26e81f8570927d53f2d1fe"
+    },
+    {
+      "name": "grim_restore_textures",
+      "address": "0x100015b0",
+      "end": "0x10001672",
+      "body_sha256": "ca05086d99a73d24fadf66aa2f99352cac1b1f62113bc606e2b3224a1e7e3fa2"
+    },
+    {
+      "name": "grim_window_proc",
+      "address": "0x10001680",
+      "end": "0x100019da",
+      "body_sha256": "512848ca6fca74d7dbef8e7d5572da61a1a8d84139c78f8df2b8e961af968fac"
+    },
+    {
+      "name": "grim_run_loop",
+      "address": "0x100019e0",
+      "end": "0x10001cb2",
+      "body_sha256": "7b0f4430852d7dc2bdbebee7f2a7365b420a66ea90a7e8cce6e95bcbab31d8f7"
+    },
+    {
+      "name": "grim_d3d_init",
+      "address": "0x10001cc0",
+      "end": "0x10002036",
+      "body_sha256": "17f0fcfe944171d55c9549e69c6f1a63f8c84cf8c1dae68043ad1de936392135"
+    },
+    {
+      "name": "grim_create_geometry_buffers",
+      "address": "0x10002110",
+      "end": "0x100021b8",
+      "body_sha256": "3742ac3ec033c35b2fde43e1993600a515db4d075784c70c207f477b20256aa2"
+    },
+    {
+      "name": "grim_apply_render_state",
+      "address": "0x10002200",
+      "end": "0x1000245d",
+      "body_sha256": "2bba2c64a8dd42b32d31a32e5d37e028327b178ff8ec4e0fbfb5e643c044c4c7"
+    },
+    {
+      "name": "grim_timing_init",
+      "address": "0x10002590",
+      "end": "0x10002655",
+      "body_sha256": "6bc38523e25c7701d543984a03afe39e4c5002376768e3f3113da0b6108d9bc0"
+    },
+    {
+      "name": "grim_timing_update",
+      "address": "0x10002660",
+      "end": "0x100027b6",
+      "body_sha256": "827cf751eae29a2fbc53a03edad1ee5c0cc7eef6b3a79628bc588fb367880700"
+    },
+    {
+      "name": "grim_texture_release",
+      "address": "0x10002820",
+      "end": "0x1000284e",
+      "body_sha256": "5c9ff6452539abbc5af6e2a5d0c46eb62f734e5d8ddf664aaa3787d104e58d48"
+    },
+    {
+      "name": "grim_texture_load_file",
+      "address": "0x10002850",
+      "end": "0x10002905",
+      "body_sha256": "afc0078c777f9e17e997dc2edc0256cfe5c6dc0f370e6883c0180dff84828d90"
+    },
+    {
+      "name": "grim_texture_name_equals",
+      "address": "0x10002910",
+      "end": "0x1000295f",
+      "body_sha256": "e20292097c9668008b6c93b360eda0af69d04cf3cf3951d919d45762057a4664"
+    },
+    {
+      "name": "grim_load_texture_internal",
+      "address": "0x100029d0",
+      "end": "0x10002ab1",
+      "body_sha256": "22d2dfb00dca59f7facf30ec5141dea8f3e951ee04b8a424280d224ba1dd2711"
+    },
+    {
+      "name": "grim_state_init",
+      "address": "0x10002ac0",
+      "end": "0x10002dd9",
+      "body_sha256": "5f6fc8bad1ea67b017ec7258c6f2681ef67cdae146578c2158ebfa2793c2f066"
+    },
+    {
+      "name": "grim_lookup_blob_load",
+      "address": "0x10002de0",
+      "end": "0x10002e6c",
+      "body_sha256": "e68719d34734c67a3ca1a227380892c8d3508bdb6766397ff544cb59849d9298"
+    },
+    {
+      "name": "grim_apply_config",
+      "address": "0x10002fc0",
+      "end": "0x100030a7",
+      "body_sha256": "d182ed3f8b9e7a5733d24fbaf35ce9a14e8e672eab09ead6ef3b2b961d7ab347"
+    },
+    {
+      "name": "grim_init_system",
+      "address": "0x100030b0",
+      "end": "0x100032eb",
+      "body_sha256": "83be603e1f7dc31b8db825d379636e8e7a4b29952abb04cc32b60262efebd4ac"
+    },
+    {
+      "name": "grim_shutdown",
+      "address": "0x100032f0",
+      "end": "0x10003311",
+      "body_sha256": "54b10480c5ebcfad3e71b6477d262502c3f98431c8391fc3db730f9b2f68b2ee"
+    },
+    {
+      "name": "grim_set_config_var",
+      "address": "0x10003330",
+      "end": "0x100036a9",
+      "body_sha256": "09c054552236db3483f64771853c8e5052ddeefca2230be91198d35cb1d63d95"
+    },
+    {
+      "name": "grim_get_config_var",
+      "address": "0x100036b0",
+      "end": "0x100036f4",
+      "body_sha256": "3e3527483e2a7be754ae166a73a19010ffbfcfb857786d91af54946a081bb754"
+    },
+    {
+      "name": "grim_clear_color",
+      "address": "0x10003710",
+      "end": "0x10003799",
+      "body_sha256": "55a347e906ba2e60c7a87ba76ea113d5242b880de53c460b07aaf902a8b723d7"
+    },
+    {
+      "name": "grim_set_render_target",
+      "address": "0x100037a0",
+      "end": "0x10003887",
+      "body_sha256": "56910fc29f3062ef8bb0b1949ab37f30c16d092313b21a722e944f748c0f75cd"
+    },
+    {
+      "name": "grim_get_time_ms",
+      "address": "0x10003890",
+      "end": "0x10003897",
+      "body_sha256": "d32c7c6686481f5233aa7f9169f64d846b1b484d7438441803885fdbed1f52e0"
+    },
+    {
+      "name": "grim_set_time_ms",
+      "address": "0x100038a0",
+      "end": "0x100038cc",
+      "body_sha256": "9dd77e5391f15a4b3cd204cab5ba1f27115606e92fda6a02175a136404dd79ba"
+    },
+    {
+      "name": "grim_get_frame_dt",
+      "address": "0x100038d0",
+      "end": "0x100038d7",
+      "body_sha256": "f7f68d1f06edb78d71bea2c9105474fc78244f6f1ea9824e6e06663efa3ce0cc"
+    },
+    {
+      "name": "grim_was_key_pressed",
+      "address": "0x10003900",
+      "end": "0x1000394b",
+      "body_sha256": "7f364e8b07544422c92247f1176d410406ec0beb264db15687d47d038cb51c73"
+    },
+    {
+      "name": "grim_was_mouse_button_pressed",
+      "address": "0x10003980",
+      "end": "0x100039ff",
+      "body_sha256": "b09c6c3da22953982cbb07dd568274da7741d4571adb8ae76c6302027932645e"
+    },
+    {
+      "name": "grim_bind_texture",
+      "address": "0x10003c10",
+      "end": "0x10003c47",
+      "body_sha256": "35cf891ab2eefe216b4ca33ead141463363b7338e3280ccca7c1b15d490d3cf4"
+    },
+    {
+      "name": "grim_begin_batch",
+      "address": "0x10003c50",
+      "end": "0x10003cc9",
+      "body_sha256": "d0d3a149fb3298f0969200fc0bb577078a99602be534a99210b48463179259da"
+    },
+    {
+      "name": "grim_end_batch",
+      "address": "0x10003cd0",
+      "end": "0x10003d3c",
+      "body_sha256": "37495cebff8ab18c8c686a9432039e70508377d1395ede83b8dff24ec48c3c9f"
+    },
+    {
+      "name": "grim_set_rotation",
+      "address": "0x10003d40",
+      "end": "0x10003d68",
+      "body_sha256": "afa25937bec947bf39795a9f82741982c28d929cfdda920788a3ad74eb430a56"
+    },
+    {
+      "name": "grim_set_color",
+      "address": "0x10003d70",
+      "end": "0x10003dea",
+      "body_sha256": "fee8506e2517ac261050051ff24a852b58a09d82714ec036e8b0ff23a2832442"
+    },
+    {
+      "name": "grim_set_uv",
+      "address": "0x10003e60",
+      "end": "0x10003ee0",
+      "body_sha256": "01edb9de3a7e8b094de4898f8d78c901af50489f421265c5079c3c5c2bdfced2"
+    },
+    {
+      "name": "grim_flush_batch",
+      "address": "0x10003f00",
+      "end": "0x10003f88",
+      "body_sha256": "de26f23e762709a4a38a107eb32aa86c2b7f35e7b2d213558c547aa6d764c045"
+    },
+    {
+      "name": "grim_draw_quad",
+      "address": "0x10003f90",
+      "end": "0x1000437f",
+      "body_sha256": "aa74cdf0b72190e5d74a726996ba5268a4a3760c6cf3b8d5599be0267b996655"
+    },
+    {
+      "name": "grim_draw_quad_points",
+      "address": "0x10004380",
+      "end": "0x100046ab",
+      "body_sha256": "d86932c007787decd4db149c125fdc39c5a25c49fe45cc3003f385045fd518b2"
+    },
+    {
+      "name": "grim_draw_text_mono",
+      "address": "0x100046b0",
+      "end": "0x10004807",
+      "body_sha256": "e6f7d3cb632fd4551e0d8db573aea05434afa3d1ad35b1f693c6686d00fc455e"
+    },
+    {
+      "name": "GRIM__GetInterface",
+      "address": "0x10004810",
+      "end": "0x1000482d",
+      "body_sha256": "b4378dd6b649655a5bd03b6cb7d552ef52594349321a2431934caaf90be14881"
+    },
+    {
+      "name": "grim_keyboard_key_down",
+      "address": "0x10004860",
+      "end": "0x10004873",
+      "body_sha256": "78f597e2ffc15186c6637459724be9998c617c784e12fcb0ee1a166d8b5ecd54"
+    },
+    {
+      "name": "grim_keyboard_init",
+      "address": "0x10004880",
+      "end": "0x10004940",
+      "body_sha256": "b016bc5a8db6274231586b7ddff9c02eed7798d16650ff37daa832aa3b44896f"
+    },
+    {
+      "name": "grim_keyboard_poll",
+      "address": "0x10004940",
+      "end": "0x1000499e",
+      "body_sha256": "1049c32073b60461520aec992aabddc82e2a880fd671cedabcec65a29aa31337"
+    },
+    {
+      "name": "grim_mouse_init",
+      "address": "0x100049f0",
+      "end": "0x10004ab0",
+      "body_sha256": "8a9da2a35c01f3c0ca4fcfbb82783e6a3c1ca751c0018102f81cea3c1efb1724"
+    },
+    {
+      "name": "grim_mouse_poll",
+      "address": "0x10004ab0",
+      "end": "0x10004b72",
+      "body_sha256": "1d639bf52217550e5edaf014826404497145735fba5e2a3f558d0f3a7d160cc2"
+    },
+    {
+      "name": "DirectInput8Create",
+      "address": "0x10032730",
+      "end": "0x10032736",
+      "body_sha256": "d5b37ed9ca6bb3596b8221847df2a12c95e98b7a69578df083bf03460116d8e0"
+    },
+    {
+      "name": "??3@YAXPAX@Z",
+      "address": "0x10032840",
+      "end": "0x1003284b",
+      "body_sha256": "37743399c711c56e64fe58e8621267a1955c5838f7cad79fbaa08fd4226e163a"
+    },
+    {
+      "name": "??2@YAPAXI@Z",
+      "address": "0x1003284b",
+      "end": "0x10032879",
+      "body_sha256": "ebc16410e47ec10e08a4634a2ff84c6dab3f3a3c2cd0e3810bfe5862e1b60ae7"
+    },
+    {
+      "name": "__CxxFrameHandler",
+      "address": "0x100328ea",
+      "end": "0x10032919",
+      "body_sha256": "6cb17f53c53c1aa0f5861152da203920ed8e5a0f434ded8f802ceab042389479"
+    },
+    {
+      "name": "_ftol",
+      "address": "0x10033044",
+      "end": "0x1003306b",
+      "body_sha256": "d0a2aca68648a0ae9d5cbfae1b276d4a64d4f797fc0c60f28b64096cdfa3148c"
+    }
+  ],
+  "data": [
+    {
+      "name": "?0GrimTexture",
+      "address": "0x100027c0",
+      "reference": "0x10002a31",
+      "bytes": "e88afdffff"
+    },
+    {
+      "name": "?1GrimTexture",
+      "address": "0x10002820",
+      "reference": "0x10002a64",
+      "bytes": "e8b7fdffff"
+    },
+    {
+      "name": "?3",
+      "address": "0x10032840",
+      "reference": "0x10002844",
+      "bytes": "e8f7ff0200"
+    },
+    {
+      "name": "?2",
+      "address": "0x1003284b",
+      "reference": "0x10002a16",
+      "bytes": "e830fe0200"
+    },
+    {
+      "name": "fclose",
+      "address": "0x10032c2e",
+      "reference": "0x10002e60",
+      "bytes": "e8c9fd0200"
+    },
+    {
+      "name": "fread",
+      "address": "0x10032cab",
+      "reference": "0x10002e5a",
+      "bytes": "e84cfe0200"
+    },
+    {
+      "name": "ftell",
+      "address": "0x10032dc2",
+      "reference": "0x10002e29",
+      "bytes": "e894ff0200"
+    },
+    {
+      "name": "fseek",
+      "address": "0x10032f45",
+      "reference": "0x10002e23",
+      "bytes": "e81d010300"
+    },
+    {
+      "name": "fopen",
+      "address": "0x1003302f",
+      "reference": "0x10002deb",
+      "bytes": "e83f020300"
+    },
+    {
+      "name": "ftol",
+      "address": "0x10033044",
+      "reference": "0x10003732",
+      "bytes": "e80df90200"
+    },
+    {
+      "name": "GetModuleHandleA",
+      "address": "0x1003e038",
+      "reference": "0x100048b3",
+      "bytes": "ff1538e00310"
+    },
+    {
+      "name": "GetForegroundWindow",
+      "address": "0x1003e15c",
+      "reference": "0x10004889",
+      "bytes": "ff155ce10310"
+    },
+    {
+      "name": "PostQuitMessage",
+      "address": "0x1003e184",
+      "reference": "0x10001482",
+      "bytes": "ff1584e10310"
+    },
+    {
+      "name": "DestroyWindow",
+      "address": "0x1003e188",
+      "reference": "0x10001492",
+      "bytes": "ff1588e10310"
+    },
+    {
+      "name": "UnregisterClassA",
+      "address": "0x1003e18c",
+      "reference": "0x100014a5",
+      "bytes": "ff158ce10310"
+    },
+    {
+      "name": "GetDesktopWindow",
+      "address": "0x1003e194",
+      "reference": "0x10004893",
+      "bytes": "ff1594e10310"
+    },
+    {
+      "name": "grim_interface_vtable",
+      "address": "0x1003e214",
+      "reference": "0x10004823",
+      "bytes": "c70014e20310"
+    },
+    {
+      "name": "png_IDAT",
+      "address": "0x10040a30",
+      "reference": "0x1001e2ad",
+      "bytes": "b8300a0410"
+    },
+    {
+      "name": "c_dfDIKeyboard",
+      "address": "0x10041da4",
+      "reference": "0x100048ff",
+      "bytes": "68a41d0410"
+    },
+    {
+      "name": "c_dfDIMouse2",
+      "address": "0x10041fac",
+      "reference": "0x10004a6f",
+      "bytes": "68ac1f0410"
+    },
+    {
+      "name": "GUID_SysKeyboard",
+      "address": "0x10041fc4",
+      "reference": "0x100048e9",
+      "bytes": "68c41f0410"
+    },
+    {
+      "name": "GUID_SysMouse",
+      "address": "0x10041fd4",
+      "reference": "0x10004a59",
+      "bytes": "68d41f0410"
+    },
+    {
+      "name": "IID_IDirectInput8A",
+      "address": "0x10042024",
+      "reference": "0x100048a8",
+      "bytes": "6824200410"
+    },
+    {
+      "name": "grim_bound_texture_handle",
+      "address": "0x10044088",
+      "reference": "0x10003c3d",
+      "bytes": "893588400410"
+    },
+    {
+      "name": "grim_missing_frame_error_text",
+      "address": "0x10044090",
+      "reference": "0x100010c0",
+      "bytes": "c70544b8041090400410"
+    },
+    {
+      "name": "grim_zlib_fixed_literal_bits",
+      "address": "0x10046698",
+      "reference": "0x1002f6ec",
+      "bytes": "8b0d98660410",
+      "build_only": true
+    },
+    {
+      "name": "grim_frame_dt",
+      "address": "0x1004aae0",
+      "reference": "0x100038d0",
+      "bytes": "d905e0aa0410"
+    },
+    {
+      "name": "grim_vertex_capacity",
+      "address": "0x1004aae4",
+      "reference": "0x1000211e",
+      "bytes": "c705e4aa041000010000"
+    },
+    {
+      "name": "grim_window_class_hinstance",
+      "address": "0x1004ab24",
+      "reference": "0x10001498",
+      "bytes": "a124ab0410"
+    },
+    {
+      "name": "grim_window_class_name",
+      "address": "0x1004ab38",
+      "reference": "0x1000149d",
+      "bytes": "8b0d38ab0410"
+    },
+    {
+      "name": "grim_rotation_radians",
+      "address": "0x1004ab78",
+      "reference": "0x10003d4e",
+      "bytes": "a378ab0410"
+    },
+    {
+      "name": "grim_vertex_write_ptr",
+      "address": "0x1004ab7c",
+      "reference": "0x10003c81",
+      "bytes": "687cab0410"
+    },
+    {
+      "name": "grim_rotation_sin",
+      "address": "0x1004ab80",
+      "reference": "0x10003d5f",
+      "bytes": "d91d80ab0410"
+    },
+    {
+      "name": "grim_time_ms",
+      "address": "0x1004ab90",
+      "reference": "0x10003890",
+      "bytes": "d90590ab0410"
+    },
+    {
+      "name": "grim_config_default",
+      "address": "0x1004aba0",
+      "reference": "0x100036e6",
+      "bytes": "bea0ab0410"
+    },
+    {
+      "name": "grim_main_window_hwnd",
+      "address": "0x1004abc0",
+      "reference": "0x10001488",
+      "bytes": "a1c0ab0410"
+    },
+    {
+      "name": "grim_vertex_z",
+      "address": "0x1004acb8",
+      "reference": "0x100040ba",
+      "bytes": "a1b8ac0410"
+    },
+    {
+      "name": "grim_index_write_ptr",
+      "address": "0x1004aef0",
+      "reference": "0x10003ca5",
+      "bytes": "68f0ae0410"
+    },
+    {
+      "name": "grim_font2_uv_u",
+      "address": "0x1004aef8",
+      "reference": "0x1000474f",
+      "bytes": "8b0cd5f8ae0410"
+    },
+    {
+      "name": "grim_color_slot1",
+      "address": "0x1004b714",
+      "reference": "0x1000413d",
+      "bytes": "a114b70410"
+    },
+    {
+      "name": "grim_color_slot2",
+      "address": "0x1004b718",
+      "reference": "0x100041a4",
+      "bytes": "8b0d18b70410"
+    },
+    {
+      "name": "grim_color_slot3",
+      "address": "0x1004b71c",
+      "reference": "0x1000420c",
+      "bytes": "a11cb70410"
+    },
+    {
+      "name": "grim_lookup_blob_loaded",
+      "address": "0x1004b720",
+      "reference": "0x1000286d",
+      "bytes": "a020b70410"
+    },
+    {
+      "name": "grim_key_repeat_first_press",
+      "address": "0x1004b728",
+      "reference": "0x1000391a",
+      "bytes": "8a8828b70410"
+    },
+    {
+      "name": "grim_device_ready",
+      "address": "0x1004b82c",
+      "reference": "0x10003710",
+      "bytes": "a02cb80410"
+    },
+    {
+      "name": "grim_vertex_count",
+      "address": "0x1004b82e",
+      "reference": "0x10003cbf",
+      "bytes": "66c7052eb804100000"
+    },
+    {
+      "name": "grim_time_ticks",
+      "address": "0x1004b830",
+      "reference": "0x100038be",
+      "bytes": "a330b80410",
+      "build_only": true
+    },
+    {
+      "name": "grim_rotation_cos",
+      "address": "0x1004b838",
+      "reference": "0x10003d57",
+      "bytes": "d91d38b80410"
+    },
+    {
+      "name": "grim_mouse_button_latch",
+      "address": "0x1004b83c",
+      "reference": "0x10003997",
+      "bytes": "8a813cb80410"
+    },
+    {
+      "name": "grim_config_values",
+      "address": "0x1004b850",
+      "reference": "0x10002411",
+      "bytes": "8b0d78b90410",
+      "offset": 296
+    },
+    {
+      "name": "grim_font_texture_bound",
+      "address": "0x1004b9d8",
+      "reference": "0x100046c3",
+      "bytes": "a0d8b90410"
+    },
+    {
+      "name": "grim_font_scale",
+      "address": "0x1004b9ec",
+      "reference": "0x100046e3",
+      "bytes": "a1ecb90410"
+    },
+    {
+      "name": "grim_ms_to_seconds_scale",
+      "address": "0x1004c454",
+      "reference": "0x100038a6",
+      "bytes": "d83554c40410"
+    },
+    {
+      "name": "grim_batch_active",
+      "address": "0x1004c468",
+      "reference": "0x10003c50",
+      "bytes": "a068c40410"
+    },
+    {
+      "name": "grim_texture_backup_pending",
+      "address": "0x1004c469",
+      "reference": "0x100014c1",
+      "bytes": "a069c40410"
+    },
+    {
+      "name": "grim_empty_string",
+      "address": "0x1004c474",
+      "reference": "0x100032f0",
+      "bytes": "6874c40410"
+    },
+    {
+      "name": "grim_keyboard_state",
+      "address": "0x1004c480",
+      "reference": "0x10004869",
+      "bytes": "8a8080c40410"
+    },
+    {
+      "name": "grim_mouse_state",
+      "address": "0x1004c588",
+      "reference": "0x10004abf",
+      "bytes": "6888c50410"
+    },
+    {
+      "name": "grim_mouse_wheel",
+      "address": "0x1004c5a4",
+      "reference": "0x10004b5d",
+      "bytes": "d905a4c50410"
+    }
+  ],
+  "absent": [
+    {
+      "name": "grim_joystick_button_down",
+      "note": "Not present in 1.0.2 grim.dll."
+    },
+    {
+      "name": "HlinkNavigateString",
+      "note": "Not present in 1.0.2 grim.dll; 0x10032730 is DirectInput8Create."
+    }
+  ]
+}

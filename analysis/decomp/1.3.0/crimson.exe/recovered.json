@@ -1,0 +1,618 @@
+{
+  "schema": 1,
+  "sha256": "5c56641e7205631f4ea87394d8cbfd87bfc88f8211d199d439eae0a5ca6ad4d8",
+  "functions": [
+    {
+      "name": "grim_load_interface",
+      "address": "0x00401000",
+      "end": "0x00401029",
+      "body_sha256": "d1436b40aba0e950e6558eff8c107ef1964c8058d2aa8cc46e260ab3e529c08e"
+    },
+    {
+      "name": "unused_global_noop_init_thunk",
+      "address": "0x00401060",
+      "end": "0x00401065",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_global_noop_init",
+      "address": "0x00401070",
+      "end": "0x00401071",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "unused_particle_pool_suffix_color_global_init_thunk",
+      "address": "0x00401080",
+      "end": "0x00401085",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_particle_pool_suffix_color_global_init",
+      "address": "0x00401090",
+      "end": "0x004010b9",
+      "body_sha256": "ea85627afd04a189ff97059079642051127f33f11a043a0e9ea9adf91aa771f9"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init_thunk",
+      "address": "0x004010c0",
+      "end": "0x004010c5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init",
+      "address": "0x004010d0",
+      "end": "0x004010e5",
+      "body_sha256": "7f386218e9d5e0e90524969b5a7e4eed6b56b56364f4db5b698159be14137aa2"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+      "address": "0x004010f0",
+      "end": "0x004010f5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "address": "0x00401100",
+      "end": "0x00401115",
+      "body_sha256": "342efc2f9e13f7dd58b61e7e277f9547c2e8a2cbd9402ce9f26c3702d7a32c3d"
+    },
+    {
+      "name": "fx_queue_global_init_thunk",
+      "address": "0x00401120",
+      "end": "0x00401125",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "fx_queue_global_init",
+      "address": "0x00401130",
+      "end": "0x004011c7",
+      "body_sha256": "5f26a8caf55a2217220f555fc62d244b7016d8d3d7bfb979c70d710ec62a3778"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31_thunk",
+      "address": "0x004012d0",
+      "end": "0x004012d5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "address": "0x004012e0",
+      "end": "0x004012e1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "perk_meta_global_construct_and_register",
+      "address": "0x00401340",
+      "end": "0x0040134a",
+      "body_sha256": "7ddff71a398e09a2cefbd243ce81e592fdbf2b187c1e21e6bbbaf98aba64aeb3"
+    },
+    {
+      "name": "perk_meta_table_init",
+      "address": "0x00401350",
+      "end": "0x00401369",
+      "body_sha256": "dae3b86934f30ec28952b24ea615ceb8851772618385489aeb62927905450ef6"
+    },
+    {
+      "name": "perk_meta_entry_init",
+      "address": "0x00401370",
+      "end": "0x00401384",
+      "body_sha256": "a171ad269dc4991cb3d25cf76d9b72f0f9ce07d8d283d8b7782e56be53acf549"
+    },
+    {
+      "name": "perk_meta_register_atexit",
+      "address": "0x004013c0",
+      "end": "0x004013cc",
+      "body_sha256": "f1f83a6b540531db5be9b4f6948163c308b811af1ad88472dd0f486e3bd9d22b"
+    },
+    {
+      "name": "perk_meta_table_destroy",
+      "address": "0x004013d0",
+      "end": "0x004013e4",
+      "body_sha256": "5c725b6619aeae18d6e7acc0018bf337a396df59d1b4d5d20de35eb830962862"
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
+      "address": "0x00401410",
+      "end": "0x00401415",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+      "address": "0x00401420",
+      "end": "0x00401435",
+      "body_sha256": "19907ae05cb4104988a67c9f90d959eedb1c634de6e0a6703749fc43451cc093"
+    },
+    {
+      "name": "secondary_projectile_pool_global_init_thunk",
+      "address": "0x00401460",
+      "end": "0x00401465",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "secondary_projectile_pool_global_init",
+      "address": "0x00401470",
+      "end": "0x00401492",
+      "body_sha256": "5da10f358ce638e928c23c7109d8e482ec1d178e040d4551d7d2b26e0d94aadd"
+    },
+    {
+      "name": "particle_pool_global_init",
+      "address": "0x00401530",
+      "end": "0x004015c8",
+      "body_sha256": "53b56d065d220b480ebfb8d0b4fc2c226e99ba6f77c3181bc0aeaa8bc1fab09a"
+    },
+    {
+      "name": "creature_pool_global_init_thunk",
+      "address": "0x004015d0",
+      "end": "0x004015d5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "creature_pool_global_init",
+      "address": "0x004015e0",
+      "end": "0x0040160a",
+      "body_sha256": "71ea3ac6faf1382ef8e350c29e8ba839a95ad3e4e371caa0b738ea51e8a3b060"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44_thunk",
+      "address": "0x00401650",
+      "end": "0x00401655",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "address": "0x00401660",
+      "end": "0x00401661",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45_thunk",
+      "address": "0x00401670",
+      "end": "0x00401675",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "address": "0x00401680",
+      "end": "0x00401681",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "projectile_pool_global_init_thunk",
+      "address": "0x00401690",
+      "end": "0x00401695",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "projectile_pool_global_init",
+      "address": "0x004016a0",
+      "end": "0x004016c3",
+      "body_sha256": "8eff1965529f24f761c54cdb8bc3707db4ce53beef9e00322850d43096b5360b"
+    },
+    {
+      "name": "player_state_table_global_init_thunk",
+      "address": "0x004016d0",
+      "end": "0x004016d5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "player_state_table_global_init",
+      "address": "0x004016e0",
+      "end": "0x00401743",
+      "body_sha256": "cbaae20b265d2802a04d8627f3c87826cad70fbb7353fa1b1ab70d00c363aaad"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_54_thunk",
+      "address": "0x00401750",
+      "end": "0x00401755",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_54",
+      "address": "0x00401760",
+      "end": "0x00401761",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "input_aim_pov_left_active",
+      "address": "0x004034d0",
+      "end": "0x004034ed",
+      "body_sha256": "4d5fd140f2afe6ee7b70e6bd9cf62a7d09e31d0dbfeb2d5b6a77b3a2833e1444"
+    },
+    {
+      "name": "input_aim_pov_right_active",
+      "address": "0x004034f0",
+      "end": "0x0040350d",
+      "body_sha256": "2e013fe362e7f139346703d984ca2b08623f99446e5bb0c21e277c38a78d6053"
+    },
+    {
+      "name": "fx_spawn_sprite",
+      "address": "0x00404040",
+      "end": "0x004040d0",
+      "body_sha256": "ce8a67c3a10bcc64bc9dd496979b3d60b3ec46b6da0769fbdb13e1ea434431d8"
+    },
+    {
+      "name": "wrap_text_to_width_alloc",
+      "address": "0x00404a60",
+      "end": "0x00404acb",
+      "body_sha256": "c6bf6848ec8f37b82d2e95eba42e64f1890c0e3722edf61572ce63d7504675e6"
+    },
+    {
+      "name": "creature_find_nearest",
+      "address": "0x00405cf0",
+      "end": "0x00405dc2",
+      "body_sha256": "034dc76164d8911e5a884cfb778828263dc98c5484257693707a4c4cbe44f1cd"
+    },
+    {
+      "name": "fx_spawn_particle",
+      "address": "0x00405ee0",
+      "end": "0x00405fc1",
+      "body_sha256": "fd17dce9cf9467e8212401230a8424549c7272170da365743173540c66b0e9aa"
+    },
+    {
+      "name": "fx_spawn_secondary_projectile",
+      "address": "0x00405ff0",
+      "end": "0x004060cd",
+      "body_sha256": "38c67f35c61e02ae613d4bb23d3a5a716adf43272a1b97c6af527a834b8a33f4"
+    },
+    {
+      "name": "projectile_spawn",
+      "address": "0x004060d0",
+      "end": "0x004061a8",
+      "body_sha256": "df9a2bd859a0f7d9847c6bbbf32138917d5f9681ab4879234a786813fc92b4b5"
+    },
+    {
+      "name": "projectile_reset_pools",
+      "address": "0x004061b0",
+      "end": "0x004061d5",
+      "body_sha256": "7f763ebc603848b8e6e6f2b3f859a21b492bc7054cc2db1f67c1d8e7a4de0140"
+    },
+    {
+      "name": "creature_find_in_radius",
+      "address": "0x004061e0",
+      "end": "0x00406252",
+      "body_sha256": "d91be3c989bb5a0740abd9088a93f8d01fb32be53ae27970560631b98827eebc"
+    },
+    {
+      "name": "plaguebearer_spread_infection",
+      "address": "0x00409bc0",
+      "end": "0x00409c7e",
+      "body_sha256": "58b0f201f3d48560d8731306bed99a12ab1a0c708f979b51172c22cc2d65fed9"
+    },
+    {
+      "name": "creature_reset_all",
+      "address": "0x0040b510",
+      "end": "0x0040b525",
+      "body_sha256": "d9cc9ab66620933bee109af2784efea993a188569a6904a843ae386762dc8b99"
+    },
+    {
+      "name": "creatures_none_active",
+      "address": "0x0040b530",
+      "end": "0x0040b54c",
+      "body_sha256": "bc8776abc0abc21703861176bf1129ffc51ca3e1206f1fd23afcd1975edb78ca"
+    }
+  ],
+  "data": [
+    {
+      "name": "unused_global_noop_init",
+      "address": "0x00401070",
+      "reference": "0x00401060",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_particle_pool_suffix_color_global_init",
+      "address": "0x00401090",
+      "reference": "0x00401080",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init",
+      "address": "0x004010d0",
+      "reference": "0x004010c0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "address": "0x00401100",
+      "reference": "0x004010f0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "fx_queue_global_init",
+      "address": "0x00401130",
+      "reference": "0x00401120",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "address": "0x004012e0",
+      "reference": "0x004012d0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "?0perk_meta_cpp_t",
+      "address": "0x00401370",
+      "reference": "0x00401355",
+      "bytes": "6870134000"
+    },
+    {
+      "name": "?1perk_meta_cpp_t",
+      "address": "0x00401390",
+      "reference": "0x00401350",
+      "bytes": "6890134000"
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+      "address": "0x00401420",
+      "reference": "0x00401410",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "secondary_projectile_pool_global_init",
+      "address": "0x00401470",
+      "reference": "0x00401460",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "particle_pool_global_init",
+      "address": "0x00401530",
+      "reference": "0x00401520",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "creature_pool_global_init",
+      "address": "0x004015e0",
+      "reference": "0x004015d0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_38",
+      "address": "0x00401620",
+      "reference": "0x00401610",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_39",
+      "address": "0x00401640",
+      "reference": "0x00401630",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "address": "0x00401660",
+      "reference": "0x00401650",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "address": "0x00401680",
+      "reference": "0x00401670",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "projectile_pool_global_init",
+      "address": "0x004016a0",
+      "reference": "0x00401690",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "player_state_table_global_init",
+      "address": "0x004016e0",
+      "reference": "0x004016d0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_54",
+      "address": "0x00401760",
+      "reference": "0x00401750",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "sprite_effect_alloc_slot",
+      "address": "0x00404020",
+      "reference": "0x00404042",
+      "bytes": "e8d9ffffff",
+      "build_only": true
+    },
+    {
+      "name": "creature_find_nearest",
+      "address": "0x00405cf0",
+      "reference": "0x00406099",
+      "bytes": "e852fcffff"
+    },
+    {
+      "name": "projectile_alloc_slot",
+      "address": "0x00405ea0",
+      "reference": "0x004060d1",
+      "bytes": "e8cafdffff",
+      "build_only": true
+    },
+    {
+      "name": "particle_alloc_slot",
+      "address": "0x00405ec0",
+      "reference": "0x00405ee5",
+      "bytes": "e8d6ffffff",
+      "build_only": true
+    },
+    {
+      "name": "secondary_projectile_alloc_slot",
+      "address": "0x00405fd0",
+      "reference": "0x00405ff3",
+      "bytes": "e8d8ffffff",
+      "build_only": true
+    },
+    {
+      "name": "?_L",
+      "address": "0x0041bbc6",
+      "reference": "0x00401363",
+      "bytes": "e85ea80100"
+    },
+    {
+      "name": "atexit",
+      "address": "0x0041bcc0",
+      "reference": "0x004013c5",
+      "bytes": "e8f6a80100"
+    },
+    {
+      "name": "?_M",
+      "address": "0x0041bd01",
+      "reference": "0x004013de",
+      "bytes": "e81ea90100"
+    },
+    {
+      "name": "crt_rand",
+      "address": "0x0041bde9",
+      "reference": "0x00401590",
+      "bytes": "e854a80100"
+    },
+    {
+      "name": "?2",
+      "address": "0x0041be07",
+      "reference": "0x00404a79",
+      "bytes": "e889730100"
+    },
+    {
+      "name": "GetProcAddress",
+      "address": "0x00427038",
+      "reference": "0x0040101a",
+      "bytes": "ff1538704200"
+    },
+    {
+      "name": "LoadLibraryA",
+      "address": "0x0042703c",
+      "reference": "0x00401005",
+      "bytes": "ff153c704200"
+    },
+    {
+      "name": "grim_dll_module_handle",
+      "address": "0x0042e508",
+      "reference": "0x0040100d",
+      "bytes": "a308e54200"
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2",
+      "address": "0x0042e510",
+      "reference": "0x00401420",
+      "bytes": "c70510e5420000000000"
+    },
+    {
+      "name": "player_state_table",
+      "address": "0x0042ff90",
+      "reference": "0x004016e0",
+      "bytes": "b80c004300",
+      "offset": 124
+    },
+    {
+      "name": "highscore_record_shots_fired",
+      "address": "0x00430278",
+      "reference": "0x00406002",
+      "bytes": "8b3578024300"
+    },
+    {
+      "name": "fx_queue",
+      "address": "0x00430298",
+      "reference": "0x00401173",
+      "bytes": "b8a0024300",
+      "offset": 8
+    },
+    {
+      "name": "projectile_pool",
+      "address": "0x004307d0",
+      "reference": "0x004016a0",
+      "bytes": "b8fc074300",
+      "offset": 44
+    },
+    {
+      "name": "particle_pool",
+      "address": "0x004314d0",
+      "reference": "0x00401563",
+      "bytes": "bef4144300",
+      "offset": 36
+    },
+    {
+      "name": "unused_particle_pool_suffix_color",
+      "address": "0x00432ed0",
+      "reference": "0x00401090",
+      "bytes": "c705d02e43009a99193f"
+    },
+    {
+      "name": "secondary_projectile_pool",
+      "address": "0x00432ef0",
+      "reference": "0x00401470",
+      "bytes": "b8f82e4300",
+      "offset": 8
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2",
+      "address": "0x00433f18",
+      "reference": "0x004010d0",
+      "bytes": "c705183f430000000000"
+    },
+    {
+      "name": "sprite_effect_pool",
+      "address": "0x00433f20",
+      "reference": "0x00404057",
+      "bytes": "c686203f430001"
+    },
+    {
+      "name": "perk_meta_table",
+      "address": "0x00436d18",
+      "reference": "0x0040135e",
+      "bytes": "68186d4300"
+    },
+    {
+      "name": "config_blob",
+      "address": "0x00437324",
+      "reference": "0x004034dd",
+      "bytes": "8b15d8744300",
+      "offset": 436
+    },
+    {
+      "name": "creature_pool",
+      "address": "0x004374f8",
+      "reference": "0x004061e7",
+      "bytes": "b9f8744300"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2",
+      "address": "0x004475f8",
+      "reference": "0x00401100",
+      "bytes": "c705f875440000000000"
+    },
+    {
+      "name": "current_player_index",
+      "address": "0x0044774c",
+      "reference": "0x00406086",
+      "bytes": "a14c774400"
+    },
+    {
+      "name": "plaguebearer_infection_count",
+      "address": "0x00447750",
+      "reference": "0x00409c1a",
+      "bytes": "833d507744003c",
+      "build_only": true
+    },
+    {
+      "name": "grim_interface_ptr",
+      "address": "0x00447754",
+      "reference": "0x004034d0",
+      "bytes": "8b0d54774400"
+    },
+    {
+      "name": "bonus_fire_bullets_timer",
+      "address": "0x00447778",
+      "reference": "0x0040617d",
+      "bytes": "d90578774400",
+      "build_only": true
+    }
+  ],
+  "absent": [
+    {
+      "name": "crt_atol",
+      "note": "0x0041bde9 is crt_rand."
+    },
+    {
+      "name": "fx_spawn_particle_slow",
+      "note": "0x00405fd0 is secondary_projectile_alloc_slot."
+    }
+  ]
+}

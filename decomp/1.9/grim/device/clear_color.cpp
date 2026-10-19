@@ -6,9 +6,11 @@ extern unsigned char grim_device_ready;
 
 void IGrim2D_cpp::grim_clear_color(float r, float g, float b, float a)
 {
+#if CL_BUILD >= 10400
     if (grim_render_disabled) {
         return;
     }
+#endif
     if (!grim_device_ready) {
         return;
     }

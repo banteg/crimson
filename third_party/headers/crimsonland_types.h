@@ -351,7 +351,13 @@ typedef struct player_state_t {
     int experience;
     int reset_reserved_b0;
     int level;
+#if CL_BUILD == 10300
+    int perk_counts[2];
+#elif CL_BUILD == 10400
+    int perk_counts[10];
+#else
     int perk_counts[0x80];
+#endif
     float spread_heat;
     unsigned char _pad6[4];
     int weapon_id;
@@ -455,6 +461,152 @@ typedef struct effect_color_t {
     float a;
 } effect_color_t;
 
+#if CL_BUILD < 10300
+typedef struct creature_t {
+    unsigned char active;
+    unsigned char ai_mode;
+    unsigned char _pad0[2];
+    float hit_flash_timer;
+    float death_timer;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
+    union {
+        struct {
+            float vel_x;
+            float vel_y;
+        };
+        vec2f_t velocity;
+    };
+    float health;
+    float max_health;
+    float size;
+    unsigned char plague_infected;
+    unsigned char state_flag;
+    unsigned char force_target;
+    signed char target_player;
+    float heading;
+    float target_heading;
+    union {
+        struct {
+            float tint_r;
+            float tint_g;
+            float tint_b;
+            float tint_a;
+        };
+        effect_color_t color;
+    };
+    union {
+        struct {
+            float target_x;
+            float target_y;
+        };
+        vec2f_t target_position;
+    };
+    float contact_damage;
+    float move_speed;
+    float attack_cooldown;
+    float reward_value;
+    int type_id;
+    union {
+        int link_index;
+        creature_bonus_args_t bonus_args;
+        struct {
+            float target_offset_x;
+            float target_offset_y;
+        };
+        vec2f_t target_offset;
+    };
+    union {
+        float orbit_angle;
+        creature_orbit_radius_t orbit_radius;
+        int flags;
+        int phase_seed;
+        float dot_tick_timer;
+        float anim_phase;
+    };
+    int entity_reserved_74;
+} creature_t;
+#elif CL_BUILD < 10900
+typedef struct creature_t {
+    unsigned char active;
+    unsigned char ai_mode;
+    unsigned char _pad0[2];
+    unsigned char state_flag;
+    unsigned char _pad1[3];
+    float hit_flash_timer;
+    unsigned char plague_infected;
+    unsigned char _pad2[3];
+    float anim_phase;
+    float death_timer;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
+    union {
+        struct {
+            float vel_x;
+            float vel_y;
+        };
+        vec2f_t velocity;
+    };
+    float health;
+    float max_health;
+    float heading;
+    float size;
+    float target_heading;
+    union {
+        struct {
+            float tint_r;
+            float tint_g;
+            float tint_b;
+            float tint_a;
+        };
+        effect_color_t color;
+    };
+    unsigned char force_target;
+    signed char target_player;
+    unsigned char _pad_force_target[2];
+    union {
+        struct {
+            float target_x;
+            float target_y;
+        };
+        vec2f_t target_position;
+    };
+    float contact_damage;
+    float move_speed;
+    float attack_cooldown;
+    float reward_value;
+    int type_id;
+    union {
+        int link_index;
+        creature_bonus_args_t bonus_args;
+    };
+    union {
+        struct {
+            float target_offset_x;
+            float target_offset_y;
+        };
+        vec2f_t target_offset;
+    };
+    union {
+        float orbit_angle;
+        creature_orbit_radius_t orbit_radius;
+        int flags;
+        int phase_seed;
+        float dot_tick_timer;
+    };
+    int entity_reserved_74;
+} creature_t;
+#else
 typedef struct creature_t {
     unsigned char active;
     unsigned char _pad0[3];
@@ -529,6 +681,7 @@ typedef struct creature_t {
     int ai_mode;
     float anim_phase;
 } creature_t;
+#endif
 
 // Binary Ninja presentation view for tutorial bonus carriers. The tutorial
 // reuses the creature `link_index` slot as two signed 16-bit bonus arguments;
@@ -692,11 +845,29 @@ typedef struct projectile_vel_y_block_t {
     projectile_type_id_t type_id;
     float life_timer;
     float reserved;
+#if CL_BUILD >= 10900
     float speed_scale;
     float damage_pool;
     float hit_radius;
     float projectile_speed;
     int owner_id;
+#elif CL_BUILD >= 10300
+    float speed_scale;
+    union {
+        float damage_pool;
+        float hit_radius;
+        float projectile_speed;
+        int owner_id;
+    };
+#else
+    union {
+        float speed_scale;
+        float damage_pool;
+        float hit_radius;
+        float projectile_speed;
+        int owner_id;
+    };
+#endif
 } projectile_vel_y_block_t;
 
 typedef struct projectile_tail_t {
@@ -754,17 +925,35 @@ typedef struct projectile_t {
             projectile_type_id_t type_id;
             float life_timer;
             float reserved;
+#if CL_BUILD >= 10900
             float speed_scale;
             float damage_pool;
             float hit_radius;
             float projectile_speed;
             int owner_id;
+#elif CL_BUILD >= 10300
+            float speed_scale;
+            union {
+                float damage_pool;
+                float hit_radius;
+                float projectile_speed;
+                int owner_id;
+            };
+#else
+            union {
+                float speed_scale;
+                float damage_pool;
+                float hit_radius;
+                float projectile_speed;
+                int owner_id;
+            };
+#endif
         } fields;
         vec2f_t position;
     };
 } projectile_t;
 
-#if CL_BUILD == 10908
+#if CL_BUILD <= 10908
 enum { PROJECTILE_POOL_CAPACITY = 0x40 };
 #else
 enum { PROJECTILE_POOL_CAPACITY = 0x60 };
@@ -829,10 +1018,27 @@ typedef struct particle_t {
     };
     float angle;
     // Accumulated rotation angle: starts random, grows with dt.
+#if CL_BUILD >= 10400
     float rotation;
     unsigned char style_id;
     unsigned char _pad1[3];
     int target_id;
+#elif CL_BUILD >= 10300
+    float rotation;
+    union {
+        struct {
+            unsigned char style_id;
+            unsigned char _pad1[3];
+        };
+        int target_id;
+    };
+#else
+    union {
+        float rotation;
+        unsigned char style_id;
+        int target_id;
+    };
+#endif
 } particle_t;
 
 // Binary Ninja presentation view for the same 0x38-byte record; the flat
@@ -872,7 +1078,9 @@ typedef struct secondary_projectile_vel_y_block_t {
     secondary_projectile_type_id_t type_id;
     float trail_distance;
     int target_id;
+#if CL_BUILD >= 10900
     unsigned int unused_0x28;
+#endif
 } secondary_projectile_vel_y_block_t;
 
 typedef struct secondary_projectile_vel_x_block_t {
@@ -917,7 +1125,9 @@ typedef struct secondary_projectile_t {
             secondary_projectile_type_id_t type_id;
             float trail_distance;
             int target_id;
+#if CL_BUILD >= 10900
             unsigned int unused_0x28;
+#endif
         } fields;
         vec2f_t position;
     };

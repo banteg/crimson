@@ -1,0 +1,403 @@
+{
+  "schema": 1,
+  "sha256": "7f7ccf19ef028570c73c4478562a23d57c54c91e7335e88c373d092e9faa07fe",
+  "functions": [
+    {
+      "name": "unused_global_noop_init_thunk",
+      "address": "0x00401030",
+      "end": "0x00401035",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_global_noop_init",
+      "address": "0x00401040",
+      "end": "0x00401041",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "perk_meta_global_construct_and_register",
+      "address": "0x00401080",
+      "end": "0x0040108a",
+      "body_sha256": "b23d8620312ceb9c0443b7d4a57e01177f551db5c07e749e82ca68d8749b3756"
+    },
+    {
+      "name": "perk_meta_table_init",
+      "address": "0x00401090",
+      "end": "0x004010a9",
+      "body_sha256": "0fa7cca4e54ef53b5f80616223863361b65b6f6c40009277e213aa7d6a18a37e"
+    },
+    {
+      "name": "perk_meta_entry_init",
+      "address": "0x004010b0",
+      "end": "0x004010c0",
+      "body_sha256": "9d20fb9737545d0eeb198c79dc5d325beabd6d570a4058d3f1e7f4a887df0403"
+    },
+    {
+      "name": "perk_meta_register_atexit",
+      "address": "0x004010f0",
+      "end": "0x004010fc",
+      "body_sha256": "50003b7bb4b54887d2209ae609c3043473214c4aeba150b48fb689f310ee568d"
+    },
+    {
+      "name": "perk_meta_table_destroy",
+      "address": "0x00401100",
+      "end": "0x00401114",
+      "body_sha256": "7b05c77a5ca20ee7142021a26c86855e7302878f6c7c39e8258c3b713a2401ea"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+      "address": "0x00401120",
+      "end": "0x00401125",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "address": "0x00401130",
+      "end": "0x00401145",
+      "body_sha256": "a1a587f591649bf45b565c4fea4da4de874d24869d7ae39276b5e12177d101b4"
+    },
+    {
+      "name": "grim_load_interface",
+      "address": "0x00401170",
+      "end": "0x00401199",
+      "body_sha256": "5805c8c339d5a8e9b9ff57aae3ed3facf57059f686a94287d6d5230fff6d6d6c"
+    },
+    {
+      "name": "particle_pool_global_init_thunk",
+      "address": "0x004011a0",
+      "end": "0x004011a5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "particle_pool_global_init",
+      "address": "0x004011b0",
+      "end": "0x00401244",
+      "body_sha256": "9927cea423092db019d50df426d7c6583535de0c7d65de442637b53313c72138"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init_thunk",
+      "address": "0x00401250",
+      "end": "0x00401255",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init",
+      "address": "0x00401260",
+      "end": "0x00401275",
+      "body_sha256": "f8a1a595c13b1f1a51fe63746ab8da728c014272a74a9506416370c2a5a98360"
+    },
+    {
+      "name": "creature_pool_global_init_thunk",
+      "address": "0x004012c0",
+      "end": "0x004012c5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "creature_pool_global_init",
+      "address": "0x004012d0",
+      "end": "0x004012ee",
+      "body_sha256": "716aaa9f5b667f52d7f3bfa16648444dddbb7a9809468e565978b0437c053e3b"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31_thunk",
+      "address": "0x004012f0",
+      "end": "0x004012f5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "address": "0x00401300",
+      "end": "0x00401301",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_38_thunk",
+      "address": "0x00401310",
+      "end": "0x00401315",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_38",
+      "address": "0x00401320",
+      "end": "0x00401321",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_39_thunk",
+      "address": "0x00401330",
+      "end": "0x00401335",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_39",
+      "address": "0x00401340",
+      "end": "0x00401341",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44_thunk",
+      "address": "0x00401350",
+      "end": "0x00401355",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "address": "0x00401360",
+      "end": "0x00401361",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "projectile_pool_global_init",
+      "address": "0x00401380",
+      "end": "0x004013a3",
+      "body_sha256": "d193fa94487f632793a613b0e50ef3cf41b04acce6696aeca5b3186fd7d25ceb"
+    },
+    {
+      "name": "player_state_table_global_init_thunk",
+      "address": "0x004013b0",
+      "end": "0x004013b5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "player_state_table_global_init",
+      "address": "0x004013c0",
+      "end": "0x00401416",
+      "body_sha256": "b142efeca7e308ae74c2986104bb459345fa8b24266af097c80ad0b039c6152e"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45_thunk",
+      "address": "0x00401420",
+      "end": "0x00401425",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "address": "0x00401430",
+      "end": "0x00401431",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "wrap_text_to_width_alloc",
+      "address": "0x00401c10",
+      "end": "0x00401c7b",
+      "body_sha256": "2b8c26db9837690aa7c1c28dde9dcaf35a1f05772f8c60ea688890f81264c090"
+    },
+    {
+      "name": "fx_spawn_particle",
+      "address": "0x00402a90",
+      "end": "0x00402b67",
+      "body_sha256": "436c37a9fc31665b653a62dcdfa210afaa55b41ee25496add4eb4242eb9e8e50"
+    },
+    {
+      "name": "projectile_spawn",
+      "address": "0x00402b70",
+      "end": "0x00402bfa",
+      "body_sha256": "8750828bcca61d6b40f17f6d4cacb7005f0b6eb72c168c574e1705e9d21f3a11"
+    },
+    {
+      "name": "projectile_reset_pools",
+      "address": "0x00402c00",
+      "end": "0x00402c25",
+      "body_sha256": "821ff9ad8ced579905367a4b1d317c60017d8438a57e3d3f72c1ef0c64c2abd8"
+    },
+    {
+      "name": "creature_find_in_radius",
+      "address": "0x00402c30",
+      "end": "0x00402c99",
+      "body_sha256": "7645fc6c31a0fb61c93c74a960be74e9cfd259a86d74d085898375d62efe7be8"
+    },
+    {
+      "name": "creature_reset_all",
+      "address": "0x004062c0",
+      "end": "0x004062d3",
+      "body_sha256": "ede8ce732fa0ed0a0bd3a03ffe2c985922a2ca323267773912c1bebeaaf2d4b2"
+    }
+  ],
+  "data": [
+    {
+      "name": "unused_global_noop_init",
+      "address": "0x00401040",
+      "reference": "0x00401030",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "?0perk_meta_cpp_t",
+      "address": "0x004010b0",
+      "reference": "0x00401095",
+      "bytes": "68b0104000"
+    },
+    {
+      "name": "?1perk_meta_cpp_t",
+      "address": "0x004010c0",
+      "reference": "0x00401090",
+      "bytes": "68c0104000"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "address": "0x00401130",
+      "reference": "0x00401120",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "particle_pool_global_init",
+      "address": "0x004011b0",
+      "reference": "0x004011a0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init",
+      "address": "0x00401260",
+      "reference": "0x00401250",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "creature_pool_global_init",
+      "address": "0x004012d0",
+      "reference": "0x004012c0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "address": "0x00401300",
+      "reference": "0x004012f0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_38",
+      "address": "0x00401320",
+      "reference": "0x00401310",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_39",
+      "address": "0x00401340",
+      "reference": "0x00401330",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "address": "0x00401360",
+      "reference": "0x00401350",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "projectile_pool_global_init",
+      "address": "0x00401380",
+      "reference": "0x00401370",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "player_state_table_global_init",
+      "address": "0x004013c0",
+      "reference": "0x004013b0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "address": "0x00401430",
+      "reference": "0x00401420",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "projectile_alloc_slot",
+      "address": "0x00402a50",
+      "reference": "0x00402b71",
+      "bytes": "e8dafeffff",
+      "build_only": true
+    },
+    {
+      "name": "particle_alloc_slot",
+      "address": "0x00402a70",
+      "reference": "0x00402a95",
+      "bytes": "e8d6ffffff",
+      "build_only": true
+    },
+    {
+      "name": "?_L",
+      "address": "0x00410a16",
+      "reference": "0x004010a3",
+      "bytes": "e86ef90000"
+    },
+    {
+      "name": "atexit",
+      "address": "0x00410b10",
+      "reference": "0x004010f5",
+      "bytes": "e816fa0000"
+    },
+    {
+      "name": "?_M",
+      "address": "0x00410b51",
+      "reference": "0x0040110e",
+      "bytes": "e83efa0000"
+    },
+    {
+      "name": "crt_rand",
+      "address": "0x00410c4f",
+      "reference": "0x0040120c",
+      "bytes": "e83efa0000"
+    },
+    {
+      "name": "?2",
+      "address": "0x00410f9e",
+      "reference": "0x00401c29",
+      "bytes": "e870f30000"
+    },
+    {
+      "name": "GetProcAddress",
+      "address": "0x0041b034",
+      "reference": "0x0040118a",
+      "bytes": "ff1534b04100"
+    },
+    {
+      "name": "LoadLibraryA",
+      "address": "0x0041b038",
+      "reference": "0x00401175",
+      "bytes": "ff1538b04100"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2",
+      "address": "0x00420b88",
+      "reference": "0x00401130",
+      "bytes": "c705880b420000000000"
+    },
+    {
+      "name": "player_state_table",
+      "address": "0x00421e90",
+      "reference": "0x004013c1",
+      "bytes": "b8911e4200",
+      "offset": 1
+    },
+    {
+      "name": "grim_dll_module_handle",
+      "address": "0x004220cc",
+      "reference": "0x0040117d",
+      "bytes": "a3cc204200"
+    },
+    {
+      "name": "projectile_pool",
+      "address": "0x00422128",
+      "reference": "0x00401380",
+      "bytes": "b854214200",
+      "offset": 44
+    },
+    {
+      "name": "particle_pool",
+      "address": "0x00422d28",
+      "reference": "0x004011e3",
+      "bytes": "be3c2d4200",
+      "offset": 20
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2",
+      "address": "0x00424ac0",
+      "reference": "0x00401260",
+      "bytes": "c705c04a420000000000"
+    },
+    {
+      "name": "perk_meta_table",
+      "address": "0x00424bc8",
+      "reference": "0x0040109e",
+      "bytes": "68c84b4200"
+    }
+  ]
+}

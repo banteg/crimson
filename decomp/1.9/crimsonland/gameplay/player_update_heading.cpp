@@ -216,6 +216,25 @@ extern "C" float player_heading_approach_target(float target_heading)
         amount = wrapped;
     }
 
+#if CL_BUILD < 10900
+    if (direct > wrapped) {
+        if (target_heading < player_state_table[player_index].heading) {
+            player_state_table[player_index].heading += frame_dt * amount * 5.0f;
+            return amount;
+        } else {
+            player_state_table[player_index].heading -= frame_dt * amount * 5.0f;
+            return amount;
+        }
+    } else {
+        if (target_heading > player_state_table[player_index].heading) {
+            player_state_table[player_index].heading += frame_dt * amount * 5.0f;
+            return amount;
+        } else {
+            player_state_table[player_index].heading -= frame_dt * amount * 5.0f;
+            return amount;
+        }
+    }
+#else
     if (direct > wrapped) {
         player_heading_turn_delta = target_heading < player_state_table[player_index].heading
             ? frame_dt * amount * 5.0f
@@ -228,6 +247,7 @@ extern "C" float player_heading_approach_target(float target_heading)
     player_state_table[player_index].heading =
         player_heading_turn_delta + player_state_table[player_index].heading;
     return amount;
+#endif
 }
 
 extern "C" void player_update(void)

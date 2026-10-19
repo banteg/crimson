@@ -1,6 +1,81 @@
 {
   "entries": [
     {
+      "address": "0x10005252",
+      "name": "?3",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1000525d",
+      "name": "?2",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10005642",
+      "name": "fclose",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x100056bf",
+      "name": "fread",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x100057d6",
+      "name": "ftell",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10005959",
+      "name": "fseek",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10005a43",
+      "name": "fopen",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10005a58",
+      "name": "ftol",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10040030",
+      "name": "GetModuleHandleA",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004015c",
+      "name": "GetForegroundWindow",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10040184",
+      "name": "PostQuitMessage",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10040188",
+      "name": "DestroyWindow",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004018c",
+      "name": "UnregisterClassA",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10040194",
+      "name": "GetDesktopWindow",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10040218",
+      "name": "grim_interface_vtable",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x10040970",
       "name": "_g_D3DXFormatUnknown",
       "program": "1.3.0/grim.dll"
@@ -431,6 +506,11 @@
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x100430f0",
+      "name": "png_IDAT",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x10043580",
       "name": "crc_table",
       "program": "1.3.0/grim.dll"
@@ -511,6 +591,26 @@
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x1004466c",
+      "name": "c_dfDIKeyboard",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10044874",
+      "name": "c_dfDIMouse2",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004488c",
+      "name": "GUID_SysKeyboard",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004489c",
+      "name": "GUID_SysMouse",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x1004493c",
       "name": "IID_IDirectInput8A",
       "program": "1.3.0/grim.dll"
@@ -533,6 +633,16 @@
     {
       "address": "0x10046084",
       "name": "grim_texture_slot_max_index",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10046088",
+      "name": "grim_bound_texture_handle",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x10046090",
+      "name": "grim_missing_frame_error_text",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -946,6 +1056,11 @@
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x1004b6d8",
+      "name": "grim_zlib_fixed_literal_bits",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x1004b6dc",
       "name": "d3dx_zlib_fixed_distance_bits",
       "program": "1.3.0/grim.dll"
@@ -966,6 +1081,16 @@
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x1004cb88",
+      "name": "grim_frame_dt",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004cb8c",
+      "name": "grim_vertex_capacity",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x1004cb98",
       "name": "grim_window_icon_handle",
       "program": "1.3.0/grim.dll"
@@ -978,6 +1103,16 @@
     {
       "address": "0x1004cfd8",
       "name": "grim_d3d_device",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004cffc",
+      "name": "grim_window_class_hinstance",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004d010",
+      "name": "grim_window_class_name",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -1001,13 +1136,38 @@
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x1004d050",
+      "name": "grim_rotation_radians",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004d054",
+      "name": "grim_vertex_write_ptr",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004d058",
+      "name": "grim_rotation_sin",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x1004d05c",
       "name": "grim_mouse_button_cache",
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x1004d064",
+      "name": "grim_time_ms",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x1004d068",
       "name": "grim_lookup_blob_size",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004d070",
+      "name": "grim_config_default",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -1018,6 +1178,11 @@
     {
       "address": "0x1004d08c",
       "name": "grim_render_target_surface",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004d090",
+      "name": "grim_main_window_hwnd",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -1038,6 +1203,11 @@
     {
       "address": "0x1004d17c",
       "name": "grim_mouse_y_cached",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004d188",
+      "name": "grim_vertex_z",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -1071,6 +1241,16 @@
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x1004d5bc",
+      "name": "grim_index_write_ptr",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004d5c8",
+      "name": "grim_font2_uv_u",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x1004ddcc",
       "name": "grim_module_handle",
       "program": "1.3.0/grim.dll"
@@ -1078,6 +1258,56 @@
     {
       "address": "0x1004dde0",
       "name": "grim_color_slot0",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004dde4",
+      "name": "grim_color_slot1",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004dde8",
+      "name": "grim_color_slot2",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004ddec",
+      "name": "grim_color_slot3",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004ddf0",
+      "name": "grim_lookup_blob_loaded",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004ddf8",
+      "name": "grim_key_repeat_first_press",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004defc",
+      "name": "grim_device_ready",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004defe",
+      "name": "grim_vertex_count",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004df00",
+      "name": "grim_time_ticks",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004df08",
+      "name": "grim_rotation_cos",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004df0c",
+      "name": "grim_mouse_button_latch",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -1096,8 +1326,28 @@
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x1004df20",
+      "name": "grim_config_values",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x1004e060",
       "name": "grim_input_cached",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004e150",
+      "name": "grim_font_texture_bound",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004e164",
+      "name": "grim_font_scale",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004eb28",
+      "name": "grim_ms_to_seconds_scale",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -1118,6 +1368,21 @@
     {
       "address": "0x1004eb3c",
       "name": "grim_splash_texture",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004eb40",
+      "name": "grim_batch_active",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004eb48",
+      "name": "grim_texture_backup_pending",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004eb54",
+      "name": "grim_empty_string",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -1181,6 +1446,11 @@
       "program": "1.3.0/grim.dll"
     },
     {
+      "address": "0x1004ed90",
+      "name": "grim_mouse_state",
+      "program": "1.3.0/grim.dll"
+    },
+    {
       "address": "0x1004ed9c",
       "name": "grim_mouse_buttons",
       "program": "1.3.0/grim.dll"
@@ -1193,6 +1463,11 @@
     {
       "address": "0x1004eda8",
       "name": "grim_mouse_y",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004edac",
+      "name": "grim_mouse_wheel",
       "program": "1.3.0/grim.dll"
     },
     {
@@ -1286,5 +1561,5 @@
       "program": "1.3.0/grim.dll"
     }
   ],
-  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees."
+  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees. Reviewed native identities also retain their pinned instruction references in recovered.json."
 }

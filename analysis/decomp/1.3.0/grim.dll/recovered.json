@@ -1,0 +1,623 @@
+{
+  "schema": 1,
+  "sha256": "4ce04684bf7f989e5c3d0b4dbd72507ce4e1ee9a384ae1c9bdcb06b405e7c241",
+  "functions": [
+    {
+      "name": "grim_config_dialog_proc",
+      "address": "0x100010e0",
+      "end": "0x100014d2",
+      "body_sha256": "bf23cbcc3002b975175e08fb12bc6b33f28f4e44e2b5dc31b83d05cfa0541b14"
+    },
+    {
+      "name": "grim_window_create",
+      "address": "0x100014e0",
+      "end": "0x1000169a",
+      "body_sha256": "109652f37a7ea7e84b21c4b293a9a477e003e6592ff63db2f431901a0a29b863"
+    },
+    {
+      "name": "grim_window_destroy",
+      "address": "0x100016a0",
+      "end": "0x100016cc",
+      "body_sha256": "cfa680e72d0d841d75ce102318cfe172064ec64a3c4708508d4a64fa6f78e668"
+    },
+    {
+      "name": "grim_noop",
+      "address": "0x100016d0",
+      "end": "0x100016d1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "grim_backup_textures",
+      "address": "0x100016e0",
+      "end": "0x100017e7",
+      "body_sha256": "df660194bd93d69665482da259103c6ce80bd22f106c011699d8036946bba528"
+    },
+    {
+      "name": "grim_restore_textures",
+      "address": "0x100017f0",
+      "end": "0x100018bb",
+      "body_sha256": "407f78161ca1cf837f7a8a529bc5abdb234e6fdd09729e40ba3706bed40bb2f8"
+    },
+    {
+      "name": "grim_window_proc",
+      "address": "0x100018c0",
+      "end": "0x10001c0a",
+      "body_sha256": "3e2e4008e8bd3331060c41c46402d27c4325b41c723ef0ce23e68bd24ce7c9f3"
+    },
+    {
+      "name": "grim_run_loop",
+      "address": "0x10001c10",
+      "end": "0x10001e91",
+      "body_sha256": "264e9f3bcc480727fc33281022e06e427650256bf38f90047c73dd42b59342cc"
+    },
+    {
+      "name": "grim_d3d_init",
+      "address": "0x10001ea0",
+      "end": "0x1000221a",
+      "body_sha256": "296706e0ba00bd95d9cec768b92782354bce280d60f7cb56c0fbe377a5267b89"
+    },
+    {
+      "name": "grim_create_geometry_buffers",
+      "address": "0x100022f0",
+      "end": "0x10002398",
+      "body_sha256": "ccf1ca085c907b22f9fb053f25c03f3786900dffcc449e25ffdf0b5925ac6b8b"
+    },
+    {
+      "name": "grim_apply_render_state",
+      "address": "0x100023e0",
+      "end": "0x1000263d",
+      "body_sha256": "0d1444c2a446b26f7d9576cfde324bc06d1d7c492e7b366a253821a013994a48"
+    },
+    {
+      "name": "grim_timing_init",
+      "address": "0x10002770",
+      "end": "0x10002835",
+      "body_sha256": "529131b469be41fdc65bc2cc137ba60b2ca804f911fe1f2c13f086fbf8e5c011"
+    },
+    {
+      "name": "grim_timing_update",
+      "address": "0x10002840",
+      "end": "0x10002996",
+      "body_sha256": "487f7c20fa95eb141810ba05f09a8eecc7286e3143b10d25f30bb1179107a77c"
+    },
+    {
+      "name": "grim_texture_release",
+      "address": "0x10002a00",
+      "end": "0x10002a2e",
+      "body_sha256": "b3525006c154c4834d5891e0be69a1a37b65e059b9ee6d9fb8087d0ddc74b403"
+    },
+    {
+      "name": "grim_texture_load_file",
+      "address": "0x10002a30",
+      "end": "0x10002ae5",
+      "body_sha256": "55f3976243535a39d5e1e02f9730ae3f576c261d9eaaf3dbe28a33b0992c78f5"
+    },
+    {
+      "name": "grim_texture_name_equals",
+      "address": "0x10002af0",
+      "end": "0x10002b3f",
+      "body_sha256": "e20292097c9668008b6c93b360eda0af69d04cf3cf3951d919d45762057a4664"
+    },
+    {
+      "name": "grim_state_init",
+      "address": "0x10002cc0",
+      "end": "0x1000302c",
+      "body_sha256": "8e40cae3cf14f497378e7d93c3cab6d016582687eb321b5fc7d8164deaf44452"
+    },
+    {
+      "name": "grim_lookup_blob_load",
+      "address": "0x10003030",
+      "end": "0x100030bc",
+      "body_sha256": "7411bdabcc70609898d790f2225343e42acfb40327a30ad1e4727c36b718b13a"
+    },
+    {
+      "name": "grim_get_version",
+      "address": "0x10003210",
+      "end": "0x10003217",
+      "body_sha256": "5aa3dcc88a640b2a9a3a6f5286adaaeaf8a0ea0bec634d85dc2cf9005d1d3139"
+    },
+    {
+      "name": "grim_apply_config",
+      "address": "0x100032b0",
+      "end": "0x10003469",
+      "body_sha256": "9d43db7a3718f7320108264651ddd41352bae854c2e1b358d6563dd77897960d"
+    },
+    {
+      "name": "grim_init_system",
+      "address": "0x10003470",
+      "end": "0x100036df",
+      "body_sha256": "c5508794893d6e3769b341e89522966d1411adcad907fb1700014c7d6d6a137b"
+    },
+    {
+      "name": "grim_shutdown",
+      "address": "0x100036e0",
+      "end": "0x10003706",
+      "body_sha256": "7fe5d212094411782206462636ee524fd702de6a95eb13788fd40437d4ebf39b"
+    },
+    {
+      "name": "grim_set_config_var",
+      "address": "0x10003720",
+      "end": "0x10003ab9",
+      "body_sha256": "ba273571094ea79a2dc402c2f0f2e82ae3c5d58d4f538aade5b7b65f98438ade"
+    },
+    {
+      "name": "grim_get_config_var",
+      "address": "0x10003ac0",
+      "end": "0x10003b04",
+      "body_sha256": "f6de7d282223e6091404029726bec9a35e08a2d718f798b7ce821a15ea46f510"
+    },
+    {
+      "name": "grim_clear_color",
+      "address": "0x10003b20",
+      "end": "0x10003ba9",
+      "body_sha256": "59acfb56a0349d53b1c97fb20dd012c4f5bb378d48ea67941a685f790b2dc627"
+    },
+    {
+      "name": "grim_set_render_target",
+      "address": "0x10003bb0",
+      "end": "0x10003c97",
+      "body_sha256": "a7f0f5352258a62f4c5026904b5d2ed7fc9796752ae0d88d10a45096c7b10451"
+    },
+    {
+      "name": "grim_get_time_ms",
+      "address": "0x10003ca0",
+      "end": "0x10003ca7",
+      "body_sha256": "9da06f78ae9808fd336a897246535c236d0e700f57541550aa13390fb4026734"
+    },
+    {
+      "name": "grim_set_time_ms",
+      "address": "0x10003cb0",
+      "end": "0x10003cdc",
+      "body_sha256": "4ed4b9824b31e1d19a1fcb523c1f05d5a94495307b2bad5fc421ccb9b0f004a1"
+    },
+    {
+      "name": "grim_get_frame_dt",
+      "address": "0x10003ce0",
+      "end": "0x10003ce7",
+      "body_sha256": "453e411f2665fb8fc2f6faaf9d328286a59a5be188b08b54cb0eeccfac4a3fa7"
+    },
+    {
+      "name": "grim_was_key_pressed",
+      "address": "0x10003d10",
+      "end": "0x10003d5b",
+      "body_sha256": "fe51a605e654f76ab098e1c35658c3669e80b532b10e36783c7248c68867eda1"
+    },
+    {
+      "name": "grim_was_mouse_button_pressed",
+      "address": "0x10003d90",
+      "end": "0x10003e0f",
+      "body_sha256": "1ac13b0e98538e1ab9d94b513d48a5eca9f92c24efcb8e1fc3fa7d5900636a37"
+    },
+    {
+      "name": "grim_bind_texture",
+      "address": "0x10004070",
+      "end": "0x100040a7",
+      "body_sha256": "aa1b1af2511588f1ea165be3daeea2949154f073a69b2cdad1ff0fcdf51d23ec"
+    },
+    {
+      "name": "grim_begin_batch",
+      "address": "0x100040b0",
+      "end": "0x10004129",
+      "body_sha256": "a83bbc8a818087e71ff0c0f34d4476fc2218ea5033c3f055eab1efed484024ed"
+    },
+    {
+      "name": "grim_end_batch",
+      "address": "0x10004130",
+      "end": "0x1000419c",
+      "body_sha256": "db586873c9fc13b2b4201d64445eba23085419ff0ca0c17bd1c874651afc3cbf"
+    },
+    {
+      "name": "grim_set_rotation",
+      "address": "0x100041a0",
+      "end": "0x100041c8",
+      "body_sha256": "dc7dfe0503337b8a2260a795b0a2cdb0d4eff0b17cd6b679824b210bb4fa774b"
+    },
+    {
+      "name": "grim_set_color",
+      "address": "0x100041d0",
+      "end": "0x1000424a",
+      "body_sha256": "7180053af0297830dfbdb5e819a14eb4ea11af61ceccaeb3084c917f1a9095c1"
+    },
+    {
+      "name": "grim_set_uv",
+      "address": "0x100042c0",
+      "end": "0x10004340",
+      "body_sha256": "f9c46de85e8e4e1521ee2e79e4816cdf5cfbed0a7333397dd69510dc29f482ec"
+    },
+    {
+      "name": "grim_flush_batch",
+      "address": "0x10004360",
+      "end": "0x100043e8",
+      "body_sha256": "bd3c32fb318ae59da447ad8f46acf66eb4439f178d97ec8249dd2231142ef859"
+    },
+    {
+      "name": "grim_draw_quad",
+      "address": "0x100043f0",
+      "end": "0x10004774",
+      "body_sha256": "3d9455bc743305041b3a6fc6556f3dbf7a2a7d916e6dc7121173521b6923cd4b"
+    },
+    {
+      "name": "grim_draw_quad_points",
+      "address": "0x10004780",
+      "end": "0x10004a3c",
+      "body_sha256": "714f2424331c1ff93c532c8e424efd0bacd433b577a4002de3524252fca1ba4d"
+    },
+    {
+      "name": "grim_draw_text_mono",
+      "address": "0x10004a40",
+      "end": "0x10004b9d",
+      "body_sha256": "12d0bae9582e468a675dbaa6887307c8d83f4ef50cbb2084b6a018fe212ba8d2"
+    },
+    {
+      "name": "GRIM__GetInterface",
+      "address": "0x10004ba0",
+      "end": "0x10004bbd",
+      "body_sha256": "848a54dc5f6e5a7cfcb5b7ed0fc41938e4dcbe747cdd9ef8baf05d2549bf8dc0"
+    },
+    {
+      "name": "grim_keyboard_init",
+      "address": "0x10004e70",
+      "end": "0x10004f30",
+      "body_sha256": "f6d42794a3adac14be0623a9387526e386e0f6899c52b0da7614598611c486a1"
+    },
+    {
+      "name": "grim_keyboard_poll",
+      "address": "0x10004f30",
+      "end": "0x10004f8e",
+      "body_sha256": "a7d6c2240e24c8482c6fc151d0f18449a0d8869f4da72da361571e0566d30135"
+    },
+    {
+      "name": "grim_mouse_init",
+      "address": "0x10004fe0",
+      "end": "0x100050a0",
+      "body_sha256": "db6c22fa6f8d2da7d01b18f216bd18d52fa8d483de3a67b3e080f63b5aeea6d9"
+    },
+    {
+      "name": "grim_mouse_poll",
+      "address": "0x100050a0",
+      "end": "0x10005162",
+      "body_sha256": "b28a791c6ad79f2787645f31fa013ac77415d422677807afbf027d194302c9b9"
+    },
+    {
+      "name": "_ftol",
+      "address": "0x10005a58",
+      "end": "0x10005a7f",
+      "body_sha256": "d0a2aca68648a0ae9d5cbfae1b276d4a64d4f797fc0c60f28b64096cdfa3148c"
+    }
+  ],
+  "data": [
+    {
+      "name": "?3",
+      "address": "0x10005252",
+      "reference": "0x10002a24",
+      "bytes": "e829280000"
+    },
+    {
+      "name": "?2",
+      "address": "0x1000525d",
+      "reference": "0x10003095",
+      "bytes": "e8c3210000"
+    },
+    {
+      "name": "fclose",
+      "address": "0x10005642",
+      "reference": "0x100030b0",
+      "bytes": "e88d250000"
+    },
+    {
+      "name": "fread",
+      "address": "0x100056bf",
+      "reference": "0x100030aa",
+      "bytes": "e810260000"
+    },
+    {
+      "name": "ftell",
+      "address": "0x100057d6",
+      "reference": "0x10003079",
+      "bytes": "e858270000"
+    },
+    {
+      "name": "fseek",
+      "address": "0x10005959",
+      "reference": "0x10003073",
+      "bytes": "e8e1280000"
+    },
+    {
+      "name": "fopen",
+      "address": "0x10005a43",
+      "reference": "0x1000303b",
+      "bytes": "e8032a0000"
+    },
+    {
+      "name": "ftol",
+      "address": "0x10005a58",
+      "reference": "0x10003b42",
+      "bytes": "e8111f0000"
+    },
+    {
+      "name": "GetModuleHandleA",
+      "address": "0x10040030",
+      "reference": "0x10004ea3",
+      "bytes": "ff1530000410"
+    },
+    {
+      "name": "GetForegroundWindow",
+      "address": "0x1004015c",
+      "reference": "0x10004e79",
+      "bytes": "ff155c010410"
+    },
+    {
+      "name": "PostQuitMessage",
+      "address": "0x10040184",
+      "reference": "0x100016a2",
+      "bytes": "ff1584010410"
+    },
+    {
+      "name": "DestroyWindow",
+      "address": "0x10040188",
+      "reference": "0x100016b2",
+      "bytes": "ff1588010410"
+    },
+    {
+      "name": "UnregisterClassA",
+      "address": "0x1004018c",
+      "reference": "0x100016c5",
+      "bytes": "ff158c010410"
+    },
+    {
+      "name": "GetDesktopWindow",
+      "address": "0x10040194",
+      "reference": "0x10004e83",
+      "bytes": "ff1594010410"
+    },
+    {
+      "name": "grim_interface_vtable",
+      "address": "0x10040218",
+      "reference": "0x10004bb3",
+      "bytes": "c70018020410"
+    },
+    {
+      "name": "png_IDAT",
+      "address": "0x100430f0",
+      "reference": "0x10027cfd",
+      "bytes": "b8f0300410"
+    },
+    {
+      "name": "c_dfDIKeyboard",
+      "address": "0x1004466c",
+      "reference": "0x10004eef",
+      "bytes": "686c460410"
+    },
+    {
+      "name": "c_dfDIMouse2",
+      "address": "0x10044874",
+      "reference": "0x1000505f",
+      "bytes": "6874480410"
+    },
+    {
+      "name": "GUID_SysKeyboard",
+      "address": "0x1004488c",
+      "reference": "0x10004ed9",
+      "bytes": "688c480410"
+    },
+    {
+      "name": "GUID_SysMouse",
+      "address": "0x1004489c",
+      "reference": "0x10005049",
+      "bytes": "689c480410"
+    },
+    {
+      "name": "grim_bound_texture_handle",
+      "address": "0x10046088",
+      "reference": "0x1000409d",
+      "bytes": "893588600410"
+    },
+    {
+      "name": "grim_missing_frame_error_text",
+      "address": "0x10046090",
+      "reference": "0x100010c0",
+      "bytes": "c70514df041090600410"
+    },
+    {
+      "name": "grim_zlib_fixed_literal_bits",
+      "address": "0x1004b6d8",
+      "reference": "0x1003912c",
+      "bytes": "8b0dd8b60410",
+      "build_only": true
+    },
+    {
+      "name": "grim_frame_dt",
+      "address": "0x1004cb88",
+      "reference": "0x10003ce0",
+      "bytes": "d90588cb0410"
+    },
+    {
+      "name": "grim_vertex_capacity",
+      "address": "0x1004cb8c",
+      "reference": "0x100022fe",
+      "bytes": "c7058ccb041000010000"
+    },
+    {
+      "name": "grim_window_class_hinstance",
+      "address": "0x1004cffc",
+      "reference": "0x100016b8",
+      "bytes": "a1fccf0410"
+    },
+    {
+      "name": "grim_window_class_name",
+      "address": "0x1004d010",
+      "reference": "0x100016bd",
+      "bytes": "8b0d10d00410"
+    },
+    {
+      "name": "grim_rotation_radians",
+      "address": "0x1004d050",
+      "reference": "0x100041ae",
+      "bytes": "a350d00410"
+    },
+    {
+      "name": "grim_vertex_write_ptr",
+      "address": "0x1004d054",
+      "reference": "0x100040e1",
+      "bytes": "6854d00410"
+    },
+    {
+      "name": "grim_rotation_sin",
+      "address": "0x1004d058",
+      "reference": "0x100041bf",
+      "bytes": "d91d58d00410"
+    },
+    {
+      "name": "grim_time_ms",
+      "address": "0x1004d064",
+      "reference": "0x10003ca0",
+      "bytes": "d90564d00410"
+    },
+    {
+      "name": "grim_config_default",
+      "address": "0x1004d070",
+      "reference": "0x10003af6",
+      "bytes": "be70d00410"
+    },
+    {
+      "name": "grim_main_window_hwnd",
+      "address": "0x1004d090",
+      "reference": "0x100016a8",
+      "bytes": "a190d00410"
+    },
+    {
+      "name": "grim_vertex_z",
+      "address": "0x1004d188",
+      "reference": "0x10004520",
+      "bytes": "a188d10410"
+    },
+    {
+      "name": "grim_index_write_ptr",
+      "address": "0x1004d5bc",
+      "reference": "0x10004105",
+      "bytes": "68bcd50410"
+    },
+    {
+      "name": "grim_font2_uv_u",
+      "address": "0x1004d5c8",
+      "reference": "0x10004ae2",
+      "bytes": "8b0cd5c8d50410"
+    },
+    {
+      "name": "grim_color_slot1",
+      "address": "0x1004dde4",
+      "reference": "0x100045a3",
+      "bytes": "a1e4dd0410"
+    },
+    {
+      "name": "grim_color_slot2",
+      "address": "0x1004dde8",
+      "reference": "0x1000460a",
+      "bytes": "8b0de8dd0410"
+    },
+    {
+      "name": "grim_color_slot3",
+      "address": "0x1004ddec",
+      "reference": "0x10004672",
+      "bytes": "a1ecdd0410"
+    },
+    {
+      "name": "grim_lookup_blob_loaded",
+      "address": "0x1004ddf0",
+      "reference": "0x10002a4d",
+      "bytes": "a0f0dd0410"
+    },
+    {
+      "name": "grim_key_repeat_first_press",
+      "address": "0x1004ddf8",
+      "reference": "0x10003d2a",
+      "bytes": "8a88f8dd0410"
+    },
+    {
+      "name": "grim_device_ready",
+      "address": "0x1004defc",
+      "reference": "0x10003b20",
+      "bytes": "a0fcde0410"
+    },
+    {
+      "name": "grim_vertex_count",
+      "address": "0x1004defe",
+      "reference": "0x1000411f",
+      "bytes": "66c705fede04100000"
+    },
+    {
+      "name": "grim_time_ticks",
+      "address": "0x1004df00",
+      "reference": "0x10003cce",
+      "bytes": "a300df0410",
+      "build_only": true
+    },
+    {
+      "name": "grim_rotation_cos",
+      "address": "0x1004df08",
+      "reference": "0x100041b7",
+      "bytes": "d91d08df0410"
+    },
+    {
+      "name": "grim_mouse_button_latch",
+      "address": "0x1004df0c",
+      "reference": "0x10003da7",
+      "bytes": "8a810cdf0410"
+    },
+    {
+      "name": "grim_config_values",
+      "address": "0x1004df20",
+      "reference": "0x100025f1",
+      "bytes": "8b0dd8e00410",
+      "offset": 440
+    },
+    {
+      "name": "grim_font_texture_bound",
+      "address": "0x1004e150",
+      "reference": "0x10004a53",
+      "bytes": "a050e10410"
+    },
+    {
+      "name": "grim_font_scale",
+      "address": "0x1004e164",
+      "reference": "0x10004a73",
+      "bytes": "a164e10410"
+    },
+    {
+      "name": "grim_ms_to_seconds_scale",
+      "address": "0x1004eb28",
+      "reference": "0x10003cb6",
+      "bytes": "d83528eb0410"
+    },
+    {
+      "name": "grim_batch_active",
+      "address": "0x1004eb40",
+      "reference": "0x100040b0",
+      "bytes": "a040eb0410"
+    },
+    {
+      "name": "grim_texture_backup_pending",
+      "address": "0x1004eb48",
+      "reference": "0x100016e1",
+      "bytes": "a048eb0410"
+    },
+    {
+      "name": "grim_empty_string",
+      "address": "0x1004eb54",
+      "reference": "0x100036e0",
+      "bytes": "6854eb0410"
+    },
+    {
+      "name": "grim_mouse_state",
+      "address": "0x1004ed90",
+      "reference": "0x100050af",
+      "bytes": "6890ed0410"
+    },
+    {
+      "name": "grim_mouse_wheel",
+      "address": "0x1004edac",
+      "reference": "0x1000514d",
+      "bytes": "d905aced0410"
+    }
+  ]
+}

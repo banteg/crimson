@@ -4,7 +4,11 @@
 #include "cl_build.h"
 
 struct grim_config_value_t {
+#if CL_BUILD < 10400
+    unsigned int words[6];
+#else
     unsigned int words[4];
+#endif
 
     grim_config_value_t() {}
     grim_config_value_t(unsigned int value) { words[0] = value; }
@@ -27,9 +31,18 @@ public:
     virtual void grim_legacy_slot_04(int arg) = 0;
     virtual bool grim_legacy_slot_08(void) = 0;
 #endif
+#if CL_BUILD >= 10900
     virtual void grim_set_paused(int paused) = 0;
+#else
+    void grim_set_paused(int paused);
+#endif
+#if CL_BUILD >= 10300
     virtual float grim_get_version(void) = 0;
     virtual bool grim_save_screenshot(char *path) = 0;
+#else
+    float grim_get_version(void);
+    bool grim_save_screenshot(char *path);
+#endif
     virtual bool grim_apply_config(void) = 0;
     virtual bool grim_init_system(void) = 0;
     virtual void grim_shutdown(void) = 0;
@@ -39,15 +52,26 @@ public:
     virtual char *grim_get_error_text(void) = 0;
     virtual void grim_clear_color(float r, float g, float b, float a) = 0;
     virtual bool grim_set_render_target(int target_index) = 0;
+#if CL_BUILD < 10900
+    virtual float grim_get_time_ms(void) = 0;
+    virtual void grim_set_time_ms(float seconds) = 0;
+#else
     virtual int grim_get_time_ms(void) = 0;
     virtual void grim_set_time_ms(int ms) = 0;
+#endif
     virtual float grim_get_frame_dt(void) = 0;
     virtual float grim_get_fps(void) = 0;
     virtual unsigned char grim_is_key_down(unsigned char key) = 0;
     virtual bool grim_was_key_pressed(unsigned int key) = 0;
+#if CL_BUILD >= 10900
     virtual void grim_flush_input(void) = 0;
     virtual int grim_get_key_char(void) = 0;
     virtual void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size) = 0;
+#else
+    void grim_flush_input(void);
+    int grim_get_key_char(void);
+    void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size);
+#endif
     virtual unsigned char grim_is_mouse_button_down(int button) = 0;
     virtual bool grim_was_mouse_button_pressed(int button) = 0;
     virtual float grim_get_mouse_wheel_delta(void) = 0;
@@ -56,6 +80,7 @@ public:
     virtual float grim_get_mouse_y(void) = 0;
     virtual float grim_get_mouse_dx(void) = 0;
     virtual float grim_get_mouse_dy(void) = 0;
+#if CL_BUILD >= 10900
     virtual float grim_get_mouse_dx_indexed(int index) = 0;
     virtual float grim_get_mouse_dy_indexed(int index) = 0;
     virtual unsigned char grim_is_key_active(int key) = 0;
@@ -66,18 +91,46 @@ public:
     virtual void grim_set_slot_float(int index, float value) = 0;
     virtual void grim_set_slot_int(int index, int value) = 0;
 #endif
+#else
+    float grim_get_mouse_dx_indexed(int index);
+    float grim_get_mouse_dy_indexed(int index);
+    unsigned char grim_is_key_active(int key);
+    float grim_get_config_float(int id);
+    float grim_get_slot_float(int index);
+    int grim_get_slot_int(int index);
+    void grim_set_slot_float(int index, float value);
+    void grim_set_slot_int(int index, int value);
+#endif
+#if CL_BUILD >= 10300
     virtual int grim_get_joystick_x(void) = 0;
     virtual int grim_get_joystick_y(void) = 0;
     virtual int grim_get_joystick_z(void) = 0;
     virtual int grim_get_joystick_pov(int index) = 0;
     virtual unsigned char grim_is_joystick_button_down(int button) = 0;
+#else
+    int grim_get_joystick_x(void);
+    int grim_get_joystick_y(void);
+    int grim_get_joystick_z(void);
+    int grim_get_joystick_pov(int index);
+    unsigned char grim_is_joystick_button_down(int button);
+#endif
     virtual bool grim_create_texture(char *name, int width, int height) = 0;
+#if CL_BUILD >= 10400
     virtual bool grim_recreate_texture(int handle) = 0;
+#endif
     virtual bool grim_load_texture(char *name, char *path) = 0;
+#if CL_BUILD >= 10400
     virtual bool grim_save_texture(int handle, char *path) = 0;
+#endif
     virtual void grim_destroy_texture(int handle) = 0;
     virtual int grim_get_texture_handle(char *name) = 0;
+#if CL_BUILD < 10400
+    virtual void grim_bind_texture(int handle);
+    void grim_bind_texture(int handle, int stage);
+#else
     virtual void grim_bind_texture(int handle, int stage);
+#endif
+#if CL_BUILD >= 10900
     virtual void grim_draw_fullscreen_quad(int unused);
     virtual void grim_draw_fullscreen_color(float r, float g, float b, float a);
     virtual void grim_draw_rect_filled(
@@ -87,21 +140,44 @@ public:
     virtual void grim_draw_circle_outline(float x, float y, float radius) = 0;
     virtual void grim_draw_line(float *p0, float *p1, float thickness) = 0;
     virtual void grim_draw_line_quad(float *p0, float *p1, float *half_vec) = 0;
+#else
+    void grim_draw_fullscreen_quad(int unused);
+    void grim_draw_fullscreen_color(float r, float g, float b, float a);
+    void grim_draw_rect_filled(
+        float *xy, float width, float height, float *rgba);
+    void grim_draw_rect_outline(float *xy, float width, float height);
+    void grim_draw_circle_filled(float x, float y, float radius);
+    void grim_draw_circle_outline(float x, float y, float radius);
+    void grim_draw_line(float *p0, float *p1, float thickness);
+    void grim_draw_line_quad(float *p0, float *p1, float *half_vec);
+#endif
     virtual void grim_begin_batch(void);
     virtual void grim_flush_batch(void);
     virtual void grim_end_batch(void);
+#if CL_BUILD >= 10400
     virtual void grim_submit_vertex_raw(float *vertex) = 0;
     virtual void grim_submit_quad_raw(float *vertices) = 0;
+#endif
     virtual void grim_set_rotation(float radians);
     virtual void grim_set_uv(float u0, float v0, float u1, float v1);
+#if CL_BUILD >= 10900
     virtual void grim_set_atlas_frame(int atlas_size, int frame) = 0;
     virtual void grim_set_sub_rect(int atlas_size, int width, int height, int frame) = 0;
+#else
+    void grim_set_atlas_frame(int atlas_size, int frame);
+    void grim_set_sub_rect(int atlas_size, int width, int height, int frame);
+#endif
     virtual void grim_set_uv_point(int index, float u, float v);
+#if CL_BUILD >= 10900
     virtual void grim_set_color_ptr(float *rgba);
+#else
+    void grim_set_color_ptr(float *rgba);
+#endif
     virtual void grim_set_color(float r, float g, float b, float a);
     virtual void grim_set_color_slot(
         int index, float r, float g, float b, float a);
     virtual void grim_draw_quad(float x, float y, float w, float h);
+#if CL_BUILD >= 10900
     virtual void grim_draw_quad_xy(float *xy, float w, float h);
     virtual void grim_draw_quad_rotated_matrix(float x, float y, float w, float h);
     virtual void grim_submit_vertices_transform(
@@ -119,6 +195,25 @@ public:
         float *offset,
         float *matrix,
         unsigned long *color);
+#else
+    void grim_draw_quad_xy(float *xy, float w, float h);
+    void grim_draw_quad_rotated_matrix(float x, float y, float w, float h);
+    void grim_submit_vertices_transform(
+        float *vertices, int count, float *offset, float *matrix);
+    void grim_submit_vertices_offset(
+        float *vertices, int count, float *offset);
+    void grim_submit_vertices_offset_color(
+        float *vertices,
+        int count,
+        float *offset,
+        unsigned long *color);
+    void grim_submit_vertices_transform_color(
+        float *vertices,
+        int count,
+        float *offset,
+        float *matrix,
+        unsigned long *color);
+#endif
     virtual void grim_draw_quad_points(
         float x0,
         float y0,
@@ -129,10 +224,18 @@ public:
         float x3,
         float y3);
     virtual void grim_draw_text_mono(float x, float y, char *text) = 0;
+#if CL_BUILD >= 10400
     virtual void grim_draw_text_mono_fmt(float x, float y, char *fmt, ...);
+#endif
+#if CL_BUILD >= 10900
     virtual void grim_draw_text_small(float x, float y, char *text) = 0;
     virtual void grim_draw_text_small_fmt(float x, float y, char *fmt, ...);
     virtual int grim_measure_text_width(char *text) = 0;
+#else
+    void grim_draw_text_small(float x, float y, char *text);
+    void grim_draw_text_small_fmt(float x, float y, char *fmt, ...);
+    int grim_measure_text_width(char *text);
+#endif
 };
 
 #endif

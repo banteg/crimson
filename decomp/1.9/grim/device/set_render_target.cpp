@@ -5,9 +5,11 @@ extern unsigned char grim_render_disabled;
 
 bool IGrim2D_cpp::grim_set_render_target(int target_index)
 {
+#if CL_BUILD >= 10400
     if (grim_render_disabled) {
         return true;
     }
+#endif
 
     if (target_index < 0) {
         if (grim_backbuffer_surface == 0) {

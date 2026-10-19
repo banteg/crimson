@@ -6,14 +6,24 @@ extern unsigned char grim_device_ready;
 extern unsigned char grim_batch_active;
 extern IDirect3DDevice8 *grim_d3d_device;
 extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
+#if CL_BUILD < 10400
+extern IDirect3DIndexBuffer8 *grim_index_buffer;
+extern unsigned short *grim_index_write_ptr;
+#endif
 extern unsigned char *grim_vertex_write_ptr;
 extern unsigned long grim_vertex_count;
 
 void IGrim2D_cpp::grim_begin_batch(void)
 {
+#if CL_BUILD < 10400
+    if (grim_batch_active) {
+        return;
+    }
+#else
     if (grim_render_disabled || grim_batch_active) {
         return;
     }
+#endif
 
     grim_batch_active = 1;
     if (!grim_device_ready) {
@@ -28,5 +38,14 @@ void IGrim2D_cpp::grim_begin_batch(void)
             D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK) < 0) {
         grim_device_ready = 0;
     }
+#if CL_BUILD < 10400
+    if (grim_index_buffer->Lock(
+            0,
+            0,
+            (unsigned char **)&grim_index_write_ptr,
+            D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK) < 0) {
+        grim_device_ready = 0;
+    }
+#endif
     *(unsigned short *)&grim_vertex_count = 0;
 }

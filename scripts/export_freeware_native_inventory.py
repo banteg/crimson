@@ -30,11 +30,34 @@ for build in registry["builds"]:
         output = directory / spec["native_inventory"]
         previous = json.loads(output.read_text())
         mapped = (directory / "functions.json").read_bytes()
-        seeds = [int(row["address"], 16) for row in json.loads(mapped) if row["evidence"] == "exact"]
+        seeds = [int(row["address"], 16) for row in json.loads(mapped) if row["evidence"] in ("exact", "interface", "recovered")]
         view = bn.load(str(path), options={"analysis.mode": "controlFlow"})
+        for start in list(seeds):
+            raw = view.read(start, 5)
+            if len(raw) == 5 and raw[0] == 0xE9:
+                rel = int.from_bytes(raw[1:5], "little", signed=True)
+                target = (start + 5 + rel) & 0xFFFFFFFF
+                if target not in seeds:
+                    seeds.append(target)
         for start in seeds:
             if view.get_function_at(start) is None:
                 view.add_function(start)
+        view.update_analysis_and_wait()
+        for function in list(view.functions):
+            raw = view.read(function.start, 16)
+            pad = len(raw) - len(raw.lstrip(b"\\x90\\xcc"))
+            if pad > 0 and function.start not in seeds:
+                aligned = function.start + pad
+                view.remove_user_function(function)
+                if aligned < function.highest_address and view.get_function_at(aligned) is None:
+                    view.add_function(aligned)
+            else:
+                raw5 = view.read(function.start, 5)
+                if len(raw5) == 5 and raw5[0] == 0xE9:
+                    rel = int.from_bytes(raw5[1:5], "little", signed=True)
+                    target = (function.start + 5 + rel) & 0xFFFFFFFF
+                    if target == function.start + 16 and view.get_function_at(target) is None:
+                        view.add_function(target)
         view.update_analysis_and_wait()
         functions = []
         for function in sorted(view.functions, key=lambda f: f.start):

@@ -2,7 +2,13 @@ The distributed crimson.paq stores some images decoded, under the same path with
 the stored entry by what it holds (game/repack.cpp).
 --- a/decomp/1.9/grim/texture/load_file.cpp
 +++ b/decomp/1.9/grim/texture/load_file.cpp
-@@ -26,6 +26,7 @@
+@@ -135,12 +135,13 @@
+     if (path == 0) {
+         return false;
+     }
+ 
+     if (this->texture != 0) {
+         this->texture->Release();
      }
      this->texture = 0;
  

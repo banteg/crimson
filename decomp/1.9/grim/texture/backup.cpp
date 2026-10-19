@@ -4,6 +4,67 @@
 extern unsigned char grim_texture_backup_pending;
 extern grim_config_value_t grim_config_values[128];
 
+#if CL_BUILD < 10900
+extern "C" void grim_noop(int value);
+
+bool grim_backup_textures(void)
+{
+    if (grim_texture_backup_pending) {
+        return true;
+    }
+
+    IDirect3DSurface8 *surface = 0;
+    for (int i = 0; i <= grim_texture_slot_max_index; ++i) {
+        if (grim_texture_slots[i] != 0 &&
+            grim_texture_slots[i]->owns_texture) {
+            grim_noop(i);
+
+            if (grim_d3d_device->CreateImageSurface(
+                    grim_texture_slots[i]->width,
+                    grim_texture_slots[i]->height,
+                    grim_texture_format,
+                    &grim_texture_slots[i]->backup) < 0) {
+                grim_error_text =
+                    "D3D: Unable to backup texture.";
+                return false;
+            }
+
+            if (grim_texture_slots[i]->texture->GetSurfaceLevel(
+                    0, &surface) < 0) {
+#if CL_BUILD >= 10300
+                if (grim_texture_slots[i]->backup != 0 &&
+                    grim_texture_slots[i]->backup->Release() <= 0) {
+                    grim_texture_slots[i]->backup = 0;
+                }
+#endif
+                grim_error_text =
+                    "D3D: Unable to backup texture.";
+                return false;
+            }
+
+            if (grim_d3d_device->CopyRects(
+                    surface, 0, 0, grim_texture_slots[i]->backup, 0) < 0) {
+#if CL_BUILD >= 10300
+                if (grim_texture_slots[i]->backup != 0 &&
+                    grim_texture_slots[i]->backup->Release() <= 0) {
+                    grim_texture_slots[i]->backup = 0;
+                }
+#endif
+                grim_error_text =
+                    "D3D: Unable to backup texture.";
+                return false;
+            }
+
+            if (surface != 0 && surface->Release() <= 0) {
+                surface = 0;
+            }
+        }
+    }
+
+    grim_texture_backup_pending = 1;
+    return true;
+}
+#else
 extern "C" void grim_noop(char *message, int value);
 
 bool grim_backup_textures(void)
@@ -84,3 +145,4 @@ bool grim_backup_textures(void)
     grim_texture_backup_pending = 1;
     return true;
 }
+#endif

@@ -177,7 +177,8 @@ def load_registry(path: Path = REGISTRY_PATH) -> Registry:
     payload = json.loads(path.read_text(encoding="utf-8"))
     canonical = {family["id"]: family["canonical_build"] for family in payload["families"]}
     game_profiles = frozenset(
-        profile for row in payload["builds"] for image in row["images"] for profile in image["profiles"]
+        profile for row in payload["builds"] if row["id"] in canonical.values()
+        for image in row["images"] for profile in image["profiles"]
     )
     return Registry(
         {

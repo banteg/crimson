@@ -1,3 +1,4 @@
+#include "cl_build.h"
 #include <windows.h>
 
 struct GrimGuid {
@@ -56,9 +57,11 @@ extern GrimDirectInput *grim_dinput_mouse;
 extern GrimMouseDevice *grim_mouse_device;
 extern bool grim_mouse_poll(void);
 
-bool grim_mouse_init(HWND)
+bool grim_mouse_init(HWND hwnd)
 {
-    HWND hwnd = grim_main_window_hwnd;
+#if CL_BUILD >= 10900
+    hwnd = grim_main_window_hwnd;
+#endif
     if (hwnd == 0 && GetForegroundWindow() == 0) {
         GetDesktopWindow();
     }

@@ -1,6 +1,161 @@
 {
   "entries": [
     {
+      "address": "0x00401070",
+      "name": "unused_global_noop_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401090",
+      "name": "unused_particle_pool_suffix_color_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004010d0",
+      "name": "unused_fx_queue_random_prefix_vec2_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401100",
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401130",
+      "name": "fx_queue_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004012e0",
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401370",
+      "name": "?0perk_meta_cpp_t",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401390",
+      "name": "?1perk_meta_cpp_t",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401420",
+      "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401470",
+      "name": "secondary_projectile_pool_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401530",
+      "name": "particle_pool_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004015e0",
+      "name": "creature_pool_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401620",
+      "name": "crimson_crt_empty_initializer_slot_38",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401640",
+      "name": "crimson_crt_empty_initializer_slot_39",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401660",
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401680",
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004016a0",
+      "name": "projectile_pool_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004016e0",
+      "name": "player_state_table_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401760",
+      "name": "crimson_crt_empty_initializer_slot_54",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00404020",
+      "name": "sprite_effect_alloc_slot",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00405cf0",
+      "name": "creature_find_nearest",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00405ea0",
+      "name": "projectile_alloc_slot",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00405ec0",
+      "name": "particle_alloc_slot",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00405fd0",
+      "name": "secondary_projectile_alloc_slot",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bbc6",
+      "name": "?_L",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bcc0",
+      "name": "atexit",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bd01",
+      "name": "?_M",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bde9",
+      "name": "crt_rand",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041be07",
+      "name": "?2",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00427038",
+      "name": "GetProcAddress",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042703c",
+      "name": "LoadLibraryA",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x004274b8",
       "name": "$T318",
       "program": "1.3.0/crimson.exe"
@@ -386,8 +541,98 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x0042e508",
+      "name": "grim_dll_module_handle",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x0042e510",
+      "name": "unused_effect_uv_strip16_prefix_vec2",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042ff90",
+      "name": "player_state_table",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430278",
+      "name": "highscore_record_shots_fired",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430298",
+      "name": "fx_queue",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004307d0",
+      "name": "projectile_pool",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004314d0",
+      "name": "particle_pool",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00432ed0",
+      "name": "unused_particle_pool_suffix_color",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00432ef0",
+      "name": "secondary_projectile_pool",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433f18",
+      "name": "unused_fx_queue_random_prefix_vec2",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433f20",
+      "name": "sprite_effect_pool",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00436d18",
+      "name": "perk_meta_table",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00437324",
+      "name": "config_blob",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374f8",
+      "name": "creature_pool",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004475f8",
       "name": "unused_effect_uv16_prefix_vec2",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044774c",
+      "name": "current_player_index",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447750",
+      "name": "plaguebearer_infection_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447754",
+      "name": "grim_interface_ptr",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447778",
+      "name": "bonus_fire_bullets_timer",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -791,5 +1036,5 @@
       "program": "1.3.0/crimson.exe"
     }
   ],
-  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees."
+  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees. Reviewed native identities also retain their pinned instruction references in recovered.json."
 }

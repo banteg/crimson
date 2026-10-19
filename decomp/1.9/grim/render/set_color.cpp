@@ -4,11 +4,13 @@ extern unsigned long grim_color_slot0[4];
 
 void IGrim2D_cpp::grim_set_color(float r, float g, float b, float a)
 {
+#if CL_BUILD >= 10900
     if (a > 1.0f) {
         a = 1.0f;
     } else if (a < 0.0f) {
         a = 0.0f;
     }
+#endif
 
     unsigned long color =
         (((unsigned long)(a * 255.0f) & 0xff) << 24) |

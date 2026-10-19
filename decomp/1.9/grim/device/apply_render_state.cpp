@@ -15,8 +15,12 @@ void grim_apply_render_state(void)
     grim_d3d_device->SetRenderState(D3DRS_NORMALIZENORMALS, 0);
     grim_d3d_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
     grim_d3d_device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+#if CL_BUILD < 10900
+    grim_d3d_device->SetRenderState(D3DRS_DITHERENABLE, 1);
+#else
     grim_d3d_device->SetRenderState(
         D3DRS_DITHERENABLE, grim_config_values[0x58].words[0] & 0xff);
+#endif
     grim_d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, 1);
     grim_d3d_device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
     grim_d3d_device->SetRenderState(D3DRS_ALPHAREF, 4);
@@ -44,17 +48,36 @@ void grim_apply_render_state(void)
     grim_d3d_device->SetTextureStageState(
         1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
     grim_d3d_device->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+#if CL_BUILD >= 10400
     grim_d3d_device->SetTextureStageState(1, D3DTSS_TEXCOORDINDEX, 0);
-
+#endif
+#if CL_BUILD >= 10900
     grim_d3d_device->SetRenderState(D3DRS_WRAP0, 0);
     grim_d3d_device->SetRenderState(D3DRS_WRAP1, 0);
     grim_d3d_device->SetRenderState(D3DRS_WRAP2, 0);
     grim_d3d_device->SetRenderState(D3DRS_WRAP3, 0);
-
+#endif
     grim_d3d_device->SetStreamSource(0, grim_vertex_buffer, 0x1c);
     grim_d3d_device->SetIndices(grim_index_buffer, 0);
     grim_d3d_device->SetVertexShader(0x144);
 
+#if CL_BUILD < 10300
+    grim_d3d_device->SetRenderState(
+        D3DRS_ALPHABLENDENABLE,
+        grim_config_values[0x0c].words[2] & 0xff);
+    grim_d3d_device->SetRenderState(
+        D3DRS_SRCBLEND, grim_config_values[0x0d].words[0]);
+    grim_d3d_device->SetRenderState(
+        D3DRS_DESTBLEND, grim_config_values[0x0e].words[0]);
+#elif CL_BUILD < 10400
+    grim_d3d_device->SetRenderState(
+        D3DRS_ALPHABLENDENABLE,
+        grim_config_values[0x12].words[2] & 0xff);
+    grim_d3d_device->SetRenderState(
+        D3DRS_SRCBLEND, grim_config_values[0x13].words[0]);
+    grim_d3d_device->SetRenderState(
+        D3DRS_DESTBLEND, grim_config_values[0x14].words[0]);
+#else
     grim_d3d_device->SetRenderState(
         D3DRS_ALPHABLENDENABLE,
         grim_config_values[0x12].words[0] & 0xff);
@@ -62,4 +85,5 @@ void grim_apply_render_state(void)
         D3DRS_SRCBLEND, grim_config_values[0x13].words[0]);
     grim_d3d_device->SetRenderState(
         D3DRS_DESTBLEND, grim_config_values[0x14].words[0]);
+#endif
 }

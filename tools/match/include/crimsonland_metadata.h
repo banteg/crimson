@@ -1,6 +1,8 @@
 #ifndef CRIMSONLAND_METADATA_H
 #define CRIMSONLAND_METADATA_H
 
+#include "cl_build.h"
+
 extern "C" void crt_free(void *ptr);
 
 class quest_meta_cpp_t {
@@ -41,10 +43,22 @@ public:
 
     char *name;
     char *description;
+#if CL_BUILD >= 10900
     int flags;
     unsigned char available;
     unsigned char _pad0[3];
     int prerequisite;
+#elif CL_BUILD >= 10300
+    int reserved_08;
+    int flags;
+    unsigned char available;
+    unsigned char available_default;
+    unsigned char _pad0[2];
+#else
+    int flags;
+    unsigned char available;
+    unsigned char _pad0[3];
+#endif
 };
 
 #endif

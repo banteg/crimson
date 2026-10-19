@@ -1,0 +1,923 @@
+{
+  "schema": 1,
+  "sha256": "0e4d5f62b34c7c62d5b7bb1f6a774d54e91c68a0c898d53cabead1f5f151eb8b",
+  "functions": [
+    {
+      "name": "ui_template_slot_ctor_noop",
+      "address": "0x00401000",
+      "end": "0x00401003",
+      "body_sha256": "58367ffa2a0179375018fa0f5c26da24391e42ebe0ed8fdda35a21fc7bdc396f"
+    },
+    {
+      "name": "console_cmd_exec",
+      "address": "0x00401ba0",
+      "end": "0x00401c6e",
+      "body_sha256": "9a10508a1314a2ffc835cb4c3bcf8747bb82814ba3d1ea09e2d8186aeada669e"
+    },
+    {
+      "name": "console_cmd_set",
+      "address": "0x00401e70",
+      "end": "0x00401ebd",
+      "body_sha256": "2bdcb481ac57158a0be7d77de518cd3b19ae27d63cf8923c47c15ecb17fe1360"
+    },
+    {
+      "name": "console_printf",
+      "address": "0x00402240",
+      "end": "0x00402286",
+      "body_sha256": "e7dd3e5ca56395d08235d209bb1cd73e60c15524023d4942932e255c7220961e"
+    },
+    {
+      "name": "console_set_open",
+      "address": "0x00402290",
+      "end": "0x0040229a",
+      "body_sha256": "5b5f02b28d06659810fa12a4917e05175dc8b122c223650a4cc723416f54fe55"
+    },
+    {
+      "name": "console_exec_line",
+      "address": "0x00402310",
+      "end": "0x00402389",
+      "body_sha256": "b0b34c9493ee5bd243c07287897d213c4a510ff311732708703e31e9f28bf15b"
+    },
+    {
+      "name": "console_register_cvar",
+      "address": "0x00402ab0",
+      "end": "0x00402ba5",
+      "body_sha256": "f62a7b4d47b579b741b68159237c1a00fd771e648888ee12d0370caa2e46af56"
+    },
+    {
+      "name": "console_flush_log",
+      "address": "0x00402ef0",
+      "end": "0x00402f5a",
+      "body_sha256": "37e3bd6c80789c4932ba0ce36d60df4364b8e57aea21a579348cb3e55d166fac"
+    },
+    {
+      "name": "grim_load_interface",
+      "address": "0x00402fb0",
+      "end": "0x00402fd9",
+      "body_sha256": "8ab97753c12fc6b002536a25703c0341d5e3dc8d189e3f1dd20c3c7af7674e3f"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
+      "address": "0x00403230",
+      "end": "0x00403235",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_color_global_init",
+      "address": "0x00403240",
+      "end": "0x00403269",
+      "body_sha256": "74df0b1bed04c77dde0d98f6a15a415bf2392b2fdee5ab573cbeea0d03daeafb"
+    },
+    {
+      "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk",
+      "address": "0x00403270",
+      "end": "0x00403275",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
+      "address": "0x00403280",
+      "end": "0x004032a9",
+      "body_sha256": "16cb952c691e81dd54f77653eac667e28261d09b5f08928303fa1ea6e9e02ddf"
+    },
+    {
+      "name": "unused_aim64_prefix_color_global_init_thunk",
+      "address": "0x004032b0",
+      "end": "0x004032b5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_aim64_prefix_color_global_init",
+      "address": "0x004032c0",
+      "end": "0x004032e9",
+      "body_sha256": "6b0ebb025053402662aa641316e4508db6c7eb18b3bacef5d5ff1e6d446f6320"
+    },
+    {
+      "name": "unused_fx_rotated_scale_prefix_color_global_init_thunk",
+      "address": "0x004032f0",
+      "end": "0x004032f5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_fx_rotated_scale_prefix_color_global_init",
+      "address": "0x00403300",
+      "end": "0x00403329",
+      "body_sha256": "31f04f007838d430732aea31ba453aaf1256e033adf493169d87b84acd1c0221"
+    },
+    {
+      "name": "unused_global_noop_init_thunk",
+      "address": "0x00403360",
+      "end": "0x00403365",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_global_noop_init",
+      "address": "0x00403370",
+      "end": "0x00403371",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "unused_particle_pool_suffix_color_global_init_thunk",
+      "address": "0x00403380",
+      "end": "0x00403385",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_particle_pool_suffix_color_global_init",
+      "address": "0x00403390",
+      "end": "0x004033b9",
+      "body_sha256": "557845d2a565ea22de44c5ac8533da9907451d25216eb6c12cc54e423760dcfe"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init_thunk",
+      "address": "0x004033c0",
+      "end": "0x004033c5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init",
+      "address": "0x004033d0",
+      "end": "0x004033e5",
+      "body_sha256": "d6fddf94d259032dda6a9621ad9c92df0b8d33f14d9815dd38700c1141cea981"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+      "address": "0x004033f0",
+      "end": "0x004033f5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "address": "0x00403400",
+      "end": "0x00403415",
+      "body_sha256": "ac6257b6893549aaae5de5b794d777749c0939b5d999aa70146238e8c1998031"
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
+      "address": "0x00403420",
+      "end": "0x00403425",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+      "address": "0x00403430",
+      "end": "0x00403445",
+      "body_sha256": "46afc0a04d3cdbb0c40eac3fe3877cfa2cd4c72051d4df110faa9d2357a5fc68"
+    },
+    {
+      "name": "fx_queue_global_init_thunk",
+      "address": "0x00403450",
+      "end": "0x00403455",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "fx_queue_global_init",
+      "address": "0x00403460",
+      "end": "0x004034f7",
+      "body_sha256": "678d2fd6e750ea4486fdc76de7b23ef525fb5c4a536752f42d0f92aea46dcf7a"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31_thunk",
+      "address": "0x00403620",
+      "end": "0x00403625",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "address": "0x00403630",
+      "end": "0x00403631",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "perk_meta_global_construct_and_register",
+      "address": "0x00403690",
+      "end": "0x0040369a",
+      "body_sha256": "7ddff71a398e09a2cefbd243ce81e592fdbf2b187c1e21e6bbbaf98aba64aeb3"
+    },
+    {
+      "name": "perk_meta_table_init",
+      "address": "0x004036a0",
+      "end": "0x004036b9",
+      "body_sha256": "1cd3fd7899e6dc1dbf487463decb94e88b0ca3656628d0f96e48bbb5db0586b5"
+    },
+    {
+      "name": "perk_meta_entry_init",
+      "address": "0x004036c0",
+      "end": "0x004036d1",
+      "body_sha256": "b892f4180e8a04f1ab8aca42dcfac799f2b679aded04ff5fa83e7533f331fc4c"
+    },
+    {
+      "name": "perk_meta_register_atexit",
+      "address": "0x00403710",
+      "end": "0x0040371c",
+      "body_sha256": "f2568d4102bc2864c809383aebc2d66b51b2e23fdd3928ef11c7e0522912c949"
+    },
+    {
+      "name": "perk_meta_table_destroy",
+      "address": "0x00403720",
+      "end": "0x00403734",
+      "body_sha256": "e8ff1ad9aeaf9c94bb8de421a0f213a21c8972343bb691bdaac9dfeb9168f39e"
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init_thunk",
+      "address": "0x00403760",
+      "end": "0x00403765",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init",
+      "address": "0x00403770",
+      "end": "0x00403785",
+      "body_sha256": "71a3b823e4ed9a3b755dc3abe0982a215c36ec96a60399a2b619b819301202f3"
+    },
+    {
+      "name": "secondary_projectile_pool_global_init_thunk",
+      "address": "0x004037b0",
+      "end": "0x004037b5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "secondary_projectile_pool_global_init",
+      "address": "0x004037c0",
+      "end": "0x004037e2",
+      "body_sha256": "7b078ac89d32ff3964cba8b31099361eb64f84dadcd44b7ed3061f7780b23bf9"
+    },
+    {
+      "name": "creature_pool_global_init_thunk",
+      "address": "0x00403920",
+      "end": "0x00403925",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "creature_pool_global_init",
+      "address": "0x00403930",
+      "end": "0x0040395a",
+      "body_sha256": "d415c3070db365f913ddf5ab93f6b548b93a1d537e931733bf793dcf624b048d"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44_thunk",
+      "address": "0x004039a0",
+      "end": "0x004039a5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "address": "0x004039b0",
+      "end": "0x004039b1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45_thunk",
+      "address": "0x004039c0",
+      "end": "0x004039c5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "address": "0x004039d0",
+      "end": "0x004039d1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "projectile_pool_global_init_thunk",
+      "address": "0x004039e0",
+      "end": "0x004039e5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "projectile_pool_global_init",
+      "address": "0x004039f0",
+      "end": "0x00403a13",
+      "body_sha256": "79d84319edaf1a02fb73c54a91e41d90d7da403efa1f0e7c3025c014aca4b62c"
+    },
+    {
+      "name": "player_state_table_global_init_thunk",
+      "address": "0x00403a20",
+      "end": "0x00403a25",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "player_state_table_global_init",
+      "address": "0x00403a30",
+      "end": "0x00403a93",
+      "body_sha256": "b317a3d4079e93414b3766c65a07768919b11dc31f2d54596bb07fa01aca264b"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_54_thunk",
+      "address": "0x00403aa0",
+      "end": "0x00403aa5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_54",
+      "address": "0x00403ab0",
+      "end": "0x00403ab1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "fx_queue_add",
+      "address": "0x00405c80",
+      "end": "0x00405d03",
+      "body_sha256": "0caec9c429a71abf043dee7fb2044d3b587b95c236b3e01d7b9cfa66afef96ee"
+    },
+    {
+      "name": "input_aim_pov_left_active",
+      "address": "0x00405dd0",
+      "end": "0x00405ded",
+      "body_sha256": "276319558d822e200b6d4093a3eac5fe8b49163fa03204eb03cdc75d88d4861d"
+    },
+    {
+      "name": "input_aim_pov_right_active",
+      "address": "0x00405df0",
+      "end": "0x00405e0d",
+      "body_sha256": "0c5bc61fc12375f8940e45e8729b06eae468ae028e9ee6d50be316953e3ff824"
+    },
+    {
+      "name": "angle_approach",
+      "address": "0x00406480",
+      "end": "0x004065af",
+      "body_sha256": "9da66505233f7235415fee35042973a9990967f13af8b02ea88ba12454163f30"
+    },
+    {
+      "name": "fx_spawn_sprite",
+      "address": "0x00406aa0",
+      "end": "0x00406b5d",
+      "body_sha256": "1d521d9274f269ea2a46a34799884df95ffc7705704d262831ce5a203dd84c41"
+    },
+    {
+      "name": "wrap_text_to_width_alloc",
+      "address": "0x004078b0",
+      "end": "0x0040791b",
+      "body_sha256": "7084ac19a5da5e2e3af7104cbb8f6f82e788645fe39c92d16204a2f727a2ca83"
+    },
+    {
+      "name": "fx_spawn_secondary_projectile",
+      "address": "0x00409240",
+      "end": "0x00409334",
+      "body_sha256": "e8ce32d1eae30182ec954c048f64f46d515d7e332e756cc132215c064b993ae8"
+    },
+    {
+      "name": "projectile_spawn",
+      "address": "0x00409340",
+      "end": "0x0040942d",
+      "body_sha256": "6e4e64fb61d00df4f4934c56bb8aaa5218a088e39e8829038b133b8841212f4d"
+    },
+    {
+      "name": "projectile_reset_pools",
+      "address": "0x00409430",
+      "end": "0x00409455",
+      "body_sha256": "82566bd31d0aeef691055ac5cd8ec322d652b1505842f0e02e3d9b8d7196491a"
+    },
+    {
+      "name": "creature_find_in_radius",
+      "address": "0x00409460",
+      "end": "0x004094d2",
+      "body_sha256": "b2dbdf5adee985d07255e9b45da41c327a407fc8e290504a6a65545230c3a594"
+    },
+    {
+      "name": "plaguebearer_spread_infection",
+      "address": "0x0040d800",
+      "end": "0x0040d8be",
+      "body_sha256": "10a642600bf113f8091e1d0517cae418c927773dd08063fda61c9761b63c6c97"
+    },
+    {
+      "name": "creature_reset_all",
+      "address": "0x0040f610",
+      "end": "0x0040f625",
+      "body_sha256": "42e1f45bd3913759a38c95cff659bf70dacaca457d409fcfe93bcb3d364529e2"
+    },
+    {
+      "name": "creatures_none_active",
+      "address": "0x0040f630",
+      "end": "0x0040f64c",
+      "body_sha256": "77f4a1d092e4b893bbd26666db850c7f85deedf1eeea560c12be582a739d3aa1"
+    },
+    {
+      "name": "player_heading_approach_target",
+      "address": "0x00412570",
+      "end": "0x004126de",
+      "body_sha256": "d0d967f1233a8058cf427f4779a408dec422f8fba81ac9a09978a0a853379bcd"
+    },
+    {
+      "name": "console_cmd_load_texture",
+      "address": "0x0041fcf0",
+      "end": "0x0041fd2c",
+      "body_sha256": "6549206901fee942d1a83bc6bacf3fe0d36b5a22a9a213f181da97829a8daa58"
+    },
+    {
+      "name": "console_cmd_set_resource_paq",
+      "address": "0x00420130",
+      "end": "0x004201ce",
+      "body_sha256": "35dd189033b83e4cd43c5cf113b81d13e6cb291a8b0c630405eb571d17f64935"
+    },
+    {
+      "name": "console_cmd_tell_time_survived",
+      "address": "0x004205c0",
+      "end": "0x004205df",
+      "body_sha256": "b16fb3ca9a2d18254fc592b437bfa7be71c7091e376ba145dd7350ee073af049"
+    },
+    {
+      "name": "console_cmd_open_url",
+      "address": "0x00420640",
+      "end": "0x004206cc",
+      "body_sha256": "34a73a191d254e20c4b5d1d701dd6f1f8544b80a5316c5cf244f13488def1d73"
+    },
+    {
+      "name": "console_cmd_snd_freq_adjustment",
+      "address": "0x004206d0",
+      "end": "0x0042070a",
+      "body_sha256": "af572d284a4710cc8b4278da92ec149dd496406efde73a78d4b69067614d18ab"
+    }
+  ],
+  "data": [
+    {
+      "name": "console_cmd_arg_get",
+      "address": "0x004018c0",
+      "reference": "0x0041fd0f",
+      "bytes": "e8ac1bfeff"
+    },
+    {
+      "name": "console_cmd_argc_get",
+      "address": "0x004018f0",
+      "reference": "0x0041fcf0",
+      "bytes": "e8fb1bfeff"
+    },
+    {
+      "name": "console_push_line",
+      "address": "0x00402170",
+      "reference": "0x00402279",
+      "bytes": "e8f2feffff"
+    },
+    {
+      "name": "console_printf",
+      "address": "0x00402240",
+      "reference": "0x00401bb5",
+      "bytes": "e886060000"
+    },
+    {
+      "name": "exec_line",
+      "address": "0x00402310",
+      "reference": "0x00401c47",
+      "bytes": "e8c4060000"
+    },
+    {
+      "name": "console_register_cvar",
+      "address": "0x00402ab0",
+      "reference": "0x00401e9e",
+      "bytes": "e80d0c0000"
+    },
+    {
+      "name": "console_cvar_find",
+      "address": "0x00402bb0",
+      "reference": "0x00402330",
+      "bytes": "e87b080000"
+    },
+    {
+      "name": "console_tokenize_line",
+      "address": "0x00402c10",
+      "reference": "0x00402319",
+      "bytes": "e8f2080000"
+    },
+    {
+      "name": "console_command_find",
+      "address": "0x00402de0",
+      "reference": "0x00402340",
+      "bytes": "e89b0a0000"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_color_global_init",
+      "address": "0x00403240",
+      "reference": "0x00403230",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
+      "address": "0x00403280",
+      "reference": "0x00403270",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_aim64_prefix_color_global_init",
+      "address": "0x004032c0",
+      "reference": "0x004032b0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_fx_rotated_scale_prefix_color_global_init",
+      "address": "0x00403300",
+      "reference": "0x004032f0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_global_noop_init",
+      "address": "0x00403370",
+      "reference": "0x00403360",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_particle_pool_suffix_color_global_init",
+      "address": "0x00403390",
+      "reference": "0x00403380",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2_global_init",
+      "address": "0x004033d0",
+      "reference": "0x004033c0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "address": "0x00403400",
+      "reference": "0x004033f0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+      "address": "0x00403430",
+      "reference": "0x00403420",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "fx_queue_global_init",
+      "address": "0x00403460",
+      "reference": "0x00403450",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "address": "0x00403630",
+      "reference": "0x00403620",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "?0perk_meta_cpp_t",
+      "address": "0x004036c0",
+      "reference": "0x004036a5",
+      "bytes": "68c0364000"
+    },
+    {
+      "name": "?1perk_meta_cpp_t",
+      "address": "0x004036e0",
+      "reference": "0x004036a0",
+      "bytes": "68e0364000"
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init",
+      "address": "0x00403770",
+      "reference": "0x00403760",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "secondary_projectile_pool_global_init",
+      "address": "0x004037c0",
+      "reference": "0x004037b0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "particle_pool_global_init",
+      "address": "0x00403880",
+      "reference": "0x00403870",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "creature_pool_global_init",
+      "address": "0x00403930",
+      "reference": "0x00403920",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_38",
+      "address": "0x00403970",
+      "reference": "0x00403960",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_39",
+      "address": "0x00403990",
+      "reference": "0x00403980",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "address": "0x004039b0",
+      "reference": "0x004039a0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "address": "0x004039d0",
+      "reference": "0x004039c0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "projectile_pool_global_init",
+      "address": "0x004039f0",
+      "reference": "0x004039e0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "player_state_table_global_init",
+      "address": "0x00403a30",
+      "reference": "0x00403a20",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "crimson_crt_empty_initializer_slot_54",
+      "address": "0x00403ab0",
+      "reference": "0x00403aa0",
+      "bytes": "e90b000000"
+    },
+    {
+      "name": "creature_find_nearest",
+      "address": "0x00408e20",
+      "reference": "0x00409300",
+      "bytes": "e81bfbffff"
+    },
+    {
+      "name": "texture_get_or_load",
+      "address": "0x0041fc80",
+      "reference": "0x0041fd23",
+      "bytes": "e858ffffff"
+    },
+    {
+      "name": "atexit",
+      "address": "0x00421b40",
+      "reference": "0x00403715",
+      "bytes": "e826e40100"
+    },
+    {
+      "name": "crt_free",
+      "address": "0x00421b81",
+      "reference": "0x00402ad0",
+      "bytes": "e8acf00100"
+    },
+    {
+      "name": "crt_fclose",
+      "address": "0x00421c22",
+      "reference": "0x00401c64",
+      "bytes": "e8b9ff0100"
+    },
+    {
+      "name": "strchr",
+      "address": "0x00421c90",
+      "reference": "0x00401c27",
+      "bytes": "e864000200"
+    },
+    {
+      "name": "crt_fgets",
+      "address": "0x00421d4c",
+      "reference": "0x00401c14",
+      "bytes": "e833010200"
+    },
+    {
+      "name": "crt_fopen",
+      "address": "0x00421dc3",
+      "reference": "0x00401bca",
+      "bytes": "e8f4010200"
+    },
+    {
+      "name": "?2",
+      "address": "0x00421dd6",
+      "reference": "0x00402b0e",
+      "bytes": "e8c3f20100"
+    },
+    {
+      "name": "crt_vsprintf",
+      "address": "0x00421de4",
+      "reference": "0x0040226a",
+      "bytes": "e875fb0100"
+    },
+    {
+      "name": "crt_fwrite",
+      "address": "0x00422138",
+      "reference": "0x00402f3d",
+      "bytes": "e8f6f10100"
+    },
+    {
+      "name": "?_L",
+      "address": "0x00422294",
+      "reference": "0x004036b3",
+      "bytes": "e8dceb0100"
+    },
+    {
+      "name": "?_M",
+      "address": "0x00422316",
+      "reference": "0x0040372e",
+      "bytes": "e8e3eb0100"
+    },
+    {
+      "name": "crt_rand",
+      "address": "0x00422414",
+      "reference": "0x004038e0",
+      "bytes": "e82feb0100"
+    },
+    {
+      "name": "fgetc",
+      "address": "0x00422ad2",
+      "reference": "0x0041fc4f",
+      "bytes": "e87e2e0000",
+      "build_only": true
+    },
+    {
+      "name": "HlinkNavigateString",
+      "address": "0x0042c2e0",
+      "reference": "0x00420691",
+      "bytes": "e84abc0000"
+    },
+    {
+      "name": "strdup_malloc",
+      "address": "0x0042c2ec",
+      "reference": "0x00402ae0",
+      "bytes": "e807980200"
+    },
+    {
+      "name": "MultiByteToWideChar",
+      "address": "0x0042d000",
+      "reference": "0x00420684",
+      "bytes": "ff1500d04200"
+    },
+    {
+      "name": "GetProcAddress",
+      "address": "0x0042d004",
+      "reference": "0x00402fca",
+      "bytes": "ff1504d04200"
+    },
+    {
+      "name": "LoadLibraryA",
+      "address": "0x0042d008",
+      "reference": "0x00402fb5",
+      "bytes": "ff1508d04200"
+    },
+    {
+      "name": "console_empty_arg",
+      "address": "0x0042f0c8",
+      "reference": "0x004018de",
+      "bytes": "a1c8f04200"
+    },
+    {
+      "name": "console_exec_line_buf",
+      "address": "0x00435f10",
+      "reference": "0x00401c0f",
+      "bytes": "68105f4300"
+    },
+    {
+      "name": "grim_dll_module_handle",
+      "address": "0x004369a0",
+      "reference": "0x00402fbd",
+      "bytes": "a3a0694300"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_color",
+      "address": "0x004369e0",
+      "reference": "0x00403240",
+      "bytes": "c705e06943000000803f"
+    },
+    {
+      "name": "unused_console_prefix_vec2",
+      "address": "0x004369f0",
+      "reference": "0x00403770",
+      "bytes": "c705f069430000000000"
+    },
+    {
+      "name": "unused_fx_rotated_scale_prefix_color",
+      "address": "0x00438320",
+      "reference": "0x00403300",
+      "bytes": "c705208343000000003f"
+    },
+    {
+      "name": "player_state_table",
+      "address": "0x00438478",
+      "reference": "0x00403a30",
+      "bytes": "b8f4844300",
+      "offset": 124
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2",
+      "address": "0x004387c0",
+      "reference": "0x00403430",
+      "bytes": "c705c087430000000000"
+    },
+    {
+      "name": "highscore_record_shots_fired",
+      "address": "0x004387f0",
+      "reference": "0x00409269",
+      "bytes": "8b35f0874300"
+    },
+    {
+      "name": "fx_queue",
+      "address": "0x00438828",
+      "reference": "0x004034a3",
+      "bytes": "b830884300",
+      "offset": 8
+    },
+    {
+      "name": "projectile_pool",
+      "address": "0x00439260",
+      "reference": "0x004039f0",
+      "bytes": "b88c924300",
+      "offset": 44
+    },
+    {
+      "name": "secondary_projectile_pool",
+      "address": "0x0043bb78",
+      "reference": "0x004037c0",
+      "bytes": "b880bb4300",
+      "offset": 8
+    },
+    {
+      "name": "unused_aim64_prefix_color",
+      "address": "0x0043c5d0",
+      "reference": "0x004032c0",
+      "bytes": "c705d0c5430000000000"
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2",
+      "address": "0x0043cbc0",
+      "reference": "0x004033d0",
+      "bytes": "c705c0cb430000000000"
+    },
+    {
+      "name": "perk_meta_table",
+      "address": "0x00441fc0",
+      "reference": "0x004036ae",
+      "bytes": "68c01f4400"
+    },
+    {
+      "name": "unused_fx_rotated_creature_type_id_prefix_color",
+      "address": "0x00442380",
+      "reference": "0x00403280",
+      "bytes": "c705802344000000003f"
+    },
+    {
+      "name": "config_blob",
+      "address": "0x0044271c",
+      "reference": "0x00405ddd",
+      "bytes": "8b15d0284400",
+      "offset": 436
+    },
+    {
+      "name": "config_sound_freq_adjustment",
+      "address": "0x004428e5",
+      "reference": "0x004206d0",
+      "bytes": "8a15e5284400",
+      "build_only": true
+    },
+    {
+      "name": "creature_pool",
+      "address": "0x00442af8",
+      "reference": "0x00409467",
+      "bytes": "b9f82a4400"
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2",
+      "address": "0x00452bf8",
+      "reference": "0x00403400",
+      "bytes": "c705f82b450000000000"
+    },
+    {
+      "name": "current_player_index",
+      "address": "0x00452d8c",
+      "reference": "0x004092eb",
+      "bytes": "a18c2d4500"
+    },
+    {
+      "name": "plaguebearer_infection_count",
+      "address": "0x00452d90",
+      "reference": "0x0040d85a",
+      "bytes": "833d902d45003c",
+      "build_only": true
+    },
+    {
+      "name": "grim_interface_ptr",
+      "address": "0x00452d94",
+      "reference": "0x00405dd0",
+      "bytes": "8b0d942d4500"
+    },
+    {
+      "name": "fx_queue_count",
+      "address": "0x00452da0",
+      "reference": "0x00405c80",
+      "bytes": "8b0da02d4500"
+    },
+    {
+      "name": "bonus_fire_bullets_timer",
+      "address": "0x00452db8",
+      "reference": "0x00409402",
+      "bytes": "d905b82d4500",
+      "build_only": true
+    },
+    {
+      "name": "run_elapsed_ms",
+      "address": "0x00452dc4",
+      "reference": "0x004205c0",
+      "bytes": "d905c42d4500"
+    },
+    {
+      "name": "frame_dt",
+      "address": "0x00452e94",
+      "reference": "0x00406577",
+      "bytes": "d905942e4500"
+    }
+  ]
+}

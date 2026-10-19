@@ -1,4 +1,8 @@
 #include "grim2d_cpp.h"
+#if CL_BUILD < 10400
+#include <math.h>
+#include "grim_d3d8.h"
+#endif
 
 struct GrimPoint {
     float x;
@@ -39,8 +43,18 @@ extern unsigned long grim_color_slot1;
 extern unsigned long grim_color_slot2;
 extern unsigned long grim_color_slot3;
 extern GrimUV grim_uv_u0[4];
+#if CL_BUILD < 10900
+extern unsigned short grim_vertex_count;
+#else
 extern unsigned long grim_vertex_count;
+#endif
 extern unsigned int grim_vertex_capacity;
+#if CL_BUILD < 10400
+extern IDirect3DDevice8 *grim_d3d_device;
+extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
+extern IDirect3DIndexBuffer8 *grim_index_buffer;
+extern unsigned short *grim_index_write_ptr;
+#endif
 
 inline float grim_inverse_sqrt(float number)
 {
@@ -65,9 +79,15 @@ void IGrim2D_cpp::grim_draw_quad(float x, float y, float w, float h)
     float *center = points[4];
 #endif
 
+#if CL_BUILD < 10400
+    if (!grim_device_ready) {
+        return;
+    }
+#else
     if (grim_render_disabled || !grim_device_ready) {
         return;
     }
+#endif
 
     if (!grim_batch_active) {
         grim_begin_batch();
@@ -85,8 +105,12 @@ void IGrim2D_cpp::grim_draw_quad(float x, float y, float w, float h)
     } else {
         center[0] = x + w * 0.5f;
         center[1] = y + h * 0.5f;
+#if CL_BUILD < 10400
+        float half_diagonal = (float)sqrt(w * w + h * h) * 0.5f;
+#else
         float length_sq = w * w + h * h;
         float half_diagonal = length_sq * grim_inverse_sqrt(length_sq) * 0.5f;
+#endif
         float dx = grim_rotation_cos * half_diagonal;
         half_diagonal *= grim_rotation_sin;
 
@@ -130,8 +154,43 @@ void IGrim2D_cpp::grim_draw_quad(float x, float y, float w, float h)
     grim_vertex_write_ptr->uv = grim_uv_u0[3];
     ++grim_vertex_write_ptr;
 
+#if CL_BUILD < 10400
+    *grim_index_write_ptr++ = grim_vertex_count;
+    *grim_index_write_ptr++ = grim_vertex_count + 1;
+    *grim_index_write_ptr++ = grim_vertex_count + 2;
+    *grim_index_write_ptr++ = grim_vertex_count + 2;
+    *grim_index_write_ptr++ = grim_vertex_count + 3;
+    *grim_index_write_ptr++ = grim_vertex_count;
+#endif
+#if CL_BUILD < 10900
+    grim_vertex_count += 4;
+    if (grim_vertex_count >= grim_vertex_capacity) {
+#if CL_BUILD < 10300
+        grim_vertex_buffer->Unlock();
+        grim_index_buffer->Unlock();
+        grim_d3d_device->DrawIndexedPrimitive(
+            D3DPT_TRIANGLELIST, 0, grim_vertex_count, 0, grim_vertex_count >> 1);
+        if (grim_vertex_buffer->Lock(
+                0,
+                0,
+                (unsigned char **)&grim_vertex_write_ptr,
+                D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK) >= 0) {
+            if (grim_index_buffer->Lock(
+                    0,
+                    0,
+                    (unsigned char **)&grim_index_write_ptr,
+                    D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK) >= 0) {
+                grim_vertex_count = 0;
+            }
+        }
+#else
+        grim_flush_batch();
+#endif
+    }
+#else
     *(unsigned short *)&grim_vertex_count += 4;
     if ((unsigned short)grim_vertex_count >= grim_vertex_capacity) {
         grim_flush_batch();
     }
+#endif
 }
