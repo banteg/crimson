@@ -178,11 +178,12 @@ void capture_frame() {
 
 // CRIMSON_INPUT scripts input for unattended runs: "frame:action;..." (host
 // frames) where an
-// action is "move x y" (back-buffer pixels), "press button" or "release button"
+// action is "move x y" (logical game pixels), "press button" or "release button"
 // (0 left, 1 right), or "key code" / "unkey code" (DirectInput scancodes, hex).
 // Virtual gamepads stand in for real ones: "padattach n", "paddetach n",
 // "padbutton name 0|1 n" and "padaxis name value n" for pad n, 0 when left out
 // (SDL's names: "a", "dpup", "start", "leftx", "righttrigger"; axes -32768 to 32767).
+// "resize width height" changes the window in SDL coordinates.
 SDL_Joystick *scripted_pads[4];
 void script_pad(const char *verb, const char *name, int value, int index) {
   SDL_Joystick *&joystick = scripted_pads[index & 3];
@@ -241,6 +242,9 @@ void run_script(int frame) {
       else
         sscanf(s.action.c_str(), "%*s %31s %d %d", name, &value, &index);
       script_pad(verb, name, value, index);
+    } else if (!strcmp(verb, "resize") && a > 0 && b > 0) {
+      SDL_SetWindowSize(window, (int)a, (int)b);
+      SDL_SyncWindow(window);
     } else if (!strcmp(verb, "move")) {
       scripted_x = a;
       scripted_y = b;
@@ -929,6 +933,9 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   SDL_HideCursor();
   SDL_StartTextInput(window);
   renderer_init();
+  int pixel_width, pixel_height;
+  SDL_GetWindowSizeInPixels(window, &pixel_width, &pixel_height);
+  renderer_resize(pixel_width, pixel_height);
   audio_init();
   if (!start_game())
     return SDL_APP_FAILURE;
@@ -1048,17 +1055,18 @@ SDL_AppResult SDL_AppIterate(void *) {
 #ifndef __EMSCRIPTEN__
   network_update();
 #endif
-  // The window cursor, in back-buffer pixels, reaches DirectInput as motion.
+  // Raster density changes only the host targets; the game and DirectInput
+  // continue to see the configured logical dimensions.
+  run_script(frames + 1);
   float x, y;
   SDL_GetMouseState(&x, &y);
   int width, height, pixel_width, pixel_height;
   SDL_GetWindowSize(window, &width, &height);
   SDL_GetWindowSizeInPixels(window, &pixel_width, &pixel_height);
+  renderer_resize(pixel_width, pixel_height);
   Viewport v = renderer_viewport(pixel_width, pixel_height);
-  if (v.back_width) {
-    float scale = (float)pixel_width / width;
-    float gx = (x * scale - v.x) / v.width * v.back_width, gy = (y * scale - v.y) / v.height * v.back_height;
-    run_script(frames + 1);
+  if (v.width && width > 0 && height > 0) {
+    float gx = v.logical_x(x * pixel_width / width), gy = v.logical_y(y * pixel_height / height);
     if (scripted_x >= 0) {
       gx = scripted_x;
       gy = scripted_y;

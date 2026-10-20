@@ -25,21 +25,27 @@ SCRIPT = (
 TAKE, RETRY = range(605, 625), range(720, 745)
 
 
-def pixels(path: Path) -> bytearray:
+def pixels(path: Path) -> tuple[int, int, bytearray]:
     header, size, depth, data = path.read_bytes().split(b"\n", 3)
-    assert (header, size, depth) == (b"P6", b"1024 768", b"255")
-    assert len(data) == 1024 * 768 * 3
-    return bytearray(data)
+    assert (header, depth) == (b"P6", b"255")
+    width, height = map(int, size.split())
+    assert width > 0 and height > 0 and len(data) == width * height * 3
+    return width, height, bytearray(data)
 
 
 def same_world(a: Path, b: Path, *, cursors: tuple[tuple[int, int], ...] = ((512, 384),)) -> None:
-    images = [pixels(a), pixels(b)]
+    width, height, first = pixels(a)
+    other_width, other_height, second = pixels(b)
+    assert (width, height) == (other_width, other_height)
+    images = [first, second]
     # The viewer's bar differs; the human cursor animates between frames.
     boxes = [(0, 720, 1024, 768), *((x - 80, y - 80, x + 96, y + 96) for x, y in cursors)]
     for data in images:
         for left, top, right, bottom in boxes:
+            left, right = left * width // 1024, (right * width + 1023) // 1024
+            top, bottom = top * height // 768, (bottom * height + 767) // 768
             for y in range(top, bottom):
-                start, end = (y * 1024 + left) * 3, (y * 1024 + right) * 3
+                start, end = (y * width + left) * 3, (y * width + right) * 3
                 data[start:end] = bytes(end - start)
     assert images[0] == images[1], f"world or HUD differs: {a.name} / {b.name}"
 
@@ -94,7 +100,32 @@ def main() -> None:
         take, retry = started(TAKE), started(RETRY)
         same_world(captures / f"frame_{take}.ppm", captures / f"frame_{retry}.ppm", cursors=((512, 384), (232, 374)))
         same_world(captures / "frame_600.ppm", captures / "frame_840.ppm")
-        print(json.dumps({"takeover": True, "retry_pixels": True, "original_pixels": True}))
+        original_states = {frame: state(frame) for frame in (600, take, 680, retry, 840)}
+
+        # Repeat through physical target changes: take an anchor at one size,
+        # play and retry at another, then restore the original at its first size.
+        # Window units deliberately work on both 1x and Retina displays.
+        captures = root / "captures-resize"
+        captures.mkdir()
+        env["CRIMSON_CAPTURE"] = str(captures)
+        env["CRIMSON_INPUT"] = SCRIPT + ";1:resize 640 480;635:resize 800 600;750:resize 512 384;815:resize 640 480"
+        subprocess.run([str(binary), str(game)], env=env, check=True, timeout=90)
+        assert {frame: state(frame) for frame in original_states} == original_states
+        first_width, first_height, _ = pixels(captures / f"frame_{take}.ppm")
+        retry_width, retry_height, _ = pixels(captures / f"frame_{retry}.ppm")
+        assert retry_width * 4 == first_width * 5 and retry_height * 4 == first_height * 5
+        same_world(captures / "frame_600.ppm", captures / "frame_840.ppm")
+        print(
+            json.dumps(
+                {
+                    "takeover": True,
+                    "retry_pixels": True,
+                    "original_pixels": True,
+                    "resize_original_pixels": True,
+                    "resize_practice_states": True,
+                },
+            ),
+        )
 
 
 if __name__ == "__main__":

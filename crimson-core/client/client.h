@@ -14,15 +14,19 @@ bool client_resolve(const std::string &relative, std::string &path);
 
 // renderer.cpp: the Direct3D 8 subset the game module's device sends.
 void renderer_init();
+// Fit the logical game view to physical window pixels before the game draws.
+void renderer_resize(int window_width, int window_height);
 // The back buffer to the window's framebuffer, which stays bound for the swap
 // (macOS shows a black window when the swap finds another framebuffer bound);
 // renderer_resume binds the game's render target again after it.
 void renderer_present(int window_width, int window_height);
 void renderer_resume();
-// The rectangle of the window the back buffer fills, letterboxed.
+// Integer physical pixels, with a top-left origin shared by input and drawing.
 struct Viewport {
-  float x, y, width, height;
+  int x, y, width, height;
   int back_width, back_height;
+  float logical_x(float pixel_x) const { return (pixel_x - x) * back_width / width; }
+  float logical_y(float pixel_y) const { return (pixel_y - y) * back_height / height; }
 };
 Viewport renderer_viewport(int window_width, int window_height);
 std::vector<unsigned char> renderer_capture(int &width, int &height);

@@ -117,6 +117,12 @@ jobs:
         if: matrix.name != 'web'
         run: python3 crimson-core/checks/native_network.py
 
+      - name: Check native-resolution rendering
+        if: matrix.name == 'linux'
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: xvfb-run -a python3 crimson-core/checks/renderer.py
+
       - name: Build the client
         if: matrix.name != 'web' || steps.web.outputs.cache-hit != 'true'
         run: python3 crimson-core/client/build.py --target ${{ matrix.name == 'web' && 'web' || 'native' }} --skip-game --package

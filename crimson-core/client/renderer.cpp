@@ -51,10 +51,13 @@ enum {
 
 struct Target {
   GLuint texture = 0, framebuffer = 0;
+  // Texture storage and viewport pixels are independent of draw coordinates.
   int width = 0, height = 0, flags = 0;
+  int logical_width = 0, logical_height = 0;
 };
 std::unordered_map<int, Target> textures; // id 0 is the back buffer
 int current_target = 0;
+int drawable_width = 0, drawable_height = 0;
 unsigned render_states[256];
 unsigned stage_states[STAGES][32];
 int bound[STAGES];
@@ -245,6 +248,8 @@ void allocate(Target &t) {
     glGenFramebuffers(1, &t.framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, t.framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t.texture, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+      client_fatal("Could not allocate render target");
     // Direct3D's surfaces start black and opaque, whatever the last draw masked.
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearColor(0, 0, 0, 1);
@@ -340,9 +345,35 @@ void renderer_init() {
 
 Viewport renderer_viewport(int window_width, int window_height) {
   Target &back = textures[0];
-  float scale = fminf((float)window_width / back.width, (float)window_height / back.height);
-  float width = back.width * scale, height = back.height * scale;
-  return {(window_width - width) / 2, (window_height - height) / 2, width, height, back.width, back.height};
+  if (window_width <= 0 || window_height <= 0 || back.logical_width <= 0 || back.logical_height <= 0)
+    return {};
+  double scale = fmin((double)window_width / back.logical_width, (double)window_height / back.logical_height);
+  int width = (int)fmax(1, round(back.logical_width * scale));
+  int height = (int)fmax(1, round(back.logical_height * scale));
+  return {(window_width - width) / 2, (window_height - height) / 2, width, height,
+          back.logical_width, back.logical_height};
+}
+
+void renderer_resize(int window_width, int window_height) {
+  drawable_width = window_width;
+  drawable_height = window_height;
+  Viewport v = renderer_viewport(window_width, window_height);
+  Target &back = textures[0];
+  // A minimized window can have no drawable pixels. Keep its last image.
+  if (!v.width || !back.framebuffer || (back.width == v.width && back.height == v.height))
+    return;
+  Target previous = back;
+  back.texture = back.framebuffer = 0;
+  back.width = v.width;
+  back.height = v.height;
+  allocate(back);
+  // Some frames only draw overlays (paused, seeking or waiting for co-op).
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, previous.framebuffer);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, back.framebuffer);
+  glBlitFramebuffer(0, 0, previous.width, previous.height, 0, 0, back.width, back.height,
+                    GL_COLOR_BUFFER_BIT, GL_LINEAR);
+  release(previous);
+  bind_target();
 }
 
 void renderer_present(int window_width, int window_height) {
@@ -350,6 +381,8 @@ void renderer_present(int window_width, int window_height) {
   if (!back.texture)
     return;
   Viewport v = renderer_viewport(window_width, window_height);
+  if (!v.width)
+    return;
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, window_width, window_height);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -357,7 +390,7 @@ void renderer_present(int window_width, int window_height) {
   glDisable(GL_CULL_FACE);
   glClearColor(0, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
-  glViewport((GLint)v.x, (GLint)v.y, (GLsizei)v.width, (GLsizei)v.height);
+  glViewport(v.x, window_height - v.y - v.height, v.width, v.height);
   glUseProgram(present_program);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, gamma_texture);
@@ -365,8 +398,8 @@ void renderer_present(int window_width, int window_height) {
   glBindTexture(GL_TEXTURE_2D, back.texture);
   glBindSampler(0, 0);
   glBindSampler(1, 0);
-  // Whole-number scales stay sharp.
-  bool exact = fmodf(v.width, (float)back.width) == 0;
+  // Normally a one-to-one copy; a resize between draw and present may scale once.
+  bool exact = v.width == back.width && v.height == back.height;
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, exact ? GL_NEAREST : GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, exact ? GL_NEAREST : GL_LINEAR);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -406,16 +439,21 @@ void w2c_host_frame_hold(struct w2c_host *, u32 op) {
   Target &to = op == 1 || op == 4 ? held : op == 3 ? anchor : back;
   if (!from.framebuffer)
     return;
-  if (to.width != from.width || to.height != from.height || !to.framebuffer) {
+  // Saved images retain their capture density. Restoring must never shrink the
+  // current back buffer or discard its X8R8G8B8 (opaque alpha) semantics.
+  if (&to != &back && (to.width != from.width || to.height != from.height || !to.framebuffer)) {
     release(to);
     to.width = from.width;
     to.height = from.height;
-    to.flags = 1;
+    to.logical_width = from.logical_width;
+    to.logical_height = from.logical_height;
+    to.flags = from.flags;
     allocate(to);
   }
   glBindFramebuffer(GL_READ_FRAMEBUFFER, from.framebuffer);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.framebuffer);
-  glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, to.width, to.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, to.width, to.height, GL_COLOR_BUFFER_BIT,
+                    to.width == from.width && to.height == from.height ? GL_NEAREST : GL_LINEAR);
   bind_target();
 }
 void w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
@@ -427,6 +465,8 @@ void w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
     release(to);
     to.width = from.width;
     to.height = from.height;
+    to.logical_width = from.logical_width;
+    to.logical_height = from.logical_height;
     to.flags = 1;
     allocate(to);
   }
@@ -438,8 +478,11 @@ void w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
 void w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
   Target &back = textures[0];
   release(back);
-  back.width = (int)width;
-  back.height = (int)height;
+  back.logical_width = (int)width;
+  back.logical_height = (int)height;
+  Viewport v = renderer_viewport(drawable_width, drawable_height);
+  back.width = v.width ? v.width : (int)width;
+  back.height = v.height ? v.height : (int)height;
   back.flags = 1 | 2; // the back buffer is X8R8G8B8
   allocate(back);
   current_target = 0;
@@ -448,8 +491,8 @@ void w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
 void w2c_host_texture_create(struct w2c_host *, u32 id, u32 width, u32 height, u32 flags) {
   Target &t = textures[(int)id];
   release(t);
-  t.width = (int)width;
-  t.height = (int)height;
+  t.logical_width = t.width = (int)width;
+  t.logical_height = t.height = (int)height;
   t.flags = (int)flags;
   allocate(t);
   bind_target();
@@ -508,7 +551,7 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
                    u32 primitive_count) {
   Target &t = target_or_back(current_target);
   glUseProgram(program);
-  glUniform2f(u_target_size, (float)t.width, (float)t.height);
+  glUniform2f(u_target_size, (float)t.logical_width, (float)t.logical_height);
   GLint has[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES];
   for (int s = 0; s < STAGES; ++s) {
     auto it = textures.find(bound[s]);
