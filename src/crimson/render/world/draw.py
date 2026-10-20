@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterator, Sequence
+from contextlib import nullcontext
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -16,6 +17,7 @@ from ...effects_atlas import EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...ui.cursor import draw_aim_cursor
+from ..rtx.material_lights import collect_material_lights
 from ..rtx.materials import MaterialGroundRenderer
 from ..rtx.mode import RtxRenderMode
 from . import viewport
@@ -230,6 +232,13 @@ def draw_creature_overlays(
 def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
     frame = render_ctx.frame
     creature_entries = frame.creatures.entries
+    lighting = frame.creature_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
+    if lighting is not None:
+        lighting.prepare(
+            collect_material_lights(frame, view_center=render_ctx.view.screen_size * 0.5 - render_ctx.view.camera),
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
+        )
 
     # Native `creature_render_all` batches all overlays across the active pool
     # before any species-specific sprite passes.
@@ -248,61 +257,66 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
     for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
         # Native batches every shadow before drawing any body of this species.
         for shadow in (True, False) if shadow_pass else (False,):
-            for creature in creature_entries:
-                if not creature.active or creature.type_id != type_id:
-                    continue
-                screen = viewport.world_to_screen_with(
-                    creature.pos,
-                    camera=render_ctx.view.camera,
-                    view_scale=render_ctx.view.view_scale,
-                )
-                death_timer = float(creature.death_timer)
-
-                texture = _creature_texture(resources, type_id)
-
-                # Native quad dimensions use the creature's actual size.
-                if texture.width <= 0:
-                    continue
-                size_scale = float(creature.size) / (float(texture.width) / 8.0)
-                shadow_alpha = None
-                if shadow:
-                    shadow_alpha = creature_color_byte(
-                        creature_shadow_alpha(
-                            creature.tint.a,
-                            flags=creature.flags,
-                            death_timer=death_timer,
-                            transition=ctx.entity_alpha,
-                        ),
+            body_scope = (
+                lighting.scope(restore_shader=resources.alpha_test.shader)
+                if lighting is not None and not shadow else nullcontext()
+            )
+            with body_scope:
+                for creature in creature_entries:
+                    if not creature.active or creature.type_id != type_id:
+                        continue
+                    screen = viewport.world_to_screen_with(
+                        creature.pos,
+                        camera=render_ctx.view.camera,
+                        view_scale=render_ctx.view.view_scale,
                     )
-                    tint = rl_color(0, 0, 0, shadow_alpha)
-                else:
-                    tint = creature_color_to_rl(
-                        creature_render_tint(
-                            creature.tint,
-                            max_hp=creature.max_hp,
-                            energizer_timer=frame.state.bonuses.energizer,
-                            death_timer=death_timer,
-                            transition=ctx.entity_alpha,
-                        ),
-                    )
+                    death_timer = float(creature.death_timer)
 
-                draw_creature_sprite(
-                    render_ctx,
-                    texture,
-                    type_id=type_id or CreatureTypeId.ZOMBIE,
-                    flags=creature.flags,
-                    phase=float(creature.anim_phase),
-                    death_timer=death_timer,
-                    shadow_alpha=shadow_alpha,
-                    pos=creature.pos,
-                    screen_pos=screen,
-                    rotation_rad=float(creature.heading) - math.pi / 2.0,
-                    scale=render_ctx.view.scale,
-                    size_scale=size_scale,
-                    tint=tint,
-                    shadow=shadow,
-                    body=not shadow,
-                )
+                    texture = _creature_texture(resources, type_id)
+
+                    # Native quad dimensions use the creature's actual size.
+                    if texture.width <= 0:
+                        continue
+                    size_scale = float(creature.size) / (float(texture.width) / 8.0)
+                    shadow_alpha = None
+                    if shadow:
+                        shadow_alpha = creature_color_byte(
+                            creature_shadow_alpha(
+                                creature.tint.a,
+                                flags=creature.flags,
+                                death_timer=death_timer,
+                                transition=ctx.entity_alpha,
+                            ),
+                        )
+                        tint = rl_color(0, 0, 0, shadow_alpha)
+                    else:
+                        tint = creature_color_to_rl(
+                            creature_render_tint(
+                                creature.tint,
+                                max_hp=creature.max_hp,
+                                energizer_timer=frame.state.bonuses.energizer,
+                                death_timer=death_timer,
+                                transition=ctx.entity_alpha,
+                            ),
+                        )
+
+                    draw_creature_sprite(
+                        render_ctx,
+                        texture,
+                        type_id=type_id or CreatureTypeId.ZOMBIE,
+                        flags=creature.flags,
+                        phase=float(creature.anim_phase),
+                        death_timer=death_timer,
+                        shadow_alpha=shadow_alpha,
+                        pos=creature.pos,
+                        screen_pos=screen,
+                        rotation_rad=float(creature.heading) - math.pi / 2.0,
+                        scale=render_ctx.view.scale,
+                        size_scale=size_scale,
+                        tint=tint,
+                        shadow=shadow,
+                        body=not shadow,
+                    )
 
         if frame.config is not None and frame.config.display.violence_disabled:
             draw_creature_hit_flashes(render_ctx, type_id=type_id, ctx=ctx)

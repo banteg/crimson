@@ -1,0 +1,192 @@
+from __future__ import annotations
+
+import struct
+from contextlib import contextmanager
+
+import msgspec
+import pytest
+
+from crimson.creatures.spawn import CreatureTypeId
+from crimson.render.rtx.creature_lighting import CreatureLighting
+from crimson.render.rtx.material_lights import MaterialLight
+from crimson.render.rtx.mode import RtxRenderMode
+from crimson.render.world import draw as world_draw
+from crimson.world.render_resources import RenderResources
+from grim.edr import load_float_render_texture
+from grim.geom import Vec2
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
+from grim.shaders import AlphaTestShader
+from grim.texture_mode import texture_mode
+from tests.support.creature_draw_capture import render_ctx_for_creatures
+from tests.support.factories import make_creature_state
+
+
+@pytest.mark.parametrize("mode", list(RtxRenderMode))
+def test_only_rtx_bodies_use_lighting(mocker, headless_resources, mode):
+    creature = make_creature_state(pos=Vec2(64, 64), type_id=CreatureTypeId.SPIDER_SP1)
+    creature.hit_flash_timer = 0.1
+    ctx = render_ctx_for_creatures(headless_resources, [creature])
+    from grim.config import default_crimson_cfg
+
+    config = default_crimson_cfg()
+    config.display.violence_disabled = True
+    lighting = CreatureLighting()
+    ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(
+        ctx.frame, rtx_mode=mode, config=config, creature_lighting=lighting,
+    ))
+    active = False
+    draws = mocker.Mock()
+
+    @contextmanager
+    def scope(**_kwargs):
+        nonlocal active
+        active = True
+        try:
+            yield
+        finally:
+            active = False
+
+    prepare = mocker.patch.object(CreatureLighting, "prepare")
+    mocker.patch.object(CreatureLighting, "scope", side_effect=scope)
+    mocker.patch.object(world_draw, "draw_creature_sprite", side_effect=lambda *a, **kw: draws(kw, active))
+    mocker.patch.object(world_draw, "draw_creature_overlays")
+    mocker.patch.object(world_draw.rl, "begin_blend_mode")
+    mocker.patch.object(world_draw.rl, "end_blend_mode")
+    world_draw.draw_creatures(ctx, ctx=world_draw.WorldDrawContext())
+    assert prepare.call_count == int(mode is RtxRenderMode.RTX)
+    assert draws.call_count == 3
+    for call in draws.call_args_list:
+        kwargs, lit = call.args
+        assert lit == (mode is RtxRenderMode.RTX and not kwargs.get("shadow") and not kwargs.get("hit_flash"))
+
+
+def test_lazy_lifecycle_and_exception_restore(mocker, tmp_path):
+    lighting = CreatureLighting()
+    load = mocker.patch.object(rl, "load_shader_from_memory")
+    lighting.prepare([], camera=Vec2(), view_scale=Vec2(1, 1))
+    load.assert_not_called()
+    begin = mocker.patch.object(rl, "begin_shader_mode")
+    unload = mocker.patch.object(rl, "unload_shader")
+    shader = rl.ffi.new("Shader *")[0]
+    shader.id = 42
+    restore = rl.ffi.new("Shader *")[0]
+    restore.id = 9
+    lighting.shader = shader
+    lighting.active = True
+    with pytest.raises(ValueError), lighting.scope(restore_shader=restore):
+        raise ValueError("drawing interrupted")
+    assert [call.args[0] for call in begin.call_args_list] == [shader, restore]
+    resources = RenderResources(tmp_path, creature_lighting=lighting)
+    resources.close()
+    resources.close()
+    unload.assert_called_once_with(shader)
+    assert lighting.shader is None and not lighting.active
+
+
+@pytest.fixture
+def lit_sprite(raylib_context):
+    # Eight-by-eight atlas, with an opaque disk and a small protruding limb.
+    image = rl.gen_image_color(256, 256, rl.BLANK)
+    rl.image_draw_circle(image, 16, 16, 10, rl.Color(70, 55, 40, 255))
+    rl.image_draw_rectangle(image, 24, 15, 8, 3, rl.Color(70, 55, 40, 255))
+    texture = rl.load_texture_from_image(image)
+    rl.unload_image(image)
+    target = load_float_render_texture(128, 128)
+    lighting = CreatureLighting()
+    alpha = AlphaTestShader()
+
+    def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False):
+        if neighbor:
+            other = rl.gen_image_color(256, 256, rl.BLANK)
+            rl.image_draw_circle(other, 16, 16, 10, rl.Color(70, 55, 40, 255))
+            rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(70, 55, 40, 255))
+            rl.image_draw_rectangle(other, 32, 0, 32, 32, rl.Color(255, 0, 0, 255))
+            rl.update_texture(texture, other.data)
+            rl.unload_image(other)
+        lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale))
+        with texture_mode(target):
+            rl.clear_background(rl.BLANK)
+            with alpha.scope():
+                def draw():
+                    pos = (Vec2(64, 64) + camera) * scale
+                    rl.draw_texture_pro(texture, rl_rectangle(0, 0, 32, 32),
+                                        rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
+                                        rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
+                if use_shader:
+                    with lighting.scope(restore_shader=alpha.shader):
+                        draw()
+                else:
+                    draw()
+        img = rl.load_image_from_texture(target.texture)
+        try:
+            rl.image_format(img, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
+            return list(struct.iter_unpack("ffff", bytes(rl.ffi.buffer(img.data, 128*128*16))))
+        finally:
+            rl.unload_image(img)
+
+    try:
+        yield render, lighting
+    finally:
+        lighting.close()
+        alpha.close()
+        rl.unload_texture(texture)
+        rl.unload_render_texture(target)
+
+
+def test_zero_and_out_of_range_lights_preserve_base_pixels(lit_sprite):
+    render, lighting = lit_sprite
+    base = render([], use_shader=False)
+    assert render([]) == base
+    assert lighting.shader is None
+    assert render([MaterialLight(Vec2(1000, 1000), 10, (1, 1, 1))]) == base
+    assert render([MaterialLight(Vec2(64, 64), 100, (0, 0, 0))]) == base
+    assert render([]) == base  # A previous lit frame cannot leak into the next one.
+
+
+@pytest.mark.parametrize("rotation", [0., 90., 217.])
+def test_rim_follows_world_light_and_preserves_alpha(lit_sprite, rotation):
+    render, _lighting = lit_sprite
+    base = render([], rotation=rotation)
+    right = render([MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=40)], rotation=rotation)
+    left = render([MaterialLight(Vec2(38, 64), 110, (1.4, .68, .2), height=40)], rotation=rotation)
+    assert [p[3] for p in base] == [p[3] for p in right] == [p[3] for p in left]
+    def halves(pixels):
+        delta = [p[0]-b[0] for p, b in zip(pixels, base, strict=True)]
+        assert min(delta) >= -0.001
+        return [sum(v for i, v in enumerate(delta) if (i % 128 >= 64) == half) for half in (False, True)]
+    assert halves(right)[1] > halves(right)[0]
+    assert halves(left)[0] > halves(left)[1]
+
+
+def test_camera_scale_and_adjacent_atlas_frame(lit_sprite):
+    render, _lighting = lit_sprite
+    lights = [MaterialLight(Vec2(88, 64), 110, (.5, .8, 1.5), height=40)]
+    normal = render(lights)
+    # Doubling the view and moving its origin preserves the world-space illumination.
+    zoomed = render(lights, scale=2, camera=Vec2(-32.25, -32.25))
+    for x in range(59, 69):
+        a = normal[63*128+x]
+        # Offset the zoomed camera by a quarter unit to align pixel centers.
+        b = zoomed[63*128+(x-32)*2]
+        assert a[:3] == pytest.approx(b[:3], abs=.002)
+    neighbor = render(lights, neighbor=True)
+    # Pixel centers near the right edge of frame zero must not read frame one's alpha.
+    for y in range(128):
+        for x in range(48, 80):
+            i=y*128+x
+            assert normal[i] == neighbor[i]
+
+
+def test_multiple_emitters_and_light_budget(lit_sprite):
+    render, _lighting = lit_sprite
+    red = MaterialLight(Vec2(86, 64), 110, (1.4, 0, 0), height=40)
+    blue = MaterialLight(Vec2(42, 64), 110, (0, 0, 1.4), height=40)
+    base = render([])
+    red_only = render([red])
+    blue_only = render([blue])
+    both = render([red, blue])
+    def energy(pixels, channel):
+        return sum(p[channel]-b[channel] for p, b in zip(pixels, base, strict=True))
+    assert energy(both, 0) > energy(blue_only, 0) + 1
+    assert energy(both, 2) > energy(red_only, 2) + 1
+    assert render([red]*16 + [blue]) == render([red]*16)

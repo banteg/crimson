@@ -16,6 +16,8 @@ from .rtx.mode import RtxRenderMode
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
+    from .rtx.creature_lighting import CreatureLighting
+
 
 
 class RenderFrame(msgspec.Struct, frozen=True):
@@ -37,3 +39,4 @@ class RenderFrame(msgspec.Struct, frozen=True):
     elapsed_ms: float
     bonus_anim_phase: float
     rtx_mode: RtxRenderMode
+    creature_lighting: CreatureLighting | None = None

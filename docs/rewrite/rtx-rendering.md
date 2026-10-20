@@ -8,7 +8,7 @@ tags:
 # RTX rendering
 
 RTX is the Python port's alternative rendering mode. It combines analytic beam
-shaders and wet ground materials with HDR world rendering and macOS extended dynamic range (EDR) output.
+shaders, wet ground materials, and creature lighting with HDR world rendering and macOS extended dynamic range (EDR) output.
 This page covers those paths, their controls, and how they differ from classic
 rendering.
 
@@ -232,3 +232,27 @@ Benchmark controls:
 `crimson.render.rtx` is intended as the home for non-classic render
 enhancements (beam acceleration, HDR additive tonemapping, and EDR output now,
 advanced lighting next), while keeping `classic` as the parity reference path.
+
+## Creature lighting
+
+Python RTX creature bodies receive the same bounded weapon emitters as the ground
+pass. A rounded body normal and weak texture relief provide broad colored lighting
+and small highlights; three alpha taps toward each light produce an inner silhouette
+rim. The approved blend uses 65% of the dome study and 65% of the rim study, with a
+hue-preserving limit on their combined radiance. These are artistic shape estimates,
+not authored normal maps or physically calibrated skin/chitin models.
+
+Implementation: `src/crimson/render/rtx/creature_lighting.py` and
+`creature_shaders.py`. Point emitters and finite beam segments both work in world
+coordinates. The sprite basis is recovered from interpolated coordinates, so
+rotation and size do not require per-creature uniform uploads or batch flushes.
+Lights are uploaded once before the species passes. Alpha taps stay inside the
+current cell of the 8×8 animation atlas, and the native alpha cutoff and silhouette
+remain intact.
+
+Only creature body passes use this shader. Existing shadows, hit flashes, freeze
+and poison overlays, players, and baked corpses keep their existing paths. No
+additional ambient darkening or cast shadows are introduced. Classic bypasses
+lighting entirely; an empty light list also uses the original body shader. GPU
+resources are lazy and released with the world's render resources. The existing
+HDR world target and display shoulder handle the added highlights.
