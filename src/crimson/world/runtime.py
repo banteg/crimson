@@ -10,6 +10,7 @@ from grim.rand import CrandLike
 
 from ..camera import CameraUpdate, camera_update_for_players
 from ..render.frame import RenderFrame
+from ..render.rtx.debug import RtxDebugView, draw_debug_label
 from ..render.rtx.mode import RtxRenderMode
 from ..render.rtx.shockwaves import collect_pressure_fronts
 from ..render.world import viewport
@@ -50,6 +51,7 @@ class WorldRuntime:
         self.preserve_bugs = bool(preserve_bugs)
         self.config = config
         self.rtx_mode = rtx_mode
+        self.rtx_debug = RtxDebugView.SHADED
 
         self._reset_world(seed=0xBEEF, player_count=1)
 
@@ -158,10 +160,18 @@ class WorldRuntime:
             screen_size=screen_size,
         )
 
+    @property
+    def rtx_debug_active(self) -> bool:
+        return self.rtx_mode is RtxRenderMode.RTX and self.rtx_debug is not RtxDebugView.SHADED
+
+    @property
+    def rtx_debug_map_active(self) -> bool:
+        return self.rtx_debug_active and self.rtx_debug.is_map
+
     def draw(self, *, entity_alpha: float = 1.0) -> None:
         self.render_resources.process_ground_pending()
         render_ctx = self._render_ctx()
-        if self.rtx_mode is RtxRenderMode.RTX:
+        if self.rtx_mode is RtxRenderMode.RTX and not self.rtx_debug_map_active:
             with self.render_resources.hdr.scope(
                 out_size=render_ctx.view.out_size,
                 pressure_fronts=collect_pressure_fronts(render_ctx) if entity_alpha > 1e-3 else (),
@@ -169,8 +179,12 @@ class WorldRuntime:
                 draw_world(render_ctx, entity_alpha=entity_alpha)
         else:
             draw_world(render_ctx, entity_alpha=entity_alpha)
+        if self.rtx_debug_active:
+            draw_debug_label(self.rtx_debug)
 
     def draw_aim_indicators(self, *, show_aim: bool, aim_enhancement_fade: float, entity_alpha: float = 1.0) -> None:
+        if self.rtx_debug_map_active:
+            return
         ui_render_aim_indicators(
             self._render_ctx(), show_aim=show_aim, aim_enhancement_fade=aim_enhancement_fade, entity_alpha=entity_alpha,
         )
@@ -203,6 +217,7 @@ class WorldRuntime:
             elapsed_ms=float(self.presentation.elapsed_ms),
             bonus_anim_phase=float(self.presentation.bonus_anim_phase),
             rtx_mode=self.rtx_mode,
+            rtx_debug=self.rtx_debug,
             creature_lighting=self.render_resources.creature_lighting,
             bonus_lighting=self.render_resources.bonus_lighting,
         )

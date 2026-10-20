@@ -11,6 +11,7 @@ from grim.terrain_render import GroundRenderer
 
 from ..creatures.runtime import CreaturePool
 from ..sim.state_types import PlayerState
+from .rtx.debug import RtxDebugView
 from .rtx.mode import RtxRenderMode
 
 if TYPE_CHECKING:
@@ -40,5 +41,6 @@ class RenderFrame(msgspec.Struct, frozen=True):
     elapsed_ms: float
     bonus_anim_phase: float
     rtx_mode: RtxRenderMode
+    rtx_debug: RtxDebugView = RtxDebugView.SHADED
     creature_lighting: CreatureLighting | None = None
     bonus_lighting: BonusLighting | None = None

@@ -80,15 +80,22 @@ def test_alpha_test_scope_ends_after_an_error_and_keeps_its_handle_until_close(r
         rl.unload_render_texture(target)
 
 
-@pytest.mark.parametrize("gain", [1.0, 1.5])
+@pytest.mark.parametrize(("gain", "debug_map"), [(1.0, False), (1.5, False), (1.5, True)])
 def test_gamma_covers_inner_shader_and_later_drawing_at_display_resolution(
     raylib_context,
     make_game_state,
     mocker,
     gain: float,
+    debug_map: bool,
 ) -> None:
     view = GameLoopView(make_game_state())
     view.state.gamma_ramp = gain
+    if debug_map:
+        from crimson.screens.stack import ScreenEntry
+
+        screen = mocker.Mock(rtx_debug_map_active=True)
+        view.state.screens.push(ScreenEntry(screen))
+    display_gain = 1.0 if debug_map else gain
     alpha_test = AlphaTestShader()
     screen_w, screen_h = rl.get_screen_width(), rl.get_screen_height()
 
@@ -107,7 +114,7 @@ def test_gamma_covers_inner_shader_and_later_drawing_at_display_resolution(
             image = rl.load_image_from_screen()
             try:
                 assert (image.width, image.height) == (rl.get_render_width(), rl.get_render_height())
-                if gain != 1.0:
+                if display_gain != 1.0:
                     assert view._gamma_target is not None
                     assert (view._gamma_target.texture.width, view._gamma_target.texture.height) == (
                         image.width,
@@ -119,7 +126,7 @@ def test_gamma_covers_inner_shader_and_later_drawing_at_display_resolution(
                     (image.width // 4, image.height * 3 // 4, (20, 30, 40)),
                     (image.width * 3 // 4, image.height * 3 // 4, (100, 120, 140)),
                 ):
-                    assert _rgb(image, x, y) == pytest.approx(tuple(c * gain for c in rgb), abs=1)
+                    assert _rgb(image, x, y) == pytest.approx(tuple(c * display_gain for c in rgb), abs=1)
             finally:
                 rl.unload_image(image)
         finally:

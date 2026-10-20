@@ -363,7 +363,7 @@ class MaterialGroundRenderer(GroundRenderer):
 
     @contextmanager
     def material_scope(
-        self, frame: RenderFrame, *, view_center: Vec2 = Vec2(512, 512), debug: int = 0,
+        self, frame: RenderFrame, *, view_center: Vec2 = Vec2(512, 512), debug: int | None = None,
     ) -> Iterator[None]:
         from grim.assets import TextureId
 
@@ -376,7 +376,8 @@ class MaterialGroundRenderer(GroundRenderer):
         sh = self.material_shader
         _uniform(sh, "u_ground_size", [float(self.width), float(self.height)])
         _uniform(sh, "u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
-        _integer(sh, "u_debug", debug)
+        _integer(sh, "u_debug", int(frame.rtx_debug) if debug is None else debug)
+        _integer(sh, "u_debug_display", int(debug is None))
         shadows = frame.config is None or frame.config.display.shadows_enabled
         _integer(sh, "u_dynamic_shadows", int(shadows))
         lights = collect_material_lights(frame, view_center=view_center)
