@@ -11,6 +11,7 @@ from grim.terrain_render import GroundRenderer
 from grim.terrain_stamps import TerrainLayers
 
 from ..creatures.anim import creature_corpse_frame_for_type
+from ..render.rtx.bonus_lighting import BonusLighting
 from ..render.rtx.creature_lighting import CreatureLighting
 from ..render.rtx.hdr import HdrRenderer
 from ..render.rtx.materials import MaterialGroundRenderer
@@ -27,6 +28,7 @@ class RenderResources(msgspec.Struct):
     fx_textures: FxQueueTextures | None = None
     hdr: HdrRenderer = msgspec.field(default_factory=HdrRenderer)
     creature_lighting: CreatureLighting = msgspec.field(default_factory=CreatureLighting)
+    bonus_lighting: BonusLighting = msgspec.field(default_factory=BonusLighting)
     _pending_terrain_fx_batches: list[TerrainFxBatch] = msgspec.field(default_factory=list)
     _resources: RuntimeResources | None = None
 
@@ -112,6 +114,7 @@ class RenderResources(msgspec.Struct):
         self.ground = None
         self.hdr.close()
         self.creature_lighting.close()
+        self.bonus_lighting.close()
 
         self._resources = None
         self.fx_textures = None

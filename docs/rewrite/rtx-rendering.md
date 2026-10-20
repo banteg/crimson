@@ -260,3 +260,27 @@ additional ambient darkening or cast shadows are introduced. Classic bypasses
 lighting entirely; an empty light list also uses the original body shader. GPU
 resources are lazy and released with the world's render resources. The existing
 HDR world target and display shoulder handle the added highlights.
+
+## Bonus materials
+
+Python RTX replaces the pickup bubble bitmap with an analytical dark sphere and
+lights the original bonus and weapon icon artwork as a shallow foil/enamel emblem.
+The Argon bonus study supplies the visual baseline: a black core, the original
+top-right studio highlight, directional edge crescents, and curved reflections of
+finite weapon beams. The opposite-wall glow suggests internal refraction; these
+are artistic material approximations, not a calibrated glass simulation.
+
+Implementation: `src/crimson/render/rtx/bonus_lighting.py` and `bonus_shaders.py`.
+The shell and emblem share a coating normal derived from the pickup's fixed world
+center and radius. Icon pulsing, rotation, and weapon aspect ratio cannot move or
+stretch that coating. Weapon portions outside the shell retain their surface and
+edge lighting without a spherical reflection. Texture-relief and edge probes stay
+inside their bonus/weapon atlas cell, and derivatives precede alpha discard.
+
+The renderer retains the original bubble/icon draw order, icon animation, spawn
+fades, expiration blink, and weapon fade. It uploads the bounded weapon lights
+once per pickup pass and flushes before changing each draw's material/center
+uniforms; the pool is bounded to 16 entries. The shader is created only when RTX
+draws an occupied pool, and is released by the world's render resources.
+Classic uses its original bitmap path. Unlit RTX emblems retain their source
+colors; the analytical shell retains its studio highlight.
