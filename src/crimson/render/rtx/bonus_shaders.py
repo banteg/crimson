@@ -151,7 +151,7 @@ void main() {
     }
 
     // PASS 1: Flat Foil/Enamel Icon Slapped on Top of the Sphere + Clear-Coat Cabochon Glint
-    if (base.a <= 4.0 / 255.0)
+    if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0) {
         finalColor = base;

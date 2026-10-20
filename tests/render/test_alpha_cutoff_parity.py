@@ -4,6 +4,7 @@ import struct
 
 import pytest
 
+from crimson.render.rtx.bonus_shaders import BONUS_FRAGMENT
 from crimson.render.rtx.creature_shaders import CREATURE_FRAGMENT, CREATURE_VERTEX
 from crimson.render.rtx.material_shaders import STAMP_FRAGMENT
 from grim.blend import opaque_blend
@@ -12,8 +13,9 @@ from grim.shaders import _ALPHA_TEST_FS_330, _PIXEL_COVERAGE_FS_330
 from grim.texture_mode import texture_mode
 
 
-@pytest.mark.parametrize("fragment", [_ALPHA_TEST_FS_330, _PIXEL_COVERAGE_FS_330, CREATURE_FRAGMENT, STAMP_FRAGMENT],
-                         ids=["world", "font", "creature", "material"])
+@pytest.mark.parametrize("fragment", [_ALPHA_TEST_FS_330, _PIXEL_COVERAGE_FS_330, CREATURE_FRAGMENT, STAMP_FRAGMENT,
+                                     BONUS_FRAGMENT],
+                         ids=["world", "font", "creature", "material", "bonus"])
 @pytest.mark.parametrize(("source_alpha", "tint_alpha", "passes"), [
     (0.0, 255, False),
     (3.0, 255, False),
@@ -47,14 +49,17 @@ def test_bitmap_alpha_test_uses_modulated_byte_alpha(
             if loc >= 0:
                 rl.set_shader_value(shader, loc, rl.ffi.new("float *", value),
                                     rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
-        loc = rl.get_shader_location(shader, "u_view_scale")
-        if loc >= 0:
-            rl.set_shader_value(shader, loc, rl.ffi.new("float[2]", [1., 1.]),
-                                rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2)
-        loc = rl.get_shader_location(shader, "u_kind")
-        if loc >= 0:
-            rl.set_shader_value(shader, loc, rl.ffi.new("int *", 1),
-                                rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+        for name in ("u_view_scale", "u_grid"):
+            loc = rl.get_shader_location(shader, name)
+            if loc >= 0:
+                rl.set_shader_value(shader, loc, rl.ffi.new("float[2]", [1., 1.]),
+                                    rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2)
+        for name in ("u_kind", "u_pass"):
+            loc = rl.get_shader_location(shader, name)
+            if loc >= 0:
+                value = int(name == "u_kind" or fragment == BONUS_FRAGMENT)
+                rl.set_shader_value(shader, loc, rl.ffi.new("int *", value),
+                                    rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
         with texture_mode(target), opaque_blend():
             rl.clear_background(rl.BLUE)
             rl.begin_shader_mode(shader)
