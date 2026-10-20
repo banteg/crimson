@@ -122,6 +122,7 @@ def test_toolchain_change_invalidates_game_and_client_inputs(source: Path, monke
     "path",
     [
         "crimson-core/client/main.cpp",
+        "src/grim/filtering.glsl",
         "crimson-core/game/host_input.h",
         "crimson-core/game/leaderboard_requests.h",
         "crimson-core/game/sha256.cpp",
@@ -225,6 +226,7 @@ def test_wheel_from_sdist_retains_identity_and_source_provenance_without_git(tmp
     with zipfile.ZipFile(next(distributions.glob("*.whl"))) as archive:
         metadata = json.loads(archive.read("crimson/_build.json"))
         assert archive.read("crimson/assets_version.json") == (source / "src/crimson/assets_version.json").read_bytes()
+        assert archive.read("grim/filtering.glsl") == (source / "src/grim/filtering.glsl").read_bytes()
         archive.extractall(installation)
     assert metadata["fingerprint"] == expected["fingerprint"]
     assert metadata["origin"] == expected["origin"]

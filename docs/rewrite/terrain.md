@@ -11,7 +11,7 @@ terrain pipeline (see also: `docs/crimsonland-exe/terrain.md`).
 
 ## Mental model
 
-- The world background is a single **1024×1024 “ground” texture**.
+- The world background covers **1024×1024 logical units**. Interactive clients bake it at 2× density (2048×2048 pixels by default).
 - In the original exe, it is a **render target** that gets:
   1) procedurally generated once (`terrain_generate`)
   2) incrementally updated by **baking decals** (blood/corpses/etc) into the same texture (`fx_queue_render`)
@@ -26,7 +26,7 @@ Generation: `src/crimson/sim/terrain_generate.py`; drawing: `src/grim/terrain_re
   texture slots plus three stamp layers (`grim.terrain_stamps.TerrainLayers`). Each stamp is the native
   pre-scale value: float32 rotation `(float)(rand % 314) * 0.01f`, and a top-left `rand % 1152 - 64`
   that already includes the overscan, drawn rotation, then y, then x.
-- `GroundRenderer` maintains an internal RT sized from `1024/texture_scale`.
+- `GroundRenderer` maintains an internal RT sized from `2048/texture_scale`, independent of window DPI.
 - `GroundRenderer.schedule_stamps(layers, texture_scale=...)` queues drawing a generated setup, and `GroundRenderer.process_pending()`
   performs the scheduled RT creation and stamping. It applies `inv_scale`, moves the native top-left to
   raylib's quad center, and never touches an RNG, so drawing or re-applying a setup is free.
@@ -60,8 +60,9 @@ Resetting the world or reopening render resources leaves the ground alone.
 
 Intentional rewrite deviations:
 
-- Procedural terrain stamps keep bilinear sampling while rotating into the RT. The original engine appears to point-sample those stamps, but bilinear reads better in the port and still stays within current fixture tolerances.
-- Corpse atlas frames keep bilinear sampling while baking for the same reason.
+- Procedural terrain stamps use Catmull–Rom reconstruction in premultiplied-alpha space while rotating into the RT. Negative-lobe overshoot is clamped before converting back to straight alpha for the existing blend equations.
+- Decals, corpse atlas frames and bilinear-filtered artwork reconstruct in premultiplied-alpha space with four source samples. This prevents invisible RGB from tinting or darkening translucent edges. Source uploads stay RGBA8; no extra source textures are allocated.
+- The shared shader is `src/grim/filtering.glsl`. Python includes it in artwork shaders; the native/WebGL renderer uses it for linearly filtered source artwork. Cubic reconstruction is restricted to terrain artwork baked into a target. Point sampling, render-target copies, ground presentation, fonts, analytical effects and the alpha cutoff remain unchanged.
 
 ## Ground dump fixtures (parity test)
 
@@ -99,9 +100,9 @@ target** before terrain is blitted to the backbuffer.
 The rewrite exposes the same mechanism via two helpers:
 
 - `GroundRenderer.bake_decals([...])` for generic textured decals (blood, scorch, etc).
-  - Scales positions/sizes by the allocated RT width divided by the terrain width. This includes the RT’s HiDPI scale and stays fixed if the window moves between monitors with different DPI.
+  - Scales positions/sizes by the allocated RT width divided by the terrain width. This includes the RT’s fixed 2× density and stays fixed if the window moves between monitors with different DPI.
   - Runs through the terrain alpha-test shim, so low-alpha fringe texels are discarded before blending.
-  - Intentional rewrite deviation: generic decal sprites keep bilinear sampling while baking. The original engine appears to point-sample them, but bilinear reads better in the port.
+  - Uses bilinear reconstruction in premultiplied-alpha space while baking.
 
 - `GroundRenderer.bake_corpse_decals(bodyset_texture, [...])` for corpse sprites (bodyset 4×4 atlas frames).
   - Uses the same allocated RT scale as generic decals, so DPI changes preserve corpse positions and sizes.
@@ -109,7 +110,7 @@ The rewrite exposes the same mechanism via two helpers:
     - a “shadow/darken” pass using `ZERO / ONE_MINUS_SRC_ALPHA`
     - a normal alpha blend color pass
   - Applies the exe’s small alignment tweaks (`-0.5` shift and `offset = terrain_scale/512`) and rotation offset (`rotation - pi/2`).
-  - Intentional rewrite deviation: corpse atlas frames keep bilinear sampling while baking. The original engine appears to point-sample them, but that looks worse in the port at modern output scales.
+  - Uses the same bilinear reconstruction in premultiplied-alpha space.
 
 ## Blend mode when drawing to screen
 
@@ -168,3 +169,57 @@ for terrain generation and RNG ownership.
 
 The captured fixtures cover specific terrain configurations. Broader weapon,
 bonus and corpse visual parity still needs corresponding runtime evidence.
+
+## Replay memory
+
+Both interactive clients retain at most eight full-resolution ground checkpoints.
+At the default density, their RGBA8 color storage is 128 MiB (eight × 16 MiB),
+matching 32 old 1× color snapshots. This excludes depth attachments and other
+render targets; nondefault terrain sizes change the byte cost. Compaction frees
+old snapshots before allocating the next one, so allocation never briefly needs
+a ninth copy. Fewer checkpoints can require more decal rebaking on a seek.
+Keeping copies at 2× avoids progressively blurring baked decals after restoration.
+
+Backend simulation allocates no ground framebuffer. Server replay thumbnails
+retain their existing 1× software rasterizer; this change does not alter that path.
+
+## Filtering cost
+
+Measured on Apple M1 Pro, 2026-10-20, with a 2048×2048 target in every variant.
+Times include CPU submission and synchronized GPU completion, excluding shader
+compilation, asset loading and initial allocation. Each result has four warmups
+and 20 samples. These are workload timings, not whole-game FPS or isolated GPU
+kernel timings. Raw results are in `crimson-core/results/ground_filtering.json`.
+
+| Workload | Ordinary bilinear | Associated bilinear | Associated Catmull–Rom |
+| --- | ---: | ---: | ---: |
+| Python Q1 terrain, 1,700 real asset stamps | 3.71 ms | 6.70 ms | 20.37 ms |
+| Native renderer, 1,700 synthetic terrain stamps | 13.55 ms | 16.58 ms | 30.09 ms |
+| WebGL2 renderer, same synthetic terrain | 12.00 ms | 17.50 ms | 31.00 ms |
+
+Cubic adds about 17–19 ms to these terrain rebuilds. It runs when constructing
+terrain, not when presenting each frame or baking later blood/corpses. Python's
+real-asset workload and the C++ synthetic workload have different coverage and
+submission paths, so their absolute times should not be compared directly.
+
+The separate 500-sprite synthetic workload uses associated bilinear in both new
+modes: native median 1.12 ms before versus 1.13–1.21 ms after; WebGL2 1.41 ms before
+versus 1.66–2.13 ms after. Browser scheduling/timer noise is visible even between
+identical sprite shaders. Each sprite sample averages 16 synchronized frames;
+these figures do not predict an equivalent whole-game frame-time increase.
+
+Reproduce (GPU/display required):
+
+```sh
+uv run scripts/bench_ground_filtering.py --paq /path/to/crimson.paq
+uv run crimson-core/checks/renderer.py --benchmark baseline
+uv run crimson-core/checks/renderer.py --benchmark bilinear
+uv run crimson-core/checks/renderer.py --benchmark cubic
+# Add --web to build each workload for WebGL2; serve crimson-core/build
+# and open renderer-check-{baseline,bilinear,cubic}/index.html.
+```
+
+The Python benchmark interleaves the three modes using Q1 terrain and seed
+`0xC0FFEE`. The native/WebGL benchmark uses deterministic synthetic RGBA artwork,
+1,700 rotated overlapping terrain stamps, and a separate 500-quad sprite pass.
+It runs the production renderer's pixel regressions before timing.

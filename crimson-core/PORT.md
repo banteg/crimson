@@ -139,6 +139,12 @@ allocating the next one. Fewer snapshots can require more decal rebaking per
 seek; the existing adaptive spacing still preserves the first snapshot and
 reconstructs every intervening bake.
 
+Linearly filtered artwork reconstructs in premultiplied-alpha space using the
+shared `src/grim/filtering.glsl`. Terrain artwork uses Catmull–Rom during baking;
+other artwork uses bilinear reconstruction. Uploads and blend equations retain
+straight alpha. Copies and ground presentation keep their existing sampling.
+See [terrain filtering measurements](../docs/rewrite/terrain.md#filtering-cost).
+
 Bitmap-font filtering is unchanged; native scene density does not remove
 nearest-filtered stroke variation at fractional scales. At a 3840×2160 drawable the 2880×2160 scene
 has 7.91 times the default logical pixel count (23.7 MiB for one RGBA8 target);

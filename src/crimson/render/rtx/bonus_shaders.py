@@ -1,5 +1,7 @@
 """Analytical dark bonus shells and lit foil emblems, adapted from the Argon lookdev."""
 
+from grim.filtering import FILTERING_GLSL
+
 BONUS_VERTEX = r"""
 #version 330
 in vec3 vertexPosition;
@@ -19,8 +21,7 @@ void main() {
 }
 """
 
-BONUS_FRAGMENT = r"""
-#version 330
+BONUS_FRAGMENT = "\n#version 330\n" + FILTERING_GLSL + r"""
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
@@ -109,7 +110,7 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
 }
 
 void main() {
-    vec4 texel = texture(texture0, fragTexCoord);
+    vec4 texel = alphaBilinear(texture0, fragTexCoord);
     vec4 base = texel * fragColor * colDiffuse;
     vec2 dxq = dFdx(fragTexCoord * u_grid) * 2.0;
     vec2 dyq = dFdy(fragTexCoord * u_grid) * 2.0;

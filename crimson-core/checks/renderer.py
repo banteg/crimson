@@ -21,7 +21,7 @@ def tool(name: str) -> str:
     return path
 
 
-def build(out: Path, web: bool) -> Path:
+def build(out: Path, web: bool, benchmark: str | None = None) -> Path:
     filtering = (CORE.parent / "src/grim/filtering.glsl").read_text()
     (out / "filtering.h").write_text('R"GLSL(' + filtering + ')GLSL"\n')
     # Only wasm2c's scalar types are needed by the rendering imports.
@@ -35,6 +35,8 @@ def build(out: Path, web: bool) -> Path:
         + (["-framework", "OpenGL"] if sys.platform == "darwin" else ["-lGL"])
     )
     binary = out / ("index.html" if web else "renderer")
+    if benchmark is not None:
+        flags += ["-DRENDERER_BENCHMARK=" + str(["baseline", "bilinear", "cubic"].index(benchmark))]
     subprocess.run(
         [
             tool("em++" if web else "clang++"),
@@ -54,14 +56,15 @@ def build(out: Path, web: bool) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--web", action="store_true")
+    parser.add_argument("--benchmark", choices=["baseline", "bilinear", "cubic"])
     args = parser.parse_args()
     if args.web:
-        out = CORE / "build/renderer-check"
+        out = CORE / "build" / ("renderer-check" + ("-" + args.benchmark if args.benchmark else ""))
         out.mkdir(parents=True, exist_ok=True)
-        print(build(out, True))
+        print(build(out, True, args.benchmark))
     else:
         with tempfile.TemporaryDirectory(prefix="crimson-renderer-") as folder:
-            subprocess.run([str(build(Path(folder), False))], check=True)
+            subprocess.run([str(build(Path(folder), False, args.benchmark))], check=True)
 
 
 if __name__ == "__main__":

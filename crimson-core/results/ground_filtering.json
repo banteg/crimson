@@ -1,0 +1,144 @@
+{
+  "date": "2026-10-20",
+  "hardware": "Apple M1 Pro",
+  "modes": {
+    "0": "ordinary bilinear",
+    "1": "associated bilinear",
+    "2": "associated Catmull-Rom terrain; associated bilinear sprites"
+  },
+  "measurement": "CPU submission plus synchronized GPU completion; 4 warmups, 20 samples; sprites average 16 synchronized frames/sample; excludes compilation, loading and initial allocation",
+  "python": {
+    "target": [
+      2048,
+      2048
+    ],
+    "stamps": 1700,
+    "samples": 20,
+    "timings": {
+      "baseline": {
+        "median_ms": 3.7062293849885464,
+        "p95_ms": 5.784749984741211
+      },
+      "bilinear": {
+        "median_ms": 6.70466641895473,
+        "p95_ms": 7.809291128069162
+      },
+      "cubic": {
+        "median_ms": 20.374854560941458,
+        "p95_ms": 23.53004179894924
+      }
+    }
+  },
+  "native": [
+    {
+      "workload": "terrain",
+      "mode": 0,
+      "samples": 20,
+      "quads": 1700,
+      "size": 2048,
+      "median_ms": 13.5494,
+      "p95_ms": 16.038
+    },
+    {
+      "workload": "sprites",
+      "mode": 0,
+      "samples": 20,
+      "quads": 500,
+      "size": 2048,
+      "median_ms": 1.1162,
+      "p95_ms": 1.3132
+    },
+    {
+      "workload": "terrain",
+      "mode": 1,
+      "samples": 20,
+      "quads": 1700,
+      "size": 2048,
+      "median_ms": 16.5814,
+      "p95_ms": 17.566
+    },
+    {
+      "workload": "sprites",
+      "mode": 1,
+      "samples": 20,
+      "quads": 500,
+      "size": 2048,
+      "median_ms": 1.125,
+      "p95_ms": 1.2535
+    },
+    {
+      "workload": "terrain",
+      "mode": 2,
+      "samples": 20,
+      "quads": 1700,
+      "size": 2048,
+      "median_ms": 30.0884,
+      "p95_ms": 32.6218
+    },
+    {
+      "workload": "sprites",
+      "mode": 2,
+      "samples": 20,
+      "quads": 500,
+      "size": 2048,
+      "median_ms": 1.2102,
+      "p95_ms": 1.2709
+    }
+  ],
+  "webgl2": [
+    {
+      "workload": "terrain",
+      "mode": 0,
+      "samples": 20,
+      "quads": 1700,
+      "size": 2048,
+      "median_ms": 12,
+      "p95_ms": 15
+    },
+    {
+      "workload": "sprites",
+      "mode": 0,
+      "samples": 20,
+      "quads": 500,
+      "size": 2048,
+      "median_ms": 1.4062,
+      "p95_ms": 2.8125
+    },
+    {
+      "workload": "terrain",
+      "mode": 1,
+      "samples": 20,
+      "quads": 1700,
+      "size": 2048,
+      "median_ms": 17.5,
+      "p95_ms": 18
+    },
+    {
+      "workload": "sprites",
+      "mode": 1,
+      "samples": 20,
+      "quads": 500,
+      "size": 2048,
+      "median_ms": 2.125,
+      "p95_ms": 3.75
+    },
+    {
+      "workload": "terrain",
+      "mode": 2,
+      "samples": 20,
+      "quads": 1700,
+      "size": 2048,
+      "median_ms": 31,
+      "p95_ms": 32
+    },
+    {
+      "workload": "sprites",
+      "mode": 2,
+      "samples": 20,
+      "quads": 500,
+      "size": 2048,
+      "median_ms": 1.6562,
+      "p95_ms": 3.625
+    }
+  ]
+}

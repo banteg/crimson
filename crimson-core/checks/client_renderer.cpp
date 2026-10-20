@@ -2,9 +2,11 @@
 #include <SDL3/SDL.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <algorithm>
+#include <string>
 #include "../client/renderer.cpp"
 
-alignas(16) u8 memory[4096];
+alignas(16) u8 memory[1024 * 1024];
 u8 *client_memory() { return memory; }
 [[noreturn]] void client_fatal(const char *message) {
   fprintf(stderr, "%s\n", message);
@@ -54,6 +56,85 @@ void check_scene(int window_width, int window_height, int expected_width, int ex
   assert(glGetError() == GL_NO_ERROR);
 }
 
+#ifdef RENDERER_BENCHMARK
+void benchmark(bool terrain) {
+  // Three production-sized terrain batches, same geometry/data in all modes.
+  w2c_host_texture_create(nullptr, 101, 256, 256, 0);
+  for (int y = 0; y < 256; ++y)
+    for (int x = 0; x < 256; ++x) {
+      size_t i = ((size_t)y * 256 + x) * 4;
+      float r = hypotf((x - 127.5f) / 128, (y - 127.5f) / 128);
+      memory[i] = (x * 17 + y * 13) & 255;
+      memory[i + 1] = (x * 3 + y * 7) & 255;
+      memory[i + 2] = 128;
+      memory[i + 3] = (u8)(255 * fmaxf(0, 1 - r));
+    }
+  w2c_host_texture_upload(nullptr, 101, 0);
+  w2c_host_texture_create(nullptr, 102, 1024, 1024, 3);
+  w2c_host_set_render_target(nullptr, 102);
+  w2c_host_set_texture(nullptr, 0, 101);
+  w2c_host_set_texture(nullptr, 1, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_MINFILTER, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_MAGFILTER, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_TERRAIN_ART, terrain && RENDERER_BENCHMARK == 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 4);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG1, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 1);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG1, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG2, 1);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ADDRESSU, 1);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ADDRESSV, 1);
+  w2c_host_texture_stage_state(nullptr, 1, TSS_COLOROP, 1);
+  w2c_host_render_state(nullptr, RS_CULLMODE, 1);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+  w2c_host_render_state(nullptr, RS_ALPHATESTENABLE, 1);
+  w2c_host_render_state(nullptr, RS_ALPHAFUNC, 7);
+  w2c_host_render_state(nullptr, RS_ALPHAREF, 4);
+  w2c_host_render_state(nullptr, RS_COLORWRITEENABLE, 7);
+  std::vector<Vertex> batches[3];
+  unsigned seed = 0xc0ffee;
+  auto random = [&]() { seed = seed * 1664525 + 1013904223; return seed; };
+  int counts[] = {terrain ? 1600 : 400, terrain ? 70 : 80, terrain ? 30 : 20};
+  float size = terrain ? 128.f : 48.f;
+  for (int b = 0; b < 3; ++b)
+    for (int i = 0; i < counts[b]; ++i) {
+      float angle = (random() % 314) * .01f, x = (int)(random() % 1152) - 64.f,
+            y = (int)(random() % 1152) - 64.f, c = cosf(angle), s = sinf(angle);
+      for (int k : {0, 1, 2, 2, 1, 3}) {
+        float u = k & 1, v = k >> 1, dx = (u - .5f) * size, dy = (v - .5f) * size;
+        batches[b].push_back({x + 64 + dx*c - dy*s - .5f, y + 64 + dx*s + dy*c - .5f,
+                              0, 1, b == 2 ? 0x99b2b2b2u : 0xe6b2b2b2u, u, v});
+      }
+    }
+  std::vector<double> samples;
+  int repetitions = terrain ? 1 : 16; // Average small frames across browser timer quantization.
+  for (int iteration = 0; iteration < 24; ++iteration) {
+    glFinish();
+    Uint64 start = SDL_GetPerformanceCounter();
+    u8 pixel[4];
+    for (int repeat = 0; repeat < repetitions; ++repeat) {
+      w2c_host_clear(nullptr, 0xff3f3819);
+      for (auto &vertices : batches) {
+        memcpy(memory, vertices.data(), vertices.size() * sizeof(Vertex));
+        w2c_host_draw(nullptr, 4, 0, (u32)vertices.size(), 0, (u32)vertices.size() / 3);
+      }
+      glReadPixels(1024, 1024, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+      glFinish();
+    }
+    double ms = (SDL_GetPerformanceCounter() - start) * 1000.0 / SDL_GetPerformanceFrequency() / repetitions;
+    assert(pixel[3] == 255 && glGetError() == GL_NO_ERROR);
+    if (iteration >= 4) samples.push_back(ms);
+  }
+  std::sort(samples.begin(), samples.end());
+  printf("BENCHMARK {\"workload\":\"%s\",\"mode\":%d,\"samples\":20,\"quads\":%d,\"size\":2048,\"median_ms\":%.4f,\"p95_ms\":%.4f}\n",
+         terrain ? "terrain" : "sprites", RENDERER_BENCHMARK, terrain ? 1700 : 500,
+         (samples[9]+samples[10])/2, samples[18]);
+}
+#endif
+
 int main() {
   assert(SDL_Init(SDL_INIT_VIDEO));
 #ifdef __EMSCRIPTEN__
@@ -70,6 +151,15 @@ int main() {
   assert(window);
   SDL_GLContext context = SDL_GL_CreateContext(window);
   assert(context);
+#if defined(RENDERER_BENCHMARK) && RENDERER_BENCHMARK == 0
+  std::string baseline = fragment_source;
+  for (const char *call : {"alphaCatmullRom(image, v_uv)", "alphaBilinear(image, v_uv)"}) {
+    size_t at = baseline.find(call);
+    assert(at != std::string::npos);
+    baseline.replace(at, strlen(call), "texture(image, v_uv)");
+  }
+  fragment_source = baseline.c_str();
+#endif
   renderer_init();
   renderer_resize(2048, 1536);
   w2c_host_back_buffer(nullptr, 1024, 768);
@@ -216,6 +306,38 @@ int main() {
   renderer_resume();
   assert(glGetError() == GL_NO_ERROR);
   puts("renderer: native density, logical projection/input, terrain, holds, anchors, alpha and presentation passed");
+#if !defined(RENDERER_BENCHMARK) || RENDERER_BENCHMARK != 0
+  // A transparent blue texel must never turn the opaque red neighbor purple.
+  w2c_host_texture_create(nullptr, 201, 2, 1, 0);
+  const u8 edge_texels[] = {0, 0, 255, 255, 255, 0, 0, 0};
+  memcpy(memory + 1024, edge_texels, sizeof edge_texels);
+  w2c_host_texture_upload(nullptr, 201, 1024);
+  w2c_host_set_texture(nullptr, 0, 201);
+  w2c_host_set_texture(nullptr, 1, 0);
+  w2c_host_texture_create(nullptr, 202, 16, 8, 3);
+  w2c_host_set_render_target(nullptr, 202);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_render_state(nullptr, RS_ALPHATESTENABLE, 0);
+  w2c_host_render_state(nullptr, RS_COLORWRITEENABLE, 15);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG1, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_MINFILTER, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_MAGFILTER, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ADDRESSU, 3);
+  w2c_host_texture_stage_state(nullptr, 1, TSS_COLOROP, 1);
+  for (int cubic : {0, 1}) {
+    w2c_host_texture_stage_state(nullptr, 0, TSS_TERRAIN_ART, cubic);
+    rectangle(0, 0, 16, 8, 0xffffffff);
+    u8 edge[4];
+    glReadPixels(15, 8, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, edge);
+    assert(edge[0] == 255 && edge[1] == 0 && edge[2] == 0 && edge[3] == 255);
+  }
+  puts("renderer: associated bilinear and cubic reject transparent RGB contamination");
+#endif
+#ifdef RENDERER_BENCHMARK
+  benchmark(true);
+  benchmark(false);
+#endif
   SDL_GL_DestroyContext(context);
   SDL_DestroyWindow(window);
   SDL_Quit();

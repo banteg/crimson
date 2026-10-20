@@ -197,6 +197,7 @@ def test_client_and_pytest_suites_cover_audio_practice_renderer_and_build_backen
         "crimson-core/checks/native_practice.py",
         "crimson-core/checks/renderer.py",
         "crimson-core/checks/client_renderer.cpp",
+        "src/grim/filtering.glsl",
         "tests/fixtures/replays/survival-238852.crd",
     ):
         assert relevant("client", [path]), path

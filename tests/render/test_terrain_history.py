@@ -16,6 +16,7 @@ from crimson.world.render_resources import RenderResources
 from crimson.world.terrain_history import TerrainHistory
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.terrain_render import GroundRenderer
 from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import record_replay
 
@@ -27,6 +28,31 @@ def _target(ids: count) -> rl.RenderTexture:
     target.id = next(ids)
     target.texture.width = target.texture.height = 64
     return target
+
+
+def test_snapshot_cap_includes_the_allocation_peak(resources: RenderResources, mocker) -> None:
+    live = set()
+    peak = 0
+    ids = count(100)
+
+    def allocate(*_) -> rl.RenderTexture:
+        nonlocal peak
+        target = _target(ids)
+        live.add(target.id)
+        peak = max(peak, len(live))
+        return target
+
+    mocker.patch.object(rl, "load_render_texture", side_effect=allocate)
+    mocker.patch.object(rl, "unload_render_texture", side_effect=lambda target: live.remove(target.id))
+    mocker.patch.object(terrain_history, "_copy")
+    mocker.patch.object(terrain_history, "SHOTS", 4)
+    history = TerrainHistory(resources, None)
+    builder = GroundRenderer(rl.Texture(), rl.Texture(), rl.Texture(), render_target=_target(count(1)))
+    for tick in range(20):
+        history._shoot(builder, tick, tick)
+    assert peak == 4
+    history.close()
+    assert not live
 
 
 @pytest.fixture

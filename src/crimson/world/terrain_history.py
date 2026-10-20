@@ -3,7 +3,7 @@
 Ticks bake decals and corpses into the ground's render target, so a seek rebuilds it: from the nearest copy of the
 terrain at or before the keyframe it restores, then every logged bake after the copy. The copies come from a
 terrain of the history's own that bakes the pass's log as it comes in, copied as the run starts and every 30
-seconds after (at most 32 copies, the spacing doubling past them).
+seconds after (at most eight copies, the spacing doubling past them).
 """
 
 from __future__ import annotations
@@ -21,7 +21,8 @@ from ..sim.terrain_generate import TerrainSetup
 from .render_resources import RenderResources
 
 SHOT_TICKS = 1800
-SHOTS = 32
+# Eight default 2048-square RGBA copies use 128 MiB of color storage, as in WASM.
+SHOTS = 8
 
 
 class TerrainShot(msgspec.Struct):
@@ -102,15 +103,15 @@ class TerrainHistory:
     def _shoot(self, builder: GroundRenderer, bakes: int, tick: int) -> None:
         assert builder.render_target is not None
         texture = builder.render_target.texture
+        # Compact before allocating so even the transient peak respects the cap.
+        if len(self.shots) >= SHOTS:
+            for shot in self.shots[1::2]:
+                rl.unload_render_texture(shot.target)
+            self.shots = self.shots[::2]
+            self._spacing *= 2
         target = rl.load_render_texture(texture.width, texture.height)
         _copy(target, builder.render_target)
         self.shots.append(TerrainShot(bakes, tick, target))
-        if len(self.shots) <= SHOTS:
-            return
-        for shot in self.shots[1::2]:
-            rl.unload_render_texture(shot.target)
-        self.shots = self.shots[::2]
-        self._spacing *= 2
 
     def rebuild(self, preparation: ReplayPreparation, bakes: int) -> None:
         """The run's ground as it stood after the first `bakes` bakes; bakes still pending are dropped."""
