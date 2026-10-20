@@ -56,8 +56,12 @@ void main() {
     vec2 dxq = dFdx(fragTexCoord) * 16., dyq = dFdy(fragTexCoord) * 16.;
     vec2 dxw = dFdx(world), dyw = dFdy(world);
     float determinant = dxq.x * dyq.y - dxq.y * dyq.x;
-    mat2 basis = mat2(dxw * dyq.y - dyw * dxq.y, dyw * dxq.x - dxw * dyq.x) / determinant;
-    mat2 rot = mat2(normalize(basis[0]), normalize(basis[1]));
+    // Collapsed atlas coordinates have no recoverable orientation.
+    mat2 rot = mat2(1.0);
+    if (abs(determinant) > 1e-12) {
+        mat2 basis = mat2(dxw * dyq.y - dyw * dxq.y, dyw * dxq.x - dxw * dyq.x) / determinant;
+        rot = mat2(normalize(basis[0]), normalize(basis[1]));
+    }
     vec2 wp = world;
     float lum = dot(texel.rgb, vec3(.299, .587, .114));
     // Smooth body bulge plus weak texture relief: no alpha-outline rim.

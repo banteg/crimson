@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import struct
 from contextlib import contextmanager
 
@@ -95,7 +96,8 @@ def lit_sprite(raylib_context):
     lighting = CreatureLighting()
     alpha = AlphaTestShader()
 
-    def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False):
+    def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
+               degenerate_uv=False):
         if neighbor:
             other = rl.gen_image_color(256, 256, rl.BLANK)
             rl.image_draw_circle(other, 16, 16, 10, rl.Color(70, 55, 40, 255))
@@ -109,7 +111,8 @@ def lit_sprite(raylib_context):
             with alpha.scope():
                 def draw():
                     pos = (Vec2(64, 64) + camera) * scale
-                    rl.draw_texture_pro(texture, rl_rectangle(0, 0, 32, 32),
+                    source = rl_rectangle(20, 16, 0, 0) if degenerate_uv else rl_rectangle(0, 0, 32, 32)
+                    rl.draw_texture_pro(texture, source,
                                         rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
                                         rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
                 if use_shader:
@@ -141,6 +144,29 @@ def test_zero_and_out_of_range_lights_preserve_base_pixels(lit_sprite):
     assert render([MaterialLight(Vec2(1000, 1000), 10, (1, 1, 1))]) == base
     assert render([MaterialLight(Vec2(64, 64), 100, (0, 0, 0))]) == base
     assert render([]) == base  # A previous lit frame cannot leak into the next one.
+
+
+def test_degenerate_uv_basis_keeps_lighting_finite(lit_sprite, monkeypatch):
+    from crimson.render.rtx import creature_lighting
+
+    render, lighting = lit_sprite
+    # A nonzero destination still rasterizes when all UVs sample one opaque texel.
+    # This exercises the singular basis instead of a zero-area quad with no fragments.
+    base = render([], degenerate_uv=True)
+    lit = render([MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=40)], degenerate_uv=True)
+    assert any(p[3] > 0 for p in base)
+    assert all(math.isfinite(channel) for pixel in lit for channel in pixel)
+    assert [p[3] for p in lit] == [p[3] for p in base]
+    assert sum(p[0] for p in lit) > sum(p[0] for p in base) + 1
+    # The singular mapping must produce the same shading as an explicit identity basis.
+    fragment = creature_lighting.CREATURE_FRAGMENT
+    start = fragment.index("    vec2 dxq =")
+    end = fragment.index("    vec2 wp =", start)
+    monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT",
+                        fragment[:start] + "    mat2 rot = mat2(1.0);\n" + fragment[end:])
+    lighting.close()
+    identity = render([MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=40)], degenerate_uv=True)
+    assert lit == identity
 
 
 @pytest.mark.parametrize("rotation", [0., 90., 217.])
