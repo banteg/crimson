@@ -21,6 +21,7 @@ uniform int u_debug; // RtxDebugView: raw data maps bypass gamma and display ton
 uniform int u_debug_display; // Map radiance for live viewing; explicit diagnostic probes retain linear RGB.
 uniform int u_spec_light_count;
 uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z_height
+uniform float u_spec_tail[MAX_SPEC_LIGHTS]; // Reflection radiance at the negative segment endpoint
 uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = annulus radius (0=disc/segment)
 uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = broad illumination, w = capsule_h
 uniform vec4 u_spec_response[MAX_SPEC_LIGHTS]; // illumination, reflection, reflection reach, source width
@@ -202,7 +203,7 @@ void main() {
                 float along = clamp(dot(reflected_hit - sp_pos.xy, axis), -sp_dir.w * .5, sp_dir.w * .5);
                 on_source += axis * along;
                 float source_t = clamp(along / sp_dir.w + .5, 0.0, 1.0);
-                source_gain = mix(.18, 1.0, source_t);
+                source_gain = mix(u_spec_tail[i], 1.0, source_t);
             }
             float source_distance = length(reflected_hit - on_source);
             float source_width = max(.1, response.w);

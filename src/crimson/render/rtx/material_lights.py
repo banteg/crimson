@@ -11,10 +11,12 @@ from grim.geom import Vec2
 
 from ...effects import Particle, ParticleStyleId
 from ...math_parity import native_fire_muzzle_pos
+from ...perks import PerkId
 from ...projectiles.types import Projectile
 from ...projectiles.types import ProjectileTemplateId as PT
 from ...projectiles.types import SecondaryProjectileTypeId as ST
 from ...weapons import WEAPON_BY_ID, WeaponId
+from ..laser_sight import laser_sight_geometry
 
 if TYPE_CHECKING:
     from ..frame import RenderFrame
@@ -48,6 +50,7 @@ class MaterialLight(msgspec.Struct, frozen=True):
     broad_illumination: bool = False
     # Positive radius selects an annulus; its width remains source_width.
     ring_radius: float = 0.0
+    reflection_tail: float = 0.18
 
     @property
     def reflection_reach(self) -> float:
@@ -210,6 +213,17 @@ def select_material_lights(sources: list[MaterialLight], *, view_center: Vec2) -
 def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[MaterialLight]:
     sources: list[MaterialLight] = []
     for player in frame.players:
+        if player.health > 0.0 and PerkId.SHARPSHOOTER in frame.state.perks:
+            near, far, _ = laser_sight_geometry(player.pos, player.aim_heading)
+            # The native sight is red at the gun and black at its far end.
+            # Reverse the source axis so the shared taper is brightest near the gun.
+            direction, length = (near - far).normalized_with_length()
+            sources.append(MaterialLight(
+                (near + far) * 0.5, 40.0, (1.3, 0.0, 0.0), height=28.0,
+                direction=direction, length=length, source_width=1.2,
+                illumination_gain=0.0, reflection_gain=1.0, reflection_radius=100.0,
+                reflection_tail=0.0,
+            ))
         gain = max(0.0, min(1.0, float(player.muzzle_flash_alpha)))
         if gain <= 0.02 or player.health <= 0.0:
             continue
