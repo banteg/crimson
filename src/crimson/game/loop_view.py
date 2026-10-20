@@ -133,6 +133,8 @@ class GameLoopView:
             self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
+        if gameplay is not None and not console.open_flag:
+            gameplay.handle_rtx_debug_hotkey()
         if console.open_flag:
             if console.quit_requested:
                 self.state.quit_requested = True
@@ -284,6 +286,9 @@ class GameLoopView:
         self._gamma_edr_loc = -1
 
     def _draw_with_gamma(self) -> None:
+        if getattr(self.state.screens.active, "rtx_debug_map_active", False):
+            self._draw_scene_layers()
+            return
         gamma_gain = max(0.0, float(self.state.gamma_ramp))
         if abs(gamma_gain - 1.0) <= 1e-6:
             self._draw_scene_layers()

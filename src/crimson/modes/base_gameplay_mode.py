@@ -31,6 +31,7 @@ from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import HighScoreRecord
 from ..quests.custom import CustomQuest
 from ..quests.level import QuestLevel
+from ..render.rtx.debug import RtxDebugView, debug_hotkey
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.viewport import DEFAULT_VIEW_CAP
 from ..replay import REPLAY_TICK_RATE, ReplayRecorder
@@ -359,6 +360,25 @@ class BaseGameplayMode:
     def bind_audio(self, audio: AudioState | None, audio_rng: CrandLike) -> None:
         self._world_runtime.audio = audio
         self._world_runtime.audio_rng = audio_rng
+
+    @property
+    def rtx_debug_active(self) -> bool:
+        return self._world_runtime.rtx_debug_active
+
+    @property
+    def rtx_debug_map_active(self) -> bool:
+        return self._world_runtime.rtx_debug_map_active
+
+    @property
+    def rtx_debug(self) -> RtxDebugView:
+        return self._world_runtime.rtx_debug
+
+    def set_rtx_debug(self, view: RtxDebugView) -> None:
+        self._world_runtime.rtx_debug = view
+
+    def handle_rtx_debug_hotkey(self) -> None:
+        if self.rtx_mode is RtxRenderMode.RTX:
+            self.set_rtx_debug(debug_hotkey(self.rtx_debug))
 
     def set_rtx_mode(self, mode: RtxRenderMode) -> None:
         self._world_runtime.rtx_mode = mode

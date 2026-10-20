@@ -33,6 +33,7 @@ from ..input_codes import PadCode, pad_nav_pressed
 from ..modes.replay_playback_mode import ReplayPlaybackMode
 from ..perks.ids import perk_display_name
 from ..persistence.highscores import HighScoreRecord
+from ..render.rtx.debug import RtxDebugView, debug_hotkey
 from ..render.rtx.mode import RtxRenderMode
 from ..replay.driver.prepare import Mark, MarkKind, Pick, ReplayPreparation
 from ..replay.types import Replay
@@ -184,6 +185,21 @@ class ReplayViewer:
             self._history = None
         self.player.close()
 
+    @property
+    def rtx_debug_active(self) -> bool:
+        return self.player.runtime.rtx_debug_active
+
+    @property
+    def rtx_debug_map_active(self) -> bool:
+        return self.player.runtime.rtx_debug_map_active
+
+    @property
+    def rtx_debug(self) -> RtxDebugView:
+        return self.player.runtime.rtx_debug
+
+    def set_rtx_debug(self, view: RtxDebugView) -> None:
+        self.player.runtime.rtx_debug = view
+
     def set_rtx_mode(self, mode: RtxRenderMode) -> None:
         self.player.set_rtx_mode(mode)
 
@@ -334,6 +350,8 @@ class ReplayViewer:
             self._next_pick += 1
 
     def _keys(self) -> None:
+        if self.player.runtime.rtx_mode is RtxRenderMode.RTX:
+            self.set_rtx_debug(debug_hotkey(self.rtx_debug))
         pressed = rl.is_key_pressed
         keys = rl.KeyboardKey
         second = 60

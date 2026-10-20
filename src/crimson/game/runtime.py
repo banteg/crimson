@@ -18,6 +18,7 @@ from ..debug import set_debug_enabled
 from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_code_name, player_gamepad_index
 from ..leaderboard import Leaderboard
 from ..persistence.save_status import ensure_game_status
+from ..render.rtx.debug import RtxDebugView
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
 from ..runtime_boot import boot_runtime
 from ..screens.quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
@@ -125,6 +126,28 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         state.rtx_mode = cycle_rtx_render_mode(state.rtx_mode)
         console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
 
+    def cmd_rtx_debug(args: list[str]) -> None:
+        usage = "rtxdebug <" + "|".join(view.token for view in RtxDebugView) + ">"
+        if len(args) != 1:
+            console.log.log(usage)
+            return
+        try:
+            view = RtxDebugView.parse(args[0])
+        except KeyError:
+            console.log.log(usage)
+            return
+        try:
+            active = state.screens.active
+        except IndexError:
+            console.log.log("rtxdebug requires an open game or replay.")
+            return
+        setter = getattr(active, "set_rtx_debug", None)
+        if not callable(setter):
+            console.log.log("rtxdebug requires an open game or replay.")
+            return
+        setter(view)
+        console.log.log(f"RTX debug view: {view.token} (RTX mode only).")
+
     def cmd_gamepads(args: list[str]) -> None:
         if args:
             console.log.log("gamepads")
@@ -158,6 +181,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         "sndfreqadjustment": cmd_snd_freq_adjustment,
         "rendermode": cmd_render_mode,
         "togglertx": cmd_toggle_rtx,
+        "rtxdebug": cmd_rtx_debug,
         "gamepads": cmd_gamepads,
     }
 

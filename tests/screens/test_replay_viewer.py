@@ -345,3 +345,27 @@ def test_paused_viewer_keeps_sound_cooldowns_but_updates_music(open_viewer: Open
     viewer.update(0.0)
     assert viewer.tick == 1
     assert audio.state.sfx.cooldowns[SfxId.FLAMER_FIRE_01] == f32(f32(0.44) - f32(1.0 / 60.0))
+
+
+def test_rtx_debug_cycles_while_paused_and_survives_seek(open_viewer: OpenViewer, mocker) -> None:
+    from crimson.render.rtx.debug import RtxDebugView
+    from crimson.render.rtx.mode import RtxRenderMode
+
+    replay = load_replay_file(RECORDED_DIR / "quest-1.1-completed.crd")
+    viewer = open_viewer(replay)
+    viewer.paused = True
+    viewer.set_rtx_mode(RtxRenderMode.RTX)
+    before = pickle.dumps(viewer.player.runtime.world)
+    tick = viewer.tick
+    _press(mocker, rl.KeyboardKey.KEY_F6)
+    viewer.update(0)
+    assert viewer.rtx_debug is RtxDebugView.SUBSTRATE_NORMAL
+    assert viewer.tick == tick
+    assert pickle.dumps(viewer.player.runtime.world) == before
+    mocker.patch.object(rl, "is_key_down", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT_SHIFT)
+    viewer.update(0)
+    assert viewer.rtx_debug is RtxDebugView.SHADED
+    viewer.set_rtx_debug(RtxDebugView.VISIBILITY)
+    viewer.seek(60)
+    assert viewer.rtx_debug is RtxDebugView.VISIBILITY
+    viewer.close()

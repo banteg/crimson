@@ -507,3 +507,33 @@ speedup. These small optimizations do not remove the substantial dense-scene cos
 Before/after SDR captures differed by at most one 8-bit code value in at most 175
 of 4.8 million RGB channels; all body profiles and artistic lighting settings
 stayed fixed.
+
+
+### Live ground diagnostics
+
+In RTX mode, **F6** cycles ground diagnostic views; **Shift+F6** cycles backward.
+This works during gameplay and in the standalone replay viewer, including while paused.
+Return to `shaded` for the normal scene. The in-game console also accepts
+`rtxdebug <name>`: `shaded`, `substrate-normal`, `fluid-normal`, `freshness`,
+`blood-depth`, `reflections`, `direct`, `direct-unshadowed`, `visibility`,
+`albedo`, `roughness`, `height`, `materials`, `ambient`, or `no-direct`.
+
+These are display-only selections: they survive replay seeks, do not affect the
+simulation/recording, and have no effect in classic mode. Ground maps hide live
+sprites, particles and aim overlays; the HUD and playback controls remain usable.
+Raw normals/material channels bypass the world HDR shoulder and game gamma
+multiplier. Normals encode XYZ as `normal * 0.5 + 0.5`. Radiance views use a fixed
+`c/(1+c)` mapping followed by gamma encoding, independent of display EDR headroom.
+Explicit `material_scope(debug=...)` probes retain linear radiance for GPU tests.
+
+`direct` includes dynamic diffuse lighting after creature shadows;
+`direct-unshadowed` evaluates the same material/light response before occlusion.
+`visibility` is their linear luminance ratio across all selected lights: white is
+unblocked, black is fully blocked, and blue indicates no direct illumination.
+It is not a separate geometric mask or a measure of ambient light. `reflections`
+shows dynamic reflections only; `no-direct` is a matched scene comparison: it removes only dynamic ground
+diffuse lighting, preserving entities, aim overlays, reflections and the ordinary
+HDR shoulder/game gamma. Unlike the isolated maps, this can be compared directly
+with `shaded`.
+`albedo` shows the substrate before blood absorption. `materials` shows blood in
+red, corpse coverage in green, brass in blue, and ice in cyan.
