@@ -255,10 +255,15 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
     shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
     shadow_pass = shadows_enabled and (not frame.players or PerkId.MONSTER_VISION not in frame.state.perks)
     for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
+        if not any(creature.active and creature.type_id == type_id for creature in creature_entries):
+            continue
+        texture = _creature_texture(resources, type_id)
+        if texture.width <= 0:
+            continue
         # Native batches every shadow before drawing any body of this species.
         for shadow in (True, False) if shadow_pass else (False,):
             body_scope = (
-                lighting.scope(restore_shader=resources.alpha_test.shader)
+                lighting.scope(texture=texture, restore_shader=resources.alpha_test.shader)
                 if lighting is not None and not shadow else nullcontext()
             )
             with body_scope:
@@ -272,11 +277,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                     )
                     death_timer = float(creature.death_timer)
 
-                    texture = _creature_texture(resources, type_id)
-
                     # Native quad dimensions use the creature's actual size.
-                    if texture.width <= 0:
-                        continue
                     size_scale = float(creature.size) / (float(texture.width) / 8.0)
                     shadow_alpha = None
                     if shadow:

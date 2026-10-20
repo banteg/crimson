@@ -8,11 +8,13 @@ import msgspec
 import pytest
 
 from crimson.creatures.spawn import CreatureTypeId
+from crimson.render.rtx import creature_lighting
 from crimson.render.rtx.creature_lighting import CreatureLighting
 from crimson.render.rtx.material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import draw as world_draw
 from crimson.world.render_resources import RenderResources
+from grim.assets import TextureId
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
@@ -37,10 +39,12 @@ def test_only_rtx_bodies_use_lighting(mocker, headless_resources, mode):
     ))
     active = False
     draws = mocker.Mock()
+    scoped_textures = []
 
     @contextmanager
-    def scope(**_kwargs):
+    def scope(**kwargs):
         nonlocal active
+        scoped_textures.append(kwargs["texture"])
         active = True
         try:
             yield
@@ -55,6 +59,9 @@ def test_only_rtx_bodies_use_lighting(mocker, headless_resources, mode):
     mocker.patch.object(world_draw.rl, "end_blend_mode")
     world_draw.draw_creatures(ctx, ctx=world_draw.WorldDrawContext())
     assert prepare.call_count == int(mode is RtxRenderMode.RTX)
+    assert scoped_textures == (
+        [headless_resources.texture(TextureId.SPIDER_SP1)] if mode is RtxRenderMode.RTX else []
+    )
     assert draws.call_count == 3
     for call in draws.call_args_list:
         kwargs, lit = call.args
@@ -72,15 +79,26 @@ def test_lazy_lifecycle_and_exception_restore(mocker, tmp_path):
     shader.id = 42
     restore = rl.ffi.new("Shader *")[0]
     restore.id = 9
+    texture = rl.ffi.new("Texture *")[0]
+    texture.id = 10
+    thickness = rl.ffi.new("Texture *")[0]
+    thickness.id = 11
     lighting.shader = shader
     lighting.active = True
-    with pytest.raises(ValueError), lighting.scope(restore_shader=restore):
+    lighting.locations["u_thickness"] = 12
+    lighting.thickness_textures[texture.id] = thickness
+    mocker.patch.object(rl, "set_shader_value_texture")
+    mocker.patch.object(rl, "rl_draw_render_batch_active")
+    unload_texture = mocker.patch.object(rl, "unload_texture")
+    with pytest.raises(ValueError), lighting.scope(texture=texture, restore_shader=restore):
         raise ValueError("drawing interrupted")
     assert [call.args[0] for call in begin.call_args_list] == [shader, restore]
     resources = RenderResources(tmp_path, creature_lighting=lighting)
     resources.close()
     resources.close()
     unload.assert_called_once_with(shader)
+    unload_texture.assert_called_once_with(thickness)
+    assert not lighting.thickness_textures
     assert lighting.shader is None and not lighting.active
 
 
@@ -97,10 +115,10 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False, textured=False, relief_ramp=None):
+               degenerate_uv=False, textured=False, relief_ramp=None, pigment: tuple[int, int, int] = (70, 55, 40)):
         other = rl.gen_image_color(256, 256, rl.BLANK)
-        rl.image_draw_circle(other, 16, 16, 10, rl.Color(70, 55, 40, 255))
-        rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(70, 55, 40, 255))
+        rl.image_draw_circle(other, 16, 16, 10, rl.Color(*pigment, 255))
+        rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(*pigment, 255))
         if textured:
             for y in range(10, 23):
                 for x in range(10, 23):
@@ -125,7 +143,7 @@ def lit_sprite(raylib_context):
                                         rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
                                         rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
                 if use_shader:
-                    with lighting.scope(restore_shader=alpha.shader):
+                    with lighting.scope(texture=texture, restore_shader=alpha.shader):
                         draw()
                 else:
                     draw()
@@ -150,6 +168,7 @@ def test_zero_and_out_of_range_lights_preserve_base_pixels(lit_sprite):
     base = render([], use_shader=False)
     assert render([]) == base
     assert lighting.shader is None
+    assert not lighting.thickness_textures
     assert render([MaterialLight(Vec2(1000, 1000), 10, (1, 1, 1))]) == base
     assert render([MaterialLight(Vec2(64, 64), 100, (0, 0, 0))]) == base
     assert render([]) == base  # A previous lit frame cannot leak into the next one.
@@ -304,3 +323,78 @@ def test_independent_diffuse_and_specular_response(lit_sprite):
     assert render([msgspec.structs.replace(light, reflection_gain=0)]) == base
     diffuse = render([msgspec.structs.replace(light, radius=110, illumination_gain=1, reflection_gain=0)])
     assert diffuse != base and diffuse != reflected
+
+
+@pytest.mark.parametrize("rgb,channel", [((1.4, 0, 0), 0), ((0, 0, 1.4), 2)])
+@pytest.mark.parametrize("light_x", [38, 90], ids=["far-side-limb", "near-side-limb"])
+def test_transmission_lights_thin_parts_on_either_side_of_light(lit_sprite, monkeypatch, rgb, channel, light_x):
+    render, lighting = lit_sprite
+    light = MaterialLight(Vec2(light_x, 64), 110, rgb, height=40)
+    actual = render([light])
+    lighting.close()
+    fragment = creature_lighting.CREATURE_FRAGMENT
+    reference = fragment.replace(
+        "const float TRANSMISSION_STRENGTH = 1.4;",
+        "const float TRANSMISSION_STRENGTH = 0.0;",
+    )
+    assert reference != fragment
+    monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", reference)
+    baseline = render([light])
+    assert [p[3] for p in actual] == [p[3] for p in baseline]
+    limb = 63 * 128 + 77
+    core = 63 * 128 + 64
+    gain = actual[limb][channel] - baseline[limb][channel]
+    assert gain > .02
+    assert actual[core][channel] - baseline[core][channel] < gain * .5
+    # Pigment modulates the source spectrum without emitting unlit channels.
+    for other in set(range(3)) - {channel}:
+        assert actual[limb][other] == pytest.approx(baseline[limb][other], abs=.001)
+
+
+def test_transmission_retains_pigment_and_restrains_black_parts(lit_sprite, monkeypatch):
+    render, lighting = lit_sprite
+    light = MaterialLight(Vec2(38, 64), 110, (1, 1, 1), height=40)
+    pigments = [(0, 0, 0), (255, 255, 255), (180, 30, 30), (30, 180, 30)]
+    limb = 63 * 128 + 77
+    actual = [render([light], pigment=color)[limb] for color in pigments]
+    lighting.close()
+    fragment = creature_lighting.CREATURE_FRAGMENT
+    reference = fragment.replace(
+        "const float TRANSMISSION_STRENGTH = 1.4;",
+        "const float TRANSMISSION_STRENGTH = 0.0;",
+    )
+    assert reference != fragment
+    monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", reference)
+    baseline = [render([light], pigment=color)[limb] for color in pigments]
+    gain = [
+        [a[c] ** 2.2 - b[c] ** 2.2 for c in range(3)]
+        for a, b in zip(actual, baseline, strict=True)
+    ]
+    assert 0 < gain[0][0] < gain[1][0] * .1
+    assert gain[2][0] > gain[2][1] * 3
+    assert gain[3][1] > gain[3][0] * 3
+
+
+@pytest.mark.parametrize("illumination,radius,length", [(0., 110., 0.), (0., 110., 128.), (1., 1., 0.)],
+                         ids=["reflection-only-point", "reflection-only-tracer", "outside-illumination-reach"])
+def test_transmission_obeys_illumination_channel(lit_sprite, monkeypatch, illumination, radius, length):
+    render, lighting = lit_sprite
+    source = MaterialLight(Vec2(88, 64), radius, (1.4, .3, .1), height=40,
+                           direction=Vec2(1, 0), length=length,
+                           illumination_gain=illumination, reflection_radius=110)
+    base = render([], use_shader=False)
+    transmission_on = render([source])
+    illuminated = msgspec.structs.replace(source, radius=110, illumination_gain=1)
+    positive_control = render([illuminated])
+    lighting.close()
+    fragment = creature_lighting.CREATURE_FRAGMENT
+    reference = fragment.replace("const float TRANSMISSION_STRENGTH = 1.4;",
+                                 "const float TRANSMISSION_STRENGTH = 0.0;")
+    assert reference != fragment
+    monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", reference)
+    transmission_off = render([source])
+    # Actual GPU pixels: zero transmission, but the reflected catch remains.
+    assert transmission_on == transmission_off
+    assert transmission_on != base
+    assert [p[3] for p in transmission_on] == [p[3] for p in base]
+    assert positive_control != render([illuminated])

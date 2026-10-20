@@ -26,6 +26,7 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
 uniform sampler2D texture0;
+uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
 uniform int u_count;
 uniform vec4 u_pos[32];
@@ -35,6 +36,7 @@ uniform vec4 u_response[32]; // illumination, reflection, reflection reach, sour
 out vec4 finalColor;
 const float DOME_STRENGTH = 0.65;
 const float RIM_STRENGTH = 0.65;
+const float TRANSMISSION_STRENGTH = 1.4;
 vec4 spriteSample(vec2 uv) {
     vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
     vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
@@ -87,6 +89,13 @@ void main() {
     vec3 N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
     vec3 V = normalize(vec3(0, .57735, 1));
     vec3 baseLin = pow(max(base.rgb, vec3(0)), vec3(2.2));
+    // Per-cell morphological openings estimate part size, not anatomical depth.
+    vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
+    vec2 half_texel = .5 / vec2(textureSize(u_thickness, 0));
+    vec2 thickness_uv = clamp(fragTexCoord, cell + half_texel, cell + vec2(.125) - half_texel);
+    float thickness = textureLod(u_thickness, thickness_uv, 0.).r * 16.0;
+    float transmission = exp(-.48 * thickness);
+    vec3 transmission_tint = mix(vec3(.15), baseLin, .85);
     vec3 added = vec3(0);
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
@@ -111,7 +120,8 @@ void main() {
 
         // An inner silhouette rim, only on the edge facing this emitter.
         // Atlas-local samples cannot reach neighboring animation frames.
-        vec2 toward = transpose(rot) * normalize(delta + vec2(.0001));
+        vec2 light_xy = normalize(delta + vec2(.0001));
+        vec2 toward = transpose(rot) * light_xy;
         vec2 side = vec2(-toward.y, toward.x);
         float beyond = (spriteAlpha(fragTexCoord + toward * px * 1.5) +
                         spriteAlpha(fragTexCoord + (toward * 1.5 + side * .65) * px) +
@@ -119,12 +129,14 @@ void main() {
                        3.0;
         float edge = smoothstep(.04, .7, max(0.0, texel.a - beyond));
         float elevation = length(delta) / sqrt(dot(delta, delta) + pow(max(8.0, u_pos[i].w - 8.0), 2.0));
-        // The artistic silhouette rim follows illumination, never bypassing a
-        // restrained tracer's diffuse gain. Specular catches remain independent.
+        // Rim and lateral thin-part transmission follow illumination, never
+        // bypassing a restrained tracer's gain. Specular catches stay independent.
+        // The cell-center dome normal cannot describe individual limbs.
         added += u_rgb[i].rgb * axial_gain * (
             u_response[i].x * a * a *
                 (baseLin * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
-                 edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum)) +
+                 edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum) +
+                 transmission_tint * transmission * elevation * TRANSMISSION_STRENGTH) +
             u_response[i].y * s * s *
                 catchlight * (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum));
     }

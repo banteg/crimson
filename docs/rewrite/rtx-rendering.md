@@ -239,7 +239,8 @@ Python RTX creature bodies receive the same bounded weapon emitters as the groun
 pass. A rounded body normal and weak texture relief provide broad colored lighting
 and small highlights; three alpha taps toward each light produce an inner silhouette
 rim. The approved blend uses 65% of the dome study and 65% of the rim study, with a
-hue-preserving limit on their combined radiance. These are artistic shape estimates,
+hue-preserving limit on their combined radiance, including thin-part transmission.
+These are artistic shape estimates,
 not authored normal maps or physically calibrated skin/chitin models.
 
 Implementation: `src/crimson/render/rtx/creature_lighting.py` and
@@ -253,6 +254,35 @@ resolution. Both relief and alpha taps stay inside the current animation cell.
 Lights are uploaded once before the species passes. Beam intensity tapers from
 20% at the tail to 100% at the head; this gain applies once, independently of
 squared radial attenuation. Point lights and the native alpha cutoff remain intact.
+
+Thin parts also scatter lateral light, tinted by their pigment.
+`src/crimson/render/rtx/creature_translucency.py` estimates part size from each
+animation cell's alpha silhouette with the same alpha cutoff of 4/255.
+It finds the largest fully contained odd square covering each pixel, capped at
+31 texels. This is equivalent to accumulating nested square morphological openings:
+erode, then dilate each surviving region back to its extent. Unlike boundary
+distance, it assigns thick support to a broad body's edges as well as its center.
+Descending max-dilation reconstructs all sixteen levels in fifteen steps; cells
+remain isolated throughout.
+Transmission falls as `exp(-0.48 * size)`, where size is the square's radius plus
+one, with an artistic strength of 1.4. Its pigment multiplier is
+`mix(vec3(0.15), baseLin, 0.85)`; even black parts retain a small 0.0225 floor.
+The lateral response uses the light's elevation, independent of the cell-center
+dome normal, so a narrow limb can scatter on either side of the sprite.
+The shader samples this map once per body pixel and adds its directional response
+inside the existing light loop, sharing each emitter's finite source, radial
+attenuation and beam taper. It preserves sprite alpha and the existing HDR limit.
+This is a silhouette part-size appearance model, not anatomical thickness or traced
+subsurface scattering. Square openings are orientation-dependent and can still
+classify curved tips and corners as thin. The model does not distinguish skin from
+claws/armor, cast shadows, or account for intervening creatures.
+
+Thickness textures are generated from the loaded source atlas on its first lit RTX
+body pass, cached by that atlas's texture ID, and released when the world's lighting
+resources close. Empty species and unlit/classic draws do not generate them.
+Each 512×512 atlas adds a 256 KiB single-channel texture without mipmaps; generation
+has a one-time readback and CPU preprocessing cost. Atlas binding happens once per
+species body batch, with no per-creature texture uploads or additional render pass.
 
 Only creature body passes use this shader. Existing shadows, hit flashes, freeze
 and poison overlays, players, and baked corpses keep their existing paths. No
@@ -290,7 +320,7 @@ colors; the analytical shell retains its studio highlight.
 `material_lights.py` describes finite luminous sources shared by the ground,
 creature, and bonus passes. The visible projectile still uses its original draw
 path. `MaterialLight.rgb` is linear source radiance; `illumination_gain` controls
-diffuse spill and artistic edge lighting, while `reflection_gain` controls
+diffuse spill, artistic edge lighting, and creature transmission, while `reflection_gain` controls
 specular catches. A source can therefore be reflected without lighting nearby dirt.
 `source_width` describes the reflection footprint in world units, independently of
 the illumination `radius`. `reflection_radius` optionally specifies separate
@@ -325,7 +355,8 @@ gain zeroed. Shared sources are not counted twice, and reflection-only tracers d
 not consume illumination slots.
 
 Ground roughness broadens the explicit source footprint. Creature diffuse dome
-shading and the artistic silhouette rim follow illumination gain, while specular
+shading, the artistic silhouette rim, and thin-part transmission follow illumination
+gain and reach, while specular
 catches follow reflection gain and width. Bonus coat reflections and foil sheen
 likewise remain independent of diffuse and artificial edge/back-wall lighting.
 Material-specific approximations remain: these shaders are not reflections of
@@ -333,6 +364,8 @@ arbitrary non-emissive objects.
 
 GPU tests exercise reflection-only sources beyond illumination reach, independent
 gain controls, source footprint changes, alpha preservation, and the upload bound.
+Transmission comparisons against a zero-transmission shader verify that
+reflection-only sources retain specular catches without lighting thin limbs.
 CPU tests cover independent selection budgets, union masking, finite-segment
 ranking, family colors/geometry, optical fade, muzzle flags, expanding detonations,
 and flame grouping. Dense volleys, cell transitions, and EDR remain art-tuning

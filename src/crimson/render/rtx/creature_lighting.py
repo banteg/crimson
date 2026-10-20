@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from .creature_shaders import CREATURE_FRAGMENT, CREATURE_VERTEX
+from .creature_translucency import load_thickness_texture
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 
 
@@ -18,6 +19,7 @@ class CreatureLighting(msgspec.Struct):
     shader: rl.Shader | None = None
     locations: dict[str, int] = msgspec.field(default_factory=dict)
     active: bool = False
+    thickness_textures: dict[int, rl.Texture] = msgspec.field(default_factory=dict)
 
     def prepare(self, lights: Sequence[MaterialLight], *, camera: Vec2, view_scale: Vec2) -> None:
         """Upload bounded emitters once per creature pass, before any body batches."""
@@ -31,7 +33,7 @@ class CreatureLighting(msgspec.Struct):
             self.shader = shader
             self.locations = {
                 name: int(rl.get_shader_location(shader, name))
-                for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response")
+                for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response", "u_thickness")
             }
         shader = self.shader
         # Flush preceding draws before changing values on a possibly reused shader.
@@ -61,12 +63,20 @@ class CreatureLighting(msgspec.Struct):
             )
 
     @contextmanager
-    def scope(self, *, restore_shader: rl.Shader | None) -> Iterator[None]:
+    def scope(self, *, texture: rl.Texture, restore_shader: rl.Shader | None) -> Iterator[None]:
         if not self.active or self.shader is None:
             yield
             return
-        rl.begin_shader_mode(self.shader)
+        # Texture IDs remain stable for the owning render resources' lifetime.
+        thickness = self.thickness_textures.get(int(texture.id))
+        if thickness is None:
+            rl.rl_draw_render_batch_active()
+            thickness = load_thickness_texture(texture)
+            self.thickness_textures[int(texture.id)] = thickness
+        rl.rl_draw_render_batch_active()
         try:
+            rl.begin_shader_mode(self.shader)
+            rl.set_shader_value_texture(self.shader, self.locations["u_thickness"], thickness)
             yield
         finally:
             # The enclosing world pass uses alpha testing, including after exceptions.
@@ -76,6 +86,9 @@ class CreatureLighting(msgspec.Struct):
                 rl.begin_shader_mode(restore_shader)
 
     def close(self) -> None:
+        for texture in self.thickness_textures.values():
+            rl.unload_texture(texture)
+        self.thickness_textures.clear()
         if self.shader is not None:
             rl.unload_shader(self.shader)
         self.shader = None
