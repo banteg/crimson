@@ -112,14 +112,21 @@ def lit_bonus(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, pass_id=1, size=32., rotation=0., camera=Vec2(), scale=1.,
-               neighbor=False, grid=(4., 4.), color=(70, 55, 40), source_shader=True):
+               neighbor=False, grid=(4., 4.), color=(70, 55, 40), source_shader=True, relief_ramp=None):
         image = rl.gen_image_color(128, 128, rl.BLANK)
         height = int(128/grid[1])
         rl.image_draw_rectangle(image, 0, 0, 32, height, rl.Color(color[0], color[1], color[2], 255))
+        if relief_ramp is not None:
+            for y in range(height//2 - 6, height//2 + 7):
+                for x in range(10, 23):
+                    value = round(120 + (x - 15.5) * relief_ramp.x + (y - (height - 1)/2) * relief_ramp.y)
+                    rl.image_draw_pixel(image, x, y, rl.Color(value, value, value, 255))
         if neighbor:
             rl.image_draw_rectangle(image, 32, 0, 32, height, rl.Color(255, 0, 255, 255))
         rl.update_texture(texture, image.data)
         rl.unload_image(image)
+        rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR if relief_ramp is not None
+                              else rl.TextureFilter.TEXTURE_FILTER_POINT)
         lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale))
         pos = (Vec2(64, 64)+camera)*scale
         with texture_mode(target):
@@ -161,6 +168,32 @@ def test_unlit_and_out_of_range_icons_preserve_original_pixels(lit_bonus):
     assert [p[3] for p in lit] == [p[3] for p in baseline]
     assert all(math.isfinite(c) for p in lit for c in p)
     assert render([]) == baseline
+
+
+@pytest.mark.parametrize('grid', [(4., 4.), (4., 8.)], ids=['bonus', 'weapon'])
+@pytest.mark.parametrize('rotation', [0., 90., 217.])
+@pytest.mark.parametrize('axis', [Vec2(1, 0), Vec2(0, 1)], ids=['u', 'v'])
+def test_bright_emblem_relief_faces_downhill_light(lit_bonus, grid, rotation, axis):
+    render, _ = lit_bonus
+    angle = math.radians(rotation)
+    uphill = Vec2(axis.x * math.cos(angle) - axis.y * math.sin(angle),
+                  axis.x * math.sin(angle) + axis.y * math.cos(angle))
+    # Pixel-center alignment cancels the emblem's dome slope. Opposing ramps
+    # have identical center albedo and coating, isolating their relief normals.
+    options = {'grid': grid, 'rotation': rotation, 'camera': Vec2(.5, .5)}
+    center = 63 * 128 + 64
+    rising = axis * 10
+    falling = axis * -10
+    base_rising = render([], relief_ramp=rising, **options)[center]
+    base_falling = render([], relief_ramp=falling, **options)[center]
+    assert base_rising == pytest.approx(base_falling, abs=.001)
+    for direction in (-1, 1):
+        light = MaterialLight(Vec2(64, 64) + uphill * (24 * direction), 110, (1, 1, 1), height=40)
+        lit_rising = render([light], relief_ramp=rising, **options)[center]
+        lit_falling = render([light], relief_ramp=falling, **options)[center]
+        # Raised height tilts the normal downhill on either atlas axis; swapping
+        # the light must swap which ramp is brighter, including rectangular cells.
+        assert (lit_falling[0] - lit_rising[0]) * direction > .005
 
 
 @pytest.mark.parametrize('pass_id', [0, 1])

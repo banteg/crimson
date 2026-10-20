@@ -171,7 +171,8 @@ void main() {
         cellLum(fragTexCoord + vec2(px.x, 0.0)) - cellLum(fragTexCoord - vec2(px.x, 0.0)),
         cellLum(fragTexCoord + vec2(0.0, px.y)) - cellLum(fragTexCoord - vec2(0.0, px.y))
     );
-    vec2 slope_flat = rot * (q_cell * 0.22 + relief * 1.15);
+    // Brighter texels are raised: the height-field normal points downhill.
+    vec2 slope_flat = rot * (q_cell * 0.22 - relief * 1.15);
     vec3 N_flat = normalize(vec3(slope_flat, sqrt(max(0.25, 1.0 - dot(slope_flat, slope_flat)))));
 
     // 2. Underlying spherical cabochon normal for clear-coat specular over the flat icon:
