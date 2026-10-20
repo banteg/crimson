@@ -277,20 +277,23 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                 ),
             )
     for visual in frame.state.effects.explosion_visuals:
-        if not visual.emit_light or visual.age < 0.0 or visual.age >= 0.7:
+        if not visual.emit_light or not visual.fireballs or visual.age < 0.0 or visual.age >= visual.lifetime:
             continue
-        # A short hot flash and the longer visible fireball share one source.
-        # These are art-directed linear radiances, not nuclear radiometry.
+        # Keep the flash fast, sustain the visible fireball, then fade with its
+        # retimed alpha. Height is art-directed: native sprites have no Z data.
         t = visual.age
-        gain = 0.6 * math.exp(-t / 0.08) + 0.4 * (1.0 - t / 0.7) ** 1.7
+        fade = min(1.0, max(0.0, 1.0 - t / visual.lifetime) / 0.75)
+        gain = 0.2 * math.exp(-t / 0.08) + 0.8 * fade ** 1.1
+        rise = min(t / 0.8, 1.0)
+        rise = rise * rise * (3.0 - 2.0 * rise)
         scale = max(0.1, visual.scale)
         sources.append(
             MaterialLight(
                 visual.pos,
                 330.0 * scale,
                 (1.8 * gain, 0.92 * gain, 0.3 * gain),
-                height=40.0 * scale,
-                source_width=(12.0 + 30.0 * min(t / 0.4, 1.0)) * scale,
+                height=(12.0 + 68.0 * rise) * scale,
+                source_width=visual.fireball_radius,
                 illumination_gain=6.0,
                 reflection_gain=1.2,
                 broad_illumination=True,

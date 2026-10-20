@@ -640,6 +640,24 @@ class EffectEntry(msgspec.Struct):
     next_free: int = -1
 
 
+class ExplosionFireball(msgspec.Struct):
+    """Archived visual parameters; native slot ownership ends when that slot frees."""
+
+    initial: EffectEntry
+    native: EffectEntry | None
+
+    def sample(self, age: float) -> EffectEntry:
+        initial = self.initial
+        return msgspec.structs.replace(
+            initial,
+            age=age,
+            pos=initial.pos + initial.vel * age,
+            rotation=initial.rotation + initial.rotation_step * age,
+            scale=initial.scale + initial.scale_step * age,
+            color=initial.color.with_alpha(max(0.0, 1.0 - age / initial.lifetime)),
+        )
+
+
 class ExplosionVisual(msgspec.Struct):
     """Render-only event: one flash/fireball independent of atlas detail count."""
 
@@ -648,6 +666,28 @@ class ExplosionVisual(msgspec.Struct):
     emit_light: bool = True
     age: float = 0.0
     ring: EffectEntry | None = None
+    fireballs: list[ExplosionFireball] = msgspec.field(default_factory=list)
+
+    @property
+    def lifetime(self) -> float:
+        return 1.4 if self.emit_light else 0.7
+
+    @property
+    def fireball_age(self) -> float:
+        return self.age * 0.5
+
+    @property
+    def fireball_radius(self) -> float:
+        # The moving sprite bounds determine the finite emitting footprint.
+        # The luminous atlas core occupies roughly 35% of those outer bounds.
+        age = self.fireball_age
+        extent = max((
+            (sprite.initial.pos + sprite.initial.vel * age - self.pos).length()
+            + max(sprite.initial.half_width, sprite.initial.half_height)
+            * (sprite.initial.scale + sprite.initial.scale_step * age)
+            for sprite in self.fireballs
+        ), default=32.0 * self.scale)
+        return max(12.0 * self.scale, min(90.0 * self.scale, extent * 0.35))
 
     @property
     def active_ring(self) -> EffectEntry | None:
@@ -809,6 +849,9 @@ class EffectPool:
         for visual in self.explosion_visuals:
             if visual.ring is entry:
                 visual.ring = None
+            for sprite in visual.fireballs:
+                if sprite.native is entry:
+                    sprite.native = None
 
     def _advance_entry(self, entry: EffectEntry, dt_f32: float) -> bool:
         age = f32(f32(entry.age) + dt_f32)
@@ -841,7 +884,7 @@ class EffectPool:
         dt_f32 = f32(dt)
         for visual in self.explosion_visuals:
             visual.age += dt_f32
-        self.explosion_visuals[:] = [visual for visual in self.explosion_visuals if visual.age < 0.7]
+        self.explosion_visuals[:] = [visual for visual in self.explosion_visuals if visual.age < visual.lifetime]
 
         for idx, entry in enumerate(self._entries):
             flags = int(entry.flags)
@@ -1211,4 +1254,6 @@ class EffectPool:
             template.rotation_step = float(
                 (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION_STEP) + 3) & 7,
             )
-            self.spawn(EffectId.EXPLOSION_BURST, pos, detail_preset, preserve_bugs=preserve_bugs)
+            entry = self.spawn(EffectId.EXPLOSION_BURST, pos, detail_preset, preserve_bugs=preserve_bugs)
+            if emit_light and entry is not None:
+                visual.fireballs.append(ExplosionFireball(initial=msgspec.structs.replace(entry), native=entry))

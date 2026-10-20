@@ -33,7 +33,7 @@ def test_one_explosion_light_survives_flash_and_does_not_depend_on_detail(detail
     snapshot.state.effects.update(0.4)
     faded = collect_material_lights(snapshot, view_center=Vec2(100, 120))
     assert len(faded) == 1 and 0 < faded[0].rgb[0] < lights[0].rgb[0]
-    snapshot.state.effects.update(0.31)
+    snapshot.state.effects.update(1.01)
     assert collect_material_lights(snapshot, view_center=Vec2()) == []
     assert snapshot.state.effects.explosion_visuals == []
 
@@ -140,7 +140,47 @@ def test_effect_pool_deepcopy_preserves_ring_ownership_without_live_aliases() ->
     copied = clone.explosion_visuals[0].active_ring
     assert copied is not None and original is not None and copied is not original
     assert any(copied is entry for entry in clone.entries)
+    copied_sprite = clone.explosion_visuals[0].fireballs[0]
+    original_sprite = pool.explosion_visuals[0].fireballs[0]
+    assert copied_sprite.native is not original_sprite.native
+    assert any(copied_sprite.native is entry for entry in clone.entries)
+    assert copied_sprite.initial is not original_sprite.initial
     assert all(copied is not entry for entry in pool.entries)
     clone.update(0.3)
     assert clone.explosion_visuals[0].active_ring is None
     assert pool.explosion_visuals[0].active_ring is original
+
+
+def test_rising_light_tracks_retained_visible_fireball_after_native_expiry() -> None:
+    snapshot = frame()
+    pool = snapshot.state.effects
+    burst(pool)
+    visual = pool.explosion_visuals[0]
+    assert len(visual.fireballs) == 4
+    initial = collect_material_lights(snapshot, view_center=Vec2())[0]
+    assert initial.height == 12
+    pool.update(.8)
+    assert all(sprite.native is None for sprite in visual.fireballs)
+    assert all(sprite.sample(visual.fireball_age).color.a > .4 for sprite in visual.fireballs)
+    risen = collect_material_lights(snapshot, view_center=Vec2())[0]
+    assert risen.height == 80
+    assert risen.source_width > initial.source_width
+    assert risen.rgb[0] > .3
+    pool.update(.61)
+    assert pool.explosion_visuals == []
+    assert collect_material_lights(snapshot, view_center=Vec2()) == []
+
+
+def test_rocket_burst_keeps_native_lifetime_and_no_archived_fireballs() -> None:
+    pool = EffectPool()
+    burst(pool, emit_light=False)
+    assert pool.explosion_visuals[0].fireballs == []
+    pool.update(.71)
+    assert pool.explosion_visuals == []
+
+
+def test_no_invisible_lamp_when_fireball_allocation_is_exhausted() -> None:
+    snapshot = frame()
+    burst(snapshot.state.effects)
+    snapshot.state.effects.explosion_visuals[0].fireballs.clear()
+    assert collect_material_lights(snapshot, view_center=Vec2()) == []

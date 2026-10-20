@@ -140,6 +140,17 @@ def draw_effect_pool(
 
     pool = frame.state.effects
     effects = (*pool.entries, *pool.overflow_entries) if pool.overflow_entries else pool.entries
+    fireball_slots: set[int] = set()
+    if frame.rtx_mode is RtxRenderMode.RTX:
+        archived = []
+        for visual in pool.explosion_visuals:
+            if not visual.emit_light or not 0.0 <= visual.age < visual.lifetime:
+                continue
+            for sprite in visual.fireballs:
+                if sprite.native is not None:
+                    fireball_slots.add(id(sprite.native))
+                archived.append(sprite.sample(visual.fireball_age))
+        effects = (*effects, *archived)
     if not any(entry.flags and entry.age >= 0.0 for entry in effects):
         return
 
@@ -154,6 +165,8 @@ def draw_effect_pool(
     )
 
     def draw_entry(entry: EffectEntry) -> None:
+        if id(entry) in fireball_slots:
+            return
         if id(entry) in pressure_rings and int(entry.effect_id) == int(EffectId.RING):
             return
         effect_id = int(entry.effect_id)

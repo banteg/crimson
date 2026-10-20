@@ -519,12 +519,24 @@ entries, simulation damage, or Classic drawing. Rocket-impact bursts opt out of
 the additional light because their secondary detonation already owns it.
 
 The source illuminates terrain and creatures and reflects from wet materials.
-Its art-directed linear envelope is `0.6 * exp(-t / 0.08) +
-0.4 * max(0, 1 - t / 0.7)^1.7`: a short flash followed by the visible fireball's
-0.7-second decay. Radius is 330 times blast scale; height is 40 times scale;
-source width expands from 12 to 42 times scale. RGB is `(1.8, 0.92, 0.3)` times
-the envelope, with independent illumination/reflection gains of 6/1.2. These
-values describe visual tuning, not calibrated nuclear radiometry.
+RTX archives the actual fireball sprites chosen by the native spawner, without
+extra RNG or additional pieces. It samples their position, scale, rotation and
+alpha at half age, extending their visible 0.7-second lifetime to 1.4 seconds.
+Native effect slots still expire normally; the flash, smoke and pressure-front
+timing remain unchanged. Classic draws the original slots at normal speed.
+Rocket bursts retain their native fireball timing as well as their existing light.
+
+The emitter rises from 12 to 80 world units (times blast scale) with a smoothstep
+over 0.8 seconds. This height is art-directed: the sprites have no native Z data.
+Source width follows 35% of the growing, drifting fireball sprite bounds, clamped
+to 12–90 units times blast scale. A low early source gives long shadows; rising
+height shortens them and the growing source softens them. Radius stays at 330
+times blast scale. The linear-radiance envelope is `0.2 * exp(-t / 0.08) +
+0.8 * min(1, max(0, 1 - t / 1.4) / 0.75)^1.1`: a brief flash, a sustained bright
+phase through 0.35 seconds, then a fade with visible fireball alpha. RGB is
+`(1.8, 0.92, 0.3)` times this envelope; illumination/reflection gains are 6/1.2.
+These values describe visual tuning, not calibrated nuclear radiometry. Missing
+fireball sprites do not create a lingering invisible lamp.
 
 In RTX, only the explosion-owned atlas ring becomes a thin pressure front.
 Freeze, shield and other ring effects retain their native drawing. The front
@@ -537,6 +549,8 @@ volumetric fluid simulation.
 
 The extra target and shader allocate lazily; frames with no active front use the
 original tonemap path. One fullscreen pass handles up to 16 simultaneous fronts.
-Explosion metadata is bounded to 128 events, expires after 0.7 seconds and clears
-with the effect pool. Freeing a native ring slot also releases its visual owner,
-including overflow slots, so slot reuse cannot create a ghost pressure front.
+Explosion metadata is bounded to 128 events, expires after 1.4 seconds (0.7 for
+rocket bursts) and clears
+with the effect pool. Freeing a native slot also releases its visual owner, including overflow slots,
+so slot reuse cannot create a ghost pressure front or hide a later sprite.
+Archived fireball parameters stay separate from the reusable native slot.
