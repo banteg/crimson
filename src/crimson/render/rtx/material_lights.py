@@ -213,8 +213,8 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
             # Reverse the source axis so the shared taper is brightest near the gun.
             direction, length = (near - far).normalized_with_length()
             sources.append(MaterialLight(
-                (near + far) * 0.5, 80.0, (0.16, 0.0, 0.0), height=28.0,
-                direction=direction, length=length, source_width=0.65,
+                (near + far) * 0.5, 40.0, (1.3, 0.0, 0.0), height=28.0,
+                direction=direction, length=length, source_width=1.2,
                 illumination_gain=0.0, reflection_gain=1.0, reflection_radius=100.0,
                 reflection_tail=0.0,
             ))

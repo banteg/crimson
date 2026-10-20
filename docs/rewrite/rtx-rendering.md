@@ -514,6 +514,9 @@ The native red sight contributes a narrow reflection source for each living
 Sharpshooter player. It uses the same stored endpoints as the visible quad,
 including the offset near the gun. Its axis points back toward the gun so the
 reflection fades to black at the distant end, matching the visible sight rather
-than a projectile's bright nose. It adds no diffuse illumination. Wet blood,
+than a projectile's bright nose. Its art-directed red radiance is 1.3 with a
+1.2-world-unit source width, making the glint readable over red blood without
+changing the native sight artwork. It adds no diffuse illumination. Wet blood,
 ice and other reflective materials use their existing roughness, freshness and
-occlusion response; the aiming cursor remains a presentation overlay.
+occlusion response. Bonus orbs receive the same source through their curved
+resin-coat reflection; the aiming cursor remains a presentation overlay.
