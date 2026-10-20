@@ -20,7 +20,7 @@ def test_transparent_rgb_cannot_contaminate_visible_edges(raylib_context, fragme
     # Creature/bonus shaders need their world-coordinate vertex output.
     vertex = CREATURE_VERTEX if fragment in (CREATURE_FRAGMENT, BONUS_FRAGMENT) else _ALPHA_TEST_VS_330
     shader = rl.load_shader_from_memory(vertex, fragment)
-    assert shader.id != rl.rl_get_shader_id_default()
+    assert shader.id > 0 and shader.id != rl.rl_get_shader_id_default()
     for name in ("u_view_scale", "u_grid"):
         loc = rl.get_shader_location(shader, name)
         if loc >= 0:
