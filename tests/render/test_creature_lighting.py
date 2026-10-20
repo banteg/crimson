@@ -103,19 +103,6 @@ def test_lazy_lifecycle_and_exception_restore(mocker, tmp_path):
 
 
 @pytest.fixture
-def opaque_creature_lighting(monkeypatch):
-    # Isolate the existing front-facing rim/relief contract: transmission deliberately
-    # adds opposite-facing light and can make that side brighter on thin silhouettes.
-    fragment = creature_lighting.CREATURE_FRAGMENT
-    opaque = fragment.replace(
-        "const float TRANSMISSION_STRENGTH = 2.8;",
-        "const float TRANSMISSION_STRENGTH = 0.0;",
-    )
-    assert opaque != fragment
-    monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", opaque)
-
-
-@pytest.fixture
 def lit_sprite(raylib_context):
     # Eight-by-eight atlas, with an opaque disk and a small protruding limb.
     image = rl.gen_image_color(256, 256, rl.BLANK)
@@ -128,10 +115,10 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False, textured=False, relief_ramp=None):
+               degenerate_uv=False, textured=False, relief_ramp=None, pigment: tuple[int, int, int] = (70, 55, 40)):
         other = rl.gen_image_color(256, 256, rl.BLANK)
-        rl.image_draw_circle(other, 16, 16, 10, rl.Color(70, 55, 40, 255))
-        rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(70, 55, 40, 255))
+        rl.image_draw_circle(other, 16, 16, 10, rl.Color(*pigment, 255))
+        rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(*pigment, 255))
         if textured:
             for y in range(10, 23):
                 for x in range(10, 23):
@@ -211,7 +198,7 @@ def test_degenerate_uv_basis_keeps_lighting_finite(lit_sprite, monkeypatch):
 
 
 @pytest.mark.parametrize("rotation", [0., 90., 217.])
-def test_rim_follows_world_light_and_preserves_alpha(lit_sprite, opaque_creature_lighting, rotation):
+def test_rim_follows_world_light_and_preserves_alpha(lit_sprite, rotation):
     render, _lighting = lit_sprite
     base = render([], rotation=rotation)
     right = render([MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=40)], rotation=rotation)
@@ -260,7 +247,7 @@ def test_textured_relief_is_independent_of_framebuffer_scale(lit_sprite, rotatio
 
 @pytest.mark.parametrize("rotation", [0., 90., 217.])
 @pytest.mark.parametrize("axis", [Vec2(1, 0), Vec2(0, 1)], ids=["u", "v"])
-def test_bright_relief_faces_downhill_light(lit_sprite, opaque_creature_lighting, rotation, axis):
+def test_bright_relief_faces_downhill_light(lit_sprite, rotation, axis):
     render, _lighting = lit_sprite
     angle = math.radians(rotation)
     uphill = Vec2(axis.x * math.cos(angle) - axis.y * math.sin(angle),
@@ -325,14 +312,15 @@ def test_multiple_emitters_and_light_budget(lit_sprite):
 
 
 @pytest.mark.parametrize("rgb,channel", [((1.4, 0, 0), 0), ((0, 0, 1.4), 2)])
-def test_transmission_lights_thin_backlit_parts_without_changing_alpha(lit_sprite, monkeypatch, rgb, channel):
+@pytest.mark.parametrize("light_x", [38, 90], ids=["far-side-limb", "near-side-limb"])
+def test_transmission_lights_thin_parts_on_either_side_of_light(lit_sprite, monkeypatch, rgb, channel, light_x):
     render, lighting = lit_sprite
-    light = MaterialLight(Vec2(38, 64), 110, rgb, height=40)
+    light = MaterialLight(Vec2(light_x, 64), 110, rgb, height=40)
     actual = render([light])
     lighting.close()
     fragment = creature_lighting.CREATURE_FRAGMENT
     reference = fragment.replace(
-        "const float TRANSMISSION_STRENGTH = 2.8;",
+        "const float TRANSMISSION_STRENGTH = 1.4;",
         "const float TRANSMISSION_STRENGTH = 0.0;",
     )
     assert reference != fragment
@@ -344,6 +332,30 @@ def test_transmission_lights_thin_backlit_parts_without_changing_alpha(lit_sprit
     gain = actual[limb][channel] - baseline[limb][channel]
     assert gain > .02
     assert actual[core][channel] - baseline[core][channel] < gain * .5
-    # Neutral transmission follows the source spectrum rather than adding a white/red rim.
+    # Pigment modulates the source spectrum without emitting unlit channels.
     for other in set(range(3)) - {channel}:
         assert actual[limb][other] == pytest.approx(baseline[limb][other], abs=.001)
+
+
+def test_transmission_retains_pigment_and_restrains_black_parts(lit_sprite, monkeypatch):
+    render, lighting = lit_sprite
+    light = MaterialLight(Vec2(38, 64), 110, (1, 1, 1), height=40)
+    pigments = [(0, 0, 0), (255, 255, 255), (180, 30, 30), (30, 180, 30)]
+    limb = 63 * 128 + 77
+    actual = [render([light], pigment=color)[limb] for color in pigments]
+    lighting.close()
+    fragment = creature_lighting.CREATURE_FRAGMENT
+    reference = fragment.replace(
+        "const float TRANSMISSION_STRENGTH = 1.4;",
+        "const float TRANSMISSION_STRENGTH = 0.0;",
+    )
+    assert reference != fragment
+    monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", reference)
+    baseline = [render([light], pigment=color)[limb] for color in pigments]
+    gain = [
+        [a[c] ** 2.2 - b[c] ** 2.2 for c in range(3)]
+        for a, b in zip(actual, baseline, strict=True)
+    ]
+    assert 0 < gain[0][0] < gain[1][0] * .1
+    assert gain[2][0] > gain[2][1] * 3
+    assert gain[3][1] > gain[3][0] * 3

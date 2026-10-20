@@ -255,17 +255,27 @@ Lights are uploaded once before the species passes. Beam intensity tapers from
 20% at the tail to 100% at the head; this gain applies once, independently of
 squared radial attenuation. Point lights and the native alpha cutoff remain intact.
 
-Thin parts also receive source-colored light on their opposite-facing side.
-`src/crimson/render/rtx/creature_translucency.py` derives an approximate thickness
-from each animation cell's alpha silhouette: up to sixteen steps of 3×3 erosion,
-with transparent borders between cells and the same alpha cutoff of 4/255.
-Transmission falls as `exp(-0.48 * distance)` with an artistic strength of 2.8.
+Thin parts also scatter lateral light, tinted by their pigment.
+`src/crimson/render/rtx/creature_translucency.py` estimates part size from each
+animation cell's alpha silhouette with the same alpha cutoff of 4/255.
+It finds the largest fully contained odd square covering each pixel, capped at
+31 texels. This is equivalent to accumulating nested square morphological openings:
+erode, then dilate each surviving region back to its extent. Unlike boundary
+distance, it assigns thick support to a broad body's edges as well as its center.
+Descending max-dilation reconstructs all sixteen levels in fifteen steps; cells
+remain isolated throughout.
+Transmission falls as `exp(-0.48 * size)`, where size is the square's radius plus
+one, with an artistic strength of 1.4. Its pigment multiplier is
+`mix(vec3(0.15), baseLin, 0.85)`; even black parts retain a small 0.0225 floor.
+The lateral response uses the light's elevation, independent of the cell-center
+dome normal, so a narrow limb can scatter on either side of the sprite.
 The shader samples this map once per body pixel and adds its directional response
 inside the existing light loop, sharing each emitter's finite source, radial
 attenuation and beam taper. It preserves sprite alpha and the existing HDR limit.
-This is a silhouette-distance appearance model, not anatomical thickness or traced
-subsurface scattering: it does not distinguish skin from claws/armor, cast shadows,
-or account for intervening creatures.
+This is a silhouette part-size appearance model, not anatomical thickness or traced
+subsurface scattering. Square openings are orientation-dependent and can still
+classify curved tips and corners as thin. The model does not distinguish skin from
+claws/armor, cast shadows, or account for intervening creatures.
 
 Thickness textures are generated from the loaded source atlas on its first lit RTX
 body pass, cached by that atlas's texture ID, and released when the world's lighting

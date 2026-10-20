@@ -1,4 +1,4 @@
-"""Silhouette-distance proxies for artistic creature transmission, not anatomical thickness."""
+"""Opening-based part-size proxies for artistic transmission, not anatomical thickness."""
 
 from PIL import Image, ImageChops, ImageDraw
 
@@ -6,7 +6,7 @@ from grim.raylib_api import rl
 
 
 def build_thickness_proxy(alpha: Image.Image) -> Image.Image:
-    """Encode up to sixteen erosion steps, independently inside each 8x8 atlas cell."""
+    """Encode largest covering odd-square support, capped at 31px, per 8x8 atlas cell."""
     width, height = alpha.size
     if alpha.mode != "L" or width <= 0 or height <= 0 or width % 8 or height % 8:
         raise ValueError("Creature thickness requires an L alpha image with an 8x8 cell grid")
@@ -19,13 +19,13 @@ def build_thickness_proxy(alpha: Image.Image) -> Image.Image:
         for y in (cell * cell_height, (cell + 1) * cell_height - 1):
             grid.line((0, y, width - 1, y), fill=0)
     mask = alpha.point([0] * 4 + [16] * 252)
-    distance = Image.new("L", alpha.size)
+    erosions: list[Image.Image] = []
     for _ in range(16):
         if mask.getbbox() is None:
             break
-        distance = ImageChops.add(distance, mask)
+        erosions.append(mask)
         # Separable 3x3 minimum, processing all cells together. Each cell's border
-        # survives the first count, then is erased as if padded with transparency.
+        # survives the first level, then is erased as if padded with transparency.
         # Clearing borders also removes the wrap introduced by ImageChops.offset.
         horizontal = ImageChops.darker(
             ImageChops.darker(mask, ImageChops.offset(mask, 1, 0)),
@@ -36,7 +36,24 @@ def build_thickness_proxy(alpha: Image.Image) -> Image.Image:
             ImageChops.offset(horizontal, 0, -1),
         )
         mask = ImageChops.darker(eroded, interior)
-    return distance
+    thickness = Image.new("L", alpha.size)
+    for radius in range(len(erosions) - 1, -1, -1):
+        # A radius-k erosion seed covers its entire (2k+1)-square, not just its
+        # distance from the nearest edge. Descending max-dilation reconstructs
+        # all nested openings in 15 steps instead of dilating each separately.
+        horizontal = ImageChops.lighter(
+            ImageChops.lighter(thickness, ImageChops.offset(thickness, 1, 0)),
+            ImageChops.offset(thickness, -1, 0),
+        )
+        expanded = ImageChops.lighter(
+            ImageChops.lighter(horizontal, ImageChops.offset(horizontal, 0, 1)),
+            ImageChops.offset(horizontal, 0, -1),
+        )
+        encoded = min(255, (radius + 1) * 16)
+        seeds = erosions[radius].point([0] + [encoded] * 255)
+        thickness = ImageChops.lighter(expanded, seeds)
+    # Every expansion is contained by the seed's eroded cell/silhouette.
+    return thickness
 
 
 def load_thickness_texture(source: rl.Texture) -> rl.Texture:
