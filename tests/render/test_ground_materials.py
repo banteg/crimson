@@ -12,6 +12,7 @@ from crimson.creatures.runtime import CreaturePool, CreatureState
 from crimson.effects import FxQueueEntry, FxQueueRotatedEntry
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx import materials as ground_materials
+from crimson.render.rtx.debug import RtxDebugView
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.materials import MaterialGroundRenderer, _integer, _uniform
 from crimson.render.rtx.mode import RtxRenderMode
@@ -264,7 +265,7 @@ def test_partial_scorch_removes_film_without_diluting_its_age(ground_material) -
     assert pixels(ground.coverage)[center][0] < 0.6
 
 
-def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None, shadows: bool = True, pixel_format: int | None = None) -> list[tuple[float, float, float, float]]:
+def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None, shadows: bool = True, pixel_format: int | None = None, live: bool = False) -> list[tuple[float, float, float, float]]:
     class Textures:
         def texture(self, _texture_id):
             return texture
@@ -275,10 +276,11 @@ def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: Crea
     frame = RenderFrame(
         config=config, camera=Vec2(), ground=ground, state=GameplayState(), players=[], creatures=creatures if creatures is not None else CreaturePool(),
         resources=cast(Any, Textures()), elapsed_ms=time * 1000, bonus_anim_phase=0, rtx_mode=RtxRenderMode.RTX,
+        rtx_debug=RtxDebugView(mode) if live else RtxDebugView.SHADED,
     )
     target = load_float_render_texture(64, 64, **({"pixel_format": pixel_format} if pixel_format is not None else {}))
     try:
-        with texture_mode(target), ground.material_scope(frame, debug=mode):
+        with texture_mode(target), ground.material_scope(frame, debug=None if live else mode):
             ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
         return pixels(target)
     finally:
@@ -816,3 +818,55 @@ def test_negligible_ground_diffuse_skip_has_bounded_linear_error(ground_material
     assert max(errors) > 0
     assert min(errors) >= -1e-7
     assert max(errors) <= 1.01e-5
+
+
+def test_direct_debug_maps_show_clean_ground_lighting_and_weighted_visibility(ground_material, mocker):
+    ground, texture = ground_material
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=35)
+    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
+    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(32, 16), 150, (2, 1, .5), height=24, reflection_gain=0, broad_illumination=True),
+    ])
+    clear = debug_pixels(ground, texture, mode=7, creatures=pool)
+    shadow = debug_pixels(ground, texture, mode=6, creatures=pool)
+    visibility = debug_pixels(ground, texture, mode=8, creatures=pool)
+    assert max(p[0] for p in clear) > .05  # No blood/corpse coverage is needed for direct lighting.
+    assert sum(p[0] for p in shadow) < sum(p[0] for p in clear) * .95
+    assert min(p[0] for p in visibility) < .5
+    assert max(p[0] for p in visibility) > .99
+    weights = (.2126, .7152, .0722)
+    for a, b, v in zip(clear, shadow, visibility, strict=True):
+        total = sum(a[i] * weights[i] for i in range(3))
+        if total > 1e-5:
+            expected = sum(b[i] * weights[i] for i in range(3)) / total
+            assert v[0] == pytest.approx(expected, abs=.003)
+    collector.return_value = []
+    assert all(p[:3] == pytest.approx((.12, .16, .22), abs=.001) for p in debug_pixels(ground, texture, mode=8))
+
+
+def test_live_debug_maps_preserve_normals_and_compress_hdr_contributions(ground_material, mocker):
+    ground, texture = ground_material
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(32, 16), 150, (200, 100, 50), height=24, reflection_gain=0, broad_illumination=True),
+    ])
+    assert debug_pixels(ground, texture, mode=1, live=True) == debug_pixels(ground, texture, mode=1)
+    raw = debug_pixels(ground, texture, mode=6)
+    displayed = debug_pixels(ground, texture, mode=6, live=True)
+    assert max(p[0] for p in raw) > 1
+    assert all(0 <= c <= 1 for p in displayed for c in p)
+    for a, b in zip(raw, displayed, strict=True):
+        assert b[:3] == pytest.approx(tuple((c / (1 + c)) ** (1 / 2.2) for c in a[:3]), abs=.001)
+
+
+def test_no_direct_is_a_matched_beauty_comparison(ground_material, mocker):
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(32, 16), 150, (2, 1, .5), height=24, broad_illumination=True),
+    ])
+    without_direct = debug_pixels(ground, texture, mode=14, live=True)
+    collector.return_value = [msgspec.structs.replace(collector.return_value[0], illumination_gain=0)]
+    # Exactly the ordinary beauty pass with direct gain off; reflections remain present.
+    assert debug_pixels(ground, texture, mode=0) == without_direct

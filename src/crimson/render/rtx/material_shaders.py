@@ -17,7 +17,8 @@ uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass
 
 uniform vec2 u_ground_size;
 uniform float u_time_s; // Seconds relative to the wetness epoch
-uniform int u_debug; // 0 shaded, 1 substrate normal, 2 liquid normal, 3 freshness, 4 amount, 5 dynamic specular
+uniform int u_debug; // RtxDebugView: raw data maps bypass gamma and display tonemapping
+uniform int u_debug_display; // Map radiance for live viewing; explicit diagnostic probes retain linear RGB.
 uniform int u_spec_light_count;
 uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z_height
 uniform float u_spec_tail[MAX_SPEC_LIGHTS]; // Reflection radiance at the negative segment endpoint
@@ -31,6 +32,12 @@ float blood_below_ice(vec4 surface, vec4 coverage) {
     // Both stored volume and blood coverage have been attenuated by the ice opacity.
     float exposed = max(1.0 - coverage.a, 0.001);
     return clamp(surface.b * coverage.r / (exposed * exposed), 0.0, 0.999);
+}
+
+vec3 debug_radiance(vec3 value) {
+    if (u_debug_display == 0) return value;
+    vec3 positive = max(value, vec3(0.));
+    return pow(positive / (vec3(1.) + positive), vec3(1. / 2.2));
 }
 
 void main() {
@@ -98,6 +105,9 @@ void main() {
     if (u_debug == 2) { finalColor = vec4(N_fluid * .5 + .5, 1.); return; }
     if (u_debug == 3) { finalColor = vec4(vec3(freshness), 1.); return; }
     if (u_debug == 4) { finalColor = vec4(vec3(blood_amount), 1.); return; }
+    if (u_debug == 9) { finalColor = vec4(pow(albedo_tex.rgb, vec3(1./2.2)), 1.); return; }
+    if (u_debug == 11) { finalColor = vec4(vec3(surf.a), 1.); return; }
+    if (u_debug == 12) { finalColor = vec4(mix(weights.rgb, vec3(0.,1.,1.), weights.a), 1.); return; }
     float is_metal = weights.b;
     float is_chitin = weights.g;
     float blood_smooth = mix(0.52, 0.91, freshness);
@@ -105,6 +115,8 @@ void main() {
     smoothness = mix(max(smoothness, max(is_metal * 0.88, is_chitin * 0.42)), .90, is_ice);
     vec3 N_spec = normalize(mix(N_fluid, N_sub, is_ice));
     float roughness = clamp(1.0 - smoothness, 0.09, 0.92);
+
+    if (u_debug == 10) { finalColor = vec4(vec3(roughness), 1.); return; }
 
     // Readable daylight floor: lighting adds to the scene, never blacks out its unlit regions.
     float daylight_ndl = clamp(dot(N_sub, normalize(vec3(-0.38, -0.48, 0.79))), 0.0, 1.0);
@@ -133,6 +145,9 @@ void main() {
     vec3 V = normalize(vec3(0.0, 0.57735, 1.0));
     vec3 R = reflect(-V, N_spec);
     vec3 spec_accum = vec3(0.0);
+    vec3 ambient_lit = diffuse_lit;
+    vec3 direct_unshadowed = vec3(0.);
+    vec3 direct_shadowed = vec3(0.);
 
     for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
         if (i >= u_spec_light_count) break;
@@ -161,11 +176,13 @@ void main() {
                                          : clamp((ndl_sub + .18) / (L.z + .18), .64, 1.55);
             float angular_response = sp_dir.z > .5 ? .22 + .78 * ndl_sub : .22 * ndl_sub;
             vec3 direct = direct_albedo * sp_col.rgb * (response.x * atten * angular_response * relief);
+            direct_unshadowed += direct;
             // As with reflections, retain negligible radiance without tracing a
             // shadow whose maximum possible change is below 1e-5 linear RGB.
             if (max(direct.r, max(direct.g, direct.b)) > .00001)
                 direct *= illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
             diffuse_lit += direct;
+            direct_shadowed += direct;
         }
 
         // Reflect the virtual eye ray into a finite source at the emitter's height.
@@ -206,7 +223,17 @@ void main() {
         }
     }
 
-    if (u_debug == 5) { finalColor = vec4(spec_accum, 1.0); return; }
+    if (u_debug == 5) { finalColor = vec4(debug_radiance(spec_accum), 1.); return; }
+    if (u_debug == 6) { finalColor = vec4(debug_radiance(direct_shadowed), 1.); return; }
+    if (u_debug == 7) { finalColor = vec4(debug_radiance(direct_unshadowed), 1.); return; }
+    if (u_debug == 8) {
+        vec3 luminance = vec3(.2126, .7152, .0722);
+        float total = dot(direct_unshadowed, luminance);
+        vec3 visibility = total > 1e-7 ? vec3(clamp(dot(direct_shadowed, luminance) / total, 0., 1.))
+                                      : vec3(.12, .16, .22);
+        finalColor = vec4(visibility, 1.); return;
+    }
+    if (u_debug == 13) { finalColor = vec4(debug_radiance(ambient_lit), 1.); return; }
 
     // Subtle cold moonlit sky reflection across smooth liquid pools (stronger on fresh blood)
     vec3 H_sky = normalize(normalize(vec3(-0.30, -0.40, 0.86)) + V);
@@ -216,6 +243,7 @@ void main() {
 
     // Each dynamic reflection has its own visibility; the sky stays unchanged.
     vec3 reflected_light = spec_accum + sky_wet_spec;
+    if (u_debug == 14) diffuse_lit = ambient_lit;
     // HdrRenderer owns the only display shoulder; preserve highlights above 1 here.
     finalColor = vec4(pow(max(diffuse_lit + reflected_light, vec3(0.0)), vec3(1.0 / 2.2)), 1.0);
 }

@@ -75,6 +75,8 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
     entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
     view = render_ctx.view
     draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size)
+    if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_map:
+        return
     if entity_alpha <= 1e-3:
         # Native 0x405b95 still calls projectile_render at zero transition;
         # its Gauss slots retain life alpha. Keep that pass inside alpha testing.
