@@ -31,6 +31,7 @@ const replays = fixture
     };
 
 let groundId = 0, renderTarget = 0, boundTexture = 0, srcBlend = 0, dstBlend = 0;
+let peakTerrainShots = 0, terrainCopies = 0;
 const textures = new Map(), terrainAt = new Map();
 const run = bootGame(gameWasm, directory, 1, {
   onHost(name, args) {
@@ -42,8 +43,13 @@ const run = bootGame(gameWasm, directory, 1, {
     else if (name === "render_state") {
       if (args[0] === 19) srcBlend = args[1];
       else if (args[0] === 20) dstBlend = args[1];
-    } else if (name === "texture_copy") textures.set(args[0], Buffer.from(textures.get(args[1]) ?? Buffer.alloc(32)));
-    else if (name === "texture_release") textures.delete(args[0]);
+    } else if (name === "texture_copy") {
+      textures.set(args[0], Buffer.from(textures.get(args[1]) ?? Buffer.alloc(32)));
+      if (args[0] >= (1 << 30)) ++terrainCopies;
+      const shots = [...textures.keys()].filter((id) => id >= (1 << 30)).length;
+      peakTerrainShots = Math.max(peakTerrainShots, shots);
+      if (shots > 8) throw Error("terrain copies exceeded the eight-target budget");
+    } else if (name === "texture_release") textures.delete(args[0]);
     else if ((name === "clear" || name === "draw") && renderTarget === groundId && groundId) {
       const hash = crypto.createHash("sha256").update(textures.get(groundId));
       if (name === "clear") hash.update(Buffer.from([0, args[0] & 255, (args[0] >>> 8) & 255, (args[0] >>> 16) & 255, (args[0] >>> 24) & 255]));
@@ -77,6 +83,7 @@ const compared = names.map((name, i) => [name, i]).filter(([name]) => !PRESENTAT
 
 // Seeks across the replay `name` (`file`), which plays from the menus.
 function seeks(name, file) {
+  peakTerrainShots = terrainCopies = 0;
   fs.writeFileSync(path.join(directory, "watched/seek.crd"), file);
   memory().write("watched/seek.crd\0", game.game_replay_path(), "latin1");
   if (!game.game_replay_open() || !game.game_watch()) throw Error(`${name} does not play`);
@@ -95,6 +102,8 @@ function seeks(name, file) {
 
   // The verifier's world at every target, from one straight replay.
   const ticks = game.game_watch_ticks();
+  if (ticks >= 8 * 1800 && (peakTerrainShots !== 8 || terrainCopies <= 8))
+    throw Error(`${name}: the long replay did not exercise terrain-cache compaction`);
   const targets = [1, 2, 59, 60, 61, 119, 120, 121, ticks - 1, ticks];
   for (let i = 0; targets.length < 40; ++i) targets.push(1 + ((i * 7919 + 13) % ticks));
   const sorted = [...new Set(targets)].sort((a, b) => a - b);
@@ -145,6 +154,8 @@ function seeks(name, file) {
   }
   return {
     prepared,
+    terrain_shots_peak: peakTerrainShots,
+    terrain_copies: terrainCopies,
     seeks: order.length,
     seek_ms: { median: +times[times.length >> 1].toFixed(1), worst: +times[times.length - 1].toFixed(1) },
   };

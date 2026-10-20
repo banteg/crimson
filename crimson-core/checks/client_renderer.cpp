@@ -95,17 +95,42 @@ int main() {
     for (int x = 199; x < 202; ++x)
       assert(pixels[((size_t)y * width + x) * 4] == (x == 200 ? 255 : 0));
 
-  // Terrain and replay copies keep their own density and projection.
+  // Terrain is fixed at 2x logical density, independent of scene resolution.
   w2c_host_texture_create(nullptr, 7, 1024, 1024, 1);
   w2c_host_set_render_target(nullptr, 7);
   w2c_host_clear(nullptr, 0xff123456);
+  rectangle(100, 100, 100.5f, 101, 0xffffffff);
+  u8 baked[8];
+  glReadPixels(200, 200, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, baked);
+  assert(baked[0] == 255 && baked[4] == 0x12);
   w2c_host_texture_copy(nullptr, 8, 7);
   renderer_resize(1600, 1200);
   GLint viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
-  assert(viewport[2] == 1024 && viewport[3] == 1024);
-  assert(textures[7].width == 1024 && textures[8].width == 1024);
+  assert(viewport[2] == 2048 && viewport[3] == 2048);
+  assert(textures[7].width == 2048 && textures[8].width == 2048);
   assert(textures[8].logical_width == 1024 && textures[8].logical_height == 1024);
+  w2c_host_clear(nullptr, 0);
+  w2c_host_texture_copy(nullptr, 7, 8);
+  u8 restored[8];
+  glReadPixels(200, 200, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, restored);
+  assert(!memcmp(baked, restored, sizeof baked));
+
+  // Uploads to a scaled target read only the logical CPU buffer and fill the
+  // physical texture. Sentinels would become visible if the source was overread.
+  w2c_host_texture_create(nullptr, 10, 2, 1, 1);
+  memset(memory + 1024, 0xee, 32);
+  const u8 target_texels[] = {0, 0, 255, 255, 255, 0, 0, 255};
+  memcpy(memory + 1024, target_texels, sizeof target_texels);
+  w2c_host_texture_upload(nullptr, 10, 1024);
+  w2c_host_set_render_target(nullptr, 10);
+  u8 uploaded[32];
+  glReadPixels(0, 0, 4, 2, GL_RGBA, GL_UNSIGNED_BYTE, uploaded);
+  for (int i = 0; i < 8; ++i) {
+    assert(uploaded[i * 4] == (i % 4 < 2 ? 255 : 0));
+    assert(uploaded[i * 4 + 2] == (i % 4 < 2 ? 0 : 255));
+    assert(uploaded[i * 4 + 3] == 255);
+  }
   w2c_host_set_render_target(nullptr, 0);
 
   // Textured draws sample at output density, with the original stage filters.

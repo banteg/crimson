@@ -494,6 +494,13 @@ void w2c_host_texture_create(struct w2c_host *, u32 id, u32 width, u32 height, u
   t.logical_width = t.width = (int)width;
   t.logical_height = t.height = (int)height;
   t.flags = (int)flags;
+  // The game's offscreen render target is its persistent ground. Rasterize it
+  // at 2x the configured density, independently of the window. Uploaded artwork
+  // keeps its source dimensions; replay copies inherit the allocated size.
+  if (t.flags & 1) {
+    t.width *= 2;
+    t.height *= 2;
+  }
   allocate(t);
   bind_target();
 }
@@ -505,12 +512,19 @@ void w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
   // A8R8G8B8 texels are BGRA bytes.
   std::vector<unsigned char> rgba((size_t)t.width * t.height * 4);
   const u8 *bgra = client_memory() + texels;
-  for (size_t i = 0; i < rgba.size(); i += 4) {
-    rgba[i] = bgra[i + 2];
-    rgba[i + 1] = bgra[i + 1];
-    rgba[i + 2] = bgra[i];
-    rgba[i + 3] = bgra[i + 3];
-  }
+  // LockRect supplies logical-sized CPU storage, even for a denser GPU target.
+  // Replicate uploaded texels there; reading physical dimensions from the
+  // module would run beyond its source buffer.
+  for (int y = 0; y < t.height; ++y)
+    for (int x = 0; x < t.width; ++x) {
+      size_t source = ((size_t)(y * t.logical_height / t.height) * t.logical_width +
+                       x * t.logical_width / t.width) * 4;
+      size_t destination = ((size_t)y * t.width + x) * 4;
+      rgba[destination] = bgra[source + 2];
+      rgba[destination + 1] = bgra[source + 1];
+      rgba[destination + 2] = bgra[source];
+      rgba[destination + 3] = bgra[source + 3];
+    }
   glBindTexture(GL_TEXTURE_2D, t.texture);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, t.width, t.height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
 }

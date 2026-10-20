@@ -188,7 +188,9 @@ struct TerrainShot {
 // Copies of the terrain start this far apart and spread out, every other one
 // dropped, past the cap: each holds a whole render target.
 static constexpr int TERRAIN_SHOT_TICKS = 1800;
-static constexpr size_t TERRAIN_SHOTS = 32;
+// The host draws ground targets at 2x density: eight default 2048-square RGBA
+// copies retain the previous 128 MiB budget (32 copies at 1024 square).
+static constexpr size_t TERRAIN_SHOTS = 8;
 static constexpr int TERRAIN_SHOT_IDS = 1 << 30; // host texture ids the copies take
 
 // A bake log, zstd-packed a block at a time: a long run bakes millions of
@@ -262,19 +264,20 @@ static int terrain_host_id() { return platform_texture_host_id(terrain_render_ta
 static void terrain_shoot(int at_tick) {
   if (!terrain.shots.empty() && at_tick - terrain.shots.back().tick < terrain.shot_ticks)
     return;
+  if (terrain.shots.size() >= TERRAIN_SHOTS) {
+    // Release before allocating the next copy, so the peak also fits the cap.
+    std::vector<TerrainShot> kept;
+    for (size_t i = 0; i < terrain.shots.size(); ++i)
+      if (i % 2 == 0)
+        kept.push_back(terrain.shots[i]);
+      else
+        host_texture_release(terrain.shots[i].id);
+    terrain.shots = kept;
+    terrain.shot_ticks *= 2;
+  }
   int id = TERRAIN_SHOT_IDS + terrain.next_shot_id++;
   host_texture_copy(id, terrain_host_id());
   terrain.shots.push_back({terrain.batches.size(), at_tick, id});
-  if (terrain.shots.size() <= TERRAIN_SHOTS)
-    return;
-  std::vector<TerrainShot> kept;
-  for (size_t i = 0; i < terrain.shots.size(); ++i)
-    if (i % 2 == 0)
-      kept.push_back(terrain.shots[i]);
-    else
-      host_texture_release(terrain.shots[i].id);
-  terrain.shots = kept;
-  terrain.shot_ticks *= 2;
 }
 
 // One logged bake through the original's fx_queue_render: `queued` decals (the
