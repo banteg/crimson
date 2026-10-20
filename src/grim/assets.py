@@ -23,7 +23,6 @@ PAQ_NAME = "crimson.paq"
 class TextureSpec(msgspec.Struct, frozen=True):
     rel_path: str
     clamp: bool = False
-    point_filter: bool = False
 
 
 TEXTURE_SPECS: Final[dict[TextureId, TextureSpec]] = {
@@ -192,11 +191,9 @@ def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture:
     return texture
 
 
-def _apply_texture_settings(texture: rl.Texture, *, clamp: bool, point_filter: bool) -> None:
+def _apply_texture_settings(texture: rl.Texture, *, clamp: bool) -> None:
     if clamp:
         rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
-    if point_filter:
-        rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
 
 
 def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> rl.Texture | None:
@@ -260,7 +257,7 @@ def load_runtime_resources(assets_dir: Path, *, upload: bool = True) -> RuntimeR
             if texture is None:
                 raise FileNotFoundError(f"Missing runtime texture: {spec.rel_path}")
             cleanup.callback(rl.unload_texture, texture)
-            _apply_texture_settings(texture, clamp=bool(spec.clamp), point_filter=bool(spec.point_filter))
+            _apply_texture_settings(texture, clamp=bool(spec.clamp))
             textures[texture_id] = texture
 
         resources = RuntimeResources(

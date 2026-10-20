@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import io
 from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
+from grim import assets
 from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
@@ -150,3 +153,86 @@ def test_runtime_unload_releases_font_shader(pixel_font: SmallFontData, tmp_path
     resources.unload()
     assert pixel_font.pixel_coverage.shader is None
     resources.unload()
+
+
+@pytest.mark.parametrize("cell_size", [8, 16])
+@pytest.mark.parametrize("scale", [1.25, 1.5625, 3.125])
+def test_font_does_not_sample_neighboring_atlas_cells(raylib_context, cell_size: int, scale: float) -> None:
+    # The drawn cell is transparent, surrounded on all sides by opaque cells.
+    # Any light pixels are contamination from a neighboring glyph.
+    image = rl.gen_image_color(cell_size * 16, cell_size * 16, rl.WHITE)
+    rl.image_draw_rectangle(image, cell_size, 4 * cell_size, cell_size, cell_size, rl.BLANK)
+    try:
+        texture = rl.load_texture_from_image(image)
+    finally:
+        rl.unload_image(image)
+    rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    widths = [0] * 256
+    widths[ord("A")] = cell_size
+    font = SmallFontData(widths=widths, texture=texture, cell_size=cell_size)
+    target = rl.load_render_texture(96, 96)
+    try:
+        with texture_mode(target, scale_x=scale, scale_y=scale):
+            rl.clear_background(rl.BLACK)
+            draw_small_text(font, "A", Vec2(3, 3), rl.WHITE)
+        assert _read_rgb(target) == [(0, 0, 0)] * (96 * 96)
+    finally:
+        font.pixel_coverage.close()
+        rl.unload_render_texture(target)
+        rl.unload_texture(texture)
+
+
+@pytest.mark.parametrize("attempt", range(2))
+def test_headless_font_starts_with_fresh_shader_state(headless_resources, headless_window, attempt: int) -> None:
+    font = headless_resources.small_font
+    assert font.pixel_coverage.shader is None
+    assert headless_resources.alpha_test.shader is None
+    draw_small_text(font, "A", Vec2(), rl.WHITE)
+    assert font.pixel_coverage.shader is not None
+    with headless_resources.alpha_test.scope():
+        pass
+
+
+def test_registered_font_has_no_mock_handle_in_real_gl_context(raylib_context, headless_resources, assets_dir) -> None:
+    from grim.fonts.small import load_small_font
+
+    font = load_small_font(assets_dir)
+    assert font is headless_resources.small_font
+    assert font.pixel_coverage.shader is None
+    try:
+        with font.pixel_coverage.scope():
+            assert font.pixel_coverage.shader is not None
+            assert font.pixel_coverage.shader.locs != rl.ffi.NULL
+    finally:
+        font.pixel_coverage.close()
+
+
+@pytest.mark.parametrize("glyph", ["z", "~"])
+@pytest.mark.parametrize("scale", [1.25, 1.5625, 3.125])
+def test_real_font_matches_isolated_glyph_atlas(raylib_context, assets_dir: Path, glyph: str, scale: float) -> None:
+    entries = assets.load_paq_entries(assets_dir)
+    atlas = Image.open(io.BytesIO(entries["load/smallWhite.tga"])).convert("RGBA")
+    x, y = ord(glyph) % 16 * 16, ord(glyph) // 16 * 16
+    isolated = Image.new("RGBA", atlas.size)
+    isolated.paste(atlas.crop((x, y, x + 16, y + 16)), (x, y))
+    target = rl.load_render_texture(64, 64)
+    outputs = []
+    try:
+        # z and ~ sit above accented capitals with ink in their first row.
+        # Erasing those neighbors must not change the drawn glyph at all.
+        for image in (atlas, isolated):
+            encoded = io.BytesIO()
+            image.save(encoded, format="PNG")
+            texture = assets._load_texture_from_bytes(encoded.getvalue(), ".png")
+            font = SmallFontData(widths=list(entries["load/smallFnt.dat"]), texture=texture)
+            try:
+                with texture_mode(target, scale_x=scale, scale_y=scale):
+                    rl.clear_background(rl.BLACK)
+                    draw_small_text(font, glyph, Vec2(3, 3), rl.WHITE)
+                outputs.append(_read_rgb(target))
+            finally:
+                font.pixel_coverage.close()
+                rl.unload_texture(texture)
+        assert outputs[0] == outputs[1]
+    finally:
+        rl.unload_render_texture(target)

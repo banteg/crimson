@@ -166,18 +166,42 @@ def assets_dir() -> Path:
 
 
 @pytest.fixture(scope="session")
-def headless_resources(assets_dir: Path) -> Iterator[RuntimeResources]:
-    """Real runtime textures and font decoded from crimson.paq without a GPU context.
-
-    Registered for the tests' assets directory, so gameplay modes open and update
-    headlessly; the textures keep real sizes but can't be drawn. Nothing reached a
-    GPU, so teardown only unregisters them.
-    """
+def _headless_resource_template(assets_dir: Path) -> RuntimeResources:
+    """Decode the real assets once, without retaining a global registration."""
     from grim.assets import load_runtime_resources, unregister_runtime_resources
 
     resources = load_runtime_resources(assets_dir, upload=False)
-    yield resources
-    unregister_runtime_resources(resources.assets_dir)
+    unregister_runtime_resources(assets_dir)
+    return resources
+
+
+@pytest.fixture
+def headless_resources(_headless_resource_template: RuntimeResources) -> Iterator[RuntimeResources]:
+    """Per-test CPU texture metadata and shader caches, registered for game code.
+
+    Mock shader handles must never outlive the test's headless_window patches.
+    Only asset decoding is shared; each test owns its resource objects.
+    """
+    from grim.assets import RuntimeResources, TextureId, register_runtime_resources, unregister_runtime_resources
+    from grim.fonts.small import SmallFontData
+    from grim.raylib_api import rl
+
+    template = _headless_resource_template
+    textures = {
+        key: rl.Texture(0, tex.width, tex.height, tex.mipmaps, tex.format)
+        for key, tex in template.textures.items()
+    }
+    resources = RuntimeResources(
+        assets_dir=template.assets_dir,
+        textures=textures,
+        small_font=SmallFontData(widths=list(template.small_font.widths), texture=textures[TextureId.SMALL_WHITE]),
+    )
+    register_runtime_resources(resources)
+    try:
+        yield resources
+    finally:
+        # No GPU textures were allocated; mock shader handles must not be unloaded.
+        unregister_runtime_resources(resources.assets_dir)
 
 
 @pytest.fixture

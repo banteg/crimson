@@ -28,7 +28,7 @@ def draw_small_text(font: SmallFontData, text: str, pos: Vec2, color: rl.Color) 
     base_x = x_pos
     line_height = float(font.cell_size)
     origin = rl_vector2(0.0, 0.0)
-    with font.pixel_coverage.scope():
+    with font.pixel_coverage.scope(cell_size=font.cell_size):
         for value in text.encode("latin-1", errors="replace"):
             if value == 0x0A:
                 x_pos = base_x

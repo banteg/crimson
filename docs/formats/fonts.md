@@ -46,7 +46,8 @@ texel boundaries blend, over one physical output pixel. This keeps the original
 layout and advances at fractional fullscreen or HiDPI scales while avoiding
 nearest-neighbor's uneven strokes. Aligned integer scales preserve the original
 texels. Coverage is derived from texture-coordinate derivatives, so it follows
-the active render target without caching a window or DPI scale.
+the active render target without caching a window or DPI scale. Sampling stays
+within each atlas cell so accents in neighboring cells cannot bleed into a glyph.
 
 ### Identification (font source)
 
