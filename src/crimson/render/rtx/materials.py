@@ -27,6 +27,7 @@ from .hdr import _HDR_TONEMAP_VS_330
 from .material_history import MaterialHistory
 from .material_lights import collect_material_lights
 from .material_shaders import GROUND_FRAGMENT, STAMP_FRAGMENT
+from .reflection_occlusion import ReflectionOcclusion, build_occlusion_grid, creature_body_volumes
 
 if TYPE_CHECKING:
     from ..frame import RenderFrame
@@ -105,7 +106,10 @@ class MaterialGroundRenderer(GroundRenderer):
     wetness_epoch: float = 0.0
     stamp_locations: dict[str, int] = msgspec.field(default_factory=dict)
 
+    reflection_occlusion: ReflectionOcclusion = msgspec.field(default_factory=ReflectionOcclusion)
+
     def reset_materials(self) -> None:
+        self.reflection_occlusion.close()
         if self.substrate is not None:
             self.substrate.close()
             self.substrate = None
@@ -374,6 +378,16 @@ class MaterialGroundRenderer(GroundRenderer):
         _integer(sh, "u_debug", debug)
         lights = collect_material_lights(frame, view_center=view_center)
         _integer(sh, "u_spec_light_count", len(lights))
+        bodies = (
+            [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
+            if any(light.reflection_gain > 0 for light in lights) else []
+        )
+        grid = build_occlusion_grid(bodies, lights, width=self.width, height=self.height)
+        occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
+        _uniform(sh, "u_occlusion_grid", [
+            grid.origin.x, grid.origin.y, float(grid.columns if grid.body_count else 0), float(grid.rows),
+        ])
+        _uniform(sh, "u_occlusion_cell_size", [grid.cell_size])
         for i, light in enumerate(lights):
             _uniform(sh, f"u_spec_pos[{i}]", [light.pos.x, light.pos.y, light.radius, light.height])
             _uniform(sh, f"u_spec_color[{i}]", [*light.rgb, float(light.length > 0)])
@@ -384,6 +398,8 @@ class MaterialGroundRenderer(GroundRenderer):
         with opaque_blend():
             rl.begin_shader_mode(sh)
             try:
+                if occlusion_texture is not None:
+                    rl.set_shader_value_texture(sh, rl.get_shader_location(sh, "u_occlusion_tex"), occlusion_texture)
                 rl.set_shader_value_texture(sh, rl.get_shader_location(sh, "u_surface_tex"), self.surface.texture)
                 rl.set_shader_value_texture(sh, rl.get_shader_location(sh, "u_material_tex"), self.coverage.texture)
                 assert self.substrate is not None and self.substrate.render_target is not None

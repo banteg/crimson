@@ -370,3 +370,45 @@ CPU tests cover independent selection budgets, union masking, finite-segment
 ranking, family colors/geometry, optical fade, muzzle flags, expanding detonations,
 and flame grouping. Dense volleys, cell transitions, and EDR remain art-tuning
 cases; the daylight baseline and classic renderer are unchanged.
+
+
+## Ground reflection occlusion
+
+Dynamic ground reflections now test the path from the receiving surface to the
+same finite source point and height used by the reflection calculation. Each
+source's specular contribution gets its own visibility. Ambient daylight, sky
+reflection, diffuse weapon light, creature lighting, projectile artwork and the
+classic renderer are unchanged. Reflection-only tracers are occluded even when
+their illumination gain is zero.
+
+The five standard creature species use two rotated, size-scaled ellipsoids fitted
+to the central body masses of their sprite sheets. The proxies represent abdomen,
+torso or head, with an art-directed height; legs, arms, tails, dead creatures and
+players are absent. Their opacity follows the creature tint. The volumes extend
+slightly below the ground plane so their bases meet the surface, rather than
+balancing a full ellipsoid on a single point. These are stable body approximations,
+not frame-by-frame silhouettes or anatomical geometry.
+
+A CPU-built spatial grid retains every body near the selected
+reflection sources. Cells are 64 world units in small scenes and 32 with at least
+512 body volumes (256 standard creatures); the finer grid reduces candidate
+fetches in crowds. The resolution changes indexing only, not visibility.
+Source-support cells are marked once, avoiding a body-by-source
+culling loop. A growing,
+renderer-owned RGBA32F texture holds cell lists and body transforms; no nearest-N
+blocker cap causes shadows to switch between creatures in a crowd. The shader
+traverses only cells crossed by the receiver-to-source segment, rejects nearby
+cell members with a conservative planar bound, and exits when
+visibility is effectively zero. Negligible reflections skip traversal entirely.
+The grid includes the selected source endpoints outside the arena, and expanded
+cell bounds account for the finite-source filter.
+
+Visibility uses closest approach to each ellipsoid in its local coordinates,
+with a smooth transition whose width grows toward the finite source. Wider
+sources therefore produce softer edges. This is an analytic penumbra
+approximation, not multi-sample area-light integration; two partially opaque
+volumes combine by strongest occlusion, avoiding seams where a creature's body
+parts overlap. It does not add ambient darkness, lengthen shadows artificially,
+or lower the emitter for the occlusion test. Large source widths and heavily
+animated silhouettes remain approximations. Future diffuse shadows should share
+the body representation but need their own receiver/source visibility calculation.

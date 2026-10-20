@@ -8,13 +8,14 @@ from typing import Any, cast
 import msgspec
 import pytest
 
-from crimson.creatures.runtime import CreaturePool
+from crimson.creatures.runtime import CreaturePool, CreatureState
 from crimson.effects import FxQueueEntry, FxQueueRotatedEntry
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx import materials as ground_materials
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.materials import MaterialGroundRenderer, _integer, _uniform
 from crimson.render.rtx.mode import RtxRenderMode
+from crimson.render.rtx.reflection_occlusion import BodyVolume
 from crimson.render.terrain_fx import FxQueueTextures
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.terrain_fx import TerrainFxBatch
@@ -263,13 +264,13 @@ def test_partial_scorch_removes_film_without_diluting_its_age(ground_material) -
     assert pixels(ground.coverage)[center][0] < 0.6
 
 
-def debug_pixels(ground, texture, *, mode: int, time: float = 0) -> list[tuple[float, float, float, float]]:
+def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None) -> list[tuple[float, float, float, float]]:
     class Textures:
         def texture(self, _texture_id):
             return texture
 
     frame = RenderFrame(
-        config=None, camera=Vec2(), ground=ground, state=GameplayState(), players=[], creatures=CreaturePool(),
+        config=None, camera=Vec2(), ground=ground, state=GameplayState(), players=[], creatures=creatures if creatures is not None else CreaturePool(),
         resources=cast(Any, Textures()), elapsed_ms=time * 1000, bonus_anim_phase=0, rtx_mode=RtxRenderMode.RTX,
     )
     target = load_float_render_texture(64, 64)
@@ -614,3 +615,113 @@ def test_long_tracer_reflection_is_not_clipped_by_head_biased_illumination(groun
     ])
     image = debug_pixels(ground, texture, mode=5)
     assert max(p[0] for p in image) > .02
+
+
+@pytest.mark.parametrize("population", [1, 600])
+@pytest.mark.parametrize("beam", [False, True])
+def test_body_occludes_only_its_sources_reflection(ground_material, mocker, beam, population) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=35)
+    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
+    distant = [msgspec.structs.replace(body, pos=Vec2(4000, 4000))] * (population - 1)
+    proxy = mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body, *distant] if c.active else [])
+    source = MaterialLight(Vec2(32, 16), 150, (2, 1, .5), height=30,
+                           direction=Vec2(1, 0), length=24 if beam else 0, illumination_gain=0)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
+    unblocked = debug_pixels(ground, texture, mode=5)
+    blocked = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert sum(p[0] for p in blocked) < sum(p[0] for p in unblocked) * .8
+    assert all(b[0] <= a[0] for a, b in zip(unblocked, blocked, strict=True))
+    assert all(math.isfinite(c) for p in blocked for c in p)
+    assert {p[3] for p in blocked} == {1.}
+    # A low body is below the actual source ray, not an arbitrary flattened shadow ray.
+    low = msgspec.structs.replace(body, height=1)
+    proxy.side_effect = lambda c: [low, *distant] if c.active else []
+    cleared = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert sum(p[0] for p in cleared) > sum(p[0] for p in blocked) * 1.2
+    proxy.side_effect = lambda c: [body, *distant] if c.active else []
+    # Ambient and diffuse, including absorption, are byte-identical with bodies.
+    for sources in ([], [msgspec.structs.replace(source, illumination_gain=1, reflection_gain=0)]):
+        collector.return_value = sources
+        assert debug_pixels(ground, texture, mode=0) == debug_pixels(ground, texture, mode=0, creatures=pool)
+    # Unobstructed second sources do not inherit the first source's shadow.
+    other = MaterialLight(Vec2(4, 4), 100, (0, 1, 0), height=30, illumination_gain=0)
+    collector.return_value = [other]
+    green = debug_pixels(ground, texture, mode=5, creatures=pool)
+    collector.return_value = [source, other]
+    both = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert [p[1] for p in both] == pytest.approx([a[1] + b[1] for a, b in zip(blocked, green, strict=True)], abs=.001)
+    assert ground.reflection_occlusion.texture is not None
+    ground.reset_materials()
+    assert ground.reflection_occlusion.texture is None
+
+
+def test_rounded_body_rotation_and_source_width_change_the_occlusion(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100)
+    body = BodyVolume(Vec2(32, 26), Vec2(10, 3), 24, 0)
+    proxy = mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    source = MaterialLight(Vec2(32, 16), 150, (1, 1, 1), height=30,
+                           direction=Vec2(1, 0), length=40, illumination_gain=0)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
+    horizontal = debug_pixels(ground, texture, mode=5, creatures=pool)
+    distant = [msgspec.structs.replace(body, pos=Vec2(4000, 4000))] * 511
+    proxy.side_effect = lambda c: [body, *distant] if c.active else []
+    assert debug_pixels(ground, texture, mode=5, creatures=pool) == horizontal
+    proxy.side_effect = lambda c: [msgspec.structs.replace(body, angle=math.pi/2)] if c.active else []
+    vertical = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert horizontal != vertical
+    proxy.side_effect = lambda c: [body] if c.active else []
+    ratios = []
+    for width in (.5, 8):
+        collector.return_value = [msgspec.structs.replace(source, source_width=width)]
+        base = debug_pixels(ground, texture, mode=5)
+        occluded = debug_pixels(ground, texture, mode=5, creatures=pool)
+        ratios.append([b[0] / a[0] for a, b in zip(base, occluded, strict=True) if a[0] > .01])
+    # A wider finite source creates more partially visible pixels at the boundary.
+    assert sum(.05 < v < .95 for v in ratios[1]) > sum(.05 < v < .95 for v in ratios[0])
+
+
+
+def test_living_sprite_proxy_reaches_material_scope_without_touching_classic(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=50, heading=math.pi/2)
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(32, 16), 150, (1, 1, 1), height=30, direction=Vec2(1, 0), length=30, illumination_gain=0),
+    ])
+    classic = pixels(ground.render_target)
+    clear = debug_pixels(ground, texture, mode=5)
+    alive = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert sum(p[0] for p in alive) < sum(p[0] for p in clear)
+    pool.entries[0].hp = 0
+    assert debug_pixels(ground, texture, mode=5, creatures=pool) == clear
+    assert pixels(ground.render_target) == classic
+
+
+def test_spatial_cell_crossing_does_not_drop_a_soft_body(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100)
+    # The expanded body footprint crosses the x=0 cell edge. This also exercises
+    # a ray pointing out of the arena toward a selected source outside it.
+    body = BodyVolume(Vec2(0, 26), Vec2(7, 4), 24, .2)
+    proxy = mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(-1, 16), 150, (1, 1, 1), height=30, source_width=5, illumination_gain=0),
+    ])
+    base = debug_pixels(ground, texture, mode=5)
+    images = []
+    for offset in (-.01, .01):
+        shifted = msgspec.structs.replace(body, pos=Vec2(offset, 26))
+        proxy.side_effect = lambda c, b=shifted: [b] if c.active else []
+        images.append(debug_pixels(ground, texture, mode=5, creatures=pool))
+    energies = [sum(p[0] for p in im) for im in images]
+    assert energies[0] == pytest.approx(energies[1], rel=.01)
+    assert max(energies) < sum(p[0] for p in base) * .9
