@@ -1,4 +1,4 @@
-"""Rounded living-body proxies shared by reflections and weapon illumination."""
+"""Rounded visible-body proxies shared by reflections and weapon illumination."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import msgspec
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ...creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
 from ...creatures.runtime import CreatureState
 from ...creatures.spawn import CreatureTypeId
 from .material_lights import MaterialLight
@@ -40,7 +41,16 @@ class BodyVolume(msgspec.Struct, frozen=True):
 
 
 def creature_body_volumes(creature: CreatureState) -> list[BodyVolume]:
-    if not creature.active or creature.hp <= 0 or creature.size <= 0:
+    if not creature.active or creature.size <= 0 or creature.death_timer <= 0:
+        return []
+    # HP reaches zero before the drawn body finishes its death slide. Follow
+    # that existing timer and current geometry, rather than dropping its shadow
+    # on the killing hit or retaining a full-height ghost after corpse baking.
+    remaining = min(1.0, creature.death_timer / CREATURE_LIFECYCLE_ALIVE)
+    height_scale = remaining * remaining * (3.0 - 2.0 * remaining)
+    fade = min(1.0, remaining * 4.0)
+    opacity = min(1.0, max(0.0, creature.tint.a)) * fade * fade * (3.0 - 2.0 * fade)
+    if opacity <= 0.0:
         return []
     profile = BODY_PROFILES.get(creature.type_id)
     if profile is None:
@@ -52,7 +62,7 @@ def creature_body_volumes(creature: CreatureState) -> list[BodyVolume]:
         BodyVolume(
             creature.pos + (right * x + down * y) * creature.size,
             Vec2(rx * creature.size, ry * creature.size),
-            height * creature.size, angle, min(1.0, max(0.0, creature.tint.a)), creature.pos,
+            height * creature.size * height_scale, angle, opacity, creature.pos,
         )
         for x, y, rx, ry, height in profile
     ]

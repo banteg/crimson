@@ -9,6 +9,7 @@ import msgspec
 import pytest
 
 from crimson.creatures.runtime import CreaturePool, CreatureState
+from crimson.creatures.spawn import CreatureTypeId
 from crimson.effects import FxQueueEntry, FxQueueRotatedEntry
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx import materials as ground_materials
@@ -705,6 +706,8 @@ def test_living_sprite_proxy_reaches_material_scope_without_touching_classic(gro
     alive = debug_pixels(ground, texture, mode=5, creatures=pool)
     assert sum(p[0] for p in alive) < sum(p[0] for p in clear)
     pool.entries[0].hp = 0
+    assert debug_pixels(ground, texture, mode=5, creatures=pool) == alive
+    pool.entries[0].death_timer = 0
     assert debug_pixels(ground, texture, mode=5, creatures=pool) == clear
     assert pixels(ground.render_target) == classic
 
@@ -902,3 +905,27 @@ def test_reflection_tail_uniform_only_tapers_segments_not_annuli(ground_material
         assert tapered == uniform
     else:
         assert sum(b[0] - a[0] for a, b in zip(tapered, uniform, strict=True)) > 1
+
+
+def test_visible_death_shadow_collapses_without_an_instant_hp_cutoff(ground_material, mocker):
+    ground, texture = ground_material
+    pool = CreaturePool()
+    creature = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=44,
+                             type_id=CreatureTypeId.SPIDER_SP1, heading=math.pi / 2)
+    pool.entries[0] = creature
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(32, 10), 150, (2, 1, .5), height=18, reflection_gain=0, broad_illumination=True),
+    ])
+    clear = debug_pixels(ground, texture, mode=7, creatures=pool)
+    living = debug_pixels(ground, texture, mode=6, creatures=pool)
+    creature.hp = 0
+    killed = debug_pixels(ground, texture, mode=6, creatures=pool)
+    assert killed == living
+    blocked = sum(a[0] - b[0] for a, b in zip(clear, killed, strict=True))
+    assert blocked > .1
+    creature.death_timer = 2
+    low = debug_pixels(ground, texture, mode=6, creatures=pool)
+    remaining = sum(a[0] - b[0] for a, b in zip(clear, low, strict=True))
+    assert 0 <= remaining < blocked * .2
+    creature.death_timer = 0
+    assert debug_pixels(ground, texture, mode=6, creatures=pool) == clear

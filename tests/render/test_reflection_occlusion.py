@@ -35,7 +35,10 @@ def test_body_profiles_rotate_and_scale_with_the_drawn_sprite() -> None:
             assert c.height == b.height * 2
             assert c.pos - creature.pos == (b.pos - creature.pos) * 2
         creature.hp = 0
+        assert creature_body_volumes(creature) == doubled
+        creature.death_timer = 0
         assert not creature_body_volumes(creature)
+        creature.death_timer = 16
         creature.hp = 100
         creature.active = False
         assert not creature_body_volumes(creature)
@@ -107,3 +110,39 @@ def test_annulus_grid_keeps_outer_endpoints_and_interior_ray_blockers() -> None:
     assert grid.body_count == 5
     assert grid.origin.x + grid.columns * grid.cell_size >= 950
     assert grid.origin.y + grid.rows * grid.cell_size >= 950
+
+
+def test_killed_visible_caster_collapses_with_native_timer_and_current_geometry() -> None:
+    import msgspec
+
+    creature = CreatureState(active=True, hp=100, type_id=CreatureTypeId.SPIDER_SP1,
+                             pos=Vec2(100, 200), size=60)
+    living = creature_body_volumes(creature)
+    creature.hp = 0
+    assert creature_body_volumes(creature) == living  # No pop on the killing hit.
+    last_height, last_opacity = living[0].height, living[0].opacity
+    for timer in (15., 8., 4., 2., .1):
+        creature.death_timer = timer
+        volumes = creature_body_volumes(creature)
+        assert 0 < volumes[0].height < last_height
+        assert 0 < volumes[0].opacity <= last_opacity
+        assert volumes[0].radii == living[0].radii
+        last_height, last_opacity = volumes[0].height, volumes[0].opacity
+    creature.death_timer = 8
+    collapsed = creature_body_volumes(creature)
+    creature.pos += Vec2(15, -8)
+    moved = creature_body_volumes(creature)
+    assert moved[0].pos == collapsed[0].pos + Vec2(15, -8)
+    assert moved[0].owner == creature.pos
+    creature.size *= .5
+    shrunk = creature_body_volumes(creature)
+    assert shrunk[0].radii == moved[0].radii * .5
+    assert shrunk[0].height == moved[0].height * .5
+    assert creature_body_volumes(msgspec.structs.replace(creature, active=False)) == []
+    assert creature_body_volumes(msgspec.structs.replace(creature, size=0)) == []
+    assert creature_body_volumes(msgspec.structs.replace(creature, tint=creature.tint.with_alpha(0))) == []
+    # At baking, the ground material replaces the elevated caster. Fading sprite
+    # overlays must not keep an invisible body volume above that baked corpse.
+    for timer in (0., -.1, -5., -10., -11.):
+        creature.death_timer = timer
+        assert creature_body_volumes(creature) == []

@@ -614,3 +614,16 @@ so slot reuse cannot hide a later sprite. The shell remembers successful native
 allocation, then follows its own bounded event age; a reused slot cannot change
 its geometry or restart it. Archived fireball parameters stay separate from the
 reusable native slot.
+
+
+### Dying creature casters
+
+A killing hit does not remove the visible body immediately. Dynamic illumination
+and reflection proxies follow the native death slide: current position, rotation
+and size remain authoritative, while height falls by `smoothstep(0, 16,
+death_timer)`. Opacity fades over the final quarter of that collapse, before the
+corpse is baked at timer zero. A newly killed body therefore keeps its shadow;
+the shadow shortens and fades as it settles, rather than blinking off at HP zero.
+The later fading corpse sprite has no elevated proxy above its baked ground
+material. This uses existing simulation state only and does not alter death
+movement, damage, corpse timing, RNG or Classic rendering.
