@@ -146,6 +146,8 @@ SUITES = {
             "crimson-core/checks/native_network.*",
             "crimson-core/checks/native_client_network.py",
             "crimson-core/checks/native_practice.py",
+            "crimson-core/checks/renderer.py",
+            "crimson-core/checks/client_renderer.cpp",
             "tests/fixtures/replays/quest-1.1-completed.crd",
             "tests/fixtures/replays/survival-238852.crd",
             ".github/workflows/client.yml",
@@ -243,7 +245,8 @@ def module_file(name: str) -> str | None:
         return None
     base = PurePosixPath(root, *name.split("."))
     return next(
-        (str(path) for path in (base.with_suffix(".py"), base / "__init__.py") if str(path) in _tracked_set()), None,
+        (str(path) for path in (base.with_suffix(".py"), base / "__init__.py") if str(path) in _tracked_set()),
+        None,
     )
 
 

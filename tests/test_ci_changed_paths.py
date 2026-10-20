@@ -74,6 +74,7 @@ def test_a_release_version_bump_is_not_a_change(tmp_path: Path, monkeypatch: pyt
     assert inputs_hash("core-corpus") != before_hash
     tracked_files.cache_clear()
 
+
 def test_a_suite_runs_for_the_code_its_checks_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(Path(__file__).resolve().parents[1])
 
@@ -188,12 +189,14 @@ def test_corpus_and_oracle_suites_cover_quest_recipes_and_check_drivers() -> Non
         assert relevant("core", [path]), path
 
 
-def test_client_and_pytest_suites_cover_audio_practice_and_build_backend() -> None:
+def test_client_and_pytest_suites_cover_audio_practice_renderer_and_build_backend() -> None:
     for path in (
         "crimson-core/checks/audio.py",
         "crimson-core/checks/audio_timing.cpp",
         "crimson-core/checks/client_audio.cpp",
         "crimson-core/checks/native_practice.py",
+        "crimson-core/checks/renderer.py",
+        "crimson-core/checks/client_renderer.cpp",
         "tests/fixtures/replays/survival-238852.crd",
     ):
         assert relevant("client", [path]), path
