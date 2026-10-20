@@ -377,14 +377,15 @@ class MaterialGroundRenderer(GroundRenderer):
         _uniform(sh, "u_ground_size", [float(self.width), float(self.height)])
         _uniform(sh, "u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
         _integer(sh, "u_debug", debug)
-        _integer(sh, "u_dynamic_shadows", int(frame.config is None or frame.config.display.shadows_enabled))
+        shadows = frame.config is None or frame.config.display.shadows_enabled
+        _integer(sh, "u_dynamic_shadows", int(shadows))
         lights = collect_material_lights(frame, view_center=view_center)
         _integer(sh, "u_spec_light_count", len(lights))
         bodies = (
             [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
-            if any(light.reflection_gain > 0 or light.illumination_gain > 0 for light in lights) else []
+            if any(light.reflection_gain > 0 or (shadows and light.illumination_gain > 0) for light in lights) else []
         )
-        grid = build_occlusion_grid(bodies, lights, width=self.width, height=self.height)
+        grid = build_occlusion_grid(bodies, lights, width=self.width, height=self.height, illumination=shadows)
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
         _uniform(sh, "u_occlusion_grid", [
             grid.origin.x, grid.origin.y, float(grid.columns if grid.body_count else 0), float(grid.rows),

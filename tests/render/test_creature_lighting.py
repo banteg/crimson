@@ -115,7 +115,7 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), pigment: tuple[int, int, int] = (70, 55, 40)):
+               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), target_override=None, pigment: tuple[int, int, int] = (70, 55, 40)):
         other = rl.gen_image_color(256, 256, rl.BLANK)
         rl.image_draw_circle(other, 16, 16, 10, rl.Color(*pigment, 255))
         rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(*pigment, 255))
@@ -133,7 +133,8 @@ def lit_sprite(raylib_context):
         rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR if textured
                               else rl.TextureFilter.TEXTURE_FILTER_POINT)
         lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale), occlusion=occlusion, shadows=shadows, ambient=ambient)
-        with texture_mode(target):
+        render_target = target if target_override is None else target_override
+        with texture_mode(render_target):
             rl.clear_background(rl.BLANK)
             with alpha.scope():
                 def draw():
@@ -147,7 +148,7 @@ def lit_sprite(raylib_context):
                         draw()
                 else:
                     draw()
-        img = rl.load_image_from_texture(target.texture)
+        img = rl.load_image_from_texture(render_target.texture)
         try:
             rl.image_format(img, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
             return list(struct.iter_unpack("ffff", bytes(rl.ffi.buffer(img.data, 128*128*16))))
@@ -435,3 +436,81 @@ def test_unlit_ambient_fill_preserves_alpha_without_loading_thickness(lit_sprite
     assert not lighting.thickness_textures
     assert [p[3] for p in filled] == [p[3] for p in native]
     assert sum(p[0] for p in filled) == pytest.approx(sum(p[0] for p in native) * .6 ** (1 / 2.2), rel=.002)
+
+
+@pytest.mark.parametrize("gain", [(1., 0.), (0., 1.), (1., 1.)])
+def test_creature_source_axis_matches_point_fallback_and_normalized_beam(lit_sprite, gain):
+    render, _ = lit_sprite
+    source = MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=24,
+                           illumination_gain=gain[0], reflection_gain=gain[1])
+    point = render([source])
+    for axis in (Vec2(), Vec2(.001, 0)):
+        assert render([msgspec.structs.replace(source, direction=axis, length=128)]) == point
+    unit = msgspec.structs.replace(source, direction=Vec2(.6, .8), length=40)
+    expected = render([unit])
+    scaled = render([msgspec.structs.replace(unit, direction=Vec2(6, 8))])
+    for a, b in zip(scaled, expected, strict=True):
+        assert a == pytest.approx(b, abs=.001)
+
+
+@pytest.mark.parametrize("reach", [0., -1.])
+@pytest.mark.parametrize("reflection_gain", [0., 1.])
+def test_creature_nonpositive_reflection_reach_is_disabled_and_finite(lit_sprite, reach, reflection_gain):
+    render, _ = lit_sprite
+    source = MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=24, reflection_gain=0)
+    expected = render([source])
+    actual = render([msgspec.structs.replace(source, reflection_radius=reach, reflection_gain=reflection_gain)])
+    assert actual == expected
+    assert all(math.isfinite(c) for p in actual for c in p)
+
+
+def test_empty_grid_disables_creature_traversal_and_unlit_uniform_arrays(lit_sprite, mocker):
+    from crimson.render.rtx.reflection_occlusion import ReflectionOcclusion, build_occlusion_grid
+
+    render, lighting = lit_sprite
+    source = MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=24)
+    expected = render([source])
+    empty = ReflectionOcclusion()
+    grid_uploads = []
+    original = rl.set_shader_value
+
+    def capture(shader, location, value, kind):
+        if location == lighting.locations.get("u_occlusion_grid"):
+            grid_uploads.append(tuple(rl.ffi.cast("float *", value)[i] for i in range(4)))
+        return original(shader, location, value, kind)
+
+    mocker.patch.object(rl, "set_shader_value", side_effect=capture)
+    arrays = mocker.spy(rl, "set_shader_value_v")
+    try:
+        empty.upload(build_occlusion_grid([], [source], width=128, height=128))
+        assert render([source], occlusion=empty) == expected
+        assert grid_uploads[-1][2] == 0
+        arrays.reset_mock()
+        render([], ambient=.6, occlusion=empty)
+        arrays.assert_not_called()
+    finally:
+        empty.close()
+
+
+def test_negligible_creature_diffuse_skip_has_bounded_linear_error(lit_sprite, monkeypatch):
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, lighting = lit_sprite
+    source = MaterialLight(Vec2(93, 64), 110, (.00001, .00001, .00001), height=24, reflection_gain=0)
+    occlusion = ReflectionOcclusion()
+    body = BodyVolume(Vec2(76, 64), Vec2(8, 12), 28, 0)
+    target = load_float_render_texture(128, 128, pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
+    try:
+        occlusion.upload(build_occlusion_grid([body], [source], width=128, height=128))
+        approximate = render([source], occlusion=occlusion, target_override=target)
+        monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", creature_lighting.CREATURE_FRAGMENT.replace(
+            "max(diffuse.r, max(diffuse.g, diffuse.b)) > .00001", "max(diffuse.r, max(diffuse.g, diffuse.b)) > 0."))
+        lighting.close()
+        exact = render([source], occlusion=occlusion, target_override=target)
+        errors = [a[c] ** 2.2 - b[c] ** 2.2 for a, b in zip(approximate, exact, strict=True) for c in range(3)]
+        assert max(errors) > 0
+        assert min(errors) >= -1e-7
+        assert max(errors) <= 1.01e-5
+    finally:
+        occlusion.close()
+        rl.unload_render_texture(target)

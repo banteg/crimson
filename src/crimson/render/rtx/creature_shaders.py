@@ -104,26 +104,32 @@ void main() {
     vec3 added = vec3(0);
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
-        float along = clamp(dot(dp, u_dir[i].xy), -u_dir[i].w * .5, u_dir[i].w * .5);
-        vec2 source = u_pos[i].xy + u_dir[i].xy * along;
+        vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
+        bool beam = u_dir[i].w > 0. && dot(axis, axis) > 0.;
+        float along = clamp(dot(dp, axis), -u_dir[i].w * .5, u_dir[i].w * .5);
+        vec2 source = u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
         if (spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
-        float s = 1.0 - smoothstep(0.0, u_response[i].z, spec_distance);
-        float axial_gain = u_dir[i].w > 0.0
-            ? mix(.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + .5, 0.0, 1.0)) : 1.;
         float source_width = max(.1, u_response[i].w);
-        vec3 spec_L = normalize(vec3(source - wp, max(8., u_pos[i].w - 8.)));
-        vec3 H = normalize(spec_L + V);
-        float catchlight = pow(max(dot(N, H), 0.0), clamp(84.0 / source_width, 8.0, 100.0)) *
-                           max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
-        float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
-                            (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-        if (spec_amount * max(u_rgb[i].r, max(u_rgb[i].g, u_rgb[i].b)) > .00001) {
-            float visibility = illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), source_width, owner);
-            added += u_rgb[i].rgb * spec_amount * visibility;
+        float point_visibility = -1.;
+        if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
+            float s = 1.0 - smoothstep(0.0, u_response[i].z, spec_distance);
+            float axial_gain = beam
+                ? mix(.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + .5, 0.0, 1.0)) : 1.;
+            vec3 spec_L = normalize(vec3(source - wp, max(8., u_pos[i].w - 8.)));
+            vec3 H = normalize(spec_L + V);
+            float catchlight = pow(max(dot(N, H), 0.0), clamp(84.0 / source_width, 8.0, 100.0)) *
+                               max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
+            float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
+                                (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
+            if (spec_amount * max(u_rgb[i].r, max(u_rgb[i].g, u_rgb[i].b)) > .00001) {
+                float visibility = illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), source_width, owner);
+                if (!beam) point_visibility = visibility;
+                added += u_rgb[i].rgb * spec_amount * visibility;
+            }
         }
         if (u_response[i].x <= 0. || spec_distance >= u_pos[i].z) continue;
-        vec2 light_source = illuminationSource(u_pos[i].xy, u_dir[i].xy, u_dir[i].w);
+        vec2 light_source = illuminationSource(u_pos[i].xy, axis, u_dir[i].w);
         vec2 delta = light_source - wp;
         float distance_to_light = length(delta);
         if (distance_to_light >= u_pos[i].z) continue;
@@ -144,12 +150,17 @@ void main() {
         // Rim and lateral thin-part transmission follow illumination, never
         // bypassing a restrained tracer's gain. Specular catches stay independent.
         // The cell-center dome normal cannot describe individual limbs.
-        float visibility = illuminationVisibility(vec3(wp, 8.), vec3(light_source, u_pos[i].w), source_width, owner);
-        added += u_rgb[i].rgb * (
-            u_response[i].x * a * a * visibility *
+        vec3 diffuse = u_rgb[i].rgb * (
+            u_response[i].x * a * a *
                 (baseLin * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
                  edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum) +
                  transmission_tint * transmission * elevation * TRANSMISSION_STRENGTH));
+        if (max(diffuse.r, max(diffuse.g, diffuse.b)) > .00001) {
+            float visibility = point_visibility >= 0. ? point_visibility :
+                illuminationVisibility(vec3(wp, 8.), vec3(light_source, u_pos[i].w), source_width, owner);
+            diffuse *= visibility;
+        }
+        added += diffuse;
     }
     // Bound aggregate illumination in dense fights without changing hue.
     float peak = max(added.r, max(added.g, added.b));

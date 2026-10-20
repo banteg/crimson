@@ -54,7 +54,7 @@ class CreatureLighting(msgspec.Struct):
                 rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
             )
         grid = occlusion.grid if occlusion is not None else None
-        grid_values = [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)] if grid else [0.] * 4
+        grid_values = [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)] if grid is not None and grid.body_count else [0.] * 4
         buffer = rl.ffi.new("float[4]", grid_values)
         rl.set_shader_value(shader, self.locations["u_occlusion_grid"], rl.ffi.cast("void *", buffer),
                             rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4)
@@ -68,6 +68,8 @@ class CreatureLighting(msgspec.Struct):
             shader, self.locations["u_count"], rl.ffi.new("int *", len(lights)),
             rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
         )
+        if not lights:
+            return
         values = {
             "u_pos": [v for light in lights for v in (light.pos.x, light.pos.y, light.radius, light.height)],
             "u_rgb": [v for light in lights for v in (*light.rgb, 0.0)],
@@ -97,7 +99,7 @@ class CreatureLighting(msgspec.Struct):
             rl.begin_shader_mode(self.shader)
             if thickness is not None:
                 rl.set_shader_value_texture(self.shader, self.locations["u_thickness"], thickness)
-            if self.occlusion is not None and self.occlusion.grid is not None and self.occlusion.texture is not None:
+            if self.occlusion is not None and self.occlusion.grid is not None and self.occlusion.grid.body_count and self.occlusion.texture is not None:
                 rl.set_shader_value_texture(self.shader, self.locations["u_occlusion_tex"], self.occlusion.texture)
             yield
         finally:

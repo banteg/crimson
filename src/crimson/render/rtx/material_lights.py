@@ -164,7 +164,7 @@ def _flame_sources(frame: RenderFrame) -> list[MaterialLight]:
 
 
 def _distance_sq(source: MaterialLight, point: Vec2) -> float:
-    axis = source.direction
+    axis = source.direction.normalized() if source.direction.length_sq() > .0001 else Vec2()
     delta = point - source.pos
     along = max(-source.length * 0.5, min(source.length * 0.5, delta.x * axis.x + delta.y * axis.y))
     return (point - source.pos - axis * along).length_sq()

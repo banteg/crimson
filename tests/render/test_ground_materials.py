@@ -264,7 +264,7 @@ def test_partial_scorch_removes_film_without_diluting_its_age(ground_material) -
     assert pixels(ground.coverage)[center][0] < 0.6
 
 
-def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None, shadows: bool = True) -> list[tuple[float, float, float, float]]:
+def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None, shadows: bool = True, pixel_format: int | None = None) -> list[tuple[float, float, float, float]]:
     class Textures:
         def texture(self, _texture_id):
             return texture
@@ -276,7 +276,7 @@ def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: Crea
         config=config, camera=Vec2(), ground=ground, state=GameplayState(), players=[], creatures=creatures if creatures is not None else CreaturePool(),
         resources=cast(Any, Textures()), elapsed_ms=time * 1000, bonus_anim_phase=0, rtx_mode=RtxRenderMode.RTX,
     )
-    target = load_float_render_texture(64, 64)
+    target = load_float_render_texture(64, 64, **({"pixel_format": pixel_format} if pixel_format is not None else {}))
     try:
         with texture_mode(target), ground.material_scope(frame, debug=mode):
             ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
@@ -787,3 +787,32 @@ def test_weak_sources_keep_cosine_response_without_broad_grazing_fill(ground_mat
     ndls = [height / math.hypot(height, 27.) for height in (12., 24.)]
     expected = [( .22 + .78 * ndl) if broad else .22 * ndl for ndl in ndls]
     assert increments[0] / increments[1] == pytest.approx(expected[0] / expected[1], rel=.025)
+
+
+def test_negligible_ground_diffuse_skip_has_bounded_linear_error(ground_material, mocker):
+    from crimson.render.rtx.material_shaders import GROUND_FRAGMENT
+
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=35)
+    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
+    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    source = MaterialLight(Vec2(32, 16), 150, (.0001, .0001, .0001), height=24,
+                           reflection_gain=0, broad_illumination=True)
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
+    pixel_format = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32
+    approximate = debug_pixels(ground, texture, mode=0, creatures=pool, pixel_format=pixel_format)
+    original = ground.material_shader
+    reference = ground_materials._shader(GROUND_FRAGMENT.replace(
+        "max(direct.r, max(direct.g, direct.b)) > .00001", "max(direct.r, max(direct.g, direct.b)) > 0."))
+    try:
+        ground.material_shader = reference
+        exact = debug_pixels(ground, texture, mode=0, creatures=pool, pixel_format=pixel_format)
+    finally:
+        ground.material_shader = original
+        rl.unload_shader(reference)
+    errors = [a[c] ** 2.2 - b[c] ** 2.2 for a, b in zip(approximate, exact, strict=True) for c in range(3)]
+    assert max(errors) > 0
+    assert min(errors) >= -1e-7
+    assert max(errors) <= 1.01e-5

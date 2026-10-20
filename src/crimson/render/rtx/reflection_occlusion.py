@@ -70,6 +70,7 @@ class OcclusionGrid(msgspec.Struct, frozen=True):
 
 def build_occlusion_grid(
     bodies: Sequence[BodyVolume], lights: Sequence[MaterialLight], *, width: float, height: float,
+    illumination: bool = True,
 ) -> OcclusionGrid:
     """Retain every relevant body; no priority cap or nearest-N popping.
 
@@ -77,7 +78,7 @@ def build_occlusion_grid(
     cannot intersect an in-arena receiver/source segment unless the source is
     outside too; extend the grid to include those selected source endpoints.
     """
-    sources = [light for light in lights if light.reflection_gain > 0 or light.illumination_gain > 0]
+    sources = [light for light in lights if light.reflection_gain > 0 or (illumination and light.illumination_gain > 0)]
     if not sources:
         return OcclusionGrid(Vec2(), CELL_SIZE, 0, 0, [], 0, 0)
     # Fine cells reduce candidate fetches in dense crowds. Small scenes retain
@@ -88,10 +89,10 @@ def build_occlusion_grid(
     hi = Vec2(width + cell_size, height + cell_size)
     supports = []
     for light in sources:
-        direction = light.direction.normalized()
+        direction = light.direction.normalized() if light.direction.length_sq() > .0001 else Vec2()
         reach = max(
             light.reflection_reach if light.reflection_gain > 0 else 0.,
-            light.radius if light.illumination_gain > 0 else 0.,
+            light.radius if illumination and light.illumination_gain > 0 else 0.,
         )
         supports.append((light.pos.x, light.pos.y, direction.x, direction.y, light.length * .5, reach))
         axis = direction * (light.length * .5)

@@ -85,3 +85,14 @@ def test_illumination_only_grid_support_and_explicit_energetic_profiles():
     source = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), reflection_gain=0, reflection_radius=1)
     grid = build_occlusion_grid([body], [source], width=1024, height=1024)
     assert grid.body_count == 1
+
+
+def test_shadows_off_uses_only_reflection_support_without_dropping_reflectors():
+    body = BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, 0)
+    illumination_only = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), reflection_gain=0)
+    assert build_occlusion_grid([body], [illumination_only], width=1024, height=1024, illumination=False).body_count == 0
+    reflected = MaterialLight(Vec2(900, 900), 1500, (1, 1, 1), reflection_radius=10)
+    assert build_occlusion_grid([body], [reflected], width=1024, height=1024).body_count == 1
+    assert build_occlusion_grid([body], [reflected], width=1024, height=1024, illumination=False).body_count == 0
+    near = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), illumination_gain=0)
+    assert build_occlusion_grid([body], [near], width=1024, height=1024, illumination=False).body_count == 1

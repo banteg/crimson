@@ -159,8 +159,12 @@ void main() {
             float relief = sp_dir.z > .5 ? clamp((ndl_sub + .10) / (L.z + .10), .35, 2.5)
                                          : clamp((ndl_sub + .18) / (L.z + .18), .64, 1.55);
             float angular_response = sp_dir.z > .5 ? .22 + .78 * ndl_sub : .22 * ndl_sub;
-            float visibility = illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
-            diffuse_lit += direct_albedo * sp_col.rgb * (response.x * atten * angular_response * relief * visibility);
+            vec3 direct = direct_albedo * sp_col.rgb * (response.x * atten * angular_response * relief);
+            // As with reflections, retain negligible radiance without tracing a
+            // shadow whose maximum possible change is below 1e-5 linear RGB.
+            if (max(direct.r, max(direct.g, direct.b)) > .00001)
+                direct *= illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
+            diffuse_lit += direct;
         }
 
         // Reflect the virtual eye ray into a finite source at the emitter's height.

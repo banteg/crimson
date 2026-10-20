@@ -465,7 +465,7 @@ Warm native OpenGL completion measurements on Apple M1 Pro (`OpenGL 4.1 Metal -
 states (world drawing, including CPU submission, body-grid construction and
 `glFinish` completion; simulation, HUD and UI excluded):
 
-| Scene / target | Before | Proposed | Proposed, shadows off |
+| Scene / target | Before | Initial candidate | Initial candidate, shadows off |
 | --- | ---: | ---: | ---: |
 | Ion Rifle, 67 living creatures, 1600×1000 | 5.61 ms | 7.80 ms | 4.86 ms |
 | Synthetic 384 creatures / 16 bright sources, 1600×1000 | 12.87 ms | 32.75 ms | 13.88 ms |
@@ -477,3 +477,33 @@ guarantee. The dense case is deliberately severe and its roughly 20 ms added cos
 is substantial. At 960×600, one/two/four illumination samples cost 18.25/26.24/42.13 ms
 in that synthetic case; the shipped single centroid avoids the extra integration
 cost. The corresponding earlier before measurement was 12.32 ms.
+
+
+Review follow-ups normalize or collapse degenerate source axes consistently,
+disable nonpositive reflection reaches before evaluating `smoothstep`, and avoid
+empty grid traversal/uniform-array uploads. Shadows-off grid construction considers
+only reflection support. Point-source creature reflections and diffuse lighting
+reuse the same visibility result. Diffuse contributions below `1e-5` linear RGB
+retain their radiance but skip shadow traversal, matching the existing reflection
+policy. R32F native tests compare against tracing every positive contribution and
+bound the additional light by `1.01e-5` per source (including float tolerance).
+
+A matched follow-up run with the same hardware, resolution and warmup measured:
+
+| 1600×1000 scene | Before review fixes (`67af1231e`) | After review fixes | After, shadows off |
+| --- | ---: | ---: | ---: |
+| Ion Rifle replay | 5.92 ms | 7.05 ms | 5.69 ms |
+| 384 creatures / 16 finite beam sources | 30.95 ms | 29.94 ms | 12.53 ms |
+| 384 creatures / 16 point sources | 31.45 ms | 27.31 ms | 13.13 ms |
+
+The point-source stress case improved by 13%, while this separate-process Ion
+run regressed by 19% (p10/p90: 4.41/6.75 ms before, 5.80/9.88 ms after). A bounded
+follow-up interleaved the old, reviewed, and reviewed-without-diffuse-gates shaders
+in ABC/CBA order twice, with the same current CPU renderer. Each of the four
+blocks per variant used 10 warm and 20 measured frames. Pooled Ion medians were
+6.01/5.80/6.19 ms respectively; p90 values were 9.52/9.56/9.65 ms. The slowdown did
+not persist under interleaving, but this does not establish a general typical-scene
+speedup. These small optimizations do not remove the substantial dense-scene cost.
+Before/after SDR captures differed by at most one 8-bit code value in at most 175
+of 4.8 million RGB channels; all body profiles and artistic lighting settings
+stayed fixed.
