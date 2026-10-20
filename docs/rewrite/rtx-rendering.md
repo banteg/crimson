@@ -507,3 +507,13 @@ speedup. These small optimizations do not remove the substantial dense-scene cos
 Before/after SDR captures differed by at most one 8-bit code value in at most 175
 of 4.8 million RGB channels; all body profiles and artistic lighting settings
 stayed fixed.
+
+### Sharpshooter sight reflection
+
+The native red sight contributes a narrow reflection source for each living
+Sharpshooter player. It uses the same stored endpoints as the visible quad,
+including the offset near the gun. Its axis points back toward the gun so the
+reflection fades to black at the distant end, matching the visible sight rather
+than a projectile's bright nose. It adds no diffuse illumination. Wet blood,
+ice and other reflective materials use their existing roughness, freshness and
+occlusion response; the aiming cursor remains a presentation overlay.

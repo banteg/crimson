@@ -394,6 +394,7 @@ class MaterialGroundRenderer(GroundRenderer):
         for i, light in enumerate(lights):
             _uniform(sh, f"u_spec_pos[{i}]", [light.pos.x, light.pos.y, light.radius, light.height])
             _uniform(sh, f"u_spec_color[{i}]", [*light.rgb, float(light.length > 0)])
+            _uniform(sh, f"u_spec_tail[{i}]", [light.reflection_tail])
             _uniform(sh, f"u_spec_dir[{i}]", [light.direction.x, light.direction.y, float(light.broad_illumination), light.length])
             _uniform(sh, f"u_spec_response[{i}]", list(light.response))
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,

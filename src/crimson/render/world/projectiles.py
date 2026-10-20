@@ -10,9 +10,10 @@ from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
-from ...math_parity import NATIVE_HALF_PI, f32, f32_vec2, sin_f32, x87_pc24_cos_mul, x87_pc24_sin_mul
+from ...math_parity import f32, f32_vec2
 from ...perks import PerkId
 from ...projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectileTypeId
+from ..laser_sight import laser_sight_geometry
 from ..rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ..rtx.mode import RtxRenderMode
 from .atlas import effect_cell_src_inset
@@ -114,21 +115,7 @@ def _sharpshooter_laser_corners(
 ) -> tuple[Vec2, Vec2, Vec2, Vec2]:
     """Preserve the native laser's trig products and PC24 corner stores."""
 
-    player_pos = f32_vec2(player_pos)
-    aim_heading = f32(aim_heading)
-    heading = f32(aim_heading - NATIVE_HALF_PI)
-    # Native keeps the far cosine wide, but stores its sine before scaling.
-    end = f32_vec2(
-        player_pos + Vec2(x87_pc24_cos_mul(heading, 512.0), f32(sin_f32(heading) * 512.0)),
-    )
-    start_heading = f32(heading - f32(0.150915))
-    start = f32_vec2(
-        player_pos + Vec2(x87_pc24_cos_mul(start_heading, 15.0), x87_pc24_sin_mul(start_heading, 15.0)),
-    )
-    half_width = Vec2(
-        x87_pc24_cos_mul(aim_heading, f32(1.1)),
-        x87_pc24_sin_mul(aim_heading, f32(1.1)),
-    )
+    start, end, half_width = laser_sight_geometry(player_pos, aim_heading)
     camera = f32_vec2(camera)
     start = f32_vec2(start + camera)
     end = f32_vec2(end + camera)
