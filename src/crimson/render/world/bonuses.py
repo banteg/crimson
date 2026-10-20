@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from contextlib import nullcontext
 
 from grim import canvas
 from grim.assets import TextureId
@@ -12,6 +13,8 @@ from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from ...bonuses import BONUS_BY_ID, BonusId
 from ...bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
 from ...weapons import WEAPON_BY_ID, WeaponId
+from ..rtx.material_lights import collect_material_lights
+from ..rtx.mode import RtxRenderMode
 from . import viewport
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
@@ -89,6 +92,13 @@ def draw_bonus_pickups(
     wicons_texture = resources.texture(TextureId.UI_WICONS)
     entries = frame.state.bonus_pool.entries
 
+    lighting = frame.bonus_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
+    if lighting is not None and any(b.bonus_id != BonusId.UNUSED for b in entries):
+        lighting.prepare(
+            collect_material_lights(frame, view_center=render_ctx.view.screen_size * 0.5 - camera),
+            camera=camera, view_scale=view_scale,
+        )
+
     bubble_src = bonus_icon_src(bonuses_texture, 0)
     bubble_size = 32.0 * scale
     for idx, bonus in enumerate(entries):
@@ -101,7 +111,10 @@ def draw_bonus_pickups(
         bubble_dst = rl_rectangle(screen.x, screen.y, bubble_size, bubble_size)
         bubble_origin = rl_vector2(bubble_size * 0.5, bubble_size * 0.5)
         bubble_tint = rl_color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
-        rl.draw_texture_pro(bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, bubble_tint)
+        with lighting.pass_scope(
+            pass_id=0, grid=(4.0, 4.0), shell_center=bonus.pos, restore_shader=resources.alpha_test.shader,
+        ) if lighting is not None else nullcontext():
+            rl.draw_texture_pro(bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, bubble_tint)
 
         meta = BONUS_BY_ID.get(bonus.bonus_id)
         icon_id = int(meta.icon_id) if meta is not None and meta.icon_id is not None else -1
@@ -118,7 +131,10 @@ def draw_bonus_pickups(
         dst = rl_rectangle(screen.x, screen.y, size, size)
         origin = rl_vector2(size * 0.5, size * 0.5)
         icon_tint = rl_color(255, 255, 255, int(alpha * 255.0 + 0.5))
-        rl.draw_texture_pro(bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), icon_tint)
+        with lighting.pass_scope(
+            pass_id=1, grid=(4.0, 4.0), shell_center=bonus.pos, restore_shader=resources.alpha_test.shader,
+        ) if lighting is not None else nullcontext():
+            rl.draw_texture_pro(bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), icon_tint)
 
     for bonus in entries:
         if bonus.bonus_id != BonusId.WEAPON or bonus.amount not in WEAPON_BY_ID:
@@ -137,7 +153,10 @@ def draw_bonus_pickups(
         dst = rl_rectangle(screen.x, screen.y, w, h)
         origin = rl_vector2(w * 0.5, h * 0.5)
         icon_tint = rl_color(255, 255, 255, int(fade * alpha * 255.0 + 0.5))
-        rl.draw_texture_pro(wicons_texture, src, dst, origin, 0.0, icon_tint)
+        with lighting.pass_scope(
+            pass_id=1, grid=(4.0, 8.0), shell_center=bonus.pos, restore_shader=resources.alpha_test.shader,
+        ) if lighting is not None else nullcontext():
+            rl.draw_texture_pro(wicons_texture, src, dst, origin, 0.0, icon_tint)
 
 
 def draw_bonus_hover_labels(

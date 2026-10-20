@@ -230,7 +230,7 @@ void main() {
     if (u_pass == 3) { finalColor = vec4(0., u_wetness, 0., 0.); return; }
     vec4 t = texture(texture0, fragTexCoord);
     float a = t.a * fragColor.a;
-    if (a <= 4.0 / 255.0) discard;
+    if (floor(a * 255.0 + 0.5) < 4.0) discard;
     float lum = dot(t.rgb, vec3(.299, .587, .114));
     if (u_kind == 0) {
         finalColor = vec4(.04, 0., 0., clamp(.45 + (lum - .42) * .65, .05, .95));

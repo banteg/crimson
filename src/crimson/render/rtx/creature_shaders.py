@@ -55,7 +55,7 @@ void main() {
     // Save derivatives before alpha discard makes neighboring lanes diverge.
     vec2 dxq = dFdx(fragTexCoord) * 16., dyq = dFdy(fragTexCoord) * 16.;
     vec2 dxw = dFdx(world), dyw = dFdy(world);
-    if (base.a <= 4.0 / 255.0)
+    if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0) {
         finalColor = base;
@@ -81,7 +81,8 @@ void main() {
     vec2 relief = .5 * vec2(
         spriteLuminance(fragTexCoord + vec2(px.x, 0)) - spriteLuminance(fragTexCoord - vec2(px.x, 0)),
         spriteLuminance(fragTexCoord + vec2(0, px.y)) - spriteLuminance(fragTexCoord - vec2(0, px.y)));
-    slope += rot * relief * .8;
+    // Brighter texels are raised: the height-field normal points downhill.
+    slope -= rot * relief * .8;
     vec3 N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
     vec3 V = normalize(vec3(0, .57735, 1));
     vec3 baseLin = pow(max(base.rgb, vec3(0)), vec3(2.2));

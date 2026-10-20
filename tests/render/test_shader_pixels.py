@@ -20,7 +20,7 @@ def _rgb(image: rl.Image, x: int, y: int) -> tuple[int, int, int]:
 
 def test_alpha_test_cutoff_and_default_shader_restoration(raylib_context) -> None:
     alpha_test = AlphaTestShader()
-    target = rl.load_render_texture(64, 16)
+    target = rl.load_render_texture(80, 16)
     try:
         # Run twice to exercise release and lazy reload in the same GL context.
         for _ in range(2):
@@ -28,14 +28,14 @@ def test_alpha_test_cutoff_and_default_shader_restoration(raylib_context) -> Non
             try:
                 rl.clear_background(rl.BLACK)
                 with alpha_test.scope():
-                    for i, alpha in enumerate((4, 5, 255)):
+                    for i, alpha in enumerate((3, 4, 5, 255)):
                         rl.draw_rectangle(i * 16, 0, 16, 16, rl.Color(255, 0, 0, alpha))
-                rl.draw_rectangle(48, 0, 16, 16, rl.Color(255, 0, 0, 4))
+                rl.draw_rectangle(64, 0, 16, 16, rl.Color(255, 0, 0, 3))
             finally:
                 rl.end_texture_mode()
             image = rl.load_image_from_texture(target.texture)
             try:
-                assert [_rgb(image, x, 8)[0] for x in (8, 24, 40, 56)] == [0, 5, 255, 4]
+                assert [_rgb(image, x, 8)[0] for x in (8, 24, 40, 56, 72)] == [0, 4, 5, 255, 3]
             finally:
                 rl.unload_image(image)
             alpha_test.close()
@@ -55,8 +55,8 @@ def test_alpha_test_scope_ends_after_an_error_and_keeps_its_handle_until_close(r
         rl.begin_texture_mode(target)
         try:
             rl.clear_background(rl.BLACK)
-            # Still bound, the shader would discard this alpha-4 draw.
-            rl.draw_rectangle(0, 0, 16, 16, rl.Color(255, 0, 0, 4))
+            # Still bound, the shader would discard this alpha-3 draw.
+            rl.draw_rectangle(0, 0, 16, 16, rl.Color(255, 0, 0, 3))
             with alpha_test.scope():
                 pass
         finally:
@@ -64,7 +64,7 @@ def test_alpha_test_scope_ends_after_an_error_and_keeps_its_handle_until_close(r
         assert alpha_test.shader is shader
         image = rl.load_image_from_texture(target.texture)
         try:
-            assert _rgb(image, 8, 8)[0] == 4
+            assert _rgb(image, 8, 8)[0] == 3
         finally:
             rl.unload_image(image)
 

@@ -26,8 +26,8 @@ type Rgba = tuple[int, int, int, int]
 RED = rl.Color(255, 0, 0, 255)
 GREEN = rl.Color(0, 255, 0, 255)
 BLUE = rl.Color(0, 0, 255, 255)
-# Alpha 4 is the last value the native ALPHAREF=4 test rejects.
-CUTOUT = rl.Color(255, 255, 255, 4)
+# Alpha 3 is the last value the native ALPHAREF=4 test rejects.
+CUTOUT = rl.Color(255, 255, 255, 3)
 SENTINEL = rl.Color(255, 0, 255, 255)
 NO_STAMPS = TerrainLayers(base=(), overlay=(), detail=())
 
@@ -231,7 +231,7 @@ def test_generated_stamps_draw_each_layer_with_its_texture_and_tint_under_alpha_
     assert base == pytest.approx(_over(RED, TERRAIN_BASE_TINT, TERRAIN_CLEAR_COLOR), abs=1)
     assert overlay == pytest.approx(_over(GREEN, TERRAIN_OVERLAY_TINT, TERRAIN_CLEAR_COLOR), abs=1)
     assert detail == pytest.approx(_over(BLUE, TERRAIN_DETAIL_TINT, TERRAIN_CLEAR_COLOR), abs=1)
-    # Without the alpha test the alpha-4 texel would still nudge the ground by ~2 levels.
+    # Without the alpha test the alpha-3 texel would still nudge the ground by ~2 levels.
     assert cutout == _rgba(TERRAIN_CLEAR_COLOR)
     assert bare == _rgba(TERRAIN_CLEAR_COLOR)
 
