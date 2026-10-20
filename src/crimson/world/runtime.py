@@ -199,4 +199,5 @@ class WorldRuntime:
             bonus_anim_phase=float(self.presentation.bonus_anim_phase),
             rtx_mode=self.rtx_mode,
             creature_lighting=self.render_resources.creature_lighting,
+            bonus_lighting=self.render_resources.bonus_lighting,
         )

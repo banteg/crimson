@@ -97,7 +97,7 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False, textured=False):
+               degenerate_uv=False, textured=False, relief_ramp=None):
         other = rl.gen_image_color(256, 256, rl.BLANK)
         rl.image_draw_circle(other, 16, 16, 10, rl.Color(70, 55, 40, 255))
         rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(70, 55, 40, 255))
@@ -105,6 +105,8 @@ def lit_sprite(raylib_context):
             for y in range(10, 23):
                 for x in range(10, 23):
                     value = 30 + (x - 10) * 10 + (y - 10) * 5
+                    if relief_ramp is not None:
+                        value = round(120 + (x - 15.5) * relief_ramp.x + (y - 15.5) * relief_ramp.y)
                     rl.image_draw_pixel(other, x, y, rl.Color(value, value, value, 255))
         if neighbor:
             rl.image_draw_rectangle(other, 32, 0, 32, 32, rl.Color(255, 0, 0, 255))
@@ -222,6 +224,31 @@ def test_textured_relief_is_independent_of_framebuffer_scale(lit_sprite, rotatio
             a = normal[y*128+x]
             b = zoomed[(2*y-63)*128+(x-32)*2]
             assert a == pytest.approx(b, abs=.002)
+
+
+@pytest.mark.parametrize("rotation", [0., 90., 217.])
+@pytest.mark.parametrize("axis", [Vec2(1, 0), Vec2(0, 1)], ids=["u", "v"])
+def test_bright_relief_faces_downhill_light(lit_sprite, rotation, axis):
+    render, _lighting = lit_sprite
+    angle = math.radians(rotation)
+    uphill = Vec2(axis.x * math.cos(angle) - axis.y * math.sin(angle),
+                  axis.x * math.sin(angle) + axis.y * math.cos(angle))
+    # Align the sprite center to a pixel center. Opposite ramps have identical
+    # albedo here, so only their normals can change the lighting response.
+    options = {"textured": True, "rotation": rotation, "camera": Vec2(.5, .5)}
+    center = 63 * 128 + 64
+    rising = axis * 10
+    falling = axis * -10
+    base_rising = render([], relief_ramp=rising, **options)[center]
+    base_falling = render([], relief_ramp=falling, **options)[center]
+    assert base_rising == pytest.approx(base_falling, abs=.001)
+    for direction in (-1, 1):
+        light = MaterialLight(Vec2(64, 64) + uphill * (24 * direction), 110, (1, 1, 1), height=40)
+        lit_rising = render([light], relief_ramp=rising, **options)[center]
+        lit_falling = render([light], relief_ramp=falling, **options)[center]
+        # A height field's normal points downhill: reversing the light must
+        # reverse which ramp is brighter, for either atlas axis and any rotation.
+        assert (lit_falling[0] - lit_rising[0]) * direction > .005
 
 
 @pytest.mark.parametrize("offset", [0., 1.])
