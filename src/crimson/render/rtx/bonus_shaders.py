@@ -31,9 +31,10 @@ uniform vec2 u_shell_center;
 uniform int u_pass;        // 0 = analytical obsidian-glass sphere, 1 = flat foil/enamel icon + cabochon clear-coat
 uniform vec2 u_grid;       // (4, 4) for bonuses.jaz, (4, 8) for ui_wicons.jaz
 uniform int u_count;
-uniform vec4 u_pos[16];
-uniform vec4 u_rgb[16];
-uniform vec4 u_dir[16];
+uniform vec4 u_pos[32];
+uniform vec4 u_rgb[32];
+uniform vec4 u_dir[32];
+uniform vec4 u_response[32]; // illumination, reflection, reflection reach, source width
 out vec4 finalColor;
 
 vec4 cellSample(vec2 uv) {
@@ -69,13 +70,16 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
         vec2 source = u_pos[i].xy + u_dir[i].xy * along;
         vec2 delta = source - world;
         float dist = length(delta);
-        if (dist >= u_pos[i].z)
+        if (dist >= max(u_pos[i].z, u_response[i].z))
             continue;
         float a = 1.0 - smoothstep(0.0, u_pos[i].z, dist);
+        float s = 1.0 - smoothstep(0.0, u_response[i].z, dist);
         float axial = u_dir[i].w > 0.0
             ? mix(0.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + 0.5, 0.0, 1.0))
             : 1.0;
-        float weight = a * a * axial;
+        float weight = s * s * axial * u_response[i].y;
+        float illumination_weight = a * a * axial * u_response[i].x;
+        float source_width = max(.1, u_response[i].w);
 
         vec3 L = normalize(vec3(delta, max(14.0, u_pos[i].w)));
         vec3 H = normalize(L + V);
@@ -83,13 +87,15 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
         float ndh = max(dot(N, H), 0.0);
 
         // 1. Curved convex-mirror reflection of finite 1D beam or point orb on the sphere:
-        float coat_spec = pow(ndh, 52.0) * 3.4 + pow(ndh, 12.0) * 0.55 * ndl;
-        if (u_dir[i].w > 0.0 && R.z > 0.05) {
+        float coat_spec = (pow(ndh, 52.0) * 3.4 + pow(ndh, 12.0) * 0.55 * ndl) *
+                          min(1.0, source_width / 3.0);
+        if (R.z > 0.05) {
             vec2 hit = world + R.xy * max(16.0, u_pos[i].w) / R.z;
             float hit_along = clamp(dot(hit - u_pos[i].xy, u_dir[i].xy), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
             vec2 on_beam = u_pos[i].xy + u_dir[i].xy * hit_along;
             float d_beam = length(hit - on_beam);
-            coat_spec += exp(-0.5 * (d_beam * d_beam) / 64.0) * 2.2 * ndl;
+            float reflected_width = source_width * (8.0 / 3.0);
+            coat_spec += exp(-0.5 * pow(d_beam / reflected_width, 2.0)) * 2.2 * ndl;
         }
 
         // 2. Grazing Fresnel glass crescent around the sphere edge facing the emitter:
@@ -103,7 +109,8 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
             * pow(back_align, 2.6) * N.z * 0.36;
 
         spec_sum += u_rgb[i].rgb * weight * coat_spec * (0.38 + 0.62 * fresnel);
-        rim_sum  += u_rgb[i].rgb * weight * (fresnel_crescent + back_caustic);
+        rim_sum += u_rgb[i].rgb * (weight * fresnel_crescent * min(1.0, source_width / 3.0) +
+                                   illumination_weight * back_caustic);
     }
     rim_and_caustic = rim_sum;
     return spec_sum;
@@ -192,9 +199,10 @@ void main() {
         vec2 source = u_pos[i].xy + u_dir[i].xy * along;
         vec2 delta = source - world;
         float dist = length(delta);
-        if (dist >= u_pos[i].z)
+        if (dist >= max(u_pos[i].z, u_response[i].z))
             continue;
         float a = 1.0 - smoothstep(0.0, u_pos[i].z, dist);
+        float s = 1.0 - smoothstep(0.0, u_response[i].z, dist);
         float axial = u_dir[i].w > 0.0
             ? mix(0.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + 0.5, 0.0, 1.0))
             : 1.0;
@@ -214,10 +222,9 @@ void main() {
         ) / 3.0;
         float edge = smoothstep(0.04, 0.68, max(0.0, texel.a - beyond));
 
-        added += u_rgb[i].rgb * a * a * axial * (
-            base_lin * 0.78 * facing_flat +
-            foil_sheen * 1.15 * (0.25 + 0.75 * lum) +
-            edge * 1.85 * (0.55 + 0.45 * lum)
+        added += u_rgb[i].rgb * axial * (
+            u_response[i].x * a * a * (base_lin * 0.78 * facing_flat + edge * 1.85 * (0.55 + 0.45 * lum)) +
+            u_response[i].y * s * s * min(1.0, u_response[i].w / 3.0) * foil_sheen * 1.15 * (0.25 + 0.75 * lum)
         );
     }
 

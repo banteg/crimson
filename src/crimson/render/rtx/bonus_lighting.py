@@ -26,7 +26,18 @@ class BonusLighting(msgspec.Struct):
             self.shader = shader
             self.locations = {
                 name: int(rl.get_shader_location(shader, name))
-                for name in ("u_camera", "u_view_scale", "u_pass", "u_grid", "u_shell_center", "u_count", "u_pos", "u_rgb", "u_dir")
+                for name in (
+                    "u_camera",
+                    "u_view_scale",
+                    "u_pass",
+                    "u_grid",
+                    "u_shell_center",
+                    "u_count",
+                    "u_pos",
+                    "u_rgb",
+                    "u_dir",
+                    "u_response",
+                )
             }
         return self.shader
 
@@ -36,12 +47,16 @@ class BonusLighting(msgspec.Struct):
         for name, value in (("u_camera", camera), ("u_view_scale", view_scale)):
             buf = rl.ffi.new("float[2]", [value.x, value.y])
             rl.set_shader_value(
-                shader, self.locations[name], rl.ffi.cast("void *", buf),
+                shader,
+                self.locations[name],
+                rl.ffi.cast("void *", buf),
                 rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
             )
         lights = lights[:MAX_MATERIAL_LIGHTS]
         rl.set_shader_value(
-            shader, self.locations["u_count"], rl.ffi.new("int *", len(lights)),
+            shader,
+            self.locations["u_count"],
+            rl.ffi.new("int *", len(lights)),
             rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
         )
         if not lights:
@@ -50,12 +65,16 @@ class BonusLighting(msgspec.Struct):
             "u_pos": [v for light in lights for v in (light.pos.x, light.pos.y, light.radius, light.height)],
             "u_rgb": [v for light in lights for v in (*light.rgb, 0.0)],
             "u_dir": [v for light in lights for v in (light.direction.x, light.direction.y, 0.0, light.length)],
+            "u_response": [v for light in lights for v in light.response],
         }
         for name, value in values.items():
             buf = rl.ffi.new("float[]", value)
             rl.set_shader_value_v(
-                shader, self.locations[name], rl.ffi.cast("void *", buf),
-                rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4, len(lights),
+                shader,
+                self.locations[name],
+                rl.ffi.cast("void *", buf),
+                rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4,
+                len(lights),
             )
 
     @contextmanager
@@ -70,17 +89,23 @@ class BonusLighting(msgspec.Struct):
         shader = self.ensure_shader()
         rl.rl_draw_render_batch_active()
         rl.set_shader_value(
-            shader, self.locations["u_pass"], rl.ffi.new("int *", int(pass_id)),
+            shader,
+            self.locations["u_pass"],
+            rl.ffi.new("int *", int(pass_id)),
             rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
         )
         g_buf = rl.ffi.new("float[2]", [float(grid[0]), float(grid[1])])
         rl.set_shader_value(
-            shader, self.locations["u_grid"], rl.ffi.cast("void *", g_buf),
+            shader,
+            self.locations["u_grid"],
+            rl.ffi.cast("void *", g_buf),
             rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
         )
         center = rl.ffi.new("float[2]", [shell_center.x, shell_center.y])
         rl.set_shader_value(
-            shader, self.locations["u_shell_center"], rl.ffi.cast("void *", center),
+            shader,
+            self.locations["u_shell_center"],
+            rl.ffi.cast("void *", center),
             rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
         )
         rl.begin_shader_mode(shader)

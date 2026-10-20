@@ -112,6 +112,7 @@ def test_fresh_blood_reflects_hdr_then_dries(ground_material) -> None:
         _uniform(sh, "u_spec_pos[0]", [32, 14, 150, 30])
         _uniform(sh, "u_spec_color[0]", [4, 4, 4, 0])
         _uniform(sh, "u_spec_dir[0]", [0, 0, 0, 0])
+        _uniform(sh, "u_spec_response[0]", [1, 1, 150, 3])
         values = []
         for time in (1200, 1290):
             _uniform(sh, "u_time_s", [time - ground.wetness_epoch])
@@ -568,3 +569,48 @@ def test_fresh_deep_blood_has_red_body_and_loses_color_and_reflection_with_age(g
     peaks = [max(p[0] for p in debug_pixels(ground, texture, mode=5, time=t)) for t in (0, 45, 180)]
     assert peaks[0] > peaks[1] > peaks[2]
     assert peaks[2] < peaks[0] * .25
+
+
+def test_reflection_gain_and_reach_are_independent_of_illumination(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+    ambient = debug_pixels(ground, texture, mode=0)
+    source = MaterialLight(Vec2(32, 14), 1, (2, 1, .5), height=18,
+                           illumination_gain=0, reflection_radius=150)
+    collector.return_value = [source]
+    reflection = debug_pixels(ground, texture, mode=5)
+    assert max(p[0] for p in reflection) > .1
+    assert debug_pixels(ground, texture, mode=0) != ambient
+    collector.return_value = [msgspec.structs.replace(source, illumination_gain=1)]
+    assert debug_pixels(ground, texture, mode=5) == reflection
+    collector.return_value = [msgspec.structs.replace(source, reflection_gain=0)]
+    assert max(p[0] for p in debug_pixels(ground, texture, mode=5)) == 0
+    assert debug_pixels(ground, texture, mode=0) == ambient
+
+
+def test_source_width_changes_reflection_footprint_without_diffuse_spill(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights")
+    energies, spreads = [], []
+    for width in (1., 6.):
+        collector.return_value = [MaterialLight(Vec2(32, 16), 150, (1, 1, 1), source_width=width, illumination_gain=0)]
+        image = debug_pixels(ground, texture, mode=5)
+        energy = sum(p[0] for p in image)
+        energies.append(energy)
+        spreads.append(sum(((i%64+.5)-32)**2*p[0] for i,p in enumerate(image))/energy)
+    assert energies[1] > energies[0] * 2
+    assert spreads[1] > spreads[0] * 2
+
+
+def test_long_tracer_reflection_is_not_clipped_by_head_biased_illumination(ground_material, mocker) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    # The head is outside this small tile. The visible tail still crosses the wet film.
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
+        MaterialLight(Vec2(1000, 16), 25, (1, 1, 1), direction=Vec2(1, 0), length=2000,
+                      illumination_gain=0, reflection_radius=100),
+    ])
+    image = debug_pixels(ground, texture, mode=5)
+    assert max(p[0] for p in image) > .02

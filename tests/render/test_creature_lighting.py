@@ -9,7 +9,7 @@ import pytest
 
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.render.rtx.creature_lighting import CreatureLighting
-from crimson.render.rtx.material_lights import MaterialLight
+from crimson.render.rtx.material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import draw as world_draw
 from crimson.world.render_resources import RenderResources
@@ -289,4 +289,18 @@ def test_multiple_emitters_and_light_budget(lit_sprite):
         return sum(p[channel]-b[channel] for p, b in zip(pixels, base, strict=True))
     assert energy(both, 0) > energy(blue_only, 0) + 1
     assert energy(both, 2) > energy(red_only, 2) + 1
-    assert render([red]*16 + [blue]) == render([red]*16)
+    assert render([red]*MAX_MATERIAL_LIGHTS + [blue]) == render([red]*MAX_MATERIAL_LIGHTS)
+
+
+def test_independent_diffuse_and_specular_response(lit_sprite):
+    import msgspec
+
+    render, _ = lit_sprite
+    base = render([])
+    light = MaterialLight(Vec2(88, 64), 1, (1, .5, .1), illumination_gain=0, reflection_radius=110)
+    reflected = render([light])
+    assert reflected != base
+    assert [p[3] for p in reflected] == [p[3] for p in base]
+    assert render([msgspec.structs.replace(light, reflection_gain=0)]) == base
+    diffuse = render([msgspec.structs.replace(light, radius=110, illumination_gain=1, reflection_gain=0)])
+    assert diffuse != base and diffuse != reflected

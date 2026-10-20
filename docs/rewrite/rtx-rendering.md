@@ -134,8 +134,8 @@ resolution and world coordinates, including texture scale and DPI:
   at 45 seconds, 14% at 90 seconds, and 2% at 180 seconds. Color and reflections
   fade gradually; blood coverage remains. These are artistic controls, not
   calibrated optical constants.
-- Up to 16 nearby energetic muzzle, Ion/Fire/Gauss/plasma, and detonation lights feed
-  the ground pass, ranked around the actual view center rather than player one.
+- Independently bounded illumination and reflection sources feed the ground pass,
+  ranked around the actual view center rather than player one (see weapon profiles below).
   A fixed orthographic virtual eye tilts backward by 30 degrees for specular only,
   placing reflections below their sources without moving the camera or dimming the arena.
   Moving players do not steer this viewpoint. The reflected eye ray intersects an
@@ -173,9 +173,9 @@ inputs, and native/browser rendering are unchanged.
   each light's reflection individually, rather than multiply every light by the
   prototype's average shadow value. Entity lighting also needs to be tuned alongside
   terrain lighting while retaining a readable ambient floor.
-- The strongest-16 selection can change abruptly in dense fights. Spatial clustering
-  or temporal selection would improve continuity. Flame particles, chain arcs, and
-  rocket exhaust are not independent ground emitters yet.
+- Each response's strongest-16 selection can change abruptly in dense fights.
+  Flame particles are grouped spatially, but cell boundaries and source selection
+  still need temporal smoothing. Chain arcs are not independent emitters yet.
 - Coverage, depth, and weighted wetness are per pixel, not a multilayer fluid
   simulation. Drying, roughness, meniscus width, and blood absorption still need
   broader art tuning.
@@ -284,3 +284,56 @@ uniforms; the pool is bounded to 16 entries. The shader is created only when RTX
 draws an occupied pool, and is released by the world's render resources.
 Classic uses its original bitmap path. Unlit RTX emblems retain their source
 colors; the analytical shell retains its studio highlight.
+
+## Weapon source profiles
+
+`material_lights.py` describes finite luminous sources shared by the ground,
+creature, and bonus passes. The visible projectile still uses its original draw
+path. `MaterialLight.rgb` is linear source radiance; `illumination_gain` controls
+diffuse spill and artistic edge lighting, while `reflection_gain` controls
+specular catches. A source can therefore be reflected without lighting nearby dirt.
+`source_width` describes the reflection footprint in world units, independently of
+the illumination `radius`. `reflection_radius` optionally specifies separate
+finite reflection support. These are art controls, not calibrated radiometry.
+
+`ProjectileEmission` profiles evaluate flight and impact state without modifying
+the simulation:
+
+| Family | Source and response |
+| --- | --- |
+| Ordinary tracers | Sub-unit-width reflected segments; no diffuse spill |
+| Gauss | Narrow blue reflection, 12% of the former radiance, further restrained illumination |
+| Ion / Fire Bullets | Strong tapered segments, preserving the reference rifle/fire treatment |
+| Plasma | Warm atlas colors, distinct core widths and speed-scaled short tails; compact warm impact glow |
+| Spider Plasma / Shrinkifier | Flight tint changes to the untinted warm impact artwork |
+| Pulse | Restrained green source, followed by the warm impact sprite |
+| Rockets | Localized exhaust sources, scaled by rocket type and respecting the glow setting |
+| Detonations | Expanding reflection footprint and fading warm radiance |
+| Flamers | Particles grouped into 64-unit spatial cells, with bounded accumulated radiance |
+
+Ballistic/Gauss optical gain follows normalized life raised to 2.2, so the reflected
+image fades more like the legacy alpha-blended tracer. This changes neither its
+original lifetime nor gameplay. Other profiles retain linear lifetime gain;
+emitter RGB is never gamma-decoded again in a material shader. Muzzle lights follow
+the visible flash's suppression flags and warm artwork, with restrained spill for
+ordinary weapons. Blade, Plague, and bubbles do not gain luminous sources.
+
+Illumination and reflection independently select at most 16 sources by radiance,
+response gain, and distance from the view center to the finite segment. Their union
+uploads at most 32 entries; an entry selected for only one response has the other
+gain zeroed. Shared sources are not counted twice, and reflection-only tracers do
+not consume illumination slots.
+
+Ground roughness broadens the explicit source footprint. Creature diffuse dome
+shading and the artistic silhouette rim follow illumination gain, while specular
+catches follow reflection gain and width. Bonus coat reflections and foil sheen
+likewise remain independent of diffuse and artificial edge/back-wall lighting.
+Material-specific approximations remain: these shaders are not reflections of
+arbitrary non-emissive objects.
+
+GPU tests exercise reflection-only sources beyond illumination reach, independent
+gain controls, source footprint changes, alpha preservation, and the upload bound.
+CPU tests cover independent selection budgets, union masking, finite-segment
+ranking, family colors/geometry, optical fade, muzzle flags, expanding detonations,
+and flame grouping. Dense volleys, cell transitions, and EDR remain art-tuning
+cases; the daylight baseline and classic renderer are unchanged.

@@ -31,7 +31,7 @@ class CreatureLighting(msgspec.Struct):
             self.shader = shader
             self.locations = {
                 name: int(rl.get_shader_location(shader, name))
-                for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir")
+                for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response")
             }
         shader = self.shader
         # Flush preceding draws before changing values on a possibly reused shader.
@@ -51,6 +51,7 @@ class CreatureLighting(msgspec.Struct):
             "u_pos": [v for light in lights for v in (light.pos.x, light.pos.y, light.radius, light.height)],
             "u_rgb": [v for light in lights for v in (*light.rgb, 0.0)],
             "u_dir": [v for light in lights for v in (light.direction.x, light.direction.y, 0.0, light.length)],
+            "u_response": [v for light in lights for v in light.response],
         }
         for name, value in values.items():
             buffer = rl.ffi.new("float[]", value)

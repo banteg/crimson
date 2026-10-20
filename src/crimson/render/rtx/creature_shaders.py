@@ -28,9 +28,10 @@ in vec2 world;
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 uniform int u_count;
-uniform vec4 u_pos[16];
-uniform vec4 u_rgb[16];
-uniform vec4 u_dir[16];
+uniform vec4 u_pos[32];
+uniform vec4 u_rgb[32];
+uniform vec4 u_dir[32];
+uniform vec4 u_response[32]; // illumination, reflection, reflection reach, source width
 out vec4 finalColor;
 const float DOME_STRENGTH = 0.65;
 const float RIM_STRENGTH = 0.65;
@@ -93,9 +94,10 @@ void main() {
         vec2 source = u_pos[i].xy + u_dir[i].xy * along;
         vec2 delta = source - wp;
         float distance_to_light = length(delta);
-        if (distance_to_light >= u_pos[i].z)
+        if (distance_to_light >= max(u_pos[i].z, u_response[i].z))
             continue;
         float a = 1.0 - smoothstep(0.0, u_pos[i].z, distance_to_light);
+        float s = 1.0 - smoothstep(0.0, u_response[i].z, distance_to_light);
         // Taper emitted intensity once; only radial attenuation is squared.
         float axial_gain = u_dir[i].w > 0.0
             ? mix(.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + .5, 0.0, 1.0))
@@ -103,7 +105,9 @@ void main() {
         vec3 L = normalize(vec3(delta, max(8.0, u_pos[i].w - 8.0)));
         float facing = max(dot(N, L), 0.0);
         vec3 H = normalize(L + V);
-        float catchlight = pow(max(dot(N, H), 0.0), 28.0) * facing;
+        float source_width = max(.1, u_response[i].w);
+        float catchlight = pow(max(dot(N, H), 0.0), clamp(84.0 / source_width, 8.0, 100.0)) *
+                           facing * min(1.0, source_width / 3.0);
 
         // An inner silhouette rim, only on the edge facing this emitter.
         // Atlas-local samples cannot reach neighboring animation frames.
@@ -115,10 +119,14 @@ void main() {
                        3.0;
         float edge = smoothstep(.04, .7, max(0.0, texel.a - beyond));
         float elevation = length(delta) / sqrt(dot(delta, delta) + pow(max(8.0, u_pos[i].w - 8.0), 2.0));
-        added += u_rgb[i].rgb * a * a * axial_gain *
-                 (baseLin * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
-                  catchlight * (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum) +
-                  edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum));
+        // The artistic silhouette rim follows illumination, never bypassing a
+        // restrained tracer's diffuse gain. Specular catches remain independent.
+        added += u_rgb[i].rgb * axial_gain * (
+            u_response[i].x * a * a *
+                (baseLin * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
+                 edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum)) +
+            u_response[i].y * s * s *
+                catchlight * (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum));
     }
     // Bound aggregate illumination in dense fights without changing hue.
     float peak = max(added.r, max(added.g, added.b));

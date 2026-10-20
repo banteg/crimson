@@ -11,7 +11,7 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry
 from crimson.render.rtx import bonus_lighting as module
 from crimson.render.rtx.bonus_lighting import BonusLighting
-from crimson.render.rtx.material_lights import MaterialLight
+from crimson.render.rtx.material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import bonuses
 from crimson.world.render_resources import RenderResources
@@ -241,7 +241,9 @@ def test_weapon_overhang_has_foil_light_but_no_shell_coating(lit_bonus, monkeypa
 def test_light_budget_and_framebuffer_scale(lit_bonus):
     render, _ = lit_bonus
     light = MaterialLight(Vec2(88, 64), 110, (.5, .8, 1.5), height=40)
-    assert render([light]*16) == render([light]*16+[MaterialLight(Vec2(64, 64), 100, (9, 0, 0))])
+    assert render([light]*MAX_MATERIAL_LIGHTS) == render(
+        [light]*MAX_MATERIAL_LIGHTS+[MaterialLight(Vec2(64, 64), 100, (9, 0, 0))],
+    )
     normal = render([light])
     zoomed = render([light], scale=2., camera=Vec2(-32.25, -32.25))
     for y in range(59, 69):
@@ -265,3 +267,16 @@ def test_shell_light_direction_and_shader_reopen(lit_bonus):
     assert [p[3] for p in base] == [p[3] for p in right] == [p[3] for p in left]
     lighting.close()
     assert render([right_light], pass_id=0) == right
+
+
+@pytest.mark.parametrize("pass_id", [0, 1])
+def test_reflection_only_source_preserves_shell_and_icon_alpha(lit_bonus, pass_id):
+    import msgspec
+
+    render, _ = lit_bonus
+    base = render([], pass_id=pass_id)
+    light = MaterialLight(Vec2(88, 64), 1, (1, .5, .1), illumination_gain=0, reflection_radius=110)
+    reflected = render([light], pass_id=pass_id)
+    assert reflected != base
+    assert [p[3] for p in reflected] == [p[3] for p in base]
+    assert render([msgspec.structs.replace(light, reflection_gain=0)], pass_id=pass_id) == base

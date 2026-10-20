@@ -3,7 +3,7 @@
 GROUND_FRAGMENT = r"""
 #version 330
 
-#define MAX_SPEC_LIGHTS 16
+#define MAX_SPEC_LIGHTS 32
 
 in vec2 fragTexCoord;
 in vec4 fragColor;
@@ -20,6 +20,7 @@ uniform int u_spec_light_count;
 uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z_height
 uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = shape (0=point/cone, 1=capsule)
 uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = focus, w = capsule_h
+uniform vec4 u_spec_response[MAX_SPEC_LIGHTS]; // illumination, reflection, reflection reach, source width
 
 float blood_below_ice(vec4 surface, vec4 coverage) {
     // Ice occludes the film; it does not thin it into a new red meniscus.
@@ -134,14 +135,17 @@ void main() {
         vec4 sp_pos = u_spec_pos[i];
         vec4 sp_col = u_spec_color[i];
         vec4 sp_dir = u_spec_dir[i];
+        vec4 response = u_spec_response[i];
 
         vec2 light_xy = sp_pos.xy;
+        vec2 reflection_xy = sp_pos.xy;
         float capsule_axial_gain = 1.0;
         if (sp_col.w > 0.5 && dot(sp_dir.xy, sp_dir.xy) > 0.0001) {
             vec2 axis = normalize(sp_dir.xy);
             float h_len = max(1.0, sp_dir.w);
             float raw_proj = dot(world - sp_pos.xy, axis);
             float proj = clamp(raw_proj, -h_len * 0.5, h_len * 0.5);
+            reflection_xy += axis * proj;
             // Bias reflection point toward the blazing projectile head (+0.45 * h_len)
             float biased_proj = mix(proj, h_len * 0.45, 0.24);
             light_xy = sp_pos.xy + axis * biased_proj;
@@ -154,24 +158,27 @@ void main() {
 
         vec2 to_l = light_xy - world;
         float d2d = length(to_l);
+        float reflection_distance = length(reflection_xy - world);
         float rad = max(1.0, sp_pos.z);
-        if (d2d >= rad) continue;
+        if (d2d >= rad && reflection_distance >= response.z) continue;
 
-        float x_att = clamp(1.0 - d2d / rad, 0.0, 1.0);
-        float atten = x_att * x_att * capsule_axial_gain;
-
-        vec3 L = normalize(vec3(to_l.x, to_l.y, max(12.0, sp_pos.w)));
-        float ndl_sub = clamp(dot(N_sub, L), 0.0, 1.0);
-        float flat_ndl = L.z;
-        // Each light has its own optical path and relief; fading it cannot recolor other light.
-        vec3 transmittance = exp(-absorption * (0.90 + 0.35 / clamp(flat_ndl, 0.22, 1.0)));
-        vec3 direct_albedo = mix(wetted_substrate * transmittance + blood_body_color, albedo_tex.rgb, is_ice);
-        float relief = clamp((ndl_sub + 0.18) / (flat_ndl + 0.18), 0.64, 1.55);
-        diffuse_lit += direct_albedo * sp_col.rgb * (atten * ndl_sub * 0.22 * relief);
+        // Reflection-only tracers need no diffuse optical-path evaluation.
+        if (response.x > 0.0 && d2d < rad) {
+            float x_att = clamp(1.0 - d2d / rad, 0.0, 1.0);
+            float atten = x_att * x_att * capsule_axial_gain;
+            vec3 L = normalize(vec3(to_l.x, to_l.y, max(12.0, sp_pos.w)));
+            float ndl_sub = clamp(dot(N_sub, L), 0.0, 1.0);
+            float flat_ndl = L.z;
+            // Each light has its own optical path and relief; fading it cannot recolor other light.
+            vec3 transmittance = exp(-absorption * (0.90 + 0.35 / clamp(flat_ndl, 0.22, 1.0)));
+            vec3 direct_albedo = mix(wetted_substrate * transmittance + blood_body_color, albedo_tex.rgb, is_ice);
+            float relief = clamp((ndl_sub + 0.18) / (flat_ndl + 0.18), 0.64, 1.55);
+            diffuse_lit += direct_albedo * sp_col.rgb * (response.x * atten * ndl_sub * 0.22 * relief);
+        }
 
         // Reflect the virtual eye ray into a finite source at the emitter's height.
         // This is an artistic rough-reflection approximation, not a calibrated BRDF.
-        if (R.z > 0.02) {
+        if (response.y > 0.0 && R.z > 0.02) {
             float height = max(12., sp_pos.w);
             vec2 reflected_hit = world + R.xy * height / R.z;
             bool beam = sp_col.w > 0.5 && sp_dir.w > 0.0 && dot(sp_dir.xy, sp_dir.xy) > 0.0001;
@@ -185,20 +192,20 @@ void main() {
                 source_gain = mix(.18, 1.0, source_t);
             }
             float source_distance = length(reflected_hit - on_source);
-            float source_width = 3.0;
+            float source_width = max(.1, response.w);
             float blur_width = source_width + roughness * roughness * height * 1.8 / R.z;
             float blur_gain = source_width / blur_width;
             // A point source spreads across two dimensions; a beam spreads mostly across its width.
             float footprint = exp(-.5 * pow(source_distance / blur_width, 2.0)) *
                 (beam ? blur_gain : blur_gain * blur_gain);
             // Fade at finite light support rather than cutting off a displaced reflection.
-            float support = 1.0 - smoothstep(rad * .8, rad, d2d);
+            float support = 1.0 - smoothstep(response.z * .8, max(.01, response.z), reflection_distance);
             float NoV = clamp(dot(N_spec, V), 0.0, 1.0);
             float F = .03 + .97 * pow(1. - NoV, 5.);
             float blood_gate = clamp(wet_film*.45 + deep_pool*.78, 0., 1.) * mix(.25, 1., freshness) * (1.-is_ice);
             float material_gate = clamp(blood_gate + is_ice*.75 + is_metal + is_chitin*.25, 0., 1.);
             vec3 tint = mix(vec3(1.), vec3(1., .85, .52), is_metal);
-            spec_accum += sp_col.rgb * tint * (F * 24. * footprint * source_gain * material_gate * support);
+            spec_accum += sp_col.rgb * tint * (response.y * F * 24. * footprint * source_gain * material_gate * support);
         }
     }
 
