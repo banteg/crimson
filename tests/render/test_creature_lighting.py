@@ -97,14 +97,21 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False):
+               degenerate_uv=False, textured=False):
+        other = rl.gen_image_color(256, 256, rl.BLANK)
+        rl.image_draw_circle(other, 16, 16, 10, rl.Color(70, 55, 40, 255))
+        rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(70, 55, 40, 255))
+        if textured:
+            for y in range(10, 23):
+                for x in range(10, 23):
+                    value = 30 + (x - 10) * 10 + (y - 10) * 5
+                    rl.image_draw_pixel(other, x, y, rl.Color(value, value, value, 255))
         if neighbor:
-            other = rl.gen_image_color(256, 256, rl.BLANK)
-            rl.image_draw_circle(other, 16, 16, 10, rl.Color(70, 55, 40, 255))
-            rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(70, 55, 40, 255))
             rl.image_draw_rectangle(other, 32, 0, 32, 32, rl.Color(255, 0, 0, 255))
-            rl.update_texture(texture, other.data)
-            rl.unload_image(other)
+        rl.update_texture(texture, other.data)
+        rl.unload_image(other)
+        rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR if textured
+                              else rl.TextureFilter.TEXTURE_FILTER_POINT)
         lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale))
         with texture_mode(target):
             rl.clear_background(rl.BLANK)
@@ -160,7 +167,7 @@ def test_degenerate_uv_basis_keeps_lighting_finite(lit_sprite, monkeypatch):
     assert sum(p[0] for p in lit) > sum(p[0] for p in base) + 1
     # The singular mapping must produce the same shading as an explicit identity basis.
     fragment = creature_lighting.CREATURE_FRAGMENT
-    start = fragment.index("    vec2 dxq =")
+    start = fragment.index("    float determinant =")
     end = fragment.index("    vec2 wp =", start)
     monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT",
                         fragment[:start] + "    mat2 rot = mat2(1.0);\n" + fragment[end:])
@@ -201,6 +208,46 @@ def test_camera_scale_and_adjacent_atlas_frame(lit_sprite):
         for x in range(48, 80):
             i=y*128+x
             assert normal[i] == neighbor[i]
+
+
+@pytest.mark.parametrize("rotation", [0., 90.])
+def test_textured_relief_is_independent_of_framebuffer_scale(lit_sprite, rotation):
+    render, _lighting = lit_sprite
+    lights = [MaterialLight(Vec2(88, 64), 110, (.5, .8, 1.5), height=40)]
+    normal = render(lights, textured=True, rotation=rotation)
+    zoomed = render(lights, textured=True, rotation=rotation, scale=2, camera=Vec2(-32.25, -32.25))
+    for y in range(59, 69):
+        for x in range(59, 69):
+            # Render-target rows run upward; align the world-space sample centers.
+            a = normal[y*128+x]
+            b = zoomed[(2*y-63)*128+(x-32)*2]
+            assert a == pytest.approx(b, abs=.002)
+
+
+@pytest.mark.parametrize("offset", [0., 1.])
+def test_relief_cannot_read_neighboring_atlas_cells(lit_sprite, offset):
+    render, _lighting = lit_sprite
+    lights = [MaterialLight(Vec2(88, 64), 110, (.5, .8, 1.5), height=40)]
+    camera = Vec2(offset, 0)
+    normal = render(lights, camera=camera)
+    neighbor = render(lights, camera=camera, neighbor=True)
+    assert normal == neighbor
+
+
+@pytest.mark.parametrize("direction", [-1., 1.])
+@pytest.mark.parametrize("along_fraction,gain", [(0., .2), (.5, .6), (1., 1.)])
+def test_beam_taper_matches_point_radiance_once(lit_sprite, direction, along_fraction, gain):
+    render, _lighting = lit_sprite
+    rgb = (.5, .8, 1.5)
+    # Along this pixel column the closest beam point is exactly the reference point.
+    source = Vec2(64.5, 40)
+    beam = MaterialLight(source + Vec2(direction * (0.5 - along_fraction) * 256, 0),
+                         110, rgb, height=40, direction=Vec2(direction, 0), length=256)
+    point = MaterialLight(source, 110, tuple(c * gain for c in rgb), height=40)
+    actual = render([beam])
+    expected = render([point])
+    for y in range(56, 72):
+        assert actual[y*128+64] == pytest.approx(expected[y*128+64], abs=.002)
 
 
 def test_multiple_emitters_and_light_budget(lit_sprite):

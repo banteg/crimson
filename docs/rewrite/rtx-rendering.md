@@ -246,9 +246,13 @@ Implementation: `src/crimson/render/rtx/creature_lighting.py` and
 `creature_shaders.py`. Point emitters and finite beam segments both work in world
 coordinates. The sprite basis is recovered from interpolated coordinates, so
 rotation and size do not require per-creature uniform uploads or batch flushes.
-Lights are uploaded once before the species passes. Alpha taps stay inside the
-current cell of the 8×8 animation atlas, and the native alpha cutoff and silhouette
-remain intact.
+Basis derivatives are evaluated before alpha discard, with an identity fallback
+for singular UV mappings. Texture relief uses central differences at offsets of one atlas
+texel, rotated into world space, so its strength does not depend on framebuffer
+resolution. Both relief and alpha taps stay inside the current animation cell.
+Lights are uploaded once before the species passes. Beam intensity tapers from
+20% at the tail to 100% at the head; this gain applies once, independently of
+squared radial attenuation. Point lights and the native alpha cutoff remain intact.
 
 Only creature body passes use this shader. Existing shadows, hit flashes, freeze
 and poison overlays, players, and baked corpses keep their existing paths. No
