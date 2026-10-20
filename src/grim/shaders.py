@@ -8,7 +8,7 @@ import msgspec
 from .raylib_api import rl
 
 # Grim2D enables alpha test globally with:
-#   ALPHATESTENABLE=1, ALPHAFUNC=GREATER, ALPHAREF=4
+#   ALPHATESTENABLE=1, ALPHAFUNC=GREATEREQUAL, ALPHAREF=4
 # Static anchor: `grim_apply_render_state` @ 0x10004520.
 #
 # raylib does not expose fixed-function alpha test, so we emulate it with a tiny
@@ -47,9 +47,10 @@ out vec4 finalColor;
 
 void main() {
     // Emulate DX8 fixed-function alpha test after stage-0 modulation:
-    // stage output = texture * diffuse, then discard when alpha <= 4/255.
+    // Compare the rounded byte alpha, as in the C/WebGL D3D8 host.
+    // GREATEREQUAL with ALPHAREF=4 accepts byte alpha 4 after modulation.
     vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
-    if (texel.a <= 4.0 / 255.0) discard;
+    if (floor(texel.a * 255.0 + 0.5) < 4.0) discard;
     finalColor = texel;
 }
 """
@@ -127,7 +128,7 @@ void main() {
                             cellOrigin + 0.5, cellOrigin + cellSize - 0.5);
     vec2 uv = sampleTexel / size;
     vec4 texelColor = texture(texture0, uv) * fragColor * colDiffuse;
-    if (texelColor.a <= alphaCutoff) discard;
+    if (floor(texelColor.a * 255.0 + 0.5) < alphaCutoff) discard;
     finalColor = texelColor;
 }
 """
@@ -168,7 +169,7 @@ class PixelCoverageShader(msgspec.Struct):
             )
             rl.set_shader_value(
                 self.shader, self._alpha_cutoff_loc,
-                rl.ffi.new("float *", 4.0 / 255.0 if alpha_test else -1.0),
+                rl.ffi.new("float *", 4.0 if alpha_test else -1.0),
                 rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
             )
             yield

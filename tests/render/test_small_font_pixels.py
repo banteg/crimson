@@ -101,23 +101,25 @@ def test_aligned_integer_scales_match_nearest(pixel_font: SmallFontData, scale: 
         rl.unload_render_texture(target)
 
 
-def test_font_preserves_enclosing_alpha_test_and_restores_default(pixel_font: SmallFontData) -> None:
+@pytest.mark.parametrize("alpha", [3, 4])
+def test_font_preserves_enclosing_alpha_test_and_restores_default(pixel_font: SmallFontData, alpha: int) -> None:
     target = rl.load_render_texture(64, 32)
     alpha_test = AlphaTestShader()
     try:
         with texture_mode(target):
             rl.clear_background(rl.BLACK)
             with alpha_test.scope():
-                draw_small_text(pixel_font, "A", Vec2(0, 0), rl.Color(255, 255, 255, 4))
+                draw_small_text(pixel_font, "A", Vec2(0, 0), rl.Color(255, 255, 255, alpha))
                 # Drawing text must not disable alpha testing for later world effects.
-                rl.draw_rectangle(16, 0, 16, 32, rl.Color(255, 0, 0, 4))
-            draw_small_text(pixel_font, "A", Vec2(32, 0), rl.Color(255, 255, 255, 4))
-            rl.draw_rectangle(48, 0, 16, 32, rl.Color(255, 0, 0, 4))
+                rl.draw_rectangle(16, 0, 16, 32, rl.Color(255, 0, 0, alpha))
+            draw_small_text(pixel_font, "A", Vec2(32, 0), rl.Color(255, 255, 255, alpha))
+            rl.draw_rectangle(48, 0, 16, 32, rl.Color(255, 0, 0, alpha))
         pixels = _read_rgb(target)
-        assert pixels[4 * 64 + 1] == (0, 0, 0)
-        assert pixels[4 * 64 + 24] == (0, 0, 0)
-        assert pixels[4 * 64 + 33] == (4, 4, 4)
-        assert pixels[4 * 64 + 56] == (4, 0, 0)
+        kept = alpha if alpha >= 4 else 0
+        assert pixels[4 * 64 + 1] == (kept, kept, kept)
+        assert pixels[4 * 64 + 24] == (kept, 0, 0)
+        assert pixels[4 * 64 + 33] == (alpha, alpha, alpha)
+        assert pixels[4 * 64 + 56] == (alpha, 0, 0)
     finally:
         alpha_test.close()
         rl.unload_render_texture(target)
@@ -133,7 +135,7 @@ def test_font_shader_releases_reloads_and_restores_parent_after_error(pixel_font
                 with alpha_test.scope():
                     with pytest.raises(RuntimeError, match="draw failed"), pixel_font.pixel_coverage.scope():
                         raise RuntimeError("draw failed")
-                    rl.draw_rectangle(0, 0, 16, 16, rl.Color(255, 0, 0, 4))
+                    rl.draw_rectangle(0, 0, 16, 16, rl.Color(255, 0, 0, 3))
             assert _read_rgb(target) == [(0, 0, 0)] * 256
             assert pixel_font.pixel_coverage.shader is not None
             pixel_font.pixel_coverage.close()

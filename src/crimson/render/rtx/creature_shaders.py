@@ -54,7 +54,7 @@ void main() {
     // Save derivatives before alpha discard makes neighboring lanes diverge.
     vec2 dxq = dFdx(fragTexCoord) * 16., dyq = dFdy(fragTexCoord) * 16.;
     vec2 dxw = dFdx(world), dyw = dFdy(world);
-    if (base.a <= 4.0 / 255.0)
+    if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0) {
         finalColor = base;
