@@ -620,7 +620,6 @@ class FxQueueRotated:
         return True
 
 
-
 class EffectEntry(msgspec.Struct):
     """Native `effect_entry_t`; the defaults are its zeroed static storage."""
 
@@ -639,6 +638,25 @@ class EffectEntry(msgspec.Struct):
     scale_step: float = 0.0
     # Native `next_free`: the entry index after this one on the free list, -1 for null.
     next_free: int = -1
+
+
+class ExplosionVisual(msgspec.Struct):
+    """Render-only event: one flash/fireball independent of atlas detail count."""
+
+    pos: Vec2
+    scale: float
+    emit_light: bool = True
+    age: float = 0.0
+    ring: EffectEntry | None = None
+
+    @property
+    def active_ring(self) -> EffectEntry | None:
+        ring = self.ring
+        if ring is None or not ring.flags or ring.effect_id != EffectId.RING:
+            return None
+        if not 0.0 <= ring.age < ring.lifetime or min(ring.scale, ring.half_width, ring.half_height) <= 0.0:
+            return None
+        return ring
 
 
 class EffectTemplate(msgspec.Struct):
@@ -673,6 +691,7 @@ class EffectPool:
         self._entries = [EffectEntry() for _ in range(EFFECT_POOL_SIZE)]
         self._overflow: list[EffectEntry] = []
         self.template = EffectTemplate()
+        self.explosion_visuals: list[ExplosionVisual] = []
         self._free_head = 0
         self._overflow_free = -1
         self._overflow_active = 0
@@ -698,6 +717,7 @@ class EffectPool:
         511 entries are live and a spawn with the last entry at the head is discarded.
         """
 
+        self.explosion_visuals.clear()
         template = self.template
         template.color = RGBA(1.0, 1.0, 1.0, 1.0)
         template.flags = 1
@@ -728,7 +748,7 @@ class EffectPool:
     def iter_active(self) -> list[EffectEntry]:
         return [entry for entry in (*self._entries, *self._overflow) if entry.flags]
 
-    def spawn(self, effect_id: int, pos: Vec2, detail_preset: int, *, preserve_bugs: bool) -> None:
+    def spawn(self, effect_id: int, pos: Vec2, detail_preset: int, *, preserve_bugs: bool) -> EffectEntry | None:
         """Port of `effect_spawn` (0x0042e120): pop the free-list head and copy the whole template into it.
 
         Low detail presets skip every other spawn. With the free list down to its last
@@ -739,13 +759,13 @@ class EffectPool:
             skip = self._detail_skip_counter & 1
             self._detail_skip_counter += 1
             if skip:
-                return
+                return None
 
         entry = self._entries[self._free_head]
         if entry.next_free != -1:
             self._free_head = entry.next_free
         elif preserve_bugs or int(effect_id) == int(EffectId.BLOOD_SPLATTER):
-            return
+            return None
         elif self._overflow_free != -1:
             entry = self._overflow[self._overflow_free]
             self._overflow_free = entry.next_free
@@ -755,7 +775,7 @@ class EffectPool:
             self._overflow.append(entry)
             self._overflow_active += 1
         else:
-            return
+            return None
 
         template = self.template
         entry.vel = f32_vec2(template.vel)
@@ -772,14 +792,23 @@ class EffectPool:
         entry.scale_step = f32(template.scale_step)
         entry.pos = f32_vec2(pos)
         entry.effect_id = int(effect_id)
+        return entry
 
     def free(self, idx: int) -> None:
         """Port of `effect_free`: push the entry onto the free-list head."""
 
         entry = self._entries[idx]
+        self._release_visual_ring(entry)
         entry.next_free = self._free_head
         entry.flags = 0
         self._free_head = idx
+
+    def _release_visual_ring(self, entry: EffectEntry) -> None:
+        # Native slots are reused in place. Never let an old explosion take
+        # ownership of a later ring (including another explosion's ring).
+        for visual in self.explosion_visuals:
+            if visual.ring is entry:
+                visual.ring = None
 
     def _advance_entry(self, entry: EffectEntry, dt_f32: float) -> bool:
         age = f32(f32(entry.age) + dt_f32)
@@ -810,6 +839,9 @@ class EffectPool:
         """Advance active effects and enqueue terrain decals on expiry."""
 
         dt_f32 = f32(dt)
+        for visual in self.explosion_visuals:
+            visual.age += dt_f32
+        self.explosion_visuals[:] = [visual for visual in self.explosion_visuals if visual.age < 0.7]
 
         for idx, entry in enumerate(self._entries):
             flags = int(entry.flags)
@@ -849,6 +881,7 @@ class EffectPool:
                     rgba=entry.color,
                 )
 
+            self._release_visual_ring(entry)
             entry.flags = 0
             self._overflow_active -= 1
             if self._overflow_active == 0:
@@ -1095,6 +1128,7 @@ class EffectPool:
         rng: CrandLike,
         detail_preset: int,
         preserve_bugs: bool,
+        emit_light: bool = True,
     ) -> None:
         """Port of `effect_spawn_explosion_burst` (0x0042f6c0).
 
@@ -1102,6 +1136,11 @@ class EffectPool:
         """
 
         scale = f32(scale)
+        # This does not consume RNG or alter the native atlas entries. Rocket hits
+        # already have a secondary detonation source, so they opt out of this light.
+        visual = ExplosionVisual(pos=pos, scale=scale, emit_light=emit_light)
+        self.explosion_visuals.append(visual)
+        del self.explosion_visuals[:-128]
         template = self.template
 
         template.flags = 0x19
@@ -1113,7 +1152,7 @@ class EffectPool:
         template.rotation = 0.0
         template.vel = Vec2()
         template.scale_step = x87_pc24_mul(scale, 25.0)
-        self.spawn(EffectId.RING, pos, detail_preset, preserve_bugs=preserve_bugs)
+        visual.ring = self.spawn(EffectId.RING, pos, detail_preset, preserve_bugs=preserve_bugs)
 
         template.flags = 0x5D
         template.color = RGBA(0.1, 0.1, 0.1, 1.0)

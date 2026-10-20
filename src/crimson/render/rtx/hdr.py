@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 
 import msgspec
@@ -10,6 +10,8 @@ from grim.edr import HDR_PIXEL_FORMAT, load_float_render_texture
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import current_target_edr_headroom, current_target_size, texture_mode
+
+from .shockwaves import PressureFront, ShockwaveRenderer
 
 HDR_SHOULDER_KNEE = 0.85
 HDR_WHITE_DRIFT = 0.6
@@ -85,6 +87,8 @@ load_float_target = load_float_render_texture
 class HdrRenderer(msgspec.Struct):
     """Lazily allocated RGBA16F world target and EDR/SDR hue-preserving tonemapper for RTX mode."""
 
+    shockwaves: ShockwaveRenderer = msgspec.field(default_factory=ShockwaveRenderer)
+
     target: rl.RenderTexture | None = None
     shader: rl.Shader | None = None
     headroom_loc: int = -1
@@ -110,7 +114,7 @@ class HdrRenderer(msgspec.Struct):
         return target, self.shader
 
     @contextmanager
-    def scope(self, *, out_size: Vec2) -> Iterator[None]:
+    def scope(self, *, out_size: Vec2, pressure_fronts: Sequence[PressureFront] = ()) -> Iterator[None]:
         out_w = float(out_size.x)
         out_h = float(out_size.y)
         render_w, render_h = current_target_size()
@@ -122,6 +126,7 @@ class HdrRenderer(msgspec.Struct):
         with texture_mode(target, scale_x=render_w / out_w, scale_y=render_h / out_h):
             rl.clear_background(rl.BLACK)
             yield
+        texture = self.shockwaves.apply(target.texture, pressure_fronts, out_size=out_size)
         if self.headroom_loc >= 0:
             rl.set_shader_value(
                 shader,
@@ -133,7 +138,7 @@ class HdrRenderer(msgspec.Struct):
         try:
             with opaque_blend():
                 rl.draw_texture_pro(
-                    target.texture,
+                    texture,
                     rl_rectangle(0.0, 0.0, float(render_w), -float(render_h)),
                     rl_rectangle(0.0, 0.0, out_w, out_h),
                     rl_vector2(0.0, 0.0),
@@ -144,6 +149,7 @@ class HdrRenderer(msgspec.Struct):
             rl.end_shader_mode()
 
     def close(self) -> None:
+        self.shockwaves.close()
         if self.target is not None:
             rl.unload_render_texture(self.target)
             self.target = None

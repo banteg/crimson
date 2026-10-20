@@ -9,6 +9,7 @@ from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EffectId
+from ..rtx.mode import RtxRenderMode
 from . import viewport
 from .atlas import effect_cell_src, effect_cell_src_inset
 from .constants import _RAD_TO_DEG
@@ -144,7 +145,17 @@ def draw_effect_pool(
 
     scale = viewport.view_scale_avg(view_scale)
 
+    # Only the explosion spawner's own ring becomes a pressure front. Freeze,
+    # shield and other atlas-ring effects retain their native presentation.
+    pressure_rings = (
+        {id(ring) for v in pool.explosion_visuals if (ring := v.active_ring) is not None}
+        if frame.rtx_mode is RtxRenderMode.RTX
+        else set()
+    )
+
     def draw_entry(entry: EffectEntry) -> None:
+        if id(entry) in pressure_rings and int(entry.effect_id) == int(EffectId.RING):
+            return
         effect_id = int(entry.effect_id)
         src = effect_cell_src_inset(texture, effect_id)
         if src is None:

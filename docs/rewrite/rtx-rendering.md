@@ -507,3 +507,36 @@ speedup. These small optimizations do not remove the substantial dense-scene cos
 Before/after SDR captures differed by at most one 8-bit code value in at most 175
 of 4.8 million RGB channels; all body profiles and artistic lighting settings
 stayed fixed.
+
+
+## Explosion emission and pressure fronts
+
+Nuke and Final Revenge use generic explosion effects rather than secondary
+`DETONATION` projectiles. Each `spawn_explosion_burst` now records one render-only
+explosion event, independent of the one/three/four atlas pieces selected by the
+detail preset. It uses no additional RNG and does not change the native effect
+entries, simulation damage, or Classic drawing. Rocket-impact bursts opt out of
+the additional light because their secondary detonation already owns it.
+
+The source illuminates terrain and creatures and reflects from wet materials.
+Its art-directed linear envelope is `0.6 * exp(-t / 0.08) +
+0.4 * max(0, 1 - t / 0.7)^1.7`: a short flash followed by the visible fireball's
+0.7-second decay. Radius is 330 times blast scale; height is 40 times scale;
+source width expands from 12 to 42 times scale. RGB is `(1.8, 0.92, 0.3)` times
+the envelope, with independent illumination/reflection gains of 6/1.2. These
+values describe visual tuning, not calibrated nuclear radiometry.
+
+In RTX, only the explosion-owned atlas ring becomes a thin pressure front.
+Freeze, shield and other ring effects retain their native drawing. The front
+keeps the native 0.1-second delay, expansion and 0.35-second fade, and bends the
+world image across a narrow compression/rarefaction band. It emits no light;
+its interior stays transparent. A separate RGBA16F target avoids reading and
+writing the same texture. The pass runs before tone mapping and before HUD/UI,
+so it preserves extended highlights. It is a screen-space approximation, not
+volumetric fluid simulation.
+
+The extra target and shader allocate lazily; frames with no active front use the
+original tonemap path. One fullscreen pass handles up to 16 simultaneous fronts.
+Explosion metadata is bounded to 128 events, expires after 0.7 seconds and clears
+with the effect pool. Freeing a native ring slot also releases its visual owner,
+including overflow slots, so slot reuse cannot create a ghost pressure front.

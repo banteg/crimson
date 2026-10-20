@@ -370,6 +370,7 @@ class SecondaryProjectilePool:
                                 rng=rng,
                                 detail_preset=detail_preset,
                                 preserve_bugs=runtime_state.preserve_bugs,
+                                emit_light=False,
                             )
                     case SecondaryProjectileTypeId.HOMING_ROCKET:
                         damage = x87_pc24_add(x87_pc24_mul(entry.life_timer, 20.0), 80.0)

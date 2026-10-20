@@ -276,5 +276,25 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                     reflection_radius=140.0,
                 ),
             )
+    for visual in frame.state.effects.explosion_visuals:
+        if not visual.emit_light or visual.age < 0.0 or visual.age >= 0.7:
+            continue
+        # A short hot flash and the longer visible fireball share one source.
+        # These are art-directed linear radiances, not nuclear radiometry.
+        t = visual.age
+        gain = 0.6 * math.exp(-t / 0.08) + 0.4 * (1.0 - t / 0.7) ** 1.7
+        scale = max(0.1, visual.scale)
+        sources.append(
+            MaterialLight(
+                visual.pos,
+                330.0 * scale,
+                (1.8 * gain, 0.92 * gain, 0.3 * gain),
+                height=40.0 * scale,
+                source_width=(12.0 + 30.0 * min(t / 0.4, 1.0)) * scale,
+                illumination_gain=6.0,
+                reflection_gain=1.2,
+                broad_illumination=True,
+            ),
+        )
     sources.extend(_flame_sources(frame))
     return select_material_lights(sources, view_center=view_center)
