@@ -13,6 +13,8 @@ from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import texture_mode
 
+from .explosion_shell import explosion_shell
+
 if TYPE_CHECKING:
     from ..world.context import WorldRenderCtx
 
@@ -28,14 +30,14 @@ class PressureFront(msgspec.Struct, frozen=True):
 def collect_pressure_fronts(ctx: WorldRenderCtx) -> list[PressureFront]:
     fronts = []
     for visual in ctx.frame.state.effects.explosion_visuals:
-        ring = visual.active_ring
-        if ring is None:
+        shell = explosion_shell(visual.age, visual.scale) if visual.ring_spawned else None
+        if shell is None:
             continue
         fronts.append(
             PressureFront(
-                ctx.view.world_to_screen(ring.pos),
-                Vec2(ring.half_width, ring.half_height).mul_components(ctx.view.view_scale) * ring.scale,
-                ring.color.a,
+                ctx.view.world_to_screen(visual.pos),
+                ctx.view.view_scale * shell.radius,
+                shell.strength,
             ),
         )
     return fronts[-MAX_PRESSURE_FRONTS:]
@@ -70,12 +72,12 @@ void main() {
         vec2 radius = max(u_fronts[i].zw, vec2(1.0));
         float radial = length(delta / radius);
         float distance = (radial - 1.0) * min(radius.x, radius.y);
-        float width = max(1.5, min(radius.x, radius.y) * 0.018);
+        float width = max(3.0, min(radius.x, radius.y) * 0.022);
         float x = distance / width;
         float crest = exp(-0.5 * x * x);
         vec2 normal = normalize(delta / (radius * radius) + vec2(1e-10));
-        displacement += normal * (-x * crest) * (2.2 * u_strength[i]);
-        contrast += u_strength[i] * (0.10 * crest - 0.08 * exp(-pow((distance + width) / width, 2.0)));
+        displacement += normal * (-x * crest) * (4.5 * u_strength[i]);
+        contrast += u_strength[i] * (0.16 * crest - 0.14 * exp(-pow((distance + width) / width, 2.0)));
     }
     displacement = clamp(displacement, vec2(-6.0), vec2(6.0));
     vec2 offset = vec2(displacement.x, -displacement.y) / u_size;

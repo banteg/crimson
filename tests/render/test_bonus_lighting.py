@@ -280,3 +280,15 @@ def test_reflection_only_source_preserves_shell_and_icon_alpha(lit_bonus, pass_i
     assert reflected != base
     assert [p[3] for p in reflected] == [p[3] for p in base]
     assert render([msgspec.structs.replace(light, reflection_gain=0)], pass_id=pass_id) == base
+
+
+def test_annular_source_lights_the_front_and_leaves_distant_center_unlit(lit_bonus):
+    render, _ = lit_bonus
+    base = render([])
+    ring = MaterialLight(Vec2(264, 64), 30, (1, .5, .2), ring_radius=200,
+                         height=16, source_width=8, reflection_radius=30)
+    lit = render([ring])
+    assert max(abs(a[0] - b[0]) for a, b in zip(lit, base, strict=True)) > .03
+    assert all(math.isfinite(c) for p in lit for c in p)
+    centered = msgspec.structs.replace(ring, pos=Vec2(64, 64))
+    assert render([centered]) == base

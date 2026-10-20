@@ -1,6 +1,15 @@
 """Shared finite-source visibility for ground and creature lighting."""
 
-LIGHT_VISIBILITY_GLSL = r"""
+SOURCE_GEOMETRY_GLSL = r"""
+// Nearest point approximation to a continuous annulus, not angular integration.
+vec2 nearestRingPoint(vec2 center, vec2 receiver, float radius) {
+    vec2 delta = receiver - center;
+    float distance = length(delta);
+    return center + (distance > 1e-6 ? delta / distance : vec2(1., 0.)) * radius;
+}
+"""
+
+LIGHT_VISIBILITY_GLSL = SOURCE_GEOMETRY_GLSL + r"""
 uniform int u_dynamic_shadows;
 // Packed float texture: cell headers, body transforms, then lossless cell lists.
 uniform sampler2D u_occlusion_tex;

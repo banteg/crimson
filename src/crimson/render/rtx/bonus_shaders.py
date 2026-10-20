@@ -2,6 +2,8 @@
 
 from grim.filtering import FILTERING_GLSL
 
+from .lighting_shaders import SOURCE_GEOMETRY_GLSL
+
 BONUS_VERTEX = r"""
 #version 330
 in vec3 vertexPosition;
@@ -21,7 +23,7 @@ void main() {
 }
 """
 
-BONUS_FRAGMENT = "\n#version 330\n" + FILTERING_GLSL + r"""
+BONUS_FRAGMENT = "\n#version 330\n" + FILTERING_GLSL + SOURCE_GEOMETRY_GLSL + r"""
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
@@ -67,14 +69,14 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
     for (int i = 0; i < u_count; i++) {
         vec2 dp = world - u_pos[i].xy;
         float along = clamp(dot(dp, u_dir[i].xy), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
-        vec2 source = u_pos[i].xy + u_dir[i].xy * along;
+        vec2 source = u_rgb[i].w > 0. ? nearestRingPoint(u_pos[i].xy, world, u_rgb[i].w) : u_pos[i].xy + u_dir[i].xy * along;
         vec2 delta = source - world;
         float dist = length(delta);
         if (dist >= max(u_pos[i].z, u_response[i].z))
             continue;
         float a = 1.0 - smoothstep(0.0, u_pos[i].z, dist);
         float s = 1.0 - smoothstep(0.0, u_response[i].z, dist);
-        float axial = u_dir[i].w > 0.0
+        float axial = u_rgb[i].w <= 0. && u_dir[i].w > 0.0
             ? mix(0.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + 0.5, 0.0, 1.0))
             : 1.0;
         float weight = s * s * axial * u_response[i].y;
@@ -92,7 +94,7 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
         if (R.z > 0.05) {
             vec2 hit = world + R.xy * max(16.0, u_pos[i].w) / R.z;
             float hit_along = clamp(dot(hit - u_pos[i].xy, u_dir[i].xy), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
-            vec2 on_beam = u_pos[i].xy + u_dir[i].xy * hit_along;
+            vec2 on_beam = u_rgb[i].w > 0. ? nearestRingPoint(u_pos[i].xy, hit, u_rgb[i].w) : u_pos[i].xy + u_dir[i].xy * hit_along;
             float d_beam = length(hit - on_beam);
             float reflected_width = source_width * (8.0 / 3.0);
             coat_spec += exp(-0.5 * pow(d_beam / reflected_width, 2.0)) * 2.2 * ndl;
@@ -196,14 +198,14 @@ void main() {
     for (int i = 0; i < u_count; i++) {
         vec2 dp = world - u_pos[i].xy;
         float along = clamp(dot(dp, u_dir[i].xy), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
-        vec2 source = u_pos[i].xy + u_dir[i].xy * along;
+        vec2 source = u_rgb[i].w > 0. ? nearestRingPoint(u_pos[i].xy, world, u_rgb[i].w) : u_pos[i].xy + u_dir[i].xy * along;
         vec2 delta = source - world;
         float dist = length(delta);
         if (dist >= max(u_pos[i].z, u_response[i].z))
             continue;
         float a = 1.0 - smoothstep(0.0, u_pos[i].z, dist);
         float s = 1.0 - smoothstep(0.0, u_response[i].z, dist);
-        float axial = u_dir[i].w > 0.0
+        float axial = u_rgb[i].w <= 0. && u_dir[i].w > 0.0
             ? mix(0.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + 0.5, 0.0, 1.0))
             : 1.0;
 

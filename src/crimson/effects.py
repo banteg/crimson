@@ -666,6 +666,7 @@ class ExplosionVisual(msgspec.Struct):
     emit_light: bool = True
     age: float = 0.0
     ring: EffectEntry | None = None
+    ring_spawned: bool = False
     fireballs: list[ExplosionFireball] = msgspec.field(default_factory=list)
 
     @property
@@ -1196,6 +1197,7 @@ class EffectPool:
         template.vel = Vec2()
         template.scale_step = x87_pc24_mul(scale, 25.0)
         visual.ring = self.spawn(EffectId.RING, pos, detail_preset, preserve_bugs=preserve_bugs)
+        visual.ring_spawned = visual.ring is not None
 
         template.flags = 0x5D
         template.color = RGBA(0.1, 0.1, 0.1, 1.0)

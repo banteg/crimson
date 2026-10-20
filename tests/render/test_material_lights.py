@@ -203,3 +203,14 @@ def test_flame_stream_is_grouped_and_excludes_bubbles() -> None:
     for particle in snapshot.state.particles.entries:
         particle.style_id = ParticleStyleId.BUBBLEGUN
     assert collect_material_lights(snapshot, view_center=Vec2()) == []
+
+
+def test_annulus_budget_uses_circumference_instead_of_center() -> None:
+    from crimson.render.rtx.material_lights import MaterialLight, select_material_lights
+
+    ring = MaterialLight(Vec2(1000, 0), 30, (1, 1, 1), ring_radius=1000)
+    lamps = [MaterialLight(Vec2(40, 0), 30, (.8, .8, .8)) for _ in range(32)]
+    selected = select_material_lights([ring, *lamps], view_center=Vec2())
+    assert ring in selected
+    centered_lamps = [MaterialLight(ring.pos, 30, (.8, .8, .8)) for _ in range(32)]
+    assert ring not in select_material_lights([ring, *centered_lamps], view_center=ring.pos)

@@ -105,9 +105,10 @@ void main() {
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
-        bool beam = u_dir[i].w > 0. && dot(axis, axis) > 0.;
+        bool ring = u_rgb[i].w > 0.;
+        bool beam = !ring && u_dir[i].w > 0. && dot(axis, axis) > 0.;
         float along = clamp(dot(dp, axis), -u_dir[i].w * .5, u_dir[i].w * .5);
-        vec2 source = u_pos[i].xy + axis * along;
+        vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) : u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
         if (spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
@@ -129,7 +130,7 @@ void main() {
             }
         }
         if (u_response[i].x <= 0. || spec_distance >= u_pos[i].z) continue;
-        vec2 light_source = illuminationSource(u_pos[i].xy, axis, u_dir[i].w);
+        vec2 light_source = ring ? source : illuminationSource(u_pos[i].xy, axis, u_dir[i].w);
         vec2 delta = light_source - wp;
         float distance_to_light = length(delta);
         if (distance_to_light >= u_pos[i].z) continue;

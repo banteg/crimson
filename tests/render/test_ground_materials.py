@@ -816,3 +816,18 @@ def test_negligible_ground_diffuse_skip_has_bounded_linear_error(ground_material
     assert max(errors) > 0
     assert min(errors) >= -1e-7
     assert max(errors) <= 1.01e-5
+
+
+def test_ring_reflection_tracks_annular_footprint_instead_of_center(ground_material, mocker):
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights")
+    ring = MaterialLight(Vec2(32, 16), 80, (1, .5, .2), height=18, ring_radius=18,
+                         source_width=2, illumination_gain=0)
+    collector.return_value = [ring]
+    reflected = debug_pixels(ground, texture, mode=5)
+    collector.return_value = [msgspec.structs.replace(ring, ring_radius=0)]
+    point = debug_pixels(ground, texture, mode=5)
+    assert max(p[0] for p in reflected) > .05
+    assert sum(abs(a[0] - b[0]) for a, b in zip(reflected, point, strict=True)) > 1
+    assert all(math.isfinite(c) for p in reflected for c in p)

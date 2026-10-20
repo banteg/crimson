@@ -63,7 +63,7 @@ class BonusLighting(msgspec.Struct):
             return
         values = {
             "u_pos": [v for light in lights for v in (light.pos.x, light.pos.y, light.radius, light.height)],
-            "u_rgb": [v for light in lights for v in (*light.rgb, 0.0)],
+            "u_rgb": [v for light in lights for v in (*light.rgb, light.ring_radius)],
             "u_dir": [v for light in lights for v in (light.direction.x, light.direction.y, 0.0, light.length)],
             "u_response": [v for light in lights for v in light.response],
         }

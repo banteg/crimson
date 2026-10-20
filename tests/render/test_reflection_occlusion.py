@@ -96,3 +96,14 @@ def test_shadows_off_uses_only_reflection_support_without_dropping_reflectors():
     assert build_occlusion_grid([body], [reflected], width=1024, height=1024, illumination=False).body_count == 0
     near = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), illumination_gain=0)
     assert build_occlusion_grid([body], [near], width=1024, height=1024, illumination=False).body_count == 1
+
+
+def test_annulus_grid_keeps_outer_endpoints_and_interior_ray_blockers() -> None:
+    ring = MaterialLight(Vec2(500, 500), 30, (1, 1, 1), ring_radius=450)
+    bodies = [BodyVolume(Vec2(x, y), Vec2(8, 14), 24, 0)
+              for x, y in [(500, 500), (60, 500), (940, 500), (500, 60), (500, 940)]]
+    far = BodyVolume(Vec2(1500, 1500), Vec2(8, 14), 24, 0)
+    grid = build_occlusion_grid([*bodies, far], [ring], width=64, height=64)
+    assert grid.body_count == 5
+    assert grid.origin.x + grid.columns * grid.cell_size >= 950
+    assert grid.origin.y + grid.rows * grid.cell_size >= 950

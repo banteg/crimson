@@ -32,7 +32,9 @@ def test_one_explosion_light_survives_flash_and_does_not_depend_on_detail(detail
     assert lights[0].illumination_gain > 0 and lights[0].reflection_gain > 0
     snapshot.state.effects.update(0.4)
     faded = collect_material_lights(snapshot, view_center=Vec2(100, 120))
-    assert len(faded) == 1 and 0 < faded[0].rgb[0] < lights[0].rgb[0]
+    assert len(faded) == 2
+    fireball = next(light for light in faded if light.ring_radius == 0)
+    assert 0 < fireball.rgb[0] < lights[0].rgb[0]
     snapshot.state.effects.update(1.01)
     assert collect_material_lights(snapshot, view_center=Vec2()) == []
     assert snapshot.state.effects.explosion_visuals == []
@@ -50,7 +52,7 @@ def test_light_metadata_does_not_change_native_effects_or_rng_and_can_opt_out() 
     assert a.explosion_visuals == []
 
 
-def test_only_semantic_explosion_ring_is_refracted_and_reused_slot_is_ignored() -> None:
+def test_only_semantic_explosion_shell_is_refracted_and_outlives_native_ring() -> None:
     snapshot = frame()
     pool = snapshot.state.effects
     burst(pool)
@@ -62,7 +64,10 @@ def test_only_semantic_explosion_ring_is_refracted_and_reused_slot_is_ignored() 
     assert fronts[0].radius.x > 0 and fronts[0].radius.y == pytest.approx(fronts[0].radius.x * 1.5)
     ring = pool.explosion_visuals[0].ring
     assert ring is not None
-    ring.effect_id = EffectId.BURST
+    pool.update(0.3)
+    assert pool.explosion_visuals[0].active_ring is None
+    assert collect_pressure_fronts(ctx)[0].radius.x > fronts[0].radius.x
+    pool.update(0.21)
     assert collect_pressure_fronts(ctx) == []
     pool.reset()
     pool.spawn(EffectId.RING, Vec2(), 5, preserve_bugs=False)
@@ -184,3 +189,35 @@ def test_no_invisible_lamp_when_fireball_allocation_is_exhausted() -> None:
     burst(snapshot.state.effects)
     snapshot.state.effects.explosion_visuals[0].fireballs.clear()
     assert collect_material_lights(snapshot, view_center=Vec2()) == []
+
+
+def test_shell_light_pressure_and_sprite_share_expanding_profile() -> None:
+    from crimson.render.rtx.explosion_shell import explosion_shell
+
+    snapshot = frame()
+    burst(snapshot.state.effects)
+    visual = snapshot.state.effects.explosion_visuals[0]
+    assert explosion_shell(0, 1) is None and explosion_shell(.71, 1) is None
+    previous_radius = 0.0
+    previous_energy = 2.0
+    for age in (.05, .15, .35, .5, .69):
+        visual.age = age
+        shell = explosion_shell(age, visual.scale)
+        assert shell is not None
+        light = next(s for s in collect_material_lights(snapshot, view_center=visual.pos) if s.ring_radius > 0)
+        assert light.ring_radius == shell.radius > previous_radius
+        assert 0 < shell.energy <= previous_energy
+        assert light.rgb == pytest.approx((.6 * shell.energy, .39 * shell.energy, .18 * shell.energy))
+        assert light.length == 0 and light.source_width == 8 and light.height == 16
+        assert 0 < shell.alpha <= .36
+        previous_radius, previous_energy = shell.radius, shell.energy
+    visual.ring_spawned = False
+    assert all(s.ring_radius == 0 for s in collect_material_lights(snapshot, view_center=visual.pos))
+
+
+def test_rocket_shell_does_not_duplicate_its_central_detonation_source() -> None:
+    snapshot = frame()
+    burst(snapshot.state.effects, emit_light=False)
+    snapshot.state.effects.update(.2)
+    lights = collect_material_lights(snapshot, view_center=Vec2())
+    assert len(lights) == 1 and lights[0].ring_radius > 0

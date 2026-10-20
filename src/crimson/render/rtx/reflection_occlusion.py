@@ -94,9 +94,10 @@ def build_occlusion_grid(
             light.reflection_reach if light.reflection_gain > 0 else 0.,
             light.radius if illumination and light.illumination_gain > 0 else 0.,
         )
-        supports.append((light.pos.x, light.pos.y, direction.x, direction.y, light.length * .5, reach))
+        supports.append((light.pos.x, light.pos.y, direction.x, direction.y, light.length * .5, reach + light.ring_radius))
         axis = direction * (light.length * .5)
-        for point in (light.pos - axis, light.pos + axis):
+        extent = Vec2(abs(axis.x) + light.ring_radius, abs(axis.y) + light.ring_radius)
+        for point in (light.pos - extent, light.pos + extent):
             lo = Vec2(min(lo.x, point.x - cell_size), min(lo.y, point.y - cell_size))
             hi = Vec2(max(hi.x, point.x + cell_size), max(hi.y, point.y + cell_size))
     origin = Vec2(math.floor(lo.x / cell_size) * cell_size, math.floor(lo.y / cell_size) * cell_size)

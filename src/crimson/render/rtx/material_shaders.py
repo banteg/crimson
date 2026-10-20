@@ -20,7 +20,7 @@ uniform float u_time_s; // Seconds relative to the wetness epoch
 uniform int u_debug; // 0 shaded, 1 substrate normal, 2 liquid normal, 3 freshness, 4 amount, 5 dynamic specular
 uniform int u_spec_light_count;
 uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z_height
-uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = shape (0=point/cone, 1=capsule)
+uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = annulus radius (0=disc/segment)
 uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = broad illumination, w = capsule_h
 uniform vec4 u_spec_response[MAX_SPEC_LIGHTS]; // illumination, reflection, reflection reach, source width
 
@@ -143,6 +143,11 @@ void main() {
         vec2 axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(0.);
         vec2 light_xy = illuminationSource(sp_pos.xy, axis, sp_dir.w);
         vec2 reflection_xy = sp_pos.xy + axis * clamp(dot(world - sp_pos.xy, axis), -sp_dir.w*.5, sp_dir.w*.5);
+        bool ring = sp_col.w > 0.0;
+        if (ring) {
+            light_xy = nearestRingPoint(sp_pos.xy, world, sp_col.w);
+            reflection_xy = light_xy;
+        }
         vec2 to_l = light_xy - world;
         float d2d = length(to_l);
         float reflection_distance = length(reflection_xy - world);
@@ -172,9 +177,9 @@ void main() {
         if (response.y > 0.0 && R.z > 0.02) {
             float height = max(12., sp_pos.w);
             vec2 reflected_hit = world + R.xy * height / R.z;
-            bool beam = sp_col.w > 0.5 && sp_dir.w > 0.0 && dot(sp_dir.xy, sp_dir.xy) > 0.0001;
+            bool beam = !ring && sp_dir.w > 0.0 && dot(sp_dir.xy, sp_dir.xy) > 0.0001;
             float source_gain = 1.0;
-            vec2 on_source = sp_pos.xy;
+            vec2 on_source = ring ? nearestRingPoint(sp_pos.xy, reflected_hit, sp_col.w) : sp_pos.xy;
             if (beam) {
                 vec2 axis = normalize(sp_dir.xy);
                 float along = clamp(dot(reflected_hit - sp_pos.xy, axis), -sp_dir.w * .5, sp_dir.w * .5);
@@ -188,7 +193,7 @@ void main() {
             float blur_gain = source_width / blur_width;
             // A point source spreads across two dimensions; a beam spreads mostly across its width.
             float footprint = exp(-.5 * pow(source_distance / blur_width, 2.0)) *
-                (beam ? blur_gain : blur_gain * blur_gain);
+                ((beam || ring) ? blur_gain : blur_gain * blur_gain);
             // Fade at finite light support rather than cutting off a displaced reflection.
             float support = 1.0 - smoothstep(response.z * .8, max(.01, response.z), reflection_distance);
             float NoV = clamp(dot(N_spec, V), 0.0, 1.0);

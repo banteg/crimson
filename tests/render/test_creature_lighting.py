@@ -514,3 +514,15 @@ def test_negligible_creature_diffuse_skip_has_bounded_linear_error(lit_sprite, m
     finally:
         occlusion.close()
         rl.unload_render_texture(target)
+
+
+def test_annular_source_lights_the_front_and_leaves_distant_center_unlit(lit_sprite):
+    render, _ = lit_sprite
+    base = render([])
+    ring = MaterialLight(Vec2(264, 64), 30, (1, .5, .2), ring_radius=200,
+                         height=16, source_width=8, reflection_radius=30)
+    lit = render([ring])
+    assert max(abs(a[0] - b[0]) for a, b in zip(lit, base, strict=True)) > .03
+    assert all(math.isfinite(c) for p in lit for c in p)
+    centered = msgspec.structs.replace(ring, pos=Vec2(64, 64))
+    assert render([centered]) == base
