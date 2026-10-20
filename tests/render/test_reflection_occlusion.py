@@ -72,3 +72,16 @@ def test_dense_grid_uses_smaller_cells_without_dropping_volumes() -> None:
     assert small.cell_size == 64
     assert dense.cell_size == 32
     assert dense.body_count == 512
+
+
+def test_illumination_only_grid_support_and_explicit_energetic_profiles():
+    from crimson.projectiles.types import ProjectileTemplateId as PT
+    from crimson.render.rtx.material_lights import PROJECTILE_EMISSIONS
+
+    expected = {PT.ION_RIFLE, PT.ION_MINIGUN, PT.ION_CANNON, PT.FIRE_BULLETS,
+                PT.PLASMA_MINIGUN, PT.PLASMA_RIFLE, PT.PLASMA_CANNON}
+    assert {kind for kind, profile in PROJECTILE_EMISSIONS.items() if profile.broad_illumination} == expected
+    body = BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, 0)
+    source = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), reflection_gain=0, reflection_radius=1)
+    grid = build_occlusion_grid([body], [source], width=1024, height=1024)
+    assert grid.body_count == 1

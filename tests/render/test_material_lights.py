@@ -47,8 +47,8 @@ def test_muzzle_radiance_fades_linearly() -> None:
     assert faded.rgb == pytest.approx(tuple(channel * .5 for channel in bright.rgb))
 
 
-@pytest.mark.parametrize("kind, height", [(ProjectileTemplateId.ION_RIFLE, 40.), (ProjectileTemplateId.PLASMA_RIFLE, 18.)])
-def test_projectile_emitter_height_preserves_beam_reflection_offset(kind, height) -> None:
+@pytest.mark.parametrize("kind, height", [(ProjectileTemplateId.ION_RIFLE, 24.), (ProjectileTemplateId.PLASMA_RIFLE, 18.)])
+def test_projectile_uses_one_height_for_illumination_and_reflection(kind, height) -> None:
     snapshot = frame()
     projectile = snapshot.state.projectiles.entries[0]
     projectile.active = True

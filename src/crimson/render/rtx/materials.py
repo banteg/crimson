@@ -367,6 +367,7 @@ class MaterialGroundRenderer(GroundRenderer):
     ) -> Iterator[None]:
         from grim.assets import TextureId
 
+        self.reflection_occlusion.grid = None
         if not self.render_target_ready():
             yield
             return
@@ -376,11 +377,12 @@ class MaterialGroundRenderer(GroundRenderer):
         _uniform(sh, "u_ground_size", [float(self.width), float(self.height)])
         _uniform(sh, "u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
         _integer(sh, "u_debug", debug)
+        _integer(sh, "u_dynamic_shadows", int(frame.config is None or frame.config.display.shadows_enabled))
         lights = collect_material_lights(frame, view_center=view_center)
         _integer(sh, "u_spec_light_count", len(lights))
         bodies = (
             [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
-            if any(light.reflection_gain > 0 for light in lights) else []
+            if any(light.reflection_gain > 0 or light.illumination_gain > 0 for light in lights) else []
         )
         grid = build_occlusion_grid(bodies, lights, width=self.width, height=self.height)
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
@@ -391,7 +393,7 @@ class MaterialGroundRenderer(GroundRenderer):
         for i, light in enumerate(lights):
             _uniform(sh, f"u_spec_pos[{i}]", [light.pos.x, light.pos.y, light.radius, light.height])
             _uniform(sh, f"u_spec_color[{i}]", [*light.rgb, float(light.length > 0)])
-            _uniform(sh, f"u_spec_dir[{i}]", [light.direction.x, light.direction.y, 0.0, light.length])
+            _uniform(sh, f"u_spec_dir[{i}]", [light.direction.x, light.direction.y, float(light.broad_illumination), light.length])
             _uniform(sh, f"u_spec_response[{i}]", list(light.response))
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,
         # since rlgl flushes (and clears sampler bindings) when changing blend modes.

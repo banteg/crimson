@@ -1,4 +1,4 @@
-"""Rounded living-body proxies and a lossless spatial index for ground reflections."""
+"""Rounded living-body proxies shared by reflections and weapon illumination."""
 
 from __future__ import annotations
 
@@ -35,6 +35,8 @@ class BodyVolume(msgspec.Struct, frozen=True):
     height: float
     angle: float
     opacity: float = 1.0
+    # Unowned volumes never match a recoverable sprite center.
+    owner: Vec2 = Vec2(1e20, 1e20)
 
 
 def creature_body_volumes(creature: CreatureState) -> list[BodyVolume]:
@@ -50,7 +52,7 @@ def creature_body_volumes(creature: CreatureState) -> list[BodyVolume]:
         BodyVolume(
             creature.pos + (right * x + down * y) * creature.size,
             Vec2(rx * creature.size, ry * creature.size),
-            height * creature.size, angle, min(1.0, max(0.0, creature.tint.a)),
+            height * creature.size, angle, min(1.0, max(0.0, creature.tint.a)), creature.pos,
         )
         for x, y, rx, ry, height in profile
     ]
@@ -75,19 +77,23 @@ def build_occlusion_grid(
     cannot intersect an in-arena receiver/source segment unless the source is
     outside too; extend the grid to include those selected source endpoints.
     """
-    reflective = [light for light in lights if light.reflection_gain > 0]
-    if not reflective:
+    sources = [light for light in lights if light.reflection_gain > 0 or light.illumination_gain > 0]
+    if not sources:
         return OcclusionGrid(Vec2(), CELL_SIZE, 0, 0, [], 0, 0)
     # Fine cells reduce candidate fetches in dense crowds. Small scenes retain
     # cheaper CPU construction. Both grids retain the same volumes/visibility.
     cell_size = CELL_SIZE * .5 if len(bodies) >= 512 else CELL_SIZE
-    padding = max((max(.1, light.source_width) for light in reflective), default=0.0)
+    padding = max((max(.1, light.source_width) for light in sources), default=0.0)
     lo = Vec2(-cell_size, -cell_size)
     hi = Vec2(width + cell_size, height + cell_size)
     supports = []
-    for light in reflective:
+    for light in sources:
         direction = light.direction.normalized()
-        supports.append((light.pos.x, light.pos.y, direction.x, direction.y, light.length * .5, light.reflection_reach))
+        reach = max(
+            light.reflection_reach if light.reflection_gain > 0 else 0.,
+            light.radius if light.illumination_gain > 0 else 0.,
+        )
+        supports.append((light.pos.x, light.pos.y, direction.x, direction.y, light.length * .5, reach))
         axis = direction * (light.length * .5)
         for point in (light.pos - axis, light.pos + axis):
             lo = Vec2(min(lo.x, point.x - cell_size), min(lo.y, point.y - cell_size))
@@ -129,8 +135,8 @@ def build_occlusion_grid(
         address = len(values) // 4
         body_count += 1
         values.extend((body.pos.x, body.pos.y, body.height * .4, radius + soft_margin))
-        values.extend((1 / body.radii.x, 1 / body.radii.y, 1 / (body.height * .6), 0))
-        values.extend((c, s, body.opacity, 0))
+        values.extend((1 / body.radii.x, 1 / body.radii.y, 1 / (body.height * .6), body.owner.x))
+        values.extend((c, s, body.opacity, body.owner.y))
         for cell in occupied:
             cells[cell].append(address)
     references = 0
@@ -144,8 +150,10 @@ def build_occlusion_grid(
 
 class ReflectionOcclusion(msgspec.Struct):
     texture: rl.Texture | None = None
+    grid: OcclusionGrid | None = None
 
     def close(self) -> None:
+        self.grid = None
         if self.texture is not None:
             rl.unload_texture(self.texture)
             self.texture = None
@@ -169,4 +177,5 @@ class ReflectionOcclusion(msgspec.Struct):
             rl.set_texture_filter(self.texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
         else:
             rl.update_texture(self.texture, data)
+        self.grid = grid
         return self.texture

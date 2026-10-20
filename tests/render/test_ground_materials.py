@@ -264,13 +264,16 @@ def test_partial_scorch_removes_film_without_diluting_its_age(ground_material) -
     assert pixels(ground.coverage)[center][0] < 0.6
 
 
-def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None) -> list[tuple[float, float, float, float]]:
+def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None, shadows: bool = True) -> list[tuple[float, float, float, float]]:
     class Textures:
         def texture(self, _texture_id):
             return texture
 
+    from grim.config import default_crimson_cfg
+    config = default_crimson_cfg()
+    config.display.shadows_enabled = shadows
     frame = RenderFrame(
-        config=None, camera=Vec2(), ground=ground, state=GameplayState(), players=[], creatures=creatures if creatures is not None else CreaturePool(),
+        config=config, camera=Vec2(), ground=ground, state=GameplayState(), players=[], creatures=creatures if creatures is not None else CreaturePool(),
         resources=cast(Any, Textures()), elapsed_ms=time * 1000, bonus_anim_phase=0, rtx_mode=RtxRenderMode.RTX,
     )
     target = load_float_render_texture(64, 64)
@@ -426,7 +429,7 @@ def test_single_expired_freeze_shard_has_ice_coverage_and_reflection(ground_mate
     mocker.patch.object(ground_materials, "collect_material_lights", return_value=[
         MaterialLight(Vec2(32, 14), 150, (4, 4, 4), height=30),
     ])
-    icy = debug_pixels(ground, texture, mode=0)
+    icy = debug_pixels(ground, texture, mode=5)
     # Remove only ice coverage: substrate color, relief, specularity and lights stay identical.
     with texture_mode(ground.coverage):
         rl.rl_color_mask(False, False, False, True)
@@ -434,7 +437,7 @@ def test_single_expired_freeze_shard_has_ice_coverage_and_reflection(ground_mate
             rl.clear_background(rl.BLANK)
         finally:
             rl.rl_color_mask(True, True, True, True)
-    dry = debug_pixels(ground, texture, mode=0)
+    dry = debug_pixels(ground, texture, mode=5)
     assert max(max(a[:3]) - max(b[:3]) for a, b in zip(icy, dry, strict=True)) > .01
 
 
@@ -501,12 +504,12 @@ def test_ice_color_is_not_absorbed_by_older_blood_but_new_blood_can_cover_it(gro
         blue = debug_pixels(ground, texture, mode=0)[center]
         # The shard is translucent: bright fresh blood can remain visible through it.
         # Its blue contribution must survive absorption rather than become a red cutout.
-        assert blue[2] > underlying[2] + .1
-        assert blue[2] - blue[0] > underlying[2] - underlying[0] + .1
+        assert blue[2] > underlying[2] * 1.35
+        assert blue[2] / blue[0] > underlying[2] / underlying[0] + .25
         ground.material_batches.extend([blood(1)] * 8)
         red = debug_pixels(ground, texture, mode=0, time=1)[center]
         assert red[0] > red[2]
-        assert red[2] < blue[2] * .6
+        assert red[2] == pytest.approx(underlying[2], abs=.01)
         n = ground.coverage.texture.width
         assert pixels(ground.coverage)[n // 2 * n + n // 2][3] == 0
     finally:
@@ -642,10 +645,10 @@ def test_body_occludes_only_its_sources_reflection(ground_material, mocker, beam
     cleared = debug_pixels(ground, texture, mode=5, creatures=pool)
     assert sum(p[0] for p in cleared) > sum(p[0] for p in blocked) * 1.2
     proxy.side_effect = lambda c: [body, *distant] if c.active else []
-    # Ambient and diffuse, including absorption, are byte-identical with bodies.
+    # Ambient is unchanged; disabling dynamic shadows retains diffuse light.
     for sources in ([], [msgspec.structs.replace(source, illumination_gain=1, reflection_gain=0)]):
         collector.return_value = sources
-        assert debug_pixels(ground, texture, mode=0) == debug_pixels(ground, texture, mode=0, creatures=pool)
+        assert debug_pixels(ground, texture, mode=0, shadows=False) == debug_pixels(ground, texture, mode=0, creatures=pool, shadows=False)
     # Unobstructed second sources do not inherit the first source's shadow.
     other = MaterialLight(Vec2(4, 4), 100, (0, 1, 0), height=30, illumination_gain=0)
     collector.return_value = [other]
@@ -725,3 +728,62 @@ def test_spatial_cell_crossing_does_not_drop_a_soft_body(ground_material, mocker
     energies = [sum(p[0] for p in im) for im in images]
     assert energies[0] == pytest.approx(energies[1], rel=.01)
     assert max(energies) < sum(p[0] for p in base) * .9
+
+
+def test_dynamic_shadow_switch_does_not_disable_reflection_visibility(ground_material, mocker):
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=35)
+    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
+    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    source = MaterialLight(Vec2(32, 16), 150, (2, 1, .5), height=24, reflection_gain=0, broad_illumination=True)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
+    clear = debug_pixels(ground, texture, mode=0, creatures=pool, shadows=False)
+    shadow = debug_pixels(ground, texture, mode=0, creatures=pool)
+    assert sum(p[0] for p in shadow) < sum(p[0] for p in clear) * .95
+    assert all(b[0] <= a[0] for a, b in zip(clear, shadow, strict=True))
+    collector.return_value = [msgspec.structs.replace(source, illumination_gain=0, reflection_gain=1)]
+    assert debug_pixels(ground, texture, mode=5, creatures=pool) == debug_pixels(ground, texture, mode=5, creatures=pool, shadows=False)
+    collector.return_value = []
+    debug_pixels(ground, texture, mode=0, creatures=pool)
+    assert ground.reflection_occlusion.grid is None
+
+
+def test_direct_shadows_are_per_source_and_coincident_zero_height_is_finite(ground_material, mocker):
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=35)
+    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
+    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    red_source = MaterialLight(Vec2(32, 16), 150, (2, 0, 0), height=24, reflection_gain=0)
+    green_source = MaterialLight(Vec2(4, 4), 150, (0, 2, 0), height=24, reflection_gain=0)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[red_source])
+    red = debug_pixels(ground, texture, mode=0, creatures=pool)
+    collector.return_value = [green_source]
+    green = debug_pixels(ground, texture, mode=0, creatures=pool)
+    collector.return_value = [red_source, green_source]
+    both = debug_pixels(ground, texture, mode=0, creatures=pool)
+    assert [p[0] for p in both] == pytest.approx([p[0] for p in red], abs=.001)
+    assert [p[1] for p in both] == pytest.approx([p[1] for p in green], abs=.001)
+    collector.return_value = [msgspec.structs.replace(red_source, pos=Vec2(32.5, 31.5), height=0)]
+    result = debug_pixels(ground, texture, mode=0, creatures=pool)
+    assert all(math.isfinite(c) for p in result for c in p)
+
+
+@pytest.mark.parametrize("broad", [False, True])
+def test_weak_sources_keep_cosine_response_without_broad_grazing_fill(ground_material, mocker, broad):
+    ground, texture = ground_material
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+    base = debug_pixels(ground, texture, mode=0)
+    center = 32 * 64 + 32
+    increments = []
+    for height in (12., 24.):
+        collector.return_value = [MaterialLight(Vec2(32.5, 4.5), 100, (.7, 0, 0), height=height,
+                                               reflection_gain=0, broad_illumination=broad)]
+        lit = debug_pixels(ground, texture, mode=0)
+        increments.append(lit[center][0] ** 2.2 - base[center][0] ** 2.2)
+    ndls = [height / math.hypot(height, 27.) for height in (12., 24.)]
+    expected = [( .22 + .78 * ndl) if broad else .22 * ndl for ndl in ndls]
+    assert increments[0] / increments[1] == pytest.approx(expected[0] / expected[1], rel=.025)

@@ -2,6 +2,8 @@
 
 from grim.filtering import FILTERING_GLSL
 
+from .lighting_shaders import LIGHT_VISIBILITY_GLSL
+
 CREATURE_VERTEX = r"""
 #version 330
 in vec3 vertexPosition;
@@ -21,7 +23,7 @@ void main() {
 }
 """
 
-CREATURE_FRAGMENT = "\n#version 330\n" + FILTERING_GLSL + r"""
+CREATURE_FRAGMENT = "\n#version 330\n" + FILTERING_GLSL + LIGHT_VISIBILITY_GLSL + r"""
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
@@ -29,6 +31,7 @@ uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
 uniform int u_count;
+uniform float u_ambient = 1.0;
 uniform vec4 u_pos[32];
 uniform vec4 u_rgb[32];
 uniform vec4 u_dir[32];
@@ -61,7 +64,7 @@ void main() {
     if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0) {
-        finalColor = base;
+        finalColor = vec4(base.rgb * pow(u_ambient, 1. / 2.2), base.a);
         return;
     }
     vec2 q = fract(fragTexCoord * 8.0) * 2.0 - 1.0;
@@ -70,9 +73,11 @@ void main() {
     float determinant = dxq.x * dyq.y - dxq.y * dyq.x;
     // Collapsed atlas coordinates have no recoverable orientation.
     mat2 rot = mat2(1.0);
+    vec2 owner = vec2(1e19);
     if (abs(determinant) > 1e-12) {
         mat2 basis = mat2(dxw * dyq.y - dyw * dxq.y, dyw * dxq.x - dxw * dyq.x) / determinant;
         rot = mat2(normalize(basis[0]), normalize(basis[1]));
+        owner = world - basis * q;
     }
     vec2 wp = world;
     float lum = dot(texel.rgb, vec3(.299, .587, .114));
@@ -101,23 +106,30 @@ void main() {
         vec2 dp = wp - u_pos[i].xy;
         float along = clamp(dot(dp, u_dir[i].xy), -u_dir[i].w * .5, u_dir[i].w * .5);
         vec2 source = u_pos[i].xy + u_dir[i].xy * along;
-        vec2 delta = source - wp;
-        float distance_to_light = length(delta);
-        if (distance_to_light >= max(u_pos[i].z, u_response[i].z))
-            continue;
-        float a = 1.0 - smoothstep(0.0, u_pos[i].z, distance_to_light);
-        float s = 1.0 - smoothstep(0.0, u_response[i].z, distance_to_light);
-        // Taper emitted intensity once; only radial attenuation is squared.
+        float spec_distance = length(source - wp);
+        if (spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
+        float s = 1.0 - smoothstep(0.0, u_response[i].z, spec_distance);
         float axial_gain = u_dir[i].w > 0.0
-            ? mix(.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + .5, 0.0, 1.0))
-            : 1.0;
+            ? mix(.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + .5, 0.0, 1.0)) : 1.;
+        float source_width = max(.1, u_response[i].w);
+        vec3 spec_L = normalize(vec3(source - wp, max(8., u_pos[i].w - 8.)));
+        vec3 H = normalize(spec_L + V);
+        float catchlight = pow(max(dot(N, H), 0.0), clamp(84.0 / source_width, 8.0, 100.0)) *
+                           max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
+        float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
+                            (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
+        if (spec_amount * max(u_rgb[i].r, max(u_rgb[i].g, u_rgb[i].b)) > .00001) {
+            float visibility = illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), source_width, owner);
+            added += u_rgb[i].rgb * spec_amount * visibility;
+        }
+        if (u_response[i].x <= 0. || spec_distance >= u_pos[i].z) continue;
+        vec2 light_source = illuminationSource(u_pos[i].xy, u_dir[i].xy, u_dir[i].w);
+        vec2 delta = light_source - wp;
+        float distance_to_light = length(delta);
+        if (distance_to_light >= u_pos[i].z) continue;
+        float a = 1.0 - smoothstep(0.0, u_pos[i].z, distance_to_light);
         vec3 L = normalize(vec3(delta, max(8.0, u_pos[i].w - 8.0)));
         float facing = max(dot(N, L), 0.0);
-        vec3 H = normalize(L + V);
-        float source_width = max(.1, u_response[i].w);
-        float catchlight = pow(max(dot(N, H), 0.0), clamp(84.0 / source_width, 8.0, 100.0)) *
-                           facing * min(1.0, source_width / 3.0);
-
         // An inner silhouette rim, only on the edge facing this emitter.
         // Atlas-local samples cannot reach neighboring animation frames.
         vec2 light_xy = normalize(delta + vec2(.0001));
@@ -132,17 +144,16 @@ void main() {
         // Rim and lateral thin-part transmission follow illumination, never
         // bypassing a restrained tracer's gain. Specular catches stay independent.
         // The cell-center dome normal cannot describe individual limbs.
-        added += u_rgb[i].rgb * axial_gain * (
-            u_response[i].x * a * a *
+        float visibility = illuminationVisibility(vec3(wp, 8.), vec3(light_source, u_pos[i].w), source_width, owner);
+        added += u_rgb[i].rgb * (
+            u_response[i].x * a * a * visibility *
                 (baseLin * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
                  edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum) +
-                 transmission_tint * transmission * elevation * TRANSMISSION_STRENGTH) +
-            u_response[i].y * s * s *
-                catchlight * (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum));
+                 transmission_tint * transmission * elevation * TRANSMISSION_STRENGTH));
     }
     // Bound aggregate illumination in dense fights without changing hue.
     float peak = max(added.r, max(added.g, added.b));
     added *= 1.0 / (1.0 + peak / 1.4);
-    finalColor = peak > 0.0 ? vec4(pow(baseLin + added, vec3(1.0 / 2.2)), base.a) : base;
+    finalColor = peak > 0.0 || u_ambient != 1.0 ? vec4(pow(baseLin * u_ambient + added, vec3(1.0 / 2.2)), base.a) : base;
 }
 """

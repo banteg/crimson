@@ -115,7 +115,7 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False, textured=False, relief_ramp=None, pigment: tuple[int, int, int] = (70, 55, 40)):
+               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), pigment: tuple[int, int, int] = (70, 55, 40)):
         other = rl.gen_image_color(256, 256, rl.BLANK)
         rl.image_draw_circle(other, 16, 16, 10, rl.Color(*pigment, 255))
         rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(*pigment, 255))
@@ -132,12 +132,12 @@ def lit_sprite(raylib_context):
         rl.unload_image(other)
         rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR if textured
                               else rl.TextureFilter.TEXTURE_FILTER_POINT)
-        lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale))
+        lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale), occlusion=occlusion, shadows=shadows, ambient=ambient)
         with texture_mode(target):
             rl.clear_background(rl.BLANK)
             with alpha.scope():
                 def draw():
-                    pos = (Vec2(64, 64) + camera) * scale
+                    pos = (center + camera) * scale
                     source = rl_rectangle(20, 16, 0, 0) if degenerate_uv else rl_rectangle(0, 0, 32, 32)
                     rl.draw_texture_pro(texture, source,
                                         rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
@@ -191,7 +191,7 @@ def test_degenerate_uv_basis_keeps_lighting_finite(lit_sprite, monkeypatch):
     start = fragment.index("    float determinant =")
     end = fragment.index("    vec2 wp =", start)
     monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT",
-                        fragment[:start] + "    mat2 rot = mat2(1.0);\n" + fragment[end:])
+                        fragment[:start] + "    mat2 rot = mat2(1.0); vec2 owner = vec2(1e19);\n" + fragment[end:])
     lighting.close()
     identity = render([MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=40)], degenerate_uv=True)
     assert lit == identity
@@ -282,14 +282,14 @@ def test_relief_cannot_read_neighboring_atlas_cells(lit_sprite, offset):
 
 @pytest.mark.parametrize("direction", [-1., 1.])
 @pytest.mark.parametrize("along_fraction,gain", [(0., .2), (.5, .6), (1., 1.)])
-def test_beam_taper_matches_point_radiance_once(lit_sprite, direction, along_fraction, gain):
+def test_beam_reflection_taper_matches_point_radiance_once(lit_sprite, direction, along_fraction, gain):
     render, _lighting = lit_sprite
     rgb = (.5, .8, 1.5)
     # Along this pixel column the closest beam point is exactly the reference point.
     source = Vec2(64.5, 40)
     beam = MaterialLight(source + Vec2(direction * (0.5 - along_fraction) * 256, 0),
-                         110, rgb, height=40, direction=Vec2(direction, 0), length=256)
-    point = MaterialLight(source, 110, tuple(c * gain for c in rgb), height=40)
+                         110, rgb, height=40, direction=Vec2(direction, 0), length=256, illumination_gain=0)
+    point = MaterialLight(source, 110, tuple(c * gain for c in rgb), height=40, illumination_gain=0)
     actual = render([beam])
     expected = render([point])
     for y in range(56, 72):
@@ -398,3 +398,40 @@ def test_transmission_obeys_illumination_channel(lit_sprite, monkeypatch, illumi
     assert transmission_on != base
     assert [p[3] for p in transmission_on] == [p[3] for p in base]
     assert positive_control != render([illuminated])
+
+
+@pytest.mark.parametrize("rotation", [0., 37., 143., 271.])
+@pytest.mark.parametrize("scale", [.73, 1., 1.37, 1.8])
+@pytest.mark.parametrize("owner", [Vec2(64, 64), Vec2(984, 874)])
+def test_own_body_is_excluded_without_excluding_nearby_creatures(lit_sprite, rotation, scale, owner):
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    source = MaterialLight(owner + Vec2(29, 0), 110, (1.4, .68, .2), height=24)
+    body = BodyVolume(owner, Vec2(12, 10), 28, math.radians(rotation), owner=owner)
+    occlusion = ReflectionOcclusion()
+    camera = Vec2(64 / scale + .37, 64 / scale - .23) - owner
+    options = {"rotation": rotation, "scale": scale, "camera": camera, "center": owner}
+    try:
+        clear = render([source], **options)
+        occlusion.upload(build_occlusion_grid([body], [source], width=1024, height=1024))
+        own = render([source], occlusion=occlusion, **options)
+        assert own == clear
+        # A different owner very close to this sprite must remain a blocker.
+        neighbor = msgspec.structs.replace(body, owner=owner + Vec2(.1, 0))
+        occlusion.upload(build_occlusion_grid([neighbor], [source], width=1024, height=1024))
+        blocked = render([source], occlusion=occlusion, **options)
+        assert sum(p[0] for p in blocked) < sum(p[0] for p in clear) * .95
+        assert render([source], occlusion=occlusion, shadows=False, **options) == clear
+        assert render([], occlusion=occlusion, ambient=.6, **options) == render([], ambient=.6, **options)
+    finally:
+        occlusion.close()
+
+
+def test_unlit_ambient_fill_preserves_alpha_without_loading_thickness(lit_sprite):
+    render, lighting = lit_sprite
+    native = render([], use_shader=False)
+    filled = render([], ambient=.6)
+    assert not lighting.thickness_textures
+    assert [p[3] for p in filled] == [p[3] for p in native]
+    assert sum(p[0] for p in filled) == pytest.approx(sum(p[0] for p in native) * .6 ** (1 / 2.2), rel=.002)

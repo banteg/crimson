@@ -238,6 +238,9 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             collect_material_lights(frame, view_center=render_ctx.view.screen_size * 0.5 - render_ctx.view.camera),
             camera=render_ctx.view.camera,
             view_scale=render_ctx.view.view_scale,
+            occlusion=frame.ground.reflection_occlusion if isinstance(frame.ground, MaterialGroundRenderer) else None,
+            shadows=frame.config is None or frame.config.display.shadows_enabled,
+            ambient=.60,
         )
 
     # Native `creature_render_all` batches all overlays across the active pool

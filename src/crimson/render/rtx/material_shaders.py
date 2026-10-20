@@ -1,5 +1,7 @@
 """Ground material shaders adapted from the crimson-night-argon look development study."""
 
+from .lighting_shaders import LIGHT_VISIBILITY_GLSL
+
 GROUND_FRAGMENT = r"""
 #version 330
 
@@ -19,73 +21,10 @@ uniform int u_debug; // 0 shaded, 1 substrate normal, 2 liquid normal, 3 freshne
 uniform int u_spec_light_count;
 uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z_height
 uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = shape (0=point/cone, 1=capsule)
-uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = focus, w = capsule_h
+uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = broad illumination, w = capsule_h
 uniform vec4 u_spec_response[MAX_SPEC_LIGHTS]; // illumination, reflection, reflection reach, source width
 
-// Packed float texture: cell headers, body transforms, then lossless cell lists.
-uniform sampler2D u_occlusion_tex;
-uniform vec4 u_occlusion_grid; // xy world origin, zw cell counts; z=0 disables
-uniform float u_occlusion_cell_size;
-
-vec4 occlusionData(int address) {
-    int width = textureSize(u_occlusion_tex, 0).x;
-    return texelFetch(u_occlusion_tex, ivec2(address % width, address / width), 0);
-}
-
-float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, float inverse_xy_length) {
-    vec4 center = occlusionData(address);
-    vec2 offset = origin.xy - center.xy;
-    float along = clamp(-dot(offset, ray.xy) * inverse_xy_length, 0., 1.);
-    vec2 nearest = offset + ray.xy * along;
-    // Reject neighboring cell members with one fetch before loading transforms.
-    // The bound already includes the largest selected source's soft margin.
-    if (dot(nearest, nearest) > center.w * center.w) return 1.;
-    vec3 inverse_radius = occlusionData(address + 1).xyz;
-    vec4 orientation = occlusionData(address + 2);
-    vec2 rotation = orientation.xy;
-    mat2 local = mat2(rotation.x, -rotation.y, rotation.y, rotation.x);
-    vec3 q = origin - center.xyz;
-    q.xy = local * q.xy;
-    ray.xy = local * ray.xy;
-    q *= inverse_radius;
-    ray *= inverse_radius;
-    float t = clamp(-dot(q, ray) / max(dot(ray, ray), 1e-8), 0., 1.);
-    float distance = length(q + ray * t);
-    // Analytic finite-source penumbra. The cone grows from the receiver toward
-    // the source; this is a smooth body proxy, not sampled silhouette tracing.
-    float softness = max(.015, source_width * t * max(inverse_radius.x, inverse_radius.y));
-    return 1. - orientation.z * (1. - smoothstep(1. - softness, 1. + softness, distance));
-}
-
-float reflectionVisibility(vec2 receiver, vec2 source, float height, float source_width) {
-    if (u_occlusion_grid.z == 0.) return 1.;
-    vec2 start = (receiver - u_occlusion_grid.xy) / u_occlusion_cell_size;
-    vec2 delta = (source - receiver) / u_occlusion_cell_size;
-    ivec2 cell = ivec2(floor(start));
-    ivec2 step_cell = ivec2(sign(delta));
-    vec2 next_edge = vec2(cell) + step(vec2(0.), delta);
-    vec2 t_step = vec2(1e20);
-    vec2 t_edge = vec2(1e20);
-    if (abs(delta.x) > 1e-8) { t_step.x = abs(1. / delta.x); t_edge.x = (next_edge.x - start.x) / delta.x; }
-    if (abs(delta.y) > 1e-8) { t_step.y = abs(1. / delta.y); t_edge.y = (next_edge.y - start.y) / delta.y; }
-    vec3 ray = vec3(source - receiver, height);
-    float visibility = 1.;
-    float inverse_xy_length = 1. / max(dot(ray.xy, ray.xy), 1e-8);
-    // Each step crosses one grid boundary. No nearest-body budget drops blockers.
-    while (cell.x >= 0 && cell.y >= 0 && cell.x < int(u_occlusion_grid.z) && cell.y < int(u_occlusion_grid.w)) {
-        vec4 header = occlusionData(cell.y * int(u_occlusion_grid.z) + cell.x);
-        for (int j = 0; j < int(header.y); j++) {
-            int address = int(occlusionData(int(header.x) + j).x);
-            visibility = min(visibility, bodyVisibility(address, vec3(receiver, 0.), ray, source_width, inverse_xy_length));
-            if (visibility < .001) return visibility;
-        }
-        if (min(t_edge.x, t_edge.y) >= 1.) break;
-        if (t_edge.x < t_edge.y) { cell.x += step_cell.x; t_edge.x += t_step.x; }
-        else { cell.y += step_cell.y; t_edge.y += t_step.y; }
-    }
-    return visibility;
-}
-
+""" + LIGHT_VISIBILITY_GLSL + r"""
 float blood_below_ice(vec4 surface, vec4 coverage) {
     // Ice occludes the film; it does not thin it into a new red meniscus.
     // Both stored volume and blood coverage have been attenuated by the ice opacity.
@@ -168,7 +107,7 @@ void main() {
 
     // Readable daylight floor: lighting adds to the scene, never blacks out its unlit regions.
     float daylight_ndl = clamp(dot(N_sub, normalize(vec3(-0.38, -0.48, 0.79))), 0.0, 1.0);
-    vec3 ambient_term = vec3(0.94 + 0.08 * daylight_ndl);
+    vec3 ambient_term = vec3(0.50 + 0.12 * daylight_ndl);
     vec3 sky_reflection = pow(vec3(0.22, 0.25, 0.30), vec3(2.2));
     float soil_lum = dot(albedo_tex.rgb, vec3(0.299, 0.587, 0.114));
     vec3 base_substrate = mix(albedo_tex.rgb, vec3(soil_lum * 1.04, soil_lum * 0.98, soil_lum * 0.92), wet_film * 0.85);
@@ -201,43 +140,27 @@ void main() {
         vec4 sp_dir = u_spec_dir[i];
         vec4 response = u_spec_response[i];
 
-        vec2 light_xy = sp_pos.xy;
-        vec2 reflection_xy = sp_pos.xy;
-        float capsule_axial_gain = 1.0;
-        if (sp_col.w > 0.5 && dot(sp_dir.xy, sp_dir.xy) > 0.0001) {
-            vec2 axis = normalize(sp_dir.xy);
-            float h_len = max(1.0, sp_dir.w);
-            float raw_proj = dot(world - sp_pos.xy, axis);
-            float proj = clamp(raw_proj, -h_len * 0.5, h_len * 0.5);
-            reflection_xy += axis * proj;
-            // Bias reflection point toward the blazing projectile head (+0.45 * h_len)
-            float biased_proj = mix(proj, h_len * 0.45, 0.24);
-            light_xy = sp_pos.xy + axis * biased_proj;
-            // Steep head-to-tail intensity taper: blazing comet head -> fading tail!
-            float axis_t = clamp((proj + h_len * 0.5) / h_len, 0.0, 1.0);
-            float head_dist = length(world - (sp_pos.xy + axis * (h_len * 0.45)));
-            float head_hotspot = exp(-head_dist / max(18.0, sp_pos.z * 0.28)) * 0.65;
-            capsule_axial_gain = mix(0.12, 1.05, pow(axis_t, 1.85)) + head_hotspot;
-        }
-
+        vec2 axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(0.);
+        vec2 light_xy = illuminationSource(sp_pos.xy, axis, sp_dir.w);
+        vec2 reflection_xy = sp_pos.xy + axis * clamp(dot(world - sp_pos.xy, axis), -sp_dir.w*.5, sp_dir.w*.5);
         vec2 to_l = light_xy - world;
         float d2d = length(to_l);
         float reflection_distance = length(reflection_xy - world);
         float rad = max(1.0, sp_pos.z);
-        if (d2d >= rad && reflection_distance >= response.z) continue;
-
-        // Reflection-only tracers need no diffuse optical-path evaluation.
+        if (reflection_distance >= max(rad, response.z)) continue;
         if (response.x > 0.0 && d2d < rad) {
-            float x_att = clamp(1.0 - d2d / rad, 0.0, 1.0);
-            float atten = x_att * x_att * capsule_axial_gain;
-            vec3 L = normalize(vec3(to_l.x, to_l.y, max(12.0, sp_pos.w)));
-            float ndl_sub = clamp(dot(N_sub, L), 0.0, 1.0);
-            float flat_ndl = L.z;
-            // Each light has its own optical path and relief; fading it cannot recolor other light.
-            vec3 transmittance = exp(-absorption * (0.90 + 0.35 / clamp(flat_ndl, 0.22, 1.0)));
+            float atten = pow(max(0., 1. - d2d / rad), 2.);
+            vec3 L = normalize(vec3(to_l, max(.001, sp_pos.w)));
+            float ndl_sub = max(dot(N_sub, L), 0.);
+            vec3 transmittance = exp(-absorption * (.90 + .35 / clamp(L.z, .22, 1.)));
             vec3 direct_albedo = mix(wetted_substrate * transmittance + blood_body_color, albedo_tex.rgb, is_ice);
-            float relief = clamp((ndl_sub + 0.18) / (flat_ndl + 0.18), 0.64, 1.55);
-            diffuse_lit += direct_albedo * sp_col.rgb * (response.x * atten * ndl_sub * 0.22 * relief);
+            // Weak sources retain their original angular response. Broad grazing
+            // fill is an explicit energetic-source policy, not inferred from gain.
+            float relief = sp_dir.z > .5 ? clamp((ndl_sub + .10) / (L.z + .10), .35, 2.5)
+                                         : clamp((ndl_sub + .18) / (L.z + .18), .64, 1.55);
+            float angular_response = sp_dir.z > .5 ? .22 + .78 * ndl_sub : .22 * ndl_sub;
+            float visibility = illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
+            diffuse_lit += direct_albedo * sp_col.rgb * (response.x * atten * angular_response * relief * visibility);
         }
 
         // Reflect the virtual eye ray into a finite source at the emitter's height.
@@ -273,7 +196,7 @@ void main() {
             // Only meaningful dynamic reflections trace bodies. Ambient, sky and
             // diffuse light are deliberately independent of this visibility.
             if (max(reflected.r, max(reflected.g, reflected.b)) > .00001)
-                reflected *= reflectionVisibility(world, on_source, height, source_width);
+                reflected *= sourceVisibility(vec3(world, 0.), vec3(on_source, height), source_width, vec2(1e19));
             spec_accum += reflected;
         }
     }

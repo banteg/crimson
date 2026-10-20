@@ -43,6 +43,7 @@ class MaterialLight(msgspec.Struct, frozen=True):
     illumination_gain: float = 1.0
     reflection_gain: float = 1.0
     reflection_radius: float | None = None
+    broad_illumination: bool = False
 
     @property
     def reflection_reach(self) -> float:
@@ -64,6 +65,7 @@ class ProjectileEmission(msgspec.Struct, frozen=True):
     reach: float = 180.0
     tail: float = 0.0
     fade_power: float = 1.0
+    broad_illumination: bool = False
 
 
 _TRACER = ProjectileEmission(
@@ -79,13 +81,13 @@ PROJECTILE_EMISSIONS: dict[PT, ProjectileEmission] = {
     PT.GAUSS_GUN: ProjectileEmission(
         (0.054, 0.102, 0.192), 75.0, 1.0, height=40.0, illumination=0.15, reach=150.0, tail=math.inf, fade_power=2.2,
     ),
-    PT.ION_RIFLE: ProjectileEmission((0.55, 0.82, 1.45), 195.0, 3.0, height=40.0, reach=195.0, tail=256.0),
-    PT.ION_MINIGUN: ProjectileEmission((0.50, 0.78, 1.35), 160.0, 2.0, height=40.0, reach=160.0, tail=256.0),
-    PT.ION_CANNON: ProjectileEmission((0.65, 0.90, 1.65), 240.0, 5.0, height=40.0, reach=240.0, tail=256.0),
-    PT.FIRE_BULLETS: ProjectileEmission((1.40, 0.68, 0.20), 155.0, 3.0, height=40.0, reach=155.0, tail=256.0),
-    PT.PLASMA_MINIGUN: ProjectileEmission((0.72, 0.37, 0.08), 100.0, 2.0, illumination=0.6, reach=125.0, tail=4.2),
-    PT.PLASMA_RIFLE: ProjectileEmission((1.1, 0.57, 0.12), 140.0, 5.0, illumination=0.8, reach=175.0, tail=17.5),
-    PT.PLASMA_CANNON: ProjectileEmission((1.5, 0.76, 0.16), 190.0, 9.0, reach=250.0, tail=44.2),
+    PT.ION_RIFLE: ProjectileEmission((0.55, 0.82, 1.45), 195.0, 3.0, height=24.0, illumination=6.0, reach=195.0, tail=256.0, broad_illumination=True),
+    PT.ION_MINIGUN: ProjectileEmission((0.50, 0.78, 1.35), 160.0, 2.0, height=24.0, illumination=4.0, reach=160.0, tail=256.0, broad_illumination=True),
+    PT.ION_CANNON: ProjectileEmission((0.65, 0.90, 1.65), 240.0, 5.0, height=24.0, illumination=8.0, reach=240.0, tail=256.0, broad_illumination=True),
+    PT.FIRE_BULLETS: ProjectileEmission((1.40, 0.68, 0.20), 155.0, 3.0, height=24.0, illumination=4.0, reach=155.0, tail=256.0, broad_illumination=True),
+    PT.PLASMA_MINIGUN: ProjectileEmission((0.72, 0.37, 0.08), 100.0, 2.0, illumination=2.4, reach=125.0, tail=4.2, broad_illumination=True),
+    PT.PLASMA_RIFLE: ProjectileEmission((1.1, 0.57, 0.12), 140.0, 5.0, illumination=3.2, reach=175.0, tail=17.5, broad_illumination=True),
+    PT.PLASMA_CANNON: ProjectileEmission((1.5, 0.76, 0.16), 190.0, 9.0, illumination=4.0, reach=250.0, tail=44.2, broad_illumination=True),
     PT.SPIDER_PLASMA: ProjectileEmission((0.08, 0.65, 0.025), 100.0, 2.0, illumination=0.5, reach=140.0, tail=4.2),
     PT.SHRINKIFIER: ProjectileEmission((0.06, 0.03, 0.18), 65.0, 2.0, illumination=0.15, reach=120.0, tail=4.2),
     PT.PULSE_GUN: ProjectileEmission((0.025, 0.24, 0.04), 75.0, 5.0, illumination=0.15, reach=130.0),
@@ -121,6 +123,7 @@ def projectile_source(proj: Projectile) -> MaterialLight | None:
         length=span,
         source_width=width,
         illumination_gain=profile.illumination,
+        broad_illumination=profile.broad_illumination,
         reflection_gain=profile.reflection,
         reflection_radius=profile.reach,
     )
@@ -150,6 +153,7 @@ def _flame_sources(frame: RenderFrame) -> list[MaterialLight]:
                 110.0,
                 (rgb[0] * scale, rgb[1] * scale, rgb[2] * scale),
                 height=20.0,
+                broad_illumination=True,
                 direction=direction,
                 length=28.0 if direction.length_sq() > 0.0 else 0.0,
                 source_width=5.0,
@@ -228,6 +232,7 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                 height=28.0,
                 source_width=4.0,
                 illumination_gain=0.8 if energetic else 0.12,
+                broad_illumination=energetic,
                 reflection_gain=0.6,
                 reflection_radius=140.0,
             ),
@@ -249,6 +254,7 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                         360.0 * max(0.35, sec.detonation_scale),
                         (1.75 * gain, 1.05 * gain, 0.38 * gain),
                         height=34.0,
+                        broad_illumination=True,
                         source_width=3.0 + 28.0 * t * sec.detonation_scale,
                     ),
                 )
@@ -263,6 +269,7 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                     110.0 * scale,
                     (0.9 * scale, 0.47 * scale, 0.1 * scale),
                     height=22.0,
+                    broad_illumination=True,
                     direction=direction,
                     length=6.0 * scale,
                     source_width=5.0 * scale,

@@ -13,17 +13,25 @@ from grim.raylib_api import rl
 from .creature_shaders import CREATURE_FRAGMENT, CREATURE_VERTEX
 from .creature_translucency import load_thickness_texture
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
+from .reflection_occlusion import ReflectionOcclusion
 
 
 class CreatureLighting(msgspec.Struct):
     shader: rl.Shader | None = None
     locations: dict[str, int] = msgspec.field(default_factory=dict)
     active: bool = False
+    light_count: int = 0
     thickness_textures: dict[int, rl.Texture] = msgspec.field(default_factory=dict)
+    occlusion: ReflectionOcclusion | None = None
 
-    def prepare(self, lights: Sequence[MaterialLight], *, camera: Vec2, view_scale: Vec2) -> None:
+    def prepare(
+        self, lights: Sequence[MaterialLight], *, camera: Vec2, view_scale: Vec2,
+        occlusion: ReflectionOcclusion | None = None, shadows: bool = True, ambient: float = 1.0,
+    ) -> None:
         """Upload bounded emitters once per creature pass, before any body batches."""
-        self.active = bool(lights)
+        self.light_count = min(len(lights), MAX_MATERIAL_LIGHTS)
+        self.occlusion = occlusion
+        self.active = bool(lights) or ambient != 1.0
         if not self.active:
             return
         if self.shader is None:
@@ -33,7 +41,8 @@ class CreatureLighting(msgspec.Struct):
             self.shader = shader
             self.locations = {
                 name: int(rl.get_shader_location(shader, name))
-                for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response", "u_thickness")
+                for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response", "u_thickness",
+                             "u_occlusion_tex", "u_occlusion_grid", "u_occlusion_cell_size", "u_dynamic_shadows", "u_ambient")
             }
         shader = self.shader
         # Flush preceding draws before changing values on a possibly reused shader.
@@ -44,6 +53,16 @@ class CreatureLighting(msgspec.Struct):
                 shader, self.locations[name], rl.ffi.cast("void *", buffer),
                 rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
             )
+        grid = occlusion.grid if occlusion is not None else None
+        grid_values = [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)] if grid else [0.] * 4
+        buffer = rl.ffi.new("float[4]", grid_values)
+        rl.set_shader_value(shader, self.locations["u_occlusion_grid"], rl.ffi.cast("void *", buffer),
+                            rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4)
+        for name, value in (("u_occlusion_cell_size", grid.cell_size if grid else 64.), ("u_ambient", ambient)):
+            rl.set_shader_value(shader, self.locations[name], rl.ffi.new("float *", value),
+                                rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
+        rl.set_shader_value(shader, self.locations["u_dynamic_shadows"], rl.ffi.new("int *", int(shadows)),
+                            rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
         lights = lights[:MAX_MATERIAL_LIGHTS]
         rl.set_shader_value(
             shader, self.locations["u_count"], rl.ffi.new("int *", len(lights)),
@@ -69,14 +88,17 @@ class CreatureLighting(msgspec.Struct):
             return
         # Texture IDs remain stable for the owning render resources' lifetime.
         thickness = self.thickness_textures.get(int(texture.id))
-        if thickness is None:
+        if thickness is None and self.light_count:
             rl.rl_draw_render_batch_active()
             thickness = load_thickness_texture(texture)
             self.thickness_textures[int(texture.id)] = thickness
         rl.rl_draw_render_batch_active()
         try:
             rl.begin_shader_mode(self.shader)
-            rl.set_shader_value_texture(self.shader, self.locations["u_thickness"], thickness)
+            if thickness is not None:
+                rl.set_shader_value_texture(self.shader, self.locations["u_thickness"], thickness)
+            if self.occlusion is not None and self.occlusion.grid is not None and self.occlusion.texture is not None:
+                rl.set_shader_value_texture(self.shader, self.locations["u_occlusion_tex"], self.occlusion.texture)
             yield
         finally:
             # The enclosing world pass uses alpha testing, including after exceptions.
@@ -94,3 +116,5 @@ class CreatureLighting(msgspec.Struct):
         self.shader = None
         self.locations.clear()
         self.active = False
+        self.light_count = 0
+        self.occlusion = None
