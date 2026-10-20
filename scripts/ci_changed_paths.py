@@ -134,6 +134,7 @@ SUITES = {
         (
             *GAME_BUILD,
             "crimson-core/client/",
+            "src/grim/filtering.glsl",
             "src/crimson/assets_version.json",
             "crimson-core/checks/assets.*",
             "crimson-core/checks/analytics.test.mjs",

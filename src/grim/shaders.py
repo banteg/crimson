@@ -5,6 +5,7 @@ from contextlib import contextmanager
 
 import msgspec
 
+from .filtering import FILTERING_GLSL
 from .raylib_api import rl
 
 # Grim2D enables alpha test globally with:
@@ -34,8 +35,7 @@ void main() {
 }
 """
 
-_ALPHA_TEST_FS_330 = r"""
-#version 330
+_ALPHA_TEST_FS_330 = "\n#version 330\n" + FILTERING_GLSL + r"""
 
 in vec2 fragTexCoord;
 in vec4 fragColor;
@@ -48,7 +48,7 @@ out vec4 finalColor;
 void main() {
     // Emulate DX8 fixed-function alpha test after stage-0 modulation:
     // stage output = texture * diffuse, then discard when alpha <= 4/255.
-    vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
+    vec4 texel = alphaBilinear(texture0, fragTexCoord) * fragColor * colDiffuse;
     if (texel.a <= 4.0 / 255.0) discard;
     finalColor = texel;
 }
@@ -78,11 +78,16 @@ class AlphaTestShader(msgspec.Struct):
     """Lazily loaded alpha-test shader owned by a graphics resource lifetime."""
 
     shader: rl.Shader | None = None
+    cubic: bool = False
 
     @contextmanager
     def scope(self) -> Iterator[None]:
         if self.shader is None:
-            shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
+            fragment = _ALPHA_TEST_FS_330
+            if self.cubic:
+                fragment = fragment.replace("alphaBilinear(texture0, fragTexCoord)",
+                                            "alphaCatmullRom(texture0, fragTexCoord)")
+            shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, fragment)
             if shader.id <= 0 or shader.id == rl.rl_get_shader_id_default():
                 raise RuntimeError("alpha-test shader compilation failed")
             self.shader = shader

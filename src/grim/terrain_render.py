@@ -72,6 +72,7 @@ class GroundRenderer(msgspec.Struct):
     point_filter: bool = False
     render_target: rl.RenderTexture | None = None
     alpha_test: AlphaTestShader = msgspec.field(default_factory=AlphaTestShader)
+    terrain_filter: AlphaTestShader = msgspec.field(default_factory=lambda: AlphaTestShader(cubic=True))
     _render_target_ready: bool = False
     _scheduled_layers: TerrainLayers | None = None
     _scheduled_texture_scale: float = 1.0
@@ -81,6 +82,7 @@ class GroundRenderer(msgspec.Struct):
             rl.unload_render_texture(self.render_target)
             self.render_target = None
         self.alpha_test.close()
+        self.terrain_filter.close()
         self._render_target_ready = False
         self._scheduled_layers = None
 
@@ -133,12 +135,11 @@ class GroundRenderer(msgspec.Struct):
         self._render_target_ready = False
         with texture_mode(self.render_target):
             rl.clear_background(TERRAIN_CLEAR_COLOR)
-            # Intentional rewrite deviation: the classic game appears to point-sample
-            # terrain stamps while rotating them into the RT, but bilinear sampling
-            # reads better in the port and still stays within current fixture tolerances.
+            # Reconstruct terrain artwork with associated-alpha Catmull-Rom.
+            # Decals and ground presentation retain their bilinear footprint.
             # Keep the ground RT alpha opaque like the original exe's XRGB-style RT.
             # The port does that by masking out alpha writes while stamping.
-            with self.alpha_test.scope(), _terrain_rt_blend(
+            with self.terrain_filter.scope(), _terrain_rt_blend(
                 rd.RL_SRC_ALPHA,
                 rd.RL_ONE_MINUS_SRC_ALPHA,
                 rd.RL_FUNC_ADD,
@@ -331,12 +332,8 @@ class GroundRenderer(msgspec.Struct):
         return True
 
     def _render_pixel_ratio(self) -> float:
-        # Window DPI, not render/screen size: raylib 6 reports the bound FBO's size
-        # from GetRender*() inside texture mode, where terrain stamping happens.
-        dpi = rl.get_window_scale_dpi()
-        if dpi.x == 2.0 and dpi.y == 2.0:
-            return 2.0
-        return 1.0
+        # Persistent ground density must not depend on its current display.
+        return 2.0
 
     def _render_target_size_for(self, scale: float) -> tuple[int, int]:
         pixel_scale = self._render_pixel_ratio()

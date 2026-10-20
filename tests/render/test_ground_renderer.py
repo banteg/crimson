@@ -126,18 +126,17 @@ def _cell_color(cx: int, cy: int) -> rl.Color:
 
 def _grid_ground(gpu: _Gpu) -> GroundRenderer:
     """A 64x64 ground whose target shows a 4x4 grid of 16-unit cells, each a distinct color."""
-    grid = gpu.texture([[_cell_color(cx, cy) for cx in range(4)] for cy in range(4)])
     ground = gpu.ground(width=64, height=64)
     ground.schedule_stamps(NO_STAMPS, texture_scale=1.0)
     ground.process_pending()
-    decal = GroundDecal(
-        texture=grid,
-        src=rl.Rectangle(0.0, 0.0, 4.0, 4.0),
-        pos=Vec2(32.0, 32.0),
-        width=64.0,
-        height=64.0,
-    )
-    assert ground.bake_decals((decal,))
+    # Projection/presentation fixture: draw exact cells directly, independently
+    # of the artwork reconstruction used when baking real decals.
+    assert ground.render_target is not None
+    size = ground.render_target.texture.width // 4
+    with texture_mode(ground.render_target):
+        for y in range(4):
+            for x in range(4):
+                rl.draw_rectangle(x * size, y * size, size, size, _cell_color(x, y))
     return ground
 
 
@@ -237,7 +236,7 @@ def test_generated_stamps_draw_each_layer_with_its_texture_and_tint_under_alpha_
     assert bare == _rgba(TERRAIN_CLEAR_COLOR)
 
 
-def test_bake_decals_point_sample_under_alpha_test(gpu: _Gpu) -> None:
+def test_bake_decals_reconstruct_alpha_before_blending(gpu: _Gpu) -> None:
     ground = gpu.ground(width=64, height=64)
     ground.schedule_stamps(NO_STAMPS, texture_scale=1.0)
     ground.process_pending()
@@ -252,16 +251,14 @@ def test_bake_decals_point_sample_under_alpha_test(gpu: _Gpu) -> None:
     assert ground.bake_decals((decal,)) is True
 
     assert ground.render_target_ready()
-    # Texels span 16 units from x=8; bilinear filtering would mix a quarter of green into red at x=20.
-    assert _read_world(ground, [(20, 32), (32, 32), (48, 32), (4, 32)]) == [
-        _rgba(RED),
-        _rgba(GREEN),
-        _rgba(TERRAIN_CLEAR_COLOR),
-        _rgba(TERRAIN_CLEAR_COLOR),
-    ]
+    # At x=20.25 the bilinear fraction is 0.265625 between opaque red/green.
+    mixed, green, bare = _read_world(ground, [(20, 32), (32, 32), (4, 32)])
+    assert mixed == pytest.approx((187, 68, 0, 255), abs=1)
+    assert green[1] > 245 and green[0] < 5 and green[2] < 5
+    assert bare == _rgba(TERRAIN_CLEAR_COLOR)
 
 
-def test_bake_corpse_decals_draw_the_frame_cell_point_sampled_over_its_shadow(gpu: _Gpu) -> None:
+def test_bake_corpse_decals_filter_the_frame_cell_over_its_shadow(gpu: _Gpu) -> None:
     ground = gpu.ground(width=64, height=64)
     ground.schedule_stamps(NO_STAMPS, texture_scale=1.0)
     ground.process_pending()
@@ -280,8 +277,8 @@ def test_bake_corpse_decals_draw_the_frame_cell_point_sampled_over_its_shadow(gp
     # The texel columns span 16 units from x=16; bilinear filtering would mix green into red at x=28.
     # The 1.064x shadow quad reaches past the color quad's right edge at x=48, halving the ground there.
     red, green, shadow = _read_world(ground, [(28, 32), (40, 32), (48.75, 32)])
-    assert red == _rgba(RED)
-    assert green == _rgba(GREEN)
+    assert red == pytest.approx((187, 68, 0, 255), abs=1)
+    assert green[1] > 245 and green[0] < 5
     clear = TERRAIN_CLEAR_COLOR
     assert shadow == pytest.approx((*(c * (1.0 - 127 / 255) for c in (clear.r, clear.g, clear.b)), clear.a), abs=1)
 

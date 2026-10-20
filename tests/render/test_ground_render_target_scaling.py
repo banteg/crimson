@@ -23,13 +23,13 @@ def _renderer() -> GroundRenderer:
 @pytest.mark.parametrize(
     ("dpi_scale", "expected_size"),
     [
-        (1.0, (1024, 1024)),
-        (1.5, (1024, 1024)),
+        (1.0, (2048, 2048)),
+        (1.5, (2048, 2048)),
         (2.0, (2048, 2048)),
     ],
     ids=["native-without-hidpi", "fractional-dpi", "double-dpi"],
 )
-def test_render_target_size_scales_with_window_dpi(
+def test_render_target_size_stays_double_density_across_window_dpi(
     mocker,
     dpi_scale: float,
     expected_size: tuple[int, int],

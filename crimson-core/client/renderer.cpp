@@ -46,6 +46,8 @@ enum {
   TSS_ADDRESSV = 14,
   TSS_MAGFILTER = 16,
   TSS_MINFILTER = 17,
+  // Host extension: the platform identifies terrain artwork by its Grim slot.
+  TSS_TERRAIN_ART = 31,
   STAGES = 2,
 };
 
@@ -66,7 +68,7 @@ GLuint program, present_program, vertex_array, vertex_buffer, index_buffer, samp
 // needs a complete texture behind it.
 GLuint blank_texture;
 GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_alpha_op, u_alpha_arg1, u_alpha_arg2,
-    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func;
+    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction;
 
 const char *vertex_source = SHADER_HEADER R"(
 layout(location = 0) in vec4 position; // x, y, z, rhw in pixels
@@ -84,7 +86,9 @@ void main() {
 )";
 
 // The fixed-function texture stages, alpha test included.
-const char *fragment_source = SHADER_HEADER R"(
+const char *fragment_source = SHADER_HEADER
+#include "filtering.h"
+R"(
 in vec4 v_diffuse;
 in vec2 v_uv;
 out vec4 color;
@@ -93,6 +97,12 @@ uniform int has_texture[2], color_op[2], color_arg1[2], color_arg2[2], alpha_op[
 uniform vec4 factor;
 uniform int alpha_test, alpha_func;
 uniform float alpha_ref;
+uniform int reconstruction[2]; // 0 sampler state, 1 associated bilinear, 2 terrain cubic
+vec4 sampleColor(sampler2D image, int mode) {
+  if (mode == 2) return alphaCatmullRom(image, v_uv);
+  if (mode == 1) return alphaBilinear(image, v_uv);
+  return texture(image, v_uv);
+}
 vec4 argument(int a, vec4 current, vec4 texel) {
   int which = a & 7;
   vec4 v = which == 1 ? current : which == 2 ? texel : which == 3 ? factor : v_diffuse;
@@ -129,7 +139,8 @@ void main() {
   vec4 current = v_diffuse;
   for (int s = 0; s < 2; ++s) {
     if (color_op[s] == 1) break;
-    vec4 texel = has_texture[s] != 0 ? (s == 0 ? texture(texture0, v_uv) : texture(texture1, v_uv)) : vec4(1.0);
+    vec4 texel = has_texture[s] != 0 ?
+        (s == 0 ? sampleColor(texture0, reconstruction[s]) : sampleColor(texture1, reconstruction[s])) : vec4(1.0);
     vec4 c = clamp(operation(color_op[s], argument(color_arg1[s], current, texel), argument(color_arg2[s], current, texel)), 0.0, 1.0);
     float a = alpha_op[s] == 1 ? current.a
         : clamp(operation(alpha_op[s], argument(alpha_arg1[s], current, texel), argument(alpha_arg2[s], current, texel)).a, 0.0, 1.0);
@@ -278,6 +289,7 @@ void renderer_init() {
   present_program = link(present_vertex_source, present_fragment_source);
   u_target_size = glGetUniformLocation(program, "target_size");
   u_has_texture = glGetUniformLocation(program, "has_texture");
+  u_reconstruction = glGetUniformLocation(program, "reconstruction");
   u_color_op = glGetUniformLocation(program, "color_op");
   u_color_arg1 = glGetUniformLocation(program, "color_arg1");
   u_color_arg2 = glGetUniformLocation(program, "color_arg2");
@@ -566,11 +578,15 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
   Target &t = target_or_back(current_target);
   glUseProgram(program);
   glUniform2f(u_target_size, (float)t.logical_width, (float)t.logical_height);
-  GLint has[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES];
+  GLint has[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES], filters[STAGES];
   for (int s = 0; s < STAGES; ++s) {
     auto it = textures.find(bound[s]);
     bool present = bound[s] && it != textures.end() && it->second.texture;
     has[s] = present;
+    bool artwork = present && !(it->second.flags & 1);
+    filters[s] = artwork && stage_states[s][TSS_MINFILTER] >= 2 && stage_states[s][TSS_MAGFILTER] >= 2 ? 1 : 0;
+    if (artwork && current_target && stage_states[s][TSS_TERRAIN_ART])
+      filters[s] = 2;
     cop[s] = (GLint)stage_states[s][TSS_COLOROP];
     ca1[s] = (GLint)stage_states[s][TSS_COLORARG1];
     ca2[s] = (GLint)stage_states[s][TSS_COLORARG2];
@@ -587,6 +603,7 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
   }
   glActiveTexture(GL_TEXTURE0);
   glUniform1iv(u_has_texture, STAGES, has);
+  glUniform1iv(u_reconstruction, STAGES, filters);
   glUniform1iv(u_color_op, STAGES, cop);
   glUniform1iv(u_color_arg1, STAGES, ca1);
   glUniform1iv(u_color_arg2, STAGES, ca2);

@@ -142,6 +142,8 @@ def main():
     args = parser.parse_args()
     out = (args.out or CORE / "build" / {"native": "app", "web": "web"}[args.target]).resolve()
     out.mkdir(parents=True, exist_ok=True)
+    filtering = (CORE.parent / "src/grim/filtering.glsl").read_text()
+    (out / "filtering.h").write_text('R"GLSL(' + filtering + ')GLSL"\n')
     write_asset_version(out)
     if not args.skip_game:
         subprocess.run([sys.executable, str(CORE / "build.py"), "--target", "game"], check=True)

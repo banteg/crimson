@@ -1,5 +1,7 @@
 """Art-directed dome and silhouette lighting for the original 8x8 creature atlases."""
 
+from grim.filtering import FILTERING_GLSL
+
 CREATURE_VERTEX = r"""
 #version 330
 in vec3 vertexPosition;
@@ -19,8 +21,7 @@ void main() {
 }
 """
 
-CREATURE_FRAGMENT = r"""
-#version 330
+CREATURE_FRAGMENT = "\n#version 330\n" + FILTERING_GLSL + r"""
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
@@ -49,7 +50,7 @@ float spriteAlpha(vec2 uv) {
     return spriteSample(uv).a;
 }
 void main() {
-    vec4 texel = texture(texture0, fragTexCoord);
+    vec4 texel = alphaBilinear(texture0, fragTexCoord);
     vec4 base = texel * fragColor * colDiffuse;
     // Save derivatives before alpha discard makes neighboring lanes diverge.
     vec2 dxq = dFdx(fragTexCoord) * 16., dyq = dFdy(fragTexCoord) * 16.;

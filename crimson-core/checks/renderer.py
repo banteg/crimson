@@ -22,6 +22,8 @@ def tool(name: str) -> str:
 
 
 def build(out: Path, web: bool) -> Path:
+    filtering = (CORE.parent / "src/grim/filtering.glsl").read_text()
+    (out / "filtering.h").write_text('R"GLSL(' + filtering + ')GLSL"\n')
     # Only wasm2c's scalar types are needed by the rendering imports.
     (out / "game.h").write_text(
         "#pragma once\n#include <stdint.h>\ntypedef uint8_t u8;\ntypedef uint32_t u32;\nstruct w2c_game;\n",

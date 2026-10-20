@@ -292,8 +292,20 @@ struct Device final : UnimplementedIDirect3DDevice8 {
     return D3D_OK;
   }
   STDMETHOD(SetTexture)(THIS_ DWORD stage, IDirect3DBaseTexture8 *texture) override {
-    if (outputs)
+    if (outputs) {
+      // Host-only reconstruction hint, never an original D3D state. Restrict
+      // cubic filtering to named terrain artwork; atlas cells remain bilinear.
+      bool terrain_art = false;
+      if (texture)
+        for (const GrimSlot *slot : grim_texture_slots)
+          if (slot && slot->texture == texture && slot->name &&
+              (!strncmp(slot->name, "ter\\", 4) || !strncmp(slot->name, "ter/", 4))) {
+            terrain_art = true;
+            break;
+          }
+      host_texture_stage_state(stage, 31, terrain_art);
       host_set_texture(stage, texture_id(texture));
+    }
     return D3D_OK;
   }
   STDMETHOD(SetTextureStageState)(THIS_ DWORD stage, D3DTEXTURESTAGESTATETYPE state, DWORD value) override {
