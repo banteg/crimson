@@ -80,7 +80,8 @@ void main() {
     vec2 relief = .5 * vec2(
         spriteLuminance(fragTexCoord + vec2(px.x, 0)) - spriteLuminance(fragTexCoord - vec2(px.x, 0)),
         spriteLuminance(fragTexCoord + vec2(0, px.y)) - spriteLuminance(fragTexCoord - vec2(0, px.y)));
-    slope += rot * relief * .8;
+    // Brighter texels are raised: the height-field normal points downhill.
+    slope -= rot * relief * .8;
     vec3 N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
     vec3 V = normalize(vec3(0, .57735, 1));
     vec3 baseLin = pow(max(base.rgb, vec3(0)), vec3(2.2));
