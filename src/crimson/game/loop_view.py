@@ -286,7 +286,11 @@ class GameLoopView:
         self._gamma_edr_loc = -1
 
     def _draw_with_gamma(self) -> None:
-        if getattr(self.state.screens.active, "rtx_debug_map_active", False):
+        try:
+            active = self.state.screens.active
+        except IndexError:
+            active = None
+        if getattr(active, "rtx_debug_map_active", False):
             self._draw_scene_layers()
             return
         gamma_gain = max(0.0, float(self.state.gamma_ramp))
