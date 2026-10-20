@@ -239,7 +239,8 @@ Python RTX creature bodies receive the same bounded weapon emitters as the groun
 pass. A rounded body normal and weak texture relief provide broad colored lighting
 and small highlights; three alpha taps toward each light produce an inner silhouette
 rim. The approved blend uses 65% of the dome study and 65% of the rim study, with a
-hue-preserving limit on their combined radiance. These are artistic shape estimates,
+hue-preserving limit on their combined radiance, including thin-part transmission.
+These are artistic shape estimates,
 not authored normal maps or physically calibrated skin/chitin models.
 
 Implementation: `src/crimson/render/rtx/creature_lighting.py` and
@@ -253,6 +254,25 @@ resolution. Both relief and alpha taps stay inside the current animation cell.
 Lights are uploaded once before the species passes. Beam intensity tapers from
 20% at the tail to 100% at the head; this gain applies once, independently of
 squared radial attenuation. Point lights and the native alpha cutoff remain intact.
+
+Thin parts also receive source-colored light on their opposite-facing side.
+`src/crimson/render/rtx/creature_translucency.py` derives an approximate thickness
+from each animation cell's alpha silhouette: up to sixteen steps of 3×3 erosion,
+with transparent borders between cells and the same alpha cutoff of 4/255.
+Transmission falls as `exp(-0.48 * distance)` with an artistic strength of 2.8.
+The shader samples this map once per body pixel and adds its directional response
+inside the existing light loop, sharing each emitter's finite source, radial
+attenuation and beam taper. It preserves sprite alpha and the existing HDR limit.
+This is a silhouette-distance appearance model, not anatomical thickness or traced
+subsurface scattering: it does not distinguish skin from claws/armor, cast shadows,
+or account for intervening creatures.
+
+Thickness textures are generated from the loaded source atlas on its first lit RTX
+body pass, cached by that atlas's texture ID, and released when the world's lighting
+resources close. Empty species and unlit/classic draws do not generate them.
+Each 512×512 atlas adds a 256 KiB single-channel texture without mipmaps; generation
+has a one-time readback and CPU preprocessing cost. Atlas binding happens once per
+species body batch, with no per-creature texture uploads or additional render pass.
 
 Only creature body passes use this shader. Existing shadows, hit flashes, freeze
 and poison overlays, players, and baked corpses keep their existing paths. No

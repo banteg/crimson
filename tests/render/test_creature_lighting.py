@@ -8,11 +8,13 @@ import msgspec
 import pytest
 
 from crimson.creatures.spawn import CreatureTypeId
+from crimson.render.rtx import creature_lighting
 from crimson.render.rtx.creature_lighting import CreatureLighting
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import draw as world_draw
 from crimson.world.render_resources import RenderResources
+from grim.assets import TextureId
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
@@ -37,10 +39,12 @@ def test_only_rtx_bodies_use_lighting(mocker, headless_resources, mode):
     ))
     active = False
     draws = mocker.Mock()
+    scoped_textures = []
 
     @contextmanager
-    def scope(**_kwargs):
+    def scope(**kwargs):
         nonlocal active
+        scoped_textures.append(kwargs["texture"])
         active = True
         try:
             yield
@@ -55,6 +59,9 @@ def test_only_rtx_bodies_use_lighting(mocker, headless_resources, mode):
     mocker.patch.object(world_draw.rl, "end_blend_mode")
     world_draw.draw_creatures(ctx, ctx=world_draw.WorldDrawContext())
     assert prepare.call_count == int(mode is RtxRenderMode.RTX)
+    assert scoped_textures == (
+        [headless_resources.texture(TextureId.SPIDER_SP1)] if mode is RtxRenderMode.RTX else []
+    )
     assert draws.call_count == 3
     for call in draws.call_args_list:
         kwargs, lit = call.args
@@ -72,16 +79,40 @@ def test_lazy_lifecycle_and_exception_restore(mocker, tmp_path):
     shader.id = 42
     restore = rl.ffi.new("Shader *")[0]
     restore.id = 9
+    texture = rl.ffi.new("Texture *")[0]
+    texture.id = 10
+    thickness = rl.ffi.new("Texture *")[0]
+    thickness.id = 11
     lighting.shader = shader
     lighting.active = True
-    with pytest.raises(ValueError), lighting.scope(restore_shader=restore):
+    lighting.locations["u_thickness"] = 12
+    lighting.thickness_textures[texture.id] = thickness
+    mocker.patch.object(rl, "set_shader_value_texture")
+    mocker.patch.object(rl, "rl_draw_render_batch_active")
+    unload_texture = mocker.patch.object(rl, "unload_texture")
+    with pytest.raises(ValueError), lighting.scope(texture=texture, restore_shader=restore):
         raise ValueError("drawing interrupted")
     assert [call.args[0] for call in begin.call_args_list] == [shader, restore]
     resources = RenderResources(tmp_path, creature_lighting=lighting)
     resources.close()
     resources.close()
     unload.assert_called_once_with(shader)
+    unload_texture.assert_called_once_with(thickness)
+    assert not lighting.thickness_textures
     assert lighting.shader is None and not lighting.active
+
+
+@pytest.fixture
+def opaque_creature_lighting(monkeypatch):
+    # Isolate the existing front-facing rim/relief contract: transmission deliberately
+    # adds opposite-facing light and can make that side brighter on thin silhouettes.
+    fragment = creature_lighting.CREATURE_FRAGMENT
+    opaque = fragment.replace(
+        "const float TRANSMISSION_STRENGTH = 2.8;",
+        "const float TRANSMISSION_STRENGTH = 0.0;",
+    )
+    assert opaque != fragment
+    monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", opaque)
 
 
 @pytest.fixture
@@ -125,7 +156,7 @@ def lit_sprite(raylib_context):
                                         rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
                                         rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
                 if use_shader:
-                    with lighting.scope(restore_shader=alpha.shader):
+                    with lighting.scope(texture=texture, restore_shader=alpha.shader):
                         draw()
                 else:
                     draw()
@@ -150,6 +181,7 @@ def test_zero_and_out_of_range_lights_preserve_base_pixels(lit_sprite):
     base = render([], use_shader=False)
     assert render([]) == base
     assert lighting.shader is None
+    assert not lighting.thickness_textures
     assert render([MaterialLight(Vec2(1000, 1000), 10, (1, 1, 1))]) == base
     assert render([MaterialLight(Vec2(64, 64), 100, (0, 0, 0))]) == base
     assert render([]) == base  # A previous lit frame cannot leak into the next one.
@@ -179,7 +211,7 @@ def test_degenerate_uv_basis_keeps_lighting_finite(lit_sprite, monkeypatch):
 
 
 @pytest.mark.parametrize("rotation", [0., 90., 217.])
-def test_rim_follows_world_light_and_preserves_alpha(lit_sprite, rotation):
+def test_rim_follows_world_light_and_preserves_alpha(lit_sprite, opaque_creature_lighting, rotation):
     render, _lighting = lit_sprite
     base = render([], rotation=rotation)
     right = render([MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=40)], rotation=rotation)
@@ -228,7 +260,7 @@ def test_textured_relief_is_independent_of_framebuffer_scale(lit_sprite, rotatio
 
 @pytest.mark.parametrize("rotation", [0., 90., 217.])
 @pytest.mark.parametrize("axis", [Vec2(1, 0), Vec2(0, 1)], ids=["u", "v"])
-def test_bright_relief_faces_downhill_light(lit_sprite, rotation, axis):
+def test_bright_relief_faces_downhill_light(lit_sprite, opaque_creature_lighting, rotation, axis):
     render, _lighting = lit_sprite
     angle = math.radians(rotation)
     uphill = Vec2(axis.x * math.cos(angle) - axis.y * math.sin(angle),
@@ -290,3 +322,28 @@ def test_multiple_emitters_and_light_budget(lit_sprite):
     assert energy(both, 0) > energy(blue_only, 0) + 1
     assert energy(both, 2) > energy(red_only, 2) + 1
     assert render([red]*16 + [blue]) == render([red]*16)
+
+
+@pytest.mark.parametrize("rgb,channel", [((1.4, 0, 0), 0), ((0, 0, 1.4), 2)])
+def test_transmission_lights_thin_backlit_parts_without_changing_alpha(lit_sprite, monkeypatch, rgb, channel):
+    render, lighting = lit_sprite
+    light = MaterialLight(Vec2(38, 64), 110, rgb, height=40)
+    actual = render([light])
+    lighting.close()
+    fragment = creature_lighting.CREATURE_FRAGMENT
+    reference = fragment.replace(
+        "const float TRANSMISSION_STRENGTH = 2.8;",
+        "const float TRANSMISSION_STRENGTH = 0.0;",
+    )
+    assert reference != fragment
+    monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", reference)
+    baseline = render([light])
+    assert [p[3] for p in actual] == [p[3] for p in baseline]
+    limb = 63 * 128 + 77
+    core = 63 * 128 + 64
+    gain = actual[limb][channel] - baseline[limb][channel]
+    assert gain > .02
+    assert actual[core][channel] - baseline[core][channel] < gain * .5
+    # Neutral transmission follows the source spectrum rather than adding a white/red rim.
+    for other in set(range(3)) - {channel}:
+        assert actual[limb][other] == pytest.approx(baseline[limb][other], abs=.001)

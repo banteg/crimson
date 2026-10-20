@@ -26,6 +26,7 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
 uniform sampler2D texture0;
+uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
 uniform int u_count;
 uniform vec4 u_pos[16];
@@ -34,6 +35,7 @@ uniform vec4 u_dir[16];
 out vec4 finalColor;
 const float DOME_STRENGTH = 0.65;
 const float RIM_STRENGTH = 0.65;
+const float TRANSMISSION_STRENGTH = 2.8;
 vec4 spriteSample(vec2 uv) {
     vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
     vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
@@ -86,6 +88,12 @@ void main() {
     vec3 N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
     vec3 V = normalize(vec3(0, .57735, 1));
     vec3 baseLin = pow(max(base.rgb, vec3(0)), vec3(2.2));
+    // Per-cell silhouette distance is an artistic thickness proxy, not tissue depth.
+    vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
+    vec2 half_texel = .5 / vec2(textureSize(u_thickness, 0));
+    vec2 thickness_uv = clamp(fragTexCoord, cell + half_texel, cell + vec2(.125) - half_texel);
+    float thickness = textureLod(u_thickness, thickness_uv, 0.).r * 16.0;
+    float transmission = exp(-.48 * thickness);
     vec3 added = vec3(0);
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
@@ -107,7 +115,8 @@ void main() {
 
         // An inner silhouette rim, only on the edge facing this emitter.
         // Atlas-local samples cannot reach neighboring animation frames.
-        vec2 toward = transpose(rot) * normalize(delta + vec2(.0001));
+        vec2 light_xy = normalize(delta + vec2(.0001));
+        vec2 toward = transpose(rot) * light_xy;
         vec2 side = vec2(-toward.y, toward.x);
         float beyond = (spriteAlpha(fragTexCoord + toward * px * 1.5) +
                         spriteAlpha(fragTexCoord + (toward * 1.5 + side * .65) * px) +
@@ -115,10 +124,14 @@ void main() {
                        3.0;
         float edge = smoothstep(.04, .7, max(0.0, texel.a - beyond));
         float elevation = length(delta) / sqrt(dot(delta, delta) + pow(max(8.0, u_pos[i].w - 8.0), 2.0));
+        // Opposite-facing thin parts transmit the source color without changing alpha.
+        // Share the finite beam source, radial attenuation and axial taper above.
+        float backlight = pow(clamp(dot(-N.xy, light_xy), 0.0, 1.0), .7);
         added += u_rgb[i].rgb * a * a * axial_gain *
                  (baseLin * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
                   catchlight * (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum) +
-                  edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum));
+                  edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum) +
+                  transmission * backlight * TRANSMISSION_STRENGTH);
     }
     // Bound aggregate illumination in dense fights without changing hue.
     float peak = max(added.r, max(added.g, added.b));
