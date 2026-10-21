@@ -329,17 +329,11 @@ async function home(): Promise<Screen> {
     panels: [
       () => (
         <>
-          <p class="lead">
-            Crimsonland, as it was in 2003.
-            <br />
-            Now with <span style={{ "white-space": "nowrap" }}>online co-op.</span>
-          </p>
+          <p>Fight off hordes of aliens, spiders, lizards and zombies with 28 weapons and 57 perks, across Quests, Rush and Survival.</p>
           <p>
-            Rebuilt from <code>crimsonland.exe</code>, with a few dozen of its <a href={BUGS}>bugs</a> fixed. Play in your browser, chase
-            internet high scores where every run is a replay you can watch, and build your own quests. Gamepads welcome.
-          </p>
-          <p>
-            To play together, press <em>Play co-op</em> and send your friend the invite link.
+            Crimsonland, as it was in 2003, rebuilt from <code>crimsonland.exe</code> with a few dozen of its bugs fixed, and running in your
+            browser. Now with online co-op: send a friend a link and fight side by side. Chase internet high scores where every run is a
+            replay you can watch, build your own quests, and play on a gamepad.
           </p>
           <PlayGame />
         </>
