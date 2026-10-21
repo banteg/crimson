@@ -929,3 +929,47 @@ def test_visible_death_shadow_collapses_without_an_instant_hp_cutoff(ground_mate
     assert 0 <= remaining < blocked * .2
     creature.death_timer = 0
     assert debug_pixels(ground, texture, mode=6, creatures=pool) == clear
+
+
+def test_beam_material_scope_bulk_upload_and_toggle_restore_real_pixels(ground_material, mocker, monkeypatch) -> None:
+    from crimson.render.rtx.continuous_beam import experiment
+
+    ground, texture = ground_material
+    monkeypatch.setattr(experiment, "enabled", False)
+    monkeypatch.setattr(experiment, "ion_gain", 1.)
+    monkeypatch.setattr(experiment, "ambient_dip", 0.)
+    # A masked source before the beam catches an incorrect vec4 count/row offset.
+    reflection_only = MaterialLight(Vec2(32, 20), 150, (1, 1, 1), illumination_gain=0)
+    beam = MaterialLight(
+        Vec2(32, 20), 150, (.5, .8, 1.4), height=24, direction=Vec2(1, 0), length=48,
+        broad_illumination=True, beam_profile=(35.2, 6.82, 1.05), beam_ion=True,
+    )
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[reflection_only, beam])
+    upload = mocker.spy(rl, "set_shader_value_v")
+
+    def render():
+        return debug_pixels(ground, texture, mode=int(RtxDebugView.DIRECT_UNSHADOWED))
+
+    baseline = render()
+    experiment.enabled = True
+    one = render()
+    experiment.ion_gain = 4.
+    four = render()
+    assert max(pixel[2] for pixel in one) > .001
+    # This tests the actual material_scope binding and CFFI pointer conversion,
+    # rather than compiling a standalone helper with manually set uniforms.
+    for normal, bright in zip(one, four, strict=True):
+        assert bright[:3] == pytest.approx(tuple(channel * 4 for channel in normal[:3]), rel=.002, abs=.001)
+    calls = [call for call in upload.call_args_list if call.args[1] == ground.beam_cells_location]
+    assert len(calls) == 2
+    assert all(call.args[4] == 6 and rl.ffi.typeof(call.args[2]).cname == "void *" for call in calls)
+    experiment.enabled = False
+    assert render() == baseline
+    experiment.enabled = True
+    assert render() == four
+
+    # A later frame without beams must ignore stale section uniforms.
+    collector.return_value = [msgspec.structs.replace(beam, beam_profile=None, beam_ion=False)]
+    no_beam_enabled = render()
+    experiment.enabled = False
+    assert render() == no_beam_enabled
