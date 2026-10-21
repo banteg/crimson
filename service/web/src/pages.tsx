@@ -193,7 +193,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                   </td>
                   <Show when={full()}>
                     <td>
-                      <a class="run-details" href={`/runs/${row.run}`}>Score card</a>
+                      <a class="run-details" href={`/runs/${row.run}`}>View →</a>
                     </td>
                     <td class="n">{formatDuration(row.elapsed_ms)}</td>
                     <td>
@@ -335,9 +335,8 @@ async function home(): Promise<Screen> {
       () => (
         <>
           <p>
-            Fight off an unending horde of monsters with over 30 weapons and 55 perks. Play the original v1.9.93 release right in your
-            browser—recovered from <code>crimsonland.exe</code> down to the last bullet, perk, and blood splatter—and post your runs to the
-            internet high scores.
+            Crimsonland v1.9.93 in your browser—recovered from <code>crimsonland.exe</code>, with 28 weapons, 57 perks, modern gamepads, and
+            internet high scores where every run is verified by replay.
           </p>
           <PlayGame />
         </>
@@ -372,7 +371,7 @@ function BoardTotals(props: { view: BoardView }) {
   return (
     <Show when={totals().runs}>
       <p class="board-totals muted">
-        {quantity(totals().runs, "game")} · {quantity(totals().kills, "frag")} · {formatLongDuration(totals().elapsed_ms)}{" "}
+        {quantity(totals().runs, "run")} · {quantity(totals().kills, "frag")} · {formatLongDuration(totals().elapsed_ms)}{" "}
         {BOARDS[props.view.board].quests ? "played" : "survived"}
       </p>
     </Show>
@@ -485,8 +484,8 @@ function QuestPreviewSvg(props: { quest: CustomQuest }) {
       </svg>
       <div style={{ flex: "1", "min-width": "240px" }}>
         <p class="muted" style={{ margin: "0 0 6px" }}>
-          Spawns: <b>{entries().length} / 256</b> waves · <b>{totalCopies().toLocaleString("en-US")}</b> monsters · last wave at{" "}
-          <b>{formatDuration(maxTriggerMs())}</b>
+          Spawns: <b>{entries().length} / 256</b> entries · <b>{totalCopies().toLocaleString("en-US")}</b> template copies · last spawn at{" "}
+          <b>{formatDuration(Math.max(0, ...entries().map((e) => e.trigger_ms)))}</b>
         </p>
         <svg viewBox="0 0 400 44" width="100%" height="44" style={{ background: "rgba(0,0,0,0.35)", "border-radius": "4px", border: "1px solid rgba(255,255,255,0.12)" }}>
           <For each={entries()}>
@@ -543,9 +542,9 @@ async function customQuests(): Promise<Screen> {
         <>
           <h2>Custom Quests</h2>
           <p class="muted">
-            Player-made levels built with <code>.quest</code> scripts. To make the list, you have to beat your own level first—every quest
-            here comes with the author's winning replay. Write one by hand or feed <a href="/custom/llm.txt" data-native>/custom/llm.txt</a>{" "}
-            to an LLM, beat it with <Command>uvx crimsonland@latest quest play my.quest</Command>, and post it with{" "}
+            Player-made levels built with <code>.quest</code> scripts. To publish a level, you have to beat it first—every quest here comes
+            with a verified completion replay. Write one by hand or feed <a href="/custom/llm.txt" data-native>/custom/llm.txt</a> to an
+            LLM, beat it with <Command>uvx crimsonland@latest quest play my.quest</Command>, and post it with{" "}
             <Command>uvx crimsonland@latest quest publish my.quest</Command>.
           </p>
           <Show when={list.quests.length} fallback={<p class="muted">No custom quests published yet.</p>}>
@@ -556,7 +555,7 @@ async function customQuests(): Promise<Screen> {
                     <th>Quest</th>
                     <th>Author</th>
                     <th>Weapon</th>
-                    <th class="n">Waves</th>
+                    <th class="n">Entries</th>
                     <th class="n">Best</th>
                     <th class="n">Players</th>
                     <th>Play</th>
@@ -629,7 +628,7 @@ async function customQuestPage(id: string): Promise<Screen> {
           <QuestPreviewSvg quest={def} />
           <p class="buttons">
             <GameButton label="Play level" href={`/play/?quest=${detail.id}`} native />
-            <GameButton label="Watch author's run" href={`/play/?watch=${detail.first_run_id}`} native />
+            <GameButton label="Watch winning run" href={`/play/?watch=${detail.first_run_id}`} native />
             <GameButton label="All custom quests" href="/custom" />
           </p>
         </>
@@ -805,7 +804,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                           </a>
                         </td>
                         <td>
-                          <a class="run-details" href={`/runs/${run.id}`}>Score card</a>
+                          <a class="run-details" href={`/runs/${run.id}`}>View →</a>
                         </td>
                         <td>{run.game_version.split("+", 1)[0]}</td>
                         <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
@@ -992,7 +991,7 @@ async function account(nav: Navigator): Promise<Screen> {
     nav.go(`/players/${me.account}`, true);
     return { title: null, quest: null, panels: [] };
   }
-  return { title: "State your name, trooper!", quest: null, panels: [SIGN_IN] };
+  return { title: "Sign in from the game", quest: null, panels: [SIGN_IN] };
 }
 
 // A login link from the game's Profile button: the browser signs in as the link's account only once the player
@@ -1053,13 +1052,14 @@ async function join(token: string, nav: Navigator): Promise<Screen> {
             <PlayerName player={view.destination} /> <span class="muted">· {view.destination.fingerprint} · {quantity(view.destination_runs, "run")}</span>
           </p>
           <p>
-            This browser is signed in as <PlayerName player={view.source} />. Joining merges this computer's{" "}
-            {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {quantity(view.moving.runs, "run")} and {quantity(view.moving.names, "saved name")} into the
-            profile above, and future games on this computer will post under it.
+            This browser is signed in as <PlayerName player={view.source} />. Joining merges this profile's{" "}
+            {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {quantity(view.moving.runs, "run")} and{" "}
+            {quantity(view.moving.names, "name")} into the profile above and removes this profile, and any computer linked to it will post
+            future runs under the profile above.
           </p>
           <p>
-            Join only if you played as <PlayerName player={view.source} tag={false} /> yourself. If you don't recognise it, someone signed this browser in
-            to their profile: cancel and sign out.
+            Join only if you played as <PlayerName player={view.source} tag={false} /> yourself. If you don't recognise it, someone signed
+            this browser in to their profile: cancel and sign out.
           </p>
           <p class="buttons">
             <GameButton label={`Join ${playerLabel(view.destination)}`} onClick={confirmJoin} />
@@ -1092,20 +1092,19 @@ const ABOUT: Screen = {
     ),
     () => (
       <>
-        <h3>Internet high scores</h3>
+        <h3>Internet scores</h3>
         <p>
-          Tick <em>Ranked</em> in the Play Game menu and play Survival or a Quest to the end. Enter your name when the game asks{" "}
-          <em>"State your name, trooper!"</em>, and your score is sent to the internet high score list (or saved for the next time you're
-          online).
+          Tick <em>Ranked</em> in the Play Game menu and play Survival or a quest to the end. Enter your name when the game asks{" "}
+          <em>"State your name, trooper!"</em>, and it uploads your run (or saves it for the next time you're online).
         </p>
         <p>
-          Survival ranks by experience points and Quests by final time—with 50 ms shaved off per remaining HP and 1 second per unpicked
-          perk—plus separate lists for Hardcore and 2-player co-op. Only your best score on each list counts.
+          Survival ranks by experience and quests by final time—with 50 ms shaved off per remaining HP and 1 second per unpicked perk—plus
+          separate lists for Hardcore and 2-player co-op. Only your best run on each list counts.
         </p>
         <p>
-          Instead of trusting a raw score packet like <code>scores.crimsonland.com</code> did in 2003, every score now sends a{" "}
-          <code>.crd</code> input recording. The server replays the game tick-for-tick in the original engine and checks that the result
-          matches. Anyone can download the replay and watch or verify it themselves.
+          In 2003, the game sent its score records as-is; here, every score comes with a <code>.crd</code> recording of the run. The server
+          replays it using the same recovered game code and checks that the result matches. Anyone can download the replay and watch or
+          verify it themselves. Bots can produce valid replays too, so verification confirms the score, not whether a human played.
         </p>
         <p>
           Ranked runs on each list use the same starting conditions: a standard progression profile and documented fixes for{" "}

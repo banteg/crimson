@@ -178,7 +178,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     if (!page.ok) return page;
     return withPreview(page, url, {
       title: "Play",
-      description: "Crimsonland v1.9.93 in your browser: the original 2003 game, recovered from crimsonland.exe.",
+      description: "Crimsonland v1.9.93 in your browser: the 2003 game, recovered from crimsonland.exe.",
       image: null,
       player: { url: url.toString(), width: VIEW_W, height: VIEW_H },
     });
@@ -332,7 +332,7 @@ interface Preview {
   player: { url: string; width: number; height: number } | null;
 }
 
-const SITE_DESCRIPTION = "Play Crimsonland v1.9.93 in your browser. Fight off the monsters in Survival and Quest mode and compete on the internet high score lists.";
+const SITE_DESCRIPTION = "Play Crimsonland v1.9.93 in your browser, with internet high scores where every run is a replay the server re-simulates.";
 // The preview of a page with no image of its own: a moment of the Survival board's top run (public/og.jpg).
 const SITE_IMAGE = { path: "/og.jpg", width: 1200, height: 630 };
 
@@ -356,7 +356,7 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
     const byline = quest.author ? ` by ${quest.author}` : "";
     return {
       title: `${quest.title}${byline}`,
-      description: `Play "${quest.title}"${byline} in the browser (${quest.definition.entries.length} waves) and compete on its high score list.`,
+      description: `Play "${quest.title}"${byline} in the browser (${quest.definition.entries.length} spawn entries) and compete on its high score list.`,
       image: { url: `${url.origin}/runs/${quest.first_run_id}.png`, width: CARD_WIDTH, height: CARD_HEIGHT },
       player: { url: `${url.origin}/play/?quest=${quest.id}`, width: VIEW_W, height: VIEW_H },
     };

@@ -87,7 +87,7 @@ function App() {
     const started = performance.now();
     const early = moving ? slideOut(old.filter((shown) => shown.panel.key === undefined)) : 0;
     const next = await resolve(url, nav).catch(
-      (): Screen => ({ title: "Error", quest: null, panels: [() => <p>Failed to update scores. Try again later.</p>] }),
+      (): Screen => ({ title: "Error", quest: null, panels: [() => <p>The high scores could not be reached.</p>] }),
     );
     if (id !== navigation) return;
     const stays = (shown: Shown, i: number) => shown.panel.key !== undefined && next.panels[i]?.key === shown.panel.key;

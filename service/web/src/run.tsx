@@ -595,15 +595,15 @@ function Arena(props: { id: string; run: RunTimeline; cursor: Cursor; outcome: s
         when={coop}
         fallback={
           <p class="muted arena-note">
-            The battlefield at the end of the game—every body, scorch mark, and blood splatter baked into the ground. The white trail
-            follows the last {TRAIL_S} seconds before the cursor (or the end of the game).{" "}
-            {props.outcome === "quest_completed" ? "The green check marks level complete." : props.outcome === "death" ? "The red X marks where the trooper fell." : "The gold circle marks where the game ended."}
+            The battlefield as the run left it. The white trail follows the last {TRAIL_S} seconds before the cursor, or before the run
+            ended.{" "}
+            {props.outcome === "quest_completed" ? "The green check marks where the level was completed." : props.outcome === "death" ? "The red X marks where the trooper fell." : "The gold circle marks where the run ended."}
           </p>
         }
       >
         <p class="muted arena-note">
-          The battlefield at the end of the game—every body, scorch mark, and blood splatter baked into the ground. Each trail follows a
-          trooper's last {TRAIL_S} seconds before the cursor (or the end of the game):{" "}
+          The battlefield as the run left it. Each trail follows a trooper's last {TRAIL_S} seconds before the cursor, or before the run
+          ended:{" "}
           <For each={run.seats}>
             {(seat, i) => (
               <>
@@ -613,7 +613,7 @@ function Arena(props: { id: string; run: RunTimeline; cursor: Cursor; outcome: s
             )}
           </For>
           . A red X marks where a trooper fell.{" "}
-          {props.outcome === "quest_completed" ? "The green check marks level complete." : props.outcome === "death" ? "" : "The gold circle marks where the game ended."}
+          {props.outcome === "quest_completed" ? "The green check marks where the level was completed." : props.outcome === "death" ? "" : "The gold circle marks where the run ended."}
         </p>
       </Show>
     </div>
@@ -660,7 +660,7 @@ function QuestScore(props: { detail: RunDetailView }) {
       <dl>
         <dt>Base Time:</dt><dd>{formatScore("quests", result.elapsed_ms)}</dd>
         <dt>Life Bonus:</dt><dd>{adjustment(lifeBonus)}</dd>
-        <dt>Unpicked Perk Bonus: <span class="muted">({result.pending_perks})</span></dt><dd>{adjustment(perkBonus)}</dd>
+        <dt>Unpicked Perk Bonus <span class="muted">({result.pending_perks})</span>:</dt><dd>{adjustment(perkBonus)}</dd>
       </dl>
       <Show when={result.elapsed_ms - lifeBonus - perkBonus === 0}>
         <p class="muted">0:00.000 is clamped to 0:00.001, just like the original high score table.</p>
