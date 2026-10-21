@@ -1,20 +1,21 @@
 from __future__ import annotations
 
 import itertools
+from pathlib import Path
 
 import msgspec
 from pytest_mock import MockerFixture
 from typer.testing import CliRunner
 
 from crimson.cli.app import app
-from crimson.replay import Replay, load_replay_file
-from crimson.replay.checkpoints import load_checkpoints_file
+from crimson.replay import Replay, dump_replay_file, load_replay_file
+from crimson.replay.checkpoints import FORMAT_VERSION, ReplayCheckpoints, dump_checkpoints_file
 from crimson.replay.driver.playback_driver import PlaybackDriver, PlaybackWalkObserver
 from crimson.replay.rng_call_order import UNTAGGED_CALLER, caller_names
 from crimson.sim.hooks import TickResult
 from crimson.sim.world_state import WorldState
 from grim.rand import CallerStatic, CrtRand
-from tests.support.replay_runner_helpers import RECORDED_REPLAYS
+from tests.support.replay_runner_helpers import RECORDED_REPLAYS, record_replay
 
 _FIXTURE = next(path for path in RECORDED_REPLAYS if path.name == "quest-2.5-completed.crd")
 
@@ -34,12 +35,13 @@ def _callers_by_tick(replay: Replay, *, max_ticks: int) -> list[list[int]]:
     return observer.callers_by_tick
 
 
-def test_verify_checkpoints_catches_draws_reordered_within_a_tick(mocker: MockerFixture) -> None:
-    replay = load_replay_file(_FIXTURE)
-    expected = {
-        ckpt.tick_index: ckpt for ckpt in load_checkpoints_file(_FIXTURE.with_name(f"{_FIXTURE.name}.chk")).checkpoints
-    }
-    callers_by_tick = _callers_by_tick(replay, max_ticks=600)
+def test_verify_checkpoints_catches_draws_reordered_within_a_tick(mocker: MockerFixture, tmp_path: Path) -> None:
+    # Reuse the historical quest configuration, but generate a fresh run under current rules.
+    # Historical results/checkpoints must not be relabelled when gameplay rules change.
+    replay = record_replay(load_replay_file(_FIXTURE).run, ticks=300)
+    replay_path = tmp_path / "rng-order.crd"
+    dump_replay_file(replay_path, replay)
+    callers_by_tick = _callers_by_tick(replay, max_ticks=300)
     # The first tick after the opening second with two consecutive draws from different tagged call sites.
     tick, pos = next(
         (tick, pos)
@@ -50,6 +52,14 @@ def test_verify_checkpoints_catches_draws_reordered_within_a_tick(mocker: Mocker
     )
     first, second = callers_by_tick[tick][pos : pos + 2]
     swap_at = sum(len(callers) for callers in callers_by_tick[:tick]) + pos
+
+    baseline = PlaybackDriver(replay, max_ticks=tick + 1, warn_on_version_mismatch=False)
+    baseline.walk_ticks(stop_tick=tick)
+    expected = baseline.build_checkpoint(tick_result=baseline.step_tick(tick))
+    dump_checkpoints_file(
+        replay_path.with_name(f"{replay_path.name}.chk"),
+        ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[expected]),
+    )
 
     # Swap which call site each of the two draws belongs to, as swapping the two draw statements would. The
     # draw count, and so the RNG state after the tick, stays the same.
@@ -70,13 +80,13 @@ def test_verify_checkpoints_catches_draws_reordered_within_a_tick(mocker: Mocker
 
     # Every field the checkpoint had before the call-order digest, the RNG state included, still matches.
     assert reordered[pos : pos + 2] == [second, first]
-    assert actual.rng_state == expected[tick].rng_state
-    assert actual.rng_callers_crc32 != expected[tick].rng_callers_crc32
-    assert msgspec.structs.replace(actual, rng_callers_crc32=expected[tick].rng_callers_crc32) == expected[tick]
+    assert actual.rng_state == expected.rng_state
+    assert actual.rng_callers_crc32 != expected.rng_callers_crc32
+    assert msgspec.structs.replace(actual, rng_callers_crc32=expected.rng_callers_crc32) == expected
 
     # The verifier replays from tick 0: count its draws afresh.
     traced_draws = itertools.count()
-    result = CliRunner().invoke(app, ["replay", "verify-checkpoints", str(_FIXTURE), "--max-ticks", str(tick + 1)])
+    result = CliRunner().invoke(app, ["replay", "verify-checkpoints", str(replay_path), "--max-ticks", str(tick + 1)])
 
     assert result.exit_code == 1
     assert f"checkpoint mismatch at tick={tick}\n" in result.output

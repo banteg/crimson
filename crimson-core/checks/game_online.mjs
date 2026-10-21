@@ -66,7 +66,7 @@ const text = (at) => memory().toString("latin1", at, memory().indexOf(0, at));
 
 // The service's answer for the Survival board (service/src/views.ts gameScores):
 // the fixture's run, and one the leaderboard drops before its replay is asked for.
-const fixture = path.join(ROOT, "tests/fixtures/replays/survival-135302.crd");
+const fixture = path.join(ROOT, "tests/fixtures/replays/rules2-survival.crd");
 const score = (run, name, experience) => ({
   run, name, score: experience, elapsed_ms: 512000, experience, most_used_weapon_id: 1,
   shots_fired: 9000, shots_hit: 7000, kills: 1400, accepted_at: Date.now(),

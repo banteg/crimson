@@ -81,6 +81,19 @@ differently: a replay plays back only under the rules it was recorded under. Rea
 `run.custom_quest`, as playing stock quests, and v30 to v33, which had no `seat_keys`, as naming no seat's key;
 writers always write v34.
 
+Rules 2 includes exact-zero reload completion, Jinxed/chain living-target
+selection, independent randomized perk intervals and swap cooldowns, post-swap
+readiness, nonnegative quest life bonuses, single rocket death handling, DoT
+death boundaries, and impact-aligned corpse slides with corrected impulses. Rules-1 recordings remain decodable but are refused by
+current playback and upload verification. `preserve_bugs` selects original
+behavior; it does not emulate an earlier version of the default rules.
+
+The planned release policy retains rules-1 playback and upload verification
+alongside default rules 2, using explicit simulation profiles. This is not yet
+implemented by the current gate. See the
+[rules compatibility plan](../rewrite/replay-rules-compatibility.md); old
+payloads, signatures and results must remain unchanged.
+
 One change played earlier replays differently without raising `rules`:
 [original bug 40](../rewrite/original-bugs.md#40-the-reload-key-does-nothing-in-co-op), the reload key in co-op with
 `preserve_bugs` off. A co-op replay recorded before it that pressed Reload can drift; one-player and `preserve_bugs`

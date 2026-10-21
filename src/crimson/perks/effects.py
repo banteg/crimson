@@ -7,6 +7,7 @@ from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
 from ..collision_math import creature_find_in_radius
+from ..creatures.lifecycle import creature_lifecycle_is_alive
 from ..effects import FxQueue
 from ..gameplay import experience_plus_reward
 from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
@@ -149,11 +150,20 @@ def perks_update_effects(
     pool_mod = 0x17F if state.preserve_bugs else 0x180
     creature_id = rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_PICK) % pool_mod
     attempts = 0
-    while attempts < 10 and not creatures[creature_id].active:
+
+    def eligible(index: int) -> bool:
+        candidate = creatures[index]
+        return candidate.active and (
+            state.preserve_bugs or (candidate.hp > 0.0 and creature_lifecycle_is_alive(candidate.death_timer))
+        )
+
+    # Corpses remain active through the fade. Retry them like empty slots in
+    # default mode, including Breathing Room corpses that retain positive HP.
+    while attempts < 10 and not eligible(creature_id):
         creature_id = rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY) % pool_mod
         attempts += 1
     creature = creatures[creature_id]
-    if not creature.active:
+    if not eligible(creature_id):
         return
 
     creature.hp = -1.0

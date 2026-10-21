@@ -71,7 +71,7 @@ def main() -> None:
                 )
                 with urllib.request.urlopen(request, timeout=60) as source:
                     (game / name).write_bytes(source.read())
-        shutil.copy2(ROOT / "tests/fixtures/replays/survival-238852.crd", game / "practice.crd")
+        shutil.copy2(ROOT / "tests/fixtures/replays/survival-rules2.crd", game / "practice.crd")
         env = {
             **os.environ,
             "CRIMSON_CAPTURE": str(captures),

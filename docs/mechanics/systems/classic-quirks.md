@@ -20,7 +20,7 @@ the page that covers it.
 | [1](../../rewrite/original-bugs.md#1-bonus-drop-suppression-amount-current-weapon-id) | Gun-number drop bans | Some bonuses never drop while player 1 holds a matching gun: Nuke with the Pistol, Freeze with the Submachine Gun and more. | Fixed | [Bonuses](bonuses.md#suppression-rules) |
 | [2](../../rewrite/original-bugs.md#2-greater-regeneration-has-no-runtime-effect) | Dud Greater Regeneration | Taking it does nothing. | Fixed: heals twice as fast as Regeneration | [Perks](../perks.md#45-greater-regeneration) |
 | [3](../../rewrite/original-bugs.md#3-bandage-applies-a-health-multiplier-instead-of-a-heal) | Bandage multiplies | Health is multiplied by 1–50, so it nearly always fills up. | Fixed: heals 1–50 HP | [Perks](../perks.md#49-bandage) |
-| [5](../../rewrite/original-bugs.md#5-stationary-reloader-can-finish-a-reload-without-refilling-ammo) | Empty reloads | A reload sped up by Stationary Reloader can finish with an empty clip: one shot per reload. | Fixed | [Perks](../perks.md#52-stationary-reloader) |
+| [5](../../rewrite/original-bugs.md#5-stationary-reloader-can-finish-a-reload-without-refilling-ammo) | Empty reloads | Stationary Reloader or exact-zero timer completion can leave the clip empty. | Fixed | [Perks](../perks.md#52-stationary-reloader) |
 | [17](../../rewrite/original-bugs.md#17-mini-rocket-swarmers-spread-can-collapse-into-clumped-rockets) | Clumped swarmers | At some clip sizes, 6 with Ammo Maniac, every Mini-Rocket Swarmer flies on one heading. | Fixed: an even fan | [Weapons](../combat/weapons.md#17-mini-rocket-swarmers) |
 | [18](../../rewrite/original-bugs.md#18-exact-zero-lethal-hits-skip-death-only-handling) | Quiet Highlander deaths | A Highlander death skips Final Revenge and the death sound. | Fixed | [Perks](../perks.md#19-final-revenge) |
 | [20](../../rewrite/original-bugs.md#20-no-target-homing-lookups-silently-fall-back-to-creature-slot-0) | Homing at nothing | With nothing to chase, Shock Chain and Seeker Rockets steer at a leftover creature, dead or alive. | Fixed: they stop retargeting | — |
@@ -29,6 +29,13 @@ the page that covers it.
 | [32](../../rewrite/original-bugs.md#32-projectile-slot-0-cannot-hit-the-player-at-first) | Ghost enemy shot | Until the session's first Shock Chain ends, an occasional enemy shot passes straight through you. | Fixed | — |
 | [33](../../rewrite/original-bugs.md#33-a-bonus-carrier-can-drop-its-bonus-twice) | Double carrier drop | A bonus carrier killed twice over, as by a rocket and its blast, drops its bonus twice. | Fixed | — |
 | [38](../../rewrite/original-bugs.md#38-quest-difficulty-leaks-into-survival-and-the-tutorial) | Quest difficulty leaks into Survival | A Hardcore box left ticked on the quest list toughens Survival's milestone waves and the Tutorial's creatures; quitting a retried quest from the pause menu eases them instead. Either way the run lands in the normal Survival table. | Fixed: both apply only to quests | [High scores](scores.md#hardcore-and-survival) |
+
+| [42](../../rewrite/original-bugs.md#42-jinxed-can-reward-an-already-dead-creature) | Jinxed corpse rewards | The random kill can select a corpse and award its XP again. | Fixed: living targets only | [Perks](../perks.md#42-jinxed) |
+| [44](../../rewrite/original-bugs.md#44-alternate-weapon-uses-stale-readiness-and-a-shared-cooldown) | Swap-fire bypass | A ready weapon can authorize firing a reloading alternate on the swap tick. | Fixed: incoming weapon gates apply | [Perks](../perks.md#9-alternate-weapon) |
+| [46](../../rewrite/original-bugs.md#46-rocket-detonation-handles-a-lethal-hit-twice) | Double rocket deaths | Lethal blasts repeat XP, drops and splitter children. | Fixed: one death | — |
+| [47](../../rewrite/original-bugs.md#47-shock-chain-continuation-targets-corpses) | Corpse chain links | Shock Chain wastes continuation links on bodies. | Fixed: living targets | — |
+| [48](../../rewrite/original-bugs.md#48-plague-and-radioactive-miss-zero-hp-kills-and-continue-live-behavior) | DoT death boundaries | Zero-HP pulses miss rewards; newly killed creatures can still attack. | Fixed | [Perks](../perks.md#13-radioactive) |
+| [49](../../rewrite/original-bugs.md#49-death-slides-ignore-impact-direction-primary-impulses-use-cosine-twice) | Wrong-way death slides | Corpses slide backward from their facing; primary impulses use cosine for both axes. | Fixed: impact-aligned slides | — |
 
 ## Co-op
 
@@ -50,6 +57,8 @@ meant the player in question.
 | [19](../../rewrite/original-bugs.md#19-co-op-auto-target-replacement-reuses-mismatched-player-distances) | Computer targets | [Computer-controlled](secrets.md#hidden-control-schemes) players can stick to a worse target. | Fixed | — |
 | [23](../../rewrite/original-bugs.md#23-plaguebearer-contact-immunity-activates-player-1-only-in-co-op) | Plaguebearer | Only player 1 infects creatures by touch. | Fixed | [Perks](../perks.md#10-plaguebearer) |
 | [40](../../rewrite/original-bugs.md#40-the-reload-key-does-nothing-in-co-op) | Reload key | The reload key does nothing with two players: guns reload only when the clip runs dry. | Fixed | [Co-op](co-op.md#what-each-player-has) |
+| [43](../../rewrite/original-bugs.md#43-co-op-randomized-perk-intervals-reschedule-the-other-player) | Shared perk intervals | One player's Fire Cough or Hot Tempered proc reschedules the other player's next proc. | Fixed: independent intervals | [Perks](../perks.md#54-fire-cough) |
+| [45](../../rewrite/original-bugs.md#45-negative-health-subtracts-from-the-quest-life-bonus) | Overkill score penalty | Negative HP adds time to the team's quest result. | Fixed: zero contribution for dead players | [Scores](scores.md) |
 
 ## Sights, sounds and menus
 

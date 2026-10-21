@@ -529,9 +529,10 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
     else:
         player.living_fortress_timer = 0.0
 
+    fire_cough_interval = intervals.fire_cough if state.preserve_bugs else player.fire_cough_interval
     if PerkId.FIRE_CAUGH in state.perks:
         player.fire_cough_timer = x87_pc24_add(player.fire_cough_timer, dt)
-        if player.fire_cough_timer > intervals.fire_cough:
+        if player.fire_cough_timer > fire_cough_interval:
             owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
             state.sfx_queue.append(SfxRequest(SfxId.AUTORIFLE_FIRE, player.pos))
             state.sfx_queue.append(SfxRequest(SfxId.PLASMAMINIGUN_FIRE, player.pos))
@@ -550,14 +551,19 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
                 pos=muzzle, vel=Vec2.from_angle(player.aim_heading) * 25.0, scale=1.0,
                 color=RGBA(0.5, 0.5, 0.5, 0.413), rng=rng,
             )
-            player.fire_cough_timer = x87_pc24_sub(player.fire_cough_timer, intervals.fire_cough)
-            intervals.fire_cough = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET) % 4) + 2.0
+            player.fire_cough_timer = x87_pc24_sub(player.fire_cough_timer, fire_cough_interval)
+            next_interval = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET) % 4) + 2.0
+            if state.preserve_bugs:
+                intervals.fire_cough = next_interval
+            else:
+                player.fire_cough_interval = next_interval
     else:
         player.fire_cough_timer = 0.0
 
+    hot_tempered_interval = intervals.hot_tempered if state.preserve_bugs else player.hot_tempered_interval
     if PerkId.HOT_TEMPERED in state.perks:
         player.hot_tempered_timer = x87_pc24_add(player.hot_tempered_timer, dt)
-        if player.hot_tempered_timer > intervals.hot_tempered:
+        if player.hot_tempered_timer > hot_tempered_interval:
             owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
             for idx in range(8):
                 type_id = ProjectileTemplateId.PLASMA_RIFLE if idx & 1 else ProjectileTemplateId.PLASMA_MINIGUN
@@ -566,8 +572,12 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
                     type_id=type_id, owner_id=owner_id, owner_player_index=player.index,
                 )
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
-            player.hot_tempered_timer = x87_pc24_sub(player.hot_tempered_timer, intervals.hot_tempered)
-            intervals.hot_tempered = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET) % 8) + 2.0
+            player.hot_tempered_timer = x87_pc24_sub(player.hot_tempered_timer, hot_tempered_interval)
+            next_interval = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET) % 8) + 2.0
+            if state.preserve_bugs:
+                intervals.hot_tempered = next_interval
+            else:
+                player.hot_tempered_interval = next_interval
     else:
         player.hot_tempered_timer = 0.0
 
@@ -849,7 +859,8 @@ def _player_tick_reload(
         preload_dt = reload_step
 
     reload_preload_underflow = x87_pc24_sub(reload_timer_now, preload_dt)
-    if reload_timer_now > 0.0 and reload_preload_underflow < 0.0:
+    reload_completes = reload_preload_underflow < 0.0 if state.preserve_bugs else reload_preload_underflow <= 0.0
+    if reload_timer_now > 0.0 and reload_completes:
         player.weapon.ammo = float(player.weapon.clip_size)
 
     if player.weapon.reload_timer > 0.0:
@@ -1024,8 +1035,8 @@ def player_update(
             x87_pc24_sub(player.spread_heat, x87_pc24_mul(frame_dt, f32(0.4))),
         )
 
-    # Native latches both normal and perk readiness before exchanging weapon
-    # slots; the old normal flag also decides whether the incoming shot costs XP/HP.
+    # Preserve the original pre-swap gate for original rules. Default rules
+    # capture it again below after the exchange and its 0.1-second delay.
     fire_gate = _capture_fire_gate(player, state.perks)
 
     # Native clears `reload_active` whenever the cooldown/timer gates are open,
@@ -1034,9 +1045,9 @@ def player_update(
         player.weapon.reload_active = False
 
     reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
-    reload_key_released = not reload_key_down_any
+    reload_key_released = not (reload_key_down_any if state.preserve_bugs else reload_key_active)
     if has_alt_weapon_perk:
-        cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms)
+        cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms if state.preserve_bugs else player.alt_weapon_swap_cooldown_ms)
         dt_ms = ftol_ms_i32(float(dt)) if float(dt) > 0.0 else 0
         if cooldown_ms < 1:
             cooldown_ms = 0
@@ -1048,13 +1059,21 @@ def player_update(
                 weapon = _weapon_entry(player.weapon.weapon_id)
                 state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
                 player.weapon.shot_cooldown = x87_pc24_add(player.weapon.shot_cooldown, f32(0.1))
-                state.player_alt_weapon_swap_cooldown_ms = 200
+                cooldown_ms = 200
             else:
-                state.player_alt_weapon_swap_cooldown_ms = 0
+                cooldown_ms = 0
         else:
-            state.player_alt_weapon_swap_cooldown_ms = max(0, int(cooldown_ms))
+            cooldown_ms = max(0, int(cooldown_ms))
             if reload_key_released:
-                state.player_alt_weapon_swap_cooldown_ms = 0
+                cooldown_ms = 0
+
+        if state.preserve_bugs:
+            state.player_alt_weapon_swap_cooldown_ms = cooldown_ms
+        else:
+            player.alt_weapon_swap_cooldown_ms = cooldown_ms
+            fire_gate = _capture_fire_gate(player, state.perks)
+            if fire_gate.normal_ready:
+                player.weapon.reload_active = False
 
     if auto_fire:
         # Computer aim fires on its own when the target is in reach (0x00415729).

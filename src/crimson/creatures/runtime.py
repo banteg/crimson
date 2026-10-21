@@ -753,7 +753,7 @@ class CreaturePool:
                     )
                     creature.hp = x87_pc24_sub(float(creature.hp), f32(15.0))
                     plague_killed = False
-                    if creature.hp < 0.0:
+                    if creature.hp < 0.0 or (not state.preserve_bugs and creature.hp == 0.0):
                         state.plaguebearer_infection_count += 1
                         self.handle_death(step_runtime, idx)
                         # Native plague-kill path consumes one rand draw for
@@ -765,6 +765,8 @@ class CreaturePool:
                         plague_killed = True
 
                     fx_queue.add_random(pos=creature.pos, rng=rng)
+                    if plague_killed and not state.preserve_bugs:
+                        continue
                     if plague_killed:
                         # Native keeps executing the current live-branch body after
                         # `creature_handle_death` in this timer-wrap kill path.
@@ -901,7 +903,7 @@ class CreaturePool:
                     creature.hp = x87_pc24_sub(float(creature.hp), pulse_damage)
                     fx_queue.add_random(pos=creature.pos, rng=rng)
 
-                    if creature.hp < 0.0:
+                    if creature.hp < 0.0 or (not state.preserve_bugs and creature.hp == 0.0):
                         if creature.type_id == CreatureTypeId.LIZARD:
                             creature.hp = 1.0
                         else:
@@ -913,6 +915,8 @@ class CreaturePool:
                                 float(creature.death_timer),
                                 float(dt),
                             )
+                            if not state.preserve_bugs:
+                                continue
 
             if (not frozen_by_evil_eyes) and (  # noqa: SIM102 - preserve the native ranged-fire branch shape
                 int(creature.flags) & _FLAG_RANGED

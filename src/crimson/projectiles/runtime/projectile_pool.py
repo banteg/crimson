@@ -560,11 +560,13 @@ class ProjectilePool:
                         # at PC24, storing each result.
                         remaining = x87_pc24_sub(proj.damage_pool, 1.0)
                         proj.damage_pool = remaining
-                        # Native `projectile_update` writes both impulse components from the
-                        # same cosine term (`cos(angle - pi/2) * speed_scale`).
+                        # Original `projectile_update` uses cosine for both axes;
+                        # default rules use sine for the vertical component.
                         impulse_angle = f32(float(proj.angle) - NATIVE_HALF_PI)
                         impulse_axis = f32(math.cos(float(impulse_angle)) * float(proj.speed_scale))
-                        impulse = Vec2(float(impulse_axis), float(impulse_axis))
+                        impulse_y = (impulse_axis if runtime_state.preserve_bugs else
+                                     f32(math.sin(float(impulse_angle)) * float(proj.speed_scale)))
+                        impulse = Vec2(float(impulse_axis), float(impulse_y))
                         if remaining <= 0.0:
                             creature_apply_damage(step_runtime, int(hit_idx), float(damage_amount), CreatureDamageType.BULLET, impulse)
                             creature_spatial.sync_index(int(hit_idx))

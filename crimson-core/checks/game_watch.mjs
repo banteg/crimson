@@ -13,7 +13,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { CORE, decode, init, loadCore, names, state, step } from "./engine.mjs";
+import { CORE, decode, field, init, loadCore, names, state, step } from "./engine.mjs";
 import { PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT } from "./game_host.mjs";
 
@@ -67,12 +67,13 @@ fs.mkdirSync(watched, { recursive: true });
 // A link opened as the game boots skips the intro and the menu. It comes in
 // once the intro's tune plays, as the page's fetch does, and the preparing pass
 // that follows is silent.
-fs.copyFileSync(path.join(fixtures, "quest-1.1-completed.crd"), path.join(watched, "linked.crd"));
+fs.copyFileSync(path.join(fixtures, "quest-1.1-rules2.crd"), path.join(watched, "linked.crd"));
 while (run.clock < 1500) frame();
 memory().write("watched/linked.crd\0", game.game_replay_path(), "latin1");
 if (!game.game_replay_open() || !game.game_watch()) throw Error("a link at startup does not take");
-// A link to a moment lies within the recording's 1441 ticks, its stop past its start.
-for (const [tick, stop] of [[1442, 0], [0, 1442], [-1, 0], [300, 300], [0, 1]])
+// A link's moment lies within this recording, its stop past its start.
+const linkedTicks = decode(Buffer.from(memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size()))).records.length;
+for (const [tick, stop] of [[linkedTicks + 1, 0], [0, linkedTicks + 1], [-1, 0], [300, 300], [0, 1]])
   if (game.game_watch_moment(tick, stop)) throw Error(`a link took the moment ${tick}..${stop}`);
 if (!game.game_watch_moment(300, 305)) throw Error("a link refused the moment 300..305");
 for (let frames = 0; game.game_watch_status() < 0 || !game.game_watch_ticks(); ++frames) {
@@ -118,9 +119,22 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   }
   const recording = Buffer.from(memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size()));
   if (!game.game_watch() || (!played && !game.game_watch())) throw Error(`${name}: Watch does not start`);
-  if (name === "survival-238852.crd") {
-    game.game_watch_seek(14320);
-    game.game_watch_stop_at(14350);
+  let moment = 0;
+  if (name === "coop-perk-timers-rules2.crd") {
+    // Locate an actual Reflex Boost window in the generated fixture.
+    const sample = decode(recording);
+    init(core, sample.config);
+    for (let i = 0; i < sample.records.length - 30; ++i) {
+      if (!step(core, sample.records[i])) throw Error("Reflex sample ended early");
+      state(core);
+      if (field(core, "globals.bonus_reflex_boost_timer", true) > 1) {
+        moment = i + 1;
+        break;
+      }
+    }
+    if (!moment) throw Error("Co-op timer fixture has no Reflex Boost window");
+    game.game_watch_seek(moment);
+    game.game_watch_stop_at(moment + 30);
   }
   for (let frames = 0; game.game_watch_status() < 0; ++frames) {
     if (frames > 600) throw Error(`${name}: the replay never started`);
@@ -128,12 +142,12 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   }
   // The host reads the next replay while this one plays.
   game.game_replay_open();
-  if (name === "survival-238852.crd") {
+  if (name === "coop-perk-timers-rules2.crd") {
     while (!game.game_watch_ticks()) frame();
-    if (game.game_watch_tick() !== 14320)
+    if (game.game_watch_tick() !== moment)
       throw Error(`Reflex Boost link seek landed on ${game.game_watch_tick()}`);
     for (let i = 0; i < 60; ++i) frame();
-    if (game.game_watch_tick() !== 14350)
+    if (game.game_watch_tick() !== moment + 30)
       throw Error(`Reflex Boost link stop landed on ${game.game_watch_tick()}`);
     frame(16, [SPACE]);
   }

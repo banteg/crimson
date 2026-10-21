@@ -144,6 +144,7 @@ class QuestResultsView(MenuScreen):
             base_time_ms=outcome.base_time_ms,
             player_health_values=outcome.player_health_values,
             pending_perk_count=outcome.pending_perk_count,
+            preserve_bugs=self.state.preserve_bugs,
         )
         record.run_elapsed_ms = int(breakdown.final_time_ms)
         player_name_default = _player_name_default(self.state.config) or "Player"

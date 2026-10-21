@@ -56,7 +56,7 @@ const before = files(),
   requestCount = requests.length;
 let anchors = 0,
   compared = 0;
-for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-completed.crd"]) {
+for (const name of ["survival-rules2.crd", "rush-rules2.crd", "quest-1.1-rules2.crd"]) {
   clear();
   fs.copyFileSync(path.join(ROOT, "tests/fixtures/replays", name), path.join(directory, "watched/practice.crd"));
   Buffer.from(game.memory.buffer).write("watched/practice.crd\0", game.game_replay_path(), "latin1");
@@ -287,7 +287,7 @@ for (const phase of ["playing", "perk"]) {
   game = run.game;
   while (run.clock < 15000) frame(16);
   const requested = requests.length;
-  fs.copyFileSync(path.join(ROOT, "tests/fixtures/replays/survival-238852.crd"), path.join(directory, "watched/practice.crd"));
+  fs.copyFileSync(path.join(ROOT, "tests/fixtures/replays/survival-rules2.crd"), path.join(directory, "watched/practice.crd"));
   Buffer.from(game.memory.buffer).write("watched/practice.crd\0", game.game_replay_path(), "latin1");
   assert.ok(game.game_replay_open());
   assert.ok(game.game_watch());

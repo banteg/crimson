@@ -30,7 +30,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.factories import player_input
 
-# Replays recorded in live play (Typ-o by `scripts/gen_typo_replay.py`), each with its `.chk` checkpoint sidecar.
+# Historical and generated recordings, each with a `.chk` sidecar; see fixtures/replays/README.md for provenance.
 RECORDED_REPLAYS = tuple(sorted((Path(__file__).resolve().parents[1] / "fixtures" / "replays").glob("*.crd")))
 
 UNVERIFIED_RESULT = RunResult(

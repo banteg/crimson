@@ -30,6 +30,10 @@ extern "C" quest_meta_t *portable_custom_quest;
 quest_meta_t *portable_custom_quest;
 extern "C" unsigned char portable_preserve_bugs;
 unsigned char portable_preserve_bugs;
+PortablePlayerRules portable_player_rules[2];
+float portable_impact_heading(float x, float y) {
+  return (float)(portable_atan2(y, x) - 1.5707964f);
+}
 static PortableCommand commands[16];
 static bool ready;
 static bool menu_requested;
@@ -460,6 +464,8 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
 #else
   portable_reset_data();
 #endif
+  for (auto &player : portable_player_rules)
+    player = {1.4f, 1.4f, 0};
   string_used = 0;
   rng = seed;
   menu_requested = false;

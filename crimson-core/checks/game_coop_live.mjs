@@ -1677,7 +1677,7 @@ tap(host, key(TAB), key(ENTER));
 play(idle, () => peers.every((p) => screen(p) === QUEST_SELECT), "the quest lists");
 settle(host, QUEST_SELECT);
 fs.mkdirSync(path.join(host.directory, "watched"));
-fs.copyFileSync(path.join(ROOT, "tests/fixtures/replays/quest-1.1-completed.crd"), path.join(host.directory, LINKED));
+fs.copyFileSync(path.join(ROOT, "tests/fixtures/replays/quest-1.1-rules2.crd"), path.join(host.directory, LINKED));
 Buffer.from(host.g.memory.buffer).write(`${LINKED}\0`, host.g.game_replay_path(), "latin1");
 assert.equal(host.g.game_replay_open(), 1);
 assert.equal(host.g.game_watch(1, 17, 10, 2026), 1);

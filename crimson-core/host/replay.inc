@@ -87,9 +87,12 @@ static void replay_result(Msgpack &m, const char *outcome) {
   if (!strcmp(outcome, "quest_completed")) {
     // compute_quest_final_time (src/crimson/quests/results.py): player one's
     // health truncated, then times 50; the second player's times 50, truncated.
-    int final = elapsed - (int)player_state_table[0].health * 50 - perk_pending_count * 1000;
-    for (uint32_t p = 1; p < cfg.players; ++p)
-      final -= (int)(player_state_table[p].health * 50.0f);
+    int final = elapsed - perk_pending_count * 1000;
+    for (uint32_t p = 0; p < cfg.players; ++p) {
+      float health = player_state_table[p].health;
+      if (!portable_preserve_bugs && health < 0.0f) health = 0.0f;
+      final -= p == 0 ? (int)health * 50 : (int)(health * 50.0f);
+    }
     m.integer(final == 0 ? 1 : final);
   } else
     m.nil();

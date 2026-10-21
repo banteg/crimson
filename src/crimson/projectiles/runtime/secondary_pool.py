@@ -114,7 +114,8 @@ def _step_detonation(
                 # second `creature_handle_death` call after the killing hit.
                 fx_queue.add_random(pos=creature.pos, rng=rng)
                 fx_queue.add_random(pos=creature.pos, rng=rng)
-                step_runtime.world.creatures.handle_death(step_runtime, creature_idx)
+                if runtime_state.preserve_bugs:
+                    step_runtime.world.creatures.handle_death(step_runtime, creature_idx)
 
 
 def _move_rocket(

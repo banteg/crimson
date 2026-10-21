@@ -12,6 +12,9 @@ The gameplay fixes below apply **by default** where specified. For parity work
 and future differential testing, you can re-enable those original behaviors with
 `--preserve-bugs`. Original text quirks and the late-game Survival spawn rate are documented only and always preserved.
 
+The [candidate triage](original-bugs-triage.md) separates proposed additions,
+balance choices, and already-handled behavior from the fixes in this ledger.
+
 ## 1) Bonus drop suppression: `amount == current weapon id`
 
 Native behavior:
@@ -146,6 +149,10 @@ Native behavior:
   never refilled when the reload completes.
 - This can lead to a “one shot + forced reload loop” (reload completes with `ammo == 0`,
   the next shot underflows ammo and restarts reload).
+- Independently of Stationary Reloader, the strict `< 0` preload test misses
+  exact-zero completion. A Pulse Gun reload of 0.1 seconds at 50 FPS reaches
+  zero after five ticks without refilling. The original executable's reload
+  fragment and the Python port reproduce this with no perks.
 
 Why it’s likely a bug:
 
@@ -154,9 +161,12 @@ Why it’s likely a bug:
 
 Rewrite behavior:
 
-- Default: use the scaled reload decrement (`reload_scale * frame_dt`) for the preload
-  check so ammo is always refilled when Stationary Reloader causes same-tick completion.
-- With `--preserve-bugs`: keep the native unscaled preload check (and the empty-reload loop).
+- Default: use the scaled reload decrement (`reload_scale * frame_dt`) and
+  include equality (`timer - decrement <= 0`). Require a positive starting
+  timer, so an idle gun does not refill every frame. Exact-zero completion is
+  included starting with rules 2.
+- With `--preserve-bugs`: keep the native unscaled, strict-negative preload
+  check (and the empty-reload loop).
 
 ## 6) Weapon-drop proximity conversion checks player 1 only
 
@@ -1155,3 +1165,130 @@ Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp`
 `tests/render/test_projectile_render.py`,
 `crimson-core/checks/projectile_colors.py` (adapted renderer draw capture), and
 [`41-projectile-head-colors.patch`](../../crimson-core/game/patches/41-projectile-head-colors.patch).
+
+## 42) Jinxed can reward an already-dead creature
+
+Native behavior:
+
+- `perks_update_effects` selects an active creature, with up to ten retries
+  for inactive slots. Dying and fading corpses remain active.
+- It sets the selected creature's HP to -1 and awards its base XP without
+  checking whether the creature was alive. A 100-XP corpse pays another 100
+  XP when selected. This was reproduced in the original 1.9.93 executable
+  under Unicorn, with controlled RNG, and in both policies of the old port.
+- Breathing Room also leaves dying creatures with positive HP; checking HP
+  alone would still treat those corpses as living victims.
+
+Rewrite behavior (rules 2):
+
+- Default: a victim must be active, have positive HP, and have the living
+  lifecycle timer (`death_timer == 16`). Retry an ineligible slot using the
+  existing ten-retry limit. If no living victim is found, the creature-kill
+  part of this proc does nothing: no extra reward, sound, or lifecycle change.
+- The accident, proc timer, Freeze gate, base-only reward, and no-drop kill
+  semantics stay as before. This fixes victim eligibility, not all special
+  death paths. Rejecting corpses can consume extra retry RNG draws.
+- With `--preserve-bugs`: retain active-only selection and duplicate rewards.
+
+Evidence: `decomp/1.9/crimsonland/game/perks_update_effects.cpp:194-211`,
+`tests/perks/test_jinxed_perk.py`, and
+[`42-jinxed-living-target.patch`](../../crimson-core/patches/42-jinxed-living-target.patch).
+
+## 43) Co-op randomized perk intervals reschedule the other player
+
+Fire Cough and Hot Tempered have per-player elapsed timers but global next
+intervals. One player's proc changes the threshold the other player is waiting
+for. Two due players can therefore produce only one shot/ring.
+
+Default (rules 2): each player owns both elapsed time and next interval. Keep
+initial delay 1.4 seconds, Fire Cough's 2–5 second distribution, Hot Tempered's
+2–9 seconds, and the shared deterministic RNG. There is no artificial phase
+shift: simultaneous first procs are allowed. Man Bomb's constant interval is
+unchanged. `--preserve-bugs` retains the shared randomized thresholds.
+
+Added state is reset with each run, compared in Python/core snapshots, hashed
+in co-op, and restored by watch/practice/rollback keyframes without changing
+the recovered player structure. [Issue #821](https://github.com/banteg/crimson/issues/821),
+`43-independent-perk-intervals.patch`, `tests/gameplay/test_rules2_bundle.py`.
+
+## 44) Alternate Weapon uses stale readiness and a shared cooldown
+
+The original captures normal/perk firing eligibility before swapping slots.
+It can fire the incoming weapon despite its reload or cooldown and charge the
+incoming weapon's XP/HP cost using the outgoing weapon's readiness.
+
+Default: evaluate the incoming weapon after adding the existing 0.1-second
+swap delay. Each player owns their 200 ms swap cooldown and release handling.
+`--preserve-bugs` retains the shared cooldown and pre-swap firing gate.
+
+**Reachability:** Alternate Weapon is not offered in normal co-op. The firing
+bug is reachable solo; shared-cooldown interference requires granting the perk
+to a co-op run. Availability is unchanged. [Issue #822](https://github.com/banteg/crimson/issues/822),
+`44-independent-weapon-swap.patch`, `tests/perks/test_alternate_weapon_perk.py`.
+
+## 45) Negative health subtracts from the quest life bonus
+
+A dead partner at -80 HP adds four seconds to a quest result compared with
+zero HP. Overkill damage should not be a negative life bonus.
+
+Default: clamp every player's contribution to zero before the existing
+seat-specific rounding. Preserve negative final times and the exactly-zero
+1 ms sentinel. `--preserve-bugs` retains negative-HP contributions. Python,
+core results, recovered results UI, and service verification use the same
+policy. Historical run pages retain the formula matching their stored score.
+[Issue #823](https://github.com/banteg/crimson/issues/823), `45-quest-life-bonus.patch`.
+
+## 46) Rocket detonation handles a lethal hit twice
+
+The ordinary damage path already handles death; detonation calls the handler
+again. A 100-XP victim pays 200 XP, bonus rolls repeat, and a splitter creates
+four children instead of two.
+
+Default: call death handling once, retaining the two follow-up random decals.
+`--preserve-bugs` retains the duplicate rewards, drops and splits. This is a
+real rocket economy change, even though it removes an accidental duplicate.
+[Issue #824](https://github.com/banteg/crimson/issues/824), `46-single-rocket-death.patch`.
+
+## 47) Shock Chain continuation targets corpses
+
+Initial target selection checks the living lifecycle; continuation originally
+checks only active slots. It can spend links on bodies and even return to an
+earlier corpse. Zero-HP slots with a living timer can also pass the initial query.
+
+Default: both searches require positive HP and `death_timer == 16`, retaining
+exclude-id, distance bounds, slot ordering and the existing no-target result.
+Seeker Rockets share the initial query, so they also stop selecting zero-HP
+slots whose lifecycle timer still says living.
+`--preserve-bugs` retains each query's original predicate and fallback.
+[Issue #825](https://github.com/banteg/crimson/issues/825), `47-living-chain-targets.patch`.
+
+## 48) Plague and Radioactive miss zero-HP kills and continue live behavior
+
+Both pulse paths test strictly negative HP. An exact-zero hit misses the
+reward; an overkill can continue into live AI/ranged/contact logic that tick.
+
+Default: treat zero as lethal and leave the live branch after the existing
+pulse effects. Plague keeps ordinary death rewards; Radioactive keeps base XP,
+no drops/splits and its lizard exemption, including at equality. Corpses begin
+their normal update on the next tick. `--preserve-bugs` keeps strict-negative
+tests and live-branch fallthrough. [Issue #826](https://github.com/banteg/crimson/issues/826),
+`48-dot-death-boundaries.patch`.
+
+## 49) Death slides ignore impact direction; primary impulses use cosine twice
+
+The original overwrites corpse velocity from its heading every tick. Primary
+hits also use the same cosine for both impulse components. The latter can
+already affect living HOLD_TIMER creatures through contact movement.
+
+Default: use sine for the primary impulse Y component. On a lethal hit with a
+nonzero impulse, align the corpse heading so the existing backward slide
+travels along that impulse. Rockets supply their outward impulse; Nuke aligns
+newly killed victims outward without adding a live-creature impulse. Rotation
+happens after death handling so splitter children inherit the pre-death state.
+
+Zero-direction hits and special deaths retain their heading. Pinned spawners
+remain stationary; mobile spawners retain their existing slide eligibility.
+Slide speed, duration, corpse collision window and piercing damage pools are
+unchanged. The heading also determines the collapsed sprite orientation.
+`--preserve-bugs` retains cosine/cosine impulses and heading-based original slides.
+[Issue #818](https://github.com/banteg/crimson/issues/818), `49-impact-aligned-death.patch`.

@@ -1,0 +1,51 @@
+Original bug 43: independent perk intervals.
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -371,9 +371,11 @@
+         player->living_fortress_timer = 0.0f;
+     }
+ 
++    float &fire_cough_interval = portable_preserve_bugs
++        ? perk_fire_cough_trigger_interval_s : portable_player_rules[current_player_index].fire_cough_interval;
+     if (perk_count_get(perk_id_fire_caugh) != 0) {
+         player->fire_cough_timer = player->fire_cough_timer + frame_dt;
+-        if (player->fire_cough_timer > perk_fire_cough_trigger_interval_s) {
++        if (player->fire_cough_timer > fire_cough_interval) {
+             int owner_id;
+             if (cv_friendlyFire->value != 0.0f) {
+                 owner_id = -1 - current_player_index;
+@@ -437,8 +439,8 @@
+             }
+ 
+             player->fire_cough_timer =
+-                player->fire_cough_timer - perk_fire_cough_trigger_interval_s;
+-            perk_fire_cough_trigger_interval_s =
++                player->fire_cough_timer - fire_cough_interval;
++            fire_cough_interval =
+                 (float)(crt_rand() % 4) + 2.0f;
+         }
+     } else {
+@@ -447,9 +449,11 @@
+ 
+ #endif
+ 
++    float &hot_tempered_interval = portable_preserve_bugs
++        ? perk_hot_tempered_trigger_interval_s : portable_player_rules[current_player_index].hot_tempered_interval;
+     if (perk_count_get(perk_id_hot_tempered) != 0) {
+         player->hot_tempered_timer = player->hot_tempered_timer + frame_dt;
+-        if (player->hot_tempered_timer > perk_hot_tempered_trigger_interval_s) {
++        if (player->hot_tempered_timer > hot_tempered_interval) {
+             int owner_id;
+             if (cv_friendlyFire->value != 0.0f) {
+                 owner_id = -1 - current_player_index;
+@@ -473,8 +477,8 @@
+ 
+             sfx_play_panned(sfx_explosion_small, &player->position, 1.0f);
+             player->hot_tempered_timer =
+-                player->hot_tempered_timer - perk_hot_tempered_trigger_interval_s;
+-            perk_hot_tempered_trigger_interval_s =
++                player->hot_tempered_timer - hot_tempered_interval;
++            hot_tempered_interval =
+                 (float)(crt_rand() % 8) + 2.0f;
+         }
+     } else {

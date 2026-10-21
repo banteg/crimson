@@ -27,7 +27,10 @@ def creature_find_nearest_alive(
         creature = creatures[idx]
         if not creature.active:
             continue
-        if not creature_lifecycle_is_alive(creature.death_timer):
+        if (
+            not creature_lifecycle_is_alive(creature.death_timer)
+            or (not preserve_bugs and creature.hp <= 0.0)
+        ):
             continue
         dx = x87_pc24_sub(f32(origin.x), f32(creature.pos.x))
         dy = x87_pc24_sub(f32(origin.y), f32(creature.pos.y))
@@ -48,8 +51,9 @@ def creature_find_nearest_active(
 ) -> int:
     """Port of ``creature_find_nearest(origin, exclude_id, min_dist)``.
 
-    This native branch accepts every active creature, regardless of lifecycle,
-    and compares the stored PC=24 square-root distance against both bounds.
+    Original rules accept every active creature, regardless of lifecycle;
+    default rules require a living target. Both compare the stored PC=24
+    square-root distance against both bounds.
     """
 
     best_idx = 0 if preserve_bugs else -1
@@ -59,6 +63,8 @@ def creature_find_nearest_active(
     for idx in range(max_index):
         creature = creatures[idx]
         if not creature.active or idx == int(exclude_id):
+            continue
+        if not preserve_bugs and (creature.hp <= 0.0 or not creature_lifecycle_is_alive(creature.death_timer)):
             continue
         dx = x87_pc24_sub(f32(origin.x), f32(creature.pos.x))
         dy = x87_pc24_sub(f32(origin.y), f32(creature.pos.y))

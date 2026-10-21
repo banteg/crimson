@@ -42,7 +42,7 @@ def crosswind() -> CustomQuest:
 # A builder that draws nothing, on a normal level without level-specific rules: its table loaded as a
 # custom quest leaves the run exactly as the stock start does.
 def test_a_stock_table_as_a_custom_quest_replays_the_stock_recording():
-    replay = load_replay((FIXTURES / "quest-1.1-completed.crd").read_bytes())
+    replay = load_replay((FIXTURES / "quest-1.1-rules2.crd").read_bytes())
     assert replay.run.quest_level is not None
     quest = quest_by_level(replay.run.quest_level)
     assert quest is not None

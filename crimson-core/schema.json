@@ -1097,5 +1097,15 @@
       "portable_effect_index(effect_pool[510].next_free)",
       "portable_effect_index(effect_pool[511].next_free)"
     ]
+  },
+  {
+    "name": "player_rules",
+    "count": 2,
+    "source": "portable_player_rules",
+    "fields": [
+      "fire_cough_interval",
+      "hot_tempered_interval",
+      "alt_weapon_swap_cooldown_ms"
+    ]
   }
 ]

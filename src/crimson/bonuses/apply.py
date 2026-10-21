@@ -8,7 +8,7 @@ from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..creatures.damage import creature_apply_damage
+from ..creatures.damage import align_death_heading, creature_apply_damage
 from ..creatures.damage_types import CreatureDamageType
 from ..effects_atlas import EffectId
 from ..math_parity import (
@@ -278,6 +278,7 @@ def bonus_apply(
                 distance = x87_pc24_sqrt(x87_pc24_add(x87_pc24_mul(dx, dx), x87_pc24_mul(dy, dy)))
                 damage_base = x87_pc24_sub(256.0, distance)
                 if damage_base > 0.0:
+                    was_alive = creature.hp > 0.0
                     creature_apply_damage(
                         step_runtime,
                         idx,
@@ -285,6 +286,8 @@ def bonus_apply(
                         CreatureDamageType.EXPLOSION,
                         Vec2(),
                     )
+                    if not state.preserve_bugs and was_alive and creature.hp <= 0.0:
+                        align_death_heading(creature, Vec2(dx, dy))
             state.scripted_burst_active = False
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, origin))
             state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, origin))

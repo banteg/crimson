@@ -19,8 +19,8 @@ def bits(x):
     return struct.unpack("<I", struct.pack("<f", x))[0]
 
 
-def observe(case):
-    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
+def observe(case, *, preserve_bugs=True):
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0, preserve_bugs=preserve_bugs)
     state = world.state
     state.bonuses.freeze = case.get("freeze", 0.0)
     rng = RecordingCrand(Crand(case["rng_seed"]))

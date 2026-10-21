@@ -259,6 +259,8 @@ def test_decode_names_the_format_of_another_version(wire: dict, version: int) ->
 def test_earlier_formats_read_with_what_they_left_out_and_are_written_as_the_current_format(version: int, left_out: set) -> None:
     wire = {key: value for key, value in _wire().items() if key not in left_out}
     wire["format_version"] = version
+    if "rules" not in left_out:
+        wire["rules"] = 1
     if version < 33:
         # Runs had no custom quest before v33.
         wire["run"] = {key: value for key, value in wire["run"].items() if key != "custom_quest"}
@@ -266,7 +268,8 @@ def test_earlier_formats_read_with_what_they_left_out_and_are_written_as_the_cur
     replay = decode_replay_payload(msgspec.msgpack.encode(wire))
 
     assert (replay.format_version, replay.rules, replay.pilot, replay.seat_keys) == (version, 1, None, None)
-    assert encode_replay_payload(replay) == _payload()
+    # Updating the envelope must not upgrade the gameplay rules.
+    assert encode_replay_payload(replay) == encode_replay_payload(msgspec.structs.replace(_replay(), rules=1))
 
 
 def test_a_declared_pilot_round_trips() -> None:
@@ -382,9 +385,10 @@ def test_load_rejects_large_zstd_window() -> None:
         load_replay(frame)
 
 
-def test_a_replay_under_other_rules_decodes_but_does_not_play() -> None:
-    other = msgspec.structs.replace(_replay(), rules=REPLAY_RULES + 1)
+@pytest.mark.parametrize("rules", [1, REPLAY_RULES + 1])
+def test_a_replay_under_other_rules_decodes_but_does_not_play(rules: int) -> None:
+    other = msgspec.structs.replace(_replay(), rules=rules)
 
-    assert decode_replay_payload(encode_replay_payload(other)).rules == REPLAY_RULES + 1
-    with pytest.raises(ReplayRulesError, match="recorded under rules 2"):
+    assert decode_replay_payload(encode_replay_payload(other)).rules == rules
+    with pytest.raises(ReplayRulesError, match=f"recorded under rules {rules}; this build plays rules {REPLAY_RULES}"):
         PlaybackDriver(other)

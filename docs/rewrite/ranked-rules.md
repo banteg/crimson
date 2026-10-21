@@ -6,10 +6,13 @@ tags:
 
 # Ranked rules
 
-A leaderboard run is a replay that verifies and satisfies these rules. The rules
-version is the replay's `game_version`: a build with a rules bug is withdrawn
-from the boards rather than frozen. The replay's `recorder` names the client and
-platform that recorded it, so a faulty client can be withdrawn the same way. `crimson replay verify` reports `ranked`,
+A leaderboard run is a replay that verifies and satisfies these rules. Its
+`rules` field selects simulation behavior; `game_version` identifies the build,
+and `recorder` identifies the recording client/platform. The planned rules-2
+rollout retains rules-1 records and verifies them under their own behavior;
+a rules upgrade alone does not withdraw them. Historical profile support is
+pending; see the [compatibility plan](replay-rules-compatibility.md).
+`crimson replay verify` reports `ranked`,
 the `board` and every `unranked_reasons` entry from the run rules
 (`src/crimson/replay/ranked.py`); the leaderboard service applies the same
 checks to each upload, along with its signatures
@@ -59,14 +62,16 @@ is a bot run when its replay declares a pilot or a moderator puts it there; see
 
 ## When the verifier changes
 
-A run stays on the boards while the current verifier still plays it to its
-result. A change to the simulation or to what a replay may do is checked against
-every ranked run: its pull request's CI replays them all through the new build,
-as the service verifies an upload, and the deploy checks every stored run again
-before it goes live. A run that no longer verifies is retired with the reason
-(`runs.retired`, set by a migration in the same change): it leaves the boards
-and the game's scores, keeps its page, which says why, and its replay stays
-downloadable.
+The planned compatibility contract checks each ranked replay under its recorded
+rules profile. CI and pre-deployment checks should verify the supported historical
+profiles as well as the current default. A mismatch during a rules upgrade is a
+compatibility investigation, not automatic grounds to retire a historical score.
+Keep existing records and replay bytes through the rules-2 rollout.
+
+Actual invalid runs and faulty-client moderation remain separate: retirement
+uses `runs.retired`, removes a run from the boards and game scores, and retains
+its page, reason and downloadable replay. A rules version becoming historical
+is not itself such a reason.
 
 ## The ranked profile
 

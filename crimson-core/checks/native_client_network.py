@@ -22,7 +22,7 @@ RUN, QUEUED = "b" * 64, "a" * 64
 
 def main():
     binary = Path(sys.argv[1]).resolve()
-    replay = (ROOT / "tests/fixtures/replays/quest-1.1-completed.crd").read_bytes()
+    replay = (ROOT / "tests/fixtures/replays/quest-1.1-rules2.crd").read_bytes()
     with tempfile.TemporaryDirectory(prefix="crimson-client-network-") as folder:
         root = Path(folder)
         game, captures = root / "game", root / "captures"

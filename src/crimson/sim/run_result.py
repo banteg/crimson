@@ -107,6 +107,7 @@ def build_run_result(session: DeterministicSession, *, outcome: RunOutcome) -> R
             base_time_ms=int(elapsed_ms),
             player_health_values=tuple(float(player.health) for player in players),
             pending_perk_count=int(state.perk_selection.pending_count),
+            preserve_bugs=state.preserve_bugs,
         ).final_time_ms
 
     return RunResult(

@@ -11,7 +11,8 @@ and RNG caller order at each recorded tick) in the same pass.
 
 Each stream's config carries its bug policy (`preserve_bugs`), and Python runs
 under the same one: the bot corpus covers both, and recorded fixtures replay
-under the rules they were recorded with, so their claimed results apply.
+only when their rules version matches this build, so their claimed results apply.
+Historical recordings remain codec fixtures and are reported as unsupported here.
 """
 
 import argparse
@@ -38,6 +39,7 @@ from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
 from crimson.replay.codec import load_replay_file
 from crimson.replay.driver.playback_driver import PlaybackDriver, ReplayRunnerError
 from crimson.replay.types import Replay, ReplayTick, current_recorder
+from crimson.replay.versioning import require_playable_rules
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import (
     PlayerRunResult,
@@ -111,7 +113,14 @@ def fields(players: int) -> tuple[tuple[str, str, Callable, bool], ...]:
         for index in range(players)
         for label, name, getter, floating in PLAYER_FIELDS
     )
-    return GLOBAL_FIELDS + own
+    rules = tuple(
+        (f"player{index + 1}.{name}", f"player_rules[{index}].{name}",
+         player_getter(index, lambda p, name=name: getattr(p, name)), floating)
+        for index in range(players)
+        for name, floating in (("fire_cough_interval", True), ("hot_tempered_interval", True),
+                               ("alt_weapon_swap_cooldown_ms", False))
+    )
+    return GLOBAL_FIELDS + own + rules
 # Result-only fields read from the core's last compared snapshot.
 RESULT_FIELDS = (
     "globals.game_state_pending",
@@ -225,6 +234,7 @@ def load_streams(rsi_dir: Path, fixtures_dir: Path) -> tuple[list[Stream], dict[
     for path in sorted(fixtures_dir.glob("*.crd")):
         try:
             replay = load_replay_file(path)
+            require_playable_rules(replay)
             payload = encode(replay, None)
             sidecar = path.with_name(path.name + ".chk")
             checkpoints = tuple(load_checkpoints_file(sidecar).checkpoints) if sidecar.exists() else ()
@@ -256,7 +266,7 @@ def run_core(native: Path, stream: Stream, columns: list[int]) -> tuple[list[tup
     return rows, proc.returncode, proc.stderr.decode()
 
 
-def core_result(row: dict[str, int], mode: GameMode, players: int) -> RunResult:
+def core_result(row: dict[str, int], mode: GameMode, players: int, preserve_bugs: bool = False) -> RunResult:
     """The core does not export a RunResult yet; derive it from its state with Python's definitions."""
 
     state = row["globals.game_state_pending"]
@@ -284,6 +294,7 @@ def core_result(row: dict[str, int], mode: GameMode, players: int) -> RunResult:
                 base_time_ms=elapsed,
                 player_health_values=health,
                 pending_perk_count=pending,
+                preserve_bugs=preserve_bugs,
             ).final_time_ms
             if outcome == RunOutcome.QUEST_COMPLETED
             else None
@@ -367,7 +378,7 @@ def compare(stream: Stream, native: Path) -> dict:
     compared_tick = python_ticks
     row = dict(zip(names, core_rows[compared_tick], strict=True))
     expected = build_run_result(session, outcome=session.end_outcome())
-    actual = core_result(row, spec.game_mode_id, stream.players)
+    actual = core_result(row, spec.game_mode_id, stream.players, spec.preserve_bugs)
     mismatches = run_result_mismatches(expected, actual)
     checkpoint_diff = compare_checkpoints(stream.checkpoints, checkpoints) if stream.checkpoints else None
     claimed = stream.recorded.result if stream.recorded is not None else None

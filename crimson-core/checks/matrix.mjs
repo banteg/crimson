@@ -84,6 +84,9 @@ function encodeControls(scheme, { x, y, heading, aimHeading, mx, my, wx, wy, mov
 // Perk ids (`PerkId` in src/crimson/perks) that ranked-rules fixes touch.
 const PERK = {
   pyrokinetic: 6,
+  alternateWeapon: 9,
+  hotTempered: 31,
+  fireCough: 54,
   plaguebearer: 10,
   evilEyes: 11,
   doctor: 29,
@@ -487,6 +490,10 @@ scenarios.push(
 // Two players, each with their own controls: the second's keys, axes and cursor are its own. The hunter prefers the
 // perks whose co-op fixes the ranked rules carry.
 scenarios.push(
+  ["coop-survival-extra-choices", [1, 1, 1, { seed: 2, players: 2 }], 2, 20000, [MOUSE, PAD],
+    { prefer: [43, 21] }],
+  ["coop-survival-independent-timers", [1, 1, 1, { seed: 44, players: 2 }], 2, 30000, [MOUSE, PAD],
+    { prefer: [PERK.hotTempered, PERK.fireCough, PERK.alternateWeapon] }],
   ["coop-survival", [1, 1, 1, { seed: 41, players: 2 }], 2, 30000, [PAD, MOUSE]],
   ["coop-rush", [2, 1, 1, { seed: 42, players: 2 }], 2, 30000, [MOUSE, { move: MOVE.relative, aim: AIM.keyboard }]],
   ["coop-quest-2.4", [3, 2, 4, { seed: 43, players: 2 }], true, 30000, [{ move: MOVE.static, aim: AIM.joystick }, { move: MOVE.pointClick, aim: AIM.mouseRelative }]],
@@ -509,7 +516,7 @@ scenarios.push(
   // Under the ranked rules this run fills the effect pool (original bug 39's overflow) as frozen creatures
   // shatter: overflow entries free at their own times and leave decals, which co-op rollbacks must restore and
   // bake (checks/game_coop.mjs).
-  ["coop-survival-effects", [1, 1, 1, { seed: 18, players: 2 }], 2, 5200, [PAD, MOUSE]],
+  ["coop-survival-effects", [1, 1, 1, { seed: 22, players: 2 }], 2, 20000, [PAD, MOUSE]],
   // A co-op quest completed: its end tune, which co-op music waits to confirm.
   ["coop-quest-1.1", [3, 1, 1, { seed: 46, players: 2 }], true, 30000, [PAD, MOUSE]],
 );

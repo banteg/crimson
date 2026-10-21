@@ -241,7 +241,7 @@ if (padded) {
 }
 const fixtures = new URL("../tests/fixtures/replays/", CORE).pathname;
 fs.mkdirSync(path.join(directory, "watched"), { recursive: true });
-fs.copyFileSync(path.join(fixtures, "quest-1.1-completed.crd"), path.join(directory, "watched/linked.crd"));
+fs.copyFileSync(path.join(fixtures, "quest-1.1-rules2.crd"), path.join(directory, "watched/linked.crd"));
 Buffer.from(game.memory.buffer).write("watched/linked.crd\0", game.game_replay_path(), "latin1");
 if (!game.game_replay_open() || !game.game_watch()) throw Error("a link as the run starts does not take");
 

@@ -84,7 +84,7 @@ def _drawn_texts(viewer: ReplayViewer, mocker) -> list[str]:
 
 
 def test_a_seek_lands_on_the_state_straight_play_reaches(open_viewer: OpenViewer) -> None:
-    replay = load_replay_file(RECORDED_DIR / "quest-1.1-completed.crd")
+    replay = load_replay_file(RECORDED_DIR / "quest-1.1-rules2.crd")
     viewer = open_viewer(replay)
     viewer.update(0.0)
     straight = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False)
@@ -103,7 +103,7 @@ def test_a_seek_lands_on_the_state_straight_play_reaches(open_viewer: OpenViewer
 
 
 def test_the_pass_in_its_own_process_finds_what_it_finds_here() -> None:
-    replay = load_replay_file(RECORDED_DIR / "quest-1.1-completed.crd")
+    replay = load_replay_file(RECORDED_DIR / "quest-1.1-rules2.crd")
     here = ReplayPreparation(replay, background=False)
     here.poll()
     apart = ReplayPreparation(replay)
@@ -115,15 +115,16 @@ def test_the_pass_in_its_own_process_finds_what_it_finds_here() -> None:
 
 
 def test_the_pick_box_shows_the_menus_offers_once_playback_passes_the_pick(open_viewer: OpenViewer, mocker) -> None:
-    replay = load_replay_file(RECORDED_DIR / "quest-2.10-completed.crd")
+    replay = load_replay_file(RECORDED_DIR / "survival-rules2.crd")
     picked = [(index, command) for index, tick in enumerate(replay.ticks) for command in tick.commands if isinstance(command, PerkPickCommand)]
+    assert len(picked) >= 3
     viewer = open_viewer(replay)
     viewer.update(0.0)
     prep = viewer.preparation
     assert prep is not None
 
     assert [(pick.tick, pick.pick.chosen) for pick in prep.picks] == [(index + 1, command.choice_index) for index, command in picked]
-    assert [mark.value for mark in prep.marks if mark.kind == MarkKind.PICK] == [0, 1, 2]
+    assert [mark.value for mark in prep.marks if mark.kind == MarkKind.PICK] == list(range(len(picked)))
     first = prep.picks[0]
     viewer.seek(first.tick - 2)
     assert viewer.card_pick == -1
@@ -272,7 +273,7 @@ def test_the_pads_b_or_start_returns_to_the_screen_below(open_viewer: OpenViewer
 
 
 def test_the_music_is_the_tune_the_run_has_where_playback_is(open_viewer: OpenViewer, mocker) -> None:
-    replay = load_replay_file(RECORDED_DIR / "quest-1.1-completed.crd")
+    replay = load_replay_file(RECORDED_DIR / "quest-1.1-rules2.crd")
     music = MusicState(ready=True, enabled=True, volume=1.0, active_track="crimson_theme", queue=["gt1_ingame", "gt2_harppen"])
     audio = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0)))
 
@@ -351,7 +352,7 @@ def test_rtx_debug_cycles_while_paused_and_survives_seek(open_viewer: OpenViewer
     from crimson.render.rtx.debug import RtxDebugView
     from crimson.render.rtx.mode import RtxRenderMode
 
-    replay = load_replay_file(RECORDED_DIR / "quest-1.1-completed.crd")
+    replay = load_replay_file(RECORDED_DIR / "quest-1.1-rules2.crd")
     viewer = open_viewer(replay)
     viewer.paused = True
     viewer.set_rtx_mode(RtxRenderMode.RTX)

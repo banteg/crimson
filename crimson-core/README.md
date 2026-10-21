@@ -395,7 +395,7 @@ the input seam: each player's turn flags arrive with their own input.
 | 01 | Weapon drops are suppressed only for a weapon a player carries, not any matching amount |
 | 02 | Greater Regeneration doubles the Regeneration heal |
 | 03 | Bandage adds its roll to living players instead of multiplying |
-| 05 | The reload preload looks ahead by the Stationary Reloader step |
+| 05 | The reload preload looks ahead by the Stationary Reloader step and includes exact-zero completion |
 | 06 | A Weapon drop turns into Points near any player |
 | 07 | Regeneration heals each living player once |
 | 09 | A hit's was-alive guard reads the hit player's health |
@@ -415,6 +415,14 @@ the input seam: each player's turn flags arrive with their own input.
 | 33 | A bonus carrier drops its bonus once |
 | 38 | The saved Hardcore box and the failed-quest retry easing apply to quests only, not to Survival's milestone waves or the Tutorial |
 | 40 | The reload key reloads in co-op |
+| 42 | Jinxed retries corpses and rewards only living targets |
+| 43 | Fire Cough and Hot Tempered intervals belong to each player |
+| 44 | Alternate Weapon cooldowns belong to each player; readiness is evaluated after swapping |
+| 45 | Negative HP contributes zero quest life bonus |
+| 46 | Rocket detonations handle each lethal hit once |
+| 47 | Initial and continuation Shock Chain targets must be living |
+| 48 | Plague/Radioactive handle zero HP and stop death-frame live behavior |
+| 49 | Primary impulses use sine for Y; lethal impacts align corpse slides |
 
 Fixes that only change what is drawn are patches in
 [`game/patches/`](game/patches), which only the game module applies, so the

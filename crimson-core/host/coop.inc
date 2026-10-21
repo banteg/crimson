@@ -848,6 +848,21 @@ static void coop_tick(int t, bool quiet, bool draw) {
       survival_xp_smoothed = 0;
       run_state_write(state.data());
     });
+    // Overflow decals pass through fx_queue only when a bake is committed.
+    // Held bakes keep them in CoopBake instead, so consumed queue entries may
+    // retain different bytes. They are never read beyond fx_queue_count; keep
+    // live queued decals and compare committed decals through the bake digest.
+    uintptr_t unused = (uintptr_t)(fx_queue + fx_queue_count);
+    uintptr_t end = (uintptr_t)(fx_queue + std::size(fx_queue));
+    size_t offset = 0;
+    for (int i = 0; i < game_run_span_count; ++i) {
+      const GameSpan &span = game_run_spans[i];
+      uintptr_t begin = (uintptr_t)span.at;
+      uintptr_t lo = std::max(begin, unused), hi = std::min(begin + span.size, end);
+      if (lo < hi)
+        memset(state.data() + offset + lo - begin, 0, hi - lo);
+      offset += span.size;
+    }
     entry.state = coop_digest(state.data(), state.size());
   }
   coop.heard = std::max(coop.heard, t);
@@ -1290,7 +1305,7 @@ __attribute__((export_name("game_coop_music_at"))) uint32_t game_coop_music_at(i
   return coop_tick_at(t) && t <= coop.played ? coop_tick_at(t)->music : 0;
 }
 // Test hook: each tick keeps a digest of the run's state after it, the keyframe
-// codec's raw bytes (game_coop_state_at, like the other digests).
+// codec's bytes less local presentation and consumed decal entries (see coop_tick).
 __attribute__((export_name("game_coop_states"))) void game_coop_states(int keep) { coop.states = keep; }
 __attribute__((export_name("game_coop_state_at"))) uint32_t game_coop_state_at(int t) {
   return coop_tick_at(t) ? coop_tick_at(t)->state : 0;
@@ -1381,7 +1396,7 @@ __attribute__((export_name("game_coop_restore"))) int game_coop_restore(int t) {
 // Test hook: changes a field family the hash covers: 0 a snapshot field, 1 a
 // session field, 2 a hover timer, 3 a run status counter, 4 an effect overflow
 // entry (none without one), 5 two floats' signs, 6 the corpse fade, 7 friendly
-// fire. 1 when changed.
+// fire; 8-10 the added per-player rule state. 1 when changed.
 __attribute__((export_name("game_coop_corrupt"))) int game_coop_corrupt(int kind) {
   if (kind == 0)
     player_state_table[1].health += 1;
@@ -1400,6 +1415,12 @@ __attribute__((export_name("game_coop_corrupt"))) int game_coop_corrupt(int kind
     cv_bodiesFade->value += 1;
   else if (kind == 7)
     cv_friendlyFire->value = !cv_friendlyFire->value;
+  else if (kind == 8)
+    portable_player_rules[1].fire_cough_interval += 1;
+  else if (kind == 9)
+    portable_player_rules[0].hot_tempered_interval += 1;
+  else if (kind == 10)
+    ++portable_player_rules[1].alt_weapon_swap_cooldown_ms;
   else
     return 0;
   return 1;

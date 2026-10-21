@@ -45,6 +45,11 @@ for (const source of replays) {
   const name = path.basename(source);
   fs.copyFileSync(source, path.join(directory, "replays", name));
   const playable = open(name);
+  // Historical fixtures still decode, but must not play under the new simulation rules.
+  if (!playable && reason().startsWith("Recorded under other rules (")) {
+    if (name.includes("rules2") || Object.hasOwn(coop, name)) throw Error(`${name}: current rules refused`);
+    continue;
+  }
   const expected = path.join(scratch, `${name}.rsi`);
   let converted = true;
   try {
@@ -62,13 +67,13 @@ for (const source of replays) {
   ++read;
 }
 // A fixture (or a co-op run) rewritten as `expression` (Python over its decoded `wire`) at replays/rewritten.crd.
-const fixture = "survival-135302.crd";
+const fixture = "rules2-survival.crd";
 const rewrite = (expression, source = path.join(fixtures, fixture)) => {
   const script =
     "import sys, msgspec, zstandard; data = open(sys.argv[1], 'rb').read(); " +
     "wire = msgspec.msgpack.decode(zstandard.ZstdDecompressor().decompress(data)); " +
     "pack = lambda value: zstandard.ZstdCompressor().compress(msgspec.msgpack.encode(value)); " +
-    "v34 = lambda seat_keys: pack({'format_version': 34, 'game_version': wire['game_version'], 'rules': 1, " +
+    "v34 = lambda seat_keys: pack({'format_version': 34, 'game_version': wire['game_version'], 'rules': wire['rules'], " +
     "'recorder': wire['recorder'], 'pilot': None, 'seat_keys': seat_keys, " +
     "**{key: wire[key] for key in ('run', 'result', 'ticks')}}); " +
     `open(sys.argv[2], 'wb').write(${expression})`;
@@ -97,8 +102,10 @@ const broken = {
   "no run": "pack({'format_version': wire['format_version'], 'rules': 1})",
   "no quest 6.1": "pack({**wire, 'run': {**wire['run'], 'game_mode_id': 3, 'quest_level': {'major': 6, 'minor': 1}}})",
   "custom quest": "pack({**wire, 'run': {**wire['run'], 'game_mode_id': 3, 'quest_level': None, 'custom_quest': {'title': 'Crosswind'}}})",
-  "format 34 without seat keys": "pack({**wire, 'format_version': 34, 'rules': 1, 'pilot': None})",
-  "seat keys before format 34": "pack({**wire, 'seat_keys': None})",
+  "format 34 without seat keys": "pack({k: v for k, v in wire.items() if k != 'seat_keys'})",
+  "seat keys before format 34": "pack({**wire, 'format_version': 33, 'seat_keys': None})",
+  "historical rules": "pack({**wire, 'rules': 1})",
+  "future rules": "pack({**wire, 'rules': wire['rules'] + 1})",
   "no seat's key": "v34([])",
   "a key per two seats": "v34([bytes(32), bytes(range(32))])",
   "a short seat key": "v34([bytes(31)])",

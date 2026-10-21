@@ -1,0 +1,13 @@
+Original bug 46: single rocket death.
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
+@@ -705,7 +705,8 @@
+                             if (creature_pool[creature_id].health <= 0.0f) {
+                                 fx_queue_add_random(&creature_pool[creature_id].position);
+                                 fx_queue_add_random(&creature_pool[creature_id].position);
+-                                creature_handle_death(creature_id, 1);
++                                if (portable_preserve_bugs)
++                                    creature_handle_death(creature_id, 1);
+                             }
+                         }
+                     }

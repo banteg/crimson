@@ -10,7 +10,8 @@ class PerkEffectIntervals(msgspec.Struct):
 
     These are global (not per-player) in crimsonland.exe: `perk_man_bomb_trigger_interval_s`,
     `perk_fire_cough_trigger_interval_s` and `perk_hot_tempered_trigger_interval_s`; Fire Cough
-    and Hot Tempered re-roll theirs.
+    and Hot Tempered re-roll theirs. Default rules keep those two thresholds on
+    PlayerState instead; these fields retain the original preserve-bugs path.
     """
 
     man_bomb: float = 4.0

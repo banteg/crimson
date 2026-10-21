@@ -118,7 +118,7 @@ for (const [steps, screen] of [[0, HIGHSCORES], [1, WEAPON_DATABASE], [2, PERK_D
 // A replay plays from the menu, and B leaves it for the high scores.
 settle(MAIN_MENU);
 fs.mkdirSync(path.join(directory, "watched"), { recursive: true });
-fs.copyFileSync(new URL("../tests/fixtures/replays/quest-1.1-completed.crd", CORE), path.join(directory, "watched/linked.crd"));
+fs.copyFileSync(new URL("../tests/fixtures/replays/quest-1.1-rules2.crd", CORE), path.join(directory, "watched/linked.crd"));
 Buffer.from(game.memory.buffer).write("watched/linked.crd\0", game.game_replay_path(), "latin1");
 if (!game.game_replay_open() || !game.game_watch()) throw Error("the replay does not start");
 for (let frames = 0; game.game_watch_status() !== 0 || game.game_watch_tick() < 120; ++frames) {

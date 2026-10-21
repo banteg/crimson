@@ -1,0 +1,56 @@
+Original bug 48: dot death boundaries.
+--- a/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
+@@ -282,7 +282,7 @@
+                                 creatures[creature_index].dot_tick_timer =
+                                     dot_tick_timer + 0.5f;
+                                 *health -= 15.0f;
+-                                if (*health < 0.0f) {
++                                if (*health < 0.0f || (!portable_preserve_bugs && *health == 0.0f)) {
+                                     ++plaguebearer_infection_count;
+                                     creature_handle_death(creature_index, 1);
+                                     sfx_play_panned(
+@@ -293,6 +293,8 @@
+                                         1.0f);
+                                 }
+                                 fx_queue_add_random(position);
++                                if (!portable_preserve_bugs && *health <= 0.0f)
++                                    goto next_creature;
+                             }
+                         }
+ 
+@@ -654,13 +656,15 @@
+                                 creatures[creature_index].dot_tick_timer = 0.5f;
+                                 creatures[creature_index].state_flag = 1;
+                                 *health -= (100.0f - interaction_distance) * 0.3f;
+-                                if (*health < 0.0f) {
++                                if (*health < 0.0f || (!portable_preserve_bugs && *health == 0.0f)) {
+                                     player_state_table[0].experience = (int)(
+                                         (float)player_state_table[0].experience
+                                         + creatures[creature_index].reward_value);
+                                     *death_timer -= frame_dt;
+                                 }
+                                 fx_queue_add_random(position);
++                                if (!portable_preserve_bugs && *health <= 0.0f)
++                                    goto next_creature;
+                             }
+ #else
+                             if (creatures[creature_index].dot_tick_timer < 0.0f
+@@ -668,7 +672,7 @@
+                                 creatures[creature_index].dot_tick_timer = 0.5f;
+                                 creatures[creature_index].state_flag = 1;
+                                 *health -= (100.0f - interaction_distance) * 0.3f;
+-                                if (*health < 0.0f) {
++                                if (*health < 0.0f || (!portable_preserve_bugs && *health == 0.0f)) {
+                                     if (creatures[creature_index].type_id
+                                         == CREATURE_TYPE_LIZARD) {
+                                         *health = 1.0f;
+@@ -680,6 +684,8 @@
+                                     }
+                                 }
+                                 fx_queue_add_random(position);
++                                if (!portable_preserve_bugs && *health <= 0.0f)
++                                    goto next_creature;
+                             }
+ #endif
+                         }

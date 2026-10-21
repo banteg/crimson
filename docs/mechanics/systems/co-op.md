@@ -51,6 +51,8 @@ details.
 - A weapon, clip and reload. Weapon bonuses and MediKits go to whoever
   picks them up.
 - Shield, Speed and Fire Bullets timers.
+- Fire Cough and Hot Tempered elapsed timers and next randomized intervals.
+  `--preserve-bugs` retains the original shared intervals.
 
 If two players reach a bonus at the same moment, both collect it: a Nuke
 goes off twice.

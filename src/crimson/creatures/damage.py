@@ -10,7 +10,7 @@ from grim.sfx_types import SfxRequest
 
 from ..collision_math import within_native_find_radius
 from ..effects_atlas import EffectId
-from ..math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
+from ..math_parity import NATIVE_HALF_PI, f32, x87_fpatan, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
 from .damage_types import CreatureDamageType
@@ -132,6 +132,12 @@ def resolve_native_death_sfx(
     return options[roll & 3]
 
 
+def align_death_heading(creature: CreatureState, direction: Vec2) -> None:
+    """The corpse slides backward along its heading; face against the impact."""
+    if direction.x != 0.0 or direction.y != 0.0:
+        creature.heading = x87_pc24_sub(x87_fpatan(direction.y, direction.x), NATIVE_HALF_PI)
+
+
 def creature_apply_damage(
     step_runtime: WorldStepRuntime,
     creature_index: int,
@@ -197,6 +203,8 @@ def creature_apply_damage(
     else:
         creature.death_timer = x87_pc24_sub(creature.death_timer, f32(0.001))
     step_runtime.world.creatures.handle_death(step_runtime, creature_index)
+    if not state.preserve_bugs:
+        align_death_heading(creature, impulse)
     creature.vel = Vec2(
         x87_pc24_sub(creature.vel.x, x87_pc24_mul(impulse.x, 2.0)),
         x87_pc24_sub(creature.vel.y, x87_pc24_mul(impulse.y, 2.0)),

@@ -1,8 +1,8 @@
 Original bug 5: the reload preload looks one unscaled frame ahead, so Stationary Reloader can skip it.
-The fix looks ahead by the scaled reload step.
+The fix looks ahead by the scaled reload step and includes exact-zero completion.
 --- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
 +++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
-@@ -873,7 +873,14 @@
+@@ -873,7 +873,16 @@
          }
      }
  
@@ -14,7 +14,9 @@ The fix looks ahead by the scaled reload step.
 +        && perk_count_get(perk_id_stationary_reloader) != 0) {
 +        preload_dt = 3.0f * frame_dt;
 +    }
-+    if (player->reload_timer - preload_dt < 0.0f
++    if ((portable_preserve_bugs
++            ? player->reload_timer - preload_dt < 0.0f
++            : player->reload_timer - preload_dt <= 0.0f)
          && player->reload_timer > 0.0f) {
          player->ammo = player->clip_size;
      }

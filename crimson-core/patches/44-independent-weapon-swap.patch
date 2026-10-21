@@ -1,0 +1,44 @@
+Original bug 44: independent weapon swap.
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -1168,11 +1168,14 @@
+         perk_fire_ready = true;
+     }
+ 
++    int &swap_cooldown_ms = portable_preserve_bugs
++        ? player_alt_weapon_swap_cooldown_ms
++        : portable_player_rules[current_player_index].alt_weapon_swap_cooldown_ms;
+     if (perk_count_get(perk_id_alternate_weapon) != 0) {
+-        if ((player_alt_weapon_swap_cooldown_ms <= 0
+-                || (player_alt_weapon_swap_cooldown_ms =
+-                        player_alt_weapon_swap_cooldown_ms - frame_dt_ms,
+-                    player_alt_weapon_swap_cooldown_ms <= 0))
++        if ((swap_cooldown_ms <= 0
++                || (swap_cooldown_ms =
++                        swap_cooldown_ms - frame_dt_ms,
++                    swap_cooldown_ms <= 0))
+             && grim_interface_ptr->grim_is_key_active(config_key_reload)) {
+             pu_swap(player->alt_weapon_id, player->weapon_id);
+             pu_swap(player->alt_clip_size, player->clip_size);
+@@ -1187,10 +1190,18 @@
+                 &player->position,
+                 1.0f);
+             player->shot_cooldown = player->shot_cooldown + 0.1f;
+-            player_alt_weapon_swap_cooldown_ms = 200;
++            swap_cooldown_ms = 200;
+         } else if (!grim_interface_ptr->grim_is_key_active(config_key_reload)) {
+-            player_alt_weapon_swap_cooldown_ms = 0;
+-        }
++            swap_cooldown_ms = 0;
++        }
++    }
++
++    if (!portable_preserve_bugs) {
++        normal_fire_ready = player->shot_cooldown <= 0.0f && player->reload_timer == 0.0f;
++        if (normal_fire_ready) player->reload_active = 0;
++        perk_fire_ready = player->shot_cooldown <= 0.0f && player->experience > 0
++            && (perk_count_get(perk_id_regression_bullets) != 0
++                || perk_count_get(perk_id_ammunition_within) != 0);
+     }
+ 
+     if ((normal_fire_ready || perk_fire_ready)

@@ -34,10 +34,11 @@ def _pick_up_weapon(world: WorldState, player: PlayerState, weapon_id: WeaponId)
     (False, True, 1000, 99.0),
     (True, True, 760, 100.0),
 ])
+@pytest.mark.parametrize("preserve_bugs", [False, True])
 def test_alternate_weapon_swap_preserves_perk_firing_and_charges_incoming_weapon(
-    regression: bool, ammunition: bool, expected_xp: int, expected_health: float,
+    regression: bool, ammunition: bool, expected_xp: int, expected_health: float, preserve_bugs: bool,
 ) -> None:
-    world = make_world()
+    world = make_world(preserve_bugs=preserve_bugs)
     state = world.state
     player = world.players[0]
     weapon_assign_player(player, WeaponId.PLASMA_MINIGUN, state=state)
@@ -59,14 +60,15 @@ def test_alternate_weapon_swap_preserves_perk_firing_and_charges_incoming_weapon
     # Native captures both ready flags before swapping, then charges the new
     # weapon despite its zero reload timer and the swap's added cooldown.
     assert player.weapon.weapon_id == WeaponId.PISTOL
-    assert_float_close(player.weapon.ammo, 11.0)
-    assert state.survival_reward_fire_seen
-    assert player.experience == expected_xp
-    assert_float_close(player.health, expected_health)
+    assert_float_close(player.weapon.ammo, 11.0 if preserve_bugs else 12.0)
+    assert state.survival_reward_fire_seen == preserve_bugs
+    assert player.experience == (expected_xp if preserve_bugs else 1000)
+    assert_float_close(player.health, expected_health if preserve_bugs else 100.0)
 
 
-def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None:
-    world = make_world(player_count=2)
+@pytest.mark.parametrize("preserve_bugs", [False, True])
+def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player(preserve_bugs: bool) -> None:
+    world = make_world(player_count=2, preserve_bugs=preserve_bugs)
     state = world.state
     players = world.players
     player0, player1 = players
@@ -82,7 +84,7 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
         reload_key_down_any=True,
     )
     assert player0.weapon.weapon_id == 1
-    assert state.player_alt_weapon_swap_cooldown_ms == 200
+    assert (state.player_alt_weapon_swap_cooldown_ms if preserve_bugs else player0.alt_weapon_swap_cooldown_ms) == 200
 
     player_update(
         player1,
@@ -91,7 +93,7 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
         step_runtime=make_step_runtime(world, dt=0.05),
         reload_key_down_any=True,
     )
-    assert state.player_alt_weapon_swap_cooldown_ms > 0
+    assert (state.player_alt_weapon_swap_cooldown_ms if preserve_bugs else player0.alt_weapon_swap_cooldown_ms) > 0
 
     player_update(
         player0,

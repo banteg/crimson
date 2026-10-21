@@ -25,7 +25,8 @@ const vectors = JSON.parse(fs.readFileSync(path.join(ROOT, "service/test/vectors
 const replays = fixture
   ? { [path.basename(fixture)]: fs.readFileSync(fixture) }
   : {
-      "survival-238852.crd": fs.readFileSync(path.join(ROOT, "tests/fixtures/replays/survival-238852.crd")),
+      "coop-perk-timers-rules2.crd": fs.readFileSync(path.join(ROOT, "tests/fixtures/replays/coop-perk-timers-rules2.crd")),
+      "survival-rules2.crd": fs.readFileSync(path.join(ROOT, "tests/fixtures/replays/survival-rules2.crd")),
       "coop-survival.crd": Buffer.from(vectors.file, "base64"),
       "coop-quest.crd": Buffer.from(vectors.quest_file, "base64"),
     };

@@ -1,0 +1,55 @@
+Original bug 49: impact aligned death.
+--- a/decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp
+@@ -98,6 +98,8 @@
+         if (creature_pool[creature_id].health <= 0.0f) {
+             creature_pool[creature_id].death_timer -= frame_dt;
+             creature_handle_death(creature_id, 1);
++            if (!portable_preserve_bugs && (impulse->x != 0.0f || impulse->y != 0.0f))
++                creature_pool[creature_id].heading = portable_impact_heading(impulse->x, impulse->y);
+ 
+             damage_vec2_t doubled_impulse =
+                 *(const damage_vec2_t *)impulse * 2.0f;
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
+@@ -486,7 +486,8 @@
+ 
+                                             vec2f_t impulse = {
+                                                 impulse_x,
+-                                                impulse_cosine * impulse_speed,
++                                                portable_preserve_bugs ? impulse_cosine * impulse_speed
++                                                    : (float)(sin(projectile->angle - 1.5707964f) * impulse_speed),
+                                             };
+                                             creature_apply_damage(hit_id,
+                                                 projectile->pos.tail.vy.damage_pool, 1, &impulse);
+@@ -502,7 +503,8 @@
+ 
+                                             vec2f_t impulse = {
+                                                 impulse_x,
+-                                                impulse_cosine * impulse_speed,
++                                                portable_preserve_bugs ? impulse_cosine * impulse_speed
++                                                    : (float)(sin(projectile->angle - 1.5707964f) * impulse_speed),
+                                             };
+                                             creature_apply_damage(hit_id, damage, 1, &impulse);
+                                             if (projectile->pos.tail.vy.life_timer != 0.25f) {
+--- a/decomp/1.9/crimsonland/game/bonus_apply.cpp
++++ b/decomp/1.9/crimsonland/game/bonus_apply.cpp
+@@ -277,11 +277,18 @@
+                             vec2f_t impulse;
+                             impulse.x = 0.0f;
+                             impulse.y = 0.0f;
++                            bool was_alive = creature_pool[creature_iter].health > 0.0f;
+                             creature_apply_damage(
+                                 creature_iter,
+                                 damage * 5.0f,
+                                 3,
+                                 &impulse);
++                            if (!portable_preserve_bugs && was_alive && creature_pool[creature_iter].health <= 0.0f) {
++                                float dx = creature_pool[creature_iter].position.x - bonus_pos->x;
++                                float dy = creature_pool[creature_iter].position.y - bonus_pos->y;
++                                if (dx != 0.0f || dy != 0.0f)
++                                    creature_pool[creature_iter].heading = portable_impact_heading(dx, dy);
++                            }
+                         }
+                     }
+                 }

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
@@ -15,6 +17,8 @@ from crimson.projectiles.runtime import ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.weapon_runtime import weapon_assign_player
+from crimson.weapon_runtime.assign import player_start_reload
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
@@ -84,6 +88,36 @@ def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> No
     assert_float_close(player.weapon.reload_timer, 0.0)
     assert_float_close(player.weapon.ammo, 6.0)
     assert player.weapon.reload_active is True
+
+
+@pytest.mark.parametrize("preserve_bugs", [False, True])
+def test_pulse_gun_full_reload_at_50fps_refills_on_exact_zero(preserve_bugs: bool) -> None:
+    world = make_world(preserve_bugs=preserve_bugs)
+    player = world.players[0]
+    weapon_assign_player(player, WeaponId.PULSE_GUN, state=world.state)
+    player.weapon.ammo = 0.0
+    player_start_reload(player, world.state)
+    for _ in range(5):
+        step_player(world, player, player_input(), 0.02)
+    assert player.weapon.reload_timer == 0.0
+    assert player.weapon.ammo == (0.0 if preserve_bugs else player.weapon.clip_size)
+    # A completed reload must not become an unconditional refill each frame.
+    player.weapon.ammo = 2.0
+    step_player(world, player, player_input(), 0.02)
+    assert player.weapon.ammo == 2.0
+
+
+@pytest.mark.parametrize("preserve_bugs", [False, True])
+def test_stationary_reload_exact_scaled_boundary(preserve_bugs: bool) -> None:
+    world = make_world(preserve_bugs=preserve_bugs)
+    world.state.perks[PerkId.STATIONARY_RELOADER] = 1
+    player = world.players[0]
+    player.weapon.ammo = 0.0
+    player.weapon.reload_timer = 0.09375
+    player.weapon.reload_active = True
+    step_player(world, player, player_input(), 0.03125)
+    assert player.weapon.reload_timer == 0.0
+    assert player.weapon.ammo == (0.0 if preserve_bugs else player.weapon.clip_size)
 
 
 def test_player_update_hot_tempered_spawns_ring() -> None:

@@ -57,7 +57,7 @@ _TYPO_COMMANDS = (TypoCharCommand, TypoBackspaceCommand, TypoSubmitCommand)
 
 
 class _ReplayV30(msgspec.Struct, forbid_unknown_fields=True):
-    """Format 30, which had no `rules`: no change since makes its replays play differently, so they play under rules 1."""
+    """Format 30 had no `rules`: decode as historical rules 1 without upgrading its gameplay."""
 
     format_version: int
     game_version: str

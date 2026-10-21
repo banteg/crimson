@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { concat, COOP_RUN_DOMAIN, fromHex, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
 import { confirmMerge } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
-import { decodeReplay, inflateReplay } from "../../src/replay";
+import { decodeReplay, inflateReplay, REPLAY_RULES } from "../../src/replay";
 import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameScore, LoginView, ProfileView, ReplaysView, RunDetailView, Timeline } from "../../src/api-types";
 import { STALE, timelineFor, validateRecipeSource } from "../../src/runs";
 import vectors from "../vectors.json";
@@ -99,6 +99,16 @@ async function login(player: Player): Promise<string> {
 }
 
 describe("runs", () => {
+  it.each([1, REPLAY_RULES + 1])("refuses rules %s before verifying a run", async (rules) => {
+    const header = new TextEncoder().encode("rules");
+    const file = rewritten(vectors.ranked_run, concat(header, Uint8Array.of(REPLAY_RULES)), concat(header, Uint8Array.of(rules)));
+    const response = await (await Player.create()).upload(file, "banteg");
+
+    expect(response.status).toBe(422);
+    expect(await reason(response)).toBe(`replay was recorded under rules ${rules}; this service verifies rules ${REPLAY_RULES}`);
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM runs").first("n")).toBe(0);
+  });
+
   it("a verified ranked run joins its board under its name", async () => {
     const player = await Player.create();
     const response = await player.upload(vectors.ranked_run, "banteg");

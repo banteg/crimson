@@ -451,6 +451,17 @@ def custom_quest_payload() -> dict[str, object]:
         "run_id": _run_id(transport),
     }
 
+def unranked_run() -> str:
+    """A fresh, unfinished run under the historical Rush fixture's unranked configuration."""
+    historical = decode_replay_payload(inflate_replay_payload((FIXTURES / "rush-kills103.crd").read_bytes()))
+    replay = msgspec.structs.replace(
+        _base_replay(), run=historical.run, seat_keys=None,
+        ticks=[ReplayTick(inputs=[(0.0, 0.0, 512.0, 400.0, (1 << 8) | (1 << 12))])],
+    )
+    result = PlaybackDriver(replay, version_mismatch_action=None).run()
+    return base64.b64encode(dump_replay(msgspec.structs.replace(replay, result=result))).decode("ascii")
+
+
 def main() -> None:
     from quests import quest_dsl_tables
 
@@ -459,7 +470,7 @@ def main() -> None:
     vectors = {
         "fixtures": fixture_vectors(), "valid_payload": base, "corrupted": corrupted, "custom_quest_run": custom_quest_payload(), "ranked_run": ranked,
         "ranked_run_id": ranked_id, "ranked_run_inflated": inflated, "piloted_run": piloted, "illegal_command_run": illegal,
-        "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
+        "unranked_run": unranked_run(),
         "coop_run": coop_runs(),
         "terrain": terrain_vectors(),
         "run_terrain": run_terrain_vectors(),

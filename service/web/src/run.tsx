@@ -3,7 +3,7 @@
 import { type Accessor, createMemo, createResource, createSignal, For, type JSX, Show } from "solid-js";
 import { BOARDS, type Category, PLAYER_EFFECTS, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
 import { boardPath } from "../../src/paths";
-import { lifeBonusMs } from "../../src/quest-time";
+import { lifeBonusMs, questFinalMs } from "../../src/quest-time";
 import { get, moderate } from "./api";
 import { GameButton } from "./button";
 import { formatScore } from "./format";
@@ -651,7 +651,10 @@ function Stats(props: { run: RunTimeline; detail: RunDetailView }) {
 // the millisecond), each pending perk 1 s.
 function QuestScore(props: { detail: RunDetailView }) {
   const result = props.detail.result;
-  const lifeBonus = lifeBonusMs(result.healths);
+  // Historical runs keep the calculation that produced their stored score. The
+  // database predates rules metadata; where both formulas agree, either is exact.
+  const legacy = questFinalMs(result.elapsed_ms, result.healths, result.pending_perks, true) === props.detail.score;
+  const lifeBonus = lifeBonusMs(result.healths, legacy);
   const perkBonus = result.pending_perks * 1000;
   const adjustment = (bonus: number) => `${bonus > 0 ? "−" : bonus < 0 ? "+" : ""}${formatScore("quests", Math.abs(bonus))}`;
   return (

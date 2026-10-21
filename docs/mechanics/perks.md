@@ -259,6 +259,9 @@ Every 2–9 seconds (random), fires an 8-shot ring of plasma around you,
 alternating Plasma Minigun and Plasma Rifle. While you have Fire Bullets, the
 ring is Fire Bullets instead. Friendly fire applies when enabled.
 
+In co-op, each player owns the next random interval as well as elapsed time. Under
+`--preserve-bugs`, either player's burst re-rolls the threshold for both.
+
 Unlocked by quest 1.9 (*Nesting Grounds*).
 
 ## 32. Bonus Economist
@@ -359,10 +362,13 @@ Unlocked by quest 3.9 (*Deja vu*).
 Every 2–4 seconds: a 1-in-10 chance you lose 5 HP (nothing blocks it), and,
 unless Freeze is active, a random creature may drop dead whatever its health.
 Jinxed kills give base XP only and never drop bonuses.
+In the default rules, only living creatures can be selected; corpses are
+retried within the same ten-retry limit as empty slots.
 
 !!! bug "Original bug"
     In the original executable, the 5 HP accident always hits player 1 in
-    co-op. Use `--preserve-bugs` to keep that.
+    co-op, and the random kill can select a corpse and pay its XP again.
+    Use `--preserve-bugs` to keep those behaviors.
 
 Unlocked by quest 4.1 (*Major Alien Breach*).
 
@@ -476,6 +482,9 @@ Always available.
 Every 2–5 seconds (random), you cough a Fire Bullets shot from the muzzle
 toward your crosshair, with your current spread. Friendly fire applies when
 enabled.
+
+In co-op, each player owns their timer and next random interval, as with Hot
+Tempered. `--preserve-bugs` retains the shared interval.
 
 Always available.
 

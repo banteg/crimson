@@ -197,8 +197,10 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
     assert callers.count(RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX) == 1
 
 
-def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
+@pytest.mark.parametrize("preserve_bugs", [False, True])
+def test_detonation_followup_does_not_duplicate_resolved_death_sfx(preserve_bugs: bool) -> None:
     world = _world_with_player()
+    world.state.preserve_bugs = preserve_bugs
     creature = world.creatures.entries[0] = make_creature_state(
         pos=Vec2(256.0, 256.0),
         hp=25.0,
@@ -218,7 +220,7 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
 
     # Native detonation follow-up re-enters creature death handling for side effects,
     # but does not perform a second death-SFX random pick.
-    assert len(events.deaths) == 2
+    assert len(events.deaths) == (2 if preserve_bugs else 1)
     assert sum(key in _ALIEN_DEATH_SFX for key in sfx_ids(events.sfx)) == 1
 
 

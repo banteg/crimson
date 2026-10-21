@@ -78,6 +78,9 @@ class PlayerState(msgspec.Struct):
     man_bomb_timer: float = 0.0
     living_fortress_timer: float = 0.0
     fire_cough_timer: float = 0.0
+    fire_cough_interval: float = f32(1.4)
+    hot_tempered_interval: float = f32(1.4)
+    alt_weapon_swap_cooldown_ms: int = 0
 
     speed_bonus_timer: float = 0.0
     shield_timer: float = 0.0
