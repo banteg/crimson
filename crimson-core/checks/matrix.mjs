@@ -557,7 +557,7 @@ const report = {
 for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] of scenarios) {
   console.log(`${scenario}: generating input stream`);
   const head = (preserveBugs) => {
-    const cfg = config(mode, major, minor, { ...options, preserveBugs });
+    const cfg = config(mode, major, minor, { ...options, preserveBugs, legacyCoopReload: preserveBugs ? 0 : (options?.legacyCoopReload ?? 0) });
     return options?.quest ? Buffer.concat([cfg, options.quest]) : cfg;
   };
   const runs = [[scenario, play(head(1), bot, limit, scheme, hunt)]];
