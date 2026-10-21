@@ -127,6 +127,8 @@ def projectile_source(proj: Projectile) -> MaterialLight | None:
     beam_scale = STREAK_SCALES.get(proj.type_id)
     beam_profile = None
     if beam_scale is not None:
+        if direction.length_sq() == 0:
+            direction = Vec2.from_heading(proj.angle)
         beam_profile = (16. * beam_scale, min(beam_scale * 3.1, 9.), 1.35 if proj.type_id == PT.FIRE_BULLETS else 1.05)
     return MaterialLight(
         proj.pos - direction * (span * 0.5),

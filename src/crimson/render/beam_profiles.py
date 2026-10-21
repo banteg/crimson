@@ -1,4 +1,5 @@
 """Authored streak dimensions shared by visible sprites and lighting."""
+
 from ..projectiles.types import ProjectileTemplateId
 
 STREAK_SCALES = {

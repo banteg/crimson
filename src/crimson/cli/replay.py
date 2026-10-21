@@ -387,7 +387,7 @@ def cmd_replay_play(
     fps: int = typer.Option(60, help="target fps"),
     rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     experimental_beam_shadows: bool = typer.Option(
-        False, "--experimental-beam-shadows", help="opt into expensive continuous-core ground lighting (requires --rtx)",
+        False, "--experimental-beam-shadows", help="use extended beam lighting and directional soft shadows (requires --rtx)",
     ),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
