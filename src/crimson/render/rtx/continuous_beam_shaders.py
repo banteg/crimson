@@ -2,7 +2,7 @@
 
 CONTINUOUS_BEAM_GLSL = r"""
 uniform int u_has_beam_lights;
-uniform vec2 u_beam_tuning; // Ion direct gain, bounded local ambient dip
+uniform vec4 u_beam_tuning; // Ion gain/dip, Fire gain/dip
 // Three energy-weighted sections per source: mass, world offset, halfspan, Ion.
 // CPU caps longitudinal halfspans at four world units and expands the shared
 // occluder grid by the same support. This is not exact finite-beam integration.
@@ -48,7 +48,7 @@ vec3 continuousLight(int index, vec4 direction, vec2 world, vec3 N_sub, vec3 abs
                      vec3 wetted, vec3 blood, vec3 albedo, float ice, vec4 sp_pos,
                      vec4 sp_col, vec4 response, float broad, out vec3 unshadowed) {
     vec2 axis = dot(direction.xy, direction.xy) > .0001 ? normalize(direction.xy) : vec2(1., 0.);
-    float gain = response.x * (u_line_cells[index * 3].w > .5 ? u_beam_tuning.x : 1.);
+    float gain = response.x * (u_line_cells[index * 3].w > .5 ? u_beam_tuning.x : u_beam_tuning.z);
     float radius = max(1., sp_pos.z);
     vec3 result = vec3(0.);
     unshadowed = vec3(0.);

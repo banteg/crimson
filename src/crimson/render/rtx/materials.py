@@ -23,7 +23,7 @@ from ...effects_atlas import EffectId
 from ...sim.terrain_fx import TerrainFxBatch
 from ..terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..world.atlas import effect_cell_src
-from .continuous_beam import ION_AMBIENT_DIP, ION_DIRECT_GAIN, prepare_beam_lights
+from .continuous_beam import FIRE_AMBIENT_DIP, FIRE_DIRECT_GAIN, ION_AMBIENT_DIP, ION_DIRECT_GAIN, prepare_beam_lights
 from .hdr import _HDR_TONEMAP_VS_330
 from .material_history import MaterialHistory
 from .material_lights import collect_material_lights
@@ -397,7 +397,7 @@ class MaterialGroundRenderer(GroundRenderer):
         grid_lights = lights
         if has_beam_lights:
             cells, grid_lights = prepare_beam_lights(lights)
-            _uniform(sh, "u_beam_tuning", [ION_DIRECT_GAIN, ION_AMBIENT_DIP])
+            _uniform(sh, "u_beam_tuning", [ION_DIRECT_GAIN, ION_AMBIENT_DIP, FIRE_DIRECT_GAIN, FIRE_AMBIENT_DIP])
             cells_buffer = rl.ffi.new("float[]", cells)
             rl.set_shader_value_v(
                 sh, self.beam_cells_location, rl.ffi.cast("void *", cells_buffer),

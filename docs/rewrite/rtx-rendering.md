@@ -382,17 +382,19 @@ reflection remain independent of that visibility. Projectile artwork and the
 classic renderer are unchanged. Reflection-only tracers are occluded even when
 their illumination gain is zero.
 
-The five standard creature species use two rotated, size-scaled ellipsoids fitted
-to the central body masses of their sprite sheets. The proxies represent abdomen,
-torso or head, with an art-directed height; legs, arms, tails, dead creatures and
-players are absent. Their opacity follows the creature tint. The volumes extend
+The five standard creature species use one rotated, size-scaled ellipsoid each, fitted
+to the combined planar bounds of their former two body parts and retaining the
+maximum part height. The single convex mass avoids forked body silhouettes while
+preserving elongated shapes. Legs, arms, tails and players are absent; dying
+bodies retain the collapse and fade described below. Their opacity follows the
+creature tint. The volumes extend
 slightly below the ground plane so their bases meet the surface, rather than
 balancing a full ellipsoid on a single point. These are stable body approximations,
 not frame-by-frame silhouettes or anatomical geometry.
 
 A CPU-built spatial grid retains every body near the selected
 reflection or illumination sources. Cells are 64 world units in small scenes and 32 with at least
-512 body volumes (256 standard creatures); the finer grid reduces candidate
+512 body volumes (512 standard creatures); the finer grid reduces candidate
 fetches in crowds. The resolution changes indexing only, not visibility.
 Source-support cells are marked once, avoiding a body-by-source
 culling loop. A growing,
@@ -407,9 +409,9 @@ cell bounds account for the finite-source filter.
 Visibility uses closest approach to each ellipsoid in its local coordinates,
 with a smooth transition whose width grows toward the finite source. Wider
 sources therefore produce softer edges. This is an analytic penumbra
-approximation, not multi-sample area-light integration; two partially opaque
-volumes combine by strongest occlusion, avoiding seams where a creature's body
-parts overlap. It does not add ambient darkness, lengthen shadows artificially,
+approximation, not multi-sample area-light integration; overlapping partially opaque
+volumes combine by strongest occlusion, avoiding seams between creatures. The
+visibility test does not add ambient darkness, lengthen shadows artificially,
 or lower the emitter for the occlusion test. Large source widths and heavily
 animated silhouettes remain approximations. Direct lighting shares these volumes
 and the grid while evaluating its own receiver/source segment.
@@ -421,8 +423,9 @@ RTX keeps readable daylight fill (ground `0.50 + 0.12 * daylight_ndl`, living
 sprites `0.60`, in linear RGB) while Ion, Fire Bullets and plasma add stronger
 localized illumination. This is an art-directed lighting balance, not exposure
 adaptation or a night mode. Blood absorption, aging, roughness and substrate/fluid
-normals are unchanged. Overlapping emitters add independently; Fire Bullet gain
-is restrained to 4 after inspecting a fifteen-shot replay frame.
+normals are unchanged. Overlapping emitters add independently. Fire Bullet source
+gain is 4; the ground-only multiplier below applies on top of this shared source
+gain without increasing creature, bonus or reflection brightness.
 
 `lighting_shaders.py` shares source placement and visibility between ground and
 creatures. A finite beam's illumination is approximated by one energy centroid
@@ -633,8 +636,9 @@ movement, damage, corpse timing, RNG or Classic rendering.
 
 Python RTX uses a three-section approximation for Ion Rifle, Ion Minigun, Ion
 Cannon and Fire Bullets ground lighting by default. Ion direct illumination uses
-a 4x gain and a maximum 25% local ambient reduction; Fire retains its existing
-gain. These are presentation settings: simulation and classic rendering are
+a 4x gain and a maximum 25% local ambient reduction; Fire uses a 3x ground
+gain and a maximum 15% local ambient reduction. These are presentation settings:
+simulation and classic rendering are
 unaffected. No separate beam console command or replay flag is required:
 
 ```sh
@@ -671,10 +675,11 @@ reflections or creature lighting. A bounded 128-entry profile cache handles
 repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
 candidate texture, interval sort, quadratic sweep or exact-overflow fallback.
 
-Ion's contrast reduces ambient only within its local footprint, fades
+Beam contrast reduces ambient only within its local footprint, fades
 with source radiance, and takes the maximum contribution of overlapping beams
-rather than multiplying dips. At the 0.25 setting, at least 75%
-of ordinary ambient remains. This changes ground direct illumination only:
+rather than multiplying dips. Fire alone leaves at least 85% of ordinary ambient;
+Ion or mixed beams leave at least 75%. The reduction remains an art-directed
+local contrast adjustment, independent of visibility. This changes ground lighting only:
 creature/bonus lighting and specular reflection approximations remain as before.
 Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to inspect it.
 

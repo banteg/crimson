@@ -931,13 +931,14 @@ def test_visible_death_shadow_collapses_without_an_instant_hp_cutoff(ground_mate
     assert debug_pixels(ground, texture, mode=6, creatures=pool) == clear
 
 
-def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(ground_material, mocker, monkeypatch) -> None:
+@pytest.mark.parametrize("ion,gain_name,gain", [(True, "ION_DIRECT_GAIN", 4.), (False, "FIRE_DIRECT_GAIN", 3.)])
+def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(ground_material, mocker, monkeypatch, ion, gain_name, gain) -> None:
     ground, texture = ground_material
     # A masked source before the beam catches an incorrect vec4 count/row offset.
     reflection_only = MaterialLight(Vec2(32, 20), 150, (1, 1, 1), illumination_gain=0)
     beam = MaterialLight(
         Vec2(32, 20), 150, (.5, .8, 1.4), height=24, direction=Vec2(1, 0), length=48,
-        broad_illumination=True, beam_profile=(35.2, 6.82, 1.05), beam_ion=True,
+        broad_illumination=True, beam_profile=(35.2, 6.82, 1.05), beam_ion=ion,
     )
     collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[reflection_only, beam])
     upload = mocker.spy(rl, "set_shader_value_v")
@@ -950,21 +951,21 @@ def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(g
     collector.return_value = [nonbeam]
     baseline = render()
     collector.return_value = [reflection_only, beam]
-    four = render()  # Accepted lighting is active without a separate control.
-    monkeypatch.setattr(ground_materials, "ION_DIRECT_GAIN", 1.)
+    boosted = render()  # Accepted lighting is active without a separate control.
+    monkeypatch.setattr(ground_materials, gain_name, 1.)
     one = render()
     assert max(pixel[2] for pixel in one) > .001
     # Exercise material_scope's real array binding and CFFI pointer conversion.
-    for normal, bright in zip(one, four, strict=True):
-        assert bright[:3] == pytest.approx(tuple(channel * 4 for channel in normal[:3]), rel=.002, abs=.001)
+    for normal, bright in zip(one, boosted, strict=True):
+        assert bright[:3] == pytest.approx(tuple(channel * gain for channel in normal[:3]), rel=.002, abs=.001)
     calls = [call for call in upload.call_args_list if call.args[1] == ground.beam_cells_location]
     assert len(calls) == 2
     assert all(call.args[4] == 6 and rl.ffi.typeof(call.args[2]).cname == "void *" for call in calls)
-    monkeypatch.setattr(ground_materials, "ION_DIRECT_GAIN", 4.)
+    monkeypatch.setattr(ground_materials, gain_name, gain)
     collector.return_value = [nonbeam]
     assert render() == baseline  # Stale cells must not affect a later non-beam frame.
     collector.return_value = [reflection_only, beam]
-    assert render() == four
+    assert render() == boosted
     collector.return_value = []
     assert all(pixel[:3] == (0., 0., 0.) for pixel in render())
 
@@ -988,3 +989,33 @@ def test_ion_arcs_add_ground_light_and_wet_reflections(ground_material, mocker) 
     collector.return_value = ion_arc_sources(frame, shot)
     assert debug_pixels(ground, texture, mode=5) == baseline[5]
     assert debug_pixels(ground, texture, mode=6) == baseline[6]
+
+
+@pytest.mark.parametrize("ion,dip", [(False, .15), (True, .25)])
+def test_beam_ambient_contrast_is_bounded_local_and_fades(ground_material, mocker, ion, dip):
+    ground, texture = ground_material
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+
+    def ambient():
+        return debug_pixels(ground, texture, mode=int(RtxDebugView.AMBIENT))
+
+    baseline = ambient()
+    beam = MaterialLight(
+        Vec2(32, 32), 150, (1.65, .8, .2), height=24, direction=Vec2(1, 0), length=48,
+        broad_illumination=True, beam_profile=(12.8, 2.48, 1.35), beam_ion=ion,
+    )
+    collector.return_value = [beam]
+    dipped = ambient()
+    center = 32 * 64 + 32
+    assert dipped[center][0] / baseline[center][0] == pytest.approx(1 - dip, abs=.002)
+    # Overlapping beams take a maximum, rather than multiplying ambient away.
+    collector.return_value = [beam] * 8
+    assert ambient() == dipped
+    collector.return_value = [msgspec.structs.replace(beam, rgb=tuple(c * .5 for c in beam.rgb))]
+    assert ambient()[center][0] / baseline[center][0] == pytest.approx(1 - dip * .5, abs=.002)
+    collector.return_value = [msgspec.structs.replace(beam, pos=Vec2(600, 32))]
+    assert ambient() == baseline
+    collector.return_value = [msgspec.structs.replace(beam, illumination_gain=0)]
+    assert ambient() == baseline
+    collector.return_value = [msgspec.structs.replace(beam, beam_profile=None)]
+    assert ambient() == baseline
