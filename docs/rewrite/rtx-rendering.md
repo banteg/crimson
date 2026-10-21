@@ -233,6 +233,34 @@ Benchmark controls:
 enhancements (beam acceleration, HDR additive tonemapping, and EDR output now,
 advanced lighting next), while keeping `classic` as the parity reference path.
 
+## Player lighting
+
+Python RTX players receive the shared bounded weapon emitters through a separate
+opaque cloth shader. The treatment combines stronger diffuse dome lighting,
+painted texture relief, and a directional inner rim. It preserves the original
+single-player and co-op tints and keeps a full ambient floor. There is no player
+specular, transmission, material mask, or additional player shadow/occlusion pass.
+The dome coefficient is 2.2, rim coefficient 0.8, relief strength 0.65, and the
+combined added linear radiance is limited without changing hue at a scale of 1.4.
+A small albedo lift and broad facing floor make the response readable on the
+already-painted atlas. These are art-directed sprite normals, not 3D anatomy.
+
+`player_lighting.py` owns a lazy shader and `player_shaders.py` defines its response.
+The world pass selects the light list once for player and creature lighting, then
+uploads it before drawing players. Living legs and torso share one shader scope;
+the visible death sprite uses the same treatment. Black sprite shadows, radioactive
+auras, shields, and muzzle flashes retain their original draw paths. With no lights,
+the player uses the original shader without allocating the lighting shader. Classic
+mode always uses the original path, including after switching back from RTX.
+
+Per-layer orientation comes from UV/world derivatives evaluated before alpha discard,
+with an identity basis for singular UV mappings. Relief and rim taps clamp to the
+current animation cell. The base sprite keeps the original alpha-aware filtering and
+4/255 cutoff. Point, finite beam, and annular illumination reuse the shared source
+geometry and illumination gain; reflection-only tracers do not light player cloth.
+Beam illumination uses the head-weighted energy centroid, with squared radial
+attenuation, rather than the reflection channel's axial taper.
+
 ## Creature lighting
 
 Python RTX creature bodies receive the same bounded weapon emitters as the ground

@@ -219,5 +219,6 @@ class WorldRuntime:
             rtx_mode=self.rtx_mode,
             rtx_debug=self.rtx_debug,
             creature_lighting=self.render_resources.creature_lighting,
+            player_lighting=self.render_resources.player_lighting,
             bonus_lighting=self.render_resources.bonus_lighting,
         )

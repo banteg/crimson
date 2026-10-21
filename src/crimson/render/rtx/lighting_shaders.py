@@ -7,6 +7,13 @@ vec2 nearestRingPoint(vec2 center, vec2 receiver, float radius) {
     float distance = length(delta);
     return center + (distance > 1e-6 ? delta / distance : vec2(1., 0.)) * radius;
 }
+// Energy centroid of (.015 + f^8), f in [0,1], measured from tail to head.
+// Fixed source placement avoids receiver-dependent shadow sliding. Source width
+// supplies analytic softness; this is not full finite-beam integration.
+vec2 illuminationSource(vec2 center, vec2 direction, float length) {
+    return center + direction * length * .35242291;
+}
+
 """
 
 LIGHT_VISIBILITY_GLSL = SOURCE_GEOMETRY_GLSL + r"""
@@ -93,12 +100,6 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
     return visibility;
 }
 
-// Energy centroid of (.015 + f^8), f in [0,1], measured from tail to head.
-// Fixed source placement avoids receiver-dependent shadow sliding. Source width
-// supplies analytic softness; this is not full finite-beam integration.
-vec2 illuminationSource(vec2 center, vec2 direction, float length) {
-    return center + direction * length * .35242291;
-}
 float illuminationVisibility(vec3 receiver, vec3 source, float width, vec2 owner) {
     return u_dynamic_shadows != 0 ? sourceVisibility(receiver, source, width, owner) : 1.;
 }
