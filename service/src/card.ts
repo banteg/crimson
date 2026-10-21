@@ -134,10 +134,10 @@ function cardSvg(detail: RunDetailView, timeline: Timeline, art: CardArt, backgr
     : [playerLabel(detail.player)];
   const weapon = WEAPONS[result.most_used_weapon_id];
   const stats: [string, string][] = [
-    quest ? ["quest time", formatScore(detail.board, result.elapsed_ms)] : ["survived", clock(result.elapsed_ms / 1000)],
-    ["kills", grouped(result.kills)],
+    quest ? ["base time", formatScore(detail.board, result.elapsed_ms)] : ["game time", clock(result.elapsed_ms / 1000)],
+    ["frags", grouped(result.kills)],
     ["level", String(timeline.samples.at(-1)![2])],
-    ["accuracy", result.shots_fired ? `${Math.round((result.shots_hit / result.shots_fired) * 100)}%` : "-"],
+    ["hit %", result.shots_fired ? `${Math.round((result.shots_hit / result.shots_fired) * 100)}%` : "-"],
   ];
   const score = quest ? formatScore(detail.board, detail.score) : grouped(detail.score);
   const icon = (frame: number) => `viewBox="${(frame % 8) * ICON_CELL} ${Math.floor(frame / 8) * ICON_CELL} ${ICON_CELL * 2} ${ICON_CELL}"`;

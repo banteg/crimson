@@ -144,21 +144,21 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
   const bots = () => props.view.category === "bot";
   const full = () => !props.compact;
   return (
-    <Show when={props.view.rows.length} fallback={<p class="muted">No runs yet.</p>}>
+    <Show when={props.view.rows.length} fallback={<p class="muted">No scores yet.</p>}>
       <div class="board-table">
         <table>
           <thead>
             <tr>
-              <th class="n">#</th>
+              <th class="n">Rank</th>
               <th>Player</th>
               <Show when={bots() && full()}>
                 <th>Bot</th>
               </Show>
               <th class="n">Score</th>
               <Show when={full()} fallback={<th />}>
-                <th>Run</th>
-                <th class="n">Duration</th>
-                <th title="Most used weapon by time equipped">Weapon</th>
+                <th>Score card</th>
+                <th class="n" title="The time the game lasted">Game time</th>
+                <th title="Most used weapon during the game">Weapon</th>
                 <th>Replay</th>
               </Show>
             </tr>
@@ -193,7 +193,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                   </td>
                   <Show when={full()}>
                     <td>
-                      <a class="run-details" href={`/runs/${row.run}`}>Details →</a>
+                      <a class="run-details" href={`/runs/${row.run}`}>Score card</a>
                     </td>
                     <td class="n">{formatDuration(row.elapsed_ms)}</td>
                     <td>
@@ -221,8 +221,8 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
 // How a bot gets onto the bot boards.
 const BotInvite = () => (
   <p class="muted">
-    Bots and tool-assisted runs, verified under the same <a href={RULES}>rules</a>. Built one? Set <code>CRIMSON_PILOT_NAME</code> when the
-    Python port records, and its runs list here under its name. See <a href={BOTS}>bots</a>.
+    Computer-controlled and tool-assisted runs, checked under the same <a href={RULES}>rules</a>. Wrote a bot? Set{" "}
+    <code>CRIMSON_PILOT_NAME</code> when the Python port records to put its name on the score list. See <a href={BOTS}>bots</a>.
   </p>
 );
 
@@ -335,8 +335,9 @@ async function home(): Promise<Screen> {
       () => (
         <>
           <p>
-            Crimsonland, the 2003 top-down shooter, back in your browser. It's the original game rebuilt from its own code, so it plays
-            exactly like you remember, now with modern gamepads and a leaderboard where every score is verified by replay.
+            Fight off an unending horde of monsters with over 30 weapons and 55 perks. Play the original v1.9.93 release right in your
+            browser—recovered from <code>crimsonland.exe</code> down to the last bullet, perk, and blood splatter—and post your runs to the
+            internet high scores.
           </p>
           <PlayGame />
         </>
@@ -357,7 +358,7 @@ async function home(): Promise<Screen> {
             </div>
           </div>
           <p>
-            <a href="/survival">Full boards</a> · <a href="/quests">Quests</a> · <a href="/custom">Custom quests</a>
+            <a href="/survival">High scores</a> · <a href="/quests">Quests</a> · <a href="/custom">Custom quests</a>
           </p>
         </>
       ),
@@ -371,7 +372,7 @@ function BoardTotals(props: { view: BoardView }) {
   return (
     <Show when={totals().runs}>
       <p class="board-totals muted">
-        {quantity(totals().runs, "run")} · {quantity(totals().kills, "kill")} · {formatLongDuration(totals().elapsed_ms)}{" "}
+        {quantity(totals().runs, "game")} · {quantity(totals().kills, "frag")} · {formatLongDuration(totals().elapsed_ms)}{" "}
         {BOARDS[props.view.board].quests ? "played" : "survived"}
       </p>
     </Show>
@@ -415,12 +416,12 @@ function BoardSwitch(props: { board: Board; at?: number | string }) {
           <GameButton label="Quests" href={to(true, coop)} on={quests} />
         </span>
         <span class="buttons">
-          <GameButton label="Solo" href={to(quests, false)} on={!coop} />
-          <GameButton label="Co-op" href={to(quests, true)} on={coop} />
+          <GameButton label="1 player" href={to(quests, false)} on={!coop} />
+          <GameButton label="2 players" href={to(quests, true)} on={coop} />
         </span>
       </nav>
       <Show when={coop}>
-        <p class="muted">Two players online, ranked as a pair.</p>
+        <p class="muted">Two-player co-op over the internet, ranked as a pair.</p>
       </Show>
     </>
   );
@@ -484,7 +485,7 @@ function QuestPreviewSvg(props: { quest: CustomQuest }) {
       </svg>
       <div style={{ flex: "1", "min-width": "240px" }}>
         <p class="muted" style={{ margin: "0 0 6px" }}>
-          Entry budget: <b>{entries().length} / 256</b> entries · <b>{totalCopies().toLocaleString("en-US")}</b> template copies · horizon{" "}
+          Spawns: <b>{entries().length} / 256</b> waves · <b>{totalCopies().toLocaleString("en-US")}</b> monsters · last wave at{" "}
           <b>{formatDuration(maxTriggerMs())}</b>
         </p>
         <svg viewBox="0 0 400 44" width="100%" height="44" style={{ background: "rgba(0,0,0,0.35)", "border-radius": "4px", border: "1px solid rgba(255,255,255,0.12)" }}>
@@ -542,9 +543,10 @@ async function customQuests(): Promise<Screen> {
         <>
           <h2>Custom Quests</h2>
           <p class="muted">
-            Community encounters authored in the <code>.quest</code> language. Every published quest is backed by a verified completion replay.
-            Describe an encounter to an LLM using <a href="/custom/llm.txt" data-native>/custom/llm.txt</a>, beat it with{" "}
-            <Command>uvx crimsonland@latest quest play my.quest</Command>, and publish with <Command>uvx crimsonland@latest quest publish my.quest</Command>.
+            Player-made levels built with <code>.quest</code> scripts. To make the list, you have to beat your own level first—every quest
+            here comes with the author's winning replay. Write one by hand or feed <a href="/custom/llm.txt" data-native>/custom/llm.txt</a>{" "}
+            to an LLM, beat it with <Command>uvx crimsonland@latest quest play my.quest</Command>, and post it with{" "}
+            <Command>uvx crimsonland@latest quest publish my.quest</Command>.
           </p>
           <Show when={list.quests.length} fallback={<p class="muted">No custom quests published yet.</p>}>
             <div class="board-table">
@@ -554,7 +556,7 @@ async function customQuests(): Promise<Screen> {
                     <th>Quest</th>
                     <th>Author</th>
                     <th>Weapon</th>
-                    <th class="n">Entries</th>
+                    <th class="n">Waves</th>
                     <th class="n">Best</th>
                     <th class="n">Players</th>
                     <th>Play</th>
@@ -626,8 +628,8 @@ async function customQuestPage(id: string): Promise<Screen> {
           <QuestRestrictions quest={def} />
           <QuestPreviewSvg quest={def} />
           <p class="buttons">
-            <GameButton label="Play in browser" href={`/play/?quest=${detail.id}`} native />
-            <GameButton label="Watch proof clear" href={`/play/?watch=${detail.first_run_id}`} native />
+            <GameButton label="Play level" href={`/play/?quest=${detail.id}`} native />
+            <GameButton label="Watch author's run" href={`/play/?watch=${detail.first_run_id}`} native />
             <GameButton label="All custom quests" href="/custom" />
           </p>
         </>
@@ -759,14 +761,14 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
             <p class="muted">Names: {view.names.join(", ")}</p>
           </Show>
           <h3>Runs</h3>
-          <Show when={view.runs.length} fallback={<p class="muted">No ranked runs yet.</p>}>
+          <Show when={view.runs.length} fallback={<p class="muted">No scores yet.</p>}>
             <div class="board-table">
               <table>
                 <thead>
                   <tr>
                     <th>Board</th>
                     <th class="n">Score</th>
-                    <th>Run</th>
+                    <th>Score card</th>
                     <th>Version</th>
                     <th>Accepted</th>
                     <th>Replay</th>
@@ -803,7 +805,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                           </a>
                         </td>
                         <td>
-                          <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
+                          <a class="run-details" href={`/runs/${run.id}`}>Score card</a>
                         </td>
                         <td>{run.game_version.split("+", 1)[0]}</td>
                         <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
@@ -980,7 +982,7 @@ function GameplayAnalyticsPreference() {
 
 const SIGN_IN = () => (
   <p>
-    Open your profile from the game: press <em>Profile</em> on Play Game.
+    To open your profile, launch the game and press <em>Profile</em> in the Play Game menu.
   </p>
 );
 
@@ -990,7 +992,7 @@ async function account(nav: Navigator): Promise<Screen> {
     nav.go(`/players/${me.account}`, true);
     return { title: null, quest: null, panels: [] };
   }
-  return { title: "Sign in from the game", quest: null, panels: [SIGN_IN] };
+  return { title: "State your name, trooper!", quest: null, panels: [SIGN_IN] };
 }
 
 // A login link from the game's Profile button: the browser signs in as the link's account only once the player
@@ -1009,18 +1011,18 @@ async function login(token: string, nav: Navigator): Promise<Screen> {
     panels: [
       () => (
         <>
-          <h2>Sign in as this game's account?</h2>
+          <h2>Sign in as this trooper?</h2>
           <p>
             <PlayerName player={view.account} /> <span class="muted">· {quantity(view.runs, "run")}</span>
           </p>
           <Show when={view.current}>
             {(current) => (
               <p>
-                This browser is signed in as <PlayerName player={current()} />. Signing in switches it to the account above.
+                This browser is signed in as <PlayerName player={current()} />. Signing in switches it to the profile above.
               </p>
             )}
           </Show>
-          <p class="muted">Continue only if you just pressed Profile in your game. A sign-in link someone sent you signs you in to their account.</p>
+          <p class="muted">Only continue if you just pressed Profile in your own game. Someone else's sign-in link will log your browser into their profile.</p>
           <p class="buttons">
             <GameButton label="Sign in" onClick={signIn} />
             <GameButton label="Cancel" href="/" />
@@ -1051,13 +1053,13 @@ async function join(token: string, nav: Navigator): Promise<Screen> {
             <PlayerName player={view.destination} /> <span class="muted">· {view.destination.fingerprint} · {quantity(view.destination_runs, "run")}</span>
           </p>
           <p>
-            This browser is signed in as <PlayerName player={view.source} />. Joining moves its{" "}
-            {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {quantity(view.moving.runs, "run")} and {quantity(view.moving.names, "name")} into the
-            account above and removes it, and from then on that key signs in to the account above.
+            This browser is signed in as <PlayerName player={view.source} />. Joining merges this computer's{" "}
+            {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {quantity(view.moving.runs, "run")} and {quantity(view.moving.names, "saved name")} into the
+            profile above, and future games on this computer will post under it.
           </p>
           <p>
             Join only if you played as <PlayerName player={view.source} tag={false} /> yourself. If you don't recognise it, someone signed this browser in
-            to their account: cancel and sign out.
+            to their profile: cancel and sign out.
           </p>
           <p class="buttons">
             <GameButton label={`Join ${playerLabel(view.destination)}`} onClick={confirmJoin} />
@@ -1090,37 +1092,39 @@ const ABOUT: Screen = {
     ),
     () => (
       <>
-        <h3>The leaderboard</h3>
+        <h3>Internet high scores</h3>
         <p>
-          Tick <em>Ranked</em> in the Play Game menu and play Survival or a quest to the end. Enter your name on the high score screen, and
-          the game uploads your run. If you're offline, it uploads the next time you connect.
+          Tick <em>Ranked</em> in the Play Game menu and play Survival or a Quest to the end. Enter your name when the game asks{" "}
+          <em>"State your name, trooper!"</em>, and your score is sent to the internet high score list (or saved for the next time you're
+          online).
         </p>
         <p>
-          Survival is ranked by experience and quests by time, with a separate board for hardcore. Only your best run counts.
+          Survival ranks by experience points and Quests by final time—with 50 ms shaved off per remaining HP and 1 second per unpicked
+          perk—plus separate lists for Hardcore and 2-player co-op. Only your best score on each list counts.
         </p>
         <p>
-          Every score comes with a recording of the run. The server plays it back using the same game code and checks that the result
-          matches. Anyone can download the replay and verify it themselves. Bots can produce valid replays too, so verification confirms
-          the score, not whether a human played.
+          Instead of trusting a raw score packet like <code>scores.crimsonland.com</code> did in 2003, every score now sends a{" "}
+          <code>.crd</code> input recording. The server replays the game tick-for-tick in the original engine and checks that the result
+          matches. Anyone can download the replay and watch or verify it themselves.
         </p>
         <p>
-          Ranked runs on each board use the same starting conditions: one player, a standard progression profile, and documented fixes
-          for <a href={BUGS}>bugs in the original game</a>.
+          Ranked runs on each list use the same starting conditions: a standard progression profile and documented fixes for{" "}
+          <a href={BUGS}>bugs in the original game</a>.
         </p>
         <p>
-          Bots are welcome too. Every board ranks them next to the humans: a program that plays declares itself in its replay and lists
-          under the bot's name, and moderators move undeclared bots there. See <a href={BOTS}>bots</a>.
+          Bots are welcome too. Every board has a separate list for computer-controlled runs: a bot declares itself in its replay and lists
+          under its own name, and moderators move undeclared bots there. See <a href={BOTS}>bots</a>.
         </p>
       </>
     ),
     () => (
       <>
-        <h3>Your name</h3>
+        <h3>Your name, trooper</h3>
         <p>
-          You don't need to sign up. The game makes a keypair on first launch, and that keypair is your account. You show up under the name
-          from your latest run, and your <em>Profile</em> in the Play Game menu lists every name you've used. Link GitHub, Discord or X to
-          show your handle so other players can identify you by your linked accounts, and to keep your runs when you switch computers or
-          clear your browser's site data.
+          You don't need to register an account. The game generates a keypair on first launch, and that keypair is your identity. You show
+          up under the name from your latest run, and <em>Profile</em> in the Play Game menu lists every name you've used. Link GitHub,
+          Discord or X to show your handle on the high score lists, and to keep your scores together when you play on another computer or
+          clear your browser's storage.
         </p>
         <h3>Replays, other ports and docs</h3>
         <p>

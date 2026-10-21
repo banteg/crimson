@@ -46,7 +46,7 @@ const boardPage = (path: string) => survivalPage(path) !== null || questPage(pat
 // Play leaves the site's app for the game's own page. Leaderboards opens the board last looked at.
 const MENU: { label: string; href: (board: string) => string; native?: boolean; on: (path: string) => boolean }[] = [
   { label: "Play", href: () => "/play/", native: true, on: () => false },
-  { label: "Leaderboards", href: (board) => board, on: boardPage },
+  { label: "High scores", href: (board) => board, on: boardPage },
   { label: "Custom", href: () => "/custom", on: (path) => path === "/custom" || path.startsWith("/custom/") },
   { label: "About", href: () => "/about", on: (path) => path === "/about" },
 ];
@@ -87,7 +87,7 @@ function App() {
     const started = performance.now();
     const early = moving ? slideOut(old.filter((shown) => shown.panel.key === undefined)) : 0;
     const next = await resolve(url, nav).catch(
-      (): Screen => ({ title: "Error", quest: null, panels: [() => <p>The leaderboard could not be reached.</p>] }),
+      (): Screen => ({ title: "Error", quest: null, panels: [() => <p>Failed to update scores. Try again later.</p>] }),
     );
     if (id !== navigation) return;
     const stays = (shown: Shown, i: number) => shown.panel.key !== undefined && next.panels[i]?.key === shown.panel.key;
