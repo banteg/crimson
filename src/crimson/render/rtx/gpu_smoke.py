@@ -159,7 +159,7 @@ class GpuSmokeSimulation:
                     raise RuntimeError("GPU smoke solver shader compilation failed")
                 setattr(self, attr, shader)
                 if attr == "shader":
-                    names = ("u_resolution", "u_world_size", "u_aux", "u_mode", "u_dt", "u_decay", "u_fade", "u_dilate")
+                    names = ("u_resolution", "u_world_size", "u_aux", "u_mode", "u_dt", "u_decay", "u_fade")
                 elif attr == "splat_shader":
                     names = ("u_resolution", "u_world_size", "u_source", "u_motion", "u_rotation", "u_flow")
                 else:
@@ -214,7 +214,7 @@ class GpuSmokeSimulation:
                     if emission.source == "effect":
                         strength *= min(1., max(0., emission.color.r*.2126+emission.color.g*.7152+emission.color.b*.0722))
                     if emission.profile == "muzzle":
-                        strength *= .35
+                        strength *= .8
                     elif emission.profile == "rocket":
                         strength *= .4
                     elif emission.profile == "ordinary" and emission.source == "effect":
@@ -330,9 +330,7 @@ class GpuSmokeSimulation:
                     self._pass(nxt, p, 2, 2)
                     p = nxt
                 self._pass(self.current, other, 3, p)
-                dilate = bool(self.blasts)
-                if dilate:
-                    self._pass(2, self.current, 6)
+                if self.blasts:
                     self._inject_impulses(tuple(
                         (impulse, age, min(STEP_SECONDS, max(0., impulse.duration-age))/impulse.duration)
                         for impulse, age in self.blasts
@@ -341,8 +339,7 @@ class GpuSmokeSimulation:
                                    if age+STEP_SECONDS < impulse.duration-1e-9]
                 self.decay += STEP_SECONDS*(.20-self.decay)*.07
                 self._set(self.shader, self.locations, "u_decay", (self.decay,))
-                self._set(self.shader, self.locations, "u_dilate", (float(dilate),))
-                self._pass(other, self.current, 4, 2 if dilate else None)
+                self._pass(other, self.current, 4)
                 self.current = other
                 self.accumulator = max(0., self.accumulator-STEP_SECONDS)
                 self.executed_steps += 1

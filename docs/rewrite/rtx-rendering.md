@@ -823,8 +823,13 @@ new simulation domains.
 
 ### Motion and light
 
-The GPU solver uses semi-Lagrangian advection for planar velocity, density, and
-temperature, 12 pressure-relaxation iterations, vorticity confinement, and damping.
+The GPU solver uses semi-Lagrangian advection for planar velocity, 12
+pressure-relaxation iterations, vorticity confinement, and damping. Density and
+temperature use conservative upwind face fluxes. A donor outflow limiter keeps
+these fields nonnegative even when an impulse moves air farther than one cell per
+step; at such speeds it trades transport speed for stability. Shared face fluxes
+preserve column mass apart from source deposits, decay, open-boundary outflow and
+RGBA16F rounding. This prevents an expanding blast from multiplying smoke.
 The CPU reference's MacCormack scalar correction and finer growing grid are not
 pixel-equivalent to this bounded GPU approximation. Sources inject presentation motion and
 expansion; a small fixed planar breeze supplies background drift. RTX muzzle
@@ -843,10 +848,7 @@ nuke bursts contribute blast motion, including low-detail explosions without
 smoke puffs. No visible medium means no additional fluid simulation is needed.
 Per-tick GPU impulses are capped at 64, prioritizing blasts and muzzle jets before
 wakes; at most 16 blast fronts persist. New forces reuse the existing solver and
-pressure iterations. During a blast, a scratch pass measures pre-blast divergence;
-scalar transport dilutes density and heat only by the additional outward expansion.
-This avoids artificial smoke growth without applying noisy pressure residuals to
-untouched clouds. Advection remains an approximate, nonconservative solver.
+pressure iterations.
 
 Rocket exhaust and impact deposits use 40% of the old source strength, and ordinary
 general-effect explosion puffs use 60%. The nuke profile retains its existing

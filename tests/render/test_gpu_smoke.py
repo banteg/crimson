@@ -278,22 +278,53 @@ def test_native_expanding_blast_dilutes_smoke_instead_of_creating_mass(raylib_co
         blast.close()
 
 
-def test_native_no_blast_scalar_transport_ignores_divergence_auxiliary(raylib_context):
-    sim=GpuSmokeSimulation(resolution=128)
+
+def test_native_production_grid_blast_keeps_integrated_column_mass_bounded(raylib_context):
+    import math
+
+    from crimson.sim.smoke_events import AtmosphereImpulse, SmokeEmission
+    from grim.color import RGBA
+    control,blast=GpuSmokeSimulation(),GpuSmokeSimulation()
     try:
-        sim.consume((emission(pos=Vec2(500,500),scale=180,vel=Vec2(120,30)),),0.)
+        cloud=tuple(SmokeEmission(slot=i,generation=1,
+                    pos=Vec2(495+36*math.cos(i*2.4),440+i*16),vel=Vec2(),scale=34,
+                    color=RGBA(1,1,1,.4),rotation=i*.4,retention_seconds=10) for i in range(10))
+        impulse=AtmosphereImpulse(Vec2(420,512),Vec2(420,512),28,220,
+                                  kind="blast",duration=.55,expansion_speed=300)
+        for sim in (control,blast):
+            sim.consume(cloud,0.)
+            sim.prepare()
+        for tick in range(300):
+            control.consume((),1/60)
+            blast.consume((),1/60,impulses=(impulse,) if tick==60 else ())
+        control.prepare()
+        blast.prepare()
+        a,b=pixels(control),pixels(blast)
+        assert np.isfinite(b).all() and b[:,:,:2].min()>=0
+        np.testing.assert_allclose(b[:,:,:2].sum(axis=(0,1)),a[:,:,:2].sum(axis=(0,1)),rtol=.04)
+        assert np.linalg.norm(b[:,:,0]-a[:,:,0])>1
+    finally:
+        control.close()
+        blast.close()
+
+
+def test_native_scalar_outflow_limiter_handles_more_than_one_cell_per_step(raylib_context):
+    from crimson.sim.smoke_events import AtmosphereImpulse
+    sim=GpuSmokeSimulation()
+    try:
+        sim.consume((emission(pos=Vec2(500,500),scale=80,vel=Vec2()),),0.)
         sim.prepare()
-        source=sim.current
-        destination=1-source
-        sim._pass(2,source,6)
+        sim._inject_impulses(((AtmosphereImpulse(Vec2(300,500),Vec2(700,500),
+                               80,800,curl=400,kind="wake"),0.,1.),))
+        before=pixels(sim)
+        assert np.abs(before[:,:,2:]).max()/60>4
         assert sim.shader is not None
-        sim._set(sim.shader,sim.locations,"u_decay",(.2,))
-        sim._set(sim.shader,sim.locations,"u_dilate",(0.,))
-        sim._pass(destination,source,4,2)
-        sim.current=destination
-        with_divergence=pixels(sim)
-        sim._pass(destination,source,4,3)
-        with_empty=pixels(sim)
-        np.testing.assert_array_equal(with_divergence,with_empty)
+        sim._set(sim.shader,sim.locations,"u_decay",(0.,))
+        sim._pass(1-sim.current,sim.current,4)
+        sim.current=1-sim.current
+        after=pixels(sim)
+        assert np.isfinite(after).all() and after[:,:,:2].min()>=0
+        expected=before[:,:,:2].sum(axis=(0,1))*np.exp(-np.array([0.,.70])/60)
+        np.testing.assert_allclose(after[:,:,:2].sum(axis=(0,1)),expected,rtol=.003)
     finally:
         sim.close()
