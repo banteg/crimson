@@ -28,6 +28,7 @@ class RenderResources(msgspec.Struct):
     assets_dir: Path
     config: CrimsonConfig | None = None
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
+    simulated_smoke_enabled: bool = False
     smoke: SmokeRenderer = msgspec.field(default_factory=SmokeRenderer)
 
     ground: GroundRenderer | None = None
@@ -133,8 +134,12 @@ class RenderResources(msgspec.Struct):
     def clear_pending_terrain_fx(self) -> None:
         self._pending_terrain_fx_batches.clear()
 
+    def set_simulated_smoke(self, enabled: bool) -> None:
+        self.simulated_smoke_enabled = enabled
+        self.sync_smoke_mode()
+
     def sync_smoke_mode(self) -> bool:
-        enabled = self.rtx_mode is RtxRenderMode.RTX and (
+        enabled = self.simulated_smoke_enabled and self.rtx_mode is RtxRenderMode.RTX and (
             self.config is None or self.config.display.smoke_enabled
         )
         if not enabled:

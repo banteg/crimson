@@ -132,11 +132,13 @@ class ReplayViewer:
         leave_label: str = "High scores",
         background: bool = True,
         rtx: bool = False,
+        rtx_smoke: bool = False,
     ) -> None:
         self._replay = replay
         self._config = config
         self._audio = audio
         self._card = card
+        self._rtx_smoke = rtx_smoke
         self._background = background
         self.player = ReplayPlaybackMode(
             ctx, replay=replay, config=config, console=console, audio=audio, rtx=rtx, plays_music=False,
@@ -171,6 +173,7 @@ class ReplayViewer:
     def open(self) -> None:
         self.player.open()
         runtime = self.player.runtime
+        runtime.render_resources.set_simulated_smoke(self._rtx_smoke)
         self._history = TerrainHistory(runtime.render_resources, self.player.driver.terrain_setup)
         self._history.open()
         self.preparation = ReplayPreparation(self._replay, background=self._background)
@@ -196,6 +199,10 @@ class ReplayViewer:
     @property
     def rtx_debug(self) -> RtxDebugView:
         return self.player.runtime.rtx_debug
+
+    def set_rtx_smoke(self, enabled: bool) -> None:
+        self._rtx_smoke = enabled
+        self.player.runtime.render_resources.set_simulated_smoke(enabled)
 
     def set_rtx_debug(self, view: RtxDebugView) -> None:
         self.player.runtime.rtx_debug = view

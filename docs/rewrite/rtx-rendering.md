@@ -751,7 +751,16 @@ artwork, damage, target selection, and replay state are unchanged.
 
 ## Persistent fluid smoke
 
-RTX replaces claimed native smoke puffs with a persistent simulated density
+Fluid smoke is experimental and **off by default**, including with `--rtx`.
+In the game, open the console during gameplay or a replay and enter `rtxsmoke on` to enable it;
+`rtxsmoke off` immediately clears the fluid and restores native smoke sprites.
+Standalone playback accepts `crimson replay play <replay.crd> --rtx-smoke`
+(which also enables RTX). The console choice belongs to the current game/replay
+world and is not saved to config.
+The existing Smoke display setting still controls whether the fluid runs.
+Classic always uses its native smoke path.
+
+When enabled, RTX replaces native smoke puffs with a persistent simulated density
 field. Rocket exhaust, rocket impacts, and other native smoke emissions feed the
 same system. Nuke pickup explosion puffs request 15 seconds of retention; ordinary
 smoke requests 10 seconds. Density decays throughout that time, with an additional
@@ -787,7 +796,7 @@ pause and extra draws do not advance the fields. Forward replay playback uses th
 same presentation handoff. Level/reset/session replacement, RTX mode changes, and
 disabling the smoke setting clear fields and delayed deposits. Re-enabling RTX
 starts with new emissions. Native smoke sprites and general explosion puffs are
-never drawn in RTX, including when the solver is empty or at its allocation cap.
+not drawn while fluid smoke is enabled, including when the solver is empty or at its allocation cap.
 Classic retains the original sprites.
 Checkpoint restoration clears this presentation history instead of storing it in
 the deterministic checkpoint.
@@ -828,7 +837,7 @@ the whole cloud. The ordinary sight artwork remains unchanged.
 
 Smoke composites after native sprites, outside their alpha-test shader, inside
 the HDR world and pressure-front composition. Ground diagnostic maps bypass it.
-The renderer approximates single scattering and self-shadowing within each patch;
+The renderer approximates single scattering and self-shadowing within the shared domain;
 the assumed slab does not resolve creature geometry. Broad sky extinction gives
 billows some form after local emitters fade. Rocket exhaust uses a separate
 sixfold scattering response, without increasing its ground or creature lighting.

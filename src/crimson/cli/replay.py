@@ -386,6 +386,7 @@ def cmd_replay_play(
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
     rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
+    rtx_smoke: bool = typer.Option(False, "--rtx-smoke", help="enable experimental fluid smoke and RTX (high CPU cost)"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -436,7 +437,8 @@ def cmd_replay_play(
         card=card,
         audio=audio,
         leave_label="Close",
-        rtx=bool(rtx),
+        rtx=bool(rtx or rtx_smoke),
+        rtx_smoke=bool(rtx_smoke),
     )
     title = f"Replay — {replay_path.name}"
 
@@ -448,7 +450,7 @@ def cmd_replay_play(
             title=title,
             fps=fps,
             hooks=RunViewHooks(
-                wants_edr=(lambda: True) if rtx else None,
+                wants_edr=(lambda: True) if rtx or rtx_smoke else None,
                 should_close=view.should_close,
                 consume_screenshot_request=view.consume_screenshot_request,
             ),

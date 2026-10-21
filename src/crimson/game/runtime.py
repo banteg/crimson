@@ -126,6 +126,26 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         state.rtx_mode = cycle_rtx_render_mode(state.rtx_mode)
         console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
 
+    def cmd_rtx_smoke(args: list[str]) -> None:
+        if len(args) != 1 or args[0] not in ("on", "off"):
+            console.log.log("rtxsmoke <on|off> (experimental fluid smoke; default off)")
+            return
+        try:
+            active = state.screens.active
+        except IndexError:
+            console.log.log("rtxsmoke requires an open game or replay.")
+            return
+        setter = getattr(active, "set_rtx_smoke", None)
+        if not callable(setter):
+            console.log.log("rtxsmoke requires an open game or replay.")
+            return
+        enabled = args[0] == "on"
+        setter(enabled)
+        console.log.log(
+            "Experimental fluid smoke enabled (RTX only; high CPU cost)."
+            if enabled else "Fluid smoke disabled; using native smoke.",
+        )
+
     def cmd_rtx_debug(args: list[str]) -> None:
         usage = "rtxdebug <" + "|".join(view.token for view in RtxDebugView) + ">"
         if len(args) != 1:
@@ -182,6 +202,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         "rendermode": cmd_render_mode,
         "togglertx": cmd_toggle_rtx,
         "rtxdebug": cmd_rtx_debug,
+        "rtxsmoke": cmd_rtx_smoke,
         "gamepads": cmd_gamepads,
     }
 

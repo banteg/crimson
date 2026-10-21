@@ -37,6 +37,7 @@ def test_runtime_toggle_reset_restore_and_smoke_setting(tmp_path, headless_resou
     runtime = WorldRuntimeHost(assets_dir=tmp_path, config=config, rtx_mode=RtxRenderMode.RTX)
     runtime.render_resources.resources = headless_resources
     resources = runtime.render_resources
+    resources.set_simulated_smoke(True)
     resources.consume_smoke_batch((emission(),), dt_sim=0.)
     assert resources.smoke.simulation.fields
     frame = runtime.build_render_frame()
@@ -196,10 +197,43 @@ def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless
                        scale=1., half_width=20., half_height=20., color=RGBA(1, 1, 1, 1))
     pool.entries[0] = puff
     pool.entries[1] = msgspec.structs.replace(puff, effect_id=EffectId.RING)
-    rtx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX))
+    rtx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX, smoke=SmokeRenderer()))
     effects.draw_effect_pool(rtx, camera=Vec2(), view_scale=Vec2(1, 1))
     assert headless_window.draw_texture_pro.call_count == 1
     headless_window.draw_texture_pro.reset_mock()
     classic = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.CLASSIC))
     effects.draw_effect_pool(classic, camera=Vec2(), view_scale=Vec2(1, 1))
+    assert headless_window.draw_texture_pro.call_count == 2
+
+
+def test_default_rtx_skips_solver_and_toggle_clears_delayed_deposits(tmp_path, mocker, headless_resources):
+    runtime = WorldRuntimeHost(assets_dir=tmp_path, rtx_mode=RtxRenderMode.RTX)
+    resources = runtime.render_resources
+    resources.resources = headless_resources
+    consume = mocker.spy(resources.smoke, "consume")
+    assert not resources.simulated_smoke_enabled
+    resources.consume_smoke_batch((emission(),), dt_sim=1 / 60)
+    consume.assert_not_called()
+    assert runtime.build_render_frame().smoke is None
+    resources.set_simulated_smoke(True)
+    resources.consume_smoke_batch((emission(), emission(delay_seconds=.5)), dt_sim=0.)
+    assert resources.smoke.simulation.fields and resources.smoke.simulation.pending
+    resources.set_simulated_smoke(False)
+    assert not resources.smoke.simulation.fields and not resources.smoke.simulation.pending
+    assert runtime.build_render_frame().smoke is None
+    resources.set_simulated_smoke(True)
+    assert not resources.smoke.simulation.fields and not resources.smoke.simulation.pending
+
+
+def test_default_rtx_restores_both_native_smoke_pools(headless_window, headless_resources):
+    ctx = render_ctx_for_creatures(headless_resources, [])
+    ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX))
+    ctx.frame.state.sprite_effects.spawn(pos=Vec2(50, 50), vel=Vec2(), scale=14,
+                                       color=RGBA(1, 1, 1, .25), rng=Crand(1))
+    ctx.frame.state.effects.entries[0] = EffectEntry(
+        pos=Vec2(50, 50), effect_id=EffectId.EXPLOSION_PUFF, flags=0x40,
+        scale=1., half_width=20., half_height=20., color=RGBA(1, 1, 1, 1),
+    )
+    effects.draw_sprite_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
     assert headless_window.draw_texture_pro.call_count == 2
