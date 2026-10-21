@@ -56,6 +56,8 @@ class MaterialLight(msgspec.Struct, frozen=True):
     reflection_tail: float = 0.18
     beam_profile: tuple[float, float, float] | None = None
     beam_ion: bool = False
+    # Artistic scattering response, independent of ground/creature illumination.
+    smoke_gain: float = 1.0
 
     @property
     def reflection_reach(self) -> float:
@@ -357,6 +359,7 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                     110.0 * scale,
                     (0.9 * scale, 0.47 * scale, 0.1 * scale),
                     height=22.0,
+                    smoke_gain=6.0,
                     broad_illumination=True,
                     direction=direction,
                     length=6.0 * scale,

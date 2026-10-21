@@ -774,10 +774,11 @@ not inherit the longer lifetime. Large general-effect puffs weight their source
 strength by native tint luminance: their dark tint must not become an opaque gray
 disc that obscures the finer sprite smoke. This is an artistic conversion into a
 shared scattering medium, not a physical mass calibration. The explicit nuke
-presentation profile triples that dark-puff strength and lowers density decay
-from 0.20/s to 0.12/s so the extended aftermath remains visible. A shared patch
-keeps the slower decay after receiving a nuke deposit; this does not add mass to
-smoke already there. Capture bookkeeping lives outside native state
+presentation profile increases that dark-puff strength eightfold, distributes it
+into irregular overlapping billows with local curling motion, and lowers density decay
+from 0.20/s to 0.12/s so the extended aftermath remains visible. The shared domain
+gradually returns to the ordinary decay rate after receiving a nuke deposit;
+this does not add mass to smoke already there. Capture bookkeeping lives outside native state
 and checkpoint serialization.
 
 Presentation consumes every tick's batch, including empty batches, using its
@@ -785,23 +786,32 @@ simulation delta. Fixed 60 Hz substeps accumulate fractional slow-motion time;
 pause and extra draws do not advance the fields. Forward replay playback uses the
 same presentation handoff. Level/reset/session replacement, RTX mode changes, and
 disabling the smoke setting clear fields and delayed deposits. Re-enabling RTX
-starts with new emissions; existing native puffs retain their ordinary rendering.
+starts with new emissions. Native smoke sprites and general explosion puffs are
+never drawn in RTX, including when the solver is empty or at its allocation cap.
+Classic retains the original sprites.
 Checkpoint restoration clears this presentation history instead of storing it in
 the deterministic checkpoint.
 
-At most four 144 × 144 grids cover fixed 288 × 288 world-unit patches, with a
-bounded queue of 1024 delayed deposits. A patch is allocated only for an emission;
-empty scenes perform no fluid steps. Native puffs that cannot fit a patch or exceed
-the cap remain on their original path. Exact source-pool, slot, and generation
-identities prevent either double rendering or hiding unrelated reused slots.
-Visible patches are never evicted to admit a new source. Dilute patches retire
-early. New deposits extend the shared patch's remaining retention, baking its
-existing final fade into density and temperature first so old smoke is not restored.
+One shared domain starts at 144 × 144 cells with two world units per cell. It
+expands on the same world lattice as emissions and transported density approach
+its boundary, keeping at least 96 world units of padding where possible. Growth
+copies density, heat and velocity without resampling. All trails exchange flow
+and share light extinction; there are no internal patch walls or separate alpha
+layers. Dimensions are capped at 640 cells per axis, with at most 1024 delayed
+deposits. An outlying deposit beyond this cap is omitted rather than evicting
+visible smoke or falling back to native sprites. Open pressure/velocity boundaries
+and an absorbing outer band allow outflow at the allocation limit.
+
+Empty scenes perform no fluid steps. Dilute domains retire early. New deposits
+extend remaining retention, baking any existing final fade into density and
+temperature so old smoke is not restored. Nuke decay relaxes back toward the ordinary rate with a roughly 14-second time
+constant. Negligible empty margins can be reclaimed when the allocation cap
+would otherwise prevent growth toward new combat.
 
 ### Motion and light
 
 The solver advects planar velocity, density, and temperature, with a bounded
-MacCormack scalar correction, 48 pressure-relaxation iterations, vorticity
+MacCormack scalar correction, 24 pressure-relaxation iterations, vorticity
 confinement, damping, and unresolved diffusion. Sources inject native motion and
 expansion; a small fixed planar breeze supplies background drift. Temperature
 controls an assumed vertical density profile in the display shader. This is a
@@ -819,9 +829,10 @@ the whole cloud. The ordinary sight artwork remains unchanged.
 Smoke composites after native sprites, outside their alpha-test shader, inside
 the HDR world and pressure-front composition. Ground diagnostic maps bypass it.
 The renderer approximates single scattering and self-shadowing within each patch;
-overlapping patches do not exchange velocity or shadow one another, and the
-assumed slab does not resolve creature geometry. CPU simulation and shader cost
-grow with active fields and lights. This implementation establishes the appearance;
+the assumed slab does not resolve creature geometry. Broad sky extinction gives
+billows some form after local emitters fade. Rocket exhaust uses a separate
+sixfold scattering response, without increasing its ground or creature lighting.
+CPU simulation and shader cost grow with domain area and lights. This implementation establishes the appearance;
 a future GPU ping-pong or browser solver would need separate portability and
 performance validation.
 

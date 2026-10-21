@@ -101,6 +101,8 @@ def draw_sprite_effect_pool(
     view_scale: Vec2,
 ) -> None:
     frame = render_ctx.frame
+    if frame.rtx_mode is RtxRenderMode.RTX:
+        return
     if frame.config is not None and not frame.config.display.smoke_enabled:
         return
     texture = frame.resources.texture(TextureId.PARTICLES)
@@ -115,12 +117,8 @@ def draw_sprite_effect_pool(
     scale = viewport.view_scale_avg(view_scale)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
-    for slot, entry in enumerate(effects):
+    for entry in effects:
         if not entry.active:
-            continue
-        if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None and frame.smoke.claims_sprite(
-            slot, frame.state.sprite_effects.generation_for_slot(slot),
-        ):
             continue
         size = float(entry.scale) * scale
         if size <= 0.0:
@@ -145,13 +143,6 @@ def draw_effect_pool(
 
     pool = frame.state.effects
     effects = (*pool.entries, *pool.overflow_entries) if pool.overflow_entries else pool.entries
-    claimed_puffs = set()
-    if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None:
-        claimed_puffs = {
-            id(entry) for slot, entry in enumerate(effects)
-            if entry.effect_id == EffectId.EXPLOSION_PUFF
-            and frame.smoke.claims_effect(slot, pool.generation_for_slot(slot))
-        }
     fireball_slots: set[int] = set()
     if frame.rtx_mode is RtxRenderMode.RTX:
         archived = []
@@ -184,7 +175,7 @@ def draw_effect_pool(
     )
 
     def draw_entry(entry: EffectEntry) -> None:
-        if id(entry) in claimed_puffs:
+        if frame.rtx_mode is RtxRenderMode.RTX and entry.effect_id == EffectId.EXPLOSION_PUFF:
             return
         if id(entry) in fireball_slots:
             return

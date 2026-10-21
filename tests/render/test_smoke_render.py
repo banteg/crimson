@@ -6,6 +6,8 @@ import msgspec
 import numpy as np
 import pytest
 
+from crimson.effects import EffectEntry
+from crimson.effects_atlas import EffectId
 from crimson.perks import PerkId
 from crimson.render.rtx.debug import RtxDebugView
 from crimson.render.rtx.material_lights import MaterialLight
@@ -43,7 +45,7 @@ def test_runtime_toggle_reset_restore_and_smoke_setting(tmp_path, headless_resou
     assert not resources.smoke.simulation.fields
     assert runtime.build_render_frame().smoke is None
     runtime.rtx_mode = RtxRenderMode.RTX
-    assert not resources.smoke.simulation.claims
+    assert not resources.smoke.simulation.fields
     resources.consume_smoke_batch((emission(),), dt_sim=0.)
     config.display.smoke_enabled = False
     assert runtime.build_render_frame().smoke is None
@@ -58,23 +60,25 @@ def test_runtime_toggle_reset_restore_and_smoke_setting(tmp_path, headless_resou
     assert not resources.smoke.simulation.fields
 
 
-def test_only_claimed_current_native_puff_is_suppressed(headless_window, headless_resources):
+def test_rtx_suppresses_all_native_smoke_even_unclaimed_and_reused_slots(headless_window, headless_resources):
     ctx = render_ctx_for_creatures(headless_resources, [])
     smoke = SmokeRenderer()
     ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX, smoke=smoke))
     pool = ctx.frame.state.sprite_effects
-    old = pool.spawn(pos=Vec2(50, 50), vel=Vec2(), scale=14, color=RGBA(1, 1, 1, .25), rng=Crand(1))
+    pool.spawn(pos=Vec2(50, 50), vel=Vec2(), scale=14, color=RGBA(1, 1, 1, .25), rng=Crand(1))
     with pool.capture_emissions() as captured:
         claimed = pool.spawn(pos=Vec2(52, 50), vel=Vec2(), scale=14, color=RGBA(1, 1, 1, .25), rng=Crand(2))
     smoke.consume(tuple(captured), dt_sim=0.)
     smoke.prepared = True
     effects.draw_sprite_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
-    assert headless_window.draw_texture_pro.call_count == 1
-    assert not smoke.claims_sprite(old, pool.generation_for_slot(old))
+    assert headless_window.draw_texture_pro.call_count == 0
     pool.entries[claimed].active = False
     pool.spawn(pos=Vec2(900, 900), vel=Vec2(), scale=14, color=RGBA(1, 1, 1, .25), rng=Crand(3))
     headless_window.draw_texture_pro.reset_mock()
     effects.draw_sprite_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    assert headless_window.draw_texture_pro.call_count == 0
+    classic = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.CLASSIC))
+    effects.draw_sprite_effect_pool(classic, camera=Vec2(), view_scale=Vec2(1, 1))
     assert headless_window.draw_texture_pro.call_count == 2
 
 
@@ -126,8 +130,10 @@ def smoke_pixels(raylib_context, headless_resources):
     )
     target = load_float_render_texture(128, 128)
 
-    def render(*, lights=(), sight=False, density=.3):
+    def render(*, lights=(), sight=False, density=.3, grow=False):
         field.density.fill(density)
+        if grow:
+            field.include(Vec2(350, 64), 200.)
         field.version += 1
         ctx.frame.state.perks[PerkId.SHARPSHOOTER] = int(sight)
         smoke.prepare(ctx.frame, lights)
@@ -164,3 +170,36 @@ def test_native_shader_light_and_sight_scatter_only_in_density(smoke_pixels):
 def test_native_shader_preserves_faint_extinction_without_sprite_alpha_test(smoke_pixels):
     faint = smoke_pixels(density=.008)
     assert 0. < float(faint[:, :, 0].mean()) < .015
+
+
+def test_smoke_light_budget_culls_remote_sources_and_prioritizes_exhaust():
+    smoke = SmokeRenderer()
+    smoke.simulation.fields[0] = SmokeField(Vec2(0, 0), 0)
+    far = [MaterialLight(Vec2(900, 900), 100, (1., .5, .1)) for _ in range(20)]
+    nearby = [MaterialLight(Vec2(100, 100), 100, (.2, .2, .2)) for _ in range(20)]
+    exhaust = MaterialLight(Vec2(100, 100), 100, (.9, .47, .1), smoke_gain=6.)
+    selected = smoke.select_lights([*far, *nearby, exhaust])
+    assert len(selected) == 16 and selected[0] is exhaust
+    assert not any(light in far for light in selected)
+
+
+def test_native_texture_resize_preserves_world_space_density(smoke_pixels):
+    before = smoke_pixels()
+    after = smoke_pixels(grow=True)
+    np.testing.assert_allclose(after, before, atol=.00001)
+
+
+def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless_window, headless_resources):
+    ctx = render_ctx_for_creatures(headless_resources, [])
+    pool = ctx.frame.state.effects
+    puff = EffectEntry(pos=Vec2(50, 50), effect_id=EffectId.EXPLOSION_PUFF, flags=0x40,
+                       scale=1., half_width=20., half_height=20., color=RGBA(1, 1, 1, 1))
+    pool.entries[0] = puff
+    pool.entries[1] = msgspec.structs.replace(puff, effect_id=EffectId.RING)
+    rtx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX))
+    effects.draw_effect_pool(rtx, camera=Vec2(), view_scale=Vec2(1, 1))
+    assert headless_window.draw_texture_pro.call_count == 1
+    headless_window.draw_texture_pro.reset_mock()
+    classic = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.CLASSIC))
+    effects.draw_effect_pool(classic, camera=Vec2(), view_scale=Vec2(1, 1))
+    assert headless_window.draw_texture_pro.call_count == 2

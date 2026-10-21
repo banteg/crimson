@@ -5,7 +5,13 @@ import numpy as np
 import pytest
 
 from crimson.math_parity import f32
-from crimson.render.rtx.smoke_simulation import MAX_FIELDS, MAX_PENDING_EMISSIONS, SmokeField, SmokeSimulation
+from crimson.render.rtx.smoke_simulation import (
+    CELL_SIZE,
+    MAX_GRID_SIZE,
+    MAX_PENDING_EMISSIONS,
+    SmokeField,
+    SmokeSimulation,
+)
 from crimson.sim.smoke_events import SmokeEmission
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -52,27 +58,50 @@ def test_sequential_tick_batches_have_identical_state():
         a.consume(emissions, dt)
     for emissions, dt in tuple(plans):
         b.consume(emissions, dt)
-    assert a.claims == b.claims
     np.testing.assert_array_equal(a.fields[0].density, b.fields[0].density)
 
 
-def test_cap_preserves_unclaimed_native_sprites_and_old_generations():
+def test_multiple_trails_share_one_continuous_domain_and_cap_is_bounded():
     sim = SmokeSimulation()
-    for slot in range(MAX_FIELDS):
-        sim.consume((emission(slot=slot, pos=Vec2(slot * 400., 0)),), 0.)
-    assert len(sim.fields) == MAX_FIELDS
+    for slot in range(5):
+        sim.consume((emission(slot=slot, pos=Vec2(slot * 160., 0)),), 0.)
+    assert len(sim.fields) == 1
+    field = sim.fields[0]
+    before = float(field.density.sum())
     sim.consume((emission(slot=0, generation=2, pos=Vec2(4000, 0)),), 0.)
-    assert not sim.claims_entry("sprite", 0, 2)
-    assert sim.claims_entry("sprite", 0, 1)
-    assert not sim.claims_entry("sprite", 63, 1)
+    assert float(field.density.sum()) == pytest.approx(before, rel=1e-5)
+    assert max(field.density.shape) <= MAX_GRID_SIZE
 
 
-def test_effect_and_sprite_claims_do_not_alias():
+def test_domain_growth_keeps_world_mass_and_velocity_without_resampling():
+    field = SmokeField(Vec2(0, 0), 0)
+    field.density[70, 80] = .6
+    field.u[70, 80] = 40.
+    assert field.include(Vec2(-60, 330), 100.)
+    x = int((160 - field.origin.x) / CELL_SIZE)
+    y = int((140 - field.origin.y) / CELL_SIZE)
+    assert field.density[y, x] == pytest.approx(.6)
+    assert field.u[y, x] == 40.
+    assert field.density.sum() == pytest.approx(.6)
+
+
+def test_outward_flow_is_not_reflected_and_does_not_wrap():
+    field = SmokeField(Vec2(0, 0), 0)
+    field.u.fill(30.)
+    field.density[60:80, -8:-2] = 1.
+    for _ in range(15):
+        field._step(1 / 60)
+    assert np.mean(field.u[60:80, -3:]) > 15.
+    assert np.max(field.density[:, :20]) == 0.
+    assert np.isfinite(field.density).all()
+
+
+def test_effect_and_sprite_deposits_both_contribute():
     sim = SmokeSimulation()
-    sim.consume((emission(), emission(source="effect", generation=4)), 0.)
-    assert sim.claims_entry("sprite", 0, 1)
-    assert sim.claims_entry("effect", 0, 4)
-    assert not sim.claims_entry("sprite", 0, 4)
+    sim.consume((emission(),), 0.)
+    before = float(sim.fields[0].density.sum())
+    sim.consume((emission(source="effect", generation=4),), 0.)
+    assert float(sim.fields[0].density.sum()) == pytest.approx(before * 2.)
 
 
 def test_effect_delay_matches_native_float_age_and_reset_clears_it():
@@ -85,10 +114,9 @@ def test_effect_delay_matches_native_float_age_and_reset_clears_it():
         age = f32(f32(age) + f32(1 / 60))
         sim.consume((), 1 / 60)
         assert bool(sim.fields) is (age >= 0)
-    assert sim.claims_entry("effect", 0, 1)
     sim.consume((msgspec.structs.replace(event, generation=2),), 0.)
     sim.reset()
-    assert not sim.fields and not sim.claims and not sim.pending
+    assert not sim.fields and not sim.pending
 
 
 def test_pending_queue_and_oversize_fallback_are_bounded():
@@ -97,7 +125,7 @@ def test_pending_queue_and_oversize_fallback_are_bounded():
     sim.consume(delayed, 0.)
     assert len(sim.pending) == MAX_PENDING_EMISSIONS
     sim.consume((emission(scale=300.),), 0.)
-    assert not sim.fields and not sim.claims
+    assert not sim.fields
 
 
 def test_idle_fade_and_retirement_do_not_cut_off_continuing_source(mocker):
@@ -112,15 +140,16 @@ def test_idle_fade_and_retirement_do_not_cut_off_continuing_source(mocker):
     sim.consume((), 8.5)
     assert field.fade == pytest.approx(.5)
     sim.consume((), 1.)
-    assert not sim.fields and not sim.claims_entry("sprite", 0, 2)
+    assert not sim.fields
 
 
-def test_large_puff_gets_new_centered_field_instead_of_clipped_existing_one():
+def test_large_puff_expands_shared_domain_instead_of_starting_another_box():
     sim = SmokeSimulation()
     sim.consume((emission(pos=Vec2(400, 512)),), 0.)
+    field = sim.fields[0]
     sim.consume((emission(slot=1, pos=Vec2(490, 512), scale=64., vel=Vec2(), source="effect"),), 0.)
-    assert len(sim.fields) == 2
-    assert sim.fields[1].origin == Vec2(346, 368)
+    assert len(sim.fields) == 1 and sim.fields[0] is field
+    assert field.size.x > 288
 
 
 def test_new_deposit_does_not_resurrect_old_fading_density_or_heat():
@@ -167,3 +196,36 @@ def test_nuke_retention_survives_ordinary_deposit_without_restarting_fifteen_sec
     assert sim.fields[0].fade == pytest.approx(.5)
     sim.consume((), 1.)
     assert not sim.fields
+
+
+def test_growth_at_width_cap_still_accepts_deposits_and_can_grow_height():
+    field = SmokeField(Vec2(0, 0), 0)
+    field.include(Vec2(1050, 100), 200)
+    field.density.fill(.1)  # No empty margins to reclaim.
+    field.include(Vec2(1220, 100), 200)
+    assert field.density.shape[1] == MAX_GRID_SIZE
+    assert field.include(Vec2(1200, 400), 120)
+    assert field.size.y > 500
+    assert field.include(Vec2(1200, 100), 120)
+
+
+def test_empty_margins_are_reclaimed_when_combat_moves():
+    field = SmokeField(Vec2(-500, 0), 0)
+    field.include(Vec2(600, 100), 100)
+    field.density.fill(0)
+    x = int((600 - field.origin.x) / CELL_SIZE)
+    field.density[60, x] = .7
+    assert field.include(Vec2(1300, 100), 100)
+    x = int((600 - field.origin.x) / CELL_SIZE)
+    assert field.density[60, x] == pytest.approx(.7)
+    assert field.origin.x > -500
+
+
+def test_boundary_scalar_advection_uses_open_first_order_transport():
+    field = SmokeField(Vec2(0, 0), 0)
+    field.density[:, 1:4] = .8
+    u = np.full_like(field.density, 90.)
+    v = np.zeros_like(u)
+    corrected = field._scalar(field.density, u, v, 1 / 60)
+    forward = field._advect(field.density, u, v, 1 / 60)
+    np.testing.assert_array_equal(corrected[:, :3], forward[:, :3])
