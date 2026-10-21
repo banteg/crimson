@@ -15,6 +15,8 @@ import {
   type QuestMenuView,
   type Role,
   type RunDetailView,
+  FIXED_WEAPON_BONUSES,
+  FIXED_WEAPON_PERKS,
 } from "../../src/api-types";
 import { boardFor, boardPath, type QuestBoard, questPage, type QuestPage, questsPath, type SurvivalBoard, survivalPage } from "../../src/paths";
 import { get, moderate, post } from "./api";
@@ -116,25 +118,18 @@ function Weapon(props: { id: number }) {
   );
 }
 
-// A run's replay: watched in the browser game, or downloaded. A retired run no longer plays as recorded, so it only
-// downloads; a compact row keeps the Watch icon.
-function ReplayLinks(props: { run: string; retired?: string | null; compact?: boolean }) {
+// A run's replay, watched in the browser game; a compact row keeps the icon. A retired run no longer plays as recorded,
+// so it has none here, and its file downloads from the run's page.
+function WatchLink(props: { run: string; retired?: string | null; compact?: boolean }) {
   return (
-    <span class="replay-links">
-      <Show when={!props.retired}>
-        <a class="watch" href={`/play/?watch=${props.run}`} data-native title="Watch the replay in the game">
-          <svg viewBox="0 0 10 10" aria-hidden="true">
-            <path d="M2 1l7 4-7 4z" fill="currentColor" />
-          </svg>
-          <Show when={!props.compact}>Watch</Show>
-        </a>
-      </Show>
-      <Show when={!props.compact}>
-        <a class="crd" href={`/runs/${props.run}.crd`} data-native title="Download the replay file">
-          .crd
-        </a>
-      </Show>
-    </span>
+    <Show when={!props.retired}>
+      <a class="watch" href={`/play/?watch=${props.run}`} data-native title="Watch the replay in the game">
+        <svg viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M2 1l7 4-7 4z" fill="currentColor" />
+        </svg>
+        <Show when={!props.compact}>Watch</Show>
+      </a>
+    </Show>
   );
 }
 
@@ -144,12 +139,12 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
   const bots = () => props.view.category === "bot";
   const full = () => !props.compact;
   return (
-    <Show when={props.view.rows.length} fallback={<p class="muted">No runs yet.</p>}>
+    <Show when={props.view.rows.length} fallback={<p class="muted">No scores yet.</p>}>
       <div class="board-table">
         <table>
           <thead>
             <tr>
-              <th class="n">#</th>
+              <th class="n">Rank</th>
               <th>Player</th>
               <Show when={bots() && full()}>
                 <th>Bot</th>
@@ -157,8 +152,8 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
               <th class="n">Score</th>
               <Show when={full()} fallback={<th />}>
                 <th>Run</th>
-                <th class="n">Duration</th>
-                <th title="Most used weapon by time equipped">Weapon</th>
+                <th class="n" title="The time the game lasted">Game time</th>
+                <th title="Most used weapon during the game">Weapon</th>
                 <th>Replay</th>
               </Show>
             </tr>
@@ -181,7 +176,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                   </td>
                   <Show when={bots() && full()}>
                     <td>
-                      <Show when={row.pilot} fallback={<span class="muted" title="The replay names no bot">—</span>}>
+                      <Show when={row.pilot} fallback={<span class="muted" title="The replay names no bot">-</span>}>
                         {(pilot) => <PilotName pilot={pilot()} />}
                       </Show>
                     </td>
@@ -190,6 +185,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                     <a class="run" href={`/runs/${row.run}`}>
                       {formatScore(props.view.board, row.score)}
                     </a>
+                    <span class="muted"> · R{row.rules}</span>
                   </td>
                   <Show when={full()}>
                     <td>
@@ -200,12 +196,12 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                       <Weapon id={row.most_used_weapon_id} />
                     </td>
                     <td>
-                      <ReplayLinks run={row.run} />
+                      <WatchLink run={row.run} />
                     </td>
                   </Show>
                   <Show when={!full()}>
                     <td>
-                      <ReplayLinks run={row.run} compact />
+                      <WatchLink run={row.run} compact />
                     </td>
                   </Show>
                 </tr>
@@ -221,8 +217,8 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
 // How a bot gets onto the bot boards.
 const BotInvite = () => (
   <p class="muted">
-    Bots and tool-assisted runs, verified under the same <a href={RULES}>rules</a>. Built one? Set <code>CRIMSON_PILOT_NAME</code> when the
-    Python port records, and its runs list here under its name. See <a href={BOTS}>bots</a>.
+    Computer-controlled and tool-assisted runs, checked under the same <a href={RULES}>rules</a>. Wrote a bot? Set{" "}
+    <code>CRIMSON_PILOT_NAME</code> when the Python port records to put its name on the score list. See <a href={BOTS}>bots</a>.
   </p>
 );
 
@@ -334,9 +330,11 @@ async function home(): Promise<Screen> {
     panels: [
       () => (
         <>
+          <p>Fight off hordes of aliens, spiders, lizards and zombies with 28 weapons and 57 perks, across Quests, Rush and Survival.</p>
           <p>
-            Crimsonland, the 2003 top-down shooter, back in your browser. It's the original game rebuilt from its own code, so it plays
-            exactly like you remember, now with modern gamepads and a leaderboard where every score is verified by replay.
+            Crimsonland, as it was in 2003, rebuilt from <code>crimsonland.exe</code> with a few dozen of its bugs fixed, and running in your
+            browser. Now with online co-op: send a friend a link and fight side by side. Chase internet high scores where every run is a
+            replay you can watch, build your own quests, and play on a gamepad.
           </p>
           <PlayGame />
         </>
@@ -357,7 +355,7 @@ async function home(): Promise<Screen> {
             </div>
           </div>
           <p>
-            <a href="/survival">Full boards</a> · <a href="/quests">Quests</a> · <a href="/custom">Custom quests</a>
+            <a href="/survival">High scores</a> · <a href="/quests">Quests</a> · <a href="/custom">Custom quests</a>
           </p>
         </>
       ),
@@ -371,7 +369,7 @@ function BoardTotals(props: { view: BoardView }) {
   return (
     <Show when={totals().runs}>
       <p class="board-totals muted">
-        {quantity(totals().runs, "run")} · {quantity(totals().kills, "kill")} · {formatLongDuration(totals().elapsed_ms)}{" "}
+        {quantity(totals().runs, "run")} · {quantity(totals().kills, "frag")} · {formatLongDuration(totals().elapsed_ms)}{" "}
         {BOARDS[props.view.board].quests ? "played" : "survived"}
       </p>
     </Show>
@@ -379,11 +377,25 @@ function BoardTotals(props: { view: BoardView }) {
 }
 
 // A board's human runs, then its bot runs.
+function rulesQuery(): string {
+  const rules = new URLSearchParams(window.location.search).get("rules");
+  return rules === "1" || rules === "2" ? `&rules=${rules}` : "";
+}
+
+function RulesFilter() {
+  return <nav aria-label="Replay rules">
+    <a data-native href={window.location.pathname}>All rules</a>{" · "}
+    <a data-native href={`${window.location.pathname}?rules=1`}>Rules 1</a>{" · "}
+    <a data-native href={`${window.location.pathname}?rules=2`}>Rules 2</a>
+  </nav>;
+}
+
 function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
   return [
     () => (
       <>
         <h2>{humans.title}</h2>
+        <RulesFilter />
         <BoardTotals view={humans} />
         <BoardTable view={humans} />
       </>
@@ -415,12 +427,12 @@ function BoardSwitch(props: { board: Board; at?: number | string }) {
           <GameButton label="Quests" href={to(true, coop)} on={quests} />
         </span>
         <span class="buttons">
-          <GameButton label="Solo" href={to(quests, false)} on={!coop} />
-          <GameButton label="Co-op" href={to(quests, true)} on={coop} />
+          <GameButton label="1 player" href={to(quests, false)} on={!coop} />
+          <GameButton label="2 players" href={to(quests, true)} on={coop} />
         </span>
       </nav>
       <Show when={coop}>
-        <p class="muted">Two players online, ranked as a pair.</p>
+        <p class="muted">Two-player co-op over the internet, ranked as a pair. Start one with <em>Play co-op</em> on the Play page.</p>
       </Show>
     </>
   );
@@ -428,7 +440,7 @@ function BoardSwitch(props: { board: Board; at?: number | string }) {
 
 async function survival(board: SurvivalBoard): Promise<Screen> {
   const path = boardPath(board, "");
-  const [humans, bots] = await Promise.all([get<BoardView>(`/api${path}`), get<BoardView>(`/api${path}?category=bot`)]);
+  const [humans, bots] = await Promise.all([get<BoardView>(`/api${path}?category=human${rulesQuery()}`), get<BoardView>(`/api${path}?category=bot${rulesQuery()}`)]);
   return { title: humans!.title, quest: null, panels: [() => <BoardSwitch board={board} />, ...boardPanels(humans!, bots!)] };
 }
 
@@ -437,8 +449,8 @@ async function quests(page: QuestPage): Promise<Screen> {
   const api = (at: number | string) => `/api${questsPath(page.board, at)}`;
   const [menu, humans, bots] = await Promise.all([
     get<QuestMenuView>(api(page.stage)),
-    page.quest && get<BoardView>(api(page.quest)),
-    page.quest && get<BoardView>(`${api(page.quest)}?category=bot`),
+    page.quest && get<BoardView>(`${api(page.quest)}?category=human${rulesQuery()}`),
+    page.quest && get<BoardView>(`${api(page.quest)}?category=bot${rulesQuery()}`),
   ]);
   const menuPanel = keep("quest-menu", { menu: menu!, quest: page.quest ?? undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />);
   const coop = BOARDS[page.board].players > 1;
@@ -459,7 +471,8 @@ function spawnColor(spawnId: number): string {
 function QuestPreviewSvg(props: { quest: CustomQuest }) {
   const entries = () => props.quest.entries;
   const totalCopies = () => entries().reduce((sum, e) => sum + e.count, 0);
-  const maxTriggerMs = () => Math.max(1000, ...entries().map((e) => e.trigger_ms));
+  const lastSpawnMs = () => Math.max(0, ...entries().map((e) => e.trigger_ms));
+  const maxTriggerMs = () => Math.max(1000, lastSpawnMs());
   const toMap = (coord: number) => 32 + ((coord + 256) / 1536) * 256;
   const arenaStart = toMap(0);
   const arenaSize = toMap(1024) - arenaStart;
@@ -484,8 +497,8 @@ function QuestPreviewSvg(props: { quest: CustomQuest }) {
       </svg>
       <div style={{ flex: "1", "min-width": "240px" }}>
         <p class="muted" style={{ margin: "0 0 6px" }}>
-          Entry budget: <b>{entries().length} / 256</b> entries · <b>{totalCopies().toLocaleString("en-US")}</b> template copies · horizon{" "}
-          <b>{formatDuration(maxTriggerMs())}</b>
+          Spawns: <b>{entries().length} / 256</b> entries · <b>{totalCopies().toLocaleString("en-US")}</b> template {totalCopies() === 1 ? "copy" : "copies"} · last spawn at{" "}
+          <b>{formatDuration(lastSpawnMs())}</b>
         </p>
         <svg viewBox="0 0 400 44" width="100%" height="44" style={{ background: "rgba(0,0,0,0.35)", "border-radius": "4px", border: "1px solid rgba(255,255,255,0.12)" }}>
           <For each={entries()}>
@@ -507,26 +520,25 @@ function QuestPreviewSvg(props: { quest: CustomQuest }) {
 }
 
 function QuestRestrictions(props: { quest: CustomQuest }) {
-  const fixedWeapon = () => props.quest.no_weapons.length === 32 && props.quest.no_bonuses.includes(3);
-  const bonuses = () => props.quest.no_bonuses.map((id) => BONUS_NAMES[id] ?? `Bonus ${id}`);
-  const perks = () => props.quest.no_perks.map((id) => PERKS[id] ?? `Perk ${id}`);
+  const fixedWeapon = () => props.quest.no_weapons.length === 32 && FIXED_WEAPON_BONUSES.every((id) => props.quest.no_bonuses.includes(id));
+  // A fixed weapon already says no Weapon bonus, weapon perks or weapon drops; the lists name only the rest.
+  const unless = (ids: number[], implied: number[]) => (fixedWeapon() ? ids.filter((id) => !implied.includes(id)) : ids);
+  const bonuses = () => unless(props.quest.no_bonuses, FIXED_WEAPON_BONUSES).map((id) => BONUS_NAMES[id] ?? `Bonus ${id}`);
+  const perks = () => unless(props.quest.no_perks, FIXED_WEAPON_PERKS).map((id) => PERKS[id] ?? `Perk ${id}`);
   const weapons = () => (fixedWeapon() ? [] : props.quest.no_weapons.map((id) => WEAPONS[id]?.name ?? `Weapon ${id}`));
+  const lists = () => [
+    ...(bonuses().length ? [`No bonuses: ${bonuses().join(", ")}`] : []),
+    ...(perks().length ? [`No perks: ${perks().join(", ")}`] : []),
+    ...(weapons().length ? [`No weapon drops: ${weapons().join(", ")}`] : []),
+  ];
   return (
-    <Show when={fixedWeapon() || bonuses().length || perks().length || weapons().length}>
+    <Show when={fixedWeapon() || lists().length}>
       <p class="muted">
         <Show when={fixedWeapon()}>
-          <b>Fixed weapon</b> (weapon drops &amp; weapon perks disabled)
-          <Show when={bonuses().length > 1 || perks().length > 2}> · </Show>
+          <b>Fixed weapon</b> (no weapon drops, Weapon bonus or weapon perks)
+          <Show when={lists().length}> · </Show>
         </Show>
-        <Show when={bonuses().length}>
-          No bonuses: {bonuses().join(", ")}
-          <Show when={perks().length || weapons().length}> · </Show>
-        </Show>
-        <Show when={perks().length}>
-          No perks: {perks().join(", ")}
-          <Show when={weapons().length}> · </Show>
-        </Show>
-        <Show when={weapons().length}>No weapon drops: {weapons().join(", ")}</Show>
+        {lists().join(" · ")}
       </p>
     </Show>
   );
@@ -542,9 +554,10 @@ async function customQuests(): Promise<Screen> {
         <>
           <h2>Custom Quests</h2>
           <p class="muted">
-            Community encounters authored in the <code>.quest</code> language. Every published quest is backed by a verified completion replay.
-            Describe an encounter to an LLM using <a href="/custom/llm.txt" data-native>/custom/llm.txt</a>, beat it with{" "}
-            <Command>uvx crimsonland@latest quest play my.quest</Command>, and publish with <Command>uvx crimsonland@latest quest publish my.quest</Command>.
+            Player-made levels built with <code>.quest</code> scripts. To publish a level, you have to beat it first, so every quest here comes
+            with a verified completion replay. Write one by hand or feed <a href="/custom/llm.txt" data-native>/custom/llm.txt</a> to an
+            LLM, beat it with <Command>uvx crimsonland@latest quest play my.quest</Command>, and post it with{" "}
+            <Command>uvx crimsonland@latest quest publish my.quest</Command>.
           </p>
           <Show when={list.quests.length} fallback={<p class="muted">No custom quests published yet.</p>}>
             <div class="board-table">
@@ -568,13 +581,13 @@ async function customQuests(): Promise<Screen> {
                           <a href={`/custom/${q.id}`}>{q.title}</a>
                         </td>
                         <td>
-                          {q.creator ? <PlayerName player={q.creator} tag={false} /> : (q.author ?? "—")}
+                          {q.creator ? <PlayerName player={q.creator} tag={false} /> : (q.author ?? "-")}
                         </td>
                         <td>
                           <Weapon id={q.start_weapon_id} />
                         </td>
                         <td class="n">{q.entry_count}</td>
-                        <td class="n">{q.top_score !== null ? formatScore("quests", q.top_score) : "—"}</td>
+                        <td class="n">{q.top_score !== null ? formatScore("quests", q.top_score) : "-"}</td>
                         <td class="n">{q.players}</td>
                         <td>
                           <a class="watch" href={`/play/?quest=${q.id}`} data-native>
@@ -596,8 +609,8 @@ async function customQuests(): Promise<Screen> {
 
 async function customQuestPage(id: string): Promise<Screen> {
   const [detail, bots] = await Promise.all([
-    get<CustomQuestDetailView>(`/api/custom/${id}`),
-    get<CustomQuestDetailView>(`/api/custom/${id}?category=bot`),
+    get<CustomQuestDetailView>(`/api/custom/${id}?category=human${rulesQuery()}`),
+    get<CustomQuestDetailView>(`/api/custom/${id}?category=bot${rulesQuery()}`),
   ]);
   if (!detail || !bots) return notFound();
   const def = detail.definition;
@@ -626,9 +639,8 @@ async function customQuestPage(id: string): Promise<Screen> {
           <QuestRestrictions quest={def} />
           <QuestPreviewSvg quest={def} />
           <p class="buttons">
-            <GameButton label="Play in browser" href={`/play/?quest=${detail.id}`} native />
-            <GameButton label="Watch proof clear" href={`/play/?watch=${detail.first_run_id}`} native />
-            <GameButton label="All custom quests" href="/custom" />
+            <GameButton label="Play level" href={`/play/?quest=${detail.id}`} native />
+            <GameButton label="Watch author's run" href={`/play/?watch=${detail.first_run_id}`} native />
           </p>
         </>
       ),
@@ -759,7 +771,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
             <p class="muted">Names: {view.names.join(", ")}</p>
           </Show>
           <h3>Runs</h3>
-          <Show when={view.runs.length} fallback={<p class="muted">No ranked runs yet.</p>}>
+          <Show when={view.runs.length} fallback={<p class="muted">No scores yet.</p>}>
             <div class="board-table">
               <table>
                 <thead>
@@ -805,10 +817,10 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                         <td>
                           <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
                         </td>
-                        <td>{run.game_version.split("+", 1)[0]}</td>
+                        <td>R{run.rules} · {run.game_version.split("+", 1)[0]}</td>
                         <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
                         <td>
-                          <ReplayLinks run={run.id} retired={run.retired} />
+                          <WatchLink run={run.id} retired={run.retired} />
                         </td>
                       </tr>
                     )}
@@ -980,7 +992,7 @@ function GameplayAnalyticsPreference() {
 
 const SIGN_IN = () => (
   <p>
-    Open your profile from the game: press <em>Profile</em> on Play Game.
+    To open your profile, launch the game and press <em>Profile</em> in the Play Game menu.
   </p>
 );
 
@@ -1009,18 +1021,18 @@ async function login(token: string, nav: Navigator): Promise<Screen> {
     panels: [
       () => (
         <>
-          <h2>Sign in as this game's account?</h2>
+          <h2>Sign in to this profile?</h2>
           <p>
             <PlayerName player={view.account} /> <span class="muted">· {quantity(view.runs, "run")}</span>
           </p>
           <Show when={view.current}>
             {(current) => (
               <p>
-                This browser is signed in as <PlayerName player={current()} />. Signing in switches it to the account above.
+                This browser is signed in as <PlayerName player={current()} />. Signing in switches it to the profile above.
               </p>
             )}
           </Show>
-          <p class="muted">Continue only if you just pressed Profile in your game. A sign-in link someone sent you signs you in to their account.</p>
+          <p class="muted">Only continue if you just pressed Profile in your own game. Someone else's sign-in link will log your browser into their profile.</p>
           <p class="buttons">
             <GameButton label="Sign in" onClick={signIn} />
             <GameButton label="Cancel" href="/" />
@@ -1051,13 +1063,14 @@ async function join(token: string, nav: Navigator): Promise<Screen> {
             <PlayerName player={view.destination} /> <span class="muted">· {view.destination.fingerprint} · {quantity(view.destination_runs, "run")}</span>
           </p>
           <p>
-            This browser is signed in as <PlayerName player={view.source} />. Joining moves its{" "}
-            {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {quantity(view.moving.runs, "run")} and {quantity(view.moving.names, "name")} into the
-            account above and removes it, and from then on that key signs in to the account above.
+            This browser is signed in as <PlayerName player={view.source} />. Joining merges this profile's{" "}
+            {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {quantity(view.moving.runs, "run")} and{" "}
+            {quantity(view.moving.names, "name")} into the profile above and removes this profile, and from then on{" "}
+            {view.moving.keys === 1 ? "that key signs" : "those keys sign"} in to the profile above.
           </p>
           <p>
-            Join only if you played as <PlayerName player={view.source} tag={false} /> yourself. If you don't recognise it, someone signed this browser in
-            to their account: cancel and sign out.
+            Join only if you played as <PlayerName player={view.source} tag={false} /> yourself. If you don't recognise it, someone signed
+            this browser in to their profile: cancel and sign out.
           </p>
           <p class="buttons">
             <GameButton label={`Join ${playerLabel(view.destination)}`} onClick={confirmJoin} />
@@ -1077,56 +1090,90 @@ const ABOUT: Screen = {
       <>
         <h2>About</h2>
         <p>
-          Crimsonland was one of my favourite games as a kid. It came out in 2003, and over the years it got harder and harder to run, so I
-          brought it back.
+          Crimsonland was one of my favourite games as a kid. It came out in 2003, and over the years it got harder and harder to run, so I{" "}
+          <a href="https://banteg.xyz/posts/crimsonland/">brought it back</a>.
         </p>
         <p>
           I reverse engineered the original game back into C/C++ source that compiles to the same machine code as the original .exe. That
           source is what you <a href="/play/" data-native>play in your browser</a>. It plays exactly like you remember, the same weapons,
-          perks and quests, because it <em>is</em> the same code. On top of that it supports modern gamepads and has an online
-          leaderboard. Your saves are kept in your browser, and the original art and sound are used with permission from 10tons.
+          perks and quests, because it <em>is</em> the same code. On top of that it adds two-player co-op over the internet, modern gamepads
+          and an online leaderboard. Your saves are kept in your browser, and the original art and sound are used with permission from 10tons.
         </p>
       </>
     ),
     () => (
       <>
-        <h3>The leaderboard</h3>
+        <h3>Co-op online</h3>
         <p>
-          Tick <em>Ranked</em> in the Play Game menu and play Survival or a quest to the end. Enter your name on the high score screen, and
-          the game uploads your run. If you're offline, it uploads the next time you connect.
+          In 2003, co-op meant two players at one keyboard. Here you can play from two computers: press <em>Play co-op</em> on the{" "}
+          <a href="/play/" data-native>Play page</a>, send your friend the invite link, and the game starts when they press <em>Join</em>.
         </p>
         <p>
-          Survival is ranked by experience and quests by time, with a separate board for hardcore. Only your best run counts.
-        </p>
-        <p>
-          Every score comes with a recording of the run. The server plays it back using the same game code and checks that the result
-          matches. Anyone can download the replay and verify it themselves. Bots can produce valid replays too, so verification confirms
-          the score, not whether a human played.
-        </p>
-        <p>
-          Ranked runs on each board use the same starting conditions: one player, a standard progression profile, and documented fixes
-          for <a href={BUGS}>bugs in the original game</a>.
-        </p>
-        <p>
-          Bots are welcome too. Every board ranks them next to the humans: a program that plays declares itself in its replay and lists
-          under the bot's name, and moderators move undeclared bots there. See <a href={BOTS}>bots</a>.
+          You're one team in the same arena: shared experience, level and perks, with your own gun and health each. Survival and the quests
+          rank co-op runs as a pair on their own high score lists, and both of you sign the replay.
         </p>
       </>
     ),
     () => (
       <>
-        <h3>Your name</h3>
+        <h3>Internet scores</h3>
         <p>
-          You don't need to sign up. The game makes a keypair on first launch, and that keypair is your account. You show up under the name
-          from your latest run, and your <em>Profile</em> in the Play Game menu lists every name you've used. Link GitHub, Discord or X to
-          show your handle so other players can identify you by your linked accounts, and to keep your runs when you switch computers or
-          clear your browser's site data.
+          Tick <em>Ranked</em> in the Play Game menu and play Survival or a quest to the end. Enter your name when the game asks{" "}
+          <em>"State your name, trooper!"</em>, and it uploads your run (or saves it for the next time you're online).
         </p>
-        <h3>Replays, other ports and docs</h3>
         <p>
-          Every run on the boards can be downloaded as a replay. There's also a Python port and a native desktop build, both on{" "}
-          <a href="https://github.com/banteg/crimson">GitHub</a>. The <a href={DOCS}>docs</a> describe how the game actually works, from the
-          real numbers behind every perk and weapon rather than the in-game descriptions, to how the whole thing was rebuilt.
+          Survival ranks by experience and quests by final time, which takes 50 ms off per remaining HP and 1 second per unpicked perk.
+          Hardcore and 2-player co-op have their own lists. Only your best run on each list counts.
+        </p>
+        <p>
+          Every score comes with a recording of the run. The server replays it using the same recovered game code and checks that the
+          result matches. Bots can produce valid replays too, so verification confirms the score, not whether a human played.
+        </p>
+        <p>
+          Ranked runs on each list use the same starting conditions: a standard progression profile and documented fixes for{" "}
+          <a href={BUGS}>bugs in the original game</a>.
+        </p>
+        <p>
+          Bots are welcome too. Every board has a separate list for computer-controlled runs: a bot declares itself in its replay and lists
+          under its own name, and moderators move undeclared bots there. See <a href={BOTS}>bots</a>.
+        </p>
+      </>
+    ),
+    () => (
+      <>
+        <h3>Replays</h3>
+        <p>
+          Every run on the high score lists plays back right here: press <em>Watch</em> and the game replays it from the first tick. While
+          you watch, <em>Share from here</em> copies a link that starts at that moment, and a shared run plays inside posts on X. A run's
+          page maps the arena as the run left it, with each player's trail, and charts experience, frags per minute and the weapons and
+          bonuses over time.
+        </p>
+        <p>
+          To check a run yourself, <em>Download replay</em> on its page saves the <code>.crd</code> file, which{" "}
+          <Command>uvx crimsonland@latest replay verify run.crd</Command> plays back and checks offline.
+        </p>
+      </>
+    ),
+    () => (
+      <>
+        <h3>Trooper account</h3>
+        <p>
+          You don't need to register. The game generates a keypair on first launch, and that keypair is your account. You show up under
+          the name from your latest run, and <em>Profile</em> in the Play Game menu lists every name you've used.
+        </p>
+        <p>
+          Link GitHub, Discord or X to show your handle on the high score lists, and to keep your scores together when you play on another
+          computer or clear your browser's storage.
+        </p>
+      </>
+    ),
+    () => (
+      <>
+        <h3>Other ports and docs</h3>
+        <p>
+          There's also a Python port and a native desktop build, both on <a href="https://github.com/banteg/crimson">GitHub</a>. The{" "}
+          <a href={DOCS}>docs</a> describe how the game actually works, from the real numbers behind every perk and weapon rather than the
+          in-game descriptions, to how the whole thing was rebuilt.
         </p>
       </>
     ),

@@ -5,6 +5,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..game_modes import GameMode
+from ..game_version import REPLAY_RULES
 from ..math_parity import x87_pc24_add
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
@@ -35,6 +36,8 @@ class PreparedRun(msgspec.Struct, frozen=True):
 def initialize_run(
     spec: RunSpec,
     *,
+    rules: int = REPLAY_RULES,
+    legacy_coop_reload: bool = False,
     status: GameStatus | None = None,
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
     start_weapon_id: WeaponId | None = None,
@@ -44,6 +47,8 @@ def initialize_run(
     A live caller may supply its save object so gameplay writes remain persistent.
     Playback owns a detached copy of the same pre-start status snapshot.
     """
+    if rules not in (1, 2):
+        raise ValueError(f"unsupported replay rules {rules}")
     quest = None
     custom = spec.custom_quest
     if spec.game_mode_id == GameMode.QUESTS:
@@ -67,6 +72,8 @@ def initialize_run(
         quest_fail_retry_count=spec.quest_fail_retry_count if quest_settings else 0,
         preserve_bugs=spec.preserve_bugs,
     )
+    world.state.rules = rules
+    world.state.legacy_coop_reload = legacy_coop_reload
     world.state.rng.srand(spec.seed)
     # Nothing resets `shock_chain_projectile_id` before a run, and a fresh game starts it at 0,
     # so projectile slot 0 cannot hit a player until a Shock Chain ends (original bug 32).

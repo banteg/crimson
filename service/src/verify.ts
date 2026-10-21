@@ -120,7 +120,7 @@ function simulate(replay: Replay, transport: Uint8Array, bake?: (bakes: DataView
   }
 
   if (c.portable_snapshot() !== fieldIndex.size) throw new Error("crimson-core snapshot schema mismatch");
-  const derived = deriveResult(new DataView(c.memory.buffer, c.portable_output(), fieldIndex.size * 4), replay.run.game_mode_id, players, replay.run.preserve_bugs);
+  const derived = deriveResult(new DataView(c.memory.buffer, c.portable_output(), fieldIndex.size * 4), replay.run.game_mode_id, players, replay.run.preserve_bugs, replay.rules);
   const mismatches = resultMismatches(replay.result, derived);
   return mismatches.length
     ? refused(`the claimed result differs in ${mismatches.join(", ")}`)
@@ -181,7 +181,7 @@ function inView(x: number, y: number): boolean {
   return -VIEW_SLACK <= x && x <= VIEW_W + VIEW_SLACK && -VIEW_SLACK <= y && y <= VIEW_H + VIEW_SLACK;
 }
 
-export function deriveResult(snapshot: DataView, mode: number, players: number, preserveBugs = false): RunResult {
+export function deriveResult(snapshot: DataView, mode: number, players: number, preserveBugs = false, rules = 2): RunResult {
   const u32 = (name: string) => snapshot.getUint32(fieldIndex.get(name)! * 4, true);
   const i32 = (name: string) => snapshot.getInt32(fieldIndex.get(name)! * 4, true);
   const f32 = (name: string) => snapshot.getFloat32(fieldIndex.get(name)! * 4, true);
@@ -206,7 +206,7 @@ export function deriveResult(snapshot: DataView, mode: number, players: number, 
     shots_hit: hit,
     rng_state: u32("globals.rng"),
     pending_perks: pending,
-    quest_final_ms: outcome === "quest_completed" ? questFinalMs(elapsed, health, pending, preserveBugs) : null,
+    quest_final_ms: outcome === "quest_completed" ? questFinalMs(elapsed, health, pending, preserveBugs, rules) : null,
     // Experience is shared on player one; player two's stays 0.
     players: health.map((h, i) => ({ experience: u32(`players[${i}].experience`), health: h, most_used_weapon_id: best })),
   };

@@ -29,8 +29,12 @@ class PressureFront(msgspec.Struct, frozen=True):
 
 def collect_pressure_fronts(ctx: WorldRenderCtx) -> list[PressureFront]:
     fronts = []
+    # Rocket bursts opt out of the retained fireball presentation. Their impact
+    # keeps its separate detonation lamp but no expanding shell or refraction.
     for visual in ctx.frame.state.effects.explosion_visuals:
-        shell = explosion_shell(visual.age, visual.scale) if visual.ring_spawned else None
+        shell = (
+            explosion_shell(visual.age, visual.scale) if visual.emit_light and visual.ring_spawned else None
+        )
         if shell is None:
             continue
         fronts.append(

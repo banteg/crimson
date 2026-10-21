@@ -40,7 +40,7 @@ The medium-priority rows remain follow-up proposals. Planning tracker:
 | High | [T26/T27 exact-zero DoT deaths](https://github.com/banteg/crimson/issues/826) | Treat zero HP as lethal in Plague and Radioactive, retaining each source's existing reward policy; stop post-death attacks. | Ledger #18 covers player damage only. Radioactive's no-drop/base-XP behavior should remain intentional. |
 | Medium | T09 Shrinkifier / T43 Breathing Room | Mark their special deaths consistently so later hits cannot award a second death or treat cleared creatures as living. | Keep Breathing Room's intentional no-XP clear. Do not route every special death through the ordinary reward handler. |
 | Medium | T48 Pistol + My Favourite Weapon | Skip forced weapon-drop conversion when the perk prohibits weapon drops, then run the ordinary drop path. | Restores bonus opportunities; preserve ordinary suppression and draw order on unaffected branches. |
-| Adopted extension | T18 Fire Bullets pellet metadata | Rules 2: six Gauss Shotgun and five Multi-Plasma Fire Bullets, with normal multi-pellet cooldowns. | Explicit consistency decision; preserve legacy counts/cadence in rules 1 and original mode. Implementation pending in #832. |
+| Adopted extension | T18 Fire Bullets pellet metadata | Rules 2: six Gauss Shotgun and five Multi-Plasma Fire Bullets, with normal multi-pellet cooldowns. | Explicit consistency decision; preserve legacy counts/cadence in rules 1 and original mode. Implemented in the final stack layer (#832). |
 | Medium | T06/T07 Splitter ownership and collision | Separate player attribution from the last creature to exclude; search beyond an excluded overlap. | Do not fix by simply replacing the overloaded owner ID: that can immediately re-hit the parent creature and change splitting. |
 | Medium | T25 Plaguebearer neighbor selection | Search for an eligible infection interaction, skipping self, dead slots, and neighbors that cannot exchange infection. | A broad all-neighbor spread would be a larger buff. Preserve the cadence, HP threshold, infection budget, and one-interaction policy unless deliberately redesigned. |
 
@@ -145,7 +145,7 @@ Source-only classifications below are not claims of native runtime reproduction.
 | T15 | Preserve | Short torch range may be intentional weapon differentiation. Do not infer a fivefold range buff from an unreachable phase. |
 | T16 | Validate, limited reach | Check Bubblegun availability and target-slot reuse. Follow captured targets and prevent duplicate deaths only with a complete ownership/lifecycle design. |
 | T17 | Preserve | Ignored movement/jitter parameters can be deliberate weapon behavior; removing draws changes replay state for no benefit. |
-| T18 | Adopted for rules 2; pending implementation | Six/five Fire Bullets with normal multi-pellet cooldowns (#832). Keep legacy counts/cadence for rules 1 and preserve_bugs; casing flags remain separate. |
+| T18 | Implemented for rules 2 | Six/five Fire Bullets with normal multi-pellet cooldowns (#832). Keep legacy counts/cadence for rules 1 and preserve_bugs; casing flags remain separate. |
 | T19 | Validate / do not rotate wholesale | Effects may be lateral ejection rather than muzzle smoke; inspect the actual sprite and renderer. |
 | T20 | Validate by perk | Ring conversion may be unwanted; Fire Cough already spawns a Fire Bullets projectile plus a smoke sprite, so its shot accounting is separate from converting plasma/ion rings. |
 | T21 | Adopt movement cap | Relative backward Mean Minigun speed bypass is a clear control-mode inconsistency. Input-code truncation needs current seam reachability checks. |
@@ -265,8 +265,7 @@ The following are recommendations, not additional implemented fixes:
 Bullets under rules 2 default, consistent with other multi-pellet conversions.
 Retain each weapon's normal cooldown (1.05 seconds and approximately 0.6208117
 seconds before perks). This is an explicit consistency/balance decision,
-tracked in [#832](https://github.com/banteg/crimson/issues/832), not implemented
-in the current nine-fix bundle. Rules 1 and `preserve_bugs` retain old counts
+tracked in [#832](https://github.com/banteg/crimson/issues/832), implemented in the final stack layer. Rules 1 and `preserve_bugs` retain old counts
 and cadence. Normal unconverted firing remains unchanged.
 
 Gauss currently uses the single-pellet Fire Bullets cooldown of 0.14 seconds.
@@ -300,8 +299,7 @@ verification. Further fixes in this unreleased batch do
 not need independent version increments. Format version 34 is unchanged: this
 is gameplay compatibility, not an encoding change.
 
-The current architecture rejects replays from another rules version; it does
-not emulate rules 1 with the new default simulation. `--preserve-bugs` chooses
+The compatibility stack layer selects explicit rules-1 and rules-2 profiles. `--preserve-bugs` chooses
 original behavior, not the previous default rules, and is not a substitute for
 rules-version compatibility. Do not relabel old recorded results/checkpoints as
 rules 2. Keep historical fixtures for codec and original-reference work, and
@@ -310,9 +308,8 @@ record new default-policy fixtures for changed behavior.
 The selected release plan is to retain rules-1 playback and verification while
 making rules 2 the default for new runs. Keep existing leaderboard entries,
 IDs, scores and signed replay bytes. Proposed presentation: combined boards
-with rules labels and an optional filter. Compatibility is not implemented
-by merely relaxing the current rejection gate; simulation must select the
-recorded profile, including the historical co-op manual-reload exception.
+with rules labels and an optional filter. Simulation selects the recorded profile, including the historical co-op
+manual-reload exception.
 See the [implementation plan](replay-rules-compatibility.md) and
 [#833](https://github.com/banteg/crimson/issues/833). Client, service and verifier
 must support this before release. No deployment or migration has been performed.
@@ -333,7 +330,7 @@ must support this before release. No deployment or migration has been performed.
   timer restoration. Practice passes 15 anchors and 1,920 alternate-input ticks.
 - Six current-rule fixtures were regenerated from bot inputs; a separate run
   reproduces their results and checkpoint data. Historical rules-1 fixtures
-  remain untouched and are reported as unsupported for current playback.
+  remain untouched and now play through the compatibility layer.
 
 The complete co-op suite passes all 22 stream variants and every coverage
 assertion, including forced rollbacks, delayed/lost packets, the state audit,

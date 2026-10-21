@@ -373,6 +373,9 @@ class BaseGameplayMode:
     def rtx_debug(self) -> RtxDebugView:
         return self._world_runtime.rtx_debug
 
+    def set_rtx_smoke(self, enabled: bool) -> None:
+        self._world_runtime.render_resources.set_simulated_smoke(enabled)
+
     def set_rtx_debug(self, view: RtxDebugView) -> None:
         self._world_runtime.rtx_debug = view
 

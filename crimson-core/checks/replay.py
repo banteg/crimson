@@ -12,6 +12,7 @@ from pathlib import Path
 
 from crimson.quests.custom import PORTABLE_QUEST_BYTES, CustomQuest
 from crimson.replay.codec import load_replay_file
+from crimson.replay.versioning import legacy_coop_reload
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 
 QUEST_BYTES = PORTABLE_QUEST_BYTES
@@ -36,7 +37,7 @@ def encode(replay, limit):
     # A custom quest starts at stage 0.0, its table after the config.
     stage = (0, 0) if custom is not None else (level.major, level.minor) if level else (1, 1)
     config = struct.pack(
-        "<66I",
+        "<68I",
         run.seed,
         int(run.game_mode_id),
         *stage,
@@ -50,6 +51,8 @@ def encode(replay, limit):
         run.preserve_bugs,
         run.player_count,
         *run.status.weapon_usage_counts,
+        replay.rules,
+        legacy_coop_reload(replay),
     )
     if custom is not None:
         config += portable_quest(custom)

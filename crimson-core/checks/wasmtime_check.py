@@ -16,8 +16,8 @@ import wasmtime
 CORE = Path(__file__).resolve().parents[1]
 
 
-# `PortableConfig`: 13 settings, the player count last, then the weapon usage counts.
-CONFIG_BYTES = 264
+# `PortableConfig`: 13 settings, the player count last, then the weapon usage counts and two profile words.
+CONFIG_BYTES = 272
 PLAYERS_OFFSET = 48
 # `PortableInput`, one per player each tick.
 INPUT_BYTES = 20

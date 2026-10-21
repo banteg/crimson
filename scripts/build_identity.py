@@ -26,6 +26,7 @@ WASI_SDK_VERSION = "34.0"
 # Keep directory patterns for headers and patches: adding either can affect an existing compilation.
 CORE_BUILD = (
     "scripts/build_identity.py",
+    "src/crimson/game_version.py",
     "crimson-core/build.py",
     "crimson-core/adapter.py",
     "crimson-core/data.py",

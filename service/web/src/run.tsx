@@ -3,7 +3,7 @@
 import { type Accessor, createMemo, createResource, createSignal, For, type JSX, Show } from "solid-js";
 import { BOARDS, type Category, PLAYER_EFFECTS, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
 import { boardPath } from "../../src/paths";
-import { lifeBonusMs, questFinalMs } from "../../src/quest-time";
+import { lifeBonusMs } from "../../src/quest-time";
 import { get, moderate } from "./api";
 import { GameButton } from "./button";
 import { formatScore } from "./format";
@@ -595,14 +595,15 @@ function Arena(props: { id: string; run: RunTimeline; cursor: Cursor; outcome: s
         when={coop}
         fallback={
           <p class="muted arena-note">
-            The ground is as the run left it. The white line is their last {TRAIL_S} seconds before the time under the cursor, or before
-            the run ended. {props.outcome === "quest_completed" ? "The green check marks quest completion." : props.outcome === "death" ? "The red X marks death." : "The gold circle marks the end of the run."}
+            The battlefield as the run left it. The white trail follows the last {TRAIL_S} seconds before the cursor, or before the run
+            ended.{" "}
+            {props.outcome === "quest_completed" ? "The green check marks where the level was completed." : props.outcome === "death" ? "The red X marks where the trooper fell." : "The gold circle marks where the run ended."}
           </p>
         }
       >
         <p class="muted arena-note">
-          The ground is as the run left it. Each line is a player's last {TRAIL_S} seconds before the time under the cursor, or before the
-          run ended:{" "}
+          The battlefield as the run left it. Each trail follows a trooper's last {TRAIL_S} seconds before the cursor, or before the run
+          ended:{" "}
           <For each={run.seats}>
             {(seat, i) => (
               <>
@@ -611,8 +612,8 @@ function Arena(props: { id: string; run: RunTimeline; cursor: Cursor; outcome: s
               </>
             )}
           </For>
-          . A red X marks where a player died.{" "}
-          {props.outcome === "quest_completed" ? "The green check marks quest completion." : props.outcome === "death" ? "" : "The gold circle marks the end of the run."}
+          . A red X marks where a trooper fell.{" "}
+          {props.outcome === "quest_completed" ? "The green check marks where the level was completed." : props.outcome === "death" ? "" : "The gold circle marks where the run ended."}
         </p>
       </Show>
     </div>
@@ -624,13 +625,13 @@ function Stats(props: { run: RunTimeline; detail: RunDetailView }) {
   const result = props.detail.result;
   const end = run.samples.at(-1)!;
   const tiles: [string, string][] = [
-    [BOARDS[props.detail.board].quests ? "quest time" : "survived", clock(result.elapsed_ms / 1000)],
+    [BOARDS[props.detail.board].quests ? "base time" : "game time", clock(result.elapsed_ms / 1000)],
     ["experience", grouped(result.experience)],
     ["level", String(end.level)],
-    ["kills", grouped(result.kills)],
-    ["kills / min", grouped(result.kills / (run.duration_s / 60))],
+    ["frags", grouped(result.kills)],
+    ["frags / min", grouped(result.kills / (run.duration_s / 60))],
     ["damage / s", grouped(end.damage / run.duration_s)],
-    ["accuracy", result.shots_fired ? `${Math.round((result.shots_hit / result.shots_fired) * 100)}%` : "-"],
+    ["hit %", result.shots_fired ? `${Math.round((result.shots_hit / result.shots_fired) * 100)}%` : "-"],
     ["perks", String(run.perks.length)],
   ];
   return (
@@ -653,19 +654,19 @@ function QuestScore(props: { detail: RunDetailView }) {
   const result = props.detail.result;
   // Historical runs keep the calculation that produced their stored score. The
   // database predates rules metadata; where both formulas agree, either is exact.
-  const legacy = questFinalMs(result.elapsed_ms, result.healths, result.pending_perks, true) === props.detail.score;
+  const legacy = props.detail.rules === 1;
   const lifeBonus = lifeBonusMs(result.healths, legacy);
   const perkBonus = result.pending_perks * 1000;
   const adjustment = (bonus: number) => `${bonus > 0 ? "−" : bonus < 0 ? "+" : ""}${formatScore("quests", Math.abs(bonus))}`;
   return (
     <div class="quest-score">
       <dl>
-        <dt>Quest time</dt><dd>{formatScore("quests", result.elapsed_ms)}</dd>
-        <dt>Life bonus</dt><dd>{adjustment(lifeBonus)}</dd>
-        <dt>Unpicked perks <span class="muted">({result.pending_perks})</span></dt><dd>{adjustment(perkBonus)}</dd>
+        <dt>Base Time</dt><dd>{formatScore("quests", result.elapsed_ms)}</dd>
+        <dt>Life Bonus</dt><dd>{adjustment(lifeBonus)}</dd>
+        <dt>Unpicked Perks <span class="muted">({result.pending_perks})</span></dt><dd>{adjustment(perkBonus)}</dd>
       </dl>
       <Show when={result.elapsed_ms - lifeBonus - perkBonus === 0}>
-        <p class="muted">An exactly zero final time is recorded as 0:00.001.</p>
+        <p class="muted">0:00.000 is clamped to 0:00.001, just like the original high score table.</p>
       </Show>
     </div>
   );
@@ -760,13 +761,13 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
             </p>
           )}
         </Show>
-        <Show when={detail.result.outcome === "quest_completed"}><p class="score-label muted">Final time</p></Show>
+        <Show when={detail.result.outcome === "quest_completed"}><p class="score-label muted">Final Time</p></Show>
         <p class="run-score">{formatScore(detail.board, detail.score)}</p>
         <Show when={detail.result.outcome === "quest_completed"}><QuestScore detail={detail} /></Show>
         <p class="muted">
           {new Date(detail.accepted_at).toISOString().slice(0, 10)} · {detail.recorder.client} {detail.recorder.version} · {detail.recorder.platform}
         </p>
-        <p class="muted">Game version: {detail.game_version}</p>
+        <p class="muted">Rules {detail.rules} · Game version: {detail.game_version}</p>
         <Show when={detail.retired}>
           {(reason) => <p class="muted">Retired from the boards: {reason()}. The game no longer plays it as recorded.</p>}
         </Show>
@@ -775,7 +776,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
             <GameButton label="Watch" href={`/play/?watch=${detail.id}`} native />
           </Show>
           <GameButton label="Download replay" href={`/runs/${detail.id}.crd`} native />
-          <GameButton label="Board" href={boardPath(detail.board, detail.quest)} />
+          <GameButton label="High scores" href={boardPath(detail.board, detail.quest)} />
         </p>
       </div>
       <Show when={run}>{(run) => <Stats run={run()} detail={detail} />}</Show>
@@ -818,7 +819,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
       <>
         <div class="panel-head">
           <span class="head-title">
-            <h3>{rate() === "kills" ? "Kills per minute" : "Damage per second"}</h3>
+            <h3>{rate() === "kills" ? "Frags per minute" : "Damage per second"}</h3>
             <Show when={run.nukes.length}>
               <span class="legend">
                 <svg width="10" height="8" viewBox="0 0 10 8" aria-hidden="true">
@@ -829,7 +830,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
             </Show>
           </span>
           <span class="buttons">
-            <GameButton label="Kills/min" on={rate() === "kills"} onClick={() => setRate("kills")} />
+            <GameButton label="Frags/min" on={rate() === "kills"} onClick={() => setRate("kills")} />
             <GameButton label="Damage/s" on={rate() === "damage"} onClick={() => setRate("damage")} />
           </span>
         </div>

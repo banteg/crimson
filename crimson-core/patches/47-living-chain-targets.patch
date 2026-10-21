@@ -7,7 +7,7 @@ Original bug 47: living chain targets.
              if (creature_pool[index].active
 -                && creature_pool[index].death_timer == 16.0f) {
 +                && creature_pool[index].death_timer == 16.0f
-+                && (portable_preserve_bugs || creature_pool[index].health > 0.0f)) {
++                && (!portable_rules2_fixes || creature_pool[index].health > 0.0f)) {
                  float distance = vec2_distance(
                      pos,
                      &creature_pool[index].position
@@ -17,7 +17,7 @@ Original bug 47: living chain targets.
      for (int index = 0; index < 0x180; index++) {
 -        if (creature_pool[index].active && index != exclude_id) {
 +        if (creature_pool[index].active && index != exclude_id
-+            && (portable_preserve_bugs || (creature_pool[index].health > 0.0f
++            && (!portable_rules2_fixes || (creature_pool[index].health > 0.0f
 +                && creature_pool[index].death_timer == 16.0f))) {
              const vec2f_t *position = &creature_pool[index].position;
              float dx = pos->x - position->x;

@@ -114,7 +114,7 @@ def _step_detonation(
                 # second `creature_handle_death` call after the killing hit.
                 fx_queue.add_random(pos=creature.pos, rng=rng)
                 fx_queue.add_random(pos=creature.pos, rng=rng)
-                if runtime_state.preserve_bugs:
+                if not runtime_state.rules2_fixes:
                     step_runtime.world.creatures.handle_death(step_runtime, creature_idx)
 
 
@@ -150,7 +150,7 @@ def _move_rocket(
                 entry.target_id = creature_find_nearest_alive(
                     creatures=creatures,
                     origin=entry.pos,
-                    preserve_bugs=bool(runtime_state.preserve_bugs),
+                    preserve_bugs=bool(runtime_state.preserve_bugs), rules=runtime_state.rules,
                 )
                 target_id = entry.target_id
 
@@ -233,13 +233,14 @@ def _tick_rocket_trail(
         # (fcos with no fsin), so the smoke drifts diagonally.
         trail_cos = math.cos(f32(entry.angle) + NATIVE_HALF_PI)
         trail_velocity = Vec2(f32(trail_cos) * 90.0, f32(trail_cos * 90.0))
-        sprite_effects.spawn(
-            pos=spawn_pos,
-            vel=trail_velocity,
-            scale=14.0,
-            color=RGBA(1.0, 1.0, 1.0, 0.25),
-            rng=rng,
-        )
+        with sprite_effects.smoke_source(profile="rocket", flow_dir=direction*-1., velocity=direction*-90.):
+            sprite_effects.spawn(
+                pos=spawn_pos,
+                vel=trail_velocity,
+                scale=14.0,
+                color=RGBA(1.0, 1.0, 1.0, 0.25),
+                rng=rng,
+            )
         entry.trail_distance = f32(0.06)
 
 
@@ -273,7 +274,7 @@ def fx_spawn_secondary_projectile(
         entry.target_id = creature_find_nearest_alive(
             creatures=creatures,
             origin=player.aim,
-            preserve_bugs=bool(state.preserve_bugs),
+            preserve_bugs=bool(state.preserve_bugs), rules=state.rules,
         )
         # Native stores each trig result as float32 before the seeker's 190x velocity override.
         entry.vel = Vec2(x87_pc24_cos_mul(radians, 1.0, 190.0), x87_pc24_sin_mul(radians, 1.0, 190.0))
@@ -326,7 +327,10 @@ class SecondaryProjectilePool:
                 _step_detonation(entry, step_runtime, dt=dt, creature_spatial=creature_spatial, rng=rng)
                 continue
 
+            wake_start = entry.pos
             _move_rocket(entry, dt=dt, creatures=creatures, runtime_state=runtime_state)
+            effects.atmosphere_impulse(start=wake_start, end=entry.pos, radius=12.,
+                                       strength=600.*dt, curl=180.*dt)
 
             _tick_rocket_trail(entry, dt=dt, sprite_effects=sprite_effects, rng=rng)
 
@@ -372,6 +376,7 @@ class SecondaryProjectilePool:
                                 detail_preset=detail_preset,
                                 preserve_bugs=runtime_state.preserve_bugs,
                                 emit_light=False,
+                                emit_atmosphere=False,
                             )
                     case SecondaryProjectileTypeId.HOMING_ROCKET:
                         damage = x87_pc24_add(x87_pc24_mul(entry.life_timer, 20.0), 80.0)
@@ -453,13 +458,14 @@ class SecondaryProjectilePool:
                     )
                     ang = float(idx) * step
                     velocity = Vec2.from_angle(ang) * mag
-                    sprite_effects.spawn(
-                        pos=entry.pos,
-                        vel=velocity,
-                        scale=14.0,
-                        color=RGBA(1.0, 1.0, 1.0, 0.37),
-                        rng=rng,
-                    )
+                    with sprite_effects.smoke_source(profile="rocket", flow_dir=Vec2.from_angle(ang), velocity=velocity):
+                        sprite_effects.spawn(
+                            pos=entry.pos,
+                            vel=velocity,
+                            scale=14.0,
+                            color=RGBA(1.0, 1.0, 1.0, 0.37),
+                            rng=rng,
+                        )
 
             # Native's TTL check runs after the hit handling in the same
             # iteration (no early-out): a rocket that hits while its TTL is
@@ -470,4 +476,12 @@ class SecondaryProjectilePool:
                 entry.vel = Vec2(0.0, 0.5)
                 entry.detonation_t = 0.0
                 entry.detonation_scale = 0.5
+            # Emit once after native hit/TTL resolution, including seeker,
+            # swarmer and minigun rockets that never spawn the generic burst.
+            if entry.type_id == SecondaryProjectileTypeId.DETONATION:
+                scale = entry.detonation_scale
+                effects.atmosphere_impulse(
+                    start=entry.pos, end=entry.pos, kind="blast", radius=max(6., 12.*scale),
+                    strength=80.*scale, duration=.45, expansion_speed=180.*scale,
+                )
         return hit_count

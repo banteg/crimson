@@ -70,6 +70,13 @@ def test_optimization_patches_change_runtime_identity(source: Path, target: str)
     assert build.runtime_identity(target, source)["fingerprint"] != added["fingerprint"]
 
 
+@pytest.mark.parametrize("target", ["native", "wasm", "game"])
+def test_replay_rules_change_every_runtime_identity(source: Path, target: str) -> None:
+    before = build.runtime_identity(target, source)
+    (source / "src/crimson/game_version.py").write_text("REPLAY_RULES = 2")
+    assert build.runtime_identity(target, source)["fingerprint"] != before["fingerprint"]
+
+
 def test_unrelated_commits_and_tags_preserve_identity_but_record_new_provenance(source: Path) -> None:
     before = build.runtime_identity("game", source)
     (source / "docs/readme.md").write_text("another document")

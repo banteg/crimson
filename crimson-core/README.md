@@ -46,8 +46,10 @@ the [input seam](#transport-and-input-seam) defines command timing. An instance
 holds one run, so concurrent simulations require separate module instances.
 Breaking API or layout changes must include migration notes for callers.
 
-Migration: `PortableConfig` has a 13th setting, `players`, after `preserve_bugs`
-(264 bytes; write 1 for a one-player run, which a zero refuses), and
+Migration: `PortableConfig` is now 272 bytes: its original 66 words are followed
+by `rules` and `legacy_coop_reload` (see [Rules compatibility](#rules-compatibility)).
+The 13th setting, `players`, follows `preserve_bugs` (write 1 for a one-player run;
+zero is refused), and
 `portable_input` points at one `PortableInput` per player, player one first.
 
 Write the configuration before initializing, then write the input and up to 16
@@ -449,8 +451,8 @@ core's input stream as a test file; the service builds the same stream in
 memory ([`service/src/transport.ts`](../service/src/transport.ts)). It carries
 no claimed score:
 
-- 264-byte config: 66 little-endian uint32 values (13 settings ending with
-  `preserve_bugs` and the player count, 1 or 2, then 53 weapon usage counts),
+- 272-byte config: 68 little-endian uint32 values (13 settings ending with
+  `preserve_bugs` and the player count, 1 or 2, then 53 weapon usage counts, rules and legacy-co-op-reload),
   laid out in [`host/api.h`](host/api.h).
 - A quest at stage 0.0 plays a custom quest, whose 6,164-byte `PortableQuest`
   follows the config: its starting weapon, three terrain slots and entry count,
@@ -560,3 +562,11 @@ Native/WASM agreement establishes modern-build determinism, and one compiled
 module removes cross-target layout and compiler variation. Neither makes
 undefined C++ behavior safe or establishes original-game correctness; the
 original executable is the fidelity oracle.
+
+### Rules compatibility
+
+The config appends `rules` (1 or 2) and
+`legacy_coop_reload` (0 or 1) after its 53 weapon-use words. New runs use rules 2
+and zero for the legacy flag. Replay readers resolve the flag from documented
+build provenance; it is valid only under rules 1. Both fields survive keyframes
+and participate in state hashing. See `docs/rewrite/replay-rules-compatibility.md`.

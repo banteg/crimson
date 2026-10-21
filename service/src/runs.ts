@@ -3,11 +3,11 @@
 import { concat, COOP_RUN_DOMAIN, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
-import type { Signals, Timeline } from "./api-types";
+import { FIXED_WEAPON_BONUSES, FIXED_WEAPON_PERKS, type Signals, type Timeline } from "./api-types";
 import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError, SEED_BITS } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
-import { encodePortableQuest, encodeTransport, runIdentity } from "./transport";
+import { encodePortableQuest, encodeTransport, runIdentity, TransportError } from "./transport";
 import questDsl from "./quest-dsl.json";
 import { runGround, SIZE } from "../web/src/terrain/rules";
 import { type Verdict, verifyRun } from "./verify";
@@ -237,9 +237,8 @@ export function validateRecipeSource(source: string, quest: CustomQuest): boolea
     }
   }
   if (fixedWeapon) {
-    noBonuses.add(3);
-    noPerks.add(9);
-    noPerks.add(16);
+    FIXED_WEAPON_BONUSES.forEach((id) => noBonuses.add(id));
+    FIXED_WEAPON_PERKS.forEach((id) => noPerks.add(id));
     for (let id = 2; id <= 33; id++) noWeapons.add(id);
   }
   if (author !== quest.author || weapon !== quest.start_weapon_id) return false;
@@ -296,8 +295,8 @@ export async function postRun(request: Request, env: Env, options: { requireCust
     return refuse(422, "expected a custom quest replay");
   if (upload.source !== null && (!options.requireCustomQuest || !replay.run.custom_quest || !validateRecipeSource(upload.source, replay.run.custom_quest)))
     return refuse(422, "recipe source does not match the replay's custom quest");
-  if (replay.rules !== REPLAY_RULES)
-    return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${REPLAY_RULES}`);
+  if (replay.rules !== 1 && replay.rules !== REPLAY_RULES)
+    return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules 1 and ${REPLAY_RULES}`);
   const signersRefusal = signersReason(upload.signers, replay.run.player_count, replay.seat_keys);
   if (signersRefusal) return refuse(422, signersRefusal);
   for (const [i, signer] of upload.signers.entries()) {
@@ -316,7 +315,12 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   const reasons = [...unrankedReasons(replay.run), ...outcomeReasons(replay.run, replay.result)];
   if (reasons.length) return refuse(422, `not a ranked run: ${reasons.join(", ")}`);
 
-  const transport = encodeTransport(replay);
+  let transport: Uint8Array;
+  try { transport = encodeTransport(replay); }
+  catch (error) {
+    if (error instanceof TransportError) return refuse(422, error.message);
+    throw error;
+  }
   const runId = hex(await sha256(runIdentity(transport)));
   const custom = replay.run.custom_quest;
   const digest = custom ? await customQuestDigest(custom) : null;
@@ -372,12 +376,12 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   const statements = [
     env.DB.prepare(
       `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
-         client_version, platform, pilot, ticks, result, signals, accepted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         client_version, platform, pilot, ticks, result, signals, accepted_at, rules)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       runId, hex(payloadSha), accountId, owner.public_key, owner.name, board, quest, score, replay.game_version,
       replay.recorder.client, replay.recorder.version, replay.recorder.platform, replay.pilot ? JSON.stringify(replay.pilot) : "",
-      replay.ticks.length, JSON.stringify(replay.result), JSON.stringify(verdict.signals), now,
+      replay.ticks.length, JSON.stringify(replay.result), JSON.stringify(verdict.signals), now, replay.rules,
     ),
     // A co-op run's seats; a one-player run has only its own columns.
     ...(seated.length > 1

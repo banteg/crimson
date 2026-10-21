@@ -203,7 +203,7 @@ def creature_apply_damage(
     else:
         creature.death_timer = x87_pc24_sub(creature.death_timer, f32(0.001))
     step_runtime.world.creatures.handle_death(step_runtime, creature_index)
-    if not state.preserve_bugs:
+    if state.rules2_fixes:
         align_death_heading(creature, impulse)
     creature.vel = Vec2(
         x87_pc24_sub(creature.vel.x, x87_pc24_mul(impulse.x, 2.0)),

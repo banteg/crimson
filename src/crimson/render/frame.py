@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 
     from .rtx.bonus_lighting import BonusLighting
     from .rtx.creature_lighting import CreatureLighting
+    from .rtx.player_lighting import PlayerLighting
+    from .rtx.smoke import SmokeRenderer
 
 
 
@@ -44,3 +46,5 @@ class RenderFrame(msgspec.Struct, frozen=True):
     rtx_debug: RtxDebugView = RtxDebugView.SHADED
     creature_lighting: CreatureLighting | None = None
     bonus_lighting: BonusLighting | None = None
+    player_lighting: PlayerLighting | None = None
+    smoke: SmokeRenderer | None = None

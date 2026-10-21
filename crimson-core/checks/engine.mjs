@@ -116,8 +116,8 @@ export function refusal(e) {
   return Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString();
 }
 
-// `PortableConfig` in host/api.h: 13 uint32 settings, the player count last, then 53 weapon usage counts.
-export const CONFIG_BYTES = 264;
+// `PortableConfig` in host/api.h: 13 uint32 settings, the player count last, then 53 weapon usage counts and two profile words.
+export const CONFIG_BYTES = 272;
 const PLAYERS_OFFSET = 48;
 // `PortableInput`: four axes and the flag word.
 export const INPUT_BYTES = 20;
@@ -149,6 +149,8 @@ export function config(mode, major = 1, minor = 1, options = {}) {
     options.preserveBugs ?? 1,
     options.players ?? 1,
     ...Array.from({ length: 53 }, (_, i) => (options.usage ? i * 3 : 0)),
+    options.rules ?? 2,
+    options.legacyCoopReload ?? 0,
   ].forEach((v, i) => b.writeUInt32LE(v, i * 4));
   return b;
 }

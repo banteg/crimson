@@ -22,6 +22,10 @@ def apply_presentation_plans(
     elapsed_s = runtime.presentation.elapsed_ms * 0.001 - sum(plan.dt_sim for plan in plans)
     for plan in plans:
         elapsed_s += plan.dt_sim
+        # Empty batches still advance presentation smoke by the simulation dt.
+        runtime.render_resources.consume_smoke_batch(
+            plan.smoke_emissions, dt_sim=plan.dt_sim, impulses=plan.atmosphere_impulses,
+        )
         # Capture the viewport before this tick's post-step camera update.
         # Camera updates carry tick-local focus/shake, so batched application
         # never reads positions from a later simulation world.

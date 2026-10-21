@@ -14,7 +14,7 @@ The fix looks ahead by the scaled reload step and includes exact-zero completion
 +        && perk_count_get(perk_id_stationary_reloader) != 0) {
 +        preload_dt = 3.0f * frame_dt;
 +    }
-+    if ((portable_preserve_bugs
++    if ((!portable_rules2_fixes
 +            ? player->reload_timer - preload_dt < 0.0f
 +            : player->reload_timer - preload_dt <= 0.0f)
          && player->reload_timer > 0.0f) {

@@ -23,7 +23,7 @@ describe("the recorded fixtures decode as the Python codec decodes them", () => 
       expect([replay.run.game_mode_id, replay.run.seed, replay.ticks.length]).toEqual([fixture.game_mode_id, fixture.seed, fixture.ticks]);
       expect(rankedBoard(replay.run)).toBe(fixture.board);
       // Formats before 34 name no seat's key.
-      expect(replay.seat_keys).toBeNull();
+      if (replay.format_version < 34) expect(replay.seat_keys).toBeNull();
       expect(unrankedReasons(replay.run)).toEqual(fixture.unranked_reasons);
       expect(outcomeReasons(replay.run, replay.result)).toEqual(fixture.outcome_reasons);
       if (fixture.transport_sha256 === null) expect(() => encodeTransport(replay)).toThrow(TransportError);
@@ -76,7 +76,7 @@ describe("a co-op run", () => {
     const transport = encodeTransport(replay);
     expect(sha256(transport)).toBe(vectors.coop_run.transport_sha256);
     expect(sha256(runIdentity(transport))).toBe(vectors.coop_run.run_id);
-    expect(vectors.coop_run.run_id).toBe(sha256(transport));
+    expect(vectors.coop_run.run_id).not.toBe(sha256(transport));
   });
 
   it("ranks on the co-op board as Python's rules do; a co-op custom quest and a third player do not rank", () => {
@@ -139,4 +139,14 @@ describe("the replay's tick array keeps canonical framing", () => {
   it("refuses every truncated prefix of a real payload", () => {
     for (let end = 0; end < payload.length; end++) expect(() => decodeReplay(payload.subarray(0, end))).toThrow(ReplayError);
   });
+});
+
+it("preserves pre-upgrade solo and co-op IDs and separates rules domains", () => {
+  for (const [file, id] of [["rules1-ranked-survival.crd", vectors.legacy_ranked_run_id], ["rules1-ranked-coop.crd", vectors.legacy_coop_run_id]]) {
+    const replay = decodeReplay(inflateReplay(new Uint8Array(readFileSync(join(FIXTURES, file!)))));
+    const legacy = runIdentity(encodeTransport(replay));
+    expect(sha256(legacy)).toBe(id);
+    const current = runIdentity(encodeTransport({ ...replay, rules: 2 }));
+    expect(sha256(current)).not.toBe(id);
+  }
 });

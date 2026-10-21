@@ -154,7 +154,7 @@ def perks_update_effects(
     def eligible(index: int) -> bool:
         candidate = creatures[index]
         return candidate.active and (
-            state.preserve_bugs or (candidate.hp > 0.0 and creature_lifecycle_is_alive(candidate.death_timer))
+            not state.rules2_fixes or (candidate.hp > 0.0 and creature_lifecycle_is_alive(candidate.death_timer))
         )
 
     # Corpses remain active through the fade. Retry them like empty slots in

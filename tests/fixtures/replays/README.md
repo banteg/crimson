@@ -1,9 +1,9 @@
 # Replay fixture provenance
 
 The recordings without `rules2` in their names are historical rules-1 fixtures.
-They remain useful for decoding and transport compatibility. Current gameplay
-gates report them as unsupported instead of changing their rules, results, or
-checkpoints.
+They play under the historical profile without changes to rules, results or
+checkpoints. `rules1-ranked-survival.crd` and `rules1-ranked-coop.crd` preserve
+the exact service vectors from c0565b0 and test legacy run-ID stability.
 
 Current-rule fixtures are generated inputs, not human gameplay. Reproduce them
 with `service/scripts/vectors.py`, `crimson-core/checks/matrix.mjs`, then

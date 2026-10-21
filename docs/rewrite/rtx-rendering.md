@@ -233,6 +233,34 @@ Benchmark controls:
 enhancements (beam acceleration, HDR additive tonemapping, and EDR output now,
 advanced lighting next), while keeping `classic` as the parity reference path.
 
+## Player lighting
+
+Python RTX players receive the shared bounded weapon emitters through a separate
+opaque cloth shader. The treatment combines stronger diffuse dome lighting,
+painted texture relief, and a directional inner rim. It preserves the original
+single-player and co-op tints and keeps a full ambient floor. There is no player
+specular, transmission, material mask, or additional player shadow/occlusion pass.
+The dome coefficient is 2.2, rim coefficient 0.8, relief strength 0.65, and the
+combined added linear radiance is limited without changing hue at a scale of 1.4.
+A small albedo lift and broad facing floor make the response readable on the
+already-painted atlas. These are art-directed sprite normals, not 3D anatomy.
+
+`player_lighting.py` owns a lazy shader and `player_shaders.py` defines its response.
+The world pass selects the light list once for player and creature lighting, then
+uploads it before drawing players. Living legs and torso share one shader scope;
+the visible death sprite uses the same treatment. Black sprite shadows, radioactive
+auras, shields, and muzzle flashes retain their original draw paths. With no lights,
+the player uses the original shader without allocating the lighting shader. Classic
+mode always uses the original path, including after switching back from RTX.
+
+Per-layer orientation comes from UV/world derivatives evaluated before alpha discard,
+with an identity basis for singular UV mappings. Relief and rim taps clamp to the
+current animation cell. The base sprite keeps the original alpha-aware filtering and
+4/255 cutoff. Point, finite beam, and annular illumination reuse the shared source
+geometry and illumination gain; reflection-only tracers do not light player cloth.
+Beam illumination uses the head-weighted energy centroid, with squared radial
+attenuation, rather than the reflection channel's axial taper.
+
 ## Creature lighting
 
 Python RTX creature bodies receive the same bounded weapon emitters as the ground
@@ -382,17 +410,19 @@ reflection remain independent of that visibility. Projectile artwork and the
 classic renderer are unchanged. Reflection-only tracers are occluded even when
 their illumination gain is zero.
 
-The five standard creature species use two rotated, size-scaled ellipsoids fitted
-to the central body masses of their sprite sheets. The proxies represent abdomen,
-torso or head, with an art-directed height; legs, arms, tails, dead creatures and
-players are absent. Their opacity follows the creature tint. The volumes extend
+The five standard creature species use one rotated, size-scaled ellipsoid each, fitted
+to the combined planar bounds of their former two body parts and retaining the
+maximum part height. The single convex mass avoids forked body silhouettes while
+preserving elongated shapes. Legs, arms, tails and players are absent; dying
+bodies retain the collapse and fade described below. Their opacity follows the
+creature tint. The volumes extend
 slightly below the ground plane so their bases meet the surface, rather than
 balancing a full ellipsoid on a single point. These are stable body approximations,
 not frame-by-frame silhouettes or anatomical geometry.
 
 A CPU-built spatial grid retains every body near the selected
 reflection or illumination sources. Cells are 64 world units in small scenes and 32 with at least
-512 body volumes (256 standard creatures); the finer grid reduces candidate
+512 body volumes (512 standard creatures); the finer grid reduces candidate
 fetches in crowds. The resolution changes indexing only, not visibility.
 Source-support cells are marked once, avoiding a body-by-source
 culling loop. A growing,
@@ -407,9 +437,9 @@ cell bounds account for the finite-source filter.
 Visibility uses closest approach to each ellipsoid in its local coordinates,
 with a smooth transition whose width grows toward the finite source. Wider
 sources therefore produce softer edges. This is an analytic penumbra
-approximation, not multi-sample area-light integration; two partially opaque
-volumes combine by strongest occlusion, avoiding seams where a creature's body
-parts overlap. It does not add ambient darkness, lengthen shadows artificially,
+approximation, not multi-sample area-light integration; overlapping partially opaque
+volumes combine by strongest occlusion, avoiding seams between creatures. The
+visibility test does not add ambient darkness, lengthen shadows artificially,
 or lower the emitter for the occlusion test. Large source widths and heavily
 animated silhouettes remain approximations. Direct lighting shares these volumes
 and the grid while evaluating its own receiver/source segment.
@@ -421,8 +451,9 @@ RTX keeps readable daylight fill (ground `0.50 + 0.12 * daylight_ndl`, living
 sprites `0.60`, in linear RGB) while Ion, Fire Bullets and plasma add stronger
 localized illumination. This is an art-directed lighting balance, not exposure
 adaptation or a night mode. Blood absorption, aging, roughness and substrate/fluid
-normals are unchanged. Overlapping emitters add independently; Fire Bullet gain
-is restrained to 4 after inspecting a fifteen-shot replay frame.
+normals are unchanged. Overlapping emitters add independently. Fire Bullet source
+gain is 4; the ground-only multiplier below applies on top of this shared source
+gain without increasing creature, bonus or reflection brightness.
 
 `lighting_shaders.py` shares source placement and visibility between ground and
 creatures. A finite beam's illumination is approximated by one energy centroid
@@ -523,12 +554,13 @@ resin-coat reflection; the aiming cursor remains a presentation overlay.
 
 ### Live ground diagnostics
 
-In RTX mode, **F6** cycles ground diagnostic views; **Shift+F6** cycles backward.
+In RTX mode, **F6** cycles ground and smoke diagnostic views; **Shift+F6** cycles backward.
 This works during gameplay and in the standalone replay viewer, including while paused.
 Return to `shaded` for the normal scene. The in-game console also accepts
 `rtxdebug <name>`: `shaded`, `substrate-normal`, `fluid-normal`, `freshness`,
 `blood-depth`, `reflections`, `direct`, `direct-unshadowed`, `visibility`,
-`albedo`, `roughness`, `height`, `materials`, `ambient`, or `no-direct`.
+`albedo`, `roughness`, `height`, `materials`, `ambient`, `no-direct`,
+`smoke-density`, `smoke-heat`, `smoke-flow`, or `smoke-light`.
 
 These are display-only selections: they survive replay seeks, do not affect the
 simulation/recording, and have no effect in classic mode. Ground maps hide live
@@ -550,6 +582,16 @@ with `shaded`.
 `albedo` shows the substrate before blood absorption. `materials` shows blood in
 red, corpse coverage in green, brass in blue, and ice in cyan.
 
+The smoke views draw the fluid alone over black, through the same reduced-resolution
+composite as the scene. `smoke-density` is the column's opacity at the field's fade:
+black is clear, white is opaque. `smoke-light` is the weapon, exhaust and sight light
+the smoke scatters, without its sky fill, mapped like the other radiance views.
+`smoke-heat` and `smoke-flow` read the raw simulation state across the whole domain,
+including air that has lost its smoke: heat ramps black, red, yellow, white up to the
+temperature cap that raises and thickens the column; flow hue is the planar velocity's
+direction and brightness is `1 - exp(-speed / 60)` for speed in world units per second. With no
+active field there is nothing to show; the solver does not run without a medium.
+
 
 ## Explosion emission and pressure fronts
 
@@ -564,7 +606,9 @@ The source illuminates terrain and creatures and reflects from wet materials.
 RTX archives the actual fireball sprites chosen by the native spawner, without
 extra RNG or additional pieces. It samples their position, scale, rotation and
 alpha at half age, extending their visible 0.7-second lifetime to 1.4 seconds.
-Native effect slots still expire normally; flash and smoke timing stay unchanged. Classic draws the original slots at normal speed.
+Native effect slots still expire normally; flash timing stays unchanged. RTX smoke
+persists in the presentation fields described below. Classic draws the original
+slots at normal speed.
 Rocket bursts retain their native fireball timing as well as their existing light.
 
 The emitter rises from 12 to 80 world units (times blast scale) with a smoothstep
@@ -627,3 +671,283 @@ the shadow shortens and fades as it settles, rather than blinking off at HP zero
 The later fading corpse sprite has no elevated proxy above its baked ground
 material. This uses existing simulation state only and does not alter death
 movement, damage, corpse timing, RNG or Classic rendering.
+
+
+## Extended beam illumination
+
+Python RTX uses a three-section approximation for Ion Rifle, Ion Minigun, Ion
+Cannon and Fire Bullets ground lighting by default. Ion direct illumination uses
+a 4x gain and a maximum 25% local ambient reduction; Fire uses a 3x ground
+gain and a maximum 15% local ambient reduction. These are presentation settings:
+simulation and classic rendering are
+unaffected. No separate beam console command or replay flag is required:
+
+```sh
+uv run crimson replay play 18-survival.crd --rtx
+```
+
+### Three energy-weighted sections
+
+The source follows the authored beam's stamp spacing, scale, brighter head and
+current length. A small radial lookup projects the narrow emitting core onto
+its longitudinal axis. Three cells sample this profile and retain their energy
+and centroid. Their weights sum to the existing light budget; the visible beam
+art is unchanged. Ion Rifle and Minigun source sizes share the same scale table
+as the projectile renderer.
+
+Each section casts through the existing rounded creature proxies and spatial
+grid. Projecting its longitudinal extent perpendicular to the body-space ray
+and measuring the line's overlap with the rounded body gives directional
+softness: broader across the beam, narrower when seen end-on. Transverse source
+width adds an edge feather. The projected chord stays continuous through the
+center of a body, where a miss-vector-based direction would be undefined.
+
+Section half-lengths are deliberately capped at four world units. The section
+centers still span the full beam. This is an artistic approximation of an
+extended source, not exact visibility integration of every beam stamp. The cap
+keeps the spatial candidate lists and penumbrae practical; no creature is dropped
+to enforce a caster budget. Overlapping proxies retain the existing minimum
+visibility semantics, and dying bodies retain their shared collapse/fade behavior.
+
+Preparation uploads one small uniform array and reuses the ordinary occlusion
+grid. Conservative grid-only source copies include the endpoint halo and bounded
+section softness. They never replace the original light uniforms used by
+reflections or creature lighting. A bounded 128-entry profile cache handles
+repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
+candidate texture, interval sort, quadratic sweep or exact-overflow fallback.
+
+Beam contrast reduces ambient only within its local footprint, fades
+with source radiance, and takes the maximum contribution of overlapping beams
+rather than multiplying dips. Fire alone leaves at least 85% of ordinary ambient;
+Ion or mixed beams leave at least 75%. The reduction remains an art-directed
+local contrast adjustment, independent of visibility. This changes ground lighting only:
+creature/bonus lighting and specular reflection approximations remain as before.
+Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to inspect it.
+
+### Cost and visual limits
+
+Three sections were selected over one and five using native moving-beam renders.
+One remains visibly closer to a point source; five costs more without a useful
+improvement in the inspected scene. The ground shader includes this path; frames
+without eligible beam sources skip preparation and ignore stale section uniforms.
+
+Three visibility queries per beam are still more expensive than the previous
+centroid. Dense scenes with many simultaneous beams remain costly. The approximation can retain separate shadow
+lobes in difficult arrangements and does not reproduce the dense reference's
+penumbra exactly. It favors readable moving shadows and predictable source work
+over a numerical agreement target. Body traversal still scales with the actual
+spatial candidates.
+
+### Ion impact arcs
+
+Ion shots also register the visible post-impact connections and creature contact
+glows as RTX sources. Drawing and lighting share the same target query: only the
+impact/fade phase, the original slot-zero exclusion and collidable lifecycle,
+weapon scale, and Ion Gun Master reach apply. Fire Bullets do not chain.
+
+Each connection contributes a finite segment reflection and a small endpoint
+source, fading with the visible arc. Segment reflections have uniform longitudinal
+radiance; direct illumination uses the existing centroid approximation. The new
+sources use restrained independent gains, without the main Ion beam's 4x ground
+gain or ambient dip. At most four connections
+per impact contribute sources, ranked by segment distance to the view center
+(with endpoint distance as a tie-breaker). All arcs remain visible in the artwork.
+This bounds source preparation as well as brightness in dense crowds. This
+is an artistic brightness cap, not a physical energy simulation. Ordinary global
+source ranking and its 16 illumination / 16 reflection limits still apply.
+
+The original beam stays lit during its fade. Arc sources add illumination and
+reflections through the shared ground, creature, and bonus light list. Classic
+artwork, damage, target selection, and replay state are unchanged.
+
+## Persistent fluid smoke
+
+GPU fluid smoke is **on by default in RTX**. In the game, `rtxsmoke off`
+immediately clears the fluid and restores native smoke sprites; `rtxsmoke on`
+re-enables it. Standalone playback accepts
+`crimson replay play <replay.crd> --rtx --no-rtx-smoke` to disable it.
+`--rtx-smoke` explicitly enables both fluid smoke and RTX. The console choice belongs to the current game/replay
+world and is not saved to config.
+The existing Smoke display setting still controls whether the fluid runs.
+Classic always uses its native smoke path.
+
+When enabled, RTX replaces native smoke puffs with a persistent simulated density
+field. Rocket exhaust, rocket impacts, and other native smoke emissions feed the
+same system. Nuke pickup explosion puffs request 15 seconds of retention; ordinary
+smoke requests 10 seconds. Density decays throughout that time, with an additional
+soft fade over the final two seconds. These are maximum retention windows, not a
+promise that every small puff remains visible for that long.
+
+Implementation: `render/rtx/gpu_smoke.py`, `gpu_smoke_shaders.py`, `smoke.py`,
+`smoke_shaders.py`, and `sim/smoke_events.py`. Simulation state stays in RGBA16F
+render targets: density, temperature, and planar velocity. OpenGL 3.3 fragment
+passes perform advection, pressure projection, and source deposition. This needs
+neither compute shaders nor a per-frame CPU grid upload/readback. Python retains
+immutable emission batches and presentation clocks. `smoke_simulation.py` remains
+an explicit CPU reference for offline comparisons; it is not a runtime fallback.
+Failure to initialize the GPU solver or display restores native smoke.
+
+### Native events and lifecycle
+
+Each deterministic tick captures immutable copies of actual `SpriteEffectPool`
+smoke spawns and `EffectPool` explosion puffs, including command-triggered spawns.
+No additional gameplay random numbers are consumed. Negative native effect ages
+delay injection, and native expansion contributes planar velocity. Nuke retention
+is explicitly marked around the nuke burst, so ordinary rocket explosion puffs do
+not inherit the longer lifetime. Large general-effect puffs weight their source
+strength by native tint luminance: their dark tint must not become an opaque gray
+disc that obscures the finer sprite smoke. This is an artistic conversion into a
+shared scattering medium, not a physical mass calibration. The explicit nuke
+presentation profile increases that dark-puff strength eightfold, distributes it
+into irregular overlapping billows with local curling motion, and lowers density decay
+from 0.20/s to 0.12/s so the extended aftermath remains visible. The shared domain
+gradually returns to the ordinary decay rate after receiving a nuke deposit;
+this does not add mass to smoke already there. Capture bookkeeping lives outside native state
+and checkpoint serialization.
+
+Presentation consumes every tick's batch, including empty batches, using its
+simulation delta. Fixed 60 Hz substeps accumulate fractional slow-motion time;
+pause and extra draws do not advance the fields. Forward replay playback uses the
+same presentation handoff. Level/reset/session replacement, RTX mode changes, and
+disabling the smoke setting clear fields and delayed deposits. Re-enabling RTX
+starts with new emissions. Native smoke sprites and general explosion puffs are
+not drawn while fluid smoke is enabled, including when the solver is empty or at its allocation cap.
+Classic retains the original sprites.
+Checkpoint restoration and explicit replay seeking clear this transient history
+instead of storing it in the deterministic checkpoint. Undrawn seek ticks do not
+leave a GPU catch-up queue; normal playback and diagnostic views retain every tick.
+
+One shared 320 × 320 domain covers the arena plus a 128-world-unit guard band
+on each side. All trails exchange flow and share light extinction; there are no
+internal patch walls or separate alpha layers. Sources rasterize only their
+bounded footprint. Sampling outside the domain returns zero; open pressure
+boundaries and an absorbing outer band allow outflow instead of reflecting it.
+The domain is fixed, so a moving camera cannot relocate existing smoke and no
+GPU occupancy readback is needed to resize it.
+
+Empty scenes perform no fluid steps. Domains retire at the end of their retention
+window. New deposits extend remaining retention, baking any existing final fade
+into density and temperature so old smoke is not restored. Nuke decay relaxes
+back toward the ordinary rate with a roughly 14-second time constant. Delayed
+emissions remain capped at 1024. Sources outside the padded arena do not allocate
+new simulation domains.
+
+### Motion and light
+
+The GPU solver uses semi-Lagrangian advection for planar velocity, 12
+pressure-relaxation iterations, vorticity confinement, and damping. Density and
+temperature use conservative upwind face fluxes. A donor outflow limiter keeps
+these fields nonnegative even when an impulse moves air farther than one cell per
+step; at such speeds it trades transport speed for stability. Shared face fluxes
+preserve column mass apart from source deposits, decay, open-boundary outflow and
+RGBA16F rounding. This prevents an expanding blast from multiplying smoke.
+The CPU reference's MacCormack scalar correction and finer growing grid are not
+pixel-equivalent to this bounded GPU approximation. Sources inject presentation motion and
+expansion; a small fixed planar breeze supplies background drift. RTX muzzle
+puffs use the firing direction instead of the native sideways velocity, with a
+resolved elongated footprint and a short jet with paired vortices. Rocket exhaust
+moves backward along the flight direction instead of inheriting the native
+cosine-for-both-components drift. These overrides affect only copied smoke events;
+native sprite values, RNG, collision, damage and replay checkpoints are unchanged.
+
+Projectiles deposit velocity-only wakes along their actual swept paths. Ion, fire,
+plasma and rockets have stronger wakes than ordinary bullets. Muzzle jets and
+wakes enter before pressure projection; explosion fronts deliver a short expanding
+radial impulse after projection so the incompressible solve does not erase their
+expansion. Neither impulse creates smoke or heat. All rocket detonation paths and
+nuke bursts contribute blast motion, including low-detail explosions without
+smoke puffs. No visible medium means no additional fluid simulation is needed.
+Per-tick GPU impulses are capped at 64, prioritizing blasts and muzzle jets before
+wakes; at most 16 blast fronts persist. New forces reuse the existing solver and
+pressure iterations.
+
+Rocket exhaust and impact deposits use 40% of the old source strength, and ordinary
+general-effect explosion puffs use 60%. The nuke profile retains its existing
+strength and decay. RTX rocket explosions omit the visible pressure shell, shell
+light and screen distortion; their central explosion lighting and their motion
+through existing smoke remain. Classic explosion rings are unchanged. Temperature
+controls an assumed vertical density profile in the display shader. This is a
+shallow 2D flow approximation with a 2.5D display, not a simulated 3D volume or
+vertical buoyancy model.
+
+The display integrates 14 vertical samples and six transmittance samples per
+light into a reusable RGBA16F viewport buffer capped at 640 pixels on its longest
+axis. Premultiplied reconstruction preserves HDR radiance and translucent edges;
+the world itself stays at full output resolution. It uses the shared native weapon sources, including rocket exhaust,
+Fire/Ion beams, and explosion lights, with the existing 16 illumination-source
+limit. Fractional source gains are preserved; gains above four are capped for
+smoke response. Up to four living players' native Sharpshooter sight segments
+scatter as narrow red beams only inside density, rather than broadly illuminating
+the whole cloud. The ordinary sight artwork remains unchanged.
+
+Smoke composites after native sprites, outside their alpha-test shader, inside
+the HDR world and pressure-front composition. Ground diagnostic maps hide the composite while continuing to drain queued fluid updates; the smoke views show it alone.
+The renderer approximates single scattering and self-shadowing within the shared domain;
+the assumed slab does not resolve creature geometry. Broad sky extinction gives
+billows some form after local emitters fade. Rocket exhaust uses a separate
+sixfold scattering response, without increasing its ground or creature lighting.
+Simulation cost scales with grid area and pass count; display cost scales with
+shaded pixels and lights. Density columns are sampled once and reused at every
+integration height, preserving height-dependent optical depth. GPU timings and
+full-frame timings must be measured separately; reducing CPU simulation time
+does not imply the rest of the RTX frame is free. Shader/solver resources prewarm
+on the first enabled frame, moving the initialization cost out of the first shot.
+
+A synchronized M1 Pro benchmark of native rocket/nuke inputs and a 99-creature
+fixture measured 1.6–2.5 ms median simulation and 0.6–0.9 ms smoke display costs.
+At 1024 × 768, completed world-frame medians were 6.8–11.0 ms, including native
+simulation updates. At 2048 × 1536 they were 8.6–13.1 ms. The dense high-resolution
+case reached 22.6 ms at p95 (18.9 ms with native smoke); this is not a universal
+60 FPS guarantee. The benchmark excludes HUD, window presentation, audio and
+video encoding. The console/CLI off switches remain available for slower GPUs.
+
+## Perk illumination
+
+RTX Radioactive retains the original additive green aura and its render-clock
+sine pulse. A 100-unit green material source follows each player, including the
+native aura's post-death presence. The source uses height 18, width 13, RGB
+`(.10, .70, .07)`, and illumination/reflection gains `3.8/.8`, multiplied by the
+original aura alpha divided by its mean `.4375`. It illuminates ground and bodies,
+reflects in wet materials, and uses the shared creature-volume visibility path.
+The display shadow setting controls direct shadows as for other material lights.
+Reflection visibility remains part of the existing reflection model. Radioactive
+uses the ordinary source budget; it does not alter damage range or pulse timing.
+
+Monster Vision keeps the familiar yellow under-glow, its 90-unit footprint,
+native death fade, entity transition alpha, ordering before plague/poison, and
+native sprite-shadow suppression. RTX evaluates a smooth radial fit to the
+original aura alpha instead of sampling its texture cell. Classic keeps the
+original texture. The fit is `1.04770258 * exp(-4.85*r)` with a smooth edge envelope
+between normalized radii `.8` and `1`; the draw retains ordinary alpha blending.
+
+Each visible or overlapping offscreen aura also contributes a shadowless ground
+source: radius 60, height 12, width 16, RGB `(.65, .47, .025)`, illumination gain
+`1.65`, and reflection gain `.32`. The source uses the same substrate normals,
+wet-film/deep-pool normals, absorption, freshness and finite reflection model as
+other material lights. It is not a new enemy-body tint or contour.
+
+These sources have a separate accumulation pass and never consume weapon-light
+slots. Every eligible source whose finite support intersects the view is retained.
+Clipped source quads are submitted in batches of 256, with no population cap.
+The shader specializes the production material equations without shadow tracing,
+beam machinery, ambient, sky or gamma encoding. Raw direct and reflected RGB add
+into a view-sized FP32 target with `ONE + ONE`; the ordinary ground shader adds
+this result before its single gamma encoding and the existing HDR compositor.
+FP32 avoids cumulative half-float blend rounding in hundreds of overlapping
+sources. At 1920×1080 the lazy target uses about 32 MiB. Its dimensions follow the
+actual framebuffer, separately from logical camera/output scale, and it is
+released with terrain material resources. Empty/ineligible scenes do not allocate
+or render the target. An already allocated target is retained for reuse.
+
+The ground pass reserves texture unit 5 for this accumulator, leaving raylib's
+four auxiliary slots available for material maps and body occlusion. Direct,
+unshadowed-direct, visibility, reflection and ambient-plus-reflection diagnostics
+include the corresponding perk component. Ambient-only and data-map diagnostics
+exclude it. Monster Vision contributes equally to shadowed and unshadowed direct
+terms, so it does not invent creature shadows in the visibility ratio.
+
+Cost scales with covered source pixels, not the whole viewport times the enemy
+count. Dense overlapping crowds still increase GPU fill and material-sampling
+work, and the FP32 target adds memory bandwidth. This remains an artistic finite
+source/reflection approximation. Perk simulation, RNG, replay state, damage and
+classic rendering are unchanged.

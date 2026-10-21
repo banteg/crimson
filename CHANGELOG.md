@@ -2,6 +2,33 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.20.0
+
+### For players
+
+#### RTX in the Python port
+
+- RTX now lights the battlefield as well as the projectiles. Fire Bullets, Ion beams and explosions illuminate terrain relief, creatures and the player, and cast soft body shadows. Long beams spread their light along the streak; shadows follow creatures through their death collapse.
+- Blood absorbs light over the ground beneath it, reflects passing beams while fresh, and dries into a matte surface. Corpses, ice and bullet casings have their own material response, and creatures block reflections behind them.
+- Bonus orbs have curved resin shells and lit emblems. The Sharpshooter laser reflects in wet ground and the orbs; Ion impact arcs, Radioactive and Monster Vision also light nearby materials.
+- Smoke runs in a shared GPU simulation. Rocket exhaust lights its trail, Nuke smoke lingers, and muzzle jets, passing projectiles and explosions stir the air. Smoke catches weapon light and laser sights. Rocket trails and impact clouds are restrained to keep the arena readable; visible pressure waves are reserved for larger effects such as the Nuke.
+- On supported macOS displays, RTX uses extended dynamic range for bright beams, flames and reflections. SDR displays keep a tone-mapped picture. In-game PNG screenshots remain SDR.
+- Start with `crimson --rtx`, or use `rendermode rtx` in the console. `rtxsmoke off` restores the original smoke sprites while keeping the other RTX effects. F6 and Shift+F6 cycle diagnostic views of normals, reflections, lighting, shadows and materials during play or replay playback.
+
+These RTX additions are currently exclusive to the Python port. Classic rendering remains available; the effects do not change gameplay or replay results.
+
+#### Other rendering improvements
+
+- Browser and native desktop scenes render at the window's pixel resolution, with denser terrain targets for sharper ground detail on large and high-DPI displays.
+- Improved terrain and sprite filtering preserves small details and transparent edges. Small text keeps its strokes at fractional scales, and fading projectile heads retain their weapon colors.
+
+### Under the hood
+
+- The atmosphere stays on the GPU, including smoke transport and weapon airflow. Conservative transport prevents expanding blasts from creating extra smoke.
+- Added live RTX diagnostics and regression coverage for material lighting, shadows, smoke and HDR output. See the [RTX rendering guide](https://github.com/banteg/crimson/blob/master/docs/rewrite/rtx-rendering.md) for controls and implementation details.
+- Completed instruction matching for the 1.9.8 Game & Engine build and expanded matching for older releases. The freeware executables now have their own 1.4 decompilation family.
+- Co-op analytics distinguish network stalls from time spent waiting for a perk choice.
+
 ## 0.19.2
 
 ### For players

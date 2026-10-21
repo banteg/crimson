@@ -26,6 +26,7 @@ const replays = fixture
   ? { [path.basename(fixture)]: fs.readFileSync(fixture) }
   : {
       "coop-perk-timers-rules2.crd": fs.readFileSync(path.join(ROOT, "tests/fixtures/replays/coop-perk-timers-rules2.crd")),
+      "quest-1.1-completed.crd": fs.readFileSync(path.join(ROOT, "tests/fixtures/replays/quest-1.1-completed.crd")),
       "survival-rules2.crd": fs.readFileSync(path.join(ROOT, "tests/fixtures/replays/survival-rules2.crd")),
       "coop-survival.crd": Buffer.from(vectors.file, "base64"),
       "coop-quest.crd": Buffer.from(vectors.quest_file, "base64"),

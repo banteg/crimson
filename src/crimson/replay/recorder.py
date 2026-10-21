@@ -11,9 +11,13 @@ class ReplayRecorder:
         self,
         run: RunSpec,
         *,
+        rules: int = REPLAY_RULES,
         game_version: str | None = None,
         seat_keys: tuple[bytes, ...] | None = None,
     ) -> None:
+        if rules not in (1, 2):
+            raise ValueError(f"unsupported replay rules {rules}")
+        self._rules = rules
         self._run = run
         self._seat_keys = seat_keys
         self._game_version = current_replay_game_version() if game_version is None else game_version
@@ -41,7 +45,7 @@ class ReplayRecorder:
         return Replay(
             format_version=REPLAY_FORMAT_VERSION,
             game_version=self._game_version,
-            rules=REPLAY_RULES,
+            rules=self._rules,
             recorder=self._recorder,
             pilot=self._pilot,
             seat_keys=self._seat_keys,

@@ -385,10 +385,10 @@ def test_load_rejects_large_zstd_window() -> None:
         load_replay(frame)
 
 
-@pytest.mark.parametrize("rules", [1, REPLAY_RULES + 1])
+@pytest.mark.parametrize("rules", [REPLAY_RULES + 1])
 def test_a_replay_under_other_rules_decodes_but_does_not_play(rules: int) -> None:
     other = msgspec.structs.replace(_replay(), rules=rules)
 
     assert decode_replay_payload(encode_replay_payload(other)).rules == rules
-    with pytest.raises(ReplayRulesError, match=f"recorded under rules {rules}; this build plays rules {REPLAY_RULES}"):
+    with pytest.raises(ReplayRulesError, match=f"recorded under rules {rules}; this build plays rules 1 and {REPLAY_RULES}"):
         PlaybackDriver(other)

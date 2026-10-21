@@ -30,6 +30,7 @@ extern "C" quest_meta_t *portable_custom_quest;
 quest_meta_t *portable_custom_quest;
 extern "C" unsigned char portable_preserve_bugs;
 unsigned char portable_preserve_bugs;
+unsigned int portable_rules, portable_legacy_coop_reload;
 PortablePlayerRules portable_player_rules[2];
 float portable_impact_heading(float x, float y) {
   return (float)(portable_atan2(y, x) - 1.5707964f);
@@ -442,9 +443,11 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   trace_init("begin");
   ready = false;
   if (cfg.detail > 5 || cfg.unlock > 50 || cfg.unlock_full > 50 ||
-      cfg.retry > 2147483647u || cfg.preserve_bugs > 1 || cfg.players < 1 || cfg.players > 2)
+      cfg.retry > 2147483647u || cfg.preserve_bugs > 1 || cfg.players < 1 || cfg.players > 2 || (cfg.rules != 1 && cfg.rules != 2) || cfg.legacy_coop_reload > 1 || (cfg.rules != 1 && cfg.legacy_coop_reload))
     return 0;
   portable_preserve_bugs = (unsigned char)cfg.preserve_bugs;
+  portable_rules = cfg.rules;
+  portable_legacy_coop_reload = cfg.legacy_coop_reload;
   for (auto n : cfg.weapon_usage)
     if (n > 2147483647u)
       return 0;
@@ -802,6 +805,7 @@ extern "C" int portable_builder_probe(uint32_t seed, uint32_t index,
   if (index >= 50 || hardcore > 1 || players < 1 || players > 4)
     return 0;
   cfg = {};
+  cfg.rules = CRIMSON_REPLAY_RULES;
   cfg.detail = 5;
   cfg.hardcore = hardcore;
   cfg.players = 1;

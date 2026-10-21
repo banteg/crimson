@@ -6,7 +6,7 @@ Original bug 46: single rocket death.
                                  fx_queue_add_random(&creature_pool[creature_id].position);
                                  fx_queue_add_random(&creature_pool[creature_id].position);
 -                                creature_handle_death(creature_id, 1);
-+                                if (portable_preserve_bugs)
++                                if (!portable_rules2_fixes)
 +                                    creature_handle_death(creature_id, 1);
                              }
                          }

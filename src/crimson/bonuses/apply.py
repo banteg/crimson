@@ -169,7 +169,7 @@ def bonus_apply(
 
         case BonusId.SHOCK_CHAIN:
             target_idx = creature_find_nearest_alive(
-                creatures=creatures, origin=origin, preserve_bugs=bool(state.preserve_bugs),
+                creatures=creatures, origin=origin, preserve_bugs=bool(state.preserve_bugs), rules=state.rules,
             )
             if target_idx >= 0:
                 target = creatures[target_idx]
@@ -263,9 +263,10 @@ def bonus_apply(
                     owner_id=OWNER_LOCAL_PLAYER,
                     owner_player_index=player.index,
                 )
-            state.effects.spawn_explosion_burst(
-                pos=origin, scale=1.0, rng=rng, detail_preset=int(detail_preset), preserve_bugs=state.preserve_bugs,
-            )
+            with state.effects.smoke_retention(15.0, profile="nuke"):
+                state.effects.spawn_explosion_burst(
+                    pos=origin, scale=1.0, rng=rng, detail_preset=int(detail_preset), preserve_bugs=state.preserve_bugs,
+                )
             state.scripted_burst_active = True
             for idx, creature in enumerate(creatures):
                 # Corpses take the blast too, which shrinks them faster.
@@ -286,7 +287,7 @@ def bonus_apply(
                         CreatureDamageType.EXPLOSION,
                         Vec2(),
                     )
-                    if not state.preserve_bugs and was_alive and creature.hp <= 0.0:
+                    if state.rules2_fixes and was_alive and creature.hp <= 0.0:
                         align_death_heading(creature, Vec2(dx, dy))
             state.scripted_burst_active = False
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, origin))

@@ -4,14 +4,14 @@
 
 // The life bonus, from each player's health, player one first: player one's health is truncated before the f32
 // product with 50, which is then exact; a partner's product is rounded to f32, then truncated.
-export function lifeBonusMs(health: number[], preserveBugs = false): number {
+export function lifeBonusMs(health: number[], preserveBugs = false, rules = 2): number {
   return health.reduce((sum, hp, i) => {
-    const h = preserveBugs ? hp : Math.max(0, hp);
+    const h = preserveBugs || rules === 1 ? hp : Math.max(0, hp);
     return sum + Math.trunc(i === 0 ? Math.trunc(h) * 50 : Math.fround(h * 50));
   }, 0);
 }
 
-export function questFinalMs(base: number, health: number[], pending: number, preserveBugs = false): number {
-  const final = base - lifeBonusMs(health, preserveBugs) - pending * 1000;
+export function questFinalMs(base: number, health: number[], pending: number, preserveBugs = false, rules = 2): number {
+  const final = base - lifeBonusMs(health, preserveBugs, rules) - pending * 1000;
   return final === 0 ? 1 : final;
 }

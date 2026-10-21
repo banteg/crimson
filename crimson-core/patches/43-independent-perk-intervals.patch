@@ -5,7 +5,7 @@ Original bug 43: independent perk intervals.
          player->living_fortress_timer = 0.0f;
      }
  
-+    float &fire_cough_interval = portable_preserve_bugs
++    float &fire_cough_interval = !portable_rules2_fixes
 +        ? perk_fire_cough_trigger_interval_s : portable_player_rules[current_player_index].fire_cough_interval;
      if (perk_count_get(perk_id_fire_caugh) != 0) {
          player->fire_cough_timer = player->fire_cough_timer + frame_dt;
@@ -29,7 +29,7 @@ Original bug 43: independent perk intervals.
  
  #endif
  
-+    float &hot_tempered_interval = portable_preserve_bugs
++    float &hot_tempered_interval = !portable_rules2_fixes
 +        ? perk_hot_tempered_trigger_interval_s : portable_player_rules[current_player_index].hot_tempered_interval;
      if (perk_count_get(perk_id_hot_tempered) != 0) {
          player->hot_tempered_timer = player->hot_tempered_timer + frame_dt;

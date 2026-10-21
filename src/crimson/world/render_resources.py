@@ -15,7 +15,11 @@ from ..render.rtx.bonus_lighting import BonusLighting
 from ..render.rtx.creature_lighting import CreatureLighting
 from ..render.rtx.hdr import HdrRenderer
 from ..render.rtx.materials import MaterialGroundRenderer
+from ..render.rtx.mode import RtxRenderMode
+from ..render.rtx.player_lighting import PlayerLighting
+from ..render.rtx.smoke import SmokeRenderer
 from ..render.terrain_fx import FxQueueTextures, bake_terrain_fx_batch
+from ..sim.smoke_events import AtmosphereImpulse, SmokeEmission
 from ..sim.state_types import TERRAIN_SIZE
 from ..sim.terrain_fx import TerrainFxBatch
 
@@ -23,11 +27,15 @@ from ..sim.terrain_fx import TerrainFxBatch
 class RenderResources(msgspec.Struct):
     assets_dir: Path
     config: CrimsonConfig | None = None
+    rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
+    simulated_smoke_enabled: bool = True
+    smoke: SmokeRenderer = msgspec.field(default_factory=SmokeRenderer)
 
     ground: GroundRenderer | None = None
     fx_textures: FxQueueTextures | None = None
     hdr: HdrRenderer = msgspec.field(default_factory=HdrRenderer)
     creature_lighting: CreatureLighting = msgspec.field(default_factory=CreatureLighting)
+    player_lighting: PlayerLighting = msgspec.field(default_factory=PlayerLighting)
     bonus_lighting: BonusLighting = msgspec.field(default_factory=BonusLighting)
     _pending_terrain_fx_batches: list[TerrainFxBatch] = msgspec.field(default_factory=list)
     _resources: RuntimeResources | None = None
@@ -56,6 +64,7 @@ class RenderResources(msgspec.Struct):
         detail: rl.Texture,
     ) -> None:
         self.clear_pending_terrain_fx()
+        self.smoke.reset()
         if self.ground is None:
             self.ground = MaterialGroundRenderer(
                 texture=base,
@@ -109,11 +118,13 @@ class RenderResources(msgspec.Struct):
         )
 
     def close(self) -> None:
+        self.smoke.close()
         if self.ground is not None:
             self.ground.close()
         self.ground = None
         self.hdr.close()
         self.creature_lighting.close()
+        self.player_lighting.close()
         self.bonus_lighting.close()
 
         self._resources = None
@@ -122,6 +133,23 @@ class RenderResources(msgspec.Struct):
 
     def clear_pending_terrain_fx(self) -> None:
         self._pending_terrain_fx_batches.clear()
+
+    def set_simulated_smoke(self, enabled: bool) -> None:
+        self.simulated_smoke_enabled = enabled
+        self.sync_smoke_mode()
+
+    def sync_smoke_mode(self) -> bool:
+        enabled = self.simulated_smoke_enabled and self.rtx_mode is RtxRenderMode.RTX and (
+            self.config is None or self.config.display.smoke_enabled
+        )
+        if not enabled:
+            self.smoke.reset()
+        return enabled
+
+    def consume_smoke_batch(self, emissions: tuple[SmokeEmission, ...], *, dt_sim: float,
+                            impulses: tuple[AtmosphereImpulse, ...] = ()) -> None:
+        if self.sync_smoke_mode():
+            self.smoke.consume(emissions, dt_sim=dt_sim, impulses=impulses)
 
     def bake_terrain_fx_batch(self, batch: TerrainFxBatch, ground: GroundRenderer) -> None:
         """Bakes a tick's decals and corpses into `ground`: the run's, or another copy of its terrain."""

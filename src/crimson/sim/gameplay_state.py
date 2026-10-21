@@ -10,6 +10,7 @@ from ..bonuses.hud import BonusHudState
 from ..bonuses.pool import BonusPool
 from ..effects import EffectPool, ParticlePool, SpriteEffectPool
 from ..game_modes import GameMode
+from ..game_version import REPLAY_RULES
 from ..perks.state import PerkEffectIntervals, PerkSelectionState
 from ..persistence.save_status import GameStatus, GameStatusData
 from ..projectiles.runtime import ProjectilePool, SecondaryProjectilePool
@@ -63,6 +64,13 @@ class GameplayState(msgspec.Struct):
     # The global quest retry counter; hardcore creature spawns clear it.
     quest_fail_retry_count: int = 0
     preserve_bugs: bool = False
+    rules: int = REPLAY_RULES
+    legacy_coop_reload: bool = False
+
+    @property
+    def rules2_fixes(self) -> bool:
+        return self.rules >= 2 and not self.preserve_bugs
+
     status: GameStatus = msgspec.field(default_factory=lambda: GameStatus.detached(GameStatusData()))
     quest_level: QuestLevel | None = None
     tutorial: TutorialState = msgspec.field(default_factory=TutorialState)

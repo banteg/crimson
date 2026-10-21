@@ -270,6 +270,7 @@ class ProjectilePool:
             )
             dir_x = math.cos(heading_radians)
             dir_y = math.sin(heading_radians)
+            wake_start = proj.pos
             acc = Vec2()
             step = 0
             while step < steps:
@@ -435,7 +436,7 @@ class ProjectilePool:
                                     origin=proj.pos,
                                     exclude_id=hit_idx,
                                     min_dist=100.0,
-                                    preserve_bugs=bool(runtime_state.preserve_bugs),
+                                    preserve_bugs=bool(runtime_state.preserve_bugs), rules=runtime_state.rules,
                                 )
                                 # Native chains to slot 0 when nothing qualifies; the rewrite ends the chain.
                                 if next_idx >= 0:
@@ -564,7 +565,7 @@ class ProjectilePool:
                         # default rules use sine for the vertical component.
                         impulse_angle = f32(float(proj.angle) - NATIVE_HALF_PI)
                         impulse_axis = f32(math.cos(float(impulse_angle)) * float(proj.speed_scale))
-                        impulse_y = (impulse_axis if runtime_state.preserve_bugs else
+                        impulse_y = (impulse_axis if not runtime_state.rules2_fixes else
                                      f32(math.sin(float(impulse_angle)) * float(proj.speed_scale)))
                         impulse = Vec2(float(impulse_axis), float(impulse_y))
                         if remaining <= 0.0:
@@ -598,5 +599,17 @@ class ProjectilePool:
                         break
 
                 step += 3
+
+            energetic = proj.type_id in (
+                ProjectileTemplateId.ION_RIFLE, ProjectileTemplateId.ION_MINIGUN,
+                ProjectileTemplateId.ION_CANNON, ProjectileTemplateId.FIRE_BULLETS,
+                ProjectileTemplateId.PLASMA_RIFLE, ProjectileTemplateId.PLASMA_MINIGUN,
+                ProjectileTemplateId.PLASMA_CANNON,
+            )
+            effects.atmosphere_impulse(
+                start=wake_start, end=proj.pos, radius=9. if energetic else 5.,
+                strength=(420. if energetic else 180.)*dt,
+                curl=(120. if energetic else 60.)*dt,
+            )
 
         return hits

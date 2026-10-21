@@ -5,7 +5,7 @@ Original bug 44: independent weapon swap.
          perk_fire_ready = true;
      }
  
-+    int &swap_cooldown_ms = portable_preserve_bugs
++    int &swap_cooldown_ms = !portable_rules2_fixes
 +        ? player_alt_weapon_swap_cooldown_ms
 +        : portable_player_rules[current_player_index].alt_weapon_swap_cooldown_ms;
      if (perk_count_get(perk_id_alternate_weapon) != 0) {
@@ -33,7 +33,7 @@ Original bug 44: independent weapon swap.
 +        }
 +    }
 +
-+    if (!portable_preserve_bugs) {
++    if (portable_rules2_fixes) {
 +        normal_fire_ready = player->shot_cooldown <= 0.0f && player->reload_timer == 0.0f;
 +        if (normal_fire_ready) player->reload_active = 0;
 +        perk_fire_ready = player->shot_cooldown <= 0.0f && player->experience > 0

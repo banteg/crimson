@@ -273,6 +273,7 @@ static bool live_start() {
 // A run the player plays: seeded afresh, with their progress and settings.
 static void live_begin() {
   cfg = {};
+  cfg.rules = CRIMSON_REPLAY_RULES;
   getentropy(&cfg.seed, sizeof cfg.seed);
   cfg.mode = config_blob.game_mode;
   cfg.major = cfg.mode == GAME_MODE_QUEST ? quest_stage_major : 1;

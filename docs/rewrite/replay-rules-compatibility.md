@@ -6,18 +6,18 @@ tags:
 
 # Rules 2 rollout and historical playback plan
 
-Status: approved direction, implementation pending. The nine fixes in
-[#829](https://github.com/banteg/crimson/issues/829) are implemented in the
-working tree, but current playback and upload gates still reject rules 1.
-Compatibility is tracked in [#833](https://github.com/banteg/crimson/issues/833);
-the adopted Fire Bullets extension is
-[#832](https://github.com/banteg/crimson/issues/832).
+Status: implemented in the second layer of the post-RTX stack, pending review
+and merge. Rules 1 and 2 play through explicit profiles in Python, native/WASM,
+and the game. Compatibility is tracked in
+[#833](https://github.com/banteg/crimson/issues/833); the pellet-conversion
+extension [#832](https://github.com/banteg/crimson/issues/832) is implemented in the final layer.
+Keep the whole stack out of the RTX release; it targets the release after it.
 
 ## Selected behavior
 
 New runs default to rules 2. Recorded rules select playback and verification.
 Keep rules-1 leaderboard entries, scores, IDs, timestamps and signed replay bytes.
-The proposed board presentation combines both versions, labels each run and
+The board presentation combines both versions, labels each run and
 offers an optional rules filter. A new season does not require a reset or
 retirement of valid historical results. This is a product decision to compare
 the versions together, not a claim that their balance is mathematically equal.
@@ -32,7 +32,7 @@ the versions together, not a claim that their balance is mathematically equal.
 already part of the previous default. Unknown rules versions remain errors.
 Replay encoding stays at format 34; its existing `rules` field is sufficient.
 
-## Implementation sequence
+## Implementation
 
 1. **Establish historical witnesses.** Retain old fixtures and checksums exactly.
    Use the pinned pre-bundle source/core as an oracle. The co-op manual-reload
@@ -47,8 +47,8 @@ Replay encoding stays at format 34; its existing `rules` field is sufficient.
    its strict-negative completion boundary; rules 2 adds exact-zero completion.
    Similarly, keep the previous Jinxed pool-size fix in both profiles. Use named
    policy predicates rather than separate user switches for each fix.
-3. **Carry the profile through every entry point.** Add an explicit rules word
-   to `PortableConfig`, updating its size assertions and all encoders together.
+3. **Carry the profile through every entry point.** The config carries explicit rules and legacy co-op reload words
+   in `PortableConfig` (272 bytes), with matching encoders and size assertions.
    Reject unsupported values at initialization. Python playback must pass
    `Replay.rules` through run initialization rather than just checking it.
    Record the actual active rules, and retain them through reset, keyframes,
@@ -62,13 +62,15 @@ Replay encoding stays at format 34; its existing `rules` field is sufficient.
    changes must not change old IDs. Identical inputs under two rules versions
    must not collide. Preserve payload hashes and signatures without rewriting
    recorded bytes.
-5. **Persist rules and dispatch verification.** Add a rules column and API field;
-   backfill from retained payloads when provenance is ambiguous. Preserve IDs,
+5. **Persist rules and dispatch verification.** Store a rules column and API field.
+   The additive migration defaults pre-release records to rules 1: the deployed
+   service accepted only rules 1 before this release. New uploads always write
+   their explicit rules. Preserve IDs,
    accepted times, scores and visibility. Service verification and quest-result
    derivation use the selected profile. The quest breakdown UI can then use
    recorded rules instead of inferring the formula from the score. Accept both
    supported versions, and check historical results under their own behavior.
-6. **Add the adopted pellet conversion.** In rules 2 default, Gauss Shotgun
+6. **Adopted pellet conversion.** In rules 2 default, Gauss Shotgun
    produces six Fire Bullets at its normal 1.05-second base cooldown; Multi-Plasma
    produces five at its normal approximately 0.6208117-second cooldown. Preserve
    rules-1 counts (one and three) and cadence under legacy/original policies.
@@ -97,9 +99,27 @@ Replay encoding stays at format 34; its existing `rules` field is sufficient.
 - Ship client and verifier support together before making new rules-2 uploads
   available. Use one rules bump for the whole unreleased bundle. The earlier
   validation results cover the current nine-fix implementation, not these
-  planned compatibility and conversion changes.
+  compatibility and conversion changes; their checks are recorded in each PR.
 
 Splitter ownership/exclusion, Pistol/My Favourite Weapon drops and bounded
 Plague transmission remain recommended extensions in the
 [triage](original-bugs-triage.md#follow-up-review-recommendations-beyond-the-implemented-bundle).
 They are not implicitly included by adopting the two pellet conversions.
+
+## Historical reload provenance
+
+The co-op manual-reload fix landed at `99cc34261` during 0.18.0 development.
+Published releases through 0.18.0 use the old behavior; 0.19.0 and later use the
+fix. The exact service-vector identity
+`0.18.0+build.64a9589f5fbefdc036f0559b`, introduced at `bde24bef7` after that fix,
+is explicitly mapped to the corrected behavior. Other 0.18 development identities
+are refused for rules-1 default co-op until provenance is established. Solo,
+original policy and rules 2 do not require this exception. This is an explicit
+compatibility limitation, not a leaderboard retirement policy.
+
+The two `rules1-ranked-*` fixtures preserve the exact service payloads at
+`c0565b0b4e74c9aed422f23ddd9328027967cbc0`, with their original run-ID witnesses.
+Rules-2 identity is SHA-256 over UTF-8 `crimson:run:rules` plus a NUL byte,
+a little-endian uint32 rules number, and the old 66-word transport including
+player count followed by its quest/input bytes. Rules 1 retains its earlier
+solo/co-op identity algorithm byte for byte. Internal profile words are excluded.
