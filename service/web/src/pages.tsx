@@ -1076,8 +1076,8 @@ const ABOUT: Screen = {
       <>
         <h2>About</h2>
         <p>
-          Crimsonland was one of my favourite games as a kid. It came out in 2003, and over the years it got harder and harder to run, so I
-          brought it back.
+          Crimsonland was one of my favourite games as a kid. It came out in 2003, and over the years it got harder and harder to run, so I{" "}
+          <a href="https://banteg.xyz/posts/crimsonland/">brought it back</a>.
         </p>
         <p>
           I reverse engineered the original game back into C/C++ source that compiles to the same machine code as the original .exe. That
