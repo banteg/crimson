@@ -329,11 +329,11 @@ async function home(): Promise<Screen> {
     panels: [
       () => (
         <>
-          <h2>
+          <p class="lead">
             Crimsonland, as it was in 2003.
             <br />
             Now with <span style={{ "white-space": "nowrap" }}>online co-op.</span>
-          </h2>
+          </p>
           <p>
             Rebuilt from <code>crimsonland.exe</code>, with a few dozen of its <a href={BUGS}>bugs</a> fixed. Play in your browser, chase
             internet high scores where every run is a replay you can watch, and build your own quests. Gamepads welcome.
