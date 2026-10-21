@@ -270,6 +270,7 @@ class ProjectilePool:
             )
             dir_x = math.cos(heading_radians)
             dir_y = math.sin(heading_radians)
+            wake_start = proj.pos
             acc = Vec2()
             step = 0
             while step < steps:
@@ -598,5 +599,17 @@ class ProjectilePool:
                         break
 
                 step += 3
+
+            energetic = proj.type_id in (
+                ProjectileTemplateId.ION_RIFLE, ProjectileTemplateId.ION_MINIGUN,
+                ProjectileTemplateId.ION_CANNON, ProjectileTemplateId.FIRE_BULLETS,
+                ProjectileTemplateId.PLASMA_RIFLE, ProjectileTemplateId.PLASMA_MINIGUN,
+                ProjectileTemplateId.PLASMA_CANNON,
+            )
+            effects.atmosphere_impulse(
+                start=wake_start, end=proj.pos, radius=9. if energetic else 5.,
+                strength=(420. if energetic else 180.)*dt,
+                curl=(120. if energetic else 60.)*dt,
+            )
 
         return hits

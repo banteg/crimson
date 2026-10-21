@@ -21,12 +21,15 @@ TEXTURE_WIDTH = 256
 # Center x/y, planar radii x/y, and total height. Atlas bodies face right.
 # Fitted to the central masses of the base frames; animated limbs and tails are
 # deliberately absent, rather than making their whole sprite square opaque.
+# One ellipse fitted to the combined planar bounds of the former body parts,
+# retaining their maximum height. A single convex mass avoids forked shadows;
+# it is a visual fit, not an enclosing hull of the animated sprite.
 BODY_PROFILES = {
-    CreatureTypeId.SPIDER_SP1: ((-.225, 0., .16, .09, .36), (-.005, 0., .13, .055, .28)),
-    CreatureTypeId.SPIDER_SP2: ((-.225, 0., .14, .12, .40), (-.005, 0., .13, .055, .28)),
-    CreatureTypeId.ALIEN: ((-.065, 0., .065, .13, .36), (-.11, 0., .05, .06, .30)),
-    CreatureTypeId.LIZARD: ((.07, 0., .08, .09, .32), (.15, -.015, .07, .055, .30)),
-    CreatureTypeId.ZOMBIE: ((-.11, 0., .05, .13, .40), (-.035, 0., .07, .065, .46)),
+    CreatureTypeId.SPIDER_SP1: ((-.13, 0., .255, .09, .36),),
+    CreatureTypeId.SPIDER_SP2: ((-.12, 0., .245, .12, .40),),
+    CreatureTypeId.ALIEN: ((-.08, 0., .08, .13, .36),),
+    CreatureTypeId.LIZARD: ((.105, 0., .115, .09, .32),),
+    CreatureTypeId.ZOMBIE: ((-.0625, 0., .0975, .13, .46),),
 }
 
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from heapq import nsmallest
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -16,6 +17,8 @@ from ...projectiles.types import Projectile
 from ...projectiles.types import ProjectileTemplateId as PT
 from ...projectiles.types import SecondaryProjectileTypeId as ST
 from ...weapons import WEAPON_BY_ID, WeaponId
+from ..beam_profiles import STREAK_SCALES
+from ..ion_arcs import ion_arc_targets
 from ..laser_sight import laser_sight_geometry
 
 if TYPE_CHECKING:
@@ -51,6 +54,10 @@ class MaterialLight(msgspec.Struct, frozen=True):
     # Positive radius selects an annulus; its width remains source_width.
     ring_radius: float = 0.0
     reflection_tail: float = 0.18
+    beam_profile: tuple[float, float, float] | None = None
+    beam_ion: bool = False
+    # Artistic scattering response, independent of ground/creature illumination.
+    smoke_gain: float = 1.0
 
     @property
     def reflection_reach(self) -> float:
@@ -121,6 +128,12 @@ def projectile_source(proj: Projectile) -> MaterialLight | None:
         width = min(18.0, max(1.0, distance * 0.035))
         if proj.life_timer < 0.4:
             rgb, width = (0.7, 0.36, 0.08), 5.0
+    beam_scale = STREAK_SCALES.get(proj.type_id)
+    beam_profile = None
+    if beam_scale is not None:
+        if direction.length_sq() == 0:
+            direction = Vec2.from_heading(proj.angle)
+        beam_profile = (16. * beam_scale, min(beam_scale * 3.1, 9.), 1.35 if proj.type_id == PT.FIRE_BULLETS else 1.05)
     return MaterialLight(
         proj.pos - direction * (span * 0.5),
         profile.radius,
@@ -133,7 +146,55 @@ def projectile_source(proj: Projectile) -> MaterialLight | None:
         broad_illumination=profile.broad_illumination,
         reflection_gain=profile.reflection,
         reflection_radius=profile.reach,
+        beam_profile=beam_profile,
+        beam_ion=beam_scale is not None and proj.type_id != PT.FIRE_BULLETS,
     )
+
+
+def ion_arc_sources(
+    frame: RenderFrame, projectile: Projectile, *, view_center: Vec2 | None = None,
+) -> list[MaterialLight]:
+    """Light up to four visible arc segments and their contact glows per impact.
+
+    The existing beam source remains independent. These do not inherit its 4x
+    ground gain or ambient dip. No extra render pass is introduced; arcs compete
+    within the existing illumination/reflection source limits.
+    """
+    targets = [creature.pos for creature in ion_arc_targets(frame, projectile)
+               if projectile.pos.distance_to(creature.pos) > 1e-3]
+    if not targets:
+        return []
+    # Bound allocation/sorting work before entering the shared source selector.
+    # Rank by distance to the visible segment, with endpoint distance breaking
+    # ties at a shared impact point. All connections remain in the artwork.
+    center = projectile.pos if view_center is None else view_center
+
+    def rank(target: Vec2) -> tuple[float, float]:
+        delta = target - projectile.pos
+        offset = center - projectile.pos
+        along = max(0., min(1., (offset.x * delta.x + offset.y * delta.y) / delta.length_sq()))
+        return (offset - delta * along).length_sq(), (target - center).length_sq()
+
+    targets = nsmallest(4, targets, key=rank)
+    profile = PROJECTILE_EMISSIONS[projectile.type_id]
+    energy = min(1.0, projectile.life_timer * 2.5)
+    rgb = (profile.rgb[0] * energy, profile.rgb[1] * energy, profile.rgb[2] * energy)
+    width = STREAK_SCALES[projectile.type_id] * 1.5
+    sources: list[MaterialLight] = []
+    for target in targets:
+        direction, length = (target - projectile.pos).normalized_with_length()
+        sources.append(MaterialLight(
+            (projectile.pos + target) * .5, 100., rgb, height=18.,
+            direction=direction, length=length, source_width=width,
+            illumination_gain=.75, reflection_gain=.5, reflection_radius=120.,
+            reflection_tail=1., broad_illumination=True,
+        ))
+        sources.append(MaterialLight(
+            target, 60., rgb, height=18., source_width=width * 1.5,
+            illumination_gain=.25, reflection_gain=.25, reflection_radius=90.,
+            broad_illumination=True,
+        ))
+    return sources
 
 
 def _flame_sources(frame: RenderFrame) -> list[MaterialLight]:
@@ -213,6 +274,14 @@ def select_material_lights(sources: list[MaterialLight], *, view_center: Vec2) -
 def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[MaterialLight]:
     sources: list[MaterialLight] = []
     for player in frame.players:
+        if PerkId.RADIOACTIVE in frame.state.perks:
+            # Follow the visible aura, including its native post-death presence.
+            pulse = ((math.sin(frame.elapsed_ms * .001) + 1.) * .1875 + .25) / .4375
+            sources.append(MaterialLight(
+                player.pos, 100., (.10, .70, .07), height=18., source_width=13.,
+                illumination_gain=3.8 * pulse, reflection_gain=.8 * pulse,
+                reflection_radius=100., broad_illumination=True,
+            ))
         if player.health > 0.0 and PerkId.SHARPSHOOTER in frame.state.perks:
             near, far, _ = laser_sight_geometry(player.pos, player.aim_heading)
             # The native sight is red at the gun and black at its far end.
@@ -261,6 +330,7 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
         source = projectile_source(projectile)
         if source is not None:
             sources.append(source)
+            sources.extend(ion_arc_sources(frame, projectile, view_center=view_center))
     for sec in frame.state.secondary_projectiles.entries:
         if not sec.active:
             continue
@@ -289,6 +359,7 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                     110.0 * scale,
                     (0.9 * scale, 0.47 * scale, 0.1 * scale),
                     height=22.0,
+                    smoke_gain=6.0,
                     broad_illumination=True,
                     direction=direction,
                     length=6.0 * scale,
@@ -297,7 +368,9 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                 ),
             )
     for visual in frame.state.effects.explosion_visuals:
-        shell = explosion_shell(visual.age, visual.scale) if visual.ring_spawned else None
+        shell = (
+            explosion_shell(visual.age, visual.scale) if visual.emit_light and visual.ring_spawned else None
+        )
         if shell is not None:
             scale = max(0.1, visual.scale)
             sources.append(MaterialLight(

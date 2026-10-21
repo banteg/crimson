@@ -23,6 +23,10 @@ export type Role = "" | "mod" | "admin";
 // The program that played a run, as its replay declares it: the operator's claim.
 export type { CustomQuest, Pilot, SpawnEntry } from "./replay";
 import type { CustomQuest, Pilot } from "./replay";
+// What a custom quest's `fixed_weapon true` adds to its lists besides every weapon drop: the Weapon bonus, and the
+// Alternate Weapon and Random Weapon perks.
+export const FIXED_WEAPON_BONUSES = [3];
+export const FIXED_WEAPON_PERKS = [9, 16];
 
 export interface LinkView {
   provider: ProviderName;

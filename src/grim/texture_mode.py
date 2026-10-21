@@ -31,6 +31,18 @@ def current_target_edr_headroom() -> float:
         return 1.0
     return edr_headroom()
 
+def restore_current_target() -> None:
+    """Restore the enclosing projection/target after raw framebuffer operations.
+
+    Float-target allocation can temporarily bind a different framebuffer, even
+    when allocation fails. Call this in a finally block before resuming drawing.
+    """
+    if _stack:
+        _bind(*_stack[-1])
+    else:
+        rl.end_texture_mode()
+
+
 @contextmanager
 def texture_mode(target: rl.RenderTexture, *, scale_x: float = 1.0, scale_y: float = 1.0) -> Iterator[None]:
     _bind(target, scale_x, scale_y)
@@ -39,7 +51,4 @@ def texture_mode(target: rl.RenderTexture, *, scale_x: float = 1.0, scale_y: flo
         yield
     finally:
         _stack.pop()
-        if _stack:
-            _bind(*_stack[-1])
-        else:
-            rl.end_texture_mode()
+        restore_current_target()

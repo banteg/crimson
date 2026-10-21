@@ -58,6 +58,7 @@ class WorldRuntime:
         render_resources = RenderResources(
             assets_dir=self.assets_dir,
             config=self.config,
+            rtx_mode=rtx_mode,
         )
         self.render_resources = render_resources
         self.audio_bridge = AudioBridge(
@@ -70,6 +71,18 @@ class WorldRuntime:
 
         self.camera = Vec2(-1.0, -1.0)
         self.view_cap = viewport.DEFAULT_VIEW_CAP
+
+    @property
+    def rtx_mode(self) -> RtxRenderMode:
+        return self._rtx_mode
+
+    @rtx_mode.setter
+    def rtx_mode(self, mode: RtxRenderMode) -> None:
+        self._rtx_mode = mode
+        resources = getattr(self, "render_resources", None)
+        if resources is not None and resources.rtx_mode is not mode:
+            resources.rtx_mode = mode
+            resources.smoke.reset()
 
     @property
     def audio(self) -> AudioState | None:
@@ -108,6 +121,7 @@ class WorldRuntime:
     ) -> None:
         self._reset_world(seed=int(seed), player_count=int(player_count))
         self.render_resources.clear_pending_terrain_fx()
+        self.render_resources.smoke.reset()
         self.camera = Vec2(-1.0, -1.0)
 
     def _reset_world(self, *, seed: int, player_count: int) -> None:
@@ -123,6 +137,7 @@ class WorldRuntime:
         """Install a run: its world is the one stepped, drawn and read until the next reset."""
         self.session = session
         self.world = session.world
+        self.render_resources.smoke.reset()
 
     def end_session(self) -> None:
         """Stop stepping the run; its world stays on screen until the next reset."""
@@ -206,6 +221,7 @@ class WorldRuntime:
         return self.view_transform().screen_to_world(pos)
 
     def build_render_frame(self) -> RenderFrame:
+        smoke_enabled = self.render_resources.sync_smoke_mode()
         return RenderFrame(
             config=self.config,
             camera=self.camera,
@@ -217,7 +233,9 @@ class WorldRuntime:
             elapsed_ms=float(self.presentation.elapsed_ms),
             bonus_anim_phase=float(self.presentation.bonus_anim_phase),
             rtx_mode=self.rtx_mode,
+            smoke=self.render_resources.smoke if smoke_enabled else None,
             rtx_debug=self.rtx_debug,
             creature_lighting=self.render_resources.creature_lighting,
+            player_lighting=self.render_resources.player_lighting,
             bonus_lighting=self.render_resources.bonus_lighting,
         )

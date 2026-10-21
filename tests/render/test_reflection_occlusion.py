@@ -22,7 +22,7 @@ def test_body_profiles_rotate_and_scale_with_the_drawn_sprite() -> None:
         bodies = creature_body_volumes(creature)
         if not bodies:
             continue
-        assert len(bodies) == 2
+        assert len(bodies) == 1
         creature.heading += math.pi / 2
         rotated = creature_body_volumes(creature)
         creature.size *= 2
