@@ -95,15 +95,32 @@ crimson identity import <file>    # sign as an exported key (--replace overwrite
 crimson identity profile          # open your profile on crimson.land, signed in
 ```
 
+## Unlock campaign progress
+
+Close the game, then unlock all 50 normal and hardcore quests and their progression rewards:
+
+```bash
+crimson save unlock
+crimson save unlock --base-dir /path/to/runtime
+```
+
+This requires an existing, valid `game.cfg`. Before changing it, the command writes an exact backup
+beside it as `game.cfg.<unique-id>.bak` and prints its path. Counters, statistics and high scores stay
+unchanged. An already fully unlocked save is left untouched, without another backup.
+To restore progress, close the game and copy the backup over `game.cfg`.
+
 ## Custom quests
+
+Quest authoring uses the optional `quests` extra. From a repository checkout,
+`uv run crimson quest ...` includes it by default. Playing compiled-quest replays needs no extra.
 
 Write a quest in the [quest language](https://crimson.banteg.xyz/formats/quest-dsl/), play it, and publish it with a
 completed ranked run to give it a page and leaderboard on [crimson.land/custom](https://crimson.land/custom):
 
 ```bash
-crimson quest build <file>      # check a recipe and print its digest and entry budget
-crimson quest play <file>       # play it; every attempt saves a replay
-crimson quest publish <file>    # upload it with your newest clear
+uvx --from 'crimsonland[quests]' crimson quest build <file>      # check a recipe and print its digest and entry budget
+uvx --from 'crimsonland[quests]' crimson quest play <file>       # play it; every attempt saves a replay
+uvx --from 'crimsonland[quests]' crimson quest publish <file>    # upload it with your newest clear
 ```
 
 [crimson.land/custom/llm.txt](https://crimson.land/custom/llm.txt) is the whole language in one file, for writing

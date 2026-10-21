@@ -15,6 +15,7 @@ from numpy.typing import NDArray
 from grim.geom import Vec2
 
 from ...math_parity import f32
+from .smoke_constants import FADE_SECONDS, MAX_PENDING_EMISSIONS, STEP_SECONDS
 
 if TYPE_CHECKING:
     from ...sim.smoke_events import SmokeEmission
@@ -25,10 +26,7 @@ FIELD_SIZE = GRID_SIZE * CELL_SIZE
 MAX_GRID_SIZE = 640
 DOMAIN_PADDING = 96.0
 GROWTH_CELLS = 32
-MAX_PENDING_EMISSIONS = 1024
-STEP_SECONDS = 1.0 / 60.0
 MAX_IDLE_SECONDS = 10.0
-FADE_SECONDS = 2.0
 FloatGrid = NDArray[np.float32]
 
 

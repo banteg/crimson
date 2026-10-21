@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 import msgspec
-from tqdm import tqdm
+from rich.progress import Progress, TaskID
 
 from grim.audio import AudioState, shutdown_audio
 from grim.config import CrimsonConfig
@@ -23,24 +23,25 @@ from ...modes.replay_playback_mode import ReplayPlaybackMode, open_replay_audio
 from ...replay import REPLAY_TICK_DT, Replay
 from ...sim.run_result import RunResult, run_result_mismatches
 from .playback_driver import PlaybackDriver, PlaybackWalkObserver
+from .progress import replay_progress
 
 ProfileSortKey = Literal["cumtime", "tottime"]
 HotspotSource = Literal["project", "all"]
 
 
 class _TickBar(PlaybackWalkObserver):
-    """Advances a tqdm tick bar as the playback walk reaches each tick."""
+    """Reports absolute completed ticks to the benchmark's progress display."""
 
-    bar: tqdm
+    display: Progress
+    task: TaskID
 
     def progress(self, next_tick_index: int) -> None:
-        self.bar.update(next_tick_index - self.bar.n)
+        if not self.display.disable:
+            self.display.update(self.task, completed=next_tick_index)
 
 
-
-def _step_done(run_bar: tqdm, postfix: str) -> None:
-    run_bar.set_postfix_str(postfix, refresh=False)
-    run_bar.update(1)
+def _step_done(display: Progress, run_task: TaskID, description: str) -> None:
+    display.update(run_task, description=description, advance=1)
 
 
 class ReplayBenchmarkError(ValueError):
@@ -142,14 +143,17 @@ def run_replay_render_benchmark(
 
     tick_total = _tick_total(replay, max_ticks)
     planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0)
-    run_bar = tqdm(total=planned_steps, unit="run", desc="render benchmark", leave=False, disable=not show_progress)
+    display = replay_progress(enabled=show_progress)
+    run_task = display.add_task("render benchmark", total=planned_steps)
+    display.start()
     audio = None
     try:
         resources = load_runtime_resources(runtime_assets_dir)
         audio = None if mute_audio else open_replay_audio(cfg, ctx, console)
 
         def _run_once(tick_desc: str) -> RunResult:
-            with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
+            tick_task = display.add_task(tick_desc, total=tick_total)
+            try:
                 return _run_render_once(
                     ctx=ctx,
                     replay=replay,
@@ -158,8 +162,10 @@ def run_replay_render_benchmark(
                     max_ticks=max_ticks,
                     rtx=bool(rtx),
                     audio=audio,
-                    observer=_TickBar(bar=bar),
+                    observer=_TickBar(display=display, task=tick_task) if show_progress else None,
                 )
+            finally:
+                display.remove_task(tick_task)
 
         measured = _measure_runs(
             _run_once,
@@ -172,10 +178,11 @@ def run_replay_render_benchmark(
             profile_sort=profile_sort,
             top=top,
             profile_out=profile_out,
-            run_bar=run_bar,
+            display=display,
+            run_task=run_task,
         )
     finally:
-        run_bar.close()
+        display.stop()
         if audio is not None:
             shutdown_audio(audio)
         unload_runtime_resources(resources)
@@ -202,13 +209,18 @@ def run_replay_benchmark(
 
     tick_total = _tick_total(replay, max_ticks)
     planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0)
-    run_bar = tqdm(total=planned_steps, unit="run", desc="headless benchmark", leave=False, disable=not show_progress)
+    display = replay_progress(enabled=show_progress)
+    run_task = display.add_task("headless benchmark", total=planned_steps)
+    display.start()
     try:
 
         def _run_once(tick_desc: str) -> RunResult:
-            with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
+            tick_task = display.add_task(tick_desc, total=tick_total)
+            try:
                 driver = PlaybackDriver(replay, max_ticks=max_ticks)
-                return driver.run(observer=_TickBar(bar=bar))
+                return driver.run(observer=_TickBar(display=display, task=tick_task) if show_progress else None)
+            finally:
+                display.remove_task(tick_task)
 
         measured = _measure_runs(
             _run_once,
@@ -221,10 +233,11 @@ def run_replay_benchmark(
             profile_sort=profile_sort,
             top=top,
             profile_out=profile_out,
-            run_bar=run_bar,
+            display=display,
+            run_task=run_task,
         )
     finally:
-        run_bar.close()
+        display.stop()
 
     return _benchmark_result(tick_total, measured)
 
@@ -253,12 +266,13 @@ def _measure_runs(
     profile_sort: ProfileSortKey,
     top: int,
     profile_out: Path | None,
-    run_bar: tqdm,
+    display: Progress,
+    run_task: TaskID,
 ) -> _MeasuredRuns:
     """Warmup, timed and profiled runs; each must reproduce `baseline`, or the first timed run without one."""
     for _ in range(int(warmup_runs)):
         run_once(f"{mode} ticks warmup")
-        _step_done(run_bar, "phase=warmup")
+        _step_done(display, run_task, "phase=warmup")
 
     samples: list[BenchmarkSample] = []
     for sample_idx in range(int(runs)):
@@ -278,7 +292,7 @@ def _measure_runs(
             baseline = result
         else:
             _assert_consistent_run_result(baseline, result, where=f"{mode} run {sample_idx + 1}")
-        _step_done(run_bar, f"phase=measure sample={sample_idx + 1}/{int(runs)}")
+        _step_done(display, run_task, f"phase=measure sample={sample_idx + 1}/{int(runs)}")
     assert baseline is not None
 
     profile_result: ReplayProfileResult | None = None
@@ -301,7 +315,7 @@ def _measure_runs(
             source=source,
             hotspots=tuple(hotspots),
         )
-        _step_done(run_bar, "phase=profile")
+        _step_done(display, run_task, "phase=profile")
 
     return _MeasuredRuns(run_result=baseline, samples=tuple(samples), profile=profile_result)
 

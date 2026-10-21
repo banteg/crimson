@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from crimson.atlas import GRID_SIZE_BY_CODE, SPRITE_TABLE, grid_size_for_index, rect_for_index, uv_for_index
+from crimson_re.atlas import GRID_SIZE_BY_CODE, SPRITE_TABLE, grid_size_for_index, rect_for_index, uv_for_index
 
 DEFAULT_GRIDS = {2, 4, 8, 16}
 

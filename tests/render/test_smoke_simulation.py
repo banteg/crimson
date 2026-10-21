@@ -5,10 +5,10 @@ import numpy as np
 import pytest
 
 from crimson.math_parity import f32
+from crimson.render.rtx.smoke_constants import MAX_PENDING_EMISSIONS
 from crimson.render.rtx.smoke_simulation import (
     CELL_SIZE,
     MAX_GRID_SIZE,
-    MAX_PENDING_EMISSIONS,
     SmokeField,
     SmokeSimulation,
 )

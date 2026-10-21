@@ -1,5 +1,5 @@
 """
-Atlas slicing used by the Crimsonland renderer.
+Atlas slicing helpers for asset export and source-art packaging.
 
 Findings from native code:
 - `effect_uv_tables_init` at 0x0041FED0 precomputes a 16-entry horizontal

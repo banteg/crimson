@@ -9,7 +9,7 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-from crimson.atlas import rect_for_index
+from crimson_re.atlas import rect_for_index
 from grim import jaz, paq
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

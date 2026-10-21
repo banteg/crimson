@@ -10,11 +10,11 @@ from pathlib import Path
 from typing import Literal
 
 import msgspec
-from tqdm import tqdm
 
 from ...replay import REPLAY_TICK_RATE, Replay
 from ...sim.run_result import RunResult
 from .playback_driver import PlaybackDriver
+from .progress import replay_progress
 
 X264Preset = Literal[
     "ultrafast",
@@ -229,7 +229,8 @@ def run_replay_render_video(
             )
             video_writer.open()
             frame_dt = 1.0 / fps
-            with tqdm(total=total_ticks, unit="tick", desc="replay video", disable=not show_progress) as bar:
+            with replay_progress(enabled=show_progress) as progress:
+                task = progress.add_task("replay video", total=total_ticks)
                 while not mode.finished:
                     mode.update(frame_dt)
                     rl.begin_drawing()
@@ -239,8 +240,7 @@ def run_replay_render_video(
                         rl.end_drawing()
                     video_writer.write_frame()
                     frame_count += 1
-                    bar.set_postfix(frames=frame_count, refresh=False)
-                    bar.update(mode.tick_index - bar.n)
+                    progress.update(task, completed=mode.tick_index, description=f"replay video ({frame_count} frames)")
 
             if frame_count <= 0:
                 raise ReplayRenderError("replay render produced no frames")
@@ -451,11 +451,12 @@ def _capture_replay_audio_track(
 
         tick_dt = 1.0 / replay_tick_rate
         next_tick_deadline = time.perf_counter()
-        with tqdm(total=total_ticks, unit="tick", desc="replay audio", disable=not show_progress) as bar:
+        with replay_progress(enabled=show_progress) as progress:
+            task = progress.add_task("replay audio", total=total_ticks)
             while not mode.finished:
                 mode.update(tick_dt)
                 capture.flush_pending()
-                bar.update(mode.tick_index - bar.n)
+                progress.update(task, completed=mode.tick_index)
                 next_tick_deadline += tick_dt
                 sleep_s = next_tick_deadline - time.perf_counter()
                 if sleep_s > 0.0:

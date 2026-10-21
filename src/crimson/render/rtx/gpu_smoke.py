@@ -13,8 +13,8 @@ from grim.texture_mode import restore_current_target, texture_mode
 from ...math_parity import f32
 from ...sim.smoke_events import AtmosphereImpulse, SmokeEmission
 from .gpu_smoke_shaders import GPU_ATMOSPHERE_IMPULSE_FRAGMENT, GPU_SMOKE_FRAGMENT, GPU_SMOKE_SPLAT_FRAGMENT
+from .smoke_constants import FADE_SECONDS, MAX_PENDING_EMISSIONS, STEP_SECONDS
 from .smoke_shaders import SMOKE_VERTEX
-from .smoke_simulation import FADE_SECONDS, MAX_PENDING_EMISSIONS, STEP_SECONDS
 
 GRID_SIZE = 320
 GUARD_BAND = 128.0
