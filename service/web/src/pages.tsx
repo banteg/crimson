@@ -338,6 +338,9 @@ async function home(): Promise<Screen> {
             Crimsonland, the 2003 top-down shooter, in your browser, recovered from <code>crimsonland.exe</code>, with modern gamepads and
             internet high scores where every run is verified by replay.
           </p>
+          <p>
+            Bring a friend: press <em>Play co-op</em>, send them the invite link, and fight side by side in the same arena from two computers.
+          </p>
           <PlayGame />
         </>
       ),
@@ -420,7 +423,7 @@ function BoardSwitch(props: { board: Board; at?: number | string }) {
         </span>
       </nav>
       <Show when={coop}>
-        <p class="muted">Two-player co-op over the internet, ranked as a pair.</p>
+        <p class="muted">Two-player co-op over the internet, ranked as a pair. Start one with <em>Play co-op</em> on the Play page.</p>
       </Show>
     </>
   );
@@ -1086,8 +1089,21 @@ const ABOUT: Screen = {
         <p>
           I reverse engineered the original game back into C/C++ source that compiles to the same machine code as the original .exe. That
           source is what you <a href="/play/" data-native>play in your browser</a>. It plays exactly like you remember, the same weapons,
-          perks and quests, because it <em>is</em> the same code. On top of that it supports modern gamepads and has an online
-          leaderboard. Your saves are kept in your browser, and the original art and sound are used with permission from 10tons.
+          perks and quests, because it <em>is</em> the same code. On top of that it adds two-player co-op over the internet, modern gamepads
+          and an online leaderboard. Your saves are kept in your browser, and the original art and sound are used with permission from 10tons.
+        </p>
+      </>
+    ),
+    () => (
+      <>
+        <h3>Co-op online</h3>
+        <p>
+          In 2003, co-op meant two players at one keyboard. Here you can play from two computers: press <em>Play co-op</em> on the{" "}
+          <a href="/play/" data-native>Play page</a>, send your friend the invite link, and the game starts when they press <em>Join</em>.
+        </p>
+        <p>
+          You're one team in the same arena: shared experience, level and perks, with your own gun and health each. Survival and the quests
+          rank co-op runs as a pair on their own high score lists, and both of you sign the replay.
         </p>
       </>
     ),

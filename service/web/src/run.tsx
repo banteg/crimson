@@ -660,7 +660,7 @@ function QuestScore(props: { detail: RunDetailView }) {
       <dl>
         <dt>Base Time</dt><dd>{formatScore("quests", result.elapsed_ms)}</dd>
         <dt>Life Bonus</dt><dd>{adjustment(lifeBonus)}</dd>
-        <dt>Unpicked Perk Bonus <span class="muted">({result.pending_perks})</span></dt><dd>{adjustment(perkBonus)}</dd>
+        <dt>Unpicked Perks <span class="muted">({result.pending_perks})</span></dt><dd>{adjustment(perkBonus)}</dd>
       </dl>
       <Show when={result.elapsed_ms - lifeBonus - perkBonus === 0}>
         <p class="muted">0:00.000 is clamped to 0:00.001, just like the original high score table.</p>

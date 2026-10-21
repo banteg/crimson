@@ -176,9 +176,17 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     // Staged by `npm run play`; a build without it has no game page.
     const page = await env.ASSETS.fetch(request);
     if (!page.ok) return page;
+    // A co-op invite needs the site's own page, so its preview offers the link rather than a player inside the post.
+    if (url.searchParams.has("coop"))
+      return withPreview(page, url, {
+        title: "Co-op invite",
+        description: "You're invited to play Crimsonland together. Open the link, press Join, and fight side by side in the same arena.",
+        image: null,
+        player: null,
+      });
     return withPreview(page, url, {
       title: "Play",
-      description: "Crimsonland in your browser: the 2003 game, recovered from crimsonland.exe.",
+      description: "Crimsonland in your browser, alone or with a friend online: the 2003 game, recovered from crimsonland.exe.",
       image: null,
       player: { url: url.toString(), width: VIEW_W, height: VIEW_H },
     });
@@ -332,7 +340,7 @@ interface Preview {
   player: { url: string; width: number; height: number } | null;
 }
 
-const SITE_DESCRIPTION = "Play Crimsonland in your browser, with internet high scores where every run is a replay the server re-simulates.";
+const SITE_DESCRIPTION = "Play Crimsonland in your browser, alone or with a friend online, with internet high scores where every run is a replay the server re-simulates.";
 // The preview of a page with no image of its own: a moment of the Survival board's top run (public/og.jpg).
 const SITE_IMAGE = { path: "/og.jpg", width: 1200, height: 630 };
 
