@@ -6,8 +6,6 @@ import logging
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
@@ -17,18 +15,24 @@ from .gpu_smoke import GpuSmokeSimulation
 from .material_lights import MAX_ILLUMINATION_SOURCES, MaterialLight
 from .smoke_composite import SmokeComposite
 from .smoke_shaders import SMOKE_FRAGMENT, SMOKE_VERTEX
-from .smoke_simulation import SmokeSimulation
 
 if TYPE_CHECKING:
     from ...sim.smoke_events import AtmosphereImpulse, SmokeEmission
     from ..frame import RenderFrame
     from ..world.context import WorldRenderCtx
     from ..world.viewport import ViewTransform
+    from .smoke_simulation import SmokeSimulation
 
 
 class SmokeRenderer:
     def __init__(self, *, cpu_reference: bool = False) -> None:
-        self.simulation = SmokeSimulation() if cpu_reference else GpuSmokeSimulation()
+        self.simulation: SmokeSimulation | GpuSmokeSimulation
+        if cpu_reference:
+            from .smoke_simulation import SmokeSimulation
+
+            self.simulation = SmokeSimulation()
+        else:
+            self.simulation = GpuSmokeSimulation()
         self.available = True
         self.compositor = SmokeComposite()
         self.shader: rl.Shader | None = None
@@ -135,6 +139,10 @@ class SmokeRenderer:
         self.prepared = True
 
     def _upload_reference(self) -> None:
+        import numpy as np
+
+        from .smoke_simulation import SmokeSimulation
+
         assert isinstance(self.simulation, SmokeSimulation)
         rl.rl_draw_render_batch_active()
         for slot, field in self.simulation.fields.items():

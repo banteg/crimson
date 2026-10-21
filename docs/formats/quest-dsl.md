@@ -28,10 +28,13 @@ and weapon numbers to balance with, and the toolchain.
 With [uv](https://docs.astral.sh/uv/) installed, no checkout is needed:
 
 ```sh
-uvx crimsonland@latest quest build my.quest
-uvx crimsonland@latest quest play my.quest
-uvx crimsonland@latest quest publish my.quest
+uvx --from 'crimsonland[quests]' crimson quest build my.quest
+uvx --from 'crimsonland[quests]' crimson quest play my.quest
+uvx --from 'crimsonland[quests]' crimson quest publish my.quest
 ```
+
+The `quests` extra installs the recipe parser; ordinary gameplay and compiled-quest replays do not need it.
+From a repository checkout, `uv run crimson quest ...` includes authoring dependencies by default.
 
 `quest build` compiles a recipe and prints its ID, weapon, terrain, entry count and
 copies; `--json` prints the resolved `CustomQuest`. `quest play` opens the game

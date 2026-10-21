@@ -172,7 +172,7 @@ glow path, not this Ion trail branch.
     (e.g. `creature_type_table[0].base_frame = 0x20`, `creature_type_table[1].base_frame = 0x10`).
 ## Replicating the atlas cutting
 
-`src/crimson/atlas.py` provides the same slicing math used by the engine:
+`crimson-re/src/crimson_re/atlas.py` provides the same slicing math used by the engine:
 
 - `grid_size_from_code(code)`
 - `grid_size_for_index(table_index)`

@@ -8,6 +8,7 @@ from typer.testing import CliRunner
 
 from crimson.cli.app import app
 from crimson.game_modes import GameMode
+from crimson.replay.driver.replay_benchmark import run_replay_benchmark
 from tests.replay.cli._helpers import (
     build_replay as _build_replay,
 )
@@ -114,3 +115,12 @@ def test_replay_benchmark_profile_outputs_hotspots_and_pstats(tmp_path: Path) ->
     assert len(profile["hotspots"]) <= 5
     assert profile_out.is_file()
 
+
+
+def test_progress_keeps_benchmark_results_and_stdout_clean(capsys) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
+    quiet = run_replay_benchmark(replay, runs=1, warmup_runs=0, show_progress=False)
+    shown = run_replay_benchmark(replay, runs=1, warmup_runs=1, show_progress=True)
+    assert shown.run_result == quiet.run_result
+    assert shown.ticks == quiet.ticks == 3
+    assert capsys.readouterr().out == ""

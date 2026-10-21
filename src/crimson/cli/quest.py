@@ -23,7 +23,18 @@ _BASE_DIR = typer.Option(
 
 
 def _compile(quest_file: Path, seed: int) -> tuple[str, CustomQuest]:
-    from ..quests.dsl import QuestCompileError, build_custom_quest
+    try:
+        from ..quests.dsl import QuestCompileError, build_custom_quest
+    except ModuleNotFoundError as exc:
+        if exc.name != "lark":
+            raise
+        typer.echo(
+            "Quest authoring requires the quests extra. Run "
+            "uvx --from 'crimsonland[quests]' crimson quest <command> <file>, "
+            "or use uv run crimson quest from a repository checkout.",
+            err=True,
+        )
+        raise typer.Exit(code=1) from exc
 
     try:
         source = quest_file.read_text(encoding="utf-8")

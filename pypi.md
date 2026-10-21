@@ -97,13 +97,16 @@ crimson identity profile          # open your profile on crimson.land, signed in
 
 ## Custom quests
 
+Quest authoring uses the optional `quests` extra. From a repository checkout,
+`uv run crimson quest ...` includes it by default. Playing compiled-quest replays needs no extra.
+
 Write a quest in the [quest language](https://crimson.banteg.xyz/formats/quest-dsl/), play it, and publish it with a
 completed ranked run to give it a page and leaderboard on [crimson.land/custom](https://crimson.land/custom):
 
 ```bash
-crimson quest build <file>      # check a recipe and print its digest and entry budget
-crimson quest play <file>       # play it; every attempt saves a replay
-crimson quest publish <file>    # upload it with your newest clear
+uvx --from 'crimsonland[quests]' crimson quest build <file>      # check a recipe and print its digest and entry budget
+uvx --from 'crimsonland[quests]' crimson quest play <file>       # play it; every attempt saves a replay
+uvx --from 'crimsonland[quests]' crimson quest publish <file>    # upload it with your newest clear
 ```
 
 [crimson.land/custom/llm.txt](https://crimson.land/custom/llm.txt) is the whole language in one file, for writing

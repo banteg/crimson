@@ -25,10 +25,11 @@ without requiring the port to reproduce its global layout or virtual interface.
 | Deterministic session and world state | `src/crimson/sim/sessions.py`, `src/crimson/sim/world_state.py` |
 | Replay codec, recording and driving | `src/crimson/replay/` |
 | Camera, terrain and audio application | `src/crimson/world/` |
-| World drawing and atlas coordinates | `src/crimson/render/world/`, `src/crimson/atlas.py` |
+| World drawing and atlas coordinates | `src/crimson/render/world/` |
 | Creature, projectile, perk and bonus behavior | `src/crimson/creatures/`, `src/crimson/projectiles/`, `src/crimson/perks/`, `src/crimson/bonuses/` |
 | Quest content, tutorial and typing rules | `src/crimson/quests/`, `src/crimson/tutorial/`, `src/crimson/typo/` |
 | Saves and high scores | `src/crimson/persistence/` |
+| Asset export and atlas slicing | `crimson-re/src/crimson_re/atlas.py` |
 | Trace recording, comparison and state inspection | `crimson-re/src/crimson_re/dbg/` |
 
 ## Ownership
