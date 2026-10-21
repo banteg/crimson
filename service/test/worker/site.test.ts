@@ -56,7 +56,7 @@ async function api<T>(path: string, cookie = ""): Promise<T> {
 
 describe("site", () => {
   it("every route gets the site's page, titled for what a shared link points at", async () => {
-    for (const [path, title] of [["/", "crimson.land"], ["/quests/1.1", `1.1 ${questTitles["1.1"]} · crimson.land`], ["/about", "About · crimson.land"]]) {
+    for (const [path, title] of [["/", "crimson.land"], ["/quests/1.1", `1.1: ${questTitles["1.1"]} · crimson.land`], ["/about", "About · crimson.land"]]) {
       const html = await (await call(path!)).text();
       expect(html).toContain(`<title>${title}</title>`);
       expect(html).toContain(`<meta property="og:title" content="${title}">`);
@@ -106,13 +106,13 @@ describe("site", () => {
     expect(menu).toMatchObject({ board: "quests-hardcore", stage: 2 });
     expect(menu.quests.map((quest) => quest.quest)).toEqual(Array.from({ length: 10 }, (_, i) => `2.${i + 1}`));
     expect(menu.quests[0]).toEqual({ quest: "2.1", title: questTitles["2.1"], players: 0 });
-    expect((await api<BoardView>("/api/quests/hardcore/2.3")).title).toBe(`2.3 ${questTitles["2.3"]} · hardcore`);
+    expect((await api<BoardView>("/api/quests/hardcore/2.3")).title).toBe(`2.3: ${questTitles["2.3"]} · hardcore`);
     expect((await call("/api/quests/9.9")).status).toBe(404);
   });
 
   it("a co-op pair's boards sit under /coop, beside one player's", async () => {
     expect(await (await call("/survival/coop")).text()).toContain("<title>Survival · co-op · crimson.land</title>");
-    expect(await (await call("/quests/hardcore/coop/2.3")).text()).toContain(`<title>2.3 ${questTitles["2.3"]} · hardcore · co-op · crimson.land</title>`);
+    expect(await (await call("/quests/hardcore/coop/2.3")).text()).toContain(`<title>2.3: ${questTitles["2.3"]} · hardcore · co-op · crimson.land</title>`);
     expect(await api<BoardView>("/api/survival/coop")).toMatchObject({ board: "survival-coop", rows: [] });
     expect(await api<QuestMenuView>("/api/quests/coop/3")).toMatchObject({ board: "quests-coop", stage: 3 });
     expect((await api<BoardView>("/api/quests/hardcore/coop/2.3")).board).toBe("quests-hardcore-coop");

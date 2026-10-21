@@ -10,7 +10,7 @@ Status: implemented in the second layer of the post-RTX stack, pending review
 and merge. Rules 1 and 2 play through explicit profiles in Python, native/WASM,
 and the game. Compatibility is tracked in
 [#833](https://github.com/banteg/crimson/issues/833); the pellet-conversion
-extension [#832](https://github.com/banteg/crimson/issues/832) is the next layer.
+extension [#832](https://github.com/banteg/crimson/issues/832) is implemented in the final layer.
 Keep the whole stack out of the RTX release; it targets the release after it.
 
 ## Selected behavior
@@ -70,7 +70,7 @@ Replay encoding stays at format 34; its existing `rules` field is sufficient.
    derivation use the selected profile. The quest breakdown UI can then use
    recorded rules instead of inferring the formula from the score. Accept both
    supported versions, and check historical results under their own behavior.
-6. **Next layer: adopted pellet conversion.** In rules 2 default, Gauss Shotgun
+6. **Adopted pellet conversion.** In rules 2 default, Gauss Shotgun
    produces six Fire Bullets at its normal 1.05-second base cooldown; Multi-Plasma
    produces five at its normal approximately 0.6208117-second cooldown. Preserve
    rules-1 counts (one and three) and cadence under legacy/original policies.

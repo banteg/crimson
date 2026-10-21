@@ -17,7 +17,7 @@ from ...effects_atlas import EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...ui.cursor import draw_aim_cursor
-from ..rtx.material_lights import collect_material_lights
+from ..rtx.material_lights import MaterialLight, collect_material_lights
 from ..rtx.materials import MaterialGroundRenderer
 from ..rtx.mode import RtxRenderMode
 from . import viewport
@@ -62,10 +62,12 @@ _NATIVE_CREATURE_SPRITE_DRAW_ORDER: tuple[CreatureTypeId, ...] = (
 
 class WorldDrawContext(msgspec.Struct, frozen=True):
     entity_alpha: float = 1.0
+    material_lights: tuple[MaterialLight, ...] = ()
     trooper_texture: rl.Texture | None = None
     particles_texture: rl.Texture | None = None
     monster_vision: bool = False
     monster_vision_src: rl.Rectangle | None = None
+    monster_vision_analytic: bool = False
     poison_src: rl.Rectangle | None = None
 
 
@@ -74,20 +76,44 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
 
     entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
     view = render_ctx.view
-    draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size)
+    if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_smoke:
+        draw_smoke_map(render_ctx)
+        return
+    draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size,
+                    entity_alpha=entity_alpha)
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_map:
+        # Hidden presentation still consumes simulation ticks; do not accumulate
+        # a long GPU backlog while inspecting diagnostic maps.
+        if render_ctx.frame.smoke is not None:
+            render_ctx.frame.smoke.prepare(render_ctx.frame, ())
         return
     if entity_alpha <= 1e-3:
+        if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.smoke is not None:
+            render_ctx.frame.smoke.prepare(render_ctx.frame, ())
         # Native 0x405b95 still calls projectile_render at zero transition;
         # its Gauss slots retain life alpha. Keep that pass inside alpha testing.
         with render_ctx.frame.resources.alpha_test.scope():
             projectile_render(render_ctx, alpha=entity_alpha)
         return
 
-    with render_ctx.frame.resources.alpha_test.scope():
+    frame = render_ctx.frame
+    lights = ()
+    if frame.rtx_mode is RtxRenderMode.RTX:
+        lights = tuple(collect_material_lights(
+            frame, view_center=render_ctx.view.screen_size * .5 - render_ctx.view.camera,
+        ))
+        if frame.player_lighting is not None:
+            frame.player_lighting.prepare(lights, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
+        # Fluid passes bind their own shaders and render targets. Run them before
+        # entering the native sprite alpha-test scope so they cannot replace it.
+        if frame.smoke is not None:
+            frame.smoke.prepare(frame, lights)
+
+    with frame.resources.alpha_test.scope():
         draw_ctx = build_draw_context(
             render_ctx,
             entity_alpha=entity_alpha,
+            material_lights=lights,
         )
         draw_players(render_ctx, ctx=draw_ctx, alive=False)
         draw_creatures(render_ctx, ctx=draw_ctx)
@@ -96,6 +122,22 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
         projectile_render(render_ctx, alpha=draw_ctx.entity_alpha)
         bonus_render(render_ctx, ctx=draw_ctx)
 
+    # Continuous extinction must not inherit the native sprite alpha-test shader.
+    # This remains inside the world's HDR/pressure-front composition scope.
+    if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None:
+        frame.smoke.draw(render_ctx, alpha=entity_alpha)
+
+
+def draw_smoke_map(render_ctx: WorldRenderCtx) -> None:
+    """A smoke diagnostic over black: the fluid alone, lit by the frame's own weapon sources."""
+    rl.clear_background(rl.BLACK)
+    frame = render_ctx.frame
+    if frame.smoke is None:
+        return
+    view = render_ctx.view
+    frame.smoke.prepare(frame, tuple(collect_material_lights(frame, view_center=view.screen_size * .5 - view.camera)))
+    frame.smoke.draw(render_ctx, alpha=1.0, debug=frame.rtx_debug)
+
 
 def draw_background(
     render_ctx: WorldRenderCtx,
@@ -103,13 +145,15 @@ def draw_background(
     camera: Vec2,
     screen_size: Vec2,
     out_size: Vec2,
+    entity_alpha: float = 1.0,
 ) -> None:
     clear_color = rl_color(10, 10, 12, 255)
     ground = render_ctx.frame.ground
     assert ground is not None, "ground renderer must be initialized before live world draw"
     rl.clear_background(clear_color)
     if isinstance(ground, MaterialGroundRenderer) and render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
-        with ground.material_scope(render_ctx.frame, view_center=screen_size * 0.5 - camera):
+        with ground.material_scope(render_ctx.frame, view_center=screen_size * 0.5 - camera,
+                                   view=render_ctx.view, entity_alpha=entity_alpha):
             ground.draw_view(
                 camera, screen_w=screen_size.x, screen_h=screen_size.y, out_w=out_size.x, out_h=out_size.y,
             )
@@ -127,6 +171,7 @@ def build_draw_context(
     render_ctx: WorldRenderCtx,
     *,
     entity_alpha: float,
+    material_lights: tuple[MaterialLight, ...] = (),
 ) -> WorldDrawContext:
     frame = render_ctx.frame
     resources = frame.resources
@@ -144,10 +189,13 @@ def build_draw_context(
 
     return WorldDrawContext(
         entity_alpha=entity_alpha,
+        material_lights=material_lights,
         trooper_texture=trooper_texture,
         particles_texture=particles_texture,
         monster_vision=monster_vision,
         monster_vision_src=monster_vision_src,
+        monster_vision_analytic=(monster_vision and frame.rtx_mode is RtxRenderMode.RTX
+                                 and isinstance(frame.ground, MaterialGroundRenderer)),
         poison_src=poison_src,
     )
 
@@ -205,30 +253,46 @@ def draw_creature_overlays(
             dst = rl_rectangle(screen.x, screen.y, size, size)
             origin = rl_vector2(size * 0.5, size * 0.5)
             tint = rl_color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
-            rl.draw_texture_pro(ctx.particles_texture, ctx.monster_vision_src, dst, origin, 0.0, tint)
+            # The analytic shader ignores the atlas and needs the full [0,1] UV quad.
+            src = (rl_rectangle(0, 0, ctx.particles_texture.width, ctx.particles_texture.height)
+                   if ctx.monster_vision_analytic else ctx.monster_vision_src)
+            rl.draw_texture_pro(ctx.particles_texture, src, dst, origin, 0.0, tint)
 
-    if ctx.particles_texture is not None and ctx.poison_src is not None and bool(creature.plague_infected):
-        # creature_render_all: plague_infected overlay (black 80x80 aura), drawn before red poison flag.
-        plague_alpha = fade * ctx.entity_alpha
-        if plague_alpha > 1e-3:
-            size = 80.0 * render_ctx.view.scale
-            dst = rl_rectangle(screen.x, screen.y, size, size)
-            origin = rl_vector2(size * 0.5, size * 0.5)
-            tint = rl_color(0, 0, 0, int(clamp(plague_alpha, 0.0, 1.0) * 255.0 + 0.5))
-            rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
+    status_overlay = bool(creature.plague_infected) or bool(creature.flags & CreatureFlags.POISONED)
+    if ctx.monster_vision_analytic and status_overlay:
+        alpha_shader = render_ctx.frame.resources.alpha_test.shader
+        if alpha_shader is None:
+            rl.end_shader_mode()
+        else:
+            rl.begin_shader_mode(alpha_shader)
+    try:
+        if ctx.particles_texture is not None and ctx.poison_src is not None and bool(creature.plague_infected):
+            # creature_render_all: plague_infected overlay (black 80x80 aura), drawn before red poison flag.
+            plague_alpha = fade * ctx.entity_alpha
+            if plague_alpha > 1e-3:
+                size = 80.0 * render_ctx.view.scale
+                dst = rl_rectangle(screen.x, screen.y, size, size)
+                origin = rl_vector2(size * 0.5, size * 0.5)
+                tint = rl_color(0, 0, 0, int(clamp(plague_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
 
-    if (
-        ctx.particles_texture is not None
-        and ctx.poison_src is not None
-        and (creature.flags & CreatureFlags.POISONED)
-    ):
-        poison_alpha = fade * ctx.entity_alpha
-        if poison_alpha > 1e-3:
-            size = 60.0 * render_ctx.view.scale
-            dst = rl_rectangle(screen.x, screen.y, size, size)
-            origin = rl_vector2(size * 0.5, size * 0.5)
-            tint = rl_color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
-            rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
+        if (
+            ctx.particles_texture is not None
+            and ctx.poison_src is not None
+            and (creature.flags & CreatureFlags.POISONED)
+        ):
+            poison_alpha = fade * ctx.entity_alpha
+            if poison_alpha > 1e-3:
+                size = 60.0 * render_ctx.view.scale
+                dst = rl_rectangle(screen.x, screen.y, size, size)
+                origin = rl_vector2(size * 0.5, size * 0.5)
+                tint = rl_color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
+    finally:
+        if ctx.monster_vision_analytic and status_overlay:
+            ground = render_ctx.frame.ground
+            assert isinstance(ground, MaterialGroundRenderer)
+            rl.begin_shader_mode(ground.perk_lighting.ensure_aura_shader())
 
 
 def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
@@ -237,7 +301,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
     lighting = frame.creature_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
     if lighting is not None:
         lighting.prepare(
-            collect_material_lights(frame, view_center=render_ctx.view.screen_size * 0.5 - render_ctx.view.camera),
+            ctx.material_lights,
             camera=render_ctx.view.camera,
             view_scale=render_ctx.view.view_scale,
             occlusion=frame.ground.reflection_occlusion if isinstance(frame.ground, MaterialGroundRenderer) else None,
@@ -247,14 +311,18 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
 
     # Native `creature_render_all` batches all overlays across the active pool
     # before any species-specific sprite passes.
-    for creature in iter_active_creature_overlay_pass(creature_entries):
-        screen = viewport.world_to_screen_with(
-            creature.pos,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-        )
-        death_timer = float(creature.death_timer)
-        draw_creature_overlays(render_ctx, creature, screen=screen, death_timer=death_timer, ctx=ctx)
+    ground = frame.ground
+    aura_scope = (ground.perk_lighting.aura_scope(restore_shader=frame.resources.alpha_test.shader)
+                  if ctx.monster_vision_analytic and isinstance(ground, MaterialGroundRenderer) else nullcontext())
+    with aura_scope:
+        for creature in iter_active_creature_overlay_pass(creature_entries):
+            screen = viewport.world_to_screen_with(
+                creature.pos,
+                camera=render_ctx.view.camera,
+                view_scale=render_ctx.view.view_scale,
+            )
+            death_timer = float(creature.death_timer)
+            draw_creature_overlays(render_ctx, creature, screen=screen, death_timer=death_timer, ctx=ctx)
 
     resources = frame.resources
     shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True

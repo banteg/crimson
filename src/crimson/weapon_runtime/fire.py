@@ -98,13 +98,18 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
     def muzzle_sprite(self, speed: float, scale: float, alpha: float) -> None:
         # Native uses raw (cos h, sin h) of the aim heading - the aim direction
         # rotated 90 degrees - matching the Fire Cough and shell-casing ports.
-        self.state.sprite_effects.spawn(
-            pos=self.muzzle,
-            vel=Vec2.from_angle(self.aim_heading) * speed,
-            scale=scale,
-            color=RGBA(0.5, 0.5, 0.5, alpha),
-            rng=self.state.rng,
-        )
+        direction = Vec2.from_heading(self.aim_heading)
+        pool = self.state.sprite_effects
+        pool.atmosphere_impulse(start=self.muzzle, end=self.muzzle+direction*40.,
+                                radius=10., strength=80.*alpha, curl=20.*alpha, kind="muzzle")
+        with pool.smoke_source(profile="muzzle", flow_dir=direction, velocity=direction*speed):
+            pool.spawn(
+                pos=self.muzzle,
+                vel=Vec2.from_angle(self.aim_heading) * speed,
+                scale=scale,
+                color=RGBA(0.5, 0.5, 0.5, alpha),
+                rng=self.state.rng,
+            )
 
 
 def _native_shot_angle_with_jitter(
@@ -195,6 +200,12 @@ def fire_weapon(
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
 
     pellet_count = int(weapon.pellet_count)
+    if is_fire_bullets and state.rules2_fixes:
+        # Conversion follows the normal volley size without changing legacy metadata.
+        if weapon_id == WeaponId.GAUSS_SHOTGUN:
+            pellet_count = 6
+        elif weapon_id == WeaponId.MULTI_PLASMA:
+            pellet_count = 5
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 
     shot_cooldown = f32(weapon.shot_cooldown)

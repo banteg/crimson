@@ -119,7 +119,7 @@ export function boardTitle(board: Board, quest: string, customTitle?: string): s
   if (!quests) return `Survival${coop}`;
   if (customTitle) return customTitle;
   const stock = QUEST_TITLES[quest];
-  return stock ? `${quest} ${stock}${hardcore ? " · hardcore" : ""}${coop}` : `Quest ${quest}`;
+  return stock ? `${quest}: ${stock}${hardcore ? " · hardcore" : ""}${coop}` : `Quest ${quest}`;
 }
 
 // Each co-op run's seats, player one first; one-player runs have none. A deleted player's seat shows nobody.

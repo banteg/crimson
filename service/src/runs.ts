@@ -3,7 +3,7 @@
 import { concat, COOP_RUN_DOMAIN, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
-import type { Signals, Timeline } from "./api-types";
+import { FIXED_WEAPON_BONUSES, FIXED_WEAPON_PERKS, type Signals, type Timeline } from "./api-types";
 import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError, SEED_BITS } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
@@ -237,9 +237,8 @@ export function validateRecipeSource(source: string, quest: CustomQuest): boolea
     }
   }
   if (fixedWeapon) {
-    noBonuses.add(3);
-    noPerks.add(9);
-    noPerks.add(16);
+    FIXED_WEAPON_BONUSES.forEach((id) => noBonuses.add(id));
+    FIXED_WEAPON_PERKS.forEach((id) => noPerks.add(id));
     for (let id = 2; id <= 33; id++) noWeapons.add(id);
   }
   if (author !== quest.author || weapon !== quest.start_weapon_id) return false;

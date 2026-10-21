@@ -1292,3 +1292,21 @@ Slide speed, duration, corpse collision window and piercing damage pools are
 unchanged. The heading also determines the collapsed sprite orientation.
 `--preserve-bugs` retains cosine/cosine impulses and heading-based original slides.
 [Issue #818](https://github.com/banteg/crimson/issues/818), `49-impact-aligned-death.patch`.
+
+
+## 50) Fire Bullets loses Gauss Shotgun and Multi-Plasma pellets
+
+Normal firing emits six Gauss Shotgun projectiles and five Multi-Plasma bolts,
+but metadata supplies one and three respectively to Fire Bullets conversion.
+Rules 2 default uses six/five converted projectiles and the existing multi-pellet
+cadence: 1.05 seconds for Gauss Shotgun and approximately 0.6208117 seconds for
+Multi-Plasma before perks. Rules 1 and `--preserve-bugs` retain the old conversion.
+
+This is an adopted consistency/balance choice. Gauss previously used the
+single-pellet 0.14-second Fire Bullets cooldown, so this increases burst size
+while reducing nominal projectiles per second. Multi-Plasma converts its three
+strong/two weaker bolts into five uniform Fire Bullets. Normal firing, ammo
+suppression during the bonus, perk multipliers, spread and casing flags retain
+their existing behavior. Muzzle brightness follows the existing multi-pellet
+branch. Legacy weapon metadata remains unchanged.
+[Issue #832](https://github.com/banteg/crimson/issues/832), `50-fire-bullets-conversion.patch`.

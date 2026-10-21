@@ -84,7 +84,8 @@ writers always write v34.
 Rules 2 includes exact-zero reload completion, Jinxed/chain living-target
 selection, independent randomized perk intervals and swap cooldowns, post-swap
 readiness, nonnegative quest life bonuses, single rocket death handling, DoT
-death boundaries, and impact-aligned corpse slides with corrected impulses.
+death boundaries, impact-aligned corpse slides with corrected impulses, and complete
+Gauss Shotgun/Multi-Plasma Fire Bullets volleys at normal multi-pellet cooldowns.
 Both rules 1 and 2 are playable and verifiable using explicit simulation profiles;
 new runs default to rules 2. `preserve_bugs` selects original behavior, not the
 previous fixed default. Existing payloads, signatures and results remain intact.

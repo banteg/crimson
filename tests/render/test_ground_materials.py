@@ -929,3 +929,208 @@ def test_visible_death_shadow_collapses_without_an_instant_hp_cutoff(ground_mate
     assert 0 <= remaining < blocked * .2
     creature.death_timer = 0
     assert debug_pixels(ground, texture, mode=6, creatures=pool) == clear
+
+
+@pytest.mark.parametrize("ion,gain_name,gain", [(True, "ION_DIRECT_GAIN", 4.), (False, "FIRE_DIRECT_GAIN", 3.)])
+def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(ground_material, mocker, monkeypatch, ion, gain_name, gain) -> None:
+    ground, texture = ground_material
+    # A masked source before the beam catches an incorrect vec4 count/row offset.
+    reflection_only = MaterialLight(Vec2(32, 20), 150, (1, 1, 1), illumination_gain=0)
+    beam = MaterialLight(
+        Vec2(32, 20), 150, (.5, .8, 1.4), height=24, direction=Vec2(1, 0), length=48,
+        broad_illumination=True, beam_profile=(35.2, 6.82, 1.05), beam_ion=ion,
+    )
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[reflection_only, beam])
+    upload = mocker.spy(rl, "set_shader_value_v")
+
+    def render():
+        return debug_pixels(ground, texture, mode=int(RtxDebugView.DIRECT_UNSHADOWED))
+
+    # Capture a non-beam frame before section uniforms have ever been uploaded.
+    nonbeam = msgspec.structs.replace(beam, beam_profile=None, beam_ion=False)
+    collector.return_value = [nonbeam]
+    baseline = render()
+    collector.return_value = [reflection_only, beam]
+    boosted = render()  # Accepted lighting is active without a separate control.
+    monkeypatch.setattr(ground_materials, gain_name, 1.)
+    one = render()
+    assert max(pixel[2] for pixel in one) > .001
+    # Exercise material_scope's real array binding and CFFI pointer conversion.
+    for normal, bright in zip(one, boosted, strict=True):
+        assert bright[:3] == pytest.approx(tuple(channel * gain for channel in normal[:3]), rel=.002, abs=.001)
+    calls = [call for call in upload.call_args_list if call.args[1] == ground.beam_cells_location]
+    assert len(calls) == 2
+    assert all(call.args[4] == 6 and rl.ffi.typeof(call.args[2]).cname == "void *" for call in calls)
+    monkeypatch.setattr(ground_materials, gain_name, gain)
+    collector.return_value = [nonbeam]
+    assert render() == baseline  # Stale cells must not affect a later non-beam frame.
+    collector.return_value = [reflection_only, beam]
+    assert render() == boosted
+    collector.return_value = []
+    assert all(pixel[:3] == (0., 0., 0.) for pixel in render())
+
+
+def test_ion_arcs_add_ground_light_and_wet_reflections(ground_material, mocker) -> None:
+    from crimson.render.rtx.material_lights import ion_arc_sources
+    from tests.render.test_ion_arc_lights import scene
+
+    ground, texture = ground_material
+    uniform_fresh_film(ground, texture)
+    frame, shot = scene()
+    shot.pos = Vec2(16, 20)
+    frame.creatures.entries[1].pos = Vec2(48, 20)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+    baseline = {mode: debug_pixels(ground, texture, mode=mode) for mode in (5, 6)}
+    collector.return_value = ion_arc_sources(frame, shot)
+    for mode in (5, 6):
+        lit = debug_pixels(ground, texture, mode=mode)
+        assert max(after[2] - before[2] for before, after in zip(baseline[mode], lit, strict=True)) > .001, mode
+    shot.life_timer = 0
+    collector.return_value = ion_arc_sources(frame, shot)
+    assert debug_pixels(ground, texture, mode=5) == baseline[5]
+    assert debug_pixels(ground, texture, mode=6) == baseline[6]
+
+
+@pytest.mark.parametrize("ion,dip", [(False, .15), (True, .25)])
+def test_beam_ambient_contrast_is_bounded_local_and_fades(ground_material, mocker, ion, dip):
+    ground, texture = ground_material
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+
+    def ambient():
+        return debug_pixels(ground, texture, mode=int(RtxDebugView.AMBIENT))
+
+    baseline = ambient()
+    beam = MaterialLight(
+        Vec2(32, 32), 150, (1.65, .8, .2), height=24, direction=Vec2(1, 0), length=48,
+        broad_illumination=True, beam_profile=(12.8, 2.48, 1.35), beam_ion=ion,
+    )
+    collector.return_value = [beam]
+    dipped = ambient()
+    center = 32 * 64 + 32
+    assert dipped[center][0] / baseline[center][0] == pytest.approx(1 - dip, abs=.002)
+    # Overlapping beams take a maximum, rather than multiplying ambient away.
+    collector.return_value = [beam] * 8
+    assert ambient() == dipped
+    collector.return_value = [msgspec.structs.replace(beam, rgb=tuple(c * .5 for c in beam.rgb))]
+    assert ambient()[center][0] / baseline[center][0] == pytest.approx(1 - dip * .5, abs=.002)
+    collector.return_value = [msgspec.structs.replace(beam, pos=Vec2(600, 32))]
+    assert ambient() == baseline
+    collector.return_value = [msgspec.structs.replace(beam, illumination_gain=0)]
+    assert ambient() == baseline
+    collector.return_value = [msgspec.structs.replace(beam, beam_profile=None)]
+    assert ambient() == baseline
+
+
+@pytest.mark.parametrize("count", [1, 60, 300])
+@pytest.mark.parametrize("debug", [0, 5, 6, 7, 8, 14])
+def test_monster_vision_accumulates_all_sources_like_native_material_lights(ground_material, mocker, count, debug):
+    from crimson.perks import PerkId
+    from crimson.render.world.viewport import ViewTransform
+
+    ground, texture = ground_material
+    ground.material_batches.extend([blood(90)] * 6)
+
+    class Textures:
+        def texture(self, _texture_id):
+            return texture
+
+    state = GameplayState()
+    state.perks[PerkId.MONSTER_VISION] = 1
+    creatures = CreaturePool()
+    for c in creatures.entries[:count]:
+        c.active = True
+        c.pos = Vec2(32, 32)
+        c.death_timer = 16
+    frame = RenderFrame(
+        config=None, camera=Vec2(), ground=ground, state=state, players=[], creatures=creatures,
+        resources=cast(Any, Textures()), elapsed_ms=90000, bonus_anim_phase=0, rtx_mode=RtxRenderMode.RTX,
+    )
+    # Offset/fractional logical view plus a distinct framebuffer scale checks UV and DPI handling.
+    view = ViewTransform(Vec2(-9.25, -4.5), Vec2(71 / 48, 65 / 42), Vec2(48, 42), Vec2(71, 65))
+    target = load_float_render_texture(99, 91)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+    try:
+        results = []
+        for independent in (True, False):
+            state.perks[PerkId.MONSTER_VISION] = int(independent)
+            collector.return_value = [] if independent else [MaterialLight(
+                Vec2(32, 32), 60, tuple(v * count for v in (.65, .47, .025)),
+                height=12, source_width=16, illumination_gain=1.65, reflection_gain=.32,
+                reflection_radius=60, broad_illumination=True,
+            )]
+            # No bodies in either reference: the independent light is explicitly shadowless.
+            mocker.patch.object(ground_materials, "creature_body_volumes", return_value=[])
+            with texture_mode(target, scale_x=99 / 71, scale_y=91 / 65):
+                rl.clear_background(rl.BLACK)
+                with ground.material_scope(frame, view=view, debug=debug):
+                    ground.draw_view(view.camera, screen_w=48, screen_h=42, out_w=71, out_h=65)
+            results.append(pixels(target))
+        # All sources blend in FP32; only the final reference/output target is FP16.
+        error = max(abs(a - b) for p, q in zip(*results, strict=True) for a, b in zip(p[:3], q[:3], strict=True))
+        peak = max(v for p in results[1] for v in p[:3])
+        assert error < max(.003, peak * .003)
+        assert ground.perk_lighting.target is not None
+        assert (ground.perk_lighting.target.texture.width, ground.perk_lighting.target.texture.height) == (99, 91)
+    finally:
+        rl.unload_render_texture(target)
+
+
+@pytest.mark.parametrize("debug", [5, 6, 7, 8, 9])
+def test_monster_vision_coexists_with_radioactive_occlusion_and_clears_stale_light(ground_material, mocker, debug):
+    from crimson.perks import PerkId
+    from crimson.render.world.viewport import ViewTransform
+    from crimson.sim.state_types import PlayerState
+
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    creatures = CreaturePool()
+    creatures.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 32), size=35)
+    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
+    proxy = mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+
+    class Textures:
+        def texture(self, _):
+            return texture
+
+    state = GameplayState()
+    state.perks[PerkId.RADIOACTIVE] = 1
+    frame = RenderFrame(
+        config=None, camera=Vec2(), ground=ground, state=state,
+        players=[PlayerState(index=0, pos=Vec2(32, 16))], creatures=creatures,
+        resources=cast(Any, Textures()), elapsed_ms=0, bonus_anim_phase=0, rtx_mode=RtxRenderMode.RTX,
+    )
+    target = load_float_render_texture(64, 64)
+    view = ViewTransform(Vec2(), Vec2(1, 1), Vec2(64, 64), Vec2(64, 64))
+
+    def render(vision: bool, *, alpha=1.):
+        state.perks[PerkId.MONSTER_VISION] = int(vision)
+        with texture_mode(target), ground.material_scope(frame, view=view, entity_alpha=alpha, debug=debug):
+            ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
+        return pixels(target)
+
+    try:
+        baseline = render(False)
+        assert ground.perk_lighting.target is None
+        combined = render(True)
+        if debug == 9:  # No dynamic contribution or allocation in ambient-only diagnostics.
+            assert combined == baseline
+            assert ground.perk_lighting.target is None
+            return
+        assert ground.reflection_occlusion.grid.body_count == 1
+        assert max(a - b for p, q in zip(combined, baseline, strict=True) for a, b in zip(p[:3], q[:3], strict=True)) > .001
+        assert render(False) == baseline
+        assert render(True, alpha=0) == baseline
+        # All five non-base samplers coexist: substrate/material/surface, occlusion, perk.
+        # Turning off only body occlusion retains MV, but brightens Radioactive.
+        proxy.side_effect = lambda c: []
+        unblocked = render(True)
+        if debug in (5, 6, 8):
+            assert sum(p[1] for p in unblocked) > sum(p[1] for p in combined) * 1.01
+        else:
+            assert unblocked == combined  # Unshadowed direct already ignores bodies.
+        saved = ground.perk_lighting.target
+        ground.reset_materials()
+        assert saved is not None and ground.perk_lighting.target is None
+        assert ground.perk_lighting.shader is None
+    finally:
+        rl.unload_render_texture(target)

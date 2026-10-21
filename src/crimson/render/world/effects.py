@@ -101,6 +101,8 @@ def draw_sprite_effect_pool(
     view_scale: Vec2,
 ) -> None:
     frame = render_ctx.frame
+    if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None and frame.smoke.available:
+        return
     if frame.config is not None and not frame.config.display.smoke_enabled:
         return
     texture = frame.resources.texture(TextureId.PARTICLES)
@@ -145,7 +147,9 @@ def draw_effect_pool(
     if frame.rtx_mode is RtxRenderMode.RTX:
         archived = []
         for visual in pool.explosion_visuals:
-            shell = explosion_shell(visual.age, visual.scale) if visual.ring_spawned else None
+            shell = (
+                explosion_shell(visual.age, visual.scale) if visual.emit_light and visual.ring_spawned else None
+            )
             if shell is not None:
                 archived.append(EffectEntry(
                     effect_id=EffectId.RING, pos=visual.pos, age=0.0, flags=0x19,
@@ -164,8 +168,8 @@ def draw_effect_pool(
 
     scale = viewport.view_scale_avg(view_scale)
 
-    # Only the explosion spawner's own ring becomes the warm pressure shell. Freeze,
-    # shield and other atlas-ring effects retain their native presentation.
+    # Suppress native explosion rings in RTX: nuke/death bursts get the warm
+    # shell above; rocket bursts omit it. Unrelated freeze/shield rings remain.
     pressure_rings = (
         {id(ring) for v in pool.explosion_visuals if (ring := v.active_ring) is not None}
         if frame.rtx_mode is RtxRenderMode.RTX
@@ -173,6 +177,8 @@ def draw_effect_pool(
     )
 
     def draw_entry(entry: EffectEntry) -> None:
+        if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None and frame.smoke.available and entry.effect_id == EffectId.EXPLOSION_PUFF:
+            return
         if id(entry) in fireball_slots:
             return
         if id(entry) in pressure_rings and int(entry.effect_id) == int(EffectId.RING):

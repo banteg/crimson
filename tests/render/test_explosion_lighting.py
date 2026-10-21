@@ -215,9 +215,51 @@ def test_shell_light_pressure_and_sprite_share_expanding_profile() -> None:
     assert all(s.ring_radius == 0 for s in collect_material_lights(snapshot, view_center=visual.pos))
 
 
-def test_rocket_shell_does_not_duplicate_its_central_detonation_source() -> None:
+@pytest.mark.parametrize("age", [.05, .2, .5, .69])
+def test_rocket_burst_omits_shell_light_and_refraction_but_keeps_detonation(age) -> None:
+    from crimson.projectiles.types import SecondaryProjectileTypeId
+
     snapshot = frame()
     burst(snapshot.state.effects, emit_light=False)
-    snapshot.state.effects.update(.2)
+    snapshot.state.effects.update(age)
+    ctx = WorldRenderCtx(snapshot, ViewTransform(Vec2(), Vec2(1, 1), Vec2(200, 200), Vec2(200, 200)))
+    assert collect_pressure_fronts(ctx) == []
+    assert collect_material_lights(snapshot, view_center=Vec2()) == []
+
+    detonation = snapshot.state.secondary_projectiles.entries[0]
+    detonation.active = True
+    detonation.type_id = SecondaryProjectileTypeId.DETONATION
+    detonation.pos = Vec2(100, 120)
+    detonation.detonation_t = .2
+    detonation.detonation_scale = 1
     lights = collect_material_lights(snapshot, view_center=Vec2())
-    assert len(lights) == 1 and lights[0].ring_radius > 0
+    assert len(lights) == 1 and lights[0].ring_radius == 0
+    assert lights[0].illumination_gain > 0 and lights[0].reflection_gain > 0
+
+
+@pytest.mark.parametrize("rtx, emit_light, rings", [(True, False, 0), (False, False, 1), (True, True, 1)])
+def test_rocket_ring_is_hidden_only_in_rtx_while_nuke_shell_remains(
+    rtx, emit_light, rings, headless_window, headless_resources, mocker,
+) -> None:
+    from crimson.render.rtx.mode import RtxRenderMode
+    from crimson.render.world import effects
+    from tests.support.creature_draw_capture import render_ctx_for_creatures
+
+    ctx = render_ctx_for_creatures(headless_resources, [])
+    ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(
+        ctx.frame, rtx_mode=RtxRenderMode.RTX if rtx else RtxRenderMode.CLASSIC,
+    ))
+    pool = ctx.frame.state.effects
+    burst(pool, emit_light=emit_light)
+    pool.update(.2)
+    select = mocker.spy(effects, "effect_cell_src_inset")
+    effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    assert sum(call.args[1] == EffectId.RING for call in select.call_args_list) == rings
+
+    # A separate ring, such as freeze/shield, must never inherit the exclusion.
+    unrelated = pool.spawn(EffectId.RING, Vec2(200, 200), 5, preserve_bugs=False)
+    assert unrelated is not None
+    unrelated.age = 0
+    select.reset_mock()
+    effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    assert sum(call.args[1] == EffectId.RING for call in select.call_args_list) == rings + 1

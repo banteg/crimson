@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from contextlib import nullcontext
 from typing import TYPE_CHECKING
 
 from grim.assets import TextureId
@@ -11,6 +12,7 @@ from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
 from ...weapons import WEAPON_BY_ID
+from ..rtx.mode import RtxRenderMode
 from . import viewport
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
@@ -39,6 +41,7 @@ def draw_player_trooper_sprite(
         return
     render_frame = render_ctx.frame
     resources = render_frame.resources
+    lighting = render_frame.player_lighting if render_frame.rtx_mode is RtxRenderMode.RTX else None
     particles_texture = resources.texture(TextureId.PARTICLES)
     muzzle_flash_texture = resources.texture(TextureId.MUZZLE_FLASH)
     sprite_grid = 8
@@ -127,20 +130,21 @@ def draw_player_trooper_sprite(
             color=shadow_tint,
         )
 
-        draw(
-            leg_frame,
-            pos=screen_pos,
-            scale_mul=1.0,
-            rotation=float(player.heading),
-            color=tint,
-        )
-        draw(
-            torso_frame,
-            pos=screen_pos + recoil_offset,
-            scale_mul=1.0,
-            rotation=float(player.aim_heading),
-            color=overlay_tint,
-        )
+        with lighting.scope(restore_shader=resources.alpha_test.shader) if lighting is not None else nullcontext():
+            draw(
+                leg_frame,
+                pos=screen_pos,
+                scale_mul=1.0,
+                rotation=float(player.heading),
+                color=tint,
+            )
+            draw(
+                torso_frame,
+                pos=screen_pos + recoil_offset,
+                scale_mul=1.0,
+                rotation=float(player.aim_heading),
+                color=overlay_tint,
+            )
 
         if float(player.shield_timer) > 1e-3 and alpha > 1e-3:
             atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.SHIELD_RING))
@@ -239,4 +243,5 @@ def draw_player_trooper_sprite(
         rotation=float(player.aim_heading),
         color=shadow_tint,
     )
-    draw(frame, pos=screen_pos, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)
+    with lighting.scope(restore_shader=resources.alpha_test.shader) if lighting is not None else nullcontext():
+        draw(frame, pos=screen_pos, scale_mul=1.0, rotation=float(player.aim_heading), color=overlay_tint)

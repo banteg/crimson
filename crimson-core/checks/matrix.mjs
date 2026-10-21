@@ -120,6 +120,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
       weapons: new Set(),
       perks: new Set(),
       bonuses: new Set(),
+      fire_bullets_volleys: new Set(),
       menu: 0,
       // Menus opened while a player lay dead, by the survivor.
       survivor_menu: 0,
@@ -287,10 +288,14 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
           (hunt.gKey && tick % 211 < 30 ? G_KEY : 0),
       ];
     });
+    const fireBullets = players === 1 && f("players[0].fire_bullets_timer") > 1 / 60;
+    const shotsBefore = u("globals.highscore_record_shots_fired");
     const r = record(inputs, commands);
     if (!step(e, r)) throw Error(`Bot rejected tick ${tick} in mode ${mode}: ${refusal(e)}`);
     records.push(r);
     final = summary();
+    const emitted = u("globals.highscore_record_shots_fired") - shotsBefore;
+    if (fireBullets && emitted > 0) coverage.fire_bullets_volleys.add(emitted);
     if (countsBefore)
       perkCounts().forEach((count, id) => {
         if (count > countsBefore[id]) coverage.perks.add(id);
@@ -306,7 +311,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
       break;
     }
   }
-  for (const key of ["weapons", "perks", "bonuses"])
+  for (const key of ["weapons", "perks", "bonuses", "fire_bullets_volleys"])
     coverage[key] = [...coverage[key]].sort((a, b) =>
       a < b ? -1 : a > b ? 1 : 0,
     );
@@ -432,6 +437,25 @@ function quest(recipe) {
   return fs.readFileSync(file);
 }
 
+// A supported custom quest: slow zombie waves, one fixed starting weapon, and Fire Bullets as
+// the only timed pickup. The bot still earns and collects it through ordinary input. Disable
+// offerable perks (except the mandatory fallback) so extra perk shots cannot mask volley counts.
+function pelletQuest(weapon) {
+  const q = Buffer.alloc(QUEST_BYTES);
+  [weapon, 0, 1, 0, 60, 0x3ffc, 0xffffff7e, 0x3ffffff, 0xfffffffc, 3]
+    .forEach((v, i) => q.writeUInt32LE(v, i * 4));
+  for (let i = 0; i < 60; i++) {
+    const at = 40 + i * 24, angle = i * Math.PI / 3;
+    q.writeFloatLE(512 + 400 * Math.cos(angle), at);
+    q.writeFloatLE(512 + 400 * Math.sin(angle), at + 4);
+    q.writeFloatLE(angle, at + 8);
+    q.writeInt32LE(0x42, at + 12); // ZOMBIE_SMALL_WHITE
+    q.writeInt32LE(1000 + i * 2000, at + 16);
+    q.writeInt32LE(1, at + 20);
+  }
+  return q;
+}
+
 // [name, config arguments, bot, tick limit, controls, hunt]; a `quest` option plays that custom quest.
 const scenarios = [
   ["rules1-survival", [1, 1, 1, { seed: 44, rules: 1 }], 2, 12000, MOUSE],
@@ -475,6 +499,10 @@ const scenarios = [
   ["rush-unknown-aim", [2, 1, 1, { seed: 25 }], 2, 30000, { move: MOVE.pad, aim: AIM.unknown }],
   ["quest-point-click", [3, 2, 3, { seed: 26 }], true, 30000, { move: MOVE.pointClick, aim: AIM.mouseRelative }],
 ];
+for (const [weapon, name] of [[30, "gauss"], [10, "multi-plasma"]])
+  for (const rules of [1, 2])
+    scenarios.push([`fire-bullets-${name}-rules${rules}`,
+      [3, 0, 0, { seed: 1, rules, quest: pelletQuest(weapon) }], 2, 12000, MOUSE]);
 for (let major = 1; major <= 5; major++)
   for (let minor = 1; minor <= 10; minor++)
     scenarios.push([`quest-${major}.${minor}`, [3, major, minor], true, 30000, minor % 2 ? PAD : MOUSE]);
@@ -565,6 +593,13 @@ for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] o
   if (rankedPlaysAlike(runs[0][1], ranked)) console.log(`${scenario}: the ranked rules play the same run`);
   else runs.push([`${scenario}-ranked`, play(ranked, bot, limit, scheme, hunt)]);
   for (const [name, run] of runs) {
+    if (scenario.startsWith("fire-bullets-")) {
+      const gauss = scenario.includes("-gauss-");
+      const fixed = options.rules === 2 && run.input.readUInt32LE(44) === 0;
+      const expected = fixed ? (gauss ? 6 : 5) : (gauss ? 1 : 3);
+      if (JSON.stringify(run.coverage.fire_bullets_volleys) !== JSON.stringify([expected]))
+        throw Error(`${name}: expected Fire Bullets volleys of ${expected}, got ${run.coverage.fire_bullets_volleys}`);
+    }
     fs.writeFileSync(path.join(fixtures, `${name}.rsi`), run.input);
     console.log(`${name}: comparing ${run.input.length} input bytes`);
     const parity = await compare(run.input, native, wasm);

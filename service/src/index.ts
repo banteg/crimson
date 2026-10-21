@@ -179,9 +179,17 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     // Staged by `npm run play`; a build without it has no game page.
     const page = await env.ASSETS.fetch(request);
     if (!page.ok) return page;
+    // A co-op invite needs the site's own page, so its preview offers the link rather than a player inside the post.
+    if (url.searchParams.has("coop"))
+      return withPreview(page, url, {
+        title: "Co-op invite",
+        description: "You're invited to play Crimsonland together. Open the link, press Join, and fight side by side in the same arena.",
+        image: null,
+        player: null,
+      });
     return withPreview(page, url, {
       title: "Play",
-      description: "Crimsonland in the browser: the original game, recovered from its executable.",
+      description: "Crimsonland in your browser, alone or with a friend online: the 2003 game, recovered from crimsonland.exe.",
       image: null,
       player: { url: url.toString(), width: VIEW_W, height: VIEW_H },
     });
@@ -335,7 +343,7 @@ interface Preview {
   player: { url: string; width: number; height: number } | null;
 }
 
-const SITE_DESCRIPTION = "Play Crimsonland in your browser, and verified leaderboards where every score is a replay the server re-simulates.";
+const SITE_DESCRIPTION = "Crimsonland, as it was in 2003. Now with online co-op. Play in your browser and chase internet high scores where every run is a replay you can watch.";
 // The preview of a page with no image of its own: a moment of the Survival board's top run (public/og.jpg).
 const SITE_IMAGE = { path: "/og.jpg", width: 1200, height: 630 };
 
@@ -359,7 +367,7 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
     const byline = quest.author ? ` by ${quest.author}` : "";
     return {
       title: `${quest.title}${byline}`,
-      description: `Play "${quest.title}"${byline} in the browser (${quest.definition.entries.length} spawn entries) and compete on its verified leaderboard.`,
+      description: `Play "${quest.title}"${byline} in the browser (${quest.definition.entries.length} spawn entries) and compete on its high score list.`,
       image: { url: `${url.origin}/runs/${quest.first_run_id}.png`, width: CARD_WIDTH, height: CARD_HEIGHT },
       player: { url: `${url.origin}/play/?quest=${quest.id}`, width: VIEW_W, height: VIEW_H },
     };

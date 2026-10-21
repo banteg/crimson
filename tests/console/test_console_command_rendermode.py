@@ -57,3 +57,22 @@ def test_rtxdebug_before_any_screen_opens_is_safe(make_game_state):
     state = make_game_state()
     _boot_command_handlers(state)["rtxdebug"](["direct"])
     assert state.console.log.lines[-1] == "rtxdebug requires an open game or replay."
+
+
+def test_rtxsmoke_requires_explicit_choice_and_open_screen(make_game_state, mocker):
+    from crimson.screens.stack import ScreenEntry
+
+    state = make_game_state()
+    handler = _boot_command_handlers(state)["rtxsmoke"]
+    handler(["on"])
+    assert state.console.log.lines[-1] == "rtxsmoke requires an open game or replay."
+    screen = mocker.Mock()
+    state.screens.push(ScreenEntry(screen))
+    for args in ([], ["yes"], ["on", "off"]):
+        handler(args)
+    screen.set_rtx_smoke.assert_not_called()
+    handler(["on"])
+    screen.set_rtx_smoke.assert_called_once_with(True)
+    handler(["off"])
+    assert screen.set_rtx_smoke.call_args.args == (False,)
+    assert state.rtx_mode is RtxRenderMode.CLASSIC
