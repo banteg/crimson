@@ -21,6 +21,12 @@ vec4 occlusionData(int address) {
     return texelFetch(u_occlusion_tex, ivec2(address % width, address / width), 0);
 }
 
+#ifdef CONTINUOUS_BEAM
+vec2 beam_section_axis = vec2(0.);
+float beam_section_halfspan = 0.;
+float sectionCoverage(vec3 miss, vec3 line, float softness);
+#endif
+
 float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, float inverse_xy_length, vec2 owner) {
     vec4 center = occlusionData(address);
     vec2 offset = origin.xy - center.xy;
@@ -47,6 +53,14 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     // Analytic finite-source penumbra. The cone grows from the receiver toward
     // the source; this is a smooth body proxy, not sampled silhouette tracing.
     float softness = max(.015, source_width * t * max(inverse_radius.x, inverse_radius.y));
+    #ifdef CONTINUOUS_BEAM
+    if (beam_section_halfspan > 0.) {
+        vec3 source_axis = vec3(local * beam_section_axis, 0.) * inverse_radius;
+        vec3 projected = source_axis - ray * (dot(source_axis, ray) / max(dot(ray, ray), 1e-8));
+        vec3 line = projected * (beam_section_halfspan * t);
+        return 1. - orientation.z * sectionCoverage(q + ray * t, line, softness);
+    }
+    #endif
     return 1. - orientation.z * (1. - smoothstep(1. - softness, 1. + softness, distance));
 }
 

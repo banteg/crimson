@@ -629,60 +629,75 @@ material. This uses existing simulation state only and does not alter death
 movement, damage, corpse timing, RNG or Classic rendering.
 
 
-## Experimental continuous beam illumination
+## Optional extended beam illumination
 
-The default renderer still uses the existing energy-centroid light. The Python
-port has an opt-in research path for Ion Rifle, Ion Minigun, Ion Cannon and Fire
-Bullets ground lighting. Enable it in the game console with `rtxbeam on`; disable
-it with `rtxbeam off`. `rtxbeam on 4 0.25` sets the Ion diffuse gain multiplier and
-maximum local ambient reduction. Fire retains its existing gain. Both controls
-are presentation-only, bounded, and process-local; they are not saved to replays
-or configuration. Classic rendering is unaffected.
+The default renderer uses the existing energy-centroid light. The Python port
+also offers a three-section approximation for Ion Rifle, Ion Minigun, Ion Cannon
+and Fire Bullets ground lighting. Enable it in the game console with `rtxbeam on`;
+disable it with `rtxbeam off`. `rtxbeam on 4 0.25` sets the Ion diffuse gain
+multiplier and maximum local ambient reduction. Fire retains its existing gain.
+Both controls are presentation-only, bounded, and process-local; they are not
+saved to replays or configuration. Classic rendering is unaffected.
 
-Standalone replay playback can opt in with:
+Standalone replay playback can opt in with the retained experimental CLI flag:
 
 ```sh
 uv run crimson replay play 18-survival.crd --rtx --experimental-beam-shadows
 ```
 
-This uses a **narrow emitting core**, not the full translucent halo. The authored
-radial stamp profile is integrated across its width, then projected onto a
-continuous longitudinal line. Each weapon retains its own stamp spacing,
-scale, head width and current beam length. The visible beam art is unchanged.
-This source-model change gives stronger directional penumbrae, and is distinct
-from the broad five-slice look-development reference.
+The standalone command restores the previous beam controls when playback exits,
+including on error. A later playback in the same process does not inherit this
+command's selection.
 
-Rounded body volumes analytically block intervals of the source. Visible energy
-is integrated using local zeroth/first/second moments and bounded two-node
-quadrature in eight longitudinal cells. The cache stores 33 knots per cell,
-downsampled from 257-point integration. A bounded 64-entry CPU moment LRU avoids
-unbounded growth; a shared radial marginal table avoids per-frame exponentials.
-The source energy is normalized to the existing light budget, not physical watts.
+### Three energy-weighted sections
 
-A conservative source/tile candidate texture retains all relevant bodies.
-Receiver projection bounds cover the full padded line, including near-horizon
-bodies whose projected shadows can be unbounded. The shader caches 64 local
-intervals; overflow switches to an exact scan of the original candidate list.
-It never drops the 65th body. Overlapping proxies use maximum active opacity,
-matching the existing visibility semantics. Dying bodies use the shared native
-collapse/fade lifecycle, without retaining invisible creatures.
+The source follows the authored beam's stamp spacing, scale, brighter head and
+current length. A small radial lookup projects the narrow emitting core onto
+its longitudinal axis. Three cells sample this profile and retain their energy
+and centroid. Their weights sum to the existing light budget; the visible beam
+art is unchanged. Ion Rifle and Minigun source sizes share the same scale table
+as the projectile renderer.
+
+Each section casts through the existing rounded creature proxies and spatial
+grid. Projecting its longitudinal extent perpendicular to the body-space ray
+and measuring the line's overlap with the rounded body gives directional
+softness: broader across the beam, narrower when seen end-on. Transverse source
+width adds an edge feather. The projected chord stays continuous through the
+center of a body, where a miss-vector-based direction would be undefined.
+
+Section half-lengths are deliberately capped at four world units. The section
+centers still span the full beam. This is an artistic approximation of an
+extended source, not exact visibility integration of every beam stamp. The cap
+keeps the spatial candidate lists and penumbrae practical; no creature is dropped
+to enforce a caster budget. Overlapping proxies retain the existing minimum
+visibility semantics, and dying bodies retain their shared collapse/fade behavior.
+
+Preparation uploads one small uniform array and reuses the ordinary occlusion
+grid. Conservative grid-only source copies include the endpoint halo and bounded
+section softness. They never replace the original light uniforms used by
+reflections or creature lighting. A bounded 128-entry profile cache handles
+repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
+candidate texture, interval sort, quadratic sweep or exact-overflow fallback.
 
 Ion's optional contrast reduces ambient only within its local footprint, fades
 with source radiance, and takes the maximum contribution of overlapping beams
-rather than multiplying dips. At the default experimental 0.25 setting, at least
-75% of the ordinary ambient remains. It changes ground direct illumination only:
-creature/bonus lighting and specular source/reflection approximations remain as
-before. Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to
-inspect the change.
+rather than multiplying dips. At the default optional 0.25 setting, at least 75%
+of ordinary ambient remains. This changes ground direct illumination only:
+creature/bonus lighting and specular reflection approximations remain as before.
+Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to inspect it.
 
-### Research limits
+### Cost and visual limits
 
-This is **not ready as a default renderer**. Building moment rows for changing
-lengths and uploading candidate lists can cost CPU time; dense interval overflow
-can be much slower than the cached case. The exact fallback preserves geometry
-rather than promising a frame budget. Shader compilation is lazy and separate
-from the default shader, so the disabled path keeps its previous resource budget.
-The broad-area five-slice prototype's accuracy/timing numbers do not describe
-this integrated narrow-core path. Further optimization must preserve fading
-opacity, insertion-order independence, zero/short beam behavior and every
-candidate on overflow, and should measure preparation plus GPU rendering.
+Three sections were selected over one and five using native moving-beam renders.
+One remains visibly closer to a point source; five costs more without a useful
+improvement in the inspected scene. The shader compiles lazily and separately
+from the default shader, so disabling the mode restores the previous resource
+budget.
+
+Three visibility queries per beam are still more expensive than the default
+centroid. Dense scenes with many simultaneous beams remain costly, which is why
+this is an optional quality setting. The approximation can retain separate shadow
+lobes in difficult arrangements and does not reproduce the dense reference's
+penumbra exactly. It favors readable moving shadows and predictable source work
+over a numerical agreement target. Body traversal still scales with the actual
+spatial candidates.

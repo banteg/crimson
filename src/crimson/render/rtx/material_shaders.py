@@ -145,10 +145,10 @@ void main() {
     float beam_dip = 0.;
     if (u_beam_enabled != 0) {
         for (int i=0;i<u_spec_light_count;i++) {
-            if(u_beam_info[i].z<.5 || u_beam_info[i].w<.5)continue;
-            vec2 axis=length(u_spec_dir[i].xy)>.0001?normalize(u_spec_dir[i].xy):vec2(1.,0.);
+            if (u_line_cells[i * 3].w < .5 || u_line_cells[i * 3].x <= 0.) continue;
+            vec2 axis=dot(u_spec_dir[i].xy, u_spec_dir[i].xy) > .0001?normalize(u_spec_dir[i].xy):vec2(1.,0.);
             vec2 delta=world-u_spec_pos[i].xy;
-            float half_span=u_spec_dir[i].w*.5+u_beam_info[i].x;
+            float half_span=u_spec_dir[i].w * .5;
             float distance=length(delta-axis*clamp(dot(delta,axis),-half_span,half_span));
             float local=1.-smoothstep(40.,300.,distance);
             float power=clamp(max(u_spec_color[i].r,max(u_spec_color[i].g,u_spec_color[i].b))/1.65,0.,1.);
@@ -188,12 +188,12 @@ void main() {
         float reflection_distance = length(reflection_xy - world);
         float rad = max(1.0, sp_pos.z);
         #ifdef CONTINUOUS_BEAM
-        bool continuous=u_beam_enabled!=0 && u_beam_info[i].w>.5 && response.x>0.;
+        bool continuous=u_beam_enabled!=0 && u_line_cells[i * 3].x > 0. && response.x>0.;
         if (!continuous && reflection_distance >= max(rad, response.z)) continue;
         if (continuous) {
-            vec2 source_axis=length(sp_dir.xy)>.0001?normalize(sp_dir.xy):vec2(1.,0.);
+            vec2 source_axis=dot(sp_dir.xy, sp_dir.xy) > .0001?normalize(sp_dir.xy):vec2(1.,0.);
             vec2 delta=world-sp_pos.xy;
-            float half_span=sp_dir.w*.5+u_beam_info[i].x;
+            float half_span=beamSampleExtent(i);
             float support_distance=length(delta-source_axis*clamp(dot(delta,source_axis),-half_span,half_span));
             if(support_distance<rad) {
                 vec3 unshadowed;
