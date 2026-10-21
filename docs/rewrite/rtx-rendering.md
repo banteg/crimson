@@ -554,12 +554,13 @@ resin-coat reflection; the aiming cursor remains a presentation overlay.
 
 ### Live ground diagnostics
 
-In RTX mode, **F6** cycles ground diagnostic views; **Shift+F6** cycles backward.
+In RTX mode, **F6** cycles ground and smoke diagnostic views; **Shift+F6** cycles backward.
 This works during gameplay and in the standalone replay viewer, including while paused.
 Return to `shaded` for the normal scene. The in-game console also accepts
 `rtxdebug <name>`: `shaded`, `substrate-normal`, `fluid-normal`, `freshness`,
 `blood-depth`, `reflections`, `direct`, `direct-unshadowed`, `visibility`,
-`albedo`, `roughness`, `height`, `materials`, `ambient`, or `no-direct`.
+`albedo`, `roughness`, `height`, `materials`, `ambient`, `no-direct`,
+`smoke-density`, `smoke-heat`, `smoke-flow`, or `smoke-light`.
 
 These are display-only selections: they survive replay seeks, do not affect the
 simulation/recording, and have no effect in classic mode. Ground maps hide live
@@ -580,6 +581,16 @@ HDR shoulder/game gamma. Unlike the isolated maps, this can be compared directly
 with `shaded`.
 `albedo` shows the substrate before blood absorption. `materials` shows blood in
 red, corpse coverage in green, brass in blue, and ice in cyan.
+
+The smoke views draw the fluid alone over black, through the same reduced-resolution
+composite as the scene. `smoke-density` is the column's opacity at the field's fade:
+black is clear, white is opaque. `smoke-light` is the weapon, exhaust and sight light
+the smoke scatters, without its sky fill, mapped like the other radiance views.
+`smoke-heat` and `smoke-flow` read the raw simulation state across the whole domain,
+including air that has lost its smoke: heat ramps black, red, yellow, white up to the
+temperature cap that raises and thickens the column; flow hue is the planar velocity's
+direction and brightness is `1 - exp(-speed / 60)` for speed in world units per second. With no
+active field there is nothing to show; the solver does not run without a medium.
 
 
 ## Explosion emission and pressure fronts
@@ -870,7 +881,7 @@ scatter as narrow red beams only inside density, rather than broadly illuminatin
 the whole cloud. The ordinary sight artwork remains unchanged.
 
 Smoke composites after native sprites, outside their alpha-test shader, inside
-the HDR world and pressure-front composition. Ground diagnostic maps hide the composite while continuing to drain queued fluid updates.
+the HDR world and pressure-front composition. Ground diagnostic maps hide the composite while continuing to drain queued fluid updates; the smoke views show it alone.
 The renderer approximates single scattering and self-shadowing within the shared domain;
 the assumed slab does not resolve creature geometry. Broad sky extinction gives
 billows some form after local emitters fade. Rocket exhaust uses a separate

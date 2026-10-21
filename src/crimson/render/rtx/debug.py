@@ -23,10 +23,18 @@ class RtxDebugView(IntEnum):
     MATERIALS = 12
     AMBIENT = 13
     NO_DIRECT = 14
+    SMOKE_DENSITY = 15
+    SMOKE_HEAT = 16
+    SMOKE_FLOW = 17
+    SMOKE_LIGHT = 18
 
     @property
     def is_map(self) -> bool:
         return self not in (RtxDebugView.SHADED, RtxDebugView.NO_DIRECT)
+
+    @property
+    def is_smoke(self) -> bool:
+        return self >= RtxDebugView.SMOKE_DENSITY
 
     @property
     def token(self) -> str:
@@ -51,6 +59,10 @@ _DEBUG_HELP = {
     RtxDebugView.HEIGHT: "Substrate height; blood never adds diffuse relief",
     RtxDebugView.MATERIALS: "R = blood, G = corpse, B = brass; ice = cyan",
     RtxDebugView.NO_DIRECT: "Ground direct lighting removed; ordinary scene, reflections and display mapping",
+    RtxDebugView.SMOKE_DENSITY: "Smoke opacity through the column: black = clear; white = opaque",
+    RtxDebugView.SMOKE_HEAT: "Smoke temperature: black = cold; red, yellow, white = hotter, taller columns",
+    RtxDebugView.SMOKE_FLOW: "Planar air velocity: hue = direction; brightness = speed",
+    RtxDebugView.SMOKE_LIGHT: "Weapon and sight light scattered by smoke, no sky fill: c/(1+c), then gamma",
 }
 
 

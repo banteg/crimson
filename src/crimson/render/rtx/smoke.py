@@ -11,6 +11,7 @@ from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
 from ...perks import PerkId
 from ..laser_sight import laser_sight_geometry
+from .debug import RtxDebugView
 from .gpu_smoke import GpuSmokeSimulation
 from .material_lights import MAX_ILLUMINATION_SOURCES, MaterialLight
 from .smoke_composite import SmokeComposite
@@ -103,7 +104,7 @@ class SmokeRenderer:
             self.shader = shader
             self.locations = {name: int(rl.get_shader_location(shader, name)) for name in (
                 "u_origin", "u_size", "u_opacity", "u_light_count", "u_light_pos", "u_light_rgb", "u_light_shape",
-                "u_sight_count", "u_sights", "u_state_flip",
+                "u_sight_count", "u_sights", "u_state_flip", "u_debug",
             )}
         if isinstance(self.simulation, GpuSmokeSimulation):
             try:
@@ -141,7 +142,7 @@ class SmokeRenderer:
     def _upload_reference(self) -> None:
         import numpy as np
 
-        from .smoke_simulation import SmokeSimulation
+        from .smoke_simulation import CELL_SIZE, SmokeSimulation
 
         assert isinstance(self.simulation, SmokeSimulation)
         rl.rl_draw_render_batch_active()
@@ -165,15 +166,18 @@ class SmokeRenderer:
             state = np.zeros((height, width, 4), dtype=np.float32)
             state[:, :, 0] = field.density
             state[:, :, 1] = field.temperature
+            # The reference advects in cells per second; the shader reads world units like the GPU state.
+            state[:, :, 2] = field.u * CELL_SIZE
+            state[:, :, 3] = field.v * CELL_SIZE
             rl.update_texture(self.textures[slot], rl.ffi.cast("void *", rl.ffi.from_buffer(state)))
             self._uploaded[slot] = (field.identity, field.version)
 
-    def draw(self, ctx: WorldRenderCtx, *, alpha: float) -> None:
+    def draw(self, ctx: WorldRenderCtx, *, alpha: float, debug: RtxDebugView = RtxDebugView.SHADED) -> None:
         if not self.prepared or self.shader is None:
             return
         if isinstance(self.simulation, GpuSmokeSimulation):
             try:
-                self.compositor.draw(ctx.view, lambda: self._draw_fields(ctx.view, alpha=alpha))
+                self.compositor.draw(ctx.view, lambda: self._draw_fields(ctx.view, alpha=alpha, debug=debug))
             except RuntimeError:
                 logging.getLogger(__name__).warning("GPU smoke composite unavailable; using native smoke", exc_info=True)
                 self.available = False
@@ -182,14 +186,15 @@ class SmokeRenderer:
         else:
             rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
             try:
-                self._draw_fields(ctx.view, alpha=alpha)
+                self._draw_fields(ctx.view, alpha=alpha, debug=debug)
             finally:
                 rl.end_blend_mode()
 
-    def _draw_fields(self, view: ViewTransform, *, alpha: float) -> None:
+    def _draw_fields(self, view: ViewTransform, *, alpha: float, debug: RtxDebugView) -> None:
         assert self.shader is not None
         rl.begin_shader_mode(self.shader)
         try:
+            self._integer("u_debug", int(debug))
             for slot, field in self.simulation.fields.items():
                 rl.rl_draw_render_batch_active()
                 self._uniform("u_origin", (field.origin.x, field.origin.y))
