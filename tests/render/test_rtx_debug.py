@@ -15,7 +15,7 @@ def test_debug_hotkey_cycles_both_directions_without_touching_game_state(mocker)
     held = mocker.patch.object(rl, "is_key_down", return_value=False)
     assert debug_hotkey(RtxDebugView.SHADED) is RtxDebugView.SUBSTRATE_NORMAL
     held.return_value = True
-    assert debug_hotkey(RtxDebugView.SHADED) is RtxDebugView.NO_DIRECT
+    assert debug_hotkey(RtxDebugView.SHADED) is RtxDebugView.SMOKE_LIGHT
     assert RtxDebugView.parse("direct-unshadowed") is RtxDebugView.DIRECT_UNSHADOWED
 
 

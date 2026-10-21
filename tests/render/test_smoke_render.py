@@ -100,6 +100,22 @@ def test_map_view_prepares_without_drawing_smoke(mocker, headless_window, headle
     assert smoke.simulation.fields[0].idle_seconds == 0.
 
 
+def test_smoke_map_draws_the_fluid_alone_in_its_view(mocker, headless_window, headless_resources):
+    ctx = render_ctx_for_creatures(headless_resources, [])
+    smoke = SmokeRenderer()
+    smoke.consume((emission(),), dt_sim=0.)
+    ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(
+        ctx.frame, rtx_mode=RtxRenderMode.RTX, rtx_debug=RtxDebugView.SMOKE_FLOW, smoke=smoke,
+    ))
+    prepare = mocker.patch.object(smoke, "prepare")
+    draw = mocker.patch.object(smoke, "draw")
+    background = mocker.patch.object(world_draw, "draw_background")
+    world_draw.draw_world(ctx)
+    background.assert_not_called()
+    prepare.assert_called_once()
+    draw.assert_called_once_with(ctx, alpha=1., debug=RtxDebugView.SMOKE_FLOW)
+
+
 def test_close_releases_resources_once(mocker, tmp_path):
     smoke = SmokeRenderer()
     shader = rl.ffi.new("Shader *")[0]
@@ -132,8 +148,10 @@ def smoke_pixels(raylib_context, headless_resources):
     )
     target = load_float_render_texture(128, 128)
 
-    def render(*, lights=(), sight=False, density=.3, grow=False):
+    def render(*, lights=(), sight=False, density=.3, grow=False, velocity=(0., 0.), debug=RtxDebugView.SHADED):
         field.density.fill(density)
+        field.u.fill(velocity[0])
+        field.v.fill(velocity[1])
         if grow:
             field.include(Vec2(350, 64), 200.)
         field.version += 1
@@ -141,7 +159,7 @@ def smoke_pixels(raylib_context, headless_resources):
         smoke.prepare(ctx.frame, lights)
         with texture_mode(target):
             rl.clear_background(rl.BLANK)
-            smoke.draw(ctx, alpha=1.)
+            smoke.draw(ctx, alpha=1., debug=debug)
         image = rl.load_image_from_texture(target.texture)
         try:
             rl.image_format(image, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
@@ -167,6 +185,33 @@ def test_native_shader_light_and_sight_scatter_only_in_density(smoke_pixels):
     assert np.mean(sight[58:70, :, 0] - ambient[58:70, :, 0]) > .01
     assert np.max(np.abs(sight[:30] - ambient[:30])) < .001
     assert np.max(np.abs(smoke_pixels(sight=True, density=0.))) == 0.
+
+
+def test_smoke_maps_show_coverage_and_weapon_light_without_sky_fill(smoke_pixels):
+    thin = smoke_pixels(density=.05, debug=RtxDebugView.SMOKE_DENSITY)
+    thick = smoke_pixels(debug=RtxDebugView.SMOKE_DENSITY)
+    clear = smoke_pixels(density=0., debug=RtxDebugView.SMOKE_DENSITY)
+    assert np.all(thick[:, :, 3] == 1.) and np.all(clear[:, :, 3] == 1.)
+    assert np.max(clear[:, :, :3]) == 0.
+    np.testing.assert_allclose(thick[:, :, 0], thick[:, :, 2])
+    assert 0. < thin[:, :, 0].mean() < thick[:, :, 0].mean() < 1.
+
+    warm = [MaterialLight(Vec2(64, 64), 160, (1.4, .68, .2), height=30)]
+    assert np.max(smoke_pixels(debug=RtxDebugView.SMOKE_LIGHT)[:, :, :3]) == 0.
+    lit = smoke_pixels(lights=warm, debug=RtxDebugView.SMOKE_LIGHT)
+    added = np.maximum(smoke_pixels(lights=warm)[:, :, :3] - smoke_pixels()[:, :, :3], 0.)
+    np.testing.assert_allclose(lit[:, :, :3], (added / (1. + added)) ** (1 / 2.2), atol=.003)
+    assert lit[:, :, 0].mean() > lit[:, :, 2].mean() > 0.
+
+
+def test_smoke_heat_and_flow_maps_read_the_raw_fields_even_without_density(smoke_pixels):
+    np.testing.assert_allclose(smoke_pixels(debug=RtxDebugView.SMOKE_HEAT)[64, 64], (.75, 0., 0., 1.), atol=.01)
+    assert np.max(smoke_pixels(debug=RtxDebugView.SMOKE_FLOW)[:, :, :3]) == 0.
+    speed = 1. - math.exp(-1.)  # 30 cells/s of 2-unit cells: 60 world units/s
+    east = smoke_pixels(density=0., velocity=(30., 0.), debug=RtxDebugView.SMOKE_FLOW)
+    west = smoke_pixels(velocity=(-30., 0.), debug=RtxDebugView.SMOKE_FLOW)
+    np.testing.assert_allclose(east[64, 64, :3], (0., speed, speed), atol=.01)
+    np.testing.assert_allclose(west[64, 64, :3], (speed, 0., 0.), atol=.01)
 
 
 def test_native_shader_preserves_faint_extinction_without_sprite_alpha_test(smoke_pixels):

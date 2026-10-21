@@ -76,6 +76,9 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
 
     entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
     view = render_ctx.view
+    if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_smoke:
+        draw_smoke_map(render_ctx)
+        return
     draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size,
                     entity_alpha=entity_alpha)
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_map:
@@ -123,6 +126,17 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
     # This remains inside the world's HDR/pressure-front composition scope.
     if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None:
         frame.smoke.draw(render_ctx, alpha=entity_alpha)
+
+
+def draw_smoke_map(render_ctx: WorldRenderCtx) -> None:
+    """A smoke diagnostic over black: the fluid alone, lit by the frame's own weapon sources."""
+    rl.clear_background(rl.BLACK)
+    frame = render_ctx.frame
+    if frame.smoke is None:
+        return
+    view = render_ctx.view
+    frame.smoke.prepare(frame, tuple(collect_material_lights(frame, view_center=view.screen_size * .5 - view.camera)))
+    frame.smoke.draw(render_ctx, alpha=1.0, debug=frame.rtx_debug)
 
 
 def draw_background(
