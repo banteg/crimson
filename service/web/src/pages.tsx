@@ -156,7 +156,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
               </Show>
               <th class="n">Score</th>
               <Show when={full()} fallback={<th />}>
-                <th>Score card</th>
+                <th>Run</th>
                 <th class="n" title="The time the game lasted">Game time</th>
                 <th title="Most used weapon during the game">Weapon</th>
                 <th>Replay</th>
@@ -193,7 +193,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                   </td>
                   <Show when={full()}>
                     <td>
-                      <a class="run-details" href={`/runs/${row.run}`}>View →</a>
+                      <a class="run-details" href={`/runs/${row.run}`}>Details →</a>
                     </td>
                     <td class="n">{formatDuration(row.elapsed_ms)}</td>
                     <td>
@@ -335,7 +335,7 @@ async function home(): Promise<Screen> {
       () => (
         <>
           <p>
-            Crimsonland v1.9.93 in your browser—recovered from <code>crimsonland.exe</code>, with 28 weapons, 57 perks, modern gamepads, and
+            Crimsonland, the 2003 top-down shooter, in your browser—recovered from <code>crimsonland.exe</code>, with modern gamepads and
             internet high scores where every run is verified by replay.
           </p>
           <PlayGame />
@@ -459,7 +459,8 @@ function spawnColor(spawnId: number): string {
 function QuestPreviewSvg(props: { quest: CustomQuest }) {
   const entries = () => props.quest.entries;
   const totalCopies = () => entries().reduce((sum, e) => sum + e.count, 0);
-  const maxTriggerMs = () => Math.max(1000, ...entries().map((e) => e.trigger_ms));
+  const lastSpawnMs = () => Math.max(0, ...entries().map((e) => e.trigger_ms));
+  const maxTriggerMs = () => Math.max(1000, lastSpawnMs());
   const toMap = (coord: number) => 32 + ((coord + 256) / 1536) * 256;
   const arenaStart = toMap(0);
   const arenaSize = toMap(1024) - arenaStart;
@@ -485,7 +486,7 @@ function QuestPreviewSvg(props: { quest: CustomQuest }) {
       <div style={{ flex: "1", "min-width": "240px" }}>
         <p class="muted" style={{ margin: "0 0 6px" }}>
           Spawns: <b>{entries().length} / 256</b> entries · <b>{totalCopies().toLocaleString("en-US")}</b> template copies · last spawn at{" "}
-          <b>{formatDuration(Math.max(0, ...entries().map((e) => e.trigger_ms)))}</b>
+          <b>{formatDuration(lastSpawnMs())}</b>
         </p>
         <svg viewBox="0 0 400 44" width="100%" height="44" style={{ background: "rgba(0,0,0,0.35)", "border-radius": "4px", border: "1px solid rgba(255,255,255,0.12)" }}>
           <For each={entries()}>
@@ -628,7 +629,7 @@ async function customQuestPage(id: string): Promise<Screen> {
           <QuestPreviewSvg quest={def} />
           <p class="buttons">
             <GameButton label="Play level" href={`/play/?quest=${detail.id}`} native />
-            <GameButton label="Watch winning run" href={`/play/?watch=${detail.first_run_id}`} native />
+            <GameButton label="Watch author's run" href={`/play/?watch=${detail.first_run_id}`} native />
             <GameButton label="All custom quests" href="/custom" />
           </p>
         </>
@@ -767,7 +768,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                   <tr>
                     <th>Board</th>
                     <th class="n">Score</th>
-                    <th>Score card</th>
+                    <th>Run</th>
                     <th>Version</th>
                     <th>Accepted</th>
                     <th>Replay</th>
@@ -804,7 +805,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                           </a>
                         </td>
                         <td>
-                          <a class="run-details" href={`/runs/${run.id}`}>View →</a>
+                          <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
                         </td>
                         <td>{run.game_version.split("+", 1)[0]}</td>
                         <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
@@ -1010,7 +1011,7 @@ async function login(token: string, nav: Navigator): Promise<Screen> {
     panels: [
       () => (
         <>
-          <h2>Sign in as this trooper?</h2>
+          <h2>Sign in to this profile?</h2>
           <p>
             <PlayerName player={view.account} /> <span class="muted">· {quantity(view.runs, "run")}</span>
           </p>
@@ -1054,8 +1055,8 @@ async function join(token: string, nav: Navigator): Promise<Screen> {
           <p>
             This browser is signed in as <PlayerName player={view.source} />. Joining merges this profile's{" "}
             {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {quantity(view.moving.runs, "run")} and{" "}
-            {quantity(view.moving.names, "name")} into the profile above and removes this profile, and any computer linked to it will post
-            future runs under the profile above.
+            {quantity(view.moving.names, "name")} into the profile above and removes this profile, and from then on{" "}
+            {view.moving.keys === 1 ? "that key signs" : "those keys sign"} in to the profile above.
           </p>
           <p>
             Join only if you played as <PlayerName player={view.source} tag={false} /> yourself. If you don't recognise it, someone signed
@@ -1102,9 +1103,8 @@ const ABOUT: Screen = {
           separate lists for Hardcore and 2-player co-op. Only your best run on each list counts.
         </p>
         <p>
-          In 2003, the game sent its score records as-is; here, every score comes with a <code>.crd</code> recording of the run. The server
-          replays it using the same recovered game code and checks that the result matches. Anyone can download the replay and watch or
-          verify it themselves. Bots can produce valid replays too, so verification confirms the score, not whether a human played.
+          Every score comes with a <code>.crd</code> recording of the run. The server replays it using the same recovered game code and
+          checks that the result matches. Anyone can download the replay and watch or verify it themselves. Bots can produce valid replays too, so verification confirms the score, not whether a human played.
         </p>
         <p>
           Ranked runs on each list use the same starting conditions: a standard progression profile and documented fixes for{" "}

@@ -317,11 +317,11 @@ export function runDescription(run: RunSummary): string {
     : `finished ${run.title}${hardcore ? " on hardcore" : ""} in ${formatScore(run.board, run.score)}`;
   const weapon = WEAPONS[result.most_used_weapon_id];
   const numbers = [
-    `Frags: ${result.kills.toLocaleString("en-US")}`,
-    ...(result.shots_fired ? [`Hit %: ${Math.round((result.shots_hit / result.shots_fired) * 100)}%`] : []),
-    ...(weapon ? [`most used weapon: ${weapon.name}`] : []),
+    `${result.kills.toLocaleString("en-US")} kills`,
+    ...(result.shots_fired ? [`${Math.round((result.shots_hit / result.shots_fired) * 100)}% accuracy`] : []),
+    ...(weapon ? [`mostly the ${weapon.name}`] : []),
   ];
-  return `${runLabel(run)} ${what}${run.rank ? `, #${run.rank} on the high scores` : ""}. ${numbers.join(", ")}. Verified by replay.`;
+  return `${runLabel(run)} ${what}${run.rank ? `, #${run.rank} on the board` : ""}. ${numbers.join(", ")}. Verified by replay.`;
 }
 
 export async function gameScores(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<GameScore[]> {
