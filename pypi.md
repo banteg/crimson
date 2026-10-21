@@ -95,6 +95,20 @@ crimson identity import <file>    # sign as an exported key (--replace overwrite
 crimson identity profile          # open your profile on crimson.land, signed in
 ```
 
+## Unlock campaign progress
+
+Close the game, then unlock all 50 normal and hardcore quests and their progression rewards:
+
+```bash
+crimson save unlock
+crimson save unlock --base-dir /path/to/runtime
+```
+
+This requires an existing, valid `game.cfg`. Before changing it, the command writes an exact backup
+beside it as `game.cfg.<unique-id>.bak` and prints its path. Counters, statistics and high scores stay
+unchanged. An already fully unlocked save is left untouched, without another backup.
+To restore progress, close the game and copy the backup over `game.cfg`.
+
 ## Custom quests
 
 Write a quest in the [quest language](https://crimson.banteg.xyz/formats/quest-dsl/), play it, and publish it with a

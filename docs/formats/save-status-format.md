@@ -87,3 +87,16 @@ Mode, weapon, quest, and playtime increments wrap at 32 bits, matching the
 native fields. Playtime converts each gameplay frame delta to milliseconds
 with f32 multiplication followed by truncation. These rules keep long-running
 statistics serializable without changing the save format.
+
+## Unlocking progress from the CLI
+
+With the game closed, run `crimson save unlock` to unlock every normal and hardcore quest and their
+progression rewards. Use `--base-dir <directory>` (or `--runtime-dir`) to select a different save directory.
+The default is the same per-user runtime directory as the game, including `CRIMSON_RUNTIME_DIR` overrides.
+
+The command requires an existing save with a valid size and checksum. It writes an exact copy to a unique
+`game.cfg.<unique-id>.bak` beside the save and flushes it before setting both unlock indices to 50 and
+atomically replacing `game.cfg`. It prints the backup path; older backups are never overwritten.
+All other status fields and separate high-score files remain unchanged. If both indices are already 50,
+the command does nothing and creates no backup. To restore progress, close the game and copy the printed
+backup over `game.cfg`.
