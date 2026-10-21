@@ -20,7 +20,7 @@ from .smoke_shaders import SMOKE_FRAGMENT, SMOKE_VERTEX
 from .smoke_simulation import SmokeSimulation
 
 if TYPE_CHECKING:
-    from ...sim.smoke_events import SmokeEmission
+    from ...sim.smoke_events import AtmosphereImpulse, SmokeEmission
     from ..frame import RenderFrame
     from ..world.context import WorldRenderCtx
     from ..world.viewport import ViewTransform
@@ -42,9 +42,13 @@ class SmokeRenderer:
         self._uploaded.clear()
         self.prepared = False
 
-    def consume(self, emissions: tuple[SmokeEmission, ...], *, dt_sim: float) -> None:
+    def consume(self, emissions: tuple[SmokeEmission, ...], *, dt_sim: float,
+                impulses: tuple[AtmosphereImpulse, ...] = ()) -> None:
         if self.available:
-            self.simulation.consume(emissions, dt_sim)
+            if isinstance(self.simulation, GpuSmokeSimulation):
+                self.simulation.consume(emissions, dt_sim, impulses=impulses)
+            else:
+                self.simulation.consume(emissions, dt_sim)
 
     def _uniform(self, name: str, values: Sequence[float], *, count: int = 1) -> None:
         assert self.shader is not None

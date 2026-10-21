@@ -98,13 +98,18 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
     def muzzle_sprite(self, speed: float, scale: float, alpha: float) -> None:
         # Native uses raw (cos h, sin h) of the aim heading - the aim direction
         # rotated 90 degrees - matching the Fire Cough and shell-casing ports.
-        self.state.sprite_effects.spawn(
-            pos=self.muzzle,
-            vel=Vec2.from_angle(self.aim_heading) * speed,
-            scale=scale,
-            color=RGBA(0.5, 0.5, 0.5, alpha),
-            rng=self.state.rng,
-        )
+        direction = Vec2.from_heading(self.aim_heading)
+        pool = self.state.sprite_effects
+        pool.atmosphere_impulse(start=self.muzzle, end=self.muzzle+direction*40.,
+                                radius=10., strength=80.*alpha, curl=20.*alpha, kind="muzzle")
+        with pool.smoke_source(profile="muzzle", flow_dir=direction, velocity=direction*speed):
+            pool.spawn(
+                pos=self.muzzle,
+                vel=Vec2.from_angle(self.aim_heading) * speed,
+                scale=scale,
+                color=RGBA(0.5, 0.5, 0.5, alpha),
+                rng=self.state.rng,
+            )
 
 
 def _native_shot_angle_with_jitter(

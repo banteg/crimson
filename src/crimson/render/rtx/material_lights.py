@@ -368,7 +368,9 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                 ),
             )
     for visual in frame.state.effects.explosion_visuals:
-        shell = explosion_shell(visual.age, visual.scale) if visual.ring_spawned else None
+        shell = (
+            explosion_shell(visual.age, visual.scale) if visual.emit_light and visual.ring_spawned else None
+        )
         if shell is not None:
             scale = max(0.1, visual.scale)
             sources.append(MaterialLight(

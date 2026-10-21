@@ -28,7 +28,7 @@ from ..perks import PerkId
 from ..projectiles.types import ProjectileHit, ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..weapons import weapon_entry_for_projectile_type_id
-from .smoke_events import SmokeEmission
+from .smoke_events import AtmosphereImpulse, SmokeEmission
 from .state_types import PlayerState
 from .terrain_fx import TerrainFxBatch
 
@@ -58,6 +58,7 @@ class DeterministicPresentationPlan(msgspec.Struct, frozen=True):
     dt_sim: float = 0.0
     camera: CameraUpdate | None = None
     smoke_emissions: tuple[SmokeEmission, ...] = ()
+    atmosphere_impulses: tuple[AtmosphereImpulse, ...] = ()
 
 
 def hit_sfx_for_type(

@@ -826,8 +826,33 @@ new simulation domains.
 The GPU solver uses semi-Lagrangian advection for planar velocity, density, and
 temperature, 12 pressure-relaxation iterations, vorticity confinement, and damping.
 The CPU reference's MacCormack scalar correction and finer growing grid are not
-pixel-equivalent to this bounded GPU approximation. Sources inject native motion and
-expansion; a small fixed planar breeze supplies background drift. Temperature
+pixel-equivalent to this bounded GPU approximation. Sources inject presentation motion and
+expansion; a small fixed planar breeze supplies background drift. RTX muzzle
+puffs use the firing direction instead of the native sideways velocity, with a
+resolved elongated footprint and a short jet with paired vortices. Rocket exhaust
+moves backward along the flight direction instead of inheriting the native
+cosine-for-both-components drift. These overrides affect only copied smoke events;
+native sprite values, RNG, collision, damage and replay checkpoints are unchanged.
+
+Projectiles deposit velocity-only wakes along their actual swept paths. Ion, fire,
+plasma and rockets have stronger wakes than ordinary bullets. Muzzle jets and
+wakes enter before pressure projection; explosion fronts deliver a short expanding
+radial impulse after projection so the incompressible solve does not erase their
+expansion. Neither impulse creates smoke or heat. All rocket detonation paths and
+nuke bursts contribute blast motion, including low-detail explosions without
+smoke puffs. No visible medium means no additional fluid simulation is needed.
+Per-tick GPU impulses are capped at 64, prioritizing blasts and muzzle jets before
+wakes; at most 16 blast fronts persist. New forces reuse the existing solver and
+pressure iterations. During a blast, a scratch pass measures pre-blast divergence;
+scalar transport dilutes density and heat only by the additional outward expansion.
+This avoids artificial smoke growth without applying noisy pressure residuals to
+untouched clouds. Advection remains an approximate, nonconservative solver.
+
+Rocket exhaust and impact deposits use 40% of the old source strength, and ordinary
+general-effect explosion puffs use 60%. The nuke profile retains its existing
+strength and decay. RTX rocket explosions omit the visible pressure shell, shell
+light and screen distortion; their central explosion lighting and their motion
+through existing smoke remain. Classic explosion rings are unchanged. Temperature
 controls an assumed vertical density profile in the display shader. This is a
 shallow 2D flow approximation with a 2.5D display, not a simulated 3D volume or
 vertical buoyancy model.

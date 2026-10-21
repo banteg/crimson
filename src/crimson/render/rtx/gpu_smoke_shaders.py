@@ -8,6 +8,7 @@ uniform int u_mode;
 uniform float u_dt;
 uniform float u_decay;
 uniform float u_fade;
+uniform float u_dilate;
 out vec4 finalColor;
 vec2 uv;
 vec2 cell;
@@ -22,6 +23,10 @@ float pressure(vec2 p) {
 float curlAt(vec2 p) {
     return (sampleState(p+vec2(cell.x,0)).a-sampleState(p-vec2(cell.x,0)).a)/(2.0*u_world_size.x*cell.x)
          - (sampleState(p+vec2(0,cell.y)).b-sampleState(p-vec2(0,cell.y)).b)/(2.0*u_world_size.y*cell.y);
+}
+float divergenceAt(vec2 p, vec2 spacing) {
+    return (sampleState(p+vec2(cell.x,0)).b-sampleState(p-vec2(cell.x,0)).b)/(2.0*spacing.x)
+         + (sampleState(p+vec2(0,cell.y)).a-sampleState(p-vec2(0,cell.y)).a)/(2.0*spacing.y);
 }
 void main() {
     uv=vec2(gl_FragCoord.x/u_resolution.x,1.0-gl_FragCoord.y/u_resolution.y);
@@ -50,11 +55,19 @@ void main() {
         vec2 t=vec2(tanh(sampleState(uv+vec2(cell.x,0)).g*.25)-tanh(sampleState(uv-vec2(cell.x,0)).g*.25),
                     tanh(sampleState(uv+vec2(0,cell.y)).g*.25)-tanh(sampleState(uv-vec2(0,cell.y)).g*.25));
         finalColor=vec4(q.rg,(q.ba-grad*spacing-u_dt*72.0*t)*exp(-u_dt*.12));
+    } else if(u_mode==6) {
+        finalColor=vec4(divergenceAt(uv,spacing),0,0,0);
     } else if(u_mode==5) {
         finalColor=vec4(q.rg*u_fade,q.ba);
     } else {
         vec2 p=uv-u_dt*q.ba/u_world_size;
         vec2 rg=sampleState(p).rg;
+        // Dilute only divergence added by this step's explicit blast front.
+        // Applying this to projection residue would gradually stipple all smoke.
+        if(u_dilate>.5) {
+            float added=divergenceAt(uv,spacing)-pressure(uv);
+            rg*=exp(-u_dt*max(0.0,added));
+        }
         float edge=min(min(uv.x,uv.y),min(1.0-uv.x,1.0-uv.y));
         float sponge=exp(-u_dt*3.0*pow(clamp(1.0-edge/.045,0.0,1.0),2.0));
         finalColor=vec4(max(vec2(0),rg)*exp(-u_dt*vec2(u_decay,.70))*sponge,q.ba);
@@ -67,12 +80,18 @@ uniform vec2 u_world_size;
 uniform vec4 u_source;
 uniform vec4 u_motion;
 uniform float u_rotation;
+uniform vec4 u_flow;
 out vec4 finalColor;
 void main() {
     vec2 uv=vec2(gl_FragCoord.x/u_resolution.x,1.0-gl_FragCoord.y/u_resolution.y);
     vec2 d=(uv-u_source.xy)*u_world_size;
     float sigma=max(4.0,u_source.z*.5);
-    float mass=exp(-dot(d,d)/(2.0*sigma*sigma));
+    vec2 shape=d;
+    if(u_flow.z>.5) {
+        vec2 direction=u_flow.xy;
+        shape=vec2(dot(d,direction)/1.2,dot(d,vec2(-direction.y,direction.x))/.50);
+    }
+    float mass=exp(-dot(shape,shape)/(2.0*sigma*sigma));
     vec2 swirl=vec2(0);
     if(u_motion.w>.5) {
         mass*=.3;
@@ -90,5 +109,49 @@ void main() {
     }
     vec2 flow=mass*(u_motion.xy*.44+d*(2.0*u_motion.z/max(u_source.z,.001)*.44))+swirl;
     finalColor=vec4(mass*u_source.w*vec2(1.7,2.0),flow);
+}
+"""
+
+GPU_ATMOSPHERE_IMPULSE_FRAGMENT = """#version 330
+uniform vec2 u_resolution;
+uniform vec2 u_world_size;
+uniform vec4 u_segment;
+uniform vec4 u_impulse; // radius, total velocity impulse, curl, kind
+uniform vec4 u_phase; // age, delivery fraction, expansion speed, duration
+out vec4 finalColor;
+void main() {
+    vec2 uv=vec2(gl_FragCoord.x/u_resolution.x,1.0-gl_FragCoord.y/u_resolution.y);
+    vec2 world=uv*u_world_size;
+    vec2 delta=u_segment.zw-u_segment.xy;
+    float span=length(delta);
+    vec2 axis=span>.001 ? delta/span : vec2(1,0);
+    vec2 side=vec2(-axis.y,axis.x);
+    float radius=max(u_impulse.x,4.0);
+    vec2 flow=vec2(0);
+    if(u_impulse.w>1.5) { // blast: deliver an expanding pressure front after projection
+        vec2 d=world-u_segment.xy;
+        float distance=length(d);
+        float front=radius+max(0.0,u_phase.x)*u_phase.z;
+        float width=max(6.0,radius*.35+u_phase.x*u_phase.z*.08);
+        float shell=exp(-.5*pow((distance-front)/width,2.0));
+        flow=d/max(distance,1.0)*shell*u_impulse.y*u_phase.y;
+    } else {
+        float along=clamp(dot(world-u_segment.xy,axis),0.0,span);
+        vec2 near=u_segment.xy+axis*along;
+        vec2 offset=world-near;
+        float falloff=exp(-dot(offset,offset)/(2.0*radius*radius));
+        float taper=u_impulse.w<.5 ? mix(1.0,.35,along/max(span,1.0)) : 1.0;
+        flow=axis*u_impulse.y*falloff*taper;
+        // A counter-rotating vortex pair entrains surrounding air. These curls
+        // survive incompressible projection, unlike a purely divergent puff.
+        vec2 center=mix(u_segment.xy,u_segment.zw,.65);
+        for(int i=0;i<2;i++) {
+            float sign=i==0 ? -1.0 : 1.0;
+            vec2 q=world-center-side*(sign*radius*.9);
+            float g=exp(-dot(q,q)/(2.0*radius*radius*2.25));
+            flow+=sign*vec2(-q.y,q.x)/radius*g*u_impulse.z;
+        }
+    }
+    finalColor=vec4(0,0,clamp(flow,vec2(-800),vec2(800)));
 }
 """

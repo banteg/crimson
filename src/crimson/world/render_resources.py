@@ -19,7 +19,7 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.rtx.player_lighting import PlayerLighting
 from ..render.rtx.smoke import SmokeRenderer
 from ..render.terrain_fx import FxQueueTextures, bake_terrain_fx_batch
-from ..sim.smoke_events import SmokeEmission
+from ..sim.smoke_events import AtmosphereImpulse, SmokeEmission
 from ..sim.state_types import TERRAIN_SIZE
 from ..sim.terrain_fx import TerrainFxBatch
 
@@ -146,9 +146,10 @@ class RenderResources(msgspec.Struct):
             self.smoke.reset()
         return enabled
 
-    def consume_smoke_batch(self, emissions: tuple[SmokeEmission, ...], *, dt_sim: float) -> None:
+    def consume_smoke_batch(self, emissions: tuple[SmokeEmission, ...], *, dt_sim: float,
+                            impulses: tuple[AtmosphereImpulse, ...] = ()) -> None:
         if self.sync_smoke_mode():
-            self.smoke.consume(emissions, dt_sim=dt_sim)
+            self.smoke.consume(emissions, dt_sim=dt_sim, impulses=impulses)
 
     def bake_terrain_fx_batch(self, batch: TerrainFxBatch, ground: GroundRenderer) -> None:
         """Bakes a tick's decals and corpses into `ground`: the run's, or another copy of its terrain."""

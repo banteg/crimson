@@ -153,13 +153,14 @@ def test_actual_nuke_pickup_captures_delayed_smoke_without_gameplay_changes() ->
         sim.state.bonus_pool.spawn_at(sim.players[0].pos, BonusId.NUKE, state=sim.state)
         sim.state.rng = RecordingCrand(sim.state.rng)
     tick = captured.step_tick(dt=1 / 60, inputs=[player_input()])
-    plain._step_tick(dt=1 / 60, inputs=[player_input()], commands=None, smoke_emissions=[])
+    plain._step_tick(dt=1 / 60, inputs=[player_input()], commands=None, smoke_emissions=[], atmosphere_impulses=[])
     events = [event for event in tick.presentation.smoke_emissions if event.source == "effect"]
     assert len(events) == 2
     assert [event.delay_seconds for event in events] == [0.5, -f32(-0.3)]
     assert all(event.expansion == 160.0 for event in events)
     assert all(event.retention_seconds == 15.0 for event in events)
     assert all(event.profile == "nuke" for event in events)
+    assert len([event for event in tick.presentation.atmosphere_impulses if event.kind == "blast"]) == 1
     assert world.state.bonus_pool.entries[0].picked
     assert session_digest(captured) == session_digest(plain)
     assert isinstance(world.state.rng, RecordingCrand)
@@ -202,7 +203,7 @@ def test_native_rocket_ticks_preserve_rng_and_complete_session_state() -> None:
     for tick in range(90):
         inputs = [player_input(aim=Vec2(1000, 512), fire_down=tick == 0)]
         output = captured.step_tick(dt=1 / 60, inputs=inputs)
-        plain._step_tick(dt=1 / 60, inputs=inputs, commands=None, smoke_emissions=[])
+        plain._step_tick(dt=1 / 60, inputs=inputs, commands=None, smoke_emissions=[], atmosphere_impulses=[])
         events.extend(output.presentation.smoke_emissions)
         assert session_digest(captured) == session_digest(plain)
     assert len(events) > 10
@@ -225,5 +226,6 @@ def test_every_plan_hands_off_smoke_and_dt_in_tick_order(mocker, partition) -> N
         apply_presentation_plans(plans=plans[cursor:cursor + count], runtime=runtime)
         cursor += count
     assert runtime.render_resources.consume_smoke_batch.call_args_list == [
-        mocker.call(tuple(events), dt_sim=0.01), mocker.call((), dt_sim=0.02), mocker.call((), dt_sim=0.03),
+        mocker.call(tuple(events), dt_sim=0.01, impulses=()), mocker.call((), dt_sim=0.02, impulses=()),
+        mocker.call((), dt_sim=0.03, impulses=()),
     ]

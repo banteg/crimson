@@ -58,13 +58,16 @@ def test_native_gpu_smoke_transport_pause_and_reset(raylib_context):
 
 
 def test_native_gpu_tick_grouping_is_invariant(raylib_context):
+    from crimson.sim.smoke_events import AtmosphereImpulse
     a,b=GpuSmokeSimulation(resolution=64),GpuSmokeSimulation(resolution=64)
     try:
         for tick in range(8):
             batch=(emission(pos=Vec2(400+tick*3,300),vel=Vec2(20,4)),)
-            a.consume(batch,1/60)
+            impulses = (AtmosphereImpulse(Vec2(400,300),Vec2(430,300),20,80,curl=12,
+                                          kind="blast" if tick == 0 else "wake"),)
+            a.consume(batch,1/60,impulses=impulses)
             a.prepare()
-            b.consume(batch,1/60)
+            b.consume(batch,1/60,impulses=impulses)
         b.prepare()
         np.testing.assert_array_equal(pixels(a),pixels(b))
     finally:
@@ -130,5 +133,167 @@ def test_native_gpu_rectangular_world_and_expansion_only_source(raylib_context):
             sim.consume((),1/60)
         sim.prepare(world_size=Vec2(1024,512))
         assert np.isfinite(pixels(sim)).all()
+    finally:
+        sim.close()
+
+
+def test_airflow_is_bounded_prioritized_and_never_creates_smoke():
+    from crimson.render.rtx.gpu_smoke import MAX_IMPULSES_PER_TICK
+    from crimson.sim.smoke_events import AtmosphereImpulse
+    sim=GpuSmokeSimulation()
+    wake=AtmosphereImpulse(Vec2(200,200),Vec2(220,200),8,10)
+    blast=AtmosphereImpulse(Vec2(500,500),Vec2(500,500),40,200,kind="blast")
+    muzzle=AtmosphereImpulse(Vec2(200,200),Vec2(240,200),10,50,kind="muzzle")
+    sim.consume((),1/60,impulses=(wake,))
+    assert not sim.fields and not sim.batches
+    sim.consume((emission(),),0.)
+    sim.consume((),1/60,impulses=(*((wake,)*200),muzzle,blast))
+    impulses=sim.batches[-1][3]
+    assert len(impulses)==MAX_IMPULSES_PER_TICK
+    assert impulses[:2]==(blast,muzzle)
+    sim.reset()
+    assert not sim.waiting_impulses and not sim.blasts and not sim.batches
+
+
+def test_native_velocity_only_wake_moves_existing_smoke_without_deposit(raylib_context):
+    from crimson.sim.smoke_events import AtmosphereImpulse
+    sim=GpuSmokeSimulation(resolution=128)
+    try:
+        sim.consume((emission(pos=Vec2(300,300),scale=80,vel=Vec2()),),0.)
+        sim.prepare()
+        before=pixels(sim)
+        # Isolate the splat: it must write only velocity, even in clear air.
+        impulse=AtmosphereImpulse(Vec2(600,500),Vec2(720,500),16,80,curl=20)
+        sim._inject_impulses(((impulse,0.,1.),))
+        after=pixels(sim)
+        np.testing.assert_array_equal(before[:,:,:2],after[:,:,:2])
+        assert np.linalg.norm(after[:,:,2:]-before[:,:,2:])>10.
+        near=AtmosphereImpulse(Vec2(260,300),Vec2(340,300),24,100,curl=30,kind="muzzle")
+        sim.consume((),1/60,impulses=(near,))
+        for _ in range(20):
+            sim.consume((),1/60)
+        sim.prepare()
+        moved=pixels(sim)
+        assert np.isfinite(moved).all()
+        _,xx=np.indices(moved[:,:,0].shape)
+        before_x=(xx*before[:,:,0]).sum()/before[:,:,0].sum()
+        after_x=(xx*moved[:,:,0]).sum()/moved[:,:,0].sum()
+        assert after_x>before_x+.25
+    finally:
+        sim.close()
+
+
+def test_native_blast_front_delivers_outward_motion_after_projection(raylib_context):
+    from crimson.sim.smoke_events import AtmosphereImpulse
+    control,blast=GpuSmokeSimulation(resolution=128),GpuSmokeSimulation(resolution=128)
+    try:
+        event=emission(pos=Vec2(500,500),scale=180,vel=Vec2())
+        impulse=AtmosphereImpulse(Vec2(500,500),Vec2(500,500),40,240,kind="blast",duration=.4,expansion_speed=180)
+        for sim in (control,blast):
+            sim.consume((event,),0.)
+            sim.prepare()
+        for tick in range(12):
+            control.consume((),1/60)
+            blast.consume((),1/60,impulses=(impulse,) if tick==0 else ())
+        control.prepare()
+        blast.prepare()
+        a,b=pixels(control),pixels(blast)
+        yy,xx=np.indices(a[:,:,0].shape)
+        dx,dy=(xx+.5)*10-628,(yy+.5)*10-628
+        r=np.sqrt(dx*dx+dy*dy)
+        shell=(r>35)&(r<85)
+        radial=((b[:,:,2]-a[:,:,2])*dx+(b[:,:,3]-a[:,:,3])*dy)/np.maximum(r,1.)
+        assert radial[shell].mean()>3.
+        assert np.isfinite(b).all()
+        assert blast.blasts and blast.blasts[0][1]>.19
+        blast.consume((),.3)
+        blast.prepare()
+        assert not blast.blasts
+    finally:
+        control.close()
+        blast.close()
+
+
+def test_native_muzzle_density_follows_firing_direction(raylib_context):
+    x,y=GpuSmokeSimulation(resolution=128),GpuSmokeSimulation(resolution=128)
+    try:
+        for sim,direction in ((x,Vec2(1,0)),(y,Vec2(0,1))):
+            sim.consume((emission(pos=Vec2(500,500),scale=80,vel=Vec2(),
+                                  profile="muzzle",flow_dir=direction),),0.)
+            sim.prepare()
+        def variances(sim):
+            density=pixels(sim)[:,:,0]
+            yy,xx=np.indices(density.shape)
+            mass=density.sum()
+            mx,my=(xx*density).sum()/mass,(yy*density).sum()/mass
+            return (((xx-mx)**2*density).sum()/mass,((yy-my)**2*density).sum()/mass)
+        xx,xy=variances(x)
+        yx,yy=variances(y)
+        assert xx>xy*3 and yy>yx*3
+        np.testing.assert_allclose((xx,xy),(yy,yx),rtol=.02)
+    finally:
+        x.close()
+        y.close()
+
+
+def test_native_small_muzzle_puff_is_resolved_on_production_grid(raylib_context):
+    sim=GpuSmokeSimulation()
+    try:
+        sim.consume((emission(pos=Vec2(500,500),scale=1,vel=Vec2(),
+                              profile="muzzle",flow_dir=Vec2(1,0)),),0.)
+        sim.prepare()
+        density=pixels(sim)[:,:,0]
+        mask=density>density.max()*.1
+        yy,xx=np.nonzero(mask)
+        # Both axes must cover several cells rather than a sub-cell slug.
+        assert xx.max()-xx.min()+1>=6
+        assert yy.max()-yy.min()+1>=4
+        assert np.isfinite(density).all()
+    finally:
+        sim.close()
+
+
+def test_native_expanding_blast_dilutes_smoke_instead_of_creating_mass(raylib_context):
+    from crimson.sim.smoke_events import AtmosphereImpulse
+    control,blast=GpuSmokeSimulation(resolution=128),GpuSmokeSimulation(resolution=128)
+    try:
+        cloud=emission(pos=Vec2(500,500),scale=180,vel=Vec2())
+        impulse=AtmosphereImpulse(Vec2(500,500),Vec2(500,500),28,220,
+                                  kind="blast",duration=.55,expansion_speed=300)
+        for sim in (control,blast):
+            sim.consume((cloud,),0.)
+            sim.prepare()
+        for tick in range(300):
+            control.consume((),1/60)
+            blast.consume((),1/60,impulses=(impulse,) if tick==0 else ())
+        control.prepare()
+        blast.prepare()
+        a,b=pixels(control),pixels(blast)
+        assert np.isfinite(b).all()
+        # Approximate dilution, not a claim of exactly conservative advection.
+        assert b[:,:,0].sum()<a[:,:,0].sum()*1.30
+        assert np.linalg.norm(b[:,:,0]-a[:,:,0])>.1
+    finally:
+        control.close()
+        blast.close()
+
+
+def test_native_no_blast_scalar_transport_ignores_divergence_auxiliary(raylib_context):
+    sim=GpuSmokeSimulation(resolution=128)
+    try:
+        sim.consume((emission(pos=Vec2(500,500),scale=180,vel=Vec2(120,30)),),0.)
+        sim.prepare()
+        source=sim.current
+        destination=1-source
+        sim._pass(2,source,6)
+        assert sim.shader is not None
+        sim._set(sim.shader,sim.locations,"u_decay",(.2,))
+        sim._set(sim.shader,sim.locations,"u_dilate",(0.,))
+        sim._pass(destination,source,4,2)
+        sim.current=destination
+        with_divergence=pixels(sim)
+        sim._pass(destination,source,4,3)
+        with_empty=pixels(sim)
+        np.testing.assert_array_equal(with_divergence,with_empty)
     finally:
         sim.close()

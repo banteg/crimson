@@ -30,7 +30,7 @@ from .input import PlayerInput
 from .mode_updates import ModeState, QuestSpawnState
 from .presentation_step import DeterministicPresentationPlan
 from .run_result import RunOutcome, all_players_dead, death_transition_ready
-from .smoke_events import SmokeEmission
+from .smoke_events import AtmosphereImpulse, SmokeEmission
 from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming, reflex_boost_time_scale_factor
 from .world_state import WorldEvents, WorldState
@@ -211,11 +211,13 @@ class DeterministicSession(msgspec.Struct):
     ) -> DeterministicSessionTick:
         # Command effects belong to this tick too. Always detach the sink on
         # failure, and leave no presentation history in simulation keyframes.
+        impulses: list[AtmosphereImpulse] = []
         with (
-            self.world.state.sprite_effects.capture_emissions() as emissions,
-            self.world.state.effects.capture_emissions(emissions),
+            self.world.state.sprite_effects.capture_emissions(impulses=impulses) as emissions,
+            self.world.state.effects.capture_emissions(emissions, impulses=impulses),
         ):
-            return self._step_tick(dt=dt, inputs=inputs, commands=commands, smoke_emissions=emissions)
+            return self._step_tick(dt=dt, inputs=inputs, commands=commands,
+                                   smoke_emissions=emissions, atmosphere_impulses=impulses)
 
     def _step_tick(
         self,
@@ -224,6 +226,7 @@ class DeterministicSession(msgspec.Struct):
         inputs: Sequence[PlayerInput],
         commands: Sequence[GameCommand] | None,
         smoke_emissions: list[SmokeEmission],
+        atmosphere_impulses: list[AtmosphereImpulse],
     ) -> DeterministicSessionTick:
         post_apply_sfx: list[SfxId] = []
         perk_picks: list[PerkPick] = []
@@ -300,6 +303,7 @@ class DeterministicSession(msgspec.Struct):
             dt_sim=timing.dt_sim,
             camera=camera_update_for_players(self.world.players, state.camera_shake_offset),
             smoke_emissions=tuple(smoke_emissions),
+            atmosphere_impulses=tuple(atmosphere_impulses),
         )
         # `quest_mode_update` saves the status on each frame of its `timer > 2500` branch.
         step = DeterministicSessionTick(
