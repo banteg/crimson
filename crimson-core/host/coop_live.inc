@@ -201,6 +201,7 @@ static void coop_enter_run(const PortableConfig &config) {
 static void coop_latch(int mode, int major, int minor, int hardcore, int choice) {
   PortableConfig &config = coop_live.next;
   config = {};
+  config.rules = CRIMSON_REPLAY_RULES;
   getentropy(&config.seed, sizeof config.seed);
   config.mode = (uint32_t)mode;
   config.major = mode == GAME_MODE_QUEST ? (uint32_t)major : 1;

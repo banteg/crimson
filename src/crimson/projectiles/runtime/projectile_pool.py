@@ -435,7 +435,7 @@ class ProjectilePool:
                                     origin=proj.pos,
                                     exclude_id=hit_idx,
                                     min_dist=100.0,
-                                    preserve_bugs=bool(runtime_state.preserve_bugs),
+                                    preserve_bugs=bool(runtime_state.preserve_bugs), rules=runtime_state.rules,
                                 )
                                 # Native chains to slot 0 when nothing qualifies; the rewrite ends the chain.
                                 if next_idx >= 0:
@@ -564,7 +564,7 @@ class ProjectilePool:
                         # default rules use sine for the vertical component.
                         impulse_angle = f32(float(proj.angle) - NATIVE_HALF_PI)
                         impulse_axis = f32(math.cos(float(impulse_angle)) * float(proj.speed_scale))
-                        impulse_y = (impulse_axis if runtime_state.preserve_bugs else
+                        impulse_y = (impulse_axis if not runtime_state.rules2_fixes else
                                      f32(math.sin(float(impulse_angle)) * float(proj.speed_scale)))
                         impulse = Vec2(float(impulse_axis), float(impulse_y))
                         if remaining <= 0.0:

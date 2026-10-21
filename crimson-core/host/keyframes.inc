@@ -115,6 +115,8 @@ static const uint8_t *run_state_read(const uint8_t *in) {
   run_down_ms = host.run_down_ms;
   string_used = host.string_used;
   portable_preserve_bugs = host.preserve_bugs;
+  portable_rules = host.config.rules;
+  portable_legacy_coop_reload = host.config.legacy_coop_reload;
   memcpy(portable_player_rules, host.player_rules, sizeof portable_player_rules);
   music_playlist_randomized_latch = host.music_latch;
   ui_transition_direction = host.transition_direction;

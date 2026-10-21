@@ -88,6 +88,7 @@ def compute_quest_final_time(
     player_health_values: Sequence[float],
     pending_perk_count: int,
     preserve_bugs: bool = False,
+    rules: int = 2,
 ) -> QuestFinalTime:
     """Compute quest final time (ms) and breakdown.
 
@@ -100,7 +101,7 @@ def compute_quest_final_time(
     the rewrite's three/four-player sessions.
     """
 
-    if not preserve_bugs:
+    if rules >= 2 and not preserve_bugs:
         player_health_values = tuple(max(0.0, health) for health in player_health_values)
     base_ms = int(base_time_ms)
     player0_health = int(math.trunc(f32(player_health_values[0])))

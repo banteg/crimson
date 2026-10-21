@@ -99,13 +99,13 @@ async function login(player: Player): Promise<string> {
 }
 
 describe("runs", () => {
-  it.each([1, REPLAY_RULES + 1])("refuses rules %s before verifying a run", async (rules) => {
+  it.each([REPLAY_RULES + 1])("refuses rules %s before verifying a run", async (rules) => {
     const header = new TextEncoder().encode("rules");
     const file = rewritten(vectors.ranked_run, concat(header, Uint8Array.of(REPLAY_RULES)), concat(header, Uint8Array.of(rules)));
     const response = await (await Player.create()).upload(file, "banteg");
 
     expect(response.status).toBe(422);
-    expect(await reason(response)).toBe(`replay was recorded under rules ${rules}; this service verifies rules ${REPLAY_RULES}`);
+    expect(await reason(response)).toBe(`replay was recorded under rules ${rules}; this service verifies rules 1 and ${REPLAY_RULES}`);
     expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM runs").first("n")).toBe(0);
   });
 
@@ -997,5 +997,31 @@ describe("co-op runs", () => {
     expect(await env.DB.prepare("SELECT account_id FROM run_players WHERE run_id = ? AND seat = 1").bind(id).first()).toEqual({ account_id: into });
     expect((await get<ProfileView>(`/api/players/${into}`)).runs.map((run) => run.board).sort()).toEqual(["survival", "survival-coop"]);
     expect((await get<RunDetailView>(`/api/runs/${id}`)).team!.map((seat) => seat.player!.id)).toEqual([await accountOf(alice), into]);
+  });
+});
+
+describe("historical rules coexist with the current default", () => {
+  it("keeps legacy IDs, dispatches both profiles in a reused verifier and filters boards", async () => {
+    const player = await Player.create();
+    const oldResponse = await player.upload(vectors.legacy_ranked_run, "historical");
+    expect(oldResponse.status).toBe(201);
+    const old = await oldResponse.json() as { id: string };
+    expect(old.id).toBe(vectors.legacy_ranked_run_id);
+    const newResponse = await player.upload(vectors.ranked_run, "current");
+    expect(newResponse.status).toBe(201);
+    const current = await newResponse.json() as { id: string };
+    for (const [rules, id] of [[1, old.id], [2, current.id]]) {
+      const board = await (await SELF.fetch(`${ORIGIN}/api/survival?rules=${rules}`)).json() as BoardView;
+      expect(board.rows).toHaveLength(1);
+      expect(board.rows[0]).toMatchObject({ run: id, rules });
+      const detail = await (await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).json() as RunDetailView;
+      expect(detail.rules).toBe(rules);
+    }
+    const combined = await (await SELF.fetch(`${ORIGIN}/api/survival`)).json() as BoardView;
+    expect(combined.totals.runs).toBe(2);
+    expect(await env.DB.prepare("SELECT retired FROM runs WHERE id = ?").bind(old.id).first("retired")).toBeNull();
+    expect((await SELF.fetch(`${ORIGIN}/api/survival?rules=3`)).status).toBe(400);
+    // Reinitialize with old rules again after current rules; it must still verify.
+    expect((await player.upload(vectors.legacy_ranked_run, "historical")).status).toBe(409);
   });
 });

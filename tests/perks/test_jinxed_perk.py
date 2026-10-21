@@ -30,11 +30,13 @@ _JINXED_ZERO_ROLL_AFTER_0P2 = x87_pc24_add(
 
 
 @pytest.mark.parametrize("hp,death_timer", [(-10.0, 10.0), (0.0, 16.0), (100.0, 10.0)])
-@pytest.mark.parametrize("preserve_bugs", [False, True])
+@pytest.mark.parametrize("rules,preserve_bugs", [(1, False), (1, True), (2, False), (2, True)])
 def test_jinxed_retries_dead_or_dying_targets_only_in_default_mode(
-    hp: float, death_timer: float, preserve_bugs: bool,
+    hp: float, death_timer: float, rules: int, preserve_bugs: bool,
 ) -> None:
     world = make_world(preserve_bugs=preserve_bugs)
+    world.state.rules = rules
+    legacy = preserve_bugs or rules == 1
     state, player = world.state, world.players[0]
     state.perks[PerkId.JINXED] = 1
     state.rng = ScriptedCrand([0, 0, 0, 1])  # no accident, timer, corpse, living target
@@ -45,13 +47,13 @@ def test_jinxed_retries_dead_or_dying_targets_only_in_default_mode(
 
     perks_update_effects(state, world.players, 0.01, creatures=world.creatures.entries, fx_queue=FxQueue())
 
-    assert player.experience == (200 if preserve_bugs else 300)
-    assert corpse.hp == (-1.0 if preserve_bugs else hp)
-    expected_timer = x87_pc24_sub(f32(death_timer), x87_pc24_mul(f32(0.01), 20.0)) if preserve_bugs else death_timer
+    assert player.experience == (200 if legacy else 300)
+    assert corpse.hp == (-1.0 if legacy else hp)
+    expected_timer = x87_pc24_sub(f32(death_timer), x87_pc24_mul(f32(0.01), 20.0)) if legacy else death_timer
     assert corpse.death_timer == expected_timer
-    assert living.hp == (50.0 if preserve_bugs else -1.0)
+    assert living.hp == (50.0 if legacy else -1.0)
     retries = [r for r in state.rng.records_since() if r.caller == RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_CREATURE_RETRY]
-    assert len(retries) == (0 if preserve_bugs else 1)
+    assert len(retries) == (0 if legacy else 1)
 
 
 def test_jinxed_stops_after_ten_retries_without_rewarding_a_corpse() -> None:

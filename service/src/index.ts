@@ -113,18 +113,21 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   if (url.pathname.startsWith("/api/") && category === null) return refuse(400, "no such category");
   // Each page's data is at /api plus its path (paths.ts).
   const page = request.method === "GET" && url.pathname.startsWith("/api/") ? url.pathname.slice("/api".length) : null;
+  const rulesParam = url.searchParams.get("rules");
+  const rules = rulesParam === null ? null : Number(rulesParam);
+  if (page !== null && rules !== null && rules !== 1 && rules !== 2) return refuse(400, "unsupported rules filter");
   const survival = page === null ? null : survivalPage(page);
   if (survival) {
     const limit = Math.min(100, Number(url.searchParams.get("limit")) || 100);
-    return json(await boardView(env, survival, "", category!, limit));
+    return json(await boardView(env, survival, "", category!, limit, undefined, rules));
   }
   const quests = page === null ? null : questPage(page);
   if (quests)
-    return json(quests.quest ? await boardView(env, quests.board, quests.quest, category!, 100) : await questMenuView(env, quests.board, quests.stage, category!));
+    return json(quests.quest ? await boardView(env, quests.board, quests.quest, category!, 100, undefined, rules) : await questMenuView(env, quests.board, quests.stage, category!));
   if (page === "/custom") return json(await customQuestsListView(env, category!));
   if (page === "/replays") return json(await replaysView(env));
   if (page !== null && (match = /^\/custom\/([^/]+)$/.exec(page)) && CUSTOM_QUEST_ID.test(match[1]!)) {
-    const quest = await customQuestDetailView(env, match[1]!, category!);
+    const quest = await customQuestDetailView(env, match[1]!, category!, rules);
     return quest ? json(quest) : refuse(404, "no such quest");
   }
   const viewer = await sessionAccount(request, env);

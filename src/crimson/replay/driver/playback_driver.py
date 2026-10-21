@@ -18,7 +18,7 @@ from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.rng_call_order import RngCallOrder
 from ...replay.ticks import step_replay_tick
-from ...replay.versioning import require_playable_rules
+from ...replay.versioning import legacy_coop_reload, require_playable_rules
 from ...sim.clock import FixedStepClock
 from ...sim.hooks import TickResult
 from ...sim.mode_updates import QuestSpawnState
@@ -138,6 +138,8 @@ class PlaybackDriver:
         try:
             prepared = initialize_run(
                 self.run_spec,
+                rules=replay.rules,
+                legacy_coop_reload=legacy_coop_reload(replay),
                 spawn_entries=spawn_entries,
                 start_weapon_id=start_weapon_id,
             )

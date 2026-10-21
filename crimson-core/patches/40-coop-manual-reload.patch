@@ -6,7 +6,7 @@ Original bug 40: the reload key starts a reload only with one player. The fix ta
          && grim_interface_ptr->grim_is_key_active(config_key_reload)
          && player->reload_timer == 0.0f
 -        && config_player_count == 1) {
-+        && (config_player_count == 1 || !portable_preserve_bugs)) {
++        && (config_player_count == 1 || (!portable_preserve_bugs && !portable_legacy_coop_reload))) {
          player_start_reload();
      }
  

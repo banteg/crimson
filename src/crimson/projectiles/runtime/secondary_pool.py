@@ -114,7 +114,7 @@ def _step_detonation(
                 # second `creature_handle_death` call after the killing hit.
                 fx_queue.add_random(pos=creature.pos, rng=rng)
                 fx_queue.add_random(pos=creature.pos, rng=rng)
-                if runtime_state.preserve_bugs:
+                if not runtime_state.rules2_fixes:
                     step_runtime.world.creatures.handle_death(step_runtime, creature_idx)
 
 
@@ -150,7 +150,7 @@ def _move_rocket(
                 entry.target_id = creature_find_nearest_alive(
                     creatures=creatures,
                     origin=entry.pos,
-                    preserve_bugs=bool(runtime_state.preserve_bugs),
+                    preserve_bugs=bool(runtime_state.preserve_bugs), rules=runtime_state.rules,
                 )
                 target_id = entry.target_id
 
@@ -273,7 +273,7 @@ def fx_spawn_secondary_projectile(
         entry.target_id = creature_find_nearest_alive(
             creatures=creatures,
             origin=player.aim,
-            preserve_bugs=bool(state.preserve_bugs),
+            preserve_bugs=bool(state.preserve_bugs), rules=state.rules,
         )
         # Native stores each trig result as float32 before the seeker's 190x velocity override.
         entry.vel = Vec2(x87_pc24_cos_mul(radians, 1.0, 190.0), x87_pc24_sin_mul(radians, 1.0, 190.0))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import warnings
 
 from ..game_version import REPLAY_RULES, current_replay_game_version
@@ -12,10 +13,10 @@ class ReplayRulesError(ReplayCodecError):
 
 
 def require_playable_rules(replay: Replay) -> None:
-    """Refuse a replay recorded under other rules: this build simulates only its own (REPLAY_RULES)."""
+    """Accept the supported historical and current simulation profiles."""
 
-    if replay.rules != REPLAY_RULES:
-        raise ReplayRulesError(f"replay was recorded under rules {replay.rules}; this build plays rules {REPLAY_RULES}")
+    if replay.rules not in (1, REPLAY_RULES):
+        raise ReplayRulesError(f"replay was recorded under rules {replay.rules}; this build plays rules 1 and {REPLAY_RULES}")
 
 
 class ReplayGameVersionWarning(UserWarning):
@@ -42,3 +43,24 @@ def warn_on_game_version_mismatch(
             ReplayGameVersionWarning,
             stacklevel=2,
         )
+
+
+def legacy_coop_reload(replay: Replay) -> bool:
+    """Resolve the unversioned co-op reload fix from verified release history.
+
+    It landed during 0.18.0 development, before 0.19.0. Builds naming 0.18.0
+    with a source suffix are ambiguous and need an explicit provenance mapping.
+    """
+    if replay.rules != 1 or replay.run.player_count == 1 or replay.run.preserve_bugs:
+        return False
+    # Service vectors introduced by bde24bef7, after reload fix 99cc34261.
+    if replay.game_version == "0.18.0+build.64a9589f5fbefdc036f0559b":
+        return False
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(.*)", replay.game_version)
+    if match:
+        version = tuple(int(match[i]) for i in (1, 2, 3))
+        if version >= (0, 19, 0):
+            return False
+        if version < (0, 18, 0) or (version == (0, 18, 0) and not match[4]):
+            return True
+    raise ReplayRulesError("rules-1 co-op reload behavior requires known recording-build provenance")

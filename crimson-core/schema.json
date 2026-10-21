@@ -113,7 +113,9 @@
       "weapon_usage_time[49]",
       "weapon_usage_time[50]",
       "weapon_usage_time[51]",
-      "weapon_usage_time[52]"
+      "weapon_usage_time[52]",
+      "portable_rules",
+      "portable_legacy_coop_reload"
     ],
     "presentation": [
       "player_weapon_popup_timer[0]",

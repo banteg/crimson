@@ -1,10 +1,10 @@
-// The crimson-core input stream for a replay, a port of crimson-core/checks/replay.py: a 66-word config, then per
+// The crimson-core input stream for a replay, a port of crimson-core/checks/replay.py: a 68-word config, then per
 // tick each player's four f32 axes and flag word (player one first), the command count and each command as (kind,
 // argument). A perk command carries no player: the core knows whose perk menu is open.
 
 import { type CustomQuest, GameMode, type Replay } from "./replay";
 
-export const CONFIG_BYTES = 66 * 4;
+export const CONFIG_BYTES = 68 * 4;
 // The config word holding the player count, which the stream gained after runs were first accepted.
 const PLAYERS_WORD = 12;
 export const QUEST_HEAD_BYTES = 10 * 4;
@@ -85,6 +85,8 @@ export function encodeTransport(replay: Replay): Uint8Array {
     Number(run.preserve_bugs),
     run.player_count,
     ...run.status.weapon_usage_counts,
+    replay.rules,
+    Number(legacyCoopReload(replay)),
   ];
   config.forEach((word, i) => view.setUint32(i * 4, word >>> 0, true));
   if (custom) bytes.set(encodePortableQuest(custom), CONFIG_BYTES);
@@ -115,10 +117,40 @@ export function encodeTransport(replay: Replay): Uint8Array {
 // count, which the stream gained later; a co-op run hashes its whole stream, the count included. (A ranked run's
 // weapon usage words are zero, so the shifted one-player bytes never spell a co-op stream.)
 export function runIdentity(transport: Uint8Array): Uint8Array {
+  const rules = new DataView(transport.buffer, transport.byteOffset, transport.byteLength).getUint32(66 * 4, true);
+  // Freeze the old identity independently of the appended internal config word.
+  const legacy = new Uint8Array(transport.length - 8);
+  legacy.set(transport.subarray(0, 66 * 4));
+  legacy.set(transport.subarray(CONFIG_BYTES), 66 * 4);
+  if (rules === 1) return legacyIdentity(legacy);
+  if (rules !== 2) throw new TransportError(`Unsupported rules ${rules}`);
+  const tag = new TextEncoder().encode("crimson:run:rules\0");
+  const bytes = new Uint8Array(tag.length + 4 + legacy.length);
+  bytes.set(tag);
+  new DataView(bytes.buffer).setUint32(tag.length, rules, true);
+  bytes.set(legacy, tag.length + 4);
+  return bytes;
+}
+
+function legacyIdentity(transport: Uint8Array): Uint8Array {
   const at = PLAYERS_WORD * 4;
   if (new DataView(transport.buffer, transport.byteOffset + at, 4).getUint32(0, true) !== 1) return transport;
   const bytes = new Uint8Array(transport.length - 4);
   bytes.set(transport.subarray(0, at));
   bytes.set(transport.subarray(at + 4), at);
   return bytes;
+}
+
+
+export function legacyCoopReload(replay: Replay): boolean {
+  if (replay.rules !== 1 || replay.run.player_count === 1 || replay.run.preserve_bugs) return false;
+  // Service vectors from bde24bef7, after the co-op reload fix.
+  if (replay.game_version === "0.18.0+build.64a9589f5fbefdc036f0559b") return false;
+  const match = /^(\d+)\.(\d+)\.(\d+)(.*)$/.exec(replay.game_version);
+  if (match) {
+    const [major, minor, patch] = [Number(match[1]), Number(match[2]), Number(match[3])];
+    if (major! > 0 || minor! >= 19) return false;
+    if (minor! < 18 || (minor === 18 && patch === 0 && match[4] === "")) return true;
+  }
+  throw new TransportError("rules-1 co-op reload behavior requires known recording-build provenance");
 }

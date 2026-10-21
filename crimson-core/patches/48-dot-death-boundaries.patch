@@ -6,7 +6,7 @@ Original bug 48: dot death boundaries.
                                      dot_tick_timer + 0.5f;
                                  *health -= 15.0f;
 -                                if (*health < 0.0f) {
-+                                if (*health < 0.0f || (!portable_preserve_bugs && *health == 0.0f)) {
++                                if (*health < 0.0f || (portable_rules2_fixes && *health == 0.0f)) {
                                      ++plaguebearer_infection_count;
                                      creature_handle_death(creature_index, 1);
                                      sfx_play_panned(
@@ -14,7 +14,7 @@ Original bug 48: dot death boundaries.
                                          1.0f);
                                  }
                                  fx_queue_add_random(position);
-+                                if (!portable_preserve_bugs && *health <= 0.0f)
++                                if (portable_rules2_fixes && *health <= 0.0f)
 +                                    goto next_creature;
                              }
                          }
@@ -24,14 +24,14 @@ Original bug 48: dot death boundaries.
                                  creatures[creature_index].state_flag = 1;
                                  *health -= (100.0f - interaction_distance) * 0.3f;
 -                                if (*health < 0.0f) {
-+                                if (*health < 0.0f || (!portable_preserve_bugs && *health == 0.0f)) {
++                                if (*health < 0.0f || (portable_rules2_fixes && *health == 0.0f)) {
                                      player_state_table[0].experience = (int)(
                                          (float)player_state_table[0].experience
                                          + creatures[creature_index].reward_value);
                                      *death_timer -= frame_dt;
                                  }
                                  fx_queue_add_random(position);
-+                                if (!portable_preserve_bugs && *health <= 0.0f)
++                                if (portable_rules2_fixes && *health <= 0.0f)
 +                                    goto next_creature;
                              }
  #else
@@ -41,7 +41,7 @@ Original bug 48: dot death boundaries.
                                  creatures[creature_index].state_flag = 1;
                                  *health -= (100.0f - interaction_distance) * 0.3f;
 -                                if (*health < 0.0f) {
-+                                if (*health < 0.0f || (!portable_preserve_bugs && *health == 0.0f)) {
++                                if (*health < 0.0f || (portable_rules2_fixes && *health == 0.0f)) {
                                      if (creatures[creature_index].type_id
                                          == CREATURE_TYPE_LIZARD) {
                                          *health = 1.0f;
@@ -49,7 +49,7 @@ Original bug 48: dot death boundaries.
                                      }
                                  }
                                  fx_queue_add_random(position);
-+                                if (!portable_preserve_bugs && *health <= 0.0f)
++                                if (portable_rules2_fixes && *health <= 0.0f)
 +                                    goto next_creature;
                              }
  #endif

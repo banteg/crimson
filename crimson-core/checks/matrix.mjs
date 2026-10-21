@@ -434,6 +434,9 @@ function quest(recipe) {
 
 // [name, config arguments, bot, tick limit, controls, hunt]; a `quest` option plays that custom quest.
 const scenarios = [
+  ["rules1-survival", [1, 1, 1, { seed: 44, rules: 1 }], 2, 12000, MOUSE],
+  ["rules1-coop", [1, 1, 1, { seed: 41, players: 2, rules: 1 }], 2, 12000, [PAD, MOUSE]],
+  ["rules1-coop-legacy-reload", [1, 1, 1, { seed: 41, players: 2, rules: 1, legacyCoopReload: 1 }], 2, 12000, [PAD, MOUSE]],
   ["rush-idle", [2], false, 6000, PAD],
   ["rush-bot", [2], true, 30000, MOUSE],
   ["rush-evade", [2, 1, 1, { seed: 1337 }], 2, 30000, PAD],

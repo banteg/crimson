@@ -190,6 +190,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                     <a class="run" href={`/runs/${row.run}`}>
                       {formatScore(props.view.board, row.score)}
                     </a>
+                    <span class="muted"> · R{row.rules}</span>
                   </td>
                   <Show when={full()}>
                     <td>
@@ -379,11 +380,25 @@ function BoardTotals(props: { view: BoardView }) {
 }
 
 // A board's human runs, then its bot runs.
+function rulesQuery(): string {
+  const rules = new URLSearchParams(window.location.search).get("rules");
+  return rules === "1" || rules === "2" ? `&rules=${rules}` : "";
+}
+
+function RulesFilter() {
+  return <nav aria-label="Replay rules">
+    <a data-native href={window.location.pathname}>All rules</a>{" · "}
+    <a data-native href={`${window.location.pathname}?rules=1`}>Rules 1</a>{" · "}
+    <a data-native href={`${window.location.pathname}?rules=2`}>Rules 2</a>
+  </nav>;
+}
+
 function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
   return [
     () => (
       <>
         <h2>{humans.title}</h2>
+        <RulesFilter />
         <BoardTotals view={humans} />
         <BoardTable view={humans} />
       </>
@@ -428,7 +443,7 @@ function BoardSwitch(props: { board: Board; at?: number | string }) {
 
 async function survival(board: SurvivalBoard): Promise<Screen> {
   const path = boardPath(board, "");
-  const [humans, bots] = await Promise.all([get<BoardView>(`/api${path}`), get<BoardView>(`/api${path}?category=bot`)]);
+  const [humans, bots] = await Promise.all([get<BoardView>(`/api${path}?category=human${rulesQuery()}`), get<BoardView>(`/api${path}?category=bot${rulesQuery()}`)]);
   return { title: humans!.title, quest: null, panels: [() => <BoardSwitch board={board} />, ...boardPanels(humans!, bots!)] };
 }
 
@@ -437,8 +452,8 @@ async function quests(page: QuestPage): Promise<Screen> {
   const api = (at: number | string) => `/api${questsPath(page.board, at)}`;
   const [menu, humans, bots] = await Promise.all([
     get<QuestMenuView>(api(page.stage)),
-    page.quest && get<BoardView>(api(page.quest)),
-    page.quest && get<BoardView>(`${api(page.quest)}?category=bot`),
+    page.quest && get<BoardView>(`${api(page.quest)}?category=human${rulesQuery()}`),
+    page.quest && get<BoardView>(`${api(page.quest)}?category=bot${rulesQuery()}`),
   ]);
   const menuPanel = keep("quest-menu", { menu: menu!, quest: page.quest ?? undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />);
   const coop = BOARDS[page.board].players > 1;
@@ -596,8 +611,8 @@ async function customQuests(): Promise<Screen> {
 
 async function customQuestPage(id: string): Promise<Screen> {
   const [detail, bots] = await Promise.all([
-    get<CustomQuestDetailView>(`/api/custom/${id}`),
-    get<CustomQuestDetailView>(`/api/custom/${id}?category=bot`),
+    get<CustomQuestDetailView>(`/api/custom/${id}?category=human${rulesQuery()}`),
+    get<CustomQuestDetailView>(`/api/custom/${id}?category=bot${rulesQuery()}`),
   ]);
   if (!detail || !bots) return notFound();
   const def = detail.definition;
@@ -805,7 +820,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                         <td>
                           <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
                         </td>
-                        <td>{run.game_version.split("+", 1)[0]}</td>
+                        <td>R{run.rules} · {run.game_version.split("+", 1)[0]}</td>
                         <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
                         <td>
                           <ReplayLinks run={run.id} retired={run.retired} />

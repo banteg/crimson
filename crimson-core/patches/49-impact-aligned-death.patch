@@ -5,7 +5,7 @@ Original bug 49: impact aligned death.
          if (creature_pool[creature_id].health <= 0.0f) {
              creature_pool[creature_id].death_timer -= frame_dt;
              creature_handle_death(creature_id, 1);
-+            if (!portable_preserve_bugs && (impulse->x != 0.0f || impulse->y != 0.0f))
++            if (portable_rules2_fixes && (impulse->x != 0.0f || impulse->y != 0.0f))
 +                creature_pool[creature_id].heading = portable_impact_heading(impulse->x, impulse->y);
  
              damage_vec2_t doubled_impulse =
@@ -17,7 +17,7 @@ Original bug 49: impact aligned death.
                                              vec2f_t impulse = {
                                                  impulse_x,
 -                                                impulse_cosine * impulse_speed,
-+                                                portable_preserve_bugs ? impulse_cosine * impulse_speed
++                                                !portable_rules2_fixes ? impulse_cosine * impulse_speed
 +                                                    : (float)(sin(projectile->angle - 1.5707964f) * impulse_speed),
                                              };
                                              creature_apply_damage(hit_id,
@@ -27,7 +27,7 @@ Original bug 49: impact aligned death.
                                              vec2f_t impulse = {
                                                  impulse_x,
 -                                                impulse_cosine * impulse_speed,
-+                                                portable_preserve_bugs ? impulse_cosine * impulse_speed
++                                                !portable_rules2_fixes ? impulse_cosine * impulse_speed
 +                                                    : (float)(sin(projectile->angle - 1.5707964f) * impulse_speed),
                                              };
                                              creature_apply_damage(hit_id, damage, 1, &impulse);
@@ -44,7 +44,7 @@ Original bug 49: impact aligned death.
                                  damage * 5.0f,
                                  3,
                                  &impulse);
-+                            if (!portable_preserve_bugs && was_alive && creature_pool[creature_iter].health <= 0.0f) {
++                            if (portable_rules2_fixes && was_alive && creature_pool[creature_iter].health <= 0.0f) {
 +                                float dx = creature_pool[creature_iter].position.x - bonus_pos->x;
 +                                float dy = creature_pool[creature_iter].position.y - bonus_pos->y;
 +                                if (dx != 0.0f || dy != 0.0f)

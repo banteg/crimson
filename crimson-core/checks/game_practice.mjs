@@ -56,7 +56,7 @@ const before = files(),
   requestCount = requests.length;
 let anchors = 0,
   compared = 0;
-for (const name of ["survival-rules2.crd", "rush-rules2.crd", "quest-1.1-rules2.crd"]) {
+for (const name of ["survival-rules2.crd", "rush-rules2.crd", "quest-1.1-rules2.crd", "quest-1.1-completed.crd"]) {
   clear();
   fs.copyFileSync(path.join(ROOT, "tests/fixtures/replays", name), path.join(directory, "watched/practice.crd"));
   Buffer.from(game.memory.buffer).write("watched/practice.crd\0", game.game_replay_path(), "latin1");

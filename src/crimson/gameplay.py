@@ -529,7 +529,7 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
     else:
         player.living_fortress_timer = 0.0
 
-    fire_cough_interval = intervals.fire_cough if state.preserve_bugs else player.fire_cough_interval
+    fire_cough_interval = intervals.fire_cough if not state.rules2_fixes else player.fire_cough_interval
     if PerkId.FIRE_CAUGH in state.perks:
         player.fire_cough_timer = x87_pc24_add(player.fire_cough_timer, dt)
         if player.fire_cough_timer > fire_cough_interval:
@@ -553,14 +553,14 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
             )
             player.fire_cough_timer = x87_pc24_sub(player.fire_cough_timer, fire_cough_interval)
             next_interval = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET) % 4) + 2.0
-            if state.preserve_bugs:
+            if not state.rules2_fixes:
                 intervals.fire_cough = next_interval
             else:
                 player.fire_cough_interval = next_interval
     else:
         player.fire_cough_timer = 0.0
 
-    hot_tempered_interval = intervals.hot_tempered if state.preserve_bugs else player.hot_tempered_interval
+    hot_tempered_interval = intervals.hot_tempered if not state.rules2_fixes else player.hot_tempered_interval
     if PerkId.HOT_TEMPERED in state.perks:
         player.hot_tempered_timer = x87_pc24_add(player.hot_tempered_timer, dt)
         if player.hot_tempered_timer > hot_tempered_interval:
@@ -574,7 +574,7 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
             player.hot_tempered_timer = x87_pc24_sub(player.hot_tempered_timer, hot_tempered_interval)
             next_interval = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET) % 8) + 2.0
-            if state.preserve_bugs:
+            if not state.rules2_fixes:
                 intervals.hot_tempered = next_interval
             else:
                 player.hot_tempered_interval = next_interval
@@ -859,7 +859,7 @@ def _player_tick_reload(
         preload_dt = reload_step
 
     reload_preload_underflow = x87_pc24_sub(reload_timer_now, preload_dt)
-    reload_completes = reload_preload_underflow < 0.0 if state.preserve_bugs else reload_preload_underflow <= 0.0
+    reload_completes = reload_preload_underflow < 0.0 if not state.rules2_fixes else reload_preload_underflow <= 0.0
     if reload_timer_now > 0.0 and reload_completes:
         player.weapon.ammo = float(player.weapon.clip_size)
 
@@ -901,7 +901,7 @@ def _player_tick_reload(
 
     has_alt_weapon_perk = PerkId.ALTERNATE_WEAPON in state.perks
     # Original bug 40: native takes the reload key only with one player.
-    reload_key_enabled = len(players) == 1 or not state.preserve_bugs
+    reload_key_enabled = len(players) == 1 or (not state.preserve_bugs and not state.legacy_coop_reload)
     # Native gates on `grim_is_key_active` (key held), so holding reload chains
     # reloads back-to-back as each one completes.
     manual_reload_allowed = (
@@ -1045,9 +1045,9 @@ def player_update(
         player.weapon.reload_active = False
 
     reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
-    reload_key_released = not (reload_key_down_any if state.preserve_bugs else reload_key_active)
+    reload_key_released = not (reload_key_down_any if not state.rules2_fixes else reload_key_active)
     if has_alt_weapon_perk:
-        cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms if state.preserve_bugs else player.alt_weapon_swap_cooldown_ms)
+        cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms if not state.rules2_fixes else player.alt_weapon_swap_cooldown_ms)
         dt_ms = ftol_ms_i32(float(dt)) if float(dt) > 0.0 else 0
         if cooldown_ms < 1:
             cooldown_ms = 0
@@ -1067,7 +1067,7 @@ def player_update(
             if reload_key_released:
                 cooldown_ms = 0
 
-        if state.preserve_bugs:
+        if not state.rules2_fixes:
             state.player_alt_weapon_swap_cooldown_ms = cooldown_ms
         else:
             player.alt_weapon_swap_cooldown_ms = cooldown_ms

@@ -54,6 +54,7 @@ export interface SeatView {
 }
 
 export interface BoardRow {
+  rules: number;
   rank: number;
   run: string;
   score: number;
@@ -152,6 +153,7 @@ export interface RunView {
   // A co-op run's players.
   team: SeatView[] | null;
   game_version: string;
+  rules: number;
   accepted_at: number;
   // Why the verifier no longer accepts the run, which has left the boards; null for a ranked run.
   retired: string | null;
@@ -243,6 +245,7 @@ export interface RunDetailView {
   rank: number | null;
   accepted_at: number;
   game_version: string;
+  rules: number;
   // Why the verifier no longer accepts the run, which has left the boards; null for a ranked run.
   retired: string | null;
   recorder: { client: string; version: string; platform: string };

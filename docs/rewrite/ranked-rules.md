@@ -8,10 +8,10 @@ tags:
 
 A leaderboard run is a replay that verifies and satisfies these rules. Its
 `rules` field selects simulation behavior; `game_version` identifies the build,
-and `recorder` identifies the recording client/platform. The planned rules-2
+and `recorder` identifies the recording client/platform. The rules-2
 rollout retains rules-1 records and verifies them under their own behavior;
 a rules upgrade alone does not withdraw them. Historical profile support is
-pending; see the [compatibility plan](replay-rules-compatibility.md).
+implemented; see the [compatibility plan](replay-rules-compatibility.md).
 `crimson replay verify` reports `ranked`,
 the `board` and every `unranked_reasons` entry from the run rules
 (`src/crimson/replay/ranked.py`); the leaderboard service applies the same
@@ -62,7 +62,7 @@ is a bot run when its replay declares a pilot or a moderator puts it there; see
 
 ## When the verifier changes
 
-The planned compatibility contract checks each ranked replay under its recorded
+The compatibility contract checks each ranked replay under its recorded
 rules profile. CI and pre-deployment checks should verify the supported historical
 profiles as well as the current default. A mismatch during a rules upgrade is a
 compatibility investigation, not automatic grounds to retire a historical score.

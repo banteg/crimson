@@ -74,7 +74,7 @@ const live = args[0] === "--live" ? args.splice(0, 2)[1] : null;
 const [wasm = new URL("build/game/game.wasm", CORE).pathname, corpus = new URL("build/fixtures", CORE).pathname] = args;
 const streams = fs
   .readdirSync(corpus)
-  .filter((f) => /^coop-.*\.rsi$/.test(f))
+  .filter((f) => /^(?:coop-|rules1-coop).*\.rsi$/.test(f))
   .sort();
 assert.ok(streams.length, "no co-op streams: run checks/matrix.mjs");
 

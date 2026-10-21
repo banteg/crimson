@@ -300,8 +300,7 @@ verification. Further fixes in this unreleased batch do
 not need independent version increments. Format version 34 is unchanged: this
 is gameplay compatibility, not an encoding change.
 
-The current architecture rejects replays from another rules version; it does
-not emulate rules 1 with the new default simulation. `--preserve-bugs` chooses
+The compatibility stack layer selects explicit rules-1 and rules-2 profiles. `--preserve-bugs` chooses
 original behavior, not the previous default rules, and is not a substitute for
 rules-version compatibility. Do not relabel old recorded results/checkpoints as
 rules 2. Keep historical fixtures for codec and original-reference work, and
@@ -310,9 +309,8 @@ record new default-policy fixtures for changed behavior.
 The selected release plan is to retain rules-1 playback and verification while
 making rules 2 the default for new runs. Keep existing leaderboard entries,
 IDs, scores and signed replay bytes. Proposed presentation: combined boards
-with rules labels and an optional filter. Compatibility is not implemented
-by merely relaxing the current rejection gate; simulation must select the
-recorded profile, including the historical co-op manual-reload exception.
+with rules labels and an optional filter. Simulation selects the recorded profile, including the historical co-op
+manual-reload exception.
 See the [implementation plan](replay-rules-compatibility.md) and
 [#833](https://github.com/banteg/crimson/issues/833). Client, service and verifier
 must support this before release. No deployment or migration has been performed.
@@ -333,7 +331,7 @@ must support this before release. No deployment or migration has been performed.
   timer restoration. Practice passes 15 anchors and 1,920 alternate-input ticks.
 - Six current-rule fixtures were regenerated from bot inputs; a separate run
   reproduces their results and checkpoint data. Historical rules-1 fixtures
-  remain untouched and are reported as unsupported for current playback.
+  remain untouched and now play through the compatibility layer.
 
 The complete co-op suite passes all 22 stream variants and every coverage
 assertion, including forced rollbacks, delayed/lost packets, the state audit,

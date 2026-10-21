@@ -3,7 +3,7 @@
 import { type Accessor, createMemo, createResource, createSignal, For, type JSX, Show } from "solid-js";
 import { BOARDS, type Category, PLAYER_EFFECTS, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
 import { boardPath } from "../../src/paths";
-import { lifeBonusMs, questFinalMs } from "../../src/quest-time";
+import { lifeBonusMs } from "../../src/quest-time";
 import { get, moderate } from "./api";
 import { GameButton } from "./button";
 import { formatScore } from "./format";
@@ -653,7 +653,7 @@ function QuestScore(props: { detail: RunDetailView }) {
   const result = props.detail.result;
   // Historical runs keep the calculation that produced their stored score. The
   // database predates rules metadata; where both formulas agree, either is exact.
-  const legacy = questFinalMs(result.elapsed_ms, result.healths, result.pending_perks, true) === props.detail.score;
+  const legacy = props.detail.rules === 1;
   const lifeBonus = lifeBonusMs(result.healths, legacy);
   const perkBonus = result.pending_perks * 1000;
   const adjustment = (bonus: number) => `${bonus > 0 ? "−" : bonus < 0 ? "+" : ""}${formatScore("quests", Math.abs(bonus))}`;
@@ -766,7 +766,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
         <p class="muted">
           {new Date(detail.accepted_at).toISOString().slice(0, 10)} · {detail.recorder.client} {detail.recorder.version} · {detail.recorder.platform}
         </p>
-        <p class="muted">Game version: {detail.game_version}</p>
+        <p class="muted">Rules {detail.rules} · Game version: {detail.game_version}</p>
         <Show when={detail.retired}>
           {(reason) => <p class="muted">Retired from the boards: {reason()}. The game no longer plays it as recorded.</p>}
         </Show>

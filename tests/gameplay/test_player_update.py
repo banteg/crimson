@@ -90,9 +90,10 @@ def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> No
     assert player.weapon.reload_active is True
 
 
-@pytest.mark.parametrize("preserve_bugs", [False, True])
-def test_pulse_gun_full_reload_at_50fps_refills_on_exact_zero(preserve_bugs: bool) -> None:
+@pytest.mark.parametrize("rules,preserve_bugs", [(1, False), (1, True), (2, False), (2, True)])
+def test_pulse_gun_full_reload_at_50fps_refills_on_exact_zero(rules: int, preserve_bugs: bool) -> None:
     world = make_world(preserve_bugs=preserve_bugs)
+    world.state.rules = rules
     player = world.players[0]
     weapon_assign_player(player, WeaponId.PULSE_GUN, state=world.state)
     player.weapon.ammo = 0.0
@@ -100,7 +101,7 @@ def test_pulse_gun_full_reload_at_50fps_refills_on_exact_zero(preserve_bugs: boo
     for _ in range(5):
         step_player(world, player, player_input(), 0.02)
     assert player.weapon.reload_timer == 0.0
-    assert player.weapon.ammo == (0.0 if preserve_bugs else player.weapon.clip_size)
+    assert player.weapon.ammo == (0.0 if preserve_bugs or rules == 1 else player.weapon.clip_size)
     # A completed reload must not become an unconditional refill each frame.
     player.weapon.ammo = 2.0
     step_player(world, player, player_input(), 0.02)

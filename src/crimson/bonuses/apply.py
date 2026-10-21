@@ -169,7 +169,7 @@ def bonus_apply(
 
         case BonusId.SHOCK_CHAIN:
             target_idx = creature_find_nearest_alive(
-                creatures=creatures, origin=origin, preserve_bugs=bool(state.preserve_bugs),
+                creatures=creatures, origin=origin, preserve_bugs=bool(state.preserve_bugs), rules=state.rules,
             )
             if target_idx >= 0:
                 target = creatures[target_idx]
@@ -286,7 +286,7 @@ def bonus_apply(
                         CreatureDamageType.EXPLOSION,
                         Vec2(),
                     )
-                    if not state.preserve_bugs and was_alive and creature.hp <= 0.0:
+                    if state.rules2_fixes and was_alive and creature.hp <= 0.0:
                         align_death_heading(creature, Vec2(dx, dy))
             state.scripted_burst_active = False
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, origin))
