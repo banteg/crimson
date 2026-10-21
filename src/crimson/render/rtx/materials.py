@@ -28,10 +28,12 @@ from .hdr import _HDR_TONEMAP_VS_330
 from .material_history import MaterialHistory
 from .material_lights import collect_material_lights
 from .material_shaders import GROUND_FRAGMENT, STAMP_FRAGMENT
+from .perk_lighting import PerkLighting
 from .reflection_occlusion import ReflectionOcclusion, build_occlusion_grid, creature_body_volumes
 
 if TYPE_CHECKING:
     from ..frame import RenderFrame
+    from ..world.viewport import ViewTransform
 
 
 def _uniform(shader: rl.Shader, name: str, values: list[float]) -> None:
@@ -109,9 +111,11 @@ class MaterialGroundRenderer(GroundRenderer):
 
     beam_cells_location: int = -1
     reflection_occlusion: ReflectionOcclusion = msgspec.field(default_factory=ReflectionOcclusion)
+    perk_lighting: PerkLighting = msgspec.field(default_factory=PerkLighting)
 
     def reset_materials(self) -> None:
         self.reflection_occlusion.close()
+        self.perk_lighting.close()
         if self.substrate is not None:
             self.substrate.close()
             self.substrate = None
@@ -368,6 +372,7 @@ class MaterialGroundRenderer(GroundRenderer):
     @contextmanager
     def material_scope(
         self, frame: RenderFrame, *, view_center: Vec2 = Vec2(512, 512), debug: int | None = None,
+        view: ViewTransform | None = None, entity_alpha: float = 1.0,
     ) -> Iterator[None]:
         from grim.assets import TextureId
 
@@ -378,6 +383,12 @@ class MaterialGroundRenderer(GroundRenderer):
         self.bake_materials(frame.resources.texture(TextureId.PARTICLES), frame.resources.texture(TextureId.BODYSET))
         assert self.material_shader is not None and self.surface is not None and self.coverage is not None
         sh = self.material_shader
+        self.perk_lighting.active = False
+        if view is not None:
+            self.perk_lighting.prepare(self, frame, view, entity_alpha=entity_alpha, debug=debug)
+        _integer(sh, "u_has_perk", int(self.perk_lighting.active))
+        if view is not None:
+            _uniform(sh, "u_perk_view", [-view.camera.x, -view.camera.y, view.screen_size.x, view.screen_size.y])
         _uniform(sh, "u_ground_size", [float(self.width), float(self.height)])
         _uniform(sh, "u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
         _integer(sh, "u_debug", int(frame.rtx_debug) if debug is None else debug)
@@ -417,7 +428,7 @@ class MaterialGroundRenderer(GroundRenderer):
             _uniform(sh, f"u_spec_response[{i}]", list(light.response))
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,
         # since rlgl flushes (and clears sampler bindings) when changing blend modes.
-        with opaque_blend():
+        with opaque_blend(), self.perk_lighting.ground_texture_scope(sh):
             rl.begin_shader_mode(sh)
             try:
                 if occlusion_texture is not None:

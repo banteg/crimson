@@ -3,8 +3,7 @@
 from .continuous_beam_shaders import CONTINUOUS_BEAM_GLSL
 from .lighting_shaders import LIGHT_VISIBILITY_GLSL
 
-GROUND_FRAGMENT = r"""
-#version 330
+GROUND_FRAGMENT_BODY = r"""
 #define CONTINUOUS_BEAM
 
 #define MAX_SPEC_LIGHTS 32
@@ -19,8 +18,18 @@ uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass
 
 uniform vec2 u_ground_size;
 uniform float u_time_s; // Seconds relative to the wetness epoch
+#ifdef MONSTER_VISION_PASS
+in vec3 perk_source; // world center and native lifecycle/entity fade
+uniform int u_perk_component; // 0 direct+reflection, 1 direct, 2 reflection
+const int u_debug = 0;
+const int u_debug_display = 0;
+#else
 uniform int u_debug; // RtxDebugView: raw data maps bypass gamma and display tonemapping
 uniform int u_debug_display; // Map radiance for live viewing; explicit diagnostic probes retain linear RGB.
+uniform sampler2D u_perk_tex; // independent raw linear Monster Vision contribution
+uniform int u_has_perk;
+uniform vec4 u_perk_view; // world origin and extent of the screen-sized accumulator
+#endif
 uniform int u_spec_light_count;
 uniform vec4 u_spec_pos[MAX_SPEC_LIGHTS];   // xy = world_pos, z = radius, w = z_height
 uniform float u_spec_tail[MAX_SPEC_LIGHTS]; // Reflection radiance at the negative segment endpoint
@@ -143,6 +152,7 @@ void main() {
     // Beam contrast is local, bounded, and fades with the source.
     // Take the strongest local dip; overlapping sources never multiply to black.
     float beam_dip = 0.;
+    #ifndef MONSTER_VISION_PASS
     if (u_has_beam_lights != 0) {
         for (int i=0;i<u_spec_light_count;i++) {
             if (u_line_cells[i * 3].x <= 0.) continue;
@@ -156,6 +166,7 @@ void main() {
             beam_dip=max(beam_dip,dip*local*power);
         }
     }
+    #endif
     ambient_term*=1.-beam_dip;
     vec3 diffuse_lit = mix(wetted_substrate * ambient_transmittance + blood_body_color, albedo_tex.rgb, is_ice) * ambient_term;
 
@@ -168,12 +179,22 @@ void main() {
     vec3 direct_unshadowed = vec3(0.);
     vec3 direct_shadowed = vec3(0.);
 
+    #ifdef MONSTER_VISION_PASS
+    // One bounded quad per source, all sources accumulated with ONE+ONE blending.
+    // Constant source geometry lets the compiler remove beam/ring/shadow machinery.
+    for (int i = 0; i < 1; i++) {
+        vec4 sp_pos = vec4(perk_source.xy, 60., 12.);
+        vec4 sp_col = vec4(vec3(.65, .47, .025) * perk_source.z, 0.);
+        vec4 sp_dir = vec4(0., 0., 1., 0.);
+        vec4 response = vec4(1.65, .32, 60., 16.);
+    #else
     for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
         if (i >= u_spec_light_count) break;
         vec4 sp_pos = u_spec_pos[i];
         vec4 sp_col = u_spec_color[i];
         vec4 sp_dir = u_spec_dir[i];
         vec4 response = u_spec_response[i];
+    #endif
 
         vec2 axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(0.);
         vec2 light_xy = illuminationSource(sp_pos.xy, axis, sp_dir.w);
@@ -187,7 +208,11 @@ void main() {
         float d2d = length(to_l);
         float reflection_distance = length(reflection_xy - world);
         float rad = max(1.0, sp_pos.z);
+        #ifdef MONSTER_VISION_PASS
+        bool continuous = false;
+        #else
         bool continuous=u_has_beam_lights!=0 && u_line_cells[i * 3].x > 0. && response.x>0.;
+        #endif
         if (!continuous && reflection_distance >= max(rad, response.z)) continue;
         if (continuous) {
             vec2 source_axis=dot(sp_dir.xy, sp_dir.xy) > .0001?normalize(sp_dir.xy):vec2(1.,0.);
@@ -216,8 +241,10 @@ void main() {
             direct_unshadowed += direct;
             // As with reflections, retain negligible radiance without tracing a
             // shadow whose maximum possible change is below 1e-5 linear RGB.
+            #ifndef MONSTER_VISION_PASS
             if (max(direct.r, max(direct.g, direct.b)) > .00001)
                 direct *= illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
+            #endif
             diffuse_lit += direct;
             direct_shadowed += direct;
         }
@@ -254,12 +281,30 @@ void main() {
             vec3 reflected = sp_col.rgb * tint * (response.y * F * 24. * footprint * source_gain * material_gate * support);
             // Only meaningful dynamic reflections trace bodies. Ambient, sky and
             // diffuse light are deliberately independent of this visibility.
+            #ifndef MONSTER_VISION_PASS
             if (max(reflected.r, max(reflected.g, reflected.b)) > .00001)
                 reflected *= sourceVisibility(vec3(world, 0.), vec3(on_source, height), source_width, vec2(1e19));
+            #endif
             spec_accum += reflected;
         }
     }
 
+    #ifdef MONSTER_VISION_PASS
+    // No ambient, sky, gamma, tone mapping or body tracing in this additive pass.
+    vec3 contribution = u_perk_component == 1 ? direct_unshadowed :
+                        u_perk_component == 2 ? spec_accum : direct_unshadowed + spec_accum;
+    finalColor = vec4(contribution, 1.);
+    return;
+    #else
+    if (u_has_perk != 0) {
+        vec2 uv = (world - u_perk_view.xy) / u_perk_view.zw;
+        vec3 perk = texture(u_perk_tex, vec2(uv.x, 1. - uv.y)).rgb;
+        if (u_debug == 5 || u_debug == 14) spec_accum += perk;
+        else if (u_debug == 6 || u_debug == 7 || u_debug == 8) {
+            direct_unshadowed += perk;
+            direct_shadowed += perk;
+        } else diffuse_lit += perk;
+    }
     if (u_debug == 5) { finalColor = vec4(debug_radiance(spec_accum), 1.); return; }
     if (u_debug == 6) { finalColor = vec4(debug_radiance(direct_shadowed), 1.); return; }
     if (u_debug == 7) { finalColor = vec4(debug_radiance(direct_unshadowed), 1.); return; }
@@ -283,8 +328,12 @@ void main() {
     if (u_debug == 14) diffuse_lit = ambient_lit;
     // HdrRenderer owns the only display shoulder; preserve highlights above 1 here.
     finalColor = vec4(pow(max(diffuse_lit + reflected_light, vec3(0.0)), vec3(1.0 / 2.2)), 1.0);
+    #endif
 }
 """
+
+GROUND_FRAGMENT = "#version 330\n" + GROUND_FRAGMENT_BODY
+MONSTER_VISION_FRAGMENT = "#version 330\n#define MONSTER_VISION_PASS\n" + GROUND_FRAGMENT_BODY
 
 STAMP_FRAGMENT = r"""
 #version 330
