@@ -272,6 +272,14 @@ def select_material_lights(sources: list[MaterialLight], *, view_center: Vec2) -
 def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[MaterialLight]:
     sources: list[MaterialLight] = []
     for player in frame.players:
+        if PerkId.RADIOACTIVE in frame.state.perks:
+            # Follow the visible aura, including its native post-death presence.
+            pulse = ((math.sin(frame.elapsed_ms * .001) + 1.) * .1875 + .25) / .4375
+            sources.append(MaterialLight(
+                player.pos, 100., (.10, .70, .07), height=18., source_width=13.,
+                illumination_gain=3.8 * pulse, reflection_gain=.8 * pulse,
+                reflection_radius=100., broad_illumination=True,
+            ))
         if player.health > 0.0 and PerkId.SHARPSHOOTER in frame.state.perks:
             near, far, _ = laser_sight_geometry(player.pos, player.aim_heading)
             # The native sight is red at the gun and black at its far end.

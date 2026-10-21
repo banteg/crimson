@@ -746,3 +746,54 @@ source ranking and its 16 illumination / 16 reflection limits still apply.
 The original beam stays lit during its fade. Arc sources add illumination and
 reflections through the shared ground, creature, and bonus light list. Classic
 artwork, damage, target selection, and replay state are unchanged.
+
+## Perk illumination
+
+RTX Radioactive retains the original additive green aura and its render-clock
+sine pulse. A 100-unit green material source follows each player, including the
+native aura's post-death presence. The source uses height 18, width 13, RGB
+`(.10, .70, .07)`, and illumination/reflection gains `3.8/.8`, multiplied by the
+original aura alpha divided by its mean `.4375`. It illuminates ground and bodies,
+reflects in wet materials, and uses the shared creature-volume visibility path.
+The display shadow setting controls direct shadows as for other material lights.
+Reflection visibility remains part of the existing reflection model. Radioactive
+uses the ordinary source budget; it does not alter damage range or pulse timing.
+
+Monster Vision keeps the familiar yellow under-glow, its 90-unit footprint,
+native death fade, entity transition alpha, ordering before plague/poison, and
+native sprite-shadow suppression. RTX evaluates a smooth radial fit to the
+original aura alpha instead of sampling its texture cell. Classic keeps the
+original texture. The fit is `1.04770258 * exp(-4.85*r)` with a smooth edge envelope
+between normalized radii `.8` and `1`; the draw retains ordinary alpha blending.
+
+Each visible or overlapping offscreen aura also contributes a shadowless ground
+source: radius 60, height 12, width 16, RGB `(.65, .47, .025)`, illumination gain
+`1.65`, and reflection gain `.32`. The source uses the same substrate normals,
+wet-film/deep-pool normals, absorption, freshness and finite reflection model as
+other material lights. It is not a new enemy-body tint or contour.
+
+These sources have a separate accumulation pass and never consume weapon-light
+slots. Every eligible source whose finite support intersects the view is retained.
+Clipped source quads are submitted in batches of 256, with no population cap.
+The shader specializes the production material equations without shadow tracing,
+beam machinery, ambient, sky or gamma encoding. Raw direct and reflected RGB add
+into a view-sized FP32 target with `ONE + ONE`; the ordinary ground shader adds
+this result before its single gamma encoding and the existing HDR compositor.
+FP32 avoids cumulative half-float blend rounding in hundreds of overlapping
+sources. At 1920×1080 the lazy target uses about 32 MiB. Its dimensions follow the
+actual framebuffer, separately from logical camera/output scale, and it is
+released with terrain material resources. Empty/ineligible scenes do not allocate
+or render the target. An already allocated target is retained for reuse.
+
+The ground pass reserves texture unit 5 for this accumulator, leaving raylib's
+four auxiliary slots available for material maps and body occlusion. Direct,
+unshadowed-direct, visibility, reflection and ambient-plus-reflection diagnostics
+include the corresponding perk component. Ambient-only and data-map diagnostics
+exclude it. Monster Vision contributes equally to shadowed and unshadowed direct
+terms, so it does not invent creature shadows in the visibility ratio.
+
+Cost scales with covered source pixels, not the whole viewport times the enemy
+count. Dense overlapping crowds still increase GPU fill and material-sampling
+work, and the FP32 target adds memory bandwidth. This remains an artistic finite
+source/reflection approximation. Perk simulation, RNG, replay state, damage and
+classic rendering are unchanged.
