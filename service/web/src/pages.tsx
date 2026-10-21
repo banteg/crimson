@@ -15,6 +15,8 @@ import {
   type QuestMenuView,
   type Role,
   type RunDetailView,
+  FIXED_WEAPON_BONUSES,
+  FIXED_WEAPON_PERKS,
 } from "../../src/api-types";
 import { boardFor, boardPath, type QuestBoard, questPage, type QuestPage, questsPath, type SurvivalBoard, survivalPage } from "../../src/paths";
 import { get, moderate, post } from "./api";
@@ -116,25 +118,18 @@ function Weapon(props: { id: number }) {
   );
 }
 
-// A run's replay: watched in the browser game, or downloaded. A retired run no longer plays as recorded, so it only
-// downloads; a compact row keeps the Watch icon.
-function ReplayLinks(props: { run: string; retired?: string | null; compact?: boolean }) {
+// A run's replay, watched in the browser game; a compact row keeps the icon. A retired run no longer plays as recorded,
+// so it has none here, and its file downloads from the run's page.
+function WatchLink(props: { run: string; retired?: string | null; compact?: boolean }) {
   return (
-    <span class="replay-links">
-      <Show when={!props.retired}>
-        <a class="watch" href={`/play/?watch=${props.run}`} data-native title="Watch the replay in the game">
-          <svg viewBox="0 0 10 10" aria-hidden="true">
-            <path d="M2 1l7 4-7 4z" fill="currentColor" />
-          </svg>
-          <Show when={!props.compact}>Watch</Show>
-        </a>
-      </Show>
-      <Show when={!props.compact}>
-        <a class="crd" href={`/runs/${props.run}.crd`} data-native title="Download the replay file">
-          .crd
-        </a>
-      </Show>
-    </span>
+    <Show when={!props.retired}>
+      <a class="watch" href={`/play/?watch=${props.run}`} data-native title="Watch the replay in the game">
+        <svg viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M2 1l7 4-7 4z" fill="currentColor" />
+        </svg>
+        <Show when={!props.compact}>Watch</Show>
+      </a>
+    </Show>
   );
 }
 
@@ -200,12 +195,12 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                       <Weapon id={row.most_used_weapon_id} />
                     </td>
                     <td>
-                      <ReplayLinks run={row.run} />
+                      <WatchLink run={row.run} />
                     </td>
                   </Show>
                   <Show when={!full()}>
                     <td>
-                      <ReplayLinks run={row.run} compact />
+                      <WatchLink run={row.run} compact />
                     </td>
                   </Show>
                 </tr>
@@ -488,7 +483,7 @@ function QuestPreviewSvg(props: { quest: CustomQuest }) {
       </svg>
       <div style={{ flex: "1", "min-width": "240px" }}>
         <p class="muted" style={{ margin: "0 0 6px" }}>
-          Spawns: <b>{entries().length} / 256</b> entries · <b>{totalCopies().toLocaleString("en-US")}</b> template copies · last spawn at{" "}
+          Spawns: <b>{entries().length} / 256</b> entries · <b>{totalCopies().toLocaleString("en-US")}</b> template {totalCopies() === 1 ? "copy" : "copies"} · last spawn at{" "}
           <b>{formatDuration(lastSpawnMs())}</b>
         </p>
         <svg viewBox="0 0 400 44" width="100%" height="44" style={{ background: "rgba(0,0,0,0.35)", "border-radius": "4px", border: "1px solid rgba(255,255,255,0.12)" }}>
@@ -511,26 +506,25 @@ function QuestPreviewSvg(props: { quest: CustomQuest }) {
 }
 
 function QuestRestrictions(props: { quest: CustomQuest }) {
-  const fixedWeapon = () => props.quest.no_weapons.length === 32 && props.quest.no_bonuses.includes(3);
-  const bonuses = () => props.quest.no_bonuses.map((id) => BONUS_NAMES[id] ?? `Bonus ${id}`);
-  const perks = () => props.quest.no_perks.map((id) => PERKS[id] ?? `Perk ${id}`);
+  const fixedWeapon = () => props.quest.no_weapons.length === 32 && FIXED_WEAPON_BONUSES.every((id) => props.quest.no_bonuses.includes(id));
+  // A fixed weapon already says no Weapon bonus, weapon perks or weapon drops; the lists name only the rest.
+  const unless = (ids: number[], implied: number[]) => (fixedWeapon() ? ids.filter((id) => !implied.includes(id)) : ids);
+  const bonuses = () => unless(props.quest.no_bonuses, FIXED_WEAPON_BONUSES).map((id) => BONUS_NAMES[id] ?? `Bonus ${id}`);
+  const perks = () => unless(props.quest.no_perks, FIXED_WEAPON_PERKS).map((id) => PERKS[id] ?? `Perk ${id}`);
   const weapons = () => (fixedWeapon() ? [] : props.quest.no_weapons.map((id) => WEAPONS[id]?.name ?? `Weapon ${id}`));
+  const lists = () => [
+    ...(bonuses().length ? [`No bonuses: ${bonuses().join(", ")}`] : []),
+    ...(perks().length ? [`No perks: ${perks().join(", ")}`] : []),
+    ...(weapons().length ? [`No weapon drops: ${weapons().join(", ")}`] : []),
+  ];
   return (
-    <Show when={fixedWeapon() || bonuses().length || perks().length || weapons().length}>
+    <Show when={fixedWeapon() || lists().length}>
       <p class="muted">
         <Show when={fixedWeapon()}>
-          <b>Fixed weapon</b> (weapon drops &amp; weapon perks disabled)
-          <Show when={bonuses().length > 1 || perks().length > 2}> · </Show>
+          <b>Fixed weapon</b> (no weapon drops, Weapon bonus or weapon perks)
+          <Show when={lists().length}> · </Show>
         </Show>
-        <Show when={bonuses().length}>
-          No bonuses: {bonuses().join(", ")}
-          <Show when={perks().length || weapons().length}> · </Show>
-        </Show>
-        <Show when={perks().length}>
-          No perks: {perks().join(", ")}
-          <Show when={weapons().length}> · </Show>
-        </Show>
-        <Show when={weapons().length}>No weapon drops: {weapons().join(", ")}</Show>
+        {lists().join(" · ")}
       </p>
     </Show>
   );
@@ -633,7 +627,6 @@ async function customQuestPage(id: string): Promise<Screen> {
           <p class="buttons">
             <GameButton label="Play level" href={`/play/?quest=${detail.id}`} native />
             <GameButton label="Watch author's run" href={`/play/?watch=${detail.first_run_id}`} native />
-            <GameButton label="All custom quests" href="/custom" />
           </p>
         </>
       ),
@@ -813,7 +806,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                         <td>{run.game_version.split("+", 1)[0]}</td>
                         <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
                         <td>
-                          <ReplayLinks run={run.id} retired={run.retired} />
+                          <WatchLink run={run.id} retired={run.retired} />
                         </td>
                       </tr>
                     )}
@@ -1119,8 +1112,8 @@ const ABOUT: Screen = {
           Hardcore and 2-player co-op have their own lists. Only your best run on each list counts.
         </p>
         <p>
-          Every score comes with a <code>.crd</code> recording of the run. The server replays it using the same recovered game code and
-          checks that the result matches. Anyone can download the replay and watch or verify it themselves. Bots can produce valid replays too, so verification confirms the score, not whether a human played.
+          Every score comes with a recording of the run. The server replays it using the same recovered game code and checks that the
+          result matches. Bots can produce valid replays too, so verification confirms the score, not whether a human played.
         </p>
         <p>
           Ranked runs on each list use the same starting conditions: a standard progression profile and documented fixes for{" "}
@@ -1134,18 +1127,39 @@ const ABOUT: Screen = {
     ),
     () => (
       <>
-        <h3>Your name, trooper</h3>
+        <h3>Replays</h3>
         <p>
-          You don't need to register an account. The game generates a keypair on first launch, and that keypair is your identity. You show
-          up under the name from your latest run, and <em>Profile</em> in the Play Game menu lists every name you've used. Link GitHub,
-          Discord or X to show your handle on the high score lists, and to keep your scores together when you play on another computer or
-          clear your browser's storage.
+          Every run on the high score lists plays back right here: press <em>Watch</em> and the game replays it from the first tick. While
+          you watch, <em>Share from here</em> copies a link that starts at that moment, and a shared run plays inside posts on X. A run's
+          page maps the arena as the run left it, with each player's trail, and charts experience, frags per minute and the weapons and
+          bonuses over time.
         </p>
-        <h3>Replays, other ports and docs</h3>
         <p>
-          Every run on the boards can be downloaded as a replay. There's also a Python port and a native desktop build, both on{" "}
-          <a href="https://github.com/banteg/crimson">GitHub</a>. The <a href={DOCS}>docs</a> describe how the game actually works, from the
-          real numbers behind every perk and weapon rather than the in-game descriptions, to how the whole thing was rebuilt.
+          To check a run yourself, <em>Download replay</em> on its page saves the <code>.crd</code> file, which{" "}
+          <Command>uvx crimsonland@latest replay verify run.crd</Command> plays back and checks offline.
+        </p>
+      </>
+    ),
+    () => (
+      <>
+        <h3>Trooper account</h3>
+        <p>
+          You don't need to register. The game generates a keypair on first launch, and that keypair is your account. You show up under
+          the name from your latest run, and <em>Profile</em> in the Play Game menu lists every name you've used.
+        </p>
+        <p>
+          Link GitHub, Discord or X to show your handle on the high score lists, and to keep your scores together when you play on another
+          computer or clear your browser's storage.
+        </p>
+      </>
+    ),
+    () => (
+      <>
+        <h3>Other ports and docs</h3>
+        <p>
+          There's also a Python port and a native desktop build, both on <a href="https://github.com/banteg/crimson">GitHub</a>. The{" "}
+          <a href={DOCS}>docs</a> describe how the game actually works, from the real numbers behind every perk and weapon rather than the
+          in-game descriptions, to how the whole thing was rebuilt.
         </p>
       </>
     ),
