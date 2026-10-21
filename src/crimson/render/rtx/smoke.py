@@ -1,17 +1,21 @@
-"""Owned persistent fluid smoke: CPU simulation, lazy GPU display resources."""
+"""Owned persistent fluid smoke: GPU simulation and lazy GPU display resources."""
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import numpy as np
 
+from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
 from ...perks import PerkId
 from ..laser_sight import laser_sight_geometry
+from .gpu_smoke import GpuSmokeSimulation
 from .material_lights import MAX_ILLUMINATION_SOURCES, MaterialLight
+from .smoke_composite import SmokeComposite
 from .smoke_shaders import SMOKE_FRAGMENT, SMOKE_VERTEX
 from .smoke_simulation import SmokeSimulation
 
@@ -19,11 +23,14 @@ if TYPE_CHECKING:
     from ...sim.smoke_events import SmokeEmission
     from ..frame import RenderFrame
     from ..world.context import WorldRenderCtx
+    from ..world.viewport import ViewTransform
 
 
 class SmokeRenderer:
-    def __init__(self) -> None:
-        self.simulation = SmokeSimulation()
+    def __init__(self, *, cpu_reference: bool = False) -> None:
+        self.simulation = SmokeSimulation() if cpu_reference else GpuSmokeSimulation()
+        self.available = True
+        self.compositor = SmokeComposite()
         self.shader: rl.Shader | None = None
         self.locations: dict[str, int] = {}
         self.textures: dict[int, rl.Texture] = {}
@@ -36,7 +43,8 @@ class SmokeRenderer:
         self.prepared = False
 
     def consume(self, emissions: tuple[SmokeEmission, ...], *, dt_sim: float) -> None:
-        self.simulation.consume(emissions, dt_sim)
+        if self.available:
+            self.simulation.consume(emissions, dt_sim)
 
     def _uniform(self, name: str, values: Sequence[float], *, count: int = 1) -> None:
         assert self.shader is not None
@@ -75,17 +83,55 @@ class SmokeRenderer:
 
     def prepare(self, frame: RenderFrame, lights: Sequence[MaterialLight]) -> None:
         self.prepared = False
-        if not self.simulation.fields:
+        if not self.available:
             return
         if self.shader is None:
             shader = rl.load_shader_from_memory(SMOKE_VERTEX, SMOKE_FRAGMENT)
             if int(shader.id) <= 0 or shader.id == rl.rl_get_shader_id_default():
-                raise RuntimeError("RTX fluid smoke shader compilation failed")
+                logging.getLogger(__name__).warning("RTX smoke shader unavailable; using native smoke")
+                self.available = False
+                self.simulation.reset()
+                return
             self.shader = shader
             self.locations = {name: int(rl.get_shader_location(shader, name)) for name in (
                 "u_origin", "u_size", "u_opacity", "u_light_count", "u_light_pos", "u_light_rgb", "u_light_shape",
-                "u_sight_count", "u_sights",
+                "u_sight_count", "u_sights", "u_state_flip",
             )}
+        if isinstance(self.simulation, GpuSmokeSimulation):
+            try:
+                ground = frame.ground
+                self.simulation.prepare(world_size=Vec2(ground.width, ground.height) if ground is not None else None)
+            except RuntimeError:
+                logging.getLogger(__name__).warning("GPU smoke unavailable; using native smoke", exc_info=True)
+                self.simulation.close()
+                self.available = False
+                return
+        else:
+            self._upload_reference()
+        if not self.simulation.fields:
+            return
+        # The sight's reflection-only source is handled by narrow scattering,
+        # never promoted to broad red illumination.
+        self._integer("u_state_flip", int(isinstance(self.simulation, GpuSmokeSimulation)))
+        illumination = self.select_lights(lights)
+        self._integer("u_light_count", len(illumination))
+        if illumination:
+            self._uniform("u_light_pos", [v for l in illumination for v in (l.pos.x, l.pos.y, l.height, l.radius)], count=len(illumination))
+            self._uniform("u_light_rgb", [v for l in illumination for v in (*l.rgb, min(4.0, l.illumination_gain) * l.smoke_gain)], count=len(illumination))
+            self._uniform("u_light_shape", [v for l in illumination for v in (l.direction.x, l.direction.y, l.length * .5, l.ring_radius)], count=len(illumination))
+        sights = []
+        if PerkId.SHARPSHOOTER in frame.state.perks:
+            for player in frame.players[:4]:
+                if player.health > 0.0:
+                    near, far, _ = laser_sight_geometry(player.pos, player.aim_heading)
+                    sights.append((near.x, near.y, far.x, far.y))
+        self._integer("u_sight_count", len(sights))
+        if sights:
+            self._uniform("u_sights", [v for sight in sights for v in sight], count=len(sights))
+        self.prepared = True
+
+    def _upload_reference(self) -> None:
+        assert isinstance(self.simulation, SmokeSimulation)
         rl.rl_draw_render_batch_active()
         for slot, field in self.simulation.fields.items():
             if self._uploaded.get(slot) == (field.identity, field.version):
@@ -109,50 +155,55 @@ class SmokeRenderer:
             state[:, :, 1] = field.temperature
             rl.update_texture(self.textures[slot], rl.ffi.cast("void *", rl.ffi.from_buffer(state)))
             self._uploaded[slot] = (field.identity, field.version)
-        # The sight's reflection-only source is handled by narrow scattering,
-        # never promoted to broad red illumination.
-        illumination = self.select_lights(lights)
-        self._integer("u_light_count", len(illumination))
-        if illumination:
-            self._uniform("u_light_pos", [v for l in illumination for v in (l.pos.x, l.pos.y, l.height, l.radius)], count=len(illumination))
-            self._uniform("u_light_rgb", [v for l in illumination for v in (*l.rgb, min(4.0, l.illumination_gain) * l.smoke_gain)], count=len(illumination))
-            self._uniform("u_light_shape", [v for l in illumination for v in (l.direction.x, l.direction.y, l.length * .5, l.ring_radius)], count=len(illumination))
-        sights = []
-        if PerkId.SHARPSHOOTER in frame.state.perks:
-            for player in frame.players[:4]:
-                if player.health > 0.0:
-                    near, far, _ = laser_sight_geometry(player.pos, player.aim_heading)
-                    sights.append((near.x, near.y, far.x, far.y))
-        self._integer("u_sight_count", len(sights))
-        if sights:
-            self._uniform("u_sights", [v for sight in sights for v in sight], count=len(sights))
-        self.prepared = True
 
     def draw(self, ctx: WorldRenderCtx, *, alpha: float) -> None:
         if not self.prepared or self.shader is None:
             return
-        view = ctx.view
-        rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
+        if isinstance(self.simulation, GpuSmokeSimulation):
+            try:
+                self.compositor.draw(ctx.view, lambda: self._draw_fields(ctx.view, alpha=alpha))
+            except RuntimeError:
+                logging.getLogger(__name__).warning("GPU smoke composite unavailable; using native smoke", exc_info=True)
+                self.available = False
+                self.simulation.close()
+                self.compositor.close()
+        else:
+            rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
+            try:
+                self._draw_fields(ctx.view, alpha=alpha)
+            finally:
+                rl.end_blend_mode()
+
+    def _draw_fields(self, view: ViewTransform, *, alpha: float) -> None:
+        assert self.shader is not None
         rl.begin_shader_mode(self.shader)
         try:
             for slot, field in self.simulation.fields.items():
                 rl.rl_draw_render_batch_active()
                 self._uniform("u_origin", (field.origin.x, field.origin.y))
                 self._uniform("u_size", (field.size.x, field.size.y))
-                height, width = field.density.shape
+                if isinstance(self.simulation, GpuSmokeSimulation):
+                    texture = self.simulation.texture
+                    width, height = texture.width, texture.height
+                else:
+                    texture = self.textures[slot]
+                    width, height = texture.width, texture.height
                 self._uniform("u_opacity", (alpha * field.fade,))
                 origin = view.world_to_screen(field.origin)
                 rl.draw_texture_pro(
-                    self.textures[slot], rl_rectangle(0, 0, width, height),
+                    texture, rl_rectangle(0, 0, width, height),
                     rl_rectangle(origin.x, origin.y, field.size.x * view.view_scale.x, field.size.y * view.view_scale.y),
                     rl_vector2(0, 0), 0.0, rl.WHITE,
                 )
         finally:
             rl.end_shader_mode()
-            rl.end_blend_mode()
 
     def close(self) -> None:
         self.reset()
+        self.available = True
+        self.compositor.close()
+        if isinstance(self.simulation, GpuSmokeSimulation):
+            self.simulation.close()
         for texture in self.textures.values():
             rl.unload_texture(texture)
         self.textures.clear()

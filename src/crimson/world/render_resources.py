@@ -28,7 +28,7 @@ class RenderResources(msgspec.Struct):
     assets_dir: Path
     config: CrimsonConfig | None = None
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
-    simulated_smoke_enabled: bool = False
+    simulated_smoke_enabled: bool = True
     smoke: SmokeRenderer = msgspec.field(default_factory=SmokeRenderer)
 
     ground: GroundRenderer | None = None

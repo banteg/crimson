@@ -128,7 +128,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
 
     def cmd_rtx_smoke(args: list[str]) -> None:
         if len(args) != 1 or args[0] not in ("on", "off"):
-            console.log.log("rtxsmoke <on|off> (experimental fluid smoke; default off)")
+            console.log.log("rtxsmoke <on|off> (GPU fluid smoke; default on in RTX)")
             return
         try:
             active = state.screens.active
@@ -142,7 +142,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         enabled = args[0] == "on"
         setter(enabled)
         console.log.log(
-            "Experimental fluid smoke enabled (RTX only; high CPU cost)."
+            "GPU fluid smoke enabled (RTX only)."
             if enabled else "Fluid smoke disabled; using native smoke.",
         )
 

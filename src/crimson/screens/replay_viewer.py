@@ -132,7 +132,7 @@ class ReplayViewer:
         leave_label: str = "High scores",
         background: bool = True,
         rtx: bool = False,
-        rtx_smoke: bool = False,
+        rtx_smoke: bool = True,
     ) -> None:
         self._replay = replay
         self._config = config
@@ -264,6 +264,9 @@ class ReplayViewer:
             self._history.rebuild(prep, key.bakes)
         if self.tick < target:
             self.player.run(target - self.tick, quiet=True)
+        # Seeking discards transient atmosphere, including GPU work queued by
+        # undrawn fast-forward ticks. Ordinary playback preserves every tick.
+        self.player.runtime.render_resources.smoke.reset()
         self.player.settle_hud()
         self._next_pick = bisect.bisect_right(prep.picks, self.tick, key=lambda pick: pick.tick)
         self.card_pick = -1

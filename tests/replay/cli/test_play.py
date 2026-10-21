@@ -53,10 +53,10 @@ def test_replay_rtx_window_hooks_and_audio_cleanup(tmp_path, mocker, fail) -> No
             raise RuntimeError("window failed")
 
     mocker.patch.object(grim_app, "run_view", side_effect=run)
-    for flags in (["--rtx"], [], ["--rtx-smoke"]):
+    for flags in (["--rtx"], [], ["--rtx-smoke"], ["--rtx", "--no-rtx-smoke"], ["--no-rtx-smoke"]):
         result = CliRunner().invoke(app, ["replay", "play", str(replay_path), "--base-dir", str(tmp_path), *flags])
         assert result.exit_code == (1 if fail else 0), result.exception
-        assert viewer.call_args.kwargs["rtx"] == bool(flags)
-        assert viewer.call_args.kwargs["rtx_smoke"] == ("--rtx-smoke" in flags)
-    assert states == [True, False, True]
-    assert shutdown.call_count == 3
+        assert viewer.call_args.kwargs["rtx"] == any(flag in flags for flag in ("--rtx", "--rtx-smoke"))
+        assert viewer.call_args.kwargs["rtx_smoke"] == ("--no-rtx-smoke" not in flags)
+    assert states == [True, False, True, True, False]
+    assert shutdown.call_count == 5

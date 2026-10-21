@@ -751,11 +751,11 @@ artwork, damage, target selection, and replay state are unchanged.
 
 ## Persistent fluid smoke
 
-Fluid smoke is experimental and **off by default**, including with `--rtx`.
-In the game, open the console during gameplay or a replay and enter `rtxsmoke on` to enable it;
-`rtxsmoke off` immediately clears the fluid and restores native smoke sprites.
-Standalone playback accepts `crimson replay play <replay.crd> --rtx-smoke`
-(which also enables RTX). The console choice belongs to the current game/replay
+GPU fluid smoke is **on by default in RTX**. In the game, `rtxsmoke off`
+immediately clears the fluid and restores native smoke sprites; `rtxsmoke on`
+re-enables it. Standalone playback accepts
+`crimson replay play <replay.crd> --rtx --no-rtx-smoke` to disable it.
+`--rtx-smoke` explicitly enables both fluid smoke and RTX. The console choice belongs to the current game/replay
 world and is not saved to config.
 The existing Smoke display setting still controls whether the fluid runs.
 Classic always uses its native smoke path.
@@ -767,10 +767,14 @@ smoke requests 10 seconds. Density decays throughout that time, with an addition
 soft fade over the final two seconds. These are maximum retention windows, not a
 promise that every small puff remains visible for that long.
 
-Implementation: `render/rtx/smoke_simulation.py`, `smoke.py`, `smoke_shaders.py`,
-and `sim/smoke_events.py`. NumPy runs the CPU fluid solver. The GPU uploads the
-density/temperature grids and shades the smoke; the solver itself is not a GPU
-compute implementation.
+Implementation: `render/rtx/gpu_smoke.py`, `gpu_smoke_shaders.py`, `smoke.py`,
+`smoke_shaders.py`, and `sim/smoke_events.py`. Simulation state stays in RGBA16F
+render targets: density, temperature, and planar velocity. OpenGL 3.3 fragment
+passes perform advection, pressure projection, and source deposition. This needs
+neither compute shaders nor a per-frame CPU grid upload/readback. Python retains
+immutable emission batches and presentation clocks. `smoke_simulation.py` remains
+an explicit CPU reference for offline comparisons; it is not a runtime fallback.
+Failure to initialize the GPU solver or display restores native smoke.
 
 ### Native events and lifecycle
 
@@ -798,37 +802,40 @@ disabling the smoke setting clear fields and delayed deposits. Re-enabling RTX
 starts with new emissions. Native smoke sprites and general explosion puffs are
 not drawn while fluid smoke is enabled, including when the solver is empty or at its allocation cap.
 Classic retains the original sprites.
-Checkpoint restoration clears this presentation history instead of storing it in
-the deterministic checkpoint.
+Checkpoint restoration and explicit replay seeking clear this transient history
+instead of storing it in the deterministic checkpoint. Undrawn seek ticks do not
+leave a GPU catch-up queue; normal playback and diagnostic views retain every tick.
 
-One shared domain starts at 144 × 144 cells with two world units per cell. It
-expands on the same world lattice as emissions and transported density approach
-its boundary, keeping at least 96 world units of padding where possible. Growth
-copies density, heat and velocity without resampling. All trails exchange flow
-and share light extinction; there are no internal patch walls or separate alpha
-layers. Dimensions are capped at 640 cells per axis, with at most 1024 delayed
-deposits. An outlying deposit beyond this cap is omitted rather than evicting
-visible smoke or falling back to native sprites. Open pressure/velocity boundaries
-and an absorbing outer band allow outflow at the allocation limit.
+One shared 320 × 320 domain covers the arena plus a 128-world-unit guard band
+on each side. All trails exchange flow and share light extinction; there are no
+internal patch walls or separate alpha layers. Sources rasterize only their
+bounded footprint. Sampling outside the domain returns zero; open pressure
+boundaries and an absorbing outer band allow outflow instead of reflecting it.
+The domain is fixed, so a moving camera cannot relocate existing smoke and no
+GPU occupancy readback is needed to resize it.
 
-Empty scenes perform no fluid steps. Dilute domains retire early. New deposits
-extend remaining retention, baking any existing final fade into density and
-temperature so old smoke is not restored. Nuke decay relaxes back toward the ordinary rate with a roughly 14-second time
-constant. Negligible empty margins can be reclaimed when the allocation cap
-would otherwise prevent growth toward new combat.
+Empty scenes perform no fluid steps. Domains retire at the end of their retention
+window. New deposits extend remaining retention, baking any existing final fade
+into density and temperature so old smoke is not restored. Nuke decay relaxes
+back toward the ordinary rate with a roughly 14-second time constant. Delayed
+emissions remain capped at 1024. Sources outside the padded arena do not allocate
+new simulation domains.
 
 ### Motion and light
 
-The solver advects planar velocity, density, and temperature, with a bounded
-MacCormack scalar correction, 24 pressure-relaxation iterations, vorticity
-confinement, damping, and unresolved diffusion. Sources inject native motion and
+The GPU solver uses semi-Lagrangian advection for planar velocity, density, and
+temperature, 12 pressure-relaxation iterations, vorticity confinement, and damping.
+The CPU reference's MacCormack scalar correction and finer growing grid are not
+pixel-equivalent to this bounded GPU approximation. Sources inject native motion and
 expansion; a small fixed planar breeze supplies background drift. Temperature
 controls an assumed vertical density profile in the display shader. This is a
 shallow 2D flow approximation with a 2.5D display, not a simulated 3D volume or
 vertical buoyancy model.
 
 The display integrates 14 vertical samples and six transmittance samples per
-light. It uses the shared native weapon sources, including rocket exhaust,
+light into a reusable RGBA16F viewport buffer capped at 640 pixels on its longest
+axis. Premultiplied reconstruction preserves HDR radiance and translucent edges;
+the world itself stays at full output resolution. It uses the shared native weapon sources, including rocket exhaust,
 Fire/Ion beams, and explosion lights, with the existing 16 illumination-source
 limit. Fractional source gains are preserved; gains above four are capped for
 smoke response. Up to four living players' native Sharpshooter sight segments
@@ -836,14 +843,25 @@ scatter as narrow red beams only inside density, rather than broadly illuminatin
 the whole cloud. The ordinary sight artwork remains unchanged.
 
 Smoke composites after native sprites, outside their alpha-test shader, inside
-the HDR world and pressure-front composition. Ground diagnostic maps bypass it.
+the HDR world and pressure-front composition. Ground diagnostic maps hide the composite while continuing to drain queued fluid updates.
 The renderer approximates single scattering and self-shadowing within the shared domain;
 the assumed slab does not resolve creature geometry. Broad sky extinction gives
 billows some form after local emitters fade. Rocket exhaust uses a separate
 sixfold scattering response, without increasing its ground or creature lighting.
-CPU simulation and shader cost grow with domain area and lights. This implementation establishes the appearance;
-a future GPU ping-pong or browser solver would need separate portability and
-performance validation.
+Simulation cost scales with grid area and pass count; display cost scales with
+shaded pixels and lights. Density columns are sampled once and reused at every
+integration height, preserving height-dependent optical depth. GPU timings and
+full-frame timings must be measured separately; reducing CPU simulation time
+does not imply the rest of the RTX frame is free. Shader/solver resources prewarm
+on the first enabled frame, moving the initialization cost out of the first shot.
+
+A synchronized M1 Pro benchmark of native rocket/nuke inputs and a 99-creature
+fixture measured 1.6–2.5 ms median simulation and 0.6–0.9 ms smoke display costs.
+At 1024 × 768, completed world-frame medians were 6.8–11.0 ms, including native
+simulation updates. At 2048 × 1536 they were 8.6–13.1 ms. The dense high-resolution
+case reached 22.6 ms at p95 (18.9 ms with native smoke); this is not a universal
+60 FPS guarantee. The benchmark excludes HUD, window presentation, audio and
+video encoding. The console/CLI off switches remain available for slower GPUs.
 
 ## Perk illumination
 

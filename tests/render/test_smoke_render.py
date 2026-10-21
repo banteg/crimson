@@ -13,7 +13,7 @@ from crimson.render.rtx.debug import RtxDebugView
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.rtx.smoke import SmokeRenderer
-from crimson.render.rtx.smoke_simulation import SmokeField
+from crimson.render.rtx.smoke_simulation import SmokeField, SmokeSimulation
 from crimson.render.world import draw as world_draw
 from crimson.render.world import effects
 from crimson.render.world.viewport import ViewTransform
@@ -83,7 +83,7 @@ def test_rtx_suppresses_all_native_smoke_even_unclaimed_and_reused_slots(headles
     assert headless_window.draw_texture_pro.call_count == 2
 
 
-def test_map_view_skips_smoke_and_draws_do_not_advance_it(mocker, headless_window, headless_resources):
+def test_map_view_prepares_without_drawing_smoke(mocker, headless_window, headless_resources):
     ctx = render_ctx_for_creatures(headless_resources, [])
     smoke = SmokeRenderer()
     smoke.consume((emission(),), dt_sim=0.)
@@ -95,7 +95,7 @@ def test_map_view_skips_smoke_and_draws_do_not_advance_it(mocker, headless_windo
     mocker.patch.object(world_draw, "draw_background")
     world_draw.draw_world(ctx)
     world_draw.draw_world(ctx)
-    prepare.assert_not_called()
+    assert prepare.call_count == 2
     draw.assert_not_called()
     assert smoke.simulation.fields[0].idle_seconds == 0.
 
@@ -120,7 +120,8 @@ def test_close_releases_resources_once(mocker, tmp_path):
 def smoke_pixels(raylib_context, headless_resources):
     ctx = render_ctx_for_creatures(headless_resources, [])
     player = PlayerState(index=0, pos=Vec2(0, 64), aim_heading=math.pi / 2)
-    smoke = SmokeRenderer()
+    smoke = SmokeRenderer(cpu_reference=True)
+    assert isinstance(smoke.simulation, SmokeSimulation)
     field = SmokeField(Vec2(-80, -80), 1)
     field.density.fill(.3)
     field.temperature.fill(.5)
@@ -174,7 +175,8 @@ def test_native_shader_preserves_faint_extinction_without_sprite_alpha_test(smok
 
 
 def test_smoke_light_budget_culls_remote_sources_and_prioritizes_exhaust():
-    smoke = SmokeRenderer()
+    smoke = SmokeRenderer(cpu_reference=True)
+    assert isinstance(smoke.simulation, SmokeSimulation)
     smoke.simulation.fields[0] = SmokeField(Vec2(0, 0), 0)
     far = [MaterialLight(Vec2(900, 900), 100, (1., .5, .1)) for _ in range(20)]
     nearby = [MaterialLight(Vec2(100, 100), 100, (.2, .2, .2)) for _ in range(20)]
@@ -206,12 +208,18 @@ def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless
     assert headless_window.draw_texture_pro.call_count == 2
 
 
-def test_default_rtx_skips_solver_and_toggle_clears_delayed_deposits(tmp_path, mocker, headless_resources):
+def test_default_rtx_queues_gpu_work_and_toggle_clears_delayed_deposits(tmp_path, mocker, headless_resources):
     runtime = WorldRuntimeHost(assets_dir=tmp_path, rtx_mode=RtxRenderMode.RTX)
     resources = runtime.render_resources
     resources.resources = headless_resources
     consume = mocker.spy(resources.smoke, "consume")
-    assert not resources.simulated_smoke_enabled
+    assert resources.simulated_smoke_enabled
+    resources.consume_smoke_batch((emission(),), dt_sim=1 / 60)
+    consume.assert_called_once()
+    assert runtime.build_render_frame().smoke is resources.smoke
+    assert resources.smoke.simulation.fields
+    resources.set_simulated_smoke(False)
+    consume.reset_mock()
     resources.consume_smoke_batch((emission(),), dt_sim=1 / 60)
     consume.assert_not_called()
     assert runtime.build_render_frame().smoke is None
@@ -225,7 +233,7 @@ def test_default_rtx_skips_solver_and_toggle_clears_delayed_deposits(tmp_path, m
     assert not resources.smoke.simulation.fields and not resources.smoke.simulation.pending
 
 
-def test_default_rtx_restores_both_native_smoke_pools(headless_window, headless_resources):
+def test_disabled_rtx_smoke_restores_both_native_smoke_pools(headless_window, headless_resources):
     ctx = render_ctx_for_creatures(headless_resources, [])
     ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX))
     ctx.frame.state.sprite_effects.spawn(pos=Vec2(50, 50), vel=Vec2(), scale=14,

@@ -369,3 +369,25 @@ def test_rtx_debug_cycles_while_paused_and_survives_seek(open_viewer: OpenViewer
     viewer.seek(60)
     assert viewer.rtx_debug is RtxDebugView.VISIBILITY
     viewer.close()
+
+
+def test_forward_seek_discards_undrawn_gpu_smoke_work(open_viewer: OpenViewer) -> None:
+    from crimson.render.rtx.gpu_smoke import GpuSmokeSimulation
+    from crimson.render.rtx.mode import RtxRenderMode
+    from crimson.sim.smoke_events import SmokeEmission
+    from grim.color import RGBA
+
+    viewer = open_viewer(load_replay_file(RECORDED_DIR / "quest-1.1-completed.crd"))
+    viewer.update(0.0)
+    viewer.set_rtx_mode(RtxRenderMode.RTX)
+    smoke = viewer.player.runtime.render_resources.smoke
+    assert isinstance(smoke.simulation, GpuSmokeSimulation)
+    smoke.consume((SmokeEmission(0, 1, Vec2(512, 512), Vec2(20, 0), 12., RGBA(1, 1, 1, .5), 0.),), dt_sim=1 / 60)
+    assert smoke.simulation.batches and smoke.simulation.fields
+    try:
+        viewer.seek(60)
+        assert viewer.tick == 60
+        assert not smoke.simulation.batches and not smoke.simulation.fields
+        assert viewer.player.runtime.render_resources.simulated_smoke_enabled
+    finally:
+        viewer.close()

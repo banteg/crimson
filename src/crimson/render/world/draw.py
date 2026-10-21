@@ -79,26 +79,34 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
     draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size,
                     entity_alpha=entity_alpha)
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_map:
+        # Hidden presentation still consumes simulation ticks; do not accumulate
+        # a long GPU backlog while inspecting diagnostic maps.
+        if render_ctx.frame.smoke is not None:
+            render_ctx.frame.smoke.prepare(render_ctx.frame, ())
         return
     if entity_alpha <= 1e-3:
+        if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.smoke is not None:
+            render_ctx.frame.smoke.prepare(render_ctx.frame, ())
         # Native 0x405b95 still calls projectile_render at zero transition;
         # its Gauss slots retain life alpha. Keep that pass inside alpha testing.
         with render_ctx.frame.resources.alpha_test.scope():
             projectile_render(render_ctx, alpha=entity_alpha)
         return
 
-    with render_ctx.frame.resources.alpha_test.scope():
-        frame = render_ctx.frame
-        lights = ()
-        if frame.rtx_mode is RtxRenderMode.RTX:
-            lights = tuple(collect_material_lights(
-                frame, view_center=render_ctx.view.screen_size * .5 - render_ctx.view.camera,
-            ))
-            if frame.player_lighting is not None:
-                frame.player_lighting.prepare(lights, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
-            if frame.smoke is not None:
-                frame.smoke.prepare(frame, lights)
+    frame = render_ctx.frame
+    lights = ()
+    if frame.rtx_mode is RtxRenderMode.RTX:
+        lights = tuple(collect_material_lights(
+            frame, view_center=render_ctx.view.screen_size * .5 - render_ctx.view.camera,
+        ))
+        if frame.player_lighting is not None:
+            frame.player_lighting.prepare(lights, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
+        # Fluid passes bind their own shaders and render targets. Run them before
+        # entering the native sprite alpha-test scope so they cannot replace it.
+        if frame.smoke is not None:
+            frame.smoke.prepare(frame, lights)
 
+    with frame.resources.alpha_test.scope():
         draw_ctx = build_draw_context(
             render_ctx,
             entity_alpha=entity_alpha,

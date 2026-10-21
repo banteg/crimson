@@ -101,7 +101,7 @@ def draw_sprite_effect_pool(
     view_scale: Vec2,
 ) -> None:
     frame = render_ctx.frame
-    if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None:
+    if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None and frame.smoke.available:
         return
     if frame.config is not None and not frame.config.display.smoke_enabled:
         return
@@ -175,7 +175,7 @@ def draw_effect_pool(
     )
 
     def draw_entry(entry: EffectEntry) -> None:
-        if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None and entry.effect_id == EffectId.EXPLOSION_PUFF:
+        if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None and frame.smoke.available and entry.effect_id == EffectId.EXPLOSION_PUFF:
             return
         if id(entry) in fireball_slots:
             return
