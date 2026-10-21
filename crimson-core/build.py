@@ -6,6 +6,7 @@ import difflib
 import json
 import os
 import re
+import runpy
 import shutil
 import subprocess
 import sys
@@ -186,15 +187,13 @@ def main():
     if not wasm and os.uname().sysname == "Darwin":
         flags.append("-mmacosx-version-min=11.0")
     build_identity = runtime_identity(a.target, a.root)
-    from crimson.game_version import REPLAY_RULES
-    flags.append(f"-DCRIMSON_REPLAY_RULES={REPLAY_RULES}")
+    versions = runpy.run_path(str(a.root / "src/crimson/game_version.py"))
+    flags.append(f"-DCRIMSON_REPLAY_RULES={versions["REPLAY_RULES"]}")
     if a.target == "game":
         # The version, format and rules a replay names, as the Python port names its own (host/ranked.inc).
-        from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES
-
         flags += [
             f'-DCRIMSON_GAME_VERSION="{build_identity["version"]}"',
-            f"-DCRIMSON_REPLAY_FORMAT={REPLAY_FORMAT_VERSION}",
+            f"-DCRIMSON_REPLAY_FORMAT={versions["REPLAY_FORMAT_VERSION"]}",
         ]
     sources = json.loads((HERE / "sources.json").read_text())
     if a.target == "game":
