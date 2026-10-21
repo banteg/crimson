@@ -181,7 +181,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                   </td>
                   <Show when={bots() && full()}>
                     <td>
-                      <Show when={row.pilot} fallback={<span class="muted" title="The replay names no bot">—</span>}>
+                      <Show when={row.pilot} fallback={<span class="muted" title="The replay names no bot">-</span>}>
                         {(pilot) => <PilotName pilot={pilot()} />}
                       </Show>
                     </td>
@@ -335,7 +335,7 @@ async function home(): Promise<Screen> {
       () => (
         <>
           <p>
-            Crimsonland, the 2003 top-down shooter, in your browser—recovered from <code>crimsonland.exe</code>, with modern gamepads and
+            Crimsonland, the 2003 top-down shooter, in your browser, recovered from <code>crimsonland.exe</code>, with modern gamepads and
             internet high scores where every run is verified by replay.
           </p>
           <PlayGame />
@@ -543,7 +543,7 @@ async function customQuests(): Promise<Screen> {
         <>
           <h2>Custom Quests</h2>
           <p class="muted">
-            Player-made levels built with <code>.quest</code> scripts. To publish a level, you have to beat it first—every quest here comes
+            Player-made levels built with <code>.quest</code> scripts. To publish a level, you have to beat it first, so every quest here comes
             with a verified completion replay. Write one by hand or feed <a href="/custom/llm.txt" data-native>/custom/llm.txt</a> to an
             LLM, beat it with <Command>uvx crimsonland@latest quest play my.quest</Command>, and post it with{" "}
             <Command>uvx crimsonland@latest quest publish my.quest</Command>.
@@ -570,13 +570,13 @@ async function customQuests(): Promise<Screen> {
                           <a href={`/custom/${q.id}`}>{q.title}</a>
                         </td>
                         <td>
-                          {q.creator ? <PlayerName player={q.creator} tag={false} /> : (q.author ?? "—")}
+                          {q.creator ? <PlayerName player={q.creator} tag={false} /> : (q.author ?? "-")}
                         </td>
                         <td>
                           <Weapon id={q.start_weapon_id} />
                         </td>
                         <td class="n">{q.entry_count}</td>
-                        <td class="n">{q.top_score !== null ? formatScore("quests", q.top_score) : "—"}</td>
+                        <td class="n">{q.top_score !== null ? formatScore("quests", q.top_score) : "-"}</td>
                         <td class="n">{q.players}</td>
                         <td>
                           <a class="watch" href={`/play/?quest=${q.id}`} data-native>
@@ -1099,8 +1099,8 @@ const ABOUT: Screen = {
           <em>"State your name, trooper!"</em>, and it uploads your run (or saves it for the next time you're online).
         </p>
         <p>
-          Survival ranks by experience and quests by final time—with 50 ms shaved off per remaining HP and 1 second per unpicked perk—plus
-          separate lists for Hardcore and 2-player co-op. Only your best run on each list counts.
+          Survival ranks by experience and quests by final time, which takes 50 ms off per remaining HP and 1 second per unpicked perk.
+          Hardcore and 2-player co-op have their own lists. Only your best run on each list counts.
         </p>
         <p>
           Every score comes with a <code>.crd</code> recording of the run. The server replays it using the same recovered game code and
