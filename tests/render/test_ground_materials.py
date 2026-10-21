@@ -931,13 +931,8 @@ def test_visible_death_shadow_collapses_without_an_instant_hp_cutoff(ground_mate
     assert debug_pixels(ground, texture, mode=6, creatures=pool) == clear
 
 
-def test_beam_material_scope_bulk_upload_and_toggle_restore_real_pixels(ground_material, mocker, monkeypatch) -> None:
-    from crimson.render.rtx.continuous_beam import experiment
-
+def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(ground_material, mocker, monkeypatch) -> None:
     ground, texture = ground_material
-    monkeypatch.setattr(experiment, "enabled", False)
-    monkeypatch.setattr(experiment, "ion_gain", 1.)
-    monkeypatch.setattr(experiment, "ambient_dip", 0.)
     # A masked source before the beam catches an incorrect vec4 count/row offset.
     reflection_only = MaterialLight(Vec2(32, 20), 150, (1, 1, 1), illumination_gain=0)
     beam = MaterialLight(
@@ -950,26 +945,25 @@ def test_beam_material_scope_bulk_upload_and_toggle_restore_real_pixels(ground_m
     def render():
         return debug_pixels(ground, texture, mode=int(RtxDebugView.DIRECT_UNSHADOWED))
 
+    # Capture a non-beam frame before section uniforms have ever been uploaded.
+    nonbeam = msgspec.structs.replace(beam, beam_profile=None, beam_ion=False)
+    collector.return_value = [nonbeam]
     baseline = render()
-    experiment.enabled = True
+    collector.return_value = [reflection_only, beam]
+    four = render()  # Accepted lighting is active without a separate control.
+    monkeypatch.setattr(ground_materials, "ION_DIRECT_GAIN", 1.)
     one = render()
-    experiment.ion_gain = 4.
-    four = render()
     assert max(pixel[2] for pixel in one) > .001
-    # This tests the actual material_scope binding and CFFI pointer conversion,
-    # rather than compiling a standalone helper with manually set uniforms.
+    # Exercise material_scope's real array binding and CFFI pointer conversion.
     for normal, bright in zip(one, four, strict=True):
         assert bright[:3] == pytest.approx(tuple(channel * 4 for channel in normal[:3]), rel=.002, abs=.001)
     calls = [call for call in upload.call_args_list if call.args[1] == ground.beam_cells_location]
     assert len(calls) == 2
     assert all(call.args[4] == 6 and rl.ffi.typeof(call.args[2]).cname == "void *" for call in calls)
-    experiment.enabled = False
-    assert render() == baseline
-    experiment.enabled = True
+    monkeypatch.setattr(ground_materials, "ION_DIRECT_GAIN", 4.)
+    collector.return_value = [nonbeam]
+    assert render() == baseline  # Stale cells must not affect a later non-beam frame.
+    collector.return_value = [reflection_only, beam]
     assert render() == four
-
-    # A later frame without beams must ignore stale section uniforms.
-    collector.return_value = [msgspec.structs.replace(beam, beam_profile=None, beam_ion=False)]
-    no_beam_enabled = render()
-    experiment.enabled = False
-    assert render() == no_beam_enabled
+    collector.return_value = []
+    assert all(pixel[:3] == (0., 0., 0.) for pixel in render())

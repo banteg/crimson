@@ -5,6 +5,7 @@ from .lighting_shaders import LIGHT_VISIBILITY_GLSL
 
 GROUND_FRAGMENT = r"""
 #version 330
+#define CONTINUOUS_BEAM
 
 #define MAX_SPEC_LIGHTS 32
 
@@ -27,7 +28,7 @@ uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = annulus radi
 uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = broad illumination, w = capsule_h
 uniform vec4 u_spec_response[MAX_SPEC_LIGHTS]; // illumination, reflection, reflection reach, source width
 
-""" + LIGHT_VISIBILITY_GLSL + "\n#ifdef CONTINUOUS_BEAM\n" + CONTINUOUS_BEAM_GLSL + "\n#endif\n" + r"""
+""" + LIGHT_VISIBILITY_GLSL + CONTINUOUS_BEAM_GLSL + r"""
 float blood_below_ice(vec4 surface, vec4 coverage) {
     // Ice occludes the film; it does not thin it into a new red meniscus.
     // Both stored volume and blood coverage have been attenuated by the ice opacity.
@@ -139,11 +140,10 @@ void main() {
     vec3 blood_body_color = vec3(mix(0.05, 0.16, freshness), 0.00003, 0.00005) * body_weight;
 
     // Exposed ice keeps its substrate/sprite color instead of passing through the blood pigment.
-    #ifdef CONTINUOUS_BEAM
-    // Experimental contrast is local, bounded, and fades with the Ion source.
+    // Ion contrast is local, bounded, and fades with the Ion source.
     // Take the strongest local dip; overlapping sources never multiply to black.
     float beam_dip = 0.;
-    if (u_beam_enabled != 0) {
+    if (u_has_beam_lights != 0) {
         for (int i=0;i<u_spec_light_count;i++) {
             if (u_line_cells[i * 3].w < .5 || u_line_cells[i * 3].x <= 0.) continue;
             vec2 axis=dot(u_spec_dir[i].xy, u_spec_dir[i].xy) > .0001?normalize(u_spec_dir[i].xy):vec2(1.,0.);
@@ -156,7 +156,6 @@ void main() {
         }
     }
     ambient_term*=1.-beam_dip;
-    #endif
     vec3 diffuse_lit = mix(wetted_substrate * ambient_transmittance + blood_body_color, albedo_tex.rgb, is_ice) * ambient_term;
 
     // Fixed 30-degree backward virtual eye: reflections land below their emitters.
@@ -187,8 +186,7 @@ void main() {
         float d2d = length(to_l);
         float reflection_distance = length(reflection_xy - world);
         float rad = max(1.0, sp_pos.z);
-        #ifdef CONTINUOUS_BEAM
-        bool continuous=u_beam_enabled!=0 && u_line_cells[i * 3].x > 0. && response.x>0.;
+        bool continuous=u_has_beam_lights!=0 && u_line_cells[i * 3].x > 0. && response.x>0.;
         if (!continuous && reflection_distance >= max(rad, response.z)) continue;
         if (continuous) {
             vec2 source_axis=dot(sp_dir.xy, sp_dir.xy) > .0001?normalize(sp_dir.xy):vec2(1.,0.);
@@ -202,11 +200,7 @@ void main() {
                 direct_shadowed+=direct;
                 diffuse_lit+=direct;
             }
-        } else
-        #else
-        if (reflection_distance >= max(rad, response.z)) continue;
-        #endif
-        if (response.x > 0.0 && d2d < rad) {
+        } else if (response.x > 0.0 && d2d < rad) {
             float atten = pow(max(0., 1. - d2d / rad), 2.);
             vec3 L = normalize(vec3(to_l, max(.001, sp_pos.w)));
             float ndl_sub = max(dot(N_sub, L), 0.);
@@ -329,6 +323,3 @@ void main() {
     finalColor = u_pass == 1 ? vec4(spec, 0., 0., a) : vec4(0., 0., 0., height * a);
 }
 """
-
-# Compile the extra resources only for the opt-in path; default shaders retain their resource budget.
-CONTINUOUS_GROUND_FRAGMENT = GROUND_FRAGMENT.replace("#version 330", "#version 330\n#define CONTINUOUS_BEAM", 1)

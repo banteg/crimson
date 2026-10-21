@@ -1,7 +1,7 @@
-"""Bounded three-section beam lighting for the opt-in renderer experiment."""
+"""Bounded three-section beam lighting for Python RTX."""
 
 CONTINUOUS_BEAM_GLSL = r"""
-uniform int u_beam_enabled;
+uniform int u_has_beam_lights;
 uniform vec2 u_beam_tuning; // Ion direct gain, bounded local ambient dip
 // Three energy-weighted sections per source: mass, world offset, halfspan, Ion.
 // CPU caps longitudinal halfspans at four world units and expands the shared

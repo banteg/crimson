@@ -1,10 +1,9 @@
-"""Optional energy-section beam lighting; presentation state only."""
+"""Energy-section beam lighting; presentation state only."""
 
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator, Sequence
-from contextlib import contextmanager
+from collections.abc import Sequence
 from functools import lru_cache
 
 import msgspec
@@ -17,38 +16,8 @@ SUPPORT = 0.85998995
 MAX_SECTION_HALFSPAN = 4.0
 
 
-class BeamLightingSettings(msgspec.Struct):
-    enabled: bool = False
-    ion_gain: float = 4.0
-    ambient_dip: float = 0.25
-
-
-# Presentation-only developer control; intentionally not saved in replays/config.
-experiment = BeamLightingSettings()
-
-
-def configure(args: Sequence[str]) -> str:
-    if not args:
-        return f"Beam lighting: {experiment.enabled}; Ion gain {experiment.ion_gain:g}; ambient dip {experiment.ambient_dip:g}"
-    if len(args) > 3 or args[0] not in ("on", "off"):
-        raise ValueError("rtxbeam <on|off> [Ion gain 0..8] [local ambient dip 0..0.6]")
-    gain = float(args[1]) if len(args) > 1 else experiment.ion_gain
-    dip = float(args[2]) if len(args) > 2 else experiment.ambient_dip
-    if not math.isfinite(gain) or not 0 <= gain <= 8 or not math.isfinite(dip) or not 0 <= dip <= 0.6:
-        raise ValueError("Ion gain must be 0..8; local ambient dip must be 0..0.6")
-    experiment.enabled, experiment.ion_gain, experiment.ambient_dip = args[0] == "on", gain, dip
-    return configure(())
-
-
-@contextmanager
-def experiment_scope(*, enabled: bool) -> Iterator[None]:
-    """Restore process presentation state after a standalone replay, including errors."""
-    previous = (experiment.enabled, experiment.ion_gain, experiment.ambient_dip)
-    experiment.enabled = enabled
-    try:
-        yield
-    finally:
-        experiment.enabled, experiment.ion_gain, experiment.ambient_dip = previous
+ION_DIRECT_GAIN = 4.0
+ION_AMBIENT_DIP = 0.25
 
 
 @lru_cache(maxsize=1)

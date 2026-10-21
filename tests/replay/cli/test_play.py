@@ -27,7 +27,7 @@ def test_replay_play_rejects_an_old_replay_before_opening_a_window(tmp_path, moc
 
 
 @pytest.mark.parametrize("fail", [False, True])
-def test_replay_experiment_state_is_scoped_to_run_view(tmp_path, mocker, monkeypatch, fail) -> None:
+def test_replay_rtx_window_hooks_and_audio_cleanup(tmp_path, mocker, fail) -> None:
     from types import SimpleNamespace
 
     import grim.app as grim_app
@@ -35,7 +35,6 @@ def test_replay_experiment_state_is_scoped_to_run_view(tmp_path, mocker, monkeyp
     from crimson import runtime_boot
     from crimson.game_modes import GameMode
     from crimson.modes import replay_playback_mode
-    from crimson.render.rtx.continuous_beam import experiment
     from crimson.screens import replay_viewer
     from tests.replay.cli._helpers import build_replay, write_replay
 
@@ -43,33 +42,20 @@ def test_replay_experiment_state_is_scoped_to_run_view(tmp_path, mocker, monkeyp
     mocker.patch.object(runtime_boot, "boot_runtime", return_value=SimpleNamespace(config=None, console=None, width=320, height=240))
     mocker.patch.object(replay_playback_mode, "open_replay_audio", return_value=None)
     shutdown = mocker.patch.object(grim_audio, "shutdown_audio")
-    mocker.patch.object(replay_viewer, "ReplayViewer")
+    viewer = mocker.patch.object(replay_viewer, "ReplayViewer")
     mocker.patch.object(replay_viewer, "replay_card")
-    monkeypatch.setattr(experiment, "enabled", False)
-    monkeypatch.setattr(experiment, "ion_gain", 3.)
-    monkeypatch.setattr(experiment, "ambient_dip", .2)
     states = []
 
     def run(*args, **kwargs):
-        states.append(experiment.enabled)
-        experiment.ion_gain = 7.
+        wants_edr = kwargs["hooks"].wants_edr
+        states.append(wants_edr is not None and wants_edr())
         if fail:
             raise RuntimeError("window failed")
 
     mocker.patch.object(grim_app, "run_view", side_effect=run)
-    for flags in (["--rtx", "--experimental-beam-shadows"], []):
+    for flags in (["--rtx"], []):
         result = CliRunner().invoke(app, ["replay", "play", str(replay_path), "--base-dir", str(tmp_path), *flags])
         assert result.exit_code == (1 if fail else 0), result.exception
-        assert (experiment.enabled, experiment.ion_gain, experiment.ambient_dip) == (False, 3., .2)
+        assert viewer.call_args.kwargs["rtx"] == bool(flags)
     assert states == [True, False]
     assert shutdown.call_count == 2
-
-
-def test_invalid_replay_does_not_change_experiment_state(tmp_path, monkeypatch) -> None:
-    from crimson.render.rtx.continuous_beam import experiment
-
-    monkeypatch.setattr(experiment, "enabled", False)
-    result = CliRunner().invoke(app, ["replay", "play", str(tmp_path / "missing.crd"), "--base-dir", str(tmp_path),
-                                    "--rtx", "--experimental-beam-shadows"])
-    assert result.exit_code != 0
-    assert not experiment.enabled

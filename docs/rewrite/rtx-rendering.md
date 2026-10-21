@@ -629,25 +629,17 @@ material. This uses existing simulation state only and does not alter death
 movement, damage, corpse timing, RNG or Classic rendering.
 
 
-## Optional extended beam illumination
+## Extended beam illumination
 
-The default renderer uses the existing energy-centroid light. The Python port
-also offers a three-section approximation for Ion Rifle, Ion Minigun, Ion Cannon
-and Fire Bullets ground lighting. Enable it in the game console with `rtxbeam on`;
-disable it with `rtxbeam off`. `rtxbeam on 4 0.25` sets the Ion diffuse gain
-multiplier and maximum local ambient reduction. Fire retains its existing gain.
-Both controls are presentation-only, bounded, and process-local; they are not
-saved to replays or configuration. Classic rendering is unaffected.
-
-Standalone replay playback can opt in with the retained experimental CLI flag:
+Python RTX uses a three-section approximation for Ion Rifle, Ion Minigun, Ion
+Cannon and Fire Bullets ground lighting by default. Ion direct illumination uses
+a 4x gain and a maximum 25% local ambient reduction; Fire retains its existing
+gain. These are presentation settings: simulation and classic rendering are
+unaffected. No separate beam console command or replay flag is required:
 
 ```sh
-uv run crimson replay play 18-survival.crd --rtx --experimental-beam-shadows
+uv run crimson replay play 18-survival.crd --rtx
 ```
-
-The standalone command restores the previous beam controls when playback exits,
-including on error. A later playback in the same process does not inherit this
-command's selection.
 
 ### Three energy-weighted sections
 
@@ -679,9 +671,9 @@ reflections or creature lighting. A bounded 128-entry profile cache handles
 repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
 candidate texture, interval sort, quadratic sweep or exact-overflow fallback.
 
-Ion's optional contrast reduces ambient only within its local footprint, fades
+Ion's contrast reduces ambient only within its local footprint, fades
 with source radiance, and takes the maximum contribution of overlapping beams
-rather than multiplying dips. At the default optional 0.25 setting, at least 75%
+rather than multiplying dips. At the 0.25 setting, at least 75%
 of ordinary ambient remains. This changes ground direct illumination only:
 creature/bonus lighting and specular reflection approximations remain as before.
 Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to inspect it.
@@ -690,13 +682,11 @@ Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to inspec
 
 Three sections were selected over one and five using native moving-beam renders.
 One remains visibly closer to a point source; five costs more without a useful
-improvement in the inspected scene. The shader compiles lazily and separately
-from the default shader, so disabling the mode restores the previous resource
-budget.
+improvement in the inspected scene. The ground shader includes this path; frames
+without eligible beam sources skip preparation and ignore stale section uniforms.
 
-Three visibility queries per beam are still more expensive than the default
-centroid. Dense scenes with many simultaneous beams remain costly, which is why
-this is an optional quality setting. The approximation can retain separate shadow
+Three visibility queries per beam are still more expensive than the previous
+centroid. Dense scenes with many simultaneous beams remain costly. The approximation can retain separate shadow
 lobes in difficult arrangements and does not reproduce the dense reference's
 penumbra exactly. It favors readable moving shadows and predictable source work
 over a numerical agreement target. Body traversal still scales with the actual

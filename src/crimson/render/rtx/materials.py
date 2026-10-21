@@ -23,11 +23,11 @@ from ...effects_atlas import EffectId
 from ...sim.terrain_fx import TerrainFxBatch
 from ..terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..world.atlas import effect_cell_src
-from .continuous_beam import experiment, prepare_beam_lights
+from .continuous_beam import ION_AMBIENT_DIP, ION_DIRECT_GAIN, prepare_beam_lights
 from .hdr import _HDR_TONEMAP_VS_330
 from .material_history import MaterialHistory
 from .material_lights import collect_material_lights
-from .material_shaders import CONTINUOUS_GROUND_FRAGMENT, GROUND_FRAGMENT, STAMP_FRAGMENT
+from .material_shaders import GROUND_FRAGMENT, STAMP_FRAGMENT
 from .reflection_occlusion import ReflectionOcclusion, build_occlusion_grid, creature_body_volumes
 
 if TYPE_CHECKING:
@@ -104,7 +104,6 @@ class MaterialGroundRenderer(GroundRenderer):
     substrate: GroundRenderer | None = None
     stamp_shader: rl.Shader | None = None
     material_shader: rl.Shader | None = None
-    continuous_shader: rl.Shader | None = None
     wetness_epoch: float = 0.0
     stamp_locations: dict[str, int] = msgspec.field(default_factory=dict)
 
@@ -125,10 +124,10 @@ class MaterialGroundRenderer(GroundRenderer):
 
     def close(self) -> None:
         self.reset_materials()
-        for shader in (self.stamp_shader, self.material_shader, self.continuous_shader):
+        for shader in (self.stamp_shader, self.material_shader):
             if shader is not None:
                 rl.unload_shader(shader)
-        self.stamp_shader = self.material_shader = self.continuous_shader = None
+        self.stamp_shader = self.material_shader = None
         self.beam_cells_location = -1
         self.material_layers = None
         super().close()
@@ -147,6 +146,7 @@ class MaterialGroundRenderer(GroundRenderer):
             }
         if self.material_shader is None:
             self.material_shader = _shader(GROUND_FRAGMENT)
+            self.beam_cells_location = rl.get_shader_location(self.material_shader, "u_line_cells[0]")
         size = self.render_target.texture
         # Full precision preserves small weighted wetness contributions across epoch rebases.
         surface = load_float_render_texture(
@@ -377,11 +377,7 @@ class MaterialGroundRenderer(GroundRenderer):
             return
         self.bake_materials(frame.resources.texture(TextureId.PARTICLES), frame.resources.texture(TextureId.BODYSET))
         assert self.material_shader is not None and self.surface is not None and self.coverage is not None
-        if experiment.enabled and self.continuous_shader is None:
-            self.continuous_shader = _shader(CONTINUOUS_GROUND_FRAGMENT)
-            self.beam_cells_location = rl.get_shader_location(self.continuous_shader, "u_line_cells[0]")
-        sh = self.continuous_shader if experiment.enabled else self.material_shader
-        assert sh is not None
+        sh = self.material_shader
         _uniform(sh, "u_ground_size", [float(self.width), float(self.height)])
         _uniform(sh, "u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
         _integer(sh, "u_debug", int(frame.rtx_debug) if debug is None else debug)
@@ -394,14 +390,14 @@ class MaterialGroundRenderer(GroundRenderer):
             [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
             if any(light.reflection_gain > 0 or (shadows and light.illumination_gain > 0) for light in lights) else []
         )
-        beam_enabled = experiment.enabled and any(
+        has_beam_lights = any(
             light.beam_profile is not None and light.illumination_gain > 0 for light in lights
         )
-        _integer(sh, "u_beam_enabled", int(beam_enabled))
+        _integer(sh, "u_has_beam_lights", int(has_beam_lights))
         grid_lights = lights
-        if beam_enabled:
+        if has_beam_lights:
             cells, grid_lights = prepare_beam_lights(lights)
-            _uniform(sh, "u_beam_tuning", [experiment.ion_gain, experiment.ambient_dip])
+            _uniform(sh, "u_beam_tuning", [ION_DIRECT_GAIN, ION_AMBIENT_DIP])
             cells_buffer = rl.ffi.new("float[]", cells)
             rl.set_shader_value_v(
                 sh, self.beam_cells_location, rl.ffi.cast("void *", cells_buffer),

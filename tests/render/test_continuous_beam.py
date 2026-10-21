@@ -10,8 +10,6 @@ from crimson.render.rtx.continuous_beam import (
     SOURCE_CELLS,
     SUPPORT,
     beam_cells,
-    configure,
-    experiment,
     prepare_beam_lights,
 )
 from crimson.render.rtx.material_lights import MaterialLight
@@ -29,18 +27,6 @@ def light() -> MaterialLight:
         beam_profile=(56.0, 9.0, 1.05),
         beam_ion=True,
     )
-
-
-def test_console_validation_is_atomic(monkeypatch) -> None:
-    monkeypatch.setattr(experiment, "enabled", False)
-    monkeypatch.setattr(experiment, "ion_gain", 4.0)
-    monkeypatch.setattr(experiment, "ambient_dip", 0.25)
-    for args in (("on", "nan"), ("on", "9"), ("on", "4", "-.1"), ("on", "4", ".7")):
-        with pytest.raises(ValueError):
-            configure(args)
-        assert not experiment.enabled
-    configure(("on", "3", ".2"))
-    assert (experiment.enabled, experiment.ion_gain, experiment.ambient_dip) == (True, 3, 0.2)
 
 
 def test_shared_streak_profiles_match_authored_weapon_sizes() -> None:

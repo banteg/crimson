@@ -9,7 +9,7 @@ import pytest
 from crimson.render.rtx.continuous_beam_shaders import CONTINUOUS_BEAM_GLSL
 from crimson.render.rtx.lighting_shaders import LIGHT_VISIBILITY_GLSL
 from crimson.render.rtx.material_lights import MaterialLight
-from crimson.render.rtx.material_shaders import CONTINUOUS_GROUND_FRAGMENT, GROUND_FRAGMENT
+from crimson.render.rtx.material_shaders import GROUND_FRAGMENT
 from crimson.render.rtx.materials import _integer, _shader, _uniform
 from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
 from grim.edr import load_float_render_texture
@@ -118,7 +118,6 @@ def test_section_visibility_fades_keeps_all_casters_and_resets_for_reflections(r
         rl.unload_render_texture(target)
 
 
-def test_optional_ground_shader_and_standard_shader_compile(raylib_context) -> None:
-    for fragment in (GROUND_FRAGMENT, CONTINUOUS_GROUND_FRAGMENT):
-        shader = _shader(fragment)
-        rl.unload_shader(shader)
+def test_default_ground_shader_compiles(raylib_context) -> None:
+    shader = _shader(GROUND_FRAGMENT)
+    rl.unload_shader(shader)
