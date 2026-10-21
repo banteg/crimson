@@ -329,12 +329,17 @@ async function home(): Promise<Screen> {
     panels: [
       () => (
         <>
+          <h2>
+            Crimsonland, as it was in 2003.
+            <br />
+            Now with <span style={{ "white-space": "nowrap" }}>online co-op.</span>
+          </h2>
           <p>
-            Crimsonland, the 2003 top-down shooter, in your browser, recovered from <code>crimsonland.exe</code>, with modern gamepads and
-            internet high scores where every run is verified by replay.
+            Rebuilt from <code>crimsonland.exe</code>, with a few dozen of its <a href={BUGS}>bugs</a> fixed. Play in your browser, chase
+            internet high scores where every run is a replay you can watch, and build your own quests. Gamepads welcome.
           </p>
           <p>
-            Bring a friend: press <em>Play co-op</em>, send them the invite link, and fight side by side in the same arena from two computers.
+            To play together, press <em>Play co-op</em> and send your friend the invite link.
           </p>
           <PlayGame />
         </>

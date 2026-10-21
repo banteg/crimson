@@ -340,7 +340,7 @@ interface Preview {
   player: { url: string; width: number; height: number } | null;
 }
 
-const SITE_DESCRIPTION = "Play Crimsonland in your browser, alone or with a friend online, with internet high scores where every run is a replay the server re-simulates.";
+const SITE_DESCRIPTION = "Crimsonland, as it was in 2003. Now with online co-op. Play in your browser and chase internet high scores where every run is a replay you can watch.";
 // The preview of a page with no image of its own: a moment of the Survival board's top run (public/og.jpg).
 const SITE_IMAGE = { path: "/og.jpg", width: 1200, height: 630 };
 
