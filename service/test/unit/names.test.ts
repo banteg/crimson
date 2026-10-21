@@ -6,13 +6,17 @@ const link = (provider: "github" | "discord" | "x" | "twitch", handle: string, a
 const player = (name: string | null, links: PlayerView["links"], clash = false): PlayerView => ({ id: 1, name, fingerprint: "a2fe", clash, links, bot: false });
 
 describe("players show as the leaderboard identity rules describe", () => {
-  it("a linked account shows the handle its typed name matches, else the one most links share, else X, Discord, GitHub, Twitch", () => {
+  it("a linked account shows the handle its typed name matches, else that name unless it clashes or is the default", () => {
     expect(shownName("BANTEG", [link("x", "razenpok"), link("github", "banteg")])).toBe("banteg");
-    expect(shownName("10tons]]", [link("x", "Razenpok"), link("discord", "razenpok"), link("github", "Razenpok")])).toBe("Razenpok");
-    expect(shownName("bob", [link("x", "a"), link("discord", "b"), link("github", "b")])).toBe("b");
-    expect(shownName("bob", [link("github", "a"), link("discord", "b")])).toBe("b");
-    expect(shownName("bob", [link("twitch", "a"), link("github", "b")])).toBe("b");
-    expect(shownName("Onetake", [link("twitch", "onetakeruns")])).toBe("onetakeruns");
+    expect(shownName("Onetake", [link("twitch", "onetakeruns")])).toBe("Onetake");
+    expect(shownName("10tons]]", [link("x", "Razenpok"), link("github", "Razenpok")])).toBe("10tons]]");
+  });
+
+  it("a linked account whose name clashes or is the default shows the handle most links share, else X, Discord, GitHub, Twitch", () => {
+    expect(shownName("banteg", [link("x", "Razenpok"), link("discord", "razenpok"), link("github", "Razenpok")], true)).toBe("Razenpok");
+    expect(shownName("10tons", [link("x", "a"), link("discord", "b"), link("github", "b")])).toBe("b");
+    expect(shownName("bob", [link("github", "a"), link("discord", "b")], true)).toBe("b");
+    expect(shownName("", [link("twitch", "a"), link("github", "b")])).toBe("b");
   });
 
   it("an unlinked account shows its typed name, unless it is empty or the default", () => {

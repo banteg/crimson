@@ -201,7 +201,7 @@ describe("runs", () => {
     expect(await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text()).toContain(`<title>${fingerprint} · Survival · crimson.land</title>`);
   });
 
-  it("a linked account shows its handle over a mistyped name; an unlinked default name shows the fingerprint", async () => {
+  it("a linked account shows its typed name beside its badges, and its handle once another account has that name", async () => {
     const player = await Player.create();
     const { id } = (await (await player.upload(vectors.ranked_run, "10tons]]")).json()) as { id: string };
     await env.DB.prepare("INSERT INTO links (provider, subject, account_id, handle, avatar_url, linked_at) SELECT 'x', '9', id, 'Razenpok', NULL, 0 FROM accounts")
@@ -209,8 +209,11 @@ describe("runs", () => {
     const get = async <T>(path: string) => (await (await SELF.fetch(`${ORIGIN}${path}`)).json()) as T;
 
     const detail = await get<RunDetailView>(`/api/runs/${id}`);
-    expect([detail.name, detail.player.name]).toEqual(["10tons]]", "Razenpok"]);
-    expect(await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text()).toContain("<title>Razenpok · Survival · crimson.land</title>");
+    expect([detail.name, detail.player.name]).toEqual(["10tons]]", "10tons]]"]);
+    expect(detail.player.links.map((link) => link.handle)).toEqual(["Razenpok"]);
+    expect(await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text()).toContain("<title>10tons]] · Survival · crimson.land</title>");
+    await env.DB.prepare("INSERT INTO accounts (id, name, created_at) VALUES (98, '10tons]]', 0)").run();
+    expect((await get<RunDetailView>(`/api/runs/${id}`)).player.name).toBe("Razenpok");
 
     // Once the handle is another account's, a name matching it gets the fingerprint, and the default name shows only that.
     await env.DB.prepare("INSERT INTO accounts (id, created_at) VALUES (99, 0)").run();
