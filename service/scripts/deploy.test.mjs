@@ -26,12 +26,14 @@ test("parallel reverification matches serial verdicts and ground JPEGs, and abor
   const directory = mkdtempSync(join(tmpdir(), "crimson-reverify-"));
   try {
     const vectors = JSON.parse(readFileSync(join(service, "test/vectors.json"), "utf8"));
+    const ranked = join(directory, "ranked.crd");
+    writeFileSync(ranked, Buffer.from(vectors.ranked_run, "base64"));
     const refused = join(directory, "refused.crd");
     writeFileSync(refused, Buffer.from(vectors.illegal_command_run, "base64"));
     const runs = [
-      { id: "quest", file: join(service, "../tests/fixtures/replays/quest-1.1-completed.crd") },
+      { id: "survival", file: ranked },
       { id: "refused", file: refused },
-      { id: "rush", file: join(service, "../tests/fixtures/replays/rush-kills103.crd") },
+      { id: "rush", file: join(service, "../tests/fixtures/replays/rush-rules2.crd") },
     ];
     const check = async (jobs) => {
       const grounds = join(directory, String(jobs));
@@ -41,7 +43,7 @@ test("parallel reverification matches serial verdicts and ground JPEGs, and abor
       assert.equal(existsSync(join(grounds, "refused.jpg")), false);
       return {
         verdicts: results.map(({ seconds, ...result }) => result),
-        grounds: ["quest", "rush"].map((id) => createHash("sha256").update(readFileSync(join(grounds, `${id}.jpg`))).digest("hex")),
+        grounds: ["survival", "rush"].map((id) => createHash("sha256").update(readFileSync(join(grounds, `${id}.jpg`))).digest("hex")),
       };
     };
     assert.deepEqual(await check(2), await check(1));
