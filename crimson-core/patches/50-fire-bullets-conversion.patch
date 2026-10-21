@@ -1,0 +1,27 @@
+Original bug 50: Fire Bullets drops Gauss Shotgun and Multi-Plasma pellets.
+Rules 2 uses complete volleys and the normal multi-pellet cooldown.
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -1276,7 +1276,12 @@
+                 &player->position,
+                 1.0f);
+ 
+-            if (weapon_table[player->weapon_id].pellet_count == 1) {
++            int conversion_pellets = weapon_table[player->weapon_id].pellet_count;
++            if (portable_rules2_fixes) {
++                if (player->weapon_id == WEAPON_ID_GAUSS_SHOTGUN) conversion_pellets = 6;
++                if (player->weapon_id == WEAPON_ID_MULTI_PLASMA) conversion_pellets = 5;
++            }
++            if (conversion_pellets == 1) {
+                 player->shot_cooldown =
+                     fire_bullets_fallback_shot_cooldown;
+                 player->muzzle_flash_alpha = player->muzzle_flash_alpha
+@@ -1289,7 +1294,7 @@
+             }
+ 
+             for (int pellet_index = 0;
+-                 pellet_index < weapon_table[player->weapon_id].pellet_count;
++                 pellet_index < conversion_pellets;
+                  ++pellet_index) {
+                 float pellet_angle = (float)(crt_rand() % 200 - 100) * 0.0015f
+                     + angle_step;

@@ -195,6 +195,12 @@ def fire_weapon(
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
 
     pellet_count = int(weapon.pellet_count)
+    if is_fire_bullets and state.rules2_fixes:
+        # Conversion follows the normal volley size without changing legacy metadata.
+        if weapon_id == WeaponId.GAUSS_SHOTGUN:
+            pellet_count = 6
+        elif weapon_id == WeaponId.MULTI_PLASMA:
+            pellet_count = 5
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 
     shot_cooldown = f32(weapon.shot_cooldown)
