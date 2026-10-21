@@ -627,3 +627,62 @@ the shadow shortens and fades as it settles, rather than blinking off at HP zero
 The later fading corpse sprite has no elevated proxy above its baked ground
 material. This uses existing simulation state only and does not alter death
 movement, damage, corpse timing, RNG or Classic rendering.
+
+
+## Experimental continuous beam illumination
+
+The default renderer still uses the existing energy-centroid light. The Python
+port has an opt-in research path for Ion Rifle, Ion Minigun, Ion Cannon and Fire
+Bullets ground lighting. Enable it in the game console with `rtxbeam on`; disable
+it with `rtxbeam off`. `rtxbeam on 4 0.25` sets the Ion diffuse gain multiplier and
+maximum local ambient reduction. Fire retains its existing gain. Both controls
+are presentation-only, bounded, and process-local; they are not saved to replays
+or configuration. Classic rendering is unaffected.
+
+Standalone replay playback can opt in with:
+
+```sh
+uv run crimson replay play 18-survival.crd --rtx --experimental-beam-shadows
+```
+
+This uses a **narrow emitting core**, not the full translucent halo. The authored
+radial stamp profile is integrated across its width, then projected onto a
+continuous longitudinal line. Each weapon retains its own stamp spacing,
+scale, head width and current beam length. The visible beam art is unchanged.
+This source-model change gives stronger directional penumbrae, and is distinct
+from the broad five-slice look-development reference.
+
+Rounded body volumes analytically block intervals of the source. Visible energy
+is integrated using local zeroth/first/second moments and bounded two-node
+quadrature in eight longitudinal cells. The cache stores 33 knots per cell,
+downsampled from 257-point integration. A bounded 64-entry CPU moment LRU avoids
+unbounded growth; a shared radial marginal table avoids per-frame exponentials.
+The source energy is normalized to the existing light budget, not physical watts.
+
+A conservative source/tile candidate texture retains all relevant bodies.
+Receiver projection bounds cover the full padded line, including near-horizon
+bodies whose projected shadows can be unbounded. The shader caches 64 local
+intervals; overflow switches to an exact scan of the original candidate list.
+It never drops the 65th body. Overlapping proxies use maximum active opacity,
+matching the existing visibility semantics. Dying bodies use the shared native
+collapse/fade lifecycle, without retaining invisible creatures.
+
+Ion's optional contrast reduces ambient only within its local footprint, fades
+with source radiance, and takes the maximum contribution of overlapping beams
+rather than multiplying dips. At the default experimental 0.25 setting, at least
+75% of the ordinary ambient remains. It changes ground direct illumination only:
+creature/bonus lighting and specular source/reflection approximations remain as
+before. Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to
+inspect the change.
+
+### Research limits
+
+This is **not ready as a default renderer**. Building moment rows for changing
+lengths and uploading candidate lists can cost CPU time; dense interval overflow
+can be much slower than the cached case. The exact fallback preserves geometry
+rather than promising a frame budget. Shader compilation is lazy and separate
+from the default shader, so the disabled path keeps its previous resource budget.
+The broad-area five-slice prototype's accuracy/timing numbers do not describe
+this integrated narrow-core path. Further optimization must preserve fading
+opacity, insertion-order independence, zero/short beam behavior and every
+candidate on overflow, and should measure preparation plus GPU rendering.

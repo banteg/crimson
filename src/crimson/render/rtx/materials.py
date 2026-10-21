@@ -23,10 +23,11 @@ from ...effects_atlas import EffectId
 from ...sim.terrain_fx import TerrainFxBatch
 from ..terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..world.atlas import effect_cell_src
+from .continuous_beam import ContinuousBeam, experiment
 from .hdr import _HDR_TONEMAP_VS_330
 from .material_history import MaterialHistory
 from .material_lights import collect_material_lights
-from .material_shaders import GROUND_FRAGMENT, STAMP_FRAGMENT
+from .material_shaders import CONTINUOUS_GROUND_FRAGMENT, GROUND_FRAGMENT, STAMP_FRAGMENT
 from .reflection_occlusion import ReflectionOcclusion, build_occlusion_grid, creature_body_volumes
 
 if TYPE_CHECKING:
@@ -103,12 +104,15 @@ class MaterialGroundRenderer(GroundRenderer):
     substrate: GroundRenderer | None = None
     stamp_shader: rl.Shader | None = None
     material_shader: rl.Shader | None = None
+    continuous_shader: rl.Shader | None = None
     wetness_epoch: float = 0.0
     stamp_locations: dict[str, int] = msgspec.field(default_factory=dict)
 
+    continuous_beam: ContinuousBeam = msgspec.field(default_factory=ContinuousBeam)
     reflection_occlusion: ReflectionOcclusion = msgspec.field(default_factory=ReflectionOcclusion)
 
     def reset_materials(self) -> None:
+        self.continuous_beam.close()
         self.reflection_occlusion.close()
         if self.substrate is not None:
             self.substrate.close()
@@ -122,10 +126,10 @@ class MaterialGroundRenderer(GroundRenderer):
 
     def close(self) -> None:
         self.reset_materials()
-        for shader in (self.stamp_shader, self.material_shader):
+        for shader in (self.stamp_shader, self.material_shader, self.continuous_shader):
             if shader is not None:
                 rl.unload_shader(shader)
-        self.stamp_shader = self.material_shader = None
+        self.stamp_shader = self.material_shader = self.continuous_shader = None
         self.material_layers = None
         super().close()
 
@@ -373,7 +377,10 @@ class MaterialGroundRenderer(GroundRenderer):
             return
         self.bake_materials(frame.resources.texture(TextureId.PARTICLES), frame.resources.texture(TextureId.BODYSET))
         assert self.material_shader is not None and self.surface is not None and self.coverage is not None
-        sh = self.material_shader
+        if experiment.enabled and self.continuous_shader is None:
+            self.continuous_shader = _shader(CONTINUOUS_GROUND_FRAGMENT)
+        sh = self.continuous_shader if experiment.enabled else self.material_shader
+        assert sh is not None
         _uniform(sh, "u_ground_size", [float(self.width), float(self.height)])
         _uniform(sh, "u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
         _integer(sh, "u_debug", int(frame.rtx_debug) if debug is None else debug)
@@ -386,6 +393,16 @@ class MaterialGroundRenderer(GroundRenderer):
             [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
             if any(light.reflection_gain > 0 or (shadows and light.illumination_gain > 0) for light in lights) else []
         )
+        beam_enabled = experiment.enabled and any(light.beam_profile is not None for light in lights)
+        _integer(sh, "u_beam_enabled", int(beam_enabled))
+        if beam_enabled:
+            infos = self.continuous_beam.prepare(bodies if shadows else [], lights, width=self.width, height=self.height)
+            _uniform(sh, "u_beam_tuning", [experiment.ion_gain, experiment.ambient_dip])
+            grid_info = self.continuous_beam.candidates.grid
+            assert grid_info is not None
+            _uniform(sh, "u_beam_grid", [float(grid_info.columns), float(grid_info.rows)])
+            for i, info in enumerate(infos):
+                _uniform(sh, f"u_beam_info[{i}]", list(info))
         grid = build_occlusion_grid(bodies, lights, width=self.width, height=self.height, illumination=shadows)
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
         _uniform(sh, "u_occlusion_grid", [
@@ -403,6 +420,17 @@ class MaterialGroundRenderer(GroundRenderer):
         with opaque_blend():
             rl.begin_shader_mode(sh)
             try:
+                if beam_enabled:
+                    assert self.continuous_beam.candidates.texture is not None and self.continuous_beam.moment_texture is not None
+                    # rlgl's automatic texture slots are already occupied by the material maps.
+                    # Bind the two research samplers explicitly to the remaining GL 3.3 units.
+                    rl.rl_active_texture_slot(6)
+                    rl.rl_enable_texture(self.continuous_beam.candidates.texture.id)
+                    _integer(sh, "u_beam_candidates", 6)
+                    rl.rl_active_texture_slot(7)
+                    rl.rl_enable_texture(self.continuous_beam.moment_texture.id)
+                    _integer(sh, "u_moments", 7)
+                    rl.rl_active_texture_slot(0)
                 if occlusion_texture is not None:
                     rl.set_shader_value_texture(sh, rl.get_shader_location(sh, "u_occlusion_tex"), occlusion_texture)
                 rl.set_shader_value_texture(sh, rl.get_shader_location(sh, "u_surface_tex"), self.surface.texture)
@@ -416,3 +444,8 @@ class MaterialGroundRenderer(GroundRenderer):
                 yield
             finally:
                 rl.end_shader_mode()
+                if beam_enabled:
+                    for slot in (6, 7):
+                        rl.rl_active_texture_slot(slot)
+                        rl.rl_disable_texture()
+                    rl.rl_active_texture_slot(0)

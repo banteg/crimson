@@ -386,6 +386,9 @@ def cmd_replay_play(
     height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
     rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
+    experimental_beam_shadows: bool = typer.Option(
+        False, "--experimental-beam-shadows", help="opt into expensive continuous-core ground lighting (requires --rtx)",
+    ),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -398,6 +401,12 @@ def cmd_replay_play(
     ),
 ) -> None:
     """Play back a recorded replay."""
+    if experimental_beam_shadows:
+        if not rtx:
+            raise typer.BadParameter("--experimental-beam-shadows requires --rtx")
+        from ..render.rtx.continuous_beam import configure
+        configure(("on",))
+
     from grim.app import RunViewHooks, run_view
     from grim.audio import shutdown_audio
     from grim.view import ViewContext

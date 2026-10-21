@@ -1,5 +1,6 @@
 """Ground material shaders adapted from the crimson-night-argon look development study."""
 
+from .continuous_beam_shaders import CONTINUOUS_BEAM_GLSL
 from .lighting_shaders import LIGHT_VISIBILITY_GLSL
 
 GROUND_FRAGMENT = r"""
@@ -26,7 +27,7 @@ uniform vec4 u_spec_color[MAX_SPEC_LIGHTS]; // rgb = hdr_color, w = annulus radi
 uniform vec4 u_spec_dir[MAX_SPEC_LIGHTS];   // xy = out_dir, z = broad illumination, w = capsule_h
 uniform vec4 u_spec_response[MAX_SPEC_LIGHTS]; // illumination, reflection, reflection reach, source width
 
-""" + LIGHT_VISIBILITY_GLSL + r"""
+""" + LIGHT_VISIBILITY_GLSL + "\n#ifdef CONTINUOUS_BEAM\n" + CONTINUOUS_BEAM_GLSL + "\n#endif\n" + r"""
 float blood_below_ice(vec4 surface, vec4 coverage) {
     // Ice occludes the film; it does not thin it into a new red meniscus.
     // Both stored volume and blood coverage have been attenuated by the ice opacity.
@@ -138,6 +139,24 @@ void main() {
     vec3 blood_body_color = vec3(mix(0.05, 0.16, freshness), 0.00003, 0.00005) * body_weight;
 
     // Exposed ice keeps its substrate/sprite color instead of passing through the blood pigment.
+    #ifdef CONTINUOUS_BEAM
+    // Experimental contrast is local, bounded, and fades with the Ion source.
+    // Take the strongest local dip; overlapping sources never multiply to black.
+    float beam_dip = 0.;
+    if (u_beam_enabled != 0) {
+        for (int i=0;i<u_spec_light_count;i++) {
+            if(u_beam_info[i].z<.5 || u_beam_info[i].w<.5)continue;
+            vec2 axis=length(u_spec_dir[i].xy)>.0001?normalize(u_spec_dir[i].xy):vec2(1.,0.);
+            vec2 delta=world-u_spec_pos[i].xy;
+            float half_span=u_spec_dir[i].w*.5+u_beam_info[i].x;
+            float distance=length(delta-axis*clamp(dot(delta,axis),-half_span,half_span));
+            float local=1.-smoothstep(40.,300.,distance);
+            float power=clamp(max(u_spec_color[i].r,max(u_spec_color[i].g,u_spec_color[i].b))/1.65,0.,1.);
+            beam_dip=max(beam_dip,u_beam_tuning.y*local*power);
+        }
+    }
+    ambient_term*=1.-beam_dip;
+    #endif
     vec3 diffuse_lit = mix(wetted_substrate * ambient_transmittance + blood_body_color, albedo_tex.rgb, is_ice) * ambient_term;
 
     // Fixed 30-degree backward virtual eye: reflections land below their emitters.
@@ -168,7 +187,25 @@ void main() {
         float d2d = length(to_l);
         float reflection_distance = length(reflection_xy - world);
         float rad = max(1.0, sp_pos.z);
+        #ifdef CONTINUOUS_BEAM
+        bool continuous=u_beam_enabled!=0 && u_beam_info[i].w>.5 && response.x>0.;
+        if (!continuous && reflection_distance >= max(rad, response.z)) continue;
+        if (continuous) {
+            vec2 source_axis=length(sp_dir.xy)>.0001?normalize(sp_dir.xy):vec2(1.,0.);
+            vec2 delta=world-sp_pos.xy;
+            float half_span=sp_dir.w*.5+u_beam_info[i].x;
+            float support_distance=length(delta-source_axis*clamp(dot(delta,source_axis),-half_span,half_span));
+            if(support_distance<rad) {
+                vec3 unshadowed;
+                vec3 direct=continuousLight(i,sp_dir,world,N_sub,absorption,wetted_substrate,blood_body_color,albedo_tex.rgb,is_ice,sp_pos,sp_col,response,sp_dir.z,unshadowed);
+                direct_unshadowed+=unshadowed;
+                direct_shadowed+=direct;
+                diffuse_lit+=direct;
+            }
+        } else
+        #else
         if (reflection_distance >= max(rad, response.z)) continue;
+        #endif
         if (response.x > 0.0 && d2d < rad) {
             float atten = pow(max(0., 1. - d2d / rad), 2.);
             vec3 L = normalize(vec3(to_l, max(.001, sp_pos.w)));
@@ -292,3 +329,6 @@ void main() {
     finalColor = u_pass == 1 ? vec4(spec, 0., 0., a) : vec4(0., 0., 0., height * a);
 }
 """
+
+# Compile the extra resources only for the opt-in path; default shaders retain their resource budget.
+CONTINUOUS_GROUND_FRAGMENT = GROUND_FRAGMENT.replace("#version 330", "#version 330\n#define CONTINUOUS_BEAM", 1)

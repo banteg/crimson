@@ -126,6 +126,13 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         state.rtx_mode = cycle_rtx_render_mode(state.rtx_mode)
         console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
 
+    def cmd_rtx_beam(args: list[str]) -> None:
+        from ..render.rtx.continuous_beam import configure
+        try:
+            console.log.log(configure(args))
+        except ValueError as error:
+            console.log.log(str(error))
+
     def cmd_rtx_debug(args: list[str]) -> None:
         usage = "rtxdebug <" + "|".join(view.token for view in RtxDebugView) + ">"
         if len(args) != 1:
@@ -182,6 +189,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         "rendermode": cmd_render_mode,
         "togglertx": cmd_toggle_rtx,
         "rtxdebug": cmd_rtx_debug,
+        "rtxbeam": cmd_rtx_beam,
         "gamepads": cmd_gamepads,
     }
 
