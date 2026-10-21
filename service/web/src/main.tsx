@@ -163,7 +163,7 @@ function App() {
           </p>
         </Show>
         <p class="credit">
-          a fan project by <a href="https://banteg.xyz">banteg</a>. not affiliated with 10tons.
+          a fan project by <a href="https://banteg.xyz">banteg</a>. not affiliated with 10tons
         </p>
       </footer>
     </div>
