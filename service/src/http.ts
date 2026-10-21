@@ -25,6 +25,8 @@ export interface Env {
   DISCORD_CLIENT_SECRET?: string;
   X_CLIENT_ID?: string;
   X_CLIENT_SECRET?: string;
+  TWITCH_CLIENT_ID?: string;
+  TWITCH_CLIENT_SECRET?: string;
 }
 
 export function json(body: unknown, status = 200, headers: HeadersInit = {}): Response {

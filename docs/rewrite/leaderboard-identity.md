@@ -21,7 +21,7 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 - The key lives in `identity.key` (the 32-byte seed, readable by its owner only). `crimson identity show` prints
   the public key and its fingerprint; `crimson identity export` and `crimson identity import` move it to another
   machine, and import refuses to overwrite a different key without `--replace`.
-- Linking a GitHub or Discord login to an account is optional, and happens on the site (see
+- Linking a GitHub, Discord, X or Twitch login to an account is optional, and happens on the site (see
   [Signing in on the site](#signing-in-on-the-site)). It lets a player add a new machine's key to their account by
   signing in with the linked login, and gives their entries a linked badge.
 
@@ -129,7 +129,7 @@ A run two players play together ([online co-op](network-coop.md)) is both player
 - An unlinked account shows the name of its latest accepted run, or only its fingerprint while that is a fresh
   config's default `10tons`. Every board row belongs to the account, so a new name relabels its older entries too.
 - A linked account shows a handle instead, beside its badges: the one its run's name matches, compared without case,
-  else the one most of its links share, else the first in X, Discord, GitHub order, which is also where its avatar
+  else the one most of its links share, else the first in X, Discord, GitHub, Twitch order, which is also where its avatar
   comes from. A mistyped name thus never hides who played, and each badge names its own handle where that differs.
   Run pages still say what a run was played as, and the profile lists every name the account has typed.
 - Names are not unique. Where an unlinked account's name matches another account's name or handle, compared without
@@ -157,10 +157,10 @@ site's pages refuse to show inside another site's page (`frame-ancestors 'none'`
 
 ## Linking
 
-The signed-in profile links a GitHub, Discord or X account, each shown only once its client ID and secret are
+The signed-in profile links a GitHub, Discord, X or Twitch account, each shown only once its client ID and secret are
 configured. Linking uses the authorization-code flow with the least scope each provider offers (GitHub none,
-Discord `identify`, X `users.read tweet.read` with PKCE). The state is bound to the site session, the callbacks
-are `/auth/{github,discord,x}/callback` on the site's own origin (`https://crimson.land`, or
+Discord `identify`, X `users.read tweet.read` with PKCE, Twitch none). The state is bound to the site session, the callbacks
+are `/auth/{github,discord,x,twitch}/callback` on the site's own origin (`https://crimson.land`, or
 `http://localhost:8787` under `wrangler dev`), and the client secrets and token exchange stay in the Worker. The
 provider's token reads the profile once and is discarded; the link keeps the account's id, handle and avatar URL.
 

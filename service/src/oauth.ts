@@ -1,4 +1,4 @@
-// Linking a GitHub, Discord or X account to a player's account (docs/rewrite/leaderboard-identity.md).
+// Linking a GitHub, Discord, X or Twitch account to a player's account (docs/rewrite/leaderboard-identity.md).
 //
 // Authorization-code flow with a state bound to the site session, and PKCE for X. Client secrets and the token
 // exchange stay in the Worker; the provider token is used once to read the profile and never stored.
@@ -22,10 +22,10 @@ interface Provider {
   token: string;
   scope: string;
   pkce: boolean;
-  // GitHub takes the client secret in the form; Discord and X in HTTP basic auth.
+  // GitHub and Twitch take the client secret in the form; Discord and X in HTTP basic auth.
   secretInForm: boolean;
   credentials(env: Env): { id: string; secret: string } | null;
-  profile(accessToken: string): Promise<Identity>;
+  profile(accessToken: string, clientId: string): Promise<Identity>;
 }
 
 const STATE_TTL_MS = 10 * 60 * 1000;
@@ -33,9 +33,9 @@ const USER_AGENT = "crimson.land";
 
 const configured = (id: string | undefined, secret: string | undefined) => (id && secret ? { id, secret } : null);
 
-async function getJson(url: string, accessToken: string): Promise<any> {
+async function getJson(url: string, accessToken: string, headers: Record<string, string> = {}): Promise<any> {
   const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json", "User-Agent": USER_AGENT },
+    headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json", "User-Agent": USER_AGENT, ...headers },
   });
   if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
   return response.json();
@@ -84,6 +84,23 @@ export const PROVIDERS: Record<ProviderName, Provider> = {
     async profile(accessToken) {
       const { data } = await getJson("https://api.x.com/2/users/me?user.fields=profile_image_url", accessToken);
       return { subject: String(data.id), handle: data.username, avatar_url: data.profile_image_url ?? null };
+    },
+  },
+  twitch: {
+    name: "twitch",
+    label: "Twitch",
+    authorize: "https://id.twitch.tv/oauth2/authorize",
+    token: "https://id.twitch.tv/oauth2/token",
+    // No scope: Get Users returns the signed-in user's id, login and avatar without one.
+    scope: "",
+    pkce: false,
+    secretInForm: true,
+    credentials: (env) => configured(env.TWITCH_CLIENT_ID, env.TWITCH_CLIENT_SECRET),
+    async profile(accessToken, clientId) {
+      // Helix also wants the app's client ID beside the user's token.
+      const { data } = await getJson("https://api.twitch.tv/helix/users", accessToken, { "Client-Id": clientId });
+      const [user] = data;
+      return { subject: String(user.id), handle: user.login, avatar_url: user.profile_image_url || null };
     },
   },
 };
@@ -153,5 +170,5 @@ export async function completeLink(
   const response = await fetch(chosen.token, { method: "POST", headers, body: form });
   const token = (await response.json().catch(() => ({}))) as { access_token?: string };
   if (!response.ok || !token.access_token) return null;
-  return chosen.profile(token.access_token);
+  return chosen.profile(token.access_token, id);
 }

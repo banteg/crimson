@@ -14,7 +14,7 @@ export const BOARDS: Record<Board, { quests: boolean; hardcore: boolean; players
   "quests-coop": { quests: true, hardcore: false, players: 2 },
   "quests-hardcore-coop": { quests: true, hardcore: true, players: 2 },
 };
-export type ProviderName = "github" | "discord" | "x";
+export type ProviderName = "github" | "discord" | "x" | "twitch";
 // docs/rewrite/bots.md: every board ranks human runs and bot runs apart.
 export type Category = "human" | "bot";
 export const CATEGORIES: readonly Category[] = ["human", "bot"];

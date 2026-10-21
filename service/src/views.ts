@@ -71,6 +71,8 @@ function linkUrl(provider: ProviderName, handle: string, subject: string): strin
       return `https://x.com/${encodeURIComponent(handle)}`;
     case "discord":
       return `https://discord.com/users/${encodeURIComponent(subject)}`;
+    case "twitch":
+      return `https://www.twitch.tv/${encodeURIComponent(handle)}`;
   }
 }
 

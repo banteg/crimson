@@ -2,8 +2,8 @@ import type { LinkView, PlayerView, SeatView } from "../../src/api-types";
 
 // Linked accounts in this order: the avatar comes from the first that has one, and so does the name when the
 // handles disagree.
-const LINK_ORDER = ["x", "discord", "github"] as const;
-export const PROVIDER_LABELS: Record<string, string> = { github: "GitHub", discord: "Discord", x: "X" };
+const LINK_ORDER = ["x", "discord", "github", "twitch"] as const;
+export const PROVIDER_LABELS: Record<string, string> = { github: "GitHub", discord: "Discord", x: "X", twitch: "Twitch" };
 // A fresh config's name, which nobody chose.
 export const DEFAULT_NAME = "10tons";
 

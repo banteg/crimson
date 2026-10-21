@@ -6,7 +6,10 @@ import type { BoardView, JoinView, ProfileView, QuestMenuView } from "../../src/
 import questTitles from "../../src/quests.json";
 
 const ORIGIN = "https://crimson.land";
-const configured = { ...env, GITHUB_CLIENT_SECRET: "github-secret", X_CLIENT_ID: "x-id", X_CLIENT_SECRET: "x-secret" };
+const configured = {
+  ...env, GITHUB_CLIENT_SECRET: "github-secret", X_CLIENT_ID: "x-id", X_CLIENT_SECRET: "x-secret",
+  TWITCH_CLIENT_ID: "twitch-id", TWITCH_CLIENT_SECRET: "twitch-secret",
+};
 
 function call(path: string, init: RequestInit = {}, bindings: typeof env = configured): Promise<Response> {
   return worker.fetch(new Request(`${ORIGIN}${path}`, { redirect: "manual", ...init }), bindings);
@@ -165,6 +168,7 @@ describe("site", () => {
     expect(own.account!.providers).toEqual([
       { name: "github", label: "GitHub", linked: false },
       { name: "x", label: "X", linked: false },
+      { name: "twitch", label: "Twitch", linked: false },
     ]);
     expect((await api<ProfileView>(`/api/players/${accountId}`)).account).toBeNull();
   });
@@ -207,6 +211,36 @@ describe("linking", () => {
     const challenge = btoa(String.fromCharCode(...(await sha256(new TextEncoder().encode(verifier)))))
       .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     expect(challenge).toBe(authorize.searchParams.get("code_challenge"));
+  });
+
+  it("Twitch links with no scope, its secret in the form and the client ID on Helix", async () => {
+    const { cookie, accountId } = await signIn();
+    const { authorize, callback } = await link(cookie, "twitch");
+    expect(authorize.origin + authorize.pathname).toBe("https://id.twitch.tv/oauth2/authorize");
+    expect(authorize.searchParams.get("redirect_uri")).toBe(`${ORIGIN}/auth/twitch/callback`);
+    expect(authorize.searchParams.has("scope")).toBe(false);
+    expect(authorize.searchParams.has("code_challenge")).toBe(false);
+    const calls = provider({
+      data: [{ id: "141981764", login: "onetakeruns", display_name: "OnetakeRuns", profile_image_url: "https://static-cdn.jtvnw.net/a.png" }],
+    });
+
+    const landed = await callback();
+
+    expect(landed.headers.get("location")).toBe(`/players/${accountId}?notice=linked&provider=twitch`);
+    const [tokenUrl, tokenInit] = calls.mock.calls[0]!;
+    expect(String(tokenUrl)).toBe("https://id.twitch.tv/oauth2/token");
+    const form = new URLSearchParams(String(tokenInit!.body));
+    expect([form.get("client_id"), form.get("client_secret")]).toEqual(["twitch-id", "twitch-secret"]);
+    const [profileUrl, profileInit] = calls.mock.calls[1]!;
+    expect(String(profileUrl)).toBe("https://api.twitch.tv/helix/users");
+    expect(new Headers(profileInit!.headers).get("client-id")).toBe("twitch-id");
+    const row = await env.DB.prepare("SELECT * FROM links WHERE account_id = ?").bind(accountId).first();
+    expect(row).toEqual({
+      provider: "twitch", subject: "141981764", account_id: accountId, handle: "onetakeruns",
+      avatar_url: "https://static-cdn.jtvnw.net/a.png", linked_at: expect.any(Number),
+    });
+    const own = await api<ProfileView>(`/api/players/${accountId}`, cookie);
+    expect(own.player.links[0]!.url).toBe("https://www.twitch.tv/onetakeruns");
   });
 
   it("a state only completes in the session that started it", async () => {

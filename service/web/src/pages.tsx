@@ -1160,7 +1160,7 @@ const ABOUT: Screen = {
           the name from your latest run, and <em>Profile</em> in the Play Game menu lists every name you've used.
         </p>
         <p>
-          Link GitHub, Discord or X to show your handle on the high score lists, and to keep your scores together when you play on another
+          Link GitHub, Discord, X or Twitch to show your handle on the high score lists, and to keep your scores together when you play on another
           computer or clear your browser's storage.
         </p>
       </>
@@ -1199,8 +1199,8 @@ const PRIVACY: Screen = {
             name you have used.
           </li>
           <li>
-            <em>Linked accounts</em>, if you link one: the GitHub, Discord or X account's numeric ID, handle and avatar URL. We ask for the
-            least access each offers (GitHub: none; Discord: identify; X: users.read and tweet.read), use the access token once to read
+            <em>Linked accounts</em>, if you link one: the GitHub, Discord, X or Twitch account's numeric ID, handle and avatar URL. We ask for the
+            least access each offers (GitHub: none; Discord: identify; X: users.read and tweet.read; Twitch: none), use the access token once to read
             your profile, and do not keep it.
           </li>
           <li>
@@ -1219,7 +1219,7 @@ const PRIVACY: Screen = {
           Cloudflare hosts the site and stores the data (Workers, D1 for the database, R2 for replay files). Cloudflare handles the service's
           request logs, including IP addresses, and keeps them for up to seven days under{" "}
           <a href="https://www.cloudflare.com/privacypolicy/">its privacy policy</a>. We do not store IP addresses ourselves or use ads.
-          Profile pages load linked avatars straight from GitHub, Discord or X.
+          Profile pages load linked avatars straight from GitHub, Discord, X or Twitch.
         </p>
         <h3>How long, and deleting it</h3>
         <p>

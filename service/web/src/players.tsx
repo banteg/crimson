@@ -1,11 +1,11 @@
-import { siDiscord, siGithub, siX } from "simple-icons";
+import { siDiscord, siGithub, siTwitch, siX } from "simple-icons";
 import { For, Show } from "solid-js";
 import type { Pilot, PlayerView, SeatView } from "../../src/api-types";
 import { DELETED_PLAYER, PROVIDER_LABELS, playerParts } from "./names";
 
 export { PROVIDER_LABELS };
 
-const ICONS = { github: siGithub, discord: siDiscord, x: siX };
+const ICONS = { github: siGithub, discord: siDiscord, x: siX, twitch: siTwitch };
 
 function Icon(props: { provider: keyof typeof ICONS }) {
   const icon = ICONS[props.provider];
