@@ -401,17 +401,15 @@ def cmd_replay_play(
     ),
 ) -> None:
     """Play back a recorded replay."""
-    if experimental_beam_shadows:
-        if not rtx:
-            raise typer.BadParameter("--experimental-beam-shadows requires --rtx")
-        from ..render.rtx.continuous_beam import configure
-        configure(("on",))
+    if experimental_beam_shadows and not rtx:
+        raise typer.BadParameter("--experimental-beam-shadows requires --rtx")
 
     from grim.app import RunViewHooks, run_view
     from grim.audio import shutdown_audio
     from grim.view import ViewContext
 
     from ..modes.replay_playback_mode import open_replay_audio
+    from ..render.rtx.continuous_beam import experiment_scope
     from ..replay import ReplayCodecError, warn_on_game_version_mismatch
     from ..replay.versioning import require_playable_rules
     from ..runtime_boot import boot_runtime
@@ -450,18 +448,19 @@ def cmd_replay_play(
     title = f"Replay — {replay_path.name}"
 
     try:
-        run_view(
-            RuntimeResourcesView(view, assets_dir=assets_dir),
-            width=boot.width,
-            height=boot.height,
-            title=title,
-            fps=fps,
-            hooks=RunViewHooks(
-                wants_edr=(lambda: True) if rtx else None,
-                should_close=view.should_close,
-                consume_screenshot_request=view.consume_screenshot_request,
-            ),
-        )
+        with experiment_scope(enabled=experimental_beam_shadows):
+            run_view(
+                RuntimeResourcesView(view, assets_dir=assets_dir),
+                width=boot.width,
+                height=boot.height,
+                title=title,
+                fps=fps,
+                hooks=RunViewHooks(
+                    wants_edr=(lambda: True) if rtx else None,
+                    should_close=view.should_close,
+                    consume_screenshot_request=view.consume_screenshot_request,
+                ),
+            )
     finally:
         shutdown_audio(audio)
 

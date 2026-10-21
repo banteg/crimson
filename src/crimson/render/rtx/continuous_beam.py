@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
 from functools import lru_cache
 
 import msgspec
@@ -10,7 +11,7 @@ import msgspec
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from .material_lights import MaterialLight
+from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 from .reflection_occlusion import BodyVolume, OcclusionGrid, ReflectionOcclusion
 
 CELLS = 8
@@ -40,6 +41,17 @@ def configure(args: Sequence[str]) -> str:
         raise ValueError("Ion gain must be 0..8; local ambient dip must be 0..0.6")
     experiment.enabled, experiment.ion_gain, experiment.ambient_dip = args[0] == "on", gain, dip
     return configure(())
+
+
+@contextmanager
+def experiment_scope(*, enabled: bool) -> Iterator[None]:
+    """Restore process presentation state after a standalone replay, including errors."""
+    previous = (experiment.enabled, experiment.ion_gain, experiment.ambient_dip)
+    experiment.enabled = enabled
+    try:
+        yield
+    finally:
+        experiment.enabled, experiment.ion_gain, experiment.ambient_dip = previous
 
 
 @lru_cache(maxsize=1)
@@ -183,24 +195,29 @@ class ContinuousBeam(msgspec.Struct):
         self.moment_key = ()
 
     def prepare(self, bodies: Sequence[BodyVolume], lights: Sequence[MaterialLight], *, width: float, height: float) -> list[tuple[float, float, float, float]]:
-        key = tuple((light.length, light.beam_profile) for light in lights)
+        assert len(lights) <= MAX_MATERIAL_LIGHTS
+        # Eligibility is part of the key: selection may retain a source for
+        # reflections while moving its illumination slot to another projectile.
+        key = tuple(
+            (light.length, light.beam_profile)
+            if light.beam_profile is not None and light.illumination_gain > 0 else None
+            for light in lights
+        ) + (None,) * (MAX_MATERIAL_LIGHTS - len(lights))
         infos = []
-        data = []
-        for light in lights:
-            if light.beam_profile is None or light.illumination_gain <= 0:
+        for light, row in zip(lights, key, strict=False):
+            if row is None:
                 infos.append((0., 0., 0., 0.))
-                data.extend([0.] * (CELLS * KNOTS * 4))
             else:
-                values, pad = moments(light.length, *light.beam_profile)
-                data.extend(values)
-                infos.append((pad, light.length + 2 * pad, float(light.beam_ion), 1.))
+                length, profile = row
+                pad = profile[0] * profile[2] * SUPPORT
+                infos.append((pad, length + 2 * pad, float(light.beam_ion), 1.))
         if key != self.moment_key or self.moment_texture is None:
-            raw = rl.ffi.new("float[]", data or [0.] * (CELLS * KNOTS * 4))
-            if self.moment_texture is not None and self.moment_texture.height != max(1, len(lights)):
-                rl.unload_texture(self.moment_texture)
-                self.moment_texture = None
+            data = []
+            for row in key:
+                data.extend(moments(row[0], *row[1])[0] if row is not None else [0.] * (CELLS * KNOTS * 4))
+            raw = rl.ffi.new("float[]", data)
             if self.moment_texture is None:
-                image = rl.Image(rl.ffi.cast("void *", raw), CELLS * KNOTS, max(1, len(lights)), 1,
+                image = rl.Image(rl.ffi.cast("void *", raw), CELLS * KNOTS, MAX_MATERIAL_LIGHTS, 1,
                                  rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
                 self.moment_texture = rl.load_texture_from_image(image)
                 if self.moment_texture.id <= 0:

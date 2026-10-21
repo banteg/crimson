@@ -72,6 +72,69 @@ def test_console_validation_is_atomic(monkeypatch) -> None:
     assert (experiment.enabled, experiment.ion_gain, experiment.ambient_dip) == (True, 3, .2)
 
 
+
+def test_shared_streak_profiles_match_authored_weapon_sizes() -> None:
+    from crimson.projectiles.types import Projectile
+    from crimson.projectiles.types import ProjectileTemplateId as PT
+    from crimson.render.beam_profiles import STREAK_SCALES
+    from crimson.render.rtx.material_lights import projectile_source
+
+    for kind, scale in ((PT.ION_MINIGUN, 1.05), (PT.ION_RIFLE, 2.2), (PT.ION_CANNON, 3.5), (PT.FIRE_BULLETS, .8)):
+        source = projectile_source(Projectile(active=True, type_id=kind, life_timer=.4))
+        assert source is not None
+        assert STREAK_SCALES[kind] == scale
+        assert source.beam_profile == (16 * scale, min(scale * 3.1, 9), 1.35 if kind == PT.FIRE_BULLETS else 1.05)
+
+
+def test_selected_source_slot_changes_refresh_moments_without_reallocating(mocker) -> None:
+    from crimson.projectiles.types import Projectile
+    from crimson.projectiles.types import ProjectileTemplateId as PT
+    from crimson.render.rtx.material_lights import MAX_MATERIAL_LIGHTS, projectile_source, select_material_lights
+    from crimson.render.rtx.reflection_occlusion import ReflectionOcclusion
+
+    uploaded = []
+    row_size = CELLS * KNOTS * 4
+
+    def record(data):
+        uploaded.append(tuple(rl.ffi.cast("float *", data)[i] for i in range(MAX_MATERIAL_LIGHTS * row_size)))
+
+    def load(image):
+        assert image.height == MAX_MATERIAL_LIGHTS
+        record(image.data)
+        return rl.Texture(123, image.width, image.height, 1, image.format)
+
+    load_mock = mocker.patch.object(rl, "load_texture_from_image", side_effect=load)
+    mocker.patch.object(rl, "update_texture", side_effect=lambda texture, data: record(data))
+    mocker.patch.object(rl, "set_texture_filter")
+    mocker.patch.object(ReflectionOcclusion, "upload")
+    renderer = ContinuousBeam()
+    projectiles = [Projectile(active=True, type_id=PT.ION_CANNON, life_timer=.4,
+                              origin=Vec2(-28, 300), pos=Vec2(228, 300)) for _ in range(15)]
+    projectiles += [Projectile(active=True, type_id=PT.ION_MINIGUN, life_timer=life,
+                              origin=Vec2(-28, 100), pos=Vec2(228, 100)) for life in (.4, .36)]
+
+    def selected():
+        return select_material_lights([source for projectile in projectiles
+                                       if (source := projectile_source(projectile)) is not None], view_center=Vec2(100, 100))
+
+    first = selected()
+    assert len(first) == 17 and first[-2].illumination_gain > 0 and first[-1].illumination_gain == 0
+    renderer.prepare([], first, width=256, height=256)
+    projectiles[-2].life_timer, projectiles[-1].life_timer = .36, .4
+    second = selected()
+    assert len(second) == 17 and second[-2].illumination_gain == 0 and second[-1].illumination_gain > 0
+    renderer.prepare([], second, width=256, height=256)
+    assert len(uploaded) == 2
+    assert any(uploaded[0][15 * row_size:16 * row_size]) and not any(uploaded[0][16 * row_size:17 * row_size])
+    assert not any(uploaded[1][15 * row_size:16 * row_size]) and any(uploaded[1][16 * row_size:17 * row_size])
+
+    # Motion, brightness, changing nonbeam span, and source count do not change
+    # energy profiles or reallocate the fixed-capacity texture.
+    nonbeam = MaterialLight(Vec2(), 100, (1, 1, 1), length=10)
+    renderer.prepare([], [*second, nonbeam], width=256, height=256)
+    renderer.prepare([], [*second, msgspec.structs.replace(nonbeam, length=250)], width=256, height=256)
+    assert len(uploaded) == 2 and load_mock.call_count == 1
+
 def test_native_continuous_visibility_fades_overlap_and_keeps_overflow(raylib_context) -> None:
     # Constant radiance kernel isolates visibility. Independent dense hard rays
     # below integrate the same energy texture without using interval roots.

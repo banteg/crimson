@@ -13,6 +13,7 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, Effect
 from ...math_parity import f32, f32_vec2
 from ...perks import PerkId
 from ...projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectileTypeId
+from ..beam_profiles import STREAK_SCALES
 from ..laser_sight import laser_sight_geometry
 from ..rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ..rtx.mode import RtxRenderMode
@@ -319,16 +320,16 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
                     )
             case ProjectileTemplateId.ION_MINIGUN:
                 atlas_state = (4, 2, angle)
-                _draw_streak(render_ctx, texture, proj, effect_scale=1.05, alpha=alpha, chain=True)
+                _draw_streak(render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id], alpha=alpha, chain=True)
             case ProjectileTemplateId.ION_RIFLE:
                 atlas_state = (4, 2, angle)
-                _draw_streak(render_ctx, texture, proj, effect_scale=2.2, alpha=alpha, chain=True)
+                _draw_streak(render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id], alpha=alpha, chain=True)
             case ProjectileTemplateId.ION_CANNON:
                 atlas_state = (4, 2, angle)
-                _draw_streak(render_ctx, texture, proj, effect_scale=3.5, alpha=alpha, chain=True)
+                _draw_streak(render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id], alpha=alpha, chain=True)
             case ProjectileTemplateId.FIRE_BULLETS:
                 atlas_state = (4, 2, angle)
-                _draw_streak(render_ctx, texture, proj, effect_scale=0.8, alpha=alpha, chain=False)
+                _draw_streak(render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id], alpha=alpha, chain=False)
             case _:
                 pass
     rl.end_blend_mode()
