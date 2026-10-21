@@ -8,12 +8,12 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 
-from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...math_parity import f32, f32_vec2
 from ...perks import PerkId
 from ...projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectileTypeId
 from ..beam_profiles import STREAK_SCALES
+from ..ion_arcs import ion_arc_targets
 from ..laser_sight import laser_sight_geometry
 from ..rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ..rtx.mode import RtxRenderMode
@@ -425,8 +425,6 @@ def _draw_streak(
     if life >= 0.4 or not chain:
         return
 
-    # Ion Gun Master stretches the chain's reach, not its thickness.
-    reach = effect_scale * (1.2 if PerkId.ION_GUN_MASTER in frame.state.perks else 1.0) * 40.0
     tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
     # Each strip stretches the glow's centre column, so native ends it in a hard
     # cut that the smaller creature glow cannot hide (original bug 36). The
@@ -434,11 +432,7 @@ def _draw_streak(
     capped = not frame.state.preserve_bugs
     # Native walks `creature_find_in_radius(pos, reach, 1)`: the inner strip, the
     # outer strip, then the glow on that creature, one creature at a time.
-    for creature in frame.creatures.entries[1:]:
-        if not creature.active or not creature_lifecycle_is_collidable(creature.death_timer):
-            continue
-        if proj.pos.distance_to(creature.pos) - reach >= float(creature.size) * 0.14285715 + 3.0:
-            continue
+    for creature in ion_arc_targets(frame, proj):
         target = render_ctx.world_to_screen(creature.pos)
         side_dir, length = (target - screen).normalized_with_length()
         if length <= 1e-3:

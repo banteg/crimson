@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from heapq import nsmallest
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -17,6 +18,7 @@ from ...projectiles.types import ProjectileTemplateId as PT
 from ...projectiles.types import SecondaryProjectileTypeId as ST
 from ...weapons import WEAPON_BY_ID, WeaponId
 from ..beam_profiles import STREAK_SCALES
+from ..ion_arcs import ion_arc_targets
 from ..laser_sight import laser_sight_geometry
 
 if TYPE_CHECKING:
@@ -147,6 +149,52 @@ def projectile_source(proj: Projectile) -> MaterialLight | None:
     )
 
 
+def ion_arc_sources(
+    frame: RenderFrame, projectile: Projectile, *, view_center: Vec2 | None = None,
+) -> list[MaterialLight]:
+    """Light up to four visible arc segments and their contact glows per impact.
+
+    The existing beam source remains independent. These do not inherit its 4x
+    ground gain or ambient dip. No extra render pass is introduced; arcs compete
+    within the existing illumination/reflection source limits.
+    """
+    targets = [creature.pos for creature in ion_arc_targets(frame, projectile)
+               if projectile.pos.distance_to(creature.pos) > 1e-3]
+    if not targets:
+        return []
+    # Bound allocation/sorting work before entering the shared source selector.
+    # Rank by distance to the visible segment, with endpoint distance breaking
+    # ties at a shared impact point. All connections remain in the artwork.
+    center = projectile.pos if view_center is None else view_center
+
+    def rank(target: Vec2) -> tuple[float, float]:
+        delta = target - projectile.pos
+        offset = center - projectile.pos
+        along = max(0., min(1., (offset.x * delta.x + offset.y * delta.y) / delta.length_sq()))
+        return (offset - delta * along).length_sq(), (target - center).length_sq()
+
+    targets = nsmallest(4, targets, key=rank)
+    profile = PROJECTILE_EMISSIONS[projectile.type_id]
+    energy = min(1.0, projectile.life_timer * 2.5)
+    rgb = (profile.rgb[0] * energy, profile.rgb[1] * energy, profile.rgb[2] * energy)
+    width = STREAK_SCALES[projectile.type_id] * 1.5
+    sources: list[MaterialLight] = []
+    for target in targets:
+        direction, length = (target - projectile.pos).normalized_with_length()
+        sources.append(MaterialLight(
+            (projectile.pos + target) * .5, 100., rgb, height=18.,
+            direction=direction, length=length, source_width=width,
+            illumination_gain=.75, reflection_gain=.5, reflection_radius=120.,
+            reflection_tail=1., broad_illumination=True,
+        ))
+        sources.append(MaterialLight(
+            target, 60., rgb, height=18., source_width=width * 1.5,
+            illumination_gain=.25, reflection_gain=.25, reflection_radius=90.,
+            broad_illumination=True,
+        ))
+    return sources
+
+
 def _flame_sources(frame: RenderFrame) -> list[MaterialLight]:
     # Bound dense streams spatially instead of allocating one light per particle.
     cells: dict[tuple[int, int, ParticleStyleId], list[Particle]] = {}
@@ -272,6 +320,7 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
         source = projectile_source(projectile)
         if source is not None:
             sources.append(source)
+            sources.extend(ion_arc_sources(frame, projectile, view_center=view_center))
     for sec in frame.state.secondary_projectiles.entries:
         if not sec.active:
             continue

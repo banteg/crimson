@@ -967,3 +967,24 @@ def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(g
     assert render() == four
     collector.return_value = []
     assert all(pixel[:3] == (0., 0., 0.) for pixel in render())
+
+
+def test_ion_arcs_add_ground_light_and_wet_reflections(ground_material, mocker) -> None:
+    from crimson.render.rtx.material_lights import ion_arc_sources
+    from tests.render.test_ion_arc_lights import scene
+
+    ground, texture = ground_material
+    uniform_fresh_film(ground, texture)
+    frame, shot = scene()
+    shot.pos = Vec2(16, 20)
+    frame.creatures.entries[1].pos = Vec2(48, 20)
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
+    baseline = {mode: debug_pixels(ground, texture, mode=mode) for mode in (5, 6)}
+    collector.return_value = ion_arc_sources(frame, shot)
+    for mode in (5, 6):
+        lit = debug_pixels(ground, texture, mode=mode)
+        assert max(after[2] - before[2] for before, after in zip(baseline[mode], lit, strict=True)) > .001, mode
+    shot.life_timer = 0
+    collector.return_value = ion_arc_sources(frame, shot)
+    assert debug_pixels(ground, texture, mode=5) == baseline[5]
+    assert debug_pixels(ground, texture, mode=6) == baseline[6]

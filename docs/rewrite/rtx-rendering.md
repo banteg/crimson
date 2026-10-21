@@ -691,3 +691,25 @@ lobes in difficult arrangements and does not reproduce the dense reference's
 penumbra exactly. It favors readable moving shadows and predictable source work
 over a numerical agreement target. Body traversal still scales with the actual
 spatial candidates.
+
+### Ion impact arcs
+
+Ion shots also register the visible post-impact connections and creature contact
+glows as RTX sources. Drawing and lighting share the same target query: only the
+impact/fade phase, the original slot-zero exclusion and collidable lifecycle,
+weapon scale, and Ion Gun Master reach apply. Fire Bullets do not chain.
+
+Each connection contributes a finite segment reflection and a small endpoint
+source, fading with the visible arc. Segment reflections have uniform longitudinal
+radiance; direct illumination uses the existing centroid approximation. The new
+sources use restrained independent gains, without the main Ion beam's 4x ground
+gain or ambient dip. At most four connections
+per impact contribute sources, ranked by segment distance to the view center
+(with endpoint distance as a tie-breaker). All arcs remain visible in the artwork.
+This bounds source preparation as well as brightness in dense crowds. This
+is an artistic brightness cap, not a physical energy simulation. Ordinary global
+source ranking and its 16 illumination / 16 reflection limits still apply.
+
+The original beam stays lit during its fade. Arc sources add illumination and
+reflections through the shared ground, creature, and bonus light list. Classic
+artwork, damage, target selection, and replay state are unchanged.
