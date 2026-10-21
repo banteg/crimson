@@ -101,7 +101,13 @@ const SURVIVAL = 1,
 // Inside the original (--live), with seven in-game tunes loaded (game_host.mjs sevenTunes): streams with an
 // in-game tune, the quest's end tune and its volume, a game over's, Nukes whose blood waits for the next tick's
 // bake, and overflow decals; a window of 4 whose corrections follow played music, and catch-up frames.
-const LIVE_STREAMS = ["coop-quest-1.1-ranked.rsi", "coop-survival-hunt-ranked.rsi", "coop-survival-effects-ranked.rsi"];
+const LIVE_STREAMS = [
+  "coop-quest-1.1-ranked.rsi",
+  "coop-survival-hunt-ranked.rsi",
+  "coop-survival-effects-ranked.rsi",
+  // Original-policy Nukes still cover committing a decal while the next tick's bake is queued.
+  "coop-survival-extra-choices.rsi",
+];
 const LIVE_MODES = [
   { delay: 2, rmax: 4, budget: 2 },
   { delay: 4, rmax: 1, budget: 6 },
