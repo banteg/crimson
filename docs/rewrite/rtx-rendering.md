@@ -595,7 +595,9 @@ The source illuminates terrain and creatures and reflects from wet materials.
 RTX archives the actual fireball sprites chosen by the native spawner, without
 extra RNG or additional pieces. It samples their position, scale, rotation and
 alpha at half age, extending their visible 0.7-second lifetime to 1.4 seconds.
-Native effect slots still expire normally; flash and smoke timing stay unchanged. Classic draws the original slots at normal speed.
+Native effect slots still expire normally; flash timing stays unchanged. RTX smoke
+persists in the presentation fields described below. Classic draws the original
+slots at normal speed.
 Rocket bursts retain their native fireball timing as well as their existing light.
 
 The emitter rises from 12 to 80 world units (times blast scale) with a smoothstep
@@ -746,3 +748,79 @@ source ranking and its 16 illumination / 16 reflection limits still apply.
 The original beam stays lit during its fade. Arc sources add illumination and
 reflections through the shared ground, creature, and bonus light list. Classic
 artwork, damage, target selection, and replay state are unchanged.
+
+## Persistent fluid smoke
+
+RTX replaces claimed native smoke puffs with a persistent simulated density
+field. Rocket exhaust, rocket impacts, and other native smoke emissions feed the
+same system. Nuke pickup explosion puffs request 15 seconds of retention; ordinary
+smoke requests 10 seconds. Density decays throughout that time, with an additional
+soft fade over the final two seconds. These are maximum retention windows, not a
+promise that every small puff remains visible for that long.
+
+Implementation: `render/rtx/smoke_simulation.py`, `smoke.py`, `smoke_shaders.py`,
+and `sim/smoke_events.py`. NumPy runs the CPU fluid solver. The GPU uploads the
+density/temperature grids and shades the smoke; the solver itself is not a GPU
+compute implementation.
+
+### Native events and lifecycle
+
+Each deterministic tick captures immutable copies of actual `SpriteEffectPool`
+smoke spawns and `EffectPool` explosion puffs, including command-triggered spawns.
+No additional gameplay random numbers are consumed. Negative native effect ages
+delay injection, and native expansion contributes planar velocity. Nuke retention
+is explicitly marked around the nuke burst, so ordinary rocket explosion puffs do
+not inherit the longer lifetime. Large general-effect puffs weight their source
+strength by native tint luminance: their dark tint must not become an opaque gray
+disc that obscures the finer sprite smoke. This is an artistic conversion into a
+shared scattering medium, not a physical mass calibration. The explicit nuke
+presentation profile triples that dark-puff strength and lowers density decay
+from 0.20/s to 0.12/s so the extended aftermath remains visible. A shared patch
+keeps the slower decay after receiving a nuke deposit; this does not add mass to
+smoke already there. Capture bookkeeping lives outside native state
+and checkpoint serialization.
+
+Presentation consumes every tick's batch, including empty batches, using its
+simulation delta. Fixed 60 Hz substeps accumulate fractional slow-motion time;
+pause and extra draws do not advance the fields. Forward replay playback uses the
+same presentation handoff. Level/reset/session replacement, RTX mode changes, and
+disabling the smoke setting clear fields and delayed deposits. Re-enabling RTX
+starts with new emissions; existing native puffs retain their ordinary rendering.
+Checkpoint restoration clears this presentation history instead of storing it in
+the deterministic checkpoint.
+
+At most four 144 × 144 grids cover fixed 288 × 288 world-unit patches, with a
+bounded queue of 1024 delayed deposits. A patch is allocated only for an emission;
+empty scenes perform no fluid steps. Native puffs that cannot fit a patch or exceed
+the cap remain on their original path. Exact source-pool, slot, and generation
+identities prevent either double rendering or hiding unrelated reused slots.
+Visible patches are never evicted to admit a new source. Dilute patches retire
+early. New deposits extend the shared patch's remaining retention, baking its
+existing final fade into density and temperature first so old smoke is not restored.
+
+### Motion and light
+
+The solver advects planar velocity, density, and temperature, with a bounded
+MacCormack scalar correction, 48 pressure-relaxation iterations, vorticity
+confinement, damping, and unresolved diffusion. Sources inject native motion and
+expansion; a small fixed planar breeze supplies background drift. Temperature
+controls an assumed vertical density profile in the display shader. This is a
+shallow 2D flow approximation with a 2.5D display, not a simulated 3D volume or
+vertical buoyancy model.
+
+The display integrates 14 vertical samples and six transmittance samples per
+light. It uses the shared native weapon sources, including rocket exhaust,
+Fire/Ion beams, and explosion lights, with the existing 16 illumination-source
+limit. Fractional source gains are preserved; gains above four are capped for
+smoke response. Up to four living players' native Sharpshooter sight segments
+scatter as narrow red beams only inside density, rather than broadly illuminating
+the whole cloud. The ordinary sight artwork remains unchanged.
+
+Smoke composites after native sprites, outside their alpha-test shader, inside
+the HDR world and pressure-front composition. Ground diagnostic maps bypass it.
+The renderer approximates single scattering and self-shadowing within each patch;
+overlapping patches do not exchange velocity or shadow one another, and the
+assumed slab does not resolve creature geometry. CPU simulation and shader cost
+grow with active fields and lights. This implementation establishes the appearance;
+a future GPU ping-pong or browser solver would need separate portability and
+performance validation.

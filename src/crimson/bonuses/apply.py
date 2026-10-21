@@ -263,9 +263,10 @@ def bonus_apply(
                     owner_id=OWNER_LOCAL_PLAYER,
                     owner_player_index=player.index,
                 )
-            state.effects.spawn_explosion_burst(
-                pos=origin, scale=1.0, rng=rng, detail_preset=int(detail_preset), preserve_bugs=state.preserve_bugs,
-            )
+            with state.effects.smoke_retention(15.0, profile="nuke"):
+                state.effects.spawn_explosion_burst(
+                    pos=origin, scale=1.0, rng=rng, detail_preset=int(detail_preset), preserve_bugs=state.preserve_bugs,
+                )
             state.scripted_burst_active = True
             for idx, creature in enumerate(creatures):
                 # Corpses take the blast too, which shrinks them faster.

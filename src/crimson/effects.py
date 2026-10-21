@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Iterator
+from contextlib import contextmanager
 from enum import IntEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
+from weakref import WeakKeyDictionary
 
 import msgspec
 
@@ -29,6 +32,7 @@ from .math_parity import (
     x87_pc24_sub,
 )
 from .rng_caller_static import RngCallerStatic
+from .sim.smoke_events import SmokeEmission
 
 if TYPE_CHECKING:
     from .sim.world_state import WorldStepRuntime
@@ -377,7 +381,58 @@ class SpriteEffect(msgspec.Struct):
     scale: float = 1.0
 
 
-class SpriteEffectPool:
+class _SmokeCapture(msgspec.Struct):
+    generations: dict[int, int] = msgspec.field(default_factory=dict)
+    sink: list[SmokeEmission] | None = None
+    retention_seconds: float = 10.0
+    profile: Literal["ordinary", "nuke"] = "ordinary"
+
+
+# Presentation identities and temporary capture never enter gameplay checkpoints.
+# Weak keys release bookkeeping with the pool, including discarded replay worlds.
+_smoke_captures: WeakKeyDictionary[_SmokeCapturePool, _SmokeCapture] = WeakKeyDictionary()
+
+
+class _SmokeCapturePool:
+    @contextmanager
+    def smoke_retention(self, seconds: float, *, profile: Literal["ordinary", "nuke"] = "ordinary") -> Iterator[None]:
+        """Tag this source's emitted smoke without changing native effect state."""
+        capture = self._smoke_capture()
+        previous = capture.retention_seconds, capture.profile
+        capture.retention_seconds = seconds
+        capture.profile = profile
+        try:
+            yield
+        finally:
+            capture.retention_seconds, capture.profile = previous
+
+    def _smoke_capture(self) -> _SmokeCapture:
+        capture = _smoke_captures.get(self)
+        if capture is None:
+            capture = _SmokeCapture()
+            _smoke_captures[self] = capture
+        return capture
+
+    def generation_for_slot(self, index: int) -> int:
+        """Presentation identity of the current slot occupant (zero before spawn)."""
+        return self._smoke_capture().generations.get(index, 0)
+
+    @contextmanager
+    def capture_emissions(self, emissions: list[SmokeEmission] | None = None) -> Iterator[list[SmokeEmission]]:
+        """Record only this tick's spawns, without retaining presentation history."""
+        capture = self._smoke_capture()
+        if capture.sink is not None:
+            raise RuntimeError("smoke emission capture is already active")
+        if emissions is None:
+            emissions = []
+        capture.sink = emissions
+        try:
+            yield emissions
+        finally:
+            capture.sink = None
+
+
+class SpriteEffectPool(_SmokeCapturePool):
     def __init__(self) -> None:
         self._entries = [SpriteEffect() for _ in range(SPRITE_EFFECT_POOL_SIZE)]
 
@@ -410,6 +465,18 @@ class SpriteEffectPool:
         entry.pos = f32_vec2(pos)
         entry.vel = f32_vec2(vel)
         entry.scale = f32(scale)
+        capture = self._smoke_capture()
+        capture.generations[idx] = capture.generations.get(idx, 0) + 1
+        if capture.sink is not None:
+            capture.sink.append(SmokeEmission(
+                slot=idx,
+                generation=capture.generations[idx],
+                pos=Vec2(entry.pos.x, entry.pos.y),
+                vel=Vec2(entry.vel.x, entry.vel.y),
+                scale=entry.scale,
+                color=RGBA(entry.color.r, entry.color.g, entry.color.b, entry.color.a),
+                rotation=entry.rotation,
+            ))
         return idx
 
     def iter_active(self) -> list[SpriteEffect]:
@@ -721,7 +788,7 @@ class EffectTemplate(msgspec.Struct):
     scale_step: float = 0.0
 
 
-class EffectPool:
+class EffectPool(_SmokeCapturePool):
     """Effect pool (`effect_spawn`, `effects_update`).
 
     This pool renders transient particle quads and can optionally enqueue decals
@@ -802,16 +869,19 @@ class EffectPool:
             if skip:
                 return None
 
+        slot = self._free_head
         entry = self._entries[self._free_head]
         if entry.next_free != -1:
             self._free_head = entry.next_free
         elif preserve_bugs or int(effect_id) == int(EffectId.BLOOD_SPLATTER):
             return None
         elif self._overflow_free != -1:
+            slot = EFFECT_POOL_SIZE + self._overflow_free
             entry = self._overflow[self._overflow_free]
             self._overflow_free = entry.next_free
             self._overflow_active += 1
         elif len(self._overflow) < EFFECT_OVERFLOW_SIZE:
+            slot = EFFECT_POOL_SIZE + len(self._overflow)
             entry = EffectEntry()
             self._overflow.append(entry)
             self._overflow_active += 1
@@ -833,6 +903,23 @@ class EffectPool:
         entry.scale_step = f32(template.scale_step)
         entry.pos = f32_vec2(pos)
         entry.effect_id = int(effect_id)
+        capture = self._smoke_capture()
+        capture.generations[slot] = capture.generations.get(slot, 0) + 1
+        if capture.sink is not None and entry.effect_id == EffectId.EXPLOSION_PUFF:
+            capture.sink.append(SmokeEmission(
+                slot=slot,
+                generation=capture.generations[slot],
+                pos=Vec2(entry.pos.x, entry.pos.y),
+                vel=Vec2(entry.vel.x, entry.vel.y),
+                scale=2.0 * max(entry.half_width, entry.half_height) * entry.scale,
+                color=RGBA(entry.color.r, entry.color.g, entry.color.b, entry.color.a),
+                rotation=entry.rotation,
+                source="effect",
+                delay_seconds=max(0.0, -entry.age),
+                expansion=max(entry.half_width, entry.half_height) * entry.scale_step if entry.flags & 0x8 else 0.0,
+                retention_seconds=capture.retention_seconds,
+                profile=capture.profile,
+            ))
         return entry
 
     def free(self, idx: int) -> None:

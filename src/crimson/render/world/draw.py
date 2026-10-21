@@ -94,6 +94,8 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
             ))
             if frame.player_lighting is not None:
                 frame.player_lighting.prepare(lights, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
+            if frame.smoke is not None:
+                frame.smoke.prepare(frame, lights)
 
         draw_ctx = build_draw_context(
             render_ctx,
@@ -106,6 +108,11 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
         draw_players(render_ctx, ctx=draw_ctx, alive=True)
         projectile_render(render_ctx, alpha=draw_ctx.entity_alpha)
         bonus_render(render_ctx, ctx=draw_ctx)
+
+    # Continuous extinction must not inherit the native sprite alpha-test shader.
+    # This remains inside the world's HDR/pressure-front composition scope.
+    if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None:
+        frame.smoke.draw(render_ctx, alpha=entity_alpha)
 
 
 def draw_background(
