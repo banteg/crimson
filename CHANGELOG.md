@@ -2,6 +2,33 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.21.0
+
+### For players
+
+#### Rules 2: gameplay and co-op fixes
+
+- New runs use rules 2. Existing rules-1 replays still play and verify under their recorded behavior, and leaderboard scores stay in place. Boards show each run's rules version and can filter by it.
+- Fire Cough and Hot Tempered have independent trigger intervals for each co-op player, so one player's proc no longer reschedules the other's. Alternate Weapon checks firing readiness after a swap, including its swap delay.
+- Dead players contribute zero health to the quest life bonus: overkill no longer adds an arbitrary quest-time penalty.
+- Rocket kills grant their death rewards once. Shock Chain and Jinxed select living targets, and damage-over-time effects finish kills at exactly zero health without allowing a final death-frame attack.
+- Reloads finish when their timer reaches exactly zero. Creatures slide in the direction of a lethal impact, with corrected projectile impulses; the collapse distance and collision window stay the same.
+- Fire Bullets converts all six Gauss Shotgun pellets and all five Multi-Plasma bolts. This is an intentional balance adjustment: both use their normal multi-pellet cooldowns, so Gauss fires larger bursts more slowly than its old single-pellet conversion. Rules 1 and `--preserve-bugs` keep the old conversion counts and cadence.
+
+These corrections apply in the Python port and the browser/native game. `--preserve-bugs` retains the original branches for the new fixes; it is separate from playing a replay under the previous fixed-default rules.
+
+#### Other changes
+
+- `crimson save unlock` unlocks every normal and hardcore quest in an existing campaign save, creating a backup first. Close the game before running it; use `--base-dir` to select a different runtime directory.
+- RTX's F6 and `rtxdebug` views now include smoke density, heat, airflow and scattered light.
+- Python installations separate gameplay dependencies from development tools. Quest recipe authoring uses the optional `quests` extra; ordinary gameplay and compiled-quest replays do not need it.
+
+### Under the hood
+
+- Historical rules profiles survive recording, seeking, practice takeover and co-op rollback. Published ranked rules remain supported; existing run IDs and signed replay bytes are unchanged. The replay format remains 34.
+- Queued ranked co-op uploads from 0.18 development builds use the corrected reload behavior without a build-hash whitelist. Older keyless local replays retain the documented provenance checks.
+- The service adds a rules column without rebuilding the runs table or retiring leaderboard records. CI and deployment verification check historical runs under their own profiles.
+
 ## 0.20.0
 
 ### For players
