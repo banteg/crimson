@@ -14,8 +14,8 @@ from pathlib import Path
 CORE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(CORE))
 
-from adapter import apply_diffs, load_diffs
-from game import GAME_DIFFS
+from adapter import adapt, apply_diffs, load_diffs
+from game import GAME_DIFFS, adapt_game
 
 
 def tool(name: str) -> str:
@@ -31,8 +31,9 @@ def build(out: Path, web: bool, benchmark: str | None = None) -> Path:
     hunks = load_diffs(GAME_DIFFS)
     sources = []
     for name in ("draw_fullscreen_quad", "draw_fullscreen_color"):
-        rel = f"decomp/1.9/grim/render/{name}.cpp"
-        source = apply_diffs(rel, (CORE.parent / rel).read_text(), hunks)
+        path = CORE.parent / f"decomp/1.9/grim/render/{name}.cpp"
+        source = apply_diffs(str(path.relative_to(CORE.parent)), path.read_text(), hunks)
+        source = adapt_game(path, adapt(path, source))
         sources.append("\n".join(line for line in source.splitlines() if not line.startswith("#include")))
     (out / "fullscreen.inc").write_text("\n".join(sources))
     filtering = (CORE.parent / "src/grim/filtering.glsl").read_text()

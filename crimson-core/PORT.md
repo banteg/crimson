@@ -127,7 +127,9 @@ Full-screen texture and color helpers start at the D3D pixel boundary
 (-0.5, -0.5), cancelling that correction for their edges. This covers the
 entire physical target at every scale, including terrain, menu backgrounds,
 fades and replay preparation, without leaving pixels from the previous frame
-along the top or left edge. Ordinary sprite coordinates are unchanged.
+along the top or left edge. The textured helper extends its UVs by the same
+half pixel, so every pixel samples where the original's quad samples it.
+Ordinary sprite coordinates are unchanged.
 
 The scene target is resized before each frame, preserving its previous image
 for frames that draw only overlays. Held frames and practice anchors keep their

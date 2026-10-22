@@ -1,19 +1,60 @@
-Full-screen surfaces must start at the D3D pixel boundary, not its centre.
+Full-screen surfaces must cover the D3D pixel boundary, not start at its centre.
 The host's logical half-pixel conversion otherwise leaves stale top/left
 pixels when the scene target is larger than the game's logical resolution.
-Keep this correction in the full-screen helpers; ordinary sprite coordinates
-and the renderer's D3D conversion remain unchanged.
+The quads grow half a pixel up and left, and a textured quad's UVs extend by
+the same fraction, so each pixel samples the texture where it did. Ordinary
+sprite coordinates and the renderer's D3D conversion remain unchanged.
 --- a/decomp/1.9/grim/render/draw_fullscreen_quad.cpp
 +++ b/decomp/1.9/grim/render/draw_fullscreen_quad.cpp
-@@ -11,2 +11,2 @@
+@@ -3,2 +3,8 @@
++struct GrimUV {
++    float u;
++    float v;
++};
++
+ extern unsigned int grim_backbuffer_width;
+ extern unsigned int grim_backbuffer_height;
++extern GrimUV grim_uv_u0[4];
+@@ -7,10 +13,25 @@
+ {
++    float width = (float)grim_backbuffer_width;
++    float height = (float)grim_backbuffer_height;
++    // The quad grows half a pixel up and left; each of those corners' UVs
++    // (clockwise from the top left) extends along its edges by the same
++    // fraction, so every pixel samples where it did.
++    float x = 0.5f / width;
++    float y = 0.5f / height;
++    GrimUV uv[4] = {grim_uv_u0[0], grim_uv_u0[1], grim_uv_u0[2], grim_uv_u0[3]};
++    grim_uv_u0[0].u -= (uv[1].u - uv[0].u) * x + (uv[3].u - uv[0].u) * y;
++    grim_uv_u0[0].v -= (uv[1].v - uv[0].v) * x + (uv[3].v - uv[0].v) * y;
++    grim_uv_u0[1].u -= (uv[2].u - uv[1].u) * y;
++    grim_uv_u0[1].v -= (uv[2].v - uv[1].v) * y;
++    grim_uv_u0[3].u -= (uv[2].u - uv[3].u) * x;
++    grim_uv_u0[3].v -= (uv[2].v - uv[3].v) * x;
++
+     grim_set_rotation(0.0f);
+     grim_begin_batch();
+-    grim_draw_quad(
 -        0.0f,
 -        0.0f,
-+        -0.5f,
-+        -0.5f,
+-        (float)grim_backbuffer_width,
+-        (float)grim_backbuffer_height);
++    grim_draw_quad(-0.5f, -0.5f, width + 0.5f, height + 0.5f);
+     grim_end_batch();
++
++    grim_uv_u0[0] = uv[0];
++    grim_uv_u0[1] = uv[1];
++    grim_uv_u0[3] = uv[3];
+ }
 --- a/decomp/1.9/grim/render/draw_fullscreen_color.cpp
 +++ b/decomp/1.9/grim/render/draw_fullscreen_color.cpp
-@@ -22,2 +22,2 @@
+@@ -21,5 +21,5 @@
+         grim_draw_quad(
 -            0.0f,
 -            0.0f,
+-            (float)grim_backbuffer_width,
+-            (float)grim_backbuffer_height);
 +            -0.5f,
 +            -0.5f,
++            (float)grim_backbuffer_width + 0.5f,
++            (float)grim_backbuffer_height + 0.5f);
