@@ -215,6 +215,7 @@ describe("linking", () => {
 
   it("Twitch links with no scope, its secret in the form and the client ID on Helix", async () => {
     const { cookie, accountId } = await signIn();
+    await env.DB.prepare("UPDATE accounts SET name = 'Onetake' WHERE id = ?").bind(accountId).run();
     const { authorize, callback } = await link(cookie, "twitch");
     expect(authorize.origin + authorize.pathname).toBe("https://id.twitch.tv/oauth2/authorize");
     expect(authorize.searchParams.get("redirect_uri")).toBe(`${ORIGIN}/auth/twitch/callback`);
@@ -240,7 +241,11 @@ describe("linking", () => {
       avatar_url: "https://static-cdn.jtvnw.net/a.png", linked_at: expect.any(Number),
     });
     const own = await api<ProfileView>(`/api/players/${accountId}`, cookie);
+    expect(own.player.name).toBe("onetakeruns");
     expect(own.player.links[0]!.url).toBe("https://www.twitch.tv/onetakeruns");
+    // Another account claiming the typed alias cannot change a linked player's shown handle.
+    await env.DB.prepare("INSERT INTO accounts (name, created_at) VALUES ('Onetake', 0)").run();
+    expect((await api<ProfileView>(`/api/players/${accountId}`, cookie)).player.name).toBe("onetakeruns");
   });
 
   it("a state only completes in the session that started it", async () => {

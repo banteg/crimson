@@ -12,17 +12,14 @@ function byLinkOrder<T extends { provider: LinkView["provider"] }>(links: T[]): 
 }
 
 // The name an account shows (docs/rewrite/leaderboard-identity.md, "Names"): a linked account shows the handle its
-// typed name matches, else its typed name unless that is the default or `clash` says another account has it as a
-// name or handle, else the handle most links share, else the first link's; an unlinked one shows its typed name
+// typed name matches, else the handle most links share, else the first link's; an unlinked one shows its typed name
 // unless that is the default.
-export function shownName(typed: string, links: { provider: LinkView["provider"]; handle: string }[], clash = false): string | null {
-  const chosen = typed && typed !== DEFAULT_NAME ? typed : null;
-  if (!links.length) return chosen;
+export function shownName(typed: string, links: { provider: LinkView["provider"]; handle: string }[]): string | null {
+  if (!links.length) return typed && typed !== DEFAULT_NAME ? typed : null;
   const handles = byLinkOrder(links).map((link) => link.handle);
   const count = (handle: string) => handles.filter((other) => other.toLowerCase() === handle.toLowerCase()).length;
   return (
     handles.find((handle) => handle.toLowerCase() === typed.toLowerCase()) ??
-    (chosen && !clash ? chosen : null) ??
     handles.reduce((best, handle) => (count(handle) > count(best) ? handle : best))
   );
 }

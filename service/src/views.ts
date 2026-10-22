@@ -100,7 +100,7 @@ export async function players(env: Env, ids: number[]): Promise<Map<number, Play
     const own = links.filter((link) => link.account_id === account.id);
     found.set(account.id, {
       id: account.id,
-      name: account.name_hidden ? null : shownName(account.name, own, account.clashes > 0),
+      name: account.name_hidden ? null : shownName(account.name, own),
       fingerprint: account.fingerprint,
       clash: account.clashes > 0,
       links: own.map((link) => ({

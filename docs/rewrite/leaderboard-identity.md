@@ -128,15 +128,13 @@ A run two players play together ([online co-op](network-coop.md)) is both player
   the range 0x20..0xFF, as the entry accepts.
 - An unlinked account shows the name of its latest accepted run, or only its fingerprint while that is a fresh
   config's default `10tons`. Every board row belongs to the account, so a new name relabels its older entries too.
-- A linked account shows its name beside its badges, and each badge names its own handle where that differs, so a
-  mistyped name never hides who played. Where the name matches one of its handles, compared without case, it shows
-  that handle. Where the name is the default or another account has it as a name or handle, it shows a handle
-  instead: the one most of its links share, else the first in X, Discord, GitHub, Twitch order, which is also where
-  its avatar comes from.
+- A linked account shows a handle instead, beside its badges: the one its run's name matches, compared without case,
+  else the one most of its links share, else the first in X, Discord, GitHub, Twitch order, which is also where its avatar
+  comes from. A mistyped name thus never hides who played, and each badge names its own handle where that differs.
   Run pages still say what a run was played as, and the profile lists every name the account has typed.
 - Names are not unique. Where an unlinked account's name matches another account's name or handle, compared without
-  case, the board adds the first four hex digits of its key's hash: `banteg · 3f2a`. A linked account whose name
-  another account has shows its handle instead, so an impersonator always looks different from the player they copy.
+  case, the board adds the first four hex digits of its key's hash: `banteg · 3f2a`. A linked account shows its
+  handle, so an impersonator always looks different from the player they copy.
 - Moderators can hide an entry, hide a name (the account then shows only its fingerprint) and ban a key or an
   account. They also mark accounts as bots and move single runs between the human and bot boards, from the site
   ([bots and moderation](bots.md)). Every action is logged.
