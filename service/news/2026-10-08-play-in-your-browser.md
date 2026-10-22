@@ -1,6 +1,6 @@
 # Play It in Your Browser
 
-<a href="/play/" data-native>crimson.land/play</a> runs Crimsonland 1.9.93 in your browser. It isn't a remake, and it isn't the Python port: it's the original game, compiled from the recovered source. There's nothing to install. It downloads the game files on your first visit and keeps your saves in the browser.
+<a href="/play/" data-native>crimson.land/play</a> runs Crimsonland 1.9.93 in your browser. It isn't a remake, and it isn't the Python port: it's the original game, compiled from the recovered source. There's nothing to install. It downloads the game files on your first visit and keeps your saves in the browser. The same game also builds as a desktop client for macOS and Linux.
 
 The documented bugs are fixed, and the **Ranked** box and internet scores work here too, on the same boards.
 
