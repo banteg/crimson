@@ -70,8 +70,6 @@ nav = [
       { "Overview" = "rewrite/parity/index.md" },
       { "Status" = "rewrite/status.md" },
       { "Original bugs" = "rewrite/original-bugs.md" },
-      { "Original bugs triage" = "rewrite/original-bugs-triage.md" },
-      { "Replay rules compatibility" = "rewrite/replay-rules-compatibility.md" },
       { "Typ-o-Shooter text input" = "rewrite/parity/typo-mode-text-input.md" },
       { "Settings that steer the RNG" = "rewrite/parity/environment-rng.md" },
     ]},

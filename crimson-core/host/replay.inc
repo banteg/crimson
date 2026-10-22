@@ -771,7 +771,8 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
   else if (out.reason.empty() && out.rules != 1 && out.rules != CRIMSON_REPLAY_RULES)
     out.reason = "Recorded under other rules (" + out.game_version.substr(0, out.game_version.find('+')) + ")";
   config.rules = out.rules;
-  if (out.reason.empty() && out.rules == 1 && config.players > 1 && !config.preserve_bugs
+  // Recorded seat keys arrived with ranked co-op (#768), after reload was fixed (#758).
+  if (out.reason.empty() && out.rules == 1 && config.players > 1 && !config.preserve_bugs && !named_seats
       && out.game_version != "0.18.0+build.64a9589f5fbefdc036f0559b") {
     unsigned major = 0, minor = 0, patch = 0;
     int end = 0;

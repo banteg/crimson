@@ -84,6 +84,16 @@ for (const [name, expression] of Object.entries(seated)) {
   const recording = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
   if (!recording.equals(fs.readFileSync(fixtureRecording))) throw Error(`a replay with ${name} reads differently from its fixture`);
 }
+// Ranked co-op's recorded seats postdate the reload fix: an unlisted 0.18 build must still play.
+for (const version of ["0.18.0", "0.18.0+build.0123456789abcdef01234567"]) {
+  if (!rewrite(`pack({**wire, 'game_version': '${version}'})`, path.join(fixtures, "rules1-ranked-coop.crd")))
+    throw Error(`ranked co-op build ${version}: ${reason()}`);
+  const expected = path.join(scratch, "ranked-coop.rsi");
+  execFileSync("uv", ["run", "--no-sync", "python", path.join(CORE, "checks/replay.py"), path.join(directory, "replays", "rewritten.crd"), "--out", expected], { stdio: "pipe" });
+  const recording = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
+  if (recording.readUInt32LE(67 * 4) !== 0 || !recording.equals(fs.readFileSync(expected)))
+    throw Error(`ranked co-op build ${version}: wrong reload profile`);
+}
 // The run with the perk menu opened on its second tick and a pick on its third, both for `picker`.
 const commands = (picker) =>
   `[{'type': 'perk_menu_open', 'player_index': ${picker}}], [{'type': 'perk_pick', 'player_index': ${picker}, 'choice_index': 0}]`;

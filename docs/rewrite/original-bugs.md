@@ -12,8 +12,9 @@ The gameplay fixes below apply **by default** where specified. For parity work
 and future differential testing, you can re-enable those original behaviors with
 `--preserve-bugs`. Original text quirks and the late-game Survival spawn rate are documented only and always preserved.
 
-The [candidate triage](original-bugs-triage.md) separates proposed additions,
-balance choices, and already-handled behavior from the fixes in this ledger.
+The historical [rules-2 candidate assessment](https://github.com/banteg/crimson/blob/1c710a97e997f924cc7d6a89aa1c7269fd9df516/docs/rewrite/original-bugs-triage.md)
+remains in git history. This ledger records adopted behavior; entry 50 is an
+explicit consistency/balance choice, not a proven original defect.
 
 ## 1) Bonus drop suppression: `amount == current weapon id`
 

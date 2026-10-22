@@ -49,11 +49,15 @@ def legacy_coop_reload(replay: Replay) -> bool:
     """Resolve the unversioned co-op reload fix from verified release history.
 
     It landed during 0.18.0 development, before 0.19.0. Builds naming 0.18.0
-    with a source suffix are ambiguous and need an explicit provenance mapping.
+    with a source suffix and no recorded seats need an explicit provenance mapping.
     """
     if replay.rules != 1 or replay.run.player_count == 1 or replay.run.preserve_bugs:
         return False
-    # Service vectors introduced by bde24bef7, after reload fix 99cc34261.
+    # Seat keys/ranked co-op arrived in bde24bef7 after the fix in 6d1073f6c.
+    # Format alone is insufficient: saving an old local replay upgrades its format.
+    if replay.seat_keys is not None:
+        return False
+    # Known keyless service vectors from the same post-fix build.
     if replay.game_version == "0.18.0+build.64a9589f5fbefdc036f0559b":
         return False
     match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(.*)", replay.game_version)

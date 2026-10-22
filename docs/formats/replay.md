@@ -90,11 +90,8 @@ Both rules 1 and 2 are playable and verifiable using explicit simulation profile
 new runs default to rules 2. `preserve_bugs` selects original behavior, not the
 previous fixed default. Existing payloads, signatures and results remain intact.
 
-The co-op reload fix (original bug 40) changed behavior during rules 1 without
-raising its version. Known releases and the pinned service-vector build select
-the corresponding behavior; ambiguous 0.18 development builds are refused for
-rules-1 default co-op pending provenance. See the
-[rules compatibility contract](../rewrite/replay-rules-compatibility.md#historical-reload-provenance).
+Historical profile selection, identity stability and the reload exception are
+specified under [historical rules profiles](#historical-rules-profiles).
 
 `Recorder` is a map of `client` (`crimson` for the Python port, `crimson-core` for the web and native clients),
 `version` (that client's own content identity, in `game_version`'s form) and `platform` (the Python port's
@@ -265,3 +262,46 @@ precision the file cannot hold reaches the simulation.
 The live game records only runs that stay within these rules: it stops
 recording when a debug cheat changes the run outside recorded ticks, and the
 perk prompt stays closed while a pick is waiting for the next tick.
+
+## Historical rules profiles
+
+New runs use rules 2; playback and verification use the recorded rules. Rules 1
+keeps the previous fixed-default behavior, while rules 2 adds the bundle above.
+`preserve_bugs` retains the original branches for those fixes in either profile;
+it does not reproduce the previous fixed default. Unsupported rules are errors.
+The [ranked rules policy](../rewrite/ranked-rules.md#when-the-verifier-changes)
+retains every published ranked version.
+
+Resolve the profile once at run initialization and carry it through recording,
+reset, snapshots, state hashes, keyframes, seeking, retry, practice takeover and
+co-op rollback. Co-op setup agrees on rules. A fresh ordinary run returns to the
+current default; continuation keeps its source profile. The internal core config
+has 68 little-endian uint32 words (272 bytes): rules at word 66 and the legacy
+co-op reload flag at word 67. The flag is valid only with rules 1. These internal
+words do not change replay format 34 or historical run identities.
+
+Rules-1 IDs retain the original hash input byte for byte: the old 66-word
+transport including player count for co-op, with the player-count word removed
+for solo, followed by quest/input bytes. Rules-2 IDs hash UTF-8
+`crimson:run:rules`, a NUL byte, a little-endian uint32 rules number, and that old
+66-word transport including player count and quest/input bytes. Internal profile
+words are excluded. Existing payloads and signatures are never rewritten.
+
+### Unversioned co-op reload exception
+
+The manual-reload fix (original bug 40) reached master in `6d1073f6c` (#758),
+before ranked co-op and recorded seat keys in `bde24bef7` (#768). The earlier
+`99cc34261` is the development-branch commit included by #758. Every ranked
+co-op recording therefore uses corrected manual reload: the service always
+passes zero for the legacy flag, regardless of its recording build label.
+Python and game playback likewise select corrected reload when co-op seat keys
+are recorded. Signatures and room attestation remain mandatory for uploads;
+this profile selection does not substitute for them.
+
+Older keyless local co-op replays still need the exception: plain releases
+through 0.18.0 use legacy reload, and 0.19.0 onward use the fix. The known
+post-fix build `0.18.0+build.64a9589f5fbefdc036f0559b` also uses the fix.
+Other ambiguous keyless 0.18 development builds require explicit provenance;
+readers do not try both simulations and choose whichever matches a claimed
+score. Format 34 alone is not provenance because saving an older replay upgrades
+its format. Solo, rules 2 and `preserve_bugs` do not need this exception.

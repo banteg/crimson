@@ -150,3 +150,11 @@ it("preserves pre-upgrade solo and co-op IDs and separates rules domains", () =>
     expect(sha256(current)).not.toBe(id);
   }
 });
+
+it.each(["0.18.0", "0.18.0+build.0123456789abcdef01234567"])("keeps ranked co-op transport and identity for build %s", (game_version) => {
+  const replay = decodeReplay(inflateReplay(new Uint8Array(readFileSync(join(FIXTURES, "rules1-ranked-coop.crd")))));
+  const transport = encodeTransport({ ...replay, game_version });
+  expect(transport).toEqual(encodeTransport(replay));
+  expect(new DataView(transport.buffer).getUint32(67 * 4, true)).toBe(0);
+  expect(sha256(runIdentity(transport))).toBe(vectors.legacy_coop_run_id);
+});

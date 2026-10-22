@@ -569,4 +569,4 @@ The config appends `rules` (1 or 2) and
 `legacy_coop_reload` (0 or 1) after its 53 weapon-use words. New runs use rules 2
 and zero for the legacy flag. Replay readers resolve the flag from documented
 build provenance; it is valid only under rules 1. Both fields survive keyframes
-and participate in state hashing. See `docs/rewrite/replay-rules-compatibility.md`.
+and participate in state hashing. See `docs/formats/replay.md` (Historical rules profiles).

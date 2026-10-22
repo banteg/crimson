@@ -10,8 +10,7 @@ A leaderboard run is a replay that verifies and satisfies these rules. Its
 `rules` field selects simulation behavior; `game_version` identifies the build,
 and `recorder` identifies the recording client/platform. The rules-2
 rollout retains rules-1 records and verifies them under their own behavior;
-a rules upgrade alone does not withdraw them. Historical profile support is
-implemented; see the [compatibility plan](replay-rules-compatibility.md).
+a rules upgrade alone does not withdraw them.
 `crimson replay verify` reports `ranked`,
 the `board` and every `unranked_reasons` entry from the run rules
 (`src/crimson/replay/ranked.py`); the leaderboard service applies the same
@@ -62,11 +61,40 @@ is a bot run when its replay declares a pilot or a moderator puts it there; see
 
 ## When the verifier changes
 
-The compatibility contract checks each ranked replay under its recorded
-rules profile. CI and pre-deployment checks should verify the supported historical
-profiles as well as the current default. A mismatch during a rules upgrade is a
-compatibility investigation, not automatic grounds to retire a historical score.
-Keep existing records and replay bytes through the rules-2 rollout.
+Every published ranked rules version remains playable and verifiable. There is
+no rolling last-N retirement policy. New versions must retain earlier profiles,
+fixtures and results in Python and the native/WASM game and verifier. Adding a
+version means extending the supported-version list and parity matrix, not
+replacing the previous default with `preserve_bugs`. This commitment covers
+published ranked behavior; unversioned changes in historical development builds
+may require recording provenance (see [replay profiles](../formats/replay.md#historical-rules-profiles)).
+
+Before a verifier change lands, CI checks the historical/current profiles and
+re-verifies every active public ranked replay. Cached verdicts are reusable only
+when the replay inputs and verifier identity match. Deployment rechecks active
+production runs: it reuses matching CI verdicts and verifies newly arrived runs,
+or performs a full audit when matching verdicts are unavailable. Any unexpected
+mismatch blocks deployment and requires a compatibility investigation. A rules
+upgrade is not grounds to retire a historical score.
+
+The client, verifier and service must support a new rules version before its
+recordings are released. Preserve existing scores, IDs, timestamps and signed
+replay bytes. The database accepts positive rules numbers; readers and upload
+verification reject versions they do not implement.
+
+### Balance across rules
+
+Boards deliberately combine supported rules, label each run and offer an
+optional rules filter. This is a product choice, not a claim that versions are
+mathematically equal. Rules 2 explicitly adopts the Fire Bullets conversion
+balance change in [#832](https://github.com/banteg/crimson/issues/832), alongside
+the original-bug fixes. Gauss Shotgun converts six pellets instead of one, but
+uses its normal 1.05-second base cooldown instead of 0.14 seconds: nominal
+throughput falls from about 7.14 to 5.71 pellets/second while burst coverage
+increases. Multi-Plasma converts all five bolts instead of three at its normal
+multi-pellet cadence. Rules 1 and `preserve_bugs` retain the old conversions.
+Future balance changes require an explicit decision about shared-board
+comparability as well as a new rules profile.
 
 Actual invalid runs and faulty-client moderation remain separate: retirement
 uses `runs.retired`, removes a run from the boards and game scores, and retains
@@ -80,7 +108,7 @@ every setting that steers the RNG ([settings that steer the RNG](parity/environm
 is pinned:
 
 - one player, or two on the co-op boards (`players` names any other count);
-- the documented fixes on (`preserve_bugs` off; see
+- the recorded rules' documented fixes and adopted balance changes on (`preserve_bugs` off; see
   [original bugs](original-bugs.md));
 - detail preset 5, violence on, friendly fire off;
 - a save with no weapon used and the progress the run's own place in the game

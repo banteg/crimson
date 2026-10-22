@@ -55,3 +55,13 @@ def test_ambiguous_development_coop_build_is_not_guessed():
     # The exception does not affect solo or original behavior.
     assert not legacy_coop_reload(msgspec.structs.replace(replay, run=msgspec.structs.replace(replay.run, preserve_bugs=True)))
     assert not legacy_coop_reload(msgspec.structs.replace(replay, rules=2))
+
+
+@pytest.mark.parametrize("version", ["0.18.0", "0.18.0+build.0123456789abcdef01234567"])
+def test_recorded_coop_seats_postdate_the_manual_reload_fix(version):
+    replay = load_replay_file(Path("tests/fixtures/replays/rules1-ranked-coop.crd"))
+    replay = msgspec.structs.replace(replay, game_version=version)
+    assert replay.seat_keys is not None
+    assert not legacy_coop_reload(replay)
+    driver = PlaybackDriver(replay, warn_on_version_mismatch=False)
+    assert not driver.world.state.legacy_coop_reload

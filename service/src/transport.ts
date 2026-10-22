@@ -86,7 +86,9 @@ export function encodeTransport(replay: Replay): Uint8Array {
     run.player_count,
     ...run.status.weapon_usage_counts,
     replay.rules,
-    Number(legacyCoopReload(replay)),
+    // Ranked co-op (#768) shipped after the manual-reload fix (#758).
+    // The service never verifies the older local-only co-op profile.
+    0,
   ];
   config.forEach((word, i) => view.setUint32(i * 4, word >>> 0, true));
   if (custom) bytes.set(encodePortableQuest(custom), CONFIG_BYTES);
@@ -139,18 +141,4 @@ function legacyIdentity(transport: Uint8Array): Uint8Array {
   bytes.set(transport.subarray(0, at));
   bytes.set(transport.subarray(at + 4), at);
   return bytes;
-}
-
-
-export function legacyCoopReload(replay: Replay): boolean {
-  if (replay.rules !== 1 || replay.run.player_count === 1 || replay.run.preserve_bugs) return false;
-  // Service vectors from bde24bef7, after the co-op reload fix.
-  if (replay.game_version === "0.18.0+build.64a9589f5fbefdc036f0559b") return false;
-  const match = /^(\d+)\.(\d+)\.(\d+)(.*)$/.exec(replay.game_version);
-  if (match) {
-    const [major, minor, patch] = [Number(match[1]), Number(match[2]), Number(match[3])];
-    if (major! > 0 || minor! >= 19) return false;
-    if (minor! < 18 || (minor === 18 && patch === 0 && match[4] === "")) return true;
-  }
-  throw new TransportError("rules-1 co-op reload behavior requires known recording-build provenance");
 }

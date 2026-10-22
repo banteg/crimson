@@ -477,6 +477,7 @@ def main() -> None:
         "legacy_ranked_run": base64.b64encode((FIXTURES / "rules1-ranked-survival.crd").read_bytes()).decode(),
         "legacy_ranked_run_id": _run_id(_core_transport()(load_replay_file(FIXTURES / "rules1-ranked-survival.crd"), None)),
         "legacy_coop_run_id": _run_id(_core_transport()(load_replay_file(FIXTURES / "rules1-ranked-coop.crd"), None)),
+        "legacy_coop_run": base64.b64encode((FIXTURES / "rules1-ranked-coop.crd").read_bytes()).decode(),
         "ranked_run_id": ranked_id, "ranked_run_inflated": inflated, "piloted_run": piloted, "illegal_command_run": illegal,
         "unranked_run": unranked_run(),
         "coop_run": coop_runs(),

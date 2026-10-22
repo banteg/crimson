@@ -1001,6 +1001,29 @@ describe("co-op runs", () => {
 });
 
 describe("historical rules coexist with the current default", () => {
+  it("accepts a signed queued rules-1 co-op upload from another 0.18 development build", async () => {
+    const original = decodeReplay(inflateReplay(decode64(vectors.legacy_coop_run)));
+    const file = rewritten(vectors.legacy_coop_run,
+      new TextEncoder().encode(original.game_version),
+      new TextEncoder().encode("0.18.0+build.0123456789abcdef01234567"));
+    const [alice, bob] = await Promise.all([Player.seated(0), Player.seated(1)]);
+    await env.DB.prepare("INSERT INTO coop_runs (seed, room_id, seat0_key, seat1_key, issued_at) VALUES (?, 'roomroom00', ?, ?, ?)")
+      .bind(original.run.seed, vectors.coop_run.seat_keys[0], vectors.coop_run.seat_keys[1], Date.now()).run();
+    const response = await uploadPair(file, [alice, "alice"], [bob, "bob"]);
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({ id: vectors.legacy_coop_run_id });
+    expect(await env.DB.prepare("SELECT rules FROM runs WHERE id = ?").bind(vectors.legacy_coop_run_id).first("rules")).toBe(1);
+  });
+
+  it("stores future positive rules without rebuilding the table, while uploads still reject unsupported rules", async () => {
+    const response = await (await Player.create()).upload(vectors.ranked_run, "current");
+    expect(response.status).toBe(201);
+    const { id } = await response.json() as { id: string };
+    await env.DB.prepare("UPDATE runs SET rules = 3 WHERE id = ?").bind(id).run();
+    expect(await env.DB.prepare("SELECT rules FROM runs WHERE id = ?").bind(id).first("rules")).toBe(3);
+    await expect(env.DB.prepare("UPDATE runs SET rules = 0 WHERE id = ?").bind(id).run()).rejects.toThrow("CHECK constraint failed");
+  });
+
   it("keeps legacy IDs, dispatches both profiles in a reused verifier and filters boards", async () => {
     const player = await Player.create();
     const oldResponse = await player.upload(vectors.legacy_ranked_run, "historical");
