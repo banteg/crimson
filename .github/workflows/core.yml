@@ -307,7 +307,8 @@ jobs:
     needs: [changes, build-game, corpus]
     if: needs.changes.outputs.game == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The full rollback corpus takes ~14 minutes before live streams and sessions.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v7
