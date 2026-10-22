@@ -112,28 +112,22 @@ def test_mixed_projectile_batch_preserves_hdr_pixels_and_order(raylib_context, m
         rl.unload_texture(texture)
 
 
-def test_batch_flushes_before_uniform_changes_and_restarts_after_end(mocker):
+def test_batch_binds_once_and_restarts_after_end(mocker):
     shader = cast(Any, mocker.Mock())
     calls = mocker.Mock()
     for name in ("begin_shader_mode", "end_shader_mode", "rl_draw_render_batch_active"):
         calls.attach_mock(mocker.patch.object(rl, name), name)
     calls.attach_mock(mocker.patch.object(beam, "_apply_virtual_beam_uniforms"), "initialize")
-    calls.attach_mock(mocker.patch.object(beam, "_set_shader_float"), "step")
     batch = beam.BeamBatch()
-    batch.prepare(shader, 0.2)
-    batch.prepare(shader, None)
-    batch.prepare(shader, 0.2 + 1e-16)
-    assert [c[0] for c in calls.mock_calls] == ["begin_shader_mode", "initialize"]
-    batch.prepare(shader, 0.3)
+    batch.begin(shader)
+    batch.begin(shader)
     batch.end()
     batch.end()
-    batch.prepare(shader, None)
+    batch.begin(shader)
     batch.end()
     assert [c[0] for c in calls.mock_calls] == [
         "begin_shader_mode",
         "initialize",
-        "rl_draw_render_batch_active",
-        "step",
         "end_shader_mode",
         "begin_shader_mode",
         "initialize",

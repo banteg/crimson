@@ -36,25 +36,27 @@ if TYPE_CHECKING:
     from ..world.viewport import ViewTransform
 
 
-def _uniform(shader: rl.Shader, name: str, values: list[float], *, location: int | None = None) -> None:
-    kinds = {
-        1: rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
-        2: rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
-        4: rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4,
-    }
+_FLOAT_UNIFORM_KINDS = {
+    1: rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
+    2: rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
+    4: rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4,
+}
+
+
+def _uniform(shader: rl.Shader, name: str, values: list[float]) -> None:
     values_buffer = rl.ffi.new(f"float[{len(values)}]", values)
     rl.set_shader_value(
         shader,
-        rl.get_shader_location(shader, name) if location is None else location,
+        rl.get_shader_location(shader, name),
         rl.ffi.cast("void *", values_buffer),
-        kinds[len(values)],
+        _FLOAT_UNIFORM_KINDS[len(values)],
     )
 
 
-def _integer(shader: rl.Shader, name: str, value: int, *, location: int | None = None) -> None:
+def _integer(shader: rl.Shader, name: str, value: int) -> None:
     rl.set_shader_value(
         shader,
-        rl.get_shader_location(shader, name) if location is None else location,
+        rl.get_shader_location(shader, name),
         rl.ffi.new("int *", value),
         rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
     )
@@ -110,7 +112,6 @@ class MaterialGroundRenderer(GroundRenderer):
     stamp_locations: dict[str, int] = msgspec.field(default_factory=dict)
 
     material_locations: dict[str, int] = msgspec.field(default_factory=dict)
-    beam_cells_location: int = -1
     reflection_occlusion: ReflectionOcclusion = msgspec.field(default_factory=ReflectionOcclusion)
     perk_lighting: PerkLighting = msgspec.field(default_factory=PerkLighting)
 
@@ -133,7 +134,6 @@ class MaterialGroundRenderer(GroundRenderer):
             if shader is not None:
                 rl.unload_shader(shader)
         self.stamp_shader = self.material_shader = None
-        self.beam_cells_location = -1
         self.material_locations.clear()
         self.material_layers = None
         super().close()
@@ -152,7 +152,6 @@ class MaterialGroundRenderer(GroundRenderer):
             }
         if self.material_shader is None:
             self.material_shader = _shader(GROUND_FRAGMENT)
-            self.beam_cells_location = rl.get_shader_location(self.material_shader, "u_line_cells[0]")
         size = self.render_target.texture
         # Full precision preserves small weighted wetness contributions across epoch rebases.
         surface = load_float_render_texture(
@@ -377,24 +376,22 @@ class MaterialGroundRenderer(GroundRenderer):
             self.material_locations[name] = int(rl.get_shader_location(self.material_shader, name))
         return self.material_locations[name]
 
-    def _material_uniform(self, name: str, values: list[float]) -> None:
-        assert self.material_shader is not None
-        _uniform(self.material_shader, name, values, location=self._material_location(name))
-
     def _material_integer(self, name: str, value: int) -> None:
         assert self.material_shader is not None
-        _integer(self.material_shader, name, value, location=self._material_location(name))
+        rl.set_shader_value(
+            self.material_shader, self._material_location(name), rl.ffi.new("int *", value),
+            rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
+        )
+
+    def _material_uniform(self, name: str, values: list[float]) -> None:
+        self._material_array(name, values, components=len(values))
 
     def _material_array(self, name: str, values: list[float], *, components: int) -> None:
         assert self.material_shader is not None
-        if not values:
-            return
-        kind = (rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4 if components == 4 else
-                rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
         buffer = rl.ffi.new("float[]", values)
         rl.set_shader_value_v(
             self.material_shader, self._material_location(name), rl.ffi.cast("void *", buffer),
-            kind, len(values) // components,
+            _FLOAT_UNIFORM_KINDS[components], len(values) // components,
         )
 
     @contextmanager
@@ -439,11 +436,7 @@ class MaterialGroundRenderer(GroundRenderer):
         if has_beam_lights:
             cells, grid_lights = prepare_beam_lights(lights)
             self._material_uniform("u_beam_tuning", [ION_DIRECT_GAIN, ION_AMBIENT_DIP, FIRE_DIRECT_GAIN, FIRE_AMBIENT_DIP])
-            cells_buffer = rl.ffi.new("float[]", cells)
-            rl.set_shader_value_v(
-                sh, self.beam_cells_location, rl.ffi.cast("void *", cells_buffer),
-                rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4, len(cells) // 4,
-            )
+            self._material_array("u_line_cells[0]", cells, components=4)
         grid = build_occlusion_grid(bodies, grid_lights, width=self.width, height=self.height, illumination=shadows)
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
         self._material_uniform("u_occlusion_grid", [

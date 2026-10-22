@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import struct
-
 import msgspec
 
 from grim.geom import Vec2
@@ -23,10 +21,12 @@ _BEAM_SHADER_VS_330 = """
 
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
+in vec3 vertexNormal;
 in vec4 vertexColor;
 out vec2 fragTexCoord;
 out vec4 fragColor;
 out float fragLen;
+flat out float fragStep;
 
 uniform mat4 mvp;
 
@@ -34,6 +34,7 @@ void main() {
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
     fragLen = vertexPosition.z;
+    fragStep = vertexNormal.x;
     gl_Position = mvp * vec4(vertexPosition.x, vertexPosition.y, 0.0, 1.0);
 }
 """
@@ -44,9 +45,9 @@ _BEAM_FAST_STAMPED_FS_330 = f"""
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in float fragLen;
+flat in float fragStep;
 
 uniform vec4 colDiffuse;
-uniform float u_step_uv;
 uniform float u_stamp_scale;
 uniform float u_stamp_decay;
 uniform float u_stamp_quad;
@@ -68,7 +69,7 @@ void main() {{
         return;
     }}
 
-    float step_uv = max(0.001, u_step_uv);
+    float step_uv = max(0.001, fragStep);
     float len_uv = max(0.0, u_len);
     float stamp_count = floor(len_uv / step_uv) + 1.0;
     stamp_count = clamp(stamp_count, 0.0, float({SHADER_STAMP_VIRTUAL_MAX_STAMPS:d}));
@@ -127,7 +128,6 @@ void main() {{
 class _BeamFastStampedShader(msgspec.Struct, frozen=True):
     shader: rl.Shader
     color_loc: int
-    step_uv_loc: int
     stamp_scale_loc: int
     stamp_decay_loc: int
     stamp_quad_loc: int
@@ -181,7 +181,6 @@ def _get_beam_fast_stamped_shader() -> _BeamFastStampedShader | None:
     _BEAM_FAST_STAMPED_SHADER = _BeamFastStampedShader(
         shader=shader,
         color_loc=int(rl.get_shader_location(shader, "colDiffuse")),
-        step_uv_loc=int(rl.get_shader_location(shader, "u_step_uv")),
         stamp_scale_loc=int(rl.get_shader_location(shader, "u_stamp_scale")),
         stamp_decay_loc=int(rl.get_shader_location(shader, "u_stamp_decay")),
         stamp_quad_loc=int(rl.get_shader_location(shader, "u_stamp_quad")),
@@ -198,10 +197,9 @@ def _require_beam_fast_stamped_shader() -> _BeamFastStampedShader:
     return shader_data
 
 
-def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader, step_uv: float, intensity_gain: float) -> None:
+def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader, intensity_gain: float) -> None:
     shader = shader_data.shader
     _set_shader_vec4(shader, shader_data.color_loc, 1.0, 1.0, 1.0, 1.0)
-    _set_shader_float(shader, shader_data.step_uv_loc, float(step_uv))
     _set_shader_float(shader, shader_data.stamp_scale_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_A))
     _set_shader_float(shader, shader_data.stamp_decay_loc, float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR))
     _set_shader_float(shader, shader_data.stamp_quad_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD))
@@ -210,39 +208,27 @@ def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader, step_uv
 
 
 class BeamBatch:
-    """Keep consecutive analytic quads together, preserving their submission order.
+    """Keep consecutive analytic quads in one draw, preserving their submission order.
 
-    End the batch before drawing with another shader or changing blend modes.
-    Like the standalone beam draws, end() restores raylib's default shader.
+    Stamp spacing travels per vertex, so every body and head shares the same
+    uniforms. End the batch before drawing with another shader or changing
+    blend modes. Like the standalone beam draws, end() restores raylib's
+    default shader.
     """
 
     def __init__(self) -> None:
         self.active = False
-        self.step_key: bytes | None = None
 
-    def prepare(self, shader_data: _BeamFastStampedShader, step_uv: float | None) -> None:
-        # Compare the uploaded float32, not rounding noise from screen geometry.
-        key = struct.pack("f", step_uv) if step_uv is not None else None
+    def begin(self, shader_data: _BeamFastStampedShader) -> None:
         if not self.active:
             rl.begin_shader_mode(shader_data.shader)
-            _apply_virtual_beam_uniforms(
-                shader_data=shader_data, step_uv=1.0 if step_uv is None else step_uv,
-                intensity_gain=SHADER_STAMP_VIRTUAL_INTENSITY_GAIN,
-            )
+            _apply_virtual_beam_uniforms(shader_data=shader_data, intensity_gain=SHADER_STAMP_VIRTUAL_INTENSITY_GAIN)
             self.active = True
-            self.step_key = key
-        elif step_uv is not None and key != self.step_key:
-            # Uniform changes must not affect previously queued quads. Heads
-            # ignore step_uv, so they can share either adjacent body's batch.
-            rl.rl_draw_render_batch_active()
-            _set_shader_float(shader_data.shader, shader_data.step_uv_loc, step_uv)
-            self.step_key = key
 
     def end(self) -> None:
         if self.active:
             rl.end_shader_mode()
             self.active = False
-            self.step_key = None
 
 
 def draw_beam_fast_stamped_body(
@@ -295,16 +281,11 @@ def draw_beam_fast_stamped_body(
     g = int(clamp(float(streak_rgb[1]) * 255.0, 0.0, 255.0) + 0.5)
     b = int(clamp(float(streak_rgb[2]) * 255.0, 0.0, 255.0) + 0.5)
 
-    shader = shader_data.shader
-    if batch is not None:
-        batch.prepare(shader_data, step_uv)
-    else:
-        rl.begin_shader_mode(shader)
-        _apply_virtual_beam_uniforms(
-            shader_data=shader_data, step_uv=step_uv, intensity_gain=SHADER_STAMP_VIRTUAL_INTENSITY_GAIN,
-        )
+    quads = batch or BeamBatch()
+    quads.begin(shader_data)
     rl.rl_set_texture(0)
     rl.rl_begin(rd.RL_QUADS)
+    rl.rl_normal3f(float(step_uv), 0.0, 0.0)
 
     pos = tail_end - side
     rl.rl_color4ub(int(r), int(g), int(b), int(alpha_u8))
@@ -329,7 +310,7 @@ def draw_beam_fast_stamped_body(
     rl.rl_end()
     rl.rl_set_texture(0)
     if batch is None:
-        rl.end_shader_mode()
+        quads.end()
     return True
 
 
@@ -367,14 +348,8 @@ def draw_beam_fast_stamped_head(
     g = int(clamp(float(head_rgb[1]) * 255.0, 0.0, 255.0) + 0.5)
     b = int(clamp(float(head_rgb[2]) * 255.0, 0.0, 255.0) + 0.5)
 
-    shader = shader_data.shader
-    if batch is not None:
-        batch.prepare(shader_data, None)
-    else:
-        rl.begin_shader_mode(shader)
-        _apply_virtual_beam_uniforms(
-            shader_data=shader_data, step_uv=1.0, intensity_gain=SHADER_STAMP_VIRTUAL_INTENSITY_GAIN,
-        )
+    quads = batch or BeamBatch()
+    quads.begin(shader_data)
     rl.rl_set_texture(0)
     rl.rl_begin(rd.RL_QUADS)
 
@@ -401,7 +376,7 @@ def draw_beam_fast_stamped_head(
     rl.rl_end()
     rl.rl_set_texture(0)
     if batch is None:
-        rl.end_shader_mode()
+        quads.end()
     return True
 
 

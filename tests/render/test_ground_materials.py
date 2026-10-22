@@ -959,7 +959,7 @@ def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(g
     # Exercise material_scope's real array binding and CFFI pointer conversion.
     for normal, bright in zip(one, boosted, strict=True):
         assert bright[:3] == pytest.approx(tuple(channel * gain for channel in normal[:3]), rel=.002, abs=.001)
-    calls = [call for call in upload.call_args_list if call.args[1] == ground.beam_cells_location]
+    calls = [call for call in upload.call_args_list if call.args[1] == ground.material_locations["u_line_cells[0]"]]
     assert len(calls) == 2
     assert all(call.args[4] == 6 and rl.ffi.typeof(call.args[2]).cname == "void *" for call in calls)
     monkeypatch.setattr(ground_materials, gain_name, gain)
