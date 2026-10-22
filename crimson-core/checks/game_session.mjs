@@ -164,7 +164,7 @@ function steer(screen, [x, y]) {
 // An end screen by the pad: R2, the fire key, skips a quest's reveal of its
 // time; below Ok, the name field takes A as a typed Enter, which saves the
 // score; then B, as Main Menu.
-function leaveByPad(screen) {
+function leaveByPad(screen, check = checkSavedScore, minimumScores = 1) {
   settle(screen);
   if (screen === QUEST_RESULTS) {
     tap({ press: [PAD_R2] });
@@ -173,11 +173,11 @@ function leaveByPad(screen) {
   tap({ hat: HAT_DOWN });
   tap({ press: [PAD_SOUTH] });
   const scores = path.join(directory, "scores.jsonl");
-  for (let frames = 0; !fs.existsSync(scores) || !fs.statSync(scores).size; ++frames) {
+  for (let frames = 0; !fs.existsSync(scores) || fs.readFileSync(scores, "utf8").trim().split("\n").length < minimumScores; ++frames) {
     if (frames > 120) throw Error(`A on screen ${screen}'s name field saved no score`);
     frame(16, { cursor: PAD_CURSOR });
   }
-  checkSavedScore(scores);
+  check(scores);
   tap({ press: [PAD_EAST] });
   settle(MAIN_MENU);
 }
@@ -586,4 +586,30 @@ function unpack(bytes) {
   const result = value();
   if (at !== bytes.length) throw Error("trailing bytes after the replay");
   return result;
+}
+
+// After a recorded solo run, start a local pair in the same process. It uses
+// the recovered loop and records no replay: the preceding run's link must not
+// leak through highscore_active_record.reserved0 into this score.
+if (padded && !quest) {
+  click(MAIN_MENU, [240, 338]);
+  settle(PLAY_GAME_MENU);
+  tap({ hat: 9000 }); // player count, to the right of the first mode
+  tap({ press: [PAD_SOUTH] }); // open player count
+  tap({ hat: HAT_DOWN });
+  tap({ press: [PAD_SOUTH] }); // two players
+  click(PLAY_GAME_MENU, [232, 382]); // Survival after the solo run
+  let entered = false;
+  for (let frames = 0; !entered || game.game_state() !== GAME_OVER; ++frames) {
+    if (frames > 10000) throw Error(`the unrecorded pair never ended (screen ${game.game_state()})`);
+    frame(100, { cursor: PAD_CURSOR });
+    entered ||= game.game_state() === GAMEPLAY;
+  }
+  leaveByPad(GAME_OVER, (file) => {
+    const rows = fs.readFileSync(file, "utf8").trim().split("\n").map(JSON.parse);
+    const pair = rows.find((row) => row.player_count === 2);
+    if (!pair) throw Error("the unrecorded pair saved no score");
+    for (const key of ["replay_number", "run", "rules", "game_version"])
+      if (key in pair) throw Error(`the unrecorded pair inherited ${key} from the solo run`);
+  }, 2);
 }

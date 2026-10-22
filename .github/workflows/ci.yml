@@ -17,6 +17,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  score-store-windows:
+    name: score-store-windows
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      # Exercise actual Windows binary append, locking, rollback and concurrent writers.
+      - run: uv run --no-sync pytest -q tests/persistence/test_highscores.py
+
   checks:
     name: ${{ matrix.task }}
     runs-on: ubuntu-latest

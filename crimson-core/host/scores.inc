@@ -5,17 +5,14 @@
 // highscore_save_record appends there (highscore_store). The original's
 // scores5/*.hi tables import at startup (scores5.py) and move aside.
 #include <algorithm>
+#include <set>
+#include <errno.h>
 
 static const char SCORES_FILE[] = "scores.jsonl";
 
 // A table: the mode, a quest's level and difficulty, the players and the named
 // list, as highscore_build_path names the original's file.
-struct ScoresTable {
-  int mode, major, minor;
-  bool hardcore;
-  int players;
-  std::string list;
-};
+#include "scores_format.inc"
 // The table the menus' settings name.
 static ScoresTable scores_table() {
   bool quest = config_blob.game_mode == GAME_MODE_QUEST;
@@ -27,11 +24,6 @@ static ScoresTable scores_table() {
 }
 
 // A saved record: the original's, its table, and its run on the leaderboard ("" for none).
-struct ScoresStored {
-  highscore_record_t record;
-  ScoresTable table;
-  std::string run;
-};
 // ScoreTable.holds: only quests keep hardcore runs apart.
 static bool scores_holds(const ScoresTable &table, const ScoresStored &stored) {
   const ScoresTable &own = stored.table;
@@ -46,6 +38,10 @@ static struct {
   std::string run;
   int rules;
 } scores_linked;
+static void scores_unlink() {
+  memset(highscore_active_record.reserved0, 0, sizeof highscore_active_record.reserved0);
+  scores_linked = {};
+}
 // The run's replay is `number` (0: none saved): the score record names it, and
 // a score saved with that number links the run's leaderboard id and rules.
 static void scores_link(int number, const std::vector<uint8_t> &payload) {
@@ -76,7 +72,7 @@ static void scores_json_text(std::string &out, const char *text, size_t size) {
 // A record's line, its fields in HighScoreRecord's order and those at their
 // defaults left out, as the Python port writes it; `linked` adds the run's.
 static std::string scores_line(const highscore_record_t &record, bool hardcore, int players, const std::string &list,
-                               bool linked) {
+                               bool linked, const std::string &import_id = "") {
   std::string out = "{\"v\":1";
   auto number = [&](const char *key, long long value) {
     if (value)
@@ -85,7 +81,7 @@ static std::string scores_line(const highscore_record_t &record, bool hardcore, 
   if (record.player_name[0])
     out += ",\"name\":", scores_json_text(out, record.player_name, sizeof record.player_name);
   number("game_mode_id", record.game_mode_id);
-  if (record.quest_stage_major && record.quest_stage_minor)
+  if (record.game_mode_id == GAME_MODE_QUEST && record.quest_stage_major && record.quest_stage_minor)
     out += ",\"quest_level\":{\"major\":" + std::to_string(record.quest_stage_major) +
            ",\"minor\":" + std::to_string(record.quest_stage_minor) + "}";
   if (hardcore)
@@ -111,63 +107,18 @@ static std::string scores_line(const highscore_record_t &record, bool hardcore, 
   number("replay_number", replay);
   if (linked) {
     out += ",\"run\":\"" + scores_linked.run + "\"";
-    number("rules", scores_linked.rules);
+    out += ",\"rules\":" + std::to_string(scores_linked.rules);
     out += ",\"game_version\":", scores_json_text(out, CRIMSON_GAME_VERSION, sizeof CRIMSON_GAME_VERSION);
   }
+  if (!import_id.empty())
+    out += ",\"import_id\":\"" + import_id + "\"";
   return out + "}\n";
-}
-
-// A line as the record the original keeps, or false when it is not one.
-static bool scores_read(const Json &line, ScoresStored &out) {
-  const Json *version = line.field("v", Json::NUMBER);
-  if (line.kind != Json::OBJECT || !version || version->number != 1)
-    return false;
-  auto number = [&](const char *key, double fallback = 0) {
-    const Json *value = line.field(key, Json::NUMBER);
-    return value ? value->number : fallback;
-  };
-  auto text = [&](const char *key) {
-    const Json *value = line.field(key, Json::STRING);
-    return value ? value->text : std::string();
-  };
-  highscore_record_t &record = out.record;
-  record = {};
-  snprintf(record.player_name, sizeof record.player_name, "%s", text("name").c_str());
-  record.game_mode_id = (unsigned char)number("game_mode_id");
-  if (const Json *quest = line.field("quest_level", Json::OBJECT)) {
-    const Json *major = quest->field("major", Json::NUMBER), *minor = quest->field("minor", Json::NUMBER);
-    record.quest_stage_major = major ? (unsigned char)major->number : 0;
-    record.quest_stage_minor = minor ? (unsigned char)minor->number : 0;
-  }
-  const Json *hardcore = line.field("hardcore", Json::BOOLEAN);
-  out.table = {record.game_mode_id, record.quest_stage_major, record.quest_stage_minor, hardcore && hardcore->number,
-               (int)number("player_count", 1), text("score_list")};
-  record.run_elapsed_ms = (uint32_t)(int32_t)number("run_elapsed_ms");
-  record.score_xp = (uint32_t)number("score_xp");
-  record.most_used_weapon_id = (unsigned char)number("most_used_weapon_id");
-  record.shots_fired = (uint32_t)number("shots_fired");
-  record.shots_hit = (uint32_t)number("shots_hit");
-  record.creature_kill_count = (uint32_t)number("creature_kill_count");
-  record.random_tag = (uint32_t)number("uni_num");
-  uint32_t replay = (uint32_t)number("replay_number");
-  memcpy(record.reserved0, &replay, sizeof replay);
-  int year, month, day;
-  if (sscanf(text("date").c_str(), "%d-%d-%d", &year, &month, &day) == 3) {
-    record.day = (unsigned char)day;
-    record.month = (unsigned char)month;
-    record.year_offset = (unsigned char)(year - 2000);
-    record.date_week = (unsigned char)highscore_iso_week(year, month, day);
-  }
-  record.hardcore_marker = out.table.hardcore ? 0x75 : 0;
-  record.sentinel_pipe = 0x7c;
-  record.sentinel_ff = 0xff;
-  out.run = text("run");
-  return true;
 }
 
 // Every saved record; a line that does not read (a torn write) is skipped.
 static std::vector<ScoresStored> scores_load() {
   std::vector<ScoresStored> stored;
+  std::set<std::string> imported;
   FILE *fp = platform_fopen(SCORES_FILE, "rb");
   if (!fp)
     return stored;
@@ -180,26 +131,44 @@ static std::vector<ScoresStored> scores_load() {
     size_t end = std::min(text.find('\n', start), text.size());
     Json line;
     ScoresStored each;
-    if (json_parse(text.data() + start, end - start, line) && scores_read(line, each))
+    if (json_parse(text.data() + start, end - start, line, true) && scores_read(line, each) &&
+        (each.import_id.empty() || imported.insert(each.import_id).second))
       stored.push_back(each);
     start = end + 1;
   }
   return stored;
 }
 
-// Appends lines in one write, after a newline when a torn last line lacks one.
+// The desktop host locks this a+b descriptor until close; the web host owns its
+// directory. Finish partial writes under that lock, and flush before acknowledging.
 static bool scores_append(std::string lines) {
   if (lines.empty())
     return true;
-  if (FILE *fp = platform_fopen(SCORES_FILE, "rb")) {
-    if (!fseek(fp, -1, SEEK_END) && fgetc(fp) != '\n')
-      lines.insert(0, "\n");
-    fclose(fp);
-  }
-  FILE *fp = platform_fopen(SCORES_FILE, "ab");
+  FILE *fp = platform_fopen(SCORES_FILE, "a+b");
   if (!fp)
     return false;
-  bool written = fwrite(lines.data(), 1, lines.size(), fp) == lines.size();
+  int fd = fileno(fp);
+  off_t size = lseek(fd, 0, SEEK_END);
+  char tail;
+  bool written = size >= 0;
+  if (size > 0) {
+    written = lseek(fd, -1, SEEK_END) >= 0 && read(fd, &tail, 1) == 1;
+    if (written && tail != '\n')
+      lines.insert(0, "\n");
+  }
+  for (size_t at = 0; written && at < lines.size();) {
+    ssize_t count = write(fd, lines.data() + at, lines.size() - at);
+    if (count < 0 && errno == EINTR)
+      continue;
+    if (count <= 0)
+      written = false;
+    else
+      at += (size_t)count;
+  }
+  if (written)
+    written = fsync(fd) == 0;
+  if (!written && size >= 0)
+    ftruncate(fd, size);
   return fclose(fp) == 0 && written;
 }
 
@@ -340,12 +309,33 @@ void scores_import() {
     FILE *fp = platform_fopen(path.c_str(), "rb");
     if (!fp)
       continue;
+    std::string data;
+    char chunk[4096];
+    for (size_t count; (count = fread(chunk, 1, sizeof chunk, fp));)
+      data.append(chunk, count);
+    bool read_ok = !ferror(fp);
+    fclose(fp);
+    if (!read_ok)
+      continue;
+    std::string source = name + '\0' + data;
+    uint8_t digest[32];
+    sha256((const uint8_t *)source.data(), source.size(), digest);
+    std::string id = hex(digest, 32);
+    fp = fmemopen(data.data(), data.size(), "rb");
+    if (!fp)
+      continue;
     std::string lines;
     highscore_record_t record;
     while (!feof(fp)) {
+      long offset = ftell(fp);
       if (!highscore_read_record((char *)&record, fp) || ((record.flags & 1) && !(record.flags & 2)))
         continue;
-      lines += scores_line(record, record.hardcore_marker == 0x75, players, list, false);
+      std::string line = scores_line(record, record.hardcore_marker == 0x75, players, list, false,
+                                    id + ":" + std::to_string(offset));
+      Json parsed;
+      ScoresStored checked;
+      if (json_parse(line.data(), line.size(), parsed, true) && scores_read(parsed, checked))
+        lines += line;
     }
     fclose(fp);
     if (!scores_append(lines))

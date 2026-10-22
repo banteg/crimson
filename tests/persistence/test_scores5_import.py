@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -78,7 +79,9 @@ def test_original_tables_import_with_their_keys_and_move_aside(tmp_path: Path, o
         most_used_weapon_id=WeaponId.SHOTGUN, shots_fired=30, shots_hit=20, creature_kill_count=10, uni_num=0x1234,
         date=dt.date(2026, 10, 22),
     )
-    assert read_highscore_records(tmp_path) == [
+    records = read_highscore_records(tmp_path)
+    assert len({record.import_id for record in records}) == 4
+    assert [msgspec.structs.replace(record, import_id="") for record in records] == [
         msgspec.structs.replace(
             stats, name="Pair", game_mode_id=GameMode.QUESTS, quest_level=QuestLevel(2, 7), hardcore=True,
             player_count=2, score_list="Bob", run_elapsed_ms=-500,
@@ -101,3 +104,52 @@ def test_a_table_an_older_client_writes_later_imports_on_the_next_boot(tmp_path:
 
     assert [record.name for record in read_highscore_records(tmp_path)] == ["First", "Second"]
     assert sorted(path.name for path in (root / "imported").iterdir()) == ["rush.hi", "rush.hi.1"]
+
+
+def test_retry_after_archive_failure_keeps_each_source_row_once(tmp_path: Path, original_writer: Path, monkeypatch) -> None:
+    path = tmp_path / "scores5/survival.hi"
+    # Identical rows within a source file remain separate; retries of those rows do not.
+    row = _raw(b"Player", GameMode.SURVIVAL, xp=100)
+    _write(original_writer, path, row, row)
+    with monkeypatch.context() as patch:
+        def interrupted(*args):
+            raise OSError("interrupted before archive")
+        patch.setattr(Path, "rename", interrupted)
+        with pytest.raises(OSError):
+            scores5.import_original_scores(tmp_path)
+    assert path.exists()
+    scores5.import_original_scores(tmp_path)
+    assert len(read_highscore_records(tmp_path)) == 2
+
+
+def test_import_does_not_archive_after_failed_write(tmp_path: Path, original_writer: Path, monkeypatch) -> None:
+    path = tmp_path / "scores5/survival.hi"
+    _write(original_writer, path, _raw(b"Player", GameMode.SURVIVAL))
+    with monkeypatch.context() as patch:
+        patch.setattr(os, "write", lambda *_: 0)
+        with pytest.raises(OSError):
+            scores5.import_original_scores(tmp_path)
+    assert path.exists()
+    scores5.import_original_scores(tmp_path)
+    assert len(read_highscore_records(tmp_path)) == 1
+
+
+@pytest.mark.parametrize("mode", [GameMode.SURVIVAL, GameMode.RUSH, GameMode.TYPO])
+def test_nonquest_import_ignores_stale_quest_stage(tmp_path: Path, original_writer: Path, mode: GameMode) -> None:
+    path = tmp_path / "scores5/unknown.hi"
+    _write(original_writer, path, _raw(b"Player", mode, stage=(5, 11)))
+    scores5.import_original_scores(tmp_path)
+    [record] = read_highscore_records(tmp_path)
+    assert record.game_mode_id == mode
+    assert record.quest_level is None
+
+
+@pytest.mark.parametrize(("offset", "value"), [(0x28, 255), (0x2b, 255), (0x42, 13)])
+def test_invalid_legacy_row_does_not_prevent_importing_valid_rows(
+    tmp_path: Path, original_writer: Path, offset: int, value: int,
+) -> None:
+    bad = bytearray(_raw(b"Bad", GameMode.SURVIVAL))
+    bad[offset] = value
+    _write(original_writer, tmp_path / "scores5/survival.hi", bytes(bad), _raw(b"Good", GameMode.SURVIVAL))
+    scores5.import_original_scores(tmp_path)
+    assert [r.name for r in read_highscore_records(tmp_path)] == ["Good"]

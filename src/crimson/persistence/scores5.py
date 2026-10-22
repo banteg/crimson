@@ -6,15 +6,18 @@ Each imported file moves to `scores5/imported/`, so a table an older client writ
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import re
 import struct
 from pathlib import Path
+
+import msgspec
 
 from crimson.quests.level import QuestLevel
 
 from ..game_modes import GameMode
 from ..weapons import WeaponId
-from .highscores import HighScoreRecord, append_highscore_records
+from .highscores import HighScoreRecord, append_highscore_records, decode_highscore_record
 
 SCORES5_DIR_NAME = "scores5"
 RECORD_SIZE = 0x48
@@ -49,6 +52,7 @@ def read_original_records(path: Path, *, player_count: int = 1, score_list: str 
     """A `.hi` table's own records, as `highscore_read_record` reads them; records received from the internet stay
     out, since the leaderboard serves those now."""
     data = path.read_bytes()
+    source = hashlib.sha256(path.name.encode("utf-8") + b"\0" + data).hexdigest()
     records: list[HighScoreRecord] = []
     for offset in range(0, len(data) - RECORD_WIRE_SIZE + 1, RECORD_WIRE_SIZE):
         payload = _decode_payload(data[offset : offset + RECORD_SIZE])
@@ -60,11 +64,11 @@ def read_original_records(path: Path, *, player_count: int = 1, score_list: str 
         ) = _RECORD.unpack(payload)
         if flags & _RECEIVED_FLAG and not flags & _LOCAL_ORIGIN_FLAG:
             continue
-        records.append(
-            HighScoreRecord(
+        try:
+            record = HighScoreRecord(
                 name=name.split(b"\x00", 1)[0].decode("latin-1"),
                 game_mode_id=GameMode(mode),
-                quest_level=QuestLevel(major, minor) if major and minor else None,
+                quest_level=QuestLevel(major, minor) if mode == GameMode.QUESTS and major and minor else None,
                 hardcore=marker == HARDCORE_MARKER,
                 player_count=player_count,
                 score_list=score_list,
@@ -77,8 +81,12 @@ def read_original_records(path: Path, *, player_count: int = 1, score_list: str 
                 uni_num=uni_num,
                 date=dt.date(2000 + year_offset, month, day) if day else None,
                 replay_number=int.from_bytes(replay_number, "little"),
-            ),
-        )
+                import_id=f"{source}:{offset}",
+            )
+            record = decode_highscore_record(msgspec.json.encode(record))
+        except ValueError:
+            continue
+        records.append(record)
     return records
 
 
@@ -92,7 +100,12 @@ def import_original_scores(base_dir: Path) -> list[Path]:
         if match is None or not path.is_file():
             continue
         players = match["players"]
-        records = read_original_records(path, player_count=int(players) if players else 1, score_list=match["score_list"])
+        try:
+            records = read_original_records(
+                path, player_count=int(players) if players else 1, score_list=match["score_list"],
+            )
+        except FileNotFoundError:
+            continue  # Another client already imported and archived this file.
         append_highscore_records(base_dir, records)
         imported_dir.mkdir(exist_ok=True)
         target = imported_dir / path.name
@@ -100,6 +113,9 @@ def import_original_scores(base_dir: Path) -> list[Path]:
         while target.exists():
             target = imported_dir / f"{path.name}.{copy}"
             copy += 1
-        path.rename(target)
+        try:
+            path.rename(target)
+        except FileNotFoundError:
+            continue  # Concurrent imports have the same IDs; readers keep each source row once.
         imported.append(path)
     return imported

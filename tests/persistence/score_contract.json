@@ -1,0 +1,372 @@
+[
+  {
+    "name": "defaults",
+    "line": "{\"v\":1}",
+    "valid": true
+  },
+  {
+    "name": "nullable defaults",
+    "line": "{\"v\":1,\"quest_level\":null,\"date\":null,\"rules\":null}",
+    "valid": true
+  },
+  {
+    "name": "full",
+    "line": "{\"v\":1,\"name\":\"\\u00c4\\u00e9\\u00ff\",\"game_mode_id\":3,\"quest_level\":{\"major\":5,\"minor\":10},\"hardcore\":true,\"player_count\":4,\"score_list\":\"Zo\\u00eb\",\"run_elapsed_ms\":-2147483648,\"score_xp\":4294967295,\"most_used_weapon_id\":53,\"shots_fired\":4294967295,\"shots_hit\":17,\"creature_kill_count\":3,\"uni_num\":42,\"date\":\"2000-02-29\",\"replay_number\":4294967295,\"run\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"rules\":0,\"game_version\":\"0.21.0\",\"received\":false,\"import_id\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:76\"}",
+    "valid": true
+  },
+  {
+    "name": "upper calendar bound",
+    "line": "{\"v\":1,\"date\":\"2255-12-31\",\"run_elapsed_ms\":2147483647}",
+    "valid": true
+  },
+  {
+    "name": "raw utf8",
+    "line": "{\"v\":1,\"name\":\"Äéÿ\"}",
+    "valid": true
+  },
+  {
+    "name": "control escapes",
+    "line": "{\"v\":1,\"name\":\"a\\t\\r\\nb\"}",
+    "valid": true
+  },
+  {
+    "name": "v invalid 0",
+    "line": "{\"v\":null,\"game_mode_id\":3}",
+    "valid": false
+  },
+  {
+    "name": "v invalid 1",
+    "line": "{\"v\":true,\"game_mode_id\":3}",
+    "valid": false
+  },
+  {
+    "name": "v invalid 2",
+    "line": "{\"v\":1.0,\"game_mode_id\":3}",
+    "valid": false
+  },
+  {
+    "name": "v invalid 3",
+    "line": "{\"v\":\"1\",\"game_mode_id\":3}",
+    "valid": false
+  },
+  {
+    "name": "v invalid 4",
+    "line": "{\"v\":2,\"game_mode_id\":3}",
+    "valid": false
+  },
+  {
+    "name": "game_mode_id invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":5}",
+    "valid": false
+  },
+  {
+    "name": "game_mode_id invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":-1}",
+    "valid": false
+  },
+  {
+    "name": "game_mode_id invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":256}",
+    "valid": false
+  },
+  {
+    "name": "game_mode_id invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":1.0}",
+    "valid": false
+  },
+  {
+    "name": "player_count invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"player_count\":0}",
+    "valid": false
+  },
+  {
+    "name": "player_count invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"player_count\":5}",
+    "valid": false
+  },
+  {
+    "name": "player_count invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"player_count\":true}",
+    "valid": false
+  },
+  {
+    "name": "player_count invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"player_count\":1.0}",
+    "valid": false
+  },
+  {
+    "name": "run_elapsed_ms invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"run_elapsed_ms\":-2147483649}",
+    "valid": false
+  },
+  {
+    "name": "run_elapsed_ms invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"run_elapsed_ms\":2147483648}",
+    "valid": false
+  },
+  {
+    "name": "run_elapsed_ms invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"run_elapsed_ms\":1.5}",
+    "valid": false
+  },
+  {
+    "name": "run_elapsed_ms invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"run_elapsed_ms\":\"100\"}",
+    "valid": false
+  },
+  {
+    "name": "score_xp invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"score_xp\":-1}",
+    "valid": false
+  },
+  {
+    "name": "score_xp invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"score_xp\":4294967296}",
+    "valid": false
+  },
+  {
+    "name": "score_xp invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"score_xp\":1.0}",
+    "valid": false
+  },
+  {
+    "name": "score_xp invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"score_xp\":\"100\"}",
+    "valid": false
+  },
+  {
+    "name": "most_used_weapon_id invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"most_used_weapon_id\":-1}",
+    "valid": false
+  },
+  {
+    "name": "most_used_weapon_id invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"most_used_weapon_id\":54}",
+    "valid": false
+  },
+  {
+    "name": "rules invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"rules\":-1}",
+    "valid": false
+  },
+  {
+    "name": "rules invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"rules\":4294967296}",
+    "valid": false
+  },
+  {
+    "name": "rules invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"rules\":1.0}",
+    "valid": false
+  },
+  {
+    "name": "rules invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"rules\":false}",
+    "valid": false
+  },
+  {
+    "name": "name invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"name\":null}",
+    "valid": false
+  },
+  {
+    "name": "name invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"name\":42}",
+    "valid": false
+  },
+  {
+    "name": "name invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"name\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+    "valid": false
+  },
+  {
+    "name": "name invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"name\":\"\\ud83d\\ude00\"}",
+    "valid": false
+  },
+  {
+    "name": "name invalid 4",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"name\":\"\\u0000\"}",
+    "valid": false
+  },
+  {
+    "name": "score_list invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"score_list\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+    "valid": false
+  },
+  {
+    "name": "score_list invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"score_list\":\"\\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8\"}",
+    "valid": false
+  },
+  {
+    "name": "date invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"date\":\"1999-12-31\"}",
+    "valid": false
+  },
+  {
+    "name": "date invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"date\":\"2256-01-01\"}",
+    "valid": false
+  },
+  {
+    "name": "date invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"date\":\"2100-02-29\"}",
+    "valid": false
+  },
+  {
+    "name": "date invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"date\":\"2026-02-30\"}",
+    "valid": false
+  },
+  {
+    "name": "date invalid 4",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"date\":\"2026-1-01\"}",
+    "valid": false
+  },
+  {
+    "name": "date invalid 5",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"date\":\"2026-01-01x\"}",
+    "valid": false
+  },
+  {
+    "name": "date invalid 6",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"date\":12}",
+    "valid": false
+  },
+  {
+    "name": "quest_level invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"quest_level\":{}}",
+    "valid": false
+  },
+  {
+    "name": "quest_level invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"quest_level\":{\"major\":1}}",
+    "valid": false
+  },
+  {
+    "name": "quest_level invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"quest_level\":{\"major\":0,\"minor\":1}}",
+    "valid": false
+  },
+  {
+    "name": "quest_level invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"quest_level\":{\"major\":1,\"minor\":11}}",
+    "valid": false
+  },
+  {
+    "name": "quest_level invalid 4",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"quest_level\":{\"major\":1,\"minor\":1,\"extra\":0}}",
+    "valid": false
+  },
+  {
+    "name": "quest_level invalid 5",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"quest_level\":{\"major\":1.0,\"minor\":1}}",
+    "valid": false
+  },
+  {
+    "name": "hardcore invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"hardcore\":1}",
+    "valid": false
+  },
+  {
+    "name": "hardcore invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"hardcore\":null}",
+    "valid": false
+  },
+  {
+    "name": "received invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"received\":true}",
+    "valid": false
+  },
+  {
+    "name": "received invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"received\":0}",
+    "valid": false
+  },
+  {
+    "name": "run invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"run\":\"a\"}",
+    "valid": false
+  },
+  {
+    "name": "run invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"run\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"}",
+    "valid": false
+  },
+  {
+    "name": "run invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"run\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\n\"}",
+    "valid": false
+  },
+  {
+    "name": "import_id invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"import_id\":\"a\"}",
+    "valid": false
+  },
+  {
+    "name": "import_id invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"import_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:\"}",
+    "valid": false
+  },
+  {
+    "name": "import_id invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"import_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:-1\"}",
+    "valid": false
+  },
+  {
+    "name": "import_id invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"import_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0\\n\"}",
+    "valid": false
+  },
+  {
+    "name": "game_version invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"game_version\":null}",
+    "valid": false
+  },
+  {
+    "name": "game_version invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"game_version\":\"\\ud83d\\ude00\"}",
+    "valid": false
+  },
+  {
+    "name": "extra invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"extra\":1}",
+    "valid": false
+  },
+  {
+    "name": "missing version",
+    "line": "{}",
+    "valid": false
+  },
+  {
+    "name": "fraction version",
+    "line": "{\"v\":1.0}",
+    "valid": false
+  },
+  {
+    "name": "exponent integer",
+    "line": "{\"v\":1,\"score_xp\":1e2}",
+    "valid": false
+  },
+  {
+    "name": "duplicate",
+    "line": "{\"v\":1,\"name\":\"a\",\"name\":\"b\"}",
+    "valid": false
+  },
+  {
+    "name": "duplicate version",
+    "line": "{\"v\":1,\"v\":1}",
+    "valid": false
+  },
+  {
+    "name": "duplicate quest",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"quest_level\":{\"major\":1,\"minor\":1,\"minor\":2}}",
+    "valid": false
+  },
+  {
+    "name": "nonquest stage",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"quest_level\":{\"major\":1,\"minor\":1}}",
+    "valid": false
+  }
+]

@@ -3,6 +3,7 @@
 struct Json {
   enum Kind { NUL, BOOLEAN, NUMBER, STRING, ARRAY, OBJECT } kind = NUL;
   double number = 0;
+  bool integer = false; // Whether the number token has neither fraction nor exponent.
   std::string text;
   std::vector<Json> items;
   std::vector<std::pair<std::string, Json>> fields;
@@ -19,6 +20,7 @@ struct JsonReader {
   // Deeper than any answer nests, shallow enough for the stack.
   static constexpr int max_depth = 16;
   const char *at, *end;
+  bool strict_latin1 = false; // Persistence must not silently replace characters or duplicate fields.
 
   void space() {
     while (at < end && (*at == ' ' || *at == '\t' || *at == '\n' || *at == '\r'))
@@ -37,7 +39,7 @@ struct JsonReader {
       ++at;
     return at > start;
   }
-  bool number(double &out) {
+  bool number(double &out, bool &integer) {
     const char *start = at;
     if (at < end && *at == '-')
       ++at;
@@ -54,6 +56,7 @@ struct JsonReader {
         return false;
     }
     out = strtod(std::string(start, at).c_str(), nullptr);
+    integer = std::string(start, at).find_first_of(".eE") == std::string::npos;
     return std::isfinite(out);
   }
   bool string(std::string &out) {
@@ -95,7 +98,11 @@ struct JsonReader {
           code = code << 6 | (at[i] & 0x3f);
         }
         at += more;
+        if (strict_latin1 && (code < (more == 1 ? 0x80u : more == 2 ? 0x800u : 0x10000u)))
+          return false; // Overlong UTF-8 is not a different spelling of a Latin-1 character.
       }
+      if (strict_latin1 && (code == 0 || code > 0xff))
+        return false;
       out += code < 0x100 ? (char)code : '?';
     }
     return false;
@@ -122,6 +129,10 @@ struct JsonReader {
           space();
           if (at == end || *at++ != ':' || !value(item, depth + 1))
             return false;
+          if (strict_latin1)
+            for (const auto &field : out.fields)
+              if (field.first == key)
+                return false;
           out.fields.emplace_back(std::move(key), std::move(item));
         } else {
           if (!value(item, depth + 1))
@@ -146,13 +157,13 @@ struct JsonReader {
       return out.kind = Json::BOOLEAN, true;
     if (word("null"))
       return out.kind = Json::NUL, true;
-    return out.kind = Json::NUMBER, number(out.number);
+    return out.kind = Json::NUMBER, number(out.number, out.integer);
   }
 };
 
 // The whole of `size` bytes as one JSON value, or false when it is not.
-static bool json_parse(const char *text, size_t size, Json &out) {
-  JsonReader reader{text, text + size};
+static bool json_parse(const char *text, size_t size, Json &out, bool strict_latin1 = false) {
+  JsonReader reader{text, text + size, strict_latin1};
   if (!reader.value(out, 0))
     return false;
   reader.space();

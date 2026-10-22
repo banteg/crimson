@@ -669,6 +669,8 @@ void game_state_set(game_state_id_t state) {
            state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
     coop_live.playing ? coop_quit() : live_end("incomplete");
   bool entering_gameplay = state == GAME_STATE_GAMEPLAY && !run_active;
+  if (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active))
+    scores_unlink();
   if (!watches && (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active)))
     ++play_generation;
   bool starts = entering_gameplay && !coop && live_eligible();

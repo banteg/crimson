@@ -6,8 +6,10 @@ The original kept a scrambled, checksummed `scores5/*.hi` file per table; `score
 from __future__ import annotations
 
 import datetime as dt
+import json
 import os
 from pathlib import Path
+from typing import Annotated, Any
 
 import msgspec
 
@@ -70,7 +72,7 @@ class ScoreTable(msgspec.Struct, frozen=True):
         quests = mode == GameMode.QUESTS
         return cls(
             game_mode_id=mode,
-            quest_level=quest_level if quests else None,
+            quest_level=(config.gameplay.quest_level if quest_level is None else quest_level) if quests else None,
             hardcore=config.gameplay.hardcore and quests,
             player_count=config.gameplay.player_count,
             score_list=config.profile.named_score_list,
@@ -83,6 +85,8 @@ class ScoreTable(msgspec.Struct, frozen=True):
         )
         if self.game_mode_id == GameMode.QUESTS:
             record = msgspec.structs.replace(record, quest_level=self.quest_level, hardcore=self.hardcore)
+        else:
+            record = msgspec.structs.replace(record, quest_level=None)
         return record
 
     def holds(self, record: HighScoreRecord) -> bool:
@@ -95,15 +99,21 @@ class ScoreTable(msgspec.Struct, frozen=True):
         )
 
 
-class HighScoreRecord(msgspec.Struct, kw_only=True, omit_defaults=True, tag_field="v", tag=1):
+type ScoreText = Annotated[str, msgspec.Meta(pattern=r"^[\x01-\xff]*$")]
+type ScoreName = Annotated[str, msgspec.Meta(max_length=31, pattern=r"^[\x01-\xff]*$")]
+type RunId = Annotated[str, msgspec.Meta(pattern=r"^(?:[0-9a-f]{64})?\Z")]
+type ImportId = Annotated[str, msgspec.Meta(pattern=r"^(?:[0-9a-f]{64}:[0-9]+)?\Z")]
+
+
+class HighScoreRecord(msgspec.Struct, kw_only=True, omit_defaults=True, forbid_unknown_fields=True, tag_field="v", tag=1):
     """`highscore_record_t` as the port stores it, with its table and the replay it links."""
 
-    name: str = ""
+    name: ScoreName = ""
     game_mode_id: GameMode = GameMode.DEMO
     quest_level: QuestLevel | None = None
     hardcore: bool = False
     player_count: PlayerCount = 1
-    score_list: str = ""
+    score_list: ScoreName = ""
     run_elapsed_ms: I32 = 0
     score_xp: U32 = 0
     most_used_weapon_id: WeaponId = WeaponId.NONE
@@ -116,11 +126,13 @@ class HighScoreRecord(msgspec.Struct, kw_only=True, omit_defaults=True, tag_fiel
     # The run's replay, `replays/<n>-<mode>.crd` (crimson.replay.library); 0 for none.
     replay_number: U32 = 0
     # The run's id on the leaderboard: its replay's (`replay_run_id`), or the board's for a received record.
-    run: str = ""
-    rules: int | None = None
-    game_version: str = ""
+    run: RunId = ""
+    rules: U32 | None = None
+    game_version: ScoreText = ""
     # A record received from the leaderboard: drawn green, never saved.
     received: bool = False
+    # Source table digest and byte offset. Retried/concurrent imports keep one logical row.
+    import_id: ImportId = ""
 
     @classmethod
     def blank(cls, *, rand_value: int) -> HighScoreRecord:
@@ -139,6 +151,34 @@ _ENCODER = msgspec.json.Encoder()
 _DECODER = msgspec.json.Decoder(HighScoreRecord)
 
 
+def _unique_fields(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    fields: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in fields:
+            raise ValueError(f"duplicate score field: {key}")
+        fields[key] = value
+    return fields
+
+
+def decode_highscore_record(line: bytes) -> HighScoreRecord:
+    """The shared v1 contract: strict fields, integer tokens, Latin-1 text, and native calendar bounds."""
+    # msgspec's typed decoder validates the wire types (including integer tokens and ISO dates).
+    try:
+        record = _DECODER.decode(line)
+    except msgspec.DecodeError as exc:
+        raise ValueError(str(exc)) from exc
+    fields = json.loads(line, object_pairs_hook=_unique_fields)
+    if "v" not in fields:
+        raise ValueError("missing score version")
+    if record.date is not None and not 2000 <= record.date.year <= 2255:
+        raise ValueError("score year must be in 2000..2255")
+    if record.received:
+        raise ValueError("received scores are not local records")
+    if record.game_mode_id != GameMode.QUESTS and record.quest_level is not None:
+        raise ValueError("only quest scores have a quest level")
+    return record
+
+
 def scores_path(base_dir: Path) -> Path:
     return base_dir / SCORES_FILE_NAME
 
@@ -150,28 +190,61 @@ def read_highscore_records(base_dir: Path) -> list[HighScoreRecord]:
     except FileNotFoundError:
         return []
     records: list[HighScoreRecord] = []
+    imported: set[str] = set()
     for line in lines:
         try:
-            records.append(_DECODER.decode(line))
-        except msgspec.DecodeError:
+            record = decode_highscore_record(line)
+        except ValueError:
             continue
+        if record.import_id:
+            if record.import_id in imported:
+                continue
+            imported.add(record.import_id)
+        records.append(record)
     return records
 
 
 def append_highscore_records(base_dir: Path, records: list[HighScoreRecord]) -> None:
-    """Append records in one write, so the clients sharing the file never lose each other's."""
+    """Serialize appends, finish short writes, and acknowledge only flushed records.
+
+    Native desktop writers take the same flock; the browser owns its directory with a Web Lock.
+    """
     if not records:
         return
     path = scores_path(base_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = b"".join(_ENCODER.encode(record) + b"\n" for record in records)
-    fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_APPEND, 0o644)
+    for line in payload.splitlines():
+        decode_highscore_record(line)
+    fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_APPEND | getattr(os, "O_BINARY", 0), 0o644)
     try:
+        if os.name == "nt":
+            import msvcrt
+
+            os.lseek(fd, 0, os.SEEK_SET)
+            msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(fd, fcntl.LOCK_EX)
         size = os.fstat(fd).st_size
         # A torn last line would swallow this record's start.
-        if size and os.pread(fd, 1, size - 1) != b"\n":
-            payload = b"\n" + payload
-        os.write(fd, payload)
+        if size:
+            os.lseek(fd, size - 1, os.SEEK_SET)
+            if os.read(fd, 1) != b"\n":
+                payload = b"\n" + payload
+        try:
+            pending = memoryview(payload)
+            while pending:
+                written = os.write(fd, pending)
+                if written == 0:
+                    raise OSError("score write made no progress")
+                pending = pending[written:]
+            os.fsync(fd)
+        except OSError:
+            # The lock makes rollback safe; a retry must not duplicate a completed prefix.
+            os.ftruncate(fd, size)
+            raise
     finally:
         os.close(fd)
 

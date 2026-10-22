@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import datetime as dt
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -18,9 +21,19 @@ from crimson.persistence.highscores import (
     upsert_highscore_record,
 )
 from crimson.quests.level import QuestLevel
-from grim.config import HighScoreDateMode
+from grim.config import HighScoreDateMode, default_crimson_cfg
 
 SURVIVAL = ScoreTable(GameMode.SURVIVAL)
+
+
+def test_table_uses_configured_quest_and_clears_nonquest_stages() -> None:
+    config = default_crimson_cfg()
+    config.gameplay.mode = GameMode.QUESTS
+    config.gameplay.quest_level = QuestLevel(2, 7)
+    assert ScoreTable.for_config(config).quest_level == QuestLevel(2, 7)
+    assert ScoreTable.for_config(config, quest_level=QuestLevel(1, 1)).quest_level == QuestLevel(1, 1)
+    stale = HighScoreRecord(game_mode_id=GameMode.QUESTS, quest_level=QuestLevel(2, 7))
+    assert SURVIVAL.stamp(stale).quest_level is None
 
 
 @pytest.mark.parametrize("name, expected", [("Player  ", "Player"), ("   ", " "), ("", "")])
@@ -115,3 +128,72 @@ def test_records_round_trip_with_their_replay_link(tmp_path: Path) -> None:
     )
     append_highscore_records(tmp_path, [record])
     assert read_highscore_records(tmp_path) == [record]
+
+
+def test_append_does_not_require_unix_pread(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delattr(os, "pread", raising=False)
+    for name in ("first", "second"):
+        append_highscore_records(tmp_path, [HighScoreRecord(name=name)])
+    assert [r.name for r in read_highscore_records(tmp_path)] == ["first", "second"]
+
+
+def test_short_writes_are_completed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    write = os.write
+    monkeypatch.setattr(os, "write", lambda fd, data: write(fd, data[:7]))
+    records = [HighScoreRecord(name="first"), HighScoreRecord(name="second")]
+    append_highscore_records(tmp_path, records)
+    assert read_highscore_records(tmp_path) == records
+
+
+@pytest.mark.parametrize("failure", ["zero", "write", "fsync"])
+def test_failed_append_rolls_back_and_can_be_retried(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,
+) -> None:
+    first = HighScoreRecord(name="first")
+    second = HighScoreRecord(name="second")
+    append_highscore_records(tmp_path, [first])
+    before = scores_path(tmp_path).read_bytes()
+    write = os.write
+    calls = 0
+
+    def broken_write(fd, data):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return write(fd, data[:7])
+        if failure == "zero":
+            return 0
+        raise OSError("injected disk full")
+
+    def broken_sync(fd):
+        raise OSError("injected flush failure")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(os, "fsync", broken_sync) if failure == "fsync" else patch.setattr(os, "write", broken_write)
+        with pytest.raises(OSError):
+            append_highscore_records(tmp_path, [second])
+    assert scores_path(tmp_path).read_bytes() == before
+    append_highscore_records(tmp_path, [second])
+    assert read_highscore_records(tmp_path) == [first, second]
+
+
+def test_concurrent_partial_appends_do_not_interleave(tmp_path: Path) -> None:
+    scores_path(tmp_path).write_bytes(b'{"v":1,"name":"torn')
+    script = """
+import os, sys, time
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from crimson.persistence.highscores import HighScoreRecord, append_highscore_records
+write = os.write
+def partial(fd, data):
+    time.sleep(0.001)
+    return write(fd, data[:7])
+os.write = partial
+for i in range(10):
+    append_highscore_records(Path(sys.argv[2]), [HighScoreRecord(name=f'{sys.argv[3]}-{i}')])
+"""
+    source = Path(__file__).resolve().parents[2] / "src"
+    children = [subprocess.Popen([sys.executable, "-c", script, str(source), str(tmp_path), str(i)]) for i in range(3)]
+    for child in children:
+        assert child.wait(timeout=30) == 0
+    assert {r.name for r in read_highscore_records(tmp_path)} == {f"{i}-{j}" for i in range(3) for j in range(10)}

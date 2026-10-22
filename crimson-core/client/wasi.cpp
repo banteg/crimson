@@ -11,6 +11,9 @@
 #include <string>
 #include <sys/random.h>
 #include <sys/stat.h>
+#ifndef __EMSCRIPTEN__
+#include <sys/file.h>
+#endif
 #include <time.h>
 #include <unistd.h>
 #include <vector>
@@ -198,6 +201,22 @@ u32 w2c_wasi__snapshot__preview1_path_open(struct w2c_wasi__snapshot__preview1 *
                 (fdflags & 1 ? O_APPEND : 0) | (reads && writes ? O_RDWR : writes ? O_WRONLY : O_RDONLY) | O_NOFOLLOW;
     if ((opened.fd = open(host.c_str(), flags, 0644)) < 0)
       return errno_code();
+#ifndef __EMSCRIPTEN__
+    // Score appends include tail repair and short-write retries. Coordinate
+    // with Python's flock for the entire descriptor lifetime. Browser storage
+    // is already owned by a single tab's Web Lock (web/shell.html).
+    if (writes && !strcasecmp(relative.c_str(), "scores.jsonl")) {
+      int locked;
+      do {
+        locked = flock(opened.fd, LOCK_EX);
+      } while (locked < 0 && errno == EINTR);
+      if (locked < 0) {
+        u32 error = errno_code();
+        close(opened.fd);
+        return error;
+      }
+    }
+#endif
   }
   // A closed descriptor's slot, past the standard streams and the preopen.
   u32 fd = 4;
@@ -220,6 +239,18 @@ u32 w2c_wasi__snapshot__preview1_fd_close(struct w2c_wasi__snapshot__preview1 *,
     close(f->fd);
   *f = File{};
   return ESUCCESS;
+}
+u32 w2c_wasi__snapshot__preview1_fd_sync(struct w2c_wasi__snapshot__preview1 *, u32 fd) {
+  File *f = file(fd);
+  if (!f || f->fd < 0)
+    return EBADF_;
+  return fsync(f->fd) == 0 ? ESUCCESS : errno_code();
+}
+u32 w2c_wasi__snapshot__preview1_fd_filestat_set_size(struct w2c_wasi__snapshot__preview1 *, u32 fd, uint64_t size) {
+  File *f = file(fd);
+  if (!f || f->fd < 0)
+    return EBADF_;
+  return ftruncate(f->fd, (off_t)size) == 0 ? ESUCCESS : errno_code();
 }
 u32 w2c_wasi__snapshot__preview1_fd_read(struct w2c_wasi__snapshot__preview1 *, u32 fd, u32 iovs, u32 count,
                                          u32 result) {
@@ -250,8 +281,16 @@ u32 w2c_wasi__snapshot__preview1_fd_write(struct w2c_wasi__snapshot__preview1 *,
       File *f = file(fd);
       if (!f || f->fd < 0)
         return EBADF_;
-      if (write(f->fd, data, length) != (ssize_t)length)
+      ssize_t written;
+      do {
+        written = write(f->fd, data, length);
+      } while (written < 0 && errno == EINTR);
+      if (written < 0)
         return errno_code();
+      if ((u32)written < length) {
+        total += (u32)written;
+        break;
+      }
     }
     total += length;
   }

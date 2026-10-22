@@ -28,7 +28,7 @@ if (!directory) throw Error("usage: game_online.mjs <game directory> [game.wasm]
 const table = path.join(directory, "scores5/survival.hi");
 fs.mkdirSync(path.dirname(table), { recursive: true });
 // The local row ranks below the board's runs, so they keep the rows they are clicked on.
-const originalTable = Buffer.concat([originalRow("stale", 999999, 1), originalRow("Kept \u00e9", 1, 0)]);
+const originalTable = Buffer.concat([originalRow("stale", 999999, 1), originalRow("bad calendar", 2, 0, 13), originalRow("Kept \u00e9", 1, 0)]);
 fs.writeFileSync(table, originalTable);
 
 const requests = [];
@@ -90,13 +90,15 @@ function answerScores(scores) {
 // A Survival row of the original's table, as highscore_write_record writes it:
 // each byte offset, the checksum over the signed bytes. `flags` 1 is a row an
 // earlier build saved from the leaderboard.
-function originalRow(name, experience, flags) {
+function originalRow(name, experience, flags, month = 1) {
   const record = Buffer.alloc(72);
   record.write(name, 0, "latin1");
   record.writeUInt32LE(512000, 0x20);
   record.writeUInt32LE(experience, 0x24);
   record[0x28] = 1;
-  [record[0x40], record[0x42], record[0x43]] = [1, 1, 26];
+  // The original stamps its selected quest into every mode, including transient *.11 stages.
+  [record[0x29], record[0x2a]] = [5, 11];
+  [record[0x40], record[0x42], record[0x43]] = [1, month, 26];
   [record[0x44], record[0x46], record[0x47]] = [flags, 0x7c, 0xff];
   let checksum = 0;
   for (let i = 0; i < 72; ++i) checksum = (checksum + (i + 3) * ((record[i] << 24) >> 24) * 7) | 0;
@@ -206,7 +208,13 @@ const change = "import sys; from pathlib import Path; from grim.config import lo
   "c = load_crimson_cfg(Path(sys.argv[1]) / 'crimson.cfg'); c.gameplay.player_count = 2; " +
   "c.profile.show_internet_scores = True; c.save()";
 execFileSync("uv", ["run", "--no-sync", "python", "-c", change, directory]);
+// Simulate a prior import interrupted before archiving its source table.
+fs.copyFileSync(imported, table);
 run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
+const count = "import sys; from pathlib import Path; from crimson.persistence.highscores import read_highscore_records; " +
+  "print(len(read_highscore_records(Path(sys.argv[1]))))";
+if (execFileSync("uv", ["run", "--no-sync", "python", "-c", count, directory], { encoding: "utf8" }).trim() !== "1")
+  throw Error("retrying the native import duplicated its local score");
 game = run.game;
 while (run.clock < 15000) frame();
 click(STATISTICS);

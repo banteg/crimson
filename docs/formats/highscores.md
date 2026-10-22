@@ -23,6 +23,21 @@ hardcore, one player, the default list, zero counters, no replay. A reader
 skips a line it cannot decode, such as one a crash left half written, and a
 writer starts a new line after it.
 
+The v1 readers use the same strict contract. `v` is required and must be the
+integer `1`; unknown or duplicate fields reject the line. Integer fields take
+integer JSON tokens (not `1.0`, strings or booleans), with the signed/unsigned
+32-bit bounds below. Modes must be known, weapons are `0..53`, and player count
+is `1..4`. A quest level is null or `{major: 1..5, minor: 1..10}`, and only quest
+scores may carry one. Booleans must be JSON booleans. Dates are null or valid
+`YYYY-MM-DD` dates in `2000..2255`, the original's representable calendar.
+
+Names and named lists are at most 31 Latin-1 characters; build strings also
+use Latin-1. NUL is rejected, and strings use valid UTF-8 on disk. A run id is
+empty or 64 lowercase hexadecimal digits; rules are null or an unsigned
+32-bit integer. `received: true` is never a local record. Missing fields take
+their documented defaults. `tests/persistence/score_contract.json` exercises
+both production decoders, including malformed and boundary values.
+
 | Field | Holds |
 | --- | --- |
 | `name` | The name typed at the results screen, trailing spaces trimmed down to the first character, as `highscore_save_record` does. |
@@ -35,6 +50,7 @@ writer starts a new line after it.
 | `replay_number` | The run's replay, `replays/<n>-<mode>.crd` ([replay format](replay.md#where-replays-are-kept)); none for a record imported from before replays were numbered. A number whose file is missing is a replay that was not saved. |
 | `run` | The run's leaderboard id, the SHA-256 of its replay payload. |
 | `rules`, `game_version` | The replay's rules and build. |
+| `import_id` | Empty for a new run; for an imported row, the source digest followed by `:` and its decimal byte offset. |
 
 A table is a mode, its player count and the selected named list; each quest
 has a table per difficulty. Survival, Rush and Typ-o keep hardcore runs in
@@ -52,6 +68,14 @@ Records received from the leaderboard are never saved. While **Show internet
 scores** is on, a local record the board holds turns green: it matches by
 `run`, or, for an imported record without one, by name, time and XP.
 
+Writers hold the score file's exclusive lock while repairing its tail and
+completing partial writes, then flush it before acknowledging success. Python
+uses `flock` on macOS/Linux and a byte-range lock on Windows; the desktop host
+takes the same `flock`. The browser already owns its directory with a Web Lock
+and persists it through its existing IndexedDB synchronization. A failed append
+rolls back its bytes while holding the lock, so retrying a save does not keep a
+partially completed batch.
+
 ## Import from scores5
 
 At startup each `scores5/*.hi*` file's records are appended to
@@ -60,6 +84,15 @@ when that name is taken). A table an older client writes later imports on the
 next start. The file name gives the player count and the named list; the
 record gives the mode, quest and difficulty. Records the original received
 from the internet stay out.
+
+An imported row's source digest is SHA-256 of the original file name in UTF-8,
+a NUL byte, and the complete source file bytes. Its offset counts from the
+start of that file, including invalid and internet records. Readers keep the
+first valid row for each nonempty `import_id`, so an interrupted or concurrent
+import can append again without duplicating visible scores. Identical rows at
+different offsets remain distinct. Failed writes leave the source in place;
+archives retain invalid rows for recovery. Invalid enum/calendar fields are
+skipped, and non-quest rows discard the original's stale quest-stage bytes.
 
 ### The original's format
 
