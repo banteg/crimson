@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from crimson.game_states import GameStateId
 from crimson.quests.level import QuestLevel
 from crimson.quests.results import QuestFinalTime, QuestResultsReveal, compute_quest_final_time
@@ -32,9 +30,9 @@ from ...perks import PERK_BY_ID, PerkId, perk_display_name
 from ...persistence.highscores import (
     TABLE_MAX,
     HighScoreRecord,
+    ScoreTable,
     rank_index,
     read_highscore_table,
-    scores_path_for_mode,
 )
 from ...quests import quest_by_level
 from ...ui.button import UiButtonState, button_draw, button_update
@@ -84,7 +82,7 @@ class QuestResultsView(MenuScreen):
         self._reveal = QuestResultsReveal()
         # Native `quest_results_anim_timer`: blink ticks during the breakdown, then ms of the name/results fade-in.
         self._anim_timer: int = 0
-        self._scores_path: Path | None = None
+        self._score_table: ScoreTable | None = None
         self.name_entry = HighScoreNameEntry()
         self._player_name_default: str = ""
         self._dt: float = 0.0
@@ -148,7 +146,7 @@ class QuestResultsView(MenuScreen):
         )
         record.run_elapsed_ms = int(breakdown.final_time_ms)
         player_name_default = _player_name_default(self.state.config) or "Player"
-        record.set_name(player_name_default)
+        record.name = player_name_default
         self.record = record
         self.breakdown = breakdown
         self._player_name_default = player_name_default
@@ -161,20 +159,10 @@ class QuestResultsView(MenuScreen):
             self._log_nonfatal("failed to save status", exc)
 
         config = self.state.config
-        self._scores_path = scores_path_for_mode(
-            self.state.base_dir,
-            GameMode.QUESTS,
-            hardcore=config.gameplay.hardcore,
-            quest_stage_major=int(level.major),
-            quest_stage_minor=int(level.minor),
-            player_count=config.gameplay.player_count,
-            named_list=config.profile.named_score_list,
-        )
+        self._score_table = ScoreTable.for_config(config, game_mode_id=GameMode.QUESTS, quest_level=level)
         try:
             records = read_highscore_table(
-                self._scores_path,
-                game_mode_id=GameMode.QUESTS,
-                date_mode=config.profile.score_date_mode,
+                self.state.base_dir, self._score_table, date_mode=config.profile.score_date_mode,
             )
             self.rank = int(rank_index(records, self.record))
         except (OSError, ValueError):
@@ -285,8 +273,8 @@ class QuestResultsView(MenuScreen):
             )
             if name is None:
                 return
-            assert self._scores_path is not None
-            index = self.name_entry.save(self.record, self._scores_path, config=self.state.config)
+            assert self._score_table is not None
+            index = self.name_entry.save(self.record, self.state.base_dir, self._score_table, config=self.state.config)
             if index is None:
                 return
             if index >= 0:

@@ -34,7 +34,7 @@ from ..quests.level import QuestLevel
 from ..render.rtx.debug import RtxDebugView, debug_hotkey
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.viewport import DEFAULT_VIEW_CAP
-from ..replay import REPLAY_TICK_RATE, ReplayRecorder
+from ..replay import REPLAY_TICK_RATE, Replay, ReplayRecorder
 from ..replay.checkpoints import (
     DEFAULT_CHECKPOINT_SAMPLE_RATE,
     ReplayCheckpoint,
@@ -77,7 +77,7 @@ from ..ui.keybind_help import ui_render_keybind_help
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world.runtime import WorldRuntime
-from .components.highscore_record_builder import build_highscore_record
+from .components.highscore_record_builder import build_highscore_record, link_highscore_replay
 from .components.perk_menu_controller import PerkMenuController, PerkMenuUiContext
 from .components.perk_prompt_controller import PerkPromptState
 
@@ -667,15 +667,15 @@ class BaseGameplayMode:
         )
         self._replay_checkpoints_last_tick = int(tick_index)
 
-    def _save_replay(self) -> int:
-        """Save the run's replay; returns its number for the run's high score record, 0 when there is none."""
+    def _save_replay(self) -> tuple[int, Replay] | None:
+        """Save the run's replay; returns its number and the replay for the run's high score record."""
         recorder = self._replay_recorder
         if recorder is None:
-            return 0
+            return None
         if recorder.tick_index <= 0:
             # Nothing was simulated (e.g. a run left before its first tick).
             self._reset_replay_capture_state(clear_recorder=True)
-            return 0
+            return None
 
         self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
         result = self._replay_result
@@ -700,13 +700,13 @@ class BaseGameplayMode:
             self.leaderboard.hold(replay)
         if self.replay_saver is not None:
             self.replay_saver.submit(job)
-            return number
+            return number, replay
         lines = job.run()
         if self._console is not None:
             for line in lines:
                 self._console.log.log(line)
             self._console.log.flush()
-        return number
+        return number, replay
 
     def _player_name_default(self) -> str:
         return str(self.config.profile.player_name or "")
@@ -849,7 +849,8 @@ class BaseGameplayMode:
         )
         self._game_over_ui.open()
         self._game_over_active = True
-        self._game_over_record.replay_number = self._save_replay()
+        if saved := self._save_replay():
+            link_highscore_replay(self._game_over_record, *saved)
 
     def _finish_run(self, outcome: RunOutcome) -> None:
         """React to the session ending the run; survival, rush and Typ-o show game over."""

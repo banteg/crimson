@@ -6,7 +6,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.modes.typo_mode import TypoShooterMode
-from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
+from crimson.persistence.highscores import HighScoreRecord, ScoreTable, append_highscore_records
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.typo.names import (
     NAME_MAX_CHARS,
@@ -159,16 +159,10 @@ def test_typo_build_name_tags_exact_two_word_gt40_branch_callers() -> None:
 
 
 def test_load_typo_highscore_names_filters_and_deduplicates(tmp_path: Path) -> None:
-    path = scores_path_for_mode(tmp_path, GameMode.TYPO)
-    records = []
-    for value in ("Alpha", "Alpha", "Beta.Test", "bad name", "123", ""):
-        record = HighScoreRecord.blank()
-        record.set_name(value)
-        record.game_mode_id = GameMode.TYPO
-        records.append(record)
-    write_highscore_records(path, records)
+    names = ("Alpha", "Alpha", "Beta.Test", "bad name", "123", "")
+    append_highscore_records(tmp_path, [HighScoreRecord(name=name, game_mode_id=GameMode.TYPO) for name in names])
 
-    assert load_typo_highscore_names(path) == ["Alpha", "Beta.Test"]
+    assert load_typo_highscore_names(tmp_path, ScoreTable(GameMode.TYPO)) == ["Alpha", "Beta.Test"]
 
 
 @pytest.mark.usefixtures("headless_resources")
@@ -177,15 +171,8 @@ def test_typo_mode_open_loads_highscore_names_into_state_and_replay_header(
     assets_dir: Path,
     tmp_path: Path,
 ) -> None:
-    # An original install's Typ-o table: the original has no Typ-o file name.
-    path = tmp_path / "scores5" / "unknown.hi"
-    records = []
-    for value in ("Alpha", "Beta.Test"):
-        record = HighScoreRecord.blank()
-        record.set_name(value)
-        record.game_mode_id = GameMode.TYPO
-        records.append(record)
-    write_highscore_records(path, records)
+    names = ("Alpha", "Beta.Test")
+    append_highscore_records(tmp_path, [HighScoreRecord(name=name, game_mode_id=GameMode.TYPO) for name in names])
 
     config = make_mode_config(game_mode=GameMode.TYPO, base_dir=tmp_path)
     mode = TypoShooterMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))

@@ -10,7 +10,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..persistence.highscores import scores_path_for_mode
+from ..persistence.highscores import ScoreTable
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
@@ -54,10 +54,8 @@ class TypoShooterMode(BaseGameplayMode):
         session = self.typo_session
         highscore_names = session.highscore_names
         if not session.carry.highscore_names_loaded:
-            scores_path = scores_path_for_mode(
-                self._base_dir, GameMode.TYPO, named_list=self.config.profile.named_score_list,
-            )
-            highscore_names = tuple(load_typo_highscore_names(scores_path))
+            table = ScoreTable(GameMode.TYPO, score_list=self.config.profile.named_score_list)
+            highscore_names = tuple(load_typo_highscore_names(self._base_dir, table))
 
         self._initialize_run(
             GameMode.TYPO,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import math
 from pathlib import Path
 from typing import Any
@@ -258,6 +259,12 @@ def zstd_unpack(
         raise error(f"invalid {what} zstd payload") from exc
     require(len(payload) <= max_payload_bytes, f"{what} payload too large (> {max_payload_bytes} bytes)")
     return payload
+
+
+def run_id(payload: bytes) -> str:
+    """A run's id on the leaderboard: the sha256 of its replay's canonical payload."""
+
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _require_int(value: int, *, low: int, high: int, field: str) -> None:

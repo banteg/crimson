@@ -26,7 +26,7 @@ def test_game_over_panel_open_plays_panel_click(tmp_path: Path, assets_dir: Path
     ui.phase = 1
     ui.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
     ui.timeline.timeline_ms = ui.timeline.max_timeline_ms - 60
-    record = HighScoreRecord.blank()
+    record = HighScoreRecord()
     record.most_used_weapon_id = WeaponId.PISTOL
     played: list[SfxId] = []
 

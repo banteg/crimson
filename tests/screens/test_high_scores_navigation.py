@@ -6,7 +6,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.leaderboard import Leaderboard
-from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
+from crimson.persistence.highscores import HighScoreRecord, append_highscore_records
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScoreQuery, ScoreReturnContext, ShowScores, StartRun
 from crimson.screens.high_scores_layout import (
@@ -159,12 +159,10 @@ def test_play_locked_quest_does_not_transition(scores_view, hardcore, mocker) ->
 def test_update_scores_shows_the_board_green_beside_local_runs(scores_view, mocker) -> None:
     view = scores_view
     state = view.state
-    local = HighScoreRecord.blank(rand_value=0)
-    local.set_name("banteg")
-    local.game_mode_id = GameMode.QUESTS
-    local.quest_level = QuestLevel(1, 1)
-    local.run_elapsed_ms, local.score_xp = 16936, 1200
-    write_highscore_records(scores_path_for_mode(state.base_dir, GameMode.QUESTS, quest_stage_major=1, quest_stage_minor=1), [local])
+    local = HighScoreRecord(
+        name="banteg", game_mode_id=GameMode.QUESTS, quest_level=QuestLevel(1, 1), run_elapsed_ms=16936, score_xp=1200,
+    )
+    append_highscore_records(state.base_dir, [local])
 
     def score(name: str, final_ms: int, experience: int) -> dict[str, int | str]:
         return {

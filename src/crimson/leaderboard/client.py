@@ -12,7 +12,6 @@ did: it sends the waiting runs, then receives a verified board's best runs for t
 from __future__ import annotations
 
 import base64
-import hashlib
 import http.client
 import json
 import os
@@ -31,7 +30,7 @@ import msgspec
 from grim.atomic_write import atomic_write_bytes
 
 from .. import __version__
-from ..replay.codec import MAX_REPLAY_FILE_BYTES, encode_replay_payload, zstd_pack
+from ..replay.codec import MAX_REPLAY_FILE_BYTES, encode_replay_payload, run_id, zstd_pack
 from ..replay.types import Replay
 from .identity import Identity
 
@@ -252,7 +251,7 @@ class Leaderboard:
 
     def _queue(self, replay: Replay, name: str, *, upload: bool = False) -> _Report:
         payload = encode_replay_payload(replay)
-        run_id = hashlib.sha256(payload).hexdigest()
+        run = run_id(payload)
         envelope = {
             "replay": base64.b64encode(zstd_pack(payload)).decode("ascii"),
             "name": name,
@@ -260,8 +259,8 @@ class Leaderboard:
             "signature": self.identity.sign_run(payload, name).hex(),
         }
         self._outbox.mkdir(parents=True, exist_ok=True)
-        atomic_write_bytes(self._outbox / f"{run_id}.json", json.dumps(envelope).encode())
-        queued_line = f"leaderboard: queued run {run_id[:12]} as {name!r}"
+        atomic_write_bytes(self._outbox / f"{run}.json", json.dumps(envelope).encode())
+        queued_line = f"leaderboard: queued run {run[:12]} as {name!r}"
         if not upload or not self._url:
             return _Report([queued_line], self._waiting_count())
         sent = self._upload_pass()

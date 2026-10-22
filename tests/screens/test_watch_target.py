@@ -18,7 +18,7 @@ from tests.support.replay_runner_helpers import finish_replay
 
 
 def _record(number: int) -> HighScoreRecord:
-    record = HighScoreRecord.blank(rand_value=0)
+    record = HighScoreRecord()
     record.replay_number = number
     return record
 
@@ -52,17 +52,17 @@ def test_a_rows_replay_plays_or_says_why_not(tmp_path: Path) -> None:
 
 def test_each_board_row_keeps_its_own_run_and_a_local_run_on_the_board_takes_its_id() -> None:
     def received(run: str) -> HighScoreRecord:
-        record = HighScoreRecord.blank(rand_value=0)
-        record.set_name("twin")
-        record.run = run
-        return record
+        return HighScoreRecord(name="twin", run=run, received=True)
 
-    local = HighScoreRecord.blank(rand_value=0)
-    local.set_name("twin")
-    local.replay_number = 4
-
+    # An imported record has no run id: it takes the first board row with its name, time and experience, and keeps
+    # its own replay; the other board row stays.
+    local = HighScoreRecord(name="twin", replay_number=4)
     merged = _with_online([local], [received("a" * 64), received("b" * 64)])
-
-    # The local run takes the first board row's id and keeps its own replay; the other board row stays.
-    assert [(record.replay_number, record.run) for record in merged] == [(4, "a" * 64), (0, "b" * 64)]
+    assert [(record.replay_number, record.run, record.received) for record in merged] == [
+        (4, "a" * 64, True), (0, "b" * 64, True),
+    ]
     assert local.run == ""
+
+    # A run saved with its id matches only its own board row.
+    merged = _with_online([HighScoreRecord(name="twin", replay_number=5, run="b" * 64)], [received("a" * 64), received("b" * 64)])
+    assert [(record.replay_number, record.run) for record in merged] == [(5, "b" * 64), (0, "a" * 64)]

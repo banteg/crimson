@@ -21,9 +21,9 @@ from ...game_states import GameStateId
 from ...persistence.highscores import (
     TABLE_MAX,
     HighScoreRecord,
+    ScoreTable,
     rank_index,
     read_highscore_table,
-    scores_path_for_config,
 )
 from ...ui.animation import ui_elements_max_timeline, ui_transition_alpha
 from ...ui.button import UiButtonState, button_draw, button_update
@@ -128,6 +128,9 @@ class GameOverUi(msgspec.Struct):
         """`game_over_screen_update` lays out on `ui_element_slot_30`'s panel."""
         return ui_panel_rect(30, self.timeline.timeline_ms, screen_w)
 
+    def _score_table(self) -> ScoreTable:
+        return ScoreTable.for_config(self.config)
+
     def _begin_close_transition(self, action: ResultAction) -> None:
         if self.timeline.closing:
             return
@@ -174,9 +177,8 @@ class GameOverUi(msgspec.Struct):
             candidate.game_mode_id = game_mode_id
             self._candidate_record = candidate
 
-            path = scores_path_for_config(self.base_dir, self.config)
             records = read_highscore_table(
-                path, game_mode_id=game_mode_id, date_mode=self.config.profile.score_date_mode,
+                self.base_dir, self._score_table(), date_mode=self.config.profile.score_date_mode,
             )
             idx = rank_index(records, candidate)
             self.rank = int(idx)
@@ -203,7 +205,7 @@ class GameOverUi(msgspec.Struct):
                 play_sfx=play_sfx,
             )
             if name is not None and self.name_entry.save(
-                self._candidate_record or record, scores_path_for_config(self.base_dir, self.config), config=self.config,
+                self._candidate_record or record, self.base_dir, self._score_table(), config=self.config,
             ) is not None:
                 self.phase = 1
         else:

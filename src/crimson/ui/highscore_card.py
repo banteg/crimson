@@ -88,23 +88,18 @@ def ui_text_input_render(
     pos = Vec2(xy.x + 4.0, xy.y)
 
     if not results:
-        name = record.name()
+        name = record.name
         draw_small_text(font, name, pos, grim_color(1.0, 1.0, 1.0, alpha))
         grim_draw_rect_outline(pos.offset(dy=13.0), float(int(measure_small_text_width(font, name))), 1.0, divider_color)
-        if record.flags & 2:
-            draw_small_text(
-                font, "Internet score of local origin", pos.offset(dy=14.0), grim_color(0.8, 0.8, 0.8, alpha * 0.8),
-            )
-            draw_small_text(
-                font, f"uni#{record.uni_num}", pos + Vec2(94.0, -12.0), grim_color(0.5, 0.5, 0.5, alpha * 0.5),
-            )
-        elif record.flags & 1:
+        if record.received:
             draw_small_text(font, "Score from the Internet", pos.offset(dy=14.0), grim_color(0.7, 1.0, 0.7, alpha * 0.8))
         else:
             draw_small_text(font, "Local score", pos.offset(dy=14.0), grim_color(0.8, 0.8, 0.8, alpha * 0.8))
 
         pos = pos.offset(dy=15.0)
-        date = highscore_format_date_label(record.day, record.month, record.year_offset + 2000)
+        # A record never saved has no date: the zeroed fields native prints.
+        day, month, year = (record.date.day, record.date.month, record.date.year) if record.date else (0, 0, 2000)
+        date = highscore_format_date_label(day, month, year)
         draw_small_text(
             font, date, Vec2(pos.x + 192.0 - 32.0 - 8.0 - _half_width(font, date), pos.y + 13.0), label_color,
         )

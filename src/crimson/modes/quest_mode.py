@@ -35,7 +35,7 @@ from ..ui.overlays.quest_run import (
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
-from .components.highscore_record_builder import build_highscore_record
+from .components.highscore_record_builder import build_highscore_record, link_highscore_replay
 
 UI_HINT_COLOR = rl_color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl_color(255, 255, 255, int(255 * 0.5))
@@ -171,8 +171,8 @@ class QuestMode(BaseGameplayMode):
             creature_kill_count=int(self.creatures.kill_count),
             rand_value=int(self._quest_highscore_random_tag),
         )
-        if replay_number := self._save_replay():
-            record.replay_number = replay_number
+        if saved := self._save_replay():
+            link_highscore_replay(record, *saved)
         self._action = ShowQuestOutcome(
             QuestRunOutcome(
                 kind=kind,

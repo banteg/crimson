@@ -8,7 +8,7 @@ from grim.config import CrimsonConfig, ensure_crimson_cfg
 from grim.console import ConsoleState, create_console, register_core_cvars
 
 from .assets_fetch import download_missing_paqs, migrate_music_paq
-from .persistence.highscores import migrate_typo_scores
+from .persistence.scores5 import import_original_scores
 
 
 class RuntimeBoot(msgspec.Struct, frozen=True):
@@ -25,7 +25,7 @@ def boot_runtime(
     width: int | None = None,
     height: int | None = None,
 ) -> RuntimeBoot:
-    """Load crimson.cfg, build the console with its core cvars, fetch any missing .paq archives and migrate old files.
+    """Load crimson.cfg, build the console with its core cvars, fetch any missing .paq archives and import old files.
 
     `width`/`height` override the configured display size.
     """
@@ -38,6 +38,6 @@ def boot_runtime(
     download_missing_paqs(assets_dir, console)
     if migrate_music_paq(assets_dir):
         console.log.log("assets: renamed music.paq's entries to the original's music\\ names")
-    for path in migrate_typo_scores(base_dir):
-        console.log.log(f"scores: moved Typ-o scores to the original's {path.name}")
+    for path in import_original_scores(base_dir):
+        console.log.log(f"scores: imported {path.name} into scores.jsonl")
     return RuntimeBoot(config=config, console=console, width=width, height=height)

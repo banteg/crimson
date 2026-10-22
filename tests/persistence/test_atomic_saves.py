@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from crimson.persistence import highscores
 from crimson.persistence.save_status import GAME_CFG_NAME, ensure_game_status, load_status
 from grim import atomic_write
 
@@ -20,20 +19,6 @@ def test_failed_replacement_preserves_old_file_and_removes_temporary(tmp_path: P
 
     assert path.read_bytes() == b"previous save"
     assert list(tmp_path.iterdir()) == [path]
-
-
-def test_score_encoding_failure_preserves_existing_records(tmp_path: Path, mocker) -> None:
-    path = tmp_path / "scores.bin"
-    record = highscores.HighScoreRecord.blank(rand_value=123)
-    highscores.write_highscore_records(path, [record])
-    original = path.read_bytes()
-    mocker.patch.object(highscores, "encode_record_payload", side_effect=ValueError("injected encoding failure"))
-
-    with pytest.raises(ValueError, match="injected encoding failure"):
-        highscores.write_highscore_records(path, [record])
-
-    assert path.read_bytes() == original
-    assert len(highscores.read_highscore_records(path)) == 1
 
 
 def test_status_stays_dirty_until_replacement_succeeds(tmp_path: Path, mocker) -> None:

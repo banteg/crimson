@@ -29,4 +29,4 @@ def test_a_table_shows_the_board_for_its_player_count(make_game_state, tmp_path,
 
     records = load_records(state, ScoreQuery(GameMode.QUESTS, QuestLevel(2, 3)))
 
-    assert [record.name() for record in records] == names
+    assert [record.name for record in records] == names

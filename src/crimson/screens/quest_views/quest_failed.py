@@ -209,7 +209,7 @@ class QuestFailedView(MenuScreen):
         if outcome is None:
             return
         record = outcome.record.copy()
-        record.set_name(_player_name_default(self.state.config) or "Player")
+        record.name = _player_name_default(self.state.config) or "Player"
         record.run_elapsed_ms = max(1, outcome.base_time_ms)
         self._record = record
 

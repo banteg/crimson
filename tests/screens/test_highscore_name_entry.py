@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.persistence.highscores import NAME_MAX_EDIT, read_highscore_table, scores_dir_for_base_dir
+from crimson.persistence.highscores import NAME_MAX_EDIT, ScoreTable, read_highscore_table, scores_path
 from crimson.screens.actions import StartRun
 from grim.config import CRIMSON_CFG_NAME, load_crimson_cfg
 from grim.raylib_api import rl
@@ -54,7 +54,7 @@ class GameOver:
                 break
         assert self.ui.phase == 0
         self.entry = self.ui.name_entry
-        self.scores_dir = scores_dir_for_base_dir(self.state.base_dir)
+        self.scores_path = scores_path(self.state.base_dir)
 
     def frame(self, *keys: int, chars: str = "", click: bool = False) -> None:
         self.input.pressed = {int(key) for key in keys}
@@ -75,8 +75,8 @@ class GameOver:
         assert self.entry.text == ""
 
     def saved_names(self) -> list[str]:
-        table = read_highscore_table(self.scores_dir / "survival.hi", game_mode_id=GameMode.SURVIVAL)
-        return [record.name() for record in table]
+        table = read_highscore_table(self.state.base_dir, ScoreTable(GameMode.SURVIVAL))
+        return [record.name for record in table]
 
     def remembered_name(self) -> str:
         return load_crimson_cfg(self.state.base_dir / CRIMSON_CFG_NAME).profile.player_name
@@ -132,21 +132,21 @@ def test_blank_name_is_refused_with_a_shock(game_over: GameOver) -> None:
     assert game_over.ui.phase == 0
     assert [sfx for sfx in game_over.audio.played() if sfx == SfxId.SHOCK_HIT_01] == [SfxId.SHOCK_HIT_01] * 2
     assert game_over.audio.played()[-1] == SfxId.SHOCK_HIT_01
-    assert not game_over.scores_dir.exists()
+    assert not game_over.scores_path.exists()
     assert game_over.remembered_name() == PROFILE_NAME
 
 
 def test_failed_save_prompts_a_retry_that_saves_the_record_once(game_over: GameOver) -> None:
     game_over.release_controls()
-    # A file where the scores directory belongs makes the table unwritable.
-    game_over.scores_dir.write_bytes(b"")
+    # A directory where the scores file belongs makes it unwritable.
+    game_over.scores_path.mkdir()
 
     game_over.frame(rl.KeyboardKey.KEY_ENTER)
 
     assert game_over.ui.phase == 0
     assert game_over.entry.save_error == "Could not save. Press OK to retry."
 
-    game_over.scores_dir.unlink()
+    game_over.scores_path.rmdir()
     game_over.frame(rl.KeyboardKey.KEY_ENTER)
 
     prefill = PROFILE_NAME[:NAME_MAX_EDIT]
@@ -156,5 +156,6 @@ def test_failed_save_prompts_a_retry_that_saves_the_record_once(game_over: GameO
     # The entry remembers its record went in: saving again only rewrites the name in the config.
     record = game_over.run._game_over_record
     assert record is not None
-    assert game_over.entry.save(record, game_over.scores_dir / "survival.hi", config=game_over.state.config) == -1
+    table = ScoreTable(GameMode.SURVIVAL)
+    assert game_over.entry.save(record, game_over.state.base_dir, table, config=game_over.state.config) == -1
     assert game_over.saved_names() == [prefill]

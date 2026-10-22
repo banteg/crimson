@@ -13,7 +13,7 @@ from grim.rand import CrandLike
 from grim.raylib_api import rl, rl_color
 from grim.sfx_map import SfxId
 
-from ..persistence.highscores import NAME_MAX_EDIT, HighScoreRecord, upsert_highscore_record
+from ..persistence.highscores import NAME_MAX_EDIT, HighScoreRecord, ScoreTable, upsert_highscore_record
 from .button import UiButtonState, button_draw, button_update
 from .focus import UiFocus
 from .perk_menu import draw_ui_text
@@ -96,16 +96,18 @@ class HighScoreNameEntry(msgspec.Struct):
             play_sfx(SfxId.UI_TYPEENTER)
         return self.text
 
-    def save(self, record: HighScoreRecord, path: Path, *, config: CrimsonConfig) -> int | None:
+    def save(self, record: HighScoreRecord, base_dir: Path, table: ScoreTable, *, config: CrimsonConfig) -> int | None:
         """Remember the name and save the named record once; the table index, or None (and a retry prompt)."""
         candidate = record.copy()
-        candidate.set_name(self.text)
+        candidate.name = self.text
         try:
             config.profile.set_player_name_input(self.text)
             config.save()
             index = -1
             if not self.saved:
-                _table, index = upsert_highscore_record(path, candidate, date_mode=config.profile.score_date_mode)
+                _shown, index = upsert_highscore_record(
+                    base_dir, table, candidate, date_mode=config.profile.score_date_mode,
+                )
                 self.saved = True
         except OSError:
             self.save_error = "Could not save. Press OK to retry."

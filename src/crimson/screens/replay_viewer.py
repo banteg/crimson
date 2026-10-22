@@ -94,7 +94,7 @@ def replay_card(replay: Replay, *, name: str, day: dt.date) -> WatchCard:
     """A card from the replay's own result, for a replay that comes without a high score row."""
     result = replay.result
     record = HighScoreRecord.blank(rand_value=0)
-    record.set_name(name)
+    record.name = name
     record.game_mode_id = replay.run.game_mode_id
     record.quest_level = replay.run.quest_level
     record.run_elapsed_ms = result.quest_final_ms if result.quest_final_ms is not None else result.elapsed_ms
@@ -104,7 +104,7 @@ def replay_card(replay: Replay, *, name: str, day: dt.date) -> WatchCard:
     record.shots_fired = result.shots_fired
     record.shots_hit = result.shots_hit
     record.creature_kill_count = result.kills
-    record.ensure_date_fields(day)
+    record.ensure_date(day)
     return WatchCard(record)
 
 

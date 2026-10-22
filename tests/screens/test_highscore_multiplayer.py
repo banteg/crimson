@@ -17,7 +17,7 @@ def test_survival_high_score_record_in_multiplayer(mocker, make_mode_config, ass
     mode = SurvivalMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     mocker.patch.object(mode, "apply_terrain_setup")
     mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(mode, "_save_replay")
+    mocker.patch.object(mode, "_save_replay", return_value=None)
     mode.open()
     mocker.patch.object(GameOverUi, "open", return_value=None)
 

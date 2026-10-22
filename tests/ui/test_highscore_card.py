@@ -31,8 +31,7 @@ class _Resources:
 
 
 def _record(mode: GameMode) -> HighScoreRecord:
-    record = HighScoreRecord.blank()
-    record.set_name("tester")
+    record = HighScoreRecord(name="tester")
     record.game_mode_id = mode
     record.score_xp = 1234
     record.run_elapsed_ms = 65_000
@@ -113,7 +112,7 @@ def test_weapon_row_follows_state_and_phase(drawn: _Drawn, state: GameStateId, p
 
 def test_highscore_screen_card_adds_name_date_and_underline(drawn: _Drawn) -> None:
     record = _record(GameMode.SURVIVAL)
-    record.ensure_date_fields(dt.date(2026, 1, 31))
+    record.ensure_date(dt.date(2026, 1, 31))
 
     _render(record, GameStateId.HIGHSCORES, 0)
 

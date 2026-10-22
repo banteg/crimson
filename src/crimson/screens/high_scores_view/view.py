@@ -146,7 +146,7 @@ class HighScoresView(MenuScreen):
         replays = self.state.base_dir / "replays"
         target = local_watch_target(replays, record)
         # A run the board holds plays from its replay there when the local one is gone.
-        if (target is None or target.replay is None) and record.run:
+        if (target is None or target.replay is None) and record.received and record.run:
             target = self._board_watch_target(record.run, replays / "online")
         if target is not _DOWNLOADING:
             self._watch_target = (pinned, target)
@@ -404,13 +404,12 @@ class HighScoresView(MenuScreen):
         self._watch_target = None
         items = []
         for rank, record in enumerate(self._records, start=1):
-            flags = record.flags
-            prefix = "\\g" if (flags & 1 or flags & 4) and (not flags & 2 or flags & 4) else ""
+            prefix = "\\g" if record.received else ""
             match self._request.game_mode_id:
                 case GameMode.RUSH | GameMode.QUESTS:
-                    items.append(f"{prefix}{rank}\t{record.run_elapsed_ms // 1000}\t{record.name()}")
+                    items.append(f"{prefix}{rank}\t{record.run_elapsed_ms // 1000}\t{record.name}")
                 case _:
-                    items.append(f"{prefix}{rank}\t{record.score_xp}\t{record.name()}")
+                    items.append(f"{prefix}{rank}\t{record.score_xp}\t{record.name}")
         self.score_scroll.items = items
 
     def _update_right_panel_widgets(

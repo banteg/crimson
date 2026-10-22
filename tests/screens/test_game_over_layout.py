@@ -38,7 +38,7 @@ def _open_ui(tmp_path: Path, assets_dir: Path, make_mode_config, *, phase: int) 
 
 
 def _survival_record() -> HighScoreRecord:
-    record = HighScoreRecord.blank()
+    record = HighScoreRecord()
     record.game_mode_id = GameMode.SURVIVAL
     record.most_used_weapon_id = WeaponId.PISTOL
     return record

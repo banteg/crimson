@@ -5,7 +5,7 @@ import pytest
 import crimson.screens.quest_views.quest_results as quest_results_module
 from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestRunOutcome
-from crimson.persistence.highscores import HighScoreRecord, read_highscore_records
+from crimson.persistence.highscores import HighScoreRecord, read_highscore_records, scores_path
 from crimson.quests.level import QuestLevel
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.actions import Route, StartRun
@@ -29,7 +29,7 @@ INPUT = CONTENT.offset(dy=150.0)
 
 
 def _record() -> HighScoreRecord:
-    record = HighScoreRecord.blank()
+    record = HighScoreRecord()
     record.game_mode_id = GameMode.QUESTS
     record.run_elapsed_ms = 17_610
     record.score_xp = 1750
@@ -188,10 +188,9 @@ def test_quest_results_name_entry_uses_shared_ui_text_input_typeclick_caller(
 
 def test_score_write_failure_stays_on_name_entry_and_can_retry(make_game_state, headless_resources, mocker) -> None:
     view, audio = _open_view(make_game_state, headless_resources, mocker, phase=1)
-    scores_path = view._scores_path
-    assert scores_path is not None
+    path = scores_path(view.state.base_dir)
     # A directory where the score file belongs makes the write fail like a full disk would.
-    scores_path.mkdir(parents=True)
+    path.mkdir(parents=True)
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ENTER)
 
     # The game loop starts each frame's focus, sampling Enter.
@@ -201,11 +200,11 @@ def test_score_write_failure_stays_on_name_entry_and_can_retry(make_game_state, 
     assert not view.name_entry.saved
     assert view.name_entry.save_error is not None
 
-    scores_path.rmdir()
+    path.rmdir()
     view.state.focus.begin_frame(0)
     view.update(0.05)
     assert view.phase == 2
     assert view.name_entry.saved
     assert view.name_entry.save_error is None
-    assert [record.name() for record in read_highscore_records(scores_path)] == ["banteg"]
+    assert [record.name for record in read_highscore_records(view.state.base_dir)] == ["banteg"]
     assert audio.played() == [SfxId.UI_TYPEENTER, SfxId.UI_TYPEENTER]

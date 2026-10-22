@@ -1,57 +1,28 @@
+"""The port's high scores: one typed record per line in `scores.jsonl`, shared with the native client.
+
+The original kept a scrambled, checksummed `scores5/*.hi` file per table; `scores5.py` imports those.
+"""
+
 from __future__ import annotations
 
 import datetime as dt
-import struct
-from collections.abc import Callable
+import os
 from pathlib import Path
-from typing import Any, Self, overload
 
 import msgspec
 
+from crimson.msgspec_types import I32, U32, PlayerCount
 from crimson.quests.level import QuestLevel
-from grim.atomic_write import atomic_write_bytes
 from grim.config import CrimsonConfig, HighScoreDateMode
-from grim.rand import Crand, CrandLike
 
 from ..game_modes import GameMode
 from ..weapons import WeaponId
 
-RECORD_SIZE = 0x48
-RECORD_WIRE_SIZE = RECORD_SIZE + 4  # record + checksum
+SCORES_FILE_NAME = "scores.jsonl"
 TABLE_MAX = 100
 
-NAME_SIZE = 0x20
 NAME_MAX_EDIT = 0x14  # game_over_screen_update sets ui_text_input maxlen=0x14
 UNI_NUM_MASK = 16348 * 16348 - 1
-
-
-def _known_game_mode(value: int) -> GameMode:
-    raw = int(value)
-    try:
-        return GameMode(raw)
-    except ValueError:
-        return GameMode.DEMO
-
-
-def _clamp_u32(value: int) -> int:
-    return int(value) & 0xFFFFFFFF
-
-
-def _score_checksum(data: bytes) -> int:
-    if len(data) != RECORD_SIZE:
-        raise ValueError(f"expected {RECORD_SIZE:#x} bytes, got {len(data):#x}")
-    # highscore_write_record/highscore_read_record sum through `char *`, signed on MSVC x86.
-    return _clamp_u32(sum((idx + 3) * b * 7 for idx, b in enumerate(memoryview(data).cast("b"))))
-
-
-def _encode_byte(value: int, idx: int) -> int:
-    # highscore_write_record: b += ((idx * 5 + 1) * idx + 6)
-    return (int(value) + (idx * 5 + 1) * idx + 6) & 0xFF
-
-
-def _decode_byte(value: int, idx: int) -> int:
-    # highscore_read_record: b += (-6 - ((idx * 5 + 1) * idx))
-    return (int(value) - ((idx * 5 + 1) * idx + 6)) & 0xFF
 
 
 def highscore_date_week(year: int, month: int, day: int) -> int:
@@ -69,306 +40,157 @@ def highscore_date_week(year: int, month: int, day: int) -> int:
     return ((i_var2 - i_var1) % 0x16D + i_var1) // 7 + 1
 
 
-def _score_uni_num_from_rand(rand_value: int) -> int:
-    return int(rand_value) & UNI_NUM_MASK
+def _i32(value: int) -> int:
+    value &= 0xFFFFFFFF
+    return value - (1 << 32) if value & 0x80000000 else value
 
 
-class _RecordField[T: int]:
-    @overload
-    def __init__(self: _RecordField[int], offset: int, fmt: str) -> None: ...
-
-    @overload
-    def __init__(self, offset: int, fmt: str, decode: Callable[[int], T], encode: Callable[[Any], int] = int) -> None: ...
-
-    def __init__(
-        self, offset: int, fmt: str, decode: Callable[[int], Any] = int, encode: Callable[[Any], int] = int,
-    ) -> None:
-        self._unpack = struct.Struct(fmt)
-        self._pack = struct.Struct("<I" if fmt == "<i" else fmt)
-        self._offset = offset
-        self._mask = (1 << (self._unpack.size * 8)) - 1
-        self._decode = decode
-        self._encode = encode
-    @overload
-    def __get__(self, instance: None, owner: type[HighScoreRecord]) -> Self: ...
-
-    @overload
-    def __get__(self, instance: HighScoreRecord, owner: type[HighScoreRecord] | None = None) -> T: ...
-
-    def __get__(self, instance: HighScoreRecord | None, owner: type[HighScoreRecord] | None = None) -> T | Self:
-        if instance is None:
-            return self
-        return self._decode(int(self._unpack.unpack_from(instance.data, self._offset)[0]))
-
-    def __set__(self, instance: HighScoreRecord, value: T | int) -> None:
-        self._pack.pack_into(instance.data, self._offset, int(self._encode(value)) & self._mask)
+def _today() -> dt.date:
+    return dt.datetime.now(tz=dt.UTC).astimezone().date()
 
 
-class HighScoreRecord(msgspec.Struct):
-    data: bytearray
-    # The leaderboard run a received record shows (its replay is the site's /runs/<run>.crd); kept in memory only,
-    # never in the record's bytes.
-    run: str = ""
+class ScoreTable(msgspec.Struct, frozen=True):
+    """A high score list: `highscore_build_path`'s file in the original, a key on each record here.
 
-    run_elapsed_ms = _RecordField(0x20, "<i")
-    score_xp = _RecordField(0x24, "<I")
-    game_mode_id = _RecordField(0x28, "<B", _known_game_mode)
-    quest_stage_major = _RecordField(0x29, "<B")
-    quest_stage_minor = _RecordField(0x2A, "<B")
-    most_used_weapon_id = _RecordField(0x2B, "<B", WeaponId, WeaponId)
-    shots_fired = _RecordField(0x2C, "<I")
-    shots_hit = _RecordField(0x30, "<I")
-    creature_kill_count = _RecordField(0x34, "<I")
-    uni_num = _RecordField(0x38, "<I")
-    # The run's replay, `replays/<n>-<mode>.crd` (crimson.replay.library); 0 for none. The original reserved
-    # these bytes and never read them; its duplicate check leaves them out.
-    replay_number = _RecordField(0x3C, "<I")
-    day = _RecordField(0x40, "<B")
-    date_week = _RecordField(0x41, "<B")
-    month = _RecordField(0x42, "<B")
-    year_offset = _RecordField(0x43, "<B")
-    flags = _RecordField(0x44, "<B")
-    hardcore_marker = _RecordField(0x45, "<B")
+    Only quests keep hardcore runs apart; the original filters them by the record's hardcore marker.
+    """
+
+    game_mode_id: GameMode
+    quest_level: QuestLevel | None = None
+    hardcore: bool = False
+    player_count: PlayerCount = 1
+    score_list: str = ""
 
     @classmethod
-    def blank(cls, *, rng: CrandLike | None = None, rand_value: int | None = None) -> HighScoreRecord:
-        if rng is not None and rand_value is not None:
-            raise ValueError("pass either rng or rand_value, not both")
-        data = bytearray(RECORD_SIZE)
-        data[0x46] = 0x7C
-        data[0x47] = 0xFF
-        record = cls(data=data)
-        if rand_value is None:
-            rand_value = (rng if rng is not None else Crand()).rand()
-        record.uni_num = _score_uni_num_from_rand(rand_value)
+    def for_config(
+        cls, config: CrimsonConfig, *, game_mode_id: GameMode | None = None, quest_level: QuestLevel | None = None,
+    ) -> ScoreTable:
+        """The table a run of the configured (or given) mode saves into: the configured team and selected list."""
+        mode = GameMode(config.gameplay.mode) if game_mode_id is None else game_mode_id
+        quests = mode == GameMode.QUESTS
+        return cls(
+            game_mode_id=mode,
+            quest_level=quest_level if quests else None,
+            hardcore=config.gameplay.hardcore and quests,
+            player_count=config.gameplay.player_count,
+            score_list=config.profile.named_score_list,
+        )
+
+    def stamp(self, record: HighScoreRecord) -> HighScoreRecord:
+        """The record as this table saves it: its mode, team and list, and a quest table's level and difficulty."""
+        record = msgspec.structs.replace(
+            record, game_mode_id=self.game_mode_id, player_count=self.player_count, score_list=self.score_list,
+        )
+        if self.game_mode_id == GameMode.QUESTS:
+            record = msgspec.structs.replace(record, quest_level=self.quest_level, hardcore=self.hardcore)
         return record
 
+    def holds(self, record: HighScoreRecord) -> bool:
+        quests = self.game_mode_id == GameMode.QUESTS
+        return (
+            record.game_mode_id == self.game_mode_id
+            and record.player_count == self.player_count
+            and record.score_list == self.score_list
+            and (not quests or (record.quest_level == self.quest_level and record.hardcore == self.hardcore))
+        )
+
+
+class HighScoreRecord(msgspec.Struct, kw_only=True, omit_defaults=True, tag_field="v", tag=1):
+    """`highscore_record_t` as the port stores it, with its table and the replay it links."""
+
+    name: str = ""
+    game_mode_id: GameMode = GameMode.DEMO
+    quest_level: QuestLevel | None = None
+    hardcore: bool = False
+    player_count: PlayerCount = 1
+    score_list: str = ""
+    run_elapsed_ms: I32 = 0
+    score_xp: U32 = 0
+    most_used_weapon_id: WeaponId = WeaponId.NONE
+    shots_fired: U32 = 0
+    shots_hit: U32 = 0
+    creature_kill_count: U32 = 0
+    uni_num: U32 = 0
+    # The local date `highscore_write_record` stamps.
+    date: dt.date | None = None
+    # The run's replay, `replays/<n>-<mode>.crd` (crimson.replay.library); 0 for none.
+    replay_number: U32 = 0
+    # The run's id on the leaderboard: its replay's (`replay_run_id`), or the board's for a received record.
+    run: str = ""
+    rules: int | None = None
+    game_version: str = ""
+    # A record received from the leaderboard: drawn green, never saved.
+    received: bool = False
+
     @classmethod
-    def from_bytes(cls, data: bytes) -> HighScoreRecord:
-        if len(data) != RECORD_SIZE:
-            raise ValueError(f"expected {RECORD_SIZE:#x} bytes, got {len(data):#x}")
-        return cls(data=bytearray(data))
+    def blank(cls, *, rand_value: int) -> HighScoreRecord:
+        """`highscore_record_init`: an empty record with its random tag."""
+        return cls(uni_num=int(rand_value) & UNI_NUM_MASK)
 
     def copy(self) -> HighScoreRecord:
-        return HighScoreRecord(data=bytearray(self.data), run=self.run)
+        return msgspec.structs.replace(self)
 
-    def name(self) -> str:
-        raw = bytes(self.data[:NAME_SIZE])
-        return raw.split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
-
-    def set_name(self, value: str) -> None:
-        encoded = value.encode("latin-1", errors="ignore")[: NAME_SIZE - 1]
-        self.data[:NAME_SIZE] = b"\x00" * NAME_SIZE
-        self.data[: len(encoded)] = encoded
-        self.data[min(len(encoded), NAME_SIZE - 1)] = 0
-
-    def trim_trailing_spaces(self) -> None:
-        # highscore_save_record: strips trailing spaces (0x20) in-place before saving.
-        raw = self.data[:NAME_SIZE]
-        end = raw.find(0)
-        if end < 0:
-            end = NAME_SIZE
-        i = end - 1
-        while i > 0 and raw[i] == 0x20:
-            self.data[i] = 0
-            i -= 1
-
-    @property
-    def quest_level(self) -> QuestLevel | None:
-        major = int(self.quest_stage_major)
-        minor = int(self.quest_stage_minor)
-        if major <= 0 or minor <= 0:
-            return None
-        return QuestLevel(major, minor)
-
-    @quest_level.setter
-    def quest_level(self, value: QuestLevel | None) -> None:
-        if value is None:
-            self.quest_stage_major = 0
-            self.quest_stage_minor = 0
-            return
-        self.quest_stage_major = int(value.major)
-        self.quest_stage_minor = int(value.minor)
-
-    def ensure_date_fields(self, now: dt.date | None = None) -> None:
-        if self.day != 0:
-            return
-        if now is None:
-            now = dt.datetime.now(tz=dt.UTC).astimezone().date()
-        self.day = now.day
-        self.month = now.month
-        self.year_offset = now.year - 2000
-        self.date_week = highscore_date_week(now.year, now.month, now.day)
+    def ensure_date(self, today: dt.date | None = None) -> None:
+        if self.date is None:
+            self.date = today or _today()
 
 
-def scores_dir_for_base_dir(base_dir: Path) -> Path:
-    # Original uses CreateDirectoryA("scores5") relative to cwd.
-    return base_dir / "scores5"
+_ENCODER = msgspec.json.Encoder()
+_DECODER = msgspec.json.Decoder(HighScoreRecord)
 
 
-def _with_player_count_suffix(path: Path, *, player_count: int) -> Path:
-    count = int(player_count)
-    if count <= 1:
-        return path
-    # Native only supports 1P/2P. Our port supports up to 4 players; keep separate leaderboards.
-    count = max(2, min(4, count))
-    if path.suffix.lower() != ".hi":
-        return path
-    return path.with_name(f"{path.stem}_{count}{path.suffix}")
+def scores_path(base_dir: Path) -> Path:
+    return base_dir / SCORES_FILE_NAME
 
 
-def _scores_path_for_mode_root(
-    *,
-    root: Path,
-    game_mode_id: GameMode,
-    hardcore: bool,
-    quest_stage_major: int,
-    quest_stage_minor: int,
-) -> Path:
-    mode = _known_game_mode(int(game_mode_id))
-    match mode:
-        case GameMode.SURVIVAL:
-            return root / "survival.hi"
-        case GameMode.RUSH:
-            return root / "rush.hi"
-        case GameMode.QUESTS:
-            # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
-            # and `quest*.hi` when hardcore is ON.
-            prefix = "quest" if bool(hardcore) else "questhc"
-            major = int(quest_stage_major)
-            minor = int(quest_stage_minor)
-            return root / f"{prefix}{major}_{minor}.hi"
-        case _:
-            # Native has no Typ-o case, so Typ-o's table is the fallback file too.
-            return root / "unknown.hi"
-
-
-def scores_path_for_mode(
-    base_dir: Path,
-    game_mode_id: GameMode,
-    *,
-    hardcore: bool = False,
-    quest_stage_major: int = 0,
-    quest_stage_minor: int = 0,
-    player_count: int = 1,
-    named_list: str = "",
-) -> Path:
-    """`highscore_build_path`; a named score list appends its name to the file name ("survival.hiBob")."""
-    root = scores_dir_for_base_dir(base_dir)
-    path = _scores_path_for_mode_root(
-        root=root,
-        game_mode_id=game_mode_id,
-        hardcore=bool(hardcore),
-        quest_stage_major=int(quest_stage_major),
-        quest_stage_minor=int(quest_stage_minor),
-    )
-    path = _with_player_count_suffix(path, player_count=int(player_count))
-    return path.with_name(path.name + named_list) if named_list else path
-
-
-def migrate_typo_scores(base_dir: Path) -> list[Path]:
-    """Fold the tables an earlier port saved as `typo*.hi*` into the original's `unknown*.hi*`.
-
-    Records carry their own mode, so merging appends them. Returns the migrated tables.
-    """
-    root = scores_dir_for_base_dir(base_dir)
-    migrated: list[Path] = []
-    for path in sorted(root.glob("typo*.hi*")):
-        target = path.with_name("unknown" + path.name.removeprefix("typo"))
-        write_highscore_records(target, read_highscore_records(target) + read_highscore_records(path))
-        path.unlink()
-        migrated.append(target)
-    return migrated
-
-
-def scores_path_for_config(
-    base_dir: Path,
-    config: CrimsonConfig,
-    *,
-    quest_stage_major: int = 0,
-    quest_stage_minor: int = 0,
-) -> Path:
-    """The configured mode's table: quest stage from the arguments or the configured level, and the selected list."""
-    mode = _known_game_mode(config.gameplay.mode)
-    level = config.gameplay.quest_level
-    if mode == GameMode.QUESTS and quest_stage_major == 0 and quest_stage_minor == 0 and level is not None:
-        quest_stage_major, quest_stage_minor = level.major, level.minor
-    return scores_path_for_mode(
-        base_dir,
-        mode,
-        hardcore=config.gameplay.hardcore,
-        quest_stage_major=quest_stage_major,
-        quest_stage_minor=quest_stage_minor,
-        player_count=config.gameplay.player_count,
-        named_list=config.profile.named_score_list,
-    )
-
-
-def decode_record_payload(encoded: bytes) -> bytes:
-    if len(encoded) != RECORD_SIZE:
-        raise ValueError(f"expected {RECORD_SIZE:#x} bytes, got {len(encoded):#x}")
-    out = bytearray(encoded)
-    for idx in range(RECORD_SIZE):
-        out[idx] = _decode_byte(out[idx], idx)
-    return bytes(out)
-
-
-def encode_record_payload(decoded: bytes) -> bytes:
-    if len(decoded) != RECORD_SIZE:
-        raise ValueError(f"expected {RECORD_SIZE:#x} bytes, got {len(decoded):#x}")
-    out = bytearray(decoded)
-    for idx in range(RECORD_SIZE):
-        out[idx] = _encode_byte(out[idx], idx)
-    return bytes(out)
-
-
-def read_highscore_records(path: Path) -> list[HighScoreRecord]:
-    if not path.is_file():
+def read_highscore_records(base_dir: Path) -> list[HighScoreRecord]:
+    """Every saved record; a line that does not decode (a torn write, a newer version's) is skipped."""
+    try:
+        lines = scores_path(base_dir).read_bytes().splitlines()
+    except FileNotFoundError:
         return []
     records: list[HighScoreRecord] = []
-    with path.open("rb") as fp:
-        while True:
-            blob = fp.read(RECORD_WIRE_SIZE)
-            if not blob:
-                break
-            if len(blob) != RECORD_WIRE_SIZE:
-                break
-            payload = blob[:RECORD_SIZE]
-            stored_checksum = int(struct.unpack_from("<I", blob, RECORD_SIZE)[0])
-            decoded = decode_record_payload(payload)
-            computed = _score_checksum(decoded)
-            if computed != stored_checksum:
-                continue
-            records.append(HighScoreRecord.from_bytes(decoded))
+    for line in lines:
+        try:
+            records.append(_DECODER.decode(line))
+        except msgspec.DecodeError:
+            continue
     return records
 
 
-def write_highscore_records(path: Path, records: list[HighScoreRecord]) -> None:
+def append_highscore_records(base_dir: Path, records: list[HighScoreRecord]) -> None:
+    """Append records in one write, so the clients sharing the file never lose each other's."""
+    if not records:
+        return
+    path = scores_path(base_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = bytearray()
-    for record in records:
-        record = record.copy()
-        record.trim_trailing_spaces()
-        record.ensure_date_fields()
-        encoded = encode_record_payload(bytes(record.data))
-        checksum = _score_checksum(bytes(record.data))
-        payload.extend(encoded)
-        payload.extend(struct.pack("<I", checksum))
-    atomic_write_bytes(path, bytes(payload))
+    payload = b"".join(_ENCODER.encode(record) + b"\n" for record in records)
+    fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_APPEND, 0o644)
+    try:
+        size = os.fstat(fd).st_size
+        # A torn last line would swallow this record's start.
+        if size and os.pread(fd, 1, size - 1) != b"\n":
+            payload = b"\n" + payload
+        os.write(fd, payload)
+    finally:
+        os.close(fd)
 
 
 def _passes_date_filter(entry: HighScoreRecord, date_mode: HighScoreDateMode, now: dt.date) -> bool:
     if date_mode == HighScoreDateMode.ALL_TIME:
         return True
-    if entry.day == 0 or entry.month == 0 or 2000 + entry.year_offset != now.year:
+    date = entry.date
+    if date is None or date.year != now.year:
         return False
     match date_mode:
         case HighScoreDateMode.MONTH:
-            return entry.month == now.month
+            return date.month == now.month
         case HighScoreDateMode.WEEK:
-            return entry.date_week == highscore_date_week(now.year, now.month, now.day)
+            return highscore_date_week(date.year, date.month, date.day) == highscore_date_week(
+                now.year, now.month, now.day,
+            )
         case HighScoreDateMode.DAY:
-            return entry.day == now.day and entry.month == now.month
+            return date.day == now.day and date.month == now.month
     return False
 
 
@@ -384,25 +206,27 @@ def select_highscore_table(
 
 
 def read_highscore_table(
-    path: Path,
+    base_dir: Path,
+    table: ScoreTable,
     *,
-    game_mode_id: GameMode,
     date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
     now: dt.date | None = None,
 ) -> list[HighScoreRecord]:
     return select_highscore_table(
-        read_highscore_records(path),
-        game_mode_id=game_mode_id,
+        [record for record in read_highscore_records(base_dir) if table.holds(record)],
+        game_mode_id=table.game_mode_id,
         date_mode=date_mode,
-        now=now or dt.datetime.now(tz=dt.UTC).astimezone().date(),
+        now=now or _today(),
     )
 
 
 def _score_key(record: HighScoreRecord, game_mode_id: GameMode) -> tuple[bool, int]:
-    # Native comparators interpret both wire fields as signed ints. Quest bonuses
+    # Native comparators interpret both fields as signed ints. Quest bonuses
     # can legitimately produce a negative final time; zero is an empty entry.
-    offset = 0x20 if game_mode_id in (GameMode.RUSH, GameMode.QUESTS) else 0x24
-    value = struct.unpack_from("<i", record.data, offset)[0]
+    if game_mode_id in (GameMode.RUSH, GameMode.QUESTS):
+        value = record.run_elapsed_ms
+    else:
+        value = _i32(record.score_xp)
     if game_mode_id == GameMode.QUESTS:
         return value == 0, value
     return False, -value
@@ -421,23 +245,22 @@ def rank_index(records_sorted: list[HighScoreRecord], record: HighScoreRecord) -
 
 
 def upsert_highscore_record(
-    path: Path,
+    base_dir: Path,
+    table: ScoreTable,
     record: HighScoreRecord,
     *,
     date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
     now: dt.date | None = None,
 ) -> tuple[list[HighScoreRecord], int]:
-    """Save a qualifying score without discarding history outside the displayed table."""
-    now = now or dt.datetime.now(tz=dt.UTC).astimezone().date()
-    history = read_highscore_records(path)
-    table = select_highscore_table(history, game_mode_id=record.game_mode_id, date_mode=date_mode, now=now)
-    idx = rank_index(table, record)
+    """Save a qualifying score into `table`; history outside the displayed table stays."""
+    now = now or _today()
+    shown = read_highscore_table(base_dir, table, date_mode=date_mode, now=now)
+    idx = rank_index(shown, record)
     if idx >= TABLE_MAX:
-        return table, idx
-    candidate = record.copy()
-    candidate.trim_trailing_spaces()
-    candidate.ensure_date_fields(now)
-    history.append(candidate)
-    write_highscore_records(path, history)
-    table.insert(idx, candidate)
-    return table[:TABLE_MAX], idx
+        return shown, idx
+    # highscore_save_record strips trailing spaces in place before saving, down to the first character.
+    candidate = table.stamp(msgspec.structs.replace(record, name=record.name[:1] + record.name[1:].rstrip(" ")))
+    candidate.ensure_date(now)
+    append_highscore_records(base_dir, [candidate])
+    shown.insert(idx, candidate)
+    return shown[:TABLE_MAX], idx

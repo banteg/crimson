@@ -7,8 +7,7 @@ import msgspec
 
 from grim.rand import CrandLike
 
-from ..game_modes import GameMode
-from ..persistence.highscores import TABLE_MAX, read_highscore_table
+from ..persistence.highscores import TABLE_MAX, ScoreTable, read_highscore_table
 from ..rng_caller_static import RngCallerStatic
 
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
@@ -227,16 +226,16 @@ def load_typo_dictionary(path: Path) -> list[str]:
     return words[:MAX_TYPO_DICTIONARY_WORDS]
 
 
-def load_typo_highscore_names(path: Path) -> list[str]:
+def load_typo_highscore_names(base_dir: Path, table: ScoreTable) -> list[str]:
     try:
-        records = read_highscore_table(path, game_mode_id=GameMode.TYPO)
+        records = read_highscore_table(base_dir, table)
     except OSError:
         return []
 
     names: list[str] = []
     seen: set[str] = set()
     for record in records:
-        name = record.name()
+        name = record.name
         if not is_typo_highscore_name(name) or name in seen:
             continue
         names.append(name)

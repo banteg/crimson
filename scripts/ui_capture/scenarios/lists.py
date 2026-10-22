@@ -7,27 +7,29 @@ from crimson.weapons import WeaponId
 
 # Unlocked, so the weapon and perk databases overflow their ten rows.
 STATUS = unlock_all
-# The score list (thirty Survival scores, every third one sent) and the databases' lists at 1024x768: a row's
+# The score list (thirty Survival scores, every third one received) and the databases' lists at 1024x768: a row's
 # middle, and the scrollbar track 10px right of the list.
 HS_ROW, HS_TRACK = (200, 303), 357
 DB_ROW, DB_TRACK = (200, 330), 359
 
 
 def scores(gs):
-    from crimson.persistence.highscores import HighScoreRecord, scores_path_for_config, write_highscore_records
+    from crimson.persistence.highscores import HighScoreRecord, append_highscore_records
 
     gs.config.gameplay.mode = GameMode.SURVIVAL
-    records = []
-    for i in range(30):
-        record = HighScoreRecord.blank(rand_value=i)
-        record.game_mode_id = GameMode.SURVIVAL
-        record.set_name(f"player {i}")
-        record.score_xp = 10000 - i * 250
-        record.most_used_weapon_id = WeaponId.PISTOL
-        record.flags = 1 if i % 3 == 0 else 0
-        record.ensure_date_fields(dt.date(2026, 1, 1))
-        records.append(record)
-    write_highscore_records(scores_path_for_config(gs.base_dir, gs.config), records)
+    records = [
+        HighScoreRecord(
+            name=f"player {i}",
+            game_mode_id=GameMode.SURVIVAL,
+            score_xp=10000 - i * 250,
+            most_used_weapon_id=WeaponId.PISTOL,
+            uni_num=i,
+            date=dt.date(2026, 1, 1),
+            received=i % 3 == 0,
+        )
+        for i in range(30)
+    ]
+    append_highscore_records(gs.base_dir, records)
 
 
 def drag(name, x, grab_y, ys, off_x=None):

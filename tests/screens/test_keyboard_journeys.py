@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
-from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
+from crimson.persistence.highscores import HighScoreRecord, append_highscore_records
 from crimson.screens.actions import Route, ScoreQuery, ShowScores
 from crimson.screens.high_scores_view.view import HighScoresView
 from crimson.screens.menu import MenuView
@@ -161,11 +161,8 @@ def test_perk_database_details_follow_the_keyboard(loop, mocker) -> None:
 def test_named_score_list_added_and_deleted_by_keyboard(loop, mocker) -> None:
     config = loop.state.config
     config.gameplay.mode = GameMode.SURVIVAL
-    record = HighScoreRecord.blank(rand_value=1)
-    record.game_mode_id = GameMode.SURVIVAL
-    record.set_name("ace")
-    record.score_xp = 500
-    write_highscore_records(scores_path_for_mode(loop.state.base_dir, GameMode.SURVIVAL, named_list="Bob"), [record])
+    record = HighScoreRecord(name="ace", game_mode_id=GameMode.SURVIVAL, score_list="Bob", score_xp=500)
+    append_highscore_records(loop.state.base_dir, [record])
     loop.navigation.navigate(ShowScores(ScoreQuery(GameMode.SURVIVAL)))
     finish_transition(loop)
     scores = loop.state.screens.active
@@ -188,7 +185,7 @@ def test_named_score_list_added_and_deleted_by_keyboard(loop, mocker) -> None:
     press(loop, mocker, rl.KeyboardKey.KEY_ENTER)
     # The new list is selected and reads its own score file.
     assert config.profile.named_score_list == "Bob"
-    assert [entry.name() for entry in scores._records] == ["ace"]
+    assert [entry.name for entry in scores._records] == ["ace"]
 
     tab_to(loop, mocker, lambda: scores._profile_delete_button.focused)
     press(loop, mocker, rl.KeyboardKey.KEY_ENTER)

@@ -52,6 +52,6 @@ def test_build_highscore_record_for_a_hardcore_quest_uses_the_start_tag() -> Non
 
     assert record.game_mode_id == GameMode.QUESTS
     assert record.quest_level == QuestLevel(5, 10)
-    assert record.hardcore_marker == 0x75
+    assert record.hardcore
     assert record.uni_num == 0x0AAC0004
     assert state.rng.state == rng_state

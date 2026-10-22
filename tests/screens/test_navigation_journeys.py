@@ -9,7 +9,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.leaderboard import Leaderboard, OnlineScore
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
-from crimson.persistence.highscores import HighScoreRecord, scores_path_for_config, upsert_highscore_record
+from crimson.persistence.highscores import HighScoreRecord, ScoreTable, upsert_highscore_record
 from crimson.quests.level import QuestLevel
 from crimson.replay import ReplayRecorder, dump_replay, dump_replay_file
 from crimson.replay.input_codec import pack_tick
@@ -234,13 +234,10 @@ def test_watch_plays_a_pinned_rows_replay_over_the_scores_and_esc_returns(loop, 
     replay = finish_replay(recorder)
     (state.base_dir / "replays").mkdir(parents=True)
     dump_replay_file(state.base_dir / "replays" / replay_file_name(1, GameMode.SURVIVAL), replay)
-    record = HighScoreRecord.blank(rand_value=0)
-    record.set_name("banteg")
-    record.game_mode_id = GameMode.SURVIVAL
-    record.score_xp = 10
-    record.run_elapsed_ms = 500
-    record.replay_number = 1
-    upsert_highscore_record(scores_path_for_config(state.base_dir, state.config), record)
+    record = HighScoreRecord(
+        name="banteg", game_mode_id=GameMode.SURVIVAL, score_xp=10, run_elapsed_ms=500, replay_number=1,
+    )
+    upsert_highscore_record(state.base_dir, ScoreTable.for_config(state.config), record)
 
     loop.navigation.navigate(ShowScores(ScoreQuery(GameMode.SURVIVAL)))
     finish_transition(loop)
