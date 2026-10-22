@@ -2,6 +2,27 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.22.0
+
+### For players
+
+#### One high score file
+
+- Local high scores live in one file, `scores.jsonl`, which the Python, browser and desktop games share. Tables in a `scores5` folder, the original game's included, import at startup and move to `scores5/imported`. Each new score names its replay, rules and build, and a run of yours the leaderboard holds turns green by its run id.
+- Saving a score is all or nothing: a failed write leaves the file and the original tables as they were, and an import that stops partway picks up on the next start without duplicating rows. Games sharing a data folder take turns writing, so none loses another's scores.
+
+#### Other changes
+
+- The browser and desktop games cover the whole window at enlarged display scales. Menus, gameplay and replay preparation no longer leave stale pixels along the top and left edges.
+- RTX in the Python port draws faster: Ion and Fire Bullets beams share one draw, and ground lighting skips work that cannot change the picture. Frames look the same as before.
+- The site has a News page, in the top menu, with the latest posts on the home page.
+- Players can link a Twitch account beside GitHub, Discord and X. A linked account shows the name its runs were played under, and each badge names its handle where that differs.
+- The home page stacks the player and bot boards at full width, so names and scores fit on small screens. Score rows no longer carry a rules label; the full boards keep their rules filter.
+
+### Under the hood
+
+- The Python and native score readers share one record format and are checked against the same corpus of valid and malformed lines. A Windows CI job covers file locking, failed writes and rollback.
+
 ## 0.21.0
 
 ### For players
@@ -21,7 +42,6 @@ These corrections apply in the Python port and the browser/native game. `--prese
 
 - `crimson save unlock` unlocks every normal and hardcore quest in an existing campaign save, creating a backup first. Close the game before running it; use `--base-dir` to select a different runtime directory.
 - RTX's F6 and `rtxdebug` views now include smoke density, heat, airflow and scattered light.
-- Local high scores live in one file, `scores.jsonl`, which the Python, browser and desktop games share. Tables in a `scores5` folder, the original game's included, import at startup and move to `scores5/imported`. Each new score names its replay, rules and build, and a run of yours the leaderboard holds turns green by its run id.
 - Python installations separate gameplay dependencies from development tools. Quest recipe authoring uses the optional `quests` extra; ordinary gameplay and compiled-quest replays do not need it.
 
 ### Under the hood
