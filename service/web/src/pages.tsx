@@ -20,7 +20,8 @@ import {
 } from "../../src/api-types";
 import { boardFor, boardPath, type QuestBoard, questPage, type QuestPage, questsPath, type SurvivalBoard, survivalPage } from "../../src/paths";
 import { get, moderate, post } from "./api";
-import { formatLongDuration, formatScore, quantity } from "./format";
+import NEWS from "virtual:news";
+import { formatLongDuration, formatPostDate, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
 import { playerLabel, runLabel } from "./names";
 import { gameplayPreference, setGameplayPreference } from "./analytics-preference";
@@ -357,9 +358,35 @@ async function home(): Promise<Screen> {
           </p>
         </>
       ),
+      () => (
+        <>
+          <h2>News</h2>
+          <For each={NEWS.slice(0, HOME_NEWS)}>{(post) => <NewsPost post={post} />}</For>
+          <p>
+            <a href="/news">All news</a>
+          </p>
+        </>
+      ),
     ],
   };
 }
+
+const HOME_NEWS = 2;
+
+// A post as the original crimsonland.com set its news: the title and the date on a bar, then the text.
+function NewsPost(props: { post: (typeof NEWS)[number] }) {
+  return (
+    <article class="news">
+      <div class="news-bar">
+        <h3>{props.post.title}</h3>
+        <time datetime={props.post.date}>{formatPostDate(props.post.date)}</time>
+      </div>
+      <div innerHTML={props.post.html} />
+    </article>
+  );
+}
+
+const NEWS_SCREEN: Screen = { title: "News", quest: null, panels: NEWS.map((post) => () => <NewsPost post={post} />) };
 
 // Every ranked run on a board together, under its heading; Survival counts the time survived, a quest the time played.
 function BoardTotals(props: { view: BoardView }) {
@@ -1304,6 +1331,7 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   else if ((match = /^\/login\/([0-9a-f]{64})$/.exec(path))) screen = await login(match[1]!, nav);
   else if (path === "/account") screen = await account(nav);
   else if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) screen = await runPage(match[1]!, nav);
+  else if (path === "/news") screen = NEWS_SCREEN;
   else if (path === "/about") screen = ABOUT;
   else if (path === "/privacy") screen = PRIVACY;
   else if (path === "/terms") screen = TERMS;

@@ -132,3 +132,7 @@ a.check{color:var(--label);text-decoration:none;white-space:nowrap}a.check:hover
 }
 .board-totals{margin:-8px 0 10px}
 .board-switch{display:flex;flex-wrap:wrap;gap:4px 24px;margin:0 0 6px}
+/* News keeps the original crimsonland.com's bar: the title and the date on navy between two blue rules. */
+.news+.news{margin-top:20px}.news img{max-width:100%}
+.news-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:0 12px;margin:2px 0 8px;padding:0 6px;
+  background:#112233;border-block:1px solid #3a6a8a}.news-bar h3{margin:0;color:#fff}.news-bar time{white-space:nowrap}

@@ -386,7 +386,7 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
       player: { url: `${url.origin}/play/?watch=${run.id}`, width: VIEW_W, height: VIEW_H },
     };
   }
-  return titled(({ "/about": "About", "/privacy": "Privacy", "/terms": "Terms", "/analytics": "Gameplay analytics" } as Record<string, string>)[path] ?? null);
+  return titled(({ "/news": "News", "/about": "About","/privacy": "Privacy", "/terms": "Terms", "/analytics": "Gameplay analytics" } as Record<string, string>)[path] ?? null);
 }
 
 // The site's one page, titled for the route so shared links preview what they point at.

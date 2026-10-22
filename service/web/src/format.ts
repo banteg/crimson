@@ -17,6 +17,14 @@ export function formatLongDuration(ms: number): string {
   return [quantity(Math.floor(seconds / size), unit), ...(rest ? [quantity(rest, next![0])] : [])].join(" ");
 }
 
+// A YYYY-MM-DD date the way the original crimsonland.com dated its news: "February 1st 2026".
+export function formatPostDate(date: string): string {
+  const day = new Date(`${date}T00:00:00Z`);
+  const n = day.getUTCDate();
+  const suffix = Math.floor(n / 10) === 1 ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th");
+  return `${day.toLocaleString("en-US", { month: "long", timeZone: "UTC" })} ${n}${suffix} ${day.getUTCFullYear()}`;
+}
+
 // A board's score: experience for Survival, the final time for quests, which bonuses can take below zero.
 export function formatScore(board: Board, score: number): string {
   if (!BOARDS[board].quests) return `${score.toLocaleString("en-US")} xp`;
