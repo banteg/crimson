@@ -386,7 +386,8 @@ function NewsPost(props: { post: (typeof NEWS)[number] }) {
   );
 }
 
-const NEWS_SCREEN: Screen = { title: "News", quest: null, panels: NEWS.map((post) => () => <NewsPost post={post} />) };
+// Every post in one panel, as the original's news ran down one column; a panel each would stagger leaving the page.
+const NEWS_SCREEN: Screen = { title: "News", quest: null, panels: [() => <For each={NEWS}>{(post) => <NewsPost post={post} />}</For>] };
 
 // Every ranked run on a board together, under its heading; Survival counts the time survived, a quest the time played.
 function BoardTotals(props: { view: BoardView }) {

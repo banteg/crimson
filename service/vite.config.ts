@@ -4,7 +4,7 @@ import { defineConfig, type Plugin } from "vite";
 import solid from "vite-plugin-solid";
 
 // News posts: news/YYYY-MM-DD-slug.md, each opening with its "# Title". The site imports them as "virtual:news",
-// rendered to HTML at build time, newest first.
+// rendered to HTML at build time, newest first by file name.
 function news(): Plugin {
   const id = "virtual:news";
   const dir = new URL("news/", import.meta.url);
