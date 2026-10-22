@@ -2,7 +2,6 @@
 # requires-python = ">=3.14"
 # dependencies = [
 #     "mistune>=3.2.0",
-#     "requests>=2.32.5",
 #     "sulguk>=0.11.1",
 # ]
 # ///

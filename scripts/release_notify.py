@@ -2,19 +2,19 @@
 # requires-python = ">=3.14"
 # dependencies = [
 #     "mistune>=3.2.0",
-#     "requests>=2.32.5",
 #     "sulguk>=0.11.1",
 # ]
 # ///
 from __future__ import annotations
 
+import argparse
+import json
 import os
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
-
-import mistune
-import requests
-import sulguk
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -48,6 +48,10 @@ def _format_chunk(header: str, lines: Sequence[str]) -> str:
 
 
 def render_telegram_message(markdown: str) -> RenderedTelegramMessage:
+    # Only preparation needs third-party packages; delivery runs on system Python.
+    import mistune
+    import sulguk
+
     html = mistune.html(markdown)
     rendered = sulguk.transform_html(html)
     return RenderedTelegramMessage(text=rendered.text, entities=tuple(rendered.entities))
@@ -114,29 +118,15 @@ def build_release_messages(
         chunk_total = len(messages)
 
 
-def fetch_release(*, repo: str, tag: str, github_token: str | None) -> tuple[str, str]:
-    headers = {"Accept": "application/vnd.github+json"}
-    if github_token:
-        headers["Authorization"] = f"Bearer {github_token}"
-        headers["X-GitHub-Api-Version"] = "2022-11-28"
-    resp = requests.get(
-        f"https://api.github.com/repos/{repo}/releases/tags/{tag}",
-        headers=headers,
-        timeout=30,
-    )
-    try:
-        resp.raise_for_status()
-    except requests.HTTPError:
-        print(f"github api error: {resp.status_code} {resp.text}")
-        raise
-    release = resp.json()
-    body = release.get("body")
-    if body is None:
-        raise KeyError(f"release body missing (keys={sorted(release.keys())})")
-    release_url = release.get("html_url")
-    if not isinstance(release_url, str) or not release_url:
-        raise KeyError(f"release html_url missing (keys={sorted(release.keys())})")
-    return body, release_url
+def message_payloads(messages: Sequence[RenderedTelegramMessage]) -> list[dict[str, object]]:
+    return [
+        {
+            "text": message.text,
+            "entities": list(message.entities),
+            "link_preview_options": {"is_disabled": True},
+        }
+        for message in messages
+    ]
 
 
 def send_telegram_messages(
@@ -145,38 +135,58 @@ def send_telegram_messages(
     chat_id: str,
     messages: Sequence[RenderedTelegramMessage],
 ) -> None:
-    total = len(messages)
-    print(f"prepared {total} Telegram message(s)")
-    for index, message in enumerate(messages, start=1):
-        payload = {
-            "chat_id": chat_id,
-            "text": message.text,
-            "entities": list(message.entities),
-            "link_preview_options": {"is_disabled": True},
-        }
-        resp = requests.post(
+    send_telegram_payloads(bot_token=bot_token, chat_id=chat_id, payloads=message_payloads(messages))
+
+
+def send_telegram_payloads(*, bot_token: str, chat_id: str, payloads: Sequence[dict[str, object]]) -> None:
+    total = len(payloads)
+    for index, payload in enumerate(payloads, start=1):
+        request = urllib.request.Request(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json=payload,
-            timeout=30,
+            data=json.dumps({**payload, "chat_id": chat_id}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
         )
         try:
-            resp.raise_for_status()
-        except requests.HTTPError:
-            print(f"telegram api error on message {index}/{total}: {resp.status_code} {resp.text}")
-            raise
-        print(f"sent message {index}/{total} to {chat_id}")
+            with urllib.request.urlopen(request, timeout=30) as response:
+                result = json.load(response)
+        except (urllib.error.URLError, TimeoutError) as exc:
+            # The request URL contains the bot token; do not print it or retry an uncertain send.
+            raise SystemExit(f"Telegram request failed on message {index}/{total}: {type(exc).__name__}") from None
+        if result.get("ok") is not True:
+            raise SystemExit(f"Telegram rejected message {index}/{total}")
+        print(f"sent message {index}/{total}", flush=True)
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Prepare release notifications or deliver prepared messages.")
+    commands = parser.add_subparsers(dest="command", required=True)
+    prepare = commands.add_parser("prepare")
+    prepare.add_argument("notes", type=Path)
+    prepare.add_argument("output", type=Path)
+    send = commands.add_parser("send")
+    send.add_argument("payload", type=Path)
+    args = parser.parse_args()
+
+    if args.command == "send":
+        send_telegram_payloads(
+            bot_token=os.environ["TELEGRAM_BOT_TOKEN"],
+            chat_id=os.environ["TELEGRAM_CHAT_ID"],
+            payloads=json.loads(args.payload.read_text(encoding="utf-8")),
+        )
+        return
+
     repo = os.environ["REPO"]
     tag = os.environ["TAG_NAME"]
-    bot_token = os.environ["TELEGRAM_BOT_TOKEN"]
-    chat_id = os.environ["TELEGRAM_CHAT_ID"]
-    github_token = os.environ.get("GITHUB_TOKEN")
-
-    body, release_url = fetch_release(repo=repo, tag=tag, github_token=github_token)
-    messages = build_release_messages(repo=repo, tag=tag, body=body, release_url=release_url)
-    send_telegram_messages(bot_token=bot_token, chat_id=chat_id, messages=messages)
+    server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+    messages = build_release_messages(
+        repo=repo,
+        tag=tag,
+        body=args.notes.read_text(encoding="utf-8"),
+        release_url=f"{server}/{repo}/releases/tag/{tag}",
+    )
+    args.output.write_text(json.dumps(message_payloads(messages), ensure_ascii=False), encoding="utf-8")
+    print(f"prepared {len(messages)} Telegram message(s)")
 
 
 if __name__ == "__main__":
