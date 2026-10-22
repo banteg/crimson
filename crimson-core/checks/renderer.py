@@ -12,6 +12,10 @@ import tempfile
 from pathlib import Path
 
 CORE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(CORE))
+
+from adapter import apply_diffs, load_diffs
+from game import GAME_DIFFS
 
 
 def tool(name: str) -> str:
@@ -22,6 +26,15 @@ def tool(name: str) -> str:
 
 
 def build(out: Path, web: bool, benchmark: str | None = None) -> Path:
+    # Compile the actual adapted full-screen helpers over the test's small Grim
+    # bridge, so hard-coded, pre-corrected test vertices cannot hide edge gaps.
+    hunks = load_diffs(GAME_DIFFS)
+    sources = []
+    for name in ("draw_fullscreen_quad", "draw_fullscreen_color"):
+        rel = f"decomp/1.9/grim/render/{name}.cpp"
+        source = apply_diffs(rel, (CORE.parent / rel).read_text(), hunks)
+        sources.append("\n".join(line for line in source.splitlines() if not line.startswith("#include")))
+    (out / "fullscreen.inc").write_text("\n".join(sources))
     filtering = (CORE.parent / "src/grim/filtering.glsl").read_text()
     (out / "filtering.h").write_text('R"GLSL(' + filtering + ')GLSL"\n')
     # Only wasm2c's scalar types are needed by the rendering imports.

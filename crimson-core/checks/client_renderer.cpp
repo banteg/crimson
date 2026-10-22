@@ -29,6 +29,63 @@ void rectangle(float left, float top, float right, float bottom, u32 color) {
   w2c_host_draw(nullptr, 5, 0, 4, 0, 2);
 }
 
+// Minimal bridge for the production full-screen helpers. grim_draw_quad takes
+// raw D3D coordinates, unlike rectangle(), which supplies corrected edges.
+struct IDirect3DDevice8 {
+  void SetTexture(int stage, int id) { w2c_host_set_texture(nullptr, stage, id); }
+  void SetTextureStageState(int stage, int state, int value) {
+    w2c_host_texture_stage_state(nullptr, stage, state, value);
+  }
+} fullscreen_device;
+IDirect3DDevice8 *grim_d3d_device = &fullscreen_device;
+unsigned int grim_backbuffer_width = 1024, grim_backbuffer_height = 768;
+enum { D3DTSS_COLOROP = TSS_COLOROP, D3DTSS_ALPHAOP = TSS_ALPHAOP,
+       D3DTOP_SELECTARG2 = 3, D3DTOP_MODULATE = 4 };
+struct IGrim2D_cpp {
+  u32 color = 0xffffffff;
+  void grim_set_rotation(float angle) { assert(angle == 0); }
+  void grim_begin_batch() {}
+  void grim_end_batch() {}
+  void grim_set_color(float r, float g, float b, float a) {
+    color = (u32)(a * 255) << 24 | (u32)(r * 255) << 16 | (u32)(g * 255) << 8 | (u32)(b * 255);
+  }
+  void grim_draw_quad(float x, float y, float w, float h) {
+    rectangle(x + .5f, y + .5f, x + w + .5f, y + h + .5f, color);
+  }
+  void grim_draw_fullscreen_quad(int);
+  void grim_draw_fullscreen_color(float, float, float, float);
+};
+#include "fullscreen.inc"
+
+void check_fullscreen(int width, int height) {
+  renderer_resize(width, height);
+  IGrim2D_cpp grim;
+  for (bool textured : {false, true}) {
+    w2c_host_clear(nullptr, 0xffff00ff); // stale frame, visible through any gap
+    if (textured) {
+      w2c_host_texture_create(nullptr, 99, 1, 1, 0);
+      memset(memory + 1024, 0, 4);
+      memory[1027] = 255;
+      w2c_host_texture_upload(nullptr, 99, 1024);
+      w2c_host_set_texture(nullptr, 0, 99);
+      grim.grim_draw_fullscreen_quad(0);
+    } else {
+      grim.grim_draw_fullscreen_color(0, 0, 0, 1);
+    }
+    int w, h;
+    auto pixels = renderer_capture(w, h);
+    for (size_t i = 0; i < pixels.size(); i += 4) {
+      if (pixels[i] || pixels[i + 1] || pixels[i + 2] || pixels[i + 3] != 255) {
+        fprintf(stderr, "full-screen %s gap at %zu,%zu in %dx%d\n",
+                textured ? "texture" : "color", i / 4 % w, i / 4 / w, w, h);
+        abort();
+      }
+    }
+    w2c_host_set_texture(nullptr, 0, 0);
+  }
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 3);
+}
+
 void check_scene(int window_width, int window_height, int expected_width, int expected_height) {
   renderer_resize(window_width, window_height);
   Viewport v = renderer_viewport(window_width, window_height);
@@ -166,6 +223,9 @@ int main() {
   assert(textures[0].width == 2048); // Correct on the very first draw, too.
   w2c_host_render_state(nullptr, RS_CULLMODE, 1);
   w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 3);
+  for (auto size : {std::pair{1024, 768}, {1280, 960}, {1600, 1200}, {2048, 1536},
+                    {2300, 1540}, {2276, 1636}, {3840, 2160}, {1001, 777}, {400, 300}})
+    check_fullscreen(size.first, size.second);
   check_scene(1024, 768, 1024, 768);
   check_scene(1280, 960, 1280, 960);
   check_scene(1600, 1200, 1600, 1200);

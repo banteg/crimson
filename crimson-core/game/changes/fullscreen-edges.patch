@@ -1,0 +1,19 @@
+Full-screen surfaces must start at the D3D pixel boundary, not its centre.
+The host's logical half-pixel conversion otherwise leaves stale top/left
+pixels when the scene target is larger than the game's logical resolution.
+Keep this correction in the full-screen helpers; ordinary sprite coordinates
+and the renderer's D3D conversion remain unchanged.
+--- a/decomp/1.9/grim/render/draw_fullscreen_quad.cpp
++++ b/decomp/1.9/grim/render/draw_fullscreen_quad.cpp
+@@ -11,2 +11,2 @@
+-        0.0f,
+-        0.0f,
++        -0.5f,
++        -0.5f,
+--- a/decomp/1.9/grim/render/draw_fullscreen_color.cpp
++++ b/decomp/1.9/grim/render/draw_fullscreen_color.cpp
+@@ -22,2 +22,2 @@
+-            0.0f,
+-            0.0f,
++            -0.5f,
++            -0.5f,

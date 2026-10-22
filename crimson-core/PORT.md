@@ -123,6 +123,12 @@ the host does not expand the visible world or change ranked eligibility.
 Input and presentation share one integer, top-origin letterbox rectangle,
 including odd sizes and fractional display densities.
 
+Full-screen texture and color helpers start at the D3D pixel boundary
+(-0.5, -0.5), cancelling that correction for their edges. This covers the
+entire physical target at every scale, including terrain, menu backgrounds,
+fades and replay preparation, without leaving pixels from the previous frame
+along the top or left edge. Ordinary sprite coordinates are unchanged.
+
 The scene target is resized before each frame, preserving its previous image
 for frames that draw only overlays. Held frames and practice anchors keep their
 capture density and scale into the current scene target on restoration without

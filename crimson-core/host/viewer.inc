@@ -329,8 +329,7 @@ static void viewer_over_panel(float offset, float *corner) {
 static constexpr float VIEWER_OVER_CARD_Y = 80, VIEWER_OVER_BUTTONS_Y = 250;
 
 static void viewer_preparing() {
-  float black[4] = {0, 0, 0, 1}, at[2] = {0, 0};
-  grim_interface_ptr->grim_draw_rect_filled(at, viewer_w(), viewer_h(), black);
+  grim_interface_ptr->grim_draw_fullscreen_color(0, 0, 0, 1);
   float corner[2];
   viewer_over_panel(0, corner);
   grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
