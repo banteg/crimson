@@ -17,7 +17,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      scores: ${{ steps.detect.outputs.score-store-windows }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          base=()
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            base=(--base "$BASE_SHA")
+          fi
+          python3 scripts/ci_changed_paths.py changed "${base[@]}" score-store-windows >> "$GITHUB_OUTPUT"
+
   score-store-windows:
+    needs: changes
+    if: needs.changes.outputs.scores == 'true'
     name: score-store-windows
     runs-on: windows-latest
     timeout-minutes: 10

@@ -94,6 +94,10 @@ RE_TOOLS = Suite(
 )
 
 SUITES = {
+    "score-store-windows": Suite(
+        (".github/workflows/ci.yml",),
+        ("tests/persistence/test_highscores.py", "tests/conftest.py"),
+    ),
     "core-build": Suite(CORE_BUILD),
     "game-build": Suite(GAME_BUILD, ("src/crimson/game_version.py",)),
     "core-corpus": Suite(CORE_CORPUS),

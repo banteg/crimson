@@ -145,6 +145,45 @@ def test_short_writes_are_completed(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert read_highscore_records(tmp_path) == records
 
 
+@pytest.mark.parametrize("failure", [None, "lock", "write", "unlock"])
+def test_windows_unlocks_before_closing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str | None,
+) -> None:
+    if os.name != "nt":
+        pytest.skip("Windows byte-range locking")
+    import msvcrt
+
+    locking, close = msvcrt.locking, os.close
+    events: list[str] = []
+
+    def track_lock(fd, mode, count):
+        event = "lock" if mode == msvcrt.LK_LOCK else "unlock"
+        events.append(event)
+        assert os.lseek(fd, 0, os.SEEK_CUR) == 0
+        assert count == 1
+        if failure == event:
+            raise OSError(f"injected {event} failure")
+        locking(fd, mode, count)
+
+    def track_close(fd):
+        events.append("close")
+        close(fd)
+
+    def broken_write(fd, data):
+        raise OSError("injected write failure")
+
+    monkeypatch.setattr(msvcrt, "locking", track_lock)
+    monkeypatch.setattr(os, "close", track_close)
+    if failure == "write":
+        monkeypatch.setattr(os, "write", broken_write)
+    if failure:
+        with pytest.raises(OSError, match=f"injected {failure} failure"):
+            append_highscore_records(tmp_path, [HighScoreRecord(name="first")])
+    else:
+        append_highscore_records(tmp_path, [HighScoreRecord(name="first")])
+    assert events == (["lock", "close"] if failure == "lock" else ["lock", "unlock", "close"])
+
+
 @pytest.mark.parametrize("failure", ["zero", "write", "fsync"])
 def test_failed_append_rolls_back_and_can_be_retried(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str,

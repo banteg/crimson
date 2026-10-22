@@ -7,7 +7,7 @@ from crimson.weapons import WeaponId
 
 # Unlocked, so the weapon and perk databases overflow their ten rows.
 STATUS = unlock_all
-# The score list (thirty Survival scores, every third one received) and the databases' lists at 1024x768: a row's
+# The score list (thirty local Survival scores) and the databases' lists at 1024x768: a row's
 # middle, and the scrollbar track 10px right of the list.
 HS_ROW, HS_TRACK = (200, 303), 357
 DB_ROW, DB_TRACK = (200, 330), 359
@@ -25,7 +25,6 @@ def scores(gs):
             most_used_weapon_id=WeaponId.PISTOL,
             uni_num=i,
             date=dt.date(2026, 1, 1),
-            received=i % 3 == 0,
         )
         for i in range(30)
     ]

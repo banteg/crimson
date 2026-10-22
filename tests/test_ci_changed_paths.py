@@ -9,6 +9,23 @@ import pytest
 from scripts.ci_changed_paths import changed_paths, inputs_hash, relevant, tracked_files, version_bump_only
 
 
+def test_windows_score_checks_follow_their_inputs() -> None:
+    for path in (
+        "src/crimson/persistence/highscores.py",
+        "src/crimson/game_modes.py",
+        "src/grim/config.py",
+        "tests/persistence/test_highscores.py",
+        "tests/conftest.py",
+        "pyproject.toml",
+        "uv.lock",
+        ".github/workflows/ci.yml",
+        "scripts/ci_changed_paths.py",
+    ):
+        assert relevant("score-store-windows", [path]), path
+    for path in ("docs/formats/highscores.md", "service/src/coop.ts", "scripts/ui_capture/scenarios/lists.py"):
+        assert not relevant("score-store-windows", [path]), path
+
+
 def test_rename_checks_both_old_and_new_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     git = shutil.which("git")
     assert git is not None
