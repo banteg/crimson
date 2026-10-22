@@ -10,7 +10,7 @@ once you read the decompile and trace their gameplay impact.
 
 The gameplay fixes below apply **by default** where specified. For parity work
 and future differential testing, you can re-enable those original behaviors with
-`--preserve-bugs`. Original text quirks and the late-game Survival spawn rate are documented only and always preserved.
+`--preserve-bugs`. Original text quirks, the late-game Survival spawn rate and piercing damage-pool growth are documented only and always preserved.
 
 The historical [rules-2 candidate assessment](https://github.com/banteg/crimson/blob/1c710a97e997f924cc7d6a89aa1c7269fd9df516/docs/rewrite/original-bugs-triage.md)
 remains in git history. This ledger records adopted behavior; entry 50 is an
@@ -1311,3 +1311,27 @@ suppression during the bonus, perk multipliers, spread and casing flags retain
 their existing behavior. Muzzle brightness follows the existing multi-pellet
 branch. Legacy weapon metadata remains unchanged.
 [Issue #832](https://github.com/banteg/crimson/issues/832), `50-fire-bullets-conversion.patch`.
+
+## 51) Piercing damage pools grow on overkill (documented, not fixed)
+
+Gauss Gun, Fire Bullets and Blade Gun projectiles start with a damage pool of
+300, 240 and 50. Each hit spends 1, deals the rest of the pool, then subtracts
+the target's health *after* the hit. An overkill leaves negative health, so the
+pool grows: with no perks, a pool `P` against a target with `H` health leaves
+`2 * (P - 1) - H`. One Gauss shot through three 50-HP targets leaves pools of
+548, 1,044 and 2,036; the shot keeps piercing as long as it keeps killing.
+
+Why it stays:
+
+- Fire Bullets is the bonus that clears crowds in the original, and much of
+  that comes from pool growth. In the recorded human Survival runs, Fire Bullets
+  makes 28-41% of all kills, and 11-27% of those need a pool larger than one
+  that only shrank. Fixing it is a large
+  nerf to the main Survival bonus, and boards combine rules versions.
+- There is no intended behavior to restore. A spent-budget pool is undefined
+  under damage perks: subtracting raw health or perk-modified damage either
+  ignores Uranium Filled Bullets or compounds it across hits.
+
+Both bug policies keep the original arithmetic. A change belongs to a
+deliberate balance pass with its own rules version, not to this ledger.
+[Issue #820](https://github.com/banteg/crimson/issues/820).

@@ -82,6 +82,7 @@ meant the player in question.
 | [4](../../rewrite/original-bugs.md#4-player-facing-text-quirks-documented-not-fixed) | Original text | Typos such as *Fire Caugh* and *Persistence will be rewared.* | Kept | — |
 | [22](../../rewrite/original-bugs.md#22-the-killing-wave-picks-roll-rand-but-branch-on-the-wave-counter) | The Killing's order | Quest 3.3 runs a fixed cycle: the same edges in turn, nests on waves 5 and 10. | Kept | [Quests](../modes/quests.md#tier-3) |
 | [37](../../rewrite/original-bugs.md#37-survival-spawning-grows-without-bound-after-fifteen-minutes) | Survival after 15:00 | Spawning grows without limit until the arena holds 384 creatures. | Kept | [Survival](../modes/survival.md#waves) |
+| [51](../../rewrite/original-bugs.md#51-piercing-damage-pools-grow-on-overkill-documented-not-fixed) | Growing piercing shots | A Gauss, Fire Bullets or Blade shot that kills a weaker enemy gets a bigger damage pool, so it keeps piercing through weak crowds. | Kept | [Weapons](../combat/weapons.md#piercing) |
 | — | Swapped quest score files | Normal quest scores save to `questhcM_N.hi`, hardcore ones to `questM_N.hi`. | Kept | [High scores](scores.md#local-tables) |
 | — | Typ-o score file | Typ-o has no file name of its own, so its scores save to `scores5\unknown.hi`. | Kept | [Local high scores](../../formats/highscores.md) |
 
