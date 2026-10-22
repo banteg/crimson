@@ -38,7 +38,8 @@
   "vars": {
     "GITHUB_CLIENT_ID": "Ov23lirNiNyg92mdYr2z",
     "DISCORD_CLIENT_ID": "1557080813470883900",
-    "X_CLIENT_ID": "UnVGMFJ3SE0zczlxMGpZamhfS1I6MTpjaQ"
+    "X_CLIENT_ID": "UnVGMFJ3SE0zczlxMGpZamhfS1I6MTpjaQ",
+    "TWITCH_CLIENT_ID": "s3lh9wicvbi0bjndudw00nvspxj8p4"
   },
   // Invocation logs would keep every request URL, OAuth codes and one-time login links among them; the Worker
   // never logs tokens itself, so only its own console output and errors are kept.
