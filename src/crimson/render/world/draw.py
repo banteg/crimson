@@ -62,7 +62,8 @@ _NATIVE_CREATURE_SPRITE_DRAW_ORDER: tuple[CreatureTypeId, ...] = (
 
 class WorldDrawContext(msgspec.Struct, frozen=True):
     entity_alpha: float = 1.0
-    material_lights: tuple[MaterialLight, ...] = ()
+    # None means no selection was supplied; () is an intentionally empty selection.
+    material_lights: tuple[MaterialLight, ...] | None = None
     trooper_texture: rl.Texture | None = None
     particles_texture: rl.Texture | None = None
     monster_vision: bool = False
@@ -171,7 +172,7 @@ def build_draw_context(
     render_ctx: WorldRenderCtx,
     *,
     entity_alpha: float,
-    material_lights: tuple[MaterialLight, ...] = (),
+    material_lights: tuple[MaterialLight, ...] | None = None,
 ) -> WorldDrawContext:
     frame = render_ctx.frame
     resources = frame.resources
@@ -301,7 +302,9 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
     lighting = frame.creature_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
     if lighting is not None:
         lighting.prepare(
-            ctx.material_lights,
+            ctx.material_lights if ctx.material_lights is not None else collect_material_lights(
+                frame, view_center=render_ctx.view.screen_size * .5 - render_ctx.view.camera,
+            ),
             camera=render_ctx.view.camera,
             view_scale=render_ctx.view.view_scale,
             occlusion=frame.ground.reflection_occlusion if isinstance(frame.ground, MaterialGroundRenderer) else None,

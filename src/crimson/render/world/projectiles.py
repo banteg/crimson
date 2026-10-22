@@ -91,11 +91,14 @@ def _draw_atlas(
     size: float,
     rgba: RGBA,
     rotation_rad: float = 0.0,
+    beam_batch: BeamBatch | None = None,
 ) -> None:
     """Draw a `size`-wide cell of a `grid`x`grid` atlas centered on screen `pos`."""
 
     if rgba.a <= 1e-3 or size <= 1e-3:
         return
+    if beam_batch is not None:
+        beam_batch.end()
     cell_w = float(texture.width) / float(grid)
     render_ctx._draw_atlas_sprite(
         texture,
@@ -280,11 +283,6 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
         for proj_index, proj in enumerate(render_ctx.frame.state.projectiles.entries):
             if not proj.active:
                 continue
-            if proj.type_id not in (
-                ProjectileTemplateId.ION_MINIGUN, ProjectileTemplateId.ION_RIFLE,
-                ProjectileTemplateId.ION_CANNON, ProjectileTemplateId.FIRE_BULLETS,
-            ):
-                beam_batch.end()
             life = float(proj.life_timer)
             angle = float(proj.angle)
             screen = render_ctx.world_to_screen(proj.pos)
@@ -298,6 +296,7 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
                         size, rgba = 56.0, RGBA(1.0, 1.0, 1.0, clamp(life * 2.5, 0.0, 1.0) * alpha)
                     _draw_atlas(
                         render_ctx, texture, grid=2, frame=0, pos=screen, size=size * scale, rgba=rgba, rotation_rad=angle,
+                        beam_batch=beam_batch,
                     )
                 case ProjectileTemplateId.SPLITTER_GUN:
                     if life >= 0.4:
@@ -311,6 +310,7 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
                             size=min(dist, 20.0) * scale,
                             rgba=RGBA(1.0, 1.0, 1.0, alpha),
                             rotation_rad=angle,
+                            beam_batch=beam_batch,
                         )
                 case ProjectileTemplateId.BLADE_GUN:
                     if life >= 0.4:
@@ -324,6 +324,7 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
                             size=min(dist, 20.0) * scale,
                             rgba=RGBA(0.8, 0.8, 0.8, alpha),
                             rotation_rad=atlas_state[2],
+                            beam_batch=beam_batch,
                         )
                 case ProjectileTemplateId.ION_MINIGUN:
                     atlas_state = (4, 2, angle)

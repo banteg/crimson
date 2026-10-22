@@ -50,6 +50,10 @@ def test_mixed_projectile_batch_preserves_hdr_pixels_and_order(raylib_context, m
         PT.SPLITTER_GUN,
         PT.ION_RIFLE,
         PT.PULSE_GUN,
+        PT.FIRE_BULLETS,
+        PT.PISTOL,
+        PT.PULSE_GUN,
+        PT.ION_MINIGUN,
     ]
     _place(
         ctx,
@@ -65,6 +69,7 @@ def test_mixed_projectile_batch_preserves_hdr_pixels_and_order(raylib_context, m
         ],
     )
     ctx.frame.state.projectiles.entries[8].origin = ctx.frame.state.projectiles.entries[8].pos
+    ctx.frame.state.projectiles.entries[12].origin = ctx.frame.state.projectiles.entries[12].pos
     body, head = beam.draw_beam_fast_stamped_body, beam.draw_beam_fast_stamped_head
 
     def unbatched_body(**kwargs):
@@ -134,3 +139,25 @@ def test_batch_flushes_before_uniform_changes_and_restarts_after_end(mocker):
         "initialize",
         "end_shader_mode",
     ]
+
+
+def test_non_drawing_projectiles_do_not_interrupt_beam_batch(mocker):
+    ctx = _render_ctx(rtx_mode=RtxRenderMode.RTX)
+    _place(ctx, [
+        Projectile(type_id=kind, origin=Vec2(10, 10), pos=Vec2(80, 50), life_timer=life)
+        for kind, life in (
+            (PT.FIRE_BULLETS, .4), (PT.PISTOL, .4), (PT.SPLITTER_GUN, .2), (PT.PULSE_GUN, .4),
+            (PT.BLADE_GUN, .2), (PT.ION_RIFLE, .4), (PT.PULSE_GUN, .4),
+        )
+    ])
+    ctx.frame.state.projectiles.entries[3].origin = ctx.frame.state.projectiles.entries[3].pos
+    calls = mocker.Mock()
+    batch = mocker.Mock()
+    calls.attach_mock(batch.end, "end")
+    mocker.patch.object(projectiles, "BeamBatch", return_value=batch)
+    calls.attach_mock(mocker.patch.object(projectiles, "_draw_streak"), "beam")
+    calls.attach_mock(mocker.patch.object(projectiles.WorldRenderCtx, "_draw_atlas_sprite"), "atlas")
+    mocker.patch.object(rl, "begin_blend_mode")
+    mocker.patch.object(rl, "end_blend_mode")
+    projectiles._projectile_sprite_pass(ctx, alpha=1.)
+    assert [c[0] for c in calls.mock_calls] == ["beam", "beam", "end", "atlas", "end"]

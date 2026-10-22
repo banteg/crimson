@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import struct
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 
 import msgspec
 import pytest
@@ -13,7 +13,7 @@ from crimson.render.rtx import bonus_lighting as module
 from crimson.render.rtx.bonus_lighting import BonusLighting
 from crimson.render.rtx.material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
-from crimson.render.world import bonuses
+from crimson.render.world import bonuses, draw
 from crimson.world.render_resources import RenderResources
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
@@ -75,6 +75,35 @@ def test_empty_pool_does_not_prepare_shader(mocker, headless_resources):
     prepare = mocker.patch.object(BonusLighting, 'prepare')
     bonuses.draw_bonus_pickups(ctx, camera=Vec2(), view_scale=Vec2(1, 1), scale=1.)
     prepare.assert_not_called()
+
+
+def test_bonus_render_distinguishes_uncollected_and_empty_lights(mocker, headless_resources):
+    render_ctx = render_ctx_for_creatures(headless_resources, [])
+    render_ctx = msgspec.structs.replace(render_ctx, frame=msgspec.structs.replace(
+        render_ctx.frame, rtx_mode=RtxRenderMode.RTX, bonus_lighting=BonusLighting(),
+    ))
+    render_ctx.frame.state.bonus_pool.entries[0] = BonusEntry(
+        bonus_id=BonusId.FIRE_BULLETS, pos=Vec2(40, 60), time_left=5., time_max=10.,
+    )
+    light = MaterialLight(Vec2(40, 60), 100, (1, .5, .2))
+    collect = mocker.patch.object(bonuses, "collect_material_lights", return_value=[light])
+    prepare = mocker.patch.object(BonusLighting, "prepare")
+    mocker.patch.object(BonusLighting, "pass_scope", side_effect=lambda **kw: nullcontext())
+    mocker.patch.object(rl, "draw_texture_pro")
+    for name in ("draw_bonus_hover_labels", "draw_particle_pool", "secondary_detonation_pass",
+                 "draw_sprite_effect_pool", "draw_effect_pool"):
+        mocker.patch.object(draw, name)
+
+    ctx = draw.build_draw_context(render_ctx, entity_alpha=1.)
+    draw.bonus_render(render_ctx, ctx=ctx)
+    collect.assert_called_once()
+    assert prepare.call_args.args[0] == [light]
+
+    for selected in ((), (light,)):
+        collect.reset_mock()
+        draw.bonus_render(render_ctx, ctx=msgspec.structs.replace(ctx, material_lights=selected))
+        collect.assert_not_called()
+        assert prepare.call_args.args[0] is selected
 
 
 def test_owned_lifecycle_and_exception_restore(mocker, tmp_path):
