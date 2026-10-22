@@ -91,6 +91,12 @@ def main():
     a.out.mkdir(parents=True, exist_ok=True)
     headers = a.out / "include"
     headers.mkdir(exist_ok=True)
+    wasm = a.target != "native"
+    if wasm:
+        sdk = wasi_sdk()
+        c, cc = ([str(sdk / "bin" / tool), "--target=wasm32-wasip1"] for tool in ("clang", "clang++"))
+    else:
+        c, cc = ["clang"], ["clang++"]
     if a.target == "game":
         from game import (
             GAME_DIFFS,
@@ -112,7 +118,7 @@ def main():
         game_data(a.root, a.out, engine_globals(a.root), simulation_names(a.root))
         alignments = {}
     else:
-        alignments = data_source(a.root, a.out)
+        alignments = data_source(a.root, a.out, cc[0])
 
     def align_externs(text):
         return EXTERN.sub(
@@ -136,7 +142,6 @@ def main():
         "#include <stdint.h>\ntypedef int16_t ogg_int16_t; typedef uint16_t ogg_uint16_t; typedef int32_t ogg_int32_t; typedef uint32_t ogg_uint32_t; typedef int64_t ogg_int64_t;\n",
     )
     (headers / "new.h").write_text("#include <new>\n")
-    wasm = a.target != "native"
     if a.target == "game":
         com_defaults(a.root, headers)
     schema = json.loads((HERE / "schema.json").read_text())
@@ -159,11 +164,6 @@ def main():
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
     (headers / "presentation.inc").write_text(",".join(map(str, presentation)) + "\n")
-    if wasm:
-        sdk = wasi_sdk()
-        c, cc = ([str(sdk / "bin" / tool), "--target=wasm32-wasip1"] for tool in ("clang", "clang++"))
-    else:
-        c, cc = ["clang"], ["clang++"]
     flags = [
         "-g",
         "-std=c++17",

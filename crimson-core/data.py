@@ -2,9 +2,46 @@
 
 import json
 import re
+import subprocess
+
+# An owner header reads a contiguous aggregate through its first symbol: `#define name (*(type *)&root)`.
+OVERLAY = re.compile(r"\(\*\((\w+)\s*\*\)&(\w+)\)")
+# A record's size in bits, as clang's layout dump prints it.
+RECORD = re.compile(r"^Type: struct (\w+)\n\nLayout: <ASTRecordLayout\n  Size:(\d+)", re.MULTILINE)
 
 
-def data_source(root, out):
+def overlay_spans(root, out, cc):
+    """Each owner overlay's root and the size its type has in the original 32-bit layout.
+
+    A type whose size changes with 64-bit pointers is left out: past its first pointer, its members leave the
+    original offsets on a 64-bit host, and its pointer-typed names keep blocks a host pointer fits.
+    """
+    include = root / "tools/match/include"
+    owners = sorted(include.glob("*_owner.h"))
+    overlays = {m[1]: m[2] for h in owners for m in OVERLAY.finditer(h.read_text())}
+    probe = out / "overlays.cpp"
+    probe.write_text(
+        '#include "crimsonland_types.h"\n'
+        + "".join(f'#include "{h.name}"\n' for h in owners)
+        + f"unsigned overlay_sizes[] = {{{','.join(f'sizeof({t})' for t in overlays)}}};\n",
+    )
+
+    def sizes(target):
+        proc = subprocess.run(
+            [cc, "-target", target, "-std=c++17", "-fms-extensions", "-fsyntax-only", "-w"]
+            + ["-Xclang", "-fdump-record-layouts-simple", f"-I{include}", f"-I{root / 'third_party/headers'}"]
+            + [str(probe)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return {name: int(bits) // 8 for name, bits in RECORD.findall(proc.stdout)}
+
+    original, wide = sizes("i686-pc-windows-msvc"), sizes("x86_64-pc-windows-msvc")
+    return [(first, original[t]) for t, first in overlays.items() if original[t] == wide[t]]
+
+
+def data_source(root, out, cc):
     d = json.loads((root / "tools/native/data_definitions/crimsonland.exe.json").read_text())
     entries = list(d["entries"])
     for g in d["groups"]:
@@ -29,11 +66,11 @@ def data_source(root, out):
         if a <= int(e["address"], 16) < b and e["name"] != name
     ]
     entries = [e for e in entries if not any(a <= int(e["address"], 16) < b for a, b, _ in ownranges)]
+    extents = {e["name"]: (int(e["address"], 16), int(e["address"], 16) + e["size"]) for e in entries}
     # Recovered owner headers intentionally access a contiguous aggregate through its first symbol.
-    ranges = [(0x486FA8, 0x487150), (0x48F530, 0x48F588)]
+    ranges = [(extents[first][0], extents[first][0] + size) for first, size in overlay_spans(root, out, cc)]
     # Spans from the first symbol through the end of the last keep native overreads on the original bytes:
     # `fx_queue_render` reads the corpse frame of type 7 (ping-pong strips) from `creature_type_count`.
-    extents = {e["name"]: (int(e["address"], 16), int(e["address"], 16) + e["size"]) for e in entries}
     for first, last in [
         ("ui_mouse_x", "ui_mouse_y"),
         ("render_scratch_f0", "render_scratch_f1"),
