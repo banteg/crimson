@@ -48,6 +48,7 @@ const MENU: { label: string; href: (board: string) => string; native?: boolean; 
   { label: "Play", href: () => "/play/", native: true, on: () => false },
   { label: "High scores", href: (board) => board, on: boardPage },
   { label: "Custom", href: () => "/custom", on: (path) => path === "/custom" || path.startsWith("/custom/") },
+  { label: "News", href: () => "/news", on: (path) => path === "/news" },
   { label: "About", href: () => "/about", on: (path) => path === "/about" },
 ];
 
