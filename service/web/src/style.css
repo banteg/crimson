@@ -117,6 +117,18 @@ svg .rival{fill:none;stroke-width:1.5;stroke-dasharray:5 4;stroke-opacity:.85}
 .tag{margin-left:6px;padding:0 4px;border:1px solid var(--dim);color:var(--label);font-size:12px;line-height:16px;vertical-align:1px;white-space:nowrap}
 a.check{color:var(--label);text-decoration:none;white-space:nowrap}a.check:hover{color:#fff}a.check img{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
 .pilot{white-space:nowrap}.flag,.tile b.flag{color:#ff7a5c}
-.board-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:4px 28px}.board-pair h3{margin-top:0}
+.home-boards{display:grid;gap:24px}.home-boards>div{min-width:0}.home-boards h3{margin-top:0}
+.home-boards>div+div{padding-top:18px;border-top:1px solid #292929}
+/* Home boards share the full panel width. Reserve room for scores and let names and bot disclosures wrap. */
+.board-compact table{table-layout:fixed}
+.board-compact th:first-child{width:36px}.board-compact th:nth-last-child(2){width:128px}.board-compact th:last-child{width:18px}
+.board-compact td{padding-top:5px;padding-bottom:5px;vertical-align:top}
+.board-compact .board-player{overflow-wrap:anywhere}
+.board-pilot{display:block}.board-pilot .pilot{white-space:normal}
+@media (max-width:540px){
+  .board-compact th:first-child{width:24px}.board-compact th:nth-last-child(2){width:118px}.board-compact th:last-child{width:14px}
+  .board-compact td,.board-compact th{padding-left:3px;padding-right:3px}
+  .board-compact th:first-child{font-size:0}.board-compact th:first-child::after{content:"#";font-size:16px}
+}
 .board-totals{margin:-8px 0 10px}
 .board-switch{display:flex;flex-wrap:wrap;gap:4px 24px;margin:0 0 6px}

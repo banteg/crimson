@@ -140,7 +140,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
   const full = () => !props.compact;
   return (
     <Show when={props.view.rows.length} fallback={<p class="muted">No scores yet.</p>}>
-      <div class="board-table">
+      <div class="board-table" classList={{ "board-compact": props.compact }}>
         <table>
           <thead>
             <tr>
@@ -163,12 +163,11 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
               {(row) => (
                 <tr>
                   <td class="n">{row.rank}</td>
-                  <td>
+                  <td class="board-player">
                     <RunPlayers player={row.player} team={row.team} tag={false} />
                     <Show when={props.compact && row.pilot}>
                       {(pilot) => (
-                        <span class="muted">
-                          {" · "}
+                        <span class="board-pilot muted">
                           <PilotName pilot={pilot()} />
                         </span>
                       )}
@@ -185,7 +184,6 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                     <a class="run" href={`/runs/${row.run}`}>
                       {formatScore(props.view.board, row.score)}
                     </a>
-                    <span class="muted"> · R{row.rules}</span>
                   </td>
                   <Show when={full()}>
                     <td>
@@ -342,7 +340,7 @@ async function home(): Promise<Screen> {
       () => (
         <>
           <h2>Survival</h2>
-          <div class="board-pair">
+          <div class="home-boards">
             <div>
               <h3>Humans</h3>
               <BoardTotals view={humans!} />
