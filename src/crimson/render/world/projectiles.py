@@ -15,7 +15,7 @@ from ...projectiles.types import Projectile, ProjectileTemplateId, SecondaryProj
 from ..beam_profiles import STREAK_SCALES
 from ..ion_arcs import ion_arc_targets
 from ..laser_sight import laser_sight_geometry
-from ..rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
+from ..rtx.beam import BeamBatch, draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ..rtx.mode import RtxRenderMode
 from .atlas import effect_cell_src_inset
 from .constants import _RAD_TO_DEG
@@ -275,64 +275,85 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
     # sprite changes native state, so track selections independently of draws.
     atlas_state = (4, 3, 0.0)
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    for proj_index, proj in enumerate(render_ctx.frame.state.projectiles.entries):
-        if not proj.active:
-            continue
-        life = float(proj.life_timer)
-        angle = float(proj.angle)
-        screen = render_ctx.world_to_screen(proj.pos)
-        dist = proj.origin.distance_to(proj.pos)
-        match int(proj.type_id):
-            case ProjectileTemplateId.PULSE_GUN:
-                atlas_state = (2, 0, angle)
-                if life >= 0.4:
-                    size, rgba = dist * 0.16, RGBA(0.1, 0.6, 0.2, alpha * 0.7)
-                else:
-                    size, rgba = 56.0, RGBA(1.0, 1.0, 1.0, clamp(life * 2.5, 0.0, 1.0) * alpha)
-                _draw_atlas(
-                    render_ctx, texture, grid=2, frame=0, pos=screen, size=size * scale, rgba=rgba, rotation_rad=angle,
-                )
-            case ProjectileTemplateId.SPLITTER_GUN:
-                if life >= 0.4:
-                    atlas_state = (4, 3, angle)
+    beam_batch = BeamBatch()
+    try:
+        for proj_index, proj in enumerate(render_ctx.frame.state.projectiles.entries):
+            if not proj.active:
+                continue
+            if proj.type_id not in (
+                ProjectileTemplateId.ION_MINIGUN, ProjectileTemplateId.ION_RIFLE,
+                ProjectileTemplateId.ION_CANNON, ProjectileTemplateId.FIRE_BULLETS,
+            ):
+                beam_batch.end()
+            life = float(proj.life_timer)
+            angle = float(proj.angle)
+            screen = render_ctx.world_to_screen(proj.pos)
+            dist = proj.origin.distance_to(proj.pos)
+            match int(proj.type_id):
+                case ProjectileTemplateId.PULSE_GUN:
+                    atlas_state = (2, 0, angle)
+                    if life >= 0.4:
+                        size, rgba = dist * 0.16, RGBA(0.1, 0.6, 0.2, alpha * 0.7)
+                    else:
+                        size, rgba = 56.0, RGBA(1.0, 1.0, 1.0, clamp(life * 2.5, 0.0, 1.0) * alpha)
                     _draw_atlas(
-                        render_ctx,
-                        texture,
-                        grid=4,
-                        frame=3,
-                        pos=screen,
-                        size=min(dist, 20.0) * scale,
-                        rgba=RGBA(1.0, 1.0, 1.0, alpha),
-                        rotation_rad=angle,
+                        render_ctx, texture, grid=2, frame=0, pos=screen, size=size * scale, rgba=rgba, rotation_rad=angle,
                     )
-            case ProjectileTemplateId.BLADE_GUN:
-                if life >= 0.4:
-                    atlas_state = (4, 6, float(proj_index) * 0.1 - float(render_ctx.frame.elapsed_ms) * 0.1)
-                    _draw_atlas(
-                        render_ctx,
-                        texture,
-                        grid=4,
-                        frame=6,
-                        pos=screen,
-                        size=min(dist, 20.0) * scale,
-                        rgba=RGBA(0.8, 0.8, 0.8, alpha),
-                        rotation_rad=atlas_state[2],
+                case ProjectileTemplateId.SPLITTER_GUN:
+                    if life >= 0.4:
+                        atlas_state = (4, 3, angle)
+                        _draw_atlas(
+                            render_ctx,
+                            texture,
+                            grid=4,
+                            frame=3,
+                            pos=screen,
+                            size=min(dist, 20.0) * scale,
+                            rgba=RGBA(1.0, 1.0, 1.0, alpha),
+                            rotation_rad=angle,
+                        )
+                case ProjectileTemplateId.BLADE_GUN:
+                    if life >= 0.4:
+                        atlas_state = (4, 6, float(proj_index) * 0.1 - float(render_ctx.frame.elapsed_ms) * 0.1)
+                        _draw_atlas(
+                            render_ctx,
+                            texture,
+                            grid=4,
+                            frame=6,
+                            pos=screen,
+                            size=min(dist, 20.0) * scale,
+                            rgba=RGBA(0.8, 0.8, 0.8, alpha),
+                            rotation_rad=atlas_state[2],
+                        )
+                case ProjectileTemplateId.ION_MINIGUN:
+                    atlas_state = (4, 2, angle)
+                    _draw_streak(
+                        render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id],
+                        alpha=alpha, chain=True, beam_batch=beam_batch,
                     )
-            case ProjectileTemplateId.ION_MINIGUN:
-                atlas_state = (4, 2, angle)
-                _draw_streak(render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id], alpha=alpha, chain=True)
-            case ProjectileTemplateId.ION_RIFLE:
-                atlas_state = (4, 2, angle)
-                _draw_streak(render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id], alpha=alpha, chain=True)
-            case ProjectileTemplateId.ION_CANNON:
-                atlas_state = (4, 2, angle)
-                _draw_streak(render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id], alpha=alpha, chain=True)
-            case ProjectileTemplateId.FIRE_BULLETS:
-                atlas_state = (4, 2, angle)
-                _draw_streak(render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id], alpha=alpha, chain=False)
-            case _:
-                pass
-    rl.end_blend_mode()
+                case ProjectileTemplateId.ION_RIFLE:
+                    atlas_state = (4, 2, angle)
+                    _draw_streak(
+                        render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id],
+                        alpha=alpha, chain=True, beam_batch=beam_batch,
+                    )
+                case ProjectileTemplateId.ION_CANNON:
+                    atlas_state = (4, 2, angle)
+                    _draw_streak(
+                        render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id],
+                        alpha=alpha, chain=True, beam_batch=beam_batch,
+                    )
+                case ProjectileTemplateId.FIRE_BULLETS:
+                    atlas_state = (4, 2, angle)
+                    _draw_streak(
+                        render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id],
+                        alpha=alpha, chain=False, beam_batch=beam_batch,
+                    )
+                case _:
+                    pass
+    finally:
+        beam_batch.end()
+        rl.end_blend_mode()
     return atlas_state
 
 
@@ -344,6 +365,7 @@ def _draw_streak(
     effect_scale: float,
     alpha: float,
     chain: bool,
+    beam_batch: BeamBatch | None = None,
 ) -> None:
     """Ion and Fire Bullets streak: the last 256 units of the path, then its head.
 
@@ -378,6 +400,7 @@ def _draw_streak(
             scale=scale,
             base_alpha=base_alpha,
             streak_rgb=streak_rgb,
+            batch=beam_batch,
         )
     else:
         along = start
@@ -408,6 +431,7 @@ def _draw_streak(
             base_alpha=base_alpha,
             head_rgb=head_rgb,
             is_fire=not chain,
+            batch=beam_batch,
         )
     else:
         # The fading core is one unscaled cell whatever the streak's scale.
@@ -425,6 +449,8 @@ def _draw_streak(
     if life >= 0.4 or not chain:
         return
 
+    if beam_batch is not None:
+        beam_batch.end()
     tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
     # Each strip stretches the glow's centre column, so native ends it in a hard
     # cut that the smaller creature glow cannot hide (original bug 36). The

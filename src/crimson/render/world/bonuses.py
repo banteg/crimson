@@ -13,7 +13,7 @@ from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from ...bonuses import BONUS_BY_ID, BonusId
 from ...bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
 from ...weapons import WEAPON_BY_ID, WeaponId
-from ..rtx.material_lights import collect_material_lights
+from ..rtx.material_lights import MaterialLight, collect_material_lights
 from ..rtx.mode import RtxRenderMode
 from . import viewport
 from .constants import _RAD_TO_DEG
@@ -80,6 +80,7 @@ def draw_bonus_pickups(
     view_scale: Vec2,
     scale: float,
     alpha: float = 1.0,
+    material_lights: tuple[MaterialLight, ...] | None = None,
 ) -> None:
     """`bonus_render`'s pickup passes: every bubble and icon, then every weapon icon."""
 
@@ -95,6 +96,7 @@ def draw_bonus_pickups(
     lighting = frame.bonus_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
     if lighting is not None and any(b.bonus_id != BonusId.UNUSED for b in entries):
         lighting.prepare(
+            material_lights if material_lights is not None else
             collect_material_lights(frame, view_center=render_ctx.view.screen_size * 0.5 - camera),
             camera=camera, view_scale=view_scale,
         )

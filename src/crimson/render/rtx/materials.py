@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from itertools import groupby
 from typing import TYPE_CHECKING, NamedTuple
@@ -26,7 +26,7 @@ from ..world.atlas import effect_cell_src
 from .continuous_beam import FIRE_AMBIENT_DIP, FIRE_DIRECT_GAIN, ION_AMBIENT_DIP, ION_DIRECT_GAIN, prepare_beam_lights
 from .hdr import _HDR_TONEMAP_VS_330
 from .material_history import MaterialHistory
-from .material_lights import collect_material_lights
+from .material_lights import MaterialLight, collect_material_lights
 from .material_shaders import GROUND_FRAGMENT, STAMP_FRAGMENT
 from .perk_lighting import PerkLighting
 from .reflection_occlusion import ReflectionOcclusion, build_occlusion_grid, creature_body_volumes
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from ..world.viewport import ViewTransform
 
 
-def _uniform(shader: rl.Shader, name: str, values: list[float]) -> None:
+def _uniform(shader: rl.Shader, name: str, values: list[float], *, location: int | None = None) -> None:
     kinds = {
         1: rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
         2: rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
@@ -45,16 +45,16 @@ def _uniform(shader: rl.Shader, name: str, values: list[float]) -> None:
     values_buffer = rl.ffi.new(f"float[{len(values)}]", values)
     rl.set_shader_value(
         shader,
-        rl.get_shader_location(shader, name),
+        rl.get_shader_location(shader, name) if location is None else location,
         rl.ffi.cast("void *", values_buffer),
         kinds[len(values)],
     )
 
 
-def _integer(shader: rl.Shader, name: str, value: int) -> None:
+def _integer(shader: rl.Shader, name: str, value: int, *, location: int | None = None) -> None:
     rl.set_shader_value(
         shader,
-        rl.get_shader_location(shader, name),
+        rl.get_shader_location(shader, name) if location is None else location,
         rl.ffi.new("int *", value),
         rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
     )
@@ -109,6 +109,7 @@ class MaterialGroundRenderer(GroundRenderer):
     wetness_epoch: float = 0.0
     stamp_locations: dict[str, int] = msgspec.field(default_factory=dict)
 
+    material_locations: dict[str, int] = msgspec.field(default_factory=dict)
     beam_cells_location: int = -1
     reflection_occlusion: ReflectionOcclusion = msgspec.field(default_factory=ReflectionOcclusion)
     perk_lighting: PerkLighting = msgspec.field(default_factory=PerkLighting)
@@ -133,6 +134,7 @@ class MaterialGroundRenderer(GroundRenderer):
                 rl.unload_shader(shader)
         self.stamp_shader = self.material_shader = None
         self.beam_cells_location = -1
+        self.material_locations.clear()
         self.material_layers = None
         super().close()
 
@@ -369,10 +371,37 @@ class MaterialGroundRenderer(GroundRenderer):
                 batch.elapsed_s,
             )
 
+    def _material_location(self, name: str) -> int:
+        assert self.material_shader is not None
+        if name not in self.material_locations:
+            self.material_locations[name] = int(rl.get_shader_location(self.material_shader, name))
+        return self.material_locations[name]
+
+    def _material_uniform(self, name: str, values: list[float]) -> None:
+        assert self.material_shader is not None
+        _uniform(self.material_shader, name, values, location=self._material_location(name))
+
+    def _material_integer(self, name: str, value: int) -> None:
+        assert self.material_shader is not None
+        _integer(self.material_shader, name, value, location=self._material_location(name))
+
+    def _material_array(self, name: str, values: list[float], *, components: int) -> None:
+        assert self.material_shader is not None
+        if not values:
+            return
+        kind = (rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4 if components == 4 else
+                rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
+        buffer = rl.ffi.new("float[]", values)
+        rl.set_shader_value_v(
+            self.material_shader, self._material_location(name), rl.ffi.cast("void *", buffer),
+            kind, len(values) // components,
+        )
+
     @contextmanager
     def material_scope(
         self, frame: RenderFrame, *, view_center: Vec2 = Vec2(512, 512), debug: int | None = None,
         view: ViewTransform | None = None, entity_alpha: float = 1.0,
+        lights: Sequence[MaterialLight] | None = None,
     ) -> Iterator[None]:
         from grim.assets import TextureId
 
@@ -386,17 +415,18 @@ class MaterialGroundRenderer(GroundRenderer):
         self.perk_lighting.active = False
         if view is not None:
             self.perk_lighting.prepare(self, frame, view, entity_alpha=entity_alpha, debug=debug)
-        _integer(sh, "u_has_perk", int(self.perk_lighting.active))
+        self._material_integer("u_has_perk", int(self.perk_lighting.active))
         if view is not None:
-            _uniform(sh, "u_perk_view", [-view.camera.x, -view.camera.y, view.screen_size.x, view.screen_size.y])
-        _uniform(sh, "u_ground_size", [float(self.width), float(self.height)])
-        _uniform(sh, "u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
-        _integer(sh, "u_debug", int(frame.rtx_debug) if debug is None else debug)
-        _integer(sh, "u_debug_display", int(debug is None))
+            self._material_uniform("u_perk_view", [-view.camera.x, -view.camera.y, view.screen_size.x, view.screen_size.y])
+        self._material_uniform("u_ground_size", [float(self.width), float(self.height)])
+        self._material_uniform("u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
+        self._material_integer("u_debug", int(frame.rtx_debug) if debug is None else debug)
+        self._material_integer("u_debug_display", int(debug is None))
         shadows = frame.config is None or frame.config.display.shadows_enabled
-        _integer(sh, "u_dynamic_shadows", int(shadows))
-        lights = collect_material_lights(frame, view_center=view_center)
-        _integer(sh, "u_spec_light_count", len(lights))
+        self._material_integer("u_dynamic_shadows", int(shadows))
+        if lights is None:
+            lights = collect_material_lights(frame, view_center=view_center)
+        self._material_integer("u_spec_light_count", len(lights))
         bodies = (
             [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
             if any(light.reflection_gain > 0 or (shadows and light.illumination_gain > 0) for light in lights) else []
@@ -404,11 +434,11 @@ class MaterialGroundRenderer(GroundRenderer):
         has_beam_lights = any(
             light.beam_profile is not None and light.illumination_gain > 0 for light in lights
         )
-        _integer(sh, "u_has_beam_lights", int(has_beam_lights))
+        self._material_integer("u_has_beam_lights", int(has_beam_lights))
         grid_lights = lights
         if has_beam_lights:
             cells, grid_lights = prepare_beam_lights(lights)
-            _uniform(sh, "u_beam_tuning", [ION_DIRECT_GAIN, ION_AMBIENT_DIP, FIRE_DIRECT_GAIN, FIRE_AMBIENT_DIP])
+            self._material_uniform("u_beam_tuning", [ION_DIRECT_GAIN, ION_AMBIENT_DIP, FIRE_DIRECT_GAIN, FIRE_AMBIENT_DIP])
             cells_buffer = rl.ffi.new("float[]", cells)
             rl.set_shader_value_v(
                 sh, self.beam_cells_location, rl.ffi.cast("void *", cells_buffer),
@@ -416,29 +446,32 @@ class MaterialGroundRenderer(GroundRenderer):
             )
         grid = build_occlusion_grid(bodies, grid_lights, width=self.width, height=self.height, illumination=shadows)
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
-        _uniform(sh, "u_occlusion_grid", [
+        self._material_uniform("u_occlusion_grid", [
             grid.origin.x, grid.origin.y, float(grid.columns if grid.body_count else 0), float(grid.rows),
         ])
-        _uniform(sh, "u_occlusion_cell_size", [grid.cell_size])
-        for i, light in enumerate(lights):
-            _uniform(sh, f"u_spec_pos[{i}]", [light.pos.x, light.pos.y, light.radius, light.height])
-            _uniform(sh, f"u_spec_color[{i}]", [*light.rgb, light.ring_radius])
-            _uniform(sh, f"u_spec_tail[{i}]", [light.reflection_tail])
-            _uniform(sh, f"u_spec_dir[{i}]", [light.direction.x, light.direction.y, float(light.broad_illumination), light.length])
-            _uniform(sh, f"u_spec_response[{i}]", list(light.response))
+        self._material_uniform("u_occlusion_cell_size", [grid.cell_size])
+        self._material_array("u_spec_pos[0]", [v for light in lights for v in
+                             (light.pos.x, light.pos.y, light.radius, light.height)], components=4)
+        self._material_array("u_spec_color[0]", [v for light in lights for v in
+                             (*light.rgb, light.ring_radius)], components=4)
+        self._material_array("u_spec_tail[0]", [light.reflection_tail for light in lights], components=1)
+        self._material_array("u_spec_dir[0]", [v for light in lights for v in
+                             (light.direction.x, light.direction.y, float(light.broad_illumination), light.length)],
+                             components=4)
+        self._material_array("u_spec_response[0]", [v for light in lights for v in light.response], components=4)
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,
         # since rlgl flushes (and clears sampler bindings) when changing blend modes.
         with opaque_blend(), self.perk_lighting.ground_texture_scope(sh):
             rl.begin_shader_mode(sh)
             try:
                 if occlusion_texture is not None:
-                    rl.set_shader_value_texture(sh, rl.get_shader_location(sh, "u_occlusion_tex"), occlusion_texture)
-                rl.set_shader_value_texture(sh, rl.get_shader_location(sh, "u_surface_tex"), self.surface.texture)
-                rl.set_shader_value_texture(sh, rl.get_shader_location(sh, "u_material_tex"), self.coverage.texture)
+                    rl.set_shader_value_texture(sh, self._material_location("u_occlusion_tex"), occlusion_texture)
+                rl.set_shader_value_texture(sh, self._material_location("u_surface_tex"), self.surface.texture)
+                rl.set_shader_value_texture(sh, self._material_location("u_material_tex"), self.coverage.texture)
                 assert self.substrate is not None and self.substrate.render_target is not None
                 rl.set_shader_value_texture(
                     sh,
-                    rl.get_shader_location(sh, "u_substrate_tex"),
+                    self._material_location("u_substrate_tex"),
                     self.substrate.render_target.texture,
                 )
                 yield

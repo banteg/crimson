@@ -199,15 +199,17 @@ def test_shared_selection_and_resource_cleanup(mocker, headless_resources, tmp_p
     prepare = mocker.patch.object(PlayerLighting, 'prepare')
     creature_prepare = mocker.patch.object(CreatureLighting, 'prepare')
     mocker.patch.object(AlphaTestShader, 'scope', side_effect=nullcontext)
-    mocker.patch.object(world_draw, 'draw_background')
+    background = mocker.patch.object(world_draw, 'draw_background')
     mocker.patch.object(world_draw, 'draw_players')
     mocker.patch.object(world_draw, 'draw_freeze_overlay')
     mocker.patch.object(world_draw, 'projectile_render')
-    mocker.patch.object(world_draw, 'bonus_render')
+    bonus = mocker.patch.object(world_draw, 'bonus_render')
     world_draw.draw_world(ctx)
     assert prepare.call_args.args[0] == (light,)
     assert creature_prepare.call_args.args[0] is prepare.call_args.args[0]
     collect.assert_called_once()
+    assert background.call_args.kwargs["material_lights"] is prepare.call_args.args[0]
+    assert bonus.call_args.kwargs["ctx"].material_lights is prepare.call_args.args[0]
     shader = rl.ffi.new('Shader *')[0]
     shader.id = 42
     restore = rl.ffi.new('Shader *')[0]

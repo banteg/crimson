@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import struct
+
 import msgspec
 
 from grim.geom import Vec2
@@ -207,6 +209,42 @@ def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader, step_uv
     _set_shader_float(shader, shader_data.intensity_gain_loc, float(intensity_gain))
 
 
+class BeamBatch:
+    """Keep consecutive analytic quads together, preserving their submission order.
+
+    End the batch before drawing with another shader or changing blend modes.
+    Like the standalone beam draws, end() restores raylib's default shader.
+    """
+
+    def __init__(self) -> None:
+        self.active = False
+        self.step_key: bytes | None = None
+
+    def prepare(self, shader_data: _BeamFastStampedShader, step_uv: float | None) -> None:
+        # Compare the uploaded float32, not rounding noise from screen geometry.
+        key = struct.pack("f", step_uv) if step_uv is not None else None
+        if not self.active:
+            rl.begin_shader_mode(shader_data.shader)
+            _apply_virtual_beam_uniforms(
+                shader_data=shader_data, step_uv=1.0 if step_uv is None else step_uv,
+                intensity_gain=SHADER_STAMP_VIRTUAL_INTENSITY_GAIN,
+            )
+            self.active = True
+            self.step_key = key
+        elif step_uv is not None and key != self.step_key:
+            # Uniform changes must not affect previously queued quads. Heads
+            # ignore step_uv, so they can share either adjacent body's batch.
+            rl.rl_draw_render_batch_active()
+            _set_shader_float(shader_data.shader, shader_data.step_uv_loc, step_uv)
+            self.step_key = key
+
+    def end(self) -> None:
+        if self.active:
+            rl.end_shader_mode()
+            self.active = False
+            self.step_key = None
+
+
 def draw_beam_fast_stamped_body(
     *,
     origin_screen: Vec2,
@@ -218,6 +256,7 @@ def draw_beam_fast_stamped_body(
     scale: float,
     base_alpha: float,
     streak_rgb: tuple[float, float, float],
+    batch: BeamBatch | None = None,
 ) -> bool:
     shader_data = _require_beam_fast_stamped_shader()
 
@@ -257,12 +296,13 @@ def draw_beam_fast_stamped_body(
     b = int(clamp(float(streak_rgb[2]) * 255.0, 0.0, 255.0) + 0.5)
 
     shader = shader_data.shader
-    rl.begin_shader_mode(shader)
-    _apply_virtual_beam_uniforms(
-        shader_data=shader_data,
-        step_uv=float(step_uv),
-        intensity_gain=float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN),
-    )
+    if batch is not None:
+        batch.prepare(shader_data, step_uv)
+    else:
+        rl.begin_shader_mode(shader)
+        _apply_virtual_beam_uniforms(
+            shader_data=shader_data, step_uv=step_uv, intensity_gain=SHADER_STAMP_VIRTUAL_INTENSITY_GAIN,
+        )
     rl.rl_set_texture(0)
     rl.rl_begin(rd.RL_QUADS)
 
@@ -288,7 +328,8 @@ def draw_beam_fast_stamped_body(
 
     rl.rl_end()
     rl.rl_set_texture(0)
-    rl.end_shader_mode()
+    if batch is None:
+        rl.end_shader_mode()
     return True
 
 
@@ -301,6 +342,7 @@ def draw_beam_fast_stamped_head(
     base_alpha: float,
     head_rgb: tuple[float, float, float],
     is_fire: bool,
+    batch: BeamBatch | None = None,
 ) -> bool:
     shader_data = _require_beam_fast_stamped_shader()
 
@@ -326,12 +368,13 @@ def draw_beam_fast_stamped_head(
     b = int(clamp(float(head_rgb[2]) * 255.0, 0.0, 255.0) + 0.5)
 
     shader = shader_data.shader
-    rl.begin_shader_mode(shader)
-    _apply_virtual_beam_uniforms(
-        shader_data=shader_data,
-        step_uv=1.0,
-        intensity_gain=float(SHADER_STAMP_VIRTUAL_INTENSITY_GAIN),
-    )
+    if batch is not None:
+        batch.prepare(shader_data, None)
+    else:
+        rl.begin_shader_mode(shader)
+        _apply_virtual_beam_uniforms(
+            shader_data=shader_data, step_uv=1.0, intensity_gain=SHADER_STAMP_VIRTUAL_INTENSITY_GAIN,
+        )
     rl.rl_set_texture(0)
     rl.rl_begin(rd.RL_QUADS)
 
@@ -357,8 +400,9 @@ def draw_beam_fast_stamped_head(
 
     rl.rl_end()
     rl.rl_set_texture(0)
-    rl.end_shader_mode()
+    if batch is None:
+        rl.end_shader_mode()
     return True
 
 
-__all__ = ["draw_beam_fast_stamped_body", "draw_beam_fast_stamped_head"]
+__all__ = ["BeamBatch", "draw_beam_fast_stamped_body", "draw_beam_fast_stamped_head"]

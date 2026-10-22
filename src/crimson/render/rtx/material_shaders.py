@@ -174,6 +174,11 @@ void main() {
     // This affects specular only; neither the camera nor player positions steer it.
     vec3 V = normalize(vec3(0.0, 0.57735, 1.0));
     vec3 R = reflect(-V, N_spec);
+    float NoV = clamp(dot(N_spec, V), 0.0, 1.0);
+    float F = .03 + .97 * pow(1. - NoV, 5.);
+    float blood_gate = clamp(wet_film*.45 + deep_pool*.78, 0., 1.) * mix(.25, 1., freshness) * (1.-is_ice);
+    float material_gate = clamp(blood_gate + is_ice*.75 + is_metal + is_chitin*.25, 0., 1.);
+    vec3 tint = mix(vec3(1.), vec3(1., .85, .52), is_metal);
     vec3 spec_accum = vec3(0.0);
     vec3 ambient_lit = diffuse_lit;
     vec3 direct_unshadowed = vec3(0.);
@@ -214,6 +219,7 @@ void main() {
         bool continuous=u_has_beam_lights!=0 && u_line_cells[i * 3].x > 0. && response.x>0.;
         #endif
         if (!continuous && reflection_distance >= max(rad, response.z)) continue;
+        float point_visibility = -1.;
         if (continuous) {
             vec2 source_axis=dot(sp_dir.xy, sp_dir.xy) > .0001?normalize(sp_dir.xy):vec2(1.,0.);
             vec2 delta=world-sp_pos.xy;
@@ -242,8 +248,14 @@ void main() {
             // As with reflections, retain negligible radiance without tracing a
             // shadow whose maximum possible change is below 1e-5 linear RGB.
             #ifndef MONSTER_VISION_PASS
-            if (max(direct.r, max(direct.g, direct.b)) > .00001)
-                direct *= illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
+            if (max(direct.r, max(direct.g, direct.b)) > .00001) {
+                float visibility = illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
+                direct *= visibility;
+                // Reflection clamps height/width; only identical point rays can reuse this trace.
+                // Disabled diffuse shadows must never disable reflection shadows.
+                if (u_dynamic_shadows != 0 && !ring && sp_dir.w == 0. && sp_pos.w >= 12. && response.w >= .1)
+                    point_visibility = visibility;
+            }
             #endif
             diffuse_lit += direct;
             direct_shadowed += direct;
@@ -251,7 +263,10 @@ void main() {
 
         // Reflect the virtual eye ray into a finite source at the emitter's height.
         // This is an artistic rough-reflection approximation, not a calibrated BRDF.
-        if (response.y > 0.0 && R.z > 0.02) {
+        if (response.y > 0.0 && R.z > 0.02 && material_gate > 0.) {
+            // Reject zero support before constructing the displaced footprint or tracing bodies.
+            float support = 1.0 - smoothstep(response.z * .8, max(.01, response.z), reflection_distance);
+            if (support <= 0.) continue;
             float height = max(12., sp_pos.w);
             vec2 reflected_hit = world + R.xy * height / R.z;
             bool beam = !ring && sp_dir.w > 0.0 && dot(sp_dir.xy, sp_dir.xy) > 0.0001;
@@ -271,19 +286,13 @@ void main() {
             // A point source spreads across two dimensions; a beam spreads mostly across its width.
             float footprint = exp(-.5 * pow(source_distance / blur_width, 2.0)) *
                 ((beam || ring) ? blur_gain : blur_gain * blur_gain);
-            // Fade at finite light support rather than cutting off a displaced reflection.
-            float support = 1.0 - smoothstep(response.z * .8, max(.01, response.z), reflection_distance);
-            float NoV = clamp(dot(N_spec, V), 0.0, 1.0);
-            float F = .03 + .97 * pow(1. - NoV, 5.);
-            float blood_gate = clamp(wet_film*.45 + deep_pool*.78, 0., 1.) * mix(.25, 1., freshness) * (1.-is_ice);
-            float material_gate = clamp(blood_gate + is_ice*.75 + is_metal + is_chitin*.25, 0., 1.);
-            vec3 tint = mix(vec3(1.), vec3(1., .85, .52), is_metal);
             vec3 reflected = sp_col.rgb * tint * (response.y * F * 24. * footprint * source_gain * material_gate * support);
             // Only meaningful dynamic reflections trace bodies. Ambient, sky and
             // diffuse light are deliberately independent of this visibility.
             #ifndef MONSTER_VISION_PASS
             if (max(reflected.r, max(reflected.g, reflected.b)) > .00001)
-                reflected *= sourceVisibility(vec3(world, 0.), vec3(on_source, height), source_width, vec2(1e19));
+                reflected *= point_visibility >= 0. ? point_visibility :
+                    sourceVisibility(vec3(world, 0.), vec3(on_source, height), source_width, vec2(1e19));
             #endif
             spec_accum += reflected;
         }

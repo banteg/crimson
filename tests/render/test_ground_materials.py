@@ -4,6 +4,7 @@ import math
 import struct
 from pathlib import Path
 from typing import Any, cast
+from unittest.mock import patch
 
 import msgspec
 import pytest
@@ -1134,3 +1135,55 @@ def test_monster_vision_coexists_with_radioactive_occlusion_and_clears_stale_lig
         assert ground.perk_lighting.shader is None
     finally:
         rl.unload_render_texture(target)
+
+
+@pytest.mark.parametrize("height,width,length,ring", [
+    (0., 3., 0., 0.), (11.9, 3., 0., 0.), (12., 3., 0., 0.), (30., 3., 0., 0.),
+    (30., .05, 0., 0.), (30., .1, 0., 0.), (30., 3., 24., 0.), (30., 3., 0., 16.),
+])
+@pytest.mark.parametrize("shadows", [False, True])
+def test_reflection_visibility_is_independent_of_diffuse_trace(
+    ground_material, mocker, height, width, length, ring, shadows,
+):
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=35)
+    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
+    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    source = MaterialLight(
+        Vec2(32, 16), 150, (2, 1, .5), height=height, source_width=width,
+        direction=Vec2(1, 0), length=length, ring_radius=ring, illumination_gain=0,
+    )
+    collect = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
+    reference = debug_pixels(ground, texture, mode=5, creatures=pool, shadows=shadows)
+    assert max(p[0] for p in reference) > 0
+    # Diffuse disabled is an independent reference: it cannot populate a cached trace.
+    # Include a negligible diffuse source, for which tracing is also skipped.
+    for gain in (1e-10, 1.):
+        collect.return_value = [msgspec.structs.replace(source, illumination_gain=gain)]
+        assert debug_pixels(ground, texture, mode=5, creatures=pool, shadows=shadows) == reference
+
+
+def test_bulk_light_upload_matches_scalar_upload_after_source_count_changes(ground_material, mocker):
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    sources = [MaterialLight(
+        Vec2(10 + i, 8 + i % 7), 50 + i, (.1 + i * .02, .3, .5), height=12 + i,
+        source_width=.2 + i * .1, reflection_tail=.1 + i * .01,
+        direction=Vec2(1, 0), length=10 if i % 2 else 0,
+        reflection_gain=.3, illumination_gain=.5,
+    ) for i in range(32)]
+    collect = mocker.patch.object(ground_materials, "collect_material_lights")
+    bulk = ground._material_array
+
+    def scalar(name, values, *, components):
+        for i in range(len(values) // components):
+            _uniform(ground.material_shader, name.replace("[0]", f"[{i}]"), values[i*components:(i+1)*components])
+
+    for count in (32, 1, 0, 17):
+        collect.return_value = sources[:count]
+        with patch.object(MaterialGroundRenderer, "_material_array", side_effect=scalar):
+            reference = debug_pixels(ground, texture, mode=0)
+        assert ground._material_array == bulk
+        assert debug_pixels(ground, texture, mode=0) == reference

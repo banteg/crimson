@@ -79,8 +79,11 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_smoke:
         draw_smoke_map(render_ctx)
         return
+    lights = ()
+    if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
+        lights = tuple(collect_material_lights(render_ctx.frame, view_center=view.screen_size * .5 - view.camera))
     draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size,
-                    entity_alpha=entity_alpha)
+                    entity_alpha=entity_alpha, material_lights=lights)
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_map:
         # Hidden presentation still consumes simulation ticks; do not accumulate
         # a long GPU backlog while inspecting diagnostic maps.
@@ -97,11 +100,7 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
         return
 
     frame = render_ctx.frame
-    lights = ()
     if frame.rtx_mode is RtxRenderMode.RTX:
-        lights = tuple(collect_material_lights(
-            frame, view_center=render_ctx.view.screen_size * .5 - render_ctx.view.camera,
-        ))
         if frame.player_lighting is not None:
             frame.player_lighting.prepare(lights, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
         # Fluid passes bind their own shaders and render targets. Run them before
@@ -146,6 +145,7 @@ def draw_background(
     screen_size: Vec2,
     out_size: Vec2,
     entity_alpha: float = 1.0,
+    material_lights: tuple[MaterialLight, ...] | None = None,
 ) -> None:
     clear_color = rl_color(10, 10, 12, 255)
     ground = render_ctx.frame.ground
@@ -153,7 +153,7 @@ def draw_background(
     rl.clear_background(clear_color)
     if isinstance(ground, MaterialGroundRenderer) and render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
         with ground.material_scope(render_ctx.frame, view_center=screen_size * 0.5 - camera,
-                                   view=render_ctx.view, entity_alpha=entity_alpha):
+                                   view=render_ctx.view, entity_alpha=entity_alpha, lights=material_lights):
             ground.draw_view(
                 camera, screen_w=screen_size.x, screen_h=screen_size.y, out_w=out_size.x, out_h=out_size.y,
             )
@@ -533,7 +533,10 @@ def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
     camera = render_ctx.view.camera
     view_scale = render_ctx.view.view_scale
     alpha = ctx.entity_alpha
-    draw_bonus_pickups(render_ctx, camera=camera, view_scale=view_scale, scale=render_ctx.view.scale, alpha=alpha)
+    draw_bonus_pickups(
+        render_ctx, camera=camera, view_scale=view_scale, scale=render_ctx.view.scale, alpha=alpha,
+        material_lights=ctx.material_lights,
+    )
     draw_bonus_hover_labels(render_ctx, camera=camera, view_scale=view_scale)
     draw_particle_pool(render_ctx, camera=camera, view_scale=view_scale)
     secondary_detonation_pass(render_ctx)
