@@ -28,7 +28,9 @@
 // another choice; Start pauses, Start or B resumes; the pad disconnects for a
 // while mid-run and comes back; and on the end screen the name field takes A,
 // then B leaves for the main menu. A fresh profile takes the pad profile on
-// first use, so the run records the Dual Action Pad schemes.
+// first use, so the run records the Dual Action Pad schemes. The score the name
+// field saves goes to scores.jsonl (host/scores.inc) on its run's table, naming
+// the replay the run saved and its leaderboard id, and the Python port reads it.
 //
 // With --silent the original starts with sound and music off, so it loads no
 // music and its track ids are all 0: the run's ticks still tell the end tunes
@@ -170,13 +172,38 @@ function leaveByPad(screen) {
   }
   tap({ hat: HAT_DOWN });
   tap({ press: [PAD_SOUTH] });
-  const scores = path.join(directory, "scores5");
-  for (let frames = 0; !fs.existsSync(scores) || !fs.readdirSync(scores).length; ++frames) {
+  const scores = path.join(directory, "scores.jsonl");
+  for (let frames = 0; !fs.existsSync(scores) || !fs.statSync(scores).size; ++frames) {
     if (frames > 120) throw Error(`A on screen ${screen}'s name field saved no score`);
     frame(16, { cursor: PAD_CURSOR });
   }
+  checkSavedScore(scores);
   tap({ press: [PAD_EAST] });
   settle(MAIN_MENU);
+}
+
+// The one score saved, on the run's table, naming its replay by number and by
+// the run's leaderboard id (the payload's digest), as the Python port reads it.
+function checkSavedScore(file) {
+  const lines = fs.readFileSync(file, "utf8").split("\n").filter(Boolean);
+  if (lines.length !== 1) throw Error(`scores.jsonl holds ${lines.length} scores`);
+  const score = JSON.parse(lines[0]);
+  const expected = {
+    v: 1,
+    game_mode_id: quest ? 3 : 1,
+    quest_level: quest ? { major: 1, minor: 1 } : undefined,
+    replay_number: 1,
+    run: crypto.createHash("sha256").update(savedPayload).digest("hex"),
+    rules: savedCrd.rules,
+    game_version: savedCrd.game_version,
+  };
+  for (const [key, value] of Object.entries(expected))
+    if (JSON.stringify(score[key]) !== JSON.stringify(value)) throw Error(`the saved score's ${key} is ${JSON.stringify(score[key])}`);
+  const script =
+    "import sys; from pathlib import Path; from crimson.persistence.highscores import read_highscore_records; " +
+    "print(*(r.run for r in read_highscore_records(Path(sys.argv[1]))))";
+  const read = execFileSync("uv", ["run", "--no-sync", "python", "-c", script, directory], { encoding: "utf8" }).trim();
+  if (read !== expected.run) throw Error(`the Python port reads the saved scores as ${read || "none"}`);
 }
 
 // Holds the cursor on a spot until the screen settles, then clicks it. A menu

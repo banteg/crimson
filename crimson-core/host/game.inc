@@ -235,6 +235,7 @@ void bonus_meta_global_construct_and_register() {
     new (&bonus_meta_table[i]) bonus_meta_cpp_t;
 }
 void game_static_init();
+void scores_import();
 __attribute__((export_name("game_start"))) int game_start() {
   game_session = false;
   game_original = true;
@@ -244,6 +245,7 @@ __attribute__((export_name("game_start"))) int game_start() {
   rng = 1; // the CRT's rand seed before any srand
   game_static_init();
   game_outputs(1);
+  scores_import();
   static char command_line[] = "";
   return crimsonland_main(nullptr, nullptr, command_line, 0);
 }

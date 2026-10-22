@@ -207,7 +207,11 @@ since its flag pauses parts of a tick. The run's replay goes to `replays/` as
 the next numbered `.crd`, `<n>-<mode>.crd`, the replay the Python port records
 and the leaderboard takes ([`host/replay.inc`](host/replay.inc)), with how the
 run ended, or `incomplete`; the run's high score record keeps its number in the
-bytes the original reserved ([high score records](../docs/formats/highscores.md)). A tick takes at most one
+bytes the original reserved. The high score tables are the Python port's
+`scores.jsonl` ([local high scores](../docs/formats/highscores.md)): the
+original's loader reads its table from there, a saved score appends its record
+with the replay's number, leaderboard id and rules, and the original's `scores5`
+tables import as the game starts ([`host/scores.inc`](host/scores.inc)). A tick takes at most one
 perk command, judged by the state it starts from, since a pick can use up the
 last perk or kill the player; commands the verifier would refuse (in Rush, once
 dead, with no perk left) are dropped, as the original ignores them, and the

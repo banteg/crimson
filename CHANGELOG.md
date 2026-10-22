@@ -21,6 +21,7 @@ These corrections apply in the Python port and the browser/native game. `--prese
 
 - `crimson save unlock` unlocks every normal and hardcore quest in an existing campaign save, creating a backup first. Close the game before running it; use `--base-dir` to select a different runtime directory.
 - RTX's F6 and `rtxdebug` views now include smoke density, heat, airflow and scattered light.
+- Local high scores live in one file, `scores.jsonl`, which the Python, browser and desktop games share. Tables in a `scores5` folder, the original game's included, import at startup and move to `scores5/imported`. Each new score names its replay, rules and build, and a run of yours the leaderboard holds turns green by its run id.
 - Python installations separate gameplay dependencies from development tools. Quest recipe authoring uses the optional `quests` extra; ordinary gameplay and compiled-quest replays do not need it.
 
 ### Under the hood

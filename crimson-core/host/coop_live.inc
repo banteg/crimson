@@ -322,8 +322,7 @@ static bool coop_start_run() {
 static void coop_end(const char *outcome) {
   std::vector<uint8_t> payload = replay_payload(outcome, coop_header);
   coop_hold(payload, outcome);
-  int number = replay_save(payload);
-  memcpy(highscore_active_record.reserved0, &number, sizeof highscore_active_record.reserved0);
+  scores_link(replay_save(payload), payload);
   game_live = game_session = false;
   coop_live.playing = coop_live.choosing = coop_ui.banner = false;
   coop_live.ended = true;

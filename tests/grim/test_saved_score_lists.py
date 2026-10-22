@@ -13,9 +13,9 @@ def test_adding_lists_selects_them_and_a_full_set_overwrites_slot_one() -> None:
         profile.add_saved_name(name)
     assert profile.saved_name_count == 7
     # The eighth list would fill every slot: native overwrites slot 1 and keeps seven.
-    profile.add_saved_name("g/h")
+    profile.add_saved_name("g")
     assert profile.saved_name_count == 7
-    assert (profile.selected_saved_name_slot, profile.named_score_list) == (1, "gh")
+    assert (profile.selected_saved_name_slot, profile.named_score_list) == (1, "g")
 
 
 def test_deleting_moves_the_last_list_into_the_slot_and_selects_the_default() -> None:

@@ -1,6 +1,5 @@
 The Ranked row (host/ranked.inc): a ranked attempt lists only the modes that rank, Quests and Survival, and plays
-one player; the Play Game panel grows by the row. The high score table reads the leaderboard's runs after its own
-records.
+one player; the Play Game panel grows by the row.
 --- a/decomp/1.9/crimsonland/menus/play_game_menu_update.cpp
 +++ b/decomp/1.9/crimsonland/menus/play_game_menu_update.cpp
 @@ -191,7 +191,7 @@
@@ -110,24 +109,4 @@ records.
 +    ranked_layout();
      for (int calc_index = 0; calc_index < 41; calc_index++) {
          ui_element_layout_calc(ui_element_table[calc_index]);
-     }
---- a/decomp/1.9/crimsonland/highscore/highscore_load_table.cpp
-+++ b/decomp/1.9/crimsonland/highscore/highscore_load_table.cpp
-@@ -55,6 +55,8 @@
- #endif
- 
-+extern "C" FILE *highscore_table_open(char *path);
-+
- void highscore_load_table(void)
- {
-     highscore_record_cpp_t stored;
-     char *path;
-@@ -72,7 +74,7 @@
-     }
- 
-     count = 0;
--    fp = fopen(path, "rb");
-+    fp = highscore_table_open(path);
-     if (fp == 0) {
-         return;
      }

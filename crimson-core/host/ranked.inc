@@ -139,11 +139,9 @@ static int ranked_waiting() {
 // them (screens/high_scores_view/records.py, docs/rewrite/leaderboard-identity.md):
 // each board's latest answer is kept for the session, every fetch replacing it
 // whole, and nothing online is stored. While Show internet scores is ticked the
-// table reads the board's runs after its own records, so the original's
-// filters and order take them in; a run of the player's own that the board
-// holds turns green in its place. The screen fetches a board quietly the first
-// time it shows it; Update scores fetches the shown one with the original's
-// status lines.
+// table reads the board's runs after its own records (scores.inc). The screen
+// fetches a board quietly the first time it shows it; Update scores fetches the
+// shown one with the original's status lines.
 #include "crimsonland_highscore.h"
 #include <map>
 #include <tuple>
@@ -280,58 +278,6 @@ static const std::string *scores_run(const highscore_record_t &record) {
       return &shown.run;
   }
   return nullptr;
-}
-
-extern "C" {
-// The table's file for highscore_load_table, with the shown board's kept runs
-// after its own records while Show internet scores is ticked: a record the
-// board holds (by name, time and experience, as the Python port matches them)
-// turns green and takes the board's run instead of showing twice. Asks for a
-// board it has not fetched yet. Rows earlier builds saved from the leaderboard
-// (received, not the player's: the original's internet rows) stay out, since
-// the board's latest answer replaces them.
-FILE *highscore_table_open(char *path) {
-  static char *table;
-  FILE *file = platform_fopen(path, "rb");
-  scores_shown.clear();
-  if (!ranked_enabled)
-    return file;
-  ScoresBoard board;
-  std::vector<ScoresRun> runs;
-  if (config_blob.show_online_scores && scores_board(board)) {
-    auto kept = scores_kept.find(board);
-    if (kept != scores_kept.end())
-      runs = kept->second;
-    else if (!scores_out && !scores_asked.count(board))
-      scores_send(board, true);
-  }
-  size_t size = 0;
-  free(table);
-  table = nullptr;
-  FILE *out = open_memstream(&table, &size);
-  highscore_record_t record;
-  while (file && !feof(file)) {
-    if (!highscore_read_record((char *)&record, file) || ((record.flags & 1) && !(record.flags & 2)))
-      continue;
-    for (size_t i = 0; i < runs.size(); ++i)
-      if (!strcmp(runs[i].record.player_name, record.player_name) &&
-          runs[i].record.run_elapsed_ms == record.run_elapsed_ms && runs[i].record.score_xp == record.score_xp) {
-        record.flags |= 1;
-        scores_shown.push_back({record, runs[i].run});
-        runs.erase(runs.begin() + (ptrdiff_t)i);
-        break;
-      }
-    highscore_write_record(&record, out);
-  }
-  if (file)
-    fclose(file);
-  for (ScoresRun &run : runs) {
-    highscore_write_record(&run.record, out);
-    scores_shown.push_back(run);
-  }
-  fclose(out);
-  return fmemopen(table, size, "rb");
-}
 }
 
 extern "C" {

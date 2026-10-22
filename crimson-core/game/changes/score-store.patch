@@ -1,0 +1,62 @@
+The high score tables live in scores.jsonl, as the Python port keeps them (host/scores.inc): the table loads from
+there, with the leaderboard's runs after its own records, and a saved record appends there instead of to its
+scores5 file.
+--- a/decomp/1.9/crimsonland/highscore/highscore_load_table.cpp
++++ b/decomp/1.9/crimsonland/highscore/highscore_load_table.cpp
+@@ -55,6 +55,8 @@
+ #endif
+ 
++extern "C" FILE *highscore_table_open(void);
++
+ void highscore_load_table(void)
+ {
+     highscore_record_cpp_t stored;
+     char *path;
+@@ -72,7 +74,7 @@
+     }
+ 
+     count = 0;
+-    fp = fopen(path, "rb");
++    fp = highscore_table_open();
+     if (fp == 0) {
+         return;
+     }
+--- a/decomp/1.9/crimsonland/highscore/highscore_save_record.cpp
++++ b/decomp/1.9/crimsonland/highscore/highscore_save_record.cpp
+@@ -14,10 +14,10 @@
+ extern "C" void highscore_write_record(highscore_record_t *record, FILE *fp);
+ 
++extern "C" bool highscore_store(highscore_record_t *record);
++
+ extern "C" void highscore_save_record(highscore_record_t *record)
+ {
+-    char *path = highscore_build_path();
+     int index;
+-    FILE *fp;
+ 
+     if (record == 0) {
+         console_printf(&console_log_queue, "UNEXPECTED: sc is null!\n");
+@@ -30,22 +30,13 @@
+         index--;
+     }
+ 
+-    CreateDirectoryA(HIGHSCORE_DIR, 0);
+     if (!highscore_save_skip_record_init) {
+         highscore_record_init();
+     }
+ 
+-    if ((record->flags & 1) != 0 && highscore_update_record(path, record)) {
+-        return;
+-    }
+-
+-    fp = fopen(path, "ab");
+-    if (fp == 0) {
++    if (!highscore_store(record)) {
+         console_printf(
+             &console_log_queue,
+             "Unable to save score: disk full or file in use?\n");
+-        return;
+     }
+-    highscore_write_record(record, fp);
+-    fclose(fp);
+ }

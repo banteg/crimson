@@ -251,9 +251,7 @@ class CrimsonProfileConfig(msgspec.Struct):
         """`ui_profile_menu_update`'s Add: append and select the list; a full set (8) overwrites slot 1 instead.
 
         Native leaves the selection on the dropped eighth slot there; the port selects the overwritten slot 1.
-        Path separators are dropped since the name becomes part of a file name.
         """
-        name = name.replace("/", "").replace("\\", "")
         names = list(self.saved_names)
         names[self.saved_name_count] = name
         self.selected_saved_name_slot = self.saved_name_count

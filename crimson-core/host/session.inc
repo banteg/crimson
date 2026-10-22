@@ -152,6 +152,7 @@ static void game_music_start(int track, bool in_game);
 
 #include "replay.inc"
 #include "ranked.inc"
+#include "scores.inc"
 
 // Runs a single player plays in Survival, Rush or Quests, at the resolution the
 // verifier simulates (1024x768); the rest play as the original. A replay's
@@ -304,8 +305,7 @@ static void live_begin() {
 // names it, and a ranked run the board takes is held for its name.
 static void live_end(const char *outcome) {
   std::vector<uint8_t> payload = replay_payload(outcome);
-  int number = replay_save(payload);
-  memcpy(highscore_active_record.reserved0, &number, sizeof highscore_active_record.reserved0);
+  scores_link(replay_save(payload), payload);
   ranked_finish(payload, outcome);
   game_live = game_session = false;
 }

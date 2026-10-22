@@ -606,13 +606,20 @@ function queued(file) {
   assert.deepEqual(uploadable(entry).names, ["banteg", "Zo\u00eb"]);
 }
 
-// The tables a machine's scores went to, and when each last took one; its newest replay.
-const tables = (peer) => {
-  const kept = path.join(peer.directory, "scores5");
-  return fs.existsSync(kept) ? fs.readdirSync(kept).sort() : [];
+// A machine's saved scores (host/scores.inc), and the tables they went to, named as the original named its
+// files; its newest replay.
+const scores = (peer) => {
+  const file = path.join(peer.directory, "scores.jsonl");
+  return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
 };
-const scores = (peer) =>
-  tables(peer).map((name) => `${name}@${fs.statSync(path.join(peer.directory, "scores5", name)).mtimeMs}`).join();
+const tables = (peer) => {
+  const modes = { 1: "survival", 2: "rush" };
+  const names = scores(peer).split("\n").filter(Boolean).map((line) => {
+    const { game_mode_id, player_count = 1 } = JSON.parse(line);
+    return `${modes[game_mode_id] ?? game_mode_id}${player_count > 1 ? `_${player_count}` : ""}.hi`;
+  });
+  return [...new Set(names)].sort();
+};
 const newest = (peer) => {
   const replays = path.join(peer.directory, "replays");
   const numbered = fs.readdirSync(replays).filter((name) => /^\d+-/.test(name));

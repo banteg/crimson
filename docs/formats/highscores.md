@@ -93,6 +93,7 @@ table as `typo.hi`. Two-player tables add `_2` before `.hi`, and the port
 added `_3` and `_4`; a named list appends its name after `.hi`.
 
 Implementation: `src/crimson/persistence/highscores.py` and
-`src/crimson/persistence/scores5.py`. The native behavior is in the recovered
+`src/crimson/persistence/scores5.py`; the web and native clients' are in
+`crimson-core/host/scores.inc`, which writes the same lines. The native behavior is in the recovered
 sources under `decomp/1.9/crimsonland/highscore/` (`highscore_save_record.cpp`,
 `highscore_load_table.cpp`, and the `highscore_compare_*` comparators).

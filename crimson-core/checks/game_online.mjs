@@ -1,12 +1,14 @@
 // The leaderboard on the high score screen (host/ranked.inc) and watching its
 // runs (host/watch.inc), as the browser host serves them: ticking Show internet
-// scores fetches the Survival board quietly, and its runs join the table in
-// place of a leaderboard row an earlier build saved. A pinned run's replay is
+// scores fetches the Survival board quietly, and its runs join the table. The
+// original's Survival table imports at startup (host/scores.inc) as the Python
+// port imports it, without the leaderboard row an earlier build saved there. A
+// pinned run's replay is
 // asked for once and, written to replays/online/, plays to the result it
 // recorded; a run the leaderboard no longer has gives no Watch; a failed
 // download is asked for again when the row is pinned again; two runs with the
 // same name and numbers keep their own ids. Update scores replaces the board's
-// runs whole. Nothing online is stored: the score table stays as it was, and
+// runs whole. Nothing online is stored: the imported row is the only score, and
 // only the downloaded replay is new. Then the game starts again for two players:
 // the two players' table fetches the co-op pairs' Survival board, whose runs name
 // both players.
@@ -21,6 +23,13 @@ import { bootGame, INPUT } from "./game_host.mjs";
 const ROOT = new URL("..", CORE).pathname;
 const [directory, gameWasm = new URL("build/game/game.wasm", CORE).pathname] = process.argv.slice(2);
 if (!directory) throw Error("usage: game_online.mjs <game directory> [game.wasm]");
+
+// The original's Survival table, which the game imports as it starts.
+const table = path.join(directory, "scores5/survival.hi");
+fs.mkdirSync(path.dirname(table), { recursive: true });
+// The local row ranks below the board's runs, so they keep the rows they are clicked on.
+const originalTable = Buffer.concat([originalRow("stale", 999999, 1), originalRow("Kept \u00e9", 1, 0)]);
+fs.writeFileSync(table, originalTable);
 
 const requests = [];
 let run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
@@ -78,17 +87,17 @@ function answerScores(scores) {
   game.game_scores_received(body.length);
 }
 
-// A Survival row an earlier build saved from the leaderboard (flags 1: received),
-// as highscore_write_record writes it: each byte offset, the checksum over the
-// signed bytes.
-function savedBoardRow() {
+// A Survival row of the original's table, as highscore_write_record writes it:
+// each byte offset, the checksum over the signed bytes. `flags` 1 is a row an
+// earlier build saved from the leaderboard.
+function originalRow(name, experience, flags) {
   const record = Buffer.alloc(72);
-  record.write("stale", 0, "latin1");
+  record.write(name, 0, "latin1");
   record.writeUInt32LE(512000, 0x20);
-  record.writeUInt32LE(999999, 0x24);
+  record.writeUInt32LE(experience, 0x24);
   record[0x28] = 1;
   [record[0x40], record[0x42], record[0x43]] = [1, 1, 26];
-  [record[0x44], record[0x46], record[0x47]] = [1, 0x7c, 0xff];
+  [record[0x44], record[0x46], record[0x47]] = [flags, 0x7c, 0xff];
   let checksum = 0;
   for (let i = 0; i < 72; ++i) checksum = (checksum + (i + 3) * ((record[i] << 24) >> 24) * 7) | 0;
   for (let i = 0; i < 72; ++i) record[i] = (record[i] + (i * 5 + 1) * i + 6) & 0xff;
@@ -97,9 +106,6 @@ function savedBoardRow() {
   wire.writeInt32LE(checksum, 72);
   return wire;
 }
-const table = path.join(directory, "scores5/survival.hi");
-fs.mkdirSync(path.dirname(table), { recursive: true });
-fs.writeFileSync(table, savedBoardRow());
 
 // On a fresh profile the main menu shares its screen id with the startup sequence.
 while (run.clock < 15000) frame();
@@ -175,7 +181,15 @@ if (requests.length) throw Error(`watching again asked for ${requests.join()}`);
 frame({ taps: [ESCAPE] });
 waitFor("the return to the scores", () => game.game_state() === HIGHSCORES);
 
-if (!fs.readFileSync(table).equals(savedBoardRow())) throw Error("the score table changed");
+// The import moved the table aside, and its local row is the one score, as the Python port reads the table.
+if (fs.existsSync(table)) throw Error("the original's table was not imported");
+const imported = path.join(directory, "scores5/imported/survival.hi");
+if (!fs.readFileSync(imported).equals(originalTable)) throw Error("the imported table changed");
+const same = "import sys; from pathlib import Path; from crimson.persistence.highscores import read_highscore_records; " +
+  "from crimson.persistence.scores5 import read_original_records; " +
+  "print(read_highscore_records(Path(sys.argv[1])) == read_original_records(Path(sys.argv[2])))";
+if (execFileSync("uv", ["run", "--no-sync", "python", "-c", same, directory, imported], { encoding: "utf8" }).trim() !== "True")
+  throw Error(`the scores are ${fs.readFileSync(path.join(directory, "scores.jsonl"), "utf8")}`);
 const replays = fs.readdirSync(path.join(directory, "replays"), { recursive: true }).filter((name) => name.endsWith(".crd"));
 if (replays.join() !== path.join("online", "r1.crd")) throw Error(`the replays are ${replays.join(", ")}`);
 
