@@ -36,19 +36,24 @@ def _gl(name: str, *argtypes: Any) -> Any:
 
 
 def _store_as_float(texture_id: int, width: int, height: int, pixel_format: int) -> bool:
-    """Give the texture a sized float internal format; whether the driver then stores it as float."""
-    internal_format, data_type = _GL_FLOAT_FORMATS[int(pixel_format)]
+    """Respecify the texture with a sized float format unless it is already float; whether it ends up float."""
     bind = _gl("glBindTexture", C.c_uint, C.c_uint)
+    query = _gl("glGetTexLevelParameteriv", C.c_uint, C.c_int, C.c_uint, C.POINTER(C.c_int))
+
+    def is_float() -> bool:
+        red_type = C.c_int()
+        query(_GL_TEXTURE_2D, 0, _GL_TEXTURE_RED_TYPE, C.byref(red_type))
+        return red_type.value == _GL_FLOAT
+
     bind(_GL_TEXTURE_2D, texture_id)
-    _gl("glTexImage2D", C.c_uint, C.c_int, C.c_int, C.c_int, C.c_int, C.c_int, C.c_uint, C.c_uint, C.c_void_p)(
-        _GL_TEXTURE_2D, 0, internal_format, width, height, 0, _GL_RGBA, data_type, None,
-    )
-    red_type = C.c_int()
-    _gl("glGetTexLevelParameteriv", C.c_uint, C.c_int, C.c_uint, C.POINTER(C.c_int))(
-        _GL_TEXTURE_2D, 0, _GL_TEXTURE_RED_TYPE, C.byref(red_type),
-    )
+    if not is_float():
+        internal_format, data_type = _GL_FLOAT_FORMATS[int(pixel_format)]
+        _gl("glTexImage2D", C.c_uint, C.c_int, C.c_int, C.c_int, C.c_int, C.c_int, C.c_uint, C.c_uint, C.c_void_p)(
+            _GL_TEXTURE_2D, 0, internal_format, width, height, 0, _GL_RGBA, data_type, None,
+        )
+    stored = is_float()
     bind(_GL_TEXTURE_2D, 0)
-    return red_type.value == _GL_FLOAT
+    return stored
 
 
 def load_float_render_texture(
