@@ -1,6 +1,6 @@
 The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, the terrain's
 decals by material, the batches the host lights, Monster Vision's auras, and the explosions and smoke the ticks make
-(game/rtx_lights.cpp, rtx_smoke.cpp); it draws analytic beams and the fluid smoke, and registers console commands.
+(game/rtx_lights.cpp, rtx_smoke.cpp); it draws analytic beams, pressure shells and fluid smoke, and registers commands.
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 @@ -89,6 +89,7 @@
@@ -343,6 +343,20 @@ decals by material, the batches the host lights, Monster Vision's auras, and the
          int flags = entry->flags;
  #if CL_BUILD == 10908
          // 1.9.8 spells the test !(age < 0); 8966 compiles both spellings alike, but only
+@@ -110,9 +112,12 @@
+ #else
+         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) == 0) {
+ #endif
+-            effect_render_entry(entry, color);
++            if (!(rtx_render_mode && rtx_explosion_owns(entry)))
++                effect_render_entry(entry, color);
+         }
+     }
++    if (rtx_render_mode)
++        rtx_explosions_draw();
+ 
+     grim_interface_ptr->grim_end_batch();
+     grim_interface_ptr->grim_set_config_var(0x14, 6u);
 --- a/decomp/1.9/crimsonland/game/bonus_apply.cpp
 +++ b/decomp/1.9/crimsonland/game/bonus_apply.cpp
 @@ -257,7 +257,11 @@
@@ -398,6 +412,16 @@ decals by material, the batches the host lights, Monster Vision's auras, and the
      effect_color_t core_color = {0.6f, 0.6f, 0.6f, 1.0f};
  
      effect_template.flags = 0x19;
+--- a/decomp/1.9/crimsonland/effects/effect_free.cpp
++++ b/decomp/1.9/crimsonland/effects/effect_free.cpp
+@@ -3,6 +3,7 @@
+ 
+ extern "C" void effect_free(effect_entry_t *entry)
+ {
++    rtx_explosion_release(entry);
+     if (game_effects_free(entry))
+         return;
+     entry->next_free = effect_free_list_head;
 --- a/decomp/1.9/crimsonland/effects/effects_update.cpp
 +++ b/decomp/1.9/crimsonland/effects/effects_update.cpp
 @@ -5,6 +5,7 @@

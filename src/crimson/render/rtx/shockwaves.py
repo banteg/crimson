@@ -14,6 +14,7 @@ from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import texture_mode
 
 from .explosion_shell import explosion_shell
+from .shaders import glsl
 
 if TYPE_CHECKING:
     from ..world.context import WorldRenderCtx
@@ -58,37 +59,7 @@ void main() {
 }
 """
 
-_PRESSURE_FRAGMENT = """#version 330
-in vec2 fragTexCoord;
-out vec4 finalColor;
-uniform sampler2D texture0;
-uniform vec2 u_size;
-uniform int u_count;
-uniform vec4 u_fronts[16];
-uniform float u_strength[16];
-void main() {
-    vec2 uv = fragTexCoord;
-    vec2 pixel = vec2(uv.x, 1.0 - uv.y) * u_size;
-    vec2 displacement = vec2(0.0);
-    float contrast = 0.0;
-    for (int i = 0; i < u_count; i++) {
-        vec2 delta = pixel - u_fronts[i].xy;
-        vec2 radius = max(u_fronts[i].zw, vec2(1.0));
-        float radial = length(delta / radius);
-        float distance = (radial - 1.0) * min(radius.x, radius.y);
-        float width = max(3.0, min(radius.x, radius.y) * 0.022);
-        float x = distance / width;
-        float crest = exp(-0.5 * x * x);
-        vec2 normal = normalize(delta / (radius * radius) + vec2(1e-10));
-        displacement += normal * (-x * crest) * (4.5 * u_strength[i]);
-        contrast += u_strength[i] * (0.16 * crest - 0.14 * exp(-pow((distance + width) / width, 2.0)));
-    }
-    displacement = clamp(displacement, vec2(-6.0), vec2(6.0));
-    vec2 offset = vec2(displacement.x, -displacement.y) / u_size;
-    vec3 color = texture(texture0, clamp(uv + offset, 0.5 / u_size, 1.0 - 0.5 / u_size)).rgb;
-    finalColor = vec4(color * (1.0 + clamp(contrast, -0.15, 0.15)), 1.0);
-}
-"""
+_PRESSURE_FRAGMENT = glsl("pressure.frag")
 
 
 class ShockwaveRenderer(msgspec.Struct):
@@ -148,13 +119,14 @@ class ShockwaveRenderer(msgspec.Struct):
             rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4,
             len(fronts),
         )
-        strength_buffer = rl.ffi.new("float[]", [f.strength for f in fronts])
+        strengths = [f.strength for f in fronts]
+        strength_buffer = rl.ffi.new("float[]", strengths + [0.0] * (-len(strengths) % 4))
         rl.set_shader_value_v(
             shader,
             self.locations["u_strength"],
             rl.ffi.cast("void *", strength_buffer),
-            rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
-            len(fronts),
+            rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4,
+            (len(fronts) + 3) // 4,
         )
         with texture_mode(self.target):
             rl.begin_shader_mode(shader)

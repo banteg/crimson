@@ -90,6 +90,7 @@ const char *blit_fragment_source = SHADER_HEADER SHADER_BLIT_FRAG;
 const char *aura_fragment_source = SHADER_HEADER RTX_SHADER_PERK_AURA_FRAG;
 const char *monster_vision_vertex_source = SHADER_HEADER SHADER_MONSTER_VISION_VERT;
 const char *monster_vision_fragment_source = SHADER_HEADER SHADER_MONSTER_VISION_FRAG;
+const char *pressure_fragment_source = SHADER_HEADER SHADER_PRESSURE_LIT_FRAG;
 
 // RTX lighting: the world's lights and camera (host_scene), the batch being drawn
 // (HOST_PASS_CREATURES, _PLAYERS, MATERIAL_BONUS, or 0 for the device's own
@@ -128,6 +129,12 @@ enum { MONSTER_VISION_RADIUS = 60 };
 std::vector<float> perk_sources;
 GLuint monster_vision_program;
 Target perk_target;
+// The explosions' pressure fronts (host_pressure, render/rtx/shockwaves.py):
+// screen center, radius and strength each, applied from the world's target into
+// another before the tonemap reads it.
+std::vector<float> pressure_fronts;
+GLuint pressure_program;
+Target pressured;
 // The RTX ground (render/rtx/materials.py): companions of the terrain target,
 // made from it as it stands on first use and dropped when it is cleared,
 // replaced or released, or RTX ends. The substrate is the terrain and its decals
@@ -869,6 +876,7 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     create_lit(bonus_lit, bonus_fragment_source);
     create_lit(aura_lit, aura_fragment_source);
     monster_vision_program = link(monster_vision_vertex_source, monster_vision_fragment_source);
+    pressure_program = link(tonemap_vertex_source, pressure_fragment_source);
     ground_program = link(lit_vertex_source, ground_fragment_source);
     stamp_program = link(lit_vertex_source, stamp_fragment_source);
     glUseProgram(stamp_program);
@@ -907,6 +915,7 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     release(t);
   release(smoke_composite);
   release(perk_target);
+  release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -1198,6 +1207,10 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
     beam_lights |= l[20] > 0;
   }
 }
+void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {
+  const float *f = (const float *)(client_memory() + fronts);
+  pressure_fronts.assign(f, f + count * 4);
+}
 void GL_ENTRY(w2c_host_perk_light)(struct w2c_host *, u32 sources, u32 count) {
   const float *s = (const float *)(client_memory() + sources);
   perk_sources.assign(s, s + count * 3);
@@ -1403,6 +1416,39 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   } else if (pass == HOST_PASS_WORLD_END && world) {
     world = false;
     material = 0;
+    // The pressure fronts displace the world, in its own pixels, into a second target.
+    const Target *world_image = &hdr;
+    if (!pressure_fronts.empty()) {
+      if (pressured.width != hdr.width || pressured.height != hdr.height) {
+        release(pressured);
+        pressured.width = hdr.width, pressured.height = hdr.height, pressured.flags = hdr.flags;
+        allocate(pressured);
+      }
+      float sx = (float)hdr.width / hdr.logical_width, sy = (float)hdr.height / hdr.logical_height;
+      int count = (int)pressure_fronts.size() / 4;
+      std::vector<float> fronts, strengths((count + 3) / 4 * 4);
+      for (int i = 0; i < count; ++i) {
+        const float *f = &pressure_fronts[i * 4];
+        fronts.insert(fronts.end(), {f[0] * sx, f[1] * sy, f[2] * sx, f[2] * sy});
+        strengths[i] = f[3];
+      }
+      bind_framebuffer(pressured);
+      glUseProgram(pressure_program);
+      glUniform1i(glGetUniformLocation(pressure_program, "texture0"), 0);
+      glUniform2f(glGetUniformLocation(pressure_program, "u_size"), (float)hdr.width, (float)hdr.height);
+      glUniform1i(glGetUniformLocation(pressure_program, "u_count"), count);
+      glUniform4fv(glGetUniformLocation(pressure_program, "u_fronts"), count, fronts.data());
+      glUniform4fv(glGetUniformLocation(pressure_program, "u_strength"), (count + 3) / 4, strengths.data());
+      glDisable(GL_BLEND);
+      glDisable(GL_CULL_FACE);
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, hdr.texture);
+      glBindSampler(0, 0);
+      glBindVertexArray(vertex_array);
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+      world_image = &pressured;
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
     glUseProgram(tonemap_program);
@@ -1411,7 +1457,7 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     glDisable(GL_CULL_FACE);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, hdr.texture);
+    glBindTexture(GL_TEXTURE_2D, world_image->texture);
     glBindSampler(0, 0);
     glBindVertexArray(vertex_array);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

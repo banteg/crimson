@@ -449,6 +449,21 @@ void check_rtx() {
   };
   Pixel glow = aura_quad(445, 345), rim = aura_quad(401, 345);
   assert(glow.r > 0.9f && glow.g > 0.9f && glow.b < 0.01f && rim.r < 0.01f);
+  // A pressure front brightens the world along its crest, darkens it just
+  // inside, and leaves the world past it alone.
+  auto front = [](int count, int x, int y) {
+    const float fronts[4] = {312, 384, 200, 1};
+    memcpy(memory + 33600, fronts, sizeof fronts);
+    w2c_host_pressure(nullptr, 33600, count);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    rectangle(0, 0, 1024, 768, 0xff606060);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    w2c_host_pressure(nullptr, 33600, 0);
+    return back_red(x, y);
+  };
+  float flat = front(0, 512, 384);
+  assert(front(1, 512, 384) > flat * 1.08f && front(1, 504, 384) < flat && fabsf(front(1, 800, 384) - flat) < 1e-3f);
   // Fluid smoke: a splat stepped once draws as a translucent gray cloud over a
   // black world, brighter under a light above it; a reset clears it.
   auto smoke = [](std::initializer_list<float> commands, int lights) {
@@ -494,7 +509,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision glows; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision glows, pressure fronts ripple; classic stays 8-bit");
 }
 
 int main() {

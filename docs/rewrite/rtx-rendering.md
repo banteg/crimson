@@ -250,7 +250,18 @@ grouped flame particles, and explosion fireballs and shells, with the same
 per-response selection. Like `ExplosionVisual`, the module records each explosion
 burst as it spawns: its fireball sprites as they start out, and whether its ring
 spawned. Rocket hits stay dark, their detonation lighting them instead. The
-records age with the effects' update and are kept apart from the run. The module marks the creature body and player batches
+records age with the effects' update and are kept apart from the run. A freed slot
+leaves its record (`effect_free`), so a reused slot is never mistaken for one.
+The records also draw the explosion as `draw_effect_pool` does in RTX:
+- the explosion's own ring becomes the warm shell (the RING cell tinted
+  `(190, 163, 122)` at the shell's radius and alpha); a rocket's ring isn't drawn
+- a lit explosion's fireballs are drawn from how they spawned, at half speed
+  (1.4 s), in place of their native slots
+
+Each frame the module sends the shells as pressure fronts (`host_pressure`, at
+most 16). Before the tonemap, the host displaces the world through
+`pressure.frag` into a second HDR target. The client's targets run v down, so
+`client/shaders/pressure_lit.frag` defines `TARGET_V_DOWN`. The module marks the creature body and player batches
 (`HOST_PASS_CREATURES`, `HOST_PASS_PLAYERS`), and the host draws them with the
 lit programs, the camera offset giving each fragment its world position.
 Creature bodies keep the 0.60 ambient fill even without lights; players keep

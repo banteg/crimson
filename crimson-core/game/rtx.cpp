@@ -78,6 +78,7 @@ static bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !gri
 int rtx_collect_lights(float *out, int capacity);
 extern const float rtx_beam_tuning[4];
 int rtx_collect_monster_vision(float *out, int capacity, float alpha);
+int rtx_collect_fronts(float *out, int capacity);
 void rtx_explosions_reset();
 void effect_select_texture(int effect_id);
 extern float ui_transition_alpha;
@@ -118,6 +119,8 @@ void rtx_world(int begin) {
     host_occlusion(grid, values, value_count);
     static float auras[385 * 3];
     host_perk_light(auras, rtx_collect_monster_vision(auras, 385, ui_transition_alpha));
+    static float fronts[16 * 4];
+    host_pressure(fronts, ui_transition_alpha > 1e-3f ? rtx_collect_fronts(fronts, 16) : 0);
   }
   host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
 }

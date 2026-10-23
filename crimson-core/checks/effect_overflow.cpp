@@ -23,6 +23,7 @@ float effect_uv_step_2 = 0.5f, effect_uv_step_4 = 0.25f, effect_uv_step_8 = 0.12
 void rtx_smoke_puff(const effect_entry_t *) {}
 void rtx_explosion_effect(int, const effect_entry_t *) {}
 void rtx_explosions_age(float) {}
+void rtx_explosion_release(const effect_entry_t *) {}
 }
 static int decals, render_calls, rendered_decals[512], rendered_count, rendered_rotated[8], rotated_total;
 unsigned char fx_queue_add(int, vec2f_t *, float, float, float, effect_color_t *) {

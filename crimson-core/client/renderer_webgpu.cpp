@@ -171,6 +171,10 @@ Program smoke_impulse{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_IMPULSE_FRAG, NO_VERTIC
 Program smoke_display{&WGSL_SMOKE_FIELD_VERT, &WGSL_SMOKE_FRAG, NO_VERTICES};
 Program aura_lit{&WGSL_CREATURE_VERT, &WGSL_PERK_AURA_FRAG, DEVICE_VERTICES};
 Program monster_vision{&WGSL_MONSTER_VISION_VERT, &WGSL_MONSTER_VISION_FRAG, DEVICE_VERTICES};
+Program pressure_fronts_program{&WGSL_FULLSCREEN_VERT, &WGSL_PRESSURE_LIT_FRAG, NO_VERTICES};
+// The explosions' pressure fronts (host_pressure), as in renderer.cpp.
+std::vector<float> pressure_fronts;
+Target pressured;
 
 // RTX lighting, as in renderer.cpp: the world's lights and camera, the batch
 // being drawn, a bonus draw's own material, and each artwork's texels in the
@@ -482,7 +486,7 @@ void forget_groups() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
                      &ground_lit, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
-                     &aura_lit, &monster_vision}) {
+                     &aura_lit, &monster_vision, &pressure_fronts_program}) {
     for (auto &[key, group] : p->groups)
       wgpuBindGroupRelease(group);
     p->groups.clear();
@@ -660,7 +664,7 @@ void wgpu_renderer_init() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
                      &ground_lit, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
-                     &aura_lit, &monster_vision})
+                     &aura_lit, &monster_vision, &pressure_fronts_program})
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
@@ -1044,6 +1048,7 @@ bool wgpu_renderer_set_rtx(bool enabled) {
     drop_ground(grounds.begin()->first);
   release_smoke();
   release(perk_target);
+  release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -1316,6 +1321,10 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
     beam_lights |= l[20] > 0;
   }
 }
+void wgpu_w2c_host_pressure(struct w2c_host *, u32 fronts, u32 count) {
+  const float *f = (const float *)(client_memory() + fronts);
+  pressure_fronts.assign(f, f + count * 4);
+}
 void wgpu_w2c_host_perk_light(struct w2c_host *, u32 sources, u32 count) {
   const float *s = (const float *)(client_memory() + sources);
   perk_sources.assign(s, s + count * 3);
@@ -1516,8 +1525,38 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
   } else if (pass_kind == HOST_PASS_WORLD_END && world) {
     world = false;
     material = 0;
-    if (!fits(uniform_stream, 512))
+    if (!fits(uniform_stream, 2048))
       submit();
+    // The pressure fronts displace the world, in its own pixels, into a second target.
+    Target *world_image = &hdr;
+    if (!pressure_fronts.empty()) {
+      if (pressured.width != hdr.width || pressured.height != hdr.height) {
+        release(pressured);
+        pressured.width = hdr.width, pressured.height = hdr.height, pressured.flags = hdr.flags;
+        allocate(pressured);
+      }
+      float sx = (float)hdr.width / hdr.logical_width, sy = (float)hdr.height / hdr.logical_height;
+      int count = std::min((int)pressure_fronts.size() / 4, 16);
+      float fronts[16 * 4] = {}, strengths[16] = {};
+      for (int i = 0; i < count; ++i) {
+        const float *f = &pressure_fronts[i * 4];
+        const float front[4] = {f[0] * sx, f[1] * sy, f[2] * sx, f[2] * sy};
+        memcpy(fronts + i * 4, front, sizeof front);
+        strengths[i] = f[3];
+      }
+      begin_pass(pressured, nullptr);
+      Output po;
+      po.format = format_of(pressured);
+      po.mask = pressured.flags & TARGET_OPAQUE ? 7 : 15;
+      Uniforms pf(*pressure_fronts_program.frag);
+      pf.v2("u_size", (float)hdr.width, (float)hdr.height).i("u_count", count);
+      pf.set("u_fronts", fronts, count * 16).set("u_strength", strengths, (count + 3) / 4 * 16);
+      wgpuRenderPassEncoderSetPipeline(pass, pipeline(pressure_fronts_program, po));
+      bind(pressure_fronts_program, fragment_group(pressure_fronts_program, {{"texture0", hdr.view, linear_clamp()}}),
+           nullptr, &pf);
+      wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+      world_image = &pressured;
+    }
     begin_pass(back, nullptr);
     Output o;
     o.format = format_of(back);
@@ -1525,7 +1564,7 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     Uniforms fragment(*tonemap.frag);
     fragment.v4("colDiffuse", 1, 1, 1, 1).f("u_edr_headroom", edr_headroom);
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(tonemap, o));
-    bind(tonemap, fragment_group(tonemap, {{"texture0", hdr.view, nearest_clamp()}}), nullptr, &fragment);
+    bind(tonemap, fragment_group(tonemap, {{"texture0", world_image->view, nearest_clamp()}}), nullptr, &fragment);
     wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
     end_pass();
   }

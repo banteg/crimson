@@ -8,6 +8,7 @@
 #include "crimsonland_gameplay.h"
 #include "crimsonland_config_owner.h"
 #include "render_passes.h"
+#include "grim2d_cpp.h"
 #include <algorithm>
 #include <math.h>
 #include <string.h>
@@ -19,7 +20,9 @@ extern float game_time_s;
 extern vec2f_t camera_offset;
 extern unsigned int grim_backbuffer_width, grim_backbuffer_height;
 int creature_find_in_radius(float *pos, float radius, int start_index);
+void effect_select_texture(int effect_id);
 }
+extern IGrim2D_cpp *grim_interface_ptr;
 
 namespace {
 
@@ -296,14 +299,40 @@ void secondary_sources(const secondary_projectile_t &s) {
 // Each explosion burst's flash and fireball, kept apart from the effect slots
 // that draw it: its fireball sprites as they spawned and whether its ring did,
 // aged with the effects. Only light reads them; the run never does.
+// A fireball sprite as it spawned (ExplosionFireball.initial) and its slot while
+// it holds it.
 struct Fireball {
-  float x, y, vx, vy, half, scale, scale_step;
+  float x, y, vx, vy, half_width, half_height, scale, scale_step, rotation, rotation_step, lifetime;
+  float rgb[3];
+  const effect_entry_t *entry;
+  // The sprite at `age` along its own course (ExplosionFireball.sample).
+  float half() const { return fmaxf(half_width, half_height); }
 };
+// The shared pressure shell (render/rtx/explosion_shell.py): a warm visible
+// front and its nearby light travel together for 0.65 s after the first 0.05.
+struct Shell {
+  float radius, strength, alpha, energy;
+};
+bool explosion_shell(float age, float scale, Shell &shell) {
+  float elapsed = age - 0.05f;
+  if (elapsed < 0 || elapsed >= 0.65f)
+    return false;
+  float fade = fminf(1, fmaxf(0, (elapsed - 0.28f) / 0.37f));
+  shell.strength = 1 - fade * fade * (3 - 2 * fade);
+  float radius = 30 + 650 * elapsed, dilution = fminf(1, 100 / radius);
+  shell.radius = radius * fmaxf(0.1f, scale);
+  shell.alpha = 0.36f * shell.strength * powf(dilution, 0.65f);
+  shell.energy = shell.strength * sqrtf(dilution);
+  return true;
+}
 struct Explosion {
   float x, y, scale, age;
   bool emit_light, ring_spawned;
+  const effect_entry_t *ring; // its ring's slot, while it holds it
   int fireball_count;
   Fireball fireballs[4];
+  bool has_shell(Shell &shell) const { return emit_light && ring_spawned && explosion_shell(age, scale, shell); }
+  bool archives_fireballs() const { return emit_light && age >= 0 && age < lifetime(); }
   float lifetime() const { return emit_light ? 1.4f : 0.7f; }
   // The moving sprites' bounds give the emitting footprint; the luminous core
   // fills about 35% of them.
@@ -312,7 +341,7 @@ struct Explosion {
     for (int i = 0; i < fireball_count; ++i) {
       const Fireball &f = fireballs[i];
       float dx = f.vx * age + f.x - x, dy = f.vy * age + f.y - y;
-      extent = fmaxf(extent, sqrtf(dx * dx + dy * dy) + f.half * (f.scale + f.scale_step * age));
+      extent = fmaxf(extent, sqrtf(dx * dx + dy * dy) + f.half() * (f.scale + f.scale_step * age));
     }
     return fmaxf(12 * scale, fminf(90 * scale, extent * 0.35f));
   }
@@ -324,15 +353,11 @@ bool dark_bursts;    // a rocket hit's burst: its detonation lights it instead
 void explosion_sources() {
   for (const Explosion &e : explosions) {
     float scale = fmaxf(0.1f, e.scale);
-    // A warm pressure front and its nearby light travel together for 0.65 s.
-    float elapsed = e.age - 0.05f;
-    if (e.emit_light && e.ring_spawned && elapsed >= 0 && elapsed < 0.65f) {
-      float fade = fminf(1, fmaxf(0, (elapsed - 0.28f) / 0.37f));
-      float strength = 1 - fade * fade * (3 - 2 * fade);
-      float radius = 30 + 650 * elapsed;
-      float energy = strength * sqrtf(fminf(1, 100 / radius));
+    Shell front;
+    if (e.has_shell(front)) {
+      float energy = front.energy;
       Light &shell = add(e.x, e.y, 85 * scale, 0.60f * energy, 0.39f * energy, 0.18f * energy);
-      shell.height = 16 * scale, shell.ring = radius * fmaxf(0.1f, e.scale), shell.width = 8 * scale;
+      shell.height = 16 * scale, shell.ring = front.radius, shell.width = 8 * scale;
       shell.illumination = 1.8f, shell.reflection = 0.65f, shell.reach = 100 * scale, shell.broad = true;
     }
     if (!e.emit_light || !e.fireball_count || e.age < 0 || e.age >= e.lifetime())
@@ -719,7 +744,7 @@ extern "C" int rtx_collect_sights(float *out, int capacity) {
 extern "C" void rtx_explosion_begin(float x, float y, float scale) {
   if (explosions.size() >= 128)
     explosions.erase(explosions.begin());
-  explosions.push_back({x, y, scale, 0, !dark_bursts, false, 0, {}});
+  explosions.push_back({x, y, scale, 0, !dark_bursts, false, nullptr, 0, {}});
   bursting = &explosions.back();
 }
 extern "C" void rtx_explosion_end() { bursting = nullptr; }
@@ -731,13 +756,89 @@ extern "C" void rtx_explosion_dark(int dark) { dark_bursts = dark; }
 extern "C" void rtx_explosion_effect(int effect_id, const effect_entry_t *entry) {
   if (!bursting)
     return;
-  if (effect_id == 0x01)
+  if (effect_id == 0x01) {
     bursting->ring_spawned = true;
-  else if (effect_id == 0x0c && bursting->emit_light && bursting->fireball_count < 4)
-    bursting->fireballs[bursting->fireball_count++] = {entry->pos_x,  entry->pos_y,
-                                                       entry->vel_x,  entry->vel_y,
-                                                       fmaxf(entry->half_width, entry->half_height),
-                                                       entry->scale, entry->scale_step};
+    bursting->ring = entry;
+  } else if (effect_id == 0x0c && bursting->emit_light && bursting->fireball_count < 4) {
+    float rgba[4];
+    memcpy(rgba, &entry->color, sizeof rgba);
+    bursting->fireballs[bursting->fireball_count++] = {
+        entry->pos_x,    entry->pos_y,         entry->vel_x,    entry->vel_y,    entry->half_width,
+        entry->half_height, entry->scale,      entry->scale_step, entry->rotation, entry->rotation_step,
+        entry->lifetime, {rgba[0], rgba[1], rgba[2]}, entry};
+  }
+}
+
+// A freed slot (effect_free) is no longer any explosion's: a later effect may reuse it.
+extern "C" void rtx_explosion_release(const effect_entry_t *entry) {
+  for (Explosion &e : explosions) {
+    if (e.ring == entry)
+      e.ring = nullptr;
+    for (int i = 0; i < e.fireball_count; ++i)
+      if (e.fireballs[i].entry == entry)
+        e.fireballs[i].entry = nullptr;
+  }
+}
+
+// Whether RTX draws a native effect itself (effects_render): an explosion's ring
+// becomes its pressure shell (or nothing, for a rocket's), and a lit explosion's
+// fireballs are drawn at half speed from how they spawned.
+extern "C" int rtx_explosion_owns(const effect_entry_t *entry) {
+  for (const Explosion &e : explosions) {
+    if (e.ring == entry && entry->effect_id == 0x01)
+      return 1;
+    if (e.archives_fireballs())
+      for (int i = 0; i < e.fireball_count; ++i)
+        if (e.fireballs[i].entry == entry)
+          return 1;
+  }
+  return 0;
+}
+
+// The shells and retimed fireballs, added after the native additive effects:
+// each fireball sampled at half the explosion's age, so it lasts 1.4 s.
+extern "C" void rtx_explosions_draw() {
+  auto quad = [](int effect_id, float x, float y, float half_width, float half_height, float scale, float rotation,
+                 float r, float g, float b, float a) {
+    float w = half_width * 2 * scale, h = half_height * 2 * scale;
+    if (w <= 0 || h <= 0)
+      return;
+    grim_interface_ptr->grim_set_color(r, g, b, a);
+    grim_interface_ptr->grim_set_rotation(rotation);
+    effect_select_texture(effect_id);
+    grim_interface_ptr->grim_draw_quad(camera_offset.x + x - w * 0.5f, camera_offset.y + y - h * 0.5f, w, h);
+  };
+  for (const Explosion &e : explosions) {
+    Shell shell;
+    if (e.has_shell(shell))
+      quad(0x01, e.x, e.y, shell.radius, shell.radius, 1, 0, 190 / 255.0f, 163 / 255.0f, 122 / 255.0f, shell.alpha);
+    if (!e.archives_fireballs())
+      continue;
+    float age = e.age * 0.5f;
+    for (int i = 0; i < e.fireball_count; ++i) {
+      const Fireball &f = e.fireballs[i];
+      quad(0x0c, f.x + f.vx * age, f.y + f.vy * age, f.half_width, f.half_height, f.scale + f.scale_step * age,
+           f.rotation + f.rotation_step * age, f.rgb[0], f.rgb[1], f.rgb[2], fmaxf(0, 1 - age / f.lifetime));
+    }
+  }
+}
+
+// The pressure fronts the host displaces the world by (shockwaves.py), the last
+// 16: center and radii on the screen, and strength.
+extern "C" int rtx_collect_fronts(float *out, int capacity) {
+  int count = 0;
+  for (const Explosion &e : explosions) {
+    Shell shell;
+    if (!e.has_shell(shell))
+      continue;
+    if (count == capacity) {
+      memmove(out, out + 4, (capacity - 1) * 4 * sizeof(float));
+      --count;
+    }
+    const float front[4] = {e.x + camera_offset.x, e.y + camera_offset.y, shell.radius, shell.strength};
+    memcpy(out + count++ * 4, front, sizeof front);
+  }
+  return count;
 }
 
 // The effects' update (effects_update): explosions age with them and go at the
