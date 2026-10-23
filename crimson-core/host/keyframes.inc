@@ -20,6 +20,8 @@ extern const int game_run_span_count;
 void fx_queue_render_recovered();
 int platform_texture_host_id(int handle);
 extern int terrain_render_target;
+extern int run_elapsed_ms;
+extern float rtx_ground_ms; // a seek's bake time (game/rtx.cpp)
 }
 
 // The session's own state a tick reads or writes (host.cpp), and the effect
@@ -179,9 +181,10 @@ static void fx_rotated_set(int i, const RotatedDecal &d) {
   fx_rotated_color_r[i] = d.color;
 }
 
-// One bake: the tick it came with, and where its decals and corpses start in the logs.
+// One bake: the tick it came with, the run's clock then (which RTX ages wet blood
+// by, game/rtx.cpp), and where its decals and corpses start in the logs.
 struct DecalBatch {
-  int tick;
+  int tick, clock_ms;
   size_t queue, rotated;
 };
 
@@ -243,7 +246,7 @@ static struct {
 } terrain;
 
 static void terrain_log_batch(int at_tick) {
-  terrain.batches.push_back({at_tick, terrain.queue.size(), terrain.rotated.size()});
+  terrain.batches.push_back({at_tick, run_elapsed_ms, terrain.queue.size(), terrain.rotated.size()});
   for (int i = 0; i < fx_queue_count; ++i)
     terrain.queue.push(fx_queue[i]);
   for (int i = 0; i < game_effect_overflow.decal_count; ++i)
@@ -356,8 +359,10 @@ static void terrain_rebuild(size_t batches) {
       terrain.queue.read(terrain.batches[b].queue, queue_end, queue.data());
       rotated.resize(rotated_end - terrain.batches[b].rotated);
       terrain.rotated.read(terrain.batches[b].rotated, rotated_end, rotated.data());
+      rtx_ground_ms = (float)terrain.batches[b].clock_ms;
       terrain_bake(queue.data(), queue.size(), rotated.data(), rotated.size());
     }
+    rtx_ground_ms = -1;
   });
 }
 

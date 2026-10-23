@@ -1,7 +1,7 @@
 """The client's GLSL, for both renderers: OpenGL builds it as written, WebGPU runs it translated to WGSL.
 
 Sources are crimson-core/client/shaders/*.{vert,frag} (with common.glsl) and the RTX shaders the Python port shares,
-src/crimson/render/rtx/shaders/*.frag. `#include "name"` pulls in a file from either folder or src/grim.
+src/crimson/render/rtx/shaders/*.frag; a client stage may wrap one of those under its own defines. `#include "name"` pulls in a file from either folder or src/grim.
 
 The build writes client_shaders.h: SHADER_<NAME>_<STAGE> and RTX_SHADER_<NAME>_<STAGE> as raw strings without their
 #version line (the renderer prepends 330 core or 300 es). The WGSL is committed as wgsl_shaders.h, because its
@@ -40,6 +40,9 @@ PROGRAMS = {
     "creature": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "creature.frag"),
     "player": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "player.frag"),
     "bonus": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "bonus.frag"),
+    "ground": (CLIENT_SHADERS / "creature.vert", CLIENT_SHADERS / "ground_lit.frag"),
+    "ground_stamp": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "ground_stamp.frag"),
+    "ground_fill": (CLIENT_SHADERS / "fullscreen.vert", RTX_SHADERS / "ground_stamp.frag"),
 }
 # glslang's arguments per stage: where each stage's uniform block and textures go.
 STAGE_ARGS = {
@@ -56,12 +59,12 @@ TYPE_SIZES = {
 
 
 def source(path: Path) -> str:
-    """A stage with its includes inlined."""
+    """A stage with its includes inlined (an included stage without its #version line)."""
 
     def include(match: re.Match) -> str:
         for folder in INCLUDES:
-            if (folder / match[1]).exists():
-                return source(folder / match[1])
+            if (folder / match[1]).exists() and folder / match[1] != path:
+                return without_version(source(folder / match[1]))
         raise SystemExit(f"{path.name}: include {match[1]} not found")
 
     return re.sub(r'(?m)^#include "([^"]+)"[ \t]*$', include, path.read_text())

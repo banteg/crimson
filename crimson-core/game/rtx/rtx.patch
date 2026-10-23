@@ -1,6 +1,6 @@
-The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, and the creature
-body, player and bonus batches the host lights; it draws the ion and Fire Bullets streaks as analytic beams in
-place of their stamps, and registers its console commands beside the original's.
+The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, the terrain's
+decals by material and the batches the host lights (the ground, creature bodies, players, bonuses); it draws the ion
+and Fire Bullets streaks as analytic beams in place of their stamps, and registers its console commands.
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 @@ -89,6 +89,7 @@
@@ -179,6 +179,51 @@ place of their stamps, and registers its console commands beside the original's.
  
      grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
      grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
+--- a/decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp
+@@ -145,6 +145,7 @@
+                     grim_interface_ptr->grim_set_color_ptr(&entry->color.r);
+                     grim_interface_ptr->grim_set_rotation(entry->rotation);
+                     effect_select_texture(entry->effect_id);
++                    rtx_ground_decal(entry->effect_id, entry->color.r);
+                     grim_interface_ptr->grim_draw_quad(
+                         (entry->pos_x - entry->width * 0.5f)
+                             * texture_scale_inv,
+@@ -161,6 +162,7 @@
+                 grim_interface_ptr->grim_bind_texture(bodyset_texture, 0);
+                 grim_interface_ptr->grim_set_config_var(0x13, 1u);
+                 grim_interface_ptr->grim_set_config_var(0x14, 6u);
++                rtx_ground(HOST_GROUND_DECAL);
+                 grim_interface_ptr->grim_begin_batch();
+ 
+                 int index;
+@@ -198,6 +200,7 @@
+                 grim_interface_ptr->grim_end_batch();
+                 grim_interface_ptr->grim_set_config_var(0x13, 5u);
+                 grim_interface_ptr->grim_set_config_var(0x14, 6u);
++                rtx_ground(HOST_GROUND_CORPSE);
+                 grim_interface_ptr->grim_begin_batch();
+ 
+                 for (index = 0; index < fx_queue_rotated; ++index) {
+@@ -234,6 +237,7 @@
+ 
+             fx_queue_count = 0;
+             fx_queue_rotated = 0;
++            rtx_ground(HOST_GROUND_END);
+             grim_interface_ptr->grim_set_render_target(-1);
+     }
+ }
+--- a/decomp/1.9/crimsonland/ui_render/terrain_render.cpp
++++ b/decomp/1.9/crimsonland/ui_render/terrain_render.cpp
+@@ -70,6 +70,8 @@
+         v0,
+         (float)config_screen_width / (float)terrain_texture_width + u0,
+         (float)config_screen_height / (float)terrain_texture_height + v0);
++    rtx_material(HOST_PASS_GROUND);
+     grim_interface_ptr->grim_draw_fullscreen_quad(0);
++    rtx_material(HOST_PASS_SPRITES);
+     grim_interface_ptr->grim_set_config_var(0x15, 2u);
+ }
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 @@ -204,6 +204,10 @@

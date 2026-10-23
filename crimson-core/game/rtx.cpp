@@ -57,9 +57,18 @@ void console_cmd_toggle_rtx(void) {
 static bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
 
 int rtx_collect_lights(float *out, int capacity);
+extern const float rtx_beam_tuning[4];
 const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count);
 extern vec2f_t camera_offset;
 extern crimson_cfg_t config_blob;
+extern int terrain_texture_width, terrain_texture_height;
+extern int run_elapsed_ms;
+float rtx_ground_ms = -1;
+
+// The run's clock, which wet blood ages by: presentation time, slow motion
+// included, paused with the run; or a logged bake's own time while a replay's
+// seek bakes it again (host/keyframes.inc).
+static float rtx_seconds() { return (rtx_ground_ms >= 0 ? rtx_ground_ms : (float)run_elapsed_ms) * 0.001f; }
 
 // The world's bounds in the frame (game/rtx/rtx.patch): what Grim batched before
 // a bound belongs to the side it was drawn on. The world's lights go first.
@@ -68,10 +77,12 @@ void rtx_world(int begin) {
     return;
   grim_interface_ptr->grim_flush_batch();
   if (begin) {
-    static float lights[32 * 16];
+    static float lights[32 * RTX_LIGHT_FLOATS];
     int count = rtx_collect_lights(lights, 32);
-    const float camera[2] = {camera_offset.x, camera_offset.y};
-    host_scene(camera, lights, count);
+    const float view[9] = {camera_offset.x,    camera_offset.y,    rtx_seconds(),
+                           (float)terrain_texture_width, (float)terrain_texture_height, rtx_beam_tuning[0],
+                           rtx_beam_tuning[1], rtx_beam_tuning[2], rtx_beam_tuning[3]};
+    host_scene(view, lights, count);
     float grid[6];
     int value_count;
     bool shadows = config_blob.shadows_enabled;
@@ -89,6 +100,27 @@ void rtx_material(int pass) {
     return;
   grim_interface_ptr->grim_flush_batch();
   host_render_pass(pass);
+}
+
+// The terrain's decals by material (fx_queue_render): a mark only where the
+// material changes, so a run of one material stays one batch.
+void rtx_ground(int kind) {
+  static int marked = HOST_GROUND_END;
+  if (!rtx_drawing() || kind == marked)
+    return;
+  grim_interface_ptr->grim_flush_batch();
+  host_ground(kind, rtx_seconds());
+  marked = kind;
+}
+
+// A queued decal's material, by its effect (render/rtx/materials.py): blood
+// splatters, casings, scorches (black), freeze shards and their shatter.
+void rtx_ground_decal(int effect_id, float red) {
+  rtx_ground(effect_id >= 3 && effect_id <= 7                       ? HOST_GROUND_BLOOD
+             : effect_id == 0x12                                    ? HOST_GROUND_BRASS
+             : effect_id == 0x10 && red <= 0.05f                    ? HOST_GROUND_SCORCH
+             : (effect_id >= 8 && effect_id <= 10) || effect_id == 0xe ? HOST_GROUND_ICE
+                                                                    : HOST_GROUND_DECAL);
 }
 
 // One bonus quad in its material (host_bonus): each carries its own shell center.

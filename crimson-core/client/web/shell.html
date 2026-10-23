@@ -1040,8 +1040,11 @@
       // ?renderer=webgl, keep WebGL2. The device comes before the module, which picks its renderer as it starts.
       if (navigator.gpu && query.get("renderer") !== "webgl") {
         addRunDependency("webgpu");
+        // The RTX ground keeps its wetness in 32-bit floats where the GPU filters and blends them.
         navigator.gpu.requestAdapter()
-          .then((adapter) => adapter?.requestDevice())
+          .then((adapter) => adapter?.requestDevice({
+            requiredFeatures: ["float32-filterable", "float32-blendable"].filter((f) => adapter.features.has(f)),
+          }))
           .then((device) => {
             if (!device) return;
             device.onuncapturederror = (event) => console.error("WebGPU:", event.error.message);

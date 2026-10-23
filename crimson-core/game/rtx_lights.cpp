@@ -7,6 +7,7 @@
 // (game/rtx.cpp), at most 32. Reading the run only: nothing here writes it.
 #include "crimsonland_gameplay.h"
 #include "crimsonland_config_owner.h"
+#include "render_passes.h"
 #include <algorithm>
 #include <math.h>
 #include <string.h>
@@ -26,10 +27,16 @@ const float HALF_PI = 1.5707964f;
 const float INF = 1e30f;
 enum { MAX_ILLUMINATION = 16, MAX_REFLECTION = 16, MAX_SOURCES = 256 };
 
+// A luminous disc, tapered segment or annulus (MaterialLight). A beam's streak
+// (its stamp radius, spacing and head size) lights the ground in energy sections.
 struct Light {
   float x, y, radius, r, g, b;
   float height = 18, dx = 0, dy = 0, length = 0, width = 3;
   float illumination = 1, reflection = 1, reach = -1, ring = 0;
+  float tail = 0.18f;
+  bool broad = false;
+  float beam_radius = 0, beam_step = 0, beam_head = 0;
+  bool beam_ion = false;
   float reflection_reach() const { return reach < 0 ? radius : reach; }
 };
 Light sources[MAX_SOURCES];
@@ -69,18 +76,19 @@ float streak_scale(int type) {
 
 struct Emission {
   float r, g, b, radius, width, height, illumination, reflection, reach, tail, fade_power;
+  bool broad = false;
 };
 // Art-directed radiance, not calibrated watts. The visible source remains native.
 const Emission TRACER = {0.22f, 0.21f, 0.18f, 60, 0.65f, 28, 0, 1, 100, INF, 2.2f};
 const Emission *emission(int type) {
   static const Emission gauss = {0.054f, 0.102f, 0.192f, 75, 1, 40, 0.15f, 1, 150, INF, 2.2f};
-  static const Emission ion_rifle = {0.55f, 0.82f, 1.45f, 195, 3, 24, 6, 1, 195, 256, 1};
-  static const Emission ion_minigun = {0.50f, 0.78f, 1.35f, 160, 2, 24, 4, 1, 160, 256, 1};
-  static const Emission ion_cannon = {0.65f, 0.90f, 1.65f, 240, 5, 24, 8, 1, 240, 256, 1};
-  static const Emission fire_bullets = {1.40f, 0.68f, 0.20f, 155, 3, 24, 4, 1, 155, 256, 1};
-  static const Emission plasma_minigun = {0.72f, 0.37f, 0.08f, 100, 2, 18, 2.4f, 1, 125, 4.2f, 1};
-  static const Emission plasma_rifle = {1.1f, 0.57f, 0.12f, 140, 5, 18, 3.2f, 1, 175, 17.5f, 1};
-  static const Emission plasma_cannon = {1.5f, 0.76f, 0.16f, 190, 9, 18, 4, 1, 250, 44.2f, 1};
+  static const Emission ion_rifle = {0.55f, 0.82f, 1.45f, 195, 3, 24, 6, 1, 195, 256, 1, true};
+  static const Emission ion_minigun = {0.50f, 0.78f, 1.35f, 160, 2, 24, 4, 1, 160, 256, 1, true};
+  static const Emission ion_cannon = {0.65f, 0.90f, 1.65f, 240, 5, 24, 8, 1, 240, 256, 1, true};
+  static const Emission fire_bullets = {1.40f, 0.68f, 0.20f, 155, 3, 24, 4, 1, 155, 256, 1, true};
+  static const Emission plasma_minigun = {0.72f, 0.37f, 0.08f, 100, 2, 18, 2.4f, 1, 125, 4.2f, 1, true};
+  static const Emission plasma_rifle = {1.1f, 0.57f, 0.12f, 140, 5, 18, 3.2f, 1, 175, 17.5f, 1, true};
+  static const Emission plasma_cannon = {1.5f, 0.76f, 0.16f, 190, 9, 18, 4, 1, 250, 44.2f, 1, true};
   static const Emission spider_plasma = {0.08f, 0.65f, 0.025f, 100, 2, 18, 0.5f, 1, 140, 4.2f, 1};
   static const Emission shrinkifier = {0.06f, 0.03f, 0.18f, 65, 2, 18, 0.15f, 1, 120, 4.2f, 1};
   static const Emission pulse = {0.025f, 0.24f, 0.04f, 75, 5, 18, 0.15f, 1, 130, 0, 1};
@@ -144,6 +152,12 @@ void projectile_source(const projectile_t &p) {
   light.illumination = e->illumination;
   light.reflection = e->reflection;
   light.reach = e->reach;
+  light.broad = e->broad;
+  if (float scale = streak_scale(type)) {
+    bool fire = type == PROJECTILE_TYPE_FIRE_BULLETS;
+    light.beam_radius = 16 * scale, light.beam_step = fminf(scale * 3.1f, 9), light.beam_head = fire ? 1.35f : 1.05f;
+    light.beam_ion = !fire;
+  }
 }
 
 // Up to four arcs of an ion impact, and their contact glows, nearest the view
@@ -192,9 +206,11 @@ void ion_arc_sources(projectile_t &p, float view_x, float view_y) {
                      e->r * energy, e->g * energy, e->b * energy);
     arc.dx = dx, arc.dy = dy, arc.length = length, arc.width = width;
     arc.illumination = 0.75f, arc.reflection = 0.5f, arc.reach = 120;
+    arc.tail = 1, arc.broad = true;
     Light &glow = add(targets[i].x, targets[i].y, 60, e->r * energy, e->g * energy, e->b * energy);
     glow.width = width * 1.5f;
     glow.illumination = 0.25f, glow.reflection = 0.25f, glow.reach = 90;
+    glow.broad = true;
   }
 }
 
@@ -205,6 +221,7 @@ void player_sources(const player_state_t &player) {
     Light &aura = add(player.pos_x, player.pos_y, 100, 0.10f, 0.70f, 0.07f);
     aura.width = 13;
     aura.illumination = 3.8f * pulse, aura.reflection = 0.8f * pulse, aura.reach = 100;
+    aura.broad = true;
   }
   if (player.health > 0 && perk_count_get(perk_id_sharpshooter)) {
     // The native sight (render/laser_sight.py): red at the gun, black at its far
@@ -219,6 +236,7 @@ void player_sources(const player_state_t &player) {
     sight.height = 28;
     sight.dx = dx, sight.dy = dy, sight.length = length, sight.width = 1.2f;
     sight.illumination = 0, sight.reflection = 1, sight.reach = 100;
+    sight.tail = 0;
   }
   float gain = fmaxf(0, fminf(1, player.muzzle_flash_alpha));
   // Match the visible muzzle pass, including weapons which suppress that sprite.
@@ -234,6 +252,7 @@ void player_sources(const player_state_t &player) {
                       1.6f * gain, 1.0f * gain, 0.4f * gain);
   muzzle.height = 28, muzzle.width = 4;
   muzzle.illumination = energetic ? 0.8f : 0.12f, muzzle.reflection = 0.6f, muzzle.reach = 140;
+  muzzle.broad = energetic;
 }
 
 void secondary_sources(const secondary_projectile_t &s) {
@@ -248,6 +267,7 @@ void secondary_sources(const secondary_projectile_t &s) {
       Light &blast = add(s.fields.pos_x, s.fields.pos_y, 360 * fmaxf(0.35f, scale), 1.75f * gain, 1.05f * gain,
                          0.38f * gain);
       blast.height = 34, blast.width = 3 + 28 * t * scale;
+      blast.broad = true;
     }
   } else if (type == SECONDARY_PROJECTILE_TYPE_ROCKET || type == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET ||
              type == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
@@ -261,6 +281,7 @@ void secondary_sources(const secondary_projectile_t &s) {
                          0.1f * scale);
     exhaust.height = 22;
     exhaust.dx = dx, exhaust.dy = dy, exhaust.length = 6 * scale, exhaust.width = 5 * scale, exhaust.reach = 140;
+    exhaust.broad = true;
   }
 }
 
@@ -304,6 +325,7 @@ void flame_sources() {
                        rgb[2] * scale);
     flame.height = 20;
     flame.dx = dx, flame.dy = dy, flame.length = speed > 0 ? 28.0f : 0.0f, flame.width = 5, flame.reach = 140;
+    flame.broad = true;
   }
 }
 
@@ -344,6 +366,84 @@ void select(bool reflection, int limit, float view_x, float view_y, bool *chosen
       break;
     chosen[best] = true;
   }
+}
+
+// --- Beam energy sections (render/rtx/continuous_beam.py) ---------------------------
+// A streak lights the ground as three energy-weighted sections of its stamps
+// and head: mass, offset from the beam's midpoint, longitudinal half-span, and
+// whether it is an ion beam. An appearance approximation, as in Python, in its
+// double precision.
+const double SUPPORT = 0.85998995, MAX_SECTION_HALFSPAN = 4.0;
+enum { SOURCE_CELLS = 3 };
+
+const double *radial_marginal() {
+  static double values[65];
+  static bool made;
+  for (int i = 0; i < 65 && !made; ++i) {
+    double x = SUPPORT * i / 64, total = 0;
+    for (int j = 0; j < 33; ++j) {
+      double y = SUPPORT * j / 32, radius = hypot(x, y);
+      double density = fmin(1.0, fmax(0.0, 1.3 * exp(-4.8 * radius - radius * radius) - 0.01));
+      total += density * (j == 0 || j == 32 ? 0.5 : 1.0);
+    }
+    values[i] = total * 2 * SUPPORT / 32;
+  }
+  made = true;
+  return values;
+}
+
+double radial_density(double r) {
+  const double *radial = radial_marginal();
+  r = fabs(r);
+  if (r >= SUPPORT)
+    return 0;
+  double t = r / SUPPORT * 64;
+  int index = (int)t;
+  return radial[index] + (radial[index + 1] - radial[index]) * (t - index);
+}
+
+// source_cells: each cell samples the authored stamps near it plus the head.
+void source_cells(double length, double radius, double step, double head_multiplier, float *out) {
+  double support = radius * SUPPORT, head_radius = radius * head_multiplier, pad = head_radius * SUPPORT;
+  double span = length + 2 * pad;
+  int stamp_count = (int)ceil(length / step), samples = 32;
+  double values[SOURCE_CELLS * 4], total = 0;
+  for (int cell = 0; cell < SOURCE_CELLS; ++cell) {
+    double mass = 0, first = 0, second = 0;
+    for (int j = 0; j < samples; ++j) {
+      double u = (cell + (j + 0.5) / samples) / SOURCE_CELLS, x = -pad + u * span;
+      double energy = head_radius * radial_density((x - length) / head_radius);
+      if (length > 0) {
+        int lo = std::max(0, (int)ceil((x - support) / step));
+        int hi = std::min(stamp_count - 1, (int)floor((x + support) / step));
+        for (int k = lo; k <= hi; ++k) {
+          double position = k * step;
+          energy += position / length * radius * radial_density((x - position) / radius);
+        }
+      }
+      mass += energy, first += energy * u, second += energy * u * u;
+    }
+    double mean = mass ? first / mass : (cell + 0.5) / SOURCE_CELLS;
+    double half_span = mass ? sqrt(fmax(0.0, 3 * (second / mass - mean * mean))) : 0.0;
+    double cell_values[4] = {mass, -pad + mean * span - length * 0.5, half_span * span, 0};
+    memcpy(values + cell * 4, cell_values, sizeof cell_values);
+    total += mass;
+  }
+  for (int i = 0; i < SOURCE_CELLS * 4; ++i)
+    out[i] = (float)(i % 4 == 0 ? values[i] / total : values[i]);
+}
+
+// beam_cells: unselected lamps stay dark, as do reflection-only sources.
+void beam_cells(const Light &light, float illumination, float *out) {
+  memset(out, 0, SOURCE_CELLS * 4 * sizeof(float));
+  if (!light.beam_radius || illumination <= 0)
+    return;
+  source_cells(light.length, light.beam_radius, light.beam_step, light.beam_head, out);
+  for (int i = 0; i < SOURCE_CELLS * 4; ++i)
+    if (i % 4 == 3)
+      out[i] = light.beam_ion;
+    else if (i % 4 == 2)
+      out[i] = (float)fmin(out[i], MAX_SECTION_HALFSPAN);
 }
 
 } // namespace
@@ -407,7 +507,16 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   } supports[32];
   int support_count = 0;
   for (int i = 0; i < count; ++i) {
-    const float *l = lights + i * 16;
+    // A beam's sections widen and lengthen its support (prepare_beam_lights).
+    float l[16];
+    memcpy(l, lights + i * RTX_LIGHT_FLOATS, sizeof l);
+    const float *cells = lights + i * RTX_LIGHT_FLOATS + 20;
+    if (cells[0] > 0) {
+      if (l[8] * l[8] + l[9] * l[9] <= 0.0001f)
+        l[8] = 1, l[9] = 0;
+      l[15] += fmaxf(cells[2], fmaxf(cells[6], cells[10]));
+      l[11] += 2 * lights[i * RTX_LIGHT_FLOATS + 18];
+    }
     float illumination = l[12], reflection = l[13];
     if (!(reflection > 0 || (shadows && illumination > 0)))
       continue;
@@ -483,9 +592,15 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   return grid_values.data();
 }
 
-// The frame's lights for the view, 16 floats each: position, radius, height;
-// linear RGB, ring radius; direction, 0, length; illumination and reflection
-// gains, reflection reach, source width. At most `capacity`.
+// A beam section's ground gain and the ambient dip around it: ion beams', then
+// Fire Bullets' (render/rtx/continuous_beam.py).
+extern "C" const float rtx_beam_tuning[4] = {4.0f, 0.25f, 3.0f, 0.15f};
+
+// The frame's lights for the view, RTX_LIGHT_FLOATS each: position, radius,
+// height; linear RGB, ring radius; direction, 0, length; illumination and
+// reflection gains, reflection reach, source width; reflection tail, broad
+// illumination, a beam's padding past its ends; its three energy sections.
+// At most `capacity`.
 extern "C" int rtx_collect_lights(float *out, int capacity) {
   source_count = 0;
   float view_x = grim_backbuffer_width * 0.5f - camera_offset.x;
@@ -509,10 +624,13 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
     if (!lit[i] && !reflected[i])
       continue;
     const Light &l = sources[i];
-    const float packed[16] = {l.x, l.y, l.radius, l.height, l.r, l.g, l.b, l.ring, l.dx, l.dy, 0, l.length,
-                              lit[i] ? l.illumination : 0, reflected[i] ? l.reflection : 0, l.reflection_reach(),
-                              l.width};
-    memcpy(out + count++ * 16, packed, sizeof packed);
+    float illumination = lit[i] ? l.illumination : 0;
+    float *packed = out + count++ * RTX_LIGHT_FLOATS;
+    const float head[20] = {l.x, l.y, l.radius, l.height, l.r, l.g, l.b, l.ring, l.dx, l.dy, 0, l.length,
+                            illumination, reflected[i] ? l.reflection : 0, l.reflection_reach(), l.width,
+                            l.tail, (float)l.broad, (float)(l.beam_radius * l.beam_head * SUPPORT), 0};
+    memcpy(packed, head, sizeof head);
+    beam_cells(l, illumination, packed + 20);
   }
   return count;
 }

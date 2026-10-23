@@ -48,8 +48,17 @@ WGPUTexture blank, gamma_texture;
 WGPUTextureView blank_view, gamma_view;
 
 WGPUStringView text(const char *s) { return WGPUStringView{s, strlen(s)}; }
+// The RTX ground's float surface: 32-bit where the device filters and blends it
+// (shell.html asks for both), else half floats.
+WGPUTextureFormat float_format() {
+  static const bool full = wgpuDeviceHasFeature(device, WGPUFeatureName_Float32Filterable) &&
+                           wgpuDeviceHasFeature(device, WGPUFeatureName_Float32Blendable);
+  return full ? WGPUTextureFormat_RGBA32Float : WGPUTextureFormat_RGBA16Float;
+}
 WGPUTextureFormat format_of(const Target &t) {
-  return t.flags & TARGET_HALF_FLOAT ? WGPUTextureFormat_RGBA16Float : WGPUTextureFormat_RGBA8Unorm;
+  return t.flags & TARGET_FLOAT        ? float_format()
+         : t.flags & TARGET_HALF_FLOAT ? WGPUTextureFormat_RGBA16Float
+                                       : WGPUTextureFormat_RGBA8Unorm;
 }
 
 // --- Per-frame streams: vertices, indices and uniforms written once each --------
@@ -153,6 +162,9 @@ Program beam{&WGSL_BEAM_VERT, &WGSL_BEAM_FRAG, BEAM_CORNERS};
 Program creature_lit{&WGSL_CREATURE_VERT, &WGSL_CREATURE_FRAG, DEVICE_VERTICES};
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
 Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
+Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_FRAG, DEVICE_VERTICES};
+Program ground_stamp{&WGSL_CREATURE_VERT, &WGSL_GROUND_STAMP_FRAG, DEVICE_VERTICES};
+Program ground_fill{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_STAMP_FRAG, NO_VERTICES};
 
 // RTX lighting, as in renderer.cpp: the world's lights and camera, the batch
 // being drawn, a bonus draw's own material, and each artwork's texels in the
@@ -164,6 +176,10 @@ float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS
 int light_count;
 int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
+// What the ground takes beyond them, as in renderer.cpp.
+float scene_seconds, ground_size[2], beam_tuning[4];
+float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
+bool beam_lights;
 std::unordered_map<int, u32> texel_addresses;
 struct Thickness {
   WGPUTexture texture;
@@ -267,9 +283,11 @@ struct Output {
   WGPUBlendOperation op = WGPUBlendOperation_Add;
   unsigned mask = 0xf;
   WGPUPrimitiveTopology topology = WGPUPrimitiveTopology_TriangleStrip;
+  // Alpha's own factors (the RTX ground's coverage), or the color's.
+  WGPUBlendFactor alpha_src = WGPUBlendFactor_Undefined, alpha_dst = WGPUBlendFactor_Undefined;
   uint64_t key() const {
     return (uint64_t)format | (uint64_t)blend << 8 | (uint64_t)src << 9 | (uint64_t)dst << 17 | (uint64_t)op << 25 |
-           (uint64_t)mask << 33 | (uint64_t)topology << 37;
+           (uint64_t)mask << 33 | (uint64_t)topology << 37 | (uint64_t)alpha_src << 41 | (uint64_t)alpha_dst << 49;
   }
 };
 
@@ -347,8 +365,10 @@ WGPURenderPipeline pipeline(Program &p, const Output &o) {
   }
   WGPUBlendState blend = WGPU_BLEND_STATE_INIT;
   blend.color.operation = blend.alpha.operation = o.op;
-  blend.color.srcFactor = blend.alpha.srcFactor = o.src;
-  blend.color.dstFactor = blend.alpha.dstFactor = o.dst;
+  blend.color.srcFactor = o.src;
+  blend.color.dstFactor = o.dst;
+  blend.alpha.srcFactor = o.alpha_src ? o.alpha_src : o.src;
+  blend.alpha.dstFactor = o.alpha_dst ? o.alpha_dst : o.dst;
   WGPUColorTargetState target = WGPU_COLOR_TARGET_STATE_INIT;
   target.format = o.format;
   target.blend = o.blend ? &blend : nullptr;
@@ -448,7 +468,8 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
-  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit}) {
+  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
+                     &ground_lit, &ground_stamp, &ground_fill}) {
     for (auto &[key, group] : p->groups)
       wgpuBindGroupRelease(group);
     p->groups.clear();
@@ -623,7 +644,8 @@ void wgpu_renderer_init() {
   stream_buffer(vertex_stream, WGPUBufferUsage_Vertex);
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
-  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit})
+  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
+                     &ground_lit, &ground_stamp, &ground_fill})
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
@@ -712,10 +734,192 @@ std::vector<unsigned char> wgpu_renderer_capture(int &width, int &height) {
   return {};
 }
 
+// A draw's geometry in the streams, drawn into each pass that takes it.
+struct Geometry {
+  WGPUPrimitiveTopology topology;
+  uint64_t vertex_at, vertex_bytes, index_at = 0, index_bytes = 0;
+  int index_count;
+};
+void draw_geometry(const Geometry &g) {
+  wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, g.vertex_at, g.vertex_bytes);
+  if (g.index_bytes) {
+    wgpuRenderPassEncoderSetIndexBuffer(pass, index_stream.buffer, WGPUIndexFormat_Uint16, g.index_at,
+                                        (g.index_bytes + 3) & ~3ull);
+    wgpuRenderPassEncoderDrawIndexed(pass, g.index_count, 1, 0, 0, 0);
+  } else {
+    wgpuRenderPassEncoderDraw(pass, g.index_count, 1, 0, 0);
+  }
+}
+
+// The device's own shading of the next draw into `t`, in the open pass.
+void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
+  Uniforms vertex(*classic.vert), fragment(*classic.frag);
+  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height);
+  int has[STAGES], filters[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES];
+  Input inputs[STAGES];
+  for (int s = 0; s < STAGES; ++s) {
+    auto it = textures.find(bound[s]);
+    bool present = bound[s] && it != textures.end() && it->second.texture;
+    has[s] = present;
+    bool artwork = present && !(it->second.flags & TARGET_RENDER);
+    filters[s] = artwork && stage_states[s][TSS_MINFILTER] >= 2 && stage_states[s][TSS_MAGFILTER] >= 2 ? 1 : 0;
+    if (artwork && current_target && stage_states[s][TSS_TERRAIN_ART])
+      filters[s] = 2;
+    cop[s] = (int)stage_states[s][TSS_COLOROP];
+    ca1[s] = (int)stage_states[s][TSS_COLORARG1];
+    ca2[s] = (int)stage_states[s][TSS_COLORARG2];
+    aop[s] = (int)stage_states[s][TSS_ALPHAOP];
+    aa1[s] = (int)stage_states[s][TSS_ALPHAARG1];
+    aa2[s] = (int)stage_states[s][TSS_ALPHAARG2];
+    inputs[s] = {s ? "texture1" : "texture0", present ? it->second.view : blank_view,
+                 sampler(stage_states[s][TSS_ADDRESSU], stage_states[s][TSS_ADDRESSV], stage_states[s][TSS_MAGFILTER] >= 2,
+                         stage_states[s][TSS_MINFILTER] >= 2)};
+  }
+  fragment.i2("has_texture", has).i2("reconstruction", filters).i2("color_op", cop).i2("color_arg1", ca1);
+  fragment.i2("color_arg2", ca2).i2("alpha_op", aop).i2("alpha_arg1", aa1).i2("alpha_arg2", aa2);
+  unsigned f = render_states[RS_TEXTUREFACTOR];
+  fragment.v4("factor", (f >> 16 & 255) / 255.0f, (f >> 8 & 255) / 255.0f, (f & 255) / 255.0f, (f >> 24) / 255.0f);
+  fragment.i("alpha_test", render_states[RS_ALPHATESTENABLE] != 0);
+  fragment.f("alpha_ref", (float)(render_states[RS_ALPHAREF] & 255));
+  fragment.i("alpha_func", (int)render_states[RS_ALPHAFUNC]);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(classic, device_output(t, topology)));
+  bind(classic, fragment_group(classic, {inputs[0], inputs[1]}), &vertex, &fragment);
+}
+
+// --- The RTX ground (render/rtx/materials.py), as in renderer.cpp -----------------
+struct Ground {
+  Target substrate, coverage, surface;
+  float epoch = 0;
+};
+std::unordered_map<int, Ground> grounds;
+int ground_kind = HOST_GROUND_END;
+float ground_seconds;
+
+void drop_ground(int id) {
+  auto it = grounds.find(id);
+  if (it == grounds.end())
+    return;
+  release(it->second.substrate);
+  release(it->second.coverage);
+  release(it->second.surface);
+  grounds.erase(it);
+}
+
+// A ground pass over a whole companion: the stamp shader's `kind` and `pass`
+// over `source`, into `into` with `o`'s blend.
+void fill_ground(Target &into, WGPUTextureView source, int kind, int pass_id, float wetness, Output o) {
+  pass_into(into);
+  o.format = format_of(into);
+  Uniforms fragment(*ground_fill.frag);
+  fragment.i("u_kind", kind).i("u_pass", pass_id).f("u_wetness", wetness);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_fill, o));
+  bind(ground_fill, fragment_group(ground_fill, {{"texture0", source, linear_clamp()}}), nullptr, &fragment);
+  wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+}
+
+Ground &ground_of(int id) {
+  auto made = grounds.find(id);
+  if (made != grounds.end())
+    return made->second;
+  Target &albedo = textures[id];
+  Ground &g = grounds[id];
+  for (Target *t : {&g.substrate, &g.coverage, &g.surface}) {
+    t->width = albedo.width, t->height = albedo.height;
+    t->logical_width = albedo.logical_width, t->logical_height = albedo.logical_height;
+    t->flags = t == &g.substrate ? albedo.flags : TARGET_RENDER | (t == &g.surface ? TARGET_FLOAT : 0);
+    allocate(*t);
+  }
+  copy(albedo, g.substrate);
+  WGPUColor none = {0, 0, 0, 0}, terrain = {10 / 255.0, 0, 0, 115 / 255.0};
+  begin_pass(g.coverage, &none);
+  begin_pass(g.surface, &terrain);
+  fill_ground(g.surface, g.substrate.view, 0, 0, 0, Output{});
+  return g;
+}
+
+void rebase_wetness(Ground &g, float epoch) {
+  Output o;
+  o.blend = true, o.src = WGPUBlendFactor_Zero, o.dst = WGPUBlendFactor_Src, o.mask = WGPUColorWriteMask_Green;
+  fill_ground(g.surface, blank_view, 0, 3, expf((g.epoch - epoch) / 45), o);
+  g.epoch = epoch;
+}
+
+void stamp_ground(Ground &g, int kind, const Geometry &geometry) {
+  if (ground_seconds - g.epoch > 180)
+    rebase_wetness(g, ground_seconds);
+  auto it = textures.find(bound[0]);
+  bool present = bound[0] && it != textures.end() && it->second.texture;
+  Input atlas = {"texture0", present ? it->second.view : blank_view,
+                 sampler(stage_states[0][TSS_ADDRESSU], stage_states[0][TSS_ADDRESSV], stage_states[0][TSS_MAGFILTER] >= 2,
+                         stage_states[0][TSS_MINFILTER] >= 2)};
+  bool blood = kind == HOST_GROUND_BLOOD;
+  for (int pass_id = 0; pass_id < (blood ? 2 : 3); ++pass_id) {
+    Target &into = pass_id ? g.surface : g.coverage;
+    pass_into(into);
+    Output o;
+    o.format = format_of(into);
+    o.topology = geometry.topology;
+    o.blend = true;
+    o.dst = WGPUBlendFactor_OneMinusSrcAlpha;
+    if (pass_id == 0) {
+      // RGB weighs the materials alpha-over; A is ice coverage, which every later material occludes.
+      o.src = WGPUBlendFactor_SrcAlpha;
+      o.alpha_src = kind == HOST_GROUND_ICE ? WGPUBlendFactor_One : WGPUBlendFactor_Zero;
+      o.alpha_dst = WGPUBlendFactor_OneMinusSrcAlpha;
+    } else if (pass_id == 1) {
+      o.src = blood ? WGPUBlendFactor_One : WGPUBlendFactor_SrcAlpha;
+      o.mask = (blood ? 0 : WGPUColorWriteMask_Red) | WGPUColorWriteMask_Green | WGPUColorWriteMask_Blue;
+    } else {
+      o.src = WGPUBlendFactor_One;
+      o.mask = WGPUColorWriteMask_Alpha;
+    }
+    Uniforms vertex(*ground_stamp.vert), fragment(*ground_stamp.frag);
+    vertex.v2("target_size", (float)into.logical_width, (float)into.logical_height);
+    fragment.i("u_kind", kind).i("u_pass", pass_id).f("u_wetness", expf((ground_seconds - g.epoch) / 45));
+    wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_stamp, o));
+    bind(ground_stamp, fragment_group(ground_stamp, {atlas}), &vertex, &fragment);
+    draw_geometry(geometry);
+  }
+}
+
+// The terrain drawn into the world, lit as the Python port's ground.
+bool ground_draw(const Geometry &geometry) {
+  auto it = textures.find(bound[0]);
+  if (!bound[0] || it == textures.end() || !(it->second.flags & TARGET_RENDER))
+    return false;
+  Ground &g = ground_of(bound[0]);
+  Target &t = drawing_target(current_target);
+  pass_into(t);
+  Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
+  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
+  fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
+  fragment.i("u_debug_display", 1).i("u_has_perk", 0).i("u_dynamic_shadows", dynamic_shadows);
+  fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_tuning", beam_tuning, 16);
+  fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
+  fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
+  fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
+  fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_line_cells", line_cells, light_count * 48);
+  Output o = device_output(t, geometry.topology);
+  o.blend = false; // the ground is opaque
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_lit, o));
+  bind(ground_lit,
+       fragment_group(ground_lit, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
+                                   {"u_surface_tex", g.surface.view, linear_clamp()},
+                                   {"u_material_tex", g.coverage.view, linear_clamp()},
+                                   {"u_perk_tex", blank_view, linear_clamp()},
+                                   {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()}}),
+       &vertex, &fragment);
+  draw_geometry(geometry);
+  return true;
+}
+
 bool wgpu_renderer_set_rtx(bool enabled) {
   rtx = enabled;
   world = false;
   release(hdr);
+  // Classic bakes leave the ground's companions behind: RTX makes them afresh.
+  while (!grounds.empty())
+    drop_ground(grounds.begin()->first);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -759,6 +963,7 @@ void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) 
   Target &from = target_or_back((int)source);
   if (!from.texture)
     return;
+  drop_ground((int)destination);
   Target &to = textures[(int)destination];
   if (to.width != from.width || to.height != from.height || format_of(to) != format_of(from) || !to.texture) {
     release(to);
@@ -830,6 +1035,7 @@ void wgpu_w2c_host_texture_release(struct w2c_host *, u32 id) {
     return;
   if (current_target == (int)id)
     current_target = 0;
+  drop_ground((int)id);
   release(it->second);
   textures.erase(it);
   texel_addresses.erase((int)id);
@@ -855,6 +1061,7 @@ void wgpu_w2c_host_set_texture(struct w2c_host *, u32 stage, u32 id) {
 }
 void wgpu_w2c_host_set_render_target(struct w2c_host *, u32 id) { current_target = (int)id; }
 void wgpu_w2c_host_clear(struct w2c_host *, u32 color) {
+  drop_ground(current_target);
   Target &t = drawing_target(current_target);
   WGPUColor clear = {(color >> 16 & 255) / 255.0, (color >> 8 & 255) / 255.0, (color & 255) / 255.0,
                      t.flags & TARGET_OPAQUE ? 1.0 : (color >> 24) / 255.0};
@@ -878,15 +1085,30 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
       WGPUPrimitiveTopology_PointList, WGPUPrimitiveTopology_PointList, WGPUPrimitiveTopology_LineList,
       WGPUPrimitiveTopology_LineStrip, WGPUPrimitiveTopology_TriangleList, WGPUPrimitiveTopology_TriangleStrip,
       WGPUPrimitiveTopology_TriangleList};
-  WGPUPrimitiveTopology topology = primitive < 7 ? topologies[primitive] : WGPUPrimitiveTopology_TriangleList;
-  uint64_t vertex_bytes = (uint64_t)vertex_count * 28, index_bytes = index_data ? (uint64_t)index_count * 2 : 0;
-  if (!fits(vertex_stream, vertex_bytes) || !fits(index_stream, index_bytes + 3) ||
-      !fits(uniform_stream, creature_lit.frag->uniform_size + 512 + creature_lit.vert->uniform_size))
+  Geometry geometry;
+  geometry.topology = primitive < 7 ? topologies[primitive] : WGPUPrimitiveTopology_TriangleList;
+  geometry.vertex_bytes = (uint64_t)vertex_count * 28;
+  geometry.index_bytes = index_data ? (uint64_t)index_count * 2 : 0;
+  geometry.index_count = index_count;
+  // Room for the draw and what a marked decal adds: its substrate, stamps, and the companions' first passes.
+  uint64_t uniforms = 8 * (ground_lit.frag->uniform_size + ground_lit.vert->uniform_size + 512);
+  if (!fits(vertex_stream, geometry.vertex_bytes) || !fits(index_stream, geometry.index_bytes + 3) ||
+      !fits(uniform_stream, uniforms))
     submit();
 
   Target &t = drawing_target(current_target);
+  // A marked decal reaches the ground's companions too: the substrate unless it
+  // is blood, the materials if it has one. They start from the terrain before it.
+  bool marked = rtx && ground_kind != HOST_GROUND_END && current_target && (t.flags & TARGET_RENDER);
+  Ground *g = marked ? &ground_of(current_target) : nullptr;
+  geometry.vertex_at = put(vertex_stream, client_memory() + vertices, geometry.vertex_bytes);
+  if (index_data)
+    geometry.index_at = put(index_stream, index_data, geometry.index_bytes);
+  if (rtx && world && material == HOST_PASS_GROUND && ground_draw(geometry))
+    return;
+
   pass_into(t);
-  bool lit = rtx && world && material && (material != HOST_PASS_PLAYERS || light_count);
+  bool lit = rtx && world && material && material != HOST_PASS_GROUND && (material != HOST_PASS_PLAYERS || light_count);
   Program &program = !lit                           ? classic
                      : material == HOST_PASS_PLAYERS ? player_lit
                      : material == MATERIAL_BONUS    ? bonus_lit
@@ -905,56 +1127,25 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     WGPUSampler atlas_sampler = sampler(stage_states[0][TSS_ADDRESSU], stage_states[0][TSS_ADDRESSV],
                                         stage_states[0][TSS_MAGFILTER] >= 2, stage_states[0][TSS_MINFILTER] >= 2);
     WGPUTextureView thickness = material == HOST_PASS_CREATURES && present ? thickness_map(bound[0]) : blank_view;
-    wgpuRenderPassEncoderSetPipeline(pass, pipeline(program, device_output(t, topology)));
+    wgpuRenderPassEncoderSetPipeline(pass, pipeline(program, device_output(t, geometry.topology)));
     bind(program,
          fragment_group(program, {{"texture0", present ? it->second.view : blank_view, atlas_sampler},
                                   {"u_thickness", thickness, linear_clamp()},
                                   {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()}}),
          &vertex, &fragment);
-  }
-  Uniforms vertex(*classic.vert), fragment(*classic.frag);
-  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height);
-  int has[STAGES], filters[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES];
-  Input inputs[STAGES];
-  for (int s = 0; s < STAGES; ++s) {
-    auto it = textures.find(bound[s]);
-    bool present = bound[s] && it != textures.end() && it->second.texture;
-    has[s] = present;
-    bool artwork = present && !(it->second.flags & TARGET_RENDER);
-    filters[s] = artwork && stage_states[s][TSS_MINFILTER] >= 2 && stage_states[s][TSS_MAGFILTER] >= 2 ? 1 : 0;
-    if (artwork && current_target && stage_states[s][TSS_TERRAIN_ART])
-      filters[s] = 2;
-    cop[s] = (int)stage_states[s][TSS_COLOROP];
-    ca1[s] = (int)stage_states[s][TSS_COLORARG1];
-    ca2[s] = (int)stage_states[s][TSS_COLORARG2];
-    aop[s] = (int)stage_states[s][TSS_ALPHAOP];
-    aa1[s] = (int)stage_states[s][TSS_ALPHAARG1];
-    aa2[s] = (int)stage_states[s][TSS_ALPHAARG2];
-    inputs[s] = {s ? "texture1" : "texture0", present ? it->second.view : blank_view,
-                 sampler(stage_states[s][TSS_ADDRESSU], stage_states[s][TSS_ADDRESSV], stage_states[s][TSS_MAGFILTER] >= 2,
-                         stage_states[s][TSS_MINFILTER] >= 2)};
-  }
-  fragment.i2("has_texture", has).i2("reconstruction", filters).i2("color_op", cop).i2("color_arg1", ca1);
-  fragment.i2("color_arg2", ca2).i2("alpha_op", aop).i2("alpha_arg1", aa1).i2("alpha_arg2", aa2);
-  unsigned f = render_states[RS_TEXTUREFACTOR];
-  fragment.v4("factor", (f >> 16 & 255) / 255.0f, (f >> 8 & 255) / 255.0f, (f & 255) / 255.0f, (f >> 24) / 255.0f);
-  fragment.i("alpha_test", render_states[RS_ALPHATESTENABLE] != 0);
-  fragment.f("alpha_ref", (float)(render_states[RS_ALPHAREF] & 255));
-  fragment.i("alpha_func", (int)render_states[RS_ALPHAFUNC]);
-
-  if (!lit) {
-    wgpuRenderPassEncoderSetPipeline(pass, pipeline(classic, device_output(t, topology)));
-    bind(classic, fragment_group(classic, {inputs[0], inputs[1]}), &vertex, &fragment);
-  }
-  uint64_t vertex_at = put(vertex_stream, client_memory() + vertices, vertex_bytes);
-  wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, vertex_at, vertex_bytes);
-  if (index_data) {
-    uint64_t index_at = put(index_stream, index_data, index_bytes);
-    wgpuRenderPassEncoderSetIndexBuffer(pass, index_stream.buffer, WGPUIndexFormat_Uint16, index_at, (index_bytes + 3) & ~3ull);
-    wgpuRenderPassEncoderDrawIndexed(pass, index_count, 1, 0, 0, 0);
   } else {
-    wgpuRenderPassEncoderDraw(pass, index_count, 1, 0, 0);
+    bind_classic(t, geometry.topology);
   }
+  draw_geometry(geometry);
+  if (!g)
+    return;
+  if (ground_kind != HOST_GROUND_BLOOD) {
+    pass_into(g->substrate);
+    bind_classic(g->substrate, geometry.topology);
+    draw_geometry(geometry);
+  }
+  if (ground_kind != HOST_GROUND_DECAL)
+    stamp_ground(*g, ground_kind, geometry);
 }
 void wgpu_w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
   if (!rtx)
@@ -980,16 +1171,29 @@ void wgpu_w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u3
   wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, sizeof strip);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
 }
-void wgpu_w2c_host_scene(struct w2c_host *, u32 camera, u32 lights, u32 count) {
-  memcpy(scene_camera, client_memory() + camera, sizeof scene_camera);
+void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
+  const float *v = (const float *)(client_memory() + view);
+  scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
+  ground_size[0] = v[3], ground_size[1] = v[4];
+  memcpy(beam_tuning, v + 5, sizeof beam_tuning);
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
-  const float *packed = (const float *)(client_memory() + lights);
+  beam_lights = false;
   for (int i = 0; i < light_count; ++i) {
-    memcpy(light_pos + i * 4, packed + i * 16, 16);
-    memcpy(light_rgb + i * 4, packed + i * 16 + 4, 16);
-    memcpy(light_dir + i * 4, packed + i * 16 + 8, 16);
-    memcpy(light_response + i * 4, packed + i * 16 + 12, 16);
+    const float *l = (const float *)(client_memory() + lights) + i * RTX_LIGHT_FLOATS;
+    memcpy(light_pos + i * 4, l, 16);
+    memcpy(light_rgb + i * 4, l + 4, 16);
+    memcpy(light_dir + i * 4, l + 8, 16);
+    memcpy(light_response + i * 4, l + 12, 16);
+    memcpy(ground_dir + i * 4, l + 8, 16);
+    ground_dir[i * 4 + 2] = l[17];
+    light_tail[i] = l[16];
+    memcpy(line_cells + i * 12, l + 20, 48);
+    beam_lights |= l[20] > 0;
   }
+}
+void wgpu_w2c_host_ground(struct w2c_host *, u32 kind, f32 seconds) {
+  ground_kind = (int)kind;
+  ground_seconds = seconds;
 }
 void wgpu_w2c_host_occlusion(struct w2c_host *, u32 grid, u32 values, u32 count) {
   const float *g = (const float *)(client_memory() + grid);

@@ -265,6 +265,27 @@ weapon icon quad (`host_bonus`, with its atlas grid and the bonus's position as
 the shell center), and the host draws it with the bonus program whether or not
 lights reach it, as `draw_bonus_pickups` does.
 
+The ground takes the same `ground.frag` and `ground_stamp.frag` (the client's
+textures run v down the world, so it defines `GROUND_V_DOWN`). The module marks
+the terrain's decals in `fx_queue_render` by the same materials as
+`MaterialGroundRenderer._commands` (`host_ground`): blood, corpse bodies,
+casings, black scorches and freeze shards, or no material. Each mark carries the
+run's clock, which ages wet blood. While RTX is on, the host keeps the same three
+companions of the terrain target and draws each marked decal into them as it
+lands: the substrate (everything but blood), the ordered coverage, and the float
+surface's three stamp passes. It draws the terrain into the world with the ground
+program (`HOST_PASS_GROUND`). The lights carry what the ground adds: the
+reflection tail, broad illumination, and a beam's three energy sections, computed
+by the module as `continuous_beam.py` does (their widened supports also size the
+body grid). The companions start from the terrain as it stands the first time
+RTX needs them. A clear, a replay's terrain copy, or leaving RTX drops them.
+Blood baked before then (in classic, or before the terrain copy a seek starts
+from) stays in the substrate as painted terrain, without its wet film. A seek
+bakes the logged decals after that copy again at their logged clock. WebGPU
+keeps the surface in 32-bit floats where the device filters and blends them,
+otherwise in half floats. Monster Vision's ground light and the perk auras are
+not ported yet.
+
 Ion and Fire Bullets streaks draw as the same analytic beams as the Python port's
 (`shaders/beam.frag`): the module computes each body and head quad as
 `render/rtx/beam.py` does and hands it to the host (`host_beam`) in place of the

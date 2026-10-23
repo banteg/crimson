@@ -241,15 +241,19 @@ void benchmark(bool terrain) {
 #endif
 
 // The back buffer's red channel at a logical pixel, as stored.
-float back_red(int x, int y) {
+struct Pixel {
+  float r, g, b, a;
+};
+Pixel back_pixel(int x, int y) {
   Target &back = textures[0];
-  float pixel[4];
+  Pixel pixel;
   glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
   glReadPixels(x * back.width / back.logical_width, y * back.height / back.logical_height, 1, 1, GL_RGBA, GL_FLOAT,
-               pixel);
+               &pixel);
   bind_target();
-  return pixel[0];
+  return pixel;
 }
+float back_red(int x, int y) { return back_pixel(x, y).r; }
 
 // RTX: an additive stack of three whites draws past white in the world's HDR
 // target, whose tonemap rolls it off below white without EDR headroom and past
@@ -304,12 +308,18 @@ void check_rtx() {
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG1, 2);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
   renderer_set_headroom(1);
-  auto lit = [](int pass, int lights) {
-    const float camera[2] = {0, 0};
-    const float light[16] = {512, 384, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 200, 3};
-    memcpy(memory + 32768, camera, sizeof camera);
-    memcpy(memory + 32800, light, sizeof light);
-    w2c_host_scene(nullptr, 32768, 32800, lights);
+  // A frame's scene: no camera offset, the clock at zero, a 1024-unit terrain,
+  // and up to one light (its first 16 floats; no tail, broad fill or beam).
+  auto scene = [](std::initializer_list<float> light, int count) {
+    const float view[9] = {0, 0, 0, 1024, 1024, 4, 0.25f, 3, 0.15f};
+    float packed[RTX_LIGHT_FLOATS] = {};
+    std::copy(light.begin(), light.end(), packed);
+    memcpy(memory + 32768, view, sizeof view);
+    memcpy(memory + 32832, packed, sizeof packed);
+    w2c_host_scene(nullptr, 32768, 32832, count);
+  };
+  auto lit = [&](int pass, int lights) {
+    scene({512, 384, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 200, 3}, lights);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
     w2c_host_render_pass(nullptr, pass);
     rectangle(0, 0, 1024, 768, 0xffffffff);
@@ -325,12 +335,8 @@ void check_rtx() {
   // clear coat mirrors a light above it; an emblem without lights keeps the
   // device's colors. The quad spans the
   // atlas's 4x4 grid, so its cell (1, 1) centers at (384, 288).
-  auto bonus = [](int emblem, int lights) {
-    const float camera[2] = {0, 0};
-    const float light[16] = {384, 288, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 200, 3};
-    memcpy(memory + 32768, camera, sizeof camera);
-    memcpy(memory + 32800, light, sizeof light);
-    w2c_host_scene(nullptr, 32768, 32800, lights);
+  auto bonus = [&](int emblem, int lights) {
+    scene({384, 288, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 200, 3}, lights);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
     w2c_host_bonus(nullptr, emblem, 4, 4, 384, 288);
     rectangle(0, 0, 1024, 768, 0xffffffff);
@@ -353,11 +359,7 @@ void check_rtx() {
     memcpy(memory + 33024, grid, sizeof grid);
     memcpy(memory + 33152, values, sizeof values);
     w2c_host_occlusion(nullptr, 33024, 33152, 20);
-    const float far_light[16] = {200, 384, 600, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 600, 3};
-    memcpy(memory + 32800, far_light, sizeof far_light);
-    const float camera[2] = {0, 0};
-    memcpy(memory + 32768, camera, sizeof camera);
-    w2c_host_scene(nullptr, 32768, 32800, 1);
+    scene({200, 384, 600, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 600, 3}, 1);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
     w2c_host_render_pass(nullptr, HOST_PASS_CREATURES);
     rectangle(0, 0, 1024, 768, 0xffffffff);
@@ -370,6 +372,55 @@ void check_rtx() {
   const float none[6] = {0, 0, 0, 0, 64, 1};
   memcpy(memory + 33024, none, sizeof none);
   w2c_host_occlusion(nullptr, 33024, 0, 0);
+  // The ground: a gray terrain target drawn into the world through its
+  // companions, a world unit a pixel. Blood baked into it soaks the ground dark
+  // red, although the terrain itself took the decal white; brass mirrors a
+  // light the bare ground does not; a clear drops the companions with what
+  // they held.
+  w2c_host_texture_create(nullptr, 400, 1024, 1024, 1);
+  auto terrain = [] {
+    w2c_host_set_render_target(nullptr, 400);
+    w2c_host_clear(nullptr, 0xff808080);
+    w2c_host_set_render_target(nullptr, 0);
+  };
+  auto decal = [](int kind, float x, float y) {
+    w2c_host_set_render_target(nullptr, 400);
+    w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+    w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+    w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+    w2c_host_ground(nullptr, kind, 0);
+    rectangle(x - 48, y - 48, x + 48, y + 48, 0xc8ffffff);
+    w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+    w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+    w2c_host_render_state(nullptr, RS_SRCBLEND, 2);
+    w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
+    w2c_host_set_render_target(nullptr, 0);
+  };
+  auto ground = [&](std::initializer_list<float> light, int count, int x, int y) {
+    scene(light, count);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, HOST_PASS_GROUND);
+    w2c_host_set_texture(nullptr, 0, 400);
+    rectangle(0, 0, 1024, 1024, 0xffffffff);
+    w2c_host_set_texture(nullptr, 0, 300);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_pixel(x, y);
+  };
+  terrain();
+  decal(HOST_GROUND_BLOOD, 200, 200);
+  decal(HOST_GROUND_BRASS, 600, 400);
+  Pixel bare = ground({}, 0, 400, 200), blood = ground({}, 0, 200, 200);
+  assert(fabsf(bare.r - bare.g) < 0.02f && bare.r > 0.25f);
+  assert(blood.g < bare.g * 0.5f && blood.r > blood.g * 2);
+  // A broad mirror source above (the reflection lands below its emitter).
+  const std::initializer_list<float> mirror = {600, 390, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 200, 40};
+  assert(ground(mirror, 1, 600, 400).r > ground({}, 0, 600, 400).r + 0.1f);
+  assert(fabsf(ground(mirror, 1, 400, 400).r - ground({}, 0, 400, 400).r) < 1e-3f);
+  terrain();
+  Pixel cleared = ground({}, 0, 200, 200);
+  assert(fabsf(cleared.g - bare.g) < 1e-3f);
+  w2c_host_texture_release(nullptr, 400);
   w2c_host_set_texture(nullptr, 0, 0);
   w2c_host_texture_release(nullptr, 300);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
@@ -391,7 +442,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground; classic stays 8-bit");
 }
 
 int main() {

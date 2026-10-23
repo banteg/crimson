@@ -27,8 +27,9 @@ enum {
   STAGES = 2,
 };
 // Target flags: host_texture_create's (1 render target, 2 no alpha) and the host's
-// own half-float storage, which the RTX back buffer and world target use.
-enum { TARGET_RENDER = 1, TARGET_OPAQUE = 2, TARGET_HALF_FLOAT = 4 };
+// own half-float storage, which the RTX back buffer and world target use, and
+// float storage, the RTX ground's surface.
+enum { TARGET_RENDER = 1, TARGET_OPAQUE = 2, TARGET_HALF_FLOAT = 4, TARGET_FLOAT = 8 };
 #include "../game/render_passes.h"
 // The material host_bonus starts, beside the lit passes, until the next pass.
-enum { MATERIAL_BONUS = HOST_PASS_SPRITES + 1 };
+enum { MATERIAL_BONUS = HOST_PASS_GROUND + 1 };

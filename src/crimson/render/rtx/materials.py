@@ -447,7 +447,8 @@ class MaterialGroundRenderer(GroundRenderer):
                              (light.pos.x, light.pos.y, light.radius, light.height)], components=4)
         self._material_array("u_spec_color[0]", [v for light in lights for v in
                              (*light.rgb, light.ring_radius)], components=4)
-        self._material_array("u_spec_tail[0]", [light.reflection_tail for light in lights], components=1)
+        tails = [light.reflection_tail for light in lights]
+        self._material_array("u_spec_tail[0]", tails + [0.0] * (-len(tails) % 4), components=4)
         self._material_array("u_spec_dir[0]", [v for light in lights for v in
                              (light.direction.x, light.direction.y, float(light.broad_illumination), light.length)],
                              components=4)

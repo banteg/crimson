@@ -78,6 +78,8 @@ const char *lit_vertex_source = SHADER_HEADER SHADER_CREATURE_VERT;
 const char *creature_fragment_source = SHADER_HEADER RTX_SHADER_CREATURE_FRAG;
 const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
 const char *bonus_fragment_source = SHADER_HEADER RTX_SHADER_BONUS_FRAG;
+const char *ground_fragment_source = SHADER_HEADER SHADER_GROUND_LIT_FRAG;
+const char *stamp_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_STAMP_FRAG;
 
 // RTX lighting: the world's lights and camera (host_scene), the batch being drawn
 // (HOST_PASS_CREATURES, _PLAYERS, MATERIAL_BONUS, or 0 for the device's own
@@ -89,6 +91,12 @@ int material;
 float scene_camera[2];
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
+// What the ground takes beyond them (host_scene): the run's clock, the terrain's
+// size in world units, the beam sections' tuning, and per light its direction
+// with broad illumination, its reflection tail and its three beam sections.
+float scene_seconds, ground_size[2], beam_tuning[4];
+float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
+bool beam_lights;
 int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
 struct LitProgram {
@@ -103,6 +111,22 @@ float occlusion_grid[4], occlusion_cell = 64;
 int dynamic_shadows, occlusion_rows;
 GLuint occlusion_texture;
 LitProgram creature_lit, player_lit, bonus_lit;
+// The RTX ground (render/rtx/materials.py): companions of the terrain target,
+// made from it as it stands on first use and dropped when it is cleared,
+// replaced or released, or RTX ends. The substrate is the terrain and its decals
+// without blood; coverage holds the ordered materials (blood, corpse, brass,
+// ice); the float surface holds specularity, wetness, blood volume and height.
+// Wetness is stored against an epoch, rebased as the clock runs on. Decal draws
+// marked with a material (host_ground) reach them as they reach the terrain.
+struct Ground {
+  Target substrate, coverage, surface;
+  float epoch = 0;
+};
+std::unordered_map<int, Ground> grounds;
+int ground_kind = HOST_GROUND_END;
+float ground_seconds;
+GLuint ground_program, stamp_program, fill_program;
+GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
 // Each uploaded artwork's texels in the module (it keeps them), for the creature
 // thickness maps made on a creature atlas's first lit draw.
 std::unordered_map<int, u32> texel_addresses;
@@ -188,7 +212,9 @@ Target &target_or_back(int id) {
 void allocate(Target &t) {
   glGenTextures(1, &t.texture);
   glBindTexture(GL_TEXTURE_2D, t.texture);
-  if (t.flags & TARGET_HALF_FLOAT)
+  if (t.flags & TARGET_FLOAT)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, t.width, t.height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  else if (t.flags & TARGET_HALF_FLOAT)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, t.width, t.height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
   else
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t.width, t.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -329,7 +355,7 @@ void submit_geometry(u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
 // lights them: creatures (their ambient fill is 0.6) and bonuses always, players
 // only under lights.
 bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
-  if (!rtx || !world || !material || (material == HOST_PASS_PLAYERS && !light_count))
+  if (!rtx || !world || !material || material == HOST_PASS_GROUND || (material == HOST_PASS_PLAYERS && !light_count))
     return false;
   Target &t = drawing_target(current_target);
   LitProgram &p = material == HOST_PASS_PLAYERS ? player_lit : material == MATERIAL_BONUS ? bonus_lit : creature_lit;
@@ -367,6 +393,168 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   glBindSampler(2, 0);
   glActiveTexture(GL_TEXTURE0);
   apply_output_state(t);
+  glDisable(GL_CULL_FACE);
+  submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
+  return true;
+}
+
+// A ground pass over a whole companion: the stamp shader's `kind` and `pass`
+// over `source`, into the bound framebuffer.
+void ground_fill(GLuint source, int kind, int pass, float wetness) {
+  glUseProgram(fill_program);
+  glUniform1i(u_fill_kind, kind);
+  glUniform1i(u_fill_pass, pass);
+  glUniform1f(u_fill_wetness, wetness);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, source);
+  glBindSampler(0, 0);
+  glDisable(GL_CULL_FACE);
+  glBindVertexArray(vertex_array);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void bind_framebuffer(const Target &t) {
+  glBindFramebuffer(GL_FRAMEBUFFER, t.framebuffer);
+  glViewport(0, 0, t.width, t.height);
+}
+
+void drop_ground(int id) {
+  auto it = grounds.find(id);
+  if (it == grounds.end())
+    return;
+  release(it->second.substrate);
+  release(it->second.coverage);
+  release(it->second.surface);
+  grounds.erase(it);
+}
+
+// The companions of the terrain target `id`, made from it as it stands: the
+// substrate a copy, no materials, and the surface's terrain pass (kind 0).
+Ground &ground_of(int id) {
+  auto made = grounds.find(id);
+  if (made != grounds.end())
+    return made->second;
+  Target &albedo = textures[id];
+  Ground &g = grounds[id];
+  for (Target *t : {&g.substrate, &g.coverage, &g.surface}) {
+    t->width = albedo.width, t->height = albedo.height;
+    t->logical_width = albedo.logical_width, t->logical_height = albedo.logical_height;
+    t->flags = t == &g.substrate ? albedo.flags : TARGET_RENDER | (t == &g.surface ? TARGET_FLOAT : 0);
+    allocate(*t);
+  }
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, albedo.framebuffer);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g.substrate.framebuffer);
+  glBlitFramebuffer(0, 0, albedo.width, albedo.height, 0, 0, albedo.width, albedo.height, GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  bind_framebuffer(g.coverage);
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  bind_framebuffer(g.surface);
+  glClearColor(10 / 255.0f, 0, 0, 115 / 255.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glDisable(GL_BLEND);
+  ground_fill(g.substrate.texture, 0, 0, 0);
+  bind_target();
+  return g;
+}
+
+// Wetness against a later epoch: its channel scaled by exp((old - new) / 45).
+void rebase_wetness(Ground &g, float epoch) {
+  bind_framebuffer(g.surface);
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+  glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
+  ground_fill(blank_texture, 0, 3, expf((g.epoch - epoch) / 45));
+  g.epoch = epoch;
+}
+
+// A marked decal draw's material stamps (materials.py's _stamp_commands, one
+// draw at a time): its coverage, then specularity, wetness and volume, then
+// height, each with its own blend and channels.
+void stamp_ground(Ground &g, int kind, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
+                  u32 primitive_count) {
+  if (ground_seconds - g.epoch > 180)
+    rebase_wetness(g, ground_seconds);
+  glUseProgram(stamp_program);
+  glUniform2f(u_stamp_target_size, (float)g.surface.logical_width, (float)g.surface.logical_height);
+  glUniform1i(u_stamp_kind, kind);
+  glUniform1f(u_stamp_wetness, expf((ground_seconds - g.epoch) / 45));
+  auto it = textures.find(bound[0]);
+  bool present = bound[0] && it != textures.end() && it->second.texture;
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
+  glBindSampler(0, samplers[0]);
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  for (int pass = 0; pass < 3; ++pass) {
+    if (pass == 2 && kind == HOST_GROUND_BLOOD)
+      break;
+    bind_framebuffer(pass ? g.surface : g.coverage);
+    glUniform1i(u_stamp_pass, pass);
+    if (pass == 0) {
+      // RGB weighs the materials alpha-over; A is ice coverage, which every later material occludes.
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, kind == HOST_GROUND_ICE ? GL_ONE : GL_ZERO,
+                          GL_ONE_MINUS_SRC_ALPHA);
+    } else if (pass == 1) {
+      glColorMask(kind != HOST_GROUND_BLOOD, GL_TRUE, GL_TRUE, GL_FALSE);
+      glBlendFunc(kind == HOST_GROUND_BLOOD ? GL_ONE : GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    } else {
+      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+      glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
+  }
+}
+
+// The terrain drawn into the world, lit as the Python port's ground: its
+// substrate, materials and surface under the frame's lights and body shadows.
+bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
+  auto it = textures.find(bound[0]);
+  if (!bound[0] || it == textures.end() || !it->second.framebuffer)
+    return false;
+  Ground &g = ground_of(bound[0]);
+  Target &t = drawing_target(current_target);
+  bind_target();
+  GLuint p = ground_program;
+  glUseProgram(p);
+  auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
+  glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
+  glUniform2fv(at("u_ground_size"), 1, ground_size);
+  glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
+  glUniform1i(at("u_debug"), 0);
+  glUniform1i(at("u_debug_display"), 1);
+  glUniform1i(at("u_has_perk"), 0);
+  glUniform1i(at("u_dynamic_shadows"), dynamic_shadows);
+  glUniform1i(at("u_spec_light_count"), light_count);
+  glUniform1i(at("u_has_beam_lights"), beam_lights);
+  glUniform4fv(at("u_beam_tuning"), 1, beam_tuning);
+  glUniform4fv(at("u_occlusion_grid"), 1, occlusion_grid);
+  glUniform1f(at("u_occlusion_cell_size"), occlusion_cell);
+  if (light_count) {
+    glUniform4fv(at("u_spec_pos"), light_count, light_pos);
+    glUniform4fv(at("u_spec_color"), light_count, light_rgb);
+    glUniform4fv(at("u_spec_dir"), light_count, ground_dir);
+    glUniform4fv(at("u_spec_response"), light_count, light_response);
+    glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
+    glUniform4fv(at("u_line_cells"), light_count * 3, line_cells);
+  }
+  const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
+                           occlusion_grid[2] ? occlusion_texture : blank_texture, blank_texture};
+  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex", "u_perk_tex"};
+  for (int i = 0; i < 5; ++i) {
+    glUniform1i(at(names[i]), i);
+    glActiveTexture(GL_TEXTURE0 + i);
+    glBindTexture(GL_TEXTURE_2D, inputs[i]);
+    glBindSampler(i, 0);
+  }
+  glActiveTexture(GL_TEXTURE0);
+  apply_output_state(t);
+  glDisable(GL_BLEND); // the ground is opaque
   glDisable(GL_CULL_FACE);
   submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
   return true;
@@ -522,6 +710,20 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     create_lit(creature_lit, creature_fragment_source);
     create_lit(player_lit, player_fragment_source);
     create_lit(bonus_lit, bonus_fragment_source);
+    ground_program = link(lit_vertex_source, ground_fragment_source);
+    stamp_program = link(lit_vertex_source, stamp_fragment_source);
+    glUseProgram(stamp_program);
+    glUniform1i(glGetUniformLocation(stamp_program, "texture0"), 0);
+    u_stamp_target_size = glGetUniformLocation(stamp_program, "target_size");
+    u_stamp_kind = glGetUniformLocation(stamp_program, "u_kind");
+    u_stamp_pass = glGetUniformLocation(stamp_program, "u_pass");
+    u_stamp_wetness = glGetUniformLocation(stamp_program, "u_wetness");
+    fill_program = link(tonemap_vertex_source, stamp_fragment_source);
+    glUseProgram(fill_program);
+    glUniform1i(glGetUniformLocation(fill_program, "texture0"), 0);
+    u_fill_kind = glGetUniformLocation(fill_program, "u_kind");
+    u_fill_pass = glGetUniformLocation(fill_program, "u_pass");
+    u_fill_wetness = glGetUniformLocation(fill_program, "u_wetness");
     glGenVertexArrays(1, &beam_array);
     glBindVertexArray(beam_array);
     glGenBuffers(1, &beam_buffer);
@@ -532,6 +734,9 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   rtx = enabled;
   world = false;
   release(hdr);
+  // Classic bakes leave the ground's companions behind: RTX makes them afresh.
+  while (!grounds.empty())
+    drop_ground(grounds.begin()->first);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -597,6 +802,7 @@ void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 sou
   Target &from = target_or_back((int)source);
   if (!from.framebuffer)
     return;
+  drop_ground((int)destination);
   Target &to = textures[(int)destination];
   if (to.width != from.width || to.height != from.height || !to.framebuffer) {
     release(to);
@@ -673,6 +879,7 @@ void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
     return;
   if (current_target == (int)id)
     current_target = 0;
+  drop_ground((int)id);
   release(it->second);
   textures.erase(it);
   texel_addresses.erase((int)id);
@@ -700,17 +907,17 @@ void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
   bind_target();
 }
 void GL_ENTRY(w2c_host_clear)(struct w2c_host *, u32 color) {
+  drop_ground(current_target);
+  bind_target();
   Target &t = drawing_target(current_target);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glClearColor((color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f,
                t.flags & 2 ? 1.0f : (color >> 24) / 255.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 }
-void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
-                   u32 primitive_count) {
-  if (lit_draw(primitive, vertices, vertex_count, indices, primitive_count))
-    return;
-  Target &t = drawing_target(current_target);
+// A draw through the device's own shading into the bound target `t`.
+static void device_draw(const Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
+                        u32 primitive_count) {
   glUseProgram(program);
   glUniform2f(u_target_size, (float)t.logical_width, (float)t.logical_height);
   GLint has[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES], filters[STAGES];
@@ -762,6 +969,27 @@ void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32
   }
   submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
 }
+void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
+                   u32 primitive_count) {
+  if (rtx && world && material == HOST_PASS_GROUND ? ground_draw(primitive, vertices, vertex_count, indices, primitive_count)
+                                                   : lit_draw(primitive, vertices, vertex_count, indices, primitive_count))
+    return;
+  Target &t = drawing_target(current_target);
+  // A marked decal reaches the ground's companions too: the substrate unless it
+  // is blood, the materials if it has one.
+  bool marked = rtx && ground_kind != HOST_GROUND_END && current_target && (t.flags & TARGET_RENDER);
+  Ground *g = marked ? &ground_of(current_target) : nullptr;
+  device_draw(t, primitive, vertices, vertex_count, indices, primitive_count);
+  if (!g)
+    return;
+  if (ground_kind != HOST_GROUND_BLOOD) {
+    bind_framebuffer(g->substrate);
+    device_draw(g->substrate, primitive, vertices, vertex_count, indices, primitive_count);
+  }
+  if (ground_kind != HOST_GROUND_DECAL)
+    stamp_ground(*g, ground_kind, primitive, vertices, vertex_count, indices, primitive_count);
+  bind_target();
+}
 void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
   if (!rtx)
     return;
@@ -780,16 +1008,29 @@ void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 ste
   glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), client_memory() + corners, GL_STREAM_DRAW);
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
-void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 camera, u32 lights, u32 count) {
-  memcpy(scene_camera, client_memory() + camera, sizeof scene_camera);
+void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count) {
+  const float *v = (const float *)(client_memory() + view);
+  scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
+  ground_size[0] = v[3], ground_size[1] = v[4];
+  memcpy(beam_tuning, v + 5, sizeof beam_tuning);
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
-  const float *packed = (const float *)(client_memory() + lights);
+  beam_lights = false;
   for (int i = 0; i < light_count; ++i) {
-    memcpy(light_pos + i * 4, packed + i * 16, 16);
-    memcpy(light_rgb + i * 4, packed + i * 16 + 4, 16);
-    memcpy(light_dir + i * 4, packed + i * 16 + 8, 16);
-    memcpy(light_response + i * 4, packed + i * 16 + 12, 16);
+    const float *l = (const float *)(client_memory() + lights) + i * RTX_LIGHT_FLOATS;
+    memcpy(light_pos + i * 4, l, 16);
+    memcpy(light_rgb + i * 4, l + 4, 16);
+    memcpy(light_dir + i * 4, l + 8, 16);
+    memcpy(light_response + i * 4, l + 12, 16);
+    memcpy(ground_dir + i * 4, l + 8, 16);
+    ground_dir[i * 4 + 2] = l[17];
+    light_tail[i] = l[16];
+    memcpy(line_cells + i * 12, l + 20, 48);
+    beam_lights |= l[20] > 0;
   }
+}
+void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
+  ground_kind = (int)kind;
+  ground_seconds = seconds;
 }
 void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 count) {
   const float *g = (const float *)(client_memory() + grid);

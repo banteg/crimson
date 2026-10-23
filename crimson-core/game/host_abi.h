@@ -33,8 +33,13 @@ HOST_IMPORT(render_mode) int host_render_mode(int requested);
 #include "render_passes.h"
 HOST_IMPORT(render_pass) void host_render_pass(int pass);
 // The world's light sources, sent before its begin mark (game/rtx_lights.cpp):
-// the camera offset (world to screen) and `count` lights of 16 floats each.
-HOST_IMPORT(scene) void host_scene(const float *camera, const float *lights, int count);
+// the view (the camera offset, world to screen; the run's clock in seconds; the
+// terrain's size in world units; the beam sections' gains and ambient dips) and
+// `count` lights of RTX_LIGHT_FLOATS each.
+HOST_IMPORT(scene) void host_scene(const float *view, const float *lights, int count);
+// Draws into the terrain until the next mark are its decals of a HOST_GROUND_*
+// material, deposited at `seconds` on the run's clock (render/rtx/materials.py).
+HOST_IMPORT(ground) void host_ground(int kind, float seconds);
 // Their shadows: the creature body grid (render/rtx/reflection_occlusion.py) as
 // `grid` (origin x, y, columns, or 0 for none, rows, cell size, and whether the
 // shadows setting is on) and `count` floats of RGBA32F texels, or none.
