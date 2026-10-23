@@ -38,12 +38,17 @@ def test_window_gets_a_deep_surface_tagged_through_color_management() -> None:
             pytest.skip("GLFW chose X11")
         is_float, red_bits = edr.backbuffer_format()
         assert is_float or red_bits >= 10
-        if not edr.activate_edr_window(True):
+        active = edr.activate_edr_window(True)
+        # Even without HDR presentation, classic must composite through RGBA8 on the deep surface.
+        assert edr.edr_available()
+        if not active:
             pytest.skip("compositor lacks parametric gamma 2.2 color management")
         bridge = edr._bridge
         assert isinstance(bridge, WaylandEdr) and bridge.description is not None and bridge.wl is not None
-        peak = bridge.reference * edr.edr_headroom()
-        assert edr.edr_output_gain() == pytest.approx(((bridge.reference - bridge.black) / (peak - bridge.black)) ** (1 / 2.2))
+        headroom = edr.edr_headroom()
+        peak = bridge.reference * headroom
+        expected = None if headroom <= 1.0 else ((bridge.reference - bridge.black) / (peak - bridge.black)) ** (1 / 2.2)
+        assert edr.edr_output_gain() == pytest.approx(expected)
         surface.fit()
         for requested in (True, False, True):
             edr.activate_edr_window(requested)

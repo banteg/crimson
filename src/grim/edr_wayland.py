@@ -9,7 +9,8 @@ The surface is described as gamma 2.2 sRGB whose signal 1.0 is the display's pea
 the compositor's own. The game keeps its macOS meaning of "1.0 is SDR white, headroom is the multiple above
 it": the RTX shoulder already limits highlights to headroom**(1/2.2) in its gamma domain, so presenting the
 frame divided by that limit lands SDR white on the reference level and the shoulder's ceiling on the peak.
-That signal never exceeds 1.0, so a 10-bit surface carries it as well as a float one.
+Within that limit the signal stays in 0..1, so a 10-bit surface carries it; anything brighter (a gamma ramp
+above 1.0) clips at the peak, as it does past an EDR display's headroom on macOS.
 """
 
 from __future__ import annotations
@@ -115,6 +116,8 @@ class _GotSlot:
 
     def __init__(self, path: str, base: int, symbol: str) -> None:
         data = Path(path).read_bytes()
+        if data[4:6] != b"\x02\x01":  # EI_CLASS ELFCLASS64, EI_DATA ELFDATA2LSB; i686 is ELF32 with REL tables
+            raise ValueError(f"{path} is not a little-endian ELF64 image")
         shoff, = struct.unpack_from("<Q", data, 0x28)
         shentsize, shnum, shstrndx = struct.unpack_from("<HHH", data, 0x3A)
         sections = [struct.unpack_from("<IIQQQQIIQQ", data, shoff + i * shentsize) for i in range(shnum)]
@@ -130,7 +133,10 @@ class _GotSlot:
         dynsym, dynstr = section(".dynsym"), section(".dynstr")
         self.address = 0
         for table in (".rela.plt", ".rela.dyn"):
-            rela = section(table)
+            try:
+                rela = section(table)
+            except LookupError:
+                continue
             for offset in range(rela[4], rela[4] + rela[5], 24):
                 r_offset, r_info = struct.unpack_from("<QQ", data, offset)
                 name_offset, = struct.unpack_from("<I", data, dynsym[4] + (r_info >> 32) * 24)
@@ -141,7 +147,7 @@ class _GotSlot:
         raise LookupError(symbol)
 
     @contextmanager
-    def replaced(self, function: int) -> Iterator[int]:
+    def replaced(self, function: int) -> Iterator[None]:
         libc = C.CDLL(None, use_errno=True)
         libc.mprotect.argtypes = [C.c_void_p, C.c_size_t, C.c_int]
         size = os.sysconf("SC_PAGE_SIZE")
@@ -154,7 +160,7 @@ class _GotSlot:
             raise OSError(C.get_errno(), "mprotect")
         slot.value = function
         try:
-            yield original
+            yield
         finally:
             slot.value = original
             libc.mprotect(page, size, protection)
@@ -375,6 +381,7 @@ class WaylandEdr:
         self.feedback = 0
         self.description: _ImageDescription | None = None
         self.attached = False
+        self.deep = False
         self.supported = False
         self.requested: bool | None = None
         self.headroom = 1.0
@@ -408,18 +415,15 @@ class WaylandEdr:
             self._callbacks.append(float_configs)
             return _address(float_configs)
 
-        if C.c_void_p.from_address(slot.address).value != _address(libc.dlsym):
-            _log.warning("EDR: raylib's dlsym import is not bound to libc's dlsym; using SDR")
-            yield
-            return
+        # Forward to libc's dlsym, not to what the slot held: a lazily bound slot would rebind itself mid-hook.
+        real_dlsym = _DLSYM(_address(libc.dlsym))
         with ExitStack() as stack:
             try:
-                original = stack.enter_context(slot.replaced(_address(dlsym)))
+                stack.enter_context(slot.replaced(_address(dlsym)))
             except OSError:
                 _log.warning("EDR: raylib's dlsym import could not be patched; using SDR", exc_info=True)
                 yield
                 return
-            real_dlsym = _DLSYM(original)
             yield
 
     def _deep_configs(self, get_configs: Any, get_attrib: Any, query_string: Any) -> Any:
@@ -463,7 +467,8 @@ class WaylandEdr:
         if self.raylib.glfwGetPlatform() != rd.GLFW_PLATFORM_WAYLAND:
             return
         is_float, red_bits = backbuffer_format()
-        if not is_float and red_bits < 10:
+        self.deep = is_float or red_bits >= 10
+        if not self.deep:
             _log.warning("EDR: Wayland window surface has %d-bit color; using SDR", red_bits)
             return
         self.wl = wl = _Wayland(self.raylib.glfwGetWaylandDisplay())
@@ -543,9 +548,11 @@ class WaylandEdr:
             wl.request(self.color_surface, 2)
         wl.flush()
 
-    def output_gain(self, headroom: float) -> float:
+    def output_gain(self, headroom: float) -> float | None:
         # Gamma 2.2 maps signal E to black + (peak - black) * E**2.2, with the peak `headroom` times the reference
-        # white; this gain puts the frame's 1.0 on the reference white.
+        # white; this gain puts the frame's 1.0 on the reference white. Without headroom it is 1: present as drawn.
+        if headroom <= 1.0:
+            return None
         return ((self.reference - self.black) / (self.reference * headroom - self.black)) ** (1 / 2.2)
 
     def close(self) -> None:

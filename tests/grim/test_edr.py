@@ -87,6 +87,8 @@ def test_wayland_gain_puts_frame_white_on_reference_white_above_black() -> None:
     bridge = WaylandEdr()
     bridge.black, bridge.reference = 0.2, 203.0
     gain = bridge.output_gain(1000 / 203)
+    assert gain is not None
     # Gamma 2.2 with black 0.2 and peak 1000: frame white must come out at 203 cd/m².
     assert 0.2 + (1000 - 0.2) * gain**2.2 == pytest.approx(203.0)
-    assert bridge.output_gain(1.0) == pytest.approx(1.0)
+    # An SDR output needs no presentation pass.
+    assert bridge.output_gain(1.0) is None

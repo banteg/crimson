@@ -19,6 +19,8 @@ _log = logging.getLogger(__name__)
 class _Bridge(Protocol):
     """A platform's deep window surface and its HDR presentation switch."""
 
+    # The window surface is deeper than 8-bit unorm, whether or not HDR presentation works on it.
+    deep: bool
     supported: bool
 
     def float_pixel_format(self) -> AbstractContextManager[None]: ...
@@ -79,6 +81,7 @@ class _MacosEdr:
         self.objc.method_setImplementation.restype = C.c_void_p
         self.window = 0
         self.view = 0
+        self.deep = False
         self.supported = False
         self.requested: bool | None = None
 
@@ -149,10 +152,11 @@ class _MacosEdr:
     def attach(self) -> None:
         self.window = int(ffi.cast("uintptr_t", rl.get_window_handle()))
         self.view = self.send(self.window, "contentView") if self.window else 0
+        self.deep = backbuffer_format()[0]
         self.supported = False
         if not self.view or not self.supports(self.view, "setWantsExtendedDynamicRangeOpenGLSurface:"):
             return
-        if not backbuffer_format()[0]:
+        if not self.deep:
             _log.warning("EDR: window backbuffer is not floating point; using SDR")
             return
         self.supported = True
@@ -255,8 +259,8 @@ def edr_headroom() -> float:
 
 
 def edr_available() -> bool:
-    """Whether this window has a float surface, even while classic keeps EDR off."""
-    return _bridge is not None and _bridge.supported
+    """Whether this window has a deep surface, even while classic or the platform keeps EDR off."""
+    return _bridge is not None and _bridge.deep
 
 
 def edr_output_gain() -> float | None:
