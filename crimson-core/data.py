@@ -70,12 +70,14 @@ def data_source(root, out, cc):
     # Recovered owner headers intentionally access a contiguous aggregate through its first symbol.
     ranges = [(extents[first][0], extents[first][0] + size) for first, size in overlay_spans(root, out, cc)]
     # Spans from the first symbol through the end of the last keep native overreads on the original bytes:
-    # `fx_queue_render` reads the corpse frame of type 7 (ping-pong strips) from `creature_type_count`.
+    # `fx_queue_render` reads the corpse frame of type 7 (ping-pong strips) from `creature_type_count`, and with two
+    # players `projectile_render` reads the muzzle flash of player 3 from `effect_uv4`.
     for first, last in [
         ("ui_mouse_x", "ui_mouse_y"),
         ("render_scratch_f0", "render_scratch_f1"),
         ("render_scratch_f2", "render_scratch_f3"),
         ("creature_type_table", "creature_type_count"),
+        ("player_state_table", "effect_uv4"),
     ]:
         if first in extents:
             ranges.append((extents[first][0], extents[last][1]))
