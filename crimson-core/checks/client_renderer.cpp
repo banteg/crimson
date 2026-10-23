@@ -421,6 +421,30 @@ void check_rtx() {
   Pixel cleared = ground({}, 0, 200, 200);
   assert(fabsf(cleared.g - bare.g) < 1e-3f);
   w2c_host_texture_release(nullptr, 400);
+  // Fluid smoke: a splat stepped once draws as a translucent gray cloud over a
+  // black world, brighter under a light above it; a reset clears it.
+  auto smoke = [](std::initializer_list<float> commands, int lights) {
+    std::copy(commands.begin(), commands.end(), (float *)(memory + 40000));
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_smoke(nullptr, 40000, (u32)commands.size());
+    const float view[9] = {-128, -128, 1280, 1280, -128, -128, 1280, 1280, 1};
+    const float light[SMOKE_LIGHT_FLOATS] = {534, 384, 30, 300, 1, 1, 1, 4, 0, 0, 0, 0};
+    memcpy(memory + 41000, view, sizeof view);
+    memcpy(memory + 41100, light, sizeof light);
+    w2c_host_smoke_draw(nullptr, 41000, 41100, lights, 0, 0);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_pixel(534, 384);
+  };
+  // An emission at (512, 384), 64 units across, its center a third of its size downstream.
+  const float splat_center_u = (534 + 128) / 1280.0f, splat_center_v = (384 + 128) / 1280.0f;
+  Pixel cloud = smoke({SMOKE_RESET, 320, 1280, 1280, 1 / 60.0f, 12,
+                       SMOKE_SPLAT, splat_center_u - 0.125f, splat_center_v - 0.125f, 0.25f, 0.25f,
+                       splat_center_u, splat_center_v, 64, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                       SMOKE_PROJECT, SMOKE_TRANSPORT, 0.2f}, 0);
+  assert(cloud.r > 0.1f && fabsf(cloud.r - cloud.b) < 0.1f);
+  assert(smoke({}, 1).r > cloud.r + 0.05f);
+  assert(smoke({SMOKE_RESET, 320, 1280, 1280, 1 / 60.0f, 12}, 0).r == 0);
   w2c_host_set_texture(nullptr, 0, 0);
   w2c_host_texture_release(nullptr, 300);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
@@ -442,7 +466,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters; classic stays 8-bit");
 }
 
 int main() {

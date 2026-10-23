@@ -18,6 +18,8 @@ extern "C" {
 unsigned char portable_preserve_bugs, terrain_texture_failed;
 int config_detail_preset = 5, effect_spawn_detail_skip_counter;
 float effect_uv_step_2 = 0.5f, effect_uv_step_4 = 0.25f, effect_uv_step_8 = 0.125f, effect_uv_step_16 = 0.0625f;
+// RTX smoke captures explosion puffs as they spawn (game/rtx_smoke.cpp); nothing draws here.
+void rtx_smoke_puff(const effect_entry_t *) {}
 }
 static int decals, render_calls, rendered_decals[512], rendered_count, rendered_rotated[8], rotated_total;
 unsigned char fx_queue_add(int, vec2f_t *, float, float, float, effect_color_t *) {

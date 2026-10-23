@@ -99,6 +99,7 @@ static uint8_t *run_state_write(uint8_t *out) {
 }
 
 static const uint8_t *run_state_read(const uint8_t *in) {
+  rtx_smoke_reset(); // the fluid smoke's history is not the restored run's
   for (int i = 0; i < game_run_span_count; ++i) {
     memcpy(game_run_spans[i].at, in, game_run_spans[i].size);
     in += game_run_spans[i].size;

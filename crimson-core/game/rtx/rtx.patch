@@ -1,6 +1,6 @@
 The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, the terrain's
-decals by material and the batches the host lights (the ground, creature bodies, players, bonuses); it draws the ion
-and Fire Bullets streaks as analytic beams in place of their stamps, and registers its console commands.
+decals by material, the batches the host lights and the smoke the ticks make (game/rtx_smoke.cpp), which it draws in
+place of native puffs; it draws the ion and Fire Bullets streaks as analytic beams, and registers console commands.
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 @@ -89,6 +89,7 @@
@@ -11,12 +11,81 @@ and Fire Bullets streaks as analytic beams in place of their stamps, and registe
      terrain_render();
  
      current_player_index = 0;
-@@ -116,4 +117,5 @@
+@@ -111,9 +112,11 @@
+ 
+     projectile_render(ui_transition_alpha);
+     bonus_render();
++    rtx_smoke(ui_transition_alpha);
+ 
+     if (screen_fade_alpha > 0.0f) {
          grim_interface_ptr->grim_draw_fullscreen_color(
              0.0f, 0.0f, 0.0f, screen_fade_alpha);
      }
 +    rtx_world(0);
  }
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
+@@ -250,6 +250,7 @@
+ #if CL_BUILD == 10908
+                     vec2f_t delta;
+ #endif
++                    float rtx_wake_x = position->x, rtx_wake_y = position->y;
+                     delta.x = delta.y = 0.0f;
+                     {
+                         for (step = 0; step < step_count; step += 3) {
+@@ -639,6 +640,8 @@
+                             }
+                         }
+                     }
++                    rtx_smoke_wake(projectile->pos.tail.vy.type_id, rtx_wake_x, rtx_wake_y, position->x, position->y,
++                                   frame_dt);
+                 }
+             }
+         }
+@@ -718,7 +721,10 @@
+                 projectile_vec2_t& secondary_position = *(projectile_vec2_t*)&secondary_projectile_pool[secondary_index].position;
+                 projectile_vec2_t movement
+                     = frame_dt * *(projectile_vec2_t*)&secondary_projectile_pool[secondary_index].pos.vx.velocity;
++                float rtx_wake_x = secondary_position.x, rtx_wake_y = secondary_position.y;
+                 vec2_add((vec2f_t*)&secondary_position, (vec2f_t*)&movement, 4.0f);
++                rtx_smoke_impulse(rtx_wake_x, rtx_wake_y, secondary_position.x, secondary_position.y, 12.0f,
++                                  600.0f * frame_dt, 180.0f * frame_dt, 2, 0.15f, 0.0f);
+ 
+                 secondary_projectile_type_id_t type_id = secondary_projectile_pool[secondary_index].pos.vx.vy.type_id;
+                 if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
+@@ -795,6 +801,9 @@
+                     projectile_vec2_t trail_pos = trail_origin
+                         - projectile_vec2_t((float)cos(trail_heading), (float)sin(trail_heading))
+                             * 9.0f;
++                    float rtx_exhaust_x = -(float)cos(trail_heading), rtx_exhaust_y = -(float)sin(trail_heading);
++                    RtxSmokeRocket rtx_smoke_source(rtx_exhaust_x, rtx_exhaust_y, rtx_exhaust_x * 90.0f,
++                                                    rtx_exhaust_y * 90.0f);
+                     int effect_id = fx_spawn_sprite(
+                         (const vec2f_t*)&trail_pos, (const vec2f_t*)&trail_velocity, 14.0f);
+                     secondary_projectile_pool[secondary_index].pos.vx.vy.trail_distance = 0.06f;
+@@ -962,6 +971,7 @@
+                             velocity_x,
+                             magnitude * burst_direction.y,
+                         };
++                        RtxSmokeRocket rtx_smoke_source(burst_cos, burst_sin, velocity.x, velocity.y);
+                         int effect_id = fx_spawn_sprite(
+                             (vec2f_t*)&secondary_position, (vec2f_t*)&velocity, 14.0f);
+                         sprite_effect_pool[effect_id].color_a = 0.37f;
+@@ -974,10 +984,14 @@
+                     secondary_projectile_pool[secondary_index].pos.vx.vel_x = 0.0f;
+                     secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y = 0.5f;
+                 }
++                if (secondary_projectile_pool[secondary_index].pos.vx.vy.type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING)
++                    rtx_smoke_blast(secondary_position.x, secondary_position.y,
++                                    secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y);
+             }
+         }
+     }
+ 
++    rtx_smoke_flush();
+     for (int sprite_index = 0; sprite_index < 0x180; ++sprite_index) {
+         sprite_effect_t* sprite = &sprite_effect_pool[sprite_index];
+         if (sprite->active) {
 --- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 @@ -826,7 +826,17 @@
@@ -179,6 +248,15 @@ and Fire Bullets streaks as analytic beams in place of their stamps, and registe
  
      grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
      grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
+@@ -463,7 +468,7 @@
+     grim_interface_ptr->grim_end_batch();
+     grim_interface_ptr->grim_set_config_var(0x14, 6u);
+ 
+-    if (config_smoke_enabled) {
++    if (config_smoke_enabled && !rtx_smoke_active()) {
+         grim_interface_ptr->grim_set_config_var(0x13, 5u);
+         grim_interface_ptr->grim_set_config_var(0x14, 6u);
+         grim_interface_ptr->grim_bind_texture(particles_texture, 0);
 --- a/decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp
 @@ -145,6 +145,7 @@
@@ -224,9 +302,84 @@ and Fire Bullets streaks as analytic beams in place of their stamps, and registe
 +    rtx_material(HOST_PASS_SPRITES);
      grim_interface_ptr->grim_set_config_var(0x15, 2u);
  }
+--- a/decomp/1.9/crimsonland/crimsonland/fx_spawn_sprite.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/fx_spawn_sprite.cpp
+@@ -30,5 +30,6 @@
+     sprite_effect_pool[index].velocity = *vel;
+     sprite_effect_pool[index].scale = scale;
+     sprite_effect_pool[index].rotation = (float)(crt_rand() % 0x274) * 0.01f;
++    rtx_smoke_spawned(index);
+     return index;
+ }
+--- a/decomp/1.9/crimsonland/effects/effect_spawn.cpp
++++ b/decomp/1.9/crimsonland/effects/effect_spawn.cpp
+@@ -79,5 +79,7 @@
+     } else if (size_code == 0x80) {
+         EFFECT_BUILD_QUAD(effect_uv2, effect_uv_step_2);
+     }
++    if (effect_id == 0x11 && entry != &effect_discard_entry)
++        rtx_smoke_puff(entry);
+     return entry;
+ }
+--- a/decomp/1.9/crimsonland/effects/effects_render.cpp
++++ b/decomp/1.9/crimsonland/effects/effects_render.cpp
+@@ -86,6 +86,8 @@
+     int index;
+     for (index = 0; index < count; ++index) {
+         effect_entry_t *entry = game_effects_entry(index);
++        if (entry->effect_id == 0x11 && rtx_smoke_active())
++            continue;
+         int flags = entry->flags;
+ #if CL_BUILD == 10908
+         // 1.9.8 spells the test !(age < 0); 8966 compiles both spellings alike, but only
+--- a/decomp/1.9/crimsonland/game/bonus_apply.cpp
++++ b/decomp/1.9/crimsonland/game/bonus_apply.cpp
+@@ -257,7 +257,11 @@
+             PROJECTILE_TYPE_GAUSS_GUN,
+             -100);
+         current_player_index = saved_player_index;
+-        effect_spawn_explosion_burst(bonus_pos, 1.0f);
++        rtx_smoke_blast(bonus_pos->x, bonus_pos->y, 1.0f);
++        {
++            RtxSmokeNuke rtx_smoke_source;
++            effect_spawn_explosion_burst(bonus_pos, 1.0f);
++        }
+         camera_shake_pulses = 20;
+         camera_shake_timer = 0.2f;
+ 
+--- a/decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp
+@@ -76,6 +76,7 @@
+         if (perk_count_get(perk_id_final_revenge) != 0) {
+             const vec2f_t *player_pos =
+                 &player_state_table[player_index].position;
++            rtx_smoke_blast(player_pos->x, player_pos->y, 1.8f);
+             effect_spawn_explosion_burst(player_pos, 1.8f);
+             scripted_burst_active = 1;
+ 
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -1209,6 +1209,7 @@
+             grim_interface_ptr->grim_is_key_active(player->input.fire_key)
+                 || auto_fire)) {
+         int owner_id;
++        RtxSmokeMuzzle rtx_smoke_source(fire_heading);
+         survival_reward_fire_seen = 1;
+ 
+         if (!normal_fire_ready) {
+--- a/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
++++ b/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
+@@ -294,6 +294,7 @@
+     mouse_button_down =
+         grim_interface_ptr->grim_is_mouse_button_down(0) != 0;
+     bonus_update();
++    rtx_smoke_tick(frame_dt);
+     frame_dt = unscaled_frame_dt;
+     frame_dt_ms = (int)(unscaled_frame_dt * 1000.0f);
+ 
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
-@@ -204,6 +204,10 @@
+@@ -204,6 +204,12 @@
          "openurl", console_cmd_open_url);
      console_log_queue.console_register_command(
          "sndfreqadjustment", console_cmd_snd_freq_adjustment);
@@ -234,6 +387,8 @@ and Fire Bullets streaks as analytic beams in place of their stamps, and registe
 +        "rendermode", console_cmd_render_mode);
 +    console_log_queue.console_register_command(
 +        "togglertx", console_cmd_toggle_rtx);
++    console_log_queue.console_register_command(
++        "rtxsmoke", console_cmd_rtx_smoke);
  
      memset(registry_key_status_root_path, 0, 0xff);
      registry_key_status_root_path[0] = 'S';

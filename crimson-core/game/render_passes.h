@@ -13,6 +13,17 @@ enum {
 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).
 enum { RTX_LIGHT_FLOATS = 32 };
+// The fluid smoke solver's commands (host_smoke, game/rtx_smoke.cpp), each an
+// opcode and its floats: RESET clears the field targets (resolution, world
+// size, step seconds, pressure iterations); FADE scales density and heat;
+// SPLAT deposits an emission (its rect in the solver's uv, then source, motion,
+// rotation and flow) and IMPULSE an airflow (rect, segment, impulse, phase);
+// PROJECT advects velocity and removes its divergence; TRANSPORT carries density
+// and heat along it and decays them (decay).
+enum { SMOKE_RESET = 1, SMOKE_FADE, SMOKE_SPLAT, SMOKE_IMPULSE, SMOKE_PROJECT, SMOKE_TRANSPORT };
+// Floats per smoke light in host_smoke_draw: position, height, radius; RGB, gain;
+// direction, half length, ring radius.
+enum { SMOKE_LIGHT_FLOATS = 12, SMOKE_MAX_LIGHTS = 16, SMOKE_MAX_SIGHTS = 4 };
 // The terrain's decals by material (host_ground), as render/rtx/materials.py
 // sorts them: what the draws into the terrain until HOST_GROUND_END are.
 // A decal without a material reaches the ground's substrate alone.

@@ -37,6 +37,7 @@ struct Light {
   bool broad = false;
   float beam_radius = 0, beam_step = 0, beam_head = 0;
   bool beam_ion = false;
+  float smoke_gain = 1; // fluid smoke's scattering response, apart from the ground's and creatures'
   float reflection_reach() const { return reach < 0 ? radius : reach; }
 };
 Light sources[MAX_SOURCES];
@@ -214,6 +215,14 @@ void ion_arc_sources(projectile_t &p, float view_x, float view_y) {
   }
 }
 
+// The native Sharpshooter sight (render/laser_sight.py): from beside the gun to 512 units out.
+void sight_geometry(const player_state_t &player, float &near_x, float &near_y, float &far_x, float &far_y) {
+  float heading = player.aim_heading - HALF_PI;
+  far_x = player.pos_x + cosf(heading) * 512, far_y = player.pos_y + sinf(heading) * 512;
+  float near_heading = heading - 0.150915f;
+  near_x = player.pos_x + cosf(near_heading) * 15, near_y = player.pos_y + sinf(near_heading) * 15;
+}
+
 void player_sources(const player_state_t &player) {
   if (perk_count_get(perk_id_radioactive)) {
     // Follow the visible aura, including its native post-death presence.
@@ -224,12 +233,9 @@ void player_sources(const player_state_t &player) {
     aura.broad = true;
   }
   if (player.health > 0 && perk_count_get(perk_id_sharpshooter)) {
-    // The native sight (render/laser_sight.py): red at the gun, black at its far
-    // end, so the source axis points back toward the gun.
-    float heading = player.aim_heading - HALF_PI;
-    float far_x = player.pos_x + cosf(heading) * 512, far_y = player.pos_y + sinf(heading) * 512;
-    float near_heading = heading - 0.150915f;
-    float near_x = player.pos_x + cosf(near_heading) * 15, near_y = player.pos_y + sinf(near_heading) * 15;
+    // Red at the gun, black at its far end, so the source axis points back toward the gun.
+    float near_x, near_y, far_x, far_y;
+    sight_geometry(player, near_x, near_y, far_x, far_y);
     float dx = near_x - far_x, dy = near_y - far_y;
     float length = normalize(dx, dy);
     Light &sight = add((near_x + far_x) * 0.5f, (near_y + far_y) * 0.5f, 40, 1.3f, 0, 0);
@@ -282,6 +288,7 @@ void secondary_sources(const secondary_projectile_t &s) {
     exhaust.height = 22;
     exhaust.dx = dx, exhaust.dy = dy, exhaust.length = 6 * scale, exhaust.width = 5 * scale, exhaust.reach = 140;
     exhaust.broad = true;
+    exhaust.smoke_gain = 6;
   }
 }
 
@@ -599,7 +606,8 @@ extern "C" const float rtx_beam_tuning[4] = {4.0f, 0.25f, 3.0f, 0.15f};
 // The frame's lights for the view, RTX_LIGHT_FLOATS each: position, radius,
 // height; linear RGB, ring radius; direction, 0, length; illumination and
 // reflection gains, reflection reach, source width; reflection tail, broad
-// illumination, a beam's padding past its ends; its three energy sections.
+// illumination, a beam's padding past its ends, its smoke gain; its three
+// energy sections.
 // At most `capacity`.
 extern "C" int rtx_collect_lights(float *out, int capacity) {
   source_count = 0;
@@ -628,9 +636,23 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
     float *packed = out + count++ * RTX_LIGHT_FLOATS;
     const float head[20] = {l.x, l.y, l.radius, l.height, l.r, l.g, l.b, l.ring, l.dx, l.dy, 0, l.length,
                             illumination, reflected[i] ? l.reflection : 0, l.reflection_reach(), l.width,
-                            l.tail, (float)l.broad, (float)(l.beam_radius * l.beam_head * SUPPORT), 0};
+                            l.tail, (float)l.broad, (float)(l.beam_radius * l.beam_head * SUPPORT), l.smoke_gain};
     memcpy(packed, head, sizeof head);
     beam_cells(l, illumination, packed + 20);
   }
+  return count;
+}
+
+// The living players' Sharpshooter sights, near and far ends: fluid smoke
+// scatters them as narrow red beams (render/rtx/smoke.py).
+extern "C" int rtx_collect_sights(float *out, int capacity) {
+  int count = 0;
+  if (!perk_count_get(perk_id_sharpshooter))
+    return 0;
+  for (int i = 0; i < config_blob.player_count && i < 2 && count < capacity; ++i)
+    if (player_state_table[i].health > 0) {
+      sight_geometry(player_state_table[i], out[count * 4], out[count * 4 + 1], out[count * 4 + 2], out[count * 4 + 3]);
+      ++count;
+    }
   return count;
 }

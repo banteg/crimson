@@ -21,8 +21,12 @@ int rtx_render_mode;
 
 static const char *rtx_mode_name(int mode) { return mode ? "rtx" : "classic"; }
 
+void rtx_smoke_reset();
+extern int rtx_smoke_on;
+
 static void rtx_set_mode(int requested) {
   rtx_render_mode = platform_outputs() ? host_render_mode(requested) : 0;
+  rtx_smoke_reset();
 }
 
 // The mode the host's launch options ask for (--rtx, CRIMSON_RTX).
@@ -54,6 +58,19 @@ void console_cmd_toggle_rtx(void) {
   rtx_report(requested);
 }
 
+// rtxsmoke <on|off>: RTX's fluid smoke, on by default; off brings native puffs back.
+void console_cmd_rtx_smoke(void) {
+  char *name = console_cmd_argc_get() == 2 ? console_cmd_arg_get(1) : nullptr;
+  if (name && (!strcmp(name, "on") || !strcmp(name, "off"))) {
+    rtx_smoke_on = !strcmp(name, "on");
+    rtx_smoke_reset();
+  } else if (name) {
+    console_printf(&console_log_queue, "rtxsmoke <on|off>\n");
+    return;
+  }
+  console_printf(&console_log_queue, "RTX smoke is %s.\n", rtx_smoke_on ? "on" : "off");
+}
+
 static bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
 
 int rtx_collect_lights(float *out, int capacity);
@@ -70,6 +87,10 @@ float rtx_ground_ms = -1;
 // seek bakes it again (host/keyframes.inc).
 static float rtx_seconds() { return (rtx_ground_ms >= 0 ? rtx_ground_ms : (float)run_elapsed_ms) * 0.001f; }
 
+// The frame's lights, collected as the world begins.
+static float rtx_lights[32 * RTX_LIGHT_FLOATS];
+static int rtx_light_count;
+
 // The world's bounds in the frame (game/rtx/rtx.patch): what Grim batched before
 // a bound belongs to the side it was drawn on. The world's lights go first.
 void rtx_world(int begin) {
@@ -77,8 +98,8 @@ void rtx_world(int begin) {
     return;
   grim_interface_ptr->grim_flush_batch();
   if (begin) {
-    static float lights[32 * RTX_LIGHT_FLOATS];
-    int count = rtx_collect_lights(lights, 32);
+    int count = rtx_light_count = rtx_collect_lights(rtx_lights, 32);
+    const float *lights = rtx_lights;
     const float view[9] = {camera_offset.x,    camera_offset.y,    rtx_seconds(),
                            (float)terrain_texture_width, (float)terrain_texture_height, rtx_beam_tuning[0],
                            rtx_beam_tuning[1], rtx_beam_tuning[2], rtx_beam_tuning[3]};
@@ -91,6 +112,16 @@ void rtx_world(int begin) {
     host_occlusion(grid, values, value_count);
   }
   host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
+}
+
+// The fluid smoke field after the world's sprites, at its transition `alpha`.
+bool rtx_smoke_active();
+void rtx_smoke_draw(const float *lights, int light_count, float alpha);
+void rtx_smoke(float alpha) {
+  if (!rtx_drawing() || !rtx_smoke_active())
+    return;
+  grim_interface_ptr->grim_flush_batch();
+  rtx_smoke_draw(rtx_lights, rtx_light_count, alpha);
 }
 
 // The batches the host lights (HOST_PASS_CREATURES, _PLAYERS), and the return to

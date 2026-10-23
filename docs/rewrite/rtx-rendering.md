@@ -287,6 +287,31 @@ keeps the surface in 32-bit floats where the device filters and blends them,
 otherwise in half floats. Monster Vision's ground light and the perk auras are
 not ported yet.
 
+Fluid smoke takes the same solver and display shaders (`smoke_solver.frag`,
+`smoke_splat.frag`, `smoke_impulse.frag`, `smoke.frag`). The module captures what
+`sim/smoke_events.py` captures as each tick runs (`crimson-core/game/rtx_smoke.cpp`,
+hooks in `game/rtx/rtx.patch`):
+- sprite smoke spawns, read back after their caller colors them
+- explosion puffs, with their delay and expansion
+- muzzle puffs, which follow the firing direction, each with a jet of air
+- rocket exhaust, which moves back along the flight, and detonation sprites
+- the nuke's 15-second billows
+- projectile and rocket wakes, and blast fronts from explosion bursts and rocket
+  detonations
+
+These hooks only read the run: no RNG, no state, and the verifier builds without
+them. The module also runs `GpuSmokeSimulation`'s CPU side: delayed deposits,
+retention and fade, impulse budgets and fixed 60 Hz steps. It hands the host the
+solver passes as a command stream (`host_smoke`). The host runs them on its five
+RGBA16F field targets. After the world's sprites (`bonus_render`, which ends with
+the effects), the host integrates the display under the smoke's 16 lights and the
+Sharpshooter sights (`host_smoke_draw`) into a composite at most 640 pixels
+across, and puts it over the world premultiplied. While fluid smoke runs, native
+smoke sprites and explosion puffs are not drawn.
+The console's `rtxsmoke on|off` switches it, on by default. The Smoke display
+setting gates it too. A mode change, a new run, or a restored run (a replay's
+seek, a co-op rollback) clears the field.
+
 Ion and Fire Bullets streaks draw as the same analytic beams as the Python port's
 (`shaders/beam.frag`): the module computes each body and head quad as
 `render/rtx/beam.py` does and hands it to the host (`host_beam`) in place of the
@@ -300,7 +325,7 @@ without it.
 Controls:
 
 - launch flag: `crimson --rtx`, or `CRIMSON_RTX=1` (unattended captures)
-- console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`
+- console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`, `rtxsmoke <on|off>`
 - `rendermode rtx` in the game folder's `autoexec.txt`, which the original runs at
   startup, keeps the mode across launches
 

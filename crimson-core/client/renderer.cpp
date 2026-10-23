@@ -80,6 +80,13 @@ const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
 const char *bonus_fragment_source = SHADER_HEADER RTX_SHADER_BONUS_FRAG;
 const char *ground_fragment_source = SHADER_HEADER SHADER_GROUND_LIT_FRAG;
 const char *stamp_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_STAMP_FRAG;
+const char *smoke_rect_source = SHADER_HEADER SHADER_SMOKE_RECT_VERT;
+const char *smoke_field_source = SHADER_HEADER SHADER_SMOKE_FIELD_VERT;
+const char *smoke_solver_source = SHADER_HEADER RTX_SHADER_SMOKE_SOLVER_FRAG;
+const char *smoke_splat_source = SHADER_HEADER RTX_SHADER_SMOKE_SPLAT_FRAG;
+const char *smoke_impulse_source = SHADER_HEADER RTX_SHADER_SMOKE_IMPULSE_FRAG;
+const char *smoke_fragment_source = SHADER_HEADER RTX_SHADER_SMOKE_FRAG;
+const char *blit_fragment_source = SHADER_HEADER SHADER_BLIT_FRAG;
 
 // RTX lighting: the world's lights and camera (host_scene), the batch being drawn
 // (HOST_PASS_CREATURES, _PLAYERS, MATERIAL_BONUS, or 0 for the device's own
@@ -127,6 +134,14 @@ int ground_kind = HOST_GROUND_END;
 float ground_seconds;
 GLuint ground_program, stamp_program, fill_program;
 GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
+// RTX fluid smoke (game/rtx_smoke.cpp, render/rtx/gpu_smoke.py): the field's
+// RGBA16F targets (its state twice, divergence, pressure twice), the solver's
+// settings and passes, and the display's composite at reduced resolution.
+enum { SMOKE_TARGETS = 5, SMOKE_DISPLAY_MAX_AXIS = 640 };
+Target smoke_targets[SMOKE_TARGETS], smoke_composite;
+int smoke_current, smoke_iterations;
+float smoke_resolution, smoke_world[2], smoke_dt, smoke_decay = 0.2f, smoke_fade = 1;
+GLuint smoke_solver_program, smoke_splat_program, smoke_impulse_program, smoke_program, blit_program;
 // Each uploaded artwork's texels in the module (it keeps them), for the creature
 // thickness maps made on a creature atlas's first lit draw.
 std::unordered_map<int, u32> texel_addresses;
@@ -510,6 +525,57 @@ void stamp_ground(Ground &g, int kind, u32 primitive, u32 vertices, u32 vertex_c
   }
 }
 
+// A rect of a smoke target through one of the solver's programs, its uniforms set.
+void smoke_rect(GLuint p, const float *rect) {
+  glUniform4fv(glGetUniformLocation(p, "rect"), 1, rect);
+  glUniform2f(glGetUniformLocation(p, "u_resolution"), smoke_resolution, smoke_resolution);
+  glUniform2fv(glGetUniformLocation(p, "u_world_size"), 1, smoke_world);
+  glDisable(GL_CULL_FACE);
+  glBindVertexArray(vertex_array);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+// A whole-field solver pass (GpuSmokeSimulation._pass): `mode` from `source`,
+// with `aux` (pressure or divergence), into `destination`.
+void smoke_pass(int destination, int source, int mode, int aux = -1) {
+  bind_framebuffer(smoke_targets[destination]);
+  glDisable(GL_BLEND);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  GLuint p = smoke_solver_program;
+  glUseProgram(p);
+  glUniform1i(glGetUniformLocation(p, "texture0"), 0);
+  glUniform1i(glGetUniformLocation(p, "u_aux"), 1);
+  glUniform1i(glGetUniformLocation(p, "u_mode"), mode);
+  glUniform1f(glGetUniformLocation(p, "u_dt"), smoke_dt);
+  glUniform1f(glGetUniformLocation(p, "u_decay"), smoke_decay);
+  glUniform1f(glGetUniformLocation(p, "u_fade"), smoke_fade);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, aux >= 0 ? smoke_targets[aux].texture : blank_texture);
+  glBindSampler(1, 0);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, smoke_targets[source].texture);
+  glBindSampler(0, 0);
+  const float whole[4] = {0, 0, 1, 1};
+  smoke_rect(p, whole);
+}
+
+void clear_smoke_target(int index) {
+  bind_framebuffer(smoke_targets[index]);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
+// Splats and impulses add into the state: its alpha is signed velocity, so ONE/ONE.
+void smoke_add(GLuint p, const float *rect) {
+  bind_framebuffer(smoke_targets[smoke_current]);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_ONE, GL_ONE);
+  smoke_rect(p, rect);
+}
+
 // The terrain drawn into the world, lit as the Python port's ground: its
 // substrate, materials and surface under the frame's lights and body shadows.
 bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
@@ -718,6 +784,13 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     u_stamp_kind = glGetUniformLocation(stamp_program, "u_kind");
     u_stamp_pass = glGetUniformLocation(stamp_program, "u_pass");
     u_stamp_wetness = glGetUniformLocation(stamp_program, "u_wetness");
+    smoke_solver_program = link(smoke_rect_source, smoke_solver_source);
+    smoke_splat_program = link(smoke_rect_source, smoke_splat_source);
+    smoke_impulse_program = link(smoke_rect_source, smoke_impulse_source);
+    smoke_program = link(smoke_field_source, smoke_fragment_source);
+    blit_program = link(tonemap_vertex_source, blit_fragment_source);
+    glUseProgram(blit_program);
+    glUniform1i(glGetUniformLocation(blit_program, "source"), 0);
     fill_program = link(tonemap_vertex_source, stamp_fragment_source);
     glUseProgram(fill_program);
     glUniform1i(glGetUniformLocation(fill_program, "texture0"), 0);
@@ -737,6 +810,9 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())
     drop_ground(grounds.begin()->first);
+  for (Target &t : smoke_targets)
+    release(t);
+  release(smoke_composite);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -1031,6 +1107,147 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
 void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
   ground_kind = (int)kind;
   ground_seconds = seconds;
+}
+void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
+  if (!rtx)
+    return;
+  const float *c = (const float *)(client_memory() + commands), *end = c + count;
+  while (c < end) {
+    switch ((int)*c) {
+    case SMOKE_RESET:
+      smoke_resolution = c[1], smoke_world[0] = c[2], smoke_world[1] = c[3], smoke_dt = c[4];
+      smoke_iterations = (int)c[5];
+      for (int i = 0; i < SMOKE_TARGETS; ++i) {
+        Target &t = smoke_targets[i];
+        if (t.width != (int)smoke_resolution) {
+          release(t);
+          t.width = t.height = t.logical_width = t.logical_height = (int)smoke_resolution;
+          t.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+          allocate(t);
+        }
+        clear_smoke_target(i);
+      }
+      smoke_current = 0;
+      c += 6;
+      break;
+    case SMOKE_FADE:
+      smoke_fade = c[1];
+      smoke_pass(1 - smoke_current, smoke_current, 5);
+      smoke_current = 1 - smoke_current;
+      c += 2;
+      break;
+    case SMOKE_SPLAT: {
+      GLuint p = smoke_splat_program;
+      glUseProgram(p);
+      glUniform4fv(glGetUniformLocation(p, "u_source"), 1, c + 5);
+      glUniform4fv(glGetUniformLocation(p, "u_motion"), 1, c + 9);
+      glUniform1f(glGetUniformLocation(p, "u_rotation"), c[13]);
+      glUniform4fv(glGetUniformLocation(p, "u_flow"), 1, c + 14);
+      smoke_add(p, c + 1);
+      c += 18;
+      break;
+    }
+    case SMOKE_IMPULSE: {
+      GLuint p = smoke_impulse_program;
+      glUseProgram(p);
+      glUniform4fv(glGetUniformLocation(p, "u_segment"), 1, c + 5);
+      glUniform4fv(glGetUniformLocation(p, "u_impulse"), 1, c + 9);
+      glUniform4fv(glGetUniformLocation(p, "u_phase"), 1, c + 13);
+      smoke_add(p, c + 1);
+      c += 17;
+      break;
+    }
+    case SMOKE_PROJECT: {
+      // Advect velocity, take its divergence, relax pressure, then subtract its gradient.
+      int other = 1 - smoke_current;
+      smoke_pass(other, smoke_current, 0);
+      smoke_pass(2, other, 1);
+      clear_smoke_target(3);
+      int pressure = 3;
+      for (int i = 0; i < smoke_iterations; ++i) {
+        smoke_pass(7 - pressure, pressure, 2, 2);
+        pressure = 7 - pressure;
+      }
+      smoke_pass(smoke_current, other, 3, pressure);
+      c += 1;
+      break;
+    }
+    case SMOKE_TRANSPORT:
+      smoke_decay = c[1];
+      smoke_pass(1 - smoke_current, smoke_current, 4);
+      smoke_current = 1 - smoke_current;
+      c += 2;
+      break;
+    default:
+      client_fatal("Unknown smoke command");
+    }
+  }
+  bind_target();
+}
+void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 light_count, u32 sights,
+                                   u32 sight_count) {
+  if (!rtx || !world || !smoke_targets[0].texture)
+    return;
+  const float *v = (const float *)(client_memory() + view);
+  Target &t = drawing_target(current_target);
+  // Smoke is a low-frequency volume: integrate it at most 640 pixels across.
+  float scale = fminf(1.0f, (float)SMOKE_DISPLAY_MAX_AXIS / (float)std::max(t.width, t.height));
+  int width = std::max(1, (int)lroundf(t.width * scale)), height = std::max(1, (int)lroundf(t.height * scale));
+  if (smoke_composite.width != width || smoke_composite.height != height) {
+    release(smoke_composite);
+    smoke_composite.width = width, smoke_composite.height = height;
+    smoke_composite.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(smoke_composite);
+  }
+  smoke_composite.logical_width = t.logical_width, smoke_composite.logical_height = t.logical_height;
+  bind_framebuffer(smoke_composite);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  // Straight RGB becomes premultiplied once; alpha accumulates as alpha.
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  GLuint p = smoke_program;
+  glUseProgram(p);
+  auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
+  glUniform4fv(at("rect"), 1, v);
+  glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform1i(at("texture0"), 0);
+  glUniform1i(at("u_state_flip"), 1);
+  glUniform2fv(at("u_origin"), 1, v + 4);
+  glUniform2fv(at("u_size"), 1, v + 6);
+  glUniform1f(at("u_opacity"), v[8]);
+  glUniform1i(at("u_debug"), 0);
+  glUniform1i(at("u_light_count"), (int)light_count);
+  std::vector<float> pos, rgb, shape;
+  const float *l = (const float *)(client_memory() + lights);
+  for (u32 i = 0; i < light_count; ++i, l += SMOKE_LIGHT_FLOATS) {
+    pos.insert(pos.end(), l, l + 4);
+    rgb.insert(rgb.end(), l + 4, l + 8);
+    shape.insert(shape.end(), l + 8, l + 12);
+  }
+  if (light_count) {
+    glUniform4fv(at("u_light_pos"), (int)light_count, pos.data());
+    glUniform4fv(at("u_light_rgb"), (int)light_count, rgb.data());
+    glUniform4fv(at("u_light_shape"), (int)light_count, shape.data());
+  }
+  glUniform1i(at("u_sight_count"), (int)sight_count);
+  if (sight_count)
+    glUniform4fv(at("u_sights"), (int)sight_count, (const float *)(client_memory() + sights));
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, smoke_targets[smoke_current].texture);
+  glBindSampler(0, 0);
+  glDisable(GL_CULL_FACE);
+  glBindVertexArray(vertex_array);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  // The premultiplied composite over the world.
+  bind_target();
+  glUseProgram(blit_program);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glBindTexture(GL_TEXTURE_2D, smoke_composite.texture);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 count) {
   const float *g = (const float *)(client_memory() + grid);

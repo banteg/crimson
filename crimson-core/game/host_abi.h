@@ -37,6 +37,15 @@ HOST_IMPORT(render_pass) void host_render_pass(int pass);
 // terrain's size in world units; the beam sections' gains and ambient dips) and
 // `count` lights of RTX_LIGHT_FLOATS each.
 HOST_IMPORT(scene) void host_scene(const float *view, const float *lights, int count);
+// RTX fluid smoke (game/rtx_smoke.cpp): the solver's passes as SMOKE_* commands,
+// run in order on the host's field targets.
+HOST_IMPORT(smoke) void host_smoke(const float *commands, int count);
+// The field drawn over the world, after its sprites (render/rtx/smoke.py): the
+// view (the field's rect on the back buffer in logical pixels, its world origin
+// and size, its opacity), SMOKE_LIGHT_FLOATS per light and four floats per
+// Sharpshooter sight (its near and far ends).
+HOST_IMPORT(smoke_draw) void host_smoke_draw(const float *view, const float *lights, int light_count,
+                                              const float *sights, int sight_count);
 // Draws into the terrain until the next mark are its decals of a HOST_GROUND_*
 // material, deposited at `seconds` on the run's clock (render/rtx/materials.py).
 HOST_IMPORT(ground) void host_ground(int kind, float seconds);
