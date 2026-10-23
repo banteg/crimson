@@ -223,6 +223,11 @@ window correctly clamped extended values to 1. Native window size returned to
 changed with DPI; that was not native window growth. This validates the probe
 and SDR negative control, not physical HDR output.
 
+After updating the probe to the shared facade and integrating #865/#866, a
+four-frame hidden Wayland run selected FP16, preserved raw values 0.25/1/2/4,
+and completed cleanup without GL or protocol errors. The headless fixed/float
+controls also passed on this Intel/Mesa stack.
+
 Separately, #865's application pipeline selected a real FP16 backbuffer and
 negotiated color-management without forced headroom. The user observed brighter
 2x/4x/8x highlights with stable reference white across HDR/SDR alternation.
