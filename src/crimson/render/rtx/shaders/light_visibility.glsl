@@ -109,15 +109,21 @@ float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfs
 
 #endif
 
+// Squared planar distance from the body center (the origin) to the ray.
+float rayDistance2(vec2 receiver, vec2 to_source, float inverse_xy_length) {
+    vec2 nearest = receiver + to_source * clamp(-dot(receiver, to_source) * inverse_xy_length, 0., 1.);
+    return dot(nearest, nearest);
+}
+
 float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, float inverse_xy_length, vec2 owner) {
     vec4 center = occlusionData(address);
     vec2 offset = origin.xy - center.xy;
-    float along = clamp(-dot(offset, ray.xy) * inverse_xy_length, 0., 1.);
-    vec2 nearest = offset + ray.xy * along;
-    float distance2 = dot(nearest, nearest);
     #ifdef CONTINUOUS_BEAM
-    if (beam_section_halfspan > 0.)
-        distance2 = fanDistance2(offset, ray.xy, beam_section_axis * beam_section_halfspan);
+    float distance2 = beam_section_halfspan > 0.
+        ? fanDistance2(offset, ray.xy, beam_section_axis * beam_section_halfspan)
+        : rayDistance2(offset, ray.xy, inverse_xy_length);
+    #else
+    float distance2 = rayDistance2(offset, ray.xy, inverse_xy_length);
     #endif
     // Reject neighboring cell members with one fetch before loading transforms.
     // The bound already includes the largest selected source's soft margin.
