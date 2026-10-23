@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
+
 import grim.app as grim_app
-from grim.raylib_api import rl
+from grim.raylib_api import rd, rl
 
 
 class _FakeRl:
@@ -21,12 +23,31 @@ class _FakeRl:
         self.keys_by_frame: list[set[int]] = []
         self.frame = -1
         self.borderless = False
+        self.window_size = (0, 0)
+        self.saved_window_size = (0, 0)
+        self.restored_sizes: list[tuple[int, int]] = []
+        self.decoration_restores: list[tuple[bool, int, int]] = []
 
     def set_config_flags(self, _: int) -> None:
         return None
 
     def init_window(self, width: int, height: int, title: str) -> None:
         self.init_args = (width, height, title)
+        self.window_size = (width, height)
+
+    def glfw_get_window_size(self, _window: Any, width: Any, height: Any) -> None:
+        width[0], height[0] = self.window_size
+
+    def set_window_size(self, width: int, height: int) -> None:
+        self.window_size = (width, height)
+        self.restored_sizes.append(self.window_size)
+
+    def glfw_set_window_attrib(self, _window: Any, attrib: int, value: int) -> None:
+        self.decoration_restores.append((self.borderless, attrib, value))
+
+    def set_window_state(self, flags: int) -> None:
+        if flags & rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE:
+            self.toggle_borderless_windowed()
 
     def set_exit_key(self, _: int) -> None:
         return None
@@ -63,6 +84,12 @@ class _FakeRl:
         return key in self._keys()
 
     def toggle_borderless_windowed(self) -> None:
+        if self.borderless:
+            # Model raylib incorrectly applying 150% DPI again on exit.
+            self.window_size = tuple(int(size * 1.5) for size in self.saved_window_size)
+        else:
+            self.saved_window_size = self.window_size
+            self.window_size = (2560, 1440)
         self.borderless = not self.borderless
 
     def is_window_state(self, _: int) -> bool:
@@ -200,6 +227,53 @@ def test_screenshot_names_skip_existing_shots(tmp_path) -> None:
 
     assert grim_app._next_screenshot_name(tmp_path, 0) == ("shot_002.png", 3)
     assert grim_app._next_screenshot_name(tmp_path, 1000) == ("shot_1000.png", 1001)
+
+
+@pytest.mark.parametrize("start_fullscreen", [False, True])
+def test_run_view_preserves_window_size_across_repeated_fullscreen_cycles(mocker, start_fullscreen) -> None:
+    fake_rl = _FakeRl()
+    fake_rl.keys_by_frame = [{rl.KeyboardKey.KEY_LEFT_ALT, rl.KeyboardKey.KEY_ENTER}] * 6
+    view = _ViewSpy()
+    mocker.patch.object(grim_app, "rl", fake_rl)
+    mocker.patch.object(grim_app, "Canvas", _CanvasStub)
+    mocker.patch.object(grim_app, "WindowSink")
+    mocker.patch.object(grim_app, "RaylibDrawScope")
+    mocker.patch.object(grim_app, "RenderPipeline", _PipelineSpy)
+    mocker.patch.object(fake_rl, "window_should_close", side_effect=[False] * 6 + [True])
+    fullscreen_changed = mocker.Mock()
+
+    grim_app.run_view(
+        view,
+        width=640,
+        height=480,
+        window_state=rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE if start_fullscreen else 0,
+        hooks=grim_app.RunViewHooks(fullscreen_changed=fullscreen_changed),
+    )
+
+    assert fake_rl.restored_sizes == [(640, 480)] * 3
+    assert fake_rl.decoration_restores == [(False, rd.GLFW_DECORATED, rd.GLFW_TRUE)] * 3
+    assert fullscreen_changed.call_args_list == [mocker.call(not start_fullscreen), mocker.call(start_fullscreen)] * 3
+
+
+def test_run_view_restores_the_window_size_from_before_fullscreen_entry(mocker) -> None:
+    fake_rl = _FakeRl()
+    fake_rl.keys_by_frame = [set(), {rl.KeyboardKey.KEY_LEFT_ALT, rl.KeyboardKey.KEY_ENTER}] * 2
+    view = _ViewSpy()
+    mocker.patch.object(grim_app, "rl", fake_rl)
+    mocker.patch.object(grim_app, "Canvas", _CanvasStub)
+    mocker.patch.object(grim_app, "WindowSink")
+    mocker.patch.object(grim_app, "RaylibDrawScope")
+    mocker.patch.object(grim_app, "RenderPipeline", _PipelineSpy)
+    mocker.patch.object(fake_rl, "window_should_close", side_effect=[False] * 4 + [True])
+
+    def resize_before_entry(_dt: float) -> None:
+        if not fake_rl.borderless:
+            fake_rl.window_size = (1000, 700)
+
+    mocker.patch.object(view, "update", side_effect=resize_before_entry)
+    grim_app.run_view(view, width=640, height=480)
+
+    assert fake_rl.restored_sizes == [(1000, 700)]
 
 
 def test_raylib_sees_the_screenshot_key_only_after_the_frame_ends(mocker) -> None:

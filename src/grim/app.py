@@ -8,7 +8,7 @@ from typing import Any
 import msgspec
 from PIL import Image
 
-from grim.raylib_api import rl, rl_rectangle
+from grim.raylib_api import rd, rl, rl_rectangle
 
 from .canvas import Canvas, frame_rect
 from .edr import activate_macos_edr_window, macos_float_backbuffer, reset_edr_window
@@ -119,6 +119,9 @@ def run_view(
     rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
     with macos_float_backbuffer(enabled=run_hooks.wants_edr is not None):
         rl.init_window(width, height, title)
+    window = rl.glfw_get_current_context()
+    windowed_size = rl.ffi.new("int[2]")
+    rl.glfw_get_window_size(window, windowed_size + 0, windowed_size + 1)
     if window_state:
         # Borderless windowed only applies to an open window, so it can't go through set_config_flags.
         rl.set_window_state(window_state)
@@ -147,8 +150,18 @@ def run_view(
                 run_hooks.focus_changed(focused)
             toggle_fullscreen = _fullscreen_toggle_pressed()
             if toggle_fullscreen:
+                if not rl.is_window_state(rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE):
+                    rl.glfw_get_window_size(window, windowed_size + 0, windowed_size + 1)
                 rl.toggle_borderless_windowed()
-                run_hooks.fullscreen_changed(rl.is_window_state(rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE))
+                fullscreen = rl.is_window_state(rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE)
+                if not fullscreen:
+                    # raylib can multiply its saved logical size by DPI again on
+                    # Wayland. Restore the original GLFW window units instead.
+                    rl.set_window_size(windowed_size[0], windowed_size[1])
+                    # raylib enables decorations while GLFW still considers the
+                    # window fullscreen, so Wayland skips applying the title bar.
+                    rl.glfw_set_window_attrib(window, rd.GLFW_DECORATED, rd.GLFW_TRUE)
+                run_hooks.fullscreen_changed(fullscreen)
             canvas.fit()
             # Skip the update that would also see this frame's Enter press.
             if not toggle_fullscreen and focused and was_focused:
