@@ -10,6 +10,7 @@
 #include "render_passes.h"
 #include "grim2d_cpp.h"
 #include <algorithm>
+#include <array>
 #include <math.h>
 #include <string.h>
 #include <vector>
@@ -576,7 +577,9 @@ std::vector<float> grid_values;
 // The body grid for the selected lights (packed as rtx_collect_lights writes
 // them): every body near a source's support, no nearest-N cap. `grid` gets the
 // origin, columns (0 for no bodies), rows and cell size; the values are cell
-// headers, body transforms and cell lists, four floats per texel.
+// headers, body transforms and cell lists, four floats per texel. A header
+// holds the ordinary list, then the beam sections' list, padded by the largest
+// section half-span near beam sources only (build_occlusion_grid).
 extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count) {
   Body bodies[385];
   int body_total = 0;
@@ -587,34 +590,37 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   grid[4] = 64;
   *value_count = 0;
   float cell = body_total >= 512 ? 32.0f : 64.0f;
-  float padding = 0, lo_x = -cell, lo_y = -cell;
+  float padding = 0, beam_margin = 0, lo_x = -cell, lo_y = -cell;
   float hi_x = terrain_texture_width + cell, hi_y = terrain_texture_height + cell;
   struct Support {
     float x, y, ax, ay, half, reach;
+    bool beam;
   } supports[32];
   int support_count = 0;
   for (int i = 0; i < count; ++i) {
-    // A beam's sections widen and lengthen its support (prepare_beam_lights).
+    // A beam's sections lengthen its support (prepare_beam_lights).
     float l[16];
     memcpy(l, lights + i * RTX_LIGHT_FLOATS, sizeof l);
     const float *cells = lights + i * RTX_LIGHT_FLOATS + 20;
     if (cells[0] > 0) {
       if (l[8] * l[8] + l[9] * l[9] <= 0.0001f)
         l[8] = 1, l[9] = 0;
-      l[15] += fmaxf(cells[2], fmaxf(cells[6], cells[10]));
       l[11] += 2 * lights[i * RTX_LIGHT_FLOATS + 18];
     }
     float illumination = l[12], reflection = l[13];
     if (!(reflection > 0 || (shadows && illumination > 0)))
       continue;
     padding = fmaxf(padding, fmaxf(0.1f, l[15]));
+    bool beam = cells[0] > 0 && shadows && illumination > 0;
+    if (beam)
+      beam_margin = fmaxf(beam_margin, fmaxf(cells[2], fmaxf(cells[6], cells[10])));
     float ax = l[8], ay = l[9];
     if (ax * ax + ay * ay > 0.0001f)
       normalize(ax, ay);
     else
       ax = ay = 0;
     float reach = fmaxf(reflection > 0 ? l[14] : 0, shadows && illumination > 0 ? l[2] : 0);
-    supports[support_count++] = {l[0], l[1], ax, ay, l[11] * 0.5f, reach + l[7]};
+    supports[support_count++] = {l[0], l[1], ax, ay, l[11] * 0.5f, reach + l[7], beam};
     float ex = fabsf(ax * l[11] * 0.5f) + l[7], ey = fabsf(ay * l[11] * 0.5f) + l[7];
     lo_x = fminf(lo_x, l[0] - ex - cell), lo_y = fminf(lo_y, l[1] - ey - cell);
     hi_x = fmaxf(hi_x, l[0] + ex + cell), hi_y = fmaxf(hi_y, l[1] + ey + cell);
@@ -624,7 +630,7 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   float origin_x = floorf(lo_x / cell) * cell, origin_y = floorf(lo_y / cell) * cell;
   int columns = (int)ceilf((hi_x - origin_x) / cell), rows = (int)ceilf((hi_y - origin_y) / cell);
   // Mark each source's conservative support once; bodies then cull against all of them.
-  std::vector<unsigned char> active((size_t)columns * rows);
+  std::vector<unsigned char> active((size_t)columns * rows), beam_active((size_t)columns * rows);
   auto span = [&](float center, float extent, float origin, int limit, int &first, int &last) {
     first = std::max(0, (int)floorf((center - extent - origin) / cell));
     last = std::min(limit - 1, (int)floorf((center + extent - origin) / cell));
@@ -635,10 +641,15 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
     span(s.x, fabsf(s.ax) * s.half + s.reach, origin_x, columns, x0, x1);
     span(s.y, fabsf(s.ay) * s.half + s.reach, origin_y, rows, y0, y1);
     for (int y = y0; y <= y1; ++y)
-      for (int x = x0; x <= x1; ++x)
+      for (int x = x0; x <= x1; ++x) {
         active[(size_t)y * columns + x] = 1;
+        beam_active[(size_t)y * columns + x] |= s.beam && beam_margin > 0;
+      }
   }
-  std::vector<std::vector<int>> cells((size_t)columns * rows);
+  // List entries: body address, then for beam entries the cell range packed as
+  // first + last * 4096 per axis, so a walk tests a body in its first cell only.
+  using Entry = std::array<float, 4>;
+  std::vector<std::vector<Entry>> cells((size_t)columns * rows), beam_lists((size_t)columns * rows);
   grid_values.assign((size_t)columns * rows * 4, 0.0f);
   int placed = 0;
   for (int b = 0; b < body_total; ++b) {
@@ -647,17 +658,24 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
     float radius = fmaxf(body.rx, body.ry);
     float soft_margin = fmaxf(0.015f * radius, padding * radius / fminf(body.rx, body.ry));
     float rx = hypotf(c * body.rx, s * body.ry) + soft_margin, ry = hypotf(s * body.rx, c * body.ry) + soft_margin;
-    int x0, x1, y0, y1;
-    span(body.x, rx, origin_x, columns, x0, x1);
-    span(body.y, ry, origin_y, rows, y0, y1);
     int address = (int)grid_values.size() / 4;
     bool occupies = false;
-    for (int y = y0; y <= y1; ++y)
-      for (int x = x0; x <= x1; ++x)
-        if (active[(size_t)y * columns + x]) {
-          cells[(size_t)y * columns + x].push_back(address);
-          occupies = true;
-        }
+    auto cover = [&](float extent_x, float extent_y, const std::vector<unsigned char> &marked,
+                     std::vector<std::vector<Entry>> &lists, bool ranged) {
+      int x0, x1, y0, y1;
+      span(body.x, extent_x, origin_x, columns, x0, x1);
+      span(body.y, extent_y, origin_y, rows, y0, y1);
+      Entry entry = {(float)address, ranged ? (float)(x0 + x1 * 4096) : 0, ranged ? (float)(y0 + y1 * 4096) : 0, 0};
+      for (int y = y0; y <= y1; ++y)
+        for (int x = x0; x <= x1; ++x)
+          if (marked[(size_t)y * columns + x]) {
+            lists[(size_t)y * columns + x].push_back(entry);
+            occupies = true;
+          }
+    };
+    cover(rx, ry, active, cells, false);
+    // A section's rays fan out from the walked center ray by at most its half-span.
+    cover(rx + beam_margin, ry + beam_margin, beam_active, beam_lists, true);
     if (!occupies)
       continue;
     ++placed;
@@ -668,12 +686,14 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   }
   if (!placed)
     return nullptr;
-  for (size_t i = 0; i < cells.size(); ++i) {
-    grid_values[i * 4] = (float)(grid_values.size() / 4);
-    grid_values[i * 4 + 1] = (float)cells[i].size();
-    for (int address : cells[i])
-      grid_values.insert(grid_values.end(), {(float)address, 0, 0, 0});
-  }
+  for (size_t i = 0; i < cells.size(); ++i)
+    for (int slot = 0; slot < 2; ++slot) {
+      const std::vector<Entry> &list = slot ? beam_lists[i] : cells[i];
+      grid_values[i * 4 + slot * 2] = (float)(grid_values.size() / 4);
+      grid_values[i * 4 + slot * 2 + 1] = (float)list.size();
+      for (const Entry &entry : list)
+        grid_values.insert(grid_values.end(), entry.begin(), entry.end());
+    }
   grid[0] = origin_x, grid[1] = origin_y, grid[2] = (float)columns, grid[3] = (float)rows, grid[4] = cell;
   *value_count = (int)grid_values.size();
   return grid_values.data();

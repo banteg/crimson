@@ -29,6 +29,28 @@ float intervalOverlap(vec2 first, vec2 second) {
     return max(0., min(first.y, second.y) - max(first.x, second.x));
 }
 
+float edgeDistance2(vec2 a, vec2 b) {
+    vec2 edge = b - a;
+    vec2 nearest = a + edge * clamp(-dot(a, edge) / max(dot(edge, edge), 1e-8), 0., 1.);
+    return dot(nearest, nearest);
+}
+
+float crossZ(vec2 a, vec2 b) {
+    return a.x * b.y - a.y * b.x;
+}
+
+// Squared planar distance from the body center (the origin) to a section's ray
+// fan: the triangle from the receiver to both ends of the section.
+float fanDistance2(vec2 receiver, vec2 to_source, vec2 half_axis) {
+    vec2 first = receiver + to_source - half_axis;
+    vec2 second = receiver + to_source + half_axis;
+    float a = crossZ(first - receiver, -receiver);
+    float b = crossZ(second - first, -first);
+    float c = crossZ(receiver - second, -second);
+    if ((a >= 0. && b >= 0. && c >= 0.) || (a <= 0. && b <= 0. && c <= 0.)) return 0.;
+    return min(edgeDistance2(receiver, first), min(edgeDistance2(first, second), edgeDistance2(second, receiver)));
+}
+
 float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfspan) {
     float quadratic_c = dot(relative, relative) - 1.;
     float quadratic_a = dot(base_ray, base_ray);
@@ -92,9 +114,14 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     vec2 offset = origin.xy - center.xy;
     float along = clamp(-dot(offset, ray.xy) * inverse_xy_length, 0., 1.);
     vec2 nearest = offset + ray.xy * along;
+    float distance2 = dot(nearest, nearest);
+    #ifdef CONTINUOUS_BEAM
+    if (beam_section_halfspan > 0.)
+        distance2 = fanDistance2(offset, ray.xy, beam_section_axis * beam_section_halfspan);
+    #endif
     // Reject neighboring cell members with one fetch before loading transforms.
     // The bound already includes the largest selected source's soft margin.
-    if (dot(nearest, nearest) > center.w * center.w) return 1.;
+    if (distance2 > center.w * center.w) return 1.;
     vec4 shape = occlusionData(address + 1);
     vec3 inverse_radius = shape.xyz;
     vec4 orientation = occlusionData(address + 2);
@@ -143,14 +170,27 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
     vec3 ray = source - receiver;
     float visibility = 1.;
     float inverse_xy_length = 1. / max(dot(ray.xy, ray.xy), 1e-8);
+    bool beam = false;
+    #ifdef CONTINUOUS_BEAM
+    beam = beam_section_halfspan > 0.;
+    #endif
+    ivec2 previous = ivec2(-1);
     // Each step crosses one grid boundary. No nearest-body budget drops blockers.
     while (cell.x >= 0 && cell.y >= 0 && cell.x < int(u_occlusion_grid.z) && cell.y < int(u_occlusion_grid.w)) {
         vec4 header = occlusionData(cell.y * int(u_occlusion_grid.z) + cell.x);
+        // Beam sections walk their own lists, padded by the largest half-span.
+        if (beam) header.xy = header.zw;
         for (int j = 0; j < int(header.y); j++) {
-            int address = int(occlusionData(int(header.x) + j).x);
-            visibility = min(visibility, bodyVisibility(address, receiver, ray, source_width, inverse_xy_length, owner));
+            vec4 entry = occlusionData(int(header.x) + j);
+            // A padded beam entry spans a run of walked cells; test it in the first.
+            if (beam && previous.x >= 0) {
+                ivec2 packed = ivec2(entry.yz);
+                if (all(greaterThanEqual(previous, packed & 4095)) && all(lessThanEqual(previous, packed >> 12))) continue;
+            }
+            visibility = min(visibility, bodyVisibility(int(entry.x), receiver, ray, source_width, inverse_xy_length, owner));
             if (visibility < .001) return visibility;
         }
+        previous = cell;
         if (min(t_edge.x, t_edge.y) >= 1.) break;
         if (t_edge.x < t_edge.y) { cell.x += step_cell.x; t_edge.x += t_step.x; }
         else { cell.y += step_cell.y; t_edge.y += t_step.y; }

@@ -100,8 +100,10 @@ def beam_cells(light: MaterialLight) -> tuple[float, ...]:
 def prepare_beam_lights(lights: Sequence[MaterialLight]) -> tuple[list[float], list[MaterialLight]]:
     """Pack one uniform array and conservative grid-only copies of the sources.
 
-    The shared spatial grid retains every relevant body across the complete
-    section support. Upload original lights for reflection/illumination radiance.
+    The copies only lengthen and orient a beam's support; pass the largest
+    packed half-span as the grid's beam margin, so section walks retain every
+    body across the complete section support while other lights keep their
+    own margin. Upload original lights for reflection/illumination radiance.
     """
     assert len(lights) <= MAX_MATERIAL_LIGHTS
     values: list[float] = []
@@ -114,13 +116,11 @@ def prepare_beam_lights(lights: Sequence[MaterialLight]) -> tuple[list[float], l
             continue
         radius, _, head = light.beam_profile
         pad = radius * head * SUPPORT
-        half_span = max(cells[2::4])
         direction = light.direction if light.direction.length_sq() > 0.0001 else Vec2(1.0, 0.0)
         grid_sources.append(
             msgspec.structs.replace(
                 light,
                 direction=direction,
-                source_width=light.source_width + half_span,
                 length=light.length + 2 * pad,
             ),
         )

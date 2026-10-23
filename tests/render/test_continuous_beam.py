@@ -105,18 +105,22 @@ def test_selected_source_slot_changes_mask_profiles_without_stale_state() -> Non
     assert not any(values) and grid == [nonbeam]
 
 
-def test_full_section_extent_and_grid_padding_share_one_footprint() -> None:
+def test_full_section_extent_pads_only_beam_cell_lists() -> None:
     from crimson.render.rtx.reflection_occlusion import BodyVolume, build_occlusion_grid
 
     original = light()
     cells, grid_sources = prepare_beam_lights([original])
-    assert max(cells[2::4]) > 4.0
-    assert grid_sources[0].source_width == original.source_width + max(cells[2::4])
+    margin = max(cells[2::4])
+    assert margin > 4.0
+    assert grid_sources[0].source_width == original.source_width
     assert grid_sources[0].length == original.length + 2 * 56 * 1.05 * SUPPORT
     assert original.source_width == 3 and original.length == 256
     bodies = [BodyVolume(Vec2(100, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(384)]
-    grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256)
+    grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256, beam_margin=margin)
     assert grid.body_count == len(bodies)
+    # Section walks get the half-span; other lights keep the transverse margin.
+    plain = build_occlusion_grid(bodies, grid_sources, width=256, height=256)
+    assert grid.references == plain.references < grid.beam_references
     zero = msgspec.structs.replace(original, length=0, direction=Vec2())
     zero_cells, zero_grid = prepare_beam_lights([zero])
     assert zero_grid[0].direction == Vec2(1, 0)

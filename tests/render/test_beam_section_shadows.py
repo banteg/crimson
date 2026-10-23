@@ -86,12 +86,11 @@ def test_projected_visibility_matches_sampled_reference(
     """)
     target = load_float_render_texture(2, 2)
     renderer = ReflectionOcclusion()
-    # Grid padding covers the section's half-span, as prepare_beam_lights does.
-    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=24., source_width=4.5 + 20.)
+    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=24., source_width=4.5, beam_profile=(16., 3.1, 1.05))
     body = BodyVolume(Vec2(64., body_y), Vec2(8., 10.), body_height, 0.)
 
     try:
-        grid = build_occlusion_grid([body], [source], width=128., height=128.)
+        grid = build_occlusion_grid([body], [source], width=128., height=128., beam_margin=20.)
         texture = renderer.upload(grid)
         _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
         _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
@@ -124,11 +123,11 @@ def test_section_visibility_fades_keeps_all_casters_and_resets_for_reflections(r
     """)
     target = load_float_render_texture(2, 2)
     renderer = ReflectionOcclusion()
-    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=24., source_width=4.5)
+    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=24., source_width=4.5, beam_profile=(16., 3.1, 1.05))
     body = BodyVolume(Vec2(64., 64.), Vec2(1.5, 1.5), 40., 0., owner=Vec2(64., 64.))
 
     def sample(bodies: Sequence[BodyVolume], *, shadows: bool = True, owner: Vec2 = Vec2(1e19, 1e19)):
-        grid = build_occlusion_grid(bodies, [source], width=128., height=128.)
+        grid = build_occlusion_grid(bodies, [source], width=128., height=128., beam_margin=4.)
         texture = renderer.upload(grid)
         _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
         _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])

@@ -843,10 +843,14 @@ four-unit cap, and the same analytic approximation is used at every body
 height. Overlapping proxies retain the existing minimum-visibility semantics,
 and dying bodies retain their shared collapse/fade behavior.
 
-Preparation uploads one small uniform array and reuses the ordinary occlusion
-grid. Conservative grid-only source copies include the endpoint halo and complete
-section extents. They never replace the original light uniforms used by
-reflections or creature lighting. A bounded 128-entry profile cache handles
+Preparation uploads one small uniform array and reuses the occlusion texture.
+Each cell near a beam source also holds a beam list, its bodies padded by the
+largest section half-span in world units; point lights, reflections and creature
+shadows keep their narrow lists. A section walks the beam lists along its center
+ray, rejects bodies outside its ray fan (the triangle from the receiver to both
+section ends), and tests each body only in the first walked cell that lists it.
+Conservative grid-only source copies add the endpoint halo. They never replace
+the original light uniforms used by reflections or creature lighting. A bounded 128-entry profile cache handles
 repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
 candidate texture or interval sort.
 
@@ -869,8 +873,9 @@ Three visibility queries per beam are still more expensive than the previous
 centroid, with two analytic chord evaluations per candidate body and section.
 Dense scenes with many simultaneous beams remain costly. Two transverse taps do
 not reproduce a dense sampled reference exactly, but avoid the old separate
-shadow lobes at substantially lower cost. Body traversal still scales with the
-actual spatial candidates.
+shadow lobes at substantially lower cost. A section's fan is as wide as the
+section, so its walk fetches more list entries than a point light's; that
+traversal, rather than the chord evaluation, dominates its cost.
 
 ### Ion impact arcs
 
