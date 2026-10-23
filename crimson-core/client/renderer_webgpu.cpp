@@ -152,14 +152,18 @@ Program tonemap{&WGSL_FULLSCREEN_VERT, &WGSL_HDR_TONEMAP_FRAG, NO_VERTICES};
 Program beam{&WGSL_BEAM_VERT, &WGSL_BEAM_FRAG, BEAM_CORNERS};
 Program creature_lit{&WGSL_CREATURE_VERT, &WGSL_CREATURE_FRAG, DEVICE_VERTICES};
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
+Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
 
 // RTX lighting, as in renderer.cpp: the world's lights and camera, the batch
-// being drawn, and each artwork's texels in the module for creature thickness.
+// being drawn, a bonus draw's own material, and each artwork's texels in the
+// module for creature thickness.
 enum { MAX_LIGHTS = 32 };
 int material;
 float scene_camera[2];
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
+int bonus_emblem;
+float bonus_grid[2], bonus_center[2];
 std::unordered_map<int, u32> texel_addresses;
 struct Thickness {
   WGPUTexture texture;
@@ -444,7 +448,7 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
-  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit}) {
+  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit}) {
     for (auto &[key, group] : p->groups)
       wgpuBindGroupRelease(group);
     p->groups.clear();
@@ -619,7 +623,7 @@ void wgpu_renderer_init() {
   stream_buffer(vertex_stream, WGPUBufferUsage_Vertex);
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
-  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit})
+  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit})
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
@@ -882,14 +886,18 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
 
   Target &t = drawing_target(current_target);
   pass_into(t);
-  bool lit = rtx && world && material && (material == HOST_PASS_CREATURES || light_count);
-  Program &program = !lit ? classic : material == HOST_PASS_PLAYERS ? player_lit : creature_lit;
+  bool lit = rtx && world && material && (material != HOST_PASS_PLAYERS || light_count);
+  Program &program = !lit                           ? classic
+                     : material == HOST_PASS_PLAYERS ? player_lit
+                     : material == MATERIAL_BONUS    ? bonus_lit
+                                                     : creature_lit;
   if (lit) {
     Uniforms vertex(*program.vert), fragment(*program.frag);
     vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
     fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_count", light_count).f("u_ambient", 0.6f);
     fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
     fragment.i("u_dynamic_shadows", dynamic_shadows);
+    fragment.i("u_pass", bonus_emblem).set("u_grid", bonus_grid, 8).set("u_shell_center", bonus_center, 8);
     fragment.set("u_pos", light_pos, light_count * 16).set("u_rgb", light_rgb, light_count * 16);
     fragment.set("u_dir", light_dir, light_count * 16).set("u_response", light_response, light_count * 16);
     auto it = textures.find(bound[0]);
@@ -1017,6 +1025,12 @@ void wgpu_w2c_host_occlusion(struct w2c_host *, u32 grid, u32 values, u32 count)
   WGPUTexelCopyBufferLayout layout = {0, OCCLUSION_WIDTH * 16, (uint32_t)rows};
   WGPUExtent3D extent = {OCCLUSION_WIDTH, (uint32_t)rows, 1};
   wgpuQueueWriteTexture(queue, &destination, texels.data(), texels.size() * 4, &layout, &extent);
+}
+void wgpu_w2c_host_bonus(struct w2c_host *, u32 emblem, f32 grid_x, f32 grid_y, f32 center_x, f32 center_y) {
+  material = MATERIAL_BONUS;
+  bonus_emblem = (int)emblem;
+  bonus_grid[0] = grid_x, bonus_grid[1] = grid_y;
+  bonus_center[0] = center_x, bonus_center[1] = center_y;
 }
 void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
   if (pass_kind >= HOST_PASS_CREATURES) {

@@ -46,6 +46,7 @@ void console_cmd_render_mode(void);
 void console_cmd_toggle_rtx(void);
 void rtx_world(int begin);
 void rtx_material(int pass); // a HOST_PASS_* of game/render_passes.h
+void rtx_bonus(int emblem, float grid_x, float grid_y, float center_x, float center_y);
 void rtx_beam_body(float origin_x, float origin_y, float head_x, float head_y, float start, float span, float step,
                    float effect_scale, float alpha, float r, float g, float b);
 void rtx_beam_head(float center_x, float center_y, float rotation, float effect_scale, bool fire);

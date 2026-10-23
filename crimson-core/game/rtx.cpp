@@ -91,6 +91,14 @@ void rtx_material(int pass) {
   host_render_pass(pass);
 }
 
+// One bonus quad in its material (host_bonus): each carries its own shell center.
+void rtx_bonus(int emblem, float grid_x, float grid_y, float center_x, float center_y) {
+  if (!rtx_drawing())
+    return;
+  grim_interface_ptr->grim_flush_batch();
+  host_bonus(emblem, grid_x, grid_y, center_x, center_y);
+}
+
 // Analytic beams, from src/crimson/render/rtx/beam.py: an ion or Fire Bullets
 // streak's stamps summed along one quad, and its head as one stamp, in screen
 // pixels at the original's scale. Grim's batch draws first, keeping the order.
