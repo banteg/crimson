@@ -27,6 +27,7 @@ def test_edr_request_is_retained_while_current_headroom_is_one(mocker) -> None:
 
 def test_float_allocation_failure_releases_partial_resources(mocker) -> None:
     mocker.patch.object(rl, "rl_load_texture", return_value=42)
+    mocker.patch.object(edr, "_store_as_float", return_value=True)
     mocker.patch.object(rl, "rl_load_framebuffer", return_value=43)
     mocker.patch.object(rl, "rl_framebuffer_attach")
     mocker.patch.object(rl, "rl_framebuffer_complete", return_value=False)
