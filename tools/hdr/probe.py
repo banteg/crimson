@@ -165,7 +165,7 @@ def window_probe():
         convention = C.CFUNCTYPE
     edr.reset_edr_window()
     rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_RESIZABLE)
-    with edr.macos_float_backbuffer(enabled=True):
+    with edr.float_backbuffer(enabled=True):
         rl.init_window(960, 360, "Framebuffer probe: F11 borderless, Esc exit (not an HDR detector)")
     try:
         gl = GL(resolve, convention)
@@ -174,7 +174,7 @@ def window_probe():
         while not rl.window_should_close():
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F11):
                 rl.toggle_borderless_windowed()
-            edr.activate_macos_edr_window(True)
+            edr.activate_edr_window(True)
             width, height = rl.get_render_width(), rl.get_render_height()
             if min(width, height) < 4:
                 continue

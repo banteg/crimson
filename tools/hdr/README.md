@@ -1,6 +1,6 @@
 # HDR presentation investigation (#852)
 
-Investigation date: 2026-10-23. Source baseline:
+Investigation date: 2026-10-23. Original investigation baseline:
 `b5dfe1571afb79b1e536b333ef26a381f23ecaec`.
 
 ## Recommendation
@@ -8,15 +8,16 @@ Investigation date: 2026-10-23. Source baseline:
 Keep the RTX OpenGL renderer. First try an **opt-in Windows float WGL
 backbuffer in a custom raylib/GLFW build**, paired with a final, whole-frame
 linear-scRGB encoding pass and live Windows display queries. Do not enable it
-by default until physical-display tests pass. On Linux, prototype **native
-Wayland + EGL float surfaces + color-management-v1** on a known compositor and
-Mesa stack. Keep X11/Xwayland on SDR unless a separately validated presentation
+by default until physical-display tests pass. Linux native Wayland HDR is
+implemented in [#865](https://github.com/banteg/crimson/pull/865) using deep EGL
+surfaces and color-management-v1, and has passed the physical-display checks
+below on an Intel Arc / GNOME stack. Keep X11/Xwayland on SDR unless a separately validated presentation
 route is selected. The Windows GLFW patch is not a Linux HDR solution.
 
 This contribution provides a runnable framebuffer diagnostic and an integration
 plan, not Windows/Linux HDR support. No production rendering code is changed.
 
-## What the current code implies
+## What the original baseline implied
 
 - `src/grim/edr.py`: float offscreen allocation is portable; window setup,
   activation, and headroom querying are Cocoa-only.
@@ -40,7 +41,7 @@ plan, not Windows/Linux HDR support. No production rendering code is changed.
 
 | Route | Required work | Assessment |
 | --- | --- | --- |
-| Stock raylib/GLFW OpenGL | Existing SDR window, HDR offscreen FBOs | No implemented Windows/Linux native HDR path |
+| Stock raylib/GLFW OpenGL | Existing SDR window, HDR offscreen FBOs | Windows remains SDR; Linux Wayland implementation in #865 |
 | Windows float WGL | GLFW pixel-format selection change; raylib creation hint; rebuilt Python wheel; display queries; final encoding | Smallest renderer disruption; driver-dependent experiment |
 | Windows D3D11/DXGI presenter | FP16 flip swapchain, explicit scRGB color space, GL/D3D sharing + synchronization, resize/device-loss handling | More explicit presentation control; retain world shaders; larger native bridge |
 | Linux Wayland/EGL | Float EGLConfig, explicit surface color description, feedback/events, compositor and buffer-format support | Smallest plausible native Linux path; validate actual driver/compositor combinations |
@@ -159,9 +160,10 @@ GL images to Vulkan requires compatible memory handles, adapters and explicit
 synchronization; CPU readback/upload is a diagnostic fallback, not a desirable
 high-resolution game presenter.
 
-## Capability and fallback contract to implement next
+## Proposed capability and fallback contract
 
-Replace platform-named entry points with a presentation adapter that reports
+#865 replaces the platform-named entry points with a shared facade. For future
+adapters, especially Windows, consider extending it to report
 `surface_encoding`, `surface_float`, `hdr_enabled`, `sdr_white_scale`,
 `headroom`, `display_identity`, and `fallback_reason`. Keep reservation separate
 from activation. macOS retains its current EDR behavior; unavailable adapters
@@ -189,11 +191,12 @@ PYTHONPATH=src python tools/hdr/probe.py
 
 The window mode uses the current application setup, displays numeric linear
 patches, reads the actual default framebuffer before swap, and logs changes
-when resized, moved between monitors, or toggled borderless with F11. On stock
-Windows/Linux it does not request a new HDR format. It can be reused after a
-native creation prototype is added. **Window mode has not been executed here
-on any OS.** Its patch brightness is not calibrated without the proposed
-platform color negotiation; do not use it as a visual HDR pass/fail test.
+when resized, moved between monitors, or toggled borderless with F11. It uses
+the shared `float_backbuffer` / `activate_edr_window` setup, including Wayland
+negotiation where supported. Its raw clears bypass the application canvas
+encoding pass, so patch brightness is not calibrated; do not use it as a visual
+HDR pass/fail test. The original revision was tested on a real Wayland desktop
+as described below.
 
 Executed here: Linux container, no DISPLAY/WAYLAND_DISPLAY or GPU device,
 Mesa 25.2.8, llvmpipe LLVM 20.1.2, OpenGL 4.5. `headless-result.jsonl` records:
@@ -207,6 +210,35 @@ Both runs check all RGB samples and GL errors and exit nonzero on mismatch.
 `physical_hdr_verified` is always false: the probe cannot verify this.
 This is a positive/negative control demonstrating why float readback alone
 cannot detect HDR presentation, even for a default framebuffer.
+
+## Physical-display validation (2026-10-23)
+
+Fedora 44, native GNOME/Mutter 50.6 Wayland, Intel Arc (MTL), Mesa 26.2.5,
+OpenGL 4.6, Samsung S27B80P at 3840x2160 60 Hz with 150% scaling.
+
+The original diagnostic revision `0fa550ea7`, with master `90c492ed6`, completed
+80 frames, two F11 borderless cycles and a resize without GL errors. Its 8-bit
+window correctly clamped extended values to 1. Native window size returned to
+960x360 after each cycle, then resized to 800x400. Renderbuffer dimensions
+changed with DPI; that was not native window growth. This validates the probe
+and SDR negative control, not physical HDR output.
+
+Separately, #865's application pipeline selected a real FP16 backbuffer and
+negotiated color-management without forced headroom. The user observed brighter
+2x/4x/8x highlights with stable reference white across HDR/SDR alternation.
+All 42 numeric capture states matched expected encoding. Resize, repeated
+fullscreen cycles, desktop HDR off/on, and real X11 SDR fallback passed. An
+actual RTX replay with simulated smoke ran for 75 seconds and exited normally;
+the user confirmed correct scene, effects and HUD. Five GPU captures were
+finite and error-free, with maximum float canvas RGB 2.1328125. All 21 focused
+automated checks passed.
+
+These are visual observations and framebuffer/protocol measurements, not
+metered luminance/color calibration. The compositor's 10000-nit target is a
+theoretical color-volume target, not measured panel brightness. Mixed HDR/SDR
+monitor moves, mixed-output spanning, hotplug, sleep/resume, and other real
+compositor/driver combinations remain follow-up coverage. Windows HDR is still
+unimplemented and tracked in #852.
 
 ## Validation before enabling a native adapter
 
