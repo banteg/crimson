@@ -321,6 +321,35 @@ void check_rtx() {
   assert(fabsf(ambient - powf(0.6f, 1 / 2.2f)) < 2e-3f);
   assert(lit(HOST_PASS_CREATURES, 1) > ambient + 0.05f);
   assert(lit(HOST_PASS_PLAYERS, 0) == device && lit(HOST_PASS_PLAYERS, 1) > device);
+  // A body between the light and the batch (one grid cell holding it) shades it,
+  // unless the shadows setting is off.
+  auto occluded = [&](float shadows) {
+    const float grid[6] = {0, 0, 1, 1, 2048, shadows};
+    const float values[20] = {4, 1, 0, 0,                     // cell 0: its list at texel 4, one body
+                              400, 384, 16, 64,                // body: center, height * 0.4, bound
+                              1 / 60.f, 1 / 60.f, 1 / 24.f, 1e20f, // inverse radii, owner x
+                              1, 0, 1, 1e20f,                  // rotation, opacity, owner y
+                              1, 0, 0, 0};                     // the cell's list: the body at texel 1
+    memcpy(memory + 33024, grid, sizeof grid);
+    memcpy(memory + 33152, values, sizeof values);
+    w2c_host_occlusion(nullptr, 33024, 33152, 20);
+    const float far_light[16] = {200, 384, 600, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 600, 3};
+    memcpy(memory + 32800, far_light, sizeof far_light);
+    const float camera[2] = {0, 0};
+    memcpy(memory + 32768, camera, sizeof camera);
+    w2c_host_scene(nullptr, 32768, 32800, 1);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, HOST_PASS_CREATURES);
+    rectangle(0, 0, 1024, 768, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_red(600, 384);
+  };
+  float open = occluded(0), shaded = occluded(1);
+  assert(shaded < open - 0.02f);
+  const float none[6] = {0, 0, 0, 0, 64, 1};
+  memcpy(memory + 33024, none, sizeof none);
+  w2c_host_occlusion(nullptr, 33024, 0, 0);
   w2c_host_set_texture(nullptr, 0, 0);
   w2c_host_texture_release(nullptr, 300);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
@@ -342,7 +371,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them; classic stays 8-bit");
 }
 
 int main() {

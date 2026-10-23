@@ -30,6 +30,7 @@
   X(beam, (struct w2c_host * h, u32 c, f32 l, f32 s, u32 col), (h, c, l, s, col))                                     \
   X(render_pass, (struct w2c_host * h, u32 p), (h, p))                                                                \
   X(scene, (struct w2c_host * h, u32 c, u32 l, u32 n), (h, c, l, n))                                                  \
+  X(occlusion, (struct w2c_host * h, u32 g, u32 v, u32 n), (h, g, v, n))                                              \
   X(gamma_ramp, (struct w2c_host * h, u32 r, u32 g, u32 b), (h, r, g, b))
 
 #define DECLARE(type, name, params, args) type gl_##name params; type wgpu_##name params;

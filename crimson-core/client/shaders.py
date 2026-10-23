@@ -142,10 +142,16 @@ def translate(path: Path, folder: Path) -> dict:
                 raise SystemExit(f"{path.name}: uniform array {name} (pack it in vec4s: WGSL uniform arrays need 16-byte strides)")
             uniforms.append((name.removesuffix("[0]"), offset))
             size = max(size, offset + TYPE_SIZES[kind] * count)
+    # A texture only ever loaded (texelFetch), never sampled, may hold 32-bit floats, which WebGPU cannot filter:
+    # its split-off sampler is declared and never used.
+    def sampled(texture: str) -> bool:
+        return len(re.findall(rf"\b{texture}_sampler\b", wgsl)) > 1
+
     bindings = []
     for _group, binding, name, kind in re.findall(r"@group\((\d+)\) @binding\((\d+)\)\s*var(?:<uniform>)? (\w+): ([\w<>]+);", wgsl):
         if kind.startswith("texture"):
-            bindings.append((name.removesuffix("_image"), int(binding), "TEXTURE"))
+            texture = name.removesuffix("_image")
+            bindings.append((texture, int(binding), "TEXTURE" if sampled(texture) else "TEXTURE_LOADED"))
         elif kind == "sampler":
             bindings.append((name.removesuffix("_sampler"), int(binding), "SAMPLER"))
         else:
@@ -167,7 +173,8 @@ def write_wgsl() -> None:
         f"// Source hash: {sources_hash()}",
         "#pragma once",
         "struct WgslUniform { const char *name; unsigned offset; };",
-        "enum WgslKind { WGSL_UNIFORM, WGSL_TEXTURE, WGSL_SAMPLER };",
+        "// WGSL_TEXTURE_LOADED: read with textureLoad alone, so it may hold unfilterable floats.",
+        "enum WgslKind { WGSL_UNIFORM, WGSL_TEXTURE, WGSL_TEXTURE_LOADED, WGSL_SAMPLER };",
         "struct WgslBinding { const char *name; unsigned binding; WgslKind kind; };",
         "// A stage: its WGSL, the bind group it uses, its uniform block's size and members, and its bindings.",
         "struct WgslStage {",

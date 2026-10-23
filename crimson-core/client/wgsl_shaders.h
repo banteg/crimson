@@ -3,7 +3,8 @@
 // Source hash: 81f7e628c023737688ea3b02747d65d1a022d48cc8c9bf337b7584a42b7a7726
 #pragma once
 struct WgslUniform { const char *name; unsigned offset; };
-enum WgslKind { WGSL_UNIFORM, WGSL_TEXTURE, WGSL_SAMPLER };
+// WGSL_TEXTURE_LOADED: read with textureLoad alone, so it may hold unfilterable floats.
+enum WgslKind { WGSL_UNIFORM, WGSL_TEXTURE, WGSL_TEXTURE_LOADED, WGSL_SAMPLER };
 struct WgslBinding { const char *name; unsigned binding; WgslKind kind; };
 // A stage: its WGSL, the bind group it uses, its uniform block's size and members, and its bindings.
 struct WgslStage {
@@ -1158,7 +1159,7 @@ fn main(@location(2) fragLen: f32, @location(0) fragTexCoord: vec2<f32>, @locati
 )WGSL", 0, 16,
     wgsl_beam_frag_uniforms, 1, wgsl_beam_frag_bindings, 1};
 static const WgslUniform wgsl_creature_frag_uniforms[] = {{"u_dynamic_shadows", 0}, {"u_occlusion_grid", 16}, {"u_occlusion_cell_size", 32}, {"colDiffuse", 48}, {"u_count", 64}, {"u_ambient", 68}, {"u_pos", 80}, {"u_rgb", 592}, {"u_dir", 1104}, {"u_response", 1616}};
-static const WgslBinding wgsl_creature_frag_bindings[] = {{"uniforms", 0, WGSL_UNIFORM}, {"u_occlusion_tex", 1, WGSL_TEXTURE}, {"u_occlusion_tex", 2, WGSL_SAMPLER}, {"texture0", 3, WGSL_TEXTURE}, {"texture0", 4, WGSL_SAMPLER}, {"u_thickness", 5, WGSL_TEXTURE}, {"u_thickness", 6, WGSL_SAMPLER}};
+static const WgslBinding wgsl_creature_frag_bindings[] = {{"uniforms", 0, WGSL_UNIFORM}, {"u_occlusion_tex", 1, WGSL_TEXTURE_LOADED}, {"u_occlusion_tex", 2, WGSL_SAMPLER}, {"texture0", 3, WGSL_TEXTURE}, {"texture0", 4, WGSL_SAMPLER}, {"u_thickness", 5, WGSL_TEXTURE}, {"u_thickness", 6, WGSL_SAMPLER}};
 static const WgslStage WGSL_CREATURE_FRAG = {R"WGSL(struct FragmentUniforms {
     u_dynamic_shadows: i32,
     u_occlusion_grid: vec4<f32>,

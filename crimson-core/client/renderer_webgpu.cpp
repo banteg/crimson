@@ -166,6 +166,12 @@ struct Thickness {
   WGPUTextureView view;
 };
 std::unordered_map<int, Thickness> thickness_maps;
+// The creature body grid (host_occlusion), as in renderer.cpp.
+enum { OCCLUSION_WIDTH = 256 };
+float occlusion_grid[4], occlusion_cell = 64;
+int dynamic_shadows, occlusion_rows;
+WGPUTexture occlusion_texture;
+WGPUTextureView occlusion_view;
 
 WGPUShaderModule module_of(const WgslStage &stage) {
   WGPUShaderSourceWGSL wgsl = WGPU_SHADER_SOURCE_WGSL_INIT;
@@ -188,8 +194,9 @@ WGPUBindGroupLayout layout_of(const WgslStage &stage, WGPUShaderStage visibility
       entry.buffer.type = WGPUBufferBindingType_Uniform;
       entry.buffer.hasDynamicOffset = true;
       entry.buffer.minBindingSize = stage.uniform_size;
-    } else if (b.kind == WGSL_TEXTURE) {
-      entry.texture.sampleType = WGPUTextureSampleType_Float;
+    } else if (b.kind == WGSL_TEXTURE || b.kind == WGSL_TEXTURE_LOADED) {
+      // A texture only loaded may hold 32-bit floats, which WebGPU cannot filter.
+      entry.texture.sampleType = b.kind == WGSL_TEXTURE ? WGPUTextureSampleType_Float : WGPUTextureSampleType_UnfilterableFloat;
       entry.texture.viewDimension = WGPUTextureViewDimension_2D;
     } else {
       entry.sampler.type = WGPUSamplerBindingType_Filtering;
@@ -411,7 +418,7 @@ WGPUBindGroup fragment_group(Program &p, std::initializer_list<Input> inputs) {
       for (const Input &in : inputs)
         if (!strcmp(in.name, b.name))
           input = &in;
-      if (b.kind == WGSL_TEXTURE)
+      if (b.kind != WGSL_SAMPLER)
         entry.textureView = input ? input->view : blank_view;
       else
         entry.sampler = input ? input->sampler : linear_clamp();
@@ -880,7 +887,9 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   if (lit) {
     Uniforms vertex(*program.vert), fragment(*program.frag);
     vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
-    fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_count", light_count).f("u_ambient", 0.6f).f("u_occlusion_cell_size", 64);
+    fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_count", light_count).f("u_ambient", 0.6f);
+    fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
+    fragment.i("u_dynamic_shadows", dynamic_shadows);
     fragment.set("u_pos", light_pos, light_count * 16).set("u_rgb", light_rgb, light_count * 16);
     fragment.set("u_dir", light_dir, light_count * 16).set("u_response", light_response, light_count * 16);
     auto it = textures.find(bound[0]);
@@ -891,7 +900,8 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(program, device_output(t, topology)));
     bind(program,
          fragment_group(program, {{"texture0", present ? it->second.view : blank_view, atlas_sampler},
-                                  {"u_thickness", thickness, linear_clamp()}, {"u_occlusion_tex", blank_view, nearest_clamp()}}),
+                                  {"u_thickness", thickness, linear_clamp()},
+                                  {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()}}),
          &vertex, &fragment);
   }
   Uniforms vertex(*classic.vert), fragment(*classic.frag);
@@ -972,6 +982,41 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 camera, u32 lights, u32 count) {
     memcpy(light_dir + i * 4, packed + i * 16 + 8, 16);
     memcpy(light_response + i * 4, packed + i * 16 + 12, 16);
   }
+}
+void wgpu_w2c_host_occlusion(struct w2c_host *, u32 grid, u32 values, u32 count) {
+  const float *g = (const float *)(client_memory() + grid);
+  occlusion_grid[0] = g[0], occlusion_grid[1] = g[1], occlusion_grid[2] = count ? g[2] : 0, occlusion_grid[3] = g[3];
+  occlusion_cell = g[4];
+  dynamic_shadows = g[5] != 0;
+  if (!count)
+    return;
+  // Whole rows, and a texture that grows in powers of two as crowds do.
+  int rows = (int)((count + OCCLUSION_WIDTH * 4 - 1) / (OCCLUSION_WIDTH * 4));
+  if (rows > occlusion_rows) {
+    occlusion_rows = 1;
+    while (occlusion_rows < rows)
+      occlusion_rows *= 2;
+    if (occlusion_texture) {
+      wgpuTextureViewRelease(occlusion_view);
+      wgpuTextureRelease(occlusion_texture);
+      forget_groups();
+    }
+    WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
+    descriptor.size = {OCCLUSION_WIDTH, (uint32_t)occlusion_rows, 1};
+    descriptor.format = WGPUTextureFormat_RGBA32Float;
+    descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
+    occlusion_texture = wgpuDeviceCreateTexture(device, &descriptor);
+    occlusion_view = wgpuTextureCreateView(occlusion_texture, nullptr);
+  }
+  // Earlier draws this frame read the grid as it was.
+  submit();
+  std::vector<float> texels((size_t)rows * OCCLUSION_WIDTH * 4);
+  memcpy(texels.data(), client_memory() + values, (size_t)count * 4);
+  WGPUTexelCopyTextureInfo destination = WGPU_TEXEL_COPY_TEXTURE_INFO_INIT;
+  destination.texture = occlusion_texture;
+  WGPUTexelCopyBufferLayout layout = {0, OCCLUSION_WIDTH * 16, (uint32_t)rows};
+  WGPUExtent3D extent = {OCCLUSION_WIDTH, (uint32_t)rows, 1};
+  wgpuQueueWriteTexture(queue, &destination, texels.data(), texels.size() * 4, &layout, &extent);
 }
 void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
   if (pass_kind >= HOST_PASS_CREATURES) {

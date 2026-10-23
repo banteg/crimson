@@ -254,8 +254,12 @@ Creature bodies keep the 0.60 ambient fill even without lights; players keep
 the device's shading until lit. Thin-part transmission uses the same
 part-size map (`crimson-core/client/thickness.cpp`, a port of
 `creature_translucency.py`), made from the atlas texels the module keeps on a
-creature atlas's first lit draw. Creature shadows (the body grid) are not
-ported yet: every source is visible.
+creature atlas's first lit draw. Creature shadows use the same body grid
+(`rtx_build_occlusion`, a port of `reflection_occlusion.py`): the module builds
+it from the creature pool against the selected lights and sends it each frame
+(`host_occlusion`), and the hosts upload it as the RGBA32F texture the shader
+walks (unfilterable in WebGPU, which reads it with `textureLoad` alone). The
+shadows setting turns direct-light visibility off as in the Python port.
 
 Ion and Fire Bullets streaks draw as the same analytic beams as the Python port's
 (`shaders/beam.frag`): the module computes each body and head quad as

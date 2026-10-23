@@ -7,8 +7,10 @@
 // (game/rtx.cpp), at most 32. Reading the run only: nothing here writes it.
 #include "crimsonland_gameplay.h"
 #include "crimsonland_config_owner.h"
+#include <algorithm>
 #include <math.h>
 #include <string.h>
+#include <vector>
 
 extern "C" {
 extern int perk_id_radioactive, perk_id_sharpshooter, perk_id_ion_gun_master;
@@ -345,6 +347,141 @@ void select(bool reflection, int limit, float view_x, float view_y, bool *chosen
 }
 
 } // namespace
+
+// --- Creature shadows (render/rtx/reflection_occlusion.py) --------------------------
+// One rotated, size-scaled ellipsoid per standard creature, fitted to its body's
+// central mass (local x right, y down, as fractions of the drawn size: center,
+// planar radii, height), packed into a grid of cells for the shader to walk.
+
+namespace {
+const float BODY_PROFILES[5][5] = {
+    {-0.0625f, 0, 0.0975f, 0.13f, 0.46f}, // zombie
+    {0.105f, 0, 0.115f, 0.09f, 0.32f},    // lizard
+    {-0.08f, 0, 0.08f, 0.13f, 0.36f},     // alien
+    {-0.13f, 0, 0.255f, 0.09f, 0.36f},    // spider SP1
+    {-0.12f, 0, 0.245f, 0.12f, 0.40f},    // spider SP2
+};
+struct Body {
+  float x, y, rx, ry, height, angle, opacity, owner_x, owner_y;
+};
+
+bool body_of(const creature_t &c, Body &body) {
+  if (!c.active || c.size <= 0 || c.death_timer <= 0 || c.type_id < 0 || c.type_id > 4)
+    return false;
+  // The drawn body slides down as it dies; its shadow follows that timer.
+  float remaining = fminf(1, c.death_timer / 16);
+  float height_scale = remaining * remaining * (3 - 2 * remaining);
+  float fade = fminf(1, remaining * 4);
+  float opacity = fminf(1, fmaxf(0, c.tint_a)) * fade * fade * (3 - 2 * fade);
+  if (opacity <= 0)
+    return false;
+  const float *p = BODY_PROFILES[c.type_id];
+  float angle = c.heading - HALF_PI;
+  float right_x = cosf(angle), right_y = sinf(angle), down_x = -right_y, down_y = right_x;
+  body = {c.pos_x + (right_x * p[0] + down_x * p[1]) * c.size, c.pos_y + (right_y * p[0] + down_y * p[1]) * c.size,
+          p[2] * c.size, p[3] * c.size, p[4] * c.size * height_scale, angle, opacity, c.pos_x, c.pos_y};
+  return true;
+}
+
+std::vector<float> grid_values;
+} // namespace
+
+// The body grid for the selected lights (packed as rtx_collect_lights writes
+// them): every body near a source's support, no nearest-N cap. `grid` gets the
+// origin, columns (0 for no bodies), rows and cell size; the values are cell
+// headers, body transforms and cell lists, four floats per texel.
+extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count) {
+  Body bodies[385];
+  int body_total = 0;
+  for (const creature_t &c : creature_pool)
+    if (body_total < 385 && body_of(c, bodies[body_total]))
+      ++body_total;
+  grid[0] = grid[1] = grid[2] = grid[3] = 0;
+  grid[4] = 64;
+  *value_count = 0;
+  float cell = body_total >= 512 ? 32.0f : 64.0f;
+  float padding = 0, lo_x = -cell, lo_y = -cell;
+  float hi_x = terrain_texture_width + cell, hi_y = terrain_texture_height + cell;
+  struct Support {
+    float x, y, ax, ay, half, reach;
+  } supports[32];
+  int support_count = 0;
+  for (int i = 0; i < count; ++i) {
+    const float *l = lights + i * 16;
+    float illumination = l[12], reflection = l[13];
+    if (!(reflection > 0 || (shadows && illumination > 0)))
+      continue;
+    padding = fmaxf(padding, fmaxf(0.1f, l[15]));
+    float ax = l[8], ay = l[9];
+    if (ax * ax + ay * ay > 0.0001f)
+      normalize(ax, ay);
+    else
+      ax = ay = 0;
+    float reach = fmaxf(reflection > 0 ? l[14] : 0, shadows && illumination > 0 ? l[2] : 0);
+    supports[support_count++] = {l[0], l[1], ax, ay, l[11] * 0.5f, reach + l[7]};
+    float ex = fabsf(ax * l[11] * 0.5f) + l[7], ey = fabsf(ay * l[11] * 0.5f) + l[7];
+    lo_x = fminf(lo_x, l[0] - ex - cell), lo_y = fminf(lo_y, l[1] - ey - cell);
+    hi_x = fmaxf(hi_x, l[0] + ex + cell), hi_y = fmaxf(hi_y, l[1] + ey + cell);
+  }
+  if (!support_count || !body_total)
+    return nullptr;
+  float origin_x = floorf(lo_x / cell) * cell, origin_y = floorf(lo_y / cell) * cell;
+  int columns = (int)ceilf((hi_x - origin_x) / cell), rows = (int)ceilf((hi_y - origin_y) / cell);
+  // Mark each source's conservative support once; bodies then cull against all of them.
+  std::vector<unsigned char> active((size_t)columns * rows);
+  auto span = [&](float center, float extent, float origin, int limit, int &first, int &last) {
+    first = std::max(0, (int)floorf((center - extent - origin) / cell));
+    last = std::min(limit - 1, (int)floorf((center + extent - origin) / cell));
+  };
+  for (int i = 0; i < support_count; ++i) {
+    const Support &s = supports[i];
+    int x0, x1, y0, y1;
+    span(s.x, fabsf(s.ax) * s.half + s.reach, origin_x, columns, x0, x1);
+    span(s.y, fabsf(s.ay) * s.half + s.reach, origin_y, rows, y0, y1);
+    for (int y = y0; y <= y1; ++y)
+      for (int x = x0; x <= x1; ++x)
+        active[(size_t)y * columns + x] = 1;
+  }
+  std::vector<std::vector<int>> cells((size_t)columns * rows);
+  grid_values.assign((size_t)columns * rows * 4, 0.0f);
+  int placed = 0;
+  for (int b = 0; b < body_total; ++b) {
+    const Body &body = bodies[b];
+    float c = cosf(body.angle), s = sinf(body.angle);
+    float radius = fmaxf(body.rx, body.ry);
+    float soft_margin = fmaxf(0.015f * radius, padding * radius / fminf(body.rx, body.ry));
+    float rx = hypotf(c * body.rx, s * body.ry) + soft_margin, ry = hypotf(s * body.rx, c * body.ry) + soft_margin;
+    int x0, x1, y0, y1;
+    span(body.x, rx, origin_x, columns, x0, x1);
+    span(body.y, ry, origin_y, rows, y0, y1);
+    int address = (int)grid_values.size() / 4;
+    bool occupies = false;
+    for (int y = y0; y <= y1; ++y)
+      for (int x = x0; x <= x1; ++x)
+        if (active[(size_t)y * columns + x]) {
+          cells[(size_t)y * columns + x].push_back(address);
+          occupies = true;
+        }
+    if (!occupies)
+      continue;
+    ++placed;
+    const float transform[12] = {body.x, body.y, body.height * 0.4f, radius + soft_margin,
+                                 1 / body.rx, 1 / body.ry, 1 / (body.height * 0.6f), body.owner_x,
+                                 c, s, body.opacity, body.owner_y};
+    grid_values.insert(grid_values.end(), transform, transform + 12);
+  }
+  if (!placed)
+    return nullptr;
+  for (size_t i = 0; i < cells.size(); ++i) {
+    grid_values[i * 4] = (float)(grid_values.size() / 4);
+    grid_values[i * 4 + 1] = (float)cells[i].size();
+    for (int address : cells[i])
+      grid_values.insert(grid_values.end(), {(float)address, 0, 0, 0});
+  }
+  grid[0] = origin_x, grid[1] = origin_y, grid[2] = (float)columns, grid[3] = (float)rows, grid[4] = cell;
+  *value_count = (int)grid_values.size();
+  return grid_values.data();
+}
 
 // The frame's lights for the view, 16 floats each: position, radius, height;
 // linear RGB, ring radius; direction, 0, length; illumination and reflection

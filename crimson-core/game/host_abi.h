@@ -35,6 +35,10 @@ HOST_IMPORT(render_pass) void host_render_pass(int pass);
 // The world's light sources, sent before its begin mark (game/rtx_lights.cpp):
 // the camera offset (world to screen) and `count` lights of 16 floats each.
 HOST_IMPORT(scene) void host_scene(const float *camera, const float *lights, int count);
+// Their shadows: the creature body grid (render/rtx/reflection_occlusion.py) as
+// `grid` (origin x, y, columns, or 0 for none, rows, cell size, and whether the
+// shadows setting is on) and `count` floats of RGBA32F texels, or none.
+HOST_IMPORT(occlusion) void host_occlusion(const float *grid, const float *values, int count);
 // An RTX analytic beam quad (src/crimson/render/rtx/shaders/beam.frag): four
 // corners as x, y, u, v (u and v in beam radii), its length in radii (negative
 // for a head) and stamp spacing, and its D3DCOLOR, drawn with the current blend
