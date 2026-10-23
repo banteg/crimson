@@ -5,7 +5,8 @@
 // (game/rtx.cpp, native only) the world draws into a half-float target that a
 // tonemap then puts on a half-float back buffer, so highlights can exceed white.
 #include "client.h"
-#include "rtx_shaders.h"
+#include "client_shaders.h"
+#include "device_states.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,38 +26,18 @@
 #define SHADER_HEADER "#version 330 core\n"
 #endif
 
+// The browser build carries a WebGPU renderer too (renderer_webgpu.cpp) and picks
+// one at startup (renderer_select.cpp): there these entry points are gl_*.
+#ifdef CLIENT_RENDERER_SELECT
+#define GL_ENTRY(name) gl_##name
+#else
+#define GL_ENTRY(name) name
+bool renderer_uses_gl() { return true; }
+#endif
+
 namespace {
 
-// Direct3D 8 values the device forwards.
-enum {
-  RS_ALPHATESTENABLE = 15,
-  RS_SRCBLEND = 19,
-  RS_DESTBLEND = 20,
-  RS_CULLMODE = 22,
-  RS_ALPHAREF = 24,
-  RS_ALPHAFUNC = 25,
-  RS_ALPHABLENDENABLE = 27,
-  RS_TEXTUREFACTOR = 60,
-  RS_COLORWRITEENABLE = 168,
-  RS_BLENDOP = 171,
-  TSS_COLOROP = 1,
-  TSS_COLORARG1 = 2,
-  TSS_COLORARG2 = 3,
-  TSS_ALPHAOP = 4,
-  TSS_ALPHAARG1 = 5,
-  TSS_ALPHAARG2 = 6,
-  TSS_ADDRESSU = 13,
-  TSS_ADDRESSV = 14,
-  TSS_MAGFILTER = 16,
-  TSS_MINFILTER = 17,
-  // Host extension: the platform identifies terrain artwork by its Grim slot.
-  TSS_TERRAIN_ART = 31,
-  STAGES = 2,
-};
 
-// Target flags beyond the host_texture_create ones (1 render target, 2 no alpha):
-// half-float storage, which the RTX back buffer and world target use.
-enum { TARGET_HALF_FLOAT = 4 };
 struct Target {
   GLuint texture = 0, framebuffer = 0;
   // Texture storage and viewport pixels are independent of draw coordinates.
@@ -83,146 +64,15 @@ GLuint tonemap_program, beam_program, beam_array, beam_buffer;
 GLint u_tonemap_headroom, u_beam_target_size, u_beam_length, u_beam_step, u_beam_color;
 float edr_headroom = 1;
 
-const char *vertex_source = SHADER_HEADER R"(
-layout(location = 0) in vec4 position; // x, y, z, rhw in pixels
-layout(location = 1) in vec4 diffuse;  // D3DCOLOR bytes: b, g, r, a
-layout(location = 2) in vec2 uv;
-uniform vec2 target_size;
-out vec4 v_diffuse;
-out vec2 v_uv;
-void main() {
-  // Direct3D 8 puts pixel centers at integer coordinates; OpenGL at half-integers.
-  gl_Position = vec4((position.xy + 0.5) / target_size * 2.0 - 1.0, 0.0, 1.0);
-  v_diffuse = diffuse.zyxw;
-  v_uv = uv;
-}
-)";
-
-// The fixed-function texture stages, alpha test included.
-const char *fragment_source = SHADER_HEADER
-#include "filtering.h"
-R"(
-in vec4 v_diffuse;
-in vec2 v_uv;
-out vec4 color;
-uniform sampler2D texture0, texture1;
-uniform int has_texture[2], color_op[2], color_arg1[2], color_arg2[2], alpha_op[2], alpha_arg1[2], alpha_arg2[2];
-uniform vec4 factor;
-uniform int alpha_test, alpha_func;
-uniform float alpha_ref;
-uniform int reconstruction[2]; // 0 sampler state, 1 associated bilinear, 2 terrain cubic
-vec4 sampleColor(sampler2D image, int mode) {
-  if (mode == 2) return alphaCatmullRom(image, v_uv);
-  if (mode == 1) return alphaBilinear(image, v_uv);
-  return texture(image, v_uv);
-}
-vec4 argument(int a, vec4 current, vec4 texel) {
-  int which = a & 7;
-  vec4 v = which == 1 ? current : which == 2 ? texel : which == 3 ? factor : v_diffuse;
-  if ((a & 0x10) != 0) v = 1.0 - v;
-  if ((a & 0x20) != 0) v = vec4(v.a);
-  return v;
-}
-vec4 operation(int op, vec4 a, vec4 b) {
-  if (op == 2) return a;
-  if (op == 3) return b;
-  if (op == 4) return a * b;
-  if (op == 5) return a * b * 2.0;
-  if (op == 6) return a * b * 4.0;
-  if (op == 7) return a + b;
-  if (op == 8) return a + b - 0.5;
-  if (op == 9) return (a + b - 0.5) * 2.0;
-  if (op == 10) return a - b;
-  if (op == 11) return a + b - a * b;
-  if (op == 24) return vec4(clamp(4.0 * dot(a.rgb - 0.5, b.rgb - 0.5), 0.0, 1.0));
-  return a;
-}
-bool passes(float a) {
-  float r = alpha_ref;
-  if (alpha_func == 1) return false;
-  if (alpha_func == 2) return a < r;
-  if (alpha_func == 3) return a == r;
-  if (alpha_func == 4) return a <= r;
-  if (alpha_func == 5) return a > r;
-  if (alpha_func == 6) return a != r;
-  if (alpha_func == 7) return a >= r;
-  return true;
-}
-void main() {
-  vec4 current = v_diffuse;
-  for (int s = 0; s < 2; ++s) {
-    if (color_op[s] == 1) break;
-    vec4 texel = has_texture[s] != 0 ?
-        (s == 0 ? sampleColor(texture0, reconstruction[s]) : sampleColor(texture1, reconstruction[s])) : vec4(1.0);
-    vec4 c = clamp(operation(color_op[s], argument(color_arg1[s], current, texel), argument(color_arg2[s], current, texel)), 0.0, 1.0);
-    float a = alpha_op[s] == 1 ? current.a
-        : clamp(operation(alpha_op[s], argument(alpha_arg1[s], current, texel), argument(alpha_arg2[s], current, texel)).a, 0.0, 1.0);
-    current = vec4(c.rgb, a);
-  }
-  // Direct3D compares the 8-bit alpha with the reference.
-  if (alpha_test != 0 && !passes(floor(current.a * 255.0 + 0.5))) discard;
-  color = current;
-}
-)";
-
-const char *present_vertex_source = SHADER_HEADER R"(
-out vec2 v_uv;
-void main() {
-  vec2 corner = vec2(float(gl_VertexID & 1), float(gl_VertexID >> 1));
-  gl_Position = vec4(corner * 2.0 - 1.0, 0.0, 1.0);
-  v_uv = vec2(corner.x, 1.0 - corner.y); // the back buffer's row 0 is the window's top
-}
-)";
-const char *present_fragment_source = SHADER_HEADER R"(
-in vec2 v_uv;
-out vec4 color;
-uniform sampler2D back_buffer, gamma;
-void main() {
-  vec3 c = texture(back_buffer, v_uv).rgb;
-  // The device's gamma ramp, one 256-entry table per channel. An RTX highlight
-  // past white keeps its excess over the ramp's white.
-  vec3 sdr = min(c, 1.0);
-  color = vec4(vec3(texture(gamma, vec2(sdr.r * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).r,
-                    texture(gamma, vec2(sdr.g * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).g,
-                    texture(gamma, vec2(sdr.b * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).b) * max(c, 1.0), 1.0);
-}
-)";
-
-// The Python port's RTX tonemap (src/crimson/render/rtx/shaders/hdr_tonemap.frag)
-// over the HDR target, which shares the back buffer's orientation.
-const char *tonemap_vertex_source = SHADER_HEADER R"(
-out vec2 fragTexCoord;
-out vec4 fragColor;
-void main() {
-  vec2 corner = vec2(float(gl_VertexID & 1), float(gl_VertexID >> 1));
-  gl_Position = vec4(corner * 2.0 - 1.0, 0.0, 1.0);
-  fragTexCoord = corner;
-  fragColor = vec4(1.0);
-}
-)";
+// The shaders WebGPU runs too (crimson-core/client/shaders, client/shaders.py).
+const char *vertex_source = SHADER_HEADER SHADER_CLASSIC_VERT;
+const char *fragment_source = SHADER_HEADER SHADER_CLASSIC_FRAG;
+const char *present_vertex_source = SHADER_HEADER SHADER_PRESENT_VERT;
+const char *present_fragment_source = SHADER_HEADER SHADER_PRESENT_FRAG;
+// The Python port's RTX tonemap and analytic beam (src/crimson/render/rtx/shaders).
+const char *tonemap_vertex_source = SHADER_HEADER SHADER_FULLSCREEN_VERT;
 const char *tonemap_fragment_source = SHADER_HEADER RTX_SHADER_HDR_TONEMAP_FRAG;
-
-// The Python port's analytic beam (src/crimson/render/rtx/shaders/beam.frag) over
-// a quad the module sends (host_beam): corners in logical pixels with their beam
-// uv, and the quad's length, stamp spacing and color.
-const char *beam_vertex_source = SHADER_HEADER R"(
-layout(location = 0) in vec4 corner; // x, y in pixels, u, v in beam radii
-uniform vec2 target_size;
-uniform float beam_length, beam_step;
-uniform vec4 beam_color;
-out vec2 fragTexCoord;
-out vec4 fragColor;
-out float fragLen;
-flat out float fragStep;
-void main() {
-  // Direct3D 8 puts pixel centers at integer coordinates, as host_draw's vertices.
-  gl_Position = vec4((corner.xy + 0.5) / target_size * 2.0 - 1.0, 0.0, 1.0);
-  fragTexCoord = corner.zw;
-  fragColor = beam_color;
-  fragLen = beam_length;
-  fragStep = beam_step;
-}
-)";
+const char *beam_vertex_source = SHADER_HEADER SHADER_BEAM_VERT;
 const char *beam_fragment_source = SHADER_HEADER RTX_SHADER_BEAM_FRAG;
 
 GLuint compile(GLenum kind, const char *source) {
@@ -377,7 +227,7 @@ void apply_output_state(const Target &t) {
 
 } // namespace
 
-void renderer_init() {
+void GL_ENTRY(renderer_init)() {
   program = link(vertex_source, fragment_source);
   present_program = link(present_vertex_source, present_fragment_source);
   u_target_size = glGetUniformLocation(program, "target_size");
@@ -448,7 +298,7 @@ void renderer_init() {
   }
 }
 
-Viewport renderer_viewport(int window_width, int window_height) {
+Viewport GL_ENTRY(renderer_viewport)(int window_width, int window_height) {
   Target &back = textures[0];
   if (window_width <= 0 || window_height <= 0 || back.logical_width <= 0 || back.logical_height <= 0)
     return {};
@@ -459,10 +309,10 @@ Viewport renderer_viewport(int window_width, int window_height) {
           back.logical_width, back.logical_height};
 }
 
-void renderer_resize(int window_width, int window_height) {
+void GL_ENTRY(renderer_resize)(int window_width, int window_height) {
   drawable_width = window_width;
   drawable_height = window_height;
-  Viewport v = renderer_viewport(window_width, window_height);
+  Viewport v = GL_ENTRY(renderer_viewport)(window_width, window_height);
   Target &back = textures[0];
   // A minimized window can have no drawable pixels. Keep its last image.
   if (!v.width || !back.framebuffer || (back.width == v.width && back.height == v.height))
@@ -472,11 +322,11 @@ void renderer_resize(int window_width, int window_height) {
   bind_target();
 }
 
-void renderer_present(int window_width, int window_height) {
+void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   Target &back = textures[0];
   if (!back.texture)
     return;
-  Viewport v = renderer_viewport(window_width, window_height);
+  Viewport v = GL_ENTRY(renderer_viewport)(window_width, window_height);
   if (!v.width)
     return;
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -502,9 +352,9 @@ void renderer_present(int window_width, int window_height) {
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void renderer_resume() { bind_target(); }
+void GL_ENTRY(renderer_resume)() { bind_target(); }
 
-bool renderer_set_rtx(bool enabled) {
+bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
 #ifdef __EMSCRIPTEN__
   // WebGL2 has no extended-range output: the browser stays classic.
   enabled = false;
@@ -543,13 +393,13 @@ bool renderer_set_rtx(bool enabled) {
   return enabled;
 }
 
-void renderer_set_headroom(float headroom) { edr_headroom = headroom; }
+void GL_ENTRY(renderer_set_headroom)(float headroom) { edr_headroom = headroom; }
 
 // The kept frame (host_frame_hold): the back buffer copied aside, and back.
 Target held, anchor;
 
 // The back buffer as top-down RGBA rows.
-std::vector<unsigned char> renderer_capture(int &width, int &height) {
+std::vector<unsigned char> GL_ENTRY(renderer_capture)(int &width, int &height) {
   Target &back = textures[0];
   width = back.width;
   height = back.height;
@@ -563,7 +413,7 @@ std::vector<unsigned char> renderer_capture(int &width, int &height) {
 // --- The game module's host interface ---------------------------------------------
 
 extern "C" {
-void w2c_host_frame_hold(struct w2c_host *, u32 op) {
+void GL_ENTRY(w2c_host_frame_hold)(struct w2c_host *, u32 op) {
   if (op == 5) { // HOST_FRAME_ANCHOR_DROP
     release(anchor);
     anchor = {};
@@ -593,7 +443,7 @@ void w2c_host_frame_hold(struct w2c_host *, u32 op) {
                     to.width == from.width && to.height == from.height ? GL_NEAREST : GL_LINEAR);
   bind_target();
 }
-void w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
+void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
   Target &from = target_or_back((int)source);
   if (!from.framebuffer)
     return;
@@ -612,12 +462,12 @@ void w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
   glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, from.width, from.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
   bind_target();
 }
-void w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
+void GL_ENTRY(w2c_host_back_buffer)(struct w2c_host *, u32 width, u32 height) {
   Target &back = textures[0];
   release(back);
   back.logical_width = (int)width;
   back.logical_height = (int)height;
-  Viewport v = renderer_viewport(drawable_width, drawable_height);
+  Viewport v = GL_ENTRY(renderer_viewport)(drawable_width, drawable_height);
   back.width = v.width ? v.width : (int)width;
   back.height = v.height ? v.height : (int)height;
   back.flags = 1 | 2 | (rtx ? TARGET_HALF_FLOAT : 0); // the back buffer is X8R8G8B8
@@ -625,7 +475,7 @@ void w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
   current_target = 0;
   bind_target();
 }
-void w2c_host_texture_create(struct w2c_host *, u32 id, u32 width, u32 height, u32 flags) {
+void GL_ENTRY(w2c_host_texture_create)(struct w2c_host *, u32 id, u32 width, u32 height, u32 flags) {
   Target &t = textures[(int)id];
   release(t);
   t.logical_width = t.width = (int)width;
@@ -641,7 +491,7 @@ void w2c_host_texture_create(struct w2c_host *, u32 id, u32 width, u32 height, u
   allocate(t);
   bind_target();
 }
-void w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
+void GL_ENTRY(w2c_host_texture_upload)(struct w2c_host *, u32 id, u32 texels) {
   auto it = textures.find((int)id);
   if (it == textures.end())
     return;
@@ -665,7 +515,7 @@ void w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
   glBindTexture(GL_TEXTURE_2D, t.texture);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, t.width, t.height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
 }
-void w2c_host_texture_release(struct w2c_host *, u32 id) {
+void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
   auto it = textures.find((int)id);
   if (it == textures.end() || !id)
     return;
@@ -675,30 +525,30 @@ void w2c_host_texture_release(struct w2c_host *, u32 id) {
   textures.erase(it);
   bind_target();
 }
-void w2c_host_render_state(struct w2c_host *, u32 state, u32 value) {
+void GL_ENTRY(w2c_host_render_state)(struct w2c_host *, u32 state, u32 value) {
   if (state < 256)
     render_states[state] = value;
 }
-void w2c_host_texture_stage_state(struct w2c_host *, u32 stage, u32 state, u32 value) {
+void GL_ENTRY(w2c_host_texture_stage_state)(struct w2c_host *, u32 stage, u32 state, u32 value) {
   if (stage < STAGES && state < 32)
     stage_states[stage][state] = value;
 }
-void w2c_host_set_texture(struct w2c_host *, u32 stage, u32 id) {
+void GL_ENTRY(w2c_host_set_texture)(struct w2c_host *, u32 stage, u32 id) {
   if (stage < STAGES)
     bound[stage] = (int)id;
 }
-void w2c_host_set_render_target(struct w2c_host *, u32 id) {
+void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
   current_target = (int)id;
   bind_target();
 }
-void w2c_host_clear(struct w2c_host *, u32 color) {
+void GL_ENTRY(w2c_host_clear)(struct w2c_host *, u32 color) {
   Target &t = drawing_target(current_target);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glClearColor((color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f,
                t.flags & 2 ? 1.0f : (color >> 24) / 255.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 }
-void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
+void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
                    u32 primitive_count) {
   Target &t = drawing_target(current_target);
   glUseProgram(program);
@@ -727,14 +577,14 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
     glSamplerParameteri(samplers[s], GL_TEXTURE_MIN_FILTER, stage_states[s][TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
   }
   glActiveTexture(GL_TEXTURE0);
-  glUniform1iv(u_has_texture, STAGES, has);
-  glUniform1iv(u_reconstruction, STAGES, filters);
-  glUniform1iv(u_color_op, STAGES, cop);
-  glUniform1iv(u_color_arg1, STAGES, ca1);
-  glUniform1iv(u_color_arg2, STAGES, ca2);
-  glUniform1iv(u_alpha_op, STAGES, aop);
-  glUniform1iv(u_alpha_arg1, STAGES, aa1);
-  glUniform1iv(u_alpha_arg2, STAGES, aa2);
+  glUniform2iv(u_has_texture, 1, has);
+  glUniform2iv(u_reconstruction, 1, filters);
+  glUniform2iv(u_color_op, 1, cop);
+  glUniform2iv(u_color_arg1, 1, ca1);
+  glUniform2iv(u_color_arg2, 1, ca2);
+  glUniform2iv(u_alpha_op, 1, aop);
+  glUniform2iv(u_alpha_arg1, 1, aa1);
+  glUniform2iv(u_alpha_arg2, 1, aa2);
   unsigned f = render_states[RS_TEXTUREFACTOR];
   glUniform4f(u_factor, (f >> 16 & 255) / 255.0f, (f >> 8 & 255) / 255.0f, (f & 255) / 255.0f, (f >> 24) / 255.0f);
   glUniform1i(u_alpha_test, render_states[RS_ALPHATESTENABLE] != 0);
@@ -766,7 +616,7 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
     glDrawArrays(mode, 0, index_count);
   }
 }
-void w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
+void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
   if (!rtx)
     return;
   Target &t = drawing_target(current_target);
@@ -784,7 +634,7 @@ void w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u32 col
   glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), client_memory() + corners, GL_STREAM_DRAW);
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
-void w2c_host_render_pass(struct w2c_host *, u32 pass) {
+void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   Target &back = textures[0];
   if (!rtx || !back.framebuffer)
     return;
@@ -819,7 +669,7 @@ void w2c_host_render_pass(struct w2c_host *, u32 pass) {
   }
   bind_target();
 }
-void w2c_host_gamma_ramp(struct w2c_host *, u32 red, u32 green, u32 blue) {
+void GL_ENTRY(w2c_host_gamma_ramp)(struct w2c_host *, u32 red, u32 green, u32 blue) {
   // D3DGAMMARAMP: three tables of 256 16-bit levels.
   unsigned char ramp[256 * 4];
   const u8 *m = client_memory();

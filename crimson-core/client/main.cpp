@@ -379,7 +379,9 @@ u32 w2c_host_time_ms(struct w2c_host *) {
 f64 w2c_host_clock_ms(struct w2c_host *) { return SDL_GetTicksNS() / 1e6; }
 static void show_frame(int width, int height) {
   renderer_present(width, height);
-  SDL_GL_SwapWindow(window);
+  // WebGPU shows its frame when the browser composites the canvas.
+  if (renderer_uses_gl())
+    SDL_GL_SwapWindow(window);
   renderer_resume();
 }
 void w2c_host_present(struct w2c_host *) {
@@ -388,10 +390,14 @@ void w2c_host_present(struct w2c_host *) {
   capture_frame();
   show_frame(width, height);
 }
-// RTX (game/rtx.cpp): the mode the renderer shows of the one asked for.
+// RTX (game/rtx.cpp): the mode the renderer shows of the one asked for. The page's
+// switch follows it, whoever changed it (shell.html).
 u32 w2c_host_render_mode(struct w2c_host *, u32 requested) {
   bool rtx = renderer_set_rtx(requested == 1);
   display_edr(rtx);
+#ifdef __EMSCRIPTEN__
+  MAIN_THREAD_EM_ASM({ Module.renderMode?.($0); }, rtx);
+#endif
   return rtx;
 }
 }
@@ -753,6 +759,11 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch_run() {
 extern "C" EMSCRIPTEN_KEEPALIVE int client_watch_tick() {
   return started ? (int)w2c_game_game_watch_tick(&game) : 0;
 }
+// The page's RTX switch: the rendering mode, as the console's rendermode sets it.
+extern "C" EMSCRIPTEN_KEEPALIVE void client_render_mode(int mode) {
+  if (started)
+    w2c_game_game_render_mode(&game, mode);
+}
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_play_quest(const char *path, const char *title, const char *author) {
   if (!started)
     return "wait";
@@ -964,11 +975,15 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
 #else
   const char *title = "Crimsonland";
 #endif
-  window = SDL_CreateWindow(title, 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-  if (!window || !(context = SDL_GL_CreateContext(window)))
+  // A browser with WebGPU draws into the canvas without a GL context (renderer_webgpu.cpp).
+  bool gl = renderer_uses_gl();
+  window = SDL_CreateWindow(title, 1024, 768,
+                            (gl ? SDL_WINDOW_OPENGL : 0) | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+  if (!window || (gl && !(context = SDL_GL_CreateContext(window))))
     client_fatal(SDL_GetError());
   // Unattended captures run unthrottled: a hidden window would otherwise wait on vsync.
-  SDL_GL_SetSwapInterval(unattended ? 0 : 1);
+  if (gl)
+    SDL_GL_SetSwapInterval(unattended ? 0 : 1);
   SDL_HideCursor();
   SDL_StartTextInput(window);
   renderer_init();
@@ -978,6 +993,10 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   audio_init();
   if (!start_game())
     return SDL_APP_FAILURE;
+#ifdef __EMSCRIPTEN__
+  // The page's choice (?rtx=1, the player's last one; shell.html).
+  rtx_requested = EM_ASM_INT({ return Module.rtxWanted?.() ? 1 : 0; });
+#endif
   if (rtx_requested)
     w2c_game_game_render_mode(&game, 1);
 #ifndef __EMSCRIPTEN__
@@ -1128,8 +1147,9 @@ SDL_AppResult SDL_AppIterate(void *) {
   // Finish the elapsed audio before this frame creates new sounds. In
   // particular, dropping a stall's unheard time must not eat a fresh attack.
   audio_update(&game);
-  // The headroom moves with brightness and the display the window is on.
-  if (edr)
+  // The headroom moves with brightness and the display the window is on. Unattended captures tonemap for SDR, so
+  // they read the same on any display.
+  if (edr && !unattended)
     renderer_set_headroom(SDL_GetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1));
   bool running = w2c_game_game_frame(&game);
   coop_send();

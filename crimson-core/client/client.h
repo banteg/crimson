@@ -12,7 +12,10 @@ void client_wasi_init();
 // The host path of a name under the game directory, matched as the game opens it.
 bool client_resolve(const std::string &relative, std::string &path);
 
-// renderer.cpp: the Direct3D 8 subset the game module's device sends.
+// renderer.cpp: the Direct3D 8 subset the game module's device sends (in the
+// browser, renderer_webgpu.cpp instead where WebGPU runs; renderer_select.cpp).
+// Whether it draws with OpenGL, whose window needs a GL context and swaps.
+bool renderer_uses_gl();
 void renderer_init();
 // Fit the logical game view to physical window pixels before the game draws.
 void renderer_resize(int window_width, int window_height);

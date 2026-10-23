@@ -155,10 +155,13 @@ def main():
     web = args.target == "web"
     cc, cxx = (tool("emcc"), tool("em++")) if web else (tool("clang"), tool("clang++"))
     cflags = ["-O2", "-I" + str(out), "-I" + str(runtime), "-I" + str(include), "-I" + str(HERE)]
-    # The browser build has no threads; wasm2c then guards memory by bounds checks.
+    # The browser build has no threads; wasm2c then guards memory by bounds checks. It carries the WebGPU renderer
+    # too, over Emdawnwebgpu's bindings (web/emdawnwebgpu_pinned.py), and picks one at startup (renderer_select.cpp).
+    webgpu = ["--use-port=" + str(HERE / "web/emdawnwebgpu_pinned.py")]
     cflags += ["-sUSE_SDL=3", "-DWASM_RT_USE_PTHREADS=0"] if web else []
     cxxflags = [
         *cflags,
+        *([*webgpu, "-DCLIENT_RENDERER_SELECT"] if web else []),
         "-std=c++17",
         f'-DCRIMSON_CLIENT_VERSION="{build_identity["version"]}"',
         *([] if web else [*pkg_config("--cflags"), *curl_flags("--cflags"), "-pthread"]),
@@ -182,6 +185,7 @@ def main():
             *objects,
             "-O2",
             "-sUSE_SDL=3",
+            *webgpu,
             "-sMIN_WEBGL_VERSION=2",
             "-sMAX_WEBGL_VERSION=2",
             "-sALLOW_MEMORY_GROWTH",

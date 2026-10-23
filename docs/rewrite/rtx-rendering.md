@@ -83,8 +83,8 @@ When render mode is `rtx`, `WorldRuntime.draw()` wraps `draw_world()` in `HdrRen
 - returning to classic disables the Cocoa EDR opt-in and composites through an 8-bit target, preserving classic's per-draw saturation even on the reserved float window
 - other platforms, unavailable float surfaces, and displays with headroom `1.0` use SDR tonemapping; an SDR ancestor target also forces SDR output for capture/compositing
 
-The native client runs the same HDR world target and tonemap (see [Native client](#native-client)).
-The browser client stays classic: WebGL2 has no extended-range output.
+The native and browser clients run the same HDR world target and tonemap (see [Native client](#native-client)
+and [Browser client](#browser-client)).
 
 In-game PNG screenshots still use an 8-bit SDR readback. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
 
@@ -255,6 +255,19 @@ Controls:
 - console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`
 - `rendermode rtx` in the game folder's `autoexec.txt`, which the original runs at
   startup, keeps the mode across launches
+
+## Browser client
+
+In the browser, RTX needs the WebGPU renderer (`crimson-core/client/renderer_webgpu.cpp`): WebGL2 has no
+extended-range output, so the WebGL2 renderer stays classic. The WebGPU renderer runs the same world target, tonemap
+and beams through the same GLSL, translated to WGSL (`crimson-core/client/shaders.py`). On an HDR display
+(`dynamic-range: high`) the canvas turns `rgba16float` with extended tone mapping while RTX is on. Browsers report
+no headroom, so the tonemap rolls highlights off toward twice SDR white, which most HDR displays show without
+clipping. Elsewhere it tonemaps to SDR.
+
+The page's RTX switch sits beside fullscreen and shows only with WebGPU. `?rtx=1` or `?rtx=0` picks the mode for a
+link, otherwise the switch's last state is kept in the browser. The console's `rendermode` and `togglertx` work as
+on the desktop, and the switch follows them.
 
 ## Future direction
 

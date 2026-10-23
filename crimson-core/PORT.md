@@ -483,6 +483,19 @@ centers, two fixed-function texture stages, raw `D3DBLEND` factors, alpha test,
 colour-write masks with X8R8G8B8 targets keeping alpha at one, render targets,
 per-stage filtering and addressing, and the gamma ramp at present.
 
+Browsers with WebGPU draw through
+[`client/renderer_webgpu.cpp`](client/renderer_webgpu.cpp) instead, the same
+subset on pipelines and bind groups; the page requests the device before the
+module starts, and [`client/renderer_select.cpp`](client/renderer_select.cpp)
+picks one renderer for the session, since a canvas keeps its first kind of
+context (`?renderer=webgl` forces WebGL2). Both renderers run the same GLSL,
+[`client/shaders/`](client/shaders) and the Python port's RTX shaders: OpenGL
+compiles it as written, and WebGPU runs it translated to WGSL by
+[`client/shaders.py`](client/shaders.py) (glslang, spirv-opt and naga, with
+each stage's uniform offsets and bindings). The WGSL is committed as
+`client/wgsl_shaders.h`, and the build stops when it no longer matches its GLSL:
+regenerate it with `uv run python crimson-core/client/shaders.py --wgsl`.
+
 Neither SDL rendering API fits: SDL_GPU has no WebGL backend (its WebGPU
 backend is an [experimental PR](https://github.com/libsdl-org/SDL/pull/16020)),
 and SDL_Renderer has no alpha test or write masks. raylib would mean fitting
@@ -540,7 +553,7 @@ python3 crimson-core/checks/native_network.py
 uv run python crimson-core/client/build.py --target web   # Emscripten, SDL3 port
 ```
 
-`build/web/index.html` runs the same host on WebGL2. The game directory is
+`build/web/index.html` runs the same host on WebGPU, or WebGL2 without it. The game directory is
 `/game` in IndexedDB: on first launch the page fetches the game files from
 `?assets=<url>` (default `game/` beside the page) with a progress bar; when that
 fails, it retries or takes the player's own game folder, either layout; and settings, saves and
