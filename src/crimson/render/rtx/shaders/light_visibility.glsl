@@ -190,8 +190,8 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
             vec4 entry = occlusionData(int(header.x) + j);
             // A padded beam entry spans a run of walked cells; test it in the first.
             if (beam && previous.x >= 0) {
-                ivec2 packed = ivec2(entry.yz);
-                if (all(greaterThanEqual(previous, packed & 4095)) && all(lessThanEqual(previous, packed >> 12))) continue;
+                ivec2 cell_range = ivec2(entry.yz);
+                if (all(greaterThanEqual(previous, cell_range & 4095)) && all(lessThanEqual(previous, cell_range >> 12))) continue;
             }
             visibility = min(visibility, bodyVisibility(int(entry.x), receiver, ray, source_width, inverse_xy_length, owner));
             if (visibility < .001) return visibility;
