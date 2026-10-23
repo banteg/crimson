@@ -6,15 +6,18 @@ import subprocess
 
 # An owner header reads a contiguous aggregate through its first symbol: `#define name (*(type *)&root)`.
 OVERLAY = re.compile(r"\(\*\((\w+)\s*\*\)&(\w+)\)")
-# A record's size in bits, as clang's layout dump prints it.
-RECORD = re.compile(r"^Type: struct (\w+)\n\nLayout: <ASTRecordLayout\n  Size:(\d+)", re.MULTILINE)
+# A record's size and field offsets in bits, as clang's layout dump prints them.
+RECORD = re.compile(
+    r"^Type: struct (\w+)\n\nLayout: <ASTRecordLayout\n  Size:(\d+)\n(?:  .*\n)*?  FieldOffsets: \[([^\]]*)\]",
+    re.MULTILINE,
+)
 
 
 def overlay_spans(root, out, cc):
     """Each owner overlay's root and the size its type has in the original 32-bit layout.
 
-    A type whose size changes with 64-bit pointers is left out: past its first pointer, its members leave the
-    original offsets on a 64-bit host, and its pointer-typed names keep blocks a host pointer fits.
+    A type the build's target lays out differently is left out: its members leave the original offsets there (a
+    64-bit host's pointers move every member after the first), and its names keep blocks of their own.
     """
     include = root / "tools/match/include"
     owners = sorted(include.glob("*_owner.h"))
@@ -26,19 +29,19 @@ def overlay_spans(root, out, cc):
         + f"unsigned overlay_sizes[] = {{{','.join(f'sizeof({t})' for t in overlays)}}};\n",
     )
 
-    def sizes(target):
+    def layouts(compiler):
         proc = subprocess.run(
-            [cc, "-target", target, "-std=c++17", "-fms-extensions", "-fsyntax-only", "-w"]
+            [*compiler, "-std=c++17", "-fms-extensions", "-fsyntax-only", "-w"]
             + ["-Xclang", "-fdump-record-layouts-simple", f"-I{include}", f"-I{root / 'third_party/headers'}"]
             + [str(probe)],
-            capture_output=True,
+            stdout=subprocess.PIPE,
             text=True,
             check=True,
         )
-        return {name: int(bits) // 8 for name, bits in RECORD.findall(proc.stdout)}
+        return {name: (int(bits), offsets) for name, bits, offsets in RECORD.findall(proc.stdout)}
 
-    original, wide = sizes("i686-pc-windows-msvc"), sizes("x86_64-pc-windows-msvc")
-    return [(first, original[t]) for t, first in overlays.items() if original[t] == wide[t]]
+    original, target = layouts([cc[0], "-target", "i686-pc-windows-msvc"]), layouts(cc)
+    return [(first, original[t][0] // 8) for t, first in overlays.items() if original[t] == target[t]]
 
 
 def data_source(root, out, cc):

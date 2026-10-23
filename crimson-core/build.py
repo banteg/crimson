@@ -118,7 +118,7 @@ def main():
         game_data(a.root, a.out, engine_globals(a.root), simulation_names(a.root))
         alignments = {}
     else:
-        alignments = data_source(a.root, a.out, cc[0])
+        alignments = data_source(a.root, a.out, cc)
 
     def align_externs(text):
         return EXTERN.sub(
