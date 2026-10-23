@@ -15,6 +15,20 @@ vec4 occlusionData(int address) {
 vec2 beam_section_axis = vec2(0.);
 float beam_section_halfspan = 0.;
 
+// Interval where a*s^2 + b*s + c <= 0 for a > 0; hi <= lo when empty.
+// The product form keeps the root nearest zero accurate when one is huge.
+vec2 quadraticBelow(float a, float b, float c) {
+    float radicand = b * b - 4. * a * c;
+    if (radicand <= 0.) return vec2(1., -1.);
+    float q = -.5 * (b + (b < 0. ? -sqrt(radicand) : sqrt(radicand)));
+    vec2 roots = vec2(q / a, c / q);
+    return vec2(min(roots.x, roots.y), max(roots.x, roots.y));
+}
+
+float intervalOverlap(vec2 first, vec2 second) {
+    return max(0., min(first.y, second.y) - max(first.x, second.x));
+}
+
 float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfspan) {
     float quadratic_c = dot(relative, relative) - 1.;
     float quadratic_a = dot(base_ray, base_ray);
@@ -33,31 +47,41 @@ float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfs
         else lo = max(lo, bound);
     }
     if (hi <= lo) return 0.;
+    // Source positions whose infinite ray meets the body: one or two intervals.
     float a = linear_b * linear_b - constant_a * quadratic_c;
     float b = 2. * (quadratic_b * linear_b - .5 * linear_a * quadratic_c);
     float d = quadratic_b * quadratic_b - quadratic_a * quadratic_c;
-    float radicand = b * b - 4. * a * d;
+    vec2 first = vec2(lo, hi);
+    vec2 second = vec2(1., -1.);
     if (abs(a) < 1e-8) {
-        if (abs(b) < 1e-8) return d >= 0. ? (hi - lo) / (2. * halfspan) : 0.;
-        float bound = -d / b;
-        if (b > 0.) lo = max(lo, bound);
-        else hi = min(hi, bound);
-        return clamp((hi - lo) / (2. * halfspan), 0., 1.);
-    }
-    if (radicand <= 0.) {
-        if (a < 0.) return 0.;
-        return clamp((hi - lo) / (2. * halfspan), 0., 1.);
-    }
-    float center = -b / (2. * a);
-    float half_chord = abs(sqrt(radicand) / (2. * a));
-    float root_lo = center - half_chord;
-    float root_hi = center + half_chord;
-    float blocked = 0.;
-    if (a < 0.) {
-        blocked = max(0., min(hi, root_hi) - max(lo, root_lo));
+        if (abs(b) < 1e-8) {
+            if (d < 0.) return 0.;
+        } else if (b > 0.) {
+            first.x = max(lo, -d / b);
+        } else {
+            first.y = min(hi, -d / b);
+        }
+    } else if (a < 0.) {
+        vec2 roots = quadraticBelow(-a, -b, -d);
+        first = vec2(max(lo, roots.x), min(hi, roots.y));
     } else {
-        blocked = max(0., min(hi, root_lo) - lo) + max(0., hi - max(lo, root_hi));
+        vec2 roots = quadraticBelow(a, b, d);
+        if (roots.y > roots.x) {
+            first.y = min(hi, roots.x);
+            second = vec2(max(lo, roots.y), hi);
+        }
     }
+    // The ray must reach the body before the light. Bodies taller than the
+    // emitter otherwise shadow from beyond it. Where the chord's midpoint lies
+    // past the light, only a light inside the body is still blocked.
+    vec2 beyond = quadraticBelow(constant_a, linear_a + linear_b, quadratic_a + quadratic_b);
+    vec3 source_relative = relative + base_ray;
+    vec2 inside = quadraticBelow(constant_a, 2. * dot(source_relative, axis_ray),
+                                 dot(source_relative, source_relative) - 1.);
+    inside = vec2(max(inside.x, -halfspan), min(inside.y, halfspan));
+    float blocked = max(0., first.y - first.x) - intervalOverlap(first, beyond)
+        + max(0., second.y - second.x) - intervalOverlap(second, beyond)
+        + intervalOverlap(inside, beyond);
     return clamp(blocked / max(2. * halfspan, 1e-6), 0., 1.);
 }
 

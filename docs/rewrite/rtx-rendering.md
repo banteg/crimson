@@ -831,8 +831,9 @@ as the projectile renderer.
 Each section casts through the existing rounded creature proxies and spatial
 grid. For each body, a ray/ellipsoid discriminant becomes a quadratic in the
 longitudinal source position. Clipping its blocked roots to the section interval
-integrates the emitting segment analytically, including the receiver-side
-constraint. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
+integrates the emitting segment analytically. A body blocks only between the
+receiver and the light, so one taller than the emitter does not shadow from
+beyond it. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
 half-width average the remaining emitter dimension. Umbra and penumbra therefore
 change with the body's direction around the projectile instead of using three
 point or disc lights.

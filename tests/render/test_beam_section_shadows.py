@@ -62,7 +62,10 @@ def test_beam_chord_matches_analytic_sphere_coverage(raylib_context) -> None:
         rl.unload_render_texture(target)
 
 
-def test_projected_visibility_matches_sampled_reference(raylib_context) -> None:
+@pytest.mark.parametrize(("body_y", "body_height", "shadowed"), [(60., 12., True), (60., 40., True), (0., 40., False)])
+def test_projected_visibility_matches_sampled_reference(
+    raylib_context, body_y: float, body_height: float, shadowed: bool,
+) -> None:
     shader = _probe_shader("""
     void main() {
         vec3 receiver = vec3(64., 100., 0.);
@@ -83,8 +86,9 @@ def test_projected_visibility_matches_sampled_reference(raylib_context) -> None:
     """)
     target = load_float_render_texture(2, 2)
     renderer = ReflectionOcclusion()
-    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=24., source_width=4.5)
-    body = BodyVolume(Vec2(64., 60.), Vec2(8., 10.), 12., 0.)
+    # Grid padding covers the section's half-span, as prepare_beam_lights does.
+    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=24., source_width=4.5 + 20.)
+    body = BodyVolume(Vec2(64., body_y), Vec2(8., 10.), body_height, 0.)
 
     try:
         grid = build_occlusion_grid([body], [source], width=128., height=128.)
@@ -98,7 +102,8 @@ def test_projected_visibility_matches_sampled_reference(raylib_context) -> None:
             rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
             rl.end_shader_mode()
         projected, reference, _, _ = _pixel(target)
-        assert 0. < projected < 1.
+        # A tall body past the light must not shadow from beyond it.
+        assert 0. < projected < 1. if shadowed else projected == 1.
         assert projected == pytest.approx(reference, abs=.08)
     finally:
         renderer.close()
