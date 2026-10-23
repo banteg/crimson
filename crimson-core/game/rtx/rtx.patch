@@ -1,0 +1,194 @@
+The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, and the creature
+body, player and bonus batches the host lights; it draws the ion and Fire Bullets streaks as analytic beams in
+place of their stamps, and registers its console commands beside the original's.
+--- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
++++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
+@@ -89,6 +89,7 @@
+     if (!game_live_between_ticks()) {
+         fx_queue_render();
+     }
++    rtx_world(1);
+     terrain_render();
+ 
+     current_player_index = 0;
+@@ -116,4 +117,5 @@
+         grim_interface_ptr->grim_draw_fullscreen_color(
+             0.0f, 0.0f, 0.0f, screen_fade_alpha);
+     }
++    rtx_world(0);
+ }
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
+@@ -826,7 +826,17 @@
+                 step = 9.0f;
+             }
+             float first = along;
+-            while (along < distance) {
++            if (rtx_render_mode)
++                rtx_beam_body(
++                    camera_offset[0] + projectile->pos.origin_x,
++                    camera_offset[1] + primary->origin_y,
++                    camera_offset[0] + projectile->pos_x,
++                    camera_offset[1] + projectile->pos.pos_y,
++                    along, span, step, scale, transition_alpha,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS ? 1.0f : 0.5f,
++                    0.6f,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS ? 0.1f : 1.0f);
++            else while (along < distance) {
+                 if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS) {
+                     float alpha = (along - first) / span
+                         * transition_alpha;
+@@ -857,6 +867,13 @@
+                 grim_interface_ptr->grim_set_color(
+                     0.5f, 0.6f, 1.0f, transition_alpha);
+             }
++            if (rtx_render_mode)
++                rtx_beam_head(
++                    camera_offset[0] + projectile->pos_x,
++                    camera_offset[1] + projectile->pos.pos_y,
++                    projectile->angle, scale,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS);
++            else
+             grim_interface_ptr->grim_draw_quad(
+                 camera_offset[0] + projectile->pos_x - half_size,
+                 camera_offset[1] + projectile->pos.pos_y - half_size,
+@@ -907,7 +924,17 @@
+                 step = 9.0f;
+             }
+             float first = along;
+-            while (along < distance) {
++            if (rtx_render_mode)
++                rtx_beam_body(
++                    camera_offset[0] + projectile->pos.origin_x,
++                    camera_offset[1] + primary->origin_y,
++                    camera_offset[0] + projectile->pos_x,
++                    camera_offset[1] + projectile->pos.pos_y,
++                    along, span, step, scale, fade * transition_alpha,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS ? 1.0f : 0.5f,
++                    0.6f,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS ? 0.1f : 1.0f);
++            else while (along < distance) {
+                 if (projectile_pool[projectile_index].pos.tail.vy.type_id
+                     == PROJECTILE_TYPE_FIRE_BULLETS) {
+                     float alpha = fade * ((along - first) / span)
+@@ -937,6 +964,13 @@
+                 grim_interface_ptr->grim_set_color(
+                     0.5f, 0.6f, 1.0f, head_alpha);
+             }
++            if (rtx_render_mode)
++                rtx_beam_head(
++                    camera_offset[0] + projectile->pos_x,
++                    camera_offset[1] + projectile->pos.pos_y,
++                    projectile->angle, scale,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS);
++            else
+             grim_interface_ptr->grim_draw_quad(
+                 camera_offset[0] + projectile->pos_x - 16.0f,
+                 camera_offset[1] + projectile->pos.pos_y - 16.0f,
+--- a/decomp/1.9/crimsonland/ui_render/creature_render_type.cpp
++++ b/decomp/1.9/crimsonland/ui_render/creature_render_type.cpp
+@@ -136,6 +136,7 @@
+         grim_interface_ptr->grim_end_batch();
+     }
+ 
++    rtx_material(HOST_PASS_CREATURES);
+     grim_interface_ptr->grim_set_config_var(0x13, 5u);
+     grim_interface_ptr->grim_set_config_var(0x14, 6u);
+     grim_interface_ptr->grim_begin_batch();
+@@ -310,6 +311,7 @@
+     }
+ 
+     grim_interface_ptr->grim_end_batch();
++    rtx_material(HOST_PASS_SPRITES);
+ 
+     if (config_blob.violence_disabled) {
+         grim_interface_ptr->grim_set_config_var(0x14, 2u);
+--- a/decomp/1.9/crimsonland/crimsonland/player_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/player_render.cpp
+@@ -238,6 +238,7 @@
+         grim_interface_ptr->grim_set_config_var(0x13, 5u);
+         grim_interface_ptr->grim_set_config_var(0x14, 6u);
+         player_render_set_tint(transition_alpha);
++        rtx_material(HOST_PASS_PLAYERS);
+         grim_interface_ptr->grim_begin_batch();
+ #if CL_BUILD == 10908
+         grim_interface_ptr->grim_draw_quad(
+@@ -254,6 +255,7 @@
+             dead_sprite_size);
+ #endif
+         grim_interface_ptr->grim_end_batch();
++        rtx_material(HOST_PASS_SPRITES);
+         return;
+     }
+ 
+@@ -321,6 +323,7 @@
+         creature_type_table[5].texture_handle, 0);
+     grim_interface_ptr->grim_set_config_var(0x13, 5u);
+     grim_interface_ptr->grim_set_config_var(0x14, 6u);
++    rtx_material(HOST_PASS_PLAYERS);
+     grim_interface_ptr->grim_begin_batch();
+     grim_interface_ptr->grim_set_color(
+         1.0f, 1.0f, 1.0f, transition_alpha);
+@@ -408,6 +411,7 @@
+         sprite_size);
+ #endif
+     grim_interface_ptr->grim_end_batch();
++    rtx_material(HOST_PASS_SPRITES);
+ 
+     if (player_state_table[current_player_index].shield_timer > 0.0f) {
+         grim_interface_ptr->grim_set_config_var(0x13, 5u);
+--- a/decomp/1.9/crimsonland/crimsonland/bonus_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/bonus_render.cpp
+@@ -173,6 +173,7 @@
+         grim_interface_ptr->grim_set_color_ptr(&color.r);
+         grim_interface_ptr->grim_set_rotation(0.0f);
+         grim_interface_ptr->grim_set_atlas_frame(4, 0);
++        rtx_bonus(0, 4.0f, 4.0f, entry->time.pos_x, entry->time.pos_y);
+         grim_interface_ptr->grim_draw_quad(
+             camera_offset_x + entry->time.pos_x - 16.0f,
+             camera_offset_y + entry->time.pos_y - 16.0f,
+@@ -213,6 +214,7 @@
+ 
+             float size = icon_scale * 32.0f;
+             float half_size = icon_scale * 16.0f;
++            rtx_bonus(1, 4.0f, 4.0f, entry->time.pos_x, entry->time.pos_y);
+             grim_interface_ptr->grim_draw_quad(
+                 camera_offset_x + entry->time.pos_x - half_size,
+                 camera_offset_y + entry->time.pos_y - half_size,
+@@ -221,6 +223,7 @@
+         }
+     }
+     grim_interface_ptr->grim_end_batch();
++    rtx_material(HOST_PASS_SPRITES);
+ 
+     grim_interface_ptr->grim_bind_texture(ui_weapon_icons_texture, 0);
+     grim_interface_ptr->grim_begin_batch();
+@@ -252,6 +255,7 @@
+ 
+         float half_width = icon_scale * 30.0f;
+         float height = icon_scale * 30.0f;
++        rtx_bonus(1, 4.0f, 8.0f, entry->time.pos_x, entry->time.pos_y);
+         grim_interface_ptr->grim_draw_quad(
+             camera_offset_x + entry->time.pos_x - half_width,
+             camera_offset_y + entry->time.pos_y - icon_scale * 15.0f,
+@@ -259,6 +263,7 @@
+             height);
+     }
+     grim_interface_ptr->grim_end_batch();
++    rtx_material(HOST_PASS_SPRITES);
+ 
+     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
+--- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
+@@ -204,6 +204,10 @@
+         "openurl", console_cmd_open_url);
+     console_log_queue.console_register_command(
+         "sndfreqadjustment", console_cmd_snd_freq_adjustment);
++    console_log_queue.console_register_command(
++        "rendermode", console_cmd_render_mode);
++    console_log_queue.console_register_command(
++        "togglertx", console_cmd_toggle_rtx);
+ 
+     memset(registry_key_status_root_path, 0, 0xff);
+     registry_key_status_root_path[0] = 'S';

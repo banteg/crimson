@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <string>
 #include "../client/renderer.cpp"
+#include "../client/thickness.cpp"
 
 alignas(16) u8 memory[1024 * 1024];
 u8 *client_memory() { return memory; }
@@ -239,6 +240,160 @@ void benchmark(bool terrain) {
 }
 #endif
 
+// The back buffer's red channel at a logical pixel, as stored.
+float back_red(int x, int y) {
+  Target &back = textures[0];
+  float pixel[4];
+  glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
+  glReadPixels(x * back.width / back.logical_width, y * back.height / back.logical_height, 1, 1, GL_RGBA, GL_FLOAT,
+               pixel);
+  bind_target();
+  return pixel[0];
+}
+
+// RTX: an additive stack of three whites draws past white in the world's HDR
+// target, whose tonemap rolls it off below white without EDR headroom and past
+// white with it, while what stays under the shoulder's knee lands unchanged.
+// Classic saturates each draw on its 8-bit back buffer.
+void check_rtx() {
+#ifdef __EMSCRIPTEN__
+  assert(!renderer_set_rtx(true));
+#else
+  renderer_resize(2048, 1536);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 2);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
+  auto world = [] {
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, 1);
+    for (int i = 0; i < 3; ++i)
+      rectangle(0, 0, 512, 768, 0xffffffff);
+    rectangle(512, 0, 1024, 768, 0xff808080);
+    w2c_host_render_pass(nullptr, 2);
+  };
+  assert(renderer_set_rtx(true) && (textures[0].flags & TARGET_HALF_FLOAT));
+  // A beam head is one stamp: full gain at its center, nothing past its radius.
+  // A 256-pixel body (a streak's longest) fades in from its tail and is
+  // symmetric about its axis, which sits on physical row 768 (Direct3D's
+  // half-pixel shift included).
+  auto beam = [](std::initializer_list<float> corners, float length, float step) {
+    memcpy(memory, corners.begin(), corners.size() * sizeof(float));
+    w2c_host_beam(nullptr, 0, length, step, 0xffffffff);
+  };
+  w2c_host_clear(nullptr, 0xff000000);
+  beam({495.75f, 367.75f, -1, -1, 495.75f, 399.75f, -1, 1, 527.75f, 399.75f, 1, 1, 527.75f, 367.75f, 1, -1}, -1, 0);
+  assert(fabsf(back_red(512, 384) - 0.92f) < 1e-2f && back_red(512, 399) < 1e-3f);
+  w2c_host_clear(nullptr, 0xff000000);
+  float length = 256 / 16.0f;
+  beam({184, 367.75f, -1, -1, 184, 399.75f, -1, 1, 472, 399.75f, length + 1, 1, 472, 367.75f, length + 1, -1}, length,
+       3.1f / 16);
+  assert(back_red(210, 384) < back_red(330, 384) && back_red(330, 384) < back_red(450, 384));
+  assert(fabsf(back_red(330, 378) - back_red(330, 390)) < 1e-3f && back_red(330, 380) > 0);
+  assert(back_red(330, 410) == 0);
+  // Lit batches: creature bodies keep a 0.6 linear ambient fill without lights
+  // and brighten under one; players without lights keep the device's shading.
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_texture_create(nullptr, 300, 64, 64, 0);
+  memset(memory + 4096, 255, 64 * 64 * 4);
+  w2c_host_texture_upload(nullptr, 300, 4096);
+  w2c_host_set_texture(nullptr, 0, 300);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG1, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  renderer_set_headroom(1);
+  auto lit = [](int pass, int lights) {
+    const float camera[2] = {0, 0};
+    const float light[16] = {512, 384, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 200, 3};
+    memcpy(memory + 32768, camera, sizeof camera);
+    memcpy(memory + 32800, light, sizeof light);
+    w2c_host_scene(nullptr, 32768, 32800, lights);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, pass);
+    rectangle(0, 0, 1024, 768, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_red(512, 384);
+  };
+  float device = lit(HOST_PASS_SPRITES, 0), ambient = lit(HOST_PASS_CREATURES, 0);
+  assert(fabsf(ambient - powf(0.6f, 1 / 2.2f)) < 2e-3f);
+  assert(lit(HOST_PASS_CREATURES, 1) > ambient + 0.05f);
+  assert(lit(HOST_PASS_PLAYERS, 0) == device && lit(HOST_PASS_PLAYERS, 1) > device);
+  // Bonuses: a shell is black glass, dim but for a fixed key highlight, whose
+  // clear coat mirrors a light above it; an emblem without lights keeps the
+  // device's colors. The quad spans the
+  // atlas's 4x4 grid, so its cell (1, 1) centers at (384, 288).
+  auto bonus = [](int emblem, int lights) {
+    const float camera[2] = {0, 0};
+    const float light[16] = {384, 288, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 200, 3};
+    memcpy(memory + 32768, camera, sizeof camera);
+    memcpy(memory + 32800, light, sizeof light);
+    w2c_host_scene(nullptr, 32768, 32800, lights);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_bonus(nullptr, emblem, 4, 4, 384, 288);
+    rectangle(0, 0, 1024, 768, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_red(384, 288);
+  };
+  float shell = bonus(0, 0);
+  assert(shell < 0.3f && bonus(0, 1) > shell + 0.5f);
+  assert(fabsf(bonus(1, 0) - device) < 2e-3f);
+  // A body between the light and the batch (one grid cell holding it) shades it,
+  // unless the shadows setting is off.
+  auto occluded = [&](float shadows) {
+    const float grid[6] = {0, 0, 1, 1, 2048, shadows};
+    const float values[20] = {4, 1, 0, 0,                     // cell 0: its list at texel 4, one body
+                              400, 384, 16, 64,                // body: center, height * 0.4, bound
+                              1 / 60.f, 1 / 60.f, 1 / 24.f, 1e20f, // inverse radii, owner x
+                              1, 0, 1, 1e20f,                  // rotation, opacity, owner y
+                              1, 0, 0, 0};                     // the cell's list: the body at texel 1
+    memcpy(memory + 33024, grid, sizeof grid);
+    memcpy(memory + 33152, values, sizeof values);
+    w2c_host_occlusion(nullptr, 33024, 33152, 20);
+    const float far_light[16] = {200, 384, 600, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 600, 3};
+    memcpy(memory + 32800, far_light, sizeof far_light);
+    const float camera[2] = {0, 0};
+    memcpy(memory + 32768, camera, sizeof camera);
+    w2c_host_scene(nullptr, 32768, 32800, 1);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, HOST_PASS_CREATURES);
+    rectangle(0, 0, 1024, 768, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_red(600, 384);
+  };
+  float open = occluded(0), shaded = occluded(1);
+  assert(shaded < open - 0.02f);
+  const float none[6] = {0, 0, 0, 0, 64, 1};
+  memcpy(memory + 33024, none, sizeof none);
+  w2c_host_occlusion(nullptr, 33024, 0, 0);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_texture_release(nullptr, 300);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  float limit = 0;
+  for (float headroom : {1.0f, 4.0f}) {
+    renderer_set_headroom(headroom);
+    world();
+    float highlight = back_red(100, 100), shadow = back_red(700, 100);
+    assert(fabsf(shadow - 128 / 255.0f) < 1e-3f);
+    assert(highlight > 0.85f && (headroom == 1 ? highlight <= 1 : highlight > 1 && highlight < powf(4, 1 / 2.2f)));
+    limit = highlight;
+  }
+  assert(!renderer_set_rtx(false) && !(textures[0].flags & TARGET_HALF_FLOAT));
+  assert(fabsf(back_red(100, 100) - 1) < 1e-3f && limit > 1); // the switch kept the image, clipped to 8 bits
+  world();
+  assert(back_red(100, 100) == 1 && fabsf(back_red(700, 100) - 128 / 255.0f) < 1e-3f);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
+#endif
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights; classic stays 8-bit");
+}
+
 int main() {
   assert(SDL_Init(SDL_INIT_VIDEO));
 #ifdef __EMSCRIPTEN__
@@ -415,6 +570,7 @@ int main() {
   renderer_resume();
   assert(glGetError() == GL_NO_ERROR);
   puts("renderer: native density, logical projection/input, terrain, holds, anchors, alpha and presentation passed");
+  check_rtx();
 #if !defined(RENDERER_BENCHMARK) || RENDERER_BENCHMARK != 0
   // A transparent blue texel must never turn the opaque red neighbor purple.
   w2c_host_texture_create(nullptr, 201, 2, 1, 0);

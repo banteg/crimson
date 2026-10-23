@@ -8,7 +8,7 @@ tags:
 # RTX rendering
 
 RTX is the Python port's alternative rendering mode. It combines analytic beam
-shaders, wet ground materials, and creature lighting with HDR world rendering and macOS extended dynamic range (EDR) output.
+shaders, wet ground materials, and creature lighting with HDR world rendering and extended dynamic range (EDR) output on macOS and Wayland.
 This page covers those paths, their controls, and how they differ from classic
 rendering.
 
@@ -76,16 +76,18 @@ When render mode is `rtx`, `WorldRuntime.draw()` wraps `draw_world()` in `HdrRen
 - pixels at or below the shoulder knee (`0.85`) pass through the tonemapper unchanged; the material pass below shades RTX terrain before this step
 - on SDR/8-bit targets, values above `0.85` compress the peak channel with a $C^1$ exponential shoulder while scaling the remaining channels proportionally to preserve hue, and stacks above `1.0` drift smoothly toward an incandescent white core (`white = 0.6` over a `3.0` excess span)
 - selecting RTX always requests EDR; macOS uses a verified floating-point OpenGL backbuffer and Cocoa's `wantsExtendedDynamicRangeOpenGLSurface` opt-in, following [Apple's OpenGL EDR recipe](https://developer.apple.com/videos/play/wwdc2021/10161/)
-- the Python window runner reserves a float surface for game windows so console/debug mode changes do not need to recreate the GL context; its temporary Cocoa pixel-format hook is restored immediately after window creation
+- on Wayland, the window gets an RGBA16F EGL surface where the driver and compositor share a float format, else a 10-bit one, and is tagged through `wp_color_management_v1` as gamma 2.2 sRGB whose signal `1.0` is the display peak and whose reference white is the compositor's; the canvas divides the frame by the shoulder's limit (`headroom^(1/2.2)`) so SDR white lands on the reference level. Headroom is the preferred description's target peak over its reference white, refreshed when the compositor reports a new preferred description (another output, HDR toggled). Compositors without parametric descriptions, `set_luminances` or gamma 2.2, and X11 sessions, stay SDR
+- the Python window runner reserves a deep surface for game windows so console/debug mode changes do not need to recreate the GL context; its temporary pixel-format hook (Cocoa) or EGL config filter (Wayland) is removed immediately after window creation
 - current display headroom is refreshed before each frame, including after display moves and fullscreen changes; potential headroom is not a rendering limit, and activation can ramp up from `1.0`
 - the tonemapper approximates the legacy OpenGL transfer with gamma 2.2 and rolls highlights off toward current headroom; this is display-relative rendering, not a calibrated nit target
 - gamma and letterbox targets preserve extended values; HUD, aim indicators, perk prompts, and console overlays are drawn outside the world tonemapper and remain in the SDR range
-- returning to classic disables the Cocoa EDR opt-in and composites through an 8-bit target, preserving classic's per-draw saturation even on the reserved float window
-- other platforms, unavailable float surfaces, and displays with headroom `1.0` use SDR tonemapping; an SDR ancestor target also forces SDR output for capture/compositing
+- returning to classic disables the Cocoa EDR opt-in or unsets the Wayland image description and composites through an 8-bit target, preserving classic's per-draw saturation even on the reserved deep window
+- Windows, unavailable deep surfaces, and displays with headroom `1.0` use SDR tonemapping; an SDR ancestor target also forces SDR output for capture/compositing
 
-This integration is limited to the Python port. The native/browser ports are unchanged.
+The native and browser clients run the same HDR world target and tonemap (see [Native client](#native-client)
+and [Browser client](#browser-client)).
 
-In-game PNG screenshots still use an 8-bit SDR readback. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
+In-game PNG screenshots still use an 8-bit SDR readback, taken from the frame before Wayland's presentation scaling. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
 
 ## Ground materials and wet blood
 
@@ -226,6 +228,73 @@ Benchmark controls:
 - render benchmarks can select mode via:
   - `uv run crimson replay benchmark <replay.crd> --mode render`
   - `uv run crimson replay benchmark <replay.crd> --mode render --rtx`
+
+## Native client
+
+The native client (`crimson-core/client`) shows RTX through the same GLSL as the
+Python port: `src/crimson/render/rtx/shaders/*.frag` are loaded by Python and built
+into the client's `rtx_shaders.h` (`crimson-core/client/shaders.py`). The client
+renders the original game, so it cannot branch inside a Python draw path; instead
+the game module marks where the world starts and ends in a frame
+(`crimson-core/game/rtx/rtx.patch`, `game/rtx.cpp`), and the host
+(`client/renderer.cpp`) draws the world between those marks into an `RGBA16F`
+target, tonemaps it onto a half-float back buffer, and draws the HUD over it.
+Classic keeps its 8-bit back buffer, so each classic draw still saturates at white.
+Creature bodies and players are lit as in the Python port, with the same
+`creature.frag` and `player.frag` (moved into `shaders/` with the shared
+`source_geometry.glsl` and `light_visibility.glsl`). The game module collects
+the frame's lights at the world's start (`crimson-core/game/rtx_lights.cpp`, a
+port of `material_lights.py`): projectiles and their ion arcs, muzzle flashes,
+the Sharpshooter sight, the Radioactive aura, rocket exhaust, detonations and
+grouped flame particles, with the same per-response selection. Explosion
+fireballs and shells, which the Python port records as each explosion spawns,
+are not collected yet. The module marks the creature body and player batches
+(`HOST_PASS_CREATURES`, `HOST_PASS_PLAYERS`), and the host draws them with the
+lit programs, the camera offset giving each fragment its world position.
+Creature bodies keep the 0.60 ambient fill even without lights; players keep
+the device's shading until lit. Thin-part transmission uses the same
+part-size map (`crimson-core/client/thickness.cpp`, a port of
+`creature_translucency.py`), made from the atlas texels the module keeps on a
+creature atlas's first lit draw. Creature shadows use the same body grid
+(`rtx_build_occlusion`, a port of `reflection_occlusion.py`): the module builds
+it from the creature pool against the selected lights and sends it each frame
+(`host_occlusion`), and the hosts upload it as the RGBA32F texture the shader
+walks (unfilterable in WebGPU, which reads it with `textureLoad` alone). The
+shadows setting turns direct-light visibility off as in the Python port.
+Bonuses take the same `bonus.frag`: the module marks each shell, icon and
+weapon icon quad (`host_bonus`, with its atlas grid and the bonus's position as
+the shell center), and the host draws it with the bonus program whether or not
+lights reach it, as `draw_bonus_pickups` does.
+
+Ion and Fire Bullets streaks draw as the same analytic beams as the Python port's
+(`shaders/beam.frag`): the module computes each body and head quad as
+`render/rtx/beam.py` does and hands it to the host (`host_beam`) in place of the
+original's stamps, in the head colors the classic path picks (original bug 41
+included).
+On macOS the window is half-float from the start and opts into EDR while RTX is
+on, following the headroom SDL reports each frame. Other platforms tonemap to SDR.
+The mode never reaches a run's state, and the verifier (`core.wasm`) builds
+without it.
+
+Controls:
+
+- launch flag: `crimson --rtx`, or `CRIMSON_RTX=1` (unattended captures)
+- console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`
+- `rendermode rtx` in the game folder's `autoexec.txt`, which the original runs at
+  startup, keeps the mode across launches
+
+## Browser client
+
+In the browser, RTX needs the WebGPU renderer (`crimson-core/client/renderer_webgpu.cpp`): WebGL2 has no
+extended-range output, so the WebGL2 renderer stays classic. The WebGPU renderer runs the same world target, tonemap
+and beams through the same GLSL, translated to WGSL (`crimson-core/client/shaders.py`). On an HDR display
+(`dynamic-range: high`) the canvas turns `rgba16float` with extended tone mapping while RTX is on. Browsers report
+no headroom, so the tonemap rolls highlights off toward twice SDR white, which most HDR displays show without
+clipping. Elsewhere it tonemaps to SDR.
+
+The page's RTX switch sits beside fullscreen and shows only with WebGPU. `?rtx=1` or `?rtx=0` picks the mode for a
+link, otherwise the switch's last state is kept in the browser. The console's `rendermode` and `togglertx` work as
+on the desktop, and the switch follows them.
 
 ## Future direction
 

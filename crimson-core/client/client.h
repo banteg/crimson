@@ -12,7 +12,10 @@ void client_wasi_init();
 // The host path of a name under the game directory, matched as the game opens it.
 bool client_resolve(const std::string &relative, std::string &path);
 
-// renderer.cpp: the Direct3D 8 subset the game module's device sends.
+// renderer.cpp: the Direct3D 8 subset the game module's device sends (in the
+// browser, renderer_webgpu.cpp instead where WebGPU runs; renderer_select.cpp).
+// Whether it draws with OpenGL, whose window needs a GL context and swaps.
+bool renderer_uses_gl();
 void renderer_init();
 // Fit the logical game view to physical window pixels before the game draws.
 void renderer_resize(int window_width, int window_height);
@@ -30,6 +33,12 @@ struct Viewport {
 };
 Viewport renderer_viewport(int window_width, int window_height);
 std::vector<unsigned char> renderer_capture(int &width, int &height);
+// RTX (game/rtx.cpp): whether the renderer shows it, asked to, and the display's
+// EDR headroom its tonemap rolls highlights toward (1 is SDR).
+bool renderer_set_rtx(bool enabled);
+void renderer_set_headroom(float headroom);
+// thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
+std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);
 
 // audio.cpp: plays the module's mix, pulled after each frame.
 void audio_init();

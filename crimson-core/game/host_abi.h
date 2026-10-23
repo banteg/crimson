@@ -1,7 +1,8 @@
 #pragma once
 // What the game module asks of its host. Presentation calls return nothing, so
-// the host observes the game without feeding back into it. The query is wall
-// time, which a simulation tick never reads; files arrive through WASI.
+// the host observes the game without feeding back into it. The queries are wall
+// time and the rendering mode, which a simulation tick never reads; files arrive
+// through WASI.
 #define HOST_IMPORT(name) __attribute__((import_module("host"), import_name(#name)))
 extern "C" {
 // Textures hold A8R8G8B8 texels. Flags: 1, a render target the device draws
@@ -24,6 +25,29 @@ HOST_IMPORT(clear) void host_clear(unsigned color);
 HOST_IMPORT(draw) void host_draw(int primitive, const void *vertices, int vertex_count, const unsigned short *indices,
                                  int primitive_count);
 HOST_IMPORT(present) void host_present(void);
+// RTX, the rendering mode beyond the original's look (game/rtx.cpp): the mode
+// the host shows of the one asked for (0 classic, 1 RTX), and the world's bounds
+// in the frame, which the host draws into its HDR target and then tonemaps onto
+// the back buffer.
+HOST_IMPORT(render_mode) int host_render_mode(int requested);
+#include "render_passes.h"
+HOST_IMPORT(render_pass) void host_render_pass(int pass);
+// The world's light sources, sent before its begin mark (game/rtx_lights.cpp):
+// the camera offset (world to screen) and `count` lights of 16 floats each.
+HOST_IMPORT(scene) void host_scene(const float *camera, const float *lights, int count);
+// Their shadows: the creature body grid (render/rtx/reflection_occlusion.py) as
+// `grid` (origin x, y, columns, or 0 for none, rows, cell size, and whether the
+// shadows setting is on) and `count` floats of RGBA32F texels, or none.
+HOST_IMPORT(occlusion) void host_occlusion(const float *grid, const float *values, int count);
+// A bonus draw's material (src/crimson/render/rtx/shaders/bonus.frag) until the
+// next pass: the shell (emblem 0) or an icon on it, the atlas's cell grid and
+// the bonus's world position, the shell's center.
+HOST_IMPORT(bonus) void host_bonus(int emblem, float grid_x, float grid_y, float center_x, float center_y);
+// An RTX analytic beam quad (src/crimson/render/rtx/shaders/beam.frag): four
+// corners as x, y, u, v (u and v in beam radii), its length in radii (negative
+// for a head) and stamp spacing, and its D3DCOLOR, drawn with the current blend
+// into the current target.
+HOST_IMPORT(beam) void host_beam(const float *corners, float length, float step, unsigned color);
 // The last drawn frame, kept and shown again under what a replay draws over it
 // while no tick draws (host/watch.inc): save the back buffer, or show the saved one.
 enum {

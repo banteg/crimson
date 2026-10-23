@@ -8,6 +8,7 @@
 // The custom quest a run plays in place of a stock one, or null (host/host.cpp, seams/custom-quest.patch).
 extern "C" struct quest_meta_t *portable_custom_quest;
 #ifdef CRIMSON_GAME
+#include "../game/render_passes.h"
 extern "C" {
 // The game module takes the recording only inside a tick (host/game.inc).
 extern unsigned char game_ticking;
@@ -37,6 +38,18 @@ int highscore_watch_row(int hovered, int rows, int *selected);
 void highscore_watch(float *card, struct highscore_record_t *record);
 // The build's name (host/game.inc).
 char *game_version_label();
+// RTX (game/rtx.cpp): the rendering mode, 0 classic, 1 RTX, its console
+// commands, the world's bounds in the frame and the analytic beams that replace
+// the stamped streaks (game/rtx/rtx.patch).
+extern int rtx_render_mode;
+void console_cmd_render_mode(void);
+void console_cmd_toggle_rtx(void);
+void rtx_world(int begin);
+void rtx_material(int pass); // a HOST_PASS_* of game/render_passes.h
+void rtx_bonus(int emblem, float grid_x, float grid_y, float center_x, float center_y);
+void rtx_beam_body(float origin_x, float origin_y, float head_x, float head_y, float start, float span, float step,
+                   float effect_scale, float alpha, float r, float g, float b);
+void rtx_beam_head(float center_x, float center_y, float rotation, float effect_scale, bool fire);
 // A track's volume a tick sets, on the original's track for the one it names
 // (host/coop.inc).
 void game_music_volume(int id, float volume);

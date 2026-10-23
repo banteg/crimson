@@ -20,7 +20,7 @@ def test_edr_survives_world_gamma_canvas_and_classic_toggle(
 ) -> None:
     edr.reset_edr_window()
     rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIDDEN | rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
-    with edr.macos_float_backbuffer(enabled=True):
+    with edr.float_backbuffer(enabled=True):
         rl.init_window(128, 96, "EDR pipeline test")
     game = GameLoopView(make_game_state())
     game.state.gamma_ramp = gain
@@ -49,7 +49,7 @@ def test_edr_survives_world_gamma_canvas_and_classic_toggle(
         rl.draw_rectangle(0, 0, canvas.width(), canvas.height() // 2, rl.Color(128, 128, 128, 255))
 
     try:
-        assert edr.activate_macos_edr_window(True)
+        assert edr.activate_edr_window(True)
         assert edr.edr_available()
         # Hidden test windows don't raise display headroom. A controlled value
         # tests the entire real float pipeline independently of display brightness.
@@ -75,7 +75,7 @@ def test_edr_survives_world_gamma_canvas_and_classic_toggle(
             )
         rl.end_drawing()
 
-        assert not edr.activate_macos_edr_window(False)
+        assert not edr.activate_edr_window(False)
         assert edr.edr_headroom() == 1.0
 
         def classic_scene() -> None:
@@ -116,3 +116,36 @@ def test_cocoa_pixel_format_hook_is_restored_on_exception() -> None:
         assert objc.method_getImplementation(method) != original
         raise RuntimeError("window setup failed")
     assert objc.method_getImplementation(method) == original
+
+
+def test_encoded_surface_takes_the_scaled_frame_and_screenshots_take_it_as_drawn(raylib_display, mocker) -> None:
+    edr.reset_edr_window()
+    rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIDDEN | rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
+    rl.init_window(128, 96, "EDR encode test")
+    # A Wayland-style surface on a display with 4x headroom: signal 1.0 is the peak.
+    bridge = mocker.Mock(supported=True)
+    bridge.update.return_value = (True, 4.0)
+    bridge.output_gain.side_effect = lambda headroom: headroom ** (-1 / 2.2)
+    mocker.patch.object(edr, "_bridge", bridge)
+    mocker.patch.object(edr, "float_backbuffer")
+    surface = canvas.Canvas(128, 96)
+    try:
+        assert edr.activate_edr_window(True)
+        surface.fit()
+        rl.begin_drawing()
+        surface.draw(lambda: rl.draw_rectangle(0, 0, 128, 96, rl.Color(128, 128, 128, 255)))
+        rl.rl_draw_render_batch_active()
+        pixel = rl.load_image_colors(image := rl.load_image_from_screen())[0]
+        rl.unload_image(image)
+        shot = surface.load_frame_image()
+        assert shot is not None
+        shot_pixel = rl.load_image_colors(shot)[0]
+        rl.unload_image(shot)
+        rl.end_drawing()
+        assert pixel.r == pytest.approx(128 * 4.0 ** (-1 / 2.2), abs=1.5)
+        # raylib truncates when converting the half-float target to 8 bits.
+        assert (shot_pixel.r, shot_pixel.g, shot_pixel.b) == pytest.approx((128, 128, 128), abs=1)
+    finally:
+        surface.close()
+        edr.reset_edr_window()
+        rl.close_window()

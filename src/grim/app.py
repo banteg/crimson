@@ -8,10 +8,10 @@ from typing import Any
 import msgspec
 from PIL import Image
 
-from grim.raylib_api import rl, rl_rectangle
+from grim.raylib_api import rd, rl, rl_rectangle
 
 from .canvas import Canvas, frame_rect
-from .edr import activate_macos_edr_window, macos_float_backbuffer, reset_edr_window
+from .edr import activate_edr_window, float_backbuffer, reset_edr_window
 from .render_pipeline import RaylibDrawScope, RenderPipeline, WindowSink
 from .view import View
 
@@ -73,7 +73,7 @@ class _HeldKey:
         self._held.clear()
 
 
-def _save_screenshot(path: Path) -> None:
+def _save_screenshot(path: Path, canvas: Canvas) -> None:
     """Write the frame drawn so far at physical pixels, without letterbox bars.
 
     Runs before the buffer swap. raylib's `take_screenshot` runs after it and scales the already-physical
@@ -82,11 +82,17 @@ def _save_screenshot(path: Path) -> None:
     """
     # Flush the batched draws so the read sees the whole frame, not just the clear.
     rl.rl_draw_render_batch_active()
-    image = rl.load_image_from_screen()
+    image = canvas.load_frame_image()
+    from_screen = image is None
+    if from_screen:
+        image = rl.load_image_from_screen()
     try:
-        frame = frame_rect()
-        dpi = rl.get_window_scale_dpi()
-        rl.image_crop(image, rl_rectangle(frame.x * dpi.x, frame.y * dpi.y, frame.width * dpi.x, frame.height * dpi.y))
+        if from_screen:
+            frame = frame_rect()
+            dpi = rl.get_window_scale_dpi()
+            rl.image_crop(
+                image, rl_rectangle(frame.x * dpi.x, frame.y * dpi.y, frame.width * dpi.x, frame.height * dpi.y),
+            )
         pixels = rl.ffi.buffer(image.data, image.width * image.height * 4)
         shot = Image.frombytes("RGBA", (image.width, image.height), pixels).convert("RGB")
     finally:
@@ -117,13 +123,16 @@ def run_view(
     run_hooks = hooks if hooks is not None else RunViewHooks()
     reset_edr_window()
     rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
-    with macos_float_backbuffer(enabled=run_hooks.wants_edr is not None):
+    with float_backbuffer(enabled=run_hooks.wants_edr is not None):
         rl.init_window(width, height, title)
+    window = rl.glfw_get_current_context()
+    windowed_size = rl.ffi.new("int[2]")
+    rl.glfw_get_window_size(window, windowed_size + 0, windowed_size + 1)
     if window_state:
         # Borderless windowed only applies to an open window, so it can't go through set_config_flags.
         rl.set_window_state(window_state)
     if run_hooks.wants_edr is not None:
-        activate_macos_edr_window(run_hooks.wants_edr())
+        activate_edr_window(run_hooks.wants_edr())
     canvas = Canvas(width, height)
     canvas.fit()
     screenshot_key = _HeldKey(SCREENSHOT_KEY)
@@ -147,14 +156,24 @@ def run_view(
                 run_hooks.focus_changed(focused)
             toggle_fullscreen = _fullscreen_toggle_pressed()
             if toggle_fullscreen:
+                if not rl.is_window_state(rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE):
+                    rl.glfw_get_window_size(window, windowed_size + 0, windowed_size + 1)
                 rl.toggle_borderless_windowed()
-                run_hooks.fullscreen_changed(rl.is_window_state(rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE))
+                fullscreen = rl.is_window_state(rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE)
+                if not fullscreen:
+                    # raylib can multiply its saved logical size by DPI again on
+                    # Wayland. Restore the original GLFW window units instead.
+                    rl.glfw_set_window_size(window, windowed_size[0], windowed_size[1])
+                    # raylib enables decorations while GLFW still considers the
+                    # window fullscreen, so Wayland skips applying the title bar.
+                    rl.glfw_set_window_attrib(window, rd.GLFW_DECORATED, rd.GLFW_TRUE)
+                run_hooks.fullscreen_changed(fullscreen)
             canvas.fit()
             # Skip the update that would also see this frame's Enter press.
             if not toggle_fullscreen and focused and was_focused:
                 view.update(dt)
             if run_hooks.wants_edr is not None:
-                activate_macos_edr_window(run_hooks.wants_edr())
+                activate_edr_window(run_hooks.wants_edr())
             take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
             if run_hooks.consume_screenshot_request():
                 take_screenshot = True
@@ -167,7 +186,7 @@ def run_view(
             def draw_frame(screenshot_path: Path | None = screenshot_path) -> None:
                 canvas.draw(view.draw)
                 if screenshot_path is not None:
-                    _save_screenshot(screenshot_path)
+                    _save_screenshot(screenshot_path, canvas)
 
             render_pipeline.draw(
                 draw_frame=draw_frame,

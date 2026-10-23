@@ -6,13 +6,9 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
 
+from .shaders import glsl
+
 SHADER_STAMP_ANALYTIC_RADIUS_SCALE = 16.0
-SHADER_STAMP_VIRTUAL_PROFILE_A = 1.3
-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR = -4.8
-SHADER_STAMP_VIRTUAL_PROFILE_QUAD = 1.0
-SHADER_STAMP_VIRTUAL_PROFILE_OFFSET = 0.01
-SHADER_STAMP_VIRTUAL_INTENSITY_GAIN = 0.92
-SHADER_STAMP_VIRTUAL_MAX_STAMPS = 128
 SHADER_STAMP_VIRTUAL_HEAD_RADIUS_MULTIPLIER = 1.05
 SHADER_STAMP_VIRTUAL_HEAD_FIRE_RADIUS_MULTIPLIER = 1.35
 
@@ -39,115 +35,16 @@ void main() {
 }
 """
 
-_BEAM_FAST_STAMPED_FS_330 = f"""
-#version 330
-
-in vec2 fragTexCoord;
-in vec4 fragColor;
-in float fragLen;
-flat in float fragStep;
-
-uniform vec4 colDiffuse;
-uniform float u_stamp_scale;
-uniform float u_stamp_decay;
-uniform float u_stamp_quad;
-uniform float u_stamp_offset;
-uniform float u_intensity_gain;
-
-out vec4 finalColor;
-
-void main() {{
-    float u_len = fragLen;
-    float gain = max(u_intensity_gain, 0.0);
-
-    if (u_len < 0.0) {{
-        float d = length(fragTexCoord);
-        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d - u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
-        float intensity = profile * fragColor.a * gain;
-        vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
-        finalColor = vec4(rgb, 1.0);
-        return;
-    }}
-
-    float step_uv = max(0.001, fragStep);
-    float len_uv = max(0.0, u_len);
-    float stamp_count = floor(len_uv / step_uv) + 1.0;
-    stamp_count = clamp(stamp_count, 0.0, float({SHADER_STAMP_VIRTUAL_MAX_STAMPS:d}));
-
-    int start_i = 0;
-    int end_i = int(stamp_count);
-
-    // Profile support radius in UV-space where profile falls to zero.
-    // For current params (offset > 0), this makes the loop O(local overlap).
-    float reach_uv = 0.0;
-    bool has_reach_uv = false;
-    if (u_stamp_scale <= 0.0 || u_stamp_offset >= u_stamp_scale) {{
-        has_reach_uv = true;
-    }} else if (u_stamp_offset > 0.0) {{
-        float target = -log(u_stamp_offset / max(u_stamp_scale, 1e-6));
-        float b = max(u_stamp_decay, 0.0);
-        float q = max(u_stamp_quad, 0.0);
-        if (q > 1e-6) {{
-            float disc = max(0.0, b * b + 4.0 * q * target);
-            reach_uv = (-b + sqrt(disc)) / (2.0 * q);
-            has_reach_uv = true;
-        }} else if (b > 1e-6) {{
-            reach_uv = target / b;
-            has_reach_uv = true;
-        }}
-    }}
-
-    if (has_reach_uv) {{
-        reach_uv = max(reach_uv, 0.0);
-        float center_index = floor(fragTexCoord.x / step_uv);
-        float index_reach = ceil(reach_uv / step_uv);
-        start_i = max(0, int(center_index - index_reach));
-        end_i = min(int(stamp_count), int(center_index + index_reach + 1.0));
-    }}
-
-    float accum = 0.0;
-    for (int i = start_i; i < end_i; i++) {{
-        float fi = float(i);
-        float sx = fi * step_uv;
-        if (sx >= len_uv) {{
-            break;
-        }}
-        float t = clamp(sx / max(1e-6, len_uv), 0.0, 1.0);
-        float d = length(vec2(fragTexCoord.x - sx, fragTexCoord.y));
-        float profile = clamp(u_stamp_scale * exp(-u_stamp_decay * d - u_stamp_quad * d * d) - u_stamp_offset, 0.0, 1.0);
-        accum += t * profile;
-    }}
-
-    float intensity = accum * fragColor.a * gain;
-    vec3 rgb = fragColor.rgb * colDiffuse.rgb * intensity;
-    finalColor = vec4(rgb, 1.0);
-}}
-"""
+_BEAM_FAST_STAMPED_FS_330 = glsl("beam.frag")
 
 
 class _BeamFastStampedShader(msgspec.Struct, frozen=True):
     shader: rl.Shader
     color_loc: int
-    stamp_scale_loc: int
-    stamp_decay_loc: int
-    stamp_quad_loc: int
-    stamp_offset_loc: int
-    intensity_gain_loc: int
 
 
 _BEAM_FAST_STAMPED_SHADER_TRIED = False
 _BEAM_FAST_STAMPED_SHADER: _BeamFastStampedShader | None = None
-
-
-def _set_shader_float(shader: rl.Shader, location: int, value: float) -> None:
-    if int(location) < 0:
-        return
-    rl.set_shader_value(
-        shader,
-        int(location),
-        rl.ffi.new("float *", float(value)),
-        rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
-    )
 
 
 def _set_shader_vec4(shader: rl.Shader, location: int, x: float, y: float, z: float, w: float) -> None:
@@ -181,11 +78,6 @@ def _get_beam_fast_stamped_shader() -> _BeamFastStampedShader | None:
     _BEAM_FAST_STAMPED_SHADER = _BeamFastStampedShader(
         shader=shader,
         color_loc=int(rl.get_shader_location(shader, "colDiffuse")),
-        stamp_scale_loc=int(rl.get_shader_location(shader, "u_stamp_scale")),
-        stamp_decay_loc=int(rl.get_shader_location(shader, "u_stamp_decay")),
-        stamp_quad_loc=int(rl.get_shader_location(shader, "u_stamp_quad")),
-        stamp_offset_loc=int(rl.get_shader_location(shader, "u_stamp_offset")),
-        intensity_gain_loc=int(rl.get_shader_location(shader, "u_intensity_gain")),
     )
     return _BEAM_FAST_STAMPED_SHADER
 
@@ -197,14 +89,8 @@ def _require_beam_fast_stamped_shader() -> _BeamFastStampedShader:
     return shader_data
 
 
-def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader, intensity_gain: float) -> None:
-    shader = shader_data.shader
-    _set_shader_vec4(shader, shader_data.color_loc, 1.0, 1.0, 1.0, 1.0)
-    _set_shader_float(shader, shader_data.stamp_scale_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_A))
-    _set_shader_float(shader, shader_data.stamp_decay_loc, float(-SHADER_STAMP_VIRTUAL_PROFILE_LINEAR))
-    _set_shader_float(shader, shader_data.stamp_quad_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_QUAD))
-    _set_shader_float(shader, shader_data.stamp_offset_loc, float(SHADER_STAMP_VIRTUAL_PROFILE_OFFSET))
-    _set_shader_float(shader, shader_data.intensity_gain_loc, float(intensity_gain))
+def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader) -> None:
+    _set_shader_vec4(shader_data.shader, shader_data.color_loc, 1.0, 1.0, 1.0, 1.0)
 
 
 class BeamBatch:
@@ -222,7 +108,7 @@ class BeamBatch:
     def begin(self, shader_data: _BeamFastStampedShader) -> None:
         if not self.active:
             rl.begin_shader_mode(shader_data.shader)
-            _apply_virtual_beam_uniforms(shader_data=shader_data, intensity_gain=SHADER_STAMP_VIRTUAL_INTENSITY_GAIN)
+            _apply_virtual_beam_uniforms(shader_data=shader_data)
             self.active = True
 
     def end(self) -> None:

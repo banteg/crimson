@@ -30,6 +30,10 @@
   .corner:hover { color: #fff; }
   .corner svg { display: block; width: 20px; height: 20px; }
   #fullscreen { right: 6px; }
+  /* The RTX lighting switch, beside fullscreen: lit while RTX draws. */
+  #rtx { right: 44px; width: auto; padding: 6px 8px; font-family: inherit; font-size: 12px; font-weight: 600; line-height: 20px;
+    letter-spacing: 0.05em; }
+  #rtx.on { color: var(--row-on); }
   #home { left: 6px; }
   #fullscreen .exit, :fullscreen #fullscreen .enter { display: none; }
   :fullscreen #fullscreen .exit { display: block; }
@@ -79,6 +83,7 @@
 <a id="home" class="corner shown" href="/" title="crimson.land" aria-label="Back to crimson.land">
   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l-6 6 6 6"/></svg>
 </a>
+<button id="rtx" class="corner" type="button" title="RTX lighting" aria-pressed="false" hidden>RTX</button>
 <button id="fullscreen" class="corner" type="button" title="Fullscreen" aria-label="Fullscreen" hidden>
   <svg class="enter" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5"/></svg>
   <svg class="exit" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v5H2M18 7h-5V2M13 18v-5h5M2 13h5v5"/></svg>
@@ -174,6 +179,26 @@
   // game where the browser allows it (the Keyboard Lock API); holding Escape
   // still leaves.
   const fullscreen = document.getElementById("fullscreen"), home = document.getElementById("home");
+  // RTX lighting, where the game draws with WebGPU (client/renderer_webgpu.cpp): ?rtx=1 or ?rtx=0, else the player's
+  // last choice. The switch follows the game's mode, which the console's rendermode changes too.
+  const rtx = document.getElementById("rtx");
+  const RTX_CHOICE = "crimson.rtx";
+  const rtxWanted = () => {
+    if (query.has("rtx")) return query.get("rtx") !== "0";
+    try {
+      return localStorage.getItem(RTX_CHOICE) === "1";
+    } catch {
+      return false;
+    }
+  };
+  rtx.onclick = () => {
+    const on = rtx.getAttribute("aria-pressed") !== "true";
+    Module.ccall("client_render_mode", null, ["number"], [on ? 1 : 0]);
+    try {
+      localStorage.setItem(RTX_CHOICE, on ? "1" : "0");
+    } catch {}
+    canvas.focus();
+  };
   const share = document.getElementById("share"), shareStop = document.getElementById("share-stop"),
     shareFull = document.getElementById("share-full");
   let hide;
@@ -182,11 +207,11 @@
   let watchTicks = 0, givenStop = null;
   const coopPanel = document.getElementById("coop");
   const showFullscreen = (ms) => {
-    for (const element of [fullscreen, home, share, coopPanel]) element.classList.add("shown");
+    for (const element of [rtx, fullscreen, home, share, coopPanel]) element.classList.add("shown");
     clearTimeout(hide);
     hide = setTimeout(() => {
       if (!cover.hidden) return;
-      for (const element of [fullscreen, home, share]) element.classList.remove("shown");
+      for (const element of [rtx, fullscreen, home, share]) element.classList.remove("shown");
       // The co-op panel stays while it has something to say.
       if (!coopPinned()) coopPanel.classList.remove("shown");
     }, ms);
@@ -1011,12 +1036,35 @@
       FS.mkdir("/game");
       FS.mount(IDBFS, {}, "/game");
       addRunDependency("game files");
+      // A browser with WebGPU draws through it (client/renderer_webgpu.cpp), which the RTX mode needs; others, and
+      // ?renderer=webgl, keep WebGL2. The device comes before the module, which picks its renderer as it starts.
+      if (navigator.gpu && query.get("renderer") !== "webgl") {
+        addRunDependency("webgpu");
+        navigator.gpu.requestAdapter()
+          .then((adapter) => adapter?.requestDevice())
+          .then((device) => {
+            if (!device) return;
+            device.onuncapturederror = (event) => console.error("WebGPU:", event.error.message);
+            Module.preinitializedWebGPUDevice = device;
+          })
+          .catch((error) => console.warn("WebGPU unavailable, drawing with WebGL2:", error))
+          .finally(() => removeRunDependency("webgpu"));
+      }
       if (!navigator.locks) return stuck("Crimsonland needs HTTPS (or localhost) to keep its saves.");
       navigator.locks.request(LOCK, { ifAvailable: true }, (lock) => (lock ? own() : elsewhere())).catch(lost);
     }],
+    // Whether the game starts in RTX (client/main.cpp), which only WebGPU draws.
+    rtxWanted: () => !!Module.preinitializedWebGPUDevice && rtxWanted(),
+    // The rendering mode the game shows (client/main.cpp): HDR displays get its highlights past white.
+    renderMode: (on) => {
+      rtx.classList.toggle("on", !!on);
+      rtx.setAttribute("aria-pressed", on ? "true" : "false");
+      rtx.title = !on ? "RTX lighting" : matchMedia("(dynamic-range: high)").matches ? "RTX lighting · HDR" : "RTX lighting · SDR";
+    },
     // The host is running: the game takes the page.
     onRuntimeInitialized: () => {
       cover.hidden = true;
+      rtx.hidden = !Module.preinitializedWebGPUDevice;
       // An embedding page can withhold fullscreen.
       fullscreen.hidden = !document.fullscreenEnabled;
       showFullscreen(3000);
@@ -1044,6 +1092,7 @@
       cover.hidden = false;
       share.hidden = true;
       fullscreen.hidden = true;
+      rtx.hidden = true;
       home.classList.add("shown");
       progress.hidden = true;
       say("Saving…");

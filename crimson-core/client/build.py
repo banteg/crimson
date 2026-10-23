@@ -19,6 +19,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from shaders import write_shader_headers
+
 from scripts.build_identity import client_identity, read_manifest, write_manifest
 
 HERE = Path(__file__).resolve().parent
@@ -142,8 +144,7 @@ def main():
     args = parser.parse_args()
     out = (args.out or CORE / "build" / {"native": "app", "web": "web"}[args.target]).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    filtering = (CORE.parent / "src/grim/filtering.glsl").read_text()
-    (out / "filtering.h").write_text('R"GLSL(' + filtering + ')GLSL"\n')
+    write_shader_headers(out)
     write_asset_version(out)
     if not args.skip_game:
         subprocess.run([sys.executable, str(CORE / "build.py"), "--target", "game"], check=True)
@@ -154,10 +155,13 @@ def main():
     web = args.target == "web"
     cc, cxx = (tool("emcc"), tool("em++")) if web else (tool("clang"), tool("clang++"))
     cflags = ["-O2", "-I" + str(out), "-I" + str(runtime), "-I" + str(include), "-I" + str(HERE)]
-    # The browser build has no threads; wasm2c then guards memory by bounds checks.
+    # The browser build has no threads; wasm2c then guards memory by bounds checks. It carries the WebGPU renderer
+    # too, over Emdawnwebgpu's bindings (web/emdawnwebgpu_pinned.py), and picks one at startup (renderer_select.cpp).
+    webgpu = ["--use-port=" + str(HERE / "web/emdawnwebgpu_pinned.py")]
     cflags += ["-sUSE_SDL=3", "-DWASM_RT_USE_PTHREADS=0"] if web else []
     cxxflags = [
         *cflags,
+        *([*webgpu, "-DCLIENT_RENDERER_SELECT"] if web else []),
         "-std=c++17",
         f'-DCRIMSON_CLIENT_VERSION="{build_identity["version"]}"',
         *([] if web else [*pkg_config("--cflags"), *curl_flags("--cflags"), "-pthread"]),
@@ -181,6 +185,7 @@ def main():
             *objects,
             "-O2",
             "-sUSE_SDL=3",
+            *webgpu,
             "-sMIN_WEBGL_VERSION=2",
             "-sMAX_WEBGL_VERSION=2",
             "-sALLOW_MEMORY_GROWTH",
@@ -195,7 +200,8 @@ def main():
         ]
     else:
         # Linux finds a packaged SDL3 beside the executable.
-        system = ["-framework", "OpenGL"] if sys.platform == "darwin" else ["-lGL", "-Wl,-rpath,$ORIGIN"]
+        # libobjc for the window's extended-range opt-in (main.cpp display_edr).
+        system = ["-framework", "OpenGL", "-lobjc"] if sys.platform == "darwin" else ["-lGL", "-Wl,-rpath,$ORIGIN"]
         link = [
             cxx,
             *objects,

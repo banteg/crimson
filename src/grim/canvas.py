@@ -5,7 +5,7 @@ from collections.abc import Callable
 import msgspec
 
 from .blend import opaque_blend
-from .edr import HDR_PIXEL_FORMAT, edr_active, edr_available, load_float_render_texture
+from .edr import HDR_PIXEL_FORMAT, edr_active, edr_available, edr_output_gain, load_float_render_texture
 from .raylib_api import rl, rl_rectangle, rl_vector2
 from .texture_mode import texture_mode
 
@@ -13,6 +13,40 @@ from .texture_mode import texture_mode
 # another size (borderless fullscreen), the frame is drawn at that canvas size and
 # scaled to fit with black bars, so game code reads the screen size and mouse
 # position from here rather than from raylib.
+
+
+_ENCODE_VS_330 = r"""
+#version 330
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec4 vertexColor;
+
+out vec2 fragTexCoord;
+
+uniform mat4 mvp;
+
+void main() {
+    fragTexCoord = vertexTexCoord;
+    gl_Position = mvp * vec4(vertexPosition, 1.0);
+}
+"""
+
+# Scales the gamma-domain frame for surfaces whose signal 1.0 is the display peak rather than SDR white.
+_ENCODE_FS_330 = r"""
+#version 330
+
+in vec2 fragTexCoord;
+
+uniform sampler2D texture0;
+uniform float u_gain;
+
+out vec4 finalColor;
+
+void main() {
+    finalColor = vec4(texture(texture0, fragTexCoord).rgb * u_gain, 1.0);
+}
+"""
 
 
 class _Letterbox(msgspec.Struct, frozen=True):
@@ -98,12 +132,20 @@ class Canvas:
         self.width = width
         self.height = height
         self._target: rl.RenderTexture | None = None
+        self._encode: rl.Shader | None = None
+        self._encoded = False
 
     def fit(self) -> None:
         """Letterbox the canvas into the window; a window of canvas size is drawn to directly."""
         global _letterbox
         window_w = rl.get_screen_width()
         window_h = rl.get_screen_height()
+        # GLFW cursor coordinates use window units. raylib's resize callbacks can
+        # leave an extra inverse-DPI mouse scale on Wayland, even after fullscreen
+        # ends. Derive the mapping from the actual sizes before letterboxing.
+        size = rl.ffi.new("int[2]")
+        rl.glfw_get_window_size(rl.glfw_get_current_context(), size + 0, size + 1)
+        rl.set_mouse_scale(window_w / size[0], window_h / size[1])
         if (window_w, window_h) == (self.width, self.height):
             _letterbox = None
             return
@@ -118,9 +160,11 @@ class Canvas:
 
     def draw(self, draw_frame: Callable[[], None]) -> None:
         box = _letterbox
+        gain = edr_output_gain()
+        self._encoded = gain is not None
         # A reserved float window must still composite classic through RGBA8,
         # preserving its per-draw saturation and quantization before presentation.
-        if box is None and (edr_active() or not edr_available()):
+        if box is None and gain is None and (edr_active() or not edr_available()):
             draw_frame()
             return
         dst = frame_rect()
@@ -133,15 +177,43 @@ class Canvas:
             rl.clear_background(rl.BLACK)
             draw_frame()
         rl.clear_background(rl.BLACK)
-        with opaque_blend():
-            rl.draw_texture_pro(
-                target.texture,
-                rl_rectangle(0.0, 0.0, float(target_w), -float(target_h)),
-                dst,
-                rl_vector2(0.0, 0.0),
-                0.0,
-                rl.WHITE,
-            )
+        if gain is not None:
+            rl.begin_shader_mode(self._encode_shader(gain))
+        try:
+            with opaque_blend():
+                rl.draw_texture_pro(
+                    target.texture,
+                    rl_rectangle(0.0, 0.0, float(target_w), -float(target_h)),
+                    dst,
+                    rl_vector2(0.0, 0.0),
+                    0.0,
+                    rl.WHITE,
+                )
+        finally:
+            if gain is not None:
+                rl.end_shader_mode()
+
+    def _encode_shader(self, gain: float) -> rl.Shader:
+        if self._encode is None:
+            shader = rl.load_shader_from_memory(_ENCODE_VS_330, _ENCODE_FS_330)
+            if int(shader.id) <= 0 or shader.id == rl.rl_get_shader_id_default():
+                raise RuntimeError("canvas encode shader compilation returned an invalid shader id")
+            self._encode = shader
+        rl.set_shader_value(self._encode, rl.get_shader_location(self._encode, "u_gain"), rl.ffi.new("float *", gain),
+                            rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
+        return self._encode
+
+    def load_frame_image(self) -> rl.Image | None:
+        """The last frame before its presentation gain, at physical pixels, when the backbuffer was scaled.
+
+        A scaled backbuffer reads back darkened; screenshots take the gamma-domain frame as drawn instead.
+        """
+        if not self._encoded or self._target is None:
+            return None
+        image = rl.load_image_from_texture(self._target.texture)
+        rl.image_flip_vertical(image)
+        rl.image_format(image, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
+        return image
 
     def _ensure_target(self, target_w: int, target_h: int) -> rl.RenderTexture:
         use_float = edr_active()
@@ -170,3 +242,6 @@ class Canvas:
         if self._target is not None:
             rl.unload_render_texture(self._target)
             self._target = None
+        if self._encode is not None:
+            rl.unload_shader(self._encode)
+            self._encode = None
