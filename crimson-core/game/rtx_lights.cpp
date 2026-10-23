@@ -462,7 +462,7 @@ void select(bool reflection, int limit, float view_x, float view_y, bool *chosen
 // and head: mass, offset from the beam's midpoint, longitudinal half-span, and
 // whether it is an ion beam. An appearance approximation, as in Python, in its
 // double precision.
-const double SUPPORT = 0.85998995, MAX_SECTION_HALFSPAN = 4.0;
+const double SUPPORT = 0.85998995;
 enum { SOURCE_CELLS = 3 };
 
 const double *radial_marginal() {
@@ -531,8 +531,6 @@ void beam_cells(const Light &light, float illumination, float *out) {
   for (int i = 0; i < SOURCE_CELLS * 4; ++i)
     if (i % 4 == 3)
       out[i] = light.beam_ion;
-    else if (i % 4 == 2)
-      out[i] = (float)fmin(out[i], MAX_SECTION_HALFSPAN);
 }
 
 } // namespace

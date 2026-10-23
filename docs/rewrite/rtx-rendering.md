@@ -829,25 +829,27 @@ art is unchanged. Ion Rifle and Minigun source sizes share the same scale table
 as the projectile renderer.
 
 Each section casts through the existing rounded creature proxies and spatial
-grid. Projecting its longitudinal extent perpendicular to the body-space ray
-and measuring the line's overlap with the rounded body gives directional
-softness: broader across the beam, narrower when seen end-on. Transverse source
-width adds an edge feather. The projected chord stays continuous through the
-center of a body, where a miss-vector-based direction would be undefined.
+grid. For each body, a ray/ellipsoid discriminant becomes a quadratic in the
+longitudinal source position. Clipping its blocked roots to the section interval
+integrates the emitting segment analytically, including the receiver-side
+constraint. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
+half-width average the remaining emitter dimension. Umbra and penumbra therefore
+change with the body's direction around the projectile instead of using three
+point or disc lights.
 
-Section half-lengths are deliberately capped at four world units. The section
-centers still span the full beam. This is an artistic approximation of an
-extended source, not exact visibility integration of every beam stamp. The cap
-keeps the spatial candidate lists and penumbrae practical; no creature is dropped
-to enforce a caster budget. Overlapping proxies retain the existing minimum
-visibility semantics, and dying bodies retain their shared collapse/fade behavior.
+The analytic path applies when the emitter is above the body's top. A taller
+body uses 8 longitudinal by 2 transverse visibility samples, since the
+receiver-side clipping guarantee no longer holds. Section half-lengths retain
+their full profile extent rather than the old four-unit cap. Overlapping proxies
+retain the existing minimum-visibility semantics, and dying bodies retain their
+shared collapse/fade behavior.
 
 Preparation uploads one small uniform array and reuses the ordinary occlusion
-grid. Conservative grid-only source copies include the endpoint halo and bounded
-section softness. They never replace the original light uniforms used by
+grid. Conservative grid-only source copies include the endpoint halo and complete
+section extents. They never replace the original light uniforms used by
 reflections or creature lighting. A bounded 128-entry profile cache handles
 repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
-candidate texture, interval sort, quadratic sweep or exact-overflow fallback.
+candidate texture or interval sort.
 
 Beam contrast reduces ambient only within its local footprint, fades
 with source radiance, and takes the maximum contribution of overlapping beams
@@ -865,11 +867,11 @@ improvement in the inspected scene. The ground shader includes this path; frames
 without eligible beam sources skip preparation and ignore stale section uniforms.
 
 Three visibility queries per beam are still more expensive than the previous
-centroid. Dense scenes with many simultaneous beams remain costly. The approximation can retain separate shadow
-lobes in difficult arrangements and does not reproduce the dense reference's
-penumbra exactly. It favors readable moving shadows and predictable source work
-over a numerical agreement target. Body traversal still scales with the actual
-spatial candidates.
+centroid. Ordinary bodies cost two analytic chord evaluations per section;
+taller bodies invoke the sampled fallback. Dense scenes with many simultaneous
+beams remain costly. Two transverse taps do not reproduce a dense sampled
+reference exactly, but avoid the old separate shadow lobes at substantially
+lower cost. Body traversal still scales with the actual spatial candidates.
 
 ### Ion impact arcs
 

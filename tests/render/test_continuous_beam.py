@@ -6,7 +6,6 @@ import msgspec
 import pytest
 
 from crimson.render.rtx.continuous_beam import (
-    MAX_SECTION_HALFSPAN,
     SOURCE_CELLS,
     SUPPORT,
     beam_cells,
@@ -106,13 +105,12 @@ def test_selected_source_slot_changes_mask_profiles_without_stale_state() -> Non
     assert not any(values) and grid == [nonbeam]
 
 
-def test_section_softness_cap_and_grid_padding_share_one_footprint() -> None:
+def test_full_section_extent_and_grid_padding_share_one_footprint() -> None:
     from crimson.render.rtx.reflection_occlusion import BodyVolume, build_occlusion_grid
 
     original = light()
     cells, grid_sources = prepare_beam_lights([original])
-    assert max(cells[2::4]) == MAX_SECTION_HALFSPAN
-    assert all(0 <= value <= MAX_SECTION_HALFSPAN for value in cells[2::4])
+    assert max(cells[2::4]) > 4.0
     assert grid_sources[0].source_width == original.source_width + max(cells[2::4])
     assert grid_sources[0].length == original.length + 2 * 56 * 1.05 * SUPPORT
     assert original.source_width == 3 and original.length == 256

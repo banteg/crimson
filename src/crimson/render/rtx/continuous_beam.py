@@ -13,7 +13,6 @@ from grim.geom import Vec2
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 
 SUPPORT = 0.85998995
-MAX_SECTION_HALFSPAN = 4.0
 
 
 ION_DIRECT_GAIN = 4.0
@@ -47,8 +46,8 @@ def source_cells(length: float, radius: float, step: float, head_multiplier: flo
 
     Positions and half-spans are world units relative to the beam midpoint.
     Each cell samples only the nearby authored stamps plus the head. Matching
-    its variance to a uniform segment gives a cheap anisotropic penumbra width;
-    this is an appearance approximation, not exact emitter visibility.
+    its variance to a uniform segment gives the source extent used by the
+    analytic finite-source visibility integral.
     """
     radial = source_radial_marginal()
     support = radius * SUPPORT
@@ -95,18 +94,14 @@ def beam_cells(light: MaterialLight) -> tuple[float, ...]:
     if light.beam_profile is None or light.illumination_gain <= 0:
         return (0.0,) * (SOURCE_CELLS * 4)
     values = source_cells(light.length, *light.beam_profile)
-    return tuple(
-        float(light.beam_ion) if i % 4 == 3 else min(value, MAX_SECTION_HALFSPAN) if i % 4 == 2 else value
-        for i, value in enumerate(values)
-    )
+    return tuple(float(light.beam_ion) if i % 4 == 3 else value for i, value in enumerate(values))
 
 
 def prepare_beam_lights(lights: Sequence[MaterialLight]) -> tuple[list[float], list[MaterialLight]]:
     """Pack one uniform array and conservative grid-only copies of the sources.
 
-    The four-unit softness cap applies to both sampling and grid padding. The
-    shared spatial grid retains every relevant body; only the source shape is
-    approximated. Upload original lights for reflection/illumination radiance.
+    The shared spatial grid retains every relevant body across the complete
+    section support. Upload original lights for reflection/illumination radiance.
     """
     assert len(lights) <= MAX_MATERIAL_LIGHTS
     values: list[float] = []

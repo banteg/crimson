@@ -14,7 +14,70 @@ vec4 occlusionData(int address) {
 #ifdef CONTINUOUS_BEAM
 vec2 beam_section_axis = vec2(0.);
 float beam_section_halfspan = 0.;
-float sectionCoverage(vec3 miss, vec3 line, float softness);
+
+float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfspan) {
+    float quadratic_c = dot(relative, relative) - 1.;
+    float quadratic_a = dot(base_ray, base_ray);
+    float quadratic_b = dot(relative, base_ray);
+    float linear_a = 2. * dot(base_ray, axis_ray);
+    float linear_b = dot(relative, axis_ray);
+    float constant_a = dot(axis_ray, axis_ray);
+    if (quadratic_c <= 0.) return 1.;
+    float lo = -halfspan;
+    float hi = halfspan;
+    if (abs(linear_b) < 1e-8) {
+        if (quadratic_b > 0.) return 0.;
+    } else {
+        float bound = -quadratic_b / linear_b;
+        if (linear_b > 0.) hi = min(hi, bound);
+        else lo = max(lo, bound);
+    }
+    if (hi <= lo) return 0.;
+    float a = linear_b * linear_b - constant_a * quadratic_c;
+    float b = 2. * (quadratic_b * linear_b - .5 * linear_a * quadratic_c);
+    float d = quadratic_b * quadratic_b - quadratic_a * quadratic_c;
+    float radicand = b * b - 4. * a * d;
+    if (abs(a) < 1e-8) {
+        if (abs(b) < 1e-8) return d >= 0. ? (hi - lo) / (2. * halfspan) : 0.;
+        float bound = -d / b;
+        if (b > 0.) lo = max(lo, bound);
+        else hi = min(hi, bound);
+        return clamp((hi - lo) / (2. * halfspan), 0., 1.);
+    }
+    if (radicand <= 0.) {
+        if (a < 0.) return 0.;
+        return clamp((hi - lo) / (2. * halfspan), 0., 1.);
+    }
+    float center = -b / (2. * a);
+    float half_chord = abs(sqrt(radicand) / (2. * a));
+    float root_lo = center - half_chord;
+    float root_hi = center + half_chord;
+    float blocked = 0.;
+    if (a < 0.) {
+        blocked = max(0., min(hi, root_hi) - max(lo, root_lo));
+    } else {
+        blocked = max(0., min(hi, root_lo) - lo) + max(0., hi - max(lo, root_hi));
+    }
+    return clamp(blocked / max(2. * halfspan, 1e-6), 0., 1.);
+}
+
+float beamSampledCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, vec3 transverse_ray,
+                          vec3 inverse_radius, float source_width, float halfspan) {
+    float coverage = 0.;
+    float max_inverse_radius = max(inverse_radius.x, inverse_radius.y);
+    for (int along = 0; along < 8; along++) {
+        float offset = ((float(along) + .5) / 8. * 2. - 1.) * halfspan;
+        for (int across = 0; across < 2; across++) {
+            float transverse = (across == 0 ? -.57735027 : .57735027) * source_width;
+            vec3 sample_ray = base_ray + axis_ray * offset + transverse_ray * transverse;
+            float t = clamp(-dot(relative, sample_ray) / max(dot(sample_ray, sample_ray), 1e-8), 0., 1.);
+            float distance = length(relative + sample_ray * t);
+            float softness = max(.015, .1 * t * max_inverse_radius);
+            coverage += 1. - smoothstep(1. - softness, 1. + softness, distance);
+        }
+    }
+    return coverage / 16.;
+}
 #endif
 
 float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, float inverse_xy_length, vec2 owner) {
@@ -38,19 +101,32 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     ray.xy = local * ray.xy;
     q *= inverse_radius;
     ray *= inverse_radius;
+    #ifdef CONTINUOUS_BEAM
+    if (beam_section_halfspan > 0.) {
+        vec3 source_axis = vec3(local * beam_section_axis, 0.) * inverse_radius;
+        vec2 transverse_axis = vec2(-beam_section_axis.y, beam_section_axis.x);
+        vec3 transverse_ray = vec3(local * transverse_axis, 0.) * inverse_radius;
+        float source_height = origin.z + ray.z / inverse_radius.z;
+        float body_top = center.z + 1. / inverse_radius.z;
+        float coverage;
+        if (body_top > source_height + .001) {
+            coverage = beamSampledCoverage(q, ray, source_axis, transverse_ray, inverse_radius,
+                                           source_width, beam_section_halfspan);
+        } else {
+            coverage = .5 * (
+                beamChordCoverage(q, ray - transverse_ray * (.57735027 * source_width),
+                                  source_axis, beam_section_halfspan)
+                + beamChordCoverage(q, ray + transverse_ray * (.57735027 * source_width),
+                                    source_axis, beam_section_halfspan));
+        }
+        return 1. - orientation.z * coverage;
+    }
+    #endif
     float t = clamp(-dot(q, ray) / max(dot(ray, ray), 1e-8), 0., 1.);
     float distance = length(q + ray * t);
     // Analytic finite-source penumbra. The cone grows from the receiver toward
     // the source; this is a smooth body proxy, not sampled silhouette tracing.
     float softness = max(.015, source_width * t * max(inverse_radius.x, inverse_radius.y));
-    #ifdef CONTINUOUS_BEAM
-    if (beam_section_halfspan > 0.) {
-        vec3 source_axis = vec3(local * beam_section_axis, 0.) * inverse_radius;
-        vec3 projected = source_axis - ray * (dot(source_axis, ray) / max(dot(ray, ray), 1e-8));
-        vec3 line = projected * (beam_section_halfspan * t);
-        return 1. - orientation.z * sectionCoverage(q + ray * t, line, softness);
-    }
-    #endif
     return 1. - orientation.z * (1. - smoothstep(1. - softness, 1. + softness, distance));
 }
 
