@@ -924,6 +924,10 @@ __attribute__((export_name("game_watch_tick"))) int game_watch_tick() { return w
 __attribute__((export_name("game_watch_ticks"))) int game_watch_ticks() { return watch.ticks; }
 __attribute__((export_name("game_watch_seek"))) void game_watch_seek(int at) { watch_ask(at); }
 __attribute__((export_name("game_watch_stop_at"))) void game_watch_stop_at(int at) { watch.stop_at = at; }
+// The tick a prepared replay is paused on, or 0: an unattended capture of a moment (client/main.cpp).
+__attribute__((export_name("game_watch_paused_tick"))) int game_watch_paused_tick() {
+  return live.watching && watch.phase == WATCH_PLAYING && watch.paused ? watch.tick : 0;
+}
 // A link to a moment: a tick to go to (0 stays where playback is) and one to
 // pause on reaching (0 none, else past the first), within the run, or the
 // recording of the run about to play until it is prepared. 0 when outside it.

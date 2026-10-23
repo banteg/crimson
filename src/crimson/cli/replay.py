@@ -940,6 +940,8 @@ def cmd_replay_render(
         "--audio/--mute-audio",
         help="include in-game audio in output video",
     ),
+    rtx: bool = typer.Option(False, "--rtx", help="render in the non-canonical RTX mode (tonemapped for SDR)"),
+    rtx_smoke: bool | None = typer.Option(None, "--rtx-smoke/--no-rtx-smoke", help="GPU fluid smoke (on in RTX); enabling also enables RTX"),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -976,6 +978,8 @@ def cmd_replay_render(
             overwrite=bool(overwrite),
             mute_audio=not bool(audio),
             show_progress=True,
+            rtx=bool(rtx or rtx_smoke),
+            rtx_smoke=True if rtx_smoke is None else rtx_smoke,
         )
     except (ReplayRenderError, ReplayRunnerError) as exc:
         _fail_replay("replay render", exc)

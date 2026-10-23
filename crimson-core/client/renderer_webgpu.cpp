@@ -1061,6 +1061,8 @@ bool wgpu_renderer_set_rtx(bool enabled) {
 
 // The canvas sets the headroom it shows (configure_canvas).
 void wgpu_renderer_set_headroom(float) {}
+// WebGPU's timestamp queries need a device feature the page does not ask for.
+std::string wgpu_renderer_gpu_timings() { return ""; }
 
 extern "C" {
 void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {

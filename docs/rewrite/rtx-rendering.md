@@ -228,6 +228,25 @@ Benchmark controls:
 - render benchmarks can select mode via:
   - `uv run crimson replay benchmark <replay.crd> --mode render`
   - `uv run crimson replay benchmark <replay.crd> --mode render --rtx`
+- replay videos render RTX too, tonemapped for SDR:
+  `uv run crimson replay render <replay.crd> --rtx` (`--no-rtx-smoke` without the fluid smoke)
+
+### Golden scenes
+
+`tools/rtx/scenes.toml` names replay moments that exercise each RTX path:
+- aged blood with almost no light
+- frozen creatures, and fire across ice
+- rocket smoke
+- the nuke
+- ion beams through smoke
+- dense beam lights
+- a Shock Chain crowd
+
+`uv run python tools/rtx/golden.py capture --game <game folder> --out <dir>` captures each one, classic and RTX, with
+the native client. The client seeks a little before the tick, pauses on it (`CRIMSON_CAPTURE_TICK`) and records the
+median GPU time per pass over the frames leading to it (`CRIMSON_GPU_TIMERS`). `golden.py compare <before> <after>`
+puts two captures side by side with a difference map, the mean change and the GPU time per scene. Captures tonemap
+for SDR, so they read the same on any display.
 
 ## Native client
 

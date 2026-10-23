@@ -165,10 +165,24 @@ void key(SDL_Scancode scancode, bool down) {
 // CRIMSON_CAPTURE_FRAMES (comma-separated: host frames that draw) as
 // frame_<n>.ppm, then quits. Such a run's clock moves 16 ms a frame, so
 // scripted input (CRIMSON_INPUT) lands on the same frames every time.
+// CRIMSON_CAPTURE_TICK=<tick> instead pauses a watched replay (CRIMSON_WATCH)
+// on that tick and saves its frame as tick_<tick>.ppm, then quits.
 std::vector<int> capture_frames;
 int presented, frames, captured_frame = -1;
 bool capture_done;
 const bool unattended = getenv("CRIMSON_CAPTURE");
+void write_capture(const std::string &name) {
+  int width, height;
+  std::vector<unsigned char> pixels = renderer_capture(width, height);
+  std::string path = std::string(getenv("CRIMSON_CAPTURE")) + "/" + name + ".ppm";
+  if (FILE *fp = fopen(path.c_str(), "wb")) {
+    fprintf(fp, "P6\n%d %d\n255\n", width, height);
+    for (int y = 0; y < height; ++y)
+      for (int x = 0; x < width; ++x)
+        fwrite(&pixels[((size_t)y * width + x) * 4], 1, 3, fp);
+    fclose(fp);
+  }
+}
 void capture_frame() {
   ++presented;
   const char *directory = getenv("CRIMSON_CAPTURE");
@@ -181,16 +195,7 @@ void capture_frame() {
   for (size_t i = 0; i < capture_frames.size(); ++i) {
     if (capture_frames[i] != frames)
       continue;
-    int width, height;
-    std::vector<unsigned char> pixels = renderer_capture(width, height);
-    std::string path = std::string(directory) + "/frame_" + std::to_string(frames) + ".ppm";
-    if (FILE *fp = fopen(path.c_str(), "wb")) {
-      fprintf(fp, "P6\n%d %d\n255\n", width, height);
-      for (int y = 0; y < height; ++y)
-        for (int x = 0; x < width; ++x)
-          fwrite(&pixels[((size_t)y * width + x) * 4], 1, 3, fp);
-      fclose(fp);
-    }
+    write_capture("frame_" + std::to_string(frames));
     captured_frame = frames;
     capture_frames.erase(capture_frames.begin() + i);
     if (capture_frames.empty())
@@ -424,6 +429,8 @@ void watch_from_env() {
     w2c_game_game_watch_seek(&game, atoi(seek));
   if (const char *stop = getenv("CRIMSON_WATCH_STOP"))
     w2c_game_game_watch_stop_at(&game, atoi(stop));
+  else if (const char *tick = getenv("CRIMSON_CAPTURE_TICK"))
+    w2c_game_game_watch_stop_at(&game, atoi(tick));
 }
 
 #ifndef __EMSCRIPTEN__
@@ -1169,6 +1176,22 @@ SDL_AppResult SDL_AppIterate(void *) {
       fclose(fp);
     }
     captured_frame = -1;
+  }
+  // CRIMSON_GPU_TIMERS: the GPU time per pass, a frame late, with the replay tick it drew.
+  static const bool gpu_timers = getenv("CRIMSON_GPU_TIMERS");
+  static int timed_tick;
+  if (gpu_timers) {
+    std::string timings = renderer_gpu_timings();
+    if (!timings.empty())
+      fprintf(stderr, "gpu tick=%d %s\n", timed_tick, timings.c_str());
+    timed_tick = (int)w2c_game_game_watch_tick(&game);
+  }
+  // A moment's frame, once the replay has held on it for a frame.
+  static const int capture_tick = unattended && getenv("CRIMSON_CAPTURE_TICK") ? atoi(getenv("CRIMSON_CAPTURE_TICK")) : 0;
+  static int held_frames;
+  if (capture_tick && (int)w2c_game_game_watch_paused_tick(&game) == capture_tick && ++held_frames == 2) {
+    write_capture("tick_" + std::to_string(capture_tick));
+    w2c_game_game_close(&game);
   }
 #ifdef __EMSCRIPTEN__
   // At most once a second, and on gameplay transitions. The browser measures
