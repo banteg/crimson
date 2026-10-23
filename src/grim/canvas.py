@@ -104,6 +104,12 @@ class Canvas:
         global _letterbox
         window_w = rl.get_screen_width()
         window_h = rl.get_screen_height()
+        # GLFW cursor coordinates use window units. raylib's resize callbacks can
+        # leave an extra inverse-DPI mouse scale on Wayland, even after fullscreen
+        # ends. Derive the mapping from the actual sizes before letterboxing.
+        size = rl.ffi.new("int[2]")
+        rl.glfw_get_window_size(rl.glfw_get_current_context(), size + 0, size + 1)
+        rl.set_mouse_scale(window_w / size[0], window_h / size[1])
         if (window_w, window_h) == (self.width, self.height):
             _letterbox = None
             return
