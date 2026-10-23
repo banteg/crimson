@@ -39,6 +39,7 @@ PROGRAMS = {
     "beam": (CLIENT_SHADERS / "beam.vert", RTX_SHADERS / "beam.frag"),
     "creature": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "creature.frag"),
     "player": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "player.frag"),
+    "bonus": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "bonus.frag"),
 }
 # glslang's arguments per stage: where each stage's uniform block and textures go.
 STAGE_ARGS = {

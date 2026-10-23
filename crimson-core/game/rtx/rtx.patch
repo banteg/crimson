@@ -1,6 +1,6 @@
 The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, and the creature
-body and player batches the host lights; it draws the ion and Fire Bullets streaks as analytic beams in place of
-their stamps, and registers its console commands beside the original's.
+body, player and bonus batches the host lights; it draws the ion and Fire Bullets streaks as analytic beams in
+place of their stamps, and registers its console commands beside the original's.
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 @@ -89,6 +89,7 @@
@@ -137,6 +137,48 @@ their stamps, and registers its console commands beside the original's.
  
      if (player_state_table[current_player_index].shield_timer > 0.0f) {
          grim_interface_ptr->grim_set_config_var(0x13, 5u);
+--- a/decomp/1.9/crimsonland/crimsonland/bonus_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/bonus_render.cpp
+@@ -173,6 +173,7 @@
+         grim_interface_ptr->grim_set_color_ptr(&color.r);
+         grim_interface_ptr->grim_set_rotation(0.0f);
+         grim_interface_ptr->grim_set_atlas_frame(4, 0);
++        rtx_bonus(0, 4.0f, 4.0f, entry->time.pos_x, entry->time.pos_y);
+         grim_interface_ptr->grim_draw_quad(
+             camera_offset_x + entry->time.pos_x - 16.0f,
+             camera_offset_y + entry->time.pos_y - 16.0f,
+@@ -213,6 +214,7 @@
+ 
+             float size = icon_scale * 32.0f;
+             float half_size = icon_scale * 16.0f;
++            rtx_bonus(1, 4.0f, 4.0f, entry->time.pos_x, entry->time.pos_y);
+             grim_interface_ptr->grim_draw_quad(
+                 camera_offset_x + entry->time.pos_x - half_size,
+                 camera_offset_y + entry->time.pos_y - half_size,
+@@ -221,6 +223,7 @@
+         }
+     }
+     grim_interface_ptr->grim_end_batch();
++    rtx_material(HOST_PASS_SPRITES);
+ 
+     grim_interface_ptr->grim_bind_texture(ui_weapon_icons_texture, 0);
+     grim_interface_ptr->grim_begin_batch();
+@@ -252,6 +255,7 @@
+ 
+         float half_width = icon_scale * 30.0f;
+         float height = icon_scale * 30.0f;
++        rtx_bonus(1, 4.0f, 8.0f, entry->time.pos_x, entry->time.pos_y);
+         grim_interface_ptr->grim_draw_quad(
+             camera_offset_x + entry->time.pos_x - half_width,
+             camera_offset_y + entry->time.pos_y - icon_scale * 15.0f,
+@@ -259,6 +263,7 @@
+             height);
+     }
+     grim_interface_ptr->grim_end_batch();
++    rtx_material(HOST_PASS_SPRITES);
+ 
+     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 @@ -204,6 +204,10 @@

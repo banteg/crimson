@@ -260,6 +260,10 @@ it from the creature pool against the selected lights and sends it each frame
 (`host_occlusion`), and the hosts upload it as the RGBA32F texture the shader
 walks (unfilterable in WebGPU, which reads it with `textureLoad` alone). The
 shadows setting turns direct-light visibility off as in the Python port.
+Bonuses take the same `bonus.frag`: the module marks each shell, icon and
+weapon icon quad (`host_bonus`, with its atlas grid and the bonus's position as
+the shell center), and the host draws it with the bonus program whether or not
+lights reach it, as `draw_bonus_pickups` does.
 
 Ion and Fire Bullets streaks draw as the same analytic beams as the Python port's
 (`shaders/beam.frag`): the module computes each body and head quad as

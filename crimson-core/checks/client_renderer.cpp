@@ -321,6 +321,26 @@ void check_rtx() {
   assert(fabsf(ambient - powf(0.6f, 1 / 2.2f)) < 2e-3f);
   assert(lit(HOST_PASS_CREATURES, 1) > ambient + 0.05f);
   assert(lit(HOST_PASS_PLAYERS, 0) == device && lit(HOST_PASS_PLAYERS, 1) > device);
+  // Bonuses: a shell is black glass, dim but for a fixed key highlight, whose
+  // clear coat mirrors a light above it; an emblem without lights keeps the
+  // device's colors. The quad spans the
+  // atlas's 4x4 grid, so its cell (1, 1) centers at (384, 288).
+  auto bonus = [](int emblem, int lights) {
+    const float camera[2] = {0, 0};
+    const float light[16] = {384, 288, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 200, 3};
+    memcpy(memory + 32768, camera, sizeof camera);
+    memcpy(memory + 32800, light, sizeof light);
+    w2c_host_scene(nullptr, 32768, 32800, lights);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_bonus(nullptr, emblem, 4, 4, 384, 288);
+    rectangle(0, 0, 1024, 768, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_red(384, 288);
+  };
+  float shell = bonus(0, 0);
+  assert(shell < 0.3f && bonus(0, 1) > shell + 0.5f);
+  assert(fabsf(bonus(1, 0) - device) < 2e-3f);
   // A body between the light and the batch (one grid cell holding it) shades it,
   // unless the shadows setting is off.
   auto occluded = [&](float shadows) {
@@ -371,7 +391,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights; classic stays 8-bit");
 }
 
 int main() {
