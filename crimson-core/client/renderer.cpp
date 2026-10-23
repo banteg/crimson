@@ -160,9 +160,9 @@ float scene_camera[2];
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
 // What the ground takes beyond them (host_scene): the run's clock, the terrain's
-// size in world units, the beam sections' tuning, and per light its direction
+// size in world units, the beam sections' gains, and per light its direction
 // with broad illumination, its reflection tail and its three beam sections.
-float scene_seconds, ground_size[2], beam_tuning[4];
+float scene_seconds, ground_size[2], beam_gain[2];
 float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
 bool beam_lights;
 int bonus_emblem;
@@ -752,7 +752,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   glUniform1i(at("u_dynamic_shadows"), dynamic_shadows);
   glUniform1i(at("u_spec_light_count"), light_count);
   glUniform1i(at("u_has_beam_lights"), beam_lights);
-  glUniform4fv(at("u_beam_tuning"), 1, beam_tuning);
+  glUniform2fv(at("u_beam_gain"), 1, beam_gain);
   glUniform4fv(at("u_occlusion_grid"), 1, occlusion_grid);
   glUniform1f(at("u_occlusion_cell_size"), occlusion_cell);
   if (light_count) {
@@ -1253,7 +1253,7 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
-  memcpy(beam_tuning, v + 5, sizeof beam_tuning);
+  memcpy(beam_gain, v + 5, sizeof beam_gain);
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
   beam_lights = false;
   for (int i = 0; i < light_count; ++i) {

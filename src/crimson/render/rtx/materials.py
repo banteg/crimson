@@ -23,7 +23,7 @@ from ...effects_atlas import EffectId
 from ...sim.terrain_fx import TerrainFxBatch
 from ..terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..world.atlas import effect_cell_src
-from .continuous_beam import FIRE_AMBIENT_DIP, FIRE_DIRECT_GAIN, ION_AMBIENT_DIP, ION_DIRECT_GAIN, prepare_beam_lights
+from .continuous_beam import FIRE_DIRECT_GAIN, ION_DIRECT_GAIN, prepare_beam_lights
 from .hdr import _HDR_TONEMAP_VS_330
 from .material_history import MaterialHistory
 from .material_lights import MaterialLight, collect_material_lights
@@ -436,7 +436,7 @@ class MaterialGroundRenderer(GroundRenderer):
         if has_beam_lights:
             cells, grid_lights = prepare_beam_lights(lights)
             beam_margin = max(cells[2::4])
-            self._material_uniform("u_beam_tuning", [ION_DIRECT_GAIN, ION_AMBIENT_DIP, FIRE_DIRECT_GAIN, FIRE_AMBIENT_DIP])
+            self._material_uniform("u_beam_gain", [ION_DIRECT_GAIN, FIRE_DIRECT_GAIN])
             self._material_array("u_line_cells[0]", cells, components=4)
         grid = build_occlusion_grid(
             bodies, grid_lights, width=self.width, height=self.height, illumination=shadows, beam_margin=beam_margin,
