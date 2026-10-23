@@ -258,6 +258,7 @@ void check_rtx() {
 #ifdef __EMSCRIPTEN__
   assert(!renderer_set_rtx(true));
 #else
+  renderer_resize(2048, 1536);
   w2c_host_set_texture(nullptr, 0, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
@@ -273,6 +274,24 @@ void check_rtx() {
     w2c_host_render_pass(nullptr, 2);
   };
   assert(renderer_set_rtx(true) && (textures[0].flags & TARGET_HALF_FLOAT));
+  // A beam head is one stamp: full gain at its center, nothing past its radius.
+  // A 256-pixel body (a streak's longest) fades in from its tail and is
+  // symmetric about its axis, which sits on physical row 768 (Direct3D's
+  // half-pixel shift included).
+  auto beam = [](std::initializer_list<float> corners, float length, float step) {
+    memcpy(memory, corners.begin(), corners.size() * sizeof(float));
+    w2c_host_beam(nullptr, 0, length, step, 0xffffffff);
+  };
+  w2c_host_clear(nullptr, 0xff000000);
+  beam({495.75f, 367.75f, -1, -1, 495.75f, 399.75f, -1, 1, 527.75f, 399.75f, 1, 1, 527.75f, 367.75f, 1, -1}, -1, 0);
+  assert(fabsf(back_red(512, 384) - 0.92f) < 1e-2f && back_red(512, 399) < 1e-3f);
+  w2c_host_clear(nullptr, 0xff000000);
+  float length = 256 / 16.0f;
+  beam({184, 367.75f, -1, -1, 184, 399.75f, -1, 1, 472, 399.75f, length + 1, 1, 472, 367.75f, length + 1, -1}, length,
+       3.1f / 16);
+  assert(back_red(210, 384) < back_red(330, 384) && back_red(330, 384) < back_red(450, 384));
+  assert(fabsf(back_red(330, 378) - back_red(330, 390)) < 1e-3f && back_red(330, 380) > 0);
+  assert(back_red(330, 410) == 0);
   float limit = 0;
   for (float headroom : {1.0f, 4.0f}) {
     renderer_set_headroom(headroom);
@@ -289,7 +308,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps; classic stays 8-bit");
 }
 
 int main() {

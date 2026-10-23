@@ -23,6 +23,12 @@ float portable_sinf(float x) { return sinf(x); }
 float portable_cosf(float x) { return cosf(x); }
 void effect_select_texture(int) { grim_interface_ptr->grim_bind_texture(102, 0); }
 int creature_find_in_radius(float *, float, int) { return -1; }
+// Classic draws only: the RTX mode's beams (game/rtx.cpp) never run here.
+int rtx_render_mode;
+void rtx_beam_body(float, float, float, float, float, float, float, float, float, float, float, float) {
+  __builtin_trap();
+}
+void rtx_beam_head(float, float, float, float, bool) { __builtin_trap(); }
 vec2f_t *D3DXVec2Normalize(vec2f_t *dst, const vec2f_t *src) {
   float length = sqrtf(src->x * src->x + src->y * src->y);
   *dst = length ? vec2f_t{src->x / length, src->y / length} : vec2f_t{};

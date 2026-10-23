@@ -42,7 +42,7 @@ def build(out: Path, web: bool, benchmark: str | None = None) -> Path:
     write_shader_headers(out)
     # Only wasm2c's scalar types are needed by the rendering imports.
     (out / "game.h").write_text(
-        "#pragma once\n#include <stdint.h>\ntypedef uint8_t u8;\ntypedef uint32_t u32;\nstruct w2c_game;\n",
+        "#pragma once\n#include <stdint.h>\ntypedef uint8_t u8;\ntypedef uint32_t u32;\ntypedef float f32;\nstruct w2c_game;\n",
     )
     flags = (
         ["-sUSE_SDL=3", "-sMIN_WEBGL_VERSION=2", "-sMAX_WEBGL_VERSION=2", "-sALLOW_MEMORY_GROWTH"]

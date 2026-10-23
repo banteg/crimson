@@ -32,6 +32,11 @@ HOST_IMPORT(present) void host_present(void);
 HOST_IMPORT(render_mode) int host_render_mode(int requested);
 enum { HOST_PASS_WORLD_BEGIN = 1, HOST_PASS_WORLD_END = 2 };
 HOST_IMPORT(render_pass) void host_render_pass(int pass);
+// An RTX analytic beam quad (src/crimson/render/rtx/shaders/beam.frag): four
+// corners as x, y, u, v (u and v in beam radii), its length in radii (negative
+// for a head) and stamp spacing, and its D3DCOLOR, drawn with the current blend
+// into the current target.
+HOST_IMPORT(beam) void host_beam(const float *corners, float length, float step, unsigned color);
 // The last drawn frame, kept and shown again under what a replay draws over it
 // while no tick draws (host/watch.inc): save the back buffer, or show the saved one.
 enum {

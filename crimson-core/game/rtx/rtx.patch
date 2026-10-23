@@ -1,5 +1,6 @@
-The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, and registers its
-console commands beside the original's.
+The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, draws the ion and
+Fire Bullets streaks as analytic beams in place of their stamps, and registers its console commands beside the
+original's.
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 @@ -89,6 +89,7 @@
@@ -16,6 +17,74 @@ console commands beside the original's.
      }
 +    rtx_world(0);
  }
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
+@@ -826,7 +826,17 @@
+                 step = 9.0f;
+             }
+             float first = along;
+-            while (along < distance) {
++            if (rtx_render_mode)
++                rtx_beam_body(
++                    camera_offset[0] + projectile->pos.origin_x,
++                    camera_offset[1] + primary->origin_y,
++                    camera_offset[0] + projectile->pos_x,
++                    camera_offset[1] + projectile->pos.pos_y,
++                    along, span, step, scale, transition_alpha,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS ? 1.0f : 0.5f,
++                    0.6f,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS ? 0.1f : 1.0f);
++            else while (along < distance) {
+                 if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS) {
+                     float alpha = (along - first) / span
+                         * transition_alpha;
+@@ -857,6 +867,13 @@
+                 grim_interface_ptr->grim_set_color(
+                     0.5f, 0.6f, 1.0f, transition_alpha);
+             }
++            if (rtx_render_mode)
++                rtx_beam_head(
++                    camera_offset[0] + projectile->pos_x,
++                    camera_offset[1] + projectile->pos.pos_y,
++                    projectile->angle, scale,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS);
++            else
+             grim_interface_ptr->grim_draw_quad(
+                 camera_offset[0] + projectile->pos_x - half_size,
+                 camera_offset[1] + projectile->pos.pos_y - half_size,
+@@ -907,7 +924,17 @@
+                 step = 9.0f;
+             }
+             float first = along;
+-            while (along < distance) {
++            if (rtx_render_mode)
++                rtx_beam_body(
++                    camera_offset[0] + projectile->pos.origin_x,
++                    camera_offset[1] + primary->origin_y,
++                    camera_offset[0] + projectile->pos_x,
++                    camera_offset[1] + projectile->pos.pos_y,
++                    along, span, step, scale, fade * transition_alpha,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS ? 1.0f : 0.5f,
++                    0.6f,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS ? 0.1f : 1.0f);
++            else while (along < distance) {
+                 if (projectile_pool[projectile_index].pos.tail.vy.type_id
+                     == PROJECTILE_TYPE_FIRE_BULLETS) {
+                     float alpha = fade * ((along - first) / span)
+@@ -937,6 +964,13 @@
+                 grim_interface_ptr->grim_set_color(
+                     0.5f, 0.6f, 1.0f, head_alpha);
+             }
++            if (rtx_render_mode)
++                rtx_beam_head(
++                    camera_offset[0] + projectile->pos_x,
++                    camera_offset[1] + projectile->pos.pos_y,
++                    projectile->angle, scale,
++                    projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS);
++            else
+             grim_interface_ptr->grim_draw_quad(
+                 camera_offset[0] + projectile->pos_x - 16.0f,
+                 camera_offset[1] + projectile->pos.pos_y - 16.0f,
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 @@ -204,6 +204,10 @@

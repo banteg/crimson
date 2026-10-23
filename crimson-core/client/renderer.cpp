@@ -79,8 +79,8 @@ GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_al
 // tonemap that puts it on the back buffer toward the display's EDR headroom.
 bool rtx, world;
 Target hdr;
-GLuint tonemap_program;
-GLint u_tonemap_headroom;
+GLuint tonemap_program, beam_program, beam_array, beam_buffer;
+GLint u_tonemap_headroom, u_beam_target_size, u_beam_length, u_beam_step, u_beam_color;
 float edr_headroom = 1;
 
 const char *vertex_source = SHADER_HEADER R"(
@@ -202,6 +202,29 @@ void main() {
 )";
 const char *tonemap_fragment_source = SHADER_HEADER RTX_SHADER_HDR_TONEMAP_FRAG;
 
+// The Python port's analytic beam (src/crimson/render/rtx/shaders/beam.frag) over
+// a quad the module sends (host_beam): corners in logical pixels with their beam
+// uv, and the quad's length, stamp spacing and color.
+const char *beam_vertex_source = SHADER_HEADER R"(
+layout(location = 0) in vec4 corner; // x, y in pixels, u, v in beam radii
+uniform vec2 target_size;
+uniform float beam_length, beam_step;
+uniform vec4 beam_color;
+out vec2 fragTexCoord;
+out vec4 fragColor;
+out float fragLen;
+flat out float fragStep;
+void main() {
+  // Direct3D 8 puts pixel centers at integer coordinates, as host_draw's vertices.
+  gl_Position = vec4((corner.xy + 0.5) / target_size * 2.0 - 1.0, 0.0, 1.0);
+  fragTexCoord = corner.zw;
+  fragColor = beam_color;
+  fragLen = beam_length;
+  fragStep = beam_step;
+}
+)";
+const char *beam_fragment_source = SHADER_HEADER RTX_SHADER_BEAM_FRAG;
+
 GLuint compile(GLenum kind, const char *source) {
   GLuint shader = glCreateShader(kind);
   glShaderSource(shader, 1, &source, nullptr);
@@ -271,6 +294,9 @@ GLenum blend_equation(unsigned d3d) {
 }
 GLenum address(unsigned d3d) { return d3d == 2 ? GL_MIRRORED_REPEAT : d3d == 3 || d3d == 4 ? GL_CLAMP_TO_EDGE : GL_REPEAT; }
 
+// The render states a draw writes its target with: blending and color writes.
+void apply_output_state(const Target &t);
+
 Target &target_or_back(int id) {
   auto it = textures.find(id);
   return it != textures.end() ? it->second : textures[0];
@@ -334,6 +360,19 @@ void reallocate(Target &t, int width, int height, int flags) {
   glBlitFramebuffer(0, 0, previous.width, previous.height, 0, 0, t.width, t.height, GL_COLOR_BUFFER_BIT,
                     previous.width == t.width && previous.height == t.height ? GL_NEAREST : GL_LINEAR);
   release(previous);
+}
+
+void apply_output_state(const Target &t) {
+  if (render_states[RS_ALPHABLENDENABLE]) {
+    glEnable(GL_BLEND);
+    glBlendFunc(blend_factor(render_states[RS_SRCBLEND]), blend_factor(render_states[RS_DESTBLEND]));
+    glBlendEquation(blend_equation(render_states[RS_BLENDOP]));
+  } else {
+    glDisable(GL_BLEND);
+  }
+  unsigned mask = render_states[RS_COLORWRITEENABLE];
+  // An X8R8G8B8 surface keeps its alpha at one.
+  glColorMask(mask & 1, mask & 2, mask & 4, (mask & 8) && !(t.flags & 2));
 }
 
 } // namespace
@@ -476,6 +515,19 @@ bool renderer_set_rtx(bool enabled) {
     glUniform1i(glGetUniformLocation(tonemap_program, "texture0"), 0);
     glUniform4f(glGetUniformLocation(tonemap_program, "colDiffuse"), 1, 1, 1, 1);
     u_tonemap_headroom = glGetUniformLocation(tonemap_program, "u_edr_headroom");
+    beam_program = link(beam_vertex_source, beam_fragment_source);
+    glUseProgram(beam_program);
+    glUniform4f(glGetUniformLocation(beam_program, "colDiffuse"), 1, 1, 1, 1);
+    u_beam_target_size = glGetUniformLocation(beam_program, "target_size");
+    u_beam_length = glGetUniformLocation(beam_program, "beam_length");
+    u_beam_step = glGetUniformLocation(beam_program, "beam_step");
+    u_beam_color = glGetUniformLocation(beam_program, "beam_color");
+    glGenVertexArrays(1, &beam_array);
+    glBindVertexArray(beam_array);
+    glGenBuffers(1, &beam_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, beam_buffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 16, (void *)0);
   }
   rtx = enabled;
   world = false;
@@ -689,16 +741,7 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
   glUniform1f(u_alpha_ref, (float)(render_states[RS_ALPHAREF] & 255));
   glUniform1i(u_alpha_func, (GLint)render_states[RS_ALPHAFUNC]);
 
-  if (render_states[RS_ALPHABLENDENABLE]) {
-    glEnable(GL_BLEND);
-    glBlendFunc(blend_factor(render_states[RS_SRCBLEND]), blend_factor(render_states[RS_DESTBLEND]));
-    glBlendEquation(blend_equation(render_states[RS_BLENDOP]));
-  } else {
-    glDisable(GL_BLEND);
-  }
-  unsigned mask = render_states[RS_COLORWRITEENABLE];
-  // An X8R8G8B8 surface keeps its alpha at one.
-  glColorMask(mask & 1, mask & 2, mask & 4, (mask & 8) && !(t.flags & 2));
+  apply_output_state(t);
   unsigned cull = render_states[RS_CULLMODE];
   if (cull == 2 || cull == 3) {
     glEnable(GL_CULL_FACE);
@@ -722,6 +765,24 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
   } else {
     glDrawArrays(mode, 0, index_count);
   }
+}
+void w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
+  if (!rtx)
+    return;
+  Target &t = drawing_target(current_target);
+  glUseProgram(beam_program);
+  glUniform2f(u_beam_target_size, (float)t.logical_width, (float)t.logical_height);
+  glUniform1f(u_beam_length, length);
+  glUniform1f(u_beam_step, step);
+  glUniform4f(u_beam_color, (color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f,
+              (color >> 24) / 255.0f);
+  apply_output_state(t);
+  // A flat quad, whichever way its corners turn.
+  glDisable(GL_CULL_FACE);
+  glBindVertexArray(beam_array);
+  glBindBuffer(GL_ARRAY_BUFFER, beam_buffer);
+  glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), client_memory() + corners, GL_STREAM_DRAW);
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 void w2c_host_render_pass(struct w2c_host *, u32 pass) {
   Target &back = textures[0];

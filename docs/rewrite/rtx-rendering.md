@@ -239,6 +239,11 @@ the game module marks where the world starts and ends in a frame
 (`client/renderer.cpp`) draws the world between those marks into an `RGBA16F`
 target, tonemaps it onto a half-float back buffer, and draws the HUD over it.
 Classic keeps its 8-bit back buffer, so each classic draw still saturates at white.
+Ion and Fire Bullets streaks draw as the same analytic beams as the Python port's
+(`shaders/beam.frag`): the module computes each body and head quad as
+`render/rtx/beam.py` does and hands it to the host (`host_beam`) in place of the
+original's stamps, in the head colors the classic path picks (original bug 41
+included).
 On macOS the window is half-float from the start and opts into EDR while RTX is
 on, following the headroom SDL reports each frame. Other platforms tonemap to SDR.
 The mode never reaches a run's state, and the verifier (`core.wasm`) builds
