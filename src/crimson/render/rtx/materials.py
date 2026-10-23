@@ -432,12 +432,15 @@ class MaterialGroundRenderer(GroundRenderer):
             light.beam_profile is not None and light.illumination_gain > 0 for light in lights
         )
         self._material_integer("u_has_beam_lights", int(has_beam_lights))
-        grid_lights = lights
+        grid_lights, beam_margin = lights, 0.
         if has_beam_lights:
             cells, grid_lights = prepare_beam_lights(lights)
+            beam_margin = max(cells[2::4])
             self._material_uniform("u_beam_tuning", [ION_DIRECT_GAIN, ION_AMBIENT_DIP, FIRE_DIRECT_GAIN, FIRE_AMBIENT_DIP])
             self._material_array("u_line_cells[0]", cells, components=4)
-        grid = build_occlusion_grid(bodies, grid_lights, width=self.width, height=self.height, illumination=shadows)
+        grid = build_occlusion_grid(
+            bodies, grid_lights, width=self.width, height=self.height, illumination=shadows, beam_margin=beam_margin,
+        )
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
         self._material_uniform("u_occlusion_grid", [
             grid.origin.x, grid.origin.y, float(grid.columns if grid.body_count else 0), float(grid.rows),
