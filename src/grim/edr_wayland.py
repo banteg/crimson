@@ -20,7 +20,7 @@ import math
 import os
 import struct
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -378,6 +378,9 @@ class WaylandEdr:
         self.supported = False
         self.requested: bool | None = None
         self.headroom = 1.0
+        # The preferred description's black and reference white, in cd/m².
+        self.black = 0.0
+        self.reference = 80.0
         self.preferred_stale = False
         self._callbacks: list[Any] = []
 
@@ -409,7 +412,13 @@ class WaylandEdr:
             _log.warning("EDR: raylib's dlsym import is not bound to libc's dlsym; using SDR")
             yield
             return
-        with slot.replaced(_address(dlsym)) as original:
+        with ExitStack() as stack:
+            try:
+                original = stack.enter_context(slot.replaced(_address(dlsym)))
+            except OSError:
+                _log.warning("EDR: raylib's dlsym import could not be patched; using SDR", exc_info=True)
+                yield
+                return
             real_dlsym = _DLSYM(original)
             yield
 
@@ -505,6 +514,7 @@ class WaylandEdr:
         min_lum, max_lum, reference = info["luminances"]
         target_max = info.get("target_luminance", (min_lum, max_lum))[1]
         self.headroom = max(1.0, target_max / reference) if reference > 0 and math.isfinite(target_max) else 1.0
+        self.black, self.reference = min_lum / 10000, reference
         creator = wl.request(self.manager, 5, None, interface="wp_image_description_creator_params_v1")
         wl.request(creator, 1, _TF_GAMMA22)
         wl.request(creator, 3, _PRIMARIES_SRGB)
@@ -524,17 +534,19 @@ class WaylandEdr:
 
     def _apply(self, active: bool) -> None:
         wl = self.wl
-        assert wl is not None and self.description is not None
+        assert wl is not None
         # Double-buffered surface state: the next eglSwapBuffers commit applies it with the matching pixels.
         if active:
+            assert self.description is not None
             wl.request(self.color_surface, 1, self.description.proxy, _INTENT_PERCEPTUAL)
         else:
             wl.request(self.color_surface, 2)
         wl.flush()
 
     def output_gain(self, headroom: float) -> float:
-        # Signal 1.0 is the display peak, `headroom` times the reference white.
-        return headroom ** (-1 / 2.2)
+        # Gamma 2.2 maps signal E to black + (peak - black) * E**2.2, with the peak `headroom` times the reference
+        # white; this gain puts the frame's 1.0 on the reference white.
+        return ((self.reference - self.black) / (self.reference * headroom - self.black)) ** (1 / 2.2)
 
     def close(self) -> None:
         """Release the protocol objects before GLFW disconnects its display."""
@@ -560,7 +572,10 @@ class WaylandEdr:
             return False, 1.0
         self.wl.dispatch_pending()
         if self.preferred_stale and not self._describe():
-            self.supported = False
+            # The old description would still apply to the SDR frames that follow.
+            if self.requested:
+                self._apply(False)
+            self.supported, self.requested = False, False
             return False, 1.0
         if requested != self.requested:
             self._apply(requested)
