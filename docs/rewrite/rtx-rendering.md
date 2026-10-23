@@ -8,7 +8,7 @@ tags:
 # RTX rendering
 
 RTX is the Python port's alternative rendering mode. It combines analytic beam
-shaders, wet ground materials, and creature lighting with HDR world rendering and macOS extended dynamic range (EDR) output.
+shaders, wet ground materials, and creature lighting with HDR world rendering and extended dynamic range (EDR) output on macOS and Wayland.
 This page covers those paths, their controls, and how they differ from classic
 rendering.
 
@@ -76,16 +76,17 @@ When render mode is `rtx`, `WorldRuntime.draw()` wraps `draw_world()` in `HdrRen
 - pixels at or below the shoulder knee (`0.85`) pass through the tonemapper unchanged; the material pass below shades RTX terrain before this step
 - on SDR/8-bit targets, values above `0.85` compress the peak channel with a $C^1$ exponential shoulder while scaling the remaining channels proportionally to preserve hue, and stacks above `1.0` drift smoothly toward an incandescent white core (`white = 0.6` over a `3.0` excess span)
 - selecting RTX always requests EDR; macOS uses a verified floating-point OpenGL backbuffer and Cocoa's `wantsExtendedDynamicRangeOpenGLSurface` opt-in, following [Apple's OpenGL EDR recipe](https://developer.apple.com/videos/play/wwdc2021/10161/)
-- the Python window runner reserves a float surface for game windows so console/debug mode changes do not need to recreate the GL context; its temporary Cocoa pixel-format hook is restored immediately after window creation
+- on Wayland, the window gets an RGBA16F EGL surface where the driver and compositor share a float format, else a 10-bit one, and is tagged through `wp_color_management_v1` as gamma 2.2 sRGB whose signal `1.0` is the display peak and whose reference white is the compositor's; the canvas divides the frame by the shoulder's limit (`headroom^(1/2.2)`) so SDR white lands on the reference level. Headroom is the preferred description's target peak over its reference white, refreshed when the compositor reports a new preferred description (another output, HDR toggled). Compositors without parametric descriptions, `set_luminances` or gamma 2.2, and X11 sessions, stay SDR
+- the Python window runner reserves a deep surface for game windows so console/debug mode changes do not need to recreate the GL context; its temporary pixel-format hook (Cocoa) or EGL config filter (Wayland) is removed immediately after window creation
 - current display headroom is refreshed before each frame, including after display moves and fullscreen changes; potential headroom is not a rendering limit, and activation can ramp up from `1.0`
 - the tonemapper approximates the legacy OpenGL transfer with gamma 2.2 and rolls highlights off toward current headroom; this is display-relative rendering, not a calibrated nit target
 - gamma and letterbox targets preserve extended values; HUD, aim indicators, perk prompts, and console overlays are drawn outside the world tonemapper and remain in the SDR range
-- returning to classic disables the Cocoa EDR opt-in and composites through an 8-bit target, preserving classic's per-draw saturation even on the reserved float window
-- other platforms, unavailable float surfaces, and displays with headroom `1.0` use SDR tonemapping; an SDR ancestor target also forces SDR output for capture/compositing
+- returning to classic disables the Cocoa EDR opt-in or unsets the Wayland image description and composites through an 8-bit target, preserving classic's per-draw saturation even on the reserved deep window
+- Windows, unavailable deep surfaces, and displays with headroom `1.0` use SDR tonemapping; an SDR ancestor target also forces SDR output for capture/compositing
 
 This integration is limited to the Python port. The native/browser ports are unchanged.
 
-In-game PNG screenshots still use an 8-bit SDR readback. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
+In-game PNG screenshots still use an 8-bit SDR readback, taken from the frame before Wayland's presentation scaling. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
 
 ## Ground materials and wet blood
 

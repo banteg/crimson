@@ -5,8 +5,8 @@ import logging
 import math
 import sys
 from collections.abc import Iterator
-from contextlib import contextmanager
-from typing import Any
+from contextlib import AbstractContextManager, contextmanager
+from typing import Any, Protocol
 
 from .raylib_api import ffi, rl
 
@@ -14,7 +14,25 @@ HDR_PIXEL_FORMAT = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16
 _RL_ATTACHMENT_COLOR_CHANNEL0 = 0
 _RL_ATTACHMENT_TEXTURE2D = 100
 _log = logging.getLogger(__name__)
-_macos: _MacosEdr | None = None
+
+
+class _Bridge(Protocol):
+    """A platform's deep window surface and its HDR presentation switch."""
+
+    supported: bool
+
+    def float_pixel_format(self) -> AbstractContextManager[None]: ...
+
+    def update(self, requested: bool) -> tuple[bool, float]: ...
+
+    def output_gain(self, headroom: float, /) -> float | None:
+        """What the active surface needs the gamma-domain frame multiplied by, or None to present it as drawn."""
+        ...
+
+    def close(self) -> None: ...
+
+
+_bridge: _Bridge | None = None
 _edr_active = False
 _headroom = 1.0
 
@@ -59,13 +77,6 @@ class _MacosEdr:
         self.objc.class_getInstanceMethod.restype = C.c_void_p
         self.objc.method_setImplementation.argtypes = [C.c_void_p, C.c_void_p]
         self.objc.method_setImplementation.restype = C.c_void_p
-        self.gl = C.CDLL("/System/Library/Frameworks/OpenGL.framework/OpenGL")
-        self.gl.glGetFramebufferAttachmentParameteriv.argtypes = [
-            C.c_uint,
-            C.c_uint,
-            C.c_uint,
-            C.POINTER(C.c_int),
-        ]
         self.window = 0
         self.view = 0
         self.supported = False
@@ -141,10 +152,7 @@ class _MacosEdr:
         self.supported = False
         if not self.view or not self.supports(self.view, "setWantsExtendedDynamicRangeOpenGLSurface:"):
             return
-        # Inspect the actual default backbuffer, not an offscreen HDR texture.
-        component = C.c_int()
-        self.gl.glGetFramebufferAttachmentParameteriv(0x8D40, 0x0402, 0x8211, C.byref(component))
-        if component.value != 0x1406:  # GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE != GL_FLOAT
+        if not backbuffer_format()[0]:
             _log.warning("EDR: window backbuffer is not floating point; using SDR")
             return
         self.supported = True
@@ -167,41 +175,75 @@ class _MacosEdr:
         headroom = float(self.send(screen, selector, C.c_double)) if self.supports(screen, selector) else 1.0
         return True, max(1.0, headroom) if math.isfinite(headroom) else 1.0
 
+    def output_gain(self, _headroom: float) -> None:
+        # EDR OpenGL surfaces take the extended gamma-domain frame as drawn.
+        return None
+
+    def close(self) -> None:
+        pass
+
+
+def backbuffer_format() -> tuple[bool, int]:
+    """Whether the window's actual default backbuffer (not an offscreen HDR texture) is float, and its red bits."""
+    query = C.CFUNCTYPE(None, C.c_uint, C.c_uint, C.c_uint, C.POINTER(C.c_int))(
+        int(ffi.cast("uintptr_t", rl.glfw_get_proc_address("glGetFramebufferAttachmentParameteriv"))),
+    )
+    component, red = C.c_int(), C.c_int()
+    # GL_FRAMEBUFFER, GL_BACK_LEFT: GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE, _RED_SIZE
+    query(0x8D40, 0x0402, 0x8211, C.byref(component))
+    query(0x8D40, 0x0402, 0x8212, C.byref(red))
+    return component.value == 0x1406, red.value
+
+
+def _platform_bridge() -> _Bridge | None:
+    if sys.platform == "darwin":
+        return _MacosEdr()
+    if sys.platform == "linux":
+        from .edr_wayland import WaylandEdr
+
+        return WaylandEdr()
+    return None
+
 
 @contextmanager
-def macos_float_backbuffer(*, enabled: bool) -> Iterator[None]:
+def float_backbuffer(*, enabled: bool) -> Iterator[None]:
     """Reserve a float surface for windows that can switch to RTX at runtime.
 
-    The surface alone does not enable EDR. activate_macos_edr_window follows the
+    The surface alone does not enable EDR. activate_edr_window follows the
     render mode, including when it starts in classic and later switches to RTX.
     """
-    global _macos
-    if not enabled or sys.platform != "darwin":
+    global _bridge
+    if not enabled:
         yield
         return
     try:
-        _macos = _MacosEdr()
-    except (OSError, AttributeError):
-        _log.warning("EDR: Cocoa/OpenGL bridge unavailable; using SDR", exc_info=True)
+        _bridge = _platform_bridge()
+    except (OSError, AttributeError, StopIteration):
+        _log.warning("EDR: platform bridge unavailable; using SDR", exc_info=True)
         yield
         return
-    with _macos.float_pixel_format():
+    if _bridge is None:
+        yield
+        return
+    with _bridge.float_pixel_format():
         yield
 
 
-def activate_macos_edr_window(requested: bool) -> bool:
+def activate_edr_window(requested: bool) -> bool:
     """Refresh the RTX opt-in and live display headroom before drawing a frame."""
     global _edr_active, _headroom
-    if _macos is None or not rl.is_window_ready():
+    if _bridge is None or not rl.is_window_ready():
         _edr_active, _headroom = False, 1.0
     else:
-        _edr_active, _headroom = _macos.update(requested)
+        _edr_active, _headroom = _bridge.update(requested)
     return _edr_active
 
 
 def reset_edr_window() -> None:
-    global _macos, _edr_active, _headroom
-    _macos, _edr_active, _headroom = None, False, 1.0
+    global _bridge, _edr_active, _headroom
+    if _bridge is not None:
+        _bridge.close()
+    _bridge, _edr_active, _headroom = None, False, 1.0
 
 
 def edr_active() -> bool:
@@ -214,4 +256,11 @@ def edr_headroom() -> float:
 
 def edr_available() -> bool:
     """Whether this window has a float surface, even while classic keeps EDR off."""
-    return _macos is not None and _macos.supported
+    return _bridge is not None and _bridge.supported
+
+
+def edr_output_gain() -> float | None:
+    """The gain the active EDR surface needs on the gamma-domain frame, or None to present it as drawn."""
+    if not _edr_active or _bridge is None:
+        return None
+    return _bridge.output_gain(_headroom)

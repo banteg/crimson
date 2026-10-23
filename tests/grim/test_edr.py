@@ -10,14 +10,14 @@ from grim.texture_mode import current_target_edr_headroom, texture_mode
 def test_edr_request_is_retained_while_current_headroom_is_one(mocker) -> None:
     bridge = mocker.Mock()
     bridge.update.side_effect = [(True, 1.0), (True, 7.5), (False, 1.0)]
-    mocker.patch.object(edr, "_macos", bridge)
+    mocker.patch.object(edr, "_bridge", bridge)
     mocker.patch.object(rl, "is_window_ready", return_value=True)
     try:
-        assert edr.activate_macos_edr_window(True)
+        assert edr.activate_edr_window(True)
         assert edr.edr_headroom() == 1.0
-        assert edr.activate_macos_edr_window(True)
+        assert edr.activate_edr_window(True)
         assert edr.edr_headroom() == 7.5
-        assert not edr.activate_macos_edr_window(False)
+        assert not edr.activate_edr_window(False)
         assert edr.edr_headroom() == 1.0
         assert bridge.update.call_args_list == [mocker.call(True), mocker.call(True), mocker.call(False)]
     finally:
@@ -54,8 +54,8 @@ def test_sdr_ancestor_forces_sdr_tonemapping_even_inside_float_target(mocker) ->
 
 
 def test_non_macos_does_not_load_cocoa(mocker) -> None:
-    mocker.patch.object(edr.sys, "platform", "linux")
+    mocker.patch.object(edr.sys, "platform", "win32")
     bridge = mocker.patch.object(edr, "_MacosEdr")
-    with edr.macos_float_backbuffer(enabled=True):
+    with edr.float_backbuffer(enabled=True):
         pass
     bridge.assert_not_called()

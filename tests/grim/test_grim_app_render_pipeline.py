@@ -168,7 +168,8 @@ def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) 
     )
     assert view.draw_calls == 2
     assert len(view.update_dts) == 2
-    screenshot.assert_called_once_with(tmp_path / "shot_000.png")
+    assert screenshot.call_count == 1
+    assert screenshot.call_args.args[0] == tmp_path / "shot_000.png"
     screenshot_saved.assert_called_once_with(tmp_path / "shot_000.png")
     assert quit_requested.call_count == screenshot_requested.call_count == 2
     assert view.close_calls == fake_rl.close_calls == 1
@@ -232,8 +233,8 @@ def test_run_view_updates_edr_after_mode_changes_and_resets_on_close(mocker) -> 
     mocker.patch.object(grim_app, "RaylibDrawScope")
     mocker.patch.object(grim_app, "RenderPipeline", _PipelineSpy)
     mocker.patch.object(fake_rl, "window_should_close", side_effect=[False, False, True])
-    reserve = mocker.patch.object(grim_app, "macos_float_backbuffer", return_value=nullcontext())
-    activate = mocker.patch.object(grim_app, "activate_macos_edr_window")
+    reserve = mocker.patch.object(grim_app, "float_backbuffer", return_value=nullcontext())
+    activate = mocker.patch.object(grim_app, "activate_edr_window")
     reset = mocker.patch.object(grim_app, "reset_edr_window")
     requested = False
 
