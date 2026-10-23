@@ -239,6 +239,59 @@ void benchmark(bool terrain) {
 }
 #endif
 
+// The back buffer's red channel at a logical pixel, as stored.
+float back_red(int x, int y) {
+  Target &back = textures[0];
+  float pixel[4];
+  glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
+  glReadPixels(x * back.width / back.logical_width, y * back.height / back.logical_height, 1, 1, GL_RGBA, GL_FLOAT,
+               pixel);
+  bind_target();
+  return pixel[0];
+}
+
+// RTX: an additive stack of three whites draws past white in the world's HDR
+// target, whose tonemap rolls it off below white without EDR headroom and past
+// white with it, while what stays under the shoulder's knee lands unchanged.
+// Classic saturates each draw on its 8-bit back buffer.
+void check_rtx() {
+#ifdef __EMSCRIPTEN__
+  assert(!renderer_set_rtx(true));
+#else
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 2);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
+  auto world = [] {
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, 1);
+    for (int i = 0; i < 3; ++i)
+      rectangle(0, 0, 512, 768, 0xffffffff);
+    rectangle(512, 0, 1024, 768, 0xff808080);
+    w2c_host_render_pass(nullptr, 2);
+  };
+  assert(renderer_set_rtx(true) && (textures[0].flags & TARGET_HALF_FLOAT));
+  float limit = 0;
+  for (float headroom : {1.0f, 4.0f}) {
+    renderer_set_headroom(headroom);
+    world();
+    float highlight = back_red(100, 100), shadow = back_red(700, 100);
+    assert(fabsf(shadow - 128 / 255.0f) < 1e-3f);
+    assert(highlight > 0.85f && (headroom == 1 ? highlight <= 1 : highlight > 1 && highlight < powf(4, 1 / 2.2f)));
+    limit = highlight;
+  }
+  assert(!renderer_set_rtx(false) && !(textures[0].flags & TARGET_HALF_FLOAT));
+  assert(fabsf(back_red(100, 100) - 1) < 1e-3f && limit > 1); // the switch kept the image, clipped to 8 bits
+  world();
+  assert(back_red(100, 100) == 1 && fabsf(back_red(700, 100) - 128 / 255.0f) < 1e-3f);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
+#endif
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom; classic stays 8-bit");
+}
+
 int main() {
   assert(SDL_Init(SDL_INIT_VIDEO));
 #ifdef __EMSCRIPTEN__
@@ -415,6 +468,7 @@ int main() {
   renderer_resume();
   assert(glGetError() == GL_NO_ERROR);
   puts("renderer: native density, logical projection/input, terrain, holds, anchors, alpha and presentation passed");
+  check_rtx();
 #if !defined(RENDERER_BENCHMARK) || RENDERER_BENCHMARK != 0
   // A transparent blue texel must never turn the opaque red neighbor purple.
   w2c_host_texture_create(nullptr, 201, 2, 1, 0);

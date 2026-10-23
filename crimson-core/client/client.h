@@ -30,6 +30,10 @@ struct Viewport {
 };
 Viewport renderer_viewport(int window_width, int window_height);
 std::vector<unsigned char> renderer_capture(int &width, int &height);
+// RTX (game/rtx.cpp): whether the renderer shows it, asked to, and the display's
+// EDR headroom its tonemap rolls highlights toward (1 is SDR).
+bool renderer_set_rtx(bool enabled);
+void renderer_set_headroom(float headroom);
 
 // audio.cpp: plays the module's mix, pulled after each frame.
 void audio_init();

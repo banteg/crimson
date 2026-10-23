@@ -11,8 +11,8 @@ HERE = Path(__file__).resolve().parent
 GAME = HERE / "game"
 # changes/: what the client changes in the recovered game, where its host hooks in and which defaults it picks;
 # patches/: the ranked fixes that only change what is drawn (`NN-*.patch` fixes original bug NN), so they leave the
-# verifier untouched.
-GAME_DIFFS = (*DIFFS, GAME / "changes", GAME / "patches")
+# verifier untouched; rtx/: where the RTX mode draws (game/rtx.cpp), over what those fixes draw.
+GAME_DIFFS = (*DIFFS, GAME / "changes", GAME / "patches", GAME / "rtx")
 # Signatures the recovered files disagree on, as the game module's definitions have them (adapter.PROTOTYPES): some
 # callers declare sfx_play void, but it returns the voice, which they ignore.
 GAME_PROTOTYPES = {

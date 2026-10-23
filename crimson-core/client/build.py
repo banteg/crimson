@@ -19,6 +19,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from shaders import write_shader_headers
+
 from scripts.build_identity import client_identity, read_manifest, write_manifest
 
 HERE = Path(__file__).resolve().parent
@@ -142,8 +144,7 @@ def main():
     args = parser.parse_args()
     out = (args.out or CORE / "build" / {"native": "app", "web": "web"}[args.target]).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    filtering = (CORE.parent / "src/grim/filtering.glsl").read_text()
-    (out / "filtering.h").write_text('R"GLSL(' + filtering + ')GLSL"\n')
+    write_shader_headers(out)
     write_asset_version(out)
     if not args.skip_game:
         subprocess.run([sys.executable, str(CORE / "build.py"), "--target", "game"], check=True)
@@ -195,7 +196,8 @@ def main():
         ]
     else:
         # Linux finds a packaged SDL3 beside the executable.
-        system = ["-framework", "OpenGL"] if sys.platform == "darwin" else ["-lGL", "-Wl,-rpath,$ORIGIN"]
+        # libobjc for the window's extended-range opt-in (main.cpp display_edr).
+        system = ["-framework", "OpenGL", "-lobjc"] if sys.platform == "darwin" else ["-lGL", "-Wl,-rpath,$ORIGIN"]
         link = [
             cxx,
             *objects,

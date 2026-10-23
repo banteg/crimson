@@ -83,7 +83,8 @@ When render mode is `rtx`, `WorldRuntime.draw()` wraps `draw_world()` in `HdrRen
 - returning to classic disables the Cocoa EDR opt-in and composites through an 8-bit target, preserving classic's per-draw saturation even on the reserved float window
 - other platforms, unavailable float surfaces, and displays with headroom `1.0` use SDR tonemapping; an SDR ancestor target also forces SDR output for capture/compositing
 
-This integration is limited to the Python port. The native/browser ports are unchanged.
+The native client runs the same HDR world target and tonemap (see [Native client](#native-client)).
+The browser client stays classic: WebGL2 has no extended-range output.
 
 In-game PNG screenshots still use an 8-bit SDR readback. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
 
@@ -226,6 +227,29 @@ Benchmark controls:
 - render benchmarks can select mode via:
   - `uv run crimson replay benchmark <replay.crd> --mode render`
   - `uv run crimson replay benchmark <replay.crd> --mode render --rtx`
+
+## Native client
+
+The native client (`crimson-core/client`) shows RTX through the same GLSL as the
+Python port: `src/crimson/render/rtx/shaders/*.frag` are loaded by Python and built
+into the client's `rtx_shaders.h` (`crimson-core/client/shaders.py`). The client
+renders the original game, so it cannot branch inside a Python draw path; instead
+the game module marks where the world starts and ends in a frame
+(`crimson-core/game/rtx/rtx.patch`, `game/rtx.cpp`), and the host
+(`client/renderer.cpp`) draws the world between those marks into an `RGBA16F`
+target, tonemaps it onto a half-float back buffer, and draws the HUD over it.
+Classic keeps its 8-bit back buffer, so each classic draw still saturates at white.
+On macOS the window is half-float from the start and opts into EDR while RTX is
+on, following the headroom SDL reports each frame. Other platforms tonemap to SDR.
+The mode never reaches a run's state, and the verifier (`core.wasm`) builds
+without it.
+
+Controls:
+
+- launch flag: `crimson --rtx`, or `CRIMSON_RTX=1` (unattended captures)
+- console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`
+- `rendermode rtx` in the game folder's `autoexec.txt`, which the original runs at
+  startup, keeps the mode across launches
 
 ## Future direction
 

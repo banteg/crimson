@@ -1,8 +1,11 @@
 // The Direct3D 8 subset the game module's device sends, on OpenGL 3.3 core
 // (OpenGL ES 3.0 / WebGL2 in the browser). Render targets and the back buffer
 // are framebuffer textures whose row 0 is the image's top row, as uploaded
-// textures are; presenting flips the back buffer into the window.
+// textures are; presenting flips the back buffer into the window. In RTX mode
+// (game/rtx.cpp, native only) the world draws into a half-float target that a
+// tonemap then puts on a half-float back buffer, so highlights can exceed white.
 #include "client.h"
+#include "rtx_shaders.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -51,6 +54,9 @@ enum {
   STAGES = 2,
 };
 
+// Target flags beyond the host_texture_create ones (1 render target, 2 no alpha):
+// half-float storage, which the RTX back buffer and world target use.
+enum { TARGET_HALF_FLOAT = 4 };
 struct Target {
   GLuint texture = 0, framebuffer = 0;
   // Texture storage and viewport pixels are independent of draw coordinates.
@@ -69,6 +75,13 @@ GLuint program, present_program, vertex_array, vertex_buffer, index_buffer, samp
 GLuint blank_texture;
 GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_alpha_op, u_alpha_arg1, u_alpha_arg2,
     u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction;
+// RTX: the world's HDR target while the world draws (host_render_pass), and the
+// tonemap that puts it on the back buffer toward the display's EDR headroom.
+bool rtx, world;
+Target hdr;
+GLuint tonemap_program;
+GLint u_tonemap_headroom;
+float edr_headroom = 1;
 
 const char *vertex_source = SHADER_HEADER R"(
 layout(location = 0) in vec4 position; // x, y, z, rhw in pixels
@@ -166,12 +179,28 @@ out vec4 color;
 uniform sampler2D back_buffer, gamma;
 void main() {
   vec3 c = texture(back_buffer, v_uv).rgb;
-  // The device's gamma ramp, one 256-entry table per channel.
-  color = vec4(texture(gamma, vec2(c.r * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).r,
-               texture(gamma, vec2(c.g * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).g,
-               texture(gamma, vec2(c.b * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).b, 1.0);
+  // The device's gamma ramp, one 256-entry table per channel. An RTX highlight
+  // past white keeps its excess over the ramp's white.
+  vec3 sdr = min(c, 1.0);
+  color = vec4(vec3(texture(gamma, vec2(sdr.r * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).r,
+                    texture(gamma, vec2(sdr.g * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).g,
+                    texture(gamma, vec2(sdr.b * 255.0 / 256.0 + 0.5 / 256.0, 0.5)).b) * max(c, 1.0), 1.0);
 }
 )";
+
+// The Python port's RTX tonemap (src/crimson/render/rtx/shaders/hdr_tonemap.frag)
+// over the HDR target, which shares the back buffer's orientation.
+const char *tonemap_vertex_source = SHADER_HEADER R"(
+out vec2 fragTexCoord;
+out vec4 fragColor;
+void main() {
+  vec2 corner = vec2(float(gl_VertexID & 1), float(gl_VertexID >> 1));
+  gl_Position = vec4(corner * 2.0 - 1.0, 0.0, 1.0);
+  fragTexCoord = corner;
+  fragColor = vec4(1.0);
+}
+)";
+const char *tonemap_fragment_source = SHADER_HEADER RTX_SHADER_HDR_TONEMAP_FRAG;
 
 GLuint compile(GLenum kind, const char *source) {
   GLuint shader = glCreateShader(kind);
@@ -250,7 +279,10 @@ Target &target_or_back(int id) {
 void allocate(Target &t) {
   glGenTextures(1, &t.texture);
   glBindTexture(GL_TEXTURE_2D, t.texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t.width, t.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  if (t.flags & TARGET_HALF_FLOAT)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, t.width, t.height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
+  else
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t.width, t.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -276,10 +308,32 @@ void release(Target &t) {
   t = Target{};
 }
 
+// Where a draw lands: while the RTX world draws, the back buffer's draws go to
+// the HDR target.
+Target &drawing_target(int id) {
+  Target &t = target_or_back(id);
+  return world && &t == &textures[0] ? hdr : t;
+}
+
 void bind_target() {
-  Target &t = target_or_back(current_target);
+  Target &t = drawing_target(current_target);
   glBindFramebuffer(GL_FRAMEBUFFER, t.framebuffer);
   glViewport(0, 0, t.width, t.height);
+}
+
+// Reallocate a target in place, keeping its image (scaled once if its size changed).
+void reallocate(Target &t, int width, int height, int flags) {
+  Target previous = t;
+  t.texture = t.framebuffer = 0;
+  t.width = width;
+  t.height = height;
+  t.flags = flags;
+  allocate(t);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, previous.framebuffer);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, t.framebuffer);
+  glBlitFramebuffer(0, 0, previous.width, previous.height, 0, 0, t.width, t.height, GL_COLOR_BUFFER_BIT,
+                    previous.width == t.width && previous.height == t.height ? GL_NEAREST : GL_LINEAR);
+  release(previous);
 }
 
 } // namespace
@@ -374,17 +428,8 @@ void renderer_resize(int window_width, int window_height) {
   // A minimized window can have no drawable pixels. Keep its last image.
   if (!v.width || !back.framebuffer || (back.width == v.width && back.height == v.height))
     return;
-  Target previous = back;
-  back.texture = back.framebuffer = 0;
-  back.width = v.width;
-  back.height = v.height;
-  allocate(back);
   // Some frames only draw overlays (paused, seeking or waiting for co-op).
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, previous.framebuffer);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, back.framebuffer);
-  glBlitFramebuffer(0, 0, previous.width, previous.height, 0, 0, back.width, back.height,
-                    GL_COLOR_BUFFER_BIT, GL_LINEAR);
-  release(previous);
+  reallocate(back, v.width, v.height, back.flags);
   bind_target();
 }
 
@@ -419,6 +464,34 @@ void renderer_present(int window_width, int window_height) {
 }
 
 void renderer_resume() { bind_target(); }
+
+bool renderer_set_rtx(bool enabled) {
+#ifdef __EMSCRIPTEN__
+  // WebGL2 has no extended-range output: the browser stays classic.
+  enabled = false;
+#endif
+  if (enabled && !tonemap_program) {
+    tonemap_program = link(tonemap_vertex_source, tonemap_fragment_source);
+    glUseProgram(tonemap_program);
+    glUniform1i(glGetUniformLocation(tonemap_program, "texture0"), 0);
+    glUniform4f(glGetUniformLocation(tonemap_program, "colDiffuse"), 1, 1, 1, 1);
+    u_tonemap_headroom = glGetUniformLocation(tonemap_program, "u_edr_headroom");
+  }
+  rtx = enabled;
+  world = false;
+  release(hdr);
+  // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
+  Target &back = textures[0];
+  int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
+  if (back.framebuffer && flags != back.flags)
+    reallocate(back, back.width, back.height, flags);
+  else
+    back.flags = flags;
+  bind_target();
+  return enabled;
+}
+
+void renderer_set_headroom(float headroom) { edr_headroom = headroom; }
 
 // The kept frame (host_frame_hold): the back buffer copied aside, and back.
 Target held, anchor;
@@ -495,7 +568,7 @@ void w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
   Viewport v = renderer_viewport(drawable_width, drawable_height);
   back.width = v.width ? v.width : (int)width;
   back.height = v.height ? v.height : (int)height;
-  back.flags = 1 | 2; // the back buffer is X8R8G8B8
+  back.flags = 1 | 2 | (rtx ? TARGET_HALF_FLOAT : 0); // the back buffer is X8R8G8B8
   allocate(back);
   current_target = 0;
   bind_target();
@@ -567,7 +640,7 @@ void w2c_host_set_render_target(struct w2c_host *, u32 id) {
   bind_target();
 }
 void w2c_host_clear(struct w2c_host *, u32 color) {
-  Target &t = target_or_back(current_target);
+  Target &t = drawing_target(current_target);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glClearColor((color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f,
                t.flags & 2 ? 1.0f : (color >> 24) / 255.0f);
@@ -575,7 +648,7 @@ void w2c_host_clear(struct w2c_host *, u32 color) {
 }
 void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
                    u32 primitive_count) {
-  Target &t = target_or_back(current_target);
+  Target &t = drawing_target(current_target);
   glUseProgram(program);
   glUniform2f(u_target_size, (float)t.logical_width, (float)t.logical_height);
   GLint has[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES], filters[STAGES];
@@ -649,6 +722,41 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
   } else {
     glDrawArrays(mode, 0, index_count);
   }
+}
+void w2c_host_render_pass(struct w2c_host *, u32 pass) {
+  Target &back = textures[0];
+  if (!rtx || !back.framebuffer)
+    return;
+  if (pass == 1) { // HOST_PASS_WORLD_BEGIN: the world goes over what the frame drew so far.
+    if (hdr.width != back.width || hdr.height != back.height || !hdr.framebuffer) {
+      release(hdr);
+      hdr.width = back.width;
+      hdr.height = back.height;
+      hdr.flags = back.flags | TARGET_HALF_FLOAT;
+      allocate(hdr);
+    }
+    hdr.logical_width = back.logical_width;
+    hdr.logical_height = back.logical_height;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, back.framebuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, hdr.framebuffer);
+    glBlitFramebuffer(0, 0, back.width, back.height, 0, 0, hdr.width, hdr.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    world = true;
+  } else if (pass == 2 && world) { // HOST_PASS_WORLD_END
+    world = false;
+    glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
+    glViewport(0, 0, back.width, back.height);
+    glUseProgram(tonemap_program);
+    glUniform1f(u_tonemap_headroom, edr_headroom);
+    glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, hdr.texture);
+    glBindSampler(0, 0);
+    glBindVertexArray(vertex_array);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  }
+  bind_target();
 }
 void w2c_host_gamma_ramp(struct w2c_host *, u32 red, u32 green, u32 blue) {
   // D3DGAMMARAMP: three tables of 256 16-bit levels.

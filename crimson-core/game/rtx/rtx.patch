@@ -1,0 +1,31 @@
+The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, and registers its
+console commands beside the original's.
+--- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
++++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
+@@ -89,6 +89,7 @@
+     if (!game_live_between_ticks()) {
+         fx_queue_render();
+     }
++    rtx_world(1);
+     terrain_render();
+ 
+     current_player_index = 0;
+@@ -116,4 +117,5 @@
+         grim_interface_ptr->grim_draw_fullscreen_color(
+             0.0f, 0.0f, 0.0f, screen_fade_alpha);
+     }
++    rtx_world(0);
+ }
+--- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
+@@ -204,6 +204,10 @@
+         "openurl", console_cmd_open_url);
+     console_log_queue.console_register_command(
+         "sndfreqadjustment", console_cmd_snd_freq_adjustment);
++    console_log_queue.console_register_command(
++        "rendermode", console_cmd_render_mode);
++    console_log_queue.console_register_command(
++        "togglertx", console_cmd_toggle_rtx);
+ 
+     memset(registry_key_status_root_path, 0, 0xff);
+     registry_key_status_root_path[0] = 'S';

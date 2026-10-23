@@ -60,6 +60,7 @@ GAME_BUILD = (
 CLIENT_BUILD = (
     "crimson-core/client/",
     "src/grim/filtering.glsl",
+    "src/crimson/render/rtx/shaders/",
     "crimson-core/game/host_input.h",
     "crimson-core/game/leaderboard_requests.h",
     "crimson-core/game/sha256.cpp",

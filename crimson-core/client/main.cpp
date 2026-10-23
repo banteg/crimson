@@ -1,6 +1,7 @@
 // The client: an SDL3 window running the game module one frame per callback.
-// Usage: crimson [game directory]. Without one it plays from the player's data
-// folder, the Python game's too, and downloads the game's files it lacks.
+// Usage: crimson [game directory] [--watch <run>] [--rtx]. Without a directory it
+// plays from the player's data folder, the Python game's too, and downloads the
+// game's files it lacks. --rtx (or CRIMSON_RTX=1) starts in the RTX rendering mode.
 #define SDL_MAIN_USE_CALLBACKS
 #include "client.h"
 #include "network.h"
@@ -15,6 +16,10 @@
 #include <emscripten.h>
 #else
 #include <curl/curl.h>
+#endif
+#ifdef __APPLE__
+#include <objc/message.h>
+#include <objc/runtime.h>
 #endif
 #include <math.h>
 #include <sstream>
@@ -48,6 +53,24 @@ int hold_frames[8];
 // The window has the player: away (blurred, minimized, a hidden tab), no input reaches the game, the pad's
 // neither (a co-op session plays on there, on neutral records).
 bool focused = true;
+// The RTX mode the launch asks for (--rtx, CRIMSON_RTX=1), and whether the window shows extended range.
+bool rtx_requested = getenv("CRIMSON_RTX") && strcmp(getenv("CRIMSON_RTX"), "0");
+bool edr;
+
+// On macOS the RTX window opts into extended dynamic range: its half-float back
+// buffer (SDL_GL_FLOATBUFFERS) then carries highlights past white to the display,
+// whose headroom SDL reports. SDL leaves the Cocoa view's opt-in to its user.
+void display_edr(bool enabled) {
+#ifdef __APPLE__
+  void *cocoa = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
+  void *view = ((void *(*)(void *, SEL))objc_msgSend)(cocoa, sel_registerName("contentView"));
+  ((void (*)(void *, SEL, BOOL))objc_msgSend)(view, sel_registerName("setWantsExtendedDynamicRangeOpenGLSurface:"),
+                                              enabled);
+  edr = enabled;
+#endif
+  if (!edr)
+    renderer_set_headroom(1);
+}
 
 // SDL scancodes to the DirectInput scancodes the game binds.
 unsigned char dik(SDL_Scancode s) {
@@ -364,6 +387,12 @@ void w2c_host_present(struct w2c_host *) {
   SDL_GetWindowSizeInPixels(window, &width, &height);
   capture_frame();
   show_frame(width, height);
+}
+// RTX (game/rtx.cpp): the mode the renderer shows of the one asked for.
+u32 w2c_host_render_mode(struct w2c_host *, u32 requested) {
+  bool rtx = renderer_set_rtx(requested == 1);
+  display_edr(rtx);
+  return rtx;
 }
 }
 
@@ -878,12 +907,16 @@ void fetch_assets() {
 
 SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   bool directory_given = false;
+  const char *usage = "Usage: crimson [game directory] [--watch <run id or replay URL>] [--rtx]";
   for (int i = 1; i < argc; ++i) {
+    if (!strcmp(argv[i], "--rtx")) {
+      rtx_requested = true;
+      continue;
+    }
 #ifndef __EMSCRIPTEN__
     if (!strcmp(argv[i], "--watch")) {
       if (++i == argc)
-        client_fatal(
-            "Usage: crimson [game directory] [--watch <run id or replay URL>]");
+        client_fatal(usage);
       const char *api = getenv("CRIMSON_LEADERBOARD_URL");
       linked_replay = LeaderboardNetwork::replay_link(
           argv[i], api ? api : "https://crimson.land/api");
@@ -894,8 +927,7 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
     }
 #endif
     if (directory_given)
-      client_fatal(
-          "Usage: crimson [game directory] [--watch <run id or replay URL>]");
+      client_fatal(usage);
     game_directory = argv[i];
     directory_given = true;
   }
@@ -919,6 +951,13 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 #endif
+#ifdef __APPLE__
+  // Half-float from the start, so switching to RTX needs no new context; classic
+  // presents the same 8-bit image into it (display_edr).
+  SDL_GL_SetAttribute(SDL_GL_FLOATBUFFERS, 1);
+  for (SDL_GLAttr size : {SDL_GL_RED_SIZE, SDL_GL_GREEN_SIZE, SDL_GL_BLUE_SIZE, SDL_GL_ALPHA_SIZE})
+    SDL_GL_SetAttribute(size, 16);
+#endif
 #ifdef __EMSCRIPTEN__
   // A window title would replace the page's.
   const char *title = nullptr;
@@ -939,6 +978,8 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   audio_init();
   if (!start_game())
     return SDL_APP_FAILURE;
+  if (rtx_requested)
+    w2c_game_game_render_mode(&game, 1);
 #ifndef __EMSCRIPTEN__
   // The page's fullscreen is the player's to ask for; a desktop window opens as crimson.cfg left it.
   if (!w2c_game_game_windowed(&game))
@@ -1087,6 +1128,9 @@ SDL_AppResult SDL_AppIterate(void *) {
   // Finish the elapsed audio before this frame creates new sounds. In
   // particular, dropping a stall's unheard time must not eat a fresh attack.
   audio_update(&game);
+  // The headroom moves with brightness and the display the window is on.
+  if (edr)
+    renderer_set_headroom(SDL_GetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1));
   bool running = w2c_game_game_frame(&game);
   coop_send();
   // Snapshot viewer state after the frame returns; never re-enter the module

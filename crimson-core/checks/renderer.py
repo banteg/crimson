@@ -17,6 +17,9 @@ sys.path.insert(0, str(CORE))
 from adapter import adapt, apply_diffs, load_diffs
 from game import GAME_DIFFS, adapt_game
 
+sys.path.insert(0, str(CORE / "client"))
+from shaders import write_shader_headers
+
 
 def tool(name: str) -> str:
     path = shutil.which(name)
@@ -36,8 +39,7 @@ def build(out: Path, web: bool, benchmark: str | None = None) -> Path:
         source = adapt_game(path, adapt(path, source))
         sources.append("\n".join(line for line in source.splitlines() if not line.startswith("#include")))
     (out / "fullscreen.inc").write_text("\n".join(sources))
-    filtering = (CORE.parent / "src/grim/filtering.glsl").read_text()
-    (out / "filtering.h").write_text('R"GLSL(' + filtering + ')GLSL"\n')
+    write_shader_headers(out)
     # Only wasm2c's scalar types are needed by the rendering imports.
     (out / "game.h").write_text(
         "#pragma once\n#include <stdint.h>\ntypedef uint8_t u8;\ntypedef uint32_t u32;\nstruct w2c_game;\n",

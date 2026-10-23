@@ -1,7 +1,8 @@
 #pragma once
 // What the game module asks of its host. Presentation calls return nothing, so
-// the host observes the game without feeding back into it. The query is wall
-// time, which a simulation tick never reads; files arrive through WASI.
+// the host observes the game without feeding back into it. The queries are wall
+// time and the rendering mode, which a simulation tick never reads; files arrive
+// through WASI.
 #define HOST_IMPORT(name) __attribute__((import_module("host"), import_name(#name)))
 extern "C" {
 // Textures hold A8R8G8B8 texels. Flags: 1, a render target the device draws
@@ -24,6 +25,13 @@ HOST_IMPORT(clear) void host_clear(unsigned color);
 HOST_IMPORT(draw) void host_draw(int primitive, const void *vertices, int vertex_count, const unsigned short *indices,
                                  int primitive_count);
 HOST_IMPORT(present) void host_present(void);
+// RTX, the rendering mode beyond the original's look (game/rtx.cpp): the mode
+// the host shows of the one asked for (0 classic, 1 RTX), and the world's bounds
+// in the frame, which the host draws into its HDR target and then tonemaps onto
+// the back buffer.
+HOST_IMPORT(render_mode) int host_render_mode(int requested);
+enum { HOST_PASS_WORLD_BEGIN = 1, HOST_PASS_WORLD_END = 2 };
+HOST_IMPORT(render_pass) void host_render_pass(int pass);
 // The last drawn frame, kept and shown again under what a replay draws over it
 // while no tick draws (host/watch.inc): save the back buffer, or show the saved one.
 enum {
