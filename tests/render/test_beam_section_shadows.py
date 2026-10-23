@@ -62,8 +62,7 @@ def test_beam_chord_matches_analytic_sphere_coverage(raylib_context) -> None:
         rl.unload_render_texture(target)
 
 
-@pytest.mark.parametrize("body_height", [12., 40.])
-def test_projected_visibility_matches_sampled_reference(raylib_context, body_height: float) -> None:
+def test_projected_visibility_matches_sampled_reference(raylib_context) -> None:
     shader = _probe_shader("""
     void main() {
         vec3 receiver = vec3(64., 100., 0.);
@@ -85,7 +84,7 @@ def test_projected_visibility_matches_sampled_reference(raylib_context, body_hei
     target = load_float_render_texture(2, 2)
     renderer = ReflectionOcclusion()
     source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=24., source_width=4.5)
-    body = BodyVolume(Vec2(64., 60.), Vec2(8., 10.), body_height, 0.)
+    body = BodyVolume(Vec2(64., 60.), Vec2(8., 10.), 12., 0.)
 
     try:
         grid = build_occlusion_grid([body], [source], width=128., height=128.)

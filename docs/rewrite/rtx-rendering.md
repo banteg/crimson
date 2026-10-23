@@ -837,12 +837,10 @@ half-width average the remaining emitter dimension. Umbra and penumbra therefore
 change with the body's direction around the projectile instead of using three
 point or disc lights.
 
-The analytic path applies when the emitter is above the body's top. A taller
-body uses 8 longitudinal by 2 transverse visibility samples, since the
-receiver-side clipping guarantee no longer holds. Section half-lengths retain
-their full profile extent rather than the old four-unit cap. Overlapping proxies
-retain the existing minimum-visibility semantics, and dying bodies retain their
-shared collapse/fade behavior.
+Section half-lengths retain their full profile extent rather than the old
+four-unit cap, and the same analytic approximation is used at every body
+height. Overlapping proxies retain the existing minimum-visibility semantics,
+and dying bodies retain their shared collapse/fade behavior.
 
 Preparation uploads one small uniform array and reuses the ordinary occlusion
 grid. Conservative grid-only source copies include the endpoint halo and complete
@@ -867,11 +865,11 @@ improvement in the inspected scene. The ground shader includes this path; frames
 without eligible beam sources skip preparation and ignore stale section uniforms.
 
 Three visibility queries per beam are still more expensive than the previous
-centroid. Ordinary bodies cost two analytic chord evaluations per section;
-taller bodies invoke the sampled fallback. Dense scenes with many simultaneous
-beams remain costly. Two transverse taps do not reproduce a dense sampled
-reference exactly, but avoid the old separate shadow lobes at substantially
-lower cost. Body traversal still scales with the actual spatial candidates.
+centroid, with two analytic chord evaluations per candidate body and section.
+Dense scenes with many simultaneous beams remain costly. Two transverse taps do
+not reproduce a dense sampled reference exactly, but avoid the old separate
+shadow lobes at substantially lower cost. Body traversal still scales with the
+actual spatial candidates.
 
 ### Ion impact arcs
 

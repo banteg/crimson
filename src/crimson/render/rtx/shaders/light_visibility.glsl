@@ -61,23 +61,6 @@ float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfs
     return clamp(blocked / max(2. * halfspan, 1e-6), 0., 1.);
 }
 
-float beamSampledCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, vec3 transverse_ray,
-                          vec3 inverse_radius, float source_width, float halfspan) {
-    float coverage = 0.;
-    float max_inverse_radius = max(inverse_radius.x, inverse_radius.y);
-    for (int along = 0; along < 8; along++) {
-        float offset = ((float(along) + .5) / 8. * 2. - 1.) * halfspan;
-        for (int across = 0; across < 2; across++) {
-            float transverse = (across == 0 ? -.57735027 : .57735027) * source_width;
-            vec3 sample_ray = base_ray + axis_ray * offset + transverse_ray * transverse;
-            float t = clamp(-dot(relative, sample_ray) / max(dot(sample_ray, sample_ray), 1e-8), 0., 1.);
-            float distance = length(relative + sample_ray * t);
-            float softness = max(.015, .1 * t * max_inverse_radius);
-            coverage += 1. - smoothstep(1. - softness, 1. + softness, distance);
-        }
-    }
-    return coverage / 16.;
-}
 #endif
 
 float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, float inverse_xy_length, vec2 owner) {
@@ -106,19 +89,11 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
         vec3 source_axis = vec3(local * beam_section_axis, 0.) * inverse_radius;
         vec2 transverse_axis = vec2(-beam_section_axis.y, beam_section_axis.x);
         vec3 transverse_ray = vec3(local * transverse_axis, 0.) * inverse_radius;
-        float source_height = origin.z + ray.z / inverse_radius.z;
-        float body_top = center.z + 1. / inverse_radius.z;
-        float coverage;
-        if (body_top > source_height + .001) {
-            coverage = beamSampledCoverage(q, ray, source_axis, transverse_ray, inverse_radius,
-                                           source_width, beam_section_halfspan);
-        } else {
-            coverage = .5 * (
-                beamChordCoverage(q, ray - transverse_ray * (.57735027 * source_width),
-                                  source_axis, beam_section_halfspan)
-                + beamChordCoverage(q, ray + transverse_ray * (.57735027 * source_width),
-                                    source_axis, beam_section_halfspan));
-        }
+        float coverage = .5 * (
+            beamChordCoverage(q, ray - transverse_ray * (.57735027 * source_width),
+                              source_axis, beam_section_halfspan)
+            + beamChordCoverage(q, ray + transverse_ray * (.57735027 * source_width),
+                                source_axis, beam_section_halfspan));
         return 1. - orientation.z * coverage;
     }
     #endif
