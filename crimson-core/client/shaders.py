@@ -37,6 +37,8 @@ PROGRAMS = {
     "blit": (CLIENT_SHADERS / "fullscreen.vert", CLIENT_SHADERS / "blit.frag"),
     "tonemap": (CLIENT_SHADERS / "fullscreen.vert", RTX_SHADERS / "hdr_tonemap.frag"),
     "beam": (CLIENT_SHADERS / "beam.vert", RTX_SHADERS / "beam.frag"),
+    "creature": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "creature.frag"),
+    "player": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "player.frag"),
 }
 # glslang's arguments per stage: where each stage's uniform block and textures go.
 STAGE_ARGS = {
@@ -136,10 +138,10 @@ def translate(path: Path, folder: Path) -> dict:
             name, offset, kind, count = match[1], int(match[2]), int(match[3], 16), int(match[4])
             if kind not in TYPE_SIZES:
                 continue  # a sampler: a binding, not a block member
-            if count != 1:
+            if count != 1 and TYPE_SIZES[kind] != 16:
                 raise SystemExit(f"{path.name}: uniform array {name} (pack it in vec4s: WGSL uniform arrays need 16-byte strides)")
-            uniforms.append((name, offset))
-            size = max(size, offset + TYPE_SIZES[kind])
+            uniforms.append((name.removesuffix("[0]"), offset))
+            size = max(size, offset + TYPE_SIZES[kind] * count)
     bindings = []
     for _group, binding, name, kind in re.findall(r"@group\((\d+)\) @binding\((\d+)\)\s*var(?:<uniform>)? (\w+): ([\w<>]+);", wgsl):
         if kind.startswith("texture"):

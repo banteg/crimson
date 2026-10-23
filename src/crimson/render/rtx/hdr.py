@@ -11,7 +11,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import current_target_edr_headroom, current_target_size, texture_mode
 
-from .shaders import RTX_SHADERS
+from .shaders import glsl
 from .shockwaves import PressureFront, ShockwaveRenderer
 
 _HDR_TONEMAP_VS_330 = r"""
@@ -33,7 +33,7 @@ void main() {
 }
 """
 
-_HDR_TONEMAP_FS_330 = RTX_SHADERS.joinpath("hdr_tonemap.frag").read_text()
+_HDR_TONEMAP_FS_330 = glsl("hdr_tonemap.frag")
 
 load_float_target = load_float_render_texture
 

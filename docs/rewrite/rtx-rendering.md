@@ -239,6 +239,24 @@ the game module marks where the world starts and ends in a frame
 (`client/renderer.cpp`) draws the world between those marks into an `RGBA16F`
 target, tonemaps it onto a half-float back buffer, and draws the HUD over it.
 Classic keeps its 8-bit back buffer, so each classic draw still saturates at white.
+Creature bodies and players are lit as in the Python port, with the same
+`creature.frag` and `player.frag` (moved into `shaders/` with the shared
+`source_geometry.glsl` and `light_visibility.glsl`). The game module collects
+the frame's lights at the world's start (`crimson-core/game/rtx_lights.cpp`, a
+port of `material_lights.py`): projectiles and their ion arcs, muzzle flashes,
+the Sharpshooter sight, the Radioactive aura, rocket exhaust, detonations and
+grouped flame particles, with the same per-response selection. Explosion
+fireballs and shells, which the Python port records as each explosion spawns,
+are not collected yet. The module marks the creature body and player batches
+(`HOST_PASS_CREATURES`, `HOST_PASS_PLAYERS`), and the host draws them with the
+lit programs, the camera offset giving each fragment its world position.
+Creature bodies keep the 0.60 ambient fill even without lights; players keep
+the device's shading until lit. Thin-part transmission uses the same
+part-size map (`crimson-core/client/thickness.cpp`, a port of
+`creature_translucency.py`), made from the atlas texels the module keeps on a
+creature atlas's first lit draw. Creature shadows (the body grid) are not
+ported yet: every source is visible.
+
 Ion and Fire Bullets streaks draw as the same analytic beams as the Python port's
 (`shaders/beam.frag`): the module computes each body and head quad as
 `render/rtx/beam.py` does and hands it to the host (`host_beam`) in place of the

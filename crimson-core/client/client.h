@@ -37,6 +37,8 @@ std::vector<unsigned char> renderer_capture(int &width, int &height);
 // EDR headroom its tonemap rolls highlights toward (1 is SDR).
 bool renderer_set_rtx(bool enabled);
 void renderer_set_headroom(float headroom);
+// thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
+std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);
 
 // audio.cpp: plays the module's mix, pulled after each frame.
 void audio_init();

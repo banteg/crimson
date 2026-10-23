@@ -5,6 +5,7 @@
 // sent in place of the original's stamped streaks. Nothing here reaches a run's
 // state: only drawing reads the mode.
 #include "crimsonland_console.h"
+#include "crimsonland_types.h"
 #include "grim2d_cpp.h"
 #include "host_abi.h"
 #include <math.h>
@@ -55,13 +56,31 @@ void console_cmd_toggle_rtx(void) {
 
 static bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
 
+int rtx_collect_lights(float *out, int capacity);
+extern vec2f_t camera_offset;
+
 // The world's bounds in the frame (game/rtx/rtx.patch): what Grim batched before
-// a bound belongs to the side it was drawn on.
+// a bound belongs to the side it was drawn on. The world's lights go first.
 void rtx_world(int begin) {
   if (!rtx_drawing())
     return;
   grim_interface_ptr->grim_flush_batch();
+  if (begin) {
+    static float lights[32 * 16];
+    int count = rtx_collect_lights(lights, 32);
+    const float camera[2] = {camera_offset.x, camera_offset.y};
+    host_scene(camera, lights, count);
+  }
   host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
+}
+
+// The batches the host lights (HOST_PASS_CREATURES, _PLAYERS), and the return to
+// the device's own shading (HOST_PASS_SPRITES).
+void rtx_material(int pass) {
+  if (!rtx_drawing())
+    return;
+  grim_interface_ptr->grim_flush_batch();
+  host_render_pass(pass);
 }
 
 // Analytic beams, from src/crimson/render/rtx/beam.py: an ion or Fire Bullets

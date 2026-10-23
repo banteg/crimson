@@ -29,3 +29,4 @@ enum {
 // Target flags: host_texture_create's (1 render target, 2 no alpha) and the host's
 // own half-float storage, which the RTX back buffer and world target use.
 enum { TARGET_RENDER = 1, TARGET_OPAQUE = 2, TARGET_HALF_FLOAT = 4 };
+#include "../game/render_passes.h"

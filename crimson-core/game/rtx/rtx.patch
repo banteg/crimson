@@ -1,6 +1,6 @@
-The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, draws the ion and
-Fire Bullets streaks as analytic beams in place of their stamps, and registers its console commands beside the
-original's.
+The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, and the creature
+body and player batches the host lights; it draws the ion and Fire Bullets streaks as analytic beams in place of
+their stamps, and registers its console commands beside the original's.
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 @@ -89,6 +89,7 @@
@@ -85,6 +85,58 @@ original's.
              grim_interface_ptr->grim_draw_quad(
                  camera_offset[0] + projectile->pos_x - 16.0f,
                  camera_offset[1] + projectile->pos.pos_y - 16.0f,
+--- a/decomp/1.9/crimsonland/ui_render/creature_render_type.cpp
++++ b/decomp/1.9/crimsonland/ui_render/creature_render_type.cpp
+@@ -136,6 +136,7 @@
+         grim_interface_ptr->grim_end_batch();
+     }
+ 
++    rtx_material(HOST_PASS_CREATURES);
+     grim_interface_ptr->grim_set_config_var(0x13, 5u);
+     grim_interface_ptr->grim_set_config_var(0x14, 6u);
+     grim_interface_ptr->grim_begin_batch();
+@@ -310,6 +311,7 @@
+     }
+ 
+     grim_interface_ptr->grim_end_batch();
++    rtx_material(HOST_PASS_SPRITES);
+ 
+     if (config_blob.violence_disabled) {
+         grim_interface_ptr->grim_set_config_var(0x14, 2u);
+--- a/decomp/1.9/crimsonland/crimsonland/player_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/player_render.cpp
+@@ -238,6 +238,7 @@
+         grim_interface_ptr->grim_set_config_var(0x13, 5u);
+         grim_interface_ptr->grim_set_config_var(0x14, 6u);
+         player_render_set_tint(transition_alpha);
++        rtx_material(HOST_PASS_PLAYERS);
+         grim_interface_ptr->grim_begin_batch();
+ #if CL_BUILD == 10908
+         grim_interface_ptr->grim_draw_quad(
+@@ -254,6 +255,7 @@
+             dead_sprite_size);
+ #endif
+         grim_interface_ptr->grim_end_batch();
++        rtx_material(HOST_PASS_SPRITES);
+         return;
+     }
+ 
+@@ -321,6 +323,7 @@
+         creature_type_table[5].texture_handle, 0);
+     grim_interface_ptr->grim_set_config_var(0x13, 5u);
+     grim_interface_ptr->grim_set_config_var(0x14, 6u);
++    rtx_material(HOST_PASS_PLAYERS);
+     grim_interface_ptr->grim_begin_batch();
+     grim_interface_ptr->grim_set_color(
+         1.0f, 1.0f, 1.0f, transition_alpha);
+@@ -408,6 +411,7 @@
+         sprite_size);
+ #endif
+     grim_interface_ptr->grim_end_batch();
++    rtx_material(HOST_PASS_SPRITES);
+ 
+     if (player_state_table[current_player_index].shield_timer > 0.0f) {
+         grim_interface_ptr->grim_set_config_var(0x13, 5u);
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 @@ -204,6 +204,10 @@

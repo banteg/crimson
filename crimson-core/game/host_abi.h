@@ -30,8 +30,11 @@ HOST_IMPORT(present) void host_present(void);
 // in the frame, which the host draws into its HDR target and then tonemaps onto
 // the back buffer.
 HOST_IMPORT(render_mode) int host_render_mode(int requested);
-enum { HOST_PASS_WORLD_BEGIN = 1, HOST_PASS_WORLD_END = 2 };
+#include "render_passes.h"
 HOST_IMPORT(render_pass) void host_render_pass(int pass);
+// The world's light sources, sent before its begin mark (game/rtx_lights.cpp):
+// the camera offset (world to screen) and `count` lights of 16 floats each.
+HOST_IMPORT(scene) void host_scene(const float *camera, const float *lights, int count);
 // An RTX analytic beam quad (src/crimson/render/rtx/shaders/beam.frag): four
 // corners as x, y, u, v (u and v in beam radii), its length in radii (negative
 // for a head) and stamp spacing, and its D3DCOLOR, drawn with the current blend

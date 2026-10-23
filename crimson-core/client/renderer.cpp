@@ -74,6 +74,27 @@ const char *tonemap_vertex_source = SHADER_HEADER SHADER_FULLSCREEN_VERT;
 const char *tonemap_fragment_source = SHADER_HEADER RTX_SHADER_HDR_TONEMAP_FRAG;
 const char *beam_vertex_source = SHADER_HEADER SHADER_BEAM_VERT;
 const char *beam_fragment_source = SHADER_HEADER RTX_SHADER_BEAM_FRAG;
+const char *lit_vertex_source = SHADER_HEADER SHADER_CREATURE_VERT;
+const char *creature_fragment_source = SHADER_HEADER RTX_SHADER_CREATURE_FRAG;
+const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
+
+// RTX lighting: the world's lights and camera (host_scene), the batch being drawn
+// (HOST_PASS_CREATURES, _PLAYERS, or 0 for the device's own shading), and the
+// creature and player programs, which light the device's vertices in the world.
+enum { MAX_LIGHTS = 32 };
+int material;
+float scene_camera[2];
+float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
+int light_count;
+struct LitProgram {
+  GLuint id = 0;
+  GLint target_size, camera, count, ambient, pos, rgb, dir, response;
+};
+LitProgram creature_lit, player_lit;
+// Each uploaded artwork's texels in the module (it keeps them), for the creature
+// thickness maps made on a creature atlas's first lit draw.
+std::unordered_map<int, u32> texel_addresses;
+std::unordered_map<int, GLuint> thickness_maps;
 
 GLuint compile(GLenum kind, const char *source) {
   GLuint shader = glCreateShader(kind);
@@ -225,6 +246,111 @@ void apply_output_state(const Target &t) {
   glColorMask(mask & 1, mask & 2, mask & 4, (mask & 8) && !(t.flags & 2));
 }
 
+void create_lit(LitProgram &p, const char *fragment) {
+  p.id = link(lit_vertex_source, fragment);
+  glUseProgram(p.id);
+  glUniform1i(glGetUniformLocation(p.id, "texture0"), 0);
+  glUniform1i(glGetUniformLocation(p.id, "u_thickness"), 1);
+  glUniform1i(glGetUniformLocation(p.id, "u_occlusion_tex"), 2);
+  glUniform4f(glGetUniformLocation(p.id, "colDiffuse"), 1, 1, 1, 1);
+  // No creature shadows yet: an empty grid leaves every source visible.
+  glUniform4f(glGetUniformLocation(p.id, "u_occlusion_grid"), 0, 0, 0, 0);
+  glUniform1f(glGetUniformLocation(p.id, "u_occlusion_cell_size"), 64);
+  glUniform1i(glGetUniformLocation(p.id, "u_dynamic_shadows"), 0);
+  p.target_size = glGetUniformLocation(p.id, "target_size");
+  p.camera = glGetUniformLocation(p.id, "camera");
+  p.count = glGetUniformLocation(p.id, "u_count");
+  p.ambient = glGetUniformLocation(p.id, "u_ambient");
+  p.pos = glGetUniformLocation(p.id, "u_pos");
+  p.rgb = glGetUniformLocation(p.id, "u_rgb");
+  p.dir = glGetUniformLocation(p.id, "u_dir");
+  p.response = glGetUniformLocation(p.id, "u_response");
+}
+
+// A creature atlas's part sizes (renderer_thickness), made once it is lit; the
+// shader reads them only with lights.
+GLuint thickness_map(int id) {
+  auto made = thickness_maps.find(id);
+  if (made != thickness_maps.end())
+    return made->second;
+  auto t = textures.find(id);
+  auto texels = texel_addresses.find(id);
+  if (!light_count || t == textures.end() || texels == texel_addresses.end())
+    return blank_texture;
+  std::vector<unsigned char> sizes =
+      renderer_thickness(client_memory() + texels->second, t->second.logical_width, t->second.logical_height);
+  GLuint texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, t->second.logical_width, t->second.logical_height, 0, GL_RED,
+               GL_UNSIGNED_BYTE, sizes.data());
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  return thickness_maps[id] = texture;
+}
+
+// The device's vertices and indices as host_draw sends them.
+void submit_geometry(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
+  static const GLenum modes[] = {GL_POINTS, GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
+  GLenum mode = primitive < 7 ? modes[primitive] : GL_TRIANGLES;
+  glBindVertexArray(vertex_array);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+  glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vertex_count * 28, client_memory() + vertices, GL_STREAM_DRAW);
+  int index_count = primitive == 4 ? primitive_count * 3 : primitive == 5 || primitive == 6 ? primitive_count + 2
+                    : primitive == 2 ? primitive_count * 2 : primitive == 3 ? primitive_count + 1 : primitive_count;
+  if (indices) {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)index_count * 2, client_memory() + indices, GL_STREAM_DRAW);
+    glDrawElements(mode, index_count, GL_UNSIGNED_SHORT, nullptr);
+  } else {
+    glDrawArrays(mode, 0, index_count);
+  }
+}
+
+// A draw in an RTX creature or player batch, lit as the Python port lights
+// them: creatures always (their ambient fill is 0.6), players only under lights.
+bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
+  if (!rtx || !world || !material || (material == HOST_PASS_PLAYERS && !light_count))
+    return false;
+  Target &t = drawing_target(current_target);
+  LitProgram &p = material == HOST_PASS_PLAYERS ? player_lit : creature_lit;
+  glUseProgram(p.id);
+  glUniform2f(p.target_size, (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(p.camera, scene_camera[0], scene_camera[1]);
+  glUniform1i(p.count, light_count);
+  glUniform1f(p.ambient, 0.6f);
+  if (light_count) {
+    glUniform4fv(p.pos, light_count, light_pos);
+    glUniform4fv(p.rgb, light_count, light_rgb);
+    glUniform4fv(p.dir, light_count, light_dir);
+    glUniform4fv(p.response, light_count, light_response);
+  }
+  auto it = textures.find(bound[0]);
+  bool present = bound[0] && it != textures.end() && it->second.texture;
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
+  glBindSampler(0, samplers[0]);
+  glSamplerParameteri(samplers[0], GL_TEXTURE_WRAP_S, address(stage_states[0][TSS_ADDRESSU]));
+  glSamplerParameteri(samplers[0], GL_TEXTURE_WRAP_T, address(stage_states[0][TSS_ADDRESSV]));
+  glSamplerParameteri(samplers[0], GL_TEXTURE_MAG_FILTER, stage_states[0][TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
+  glSamplerParameteri(samplers[0], GL_TEXTURE_MIN_FILTER, stage_states[0][TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, material == HOST_PASS_CREATURES && present ? thickness_map(bound[0]) : blank_texture);
+  glBindSampler(1, 0);
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, blank_texture);
+  glBindSampler(2, 0);
+  glActiveTexture(GL_TEXTURE0);
+  apply_output_state(t);
+  glDisable(GL_CULL_FACE);
+  submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
+  return true;
+}
+
 } // namespace
 
 void GL_ENTRY(renderer_init)() {
@@ -372,6 +498,8 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     u_beam_length = glGetUniformLocation(beam_program, "beam_length");
     u_beam_step = glGetUniformLocation(beam_program, "beam_step");
     u_beam_color = glGetUniformLocation(beam_program, "beam_color");
+    create_lit(creature_lit, creature_fragment_source);
+    create_lit(player_lit, player_fragment_source);
     glGenVertexArrays(1, &beam_array);
     glBindVertexArray(beam_array);
     glGenBuffers(1, &beam_buffer);
@@ -496,6 +624,8 @@ void GL_ENTRY(w2c_host_texture_upload)(struct w2c_host *, u32 id, u32 texels) {
   if (it == textures.end())
     return;
   Target &t = it->second;
+  if (!(t.flags & TARGET_RENDER))
+    texel_addresses[(int)id] = texels;
   // A8R8G8B8 texels are BGRA bytes.
   std::vector<unsigned char> rgba((size_t)t.width * t.height * 4);
   const u8 *bgra = client_memory() + texels;
@@ -523,6 +653,12 @@ void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
     current_target = 0;
   release(it->second);
   textures.erase(it);
+  texel_addresses.erase((int)id);
+  auto map = thickness_maps.find((int)id);
+  if (map != thickness_maps.end()) {
+    glDeleteTextures(1, &map->second);
+    thickness_maps.erase(map);
+  }
   bind_target();
 }
 void GL_ENTRY(w2c_host_render_state)(struct w2c_host *, u32 state, u32 value) {
@@ -550,6 +686,8 @@ void GL_ENTRY(w2c_host_clear)(struct w2c_host *, u32 color) {
 }
 void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
                    u32 primitive_count) {
+  if (lit_draw(primitive, vertices, vertex_count, indices, primitive_count))
+    return;
   Target &t = drawing_target(current_target);
   glUseProgram(program);
   glUniform2f(u_target_size, (float)t.logical_width, (float)t.logical_height);
@@ -600,21 +738,7 @@ void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32
   } else {
     glDisable(GL_CULL_FACE);
   }
-
-  static const GLenum modes[] = {GL_POINTS, GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
-  GLenum mode = primitive < 7 ? modes[primitive] : GL_TRIANGLES;
-  glBindVertexArray(vertex_array);
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vertex_count * 28, client_memory() + vertices, GL_STREAM_DRAW);
-  int index_count = primitive == 4 ? primitive_count * 3 : primitive == 5 || primitive == 6 ? primitive_count + 2
-                    : primitive == 2 ? primitive_count * 2 : primitive == 3 ? primitive_count + 1 : primitive_count;
-  if (indices) {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)index_count * 2, client_memory() + indices, GL_STREAM_DRAW);
-    glDrawElements(mode, index_count, GL_UNSIGNED_SHORT, nullptr);
-  } else {
-    glDrawArrays(mode, 0, index_count);
-  }
+  submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
 }
 void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
   if (!rtx)
@@ -634,11 +758,26 @@ void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 ste
   glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), client_memory() + corners, GL_STREAM_DRAW);
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
+void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 camera, u32 lights, u32 count) {
+  memcpy(scene_camera, client_memory() + camera, sizeof scene_camera);
+  light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
+  const float *packed = (const float *)(client_memory() + lights);
+  for (int i = 0; i < light_count; ++i) {
+    memcpy(light_pos + i * 4, packed + i * 16, 16);
+    memcpy(light_rgb + i * 4, packed + i * 16 + 4, 16);
+    memcpy(light_dir + i * 4, packed + i * 16 + 8, 16);
+    memcpy(light_response + i * 4, packed + i * 16 + 12, 16);
+  }
+}
 void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
+  if (pass >= HOST_PASS_CREATURES) {
+    material = pass == HOST_PASS_SPRITES ? 0 : (int)pass;
+    return;
+  }
   Target &back = textures[0];
   if (!rtx || !back.framebuffer)
     return;
-  if (pass == 1) { // HOST_PASS_WORLD_BEGIN: the world goes over what the frame drew so far.
+  if (pass == HOST_PASS_WORLD_BEGIN) { // The world goes over what the frame drew so far.
     if (hdr.width != back.width || hdr.height != back.height || !hdr.framebuffer) {
       release(hdr);
       hdr.width = back.width;
@@ -652,8 +791,9 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, hdr.framebuffer);
     glBlitFramebuffer(0, 0, back.width, back.height, 0, 0, hdr.width, hdr.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     world = true;
-  } else if (pass == 2 && world) { // HOST_PASS_WORLD_END
+  } else if (pass == HOST_PASS_WORLD_END && world) {
     world = false;
+    material = 0;
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
     glUseProgram(tonemap_program);

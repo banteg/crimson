@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <string>
 #include "../client/renderer.cpp"
+#include "../client/thickness.cpp"
 
 alignas(16) u8 memory[1024 * 1024];
 u8 *client_memory() { return memory; }
@@ -292,6 +293,39 @@ void check_rtx() {
   assert(back_red(210, 384) < back_red(330, 384) && back_red(330, 384) < back_red(450, 384));
   assert(fabsf(back_red(330, 378) - back_red(330, 390)) < 1e-3f && back_red(330, 380) > 0);
   assert(back_red(330, 410) == 0);
+  // Lit batches: creature bodies keep a 0.6 linear ambient fill without lights
+  // and brighten under one; players without lights keep the device's shading.
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_texture_create(nullptr, 300, 64, 64, 0);
+  memset(memory + 4096, 255, 64 * 64 * 4);
+  w2c_host_texture_upload(nullptr, 300, 4096);
+  w2c_host_set_texture(nullptr, 0, 300);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG1, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  renderer_set_headroom(1);
+  auto lit = [](int pass, int lights) {
+    const float camera[2] = {0, 0};
+    const float light[16] = {512, 384, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 200, 3};
+    memcpy(memory + 32768, camera, sizeof camera);
+    memcpy(memory + 32800, light, sizeof light);
+    w2c_host_scene(nullptr, 32768, 32800, lights);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, pass);
+    rectangle(0, 0, 1024, 768, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_red(512, 384);
+  };
+  float device = lit(HOST_PASS_SPRITES, 0), ambient = lit(HOST_PASS_CREATURES, 0);
+  assert(fabsf(ambient - powf(0.6f, 1 / 2.2f)) < 2e-3f);
+  assert(lit(HOST_PASS_CREATURES, 1) > ambient + 0.05f);
+  assert(lit(HOST_PASS_PLAYERS, 0) == device && lit(HOST_PASS_PLAYERS, 1) > device);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_texture_release(nullptr, 300);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
   float limit = 0;
   for (float headroom : {1.0f, 4.0f}) {
     renderer_set_headroom(headroom);
@@ -308,7 +342,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light; classic stays 8-bit");
 }
 
 int main() {

@@ -6,7 +6,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
 
-from .shaders import RTX_SHADERS
+from .shaders import glsl
 
 SHADER_STAMP_ANALYTIC_RADIUS_SCALE = 16.0
 SHADER_STAMP_VIRTUAL_HEAD_RADIUS_MULTIPLIER = 1.05
@@ -35,7 +35,7 @@ void main() {
 }
 """
 
-_BEAM_FAST_STAMPED_FS_330 = RTX_SHADERS.joinpath("beam.frag").read_text()
+_BEAM_FAST_STAMPED_FS_330 = glsl("beam.frag")
 
 
 class _BeamFastStampedShader(msgspec.Struct, frozen=True):

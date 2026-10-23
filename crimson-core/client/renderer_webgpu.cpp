@@ -150,6 +150,22 @@ Program present_program{&WGSL_PRESENT_VERT, &WGSL_PRESENT_FRAG, NO_VERTICES};
 Program blit{&WGSL_FULLSCREEN_VERT, &WGSL_BLIT_FRAG, NO_VERTICES};
 Program tonemap{&WGSL_FULLSCREEN_VERT, &WGSL_HDR_TONEMAP_FRAG, NO_VERTICES};
 Program beam{&WGSL_BEAM_VERT, &WGSL_BEAM_FRAG, BEAM_CORNERS};
+Program creature_lit{&WGSL_CREATURE_VERT, &WGSL_CREATURE_FRAG, DEVICE_VERTICES};
+Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
+
+// RTX lighting, as in renderer.cpp: the world's lights and camera, the batch
+// being drawn, and each artwork's texels in the module for creature thickness.
+enum { MAX_LIGHTS = 32 };
+int material;
+float scene_camera[2];
+float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
+int light_count;
+std::unordered_map<int, u32> texel_addresses;
+struct Thickness {
+  WGPUTexture texture;
+  WGPUTextureView view;
+};
+std::unordered_map<int, Thickness> thickness_maps;
 
 WGPUShaderModule module_of(const WgslStage &stage) {
   WGPUShaderSourceWGSL wgsl = WGPU_SHADER_SOURCE_WGSL_INIT;
@@ -211,7 +227,7 @@ void create(Program &p) {
 // A stage's uniform block, filled by member name as glUniform* would.
 struct Uniforms {
   const WgslStage &stage;
-  unsigned char data[256] = {};
+  unsigned char data[4096] = {};
   explicit Uniforms(const WgslStage &s) : stage(s) {}
   Uniforms &set(const char *name, const void *value, size_t size) {
     for (unsigned i = 0; i < stage.uniform_count; ++i)
@@ -366,11 +382,16 @@ WGPUSampler sampler(unsigned address_u, unsigned address_v, bool linear_mag, boo
 WGPUSampler linear_clamp() { return sampler(3, 3, true, true); }
 WGPUSampler nearest_clamp() { return sampler(3, 3, false, false); }
 
-// Group 0: a program's fragment uniforms, then each named texture with its sampler.
-WGPUBindGroup fragment_group(Program &p, std::initializer_list<std::pair<WGPUTextureView, WGPUSampler>> inputs) {
+// Group 0: a program's fragment uniforms, then each texture and its sampler, by name.
+struct Input {
+  const char *name;
+  WGPUTextureView view;
+  WGPUSampler sampler;
+};
+WGPUBindGroup fragment_group(Program &p, std::initializer_list<Input> inputs) {
   uint64_t key = 0;
-  for (auto [view, s] : inputs)
-    key = key * 1000003 ^ (uintptr_t)view ^ (uint64_t)(uintptr_t)s << 32;
+  for (const Input &in : inputs)
+    key = key * 1000003 ^ (uintptr_t)in.view ^ (uint64_t)(uintptr_t)in.sampler << 32;
   auto it = p.groups.find(key);
   if (it != p.groups.end())
     return it->second;
@@ -386,17 +407,14 @@ WGPUBindGroup fragment_group(Program &p, std::initializer_list<std::pair<WGPUTex
       entry.buffer = uniform_stream.buffer;
       entry.size = stage.uniform_size;
     } else {
-      // Textures bind in the order the program names them.
-      unsigned n = 0;
-      for (unsigned j = 0; j < i; ++j)
-        n += stage.bindings[j].kind == WGSL_TEXTURE;
-      if (b.kind == WGSL_SAMPLER)
-        --n; // the sampler follows its texture
-      auto input = inputs.begin()[n];
+      const Input *input = nullptr;
+      for (const Input &in : inputs)
+        if (!strcmp(in.name, b.name))
+          input = &in;
       if (b.kind == WGSL_TEXTURE)
-        entry.textureView = input.first;
+        entry.textureView = input ? input->view : blank_view;
       else
-        entry.sampler = input.second;
+        entry.sampler = input ? input->sampler : linear_clamp();
     }
     entries.push_back(entry);
   }
@@ -419,7 +437,7 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
-  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam}) {
+  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit}) {
     for (auto &[key, group] : p->groups)
       wgpuBindGroupRelease(group);
     p->groups.clear();
@@ -484,7 +502,7 @@ void copy(Target &from, Target &to) {
   o.format = format_of(to);
   o.mask = to.flags & TARGET_OPAQUE ? 7 : 15;
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(blit, o));
-  bind(blit, fragment_group(blit, {{from.view, linear_clamp()}}), nullptr, nullptr);
+  bind(blit, fragment_group(blit, {{"source", from.view, linear_clamp()}}), nullptr, nullptr);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
   end_pass();
 }
@@ -550,6 +568,32 @@ WGPUTexture small_texture(int width, const unsigned char *rgba, WGPUTextureView 
   return texture;
 }
 
+// A creature atlas's part sizes (renderer_thickness), made once it is lit.
+WGPUTextureView thickness_map(int id) {
+  auto made = thickness_maps.find(id);
+  if (made != thickness_maps.end())
+    return made->second.view;
+  auto t = textures.find(id);
+  auto texels = texel_addresses.find(id);
+  if (!light_count || t == textures.end() || texels == texel_addresses.end())
+    return blank_view;
+  int width = t->second.logical_width, height = t->second.logical_height;
+  std::vector<unsigned char> sizes = renderer_thickness(client_memory() + texels->second, width, height);
+  WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
+  descriptor.size = {(uint32_t)width, (uint32_t)height, 1};
+  descriptor.format = WGPUTextureFormat_R8Unorm;
+  descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
+  Thickness map;
+  map.texture = wgpuDeviceCreateTexture(device, &descriptor);
+  map.view = wgpuTextureCreateView(map.texture, nullptr);
+  WGPUTexelCopyTextureInfo destination = WGPU_TEXEL_COPY_TEXTURE_INFO_INIT;
+  destination.texture = map.texture;
+  WGPUTexelCopyBufferLayout layout = {0, (uint32_t)width, (uint32_t)height};
+  WGPUExtent3D extent = {(uint32_t)width, (uint32_t)height, 1};
+  wgpuQueueWriteTexture(queue, &destination, sizes.data(), sizes.size(), &layout, &extent);
+  return (thickness_maps[id] = map).view;
+}
+
 } // namespace
 
 // --- The renderer's entry points (renderer_select.cpp) ---------------------------------
@@ -568,7 +612,7 @@ void wgpu_renderer_init() {
   stream_buffer(vertex_stream, WGPUBufferUsage_Vertex);
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
-  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam})
+  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit})
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
@@ -640,7 +684,8 @@ void wgpu_renderer_present(int window_width, int window_height) {
   // Normally a one-to-one copy; a resize between draw and present may scale once.
   bool exact = v.width == back.width && v.height == back.height;
   bind(present_program,
-       fragment_group(present_program, {{back.view, exact ? nearest_clamp() : linear_clamp()}, {gamma_view, nearest_clamp()}}),
+       fragment_group(present_program, {{"back_buffer", back.view, exact ? nearest_clamp() : linear_clamp()},
+                                        {"gamma", gamma_view, nearest_clamp()}}),
        nullptr, nullptr);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
   submit();
@@ -746,6 +791,8 @@ void wgpu_w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
   if (it == textures.end())
     return;
   Target &t = it->second;
+  if (!(t.flags & TARGET_RENDER))
+    texel_addresses[(int)id] = texels;
   // What the frame drew so far sampled the texture as it was.
   submit();
   // A8R8G8B8 texels are BGRA bytes, at logical size even for a denser target.
@@ -774,6 +821,14 @@ void wgpu_w2c_host_texture_release(struct w2c_host *, u32 id) {
     current_target = 0;
   release(it->second);
   textures.erase(it);
+  texel_addresses.erase((int)id);
+  auto map = thickness_maps.find((int)id);
+  if (map != thickness_maps.end()) {
+    wgpuTextureViewRelease(map->second.view);
+    wgpuTextureRelease(map->second.texture);
+    thickness_maps.erase(map);
+    forget_groups();
+  }
 }
 void wgpu_w2c_host_render_state(struct w2c_host *, u32 state, u32 value) {
   if (state < 256)
@@ -815,15 +870,34 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   WGPUPrimitiveTopology topology = primitive < 7 ? topologies[primitive] : WGPUPrimitiveTopology_TriangleList;
   uint64_t vertex_bytes = (uint64_t)vertex_count * 28, index_bytes = index_data ? (uint64_t)index_count * 2 : 0;
   if (!fits(vertex_stream, vertex_bytes) || !fits(index_stream, index_bytes + 3) ||
-      !fits(uniform_stream, classic.frag->uniform_size + 256 + classic.vert->uniform_size))
+      !fits(uniform_stream, creature_lit.frag->uniform_size + 512 + creature_lit.vert->uniform_size))
     submit();
 
   Target &t = drawing_target(current_target);
   pass_into(t);
+  bool lit = rtx && world && material && (material == HOST_PASS_CREATURES || light_count);
+  Program &program = !lit ? classic : material == HOST_PASS_PLAYERS ? player_lit : creature_lit;
+  if (lit) {
+    Uniforms vertex(*program.vert), fragment(*program.frag);
+    vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
+    fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_count", light_count).f("u_ambient", 0.6f).f("u_occlusion_cell_size", 64);
+    fragment.set("u_pos", light_pos, light_count * 16).set("u_rgb", light_rgb, light_count * 16);
+    fragment.set("u_dir", light_dir, light_count * 16).set("u_response", light_response, light_count * 16);
+    auto it = textures.find(bound[0]);
+    bool present = bound[0] && it != textures.end() && it->second.texture;
+    WGPUSampler atlas_sampler = sampler(stage_states[0][TSS_ADDRESSU], stage_states[0][TSS_ADDRESSV],
+                                        stage_states[0][TSS_MAGFILTER] >= 2, stage_states[0][TSS_MINFILTER] >= 2);
+    WGPUTextureView thickness = material == HOST_PASS_CREATURES && present ? thickness_map(bound[0]) : blank_view;
+    wgpuRenderPassEncoderSetPipeline(pass, pipeline(program, device_output(t, topology)));
+    bind(program,
+         fragment_group(program, {{"texture0", present ? it->second.view : blank_view, atlas_sampler},
+                                  {"u_thickness", thickness, linear_clamp()}, {"u_occlusion_tex", blank_view, nearest_clamp()}}),
+         &vertex, &fragment);
+  }
   Uniforms vertex(*classic.vert), fragment(*classic.frag);
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height);
   int has[STAGES], filters[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES];
-  std::pair<WGPUTextureView, WGPUSampler> inputs[STAGES];
+  Input inputs[STAGES];
   for (int s = 0; s < STAGES; ++s) {
     auto it = textures.find(bound[s]);
     bool present = bound[s] && it != textures.end() && it->second.texture;
@@ -838,7 +912,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     aop[s] = (int)stage_states[s][TSS_ALPHAOP];
     aa1[s] = (int)stage_states[s][TSS_ALPHAARG1];
     aa2[s] = (int)stage_states[s][TSS_ALPHAARG2];
-    inputs[s] = {present ? it->second.view : blank_view,
+    inputs[s] = {s ? "texture1" : "texture0", present ? it->second.view : blank_view,
                  sampler(stage_states[s][TSS_ADDRESSU], stage_states[s][TSS_ADDRESSV], stage_states[s][TSS_MAGFILTER] >= 2,
                          stage_states[s][TSS_MINFILTER] >= 2)};
   }
@@ -850,8 +924,10 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   fragment.f("alpha_ref", (float)(render_states[RS_ALPHAREF] & 255));
   fragment.i("alpha_func", (int)render_states[RS_ALPHAFUNC]);
 
-  wgpuRenderPassEncoderSetPipeline(pass, pipeline(classic, device_output(t, topology)));
-  bind(classic, fragment_group(classic, {inputs[0], inputs[1]}), &vertex, &fragment);
+  if (!lit) {
+    wgpuRenderPassEncoderSetPipeline(pass, pipeline(classic, device_output(t, topology)));
+    bind(classic, fragment_group(classic, {inputs[0], inputs[1]}), &vertex, &fragment);
+  }
   uint64_t vertex_at = put(vertex_stream, client_memory() + vertices, vertex_bytes);
   wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, vertex_at, vertex_bytes);
   if (index_data) {
@@ -886,11 +962,26 @@ void wgpu_w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u3
   wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, sizeof strip);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
 }
+void wgpu_w2c_host_scene(struct w2c_host *, u32 camera, u32 lights, u32 count) {
+  memcpy(scene_camera, client_memory() + camera, sizeof scene_camera);
+  light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
+  const float *packed = (const float *)(client_memory() + lights);
+  for (int i = 0; i < light_count; ++i) {
+    memcpy(light_pos + i * 4, packed + i * 16, 16);
+    memcpy(light_rgb + i * 4, packed + i * 16 + 4, 16);
+    memcpy(light_dir + i * 4, packed + i * 16 + 8, 16);
+    memcpy(light_response + i * 4, packed + i * 16 + 12, 16);
+  }
+}
 void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
+  if (pass_kind >= HOST_PASS_CREATURES) {
+    material = pass_kind == HOST_PASS_SPRITES ? 0 : (int)pass_kind;
+    return;
+  }
   Target &back = textures[0];
   if (!rtx || !back.texture)
     return;
-  if (pass_kind == 1) { // HOST_PASS_WORLD_BEGIN: the world goes over what the frame drew so far.
+  if (pass_kind == HOST_PASS_WORLD_BEGIN) { // The world goes over what the frame drew so far.
     if (hdr.width != back.width || hdr.height != back.height || !hdr.texture) {
       release(hdr);
       hdr.width = back.width;
@@ -902,8 +993,9 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     hdr.logical_height = back.logical_height;
     copy(back, hdr);
     world = true;
-  } else if (pass_kind == 2 && world) { // HOST_PASS_WORLD_END
+  } else if (pass_kind == HOST_PASS_WORLD_END && world) {
     world = false;
+    material = 0;
     if (!fits(uniform_stream, 512))
       submit();
     begin_pass(back, nullptr);
@@ -913,7 +1005,7 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     Uniforms fragment(*tonemap.frag);
     fragment.v4("colDiffuse", 1, 1, 1, 1).f("u_edr_headroom", edr_headroom);
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(tonemap, o));
-    bind(tonemap, fragment_group(tonemap, {{hdr.view, nearest_clamp()}}), nullptr, &fragment);
+    bind(tonemap, fragment_group(tonemap, {{"texture0", hdr.view, nearest_clamp()}}), nullptr, &fragment);
     wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
     end_pass();
   }
