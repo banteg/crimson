@@ -38,7 +38,7 @@ class _FakeRl:
     def glfw_get_window_size(self, _window: Any, width: Any, height: Any) -> None:
         width[0], height[0] = self.window_size
 
-    def set_window_size(self, width: int, height: int) -> None:
+    def glfw_set_window_size(self, _window: Any, width: int, height: int) -> None:
         self.window_size = (width, height)
         self.restored_sizes.append(self.window_size)
 

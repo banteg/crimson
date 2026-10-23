@@ -157,7 +157,7 @@ def run_view(
                 if not fullscreen:
                     # raylib can multiply its saved logical size by DPI again on
                     # Wayland. Restore the original GLFW window units instead.
-                    rl.set_window_size(windowed_size[0], windowed_size[1])
+                    rl.glfw_set_window_size(window, windowed_size[0], windowed_size[1])
                     # raylib enables decorations while GLFW still considers the
                     # window fullscreen, so Wayland skips applying the title bar.
                     rl.glfw_set_window_attrib(window, rd.GLFW_DECORATED, rd.GLFW_TRUE)
