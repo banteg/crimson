@@ -77,3 +77,13 @@ std::vector<unsigned char> renderer_blur_cells(const std::vector<unsigned char> 
   };
   return pass(pass(plane, false), true);
 }
+
+// Monster Vision's continuous silhouette density (build_heat_density): two
+// cell-local 5x5 alpha blurs, preserving fractional coverage. A pose's part
+// sizes can jump by an entire square-opening level; density changes smoothly.
+std::vector<unsigned char> renderer_heat_density(const unsigned char *bgra, int width, int height) {
+  Plane alpha((size_t)width * height);
+  for (size_t i = 0; i < alpha.size(); ++i)
+    alpha[i] = bgra[i * 4 + 3];
+  return renderer_blur_cells(renderer_blur_cells(alpha, width, height, 2), width, height, 2);
+}
