@@ -406,7 +406,7 @@ def draw_creature_heat(
             opacity = heat_visibility(creature, entity_alpha=ctx.entity_alpha) if creature.active else 0.0
             if creature.type_id != type_id or opacity <= 1e-3:
                 continue
-            warmth = heat_warmth(creature, render_ctx.frame, entity_alpha=ctx.entity_alpha)
+            warmth = heat_warmth(creature, render_ctx.frame)
             draw_creature_sprite(
                 render_ctx,
                 texture,

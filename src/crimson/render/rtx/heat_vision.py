@@ -53,26 +53,18 @@ def _load(vertex: str, fragment: str) -> rl.Shader:
     return shader
 
 
-def _float(shader: rl.Shader, name: str, value: float) -> None:
-    rl.set_shader_value(shader, rl.get_shader_location(shader, name), rl.ffi.new("float *", value),
-                        rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
-
-
-def _vec2(shader: rl.Shader, name: str, value: Vec2) -> None:
-    buffer = rl.ffi.new("float[2]", [value.x, value.y])
-    rl.set_shader_value(shader, rl.get_shader_location(shader, name), rl.ffi.cast("void *", buffer),
-                        rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2)
-
-
 def heat_visibility(creature: CreatureState, *, entity_alpha: float) -> float:
     """How strongly Monster Vision shows a monster: its native fade, never the creature's own tint alpha."""
     return min(monster_vision_fade_alpha(creature.death_timer) * entity_alpha, 1.0)
 
 
-def heat_warmth(creature: CreatureState, frame: RenderFrame, *, entity_alpha: float) -> float:
-    """How hot it reads: its visibility, cooled while Freeze holds it, with Freeze's own fade out."""
+def heat_warmth(creature: CreatureState, frame: RenderFrame) -> float:
+    """How hot it reads: the native death fade, cooled while Freeze holds it, with Freeze's own fade out.
+
+    Scene transitions fade the heat's opacity, never its warmth.
+    """
     frozen = min(max(frame.state.bonuses.freeze, 0.0), 1.0)
-    return heat_visibility(creature, entity_alpha=entity_alpha) * (1.0 - (1.0 - FROZEN_WARMTH) * frozen)
+    return monster_vision_fade_alpha(creature.death_timer) * (1.0 - (1.0 - FROZEN_WARMTH) * frozen)
 
 
 class HeatVision(msgspec.Struct):
@@ -81,7 +73,24 @@ class HeatVision(msgspec.Struct):
     trail_shader: rl.Shader | None = None
     body_shader: rl.Shader | None = None
     thickness: dict[int, rl.Texture] = msgspec.field(default_factory=dict)
+    locations: dict[tuple[int, str], int] = msgspec.field(default_factory=dict)
     last_ms: float | None = None
+
+    def _location(self, shader: rl.Shader, name: str) -> int:
+        key = (int(shader.id), name)
+        location = self.locations.get(key)
+        if location is None:
+            location = self.locations[key] = int(rl.get_shader_location(shader, name))
+        return location
+
+    def _float(self, shader: rl.Shader, name: str, value: float) -> None:
+        rl.set_shader_value(shader, self._location(shader, name), rl.ffi.new("float *", value),
+                            rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
+
+    def _vec2(self, shader: rl.Shader, name: str, value: Vec2) -> None:
+        buffer = rl.ffi.new("float[2]", [value.x, value.y])
+        rl.set_shader_value(shader, self._location(shader, name), rl.ffi.cast("void *", buffer),
+                            rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2)
 
     def _ensure_trail(self, ground_size: Vec2) -> rl.RenderTexture:
         width = max(1, round(ground_size.x * TRAIL_TEXELS_PER_UNIT))
@@ -89,10 +98,8 @@ class HeatVision(msgspec.Struct):
         if self.trail is not None and (self.trail.texture.width, self.trail.texture.height) != (width, height):
             self.clear()
         if self.trail is None:
+            # Allocation binds framebuffers without flushing: callers flush first. No last frame clears it.
             self.trail = load_float_render_texture(width, height)
-            rl.set_texture_filter(self.trail.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
-            with texture_mode(self.trail):
-                rl.clear_background(rl.BLANK)
             self.last_ms = None
         return self.trail
 
@@ -101,6 +108,8 @@ class HeatVision(msgspec.Struct):
 
         Stored heat ignores scene transitions; `draw_trails` fades it with the scene instead.
         """
+        # Pending sprites belong to the enclosing target: draw them before any framebuffer changes.
+        rl.rl_draw_render_batch_active()
         trail = self._ensure_trail(ground_size)
         if self.stamp_shader is None:
             self.stamp_shader = _load(_HDR_TONEMAP_VS_330, _HEAT_STAMP)
@@ -108,22 +117,21 @@ class HeatVision(msgspec.Struct):
         now = frame.elapsed_ms
         gap = None if self.last_ms is None else now - self.last_ms
         self.last_ms = now
-        rl.rl_draw_render_batch_active()
         with texture_mode(trail):
             rl.begin_shader_mode(shader)
             try:
                 if gap is None or gap < 0. or gap > MAX_GAP_MS:
                     rl.clear_background(rl.BLANK)
                 elif gap > 0.:
-                    _float(shader, "u_fade", 1. - .5 ** (gap * .001 / TRAIL_HALF_LIFE_S))
+                    self._float(shader, "u_fade", 1. - .5 ** (gap * .001 / TRAIL_HALF_LIFE_S))
                     with blend_custom(rd.RL_ZERO, rd.RL_ONE_MINUS_SRC_ALPHA, rd.RL_FUNC_ADD):
                         rl.draw_rectangle(0, 0, trail.texture.width, trail.texture.height, rl.WHITE)
-                _float(shader, "u_fade", -1.)
+                self._float(shader, "u_fade", -1.)
                 with blend_custom(rd.RL_ONE, rd.RL_ONE, rd.RL_MAX):
                     rl.rl_set_texture(rl.rl_get_texture_id_default())
                     rl.rl_begin(rd.RL_QUADS)
                     for creature in frame.creatures.entries:
-                        warmth = heat_warmth(creature, frame, entity_alpha=1.) if creature.active else 0.
+                        warmth = heat_warmth(creature, frame) if creature.active else 0.
                         if warmth <= 1e-3:
                             continue
                         p = creature.pos * TRAIL_TEXELS_PER_UNIT
@@ -149,13 +157,13 @@ class HeatVision(msgspec.Struct):
         rl.rl_draw_render_batch_active()
         rl.begin_shader_mode(shader)
         try:
-            _vec2(shader, "u_camera", view.camera)
-            _vec2(shader, "u_view_scale", view.view_scale)
-            _vec2(shader, "u_ground_size", ground_size)
-            _float(shader, "u_alpha", entity_alpha)
+            self._vec2(shader, "u_camera", view.camera)
+            self._vec2(shader, "u_view_scale", view.view_scale)
+            self._vec2(shader, "u_ground_size", ground_size)
+            self._float(shader, "u_alpha", entity_alpha)
             with blend_custom(rd.RL_ONE, rd.RL_ONE, rd.RL_FUNC_ADD):
                 # Bind after the blend switch: rlgl clears auxiliary samplers when it flushes.
-                rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_heat"), self.trail.texture)
+                rl.set_shader_value_texture(shader, self._location(shader, "u_heat"), self.trail.texture)
                 rl.draw_rectangle_rec(rl_rectangle(0, 0, view.out_size.x, view.out_size.y), rl.WHITE)
         finally:
             if restore_shader is None:
@@ -174,7 +182,7 @@ class HeatVision(msgspec.Struct):
             thickness = self.thickness[int(texture.id)] = load_thickness_texture(texture, blur=THICKNESS_BLUR)
         rl.begin_shader_mode(shader)
         try:
-            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_thickness"), thickness)
+            rl.set_shader_value_texture(shader, self._location(shader, "u_thickness"), thickness)
             yield
         finally:
             rl.rl_draw_render_batch_active()
@@ -198,3 +206,4 @@ class HeatVision(msgspec.Struct):
             if shader is not None:
                 rl.unload_shader(shader)
         self.stamp_shader = self.trail_shader = self.body_shader = None
+        self.locations.clear()

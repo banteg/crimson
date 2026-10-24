@@ -1085,8 +1085,9 @@ suppression; classic keeps the original yellow aura texture.
   texture tap per fragment): thin legs read cool magenta, thick
   bodies orange to white. The overlay's opacity is Monster Vision's fade times
   `.88`, never the creature's tint alpha, so Hidden Evil's near-invisible aliens
-  show in full. Red in the tint carries warmth: the same fade, cooled to 30%
-  while Freeze holds the monsters, following Freeze's own fade out.
+  show in full. Red in the tint carries warmth: the native death fade, cooled to
+  30% while Freeze holds the monsters, following Freeze's own fade out. Scene
+  transitions fade the overlay's opacity, never its warmth.
 - Trails: a world-space float buffer at half the terrain's resolution. Each
   drawn frame fades it by the game time since the last (half-life 0.9 s, so
   slow motion leaves the same trail per distance), then max-blends a soft

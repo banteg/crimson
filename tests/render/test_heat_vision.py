@@ -19,10 +19,11 @@ def test_hidden_evil_aliens_show_in_full_and_corpses_cool() -> None:
     alien = snapshot.creatures.entries[0]
     # Hidden Evil's faintest alien: Monster Vision is the only way to see it.
     alien.active, alien.death_timer, alien.tint = True, 16.0, RGBA(.1, .7, .51, .04)
-    assert heat_visibility(alien, entity_alpha=1.0) == heat_warmth(alien, snapshot, entity_alpha=1.0) == 1.0
+    assert heat_visibility(alien, entity_alpha=1.0) == heat_warmth(alien, snapshot) == 1.0
     alien.death_timer = -5.0
-    assert heat_warmth(alien, snapshot, entity_alpha=1.0) == .5
+    assert heat_warmth(alien, snapshot) == .5
     assert heat_visibility(alien, entity_alpha=.5) == .25
+    assert heat_warmth(alien, snapshot) == .5  # a scene fade dims the heat, never cools it
 
 
 def test_freeze_cools_monsters_without_hiding_them() -> None:
@@ -31,9 +32,9 @@ def test_freeze_cools_monsters_without_hiding_them() -> None:
     spider.active, spider.death_timer = True, 16.0
     snapshot.state.bonuses.freeze = 4.0
     assert heat_visibility(spider, entity_alpha=1.0) == 1.0
-    assert heat_warmth(spider, snapshot, entity_alpha=1.0) == pytest.approx(FROZEN_WARMTH)
+    assert heat_warmth(spider, snapshot) == pytest.approx(FROZEN_WARMTH)
     snapshot.state.bonuses.freeze = .5  # thawing with the ice's own fade
-    assert FROZEN_WARMTH < heat_warmth(spider, snapshot, entity_alpha=1.0) < 1.0
+    assert FROZEN_WARMTH < heat_warmth(spider, snapshot) < 1.0
 
 
 
@@ -86,6 +87,21 @@ def test_trails_follow_the_camera_and_fade_with_the_scene(raylib_context) -> Non
         # Stored heat ignores the transition; the composite fades with the scene (gamma-encoded output).
         assert max(composite(.1)) == pytest.approx(peak * .1 ** (1 / 2.2), rel=.02)
         assert max(composite(1.0)) == pytest.approx(peak)
+    finally:
+        rl.unload_render_texture(target)
+        heat.close()
+
+
+def test_first_heat_frame_keeps_sprites_queued_for_the_enclosing_target(raylib_context) -> None:
+    snapshot = frame()
+    heat = HeatVision()
+    target = load_float_render_texture(16, 16)
+    try:
+        with texture_mode(target):
+            rl.clear_background(rl.BLANK)
+            rl.draw_rectangle(0, 0, 16, 16, rl.WHITE)  # still in rlgl's batch
+            heat.update(snapshot, ground_size=Vec2(128, 128))  # allocates the trail buffer
+        assert all(p[0] == 1.0 for p in pixels(target))
     finally:
         rl.unload_render_texture(target)
         heat.close()
