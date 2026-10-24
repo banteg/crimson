@@ -7,9 +7,11 @@
 #include "client.h"
 #include "client_shaders.h"
 #include "device_states.h"
+#include <algorithm>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include <unordered_map>
 #include <vector>
 #ifdef __EMSCRIPTEN__
@@ -36,6 +38,61 @@ bool renderer_uses_gl() { return true; }
 #endif
 
 namespace {
+
+// CRIMSON_GPU_TIMERS: GPU time per pass. Each mark ends the running query and
+// starts one charged to its label; a frame's queries are read at the next
+// present, by when they have finished. WebGL2 has no timer queries.
+struct GpuTimer {
+  const char *label;
+  GLuint query;
+};
+#ifdef __EMSCRIPTEN__
+const bool gpu_timers = false;
+#define GL_TIME_ELAPSED 0
+#define glGetQueryObjectui64v(query, name, value)
+#else
+const bool gpu_timers = getenv("CRIMSON_GPU_TIMERS");
+#endif
+std::vector<GpuTimer> gpu_frame, gpu_previous;
+std::vector<GLuint> gpu_queries;
+std::string gpu_timings;
+void gpu_mark(const char *label) {
+  if (!gpu_timers || (!gpu_frame.empty() && !strcmp(gpu_frame.back().label, label)))
+    return;
+  if (!gpu_frame.empty())
+    glEndQuery(GL_TIME_ELAPSED);
+  GLuint query;
+  if (gpu_queries.empty()) {
+    glGenQueries(1, &query);
+  } else {
+    query = gpu_queries.back();
+    gpu_queries.pop_back();
+  }
+  glBeginQuery(GL_TIME_ELAPSED, query);
+  gpu_frame.push_back({label, query});
+}
+// The frame ends: read the one before it, then start the next.
+void gpu_frame_end() {
+  if (!gpu_timers || gpu_frame.empty())
+    return;
+  glEndQuery(GL_TIME_ELAPSED);
+  std::vector<std::pair<const char *, double>> totals;
+  for (const GpuTimer &t : gpu_previous) {
+    GLuint64 ns = 0;
+    glGetQueryObjectui64v(t.query, GL_QUERY_RESULT, &ns);
+    auto it = std::find_if(totals.begin(), totals.end(), [&](const auto &p) { return !strcmp(p.first, t.label); });
+    (it == totals.end() ? totals.emplace_back(t.label, 0.0) : *it).second += ns / 1e6;
+    gpu_queries.push_back(t.query);
+  }
+  gpu_timings.clear();
+  char entry[64];
+  for (const auto &[label, ms] : totals) {
+    snprintf(entry, sizeof entry, "%s%s=%.3f", gpu_timings.empty() ? "" : " ", label, ms);
+    gpu_timings += entry;
+  }
+  gpu_previous.swap(gpu_frame);
+  gpu_frame.clear();
+}
 
 
 struct Target {
@@ -103,9 +160,9 @@ float scene_camera[2];
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
 // What the ground takes beyond them (host_scene): the run's clock, the terrain's
-// size in world units, the beam sections' tuning, and per light its direction
+// size in world units, the beam sections' gains, and per light its direction
 // with broad illumination, its reflection tail and its three beam sections.
-float scene_seconds, ground_size[2], beam_tuning[4];
+float scene_seconds, ground_size[2], beam_gain[2];
 float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
 bool beam_lights;
 int bonus_emblem;
@@ -695,7 +752,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   glUniform1i(at("u_dynamic_shadows"), dynamic_shadows);
   glUniform1i(at("u_spec_light_count"), light_count);
   glUniform1i(at("u_has_beam_lights"), beam_lights);
-  glUniform4fv(at("u_beam_tuning"), 1, beam_tuning);
+  glUniform2fv(at("u_beam_gain"), 1, beam_gain);
   glUniform4fv(at("u_occlusion_grid"), 1, occlusion_grid);
   glUniform1f(at("u_occlusion_cell_size"), occlusion_cell);
   if (light_count) {
@@ -822,6 +879,7 @@ void GL_ENTRY(renderer_resize)(int window_width, int window_height) {
 }
 
 void GL_ENTRY(renderer_present)(int window_width, int window_height) {
+  gpu_mark("present");
   Target &back = textures[0];
   if (!back.texture)
     return;
@@ -849,7 +907,11 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, exact ? GL_NEAREST : GL_LINEAR);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindTexture(GL_TEXTURE_2D, 0);
+  gpu_frame_end();
+  gpu_mark("frame");
 }
+
+std::string GL_ENTRY(renderer_gpu_timings)() { return gpu_timings; }
 
 void GL_ENTRY(renderer_resume)() { bind_target(); }
 
@@ -1191,7 +1253,7 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
-  memcpy(beam_tuning, v + 5, sizeof beam_tuning);
+  memcpy(beam_gain, v + 5, sizeof beam_gain);
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
   beam_lights = false;
   for (int i = 0; i < light_count; ++i) {
@@ -1222,6 +1284,7 @@ void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
 void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
   if (!rtx)
     return;
+  gpu_mark("smoke-solver");
   const float *c = (const float *)(client_memory() + commands), *end = c + count;
   while (c < end) {
     switch ((int)*c) {
@@ -1299,6 +1362,7 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
                                    u32 sight_count) {
   if (!rtx || !world || !smoke_targets[0].texture)
     return;
+  gpu_mark("smoke");
   const float *v = (const float *)(client_memory() + view);
   Target &t = drawing_target(current_target);
   // Smoke is a low-frequency volume: integrate it at most 640 pixels across.
@@ -1386,12 +1450,15 @@ void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 c
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, OCCLUSION_WIDTH, rows, GL_RGBA, GL_FLOAT, texels.data());
 }
 void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 grid_y, f32 center_x, f32 center_y) {
+  gpu_mark("bonuses");
   material = MATERIAL_BONUS;
   bonus_emblem = (int)emblem;
   bonus_grid[0] = grid_x, bonus_grid[1] = grid_y;
   bonus_center[0] = center_x, bonus_center[1] = center_y;
 }
 void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
+  static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "aura"};
+  gpu_mark(pass < sizeof labels / sizeof *labels ? labels[pass] : "sprites");
   if (pass >= HOST_PASS_CREATURES) {
     material = pass == HOST_PASS_SPRITES ? 0 : (int)pass;
     return;
@@ -1416,6 +1483,10 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   } else if (pass == HOST_PASS_WORLD_END && world) {
     world = false;
     material = 0;
+    // What follows the world's post passes is the HUD's.
+    struct HudMark {
+      ~HudMark() { gpu_mark("hud"); }
+    } hud;
     // The pressure fronts displace the world, in its own pixels, into a second target.
     const Target *world_image = &hdr;
     if (!pressure_fronts.empty()) {

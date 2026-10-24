@@ -76,7 +76,7 @@ void console_cmd_rtx_smoke(void) {
 static bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
 
 int rtx_collect_lights(float *out, int capacity);
-extern const float rtx_beam_tuning[4];
+extern const float rtx_beam_gain[2];
 int rtx_collect_monster_vision(float *out, int capacity, float alpha);
 int rtx_collect_fronts(float *out, int capacity);
 void rtx_explosions_reset();
@@ -107,9 +107,8 @@ void rtx_world(int begin) {
   if (begin) {
     int count = rtx_light_count = rtx_collect_lights(rtx_lights, 32);
     const float *lights = rtx_lights;
-    const float view[9] = {camera_offset.x,    camera_offset.y,    rtx_seconds(),
-                           (float)terrain_texture_width, (float)terrain_texture_height, rtx_beam_tuning[0],
-                           rtx_beam_tuning[1], rtx_beam_tuning[2], rtx_beam_tuning[3]};
+    const float view[7] = {camera_offset.x, camera_offset.y, rtx_seconds(), (float)terrain_texture_width,
+                           (float)terrain_texture_height, rtx_beam_gain[0], rtx_beam_gain[1]};
     host_scene(view, lights, count);
     float grid[6];
     int value_count;

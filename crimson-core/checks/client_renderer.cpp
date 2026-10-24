@@ -311,7 +311,7 @@ void check_rtx() {
   // A frame's scene: no camera offset, the clock at zero, a 1024-unit terrain,
   // and up to one light (its first 16 floats; no tail, broad fill or beam).
   auto scene = [](std::initializer_list<float> light, int count) {
-    const float view[9] = {0, 0, 0, 1024, 1024, 4, 0.25f, 3, 0.15f};
+    const float view[7] = {0, 0, 0, 1024, 1024, 4, 3};
     float packed[RTX_LIGHT_FLOATS] = {};
     std::copy(light.begin(), light.end(), packed);
     memcpy(memory + 32768, view, sizeof view);

@@ -699,9 +699,8 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   return grid_values.data();
 }
 
-// A beam section's ground gain and the ambient dip around it: ion beams', then
-// Fire Bullets' (render/rtx/continuous_beam.py).
-extern "C" const float rtx_beam_tuning[4] = {4.0f, 0.25f, 3.0f, 0.15f};
+// A beam section's ground gain: ion beams', then Fire Bullets' (render/rtx/continuous_beam.py).
+extern "C" const float rtx_beam_gain[2] = {4.0f, 3.0f};
 
 // The frame's lights for the view, RTX_LIGHT_FLOATS each: position, radius,
 // height; linear RGB, ring radius; direction, 0, length; illumination and

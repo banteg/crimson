@@ -992,8 +992,8 @@ def test_ion_arcs_add_ground_light_and_wet_reflections(ground_material, mocker) 
     assert debug_pixels(ground, texture, mode=6) == baseline[6]
 
 
-@pytest.mark.parametrize("ion,dip", [(False, .15), (True, .25)])
-def test_beam_ambient_contrast_is_bounded_local_and_fades(ground_material, mocker, ion, dip):
+@pytest.mark.parametrize("ion", [False, True])
+def test_beams_add_light_without_dimming_the_ambient(ground_material, mocker, ion):
     ground, texture = ground_material
     collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
 
@@ -1001,24 +1001,10 @@ def test_beam_ambient_contrast_is_bounded_local_and_fades(ground_material, mocke
         return debug_pixels(ground, texture, mode=int(RtxDebugView.AMBIENT))
 
     baseline = ambient()
-    beam = MaterialLight(
+    collector.return_value = [MaterialLight(
         Vec2(32, 32), 150, (1.65, .8, .2), height=24, direction=Vec2(1, 0), length=48,
         broad_illumination=True, beam_profile=(12.8, 2.48, 1.35), beam_ion=ion,
-    )
-    collector.return_value = [beam]
-    dipped = ambient()
-    center = 32 * 64 + 32
-    assert dipped[center][0] / baseline[center][0] == pytest.approx(1 - dip, abs=.002)
-    # Overlapping beams take a maximum, rather than multiplying ambient away.
-    collector.return_value = [beam] * 8
-    assert ambient() == dipped
-    collector.return_value = [msgspec.structs.replace(beam, rgb=tuple(c * .5 for c in beam.rgb))]
-    assert ambient()[center][0] / baseline[center][0] == pytest.approx(1 - dip * .5, abs=.002)
-    collector.return_value = [msgspec.structs.replace(beam, pos=Vec2(600, 32))]
-    assert ambient() == baseline
-    collector.return_value = [msgspec.structs.replace(beam, illumination_gain=0)]
-    assert ambient() == baseline
-    collector.return_value = [msgspec.structs.replace(beam, beam_profile=None)]
+    )] * 8
     assert ambient() == baseline
 
 

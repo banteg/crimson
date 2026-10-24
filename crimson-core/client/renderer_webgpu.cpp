@@ -187,7 +187,7 @@ int light_count;
 int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
 // What the ground takes beyond them, as in renderer.cpp.
-float scene_seconds, ground_size[2], beam_tuning[4];
+float scene_seconds, ground_size[2], beam_gain[2];
 float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
 bool beam_lights;
 std::unordered_map<int, u32> texel_addresses;
@@ -977,7 +977,7 @@ bool ground_draw(const Geometry &geometry) {
   fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
   fragment.i("u_debug_display", 1).i("u_has_perk", perk).i("u_dynamic_shadows", dynamic_shadows);
   fragment.v4("u_perk_view", -scene_camera[0], -scene_camera[1], (float)t.logical_width, (float)t.logical_height);
-  fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_tuning", beam_tuning, 16);
+  fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
   fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
   fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
   fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
@@ -1061,6 +1061,8 @@ bool wgpu_renderer_set_rtx(bool enabled) {
 
 // The canvas sets the headroom it shows (configure_canvas).
 void wgpu_renderer_set_headroom(float) {}
+// WebGPU's timestamp queries need a device feature the page does not ask for.
+std::string wgpu_renderer_gpu_timings() { return ""; }
 
 extern "C" {
 void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {
@@ -1305,7 +1307,7 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
-  memcpy(beam_tuning, v + 5, sizeof beam_tuning);
+  memcpy(beam_gain, v + 5, sizeof beam_gain);
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
   beam_lights = false;
   for (int i = 0; i < light_count; ++i) {
