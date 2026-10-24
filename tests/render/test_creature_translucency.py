@@ -5,7 +5,7 @@ from PIL import Image
 
 from crimson.render.rtx import creature_lighting
 from crimson.render.rtx.creature_lighting import CreatureLighting
-from crimson.render.rtx.creature_translucency import build_thickness_proxy
+from crimson.render.rtx.creature_translucency import blur_cells, build_thickness_proxy
 from crimson.render.rtx.material_lights import MaterialLight
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
@@ -141,3 +141,15 @@ def test_consecutive_species_bind_their_own_cached_thickness(raylib_context, moc
         rl.unload_texture(thick)
         rl.unload_texture(thin)
         rl.unload_render_texture(target)
+
+
+def test_cell_blur_softens_within_a_cell_and_never_bleeds_across() -> None:
+    proxy = Image.new("L", (64, 64))
+    proxy.paste(255, (0, 0, 8, 8))  # one full cell next to empty ones
+    proxy.paste(160, (12, 12, 13, 13))  # a lone texel inside the next cell
+    blurred = blur_cells(proxy, 2)
+    assert blurred.getpixel((7, 4)) == 255  # extended edges keep a full cell full
+    assert blurred.getpixel((8, 4)) == blurred.getpixel((4, 8)) == 0
+    assert blurred.getpixel((12, 12)) == round(160 / 25)
+    assert blurred.getpixel((14, 14)) == round(160 / 25)
+    assert blurred.getpixel((15, 15)) == 0

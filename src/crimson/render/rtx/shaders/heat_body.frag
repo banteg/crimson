@@ -12,15 +12,11 @@ void main() {
     float a = alphaBilinear(texture0, fragTexCoord).a;
     if (a * fragColor.a < 4. / 255.)
         discard;
-    // The per-cell opening proxy (creature_translucency.py), softened: legs are a texel or two, the core several.
+    // The per-cell opening proxy (creature_translucency.py), box-blurred per cell on upload: legs are a texel or
+    // two, the core several.
     vec2 cell = floor(fragTexCoord * 8.) / 8.;
-    vec2 texel = 1. / vec2(textureSize(u_thickness, 0));
-    float thickness = 0.;
-    for (int y = -2; y <= 2; y++)
-        for (int x = -2; x <= 2; x++)
-            thickness += textureLod(u_thickness, clamp(fragTexCoord + vec2(x, y) * texel, cell + .5 * texel,
-                                                       cell + vec2(.125) - .5 * texel), 0.).r;
-    thickness *= 16. / 25.;
+    vec2 half_texel = .5 / vec2(textureSize(u_thickness, 0));
+    float thickness = textureLod(u_thickness, clamp(fragTexCoord, cell + half_texel, cell + vec2(.125) - half_texel), 0.).r * 16.;
     float core = smoothstep(.5, 6., thickness);
     // Red is warmth: 1 while alive, cooling with the corpse's fade.
     float warmth = fragColor.r;

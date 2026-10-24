@@ -1081,7 +1081,8 @@ suppression; classic keeps the original yellow aura texture.
 
 - Bodies: after each species' body pass, the same sprites draw again with
   `heat_body.frag` in the ironbow ramp (`ironbow.glsl`), indexed by the creature
-  thickness proxy softened over 5×5 texels: thin legs read cool magenta, thick
+  thickness proxy, box-blurred 5×5 within each atlas cell once on upload (one
+  texture tap per fragment): thin legs read cool magenta, thick
   bodies orange to white. The overlay's opacity is Monster Vision's fade times
   `.88`, never the creature's tint alpha, so Hidden Evil's near-invisible aliens
   show in full. Red in the tint carries warmth: the same fade, cooled to 30%

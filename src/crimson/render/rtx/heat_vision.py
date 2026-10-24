@@ -36,6 +36,8 @@ TRAIL_HALF_LIFE_S = 0.9
 # A footprint's radius, as a share of the creature's size.
 FOOTPRINT = 0.45
 BODY_OPACITY = 0.88
+# Softens the thickness proxy's squares, once per atlas: a 5x5 box per texel.
+THICKNESS_BLUR = 2
 # A monster frozen in Freeze's ice keeps this share of its warmth.
 FROZEN_WARMTH = 0.3
 # Longer gaps between frames (a seek, a stall) start the trails over.
@@ -169,7 +171,7 @@ class HeatVision(msgspec.Struct):
         rl.rl_draw_render_batch_active()
         thickness = self.thickness.get(int(texture.id))
         if thickness is None:
-            thickness = self.thickness[int(texture.id)] = load_thickness_texture(texture)
+            thickness = self.thickness[int(texture.id)] = load_thickness_texture(texture, blur=THICKNESS_BLUR)
         rl.begin_shader_mode(shader)
         try:
             rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_thickness"), thickness)
