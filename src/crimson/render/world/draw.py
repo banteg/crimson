@@ -18,7 +18,7 @@ from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...ui.cursor import draw_aim_cursor
 from ..rtx.heat_vision import BODY_OPACITY, HeatVision, heat_visibility, heat_warmth
-from ..rtx.material_lights import MaterialLight, collect_material_lights
+from ..rtx.material_lights import MaterialLight, collect_material_lights, ion_contact_glows
 from ..rtx.materials import MaterialGroundRenderer
 from ..rtx.mode import RtxRenderMode
 from . import viewport
@@ -296,6 +296,13 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             shadows=frame.config is None or frame.config.display.shadows_enabled,
             ambient=.60,
         )
+
+    if frame.rtx_mode is RtxRenderMode.RTX and frame.contact_glows is not None:
+        # Ion arcs' contacts glow on the ground under every body, as the client draws them (creature_render_all).
+        view = render_ctx.view
+        frame.contact_glows.draw(ion_contact_glows(frame, view_center=view.screen_size * .5 - view.camera),
+                                 camera=view.camera, view_scale=view.view_scale, alpha=ctx.entity_alpha,
+                                 restore_shader=frame.resources.alpha_test.shader)
 
     heat = ctx.heat_vision
     if heat is not None:

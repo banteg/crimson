@@ -79,7 +79,7 @@ int rtx_collect_lights(float *out, int capacity);
 extern const float rtx_beam_gain[2];
 int rtx_collect_heat(float *out, int capacity);
 int rtx_collect_fronts(float *out, int capacity);
-void rtx_explosions_reset();
+void rtx_lights_reset();
 extern float ui_transition_alpha;
 const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count);
 extern vec2f_t camera_offset;
@@ -134,11 +134,11 @@ void rtx_smoke(float alpha) {
 }
 
 // What RTX keeps beside a run, cleared when a run starts or is restored and
-// when the mode changes: the fluid smoke and the explosions' lights.
+// when the mode changes: the fluid smoke and the lights' explosions and fades.
 void rtx_smoke_reset();
 void rtx_reset() {
   rtx_smoke_reset();
-  rtx_explosions_reset();
+  rtx_lights_reset();
 }
 
 // The batches the host lights (HOST_PASS_CREATURES, _PLAYERS), and the return to

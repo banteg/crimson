@@ -145,6 +145,7 @@ const char *smoke_impulse_source = SHADER_HEADER RTX_SHADER_SMOKE_IMPULSE_FRAG;
 const char *smoke_fragment_source = SHADER_HEADER RTX_SHADER_SMOKE_FRAG;
 const char *blit_fragment_source = SHADER_HEADER SHADER_BLIT_FRAG;
 const char *heat_body_fragment_source = SHADER_HEADER RTX_SHADER_HEAT_BODY_FRAG;
+const char *contact_glow_fragment_source = SHADER_HEADER RTX_SHADER_CONTACT_GLOW_FRAG;
 const char *heat_stamp_fragment_source = SHADER_HEADER SHADER_HEAT_STAMP_FRAG;
 const char *heat_trail_fragment_source = SHADER_HEADER SHADER_HEAT_TRAIL_LIT_FRAG;
 const char *pressure_fragment_source = SHADER_HEADER SHADER_PRESSURE_LIT_FRAG;
@@ -185,6 +186,8 @@ LitProgram creature_lit, player_lit, bonus_lit;
 // the program that adds it to the ground (host_heat_trails).
 const float HEAT_TRAIL_SCALE = 0.5f, HEAT_HALF_LIFE_S = 0.9f, HEAT_MAX_GAP_S = 1;
 GLuint heat_body_program, heat_stamp_program, heat_trail_program;
+// Ion arcs' contact glows on the ground (HOST_PASS_GLOW, render/rtx/contact_glow.py).
+GLuint contact_glow_program;
 Target heat_trail;
 float heat_seconds = -1;
 // The explosions' pressure fronts (host_pressure, render/rtx/shockwaves.py):
@@ -465,6 +468,18 @@ bool heat_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 ind
   return true;
 }
 
+// Ion arcs' contact glows (contact_glow.frag): discs over the quads' UVs in
+// their vertex colors, blended as the device's states say.
+bool glow_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
+  glUseProgram(contact_glow_program);
+  glUniform2f(glGetUniformLocation(contact_glow_program, "target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(glGetUniformLocation(contact_glow_program, "camera"), scene_camera[0], scene_camera[1]);
+  apply_output_state(t);
+  glDisable(GL_CULL_FACE);
+  submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
+  return true;
+}
+
 // A draw in an RTX creature, player or bonus batch, lit as the Python port
 // lights them: creatures (their ambient fill is 0.6) and bonuses always, players
 // only under lights.
@@ -474,6 +489,8 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   Target &t = drawing_target(current_target);
   if (material == HOST_PASS_HEAT)
     return heat_draw(t, primitive, vertices, vertex_count, indices, primitive_count);
+  if (material == HOST_PASS_GLOW)
+    return glow_draw(t, primitive, vertices, vertex_count, indices, primitive_count);
   LitProgram &p = material == HOST_PASS_PLAYERS ? player_lit
                   : material == MATERIAL_BONUS  ? bonus_lit
                                                 : creature_lit;
@@ -900,6 +917,7 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     glUniform1i(glGetUniformLocation(heat_body_program, "texture0"), 0);
     glUniform1i(glGetUniformLocation(heat_body_program, "u_thickness"), 1);
     heat_stamp_program = link(lit_vertex_source, heat_stamp_fragment_source);
+    contact_glow_program = link(lit_vertex_source, contact_glow_fragment_source);
     heat_trail_program = link(lit_vertex_source, heat_trail_fragment_source);
     glUseProgram(heat_trail_program);
     glUniform1i(glGetUniformLocation(heat_trail_program, "u_heat"), 0);

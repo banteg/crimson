@@ -12,8 +12,10 @@ from grim.terrain_stamps import TerrainLayers
 
 from ..creatures.anim import creature_corpse_frame_for_type
 from ..render.rtx.bonus_lighting import BonusLighting
+from ..render.rtx.contact_glow import ContactGlows
 from ..render.rtx.creature_lighting import CreatureLighting
 from ..render.rtx.hdr import HdrRenderer
+from ..render.rtx.material_lights import LightSelection
 from ..render.rtx.materials import MaterialGroundRenderer
 from ..render.rtx.mode import RtxRenderMode
 from ..render.rtx.player_lighting import PlayerLighting
@@ -37,6 +39,8 @@ class RenderResources(msgspec.Struct):
     creature_lighting: CreatureLighting = msgspec.field(default_factory=CreatureLighting)
     player_lighting: PlayerLighting = msgspec.field(default_factory=PlayerLighting)
     bonus_lighting: BonusLighting = msgspec.field(default_factory=BonusLighting)
+    light_selection: LightSelection = msgspec.field(default_factory=LightSelection)
+    contact_glows: ContactGlows = msgspec.field(default_factory=ContactGlows)
     _pending_terrain_fx_batches: list[TerrainFxBatch] = msgspec.field(default_factory=list)
     _resources: RuntimeResources | None = None
 
@@ -126,6 +130,8 @@ class RenderResources(msgspec.Struct):
         self.creature_lighting.close()
         self.player_lighting.close()
         self.bonus_lighting.close()
+        self.contact_glows.close()
+        self.light_selection.reset()
 
         self._resources = None
         self.fx_textures = None

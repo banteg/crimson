@@ -11,7 +11,7 @@ from crimson.render.rtx.lighting_shaders import LIGHT_VISIBILITY_GLSL
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.material_shaders import GROUND_FRAGMENT
 from crimson.render.rtx.materials import _integer, _shader, _uniform
-from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+from crimson.render.rtx.reflection_occlusion import CROWD_BODIES, BodyVolume, ReflectionOcclusion, build_occlusion_grid
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -149,10 +149,15 @@ def test_section_visibility_fades_keeps_all_casters_and_resets_for_reflections(r
         assert 0. < blocked < .95
         half = msgspec.structs.replace(body, opacity=.5)
         assert sample([half]) == pytest.approx((clear + blocked) / 2., abs=.002)
-        assert sample([half] * 70) == pytest.approx(sample([half]), abs=.002)
+        assert sample([half] * CROWD_BODIES) == pytest.approx(sample([half]), abs=.002)
         # A late stronger caster must not disappear behind an arbitrary budget.
-        assert sample([half] * 70 + [body]) == pytest.approx(blocked, abs=.002)
-        assert sample([body] + [half] * 70) == pytest.approx(blocked, abs=.002)
+        assert sample([half] * (CROWD_BODIES - 1) + [body]) == pytest.approx(blocked, abs=.002)
+        assert sample([body] + [half] * (CROWD_BODIES - 1)) == pytest.approx(blocked, abs=.002)
+        # Past that the cell is a crowd: a medium that darkens with its density and still spares its own bodies.
+        sparse, dense = sample([half] * (CROWD_BODIES + 1)), sample([half] * 70)
+        assert clear > sparse > dense > 0.
+        assert sample([body] + [half] * 69) < dense
+        assert sample([half] * 70, owner=body.owner) == clear
         assert sample([body], shadows=False) == clear
         assert sample([body], owner=body.owner) == clear
         assert sample([msgspec.structs.replace(body, opacity=0.)]) == clear

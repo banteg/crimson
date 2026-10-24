@@ -5,6 +5,9 @@ uniform int u_dynamic_shadows;
 uniform sampler2D u_occlusion_tex;
 uniform vec4 u_occlusion_grid; // xy world origin, zw cell counts; z=0 disables
 uniform float u_occlusion_cell_size;
+// A crowd cell (header y < 0: minus its bodies' summed footprint over its area, x their top height) is crossed as an
+// absorbing medium below that height (render/rtx/reflection_occlusion.py's CROWD_BODIES).
+const float CROWD_EXTINCTION = 3.;
 
 vec4 occlusionData(int address) {
     int width = textureSize(u_occlusion_tex, 0).x;
@@ -181,11 +184,24 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
     beam = beam_section_halfspan > 0.;
     #endif
     ivec2 previous = ivec2(-1);
+    ivec2 first_cell = cell;
+    float t_enter = 0.;
+    float cells_crossed = length(delta);
     // Each step crosses one grid boundary. No nearest-body budget drops blockers.
     while (cell.x >= 0 && cell.y >= 0 && cell.x < int(u_occlusion_grid.z) && cell.y < int(u_occlusion_grid.w)) {
         vec4 header = occlusionData(cell.y * int(u_occlusion_grid.z) + cell.x);
         // Beam sections walk their own lists, padded by the largest half-span.
         if (beam) header.xy = header.zw;
+        if (header.y < 0.) {
+            // A crowd: absorb along the length crossed while the rising ray is still below the bodies' tops. A
+            // body's own cell does not shade the body.
+            float t_exit = min(min(t_edge.x, t_edge.y), 1.);
+            if (receiver.z + ray.z * t_enter < header.x && !(cell == first_cell && owner.x < 1e18)) {
+                visibility *= exp(CROWD_EXTINCTION * header.y * (t_exit - t_enter) * cells_crossed);
+                if (visibility < .001) return visibility;
+            }
+            header.y = 0.;
+        }
         for (int j = 0; j < int(header.y); j++) {
             vec4 entry = occlusionData(int(header.x) + j);
             // A padded beam entry spans a run of walked cells; test it in the first.
@@ -198,6 +214,7 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
         }
         previous = cell;
         if (min(t_edge.x, t_edge.y) >= 1.) break;
+        t_enter = min(t_edge.x, t_edge.y);
         if (t_edge.x < t_edge.y) { cell.x += step_cell.x; t_edge.x += t_step.x; }
         else { cell.y += step_cell.y; t_edge.y += t_step.y; }
     }

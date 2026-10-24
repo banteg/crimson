@@ -8,7 +8,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.reflection_occlusion import (
-    CELL_SIZE,
+    CROWD_BODIES,
     BodyVolume,
     build_occlusion_grid,
     creature_body_volumes,
@@ -44,18 +44,34 @@ def test_body_profiles_rotate_and_scale_with_the_drawn_sprite() -> None:
         assert not creature_body_volumes(creature)
 
 
-def test_spatial_grid_keeps_dense_overlaps_without_priority_truncation() -> None:
-    bodies = [BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, i * .01) for i in range(384)]
+def test_spatial_grid_keeps_overlaps_up_to_a_crowd_without_priority_truncation() -> None:
+    bodies = [BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, i * .01) for i in range(CROWD_BODIES)]
     light = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), illumination_gain=0)
-    grid = build_occlusion_grid(bodies, [light], width=1024, height=1024)
-    x = math.floor((100 - grid.origin.x) / CELL_SIZE)
-    y = math.floor((100 - grid.origin.y) / CELL_SIZE)
-    assert grid.body_count == 384
-    offset, count = grid.values[(y * grid.columns + x) * 4:][:2]
-    assert count == 384
-    addresses = {grid.values[(int(offset) + i) * 4] for i in range(int(count))}
-    assert len(addresses) == 384
+
+    def home_header(bodies):
+        grid = build_occlusion_grid(bodies, [light], width=1024, height=1024)
+        x = math.floor((100 - grid.origin.x) / grid.cell_size)
+        y = math.floor((100 - grid.origin.y) / grid.cell_size)
+        return grid, grid.values[(y * grid.columns + x) * 4:][:2]
+
+    grid, (offset, count) = home_header(bodies)
+    assert grid.body_count == count == CROWD_BODIES
+    assert len({grid.values[(int(offset) + i) * 4] for i in range(int(count))}) == CROWD_BODIES
     assert build_occlusion_grid(bodies, [], width=1024, height=1024).body_count == 0
+
+
+def test_crowded_cell_holds_density_and_top_height_instead_of_its_list() -> None:
+    light = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), illumination_gain=0)
+    tall, short = BodyVolume(Vec2(100, 100), Vec2(8, 14), 30, 0), BodyVolume(Vec2(110, 100), Vec2(8, 14), 10, 0, .5)
+    bodies = [tall] * 200 + [short] * 200
+    grid = build_occlusion_grid(bodies, [light], width=1024, height=1024)
+    x = math.floor((100 - grid.origin.x) / grid.cell_size)
+    y = math.floor((100 - grid.origin.y) / grid.cell_size)
+    top, cover = grid.values[(y * grid.columns + x) * 4:][:2]
+    area = math.pi * 8 * 14 / grid.cell_size ** 2
+    assert grid.body_count == 400
+    assert cover == pytest.approx(-area * 300)
+    assert top == pytest.approx((30 * 200 + 10 * 100) / 300)
 
 
 def test_source_culling_retains_long_tracer_and_rejects_distant_bodies() -> None:

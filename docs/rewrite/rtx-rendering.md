@@ -175,9 +175,8 @@ inputs, and native/browser rendering are unchanged.
   each light's reflection individually, rather than multiply every light by the
   prototype's average shadow value. Entity lighting also needs to be tuned alongside
   terrain lighting while retaining a readable ambient floor.
-- Each response's strongest-16 selection can change abruptly in dense fights.
-  Flame particles are grouped spatially, but cell boundaries and source selection
-  still need temporal smoothing. Chain arcs are not independent emitters yet.
+- Flame particles are grouped spatially, and a flame cell's light can still jump
+  as the stream crosses cell boundaries.
 - Coverage, depth, and weighted wetness are per pixel, not a multilayer fluid
   simulation. Drying, roughness, meniscus width, and blood absorption still need
   broader art tuning.
@@ -266,7 +265,9 @@ the frame's lights at the world's start (`crimson-core/game/rtx_lights.cpp`, a
 port of `material_lights.py`): projectiles and their ion arcs, muzzle flashes,
 the Sharpshooter sight, the Radioactive aura, rocket exhaust, detonations and
 grouped flame particles, and explosion fireballs and shells, with the same
-per-response selection. Like `ExplosionVisual`, the module records each explosion
+idents, volley merging and per-response selection and fades (on `run_elapsed_ms`,
+reset with the run), and draws the ion arcs' contact glows in their own pass
+(`HOST_PASS_GLOW`) as the creatures begin. Like `ExplosionVisual`, the module records each explosion
 burst as it spawns: its fireball sprites as they start out, and whether its ring
 spawned. Rocket hits stay dark, their detonation lighting them instead. The
 records age with the effects' update and are kept apart from the run. A freed slot
@@ -290,7 +291,7 @@ part-size map (`crimson-core/client/thickness.cpp`, a port of
 creature atlas's first lit draw. Creature shadows use the same body grid
 (`rtx_build_occlusion`, a port of `reflection_occlusion.py`): the module builds
 it from the creature pool against the selected lights and sends it each frame
-(`host_occlusion`), and the hosts upload it as the RGBA32F texture the shader
+(`host_occlusion`, crowd cells included), and the hosts upload it as the RGBA32F texture the shader
 walks (unfilterable in WebGPU, which reads it with `textureLoad` alone). The
 shadows setting turns direct-light visibility off as in the Python port.
 Bonuses take the same `bonus.frag`: the module marks each shell, icon and
@@ -534,10 +535,28 @@ the visible flash's suppression flags and warm artwork, with restrained spill fo
 ordinary weapons. Blade, Plague, and bubbles do not gain luminous sources.
 
 Illumination and reflection independently select at most 16 sources by radiance,
-response gain, and distance from the view center to the finite segment. Their union
-uploads at most 32 entries; an entry selected for only one response has the other
-gain zeroed. Shared sources are not counted twice, and reflection-only tracers do
-not consume illumination slots.
+response gain, and distance from the view center: to a segment's energy centroid
+for illumination (so a streak's dark tail at the muzzle does not pull it toward the
+view) and to the nearest point of the segment for reflection. Their union uploads
+at most 32 entries; an entry selected for only one response has the other gain
+zeroed. Shared sources are not counted twice, and reflection-only tracers do not
+consume illumination slots.
+
+A shotgun's pellets or a burst leave the muzzle together, so shots of one kind whose
+heads and tails both lie within 28 units are one source: their radiance adds, the
+merged segment runs between their brightness-weighted heads and tails, and it keeps
+one shot's width. The width is never widened by the volley's spread, because every
+body's shadow margin follows the widest source. A volley that fans out splits into
+separate sources without changing its total light.
+
+Every source has an ident that names it from frame to frame (its kind and slot; an
+explosion's spawn position, since the effect list reorders). Each response fades a
+source across its budget's edge over 6 ticks of the run's clock instead of popping
+it: one leaving the budget dims out while the one taking its place brightens. A
+source never seen before starts at its target, so a new shot lights at once, and a
+rewind or a gap over a second starts the fades over. While sources fade the union
+can outgrow 32 entries; it keeps the ones delivering the most light (both responses'
+faded scores summed) and drops the faintest.
 
 Ground roughness broadens the explicit source footprint. Creature diffuse dome
 shading, the artistic silhouette rim, and thin-part transmission follow illumination
@@ -552,9 +571,10 @@ gain controls, source footprint changes, alpha preservation, and the upload boun
 Transmission comparisons against a zero-transmission shader verify that
 reflection-only sources retain specular catches without lighting thin limbs.
 CPU tests cover independent selection budgets, union masking, finite-segment
-ranking, family colors/geometry, optical fade, muzzle flags, expanding detonations,
-and flame grouping. Dense volleys, cell transitions, and EDR remain art-tuning
-cases; the daylight baseline and classic renderer are unchanged.
+ranking, volley merging, the budget fades, family colors/geometry, optical fade,
+muzzle flags, expanding detonations, and flame grouping. Flame cell transitions and
+EDR remain art-tuning cases; the daylight baseline and classic renderer are
+unchanged.
 
 
 ## Ground reflection occlusion
@@ -599,6 +619,20 @@ visibility test does not add ambient darkness, lengthen shadows artificially,
 or lower the emitter for the occlusion test. Large source widths and heavily
 animated silhouettes remain approximations. Direct lighting shares these volumes
 and the grid while evaluating its own receiver/source segment.
+
+### Crowd cells
+
+Monsters don't collide, so a swarm piles hundreds of bodies into one cell, and a ray
+used to test each of them in every cell it crossed: a late Plasma Shotgun crowd took
+over a second of GPU time per frame in the native client. A cell listing more than 16
+bodies (`CROWD_BODIES`) stores a crowd instead of its list: the opacity-weighted
+footprint of the bodies centered in it, as a share of the cell's area, and their
+footprint-weighted top height. A ray crosses a crowd cell as an absorbing medium,
+`exp(-3 × cover × length crossed in cells)`, while it is still below that height;
+a body's own cell does not shade it. The cost no longer grows with the crowd (that
+frame dropped to about 0.16 s, most of it the original's own sprite fill), and
+packed bodies' shadows merge into one dark mass anyway. Sparse cells keep exact
+per-body shadows.
 
 
 ## Weapon illumination and soft body shadows
@@ -904,13 +938,16 @@ traversal, rather than the chord evaluation, dominates its cost.
 
 ### Ion impact arcs
 
-Ion shots also register the visible post-impact connections and creature contact
-glows as RTX sources. Drawing and lighting share the same target query: only the
+Ion shots also register the visible post-impact connections as RTX sources, and
+glow where they meet creatures. Drawing and lighting share the same target query: only the
 impact/fade phase, the original slot-zero exclusion and collidable lifecycle,
 weapon scale, and Ion Gun Master reach apply. Fire Bullets do not chain.
 
-Each connection contributes a finite segment reflection and a small endpoint
-source, fading with the visible arc. Arc segments are uniform (a tail of 1), so
+Each connection contributes a finite segment source, fading with the visible arc.
+Its contact is always a disc, so it is not a light: an additive ground glow
+(`contact_glow.py`, `contact_glow.frag`) in the arc's color, a 60-unit disc drawn
+before the creatures, leaves the light budget to the arcs and everything else when
+an ion crowd would otherwise fill it. Arc segments are uniform (a tail of 1), so
 their reflections are even along the arc and their illumination centroid is its middle. The new
 sources use restrained independent gains, without the main Ion beam's 4x ground
 gain. At most four connections
