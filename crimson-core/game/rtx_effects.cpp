@@ -11,6 +11,8 @@ extern IGrim2D_cpp *grim_interface_ptr;
 extern "C" {
 extern vec2f_t camera_offset;
 extern int particles_texture;
+extern int grim_bound_texture_handle;
+extern grim_config_value_t grim_config_values[128];
 extern unsigned long grim_color_slot0[4];
 extern float grim_uv_u0[8];
 extern float grim_rotation_radians;
@@ -21,7 +23,6 @@ int rtx_effects_active;
 
 namespace {
 enum { WARM, AURA, RING, PLASMA, ARC };
-int bound_texture = -1;
 float byte_alpha(float a) {
   return floorf(std::clamp(a, 0.f, 1.f) * 255.f + .5f) / 255.f;
 }
@@ -53,18 +54,17 @@ int effect_kind(int id) {
   return id == 13 ? WARM : id == 16 ? AURA : id == 1 ? RING : -1;
 }
 bool drawing() { return rtx_effects_active && rtx_drawing(); }
-} // namespace
-
-extern "C" void rtx_effect_texture(int handle, int stage) {
-  if (stage == 0)
-    bound_texture = handle;
+bool additive() {
+  return grim_config_values[0x12].words[0] && grim_config_values[0x13].words[0] == 5 &&
+         grim_config_values[0x14].words[0] == 2;
 }
+} // namespace
 
 // The sprite methods keep their normal state/UV bookkeeping. Only whole known
 // cells on particles are intercepted, so other atlases and UI draws cannot
 // match.
-extern "C" bool rtx_effect_quad(float x, float y, float w, float h) {
-  if (!drawing() || bound_texture != particles_texture)
+extern "C" bool rtx_effect_quad(const float *points) {
+  if (!drawing() || grim_bound_texture_handle != particles_texture)
     return false;
   for (int i = 1; i < 4; ++i)
     if (grim_color_slot0[i] != grim_color_slot0[0])
@@ -80,12 +80,22 @@ extern "C" bool rtx_effect_quad(float x, float y, float w, float h) {
     kind = RING;
   if (kind < 0)
     return false;
+  if (kind == WARM && !additive()) return false;
   // Ensure the other two corners are a whole rectangular cell as well.
   if (grim_uv_u0[2] != u1 || grim_uv_u0[3] != v0 || grim_uv_u0[6] != u0 ||
       grim_uv_u0[7] != v1)
     return false;
-  sprite(kind, x + w * .5f, y + h * .5f, w, h, grim_rotation_radians,
-         (unsigned)grim_color_slot0[0]);
+  // Grim's rotated draw_quad can turn a non-square input into a square.
+  // Reuse its computed corners, including its inverse-square-root rounding.
+  float corners[16];
+  const float uv[8] = {-1,-1, 1,-1, 1,1, -1,1};
+  for (int i=0; i<4; ++i) {
+    corners[i*4]=points[i*2]; corners[i*4+1]=points[i*2+1];
+    corners[i*4+2]=uv[i*2]; corners[i*4+3]=uv[i*2+1];
+  }
+  const float params[12] = {};
+  grim_interface_ptr->grim_flush_batch();
+  host_effect(corners,kind,params,(unsigned)grim_color_slot0[0]);
   return true;
 }
 
@@ -93,6 +103,7 @@ extern "C" bool rtx_effect_entry(const effect_entry_t *e) {
   int kind = effect_kind(e->effect_id);
   if (!drawing() || kind < 0)
     return false;
+  if (kind == WARM && !additive()) return false;
   sprite(
       kind, camera_offset.x + e->pos_x, camera_offset.y + e->pos_y,
       e->half_width * 2 * e->scale, e->half_height * 2 * e->scale, e->rotation,
@@ -103,6 +114,7 @@ extern "C" bool rtx_effect_entry(const effect_entry_t *e) {
 }
 
 extern "C" void rtx_plasma(int slot, float alpha) {
+  if (!drawing()) return;
   const projectile_t &p = projectile_pool[slot];
   int type = p.fields.type_id;
   float cx = camera_offset.x + p.fields.pos_x,
@@ -177,6 +189,7 @@ extern "C" void rtx_plasma(int slot, float alpha) {
 
 extern "C" void rtx_ion_arc(float sx, float sy, float ex, float ey, float scale,
                             float alpha) {
+  if (!drawing()) return;
   float ax = ex - sx, ay = ey - sy, len = sqrtf(ax * ax + ay * ay);
   if (len <= 1e-3f)
     return;

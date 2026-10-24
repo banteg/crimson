@@ -222,7 +222,10 @@ def draw_effect_pool(
         tint = entry.color.to_rl()
 
         shape = SPRITE_SHAPES.get(effect_id)
-        if frame.rtx_mode is RtxRenderMode.RTX and shape is not None:
+        if (
+            frame.rtx_mode is RtxRenderMode.RTX and shape is not None
+            and not (shape is EffectShape.GLOW and entry.flags & 0x40)
+        ):
             draw_sprite(shape, center=screen, width=w, height=h, color=entry.color, rotation=float(entry.rotation))
             return
         dst = rl_rectangle(screen.x, screen.y, float(w), float(h))

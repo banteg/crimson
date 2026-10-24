@@ -3,13 +3,33 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from crimson.effects import EffectEntry
+from crimson.effects_atlas import EffectId
 from crimson.render.rtx import effects
+from crimson.render.rtx.mode import RtxRenderMode
+from crimson.render.world import effects as world_effects
 from grim.color import RGBA
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.shaders import AlphaTestShader
 from grim.texture_mode import texture_mode
+from tests.render.test_projectile_render import _render_ctx
+
+
+@pytest.mark.parametrize("flags", [0x40, 0x19])
+def test_warm_glow_uses_analytic_profile_only_for_additive_entries(mocker, flags):
+    ctx = _render_ctx(rtx_mode=RtxRenderMode.RTX)
+    ctx.frame.state.effects.entries[0] = EffectEntry(
+        effect_id=EffectId.GLOW, pos=Vec2(40,40), flags=flags, half_width=20., half_height=30., scale=1.,
+    )
+    sprite = mocker.patch.object(world_effects, "draw_sprite")
+    texture = mocker.patch.object(rl, "draw_texture_pro")
+    mocker.patch.object(rl, "begin_blend_mode")
+    mocker.patch.object(rl, "end_blend_mode")
+    world_effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1,1))
+    assert sprite.call_count == (flags != 0x40)
+    assert texture.call_count == (flags == 0x40)
 
 
 @pytest.fixture
