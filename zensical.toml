@@ -65,6 +65,7 @@ nav = [
       { "Rendering pipeline" = "rewrite/rendering-pipeline.md" },
       { "Terrain" = "rewrite/terrain.md" },
       { "RTX rendering" = "rewrite/rtx-rendering.md" },
+      { "RTX renderer review" = "rewrite/rtx-renderer-review.md" },
     ]},
     { "Parity" = [
       { "Overview" = "rewrite/parity/index.md" },
