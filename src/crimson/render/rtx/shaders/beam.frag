@@ -24,7 +24,7 @@ float glow(float r2) {
 
 // The halo's Gaussian tail outlasts the texture's, which is spent by 0.9 radii; end it inside the quad.
 float edge_fade(float r) {
-    return smoothstep(1.0, 0.75, r);
+    return 1.0 - smoothstep(0.75, 1.0, r);
 }
 
 // erf within 4e-4. erf is flat past 3; the clamp keeps tanh's own exp from overflowing to NaN.
