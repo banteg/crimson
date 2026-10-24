@@ -16,6 +16,7 @@ from ..beam_profiles import STREAK_SCALES
 from ..ion_arcs import ion_arc_targets
 from ..laser_sight import laser_sight_geometry
 from ..rtx.beam import BeamBatch, draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
+from ..rtx.effects import SPRITE_SHAPES, draw_ion_arc, draw_plasma, draw_sprite
 from ..rtx.mode import RtxRenderMode
 from .atlas import effect_cell_src_inset
 from .constants import _RAD_TO_DEG
@@ -66,6 +67,7 @@ def _glow_src(texture: rl.Texture) -> rl.Rectangle:
 
 
 def _draw_quad(
+    render_ctx: WorldRenderCtx,
     texture: rl.Texture,
     src: rl.Rectangle,
     *,
@@ -73,8 +75,12 @@ def _draw_quad(
     size: float,
     rgba: RGBA,
     rotation_rad: float = 0.0,
+    effect_id: EffectId | None = EffectId.GLOW,
 ) -> None:
     if rgba.a <= 1e-3 or size <= 1e-3:
+        return
+    if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and effect_id is not None:
+        draw_sprite(SPRITE_SHAPES[effect_id], center=pos, width=size, height=size, color=rgba, rotation=rotation_rad)
         return
     dst = rl_rectangle(pos.x, pos.y, size, size)
     origin = rl_vector2(size * 0.5, size * 0.5)
@@ -240,7 +246,7 @@ def _plasma_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
         screen = render_ctx.world_to_screen(proj.pos)
         if float(proj.life_timer) < 0.4:
             fade = clamp(float(proj.life_timer) * 2.5, 0.0, 1.0)
-            _draw_quad(texture, src, pos=screen, size=56.0 * scale, rgba=RGBA(1.0, 1.0, 1.0, fade * alpha))
+            _draw_quad(render_ctx, texture, src, pos=screen, size=56.0 * scale, rgba=RGBA(1.0, 1.0, 1.0, fade * alpha))
             continue
         # Native converts both operands to signed integers before dividing; the
         # numerator is the rendered origin-to-position distance.
@@ -252,18 +258,46 @@ def _plasma_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
         )
         # The stored angle is rotated by +pi/2 from the travel direction.
         step = Vec2.from_heading(float(proj.angle) + math.pi) * (float(proj.speed_scale) * step_len)
+        if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
+            draw_plasma(
+                center=screen,
+                tail_axis=Vec2.from_heading(float(proj.angle) + math.pi),
+                segments=segments,
+                step=step.length() * scale,
+                tail_radius=tail_size * scale * 0.5,
+                head_radius=head_size * scale * 0.5,
+                head_alpha=head_alpha,
+                aura_radius=aura_size * scale * 0.5 if flame_glow else 0.0,
+                aura_alpha=aura_alpha if flame_glow else 0.0,
+                alpha=alpha,
+                color=(red, green, blue),
+            )
+            continue
         for index in range(segments):
             _draw_quad(
+                render_ctx,
                 texture,
                 src,
                 pos=render_ctx.world_to_screen(proj.pos + step * float(index)),
                 size=tail_size * scale,
                 rgba=RGBA(red, green, blue, alpha * 0.4),
             )
-        _draw_quad(texture, src, pos=screen, size=head_size * scale, rgba=RGBA(red, green, blue, alpha * head_alpha))
+        _draw_quad(
+            render_ctx,
+            texture,
+            src,
+            pos=screen,
+            size=head_size * scale,
+            rgba=RGBA(red, green, blue, alpha * head_alpha),
+        )
         if flame_glow:
             _draw_quad(
-                texture, src, pos=screen, size=aura_size * scale, rgba=RGBA(red, green, blue, alpha * aura_alpha),
+                render_ctx,
+                texture,
+                src,
+                pos=screen,
+                size=aura_size * scale,
+                rgba=RGBA(red, green, blue, alpha * aura_alpha),
             )
     rl.end_blend_mode()
 
@@ -461,6 +495,9 @@ def _draw_streak(
     # outer strip, then the glow on that creature, one creature at a time.
     for creature in ion_arc_targets(frame, proj):
         target = render_ctx.world_to_screen(creature.pos)
+        if rtx:
+            draw_ion_arc(start=screen, end=target, effect_scale=effect_scale * scale, alpha=base_alpha, capped=capped)
+            continue
         side_dir, length = (target - screen).normalized_with_length()
         if length <= 1e-3:
             continue
@@ -570,6 +607,7 @@ def _fire_bullets_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
         if not preserve_bugs and int(proj.type_id) != ProjectileTemplateId.FIRE_BULLETS:
             continue
         _draw_quad(
+            render_ctx,
             texture,
             src,
             pos=render_ctx.world_to_screen(proj.pos),
@@ -634,6 +672,7 @@ def _secondary_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
         if not proj.active:
             continue
         _draw_quad(
+            render_ctx,
             texture,
             src,
             pos=render_ctx.world_to_screen(proj.pos) - Vec2.from_heading(float(proj.angle)) * (5.0 * scale),
@@ -694,6 +733,7 @@ def _secondary_flame_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
             case _:
                 continue
         _draw_quad(
+            render_ctx,
             texture,
             src,
             pos=render_ctx.world_to_screen(proj.pos) - Vec2.from_heading(float(proj.angle)) * (9.0 * scale),
@@ -726,8 +766,25 @@ def secondary_detonation_pass(render_ctx: WorldRenderCtx) -> None:
         fade = 1.0 - t
         screen = render_ctx.world_to_screen(proj.pos)
         det_scale = float(proj.detonation_scale)
-        _draw_quad(texture, src, pos=screen, size=det_scale * t * 64.0 * scale, rgba=RGBA(1.0, 0.6, 0.1, fade))
-        _draw_quad(texture, src, pos=screen, size=det_scale * t * 200.0 * scale, rgba=RGBA(1.0, 0.6, 0.1, fade * 0.3))
+        effect_id = None if render_ctx.frame.state.preserve_bugs else EffectId.AURA
+        _draw_quad(
+            render_ctx,
+            texture,
+            src,
+            pos=screen,
+            size=det_scale * t * 64.0 * scale,
+            rgba=RGBA(1.0, 0.6, 0.1, fade),
+            effect_id=effect_id,
+        )
+        _draw_quad(
+            render_ctx,
+            texture,
+            src,
+            pos=screen,
+            size=det_scale * t * 200.0 * scale,
+            rgba=RGBA(1.0, 0.6, 0.1, fade * 0.3),
+            effect_id=effect_id,
+        )
     rl.end_blend_mode()
 
 

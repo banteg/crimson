@@ -1,0 +1,59 @@
+World-only analytic glows, shells, plasma and ion arcs. Classic submission is unchanged.
+--- a/decomp/1.9/grim/render/draw_quad.cpp
++++ b/decomp/1.9/grim/render/draw_quad.cpp
+@@ -69,6 +69,7 @@
+ 
+ void IGrim2D_cpp::grim_draw_quad(float x, float y, float w, float h)
+ {
++    if (rtx_effect_quad(x, y, w, h)) return;
+ #if CL_BUILD == 10908
+     // 1.9.8 keeps the quad centre out of the corner array, so its frame is
+     // four points (0x20) where 1.9.93 reserves five (0x28).
+--- a/decomp/1.9/grim/render/bind_texture.cpp
++++ b/decomp/1.9/grim/render/bind_texture.cpp
+@@ -31,6 +31,7 @@
+     }
+ 
+     grim_d3d_device->SetTexture(stage, slot->texture);
++    rtx_effect_texture(handle, stage);
+     grim_bound_texture_handle = handle;
+ }
+ #endif
+--- a/decomp/1.9/crimsonland/effects/effects_render.cpp
++++ b/decomp/1.9/crimsonland/effects/effects_render.cpp
+@@ -44,6 +44,7 @@
+     effect_entry_t *entry,
+     unsigned long &color)
+ {
++    if (rtx_effect_entry(entry)) return;
+     float rotation;
+     float matrix[4];
+ 
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
+@@ -417,6 +417,10 @@
+             continue;
+         }
+ 
++        if (rtx_render_mode) {
++            rtx_plasma(projectile_index, transition_alpha);
++            continue;
++        }
+         if (projectile_pool[projectile_index].pos.tail.vy.life_timer == 0.4f) {
+             if (type_id == PROJECTILE_TYPE_PLASMA_RIFLE) {
+                 float dx = projectile_pool[projectile_index].pos.origin_x - position->x;
+@@ -986,6 +990,14 @@
+                     radius,
+                     1);
+                 while (creature_index != -1) {
++                    if (rtx_render_mode) {
++                        rtx_ion_arc(camera_offset[0] + projectile->pos_x,
++                                    camera_offset[1] + projectile->pos.pos_y,
++                                    camera_offset[0] + creature_pool[creature_index].pos_x,
++                                    camera_offset[1] + creature_pool[creature_index].pos_y, scale, head_alpha);
++                        creature_index = creature_find_in_radius(&projectile->pos_x, radius, creature_index + 1);
++                        continue;
++                    }
+                     grim_interface_ptr->grim_set_uv_point(0, 0.625f, 0.0f);
+                     grim_interface_ptr->grim_set_uv_point(1, 0.625f, 0.25f);
+                     grim_interface_ptr->grim_set_uv_point(2, 0.625f, 0.25f);

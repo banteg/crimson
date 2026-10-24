@@ -72,6 +72,9 @@ HOST_IMPORT(bonus) void host_bonus(int emblem, float grid_x, float grid_y, float
 // for a head) and stamp spacing, and its D3DCOLOR, drawn with the current blend
 // into the current target.
 HOST_IMPORT(beam) void host_beam(const float *corners, float length, float step, unsigned color);
+// Analytic glow/shell/plasma/arc: four x,y,u,v corners, effect.frag's kind,
+// three vec4 shape parameters, and the original D3DCOLOR. Uses the current blend state.
+HOST_IMPORT(effect) void host_effect(const float *corners, int kind, const float *params, unsigned color);
 // The last drawn frame, kept and shown again under what a replay draws over it
 // while no tick draws (host/watch.inc): save the back buffer, or show the saved one.
 enum {

@@ -297,6 +297,39 @@ void check_rtx() {
   assert(back_red(210, 384) < back_red(330, 384) && back_red(330, 384) < back_red(450, 384));
   assert(fabsf(back_red(330, 378) - back_red(330, 390)) < 1e-3f && back_red(330, 380) > 0);
   assert(back_red(330, 410) == 0);
+  // The same effect.frag as Python: radial glow/aura/shell, HDR plasma,
+  // and capped/cut ion arcs. Uniform arrays and blend state reach real GL.
+  auto effect = [&](int kind, const float *params, unsigned color, float x0, float x1, float y0, float y1,
+                    float u0, float u1, float v0, float v1) {
+    const float c[16] = {x0,y0,u0,v0, x0,y1,u0,v1, x1,y1,u1,v1, x1,y0,u1,v0};
+    memcpy(memory, c, sizeof c);
+    memcpy(memory+128, params, 48);
+    w2c_host_effect(nullptr, 0, kind, 128, color);
+  };
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  const float empty[12] = {};
+  for (int kind = 0; kind < 3; ++kind) {
+    w2c_host_clear(nullptr, 0xff000000);
+    effect(kind, empty, 0xffffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
+    if (kind < 2) assert(back_red(512,384) > .7f);
+    else assert(back_red(512,384) == 0 && back_red(526,384) > .1f);
+    assert(back_red(492,384) == 0);
+    w2c_host_clear(nullptr, 0xff000000);
+    effect(kind, empty, 0x01ffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
+    assert(back_red(512,384) == 0 && back_red(526,384) == 0);
+  }
+  w2c_host_clear(nullptr, 0xff000000);
+  const float plasma[12] = {8,0,0,27,1.5f,.4f,0,0,.027944f,.036952f,0,0};
+  effect(3,plasma,0xffffffff,477.75f,521.75f,375.75f,391.75f,-34,10,-8,8);
+  assert(back_red(500,384) > 1.f && back_red(500,400) == 0);
+  float arc[12] = {48,1,1,0,0,0,0,0,0,0,0,0};
+  w2c_host_clear(nullptr, 0xff000000);
+  effect(4,arc,0xff8099ff,471.75f,551.75f,367.75f,399.75f,-16,64,-16,16);
+  assert(back_red(485,384) > .01f && back_red(510,384) > .1f);
+  arc[2]=0;
+  w2c_host_clear(nullptr, 0xff000000);
+  effect(4,arc,0xff8099ff,471.75f,551.75f,367.75f,399.75f,-16,64,-16,16);
+  assert(back_red(485,384) == 0 && back_red(510,384) > .1f);
   // Lit batches: creature bodies keep a 0.6 linear ambient fill without lights
   // and brighten under one; players without lights keep the device's shading.
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);

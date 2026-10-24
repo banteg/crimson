@@ -159,6 +159,7 @@ Program present_program{&WGSL_PRESENT_VERT, &WGSL_PRESENT_FRAG, NO_VERTICES};
 Program blit{&WGSL_FULLSCREEN_VERT, &WGSL_BLIT_FRAG, NO_VERTICES};
 Program tonemap{&WGSL_FULLSCREEN_VERT, &WGSL_HDR_TONEMAP_FRAG, NO_VERTICES};
 Program beam{&WGSL_BEAM_VERT, &WGSL_BEAM_FRAG, BEAM_CORNERS};
+Program effect{&WGSL_EFFECT_VERT, &WGSL_EFFECT_FRAG, BEAM_CORNERS};
 Program creature_lit{&WGSL_CREATURE_VERT, &WGSL_CREATURE_FRAG, DEVICE_VERTICES};
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
 Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
@@ -489,7 +490,7 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
-  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
+  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
                      &ground_lit, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program}) {
@@ -671,7 +672,7 @@ void wgpu_renderer_init() {
   stream_buffer(vertex_stream, WGPUBufferUsage_Vertex);
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
-  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
+  for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
                      &ground_lit, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program})
@@ -1258,6 +1259,27 @@ void wgpu_w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u3
   float strip[16];
   for (int i = 0; i < 4; ++i)
     memcpy(strip + i * 4, c + order[i] * 4, 16);
+  uint64_t at = put(vertex_stream, strip, sizeof strip);
+  wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, sizeof strip);
+  wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+}
+void wgpu_w2c_host_effect(struct w2c_host *, u32 corners, u32 kind, u32 params, u32 color) {
+  if (!rtx) return;
+  if (!fits(vertex_stream, 64) || !fits(uniform_stream, 1024)) submit();
+  Target &t = drawing_target(current_target);
+  pass_into(t);
+  Uniforms vertex(*effect.vert), fragment(*effect.frag);
+  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height);
+  vertex.v4("effect_color", (color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f,
+            (color & 255) / 255.0f, (color >> 24) / 255.0f);
+  fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_kind", kind);
+  fragment.set("u_params", client_memory() + params, 48);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(effect, device_output(t, WGPUPrimitiveTopology_TriangleStrip)));
+  bind(effect, fragment_group(effect, {}), &vertex, &fragment);
+  const float *c = (const float *)(client_memory() + corners);
+  static const int order[4] = {0, 1, 3, 2};
+  float strip[16];
+  for (int i = 0; i < 4; ++i) memcpy(strip + i * 4, c + order[i] * 4, 16);
   uint64_t at = put(vertex_stream, strip, sizeof strip);
   wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, sizeof strip);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);

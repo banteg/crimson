@@ -118,6 +118,8 @@ GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_al
 bool rtx, world;
 Target hdr;
 GLuint tonemap_program, beam_program, beam_array, beam_buffer;
+GLuint effect_program;
+GLint u_effect_target_size, u_effect_color, u_effect_kind, u_effect_params;
 GLint u_tonemap_headroom, u_beam_target_size, u_beam_length, u_beam_step, u_beam_color;
 float edr_headroom = 1;
 
@@ -909,6 +911,13 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     u_beam_length = glGetUniformLocation(beam_program, "beam_length");
     u_beam_step = glGetUniformLocation(beam_program, "beam_step");
     u_beam_color = glGetUniformLocation(beam_program, "beam_color");
+    effect_program = link(SHADER_HEADER SHADER_EFFECT_VERT, SHADER_HEADER RTX_SHADER_EFFECT_FRAG);
+    glUseProgram(effect_program);
+    glUniform4f(glGetUniformLocation(effect_program, "colDiffuse"), 1, 1, 1, 1);
+    u_effect_target_size = glGetUniformLocation(effect_program, "target_size");
+    u_effect_color = glGetUniformLocation(effect_program, "effect_color");
+    u_effect_kind = glGetUniformLocation(effect_program, "u_kind");
+    u_effect_params = glGetUniformLocation(effect_program, "u_params");
     create_lit(creature_lit, creature_fragment_source);
     create_lit(player_lit, player_fragment_source);
     create_lit(bonus_lit, bonus_fragment_source);
@@ -1229,6 +1238,22 @@ void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 ste
               (color >> 24) / 255.0f);
   apply_output_state(t);
   // A flat quad, whichever way its corners turn.
+  glDisable(GL_CULL_FACE);
+  glBindVertexArray(beam_array);
+  glBindBuffer(GL_ARRAY_BUFFER, beam_buffer);
+  glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), client_memory() + corners, GL_STREAM_DRAW);
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+void GL_ENTRY(w2c_host_effect)(struct w2c_host *, u32 corners, u32 kind, u32 params, u32 color) {
+  if (!rtx) return;
+  Target &t = drawing_target(current_target);
+  glUseProgram(effect_program);
+  glUniform2f(u_effect_target_size, (float)t.logical_width, (float)t.logical_height);
+  glUniform4f(u_effect_color, (color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f,
+              (color & 255) / 255.0f, (color >> 24) / 255.0f);
+  glUniform1i(u_effect_kind, kind);
+  glUniform4fv(u_effect_params, 3, (const float *)(client_memory() + params));
+  apply_output_state(t);
   glDisable(GL_CULL_FACE);
   glBindVertexArray(beam_array);
   glBindBuffer(GL_ARRAY_BUFFER, beam_buffer);

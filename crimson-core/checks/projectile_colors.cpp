@@ -29,6 +29,8 @@ void rtx_beam_body(float, float, float, float, float, float, float, float, float
   __builtin_trap();
 }
 void rtx_beam_head(float, float, float, float, bool) { __builtin_trap(); }
+void rtx_plasma(int, float) { __builtin_trap(); }
+void rtx_ion_arc(float, float, float, float, float, float) { __builtin_trap(); }
 vec2f_t *D3DXVec2Normalize(vec2f_t *dst, const vec2f_t *src) {
   float length = sqrtf(src->x * src->x + src->y * src->y);
   *dst = length ? vec2f_t{src->x / length, src->y / length} : vec2f_t{};
