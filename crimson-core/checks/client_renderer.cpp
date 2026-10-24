@@ -279,7 +279,7 @@ void check_rtx() {
     w2c_host_render_pass(nullptr, 2);
   };
   assert(renderer_set_rtx(true) && (textures[0].flags & TARGET_HALF_FLOAT));
-  // A beam head is one stamp: full gain at its center, nothing past its radius.
+  // A beam head is one stamp: the glow texel's peak at its center, nothing past its radius.
   // A 256-pixel body (a streak's longest) fades in from its tail and is
   // symmetric about its axis, which sits on physical row 768 (Direct3D's
   // half-pixel shift included).
@@ -289,7 +289,7 @@ void check_rtx() {
   };
   w2c_host_clear(nullptr, 0xff000000);
   beam({495.75f, 367.75f, -1, -1, 495.75f, 399.75f, -1, 1, 527.75f, 399.75f, 1, 1, 527.75f, 367.75f, 1, -1}, -1, 0);
-  assert(fabsf(back_red(512, 384) - 0.92f) < 1e-2f && back_red(512, 399) < 1e-3f);
+  assert(fabsf(back_red(512, 384) - 0.863f) < 1e-2f && back_red(512, 399) < 1e-3f);
   w2c_host_clear(nullptr, 0xff000000);
   float length = 256 / 16.0f;
   beam({184, 367.75f, -1, -1, 184, 399.75f, -1, 1, 472, 399.75f, length + 1, 1, 472, 367.75f, length + 1, -1}, length,
@@ -539,7 +539,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, ion contacts glow, pressure fronts ripple; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams integrate their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, ion contacts glow, pressure fronts ripple; classic stays 8-bit");
 }
 
 int main() {
