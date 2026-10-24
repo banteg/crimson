@@ -144,9 +144,9 @@ const char *smoke_splat_source = SHADER_HEADER RTX_SHADER_SMOKE_SPLAT_FRAG;
 const char *smoke_impulse_source = SHADER_HEADER RTX_SHADER_SMOKE_IMPULSE_FRAG;
 const char *smoke_fragment_source = SHADER_HEADER RTX_SHADER_SMOKE_FRAG;
 const char *blit_fragment_source = SHADER_HEADER SHADER_BLIT_FRAG;
-const char *aura_fragment_source = SHADER_HEADER RTX_SHADER_PERK_AURA_FRAG;
-const char *monster_vision_vertex_source = SHADER_HEADER SHADER_MONSTER_VISION_VERT;
-const char *monster_vision_fragment_source = SHADER_HEADER SHADER_MONSTER_VISION_FRAG;
+const char *heat_body_fragment_source = SHADER_HEADER RTX_SHADER_HEAT_BODY_FRAG;
+const char *heat_stamp_fragment_source = SHADER_HEADER SHADER_HEAT_STAMP_FRAG;
+const char *heat_trail_fragment_source = SHADER_HEADER SHADER_HEAT_TRAIL_LIT_FRAG;
 const char *pressure_fragment_source = SHADER_HEADER SHADER_PRESSURE_LIT_FRAG;
 
 // RTX lighting: the world's lights and camera (host_scene), the batch being drawn
@@ -178,14 +178,15 @@ enum { OCCLUSION_WIDTH = 256 };
 float occlusion_grid[4], occlusion_cell = 64;
 int dynamic_shadows, occlusion_rows;
 GLuint occlusion_texture;
-LitProgram creature_lit, player_lit, bonus_lit, aura_lit;
-// Monster Vision's ground light (host_perk_light, render/rtx/perk_lighting.py):
-// its auras as world x, y and alpha, the additive pass that sums their light
-// on the ground, and the float accumulator the ground program adds.
-enum { MONSTER_VISION_RADIUS = 60 };
-std::vector<float> perk_sources;
-GLuint monster_vision_program;
-Target perk_target;
+LitProgram creature_lit, player_lit, bonus_lit;
+// Monster Vision's heat (render/rtx/heat_vision.py): the bodies' program
+// (HOST_PASS_HEAT), and the world-space trail buffer at half the terrain's
+// resolution with the run's clock it last faded at (host_heat), its passes and
+// the program that adds it to the ground (host_heat_trails).
+const float HEAT_TRAIL_SCALE = 0.5f, HEAT_HALF_LIFE_S = 0.9f, HEAT_MAX_GAP_S = 1;
+GLuint heat_body_program, heat_stamp_program, heat_trail_program;
+Target heat_trail;
+float heat_seconds = -1;
 // The explosions' pressure fronts (host_pressure, render/rtx/shockwaves.py):
 // screen center, radius and strength each, applied from the world's target into
 // another before the tonemap reads it.
@@ -219,7 +220,7 @@ GLuint smoke_solver_program, smoke_splat_program, smoke_impulse_program, smoke_p
 // Each uploaded artwork's texels in the module (it keeps them), for the creature
 // thickness maps made on a creature atlas's first lit draw.
 std::unordered_map<int, u32> texel_addresses;
-std::unordered_map<int, GLuint> thickness_maps;
+std::unordered_map<int, GLuint> thickness_maps, heat_thickness_maps;
 
 GLuint compile(GLenum kind, const char *source) {
   GLuint shader = glCreateShader(kind);
@@ -397,29 +398,32 @@ void create_lit(LitProgram &p, const char *fragment) {
 }
 
 // A creature atlas's part sizes (renderer_thickness), made once it is lit; the
-// shader reads them only with lights.
-GLuint thickness_map(int id) {
-  auto made = thickness_maps.find(id);
-  if (made != thickness_maps.end())
+// creature shader reads them only with lights, Monster Vision's heat always, as
+// heat_vision.py blurs them within each cell.
+GLuint thickness_map(int id, bool heat = false) {
+  auto &maps = heat ? heat_thickness_maps : thickness_maps;
+  auto made = maps.find(id);
+  if (made != maps.end())
     return made->second;
   auto t = textures.find(id);
   auto texels = texel_addresses.find(id);
-  if (!light_count || t == textures.end() || texels == texel_addresses.end())
+  if ((!light_count && !heat) || t == textures.end() || texels == texel_addresses.end())
     return blank_texture;
-  std::vector<unsigned char> sizes =
-      renderer_thickness(client_memory() + texels->second, t->second.logical_width, t->second.logical_height);
+  int width = t->second.logical_width, height = t->second.logical_height;
+  std::vector<unsigned char> sizes = renderer_thickness(client_memory() + texels->second, width, height);
+  if (heat)
+    sizes = renderer_blur_cells(sizes, width, height, 2);
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, t->second.logical_width, t->second.logical_height, 0, GL_RED,
-               GL_UNSIGNED_BYTE, sizes.data());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, sizes.data());
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  return thickness_maps[id] = texture;
+  return maps[id] = texture;
 }
 
 // The device's vertices and indices as host_draw sends them.
@@ -440,6 +444,27 @@ void submit_geometry(u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
   }
 }
 
+// A creature batch drawn again as heat (heat_body.frag): the atlas and its
+// blurred part sizes, blended as the device's states say.
+bool heat_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
+  glUseProgram(heat_body_program);
+  glUniform2f(glGetUniformLocation(heat_body_program, "target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(glGetUniformLocation(heat_body_program, "camera"), scene_camera[0], scene_camera[1]);
+  auto it = textures.find(bound[0]);
+  bool present = bound[0] && it != textures.end() && it->second.texture;
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
+  glBindSampler(0, 0);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, present ? thickness_map(bound[0], true) : blank_texture);
+  glBindSampler(1, 0);
+  glActiveTexture(GL_TEXTURE0);
+  apply_output_state(t);
+  glDisable(GL_CULL_FACE);
+  submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
+  return true;
+}
+
 // A draw in an RTX creature, player or bonus batch, lit as the Python port
 // lights them: creatures (their ambient fill is 0.6) and bonuses always, players
 // only under lights.
@@ -447,9 +472,10 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   if (!rtx || !world || !material || material == HOST_PASS_GROUND || (material == HOST_PASS_PLAYERS && !light_count))
     return false;
   Target &t = drawing_target(current_target);
+  if (material == HOST_PASS_HEAT)
+    return heat_draw(t, primitive, vertices, vertex_count, indices, primitive_count);
   LitProgram &p = material == HOST_PASS_PLAYERS ? player_lit
                   : material == MATERIAL_BONUS  ? bonus_lit
-                  : material == HOST_PASS_AURA  ? aura_lit
                                                 : creature_lit;
   glUseProgram(p.id);
   glUniform1i(p.pass, bonus_emblem);
@@ -666,66 +692,6 @@ void submit_vertices(const std::vector<HostVertex> &vertices) {
   glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.size());
 }
 
-// Each aura's quad, its 60-unit support clipped to the view on `t`; its texture
-// coordinates carry its world center and its alpha the aura's.
-std::vector<HostVertex> monster_vision_quads(const Target &t) {
-  std::vector<HostVertex> quads;
-  float lo_x = -scene_camera[0], lo_y = -scene_camera[1];
-  float hi_x = lo_x + t.logical_width, hi_y = lo_y + t.logical_height;
-  for (size_t i = 0; i + 2 < perk_sources.size(); i += 3) {
-    float x = perk_sources[i], y = perk_sources[i + 1], r = MONSTER_VISION_RADIUS;
-    float x0 = std::max(lo_x, x - r), y0 = std::max(lo_y, y - r), x1 = std::min(hi_x, x + r), y1 = std::min(hi_y, y + r);
-    if (x1 <= x0 || y1 <= y0)
-      continue;
-    u32 color = (u32)(perk_sources[i + 2] * 255 + 0.5f) << 24 | 0xffffff;
-    auto corner = [&](float cx, float cy) {
-      return HostVertex{cx + scene_camera[0], cy + scene_camera[1], 0, 1, color, x, y};
-    };
-    for (HostVertex v : {corner(x0, y0), corner(x0, y1), corner(x1, y1), corner(x0, y0), corner(x1, y1), corner(x1, y0)})
-      quads.push_back(v);
-  }
-  return quads;
-}
-
-// Monster Vision's light summed into the accumulator, ONE + ONE: each aura's
-// shadowless direct and reflected light on the ground beneath it.
-void accumulate_monster_vision(const Ground &g, const Target &t) {
-  if (perk_target.width != t.width || perk_target.height != t.height) {
-    release(perk_target);
-    perk_target.width = t.width, perk_target.height = t.height;
-    perk_target.flags = TARGET_RENDER | TARGET_FLOAT;
-    allocate(perk_target);
-  }
-  perk_target.logical_width = t.logical_width, perk_target.logical_height = t.logical_height;
-  bind_framebuffer(perk_target);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  glClearColor(0, 0, 0, 0);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glEnable(GL_BLEND);
-  glBlendEquation(GL_FUNC_ADD);
-  glBlendFunc(GL_ONE, GL_ONE);
-  glDisable(GL_CULL_FACE);
-  GLuint p = monster_vision_program;
-  glUseProgram(p);
-  auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
-  glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
-  glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
-  glUniform2fv(at("u_ground_size"), 1, ground_size);
-  glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
-  glUniform1i(at("u_perk_component"), 0);
-  const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture, blank_texture};
-  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex"};
-  for (int i = 0; i < 4; ++i) {
-    glUniform1i(at(names[i]), i);
-    glActiveTexture(GL_TEXTURE0 + i);
-    glBindTexture(GL_TEXTURE_2D, inputs[i]);
-    glBindSampler(i, 0);
-  }
-  glActiveTexture(GL_TEXTURE0);
-  submit_vertices(monster_vision_quads(t));
-  bind_target();
-}
-
 // The terrain drawn into the world, lit as the Python port's ground: its
 // substrate, materials and surface under the frame's lights and body shadows.
 bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
@@ -734,10 +700,6 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
-  bool perk = !perk_sources.empty();
-  if (perk)
-    accumulate_monster_vision(g, t);
-  bind_target();
   GLuint p = ground_program;
   glUseProgram(p);
   auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
@@ -747,8 +709,6 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
   glUniform1i(at("u_debug"), 0);
   glUniform1i(at("u_debug_display"), 1);
-  glUniform1i(at("u_has_perk"), perk);
-  glUniform4f(at("u_perk_view"), -scene_camera[0], -scene_camera[1], (float)t.logical_width, (float)t.logical_height);
   glUniform1i(at("u_dynamic_shadows"), dynamic_shadows);
   glUniform1i(at("u_spec_light_count"), light_count);
   glUniform1i(at("u_has_beam_lights"), beam_lights);
@@ -764,10 +724,9 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     glUniform4fv(at("u_line_cells"), light_count * 3, line_cells);
   }
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
-                           occlusion_grid[2] ? occlusion_texture : blank_texture,
-                           perk ? perk_target.texture : blank_texture};
-  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex", "u_perk_tex"};
-  for (int i = 0; i < 5; ++i) {
+                           occlusion_grid[2] ? occlusion_texture : blank_texture};
+  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex"};
+  for (int i = 0; i < 4; ++i) {
     glUniform1i(at(names[i]), i);
     glActiveTexture(GL_TEXTURE0 + i);
     glBindTexture(GL_TEXTURE_2D, inputs[i]);
@@ -936,8 +895,14 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     create_lit(creature_lit, creature_fragment_source);
     create_lit(player_lit, player_fragment_source);
     create_lit(bonus_lit, bonus_fragment_source);
-    create_lit(aura_lit, aura_fragment_source);
-    monster_vision_program = link(monster_vision_vertex_source, monster_vision_fragment_source);
+    heat_body_program = link(lit_vertex_source, heat_body_fragment_source);
+    glUseProgram(heat_body_program);
+    glUniform1i(glGetUniformLocation(heat_body_program, "texture0"), 0);
+    glUniform1i(glGetUniformLocation(heat_body_program, "u_thickness"), 1);
+    heat_stamp_program = link(lit_vertex_source, heat_stamp_fragment_source);
+    heat_trail_program = link(lit_vertex_source, heat_trail_fragment_source);
+    glUseProgram(heat_trail_program);
+    glUniform1i(glGetUniformLocation(heat_trail_program, "u_heat"), 0);
     pressure_program = link(tonemap_vertex_source, pressure_fragment_source);
     ground_program = link(lit_vertex_source, ground_fragment_source);
     stamp_program = link(lit_vertex_source, stamp_fragment_source);
@@ -976,7 +941,8 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   for (Target &t : smoke_targets)
     release(t);
   release(smoke_composite);
-  release(perk_target);
+  release(heat_trail);
+  heat_seconds = -1;
   release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
@@ -1124,10 +1090,12 @@ void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
   release(it->second);
   textures.erase(it);
   texel_addresses.erase((int)id);
-  auto map = thickness_maps.find((int)id);
-  if (map != thickness_maps.end()) {
-    glDeleteTextures(1, &map->second);
-    thickness_maps.erase(map);
+  for (auto *maps : {&thickness_maps, &heat_thickness_maps}) {
+    auto map = maps->find((int)id);
+    if (map != maps->end()) {
+      glDeleteTextures(1, &map->second);
+      maps->erase(map);
+    }
   }
   bind_target();
 }
@@ -1274,9 +1242,86 @@ void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {
   const float *f = (const float *)(client_memory() + fronts);
   pressure_fronts.assign(f, f + count * 4);
 }
-void GL_ENTRY(w2c_host_perk_light)(struct w2c_host *, u32 sources, u32 count) {
-  const float *s = (const float *)(client_memory() + sources);
-  perk_sources.assign(s, s + count * 3);
+// The frame's footprints into the trail buffer (heat_vision.py's update): fade
+// it by the run's clock since the last frame, or start it over after a rewind,
+// a long gap or a new terrain, then keep each footprint's warmth where higher.
+void GL_ENTRY(w2c_host_heat)(struct w2c_host *, u32 footprints, u32 count) {
+  if (!rtx || (!count && !heat_trail.framebuffer))
+    return;
+  int width = std::max(1, (int)lroundf(ground_size[0] * HEAT_TRAIL_SCALE));
+  int height = std::max(1, (int)lroundf(ground_size[1] * HEAT_TRAIL_SCALE));
+  if (heat_trail.width != width || heat_trail.height != height) {
+    release(heat_trail);
+    heat_trail.width = heat_trail.logical_width = width, heat_trail.height = heat_trail.logical_height = height;
+    heat_trail.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(heat_trail);
+    heat_seconds = -1;
+  }
+  float gap = heat_seconds < 0 ? -1 : scene_seconds - heat_seconds;
+  heat_seconds = scene_seconds;
+  bind_framebuffer(heat_trail);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glDisable(GL_CULL_FACE);
+  GLuint p = heat_stamp_program;
+  glUseProgram(p);
+  glUniform2f(glGetUniformLocation(p, "target_size"), (float)width, (float)height);
+  glUniform2f(glGetUniformLocation(p, "camera"), 0, 0);
+  auto quad = [](std::vector<HostVertex> &v, float x0, float y0, float x1, float y1, u32 color) {
+    auto corner = [&](float x, float y, float u, float w) { return HostVertex{x, y, 0, 1, color, u, w}; };
+    for (HostVertex c : {corner(x0, y0, 0, 0), corner(x0, y1, 0, 1), corner(x1, y1, 1, 1), corner(x0, y0, 0, 0),
+                         corner(x1, y1, 1, 1), corner(x1, y0, 1, 0)})
+      v.push_back(c);
+  };
+  if (gap < 0 || gap > HEAT_MAX_GAP_S) {
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+  } else if (gap > 0) {
+    glUniform1f(glGetUniformLocation(p, "u_fade"), 1 - powf(0.5f, gap / HEAT_HALF_LIFE_S));
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+    std::vector<HostVertex> whole;
+    quad(whole, 0, 0, (float)width, (float)height, 0xffffffff);
+    submit_vertices(whole);
+  }
+  std::vector<HostVertex> stamps;
+  const float *f = (const float *)(client_memory() + footprints);
+  for (u32 i = 0; i < count; ++i, f += 4) {
+    float x = f[0] * HEAT_TRAIL_SCALE, y = f[1] * HEAT_TRAIL_SCALE, r = f[2] * HEAT_TRAIL_SCALE;
+    quad(stamps, x - r, y - r, x + r, y + r, (u32)(std::min(1.0f, f[3]) * 255 + 0.5f) << 24 | 0xffffff);
+  }
+  if (!stamps.empty()) {
+    glUniform1f(glGetUniformLocation(p, "u_fade"), -1);
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_MAX);
+    glBlendFunc(GL_ONE, GL_ONE);
+    submit_vertices(stamps);
+  }
+  bind_target();
+}
+// The trail buffer added to the ground in view, before the creatures' overlays.
+void GL_ENTRY(w2c_host_heat_trails)(struct w2c_host *, f32 alpha) {
+  if (!rtx || !world || !heat_trail.texture)
+    return;
+  gpu_mark("heat");
+  Target &t = drawing_target(current_target);
+  GLuint p = heat_trail_program;
+  glUseProgram(p);
+  glUniform2f(glGetUniformLocation(p, "target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(glGetUniformLocation(p, "camera"), scene_camera[0], scene_camera[1]);
+  glUniform2fv(glGetUniformLocation(p, "u_ground_size"), 1, ground_size);
+  glUniform1f(glGetUniformLocation(p, "u_alpha"), alpha);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, heat_trail.texture);
+  glBindSampler(0, 0);
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_ONE, GL_ONE);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glDisable(GL_CULL_FACE);
+  float w = (float)t.logical_width, h = (float)t.logical_height;
+  submit_vertices({{0, 0, 0, 1, 0xffffffff, 0, 0}, {0, h, 0, 1, 0xffffffff, 0, 0}, {w, h, 0, 1, 0xffffffff, 0, 0},
+                   {0, 0, 0, 1, 0xffffffff, 0, 0}, {w, h, 0, 1, 0xffffffff, 0, 0}, {w, 0, 0, 1, 0xffffffff, 0, 0}});
 }
 void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
   ground_kind = (int)kind;
@@ -1460,7 +1505,7 @@ void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 gri
   bonus_center[0] = center_x, bonus_center[1] = center_y;
 }
 void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
-  static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "aura"};
+  static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "heat"};
   gpu_mark(pass < sizeof labels / sizeof *labels ? labels[pass] : "sprites");
   if (pass >= HOST_PASS_CREATURES) {
     material = pass == HOST_PASS_SPRITES ? 0 : (int)pass;

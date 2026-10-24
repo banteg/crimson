@@ -48,3 +48,9 @@ name = "ion-chain"
 note = "Shock Chain arcs among a crowd"
 replay = "tools/rtx/replays/ion-chain.crd"
 tick = 8740
+
+[[scene]]
+name = "hidden-evil"
+note = "quest 3.4: a crowd of near-invisible aliens under Monster Vision's heat, with their trails"
+replay = "tools/rtx/replays/hidden-evil.crd"
+tick = 2880

@@ -169,12 +169,17 @@ Program smoke_solver{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_SOLVER_FRAG, NO_VERTICES
 Program smoke_splat{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_SPLAT_FRAG, NO_VERTICES};
 Program smoke_impulse{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_IMPULSE_FRAG, NO_VERTICES};
 Program smoke_display{&WGSL_SMOKE_FIELD_VERT, &WGSL_SMOKE_FRAG, NO_VERTICES};
-Program aura_lit{&WGSL_CREATURE_VERT, &WGSL_PERK_AURA_FRAG, DEVICE_VERTICES};
-Program monster_vision{&WGSL_MONSTER_VISION_VERT, &WGSL_MONSTER_VISION_FRAG, DEVICE_VERTICES};
+Program heat_body{&WGSL_CREATURE_VERT, &WGSL_HEAT_BODY_FRAG, DEVICE_VERTICES};
+Program heat_stamp{&WGSL_CREATURE_VERT, &WGSL_HEAT_STAMP_FRAG, DEVICE_VERTICES};
+Program heat_trail_program{&WGSL_CREATURE_VERT, &WGSL_HEAT_TRAIL_LIT_FRAG, DEVICE_VERTICES};
 Program pressure_fronts_program{&WGSL_FULLSCREEN_VERT, &WGSL_PRESSURE_LIT_FRAG, NO_VERTICES};
 // The explosions' pressure fronts (host_pressure), as in renderer.cpp.
 std::vector<float> pressure_fronts;
 Target pressured;
+// Monster Vision's trail buffer and the run's clock it last faded at, as in renderer.cpp.
+const float HEAT_TRAIL_SCALE = 0.5f, HEAT_HALF_LIFE_S = 0.9f, HEAT_MAX_GAP_S = 1;
+Target heat_trail;
+float heat_seconds = -1;
 
 // RTX lighting, as in renderer.cpp: the world's lights and camera, the batch
 // being drawn, a bonus draw's own material, and each artwork's texels in the
@@ -195,7 +200,7 @@ struct Thickness {
   WGPUTexture texture;
   WGPUTextureView view;
 };
-std::unordered_map<int, Thickness> thickness_maps;
+std::unordered_map<int, Thickness> thickness_maps, heat_thickness_maps;
 // The creature body grid (host_occlusion), as in renderer.cpp.
 enum { OCCLUSION_WIDTH = 256 };
 float occlusion_grid[4], occlusion_cell = 64;
@@ -467,7 +472,7 @@ WGPUBindGroup fragment_group(Program &p, std::initializer_list<Input> inputs) {
 }
 
 // Bind a program's groups with its uniform blocks, written to the stream.
-// A stage without a uniform block (the aura's fragment) takes no uniforms.
+// A stage without a uniform block (the heat bodies' fragment) takes no uniforms.
 void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniforms *fragment) {
   if (!p.frag->uniform_size)
     fragment = nullptr;
@@ -486,7 +491,7 @@ void forget_groups() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
                      &ground_lit, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
-                     &aura_lit, &monster_vision, &pressure_fronts_program}) {
+                     &heat_body, &heat_stamp, &heat_trail_program, &pressure_fronts_program}) {
     for (auto &[key, group] : p->groups)
       wgpuBindGroupRelease(group);
     p->groups.clear();
@@ -617,17 +622,21 @@ WGPUTexture small_texture(int width, const unsigned char *rgba, WGPUTextureView 
   return texture;
 }
 
-// A creature atlas's part sizes (renderer_thickness), made once it is lit.
-WGPUTextureView thickness_map(int id) {
-  auto made = thickness_maps.find(id);
-  if (made != thickness_maps.end())
+// A creature atlas's part sizes (renderer_thickness), made once it is lit;
+// Monster Vision's heat reads them blurred within each cell, as in renderer.cpp.
+WGPUTextureView thickness_map(int id, bool heat = false) {
+  auto &maps = heat ? heat_thickness_maps : thickness_maps;
+  auto made = maps.find(id);
+  if (made != maps.end())
     return made->second.view;
   auto t = textures.find(id);
   auto texels = texel_addresses.find(id);
-  if (!light_count || t == textures.end() || texels == texel_addresses.end())
+  if ((!light_count && !heat) || t == textures.end() || texels == texel_addresses.end())
     return blank_view;
   int width = t->second.logical_width, height = t->second.logical_height;
   std::vector<unsigned char> sizes = renderer_thickness(client_memory() + texels->second, width, height);
+  if (heat)
+    sizes = renderer_blur_cells(sizes, width, height, 2);
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
   descriptor.size = {(uint32_t)width, (uint32_t)height, 1};
   descriptor.format = WGPUTextureFormat_R8Unorm;
@@ -640,7 +649,7 @@ WGPUTextureView thickness_map(int id) {
   WGPUTexelCopyBufferLayout layout = {0, (uint32_t)width, (uint32_t)height};
   WGPUExtent3D extent = {(uint32_t)width, (uint32_t)height, 1};
   wgpuQueueWriteTexture(queue, &destination, sizes.data(), sizes.size(), &layout, &extent);
-  return (thickness_maps[id] = map).view;
+  return (maps[id] = map).view;
 }
 
 } // namespace
@@ -664,7 +673,7 @@ void wgpu_renderer_init() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
                      &ground_lit, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
-                     &aura_lit, &monster_vision, &pressure_fronts_program})
+                     &heat_body, &heat_stamp, &heat_trail_program, &pressure_fronts_program})
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
@@ -901,65 +910,12 @@ void stamp_ground(Ground &g, int kind, const Geometry &geometry) {
   }
 }
 
-// Monster Vision's ground light (host_perk_light), as in renderer.cpp.
-enum { MONSTER_VISION_RADIUS = 60 };
-std::vector<float> perk_sources;
-Target perk_target;
+// Vertices the host makes, in the device's layout (x, y, z, rhw, D3DCOLOR, u, v).
 struct HostVertex {
   float x, y, z, rhw;
   u32 color;
   float u, v;
 };
-
-void accumulate_monster_vision(Ground &g, const Target &t) {
-  std::vector<HostVertex> quads;
-  float lo_x = -scene_camera[0], lo_y = -scene_camera[1];
-  float hi_x = lo_x + t.logical_width, hi_y = lo_y + t.logical_height;
-  for (size_t i = 0; i + 2 < perk_sources.size(); i += 3) {
-    float x = perk_sources[i], y = perk_sources[i + 1], r = MONSTER_VISION_RADIUS;
-    float x0 = std::max(lo_x, x - r), y0 = std::max(lo_y, y - r), x1 = std::min(hi_x, x + r), y1 = std::min(hi_y, y + r);
-    if (x1 <= x0 || y1 <= y0)
-      continue;
-    u32 color = (u32)(perk_sources[i + 2] * 255 + 0.5f) << 24 | 0xffffff;
-    auto corner = [&](float cx, float cy) {
-      return HostVertex{cx + scene_camera[0], cy + scene_camera[1], 0, 1, color, x, y};
-    };
-    for (HostVertex v : {corner(x0, y0), corner(x0, y1), corner(x1, y1), corner(x0, y0), corner(x1, y1), corner(x1, y0)})
-      quads.push_back(v);
-  }
-  if (perk_target.width != t.width || perk_target.height != t.height) {
-    release(perk_target);
-    perk_target.width = t.width, perk_target.height = t.height;
-    perk_target.flags = TARGET_RENDER | TARGET_FLOAT;
-    allocate(perk_target);
-  }
-  perk_target.logical_width = t.logical_width, perk_target.logical_height = t.logical_height;
-  uint64_t bytes = quads.size() * sizeof(HostVertex);
-  if (!fits(vertex_stream, bytes) || !fits(uniform_stream, 8192))
-    submit();
-  WGPUColor none = {0, 0, 0, 0};
-  begin_pass(perk_target, &none);
-  if (quads.empty())
-    return;
-  Output o;
-  o.format = format_of(perk_target);
-  o.topology = WGPUPrimitiveTopology_TriangleList;
-  o.blend = true, o.src = o.dst = WGPUBlendFactor_One;
-  Uniforms vertex(*monster_vision.vert), fragment(*monster_vision.frag);
-  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
-  vertex.set("u_ground_size", ground_size, 8);
-  fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_perk_component", 0);
-  wgpuRenderPassEncoderSetPipeline(pass, pipeline(monster_vision, o));
-  bind(monster_vision,
-       fragment_group(monster_vision, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
-                                       {"u_surface_tex", g.surface.view, linear_clamp()},
-                                       {"u_material_tex", g.coverage.view, linear_clamp()},
-                                       {"u_occlusion_tex", blank_view, nearest_clamp()}}),
-       &vertex, &fragment);
-  uint64_t at = put(vertex_stream, quads.data(), bytes);
-  wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, bytes);
-  wgpuRenderPassEncoderDraw(pass, (uint32_t)quads.size(), 1, 0, 0);
-}
 
 // The terrain drawn into the world, lit as the Python port's ground.
 bool ground_draw(const Geometry &geometry) {
@@ -968,15 +924,11 @@ bool ground_draw(const Geometry &geometry) {
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
-  bool perk = !perk_sources.empty();
-  if (perk)
-    accumulate_monster_vision(g, t);
   pass_into(t);
   Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
   fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
-  fragment.i("u_debug_display", 1).i("u_has_perk", perk).i("u_dynamic_shadows", dynamic_shadows);
-  fragment.v4("u_perk_view", -scene_camera[0], -scene_camera[1], (float)t.logical_width, (float)t.logical_height);
+  fragment.i("u_debug_display", 1).i("u_dynamic_shadows", dynamic_shadows);
   fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
   fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
   fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
@@ -989,7 +941,6 @@ bool ground_draw(const Geometry &geometry) {
        fragment_group(ground_lit, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
                                    {"u_surface_tex", g.surface.view, linear_clamp()},
                                    {"u_material_tex", g.coverage.view, linear_clamp()},
-                                   {"u_perk_tex", perk ? perk_target.view : blank_view, linear_clamp()},
                                    {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()}}),
        &vertex, &fragment);
   draw_geometry(geometry);
@@ -1047,7 +998,8 @@ bool wgpu_renderer_set_rtx(bool enabled) {
   while (!grounds.empty())
     drop_ground(grounds.begin()->first);
   release_smoke();
-  release(perk_target);
+  release(heat_trail);
+  heat_seconds = -1;
   release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
@@ -1170,12 +1122,14 @@ void wgpu_w2c_host_texture_release(struct w2c_host *, u32 id) {
   release(it->second);
   textures.erase(it);
   texel_addresses.erase((int)id);
-  auto map = thickness_maps.find((int)id);
-  if (map != thickness_maps.end()) {
-    wgpuTextureViewRelease(map->second.view);
-    wgpuTextureRelease(map->second.texture);
-    thickness_maps.erase(map);
-    forget_groups();
+  for (auto *maps : {&thickness_maps, &heat_thickness_maps}) {
+    auto map = maps->find((int)id);
+    if (map != maps->end()) {
+      wgpuTextureViewRelease(map->second.view);
+      wgpuTextureRelease(map->second.texture);
+      maps->erase(map);
+      forget_groups();
+    }
   }
 }
 void wgpu_w2c_host_render_state(struct w2c_host *, u32 state, u32 value) {
@@ -1243,7 +1197,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   Program &program = !lit                           ? classic
                      : material == HOST_PASS_PLAYERS ? player_lit
                      : material == MATERIAL_BONUS    ? bonus_lit
-                     : material == HOST_PASS_AURA    ? aura_lit
+                     : material == HOST_PASS_HEAT    ? heat_body
                                                      : creature_lit;
   if (lit) {
     Uniforms vertex(*program.vert), fragment(*program.frag);
@@ -1258,7 +1212,10 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     bool present = bound[0] && it != textures.end() && it->second.texture;
     WGPUSampler atlas_sampler = sampler(stage_states[0][TSS_ADDRESSU], stage_states[0][TSS_ADDRESSV],
                                         stage_states[0][TSS_MAGFILTER] >= 2, stage_states[0][TSS_MINFILTER] >= 2);
-    WGPUTextureView thickness = material == HOST_PASS_CREATURES && present ? thickness_map(bound[0]) : blank_view;
+    WGPUTextureView thickness = !present                         ? blank_view
+                                : material == HOST_PASS_CREATURES ? thickness_map(bound[0])
+                                : material == HOST_PASS_HEAT      ? thickness_map(bound[0], true)
+                                                                  : blank_view;
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(program, device_output(t, geometry.topology)));
     bind(program,
          fragment_group(program, {{"texture0", present ? it->second.view : blank_view, atlas_sampler},
@@ -1328,9 +1285,89 @@ void wgpu_w2c_host_pressure(struct w2c_host *, u32 fronts, u32 count) {
   const float *f = (const float *)(client_memory() + fronts);
   pressure_fronts.assign(f, f + count * 4);
 }
-void wgpu_w2c_host_perk_light(struct w2c_host *, u32 sources, u32 count) {
-  const float *s = (const float *)(client_memory() + sources);
-  perk_sources.assign(s, s + count * 3);
+// Monster Vision's trail buffer (host_heat, host_heat_trails), as in renderer.cpp.
+void wgpu_w2c_host_heat(struct w2c_host *, u32 footprints, u32 count) {
+  if (!rtx || (!count && !heat_trail.texture))
+    return;
+  int width = std::max(1, (int)lroundf(ground_size[0] * HEAT_TRAIL_SCALE));
+  int height = std::max(1, (int)lroundf(ground_size[1] * HEAT_TRAIL_SCALE));
+  if (heat_trail.width != width || heat_trail.height != height) {
+    release(heat_trail);
+    heat_trail.width = heat_trail.logical_width = width, heat_trail.height = heat_trail.logical_height = height;
+    heat_trail.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(heat_trail);
+    heat_seconds = -1;
+  }
+  float gap = heat_seconds < 0 ? -1 : scene_seconds - heat_seconds;
+  heat_seconds = scene_seconds;
+  auto quad = [](std::vector<HostVertex> &v, float x0, float y0, float x1, float y1, u32 color) {
+    auto corner = [&](float x, float y, float u, float w) { return HostVertex{x, y, 0, 1, color, u, w}; };
+    for (HostVertex c : {corner(x0, y0, 0, 0), corner(x0, y1, 0, 1), corner(x1, y1, 1, 1), corner(x0, y0, 0, 0),
+                         corner(x1, y1, 1, 1), corner(x1, y0, 1, 0)})
+      v.push_back(c);
+  };
+  std::vector<HostVertex> whole, stamps;
+  quad(whole, 0, 0, (float)width, (float)height, 0xffffffff);
+  const float *f = (const float *)(client_memory() + footprints);
+  for (u32 i = 0; i < count; ++i, f += 4) {
+    float x = f[0] * HEAT_TRAIL_SCALE, y = f[1] * HEAT_TRAIL_SCALE, r = f[2] * HEAT_TRAIL_SCALE;
+    quad(stamps, x - r, y - r, x + r, y + r, (u32)(std::min(1.0f, f[3]) * 255 + 0.5f) << 24 | 0xffffff);
+  }
+  uint64_t bytes = (whole.size() + stamps.size()) * sizeof(HostVertex);
+  if (!fits(vertex_stream, bytes) || !fits(uniform_stream, 4 * 512))
+    submit();
+  bool fresh = gap < 0 || gap > HEAT_MAX_GAP_S;
+  WGPUColor none = {0, 0, 0, 0};
+  begin_pass(heat_trail, fresh ? &none : nullptr);
+  Uniforms vertex(*heat_stamp.vert), fragment(*heat_stamp.frag);
+  vertex.v2("target_size", (float)width, (float)height).v2("camera", 0, 0);
+  WGPUBindGroup group = fragment_group(heat_stamp, {});
+  auto draw = [&](const std::vector<HostVertex> &v, const Output &o, float fade) {
+    fragment.f("u_fade", fade);
+    wgpuRenderPassEncoderSetPipeline(pass, pipeline(heat_stamp, o));
+    bind(heat_stamp, group, &vertex, &fragment);
+    uint64_t at = put(vertex_stream, v.data(), v.size() * sizeof(HostVertex));
+    wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, v.size() * sizeof(HostVertex));
+    wgpuRenderPassEncoderDraw(pass, (uint32_t)v.size(), 1, 0, 0);
+  };
+  Output o;
+  o.format = format_of(heat_trail);
+  o.topology = WGPUPrimitiveTopology_TriangleList;
+  o.blend = true;
+  if (!fresh && gap > 0) {
+    o.src = WGPUBlendFactor_Zero, o.dst = WGPUBlendFactor_OneMinusSrcAlpha;
+    draw(whole, o, 1 - powf(0.5f, gap / HEAT_HALF_LIFE_S));
+  }
+  if (!stamps.empty()) {
+    // Maximum ignores the factors, which WebGPU then wants as one.
+    o.src = o.dst = WGPUBlendFactor_One, o.op = WGPUBlendOperation_Max;
+    draw(stamps, o, -1);
+  }
+  end_pass();
+}
+void wgpu_w2c_host_heat_trails(struct w2c_host *, f32 alpha) {
+  if (!rtx || !world || !heat_trail.texture)
+    return;
+  if (!fits(vertex_stream, 6 * sizeof(HostVertex)) || !fits(uniform_stream, 2 * 512))
+    submit();
+  Target &t = drawing_target(current_target);
+  pass_into(t);
+  float w = (float)t.logical_width, h = (float)t.logical_height;
+  const HostVertex quad[] = {{0, 0, 0, 1, 0xffffffff, 0, 0}, {0, h, 0, 1, 0xffffffff, 0, 0}, {w, h, 0, 1, 0xffffffff, 0, 0},
+                             {0, 0, 0, 1, 0xffffffff, 0, 0}, {w, h, 0, 1, 0xffffffff, 0, 0}, {w, 0, 0, 1, 0xffffffff, 0, 0}};
+  Uniforms vertex(*heat_trail_program.vert), fragment(*heat_trail_program.frag);
+  vertex.v2("target_size", w, h).v2("camera", scene_camera[0], scene_camera[1]);
+  fragment.set("u_ground_size", ground_size, 8).f("u_alpha", alpha);
+  Output o;
+  o.format = format_of(t);
+  o.topology = WGPUPrimitiveTopology_TriangleList;
+  o.blend = true, o.src = o.dst = WGPUBlendFactor_One;
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(heat_trail_program, o));
+  bind(heat_trail_program, fragment_group(heat_trail_program, {{"u_heat", heat_trail.view, linear_clamp()}}), &vertex,
+       &fragment);
+  uint64_t at = put(vertex_stream, quad, sizeof quad);
+  wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, sizeof quad);
+  wgpuRenderPassEncoderDraw(pass, 6, 1, 0, 0);
 }
 void wgpu_w2c_host_ground(struct w2c_host *, u32 kind, f32 seconds) {
   ground_kind = (int)kind;

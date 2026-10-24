@@ -73,14 +73,13 @@ void console_cmd_rtx_smoke(void) {
   console_printf(&console_log_queue, "RTX smoke is %s.\n", rtx_smoke_on ? "on" : "off");
 }
 
-static bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
+bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
 
 int rtx_collect_lights(float *out, int capacity);
 extern const float rtx_beam_gain[2];
-int rtx_collect_monster_vision(float *out, int capacity, float alpha);
+int rtx_collect_heat(float *out, int capacity);
 int rtx_collect_fronts(float *out, int capacity);
 void rtx_explosions_reset();
-void effect_select_texture(int effect_id);
 extern float ui_transition_alpha;
 const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count);
 extern vec2f_t camera_offset;
@@ -116,8 +115,8 @@ void rtx_world(int begin) {
     const float *values = rtx_build_occlusion(lights, count, shadows, grid, &value_count);
     grid[5] = shadows;
     host_occlusion(grid, values, value_count);
-    static float auras[385 * 3];
-    host_perk_light(auras, rtx_collect_monster_vision(auras, 385, ui_transition_alpha));
+    static float footprints[385 * 4];
+    host_heat(footprints, rtx_collect_heat(footprints, 385));
     static float fronts[16 * 4];
     host_pressure(fronts, ui_transition_alpha > 1e-3f ? rtx_collect_fronts(fronts, 16) : 0);
   }
@@ -132,21 +131,6 @@ void rtx_smoke(float alpha) {
     return;
   grim_interface_ptr->grim_flush_batch();
   rtx_smoke_draw(rtx_lights, rtx_light_count, alpha);
-}
-
-// Monster Vision's aura quad (creature_render_all) as RTX's analytic glow over
-// the whole quad, then back to the atlas cell the other overlays take.
-void rtx_aura(int begin) {
-  if (!rtx_drawing())
-    return;
-  grim_interface_ptr->grim_flush_batch();
-  if (begin) {
-    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
-    host_render_pass(HOST_PASS_AURA);
-  } else {
-    host_render_pass(HOST_PASS_SPRITES);
-    effect_select_texture(0x10);
-  }
 }
 
 // What RTX keeps beside a run, cleared when a run starts or is restored and
