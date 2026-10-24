@@ -420,35 +420,48 @@ void check_rtx() {
   terrain();
   Pixel cleared = ground({}, 0, 200, 200);
   assert(fabsf(cleared.g - bare.g) < 1e-3f);
-  // Monster Vision: an aura adds its warm light to the ground within its 60
-  // units, and nothing past them.
-  const float aura[3] = {700, 300, 1};
-  memcpy(memory + 33500, aura, sizeof aura);
-  w2c_host_perk_light(nullptr, 33500, 1);
-  Pixel warm = ground({}, 0, 700, 300), outside = ground({}, 0, 700, 380);
-  w2c_host_perk_light(nullptr, 33500, 0);
-  assert(warm.r > bare.r + 0.05f && warm.r > warm.b + 0.05f);
-  assert(fabsf(outside.r - ground({}, 0, 700, 380).r) < 1e-3f);
   w2c_host_texture_release(nullptr, 400);
-  // Monster Vision's aura: the analytic glow over the quad's [0, 1] UVs, full
-  // at its center and gone at its edge.
-  auto aura_quad = [](int x, int y) {
+  // Monster Vision's heat trails: a footprint warms the ground under it as faint
+  // ironbow heat and nothing past it; the trail fades by its half-life on the
+  // run's clock and starts over when the clock runs back.
+  auto trail = [](float seconds, int count, int x, int y) {
+    const float view[7] = {0, 0, seconds, 1024, 1024, 4, 3};
+    const float footprint[4] = {700, 300, 20, 1};
+    memcpy(memory + 32768, view, sizeof view);
+    memcpy(memory + 33500, footprint, sizeof footprint);
+    w2c_host_scene(nullptr, 32768, 32832, 0);
+    w2c_host_heat(nullptr, 33500, count);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_heat_trails(nullptr, 1);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_pixel(x, y);
+  };
+  Pixel hot = trail(10, 1, 700, 300);
+  assert(hot.r > 0.2f && hot.r > hot.g * 2 && trail(10, 1, 700, 360).r < 1e-3f);
+  float faded = trail(10.9f, 0, 700, 300).r;
+  assert(faded < hot.r * 0.8f && faded > 0.01f);
+  assert(trail(5, 0, 700, 300).r < 1e-3f);
+  // Monster Vision's heat bodies: a creature batch drawn again in the ironbow
+  // ramp, red its warmth and alpha its opacity, whatever the sprite's own tint.
+  auto heat_body = [](u32 color) {
     w2c_host_clear(nullptr, 0xff000000);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
     w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
     w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
     w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
-    w2c_host_render_pass(nullptr, HOST_PASS_AURA);
-    rectangle(400, 300, 490, 390, 0xffffff00);
+    w2c_host_set_texture(nullptr, 0, 300);
+    w2c_host_render_pass(nullptr, HOST_PASS_HEAT);
+    rectangle(400, 300, 464, 364, color);
     w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
     w2c_host_render_state(nullptr, RS_SRCBLEND, 2);
     w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
     w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
-    return back_pixel(x, y);
+    return back_pixel(436, 336); // an atlas cell's middle
   };
-  Pixel glow = aura_quad(445, 345), rim = aura_quad(401, 345);
-  assert(glow.r > 0.9f && glow.g > 0.9f && glow.b < 0.01f && rim.r < 0.01f);
+  Pixel warm = heat_body(0xe0ff0000), cold = heat_body(0xe0000000), unseen = heat_body(0x00ff0000);
+  assert(warm.r > 0.5f && warm.r > warm.b && cold.r < warm.r * 0.5f && unseen.r < 1e-3f);
   // A pressure front brightens the world along its crest, darkens it just
   // inside, and leaves the world past it alone.
   auto front = [](int count, int x, int y) {
@@ -509,7 +522,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision glows, pressure fronts ripple; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, pressure fronts ripple; classic stays 8-bit");
 }
 
 int main() {

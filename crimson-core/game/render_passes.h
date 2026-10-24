@@ -10,7 +10,7 @@ enum {
   HOST_PASS_PLAYERS = 4,
   HOST_PASS_SPRITES = 5,
   HOST_PASS_GROUND = 6,
-  HOST_PASS_AURA = 7, // Monster Vision's aura quads, drawn as an analytic glow over [0, 1] UVs
+  HOST_PASS_HEAT = 7, // Monster Vision's heat bodies (game/rtx_heat.cpp): red is warmth, alpha opacity
 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).
 enum { RTX_LIGHT_FLOATS = 32 };

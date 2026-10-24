@@ -1,5 +1,5 @@
 The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, the terrain's
-decals by material, the batches the host lights, Monster Vision's auras, and the explosions and smoke the ticks make
+decals by material, the batches the host lights, Monster Vision's heat, and the explosions and smoke the ticks make
 (game/rtx_lights.cpp, rtx_smoke.cpp); it draws analytic beams, pressure shells and fluid smoke, and registers commands.
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
@@ -172,11 +172,12 @@ decals by material, the batches the host lights, Monster Vision's auras, and the
      grim_interface_ptr->grim_set_config_var(0x13, 5u);
      grim_interface_ptr->grim_set_config_var(0x14, 6u);
      grim_interface_ptr->grim_begin_batch();
-@@ -310,6 +311,7 @@
+@@ -310,6 +311,8 @@
      }
  
      grim_interface_ptr->grim_end_batch();
 +    rtx_material(HOST_PASS_SPRITES);
++    rtx_heat(type_id, transition_alpha);
  
      if (config_blob.violence_disabled) {
          grim_interface_ptr->grim_set_config_var(0x14, 2u);
@@ -434,20 +435,21 @@ decals by material, the batches the host lights, Monster Vision's auras, and the
          effect_entry_t *entry = game_effects_entry(index);
 --- a/decomp/1.9/crimsonland/ui_render/creature_render_all.cpp
 +++ b/decomp/1.9/crimsonland/ui_render/creature_render_all.cpp
-@@ -49,11 +49,13 @@
-                 }
-                 grim_interface_ptr->grim_set_color(
-                     1.0f, 1.0f, 0.0f, alpha * transition_alpha);
-+                rtx_aura(1);
-                 grim_interface_ptr->grim_draw_quad(
-                     camera_offset_x + death_timer[1] - 45.0f,
-                     camera_offset_y + death_timer[2] - 45.0f,
-                     90.0f,
-                     90.0f);
-+                rtx_aura(0);
-             }
+@@ -34,5 +34,6 @@
+     grim_interface_ptr->grim_set_color(0.0f, 0.0f, 0.0f, 1.0f);
+     grim_interface_ptr->grim_set_rotation(0.0f);
++    rtx_heat_trails(transition_alpha);
+     grim_interface_ptr->grim_begin_batch();
  
-             if (creature->plague_infected) {
+     for (int creature_index = 0; creature_index < 384; creature_index++) {
+@@ -40,6 +41,6 @@
+         float *death_timer = &creature->death_timer;
+         if (creature->active) {
+-            if (perk_count_get(perk_id_monster_vision) != 0) {
++            if (perk_count_get(perk_id_monster_vision) != 0 && !rtx_drawing()) {
+                 float alpha = *death_timer < 0.0f
+                     ? (*death_timer + 10.0f) * 0.1f
+                     : 1.0f;
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 @@ -204,6 +204,12 @@

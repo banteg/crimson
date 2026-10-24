@@ -317,13 +317,16 @@ from) stays in the substrate as painted terrain, without its wet film. A seek
 bakes the logged decals after that copy again at their logged clock. WebGPU
 keeps the surface in 32-bit floats where the device filters and blends them,
 otherwise in half floats.
-Monster Vision draws the Python port's earlier aura; heat (see Perk illumination)
-is not ported yet. Its aura quad (`HOST_PASS_AURA`,
-drawn over [0, 1] UVs) takes the analytic glow of `perk_aura.frag`. The module
-sends each aura whose support meets the view, with its fade (`host_perk_light`).
-Before the ground draws, the host sums their shadowless light into a float
-accumulator with the ground shader's `MONSTER_VISION_PASS`, which the ground
-program then adds.
+Monster Vision is heat, as in the Python port (see Perk illumination;
+`crimson-core/game/rtx_heat.cpp`). While RTX draws, `creature_render_all` skips
+the native aura quad and marks the trails instead (`host_heat_trails`, drawn
+with `heat_trail.frag` under `GROUND_V_DOWN`); after each species' bodies,
+`rtx_heat` draws the same frames again as `HOST_PASS_HEAT`, red carrying warmth
+and alpha the overlay's opacity, which the host shades with `heat_body.frag` over
+the atlas's part sizes blurred within each cell. Before the world begins, the
+module sends every warm monster's footprint (`host_heat`); the host fades its
+world-space trail buffer by the run's clock and stamps them (`heat_stamp.frag`).
+The golden scene `hidden-evil` (`tools/rtx/scenes.toml`) is a real Hidden Evil run.
 
 Fluid smoke takes the same solver and display shaders (`smoke_solver.frag`,
 `smoke_splat.frag`, `smoke_impulse.frag`, `smoke.frag`). The module captures what
@@ -1099,5 +1102,4 @@ suppression; classic keeps the original yellow aura texture.
 
 The sensor is selective: fire, explosions and beams keep their own look and do
 not wash the monsters out. Heat adds no material lights and changes no
-simulation, RNG or replay state. The native/web client still draws the earlier
-analytic aura and its shadowless ground light until it is ported.
+simulation, RNG or replay state. The native and web clients draw the same heat.
