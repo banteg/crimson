@@ -46,7 +46,8 @@ def test_arc_sources_follow_visible_targets_and_fade(kind):
     faded = ion_arc_sources(snapshot, msgspec.structs.replace(shot, life_timer=.15))
     assert faded[0].rgb == pytest.approx(tuple(c * .5 for c in segment.rgb))
     collected = collect_material_lights(snapshot, view_center=Vec2(100, 100))
-    assert msgspec.structs.replace(segment, ident=source_ident(IDENT_ARC, 0)) in collected
+    # Slot 0, spawned at (0, 100).
+    assert msgspec.structs.replace(segment, ident=source_ident(IDENT_ARC, (100 << 14) * 4)) in collected
 
 
 @pytest.mark.parametrize('life', [0., -.1, .4, .5])

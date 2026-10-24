@@ -483,11 +483,15 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
         )
     shots: list[MaterialLight] = []
     for slot, projectile in enumerate(frame.state.projectiles.entries):
-        source = projectile_source(projectile, ident=source_ident(IDENT_SHOT, slot))
+        if not projectile.active:
+            continue
+        # A slot's next shot is another source, even on the next frame: its spawn point tells them apart.
+        number = slot | (math.floor(projectile.origin.x) & 0x7f) << 7 | (math.floor(projectile.origin.y) & 0x7f) << 14
+        source = projectile_source(projectile, ident=source_ident(IDENT_SHOT, number))
         if source is not None:
             shots.append(source)
             sources.extend(ion_arc_sources(frame, projectile, view_center=view_center,
-                                           ident=source_ident(IDENT_ARC, slot * 4)))
+                                           ident=source_ident(IDENT_ARC, number * 4)))
     sources.extend(merge_volleys(shots))
     for slot, sec in enumerate(frame.state.secondary_projectiles.entries):
         if not sec.active:

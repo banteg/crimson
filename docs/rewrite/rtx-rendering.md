@@ -624,14 +624,19 @@ and the grid while evaluating its own receiver/source segment.
 
 Monsters don't collide, so a swarm piles hundreds of bodies into one cell, and a ray
 used to test each of them in every cell it crossed: a late Plasma Shotgun crowd took
-over a second of GPU time per frame in the native client. A cell listing more than 16
-bodies (`CROWD_BODIES`) stores a crowd instead of its list: the opacity-weighted
-footprint of the bodies centered in it, as a share of the cell's area, and their
-footprint-weighted top height. A ray crosses a crowd cell as an absorbing medium,
-`exp(-3 × cover × length crossed in cells)`, while it is still below that height;
-a body's own cell does not shade it. The cost no longer grows with the crowd (that
-frame dropped to about 0.16 s, most of it the original's own sprite fill), and
-packed bodies' shadows merge into one dark mass anyway. Sparse cells keep exact
+over a second of GPU time per frame in the native client. A cell where more than 16
+bodies stand (`CROWD_BODIES`; a body stands in every cell its planar extent overlaps)
+holds a crowd instead of its list: the opacity-weighted footprint of what stands there,
+as a share of the cell's area (each body's footprint shared among its cells by
+overlap), and its footprint-weighted top height. A ray crosses a crowd cell as an
+absorbing medium, `exp(-3 × cover × length crossed in cells)`, over the part of its
+path below that height; a body's own cell does not shade it. A body centered in a
+crowd is listed in the cells around it only where it stands, without its soft or beam
+padding, so a crowd's neighbors keep short exact lists, and a cell after a crowd
+tests its whole list (the crowd tested none of the padded entries it shares). The
+cost no longer grows with the crowd (that frame dropped to about 0.2 s, most of it
+the original's own sprite fill), and packed bodies' shadows merge into one dark mass
+anyway. Sparse cells keep exact
 per-body shadows.
 
 

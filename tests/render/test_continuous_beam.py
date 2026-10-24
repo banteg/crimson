@@ -110,7 +110,7 @@ def test_lit_slot_keeps_its_mask_profile_when_sources_swap() -> None:
 
 
 def test_full_section_extent_pads_only_beam_cell_lists() -> None:
-    from crimson.render.rtx.reflection_occlusion import BodyVolume, build_occlusion_grid
+    from crimson.render.rtx.reflection_occlusion import CROWD_BODIES, BodyVolume, build_occlusion_grid
 
     original = light()
     cells, grid_sources = prepare_beam_lights([original])
@@ -119,7 +119,8 @@ def test_full_section_extent_pads_only_beam_cell_lists() -> None:
     assert grid_sources[0].source_width == original.source_width
     assert grid_sources[0].length == original.length + 2 * 56 * 1.05 * SUPPORT
     assert original.source_width == 3 and original.length == 256
-    bodies = [BodyVolume(Vec2(100, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(384)]
+    # As many as one cell lists before it is a crowd.
+    bodies = [BodyVolume(Vec2(100, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(CROWD_BODIES)]
     grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256, beam_margin=margin)
     assert grid.body_count == len(bodies)
     # Section walks get the half-span; other lights keep the transverse margin.

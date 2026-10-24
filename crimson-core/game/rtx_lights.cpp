@@ -15,6 +15,7 @@
 #include "host_abi.h"
 #include <algorithm>
 #include <array>
+#include <iterator>
 #include <math.h>
 #include <string.h>
 #include <unordered_map>
@@ -36,7 +37,12 @@ namespace {
 
 const float HALF_PI = 1.5707964f;
 const float INF = 1e30f;
-enum { MAX_ILLUMINATION = 16, MAX_REFLECTION = 16, MAX_SOURCES = 256 };
+enum { MAX_ILLUMINATION = 16, MAX_REFLECTION = 16, MAX_EXPLOSIONS = 128, MAX_FLAME_CELLS = 128 };
+// Every source a frame can hold, so selection sees them all: each player's aura,
+// sight and muzzle; each projectile and its four arcs; each secondary; each
+// explosion's shell and fireball; each flame cell.
+const int MAX_SOURCES = 2 * 3 + (int)std::size(projectile_pool) * 5 + (int)std::size(secondary_projectile_pool) +
+                        MAX_EXPLOSIONS * 2 + MAX_FLAME_CELLS;
 // Shots of one kind whose heads and tails both lie this close are one volley;
 // a source fades across a budget's edge over this many ticks.
 const float VOLLEY_UNITS = 28;
@@ -409,7 +415,7 @@ void flame_sources() {
   struct Cell {
     int x, y, style;
     float weight, x_sum, y_sum, vx, vy, rgb[3];
-  } cells[128];
+  } cells[MAX_FLAME_CELLS];
   int count = 0;
   for (const particle_t &p : particle_pool) {
     if (!p.active || p.style_id == BUBBLEGUN || p.color_a <= 0.02f)
@@ -683,10 +689,10 @@ const float BODY_PROFILES[5][5] = {
 struct Body {
   float x, y, rx, ry, height, angle, opacity, owner_x, owner_y;
 };
-// A cell listing more bodies than this is a crowd (reflection_occlusion.py): it
-// holds their density and height instead of the list, and rays cross it as an
-// absorbing medium (light_visibility.glsl), at a cost that no longer grows with
-// the crowd.
+// A cell with more bodies standing in it than this is a crowd
+// (reflection_occlusion.py): it holds their density and height instead of their
+// list, and rays cross it as an absorbing medium (light_visibility.glsl), at a
+// cost that no longer grows with the crowd.
 const int CROWD_BODIES = 16;
 
 bool body_of(const creature_t &c, Body &body) {
@@ -716,9 +722,11 @@ std::vector<float> grid_values;
 // headers, body transforms and cell lists, four floats per texel. A header
 // holds the ordinary list, then the beam sections' list, padded by the largest
 // section half-span near beam sources only (build_occlusion_grid). A list
-// longer than CROWD_BODIES is a crowd header instead: the footprint-weighted top
-// height of the bodies centered in that cell, then minus their summed,
-// opacity-weighted footprint over the cell's area.
+// A cell where more than CROWD_BODIES bodies stand is a crowd: both headers hold
+// the footprint-weighted top height of what stands there, then minus the
+// opacity-weighted footprint over the cell's area, each body's footprint shared
+// among the cells it overlaps by area. A body centered in a crowd is listed only
+// where it stands, without its padding, and only outside crowd cells.
 extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count) {
   Body bodies[385];
   int body_total = 0;
@@ -785,19 +793,51 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
         beam_active[(size_t)y * columns + x] |= s.beam && beam_margin > 0;
       }
   }
+  // Each body's footprint, shared among the cells its planar extent overlaps by
+  // area: how many bodies stand in a cell, and their cover and top height there.
+  size_t total = (size_t)columns * rows;
+  std::vector<int> standing(total);
+  std::vector<float> crowd_cover(total), crowd_top(total);
+  for (int b = 0; b < body_total; ++b) {
+    const Body &body = bodies[b];
+    float c = cosf(body.angle), s = sinf(body.angle);
+    float ex = hypotf(c * body.rx, s * body.ry), ey = hypotf(s * body.rx, c * body.ry);
+    float footprint = 3.14159265f * body.rx * body.ry * body.opacity / (cell * cell);
+    int x0, x1, y0, y1;
+    span(body.x, ex, origin_x, columns, x0, x1);
+    span(body.y, ey, origin_y, rows, y0, y1);
+    for (int y = y0; y <= y1; ++y) {
+      float top = fminf(body.y + ey, origin_y + (y + 1) * cell) - fmaxf(body.y - ey, origin_y + y * cell);
+      for (int x = x0; x <= x1; ++x) {
+        float side = fminf(body.x + ex, origin_x + (x + 1) * cell) - fmaxf(body.x - ex, origin_x + x * cell);
+        float share = fmaxf(0, side) * fmaxf(0, top) / (4 * ex * ey);
+        if (share > 0) {
+          size_t i = (size_t)y * columns + x;
+          ++standing[i];
+          crowd_cover[i] += footprint * share;
+          crowd_top[i] += body.height * footprint * share;
+        }
+      }
+    }
+  }
+  auto crowd = [&](size_t i) { return standing[i] > CROWD_BODIES; };
   // List entries: body address, then for beam entries the cell range packed as
   // first + last * 4096 per axis, so a walk tests a body in its first cell only.
   using Entry = std::array<float, 4>;
-  std::vector<std::vector<Entry>> cells((size_t)columns * rows), beam_lists((size_t)columns * rows);
-  std::vector<float> crowd_cover((size_t)columns * rows), crowd_top((size_t)columns * rows);
-  grid_values.assign((size_t)columns * rows * 4, 0.0f);
+  std::vector<std::vector<Entry>> cells(total), beam_lists(total);
+  grid_values.assign(total * 4, 0.0f);
   int placed = 0;
   for (int b = 0; b < body_total; ++b) {
     const Body &body = bodies[b];
     float c = cosf(body.angle), s = sinf(body.angle);
     float radius = fmaxf(body.rx, body.ry);
     float soft_margin = fmaxf(0.015f * radius, padding * radius / fminf(body.rx, body.ry));
-    float rx = hypotf(c * body.rx, s * body.ry) + soft_margin, ry = hypotf(s * body.rx, c * body.ry) + soft_margin;
+    int home_x = (int)floorf((body.x - origin_x) / cell), home_y = (int)floorf((body.y - origin_y) / cell);
+    bool member = home_x >= 0 && home_y >= 0 && home_x < columns && home_y < rows &&
+                  crowd((size_t)home_y * columns + home_x);
+    // A crowd's member shades the cells around it only where it stands; its crowd's medium stands for it.
+    float margin = member ? 0 : soft_margin;
+    float rx = hypotf(c * body.rx, s * body.ry) + margin, ry = hypotf(s * body.rx, c * body.ry) + margin;
     int address = (int)grid_values.size() / 4;
     bool occupies = false;
     auto cover = [&](float extent_x, float extent_y, const std::vector<unsigned char> &marked,
@@ -808,43 +848,39 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
       Entry entry = {(float)address, ranged ? (float)(x0 + x1 * 4096) : 0, ranged ? (float)(y0 + y1 * 4096) : 0, 0};
       for (int y = y0; y <= y1; ++y)
         for (int x = x0; x <= x1; ++x)
-          if (marked[(size_t)y * columns + x]) {
+          if (marked[(size_t)y * columns + x] && !crowd((size_t)y * columns + x)) {
             lists[(size_t)y * columns + x].push_back(entry);
             occupies = true;
           }
     };
     cover(rx, ry, active, cells, false);
     // A section's rays fan out from the walked center ray by at most its half-span.
-    cover(rx + beam_margin, ry + beam_margin, beam_active, beam_lists, true);
+    float beam_pad = member ? 0 : beam_margin;
+    cover(rx + beam_pad, ry + beam_pad, beam_active, beam_lists, true);
     if (!occupies)
       continue;
     ++placed;
-    int home_x = (int)floorf((body.x - origin_x) / cell), home_y = (int)floorf((body.y - origin_y) / cell);
-    if (home_x >= 0 && home_y >= 0 && home_x < columns && home_y < rows) {
-      float footprint = 3.14159265f * body.rx * body.ry * body.opacity / (cell * cell);
-      crowd_cover[(size_t)home_y * columns + home_x] += footprint;
-      crowd_top[(size_t)home_y * columns + home_x] += body.height * footprint;
-    }
     const float transform[12] = {body.x, body.y, body.height * 0.4f, radius + soft_margin,
                                  1 / body.rx, 1 / body.ry, 1 / (body.height * 0.6f), body.owner_x,
                                  c, s, body.opacity, body.owner_y};
     grid_values.insert(grid_values.end(), transform, transform + 12);
   }
-  if (!placed)
-    return nullptr;
-  for (size_t i = 0; i < cells.size(); ++i)
+  for (size_t i = 0; i < total; ++i) {
+    if (crowd(i)) {
+      for (int slot = 0; slot < 2; ++slot)
+        grid_values[i * 4 + slot * 2] = crowd_top[i] / crowd_cover[i], grid_values[i * 4 + slot * 2 + 1] = -crowd_cover[i];
+      continue;
+    }
     for (int slot = 0; slot < 2; ++slot) {
       const std::vector<Entry> &list = slot ? beam_lists[i] : cells[i];
-      if ((int)list.size() > CROWD_BODIES) {
-        grid_values[i * 4 + slot * 2] = crowd_cover[i] > 0 ? crowd_top[i] / crowd_cover[i] : 0;
-        grid_values[i * 4 + slot * 2 + 1] = -fmaxf(crowd_cover[i], 1e-6f);
-        continue;
-      }
       grid_values[i * 4 + slot * 2] = (float)(grid_values.size() / 4);
       grid_values[i * 4 + slot * 2 + 1] = (float)list.size();
       for (const Entry &entry : list)
         grid_values.insert(grid_values.end(), entry.begin(), entry.end());
     }
+  }
+  if (!placed && std::none_of(standing.begin(), standing.end(), [](int n) { return n > CROWD_BODIES; }))
+    return nullptr;
   grid[0] = origin_x, grid[1] = origin_y, grid[2] = (float)columns, grid[3] = (float)rows, grid[4] = cell;
   *value_count = (int)grid_values.size();
   return grid_values.data();
@@ -865,15 +901,20 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   float view_y = grim_backbuffer_height * 0.5f - camera_offset.y;
   for (int i = 0; i < config_blob.player_count && i < 2; ++i)
     player_sources(player_state_table[i], i);
-  int slot = 0;
-  for (projectile_t &p : projectile_pool)
-    ion_arc_sources(p, view_x, view_y, source_ident(IDENT_ARC, slot++ * 4));
+  // A slot's next shot is another source, even on the next frame: its spawn point tells them apart.
+  auto number = [](int slot) {
+    const projectile_t &p = projectile_pool[slot];
+    return slot | ((int)floorf(p.fields.origin_x) & 0x7f) << 7 | ((int)floorf(p.fields.origin_y) & 0x7f) << 14;
+  };
   int shots = source_count;
-  slot = 0;
-  for (const projectile_t &p : projectile_pool)
-    projectile_source(p, source_ident(IDENT_SHOT, slot++));
+  for (int slot = 0; slot < (int)std::size(projectile_pool); ++slot)
+    if (projectile_pool[slot].active)
+      projectile_source(projectile_pool[slot], source_ident(IDENT_SHOT, number(slot)));
   merge_volleys(shots);
-  slot = 0;
+  for (int slot = 0; slot < (int)std::size(projectile_pool); ++slot)
+    if (projectile_pool[slot].active)
+      ion_arc_sources(projectile_pool[slot], view_x, view_y, source_ident(IDENT_ARC, number(slot) * 4));
+  int slot = 0;
   for (const secondary_projectile_t &s : secondary_projectile_pool)
     secondary_sources(s, slot++);
   explosion_sources();
@@ -881,8 +922,9 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
 
   // Each response selects independently and fades across its budget's edge; a
   // source chosen by one alone has the other's gain zeroed.
-  float scores[2][MAX_SOURCES], weights[2][MAX_SOURCES];
-  bool chosen[2][MAX_SOURCES] = {};
+  static float scores[2][MAX_SOURCES], weights[2][MAX_SOURCES];
+  static bool chosen[2][MAX_SOURCES];
+  memset(chosen, 0, sizeof chosen);
   selection.advance((float)run_elapsed_ms);
   for (int reflection = 0; reflection < 2; ++reflection) {
     for (int i = 0; i < source_count; ++i)
@@ -892,8 +934,9 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   }
   // The union, brightest first (both responses' delivered scores summed); the
   // faintest fading sources give way past `capacity`.
-  int order[MAX_SOURCES], union_count = 0;
-  float delivered[MAX_SOURCES];
+  static int order[MAX_SOURCES];
+  static float delivered[MAX_SOURCES];
+  int union_count = 0;
   for (int i = 0; i < source_count; ++i)
     if (weights[0][i] > 0 || weights[1][i] > 0) {
       delivered[i] = scores[0][i] * weights[0][i] + scores[1][i] * weights[1][i];
@@ -973,7 +1016,7 @@ extern "C" int rtx_collect_sights(float *out, int capacity) {
 
 // An explosion burst starting at (x, y) (effect_spawn_explosion_burst), until rtx_explosion_end.
 extern "C" void rtx_explosion_begin(float x, float y, float scale) {
-  if (explosions.size() >= 128)
+  if (explosions.size() >= MAX_EXPLOSIONS)
     explosions.erase(explosions.begin());
   explosions.push_back({x, y, scale, 0, !dark_bursts, false, nullptr, 0, {}});
   bursting = &explosions.back();

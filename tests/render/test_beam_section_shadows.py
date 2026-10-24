@@ -157,7 +157,10 @@ def test_section_visibility_fades_keeps_all_casters_and_resets_for_reflections(r
         sparse, dense = sample([half] * (CROWD_BODIES + 1)), sample([half] * 70)
         assert clear > sparse > dense > 0.
         assert sample([body] + [half] * 69) < dense
-        assert sample([half] * 70, owner=body.owner) == clear
+        # The receiver's own cell: a crowd standing wholly inside it does not shade the receiving body.
+        inside = msgspec.structs.replace(half, pos=Vec2(80., 90.), owner=Vec2(80., 90.))
+        assert sample([inside] * 70) < clear
+        assert sample([inside] * 70, owner=inside.owner) == clear
         assert sample([body], shadows=False) == clear
         assert sample([body], owner=body.owner) == clear
         assert sample([msgspec.structs.replace(body, opacity=0.)]) == clear

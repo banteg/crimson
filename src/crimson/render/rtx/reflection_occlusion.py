@@ -16,9 +16,9 @@ from ...creatures.spawn import CreatureTypeId
 from .material_lights import MaterialLight
 
 CELL_SIZE = 64.0
-# A cell listing more bodies than this is a crowd: it holds their density and height instead of the list, and rays
-# cross it as an absorbing medium (light_visibility.glsl), at a cost that no longer grows with the crowd. Packed
-# bodies' shadows merge into one dark mass anyway; testing each one made dense swarms cost seconds per frame.
+# A cell with more bodies standing in it than this is a crowd: it holds their density and height instead of their list,
+# and rays cross it as an absorbing medium (light_visibility.glsl), at a cost that no longer grows with the crowd.
+# Packed bodies' shadows merge into one dark mass anyway; testing each one made dense swarms cost seconds per frame.
 CROWD_BODIES = 16
 TEXTURE_WIDTH = 256
 # Local sprite coordinates (right, down), fractions of the drawn square size.
@@ -100,9 +100,12 @@ def build_occlusion_grid(
     largest section half-span) in world units near beam sources only. Other
     lights keep the transverse source-width margin.
 
-    A list longer than CROWD_BODIES becomes a crowd header instead: the bodies
-    centered in that cell as their summed footprint over the cell's area
-    (opacity-weighted), negated, and their footprint-weighted top height.
+    A cell where more than CROWD_BODIES bodies stand (their planar extent
+    overlaps it) is a crowd: both its headers hold the footprint-weighted top
+    height of what stands there, then minus the opacity-weighted footprint over
+    the cell's area, each body's footprint shared among the cells it overlaps by
+    area. A body centered in a crowd cell is listed only where it stands, without
+    its soft or beam padding, and only outside crowd cells.
     """
     sources = [light for light in lights if light.reflection_gain > 0 or (illumination and light.illumination_gain > 0)]
     if not sources:
@@ -152,32 +155,50 @@ def build_occlusion_grid(
         for cell in covered(bounds(x, y, abs(ax) * half + reach, abs(ay) * half + reach)):
             active[cell] = True
             beam_active[cell] |= beam
-    cells: list[list[int]] = [[] for _ in range(columns * rows)]
+    # Each body's footprint, shared among the cells its planar extent overlaps by
+    # area: how many bodies stand in a cell, and their cover and top height there.
+    standing = [0] * (columns * rows)
     crowd_cover = [0.0] * (columns * rows)
     crowd_top = [0.0] * (columns * rows)
-    beam_cells: list[list[tuple[int, int, int]]] = [[] for _ in range(columns * rows)]
-    values = [0.0] * (columns * rows * 4)
-    body_count = 0
+    shapes = []
     for body in bodies:
         if body.opacity <= 0:
             continue
         c, s = math.cos(body.angle), math.sin(body.angle)
+        ex = math.hypot(c * body.radii.x, s * body.radii.y)
+        ey = math.hypot(s * body.radii.x, c * body.radii.y)
+        shapes.append((body, c, s, ex, ey))
+        footprint = math.pi * body.radii.x * body.radii.y * body.opacity / (cell_size * cell_size)
+        x0, x1, y0, y1 = bounds(body.pos.x, body.pos.y, ex, ey)
+        for row in range(y0, y1 + 1):
+            top = min(body.pos.y + ey, origin.y + (row + 1) * cell_size) - max(body.pos.y - ey, origin.y + row * cell_size)
+            for column in range(x0, x1 + 1):
+                side = min(body.pos.x + ex, origin.x + (column + 1) * cell_size) - max(body.pos.x - ex, origin.x + column * cell_size)
+                share = max(0.0, side) * max(0.0, top) / (4 * ex * ey)
+                if share > 0.0:
+                    standing[row * columns + column] += 1
+                    crowd_cover[row * columns + column] += footprint * share
+                    crowd_top[row * columns + column] += body.height * footprint * share
+    crowd = [count > CROWD_BODIES for count in standing]
+    cells: list[list[int]] = [[] for _ in range(columns * rows)]
+    beam_cells: list[list[tuple[int, int, int]]] = [[] for _ in range(columns * rows)]
+    values = [0.0] * (columns * rows * 4)
+    body_count = 0
+    for body, c, s, ex, ey in shapes:
         radius = max(body.radii.x, body.radii.y)
         soft_margin = max(.015 * radius, padding * radius / min(body.radii.x, body.radii.y))
-        rx = math.hypot(c * body.radii.x, s * body.radii.y) + soft_margin
-        ry = math.hypot(s * body.radii.x, c * body.radii.y) + soft_margin
-        occupied = covered(bounds(body.pos.x, body.pos.y, rx, ry), active)
-        # A section's rays fan out from the walked center ray by at most its half-span.
-        beam_box = bounds(body.pos.x, body.pos.y, rx + beam_margin, ry + beam_margin)
-        beam_occupied = covered(beam_box, beam_active)
-        if not occupied and not beam_occupied:
-            continue
         home_x = math.floor((body.pos.x - origin.x) / cell_size)
         home_y = math.floor((body.pos.y - origin.y) / cell_size)
-        if 0 <= home_x < columns and 0 <= home_y < rows:
-            footprint = math.pi * body.radii.x * body.radii.y * body.opacity / (cell_size * cell_size)
-            crowd_cover[home_y * columns + home_x] += footprint
-            crowd_top[home_y * columns + home_x] += body.height * footprint
+        member = 0 <= home_x < columns and 0 <= home_y < rows and crowd[home_y * columns + home_x]
+        # A crowd's member shades the cells around it only where it stands; its crowd's medium stands for it.
+        rx, ry = (ex, ey) if member else (ex + soft_margin, ey + soft_margin)
+        margin = 0.0 if member else beam_margin
+        occupied = [cell for cell in covered(bounds(body.pos.x, body.pos.y, rx, ry), active) if not crowd[cell]]
+        # A section's rays fan out from the walked center ray by at most its half-span.
+        beam_box = bounds(body.pos.x, body.pos.y, rx + margin, ry + margin)
+        beam_occupied = [cell for cell in covered(beam_box, beam_active) if not crowd[cell]]
+        if not occupied and not beam_occupied:
+            continue
         address = len(values) // 4
         body_count += 1
         values.extend((body.pos.x, body.pos.y, body.height * .4, radius + soft_margin))
@@ -192,19 +213,15 @@ def build_occlusion_grid(
             beam_cells[cell].append((address, x0 + x1 * 4096, y0 + y1 * 4096))
     # Headers: ordinary list offset and count, then the beam sections' list.
     for i, (cell, beam_cell) in enumerate(zip(cells, beam_cells, strict=True)):
-        crowd = (crowd_top[i] / crowd_cover[i] if crowd_cover[i] > 0. else 0., -max(crowd_cover[i], 1e-6))
-        if len(cell) > CROWD_BODIES:
-            values[i * 4:i * 4 + 2] = crowd
-        else:
-            values[i * 4:i * 4 + 2] = (len(values) // 4, len(cell))
-            for address in cell:
-                values.extend((address, 0, 0, 0))
-        if len(beam_cell) > CROWD_BODIES:
-            values[i * 4 + 2:i * 4 + 4] = crowd
-        else:
-            values[i * 4 + 2:i * 4 + 4] = (len(values) // 4, len(beam_cell))
-            for entry in beam_cell:
-                values.extend((*entry, 0))
+        if crowd[i]:
+            values[i * 4:i * 4 + 4] = (crowd_top[i] / crowd_cover[i], -crowd_cover[i]) * 2
+            continue
+        values[i * 4:i * 4 + 2] = (len(values) // 4, len(cell))
+        for address in cell:
+            values.extend((address, 0, 0, 0))
+        values[i * 4 + 2:i * 4 + 4] = (len(values) // 4, len(beam_cell))
+        for entry in beam_cell:
+            values.extend((*entry, 0))
     references = sum(map(len, cells))
     beam_references = sum(map(len, beam_cells))
     return OcclusionGrid(origin, cell_size, columns, rows, values, body_count, references, beam_references)
