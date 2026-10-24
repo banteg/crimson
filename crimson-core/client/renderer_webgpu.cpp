@@ -172,6 +172,7 @@ Program smoke_display{&WGSL_SMOKE_FIELD_VERT, &WGSL_SMOKE_FRAG, NO_VERTICES};
 Program heat_body{&WGSL_CREATURE_VERT, &WGSL_HEAT_BODY_FRAG, DEVICE_VERTICES};
 Program heat_stamp{&WGSL_CREATURE_VERT, &WGSL_HEAT_STAMP_FRAG, DEVICE_VERTICES};
 Program heat_trail_program{&WGSL_CREATURE_VERT, &WGSL_HEAT_TRAIL_LIT_FRAG, DEVICE_VERTICES};
+Program contact_glow{&WGSL_CREATURE_VERT, &WGSL_CONTACT_GLOW_FRAG, DEVICE_VERTICES};
 Program pressure_fronts_program{&WGSL_FULLSCREEN_VERT, &WGSL_PRESSURE_LIT_FRAG, NO_VERTICES};
 // The explosions' pressure fronts (host_pressure), as in renderer.cpp.
 std::vector<float> pressure_fronts;
@@ -491,7 +492,7 @@ void forget_groups() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
                      &ground_lit, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
-                     &heat_body, &heat_stamp, &heat_trail_program, &pressure_fronts_program}) {
+                     &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program}) {
     for (auto &[key, group] : p->groups)
       wgpuBindGroupRelease(group);
     p->groups.clear();
@@ -673,7 +674,7 @@ void wgpu_renderer_init() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
                      &ground_lit, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
-                     &heat_body, &heat_stamp, &heat_trail_program, &pressure_fronts_program})
+                     &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program})
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
@@ -1198,6 +1199,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
                      : material == HOST_PASS_PLAYERS ? player_lit
                      : material == MATERIAL_BONUS    ? bonus_lit
                      : material == HOST_PASS_HEAT    ? heat_body
+                     : material == HOST_PASS_GLOW    ? contact_glow
                                                      : creature_lit;
   if (lit) {
     Uniforms vertex(*program.vert), fragment(*program.frag);

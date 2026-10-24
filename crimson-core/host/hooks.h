@@ -67,8 +67,8 @@ void rtx_smoke_impulse(float sx, float sy, float ex, float ey, float radius, flo
                        float duration, float expansion_speed);
 void rtx_smoke_tick(float dt);
 void rtx_reset();
-// RTX explosion lights (game/rtx_lights.cpp) and Monster Vision's heat (game/rtx_heat.cpp), which replaces
-// its aura while RTX draws (rtx_drawing).
+// RTX explosion lights and ion contact glows (game/rtx_lights.cpp), and Monster Vision's heat (game/rtx_heat.cpp),
+// which replaces its aura while RTX draws (rtx_drawing).
 void rtx_explosion_begin(float x, float y, float scale);
 void rtx_explosion_end();
 void rtx_explosion_dark(int dark);
@@ -78,6 +78,7 @@ void rtx_explosion_release(const struct effect_entry_t *entry);
 int rtx_explosion_owns(const struct effect_entry_t *entry);
 void rtx_explosions_draw();
 bool rtx_drawing();
+void rtx_contact_glows(float alpha);
 void rtx_heat_trails(float alpha);
 void rtx_heat(int type_id, float transition_alpha);
 void rtx_smoke(float alpha);

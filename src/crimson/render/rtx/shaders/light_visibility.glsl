@@ -5,6 +5,9 @@ uniform int u_dynamic_shadows;
 uniform sampler2D u_occlusion_tex;
 uniform vec4 u_occlusion_grid; // xy world origin, zw cell counts; z=0 disables
 uniform float u_occlusion_cell_size;
+// A crowd cell (header y < 0: minus its bodies' summed footprint over its area, x their top height) is crossed as an
+// absorbing medium below that height (render/rtx/reflection_occlusion.py's CROWD_BODIES).
+const float CROWD_EXTINCTION = 3.;
 
 vec4 occlusionData(int address) {
     int width = textureSize(u_occlusion_tex, 0).x;
@@ -181,11 +184,28 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
     beam = beam_section_halfspan > 0.;
     #endif
     ivec2 previous = ivec2(-1);
+    ivec2 first_cell = cell;
+    float t_enter = 0.;
+    float cells_crossed = length(delta);
     // Each step crosses one grid boundary. No nearest-body budget drops blockers.
     while (cell.x >= 0 && cell.y >= 0 && cell.x < int(u_occlusion_grid.z) && cell.y < int(u_occlusion_grid.w)) {
         vec4 header = occlusionData(cell.y * int(u_occlusion_grid.z) + cell.x);
         // Beam sections walk their own lists, padded by the largest half-span.
         if (beam) header.xy = header.zw;
+        bool crowd = header.y < 0.;
+        if (crowd) {
+            // A crowd: absorb along the length crossed below the bodies' top height. A body's own cell does not
+            // shade the body.
+            float t_exit = min(min(t_edge.x, t_edge.y), 1.);
+            float t_top = abs(ray.z) > 1e-6 ? (header.x - receiver.z) / ray.z : (receiver.z < header.x ? 1e20 : -1e20);
+            vec2 below = ray.z >= 0. ? vec2(-1e20, t_top) : vec2(t_top, 1e20);
+            float crossed = max(0., min(t_exit, below.y) - max(t_enter, below.x));
+            if (crossed > 0. && !(cell == first_cell && owner.x < 1e18)) {
+                visibility *= exp(CROWD_EXTINCTION * header.y * crossed * cells_crossed);
+                if (visibility < .001) return visibility;
+            }
+            header.y = 0.;
+        }
         for (int j = 0; j < int(header.y); j++) {
             vec4 entry = occlusionData(int(header.x) + j);
             // A padded beam entry spans a run of walked cells; test it in the first.
@@ -196,8 +216,10 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
             visibility = min(visibility, bodyVisibility(int(entry.x), receiver, ray, source_width, inverse_xy_length, owner));
             if (visibility < .001) return visibility;
         }
-        previous = cell;
+        // A crowd tested none of its neighbors' padded entries: the next cell tests its whole list.
+        previous = crowd ? ivec2(-1) : cell;
         if (min(t_edge.x, t_edge.y) >= 1.) break;
+        t_enter = min(t_edge.x, t_edge.y);
         if (t_edge.x < t_edge.y) { cell.x += step_cell.x; t_edge.x += t_step.x; }
         else { cell.y += step_cell.y; t_edge.y += t_step.y; }
     }

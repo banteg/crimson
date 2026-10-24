@@ -50,6 +50,7 @@ PROGRAMS = {
     "heat_body": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "heat_body.frag"),
     "heat_stamp": (CLIENT_SHADERS / "creature.vert", CLIENT_SHADERS / "heat_stamp.frag"),
     "heat_trail": (CLIENT_SHADERS / "creature.vert", CLIENT_SHADERS / "heat_trail_lit.frag"),
+    "contact_glow": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "contact_glow.frag"),
     "pressure": (CLIENT_SHADERS / "fullscreen.vert", CLIENT_SHADERS / "pressure_lit.frag"),
 }
 # glslang's arguments per stage: where each stage's uniform block and textures go.

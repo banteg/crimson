@@ -8,7 +8,14 @@ from crimson.perks import PerkId
 from crimson.projectiles.types import Projectile
 from crimson.projectiles.types import ProjectileTemplateId as PT
 from crimson.render.ion_arcs import ion_arc_targets
-from crimson.render.rtx.material_lights import MAX_MATERIAL_LIGHTS, collect_material_lights, ion_arc_sources
+from crimson.render.rtx.material_lights import (
+    IDENT_ARC,
+    MAX_MATERIAL_LIGHTS,
+    collect_material_lights,
+    ion_arc_sources,
+    ion_contact_glows,
+    source_ident,
+)
 from grim.geom import Vec2
 from tests.render.test_material_lights import frame
 
@@ -26,19 +33,21 @@ def test_arc_sources_follow_visible_targets_and_fade(kind):
     snapshot, shot = scene(kind)
     snapshot.creatures.entries[1].pos = Vec2(125, 100)
     lights = ion_arc_sources(snapshot, shot)
-    assert len(lights) == 2
-    segment, endpoint = lights
+    assert len(lights) == 1
+    segment, = lights
     assert segment.pos == Vec2(112.5, 100)
     assert segment.direction == Vec2(1, 0) and segment.length == 25
-    assert endpoint.pos == Vec2(125, 100) and endpoint.length == 0
     assert segment.reflection_tail == 1
-    assert all(light.illumination_gain > 0 and light.reflection_gain > 0 for light in lights)
-    assert all(light.beam_profile is None and not light.beam_ion for light in lights)
+    assert segment.illumination_gain > 0 and segment.reflection_gain > 0
+    assert segment.beam_profile is None and not segment.beam_ion
+    # The contact is a ground glow in the arc's color, not a light.
+    glow, = ion_contact_glows(snapshot, view_center=Vec2(100, 100))
+    assert glow.pos == Vec2(125, 100) and glow.rgb == segment.rgb
     faded = ion_arc_sources(snapshot, msgspec.structs.replace(shot, life_timer=.15))
-    for bright, dim in zip(lights, faded, strict=True):
-        assert dim.rgb == pytest.approx(tuple(c * .5 for c in bright.rgb))
+    assert faded[0].rgb == pytest.approx(tuple(c * .5 for c in segment.rgb))
     collected = collect_material_lights(snapshot, view_center=Vec2(100, 100))
-    assert all(light in collected for light in lights)
+    # Slot 0, spawned at (0, 100).
+    assert msgspec.structs.replace(segment, ident=source_ident(IDENT_ARC, (100 << 14) * 4)) in collected
 
 
 @pytest.mark.parametrize('life', [0., -.1, .4, .5])
