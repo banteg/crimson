@@ -1261,6 +1261,7 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
     memcpy(light_pos + i * 4, l, 16);
     memcpy(light_rgb + i * 4, l + 4, 16);
     memcpy(light_dir + i * 4, l + 8, 16);
+    light_dir[i * 4 + 2] = l[16]; // creatures, players and bonuses weight a segment by its tail
     memcpy(light_response + i * 4, l + 12, 16);
     memcpy(ground_dir + i * 4, l + 8, 16);
     ground_dir[i * 4 + 2] = l[17];
@@ -1395,17 +1396,19 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
   glUniform1f(at("u_opacity"), v[8]);
   glUniform1i(at("u_debug"), 0);
   glUniform1i(at("u_light_count"), (int)light_count);
-  std::vector<float> pos, rgb, shape;
+  std::vector<float> pos, rgb, shape, tails((light_count + 3) / 4 * 4);
   const float *l = (const float *)(client_memory() + lights);
   for (u32 i = 0; i < light_count; ++i, l += SMOKE_LIGHT_FLOATS) {
     pos.insert(pos.end(), l, l + 4);
     rgb.insert(rgb.end(), l + 4, l + 8);
     shape.insert(shape.end(), l + 8, l + 12);
+    tails[i] = l[12];
   }
   if (light_count) {
     glUniform4fv(at("u_light_pos"), (int)light_count, pos.data());
     glUniform4fv(at("u_light_rgb"), (int)light_count, rgb.data());
     glUniform4fv(at("u_light_shape"), (int)light_count, shape.data());
+    glUniform4fv(at("u_light_tail"), (int)(light_count + 3) / 4, tails.data());
   }
   glUniform1i(at("u_sight_count"), (int)sight_count);
   if (sight_count)

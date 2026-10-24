@@ -93,8 +93,7 @@ void main() {
         float point_visibility = -1.;
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
             float s = 1.0 - smoothstep(0.0, u_response[i].z, spec_distance);
-            float axial_gain = beam
-                ? mix(.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + .5, 0.0, 1.0)) : 1.;
+            float axial_gain = beam ? segmentRadiance(along / max(u_dir[i].w, 1.0) + .5, u_dir[i].z) : 1.;
             vec3 spec_L = normalize(vec3(source - wp, max(8., u_pos[i].w - 8.)));
             vec3 H = normalize(spec_L + V);
             float catchlight = pow(max(dot(N, H), 0.0), clamp(84.0 / source_width, 8.0, 100.0)) *
@@ -108,7 +107,7 @@ void main() {
             }
         }
         if (u_response[i].x <= 0. || spec_distance >= u_pos[i].z) continue;
-        vec2 light_source = ring ? source : illuminationSource(u_pos[i].xy, axis, u_dir[i].w);
+        vec2 light_source = ring ? source : illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
         vec2 delta = light_source - wp;
         float distance_to_light = length(delta);
         if (distance_to_light >= u_pos[i].z) continue;

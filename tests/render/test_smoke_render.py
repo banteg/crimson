@@ -187,6 +187,21 @@ def test_native_shader_light_and_sight_scatter_only_in_density(smoke_pixels):
     assert np.max(np.abs(smoke_pixels(sight=True, density=0.))) == 0.
 
 
+def test_smoke_scatters_a_segment_by_the_shared_beam_profile(smoke_pixels):
+    ambient = smoke_pixels()
+
+    def added(tail):
+        # A segment across the view, its head to the east.
+        beam = MaterialLight(Vec2(64, 64), 160, (1.4, .68, .2), height=30, direction=Vec2(1, 0), length=100,
+                             reflection_tail=tail)
+        return smoke_pixels(lights=[beam])[:, :, 0] - ambient[:, :, 0]
+
+    tapered, uniform = added(0.), added(1.)
+    west, east = slice(14, 34), slice(94, 114)
+    assert tapered[:, east].mean() > 2 * tapered[:, west].mean() > 0
+    assert uniform[:, east].mean() == pytest.approx(uniform[:, west].mean(), rel=.05)
+
+
 def test_smoke_maps_show_coverage_and_weapon_light_without_sky_fill(smoke_pixels):
     thin = smoke_pixels(density=.05, debug=RtxDebugView.SMOKE_DENSITY)
     thick = smoke_pixels(debug=RtxDebugView.SMOKE_DENSITY)

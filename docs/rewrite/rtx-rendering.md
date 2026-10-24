@@ -410,8 +410,8 @@ with an identity basis for singular UV mappings. Relief and rim taps clamp to th
 current animation cell. The base sprite keeps the original alpha-aware filtering and
 4/255 cutoff. Point, finite beam, and annular illumination reuse the shared source
 geometry and illumination gain; reflection-only tracers do not light player cloth.
-Beam illumination uses the head-weighted energy centroid, with squared radial
-attenuation, rather than the reflection channel's axial taper.
+Beam illumination comes from the shared beam profile's energy centroid (see weapon
+illumination below), with squared radial attenuation.
 
 ## Creature lighting
 
@@ -431,9 +431,9 @@ Basis derivatives are evaluated before alpha discard, with an identity fallback
 for singular UV mappings. Texture relief uses central differences at offsets of one atlas
 texel, rotated into world space, so its strength does not depend on framebuffer
 resolution. Both relief and alpha taps stay inside the current animation cell.
-Lights are uploaded once before the species passes. Specular beam intensity tapers
-from 20% at the tail to 100% at the head. Illumination uses the shared head-weighted
-source position described below, independently of squared radial attenuation. Point lights and the native alpha cutoff remain intact.
+Lights are uploaded once before the species passes. Specular beam intensity follows
+the shared beam profile along the segment, and illumination comes from that profile's
+centroid, independently of squared radial attenuation. Point lights and the native alpha cutoff remain intact.
 
 Thin parts also scatter lateral light, tinted by their pigment.
 `src/crimson/render/rtx/creature_translucency.py` estimates part size from each
@@ -608,9 +608,14 @@ gain is 4; the ground-only multiplier below applies on top of this shared source
 gain without increasing creature, bonus or reflection brightness.
 
 `lighting_shaders.py` shares source placement and visibility between ground and
-creatures. A finite beam's illumination is approximated by one energy centroid
-of the head-weighted distribution `0.015 + f^8`, at `f = 0.8524229` from tail to
-head. The source width supplies analytic soft edges. Fixed source positions avoid
+creatures. Every receiver weights a finite segment by one profile
+(`source_geometry.glsl`): radiance ramps linearly from the light's tail value at
+its tail to 1 at its head. Ion and Fire Bullet streaks use a tail of 0, as their
+stamps fade in from nothing; other segments keep 0.18, and ion arcs are uniform (1).
+Ground reflections, creature and bonus highlights, and smoke scattering weight a
+segment by this ramp along its axis. Illumination of the ground, bodies and players
+comes from its energy centroid, `(1 - tail) / (6 (1 + tail))` lengths ahead of the
+segment's center (a sixth of a streak). The source width supplies analytic soft edges. Fixed source positions avoid
 receiver-dependent shadow sliding, but this is not integration over the whole
 beam: it cannot reproduce every penumbra from the sixteen-sample lookdev study.
 One, two and four samples were measured before choosing this approximation.
@@ -901,8 +906,8 @@ impact/fade phase, the original slot-zero exclusion and collidable lifecycle,
 weapon scale, and Ion Gun Master reach apply. Fire Bullets do not chain.
 
 Each connection contributes a finite segment reflection and a small endpoint
-source, fading with the visible arc. Segment reflections have uniform longitudinal
-radiance; direct illumination uses the existing centroid approximation. The new
+source, fading with the visible arc. Arc segments are uniform (a tail of 1), so
+their reflections are even along the arc and their illumination centroid is its middle. The new
 sources use restrained independent gains, without the main Ion beam's 4x ground
 gain. At most four connections
 per impact contribute sources, ranked by segment distance to the view center
@@ -1031,7 +1036,8 @@ axis. Premultiplied reconstruction preserves HDR radiance and translucent edges;
 the world itself stays at full output resolution. It uses the shared native weapon sources, including rocket exhaust,
 Fire/Ion beams, and explosion lights, with the existing 16 illumination-source
 limit. Fractional source gains are preserved; gains above four are capped for
-smoke response. Up to four living players' native Sharpshooter sight segments
+smoke response. A segment scatters by the shared beam profile, so a streak's
+tail lights the cloud less than its head. Up to four living players' native Sharpshooter sight segments
 scatter as narrow red beams only inside density, rather than broadly illuminating
 the whole cloud. The ordinary sight artwork remains unchanged.
 

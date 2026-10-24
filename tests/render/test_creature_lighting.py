@@ -288,8 +288,10 @@ def test_beam_reflection_taper_matches_point_radiance_once(lit_sprite, direction
     rgb = (.5, .8, 1.5)
     # Along this pixel column the closest beam point is exactly the reference point.
     source = Vec2(64.5, 40)
+    # The taper is the light's own: a linear ramp from its tail radiance to its head.
     beam = MaterialLight(source + Vec2(direction * (0.5 - along_fraction) * 256, 0),
-                         110, rgb, height=40, direction=Vec2(direction, 0), length=256, illumination_gain=0)
+                         110, rgb, height=40, direction=Vec2(direction, 0), length=256, illumination_gain=0,
+                         reflection_tail=.2)
     point = MaterialLight(source, 110, tuple(c * gain for c in rgb), height=40, illumination_gain=0)
     actual = render([beam])
     expected = render([point])

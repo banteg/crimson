@@ -3,6 +3,7 @@
 in vec2 fragTexCoord;
 in vec4 fragColor;
 out vec4 finalColor;
+#include "source_geometry.glsl"
 uniform sampler2D texture0;
 uniform int u_state_flip;
 uniform vec2 u_origin;
@@ -12,6 +13,7 @@ uniform int u_light_count;
 uniform vec4 u_light_pos[16];
 uniform vec4 u_light_rgb[16];
 uniform vec4 u_light_shape[16];
+uniform vec4 u_light_tail[4]; // each segment light's tail radiance (source_geometry.glsl), four per vec4
 uniform int u_sight_count;
 uniform vec4 u_sights[4];
 uniform int u_debug; // RtxDebugView: smoke maps draw opaque over the cleared map background
@@ -95,10 +97,14 @@ void main() {
     for(int light=0;light<16;light++) {
         if(light>=u_light_count) break;
         vec4 source=u_light_pos[light],shape=u_light_shape[light],radiance=u_light_rgb[light];
-        vec2 nearest=source.xy+shape.xy*clamp(dot(xy-source.xy,shape.xy),-shape.z,shape.z);
+        float along=clamp(dot(xy-source.xy,shape.xy),-shape.z,shape.z);
+        vec2 nearest=source.xy+shape.xy*along;
+        // A segment scatters along its length as it shines: brighter toward its head.
+        float profile=shape.z>0. ? segmentRadiance(along/(2.*shape.z)+.5,u_light_tail[light/4][light%4]) : 1.;
         if(shape.w>0.) {
             vec2 radial=xy-source.xy;
             nearest=source.xy+radial/max(length(radial),.0001)*shape.w;
+            profile=1.;
         }
         vec2 lateral=nearest-xy;
         float dist2=dot(lateral,lateral);
@@ -118,7 +124,7 @@ void main() {
             for(int j=0;j<6;j++) optical_depth+=vertical(columns[j],z+dz*((float(j)+.5)/6.));
             float shadow=exp(-optical_depth*distance/6.*.020);
             float phase=.7-.35*dz/max(distance,.001);
-            scattered+=weights[i]*radiance.rgb*attenuation*shadow*phase*radiance.w;
+            scattered+=weights[i]*radiance.rgb*attenuation*shadow*phase*radiance.w*profile;
         }
     }
     float opacity=1.-transmission;

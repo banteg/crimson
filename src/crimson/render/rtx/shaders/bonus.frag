@@ -55,7 +55,7 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
         float a = 1.0 - smoothstep(0.0, u_pos[i].z, dist);
         float s = 1.0 - smoothstep(0.0, u_response[i].z, dist);
         float axial = u_rgb[i].w <= 0. && u_dir[i].w > 0.0
-            ? mix(0.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + 0.5, 0.0, 1.0))
+            ? segmentRadiance(along / max(u_dir[i].w, 1.0) + 0.5, u_dir[i].z)
             : 1.0;
         float weight = s * s * axial * u_response[i].y;
         float illumination_weight = a * a * axial * u_response[i].x;
@@ -184,7 +184,7 @@ void main() {
         float a = 1.0 - smoothstep(0.0, u_pos[i].z, dist);
         float s = 1.0 - smoothstep(0.0, u_response[i].z, dist);
         float axial = u_rgb[i].w <= 0. && u_dir[i].w > 0.0
-            ? mix(0.2, 1.0, clamp(along / max(u_dir[i].w, 1.0) + 0.5, 0.0, 1.0))
+            ? segmentRadiance(along / max(u_dir[i].w, 1.0) + 0.5, u_dir[i].z)
             : 1.0;
 
         vec3 L = normalize(vec3(delta, max(12.0, u_pos[i].w - 4.0)));

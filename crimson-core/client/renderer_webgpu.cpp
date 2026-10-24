@@ -1315,6 +1315,7 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
     memcpy(light_pos + i * 4, l, 16);
     memcpy(light_rgb + i * 4, l + 4, 16);
     memcpy(light_dir + i * 4, l + 8, 16);
+    light_dir[i * 4 + 2] = l[16]; // creatures, players and bonuses weight a segment by its tail
     memcpy(light_response + i * 4, l + 12, 16);
     memcpy(ground_dir + i * 4, l + 8, 16);
     ground_dir[i * 4 + 2] = l[17];
@@ -1438,15 +1439,16 @@ void wgpu_w2c_host_smoke_draw(struct w2c_host *, u32 view, u32 lights, u32 light
   vertex.set("rect", v, 16).v2("target_size", (float)t.logical_width, (float)t.logical_height);
   fragment.i("u_state_flip", 1).set("u_origin", v + 4, 8).set("u_size", v + 6, 8).f("u_opacity", v[8]).i("u_debug", 0);
   fragment.i("u_light_count", (int)light_count).i("u_sight_count", (int)sight_count);
-  float pos[SMOKE_MAX_LIGHTS * 4], rgb[SMOKE_MAX_LIGHTS * 4], shape[SMOKE_MAX_LIGHTS * 4];
+  float pos[SMOKE_MAX_LIGHTS * 4], rgb[SMOKE_MAX_LIGHTS * 4], shape[SMOKE_MAX_LIGHTS * 4], tails[SMOKE_MAX_LIGHTS] = {};
   const float *l = (const float *)(client_memory() + lights);
   for (u32 i = 0; i < light_count && i < SMOKE_MAX_LIGHTS; ++i, l += SMOKE_LIGHT_FLOATS) {
     memcpy(pos + i * 4, l, 16);
     memcpy(rgb + i * 4, l + 4, 16);
     memcpy(shape + i * 4, l + 8, 16);
+    tails[i] = l[12];
   }
   fragment.set("u_light_pos", pos, light_count * 16).set("u_light_rgb", rgb, light_count * 16);
-  fragment.set("u_light_shape", shape, light_count * 16);
+  fragment.set("u_light_shape", shape, light_count * 16).set("u_light_tail", tails, (light_count + 3) / 4 * 16);
   fragment.set("u_sights", client_memory() + sights, sight_count * 16);
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(smoke_display, o));
   bind(smoke_display,

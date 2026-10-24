@@ -162,6 +162,7 @@ void projectile_source(const projectile_t &p) {
     bool fire = type == PROJECTILE_TYPE_FIRE_BULLETS;
     light.beam_radius = 16 * scale, light.beam_step = fminf(scale * 3.1f, 9), light.beam_head = fire ? 1.35f : 1.05f;
     light.beam_ion = !fire;
+    light.tail = 0; // a streak's stamps fade in from nothing at its tail
   }
 }
 
