@@ -9,6 +9,7 @@ in vec2 world;
 uniform float u_fade;
 uniform sampler2D u_heat;
 uniform vec2 u_ground_size;
+uniform float u_alpha; // the scene's transition fade
 out vec4 finalColor;
 void main() {
 #ifdef HEAT_STAMP
@@ -22,7 +23,7 @@ void main() {
 #else
     vec2 uv = vec2(world.x, u_ground_size.y - world.y) / u_ground_size;
     float h = all(greaterThanEqual(uv, vec2(0.))) && all(lessThanEqual(uv, vec2(1.))) ? textureLod(u_heat, uv, 0.).r : 0.;
-    vec3 heat = ironbow(.12 + .4 * h) * pow(h, 1.5) * .45;
+    vec3 heat = ironbow(.12 + .4 * h) * pow(h, 1.5) * .45 * u_alpha;
     finalColor = vec4(pow(heat, vec3(1. / 2.2)), 1.);
 #endif
 }

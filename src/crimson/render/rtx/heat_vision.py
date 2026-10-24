@@ -94,8 +94,11 @@ class HeatVision(msgspec.Struct):
             self.last_ms = None
         return self.trail
 
-    def update(self, frame: RenderFrame, *, ground_size: Vec2, entity_alpha: float) -> None:
-        """Once per drawn frame: fade the trails by the game time since the last, then stamp every footprint."""
+    def update(self, frame: RenderFrame, *, ground_size: Vec2) -> None:
+        """Once per drawn frame: fade the trails by the game time since the last, then stamp every footprint.
+
+        Stored heat ignores scene transitions; `draw_trails` fades it with the scene instead.
+        """
         trail = self._ensure_trail(ground_size)
         if self.stamp_shader is None:
             self.stamp_shader = _load(_HDR_TONEMAP_VS_330, _HEAT_STAMP)
@@ -118,7 +121,7 @@ class HeatVision(msgspec.Struct):
                     rl.rl_set_texture(rl.rl_get_texture_id_default())
                     rl.rl_begin(rd.RL_QUADS)
                     for creature in frame.creatures.entries:
-                        warmth = heat_warmth(creature, frame, entity_alpha=entity_alpha) if creature.active else 0.
+                        warmth = heat_warmth(creature, frame, entity_alpha=1.) if creature.active else 0.
                         if warmth <= 1e-3:
                             continue
                         p = creature.pos * TRAIL_TEXELS_PER_UNIT
@@ -133,7 +136,9 @@ class HeatVision(msgspec.Struct):
             finally:
                 rl.end_shader_mode()
 
-    def draw_trails(self, view: ViewTransform, *, ground_size: Vec2, restore_shader: rl.Shader | None) -> None:
+    def draw_trails(
+        self, view: ViewTransform, *, ground_size: Vec2, entity_alpha: float, restore_shader: rl.Shader | None,
+    ) -> None:
         if self.trail is None:
             return
         if self.trail_shader is None:
@@ -145,6 +150,7 @@ class HeatVision(msgspec.Struct):
             _vec2(shader, "u_camera", view.camera)
             _vec2(shader, "u_view_scale", view.view_scale)
             _vec2(shader, "u_ground_size", ground_size)
+            _float(shader, "u_alpha", entity_alpha)
             with blend_custom(rd.RL_ONE, rd.RL_ONE, rd.RL_FUNC_ADD):
                 # Bind after the blend switch: rlgl clears auxiliary samplers when it flushes.
                 rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_heat"), self.trail.texture)

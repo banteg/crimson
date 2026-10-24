@@ -1092,7 +1092,8 @@ suppression; classic keeps the original yellow aura texture.
   footprint (45% of the creature's size) at every warm monster. A frame gap
   over a second, a rewind, or a terrain reset starts it over. Where the aura was
   drawn, `heat_trail.frag` adds the buffer under the view to the ground as faint
-  ironbow heat, under every body.
+  ironbow heat, under every body. Stored heat ignores scene transitions; the
+  composite fades with the scene's entity alpha, like the bodies.
 
 The sensor is selective: fire, explosions and beams keep their own look and do
 not wash the monsters out. Heat adds no material lights and changes no

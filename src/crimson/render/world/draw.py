@@ -303,8 +303,9 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         ground = frame.ground
         assert isinstance(ground, MaterialGroundRenderer)
         ground_size = Vec2(float(ground.width), float(ground.height))
-        heat.update(frame, ground_size=ground_size, entity_alpha=ctx.entity_alpha)
-        heat.draw_trails(render_ctx.view, ground_size=ground_size, restore_shader=frame.resources.alpha_test.shader)
+        heat.update(frame, ground_size=ground_size)
+        heat.draw_trails(render_ctx.view, ground_size=ground_size, entity_alpha=ctx.entity_alpha,
+                         restore_shader=frame.resources.alpha_test.shader)
 
     # Native `creature_render_all` batches all overlays across the active pool
     # before any species-specific sprite passes.
