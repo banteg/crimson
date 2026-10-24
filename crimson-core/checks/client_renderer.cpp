@@ -462,6 +462,23 @@ void check_rtx() {
   };
   Pixel warm = heat_body(0xe0ff0000), cold = heat_body(0xe0000000), unseen = heat_body(0x00ff0000);
   assert(warm.r > 0.5f && warm.r > warm.b && cold.r < warm.r * 0.5f && unseen.r < 1e-3f);
+  // An ion contact's glow adds its hue to the ground as a disc, brightest at its
+  // center and nothing at the quad's corners; glows add.
+  auto glow = [](int quads, int x, int y) {
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+    w2c_host_render_pass(nullptr, HOST_PASS_GLOW);
+    for (int i = 0; i < quads; ++i)
+      rectangle(400, 300, 520, 420, 0x406080ff);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_pixel(x, y);
+  };
+  Pixel contact = glow(1, 460, 360), stacked = glow(2, 460, 360);
+  assert(contact.b > 0.1f && contact.b > contact.g && contact.g > contact.r);
+  assert(stacked.b > contact.b * 1.2f && glow(1, 402, 302).b < 1e-3f);
   // A pressure front brightens the world along its crest, darkens it just
   // inside, and leaves the world past it alone.
   auto front = [](int count, int x, int y) {
@@ -522,7 +539,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, pressure fronts ripple; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, ion contacts glow, pressure fronts ripple; classic stays 8-bit");
 }
 
 int main() {

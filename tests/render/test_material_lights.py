@@ -28,10 +28,11 @@ def test_light_budget_follows_view_not_player_order() -> None:
         projectile.active = True
         projectile.type_id = ProjectileTemplateId.PLASMA_RIFLE
         projectile.life_timer = .4
-        projectile.pos = Vec2(10 * i, 0)
-    right = collect_material_lights(snapshot, view_center=Vec2(900, 0))
+        # Apart enough not to merge as one volley.
+        projectile.pos = Vec2(40 * i, 0)
+    right = collect_material_lights(snapshot, view_center=Vec2(1800, 0))
     snapshot.players.reverse()
-    assert collect_material_lights(snapshot, view_center=Vec2(900, 0)) == right
+    assert collect_material_lights(snapshot, view_center=Vec2(1800, 0)) == right
     left = collect_material_lights(snapshot, view_center=Vec2(0, 0))
     assert len(right) == len(left) == MAX_ILLUMINATION_SOURCES
     assert min(light.pos.x for light in right) > max(light.pos.x for light in left)
@@ -87,12 +88,25 @@ def test_source_union_masks_unselected_response_without_double_counting() -> Non
     assert all(s.illumination_gain == 0 for s in selected[16:])
 
 
-def test_long_segment_is_ranked_by_nearest_point_not_midpoint() -> None:
+def test_long_segment_reflects_by_nearest_point_and_lights_by_its_centroid() -> None:
     from crimson.render.rtx.material_lights import MaterialLight, select_material_lights
 
-    beam = MaterialLight(Vec2(5000, 0), 100, (1, 1, 1), direction=Vec2(1, 0), length=10000)
-    competitors = [MaterialLight(Vec2(200, 0), 100, (1, 1, 1)) for _ in range(20)]
-    assert beam in select_material_lights([*competitors, beam], view_center=Vec2())
+    # Reflections place a segment at its nearest point; illumination at its energy centroid, as the shaders do.
+    beam = MaterialLight(Vec2(5000, 0), 100, (1, 1, 1), direction=Vec2(1, 0), length=10000, ident=99)
+    competitors = [MaterialLight(Vec2(200, 0), 100, (1, 1, 1), ident=i) for i in range(20)]
+    chosen = next(light for light in select_material_lights([*competitors, beam], view_center=Vec2())
+                  if light.ident == 99)
+    assert chosen.reflection_gain == beam.reflection_gain and chosen.illumination_gain == 0.
+
+
+def test_outbound_streak_ranks_by_where_its_light_lands_not_its_muzzle() -> None:
+    from crimson.render.rtx.material_lights import MaterialLight, select_material_lights
+
+    # A streak whose dark tail sits at the view's center but whose light has flown 240 units away.
+    streak = MaterialLight(Vec2(120, 0), 200, (1, 1, 1), direction=Vec2(1, 0), length=240, reflection_tail=0.,
+                           reflection_gain=0., ident=99)
+    nearby = [MaterialLight(Vec2(0, 60 + i), 200, (1, 1, 1), reflection_gain=0., ident=i) for i in range(16)]
+    assert all(light.ident != 99 for light in select_material_lights([*nearby, streak], view_center=Vec2()))
 
 
 @pytest.mark.parametrize("kind", [ProjectileTemplateId.PISTOL, ProjectileTemplateId.ASSAULT_RIFLE,

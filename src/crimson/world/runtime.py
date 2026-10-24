@@ -238,4 +238,6 @@ class WorldRuntime:
             creature_lighting=self.render_resources.creature_lighting,
             player_lighting=self.render_resources.player_lighting,
             bonus_lighting=self.render_resources.bonus_lighting,
+            light_selection=self.render_resources.light_selection,
+            contact_glows=self.render_resources.contact_glows,
         )

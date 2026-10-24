@@ -435,14 +435,20 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
          effect_entry_t *entry = game_effects_entry(index);
 --- a/decomp/1.9/crimsonland/ui_render/creature_render_all.cpp
 +++ b/decomp/1.9/crimsonland/ui_render/creature_render_all.cpp
-@@ -34,5 +34,6 @@
+@@ -26,4 +26,5 @@
+         return;
+     }
++    rtx_contact_glows(transition_alpha);
+ 
+     grim_interface_ptr->grim_set_config_var(0x13, 5u);
+@@ -34,5 +35,6 @@
      grim_interface_ptr->grim_set_color(0.0f, 0.0f, 0.0f, 1.0f);
      grim_interface_ptr->grim_set_rotation(0.0f);
 +    rtx_heat_trails(transition_alpha);
      grim_interface_ptr->grim_begin_batch();
  
      for (int creature_index = 0; creature_index < 384; creature_index++) {
-@@ -40,6 +41,6 @@
+@@ -40,6 +42,6 @@
          float *death_timer = &creature->death_timer;
          if (creature->active) {
 -            if (perk_count_get(perk_id_monster_vision) != 0) {
