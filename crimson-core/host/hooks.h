@@ -49,9 +49,60 @@ void rtx_material(int pass); // a HOST_PASS_* of game/render_passes.h
 void rtx_bonus(int emblem, float grid_x, float grid_y, float center_x, float center_y);
 void rtx_ground(int kind); // a HOST_GROUND_* of game/render_passes.h
 void rtx_ground_decal(int effect_id, float red);
+// RTX fluid smoke (game/rtx_smoke.cpp): the smoke the run's ticks make, and the
+// field drawn after the world's sprites, in place of native puffs while active.
+extern int rtx_smoke_on;
+bool rtx_smoke_active();
+void rtx_smoke_reset();
+void rtx_smoke_spawned(int index);
+void rtx_smoke_flush();
+void rtx_smoke_puff(const struct effect_entry_t *entry);
+void rtx_smoke_muzzle(float heading);
+void rtx_smoke_rocket(float flow_x, float flow_y, float vx, float vy);
+void rtx_smoke_nuke();
+void rtx_smoke_source_end();
+void rtx_smoke_blast(float x, float y, float scale);
+void rtx_smoke_wake(int type, float sx, float sy, float ex, float ey, float dt);
+void rtx_smoke_impulse(float sx, float sy, float ex, float ey, float radius, float strength, float curl, int kind,
+                       float duration, float expansion_speed);
+void rtx_smoke_tick(float dt);
+void rtx_reset();
+// RTX explosion lights and Monster Vision's analytic aura (game/rtx_lights.cpp, game/rtx.cpp).
+void rtx_explosion_begin(float x, float y, float scale);
+void rtx_explosion_end();
+void rtx_explosion_dark(int dark);
+void rtx_explosion_effect(int effect_id, const struct effect_entry_t *entry);
+void rtx_explosions_age(float dt);
+void rtx_explosion_release(const struct effect_entry_t *entry);
+int rtx_explosion_owns(const struct effect_entry_t *entry);
+void rtx_explosions_draw();
+void rtx_aura(int begin);
+void rtx_smoke(float alpha);
+void console_cmd_rtx_smoke(void);
 void rtx_beam_body(float origin_x, float origin_y, float head_x, float head_y, float start, float span, float step,
                    float effect_scale, float alpha, float r, float g, float b);
 void rtx_beam_head(float center_x, float center_y, float rotation, float effect_scale, bool fire);
+// A smoke source for the scope it opens in (a gun's fire, a rocket's sprite).
+struct RtxSmokeMuzzle {
+  explicit RtxSmokeMuzzle(float heading) { rtx_smoke_muzzle(heading); }
+  ~RtxSmokeMuzzle() { rtx_smoke_source_end(); }
+};
+struct RtxSmokeRocket {
+  RtxSmokeRocket(float flow_x, float flow_y, float vx, float vy) { rtx_smoke_rocket(flow_x, flow_y, vx, vy); }
+  ~RtxSmokeRocket() { rtx_smoke_source_end(); }
+};
+struct RtxExplosion {
+  RtxExplosion(float x, float y, float scale) { rtx_explosion_begin(x, y, scale); }
+  ~RtxExplosion() { rtx_explosion_end(); }
+};
+struct RtxDarkExplosion {
+  RtxDarkExplosion() { rtx_explosion_dark(1); }
+  ~RtxDarkExplosion() { rtx_explosion_dark(0); }
+};
+struct RtxSmokeNuke {
+  RtxSmokeNuke() { rtx_smoke_nuke(); }
+  ~RtxSmokeNuke() { rtx_smoke_source_end(); }
+};
 // A track's volume a tick sets, on the original's track for the one it names
 // (host/coop.inc).
 void game_music_volume(int id, float volume);

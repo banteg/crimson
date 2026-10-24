@@ -228,6 +228,25 @@ Benchmark controls:
 - render benchmarks can select mode via:
   - `uv run crimson replay benchmark <replay.crd> --mode render`
   - `uv run crimson replay benchmark <replay.crd> --mode render --rtx`
+- replay videos render RTX too, tonemapped for SDR:
+  `uv run crimson replay render <replay.crd> --rtx` (`--no-rtx-smoke` without the fluid smoke)
+
+### Golden scenes
+
+`tools/rtx/scenes.toml` names replay moments that exercise each RTX path:
+- aged blood with almost no light
+- frozen creatures, and fire across ice
+- rocket smoke
+- the nuke
+- ion beams through smoke
+- dense beam lights
+- a Shock Chain crowd
+
+`uv run python tools/rtx/golden.py capture --game <game folder> --out <dir>` captures each one, classic and RTX, with
+the native client. The client seeks a little before the tick, pauses on it (`CRIMSON_CAPTURE_TICK`) and records the
+median GPU time per pass over the frames leading to it (`CRIMSON_GPU_TIMERS`). `golden.py compare <before> <after>`
+puts two captures side by side with a difference map, the mean change and the GPU time per scene. Captures tonemap
+for SDR, so they read the same on any display.
 
 ## Native client
 
@@ -246,9 +265,22 @@ Creature bodies and players are lit as in the Python port, with the same
 the frame's lights at the world's start (`crimson-core/game/rtx_lights.cpp`, a
 port of `material_lights.py`): projectiles and their ion arcs, muzzle flashes,
 the Sharpshooter sight, the Radioactive aura, rocket exhaust, detonations and
-grouped flame particles, with the same per-response selection. Explosion
-fireballs and shells, which the Python port records as each explosion spawns,
-are not collected yet. The module marks the creature body and player batches
+grouped flame particles, and explosion fireballs and shells, with the same
+per-response selection. Like `ExplosionVisual`, the module records each explosion
+burst as it spawns: its fireball sprites as they start out, and whether its ring
+spawned. Rocket hits stay dark, their detonation lighting them instead. The
+records age with the effects' update and are kept apart from the run. A freed slot
+leaves its record (`effect_free`), so a reused slot is never mistaken for one.
+The records also draw the explosion as `draw_effect_pool` does in RTX:
+- the explosion's own ring becomes the warm shell (the RING cell tinted
+  `(190, 163, 122)` at the shell's radius and alpha); a rocket's ring isn't drawn
+- a lit explosion's fireballs are drawn from how they spawned, at half speed
+  (1.4 s), in place of their native slots
+
+Each frame the module sends the shells as pressure fronts (`host_pressure`, at
+most 16). Before the tonemap, the host displaces the world through
+`pressure.frag` into a second HDR target. The client's targets run v down, so
+`client/shaders/pressure_lit.frag` defines `TARGET_V_DOWN`. The module marks the creature body and player batches
 (`HOST_PASS_CREATURES`, `HOST_PASS_PLAYERS`), and the host draws them with the
 lit programs, the camera offset giving each fragment its world position.
 Creature bodies keep the 0.60 ambient fill even without lights; players keep
@@ -284,8 +316,39 @@ Blood baked before then (in classic, or before the terrain copy a seek starts
 from) stays in the substrate as painted terrain, without its wet film. A seek
 bakes the logged decals after that copy again at their logged clock. WebGPU
 keeps the surface in 32-bit floats where the device filters and blends them,
-otherwise in half floats. Monster Vision's ground light and the perk auras are
-not ported yet.
+otherwise in half floats.
+Monster Vision draws the Python port's earlier aura; heat (see Perk illumination)
+is not ported yet. Its aura quad (`HOST_PASS_AURA`,
+drawn over [0, 1] UVs) takes the analytic glow of `perk_aura.frag`. The module
+sends each aura whose support meets the view, with its fade (`host_perk_light`).
+Before the ground draws, the host sums their shadowless light into a float
+accumulator with the ground shader's `MONSTER_VISION_PASS`, which the ground
+program then adds.
+
+Fluid smoke takes the same solver and display shaders (`smoke_solver.frag`,
+`smoke_splat.frag`, `smoke_impulse.frag`, `smoke.frag`). The module captures what
+`sim/smoke_events.py` captures as each tick runs (`crimson-core/game/rtx_smoke.cpp`,
+hooks in `game/rtx/rtx.patch`):
+- sprite smoke spawns, read back after their caller colors them
+- explosion puffs, with their delay and expansion
+- muzzle puffs, which follow the firing direction, each with a jet of air
+- rocket exhaust, which moves back along the flight, and detonation sprites
+- the nuke's 15-second billows
+- projectile and rocket wakes, and blast fronts from explosion bursts and rocket
+  detonations
+
+These hooks only read the run: no RNG, no state, and the verifier builds without
+them. The module also runs `GpuSmokeSimulation`'s CPU side: delayed deposits,
+retention and fade, impulse budgets and fixed 60 Hz steps. It hands the host the
+solver passes as a command stream (`host_smoke`). The host runs them on its five
+RGBA16F field targets. After the world's sprites (`bonus_render`, which ends with
+the effects), the host integrates the display under the smoke's 16 lights and the
+Sharpshooter sights (`host_smoke_draw`) into a composite at most 640 pixels
+across, and puts it over the world premultiplied. While fluid smoke runs, native
+smoke sprites and explosion puffs are not drawn.
+The console's `rtxsmoke on|off` switches it, on by default. The Smoke display
+setting gates it too. A mode change, a new run, or a restored run (a replay's
+seek, a co-op rollback) clears the field.
 
 Ion and Fire Bullets streaks draw as the same analytic beams as the Python port's
 (`shaders/beam.frag`): the module computes each body and head quad as
@@ -300,7 +363,7 @@ without it.
 Controls:
 
 - launch flag: `crimson --rtx`, or `CRIMSON_RTX=1` (unattended captures)
-- console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`
+- console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`, `rtxsmoke <on|off>`
 - `rendermode rtx` in the game folder's `autoexec.txt`, which the original runs at
   startup, keeps the mode across launches
 
@@ -348,8 +411,8 @@ with an identity basis for singular UV mappings. Relief and rim taps clamp to th
 current animation cell. The base sprite keeps the original alpha-aware filtering and
 4/255 cutoff. Point, finite beam, and annular illumination reuse the shared source
 geometry and illumination gain; reflection-only tracers do not light player cloth.
-Beam illumination uses the head-weighted energy centroid, with squared radial
-attenuation, rather than the reflection channel's axial taper.
+Beam illumination comes from the shared beam profile's energy centroid (see weapon
+illumination below), with squared radial attenuation.
 
 ## Creature lighting
 
@@ -369,9 +432,9 @@ Basis derivatives are evaluated before alpha discard, with an identity fallback
 for singular UV mappings. Texture relief uses central differences at offsets of one atlas
 texel, rotated into world space, so its strength does not depend on framebuffer
 resolution. Both relief and alpha taps stay inside the current animation cell.
-Lights are uploaded once before the species passes. Specular beam intensity tapers
-from 20% at the tail to 100% at the head. Illumination uses the shared head-weighted
-source position described below, independently of squared radial attenuation. Point lights and the native alpha cutoff remain intact.
+Lights are uploaded once before the species passes. Specular beam intensity follows
+the shared beam profile along the segment, and illumination comes from that profile's
+centroid, independently of squared radial attenuation. Point lights and the native alpha cutoff remain intact.
 
 Thin parts also scatter lateral light, tinted by their pigment.
 `src/crimson/render/rtx/creature_translucency.py` estimates part size from each
@@ -546,9 +609,14 @@ gain is 4; the ground-only multiplier below applies on top of this shared source
 gain without increasing creature, bonus or reflection brightness.
 
 `lighting_shaders.py` shares source placement and visibility between ground and
-creatures. A finite beam's illumination is approximated by one energy centroid
-of the head-weighted distribution `0.015 + f^8`, at `f = 0.8524229` from tail to
-head. The source width supplies analytic soft edges. Fixed source positions avoid
+creatures. Every receiver weights a finite segment by one profile
+(`source_geometry.glsl`): radiance ramps linearly from the light's tail value at
+its tail to 1 at its head. Ion and Fire Bullet streaks use a tail of 0, as their
+stamps fade in from nothing; other segments keep 0.18, and ion arcs are uniform (1).
+Ground reflections, creature and bonus highlights, and smoke scattering weight a
+segment by this ramp along its axis. Illumination of the ground, bodies and players
+comes from its energy centroid, `(1 - tail) / (6 (1 + tail))` lengths ahead of the
+segment's center (a sixth of a streak). The source width supplies analytic soft edges. Fixed source positions avoid
 receiver-dependent shadow sliding, but this is not integration over the whole
 beam: it cannot reproduce every penumbra from the sixteen-sample lookdev study.
 One, two and four samples were measured before choosing this approximation.
@@ -786,33 +854,35 @@ art is unchanged. Ion Rifle and Minigun source sizes share the same scale table
 as the projectile renderer.
 
 Each section casts through the existing rounded creature proxies and spatial
-grid. Projecting its longitudinal extent perpendicular to the body-space ray
-and measuring the line's overlap with the rounded body gives directional
-softness: broader across the beam, narrower when seen end-on. Transverse source
-width adds an edge feather. The projected chord stays continuous through the
-center of a body, where a miss-vector-based direction would be undefined.
+grid. For each body, a ray/ellipsoid discriminant becomes a quadratic in the
+longitudinal source position. Clipping its blocked roots to the section interval
+integrates the emitting segment analytically. A body blocks only between the
+receiver and the light, so one taller than the emitter does not shadow from
+beyond it. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
+half-width average the remaining emitter dimension. Umbra and penumbra therefore
+change with the body's direction around the projectile instead of using three
+point or disc lights.
 
-Section half-lengths are deliberately capped at four world units. The section
-centers still span the full beam. This is an artistic approximation of an
-extended source, not exact visibility integration of every beam stamp. The cap
-keeps the spatial candidate lists and penumbrae practical; no creature is dropped
-to enforce a caster budget. Overlapping proxies retain the existing minimum
-visibility semantics, and dying bodies retain their shared collapse/fade behavior.
+Section half-lengths retain their full profile extent rather than the old
+four-unit cap, and the same analytic approximation is used at every body
+height. Overlapping proxies retain the existing minimum-visibility semantics,
+and dying bodies retain their shared collapse/fade behavior.
 
-Preparation uploads one small uniform array and reuses the ordinary occlusion
-grid. Conservative grid-only source copies include the endpoint halo and bounded
-section softness. They never replace the original light uniforms used by
-reflections or creature lighting. A bounded 128-entry profile cache handles
+Preparation uploads one small uniform array and reuses the occlusion texture.
+Each cell near a beam source also holds a beam list, its bodies padded by the
+largest section half-span in world units; point lights, reflections and creature
+shadows keep their narrow lists. A section walks the beam lists along its center
+ray, rejects bodies outside its ray fan (the triangle from the receiver to both
+section ends), and tests each body only in the first walked cell that lists it.
+Conservative grid-only source copies add the endpoint halo. They never replace
+the original light uniforms used by reflections or creature lighting. A bounded 128-entry profile cache handles
 repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
-candidate texture, interval sort, quadratic sweep or exact-overflow fallback.
+candidate texture or interval sort.
 
-Beam contrast reduces ambient only within its local footprint, fades
-with source radiance, and takes the maximum contribution of overlapping beams
-rather than multiplying dips. Fire alone leaves at least 85% of ordinary ambient;
-Ion or mixed beams leave at least 75%. The reduction remains an art-directed
-local contrast adjustment, independent of visibility. This changes ground lighting only:
-creature/bonus lighting and specular reflection approximations remain as before.
-Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to inspect it.
+Beams only add light. They used to dim the ambient within 300 units of the beam (up to 25% for ion, 15% for Fire
+Bullets), regardless of visibility. Past the beam's lighting radius that left a ring darker than plain ground. The
+golden scenes measured that dip's effect at under 4 levels for 99% of pixels, so it was removed: shadows alone now
+give the contrast. Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambient` maps to inspect the beam's light.
 
 ### Cost and visual limits
 
@@ -822,11 +892,12 @@ improvement in the inspected scene. The ground shader includes this path; frames
 without eligible beam sources skip preparation and ignore stale section uniforms.
 
 Three visibility queries per beam are still more expensive than the previous
-centroid. Dense scenes with many simultaneous beams remain costly. The approximation can retain separate shadow
-lobes in difficult arrangements and does not reproduce the dense reference's
-penumbra exactly. It favors readable moving shadows and predictable source work
-over a numerical agreement target. Body traversal still scales with the actual
-spatial candidates.
+centroid, with two analytic chord evaluations per candidate body and section.
+Dense scenes with many simultaneous beams remain costly. Two transverse taps do
+not reproduce a dense sampled reference exactly, but avoid the old separate
+shadow lobes at substantially lower cost. A section's fan is as wide as the
+section, so its walk fetches more list entries than a point light's; that
+traversal, rather than the chord evaluation, dominates its cost.
 
 ### Ion impact arcs
 
@@ -836,10 +907,10 @@ impact/fade phase, the original slot-zero exclusion and collidable lifecycle,
 weapon scale, and Ion Gun Master reach apply. Fire Bullets do not chain.
 
 Each connection contributes a finite segment reflection and a small endpoint
-source, fading with the visible arc. Segment reflections have uniform longitudinal
-radiance; direct illumination uses the existing centroid approximation. The new
+source, fading with the visible arc. Arc segments are uniform (a tail of 1), so
+their reflections are even along the arc and their illumination centroid is its middle. The new
 sources use restrained independent gains, without the main Ion beam's 4x ground
-gain or ambient dip. At most four connections
+gain. At most four connections
 per impact contribute sources, ranked by segment distance to the view center
 (with endpoint distance as a tie-breaker). All arcs remain visible in the artwork.
 This bounds source preparation as well as brightness in dense crowds. This
@@ -966,7 +1037,8 @@ axis. Premultiplied reconstruction preserves HDR radiance and translucent edges;
 the world itself stays at full output resolution. It uses the shared native weapon sources, including rocket exhaust,
 Fire/Ion beams, and explosion lights, with the existing 16 illumination-source
 limit. Fractional source gains are preserved; gains above four are capped for
-smoke response. Up to four living players' native Sharpshooter sight segments
+smoke response. A segment scatters by the shared beam profile, so a streak's
+tail lights the cloud less than its head. Up to four living players' native Sharpshooter sight segments
 scatter as narrow red beams only inside density, rather than broadly illuminating
 the whole cloud. The ordinary sight artwork remains unchanged.
 
@@ -1003,41 +1075,29 @@ The display shadow setting controls direct shadows as for other material lights.
 Reflection visibility remains part of the existing reflection model. Radioactive
 uses the ordinary source budget; it does not alter damage range or pulse timing.
 
-Monster Vision keeps the familiar yellow under-glow, its 90-unit footprint,
-native death fade, entity transition alpha, ordering before plague/poison, and
-native sprite-shadow suppression. RTX evaluates a smooth radial fit to the
-original aura alpha instead of sampling its texture cell. Classic keeps the
-original texture. The fit is `1.04770258 * exp(-4.85*r)` with a smooth edge envelope
-between normalized radii `.8` and `1`; the draw retains ordinary alpha blending.
+Monster Vision shows living monsters as heat (`render/rtx/heat_vision.py`). It
+keeps the native death fade, entity transition alpha and sprite-shadow
+suppression; classic keeps the original yellow aura texture.
 
-Each visible or overlapping offscreen aura also contributes a shadowless ground
-source: radius 60, height 12, width 16, RGB `(.65, .47, .025)`, illumination gain
-`1.65`, and reflection gain `.32`. The source uses the same substrate normals,
-wet-film/deep-pool normals, absorption, freshness and finite reflection model as
-other material lights. It is not a new enemy-body tint or contour.
+- Bodies: after each species' body pass, the same sprites draw again with
+  `heat_body.frag` in the ironbow ramp (`ironbow.glsl`), indexed by the creature
+  thickness proxy, box-blurred 5×5 within each atlas cell once on upload (one
+  texture tap per fragment): thin legs read cool magenta, thick
+  bodies orange to white. The overlay's opacity is Monster Vision's fade times
+  `.88`, never the creature's tint alpha, so Hidden Evil's near-invisible aliens
+  show in full. Red in the tint carries warmth: the native death fade, cooled to
+  30% while Freeze holds the monsters, following Freeze's own fade out. Scene
+  transitions fade the overlay's opacity, never its warmth.
+- Trails: a world-space float buffer at half the terrain's resolution. Each
+  drawn frame fades it by the game time since the last (half-life 0.9 s, so
+  slow motion leaves the same trail per distance), then max-blends a soft
+  footprint (45% of the creature's size) at every warm monster. A frame gap
+  over a second, a rewind, or a terrain reset starts it over. Where the aura was
+  drawn, `heat_trail.frag` adds the buffer under the view to the ground as faint
+  ironbow heat, under every body. Stored heat ignores scene transitions; the
+  composite fades with the scene's entity alpha, like the bodies.
 
-These sources have a separate accumulation pass and never consume weapon-light
-slots. Every eligible source whose finite support intersects the view is retained.
-Clipped source quads are submitted in batches of 256, with no population cap.
-The shader specializes the production material equations without shadow tracing,
-beam machinery, ambient, sky or gamma encoding. Raw direct and reflected RGB add
-into a view-sized FP32 target with `ONE + ONE`; the ordinary ground shader adds
-this result before its single gamma encoding and the existing HDR compositor.
-FP32 avoids cumulative half-float blend rounding in hundreds of overlapping
-sources. At 1920×1080 the lazy target uses about 32 MiB. Its dimensions follow the
-actual framebuffer, separately from logical camera/output scale, and it is
-released with terrain material resources. Empty/ineligible scenes do not allocate
-or render the target. An already allocated target is retained for reuse.
-
-The ground pass reserves texture unit 5 for this accumulator, leaving raylib's
-four auxiliary slots available for material maps and body occlusion. Direct,
-unshadowed-direct, visibility, reflection and ambient-plus-reflection diagnostics
-include the corresponding perk component. Ambient-only and data-map diagnostics
-exclude it. Monster Vision contributes equally to shadowed and unshadowed direct
-terms, so it does not invent creature shadows in the visibility ratio.
-
-Cost scales with covered source pixels, not the whole viewport times the enemy
-count. Dense overlapping crowds still increase GPU fill and material-sampling
-work, and the FP32 target adds memory bandwidth. This remains an artistic finite
-source/reflection approximation. Perk simulation, RNG, replay state, damage and
-classic rendering are unchanged.
+The sensor is selective: fire, explosions and beams keep their own look and do
+not wash the monsters out. Heat adds no material lights and changes no
+simulation, RNG or replay state. The native/web client still draws the earlier
+analytic aura and its shadowless ground light until it is ported.

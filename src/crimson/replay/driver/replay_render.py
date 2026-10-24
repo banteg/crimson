@@ -139,6 +139,8 @@ def run_replay_render_video(
     overwrite: bool = False,
     mute_audio: bool = True,
     show_progress: bool = False,
+    rtx: bool = False,
+    rtx_smoke: bool = True,
 ) -> ReplayRenderResult:
     from grim.assets import load_runtime_resources, unload_runtime_resources
     from grim.raylib_api import rl
@@ -213,8 +215,11 @@ def run_replay_render_video(
                 config=cfg,
                 console=console,
                 max_ticks=max_ticks,
+                rtx=rtx,
             )
             mode.open()
+            # The video reads back an SDR frame, so RTX tonemaps as on an SDR display.
+            mode.runtime.render_resources.set_simulated_smoke(rtx_smoke)
             video_writer = _FfmpegVideoWriter(
                 rl=rl,
                 ffmpeg_path=ffmpeg_path,

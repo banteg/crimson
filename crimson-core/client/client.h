@@ -37,6 +37,9 @@ std::vector<unsigned char> renderer_capture(int &width, int &height);
 // EDR headroom its tonemap rolls highlights toward (1 is SDR).
 bool renderer_set_rtx(bool enabled);
 void renderer_set_headroom(float headroom);
+// CRIMSON_GPU_TIMERS: the GPU time each pass of the last measured frame took,
+// as "pass=ms ..." (OpenGL timer queries, a frame late), or "" where unmeasured.
+std::string renderer_gpu_timings();
 // thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);
 

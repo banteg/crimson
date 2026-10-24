@@ -99,6 +99,8 @@ void perk_apply(int);
 }
 #ifdef CRIMSON_GAME
 #include "game.inc"
+// What RTX keeps beside a run (game/rtx.cpp), which a new or restored run clears.
+extern "C" void rtx_reset();
 #endif
 static cvar_float_t friendly, transparency, verbose, pad_distance, bodies_fade;
 // Device output does not consume gameplay RNG; a tick's music call draws its
@@ -464,6 +466,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   trace_init("reset data");
 #ifdef CRIMSON_GAME
   game_reset_run_data();
+  rtx_reset();
 #else
   portable_reset_data();
 #endif

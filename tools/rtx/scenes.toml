@@ -1,0 +1,50 @@
+# RTX golden scenes (tools/rtx/golden.py): replay moments that exercise each RTX path. `history` is how many ticks
+# before `tick` playback starts (default 300), which the fluid smoke and wet blood build up over.
+
+[[scene]]
+name = "old-blood"
+note = "late quiet arena: aged blood, corpses and casings with almost no dynamic light"
+replay = "tests/fixtures/replays/survival-238852.crd"
+tick = 20000
+
+[[scene]]
+name = "frozen"
+note = "freeze: frozen creatures under Fire Bullets light"
+replay = "tests/fixtures/replays/survival-238852.crd"
+tick = 4395
+
+[[scene]]
+name = "ice-fire"
+note = "fire beams across frozen creatures and shatter ice on fresh blood"
+replay = "tests/fixtures/replays/survival-238852.crd"
+tick = 4560
+
+[[scene]]
+name = "rocket-smoke"
+note = "Rocket Minigun: exhaust and impact smoke, rocket lights"
+replay = "tests/fixtures/replays/survival-238852.crd"
+tick = 5115
+
+[[scene]]
+name = "nuke"
+note = "the nuke's fireball, shell and pressure front in smoke"
+replay = "tests/fixtures/replays/survival-238852.crd"
+tick = 6130
+
+[[scene]]
+name = "ion-smoke"
+note = "Ion Rifle beams through the nuke's lingering smoke over wet blood"
+replay = "tests/fixtures/replays/survival-238852.crd"
+tick = 6255
+
+[[scene]]
+name = "dense-beams"
+note = "Fire Bullets with Ion Minigun: many beam lights over fresh blood"
+replay = "tools/rtx/replays/ion-chain.crd"
+tick = 20720
+
+[[scene]]
+name = "ion-chain"
+note = "Shock Chain arcs among a crowd"
+replay = "tools/rtx/replays/ion-chain.crd"
+tick = 8740

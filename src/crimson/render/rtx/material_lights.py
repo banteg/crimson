@@ -53,6 +53,8 @@ class MaterialLight(msgspec.Struct, frozen=True):
     broad_illumination: bool = False
     # Positive radius selects an annulus; its width remains source_width.
     ring_radius: float = 0.0
+    # A segment's radiance at its tail, relative to its head: every receiver weights the segment by a linear ramp
+    # from it (source_geometry.glsl's segmentRadiance), 1 for a uniform segment.
     reflection_tail: float = 0.18
     beam_profile: tuple[float, float, float] | None = None
     beam_ion: bool = False
@@ -148,6 +150,8 @@ def projectile_source(proj: Projectile) -> MaterialLight | None:
         reflection_radius=profile.reach,
         beam_profile=beam_profile,
         beam_ion=beam_scale is not None and proj.type_id != PT.FIRE_BULLETS,
+        # A streak's stamps fade in from nothing at its tail.
+        **({"reflection_tail": 0.0} if beam_profile is not None else {}),
     )
 
 

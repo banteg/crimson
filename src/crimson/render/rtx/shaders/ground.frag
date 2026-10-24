@@ -157,25 +157,7 @@ void main() {
     vec3 blood_body_color = vec3(mix(0.05, 0.16, freshness), 0.00003, 0.00005) * body_weight;
 
     // Exposed ice keeps its substrate/sprite color instead of passing through the blood pigment.
-    // Beam contrast is local, bounded, and fades with the source.
-    // Take the strongest local dip; overlapping sources never multiply to black.
-    float beam_dip = 0.;
-    #ifndef MONSTER_VISION_PASS
-    if (u_has_beam_lights != 0) {
-        for (int i=0;i<u_spec_light_count;i++) {
-            if (u_line_cells[i * 3].x <= 0.) continue;
-            vec2 axis=dot(u_spec_dir[i].xy, u_spec_dir[i].xy) > .0001?normalize(u_spec_dir[i].xy):vec2(1.,0.);
-            vec2 delta=world-u_spec_pos[i].xy;
-            float half_span=u_spec_dir[i].w * .5;
-            float distance=length(delta-axis*clamp(dot(delta,axis),-half_span,half_span));
-            float local=1.-smoothstep(40.,300.,distance);
-            float power=clamp(max(u_spec_color[i].r,max(u_spec_color[i].g,u_spec_color[i].b))/1.65,0.,1.);
-            float dip=u_line_cells[i * 3].w > .5 ? u_beam_tuning.y : u_beam_tuning.w;
-            beam_dip=max(beam_dip,dip*local*power);
-        }
-    }
-    #endif
-    ambient_term*=1.-beam_dip;
+    // Emitters only add light: no source darkens the ambient around it.
     vec3 diffuse_lit = mix(wetted_substrate * ambient_transmittance + blood_body_color, albedo_tex.rgb, is_ice) * ambient_term;
 
     // Fixed 30-degree backward virtual eye: reflections land below their emitters.
@@ -210,7 +192,8 @@ void main() {
     #endif
 
         vec2 axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(0.);
-        vec2 light_xy = illuminationSource(sp_pos.xy, axis, sp_dir.w);
+        float tail = u_spec_tail[i / 4][i % 4];
+        vec2 light_xy = illuminationSource(sp_pos.xy, axis, sp_dir.w, tail);
         vec2 reflection_xy = sp_pos.xy + axis * clamp(dot(world - sp_pos.xy, axis), -sp_dir.w*.5, sp_dir.w*.5);
         bool ring = sp_col.w > 0.0;
         if (ring) {
@@ -285,7 +268,7 @@ void main() {
                 float along = clamp(dot(reflected_hit - sp_pos.xy, axis), -sp_dir.w * .5, sp_dir.w * .5);
                 on_source += axis * along;
                 float source_t = clamp(along / sp_dir.w + .5, 0.0, 1.0);
-                source_gain = mix(u_spec_tail[i / 4][i % 4], 1.0, source_t);
+                source_gain = segmentRadiance(source_t, tail);
             }
             float source_distance = length(reflected_hit - on_source);
             float source_width = max(.1, response.w);
@@ -315,7 +298,7 @@ void main() {
     #else
     if (u_has_perk != 0) {
         vec2 uv = (world - u_perk_view.xy) / u_perk_view.zw;
-        vec3 perk = texture(u_perk_tex, vec2(uv.x, 1. - uv.y)).rgb;
+        vec3 perk = texture(u_perk_tex, vec2(uv.x, V_UP > 0. ? 1. - uv.y : uv.y)).rgb;
         if (u_debug == 5 || u_debug == 14) spec_accum += perk;
         else if (u_debug == 6 || u_debug == 7 || u_debug == 8) {
             direct_unshadowed += perk;
@@ -334,10 +317,12 @@ void main() {
     }
     if (u_debug == 13) { finalColor = vec4(debug_radiance(ambient_lit), 1.); return; }
 
-    // Subtle cold moonlit sky reflection across smooth liquid pools (stronger on fresh blood)
+    // Subtle sky reflection across smooth liquid pools (stronger on fresh blood). It stays neutral over blood,
+    // where a cool tint on the dark red body read as magenta, and cold over ice.
     vec3 H_sky = normalize(normalize(vec3(-0.30, -0.40, 0.86)) + V);
     float ndh_sky = max(0.0, dot(N_spec, H_sky));
-    vec3 sky_wet_spec = sky_reflection * pow(ndh_sky, 20.0) *
+    vec3 sky_tint = mix(vec3(dot(sky_reflection, vec3(0.2126, 0.7152, 0.0722))), sky_reflection, is_ice);
+    vec3 sky_wet_spec = sky_tint * pow(ndh_sky, 20.0) *
         ((wet_film * 0.12 + deep_pool * 0.30) * mix(0.45, 1.0, freshness) * (1.0 - is_ice) + is_ice * .30);
 
     // Each dynamic reflection has its own visibility; the sky stays unchanged.

@@ -7,9 +7,11 @@
 #include "client.h"
 #include "client_shaders.h"
 #include "device_states.h"
+#include <algorithm>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include <unordered_map>
 #include <vector>
 #ifdef __EMSCRIPTEN__
@@ -36,6 +38,61 @@ bool renderer_uses_gl() { return true; }
 #endif
 
 namespace {
+
+// CRIMSON_GPU_TIMERS: GPU time per pass. Each mark ends the running query and
+// starts one charged to its label; a frame's queries are read at the next
+// present, by when they have finished. WebGL2 has no timer queries.
+struct GpuTimer {
+  const char *label;
+  GLuint query;
+};
+#ifdef __EMSCRIPTEN__
+const bool gpu_timers = false;
+#define GL_TIME_ELAPSED 0
+#define glGetQueryObjectui64v(query, name, value)
+#else
+const bool gpu_timers = getenv("CRIMSON_GPU_TIMERS");
+#endif
+std::vector<GpuTimer> gpu_frame, gpu_previous;
+std::vector<GLuint> gpu_queries;
+std::string gpu_timings;
+void gpu_mark(const char *label) {
+  if (!gpu_timers || (!gpu_frame.empty() && !strcmp(gpu_frame.back().label, label)))
+    return;
+  if (!gpu_frame.empty())
+    glEndQuery(GL_TIME_ELAPSED);
+  GLuint query;
+  if (gpu_queries.empty()) {
+    glGenQueries(1, &query);
+  } else {
+    query = gpu_queries.back();
+    gpu_queries.pop_back();
+  }
+  glBeginQuery(GL_TIME_ELAPSED, query);
+  gpu_frame.push_back({label, query});
+}
+// The frame ends: read the one before it, then start the next.
+void gpu_frame_end() {
+  if (!gpu_timers || gpu_frame.empty())
+    return;
+  glEndQuery(GL_TIME_ELAPSED);
+  std::vector<std::pair<const char *, double>> totals;
+  for (const GpuTimer &t : gpu_previous) {
+    GLuint64 ns = 0;
+    glGetQueryObjectui64v(t.query, GL_QUERY_RESULT, &ns);
+    auto it = std::find_if(totals.begin(), totals.end(), [&](const auto &p) { return !strcmp(p.first, t.label); });
+    (it == totals.end() ? totals.emplace_back(t.label, 0.0) : *it).second += ns / 1e6;
+    gpu_queries.push_back(t.query);
+  }
+  gpu_timings.clear();
+  char entry[64];
+  for (const auto &[label, ms] : totals) {
+    snprintf(entry, sizeof entry, "%s%s=%.3f", gpu_timings.empty() ? "" : " ", label, ms);
+    gpu_timings += entry;
+  }
+  gpu_previous.swap(gpu_frame);
+  gpu_frame.clear();
+}
 
 
 struct Target {
@@ -80,6 +137,17 @@ const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
 const char *bonus_fragment_source = SHADER_HEADER RTX_SHADER_BONUS_FRAG;
 const char *ground_fragment_source = SHADER_HEADER SHADER_GROUND_LIT_FRAG;
 const char *stamp_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_STAMP_FRAG;
+const char *smoke_rect_source = SHADER_HEADER SHADER_SMOKE_RECT_VERT;
+const char *smoke_field_source = SHADER_HEADER SHADER_SMOKE_FIELD_VERT;
+const char *smoke_solver_source = SHADER_HEADER RTX_SHADER_SMOKE_SOLVER_FRAG;
+const char *smoke_splat_source = SHADER_HEADER RTX_SHADER_SMOKE_SPLAT_FRAG;
+const char *smoke_impulse_source = SHADER_HEADER RTX_SHADER_SMOKE_IMPULSE_FRAG;
+const char *smoke_fragment_source = SHADER_HEADER RTX_SHADER_SMOKE_FRAG;
+const char *blit_fragment_source = SHADER_HEADER SHADER_BLIT_FRAG;
+const char *aura_fragment_source = SHADER_HEADER RTX_SHADER_PERK_AURA_FRAG;
+const char *monster_vision_vertex_source = SHADER_HEADER SHADER_MONSTER_VISION_VERT;
+const char *monster_vision_fragment_source = SHADER_HEADER SHADER_MONSTER_VISION_FRAG;
+const char *pressure_fragment_source = SHADER_HEADER SHADER_PRESSURE_LIT_FRAG;
 
 // RTX lighting: the world's lights and camera (host_scene), the batch being drawn
 // (HOST_PASS_CREATURES, _PLAYERS, MATERIAL_BONUS, or 0 for the device's own
@@ -92,9 +160,9 @@ float scene_camera[2];
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
 // What the ground takes beyond them (host_scene): the run's clock, the terrain's
-// size in world units, the beam sections' tuning, and per light its direction
+// size in world units, the beam sections' gains, and per light its direction
 // with broad illumination, its reflection tail and its three beam sections.
-float scene_seconds, ground_size[2], beam_tuning[4];
+float scene_seconds, ground_size[2], beam_gain[2];
 float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
 bool beam_lights;
 int bonus_emblem;
@@ -110,7 +178,20 @@ enum { OCCLUSION_WIDTH = 256 };
 float occlusion_grid[4], occlusion_cell = 64;
 int dynamic_shadows, occlusion_rows;
 GLuint occlusion_texture;
-LitProgram creature_lit, player_lit, bonus_lit;
+LitProgram creature_lit, player_lit, bonus_lit, aura_lit;
+// Monster Vision's ground light (host_perk_light, render/rtx/perk_lighting.py):
+// its auras as world x, y and alpha, the additive pass that sums their light
+// on the ground, and the float accumulator the ground program adds.
+enum { MONSTER_VISION_RADIUS = 60 };
+std::vector<float> perk_sources;
+GLuint monster_vision_program;
+Target perk_target;
+// The explosions' pressure fronts (host_pressure, render/rtx/shockwaves.py):
+// screen center, radius and strength each, applied from the world's target into
+// another before the tonemap reads it.
+std::vector<float> pressure_fronts;
+GLuint pressure_program;
+Target pressured;
 // The RTX ground (render/rtx/materials.py): companions of the terrain target,
 // made from it as it stands on first use and dropped when it is cleared,
 // replaced or released, or RTX ends. The substrate is the terrain and its decals
@@ -127,6 +208,14 @@ int ground_kind = HOST_GROUND_END;
 float ground_seconds;
 GLuint ground_program, stamp_program, fill_program;
 GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
+// RTX fluid smoke (game/rtx_smoke.cpp, render/rtx/gpu_smoke.py): the field's
+// RGBA16F targets (its state twice, divergence, pressure twice), the solver's
+// settings and passes, and the display's composite at reduced resolution.
+enum { SMOKE_TARGETS = 5, SMOKE_DISPLAY_MAX_AXIS = 640 };
+Target smoke_targets[SMOKE_TARGETS], smoke_composite;
+int smoke_current, smoke_iterations;
+float smoke_resolution, smoke_world[2], smoke_dt, smoke_decay = 0.2f, smoke_fade = 1;
+GLuint smoke_solver_program, smoke_splat_program, smoke_impulse_program, smoke_program, blit_program;
 // Each uploaded artwork's texels in the module (it keeps them), for the creature
 // thickness maps made on a creature atlas's first lit draw.
 std::unordered_map<int, u32> texel_addresses;
@@ -358,7 +447,10 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   if (!rtx || !world || !material || material == HOST_PASS_GROUND || (material == HOST_PASS_PLAYERS && !light_count))
     return false;
   Target &t = drawing_target(current_target);
-  LitProgram &p = material == HOST_PASS_PLAYERS ? player_lit : material == MATERIAL_BONUS ? bonus_lit : creature_lit;
+  LitProgram &p = material == HOST_PASS_PLAYERS ? player_lit
+                  : material == MATERIAL_BONUS  ? bonus_lit
+                  : material == HOST_PASS_AURA  ? aura_lit
+                                                : creature_lit;
   glUseProgram(p.id);
   glUniform1i(p.pass, bonus_emblem);
   glUniform2fv(p.grid, 1, bonus_grid);
@@ -510,6 +602,130 @@ void stamp_ground(Ground &g, int kind, u32 primitive, u32 vertices, u32 vertex_c
   }
 }
 
+// A rect of a smoke target through one of the solver's programs, its uniforms set.
+void smoke_rect(GLuint p, const float *rect) {
+  glUniform4fv(glGetUniformLocation(p, "rect"), 1, rect);
+  glUniform2f(glGetUniformLocation(p, "u_resolution"), smoke_resolution, smoke_resolution);
+  glUniform2fv(glGetUniformLocation(p, "u_world_size"), 1, smoke_world);
+  glDisable(GL_CULL_FACE);
+  glBindVertexArray(vertex_array);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+// A whole-field solver pass (GpuSmokeSimulation._pass): `mode` from `source`,
+// with `aux` (pressure or divergence), into `destination`.
+void smoke_pass(int destination, int source, int mode, int aux = -1) {
+  bind_framebuffer(smoke_targets[destination]);
+  glDisable(GL_BLEND);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  GLuint p = smoke_solver_program;
+  glUseProgram(p);
+  glUniform1i(glGetUniformLocation(p, "texture0"), 0);
+  glUniform1i(glGetUniformLocation(p, "u_aux"), 1);
+  glUniform1i(glGetUniformLocation(p, "u_mode"), mode);
+  glUniform1f(glGetUniformLocation(p, "u_dt"), smoke_dt);
+  glUniform1f(glGetUniformLocation(p, "u_decay"), smoke_decay);
+  glUniform1f(glGetUniformLocation(p, "u_fade"), smoke_fade);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, aux >= 0 ? smoke_targets[aux].texture : blank_texture);
+  glBindSampler(1, 0);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, smoke_targets[source].texture);
+  glBindSampler(0, 0);
+  const float whole[4] = {0, 0, 1, 1};
+  smoke_rect(p, whole);
+}
+
+void clear_smoke_target(int index) {
+  bind_framebuffer(smoke_targets[index]);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
+// Splats and impulses add into the state: its alpha is signed velocity, so ONE/ONE.
+void smoke_add(GLuint p, const float *rect) {
+  bind_framebuffer(smoke_targets[smoke_current]);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_ONE, GL_ONE);
+  smoke_rect(p, rect);
+}
+
+// Device vertices the host makes (x, y, z, rhw, D3DCOLOR, u, v), as a triangle list.
+struct HostVertex {
+  float x, y, z, rhw;
+  u32 color;
+  float u, v;
+};
+void submit_vertices(const std::vector<HostVertex> &vertices) {
+  glBindVertexArray(vertex_array);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+  glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(vertices.size() * sizeof(HostVertex)), vertices.data(), GL_STREAM_DRAW);
+  glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.size());
+}
+
+// Each aura's quad, its 60-unit support clipped to the view on `t`; its texture
+// coordinates carry its world center and its alpha the aura's.
+std::vector<HostVertex> monster_vision_quads(const Target &t) {
+  std::vector<HostVertex> quads;
+  float lo_x = -scene_camera[0], lo_y = -scene_camera[1];
+  float hi_x = lo_x + t.logical_width, hi_y = lo_y + t.logical_height;
+  for (size_t i = 0; i + 2 < perk_sources.size(); i += 3) {
+    float x = perk_sources[i], y = perk_sources[i + 1], r = MONSTER_VISION_RADIUS;
+    float x0 = std::max(lo_x, x - r), y0 = std::max(lo_y, y - r), x1 = std::min(hi_x, x + r), y1 = std::min(hi_y, y + r);
+    if (x1 <= x0 || y1 <= y0)
+      continue;
+    u32 color = (u32)(perk_sources[i + 2] * 255 + 0.5f) << 24 | 0xffffff;
+    auto corner = [&](float cx, float cy) {
+      return HostVertex{cx + scene_camera[0], cy + scene_camera[1], 0, 1, color, x, y};
+    };
+    for (HostVertex v : {corner(x0, y0), corner(x0, y1), corner(x1, y1), corner(x0, y0), corner(x1, y1), corner(x1, y0)})
+      quads.push_back(v);
+  }
+  return quads;
+}
+
+// Monster Vision's light summed into the accumulator, ONE + ONE: each aura's
+// shadowless direct and reflected light on the ground beneath it.
+void accumulate_monster_vision(const Ground &g, const Target &t) {
+  if (perk_target.width != t.width || perk_target.height != t.height) {
+    release(perk_target);
+    perk_target.width = t.width, perk_target.height = t.height;
+    perk_target.flags = TARGET_RENDER | TARGET_FLOAT;
+    allocate(perk_target);
+  }
+  perk_target.logical_width = t.logical_width, perk_target.logical_height = t.logical_height;
+  bind_framebuffer(perk_target);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_ONE, GL_ONE);
+  glDisable(GL_CULL_FACE);
+  GLuint p = monster_vision_program;
+  glUseProgram(p);
+  auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
+  glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
+  glUniform2fv(at("u_ground_size"), 1, ground_size);
+  glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
+  glUniform1i(at("u_perk_component"), 0);
+  const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture, blank_texture};
+  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex"};
+  for (int i = 0; i < 4; ++i) {
+    glUniform1i(at(names[i]), i);
+    glActiveTexture(GL_TEXTURE0 + i);
+    glBindTexture(GL_TEXTURE_2D, inputs[i]);
+    glBindSampler(i, 0);
+  }
+  glActiveTexture(GL_TEXTURE0);
+  submit_vertices(monster_vision_quads(t));
+  bind_target();
+}
+
 // The terrain drawn into the world, lit as the Python port's ground: its
 // substrate, materials and surface under the frame's lights and body shadows.
 bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
@@ -518,6 +734,9 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
+  bool perk = !perk_sources.empty();
+  if (perk)
+    accumulate_monster_vision(g, t);
   bind_target();
   GLuint p = ground_program;
   glUseProgram(p);
@@ -528,11 +747,12 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
   glUniform1i(at("u_debug"), 0);
   glUniform1i(at("u_debug_display"), 1);
-  glUniform1i(at("u_has_perk"), 0);
+  glUniform1i(at("u_has_perk"), perk);
+  glUniform4f(at("u_perk_view"), -scene_camera[0], -scene_camera[1], (float)t.logical_width, (float)t.logical_height);
   glUniform1i(at("u_dynamic_shadows"), dynamic_shadows);
   glUniform1i(at("u_spec_light_count"), light_count);
   glUniform1i(at("u_has_beam_lights"), beam_lights);
-  glUniform4fv(at("u_beam_tuning"), 1, beam_tuning);
+  glUniform2fv(at("u_beam_gain"), 1, beam_gain);
   glUniform4fv(at("u_occlusion_grid"), 1, occlusion_grid);
   glUniform1f(at("u_occlusion_cell_size"), occlusion_cell);
   if (light_count) {
@@ -544,7 +764,8 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     glUniform4fv(at("u_line_cells"), light_count * 3, line_cells);
   }
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
-                           occlusion_grid[2] ? occlusion_texture : blank_texture, blank_texture};
+                           occlusion_grid[2] ? occlusion_texture : blank_texture,
+                           perk ? perk_target.texture : blank_texture};
   const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex", "u_perk_tex"};
   for (int i = 0; i < 5; ++i) {
     glUniform1i(at(names[i]), i);
@@ -658,6 +879,7 @@ void GL_ENTRY(renderer_resize)(int window_width, int window_height) {
 }
 
 void GL_ENTRY(renderer_present)(int window_width, int window_height) {
+  gpu_mark("present");
   Target &back = textures[0];
   if (!back.texture)
     return;
@@ -685,7 +907,11 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, exact ? GL_NEAREST : GL_LINEAR);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindTexture(GL_TEXTURE_2D, 0);
+  gpu_frame_end();
+  gpu_mark("frame");
 }
+
+std::string GL_ENTRY(renderer_gpu_timings)() { return gpu_timings; }
 
 void GL_ENTRY(renderer_resume)() { bind_target(); }
 
@@ -710,6 +936,9 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     create_lit(creature_lit, creature_fragment_source);
     create_lit(player_lit, player_fragment_source);
     create_lit(bonus_lit, bonus_fragment_source);
+    create_lit(aura_lit, aura_fragment_source);
+    monster_vision_program = link(monster_vision_vertex_source, monster_vision_fragment_source);
+    pressure_program = link(tonemap_vertex_source, pressure_fragment_source);
     ground_program = link(lit_vertex_source, ground_fragment_source);
     stamp_program = link(lit_vertex_source, stamp_fragment_source);
     glUseProgram(stamp_program);
@@ -718,6 +947,13 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     u_stamp_kind = glGetUniformLocation(stamp_program, "u_kind");
     u_stamp_pass = glGetUniformLocation(stamp_program, "u_pass");
     u_stamp_wetness = glGetUniformLocation(stamp_program, "u_wetness");
+    smoke_solver_program = link(smoke_rect_source, smoke_solver_source);
+    smoke_splat_program = link(smoke_rect_source, smoke_splat_source);
+    smoke_impulse_program = link(smoke_rect_source, smoke_impulse_source);
+    smoke_program = link(smoke_field_source, smoke_fragment_source);
+    blit_program = link(tonemap_vertex_source, blit_fragment_source);
+    glUseProgram(blit_program);
+    glUniform1i(glGetUniformLocation(blit_program, "source"), 0);
     fill_program = link(tonemap_vertex_source, stamp_fragment_source);
     glUseProgram(fill_program);
     glUniform1i(glGetUniformLocation(fill_program, "texture0"), 0);
@@ -737,6 +973,11 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())
     drop_ground(grounds.begin()->first);
+  for (Target &t : smoke_targets)
+    release(t);
+  release(smoke_composite);
+  release(perk_target);
+  release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -1012,7 +1253,7 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
-  memcpy(beam_tuning, v + 5, sizeof beam_tuning);
+  memcpy(beam_gain, v + 5, sizeof beam_gain);
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
   beam_lights = false;
   for (int i = 0; i < light_count; ++i) {
@@ -1020,6 +1261,7 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
     memcpy(light_pos + i * 4, l, 16);
     memcpy(light_rgb + i * 4, l + 4, 16);
     memcpy(light_dir + i * 4, l + 8, 16);
+    light_dir[i * 4 + 2] = l[16]; // creatures, players and bonuses weight a segment by its tail
     memcpy(light_response + i * 4, l + 12, 16);
     memcpy(ground_dir + i * 4, l + 8, 16);
     ground_dir[i * 4 + 2] = l[17];
@@ -1028,9 +1270,162 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
     beam_lights |= l[20] > 0;
   }
 }
+void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {
+  const float *f = (const float *)(client_memory() + fronts);
+  pressure_fronts.assign(f, f + count * 4);
+}
+void GL_ENTRY(w2c_host_perk_light)(struct w2c_host *, u32 sources, u32 count) {
+  const float *s = (const float *)(client_memory() + sources);
+  perk_sources.assign(s, s + count * 3);
+}
 void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
   ground_kind = (int)kind;
   ground_seconds = seconds;
+}
+void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
+  if (!rtx)
+    return;
+  gpu_mark("smoke-solver");
+  const float *c = (const float *)(client_memory() + commands), *end = c + count;
+  while (c < end) {
+    switch ((int)*c) {
+    case SMOKE_RESET:
+      smoke_resolution = c[1], smoke_world[0] = c[2], smoke_world[1] = c[3], smoke_dt = c[4];
+      smoke_iterations = (int)c[5];
+      for (int i = 0; i < SMOKE_TARGETS; ++i) {
+        Target &t = smoke_targets[i];
+        if (t.width != (int)smoke_resolution) {
+          release(t);
+          t.width = t.height = t.logical_width = t.logical_height = (int)smoke_resolution;
+          t.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+          allocate(t);
+        }
+        clear_smoke_target(i);
+      }
+      smoke_current = 0;
+      c += 6;
+      break;
+    case SMOKE_FADE:
+      smoke_fade = c[1];
+      smoke_pass(1 - smoke_current, smoke_current, 5);
+      smoke_current = 1 - smoke_current;
+      c += 2;
+      break;
+    case SMOKE_SPLAT: {
+      GLuint p = smoke_splat_program;
+      glUseProgram(p);
+      glUniform4fv(glGetUniformLocation(p, "u_source"), 1, c + 5);
+      glUniform4fv(glGetUniformLocation(p, "u_motion"), 1, c + 9);
+      glUniform1f(glGetUniformLocation(p, "u_rotation"), c[13]);
+      glUniform4fv(glGetUniformLocation(p, "u_flow"), 1, c + 14);
+      smoke_add(p, c + 1);
+      c += 18;
+      break;
+    }
+    case SMOKE_IMPULSE: {
+      GLuint p = smoke_impulse_program;
+      glUseProgram(p);
+      glUniform4fv(glGetUniformLocation(p, "u_segment"), 1, c + 5);
+      glUniform4fv(glGetUniformLocation(p, "u_impulse"), 1, c + 9);
+      glUniform4fv(glGetUniformLocation(p, "u_phase"), 1, c + 13);
+      smoke_add(p, c + 1);
+      c += 17;
+      break;
+    }
+    case SMOKE_PROJECT: {
+      // Advect velocity, take its divergence, relax pressure, then subtract its gradient.
+      int other = 1 - smoke_current;
+      smoke_pass(other, smoke_current, 0);
+      smoke_pass(2, other, 1);
+      clear_smoke_target(3);
+      int pressure = 3;
+      for (int i = 0; i < smoke_iterations; ++i) {
+        smoke_pass(7 - pressure, pressure, 2, 2);
+        pressure = 7 - pressure;
+      }
+      smoke_pass(smoke_current, other, 3, pressure);
+      c += 1;
+      break;
+    }
+    case SMOKE_TRANSPORT:
+      smoke_decay = c[1];
+      smoke_pass(1 - smoke_current, smoke_current, 4);
+      smoke_current = 1 - smoke_current;
+      c += 2;
+      break;
+    default:
+      client_fatal("Unknown smoke command");
+    }
+  }
+  bind_target();
+}
+void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 light_count, u32 sights,
+                                   u32 sight_count) {
+  if (!rtx || !world || !smoke_targets[0].texture)
+    return;
+  gpu_mark("smoke");
+  const float *v = (const float *)(client_memory() + view);
+  Target &t = drawing_target(current_target);
+  // Smoke is a low-frequency volume: integrate it at most 640 pixels across.
+  float scale = fminf(1.0f, (float)SMOKE_DISPLAY_MAX_AXIS / (float)std::max(t.width, t.height));
+  int width = std::max(1, (int)lroundf(t.width * scale)), height = std::max(1, (int)lroundf(t.height * scale));
+  if (smoke_composite.width != width || smoke_composite.height != height) {
+    release(smoke_composite);
+    smoke_composite.width = width, smoke_composite.height = height;
+    smoke_composite.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(smoke_composite);
+  }
+  smoke_composite.logical_width = t.logical_width, smoke_composite.logical_height = t.logical_height;
+  bind_framebuffer(smoke_composite);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  // Straight RGB becomes premultiplied once; alpha accumulates as alpha.
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  GLuint p = smoke_program;
+  glUseProgram(p);
+  auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
+  glUniform4fv(at("rect"), 1, v);
+  glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform1i(at("texture0"), 0);
+  glUniform1i(at("u_state_flip"), 1);
+  glUniform2fv(at("u_origin"), 1, v + 4);
+  glUniform2fv(at("u_size"), 1, v + 6);
+  glUniform1f(at("u_opacity"), v[8]);
+  glUniform1i(at("u_debug"), 0);
+  glUniform1i(at("u_light_count"), (int)light_count);
+  std::vector<float> pos, rgb, shape, tails((light_count + 3) / 4 * 4);
+  const float *l = (const float *)(client_memory() + lights);
+  for (u32 i = 0; i < light_count; ++i, l += SMOKE_LIGHT_FLOATS) {
+    pos.insert(pos.end(), l, l + 4);
+    rgb.insert(rgb.end(), l + 4, l + 8);
+    shape.insert(shape.end(), l + 8, l + 12);
+    tails[i] = l[12];
+  }
+  if (light_count) {
+    glUniform4fv(at("u_light_pos"), (int)light_count, pos.data());
+    glUniform4fv(at("u_light_rgb"), (int)light_count, rgb.data());
+    glUniform4fv(at("u_light_shape"), (int)light_count, shape.data());
+    glUniform4fv(at("u_light_tail"), (int)(light_count + 3) / 4, tails.data());
+  }
+  glUniform1i(at("u_sight_count"), (int)sight_count);
+  if (sight_count)
+    glUniform4fv(at("u_sights"), (int)sight_count, (const float *)(client_memory() + sights));
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, smoke_targets[smoke_current].texture);
+  glBindSampler(0, 0);
+  glDisable(GL_CULL_FACE);
+  glBindVertexArray(vertex_array);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  // The premultiplied composite over the world.
+  bind_target();
+  glUseProgram(blit_program);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glBindTexture(GL_TEXTURE_2D, smoke_composite.texture);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 count) {
   const float *g = (const float *)(client_memory() + grid);
@@ -1058,12 +1453,15 @@ void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 c
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, OCCLUSION_WIDTH, rows, GL_RGBA, GL_FLOAT, texels.data());
 }
 void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 grid_y, f32 center_x, f32 center_y) {
+  gpu_mark("bonuses");
   material = MATERIAL_BONUS;
   bonus_emblem = (int)emblem;
   bonus_grid[0] = grid_x, bonus_grid[1] = grid_y;
   bonus_center[0] = center_x, bonus_center[1] = center_y;
 }
 void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
+  static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "aura"};
+  gpu_mark(pass < sizeof labels / sizeof *labels ? labels[pass] : "sprites");
   if (pass >= HOST_PASS_CREATURES) {
     material = pass == HOST_PASS_SPRITES ? 0 : (int)pass;
     return;
@@ -1088,6 +1486,43 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   } else if (pass == HOST_PASS_WORLD_END && world) {
     world = false;
     material = 0;
+    // What follows the world's post passes is the HUD's.
+    struct HudMark {
+      ~HudMark() { gpu_mark("hud"); }
+    } hud;
+    // The pressure fronts displace the world, in its own pixels, into a second target.
+    const Target *world_image = &hdr;
+    if (!pressure_fronts.empty()) {
+      if (pressured.width != hdr.width || pressured.height != hdr.height) {
+        release(pressured);
+        pressured.width = hdr.width, pressured.height = hdr.height, pressured.flags = hdr.flags;
+        allocate(pressured);
+      }
+      float sx = (float)hdr.width / hdr.logical_width, sy = (float)hdr.height / hdr.logical_height;
+      int count = (int)pressure_fronts.size() / 4;
+      std::vector<float> fronts, strengths((count + 3) / 4 * 4);
+      for (int i = 0; i < count; ++i) {
+        const float *f = &pressure_fronts[i * 4];
+        fronts.insert(fronts.end(), {f[0] * sx, f[1] * sy, f[2] * sx, f[2] * sy});
+        strengths[i] = f[3];
+      }
+      bind_framebuffer(pressured);
+      glUseProgram(pressure_program);
+      glUniform1i(glGetUniformLocation(pressure_program, "texture0"), 0);
+      glUniform2f(glGetUniformLocation(pressure_program, "u_size"), (float)hdr.width, (float)hdr.height);
+      glUniform1i(glGetUniformLocation(pressure_program, "u_count"), count);
+      glUniform4fv(glGetUniformLocation(pressure_program, "u_fronts"), count, fronts.data());
+      glUniform4fv(glGetUniformLocation(pressure_program, "u_strength"), (count + 3) / 4, strengths.data());
+      glDisable(GL_BLEND);
+      glDisable(GL_CULL_FACE);
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, hdr.texture);
+      glBindSampler(0, 0);
+      glBindVertexArray(vertex_array);
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+      world_image = &pressured;
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
     glUseProgram(tonemap_program);
@@ -1096,7 +1531,7 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     glDisable(GL_CULL_FACE);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, hdr.texture);
+    glBindTexture(GL_TEXTURE_2D, world_image->texture);
     glBindSampler(0, 0);
     glBindVertexArray(vertex_array);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

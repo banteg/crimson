@@ -165,6 +165,16 @@ Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
 Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_FRAG, DEVICE_VERTICES};
 Program ground_stamp{&WGSL_CREATURE_VERT, &WGSL_GROUND_STAMP_FRAG, DEVICE_VERTICES};
 Program ground_fill{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_STAMP_FRAG, NO_VERTICES};
+Program smoke_solver{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_SOLVER_FRAG, NO_VERTICES};
+Program smoke_splat{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_SPLAT_FRAG, NO_VERTICES};
+Program smoke_impulse{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_IMPULSE_FRAG, NO_VERTICES};
+Program smoke_display{&WGSL_SMOKE_FIELD_VERT, &WGSL_SMOKE_FRAG, NO_VERTICES};
+Program aura_lit{&WGSL_CREATURE_VERT, &WGSL_PERK_AURA_FRAG, DEVICE_VERTICES};
+Program monster_vision{&WGSL_MONSTER_VISION_VERT, &WGSL_MONSTER_VISION_FRAG, DEVICE_VERTICES};
+Program pressure_fronts_program{&WGSL_FULLSCREEN_VERT, &WGSL_PRESSURE_LIT_FRAG, NO_VERTICES};
+// The explosions' pressure fronts (host_pressure), as in renderer.cpp.
+std::vector<float> pressure_fronts;
+Target pressured;
 
 // RTX lighting, as in renderer.cpp: the world's lights and camera, the batch
 // being drawn, a bonus draw's own material, and each artwork's texels in the
@@ -177,7 +187,7 @@ int light_count;
 int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
 // What the ground takes beyond them, as in renderer.cpp.
-float scene_seconds, ground_size[2], beam_tuning[4];
+float scene_seconds, ground_size[2], beam_gain[2];
 float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
 bool beam_lights;
 std::unordered_map<int, u32> texel_addresses;
@@ -457,7 +467,12 @@ WGPUBindGroup fragment_group(Program &p, std::initializer_list<Input> inputs) {
 }
 
 // Bind a program's groups with its uniform blocks, written to the stream.
+// A stage without a uniform block (the aura's fragment) takes no uniforms.
 void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniforms *fragment) {
+  if (!p.frag->uniform_size)
+    fragment = nullptr;
+  if (!p.vert->uniform_size)
+    vertex = nullptr;
   uint32_t offset = fragment ? (uint32_t)put(uniform_stream, fragment->data, p.frag->uniform_size) : 0;
   wgpuRenderPassEncoderSetBindGroup(pass, 0, group, fragment ? 1 : 0, &offset);
   if (vertex) {
@@ -469,7 +484,9 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_stamp, &ground_fill}) {
+                     &ground_lit, &ground_stamp, &ground_fill,
+                     &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
+                     &aura_lit, &monster_vision, &pressure_fronts_program}) {
     for (auto &[key, group] : p->groups)
       wgpuBindGroupRelease(group);
     p->groups.clear();
@@ -645,7 +662,9 @@ void wgpu_renderer_init() {
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_stamp, &ground_fill})
+                     &ground_lit, &ground_stamp, &ground_fill,
+                     &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
+                     &aura_lit, &monster_vision, &pressure_fronts_program})
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
@@ -882,6 +901,66 @@ void stamp_ground(Ground &g, int kind, const Geometry &geometry) {
   }
 }
 
+// Monster Vision's ground light (host_perk_light), as in renderer.cpp.
+enum { MONSTER_VISION_RADIUS = 60 };
+std::vector<float> perk_sources;
+Target perk_target;
+struct HostVertex {
+  float x, y, z, rhw;
+  u32 color;
+  float u, v;
+};
+
+void accumulate_monster_vision(Ground &g, const Target &t) {
+  std::vector<HostVertex> quads;
+  float lo_x = -scene_camera[0], lo_y = -scene_camera[1];
+  float hi_x = lo_x + t.logical_width, hi_y = lo_y + t.logical_height;
+  for (size_t i = 0; i + 2 < perk_sources.size(); i += 3) {
+    float x = perk_sources[i], y = perk_sources[i + 1], r = MONSTER_VISION_RADIUS;
+    float x0 = std::max(lo_x, x - r), y0 = std::max(lo_y, y - r), x1 = std::min(hi_x, x + r), y1 = std::min(hi_y, y + r);
+    if (x1 <= x0 || y1 <= y0)
+      continue;
+    u32 color = (u32)(perk_sources[i + 2] * 255 + 0.5f) << 24 | 0xffffff;
+    auto corner = [&](float cx, float cy) {
+      return HostVertex{cx + scene_camera[0], cy + scene_camera[1], 0, 1, color, x, y};
+    };
+    for (HostVertex v : {corner(x0, y0), corner(x0, y1), corner(x1, y1), corner(x0, y0), corner(x1, y1), corner(x1, y0)})
+      quads.push_back(v);
+  }
+  if (perk_target.width != t.width || perk_target.height != t.height) {
+    release(perk_target);
+    perk_target.width = t.width, perk_target.height = t.height;
+    perk_target.flags = TARGET_RENDER | TARGET_FLOAT;
+    allocate(perk_target);
+  }
+  perk_target.logical_width = t.logical_width, perk_target.logical_height = t.logical_height;
+  uint64_t bytes = quads.size() * sizeof(HostVertex);
+  if (!fits(vertex_stream, bytes) || !fits(uniform_stream, 8192))
+    submit();
+  WGPUColor none = {0, 0, 0, 0};
+  begin_pass(perk_target, &none);
+  if (quads.empty())
+    return;
+  Output o;
+  o.format = format_of(perk_target);
+  o.topology = WGPUPrimitiveTopology_TriangleList;
+  o.blend = true, o.src = o.dst = WGPUBlendFactor_One;
+  Uniforms vertex(*monster_vision.vert), fragment(*monster_vision.frag);
+  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
+  vertex.set("u_ground_size", ground_size, 8);
+  fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_perk_component", 0);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(monster_vision, o));
+  bind(monster_vision,
+       fragment_group(monster_vision, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
+                                       {"u_surface_tex", g.surface.view, linear_clamp()},
+                                       {"u_material_tex", g.coverage.view, linear_clamp()},
+                                       {"u_occlusion_tex", blank_view, nearest_clamp()}}),
+       &vertex, &fragment);
+  uint64_t at = put(vertex_stream, quads.data(), bytes);
+  wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, bytes);
+  wgpuRenderPassEncoderDraw(pass, (uint32_t)quads.size(), 1, 0, 0);
+}
+
 // The terrain drawn into the world, lit as the Python port's ground.
 bool ground_draw(const Geometry &geometry) {
   auto it = textures.find(bound[0]);
@@ -889,12 +968,16 @@ bool ground_draw(const Geometry &geometry) {
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
+  bool perk = !perk_sources.empty();
+  if (perk)
+    accumulate_monster_vision(g, t);
   pass_into(t);
   Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
   fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
-  fragment.i("u_debug_display", 1).i("u_has_perk", 0).i("u_dynamic_shadows", dynamic_shadows);
-  fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_tuning", beam_tuning, 16);
+  fragment.i("u_debug_display", 1).i("u_has_perk", perk).i("u_dynamic_shadows", dynamic_shadows);
+  fragment.v4("u_perk_view", -scene_camera[0], -scene_camera[1], (float)t.logical_width, (float)t.logical_height);
+  fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
   fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
   fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
   fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
@@ -906,11 +989,54 @@ bool ground_draw(const Geometry &geometry) {
        fragment_group(ground_lit, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
                                    {"u_surface_tex", g.surface.view, linear_clamp()},
                                    {"u_material_tex", g.coverage.view, linear_clamp()},
-                                   {"u_perk_tex", blank_view, linear_clamp()},
+                                   {"u_perk_tex", perk ? perk_target.view : blank_view, linear_clamp()},
                                    {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()}}),
        &vertex, &fragment);
   draw_geometry(geometry);
   return true;
+}
+
+// --- RTX fluid smoke (game/rtx_smoke.cpp), as in renderer.cpp ---------------------
+enum { SMOKE_TARGETS = 5, SMOKE_DISPLAY_MAX_AXIS = 640 };
+Target smoke_targets[SMOKE_TARGETS], smoke_composite;
+int smoke_current, smoke_iterations;
+float smoke_resolution, smoke_world[2], smoke_dt, smoke_decay = 0.2f, smoke_fade = 1;
+
+void release_smoke() {
+  for (Target &t : smoke_targets)
+    release(t);
+  release(smoke_composite);
+}
+
+// A rect of a smoke target through one of the solver's programs, with `o`'s blend.
+void smoke_rect(Program &p, Target &into, const float *rect, Uniforms &fragment, Output o,
+                std::initializer_list<Input> inputs) {
+  pass_into(into);
+  o.format = format_of(into);
+  Uniforms vertex(*p.vert);
+  vertex.set("rect", rect, 16);
+  fragment.v2("u_resolution", smoke_resolution, smoke_resolution).set("u_world_size", smoke_world, 8);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(p, o));
+  bind(p, fragment_group(p, inputs), &vertex, &fragment);
+  wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+}
+
+void smoke_pass(int destination, int source, int mode, int aux = -1) {
+  if (!fits(uniform_stream, 2048))
+    submit();
+  Uniforms fragment(*smoke_solver.frag);
+  fragment.i("u_mode", mode).f("u_dt", smoke_dt).f("u_decay", smoke_decay).f("u_fade", smoke_fade);
+  const float whole[4] = {0, 0, 1, 1};
+  smoke_rect(smoke_solver, smoke_targets[destination], whole, fragment, Output{},
+             {{"texture0", smoke_targets[source].view, linear_clamp()},
+              {"u_aux", aux >= 0 ? smoke_targets[aux].view : blank_view, linear_clamp()}});
+}
+
+// Splats and impulses add into the state: its alpha is signed velocity, so ONE/ONE.
+Output smoke_adding() {
+  Output o;
+  o.blend = true, o.src = o.dst = WGPUBlendFactor_One;
+  return o;
 }
 
 bool wgpu_renderer_set_rtx(bool enabled) {
@@ -920,6 +1046,9 @@ bool wgpu_renderer_set_rtx(bool enabled) {
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())
     drop_ground(grounds.begin()->first);
+  release_smoke();
+  release(perk_target);
+  release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -932,6 +1061,8 @@ bool wgpu_renderer_set_rtx(bool enabled) {
 
 // The canvas sets the headroom it shows (configure_canvas).
 void wgpu_renderer_set_headroom(float) {}
+// WebGPU's timestamp queries need a device feature the page does not ask for.
+std::string wgpu_renderer_gpu_timings() { return ""; }
 
 extern "C" {
 void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {
@@ -1112,6 +1243,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   Program &program = !lit                           ? classic
                      : material == HOST_PASS_PLAYERS ? player_lit
                      : material == MATERIAL_BONUS    ? bonus_lit
+                     : material == HOST_PASS_AURA    ? aura_lit
                                                      : creature_lit;
   if (lit) {
     Uniforms vertex(*program.vert), fragment(*program.frag);
@@ -1175,7 +1307,7 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
-  memcpy(beam_tuning, v + 5, sizeof beam_tuning);
+  memcpy(beam_gain, v + 5, sizeof beam_gain);
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
   beam_lights = false;
   for (int i = 0; i < light_count; ++i) {
@@ -1183,6 +1315,7 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
     memcpy(light_pos + i * 4, l, 16);
     memcpy(light_rgb + i * 4, l + 4, 16);
     memcpy(light_dir + i * 4, l + 8, 16);
+    light_dir[i * 4 + 2] = l[16]; // creatures, players and bonuses weight a segment by its tail
     memcpy(light_response + i * 4, l + 12, 16);
     memcpy(ground_dir + i * 4, l + 8, 16);
     ground_dir[i * 4 + 2] = l[17];
@@ -1191,9 +1324,146 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
     beam_lights |= l[20] > 0;
   }
 }
+void wgpu_w2c_host_pressure(struct w2c_host *, u32 fronts, u32 count) {
+  const float *f = (const float *)(client_memory() + fronts);
+  pressure_fronts.assign(f, f + count * 4);
+}
+void wgpu_w2c_host_perk_light(struct w2c_host *, u32 sources, u32 count) {
+  const float *s = (const float *)(client_memory() + sources);
+  perk_sources.assign(s, s + count * 3);
+}
 void wgpu_w2c_host_ground(struct w2c_host *, u32 kind, f32 seconds) {
   ground_kind = (int)kind;
   ground_seconds = seconds;
+}
+void wgpu_w2c_host_smoke(struct w2c_host *, u32 commands, u32 count) {
+  if (!rtx)
+    return;
+  const float *c = (const float *)(client_memory() + commands), *end = c + count;
+  while (c < end) {
+    switch ((int)*c) {
+    case SMOKE_RESET: {
+      smoke_resolution = c[1], smoke_world[0] = c[2], smoke_world[1] = c[3], smoke_dt = c[4];
+      smoke_iterations = (int)c[5];
+      WGPUColor none = {0, 0, 0, 0};
+      for (Target &t : smoke_targets) {
+        if (t.width != (int)smoke_resolution) {
+          release(t);
+          t.width = t.height = t.logical_width = t.logical_height = (int)smoke_resolution;
+          t.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+          allocate(t);
+        }
+        begin_pass(t, &none);
+      }
+      smoke_current = 0;
+      c += 6;
+      break;
+    }
+    case SMOKE_FADE:
+      smoke_fade = c[1];
+      smoke_pass(1 - smoke_current, smoke_current, 5);
+      smoke_current = 1 - smoke_current;
+      c += 2;
+      break;
+    case SMOKE_SPLAT: {
+      if (!fits(uniform_stream, 2048))
+        submit();
+      Uniforms fragment(*smoke_splat.frag);
+      fragment.set("u_source", c + 5, 16).set("u_motion", c + 9, 16).f("u_rotation", c[13]).set("u_flow", c + 14, 16);
+      smoke_rect(smoke_splat, smoke_targets[smoke_current], c + 1, fragment, smoke_adding(), {});
+      c += 18;
+      break;
+    }
+    case SMOKE_IMPULSE: {
+      if (!fits(uniform_stream, 2048))
+        submit();
+      Uniforms fragment(*smoke_impulse.frag);
+      fragment.set("u_segment", c + 5, 16).set("u_impulse", c + 9, 16).set("u_phase", c + 13, 16);
+      smoke_rect(smoke_impulse, smoke_targets[smoke_current], c + 1, fragment, smoke_adding(), {});
+      c += 17;
+      break;
+    }
+    case SMOKE_PROJECT: {
+      // Advect velocity, take its divergence, relax pressure, then subtract its gradient.
+      int other = 1 - smoke_current;
+      smoke_pass(other, smoke_current, 0);
+      smoke_pass(2, other, 1);
+      WGPUColor none = {0, 0, 0, 0};
+      begin_pass(smoke_targets[3], &none);
+      int pressure = 3;
+      for (int i = 0; i < smoke_iterations; ++i) {
+        smoke_pass(7 - pressure, pressure, 2, 2);
+        pressure = 7 - pressure;
+      }
+      smoke_pass(smoke_current, other, 3, pressure);
+      c += 1;
+      break;
+    }
+    case SMOKE_TRANSPORT:
+      smoke_decay = c[1];
+      smoke_pass(1 - smoke_current, smoke_current, 4);
+      smoke_current = 1 - smoke_current;
+      c += 2;
+      break;
+    default:
+      client_fatal("Unknown smoke command");
+    }
+  }
+}
+void wgpu_w2c_host_smoke_draw(struct w2c_host *, u32 view, u32 lights, u32 light_count, u32 sights,
+                              u32 sight_count) {
+  if (!rtx || !world || !smoke_targets[0].texture)
+    return;
+  if (!fits(uniform_stream, 4096))
+    submit();
+  const float *v = (const float *)(client_memory() + view);
+  Target &t = drawing_target(current_target);
+  // Smoke is a low-frequency volume: integrate it at most 640 pixels across.
+  float scale = fminf(1.0f, (float)SMOKE_DISPLAY_MAX_AXIS / (float)std::max(t.width, t.height));
+  int width = std::max(1, (int)lroundf(t.width * scale)), height = std::max(1, (int)lroundf(t.height * scale));
+  if (smoke_composite.width != width || smoke_composite.height != height) {
+    release(smoke_composite);
+    smoke_composite.width = width, smoke_composite.height = height;
+    smoke_composite.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(smoke_composite);
+  }
+  smoke_composite.logical_width = t.logical_width, smoke_composite.logical_height = t.logical_height;
+  WGPUColor none = {0, 0, 0, 0};
+  begin_pass(smoke_composite, &none);
+  // Straight RGB becomes premultiplied once; alpha accumulates as alpha.
+  Output o;
+  o.format = format_of(smoke_composite);
+  o.blend = true, o.src = WGPUBlendFactor_SrcAlpha, o.dst = WGPUBlendFactor_OneMinusSrcAlpha;
+  o.alpha_src = WGPUBlendFactor_One, o.alpha_dst = WGPUBlendFactor_OneMinusSrcAlpha;
+  Uniforms vertex(*smoke_display.vert), fragment(*smoke_display.frag);
+  vertex.set("rect", v, 16).v2("target_size", (float)t.logical_width, (float)t.logical_height);
+  fragment.i("u_state_flip", 1).set("u_origin", v + 4, 8).set("u_size", v + 6, 8).f("u_opacity", v[8]).i("u_debug", 0);
+  fragment.i("u_light_count", (int)light_count).i("u_sight_count", (int)sight_count);
+  float pos[SMOKE_MAX_LIGHTS * 4], rgb[SMOKE_MAX_LIGHTS * 4], shape[SMOKE_MAX_LIGHTS * 4], tails[SMOKE_MAX_LIGHTS] = {};
+  const float *l = (const float *)(client_memory() + lights);
+  for (u32 i = 0; i < light_count && i < SMOKE_MAX_LIGHTS; ++i, l += SMOKE_LIGHT_FLOATS) {
+    memcpy(pos + i * 4, l, 16);
+    memcpy(rgb + i * 4, l + 4, 16);
+    memcpy(shape + i * 4, l + 8, 16);
+    tails[i] = l[12];
+  }
+  fragment.set("u_light_pos", pos, light_count * 16).set("u_light_rgb", rgb, light_count * 16);
+  fragment.set("u_light_shape", shape, light_count * 16).set("u_light_tail", tails, (light_count + 3) / 4 * 16);
+  fragment.set("u_sights", client_memory() + sights, sight_count * 16);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(smoke_display, o));
+  bind(smoke_display,
+       fragment_group(smoke_display, {{"texture0", smoke_targets[smoke_current].view, linear_clamp()}}), &vertex,
+       &fragment);
+  wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+  // The premultiplied composite over the world.
+  pass_into(t);
+  Output over;
+  over.format = format_of(t);
+  over.blend = true, over.src = WGPUBlendFactor_One, over.dst = WGPUBlendFactor_OneMinusSrcAlpha;
+  over.mask = t.flags & TARGET_OPAQUE ? 7 : 15;
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(blit, over));
+  bind(blit, fragment_group(blit, {{"source", smoke_composite.view, linear_clamp()}}), nullptr, nullptr);
+  wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
 }
 void wgpu_w2c_host_occlusion(struct w2c_host *, u32 grid, u32 values, u32 count) {
   const float *g = (const float *)(client_memory() + grid);
@@ -1259,8 +1529,38 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
   } else if (pass_kind == HOST_PASS_WORLD_END && world) {
     world = false;
     material = 0;
-    if (!fits(uniform_stream, 512))
+    if (!fits(uniform_stream, 2048))
       submit();
+    // The pressure fronts displace the world, in its own pixels, into a second target.
+    Target *world_image = &hdr;
+    if (!pressure_fronts.empty()) {
+      if (pressured.width != hdr.width || pressured.height != hdr.height) {
+        release(pressured);
+        pressured.width = hdr.width, pressured.height = hdr.height, pressured.flags = hdr.flags;
+        allocate(pressured);
+      }
+      float sx = (float)hdr.width / hdr.logical_width, sy = (float)hdr.height / hdr.logical_height;
+      int count = std::min((int)pressure_fronts.size() / 4, 16);
+      float fronts[16 * 4] = {}, strengths[16] = {};
+      for (int i = 0; i < count; ++i) {
+        const float *f = &pressure_fronts[i * 4];
+        const float front[4] = {f[0] * sx, f[1] * sy, f[2] * sx, f[2] * sy};
+        memcpy(fronts + i * 4, front, sizeof front);
+        strengths[i] = f[3];
+      }
+      begin_pass(pressured, nullptr);
+      Output po;
+      po.format = format_of(pressured);
+      po.mask = pressured.flags & TARGET_OPAQUE ? 7 : 15;
+      Uniforms pf(*pressure_fronts_program.frag);
+      pf.v2("u_size", (float)hdr.width, (float)hdr.height).i("u_count", count);
+      pf.set("u_fronts", fronts, count * 16).set("u_strength", strengths, (count + 3) / 4 * 16);
+      wgpuRenderPassEncoderSetPipeline(pass, pipeline(pressure_fronts_program, po));
+      bind(pressure_fronts_program, fragment_group(pressure_fronts_program, {{"texture0", hdr.view, linear_clamp()}}),
+           nullptr, &pf);
+      wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+      world_image = &pressured;
+    }
     begin_pass(back, nullptr);
     Output o;
     o.format = format_of(back);
@@ -1268,7 +1568,7 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     Uniforms fragment(*tonemap.frag);
     fragment.v4("colDiffuse", 1, 1, 1, 1).f("u_edr_headroom", edr_headroom);
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(tonemap, o));
-    bind(tonemap, fragment_group(tonemap, {{"texture0", hdr.view, nearest_clamp()}}), nullptr, &fragment);
+    bind(tonemap, fragment_group(tonemap, {{"texture0", world_image->view, nearest_clamp()}}), nullptr, &fragment);
     wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
     end_pass();
   }

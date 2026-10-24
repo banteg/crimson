@@ -70,7 +70,7 @@ void main() {
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
         bool ring = u_rgb[i].w > 0.;
         vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) :
-                             illuminationSource(u_pos[i].xy, axis, u_dir[i].w);
+                             illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
         vec2 delta = source - wp;
         float distance_to_light = length(delta);
         if (u_response[i].x <= 0. || distance_to_light >= u_pos[i].z) continue;

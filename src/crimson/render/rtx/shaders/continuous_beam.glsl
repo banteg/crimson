@@ -1,26 +1,9 @@
-// Bounded three-section beam lighting for Python RTX.
+// Three-section beam lighting with analytic finite-source visibility.
 uniform int u_has_beam_lights;
-uniform vec4 u_beam_tuning; // Ion gain/dip, Fire gain/dip
+uniform vec2 u_beam_gain; // ion, Fire Bullets direct gain
 // Three energy-weighted sections per source: mass, world offset, halfspan, Ion.
-// CPU caps longitudinal halfspans at four world units and expands the shared
-// occluder grid by the same support. This is not exact finite-beam integration.
+// The shared occluder grid covers each section's complete longitudinal support.
 uniform vec4 u_line_cells[MAX_SPEC_LIGHTS * 3];
-
-float sectionCoverage(vec3 miss, vec3 line, float softness) {
-    float line2 = dot(line, line);
-    if (line2 < 1e-10)
-        return 1. - smoothstep(1. - softness, 1. + softness, length(miss));
-    // Intersect a projected source line with the normalized rounded body.
-    // Unlike miss-normal width projection, this stays continuous at miss=0.
-    float chord_center = -dot(miss, line) / line2;
-    float perpendicular2 = max(0., dot(miss, miss) - chord_center * chord_center * line2);
-    float outer_radius = 1. + softness;
-    float half_chord = sqrt(max(0., (outer_radius * outer_radius - perpendicular2) / line2));
-    float coverage = .5 * max(0., min(1., chord_center + half_chord) - max(-1., chord_center - half_chord));
-    // Artistic transverse feather; the zero-extent limit is the point source.
-    vec3 nearest_miss = miss + line * clamp(chord_center, -1., 1.);
-    return coverage * (1. - smoothstep(1. - softness, 1. + softness, length(nearest_miss)));
-}
 
 float sectionVisibility(vec3 receiver, vec3 source, float width, vec2 axis, float halfspan, vec2 owner) {
     if (u_dynamic_shadows == 0) return 1.;
@@ -46,7 +29,7 @@ vec3 continuousLight(int index, vec4 direction, vec2 world, vec3 N_sub, vec3 abs
                      vec3 wetted, vec3 blood, vec3 albedo, float ice, vec4 sp_pos,
                      vec4 sp_col, vec4 response, float broad, out vec3 unshadowed) {
     vec2 axis = dot(direction.xy, direction.xy) > .0001 ? normalize(direction.xy) : vec2(1., 0.);
-    float gain = response.x * (u_line_cells[index * 3].w > .5 ? u_beam_tuning.x : u_beam_tuning.z);
+    float gain = response.x * (u_line_cells[index * 3].w > .5 ? u_beam_gain.x : u_beam_gain.y);
     float radius = max(1., sp_pos.z);
     vec3 result = vec3(0.);
     unshadowed = vec3(0.);

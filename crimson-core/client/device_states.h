@@ -32,4 +32,4 @@ enum {
 enum { TARGET_RENDER = 1, TARGET_OPAQUE = 2, TARGET_HALF_FLOAT = 4, TARGET_FLOAT = 8 };
 #include "../game/render_passes.h"
 // The material host_bonus starts, beside the lit passes, until the next pass.
-enum { MATERIAL_BONUS = HOST_PASS_GROUND + 1 };
+enum { MATERIAL_BONUS = HOST_PASS_AURA + 1 };

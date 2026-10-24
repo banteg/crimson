@@ -311,7 +311,7 @@ void check_rtx() {
   // A frame's scene: no camera offset, the clock at zero, a 1024-unit terrain,
   // and up to one light (its first 16 floats; no tail, broad fill or beam).
   auto scene = [](std::initializer_list<float> light, int count) {
-    const float view[9] = {0, 0, 0, 1024, 1024, 4, 0.25f, 3, 0.15f};
+    const float view[7] = {0, 0, 0, 1024, 1024, 4, 3};
     float packed[RTX_LIGHT_FLOATS] = {};
     std::copy(light.begin(), light.end(), packed);
     memcpy(memory + 32768, view, sizeof view);
@@ -420,7 +420,74 @@ void check_rtx() {
   terrain();
   Pixel cleared = ground({}, 0, 200, 200);
   assert(fabsf(cleared.g - bare.g) < 1e-3f);
+  // Monster Vision: an aura adds its warm light to the ground within its 60
+  // units, and nothing past them.
+  const float aura[3] = {700, 300, 1};
+  memcpy(memory + 33500, aura, sizeof aura);
+  w2c_host_perk_light(nullptr, 33500, 1);
+  Pixel warm = ground({}, 0, 700, 300), outside = ground({}, 0, 700, 380);
+  w2c_host_perk_light(nullptr, 33500, 0);
+  assert(warm.r > bare.r + 0.05f && warm.r > warm.b + 0.05f);
+  assert(fabsf(outside.r - ground({}, 0, 700, 380).r) < 1e-3f);
   w2c_host_texture_release(nullptr, 400);
+  // Monster Vision's aura: the analytic glow over the quad's [0, 1] UVs, full
+  // at its center and gone at its edge.
+  auto aura_quad = [](int x, int y) {
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+    w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+    w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+    w2c_host_render_pass(nullptr, HOST_PASS_AURA);
+    rectangle(400, 300, 490, 390, 0xffffff00);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_state(nullptr, RS_SRCBLEND, 2);
+    w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
+    w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_pixel(x, y);
+  };
+  Pixel glow = aura_quad(445, 345), rim = aura_quad(401, 345);
+  assert(glow.r > 0.9f && glow.g > 0.9f && glow.b < 0.01f && rim.r < 0.01f);
+  // A pressure front brightens the world along its crest, darkens it just
+  // inside, and leaves the world past it alone.
+  auto front = [](int count, int x, int y) {
+    const float fronts[4] = {312, 384, 200, 1};
+    memcpy(memory + 33600, fronts, sizeof fronts);
+    w2c_host_pressure(nullptr, 33600, count);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    rectangle(0, 0, 1024, 768, 0xff606060);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    w2c_host_pressure(nullptr, 33600, 0);
+    return back_red(x, y);
+  };
+  float flat = front(0, 512, 384);
+  assert(front(1, 512, 384) > flat * 1.08f && front(1, 504, 384) < flat && fabsf(front(1, 800, 384) - flat) < 1e-3f);
+  // Fluid smoke: a splat stepped once draws as a translucent gray cloud over a
+  // black world, brighter under a light above it; a reset clears it.
+  auto smoke = [](std::initializer_list<float> commands, int lights) {
+    std::copy(commands.begin(), commands.end(), (float *)(memory + 40000));
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_smoke(nullptr, 40000, (u32)commands.size());
+    const float view[9] = {-128, -128, 1280, 1280, -128, -128, 1280, 1280, 1};
+    const float light[SMOKE_LIGHT_FLOATS] = {534, 384, 30, 300, 1, 1, 1, 4, 0, 0, 0, 0, 1};
+    memcpy(memory + 41000, view, sizeof view);
+    memcpy(memory + 41100, light, sizeof light);
+    w2c_host_smoke_draw(nullptr, 41000, 41100, lights, 0, 0);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_pixel(534, 384);
+  };
+  // An emission at (512, 384), 64 units across, its center a third of its size downstream.
+  const float splat_center_u = (534 + 128) / 1280.0f, splat_center_v = (384 + 128) / 1280.0f;
+  Pixel cloud = smoke({SMOKE_RESET, 320, 1280, 1280, 1 / 60.0f, 12,
+                       SMOKE_SPLAT, splat_center_u - 0.125f, splat_center_v - 0.125f, 0.25f, 0.25f,
+                       splat_center_u, splat_center_v, 64, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                       SMOKE_PROJECT, SMOKE_TRANSPORT, 0.2f}, 0);
+  assert(cloud.r > 0.1f && fabsf(cloud.r - cloud.b) < 0.1f);
+  assert(smoke({}, 1).r > cloud.r + 0.05f);
+  assert(smoke({SMOKE_RESET, 320, 1280, 1280, 1 / 60.0f, 12}, 0).r == 0);
   w2c_host_set_texture(nullptr, 0, 0);
   w2c_host_texture_release(nullptr, 300);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
@@ -442,7 +509,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision glows, pressure fronts ripple; classic stays 8-bit");
 }
 
 int main() {

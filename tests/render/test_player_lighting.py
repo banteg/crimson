@@ -133,7 +133,9 @@ def test_camera_scale_degenerate_basis_and_budget(player_sprite):
 def test_beam_uses_shared_energy_centroid_and_illumination_gain(player_sprite, axis):
     render, _ = player_sprite
     source = MaterialLight(Vec2(64, 40), 110, (.5, .8, 1.5), height=40, direction=axis, length=80)
-    centroid = source.pos + axis * (80 * .35242291)
+    # The energy centroid of the shared ramp from the light's tail radiance to its head.
+    tail = source.reflection_tail
+    centroid = source.pos + axis * (80 * (1 - tail) / (6 * (1 + tail)))
     point = msgspec.structs.replace(source, pos=centroid, direction=Vec2(), length=0)
     actual = render([source])
     for a, b in zip(actual, render([point]), strict=True):
