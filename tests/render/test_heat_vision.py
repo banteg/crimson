@@ -1,10 +1,21 @@
 from __future__ import annotations
 
 import msgspec
+import numpy as np
 import pytest
 
-from crimson.render.rtx.heat_vision import FROZEN_WARMTH, TRAIL_HALF_LIFE_S, HeatVision, heat_visibility, heat_warmth
+from crimson.creatures.anim import CREATURE_ANIM, creature_anim_select_frame
+from crimson.creatures.spawn import CreatureTypeId
+from crimson.render.rtx.heat_vision import (
+    BODY_OPACITY,
+    FROZEN_WARMTH,
+    TRAIL_HALF_LIFE_S,
+    HeatVision,
+    heat_visibility,
+    heat_warmth,
+)
 from crimson.render.world.viewport import ViewTransform
+from grim.assets import TextureId, load_runtime_resources, unload_runtime_resources
 from grim.color import RGBA
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
@@ -58,6 +69,10 @@ def test_trails_fade_by_game_time_and_restart_on_rewind(raylib_context) -> None:
         assert max(trail_texels(heat)) == pytest.approx(fresh / 2, rel=.02)
         heat.update(half_life, ground_size=Vec2(128, 128))  # a paused frame keeps the trail
         assert max(trail_texels(heat)) == pytest.approx(fresh / 2, rel=.02)
+        # The shorter 0.3 s half-life leaves only an eighth of the heat at 0.9 s.
+        cooled = msgspec.structs.replace(snapshot, elapsed_ms=900.)
+        heat.update(cooled, ground_size=Vec2(128, 128))
+        assert max(trail_texels(heat)) == pytest.approx(fresh / 8, rel=.02)
         heat.update(snapshot, ground_size=Vec2(128, 128))  # a rewind starts over
         assert max(trail_texels(heat)) == 0.0
     finally:
@@ -105,3 +120,58 @@ def test_first_heat_frame_keeps_sprites_queued_for_the_enclosing_target(raylib_c
     finally:
         rl.unload_render_texture(target)
         heat.close()
+
+
+def test_every_monster_living_cycle_has_stable_heat(raylib_context, assets_dir) -> None:
+    """Real atlas poses must not make an unchanged living monster flash hot/cold."""
+    resources = load_runtime_resources(assets_dir)
+    heat = HeatVision()
+
+    def texels(texture):
+        image = rl.load_image_from_texture(texture)
+        try:
+            rl.image_format(image, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
+            data = bytes(rl.ffi.buffer(image.data, image.width * image.height * 4))
+            return np.frombuffer(data, dtype=np.uint8).reshape(image.height, image.width, 4)
+        finally:
+            rl.unload_image(image)
+
+    try:
+        for type_id, info in CREATURE_ANIM.items():
+            if type_id == CreatureTypeId.TROOPER:
+                continue
+            texture = resources.texture(TextureId[type_id.name])
+            alpha = texels(texture)[:, :, 3]
+            target = rl.load_render_texture(texture.width, texture.height)
+            try:
+                with texture_mode(target):
+                    rl.clear_background(rl.Color(15, 18, 25, 255))
+                    with heat.body_scope(texture=texture, restore_shader=None):
+                        rl.draw_texture(texture, 0, 0, rl.Color(255, 0, 0, round(BODY_OPACITY * 255)))
+                rgb = texels(target.texture)[::-1, :, :3].astype(float) / 255
+            finally:
+                rl.unload_render_texture(target)
+            luminance = rgb @ np.array([.2126, .7152, .0722])
+            means = []
+            contrasts = []
+            w, h = texture.width // 8, texture.height // 8
+            for phase in range(32):
+                index = creature_anim_select_frame(phase, base_frame=info.base, mirror_long=info.mirror)
+                x, y = index % 8 * w, index // 8 * h
+                mask = alpha[y:y + h, x:x + w] > 127
+                body = luminance[y:y + h, x:x + w][mask]
+                means.append(body.mean())
+                contrasts.append(np.quantile(body, .9) - np.quantile(body, .1))
+            # Includes the loop seam and the mirrored species' turnaround.
+            # The previous square-opening heat exceeded .10 for the alien.
+            jumps = np.abs(np.roll(means, -1) - means)
+            assert jumps.max() < .025, (type_id.name, means)
+            # Stability must retain cool extremities and bright internal detail,
+            # rather than flattening the entire creature to one temperature.
+            assert np.mean(contrasts) > .45, (type_id.name, contrasts)
+        assert len(heat.densities) == 5
+        heat.close()
+        assert not heat.densities
+    finally:
+        heat.close()
+        unload_runtime_resources(resources)

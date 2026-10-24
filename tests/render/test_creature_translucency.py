@@ -5,7 +5,7 @@ from PIL import Image
 
 from crimson.render.rtx import creature_lighting
 from crimson.render.rtx.creature_lighting import CreatureLighting
-from crimson.render.rtx.creature_translucency import blur_cells, build_thickness_proxy
+from crimson.render.rtx.creature_translucency import blur_cells, build_heat_density, build_thickness_proxy
 from crimson.render.rtx.material_lights import MaterialLight
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
@@ -153,3 +153,27 @@ def test_cell_blur_softens_within_a_cell_and_never_bleeds_across() -> None:
     assert blurred.getpixel((12, 12)) == round(160 / 25)
     assert blurred.getpixel((14, 14)) == round(160 / 25)
     assert blurred.getpixel((15, 15)) == 0
+
+
+def test_heat_density_keeps_fractional_alpha_and_atlas_cells_separate() -> None:
+    alpha = Image.new("L", (128, 128))
+    alpha.paste(128, (0, 0, 16, 16))
+    density = build_heat_density(alpha)
+    # A uniform translucent silhouette keeps its coverage, including at a cell
+    # edge. The empty frame beside it must remain entirely cold.
+    assert density.crop((0, 0, 16, 16)).getextrema() == (128, 128)
+    assert density.crop((16, 0, 32, 16)).getbbox() is None
+    assert density.crop((0, 16, 16, 32)).getbbox() is None
+
+
+def test_one_silhouette_texel_cannot_reheat_the_whole_body() -> None:
+    alpha = Image.new("L", (512, 512))
+    alpha.paste(255, (20, 20, 25, 40))
+    before = build_heat_density(alpha)
+    alpha.putpixel((25, 30), 255)
+    after = build_heat_density(alpha)
+    # A one-texel pose change stays local and contributes at most 11/255
+    # coverage; square-opening levels could instead change the entire torso.
+    changes = [abs(a - b) for a, b in zip(before.tobytes(), after.tobytes(), strict=True)]
+    assert 0 < max(changes) <= 11
+    assert before.crop((0, 0, 21, 64)).tobytes() == after.crop((0, 0, 21, 64)).tobytes()
