@@ -23,8 +23,8 @@ enum { RTX_LIGHT_FLOATS = 32 };
 // and heat along it and decays them (decay).
 enum { SMOKE_RESET = 1, SMOKE_FADE, SMOKE_SPLAT, SMOKE_IMPULSE, SMOKE_PROJECT, SMOKE_TRANSPORT };
 // Floats per smoke light in host_smoke_draw: position, height, radius; RGB, gain;
-// direction, half length, ring radius.
-enum { SMOKE_LIGHT_FLOATS = 12, SMOKE_MAX_LIGHTS = 16, SMOKE_MAX_SIGHTS = 4 };
+// direction, half length, ring radius; tail radiance (source_geometry.glsl).
+enum { SMOKE_LIGHT_FLOATS = 13, SMOKE_MAX_LIGHTS = 16, SMOKE_MAX_SIGHTS = 4 };
 // The terrain's decals by material (host_ground), as render/rtx/materials.py
 // sorts them: what the draws into the terrain until HOST_GROUND_END are.
 // A decal without a material reaches the ground's substrate alone.

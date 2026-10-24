@@ -303,7 +303,7 @@ int smoke_lights(const float *lights, int count, float *out) {
   for (int i = 0; i < n; ++i) {
     const float *l = ranked[i].second;
     const float packed[SMOKE_LIGHT_FLOATS] = {l[0], l[1], l[3], l[2], l[4], l[5], l[6], std::min(4.0f, l[12]) * l[19],
-                                              l[8], l[9], l[11] * 0.5f, l[7]};
+                                              l[8], l[9], l[11] * 0.5f, l[7], l[16]};
     std::copy(packed, packed + SMOKE_LIGHT_FLOATS, out + i * SMOKE_LIGHT_FLOATS);
   }
   return n;

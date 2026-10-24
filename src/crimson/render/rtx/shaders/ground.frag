@@ -192,7 +192,8 @@ void main() {
     #endif
 
         vec2 axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(0.);
-        vec2 light_xy = illuminationSource(sp_pos.xy, axis, sp_dir.w);
+        float tail = u_spec_tail[i / 4][i % 4];
+        vec2 light_xy = illuminationSource(sp_pos.xy, axis, sp_dir.w, tail);
         vec2 reflection_xy = sp_pos.xy + axis * clamp(dot(world - sp_pos.xy, axis), -sp_dir.w*.5, sp_dir.w*.5);
         bool ring = sp_col.w > 0.0;
         if (ring) {
@@ -267,7 +268,7 @@ void main() {
                 float along = clamp(dot(reflected_hit - sp_pos.xy, axis), -sp_dir.w * .5, sp_dir.w * .5);
                 on_source += axis * along;
                 float source_t = clamp(along / sp_dir.w + .5, 0.0, 1.0);
-                source_gain = mix(u_spec_tail[i / 4][i % 4], 1.0, source_t);
+                source_gain = segmentRadiance(source_t, tail);
             }
             float source_distance = length(reflected_hit - on_source);
             float source_width = max(.1, response.w);

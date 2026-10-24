@@ -104,7 +104,7 @@ class SmokeRenderer:
             self.shader = shader
             self.locations = {name: int(rl.get_shader_location(shader, name)) for name in (
                 "u_origin", "u_size", "u_opacity", "u_light_count", "u_light_pos", "u_light_rgb", "u_light_shape",
-                "u_sight_count", "u_sights", "u_state_flip", "u_debug",
+                "u_sight_count", "u_sights", "u_state_flip", "u_debug", "u_light_tail",
             )}
         if isinstance(self.simulation, GpuSmokeSimulation):
             try:
@@ -128,6 +128,9 @@ class SmokeRenderer:
             self._uniform("u_light_pos", [v for l in illumination for v in (l.pos.x, l.pos.y, l.height, l.radius)], count=len(illumination))
             self._uniform("u_light_rgb", [v for l in illumination for v in (*l.rgb, min(4.0, l.illumination_gain) * l.smoke_gain)], count=len(illumination))
             self._uniform("u_light_shape", [v for l in illumination for v in (l.direction.x, l.direction.y, l.length * .5, l.ring_radius)], count=len(illumination))
+            tails = [l.reflection_tail for l in illumination]
+            tails += [0.0] * (-len(tails) % 4)
+            self._uniform("u_light_tail", tails, count=len(tails) // 4)
         sights = []
         if PerkId.SHARPSHOOTER in frame.state.perks:
             for player in frame.players[:4]:
