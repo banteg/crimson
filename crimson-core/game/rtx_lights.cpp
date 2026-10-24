@@ -16,7 +16,7 @@
 #include <vector>
 
 extern "C" {
-extern int perk_id_radioactive, perk_id_sharpshooter, perk_id_ion_gun_master, perk_id_monster_vision;
+extern int perk_id_radioactive, perk_id_sharpshooter, perk_id_ion_gun_master;
 extern float game_time_s;
 extern vec2f_t camera_offset;
 extern unsigned int grim_backbuffer_width, grim_backbuffer_height;
@@ -871,28 +871,4 @@ extern "C" void rtx_explosions_age(float dt) {
 extern "C" void rtx_explosions_reset() {
   explosions.clear();
   bursting = nullptr;
-}
-
-// Monster Vision's ground light (render/rtx/perk_lighting.py): each living or
-// fading creature's aura whose 60-unit support meets the view, at its native
-// death fade and the world's transition `alpha`, as x, y, alpha. No cap.
-extern "C" int rtx_collect_monster_vision(float *out, int capacity, float alpha) {
-  if (!perk_count_get(perk_id_monster_vision) || alpha <= 1e-3f)
-    return 0;
-  const float radius = 60;
-  float lo_x = -camera_offset.x, lo_y = -camera_offset.y;
-  float hi_x = lo_x + grim_backbuffer_width, hi_y = lo_y + grim_backbuffer_height;
-  int count = 0;
-  for (const creature_t &c : creature_pool) {
-    if (!c.active || count >= capacity)
-      continue;
-    float fade = c.death_timer >= 0 ? 1.0f : fminf(1, fmaxf(0, (c.death_timer + 10) * 0.1f));
-    float a = fade * fminf(1, fmaxf(0, alpha));
-    if (a <= 1e-3f || c.pos_x + radius <= lo_x || c.pos_y + radius <= lo_y || c.pos_x - radius >= hi_x ||
-        c.pos_y - radius >= hi_y)
-      continue;
-    out[count * 3] = c.pos_x, out[count * 3 + 1] = c.pos_y, out[count * 3 + 2] = a;
-    ++count;
-  }
-  return count;
 }

@@ -34,7 +34,8 @@
   X(occlusion, (struct w2c_host * h, u32 g, u32 v, u32 n), (h, g, v, n))                                              \
   X(bonus, (struct w2c_host * h, u32 e, f32 gx, f32 gy, f32 cx, f32 cy), (h, e, gx, gy, cx, cy))                      \
   X(ground, (struct w2c_host * h, u32 k, f32 s), (h, k, s))                                                           \
-  X(perk_light, (struct w2c_host * h, u32 s, u32 n), (h, s, n))                                                       \
+  X(heat, (struct w2c_host * h, u32 f, u32 n), (h, f, n))                                                             \
+  X(heat_trails, (struct w2c_host * h, f32 a), (h, a))                                                                \
   X(pressure, (struct w2c_host * h, u32 f, u32 n), (h, f, n))                                                         \
   X(smoke, (struct w2c_host * h, u32 c, u32 n), (h, c, n))                                                            \
   X(smoke_draw, (struct w2c_host * h, u32 v, u32 l, u32 nl, u32 s, u32 ns), (h, v, l, nl, s, ns))                     \
