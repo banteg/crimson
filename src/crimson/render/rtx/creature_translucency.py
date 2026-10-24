@@ -1,6 +1,6 @@
 """Opening-based part-size proxies for artistic transmission, not anatomical thickness."""
 
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 from grim.raylib_api import rl
 
@@ -56,8 +56,20 @@ def build_thickness_proxy(alpha: Image.Image) -> Image.Image:
     return thickness
 
 
-def load_thickness_texture(source: rl.Texture) -> rl.Texture:
-    """Read source alpha once and upload a renderer-owned, single-channel proxy."""
+def blur_cells(proxy: Image.Image, radius: int) -> Image.Image:
+    """A box blur inside each 8x8 atlas cell, edges extended: no animation frame bleeds into its neighbor."""
+    width, height = proxy.size
+    cell_width, cell_height = width // 8, height // 8
+    blurred = Image.new("L", proxy.size)
+    for y in range(0, height, cell_height):
+        for x in range(0, width, cell_width):
+            box = (x, y, x + cell_width, y + cell_height)
+            blurred.paste(proxy.crop(box).filter(ImageFilter.BoxBlur(radius)), box)
+    return blurred
+
+
+def load_thickness_texture(source: rl.Texture, *, blur: int = 0) -> rl.Texture:
+    """Read source alpha once and upload a renderer-owned, single-channel proxy, box-blurred per cell by `blur`."""
     image = rl.load_image_from_texture(source)
     try:
         if image.data == rl.ffi.NULL:
@@ -68,6 +80,8 @@ def load_thickness_texture(source: rl.Texture) -> rl.Texture:
     finally:
         rl.unload_image(image)
     proxy = build_thickness_proxy(alpha)
+    if blur:
+        proxy = blur_cells(proxy, blur)
     # The Image borrows this buffer only for the synchronous upload; raylib must not free it.
     buffer = rl.ffi.new("unsigned char[]", proxy.tobytes())
     upload = rl.Image(

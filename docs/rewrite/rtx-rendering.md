@@ -317,7 +317,8 @@ from) stays in the substrate as painted terrain, without its wet film. A seek
 bakes the logged decals after that copy again at their logged clock. WebGPU
 keeps the surface in 32-bit floats where the device filters and blends them,
 otherwise in half floats.
-Monster Vision draws as in the Python port. Its aura quad (`HOST_PASS_AURA`,
+Monster Vision draws the Python port's earlier aura; heat (see Perk illumination)
+is not ported yet. Its aura quad (`HOST_PASS_AURA`,
 drawn over [0, 1] UVs) takes the analytic glow of `perk_aura.frag`. The module
 sends each aura whose support meets the view, with its fade (`host_perk_light`).
 Before the ground draws, the host sums their shadowless light into a float
@@ -1074,41 +1075,29 @@ The display shadow setting controls direct shadows as for other material lights.
 Reflection visibility remains part of the existing reflection model. Radioactive
 uses the ordinary source budget; it does not alter damage range or pulse timing.
 
-Monster Vision keeps the familiar yellow under-glow, its 90-unit footprint,
-native death fade, entity transition alpha, ordering before plague/poison, and
-native sprite-shadow suppression. RTX evaluates a smooth radial fit to the
-original aura alpha instead of sampling its texture cell. Classic keeps the
-original texture. The fit is `1.04770258 * exp(-4.85*r)` with a smooth edge envelope
-between normalized radii `.8` and `1`; the draw retains ordinary alpha blending.
+Monster Vision shows living monsters as heat (`render/rtx/heat_vision.py`). It
+keeps the native death fade, entity transition alpha and sprite-shadow
+suppression; classic keeps the original yellow aura texture.
 
-Each visible or overlapping offscreen aura also contributes a shadowless ground
-source: radius 60, height 12, width 16, RGB `(.65, .47, .025)`, illumination gain
-`1.65`, and reflection gain `.32`. The source uses the same substrate normals,
-wet-film/deep-pool normals, absorption, freshness and finite reflection model as
-other material lights. It is not a new enemy-body tint or contour.
+- Bodies: after each species' body pass, the same sprites draw again with
+  `heat_body.frag` in the ironbow ramp (`ironbow.glsl`), indexed by the creature
+  thickness proxy, box-blurred 5×5 within each atlas cell once on upload (one
+  texture tap per fragment): thin legs read cool magenta, thick
+  bodies orange to white. The overlay's opacity is Monster Vision's fade times
+  `.88`, never the creature's tint alpha, so Hidden Evil's near-invisible aliens
+  show in full. Red in the tint carries warmth: the native death fade, cooled to
+  30% while Freeze holds the monsters, following Freeze's own fade out. Scene
+  transitions fade the overlay's opacity, never its warmth.
+- Trails: a world-space float buffer at half the terrain's resolution. Each
+  drawn frame fades it by the game time since the last (half-life 0.9 s, so
+  slow motion leaves the same trail per distance), then max-blends a soft
+  footprint (45% of the creature's size) at every warm monster. A frame gap
+  over a second, a rewind, or a terrain reset starts it over. Where the aura was
+  drawn, `heat_trail.frag` adds the buffer under the view to the ground as faint
+  ironbow heat, under every body. Stored heat ignores scene transitions; the
+  composite fades with the scene's entity alpha, like the bodies.
 
-These sources have a separate accumulation pass and never consume weapon-light
-slots. Every eligible source whose finite support intersects the view is retained.
-Clipped source quads are submitted in batches of 256, with no population cap.
-The shader specializes the production material equations without shadow tracing,
-beam machinery, ambient, sky or gamma encoding. Raw direct and reflected RGB add
-into a view-sized FP32 target with `ONE + ONE`; the ordinary ground shader adds
-this result before its single gamma encoding and the existing HDR compositor.
-FP32 avoids cumulative half-float blend rounding in hundreds of overlapping
-sources. At 1920×1080 the lazy target uses about 32 MiB. Its dimensions follow the
-actual framebuffer, separately from logical camera/output scale, and it is
-released with terrain material resources. Empty/ineligible scenes do not allocate
-or render the target. An already allocated target is retained for reuse.
-
-The ground pass reserves texture unit 5 for this accumulator, leaving raylib's
-four auxiliary slots available for material maps and body occlusion. Direct,
-unshadowed-direct, visibility, reflection and ambient-plus-reflection diagnostics
-include the corresponding perk component. Ambient-only and data-map diagnostics
-exclude it. Monster Vision contributes equally to shadowed and unshadowed direct
-terms, so it does not invent creature shadows in the visibility ratio.
-
-Cost scales with covered source pixels, not the whole viewport times the enemy
-count. Dense overlapping crowds still increase GPU fill and material-sampling
-work, and the FP32 target adds memory bandwidth. This remains an artistic finite
-source/reflection approximation. Perk simulation, RNG, replay state, damage and
-classic rendering are unchanged.
+The sensor is selective: fire, explosions and beams keep their own look and do
+not wash the monsters out. Heat adds no material lights and changes no
+simulation, RNG or replay state. The native/web client still draws the earlier
+analytic aura and its shadowless ground light until it is ported.

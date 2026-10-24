@@ -17,6 +17,7 @@ from ...effects_atlas import EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...ui.cursor import draw_aim_cursor
+from ..rtx.heat_vision import BODY_OPACITY, HeatVision, heat_visibility, heat_warmth
 from ..rtx.material_lights import MaterialLight, collect_material_lights
 from ..rtx.materials import MaterialGroundRenderer
 from ..rtx.mode import RtxRenderMode
@@ -68,7 +69,8 @@ class WorldDrawContext(msgspec.Struct, frozen=True):
     particles_texture: rl.Texture | None = None
     monster_vision: bool = False
     monster_vision_src: rl.Rectangle | None = None
-    monster_vision_analytic: bool = False
+    # RTX shows Monster Vision as heat instead of the native aura.
+    heat_vision: HeatVision | None = None
     poison_src: rl.Rectangle | None = None
 
 
@@ -84,7 +86,7 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
         lights = tuple(collect_material_lights(render_ctx.frame, view_center=view.screen_size * .5 - view.camera))
     draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size,
-                    entity_alpha=entity_alpha, material_lights=lights)
+                    material_lights=lights)
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_map:
         # Hidden presentation still consumes simulation ticks; do not accumulate
         # a long GPU backlog while inspecting diagnostic maps.
@@ -145,7 +147,6 @@ def draw_background(
     camera: Vec2,
     screen_size: Vec2,
     out_size: Vec2,
-    entity_alpha: float = 1.0,
     material_lights: tuple[MaterialLight, ...] | None = None,
 ) -> None:
     clear_color = rl_color(10, 10, 12, 255)
@@ -153,8 +154,7 @@ def draw_background(
     assert ground is not None, "ground renderer must be initialized before live world draw"
     rl.clear_background(clear_color)
     if isinstance(ground, MaterialGroundRenderer) and render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
-        with ground.material_scope(render_ctx.frame, view_center=screen_size * 0.5 - camera,
-                                   view=render_ctx.view, entity_alpha=entity_alpha, lights=material_lights):
+        with ground.material_scope(render_ctx.frame, view_center=screen_size * 0.5 - camera, lights=material_lights):
             ground.draw_view(
                 camera, screen_w=screen_size.x, screen_h=screen_size.y, out_w=out_size.x, out_h=out_size.y,
             )
@@ -195,8 +195,8 @@ def build_draw_context(
         particles_texture=particles_texture,
         monster_vision=monster_vision,
         monster_vision_src=monster_vision_src,
-        monster_vision_analytic=(monster_vision and frame.rtx_mode is RtxRenderMode.RTX
-                                 and isinstance(frame.ground, MaterialGroundRenderer)),
+        heat_vision=(frame.ground.heat_vision if monster_vision and frame.rtx_mode is RtxRenderMode.RTX
+                     and isinstance(frame.ground, MaterialGroundRenderer) else None),
         poison_src=poison_src,
     )
 
@@ -247,53 +247,38 @@ def draw_creature_overlays(
     ctx: WorldDrawContext,
 ) -> None:
     fade = monster_vision_fade_alpha(death_timer)
-    if ctx.monster_vision and ctx.particles_texture is not None and ctx.monster_vision_src is not None:
+    if (ctx.monster_vision and ctx.heat_vision is None and ctx.particles_texture is not None
+            and ctx.monster_vision_src is not None):
         mv_alpha = fade * ctx.entity_alpha
         if mv_alpha > 1e-3:
             size = 90.0 * render_ctx.view.scale
             dst = rl_rectangle(screen.x, screen.y, size, size)
             origin = rl_vector2(size * 0.5, size * 0.5)
             tint = rl_color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
-            # The analytic shader ignores the atlas and needs the full [0,1] UV quad.
-            src = (rl_rectangle(0, 0, ctx.particles_texture.width, ctx.particles_texture.height)
-                   if ctx.monster_vision_analytic else ctx.monster_vision_src)
-            rl.draw_texture_pro(ctx.particles_texture, src, dst, origin, 0.0, tint)
+            rl.draw_texture_pro(ctx.particles_texture, ctx.monster_vision_src, dst, origin, 0.0, tint)
 
-    status_overlay = bool(creature.plague_infected) or bool(creature.flags & CreatureFlags.POISONED)
-    if ctx.monster_vision_analytic and status_overlay:
-        alpha_shader = render_ctx.frame.resources.alpha_test.shader
-        if alpha_shader is None:
-            rl.end_shader_mode()
-        else:
-            rl.begin_shader_mode(alpha_shader)
-    try:
-        if ctx.particles_texture is not None and ctx.poison_src is not None and bool(creature.plague_infected):
-            # creature_render_all: plague_infected overlay (black 80x80 aura), drawn before red poison flag.
-            plague_alpha = fade * ctx.entity_alpha
-            if plague_alpha > 1e-3:
-                size = 80.0 * render_ctx.view.scale
-                dst = rl_rectangle(screen.x, screen.y, size, size)
-                origin = rl_vector2(size * 0.5, size * 0.5)
-                tint = rl_color(0, 0, 0, int(clamp(plague_alpha, 0.0, 1.0) * 255.0 + 0.5))
-                rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
+    if ctx.particles_texture is not None and ctx.poison_src is not None and bool(creature.plague_infected):
+        # creature_render_all: plague_infected overlay (black 80x80 aura), drawn before red poison flag.
+        plague_alpha = fade * ctx.entity_alpha
+        if plague_alpha > 1e-3:
+            size = 80.0 * render_ctx.view.scale
+            dst = rl_rectangle(screen.x, screen.y, size, size)
+            origin = rl_vector2(size * 0.5, size * 0.5)
+            tint = rl_color(0, 0, 0, int(clamp(plague_alpha, 0.0, 1.0) * 255.0 + 0.5))
+            rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
 
-        if (
-            ctx.particles_texture is not None
-            and ctx.poison_src is not None
-            and (creature.flags & CreatureFlags.POISONED)
-        ):
-            poison_alpha = fade * ctx.entity_alpha
-            if poison_alpha > 1e-3:
-                size = 60.0 * render_ctx.view.scale
-                dst = rl_rectangle(screen.x, screen.y, size, size)
-                origin = rl_vector2(size * 0.5, size * 0.5)
-                tint = rl_color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
-                rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
-    finally:
-        if ctx.monster_vision_analytic and status_overlay:
-            ground = render_ctx.frame.ground
-            assert isinstance(ground, MaterialGroundRenderer)
-            rl.begin_shader_mode(ground.perk_lighting.ensure_aura_shader())
+    if (
+        ctx.particles_texture is not None
+        and ctx.poison_src is not None
+        and (creature.flags & CreatureFlags.POISONED)
+    ):
+        poison_alpha = fade * ctx.entity_alpha
+        if poison_alpha > 1e-3:
+            size = 60.0 * render_ctx.view.scale
+            dst = rl_rectangle(screen.x, screen.y, size, size)
+            origin = rl_vector2(size * 0.5, size * 0.5)
+            tint = rl_color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
+            rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
 
 
 def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
@@ -312,20 +297,26 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             ambient=.60,
         )
 
+    heat = ctx.heat_vision
+    if heat is not None:
+        # The trails take the aura's place: on the ground, under every body.
+        ground = frame.ground
+        assert isinstance(ground, MaterialGroundRenderer)
+        ground_size = Vec2(float(ground.width), float(ground.height))
+        heat.update(frame, ground_size=ground_size)
+        heat.draw_trails(render_ctx.view, ground_size=ground_size, entity_alpha=ctx.entity_alpha,
+                         restore_shader=frame.resources.alpha_test.shader)
+
     # Native `creature_render_all` batches all overlays across the active pool
     # before any species-specific sprite passes.
-    ground = frame.ground
-    aura_scope = (ground.perk_lighting.aura_scope(restore_shader=frame.resources.alpha_test.shader)
-                  if ctx.monster_vision_analytic and isinstance(ground, MaterialGroundRenderer) else nullcontext())
-    with aura_scope:
-        for creature in iter_active_creature_overlay_pass(creature_entries):
-            screen = viewport.world_to_screen_with(
-                creature.pos,
-                camera=render_ctx.view.camera,
-                view_scale=render_ctx.view.view_scale,
-            )
-            death_timer = float(creature.death_timer)
-            draw_creature_overlays(render_ctx, creature, screen=screen, death_timer=death_timer, ctx=ctx)
+    for creature in iter_active_creature_overlay_pass(creature_entries):
+        screen = viewport.world_to_screen_with(
+            creature.pos,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
+        )
+        death_timer = float(creature.death_timer)
+        draw_creature_overlays(render_ctx, creature, screen=screen, death_timer=death_timer, ctx=ctx)
 
     resources = frame.resources
     shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
@@ -395,8 +386,43 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                         body=not shadow,
                     )
 
+        if heat is not None:
+            draw_creature_heat(render_ctx, texture, heat, type_id=type_id, ctx=ctx)
         if frame.config is not None and frame.config.display.violence_disabled:
             draw_creature_hit_flashes(render_ctx, type_id=type_id, ctx=ctx)
+
+
+def draw_creature_heat(
+    render_ctx: WorldRenderCtx,
+    texture: rl.Texture,
+    heat: HeatVision,
+    *,
+    type_id: CreatureTypeId,
+    ctx: WorldDrawContext,
+) -> None:
+    """The species' bodies again, as heat: red is warmth, alpha the overlay's opacity (Monster Vision's fade)."""
+    with heat.body_scope(texture=texture, restore_shader=render_ctx.frame.resources.alpha_test.shader):
+        for creature in render_ctx.frame.creatures.entries:
+            opacity = heat_visibility(creature, entity_alpha=ctx.entity_alpha) if creature.active else 0.0
+            if creature.type_id != type_id or opacity <= 1e-3:
+                continue
+            warmth = heat_warmth(creature, render_ctx.frame)
+            draw_creature_sprite(
+                render_ctx,
+                texture,
+                type_id=type_id,
+                flags=creature.flags,
+                phase=float(creature.anim_phase),
+                death_timer=float(creature.death_timer),
+                pos=creature.pos,
+                screen_pos=viewport.world_to_screen_with(
+                    creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale,
+                ),
+                rotation_rad=float(creature.heading) - math.pi / 2.0,
+                scale=render_ctx.view.scale,
+                size_scale=float(creature.size) / (float(texture.width) / 8.0),
+                tint=rl_color(int(warmth * 255 + .5), 0, 0, int(opacity * BODY_OPACITY * 255 + .5)),
+            )
 
 
 def draw_creature_hit_flashes(
