@@ -1,0 +1,28 @@
+#version 330
+// Monster Vision in RTX (render/rtx/heat_vision.py): the world-space trail buffer, two passes.
+// HEAT_STAMP: u_fade >= 0 fades the whole buffer by that much; otherwise a soft footprint of the tint's alpha.
+// Without it: the buffer under the view, added to the ground as faint ironbow heat.
+#include "ironbow.glsl"
+in vec2 fragTexCoord;
+in vec4 fragColor;
+in vec2 world;
+uniform float u_fade;
+uniform sampler2D u_heat;
+uniform vec2 u_ground_size;
+out vec4 finalColor;
+void main() {
+#ifdef HEAT_STAMP
+    if (u_fade >= 0.) {
+        finalColor = vec4(0., 0., 0., u_fade);
+        return;
+    }
+    float r = length(fragTexCoord * 2. - 1.);
+    float h = fragColor.a * exp(-3. * r * r) * (1. - smoothstep(.8, 1., r));
+    finalColor = vec4(h, h, h, 1.);
+#else
+    vec2 uv = vec2(world.x, u_ground_size.y - world.y) / u_ground_size;
+    float h = all(greaterThanEqual(uv, vec2(0.))) && all(lessThanEqual(uv, vec2(1.))) ? textureLod(u_heat, uv, 0.).r : 0.;
+    vec3 heat = ironbow(.12 + .4 * h) * pow(h, 1.5) * .45;
+    finalColor = vec4(pow(heat, vec3(1. / 2.2)), 1.);
+#endif
+}
