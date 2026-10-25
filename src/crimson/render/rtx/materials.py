@@ -29,7 +29,13 @@ from .heat_vision import HeatVision
 from .material_history import MaterialHistory
 from .material_lights import MaterialLight, collect_material_lights
 from .material_shaders import GROUND_FRAGMENT, STAMP_FRAGMENT
-from .reflection_occlusion import ReflectionOcclusion, build_occlusion_grid, creature_body_volumes
+from .reflection_occlusion import (
+    ReflectionOcclusion,
+    bonus_body_volumes,
+    build_occlusion_grid,
+    creature_body_volumes,
+    player_body_volumes,
+)
 
 if TYPE_CHECKING:
     from ..frame import RenderFrame
@@ -419,6 +425,8 @@ class MaterialGroundRenderer(GroundRenderer):
         self._material_integer("u_spec_light_count", len(lights))
         bodies = (
             [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
+            + [body for player in frame.players for body in player_body_volumes(player)]
+            + [body for bonus in frame.state.bonus_pool.entries for body in bonus_body_volumes(bonus)]
             if any(light.reflection_gain > 0 or (shadows and light.illumination_gain > 0) for light in lights) else []
         )
         has_beam_lights = any(

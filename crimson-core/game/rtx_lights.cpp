@@ -767,7 +767,7 @@ void beam_cells(const Light &light, float illumination, float *out) {
 
 } // namespace
 
-// --- Creature shadows (render/rtx/reflection_occlusion.py) --------------------------
+// --- Body shadows (render/rtx/reflection_occlusion.py) ------------------------------
 // One rotated, size-scaled ellipsoid per standard creature, fitted to its body's
 // central mass (local x right, y down, as fractions of the drawn size: center,
 // planar radii, height), packed into a grid of cells for the shader to walk.
@@ -808,6 +808,36 @@ bool body_of(const creature_t &c, Body &body) {
   return true;
 }
 
+// A living player's torso: one ellipsoid facing its aim (half depth, half shoulder width, height, in units of its size).
+const float PLAYER_BODY[3] = {0.125f, 0.22f, 0.46f};
+// A bonus shell: the 32-unit dome bonus.frag draws, and its height.
+const float BONUS_SHELL_RADIUS = 16 * 0.885f, BONUS_SHELL_HEIGHT = 10;
+
+bool body_of(const player_state_t &player, Body &body) {
+  if (player.health <= 0)
+    return false;
+  body = {player.pos_x, player.pos_y, PLAYER_BODY[0] * player.size, PLAYER_BODY[1] * player.size,
+          PLAYER_BODY[2] * player.size, player.aim_heading - HALF_PI, 1, player.pos_x, player.pos_y};
+  return true;
+}
+
+// The shell's fade as bonus_render draws it (blinking out over its last two seconds).
+bool body_of(const bonus_entry_t &bonus, Body &body) {
+  if (bonus.bonus_id == BONUS_ID_NONE)
+    return false;
+  float fade = 1, age = bonus.time.time_max - bonus.time.time_left;
+  if (bonus.time.time_left < 2)
+    fade = bonus.time.time_left * (sinf(bonus.time.time_left * 18.849556f) > 0 ? 0.25f : 0.5f);
+  if (age < 0.5f)
+    fade = age + age;
+  float opacity = fminf(1, fmaxf(0, fade)) * 0.9f;
+  if (opacity <= 0)
+    return false;
+  body = {bonus.time.pos_x, bonus.time.pos_y, BONUS_SHELL_RADIUS, BONUS_SHELL_RADIUS, BONUS_SHELL_HEIGHT, 0, opacity,
+          bonus.time.pos_x, bonus.time.pos_y};
+  return true;
+}
+
 std::vector<float> grid_values;
 } // namespace
 
@@ -824,11 +854,14 @@ std::vector<float> grid_values;
 // among the cells it overlaps by area. A body centered in a crowd is listed only
 // where it stands, without its padding, and only outside crowd cells.
 extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count) {
-  Body bodies[385];
+  Body bodies[std::size(creature_pool) + 2 + std::size(bonus_pool)];
   int body_total = 0;
   for (const creature_t &c : creature_pool)
-    if (body_total < 385 && body_of(c, bodies[body_total]))
-      ++body_total;
+    body_total += body_of(c, bodies[body_total]);
+  for (int i = 0; i < config_blob.player_count && i < 2; ++i)
+    body_total += body_of(player_state_table[i], bodies[body_total]);
+  for (const bonus_entry_t &bonus : bonus_pool)
+    body_total += body_of(bonus, bodies[body_total]);
   grid[0] = grid[1] = grid[2] = grid[3] = 0;
   grid[4] = 64;
   *value_count = 0;
