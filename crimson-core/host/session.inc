@@ -652,6 +652,10 @@ void game_state_set(game_state_id_t state) {
   ranked_release();
   // A co-op session's screens (host/coop_live.inc).
   bool coop = coop_screen_set(state);
+  // The screen a link cut to its run comes, and draws (watch_follow_link).
+  watch.cut = false;
+  if (watch.hiding)
+    grim_render_disabled = watch.hiding = false;
   // A replay plays from the run its Watch starts; any other screen drops it.
   bool watches = watch.armed && state == GAME_STATE_GAMEPLAY && !run_active && live_eligible(watch_players());
   if (watch.armed && !watches)
