@@ -104,17 +104,6 @@ def test_source_culling_retains_long_tracer_and_rejects_distant_bodies() -> None
 
 
 
-def test_dense_grid_uses_smaller_cells_without_dropping_volumes() -> None:
-    body = BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, 0)
-    source = MaterialLight(Vec2(500, 500), 1000, (1, 1, 1))
-    small = build_occlusion_grid([body], [source], width=1024, height=1024)
-    spread = [msgspec.structs.replace(body, pos=Vec2(40 + 30 * (i % 32), 40 + 60 * (i // 32))) for i in range(512)]
-    dense = build_occlusion_grid(spread, [source], width=1024, height=1024)
-    assert small.cell_size == 64
-    assert dense.cell_size == 32
-    assert dense.body_count == 512
-
-
 def test_illumination_only_grid_support_and_explicit_energetic_profiles():
     from crimson.projectiles.types import ProjectileTemplateId as PT
     from crimson.render.rtx.material_lights import PROJECTILE_EMISSIONS
@@ -151,7 +140,6 @@ def test_annulus_grid_keeps_outer_endpoints_and_interior_ray_blockers() -> None:
 
 
 def test_killed_visible_caster_collapses_with_native_timer_and_current_geometry() -> None:
-    import msgspec
 
     creature = CreatureState(active=True, hp=100, type_id=CreatureTypeId.SPIDER_SP1,
                              pos=Vec2(100, 200), size=60)

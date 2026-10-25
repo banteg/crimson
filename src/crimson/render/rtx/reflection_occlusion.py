@@ -97,8 +97,11 @@ def build_occlusion_grid(
     outside too; extend the grid to include those selected source endpoints.
 
     Beam sections walk their own cell lists, padded by `beam_margin` (the
-    largest section half-span) in world units near beam sources only. Other
-    lights keep the transverse source-width margin.
+    largest section half-span) in world units near beam sources only, plus the
+    reach of their two transverse taps (0.577 of the widest beam's width): a
+    section's coverage never uses the point lights' penumbra margin, which the
+    widest source of the frame (an explosion, an aura) sets. Other lights keep
+    that source-width margin.
 
     A cell where more than CROWD_BODIES bodies stand (their planar extent
     overlaps it) is a crowd: both its headers hold the footprint-weighted top
@@ -110,13 +113,12 @@ def build_occlusion_grid(
     sources = [light for light in lights if light.reflection_gain > 0 or (illumination and light.illumination_gain > 0)]
     if not sources:
         return OcclusionGrid(Vec2(), CELL_SIZE, 0, 0, [], 0, 0)
-    # Fine cells reduce candidate fetches in dense crowds. Small scenes retain
-    # cheaper CPU construction. Both grids retain the same volumes/visibility.
-    cell_size = CELL_SIZE * .5 if len(bodies) >= 512 else CELL_SIZE
+    cell_size = CELL_SIZE
     padding = max((max(.1, light.source_width) for light in sources), default=0.0)
     lo = Vec2(-cell_size, -cell_size)
     hi = Vec2(width + cell_size, height + cell_size)
     supports = []
+    beam_width = 0.0
     for light in sources:
         direction = light.direction.normalized() if light.direction.length_sq() > .0001 else Vec2()
         reach = max(
@@ -124,6 +126,8 @@ def build_occlusion_grid(
             light.radius if illumination and light.illumination_gain > 0 else 0.,
         )
         beam = beam_margin > 0 and illumination and light.beam_profile is not None and light.illumination_gain > 0
+        if beam:
+            beam_width = max(beam_width, light.source_width)
         supports.append((light.pos.x, light.pos.y, direction.x, direction.y, light.length * .5, reach + light.ring_radius, beam))
         axis = direction * (light.length * .5)
         extent = Vec2(abs(axis.x) + light.ring_radius, abs(axis.y) + light.ring_radius)
@@ -192,10 +196,11 @@ def build_occlusion_grid(
         member = 0 <= home_x < columns and 0 <= home_y < rows and crowd[home_y * columns + home_x]
         # A crowd's member shades the cells around it only where it stands; its crowd's medium stands for it.
         rx, ry = (ex, ey) if member else (ex + soft_margin, ey + soft_margin)
-        margin = 0.0 if member else beam_margin
+        margin = 0.0 if member else beam_margin + .57735027 * beam_width
         occupied = [cell for cell in covered(bounds(body.pos.x, body.pos.y, rx, ry), active) if not crowd[cell]]
-        # A section's rays fan out from the walked center ray by at most its half-span.
-        beam_box = bounds(body.pos.x, body.pos.y, rx + margin, ry + margin)
+        # A section's rays fan out from the walked center ray by at most its half-span, and its two transverse taps
+        # (light_visibility.glsl's sectionVisibility) by a fraction of its width.
+        beam_box = bounds(body.pos.x, body.pos.y, ex + margin, ey + margin)
         beam_occupied = [cell for cell in covered(beam_box, beam_active) if not crowd[cell]]
         if not occupied and not beam_occupied:
             continue

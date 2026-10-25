@@ -620,9 +620,9 @@ balancing a full ellipsoid on a single point. These are stable body approximatio
 not frame-by-frame silhouettes or anatomical geometry.
 
 A CPU-built spatial grid retains every body near the selected
-reflection or illumination sources. Cells are 64 world units in small scenes and 32 with at least
-512 body volumes (512 standard creatures); the finer grid reduces candidate
-fetches in crowds. The resolution changes indexing only, not visibility.
+reflection or illumination sources, in 64-unit cells. Finer cells were measured
+slower in late crowds (more cells walked for the same padded bodies), and coarser
+ones faster only by turning more cells into crowds.
 Source-support cells are marked once, avoiding a body-by-source
 culling loop. A growing,
 renderer-owned RGBA32F texture holds cell lists and body transforms; no nearest-N
@@ -939,7 +939,10 @@ and dying bodies retain their shared collapse/fade behavior.
 
 Preparation uploads one small uniform array and reuses the occlusion texture.
 Each cell near a beam source also holds a beam list, its bodies padded by the
-largest section half-span in world units; point lights, reflections and creature
+largest section half-span in world units plus the reach of the two transverse
+taps (0.577 of the widest beam's width). The point lights' penumbra margin, which
+the frame's widest source sets, never pads them: a section's coverage does not use
+it. Point lights, reflections and creature
 shadows keep their narrow lists. A section walks the beam lists along its center
 ray, rejects bodies outside its ray fan (the triangle from the receiver to both
 section ends), and tests each body only in the first walked cell that lists it.
