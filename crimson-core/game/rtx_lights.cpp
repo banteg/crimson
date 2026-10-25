@@ -19,6 +19,7 @@
 #include <math.h>
 #include <string.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 extern "C" {
@@ -45,14 +46,22 @@ enum { MAX_ILLUMINATION = 16, MAX_REFLECTION = 16, MAX_EXPLOSIONS = 128, MAX_FLA
 // explosion's shell and fireball; each flame cell.
 const int MAX_SOURCES = 2 * 3 + (int)std::size(projectile_pool) * 5 + (int)std::size(secondary_projectile_pool) +
                         MAX_EXPLOSIONS * 2 + MAX_FLAME_CELLS;
-// Shots of one kind whose heads and tails both lie this close are one volley;
-// a source fades across a budget's edge over this many ticks.
+// A volley's pellets light as one source while their heads lie this close to
+// the lead's; a source fades across a budget's edge over this many ticks.
 const float VOLLEY_UNITS = 28;
 const float SLEW_TICKS = 6;
 
 // Source idents (source_ident): the kind in the top byte, its slot below.
-enum { IDENT_PLAYER = 1, IDENT_SHOT, IDENT_ARC, IDENT_SECONDARY, IDENT_EXPLOSION, IDENT_FLAME };
+enum { IDENT_PLAYER = 1, IDENT_SHOT, IDENT_ARC, IDENT_SECONDARY, IDENT_EXPLOSION, IDENT_FLAME, IDENT_VOLLEY };
 int source_ident(int kind, int number) { return kind << 24 | (number & 0xffffff); }
+// One trigger pull's pellets share a kind, an owner and a spawn point (their
+// origin): their volley's ident (material_lights.py's volley_ident).
+int volley_ident(const projectile_t &p) {
+  unsigned x = (unsigned)(int)floorf(p.fields.origin_x), y = (unsigned)(int)floorf(p.fields.origin_y);
+  unsigned number = x * 73856093u ^ y * 19349663u ^ (unsigned)p.fields.type_id * 83492791u ^
+                    (unsigned)p.fields.owner_id * 2654435761u;
+  return source_ident(IDENT_VOLLEY, (int)(number & 0xffffff));
+}
 
 // A luminous disc, tapered segment or annulus (MaterialLight). A beam's streak
 // (its stamp radius, spacing and head size) lights the ground in energy sections.
@@ -66,6 +75,8 @@ struct Light {
   bool beam_ion = false;
   float smoke_gain = 1; // fluid smoke's scattering response, apart from the ground's and creatures'
   int ident = -1;       // which source this is, the same from frame to frame
+  int volley = -1;      // a shot's volley (volley_ident): a pellet leaving it starts from its place in the budgets
+  float travel = 0;     // how far a shot has flown from its spawn point: a reused slot's new shot starts over
   float reflection_reach() const { return reach < 0 ? radius : reach; }
 };
 Light sources[MAX_SOURCES];
@@ -179,6 +190,8 @@ void projectile_source(const projectile_t &p, int ident) {
     heading_direction(p.angle, dx, dy);
   Light &light = add(ident, head_x - dx * span * 0.5f, head_y - dy * span * 0.5f, e->radius,
                      r * gain, g * gain, b * gain);
+  light.volley = volley_ident(p);
+  light.travel = hypotf(p.fields.pos_x - p.fields.origin_x, p.fields.pos_y - p.fields.origin_y);
   light.height = e->height;
   light.dx = dx, light.dy = dy, light.length = span;
   light.width = width;
@@ -508,6 +521,16 @@ void select(const float *scores, int limit, bool *chosen) {
 // over a second starts over.
 struct Selection {
   std::unordered_map<int, float> weights[2];
+  // The volleys' history (merge_volleys): when each shot was born (and how far
+  // it had flown), the pellets that have left their volley, and how much of
+  // each one's light its volley still carries.
+  struct Born {
+    float travel;
+    int tick;
+  };
+  std::unordered_map<int, Born> born;
+  std::unordered_set<int> split;
+  std::unordered_map<int, float> handoff;
   float elapsed_ms = -1, ticks = 0;
   void advance(float now_ms) {
     float gap = now_ms - elapsed_ms;
@@ -519,15 +542,20 @@ struct Selection {
   }
   void reset() {
     weights[0].clear(), weights[1].clear();
+    born.clear(), split.clear(), handoff.clear();
     elapsed_ms = -1, ticks = 0;
   }
   // The sources' weights in one response; idents no longer present are dropped.
+  // A source seen for the first time starts where it belongs, unless it is a
+  // pellet leaving its volley: that starts where the volley was.
   void slew(bool reflection, const bool *chosen, float *out) {
     std::unordered_map<int, float> &previous = weights[reflection], next;
     float step = ticks / SLEW_TICKS;
     for (int i = 0; i < source_count; ++i) {
       float target = chosen[i] ? 1.0f : 0.0f;
       auto found = previous.find(sources[i].ident);
+      if (found == previous.end())
+        found = previous.find(sources[i].volley);
       float weight = found == previous.end() ? target : found->second;
       weight = target > weight ? fminf(target, weight + step) : fmaxf(target, weight - step);
       previous[sources[i].ident] = next[sources[i].ident] = out[i] = weight;
@@ -537,66 +565,127 @@ struct Selection {
 };
 Selection selection;
 
-// Shots of one kind whose heads and tails both lie within VOLLEY_UNITS, from
-// `first` on, as one source (merge_volleys), as a shotgun's pellets or a burst
-// leave the muzzle: their radiance adds, so a volley fanning out splits without
-// changing its total light. The merged source keeps one shot's width (every
-// body's shadow margin follows the widest source) and the lowest ident.
+// One trigger pull's pellets (Light::volley, born on one tick), from `first`
+// on, as one source while their heads lie within VOLLEY_UNITS of the lead's,
+// the lowest ident still in the volley (material_lights.py's merge_volleys).
+// Unrelated shots never merge, however close they pass, nor do a gun's trigger
+// pulls from one spot. A pellet that strays leaves for good
+// and hands its light over across SLEW_TICKS: the volley keeps a fading share
+// of it where it was, while the pellet's own light comes up from the volley's
+// place in the budgets. Radiance adds, so a volley fanning out keeps its total
+// light. The merged source keeps one shot's width (every body's shadow margin
+// follows the widest source) and the volley's ident.
 void merge_volleys(int first) {
-  struct Cluster {
-    Light lead;
-    float head[2], tail[2], weight;
-    int count;
+  auto head = [](const Light &l, float *out) {
+    out[0] = l.x + l.dx * l.length * 0.5f, out[1] = l.y + l.dy * l.length * 0.5f;
   };
-  auto ends = [](const Light &l, float *head, float *tail) {
-    head[0] = l.x + l.dx * l.length * 0.5f, head[1] = l.y + l.dy * l.length * 0.5f;
-    tail[0] = l.x - l.dx * l.length * 0.5f, tail[1] = l.y - l.dy * l.length * 0.5f;
-  };
-  auto same_kind = [](const Light &a, const Light &b) {
-    return a.radius == b.radius && a.height == b.height && a.beam_radius == b.beam_radius &&
-           a.beam_step == b.beam_step && a.beam_head == b.beam_head && a.broad == b.broad && a.tail == b.tail &&
-           a.illumination == b.illumination && a.reflection == b.reflection;
-  };
-  auto near = [](const float *a, const float *b) { return hypotf(a[0] - b[0], a[1] - b[1]) <= VOLLEY_UNITS; };
-  std::vector<Cluster> clusters;
-  for (int i = first; i < source_count; ++i) {
-    const Light &shot = sources[i];
-    float head[2], tail[2], lead_head[2], lead_tail[2];
-    ends(shot, head, tail);
-    Cluster *found = nullptr;
-    for (Cluster &c : clusters) {
-      ends(c.lead, lead_head, lead_tail);
-      if (same_kind(c.lead, shot) && near(head, lead_head) && near(tail, lead_tail)) {
-        found = &c;
-        break;
-      }
-    }
-    if (!found) {
-      clusters.push_back({shot, {0, 0}, {0, 0}, 0, 0});
-      found = &clusters.back();
-      found->lead.r = found->lead.g = found->lead.b = 0;
-    }
-    // Heads and tails average by brightness.
-    float weight = fmaxf(fmaxf(shot.r, fmaxf(shot.g, shot.b)), 1e-6f);
-    for (int k = 0; k < 2; ++k)
-      found->head[k] += head[k] * weight, found->tail[k] += tail[k] * weight;
-    found->weight += weight;
-    found->lead.r += shot.r, found->lead.g += shot.g, found->lead.b += shot.b;
-    found->lead.ident = std::min(found->lead.ident, shot.ident);
-    ++found->count;
+  float step = selection.ticks / SLEW_TICKS;
+  std::unordered_set<int> present;
+  for (int i = first; i < source_count; ++i)
+    present.insert(sources[i].ident);
+  for (auto it = selection.handoff.begin(); it != selection.handoff.end();) {
+    it->second -= step;
+    it = it->second <= 0 || !present.count(it->first) ? selection.handoff.erase(it) : std::next(it);
   }
-  source_count = first;
-  for (const Cluster &c : clusters) {
-    Light &light = sources[source_count++] = c.lead;
-    if (c.count == 1)
+  for (auto it = selection.split.begin(); it != selection.split.end();)
+    it = present.count(*it) ? std::next(it) : selection.split.erase(it);
+  for (auto it = selection.born.begin(); it != selection.born.end();)
+    it = present.count(it->first) ? std::next(it) : selection.born.erase(it);
+  int tick = (int)lroundf(selection.elapsed_ms * 0.06f);
+  std::vector<Light> shots(sources + first, sources + source_count);
+  for (Light &shot : shots) {
+    if (shot.volley < 0)
       continue;
-    float head_x = c.head[0] / c.weight, head_y = c.head[1] / c.weight;
-    float tail_x = c.tail[0] / c.weight, tail_y = c.tail[1] / c.weight;
+    // A shot is born when first seen, or when it is nearer its spawn point
+    // than before: a reused slot's new shot.
+    auto seen = selection.born.find(shot.ident);
+    bool fresh = seen == selection.born.end() || shot.travel < seen->second.travel;
+    int born = fresh ? tick : seen->second.tick;
+    if (fresh) {
+      selection.split.erase(shot.ident);
+      selection.handoff.erase(shot.ident);
+    }
+    selection.born[shot.ident] = {shot.travel, born};
+    shot.volley = source_ident(IDENT_VOLLEY, (int)((unsigned)shot.volley ^ (unsigned)born * 2654435761u));
+  }
+  // By volley, then ident: each volley's members together, its lead first.
+  std::sort(shots.begin(), shots.end(), [](const Light &a, const Light &b) {
+    return a.volley != b.volley ? a.volley < b.volley : a.ident < b.ident;
+  });
+  source_count = first;
+  for (size_t begin = 0; begin < shots.size();) {
+    size_t end = begin + 1;
+    while (end < shots.size() && shots[end].volley == shots[begin].volley)
+      ++end;
+    if (shots[begin].volley < 0) {
+      for (size_t i = begin; i < end; ++i)
+        sources[source_count++] = shots[i];
+      begin = end;
+      continue;
+    }
+    const Light *lead = nullptr;
+    for (size_t i = begin; i < end && !lead; ++i)
+      if (!selection.split.count(shots[i].ident))
+        lead = &shots[i];
+    float lead_head[2] = {0, 0};
+    if (lead)
+      head(*lead, lead_head);
+    // The volley's own light: its pellets inside, and the shares still handing over.
+    struct Part {
+      const Light *light;
+      float share;
+    };
+    std::vector<Part> parts;
+    int inside = 0;
+    for (size_t i = begin; i < end; ++i) {
+      const Light &shot = shots[i];
+      float h[2];
+      head(shot, h);
+      if (lead && !selection.split.count(shot.ident) && hypotf(h[0] - lead_head[0], h[1] - lead_head[1]) <= VOLLEY_UNITS) {
+        parts.push_back({&shot, 1});
+        ++inside;
+        continue;
+      }
+      if (!selection.split.count(shot.ident)) {
+        selection.split.insert(shot.ident);
+        selection.handoff[shot.ident] = 1;
+      }
+      auto handing = selection.handoff.find(shot.ident);
+      float share = handing == selection.handoff.end() ? 0 : handing->second;
+      Light &own = sources[source_count++] = shot;
+      own.r *= 1 - share, own.g *= 1 - share, own.b *= 1 - share;
+      if (share > 0)
+        parts.push_back({&shot, share});
+    }
+    begin = end;
+    if (parts.size() == 1 && inside == 1) {
+      sources[source_count++] = *parts[0].light;
+      continue;
+    }
+    if (parts.empty())
+      continue;
+    // Heads and tails average by brightness.
+    float head_xy[2] = {0, 0}, tail_xy[2] = {0, 0}, total = 0, r = 0, g = 0, b = 0;
+    for (const Part &part : parts) {
+      const Light &l = *part.light;
+      float weight = fmaxf(fmaxf(l.r, fmaxf(l.g, l.b)), 1e-6f) * part.share;
+      float h[2];
+      head(l, h);
+      head_xy[0] += h[0] * weight, head_xy[1] += h[1] * weight;
+      tail_xy[0] += (l.x - l.dx * l.length * 0.5f) * weight, tail_xy[1] += (l.y - l.dy * l.length * 0.5f) * weight;
+      total += weight;
+      r += l.r * part.share, g += l.g * part.share, b += l.b * part.share;
+    }
+    Light &light = sources[source_count++] = *parts[0].light;
+    float head_x = head_xy[0] / total, head_y = head_xy[1] / total;
+    float tail_x = tail_xy[0] / total, tail_y = tail_xy[1] / total;
     float dx = head_x - tail_x, dy = head_y - tail_y, length = normalize(dx, dy);
     light.x = (head_x + tail_x) * 0.5f, light.y = (head_y + tail_y) * 0.5f;
     if (length > 1e-3f)
       light.dx = dx, light.dy = dy;
     light.length = length;
+    light.r = r, light.g = g, light.b = b;
+    light.ident = light.volley;
   }
 }
 
@@ -922,6 +1011,7 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   for (int slot = 0; slot < (int)std::size(projectile_pool); ++slot)
     if (projectile_pool[slot].active)
       projectile_source(projectile_pool[slot], source_ident(IDENT_SHOT, number(slot)));
+  selection.advance((float)run_elapsed_ms);
   merge_volleys(shots);
   for (int slot = 0; slot < (int)std::size(projectile_pool); ++slot)
     if (projectile_pool[slot].active)
@@ -937,7 +1027,6 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   static float scores[2][MAX_SOURCES], weights[2][MAX_SOURCES];
   static bool chosen[2][MAX_SOURCES];
   memset(chosen, 0, sizeof chosen);
-  selection.advance((float)run_elapsed_ms);
   for (int reflection = 0; reflection < 2; ++reflection) {
     for (int i = 0; i < source_count; ++i)
       scores[reflection][i] = score(sources[i], reflection, view_x, view_y);

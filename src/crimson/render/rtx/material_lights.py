@@ -1,7 +1,7 @@
 """Shared finite weapon sources, with independent illumination and reflection budgets.
 
-Every source carries an ident, the same from frame to frame: its kind and slot. A volley's co-located shots light as
-one source. Selection fades a source in or out over SLEW_TICKS of game time when it wins or loses its place in a
+Every source carries an ident, the same from frame to frame: its kind and slot. One trigger pull's pellets light as one
+source while they stay tight (merge_volleys). Selection fades a source in or out over SLEW_TICKS of game time when it wins or loses its place in a
 budget (LightSelection), so crossing the cutoff never pops.
 """
 
@@ -36,16 +36,24 @@ MAX_REFLECTION_SOURCES = 16
 # The independently selected sets share one upload; overlapping sources occur only once. Sources fading out of a
 # budget still upload until they reach zero, within the same bound.
 MAX_MATERIAL_LIGHTS = MAX_ILLUMINATION_SOURCES + MAX_REFLECTION_SOURCES
-# Shots of one kind whose heads and tails both lie within this many world units light as one source.
+# A volley's pellets light as one source while their heads lie within this many world units of the lead's.
 VOLLEY_UNITS = 28.0
 # Ticks (1/60 s of game time) over which a source fades into or out of a budget.
 SLEW_TICKS = 6
 # Source idents: the kind in the top byte, its slot below.
-IDENT_PLAYER, IDENT_SHOT, IDENT_ARC, IDENT_SECONDARY, IDENT_EXPLOSION, IDENT_FLAME = range(1, 7)
+IDENT_PLAYER, IDENT_SHOT, IDENT_ARC, IDENT_SECONDARY, IDENT_EXPLOSION, IDENT_FLAME, IDENT_VOLLEY = range(1, 8)
 
 
 def source_ident(kind: int, number: int) -> int:
     return kind << 24 | number & 0xffffff
+
+
+def volley_ident(projectile: Projectile) -> int:
+    """One trigger pull's pellets share a kind, an owner and a spawn point (their origin): their volley's ident.
+    Shots from different shooters, or from one shooter's separate trigger pulls, belong to different volleys."""
+    x, y = math.floor(projectile.origin.x), math.floor(projectile.origin.y)
+    number = (x * 73856093) ^ (y * 19349663) ^ (int(projectile.type_id) * 83492791) ^ (projectile.owner_id * 2654435761)
+    return source_ident(IDENT_VOLLEY, number)
 
 
 class MaterialLight(msgspec.Struct, frozen=True):
@@ -78,6 +86,11 @@ class MaterialLight(msgspec.Struct, frozen=True):
     smoke_gain: float = 1.0
     # Which source this is, the same from frame to frame (source_ident): selection fades by it.
     ident: int = -1
+    # A shot's volley (volley_ident), or -1: a pellet that leaves its volley starts from the volley's place in the
+    # budgets (LightSelection.slew).
+    volley: int = -1
+    # How far a shot has flown from its spawn point: a reused slot's new shot starts over (merge_volleys).
+    travel: float = 0.0
 
     @property
     def reflection_reach(self) -> float:
@@ -173,6 +186,8 @@ def projectile_source(proj: Projectile, ident: int = -1, *, flown: float = 0.0) 
         # A streak's stamps fade in from nothing at its tail.
         **({"reflection_tail": 0.0} if beam_profile is not None else {}),
         ident=ident,
+        volley=volley_ident(proj),
+        travel=(proj.pos - proj.origin).length(),
     )
 
 
@@ -296,10 +311,17 @@ def _distance_sq(source: MaterialLight, point: Vec2, *, reflection: bool = True)
 class LightSelection(msgspec.Struct):
     """Each source's place in the two budgets, by ident: a weight that moves toward 1 while it is selected and 0 while
     it is not, by 1 / SLEW_TICKS per tick of the run's clock. A source seen for the first time starts where it
-    belongs, so a new shot lights at once; a rewind or a gap over a second starts over."""
+    belongs, so a new shot lights at once, unless it is a pellet leaving its volley: that starts where the volley
+    was. A rewind or a gap over a second starts over.
+
+    It also holds the volleys' history (merge_volleys): when each shot was born, which pellets have left their volley,
+    and how much of each one's light its volley still carries while handing it over."""
 
     illumination: dict[int, float] = msgspec.field(default_factory=dict)
     reflection: dict[int, float] = msgspec.field(default_factory=dict)
+    born: dict[int, tuple[float, int]] = msgspec.field(default_factory=dict)
+    split: set[int] = msgspec.field(default_factory=set)
+    handoff: dict[int, float] = msgspec.field(default_factory=dict)
     elapsed_ms: float = -1.
     ticks: float = 0.
 
@@ -313,6 +335,9 @@ class LightSelection(msgspec.Struct):
     def reset(self) -> None:
         self.illumination.clear()
         self.reflection.clear()
+        self.born.clear()
+        self.split.clear()
+        self.handoff.clear()
         self.elapsed_ms, self.ticks = -1., 0.
 
     def slew(self, sources: list[MaterialLight], chosen: set[int], *, reflection: bool) -> dict[int, float]:
@@ -323,7 +348,9 @@ class LightSelection(msgspec.Struct):
         for i, source in enumerate(sources):
             present.add(source.ident)
             target = 1. if i in chosen else 0.
-            weight = weights.get(source.ident, target)
+            weight = weights.get(source.ident)
+            if weight is None:
+                weight = weights.get(source.volley, target)
             weight = min(target, weight + step) if target > weight else max(target, weight - step)
             weights[source.ident] = weight
             if weight > 0.:
@@ -374,55 +401,82 @@ def select_material_lights(
     ]
 
 
-def merge_volleys(shots: list[MaterialLight]) -> list[MaterialLight]:
-    """Shots of one kind whose heads and tails both lie within VOLLEY_UNITS as one source, as a shotgun's pellets or a
-    burst leave the muzzle: their radiance adds, so a volley fanning out splits without changing its total light. The
-    merged source keeps one shot's width (every body's shadow margin follows the widest source) and the lowest ident.
+def merge_volleys(shots: list[MaterialLight], selection: LightSelection | None = None) -> list[MaterialLight]:
+    """One trigger pull's pellets (MaterialLight.volley, born on one tick) as one source while their heads lie within
+    VOLLEY_UNITS of the lead's, the lowest ident still in the volley, as a shotgun's pellets leave the muzzle. Unrelated
+    shots never merge, however close they pass, nor do a gun's trigger pulls from one spot.
+
+    With a selection, a pellet that strays leaves for good and hands its light over across SLEW_TICKS: the volley keeps
+    a fading share of it where it was, while the pellet's own light comes up from the volley's place in the budgets.
+    Radiance adds, so a volley fanning out keeps its total light. The merged source keeps one shot's width (every body's
+    shadow margin follows the widest source) and the volley's ident.
     """
-    def ends(light: MaterialLight) -> tuple[Vec2, Vec2]:
-        half = light.direction * (light.length * .5)
-        return light.pos + half, light.pos - half
+    def head(light: MaterialLight) -> Vec2:
+        return light.pos + light.direction * (light.length * .5)
 
-    def kind(light: MaterialLight) -> tuple:
-        return (light.radius, light.height, light.beam_profile, light.broad_illumination, light.reflection_tail,
-                light.illumination_gain, light.reflection_gain)
-
-    clusters: list[list[MaterialLight]] = []
-    # Clusters by the cell of their first shot's head, searched in the 3x3 cells around a shot's own.
-    buckets: dict[tuple, list[int]] = {}
-    for light in shots:
-        head, tail = ends(light)
-        cell = (math.floor(head.x / VOLLEY_UNITS), math.floor(head.y / VOLLEY_UNITS))
-        found = None
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                for c in buckets.get((kind(light), cell[0] + dx, cell[1] + dy), ()):
-                    first_head, first_tail = ends(clusters[c][0])
-                    if (head - first_head).length() <= VOLLEY_UNITS and (tail - first_tail).length() <= VOLLEY_UNITS \
-                            and (found is None or c < found):
-                        found = c
-        if found is None:
-            buckets.setdefault((kind(light), *cell), []).append(len(clusters))
-            clusters.append([light])
-        else:
-            clusters[found].append(light)
+    split = selection.split if selection is not None else set()
+    handoff = selection.handoff if selection is not None else {}
+    born = selection.born if selection is not None else {}
+    step = selection.ticks / SLEW_TICKS if selection is not None else 1.
+    tick = round(selection.elapsed_ms * .06) if selection is not None else 0
+    present = {light.ident for light in shots}
+    for ident in list(handoff):
+        handoff[ident] -= step
+        if handoff[ident] <= 0. or ident not in present:
+            del handoff[ident]
+    split.intersection_update(present)
+    for ident in [ident for ident in born if ident not in present]:
+        del born[ident]
+    volleys: dict[int, list[MaterialLight]] = {}
     merged = []
-    for cluster in clusters:
-        if len(cluster) == 1:
-            merged.append(cluster[0])
+    for light in shots:
+        if light.volley < 0:
+            merged.append(light)
             continue
-        weights = [max(max(light.rgb), 1e-6) for light in cluster]
+        # A shot is born when first seen, or when it is nearer its spawn point than before: a reused slot's new shot.
+        seen = born.get(light.ident)
+        if seen is None or light.travel < seen[0]:
+            seen = (light.travel, tick)
+            split.discard(light.ident)
+            handoff.pop(light.ident, None)
+        born[light.ident] = (light.travel, seen[1])
+        volley = source_ident(IDENT_VOLLEY, light.volley ^ seen[1] * 2654435761)
+        volleys.setdefault(volley, []).append(msgspec.structs.replace(light, volley=volley))
+    for members in volleys.values():
+        members.sort(key=lambda light: light.ident)
+        lead = next((light for light in members if light.ident not in split), None)
+        inside = []
+        for light in members:
+            if light.ident not in split and lead is not None and (head(light) - head(lead)).length() <= VOLLEY_UNITS:
+                inside.append(light)
+                continue
+            if light.ident not in split and selection is not None:
+                split.add(light.ident)
+                handoff[light.ident] = 1.
+            share = 1. - handoff.get(light.ident, 0.)
+            merged.append(msgspec.structs.replace(light, rgb=tuple(c * share for c in light.rgb)))
+        # The volley's own light: its pellets inside, and the shares still handing over.
+        parts = [(light, 1.) for light in inside] + [
+            (light, handoff[light.ident]) for light in members if light.ident in handoff]
+        if len(parts) == 1 and inside:
+            merged.append(inside[0])
+            continue
+        if not parts:
+            continue
+        weights = [max(max(light.rgb), 1e-6) * share for light, share in parts]
         total = sum(weights)
-        head = sum((ends(light)[0] * w for light, w in zip(cluster, weights, strict=True)), Vec2()) / total
-        tail = sum((ends(light)[1] * w for light, w in zip(cluster, weights, strict=True)), Vec2()) / total
-        direction, length = (head - tail).normalized_with_length()
+        ends = [(head(light), light.pos - light.direction * (light.length * .5)) for light, _ in parts]
+        front = sum((h * w for (h, _), w in zip(ends, weights, strict=True)), Vec2()) / total
+        back = sum((t * w for (_, t), w in zip(ends, weights, strict=True)), Vec2()) / total
+        direction, length = (front - back).normalized_with_length()
+        first = parts[0][0]
         merged.append(msgspec.structs.replace(
-            cluster[0],
-            pos=(head + tail) * .5,
-            direction=direction if length > 1e-3 else cluster[0].direction,
+            first,
+            pos=(front + back) * .5,
+            direction=direction if length > 1e-3 else first.direction,
             length=length,
-            rgb=tuple(sum(light.rgb[c] for light in cluster) for c in range(3)),
-            ident=min(light.ident for light in cluster),
+            rgb=tuple(sum(light.rgb[c] * share for light, share in parts) for c in range(3)),
+            ident=first.volley,
         ))
     return merged
 
@@ -496,7 +550,10 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
             shots.append(source)
             sources.extend(ion_arc_sources(frame, projectile, view_center=view_center,
                                            ident=source_ident(IDENT_ARC, number * 4)))
-    sources.extend(merge_volleys(shots))
+    selection = frame.light_selection
+    if selection is not None:
+        selection.advance(frame.elapsed_ms)
+    sources.extend(merge_volleys(shots, selection))
     for slot, sec in enumerate(frame.state.secondary_projectiles.entries):
         if not sec.active:
             continue
@@ -574,7 +631,4 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
             ),
         )
     sources.extend(_flame_sources(frame))
-    selection = frame.light_selection
-    if selection is not None:
-        selection.advance(frame.elapsed_ms)
     return select_material_lights(sources, view_center=view_center, selection=selection)

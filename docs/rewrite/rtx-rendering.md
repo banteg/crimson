@@ -568,12 +568,19 @@ at most 32 entries; an entry selected for only one response has the other gain
 zeroed. Shared sources are not counted twice, and reflection-only tracers do not
 consume illumination slots.
 
-A shotgun's pellets or a burst leave the muzzle together, so shots of one kind whose
-heads and tails both lie within 28 units are one source: their radiance adds, the
-merged segment runs between their brightness-weighted heads and tails, and it keeps
-one shot's width. The width is never widened by the volley's spread, because every
-body's shadow margin follows the widest source. A volley that fans out splits into
-separate sources without changing its total light.
+One trigger pull's pellets (a shotgun's, or Fire Bullets' converted ones) leave the
+muzzle together, so shots that share a kind, an owner, a spawn point and the tick
+they were born are one volley, and its pellets whose heads lie within 28 units of the lead's are one source:
+their radiance adds, the merged segment runs between their brightness-weighted heads
+and tails, and it keeps one shot's width. The width is never widened by the volley's
+spread, because every body's shadow margin follows the widest source. Unrelated shots
+never merge, however close they pass: spider plasma from different spiders, or one
+gun's separate trigger pulls. A pellet that strays leaves its volley for good and hands
+its light over across the same 6 ticks as the budget fades: the volley keeps a fading
+share of it where it was, while the pellet's own light comes up from the volley's place
+in the budgets. A volley that fans out keeps its total light, and nothing flips back
+and forth. Merging matters for cost: with it off, Fire Bullets crowds took up to twice
+as long on the ground.
 
 Every source has an ident that names it from frame to frame (its kind and slot; an
 explosion's spawn position, since the effect list reorders). Each response fades a
