@@ -54,6 +54,7 @@ class _Draws:
 
     def __init__(self, mocker) -> None:
         self.calls = mocker.Mock()
+        mocker.patch.object(world_projectiles, "draw_sprite")
         for name in (
             "begin_blend_mode",
             "end_blend_mode",

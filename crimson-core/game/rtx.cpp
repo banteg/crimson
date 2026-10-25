@@ -18,6 +18,8 @@ extern unsigned char grim_render_disabled;
 int console_cmd_argc_get(void);
 
 int rtx_render_mode;
+extern int rtx_effects_active;
+void rtx_effect_flush();
 
 static const char *rtx_mode_name(int mode) { return mode ? "rtx" : "classic"; }
 
@@ -104,6 +106,7 @@ void rtx_world(int begin) {
     return;
   grim_interface_ptr->grim_flush_batch();
   if (begin) {
+    rtx_effects_active = 1;
     int count = rtx_light_count = rtx_collect_lights(rtx_lights, 32);
     const float *lights = rtx_lights;
     const float view[7] = {camera_offset.x, camera_offset.y, rtx_seconds(), (float)terrain_texture_width,
@@ -121,6 +124,7 @@ void rtx_world(int begin) {
     host_pressure(fronts, ui_transition_alpha > 1e-3f ? rtx_collect_fronts(fronts, 16) : 0);
   }
   host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
+  if (!begin) rtx_effects_active = 0;
 }
 
 // The fluid smoke field after the world's sprites, at its transition `alpha`.
@@ -137,6 +141,8 @@ void rtx_smoke(float alpha) {
 // when the mode changes: the fluid smoke and the lights' explosions and fades.
 void rtx_smoke_reset();
 void rtx_reset() {
+  rtx_effects_active = 0;
+  rtx_effect_flush();
   rtx_smoke_reset();
   rtx_lights_reset();
 }

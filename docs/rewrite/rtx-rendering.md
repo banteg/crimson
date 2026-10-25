@@ -247,6 +247,23 @@ median GPU time per pass over the frames leading to it (`CRIMSON_GPU_TIMERS`). `
 puts two captures side by side with a difference map, the mean change and the GPU time per scene. Captures tonemap
 for SDR, so they read the same on any display.
 
+### Analytic glow effects
+
+`render/rtx/effects.py` and the client's `host_effect` draw the same `effect.frag`:
+
+- Plasma's uniform tail stamps become a finite Gaussian line integral, with its head and optional aura in the same quad.
+- The warm glow (`particles` effect 13) fits premultiplied RGB with three Gaussian lobes; the white aura (effect 16) fits alpha.
+- Ion impact arcs combine two constant-width soft capsules and the target glow, retaining the original-bug setting's cut ends.
+- The expanding ring (effect 1) uses a broad inward radial polynomial and a compact outer rim, including elliptical and rotated draws.
+
+The profiles are fitted to the original atlas cells in `effect_profiles.glsl`. Their byte-alpha cutoff keeps faint layers from
+reappearing during fades. Fireball, smoke, blood, shard and casing artwork retains its existing drawing, as does Classic mode.
+Warm glows under normal alpha blending retain the original texture coverage. Consecutive radial sprites batch by shape with
+per-vertex tints, ending at texture, blend, target or parameterized-effect changes; natively they submit wherever Grim flushes
+or ends its own batch, so they keep their place and blend state. Native hooks retain Grim's computed corners
+and transformed vertices, including its rotated non-square quads. Suppressed rendering discards pending analytic batches.
+These are appearance approximations; fewer submitted stamps alone do not establish a performance improvement.
+
 ## Native client
 
 The native client (`crimson-core/client`) shows RTX through the same GLSL as the

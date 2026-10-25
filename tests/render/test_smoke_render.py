@@ -252,7 +252,8 @@ def test_native_texture_resize_preserves_world_space_density(smoke_pixels):
     np.testing.assert_allclose(after, before, atol=.00001)
 
 
-def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless_window, headless_resources):
+def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless_window, headless_resources, mocker):
+    analytic = mocker.patch.object(effects, "draw_sprite")
     ctx = render_ctx_for_creatures(headless_resources, [])
     pool = ctx.frame.state.effects
     puff = EffectEntry(pos=Vec2(50, 50), effect_id=EffectId.EXPLOSION_PUFF, flags=0x40,
@@ -261,7 +262,10 @@ def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless
     pool.entries[1] = msgspec.structs.replace(puff, effect_id=EffectId.RING)
     rtx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX, smoke=SmokeRenderer()))
     effects.draw_effect_pool(rtx, camera=Vec2(), view_scale=Vec2(1, 1))
-    assert headless_window.draw_texture_pro.call_count == 1
+    analytic.assert_called_once_with(
+        effects.EffectShape.RING, center=Vec2(50, 50), width=40., height=40., color=puff.color, rotation=0., batch=mocker.ANY,
+    )
+    assert headless_window.draw_texture_pro.call_count == 0
     headless_window.draw_texture_pro.reset_mock()
     classic = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.CLASSIC))
     effects.draw_effect_pool(classic, camera=Vec2(), view_scale=Vec2(1, 1))
