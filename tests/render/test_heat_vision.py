@@ -1,14 +1,26 @@
 from __future__ import annotations
 
 import msgspec
+import numpy as np
 import pytest
 
-from crimson.render.rtx.heat_vision import FROZEN_WARMTH, TRAIL_HALF_LIFE_S, HeatVision, heat_visibility, heat_warmth
+from crimson.creatures.anim import CREATURE_ANIM, creature_anim_select_frame
+from crimson.render.rtx.heat_heads import heat_head_color
+from crimson.render.rtx.heat_vision import (
+    BODY_OPACITY,
+    FROZEN_WARMTH,
+    TRAIL_HALF_LIFE_S,
+    HeatVision,
+    heat_visibility,
+    heat_warmth,
+)
+from crimson.render.world.draw import _NATIVE_CREATURE_SPRITE_DRAW_ORDER
 from crimson.render.world.viewport import ViewTransform
+from grim.assets import TextureId, load_runtime_resources, unload_runtime_resources
 from grim.color import RGBA
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import texture_mode
 from tests.render.test_ground_materials import pixels
 from tests.render.test_material_lights import frame
@@ -37,7 +49,6 @@ def test_freeze_cools_monsters_without_hiding_them() -> None:
     assert FROZEN_WARMTH < heat_warmth(spider, snapshot) < 1.0
 
 
-
 def trail_texels(heat: HeatVision) -> list[float]:
     assert heat.trail is not None
     return [p[0] for p in pixels(heat.trail)]
@@ -58,6 +69,10 @@ def test_trails_fade_by_game_time_and_restart_on_rewind(raylib_context) -> None:
         assert max(trail_texels(heat)) == pytest.approx(fresh / 2, rel=.02)
         heat.update(half_life, ground_size=Vec2(128, 128))  # a paused frame keeps the trail
         assert max(trail_texels(heat)) == pytest.approx(fresh / 2, rel=.02)
+        for halves in (2, 3):
+            cooled = msgspec.structs.replace(snapshot, elapsed_ms=halves * TRAIL_HALF_LIFE_S * 1000)
+            heat.update(cooled, ground_size=Vec2(128, 128))
+            assert max(trail_texels(heat)) == pytest.approx(fresh / 2**halves, rel=.02)
         heat.update(snapshot, ground_size=Vec2(128, 128))  # a rewind starts over
         assert max(trail_texels(heat)) == 0.0
     finally:
@@ -105,3 +120,66 @@ def test_first_heat_frame_keeps_sprites_queued_for_the_enclosing_target(raylib_c
     finally:
         rl.unload_render_texture(target)
         heat.close()
+
+
+def test_every_monster_living_cycle_has_stable_heat(raylib_context, assets_dir) -> None:
+    """Real atlas poses must not make an unchanged living monster flash hot/cold."""
+    resources = load_runtime_resources(assets_dir)
+    heat = HeatVision()
+
+    def texels(texture):
+        image = rl.load_image_from_texture(texture)
+        try:
+            rl.image_format(image, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
+            data = bytes(rl.ffi.buffer(image.data, image.width * image.height * 4))
+            return np.frombuffer(data, dtype=np.uint8).reshape(image.height, image.width, 4)
+        finally:
+            rl.unload_image(image)
+
+    try:
+        # Follow the actual body-pass list: troopers are player artwork, not monsters.
+        for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
+            info = CREATURE_ANIM[type_id]
+            texture = resources.texture(TextureId[type_id.name])
+            alpha = texels(texture)[:, :, 3]
+            target = rl.load_render_texture(texture.width, texture.height)
+            try:
+                with texture_mode(target):
+                    rl.clear_background(rl.Color(15, 18, 25, 255))
+                    with heat.body_scope(texture=texture, restore_shader=None):
+                        w, h = texture.width // 8, texture.height // 8
+                        for index in range(64):
+                            x, y = index % 8 * w, index // 8 * h
+                            head_x, head_y = heat_head_color(type_id, index)
+                            rl.draw_texture_pro(
+                                texture, rl_rectangle(x, y, w, h), rl_rectangle(x, y, w, h), rl_vector2(0, 0),
+                                0, rl.Color(255, head_x, head_y, round(BODY_OPACITY * 255)),
+                            )
+                rgb = texels(target.texture)[::-1, :, :3].astype(float) / 255
+            finally:
+                rl.unload_render_texture(target)
+            luminance = rgb @ np.array([.2126, .7152, .0722])
+            means = []
+            contrasts = []
+            w, h = texture.width // 8, texture.height // 8
+            for phase in range(32):
+                index = creature_anim_select_frame(phase, base_frame=info.base, mirror_long=info.mirror)
+                x, y = index % 8 * w, index // 8 * h
+                mask = alpha[y:y + h, x:x + w] > 127
+                body = luminance[y:y + h, x:x + w][mask]
+                means.append(body.mean())
+                contrasts.append(np.quantile(body, .9) - np.quantile(body, .1))
+            # Includes the loop seam and the mirrored species' turnaround.
+            # The previous square-opening heat exceeded .10 for the alien.
+            jumps = np.abs(np.roll(means, -1) - means)
+            assert jumps.max() < .025, (type_id.name, means)
+            # Stability must retain cool extremities and bright internal detail,
+            # rather than flattening the entire creature to one temperature.
+            assert np.mean(contrasts) > .45, (type_id.name, contrasts)
+        expected = {int(resources.texture(TextureId[kind.name]).id) for kind in _NATIVE_CREATURE_SPRITE_DRAW_ORDER}
+        assert set(heat.densities) == expected
+        heat.close()
+        assert not heat.densities
+    finally:
+        heat.close()
+        unload_runtime_resources(resources)

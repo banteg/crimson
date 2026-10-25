@@ -7,6 +7,7 @@
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
 #include "host_abi.h"
+#include "rtx_heat_heads.h"
 #include <math.h>
 
 extern IGrim2D_cpp *grim_interface_ptr;
@@ -63,8 +64,8 @@ extern "C" void rtx_heat_trails(float alpha) {
 }
 
 // The species' bodies again in heat_body.frag: red is warmth, alpha the
-// overlay's opacity. The same frames and quads creature_render_type draws, with
-// the creature atlas and blending it left bound.
+// overlay's opacity; green/blue optionally carry a tracked head. The same frames
+// and quads creature_render_type draws, with its atlas and blending left bound.
 extern "C" void rtx_heat(int type_id, float transition_alpha) {
   if (!heat_vision())
     return;
@@ -89,7 +90,13 @@ extern "C" void rtx_heat(int type_id, float transition_alpha) {
         frame += 32;
     }
     grim_interface_ptr->grim_set_atlas_frame(8, frame);
-    grim_interface_ptr->grim_set_color(warmth(c), 0, 0, fminf(1, opacity) * BODY_OPACITY);
+    // Green/blue: a zombie walking frame's head (render/rtx/heat_heads.py), zero for the fixed lobe.
+    float head_x = 0, head_y = 0;
+    if (type_id == 0 && frame < (int)(sizeof zombie_heat_heads / sizeof *zombie_heat_heads)) {
+      head_x = (zombie_heat_heads[frame][0] + .5f) / 255;
+      head_y = (zombie_heat_heads[frame][1] + .5f) / 255;
+    }
+    grim_interface_ptr->grim_set_color(warmth(c), head_x, head_y, fminf(1, opacity) * BODY_OPACITY);
     grim_interface_ptr->grim_set_rotation(c.heading - 1.57079637f);
     grim_interface_ptr->grim_draw_quad(camera_offset.x + c.pos_x - c.size * 0.5f,
                                        camera_offset.y + c.pos_y - c.size * 0.5f, c.size, c.size);

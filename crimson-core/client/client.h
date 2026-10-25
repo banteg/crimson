@@ -42,8 +42,8 @@ void renderer_set_headroom(float headroom);
 std::string renderer_gpu_timings();
 // thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);
-// Its per-cell box blur, which Monster Vision's heat bodies read (render/rtx/heat_vision.py).
-std::vector<unsigned char> renderer_blur_cells(const std::vector<unsigned char> &plane, int width, int height, int radius);
+// Monster Vision's silhouette density: two cell-local 5x5 alpha blurs.
+std::vector<unsigned char> renderer_heat_density(const unsigned char *bgra, int width, int height);
 
 // audio.cpp: plays the module's mix, pulled after each frame.
 void audio_init();
