@@ -80,6 +80,22 @@ void gpu_mark(const char *label) {
   glBeginQuery(GL_TIME_ELAPSED, query);
   gpu_frame.push_back({label, query});
 }
+// Drawing off the back buffer outside the world's passes (terrain decal bakes,
+// heat stamps) gets its own timer, so the `frame` timer keeps only the
+// simulation's time; the label before it resumes after.
+const char *gpu_resume_label;
+void gpu_aside(const char *label) {
+  if (!gpu_timers || gpu_resume_label)
+    return;
+  gpu_resume_label = gpu_frame.empty() ? "frame" : gpu_frame.back().label;
+  gpu_mark(label);
+}
+void gpu_resume() {
+  if (!gpu_resume_label)
+    return;
+  gpu_mark(gpu_resume_label);
+  gpu_resume_label = nullptr;
+}
 // The frame ends: read the one before it, then start the next.
 void gpu_frame_end() {
   if (!gpu_timers || gpu_frame.empty())
@@ -101,6 +117,7 @@ void gpu_frame_end() {
   }
   gpu_previous.swap(gpu_frame);
   gpu_frame.clear();
+  gpu_resume_label = nullptr;
   draw_stats.clear();
   for (const auto &[key, count] : draw_previous) {
     snprintf(entry, sizeof entry, "%s%s=%.0f/%.0f", draw_stats.empty() ? "" : " ", key.c_str(), count.quads, count.pixels);
@@ -1178,6 +1195,10 @@ void GL_ENTRY(w2c_host_set_texture)(struct w2c_host *, u32 stage, u32 id) {
 }
 void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
   current_target = (int)id;
+  if (id)
+    gpu_aside("bake");
+  else
+    gpu_resume();
   bind_target();
 }
 void GL_ENTRY(w2c_host_clear)(struct w2c_host *, u32 color) {
@@ -1363,6 +1384,10 @@ void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {
 void GL_ENTRY(w2c_host_heat)(struct w2c_host *, u32 footprints, u32 count) {
   if (!rtx || (!count && !heat_trail.framebuffer))
     return;
+  gpu_aside("heat-stamp");
+  struct Resume {
+    ~Resume() { gpu_resume(); }
+  } resume;
   int width = std::max(1, (int)lroundf(ground_size[0] * HEAT_TRAIL_SCALE));
   int height = std::max(1, (int)lroundf(ground_size[1] * HEAT_TRAIL_SCALE));
   if (heat_trail.width != width || heat_trail.height != height) {
