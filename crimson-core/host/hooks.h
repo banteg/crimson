@@ -18,6 +18,8 @@ void game_audio_cooldowns(float dt);
 bool game_live_run();
 // Between a live run's ticks the world only draws (game/changes/world-draw.patch).
 bool game_live_between_ticks();
+// A scripted run's cursor, until its script moves it (game/frame.cpp).
+bool game_cursor_hidden();
 bool game_live_pause();
 void game_live_pick(int choice);
 // The buttons that start a run, while a co-op session is on (host/coop_live.inc):
@@ -83,6 +85,8 @@ bool rtx_effect_vertices(const void *vertices, int count);
 void rtx_effect_flush();
 void rtx_plasma(int slot, float alpha);
 void rtx_ion_arc(float sx, float sy, float ex, float ey, float scale, float alpha);
+// The arc loop's creature search, at most two arcs a cell per shot (game/ion_arcs.cpp).
+int ion_arc_find(float *pos, float radius, int start_index);
 void rtx_contact_glows(float alpha);
 void rtx_heat_trails(float alpha);
 void rtx_heat(int type_id, float transition_alpha);

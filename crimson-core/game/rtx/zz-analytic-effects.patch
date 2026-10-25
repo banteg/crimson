@@ -59,7 +59,7 @@ World-only analytic glows, shells, plasma and ion arcs. Classic submission is un
 +                                    camera_offset[1] + projectile->pos.pos_y,
 +                                    camera_offset[0] + creature_pool[creature_index].pos_x,
 +                                    camera_offset[1] + creature_pool[creature_index].pos_y, scale, head_alpha);
-+                        creature_index = creature_find_in_radius(&projectile->pos_x, radius, creature_index + 1);
++                        creature_index = ion_arc_find(&projectile->pos_x, radius, creature_index + 1);
 +                        continue;
 +                    }
                      grim_interface_ptr->grim_set_uv_point(0, 0.625f, 0.0f);

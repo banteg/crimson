@@ -120,12 +120,17 @@ def test_full_section_extent_pads_only_beam_cell_lists() -> None:
     assert grid_sources[0].length == original.length + 2 * 56 * 1.05 * SUPPORT
     assert original.source_width == 3 and original.length == 256
     # As many as one cell lists before it is a crowd.
-    bodies = [BodyVolume(Vec2(100, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(CROWD_BODIES)]
+    bodies = [BodyVolume(Vec2(110, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(CROWD_BODIES)]
     grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256, beam_margin=margin)
     assert grid.body_count == len(bodies)
     # Section walks get the half-span; other lights keep the transverse margin.
     plain = build_occlusion_grid(bodies, grid_sources, width=256, height=256)
     assert grid.references == plain.references < grid.beam_references
+    # A wide point light (an explosion) widens the ordinary lists' penumbra margin, never the sections' lists.
+    blast = MaterialLight(Vec2(100, 90), 300, (1, 1, 1), source_width=28)
+    widened = build_occlusion_grid(bodies, [*grid_sources, blast], width=256, height=256, beam_margin=margin)
+    assert widened.references > grid.references
+    assert widened.beam_references == grid.beam_references
     zero = msgspec.structs.replace(original, length=0, direction=Vec2())
     zero_cells, zero_grid = prepare_beam_lights([zero])
     assert zero_grid[0].direction == Vec2(1, 0)

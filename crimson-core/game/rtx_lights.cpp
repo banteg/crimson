@@ -694,6 +694,7 @@ struct Body {
 // list, and rays cross it as an absorbing medium (light_visibility.glsl), at a
 // cost that no longer grows with the crowd.
 const int CROWD_BODIES = 16;
+const float PENUMBRA_WIDTH = 8;
 
 bool body_of(const creature_t &c, Body &body) {
   if (!c.active || c.size <= 0 || c.death_timer <= 0 || c.type_id < 0 || c.type_id > 4)
@@ -721,7 +722,8 @@ std::vector<float> grid_values;
 // origin, columns (0 for no bodies), rows and cell size; the values are cell
 // headers, body transforms and cell lists, four floats per texel. A header
 // holds the ordinary list, then the beam sections' list, padded by the largest
-// section half-span near beam sources only (build_occlusion_grid). A list
+// section half-span and its taps' reach (not the point lights' penumbra margin)
+// near beam sources only (build_occlusion_grid).
 // A cell where more than CROWD_BODIES bodies stand is a crowd: both headers hold
 // the footprint-weighted top height of what stands there, then minus the
 // opacity-weighted footprint over the cell's area, each body's footprint shared
@@ -736,8 +738,8 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   grid[0] = grid[1] = grid[2] = grid[3] = 0;
   grid[4] = 64;
   *value_count = 0;
-  float cell = body_total >= 512 ? 32.0f : 64.0f;
-  float padding = 0, beam_margin = 0, lo_x = -cell, lo_y = -cell;
+  const float cell = 64;
+  float padding = 0, beam_margin = 0, beam_width = 0, lo_x = -cell, lo_y = -cell;
   float hi_x = terrain_texture_width + cell, hi_y = terrain_texture_height + cell;
   struct Support {
     float x, y, ax, ay, half, reach;
@@ -757,10 +759,13 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
     float illumination = l[12], reflection = l[13];
     if (!(reflection > 0 || (shadows && illumination > 0)))
       continue;
-    padding = fmaxf(padding, fmaxf(0.1f, l[15]));
+    // A body shadow's penumbra follows sources up to PENUMBRA_WIDTH wide (reflection_occlusion.py).
+    padding = fminf(PENUMBRA_WIDTH, fmaxf(padding, fmaxf(0.1f, l[15])));
     bool beam = cells[0] > 0 && shadows && illumination > 0;
-    if (beam)
+    if (beam) {
       beam_margin = fmaxf(beam_margin, fmaxf(cells[2], fmaxf(cells[6], cells[10])));
+      beam_width = fmaxf(beam_width, l[15]);
+    }
     float ax = l[8], ay = l[9];
     if (ax * ax + ay * ay > 0.0001f)
       normalize(ax, ay);
@@ -854,9 +859,11 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
           }
     };
     cover(rx, ry, active, cells, false);
-    // A section's rays fan out from the walked center ray by at most its half-span.
-    float beam_pad = member ? 0 : beam_margin;
-    cover(rx + beam_pad, ry + beam_pad, beam_active, beam_lists, true);
+    // A section's rays fan out from the walked center ray by at most its half-span,
+    // and its two transverse taps by a fraction of its width; it never uses the
+    // point lights' penumbra margin (build_occlusion_grid).
+    float beam_pad = member ? 0 : beam_margin + 0.57735027f * beam_width;
+    cover(rx - margin + beam_pad, ry - margin + beam_pad, beam_active, beam_lists, true);
     if (!occupies)
       continue;
     ++placed;

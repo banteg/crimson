@@ -11,6 +11,7 @@ from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.reflection_occlusion import (
     CELL_SIZE,
     CROWD_BODIES,
+    PENUMBRA_WIDTH,
     BodyVolume,
     build_occlusion_grid,
     creature_body_volumes,
@@ -79,20 +80,22 @@ def test_crowded_cell_holds_density_and_top_height_instead_of_its_list() -> None
 
 
 def test_crowd_follows_what_stands_in_a_cell_not_its_padded_lists() -> None:
-    # A wide source pads every body's lists by several cells.
-    light = MaterialLight(Vec2(100, 90), 400, (1, 1, 1), illumination_gain=0, source_width=40)
-    # Centered left of the cell edge at x = 128, reaching 4 units across it.
-    body = BodyVolume(Vec2(124, 100), Vec2(8, 14), 24, 0)
+    # The widest penumbra pads every body's lists by its width times the body's aspect ratio.
+    light = MaterialLight(Vec2(100, 90), 400, (1, 1, 1), illumination_gain=0, source_width=PENUMBRA_WIDTH)
     area = math.pi * 8 * 14 / CELL_SIZE ** 2
-    grid = build_occlusion_grid([body] * (CROWD_BODIES + 1), [light], width=1024, height=1024)
+    # Centered left of the cell edge at x = 128, reaching 4 units across it: it stands in both cells.
+    straddling = BodyVolume(Vec2(124, 100), Vec2(8, 14), 24, 0)
+    grid = build_occlusion_grid([straddling] * (CROWD_BODIES + 1), [light], width=1024, height=1024)
     assert header(grid, 124, 100) == pytest.approx([24, -area * (CROWD_BODIES + 1) * .75] * 2)
     assert header(grid, 130, 100) == pytest.approx([24, -area * (CROWD_BODIES + 1) * .25] * 2)
-    # Where none stands, the padded entries of a crowd's members are dropped, and the cell stays a list.
-    padded = header(grid, 200, 100)
-    assert padded[1] == padded[3] == 0
+    # Standing short of the edge, only its padding reaches across: there a crowd's members are dropped, and the
+    # cell stays a list.
+    short = BodyVolume(Vec2(118, 100), Vec2(8, 14), 24, 0)
+    grid = build_occlusion_grid([short] * (CROWD_BODIES + 1), [light], width=1024, height=1024)
+    assert header(grid, 130, 100)[1] == header(grid, 130, 100)[3] == 0
     # One fewer is no crowd: every cell keeps its exact list.
-    grid = build_occlusion_grid([body] * CROWD_BODIES, [light], width=1024, height=1024)
-    assert header(grid, 130, 100)[1] == header(grid, 200, 100)[1] == CROWD_BODIES
+    grid = build_occlusion_grid([short] * CROWD_BODIES, [light], width=1024, height=1024)
+    assert header(grid, 130, 100)[1] == CROWD_BODIES
 
 
 def test_source_culling_retains_long_tracer_and_rejects_distant_bodies() -> None:
@@ -104,15 +107,14 @@ def test_source_culling_retains_long_tracer_and_rejects_distant_bodies() -> None
 
 
 
-def test_dense_grid_uses_smaller_cells_without_dropping_volumes() -> None:
-    body = BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, 0)
-    source = MaterialLight(Vec2(500, 500), 1000, (1, 1, 1))
-    small = build_occlusion_grid([body], [source], width=1024, height=1024)
-    spread = [msgspec.structs.replace(body, pos=Vec2(40 + 30 * (i % 32), 40 + 60 * (i // 32))) for i in range(512)]
-    dense = build_occlusion_grid(spread, [source], width=1024, height=1024)
-    assert small.cell_size == 64
-    assert dense.cell_size == 32
-    assert dense.body_count == 512
+def test_sources_wider_than_the_penumbra_width_pad_no_further() -> None:
+    bodies = [BodyVolume(Vec2(100 + 37 * i, 300), Vec2(4, 12), 24, 0) for i in range(12)]
+
+    def references(width: float) -> int:
+        light = MaterialLight(Vec2(300, 300), 400, (1, 1, 1), source_width=width)
+        return build_occlusion_grid(bodies, [light], width=1024, height=1024).references
+
+    assert references(2) < references(PENUMBRA_WIDTH) == references(PENUMBRA_WIDTH * 4)
 
 
 def test_illumination_only_grid_support_and_explicit_energetic_profiles():
@@ -151,7 +153,6 @@ def test_annulus_grid_keeps_outer_endpoints_and_interior_ray_blockers() -> None:
 
 
 def test_killed_visible_caster_collapses_with_native_timer_and_current_geometry() -> None:
-    import msgspec
 
     creature = CreatureState(active=True, hp=100, type_id=CreatureTypeId.SPIDER_SP1,
                              pos=Vec2(100, 200), size=60)

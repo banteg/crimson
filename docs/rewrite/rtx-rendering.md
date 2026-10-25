@@ -247,6 +247,14 @@ median GPU time per pass over the frames leading to it (`CRIMSON_GPU_TIMERS`). `
 puts two captures side by side with a difference map, the mean change and the GPU time per scene. Captures tonemap
 for SDR, so they read the same on any display.
 
+A GPU timer also counts the time the GPU waits for the CPU. The client's `frame` timer runs from the last present
+until the first pass mark, so it holds the frame's simulation ticks; `golden.py` leaves it out. Drawing off the back
+buffer in between has timers of its own (`bake` for terrain decal bakes, `heat-stamp` for Monster Vision's trail
+stamps), so the `frame` timer holds no drawing. Classic marks the world's bounds too (`world`, then `hud`), with
+nothing drawn differently. Each `gpu` line
+is followed by a `draws` line for the same frame: per pass, texture (or `beam` / `effect<kind>`) and target, the quads
+drawn and the target pixels they cover, as `pass:what:target=quads/pixels`.
+
 ### Analytic glow effects
 
 `render/rtx/effects.py` and the client's `host_effect` draw the same `effect.frag`:
@@ -254,6 +262,7 @@ for SDR, so they read the same on any display.
 - Plasma's uniform tail stamps become a finite Gaussian line integral, with its head and optional aura in the same quad.
 - The warm glow (`particles` effect 13) fits premultiplied RGB with three Gaussian lobes; the white aura (effect 16) fits alpha.
 - Ion impact arcs combine two constant-width soft capsules and the target glow, retaining the original-bug setting's cut ends.
+  Each corner carries the arc's length, so consecutive arcs batch like the radial sprites.
 - The expanding ring (effect 1) uses a broad inward radial polynomial and a compact outer rim, including elliptical and rotated draws.
 
 The profiles are fitted to the original atlas cells in `effect_profiles.glsl`. Their byte-alpha cutoff keeps faint layers from
@@ -614,9 +623,9 @@ balancing a full ellipsoid on a single point. These are stable body approximatio
 not frame-by-frame silhouettes or anatomical geometry.
 
 A CPU-built spatial grid retains every body near the selected
-reflection or illumination sources. Cells are 64 world units in small scenes and 32 with at least
-512 body volumes (512 standard creatures); the finer grid reduces candidate
-fetches in crowds. The resolution changes indexing only, not visibility.
+reflection or illumination sources, in 64-unit cells. Finer cells were measured
+slower in late crowds (more cells walked for the same padded bodies), and coarser
+ones faster only by turning more cells into crowds.
 Source-support cells are marked once, avoiding a body-by-source
 culling loop. A growing,
 renderer-owned RGBA32F texture holds cell lists and body transforms; no nearest-N
@@ -629,7 +638,15 @@ cell bounds account for the finite-source filter.
 
 Visibility uses closest approach to each ellipsoid in its local coordinates,
 with a smooth transition whose width grows toward the finite source. Wider
-sources therefore produce softer edges. This is an analytic penumbra
+sources therefore produce softer edges, up to `PENUMBRA_WIDTH` (8 units): an
+explosion's fireball or the Radioactive aura casts the edge of an 8-unit source,
+and the grid pads its lists for no wider. Their own widths padded every body by up
+to three times as much, the costliest part of shading late crowds. A body does not
+shadow a light inside or
+against it (a muzzle flash in a packed crowd, a beam through a creature): its
+occlusion fades out as the source comes within half a radius of its surface, in
+the body's normalized coordinates, instead of cutting the light's pool along a
+straight line through the source. This is an analytic penumbra
 approximation, not multi-sample area-light integration; overlapping partially opaque
 volumes combine by strongest occlusion, avoiding seams between creatures. The
 visibility test does not add ambient darkness, lengthen shadows artificially,
@@ -929,7 +946,10 @@ and dying bodies retain their shared collapse/fade behavior.
 
 Preparation uploads one small uniform array and reuses the occlusion texture.
 Each cell near a beam source also holds a beam list, its bodies padded by the
-largest section half-span in world units; point lights, reflections and creature
+largest section half-span in world units plus the reach of the two transverse
+taps (0.577 of the widest beam's width). The point lights' penumbra margin, which
+the frame's widest source sets, never pads them: a section's coverage does not use
+it. Point lights, reflections and creature
 shadows keep their narrow lists. A section walks the beam lists along its center
 ray, rejects bodies outside its ray fan (the triangle from the receiver to both
 section ends), and tests each body only in the first walked cell that lists it.
@@ -974,7 +994,8 @@ their reflections are even along the arc and their illumination centroid is its 
 sources use restrained independent gains, without the main Ion beam's 4x ground
 gain. At most four connections
 per impact contribute sources, ranked by segment distance to the view center
-(with endpoint distance as a tie-breaker). All arcs remain visible in the artwork.
+(with endpoint distance as a tie-breaker). The artwork draws its arcs as Classic does,
+at most two per shot into one small cell ([rendering pipeline](rendering-pipeline.md#projectile-render-and-bonus-render)).
 This bounds source preparation as well as brightness in dense crowds. This
 is an artistic brightness cap, not a physical energy simulation. Ordinary global
 source ranking and its 16 illumination / 16 reflection limits still apply.
@@ -1100,7 +1121,10 @@ the world itself stays at full output resolution. It uses the shared native weap
 Fire/Ion beams, and explosion lights, with the existing 16 illumination-source
 limit. Fractional source gains are preserved; gains above four are capped for
 smoke response. A segment scatters by the shared beam profile, so a streak's
-tail lights the cloud less than its head. Up to four living players' native Sharpshooter sight segments
+tail lights the cloud less than its head: the smoke sees that radiance ramp
+averaged over as much of the segment as it is far from it. Smoke beside a long
+beam follows the ramp, and smoke behind a dark-tailed shot still sees the shot,
+with no line across the cloud at the muzzle. Up to four living players' native Sharpshooter sight segments
 scatter as narrow red beams only inside density, rather than broadly illuminating
 the whole cloud. The ordinary sight artwork remains unchanged.
 

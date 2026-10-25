@@ -170,8 +170,8 @@ def test_hdr_scope_preserves_additive_hue_and_drifts_hot_core_to_white(raylib_co
                 core_5x = _rgb(image, 56, 8)
 
                 assert below_knee == pytest.approx((120, 160, 200), abs=1)
-                assert warm_2x == pytest.approx((255, 173, 71), abs=2)
-                assert hot_3x == pytest.approx((255, 194, 117), abs=2)
+                assert warm_2x == pytest.approx((255, 169, 61), abs=2)
+                assert hot_3x == pytest.approx((255, 198, 127), abs=2)
                 assert core_5x == pytest.approx((255, 214, 163), abs=2)
                 assert warm_2x[0] > warm_2x[1] > warm_2x[2]
                 assert warm_2x[1] < hot_3x[1] < core_5x[1]
