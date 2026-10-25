@@ -20,6 +20,10 @@ CELL_SIZE = 64.0
 # and rays cross it as an absorbing medium (light_visibility.glsl), at a cost that no longer grows with the crowd.
 # Packed bodies' shadows merge into one dark mass anyway; testing each one made dense swarms cost seconds per frame.
 CROWD_BODIES = 16
+# The widest source a body shadow's penumbra follows (light_visibility.glsl's PENUMBRA_WIDTH). Wider sources (an
+# explosion's fireball, the Radioactive aura) cast the same shadow edge as one this wide: their own width padded every
+# body's cell lists by up to three times as much, the costliest part of shading late crowds.
+PENUMBRA_WIDTH = 8.0
 TEXTURE_WIDTH = 256
 # Local sprite coordinates (right, down), fractions of the drawn square size.
 # Center x/y, planar radii x/y, and total height. Atlas bodies face right.
@@ -114,7 +118,7 @@ def build_occlusion_grid(
     if not sources:
         return OcclusionGrid(Vec2(), CELL_SIZE, 0, 0, [], 0, 0)
     cell_size = CELL_SIZE
-    padding = max((max(.1, light.source_width) for light in sources), default=0.0)
+    padding = min(PENUMBRA_WIDTH, max((max(.1, light.source_width) for light in sources), default=0.0))
     lo = Vec2(-cell_size, -cell_size)
     hi = Vec2(width + cell_size, height + cell_size)
     supports = []

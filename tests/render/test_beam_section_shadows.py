@@ -11,7 +11,13 @@ from crimson.render.rtx.lighting_shaders import LIGHT_VISIBILITY_GLSL
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.material_shaders import GROUND_FRAGMENT
 from crimson.render.rtx.materials import _integer, _shader, _uniform
-from crimson.render.rtx.reflection_occlusion import CROWD_BODIES, BodyVolume, ReflectionOcclusion, build_occlusion_grid
+from crimson.render.rtx.reflection_occlusion import (
+    CROWD_BODIES,
+    PENUMBRA_WIDTH,
+    BodyVolume,
+    ReflectionOcclusion,
+    build_occlusion_grid,
+)
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -142,6 +148,73 @@ def test_body_does_not_shadow_a_light_inside_or_against_it(raylib_context, body_
                 assert .05 < value < .95
             else:
                 assert value < .05
+    finally:
+        renderer.close()
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
+def test_penumbra_stops_widening_past_the_penumbra_width(raylib_context) -> None:
+    shader = _probe_shader("""
+    uniform vec4 u_widths;
+    void main() {
+        vec3 receiver = vec3(70., 110., 0.), source = vec3(64., 20., 30.);
+        finalColor = vec4(sourceVisibility(receiver, source, u_widths.x, vec2(1e19)),
+                          sourceVisibility(receiver, source, u_widths.y, vec2(1e19)),
+                          sourceVisibility(receiver, source, u_widths.z, vec2(1e19)), 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    wide = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=30., source_width=PENUMBRA_WIDTH * 4)
+    body = BodyVolume(Vec2(64., 80.), Vec2(6., 6.), 30., 0.)
+    try:
+        grid = build_occlusion_grid([body], [wide], width=128., height=128.)
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        _uniform(shader, "u_widths", [1., PENUMBRA_WIDTH, PENUMBRA_WIDTH * 4, 0.])
+        _integer(shader, "u_dynamic_shadows", 1)
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        narrow, capped, widest = _pixel(target)[:3]
+        assert narrow != pytest.approx(capped, abs=.01)
+        assert widest == pytest.approx(capped)
+    finally:
+        renderer.close()
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
+def test_wide_section_keeps_blockers_its_transverse_taps_cross(raylib_context) -> None:
+    # A section wider than the penumbra cap: its taps reach past the bodies' stored penumbra bound.
+    shader = _probe_shader("""
+    void main() {
+        float section = sectionVisibility(vec3(100., 240., 0.), vec3(100., 100., 24.), 32., vec2(0., 1.), 10.,
+                                          vec2(1e19));
+        finalColor = vec4(section, 0., 0., 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    source = MaterialLight(Vec2(100., 100.), 300., (1., 1., 1.), height=24., source_width=32., direction=Vec2(0., 1.),
+                           length=20., beam_profile=(16., 3.1, 1.05))
+    body = BodyVolume(Vec2(114., 135.), Vec2(4., 4.), 40., 0.)
+    try:
+        grid = build_occlusion_grid([body], [source], width=256., height=256., beam_margin=10.)
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        _integer(shader, "u_dynamic_shadows", 1)
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        assert _pixel(target)[0] < .99
     finally:
         renderer.close()
         rl.unload_shader(shader)
