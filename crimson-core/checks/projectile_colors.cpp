@@ -10,6 +10,7 @@ player_state_t player_state_table[2];
 projectile_pool_t projectile_pool;
 secondary_projectile_pool_t secondary_projectile_pool;
 creature_t creature_pool[385];
+int arc_target = -1, plasma_calls = 0, arc_calls = 0;
 extern "C" {
 IGrim2D_cpp *grim_interface_ptr;
 projectile_render_vec2_t camera_offset;
@@ -22,15 +23,23 @@ double portable_cos(double x) { return cos(x); }
 float portable_sinf(float x) { return sinf(x); }
 float portable_cosf(float x) { return cosf(x); }
 void effect_select_texture(int) { grim_interface_ptr->grim_bind_texture(102, 0); }
-int creature_find_in_radius(float *, float, int) { return -1; }
-// Classic draws only: the RTX mode's beams (game/rtx.cpp) never run here.
+int creature_find_in_radius(float *, float, int start) {
+  return start <= arc_target ? arc_target : -1;
+}
+// Record the dispatch boundary; production primitive guards are exercised
+// separately.
 int rtx_render_mode;
 void rtx_beam_body(float, float, float, float, float, float, float, float, float, float, float, float) {
-  __builtin_trap();
+  assert(rtx_render_mode);
 }
-void rtx_beam_head(float, float, float, float, bool) { __builtin_trap(); }
-void rtx_plasma(int, float) { __builtin_trap(); }
-void rtx_ion_arc(float, float, float, float, float, float) { __builtin_trap(); }
+void rtx_beam_head(float, float, float, float, bool) {
+  assert(rtx_render_mode);
+}
+void rtx_plasma(int slot, float alpha) {
+  assert(slot == 0 && alpha == .75f);
+  ++plasma_calls;
+}
+void rtx_ion_arc(float, float, float, float, float, float) { ++arc_calls; }
 vec2f_t *D3DXVec2Normalize(vec2f_t *dst, const vec2f_t *src) {
   float length = sqrtf(src->x * src->x + src->y * src->y);
   *dst = length ? vec2f_t{src->x / length, src->y / length} : vec2f_t{};
@@ -71,4 +80,30 @@ int main() {
           ++cases;
         }
   printf("projectile head colors: %d weapon/phase/trail/bug-policy cases passed\n", cases);
+  rtx_render_mode = 1;
+  for (auto type :
+       {PROJECTILE_TYPE_PLASMA_RIFLE, PROJECTILE_TYPE_PLASMA_MINIGUN,
+        PROJECTILE_TYPE_PLASMA_CANNON, PROJECTILE_TYPE_SPIDER_PLASMA,
+        PROJECTILE_TYPE_SHRINKIFIER})
+    for (float life : {.4f, .2f}) {
+      memset(&projectile_pool, 0, sizeof projectile_pool);
+      auto &shot = projectile_pool[0];
+      shot.active = 1;
+      shot.pos.tail.vy.type_id = type;
+      shot.pos.tail.vy.life_timer = life;
+      shot.pos.tail.vy.speed_scale = 1;
+      int previous = plasma_calls;
+      projectile_render(.75f);
+      assert(plasma_calls == previous + 1);
+    }
+  memset(&projectile_pool, 0, sizeof projectile_pool);
+  auto &shot = projectile_pool[0];
+  shot.active = 1;
+  shot.pos.tail.vy.type_id = PROJECTILE_TYPE_ION_RIFLE;
+  shot.pos.tail.vy.life_timer = .2f;
+  arc_target = 1;
+  creature_pool[1].pos_x = 20;
+  projectile_render(.75f);
+  assert(arc_calls == 1);
+  puts("projectile RTX dispatch: plasma phases and ion contacts passed");
 }

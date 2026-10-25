@@ -19,6 +19,7 @@ int console_cmd_argc_get(void);
 
 int rtx_render_mode;
 extern int rtx_effects_active;
+void rtx_effect_flush();
 
 static const char *rtx_mode_name(int mode) { return mode ? "rtx" : "classic"; }
 
@@ -141,6 +142,7 @@ void rtx_smoke(float alpha) {
 void rtx_smoke_reset();
 void rtx_reset() {
   rtx_effects_active = 0;
+  rtx_effect_flush();
   rtx_smoke_reset();
   rtx_lights_reset();
 }

@@ -318,8 +318,30 @@ void check_rtx() {
     effect(kind, empty, 0x01ffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
     assert(back_red(512,384) == 0 && back_red(526,384) == 0);
   }
+  // One device-vertex batch retains different sprite tints exactly, including
+  // byte color swizzling and alpha, through the actual GPU vertex layout.
+  for (int kind = 0; kind < 3; ++kind) {
+    w2c_host_clear(nullptr, 0xff000000);
+    effect(kind, empty, 0xff408020, 495.75f, 527.75f, 367.75f, 399.75f, -1, 1,
+           -1, 1);
+    effect(kind, empty, 0x802040ff, 575.75f, 607.75f, 367.75f, 399.75f, -1, 1,
+           -1, 1);
+    int width, height;
+    auto reference = renderer_capture(width, height);
+    const float a[16] = {495.75f, 367.75f, -1, -1, 495.75f, 399.75f, -1, 1,
+                         527.75f, 399.75f, 1,  1,  527.75f, 367.75f, 1,  -1};
+    const float b[16] = {575.75f, 367.75f, -1, -1, 575.75f, 399.75f, -1, 1,
+                         607.75f, 399.75f, 1,  1,  607.75f, 367.75f, 1,  -1};
+    EffectVertex sprites[12];
+    effect_quad(a, 0xff408020, sprites);
+    effect_quad(b, 0x802040ff, sprites + 6);
+    memcpy(memory + 4096, sprites, sizeof sprites);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_effect_sprites(nullptr, 4096, kind, 12);
+    assert(renderer_capture(width, height) == reference);
+  }
   w2c_host_clear(nullptr, 0xff000000);
-  const float plasma[12] = {8,0,0,27,1.5f,.4f,0,0,.027944f,.036952f,0,0};
+  const float plasma[12] = {8, 0, 0, 27, 1.5f, .4f, 0, 0, 1, 0, 0, 0};
   effect(3,plasma,0xffffffff,477.75f,521.75f,375.75f,391.75f,-34,10,-8,8);
   assert(back_red(500,384) > 1.f && back_red(500,400) == 0);
   float arc[12] = {48,1,1,0,0,0,0,0,0,0,0,0};

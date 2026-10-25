@@ -16,7 +16,7 @@ from ..beam_profiles import STREAK_SCALES
 from ..ion_arcs import ion_arc_targets
 from ..laser_sight import laser_sight_geometry
 from ..rtx.beam import BeamBatch, draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
-from ..rtx.effects import SPRITE_SHAPES, draw_ion_arc, draw_plasma, draw_sprite
+from ..rtx.effects import SPRITE_SHAPES, SpriteBatch, draw_ion_arc, draw_plasma, draw_sprite, sprite_batch
 from ..rtx.mode import RtxRenderMode
 from .atlas import effect_cell_src_inset
 from .constants import _RAD_TO_DEG
@@ -76,12 +76,23 @@ def _draw_quad(
     rgba: RGBA,
     rotation_rad: float = 0.0,
     effect_id: EffectId | None = EffectId.GLOW,
+    batch: SpriteBatch | None = None,
 ) -> None:
     if rgba.a <= 1e-3 or size <= 1e-3:
         return
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and effect_id is not None:
-        draw_sprite(SPRITE_SHAPES[effect_id], center=pos, width=size, height=size, color=rgba, rotation=rotation_rad)
+        draw_sprite(
+            SPRITE_SHAPES[effect_id],
+            center=pos,
+            width=size,
+            height=size,
+            color=rgba,
+            rotation=rotation_rad,
+            batch=batch,
+        )
         return
+    if batch is not None:
+        batch.end()
     dst = rl_rectangle(pos.x, pos.y, size, size)
     origin = rl_vector2(size * 0.5, size * 0.5)
     rl.draw_texture_pro(texture, src, dst, origin, rotation_rad * _RAD_TO_DEG, rgba.to_rl())
@@ -225,80 +236,93 @@ def _plasma_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
     scale = render_ctx.view.scale
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    for proj in render_ctx.frame.state.projectiles.entries:
-        if not proj.active:
-            continue
-        # rgb, segment divisor and step, segment cap, tail/head/aura sizes and alphas
-        match int(proj.type_id):
-            case ProjectileTemplateId.PLASMA_RIFLE:
-                style = ((1.0, 1.0, 1.0), 2.5, 2.5, 8, 22.0, 56.0, 0.45, 256.0, 0.3)
-            case ProjectileTemplateId.PLASMA_MINIGUN:
-                style = ((1.0, 1.0, 1.0), 2.1, 2.1, 3, 12.0, 16.0, 0.5, 120.0, 0.15)
-            case ProjectileTemplateId.PLASMA_CANNON:
-                style = ((1.0, 1.0, 1.0), 3.5, 2.6, 18, 44.0, 84.0, 0.45, 256.0, 0.4)
-            case ProjectileTemplateId.SPIDER_PLASMA:
-                style = ((0.3, 1.0, 0.3), 2.1, 2.1, 3, 12.0, 16.0, 0.5, 120.0, 0.15)
-            case ProjectileTemplateId.SHRINKIFIER:
-                style = ((0.3, 0.3, 1.0), 2.1, 2.1, 3, 12.0, 16.0, 0.5, 120.0, 0.15)
-            case _:
+    with sprite_batch() as batch:
+        for proj in render_ctx.frame.state.projectiles.entries:
+            if not proj.active:
                 continue
-        (red, green, blue), divisor, step_len, cap, tail_size, head_size, head_alpha, aura_size, aura_alpha = style
-        screen = render_ctx.world_to_screen(proj.pos)
-        if float(proj.life_timer) < 0.4:
-            fade = clamp(float(proj.life_timer) * 2.5, 0.0, 1.0)
-            _draw_quad(render_ctx, texture, src, pos=screen, size=56.0 * scale, rgba=RGBA(1.0, 1.0, 1.0, fade * alpha))
-            continue
-        # Native converts both operands to signed integers before dividing; the
-        # numerator is the rendered origin-to-position distance.
-        segments = plasma_trail_segment_count(
-            distance=proj.origin.distance_to(proj.pos),
-            speed_scale=float(proj.speed_scale),
-            divisor=divisor,
-            limit=cap,
-        )
-        # The stored angle is rotated by +pi/2 from the travel direction.
-        step = Vec2.from_heading(float(proj.angle) + math.pi) * (float(proj.speed_scale) * step_len)
-        if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
-            draw_plasma(
-                center=screen,
-                tail_axis=Vec2.from_heading(float(proj.angle) + math.pi),
-                segments=segments,
-                step=step.length() * scale,
-                tail_radius=tail_size * scale * 0.5,
-                head_radius=head_size * scale * 0.5,
-                head_alpha=head_alpha,
-                aura_radius=aura_size * scale * 0.5 if flame_glow else 0.0,
-                aura_alpha=aura_alpha if flame_glow else 0.0,
-                alpha=alpha,
-                color=(red, green, blue),
+            # rgb, segment divisor and step, segment cap, tail/head/aura sizes and alphas
+            match int(proj.type_id):
+                case ProjectileTemplateId.PLASMA_RIFLE:
+                    style = ((1.0, 1.0, 1.0), 2.5, 2.5, 8, 22.0, 56.0, 0.45, 256.0, 0.3)
+                case ProjectileTemplateId.PLASMA_MINIGUN:
+                    style = ((1.0, 1.0, 1.0), 2.1, 2.1, 3, 12.0, 16.0, 0.5, 120.0, 0.15)
+                case ProjectileTemplateId.PLASMA_CANNON:
+                    style = ((1.0, 1.0, 1.0), 3.5, 2.6, 18, 44.0, 84.0, 0.45, 256.0, 0.4)
+                case ProjectileTemplateId.SPIDER_PLASMA:
+                    style = ((0.3, 1.0, 0.3), 2.1, 2.1, 3, 12.0, 16.0, 0.5, 120.0, 0.15)
+                case ProjectileTemplateId.SHRINKIFIER:
+                    style = ((0.3, 0.3, 1.0), 2.1, 2.1, 3, 12.0, 16.0, 0.5, 120.0, 0.15)
+                case _:
+                    continue
+            (red, green, blue), divisor, step_len, cap, tail_size, head_size, head_alpha, aura_size, aura_alpha = style
+            screen = render_ctx.world_to_screen(proj.pos)
+            if float(proj.life_timer) < 0.4:
+                fade = clamp(float(proj.life_timer) * 2.5, 0.0, 1.0)
+                _draw_quad(
+                    render_ctx,
+                    texture,
+                    src,
+                    pos=screen,
+                    size=56.0 * scale,
+                    rgba=RGBA(1.0, 1.0, 1.0, fade * alpha),
+                    batch=batch,
+                )
+                continue
+            # Native converts both operands to signed integers before dividing; the
+            # numerator is the rendered origin-to-position distance.
+            segments = plasma_trail_segment_count(
+                distance=proj.origin.distance_to(proj.pos),
+                speed_scale=float(proj.speed_scale),
+                divisor=divisor,
+                limit=cap,
             )
-            continue
-        for index in range(segments):
-            _draw_quad(
-                render_ctx,
-                texture,
-                src,
-                pos=render_ctx.world_to_screen(proj.pos + step * float(index)),
-                size=tail_size * scale,
-                rgba=RGBA(red, green, blue, alpha * 0.4),
-            )
-        _draw_quad(
-            render_ctx,
-            texture,
-            src,
-            pos=screen,
-            size=head_size * scale,
-            rgba=RGBA(red, green, blue, alpha * head_alpha),
-        )
-        if flame_glow:
+            # The stored angle is rotated by +pi/2 from the travel direction.
+            step = Vec2.from_heading(float(proj.angle) + math.pi) * (float(proj.speed_scale) * step_len)
+            if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
+                batch.end()
+                draw_plasma(
+                    center=screen,
+                    tail_axis=Vec2.from_heading(float(proj.angle) + math.pi),
+                    segments=segments,
+                    step=step.length() * scale,
+                    tail_radius=tail_size * scale * 0.5,
+                    head_radius=head_size * scale * 0.5,
+                    head_alpha=head_alpha,
+                    aura_radius=aura_size * scale * 0.5 if flame_glow else 0.0,
+                    aura_alpha=aura_alpha if flame_glow else 0.0,
+                    alpha=alpha,
+                    color=(red, green, blue),
+                )
+                continue
+            for index in range(segments):
+                _draw_quad(
+                    render_ctx,
+                    texture,
+                    src,
+                    pos=render_ctx.world_to_screen(proj.pos + step * float(index)),
+                    size=tail_size * scale,
+                    rgba=RGBA(red, green, blue, alpha * 0.4),
+                    batch=batch,
+                )
             _draw_quad(
                 render_ctx,
                 texture,
                 src,
                 pos=screen,
-                size=aura_size * scale,
-                rgba=RGBA(red, green, blue, alpha * aura_alpha),
+                size=head_size * scale,
+                rgba=RGBA(red, green, blue, alpha * head_alpha),
+                batch=batch,
             )
+            if flame_glow:
+                _draw_quad(
+                    render_ctx,
+                    texture,
+                    src,
+                    pos=screen,
+                    size=aura_size * scale,
+                    rgba=RGBA(red, green, blue, alpha * aura_alpha),
+                    batch=batch,
+                )
     rl.end_blend_mode()
 
 
@@ -329,7 +353,14 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
                     else:
                         size, rgba = 56.0, RGBA(1.0, 1.0, 1.0, clamp(life * 2.5, 0.0, 1.0) * alpha)
                     _draw_atlas(
-                        render_ctx, texture, grid=2, frame=0, pos=screen, size=size * scale, rgba=rgba, rotation_rad=angle,
+                        render_ctx,
+                        texture,
+                        grid=2,
+                        frame=0,
+                        pos=screen,
+                        size=size * scale,
+                        rgba=rgba,
+                        rotation_rad=angle,
                         beam_batch=beam_batch,
                     )
                 case ProjectileTemplateId.SPLITTER_GUN:
@@ -363,26 +394,46 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
                 case ProjectileTemplateId.ION_MINIGUN:
                     atlas_state = (4, 2, angle)
                     _draw_streak(
-                        render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id],
-                        alpha=alpha, chain=True, beam_batch=beam_batch,
+                        render_ctx,
+                        texture,
+                        proj,
+                        effect_scale=STREAK_SCALES[proj.type_id],
+                        alpha=alpha,
+                        chain=True,
+                        beam_batch=beam_batch,
                     )
                 case ProjectileTemplateId.ION_RIFLE:
                     atlas_state = (4, 2, angle)
                     _draw_streak(
-                        render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id],
-                        alpha=alpha, chain=True, beam_batch=beam_batch,
+                        render_ctx,
+                        texture,
+                        proj,
+                        effect_scale=STREAK_SCALES[proj.type_id],
+                        alpha=alpha,
+                        chain=True,
+                        beam_batch=beam_batch,
                     )
                 case ProjectileTemplateId.ION_CANNON:
                     atlas_state = (4, 2, angle)
                     _draw_streak(
-                        render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id],
-                        alpha=alpha, chain=True, beam_batch=beam_batch,
+                        render_ctx,
+                        texture,
+                        proj,
+                        effect_scale=STREAK_SCALES[proj.type_id],
+                        alpha=alpha,
+                        chain=True,
+                        beam_batch=beam_batch,
                     )
                 case ProjectileTemplateId.FIRE_BULLETS:
                     atlas_state = (4, 2, angle)
                     _draw_streak(
-                        render_ctx, texture, proj, effect_scale=STREAK_SCALES[proj.type_id],
-                        alpha=alpha, chain=False, beam_batch=beam_batch,
+                        render_ctx,
+                        texture,
+                        proj,
+                        effect_scale=STREAK_SCALES[proj.type_id],
+                        alpha=alpha,
+                        chain=False,
+                        beam_batch=beam_batch,
                     )
                 case _:
                     pass
@@ -601,20 +652,22 @@ def _fire_bullets_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
     src = _glow_src(texture)
     scale = render_ctx.view.scale
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    for proj in entries:
-        if not proj.active or float(proj.life_timer) < 0.4:
-            continue
-        if not preserve_bugs and int(proj.type_id) != ProjectileTemplateId.FIRE_BULLETS:
-            continue
-        _draw_quad(
-            render_ctx,
-            texture,
-            src,
-            pos=render_ctx.world_to_screen(proj.pos),
-            size=64.0 * scale,
-            rgba=RGBA(1.0, 1.0, 1.0, alpha),
-            rotation_rad=float(proj.angle),
-        )
+    with sprite_batch() as batch:
+        for proj in entries:
+            if not proj.active or float(proj.life_timer) < 0.4:
+                continue
+            if not preserve_bugs and int(proj.type_id) != ProjectileTemplateId.FIRE_BULLETS:
+                continue
+            _draw_quad(
+                render_ctx,
+                texture,
+                src,
+                pos=render_ctx.world_to_screen(proj.pos),
+                size=64.0 * scale,
+                rgba=RGBA(1.0, 1.0, 1.0, alpha),
+                rotation_rad=float(proj.angle),
+                batch=batch,
+            )
     rl.end_blend_mode()
 
 
@@ -634,7 +687,9 @@ def _bullet_head_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
             continue
         type_id = int(proj.type_id)
         match type_id:
-            case ProjectileTemplateId.PLASMA_RIFLE | ProjectileTemplateId.PLASMA_MINIGUN | ProjectileTemplateId.PULSE_GUN:
+            case (
+                ProjectileTemplateId.PLASMA_RIFLE | ProjectileTemplateId.PLASMA_MINIGUN | ProjectileTemplateId.PULSE_GUN
+            ):
                 continue
             case (
                 ProjectileTemplateId.ION_RIFLE
@@ -668,17 +723,19 @@ def _secondary_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
     src = _glow_src(texture)
     scale = render_ctx.view.scale
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    for proj in render_ctx.frame.state.secondary_projectiles.entries:
-        if not proj.active:
-            continue
-        _draw_quad(
-            render_ctx,
-            texture,
-            src,
-            pos=render_ctx.world_to_screen(proj.pos) - Vec2.from_heading(float(proj.angle)) * (5.0 * scale),
-            size=140.0 * scale,
-            rgba=RGBA(1.0, 1.0, 1.0, alpha * 0.48),
-        )
+    with sprite_batch() as batch:
+        for proj in render_ctx.frame.state.secondary_projectiles.entries:
+            if not proj.active:
+                continue
+            _draw_quad(
+                render_ctx,
+                texture,
+                src,
+                pos=render_ctx.world_to_screen(proj.pos) - Vec2.from_heading(float(proj.angle)) * (5.0 * scale),
+                size=140.0 * scale,
+                rgba=RGBA(1.0, 1.0, 1.0, alpha * 0.48),
+                batch=batch,
+            )
     rl.end_blend_mode()
 
 
@@ -720,26 +777,28 @@ def _secondary_flame_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
     src = _glow_src(texture)
     scale = render_ctx.view.scale
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    for proj in render_ctx.frame.state.secondary_projectiles.entries:
-        if not proj.active:
-            continue
-        match int(proj.type_id):
-            case SecondaryProjectileTypeId.ROCKET_MINIGUN:
-                size, rgba = 30.0, RGBA(0.7, 0.7, 1.0, alpha * 0.158)
-            case SecondaryProjectileTypeId.ROCKET:
-                size, rgba = 60.0, RGBA(1.0, 1.0, 1.0, alpha * 0.68)
-            case SecondaryProjectileTypeId.HOMING_ROCKET:
-                size, rgba = 40.0, RGBA(1.0, 1.0, 1.0, alpha * 0.58)
-            case _:
+    with sprite_batch() as batch:
+        for proj in render_ctx.frame.state.secondary_projectiles.entries:
+            if not proj.active:
                 continue
-        _draw_quad(
-            render_ctx,
-            texture,
-            src,
-            pos=render_ctx.world_to_screen(proj.pos) - Vec2.from_heading(float(proj.angle)) * (9.0 * scale),
-            size=size * scale,
-            rgba=rgba,
-        )
+            match int(proj.type_id):
+                case SecondaryProjectileTypeId.ROCKET_MINIGUN:
+                    size, rgba = 30.0, RGBA(0.7, 0.7, 1.0, alpha * 0.158)
+                case SecondaryProjectileTypeId.ROCKET:
+                    size, rgba = 60.0, RGBA(1.0, 1.0, 1.0, alpha * 0.68)
+                case SecondaryProjectileTypeId.HOMING_ROCKET:
+                    size, rgba = 40.0, RGBA(1.0, 1.0, 1.0, alpha * 0.58)
+                case _:
+                    continue
+            _draw_quad(
+                render_ctx,
+                texture,
+                src,
+                pos=render_ctx.world_to_screen(proj.pos) - Vec2.from_heading(float(proj.angle)) * (9.0 * scale),
+                size=size * scale,
+                rgba=rgba,
+                batch=batch,
+            )
     rl.end_blend_mode()
 
 
@@ -759,32 +818,35 @@ def secondary_detonation_pass(render_ctx: WorldRenderCtx) -> None:
         assert src is not None
     scale = render_ctx.view.scale
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    for proj in render_ctx.frame.state.secondary_projectiles.entries:
-        if not proj.active or int(proj.type_id) != SecondaryProjectileTypeId.DETONATION:
-            continue
-        t = clamp(float(proj.detonation_t), 0.0, 1.0)
-        fade = 1.0 - t
-        screen = render_ctx.world_to_screen(proj.pos)
-        det_scale = float(proj.detonation_scale)
-        effect_id = None if render_ctx.frame.state.preserve_bugs else EffectId.AURA
-        _draw_quad(
-            render_ctx,
-            texture,
-            src,
-            pos=screen,
-            size=det_scale * t * 64.0 * scale,
-            rgba=RGBA(1.0, 0.6, 0.1, fade),
-            effect_id=effect_id,
-        )
-        _draw_quad(
-            render_ctx,
-            texture,
-            src,
-            pos=screen,
-            size=det_scale * t * 200.0 * scale,
-            rgba=RGBA(1.0, 0.6, 0.1, fade * 0.3),
-            effect_id=effect_id,
-        )
+    with sprite_batch() as batch:
+        for proj in render_ctx.frame.state.secondary_projectiles.entries:
+            if not proj.active or int(proj.type_id) != SecondaryProjectileTypeId.DETONATION:
+                continue
+            t = clamp(float(proj.detonation_t), 0.0, 1.0)
+            fade = 1.0 - t
+            screen = render_ctx.world_to_screen(proj.pos)
+            det_scale = float(proj.detonation_scale)
+            effect_id = None if render_ctx.frame.state.preserve_bugs else EffectId.AURA
+            _draw_quad(
+                render_ctx,
+                texture,
+                src,
+                pos=screen,
+                size=det_scale * t * 64.0 * scale,
+                rgba=RGBA(1.0, 0.6, 0.1, fade),
+                effect_id=effect_id,
+                batch=batch,
+            )
+            _draw_quad(
+                render_ctx,
+                texture,
+                src,
+                pos=screen,
+                size=det_scale * t * 200.0 * scale,
+                rgba=RGBA(1.0, 0.6, 0.1, fade * 0.3),
+                effect_id=effect_id,
+                batch=batch,
+            )
     rl.end_blend_mode()
 
 

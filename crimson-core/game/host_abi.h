@@ -75,6 +75,8 @@ HOST_IMPORT(beam) void host_beam(const float *corners, float length, float step,
 // Analytic glow/shell/plasma/arc: four x,y,u,v corners, effect.frag's kind,
 // three vec4 shape parameters, and the original D3DCOLOR. Uses the current blend state.
 HOST_IMPORT(effect) void host_effect(const float *corners, int kind, const float *params, unsigned color);
+// Consecutive radial sprites, as triangles of device-layout vertices (28 bytes each).
+HOST_IMPORT(effect_sprites) void host_effect_sprites(const void *vertices, int kind, int vertex_count);
 // The last drawn frame, kept and shown again under what a replay draws over it
 // while no tick draws (host/watch.inc): save the back buffer, or show the saved one.
 enum {

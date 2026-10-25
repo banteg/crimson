@@ -21,13 +21,18 @@ from tests.render.test_projectile_render import _render_ctx
 def test_warm_glow_uses_analytic_profile_only_for_additive_entries(mocker, flags):
     ctx = _render_ctx(rtx_mode=RtxRenderMode.RTX)
     ctx.frame.state.effects.entries[0] = EffectEntry(
-        effect_id=EffectId.GLOW, pos=Vec2(40,40), flags=flags, half_width=20., half_height=30., scale=1.,
+        effect_id=EffectId.GLOW,
+        pos=Vec2(40, 40),
+        flags=flags,
+        half_width=20.0,
+        half_height=30.0,
+        scale=1.0,
     )
     sprite = mocker.patch.object(world_effects, "draw_sprite")
     texture = mocker.patch.object(rl, "draw_texture_pro")
     mocker.patch.object(rl, "begin_blend_mode")
     mocker.patch.object(rl, "end_blend_mode")
-    world_effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1,1))
+    world_effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
     assert sprite.call_count == (flags != 0x40)
     assert texture.call_count == (flags == 0x40)
 
@@ -111,7 +116,11 @@ def test_arc_cap_setting_changes_only_the_strip_ends(effect_shader):
     def draw(capped):
         return _render(
             lambda: effects.draw_ion_arc(
-                start=Vec2(40, 64), end=Vec2(88, 64), effect_scale=1.0, alpha=0.5, capped=capped,
+                start=Vec2(40, 64),
+                end=Vec2(88, 64),
+                effect_scale=1.0,
+                alpha=0.5,
+                capped=capped,
             ),
         )
 
@@ -139,3 +148,25 @@ def test_analytic_draw_restores_enclosing_alpha_test(effect_shader):
     finally:
         test.close()
         rl.unload_texture(texture)
+
+
+@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING])
+def test_sprite_batch_preserves_pixels_and_binds_shader_once(effect_shader, mocker, shape):
+    def draw(batched):
+        with effects.sprite_batch() as batch:
+            for i in range(12):
+                effects.draw_sprite(
+                    shape,
+                    center=Vec2(40 + i * 3, 60),
+                    width=50.0,
+                    height=40.0,
+                    rotation=i * 0.03,
+                    color=RGBA(0.3 + i * 0.04, 0.8 - i * 0.02, 0.5, 0.2 + i * 0.04),
+                    batch=batch if batched else None,
+                )
+
+    reference = _render(lambda: draw(False))
+    binds = mocker.spy(rl, "begin_shader_mode")
+    actual = _render(lambda: draw(True))
+    np.testing.assert_array_equal(actual, reference)
+    assert binds.call_count == 1

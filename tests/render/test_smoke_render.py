@@ -263,7 +263,7 @@ def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless
     rtx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX, smoke=SmokeRenderer()))
     effects.draw_effect_pool(rtx, camera=Vec2(), view_scale=Vec2(1, 1))
     analytic.assert_called_once_with(
-        effects.EffectShape.RING, center=Vec2(50, 50), width=40., height=40., color=puff.color, rotation=0.,
+        effects.EffectShape.RING, center=Vec2(50, 50), width=40., height=40., color=puff.color, rotation=0., batch=mocker.ANY,
     )
     assert headless_window.draw_texture_pro.call_count == 0
     headless_window.draw_texture_pro.reset_mock()

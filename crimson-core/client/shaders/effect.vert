@@ -1,12 +1,13 @@
 #version 330
 #include "common.glsl"
-layout(location = 0) in vec4 corner;
+layout(location = 0) in vec4 position;
+layout(location = 1) in vec4 diffuse;
+layout(location = 2) in vec2 uv;
 uniform vec2 target_size;
-uniform vec4 effect_color;
 LOC(0) out vec2 fragTexCoord;
 LOC(1) out vec4 fragColor;
 void main() {
-    gl_Position = target_position(corner.xy, target_size);
-    fragTexCoord = corner.zw;
-    fragColor = effect_color;
+    gl_Position = target_position(position.xy, target_size);
+    fragTexCoord = uv;
+    fragColor = diffuse.zyxw;
 }

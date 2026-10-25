@@ -14,14 +14,18 @@ float alphaTest(float alpha) {
 
 vec3 plasmaGlow(vec2 p, float radius, float alpha) {
     if (radius <= 0. || alphaTest(alpha) == 0.) return vec3(0.);
-    return warmProfile(p / radius - u_params[2].xy) * alpha;
+    vec2 axis = u_params[2].xy;
+    vec2 offset = vec2(dot(WARM_OFFSET, axis), dot(WARM_OFFSET, vec2(-axis.y, axis.x)));
+    return warmProfile(p / radius - offset) * alpha;
 }
 
 vec3 plasmaTrail(vec2 p) {
     float radius = u_params[0].x, len = u_params[0].w, step_size = u_params[1].x;
     float alpha = alphaTest(u_params[1].y);
     if (len <= 0. || alpha == 0.) return vec3(0.);
-    vec2 q = p / radius - u_params[2].xy;
+    vec2 axis = u_params[2].xy;
+    vec2 offset = vec2(dot(WARM_OFFSET, axis), dot(WARM_OFFSET, vec2(-axis.y, axis.x)));
+    vec2 q = p / radius - offset;
     float cross2 = 1. - q.y*q.y;
     if (cross2 <= 0.) return vec3(0.);
     // Integrate the source disc only: Gaussian tails cannot leave a seam at the quad boundary.

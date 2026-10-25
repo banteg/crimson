@@ -26,8 +26,8 @@ struct projectile_t { Fields fields; float angle; };
 extern projectile_t projectile_pool[96];
 struct Config { bool flame_glow_enabled; };
 extern Config config_blob;
-struct Color { float r,g,b,a; };
-struct effect_entry_t { int effect_id; float pos_x,pos_y,half_width,half_height,scale,rotation; Color color; };
+struct EffectAtlasEntry { int size_code,frame; };
+extern EffectAtlasEntry effect_id_table[19];
 """)
         binary = out / "check"
         subprocess.run([

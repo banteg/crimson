@@ -2,10 +2,12 @@
 // effect.frag. Hooks replace selected world draws only; no effect/projectile
 // fields are written.
 #include "crimsonland_gameplay.h"
+#include "effect_vertices.h"
 #include "grim2d_cpp.h"
 #include "host_abi.h"
 #include <algorithm>
 #include <math.h>
+#include <vector>
 
 extern IGrim2D_cpp *grim_interface_ptr;
 extern "C" {
@@ -15,7 +17,7 @@ extern int grim_bound_texture_handle;
 extern grim_config_value_t grim_config_values[128];
 extern unsigned long grim_color_slot0[4];
 extern float grim_uv_u0[8];
-extern float grim_rotation_radians;
+extern unsigned int grim_vertex_count;
 extern unsigned char portable_preserve_bugs;
 bool rtx_drawing();
 int rtx_effects_active;
@@ -23,6 +25,8 @@ int rtx_effects_active;
 
 namespace {
 enum { WARM, AURA, RING, PLASMA, ARC };
+std::vector<EffectVertex> sprite_vertices;
+int sprite_kind = -1;
 float byte_alpha(float a) {
   return floorf(std::clamp(a, 0.f, 1.f) * 255.f + .5f) / 255.f;
 }
@@ -42,20 +46,10 @@ void emit(int kind, float cx, float cy, float ax, float ay, float x0, float y0,
   grim_interface_ptr->grim_flush_batch();
   host_effect(corners, kind, params, color);
 }
-void sprite(int kind, float cx, float cy, float w, float h, float angle,
-            unsigned color) {
-  if (w <= 0 || h <= 0 || !(color >> 24))
-    return;
-  const float params[12] = {};
-  emit(kind, cx, cy, cosf(angle), sinf(angle), -w * .5f, -h * .5f, w * .5f,
-       h * .5f, -1, -1, 1, 1, params, color);
-}
-int effect_kind(int id) {
-  return id == 13 ? WARM : id == 16 ? AURA : id == 1 ? RING : -1;
-}
 bool drawing() { return rtx_effects_active && rtx_drawing(); }
 bool additive() {
-  return grim_config_values[0x12].words[0] && grim_config_values[0x13].words[0] == 5 &&
+  return grim_config_values[0x12].words[0] &&
+         grim_config_values[0x13].words[0] == 5 &&
          grim_config_values[0x14].words[0] == 2;
 }
 } // namespace
@@ -63,58 +57,97 @@ bool additive() {
 // The sprite methods keep their normal state/UV bookkeeping. Only whole known
 // cells on particles are intercepted, so other atlases and UI draws cannot
 // match.
+extern "C" void rtx_effect_flush() {
+  if (!sprite_vertices.empty()) {
+    if (drawing())
+      host_effect_sprites(sprite_vertices.data(), sprite_kind,
+                          (int)sprite_vertices.size());
+    sprite_vertices.clear();
+  }
+}
+
+namespace {
+int sprite_cell(const EffectVertex *v) {
+  // Derive each rectangle from the original effect atlas table, rather than
+  // maintaining UV copies.
+  const int ids[3] = {13, 16, 1};
+  for (int kind = 0; kind < 3; ++kind) {
+    const auto &entry = effect_id_table[ids[kind]];
+    int grid = 256 / entry.size_code, frame = entry.frame;
+    float unit = 1.f / grid, u = (frame % grid) * unit,
+          w = (frame / grid) * unit;
+    if (v[0].u == u && v[0].v == w && v[1].u == u + unit && v[1].v == w &&
+        v[2].u == u + unit && v[2].v == w + unit && v[3].u == u &&
+        v[3].v == w + unit)
+      return kind;
+  }
+  return -1;
+}
+void enqueue(int kind, const EffectVertex *quad) {
+  // Flush earlier textured work first. The hook in Grim's flush preserves
+  // ordering with all later artwork, blend/texture changes, target changes and
+  // frame boundaries.
+  if ((grim_vertex_count & 0xffff) != 0)
+    grim_interface_ptr->grim_flush_batch();
+  if (kind != sprite_kind || sprite_vertices.size() >= 6 * 256)
+    rtx_effect_flush();
+  sprite_kind = kind;
+  const int order[6] = {0, 1, 2, 0, 2, 3};
+  for (int i : order) {
+    EffectVertex v = quad[i];
+    v.u = (i == 1 || i == 2) ? 1.f : -1.f;
+    v.v = i >= 2 ? 1.f : -1.f;
+    sprite_vertices.push_back(v);
+  }
+}
+void sprite(int kind, float cx, float cy, float w, float h, float angle,
+            unsigned color) {
+  if (w <= 0 || h <= 0 || !(color >> 24))
+    return;
+  EffectVertex quad[4];
+  const float xy[8] = {-1, -1, 1, -1, 1, 1, -1, 1};
+  float co = cosf(angle), si = sinf(angle);
+  for (int i = 0; i < 4; ++i) {
+    float x = xy[2 * i] * w * .5f, y = xy[2 * i + 1] * h * .5f;
+    quad[i] = {cx + co * x - si * y, cy + si * x + co * y, 0, 1, color, 0, 0};
+  }
+  enqueue(kind, quad);
+}
+} // namespace
+
+extern "C" bool rtx_effect_vertices(const void *vertices, int count) {
+  if (!drawing() || count != 4 ||
+      grim_bound_texture_handle != particles_texture)
+    return false;
+  const auto *v = (const EffectVertex *)vertices;
+  int kind = sprite_cell(v);
+  if (kind < 0 || (kind == WARM && !additive()))
+    return false;
+  // The source can be Grim's mapped buffer, which a flush may relock.
+  EffectVertex quad[4];
+  std::copy(v, v + 4, quad);
+  enqueue(kind, quad);
+  return true;
+}
+
 extern "C" bool rtx_effect_quad(const float *points) {
   if (!drawing() || grim_bound_texture_handle != particles_texture)
     return false;
-  for (int i = 1; i < 4; ++i)
-    if (grim_color_slot0[i] != grim_color_slot0[0])
-      return false;
-  float u0 = grim_uv_u0[0], v0 = grim_uv_u0[1], u1 = grim_uv_u0[4],
-        v1 = grim_uv_u0[5];
-  int kind = -1;
-  if (u0 == .75f && v0 == 0 && u1 == 1 && v1 == .25f)
-    kind = WARM;
-  if (u0 == .5f && v0 == .25f && u1 == .75f && v1 == .5f)
-    kind = AURA;
-  if (u0 == .5f && v0 == .5f && u1 == 1 && v1 == 1)
-    kind = RING;
-  if (kind < 0)
-    return false;
-  if (kind == WARM && !additive()) return false;
-  // Ensure the other two corners are a whole rectangular cell as well.
-  if (grim_uv_u0[2] != u1 || grim_uv_u0[3] != v0 || grim_uv_u0[6] != u0 ||
-      grim_uv_u0[7] != v1)
-    return false;
-  // Grim's rotated draw_quad can turn a non-square input into a square.
-  // Reuse its computed corners, including its inverse-square-root rounding.
-  float corners[16];
-  const float uv[8] = {-1,-1, 1,-1, 1,1, -1,1};
-  for (int i=0; i<4; ++i) {
-    corners[i*4]=points[i*2]; corners[i*4+1]=points[i*2+1];
-    corners[i*4+2]=uv[i*2]; corners[i*4+3]=uv[i*2+1];
-  }
-  const float params[12] = {};
-  grim_interface_ptr->grim_flush_batch();
-  host_effect(corners,kind,params,(unsigned)grim_color_slot0[0]);
-  return true;
-}
-
-extern "C" bool rtx_effect_entry(const effect_entry_t *e) {
-  int kind = effect_kind(e->effect_id);
-  if (!drawing() || kind < 0)
-    return false;
-  if (kind == WARM && !additive()) return false;
-  sprite(
-      kind, camera_offset.x + e->pos_x, camera_offset.y + e->pos_y,
-      e->half_width * 2 * e->scale, e->half_height * 2 * e->scale, e->rotation,
-      // Native effect entries truncate their byte colors, unlike set_color.
-      (unsigned)(e->color.a * 255) << 24 | (unsigned)(e->color.r * 255) << 16 |
-          (unsigned)(e->color.g * 255) << 8 | (unsigned)(e->color.b * 255));
-  return true;
+  EffectVertex quad[4];
+  for (int i = 0; i < 4; ++i)
+    quad[i] = {points[2 * i],
+               points[2 * i + 1],
+               0,
+               1,
+               (uint32_t)grim_color_slot0[i],
+               grim_uv_u0[2 * i],
+               grim_uv_u0[2 * i + 1]};
+  return rtx_effect_vertices(quad, 4);
 }
 
 extern "C" void rtx_plasma(int slot, float alpha) {
-  if (!drawing()) return;
+  if (!drawing())
+    return;
   const projectile_t &p = projectile_pool[slot];
   int type = p.fields.type_id;
   float cx = camera_offset.x + p.fields.pos_x,
@@ -176,8 +209,8 @@ extern "C" void rtx_plasma(int slot, float alpha) {
                       byte_alpha(alpha * .4f),
                       byte_alpha(alpha * head_a),
                       byte_alpha(alpha * aura_a),
-                      .027944f * ax + .036952f * ay,
-                      -.027944f * ay + .036952f * ax,
+                      ax,
+                      ay,
                       0,
                       0};
   float radius = std::max({tail, head, aura}),
@@ -189,7 +222,8 @@ extern "C" void rtx_plasma(int slot, float alpha) {
 
 extern "C" void rtx_ion_arc(float sx, float sy, float ex, float ey, float scale,
                             float alpha) {
-  if (!drawing()) return;
+  if (!drawing())
+    return;
   float ax = ex - sx, ay = ey - sy, len = sqrtf(ax * ax + ay * ay);
   if (len <= 1e-3f)
     return;

@@ -30,6 +30,7 @@
   X(draw, (struct w2c_host * h, u32 p, u32 v, u32 vc, u32 i, u32 pc), (h, p, v, vc, i, pc))                           \
   X(beam, (struct w2c_host * h, u32 c, f32 l, f32 s, u32 col), (h, c, l, s, col))                                     \
   X(effect, (struct w2c_host * h, u32 c, u32 k, u32 p, u32 col), (h, c, k, p, col))                                    \
+  X(effect_sprites, (struct w2c_host * h, u32 v, u32 k, u32 n), (h, v, k, n))                                          \
   X(render_pass, (struct w2c_host * h, u32 p), (h, p))                                                                \
   X(scene, (struct w2c_host * h, u32 c, u32 l, u32 n), (h, c, l, n))                                                  \
   X(occlusion, (struct w2c_host * h, u32 g, u32 v, u32 n), (h, g, v, n))                                              \
