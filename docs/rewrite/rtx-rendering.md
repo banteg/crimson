@@ -1117,7 +1117,10 @@ the world itself stays at full output resolution. It uses the shared native weap
 Fire/Ion beams, and explosion lights, with the existing 16 illumination-source
 limit. Fractional source gains are preserved; gains above four are capped for
 smoke response. A segment scatters by the shared beam profile, so a streak's
-tail lights the cloud less than its head. Up to four living players' native Sharpshooter sight segments
+tail lights the cloud less than its head: the smoke sees that radiance ramp
+averaged over as much of the segment as it is far from it. Smoke beside a long
+beam follows the ramp, and smoke behind a dark-tailed shot still sees the shot,
+with no line across the cloud at the muzzle. Up to four living players' native Sharpshooter sight segments
 scatter as narrow red beams only inside density, rather than broadly illuminating
 the whole cloud. The ordinary sight artwork remains unchanged.
 

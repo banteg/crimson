@@ -99,8 +99,14 @@ void main() {
         vec4 source=u_light_pos[light],shape=u_light_shape[light],radiance=u_light_rgb[light];
         float along=clamp(dot(xy-source.xy,shape.xy),-shape.z,shape.z);
         vec2 nearest=source.xy+shape.xy*along;
-        // A segment scatters along its length as it shines: brighter toward its head.
-        float profile=shape.z>0. ? segmentRadiance(along/(2.*shape.z)+.5,u_light_tail[light/4][light%4]) : 1.;
+        // A segment scatters along its length as it shines, brighter toward its head: the smoke sees its radiance
+        // ramp averaged over as much of its length as the smoke is far from it. The nearest point's radiance alone
+        // lit everything behind a dark tail with that tail, a hard line across the smoke at the muzzle.
+        float profile=1.;
+        if(shape.z>0.) {
+            float f=along/(2.*shape.z)+.5, reach=length(xy-nearest)/(2.*shape.z);
+            profile=segmentRadiance(.5*(clamp(f-reach,0.,1.)+clamp(f+reach,0.,1.)),u_light_tail[light/4][light%4]);
+        }
         if(shape.w>0.) {
             vec2 radial=xy-source.xy;
             nearest=source.xy+radial/max(length(radial),.0001)*shape.w;
