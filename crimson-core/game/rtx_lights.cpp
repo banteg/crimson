@@ -694,6 +694,7 @@ struct Body {
 // list, and rays cross it as an absorbing medium (light_visibility.glsl), at a
 // cost that no longer grows with the crowd.
 const int CROWD_BODIES = 16;
+const float PENUMBRA_WIDTH = 8;
 
 bool body_of(const creature_t &c, Body &body) {
   if (!c.active || c.size <= 0 || c.death_timer <= 0 || c.type_id < 0 || c.type_id > 4)
@@ -758,7 +759,8 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
     float illumination = l[12], reflection = l[13];
     if (!(reflection > 0 || (shadows && illumination > 0)))
       continue;
-    padding = fmaxf(padding, fmaxf(0.1f, l[15]));
+    // A body shadow's penumbra follows sources up to PENUMBRA_WIDTH wide (reflection_occlusion.py).
+    padding = fminf(PENUMBRA_WIDTH, fmaxf(padding, fmaxf(0.1f, l[15])));
     bool beam = cells[0] > 0 && shadows && illumination > 0;
     if (beam) {
       beam_margin = fmaxf(beam_margin, fmaxf(cells[2], fmaxf(cells[6], cells[10])));

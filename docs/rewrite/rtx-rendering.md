@@ -637,7 +637,11 @@ cell bounds account for the finite-source filter.
 
 Visibility uses closest approach to each ellipsoid in its local coordinates,
 with a smooth transition whose width grows toward the finite source. Wider
-sources therefore produce softer edges. A body does not shadow a light inside or
+sources therefore produce softer edges, up to `PENUMBRA_WIDTH` (8 units): an
+explosion's fireball or the Radioactive aura casts the edge of an 8-unit source,
+and the grid pads its lists for no wider. Their own widths padded every body by up
+to three times as much, the costliest part of shading late crowds. A body does not
+shadow a light inside or
 against it (a muzzle flash in a packed crowd, a beam through a creature): its
 occlusion fades out as the source comes within half a radius of its surface, in
 the body's normalized coordinates, instead of cutting the light's pool along a

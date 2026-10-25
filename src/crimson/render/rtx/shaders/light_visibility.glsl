@@ -8,6 +8,9 @@ uniform float u_occlusion_cell_size;
 // A crowd cell (header y < 0: minus its bodies' summed footprint over its area, x their top height) is crossed as an
 // absorbing medium below that height (render/rtx/reflection_occlusion.py's CROWD_BODIES).
 const float CROWD_EXTINCTION = 3.;
+// The widest source a body shadow's penumbra follows (reflection_occlusion.py's PENUMBRA_WIDTH): the grid pads its
+// lists for no wider.
+const float PENUMBRA_WIDTH = 8.;
 
 vec4 occlusionData(int address) {
     int width = textureSize(u_occlusion_tex, 0).x;
@@ -129,8 +132,13 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     float distance2 = rayDistance2(offset, ray.xy, inverse_xy_length);
     #endif
     // Reject neighboring cell members with one fetch before loading transforms.
-    // The bound already includes the largest selected source's soft margin.
-    if (distance2 > center.w * center.w) return 1.;
+    // The bound includes the penumbra margin (for sources up to PENUMBRA_WIDTH);
+    // a section's transverse taps reach 0.577 of its full width off the fan.
+    float bound = center.w;
+    #ifdef CONTINUOUS_BEAM
+    if (beam_section_halfspan > 0.) bound += .57735027 * source_width;
+    #endif
+    if (distance2 > bound * bound) return 1.;
     vec4 shape = occlusionData(address + 1);
     vec3 inverse_radius = shape.xyz;
     vec4 orientation = occlusionData(address + 2);
@@ -169,7 +177,7 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     float distance = length(q + ray * t);
     // Analytic finite-source penumbra. The cone grows from the receiver toward
     // the source; this is a smooth body proxy, not sampled silhouette tracing.
-    float softness = max(.015, source_width * t * max(inverse_radius.x, inverse_radius.y));
+    float softness = max(.015, min(source_width, PENUMBRA_WIDTH) * t * max(inverse_radius.x, inverse_radius.y));
     float embedded = smoothstep(1., 1.5, length(q + ray));
     return 1. - orientation.z * embedded * (1. - smoothstep(1. - softness, 1. + softness, distance));
 }

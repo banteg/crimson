@@ -120,7 +120,7 @@ def test_full_section_extent_pads_only_beam_cell_lists() -> None:
     assert grid_sources[0].length == original.length + 2 * 56 * 1.05 * SUPPORT
     assert original.source_width == 3 and original.length == 256
     # As many as one cell lists before it is a crowd.
-    bodies = [BodyVolume(Vec2(100, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(CROWD_BODIES)]
+    bodies = [BodyVolume(Vec2(110, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(CROWD_BODIES)]
     grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256, beam_margin=margin)
     assert grid.body_count == len(bodies)
     # Section walks get the half-span; other lights keep the transverse margin.
