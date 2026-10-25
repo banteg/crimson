@@ -637,7 +637,11 @@ cell bounds account for the finite-source filter.
 
 Visibility uses closest approach to each ellipsoid in its local coordinates,
 with a smooth transition whose width grows toward the finite source. Wider
-sources therefore produce softer edges. This is an analytic penumbra
+sources therefore produce softer edges. A body does not shadow a light inside or
+against it (a muzzle flash in a packed crowd, a beam through a creature): its
+occlusion fades out as the source comes within half a radius of its surface, in
+the body's normalized coordinates, instead of cutting the light's pool along a
+straight line through the source. This is an analytic penumbra
 approximation, not multi-sample area-light integration; overlapping partially opaque
 volumes combine by strongest occlusion, avoiding seams between creatures. The
 visibility test does not add ambient darkness, lengthen shadows artificially,

@@ -110,6 +110,84 @@ def test_projected_visibility_matches_sampled_reference(
         rl.unload_render_texture(target)
 
 
+@pytest.mark.parametrize(("body_y", "lit"), [(20., "full"), (29., "partial"), (60., "dark")])
+def test_body_does_not_shadow_a_light_inside_or_against_it(raylib_context, body_y: float, lit: str) -> None:
+    # A muzzle flash pressed into a packed crowd: the creature it sits in must not cut its pool along a straight line.
+    shader = _probe_shader("""
+    void main() {
+        float point = sourceVisibility(vec3(64., 100., 0.), vec3(64., 20., 20.), .5, vec2(1e19));
+        float section = sectionVisibility(vec3(64., 100., 0.), vec3(64., 20., 20.), .5, vec2(1., 0.), 4., vec2(1e19));
+        finalColor = vec4(point, section, 0., 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=20., source_width=.5, beam_profile=(16., 3.1, 1.05))
+    body = BodyVolume(Vec2(64., body_y), Vec2(8., 8.), 40., 0.)
+    try:
+        grid = build_occlusion_grid([body], [source], width=128., height=128., beam_margin=4.)
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        _integer(shader, "u_dynamic_shadows", 1)
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        for value in _pixel(target)[:2]:
+            if lit == "full":
+                assert value == pytest.approx(1.)
+            elif lit == "partial":
+                assert .05 < value < .95
+            else:
+                assert value < .05
+    finally:
+        renderer.close()
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
+@pytest.mark.parametrize(("body_x", "body_y", "radius"), [(44., 20., 8.), (54., 20., 8.), (64., 20., 8.), (64., 32., 10.),
+                                                          (60., 30., 12.)])
+def test_section_spares_only_its_embedded_stretch(raylib_context, body_x: float, body_y: float, radius: float) -> None:
+    # A section passing partly through a body: the embedded stretch is not shadowed by it, the rest still is, as the
+    # section's point emitters sampled one by one see it.
+    shader = _probe_shader("""
+    void main() {
+        vec3 receiver = vec3(64., 100., 0.), center = vec3(64., 20., 20.);
+        float section = sectionVisibility(receiver, center, .5, vec2(1., 0.), 20., vec2(1e19));
+        float reference = 0.;
+        for (int i = 0; i < 64; i++) {
+            float offset = ((float(i) + .5) / 64. * 2. - 1.) * 20.;
+            reference += sourceVisibility(receiver, center + vec3(offset, 0., 0.), .5, vec2(1e19));
+        }
+        finalColor = vec4(section, reference / 64., 0., 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=20., source_width=.5, beam_profile=(16., 3.1, 1.05))
+    body = BodyVolume(Vec2(body_x, body_y), Vec2(radius, radius), 40., 0.)
+    try:
+        grid = build_occlusion_grid([body], [source], width=128., height=128., beam_margin=20.)
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        _integer(shader, "u_dynamic_shadows", 1)
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        section, reference = _pixel(target)[:2]
+        assert section == pytest.approx(reference, abs=.1)
+    finally:
+        renderer.close()
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
 def test_section_visibility_fades_keeps_all_casters_and_resets_for_reflections(raylib_context) -> None:
     shader = _probe_shader("""
     uniform vec4 u_owner;
