@@ -101,10 +101,16 @@ static int rtx_light_count;
 
 // The world's bounds in the frame (game/rtx/rtx.patch): what Grim batched before
 // a bound belongs to the side it was drawn on. The world's lights go first.
+// Classic marks the bounds too, only so the host's timers can tell its drawing
+// from the frame's simulation and HUD.
 void rtx_world(int begin) {
-  if (!rtx_drawing())
+  if (!platform_outputs() || grim_render_disabled)
     return;
   grim_interface_ptr->grim_flush_batch();
+  if (!rtx_render_mode) {
+    host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
+    return;
+  }
   if (begin) {
     rtx_effects_active = 1;
     int count = rtx_light_count = rtx_collect_lights(rtx_lights, 32);

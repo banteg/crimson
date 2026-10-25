@@ -9,6 +9,7 @@
 #include "client_shaders.h"
 #include "device_states.h"
 #include <algorithm>
+#include <map>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -57,6 +58,13 @@ const bool gpu_timers = getenv("CRIMSON_GPU_TIMERS");
 std::vector<GpuTimer> gpu_frame, gpu_previous;
 std::vector<GLuint> gpu_queries;
 std::string gpu_timings;
+// With the timers, each pass's draws by texture (or analytic kind) and target:
+// quads, and the target pixels they cover, read a frame late with the timings.
+struct DrawCount {
+  double quads = 0, pixels = 0;
+};
+std::map<std::string, DrawCount> draw_frame, draw_previous;
+std::string draw_stats;
 void gpu_mark(const char *label) {
   if (!gpu_timers || (!gpu_frame.empty() && !strcmp(gpu_frame.back().label, label)))
     return;
@@ -72,6 +80,22 @@ void gpu_mark(const char *label) {
   glBeginQuery(GL_TIME_ELAPSED, query);
   gpu_frame.push_back({label, query});
 }
+// Drawing off the back buffer outside the world's passes (terrain decal bakes,
+// heat stamps) gets its own timer, so the `frame` timer keeps only the
+// simulation's time; the label before it resumes after.
+const char *gpu_resume_label;
+void gpu_aside(const char *label) {
+  if (!gpu_timers || gpu_resume_label)
+    return;
+  gpu_resume_label = gpu_frame.empty() ? "frame" : gpu_frame.back().label;
+  gpu_mark(label);
+}
+void gpu_resume() {
+  if (!gpu_resume_label)
+    return;
+  gpu_mark(gpu_resume_label);
+  gpu_resume_label = nullptr;
+}
 // The frame ends: read the one before it, then start the next.
 void gpu_frame_end() {
   if (!gpu_timers || gpu_frame.empty())
@@ -86,13 +110,21 @@ void gpu_frame_end() {
     gpu_queries.push_back(t.query);
   }
   gpu_timings.clear();
-  char entry[64];
+  char entry[160];
   for (const auto &[label, ms] : totals) {
     snprintf(entry, sizeof entry, "%s%s=%.3f", gpu_timings.empty() ? "" : " ", label, ms);
     gpu_timings += entry;
   }
   gpu_previous.swap(gpu_frame);
   gpu_frame.clear();
+  gpu_resume_label = nullptr;
+  draw_stats.clear();
+  for (const auto &[key, count] : draw_previous) {
+    snprintf(entry, sizeof entry, "%s%s=%.0f/%.0f", draw_stats.empty() ? "" : " ", key.c_str(), count.quads, count.pixels);
+    draw_stats += entry;
+  }
+  draw_previous.swap(draw_frame);
+  draw_frame.clear();
 }
 
 
@@ -344,6 +376,29 @@ void release(Target &t) {
 Target &drawing_target(int id) {
   Target &t = target_or_back(id);
   return world && &t == &textures[0] ? hdr : t;
+}
+
+// Counts a draw for the timers: `what` it draws, its triangles as corner
+// indices into x, y positions `stride` floats apart (the current target's
+// logical units), `primitive` a device primitive (4 list, 5 strip, 6 fan).
+void count_draw(const std::string &what, const float *positions, int stride, const unsigned short *indices,
+                int primitive, int triangles) {
+  if (!gpu_timers || primitive < 4 || primitive > 6)
+    return;
+  Target &into = drawing_target(current_target);
+  double scale = (double)into.width / std::max(1, into.logical_width), area = 0;
+  for (int t = 0; t < triangles; ++t) {
+    int k[3] = {primitive == 4 ? 3 * t : primitive == 5 ? t : 0, primitive == 4 ? 3 * t + 1 : t + 1,
+                primitive == 4 ? 3 * t + 2 : t + 2};
+    const float *a = positions + (indices ? indices[k[0]] : k[0]) * stride,
+                *b = positions + (indices ? indices[k[1]] : k[1]) * stride,
+                *c = positions + (indices ? indices[k[2]] : k[2]) * stride;
+    area += fabs((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1])) * 0.5;
+  }
+  DrawCount &count = draw_frame[std::string(gpu_frame.empty() ? "frame" : gpu_frame.back().label) + ":" + what + ":" +
+                                (current_target ? "t" + std::to_string(current_target) : world ? "world" : "back")];
+  count.quads += triangles * 0.5;
+  count.pixels += area * scale * scale;
 }
 
 void bind_target() {
@@ -890,6 +945,7 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
 }
 
 std::string GL_ENTRY(renderer_gpu_timings)() { return gpu_timings; }
+std::string GL_ENTRY(renderer_draw_stats)() { return draw_stats; }
 
 void GL_ENTRY(renderer_resume)() { bind_target(); }
 
@@ -1139,6 +1195,10 @@ void GL_ENTRY(w2c_host_set_texture)(struct w2c_host *, u32 stage, u32 id) {
 }
 void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
   current_target = (int)id;
+  if (id)
+    gpu_aside("bake");
+  else
+    gpu_resume();
   bind_target();
 }
 void GL_ENTRY(w2c_host_clear)(struct w2c_host *, u32 color) {
@@ -1206,6 +1266,16 @@ static void device_draw(const Target &t, u32 primitive, u32 vertices, u32 vertex
 }
 void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
                    u32 primitive_count) {
+  if (gpu_timers) {
+    auto texture = textures.find(bound[0]);
+    count_draw(bound[0] && texture != textures.end()
+                   ? "tex" + std::to_string(bound[0]) + "-" + std::to_string(texture->second.logical_width) + "x" +
+                         std::to_string(texture->second.logical_height)
+                   : "untextured",
+               (const float *)(client_memory() + vertices), 7,
+               indices ? (const unsigned short *)(client_memory() + indices) : nullptr, (int)primitive,
+               primitive >= 4 && primitive <= 6 ? (int)primitive_count : 0);
+  }
   if (rtx && world && material == HOST_PASS_GROUND ? ground_draw(primitive, vertices, vertex_count, indices, primitive_count)
                                                    : lit_draw(primitive, vertices, vertex_count, indices, primitive_count))
     return;
@@ -1246,6 +1316,7 @@ void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 ste
   apply_output_state(t);
   // A flat quad, whichever way its corners turn.
   glDisable(GL_CULL_FACE);
+  count_draw("beam", (const float *)(client_memory() + corners), 4, nullptr, 6, 2);
   upload_analytic_vertices(beam_array, beam_buffer, client_memory() + corners,
                            16 * sizeof(float), GL_TRIANGLE_FAN, 4);
 }
@@ -1253,6 +1324,7 @@ void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 ste
 // vertex layout.
 static void draw_effect_vertices(const EffectVertex *vertices, int count,
                                  int kind, const float *params) {
+  count_draw("effect" + std::to_string(kind), (const float *)vertices, 7, nullptr, 4, count / 3);
   Target &t = drawing_target(current_target);
   glUseProgram(effect_program);
   glUniform2f(u_effect_target_size, (float)t.logical_width,
@@ -1312,6 +1384,10 @@ void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {
 void GL_ENTRY(w2c_host_heat)(struct w2c_host *, u32 footprints, u32 count) {
   if (!rtx || (!count && !heat_trail.framebuffer))
     return;
+  gpu_aside("heat-stamp");
+  struct Resume {
+    ~Resume() { gpu_resume(); }
+  } resume;
   int width = std::max(1, (int)lroundf(ground_size[0] * HEAT_TRAIL_SCALE));
   int height = std::max(1, (int)lroundf(ground_size[1] * HEAT_TRAIL_SCALE));
   if (heat_trail.width != width || heat_trail.height != height) {
@@ -1570,7 +1646,8 @@ void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 gri
 }
 void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "heat"};
-  gpu_mark(pass < sizeof labels / sizeof *labels ? labels[pass] : "sprites");
+  // Classic marks only the world's bounds: what follows is its HUD.
+  gpu_mark(!rtx && pass == HOST_PASS_WORLD_END ? "hud" : pass < sizeof labels / sizeof *labels ? labels[pass] : "sprites");
   if (pass >= HOST_PASS_CREATURES) {
     material = pass == HOST_PASS_SPRITES ? 0 : (int)pass;
     return;

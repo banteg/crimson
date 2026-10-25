@@ -1177,13 +1177,16 @@ SDL_AppResult SDL_AppIterate(void *) {
     }
     captured_frame = -1;
   }
-  // CRIMSON_GPU_TIMERS: the GPU time per pass, a frame late, with the replay tick it drew.
+  // CRIMSON_GPU_TIMERS: the GPU time per pass, a frame late, with the replay tick it drew,
+  // and that frame's draws by pass, texture and target: quads and covered pixels.
   static const bool gpu_timers = getenv("CRIMSON_GPU_TIMERS");
   static int timed_tick;
   if (gpu_timers) {
     std::string timings = renderer_gpu_timings();
-    if (!timings.empty())
+    if (!timings.empty()) {
       fprintf(stderr, "gpu tick=%d %s\n", timed_tick, timings.c_str());
+      fprintf(stderr, "draws tick=%d %s\n", timed_tick, renderer_draw_stats().c_str());
+    }
     timed_tick = (int)w2c_game_game_watch_tick(&game);
   }
   // A moment's frame, once the replay has held on it for a frame.
