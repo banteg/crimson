@@ -171,6 +171,14 @@ std::vector<int> capture_frames;
 int presented, frames, captured_frame = -1;
 bool capture_done;
 const bool unattended = getenv("CRIMSON_CAPTURE");
+// A run a script drives (a capture, a watched moment) ends by itself: its
+// messages go to stderr, never to a dialog that waits for a click.
+const bool scripted = unattended || getenv("CRIMSON_WATCH");
+void client_message(SDL_MessageBoxFlags flags, const char *title, const char *text) {
+  fprintf(stderr, "%s: %s\n", title, text);
+  if (!scripted)
+    SDL_ShowSimpleMessageBox(flags, title, text, window);
+}
 void write_capture(const std::string &name) {
   int width, height;
   std::vector<unsigned char> pixels = renderer_capture(width, height);
@@ -349,8 +357,7 @@ void pad(HostInput *in) {
 u8 *client_memory() { return w2c_game_memory(&game)->data; }
 const std::string &client_game_directory() { return game_directory; }
 void client_fatal(const char *message) {
-  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Crimsonland", message, window);
-  fprintf(stderr, "crimson: %s\n", message);
+  client_message(SDL_MESSAGEBOX_ERROR, "Crimsonland", message);
   exit(1);
 }
 
@@ -363,8 +370,7 @@ void w2c_host_fatal(struct w2c_host *, u32 message) { client_fatal((const char *
 // The original's message boxes: startup failures and warnings the player must see.
 void w2c_host_message(struct w2c_host *, u32 text, u32 caption) {
   const char *body = (const char *)client_memory() + text, *title = (const char *)client_memory() + caption;
-  fprintf(stderr, "%s: %s\n", title, body);
-  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, title, body, window);
+  client_message(SDL_MESSAGEBOX_WARNING, title, body);
 }
 // The leaderboard (host/ranked.inc): the page signs in and uploads
 // (client/web/shell.html); the native client uses the same protocol through its worker.
@@ -409,7 +415,8 @@ u32 w2c_host_render_mode(struct w2c_host *, u32 requested) {
 
 // CRIMSON_WATCH=<replay> plays a replay, from the game folder, as a link to a
 // run does, for unattended captures: CRIMSON_WATCH_SEEK=<tick> goes to a tick
-// once it is prepared, and CRIMSON_WATCH_STOP=<tick> pauses playback there;
+// once it is prepared, and CRIMSON_WATCH_STOP=<tick> pauses playback there and
+// ends the run once that tick has drawn (unless it captures frames past it);
 // CRIMSON_WATCH_CARD=<name>,<rank>,<day>,<month>,<year> gives its card's runner.
 void watch_from_env() {
   static bool asked;
@@ -461,8 +468,7 @@ void network_submit(int request) {
     u32 key_at = w2c_game_game_identity_public_key(&game);
     std::string key = (char *)client_memory() + key_at;
     if (!N::run_id(key)) {
-      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Leaderboard",
-                               "Could not load your identity key.", window);
+      client_message(SDL_MESSAGEBOX_WARNING, "Leaderboard", "Could not load your identity key.");
       return;
     }
     if (network->request(N::CHALLENGE,
@@ -519,8 +525,7 @@ void network_update() {
           reason = "This run cannot play now.";
       }
       if (reason)
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Replay", reason,
-                                 window);
+        client_message(SDL_MESSAGEBOX_WARNING, "Replay", reason);
     } else if (event.kind == N::CHALLENGE && event.ok) {
       snprintf((char *)client_memory() + w2c_game_game_login_challenge(&game),
                65, "%s", event.body.c_str());
@@ -532,19 +537,15 @@ void network_update() {
                             ",\"challenge\":" + N::quote(event.body) +
                             ",\"signature\":" + N::quote(signature) + "}")) {
         profile_pending = false;
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Leaderboard",
-                                 "Could not sign in. Try again later.", window);
+        client_message(SDL_MESSAGEBOX_WARNING, "Leaderboard", "Could not sign in. Try again later.");
       }
     } else if (event.kind == N::LOGIN && event.ok) {
       profile_pending = false;
       if (!SDL_OpenURL(event.body.c_str()))
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Leaderboard",
-                                 "Could not open your browser.", window);
+        client_message(SDL_MESSAGEBOX_WARNING, "Leaderboard", "Could not open your browser.");
     } else if (event.kind == N::CHALLENGE || event.kind == N::LOGIN) {
       profile_pending = false;
-      SDL_ShowSimpleMessageBox(
-          SDL_MESSAGEBOX_WARNING, "Leaderboard",
-          "Can't sign in to the leaderboard. Try again later.", window);
+      client_message(SDL_MESSAGEBOX_WARNING, "Leaderboard", "Can't sign in to the leaderboard. Try again later.");
     }
     if (!event.error.empty())
       fprintf(stderr, "leaderboard: %s\n", event.error.c_str());
@@ -1186,11 +1187,17 @@ SDL_AppResult SDL_AppIterate(void *) {
       fprintf(stderr, "gpu tick=%d %s\n", timed_tick, timings.c_str());
     timed_tick = (int)w2c_game_game_watch_tick(&game);
   }
-  // A moment's frame, once the replay has held on it for a frame.
+  // A moment's frame, once the replay has held on it for a frame. A run that
+  // only stops there ends there too, unless it captures frames past it.
   static const int capture_tick = unattended && getenv("CRIMSON_CAPTURE_TICK") ? atoi(getenv("CRIMSON_CAPTURE_TICK")) : 0;
+  static const int end_tick = capture_tick ? capture_tick
+                              : getenv("CRIMSON_WATCH_STOP") && !getenv("CRIMSON_CAPTURE_FRAMES")
+                                  ? atoi(getenv("CRIMSON_WATCH_STOP"))
+                                  : 0;
   static int held_frames;
-  if (capture_tick && (int)w2c_game_game_watch_paused_tick(&game) == capture_tick && ++held_frames == 2) {
-    write_capture("tick_" + std::to_string(capture_tick));
+  if (end_tick && (int)w2c_game_game_watch_paused_tick(&game) == end_tick && ++held_frames == 2) {
+    if (capture_tick)
+      write_capture("tick_" + std::to_string(capture_tick));
     w2c_game_game_close(&game);
   }
 #ifdef __EMSCRIPTEN__
