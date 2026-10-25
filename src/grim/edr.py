@@ -4,7 +4,7 @@ import ctypes as C
 import logging
 import math
 import sys
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import AbstractContextManager, contextmanager
 from typing import Any, Protocol
 
@@ -145,7 +145,7 @@ class _MacosEdr:
         )
 
     @contextmanager
-    def float_pixel_format(self) -> Iterator[None]:
+    def float_pixel_format(self) -> Generator[None]:
         # GLFW has no Cocoa float-buffer hint. Scope the hook to InitWindow and
         # restore the original IMP even on failure. Keep the callback alive until then.
         # NSOpenGLPixelFormatAttribute value-taking attributes from the macOS SDK.
@@ -251,7 +251,7 @@ def _platform_bridge() -> _Bridge | None:
 
 
 @contextmanager
-def float_backbuffer(*, enabled: bool) -> Iterator[None]:
+def float_backbuffer(*, enabled: bool) -> Generator[None]:
     """Reserve a float surface for windows that can switch to RTX at runtime.
 
     The surface alone does not enable EDR. activate_edr_window follows the

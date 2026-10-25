@@ -10,7 +10,7 @@ import shlex
 import shutil
 import struct
 from collections import Counter, defaultdict
-from collections.abc import Collection, Iterator
+from collections.abc import Collection, Generator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
@@ -5503,7 +5503,7 @@ def _scratch_build_directory(config: ScratchConfig) -> Path:
 
 
 @contextmanager
-def _locked_staging_dir(path: Path) -> Iterator[Path]:
+def _locked_staging_dir(path: Path) -> Generator[Path]:
     with open(path.with_name(path.name + ".lock"), "w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         shutil.rmtree(path, ignore_errors=True)

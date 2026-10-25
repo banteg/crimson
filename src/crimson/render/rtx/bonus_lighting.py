@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 
 import msgspec
@@ -85,7 +85,7 @@ class BonusLighting(msgspec.Struct):
         shell_center: Vec2,
         grid: tuple[float, float],
         restore_shader: rl.Shader | None,
-    ) -> Iterator[None]:
+    ) -> Generator[None]:
         shader = self.ensure_shader()
         rl.rl_draw_render_batch_active()
         rl.set_shader_value(

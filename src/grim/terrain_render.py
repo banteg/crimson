@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 
 import msgspec
@@ -24,7 +24,7 @@ TERRAIN_DETAIL_TINT = rl_color(178, 178, 178, 153)
 
 
 @contextmanager
-def _color_mask(*, write_alpha: bool) -> Iterator[None]:
+def _color_mask(*, write_alpha: bool) -> Generator[None]:
     rl.rl_color_mask(True, True, True, bool(write_alpha))
     try:
         yield
@@ -37,7 +37,7 @@ def _terrain_rt_blend(
     src_factor: int,
     dst_factor: int,
     blend_equation: int,
-) -> Iterator[None]:
+) -> Generator[None]:
     with _color_mask(write_alpha=False), blend_custom(src_factor, dst_factor, blend_equation):
         yield
 

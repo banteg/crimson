@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 
 from .raylib_api import rd, rl
 
 
 @contextmanager
-def blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iterator[None]:
+def blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Generator[None]:
     # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
     # apply them when switching the blend mode. Set factors both before and
     # after BeginBlendMode() to ensure the current draw uses the intended values.
@@ -21,7 +21,7 @@ def blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Itera
 
 
 @contextmanager
-def opaque_blend() -> Iterator[None]:
+def opaque_blend() -> Generator[None]:
     """Overwrite the destination, ignoring source alpha.
 
     Render targets are RGBA, but translucent draws into them leave alpha below 1
