@@ -199,7 +199,7 @@ int light_count;
 // size in world units, the beam sections' gains, and per light its direction
 // with broad illumination, its reflection tail and its three beam sections.
 float scene_seconds, ground_size[2], beam_gain[2];
-float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
+float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], beam_shape[MAX_LIGHTS * 4];
 bool beam_lights;
 int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
@@ -795,7 +795,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     glUniform4fv(at("u_spec_dir"), light_count, ground_dir);
     glUniform4fv(at("u_spec_response"), light_count, light_response);
     glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
-    glUniform4fv(at("u_line_cells"), light_count * 3, line_cells);
+    glUniform4fv(at("u_beam_shape"), light_count, beam_shape);
   }
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
                            occlusion_grid[2] ? occlusion_texture : blank_texture};
@@ -1370,8 +1370,8 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
     memcpy(ground_dir + i * 4, l + 8, 16);
     ground_dir[i * 4 + 2] = l[17];
     light_tail[i] = l[16];
-    memcpy(line_cells + i * 12, l + 20, 48);
-    beam_lights |= l[20] > 0;
+    memcpy(beam_shape + i * 4, l + 20, 16);
+    beam_lights |= l[23] > 0;
   }
 }
 void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {

@@ -1,4 +1,4 @@
-"""Energy-section beam lighting; presentation state only."""
+"""One-source beam lighting; presentation state only."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ FIRE_DIRECT_GAIN = 3.0
 
 @lru_cache(maxsize=1)
 def source_radial_marginal() -> tuple[float, ...]:
-    """Small, fixed-cost lookup for the three-cell appearance approximation."""
+    """A glow stamp's density projected onto the beam axis, in stamp radii out to SUPPORT."""
     values: list[float] = []
     for i in range(65):
         x = SUPPORT * i / 64
@@ -35,91 +35,64 @@ def source_radial_marginal() -> tuple[float, ...]:
     return tuple(values)
 
 
-SOURCE_CELLS = 3
+@lru_cache(maxsize=1)
+def stamp_half_width() -> float:
+    """A stamp's longitudinal extent as a uniform stretch of equal variance, in stamp radii: sqrt(3) sigma."""
+    radial = source_radial_marginal()
+    step = SUPPORT / (len(radial) - 1)
+    mass = second = 0.0
+    for i, value in enumerate(radial):
+        weight = value * (0.5 if i in (0, len(radial) - 1) else 1.0)
+        mass += weight
+        second += weight * (i * step) ** 2
+    return math.sqrt(3 * second / mass)
 
 
 @lru_cache(maxsize=128)
-def source_cells(length: float, radius: float, step: float, head_multiplier: float) -> tuple[float, ...]:
-    """Three energy-weighted source cells: mass, offset, longitudinal half-span, zero.
+def beam_shape(length: float, radius: float, step: float, head_multiplier: float) -> tuple[float, float, float]:
+    """The beam's energy along its axis: the head's share, its half-width, and the support's half-extent.
 
-    Positions and half-spans are world units relative to the beam midpoint.
-    Each cell samples only the nearby authored stamps plus the head. Matching
-    its variance to a uniform segment gives the source extent used by the
-    analytic finite-source visibility integral.
+    The authored stamps every `step` weigh their position over the length, so in the limit they are a ramp
+    from the tail to the head; the head adds its own brighter stamp. Each stamp holds radius^2 times the same
+    projected mass, so the head's share is its radius squared against the ramp's summed weights. The head is a
+    uniform stretch of the stamp's equivalent half-width around the head end. The support adds the head's
+    halo past the end.
     """
-    radial = source_radial_marginal()
-    support = radius * SUPPORT
     head_radius = radius * head_multiplier
-    pad = head_radius * SUPPORT
-    span = length + 2 * pad
-    stamp_count = math.ceil(length / step)
-    samples = 32
-    values: list[float] = []
-    total = 0.0
-
-    def density(r: float) -> float:
-        r = abs(r)
-        if r >= SUPPORT:
-            return 0.0
-        t = r / SUPPORT * (len(radial) - 1)
-        index = int(t)
-        return radial[index] + (radial[index + 1] - radial[index]) * (t - index)
-
-    for cell in range(SOURCE_CELLS):
-        mass = first = second = 0.0
-        for j in range(samples):
-            u = (cell + (j + 0.5) / samples) / SOURCE_CELLS
-            x = -pad + u * span
-            energy = head_radius * density((x - length) / head_radius)
-            if length > 0:
-                lo = max(0, math.ceil((x - support) / step))
-                hi = min(stamp_count - 1, math.floor((x + support) / step))
-                for k in range(lo, hi + 1):
-                    position = k * step
-                    energy += position / length * radius * density((x - position) / radius)
-            mass += energy
-            first += energy * u
-            second += energy * u * u
-        mean = first / mass if mass else (cell + 0.5) / SOURCE_CELLS
-        half_span = math.sqrt(max(0.0, 3 * (second / mass - mean * mean))) if mass else 0.0
-        values.extend((mass, -pad + mean * span - length * 0.5, half_span * span, 0.0))
-        total += mass
-    return tuple(v / total if i % 4 == 0 else v for i, v in enumerate(values))
+    stamps = math.ceil(length / step) if length > 0 else 0
+    ramp = radius * radius * step * stamps * (stamps - 1) / (2 * length) if stamps > 1 else 0.0
+    head_share = head_radius * head_radius / (head_radius * head_radius + ramp)
+    return head_share, stamp_half_width() * head_radius, length * 0.5 + head_radius * SUPPORT
 
 
-def beam_cells(light: MaterialLight) -> tuple[float, ...]:
-    """Mask unselected lamps; reflection-only retained sources must not illuminate."""
+def beam_uniform(light: MaterialLight) -> tuple[float, float, float, float]:
+    """A light's `u_beam_shape`: head share, head half-width, Ion, support half-extent (0 for no beam).
+
+    Unselected lamps stay dark, as do reflection-only sources.
+    """
     if light.beam_profile is None or light.illumination_gain <= 0:
-        return (0.0,) * (SOURCE_CELLS * 4)
-    values = source_cells(light.length, *light.beam_profile)
-    return tuple(float(light.beam_ion) if i % 4 == 3 else value for i, value in enumerate(values))
+        return (0.0, 0.0, 0.0, 0.0)
+    head_share, head_half_width, support = beam_shape(light.length, *light.beam_profile)
+    return (head_share, head_half_width, float(light.beam_ion), support)
 
 
 def prepare_beam_lights(lights: Sequence[MaterialLight]) -> tuple[list[float], list[MaterialLight]]:
     """Pack one uniform array and conservative grid-only copies of the sources.
 
     The copies only lengthen and orient a beam's support; pass the largest
-    packed half-span as the grid's beam margin, so section walks retain every
-    body across the complete section support while other lights keep their
-    own margin. Upload original lights for reflection/illumination radiance.
+    support half-extent as the grid's beam margin, so a beam's one walk
+    retains every body across the stretch it lights while other lights keep
+    their own margin. Upload original lights for reflection/illumination radiance.
     """
     assert len(lights) <= MAX_MATERIAL_LIGHTS
     values: list[float] = []
     grid_sources: list[MaterialLight] = []
     for light in lights:
-        cells = beam_cells(light)
-        values.extend(cells)
-        if light.beam_profile is None or light.illumination_gain <= 0:
+        shape = beam_uniform(light)
+        values.extend(shape)
+        if not shape[3]:
             grid_sources.append(light)
             continue
-        radius, _, head = light.beam_profile
-        pad = radius * head * SUPPORT
         direction = light.direction if light.direction.length_sq() > 0.0001 else Vec2(1.0, 0.0)
-        grid_sources.append(
-            msgspec.structs.replace(
-                light,
-                direction=direction,
-                length=light.length + 2 * pad,
-            ),
-        )
+        grid_sources.append(msgspec.structs.replace(light, direction=direction, length=2 * shape[3]))
     return values, grid_sources

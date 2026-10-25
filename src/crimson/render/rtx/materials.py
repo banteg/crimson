@@ -435,10 +435,10 @@ class MaterialGroundRenderer(GroundRenderer):
         self._material_integer("u_has_beam_lights", int(has_beam_lights))
         grid_lights, beam_margin = lights, 0.
         if has_beam_lights:
-            cells, grid_lights = prepare_beam_lights(lights)
-            beam_margin = max(cells[2::4])
+            shapes, grid_lights = prepare_beam_lights(lights)
+            beam_margin = max(shapes[3::4])
             self._material_uniform("u_beam_gain", [ION_DIRECT_GAIN, FIRE_DIRECT_GAIN])
-            self._material_array("u_line_cells[0]", cells, components=4)
+            self._material_array("u_beam_shape[0]", shapes, components=4)
         grid = build_occlusion_grid(
             bodies, grid_lights, width=self.width, height=self.height, illumination=shadows, beam_margin=beam_margin,
         )

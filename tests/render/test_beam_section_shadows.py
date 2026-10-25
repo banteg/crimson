@@ -324,3 +324,73 @@ def test_section_visibility_fades_keeps_all_casters_and_resets_for_reflections(r
 def test_default_ground_shader_compiles(raylib_context) -> None:
     shader = _shader(GROUND_FRAGMENT)
     rl.unload_shader(shader)
+
+
+def test_bodies_blocking_different_stretches_of_a_beam_add_up(raylib_context) -> None:
+    # Two bodies each hide one half of a long beam from the receiver: together they hide nearly all of it, where one
+    # visibility per body, combined by its minimum, would still pass the half each leaves open.
+    shader = _probe_shader("""
+    void main() {
+        float both = sectionVisibility(vec3(64., 120., 0.), vec3(64., 20., 24.), .5, vec2(1., 0.), 40., vec2(1e19));
+        finalColor = vec4(both, 0., 0., 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    source = MaterialLight(Vec2(64., 20.), 200., (1., 1., 1.), height=24., source_width=.5, direction=Vec2(1., 0.),
+                           length=80., beam_profile=(16., 3.1, 1.05))
+    halves = [BodyVolume(Vec2(x, 70.), Vec2(20., 8.), 30., 0.) for x in (44., 84.)]
+
+    def visibility(bodies: Sequence[BodyVolume]) -> float:
+        grid = build_occlusion_grid(bodies, [source], width=128., height=160., beam_margin=40.)
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        _integer(shader, "u_dynamic_shadows", 1)
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        return _pixel(target)[0]
+
+    try:
+        left, right, both = visibility(halves[:1]), visibility(halves[1:]), visibility(halves)
+        assert .3 < left < .7 and .3 < right < .7
+        assert both < .15
+        assert both == pytest.approx(left + right - 1., abs=.1)
+    finally:
+        renderer.close()
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
+def test_beam_falloff_integrals_match_the_summed_falloff(raylib_context) -> None:
+    shader = _probe_shader("""
+    uniform vec4 u_probe; // b, R, lo, hi
+    void main() {
+        float b = u_probe.x, R = u_probe.y, lo = u_probe.z, hi = u_probe.w;
+        vec2 closed = beamPiece(.3, .02, lo, hi, b, R);
+        vec2 summed = vec2(0.);
+        for (int i = 0; i < 4096; i++) {
+            float u = lo + (hi - lo) * (float(i) + .5) / 4096.;
+            float falloff = pow(max(0., 1. - sqrt(u * u + b * b) / R), 2.) * (.3 + .02 * u) * (hi - lo) / 4096.;
+            summed += vec2(falloff, falloff * u);
+        }
+        finalColor = vec4(closed, summed);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    try:
+        for probe in ((1e-3, 150., -40., 60.), (30., 150., -100., 100.), (90., 195., 10., 120.), (5., 240., -200., -20.)):
+            _uniform(shader, "u_probe", list(probe))
+            with texture_mode(target):
+                rl.begin_shader_mode(shader)
+                rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+                rl.end_shader_mode()
+            energy, moment, summed_energy, summed_moment = _pixel(target)
+            assert energy == pytest.approx(summed_energy, rel=2e-3)
+            assert moment == pytest.approx(summed_moment, rel=2e-3, abs=1e-2)
+    finally:
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)

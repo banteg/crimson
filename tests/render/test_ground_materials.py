@@ -947,7 +947,7 @@ def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(g
     def render():
         return debug_pixels(ground, texture, mode=int(RtxDebugView.DIRECT_UNSHADOWED))
 
-    # Capture a non-beam frame before section uniforms have ever been uploaded.
+    # Capture a non-beam frame before beam uniforms have ever been uploaded.
     nonbeam = msgspec.structs.replace(beam, beam_profile=None, beam_ion=False)
     collector.return_value = [nonbeam]
     baseline = render()
@@ -959,12 +959,12 @@ def test_default_beam_material_scope_upload_and_source_transitions_real_pixels(g
     # Exercise material_scope's real array binding and CFFI pointer conversion.
     for normal, bright in zip(one, boosted, strict=True):
         assert bright[:3] == pytest.approx(tuple(channel * gain for channel in normal[:3]), rel=.002, abs=.001)
-    calls = [call for call in upload.call_args_list if call.args[1] == ground.material_locations["u_line_cells[0]"]]
+    calls = [call for call in upload.call_args_list if call.args[1] == ground.material_locations["u_beam_shape[0]"]]
     assert len(calls) == 2
-    assert all(call.args[4] == 6 and rl.ffi.typeof(call.args[2]).cname == "void *" for call in calls)
+    assert all(call.args[4] == 2 and rl.ffi.typeof(call.args[2]).cname == "void *" for call in calls)
     monkeypatch.setattr(ground_materials, gain_name, gain)
     collector.return_value = [nonbeam]
-    assert render() == baseline  # Stale cells must not affect a later non-beam frame.
+    assert render() == baseline  # Stale beam shapes must not affect a later non-beam frame.
     collector.return_value = [reflection_only, beam]
     assert render() == boosted
     collector.return_value = []

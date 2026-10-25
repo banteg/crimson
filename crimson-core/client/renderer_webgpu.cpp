@@ -196,7 +196,7 @@ int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
 // What the ground takes beyond them, as in renderer.cpp.
 float scene_seconds, ground_size[2], beam_gain[2];
-float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
+float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], beam_shape[MAX_LIGHTS * 4];
 bool beam_lights;
 std::unordered_map<int, u32> texel_addresses;
 struct Thickness {
@@ -936,7 +936,7 @@ bool ground_draw(const Geometry &geometry) {
   fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
   fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
   fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
-  fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_line_cells", line_cells, light_count * 48);
+  fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_beam_shape", beam_shape, light_count * 16);
   Output o = device_output(t, geometry.topology);
   o.blend = false; // the ground is opaque
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_lit, o));
@@ -1322,8 +1322,8 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
     memcpy(ground_dir + i * 4, l + 8, 16);
     ground_dir[i * 4 + 2] = l[17];
     light_tail[i] = l[16];
-    memcpy(line_cells + i * 12, l + 20, 48);
-    beam_lights |= l[20] > 0;
+    memcpy(beam_shape + i * 4, l + 20, 16);
+    beam_lights |= l[23] > 0;
   }
 }
 void wgpu_w2c_host_pressure(struct w2c_host *, u32 fronts, u32 count) {

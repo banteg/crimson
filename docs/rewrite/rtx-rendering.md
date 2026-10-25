@@ -352,9 +352,8 @@ companions of the terrain target and draws each marked decal into them as it
 lands: the substrate (everything but blood), the ordered coverage, and the float
 surface's three stamp passes. It draws the terrain into the world with the ground
 program (`HOST_PASS_GROUND`). The lights carry what the ground adds: the
-reflection tail, broad illumination, and a beam's three energy sections, computed
-by the module as `continuous_beam.py` does (their widened supports also size the
-body grid). The companions start from the terrain as it stands the first time
+reflection tail, broad illumination, and a beam's energy shape, computed by the
+module as `continuous_beam.py` does (its support also sizes the body grid). The companions start from the terrain as it stands the first time
 RTX needs them. A clear, a replay's terrain copy, or leaving RTX drops them.
 Blood baked before then (in classic, or before the terrain copy a seek starts
 from) stays in the substrate as painted terrain, without its wet film. A seek
@@ -937,8 +936,8 @@ movement, damage, corpse timing, RNG or Classic rendering.
 
 ## Extended beam illumination
 
-Python RTX uses a three-section approximation for Ion Rifle, Ion Minigun, Ion
-Cannon and Fire Bullets ground lighting by default. Ion direct illumination uses
+Python RTX lights the ground from Ion Rifle, Ion Minigun, Ion Cannon and Fire
+Bullets streaks as one extended source each. Ion direct illumination uses
 a 4x gain and a maximum 25% local ambient reduction; Fire uses a 3x ground
 gain and a maximum 15% local ambient reduction. These are presentation settings:
 simulation and classic rendering are
@@ -948,43 +947,54 @@ unaffected. No separate beam console command or replay flag is required:
 uv run crimson replay play 18-survival.crd --rtx
 ```
 
-### Three energy-weighted sections
+### One extended source
 
 The source follows the authored beam's stamp spacing, scale, brighter head and
-current length. A small radial lookup projects the narrow emitting core onto
-its longitudinal axis. Three cells sample this profile and retain their energy
-and centroid. Their weights sum to the existing light budget; the visible beam
-art is unchanged. Ion Rifle and Minigun source sizes share the same scale table
-as the projectile renderer.
+current length. Its stamps weigh their position over the length, so along the
+beam they form a ramp from the tail to the head; the head adds its own brighter
+stamp, a uniform stretch of the stamp's equivalent half-width around the head
+end. Each stamp holds its radius squared times the same projected mass, which
+sets the head's share of the energy (`beam_shape`): all of a shot just fired,
+less as its trail grows. The weights sum to the existing light budget; the
+visible beam art is unchanged.
 
-Each section casts through the existing rounded creature proxies and spatial
-grid. For each body, a ray/ellipsoid discriminant becomes a quadratic in the
-longitudinal source position. Clipping its blocked roots to the section interval
-integrates the emitting segment analytically. A body blocks only between the
-receiver and the light, so one taller than the emitter does not shadow from
-beyond it. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
-half-width average the remaining emitter dimension. Umbra and penumbra therefore
-change with the body's direction around the projectile instead of using three
-point or disc lights.
+The falloff, (1 - d/R)^2 of the planar distance, integrates in closed form
+against a linear density: with the receiver's foot on the axis and its distance
+b from it, the primitives of 1, u and u^2 times the falloff need only square
+roots and asinh. The ground takes the energy and its centroid from the ramp and
+the head pieces; Lambert, relief and the blood's transmittance are evaluated
+toward that centroid. Against the energy of every authored stamp, summed, this
+stays within a few percent (up to 8% for a short Ion Cannon shot, whose head is
+wide), where the three sections it replaced were up to a quarter off for long
+beams.
 
-Section half-lengths retain their full profile extent rather than the old
-four-unit cap, and the same analytic approximation is used at every body
-height. Overlapping proxies retain the existing minimum-visibility semantics,
-and dying bodies retain their shared collapse/fade behavior.
+One visibility walk covers the stretch of the beam that lights the receiver
+(the beam clipped to the falloff's reach). For each body, a ray/ellipsoid
+discriminant becomes a quadratic in the longitudinal source position; its
+roots are the source positions the body hides, clipped where the chord lies
+past the light, so a body taller than the emitter does not shadow from beyond
+it. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
+half-width average the remaining emitter dimension. The stretch keeps its
+eighths apart: each body lowers only the eighths its intervals cover, so bodies
+hiding different parts of the beam add up instead of passing what each leaves
+open, and each eighth weighs the energy it delivers to the receiver. A light in
+or against a body is spared over the last half radius before it, as the point
+lights' fade, taken at the fade's two quarter points; a crowd cell's medium
+dims every eighth. Overlapping proxies within an eighth retain the
+minimum-visibility semantics, and dying bodies retain their shared
+collapse/fade behavior.
 
-Preparation uploads one small uniform array and reuses the occlusion texture.
-Each cell near a beam source also holds a beam list, its bodies padded by the
-largest section half-span in world units plus the reach of the two transverse
-taps (0.577 of the widest beam's width). The point lights' penumbra margin, which
-the frame's widest source sets, never pads them: a section's coverage does not use
-it. Point lights, reflections and creature
-shadows keep their narrow lists. A section walks the beam lists along its center
-ray, rejects bodies outside its ray fan (the triangle from the receiver to both
-section ends), and tests each body only in the first walked cell that lists it.
-Conservative grid-only source copies add the endpoint halo. They never replace
-the original light uniforms used by reflections or creature lighting. A bounded 128-entry profile cache handles
-repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
-candidate texture or interval sort.
+Preparation uploads one `vec4` per light (`u_beam_shape`) and reuses the
+occlusion texture. Each cell near a beam source also holds a beam list, its
+bodies padded by the largest beam support (half its length plus the head's
+halo) plus the reach of the two transverse taps (0.577 of the widest beam's
+width). The point lights' penumbra margin, which the frame's widest source sets,
+never pads them. Point lights, reflections and creature shadows keep their
+narrow lists. A beam walks the beam lists along its center ray, rejects bodies
+outside its ray fan (the triangle from the receiver to both ends of the
+stretch), and tests each body only in the first walked cell that lists it.
+Conservative grid-only source copies add the head halo. They never replace the
+original light uniforms used by reflections or creature lighting.
 
 Beams only add light. They used to dim the ambient within 300 units of the beam (up to 25% for ion, 15% for Fire
 Bullets), regardless of visibility. Past the beam's lighting radius that left a ring darker than plain ground. The
@@ -993,18 +1003,14 @@ give the contrast. Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambi
 
 ### Cost and visual limits
 
-Three sections were selected over one and five using native moving-beam renders.
-One remains visibly closer to a point source; five costs more without a useful
-improvement in the inspected scene. The ground shader includes this path; frames
-without eligible beam sources skip preparation and ignore stale section uniforms.
-
-Three visibility queries per beam are still more expensive than the previous
-centroid, with two analytic chord evaluations per candidate body and section.
-Dense scenes with many simultaneous beams remain costly. Two transverse taps do
-not reproduce a dense sampled reference exactly, but avoid the old separate
-shadow lobes at substantially lower cost. A section's fan is as wide as the
-section, so its walk fetches more list entries than a point light's; that
-traversal, rather than the chord evaluation, dominates its cost.
+Visibility, not shading, is the beam's cost: in late frames with ten beams over
+two hundred bodies, the walks were nine tenths of the ground pass. The three
+sections this replaced walked three times per beam and pixel; one walk across
+the lit stretch costs a wider fan and a longer padded list, but once. The eight
+eighths cost a few vector operations per candidate body. Two transverse taps do
+not reproduce a dense sampled reference exactly, but avoid separate shadow
+lobes; eighths are coarse for a long beam, so two bodies inside the same eighth
+still combine by their minimum.
 
 ### Ion impact arcs
 

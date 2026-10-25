@@ -183,13 +183,13 @@ void main() {
         float d2d = length(to_l);
         float reflection_distance = length(reflection_xy - world);
         float rad = max(1.0, sp_pos.z);
-        bool continuous=u_has_beam_lights!=0 && u_line_cells[i * 3].x > 0. && response.x>0.;
+        bool continuous=u_has_beam_lights!=0 && u_beam_shape[i].w > 0. && response.x>0.;
         if (!continuous && reflection_distance >= max(rad, response.z)) continue;
         float point_visibility = -1.;
         if (continuous) {
             vec2 source_axis=dot(sp_dir.xy, sp_dir.xy) > .0001?normalize(sp_dir.xy):vec2(1.,0.);
             vec2 delta=world-sp_pos.xy;
-            float half_span=beamSampleExtent(i);
+            float half_span=u_beam_shape[i].w;
             float support_distance=length(delta-source_axis*clamp(dot(delta,source_axis),-half_span,half_span));
             if(support_distance<rad) {
                 vec3 unshadowed;
