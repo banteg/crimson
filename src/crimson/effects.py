@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from enum import IntEnum
 from typing import TYPE_CHECKING, Literal
@@ -399,7 +399,7 @@ _smoke_captures: WeakKeyDictionary[_SmokeCapturePool, _SmokeCapture] = WeakKeyDi
 
 class _SmokeCapturePool:
     @contextmanager
-    def smoke_source(self, *, profile: Literal["muzzle", "rocket"], flow_dir: Vec2, velocity: Vec2) -> Iterator[None]:
+    def smoke_source(self, *, profile: Literal["muzzle", "rocket"], flow_dir: Vec2, velocity: Vec2) -> Generator[None]:
         """Override only captured presentation values; native sprites stay intact."""
         capture = self._smoke_capture()
         previous = capture.profile, capture.flow_dir, capture.velocity_override
@@ -428,7 +428,7 @@ class _SmokeCapturePool:
         ))
 
     @contextmanager
-    def smoke_retention(self, seconds: float, *, profile: Literal["ordinary", "nuke"] = "ordinary") -> Iterator[None]:
+    def smoke_retention(self, seconds: float, *, profile: Literal["ordinary", "nuke"] = "ordinary") -> Generator[None]:
         """Tag this source's emitted smoke without changing native effect state."""
         capture = self._smoke_capture()
         previous = capture.retention_seconds, capture.profile
@@ -452,7 +452,7 @@ class _SmokeCapturePool:
 
     @contextmanager
     def capture_emissions(self, emissions: list[SmokeEmission] | None = None, *,
-                          impulses: list[AtmosphereImpulse] | None = None) -> Iterator[list[SmokeEmission]]:
+                          impulses: list[AtmosphereImpulse] | None = None) -> Generator[list[SmokeEmission]]:
         """Record only this tick's spawns, without retaining presentation history."""
         capture = self._smoke_capture()
         if capture.sink is not None:

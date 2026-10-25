@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 
 import msgspec
@@ -77,7 +77,7 @@ class PlayerLighting(msgspec.Struct):
             )
 
     @contextmanager
-    def scope(self, *, restore_shader: rl.Shader | None) -> Iterator[None]:
+    def scope(self, *, restore_shader: rl.Shader | None) -> Generator[None]:
         if not self.active or self.shader is None:
             yield
             return
