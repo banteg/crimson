@@ -66,6 +66,12 @@ static void game_suspend();
 
 #define GAME_EXPORT(name) extern "C" __attribute__((export_name(#name)))
 
+static bool cursor_hidden;
+// A scripted run keeps the cursor out of its frames until its script moves it
+// (game/changes/scripted-cursor.patch).
+GAME_EXPORT(game_hide_cursor) void game_hide_cursor(int hidden) { cursor_hidden = hidden; }
+extern "C" bool game_cursor_hidden() { return cursor_hidden; }
+
 // One pass of Grim's run loop; false once the game has quit.
 GAME_EXPORT(game_frame) int game_frame() {
   if (quit_posted) {

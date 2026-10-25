@@ -533,7 +533,10 @@ saves those frames' back buffers and quits, and `CRIMSON_INPUT` scripts the
 mouse, keys and a virtual gamepad; such a run's clock moves 16 ms a frame, so scripted input lands
 on the same frames (a run's seed still differs)
 ([`client/main.cpp`](client/main.cpp)). With a watched replay (`CRIMSON_WATCH`),
-`CRIMSON_CAPTURE_TICK=<tick>` pauses playback on that tick and saves its frame instead.
+`CRIMSON_CAPTURE_TICK=<tick>` pauses playback on that tick and saves its frame instead, and
+`CRIMSON_WATCH_STOP=<tick>` alone ends the run once that tick has drawn. A run any of these drive opens behind the
+player's windows and plays on there; it ignores the desktop's mouse and keyboard, draws no cursor until its script
+moves one, and reports errors on stderr instead of in a dialog.
 `CRIMSON_GPU_TIMERS=1` prints each frame's GPU time per pass to stderr (OpenGL only). `CRIMSON_MUTE=1` silences the output
 device and nothing else: the game still mixes its sounds and music, so a muted
 run plays the same game ([`client/audio.cpp`](client/audio.cpp)).

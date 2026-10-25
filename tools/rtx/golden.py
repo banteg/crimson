@@ -49,8 +49,6 @@ def capture_scene(scene: dict, mode: str, game: Path, out: Path, client: Path) -
         "CRIMSON_WATCH_SEEK": str(max(1, tick - int(scene.get("history", 300)))),
         "CRIMSON_GPU_TIMERS": "1",
         "CRIMSON_MUTE": "1",
-        # The viewer's cursor off the arena: a capture never sees the desktop's mouse.
-        "CRIMSON_INPUT": "1:move -100 -100",
         "CRIMSON_RTX": "1" if mode == "rtx" else "0",
     }
     result = subprocess.run([str(client), str(game)], env=env, capture_output=True, text=True, timeout=600, check=False)

@@ -171,9 +171,10 @@ std::vector<int> capture_frames;
 int presented, frames, captured_frame = -1;
 bool capture_done;
 const bool unattended = getenv("CRIMSON_CAPTURE");
-// A run a script drives (a capture, a watched moment) ends by itself: its
-// messages go to stderr, never to a dialog that waits for a click.
-const bool scripted = unattended || getenv("CRIMSON_WATCH");
+// A run a script drives (a capture, a watched moment, scripted input) ends by
+// itself: its messages go to stderr, never to a dialog that waits for a click.
+// It takes its input from its script alone, and plays on in the background.
+const bool scripted = unattended || getenv("CRIMSON_WATCH") || getenv("CRIMSON_INPUT");
 void client_message(SDL_MessageBoxFlags flags, const char *title, const char *text) {
   fprintf(stderr, "%s: %s\n", title, text);
   if (!scripted)
@@ -248,7 +249,7 @@ struct Scripted {
 };
 std::vector<Scripted> script;
 bool script_loaded;
-float scripted_x = -1, scripted_y = -1;
+float scripted_x, scripted_y;
 void run_script(int frame) {
   if (!script_loaded) {
     script_loaded = true;
@@ -284,6 +285,7 @@ void run_script(int frame) {
     } else if (!strcmp(verb, "move")) {
       scripted_x = a;
       scripted_y = b;
+      w2c_game_game_hide_cursor(&game, 0);
     } else if (!strcmp(verb, "press") || !strcmp(verb, "release")) {
       in->mouse_buttons[(int)a] = verb[0] == 'p' ? 0x80 : 0;
     } else if (!strcmp(verb, "key") || !strcmp(verb, "unkey")) {
@@ -694,6 +696,8 @@ bool start_game() {
     w2c_game_game_leaderboard_enable(&game, true);
 #endif
   bool running = w2c_game_game_start(&game);
+  // A scripted run's cursor shows once its script moves it.
+  w2c_game_game_hide_cursor(&game, scripted);
 #ifndef __EMSCRIPTEN__
   if (running && !linked_replay.empty()) {
     if (!network->enabled())
@@ -955,9 +959,12 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
     game_directory = runtime_directory();
   fetch_assets();
 #endif
-  // An unattended run's window never has the focus SDL wants before a pad counts.
-  if (unattended)
+  // A scripted run opens behind what the player is doing, and its window never
+  // has the focus SDL wants before a pad counts.
+  if (scripted) {
+    SDL_SetHint(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, "0");
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+  }
   if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMEPAD))
     client_fatal(SDL_GetError());
 #ifdef __EMSCRIPTEN__
@@ -1026,6 +1033,8 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
   case SDL_EVENT_WINDOW_FOCUS_LOST:
   case SDL_EVENT_WINDOW_MINIMIZED:
   case SDL_EVENT_WINDOW_HIDDEN: {
+    if (scripted)
+      break;
     // Releases happen elsewhere while the window is away: nothing stays held,
     // the pad's buttons and sticks neither. The game freezes, or a co-op
     // session plays on (game/frame.cpp game_activate).
@@ -1052,6 +1061,8 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     break;
   case SDL_EVENT_KEY_DOWN:
   case SDL_EVENT_KEY_UP:
+    if (scripted)
+      break;
 #ifndef __EMSCRIPTEN__
     // Alt+Enter toggles fullscreen, as in the Python port; the game never sees that Enter.
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.scancode == SDL_SCANCODE_RETURN && (event->key.mod & SDL_KMOD_ALT)) {
@@ -1071,12 +1082,16 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     break;
 #endif
   case SDL_EVENT_TEXT_INPUT:
+    if (scripted)
+      break;
     for (const unsigned char *c = (const unsigned char *)event->text.text; *c; ++c)
       if (*c < 0x80)
         w2c_game_game_key_char(&game, *c);
     break;
   case SDL_EVENT_MOUSE_BUTTON_DOWN:
   case SDL_EVENT_MOUSE_BUTTON_UP: {
+    if (scripted)
+      break;
     // DirectInput's order: left, right, middle, then the side buttons.
     int button = event->button.button == SDL_BUTTON_LEFT ? 0 : event->button.button == SDL_BUTTON_RIGHT ? 1
                  : event->button.button == SDL_BUTTON_MIDDLE ? 2 : event->button.button - 1;
@@ -1111,6 +1126,8 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
       }
     break;
   case SDL_EVENT_MOUSE_WHEEL:
+    if (scripted)
+      break;
     wheel += event->wheel.y * 120;
     break;
   default:
@@ -1135,7 +1152,7 @@ SDL_AppResult SDL_AppIterate(void *) {
   Viewport v = renderer_viewport(pixel_width, pixel_height);
   if (v.width && width > 0 && height > 0) {
     float gx = v.logical_x(x * pixel_width / width), gy = v.logical_y(y * pixel_height / height);
-    if (scripted_x >= 0) {
+    if (scripted) {
       gx = scripted_x;
       gy = scripted_y;
     }

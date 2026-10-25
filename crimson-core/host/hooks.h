@@ -18,6 +18,8 @@ void game_audio_cooldowns(float dt);
 bool game_live_run();
 // Between a live run's ticks the world only draws (game/changes/world-draw.patch).
 bool game_live_between_ticks();
+// A scripted run's cursor, until its script moves it (game/frame.cpp).
+bool game_cursor_hidden();
 bool game_live_pause();
 void game_live_pick(int choice);
 // The buttons that start a run, while a co-op session is on (host/coop_live.inc):
