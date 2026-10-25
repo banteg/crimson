@@ -1,0 +1,65 @@
+Original bug 52: a shot past the arena edge stops and fades in place, so a Fire Bullets trail hangs at the screen edge.
+The fix draws it flying on while it fades (game/rtx_lights.cpp lights it there too).
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
+@@ -11,6 +11,7 @@
+ extern int projectile_bullet_texture;
+ extern int perk_id_sharpshooter;
+ extern int perk_id_ion_gun_master;
++extern int perk_id_barrel_greaser;
+ extern int quest_spawn_timeline;
+ 
+ void effect_select_texture(int effect_id);
+@@ -139,6 +140,30 @@
+ #define camera_offset_x camera_offset.x
+ #define camera_offset_y camera_offset.y
+ 
++// How far a Fire Bullets shot has flown since the arena's edge stopped it
++// (render/beam_profiles.py's fire_bullets_flown). projectile_update stops any
++// shot 64 units past the terrain and fades it in place, so its whole trail hung
++// at the screen's edge; Fire Bullets pass through what they hit, so out there
++// only the edge stops them: drawn and lit, the shot flies on while it fades. It
++// flew ceil(speed / 3) strides of 3 * 20 * speed_scale units a second, and the
++// fade has run 0.4 - life seconds.
++extern "C" float projectile_fire_flown(const projectile_t *projectile)
++{
++    if (portable_preserve_bugs || projectile->pos.tail.vy.life_timer >= 0.4f
++        || projectile->pos.tail.vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS
++        || !(projectile->position.x < -64.0f || projectile->position.y < -64.0f
++            || (float)(terrain_texture_width + 64) < projectile->position.x
++            || (float)(terrain_texture_height + 64) < projectile->position.y)) {
++        return 0.0f;
++    }
++    int steps = (int)projectile->pos.tail.vy.projectile_speed;
++    if (perk_count_get(perk_id_barrel_greaser) != 0 && projectile->pos.tail.vy.owner_id < 0) {
++        steps *= 2;
++    }
++    return (0.4f - projectile->pos.tail.vy.life_timer) * (float)((steps + 2) / 3 * 3) * 20.0f
++        * projectile->pos.tail.vy.speed_scale;
++}
++
+ static __inline float projectile_render_clamp(float value)
+ {
+     if (value > 1.0f) {
+@@ -875,6 +900,10 @@
+             direction = direction_result;
+             distance = direction_result.length();
+             D3DXVec2Normalize((vec2f_t *)&direction, (const vec2f_t *)&direction);
++            float flown = projectile_fire_flown(projectile);
++            distance += flown;
++            float head_x = projectile->pos_x + direction.x * flown;
++            float head_y = projectile->pos.pos_y + direction.y * flown;
+ 
+             if (projectile_pool[projectile_index].pos.tail.vy.type_id == PROJECTILE_TYPE_ION_MINIGUN) {
+                 scale = 1.05f;
+@@ -938,8 +967,8 @@
+                     0.5f, 0.6f, 1.0f, head_alpha);
+             }
+             grim_interface_ptr->grim_draw_quad(
+-                camera_offset[0] + projectile->pos_x - 16.0f,
+-                camera_offset[1] + projectile->pos.pos_y - 16.0f,
++                camera_offset[0] + head_x - 16.0f,
++                camera_offset[1] + head_y - 16.0f,
+                 32.0f,
+                 32.0f);
+             grim_interface_ptr->grim_set_color(

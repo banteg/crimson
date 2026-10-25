@@ -1335,3 +1335,35 @@ Why it stays:
 Both bug policies keep the original arithmetic. A change belongs to a
 deliberate balance pass with its own rules version, not to this ledger.
 [Issue #820](https://github.com/banteg/crimson/issues/820).
+
+## 52) Shots past the arena edge stop and fade in place
+
+Native behavior:
+
+- `projectile_update` stops a shot once it is 64 units past the terrain and
+  starts its life timer running down: the shot takes the 0.4-second fade a hit
+  gives it, standing still.
+- `projectile_render` draws a fading shot's last 256 units of path, so the trail
+  of a shot that left the arena hangs at its edge, most of it on screen when the
+  view reaches the edge, and fades there.
+
+Why it's likely a bug:
+
+- Nothing was hit: the stop only retires a shot that is out of play. A Fire
+  Bullets shot passes through what it hits, so past the edge only the stop can
+  have faded it, and its trail freezes where it should keep flying off.
+
+Rewrite behavior:
+
+- Default: a Fire Bullets shot past the edge is drawn, and lit in RTX, flying on
+  along its path at its own speed while it fades, so its trail leaves the screen.
+  The simulation is unchanged: the shot still stops and fades as in the original.
+  Ion shots keep the original look: a hit also fades them, and creatures outside
+  the arena can be hit, so their fade there is not always the edge's.
+- `--preserve-bugs`: trails freeze at the edge as in the original.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` (the
+out-of-bounds branch), `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp`
+(the fading streak), `tests/render/test_material_lights.py`, and
+[`52-fire-bullets-fly-off.patch`](../../crimson-core/game/patches/52-fire-bullets-fly-off.patch).
+

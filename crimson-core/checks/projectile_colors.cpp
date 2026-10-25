@@ -17,7 +17,8 @@ extern "C" {
 IGrim2D_cpp *grim_interface_ptr;
 projectile_render_vec2_t camera_offset;
 int bullet_trail_texture = 101, particles_texture = 102, projectile_texture = 103, projectile_bullet_texture = 104;
-int perk_id_sharpshooter, perk_id_ion_gun_master, quest_spawn_timeline;
+int perk_id_sharpshooter, perk_id_ion_gun_master, perk_id_barrel_greaser, quest_spawn_timeline;
+int terrain_texture_width = 1024, terrain_texture_height = 1024;
 int run_elapsed_ms, current_player_index;
 unsigned char portable_preserve_bugs;
 double portable_sin(double x) { return sin(x); }
