@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 
 import msgspec
@@ -62,7 +62,7 @@ _shader_stack: list[tuple[rl.Shader, bool]] = []
 
 
 @contextmanager
-def _shader_scope(shader: rl.Shader, *, alpha_test: bool) -> Iterator[None]:
+def _shader_scope(shader: rl.Shader, *, alpha_test: bool) -> Generator[None]:
     rl.begin_shader_mode(shader)
     _shader_stack.append((shader, alpha_test))
     try:
@@ -82,7 +82,7 @@ class AlphaTestShader(msgspec.Struct):
     cubic: bool = False
 
     @contextmanager
-    def scope(self) -> Iterator[None]:
+    def scope(self) -> Generator[None]:
         if self.shader is None:
             fragment = _ALPHA_TEST_FS_330
             if self.cubic:
@@ -147,7 +147,7 @@ class PixelCoverageShader(msgspec.Struct):
     _cell_size_loc: int = -1
 
     @contextmanager
-    def scope(self, *, cell_size: int = 16) -> Iterator[None]:
+    def scope(self, *, cell_size: int = 16) -> Generator[None]:
         if self.shader is None:
             shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _PIXEL_COVERAGE_FS_330)
             # Raylib returns the default shader when compilation/linking fails.

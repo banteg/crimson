@@ -20,7 +20,7 @@ import logging
 import math
 import os
 import struct
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import Any
@@ -147,7 +147,7 @@ class _GotSlot:
         raise LookupError(symbol)
 
     @contextmanager
-    def replaced(self, function: int) -> Iterator[None]:
+    def replaced(self, function: int) -> Generator[None]:
         libc = C.CDLL(None, use_errno=True)
         libc.mprotect.argtypes = [C.c_void_p, C.c_size_t, C.c_int]
         size = os.sysconf("SC_PAGE_SIZE")
@@ -392,7 +392,7 @@ class WaylandEdr:
         self._callbacks: list[Any] = []
 
     @contextmanager
-    def float_pixel_format(self) -> Iterator[None]:
+    def float_pixel_format(self) -> Generator[None]:
         info = _Dl_info()
         libc = C.CDLL(None)
         libc.dladdr.argtypes = [C.c_void_p, C.POINTER(_Dl_info)]

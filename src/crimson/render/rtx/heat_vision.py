@@ -8,7 +8,7 @@ The sensor is selective: fire and explosions keep their own look and never wash 
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
@@ -22,7 +22,7 @@ from grim.texture_mode import texture_mode
 
 from ..world.constants import monster_vision_fade_alpha
 from .creature_shaders import CREATURE_VERTEX
-from .creature_translucency import load_thickness_texture
+from .creature_translucency import load_heat_density_texture
 from .hdr import _HDR_TONEMAP_VS_330
 from .shaders import glsl
 
@@ -32,12 +32,10 @@ if TYPE_CHECKING:
     from ..world.viewport import ViewTransform
 
 TRAIL_TEXELS_PER_UNIT = 0.5
-TRAIL_HALF_LIFE_S = 0.9
+TRAIL_HALF_LIFE_S = 0.3
 # A footprint's radius, as a share of the creature's size.
 FOOTPRINT = 0.45
 BODY_OPACITY = 0.88
-# Softens the thickness proxy's squares, once per atlas: a 5x5 box per texel.
-THICKNESS_BLUR = 2
 # A monster frozen in Freeze's ice keeps this share of its warmth.
 FROZEN_WARMTH = 0.3
 # Longer gaps between frames (a seek, a stall) start the trails over.
@@ -72,7 +70,7 @@ class HeatVision(msgspec.Struct):
     stamp_shader: rl.Shader | None = None
     trail_shader: rl.Shader | None = None
     body_shader: rl.Shader | None = None
-    thickness: dict[int, rl.Texture] = msgspec.field(default_factory=dict)
+    densities: dict[int, rl.Texture] = msgspec.field(default_factory=dict)
     locations: dict[tuple[int, str], int] = msgspec.field(default_factory=dict)
     last_ms: float | None = None
 
@@ -172,17 +170,17 @@ class HeatVision(msgspec.Struct):
                 rl.begin_shader_mode(restore_shader)
 
     @contextmanager
-    def body_scope(self, *, texture: rl.Texture, restore_shader: rl.Shader | None) -> Iterator[None]:
+    def body_scope(self, *, texture: rl.Texture, restore_shader: rl.Shader | None) -> Generator[None]:
         if self.body_shader is None:
             self.body_shader = _load(CREATURE_VERTEX, glsl("heat_body.frag"))
         shader = self.body_shader
         rl.rl_draw_render_batch_active()
-        thickness = self.thickness.get(int(texture.id))
-        if thickness is None:
-            thickness = self.thickness[int(texture.id)] = load_thickness_texture(texture, blur=THICKNESS_BLUR)
+        density = self.densities.get(int(texture.id))
+        if density is None:
+            density = self.densities[int(texture.id)] = load_heat_density_texture(texture)
         rl.begin_shader_mode(shader)
         try:
-            rl.set_shader_value_texture(shader, self._location(shader, "u_thickness"), thickness)
+            rl.set_shader_value_texture(shader, self._location(shader, "u_density"), density)
             yield
         finally:
             rl.rl_draw_render_batch_active()
@@ -199,9 +197,9 @@ class HeatVision(msgspec.Struct):
 
     def close(self) -> None:
         self.clear()
-        for texture in self.thickness.values():
+        for texture in self.densities.values():
             rl.unload_texture(texture)
-        self.thickness.clear()
+        self.densities.clear()
         for shader in (self.stamp_shader, self.trail_shader, self.body_shader):
             if shader is not None:
                 rl.unload_shader(shader)

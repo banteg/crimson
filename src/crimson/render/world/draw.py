@@ -18,7 +18,7 @@ from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...ui.cursor import draw_aim_cursor
 from ..rtx.heat_vision import BODY_OPACITY, HeatVision, heat_visibility, heat_warmth
-from ..rtx.material_lights import MaterialLight, collect_material_lights
+from ..rtx.material_lights import MaterialLight, collect_material_lights, ion_contact_glows
 from ..rtx.materials import MaterialGroundRenderer
 from ..rtx.mode import RtxRenderMode
 from . import viewport
@@ -297,6 +297,13 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             ambient=.60,
         )
 
+    if frame.rtx_mode is RtxRenderMode.RTX and frame.contact_glows is not None:
+        # Ion arcs' contacts glow on the ground under every body, as the client draws them (creature_render_all).
+        view = render_ctx.view
+        frame.contact_glows.draw(ion_contact_glows(frame, view_center=view.screen_size * .5 - view.camera),
+                                 camera=view.camera, view_scale=view.view_scale, alpha=ctx.entity_alpha,
+                                 restore_shader=frame.resources.alpha_test.shader)
+
     heat = ctx.heat_vision
     if heat is not None:
         # The trails take the aura's place: on the ground, under every body.
@@ -400,7 +407,7 @@ def draw_creature_heat(
     type_id: CreatureTypeId,
     ctx: WorldDrawContext,
 ) -> None:
-    """The species' bodies again, as heat: red is warmth, alpha the overlay's opacity (Monster Vision's fade)."""
+    """Heat bodies: red is warmth, green/blue a tracked head, alpha Monster Vision's opacity."""
     with heat.body_scope(texture=texture, restore_shader=render_ctx.frame.resources.alpha_test.shader):
         for creature in render_ctx.frame.creatures.entries:
             opacity = heat_visibility(creature, entity_alpha=ctx.entity_alpha) if creature.active else 0.0
@@ -422,6 +429,7 @@ def draw_creature_heat(
                 scale=render_ctx.view.scale,
                 size_scale=float(creature.size) / (float(texture.width) / 8.0),
                 tint=rl_color(int(warmth * 255 + .5), 0, 0, int(opacity * BODY_OPACITY * 255 + .5)),
+                heat=True,
             )
 
 

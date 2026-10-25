@@ -1,0 +1,67 @@
+World-only analytic glows, shells, plasma and ion arcs. Classic submission is unchanged.
+--- a/decomp/1.9/grim/render/flush_batch.cpp
++++ b/decomp/1.9/grim/render/flush_batch.cpp
+@@ -19,5 +19,6 @@
+ void IGrim2D_cpp::grim_flush_batch(void)
+ {
++    rtx_effect_flush();
+ #if CL_BUILD < 10400
+     if (!grim_batch_active) {
+         return;
+--- a/decomp/1.9/grim/render/end_batch.cpp
++++ b/decomp/1.9/grim/render/end_batch.cpp
+@@ -18,5 +18,6 @@
+ void IGrim2D_cpp::grim_end_batch(void)
+ {
++    rtx_effect_flush();
+ #if CL_BUILD < 10400
+     if (!grim_batch_active) {
+         return;
+--- a/decomp/1.9/grim/render/submit_vertices_transform_color.cpp
++++ b/decomp/1.9/grim/render/submit_vertices_transform_color.cpp
+@@ -44,6 +44,9 @@
+ #endif
+             grim_vertex_write_ptr += 7;
+         }
++        grim_vertex_write_ptr -= count * 7;
++        if (rtx_effect_vertices(grim_vertex_write_ptr, count)) return;
++        grim_vertex_write_ptr += count * 7;
+         *(unsigned short *)&grim_vertex_count += (short)count;
+         if ((unsigned short)grim_vertex_count >= grim_vertex_capacity) {
+             grim_flush_batch();
+--- a/decomp/1.9/grim/render/draw_quad.cpp
++++ b/decomp/1.9/grim/render/draw_quad.cpp
+@@ -130,6 +130,8 @@
+         points[3][1] += dx;
+     }
+ 
++    if (rtx_effect_quad(&points[0][0])) return;
++
+     grim_vertex_write_ptr->position = *(GrimPoint *)&points[0][0];
+     grim_vertex_write_ptr->depth = grim_vertex_z;
+     grim_vertex_write_ptr->color = grim_color_slot0;
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
+@@ -420,3 +420,7 @@
++        if (rtx_render_mode) {
++            rtx_plasma(projectile_index, transition_alpha);
++            continue;
++        }
+         if (projectile_pool[projectile_index].pos.tail.vy.life_timer == 0.4f) {
+             if (type_id == PROJECTILE_TYPE_PLASMA_RIFLE) {
+                 float dx = projectile_pool[projectile_index].pos.origin_x - position->x;
+@@ -986,6 +990,14 @@
+                     radius,
+                     1);
+                 while (creature_index != -1) {
++                    if (rtx_render_mode) {
++                        rtx_ion_arc(camera_offset[0] + projectile->pos_x,
++                                    camera_offset[1] + projectile->pos.pos_y,
++                                    camera_offset[0] + creature_pool[creature_index].pos_x,
++                                    camera_offset[1] + creature_pool[creature_index].pos_y, scale, head_alpha);
++                        creature_index = ion_arc_find(&projectile->pos_x, radius, creature_index + 1);
++                        continue;
++                    }
+                     grim_interface_ptr->grim_set_uv_point(0, 0.625f, 0.0f);
+                     grim_interface_ptr->grim_set_uv_point(1, 0.625f, 0.25f);
+                     grim_interface_ptr->grim_set_uv_point(2, 0.625f, 0.25f);

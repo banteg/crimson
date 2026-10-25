@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import struct
 import zlib
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 
 from grim.rand import CrandLike, CrtRand, RecordedCallerStatic
@@ -48,7 +48,7 @@ class RngCallOrder:
         self.callers.append(UNTAGGED_CALLER if caller is None else caller)
 
     @contextmanager
-    def recording(self, rng: CrandLike) -> Iterator[None]:
+    def recording(self, rng: CrandLike) -> Generator[None]:
         assert isinstance(rng, CrtRand), f"RNG call order needs a traceable CrtRand, got {type(rng).__name__}"
         self.callers.clear()
         previous_sink = rng.trace_sink

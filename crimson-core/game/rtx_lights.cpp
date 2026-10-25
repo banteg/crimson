@@ -2,24 +2,32 @@
 // src/crimson/render/rtx/material_lights.py: finite luminous discs, tapered
 // segments and annuli read from the frame's projectiles, muzzle flashes, perks,
 // rockets, detonations and flame particles. RGB is linear source radiance; the
-// illumination and reflection gains and reaches are art controls. Each response
-// keeps its 16 strongest sources for the view, and their union goes to the host
-// (game/rtx.cpp), at most 32. Reading the run only: nothing here writes it.
+// illumination and reflection gains and reaches are art controls. A volley's
+// co-located shots are one source. Each response keeps its 16 strongest sources
+// for the view, fading them across that edge by a per-source ident, and their
+// union goes to the host (game/rtx.cpp), at most 32. Ion arcs' contacts glow on
+// the ground instead (rtx_contact_glows). Reading the run only: nothing here
+// writes it.
 #include "crimsonland_gameplay.h"
 #include "crimsonland_config_owner.h"
 #include "render_passes.h"
 #include "grim2d_cpp.h"
+#include "host_abi.h"
 #include <algorithm>
 #include <array>
+#include <iterator>
 #include <math.h>
 #include <string.h>
+#include <unordered_map>
 #include <vector>
 
 extern "C" {
-extern int perk_id_radioactive, perk_id_sharpshooter, perk_id_ion_gun_master, perk_id_monster_vision;
+extern int perk_id_radioactive, perk_id_sharpshooter, perk_id_ion_gun_master;
 extern float game_time_s;
 extern vec2f_t camera_offset;
 extern unsigned int grim_backbuffer_width, grim_backbuffer_height;
+extern int run_elapsed_ms;
+bool rtx_drawing();
 int creature_find_in_radius(float *pos, float radius, int start_index);
 void effect_select_texture(int effect_id);
 }
@@ -29,7 +37,20 @@ namespace {
 
 const float HALF_PI = 1.5707964f;
 const float INF = 1e30f;
-enum { MAX_ILLUMINATION = 16, MAX_REFLECTION = 16, MAX_SOURCES = 256 };
+enum { MAX_ILLUMINATION = 16, MAX_REFLECTION = 16, MAX_EXPLOSIONS = 128, MAX_FLAME_CELLS = 128 };
+// Every source a frame can hold, so selection sees them all: each player's aura,
+// sight and muzzle; each projectile and its four arcs; each secondary; each
+// explosion's shell and fireball; each flame cell.
+const int MAX_SOURCES = 2 * 3 + (int)std::size(projectile_pool) * 5 + (int)std::size(secondary_projectile_pool) +
+                        MAX_EXPLOSIONS * 2 + MAX_FLAME_CELLS;
+// Shots of one kind whose heads and tails both lie this close are one volley;
+// a source fades across a budget's edge over this many ticks.
+const float VOLLEY_UNITS = 28;
+const float SLEW_TICKS = 6;
+
+// Source idents (source_ident): the kind in the top byte, its slot below.
+enum { IDENT_PLAYER = 1, IDENT_SHOT, IDENT_ARC, IDENT_SECONDARY, IDENT_EXPLOSION, IDENT_FLAME };
+int source_ident(int kind, int number) { return kind << 24 | (number & 0xffffff); }
 
 // A luminous disc, tapered segment or annulus (MaterialLight). A beam's streak
 // (its stamp radius, spacing and head size) lights the ground in energy sections.
@@ -42,15 +63,17 @@ struct Light {
   float beam_radius = 0, beam_step = 0, beam_head = 0;
   bool beam_ion = false;
   float smoke_gain = 1; // fluid smoke's scattering response, apart from the ground's and creatures'
+  int ident = -1;       // which source this is, the same from frame to frame
   float reflection_reach() const { return reach < 0 ? radius : reach; }
 };
 Light sources[MAX_SOURCES];
 int source_count;
 
-Light &add(float x, float y, float radius, float r, float g, float b) {
+Light &add(int ident, float x, float y, float radius, float r, float g, float b) {
   static Light overflow;
   Light &light = source_count < MAX_SOURCES ? sources[source_count++] : overflow;
   light = Light{x, y, radius, r, g, b};
+  light.ident = ident;
   return light;
 }
 
@@ -123,7 +146,7 @@ bool plasma(int type) {
          type == PROJECTILE_TYPE_SHRINKIFIER;
 }
 
-void projectile_source(const projectile_t &p) {
+void projectile_source(const projectile_t &p, int ident) {
   int type = p.fields.type_id;
   const Emission *e = emission(type);
   float life = p.fields.life_timer;
@@ -149,8 +172,8 @@ void projectile_source(const projectile_t &p) {
   }
   if (streak_scale(type) && dx == 0 && dy == 0)
     heading_direction(p.angle, dx, dy);
-  Light &light = add(p.fields.pos_x - dx * span * 0.5f, p.fields.pos_y - dy * span * 0.5f, e->radius, r * gain,
-                     g * gain, b * gain);
+  Light &light = add(ident, p.fields.pos_x - dx * span * 0.5f, p.fields.pos_y - dy * span * 0.5f, e->radius,
+                     r * gain, g * gain, b * gain);
   light.height = e->height;
   light.dx = dx, light.dy = dy, light.length = span;
   light.width = width;
@@ -166,19 +189,18 @@ void projectile_source(const projectile_t &p) {
   }
 }
 
-// Up to four arcs of an ion impact, and their contact glows, nearest the view
-// first (render/ion_arcs.py); the arcs reach what projectile_render's impact
-// pass does.
-void ion_arc_sources(projectile_t &p, float view_x, float view_y) {
+// Up to four visible arc targets of an ion impact, nearest the view first
+// (render/ion_arcs.py), and the arcs' color; the arcs reach what
+// projectile_render's impact pass does.
+struct ArcTarget {
+  float x, y, segment, endpoint;
+};
+int ion_arc_targets(projectile_t &p, float view_x, float view_y, ArcTarget (&targets)[4], float rgb[3]) {
   int type = p.fields.type_id;
   float life = p.fields.life_timer;
   if (!p.active || !(life > 0 && life < 0.4f) || type == PROJECTILE_TYPE_FIRE_BULLETS || !streak_scale(type))
-    return;
-  float scale = streak_scale(type);
-  float reach = scale * (perk_count_get(perk_id_ion_gun_master) ? 1.2f : 1.0f) * 40.0f;
-  struct Target {
-    float x, y, segment, endpoint;
-  } targets[4];
+    return 0;
+  float reach = streak_scale(type) * (perk_count_get(perk_id_ion_gun_master) ? 1.2f : 1.0f) * 40.0f;
   int count = 0;
   for (int i = creature_find_in_radius(&p.fields.pos_x, reach, 1); i != -1;
        i = creature_find_in_radius(&p.fields.pos_x, reach, i + 1)) {
@@ -191,7 +213,7 @@ void ion_arc_sources(projectile_t &p, float view_x, float view_y) {
     float ox = view_x - p.fields.pos_x, oy = view_y - p.fields.pos_y;
     float along = fmaxf(0, fminf(1, (ox * ddx + oy * ddy) / length_sq));
     float sx = ox - ddx * along, sy = oy - ddy * along;
-    Target t = {tx, ty, sx * sx + sy * sy, (tx - view_x) * (tx - view_x) + (ty - view_y) * (ty - view_y)};
+    ArcTarget t = {tx, ty, sx * sx + sy * sy, (tx - view_x) * (tx - view_x) + (ty - view_y) * (ty - view_y)};
     int at = count < 4 ? count++ : 4;
     while (at > 0 && (t.segment < targets[at - 1].segment ||
                       (t.segment == targets[at - 1].segment && t.endpoint < targets[at - 1].endpoint))) {
@@ -204,19 +226,24 @@ void ion_arc_sources(projectile_t &p, float view_x, float view_y) {
   }
   const Emission *e = emission(type);
   float energy = fminf(1, life * 2.5f);
-  float width = scale * 1.5f;
+  rgb[0] = e->r * energy, rgb[1] = e->g * energy, rgb[2] = e->b * energy;
+  return count;
+}
+
+// An ion impact's arcs as lights, numbered from `ident`.
+void ion_arc_sources(projectile_t &p, float view_x, float view_y, int ident) {
+  ArcTarget targets[4];
+  float rgb[3];
+  int count = ion_arc_targets(p, view_x, view_y, targets, rgb);
+  float width = streak_scale(p.fields.type_id) * 1.5f;
   for (int i = 0; i < count; ++i) {
     float dx = targets[i].x - p.fields.pos_x, dy = targets[i].y - p.fields.pos_y;
     float length = normalize(dx, dy);
-    Light &arc = add((p.fields.pos_x + targets[i].x) * 0.5f, (p.fields.pos_y + targets[i].y) * 0.5f, 100,
-                     e->r * energy, e->g * energy, e->b * energy);
+    Light &arc = add(ident + i, (p.fields.pos_x + targets[i].x) * 0.5f, (p.fields.pos_y + targets[i].y) * 0.5f, 100,
+                     rgb[0], rgb[1], rgb[2]);
     arc.dx = dx, arc.dy = dy, arc.length = length, arc.width = width;
     arc.illumination = 0.75f, arc.reflection = 0.5f, arc.reach = 120;
     arc.tail = 1, arc.broad = true;
-    Light &glow = add(targets[i].x, targets[i].y, 60, e->r * energy, e->g * energy, e->b * energy);
-    glow.width = width * 1.5f;
-    glow.illumination = 0.25f, glow.reflection = 0.25f, glow.reach = 90;
-    glow.broad = true;
   }
 }
 
@@ -228,11 +255,11 @@ void sight_geometry(const player_state_t &player, float &near_x, float &near_y, 
   near_x = player.pos_x + cosf(near_heading) * 15, near_y = player.pos_y + sinf(near_heading) * 15;
 }
 
-void player_sources(const player_state_t &player) {
+void player_sources(const player_state_t &player, int number) {
   if (perk_count_get(perk_id_radioactive)) {
     // Follow the visible aura, including its native post-death presence.
     float pulse = ((sinf(game_time_s) + 1) * 0.1875f + 0.25f) / 0.4375f;
-    Light &aura = add(player.pos_x, player.pos_y, 100, 0.10f, 0.70f, 0.07f);
+    Light &aura = add(source_ident(IDENT_PLAYER, number * 4), player.pos_x, player.pos_y, 100, 0.10f, 0.70f, 0.07f);
     aura.width = 13;
     aura.illumination = 3.8f * pulse, aura.reflection = 0.8f * pulse, aura.reach = 100;
     aura.broad = true;
@@ -243,7 +270,8 @@ void player_sources(const player_state_t &player) {
     sight_geometry(player, near_x, near_y, far_x, far_y);
     float dx = near_x - far_x, dy = near_y - far_y;
     float length = normalize(dx, dy);
-    Light &sight = add((near_x + far_x) * 0.5f, (near_y + far_y) * 0.5f, 40, 1.3f, 0, 0);
+    Light &sight = add(source_ident(IDENT_PLAYER, number * 4 + 1), (near_x + far_x) * 0.5f, (near_y + far_y) * 0.5f,
+                       40, 1.3f, 0, 0);
     sight.height = 28;
     sight.dx = dx, sight.dy = dy, sight.length = length, sight.width = 1.2f;
     sight.illumination = 0, sight.reflection = 1, sight.reach = 100;
@@ -259,14 +287,15 @@ void player_sources(const player_state_t &player) {
   // The shared fire muzzle (math_parity.native_fire_muzzle_pos); its flash is
   // warm artwork, even when the gun's projectile is blue.
   float heading = player.aim_heading - HALF_PI - 0.150915f;
-  Light &muzzle = add(player.pos_x + cosf(heading) * 16, player.pos_y + sinf(heading) * 16, energetic ? 130.0f : 65.0f,
-                      1.6f * gain, 1.0f * gain, 0.4f * gain);
+  Light &muzzle = add(source_ident(IDENT_PLAYER, number * 4 + 2), player.pos_x + cosf(heading) * 16,
+                      player.pos_y + sinf(heading) * 16, energetic ? 130.0f : 65.0f, 1.6f * gain, 1.0f * gain,
+                      0.4f * gain);
   muzzle.height = 28, muzzle.width = 4;
   muzzle.illumination = energetic ? 0.8f : 0.12f, muzzle.reflection = 0.6f, muzzle.reach = 140;
   muzzle.broad = energetic;
 }
 
-void secondary_sources(const secondary_projectile_t &s) {
+void secondary_sources(const secondary_projectile_t &s, int slot) {
   if (!s.active)
     return;
   int type = s.fields.type_id;
@@ -275,8 +304,8 @@ void secondary_sources(const secondary_projectile_t &s) {
     float t = fmaxf(0, fminf(1, s.fields.vel_x)), scale = s.fields.vel_y;
     float gain = powf(1 - t, 1.35f);
     if (gain > 0.02f) {
-      Light &blast = add(s.fields.pos_x, s.fields.pos_y, 360 * fmaxf(0.35f, scale), 1.75f * gain, 1.05f * gain,
-                         0.38f * gain);
+      Light &blast = add(source_ident(IDENT_SECONDARY, slot), s.fields.pos_x, s.fields.pos_y, 360 * fmaxf(0.35f, scale),
+                         1.75f * gain, 1.05f * gain, 0.38f * gain);
       blast.height = 34, blast.width = 3 + 28 * t * scale;
       blast.broad = true;
     }
@@ -288,8 +317,8 @@ void secondary_sources(const secondary_projectile_t &s) {
                                                                                                                : 0.4f;
     float dx, dy;
     heading_direction(s.angle, dx, dy);
-    Light &exhaust = add(s.fields.pos_x - dx * 12, s.fields.pos_y - dy * 12, 110 * scale, 0.9f * scale, 0.47f * scale,
-                         0.1f * scale);
+    Light &exhaust = add(source_ident(IDENT_SECONDARY, slot), s.fields.pos_x - dx * 12, s.fields.pos_y - dy * 12,
+                         110 * scale, 0.9f * scale, 0.47f * scale, 0.1f * scale);
     exhaust.height = 22;
     exhaust.dx = dx, exhaust.dy = dy, exhaust.length = 6 * scale, exhaust.width = 5 * scale, exhaust.reach = 140;
     exhaust.broad = true;
@@ -354,11 +383,14 @@ bool dark_bursts;    // a rocket hit's burst: its detonation lights it instead
 
 void explosion_sources() {
   for (const Explosion &e : explosions) {
+    // An explosion keeps its spot for its whole life: its position names it.
+    int spot = ((int)floorf(e.x) & 0x7ff) << 12 | ((int)floorf(e.y) & 0x7ff) << 1;
     float scale = fmaxf(0.1f, e.scale);
     Shell front;
     if (e.has_shell(front)) {
       float energy = front.energy;
-      Light &shell = add(e.x, e.y, 85 * scale, 0.60f * energy, 0.39f * energy, 0.18f * energy);
+      Light &shell = add(source_ident(IDENT_EXPLOSION, spot), e.x, e.y, 85 * scale, 0.60f * energy, 0.39f * energy,
+                         0.18f * energy);
       shell.height = 16 * scale, shell.ring = front.radius, shell.width = 8 * scale;
       shell.illumination = 1.8f, shell.reflection = 0.65f, shell.reach = 100 * scale, shell.broad = true;
     }
@@ -370,7 +402,8 @@ void explosion_sources() {
     float gain = 0.2f * expf(-t / 0.08f) + 0.8f * powf(fade, 1.1f);
     float rise = fminf(t / 0.8f, 1);
     rise = rise * rise * (3 - 2 * rise);
-    Light &fireball = add(e.x, e.y, 330 * scale, 1.8f * gain, 0.92f * gain, 0.3f * gain);
+    Light &fireball = add(source_ident(IDENT_EXPLOSION, spot | 1), e.x, e.y, 330 * scale, 1.8f * gain, 0.92f * gain,
+                          0.3f * gain);
     fireball.height = (12 + 68 * rise) * scale, fireball.width = e.fireball_radius();
     fireball.illumination = 6, fireball.reflection = 1.2f, fireball.broad = true;
   }
@@ -382,7 +415,7 @@ void flame_sources() {
   struct Cell {
     int x, y, style;
     float weight, x_sum, y_sum, vx, vy, rgb[3];
-  } cells[128];
+  } cells[MAX_FLAME_CELLS];
   int count = 0;
   for (const particle_t &p : particle_pool) {
     if (!p.active || p.style_id == BUBBLEGUN || p.color_a <= 0.02f)
@@ -412,7 +445,8 @@ void flame_sources() {
     float scale = fminf(1, 1.8f / fmaxf(fmaxf(rgb[0], fmaxf(rgb[1], rgb[2])), 0.001f));
     float dx = cell.vx, dy = cell.vy;
     float speed = normalize(dx, dy);
-    Light &flame = add(cell.x_sum / cell.weight, cell.y_sum / cell.weight, 110, rgb[0] * scale, rgb[1] * scale,
+    Light &flame = add(source_ident(IDENT_FLAME, (cell.x & 0x3ff) << 14 | (cell.y & 0x3ff) << 4 | (cell.style & 0xf)),
+                       cell.x_sum / cell.weight, cell.y_sum / cell.weight, 110, rgb[0] * scale, rgb[1] * scale,
                        rgb[2] * scale);
     flame.height = 20;
     flame.dx = dx, flame.dy = dy, flame.length = speed > 0 ? 28.0f : 0.0f, flame.width = 5, flame.reach = 140;
@@ -420,7 +454,11 @@ void flame_sources() {
   }
 }
 
-float distance_sq(const Light &light, float x, float y) {
+// From the point to where the source reaches it, as the shaders place it: an
+// annulus's nearest point; a segment's nearest point for reflections, its energy
+// centroid for illumination (source_geometry.glsl's illuminationSource), which a
+// streak's dark tail at the muzzle does not pull back.
+float distance_sq(const Light &light, float x, float y, bool reflection) {
   float px = x - light.x, py = y - light.y;
   if (light.ring > 0) {
     float d = sqrtf(px * px + py * py) - light.ring;
@@ -431,7 +469,8 @@ float distance_sq(const Light &light, float x, float y) {
     normalize(ax, ay);
   else
     ax = ay = 0;
-  float along = fmaxf(-light.length * 0.5f, fminf(light.length * 0.5f, px * ax + py * ay));
+  float along = reflection ? fmaxf(-light.length * 0.5f, fminf(light.length * 0.5f, px * ax + py * ay))
+                           : light.length * (1 - light.tail) / (6 * (1 + light.tail));
   float qx = px - ax * along, qy = py - ay * along;
   return qx * qx + qy * qy;
 }
@@ -440,22 +479,119 @@ float score(const Light &light, bool reflection, float view_x, float view_y) {
   float gain = reflection ? light.reflection : light.illumination;
   float radius = reflection ? light.reflection_reach() : light.radius;
   return fmaxf(light.r, fmaxf(light.g, light.b)) * gain /
-         (1 + distance_sq(light, view_x, view_y) / fmaxf(1, radius * radius));
+         (1 + distance_sq(light, view_x, view_y, reflection) / fmaxf(1, radius * radius));
 }
 
-// The `limit` best-scoring sources of one response, as flags.
-void select(bool reflection, int limit, float view_x, float view_y, bool *chosen) {
-  float scores[MAX_SOURCES];
-  for (int i = 0; i < source_count; ++i)
-    scores[i] = score(sources[i], reflection, view_x, view_y);
+// The `limit` best-scoring sources of one response, as flags; ties go to the lower ident.
+void select(const float *scores, int limit, bool *chosen) {
   for (int n = 0; n < limit; ++n) {
     int best = -1;
     for (int i = 0; i < source_count; ++i)
-      if (!chosen[i] && scores[i] > 0 && (best < 0 || scores[i] > scores[best]))
+      if (!chosen[i] && scores[i] > 0 &&
+          (best < 0 || scores[i] > scores[best] || (scores[i] == scores[best] && sources[i].ident < sources[best].ident)))
         best = i;
     if (best < 0)
       break;
     chosen[best] = true;
+  }
+}
+
+// Each source's place in the two budgets, by ident (LightSelection): a weight
+// that moves toward 1 while it is selected and 0 while it is not, by
+// 1 / SLEW_TICKS per tick of the run's clock. A source seen for the first time
+// starts where it belongs, so a new shot lights at once; a rewind or a gap
+// over a second starts over.
+struct Selection {
+  std::unordered_map<int, float> weights[2];
+  float elapsed_ms = -1, ticks = 0;
+  void advance(float now_ms) {
+    float gap = now_ms - elapsed_ms;
+    if (elapsed_ms < 0 || gap < 0 || gap > 1000) {
+      reset();
+      gap = 0;
+    }
+    elapsed_ms = now_ms, ticks = gap * 60 / 1000;
+  }
+  void reset() {
+    weights[0].clear(), weights[1].clear();
+    elapsed_ms = -1, ticks = 0;
+  }
+  // The sources' weights in one response; idents no longer present are dropped.
+  void slew(bool reflection, const bool *chosen, float *out) {
+    std::unordered_map<int, float> &previous = weights[reflection], next;
+    float step = ticks / SLEW_TICKS;
+    for (int i = 0; i < source_count; ++i) {
+      float target = chosen[i] ? 1.0f : 0.0f;
+      auto found = previous.find(sources[i].ident);
+      float weight = found == previous.end() ? target : found->second;
+      weight = target > weight ? fminf(target, weight + step) : fmaxf(target, weight - step);
+      previous[sources[i].ident] = next[sources[i].ident] = out[i] = weight;
+    }
+    previous.swap(next);
+  }
+};
+Selection selection;
+
+// Shots of one kind whose heads and tails both lie within VOLLEY_UNITS, from
+// `first` on, as one source (merge_volleys), as a shotgun's pellets or a burst
+// leave the muzzle: their radiance adds, so a volley fanning out splits without
+// changing its total light. The merged source keeps one shot's width (every
+// body's shadow margin follows the widest source) and the lowest ident.
+void merge_volleys(int first) {
+  struct Cluster {
+    Light lead;
+    float head[2], tail[2], weight;
+    int count;
+  };
+  auto ends = [](const Light &l, float *head, float *tail) {
+    head[0] = l.x + l.dx * l.length * 0.5f, head[1] = l.y + l.dy * l.length * 0.5f;
+    tail[0] = l.x - l.dx * l.length * 0.5f, tail[1] = l.y - l.dy * l.length * 0.5f;
+  };
+  auto same_kind = [](const Light &a, const Light &b) {
+    return a.radius == b.radius && a.height == b.height && a.beam_radius == b.beam_radius &&
+           a.beam_step == b.beam_step && a.beam_head == b.beam_head && a.broad == b.broad && a.tail == b.tail &&
+           a.illumination == b.illumination && a.reflection == b.reflection;
+  };
+  auto near = [](const float *a, const float *b) { return hypotf(a[0] - b[0], a[1] - b[1]) <= VOLLEY_UNITS; };
+  std::vector<Cluster> clusters;
+  for (int i = first; i < source_count; ++i) {
+    const Light &shot = sources[i];
+    float head[2], tail[2], lead_head[2], lead_tail[2];
+    ends(shot, head, tail);
+    Cluster *found = nullptr;
+    for (Cluster &c : clusters) {
+      ends(c.lead, lead_head, lead_tail);
+      if (same_kind(c.lead, shot) && near(head, lead_head) && near(tail, lead_tail)) {
+        found = &c;
+        break;
+      }
+    }
+    if (!found) {
+      clusters.push_back({shot, {0, 0}, {0, 0}, 0, 0});
+      found = &clusters.back();
+      found->lead.r = found->lead.g = found->lead.b = 0;
+    }
+    // Heads and tails average by brightness.
+    float weight = fmaxf(fmaxf(shot.r, fmaxf(shot.g, shot.b)), 1e-6f);
+    for (int k = 0; k < 2; ++k)
+      found->head[k] += head[k] * weight, found->tail[k] += tail[k] * weight;
+    found->weight += weight;
+    found->lead.r += shot.r, found->lead.g += shot.g, found->lead.b += shot.b;
+    found->lead.ident = std::min(found->lead.ident, shot.ident);
+    ++found->count;
+  }
+  source_count = first;
+  for (const Cluster &c : clusters) {
+    Light &light = sources[source_count++] = c.lead;
+    if (c.count == 1)
+      continue;
+    float head_x = c.head[0] / c.weight, head_y = c.head[1] / c.weight;
+    float tail_x = c.tail[0] / c.weight, tail_y = c.tail[1] / c.weight;
+    float dx = head_x - tail_x, dy = head_y - tail_y, length = normalize(dx, dy);
+    light.x = (head_x + tail_x) * 0.5f, light.y = (head_y + tail_y) * 0.5f;
+    if (length > 1e-3f)
+      light.dx = dx, light.dy = dy;
+    light.length = length;
   }
 }
 
@@ -553,6 +689,12 @@ const float BODY_PROFILES[5][5] = {
 struct Body {
   float x, y, rx, ry, height, angle, opacity, owner_x, owner_y;
 };
+// A cell with more bodies standing in it than this is a crowd
+// (reflection_occlusion.py): it holds their density and height instead of their
+// list, and rays cross it as an absorbing medium (light_visibility.glsl), at a
+// cost that no longer grows with the crowd.
+const int CROWD_BODIES = 16;
+const float PENUMBRA_WIDTH = 8;
 
 bool body_of(const creature_t &c, Body &body) {
   if (!c.active || c.size <= 0 || c.death_timer <= 0 || c.type_id < 0 || c.type_id > 4)
@@ -580,7 +722,13 @@ std::vector<float> grid_values;
 // origin, columns (0 for no bodies), rows and cell size; the values are cell
 // headers, body transforms and cell lists, four floats per texel. A header
 // holds the ordinary list, then the beam sections' list, padded by the largest
-// section half-span near beam sources only (build_occlusion_grid).
+// section half-span and its taps' reach (not the point lights' penumbra margin)
+// near beam sources only (build_occlusion_grid).
+// A cell where more than CROWD_BODIES bodies stand is a crowd: both headers hold
+// the footprint-weighted top height of what stands there, then minus the
+// opacity-weighted footprint over the cell's area, each body's footprint shared
+// among the cells it overlaps by area. A body centered in a crowd is listed only
+// where it stands, without its padding, and only outside crowd cells.
 extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count) {
   Body bodies[385];
   int body_total = 0;
@@ -590,8 +738,8 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   grid[0] = grid[1] = grid[2] = grid[3] = 0;
   grid[4] = 64;
   *value_count = 0;
-  float cell = body_total >= 512 ? 32.0f : 64.0f;
-  float padding = 0, beam_margin = 0, lo_x = -cell, lo_y = -cell;
+  const float cell = 64;
+  float padding = 0, beam_margin = 0, beam_width = 0, lo_x = -cell, lo_y = -cell;
   float hi_x = terrain_texture_width + cell, hi_y = terrain_texture_height + cell;
   struct Support {
     float x, y, ax, ay, half, reach;
@@ -611,10 +759,13 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
     float illumination = l[12], reflection = l[13];
     if (!(reflection > 0 || (shadows && illumination > 0)))
       continue;
-    padding = fmaxf(padding, fmaxf(0.1f, l[15]));
+    // A body shadow's penumbra follows sources up to PENUMBRA_WIDTH wide (reflection_occlusion.py).
+    padding = fminf(PENUMBRA_WIDTH, fmaxf(padding, fmaxf(0.1f, l[15])));
     bool beam = cells[0] > 0 && shadows && illumination > 0;
-    if (beam)
+    if (beam) {
       beam_margin = fmaxf(beam_margin, fmaxf(cells[2], fmaxf(cells[6], cells[10])));
+      beam_width = fmaxf(beam_width, l[15]);
+    }
     float ax = l[8], ay = l[9];
     if (ax * ax + ay * ay > 0.0001f)
       normalize(ax, ay);
@@ -647,18 +798,51 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
         beam_active[(size_t)y * columns + x] |= s.beam && beam_margin > 0;
       }
   }
+  // Each body's footprint, shared among the cells its planar extent overlaps by
+  // area: how many bodies stand in a cell, and their cover and top height there.
+  size_t total = (size_t)columns * rows;
+  std::vector<int> standing(total);
+  std::vector<float> crowd_cover(total), crowd_top(total);
+  for (int b = 0; b < body_total; ++b) {
+    const Body &body = bodies[b];
+    float c = cosf(body.angle), s = sinf(body.angle);
+    float ex = hypotf(c * body.rx, s * body.ry), ey = hypotf(s * body.rx, c * body.ry);
+    float footprint = 3.14159265f * body.rx * body.ry * body.opacity / (cell * cell);
+    int x0, x1, y0, y1;
+    span(body.x, ex, origin_x, columns, x0, x1);
+    span(body.y, ey, origin_y, rows, y0, y1);
+    for (int y = y0; y <= y1; ++y) {
+      float top = fminf(body.y + ey, origin_y + (y + 1) * cell) - fmaxf(body.y - ey, origin_y + y * cell);
+      for (int x = x0; x <= x1; ++x) {
+        float side = fminf(body.x + ex, origin_x + (x + 1) * cell) - fmaxf(body.x - ex, origin_x + x * cell);
+        float share = fmaxf(0, side) * fmaxf(0, top) / (4 * ex * ey);
+        if (share > 0) {
+          size_t i = (size_t)y * columns + x;
+          ++standing[i];
+          crowd_cover[i] += footprint * share;
+          crowd_top[i] += body.height * footprint * share;
+        }
+      }
+    }
+  }
+  auto crowd = [&](size_t i) { return standing[i] > CROWD_BODIES; };
   // List entries: body address, then for beam entries the cell range packed as
   // first + last * 4096 per axis, so a walk tests a body in its first cell only.
   using Entry = std::array<float, 4>;
-  std::vector<std::vector<Entry>> cells((size_t)columns * rows), beam_lists((size_t)columns * rows);
-  grid_values.assign((size_t)columns * rows * 4, 0.0f);
+  std::vector<std::vector<Entry>> cells(total), beam_lists(total);
+  grid_values.assign(total * 4, 0.0f);
   int placed = 0;
   for (int b = 0; b < body_total; ++b) {
     const Body &body = bodies[b];
     float c = cosf(body.angle), s = sinf(body.angle);
     float radius = fmaxf(body.rx, body.ry);
     float soft_margin = fmaxf(0.015f * radius, padding * radius / fminf(body.rx, body.ry));
-    float rx = hypotf(c * body.rx, s * body.ry) + soft_margin, ry = hypotf(s * body.rx, c * body.ry) + soft_margin;
+    int home_x = (int)floorf((body.x - origin_x) / cell), home_y = (int)floorf((body.y - origin_y) / cell);
+    bool member = home_x >= 0 && home_y >= 0 && home_x < columns && home_y < rows &&
+                  crowd((size_t)home_y * columns + home_x);
+    // A crowd's member shades the cells around it only where it stands; its crowd's medium stands for it.
+    float margin = member ? 0 : soft_margin;
+    float rx = hypotf(c * body.rx, s * body.ry) + margin, ry = hypotf(s * body.rx, c * body.ry) + margin;
     int address = (int)grid_values.size() / 4;
     bool occupies = false;
     auto cover = [&](float extent_x, float extent_y, const std::vector<unsigned char> &marked,
@@ -669,14 +853,17 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
       Entry entry = {(float)address, ranged ? (float)(x0 + x1 * 4096) : 0, ranged ? (float)(y0 + y1 * 4096) : 0, 0};
       for (int y = y0; y <= y1; ++y)
         for (int x = x0; x <= x1; ++x)
-          if (marked[(size_t)y * columns + x]) {
+          if (marked[(size_t)y * columns + x] && !crowd((size_t)y * columns + x)) {
             lists[(size_t)y * columns + x].push_back(entry);
             occupies = true;
           }
     };
     cover(rx, ry, active, cells, false);
-    // A section's rays fan out from the walked center ray by at most its half-span.
-    cover(rx + beam_margin, ry + beam_margin, beam_active, beam_lists, true);
+    // A section's rays fan out from the walked center ray by at most its half-span,
+    // and its two transverse taps by a fraction of its width; it never uses the
+    // point lights' penumbra margin (build_occlusion_grid).
+    float beam_pad = member ? 0 : beam_margin + 0.57735027f * beam_width;
+    cover(rx - margin + beam_pad, ry - margin + beam_pad, beam_active, beam_lists, true);
     if (!occupies)
       continue;
     ++placed;
@@ -685,9 +872,12 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
                                  c, s, body.opacity, body.owner_y};
     grid_values.insert(grid_values.end(), transform, transform + 12);
   }
-  if (!placed)
-    return nullptr;
-  for (size_t i = 0; i < cells.size(); ++i)
+  for (size_t i = 0; i < total; ++i) {
+    if (crowd(i)) {
+      for (int slot = 0; slot < 2; ++slot)
+        grid_values[i * 4 + slot * 2] = crowd_top[i] / crowd_cover[i], grid_values[i * 4 + slot * 2 + 1] = -crowd_cover[i];
+      continue;
+    }
     for (int slot = 0; slot < 2; ++slot) {
       const std::vector<Entry> &list = slot ? beam_lists[i] : cells[i];
       grid_values[i * 4 + slot * 2] = (float)(grid_values.size() / 4);
@@ -695,6 +885,9 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
       for (const Entry &entry : list)
         grid_values.insert(grid_values.end(), entry.begin(), entry.end());
     }
+  }
+  if (!placed && std::none_of(standing.begin(), standing.end(), [](int n) { return n > CROWD_BODIES; }))
+    return nullptr;
   grid[0] = origin_x, grid[1] = origin_y, grid[2] = (float)columns, grid[3] = (float)rows, grid[4] = cell;
   *value_count = (int)grid_values.size();
   return grid_values.data();
@@ -714,34 +907,104 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   float view_x = grim_backbuffer_width * 0.5f - camera_offset.x;
   float view_y = grim_backbuffer_height * 0.5f - camera_offset.y;
   for (int i = 0; i < config_blob.player_count && i < 2; ++i)
-    player_sources(player_state_table[i]);
-  for (projectile_t &p : projectile_pool) {
-    projectile_source(p);
-    ion_arc_sources(p, view_x, view_y);
-  }
+    player_sources(player_state_table[i], i);
+  // A slot's next shot is another source, even on the next frame: its spawn point tells them apart.
+  auto number = [](int slot) {
+    const projectile_t &p = projectile_pool[slot];
+    return slot | ((int)floorf(p.fields.origin_x) & 0x7f) << 7 | ((int)floorf(p.fields.origin_y) & 0x7f) << 14;
+  };
+  int shots = source_count;
+  for (int slot = 0; slot < (int)std::size(projectile_pool); ++slot)
+    if (projectile_pool[slot].active)
+      projectile_source(projectile_pool[slot], source_ident(IDENT_SHOT, number(slot)));
+  merge_volleys(shots);
+  for (int slot = 0; slot < (int)std::size(projectile_pool); ++slot)
+    if (projectile_pool[slot].active)
+      ion_arc_sources(projectile_pool[slot], view_x, view_y, source_ident(IDENT_ARC, number(slot) * 4));
+  int slot = 0;
   for (const secondary_projectile_t &s : secondary_projectile_pool)
-    secondary_sources(s);
+    secondary_sources(s, slot++);
   explosion_sources();
   flame_sources();
 
-  // Each response selects independently; a source chosen by one alone has the other's gain zeroed.
-  bool lit[MAX_SOURCES] = {}, reflected[MAX_SOURCES] = {};
-  select(false, MAX_ILLUMINATION, view_x, view_y, lit);
-  select(true, MAX_REFLECTION, view_x, view_y, reflected);
-  int count = 0;
-  for (int i = 0; i < source_count && count < capacity; ++i) {
-    if (!lit[i] && !reflected[i])
-      continue;
+  // Each response selects independently and fades across its budget's edge; a
+  // source chosen by one alone has the other's gain zeroed.
+  static float scores[2][MAX_SOURCES], weights[2][MAX_SOURCES];
+  static bool chosen[2][MAX_SOURCES];
+  memset(chosen, 0, sizeof chosen);
+  selection.advance((float)run_elapsed_ms);
+  for (int reflection = 0; reflection < 2; ++reflection) {
+    for (int i = 0; i < source_count; ++i)
+      scores[reflection][i] = score(sources[i], reflection, view_x, view_y);
+    select(scores[reflection], reflection ? MAX_REFLECTION : MAX_ILLUMINATION, chosen[reflection]);
+    selection.slew(reflection, chosen[reflection], weights[reflection]);
+  }
+  // The union, brightest first (both responses' delivered scores summed); the
+  // faintest fading sources give way past `capacity`.
+  static int order[MAX_SOURCES];
+  static float delivered[MAX_SOURCES];
+  int union_count = 0;
+  for (int i = 0; i < source_count; ++i)
+    if (weights[0][i] > 0 || weights[1][i] > 0) {
+      delivered[i] = scores[0][i] * weights[0][i] + scores[1][i] * weights[1][i];
+      order[union_count++] = i;
+    }
+  std::sort(order, order + union_count, [&](int a, int b) {
+    return delivered[a] != delivered[b] ? delivered[a] > delivered[b] : sources[a].ident < sources[b].ident;
+  });
+  int count = std::min(union_count, capacity);
+  for (int n = 0; n < count; ++n) {
+    int i = order[n];
     const Light &l = sources[i];
-    float illumination = lit[i] ? l.illumination : 0;
-    float *packed = out + count++ * RTX_LIGHT_FLOATS;
+    float illumination = l.illumination * weights[0][i];
+    float *packed = out + n * RTX_LIGHT_FLOATS;
     const float head[20] = {l.x, l.y, l.radius, l.height, l.r, l.g, l.b, l.ring, l.dx, l.dy, 0, l.length,
-                            illumination, reflected[i] ? l.reflection : 0, l.reflection_reach(), l.width,
+                            illumination, l.reflection * weights[1][i], l.reflection_reach(), l.width,
                             l.tail, (float)l.broad, (float)(l.beam_radius * l.beam_head * SUPPORT), l.smoke_gain};
     memcpy(packed, head, sizeof head);
     beam_cells(l, illumination, packed + 20);
   }
   return count;
+}
+
+// An ion arc's contact glow, a 60-unit disc on its creature (ion_contact_glows),
+// drawn on the ground in contact_glow.frag instead of taking a light, at the
+// world's transition `alpha`. The color carries the arcs' hue at full value and
+// their peak over GLOW_PEAK in alpha. The original sets its own state after.
+extern "C" void rtx_contact_glows(float alpha) {
+  const float RADIUS = 60, GLOW_PEAK = 4;
+  if (!rtx_drawing() || alpha <= 1e-3f)
+    return;
+  float view_x = grim_backbuffer_width * 0.5f - camera_offset.x;
+  float view_y = grim_backbuffer_height * 0.5f - camera_offset.y;
+  bool drawing = false;
+  for (projectile_t &p : projectile_pool) {
+    ArcTarget targets[4];
+    float rgb[3];
+    int count = ion_arc_targets(p, view_x, view_y, targets, rgb);
+    float peak = fmaxf(fmaxf(rgb[0], fmaxf(rgb[1], rgb[2])), 1e-6f);
+    for (int i = 0; i < count; ++i) {
+      if (!drawing) {
+        grim_interface_ptr->grim_flush_batch();
+        grim_interface_ptr->grim_set_config_var(0x13, 2u); // D3DBLEND_ONE, added
+        grim_interface_ptr->grim_set_config_var(0x14, 2u);
+        host_render_pass(HOST_PASS_GLOW);
+        grim_interface_ptr->grim_begin_batch();
+        grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+        grim_interface_ptr->grim_set_rotation(0);
+        drawing = true;
+      }
+      grim_interface_ptr->grim_set_color(fminf(1, rgb[0] / peak), fminf(1, rgb[1] / peak), fminf(1, rgb[2] / peak),
+                                         fminf(1, peak / GLOW_PEAK * alpha));
+      grim_interface_ptr->grim_draw_quad(camera_offset.x + targets[i].x - RADIUS, camera_offset.y + targets[i].y - RADIUS,
+                                         RADIUS * 2, RADIUS * 2);
+    }
+  }
+  if (!drawing)
+    return;
+  grim_interface_ptr->grim_end_batch();
+  grim_interface_ptr->grim_flush_batch();
+  host_render_pass(HOST_PASS_SPRITES);
 }
 
 // The living players' Sharpshooter sights, near and far ends: fluid smoke
@@ -760,7 +1023,7 @@ extern "C" int rtx_collect_sights(float *out, int capacity) {
 
 // An explosion burst starting at (x, y) (effect_spawn_explosion_burst), until rtx_explosion_end.
 extern "C" void rtx_explosion_begin(float x, float y, float scale) {
-  if (explosions.size() >= 128)
+  if (explosions.size() >= MAX_EXPLOSIONS)
     explosions.erase(explosions.begin());
   explosions.push_back({x, y, scale, 0, !dark_bursts, false, nullptr, 0, {}});
   bursting = &explosions.back();
@@ -868,31 +1131,9 @@ extern "C" void rtx_explosions_age(float dt) {
                                   [](const Explosion &e) { return e.age >= e.lifetime(); }),
                    explosions.end());
 }
-extern "C" void rtx_explosions_reset() {
+// What the lights keep beside a run: the explosions and the budgets' fades.
+extern "C" void rtx_lights_reset() {
   explosions.clear();
   bursting = nullptr;
-}
-
-// Monster Vision's ground light (render/rtx/perk_lighting.py): each living or
-// fading creature's aura whose 60-unit support meets the view, at its native
-// death fade and the world's transition `alpha`, as x, y, alpha. No cap.
-extern "C" int rtx_collect_monster_vision(float *out, int capacity, float alpha) {
-  if (!perk_count_get(perk_id_monster_vision) || alpha <= 1e-3f)
-    return 0;
-  const float radius = 60;
-  float lo_x = -camera_offset.x, lo_y = -camera_offset.y;
-  float hi_x = lo_x + grim_backbuffer_width, hi_y = lo_y + grim_backbuffer_height;
-  int count = 0;
-  for (const creature_t &c : creature_pool) {
-    if (!c.active || count >= capacity)
-      continue;
-    float fade = c.death_timer >= 0 ? 1.0f : fminf(1, fmaxf(0, (c.death_timer + 10) * 0.1f));
-    float a = fade * fminf(1, fmaxf(0, alpha));
-    if (a <= 1e-3f || c.pos_x + radius <= lo_x || c.pos_y + radius <= lo_y || c.pos_x - radius >= hi_x ||
-        c.pos_y - radius >= hi_y)
-      continue;
-    out[count * 3] = c.pos_x, out[count * 3 + 1] = c.pos_y, out[count * 3 + 2] = a;
-    ++count;
-  }
-  return count;
+  selection.reset();
 }

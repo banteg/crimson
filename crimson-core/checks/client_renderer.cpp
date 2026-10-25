@@ -279,7 +279,7 @@ void check_rtx() {
     w2c_host_render_pass(nullptr, 2);
   };
   assert(renderer_set_rtx(true) && (textures[0].flags & TARGET_HALF_FLOAT));
-  // A beam head is one stamp: full gain at its center, nothing past its radius.
+  // A beam head is one stamp: the glow texel's peak at its center, nothing past its radius.
   // A 256-pixel body (a streak's longest) fades in from its tail and is
   // symmetric about its axis, which sits on physical row 768 (Direct3D's
   // half-pixel shift included).
@@ -289,7 +289,7 @@ void check_rtx() {
   };
   w2c_host_clear(nullptr, 0xff000000);
   beam({495.75f, 367.75f, -1, -1, 495.75f, 399.75f, -1, 1, 527.75f, 399.75f, 1, 1, 527.75f, 367.75f, 1, -1}, -1, 0);
-  assert(fabsf(back_red(512, 384) - 0.92f) < 1e-2f && back_red(512, 399) < 1e-3f);
+  assert(fabsf(back_red(512, 384) - 0.863f) < 1e-2f && back_red(512, 399) < 1e-3f);
   w2c_host_clear(nullptr, 0xff000000);
   float length = 256 / 16.0f;
   beam({184, 367.75f, -1, -1, 184, 399.75f, -1, 1, 472, 399.75f, length + 1, 1, 472, 367.75f, length + 1, -1}, length,
@@ -297,6 +297,67 @@ void check_rtx() {
   assert(back_red(210, 384) < back_red(330, 384) && back_red(330, 384) < back_red(450, 384));
   assert(fabsf(back_red(330, 378) - back_red(330, 390)) < 1e-3f && back_red(330, 380) > 0);
   assert(back_red(330, 410) == 0);
+  // The same effect.frag as Python: radial glow/aura/shell, HDR plasma,
+  // and capped/cut ion arcs. Uniform arrays and blend state reach real GL.
+  auto effect = [&](int kind, const float *params, unsigned color, float x0, float x1, float y0, float y1,
+                    float u0, float u1, float v0, float v1) {
+    const float c[16] = {x0,y0,u0,v0, x0,y1,u0,v1, x1,y1,u1,v1, x1,y0,u1,v0};
+    memcpy(memory, c, sizeof c);
+    memcpy(memory+128, params, 48);
+    w2c_host_effect(nullptr, 0, kind, 128, color);
+  };
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  const float empty[12] = {};
+  for (int kind = 0; kind < 3; ++kind) {
+    w2c_host_clear(nullptr, 0xff000000);
+    effect(kind, empty, 0xffffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
+    if (kind < 2) assert(back_red(512,384) > .7f);
+    else assert(back_red(512,384) == 0 && back_red(526,384) > .1f);
+    assert(back_red(492,384) == 0);
+    w2c_host_clear(nullptr, 0xff000000);
+    effect(kind, empty, 0x01ffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
+    assert(back_red(512,384) == 0 && back_red(526,384) == 0);
+  }
+  // One device-vertex batch retains different sprite tints exactly, including
+  // byte color swizzling and alpha, through the actual GPU vertex layout.
+  for (int kind = 0; kind < 3; ++kind) {
+    w2c_host_clear(nullptr, 0xff000000);
+    effect(kind, empty, 0xff408020, 495.75f, 527.75f, 367.75f, 399.75f, -1, 1,
+           -1, 1);
+    effect(kind, empty, 0x802040ff, 575.75f, 607.75f, 367.75f, 399.75f, -1, 1,
+           -1, 1);
+    int width, height;
+    auto reference = renderer_capture(width, height);
+    const float a[16] = {495.75f, 367.75f, -1, -1, 495.75f, 399.75f, -1, 1,
+                         527.75f, 399.75f, 1,  1,  527.75f, 367.75f, 1,  -1};
+    const float b[16] = {575.75f, 367.75f, -1, -1, 575.75f, 399.75f, -1, 1,
+                         607.75f, 399.75f, 1,  1,  607.75f, 367.75f, 1,  -1};
+    EffectVertex sprites[12];
+    effect_quad(a, 0xff408020, sprites);
+    effect_quad(b, 0x802040ff, sprites + 6);
+    memcpy(memory + 4096, sprites, sizeof sprites);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_effect_sprites(nullptr, 4096, kind, 12);
+    assert(renderer_capture(width, height) == reference);
+  }
+  w2c_host_clear(nullptr, 0xff000000);
+  const float plasma[12] = {8, 0, 0, 27, 1.5f, .4f, 0, 0, 1, 0, 0, 0};
+  effect(3,plasma,0xffffffff,477.75f,521.75f,375.75f,391.75f,-34,10,-8,8);
+  assert(back_red(500,384) > 1.f && back_red(500,400) == 0);
+  // An ion arc's length in strip scales rides on its vertices, negative where
+  // its strips end in the native cut.
+  for (float length : {48.f, -48.f}) {
+    const float corners[16] = {471.75f, 367.75f, -16, -16, 471.75f, 399.75f, -16, 16,
+                               551.75f, 399.75f, 64,  16,  551.75f, 367.75f, 64,  -16};
+    EffectVertex arc[6];
+    effect_quad(corners, 0xff8099ff, arc);
+    for (EffectVertex &v : arc)
+      v.z = length;
+    memcpy(memory + 4096, arc, sizeof arc);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_effect_sprites(nullptr, 4096, 4, 6);
+    assert((length > 0 ? back_red(485, 384) > .01f : back_red(485, 384) == 0) && back_red(510, 384) > .1f);
+  }
   // Lit batches: creature bodies keep a 0.6 linear ambient fill without lights
   // and brighten under one; players without lights keep the device's shading.
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
@@ -420,35 +481,65 @@ void check_rtx() {
   terrain();
   Pixel cleared = ground({}, 0, 200, 200);
   assert(fabsf(cleared.g - bare.g) < 1e-3f);
-  // Monster Vision: an aura adds its warm light to the ground within its 60
-  // units, and nothing past them.
-  const float aura[3] = {700, 300, 1};
-  memcpy(memory + 33500, aura, sizeof aura);
-  w2c_host_perk_light(nullptr, 33500, 1);
-  Pixel warm = ground({}, 0, 700, 300), outside = ground({}, 0, 700, 380);
-  w2c_host_perk_light(nullptr, 33500, 0);
-  assert(warm.r > bare.r + 0.05f && warm.r > warm.b + 0.05f);
-  assert(fabsf(outside.r - ground({}, 0, 700, 380).r) < 1e-3f);
   w2c_host_texture_release(nullptr, 400);
-  // Monster Vision's aura: the analytic glow over the quad's [0, 1] UVs, full
-  // at its center and gone at its edge.
-  auto aura_quad = [](int x, int y) {
+  // Monster Vision's heat trails: a footprint warms the ground under it as faint
+  // ironbow heat and nothing past it; the trail fades by its half-life on the
+  // run's clock and starts over when the clock runs back.
+  auto trail = [](float seconds, int count, int x, int y) {
+    const float view[7] = {0, 0, seconds, 1024, 1024, 4, 3};
+    const float footprint[4] = {700, 300, 20, 1};
+    memcpy(memory + 32768, view, sizeof view);
+    memcpy(memory + 33500, footprint, sizeof footprint);
+    w2c_host_scene(nullptr, 32768, 32832, 0);
+    w2c_host_heat(nullptr, 33500, count);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_heat_trails(nullptr, 1);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_pixel(x, y);
+  };
+  Pixel hot = trail(10, 1, 700, 300);
+  assert(hot.r > 0.2f && hot.r > hot.g * 2 && trail(10, 1, 700, 360).r < 1e-3f);
+  float faded = trail(10.9f, 0, 700, 300).r;
+  assert(faded < hot.r * 0.8f && faded > 0.01f);
+  assert(trail(5, 0, 700, 300).r < 1e-3f);
+  // Monster Vision's heat bodies: a creature batch drawn again in the ironbow
+  // ramp, red its warmth and alpha its opacity, whatever the sprite's own tint.
+  auto heat_body = [](u32 color) {
     w2c_host_clear(nullptr, 0xff000000);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
     w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
     w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
     w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
-    w2c_host_render_pass(nullptr, HOST_PASS_AURA);
-    rectangle(400, 300, 490, 390, 0xffffff00);
+    w2c_host_set_texture(nullptr, 0, 300);
+    w2c_host_render_pass(nullptr, HOST_PASS_HEAT);
+    rectangle(400, 300, 464, 364, color);
     w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
     w2c_host_render_state(nullptr, RS_SRCBLEND, 2);
     w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
     w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_pixel(436, 336); // an atlas cell's middle
+  };
+  Pixel warm = heat_body(0xe0ff0000), cold = heat_body(0xe0000000), unseen = heat_body(0x00ff0000);
+  assert(warm.r > 0.5f && warm.r > warm.b && cold.r < warm.r * 0.5f && unseen.r < 1e-3f);
+  // An ion contact's glow adds its hue to the ground as a disc, brightest at its
+  // center and nothing at the quad's corners; glows add.
+  auto glow = [](int quads, int x, int y) {
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+    w2c_host_render_pass(nullptr, HOST_PASS_GLOW);
+    for (int i = 0; i < quads; ++i)
+      rectangle(400, 300, 520, 420, 0x406080ff);
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
     return back_pixel(x, y);
   };
-  Pixel glow = aura_quad(445, 345), rim = aura_quad(401, 345);
-  assert(glow.r > 0.9f && glow.g > 0.9f && glow.b < 0.01f && rim.r < 0.01f);
+  Pixel contact = glow(1, 460, 360), stacked = glow(2, 460, 360);
+  assert(contact.b > 0.1f && contact.b > contact.g && contact.g > contact.r);
+  assert(stacked.b > contact.b * 1.2f && glow(1, 402, 302).b < 1e-3f);
   // A pressure front brightens the world along its crest, darkens it just
   // inside, and leaves the world past it alone.
   auto front = [](int count, int x, int y) {
@@ -509,7 +600,7 @@ void check_rtx() {
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
   w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
 #endif
-  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams sum their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision glows, pressure fronts ripple; classic stays 8-bit");
+  puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams integrate their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, ion contacts glow, pressure fronts ripple; classic stays 8-bit");
 }
 
 int main() {

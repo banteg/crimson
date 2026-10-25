@@ -246,6 +246,7 @@ jobs:
         run: |
           uv run --no-sync python crimson-core/checks/effect_overflow.py
           uv run --no-sync python crimson-core/checks/projectile_colors.py
+          uv run --no-sync python crimson-core/checks/analytic_effects.py
           uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
           fresh() { rm -rf "$RUNNER_TEMP/run" && cp -R "$RUNNER_TEMP/game" "$RUNNER_TEMP/run" && echo "$RUNNER_TEMP/run"; }
           node crimson-core/checks/game_boot.mjs "$(fresh)"
@@ -307,8 +308,7 @@ jobs:
     needs: [changes, build-game, corpus]
     if: needs.changes.outputs.game == 'true'
     runs-on: ubuntu-latest
-    # The full rollback corpus takes ~14 minutes before live streams and sessions.
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v7

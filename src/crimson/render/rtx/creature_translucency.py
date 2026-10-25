@@ -1,16 +1,21 @@
-"""Opening-based part-size proxies for artistic transmission, not anatomical thickness."""
+"""Atlas-local body proxies for artistic transmission and Monster Vision heat."""
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 from grim.raylib_api import rl
 
 
+def _cell_size(alpha: Image.Image) -> tuple[int, int]:
+    width, height = alpha.size
+    if alpha.mode != "L" or width <= 0 or height <= 0 or width % 8 or height % 8:
+        raise ValueError("Creature proxies require an L alpha image with an 8x8 cell grid")
+    return width // 8, height // 8
+
+
 def build_thickness_proxy(alpha: Image.Image) -> Image.Image:
     """Encode largest covering odd-square support, capped at 31px, per 8x8 atlas cell."""
     width, height = alpha.size
-    if alpha.mode != "L" or width <= 0 or height <= 0 or width % 8 or height % 8:
-        raise ValueError("Creature thickness requires an L alpha image with an 8x8 cell grid")
-    cell_width, cell_height = width // 8, height // 8
+    cell_width, cell_height = _cell_size(alpha)
     interior = Image.new("L", alpha.size, 255)
     grid = ImageDraw.Draw(interior)
     for cell in range(8):
@@ -59,7 +64,7 @@ def build_thickness_proxy(alpha: Image.Image) -> Image.Image:
 def blur_cells(proxy: Image.Image, radius: int) -> Image.Image:
     """A box blur inside each 8x8 atlas cell, edges extended: no animation frame bleeds into its neighbor."""
     width, height = proxy.size
-    cell_width, cell_height = width // 8, height // 8
+    cell_width, cell_height = _cell_size(proxy)
     blurred = Image.new("L", proxy.size)
     for y in range(0, height, cell_height):
         for x in range(0, width, cell_width):
@@ -68,20 +73,29 @@ def blur_cells(proxy: Image.Image, radius: int) -> Image.Image:
     return blurred
 
 
-def load_thickness_texture(source: rl.Texture, *, blur: int = 0) -> rl.Texture:
-    """Read source alpha once and upload a renderer-owned, single-channel proxy, box-blurred per cell by `blur`."""
+def build_heat_density(alpha: Image.Image) -> Image.Image:
+    """Smooth silhouette coverage with two cell-local 5x5 boxes, preserving fractional alpha.
+
+    Unlike square openings, this changes continuously as a pose gains or loses
+    silhouette texels. The triangular footprint retains hot cores and cool tips
+    without quantizing the whole torso to its largest surviving square.
+    """
+    return blur_cells(blur_cells(alpha, 2), 2)
+
+
+def _source_alpha(source: rl.Texture) -> Image.Image:
     image = rl.load_image_from_texture(source)
     try:
         if image.data == rl.ffi.NULL:
-            raise RuntimeError("Could not read creature texture for thickness")
+            raise RuntimeError("Could not read creature texture for body proxy")
         rl.image_format(image, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
         pixels = bytes(rl.ffi.buffer(image.data, image.width * image.height * 4))
-        alpha = Image.frombytes("RGBA", (image.width, image.height), pixels).getchannel("A")
+        return Image.frombytes("RGBA", (image.width, image.height), pixels).getchannel("A")
     finally:
         rl.unload_image(image)
-    proxy = build_thickness_proxy(alpha)
-    if blur:
-        proxy = blur_cells(proxy, blur)
+
+
+def _upload_proxy(proxy: Image.Image) -> rl.Texture:
     # The Image borrows this buffer only for the synchronous upload; raylib must not free it.
     buffer = rl.ffi.new("unsigned char[]", proxy.tobytes())
     upload = rl.Image(
@@ -90,7 +104,7 @@ def load_thickness_texture(source: rl.Texture, *, blur: int = 0) -> rl.Texture:
     )
     texture = rl.load_texture_from_image(upload)
     if texture.id <= 0:
-        raise RuntimeError("Could not upload creature thickness texture")
+        raise RuntimeError("Could not upload creature body proxy texture")
     try:
         rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
@@ -98,3 +112,13 @@ def load_thickness_texture(source: rl.Texture, *, blur: int = 0) -> rl.Texture:
         rl.unload_texture(texture)
         raise
     return texture
+
+
+def load_thickness_texture(source: rl.Texture) -> rl.Texture:
+    """Read source alpha once and upload the single-channel transmission proxy."""
+    return _upload_proxy(build_thickness_proxy(_source_alpha(source)))
+
+
+def load_heat_density_texture(source: rl.Texture) -> rl.Texture:
+    """Read source alpha once and upload the single-channel heat density."""
+    return _upload_proxy(build_heat_density(_source_alpha(source)))

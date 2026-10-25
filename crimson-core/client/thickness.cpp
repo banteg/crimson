@@ -55,3 +55,37 @@ std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int wid
   }
   return thickness;
 }
+
+namespace {
+// A box blur inside each 8x8-grid cell, as creature_translucency.py's blur_cells
+// (PIL's BoxBlur): horizontal then vertical, each rounded to a byte, the cell's
+// edge texels extended, so no animation frame bleeds into its neighbor.
+Plane blur_cells(const Plane &plane, int width, int height, int radius) {
+  int cell_width = width / 8, cell_height = height / 8, span = 2 * radius + 1;
+  auto pass = [&](const Plane &in, bool vertical) {
+    Plane out(in.size());
+    for (int y = 0; y < height; ++y)
+      for (int x = 0; x < width; ++x) {
+        int along = vertical ? y : x, cell = vertical ? cell_height : cell_width, lo = along / cell * cell;
+        int sum = 0;
+        for (int k = -radius; k <= radius; ++k) {
+          int at = std::clamp(along + k, lo, lo + cell - 1);
+          sum += in[vertical ? (size_t)at * width + x : (size_t)y * width + at];
+        }
+        out[(size_t)y * width + x] = (unsigned char)((sum + span / 2) / span);
+      }
+    return out;
+  };
+  return pass(pass(plane, false), true);
+}
+} // namespace
+
+// Monster Vision's continuous silhouette density (build_heat_density): two
+// cell-local 5x5 alpha blurs, preserving fractional coverage. A pose's part
+// sizes can jump by an entire square-opening level; density changes smoothly.
+std::vector<unsigned char> renderer_heat_density(const unsigned char *bgra, int width, int height) {
+  Plane alpha((size_t)width * height);
+  for (size_t i = 0; i < alpha.size(); ++i)
+    alpha[i] = bgra[i * 4 + 3];
+  return blur_cells(blur_cells(alpha, width, height, 2), width, height, 2);
+}

@@ -46,9 +46,12 @@ HOST_IMPORT(smoke) void host_smoke(const float *commands, int count);
 // Sharpshooter sight (its near and far ends).
 HOST_IMPORT(smoke_draw) void host_smoke_draw(const float *view, const float *lights, int light_count,
                                               const float *sights, int sight_count);
-// Monster Vision's ground light (render/rtx/perk_lighting.py), sent before the
-// world's begin mark: `count` auras as world x, y and alpha.
-HOST_IMPORT(perk_light) void host_perk_light(const float *sources, int count);
+// Monster Vision's heat trails (render/rtx/heat_vision.py), sent before the
+// world's begin mark: `count` footprints as world x, y, radius and warmth,
+// stamped into a world-space buffer that fades by the run's clock (host_scene).
+HOST_IMPORT(heat) void host_heat(const float *footprints, int count);
+// The trail buffer added to the ground in view, at the world's transition `alpha`.
+HOST_IMPORT(heat_trails) void host_heat_trails(float alpha);
 // The explosions' pressure fronts (render/rtx/shockwaves.py), sent before the
 // world's begin mark: `count` fronts as screen center x, y, radius and strength,
 // which displace the world before it is tonemapped.
@@ -69,6 +72,11 @@ HOST_IMPORT(bonus) void host_bonus(int emblem, float grid_x, float grid_y, float
 // for a head) and stamp spacing, and its D3DCOLOR, drawn with the current blend
 // into the current target.
 HOST_IMPORT(beam) void host_beam(const float *corners, float length, float step, unsigned color);
+// Analytic glow/shell/plasma/arc: four x,y,u,v corners, effect.frag's kind,
+// three vec4 shape parameters, and the original D3DCOLOR. Uses the current blend state.
+HOST_IMPORT(effect) void host_effect(const float *corners, int kind, const float *params, unsigned color);
+// Consecutive radial sprites, as triangles of device-layout vertices (28 bytes each).
+HOST_IMPORT(effect_sprites) void host_effect_sprites(const void *vertices, int kind, int vertex_count);
 // The last drawn frame, kept and shown again under what a replay draws over it
 // while no tick draws (host/watch.inc): save the back buffer, or show the saved one.
 enum {
@@ -81,7 +89,7 @@ HOST_IMPORT(frame_hold) void host_frame_hold(int op);
 HOST_IMPORT(texture_copy) void host_texture_copy(int destination, int source);
 HOST_IMPORT(gamma_ramp) void host_gamma_ramp(const unsigned short *red, const unsigned short *green,
                                              const unsigned short *blue);
-HOST_IMPORT(fatal) [[noreturn]] void host_fatal(const char *message);
+[[noreturn]] HOST_IMPORT(fatal) void host_fatal(const char *message);
 // A message box the original shows the player (startup failures, warnings).
 HOST_IMPORT(message) void host_message(const char *text, const char *caption);
 HOST_IMPORT(time_ms) unsigned host_time_ms(void);

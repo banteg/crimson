@@ -9,6 +9,7 @@ from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EffectId
+from ..rtx.effects import SPRITE_SHAPES, EffectShape, draw_sprite, sprite_batch
 from ..rtx.explosion_shell import explosion_shell
 from ..rtx.mode import RtxRenderMode
 from . import viewport
@@ -42,21 +43,32 @@ def draw_particle_pool(
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
-    if flame_glow_enabled and src_large is not None:
-        alpha_byte = int(0.065 * 255.0 + 0.5)
-        tint = rl_color(255, 255, 255, alpha_byte)
-        for idx, entry in enumerate(particles):
-            if not entry.active or (idx % 2) or int(entry.style_id) == int(ParticleStyleId.BUBBLEGUN):
-                continue
-            radius = (math.sin((1.0 - float(entry.intensity)) * 1.5707964) + 0.1) * 55.0 + 4.0
-            radius = max(radius, 16.0)
-            size = max(0.0, radius * 2.0 * scale)
-            if size <= 0.0:
-                continue
-            screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
-            dst = rl_rectangle(screen.x, screen.y, size, size)
-            origin = rl_vector2(size * 0.5, size * 0.5)
-            rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
+    with sprite_batch() as batch:
+        if flame_glow_enabled and src_large is not None:
+            alpha_byte = int(0.065 * 255.0 + 0.5)
+            tint = rl_color(255, 255, 255, alpha_byte)
+            for idx, entry in enumerate(particles):
+                if not entry.active or (idx % 2) or int(entry.style_id) == int(ParticleStyleId.BUBBLEGUN):
+                    continue
+                radius = (math.sin((1.0 - float(entry.intensity)) * 1.5707964) + 0.1) * 55.0 + 4.0
+                radius = max(radius, 16.0)
+                size = max(0.0, radius * 2.0 * scale)
+                if size <= 0.0:
+                    continue
+                screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+                dst = rl_rectangle(screen.x, screen.y, size, size)
+                origin = rl_vector2(size * 0.5, size * 0.5)
+                if frame.rtx_mode is RtxRenderMode.RTX:
+                    draw_sprite(
+                        EffectShape.GLOW,
+                        center=screen,
+                        width=size,
+                        height=size,
+                        color=RGBA(1.0, 1.0, 1.0, alpha_byte / 255.0),
+                        batch=batch,
+                    )
+                else:
+                    rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
 
     for entry in particles:
         if not entry.active or int(entry.style_id) == int(ParticleStyleId.BUBBLEGUN):
@@ -147,15 +159,20 @@ def draw_effect_pool(
     if frame.rtx_mode is RtxRenderMode.RTX:
         archived = []
         for visual in pool.explosion_visuals:
-            shell = (
-                explosion_shell(visual.age, visual.scale) if visual.emit_light and visual.ring_spawned else None
-            )
+            shell = explosion_shell(visual.age, visual.scale) if visual.emit_light and visual.ring_spawned else None
             if shell is not None:
-                archived.append(EffectEntry(
-                    effect_id=EffectId.RING, pos=visual.pos, age=0.0, flags=0x19,
-                    half_width=shell.radius, half_height=shell.radius, scale=1.0,
-                    color=RGBA(190 / 255, 163 / 255, 122 / 255, shell.alpha),
-                ))
+                archived.append(
+                    EffectEntry(
+                        effect_id=EffectId.RING,
+                        pos=visual.pos,
+                        age=0.0,
+                        flags=0x19,
+                        half_width=shell.radius,
+                        half_height=shell.radius,
+                        scale=1.0,
+                        color=RGBA(190 / 255, 163 / 255, 122 / 255, shell.alpha),
+                    ),
+                )
             if not visual.emit_light or not 0.0 <= visual.age < visual.lifetime:
                 continue
             for sprite in visual.fireballs:
@@ -177,7 +194,12 @@ def draw_effect_pool(
     )
 
     def draw_entry(entry: EffectEntry) -> None:
-        if frame.rtx_mode is RtxRenderMode.RTX and frame.smoke is not None and frame.smoke.available and entry.effect_id == EffectId.EXPLOSION_PUFF:
+        if (
+            frame.rtx_mode is RtxRenderMode.RTX
+            and frame.smoke is not None
+            and frame.smoke.available
+            and entry.effect_id == EffectId.EXPLOSION_PUFF
+        ):
             return
         if id(entry) in fireball_slots:
             return
@@ -201,22 +223,35 @@ def draw_effect_pool(
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
         tint = entry.color.to_rl()
 
+        shape = SPRITE_SHAPES.get(effect_id)
+        if (
+            frame.rtx_mode is RtxRenderMode.RTX
+            and shape is not None
+            and not (shape is EffectShape.GLOW and entry.flags & 0x40)
+        ):
+            draw_sprite(
+                shape, center=screen, width=w, height=h, color=entry.color, rotation=float(entry.rotation), batch=batch,
+            )
+            return
+        batch.end()
         dst = rl_rectangle(screen.x, screen.y, float(w), float(h))
         origin = rl_vector2(float(w) * 0.5, float(h) * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
-    for entry in effects:
-        if not entry.flags or entry.age < 0.0:
-            continue
-        if int(entry.flags) & 0x40:
-            draw_entry(entry)
+    with sprite_batch() as batch:
+        for entry in effects:
+            if not entry.flags or entry.age < 0.0:
+                continue
+            if int(entry.flags) & 0x40:
+                draw_entry(entry)
     rl.end_blend_mode()
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    for entry in effects:
-        if not entry.flags or entry.age < 0.0:
-            continue
-        if not (int(entry.flags) & 0x40):
-            draw_entry(entry)
+    with sprite_batch() as batch:
+        for entry in effects:
+            if not entry.flags or entry.age < 0.0:
+                continue
+            if not (int(entry.flags) & 0x40):
+                draw_entry(entry)
     rl.end_blend_mode()

@@ -18,6 +18,8 @@ extern unsigned char grim_render_disabled;
 int console_cmd_argc_get(void);
 
 int rtx_render_mode;
+extern int rtx_effects_active;
+void rtx_effect_flush();
 
 static const char *rtx_mode_name(int mode) { return mode ? "rtx" : "classic"; }
 
@@ -73,14 +75,13 @@ void console_cmd_rtx_smoke(void) {
   console_printf(&console_log_queue, "RTX smoke is %s.\n", rtx_smoke_on ? "on" : "off");
 }
 
-static bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
+bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
 
 int rtx_collect_lights(float *out, int capacity);
 extern const float rtx_beam_gain[2];
-int rtx_collect_monster_vision(float *out, int capacity, float alpha);
+int rtx_collect_heat(float *out, int capacity);
 int rtx_collect_fronts(float *out, int capacity);
-void rtx_explosions_reset();
-void effect_select_texture(int effect_id);
+void rtx_lights_reset();
 extern float ui_transition_alpha;
 const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count);
 extern vec2f_t camera_offset;
@@ -100,11 +101,18 @@ static int rtx_light_count;
 
 // The world's bounds in the frame (game/rtx/rtx.patch): what Grim batched before
 // a bound belongs to the side it was drawn on. The world's lights go first.
+// Classic marks the bounds too, only so the host's timers can tell its drawing
+// from the frame's simulation and HUD.
 void rtx_world(int begin) {
-  if (!rtx_drawing())
+  if (!platform_outputs() || grim_render_disabled)
     return;
   grim_interface_ptr->grim_flush_batch();
+  if (!rtx_render_mode) {
+    host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
+    return;
+  }
   if (begin) {
+    rtx_effects_active = 1;
     int count = rtx_light_count = rtx_collect_lights(rtx_lights, 32);
     const float *lights = rtx_lights;
     const float view[7] = {camera_offset.x, camera_offset.y, rtx_seconds(), (float)terrain_texture_width,
@@ -116,12 +124,13 @@ void rtx_world(int begin) {
     const float *values = rtx_build_occlusion(lights, count, shadows, grid, &value_count);
     grid[5] = shadows;
     host_occlusion(grid, values, value_count);
-    static float auras[385 * 3];
-    host_perk_light(auras, rtx_collect_monster_vision(auras, 385, ui_transition_alpha));
+    static float footprints[385 * 4];
+    host_heat(footprints, rtx_collect_heat(footprints, 385));
     static float fronts[16 * 4];
     host_pressure(fronts, ui_transition_alpha > 1e-3f ? rtx_collect_fronts(fronts, 16) : 0);
   }
   host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
+  if (!begin) rtx_effects_active = 0;
 }
 
 // The fluid smoke field after the world's sprites, at its transition `alpha`.
@@ -134,27 +143,14 @@ void rtx_smoke(float alpha) {
   rtx_smoke_draw(rtx_lights, rtx_light_count, alpha);
 }
 
-// Monster Vision's aura quad (creature_render_all) as RTX's analytic glow over
-// the whole quad, then back to the atlas cell the other overlays take.
-void rtx_aura(int begin) {
-  if (!rtx_drawing())
-    return;
-  grim_interface_ptr->grim_flush_batch();
-  if (begin) {
-    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
-    host_render_pass(HOST_PASS_AURA);
-  } else {
-    host_render_pass(HOST_PASS_SPRITES);
-    effect_select_texture(0x10);
-  }
-}
-
 // What RTX keeps beside a run, cleared when a run starts or is restored and
-// when the mode changes: the fluid smoke and the explosions' lights.
+// when the mode changes: the fluid smoke and the lights' explosions and fades.
 void rtx_smoke_reset();
 void rtx_reset() {
+  rtx_effects_active = 0;
+  rtx_effect_flush();
   rtx_smoke_reset();
-  rtx_explosions_reset();
+  rtx_lights_reset();
 }
 
 // The batches the host lights (HOST_PASS_CREATURES, _PLAYERS), and the return to

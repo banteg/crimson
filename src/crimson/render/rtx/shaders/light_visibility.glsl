@@ -5,6 +5,12 @@ uniform int u_dynamic_shadows;
 uniform sampler2D u_occlusion_tex;
 uniform vec4 u_occlusion_grid; // xy world origin, zw cell counts; z=0 disables
 uniform float u_occlusion_cell_size;
+// A crowd cell (header y < 0: minus its bodies' summed footprint over its area, x their top height) is crossed as an
+// absorbing medium below that height (render/rtx/reflection_occlusion.py's CROWD_BODIES).
+const float CROWD_EXTINCTION = 3.;
+// The widest source a body shadow's penumbra follows (reflection_occlusion.py's PENUMBRA_WIDTH): the grid pads its
+// lists for no wider.
+const float PENUMBRA_WIDTH = 8.;
 
 vec4 occlusionData(int address) {
     int width = textureSize(u_occlusion_tex, 0).x;
@@ -126,8 +132,13 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     float distance2 = rayDistance2(offset, ray.xy, inverse_xy_length);
     #endif
     // Reject neighboring cell members with one fetch before loading transforms.
-    // The bound already includes the largest selected source's soft margin.
-    if (distance2 > center.w * center.w) return 1.;
+    // The bound includes the penumbra margin (for sources up to PENUMBRA_WIDTH);
+    // a section's transverse taps reach 0.577 of its full width off the fan.
+    float bound = center.w;
+    #ifdef CONTINUOUS_BEAM
+    if (beam_section_halfspan > 0.) bound += .57735027 * source_width;
+    #endif
+    if (distance2 > bound * bound) return 1.;
     vec4 shape = occlusionData(address + 1);
     vec3 inverse_radius = shape.xyz;
     vec4 orientation = occlusionData(address + 2);
@@ -141,6 +152,9 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     ray.xy = local * ray.xy;
     q *= inverse_radius;
     ray *= inverse_radius;
+    // A light inside a body, or against it (a muzzle in a packed crowd, a beam through a creature), is not shadowed
+    // by that body: its occlusion fades out over the last half radius before the source, in the body's normalized
+    // coordinates. Otherwise the body's near face cuts the light's pool along a straight line through the source.
     #ifdef CONTINUOUS_BEAM
     if (beam_section_halfspan > 0.) {
         vec3 source_axis = vec3(local * beam_section_axis, 0.) * inverse_radius;
@@ -151,15 +165,21 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
                               source_axis, beam_section_halfspan)
             + beamChordCoverage(q, ray + transverse_ray * (.57735027 * source_width),
                                 source_axis, beam_section_halfspan));
-        return 1. - orientation.z * coverage;
+        // Only the section's embedded stretch is spared: the share of its length the fade covers, which the chord
+        // counted as blocked. The rest of the section is shadowed as before.
+        float spared = 0.;
+        for (int k = 0; k < 8; k++)
+            spared += 1. - smoothstep(1., 1.5, length(q + ray + source_axis * (beam_section_halfspan * ((float(k) + .5) / 4. - 1.))));
+        return 1. - orientation.z * max(0., coverage - spared / 8.);
     }
     #endif
     float t = clamp(-dot(q, ray) / max(dot(ray, ray), 1e-8), 0., 1.);
     float distance = length(q + ray * t);
     // Analytic finite-source penumbra. The cone grows from the receiver toward
     // the source; this is a smooth body proxy, not sampled silhouette tracing.
-    float softness = max(.015, source_width * t * max(inverse_radius.x, inverse_radius.y));
-    return 1. - orientation.z * (1. - smoothstep(1. - softness, 1. + softness, distance));
+    float softness = max(.015, min(source_width, PENUMBRA_WIDTH) * t * max(inverse_radius.x, inverse_radius.y));
+    float embedded = smoothstep(1., 1.5, length(q + ray));
+    return 1. - orientation.z * embedded * (1. - smoothstep(1. - softness, 1. + softness, distance));
 }
 
 float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owner) {
@@ -181,11 +201,28 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
     beam = beam_section_halfspan > 0.;
     #endif
     ivec2 previous = ivec2(-1);
+    ivec2 first_cell = cell;
+    float t_enter = 0.;
+    float cells_crossed = length(delta);
     // Each step crosses one grid boundary. No nearest-body budget drops blockers.
     while (cell.x >= 0 && cell.y >= 0 && cell.x < int(u_occlusion_grid.z) && cell.y < int(u_occlusion_grid.w)) {
         vec4 header = occlusionData(cell.y * int(u_occlusion_grid.z) + cell.x);
         // Beam sections walk their own lists, padded by the largest half-span.
         if (beam) header.xy = header.zw;
+        bool crowd = header.y < 0.;
+        if (crowd) {
+            // A crowd: absorb along the length crossed below the bodies' top height. A body's own cell does not
+            // shade the body.
+            float t_exit = min(min(t_edge.x, t_edge.y), 1.);
+            float t_top = abs(ray.z) > 1e-6 ? (header.x - receiver.z) / ray.z : (receiver.z < header.x ? 1e20 : -1e20);
+            vec2 below = ray.z >= 0. ? vec2(-1e20, t_top) : vec2(t_top, 1e20);
+            float crossed = max(0., min(t_exit, below.y) - max(t_enter, below.x));
+            if (crossed > 0. && !(cell == first_cell && owner.x < 1e18)) {
+                visibility *= exp(CROWD_EXTINCTION * header.y * crossed * cells_crossed);
+                if (visibility < .001) return visibility;
+            }
+            header.y = 0.;
+        }
         for (int j = 0; j < int(header.y); j++) {
             vec4 entry = occlusionData(int(header.x) + j);
             // A padded beam entry spans a run of walked cells; test it in the first.
@@ -196,8 +233,10 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
             visibility = min(visibility, bodyVisibility(int(entry.x), receiver, ray, source_width, inverse_xy_length, owner));
             if (visibility < .001) return visibility;
         }
-        previous = cell;
+        // A crowd tested none of its neighbors' padded entries: the next cell tests its whole list.
+        previous = crowd ? ivec2(-1) : cell;
         if (min(t_edge.x, t_edge.y) >= 1.) break;
+        t_enter = min(t_edge.x, t_edge.y);
         if (t_edge.x < t_edge.y) { cell.x += step_cell.x; t_edge.x += t_step.x; }
         else { cell.y += step_cell.y; t_edge.y += t_step.y; }
     }

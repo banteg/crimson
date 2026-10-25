@@ -1831,8 +1831,9 @@ the rates a minute over, so the combined rows count in neither.
    players local, the same derivation, capture and digests as a peer.
    `checks/game_coop.mjs` (CI's `game-coop` job) plays every `coop-*` stream of
    the corpus through it against the plain run, word for word, then again
-   through forced rollbacks at windows of 0 (lockstep), 1, 4, 8 and 12 ticks,
-   delays of 2, 4 and 8 and catch-up frames: records stood in for or guessed for
+   through forced rollbacks at the 12-tick cap and one of windows 0 (lockstep),
+   1, 4 and 8 in turn, delays of 2, 4 and 8 and catch-up frames, the coverage
+   below holding the corpus to each behaviour: records stood in for or guessed for
    either player, the picker's choice late, restores into each open perk menu
    and over the effect overflow's changes. Every confirmed tick's hash, bake,
    terrain and music digests and raw state must match the plain pass's, and no
@@ -1848,7 +1849,7 @@ the rates a minute over, so the combined rows count in neither.
    run's, and what it draws into the terrain and its music after every frame
    with the plain pass's. It prints each stream's rollbacks and costs.
 
-   The gate then plays every stream between two modules, Host and Guest, each
+   The gate then plays a few short streams between two modules, Host and Guest, each
    playing its own seat through the wire protocol. They run over a seeded
    simulated pipe: 40 ± 30 ms each way, 2 % loss on channel 0 and one burst of
    12 lost packets, reliable and ordered channel 1. One peer draws at 60 Hz and

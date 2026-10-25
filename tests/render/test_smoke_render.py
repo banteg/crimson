@@ -202,6 +202,19 @@ def test_smoke_scatters_a_segment_by_the_shared_beam_profile(smoke_pixels):
     assert uniform[:, east].mean() == pytest.approx(uniform[:, west].mean(), rel=.05)
 
 
+def test_smoke_behind_a_dark_tail_still_sees_its_segment(smoke_pixels):
+    # A short tapered shot leaving the muzzle (its tail at x = 49, dark): smoke beside the muzzle, on either side of
+    # the tail's line, sees the same nearby stretch of the shot, and no hard line runs across it.
+    ambient = smoke_pixels()
+    shot = MaterialLight(Vec2(64, 64), 160, (1.4, .68, .2), height=30, direction=Vec2(1, 0), length=30,
+                         reflection_tail=0.)
+    added = smoke_pixels(lights=[shot])[:, :, 0] - ambient[:, :, 0]
+    rows = slice(20, 40)
+    behind, ahead = added[rows, 44:48].mean(), added[rows, 50:54].mean()
+    assert behind > .8 * ahead > 0
+    assert added[rows, 8:20].mean() > 0
+
+
 def test_smoke_maps_show_coverage_and_weapon_light_without_sky_fill(smoke_pixels):
     thin = smoke_pixels(density=.05, debug=RtxDebugView.SMOKE_DENSITY)
     thick = smoke_pixels(debug=RtxDebugView.SMOKE_DENSITY)
@@ -252,7 +265,8 @@ def test_native_texture_resize_preserves_world_space_density(smoke_pixels):
     np.testing.assert_allclose(after, before, atol=.00001)
 
 
-def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless_window, headless_resources):
+def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless_window, headless_resources, mocker):
+    analytic = mocker.patch.object(effects, "draw_sprite")
     ctx = render_ctx_for_creatures(headless_resources, [])
     pool = ctx.frame.state.effects
     puff = EffectEntry(pos=Vec2(50, 50), effect_id=EffectId.EXPLOSION_PUFF, flags=0x40,
@@ -261,7 +275,10 @@ def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless
     pool.entries[1] = msgspec.structs.replace(puff, effect_id=EffectId.RING)
     rtx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.RTX, smoke=SmokeRenderer()))
     effects.draw_effect_pool(rtx, camera=Vec2(), view_scale=Vec2(1, 1))
-    assert headless_window.draw_texture_pro.call_count == 1
+    analytic.assert_called_once_with(
+        effects.EffectShape.RING, center=Vec2(50, 50), width=40., height=40., color=puff.color, rotation=0., batch=mocker.ANY,
+    )
+    assert headless_window.draw_texture_pro.call_count == 0
     headless_window.draw_texture_pro.reset_mock()
     classic = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, rtx_mode=RtxRenderMode.CLASSIC))
     effects.draw_effect_pool(classic, camera=Vec2(), view_scale=Vec2(1, 1))

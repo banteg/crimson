@@ -18,6 +18,8 @@ void game_audio_cooldowns(float dt);
 bool game_live_run();
 // Between a live run's ticks the world only draws (game/changes/world-draw.patch).
 bool game_live_between_ticks();
+// A scripted run's cursor, until its script moves it (game/frame.cpp).
+bool game_cursor_hidden();
 bool game_live_pause();
 void game_live_pick(int choice);
 // The buttons that start a run, while a co-op session is on (host/coop_live.inc):
@@ -67,7 +69,8 @@ void rtx_smoke_impulse(float sx, float sy, float ex, float ey, float radius, flo
                        float duration, float expansion_speed);
 void rtx_smoke_tick(float dt);
 void rtx_reset();
-// RTX explosion lights and Monster Vision's analytic aura (game/rtx_lights.cpp, game/rtx.cpp).
+// RTX explosion lights and ion contact glows (game/rtx_lights.cpp), and Monster Vision's heat (game/rtx_heat.cpp),
+// which replaces its aura while RTX draws (rtx_drawing).
 void rtx_explosion_begin(float x, float y, float scale);
 void rtx_explosion_end();
 void rtx_explosion_dark(int dark);
@@ -76,7 +79,17 @@ void rtx_explosions_age(float dt);
 void rtx_explosion_release(const struct effect_entry_t *entry);
 int rtx_explosion_owns(const struct effect_entry_t *entry);
 void rtx_explosions_draw();
-void rtx_aura(int begin);
+bool rtx_drawing();
+bool rtx_effect_quad(const float *points);
+bool rtx_effect_vertices(const void *vertices, int count);
+void rtx_effect_flush();
+void rtx_plasma(int slot, float alpha);
+void rtx_ion_arc(float sx, float sy, float ex, float ey, float scale, float alpha);
+// The arc loop's creature search, at most two arcs a cell per shot (game/ion_arcs.cpp).
+int ion_arc_find(float *pos, float radius, int start_index);
+void rtx_contact_glows(float alpha);
+void rtx_heat_trails(float alpha);
+void rtx_heat(int type_id, float transition_alpha);
 void rtx_smoke(float alpha);
 void console_cmd_rtx_smoke(void);
 void rtx_beam_body(float origin_x, float origin_y, float head_x, float head_y, float start, float span, float step,

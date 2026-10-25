@@ -14,7 +14,8 @@
   X(std::vector<unsigned char>, renderer_capture, (int &w, int &h), (w, h))                                           \
   X(bool, renderer_set_rtx, (bool enabled), (enabled))                                                                \
   X(void, renderer_set_headroom, (float headroom), (headroom))                                                        \
-  X(std::string, renderer_gpu_timings, (), ())
+  X(std::string, renderer_gpu_timings, (), ())                                                                         \
+  X(std::string, renderer_draw_stats, (), ())
 #define HOST_ENTRIES(X)                                                                                               \
   X(frame_hold, (struct w2c_host * h, u32 op), (h, op))                                                               \
   X(texture_copy, (struct w2c_host * h, u32 d, u32 s), (h, d, s))                                                     \
@@ -29,12 +30,15 @@
   X(clear, (struct w2c_host * h, u32 c), (h, c))                                                                      \
   X(draw, (struct w2c_host * h, u32 p, u32 v, u32 vc, u32 i, u32 pc), (h, p, v, vc, i, pc))                           \
   X(beam, (struct w2c_host * h, u32 c, f32 l, f32 s, u32 col), (h, c, l, s, col))                                     \
+  X(effect, (struct w2c_host * h, u32 c, u32 k, u32 p, u32 col), (h, c, k, p, col))                                    \
+  X(effect_sprites, (struct w2c_host * h, u32 v, u32 k, u32 n), (h, v, k, n))                                          \
   X(render_pass, (struct w2c_host * h, u32 p), (h, p))                                                                \
   X(scene, (struct w2c_host * h, u32 c, u32 l, u32 n), (h, c, l, n))                                                  \
   X(occlusion, (struct w2c_host * h, u32 g, u32 v, u32 n), (h, g, v, n))                                              \
   X(bonus, (struct w2c_host * h, u32 e, f32 gx, f32 gy, f32 cx, f32 cy), (h, e, gx, gy, cx, cy))                      \
   X(ground, (struct w2c_host * h, u32 k, f32 s), (h, k, s))                                                           \
-  X(perk_light, (struct w2c_host * h, u32 s, u32 n), (h, s, n))                                                       \
+  X(heat, (struct w2c_host * h, u32 f, u32 n), (h, f, n))                                                             \
+  X(heat_trails, (struct w2c_host * h, f32 a), (h, a))                                                                \
   X(pressure, (struct w2c_host * h, u32 f, u32 n), (h, f, n))                                                         \
   X(smoke, (struct w2c_host * h, u32 c, u32 n), (h, c, n))                                                            \
   X(smoke_draw, (struct w2c_host * h, u32 v, u32 l, u32 nl, u32 s, u32 ns), (h, v, l, nl, s, ns))                     \

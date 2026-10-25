@@ -1,0 +1,22 @@
+A crowd piled under a Shock Chain gets thousands of ion arcs over the same pixels: each shot draws at most two
+to the creatures in one small cell (game/ion_arcs.cpp).
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
+@@ -899,7 +899,7 @@
+ 
+             float radius = scale * ion_scale * 40.0f;
+             if (projectile->pos.tail.vy.type_id != PROJECTILE_TYPE_FIRE_BULLETS) {
+-                int creature_index = creature_find_in_radius(
++                int creature_index = ion_arc_find(
+                     &projectile->pos_x,
+                     radius,
+                     1);
+@@ -964,7 +964,7 @@
+                             - half_size,
+                         scale * 32.0f,
+                         scale * 32.0f);
+-                    creature_index = creature_find_in_radius(
++                    creature_index = ion_arc_find(
+                         &projectile->pos_x,
+                         radius,
+                         creature_index + 1);

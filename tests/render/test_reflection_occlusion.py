@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+import msgspec
 import pytest
 
 from crimson.creatures.runtime import CreatureState
@@ -9,6 +10,8 @@ from crimson.creatures.spawn import CreatureTypeId
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.reflection_occlusion import (
     CELL_SIZE,
+    CROWD_BODIES,
+    PENUMBRA_WIDTH,
     BodyVolume,
     build_occlusion_grid,
     creature_body_volumes,
@@ -44,18 +47,55 @@ def test_body_profiles_rotate_and_scale_with_the_drawn_sprite() -> None:
         assert not creature_body_volumes(creature)
 
 
-def test_spatial_grid_keeps_dense_overlaps_without_priority_truncation() -> None:
-    bodies = [BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, i * .01) for i in range(384)]
+def test_spatial_grid_keeps_overlaps_up_to_a_crowd_without_priority_truncation() -> None:
+    bodies = [BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, i * .01) for i in range(CROWD_BODIES)]
     light = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), illumination_gain=0)
-    grid = build_occlusion_grid(bodies, [light], width=1024, height=1024)
-    x = math.floor((100 - grid.origin.x) / CELL_SIZE)
-    y = math.floor((100 - grid.origin.y) / CELL_SIZE)
-    assert grid.body_count == 384
-    offset, count = grid.values[(y * grid.columns + x) * 4:][:2]
-    assert count == 384
-    addresses = {grid.values[(int(offset) + i) * 4] for i in range(int(count))}
-    assert len(addresses) == 384
+
+    def home_header(bodies):
+        grid = build_occlusion_grid(bodies, [light], width=1024, height=1024)
+        x = math.floor((100 - grid.origin.x) / grid.cell_size)
+        y = math.floor((100 - grid.origin.y) / grid.cell_size)
+        return grid, grid.values[(y * grid.columns + x) * 4:][:2]
+
+    grid, (offset, count) = home_header(bodies)
+    assert grid.body_count == count == CROWD_BODIES
+    assert len({grid.values[(int(offset) + i) * 4] for i in range(int(count))}) == CROWD_BODIES
     assert build_occlusion_grid(bodies, [], width=1024, height=1024).body_count == 0
+
+
+def header(grid, x: float, y: float) -> list[float]:
+    column = math.floor((x - grid.origin.x) / grid.cell_size)
+    row = math.floor((y - grid.origin.y) / grid.cell_size)
+    return grid.values[(row * grid.columns + column) * 4:][:4]
+
+
+def test_crowded_cell_holds_density_and_top_height_instead_of_its_list() -> None:
+    light = MaterialLight(Vec2(100, 90), 100, (1, 1, 1), illumination_gain=0)
+    tall, short = BodyVolume(Vec2(100, 100), Vec2(8, 14), 30, 0), BodyVolume(Vec2(110, 100), Vec2(8, 14), 10, 0, .5)
+    grid = build_occlusion_grid([tall] * 200 + [short] * 200, [light], width=1024, height=1024)
+    area = math.pi * 8 * 14 / grid.cell_size ** 2
+    # Its members stand wholly inside it: none is uploaded.
+    assert grid.body_count == 0
+    assert header(grid, 100, 100) == pytest.approx([(30 * 200 + 10 * 100) / 300, -area * 300] * 2)
+
+
+def test_crowd_follows_what_stands_in_a_cell_not_its_padded_lists() -> None:
+    # The widest penumbra pads every body's lists by its width times the body's aspect ratio.
+    light = MaterialLight(Vec2(100, 90), 400, (1, 1, 1), illumination_gain=0, source_width=PENUMBRA_WIDTH)
+    area = math.pi * 8 * 14 / CELL_SIZE ** 2
+    # Centered left of the cell edge at x = 128, reaching 4 units across it: it stands in both cells.
+    straddling = BodyVolume(Vec2(124, 100), Vec2(8, 14), 24, 0)
+    grid = build_occlusion_grid([straddling] * (CROWD_BODIES + 1), [light], width=1024, height=1024)
+    assert header(grid, 124, 100) == pytest.approx([24, -area * (CROWD_BODIES + 1) * .75] * 2)
+    assert header(grid, 130, 100) == pytest.approx([24, -area * (CROWD_BODIES + 1) * .25] * 2)
+    # Standing short of the edge, only its padding reaches across: there a crowd's members are dropped, and the
+    # cell stays a list.
+    short = BodyVolume(Vec2(118, 100), Vec2(8, 14), 24, 0)
+    grid = build_occlusion_grid([short] * (CROWD_BODIES + 1), [light], width=1024, height=1024)
+    assert header(grid, 130, 100)[1] == header(grid, 130, 100)[3] == 0
+    # One fewer is no crowd: every cell keeps its exact list.
+    grid = build_occlusion_grid([short] * CROWD_BODIES, [light], width=1024, height=1024)
+    assert header(grid, 130, 100)[1] == CROWD_BODIES
 
 
 def test_source_culling_retains_long_tracer_and_rejects_distant_bodies() -> None:
@@ -67,14 +107,14 @@ def test_source_culling_retains_long_tracer_and_rejects_distant_bodies() -> None
 
 
 
-def test_dense_grid_uses_smaller_cells_without_dropping_volumes() -> None:
-    body = BodyVolume(Vec2(100, 100), Vec2(8, 14), 24, 0)
-    source = MaterialLight(Vec2(100, 90), 100, (1, 1, 1))
-    small = build_occlusion_grid([body], [source], width=1024, height=1024)
-    dense = build_occlusion_grid([body] * 512, [source], width=1024, height=1024)
-    assert small.cell_size == 64
-    assert dense.cell_size == 32
-    assert dense.body_count == 512
+def test_sources_wider_than_the_penumbra_width_pad_no_further() -> None:
+    bodies = [BodyVolume(Vec2(100 + 37 * i, 300), Vec2(4, 12), 24, 0) for i in range(12)]
+
+    def references(width: float) -> int:
+        light = MaterialLight(Vec2(300, 300), 400, (1, 1, 1), source_width=width)
+        return build_occlusion_grid(bodies, [light], width=1024, height=1024).references
+
+    assert references(2) < references(PENUMBRA_WIDTH) == references(PENUMBRA_WIDTH * 4)
 
 
 def test_illumination_only_grid_support_and_explicit_energetic_profiles():
@@ -113,7 +153,6 @@ def test_annulus_grid_keeps_outer_endpoints_and_interior_ray_blockers() -> None:
 
 
 def test_killed_visible_caster_collapses_with_native_timer_and_current_geometry() -> None:
-    import msgspec
 
     creature = CreatureState(active=True, hp=100, type_id=CreatureTypeId.SPIDER_SP1,
                              pos=Vec2(100, 200), size=60)

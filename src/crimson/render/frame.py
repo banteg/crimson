@@ -18,7 +18,9 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from .rtx.bonus_lighting import BonusLighting
+    from .rtx.contact_glow import ContactGlows
     from .rtx.creature_lighting import CreatureLighting
+    from .rtx.material_lights import LightSelection
     from .rtx.player_lighting import PlayerLighting
     from .rtx.smoke import SmokeRenderer
 
@@ -48,3 +50,6 @@ class RenderFrame(msgspec.Struct, frozen=True):
     bonus_lighting: BonusLighting | None = None
     player_lighting: PlayerLighting | None = None
     smoke: SmokeRenderer | None = None
+    # RTX: which lights fade in or out of the budgets (material_lights.LightSelection), and the ion contacts' glows.
+    light_selection: LightSelection | None = None
+    contact_glows: ContactGlows | None = None

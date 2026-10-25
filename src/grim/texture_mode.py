@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 
 from .edr import HDR_PIXEL_FORMAT, edr_headroom
@@ -44,7 +44,7 @@ def restore_current_target() -> None:
 
 
 @contextmanager
-def texture_mode(target: rl.RenderTexture, *, scale_x: float = 1.0, scale_y: float = 1.0) -> Iterator[None]:
+def texture_mode(target: rl.RenderTexture, *, scale_x: float = 1.0, scale_y: float = 1.0) -> Generator[None]:
     _bind(target, scale_x, scale_y)
     _stack.append((target, scale_x, scale_y))
     try:

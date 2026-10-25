@@ -69,7 +69,7 @@ def test_source_cells_preserve_energy_head_and_finite_growing_profiles() -> None
     assert beam_cells(light())[3::4] == (1.0, 1.0, 1.0)
 
 
-def test_selected_source_slot_changes_mask_profiles_without_stale_state() -> None:
+def test_lit_slot_keeps_its_mask_profile_when_sources_swap() -> None:
     from crimson.projectiles.types import Projectile
     from crimson.projectiles.types import ProjectileTemplateId as PT
     from crimson.render.rtx.material_lights import projectile_source, select_material_lights
@@ -85,20 +85,24 @@ def test_selected_source_slot_changes_mask_profiles_without_stale_state() -> Non
 
     def selected():
         return select_material_lights(
-            [source for projectile in projectiles if (source := projectile_source(projectile)) is not None],
+            [source for ident, projectile in enumerate(projectiles)
+             if (source := projectile_source(projectile, ident)) is not None],
             view_center=Vec2(100, 100),
         )
 
     first = selected()
     assert len(first) == 17 and first[-2].illumination_gain > 0 and first[-1].illumination_gain == 0
+    assert (first[-2].ident, first[-1].ident) == (15, 16)
     before, _ = prepare_beam_lights(first)
     projectiles[-2].life_timer, projectiles[-1].life_timer = 0.36, 0.4
     second = selected()
-    assert len(second) == 17 and second[-2].illumination_gain == 0 and second[-1].illumination_gain > 0
+    # The brighter source takes the lit slot; the mask profile follows the slot, not the source.
+    assert len(second) == 17 and second[-2].illumination_gain > 0 and second[-1].illumination_gain == 0
+    assert (second[-2].ident, second[-1].ident) == (16, 15)
     after, _ = prepare_beam_lights(second)
     row_size = SOURCE_CELLS * 4
-    assert any(before[15 * row_size : 16 * row_size]) and not any(before[16 * row_size : 17 * row_size])
-    assert not any(after[15 * row_size : 16 * row_size]) and any(after[16 * row_size : 17 * row_size])
+    for rows in (before, after):
+        assert any(rows[15 * row_size : 16 * row_size]) and not any(rows[16 * row_size : 17 * row_size])
     assert prepare_beam_lights([]) == ([], [])
     nonbeam = MaterialLight(Vec2(), 100, (1, 1, 1), length=250)
     values, grid = prepare_beam_lights([nonbeam])
@@ -106,7 +110,7 @@ def test_selected_source_slot_changes_mask_profiles_without_stale_state() -> Non
 
 
 def test_full_section_extent_pads_only_beam_cell_lists() -> None:
-    from crimson.render.rtx.reflection_occlusion import BodyVolume, build_occlusion_grid
+    from crimson.render.rtx.reflection_occlusion import CROWD_BODIES, BodyVolume, build_occlusion_grid
 
     original = light()
     cells, grid_sources = prepare_beam_lights([original])
@@ -115,12 +119,18 @@ def test_full_section_extent_pads_only_beam_cell_lists() -> None:
     assert grid_sources[0].source_width == original.source_width
     assert grid_sources[0].length == original.length + 2 * 56 * 1.05 * SUPPORT
     assert original.source_width == 3 and original.length == 256
-    bodies = [BodyVolume(Vec2(100, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(384)]
+    # As many as one cell lists before it is a crowd.
+    bodies = [BodyVolume(Vec2(110, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(CROWD_BODIES)]
     grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256, beam_margin=margin)
     assert grid.body_count == len(bodies)
     # Section walks get the half-span; other lights keep the transverse margin.
     plain = build_occlusion_grid(bodies, grid_sources, width=256, height=256)
     assert grid.references == plain.references < grid.beam_references
+    # A wide point light (an explosion) widens the ordinary lists' penumbra margin, never the sections' lists.
+    blast = MaterialLight(Vec2(100, 90), 300, (1, 1, 1), source_width=28)
+    widened = build_occlusion_grid(bodies, [*grid_sources, blast], width=256, height=256, beam_margin=margin)
+    assert widened.references > grid.references
+    assert widened.beam_references == grid.beam_references
     zero = msgspec.structs.replace(original, length=0, direction=Vec2())
     zero_cells, zero_grid = prepare_beam_lights([zero])
     assert zero_grid[0].direction == Vec2(1, 0)

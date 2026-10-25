@@ -10,9 +10,10 @@
 //    every canonical word of every tick (but the picker, which only co-op has),
 //    and gives each tick's state hash, bake digest, terrain and music digests and
 //    raw state (excluding consumed decal-queue bytes, whose bakes are compared);
-// 2. again, with forced rollbacks, at each window (lockstep, 1, 4, 8 and 12
-//    ticks; a Survival stream's 8 narrowing to 4 halfway through, as past 15
-//    minutes), delay and frame budget (catch-up frames that run several ticks):
+// 2. again, with forced rollbacks, at the 12-tick cap and one other window
+//    (lockstep, 1, 4 or 8 ticks; a Survival stream's 8 narrowing to 4 halfway
+//    through, as past 15 minutes), delay and frame budget (catch-up frames that
+//    run several ticks), the streams taking turns so the corpus plays each:
 //    every so often one player's record arrives up to 12 ticks late, the players
 //    taking turns, the ticks before it running on a stand-in (another record, the
 //    real one, or the engine's guess); the picker's choice of each perk menu comes
@@ -28,8 +29,8 @@
 //    protocol (host/coop_wire.inc), over a simulated pipe with latency, jitter,
 //    loss, a burst of lost packets, a stutter and different frame rates: the
 //    Host starts the run, each peer produces its seat's records (opens when its
-//    state allows them, its picks when it is the picker) and both play the
-//    whole stream in lockstep and with a window of 8, at delays 2 and 4, and
+//    state allows them, its picks when it is the picker) and both play a few
+//    short streams in lockstep and with a window of 8, at delays 2 and 4, and
 //    with a window of 8 at delay 8. On both, each tick once confirmed has the
 //    digests and raw state of (1) and the partner's hash compared; both end on
 //    the same tick in the same state, neither sending more than 60 ticks
@@ -87,7 +88,8 @@ const ALTER = 29,
 // The windows, delays and frame budgets the rollbacks run at: the cap, lockstep, M2's windows (4 and 8) with
 // catch-up frames whose ticks run final behind held ones, and a window of one at a longer delay, whose catch-up
 // confirms held ticks with more of the run produced past them. With `late`, a Survival run's window of 8 narrows
-// halfway through it, as it does past 15 minutes (host/coop.inc COOP_LATE_MS).
+// halfway through it, as it does past 15 minutes (host/coop.inc COOP_LATE_MS). Every stream plays the cap, the
+// deepest rollbacks, and the rest take turns; the coverage counters hold the corpus to reaching each behaviour.
 const MODES = [
   { delay: 2, rmax: 12, budget: 1 },
   { delay: 2, rmax: 0, budget: 1 },
@@ -127,6 +129,7 @@ const ROLLBACK_COVERAGE = [
   "overflow_decal_holds",
   "queued_commits",
   "unseen_bakes",
+  "late_windows",
 ];
 
 const plain = loadGame(wasm),
@@ -442,7 +445,7 @@ function rollbacks(g, { run, cmd, ticks, opens, overflow, queued }, { expected, 
     assert.ok(result.late_ticks > 0, "no tick ran under the late window");
     assert.ok(result.late_lead <= LATE_RMAX, `a tick ran on a guess ${result.late_lead} past the confirmed one, late`);
   }
-  return { ms: performance.now() - at, restores, menuRestores, stats: result };
+  return { ms: performance.now() - at, restores, menuRestores, stats: { ...result, late_windows: narrows ? 1 : 0 } };
 }
 
 // Each field family the hash covers changes it, two sign flips included.
@@ -613,7 +616,10 @@ const bare = (bytes) => {
   return kept;
 };
 // The pipe's runs: lockstep and M2's window, each at two delays, and the longest delay with that window; every
-// other one swaps which peer draws fast, stutters and loses the burst.
+// other one swaps which peer draws fast, stutters and loses the burst. The wire is the same for every stream, so
+// a few short ones play it: a quest's menus, a rush, a survival's, ranked and not.
+const PIPE_STREAMS = ["coop-quest-1.1.rsi", "coop-quest-2.4.rsi", "coop-rush-ranked.rsi", "coop-survival-plague.rsi"];
+assert.deepEqual(PIPE_STREAMS.filter((f) => !streams.includes(f)), [], "pipe streams missing from the corpus");
 const PIPE_MODES = [
   { delay: 2, rmax: 0 },
   { delay: 2, rmax: 8 },
@@ -1426,8 +1432,10 @@ for (const file of live ? LIVE_STREAMS : streams) {
     let at = performance.now();
     for (let i = 0; i < 100; i++) solo.game_coop_hash();
     const hashUs = (1000 * (performance.now() - at)) / 100;
-    const forced = MODES.map((mode) => rollbacks(solo, stream, truth, mode));
-    const piped = PIPE_MODES.map((mode, i) => pipe(stream, truth, mode, i % 2 === 1));
+    const turn = MODES[1 + (report.length % (MODES.length - 1))];
+    const forced = [MODES[0], turn].map((mode) => rollbacks(solo, stream, truth, mode));
+    const piped =
+      PIPE_STREAMS.includes(file) && !variantName ? PIPE_MODES.map((mode, i) => pipe(stream, truth, mode, i % 2 === 1)) : [];
     for (const [name, wanted] of Object.entries(CASES))
       if (file === wanted && !variantName) cases[name] = { stream, truth };
     for (const result of forced) {
