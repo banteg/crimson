@@ -14,7 +14,7 @@
     {
       "id": "crimsonland-recovered-platform-vc6",
       "path": "tools/native/providers/build/crimsonland-platform/crimsonland-platform.lib",
-      "sha256": "8b2cc07c8c4fbbcc7728b34674221593112dfbe5ec41a159acebd56869131fb3",
+      "sha256": "f96167ef939f644cdadd4fb3208c4efaf43d572d7d3eaeb020f832de475c6ec6",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "crimsonland-recovered-platform-vc6-provider"

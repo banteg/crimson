@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 import struct
 from bisect import bisect_right
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Generator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from fractions import Fraction
@@ -736,7 +736,7 @@ class NativeOracle:
         return _STACK_BASE + _STACK_SIZE - _STACK_HEADROOM - _align_up(frame_size, 4)
 
     @contextmanager
-    def trace_memory(self) -> Iterator[MemoryTrace]:
+    def trace_memory(self) -> Generator[MemoryTrace]:
         """Record native reads/writes of the image's writable sections (game state)."""
 
         trace = MemoryTrace(symbols=self.symbols)
