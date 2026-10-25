@@ -344,14 +344,20 @@ void check_rtx() {
   const float plasma[12] = {8, 0, 0, 27, 1.5f, .4f, 0, 0, 1, 0, 0, 0};
   effect(3,plasma,0xffffffff,477.75f,521.75f,375.75f,391.75f,-34,10,-8,8);
   assert(back_red(500,384) > 1.f && back_red(500,400) == 0);
-  float arc[12] = {48,1,1,0,0,0,0,0,0,0,0,0};
-  w2c_host_clear(nullptr, 0xff000000);
-  effect(4,arc,0xff8099ff,471.75f,551.75f,367.75f,399.75f,-16,64,-16,16);
-  assert(back_red(485,384) > .01f && back_red(510,384) > .1f);
-  arc[2]=0;
-  w2c_host_clear(nullptr, 0xff000000);
-  effect(4,arc,0xff8099ff,471.75f,551.75f,367.75f,399.75f,-16,64,-16,16);
-  assert(back_red(485,384) == 0 && back_red(510,384) > .1f);
+  // An ion arc's length in strip scales rides on its vertices, negative where
+  // its strips end in the native cut.
+  for (float length : {48.f, -48.f}) {
+    const float corners[16] = {471.75f, 367.75f, -16, -16, 471.75f, 399.75f, -16, 16,
+                               551.75f, 399.75f, 64,  16,  551.75f, 367.75f, 64,  -16};
+    EffectVertex arc[6];
+    effect_quad(corners, 0xff8099ff, arc);
+    for (EffectVertex &v : arc)
+      v.z = length;
+    memcpy(memory + 4096, arc, sizeof arc);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_effect_sprites(nullptr, 4096, 4, 6);
+    assert((length > 0 ? back_red(485, 384) > .01f : back_red(485, 384) == 0) && back_red(510, 384) > .1f);
+  }
   // Lit batches: creature bodies keep a 0.6 linear ambient fill without lights
   // and brighten under one; players without lights keep the device's shading.
   w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
