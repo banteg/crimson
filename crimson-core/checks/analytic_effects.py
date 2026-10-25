@@ -15,7 +15,7 @@ def main():
         out = Path(folder)
         (out / "grim2d_cpp.h").write_text("""#pragma once
 struct grim_config_value_t { unsigned words[4]; };
-struct IGrim2D_cpp { void grim_flush_batch(); };
+struct IGrim2D_cpp { void grim_flush_batch(); void grim_end_batch(); };
 """)
         (out / "crimsonland_gameplay.h").write_text("""#pragma once
 struct vec2f_t { float x,y; };

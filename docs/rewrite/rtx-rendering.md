@@ -259,7 +259,8 @@ for SDR, so they read the same on any display.
 The profiles are fitted to the original atlas cells in `effect_profiles.glsl`. Their byte-alpha cutoff keeps faint layers from
 reappearing during fades. Fireball, smoke, blood, shard and casing artwork retains its existing drawing, as does Classic mode.
 Warm glows under normal alpha blending retain the original texture coverage. Consecutive radial sprites batch by shape with
-per-vertex tints, ending at texture, blend, target or parameterized-effect changes. Native hooks retain Grim's computed corners
+per-vertex tints, ending at texture, blend, target or parameterized-effect changes; natively they submit wherever Grim flushes
+or ends its own batch, so they keep their place and blend state. Native hooks retain Grim's computed corners
 and transformed vertices, including its rotated non-square quads. Suppressed rendering discards pending analytic batches.
 These are appearance approximations; fewer submitted stamps alone do not establish a performance improvement.
 

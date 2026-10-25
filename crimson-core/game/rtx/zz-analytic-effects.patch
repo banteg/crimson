@@ -8,6 +8,15 @@ World-only analytic glows, shells, plasma and ion arcs. Classic submission is un
  #if CL_BUILD < 10400
      if (!grim_batch_active) {
          return;
+--- a/decomp/1.9/grim/render/end_batch.cpp
++++ b/decomp/1.9/grim/render/end_batch.cpp
+@@ -18,5 +18,6 @@
+ void IGrim2D_cpp::grim_end_batch(void)
+ {
++    rtx_effect_flush();
+ #if CL_BUILD < 10400
+     if (!grim_batch_active) {
+         return;
 --- a/decomp/1.9/grim/render/submit_vertices_transform_color.cpp
 +++ b/decomp/1.9/grim/render/submit_vertices_transform_color.cpp
 @@ -44,6 +44,9 @@

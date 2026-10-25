@@ -22,12 +22,21 @@ int calls = 0, flushes = 0;
 float captured[16];
 std::vector<EffectVertex> captured_sprites;
 std::vector<int> submissions;
+std::vector<unsigned> blends;
 extern "C" bool rtx_drawing() { return enabled && outputs && !disabled; }
 void IGrim2D_cpp::grim_flush_batch() {
   ++flushes;
   rtx_effect_flush();
   if (grim_vertex_count)
     submissions.push_back(-1); // Original textured work.
+  grim_vertex_count = 0;
+}
+// As patched: pending analytic sprites draw before the batch's own textured
+// work, under the state the batch was built in.
+void IGrim2D_cpp::grim_end_batch() {
+  rtx_effect_flush();
+  if (grim_vertex_count)
+    submissions.push_back(-1);
   grim_vertex_count = 0;
 }
 IGrim2D_cpp grim;
@@ -41,6 +50,7 @@ extern "C" void host_effect(const float *corners, int, const float *,
 extern "C" void host_effect_sprites(const void *data, int kind, int count) {
   ++calls;
   submissions.push_back(kind);
+  blends.push_back(grim_config_values[0x14].words[0]);
   auto *v = (const EffectVertex *)data;
   captured_sprites.assign(v, v + count);
 }
@@ -119,6 +129,19 @@ int main() {
   disabled = false;
   rtx_effect_flush();
   assert(calls == 0);
-  puts("analytic hooks: output suppression, alpha coverage, original corners "
-       "and 100-to-1 sprite batching passed");
+  // Ending a batch submits its pending sprites before the blend changes for the
+  // next one, as effects_render switches from normal alpha to additive.
+  submissions.clear();
+  blends.clear();
+  grim_config_values[0x14].words[0] = 6;
+  assert(rtx_effect_quad(points));
+  grim_vertex_count = 4;
+  grim_interface_ptr->grim_end_batch();
+  grim_config_values[0x14].words[0] = 2;
+  assert(rtx_effect_quad(points));
+  grim_interface_ptr->grim_end_batch();
+  assert((submissions == std::vector<int>{1, -1, 1}));
+  assert((blends == std::vector<unsigned>{6, 2}));
+  puts("analytic hooks: output suppression, alpha coverage, original corners, "
+       "batch-end submission and 100-to-1 sprite batching passed");
 }
