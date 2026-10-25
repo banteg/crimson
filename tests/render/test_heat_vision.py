@@ -5,7 +5,8 @@ import numpy as np
 import pytest
 
 from crimson.creatures.anim import CREATURE_ANIM, creature_anim_select_frame
-from crimson.creatures.spawn import CreatureTypeId
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
+from crimson.render.rtx.heat_heads import heat_head_color
 from crimson.render.rtx.heat_vision import (
     BODY_OPACITY,
     FROZEN_WARMTH,
@@ -14,15 +15,18 @@ from crimson.render.rtx.heat_vision import (
     heat_visibility,
     heat_warmth,
 )
+from crimson.render.world.creatures import draw_creature_sprite
+from crimson.render.world.draw import _NATIVE_CREATURE_SPRITE_DRAW_ORDER
 from crimson.render.world.viewport import ViewTransform
 from grim.assets import TextureId, load_runtime_resources, unload_runtime_resources
 from grim.color import RGBA
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import texture_mode
 from tests.render.test_ground_materials import pixels
 from tests.render.test_material_lights import frame
+from tests.support.creature_draw_capture import render_ctx_for_creatures
 
 
 def test_hidden_evil_aliens_show_in_full_and_corpses_cool() -> None:
@@ -48,6 +52,23 @@ def test_freeze_cools_monsters_without_hiding_them() -> None:
     assert FROZEN_WARMTH < heat_warmth(spider, snapshot) < 1.0
 
 
+def test_heat_sprite_carries_the_head_of_its_selected_frame(headless_resources, mocker) -> None:
+    draw = mocker.patch.object(rl, "draw_texture_pro")
+    ctx = render_ctx_for_creatures(headless_resources, ())
+    for kind in (CreatureTypeId.ZOMBIE, CreatureTypeId.LIZARD):
+        texture = headless_resources.texture(TextureId[kind.name])
+        for phase in range(32):
+            draw_creature_sprite(
+                ctx, texture, type_id=kind, flags=CreatureFlags(0), phase=phase,
+                pos=Vec2(32, 32), rotation_rad=0, scale=1, size_scale=1,
+                tint=rl.Color(255, 0, 0, 224), heat=True,
+            )
+            _, source, _, _, _, color = draw.call_args.args
+            index = int(source.x / (texture.width / 8)) + 8 * int(source.y / (texture.height / 8))
+            assert (color.g, color.b) == heat_head_color(kind, index)
+            assert (color.r, color.a) == (255, 224)
+
+
 
 def trail_texels(heat: HeatVision) -> list[float]:
     assert heat.trail is not None
@@ -69,10 +90,10 @@ def test_trails_fade_by_game_time_and_restart_on_rewind(raylib_context) -> None:
         assert max(trail_texels(heat)) == pytest.approx(fresh / 2, rel=.02)
         heat.update(half_life, ground_size=Vec2(128, 128))  # a paused frame keeps the trail
         assert max(trail_texels(heat)) == pytest.approx(fresh / 2, rel=.02)
-        # The shorter 0.3 s half-life leaves only an eighth of the heat at 0.9 s.
-        cooled = msgspec.structs.replace(snapshot, elapsed_ms=900.)
-        heat.update(cooled, ground_size=Vec2(128, 128))
-        assert max(trail_texels(heat)) == pytest.approx(fresh / 8, rel=.02)
+        for halves in (2, 3):
+            cooled = msgspec.structs.replace(snapshot, elapsed_ms=halves * TRAIL_HALF_LIFE_S * 1000)
+            heat.update(cooled, ground_size=Vec2(128, 128))
+            assert max(trail_texels(heat)) == pytest.approx(fresh / 2**halves, rel=.02)
         heat.update(snapshot, ground_size=Vec2(128, 128))  # a rewind starts over
         assert max(trail_texels(heat)) == 0.0
     finally:
@@ -137,9 +158,9 @@ def test_every_monster_living_cycle_has_stable_heat(raylib_context, assets_dir) 
             rl.unload_image(image)
 
     try:
-        for type_id, info in CREATURE_ANIM.items():
-            if type_id == CreatureTypeId.TROOPER:
-                continue
+        # Follow the actual body-pass list: troopers are player artwork, not monsters.
+        for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
+            info = CREATURE_ANIM[type_id]
             texture = resources.texture(TextureId[type_id.name])
             alpha = texels(texture)[:, :, 3]
             target = rl.load_render_texture(texture.width, texture.height)
@@ -147,7 +168,14 @@ def test_every_monster_living_cycle_has_stable_heat(raylib_context, assets_dir) 
                 with texture_mode(target):
                     rl.clear_background(rl.Color(15, 18, 25, 255))
                     with heat.body_scope(texture=texture, restore_shader=None):
-                        rl.draw_texture(texture, 0, 0, rl.Color(255, 0, 0, round(BODY_OPACITY * 255)))
+                        w, h = texture.width // 8, texture.height // 8
+                        for index in range(64):
+                            x, y = index % 8 * w, index // 8 * h
+                            head_x, head_y = heat_head_color(type_id, index)
+                            rl.draw_texture_pro(
+                                texture, rl_rectangle(x, y, w, h), rl_rectangle(x, y, w, h), rl_vector2(0, 0),
+                                0, rl.Color(255, head_x, head_y, round(BODY_OPACITY * 255)),
+                            )
                 rgb = texels(target.texture)[::-1, :, :3].astype(float) / 255
             finally:
                 rl.unload_render_texture(target)
@@ -169,7 +197,8 @@ def test_every_monster_living_cycle_has_stable_heat(raylib_context, assets_dir) 
             # Stability must retain cool extremities and bright internal detail,
             # rather than flattening the entire creature to one temperature.
             assert np.mean(contrasts) > .45, (type_id.name, contrasts)
-        assert len(heat.densities) == 5
+        expected = {int(resources.texture(TextureId[kind.name]).id) for kind in _NATIVE_CREATURE_SPRITE_DRAW_ORDER}
+        assert set(heat.densities) == expected
         heat.close()
         assert not heat.densities
     finally:

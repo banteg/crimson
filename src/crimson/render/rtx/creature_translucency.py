@@ -5,12 +5,17 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 from grim.raylib_api import rl
 
 
+def _cell_size(alpha: Image.Image) -> tuple[int, int]:
+    width, height = alpha.size
+    if alpha.mode != "L" or width <= 0 or height <= 0 or width % 8 or height % 8:
+        raise ValueError("Creature proxies require an L alpha image with an 8x8 cell grid")
+    return width // 8, height // 8
+
+
 def build_thickness_proxy(alpha: Image.Image) -> Image.Image:
     """Encode largest covering odd-square support, capped at 31px, per 8x8 atlas cell."""
     width, height = alpha.size
-    if alpha.mode != "L" or width <= 0 or height <= 0 or width % 8 or height % 8:
-        raise ValueError("Creature thickness requires an L alpha image with an 8x8 cell grid")
-    cell_width, cell_height = width // 8, height // 8
+    cell_width, cell_height = _cell_size(alpha)
     interior = Image.new("L", alpha.size, 255)
     grid = ImageDraw.Draw(interior)
     for cell in range(8):
@@ -59,7 +64,7 @@ def build_thickness_proxy(alpha: Image.Image) -> Image.Image:
 def blur_cells(proxy: Image.Image, radius: int) -> Image.Image:
     """A box blur inside each 8x8 atlas cell, edges extended: no animation frame bleeds into its neighbor."""
     width, height = proxy.size
-    cell_width, cell_height = width // 8, height // 8
+    cell_width, cell_height = _cell_size(proxy)
     blurred = Image.new("L", proxy.size)
     for y in range(0, height, cell_height):
         for x in range(0, width, cell_width):
@@ -75,9 +80,6 @@ def build_heat_density(alpha: Image.Image) -> Image.Image:
     silhouette texels. The triangular footprint retains hot cores and cool tips
     without quantizing the whole torso to its largest surviving square.
     """
-    width, height = alpha.size
-    if alpha.mode != "L" or width <= 0 or height <= 0 or width % 8 or height % 8:
-        raise ValueError("Creature heat requires an L alpha image with an 8x8 cell grid")
     return blur_cells(blur_cells(alpha, 2), 2)
 
 

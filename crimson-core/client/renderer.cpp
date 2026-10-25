@@ -415,6 +415,8 @@ GLuint shape_map(int id, bool heat = false) {
   const auto *pixels = client_memory() + texels->second;
   std::vector<unsigned char> sizes =
       heat ? renderer_heat_density(pixels, width, height) : renderer_thickness(pixels, width, height);
+  if (sizes.empty())
+    return blank_texture;
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);

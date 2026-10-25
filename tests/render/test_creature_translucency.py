@@ -86,10 +86,17 @@ def test_thickness_uses_native_alpha_cutoff() -> None:
     assert sum(value != 0 for value in thickness.tobytes()) == 2
 
 
-@pytest.mark.parametrize("size", [(63, 64), (64, 65), (7, 8)])
-def test_thickness_rejects_incomplete_atlas_cells(size: tuple[int, int]) -> None:
-    with pytest.raises(ValueError):
-        build_thickness_proxy(Image.new("L", size))
+@pytest.mark.parametrize("size", [(0, 0), (0, 8), (8, 0), (63, 64), (64, 65), (7, 8)])
+def test_proxies_reject_incomplete_atlas_cells(size: tuple[int, int]) -> None:
+    for build in (build_thickness_proxy, build_heat_density):
+        with pytest.raises(ValueError):
+            build(Image.new("L", size))
+
+
+def test_proxies_require_an_alpha_plane() -> None:
+    for build in (build_thickness_proxy, build_heat_density):
+        with pytest.raises(ValueError):
+            build(Image.new("RGBA", (64, 64)))
 
 
 def test_consecutive_species_bind_their_own_cached_thickness(raylib_context, mocker) -> None:

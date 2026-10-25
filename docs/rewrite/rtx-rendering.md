@@ -1127,9 +1127,14 @@ suppression; classic keeps the original yellow aura texture.
 - Bodies: after each species' body pass, the same sprites draw again with
   `heat_body.frag` in the ironbow ramp (`ironbow.glsl`), indexed by the creature
   silhouette density: two 5×5 alpha blurs within each atlas cell, made once on
-  upload (one texture tap per fragment). Density preserves cool extremities;
-  two soft sprite-local heat lobes keep the internal hot spots stable through
-  articulation. Bounded detail from the sprite color already fetched with its
+  the atlas's first heat draw (one texture tap per fragment). Density preserves
+  cool extremities; a fixed torso lobe and a soft head lobe preserve hot spots through
+  articulation. Zombie walking frames carry head positions baked with OpenCV
+  Lucas–Kanade optical flow (`tools/rtx/track_heat_heads.py`, `heat_heads.json`);
+  lizards use 35% of the tracked motion. The other species and non-walking cells
+  retain their fixed positions. Green/blue tint bytes carry the per-frame center
+  in both renderers, with no tracking dependency or work during gameplay.
+  Bounded detail from the sprite color already fetched with its
   alpha brings back the artwork's surface features, without extra texture taps.
   This retains a wide magenta-to-white temperature range without the
   square-opening thickness proxy's abrupt jumps between animation poses.

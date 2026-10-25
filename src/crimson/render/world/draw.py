@@ -407,7 +407,7 @@ def draw_creature_heat(
     type_id: CreatureTypeId,
     ctx: WorldDrawContext,
 ) -> None:
-    """The species' bodies again, as heat: red is warmth, alpha the overlay's opacity (Monster Vision's fade)."""
+    """Heat bodies: red is warmth, green/blue a tracked head, alpha Monster Vision's opacity."""
     with heat.body_scope(texture=texture, restore_shader=render_ctx.frame.resources.alpha_test.shader):
         for creature in render_ctx.frame.creatures.entries:
             opacity = heat_visibility(creature, entity_alpha=ctx.entity_alpha) if creature.active else 0.0
@@ -429,6 +429,7 @@ def draw_creature_heat(
                 scale=render_ctx.view.scale,
                 size_scale=float(creature.size) / (float(texture.width) / 8.0),
                 tint=rl_color(int(warmth * 255 + .5), 0, 0, int(opacity * BODY_OPACITY * 255 + .5)),
+                heat=True,
             )
 
 

@@ -322,7 +322,32 @@ SESSION_KEEPS = re.compile(
 PLAYER_ARRAYS = {"telekinetic_bonus_hover_timer_ms"}  # bonus_render's Telekinetic hover
 
 
+def heat_heads_header(root):
+    """The same packed head centers Python reads; no tracking library at runtime."""
+    tracks = json.loads((root / "src/crimson/render/rtx/heat_heads.json").read_text())
+    names = ("zombie", "lizard")
+    lines = ["// Generated from render/rtx/heat_heads.json.",
+             "static constexpr unsigned char heat_head_frames[2][32][2] = {"]
+    for name in names:
+        frames = tracks[name]
+        if not frames or len(frames) > 32 or any(len(p) != 2 or not all(0 < v < 255 for v in p) for p in frames):
+            raise ValueError(f"Invalid heat head track for {name}")
+        lines.append("  {" + ", ".join("{" + ", ".join(map(str, p)) + "}" for p in frames) + "},")
+    lines.extend(["};", "static constexpr int heat_head_frame_counts[2] = {"
+                  + ", ".join(str(len(tracks[name])) for name in names) + "};"])
+    lines.extend([
+        "struct HeatHeadColor { float green, blue; };",
+        "static HeatHeadColor heat_head_color(int type_id, int frame) {",
+        "  if (type_id < 0 || type_id >= 2 || frame < 0 || frame >= heat_head_frame_counts[type_id]) return {0, 0};",
+        "  const auto *head = heat_head_frames[type_id][frame];",
+        "  return {(head[0] + .5f) / 255, (head[1] + .5f) / 255};",
+        "}",
+    ])
+    return "\n".join(lines) + "\n"
+
+
 def game_data(root, out, engine, simulation):
+    (out / "include/rtx_heat_heads.h").write_text(heat_heads_header(root))
     # wasm32 keeps the original pointer width, so each image's data keeps its
     # original layout: aggregates read through a first symbol, overreads and
     # interior names land on the original bytes. Engine state (Grim's, and the

@@ -13,6 +13,7 @@ from ...creatures.anim import (
 )
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
+from ..rtx.heat_heads import heat_head_color
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -86,6 +87,7 @@ def draw_creature_sprite(
     shadow: bool = False,
     body: bool = True,
     hit_flash: bool = False,
+    heat: bool = False,
 ) -> None:
     info = CREATURE_ANIM.get(type_id)
     if info is None:
@@ -102,6 +104,9 @@ def draw_creature_sprite(
     )
     if index < 0:
         return
+    if heat:
+        head_x, head_y = heat_head_color(type_id, index)
+        tint = rl_color(tint.r, head_x, head_y, tint.a)
 
     if screen_pos is None:
         screen_pos = render_ctx.world_to_screen(pos)

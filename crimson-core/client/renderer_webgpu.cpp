@@ -638,6 +638,8 @@ WGPUTextureView shape_map(int id, bool heat = false) {
   const auto *pixels = client_memory() + texels->second;
   std::vector<unsigned char> sizes =
       heat ? renderer_heat_density(pixels, width, height) : renderer_thickness(pixels, width, height);
+  if (sizes.empty())
+    return blank_view;
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
   descriptor.size = {(uint32_t)width, (uint32_t)height, 1};
   descriptor.format = WGPUTextureFormat_R8Unorm;

@@ -13,18 +13,19 @@ void main() {
     float a = art.a;
     if (a * fragColor.a < 4. / 255.)
         discard;
-    // Two cell-local 5x5 alpha blurs on upload (creature_translucency.py): continuous coverage avoids the
+    // Two cell-local 5x5 alpha blurs on first use (creature_translucency.py): continuous coverage avoids the
     // square-opening proxy's whole-body jumps when an animation pose gains or loses a texel of support.
     vec2 cell = floor(fragTexCoord * 8.) / 8.;
     vec2 half_texel = .5 / vec2(textureSize(u_density, 0));
     float density = textureLod(u_density, clamp(fragTexCoord, cell + half_texel, cell + vec2(.125) - half_texel), 0.).r;
     // Preserve a wide cool-to-hot range instead of saturating the entire silhouette to yellow.
     float core = pow(density, 1.15);
-    // Soft internal lobes stay in sprite-local space: articulation cannot abruptly reclassify the whole torso.
-    // Alpha still supplies the silhouette; density follows the pose around these stable hot centers.
+    // Keep the torso lobe fixed; green/blue optionally carry a baked animation-frame head position.
+    // Zombie heads follow their OpenCV tracks fully, lizards partially; other species keep the fixed chest.
     vec2 p = fract(fragTexCoord * 8.) - .5;
     vec2 abdomen = (p - vec2(-.12, 0.)) * vec2(12., 10.);
-    vec2 chest = (p - vec2(.025, 0.)) * vec2(18., 13.);
+    vec2 head = fragColor.g > 0. ? fragColor.gb - .5 : vec2(.025, 0.);
+    vec2 chest = (p - head) * vec2(18., 13.);
     float organs = .34 * exp(-dot(abdomen, abdomen)) + .28 * exp(-dot(chest, chest));
     // Recover the original sprite's small surface features from the color already fetched with its alpha.
     // Bound their contribution so baked artwork shading cannot bring back the large temperature pops.
