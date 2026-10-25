@@ -8,7 +8,7 @@ The sensor is selective: fire and explosions keep their own look and never wash 
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
@@ -170,7 +170,7 @@ class HeatVision(msgspec.Struct):
                 rl.begin_shader_mode(restore_shader)
 
     @contextmanager
-    def body_scope(self, *, texture: rl.Texture, restore_shader: rl.Shader | None) -> Iterator[None]:
+    def body_scope(self, *, texture: rl.Texture, restore_shader: rl.Shader | None) -> Generator[None]:
         if self.body_shader is None:
             self.body_shader = _load(CREATURE_VERTEX, glsl("heat_body.frag"))
         shader = self.body_shader

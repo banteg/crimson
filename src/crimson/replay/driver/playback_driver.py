@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import pickle
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -57,7 +57,7 @@ def _tick_rng_trace(
     *,
     enabled: bool,
     strict: bool = False,
-) -> Iterator[list[RngTraceDraw]]:
+) -> Generator[list[RngTraceDraw]]:
     """Record the tick's caller order for its checkpoint and, when enabled, every draw."""
 
     draws: list[RngTraceDraw] = []
