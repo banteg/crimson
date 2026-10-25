@@ -69,7 +69,8 @@ def capture_scene(scene: dict, mode: str, game: Path, out: Path, client: Path) -
             for field in fields[2:]:
                 name, ms = field.split("=")
                 # The frame timer spans the simulation's ticks before anything draws: a GPU timer counts that CPU
-                # time as idle GPU time, so it is no measure of drawing.
+                # time as idle GPU time, so it is no measure of drawing. Drawing before the world (decal bakes,
+                # heat stamps) has timers of its own.
                 if name != "frame":
                     passes.setdefault(name, []).append(float(ms))
     shutil.rmtree(work)
