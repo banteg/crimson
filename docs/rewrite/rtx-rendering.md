@@ -255,6 +255,20 @@ nothing drawn differently. Each `gpu` line
 is followed by a `draws` line for the same frame: per pass, texture (or `beam` / `effect<kind>`) and target, the quads
 drawn and the target pixels they cover, as `pass:what:target=quads/pixels`.
 
+The two RTX renderers share their GLSL, but light collection and selection, volley merging, beams and smoke are
+ported twice (`render/rtx/*.py`, `crimson-core/game/rtx_*.cpp`, `crimson-core/client/renderer*.cpp`).
+`golden.py parity --game <game folder> --out <dir>` captures the scenes with the client (`<dir>/client`), draws them
+with the Python port (`<dir>/python`, also `golden.py python`) and compares the two: a sheet per scene and mode
+(client, Python, difference), the full-size difference map and `summary.json`. The Python side plays undrawn to the
+client's seek, then draws every tick up to the scene's, as the client does, in the client's 1024x768 window at the
+display's density, tonemapped for SDR. Each frame's HUD and aim overlays (where the Python frame differs from its
+world alone) and the client's replay bar are reported apart from the world. The client frame is aligned to the
+Python one to the pixel first (the shift is reported, with the unaligned difference): a renderer placing everything
+a pixel off differs at every edge. Classic shows how far the two draw apart outside RTX (filtering, terrain decals),
+so the RTX difference beyond the classic one is what to look into. `--window n` lets the Python frame up to `n`
+ticks either side stand in, and `--views` saves `rtxdebug` views of the Python frame (the client has none) to
+narrow a difference down to a pass.
+
 ### Analytic glow effects
 
 `render/rtx/effects.py` and the client's `host_effect` draw the same `effect.frag`:
