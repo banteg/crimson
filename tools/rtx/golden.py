@@ -6,7 +6,7 @@
 The game folder holds crimson.paq, sfx.paq and music.paq (a client's runtime folder works). Each scene in
 scenes.toml is a replay and a tick; the client seeks a little before it (smoke and wet blood need history), pauses on
 the tick and saves its frame (CRIMSON_CAPTURE_TICK), with GPU time per pass (CRIMSON_GPU_TIMERS) over the frames
-leading to it. Captures tonemap for SDR, so they read the same on any display.
+leading to it, the simulation's share left out. Captures tonemap for SDR, so they read the same on any display.
 """
 
 import argparse
@@ -68,7 +68,10 @@ def capture_scene(scene: dict, mode: str, game: Path, out: Path, client: Path) -
         if tick - 60 <= drawn < tick:
             for field in fields[2:]:
                 name, ms = field.split("=")
-                passes.setdefault(name, []).append(float(ms))
+                # The frame timer spans the simulation's ticks before anything draws: a GPU timer counts that CPU
+                # time as idle GPU time, so it is no measure of drawing.
+                if name != "frame":
+                    passes.setdefault(name, []).append(float(ms))
     shutil.rmtree(work)
     return {name: statistics.median(values) for name, values in passes.items()}
 

@@ -40,6 +40,7 @@ void renderer_set_headroom(float headroom);
 // CRIMSON_GPU_TIMERS: the GPU time each pass of the last measured frame took,
 // as "pass=ms ..." (OpenGL timer queries, a frame late), or "" where unmeasured.
 std::string renderer_gpu_timings();
+std::string renderer_draw_stats();
 // thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);
 // Monster Vision's silhouette density: two cell-local 5x5 alpha blurs.
