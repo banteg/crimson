@@ -212,8 +212,12 @@ struct LitProgram {
 // cell size, the shadows setting, and its texels in an RGBA32F texture 256 wide.
 enum { OCCLUSION_WIDTH = 256 };
 float occlusion_grid[4], occlusion_cell = 64;
-int dynamic_shadows, occlusion_rows;
-GLuint occlusion_texture;
+int dynamic_shadows;
+// The grid rotates through three textures: an upload never waits for frames
+// still reading the one before.
+GLuint occlusion_textures[3], occlusion_texture;
+int occlusion_texture_rows[3], occlusion_next;
+std::vector<float> occlusion_texels;
 LitProgram creature_lit, player_lit, bonus_lit;
 // Monster Vision's heat (render/rtx/heat_vision.py): the bodies' program
 // (HOST_PASS_HEAT), and the world-space trail buffer at half the terrain's
@@ -1621,21 +1625,26 @@ void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 c
     return;
   // Whole rows, and a texture that grows in powers of two as crowds do.
   int rows = (int)((count + OCCLUSION_WIDTH * 4 - 1) / (OCCLUSION_WIDTH * 4));
-  if (rows > occlusion_rows) {
-    occlusion_rows = 1;
-    while (occlusion_rows < rows)
-      occlusion_rows *= 2;
-    if (!occlusion_texture)
-      glGenTextures(1, &occlusion_texture);
-    glBindTexture(GL_TEXTURE_2D, occlusion_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, OCCLUSION_WIDTH, occlusion_rows, 0, GL_RGBA, GL_FLOAT, nullptr);
+  int slot = occlusion_next;
+  occlusion_next = (occlusion_next + 1) % 3;
+  if (rows > occlusion_texture_rows[slot]) {
+    int grown = 1;
+    while (grown < rows)
+      grown *= 2;
+    occlusion_texture_rows[slot] = grown;
+    if (!occlusion_textures[slot])
+      glGenTextures(1, &occlusion_textures[slot]);
+    glBindTexture(GL_TEXTURE_2D, occlusion_textures[slot]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, OCCLUSION_WIDTH, grown, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   }
-  std::vector<float> texels((size_t)rows * OCCLUSION_WIDTH * 4);
-  memcpy(texels.data(), client_memory() + values, (size_t)count * 4);
+  occlusion_texture = occlusion_textures[slot];
+  occlusion_texels.resize((size_t)rows * OCCLUSION_WIDTH * 4);
+  memcpy(occlusion_texels.data(), client_memory() + values, (size_t)count * 4);
+  std::fill(occlusion_texels.begin() + count, occlusion_texels.end(), 0.0f);
   glBindTexture(GL_TEXTURE_2D, occlusion_texture);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, OCCLUSION_WIDTH, rows, GL_RGBA, GL_FLOAT, texels.data());
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, OCCLUSION_WIDTH, rows, GL_RGBA, GL_FLOAT, occlusion_texels.data());
 }
 void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 grid_y, f32 center_x, f32 center_y) {
   gpu_mark("bonuses");
