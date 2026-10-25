@@ -422,7 +422,8 @@ Python RTX players receive the shared bounded weapon emitters through a separate
 opaque cloth shader. The treatment combines stronger diffuse dome lighting,
 painted texture relief, and a directional inner rim. It preserves the original
 single-player and co-op tints and keeps a full ambient floor. There is no player
-specular, transmission, material mask, or additional player shadow/occlusion pass.
+specular, transmission or material mask; a player casts a body shadow (see Ground
+reflection occlusion) but receives none.
 The dome coefficient is 2.2, rim coefficient 0.8, relief strength 0.65, and the
 combined added linear radiance is limited without changing hue at a scale of 1.4.
 A small albedo lift and broad facing floor make the response readable on the
@@ -622,9 +623,11 @@ their illumination gain is zero.
 The five standard creature species use one rotated, size-scaled ellipsoid each, fitted
 to the combined planar bounds of their former two body parts and retaining the
 maximum part height. The single convex mass avoids forked body silhouettes while
-preserving elongated shapes. Legs, arms, tails and players are absent; dying
+preserving elongated shapes. Legs, arms and tails are absent; dying
 bodies retain the collapse and fade described below. Their opacity follows the
-creature tint. The volumes extend
+creature tint. A living player is one torso ellipsoid facing its aim, wider across
+the shoulders than deep (`PLAYER_BODY`). A bonus shell is the dome `bonus.frag`
+draws, with the shell's own fade-in and expiry blink as its opacity. The volumes extend
 slightly below the ground plane so their bases meet the surface, rather than
 balancing a full ellipsoid on a single point. These are stable body approximations,
 not frame-by-frame silhouettes or anatomical geometry.
@@ -720,7 +723,8 @@ The existing shadows setting disables the new direct-light and creature visibili
 along with native contact shadows. Ground reflection visibility stays active,
 preserving its independent policy. A blocked emitter does not subtract ambient or
 other emitters' light. Bonuses still receive their existing analytical lighting
-without these cast shadows; players and overlays remain on their original paths.
+without these cast shadows; players and overlays remain on their original paths
+(both cast body shadows, neither receives them).
 No flashlight, diffuse corpse occluders, individual legs, smoke or new normal maps
 are introduced.
 

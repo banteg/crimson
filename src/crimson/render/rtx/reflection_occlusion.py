@@ -10,9 +10,13 @@ import msgspec
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ...bonuses import BonusId
+from ...bonuses.pool import BonusEntry
 from ...creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
 from ...creatures.runtime import CreatureState
 from ...creatures.spawn import CreatureTypeId
+from ...sim.state_types import PlayerState
+from ..world.bonuses import bonus_bubble_fade
 from .material_lights import MaterialLight
 
 CELL_SIZE = 64.0
@@ -77,6 +81,29 @@ def creature_body_volumes(creature: CreatureState) -> list[BodyVolume]:
         )
         for x, y, rx, ry, height in profile
     ]
+
+
+# A player's torso as one ellipsoid facing its aim (half depth, half shoulder width, height), in units of its size.
+PLAYER_BODY = (.125, .22, .46)
+# A bonus shell: the 32-unit dome bonus.frag draws, and its height.
+BONUS_SHELL_RADIUS, BONUS_SHELL_HEIGHT = 16. * .885, 10.
+
+
+def player_body_volumes(player: PlayerState) -> list[BodyVolume]:
+    if player.health <= 0.0:
+        return []
+    depth, half_width, height = PLAYER_BODY
+    return [BodyVolume(player.pos, Vec2(depth * player.size, half_width * player.size), height * player.size,
+                       player.aim_heading - math.pi / 2, 1.0, player.pos)]
+
+
+def bonus_body_volumes(bonus: BonusEntry) -> list[BodyVolume]:
+    """The shell as bonus_render draws it: its bubble fade, blinking out over its last two seconds."""
+    opacity = bonus_bubble_fade(bonus.time_left, bonus.time_max) * 0.9
+    if bonus.bonus_id == BonusId.UNUSED or opacity <= 0.0:
+        return []
+    radii = Vec2(BONUS_SHELL_RADIUS, BONUS_SHELL_RADIUS)
+    return [BodyVolume(bonus.pos, radii, BONUS_SHELL_HEIGHT, 0.0, opacity, bonus.pos)]
 
 
 class OcclusionGrid(msgspec.Struct, frozen=True):
