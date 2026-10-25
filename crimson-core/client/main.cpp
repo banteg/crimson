@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <utility>
 
 struct w2c_host {};
 struct w2c_wasi__snapshot__preview1 {};
@@ -53,9 +54,14 @@ int hold_frames[8];
 // The window has the player: away (blurred, minimized, a hidden tab), no input reaches the game, the pad's
 // neither (a co-op session plays on there, on neutral records).
 bool focused = true;
-// The RTX mode the launch asks for (--rtx, CRIMSON_RTX=1), and whether the window shows extended range.
+// The RTX mode the launch asks for (--rtx, CRIMSON_RTX=1), the one the renderer shows, and whether the window shows
+// extended range.
 bool rtx_requested = getenv("CRIMSON_RTX") && strcmp(getenv("CRIMSON_RTX"), "0");
+bool rtx_shown;
 bool edr;
+// The replay the host asks to play, named for the window title (show_title): its file and the tick it stops at
+// (watch_from_env), a link's runner.
+std::string watch_label;
 
 // On macOS the RTX window opts into extended dynamic range: its half-float back
 // buffer (SDL_GL_FLOATBUFFERS) then carries highlights past white to the display,
@@ -406,7 +412,7 @@ void w2c_host_present(struct w2c_host *) {
 // RTX (game/rtx.cpp): the mode the renderer shows of the one asked for. The page's
 // switch follows it, whoever changed it (shell.html).
 u32 w2c_host_render_mode(struct w2c_host *, u32 requested) {
-  bool rtx = renderer_set_rtx(requested == 1);
+  bool rtx = rtx_shown = renderer_set_rtx(requested == 1);
   display_edr(rtx);
 #ifdef __EMSCRIPTEN__
   MAIN_THREAD_EM_ASM({ Module.renderMode?.($0); }, rtx);
@@ -436,10 +442,20 @@ void watch_from_env() {
     client_fatal("CRIMSON_WATCH: this replay does not play");
   if (const char *seek = getenv("CRIMSON_WATCH_SEEK"))
     w2c_game_game_watch_seek(&game, atoi(seek));
-  if (const char *stop = getenv("CRIMSON_WATCH_STOP"))
+  // A hash-named replay goes by its first 8 digits.
+  std::string file = path;
+  file = file.substr(file.find_last_of("/\\") + 1);
+  file = file.substr(0, file.rfind('.'));
+  if (file.size() > 8 && file.find_first_not_of("0123456789abcdef") == std::string::npos)
+    file.resize(8);
+  watch_label = file;
+  const char *stop = getenv("CRIMSON_WATCH_STOP");
+  if (!stop)
+    stop = getenv("CRIMSON_CAPTURE_TICK");
+  if (stop) {
     w2c_game_game_watch_stop_at(&game, atoi(stop));
-  else if (const char *tick = getenv("CRIMSON_CAPTURE_TICK"))
-    w2c_game_game_watch_stop_at(&game, atoi(tick));
+    watch_label += " to tick " + std::to_string(atoi(stop));
+  }
 }
 
 #ifndef __EMSCRIPTEN__
@@ -521,9 +537,10 @@ void network_update() {
           }
         if (!w2c_game_game_replay_open(&game))
           reason = (char *)client_memory() + w2c_game_game_replay_reason(&game);
-        else if (w2c_game_game_watch(&game, event.rank, day, month, year))
+        else if (w2c_game_game_watch(&game, event.rank, day, month, year)) {
           reason = nullptr;
-        else
+          watch_label = event.runner;
+        } else
           reason = "This run cannot play now.";
       }
       if (reason)
@@ -557,6 +574,27 @@ void network_update() {
     network->request(N::UPLOAD);
     next_upload = now + 600000;
   }
+}
+// The window says what it shows, so windows side by side tell apart: the rendering mode and the replay playing, by
+// the name the host gave it as it starts (watch_label) or its run on the leaderboard.
+void show_title() {
+  static std::string playing;
+  static bool watched;
+  static char shown[128] = "Crimsonland";
+  bool watching = (int)w2c_game_game_watch_status(&game) >= 0;
+  if (watching && !watched)
+    playing = std::exchange(watch_label, {});
+  watched = watching;
+  char title[sizeof shown];
+  int length = snprintf(title, sizeof title, "Crimsonland%s", rtx_shown ? " RTX" : "");
+  if (watching && !playing.empty())
+    snprintf(title + length, sizeof title - length, " · %s", playing.c_str());
+  else if (watching) {
+    const char *run = (const char *)client_memory() + w2c_game_game_watch_run(&game);
+    snprintf(title + length, sizeof title - length, " · %.8s", *run ? run : "replay");
+  }
+  if (strcmp(title, shown))
+    SDL_SetWindowTitle(window, strcpy(shown, title));
 }
 } // namespace
 #endif
@@ -1178,6 +1216,9 @@ SDL_AppResult SDL_AppIterate(void *) {
     renderer_set_headroom(SDL_GetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1));
   bool running = w2c_game_game_frame(&game);
   coop_send();
+#ifndef __EMSCRIPTEN__
+  show_title();
+#endif
   // Snapshot viewer state after the frame returns; never re-enter the module
   // from its presentation import. Used by packaged-client integration checks.
   if (captured_frame >= 0) {
