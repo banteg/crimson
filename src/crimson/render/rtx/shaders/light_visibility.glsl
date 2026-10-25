@@ -144,6 +144,10 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     ray.xy = local * ray.xy;
     q *= inverse_radius;
     ray *= inverse_radius;
+    // A light inside a body, or against it (a muzzle in a packed crowd, a beam through a creature), is not shadowed
+    // by that body: its occlusion fades out over the last half radius before the source. Otherwise the body's near
+    // face cuts the light's pool along a straight line through the source.
+    float embedded = smoothstep(1., 1.5, length(q + ray));
     #ifdef CONTINUOUS_BEAM
     if (beam_section_halfspan > 0.) {
         vec3 source_axis = vec3(local * beam_section_axis, 0.) * inverse_radius;
@@ -154,7 +158,7 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
                               source_axis, beam_section_halfspan)
             + beamChordCoverage(q, ray + transverse_ray * (.57735027 * source_width),
                                 source_axis, beam_section_halfspan));
-        return 1. - orientation.z * coverage;
+        return 1. - orientation.z * embedded * coverage;
     }
     #endif
     float t = clamp(-dot(q, ray) / max(dot(ray, ray), 1e-8), 0., 1.);
@@ -162,7 +166,7 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     // Analytic finite-source penumbra. The cone grows from the receiver toward
     // the source; this is a smooth body proxy, not sampled silhouette tracing.
     float softness = max(.015, source_width * t * max(inverse_radius.x, inverse_radius.y));
-    return 1. - orientation.z * (1. - smoothstep(1. - softness, 1. + softness, distance));
+    return 1. - orientation.z * embedded * (1. - smoothstep(1. - softness, 1. + softness, distance));
 }
 
 float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owner) {
