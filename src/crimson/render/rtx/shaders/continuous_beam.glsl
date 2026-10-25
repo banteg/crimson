@@ -113,7 +113,8 @@ float beamVisibilityRead(int slot) {
     // Kept half a texel inside the group's quarter, so filtering never reaches the next group's.
     vec2 inset = .5 / u_beam_vis_target.zw;
     vec2 uv = clamp(gl_FragCoord.xy / u_beam_vis_target.xy, inset, 1. - inset);
-    vec4 v = texture(u_beam_vis, vec2((float(group) + uv.x) * .25, uv.y));
+    // An explicit level: WGSL samples only in uniform control flow otherwise, and the atlas has no mipmaps.
+    vec4 v = textureLod(u_beam_vis, vec2((float(group) + uv.x) * .25, uv.y), 0.);
     return lane == 0 ? v.x : lane == 1 ? v.y : lane == 2 ? v.z : v.w;
 }
 #endif
