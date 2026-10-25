@@ -16,7 +16,15 @@ from ..beam_profiles import STREAK_SCALES, fire_bullets_flown
 from ..ion_arcs import ion_arcs_drawn
 from ..laser_sight import laser_sight_geometry
 from ..rtx.beam import BeamBatch, draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
-from ..rtx.effects import SPRITE_SHAPES, SpriteBatch, draw_ion_arc, draw_plasma, draw_sprite, sprite_batch
+from ..rtx.effects import (
+    SPRITE_SHAPES,
+    EffectShape,
+    SpriteBatch,
+    draw_ion_arc,
+    draw_plasma,
+    draw_sprite,
+    sprite_batch,
+)
 from ..rtx.mode import RtxRenderMode
 from .atlas import effect_cell_src_inset
 from .constants import _RAD_TO_DEG
@@ -352,6 +360,12 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
                         size, rgba = dist * 0.16, RGBA(0.1, 0.6, 0.2, alpha * 0.7)
                     else:
                         size, rgba = 56.0, RGBA(1.0, 1.0, 1.0, clamp(life * 2.5, 0.0, 1.0) * alpha)
+                    if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
+                        if rgba.a > 1e-3 and size > 1e-3:
+                            beam_batch.end()
+                            draw_sprite(EffectShape.PULSE, center=screen, width=size * scale, height=size * scale,
+                                        color=rgba, rotation=angle)
+                        continue
                     _draw_atlas(
                         render_ctx,
                         texture,

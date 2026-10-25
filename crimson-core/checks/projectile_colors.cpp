@@ -43,6 +43,9 @@ void rtx_plasma(int slot, float alpha) {
   ++plasma_calls;
 }
 void rtx_ion_arc(float, float, float, float, float, float) { ++arc_calls; }
+void rtx_pulse(float, float, float, float, float, float, float, float) {
+  assert(rtx_render_mode);
+}
 vec2f_t *D3DXVec2Normalize(vec2f_t *dst, const vec2f_t *src) {
   float length = sqrtf(src->x * src->x + src->y * src->y);
   *dst = length ? vec2f_t{src->x / length, src->y / length} : vec2f_t{};

@@ -24,7 +24,7 @@ int rtx_effects_active;
 }
 
 namespace {
-enum { WARM, AURA, RING, PLASMA, ARC };
+enum { WARM, AURA, RING, PLASMA, ARC, PULSE };
 std::vector<EffectVertex> sprite_vertices;
 int sprite_kind = -1;
 float byte_alpha(float a) {
@@ -246,4 +246,12 @@ extern "C" void rtx_ion_arc(float sx, float sy, float ex, float ey, float scale,
     quad[i] = {sx + ax * x - ay * y, sy + ay * x + ax * y, shape, 1, color, local[i][0], local[i][1]};
   }
   enqueue(ARC, quad);
+}
+
+// The Pulse Gun's shot (effect.frag's pulseProfile and glow), drawn where and as
+// the native sprite is: centered, `size` wide, turned by the sprite's angle.
+extern "C" void rtx_pulse(float cx, float cy, float size, float angle, float r,
+                          float g, float b, float a) {
+  if (drawing())
+    sprite(PULSE, cx, cy, size, size, angle, rgba(r, g, b, a));
 }

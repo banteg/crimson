@@ -151,7 +151,8 @@ def test_non_drawing_projectiles_do_not_interrupt_beam_batch(mocker):
     mocker.patch.object(projectiles, "BeamBatch", return_value=batch)
     calls.attach_mock(mocker.patch.object(projectiles, "_draw_streak"), "beam")
     calls.attach_mock(mocker.patch.object(projectiles.WorldRenderCtx, "_draw_atlas_sprite"), "atlas")
+    calls.attach_mock(mocker.patch.object(projectiles, "draw_sprite"), "pulse")
     mocker.patch.object(rl, "begin_blend_mode")
     mocker.patch.object(rl, "end_blend_mode")
     projectiles._projectile_sprite_pass(ctx, alpha=1.)
-    assert [c[0] for c in calls.mock_calls] == ["beam", "beam", "end", "atlas", "end"]
+    assert [c[0] for c in calls.mock_calls] == ["beam", "beam", "end", "pulse", "end"]

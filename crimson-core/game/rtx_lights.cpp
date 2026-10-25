@@ -132,7 +132,7 @@ const Emission *emission(int type) {
   static const Emission plasma_cannon = {1.5f, 0.76f, 0.16f, 190, 9, 18, 4, 1, 250, 44.2f, 1, true};
   static const Emission spider_plasma = {0.08f, 0.65f, 0.025f, 100, 2, 18, 0.5f, 1, 140, 4.2f, 1};
   static const Emission shrinkifier = {0.06f, 0.03f, 0.18f, 65, 2, 18, 0.15f, 1, 120, 4.2f, 1};
-  static const Emission pulse = {0.025f, 0.24f, 0.04f, 75, 5, 18, 0.15f, 1, 130, 0, 1};
+  static const Emission pulse = {0.06f, 0.5f, 0.13f, 110, 3, 18, 3, 1, 140, 0, 1};
   switch (type) {
   case PROJECTILE_TYPE_PISTOL:
   case PROJECTILE_TYPE_ASSAULT_RIFLE:
@@ -181,10 +181,16 @@ void projectile_source(const projectile_t &p, int ident) {
       // All five plasma variants switch to the same untinted warm 56px glow.
       r = 1.1f, g = 0.57f, b = 0.12f, width = 5, span = 0;
     }
-  } else if (type == PROJECTILE_TYPE_PULSE_GUN) {
-    width = fminf(18, fmaxf(1, distance * 0.035f));
-    if (life < 0.4f)
-      r = 0.7f, g = 0.36f, b = 0.08f, width = 5;
+  } else if (type == PROJECTILE_TYPE_PULSE_GUN && distance > 0) {
+    // A segment across the shot's front edge, so its reflection stretches along
+    // it; on impact the white sprite lights pale green.
+    bool impact = life < 0.4f;
+    span = 1.4f * (impact ? 28 : distance * 0.08f);
+    float across_x = -dy, across_y = dx;
+    dx = across_x, dy = across_y;
+    head_x += dx * span * 0.5f, head_y += dy * span * 0.5f;
+    if (impact)
+      r = 0.4f, g = 0.75f, b = 0.5f;
   }
   if (streak_scale(type) && dx == 0 && dy == 0)
     heading_direction(p.angle, dx, dy);
