@@ -180,7 +180,7 @@ Program pressure_fronts_program{&WGSL_FULLSCREEN_VERT, &WGSL_PRESSURE_LIT_FRAG, 
 std::vector<float> pressure_fronts;
 Target pressured;
 // Monster Vision's trail buffer and the run's clock it last faded at, as in renderer.cpp.
-const float HEAT_TRAIL_SCALE = 0.5f, HEAT_HALF_LIFE_S = 0.9f, HEAT_MAX_GAP_S = 1;
+const float HEAT_TRAIL_SCALE = 0.5f, HEAT_HALF_LIFE_S = 0.3f, HEAT_MAX_GAP_S = 1;
 Target heat_trail;
 float heat_seconds = -1;
 
@@ -203,7 +203,7 @@ struct Thickness {
   WGPUTexture texture;
   WGPUTextureView view;
 };
-std::unordered_map<int, Thickness> thickness_maps, heat_thickness_maps;
+std::unordered_map<int, Thickness> thickness_maps, heat_density_maps;
 // The creature body grid (host_occlusion), as in renderer.cpp.
 enum { OCCLUSION_WIDTH = 256 };
 float occlusion_grid[4], occlusion_cell = 64;
@@ -625,10 +625,10 @@ WGPUTexture small_texture(int width, const unsigned char *rgba, WGPUTextureView 
   return texture;
 }
 
-// A creature atlas's part sizes (renderer_thickness), made once it is lit;
-// Monster Vision's heat reads them blurred within each cell, as in renderer.cpp.
-WGPUTextureView thickness_map(int id, bool heat = false) {
-  auto &maps = heat ? heat_thickness_maps : thickness_maps;
+// Transmission part sizes or Monster Vision's continuous silhouette density,
+// made once on first use, as in renderer.cpp and creature_translucency.py.
+WGPUTextureView shape_map(int id, bool heat = false) {
+  auto &maps = heat ? heat_density_maps : thickness_maps;
   auto made = maps.find(id);
   if (made != maps.end())
     return made->second.view;
@@ -637,9 +637,9 @@ WGPUTextureView thickness_map(int id, bool heat = false) {
   if ((!light_count && !heat) || t == textures.end() || texels == texel_addresses.end())
     return blank_view;
   int width = t->second.logical_width, height = t->second.logical_height;
-  std::vector<unsigned char> sizes = renderer_thickness(client_memory() + texels->second, width, height);
-  if (heat)
-    sizes = renderer_blur_cells(sizes, width, height, 2);
+  const auto *pixels = client_memory() + texels->second;
+  std::vector<unsigned char> sizes =
+      heat ? renderer_heat_density(pixels, width, height) : renderer_thickness(pixels, width, height);
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
   descriptor.size = {(uint32_t)width, (uint32_t)height, 1};
   descriptor.format = WGPUTextureFormat_R8Unorm;
@@ -1125,7 +1125,7 @@ void wgpu_w2c_host_texture_release(struct w2c_host *, u32 id) {
   release(it->second);
   textures.erase(it);
   texel_addresses.erase((int)id);
-  for (auto *maps : {&thickness_maps, &heat_thickness_maps}) {
+  for (auto *maps : {&thickness_maps, &heat_density_maps}) {
     auto map = maps->find((int)id);
     if (map != maps->end()) {
       wgpuTextureViewRelease(map->second.view);
@@ -1216,14 +1216,14 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     bool present = bound[0] && it != textures.end() && it->second.texture;
     WGPUSampler atlas_sampler = sampler(stage_states[0][TSS_ADDRESSU], stage_states[0][TSS_ADDRESSV],
                                         stage_states[0][TSS_MAGFILTER] >= 2, stage_states[0][TSS_MINFILTER] >= 2);
-    WGPUTextureView thickness = !present                         ? blank_view
-                                : material == HOST_PASS_CREATURES ? thickness_map(bound[0])
-                                : material == HOST_PASS_HEAT      ? thickness_map(bound[0], true)
-                                                                  : blank_view;
+    WGPUTextureView shape = !present                          ? blank_view
+                           : material == HOST_PASS_CREATURES ? shape_map(bound[0])
+                           : material == HOST_PASS_HEAT      ? shape_map(bound[0], true)
+                                                            : blank_view;
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(program, device_output(t, geometry.topology)));
     bind(program,
          fragment_group(program, {{"texture0", present ? it->second.view : blank_view, atlas_sampler},
-                                  {"u_thickness", thickness, linear_clamp()},
+                                  {material == HOST_PASS_HEAT ? "u_density" : "u_thickness", shape, linear_clamp()},
                                   {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()}}),
          &vertex, &fragment);
   } else {

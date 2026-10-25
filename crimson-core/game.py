@@ -322,7 +322,15 @@ SESSION_KEEPS = re.compile(
 PLAYER_ARRAYS = {"telekinetic_bonus_hover_timer_ms"}  # bonus_render's Telekinetic hover
 
 
+def heat_heads_header(root):
+    """Zombie walking frames' head centers, as render/rtx/heat_heads.py reads them."""
+    heads = json.loads((root / "src/crimson/render/rtx/zombie_heat_heads.json").read_text())
+    rows = "".join(f"  {{{x}, {y}}},\n" for x, y in heads)
+    return f"// Generated from render/rtx/zombie_heat_heads.json.\nconst unsigned char zombie_heat_heads[][2] = {{\n{rows}}};\n"
+
+
 def game_data(root, out, engine, simulation):
+    (out / "include/rtx_heat_heads.h").write_text(heat_heads_header(root))
     # wasm32 keeps the original pointer width, so each image's data keeps its
     # original layout: aggregates read through a first symbol, overreads and
     # interior names land on the original bytes. Engine state (Grim's, and the

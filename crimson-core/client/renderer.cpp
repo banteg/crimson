@@ -187,7 +187,7 @@ LitProgram creature_lit, player_lit, bonus_lit;
 // (HOST_PASS_HEAT), and the world-space trail buffer at half the terrain's
 // resolution with the run's clock it last faded at (host_heat), its passes and
 // the program that adds it to the ground (host_heat_trails).
-const float HEAT_TRAIL_SCALE = 0.5f, HEAT_HALF_LIFE_S = 0.9f, HEAT_MAX_GAP_S = 1;
+const float HEAT_TRAIL_SCALE = 0.5f, HEAT_HALF_LIFE_S = 0.3f, HEAT_MAX_GAP_S = 1;
 GLuint heat_body_program, heat_stamp_program, heat_trail_program;
 // Ion arcs' contact glows on the ground (HOST_PASS_GLOW, render/rtx/contact_glow.py).
 GLuint contact_glow_program;
@@ -226,7 +226,7 @@ GLuint smoke_solver_program, smoke_splat_program, smoke_impulse_program, smoke_p
 // Each uploaded artwork's texels in the module (it keeps them), for the creature
 // thickness maps made on a creature atlas's first lit draw.
 std::unordered_map<int, u32> texel_addresses;
-std::unordered_map<int, GLuint> thickness_maps, heat_thickness_maps;
+std::unordered_map<int, GLuint> thickness_maps, heat_density_maps;
 
 GLuint compile(GLenum kind, const char *source) {
   GLuint shader = glCreateShader(kind);
@@ -403,11 +403,10 @@ void create_lit(LitProgram &p, const char *fragment) {
   p.shell_center = glGetUniformLocation(p.id, "u_shell_center");
 }
 
-// A creature atlas's part sizes (renderer_thickness), made once it is lit; the
-// creature shader reads them only with lights, Monster Vision's heat always, as
-// heat_vision.py blurs them within each cell.
-GLuint thickness_map(int id, bool heat = false) {
-  auto &maps = heat ? heat_thickness_maps : thickness_maps;
+// A creature atlas's transmission part sizes or Monster Vision silhouette
+// density, made once on first use (creature_translucency.py).
+GLuint shape_map(int id, bool heat = false) {
+  auto &maps = heat ? heat_density_maps : thickness_maps;
   auto made = maps.find(id);
   if (made != maps.end())
     return made->second;
@@ -416,9 +415,9 @@ GLuint thickness_map(int id, bool heat = false) {
   if ((!light_count && !heat) || t == textures.end() || texels == texel_addresses.end())
     return blank_texture;
   int width = t->second.logical_width, height = t->second.logical_height;
-  std::vector<unsigned char> sizes = renderer_thickness(client_memory() + texels->second, width, height);
-  if (heat)
-    sizes = renderer_blur_cells(sizes, width, height, 2);
+  const auto *pixels = client_memory() + texels->second;
+  std::vector<unsigned char> sizes =
+      heat ? renderer_heat_density(pixels, width, height) : renderer_thickness(pixels, width, height);
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -451,7 +450,7 @@ void submit_geometry(u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
 }
 
 // A creature batch drawn again as heat (heat_body.frag): the atlas and its
-// blurred part sizes, blended as the device's states say.
+// smooth silhouette density, blended as the device's states say.
 bool heat_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
   glUseProgram(heat_body_program);
   glUniform2f(glGetUniformLocation(heat_body_program, "target_size"), (float)t.logical_width, (float)t.logical_height);
@@ -462,7 +461,7 @@ bool heat_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 ind
   glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
   glBindSampler(0, 0);
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, present ? thickness_map(bound[0], true) : blank_texture);
+  glBindTexture(GL_TEXTURE_2D, present ? shape_map(bound[0], true) : blank_texture);
   glBindSampler(1, 0);
   glActiveTexture(GL_TEXTURE0);
   apply_output_state(t);
@@ -524,7 +523,7 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   glSamplerParameteri(samplers[0], GL_TEXTURE_MAG_FILTER, stage_states[0][TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
   glSamplerParameteri(samplers[0], GL_TEXTURE_MIN_FILTER, stage_states[0][TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, material == HOST_PASS_CREATURES && present ? thickness_map(bound[0]) : blank_texture);
+  glBindTexture(GL_TEXTURE_2D, material == HOST_PASS_CREATURES && present ? shape_map(bound[0]) : blank_texture);
   glBindSampler(1, 0);
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, occlusion_grid[2] ? occlusion_texture : blank_texture);
@@ -924,7 +923,7 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     heat_body_program = link(lit_vertex_source, heat_body_fragment_source);
     glUseProgram(heat_body_program);
     glUniform1i(glGetUniformLocation(heat_body_program, "texture0"), 0);
-    glUniform1i(glGetUniformLocation(heat_body_program, "u_thickness"), 1);
+    glUniform1i(glGetUniformLocation(heat_body_program, "u_density"), 1);
     heat_stamp_program = link(lit_vertex_source, heat_stamp_fragment_source);
     contact_glow_program = link(lit_vertex_source, contact_glow_fragment_source);
     heat_trail_program = link(lit_vertex_source, heat_trail_fragment_source);
@@ -1117,7 +1116,7 @@ void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
   release(it->second);
   textures.erase(it);
   texel_addresses.erase((int)id);
-  for (auto *maps : {&thickness_maps, &heat_thickness_maps}) {
+  for (auto *maps : {&thickness_maps, &heat_density_maps}) {
     auto map = maps->find((int)id);
     if (map != maps->end()) {
       glDeleteTextures(1, &map->second);

@@ -1143,15 +1143,25 @@ suppression; classic keeps the original yellow aura texture.
 
 - Bodies: after each species' body pass, the same sprites draw again with
   `heat_body.frag` in the ironbow ramp (`ironbow.glsl`), indexed by the creature
-  thickness proxy, box-blurred 5×5 within each atlas cell once on upload (one
-  texture tap per fragment): thin legs read cool magenta, thick
-  bodies orange to white. The overlay's opacity is Monster Vision's fade times
+  silhouette density: two 5×5 alpha blurs within each atlas cell, made once on
+  the atlas's first heat draw (one texture tap per fragment). Density preserves
+  cool extremities; two soft sprite-local lobes, a fixed abdomen and a head, keep
+  hot spots stable through articulation. The zombie's head follows its walking
+  frames, baked once with OpenCV optical flow (`zombie_heat_heads.json`) and
+  carried in the tint's green/blue; other species and cells keep it fixed.
+  Bounded detail from the sprite color already fetched with its
+  alpha brings back the artwork's surface features, without extra texture taps.
+  This retains a wide magenta-to-white temperature range without the
+  square-opening thickness proxy's abrupt jumps between animation poses.
+  All species use the same response; transmission lighting retains its separate
+  thickness proxy.
+  The overlay's opacity is Monster Vision's fade times
   `.88`, never the creature's tint alpha, so Hidden Evil's near-invisible aliens
   show in full. Red in the tint carries warmth: the native death fade, cooled to
   30% while Freeze holds the monsters, following Freeze's own fade out. Scene
   transitions fade the overlay's opacity, never its warmth.
 - Trails: a world-space float buffer at half the terrain's resolution. Each
-  drawn frame fades it by the game time since the last (half-life 0.9 s, so
+  drawn frame fades it by the game time since the last (half-life 0.3 s, so
   slow motion leaves the same trail per distance), then max-blends a soft
   footprint (45% of the creature's size) at every warm monster. A frame gap
   over a second, a rewind, or a terrain reset starts it over. Where the aura was
