@@ -29,6 +29,8 @@ extern unsigned int grim_backbuffer_width, grim_backbuffer_height;
 extern int run_elapsed_ms;
 bool rtx_drawing();
 int creature_find_in_radius(float *pos, float radius, int start_index);
+// How far a Fire Bullets shot has flown since the arena's edge stopped it (game/patches/52-fire-bullets-fly-off.patch).
+float projectile_fire_flown(const projectile_t *projectile);
 void effect_select_texture(int effect_id);
 }
 extern IGrim2D_cpp *grim_interface_ptr;
@@ -155,6 +157,9 @@ void projectile_source(const projectile_t &p, int ident) {
   float gain = powf(fminf(1, life * 2.5f), e->fade_power);
   float dx = p.fields.pos_x - p.fields.origin_x, dy = p.fields.pos_y - p.fields.origin_y;
   float distance = normalize(dx, dy);
+  // A stopped Fire Bullets shot flies on as it is drawn.
+  float flown = projectile_fire_flown(&p), head_x = p.fields.pos_x + dx * flown, head_y = p.fields.pos_y + dy * flown;
+  distance += flown;
   float span = fminf(distance, e->tail);
   float r = e->r, g = e->g, b = e->b, width = e->width;
   if (plasma(type)) {
@@ -172,7 +177,7 @@ void projectile_source(const projectile_t &p, int ident) {
   }
   if (streak_scale(type) && dx == 0 && dy == 0)
     heading_direction(p.angle, dx, dy);
-  Light &light = add(ident, p.fields.pos_x - dx * span * 0.5f, p.fields.pos_y - dy * span * 0.5f, e->radius,
+  Light &light = add(ident, head_x - dx * span * 0.5f, head_y - dy * span * 0.5f, e->radius,
                      r * gain, g * gain, b * gain);
   light.height = e->height;
   light.dx = dx, light.dy = dy, light.length = span;

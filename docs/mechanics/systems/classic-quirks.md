@@ -74,6 +74,7 @@ meant the player in question.
 | [35](../../rewrite/original-bugs.md#35-rocket-detonation-flashes-draw-the-whole-particle-atlas) | Rocket flash | Rocket blasts flash the whole effects sheet: a ring down-right, specks up-left. | Fixed: a soft glow | — |
 | [36](../../rewrite/original-bugs.md#36-ion-chain-arcs-end-in-a-hard-cut) | Ion arcs | Ion chain arcs end in a straight cut across the creature. | Fixed: round ends | — |
 | [39](../../rewrite/original-bugs.md#39-blood-splatters-and-corpse-shatters-exhaust-the-511-slot-effect-pool) | Missing pickup rings and bursts | Heavy blood from Bloody Mess or a large Freeze corpse shatter fills the effect pool, so pickup rings, hit cores and bursts vanish. | Fixed | — |
+| [52](../../rewrite/original-bugs.md#52-shots-past-the-arena-edge-stop-and-fade-in-place) | Frozen Fire Bullets trails | Shots leaving the arena stop just past its edge, and their trails hang on screen while they fade. | Fixed: they fly off | — |
 
 ## Kept in both modes
 

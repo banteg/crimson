@@ -12,7 +12,7 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, Effect
 from ...math_parity import f32, f32_vec2
 from ...perks import PerkId
 from ...projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectileTypeId
-from ..beam_profiles import STREAK_SCALES
+from ..beam_profiles import STREAK_SCALES, fire_bullets_flown
 from ..ion_arcs import ion_arcs_drawn
 from ..laser_sight import laser_sight_geometry
 from ..rtx.beam import BeamBatch, draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
@@ -465,9 +465,13 @@ def _draw_streak(
     if base_alpha <= 1e-3:
         return
     direction, dist = (proj.pos - proj.origin).normalized_with_length()
+    flown = fire_bullets_flown(
+        proj, preserve_bugs=frame.state.preserve_bugs, barrel_greaser=PerkId.BARREL_GREASER in frame.state.perks,
+    )
+    dist += flown
     # A shot can still have a head (and impact arcs) before its trail grows.
     scale = render_ctx.view.scale
-    screen = render_ctx.world_to_screen(proj.pos)
+    screen = render_ctx.world_to_screen(proj.pos + direction * flown)
     streak_rgb = (0.5, 0.6, 1.0) if chain else (1.0, 0.6, 0.1)
     start = max(0.0, dist - 256.0)
     span = dist - start

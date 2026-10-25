@@ -22,7 +22,7 @@ from ...projectiles.types import Projectile
 from ...projectiles.types import ProjectileTemplateId as PT
 from ...projectiles.types import SecondaryProjectileTypeId as ST
 from ...weapons import WEAPON_BY_ID, WeaponId
-from ..beam_profiles import STREAK_SCALES
+from ..beam_profiles import STREAK_SCALES, fire_bullets_flown
 from ..ion_arcs import ion_arc_targets
 from ..laser_sight import laser_sight_geometry
 
@@ -129,12 +129,14 @@ PROJECTILE_EMISSIONS: dict[PT, ProjectileEmission] = {
 _PLASMA = {PT.PLASMA_MINIGUN, PT.PLASMA_RIFLE, PT.PLASMA_CANNON, PT.SPIDER_PLASMA, PT.SHRINKIFIER}
 
 
-def projectile_source(proj: Projectile, ident: int = -1) -> MaterialLight | None:
+def projectile_source(proj: Projectile, ident: int = -1, *, flown: float = 0.0) -> MaterialLight | None:
+    """A shot's light; `flown` carries a stopped Fire Bullets shot on, as it is drawn (fire_bullets_flown)."""
     profile = PROJECTILE_EMISSIONS.get(proj.type_id)
     if not proj.active or profile is None or proj.life_timer <= 0.0:
         return None
     gain = min(1.0, proj.life_timer * 2.5) ** profile.fade_power
     direction, distance = (proj.pos - proj.origin).normalized_with_length()
+    head, distance = proj.pos + direction * flown, distance + flown
     span = min(distance, profile.tail)
     rgb, width = profile.rgb, profile.width
     if proj.type_id in _PLASMA:
@@ -155,7 +157,7 @@ def projectile_source(proj: Projectile, ident: int = -1) -> MaterialLight | None
             direction = Vec2.from_heading(proj.angle)
         beam_profile = (16. * beam_scale, min(beam_scale * 3.1, 9.), 1.35 if proj.type_id == PT.FIRE_BULLETS else 1.05)
     return MaterialLight(
-        proj.pos - direction * (span * 0.5),
+        head - direction * (span * 0.5),
         profile.radius,
         (rgb[0] * gain, rgb[1] * gain, rgb[2] * gain),
         height=profile.height,
@@ -487,7 +489,9 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
             continue
         # A slot's next shot is another source, even on the next frame: its spawn point tells them apart.
         number = slot | (math.floor(projectile.origin.x) & 0x7f) << 7 | (math.floor(projectile.origin.y) & 0x7f) << 14
-        source = projectile_source(projectile, ident=source_ident(IDENT_SHOT, number))
+        flown = fire_bullets_flown(projectile, preserve_bugs=frame.state.preserve_bugs,
+                                   barrel_greaser=PerkId.BARREL_GREASER in frame.state.perks)
+        source = projectile_source(projectile, ident=source_ident(IDENT_SHOT, number), flown=flown)
         if source is not None:
             shots.append(source)
             sources.extend(ion_arc_sources(frame, projectile, view_center=view_center,
