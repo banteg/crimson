@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <utility>
 
 struct w2c_host {};
 struct w2c_wasi__snapshot__preview1 {};
