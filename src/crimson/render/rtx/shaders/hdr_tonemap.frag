@@ -33,7 +33,9 @@ vec3 tonemap_hue_preserving(vec3 rgb, float headroom) {
     float limit = pow(max(headroom, 1.0), 1.0 / 2.2);
     float mapped = shoulder_to(peak, KNEE, limit);
     vec3 out_rgb = x * (mapped / max(peak, 1e-6));
-    float heat = clamp((peak - 1.0) / WHITE_SPAN, 0.0, 1.0) * WHITE_DRIFT;
+    // Highlights drift toward white from peak 1 over WHITE_SPAN, eased at both ends: a linear ramp's slope breaks
+    // showed as contour lines wherever a glow's brightness passed through them.
+    float heat = smoothstep(1.0, 1.0 + WHITE_SPAN, peak) * WHITE_DRIFT;
     return mix(out_rgb, vec3(mapped), heat);
 }
 
