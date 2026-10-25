@@ -659,7 +659,7 @@ void game_state_set(game_state_id_t state) {
   // The player's own run comes before a replay a link asked for; one that waits
   // for a co-op session's end (watch_follow_link) waits through its runs.
   if ((state == GAME_STATE_GAMEPLAY || state == GAME_STATE_TYPO_GAMEPLAY) && !watches && !coop)
-    watch.linked = false;
+    watch.awaited = watch.linked = false;
   // A replay stops for any screen; leaving a run for anything but its own
   // screens (the perk menu, and the pause menu with its options) ends it
   // unfinished.
