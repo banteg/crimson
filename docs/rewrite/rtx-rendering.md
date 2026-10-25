@@ -278,6 +278,9 @@ narrow a difference down to a pass.
 - Ion impact arcs combine two constant-width soft capsules and the target glow, retaining the original-bug setting's cut ends.
   Each corner carries the arc's length, so consecutive arcs batch like the radial sprites.
 - The expanding ring (effect 1) uses a broad inward radial polynomial and a compact outer rim, including elliptical and rotated draws.
+- The Pulse Gun's shot (`projs` cell 0 of 2x2) is a dome: a circular front edge and a body fading behind it, thinning toward
+  its straight sides and cut square at the back. It draws at the sprite's size, tint and white impact, a little brighter, with
+  an HDR glow along the middle of its front edge that dims instead of swelling at sub-pixel sizes.
 
 The profiles are fitted to the original atlas cells in `effect_profiles.glsl`. Their byte-alpha cutoff keeps faint layers from
 reappearing during fades. Fireball, smoke, blood, shard and casing artwork retains its existing drawing, as does Classic mode.
@@ -563,7 +566,7 @@ the simulation:
 | Ion / Fire Bullets | Strong tapered segments, preserving the reference rifle/fire treatment |
 | Plasma | Warm atlas colors, distinct core widths and speed-scaled short tails; compact warm impact glow |
 | Spider Plasma / Shrinkifier | Flight tint changes to the untinted warm impact artwork |
-| Pulse | Restrained green source, followed by the warm impact sprite |
+| Pulse | Green segment across the shot's front edge, its width following the sprite's; pale green across the white impact |
 | Rockets | Localized exhaust sources, scaled by rocket type and respecting the glow setting |
 | Detonations | Expanding reflection footprint and fading warm radiance |
 | Flamers | Particles grouped into 64-unit spatial cells, with bounded accumulated radiance |

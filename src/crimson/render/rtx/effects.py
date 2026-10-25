@@ -23,6 +23,7 @@ class EffectShape(IntEnum):
     RING = 2
     PLASMA = 3
     ION_ARC = 4
+    PULSE = 5
 
 
 SPRITE_SHAPES = {EffectId.GLOW: EffectShape.GLOW, EffectId.AURA: EffectShape.AURA, EffectId.RING: EffectShape.RING}

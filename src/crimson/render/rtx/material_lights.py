@@ -137,7 +137,7 @@ PROJECTILE_EMISSIONS: dict[PT, ProjectileEmission] = {
     PT.PLASMA_CANNON: ProjectileEmission((1.5, 0.76, 0.16), 190.0, 9.0, illumination=4.0, reach=250.0, tail=44.2, broad_illumination=True),
     PT.SPIDER_PLASMA: ProjectileEmission((0.08, 0.65, 0.025), 100.0, 2.0, illumination=0.5, reach=140.0, tail=4.2),
     PT.SHRINKIFIER: ProjectileEmission((0.06, 0.03, 0.18), 65.0, 2.0, illumination=0.15, reach=120.0, tail=4.2),
-    PT.PULSE_GUN: ProjectileEmission((0.025, 0.24, 0.04), 75.0, 5.0, illumination=0.15, reach=130.0),
+    PT.PULSE_GUN: ProjectileEmission((0.06, 0.5, 0.13), 110.0, 3.0, illumination=3.0, reach=140.0),
 }
 _PLASMA = {PT.PLASMA_MINIGUN, PT.PLASMA_RIFLE, PT.PLASMA_CANNON, PT.SPIDER_PLASMA, PT.SHRINKIFIER}
 
@@ -159,10 +159,15 @@ def projectile_source(proj: Projectile, ident: int = -1, *, flown: float = 0.0) 
         if proj.life_timer < 0.4:
             # All five plasma variants switch to the same untinted warm 56px glow.
             rgb, width, span = (1.1, 0.57, 0.12), 5.0, 0.0
-    elif proj.type_id == PT.PULSE_GUN:
-        width = min(18.0, max(1.0, distance * 0.035))
-        if proj.life_timer < 0.4:
-            rgb, width = (0.7, 0.36, 0.08), 5.0
+    elif proj.type_id == PT.PULSE_GUN and direction.length_sq() > 0:
+        # A segment across the shot's front edge, so its reflection stretches along it; on impact the white
+        # sprite lights pale green.
+        impact = proj.life_timer < 0.4
+        bow = 28.0 if impact else distance * 0.08
+        span, direction = 1.4 * bow, direction.perp_left()
+        head += direction * (span * 0.5)
+        if impact:
+            rgb = (0.4, 0.75, 0.5)
     beam_scale = STREAK_SCALES.get(proj.type_id)
     beam_profile = None
     if beam_scale is not None:

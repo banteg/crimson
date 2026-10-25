@@ -253,3 +253,26 @@ def test_fire_bullets_stopped_at_the_arena_edge_fly_on_as_drawn_and_lit() -> Non
     assert flying.pos.x == pytest.approx(stopped.pos.x - flown)
     assert flying.length == stopped.length
 
+
+
+def test_pulse_source_lies_across_the_shot_front_and_widens_with_it() -> None:
+    from crimson.projectiles.types import Projectile
+    from crimson.render.rtx.material_lights import projectile_source
+
+    shot = Projectile(active=True, type_id=ProjectileTemplateId.PULSE_GUN, life_timer=.4, origin=Vec2(100, 100),
+                      pos=Vec2(300, 100))
+    near = projectile_source(shot)
+    shot.pos = Vec2(500, 100)
+    far = projectile_source(shot)
+    assert near is not None and far is not None
+    # Centered on the shot, across its travel, as wide as the sprite grows.
+    assert far.pos == shot.pos
+    assert abs(far.direction.x) < 1e-6 and abs(far.direction.y) == pytest.approx(1)
+    assert far.length > near.length > 0
+    assert far.rgb[1] > far.rgb[2] > far.rgb[0]
+    shot.life_timer = .2
+    impact = projectile_source(shot)
+    assert impact is not None and impact.pos == shot.pos
+    # The white impact sprite lights paler, across its fixed 56-unit width.
+    assert impact.rgb[0] / impact.rgb[1] > far.rgb[0] / far.rgb[1]
+    assert impact.length < far.length
