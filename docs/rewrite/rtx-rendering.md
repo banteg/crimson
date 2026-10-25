@@ -1004,13 +1004,24 @@ give the contrast. Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambi
 ### Cost and visual limits
 
 Visibility, not shading, is the beam's cost: in late frames with ten beams over
-two hundred bodies, the walks were nine tenths of the ground pass. The three
-sections this replaced walked three times per beam and pixel; one walk across
-the lit stretch costs a wider fan and a longer padded list, but once. The eight
-eighths cost a few vector operations per candidate body. Two transverse taps do
-not reproduce a dense sampled reference exactly, but avoid separate shadow
-lobes; eighths are coarse for a long beam, so two bodies inside the same eighth
-still combine by their minimum.
+two hundred bodies, the walks were nine tenths of the ground pass. One walk across
+the lit stretch replaced three section walks, but a wider fan and a longer padded
+list made it no cheaper at the ground's own resolution. Beam shadows are soft,
+though, so their visibility is drawn at a quarter of the ground's resolution in
+each direction instead: before the ground, a pass per group of four beams
+(`ground.frag`'s `BEAM_VISIBILITY_PASS`) walks for each of its beams where that
+beam lights the ground, into one channel of a texel in its quarter of an atlas,
+and the ground reads it back filtered (`beamVisibilityRead`). Up to sixteen lit
+beams take a slot in light order; any others still walk in the ground's own pass.
+The golden scenes draw the same at this resolution (99% of pixels within a level
+of the per-pixel walk), and late-game ground passes cost about a fifth of what
+they did.
+The Python port draws the passes when `material_scope` is given the view to draw,
+and binds the atlas past raylib's batch texture units.
+
+Two transverse taps do not reproduce a dense sampled reference exactly, but avoid
+separate shadow lobes; eighths are coarse for a long beam, so two bodies inside the
+same eighth still combine by their minimum.
 
 ### Ion impact arcs
 

@@ -16,9 +16,11 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 out vec4 finalColor;
 
+#ifndef BEAM_VISIBILITY_PASS
 uniform sampler2D u_surface_tex;  // R=specularity, G=wet amount at epoch, B=volume, A=substrate height
 uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a second blood tint
 uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass, ice
+#endif
 
 uniform vec2 u_ground_size;
 uniform float u_time_s; // Seconds relative to the wetness epoch
@@ -47,6 +49,35 @@ vec3 debug_radiance(vec3 value) {
     return pow(positive / (vec3(1.) + positive), vec3(1. / 2.2));
 }
 
+#ifdef BEAM_VISIBILITY_PASS
+// A pass at a lower resolution than the ground's: the visibility of one group's four beam slots, which the ground
+// reads instead of walking the body grid per pixel (beamVisibilityRead). Beam shadows are soft enough that a quarter
+// of the resolution draws the same.
+uniform float u_beam_group;
+void main() {
+    vec2 world = vec2(fragTexCoord.x, V_UP > 0. ? 1.0 - fragTexCoord.y : fragTexCoord.y) * u_ground_size;
+    int group = int(u_beam_group + .5);
+    vec4 visibility = vec4(1.);
+    for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
+        if (i >= u_spec_light_count) break;
+        int slot = beamSlot(i);
+        if (slot < 0 || slot / 4 != group || u_spec_response[i].x <= 0.) continue;
+        // Only where the beam delivers light, as the ground would walk.
+        vec2 axis, ramp_window, head_window;
+        float x0, b, R, half_length, ramp, head;
+        if (!beamFrame(i, u_spec_dir[i], world, u_spec_pos[i], axis, x0, b, R, half_length, ramp, head, ramp_window,
+                       head_window)) continue;
+        float energy = beamPiece(ramp * (x0 + half_length), ramp, ramp_window.x, ramp_window.y, b, R).x
+                     + beamPiece(head, 0., head_window.x, head_window.y, b, R).x;
+        float gain = u_spec_response[i].x * (u_beam_shape[i].z > .5 ? u_beam_gain.x : u_beam_gain.y);
+        vec3 color = u_spec_color[i].rgb;
+        if (energy * gain * max(color.r, max(color.g, color.b)) <= .00001) continue;
+        float lit = beamVisibility(i, u_spec_dir[i], world, u_spec_pos[i], u_spec_response[i]);
+        visibility = mix(visibility, vec4(lit), vec4(equal(ivec4(slot - group * 4), ivec4(0, 1, 2, 3))));
+    }
+    finalColor = visibility;
+}
+#else
 void main() {
     vec2 ground_uv = fragTexCoord;
     vec2 world = vec2(ground_uv.x, V_UP > 0. ? 1.0 - ground_uv.y : ground_uv.y) * u_ground_size;
@@ -286,3 +317,4 @@ void main() {
     // HdrRenderer owns the only display shoulder; preserve highlights above 1 here.
     finalColor = vec4(pow(max(diffuse_lit + reflected_light, vec3(0.0)), vec3(1.0 / 2.2)), 1.0);
 }
+#endif

@@ -267,7 +267,7 @@ def test_partial_scorch_removes_film_without_diluting_its_age(ground_material) -
     assert pixels(ground.coverage)[center][0] < 0.6
 
 
-def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None, shadows: bool = True, pixel_format: int | None = None, live: bool = False) -> list[tuple[float, float, float, float]]:
+def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None, shadows: bool = True, pixel_format: int | None = None, live: bool = False, beam_passes: bool = False) -> list[tuple[float, float, float, float]]:
     class Textures:
         def texture(self, _texture_id):
             return texture
@@ -282,8 +282,12 @@ def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: Crea
     )
     target = load_float_render_texture(64, 64, **({"pixel_format": pixel_format} if pixel_format is not None else {}))
     try:
-        with texture_mode(target), ground.material_scope(frame, debug=None if live else mode):
+        def draw_view() -> None:
             ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
+
+        with texture_mode(target), ground.material_scope(frame, debug=None if live else mode,
+                                                         draw_view=draw_view if beam_passes else None):
+            draw_view()
         return pixels(target)
     finally:
         rl.unload_render_texture(target)
@@ -1046,15 +1050,38 @@ def test_bulk_light_upload_matches_scalar_upload_after_source_count_changes(grou
         reflection_gain=.3, illumination_gain=.5,
     ) for i in range(32)]
     collect = mocker.patch.object(ground_materials, "collect_material_lights")
-    bulk = ground._material_array
+    bulk = ground_materials._apply_uniforms
 
-    def scalar(name, values, *, components):
-        for i in range(len(values) // components):
-            _uniform(ground.material_shader, name.replace("[0]", f"[{i}]"), values[i*components:(i+1)*components])
+    def scalar(shader, locations, uniforms):
+        for name, values, components in uniforms:
+            if components == 0 or "[0]" not in name:
+                bulk(shader, locations, [(name, values, components)])
+                continue
+            for i in range(len(values) // components):
+                _uniform(shader, name.replace("[0]", f"[{i}]"), values[i*components:(i+1)*components])
 
     for count in (32, 1, 0, 17):
         collect.return_value = sources[:count]
-        with patch.object(MaterialGroundRenderer, "_material_array", side_effect=scalar):
+        with patch.object(ground_materials, "_apply_uniforms", side_effect=scalar):
             reference = debug_pixels(ground, texture, mode=0)
-        assert ground._material_array == bulk
+        assert ground_materials._apply_uniforms == bulk
         assert debug_pixels(ground, texture, mode=0) == reference
+
+
+def test_beam_visibility_passes_shadow_as_the_grounds_own_walk(ground_material, mocker):
+    # With the view to draw, the ground reads a beam's visibility from passes at a quarter of its resolution
+    # instead of walking the grid per pixel: the same shadow, softened at its edge.
+    ground, texture = ground_material
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 30), size=44,
+                                    type_id=CreatureTypeId.SPIDER_SP1, heading=math.pi / 2)
+    beam = MaterialLight(Vec2(32, 8), 150, (.5, .8, 1.4), height=24, direction=Vec2(1, 0), length=40,
+                         broad_illumination=True, beam_profile=(35.2, 6.82, 1.05), beam_ion=True, reflection_gain=0)
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[beam])
+    clear = debug_pixels(ground, texture, mode=7, creatures=pool)
+    walked = debug_pixels(ground, texture, mode=6, creatures=pool)
+    passed = debug_pixels(ground, texture, mode=6, creatures=pool, beam_passes=True)
+    blocked = sum(a[0] - b[0] for a, b in zip(clear, walked, strict=True))
+    assert blocked > .1
+    assert passed != walked
+    assert sum(a[0] - b[0] for a, b in zip(clear, passed, strict=True)) == pytest.approx(blocked, rel=.2)

@@ -40,25 +40,93 @@ vec2 beamPiece(float a, float c, float lo, float hi, float b, float R) {
     return vec2(a * delta.x + c * delta.y, a * delta.y + c * delta.z);
 }
 
+// Where a receiver sits against a beam: its foot on the axis (x0), its distance from it (b), the falloff's reach,
+// the ramp's and the head's densities and the stretches of each (in u = s - x0) that reach it. False out of reach.
+bool beamFrame(int index, vec4 direction, vec2 world, vec4 sp_pos, out vec2 axis, out float x0, out float b,
+               out float R, out float half_length, out float ramp, out float head, out vec2 ramp_window,
+               out vec2 head_window) {
+    vec4 shape = u_beam_shape[index];
+    axis = dot(direction.xy, direction.xy) > .0001 ? normalize(direction.xy) : vec2(1., 0.);
+    R = max(1., sp_pos.z);
+    half_length = .5 * direction.w;
+    vec2 delta = world - sp_pos.xy;
+    x0 = dot(delta, axis);
+    b = max(abs(delta.x * axis.y - delta.y * axis.x), 1e-3);
+    if (b >= R) return false;
+    float reach = sqrt(R * R - b * b);
+    // The beam in u = s - x0: a ramp over [-half_length, half_length] holding all but the head's share, rising to
+    // the head, and the head's share spread over [half_length - h, half_length + h].
+    ramp = half_length > 0. ? (1. - shape.x) / (2. * half_length * half_length) : 0.;
+    head = shape.x / (2. * max(shape.y, 1e-3));
+    ramp_window = clamp(vec2(-half_length, half_length) - x0, -reach, reach);
+    head_window = clamp(half_length + vec2(-shape.y, shape.y) - x0, -reach, reach);
+    return true;
+}
+
+// One walk across the stretch that lights this receiver. Its eighths keep their own visibility, so bodies blocking
+// different parts of the beam add up; each eighth weighs the energy it delivers.
+float beamVisibility(int index, vec4 direction, vec2 world, vec4 sp_pos, vec4 response) {
+    vec2 axis, ramp_window, head_window;
+    float x0, b, R, half_length, ramp, head;
+    if (!beamFrame(index, direction, world, sp_pos, axis, x0, b, R, half_length, ramp, head, ramp_window, head_window))
+        return 1.;
+    float head_width = u_beam_shape[index].y;
+    vec2 lit = x0 + vec2(min(ramp_window.x, head_window.x), max(ramp_window.y, head_window.y));
+    float center = .5 * (lit.x + lit.y), halfspan = max(.5 * (lit.y - lit.x), 1e-3);
+    sectionVisibility(vec3(world, 0.), vec3(sp_pos.xy + axis * center, sp_pos.w), response.w, axis, halfspan,
+                      vec2(1e19));
+    float width = halfspan * .25;
+    vec4 s0 = center - halfspan + width * (vec4(0., 1., 2., 3.) + .5);
+    vec4 s1 = s0 + 4. * width;
+    vec4 f0 = max(vec4(0.), 1. - sqrt((s0 - x0) * (s0 - x0) + b * b) / R);
+    vec4 f1 = max(vec4(0.), 1. - sqrt((s1 - x0) * (s1 - x0) + b * b) / R);
+    vec4 r0 = ramp * max(vec4(0.), s0 + half_length) * step(s0, vec4(half_length));
+    vec4 r1 = ramp * max(vec4(0.), s1 + half_length) * step(s1, vec4(half_length));
+    // The head's share lands in the eighths it overlaps.
+    float head_falloff = pow(max(0., 1. - length(vec2(half_length - x0, b)) / R), 2.) * head;
+    vec4 h0 = max(vec4(0.), min(s0 + .5 * width, vec4(half_length + head_width)) - max(s0 - .5 * width, vec4(half_length - head_width)));
+    vec4 h1 = max(vec4(0.), min(s1 + .5 * width, vec4(half_length + head_width)) - max(s1 - .5 * width, vec4(half_length - head_width)));
+    vec4 w0 = r0 * f0 * f0 * width + head_falloff * h0;
+    vec4 w1 = r1 * f1 * f1 * width + head_falloff * h1;
+    float total = dot(w0 + w1, vec4(1.));
+    return total > 0. ? (dot(w0, beam_bins[0]) + dot(w1, beam_bins[1])) / total : 1.;
+}
+
+// The beams' visibility from passes at a lower resolution (ground.frag's BEAM_VISIBILITY_PASS): an atlas of four
+// groups side by side, each group's four slots in a texel's channels. A beam without a slot (no pass ran, or more
+// beams than slots) walks the grid itself.
+uniform vec4 u_beam_slots[MAX_SPEC_LIGHTS / 4]; // each light's slot plus one, four a vec4; 0 for none
+
+int beamSlot(int index) {
+    return int(u_beam_slots[index / 4][index - index / 4 * 4] + .5) - 1;
+}
+
+#ifdef BEAM_VISIBILITY_PASS
+// The passes draw the atlas, and never read it.
+float beamVisibilityRead(int slot) { return 1.; }
+#else
+uniform sampler2D u_beam_vis;
+uniform vec4 u_beam_vis_target; // the receiving target's pixels, then one group's texels in the atlas
+
+float beamVisibilityRead(int slot) {
+    int group = slot / 4, lane = slot - group * 4;
+    // Kept half a texel inside the group's quarter, so filtering never reaches the next group's.
+    vec2 inset = .5 / u_beam_vis_target.zw;
+    vec2 uv = clamp(gl_FragCoord.xy / u_beam_vis_target.xy, inset, 1. - inset);
+    vec4 v = texture(u_beam_vis, vec2((float(group) + uv.x) * .25, uv.y));
+    return lane == 0 ? v.x : lane == 1 ? v.y : lane == 2 ? v.z : v.w;
+}
+#endif
+
 vec3 continuousLight(int index, vec4 direction, vec2 world, vec3 N_sub, vec3 absorption,
                      vec3 wetted, vec3 blood, vec3 albedo, float ice, vec4 sp_pos,
                      vec4 sp_col, vec4 response, float broad, out vec3 unshadowed) {
     unshadowed = vec3(0.);
-    vec4 shape = u_beam_shape[index];
-    vec2 axis = dot(direction.xy, direction.xy) > .0001 ? normalize(direction.xy) : vec2(1., 0.);
-    float gain = response.x * (shape.z > .5 ? u_beam_gain.x : u_beam_gain.y);
-    float R = max(1., sp_pos.z), half_length = .5 * direction.w;
-    vec2 delta = world - sp_pos.xy;
-    float x0 = dot(delta, axis);
-    float b = max(abs(delta.x * axis.y - delta.y * axis.x), 1e-3);
-    if (b >= R) return vec3(0.);
-    float reach = sqrt(R * R - b * b);
-    // The beam in u = s - x0: a ramp over [-half_length, half_length] holding all but the head's share, rising to
-    // the head, and the head's share spread over [half_length - h, half_length + h].
-    float ramp = half_length > 0. ? (1. - shape.x) / (2. * half_length * half_length) : 0.;
-    float head = shape.x / (2. * max(shape.y, 1e-3));
-    vec2 ramp_window = clamp(vec2(-half_length, half_length) - x0, -reach, reach);
-    vec2 head_window = clamp(half_length + vec2(-shape.y, shape.y) - x0, -reach, reach);
+    vec2 axis, ramp_window, head_window;
+    float x0, b, R, half_length, ramp, head;
+    if (!beamFrame(index, direction, world, sp_pos, axis, x0, b, R, half_length, ramp, head, ramp_window, head_window))
+        return vec3(0.);
+    float gain = response.x * (u_beam_shape[index].z > .5 ? u_beam_gain.x : u_beam_gain.y);
     vec2 energy = beamPiece(ramp * (x0 + half_length), ramp, ramp_window.x, ramp_window.y, b, R)
                 + beamPiece(head, 0., head_window.x, head_window.y, b, R);
     if (energy.x <= 0.) return vec3(0.);
@@ -74,25 +142,6 @@ vec3 continuousLight(int index, vec4 direction, vec2 world, vec3 N_sub, vec3 abs
     vec3 direct = direct_albedo * sp_col.rgb * (gain * energy.x * angular * relief);
     unshadowed = direct;
     if (max(direct.r, max(direct.g, direct.b)) <= .00001) return direct;
-    // One walk across the stretch that lights this receiver. Its eighths keep their own visibility, so bodies
-    // blocking different parts of the beam add up; each eighth weighs the energy it delivers.
-    vec2 lit = x0 + vec2(min(ramp_window.x, head_window.x), max(ramp_window.y, head_window.y));
-    float center = .5 * (lit.x + lit.y), halfspan = max(.5 * (lit.y - lit.x), 1e-3);
-    sectionVisibility(vec3(world, 0.), vec3(sp_pos.xy + axis * center, sp_pos.w), response.w, axis, halfspan,
-                      vec2(1e19));
-    float width = halfspan * .25;
-    vec4 s0 = center - halfspan + width * (vec4(0., 1., 2., 3.) + .5);
-    vec4 s1 = s0 + 4. * width;
-    vec4 f0 = max(vec4(0.), 1. - sqrt((s0 - x0) * (s0 - x0) + b * b) / R);
-    vec4 f1 = max(vec4(0.), 1. - sqrt((s1 - x0) * (s1 - x0) + b * b) / R);
-    vec4 r0 = ramp * max(vec4(0.), s0 + half_length) * step(s0, vec4(half_length));
-    vec4 r1 = ramp * max(vec4(0.), s1 + half_length) * step(s1, vec4(half_length));
-    // The head's share lands in the eighths it overlaps.
-    float head_falloff = pow(max(0., 1. - length(vec2(half_length - x0, b)) / R), 2.) * head;
-    vec4 h0 = max(vec4(0.), min(s0 + .5 * width, vec4(half_length + shape.y)) - max(s0 - .5 * width, vec4(half_length - shape.y)));
-    vec4 h1 = max(vec4(0.), min(s1 + .5 * width, vec4(half_length + shape.y)) - max(s1 - .5 * width, vec4(half_length - shape.y)));
-    vec4 w0 = r0 * f0 * f0 * width + head_falloff * h0;
-    vec4 w1 = r1 * f1 * f1 * width + head_falloff * h1;
-    float total = dot(w0 + w1, vec4(1.));
-    return total > 0. ? direct * (dot(w0, beam_bins[0]) + dot(w1, beam_bins[1])) / total : direct;
+    int slot = beamSlot(index);
+    return direct * (slot >= 0 ? beamVisibilityRead(slot) : beamVisibility(index, direction, world, sp_pos, response));
 }
