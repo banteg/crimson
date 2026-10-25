@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import ExitStack, contextmanager
 from enum import IntEnum
 
@@ -130,7 +130,7 @@ class SpriteBatch:
 
 
 @contextmanager
-def sprite_batch() -> Iterator[SpriteBatch]:
+def sprite_batch() -> Generator[SpriteBatch]:
     batch = SpriteBatch()
     try:
         yield batch

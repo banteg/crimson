@@ -8,7 +8,7 @@
     {
       "id": "grim-recovered-platform-vc6",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "sha256": "10c133faf469f31d2490c9b0569b98657e22b9a63e07a4e0b6b1beb949c17d22",
+      "sha256": "87288b474ef85099ab454ce51fee2b11f331b20ace39b874553334e04ed27442",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "grim-recovered-platform-vc6-provider"

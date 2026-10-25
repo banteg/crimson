@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 
 import msgspec
@@ -68,7 +68,7 @@ class HdrRenderer(msgspec.Struct):
         return target, self.shader
 
     @contextmanager
-    def scope(self, *, out_size: Vec2, pressure_fronts: Sequence[PressureFront] = ()) -> Iterator[None]:
+    def scope(self, *, out_size: Vec2, pressure_fronts: Sequence[PressureFront] = ()) -> Generator[None]:
         out_w = float(out_size.x)
         out_h = float(out_size.y)
         render_w, render_h = current_target_size()
