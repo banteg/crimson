@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator, Sequence
+from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
 from itertools import groupby
 from typing import TYPE_CHECKING, NamedTuple
@@ -69,7 +69,7 @@ def _shader(fragment: str) -> rl.Shader:
 
 
 @contextmanager
-def _coverage_blend(*, ice: bool) -> Iterator[None]:
+def _coverage_blend(*, ice: bool) -> Generator[None]:
     # RGB stores alpha-over material weights. A stores ice coverage, not blend opacity:
     # ice contributes a, other materials contribute zero, and all occlude previous ice by (1-a).
     factors = (
@@ -398,7 +398,7 @@ class MaterialGroundRenderer(GroundRenderer):
     def material_scope(
         self, frame: RenderFrame, *, view_center: Vec2 = Vec2(512, 512), debug: int | None = None,
         lights: Sequence[MaterialLight] | None = None,
-    ) -> Iterator[None]:
+    ) -> Generator[None]:
         from grim.assets import TextureId
 
         self.reflection_occlusion.grid = None
