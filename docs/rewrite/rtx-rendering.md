@@ -248,8 +248,10 @@ puts two captures side by side with a difference map, the mean change and the GP
 for SDR, so they read the same on any display.
 
 A GPU timer also counts the time the GPU waits for the CPU. The client's `frame` timer runs from the last present
-until the first pass mark, so it holds the frame's simulation ticks; `golden.py` leaves it out. Classic marks the
-world's bounds too (`world`, then `hud`), with nothing drawn differently. Each `gpu` line
+until the first pass mark, so it holds the frame's simulation ticks; `golden.py` leaves it out. Drawing off the back
+buffer in between has timers of its own (`bake` for terrain decal bakes, `heat-stamp` for Monster Vision's trail
+stamps), so the `frame` timer holds no drawing. Classic marks the world's bounds too (`world`, then `hud`), with
+nothing drawn differently. Each `gpu` line
 is followed by a `draws` line for the same frame: per pass, texture (or `beam` / `effect<kind>`) and target, the quads
 drawn and the target pixels they cover, as `pass:what:target=quads/pixels`.
 
