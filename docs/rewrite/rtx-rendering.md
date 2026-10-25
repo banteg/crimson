@@ -1131,8 +1131,8 @@ suppression; classic keeps the original yellow aura texture.
   cool extremities; a fixed torso lobe and a soft head lobe preserve hot spots through
   articulation. Zombie walking frames carry head positions baked with OpenCV
   Lucas–Kanade optical flow (`tools/rtx/track_heat_heads.py`, `heat_heads.json`);
-  lizards use 35% of the tracked motion. The other species and non-walking cells
-  retain their fixed positions. Green/blue tint bytes carry the per-frame center
+  the other species and non-walking cells retain their fixed positions.
+  Green/blue tint bytes carry the per-frame center
   in both renderers, with no tracking dependency or work during gameplay.
   Bounded detail from the sprite color already fetched with its
   alpha brings back the artwork's surface features, without extra texture taps.

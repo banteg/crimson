@@ -9,7 +9,7 @@ from ...creatures.spawn import CreatureTypeId
 _TRACKS = msgspec.json.decode(
     files(__package__).joinpath("heat_heads.json").read_bytes(), type=dict[str, tuple[tuple[int, int], ...]],
 )
-_HEADS = {CreatureTypeId.ZOMBIE: _TRACKS["zombie"], CreatureTypeId.LIZARD: _TRACKS["lizard"]}
+_HEADS = _TRACKS["zombie"]
 
 
 def heat_head_color(type_id: CreatureTypeId, frame_index: int) -> tuple[int, int]:
@@ -18,5 +18,6 @@ def heat_head_color(type_id: CreatureTypeId, frame_index: int) -> tuple[int, int
     Only tracked walking cells have entries. Death, spawner and other species'
     frames retain the approved fixed positions rather than guessing anatomy.
     """
-    frames = _HEADS.get(type_id, ())
-    return frames[frame_index] if 0 <= frame_index < len(frames) else (0, 0)
+    if type_id == CreatureTypeId.ZOMBIE and 0 <= frame_index < len(_HEADS):
+        return _HEADS[frame_index]
+    return (0, 0)

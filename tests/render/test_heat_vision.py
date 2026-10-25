@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from crimson.creatures.anim import CREATURE_ANIM, creature_anim_select_frame
-from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
+from crimson.creatures.spawn import CreatureFlags
 from crimson.render.rtx.heat_heads import heat_head_color
 from crimson.render.rtx.heat_vision import (
     BODY_OPACITY,
@@ -55,7 +55,7 @@ def test_freeze_cools_monsters_without_hiding_them() -> None:
 def test_heat_sprite_carries_the_head_of_its_selected_frame(headless_resources, mocker) -> None:
     draw = mocker.patch.object(rl, "draw_texture_pro")
     ctx = render_ctx_for_creatures(headless_resources, ())
-    for kind in (CreatureTypeId.ZOMBIE, CreatureTypeId.LIZARD):
+    for kind in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
         texture = headless_resources.texture(TextureId[kind.name])
         for phase in range(32):
             draw_creature_sprite(
