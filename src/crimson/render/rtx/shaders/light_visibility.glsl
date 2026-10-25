@@ -145,9 +145,8 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     q *= inverse_radius;
     ray *= inverse_radius;
     // A light inside a body, or against it (a muzzle in a packed crowd, a beam through a creature), is not shadowed
-    // by that body: its occlusion fades out over the last half radius before the source. Otherwise the body's near
-    // face cuts the light's pool along a straight line through the source.
-    float embedded = smoothstep(1., 1.5, length(q + ray));
+    // by that body: its occlusion fades out over the last half radius before the source, in the body's normalized
+    // coordinates. Otherwise the body's near face cuts the light's pool along a straight line through the source.
     #ifdef CONTINUOUS_BEAM
     if (beam_section_halfspan > 0.) {
         vec3 source_axis = vec3(local * beam_section_axis, 0.) * inverse_radius;
@@ -158,7 +157,12 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
                               source_axis, beam_section_halfspan)
             + beamChordCoverage(q, ray + transverse_ray * (.57735027 * source_width),
                                 source_axis, beam_section_halfspan));
-        return 1. - orientation.z * embedded * coverage;
+        // Only the section's embedded stretch is spared: the share of its length the fade covers, which the chord
+        // counted as blocked. The rest of the section is shadowed as before.
+        float spared = 0.;
+        for (int k = 0; k < 8; k++)
+            spared += 1. - smoothstep(1., 1.5, length(q + ray + source_axis * (beam_section_halfspan * ((float(k) + .5) / 4. - 1.))));
+        return 1. - orientation.z * max(0., coverage - spared / 8.);
     }
     #endif
     float t = clamp(-dot(q, ray) / max(dot(ray, ray), 1e-8), 0., 1.);
@@ -166,6 +170,7 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     // Analytic finite-source penumbra. The cone grows from the receiver toward
     // the source; this is a smooth body proxy, not sampled silhouette tracing.
     float softness = max(.015, source_width * t * max(inverse_radius.x, inverse_radius.y));
+    float embedded = smoothstep(1., 1.5, length(q + ray));
     return 1. - orientation.z * embedded * (1. - smoothstep(1. - softness, 1. + softness, distance));
 }
 
