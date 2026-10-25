@@ -262,6 +262,7 @@ drawn and the target pixels they cover, as `pass:what:target=quads/pixels`.
 - Plasma's uniform tail stamps become a finite Gaussian line integral, with its head and optional aura in the same quad.
 - The warm glow (`particles` effect 13) fits premultiplied RGB with three Gaussian lobes; the white aura (effect 16) fits alpha.
 - Ion impact arcs combine two constant-width soft capsules and the target glow, retaining the original-bug setting's cut ends.
+  Each corner carries the arc's length, so consecutive arcs batch like the radial sprites.
 - The expanding ring (effect 1) uses a broad inward radial polynomial and a compact outer rim, including elliptical and rotated draws.
 
 The profiles are fitted to the original atlas cells in `effect_profiles.glsl`. Their byte-alpha cutoff keeps faint layers from
@@ -993,7 +994,8 @@ their reflections are even along the arc and their illumination centroid is its 
 sources use restrained independent gains, without the main Ion beam's 4x ground
 gain. At most four connections
 per impact contribute sources, ranked by segment distance to the view center
-(with endpoint distance as a tie-breaker). All arcs remain visible in the artwork.
+(with endpoint distance as a tie-breaker). The artwork draws its arcs as Classic does,
+at most two per shot into one small cell ([rendering pipeline](rendering-pipeline.md#projectile-render-and-bonus-render)).
 This bounds source preparation as well as brightness in dense crowds. This
 is an artistic brightness cap, not a physical energy simulation. Ordinary global
 source ranking and its 16 illumination / 16 reflection limits still apply.

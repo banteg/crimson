@@ -1,6 +1,8 @@
 // Supply texture handles individually; only draw submission is under test.
 #define CRIMSONLAND_TEXTURES_OWNER_H
 #include "projectile-under-test.cpp"
+#include "../game/ion_arcs.cpp"
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <cstring>
@@ -10,7 +12,7 @@ player_state_t player_state_table[2];
 projectile_pool_t projectile_pool;
 secondary_projectile_pool_t secondary_projectile_pool;
 creature_t creature_pool[385];
-int arc_target = -1, plasma_calls = 0, arc_calls = 0;
+int arc_first = -1, arc_last = -1, plasma_calls = 0, arc_calls = 0;
 extern "C" {
 IGrim2D_cpp *grim_interface_ptr;
 projectile_render_vec2_t camera_offset;
@@ -24,7 +26,7 @@ float portable_sinf(float x) { return sinf(x); }
 float portable_cosf(float x) { return cosf(x); }
 void effect_select_texture(int) { grim_interface_ptr->grim_bind_texture(102, 0); }
 int creature_find_in_radius(float *, float, int start) {
-  return start <= arc_target ? arc_target : -1;
+  return start <= arc_last ? std::max(start, arc_first) : -1;
 }
 // Record the dispatch boundary; production primitive guards are exercised
 // separately.
@@ -101,9 +103,13 @@ int main() {
   shot.active = 1;
   shot.pos.tail.vy.type_id = PROJECTILE_TYPE_ION_RIFLE;
   shot.pos.tail.vy.life_timer = .2f;
-  arc_target = 1;
-  creature_pool[1].pos_x = 20;
+  // Three creatures piled in one cell take two arcs; one apart takes its own.
+  arc_first = 1;
+  arc_last = 4;
+  for (int i = 1; i <= 3; ++i)
+    creature_pool[i].pos_x = 20;
+  creature_pool[4].pos_x = 60;
   projectile_render(.75f);
-  assert(arc_calls == 1);
+  assert(arc_calls == 3);
   puts("projectile RTX dispatch: plasma phases and ion contacts passed");
 }

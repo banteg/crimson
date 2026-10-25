@@ -33,10 +33,12 @@ in vec4 vertexColor;
 uniform mat4 mvp;
 out vec2 fragTexCoord;
 out vec4 fragColor;
+out float fragShape;
 void main() {
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
-    gl_Position = mvp * vec4(vertexPosition, 1.);
+    fragShape = vertexPosition.z;
+    gl_Position = mvp * vec4(vertexPosition.xy, 0., 1.);
 }
 """
 
@@ -74,7 +76,7 @@ def _parameters(data: _EffectShader, shape: EffectShape, params: tuple[float, ..
     rl.set_shader_value(
         data.shader, data.kind, rl.ffi.new("int *", int(shape)), rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
     )
-    if shape >= EffectShape.PLASMA:
+    if shape is EffectShape.PLASMA:
         buffer = rl.ffi.new("float[]", params)
         rl.set_shader_value_v(
             data.shader, data.params, rl.ffi.cast("void *", buffer), rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4, 3,
@@ -87,6 +89,7 @@ def _vertices(
     bounds: tuple[float, float, float, float],
     uv: tuple[float, float, float, float],
     color: RGBA,
+    arc: float = 0.0,
 ) -> None:
     tint = color.to_rl()
     side = axis.perp_left()
@@ -98,7 +101,7 @@ def _vertices(
     for x, y, u, v in ((x0, y0, u0, v0), (x0, y1, u0, v1), (x1, y1, u1, v1), (x1, y0, u1, v0)):
         pos = center + axis * x + side * y
         rl.rl_tex_coord2f(u, v)
-        rl.rl_vertex2f(pos.x, pos.y)
+        rl.rl_vertex3f(pos.x, pos.y, arc)
     rl.rl_end()
 
 
@@ -146,11 +149,12 @@ def _draw(
     uv: tuple[float, float, float, float],
     color: RGBA,
     params: tuple[float, ...] = (0.0,) * 12,
+    arc: float = 0.0,
 ) -> None:
     data = _require_shader()
     with _shader_scope(data.shader, alpha_test=False):
         _parameters(data, shape, params)
-        _vertices(center, axis, bounds, uv, color)
+        _vertices(center, axis, bounds, uv, color, arc)
 
 
 def draw_sprite(
@@ -212,11 +216,20 @@ def draw_plasma(
     _draw(EffectShape.PLASMA, center, axis, bounds, bounds, RGBA(*color, 1.0), params)
 
 
-def draw_ion_arc(*, start: Vec2, end: Vec2, effect_scale: float, alpha: float, capped: bool) -> None:
+def draw_ion_arc(
+    *, start: Vec2, end: Vec2, effect_scale: float, alpha: float, capped: bool, batch: SpriteBatch | None = None,
+) -> None:
     axis, length = (end - start).normalized_with_length()
     if length <= 1e-3:
         return
+    # Corners in strip scales, and per vertex the length in them (negative for the native cut), so arcs batch.
     radius = 16.0 * effect_scale
+    reach = length / effect_scale
     bounds = (-radius, -radius, length + radius, radius)
-    params = (length, effect_scale, float(capped), 0.0, *(0.0,) * 8)
-    _draw(EffectShape.ION_ARC, start, axis, bounds, bounds, RGBA(0.5, 0.6, 1.0, alpha), params)
+    uv = (-16.0, -16.0, reach + 16.0, 16.0)
+    color, arc = RGBA(0.5, 0.6, 1.0, alpha), reach if capped else -reach
+    if batch is not None:
+        batch.begin(EffectShape.ION_ARC)
+        _vertices(start, axis, bounds, uv, color, arc)
+    else:
+        _draw(EffectShape.ION_ARC, start, axis, bounds, uv, color, arc=arc)

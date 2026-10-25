@@ -2,6 +2,7 @@
 // Shared Python / OpenGL / WebGL / WebGPU effect primitives. Geometry is draw-only.
 in vec2 fragTexCoord;
 in vec4 fragColor;
+in float fragShape; // an ion arc's length in strip scales, negative when its strips end in the native cut
 uniform vec4 colDiffuse;
 uniform int u_kind; // 0 warm glow, 1 white aura, 2 ring, 3 plasma, 4 ion arc
 uniform vec4 u_params[3];
@@ -47,12 +48,13 @@ void main() {
             + plasmaGlow(p, u_params[0].z, u_params[1].w);
         finalColor = vec4(value * tint.rgb, 1.);
     } else if (u_kind == 4) {
-        float len = u_params[0].x, scale = u_params[0].y;
+        // Per vertex, so a run of arcs draws at once: p is in strip scales too.
+        float len = abs(fragShape);
         vec2 nearest = vec2(p.x - clamp(p.x, 0., len), p.y);
-        float body = alphaTest(ionProfile(nearest / (10.*scale)) * tint.a)
-                   + alphaTest(ionProfile(nearest / (14.*scale)) * tint.a);
-        if (u_params[0].z < .5 && (p.x < 0. || p.x > len)) body = 0.;
-        float head = alphaTest(ionProfile((p - vec2(len, 0.)) / (16.*scale)) * tint.a);
+        float body = alphaTest(ionProfile(nearest / 10.) * tint.a)
+                   + alphaTest(ionProfile(nearest / 14.) * tint.a);
+        if (fragShape < 0. && (p.x < 0. || p.x > len)) body = 0.;
+        float head = alphaTest(ionProfile((p - vec2(len, 0.)) / 16.) * tint.a);
         finalColor = vec4(tint.rgb * (body + head), 1.);
     } else {
         float alpha;

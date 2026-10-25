@@ -93,11 +93,14 @@ void enqueue(int kind, const EffectVertex *quad) {
     rtx_effect_flush();
   sprite_kind = kind;
   const int order[6] = {0, 1, 2, 0, 2, 3};
-  for (int i : order) {
-    EffectVertex v = quad[i];
-    v.u = (i == 1 || i == 2) ? 1.f : -1.f;
-    v.v = i >= 2 ? 1.f : -1.f;
-    sprite_vertices.push_back(v);
+  for (int i : order)
+    sprite_vertices.push_back(quad[i]);
+}
+// A radial sprite's corners span -1..1 of its shape.
+void radial(EffectVertex (&quad)[4]) {
+  for (int i = 0; i < 4; ++i) {
+    quad[i].u = (i == 1 || i == 2) ? 1.f : -1.f;
+    quad[i].v = i >= 2 ? 1.f : -1.f;
   }
 }
 void sprite(int kind, float cx, float cy, float w, float h, float angle,
@@ -111,6 +114,7 @@ void sprite(int kind, float cx, float cy, float w, float h, float angle,
     float x = xy[2 * i] * w * .5f, y = xy[2 * i + 1] * h * .5f;
     quad[i] = {cx + co * x - si * y, cy + si * x + co * y, 0, 1, color, 0, 0};
   }
+  radial(quad);
   enqueue(kind, quad);
 }
 } // namespace
@@ -126,6 +130,7 @@ extern "C" bool rtx_effect_vertices(const void *vertices, int count) {
   // The source can be Grim's mapped buffer, which a flush may relock.
   EffectVertex quad[4];
   std::copy(v, v + 4, quad);
+  radial(quad);
   enqueue(kind, quad);
   return true;
 }
@@ -229,10 +234,16 @@ extern "C" void rtx_ion_arc(float sx, float sy, float ex, float ey, float scale,
     return;
   ax /= len;
   ay /= len;
-  float radius = 16 * scale;
-  const float params[12] = {
-      len, scale, portable_preserve_bugs ? 0.f : 1.f, 0, 0, 0, 0, 0, 0, 0,
-      0,   0};
-  emit(ARC, sx, sy, ax, ay, -radius, -radius, len + radius, radius, -radius,
-       -radius, len + radius, radius, params, rgba(.5f, .6f, 1, alpha));
+  // Consecutive arcs batch: each corner carries its local position and the
+  // arc's length in strip scales (effect.frag), the length negative when the
+  // strips end in the native cut (original bug 36).
+  float reach = len / scale, shape = portable_preserve_bugs ? -reach : reach;
+  const float local[4][2] = {{-16, -16}, {-16, 16}, {reach + 16, 16}, {reach + 16, -16}};
+  unsigned color = rgba(.5f, .6f, 1, alpha);
+  EffectVertex quad[4];
+  for (int i = 0; i < 4; ++i) {
+    float x = local[i][0] * scale, y = local[i][1] * scale;
+    quad[i] = {sx + ax * x - ay * y, sy + ay * x + ax * y, shape, 1, color, local[i][0], local[i][1]};
+  }
+  enqueue(ARC, quad);
 }

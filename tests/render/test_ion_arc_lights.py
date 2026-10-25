@@ -7,7 +7,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.perks import PerkId
 from crimson.projectiles.types import Projectile
 from crimson.projectiles.types import ProjectileTemplateId as PT
-from crimson.render.ion_arcs import ion_arc_targets
+from crimson.render.ion_arcs import ion_arc_targets, ion_arcs_drawn
 from crimson.render.rtx.material_lights import (
     IDENT_ARC,
     MAX_MATERIAL_LIGHTS,
@@ -106,3 +106,15 @@ def test_dense_arc_selection_follows_view_center():
     left = ion_arc_sources(snapshot, shot, view_center=Vec2(20, 100))
     assert all(source.pos.x > 100 for source in right)
     assert all(source.pos.x < 100 for source in left)
+
+
+def test_a_pile_draws_two_arcs_a_cell_and_lights_see_every_target():
+    snapshot, shot = scene()
+    template = snapshot.creatures.entries[1]
+    # Three piled in one 16.5-unit cell, one apart; the lights still see all four.
+    for index, x in enumerate((120, 121, 122, 160), start=1):
+        snapshot.creatures.entries[index] = msgspec.structs.replace(template, pos=Vec2(x, 100))
+    targets = snapshot.creatures.entries[1:5]
+    assert list(ion_arcs_drawn(snapshot, shot)) == [targets[0], targets[1], targets[3]]
+    assert list(ion_arc_targets(snapshot, shot)) == targets
+

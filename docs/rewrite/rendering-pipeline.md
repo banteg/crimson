@@ -210,6 +210,14 @@ zero length. `tests/native_oracle/test_projectile_render.py` compares sprite
 selection for every primary template and rocket type against the original
 executable, plus Plague's inherited state in mixed projectile pools.
 
+An ion shot in its impact phase arcs to every creature in its reach. A crowd
+piled on one spot under a Shock Chain, which keeps a new link impacting every
+tick, would draw thousands of arcs over the same pixels, white either way. Each
+shot draws at most two arcs to the creatures in one cell a quarter of its reach
+across (`ion_arcs_drawn` in `src/crimson/render/ion_arcs.py`,
+`crimson-core/game/ion_arcs.cpp` in the client). Arcs to scattered creatures are
+unchanged; damage, chaining and the RTX arc lights still see every target.
+
 Other native render-state carries between passes are not reproduced. Neither
 are the Fire Bullets glow gate that reads a stale pointer to slot 95 and the
 muzzle-glow pass that reads the player slot past the last player.
