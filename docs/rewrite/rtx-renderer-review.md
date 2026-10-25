@@ -7,8 +7,8 @@ tags:
 
 # RTX renderer review
 
-Reviewed: 2026-10-23. Updated: 2026-10-24, after follow-up reviews, measurements on
-the golden scenes, and the work they led to.
+Reviewed: 2026-10-23. Updated: 2026-10-25, after follow-up reviews, measurements on
+the golden scenes and on a late-game replay, and the work they led to.
 
 Scope: Python RTX rendering and the client port that shares its shaders (the
 native GL client and the WebGPU web client): artistic direction, effect
@@ -45,7 +45,15 @@ The direction stays:
 | Negative light around beams | #882 | The ion and Fire Bullets ambient dips are gone from Python and the client: beams only add light, shadows give the contrast |
 | Beam light along a segment | #883 | Ground, reflections, creatures, players, bonuses and smoke weight a segment with one profile (`segmentRadiance` in `source_geometry.glsl`) |
 | Beam shadows | #880 | Projected two-tap beam shadows; the densest ion scene's ground cost fell from about 12 ms to 2 ms |
-| Monster Vision | #884, #885 | Heat instead of a lamp: ironbow bodies keyed to Monster Vision's fade (Hidden Evil's near-invisible aliens show in full) and fading world-space trails, in Python and both clients; the aura's ground light is gone |
+| Monster Vision | #884, #885, #889 | Heat instead of a lamp: ironbow bodies keyed to Monster Vision's fade (Hidden Evil's near-invisible aliens show in full) and fading world-space trails, in Python and both clients; the aura's ground light is gone. Smooth silhouette density stopped pose-to-pose flashing |
+| Stable light selection | #886 | Stable idents (kind and slot, an explosion's spawn point); each response fades a source across its 16-source budget edge over 6 ticks of the run's clock. Also: volley merging, crowd cells for piled swarms, and ion contacts as ground glows instead of lights |
+| Analytic beams and effects | #887, #888 | Beams integrate a two-Gaussian fit of the glow in closed form (no beaded spine, no slow-motion lag); plasma, warm glows, auras, rings and ion arcs are analytic, with batched radial sprites |
+| Frame budget tooling | #892, #899, #901 | Per-pass draw counts and pixels beside the GPU timers, Classic world timers, bake and heat-stamp marks. Scripted runs end by themselves, run in the background, ignore the desktop mouse and focus; the window title names the mode and replay |
+| Tonemap white drift | #893 | The drift toward white eases in and out, so glows no longer show contour lines where they crossed its old slope breaks |
+| Lights inside bodies | #894 | A body no longer shadows a light inside or against it (a muzzle in a monster, a beam section through one) |
+| Frozen-crowd shadow cost | #895, #896 | Shadow lists were padded by the widest source's penumbra for every body; beam lists drop it, and the penumbra follows at most 8 units. A frozen crowd's ground fell from 118 to 39 ms |
+| Smoke half-circle | #897 | Smoke behind a shot with a dark tail cut off along a hard line; it now weights the shot's segment over its whole reach |
+| Ion arc pile | #900 | A Shock Chain into a piled crowd drew 5,351 arcs over the same pixels (93% of Classic's world fill). Each shot now draws at most two arcs per small cell, and RTX arcs batch: Classic's world 160 to 35 ms at the peak, RTX sprites 27.5 to 4.3 ms |
 
 ## Disproven or dropped
 
@@ -70,24 +78,27 @@ The direction stays:
   against a reference within stated tolerances instead.
 - **"Smoke bands double the smoke march."** Splitting the existing height slices
   between a low and a high band adds one composite, not a second march.
+- **A stencil cap on overlapping additive draws.** Counting the arc pile's fragments
+  per pixel was pixel-exact, but on macOS GL a stencil-rejected fragment costs about
+  as much as a drawn one (156 against 157 ms with every arc fragment rejected). Only
+  geometry the CPU never submits helps; an exact per-tile CPU cut was modelled at 12%
+  of the fill, and merging arcs was simpler for an invisible difference.
+- **Bigger shadow-grid cells.** They only looked faster because more cells became
+  crowds; with the crowd threshold scaled to cell area they were slower.
+- **A half-resolution additive layer.** It halved the arc pile but cost 0.4 to 0.9 ms
+  in ordinary scenes.
 
 ## Remaining, in priority order
 
-### 1. Stable light selection
+### 1. Ground pass cost in late-game crowds
 
-`select_material_lights` (`src/crimson/render/rtx/material_lights.py`, and
-`crimson-core/game/rtx_lights.cpp` in the client) ranks sources by brightness,
-gain and distance to the view center and keeps independent top-N sets, with no
-temporal stability. In dense fights a source crossing the cutoff drops its ground,
-body, reflection and smoke response at once.
-
-- Give sources stable identities (projectile slot and type, explosion record,
-  flame cell) and rank by contribution to the visible receivers.
-- Add hysteresis or a short fade per budget, advanced per tick, not per frame, so
-  the picture does not depend on frame rate and native/web comparisons stay exact.
-- Clear it on seeks and restores (the client's reset hook already exists).
-- Keep deterministic tie-breaking; reserve semantic slots only where captures show
-  the need. Test more than 32 sources while the camera pans.
+The ground pass is still most of RTX's GPU time: about 3 ms in quiet golden scenes,
+16 ms in the densest, and 65 to 75 ms at the late plasma run's arc peak, where all of
+Classic now takes 35. What is left there is beam-section shadow walks: every body is
+padded by a section's half-span (about 48 units). Try half-resolution beam
+visibility next; cell size is not a lever. Profile with `CRIMSON_GPU_TIMERS` and the
+draw counts before and after each change. Stable light selection (#886) may still
+need ranking by contribution to the visible receivers if captures show pops.
 
 ### 2. Players and bonus shells as shadow casters
 
@@ -129,7 +140,10 @@ shoulder (`peak / 1.4` in `creature.frag` and `player.frag`; `1.7`, `2.4` in
 `bonus.frag`), so dense fights saturate by different rules per material. Keep the
 world target display-referred for now and make the tonemap's shoulder
 (`hdr_tonemap.frag`) the main compressor, keeping only response curves a material
-needs.
+needs. Beams still blow out even on an HDR display, with moiré along their bright
+core: piles of additive light reach hundreds of times white in the half-float world
+target, so a limiter belongs before the tonemap, and the moiré may come from
+half-float accumulation.
 
 ### 6. Smoke bands (an experiment)
 
@@ -140,13 +154,7 @@ the terrain. A low band under top-down sprites can read as baked into the dirt, 
 judge it on captures. Add body shadows inside smoke only after profiling: per-pixel
 shadow traces are what blew the ion-chain budget before #880.
 
-### 7. Ground pass cost
-
-The ground pass is most of RTX's GPU time in every golden scene, from about 3 ms in
-the quiet ones to about 16 ms in the densest, against about 2 ms for a whole
-Classic frame. Profile with `CRIMSON_GPU_TIMERS` before and after each change.
-
-### 8. Linear color, last and all at once
+### 7. Linear color, last and all at once
 
 Several lit passes decode albedo, add light and gamma-encode before the HDR target,
 while unlit sprites, additive effects and smoke blend in gamma space as the
@@ -217,7 +225,7 @@ reflection and scattering rather than broad red light.
 
 | Effect or material | Already connected | Still missing |
 | --- | --- | --- |
-| Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers | Stable budgets (1); player and bonus occlusion (2) |
+| Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers; stable budgets with fades | Player and bonus occlusion (2) |
 | Ion and fire beams | Analytic visible body; segment lighting with one shared profile; continuous ground response; projected shadows; smoke scattering; ion arcs | Ice and material-specific response (3) |
 | Explosions | Fireball, warm shell, light, pressure refraction, smoke, blast airflow and scorch coordinated | Hot smoke (3); heat on ice and wet ground |
 | Blood, corpses, brass, scorch | Ordered coverage, displacement, wetness, aging, absorption, relief, reflections; neutral sky over blood | Saturation (4); footprints later |
