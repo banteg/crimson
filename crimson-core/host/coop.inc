@@ -54,6 +54,8 @@ extern char *perk_slot_1_name_wrapped_primary, *perk_slot_1_name_wrapped_alterna
 extern quest_meta_t *quest_monster_vision_meta;
 extern game_state_id_t game_state_prev;
 extern unsigned char main_menu_full_version_layout_latch, screen_fade_ramp_flag, startup_skip_requested;
+extern unsigned char startup_async_load_ready, startup_loading_fade_complete;
+extern float startup_splash_timer;
 extern ui_element_t ui_sign_crimson;
 }
 
@@ -464,7 +466,8 @@ static const CoopBytes COOP_UNHASHED[] = {
     COOP_GLOBAL(ui_mouse_x), COOP_GLOBAL(ui_mouse_y), COOP_GLOBAL(game_time_s), COOP_GLOBAL(frame_dt_copy),
     COOP_GLOBAL(screen_fade_alpha), COOP_GLOBAL(screen_fade_ramp_flag), COOP_GLOBAL(gameplay_transition_latch),
     COOP_GLOBAL(ui_sign_crimson), COOP_GLOBAL(main_menu_full_version_layout_latch),
-    COOP_GLOBAL(pause_keybind_help_alpha_ms), COOP_GLOBAL(startup_skip_requested), COOP_GLOBAL(online_sync_status),
+    COOP_GLOBAL(pause_keybind_help_alpha_ms), COOP_GLOBAL(startup_skip_requested), COOP_GLOBAL(startup_async_load_ready),
+    COOP_GLOBAL(startup_loading_fade_complete), COOP_GLOBAL(startup_splash_timer), COOP_GLOBAL(online_sync_status),
     COOP_GLOBAL(demo_trial_overlay_active), COOP_GLOBAL(demo_trial_overlay_alpha_ms),
     COOP_GLOBAL(terrain_render_target), COOP_GLOBAL(highscore_active_record.player_name),
     COOP_SPAN(highscore_active_record.score_xp, highscore_active_record.most_used_weapon_id),

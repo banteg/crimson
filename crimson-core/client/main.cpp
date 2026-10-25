@@ -519,6 +519,7 @@ void network_update() {
                                              : event.status == 404 ? 1
                                                                    : 2);
     } else if (event.kind == N::LINK) {
+      w2c_game_game_watch_awaited(&game, 0);
       const char *reason = event.status == 404
                                ? "This run is no longer on the leaderboard."
                                : "Could not download this run.";
@@ -736,11 +737,16 @@ bool start_game() {
   bool running = w2c_game_game_start(&game);
   // A scripted run's cursor shows once its script moves it.
   w2c_game_game_hide_cursor(&game, scripted);
-#ifndef __EMSCRIPTEN__
+  // A link to a run, fetched meanwhile, skips the intro (game_watch_awaited).
+#ifdef __EMSCRIPTEN__
+  if (running && EM_ASM_INT({ return Module.watchAwaited?.() ? 1 : 0; }))
+    w2c_game_game_watch_awaited(&game, 1);
+#else
   if (running && !linked_replay.empty()) {
     if (!network->enabled())
       client_fatal("Watching an online run needs a leaderboard service.");
     network->request(LeaderboardNetwork::LINK, linked_replay);
+    w2c_game_game_watch_awaited(&game, 1);
   }
 #endif
   return running;
@@ -796,6 +802,11 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path, const
   if (!w2c_game_game_replay_open(&game))
     return (const char *)client_memory() + w2c_game_game_replay_reason(&game);
   return w2c_game_game_watch(&game, rank, day, month, year) ? "" : "This run cannot play now.";
+}
+// The page's link to a run came to nothing (game_watch_awaited).
+extern "C" EMSCRIPTEN_KEEPALIVE void client_watch_failed() {
+  if (started)
+    w2c_game_game_watch_awaited(&game, 0);
 }
 // A link to a moment of the run playing or about to (game_watch_moment): "" when it
 // takes, else why not.

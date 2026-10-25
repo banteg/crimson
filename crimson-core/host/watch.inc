@@ -24,6 +24,8 @@
 #include <sys/stat.h>
 extern "C" {
 extern unsigned char run_active, screen_fade_ramp_flag, startup_skip_requested;
+extern unsigned char startup_async_load_ready, startup_loading_fade_complete;
+extern float startup_splash_timer;
 extern ui_element_t ui_sign_crimson;
 void music_fade_out_all(int sfx_id);
 void music_play_exclusive(int sfx_id);
@@ -70,7 +72,10 @@ struct WatchCard {
 };
 
 static struct {
+  bool awaited;        // a host opened with a link to a run it is still fetching (game_watch_awaited)
   bool linked;         // a host asked for `link` (game_watch): it plays once the screen settles
+  bool cut;            // a link cut to its run: the screen draws nothing until the next comes
+  bool hiding;         // the screens a link cuts short draw nothing (watch_follow_link)
   LoadedReplay link;
   WatchCard link_card;
   std::string link_id;
@@ -560,13 +565,39 @@ static bool watch_on_menu() {
 // A link skips the intro, as a click does (game_startup_init), and starts as
 // the menu comes in after it, cutting straight to the replay; one that comes
 // while co-op is open (a session, or a room waiting for one) waits for its end.
+// While the host fetches its run, the startup stays on its loading screen;
+// past it, the menu that a link cuts short draws nothing, so the window keeps
+// the startup's last, black frame until the replay draws. While one waits, the
+// tunes the skipped intro and the menu would start hold (watch_holds_tune): the
+// replay is the first thing heard. A link that comes to nothing leaves the
+// menu its tune after all.
 static bool custom_quest_linked;
+static int watch_held_tune = -1;
+static bool watch_holds_tune(int sfx_id) {
+  if (!watch.awaited && !watch.linked && !custom_quest_linked)
+    return false;
+  watch_held_tune = sfx_id;
+  return true;
+}
 static void watch_follow_link() {
-  if (!watch.linked && !custom_quest_linked)
+  bool hides = startup_loading_fade_complete && (watch.cut || ((watch.linked || custom_quest_linked) && !coop_open()));
+  if (hides || watch.hiding)
+    grim_render_disabled = hides;
+  watch.hiding = hides;
+  if (!watch.awaited && !watch.linked && !custom_quest_linked) {
+    if (watch_held_tune >= 0 && watch_on_menu())
+      music_play_exclusive(watch_held_tune);
+    watch_held_tune = -1;
     return;
+  }
   startup_skip_requested = 1;
-  if (!game_live && !run_active && !watch.armed && !coop_open() && watch_on_menu() && ui_transition_direction &&
-      ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
+  // The loading screen fades out from half a second (game_startup_init).
+  if (watch.awaited && startup_async_load_ready && !startup_loading_fade_complete)
+    startup_splash_timer = std::max(startup_splash_timer, 0.5f);
+  if (!watch.awaited && !game_live && !run_active && !watch.armed && !coop_open() && watch_on_menu() &&
+      ui_transition_direction && ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
+    watch_held_tune = -1;
+    watch.cut = true;
     if (watch.linked) {
       watch.linked = false;
       watch_start(watch.link, watch.link_card, watch.link_id);
@@ -593,9 +624,9 @@ static void watch_follow_link() {
       screen_fade_ramp_flag = 1;
     }
     ui_elements_timeline = 0;
-    // The intro's tune and the menu's theme, which the skipped intro faded out
-    // and started, stop at once: the link cut both, and their fades would play
-    // over the preparing pass.
+    // The intro's tune and the menu's theme, which a link that came after them
+    // finds playing, stop at once: the link cut both, and their fades would
+    // play over the preparing pass.
     for (int track : {music_track_intro_id, music_track_crimson_theme_id}) {
       music_track_volume[track] = 0;
       sfx_entry_stop(&music_entry_table[track]);
@@ -903,6 +934,10 @@ __attribute__((export_name("game_watch_run"))) const char *game_watch_run() {
   snprintf(watch_run_id, sizeof watch_run_id, "%s", live.watching && !live.practicing ? watch.run_id.c_str() : "");
   return watch_run_id;
 }
+// A host that opens with a link to a run says so as the game starts, before
+// it has the replay: the startup holds its loading screen, then skips the
+// intro and the menu. 0 once the fetch has ended; game_watch takes the run it brought.
+__attribute__((export_name("game_watch_awaited"))) void game_watch_awaited(int awaited) { watch.awaited = awaited; }
 __attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int month, int year) {
   if (game_live || !replay_loaded.reason.empty() || replay_loaded.recording.empty() || config_blob.screen_width != 1024 ||
       config_blob.screen_height != 768)
@@ -912,6 +947,7 @@ __attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int
   watch.link_id = watch_link_run;
   watch_link_run[0] = 0;
   watch.seek = watch.stop_at = 0;
+  watch.awaited = false;
   watch.linked = true;
   if (coop_open())
     coop_note("The replay plays once co-op ends");

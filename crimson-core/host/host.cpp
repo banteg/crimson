@@ -123,17 +123,22 @@ extern "C" int crt_rand() { return crt_rand_step(crt_rand_stream()); }
 #ifdef CRIMSON_GAME
 extern "C" void music_play_exclusive_recovered(int sfx_id);
 static void game_music_play(int sfx_id, int draw);
+static bool watch_holds_tune(int sfx_id);
 #endif
 // A tick's music call (the first hit's in-game tune, the end tunes), split in
 // two. The simulation half is the original's playlist latch and the tune's random
 // draw, whatever the audio: a hit draws the tune once, until another tune clears
 // the latch (Python's game_tune_started). The game module's playback half plays
 // the track, or the in-game tune the draw picks (-1 for none), by the player's
-// own audio settings and leaves the latch alone.
+// own audio settings and leaves the latch alone. Outside a tick, a link waiting
+// to play holds the original's tunes (host/watch.inc).
 extern "C" void music_play_exclusive(int sfx_id) {
 #ifdef CRIMSON_GAME
-  if (!game_ticking)
-    return music_play_exclusive_recovered(sfx_id);
+  if (!game_ticking) {
+    if (!watch_holds_tune(sfx_id))
+      music_play_exclusive_recovered(sfx_id);
+    return;
+  }
 #endif
   int draw = -1;
   if (sfx_id == music_track_game_playlist) {

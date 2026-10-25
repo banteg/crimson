@@ -126,6 +126,8 @@
   // the high scores.
   const query = new URLSearchParams(location.search);
   const linked = query.get("watch");
+  // Until its run comes, the game skips the intro and holds its tunes (client/main.cpp).
+  let watchAwaited = !!linked;
   const linkedQuest = query.get("quest");
   const parseTick = (value) => {
     if (value === null) return null;
@@ -983,16 +985,21 @@
     start();
   }
   async function watchLink(run) {
-    if (!/^[A-Za-z0-9_-]{1,64}$/.test(run)) return tell("This replay link is malformed.");
+    const fail = (why) => {
+      watchAwaited = false;
+      Module.ccall("client_watch_failed", null, [], []);
+      tell(why);
+    };
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(run)) return fail("This replay link is malformed.");
     if (Number.isNaN(linkTick) || Number.isNaN(linkStop) || (linkStop !== null && linkStop <= (linkTick ?? 1)))
-      return tell("This link's moment is malformed.");
+      return fail("This link's moment is malformed.");
     let response, bytes;
     try {
       response = await fetch(`/runs/${run}.crd`);
       if (response.ok) bytes = new Uint8Array(await response.arrayBuffer());
     } catch {}
     if (!bytes || bytes.length > REPLAY_LIMIT)
-      return tell(response?.status === 404 ? "This run is no longer on the leaderboard." : "Could not download this run.");
+      return fail(response?.status === 404 ? "This run is no longer on the leaderboard." : "Could not download this run.");
     const path = `replays/online/${run}.crd`;
     FS.mkdirTree("/game/replays/online");
     FS.writeFile(`/game/${path}`, bytes);
@@ -1010,7 +1017,7 @@
         day ? day.getFullYear() : 2000,
       ]);
       if (why === "wait") return setTimeout(start, 250);
-      if (why) return tell(why);
+      if (why) return fail(why);
       if (linkTick !== null || linkStop !== null) {
         const bad = Module.ccall("client_watch_moment", "string", ["number", "number"], [linkTick ?? 0, linkStop ?? 0]);
         if (bad) return tell(bad);
@@ -1058,6 +1065,8 @@
     }],
     // Whether the game starts in RTX (client/main.cpp), which only WebGPU draws.
     rtxWanted: () => !!Module.preinitializedWebGPUDevice && rtxWanted(),
+    // Whether the game starts waiting for a linked run's replay (client/main.cpp).
+    watchAwaited: () => watchAwaited,
     // The rendering mode the game shows (client/main.cpp): HDR displays get its highlights past white.
     renderMode: (on) => {
       rtx.classList.toggle("on", !!on);
