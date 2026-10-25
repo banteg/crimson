@@ -20,13 +20,12 @@ void main() {
     float density = textureLod(u_density, clamp(fragTexCoord, cell + half_texel, cell + vec2(.125) - half_texel), 0.).r;
     // Preserve a wide cool-to-hot range instead of saturating the entire silhouette to yellow.
     float core = pow(density, 1.15);
-    // Keep the torso lobe fixed; green/blue optionally carry a baked animation-frame head position.
-    // Zombie heads follow their OpenCV tracks; every other species keeps the approved fixed chest.
+    // Two soft lobes in sprite-local space: a fixed abdomen and a head, which green/blue place where a zombie
+    // walking frame's head is (render/rtx/heat_heads.py); zero keeps it fixed.
     vec2 p = fract(fragTexCoord * 8.) - .5;
     vec2 abdomen = (p - vec2(-.12, 0.)) * vec2(12., 10.);
-    vec2 head = fragColor.g > 0. ? fragColor.gb - .5 : vec2(.025, 0.);
-    vec2 chest = (p - head) * vec2(18., 13.);
-    float organs = .34 * exp(-dot(abdomen, abdomen)) + .28 * exp(-dot(chest, chest));
+    vec2 head = (p - (fragColor.g > 0. ? fragColor.gb - .5 : vec2(.025, 0.))) * vec2(18., 13.);
+    float organs = .34 * exp(-dot(abdomen, abdomen)) + .28 * exp(-dot(head, head));
     // Recover the original sprite's small surface features from the color already fetched with its alpha.
     // Bound their contribution so baked artwork shading cannot bring back the large temperature pops.
     float detail = .24 * clamp(dot(art.rgb, vec3(.2126, .7152, .0722)) - .45, -.35, .35);

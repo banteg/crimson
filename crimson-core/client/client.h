@@ -41,9 +41,8 @@ void renderer_set_headroom(float headroom);
 // as "pass=ms ..." (OpenGL timer queries, a frame late), or "" where unmeasured.
 std::string renderer_gpu_timings();
 // thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
-// Invalid dimensions or null pixels return an empty map.
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);
-// Monster Vision uses continuous silhouette density instead of the quantized part-size proxy.
+// Monster Vision's silhouette density: two cell-local 5x5 alpha blurs.
 std::vector<unsigned char> renderer_heat_density(const unsigned char *bgra, int width, int height);
 
 // audio.cpp: plays the module's mix, pulled after each frame.

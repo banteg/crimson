@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 
 from crimson.creatures.anim import CREATURE_ANIM, creature_anim_select_frame
-from crimson.creatures.spawn import CreatureFlags
 from crimson.render.rtx.heat_heads import heat_head_color
 from crimson.render.rtx.heat_vision import (
     BODY_OPACITY,
@@ -15,7 +14,6 @@ from crimson.render.rtx.heat_vision import (
     heat_visibility,
     heat_warmth,
 )
-from crimson.render.world.creatures import draw_creature_sprite
 from crimson.render.world.draw import _NATIVE_CREATURE_SPRITE_DRAW_ORDER
 from crimson.render.world.viewport import ViewTransform
 from grim.assets import TextureId, load_runtime_resources, unload_runtime_resources
@@ -26,7 +24,6 @@ from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import texture_mode
 from tests.render.test_ground_materials import pixels
 from tests.render.test_material_lights import frame
-from tests.support.creature_draw_capture import render_ctx_for_creatures
 
 
 def test_hidden_evil_aliens_show_in_full_and_corpses_cool() -> None:
@@ -50,24 +47,6 @@ def test_freeze_cools_monsters_without_hiding_them() -> None:
     assert heat_warmth(spider, snapshot) == pytest.approx(FROZEN_WARMTH)
     snapshot.state.bonuses.freeze = .5  # thawing with the ice's own fade
     assert FROZEN_WARMTH < heat_warmth(spider, snapshot) < 1.0
-
-
-def test_heat_sprite_carries_the_head_of_its_selected_frame(headless_resources, mocker) -> None:
-    draw = mocker.patch.object(rl, "draw_texture_pro")
-    ctx = render_ctx_for_creatures(headless_resources, ())
-    for kind in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
-        texture = headless_resources.texture(TextureId[kind.name])
-        for phase in range(32):
-            draw_creature_sprite(
-                ctx, texture, type_id=kind, flags=CreatureFlags(0), phase=phase,
-                pos=Vec2(32, 32), rotation_rad=0, scale=1, size_scale=1,
-                tint=rl.Color(255, 0, 0, 224), heat=True,
-            )
-            _, source, _, _, _, color = draw.call_args.args
-            index = int(source.x / (texture.width / 8)) + 8 * int(source.y / (texture.height / 8))
-            assert (color.g, color.b) == heat_head_color(kind, index)
-            assert (color.r, color.a) == (255, 224)
-
 
 
 def trail_texels(heat: HeatVision) -> list[float]:

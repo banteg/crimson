@@ -90,8 +90,13 @@ extern "C" void rtx_heat(int type_id, float transition_alpha) {
         frame += 32;
     }
     grim_interface_ptr->grim_set_atlas_frame(8, frame);
-    const auto head = heat_head_color(type_id, frame);
-    grim_interface_ptr->grim_set_color(warmth(c), head.green, head.blue, fminf(1, opacity) * BODY_OPACITY);
+    // Green/blue: a zombie walking frame's head (render/rtx/heat_heads.py), zero for the fixed lobe.
+    float head_x = 0, head_y = 0;
+    if (type_id == 0 && frame < (int)(sizeof zombie_heat_heads / sizeof *zombie_heat_heads)) {
+      head_x = (zombie_heat_heads[frame][0] + .5f) / 255;
+      head_y = (zombie_heat_heads[frame][1] + .5f) / 255;
+    }
+    grim_interface_ptr->grim_set_color(warmth(c), head_x, head_y, fminf(1, opacity) * BODY_OPACITY);
     grim_interface_ptr->grim_set_rotation(c.heading - 1.57079637f);
     grim_interface_ptr->grim_draw_quad(camera_offset.x + c.pos_x - c.size * 0.5f,
                                        camera_offset.y + c.pos_y - c.size * 0.5f, c.size, c.size);

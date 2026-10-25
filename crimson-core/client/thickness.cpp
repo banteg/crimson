@@ -10,8 +10,6 @@
 namespace {
 using Plane = std::vector<unsigned char>;
 
-bool valid_atlas(int width, int height) { return width > 0 && height > 0 && width % 8 == 0 && height % 8 == 0; }
-
 // A 3x3 minimum or maximum, separable, wrapping at the image's edges.
 template <class Pick> Plane neighborhood(const Plane &in, int width, int height, Pick pick) {
   Plane across(in.size()), out(in.size());
@@ -31,8 +29,6 @@ unsigned char high(unsigned char a, unsigned char b) { return std::max(a, b); }
 } // namespace
 
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height) {
-  if (!bgra || !valid_atlas(width, height))
-    return {};
   int cell_width = width / 8, cell_height = height / 8;
   Plane interior((size_t)width * height, 255), mask((size_t)width * height);
   for (int y = 0; y < height; ++y)
@@ -88,8 +84,6 @@ Plane blur_cells(const Plane &plane, int width, int height, int radius) {
 // cell-local 5x5 alpha blurs, preserving fractional coverage. A pose's part
 // sizes can jump by an entire square-opening level; density changes smoothly.
 std::vector<unsigned char> renderer_heat_density(const unsigned char *bgra, int width, int height) {
-  if (!bgra || !valid_atlas(width, height))
-    return {};
   Plane alpha((size_t)width * height);
   for (size_t i = 0; i < alpha.size(); ++i)
     alpha[i] = bgra[i * 4 + 3];

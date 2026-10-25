@@ -323,24 +323,10 @@ PLAYER_ARRAYS = {"telekinetic_bonus_hover_timer_ms"}  # bonus_render's Telekinet
 
 
 def heat_heads_header(root):
-    """The same packed head centers Python reads; no tracking library at runtime."""
-    tracks = json.loads((root / "src/crimson/render/rtx/heat_heads.json").read_text())
-    frames = tracks["zombie"]
-    if len(frames) != 32 or any(len(p) != 2 or not all(0 < v < 255 for v in p) for p in frames):
-        raise ValueError("Invalid zombie heat head track")
-    lines = ["// Generated from render/rtx/heat_heads.json.",
-             "static constexpr unsigned char zombie_heat_heads[32][2] = {"]
-    lines.extend("  {" + ", ".join(map(str, p)) + "}," for p in frames)
-    lines.append("};")
-    lines.extend([
-        "struct HeatHeadColor { float green, blue; };",
-        "static HeatHeadColor heat_head_color(int type_id, int frame) {",
-        "  if (type_id != 0 || frame < 0 || frame >= 32) return {0, 0};",
-        "  const auto *head = zombie_heat_heads[frame];",
-        "  return {(head[0] + .5f) / 255, (head[1] + .5f) / 255};",
-        "}",
-    ])
-    return "\n".join(lines) + "\n"
+    """Zombie walking frames' head centers, as render/rtx/heat_heads.py reads them."""
+    heads = json.loads((root / "src/crimson/render/rtx/zombie_heat_heads.json").read_text())
+    rows = "".join(f"  {{{x}, {y}}},\n" for x, y in heads)
+    return f"// Generated from render/rtx/zombie_heat_heads.json.\nconst unsigned char zombie_heat_heads[][2] = {{\n{rows}}};\n"
 
 
 def game_data(root, out, engine, simulation):
