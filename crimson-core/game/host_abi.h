@@ -89,7 +89,7 @@ HOST_IMPORT(frame_hold) void host_frame_hold(int op);
 HOST_IMPORT(texture_copy) void host_texture_copy(int destination, int source);
 HOST_IMPORT(gamma_ramp) void host_gamma_ramp(const unsigned short *red, const unsigned short *green,
                                              const unsigned short *blue);
-HOST_IMPORT(fatal) [[noreturn]] void host_fatal(const char *message);
+[[noreturn]] HOST_IMPORT(fatal) void host_fatal(const char *message);
 // A message box the original shows the player (startup failures, warnings).
 HOST_IMPORT(message) void host_message(const char *text, const char *caption);
 HOST_IMPORT(time_ms) unsigned host_time_ms(void);
