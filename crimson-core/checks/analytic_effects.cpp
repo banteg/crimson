@@ -79,7 +79,16 @@ int main() {
   rtx_effects_active = 1;
   rtx_plasma(0, .7f);
   rtx_ion_arc(10, 10, 50, 20, 2, .7f);
-  assert(calls == 2);
+  assert(calls == 1);
+  // Consecutive arcs batch: each corner carries its local position and the
+  // length in strip scales, negative when the strips end in the native cut.
+  portable_preserve_bugs = 1;
+  rtx_ion_arc(10, 10, 50, 40, 2, .7f);
+  portable_preserve_bugs = 0;
+  rtx_effect_flush();
+  assert(calls == 2 && submissions.back() == 4 && captured_sprites.size() == 12);
+  assert(captured_sprites[0].z == sqrtf(1700) / 2 && captured_sprites[6].z == -sqrtf(2500) / 2);
+  assert(captured_sprites[0].u == -16 && captured_sprites[2].u == sqrtf(1700) / 2 + 16);
   const float points[8] = {-12, 7, 23, -15, 45, 20, 10, 42};
   // Normal-alpha warm glows keep the original texture coverage.
   grim_config_values[0x12].words[0] = 1;

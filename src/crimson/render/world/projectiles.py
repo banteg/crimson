@@ -13,7 +13,7 @@ from ...math_parity import f32, f32_vec2
 from ...perks import PerkId
 from ...projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectileTypeId
 from ..beam_profiles import STREAK_SCALES
-from ..ion_arcs import ion_arc_targets
+from ..ion_arcs import ion_arcs_drawn
 from ..laser_sight import laser_sight_geometry
 from ..rtx.beam import BeamBatch, draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ..rtx.effects import SPRITE_SHAPES, SpriteBatch, draw_ion_arc, draw_plasma, draw_sprite, sprite_batch
@@ -543,46 +543,54 @@ def _draw_streak(
     # rewrite closes both ends with the glow's halves, which continue that column.
     capped = not frame.state.preserve_bugs
     # Native walks `creature_find_in_radius(pos, reach, 1)`: the inner strip, the
-    # outer strip, then the glow on that creature, one creature at a time.
-    for creature in ion_arc_targets(frame, proj):
-        target = render_ctx.world_to_screen(creature.pos)
-        if rtx:
-            draw_ion_arc(start=screen, end=target, effect_scale=effect_scale * scale, alpha=base_alpha, capped=capped)
-            continue
-        side_dir, length = (target - screen).normalized_with_length()
-        if length <= 1e-3:
-            continue
-        side = side_dir.perp_left()
-        rl.rl_set_texture(texture.id)
-        rl.rl_begin(rd.RL_QUADS)
-        for half in (10.0, 14.0):
-            offset = side * (half * effect_scale * scale)
-            # Body, then the end caps: the glow's left half before the shot, its right half past the creature.
-            quads = [(screen, target, 0.625, 0.625)]
-            if capped:
-                along = side_dir * (half * effect_scale * scale)
-                quads += [(screen - along, screen, 0.5, 0.625), (target, target + along, 0.625, 0.75)]
-            rl.rl_color4ub(tint.r, tint.g, tint.b, tint.a)
-            for start, end, u_start, u_end in quads:
-                for point, u, v in (
-                    (start - offset, u_start, 0.0),
-                    (start + offset, u_start, 0.25),
-                    (end + offset, u_end, 0.25),
-                    (end - offset, u_end, 0.0),
-                ):
-                    rl.rl_tex_coord2f(u, v)
-                    rl.rl_vertex2f(point.x, point.y)
-        rl.rl_end()
-        rl.rl_set_texture(0)
-        _draw_atlas(
-            render_ctx,
-            texture,
-            grid=4,
-            frame=2,
-            pos=target,
-            size=cell * effect_scale * scale,
-            rgba=RGBA(0.5, 0.6, 1.0, base_alpha),
-        )
+    # outer strip, then the glow on that creature, one creature at a time (at most two a cell).
+    with sprite_batch() as arcs:
+        for creature in ion_arcs_drawn(frame, proj):
+            target = render_ctx.world_to_screen(creature.pos)
+            if rtx:
+                draw_ion_arc(
+                    start=screen,
+                    end=target,
+                    effect_scale=effect_scale * scale,
+                    alpha=base_alpha,
+                    capped=capped,
+                    batch=arcs,
+                )
+                continue
+            side_dir, length = (target - screen).normalized_with_length()
+            if length <= 1e-3:
+                continue
+            side = side_dir.perp_left()
+            rl.rl_set_texture(texture.id)
+            rl.rl_begin(rd.RL_QUADS)
+            for half in (10.0, 14.0):
+                offset = side * (half * effect_scale * scale)
+                # Body, then the end caps: the glow's left half before the shot, its right half past the creature.
+                quads = [(screen, target, 0.625, 0.625)]
+                if capped:
+                    along = side_dir * (half * effect_scale * scale)
+                    quads += [(screen - along, screen, 0.5, 0.625), (target, target + along, 0.625, 0.75)]
+                rl.rl_color4ub(tint.r, tint.g, tint.b, tint.a)
+                for start, end, u_start, u_end in quads:
+                    for point, u, v in (
+                        (start - offset, u_start, 0.0),
+                        (start + offset, u_start, 0.25),
+                        (end + offset, u_end, 0.25),
+                        (end - offset, u_end, 0.0),
+                    ):
+                        rl.rl_tex_coord2f(u, v)
+                        rl.rl_vertex2f(point.x, point.y)
+            rl.rl_end()
+            rl.rl_set_texture(0)
+            _draw_atlas(
+                render_ctx,
+                texture,
+                grid=4,
+                frame=2,
+                pos=target,
+                size=cell * effect_scale * scale,
+                rgba=RGBA(0.5, 0.6, 1.0, base_alpha),
+            )
 
 
 def _plague_pass(render_ctx: WorldRenderCtx, *, alpha: float, atlas_state: tuple[int, int, float]) -> None:
