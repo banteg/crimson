@@ -29,7 +29,9 @@ def current_target_scale() -> tuple[float, float]:
     """Target pixels per logical unit in the current target."""
     if _stack:
         return _stack[-1][1], _stack[-1][2]
-    return 1.0, 1.0
+    # The window: raylib scales logical coordinates into a HiDPI framebuffer itself.
+    dpi = rl.get_window_scale_dpi()
+    return float(dpi.x), float(dpi.y)
 
 
 def current_target_edr_headroom() -> float:
