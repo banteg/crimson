@@ -8,6 +8,7 @@
 #include "client.h"
 #include "client_shaders.h"
 #include "device_states.h"
+#include "ground_visibility.h"
 #include <algorithm>
 #include <chrono>
 #include <deque>
@@ -276,6 +277,8 @@ const char *pressure_fragment_source = SHADER_HEADER SHADER_PRESSURE_LIT_FRAG;
 enum { MAX_LIGHTS = 32 };
 int material;
 float scene_camera[2];
+GroundVisibility ground_visibility;
+bool visibility_dirty = true;
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
 // What the ground takes beyond them (host_scene): the run's clock, the terrain's
@@ -333,11 +336,9 @@ std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
 GLuint ground_program, stamp_program, fill_program;
-// The soft sources' visibility at a quarter of the ground's resolution
-// (ground.frag's BEAM_VISIBILITY_PASS): a group of four slots per four lights,
-// four groups a row in one atlas, which the ground reads instead of walking the
-// body grid per pixel.
-enum { BEAM_VISIBILITY_SCALE = 4, BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
+// World-space, color-independent source visibility: four source masks per
+// RGBA group, four groups a row. Final shading never walks the body grid.
+enum { BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
 GLuint ground_beam_vis_program, beam_vis_framebuffer, beam_vis_texture;
 int beam_vis_width, beam_vis_height;
 GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
@@ -865,8 +866,79 @@ void submit_vertices(const std::vector<HostVertex> &vertices) {
   glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.size());
 }
 
-// The terrain drawn into the world, lit as the Python port's ground: its
-// substrate, materials and surface under the frame's lights and body shadows.
+// Prepare the color-independent masks before opening the HDR world pass. A
+// late scene/occlusion import can also rebuild them before the next ground draw.
+void prepare_ground_visibility(int view_width, int view_height) {
+  visibility_dirty = false;
+  ground_visibility.prepare(scene_camera[0], scene_camera[1], (float)view_width, (float)view_height,
+                            light_count, dynamic_shadows && occlusion_grid[2] > 0 &&
+                            ground_size[0] > 0 && ground_size[1] > 0);
+  const GroundVisibility &v = ground_visibility;
+  profile_stat("ground_visibility_sources", v.count);
+  profile_stat("ground_visibility_groups", (v.count + 3) / 4);
+  if (!v.count)
+    return;
+  gpu_aside("ground-vis");
+  if (!beam_vis_framebuffer || v.width != beam_vis_width || v.height != beam_vis_height) {
+    if (!beam_vis_framebuffer) {
+      glGenFramebuffers(1, &beam_vis_framebuffer);
+      glGenTextures(1, &beam_vis_texture);
+    }
+    glBindTexture(GL_TEXTURE_2D, beam_vis_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4 * v.width, BEAM_VISIBILITY_ROWS * v.height,
+                 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, beam_vis_texture, 0);
+    beam_vis_width = v.width;
+    beam_vis_height = v.height;
+  }
+  glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+  glDisable(GL_BLEND);
+  glDisable(GL_CULL_FACE);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glViewport(0, 0, 4 * v.width, BEAM_VISIBILITY_ROWS * v.height);
+  glDisable(GL_SCISSOR_TEST);
+  glClearColor(1, 1, 1, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  GLuint p = ground_beam_vis_program;
+  use_program(p);
+  auto at = [p](const char *name) { return uniform_location(p, name); };
+  glUniform4fv(at("u_visibility_world"), 1, v.rect);
+  glUniform2fv(at("u_ground_size"), 1, ground_size);
+  glUniform1i(at("u_spec_light_count"), light_count);
+  glUniform1i(at("u_has_beam_lights"), beam_lights);
+  glUniform4fv(at("u_spec_pos"), light_count, light_pos);
+  glUniform4fv(at("u_spec_color"), light_count, light_rgb);
+  glUniform4fv(at("u_spec_dir"), light_count, ground_dir);
+  glUniform4fv(at("u_spec_response"), light_count, light_response);
+  glUniform4fv(at("u_beam_shape"), light_count, beam_shape);
+  glUniform4fv(at("u_occlusion_grid"), 1, occlusion_grid);
+  glUniform1f(at("u_occlusion_cell_size"), occlusion_cell);
+  glUniform1i(at("u_occlusion_tex"), 0);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, occlusion_texture);
+  glBindSampler(0, 0);
+  glBindVertexArray(vertex_array);
+  glEnable(GL_SCISSOR_TEST);
+  for (int group = 0; group * 4 < v.count; ++group) {
+    auto bounds = v.bounds(group, light_pos, ground_dir, light_rgb, light_response, beam_shape, beam_lights);
+    if (!bounds[2] || !bounds[3]) continue;
+    glScissor(group % 4 * v.width + bounds[0], group / 4 * v.height + bounds[1], bounds[2], bounds[3]);
+    glViewport(group % 4 * v.width, group / 4 * v.height, v.width, v.height);
+    glUniform1f(at("u_visibility_group"), (float)group);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  }
+  glDisable(GL_SCISSOR_TEST);
+  bind_target();
+  gpu_resume();
+}
+
+// Full-resolution material shading samples one coarse RGBA group per four
+// lights. No body-grid texture or shadow walk is bound to this program.
 bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
   flush_ground_stamps();
   auto it = textures.find(bound[0]);
@@ -874,96 +946,43 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
-  // Lit beams take the slots in light order, then wide discs and rings join
-  // them (a pass of their own would cost the world its render pass for less
-  // than it saves); the rest walk the grid in the ground's own pass.
-  float slots[MAX_LIGHTS * 4] = {};
-  int count = 0;
-  if (beam_lights && dynamic_shadows && occlusion_grid[2]) {
-    for (int i = 0; i < light_count; ++i)
-      if (beam_shape[i * 4 + 3] > 0)
-        slots[i * 4] = (float)++count;
-    for (int i = 0; i < light_count && count; ++i)
-      if (beam_shape[i * 4 + 3] <= 0 && light_response[i * 4] > 0 &&
-          (light_rgb[i * 4 + 3] > 0 || light_response[i * 4 + 3] >= RTX_SOFT_WIDTH))
-        slots[i * 4] = (float)++count;
+  if (visibility_dirty)
+    prepare_ground_visibility(t.logical_width, t.logical_height);
+  gpu_mark("ground-shade");
+  GLuint p = ground_program;
+  use_program(p);
+  auto at = [p](const char *name) { return uniform_location(p, name); };
+  glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
+  glUniform2fv(at("u_ground_size"), 1, ground_size);
+  glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
+  glUniform1i(at("u_debug"), 0);
+  glUniform1i(at("u_debug_display"), 1);
+  glUniform1i(at("u_spec_light_count"), light_count);
+  glUniform1i(at("u_has_beam_lights"), beam_lights);
+  glUniform2fv(at("u_beam_gain"), 1, beam_gain);
+  glUniform4fv(at("u_visibility_world"), 1, ground_visibility.rect);
+  glUniform2f(at("u_visibility_size"), (float)std::max(1, beam_vis_width), (float)std::max(1, beam_vis_height));
+  if (light_count) {
+    glUniform4fv(at("u_spec_pos"), light_count, light_pos);
+    glUniform4fv(at("u_spec_color"), light_count, light_rgb);
+    glUniform4fv(at("u_spec_dir"), light_count, ground_dir);
+    glUniform4fv(at("u_spec_response"), light_count, light_response);
+    glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
+    glUniform4fv(at("u_beam_shape"), light_count, beam_shape);
   }
-  auto prepare = [&](GLuint p) {
-    use_program(p);
-    auto at = [p](const char *name) { return uniform_location(p, name); };
-    glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
-    glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
-    glUniform2fv(at("u_ground_size"), 1, ground_size);
-    glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
-    glUniform1i(at("u_debug"), 0);
-    glUniform1i(at("u_debug_display"), 1);
-    glUniform1i(at("u_dynamic_shadows"), dynamic_shadows);
-    glUniform1i(at("u_spec_light_count"), light_count);
-    glUniform1i(at("u_has_beam_lights"), beam_lights);
-    glUniform2fv(at("u_beam_gain"), 1, beam_gain);
-    glUniform4fv(at("u_occlusion_grid"), 1, occlusion_grid);
-    glUniform1f(at("u_occlusion_cell_size"), occlusion_cell);
-    if (light_count) {
-      glUniform4fv(at("u_spec_pos"), light_count, light_pos);
-      glUniform4fv(at("u_spec_color"), light_count, light_rgb);
-      glUniform4fv(at("u_spec_dir"), light_count, ground_dir);
-      glUniform4fv(at("u_spec_response"), light_count, light_response);
-      glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
-      glUniform4fv(at("u_beam_shape"), light_count, beam_shape);
-      glUniform4fv(at("u_beam_slots"), light_count, slots);
-    }
-    const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
-                             occlusion_grid[2] ? occlusion_texture : blank_texture,
-                             count ? beam_vis_texture : blank_texture};
-    const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex", "u_beam_vis"};
-    for (int i = 0; i < 5; ++i) {
-      glUniform1i(at(names[i]), i);
-      glActiveTexture(GL_TEXTURE0 + i);
-      glBindTexture(GL_TEXTURE_2D, inputs[i]);
-      glBindSampler(i, 0);
-    }
-    glActiveTexture(GL_TEXTURE0);
-  };
-  if (count) {
-    int width = std::max(1, t.width / BEAM_VISIBILITY_SCALE), height = std::max(1, t.height / BEAM_VISIBILITY_SCALE);
-    if (!beam_vis_framebuffer || width != beam_vis_width || height != beam_vis_height) {
-      if (!beam_vis_framebuffer) {
-        glGenFramebuffers(1, &beam_vis_framebuffer);
-        glGenTextures(1, &beam_vis_texture);
-      }
-      glBindTexture(GL_TEXTURE_2D, beam_vis_texture);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4 * width, BEAM_VISIBILITY_ROWS * height, 0, GL_RGBA,
-                   GL_HALF_FLOAT, nullptr);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, beam_vis_texture, 0);
-      beam_vis_width = width, beam_vis_height = height;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
-    glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glViewport(0, 0, 4 * width, BEAM_VISIBILITY_ROWS * height);
-    glClearColor(1, 1, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-    prepare(ground_beam_vis_program);
-    GLint group_at = uniform_location(ground_beam_vis_program, "u_beam_group");
-    for (int group = 0; group * 4 < count; ++group) {
-      glViewport(group % 4 * width, group / 4 * height, width, height);
-      glUniform1f(group_at, (float)group);
-      submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
-    }
-    bind_target();
+  const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
+                           ground_visibility.count ? beam_vis_texture : blank_texture};
+  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_visibility_tex"};
+  for (int i = 0; i < 4; ++i) {
+    glUniform1i(at(names[i]), i);
+    glActiveTexture(GL_TEXTURE0 + i);
+    glBindTexture(GL_TEXTURE_2D, inputs[i]);
+    glBindSampler(i, 0);
   }
-  prepare(ground_program);
-  if (count)
-    glUniform4f(uniform_location(ground_program, "u_beam_vis_target"), (float)t.width, (float)t.height,
-                (float)beam_vis_width, (float)beam_vis_height);
+  glActiveTexture(GL_TEXTURE0);
   apply_output_state(t);
-  glDisable(GL_BLEND); // the ground is opaque
+  glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
   return true;
@@ -1248,7 +1267,7 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     glUniform1i(uniform_location(heat_trail_program, "u_heat"), 0);
     pressure_program = link(tonemap_vertex_source, pressure_fragment_source);
     ground_program = link(lit_vertex_source, ground_fragment_source);
-    ground_beam_vis_program = link(lit_vertex_source, ground_beam_vis_source);
+    ground_beam_vis_program = link(SHADER_HEADER SHADER_GROUND_VISIBILITY_VERT, ground_beam_vis_source);
     stamp_program = link(lit_vertex_source, stamp_fragment_source);
     use_program(stamp_program);
     glUniform1i(uniform_location(stamp_program, "texture0"), 0);
@@ -1278,6 +1297,8 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   }
   rtx = enabled;
   world = false;
+  visibility_dirty = true;
+  ground_visibility = {};
   release(hdr);
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())
@@ -1798,6 +1819,7 @@ void GL_ENTRY(w2c_host_effect_sprites)(struct w2c_host *, u32 vertices,
                        count, kind, params);
 }
 void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count) {
+  visibility_dirty = true;
   profile_stat("lights", count);
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
@@ -2065,6 +2087,7 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 count) {
+  visibility_dirty = true;
   const float *g = (const float *)(client_memory() + grid);
   occlusion_grid[0] = g[0], occlusion_grid[1] = g[1], occlusion_grid[2] = count ? g[2] : 0, occlusion_grid[3] = g[3];
   occlusion_cell = g[4];
@@ -2114,7 +2137,8 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   Target &back = textures[0];
   if (!rtx || !back.framebuffer)
     return;
-  if (pass == HOST_PASS_WORLD_BEGIN) { // The world goes over what the frame drew so far.
+  if (pass == HOST_PASS_WORLD_BEGIN) { // Scene/occlusion inputs have arrived; shade masks before HDR.
+    prepare_ground_visibility(back.logical_width, back.logical_height);
     int width = back.width, height = back.height;
     world_size(back.logical_width, width, height);
     if (hdr.width != width || hdr.height != height || !hdr.framebuffer) {
