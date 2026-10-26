@@ -630,7 +630,13 @@ void network_update() {
 // passes' CPU time, its draws, the scene's sizes and its targets) and, once the
 // GPU has finished it, its passes' GPU time. tools/profile.py reads it.
 FILE *profile_file;
-std::map<long long, std::string> profile_waiting; // frames whose GPU time has not come
+// The frames not yet written, in order: a timed frame waits for its GPU time,
+// and the frames after it wait for it.
+struct ProfileFrame {
+  std::string record;
+  bool timed;
+};
+std::map<long long, ProfileFrame> profile_waiting;
 double resident_mb() {
 #ifdef __APPLE__
   mach_task_basic_info_data_t info;
@@ -678,7 +684,8 @@ void profile_record() {
   static int last_tick = -1;
   long long frame;
   std::string record;
-  if (renderer_profile_frame(frame, record)) {
+  bool timed;
+  if (renderer_profile_frame(frame, record, timed)) {
     double now = SDL_GetTicksNS() / 1e6;
     // A replay's tick once it is prepared (its run's ticks known), else -1.
     int tick = (int)w2c_game_game_watch_status(&game) >= 0 && w2c_game_game_watch_ticks(&game)
@@ -694,27 +701,25 @@ void profile_record() {
              rtx_shown ? "true" : "false", resident_mb(), alive[0], alive[1], alive[2], alive[3], alive[4], alive[5]);
     last_wall = now;
     last_tick = tick;
-    profile_waiting[frame] = head + record;
+    profile_waiting[frame] = {head + record, timed};
   }
   std::string passes;
   while (renderer_profile_gpu(frame, passes)) {
-    auto it = profile_waiting.find(frame);
-    if (it == profile_waiting.end())
-      continue;
-    profile_write(it->second + ",\"gpu\":" + passes + "}");
-    profile_waiting.erase(it);
+    ProfileFrame &f = profile_waiting.at(frame);
+    f.record += ",\"gpu\":" + passes;
+    f.timed = false;
   }
-  // Frames the GPU never timed go without.
-  while (profile_waiting.size() > 16) {
-    profile_write(profile_waiting.begin()->second + "}");
+  // The renderer finishes every timed frame within a few timed frames.
+  while (!profile_waiting.empty() && !profile_waiting.begin()->second.timed) {
+    profile_write(profile_waiting.begin()->second.record + "}");
     profile_waiting.erase(profile_waiting.begin());
   }
 }
 void profile_close() {
   if (!profile_file)
     return;
-  for (const auto &[frame, record] : profile_waiting)
-    profile_write(record + "}");
+  for (const auto &[frame, f] : profile_waiting)
+    profile_write(f.record + "}");
   profile_waiting.clear();
   fclose(profile_file);
   profile_file = nullptr;

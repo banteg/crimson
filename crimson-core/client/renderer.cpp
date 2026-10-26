@@ -88,7 +88,7 @@ std::vector<GLuint> gpu_queries;
 long long profile_frames;
 // The last frame's own record, and the GPU's records as they finish.
 std::string profile_cpu;
-bool profile_cpu_ready;
+bool profile_cpu_ready, profile_cpu_timed;
 std::deque<std::pair<long long, std::string>> profile_gpu;
 struct DrawCount {
   double quads = 0, pixels = 0;
@@ -1068,6 +1068,7 @@ void GL_ENTRY(renderer_frame_end)() {
                   return (i + 1 < gpu_frame.size() ? gpu_frame[i + 1].cpu_at : end) - gpu_frame[i].cpu_at;
                 }) + ",\"timed\":" + (gpu_timed ? "true" : "false") + ",\"draws\":{" + draws + "},\"scene\":{" + scene + "}" + entry;
   profile_cpu_ready = true;
+  profile_cpu_timed = gpu_timed;
   ++profile_frames;
   draw_frame.clear();
   profile_scene.clear();
@@ -1098,12 +1099,13 @@ void GL_ENTRY(renderer_frame_end)() {
   gpu_mark("frame");
 }
 // The last frame's record (its CPU passes, draws, scene and targets), once.
-bool GL_ENTRY(renderer_profile_frame)(long long &frame, std::string &record) {
+bool GL_ENTRY(renderer_profile_frame)(long long &frame, std::string &record, bool &timed) {
   if (!profile_cpu_ready)
     return false;
   profile_cpu_ready = false;
   frame = profile_frames - 1;
   record = profile_cpu;
+  timed = profile_cpu_timed;
   return true;
 }
 // A finished frame's GPU passes, oldest first.

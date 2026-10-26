@@ -58,7 +58,7 @@ void renderer_set_headroom(float headroom);
 // whose work has finished, oldest first, a few frames later. The WebGPU
 // renderer records nothing.
 void renderer_frame_end();
-bool renderer_profile_frame(long long &frame, std::string &record);
+bool renderer_profile_frame(long long &frame, std::string &record, bool &timed);
 bool renderer_profile_gpu(long long &frame, std::string &passes);
 // thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);

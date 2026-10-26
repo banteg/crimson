@@ -48,7 +48,9 @@ class Profile:
 
 def load(path: Path) -> Profile:
     lines = path.read_text().splitlines()
-    return Profile(path, json.loads(lines[0]), [json.loads(line) for line in lines[1:] if line])
+    # Older clients wrote a timed frame once its GPU time came, after the frames that followed it.
+    frames = sorted((json.loads(line) for line in lines[1:] if line), key=lambda f: f["frame"])
+    return Profile(path, json.loads(lines[0]), frames)
 
 
 def ticks_range(text: str | None) -> tuple[float, float]:
