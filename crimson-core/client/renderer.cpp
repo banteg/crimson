@@ -41,6 +41,13 @@
 bool renderer_uses_gl() { return true; }
 #endif
 
+// The marked decal draws a bake queues for the terrain's companions (w2c_host_draw):
+// drawn, or dropped with the companions of terrain `id`.
+extern "C" {
+void flush_ground_stamps();
+void discard_ground_stamps(int id);
+}
+
 namespace {
 
 // CRIMSON_PROFILE (client/main.cpp): each frame's passes, as the marks between
@@ -522,21 +529,30 @@ GLuint shape_map(int id, bool heat = false) {
 }
 
 // The device's vertices and indices as host_draw sends them.
-void submit_geometry(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
+// A primitive's indices: Direct3D counts primitives, GL indices.
+int index_count(u32 primitive, u32 primitive_count) {
+  return primitive == 4 ? primitive_count * 3 : primitive == 5 || primitive == 6 ? primitive_count + 2
+         : primitive == 2 ? primitive_count * 2 : primitive == 3 ? primitive_count + 1 : primitive_count;
+}
+void submit_geometry(u32 primitive, const void *vertices, u32 vertex_count, const unsigned short *indices,
+                     u32 primitive_count) {
   static const GLenum modes[] = {GL_POINTS, GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
   GLenum mode = primitive < 7 ? modes[primitive] : GL_TRIANGLES;
   glBindVertexArray(vertex_array);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vertex_count * 28, client_memory() + vertices, GL_STREAM_DRAW);
-  int index_count = primitive == 4 ? primitive_count * 3 : primitive == 5 || primitive == 6 ? primitive_count + 2
-                    : primitive == 2 ? primitive_count * 2 : primitive == 3 ? primitive_count + 1 : primitive_count;
+  glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vertex_count * 28, vertices, GL_STREAM_DRAW);
+  int count = index_count(primitive, primitive_count);
   if (indices) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)index_count * 2, client_memory() + indices, GL_STREAM_DRAW);
-    glDrawElements(mode, index_count, GL_UNSIGNED_SHORT, nullptr);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)count * 2, indices, GL_STREAM_DRAW);
+    glDrawElements(mode, count, GL_UNSIGNED_SHORT, nullptr);
   } else {
-    glDrawArrays(mode, 0, index_count);
+    glDrawArrays(mode, 0, count);
   }
+}
+void submit_geometry(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
+  submit_geometry(primitive, client_memory() + vertices, vertex_count,
+                  indices ? (const unsigned short *)(client_memory() + indices) : nullptr, primitive_count);
 }
 
 // A creature batch drawn again as heat (heat_body.frag): the atlas and its
@@ -646,6 +662,7 @@ void bind_framebuffer(const Target &t) {
 }
 
 void drop_ground(int id) {
+  discard_ground_stamps(id);
   auto it = grounds.find(id);
   if (it == grounds.end())
     return;
@@ -695,46 +712,6 @@ void rebase_wetness(Ground &g, float epoch) {
   glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
   ground_fill(blank_texture, 0, 3, expf((g.epoch - epoch) / 45));
   g.epoch = epoch;
-}
-
-// A marked decal draw's material stamps (materials.py's _stamp_commands, one
-// draw at a time): its coverage, then specularity, wetness and volume, then
-// height, each with its own blend and channels.
-void stamp_ground(Ground &g, int kind, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
-                  u32 primitive_count) {
-  if (ground_seconds - g.epoch > 180)
-    rebase_wetness(g, ground_seconds);
-  glUseProgram(stamp_program);
-  glUniform2f(u_stamp_target_size, (float)g.surface.logical_width, (float)g.surface.logical_height);
-  glUniform1i(u_stamp_kind, kind);
-  glUniform1f(u_stamp_wetness, expf((ground_seconds - g.epoch) / 45));
-  auto it = textures.find(bound[0]);
-  bool present = bound[0] && it != textures.end() && it->second.texture;
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
-  glBindSampler(0, samplers[0]);
-  glDisable(GL_CULL_FACE);
-  glEnable(GL_BLEND);
-  glBlendEquation(GL_FUNC_ADD);
-  for (int pass = 0; pass < 3; ++pass) {
-    if (pass == 2 && kind == HOST_GROUND_BLOOD)
-      break;
-    bind_framebuffer(pass ? g.surface : g.coverage);
-    glUniform1i(u_stamp_pass, pass);
-    if (pass == 0) {
-      // RGB weighs the materials alpha-over; A is ice coverage, which every later material occludes.
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-      glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, kind == HOST_GROUND_ICE ? GL_ONE : GL_ZERO,
-                          GL_ONE_MINUS_SRC_ALPHA);
-    } else if (pass == 1) {
-      glColorMask(kind != HOST_GROUND_BLOOD, GL_TRUE, GL_TRUE, GL_FALSE);
-      glBlendFunc(kind == HOST_GROUND_BLOOD ? GL_ONE : GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    } else {
-      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-      glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    }
-    submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
-  }
 }
 
 // A rect of a smoke target through one of the solver's programs, its uniforms set.
@@ -804,6 +781,7 @@ void submit_vertices(const std::vector<HostVertex> &vertices) {
 // The terrain drawn into the world, lit as the Python port's ground: its
 // substrate, materials and surface under the frame's lights and body shadows.
 bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
+  flush_ground_stamps();
   auto it = textures.find(bound[0]);
   if (!bound[0] || it == textures.end() || !it->second.framebuffer)
     return false;
@@ -994,6 +972,7 @@ void GL_ENTRY(renderer_resize)(int window_width, int window_height) {
 }
 
 void GL_ENTRY(renderer_present)(int window_width, int window_height) {
+  flush_ground_stamps();
   gpu_mark("present");
   Target &back = textures[0];
   if (!back.texture)
@@ -1387,6 +1366,7 @@ void GL_ENTRY(w2c_host_set_texture)(struct w2c_host *, u32 stage, u32 id) {
     bound[stage] = (int)id;
 }
 void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
+  flush_ground_stamps();
   current_target = (int)id;
   if (id)
     gpu_aside("bake");
@@ -1404,8 +1384,8 @@ void GL_ENTRY(w2c_host_clear)(struct w2c_host *, u32 color) {
   glClear(GL_COLOR_BUFFER_BIT);
 }
 // A draw through the device's own shading into the bound target `t`.
-static void device_draw(const Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
-                        u32 primitive_count) {
+static void device_draw(const Target &t, u32 primitive, const void *vertices, u32 vertex_count,
+                        const unsigned short *indices, u32 primitive_count) {
   glUseProgram(program);
   glUniform2f(u_target_size, (float)t.logical_width, (float)t.logical_height);
   GLint has[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES], filters[STAGES];
@@ -1457,6 +1437,134 @@ static void device_draw(const Target &t, u32 primitive, u32 vertices, u32 vertex
   }
   submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
 }
+// A bake's marked decal draws reach the terrain's companions pass by pass, as
+// materials.py stamps them: every substrate draw, then every coverage stamp,
+// then the surface's two passes, each target bound once and its draws in the
+// bake's order. Each draw keeps its own device states, decal texture and
+// material. The queue empties as the bake's marks end, and before anything
+// reads, replaces or rescales the companions.
+struct GroundStamp {
+  int kind;
+  float seconds;
+  u32 primitive, vertex_count, primitive_count;
+  size_t vertex_at, index_at; // in ground_stamp_bytes; index_at SIZE_MAX for none
+  unsigned render_states[256], stage_states[STAGES][32];
+  int bound[STAGES];
+};
+std::vector<GroundStamp> ground_stamps;
+std::vector<unsigned char> ground_stamp_bytes;
+int ground_stamp_target;
+
+void queue_ground_stamp(Ground &g, u32 primitive, const void *vertices, u32 vertex_count,
+                        const unsigned short *indices, u32 primitive_count) {
+  if (ground_stamp_target != current_target)
+    flush_ground_stamps();
+  // The surface's wetness rebases onto a later epoch between the stamps before it and the ones after.
+  if (ground_kind != HOST_GROUND_DECAL && ground_seconds - g.epoch > 180) {
+    flush_ground_stamps();
+    rebase_wetness(g, ground_seconds);
+  }
+  ground_stamp_target = current_target;
+  GroundStamp s;
+  s.kind = ground_kind, s.seconds = ground_seconds;
+  s.primitive = primitive, s.vertex_count = vertex_count, s.primitive_count = primitive_count;
+  const unsigned char *v = (const unsigned char *)vertices;
+  s.vertex_at = ground_stamp_bytes.size();
+  ground_stamp_bytes.insert(ground_stamp_bytes.end(), v, v + (size_t)vertex_count * 28);
+  s.index_at = SIZE_MAX;
+  if (indices) {
+    const unsigned char *i = (const unsigned char *)indices;
+    s.index_at = ground_stamp_bytes.size();
+    ground_stamp_bytes.insert(ground_stamp_bytes.end(), i, i + (size_t)index_count(primitive, primitive_count) * 2);
+  }
+  memcpy(s.render_states, render_states, sizeof render_states);
+  memcpy(s.stage_states, stage_states, sizeof stage_states);
+  memcpy(s.bound, bound, sizeof bound);
+  ground_stamps.push_back(s);
+}
+
+void discard_ground_stamps(int id) {
+  if (ground_stamp_target == id) {
+    ground_stamps.clear();
+    ground_stamp_bytes.clear();
+  }
+}
+
+void flush_ground_stamps() {
+  if (ground_stamps.empty())
+    return;
+  auto found = grounds.find(ground_stamp_target);
+  Ground &g = found->second;
+  auto vertices = [](const GroundStamp &s) { return ground_stamp_bytes.data() + s.vertex_at; };
+  auto indices = [](const GroundStamp &s) {
+    return s.index_at == SIZE_MAX ? nullptr : (const unsigned short *)(ground_stamp_bytes.data() + s.index_at);
+  };
+  // The substrate takes every draw but blood's, through the device's own shading as it was set for the draw.
+  unsigned saved_states[256], saved_stages[STAGES][32];
+  int saved_bound[STAGES];
+  memcpy(saved_states, render_states, sizeof render_states);
+  memcpy(saved_stages, stage_states, sizeof stage_states);
+  memcpy(saved_bound, bound, sizeof bound);
+  int saved_target = current_target;
+  current_target = ground_stamp_target;
+  bind_framebuffer(g.substrate);
+  for (const GroundStamp &s : ground_stamps) {
+    if (s.kind == HOST_GROUND_BLOOD)
+      continue;
+    memcpy(render_states, s.render_states, sizeof render_states);
+    memcpy(stage_states, s.stage_states, sizeof stage_states);
+    memcpy(bound, s.bound, sizeof bound);
+    device_draw(g.substrate, s.primitive, vertices(s), s.vertex_count, indices(s), s.primitive_count);
+  }
+  memcpy(render_states, saved_states, sizeof render_states);
+  memcpy(stage_states, saved_stages, sizeof stage_states);
+  memcpy(bound, saved_bound, sizeof bound);
+  current_target = saved_target;
+  // Each material's coverage, then specularity, wetness and volume, then
+  // height (materials.py's _stamp_commands), each with its own blend and channels.
+  glUseProgram(stamp_program);
+  glUniform2f(u_stamp_target_size, (float)g.surface.logical_width, (float)g.surface.logical_height);
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glActiveTexture(GL_TEXTURE0);
+  for (int pass = 0; pass < 3; ++pass) {
+    bind_framebuffer(pass ? g.surface : g.coverage);
+    glUniform1i(u_stamp_pass, pass);
+    for (const GroundStamp &s : ground_stamps) {
+      if (s.kind == HOST_GROUND_DECAL || (pass == 2 && s.kind == HOST_GROUND_BLOOD))
+        continue;
+      glUniform1i(u_stamp_kind, s.kind);
+      glUniform1f(u_stamp_wetness, expf((s.seconds - g.epoch) / 45));
+      auto it = textures.find(s.bound[0]);
+      bool present = s.bound[0] && it != textures.end() && it->second.texture;
+      glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
+      glBindSampler(0, samplers[0]);
+      // The decal samples as the device's stage 0 was set for its draw.
+      glSamplerParameteri(samplers[0], GL_TEXTURE_WRAP_S, address(s.stage_states[0][TSS_ADDRESSU]));
+      glSamplerParameteri(samplers[0], GL_TEXTURE_WRAP_T, address(s.stage_states[0][TSS_ADDRESSV]));
+      glSamplerParameteri(samplers[0], GL_TEXTURE_MAG_FILTER, s.stage_states[0][TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
+      glSamplerParameteri(samplers[0], GL_TEXTURE_MIN_FILTER, s.stage_states[0][TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
+      if (pass == 0) {
+        // RGB weighs the materials alpha-over; A is ice coverage, which every later material occludes.
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, s.kind == HOST_GROUND_ICE ? GL_ONE : GL_ZERO,
+                            GL_ONE_MINUS_SRC_ALPHA);
+      } else if (pass == 1) {
+        glColorMask(s.kind != HOST_GROUND_BLOOD, GL_TRUE, GL_TRUE, GL_FALSE);
+        glBlendFunc(s.kind == HOST_GROUND_BLOOD ? GL_ONE : GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      } else {
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+      }
+      submit_geometry(s.primitive, vertices(s), s.vertex_count, indices(s), s.primitive_count);
+    }
+  }
+  ground_stamps.clear();
+  ground_stamp_bytes.clear();
+  bind_target();
+}
+
 void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
                    u32 primitive_count) {
   if (profiling) {
@@ -1474,19 +1582,14 @@ void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32
     return;
   Target &t = drawing_target(current_target);
   // A marked decal reaches the ground's companions too: the substrate unless it
-  // is blood, the materials if it has one.
+  // is blood, the materials if it has one, queued for the bake's end.
   bool marked = rtx && ground_kind != HOST_GROUND_END && current_target && (t.flags & TARGET_RENDER);
   Ground *g = marked ? &ground_of(current_target) : nullptr;
-  device_draw(t, primitive, vertices, vertex_count, indices, primitive_count);
-  if (!g)
-    return;
-  if (ground_kind != HOST_GROUND_BLOOD) {
-    bind_framebuffer(g->substrate);
-    device_draw(g->substrate, primitive, vertices, vertex_count, indices, primitive_count);
-  }
-  if (ground_kind != HOST_GROUND_DECAL)
-    stamp_ground(*g, ground_kind, primitive, vertices, vertex_count, indices, primitive_count);
-  bind_target();
+  const void *data = client_memory() + vertices;
+  const unsigned short *index_data = indices ? (const unsigned short *)(client_memory() + indices) : nullptr;
+  device_draw(t, primitive, data, vertex_count, index_data, primitive_count);
+  if (g)
+    queue_ground_stamp(*g, primitive, data, vertex_count, index_data, primitive_count);
 }
 static void upload_analytic_vertices(GLuint array, GLuint buffer,
                                      const void *data, size_t bytes,
@@ -1663,6 +1766,8 @@ void GL_ENTRY(w2c_host_heat_trails)(struct w2c_host *, f32 alpha) {
                    {0, 0, 0, 1, 0xffffffff, 0, 0}, {w, h, 0, 1, 0xffffffff, 0, 0}, {w, 0, 0, 1, 0xffffffff, 0, 0}});
 }
 void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
+  if (kind == HOST_GROUND_END)
+    flush_ground_stamps();
   ground_kind = (int)kind;
   ground_seconds = seconds;
 }
