@@ -105,22 +105,40 @@ The direction stays:
 
 ### 1. What is left of the late-game frame
 
-With #909 the ground pass no longer dominates. Next, measured on the late plasma
-run with the timers off:
+Profiles (`CRIMSON_PROFILE`, #915 and #916) of a late Survival run (RTX at 2048×1536, an M1 Pro) show the frame
+GPU-bound at about 13 ms, the CPU waiting at the swap. The ground pass is about 10.7 ms of it; the smoke solver
+(0.6 ms), terrain bakes (0.1 ms) and beams with the other sprites (0.25 ms) are small. Within the ground, probes put
+the material without lights at 1.5 ms, the beams' direct light at about 3 ms, shadows and beam visibility at about
+1.2 and 1.6 ms, and most of the rest in the per-light loop. #917 skips each light where it cannot reach (about 2 ms,
+pixel-identical). Timings here move by tens of percent between runs: compare paired, alternating runs.
 
-- **CPU stalls.** The viewer's frame hold copies the back buffer every frame (about
-  42% of the stalled CPU time), and smoke switches framebuffers per slice (about
-  24%). Both are client-side and invisible in GPU timers.
-- **RTX seeks.** Rebuilding the terrain from a kept copy bakes the logged decals
-  again, and RTX bakes about 23 times slower than Classic (9.3 against 0.4 s for
-  the run's 34,000 batches), so a seek far from a copy stalls for seconds.
-- **Quarter-resolution beam shadows.** Shadow tips step by four pixels in direct
-  light, and blockers thinner than a texel lose their contact shadow; the shaded
-  frame hides most of it (p99.9 within two levels on the golden moments). If it
-  shows in play, try an edge-aware upsample before raising the resolution.
+Next, all exact (no pixel changes), once the in-flight soft-source visibility work that reshapes the same loop lands:
 
-Stable light selection (#886) may still need ranking by contribution to the visible
-receivers if captures show pops.
+- **Per-light setup.** A beam still computes the point source's centroid, ring point and reflection point it never
+  uses; move each to the branch that reads it, and reuse one normalized axis and one beam frame.
+- **Shadows off.** `continuousLight` walks `beamVisibility` for every beam when shadows are off (no slots), only to
+  return 1.
+- **Beam visibility pass.** Return the bins' value when all eight are equal (most pixels), and reuse the frame
+  `beamFrame` already built.
+- **Integrals.** Skip pieces with zero density or an empty window; the head needs no third moment; one logarithm per
+  interval in place of two `asinh` (algebraically equal, not bit-identical: check near the axis and the falloff edge).
+- **Preamble.** Defer the eight neighbouring material taps and the fluid normal until a pixel's reflections or sky
+  specular need them.
+
+Then measure: per-tile light masks (32×32 pixels, one bit per light, an RGBA8 texture) if most tiles hold few lights;
+the beam visibility passes before the HDR target is bound (a fraction of a millisecond on Apple GPUs at most).
+Approximate options, for later: per-beam energy and centroid at a lower resolution with the material response kept
+at full resolution, and a half-float surface target.
+
+The CPU's own work matters where the CPU limits (the browser): cached uniform locations and samplers, shared light
+uniforms, batched beams. Also:
+
+- **CPU stalls.** The viewer's frame hold copies the back buffer every frame, and smoke switches framebuffers per
+  slice.
+- **RTX seeks.** A seek rebakes the logged decals; RTX bakes much slower than Classic. #918 stamps a bake's decals
+  pass by pass in the native client (a seek's bake 25 to 33% faster); the WebGPU client still stamps each as it lands.
+- **Quarter-resolution beam shadows.** Shadow tips step by four pixels in direct light, and blockers thinner than a
+  texel lose their contact shadow; the shaded frame hides most of it. If it shows in play, try an edge-aware upsample.
 
 ### 2. Contact shadows under lit players
 
