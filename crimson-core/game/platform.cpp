@@ -25,6 +25,14 @@ bool platform_outputs() { return outputs; }
 
 // --- Direct3D 8 ---------------------------------------------------------------
 
+// Grim's circles (game/changes/round-circles.patch), as host_circle shapes them.
+extern "C" void platform_circle(float x, float y, float inner, float outer, float u, float v_inner, float v_outer,
+                                unsigned color) {
+  const float shape[7] = {x, y, inner, outer, u, v_inner, v_outer};
+  if (outputs)
+    host_circle(shape, color);
+}
+
 static int texture_ids;
 
 struct Texture;

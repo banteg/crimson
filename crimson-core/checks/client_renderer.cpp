@@ -635,10 +635,10 @@ int main() {
   assert(context);
 #if defined(RENDERER_BENCHMARK) && RENDERER_BENCHMARK == 0
   std::string baseline = fragment_source;
-  for (const char *call : {"alphaCatmullRom(image, v_uv)", "alphaBilinear(image, v_uv)"}) {
+  for (const char *call : {"alphaCatmullRom(image, uv)", "alphaBilinear(image, uv)"}) {
     size_t at = baseline.find(call);
     assert(at != std::string::npos);
-    baseline.replace(at, strlen(call), "texture(image, v_uv)");
+    baseline.replace(at, strlen(call), "texture(image, uv)");
   }
   fragment_source = baseline.c_str();
 #endif
@@ -671,6 +671,38 @@ int main() {
   for (int y = 200; y < 202; ++y)
     for (int x = 199; x < 202; ++x)
       assert(pixels[((size_t)y * width + x) * 4] == (x == 200 ? 255 : 0));
+
+  // Grim's circles (host_circle) are round: a disc and a 2px band, covered within
+  // three quarters of a logical pixel of their radii and clear beyond, where the
+  // original's polygons cut up to 0.86 inside them.
+  w2c_host_clear(nullptr, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+  const float circles[2][7] = {{300, 384, 0, 100, 0, 0, 0}, {700, 384, 100, 102, 0, 0, 1}};
+  for (const float *shape : circles) {
+    memcpy(memory, shape, sizeof circles[0]);
+    w2c_host_circle(nullptr, 0, 0xffffffff);
+  }
+  pixels = renderer_capture(width, height);
+  int partial = 0;
+  for (const float *shape : circles)
+    for (int y = 0; y < height; ++y)
+      for (int x = 0; x < width; ++x) {
+        // The pixel's center in the device's logical coordinates.
+        float d = hypotf((x + .5f) / 2 - .5f - shape[0], (y + .5f) / 2 - .5f - shape[1]);
+        if (d > shape[3] + 4)
+          continue;
+        u8 value = pixels[((size_t)y * width + x) * 4];
+        if (d >= shape[3] + .75f || d <= shape[2] - .75f)
+          assert(value == 0);
+        else if (d <= shape[3] - .75f && d >= shape[2] + .75f)
+          assert(value == 255);
+        else
+          partial += value > 0 && value < 255;
+      }
+  assert(partial > 1000); // Antialiased edges.
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
 
   // Terrain is fixed at 2x logical density, independent of scene resolution.
   w2c_host_texture_create(nullptr, 7, 1024, 1024, 1);

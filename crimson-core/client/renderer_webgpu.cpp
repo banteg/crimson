@@ -809,6 +809,8 @@ void draw_geometry(const Geometry &g) {
   }
 }
 
+// The circle the device shades itself (host_circle), or none: classic.frag's circle and circle_uv.
+static float circle[8];
 // The device's own shading of the next draw into `t`, in the open pass.
 void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
   Uniforms vertex(*classic.vert), fragment(*classic.frag);
@@ -840,6 +842,7 @@ void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
   fragment.i("alpha_test", render_states[RS_ALPHATESTENABLE] != 0);
   fragment.f("alpha_ref", (float)(render_states[RS_ALPHAREF] & 255));
   fragment.i("alpha_func", (int)render_states[RS_ALPHAFUNC]);
+  fragment.set("circle", circle, 16).set("circle_uv", circle + 4, 16);
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(classic, device_output(t, topology)));
   bind(classic, fragment_group(classic, {inputs[0], inputs[1]}), &vertex, &fragment);
 }
@@ -1341,6 +1344,24 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   }
   if (ground_kind != HOST_GROUND_DECAL)
     stamp_ground(*g, ground_kind, geometry);
+}
+void wgpu_w2c_host_circle(struct w2c_host *, u32 shape, u32 color) {
+  EffectVertex vertices[4];
+  circle_quad((const float *)(client_memory() + shape), color, vertices, circle);
+  // A strip of the fan's corners.
+  std::swap(vertices[2], vertices[3]);
+  Geometry geometry;
+  geometry.topology = WGPUPrimitiveTopology_TriangleStrip;
+  geometry.vertex_bytes = sizeof(vertices);
+  geometry.index_count = 4;
+  if (!fits(vertex_stream, geometry.vertex_bytes) || !fits(uniform_stream, 2 * (classic.frag->uniform_size + 512)))
+    submit();
+  geometry.vertex_at = put(vertex_stream, vertices, geometry.vertex_bytes);
+  Target &t = drawing_target(current_target);
+  pass_into(t);
+  bind_classic(t, geometry.topology);
+  draw_geometry(geometry);
+  memset(circle, 0, sizeof(circle));
 }
 static void upload_analytic_vertices(const void *vertices, uint64_t bytes,
                                      int count) {

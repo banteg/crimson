@@ -7,8 +7,10 @@ layout(location = 2) in vec2 uv;
 uniform vec2 target_size;
 LOC(0) out vec4 v_diffuse;
 LOC(1) out vec2 v_uv;
+LOC(2) out vec2 v_pos;
 void main() {
     gl_Position = target_position(position.xy, target_size);
     v_diffuse = diffuse.zyxw;
     v_uv = uv;
+    v_pos = position.xy;
 }
