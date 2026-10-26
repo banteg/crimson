@@ -7,8 +7,8 @@
 
 The game folder holds crimson.paq, sfx.paq and music.paq (a client's runtime folder works). Each scene in
 scenes.toml is a replay and a tick; the client seeks a little before it (smoke and wet blood need history), pauses on
-the tick and saves its frame (CRIMSON_CAPTURE_TICK), with GPU time per pass (CRIMSON_GPU_TIMERS) over the frames
-leading to it, the simulation's share left out. Captures tonemap for SDR, so they read the same on any display.
+the tick and saves its frame (CRIMSON_CAPTURE_TICK), with GPU time per pass from a profile of the frames leading to
+it (CRIMSON_PROFILE, tools/profile.py), the simulation's share left out. Captures tonemap for SDR, so they read the same on any display.
 
 `python` draws the same moments with the Python port, as the client does; `parity` captures them with both and
 compares the two, so the client's port of the RTX passes and the Python one show where they part.
@@ -72,7 +72,7 @@ def capture_scene(scene: dict, mode: str, game: Path, out: Path, client: Path) -
         "CRIMSON_WATCH_SEEK": str(seek_tick(scene)),
         # Scenes share replays, and runs repeat: each replay prepares once per client build and mode.
         "CRIMSON_WATCH_CACHE": "1",
-        "CRIMSON_GPU_TIMERS": "1",
+        "CRIMSON_PROFILE": str(work / "profile.jsonl"),
         "CRIMSON_MUTE": "1",
         "CRIMSON_RTX": "1" if mode == "rtx" else "0",
     }
@@ -83,19 +83,15 @@ def capture_scene(scene: dict, mode: str, game: Path, out: Path, client: Path) -
     Image.open(frame).save(out / f"{scene['name']}-{mode}.png")
     # The frames drawn while playback approached the tick, not the held frames after it.
     passes: dict[str, list[float]] = {}
-    for line in result.stderr.splitlines():
-        if not line.startswith("gpu tick="):
-            continue
-        fields = line.split()
-        drawn = int(fields[1].removeprefix("tick="))
-        if tick - 60 <= drawn < tick:
-            for field in fields[2:]:
-                name, ms = field.split("=")
+    for line in (work / "profile.jsonl").read_text().splitlines()[1:]:
+        drawn = json.loads(line)
+        if tick - 60 <= drawn["tick"] < tick:
+            for name, ms in drawn.get("gpu", {}).items():
                 # The frame timer spans the simulation's ticks before anything draws: a GPU timer counts that CPU
                 # time as idle GPU time, so it is no measure of drawing. Drawing before the world (decal bakes,
                 # heat stamps) has timers of its own.
                 if name != "frame":
-                    passes.setdefault(name, []).append(float(ms))
+                    passes.setdefault(name, []).append(ms)
     shutil.rmtree(work)
     return {name: statistics.median(values) for name, values in passes.items()}
 

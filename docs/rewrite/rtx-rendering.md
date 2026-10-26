@@ -243,17 +243,19 @@ Benchmark controls:
 
 `uv run python tools/rtx/golden.py capture --game <game folder> --out <dir>` captures each one, classic and RTX, with
 the native client. The client seeks a little before the tick, pauses on it (`CRIMSON_CAPTURE_TICK`) and records the
-median GPU time per pass over the frames leading to it (`CRIMSON_GPU_TIMERS`). `golden.py compare <before> <after>`
+median GPU time per pass over the frames leading to it from a profile (`CRIMSON_PROFILE`, `tools/profile.py`). `golden.py compare <before> <after>`
 puts two captures side by side with a difference map, the mean change and the GPU time per scene. Captures tonemap
 for SDR, so they read the same on any display.
 
-A GPU timer also counts the time the GPU waits for the CPU. The client's `frame` timer runs from the last present
-until the first pass mark, so it holds the frame's simulation ticks; `golden.py` leaves it out. Drawing off the back
-buffer in between has timers of its own (`bake` for terrain decal bakes, `heat-stamp` for Monster Vision's trail
-stamps), so the `frame` timer holds no drawing. Classic marks the world's bounds too (`world`, then `hud`), with
-nothing drawn differently. Each `gpu` line
-is followed by a `draws` line for the same frame: per pass, texture (or `beam` / `effect<kind>`) and target, the quads
-drawn and the target pixels they cover, as `pass:what:target=quads/pixels`.
+A profile's passes are the marks the frame passes: `frame` from the last swap to the first mark, holding the frame's
+simulation ticks, the world's passes, `hud`, `present` and `swap`. Drawing off the back buffer in between has passes of
+its own (`bake` for terrain decal bakes, `heat-stamp` for Monster Vision's trail stamps, `hold` for the replay viewer's
+kept frame), so `frame` holds no drawing. Classic marks the world's bounds too (`world`, then `hud`), with nothing
+drawn differently. A pass's GPU time also counts the time the GPU waits for the CPU, so `frame`'s is idle time and
+`profile.py` and `golden.py` leave it out of the GPU's sum. A pass's CPU time runs from its mark to the next, so it
+also holds the time the driver blocks the CPU on the GPU: a pass that waits on an earlier pass's results shows that
+pass's GPU time as its own CPU time. Each frame's draws are counted per pass, texture (or `beam` / `effect<kind>`) and
+target as the quads drawn and the target pixels they cover.
 
 The two RTX renderers share their GLSL, but light collection and selection, volley merging, beams and smoke are
 ported twice (`render/rtx/*.py`, `crimson-core/game/rtx_*.cpp`, `crimson-core/client/renderer*.cpp`).
