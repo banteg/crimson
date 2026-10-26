@@ -49,10 +49,18 @@ vec3 debug_radiance(vec3 value) {
     return pow(positive / (vec3(1.) + positive), vec3(1. / 2.2));
 }
 
+// The point a disc, segment or ring lights the receiver from: a ring's nearest point, else the energy centroid
+// (source_geometry.glsl's illuminationSource).
+vec2 illuminationPoint(int i, vec2 world) {
+    if (u_spec_color[i].w > 0.) return nearestRingPoint(u_spec_pos[i].xy, world, u_spec_color[i].w);
+    vec2 axis = dot(u_spec_dir[i].xy, u_spec_dir[i].xy) > .0001 ? normalize(u_spec_dir[i].xy) : vec2(0.);
+    return illuminationSource(u_spec_pos[i].xy, axis, u_spec_dir[i].w, u_spec_tail[i / 4][i % 4]);
+}
+
 #ifdef BEAM_VISIBILITY_PASS
-// A pass at a lower resolution than the ground's: the visibility of one group's four beam slots, which the ground
-// reads instead of walking the body grid per pixel (beamVisibilityRead). Beam shadows are soft enough that a quarter
-// of the resolution draws the same.
+// A pass at a lower resolution than the ground's: the visibility of one group's four slots, which the ground reads
+// instead of walking the body grid per pixel (beamVisibilityRead). The slots hold the soft sources, beams and wide
+// discs and rings, whose shadows a quarter of the resolution draws the same.
 uniform float u_beam_group;
 void main() {
     vec2 world = vec2(fragTexCoord.x, V_UP > 0. ? 1.0 - fragTexCoord.y : fragTexCoord.y) * u_ground_size;
@@ -62,17 +70,25 @@ void main() {
         if (i >= u_spec_light_count) break;
         int slot = beamSlot(i);
         if (slot < 0 || slot / 4 != group || u_spec_response[i].x <= 0.) continue;
-        // Only where the beam delivers light, as the ground would walk.
-        vec2 axis, ramp_window, head_window;
-        float x0, b, R, half_length, ramp, head;
-        if (!beamFrame(i, u_spec_dir[i], world, u_spec_pos[i], axis, x0, b, R, half_length, ramp, head, ramp_window,
-                       head_window)) continue;
-        float energy = beamPiece(ramp * (x0 + half_length), ramp, ramp_window.x, ramp_window.y, b, R).x
-                     + beamPiece(head, 0., head_window.x, head_window.y, b, R).x;
-        float gain = u_spec_response[i].x * (u_beam_shape[i].z > .5 ? u_beam_gain.x : u_beam_gain.y);
-        vec3 color = u_spec_color[i].rgb;
-        if (energy * gain * max(color.r, max(color.g, color.b)) <= .00001) continue;
-        float lit = beamVisibility(i, u_spec_dir[i], world, u_spec_pos[i], u_spec_response[i]);
+        float lit;
+        if (u_has_beam_lights != 0 && u_beam_shape[i].w > 0.) {
+            // Only where the beam delivers light, as the ground would walk.
+            vec2 axis, ramp_window, head_window;
+            float x0, b, R, half_length, ramp, head;
+            if (!beamFrame(i, u_spec_dir[i], world, u_spec_pos[i], axis, x0, b, R, half_length, ramp, head,
+                           ramp_window, head_window)) continue;
+            float energy = beamPiece(ramp * (x0 + half_length), ramp, ramp_window.x, ramp_window.y, b, R).x
+                         + beamPiece(head, 0., head_window.x, head_window.y, b, R).x;
+            float gain = u_spec_response[i].x * (u_beam_shape[i].z > .5 ? u_beam_gain.x : u_beam_gain.y);
+            vec3 color = u_spec_color[i].rgb;
+            if (energy * gain * max(color.r, max(color.g, color.b)) <= .00001) continue;
+            lit = beamVisibility(i, u_spec_dir[i], world, u_spec_pos[i], u_spec_response[i]);
+        } else {
+            // A disc or ring, within its radius.
+            vec2 light_xy = illuminationPoint(i, world);
+            if (length(light_xy - world) >= max(1., u_spec_pos[i].z)) continue;
+            lit = sourceVisibility(vec3(world, 0.), vec3(light_xy, u_spec_pos[i].w), u_spec_response[i].w, vec2(1e19));
+        }
         visibility = mix(visibility, vec4(lit), vec4(equal(ivec4(slot - group * 4), ivec4(0, 1, 2, 3))));
     }
     finalColor = visibility;
@@ -253,11 +269,14 @@ void main() {
             // As with reflections, retain negligible radiance without tracing a
             // shadow whose maximum possible change is below 1e-5 linear RGB.
             if (max(direct.r, max(direct.g, direct.b)) > .00001) {
-                float visibility = illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
+                // A wide disc or ring with a slot reads its visibility, its reflection's too, from the atlas.
+                int slot = beamSlot(i);
+                float visibility = slot >= 0 ? beamVisibilityRead(slot)
+                    : illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
                 direct *= visibility;
                 // Reflection clamps height/width; only identical point rays can reuse this trace.
                 // Disabled diffuse shadows must never disable reflection shadows.
-                if (u_dynamic_shadows != 0 && !ring && sp_dir.w == 0. && sp_pos.w >= 12. && response.w >= .1)
+                if (slot >= 0 || (u_dynamic_shadows != 0 && !ring && sp_dir.w == 0. && sp_pos.w >= 12. && response.w >= .1))
                     point_visibility = visibility;
             }
             diffuse_lit += direct;

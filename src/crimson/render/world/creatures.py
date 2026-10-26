@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import math
+
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
+from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 
 from ...creatures.anim import (
     CREATURE_ANIM,
@@ -68,6 +70,28 @@ def creature_color_to_rl(tint: RGBA) -> rl.Color:
     return rl_color(*(creature_color_byte(channel) for channel in tint))
 
 
+def draw_centered_quad(
+    texture: rl.Texture, src: rl.Rectangle, center: Vec2, width: float, height: float, rotation_rad: float,
+    tint: rl.Color,
+) -> None:
+    """DrawTexturePro's quad about `center`, with the center in every vertex's normal: the RTX creature lighting
+    spares the creature's own body at its quad's corners (creature_visibility.glsl)."""
+    c, s = math.cos(rotation_rad), math.sin(rotation_rad)
+    half_w, half_h = width * 0.5, height * 0.5
+    u0, v0 = src.x / texture.width, src.y / texture.height
+    u1, v1 = (src.x + src.width) / texture.width, (src.y + src.height) / texture.height
+    rl.rl_set_texture(texture.id)
+    rl.rl_begin(rd.RL_QUADS)
+    rl.rl_color4ub(tint.r, tint.g, tint.b, tint.a)
+    rl.rl_normal3f(center.x, center.y, 0.0)
+    for dx, dy, u, v in ((-half_w, -half_h, u0, v0), (-half_w, half_h, u0, v1), (half_w, half_h, u1, v1),
+                         (half_w, -half_h, u1, v0)):
+        rl.rl_tex_coord2f(u, v)
+        rl.rl_vertex2f(center.x + dx * c - dy * s, center.y + dx * s + dy * c)
+    rl.rl_end()
+    rl.rl_set_texture(0)
+
+
 def draw_creature_sprite(
     render_ctx: WorldRenderCtx,
     texture: rl.Texture,
@@ -88,7 +112,9 @@ def draw_creature_sprite(
     body: bool = True,
     hit_flash: bool = False,
     heat: bool = False,
+    lit: bool = False,
 ) -> None:
+    """`lit`: the body draws under the RTX creature lighting, its quad carrying its center (draw_centered_quad)."""
     info = CREATURE_ANIM.get(type_id)
     if info is None:
         return
@@ -136,6 +162,9 @@ def draw_creature_sprite(
     if not body:
         return
 
+    if lit:
+        draw_centered_quad(texture, src, screen_pos, width, height, rotation_rad, tint)
+        return
     dst = rl_rectangle(screen_pos.x, screen_pos.y, width, height)
     origin = rl_vector2(width * 0.5, height * 0.5)
     rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)

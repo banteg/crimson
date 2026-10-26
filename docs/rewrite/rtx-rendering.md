@@ -743,12 +743,19 @@ Ordinary tracers remain reflection-only, and Gauss stays restrained.
 
 The ground pass builds and uploads the spatial index once; the following creature
 pass reuses it. Ground rays start at the surface; the artistic sprite lighting
-receiver is 8 units high. Each sprite recovers its center from the unnormalized
-UV/world derivative basis and excludes proxies carrying that owner center.
+receiver is 8 units high. A creature's visibility is walked at its quad's four
+corners in the vertex stage (`creature_visibility.glsl`), four lights a vec4, and
+`creature.frag` interpolates it across the body: a body pixel no longer walks the
+grid once per light, which a Nuke over a late crowd made the costliest pass of the
+frame. Shadows across a creature become a gradient between its corners; thin limbs
+lose the sharp edge of a neighbor's shadow. Each quad carries its center (the
+client's hosts average its four vertices, `quad_centers`; the Python port passes it
+in the vertex normal), and the corners exclude proxies carrying that owner center.
 A 0.02-world-unit tolerance prevents precision speckles at fractional zoom without
 requiring per-quad uniforms or breaking batches. Exactly coincident creatures
 share exclusion; this is a documented limitation of the batch-preserving owner
-representation. Tests retain blocking from a distinct owner only 0.1 units away.
+representation. Tests retain blocking from a distinct owner only 0.1 units away,
+from the corners whose rays cross it.
 
 The existing shadows setting disables the new direct-light and creature visibility
 along with native contact shadows. Ground reflection visibility stays active,
@@ -1025,9 +1032,15 @@ list made it no cheaper at the ground's own resolution. Beam shadows are soft,
 though, so their visibility is drawn at a quarter of the ground's resolution in
 each direction instead: before the ground, a pass per group of four beams
 (`ground.frag`'s `BEAM_VISIBILITY_PASS`) walks for each of its beams where that
-beam lights the ground, into one channel of a texel in its quarter of an atlas,
-and the ground reads it back filtered (`beamVisibilityRead`). Up to sixteen lit
-beams take a slot in light order; any others still walk in the ground's own pass.
+beam lights the ground, into one channel of a texel in its group's part of an atlas
+(four groups a row), and the ground reads it back filtered (`beamVisibilityRead`).
+Lit beams take the slots in light order. Wide discs and rings (an explosion's
+fireball and shell, at least `PENUMBRA_WIDTH` wide) join them, their soft shadows
+drawn the same way for the ground's direct light and its reflection: a Nuke's
+fireball reaches across a late crowd, and walking it per pixel cost the frame more
+than all the beams. They only join passes the beams already draw; a pass of their
+own cost ordinary explosion scenes more than their walks did. Each light's slot is
+a vec4 of its own: selecting a packed component per light slowed the ground's loop.
 The golden scenes draw the same at this resolution (99% of pixels within a level
 of the per-pixel walk), and late-game ground passes cost about a fifth of what
 they did.

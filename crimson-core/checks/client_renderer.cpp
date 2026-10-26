@@ -409,8 +409,8 @@ void check_rtx() {
   float shell = bonus(0, 0);
   assert(shell < 0.3f && bonus(0, 1) > shell + 0.5f);
   assert(fabsf(bonus(1, 0) - device) < 2e-3f);
-  // A body between the light and the batch (one grid cell holding it) shades it,
-  // unless the shadows setting is off.
+  // A body between the light and a creature-sized batch (one grid cell holding
+  // it) shades it from the quad's corners, unless the shadows setting is off.
   auto occluded = [&](float shadows) {
     const float grid[6] = {0, 0, 1, 1, 2048, shadows};
     const float values[20] = {4, 1, 0, 0,                     // cell 0: its list at texel 4, one body
@@ -424,7 +424,7 @@ void check_rtx() {
     scene({200, 384, 600, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 600, 3}, 1);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
     w2c_host_render_pass(nullptr, HOST_PASS_CREATURES);
-    rectangle(0, 0, 1024, 768, 0xffffffff);
+    rectangle(568, 352, 632, 416, 0xffffffff);
     w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
     return back_red(600, 384);
