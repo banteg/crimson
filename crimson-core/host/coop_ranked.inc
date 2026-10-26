@@ -171,7 +171,8 @@ static void coop_rank_queue() {
              hex(signer.key.data(), signer.key.size()) + "\", \"signature\": \"" +
              hex(signer.signature.data(), signer.signature.size()) + "\"}";
   }
-  ranked_queue(coop_held.digest, entry + "]}");
+  ranked_queue(coop_held.digest, entry + "]}",
+               "'" + coop_signers[0].name + "' and '" + coop_signers[1].name + "'");
   coop_held = {};
 }
 

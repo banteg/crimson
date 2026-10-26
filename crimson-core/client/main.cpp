@@ -188,6 +188,11 @@ void client_message(SDL_MessageBoxFlags flags, const char *title, const char *te
   if (!scripted)
     SDL_ShowSimpleMessageBox(flags, title, text, window);
 }
+// The uploader's word on a queued run, in the game's console (host/ranked.inc).
+void leaderboard_line(const char *line) {
+  snprintf((char *)client_memory() + w2c_game_game_leaderboard_line(&game), 512, "%s", line);
+  w2c_game_game_leaderboard_report(&game);
+}
 void write_capture(const std::string &name) {
   int width, height;
   std::vector<unsigned char> pixels = renderer_capture(width, height);
@@ -600,6 +605,8 @@ void network_update() {
     }
     if (!event.error.empty())
       fprintf(stderr, "leaderboard: %s\n", event.error.c_str());
+    for (const std::string &line : event.lines)
+      leaderboard_line(line.c_str());
   }
   Uint64 now = SDL_GetTicks();
   if (now >= next_upload) {
@@ -850,6 +857,11 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch_run() {
 }
 extern "C" EMSCRIPTEN_KEEPALIVE int client_watch_tick() {
   return started ? (int)w2c_game_game_watch_tick(&game) : 0;
+}
+// The page's uploader's word on a queued run (shell.html), for the console.
+extern "C" EMSCRIPTEN_KEEPALIVE void client_leaderboard_line(const char *line) {
+  if (started)
+    leaderboard_line(line);
 }
 // The page's RTX switch: the rendering mode, as the console's rendermode sets it.
 extern "C" EMSCRIPTEN_KEEPALIVE void client_render_mode(int mode) {

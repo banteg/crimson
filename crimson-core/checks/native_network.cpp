@@ -54,6 +54,8 @@ int main(int argc, char **argv) {
       if (kind == LeaderboardNetwork::LINK)
         printf("\n%s", event.runner.c_str());
       fprintf(stderr, "%s\n", event.error.c_str());
+      for (const std::string &line : event.lines)
+        fprintf(stderr, "%s\n", line.c_str());
       return 0;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));

@@ -38,6 +38,9 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 - The game uploads the outbox after each queued run, at launch and every ten minutes while runs wait. A run the
   service cannot be reached for stays for a later pass, so a run played offline uploads later; quitting never waits
   on the network.
+- The console says what became of each run, in every client: queued as its name, uploaded, already uploaded,
+  rejected with the service's reason (the run moves to `leaderboard/rejected/` with it), or waiting because the
+  service could not be reached or answered with an error.
 - The client draws the seed ([ranked rules](ranked-rules.md#the-ranked-profile)). Without a server-issued seed a
   player could play many seeds offline and submit the best; the game is chaotic enough that this is an accepted
   risk.
