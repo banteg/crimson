@@ -93,6 +93,7 @@ void rtx_heat_trails(float alpha);
 void rtx_heat(int type_id, float transition_alpha);
 void rtx_smoke(float alpha);
 void console_cmd_rtx_smoke(void);
+void console_cmd_render_size(void);
 void rtx_beam_body(float origin_x, float origin_y, float head_x, float head_y, float start, float span, float step,
                    float effect_scale, float alpha, float r, float g, float b);
 void rtx_beam_head(float center_x, float center_y, float rotation, float effect_scale, bool fire);

@@ -1747,10 +1747,12 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   if (!rtx || !back.framebuffer)
     return;
   if (pass == HOST_PASS_WORLD_BEGIN) { // The world goes over what the frame drew so far.
-    if (hdr.width != back.width || hdr.height != back.height || !hdr.framebuffer) {
+    int width = back.width, height = back.height;
+    world_size(back.logical_width, width, height);
+    if (hdr.width != width || hdr.height != height || !hdr.framebuffer) {
       release(hdr);
-      hdr.width = back.width;
-      hdr.height = back.height;
+      hdr.width = width;
+      hdr.height = height;
       hdr.flags = back.flags | TARGET_HALF_FLOAT;
       allocate(hdr);
     }
@@ -1758,7 +1760,8 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     hdr.logical_height = back.logical_height;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, back.framebuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, hdr.framebuffer);
-    glBlitFramebuffer(0, 0, back.width, back.height, 0, 0, hdr.width, hdr.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, back.width, back.height, 0, 0, hdr.width, hdr.height, GL_COLOR_BUFFER_BIT,
+                      hdr.width == back.width ? GL_NEAREST : GL_LINEAR);
     world = true;
   } else if (pass == HOST_PASS_WORLD_END && world) {
     world = false;
@@ -1800,6 +1803,7 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
       world_image = &pressured;
     }
+    // A world drawn smaller (render_size) scales up as it tonemaps.
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
     glUseProgram(tonemap_program);

@@ -30,6 +30,10 @@ HOST_IMPORT(present) void host_present(void);
 // in the frame, which the host draws into its HDR target and then tonemaps onto
 // the back buffer.
 HOST_IMPORT(render_mode) int host_render_mode(int requested);
+// The most the host draws, as a multiple of the game's resolution (the console's
+// rendersize): a new limit (0 for every pixel of the display), or none below 0;
+// the limit in force.
+HOST_IMPORT(render_size) float host_render_size(float limit);
 #include "render_passes.h"
 HOST_IMPORT(render_pass) void host_render_pass(int pass);
 // The world's light sources, sent before its begin mark (game/rtx_lights.cpp):
