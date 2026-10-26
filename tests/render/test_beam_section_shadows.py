@@ -35,7 +35,7 @@ def _pixel(target: rl.RenderTexture) -> tuple[float, float, float, float]:
 
 def _probe_shader(main: str) -> rl.Shader:
     return _shader(
-        "#version 330\n#define MAX_SPEC_LIGHTS 32\nout vec4 finalColor;\n"
+        "#version 330\n#define BEAM_VISIBILITY_PASS\n#define MAX_SPEC_LIGHTS 32\nout vec4 finalColor;\n"
         + LIGHT_VISIBILITY_GLSL + CONTINUOUS_BEAM_GLSL + main,
     )
 
@@ -240,5 +240,97 @@ def test_beam_falloff_integrals_match_the_summed_falloff(raylib_context) -> None
             assert energy == pytest.approx(summed_energy, rel=2e-3)
             assert moment == pytest.approx(summed_moment, rel=2e-3, abs=1e-2)
     finally:
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
+@pytest.mark.parametrize("body_y,body_height,shadowed", [(60., 12., True), (60., 40., True), (0., 40., False)])
+def test_analytic_beam_fan_matches_sampled_emitter_with_ordinary_lists(
+    raylib_context, body_y, body_height, shadowed,
+):
+    shader = _probe_shader("""
+    void main() {
+        vec3 receiver = vec3(64., 100., 0.), center = vec3(64., 20., 24.);
+        beamFanVisibility(receiver, center, 4.5, vec2(1., 0.), 20.);
+        float analytic = dot(beam_bins[0] + beam_bins[1], vec4(.125));
+        float reference = 0.;
+        for (int along = 0; along < 32; ++along) {
+            float offset = ((float(along) + .5) / 32. * 2. - 1.) * 20.;
+            for (int across = 0; across < 8; ++across) {
+                float transverse = ((float(across) + .5) / 8. * 2. - 1.) * 4.5;
+                reference += sourceVisibility(receiver, center + vec3(offset, transverse, 0.), .1, vec2(1e19));
+            }
+        }
+        finalColor = vec4(analytic, reference / 256., 0., 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    source = MaterialLight(Vec2(64, 20), 200, (1, 1, 1), height=24, source_width=4.5, length=40,
+                           direction=Vec2(1, 0))
+    body = BodyVolume(Vec2(64, body_y), Vec2(8, 10), body_height, 0)
+    try:
+        grid = build_occlusion_grid([body], [source], width=128, height=128)
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        analytic, reference = _pixel(target)[:2]
+        assert 0 < analytic < 1 if shadowed else analytic == 1
+        assert analytic == pytest.approx(reference, abs=.08)
+    finally:
+        renderer.close()
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
+def test_extended_beam_penumbra_is_directional_and_duplicate_lists_are_idempotent(raylib_context):
+    shader = _probe_shader("""
+    void main() {
+        vec3 receiver = vec3(64., 120., 0.), center = vec3(64., 20., 24.);
+        beamFanVisibility(receiver, center, .5, vec2(1., 0.), 40.);
+        float across = dot(beam_bins[0] + beam_bins[1], vec4(.125));
+        beamFanVisibility(receiver, center, .5, vec2(0., 1.), 40.);
+        float along = dot(beam_bins[0] + beam_bins[1], vec4(.125));
+        float point = sourceVisibility(receiver, center, .5, vec2(1e19));
+        finalColor = vec4(across, along, point, 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    source = MaterialLight(Vec2(64, 20), 200, (1, 1, 1), height=24, source_width=.5, length=80,
+                           direction=Vec2(1, 0))
+    body = BodyVolume(Vec2(64, 90), Vec2(5, 5), 40, 0)
+    try:
+        grid = build_occlusion_grid([body], [source], width=128, height=128)
+        assert grid.references > 1  # the blocker overlaps several ordinary lists
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        across, along, point = _pixel(target)[:3]
+        assert point < .05 and along < .05
+        assert across > along + .3  # a nearest point cannot reproduce this penumbra
+        # Repeated references and even overlapping identical bodies retain min
+        # occlusion, rather than incorrectly multiplying the same shadow.
+        before = (across, along, point)
+        grid = build_occlusion_grid([body, body], [source], width=128, height=128)
+        texture = renderer.upload(grid)
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        assert _pixel(target)[:3] == pytest.approx(before, abs=.001)
+    finally:
+        renderer.close()
         rl.unload_shader(shader)
         rl.unload_render_texture(target)

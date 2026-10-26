@@ -54,8 +54,8 @@ vec3 debug_radiance(vec3 value) {
 }
 
 #ifdef BEAM_VISIBILITY_PASS
-// One nearest-emitter ray per source on a world-anchored coarse grid. Source
-// support includes both illumination and reflection, independently of gains.
+// Coarse world-anchored visibility. Beams integrate their emitting length;
+// other sources retain nearest-emitter rays. Both include reflection support.
 uniform float u_visibility_group;
 void main() {
     vec2 world = vec2(fragTexCoord.x, V_UP > 0. ? 1. - fragTexCoord.y : fragTexCoord.y) * u_ground_size;
@@ -74,8 +74,9 @@ void main() {
             : pos.xy + axis * clamp(dot(delta, axis), -half_span, half_span);
         float reach = max(max(1., pos.z), response.z);
         if (length(source - world) >= reach) continue;
-        visibility[lane] = sourceVisibility(vec3(world, 0.), vec3(source, max(.001, pos.w)),
-                                             max(.1, response.w), vec2(1e19));
+        visibility[lane] = u_has_beam_lights != 0 && u_beam_shape[i].w > 0. && u_spec_color[i].w <= 0.
+            ? beamAtlasVisibility(i, dir, world, pos, response)
+            : sourceVisibility(vec3(world, 0.), vec3(source, max(.001, pos.w)), max(.1, response.w), vec2(1e19));
     }
     finalColor = visibility;
 }

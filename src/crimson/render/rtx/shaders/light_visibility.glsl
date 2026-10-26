@@ -56,7 +56,7 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     return 1. - orientation.z * embedded * (1. - smoothstep(1. - softness, 1. + softness, distance));
 }
 
-float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owner) {
+float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owner, bool trace_bodies) {
     if (u_occlusion_grid.z == 0.) return 1.;
     vec2 start = (receiver.xy - u_occlusion_grid.xy) / u_occlusion_cell_size;
     vec2 delta = (source.xy - receiver.xy) / u_occlusion_cell_size;
@@ -91,7 +91,7 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
             }
             header.y = 0.;
         }
-        for (int j = 0; j < int(header.y); j++) {
+        for (int j = 0; trace_bodies && j < int(header.y); j++) {
             vec4 entry = occlusionData(int(header.x) + j);
             visibility = min(visibility, bodyVisibility(int(entry.x), receiver, ray, source_width, inverse_xy_length, owner));
             if (visibility < .001) return visibility;
@@ -102,6 +102,10 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
         else { cell.y += step_cell.y; t_edge.y += t_step.y; }
     }
     return visibility;
+}
+
+float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owner) {
+    return sourceVisibility(receiver, source, source_width, owner, true);
 }
 
 float illuminationVisibility(vec3 receiver, vec3 source, float width, vec2 owner) {

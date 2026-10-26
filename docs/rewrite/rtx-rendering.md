@@ -184,8 +184,8 @@ inputs, and native/browser rendering are unchanged.
 ### Remaining tradeoffs
 
 - Ground direct light and reflections share each source's coarse nearest-emitter
-  visibility. This deliberately trades exact reflected rays and beam penumbrae for
-  bounded GPU work; see [Ground reflection occlusion](#ground-reflection-occlusion).
+  visibility. Beams retain analytic directional penumbrae; reflections reuse the
+  direct-light mask instead of tracing independent reflected rays. See see [Ground reflection occlusion](#ground-reflection-occlusion).
 - Flame particles are grouped spatially, and a flame cell's light can still jump
   as the stream crosses cell boundaries.
 - Coverage, depth, and weighted wetness are per pixel, not a multilayer fluid
@@ -659,8 +659,8 @@ Ground direct light and reflections now share a coarse, color-independent
 visibility mask for each selected source. Ambient daylight and sky reflection
 remain independent of it. Reflection-only tracers get masks even with zero
 illumination gain. This is an intentional visual approximation in the experimental
-RTX renderer: a nearest-emitter ray also attenuates the reflection, rather than
-tracing the displaced reflected-source point.
+RTX renderer: the direct-light visibility also attenuates the reflection,
+rather than tracing the displaced reflected-source point.
 
 ### Coarse visibility atlas
 
@@ -674,8 +674,12 @@ point, segment, ring, beam and reflection-only sources.
 
 Each frame clears the atlas white. A group's draw is scissored to its sources'
 combined support, including reflection reach, ring radius and extended beam
-length. The shader traces one ray toward the nearest point on the supported
-segment or ring, using the source's height and finite width. The full-resolution
+length. Points and rings use a nearest-emitter ray. Beams retain analytic blocker
+intervals along their emitting length, two transverse taps and eight energy-weighted
+visibility bins, preserving directional penumbrae. The shader gathers ordinary body
+lists from cells intersecting the receiver-to-beam triangle; repeated body entries
+combine by minimum visibility. A center-ray crowd estimate attenuates the whole
+beam, independently of body-list order. The full-resolution
 material pass samples one filtered RGBA value per four sources and applies its
 lanes to their linear direct/reflected radiance. It binds no body-grid texture and
 contains no body-grid traversal. Half-texel clamps isolate neighboring groups.
@@ -688,11 +692,12 @@ rebuilds them before the next ground draw. Python prepares them internally in
 callers. Zero sources, no bodies or disabled shadows select an unshadowed mask;
 source-count changes clear unused groups, and RTX toggles release the atlas.
 
-The cost is softer and sometimes displaced occlusion, especially for long beams
-and narrow reflections. This approximation does not integrate visibility over a
-beam's full emitting area. The renderer owns this look; matching the previous
-pixels is not a constraint. Camera stability, finite values, readable materials
-and measured replay performance remain the checks for further changes.
+Coarse filtering softens small details, and reflections can have displaced
+occlusion because they share the direct-light mask. Beam visibility retains its
+finite extent and directional penumbra: collapsing it to one nearest point loses
+that characteristic. The renderer owns this look; matching every previous pixel
+is not a constraint. Camera stability, finite values, readable materials and
+measured replay performance remain the checks for further changes.
 
 The five standard creature species use one rotated, size-scaled ellipsoid each, fitted
 to the combined planar bounds of their former two body parts and retaining the
@@ -719,8 +724,8 @@ cell members with a conservative planar bound, and exits when
 visibility is effectively zero. Ground traversal occurs only in the coarse atlas.
 The grid includes the selected source endpoints outside the arena, and expanded
 cell bounds account for the finite-source filter. Each cell has one ordinary
-point-ray list; the former padded beam fan lists, range metadata and secondary
-uploads are removed. Header xy holds the list offset/count or crowd height/density;
+point-ray list. Beam fans gather from these same lists, with no secondary
+packing or range metadata. Header xy holds the list offset/count or crowd height/density;
 zw is reserved and zero. The beam head halo still extends source support for
 culling. When shadows are off, the native builder returns an empty descriptor
 before collecting bodies or inspecting lights; the hosts skip the empty upload.
@@ -755,8 +760,8 @@ overlap), and its footprint-weighted top height. A ray crosses a crowd cell as a
 absorbing medium, `exp(-3 × cover × length crossed in cells)`, over the part of its
 path below that height; a body's own cell does not shade it. A body centered in a
 crowd is listed in the cells around it only where it stands, without its soft
-padding, so a crowd's neighbors keep short exact lists, and a cell after a crowd
-tests its whole list (the crowd tested none of the padded entries it shares). The
+padding, so a crowd's neighbors keep short exact lists. Beam fans can encounter a sparse
+body in several cells; repeating its minimum occlusion does not deepen its shadow. The
 cost no longer grows with the crowd (that frame dropped to about 0.2 s, most of it
 the original's own sprite fill), and packed bodies' shadows merge into one dark mass
 anyway. Sparse cells keep exact
@@ -1039,11 +1044,13 @@ stays within a few percent (up to 8% for a short Ion Cannon shot, whose head is
 wide), where the three sections it replaced were up to a quarter off for long
 beams.
 
-Beam energy and its shading centroid still use this analytic integral. Ground
-occlusion now comes from the shared nearest-emitter coarse atlas described above;
-the former longitudinal-eighth and transverse-tap beam shadow integration is no
-longer part of the ground shader. Grid preparation still includes the extended
-beam support, so bodies along the head halo remain available to the mask rays.
+Beam energy and its shading centroid use this analytic integral. The coarse
+atlas preserves the analytic per-body projected blocker intervals, two transverse
+taps, and eight longitudinal visibility bins weighted by their light energy.
+`beam_visibility.glsl` gathers blockers from ordinary grid cells intersecting the
+beam fan instead of requiring CPU-padded beam lists. Grid preparation includes
+the extended head support so those blockers remain available. Only the atlas
+runs this solver; full-resolution material shading reads the resulting mask.
 
 Beams only add light. They used to dim the ambient within 300 units of the beam (up to 25% for ion, 15% for Fire
 Bullets), regardless of visibility. Past the beam's lighting radius that left a ring darker than plain ground. The
@@ -1058,8 +1065,8 @@ blood normals, absorption and reflection footprint. Dense scenes benefit most;
 quiet scenes still pay for the material work and any small atlas preparation.
 GPU timer queries can perturb the macOS driver, so use separate queries-off replay
 runs for wall-time acceptance and timer-enabled runs to diagnose the
-`ground-vis`/`ground-shade` split. Shadow details are intentionally different from
-the old exact reflected-ray and integrated beam model.
+`ground-vis`/`ground-shade` split. Reflection shadows intentionally differ from independent
+reflected-ray traversal; the beam's analytic directional penumbra remains.
 
 ### Ion impact arcs
 

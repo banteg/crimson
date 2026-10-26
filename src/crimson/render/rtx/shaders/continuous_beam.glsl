@@ -48,6 +48,10 @@ bool beamFrame(int index, vec4 direction, vec2 world, vec4 sp_pos, out vec2 axis
     return true;
 }
 
+#ifdef BEAM_VISIBILITY_PASS
+#include "beam_visibility.glsl"
+#endif
+
 vec3 continuousLight(int index, vec4 direction, vec2 world, vec3 N_sub, vec3 absorption,
                      vec3 wetted, vec3 blood, vec3 albedo, float ice, vec4 sp_pos,
                      vec4 sp_col, vec4 response, float broad, float visibility, out vec3 unshadowed) {

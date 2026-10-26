@@ -1,6 +1,7 @@
 // A bounded, color-independent visibility field. Every four selected sources
 // share one RGBA group; the same coarse mask shades diffuse and reflection.
-// This is intentionally one nearest-source ray, not an exact reflected ray.
+// Beam masks preserve analytic directional penumbrae; other sources use a
+// nearest-source ray. Reflection reuses the mask rather than tracing its own ray.
 uniform vec4 u_visibility_world; // snapped world origin and extent
 uniform vec2 u_visibility_size;  // one group's texels
 const int VISIBILITY_ROWS = MAX_SPEC_LIGHTS / 16;
