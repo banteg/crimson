@@ -1,0 +1,59 @@
+Grim's circles (the aim indicator's spread disc and its ring) take a dozen or two segments, which show as
+facets at the client's render sizes. They take as many as keep each chord within a sixteenth of a logical pixel
+of the circle, up to what the vertex buffer holds.
+--- a/decomp/1.9/grim/render/draw_circle_filled.cpp
++++ b/decomp/1.9/grim/render/draw_circle_filled.cpp
+@@ -4,4 +4,5 @@
+ extern "C" double cos(double angle);
+ extern "C" double sin(double angle);
++extern "C" double sqrt(double value);
+ 
+ struct GrimCircleVertex {
+@@ -21,4 +22,5 @@ extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
+ extern GrimCircleVertex *grim_vertex_write_ptr;
+ extern unsigned long grim_vertex_count;
++extern unsigned int grim_vertex_capacity;
+ extern float grim_vertex_z;
+ extern float grim_vertex_rhw;
+@@ -64,4 +66,13 @@ void IGrim2D_cpp::grim_draw_circle_filled(float x, float y, float radius)
+ 
+     int segment_count = (int)(radius * 0.125f + 12.0f);
++    // Each chord within a sixteenth of a logical pixel of the circle (radius * (1 - cos(pi / n))), as many as
++    // a fan's vertices fit in the buffer.
++    int round_count = (int)(3.1415927f * sqrt(radius * 8.0f)) + 1;
++    if (round_count > segment_count) {
++        segment_count = round_count;
++    }
++    if (segment_count > (int)(grim_vertex_capacity - 2)) {
++        segment_count = (int)(grim_vertex_capacity - 2);
++    }
+     for (int segment = 0; segment <= segment_count; ++segment) {
+         double angle = segment * 6.2831855f / segment_count;
+--- a/decomp/1.9/grim/render/draw_circle_outline.cpp
++++ b/decomp/1.9/grim/render/draw_circle_outline.cpp
+@@ -4,4 +4,5 @@
+ extern "C" double cos(double angle);
+ extern "C" double sin(double angle);
++extern "C" double sqrt(double value);
+ 
+ struct GrimCircleVertex {
+@@ -21,4 +22,5 @@ extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
+ extern GrimCircleVertex *grim_vertex_write_ptr;
+ extern unsigned long grim_vertex_count;
++extern unsigned int grim_vertex_capacity;
+ extern float grim_vertex_z;
+ extern float grim_vertex_rhw;
+@@ -56,4 +58,13 @@ void IGrim2D_cpp::grim_draw_circle_outline(float x, float y, float radius)
+ 
+     int segment_count = (int)(radius * 0.2f + 14.0f);
++    // Each chord within a sixteenth of a logical pixel of the circle (radius * (1 - cos(pi / n))), as many as
++    // a strip's vertices fit in the buffer.
++    int round_count = (int)(3.1415927f * sqrt(radius * 8.0f)) + 1;
++    if (round_count > segment_count) {
++        segment_count = round_count;
++    }
++    if (segment_count > (int)(grim_vertex_capacity / 2 - 1)) {
++        segment_count = (int)(grim_vertex_capacity / 2 - 1);
++    }
+     for (int segment = 0; segment <= segment_count; ++segment) {
+         double angle = segment * 6.2831855f / segment_count;
