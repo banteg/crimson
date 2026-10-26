@@ -536,7 +536,7 @@ on the same frames (a run's seed still differs)
 `CRIMSON_CAPTURE_TICK=<tick>` pauses playback on that tick and saves its frame instead, and
 `CRIMSON_WATCH_STOP=<tick>` alone ends the run once that tick has drawn. `CRIMSON_WATCH_MOMENTS=<tick>,...` measures
 several moments of one prepared replay: playback goes `CRIMSON_WATCH_WINDOW` ticks (240) before each, plays to it,
-then goes on to the next, and the run ends after the last. A run any of these drive opens behind the
+then goes on to the next, and the run ends after the last; `CRIMSON_CAPTURE` saves each moment's frame. A run any of these drive opens behind the
 player's windows and plays on there; it ignores the desktop's mouse and keyboard, draws no cursor until its script
 moves one, and reports errors on stderr instead of in a dialog.
 `CRIMSON_GPU_TIMERS=1` prints each frame's GPU time per pass to stderr (OpenGL only). `CRIMSON_MUTE=1` silences the output
