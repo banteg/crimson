@@ -1087,12 +1087,10 @@ void GL_ENTRY(w2c_host_frame_hold)(struct w2c_host *, u32 op) {
                     to.width == from.width && to.height == from.height ? GL_NEAREST : GL_LINEAR);
   bind_target();
 }
-void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
-  Target &from = target_or_back((int)source);
-  if (!from.framebuffer)
-    return;
-  drop_ground((int)destination);
-  Target &to = textures[(int)destination];
+// The render target `id`, made like `from` unless it already is.
+static Target &target_like(int id, const Target &from) {
+  drop_ground(id);
+  Target &to = textures[id];
   if (to.width != from.width || to.height != from.height || !to.framebuffer) {
     release(to);
     to.width = from.width;
@@ -1102,10 +1100,36 @@ void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 sou
     to.flags = 1;
     allocate(to);
   }
+  return to;
+}
+void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
+  Target &from = target_or_back((int)source);
+  if (!from.framebuffer)
+    return;
+  Target &to = target_like((int)destination, from);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, from.framebuffer);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.framebuffer);
   glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, from.width, from.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
   bind_target();
+}
+u32 GL_ENTRY(w2c_host_texture_read)(struct w2c_host *, u32 id, u32 out, u32 capacity) {
+  const Target &t = textures[(int)id];
+  u32 size = (u32)t.width * t.height * 4;
+  if (!t.framebuffer || capacity < size)
+    return t.framebuffer ? size : 0;
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, t.framebuffer);
+  glReadPixels(0, 0, t.width, t.height, GL_RGBA, GL_UNSIGNED_BYTE, client_memory() + out);
+  bind_target();
+  return size;
+}
+u32 GL_ENTRY(w2c_host_texture_write)(struct w2c_host *, u32 id, u32 like, u32 pixels, u32 size) {
+  const Target &from = textures[(int)like];
+  if (!from.framebuffer || size != (u32)from.width * from.height * 4)
+    return 0;
+  Target &to = target_like((int)id, from);
+  glBindTexture(GL_TEXTURE_2D, to.texture);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, to.width, to.height, GL_RGBA, GL_UNSIGNED_BYTE, client_memory() + pixels);
+  return 1;
 }
 void GL_ENTRY(w2c_host_back_buffer)(struct w2c_host *, u32 width, u32 height) {
   Target &back = textures[0];

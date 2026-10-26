@@ -507,8 +507,8 @@ static void watch_seek(int target) {
   }
 }
 
-// A frame's share of the preparing pass; at the run's end, playback starts.
-static void watch_prepare() {
+// A frame's share of the preparing pass; true at the run's end.
+static bool watch_pass() {
   grim_render_disabled = 1;
   // The pass bakes the terrain as it goes, for the copies it keeps.
   terrain.baking = true;
@@ -529,10 +529,21 @@ static void watch_prepare() {
   }
   grim_render_disabled = 0;
   terrain.baking = false;
-  if (!done)
-    return;
-  if (watch.stopped.empty() && watch.at >= watch.replay.recording.size())
-    watch_judge("");
+  return done;
+}
+
+// The preparing pass, or one kept on disk (host/watch_cache.inc); at the run's
+// end, playback starts.
+static bool watch_cache_load();
+static void watch_cache_save();
+static void watch_prepare() {
+  if (watch.tick || !watch_cache_load()) {
+    if (!watch_pass())
+      return;
+    if (watch.stopped.empty() && watch.at >= watch.replay.recording.size())
+      watch_judge("");
+    watch_cache_save();
+  }
   terrain.logging = false;
   watch.phase = WATCH_PLAYING;
   // A run that stopped short never reaches a stop past its end.
@@ -744,20 +755,21 @@ static constexpr int WATCH_ONLINE_KEPT = 32;
 static void watch_online_path(const std::string &run, char *path, size_t size) {
   snprintf(path, size, "replays/online/%s.crd", run.c_str());
 }
-// Makes room for one more download: the oldest past the newest few go.
-static void watch_online_prune() {
+// Makes room in `directory` for one more file named with `suffix`: the oldest
+// past the newest `kept` go.
+static void prune_oldest(const char *directory, const char *suffix, size_t kept) {
   std::vector<std::pair<time_t, std::string>> files;
-  if (DIR *dir = opendir("replays/online")) {
+  if (DIR *dir = opendir(directory)) {
     while (dirent *entry = readdir(dir)) {
-      std::string path = std::string("replays/online/") + entry->d_name;
+      std::string path = std::string(directory) + "/" + entry->d_name;
       struct stat st;
-      if (strstr(entry->d_name, ".crd") && !stat(path.c_str(), &st))
+      if (strstr(entry->d_name, suffix) && !stat(path.c_str(), &st))
         files.emplace_back(st.st_mtime, path);
     }
     closedir(dir);
   }
   std::sort(files.begin(), files.end());
-  for (size_t i = 0; i + WATCH_ONLINE_KEPT <= files.size(); ++i)
+  for (size_t i = 0; i + kept <= files.size(); ++i)
     unlink(files[i].second.c_str());
 }
 // The card's note for a board run whose replay is not here yet: asks the host
@@ -775,7 +787,7 @@ static const char *watch_online_note(const std::string &run) {
   if (watch_download.empty()) {
     mkdir("replays", 0755);
     mkdir("replays/online", 0755);
-    watch_online_prune();
+    prune_oldest("replays/online", ".crd", WATCH_ONLINE_KEPT);
     watch_download = run;
     watch_downloads[run] = WATCH_DOWNLOADING;
     host_leaderboard(HOST_LEADERBOARD_REPLAY);

@@ -1046,6 +1046,9 @@ void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {
   }
   copy(from, to);
 }
+// Reading a target back waits on the GPU in WebGPU: a replay keeps no copies on disk there.
+u32 wgpu_w2c_host_texture_read(struct w2c_host *, u32, u32, u32) { return 0; }
+u32 wgpu_w2c_host_texture_write(struct w2c_host *, u32, u32, u32, u32) { return 0; }
 void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
   Target &from = target_or_back((int)source);
   if (!from.texture)
