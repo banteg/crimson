@@ -85,6 +85,7 @@ bool rtx_effect_vertices(const void *vertices, int count);
 void rtx_effect_flush();
 void rtx_plasma(int slot, float alpha);
 void rtx_ion_arc(float sx, float sy, float ex, float ey, float scale, float alpha);
+void rtx_pulse(float cx, float cy, float size, float angle, float r, float g, float b, float a);
 // The arc loop's creature search, at most two arcs a cell per shot (game/ion_arcs.cpp).
 int ion_arc_find(float *pos, float radius, int start_index);
 void rtx_contact_glows(float alpha);

@@ -17,7 +17,8 @@ extern "C" {
 IGrim2D_cpp *grim_interface_ptr;
 projectile_render_vec2_t camera_offset;
 int bullet_trail_texture = 101, particles_texture = 102, projectile_texture = 103, projectile_bullet_texture = 104;
-int perk_id_sharpshooter, perk_id_ion_gun_master, quest_spawn_timeline;
+int perk_id_sharpshooter, perk_id_ion_gun_master, perk_id_barrel_greaser, quest_spawn_timeline;
+int terrain_texture_width = 1024, terrain_texture_height = 1024;
 int run_elapsed_ms, current_player_index;
 unsigned char portable_preserve_bugs;
 double portable_sin(double x) { return sin(x); }
@@ -42,6 +43,9 @@ void rtx_plasma(int slot, float alpha) {
   ++plasma_calls;
 }
 void rtx_ion_arc(float, float, float, float, float, float) { ++arc_calls; }
+void rtx_pulse(float, float, float, float, float, float, float, float) {
+  assert(rtx_render_mode);
+}
 vec2f_t *D3DXVec2Normalize(vec2f_t *dst, const vec2f_t *src) {
   float length = sqrtf(src->x * src->x + src->y * src->y);
   *dst = length ? vec2f_t{src->x / length, src->y / length} : vec2f_t{};

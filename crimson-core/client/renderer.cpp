@@ -171,6 +171,7 @@ const char *creature_fragment_source = SHADER_HEADER RTX_SHADER_CREATURE_FRAG;
 const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
 const char *bonus_fragment_source = SHADER_HEADER RTX_SHADER_BONUS_FRAG;
 const char *ground_fragment_source = SHADER_HEADER SHADER_GROUND_LIT_FRAG;
+const char *ground_beam_vis_source = SHADER_HEADER SHADER_GROUND_BEAM_VIS_FRAG;
 const char *stamp_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_STAMP_FRAG;
 const char *smoke_rect_source = SHADER_HEADER SHADER_SMOKE_RECT_VERT;
 const char *smoke_field_source = SHADER_HEADER SHADER_SMOKE_FIELD_VERT;
@@ -199,7 +200,7 @@ int light_count;
 // size in world units, the beam sections' gains, and per light its direction
 // with broad illumination, its reflection tail and its three beam sections.
 float scene_seconds, ground_size[2], beam_gain[2];
-float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
+float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], beam_shape[MAX_LIGHTS * 4];
 bool beam_lights;
 int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
@@ -212,8 +213,12 @@ struct LitProgram {
 // cell size, the shadows setting, and its texels in an RGBA32F texture 256 wide.
 enum { OCCLUSION_WIDTH = 256 };
 float occlusion_grid[4], occlusion_cell = 64;
-int dynamic_shadows, occlusion_rows;
-GLuint occlusion_texture;
+int dynamic_shadows;
+// The grid rotates through three textures: an upload never waits for frames
+// still reading the one before.
+GLuint occlusion_textures[3], occlusion_texture;
+int occlusion_texture_rows[3], occlusion_next;
+std::vector<float> occlusion_texels;
 LitProgram creature_lit, player_lit, bonus_lit;
 // Monster Vision's heat (render/rtx/heat_vision.py): the bodies' program
 // (HOST_PASS_HEAT), and the world-space trail buffer at half the terrain's
@@ -246,6 +251,12 @@ std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
 GLuint ground_program, stamp_program, fill_program;
+// The beams' visibility at a quarter of the ground's resolution (ground.frag's
+// BEAM_VISIBILITY_PASS): four groups of four slots side by side in one atlas,
+// which the ground reads instead of walking the body grid per pixel.
+enum { BEAM_VISIBILITY_SCALE = 4, BEAM_VISIBILITY_SLOTS = 16 };
+GLuint ground_beam_vis_program, beam_vis_framebuffer, beam_vis_texture;
+int beam_vis_width, beam_vis_height;
 GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
 // RTX fluid smoke (game/rtx_smoke.cpp, render/rtx/gpu_smoke.py): the field's
 // RGBA16F targets (its state twice, divergence, pressure twice), the solver's
@@ -774,39 +785,86 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
-  GLuint p = ground_program;
-  glUseProgram(p);
-  auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
-  glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
-  glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
-  glUniform2fv(at("u_ground_size"), 1, ground_size);
-  glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
-  glUniform1i(at("u_debug"), 0);
-  glUniform1i(at("u_debug_display"), 1);
-  glUniform1i(at("u_dynamic_shadows"), dynamic_shadows);
-  glUniform1i(at("u_spec_light_count"), light_count);
-  glUniform1i(at("u_has_beam_lights"), beam_lights);
-  glUniform2fv(at("u_beam_gain"), 1, beam_gain);
-  glUniform4fv(at("u_occlusion_grid"), 1, occlusion_grid);
-  glUniform1f(at("u_occlusion_cell_size"), occlusion_cell);
-  if (light_count) {
-    glUniform4fv(at("u_spec_pos"), light_count, light_pos);
-    glUniform4fv(at("u_spec_color"), light_count, light_rgb);
-    glUniform4fv(at("u_spec_dir"), light_count, ground_dir);
-    glUniform4fv(at("u_spec_response"), light_count, light_response);
-    glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
-    glUniform4fv(at("u_line_cells"), light_count * 3, line_cells);
+  // Lit beams take the slots in light order; the rest walk the grid in the ground's own pass.
+  float slots[MAX_LIGHTS] = {};
+  int count = 0;
+  if (beam_lights && dynamic_shadows && occlusion_grid[2])
+    for (int i = 0; i < light_count && count < BEAM_VISIBILITY_SLOTS; ++i)
+      if (beam_shape[i * 4 + 3] > 0)
+        slots[i] = (float)++count;
+  auto prepare = [&](GLuint p) {
+    glUseProgram(p);
+    auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
+    glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
+    glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
+    glUniform2fv(at("u_ground_size"), 1, ground_size);
+    glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
+    glUniform1i(at("u_debug"), 0);
+    glUniform1i(at("u_debug_display"), 1);
+    glUniform1i(at("u_dynamic_shadows"), dynamic_shadows);
+    glUniform1i(at("u_spec_light_count"), light_count);
+    glUniform1i(at("u_has_beam_lights"), beam_lights);
+    glUniform2fv(at("u_beam_gain"), 1, beam_gain);
+    glUniform4fv(at("u_occlusion_grid"), 1, occlusion_grid);
+    glUniform1f(at("u_occlusion_cell_size"), occlusion_cell);
+    if (light_count) {
+      glUniform4fv(at("u_spec_pos"), light_count, light_pos);
+      glUniform4fv(at("u_spec_color"), light_count, light_rgb);
+      glUniform4fv(at("u_spec_dir"), light_count, ground_dir);
+      glUniform4fv(at("u_spec_response"), light_count, light_response);
+      glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
+      glUniform4fv(at("u_beam_shape"), light_count, beam_shape);
+      glUniform4fv(at("u_beam_slots"), (light_count + 3) / 4, slots);
+    }
+    const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
+                             occlusion_grid[2] ? occlusion_texture : blank_texture,
+                             count ? beam_vis_texture : blank_texture};
+    const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex", "u_beam_vis"};
+    for (int i = 0; i < 5; ++i) {
+      glUniform1i(at(names[i]), i);
+      glActiveTexture(GL_TEXTURE0 + i);
+      glBindTexture(GL_TEXTURE_2D, inputs[i]);
+      glBindSampler(i, 0);
+    }
+    glActiveTexture(GL_TEXTURE0);
+  };
+  if (count) {
+    int width = std::max(1, t.width / BEAM_VISIBILITY_SCALE), height = std::max(1, t.height / BEAM_VISIBILITY_SCALE);
+    if (!beam_vis_framebuffer || width != beam_vis_width || height != beam_vis_height) {
+      if (!beam_vis_framebuffer) {
+        glGenFramebuffers(1, &beam_vis_framebuffer);
+        glGenTextures(1, &beam_vis_texture);
+      }
+      glBindTexture(GL_TEXTURE_2D, beam_vis_texture);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4 * width, height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, beam_vis_texture, 0);
+      beam_vis_width = width, beam_vis_height = height;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+    glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glViewport(0, 0, 4 * width, height);
+    glClearColor(1, 1, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    prepare(ground_beam_vis_program);
+    GLint group_at = glGetUniformLocation(ground_beam_vis_program, "u_beam_group");
+    for (int group = 0; group * 4 < count; ++group) {
+      glViewport(group * width, 0, width, height);
+      glUniform1f(group_at, (float)group);
+      submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
+    }
+    bind_target();
   }
-  const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
-                           occlusion_grid[2] ? occlusion_texture : blank_texture};
-  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_occlusion_tex"};
-  for (int i = 0; i < 4; ++i) {
-    glUniform1i(at(names[i]), i);
-    glActiveTexture(GL_TEXTURE0 + i);
-    glBindTexture(GL_TEXTURE_2D, inputs[i]);
-    glBindSampler(i, 0);
-  }
-  glActiveTexture(GL_TEXTURE0);
+  prepare(ground_program);
+  if (count)
+    glUniform4f(glGetUniformLocation(ground_program, "u_beam_vis_target"), (float)t.width, (float)t.height,
+                (float)beam_vis_width, (float)beam_vis_height);
   apply_output_state(t);
   glDisable(GL_BLEND); // the ground is opaque
   glDisable(GL_CULL_FACE);
@@ -987,6 +1045,7 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     glUniform1i(glGetUniformLocation(heat_trail_program, "u_heat"), 0);
     pressure_program = link(tonemap_vertex_source, pressure_fragment_source);
     ground_program = link(lit_vertex_source, ground_fragment_source);
+    ground_beam_vis_program = link(lit_vertex_source, ground_beam_vis_source);
     stamp_program = link(lit_vertex_source, stamp_fragment_source);
     glUseProgram(stamp_program);
     glUniform1i(glGetUniformLocation(stamp_program, "texture0"), 0);
@@ -1024,6 +1083,9 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     release(t);
   release(smoke_composite);
   release(heat_trail);
+  glDeleteFramebuffers(1, &beam_vis_framebuffer);
+  glDeleteTextures(1, &beam_vis_texture);
+  beam_vis_framebuffer = beam_vis_texture = 0;
   heat_seconds = -1;
   release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
@@ -1087,12 +1149,10 @@ void GL_ENTRY(w2c_host_frame_hold)(struct w2c_host *, u32 op) {
                     to.width == from.width && to.height == from.height ? GL_NEAREST : GL_LINEAR);
   bind_target();
 }
-void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
-  Target &from = target_or_back((int)source);
-  if (!from.framebuffer)
-    return;
-  drop_ground((int)destination);
-  Target &to = textures[(int)destination];
+// The render target `id`, made like `from` unless it already is.
+static Target &target_like(int id, const Target &from) {
+  drop_ground(id);
+  Target &to = textures[id];
   if (to.width != from.width || to.height != from.height || !to.framebuffer) {
     release(to);
     to.width = from.width;
@@ -1102,10 +1162,36 @@ void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 sou
     to.flags = 1;
     allocate(to);
   }
+  return to;
+}
+void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
+  Target &from = target_or_back((int)source);
+  if (!from.framebuffer)
+    return;
+  Target &to = target_like((int)destination, from);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, from.framebuffer);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.framebuffer);
   glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, from.width, from.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
   bind_target();
+}
+u32 GL_ENTRY(w2c_host_texture_read)(struct w2c_host *, u32 id, u32 out, u32 capacity) {
+  const Target &t = textures[(int)id];
+  u32 size = (u32)t.width * t.height * 4;
+  if (!t.framebuffer || capacity < size)
+    return t.framebuffer ? size : 0;
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, t.framebuffer);
+  glReadPixels(0, 0, t.width, t.height, GL_RGBA, GL_UNSIGNED_BYTE, client_memory() + out);
+  bind_target();
+  return size;
+}
+u32 GL_ENTRY(w2c_host_texture_write)(struct w2c_host *, u32 id, u32 like, u32 pixels, u32 size) {
+  const Target &from = textures[(int)like];
+  if (!from.framebuffer || size != (u32)from.width * from.height * 4)
+    return 0;
+  Target &to = target_like((int)id, from);
+  glBindTexture(GL_TEXTURE_2D, to.texture);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, to.width, to.height, GL_RGBA, GL_UNSIGNED_BYTE, client_memory() + pixels);
+  return 1;
 }
 void GL_ENTRY(w2c_host_back_buffer)(struct w2c_host *, u32 width, u32 height) {
   Target &back = textures[0];
@@ -1370,8 +1456,8 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
     memcpy(ground_dir + i * 4, l + 8, 16);
     ground_dir[i * 4 + 2] = l[17];
     light_tail[i] = l[16];
-    memcpy(line_cells + i * 12, l + 20, 48);
-    beam_lights |= l[20] > 0;
+    memcpy(beam_shape + i * 4, l + 20, 16);
+    beam_lights |= l[23] > 0;
   }
 }
 void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {
@@ -1621,21 +1707,26 @@ void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 c
     return;
   // Whole rows, and a texture that grows in powers of two as crowds do.
   int rows = (int)((count + OCCLUSION_WIDTH * 4 - 1) / (OCCLUSION_WIDTH * 4));
-  if (rows > occlusion_rows) {
-    occlusion_rows = 1;
-    while (occlusion_rows < rows)
-      occlusion_rows *= 2;
-    if (!occlusion_texture)
-      glGenTextures(1, &occlusion_texture);
-    glBindTexture(GL_TEXTURE_2D, occlusion_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, OCCLUSION_WIDTH, occlusion_rows, 0, GL_RGBA, GL_FLOAT, nullptr);
+  int slot = occlusion_next;
+  occlusion_next = (occlusion_next + 1) % 3;
+  if (rows > occlusion_texture_rows[slot]) {
+    int grown = 1;
+    while (grown < rows)
+      grown *= 2;
+    occlusion_texture_rows[slot] = grown;
+    if (!occlusion_textures[slot])
+      glGenTextures(1, &occlusion_textures[slot]);
+    glBindTexture(GL_TEXTURE_2D, occlusion_textures[slot]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, OCCLUSION_WIDTH, grown, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   }
-  std::vector<float> texels((size_t)rows * OCCLUSION_WIDTH * 4);
-  memcpy(texels.data(), client_memory() + values, (size_t)count * 4);
+  occlusion_texture = occlusion_textures[slot];
+  occlusion_texels.resize((size_t)rows * OCCLUSION_WIDTH * 4);
+  memcpy(occlusion_texels.data(), client_memory() + values, (size_t)count * 4);
+  std::fill(occlusion_texels.begin() + count, occlusion_texels.end(), 0.0f);
   glBindTexture(GL_TEXTURE_2D, occlusion_texture);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, OCCLUSION_WIDTH, rows, GL_RGBA, GL_FLOAT, texels.data());
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, OCCLUSION_WIDTH, rows, GL_RGBA, GL_FLOAT, occlusion_texels.data());
 }
 void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 grid_y, f32 center_x, f32 center_y) {
   gpu_mark("bonuses");

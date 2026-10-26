@@ -19,6 +19,7 @@
 #include <math.h>
 #include <string.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 extern "C" {
@@ -29,6 +30,8 @@ extern unsigned int grim_backbuffer_width, grim_backbuffer_height;
 extern int run_elapsed_ms;
 bool rtx_drawing();
 int creature_find_in_radius(float *pos, float radius, int start_index);
+// How far a Fire Bullets shot has flown since the arena's edge stopped it (game/patches/52-fire-bullets-fly-off.patch).
+float projectile_fire_flown(const projectile_t *projectile);
 void effect_select_texture(int effect_id);
 }
 extern IGrim2D_cpp *grim_interface_ptr;
@@ -43,17 +46,25 @@ enum { MAX_ILLUMINATION = 16, MAX_REFLECTION = 16, MAX_EXPLOSIONS = 128, MAX_FLA
 // explosion's shell and fireball; each flame cell.
 const int MAX_SOURCES = 2 * 3 + (int)std::size(projectile_pool) * 5 + (int)std::size(secondary_projectile_pool) +
                         MAX_EXPLOSIONS * 2 + MAX_FLAME_CELLS;
-// Shots of one kind whose heads and tails both lie this close are one volley;
-// a source fades across a budget's edge over this many ticks.
+// A volley's pellets light as one source while their heads lie this close to
+// the lead's; a source fades across a budget's edge over this many ticks.
 const float VOLLEY_UNITS = 28;
 const float SLEW_TICKS = 6;
 
 // Source idents (source_ident): the kind in the top byte, its slot below.
-enum { IDENT_PLAYER = 1, IDENT_SHOT, IDENT_ARC, IDENT_SECONDARY, IDENT_EXPLOSION, IDENT_FLAME };
+enum { IDENT_PLAYER = 1, IDENT_SHOT, IDENT_ARC, IDENT_SECONDARY, IDENT_EXPLOSION, IDENT_FLAME, IDENT_VOLLEY };
 int source_ident(int kind, int number) { return kind << 24 | (number & 0xffffff); }
+// One trigger pull's pellets share a kind, an owner and a spawn point (their
+// origin): their volley's ident (material_lights.py's volley_ident).
+int volley_ident(const projectile_t &p) {
+  unsigned x = (unsigned)(int)floorf(p.fields.origin_x), y = (unsigned)(int)floorf(p.fields.origin_y);
+  unsigned number = x * 73856093u ^ y * 19349663u ^ (unsigned)p.fields.type_id * 83492791u ^
+                    (unsigned)p.fields.owner_id * 2654435761u;
+  return source_ident(IDENT_VOLLEY, (int)(number & 0xffffff));
+}
 
 // A luminous disc, tapered segment or annulus (MaterialLight). A beam's streak
-// (its stamp radius, spacing and head size) lights the ground in energy sections.
+// (its stamp radius, spacing and head size) lights the ground as one source.
 struct Light {
   float x, y, radius, r, g, b;
   float height = 18, dx = 0, dy = 0, length = 0, width = 3;
@@ -64,6 +75,8 @@ struct Light {
   bool beam_ion = false;
   float smoke_gain = 1; // fluid smoke's scattering response, apart from the ground's and creatures'
   int ident = -1;       // which source this is, the same from frame to frame
+  int volley = -1;      // a shot's volley (volley_ident): a pellet leaving it starts from its place in the budgets
+  float travel = 0;     // how far a shot has flown from its spawn point: a reused slot's new shot starts over
   float reflection_reach() const { return reach < 0 ? radius : reach; }
 };
 Light sources[MAX_SOURCES];
@@ -119,7 +132,7 @@ const Emission *emission(int type) {
   static const Emission plasma_cannon = {1.5f, 0.76f, 0.16f, 190, 9, 18, 4, 1, 250, 44.2f, 1, true};
   static const Emission spider_plasma = {0.08f, 0.65f, 0.025f, 100, 2, 18, 0.5f, 1, 140, 4.2f, 1};
   static const Emission shrinkifier = {0.06f, 0.03f, 0.18f, 65, 2, 18, 0.15f, 1, 120, 4.2f, 1};
-  static const Emission pulse = {0.025f, 0.24f, 0.04f, 75, 5, 18, 0.15f, 1, 130, 0, 1};
+  static const Emission pulse = {0.06f, 0.5f, 0.13f, 110, 3, 18, 3, 1, 140, 0, 1};
   switch (type) {
   case PROJECTILE_TYPE_PISTOL:
   case PROJECTILE_TYPE_ASSAULT_RIFLE:
@@ -155,6 +168,9 @@ void projectile_source(const projectile_t &p, int ident) {
   float gain = powf(fminf(1, life * 2.5f), e->fade_power);
   float dx = p.fields.pos_x - p.fields.origin_x, dy = p.fields.pos_y - p.fields.origin_y;
   float distance = normalize(dx, dy);
+  // A stopped Fire Bullets shot flies on as it is drawn.
+  float flown = projectile_fire_flown(&p), head_x = p.fields.pos_x + dx * flown, head_y = p.fields.pos_y + dy * flown;
+  distance += flown;
   float span = fminf(distance, e->tail);
   float r = e->r, g = e->g, b = e->b, width = e->width;
   if (plasma(type)) {
@@ -165,15 +181,23 @@ void projectile_source(const projectile_t &p, int ident) {
       // All five plasma variants switch to the same untinted warm 56px glow.
       r = 1.1f, g = 0.57f, b = 0.12f, width = 5, span = 0;
     }
-  } else if (type == PROJECTILE_TYPE_PULSE_GUN) {
-    width = fminf(18, fmaxf(1, distance * 0.035f));
-    if (life < 0.4f)
-      r = 0.7f, g = 0.36f, b = 0.08f, width = 5;
+  } else if (type == PROJECTILE_TYPE_PULSE_GUN && distance > 0) {
+    // A segment across the shot's front edge, so its reflection stretches along
+    // it; on impact the white sprite lights pale green.
+    bool impact = life < 0.4f;
+    span = 1.4f * (impact ? 28 : distance * 0.08f);
+    float across_x = -dy, across_y = dx;
+    dx = across_x, dy = across_y;
+    head_x += dx * span * 0.5f, head_y += dy * span * 0.5f;
+    if (impact)
+      r = 0.4f, g = 0.75f, b = 0.5f;
   }
   if (streak_scale(type) && dx == 0 && dy == 0)
     heading_direction(p.angle, dx, dy);
-  Light &light = add(ident, p.fields.pos_x - dx * span * 0.5f, p.fields.pos_y - dy * span * 0.5f, e->radius,
+  Light &light = add(ident, head_x - dx * span * 0.5f, head_y - dy * span * 0.5f, e->radius,
                      r * gain, g * gain, b * gain);
+  light.volley = volley_ident(p);
+  light.travel = hypotf(p.fields.pos_x - p.fields.origin_x, p.fields.pos_y - p.fields.origin_y);
   light.height = e->height;
   light.dx = dx, light.dy = dy, light.length = span;
   light.width = width;
@@ -503,6 +527,16 @@ void select(const float *scores, int limit, bool *chosen) {
 // over a second starts over.
 struct Selection {
   std::unordered_map<int, float> weights[2];
+  // The volleys' history (merge_volleys): when each shot was born (and how far
+  // it had flown), the pellets that have left their volley, and how much of
+  // each one's light its volley still carries.
+  struct Born {
+    float travel;
+    int tick;
+  };
+  std::unordered_map<int, Born> born;
+  std::unordered_set<int> split;
+  std::unordered_map<int, float> handoff;
   float elapsed_ms = -1, ticks = 0;
   void advance(float now_ms) {
     float gap = now_ms - elapsed_ms;
@@ -514,15 +548,20 @@ struct Selection {
   }
   void reset() {
     weights[0].clear(), weights[1].clear();
+    born.clear(), split.clear(), handoff.clear();
     elapsed_ms = -1, ticks = 0;
   }
   // The sources' weights in one response; idents no longer present are dropped.
+  // A source seen for the first time starts where it belongs, unless it is a
+  // pellet leaving its volley: that starts where the volley was.
   void slew(bool reflection, const bool *chosen, float *out) {
     std::unordered_map<int, float> &previous = weights[reflection], next;
     float step = ticks / SLEW_TICKS;
     for (int i = 0; i < source_count; ++i) {
       float target = chosen[i] ? 1.0f : 0.0f;
       auto found = previous.find(sources[i].ident);
+      if (found == previous.end())
+        found = previous.find(sources[i].volley);
       float weight = found == previous.end() ? target : found->second;
       weight = target > weight ? fminf(target, weight + step) : fmaxf(target, weight - step);
       previous[sources[i].ident] = next[sources[i].ident] = out[i] = weight;
@@ -532,76 +571,135 @@ struct Selection {
 };
 Selection selection;
 
-// Shots of one kind whose heads and tails both lie within VOLLEY_UNITS, from
-// `first` on, as one source (merge_volleys), as a shotgun's pellets or a burst
-// leave the muzzle: their radiance adds, so a volley fanning out splits without
-// changing its total light. The merged source keeps one shot's width (every
-// body's shadow margin follows the widest source) and the lowest ident.
+// One trigger pull's pellets (Light::volley, born on one tick), from `first`
+// on, as one source while their heads lie within VOLLEY_UNITS of the lead's,
+// the lowest ident still in the volley (material_lights.py's merge_volleys).
+// Unrelated shots never merge, however close they pass, nor do a gun's trigger
+// pulls from one spot. A pellet that strays leaves for good
+// and hands its light over across SLEW_TICKS: the volley keeps a fading share
+// of it where it was, while the pellet's own light comes up from the volley's
+// place in the budgets. Radiance adds, so a volley fanning out keeps its total
+// light. The merged source keeps one shot's width (every body's shadow margin
+// follows the widest source) and the volley's ident.
 void merge_volleys(int first) {
-  struct Cluster {
-    Light lead;
-    float head[2], tail[2], weight;
-    int count;
+  auto head = [](const Light &l, float *out) {
+    out[0] = l.x + l.dx * l.length * 0.5f, out[1] = l.y + l.dy * l.length * 0.5f;
   };
-  auto ends = [](const Light &l, float *head, float *tail) {
-    head[0] = l.x + l.dx * l.length * 0.5f, head[1] = l.y + l.dy * l.length * 0.5f;
-    tail[0] = l.x - l.dx * l.length * 0.5f, tail[1] = l.y - l.dy * l.length * 0.5f;
-  };
-  auto same_kind = [](const Light &a, const Light &b) {
-    return a.radius == b.radius && a.height == b.height && a.beam_radius == b.beam_radius &&
-           a.beam_step == b.beam_step && a.beam_head == b.beam_head && a.broad == b.broad && a.tail == b.tail &&
-           a.illumination == b.illumination && a.reflection == b.reflection;
-  };
-  auto near = [](const float *a, const float *b) { return hypotf(a[0] - b[0], a[1] - b[1]) <= VOLLEY_UNITS; };
-  std::vector<Cluster> clusters;
-  for (int i = first; i < source_count; ++i) {
-    const Light &shot = sources[i];
-    float head[2], tail[2], lead_head[2], lead_tail[2];
-    ends(shot, head, tail);
-    Cluster *found = nullptr;
-    for (Cluster &c : clusters) {
-      ends(c.lead, lead_head, lead_tail);
-      if (same_kind(c.lead, shot) && near(head, lead_head) && near(tail, lead_tail)) {
-        found = &c;
-        break;
-      }
-    }
-    if (!found) {
-      clusters.push_back({shot, {0, 0}, {0, 0}, 0, 0});
-      found = &clusters.back();
-      found->lead.r = found->lead.g = found->lead.b = 0;
-    }
-    // Heads and tails average by brightness.
-    float weight = fmaxf(fmaxf(shot.r, fmaxf(shot.g, shot.b)), 1e-6f);
-    for (int k = 0; k < 2; ++k)
-      found->head[k] += head[k] * weight, found->tail[k] += tail[k] * weight;
-    found->weight += weight;
-    found->lead.r += shot.r, found->lead.g += shot.g, found->lead.b += shot.b;
-    found->lead.ident = std::min(found->lead.ident, shot.ident);
-    ++found->count;
+  float step = selection.ticks / SLEW_TICKS;
+  std::unordered_set<int> present;
+  for (int i = first; i < source_count; ++i)
+    present.insert(sources[i].ident);
+  for (auto it = selection.handoff.begin(); it != selection.handoff.end();) {
+    it->second -= step;
+    it = it->second <= 0 || !present.count(it->first) ? selection.handoff.erase(it) : std::next(it);
   }
-  source_count = first;
-  for (const Cluster &c : clusters) {
-    Light &light = sources[source_count++] = c.lead;
-    if (c.count == 1)
+  for (auto it = selection.split.begin(); it != selection.split.end();)
+    it = present.count(*it) ? std::next(it) : selection.split.erase(it);
+  for (auto it = selection.born.begin(); it != selection.born.end();)
+    it = present.count(it->first) ? std::next(it) : selection.born.erase(it);
+  int tick = (int)lroundf(selection.elapsed_ms * 0.06f);
+  std::vector<Light> shots(sources + first, sources + source_count);
+  for (Light &shot : shots) {
+    if (shot.volley < 0)
       continue;
-    float head_x = c.head[0] / c.weight, head_y = c.head[1] / c.weight;
-    float tail_x = c.tail[0] / c.weight, tail_y = c.tail[1] / c.weight;
+    // A shot is born when first seen, or when it is nearer its spawn point
+    // than before: a reused slot's new shot.
+    auto seen = selection.born.find(shot.ident);
+    bool fresh = seen == selection.born.end() || shot.travel < seen->second.travel;
+    int born = fresh ? tick : seen->second.tick;
+    if (fresh) {
+      selection.split.erase(shot.ident);
+      selection.handoff.erase(shot.ident);
+    }
+    selection.born[shot.ident] = {shot.travel, born};
+    shot.volley = source_ident(IDENT_VOLLEY, (int)((unsigned)shot.volley ^ (unsigned)born * 2654435761u));
+  }
+  // By volley, then ident: each volley's members together, its lead first.
+  std::sort(shots.begin(), shots.end(), [](const Light &a, const Light &b) {
+    return a.volley != b.volley ? a.volley < b.volley : a.ident < b.ident;
+  });
+  source_count = first;
+  for (size_t begin = 0; begin < shots.size();) {
+    size_t end = begin + 1;
+    while (end < shots.size() && shots[end].volley == shots[begin].volley)
+      ++end;
+    if (shots[begin].volley < 0) {
+      for (size_t i = begin; i < end; ++i)
+        sources[source_count++] = shots[i];
+      begin = end;
+      continue;
+    }
+    const Light *lead = nullptr;
+    for (size_t i = begin; i < end && !lead; ++i)
+      if (!selection.split.count(shots[i].ident))
+        lead = &shots[i];
+    float lead_head[2] = {0, 0};
+    if (lead)
+      head(*lead, lead_head);
+    // The volley's own light: its pellets inside, and the shares still handing over.
+    struct Part {
+      const Light *light;
+      float share;
+    };
+    std::vector<Part> parts;
+    int inside = 0;
+    for (size_t i = begin; i < end; ++i) {
+      const Light &shot = shots[i];
+      float h[2];
+      head(shot, h);
+      if (lead && !selection.split.count(shot.ident) && hypotf(h[0] - lead_head[0], h[1] - lead_head[1]) <= VOLLEY_UNITS) {
+        parts.push_back({&shot, 1});
+        ++inside;
+        continue;
+      }
+      if (!selection.split.count(shot.ident)) {
+        selection.split.insert(shot.ident);
+        selection.handoff[shot.ident] = 1;
+      }
+      auto handing = selection.handoff.find(shot.ident);
+      float share = handing == selection.handoff.end() ? 0 : handing->second;
+      Light &own = sources[source_count++] = shot;
+      own.r *= 1 - share, own.g *= 1 - share, own.b *= 1 - share;
+      if (share > 0)
+        parts.push_back({&shot, share});
+    }
+    begin = end;
+    if (parts.size() == 1 && inside == 1) {
+      sources[source_count++] = *parts[0].light;
+      continue;
+    }
+    if (parts.empty())
+      continue;
+    // Heads and tails average by brightness.
+    float head_xy[2] = {0, 0}, tail_xy[2] = {0, 0}, total = 0, r = 0, g = 0, b = 0;
+    for (const Part &part : parts) {
+      const Light &l = *part.light;
+      float weight = fmaxf(fmaxf(l.r, fmaxf(l.g, l.b)), 1e-6f) * part.share;
+      float h[2];
+      head(l, h);
+      head_xy[0] += h[0] * weight, head_xy[1] += h[1] * weight;
+      tail_xy[0] += (l.x - l.dx * l.length * 0.5f) * weight, tail_xy[1] += (l.y - l.dy * l.length * 0.5f) * weight;
+      total += weight;
+      r += l.r * part.share, g += l.g * part.share, b += l.b * part.share;
+    }
+    Light &light = sources[source_count++] = *parts[0].light;
+    float head_x = head_xy[0] / total, head_y = head_xy[1] / total;
+    float tail_x = tail_xy[0] / total, tail_y = tail_xy[1] / total;
     float dx = head_x - tail_x, dy = head_y - tail_y, length = normalize(dx, dy);
     light.x = (head_x + tail_x) * 0.5f, light.y = (head_y + tail_y) * 0.5f;
     if (length > 1e-3f)
       light.dx = dx, light.dy = dy;
     light.length = length;
+    light.r = r, light.g = g, light.b = b;
+    light.ident = light.volley;
   }
 }
 
-// --- Beam energy sections (render/rtx/continuous_beam.py) ---------------------------
-// A streak lights the ground as three energy-weighted sections of its stamps
-// and head: mass, offset from the beam's midpoint, longitudinal half-span, and
-// whether it is an ion beam. An appearance approximation, as in Python, in its
-// double precision.
+// --- Beam energy (render/rtx/continuous_beam.py) ----------------------------------
+// A streak lights the ground as one source: a ramp of its stamps from the tail
+// to the head, and the head's own stamp as a uniform stretch around the head
+// end. An appearance approximation, as in Python, in its double precision.
 const double SUPPORT = 0.85998995;
-enum { SOURCE_CELLS = 3 };
 
 const double *radial_marginal() {
   static double values[65];
@@ -619,61 +717,42 @@ const double *radial_marginal() {
   return values;
 }
 
-double radial_density(double r) {
-  const double *radial = radial_marginal();
-  r = fabs(r);
-  if (r >= SUPPORT)
-    return 0;
-  double t = r / SUPPORT * 64;
-  int index = (int)t;
-  return radial[index] + (radial[index + 1] - radial[index]) * (t - index);
-}
-
-// source_cells: each cell samples the authored stamps near it plus the head.
-void source_cells(double length, double radius, double step, double head_multiplier, float *out) {
-  double support = radius * SUPPORT, head_radius = radius * head_multiplier, pad = head_radius * SUPPORT;
-  double span = length + 2 * pad;
-  int stamp_count = (int)ceil(length / step), samples = 32;
-  double values[SOURCE_CELLS * 4], total = 0;
-  for (int cell = 0; cell < SOURCE_CELLS; ++cell) {
-    double mass = 0, first = 0, second = 0;
-    for (int j = 0; j < samples; ++j) {
-      double u = (cell + (j + 0.5) / samples) / SOURCE_CELLS, x = -pad + u * span;
-      double energy = head_radius * radial_density((x - length) / head_radius);
-      if (length > 0) {
-        int lo = std::max(0, (int)ceil((x - support) / step));
-        int hi = std::min(stamp_count - 1, (int)floor((x + support) / step));
-        for (int k = lo; k <= hi; ++k) {
-          double position = k * step;
-          energy += position / length * radius * radial_density((x - position) / radius);
-        }
-      }
-      mass += energy, first += energy * u, second += energy * u * u;
+// A stamp's longitudinal extent as a uniform stretch of equal variance, in stamp radii.
+double stamp_half_width() {
+  static double width;
+  if (!width) {
+    const double *radial = radial_marginal();
+    double step = SUPPORT / 64, mass = 0, second = 0;
+    for (int i = 0; i < 65; ++i) {
+      double weight = radial[i] * (i == 0 || i == 64 ? 0.5 : 1.0);
+      mass += weight, second += weight * (i * step) * (i * step);
     }
-    double mean = mass ? first / mass : (cell + 0.5) / SOURCE_CELLS;
-    double half_span = mass ? sqrt(fmax(0.0, 3 * (second / mass - mean * mean))) : 0.0;
-    double cell_values[4] = {mass, -pad + mean * span - length * 0.5, half_span * span, 0};
-    memcpy(values + cell * 4, cell_values, sizeof cell_values);
-    total += mass;
+    width = sqrt(3 * second / mass);
   }
-  for (int i = 0; i < SOURCE_CELLS * 4; ++i)
-    out[i] = (float)(i % 4 == 0 ? values[i] / total : values[i]);
+  return width;
 }
 
-// beam_cells: unselected lamps stay dark, as do reflection-only sources.
-void beam_cells(const Light &light, float illumination, float *out) {
-  memset(out, 0, SOURCE_CELLS * 4 * sizeof(float));
+// beam_shape: the head's share of the beam's energy (each stamp holds its radius
+// squared times the same projected mass; the ramp's stamps weigh their position
+// over the length), the head's half-width, Ion, and the support's half-extent:
+// the half length plus the head's halo. Zero for unselected lamps and
+// reflection-only sources.
+void beam_shape(const Light &light, float illumination, float *out) {
+  memset(out, 0, 4 * sizeof(float));
   if (!light.beam_radius || illumination <= 0)
     return;
-  source_cells(light.length, light.beam_radius, light.beam_step, light.beam_head, out);
-  for (int i = 0; i < SOURCE_CELLS * 4; ++i)
-    if (i % 4 == 3)
-      out[i] = light.beam_ion;
+  double length = light.length, radius = light.beam_radius, head_radius = radius * light.beam_head;
+  int stamps = length > 0 ? (int)ceil(length / light.beam_step) : 0;
+  double ramp = stamps > 1 ? radius * radius * light.beam_step * stamps * (stamps - 1) / (2 * length) : 0;
+  out[0] = (float)(head_radius * head_radius / (head_radius * head_radius + ramp));
+  out[1] = (float)(stamp_half_width() * head_radius);
+  out[2] = light.beam_ion;
+  out[3] = (float)(length * 0.5 + head_radius * SUPPORT);
 }
 
 } // namespace
 
-// --- Creature shadows (render/rtx/reflection_occlusion.py) --------------------------
+// --- Body shadows (render/rtx/reflection_occlusion.py) ------------------------------
 // One rotated, size-scaled ellipsoid per standard creature, fitted to its body's
 // central mass (local x right, y down, as fractions of the drawn size: center,
 // planar radii, height), packed into a grid of cells for the shader to walk.
@@ -714,6 +793,36 @@ bool body_of(const creature_t &c, Body &body) {
   return true;
 }
 
+// A living player's torso: one ellipsoid facing its aim (half depth, half shoulder width, height, in units of its size).
+const float PLAYER_BODY[3] = {0.125f, 0.22f, 0.46f};
+// A bonus shell: the 32-unit dome bonus.frag draws, and its height.
+const float BONUS_SHELL_RADIUS = 16 * 0.885f, BONUS_SHELL_HEIGHT = 10;
+
+bool body_of(const player_state_t &player, Body &body) {
+  if (player.health <= 0)
+    return false;
+  body = {player.pos_x, player.pos_y, PLAYER_BODY[0] * player.size, PLAYER_BODY[1] * player.size,
+          PLAYER_BODY[2] * player.size, player.aim_heading - HALF_PI, 1, player.pos_x, player.pos_y};
+  return true;
+}
+
+// The shell's fade as bonus_render draws it (blinking out over its last two seconds).
+bool body_of(const bonus_entry_t &bonus, Body &body) {
+  if (bonus.bonus_id == BONUS_ID_NONE)
+    return false;
+  float fade = 1, age = bonus.time.time_max - bonus.time.time_left;
+  if (bonus.time.time_left < 2)
+    fade = bonus.time.time_left * (sinf(bonus.time.time_left * 18.849556f) > 0 ? 0.25f : 0.5f);
+  if (age < 0.5f)
+    fade = age + age;
+  float opacity = fminf(1, fmaxf(0, fade)) * 0.9f;
+  if (opacity <= 0)
+    return false;
+  body = {bonus.time.pos_x, bonus.time.pos_y, BONUS_SHELL_RADIUS, BONUS_SHELL_RADIUS, BONUS_SHELL_HEIGHT, 0, opacity,
+          bonus.time.pos_x, bonus.time.pos_y};
+  return true;
+}
+
 std::vector<float> grid_values;
 } // namespace
 
@@ -721,8 +830,8 @@ std::vector<float> grid_values;
 // them): every body near a source's support, no nearest-N cap. `grid` gets the
 // origin, columns (0 for no bodies), rows and cell size; the values are cell
 // headers, body transforms and cell lists, four floats per texel. A header
-// holds the ordinary list, then the beam sections' list, padded by the largest
-// section half-span and its taps' reach (not the point lights' penumbra margin)
+// holds the ordinary list, then the beams' list, padded by the largest beam
+// support half-extent and its taps' reach (not the point lights' penumbra margin)
 // near beam sources only (build_occlusion_grid).
 // A cell where more than CROWD_BODIES bodies stand is a crowd: both headers hold
 // the footprint-weighted top height of what stands there, then minus the
@@ -730,11 +839,14 @@ std::vector<float> grid_values;
 // among the cells it overlaps by area. A body centered in a crowd is listed only
 // where it stands, without its padding, and only outside crowd cells.
 extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count) {
-  Body bodies[385];
+  Body bodies[std::size(creature_pool) + 2 + std::size(bonus_pool)];
   int body_total = 0;
   for (const creature_t &c : creature_pool)
-    if (body_total < 385 && body_of(c, bodies[body_total]))
-      ++body_total;
+    body_total += body_of(c, bodies[body_total]);
+  for (int i = 0; i < config_blob.player_count && i < 2; ++i)
+    body_total += body_of(player_state_table[i], bodies[body_total]);
+  for (const bonus_entry_t &bonus : bonus_pool)
+    body_total += body_of(bonus, bodies[body_total]);
   grid[0] = grid[1] = grid[2] = grid[3] = 0;
   grid[4] = 64;
   *value_count = 0;
@@ -747,11 +859,11 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   } supports[32];
   int support_count = 0;
   for (int i = 0; i < count; ++i) {
-    // A beam's sections lengthen its support (prepare_beam_lights).
+    // A beam's head halo lengthens its support (prepare_beam_lights).
     float l[16];
     memcpy(l, lights + i * RTX_LIGHT_FLOATS, sizeof l);
     const float *cells = lights + i * RTX_LIGHT_FLOATS + 20;
-    if (cells[0] > 0) {
+    if (cells[3] > 0) {
       if (l[8] * l[8] + l[9] * l[9] <= 0.0001f)
         l[8] = 1, l[9] = 0;
       l[11] += 2 * lights[i * RTX_LIGHT_FLOATS + 18];
@@ -761,9 +873,9 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
       continue;
     // A body shadow's penumbra follows sources up to PENUMBRA_WIDTH wide (reflection_occlusion.py).
     padding = fminf(PENUMBRA_WIDTH, fmaxf(padding, fmaxf(0.1f, l[15])));
-    bool beam = cells[0] > 0 && shadows && illumination > 0;
+    bool beam = cells[3] > 0 && shadows && illumination > 0;
     if (beam) {
-      beam_margin = fmaxf(beam_margin, fmaxf(cells[2], fmaxf(cells[6], cells[10])));
+      beam_margin = fmaxf(beam_margin, cells[3]);
       beam_width = fmaxf(beam_width, l[15]);
     }
     float ax = l[8], ay = l[9];
@@ -859,7 +971,7 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
           }
     };
     cover(rx, ry, active, cells, false);
-    // A section's rays fan out from the walked center ray by at most its half-span,
+    // A beam's rays fan out from the walked center ray by at most its half-extent,
     // and its two transverse taps by a fraction of its width; it never uses the
     // point lights' penumbra margin (build_occlusion_grid).
     float beam_pad = member ? 0 : beam_margin + 0.57735027f * beam_width;
@@ -893,14 +1005,14 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   return grid_values.data();
 }
 
-// A beam section's ground gain: ion beams', then Fire Bullets' (render/rtx/continuous_beam.py).
+// A beam's ground gain: ion beams', then Fire Bullets' (render/rtx/continuous_beam.py).
 extern "C" const float rtx_beam_gain[2] = {4.0f, 3.0f};
 
 // The frame's lights for the view, RTX_LIGHT_FLOATS each: position, radius,
 // height; linear RGB, ring radius; direction, 0, length; illumination and
 // reflection gains, reflection reach, source width; reflection tail, broad
-// illumination, a beam's padding past its ends, its smoke gain; its three
-// energy sections.
+// illumination, a beam's padding past its ends, its smoke gain; its energy
+// shape (beam_shape).
 // At most `capacity`.
 extern "C" int rtx_collect_lights(float *out, int capacity) {
   source_count = 0;
@@ -917,6 +1029,7 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   for (int slot = 0; slot < (int)std::size(projectile_pool); ++slot)
     if (projectile_pool[slot].active)
       projectile_source(projectile_pool[slot], source_ident(IDENT_SHOT, number(slot)));
+  selection.advance((float)run_elapsed_ms);
   merge_volleys(shots);
   for (int slot = 0; slot < (int)std::size(projectile_pool); ++slot)
     if (projectile_pool[slot].active)
@@ -932,7 +1045,6 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   static float scores[2][MAX_SOURCES], weights[2][MAX_SOURCES];
   static bool chosen[2][MAX_SOURCES];
   memset(chosen, 0, sizeof chosen);
-  selection.advance((float)run_elapsed_ms);
   for (int reflection = 0; reflection < 2; ++reflection) {
     for (int i = 0; i < source_count; ++i)
       scores[reflection][i] = score(sources[i], reflection, view_x, view_y);
@@ -962,7 +1074,7 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
                             illumination, l.reflection * weights[1][i], l.reflection_reach(), l.width,
                             l.tail, (float)l.broad, (float)(l.beam_radius * l.beam_head * SUPPORT), l.smoke_gain};
     memcpy(packed, head, sizeof head);
-    beam_cells(l, illumination, packed + 20);
+    beam_shape(l, illumination, packed + 20);
   }
   return count;
 }

@@ -11,6 +11,7 @@ extern ui_element_t ui_element_slot_30; // the game over screen's panel
 extern int ui_text_reaper_texture, ui_text_well_done_texture;
 bool ui_button_update(float *xy, ui_button_t *button);
 void ui_cursor_render(void);
+bool game_cursor_hidden(); // a scripted run's cursor, until its script moves it (game/frame.cpp)
 void ui_element_render(ui_element_t *element);
 void ui_draw_textured_quad(int x, int y, int width, int height, int texture_id);
 void ui_text_input_render(float *xy, highscore_record_t *record, float alpha, int rank);
@@ -143,8 +144,9 @@ static void viewer_update(float dt) {
     viewer.idle += dt;
   viewer.last_x = x;
   viewer.last_y = y;
+  // A scripted run's mouse never moves (game_hide_cursor): its bar stays up, so whoever watches sees where it is.
   bool want = watch.paused || watch.phase != WATCH_PLAYING || viewer.idle < VIEWER_IDLE_SECONDS || viewer.dragging ||
-              y > viewer_h() - VIEWER_BAR_H - 16;
+              y > viewer_h() - VIEWER_BAR_H - 16 || game_cursor_hidden();
   viewer.shown = fminf(1.0f, fmaxf(0.0f, viewer.shown + (want ? dt : -dt) * 6.0f));
   bool on_bar = viewer.shown > 0.5f && y >= viewer_bar_y();
   if (pressed && viewer.shown > 0.5f && viewer_over_scrub(x, y))

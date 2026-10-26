@@ -165,6 +165,7 @@ Program creature_lit{&WGSL_CREATURE_VERT, &WGSL_CREATURE_FRAG, DEVICE_VERTICES};
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
 Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
 Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_FRAG, DEVICE_VERTICES};
+Program ground_beam_vis{&WGSL_CREATURE_VERT, &WGSL_GROUND_BEAM_VIS_FRAG, DEVICE_VERTICES};
 Program ground_stamp{&WGSL_CREATURE_VERT, &WGSL_GROUND_STAMP_FRAG, DEVICE_VERTICES};
 Program ground_fill{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_STAMP_FRAG, NO_VERTICES};
 Program smoke_solver{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_SOLVER_FRAG, NO_VERTICES};
@@ -196,7 +197,7 @@ int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
 // What the ground takes beyond them, as in renderer.cpp.
 float scene_seconds, ground_size[2], beam_gain[2];
-float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], line_cells[MAX_LIGHTS * 12];
+float ground_dir[MAX_LIGHTS * 4], light_tail[MAX_LIGHTS], beam_shape[MAX_LIGHTS * 4];
 bool beam_lights;
 std::unordered_map<int, u32> texel_addresses;
 struct Thickness {
@@ -492,7 +493,7 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_stamp, &ground_fill,
+                     &ground_lit, &ground_beam_vis, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program}) {
     for (auto &[key, group] : p->groups)
@@ -674,7 +675,7 @@ void wgpu_renderer_init() {
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_stamp, &ground_fill,
+                     &ground_lit, &ground_beam_vis, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program})
     create(*p);
@@ -920,6 +921,12 @@ struct HostVertex {
   float u, v;
 };
 
+// The beams' visibility at a quarter of the ground's resolution (ground.frag's
+// BEAM_VISIBILITY_PASS): four groups of four slots side by side in one atlas,
+// which the ground reads instead of walking the body grid per pixel.
+enum { BEAM_VISIBILITY_SCALE = 4, BEAM_VISIBILITY_SLOTS = 16 };
+Target beam_vis;
+
 // The terrain drawn into the world, lit as the Python port's ground.
 bool ground_draw(const Geometry &geometry) {
   auto it = textures.find(bound[0]);
@@ -927,25 +934,64 @@ bool ground_draw(const Geometry &geometry) {
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
+  // Lit beams take the slots in light order; the rest walk the grid in the ground's own pass.
+  float slots[MAX_LIGHTS] = {};
+  int count = 0;
+  if (beam_lights && dynamic_shadows && occlusion_grid[2])
+    for (int i = 0; i < light_count && count < BEAM_VISIBILITY_SLOTS; ++i)
+      if (beam_shape[i * 4 + 3] > 0)
+        slots[i] = (float)++count;
+  auto uniforms = [&](Program &program, Uniforms &vertex, Uniforms &fragment) {
+    vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
+    fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
+    fragment.i("u_debug_display", 1).i("u_dynamic_shadows", dynamic_shadows);
+    fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
+    fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
+    fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
+    fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
+    fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_beam_shape", beam_shape, light_count * 16);
+    fragment.set("u_beam_slots", slots, (light_count + 3) / 4 * 16);
+    return fragment_group(program, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
+                                    {"u_surface_tex", g.surface.view, linear_clamp()},
+                                    {"u_material_tex", g.coverage.view, linear_clamp()},
+                                    {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()},
+                                    // The passes draw the atlas the ground reads.
+                                    {"u_beam_vis", count && &program == &ground_lit ? beam_vis.view : blank_view,
+                                     linear_clamp()}});
+  };
+  if (count) {
+    int width = std::max(1, t.width / BEAM_VISIBILITY_SCALE), height = std::max(1, t.height / BEAM_VISIBILITY_SCALE);
+    if (beam_vis.width != 4 * width || beam_vis.height != height) {
+      release(beam_vis);
+      beam_vis.width = beam_vis.logical_width = 4 * width;
+      beam_vis.height = beam_vis.logical_height = height;
+      beam_vis.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+      allocate(beam_vis);
+    }
+    WGPUColor white = {1, 1, 1, 1};
+    begin_pass(beam_vis, &white);
+    Output o = device_output(beam_vis, geometry.topology);
+    o.blend = false;
+    o.mask = 0xf;
+    wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_beam_vis, o));
+    for (int group = 0; group * 4 < count; ++group) {
+      Uniforms vertex(*ground_beam_vis.vert), fragment(*ground_beam_vis.frag);
+      WGPUBindGroup textures_group = uniforms(ground_beam_vis, vertex, fragment);
+      fragment.f("u_beam_group", (float)group);
+      wgpuRenderPassEncoderSetViewport(pass, (float)(group * width), 0, (float)width, (float)height, 0, 1);
+      bind(ground_beam_vis, textures_group, &vertex, &fragment);
+      draw_geometry(geometry);
+    }
+    end_pass();
+  }
   pass_into(t);
   Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
-  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
-  fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
-  fragment.i("u_debug_display", 1).i("u_dynamic_shadows", dynamic_shadows);
-  fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
-  fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
-  fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
-  fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
-  fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_line_cells", line_cells, light_count * 48);
+  WGPUBindGroup textures_group = uniforms(ground_lit, vertex, fragment);
+  fragment.v4("u_beam_vis_target", (float)t.width, (float)t.height, (float)(beam_vis.width / 4), (float)beam_vis.height);
   Output o = device_output(t, geometry.topology);
   o.blend = false; // the ground is opaque
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_lit, o));
-  bind(ground_lit,
-       fragment_group(ground_lit, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
-                                   {"u_surface_tex", g.surface.view, linear_clamp()},
-                                   {"u_material_tex", g.coverage.view, linear_clamp()},
-                                   {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()}}),
-       &vertex, &fragment);
+  bind(ground_lit, textures_group, &vertex, &fragment);
   draw_geometry(geometry);
   return true;
 }
@@ -1002,6 +1048,7 @@ bool wgpu_renderer_set_rtx(bool enabled) {
     drop_ground(grounds.begin()->first);
   release_smoke();
   release(heat_trail);
+  release(beam_vis);
   heat_seconds = -1;
   release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
@@ -1046,6 +1093,9 @@ void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {
   }
   copy(from, to);
 }
+// Reading a target back waits on the GPU in WebGPU: a replay keeps no copies on disk there.
+u32 wgpu_w2c_host_texture_read(struct w2c_host *, u32, u32, u32) { return 0; }
+u32 wgpu_w2c_host_texture_write(struct w2c_host *, u32, u32, u32, u32) { return 0; }
 void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
   Target &from = target_or_back((int)source);
   if (!from.texture)
@@ -1322,8 +1372,8 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
     memcpy(ground_dir + i * 4, l + 8, 16);
     ground_dir[i * 4 + 2] = l[17];
     light_tail[i] = l[16];
-    memcpy(line_cells + i * 12, l + 20, 48);
-    beam_lights |= l[20] > 0;
+    memcpy(beam_shape + i * 4, l + 20, 16);
+    beam_lights |= l[23] > 0;
   }
 }
 void wgpu_w2c_host_pressure(struct w2c_host *, u32 fronts, u32 count) {

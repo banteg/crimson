@@ -80,6 +80,16 @@ way it:
 - reaches the end and judges the run: played as recorded, played differently,
   or stopped at a tick the simulation refuses.
 
+For evaluations that play the same replay again and again, the desktop client
+keeps a prepared run on disk (`CRIMSON_WATCH_CACHE=1`,
+[`host/watch_cache.inc`](../../crimson-core/host/watch_cache.inc)): the
+keyframes, bake logs, marks, tunes and judgement, with the terrain copies read
+back from the GPU, in the game folder's `cache/prepared`, named by the client's
+build, the replay and the render mode (RTX bakes the terrain its own way). The
+next run of it skips the pass and plays from the first frame; the oldest files
+go as new ones come. WebGPU reads a target back only by waiting on the GPU, so
+the browser keeps none.
+
 ## Seeking
 
 A seek to a tick restores the nearest keyframe before it, then plays forward,
@@ -168,8 +178,8 @@ Out-of-range or malformed parameters and unavailable runs show a notice. The
 host API exposes `game_watch_moment` (or `game_watch_seek` and
 `game_watch_stop_at` unchecked), `game_watch_link_run` and `game_watch_run`;
 the desktop client also takes `CRIMSON_WATCH`,
-`CRIMSON_WATCH_CARD`, `CRIMSON_WATCH_SEEK` and `CRIMSON_WATCH_STOP` for
-unattended captures.
+`CRIMSON_WATCH_CARD`, `CRIMSON_WATCH_SEEK`, `CRIMSON_WATCH_STOP`,
+`CRIMSON_WATCH_MOMENTS` and `CRIMSON_WATCH_CACHE` for unattended captures.
 
 ## Practice takeover
 

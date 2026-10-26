@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Generator, Iterator, Sequence
+from collections.abc import Callable, Generator, Iterator, Sequence
 from contextlib import contextmanager
 from itertools import groupby
 from typing import TYPE_CHECKING, NamedTuple
@@ -16,7 +16,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 from grim.terrain_render import GroundRenderer
 from grim.terrain_stamps import TerrainLayers
-from grim.texture_mode import texture_mode
+from grim.texture_mode import current_target_scale, current_target_size, texture_mode
 
 from ...creatures.anim import creature_corpse_frame_for_type
 from ...effects_atlas import EffectId
@@ -28,12 +28,25 @@ from .hdr import _HDR_TONEMAP_VS_330
 from .heat_vision import HeatVision
 from .material_history import MaterialHistory
 from .material_lights import MaterialLight, collect_material_lights
-from .material_shaders import GROUND_FRAGMENT, STAMP_FRAGMENT
-from .reflection_occlusion import ReflectionOcclusion, build_occlusion_grid, creature_body_volumes
+from .material_shaders import BEAM_VISIBILITY_FRAGMENT, GROUND_FRAGMENT, STAMP_FRAGMENT
+from .reflection_occlusion import (
+    ReflectionOcclusion,
+    bonus_body_volumes,
+    build_occlusion_grid,
+    creature_body_volumes,
+    player_body_volumes,
+)
 
 if TYPE_CHECKING:
     from ..frame import RenderFrame
 
+
+# Beams whose visibility a pass draws at 1/BEAM_VISIBILITY_SCALE of the ground's resolution (ground.frag's
+# BEAM_VISIBILITY_PASS), which the ground then reads instead of walking the body grid per pixel: four groups of four
+# slots side by side in one atlas. The atlas binds past raylib's batch texture units, which hold the ground's maps.
+BEAM_VISIBILITY_SCALE = 4
+BEAM_VISIBILITY_SLOTS = 16
+BEAM_VISIBILITY_UNIT = 5
 
 _FLOAT_UNIFORM_KINDS = {
     1: rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
@@ -59,6 +72,38 @@ def _integer(shader: rl.Shader, name: str, value: int) -> None:
         rl.ffi.new("int *", value),
         rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
     )
+
+
+def _location(shader: rl.Shader, locations: dict[str, int], name: str) -> int:
+    if name not in locations:
+        locations[name] = int(rl.get_shader_location(shader, name))
+    return locations[name]
+
+
+def _apply_uniforms(shader: rl.Shader, locations: dict[str, int], uniforms: list[tuple[str, list[float], int]]) -> None:
+    """(name, values, components) uniforms; 0 components is one int."""
+    for name, values, components in uniforms:
+        location = _location(shader, locations, name)
+        if components == 0:
+            rl.set_shader_value(shader, location, rl.ffi.new("int *", int(values[0])),
+                                rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+            continue
+        buffer = rl.ffi.new("float[]", values)
+        rl.set_shader_value_v(shader, location, rl.ffi.cast("void *", buffer), _FLOAT_UNIFORM_KINDS[components],
+                              len(values) // components)
+
+
+def _bind_unit(shader: rl.Shader | None, location: int, texture: rl.Texture | None) -> None:
+    """Binds `texture` to BEAM_VISIBILITY_UNIT for `shader`'s sampler at `location`, or unbinds it."""
+    rl.rl_active_texture_slot(BEAM_VISIBILITY_UNIT)
+    if texture is None:
+        rl.rl_disable_texture()
+    else:
+        rl.rl_enable_texture(texture.id)
+        if shader is not None and location >= 0:
+            rl.set_shader_value(shader, location, rl.ffi.new("int *", BEAM_VISIBILITY_UNIT),
+                                rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+    rl.rl_active_texture_slot(0)
 
 
 def _shader(fragment: str) -> rl.Shader:
@@ -111,6 +156,9 @@ class MaterialGroundRenderer(GroundRenderer):
     stamp_locations: dict[str, int] = msgspec.field(default_factory=dict)
 
     material_locations: dict[str, int] = msgspec.field(default_factory=dict)
+    beam_shader: rl.Shader | None = None
+    beam_locations: dict[str, int] = msgspec.field(default_factory=dict)
+    beam_atlas: rl.RenderTexture | None = None
     reflection_occlusion: ReflectionOcclusion = msgspec.field(default_factory=ReflectionOcclusion)
     heat_vision: HeatVision = msgspec.field(default_factory=HeatVision)
 
@@ -130,11 +178,15 @@ class MaterialGroundRenderer(GroundRenderer):
     def close(self) -> None:
         self.reset_materials()
         self.heat_vision.close()
-        for shader in (self.stamp_shader, self.material_shader):
+        for shader in (self.stamp_shader, self.material_shader, self.beam_shader):
             if shader is not None:
                 rl.unload_shader(shader)
-        self.stamp_shader = self.material_shader = None
+        self.stamp_shader = self.material_shader = self.beam_shader = None
         self.material_locations.clear()
+        self.beam_locations.clear()
+        if self.beam_atlas is not None:
+            rl.unload_render_texture(self.beam_atlas)
+            self.beam_atlas = None
         self.material_layers = None
         super().close()
 
@@ -372,33 +424,15 @@ class MaterialGroundRenderer(GroundRenderer):
 
     def _material_location(self, name: str) -> int:
         assert self.material_shader is not None
-        if name not in self.material_locations:
-            self.material_locations[name] = int(rl.get_shader_location(self.material_shader, name))
-        return self.material_locations[name]
-
-    def _material_integer(self, name: str, value: int) -> None:
-        assert self.material_shader is not None
-        rl.set_shader_value(
-            self.material_shader, self._material_location(name), rl.ffi.new("int *", value),
-            rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
-        )
-
-    def _material_uniform(self, name: str, values: list[float]) -> None:
-        self._material_array(name, values, components=len(values))
-
-    def _material_array(self, name: str, values: list[float], *, components: int) -> None:
-        assert self.material_shader is not None
-        buffer = rl.ffi.new("float[]", values)
-        rl.set_shader_value_v(
-            self.material_shader, self._material_location(name), rl.ffi.cast("void *", buffer),
-            _FLOAT_UNIFORM_KINDS[components], len(values) // components,
-        )
+        return _location(self.material_shader, self.material_locations, name)
 
     @contextmanager
     def material_scope(
         self, frame: RenderFrame, *, view_center: Vec2 = Vec2(512, 512), debug: int | None = None,
-        lights: Sequence[MaterialLight] | None = None,
+        lights: Sequence[MaterialLight] | None = None, draw_view: Callable[[], None] | None = None,
     ) -> Generator[None]:
+        """The ground's material program for the frame's lights. `draw_view` draws the ground's view as the caller
+        then does: with it, the beams' visibility comes from passes at a lower resolution (BEAM_VISIBILITY_SCALE)."""
         from grim.assets import TextureId
 
         self.reflection_occlusion.grid = None
@@ -408,47 +442,69 @@ class MaterialGroundRenderer(GroundRenderer):
         self.bake_materials(frame.resources.texture(TextureId.PARTICLES), frame.resources.texture(TextureId.BODYSET))
         assert self.material_shader is not None and self.surface is not None and self.coverage is not None
         sh = self.material_shader
-        self._material_uniform("u_ground_size", [float(self.width), float(self.height)])
-        self._material_uniform("u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
-        self._material_integer("u_debug", int(frame.rtx_debug) if debug is None else debug)
-        self._material_integer("u_debug_display", int(debug is None))
+        uniforms: list[tuple[str, list[float], int]] = []
+
+        def put(name: str, values: list[float], components: int = 0) -> None:
+            uniforms.append((name, values, components or len(values)))
+
+        def put_int(name: str, value: int) -> None:
+            uniforms.append((name, [value], 0))
+
+        put("u_ground_size", [float(self.width), float(self.height)])
+        put("u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
+        put_int("u_debug", int(frame.rtx_debug) if debug is None else debug)
+        put_int("u_debug_display", int(debug is None))
         shadows = frame.config is None or frame.config.display.shadows_enabled
-        self._material_integer("u_dynamic_shadows", int(shadows))
+        put_int("u_dynamic_shadows", int(shadows))
         if lights is None:
             lights = collect_material_lights(frame, view_center=view_center)
-        self._material_integer("u_spec_light_count", len(lights))
+        put_int("u_spec_light_count", len(lights))
         bodies = (
             [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
+            + [body for player in frame.players for body in player_body_volumes(player)]
+            + [body for bonus in frame.state.bonus_pool.entries for body in bonus_body_volumes(bonus)]
             if any(light.reflection_gain > 0 or (shadows and light.illumination_gain > 0) for light in lights) else []
         )
         has_beam_lights = any(
             light.beam_profile is not None and light.illumination_gain > 0 for light in lights
         )
-        self._material_integer("u_has_beam_lights", int(has_beam_lights))
-        grid_lights, beam_margin = lights, 0.
+        put_int("u_has_beam_lights", int(has_beam_lights))
+        grid_lights, beam_margin, shapes = lights, 0., [0.0] * (4 * len(lights))
         if has_beam_lights:
-            cells, grid_lights = prepare_beam_lights(lights)
-            beam_margin = max(cells[2::4])
-            self._material_uniform("u_beam_gain", [ION_DIRECT_GAIN, FIRE_DIRECT_GAIN])
-            self._material_array("u_line_cells[0]", cells, components=4)
+            shapes, grid_lights = prepare_beam_lights(lights)
+            beam_margin = max(shapes[3::4])
+            put("u_beam_gain", [ION_DIRECT_GAIN, FIRE_DIRECT_GAIN])
+            put("u_beam_shape[0]", shapes, 4)
         grid = build_occlusion_grid(
             bodies, grid_lights, width=self.width, height=self.height, illumination=shadows, beam_margin=beam_margin,
         )
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
-        self._material_uniform("u_occlusion_grid", [
+        put("u_occlusion_grid", [
             grid.origin.x, grid.origin.y, float(grid.columns if grid.body_count else 0), float(grid.rows),
         ])
-        self._material_uniform("u_occlusion_cell_size", [grid.cell_size])
-        self._material_array("u_spec_pos[0]", [v for light in lights for v in
-                             (light.pos.x, light.pos.y, light.radius, light.height)], components=4)
-        self._material_array("u_spec_color[0]", [v for light in lights for v in
-                             (*light.rgb, light.ring_radius)], components=4)
+        put("u_occlusion_cell_size", [grid.cell_size])
+        put("u_spec_pos[0]", [v for light in lights for v in (light.pos.x, light.pos.y, light.radius, light.height)], 4)
+        put("u_spec_color[0]", [v for light in lights for v in (*light.rgb, light.ring_radius)], 4)
         tails = [light.reflection_tail for light in lights]
-        self._material_array("u_spec_tail[0]", tails + [0.0] * (-len(tails) % 4), components=4)
-        self._material_array("u_spec_dir[0]", [v for light in lights for v in
-                             (light.direction.x, light.direction.y, float(light.broad_illumination), light.length)],
-                             components=4)
-        self._material_array("u_spec_response[0]", [v for light in lights for v in light.response], components=4)
+        put("u_spec_tail[0]", tails + [0.0] * (-len(tails) % 4), 4)
+        put("u_spec_dir[0]", [v for light in lights for v in
+                              (light.direction.x, light.direction.y, float(light.broad_illumination), light.length)], 4)
+        put("u_spec_response[0]", [v for light in lights for v in light.response], 4)
+        # Lit beams take the slots in light order; the rest walk the grid in the ground's own pass.
+        slots = [0.0] * (len(lights) + -len(lights) % 4)
+        count = 0
+        if draw_view is not None and shadows and grid.body_count:
+            for i in range(len(lights)):
+                if shapes[i * 4 + 3] > 0 and count < BEAM_VISIBILITY_SLOTS:
+                    count += 1
+                    slots[i] = float(count)
+        put("u_beam_slots[0]", slots or [0.0] * 4, 4)
+        atlas = self._beam_visibility(uniforms, draw_view, occlusion_texture, count) if count else None
+        if atlas is not None:
+            render_w, render_h = current_target_size()
+            put("u_beam_vis_target", [float(render_w), float(render_h),
+                                      float(atlas.texture.width // 4), float(atlas.texture.height)])
+        _apply_uniforms(sh, self.material_locations, uniforms)
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,
         # since rlgl flushes (and clears sampler bindings) when changing blend modes.
         with opaque_blend():
@@ -464,6 +520,47 @@ class MaterialGroundRenderer(GroundRenderer):
                     self._material_location("u_substrate_tex"),
                     self.substrate.render_target.texture,
                 )
+                if atlas is not None:
+                    _bind_unit(sh, self._material_location("u_beam_vis"), atlas.texture)
                 yield
             finally:
                 rl.end_shader_mode()
+                if atlas is not None:
+                    _bind_unit(None, -1, None)
+
+    def _beam_visibility(
+        self, uniforms: list[tuple[str, list[float], int]], draw_view: Callable[[], None] | None,
+        occlusion: rl.Texture | None, count: int,
+    ) -> rl.RenderTexture:
+        """The atlas the slots' groups draw into, a quarter of it each, at BEAM_VISIBILITY_SCALE of the target."""
+        assert draw_view is not None
+        if self.beam_shader is None:
+            self.beam_shader = _shader(BEAM_VISIBILITY_FRAGMENT)
+        render_w, render_h = current_target_size()
+        scale_x, scale_y = current_target_scale()
+        width, height = max(1, render_w // BEAM_VISIBILITY_SCALE), max(1, render_h // BEAM_VISIBILITY_SCALE)
+        atlas = self.beam_atlas
+        if atlas is None or int(atlas.texture.width) != 4 * width or int(atlas.texture.height) != height:
+            if atlas is not None:
+                rl.unload_render_texture(atlas)
+            atlas = self.beam_atlas = load_float_render_texture(4 * width, height)
+            rl.set_texture_filter(atlas.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+        shader = self.beam_shader
+        _apply_uniforms(shader, self.beam_locations, uniforms)
+        # The view fills the atlas's projection; each group's viewport squeezes it into its quarter.
+        with texture_mode(atlas, scale_x=scale_x * 4 * width / render_w, scale_y=scale_y * height / render_h), opaque_blend():
+            rl.clear_background(rl.WHITE)
+            for group in range((count + 3) // 4):
+                rl.rl_draw_render_batch_active()
+                rl.rl_viewport(group * width, 0, width, height)
+                rl.begin_shader_mode(shader)
+                try:
+                    if occlusion is not None:
+                        rl.set_shader_value_texture(shader, _location(shader, self.beam_locations, "u_occlusion_tex"),
+                                                    occlusion)
+                    _apply_uniforms(shader, self.beam_locations, [("u_beam_group", [float(group)], 1)])
+                    draw_view()
+                finally:
+                    rl.end_shader_mode()
+            rl.rl_viewport(0, 0, 4 * width, height)
+        return atlas

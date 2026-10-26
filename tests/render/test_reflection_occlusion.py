@@ -5,6 +5,8 @@ import math
 import msgspec
 import pytest
 
+from crimson.bonuses import BonusId
+from crimson.bonuses.pool import BonusEntry
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.render.rtx.material_lights import MaterialLight
@@ -13,9 +15,12 @@ from crimson.render.rtx.reflection_occlusion import (
     CROWD_BODIES,
     PENUMBRA_WIDTH,
     BodyVolume,
+    bonus_body_volumes,
     build_occlusion_grid,
     creature_body_volumes,
+    player_body_volumes,
 )
+from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
 
@@ -185,3 +190,36 @@ def test_killed_visible_caster_collapses_with_native_timer_and_current_geometry(
     for timer in (0., -.1, -5., -10., -11.):
         creature.death_timer = timer
         assert creature_body_volumes(creature) == []
+
+
+def test_player_torso_turns_with_aim_scales_with_size_and_leaves_on_death() -> None:
+    player = PlayerState(index=0, pos=Vec2(300, 400))
+    (body,) = player_body_volumes(player)
+    assert body.pos == body.owner == player.pos
+    assert body.radii.x < body.radii.y  # Shoulders wider than deep.
+    player.aim_heading += math.pi / 2
+    (turned,) = player_body_volumes(player)
+    assert turned.angle == pytest.approx(body.angle + math.pi / 2)
+    player.size *= 2
+    (grown,) = player_body_volumes(player)
+    assert grown.radii == body.radii * 2
+    assert grown.height == pytest.approx(body.height * 2)
+    player.health = 0
+    assert player_body_volumes(player) == []
+
+
+def test_bonus_shell_follows_its_bubble_fade() -> None:
+    bonus = BonusEntry(bonus_id=BonusId.POINTS, time_left=10., time_max=10., pos=Vec2(50, 60))
+    assert bonus_body_volumes(bonus) == []  # Spawning: the shell has not faded in.
+    bonus.time_left = 9.8
+    (rising,) = bonus_body_volumes(bonus)
+    bonus.time_left = 5.
+    (full,) = bonus_body_volumes(bonus)
+    assert 0 < rising.opacity < full.opacity == pytest.approx(.9)
+    assert full.pos == full.owner == bonus.pos
+    bonus.time_left = 1.
+    (expiring,) = bonus_body_volumes(bonus)
+    assert expiring.opacity < full.opacity
+    assert expiring.radii == full.radii
+    bonus.bonus_id = BonusId.UNUSED
+    assert bonus_body_volumes(bonus) == []

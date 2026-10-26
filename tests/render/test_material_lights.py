@@ -228,3 +228,51 @@ def test_annulus_budget_uses_circumference_instead_of_center() -> None:
     assert ring in selected
     centered_lamps = [MaterialLight(ring.pos, 30, (.8, .8, .8)) for _ in range(32)]
     assert ring not in select_material_lights([ring, *centered_lamps], view_center=ring.pos)
+
+
+def test_fire_bullets_stopped_at_the_arena_edge_fly_on_as_drawn_and_lit() -> None:
+    from crimson.projectiles.types import Projectile
+    from crimson.render.beam_profiles import fire_bullets_flown
+    from crimson.render.rtx.material_lights import projectile_source
+
+    # Stopped 92 units past the left edge, 0.1 s into its fade, at 20 steps (7 strides of 3) and speed scale 1.
+    shot = Projectile(active=True, type_id=ProjectileTemplateId.FIRE_BULLETS, life_timer=.3, origin=Vec2(400, 300),
+                      pos=Vec2(-92, 300), projectile_speed=20, speed_scale=1, owner_id=-100)
+    flown = fire_bullets_flown(shot, preserve_bugs=False, barrel_greaser=False)
+    assert flown == pytest.approx(.1 * 21 * 20)
+    assert fire_bullets_flown(shot, preserve_bugs=False, barrel_greaser=True) == pytest.approx(.1 * 42 * 20)
+    assert fire_bullets_flown(shot, preserve_bugs=True, barrel_greaser=False) == 0
+    inside = Projectile(active=True, type_id=ProjectileTemplateId.FIRE_BULLETS, life_timer=.3, origin=Vec2(400, 300),
+                        pos=Vec2(-60, 300), projectile_speed=20, speed_scale=1)
+    ion = Projectile(active=True, type_id=ProjectileTemplateId.ION_RIFLE, life_timer=.3, origin=Vec2(400, 300),
+                     pos=Vec2(-92, 300), projectile_speed=20, speed_scale=1)
+    assert fire_bullets_flown(inside, preserve_bugs=False, barrel_greaser=False) == 0
+    assert fire_bullets_flown(ion, preserve_bugs=False, barrel_greaser=False) == 0
+    stopped, flying = projectile_source(shot), projectile_source(shot, flown=flown)
+    assert stopped is not None and flying is not None
+    assert flying.pos.x == pytest.approx(stopped.pos.x - flown)
+    assert flying.length == stopped.length
+
+
+
+def test_pulse_source_lies_across_the_shot_front_and_widens_with_it() -> None:
+    from crimson.projectiles.types import Projectile
+    from crimson.render.rtx.material_lights import projectile_source
+
+    shot = Projectile(active=True, type_id=ProjectileTemplateId.PULSE_GUN, life_timer=.4, origin=Vec2(100, 100),
+                      pos=Vec2(300, 100))
+    near = projectile_source(shot)
+    shot.pos = Vec2(500, 100)
+    far = projectile_source(shot)
+    assert near is not None and far is not None
+    # Centered on the shot, across its travel, as wide as the sprite grows.
+    assert far.pos == shot.pos
+    assert abs(far.direction.x) < 1e-6 and abs(far.direction.y) == pytest.approx(1)
+    assert far.length > near.length > 0
+    assert far.rgb[1] > far.rgb[2] > far.rgb[0]
+    shot.life_timer = .2
+    impact = projectile_source(shot)
+    assert impact is not None and impact.pos == shot.pos
+    # The white impact sprite lights paler, across its fixed 56-unit width.
+    assert impact.rgb[0] / impact.rgb[1] > far.rgb[0] / far.rgb[1]
+    assert impact.length < far.length

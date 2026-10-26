@@ -164,6 +164,7 @@ def main():
         *([*webgpu, "-DCLIENT_RENDERER_SELECT"] if web else []),
         "-std=c++17",
         f'-DCRIMSON_CLIENT_VERSION="{build_identity["version"]}"',
+        f'-DCRIMSON_CLIENT_FINGERPRINT="{build_identity["fingerprint"]}"',
         *([] if web else [*pkg_config("--cflags"), *curl_flags("--cflags"), "-pthread"]),
     ]
     objects = compile_all(

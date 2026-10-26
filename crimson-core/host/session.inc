@@ -538,6 +538,7 @@ static void live_poll_prompt() {
 
 #include "keyframes.inc"
 #include "watch.inc"
+#include "watch_cache.inc"
 #include "practice.inc"
 #include "coop.inc"
 #include "coop_wire.inc"
@@ -652,6 +653,10 @@ void game_state_set(game_state_id_t state) {
   ranked_release();
   // A co-op session's screens (host/coop_live.inc).
   bool coop = coop_screen_set(state);
+  // The screen a link cut to its run comes, and draws (watch_follow_link).
+  watch.cut = false;
+  if (watch.hiding)
+    grim_render_disabled = watch.hiding = false;
   // A replay plays from the run its Watch starts; any other screen drops it.
   bool watches = watch.armed && state == GAME_STATE_GAMEPLAY && !run_active && live_eligible(watch_players());
   if (watch.armed && !watches)
@@ -659,7 +664,7 @@ void game_state_set(game_state_id_t state) {
   // The player's own run comes before a replay a link asked for; one that waits
   // for a co-op session's end (watch_follow_link) waits through its runs.
   if ((state == GAME_STATE_GAMEPLAY || state == GAME_STATE_TYPO_GAMEPLAY) && !watches && !coop)
-    watch.linked = false;
+    watch.awaited = watch.linked = false;
   // A replay stops for any screen; leaving a run for anything but its own
   // screens (the perk menu, and the pause menu with its options) ends it
   // unfinished.

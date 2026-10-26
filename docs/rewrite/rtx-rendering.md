@@ -255,6 +255,20 @@ nothing drawn differently. Each `gpu` line
 is followed by a `draws` line for the same frame: per pass, texture (or `beam` / `effect<kind>`) and target, the quads
 drawn and the target pixels they cover, as `pass:what:target=quads/pixels`.
 
+The two RTX renderers share their GLSL, but light collection and selection, volley merging, beams and smoke are
+ported twice (`render/rtx/*.py`, `crimson-core/game/rtx_*.cpp`, `crimson-core/client/renderer*.cpp`).
+`golden.py parity --game <game folder> --out <dir>` captures the scenes with the client (`<dir>/client`), draws them
+with the Python port (`<dir>/python`, also `golden.py python`) and compares the two: a sheet per scene and mode
+(client, Python, difference), the full-size difference map and `summary.json`. The Python side plays undrawn to the
+client's seek, then draws every tick up to the scene's, as the client does, in the client's 1024x768 window at the
+display's density, tonemapped for SDR. Each frame's HUD and aim overlays (where the Python frame differs from its
+world alone) and the client's replay bar are reported apart from the world. The client frame is aligned to the
+Python one to the pixel first (the shift is reported, with the unaligned difference): a renderer placing everything
+a pixel off differs at every edge. Classic shows how far the two draw apart outside RTX (filtering, terrain decals),
+so the RTX difference beyond the classic one is what to look into. `--window n` lets the Python frame up to `n`
+ticks either side stand in, and `--views` saves `rtxdebug` views of the Python frame (the client has none) to
+narrow a difference down to a pass.
+
 ### Analytic glow effects
 
 `render/rtx/effects.py` and the client's `host_effect` draw the same `effect.frag`:
@@ -264,6 +278,9 @@ drawn and the target pixels they cover, as `pass:what:target=quads/pixels`.
 - Ion impact arcs combine two constant-width soft capsules and the target glow, retaining the original-bug setting's cut ends.
   Each corner carries the arc's length, so consecutive arcs batch like the radial sprites.
 - The expanding ring (effect 1) uses a broad inward radial polynomial and a compact outer rim, including elliptical and rotated draws.
+- The Pulse Gun's shot (`projs` cell 0 of 2x2) is a dome: a circular front edge and a body fading behind it, thinning toward
+  its straight sides and cut square at the back. It draws at the sprite's size, tint and white impact, a little brighter, with
+  an HDR glow along the middle of its front edge that dims instead of swelling at sub-pixel sizes.
 
 The profiles are fitted to the original atlas cells in `effect_profiles.glsl`. Their byte-alpha cutoff keeps faint layers from
 reappearing during fades. Fireball, smoke, blood, shard and casing artwork retains its existing drawing, as does Classic mode.
@@ -335,9 +352,8 @@ companions of the terrain target and draws each marked decal into them as it
 lands: the substrate (everything but blood), the ordered coverage, and the float
 surface's three stamp passes. It draws the terrain into the world with the ground
 program (`HOST_PASS_GROUND`). The lights carry what the ground adds: the
-reflection tail, broad illumination, and a beam's three energy sections, computed
-by the module as `continuous_beam.py` does (their widened supports also size the
-body grid). The companions start from the terrain as it stands the first time
+reflection tail, broad illumination, and a beam's energy shape, computed by the
+module as `continuous_beam.py` does (its support also sizes the body grid). The companions start from the terrain as it stands the first time
 RTX needs them. A clear, a replay's terrain copy, or leaving RTX drops them.
 Blood baked before then (in classic, or before the terrain copy a seek starts
 from) stays in the substrate as painted terrain, without its wet film. A seek
@@ -422,7 +438,8 @@ Python RTX players receive the shared bounded weapon emitters through a separate
 opaque cloth shader. The treatment combines stronger diffuse dome lighting,
 painted texture relief, and a directional inner rim. It preserves the original
 single-player and co-op tints and keeps a full ambient floor. There is no player
-specular, transmission, material mask, or additional player shadow/occlusion pass.
+specular, transmission or material mask; a player casts a body shadow (see Ground
+reflection occlusion) but receives none.
 The dome coefficient is 2.2, rim coefficient 0.8, relief strength 0.65, and the
 combined added linear radiance is limited without changing hue at a scale of 1.4.
 A small albedo lift and broad facing floor make the response readable on the
@@ -548,7 +565,7 @@ the simulation:
 | Ion / Fire Bullets | Strong tapered segments, preserving the reference rifle/fire treatment |
 | Plasma | Warm atlas colors, distinct core widths and speed-scaled short tails; compact warm impact glow |
 | Spider Plasma / Shrinkifier | Flight tint changes to the untinted warm impact artwork |
-| Pulse | Restrained green source, followed by the warm impact sprite |
+| Pulse | Green segment across the shot's front edge, its width following the sprite's; pale green across the white impact |
 | Rockets | Localized exhaust sources, scaled by rocket type and respecting the glow setting |
 | Detonations | Expanding reflection footprint and fading warm radiance |
 | Flamers | Particles grouped into 64-unit spatial cells, with bounded accumulated radiance |
@@ -568,12 +585,19 @@ at most 32 entries; an entry selected for only one response has the other gain
 zeroed. Shared sources are not counted twice, and reflection-only tracers do not
 consume illumination slots.
 
-A shotgun's pellets or a burst leave the muzzle together, so shots of one kind whose
-heads and tails both lie within 28 units are one source: their radiance adds, the
-merged segment runs between their brightness-weighted heads and tails, and it keeps
-one shot's width. The width is never widened by the volley's spread, because every
-body's shadow margin follows the widest source. A volley that fans out splits into
-separate sources without changing its total light.
+One trigger pull's pellets (a shotgun's, or Fire Bullets' converted ones) leave the
+muzzle together, so shots that share a kind, an owner, a spawn point and the tick
+they were born are one volley, and its pellets whose heads lie within 28 units of the lead's are one source:
+their radiance adds, the merged segment runs between their brightness-weighted heads
+and tails, and it keeps one shot's width. The width is never widened by the volley's
+spread, because every body's shadow margin follows the widest source. Unrelated shots
+never merge, however close they pass: spider plasma from different spiders, or one
+gun's separate trigger pulls. A pellet that strays leaves its volley for good and hands
+its light over across the same 6 ticks as the budget fades: the volley keeps a fading
+share of it where it was, while the pellet's own light comes up from the volley's place
+in the budgets. A volley that fans out keeps its total light, and nothing flips back
+and forth. Merging matters for cost: with it off, Fire Bullets crowds took up to twice
+as long on the ground.
 
 Every source has an ident that names it from frame to frame (its kind and slot; an
 explosion's spawn position, since the effect list reorders). Each response fades a
@@ -615,9 +639,11 @@ their illumination gain is zero.
 The five standard creature species use one rotated, size-scaled ellipsoid each, fitted
 to the combined planar bounds of their former two body parts and retaining the
 maximum part height. The single convex mass avoids forked body silhouettes while
-preserving elongated shapes. Legs, arms, tails and players are absent; dying
+preserving elongated shapes. Legs, arms and tails are absent; dying
 bodies retain the collapse and fade described below. Their opacity follows the
-creature tint. The volumes extend
+creature tint. A living player is one torso ellipsoid facing its aim, wider across
+the shoulders than deep (`PLAYER_BODY`). A bonus shell is the dome `bonus.frag`
+draws, with the shell's own fade-in and expiry blink as its opacity. The volumes extend
 slightly below the ground plane so their bases meet the surface, rather than
 balancing a full ellipsoid on a single point. These are stable body approximations,
 not frame-by-frame silhouettes or anatomical geometry.
@@ -713,7 +739,8 @@ The existing shadows setting disables the new direct-light and creature visibili
 along with native contact shadows. Ground reflection visibility stays active,
 preserving its independent policy. A blocked emitter does not subtract ambient or
 other emitters' light. Bonuses still receive their existing analytical lighting
-without these cast shadows; players and overlays remain on their original paths.
+without these cast shadows; players and overlays remain on their original paths
+(both cast body shadows, neither receives them).
 No flashlight, diffuse corpse occluders, individual legs, smoke or new normal maps
 are introduced.
 
@@ -909,8 +936,8 @@ movement, damage, corpse timing, RNG or Classic rendering.
 
 ## Extended beam illumination
 
-Python RTX uses a three-section approximation for Ion Rifle, Ion Minigun, Ion
-Cannon and Fire Bullets ground lighting by default. Ion direct illumination uses
+Python RTX lights the ground from Ion Rifle, Ion Minigun, Ion Cannon and Fire
+Bullets streaks as one extended source each. Ion direct illumination uses
 a 4x gain and a maximum 25% local ambient reduction; Fire uses a 3x ground
 gain and a maximum 15% local ambient reduction. These are presentation settings:
 simulation and classic rendering are
@@ -920,43 +947,54 @@ unaffected. No separate beam console command or replay flag is required:
 uv run crimson replay play 18-survival.crd --rtx
 ```
 
-### Three energy-weighted sections
+### One extended source
 
 The source follows the authored beam's stamp spacing, scale, brighter head and
-current length. A small radial lookup projects the narrow emitting core onto
-its longitudinal axis. Three cells sample this profile and retain their energy
-and centroid. Their weights sum to the existing light budget; the visible beam
-art is unchanged. Ion Rifle and Minigun source sizes share the same scale table
-as the projectile renderer.
+current length. Its stamps weigh their position over the length, so along the
+beam they form a ramp from the tail to the head; the head adds its own brighter
+stamp, a uniform stretch of the stamp's equivalent half-width around the head
+end. Each stamp holds its radius squared times the same projected mass, which
+sets the head's share of the energy (`beam_shape`): all of a shot just fired,
+less as its trail grows. The weights sum to the existing light budget; the
+visible beam art is unchanged.
 
-Each section casts through the existing rounded creature proxies and spatial
-grid. For each body, a ray/ellipsoid discriminant becomes a quadratic in the
-longitudinal source position. Clipping its blocked roots to the section interval
-integrates the emitting segment analytically. A body blocks only between the
-receiver and the light, so one taller than the emitter does not shadow from
-beyond it. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
-half-width average the remaining emitter dimension. Umbra and penumbra therefore
-change with the body's direction around the projectile instead of using three
-point or disc lights.
+The falloff, (1 - d/R)^2 of the planar distance, integrates in closed form
+against a linear density: with the receiver's foot on the axis and its distance
+b from it, the primitives of 1, u and u^2 times the falloff need only square
+roots and asinh. The ground takes the energy and its centroid from the ramp and
+the head pieces; Lambert, relief and the blood's transmittance are evaluated
+toward that centroid. Against the energy of every authored stamp, summed, this
+stays within a few percent (up to 8% for a short Ion Cannon shot, whose head is
+wide), where the three sections it replaced were up to a quarter off for long
+beams.
 
-Section half-lengths retain their full profile extent rather than the old
-four-unit cap, and the same analytic approximation is used at every body
-height. Overlapping proxies retain the existing minimum-visibility semantics,
-and dying bodies retain their shared collapse/fade behavior.
+One visibility walk covers the stretch of the beam that lights the receiver
+(the beam clipped to the falloff's reach). For each body, a ray/ellipsoid
+discriminant becomes a quadratic in the longitudinal source position; its
+roots are the source positions the body hides, clipped where the chord lies
+past the light, so a body taller than the emitter does not shadow from beyond
+it. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
+half-width average the remaining emitter dimension. The stretch keeps its
+eighths apart: each body lowers only the eighths its intervals cover, so bodies
+hiding different parts of the beam add up instead of passing what each leaves
+open, and each eighth weighs the energy it delivers to the receiver. A light in
+or against a body is spared over the last half radius before it, as the point
+lights' fade, taken at the fade's two quarter points; a crowd cell's medium
+dims every eighth. Overlapping proxies within an eighth retain the
+minimum-visibility semantics, and dying bodies retain their shared
+collapse/fade behavior.
 
-Preparation uploads one small uniform array and reuses the occlusion texture.
-Each cell near a beam source also holds a beam list, its bodies padded by the
-largest section half-span in world units plus the reach of the two transverse
-taps (0.577 of the widest beam's width). The point lights' penumbra margin, which
-the frame's widest source sets, never pads them: a section's coverage does not use
-it. Point lights, reflections and creature
-shadows keep their narrow lists. A section walks the beam lists along its center
-ray, rejects bodies outside its ray fan (the triangle from the receiver to both
-section ends), and tests each body only in the first walked cell that lists it.
-Conservative grid-only source copies add the endpoint halo. They never replace
-the original light uniforms used by reflections or creature lighting. A bounded 128-entry profile cache handles
-repeated shapes; a cache miss samples only nearby stamps. There is no per-beam
-candidate texture or interval sort.
+Preparation uploads one `vec4` per light (`u_beam_shape`) and reuses the
+occlusion texture. Each cell near a beam source also holds a beam list, its
+bodies padded by the largest beam support (half its length plus the head's
+halo) plus the reach of the two transverse taps (0.577 of the widest beam's
+width). The point lights' penumbra margin, which the frame's widest source sets,
+never pads them. Point lights, reflections and creature shadows keep their
+narrow lists. A beam walks the beam lists along its center ray, rejects bodies
+outside its ray fan (the triangle from the receiver to both ends of the
+stretch), and tests each body only in the first walked cell that lists it.
+Conservative grid-only source copies add the head halo. They never replace the
+original light uniforms used by reflections or creature lighting.
 
 Beams only add light. They used to dim the ambient within 300 units of the beam (up to 25% for ion, 15% for Fire
 Bullets), regardless of visibility. Past the beam's lighting radius that left a ring darker than plain ground. The
@@ -965,18 +1003,25 @@ give the contrast. Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambi
 
 ### Cost and visual limits
 
-Three sections were selected over one and five using native moving-beam renders.
-One remains visibly closer to a point source; five costs more without a useful
-improvement in the inspected scene. The ground shader includes this path; frames
-without eligible beam sources skip preparation and ignore stale section uniforms.
+Visibility, not shading, is the beam's cost: in late frames with ten beams over
+two hundred bodies, the walks were nine tenths of the ground pass. One walk across
+the lit stretch replaced three section walks, but a wider fan and a longer padded
+list made it no cheaper at the ground's own resolution. Beam shadows are soft,
+though, so their visibility is drawn at a quarter of the ground's resolution in
+each direction instead: before the ground, a pass per group of four beams
+(`ground.frag`'s `BEAM_VISIBILITY_PASS`) walks for each of its beams where that
+beam lights the ground, into one channel of a texel in its quarter of an atlas,
+and the ground reads it back filtered (`beamVisibilityRead`). Up to sixteen lit
+beams take a slot in light order; any others still walk in the ground's own pass.
+The golden scenes draw the same at this resolution (99% of pixels within a level
+of the per-pixel walk), and late-game ground passes cost about a fifth of what
+they did.
+The Python port draws the passes when `material_scope` is given the view to draw,
+and binds the atlas past raylib's batch texture units.
 
-Three visibility queries per beam are still more expensive than the previous
-centroid, with two analytic chord evaluations per candidate body and section.
-Dense scenes with many simultaneous beams remain costly. Two transverse taps do
-not reproduce a dense sampled reference exactly, but avoid the old separate
-shadow lobes at substantially lower cost. A section's fan is as wide as the
-section, so its walk fetches more list entries than a point light's; that
-traversal, rather than the chord evaluation, dominates its cost.
+Two transverse taps do not reproduce a dense sampled reference exactly, but avoid
+separate shadow lobes; eighths are coarse for a long beam, so two bodies inside the
+same eighth still combine by their minimum.
 
 ### Ion impact arcs
 

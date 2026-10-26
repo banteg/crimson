@@ -25,6 +25,15 @@ def current_target_size() -> tuple[int, int]:
     return int(rl.get_render_width()), int(rl.get_render_height())
 
 
+def current_target_scale() -> tuple[float, float]:
+    """Target pixels per logical unit in the current target."""
+    if _stack:
+        return _stack[-1][1], _stack[-1][2]
+    # The window: raylib scales logical coordinates into a HiDPI framebuffer itself.
+    dpi = rl.get_window_scale_dpi()
+    return float(dpi.x), float(dpi.y)
+
+
 def current_target_edr_headroom() -> float:
     # Every enclosing compositing pass must preserve extended values.
     if any(int(target.texture.format) != int(HDR_PIXEL_FORMAT) for target, _, _ in _stack):

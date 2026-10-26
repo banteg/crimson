@@ -24,6 +24,8 @@
 #include <sys/stat.h>
 extern "C" {
 extern unsigned char run_active, screen_fade_ramp_flag, startup_skip_requested;
+extern unsigned char startup_async_load_ready, startup_loading_fade_complete;
+extern float startup_splash_timer;
 extern ui_element_t ui_sign_crimson;
 void music_fade_out_all(int sfx_id);
 void music_play_exclusive(int sfx_id);
@@ -70,7 +72,10 @@ struct WatchCard {
 };
 
 static struct {
+  bool awaited;        // a host opened with a link to a run it is still fetching (game_watch_awaited)
   bool linked;         // a host asked for `link` (game_watch): it plays once the screen settles
+  bool cut;            // a link cut to its run: the screen draws nothing until the next comes
+  bool hiding;         // the screens a link cuts short draw nothing (watch_follow_link)
   LoadedReplay link;
   WatchCard link_card;
   std::string link_id;
@@ -502,8 +507,8 @@ static void watch_seek(int target) {
   }
 }
 
-// A frame's share of the preparing pass; at the run's end, playback starts.
-static void watch_prepare() {
+// A frame's share of the preparing pass; true at the run's end.
+static bool watch_pass() {
   grim_render_disabled = 1;
   // The pass bakes the terrain as it goes, for the copies it keeps.
   terrain.baking = true;
@@ -524,10 +529,21 @@ static void watch_prepare() {
   }
   grim_render_disabled = 0;
   terrain.baking = false;
-  if (!done)
-    return;
-  if (watch.stopped.empty() && watch.at >= watch.replay.recording.size())
-    watch_judge("");
+  return done;
+}
+
+// The preparing pass, or one kept on disk (host/watch_cache.inc); at the run's
+// end, playback starts.
+static bool watch_cache_load();
+static void watch_cache_save();
+static void watch_prepare() {
+  if (watch.tick || !watch_cache_load()) {
+    if (!watch_pass())
+      return;
+    if (watch.stopped.empty() && watch.at >= watch.replay.recording.size())
+      watch_judge("");
+    watch_cache_save();
+  }
   terrain.logging = false;
   watch.phase = WATCH_PLAYING;
   // A run that stopped short never reaches a stop past its end.
@@ -560,13 +576,39 @@ static bool watch_on_menu() {
 // A link skips the intro, as a click does (game_startup_init), and starts as
 // the menu comes in after it, cutting straight to the replay; one that comes
 // while co-op is open (a session, or a room waiting for one) waits for its end.
+// While the host fetches its run, the startup stays on its loading screen;
+// past it, the menu that a link cuts short draws nothing, so the window keeps
+// the startup's last, black frame until the replay draws. While one waits, the
+// tunes the skipped intro and the menu would start hold (watch_holds_tune): the
+// replay is the first thing heard. A link that comes to nothing leaves the
+// menu its tune after all.
 static bool custom_quest_linked;
+static int watch_held_tune = -1;
+static bool watch_holds_tune(int sfx_id) {
+  if (!watch.awaited && !watch.linked && !custom_quest_linked)
+    return false;
+  watch_held_tune = sfx_id;
+  return true;
+}
 static void watch_follow_link() {
-  if (!watch.linked && !custom_quest_linked)
+  bool hides = startup_loading_fade_complete && (watch.cut || ((watch.linked || custom_quest_linked) && !coop_open()));
+  if (hides || watch.hiding)
+    grim_render_disabled = hides;
+  watch.hiding = hides;
+  if (!watch.awaited && !watch.linked && !custom_quest_linked) {
+    if (watch_held_tune >= 0 && watch_on_menu())
+      music_play_exclusive(watch_held_tune);
+    watch_held_tune = -1;
     return;
+  }
   startup_skip_requested = 1;
-  if (!game_live && !run_active && !watch.armed && !coop_open() && watch_on_menu() && ui_transition_direction &&
-      ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
+  // The loading screen fades out from half a second (game_startup_init).
+  if (watch.awaited && startup_async_load_ready && !startup_loading_fade_complete)
+    startup_splash_timer = std::max(startup_splash_timer, 0.5f);
+  if (!watch.awaited && !game_live && !run_active && !watch.armed && !coop_open() && watch_on_menu() &&
+      ui_transition_direction && ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
+    watch_held_tune = -1;
+    watch.cut = true;
     if (watch.linked) {
       watch.linked = false;
       watch_start(watch.link, watch.link_card, watch.link_id);
@@ -593,9 +635,9 @@ static void watch_follow_link() {
       screen_fade_ramp_flag = 1;
     }
     ui_elements_timeline = 0;
-    // The intro's tune and the menu's theme, which the skipped intro faded out
-    // and started, stop at once: the link cut both, and their fades would play
-    // over the preparing pass.
+    // The intro's tune and the menu's theme, which a link that came after them
+    // finds playing, stop at once: the link cut both, and their fades would
+    // play over the preparing pass.
     for (int track : {music_track_intro_id, music_track_crimson_theme_id}) {
       music_track_volume[track] = 0;
       sfx_entry_stop(&music_entry_table[track]);
@@ -713,20 +755,21 @@ static constexpr int WATCH_ONLINE_KEPT = 32;
 static void watch_online_path(const std::string &run, char *path, size_t size) {
   snprintf(path, size, "replays/online/%s.crd", run.c_str());
 }
-// Makes room for one more download: the oldest past the newest few go.
-static void watch_online_prune() {
+// Makes room in `directory` for one more file named with `suffix`: the oldest
+// past the newest `kept` go.
+static void prune_oldest(const char *directory, const char *suffix, size_t kept) {
   std::vector<std::pair<time_t, std::string>> files;
-  if (DIR *dir = opendir("replays/online")) {
+  if (DIR *dir = opendir(directory)) {
     while (dirent *entry = readdir(dir)) {
-      std::string path = std::string("replays/online/") + entry->d_name;
+      std::string path = std::string(directory) + "/" + entry->d_name;
       struct stat st;
-      if (strstr(entry->d_name, ".crd") && !stat(path.c_str(), &st))
+      if (strstr(entry->d_name, suffix) && !stat(path.c_str(), &st))
         files.emplace_back(st.st_mtime, path);
     }
     closedir(dir);
   }
   std::sort(files.begin(), files.end());
-  for (size_t i = 0; i + WATCH_ONLINE_KEPT <= files.size(); ++i)
+  for (size_t i = 0; i + kept <= files.size(); ++i)
     unlink(files[i].second.c_str());
 }
 // The card's note for a board run whose replay is not here yet: asks the host
@@ -744,7 +787,7 @@ static const char *watch_online_note(const std::string &run) {
   if (watch_download.empty()) {
     mkdir("replays", 0755);
     mkdir("replays/online", 0755);
-    watch_online_prune();
+    prune_oldest("replays/online", ".crd", WATCH_ONLINE_KEPT);
     watch_download = run;
     watch_downloads[run] = WATCH_DOWNLOADING;
     host_leaderboard(HOST_LEADERBOARD_REPLAY);
@@ -903,6 +946,10 @@ __attribute__((export_name("game_watch_run"))) const char *game_watch_run() {
   snprintf(watch_run_id, sizeof watch_run_id, "%s", live.watching && !live.practicing ? watch.run_id.c_str() : "");
   return watch_run_id;
 }
+// A host that opens with a link to a run says so as the game starts, before
+// it has the replay: the startup holds its loading screen, then skips the
+// intro and the menu. 0 once the fetch has ended; game_watch takes the run it brought.
+__attribute__((export_name("game_watch_awaited"))) void game_watch_awaited(int awaited) { watch.awaited = awaited; }
 __attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int month, int year) {
   if (game_live || !replay_loaded.reason.empty() || replay_loaded.recording.empty() || config_blob.screen_width != 1024 ||
       config_blob.screen_height != 768)
@@ -912,6 +959,7 @@ __attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int
   watch.link_id = watch_link_run;
   watch_link_run[0] = 0;
   watch.seek = watch.stop_at = 0;
+  watch.awaited = false;
   watch.linked = true;
   if (coop_open())
     coop_note("The replay plays once co-op ends");
@@ -926,11 +974,12 @@ __attribute__((export_name("game_watch_seek"))) void game_watch_seek(int at) { w
 __attribute__((export_name("game_watch_stop_at"))) void game_watch_stop_at(int at) { watch.stop_at = at; }
 // The tick a prepared replay is paused on, or 0: an unattended capture of a moment (client/main.cpp).
 __attribute__((export_name("game_watch_paused_tick"))) int game_watch_paused_tick() {
-  return live.watching && watch.phase == WATCH_PLAYING && watch.paused ? watch.tick : 0;
+  return live.watching && watch.phase != WATCH_PREPARING && watch.paused ? watch.tick : 0;
 }
 // A link to a moment: a tick to go to (0 stays where playback is) and one to
-// pause on reaching (0 none, else past the first), within the run, or the
-// recording of the run about to play until it is prepared. 0 when outside it.
+// pause on reaching (0 none, else past the first), which playback plays on to
+// from a tick it goes to, within the run, or the recording of the run about to
+// play until it is prepared. 0 when outside it.
 __attribute__((export_name("game_watch_moment"))) int game_watch_moment(int tick, int stop) {
   bool prepared = live.watching && watch.phase != WATCH_PREPARING;
   int ticks = prepared ? watch.ticks : live.watching ? watch.replay.ticks : watch.linked ? watch.link.ticks : 0;
@@ -940,6 +989,8 @@ __attribute__((export_name("game_watch_moment"))) int game_watch_moment(int tick
   if (tick)
     watch_ask(tick);
   watch.stop_at = stop;
+  if (tick && stop)
+    watch.paused = false;
   return 1;
 }
 // Where a replay is: -1 none plays, 0 playing, then how it ended: 1 as
