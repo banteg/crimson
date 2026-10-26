@@ -168,8 +168,8 @@ Out-of-range or malformed parameters and unavailable runs show a notice. The
 host API exposes `game_watch_moment` (or `game_watch_seek` and
 `game_watch_stop_at` unchecked), `game_watch_link_run` and `game_watch_run`;
 the desktop client also takes `CRIMSON_WATCH`,
-`CRIMSON_WATCH_CARD`, `CRIMSON_WATCH_SEEK` and `CRIMSON_WATCH_STOP` for
-unattended captures.
+`CRIMSON_WATCH_CARD`, `CRIMSON_WATCH_SEEK`, `CRIMSON_WATCH_STOP` and
+`CRIMSON_WATCH_MOMENTS` for unattended captures.
 
 ## Practice takeover
 
