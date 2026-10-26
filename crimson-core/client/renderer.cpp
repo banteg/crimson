@@ -179,7 +179,7 @@ std::vector<float> centers;
 // needs a complete texture behind it.
 GLuint blank_texture;
 GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_alpha_op, u_alpha_arg1, u_alpha_arg2,
-    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction;
+    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction, u_circle, u_circle_uv;
 // RTX: the world's HDR target while the world draws (host_render_pass), and the
 // tonemap that puts it on the back buffer toward the display's EDR headroom.
 bool rtx, world;
@@ -916,6 +916,8 @@ void GL_ENTRY(renderer_init)() {
   u_alpha_test = glGetUniformLocation(program, "alpha_test");
   u_alpha_ref = glGetUniformLocation(program, "alpha_ref");
   u_alpha_func = glGetUniformLocation(program, "alpha_func");
+  u_circle = glGetUniformLocation(program, "circle");
+  u_circle_uv = glGetUniformLocation(program, "circle_uv");
   glUseProgram(program);
   glUniform1i(glGetUniformLocation(program, "texture0"), 0);
   glUniform1i(glGetUniformLocation(program, "texture1"), 1);
@@ -1410,6 +1412,8 @@ void GL_ENTRY(w2c_host_clear)(struct w2c_host *, u32 color) {
                t.flags & 2 ? 1.0f : (color >> 24) / 255.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 }
+// The circle the device shades itself (host_circle), or none: classic.frag's circle and circle_uv.
+static float circle[8];
 // A draw through the device's own shading into the bound target `t`.
 static void device_draw(const Target &t, u32 primitive, const void *vertices, u32 vertex_count,
                         const unsigned short *indices, u32 primitive_count) {
@@ -1452,6 +1456,8 @@ static void device_draw(const Target &t, u32 primitive, const void *vertices, u3
   glUniform1i(u_alpha_test, render_states[RS_ALPHATESTENABLE] != 0);
   glUniform1f(u_alpha_ref, (float)(render_states[RS_ALPHAREF] & 255));
   glUniform1i(u_alpha_func, (GLint)render_states[RS_ALPHAFUNC]);
+  glUniform4fv(u_circle, 1, circle);
+  glUniform4fv(u_circle_uv, 1, circle + 4);
 
   apply_output_state(t);
   unsigned cull = render_states[RS_CULLMODE];
@@ -1617,6 +1623,12 @@ void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32
   device_draw(t, primitive, data, vertex_count, index_data, primitive_count);
   if (g)
     queue_ground_stamp(*g, primitive, data, vertex_count, index_data, primitive_count);
+}
+void GL_ENTRY(w2c_host_circle)(struct w2c_host *, u32 shape, u32 color) {
+  EffectVertex vertices[4];
+  circle_quad((const float *)(client_memory() + shape), color, vertices, circle);
+  device_draw(drawing_target(current_target), 6, vertices, 4, nullptr, 2);
+  memset(circle, 0, sizeof(circle));
 }
 static void upload_analytic_vertices(GLuint array, GLuint buffer,
                                      const void *data, size_t bytes,

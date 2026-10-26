@@ -1,59 +1,180 @@
-Grim's circles (the aim indicator's spread disc and its ring) take a dozen or two segments, which show as
-facets at the client's render sizes. They take as many as keep each chord within a sixteenth of a logical pixel
-of the circle, up to what the vertex buffer holds.
+Grim draws circles (the aim indicator's spread disc and its ring) as polygons of a dozen or two segments,
+which show as facets at the client's render sizes. The host shades them per pixel instead (host_circle): the
+exact disc and band with a pixel's antialiased edge, the band sampling its texture across its width as the
+original's strip did, under the device's current states.
 --- a/decomp/1.9/grim/render/draw_circle_filled.cpp
 +++ b/decomp/1.9/grim/render/draw_circle_filled.cpp
-@@ -4,4 +4,5 @@
- extern "C" double cos(double angle);
- extern "C" double sin(double angle);
-+extern "C" double sqrt(double value);
+@@ -1,30 +1,14 @@
+ #include "grim_d3d8.h"
+ #include "grim2d_cpp.h"
  
- struct GrimCircleVertex {
-@@ -21,4 +22,5 @@ extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
- extern GrimCircleVertex *grim_vertex_write_ptr;
- extern unsigned long grim_vertex_count;
-+extern unsigned int grim_vertex_capacity;
- extern float grim_vertex_z;
- extern float grim_vertex_rhw;
-@@ -64,4 +66,13 @@ void IGrim2D_cpp::grim_draw_circle_filled(float x, float y, float radius)
+-extern "C" double cos(double angle);
+-extern "C" double sin(double angle);
+-
+-struct GrimCircleVertex {
+-    float x;
+-    float y;
+-    float z;
+-    float rhw;
+-    unsigned long color;
+-    float u;
+-    float v;
+-};
+-
+ extern unsigned char grim_device_ready;
+ extern unsigned char grim_batch_active;
+ extern IDirect3DDevice8 *grim_d3d_device;
+-extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
+-extern GrimCircleVertex *grim_vertex_write_ptr;
+-extern unsigned long grim_vertex_count;
+-extern float grim_vertex_z;
+-extern float grim_vertex_rhw;
+ extern unsigned long grim_color_slot0;
+ extern float grim_uv_u0;
+ extern float grim_uv_v0;
++extern "C" void platform_circle(float x, float y, float inner, float outer, float u, float v_inner, float v_outer,
++                                unsigned color);
  
-     int segment_count = (int)(radius * 0.125f + 12.0f);
-+    // Each chord within a sixteenth of a logical pixel of the circle (radius * (1 - cos(pi / n))), as many as
-+    // a fan's vertices fit in the buffer.
-+    int round_count = (int)(3.1415927f * sqrt(radius * 8.0f)) + 1;
-+    if (round_count > segment_count) {
-+        segment_count = round_count;
-+    }
-+    if (segment_count > (int)(grim_vertex_capacity - 2)) {
-+        segment_count = (int)(grim_vertex_capacity - 2);
-+    }
-     for (int segment = 0; segment <= segment_count; ++segment) {
-         double angle = segment * 6.2831855f / segment_count;
+ void IGrim2D_cpp::grim_draw_circle_filled(float x, float y, float radius)
+ {
+@@ -38,49 +22,9 @@ void IGrim2D_cpp::grim_draw_circle_filled(float x, float y, float radius)
+     }
+ 
+     grim_d3d_device->BeginScene();
+-    if (grim_vertex_buffer->Lock(
+-            0,
+-            0,
+-            (unsigned char **)&grim_vertex_write_ptr,
+-            D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK) < 0) {
+-        grim_device_ready = 0;
+-    }
+-
+-    *(unsigned short *)&grim_vertex_count = 0;
+-    GrimCircleVertex vertex;
+-    vertex.z = grim_vertex_z;
+-    vertex.rhw = grim_vertex_rhw;
+-    vertex.color = grim_color_slot0;
+-    vertex.u = grim_uv_u0;
+-    vertex.v = grim_uv_v0;
+-
+     grim_d3d_device->SetTexture(0, 0);
+-
+-    vertex.x = x;
+-    vertex.y = y;
+-    *grim_vertex_write_ptr = vertex;
+-    ++grim_vertex_write_ptr;
+-    ++*(unsigned short *)&grim_vertex_count;
+-
+-    int segment_count = (int)(radius * 0.125f + 12.0f);
+-    for (int segment = 0; segment <= segment_count; ++segment) {
+-        double angle = segment * 6.2831855f / segment_count;
+-        vertex.x = (float)cos(angle) * radius + x;
+-        vertex.y = (float)sin(angle) * radius + y;
+-        *grim_vertex_write_ptr = vertex;
+-        ++grim_vertex_write_ptr;
+-        ++*(unsigned short *)&grim_vertex_count;
+-    }
+-
+-    grim_vertex_buffer->Unlock();
+-    if (!grim_device_ready) {
+-        return;
+-    }
+-
+-    grim_d3d_device->DrawPrimitive(
+-        D3DPT_TRIANGLEFAN,
+-        0,
+-        (unsigned short)grim_vertex_count - 2);
++    // The disc the original's triangle fan approximates, shaded per pixel.
++    platform_circle(x, y, 0.0f, radius, grim_uv_u0, grim_uv_v0, grim_uv_v0, grim_color_slot0);
+     grim_d3d_device->EndScene();
+     grim_batch_active = 0;
+ }
 --- a/decomp/1.9/grim/render/draw_circle_outline.cpp
 +++ b/decomp/1.9/grim/render/draw_circle_outline.cpp
-@@ -4,4 +4,5 @@
- extern "C" double cos(double angle);
- extern "C" double sin(double angle);
-+extern "C" double sqrt(double value);
+@@ -1,30 +1,13 @@
+ #include "grim_d3d8.h"
+ #include "grim2d_cpp.h"
  
- struct GrimCircleVertex {
-@@ -21,4 +22,5 @@ extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
- extern GrimCircleVertex *grim_vertex_write_ptr;
- extern unsigned long grim_vertex_count;
-+extern unsigned int grim_vertex_capacity;
- extern float grim_vertex_z;
- extern float grim_vertex_rhw;
-@@ -56,4 +58,13 @@ void IGrim2D_cpp::grim_draw_circle_outline(float x, float y, float radius)
+-extern "C" double cos(double angle);
+-extern "C" double sin(double angle);
+-
+-struct GrimCircleVertex {
+-    float x;
+-    float y;
+-    float z;
+-    float rhw;
+-    unsigned long color;
+-    float u;
+-    float v;
+-};
+-
+ extern unsigned char grim_device_ready;
+ extern unsigned char grim_batch_active;
+ extern IDirect3DDevice8 *grim_d3d_device;
+-extern IDirect3DVertexBuffer8 *grim_vertex_buffer;
+-extern GrimCircleVertex *grim_vertex_write_ptr;
+-extern unsigned long grim_vertex_count;
+-extern float grim_vertex_z;
+-extern float grim_vertex_rhw;
+ extern unsigned long grim_color_slot0;
+ extern float grim_uv_u0;
+-extern float grim_uv_v0;
++extern "C" void platform_circle(float x, float y, float inner, float outer, float u, float v_inner, float v_outer,
++                                unsigned color);
  
-     int segment_count = (int)(radius * 0.2f + 14.0f);
-+    // Each chord within a sixteenth of a logical pixel of the circle (radius * (1 - cos(pi / n))), as many as
-+    // a strip's vertices fit in the buffer.
-+    int round_count = (int)(3.1415927f * sqrt(radius * 8.0f)) + 1;
-+    if (round_count > segment_count) {
-+        segment_count = round_count;
-+    }
-+    if (segment_count > (int)(grim_vertex_capacity / 2 - 1)) {
-+        segment_count = (int)(grim_vertex_capacity / 2 - 1);
-+    }
-     for (int segment = 0; segment <= segment_count; ++segment) {
-         double angle = segment * 6.2831855f / segment_count;
+ void IGrim2D_cpp::grim_draw_circle_outline(float x, float y, float radius)
+ {
+@@ -38,51 +21,8 @@ void IGrim2D_cpp::grim_draw_circle_outline(float x, float y, float radius)
+     }
+ 
+     grim_d3d_device->BeginScene();
+-    if (grim_vertex_buffer->Lock(
+-            0,
+-            0,
+-            (unsigned char **)&grim_vertex_write_ptr,
+-            D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK) < 0) {
+-        grim_device_ready = 0;
+-    }
+-
+-    *(unsigned short *)&grim_vertex_count = 0;
+-    GrimCircleVertex vertex;
+-    vertex.z = grim_vertex_z;
+-    vertex.rhw = grim_vertex_rhw;
+-    vertex.color = grim_color_slot0;
+-    vertex.u = grim_uv_u0;
+-    vertex.v = grim_uv_v0;
+-
+-    int segment_count = (int)(radius * 0.2f + 14.0f);
+-    for (int segment = 0; segment <= segment_count; ++segment) {
+-        double angle = segment * 6.2831855f / segment_count;
+-        float cosine = (float)cos(angle);
+-        vertex.x = cosine * radius + x;
+-        float sine = (float)sin(angle);
+-        vertex.y = sine * radius + y;
+-        vertex.v = 0.0f;
+-        *grim_vertex_write_ptr = vertex;
+-        ++grim_vertex_write_ptr;
+-        ++*(unsigned short *)&grim_vertex_count;
+-
+-        vertex.x = (radius + 2.0f) * cosine + x;
+-        vertex.y = (radius + 2.0f) * sine + y;
+-        vertex.v = 1.0f;
+-        *grim_vertex_write_ptr = vertex;
+-        ++grim_vertex_write_ptr;
+-        ++*(unsigned short *)&grim_vertex_count;
+-    }
+-
+-    grim_vertex_buffer->Unlock();
+-    if (!grim_device_ready) {
+-        return;
+-    }
+-
+-    grim_d3d_device->DrawPrimitive(
+-        D3DPT_TRIANGLESTRIP,
+-        0,
+-        (unsigned short)grim_vertex_count - 2);
++    // The 2px band the original's triangle strip approximates, its texture's v from 0 inside to 1 outside.
++    platform_circle(x, y, radius, radius + 2.0f, grim_uv_u0, 0.0f, 1.0f, grim_color_slot0);
+     grim_d3d_device->EndScene();
+     grim_batch_active = 0;
+ }
