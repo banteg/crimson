@@ -82,12 +82,11 @@ float beamVisibility(int index, vec4 direction, vec2 world, vec4 sp_pos, vec4 re
     vec4 f1 = max(vec4(0.), 1. - sqrt((s1 - x0) * (s1 - x0) + b * b) / R);
     vec4 r0 = ramp * max(vec4(0.), s0 + half_length) * step(s0, vec4(half_length));
     vec4 r1 = ramp * max(vec4(0.), s1 + half_length) * step(s1, vec4(half_length));
-    // The head's share lands in the eighths it overlaps.
-    float head_falloff = pow(max(0., 1. - length(vec2(half_length - x0, b)) / R), 2.) * head;
+    // The head's share lands in the eighths it overlaps, through each eighth's own falloff.
     vec4 h0 = max(vec4(0.), min(s0 + .5 * width, vec4(half_length + head_width)) - max(s0 - .5 * width, vec4(half_length - head_width)));
     vec4 h1 = max(vec4(0.), min(s1 + .5 * width, vec4(half_length + head_width)) - max(s1 - .5 * width, vec4(half_length - head_width)));
-    vec4 w0 = r0 * f0 * f0 * width + head_falloff * h0;
-    vec4 w1 = r1 * f1 * f1 * width + head_falloff * h1;
+    vec4 w0 = (r0 * width + head * h0) * f0 * f0;
+    vec4 w1 = (r1 * width + head * h1) * f1 * f1;
     float total = dot(w0 + w1, vec4(1.));
     return total > 0. ? (dot(w0, beam_bins[0]) + dot(w1, beam_bins[1])) / total : 1.;
 }

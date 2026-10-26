@@ -154,6 +154,39 @@ def test_body_does_not_shadow_a_light_inside_or_against_it(raylib_context, body_
         rl.unload_render_texture(target)
 
 
+def test_receiver_inside_the_body_around_the_light_stays_lit(raylib_context) -> None:
+    # Ground under the creature a beam's head sits in: its own body spares the light there too.
+    shader = _probe_shader("""
+    void main() {
+        float point = sourceVisibility(vec3(64., 64., 0.), vec3(64., 64., 24.), .5, vec2(1e19));
+        float section = sectionVisibility(vec3(64., 64., 0.), vec3(64., 64., 24.), .5, vec2(1., 0.), 7.5, vec2(1e19));
+        finalColor = vec4(point, section, 0., 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    source = MaterialLight(Vec2(64., 64.), 200., (1., 1., 1.), height=24., source_width=.5, beam_profile=(16., 3.1, 1.05))
+    body = BodyVolume(Vec2(64., 64.), Vec2(16., 16.), 40., 0.)
+    try:
+        grid = build_occlusion_grid([body], [source], width=128., height=128., beam_margin=7.5)
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        _integer(shader, "u_dynamic_shadows", 1)
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        point, section = _pixel(target)[:2]
+        assert point == pytest.approx(1.)
+        assert section == pytest.approx(point)
+    finally:
+        renderer.close()
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
 def test_penumbra_stops_widening_past_the_penumbra_width(raylib_context) -> None:
     shader = _probe_shader("""
     uniform vec4 u_widths;

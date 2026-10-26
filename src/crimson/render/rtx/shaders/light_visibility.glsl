@@ -135,12 +135,12 @@ vec4 binOverlap(vec2 interval, vec4 lo, vec4 hi) {
 // body (`spared`, already per eighth).
 void beamTapBlocked(bool outside, vec2 first, vec2 second, vec2 beyond, float halfspan, vec4 spared0, vec4 spared1,
                     inout vec4 blocked0, inout vec4 blocked1) {
+    float width = .25 * halfspan;
     if (!outside) {
-        blocked0 += vec4(.5);
-        blocked1 += vec4(.5);
+        blocked0 += .5 * clamp(1. - spared0 / width, 0., 1.);
+        blocked1 += .5 * clamp(1. - spared1 / width, 0., 1.);
         return;
     }
-    float width = .25 * halfspan;
     vec4 lo0 = -halfspan + width * vec4(0., 1., 2., 3.), lo1 = lo0 + 4. * width;
     vec2 first_beyond = vec2(max(first.x, beyond.x), min(first.y, beyond.y));
     vec2 second_beyond = vec2(max(second.x, beyond.x), min(second.y, beyond.y));

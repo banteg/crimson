@@ -1079,6 +1079,9 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     release(t);
   release(smoke_composite);
   release(heat_trail);
+  glDeleteFramebuffers(1, &beam_vis_framebuffer);
+  glDeleteTextures(1, &beam_vis_texture);
+  beam_vis_framebuffer = beam_vis_texture = 0;
   heat_seconds = -1;
   release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.

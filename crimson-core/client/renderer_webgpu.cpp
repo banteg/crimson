@@ -1048,6 +1048,7 @@ bool wgpu_renderer_set_rtx(bool enabled) {
     drop_ground(grounds.begin()->first);
   release_smoke();
   release(heat_trail);
+  release(beam_vis);
   heat_seconds = -1;
   release(pressured);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
