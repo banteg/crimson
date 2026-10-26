@@ -14,8 +14,9 @@
   X(std::vector<unsigned char>, renderer_capture, (int &w, int &h), (w, h))                                           \
   X(bool, renderer_set_rtx, (bool enabled), (enabled))                                                                \
   X(void, renderer_set_headroom, (float headroom), (headroom))                                                        \
-  X(std::string, renderer_gpu_timings, (), ())                                                                         \
-  X(std::string, renderer_draw_stats, (), ())
+  X(void, renderer_frame_end, (), ())                                                                                 \
+  X(bool, renderer_profile_frame, (long long &f, std::string &r), (f, r))                                             \
+  X(bool, renderer_profile_gpu, (long long &f, std::string &p), (f, p))
 #define HOST_ENTRIES(X)                                                                                               \
   X(frame_hold, (struct w2c_host * h, u32 op), (h, op))                                                               \
   X(texture_copy, (struct w2c_host * h, u32 d, u32 s), (h, d, s))                                                     \

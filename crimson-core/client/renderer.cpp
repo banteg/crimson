@@ -9,6 +9,8 @@
 #include "client_shaders.h"
 #include "device_states.h"
 #include <algorithm>
+#include <chrono>
+#include <deque>
 #include <map>
 #include <math.h>
 #include <stdio.h>
@@ -41,32 +43,53 @@ bool renderer_uses_gl() { return true; }
 
 namespace {
 
-// CRIMSON_GPU_TIMERS: GPU time per pass. Each mark ends the running query and
-// starts one charged to its label; a frame's queries are read at the next
-// present, by when they have finished. WebGL2 has no timer queries.
+// CRIMSON_PROFILE (client/main.cpp): each frame's passes, as the marks between
+// them name them (gpu_mark), with the CPU time from one mark to the next and the
+// GPU time a timer query measures. The queries are read once the GPU has
+// finished them, a few frames on, so the CPU never waits on them (more than
+// PROFILE_PENDING frames behind, it does). Also the frame's draws by pass,
+// texture and target (quads and the target pixels they cover), the scene's
+// sizes the host imports send (profile_stat), and the targets the frame has.
+// WebGL2 has no timer queries.
 struct GpuTimer {
   const char *label;
   GLuint query;
+  double cpu_at; // ms
 };
 #ifdef __EMSCRIPTEN__
-const bool gpu_timers = false;
+const bool profiling = false;
 #define GL_TIME_ELAPSED 0
 #define glGetQueryObjectui64v(query, name, value)
 #else
-const bool gpu_timers = getenv("CRIMSON_GPU_TIMERS");
+const bool profiling = getenv("CRIMSON_PROFILE");
 #endif
-std::vector<GpuTimer> gpu_frame, gpu_previous;
+constexpr size_t PROFILE_PENDING = 4;
+struct PendingFrame {
+  long long frame;
+  std::vector<GpuTimer> timers;
+};
+std::vector<GpuTimer> gpu_frame;
+std::deque<PendingFrame> gpu_pending;
 std::vector<GLuint> gpu_queries;
-std::string gpu_timings;
-// With the timers, each pass's draws by texture (or analytic kind) and target:
-// quads, and the target pixels they cover, read a frame late with the timings.
+long long profile_frames;
+// The last frame's own record, and the GPU's records as they finish.
+std::string profile_cpu;
+bool profile_cpu_ready;
+std::deque<std::pair<long long, std::string>> profile_gpu;
 struct DrawCount {
   double quads = 0, pixels = 0;
 };
-std::map<std::string, DrawCount> draw_frame, draw_previous;
-std::string draw_stats;
+std::map<std::string, DrawCount> draw_frame;
+std::map<std::string, double> profile_scene;
+void profile_stat(const char *key, double value) {
+  if (profiling)
+    profile_scene[key] += value;
+}
+double profile_now() {
+  return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
 void gpu_mark(const char *label) {
-  if (!gpu_timers || (!gpu_frame.empty() && !strcmp(gpu_frame.back().label, label)))
+  if (!profiling || (!gpu_frame.empty() && !strcmp(gpu_frame.back().label, label)))
     return;
   if (!gpu_frame.empty())
     glEndQuery(GL_TIME_ELAPSED);
@@ -78,14 +101,14 @@ void gpu_mark(const char *label) {
     gpu_queries.pop_back();
   }
   glBeginQuery(GL_TIME_ELAPSED, query);
-  gpu_frame.push_back({label, query});
+  gpu_frame.push_back({label, query, profile_now()});
 }
 // Drawing off the back buffer outside the world's passes (terrain decal bakes,
-// heat stamps) gets its own timer, so the `frame` timer keeps only the
-// simulation's time; the label before it resumes after.
+// heat stamps, the kept frame) gets its own timer, so the `frame` timer keeps
+// only the simulation's time; the label before it resumes after.
 const char *gpu_resume_label;
 void gpu_aside(const char *label) {
-  if (!gpu_timers || gpu_resume_label)
+  if (!profiling || gpu_resume_label)
     return;
   gpu_resume_label = gpu_frame.empty() ? "frame" : gpu_frame.back().label;
   gpu_mark(label);
@@ -96,38 +119,30 @@ void gpu_resume() {
   gpu_mark(gpu_resume_label);
   gpu_resume_label = nullptr;
 }
-// The frame ends: read the one before it, then start the next.
-void gpu_frame_end() {
-  if (!gpu_timers || gpu_frame.empty())
-    return;
-  glEndQuery(GL_TIME_ELAPSED);
-  std::vector<std::pair<const char *, double>> totals;
-  for (const GpuTimer &t : gpu_previous) {
-    GLuint64 ns = 0;
-    glGetQueryObjectui64v(t.query, GL_QUERY_RESULT, &ns);
-    auto it = std::find_if(totals.begin(), totals.end(), [&](const auto &p) { return !strcmp(p.first, t.label); });
-    (it == totals.end() ? totals.emplace_back(t.label, 0.0) : *it).second += ns / 1e6;
-    gpu_queries.push_back(t.query);
+std::string json_string(const std::string &text) {
+  std::string out = "\"";
+  for (char c : text) {
+    if (c == '"' || c == '\\')
+      out += '\\';
+    out += c;
   }
-  gpu_timings.clear();
-  char entry[160];
-  for (const auto &[label, ms] : totals) {
-    snprintf(entry, sizeof entry, "%s%s=%.3f", gpu_timings.empty() ? "" : " ", label, ms);
-    gpu_timings += entry;
-  }
-  gpu_previous.swap(gpu_frame);
-  gpu_frame.clear();
-  gpu_resume_label = nullptr;
-  draw_stats.clear();
-  for (const auto &[key, count] : draw_previous) {
-    snprintf(entry, sizeof entry, "%s%s=%.0f/%.0f", draw_stats.empty() ? "" : " ", key.c_str(), count.quads, count.pixels);
-    draw_stats += entry;
-  }
-  draw_previous.swap(draw_frame);
-  draw_frame.clear();
+  return out + "\"";
 }
-
-
+// Labels in the order the frame first reached them, each with its summed time.
+template <class Time> std::string pass_times(const std::vector<GpuTimer> &timers, Time time) {
+  std::vector<std::pair<const char *, double>> totals;
+  for (size_t i = 0; i < timers.size(); ++i) {
+    auto it = std::find_if(totals.begin(), totals.end(), [&](const auto &p) { return !strcmp(p.first, timers[i].label); });
+    (it == totals.end() ? totals.emplace_back(timers[i].label, 0.0) : *it).second += time(i);
+  }
+  std::string out;
+  char entry[96];
+  for (const auto &[label, ms] : totals) {
+    snprintf(entry, sizeof entry, "%s\"%s\":%.3f", out.empty() ? "" : ",", label, ms);
+    out += entry;
+  }
+  return "{" + out + "}";
+}
 struct Target {
   GLuint texture = 0, framebuffer = 0;
   // Texture storage and viewport pixels are independent of draw coordinates.
@@ -394,7 +409,7 @@ Target &drawing_target(int id) {
 // logical units), `primitive` a device primitive (4 list, 5 strip, 6 fan).
 void count_draw(const std::string &what, const float *positions, int stride, const unsigned short *indices,
                 int primitive, int triangles) {
-  if (!gpu_timers || primitive < 4 || primitive > 6)
+  if (!profiling || primitive < 4 || primitive > 6)
     return;
   Target &into = drawing_target(current_target);
   double scale = (double)into.width / std::max(1, into.logical_width), area = 0;
@@ -998,12 +1013,85 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, exact ? GL_NEAREST : GL_LINEAR);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindTexture(GL_TEXTURE_2D, 0);
-  gpu_frame_end();
-  gpu_mark("frame");
+  // The host swaps next (renderer_frame_end follows it).
+  gpu_mark("swap");
 }
 
-std::string GL_ENTRY(renderer_gpu_timings)() { return gpu_timings; }
-std::string GL_ENTRY(renderer_draw_stats)() { return draw_stats; }
+// A target's bytes, by its format.
+static double target_bytes(const Target &t) {
+  return (double)t.width * t.height * (t.flags & TARGET_FLOAT ? 16 : t.flags & TARGET_HALF_FLOAT ? 8 : 4);
+}
+// The frame has been swapped: its record, and those of earlier frames whose
+// GPU work has finished.
+void GL_ENTRY(renderer_frame_end)() {
+  if (!profiling || gpu_frame.empty())
+    return gpu_mark("frame");
+  glEndQuery(GL_TIME_ELAPSED);
+  double end = profile_now();
+  std::string draws, scene;
+  char entry[192];
+  for (const auto &[key, count] : draw_frame) {
+    snprintf(entry, sizeof entry, "%s%s:[%.0f,%.0f]", draws.empty() ? "" : ",", json_string(key).c_str(), count.quads,
+             count.pixels);
+    draws += entry;
+  }
+  for (const auto &[key, value] : profile_scene) {
+    snprintf(entry, sizeof entry, "%s\"%s\":%g", scene.empty() ? "" : ",", key.c_str(), value);
+    scene += entry;
+  }
+  double bytes = target_bytes(hdr);
+  for (const auto &[id, t] : textures)
+    bytes += target_bytes(t);
+  const Target &back = textures[0];
+  snprintf(entry, sizeof entry,
+           ",\"targets\":{\"back\":[%d,%d],\"world\":[%d,%d],\"count\":%zu,\"mb\":%.1f}", back.width,
+           back.height, rtx ? hdr.width : back.width, rtx ? hdr.height : back.height, textures.size(), bytes / (1 << 20));
+  profile_cpu = "\"cpu\":" + pass_times(gpu_frame, [&](size_t i) {
+                  return (i + 1 < gpu_frame.size() ? gpu_frame[i + 1].cpu_at : end) - gpu_frame[i].cpu_at;
+                }) + ",\"draws\":{" + draws + "},\"scene\":{" + scene + "}" + entry;
+  profile_cpu_ready = true;
+  gpu_pending.push_back({profile_frames++, std::move(gpu_frame)});
+  gpu_frame.clear();
+  draw_frame.clear();
+  profile_scene.clear();
+  gpu_resume_label = nullptr;
+  // Queries finish in order: a frame whose last has is done.
+  while (!gpu_pending.empty()) {
+    PendingFrame &f = gpu_pending.front();
+    GLuint available = 0;
+    glGetQueryObjectuiv(f.timers.back().query, GL_QUERY_RESULT_AVAILABLE, &available);
+    if (!available && gpu_pending.size() <= PROFILE_PENDING)
+      break;
+    std::vector<double> ms(f.timers.size());
+    for (size_t i = 0; i < f.timers.size(); ++i) {
+      GLuint64 ns = 0;
+      glGetQueryObjectui64v(f.timers[i].query, GL_QUERY_RESULT, &ns);
+      ms[i] = ns / 1e6;
+      gpu_queries.push_back(f.timers[i].query);
+    }
+    profile_gpu.emplace_back(f.frame, pass_times(f.timers, [&](size_t i) { return ms[i]; }));
+    gpu_pending.pop_front();
+  }
+  gpu_mark("frame");
+}
+// The last frame's record (its CPU passes, draws, scene and targets), once.
+bool GL_ENTRY(renderer_profile_frame)(long long &frame, std::string &record) {
+  if (!profile_cpu_ready)
+    return false;
+  profile_cpu_ready = false;
+  frame = profile_frames - 1;
+  record = profile_cpu;
+  return true;
+}
+// A finished frame's GPU passes, oldest first.
+bool GL_ENTRY(renderer_profile_gpu)(long long &frame, std::string &passes) {
+  if (profile_gpu.empty())
+    return false;
+  frame = profile_gpu.front().first;
+  passes = std::move(profile_gpu.front().second);
+  profile_gpu.pop_front();
+  return true;
+}
 
 void GL_ENTRY(renderer_resume)() { bind_target(); }
 
@@ -1125,6 +1213,10 @@ void GL_ENTRY(w2c_host_frame_hold)(struct w2c_host *, u32 op) {
     anchor = {};
     return;
   }
+  gpu_aside("hold");
+  struct Resume {
+    ~Resume() { gpu_resume(); }
+  } resume;
   Target &back = textures[0];
   if (!back.framebuffer)
     return;
@@ -1352,7 +1444,7 @@ static void device_draw(const Target &t, u32 primitive, u32 vertices, u32 vertex
 }
 void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
                    u32 primitive_count) {
-  if (gpu_timers) {
+  if (profiling) {
     auto texture = textures.find(bound[0]);
     count_draw(bound[0] && texture != textures.end()
                    ? "tex" + std::to_string(bound[0]) + "-" + std::to_string(texture->second.logical_width) + "x" +
@@ -1390,6 +1482,7 @@ static void upload_analytic_vertices(GLuint array, GLuint buffer,
   glDrawArrays(primitive, 0, count);
 }
 void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
+  profile_stat("beams", 1);
   if (!rtx)
     return;
   Target &t = drawing_target(current_target);
@@ -1433,6 +1526,7 @@ void GL_ENTRY(w2c_host_effect)(struct w2c_host *, u32 corners, u32 kind,
 }
 void GL_ENTRY(w2c_host_effect_sprites)(struct w2c_host *, u32 vertices,
                                        u32 kind, u32 count) {
+  profile_stat("effect_vertices", count);
   if (!rtx)
     return;
   const float params[12] = {};
@@ -1440,6 +1534,7 @@ void GL_ENTRY(w2c_host_effect_sprites)(struct w2c_host *, u32 vertices,
                        count, kind, params);
 }
 void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count) {
+  profile_stat("lights", count);
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
@@ -1458,9 +1553,11 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
     light_tail[i] = l[16];
     memcpy(beam_shape + i * 4, l + 20, 16);
     beam_lights |= l[23] > 0;
+    profile_stat("beam_lights", l[23] > 0);
   }
 }
 void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {
+  profile_stat("pressure_fronts", count);
   const float *f = (const float *)(client_memory() + fronts);
   pressure_fronts.assign(f, f + count * 4);
 }
@@ -1468,6 +1565,7 @@ void GL_ENTRY(w2c_host_pressure)(struct w2c_host *, u32 fronts, u32 count) {
 // it by the run's clock since the last frame, or start it over after a rewind,
 // a long gap or a new terrain, then keep each footprint's warmth where higher.
 void GL_ENTRY(w2c_host_heat)(struct w2c_host *, u32 footprints, u32 count) {
+  profile_stat("heat_footprints", count);
   if (!rtx || (!count && !heat_trail.framebuffer))
     return;
   gpu_aside("heat-stamp");
@@ -1554,6 +1652,7 @@ void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
   ground_seconds = seconds;
 }
 void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
+  profile_stat("smoke_commands", count);
   if (!rtx)
     return;
   gpu_mark("smoke-solver");
@@ -1632,6 +1731,7 @@ void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
 }
 void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 light_count, u32 sights,
                                    u32 sight_count) {
+  profile_stat("smoke_lights", light_count);
   if (!rtx || !world || !smoke_targets[0].texture)
     return;
   gpu_mark("smoke");
@@ -1703,6 +1803,8 @@ void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 c
   occlusion_grid[0] = g[0], occlusion_grid[1] = g[1], occlusion_grid[2] = count ? g[2] : 0, occlusion_grid[3] = g[3];
   occlusion_cell = g[4];
   dynamic_shadows = g[5] != 0;
+  profile_stat("occlusion_texels", count / 4.);
+  profile_stat("occlusion_cells", count ? g[2] * g[3] : 0);
   if (!count)
     return;
   // Whole rows, and a texture that grows in powers of two as crowds do.

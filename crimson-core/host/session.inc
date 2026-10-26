@@ -761,6 +761,28 @@ bool config_sync_from_grim() {
 __attribute__((export_name("game_replay"))) const unsigned char *game_replay() { return live.replay.data(); }
 __attribute__((export_name("game_replay_size"))) int game_replay_size() { return (int)live.replay.size(); }
 
+// The world's live entities, for a profile (CRIMSON_PROFILE, client/main.cpp):
+// creatures, projectiles, secondary projectiles, particles, sprite effects and
+// bonuses.
+__attribute__((export_name("game_entity_counts"))) const unsigned *game_entity_counts() {
+  static unsigned counts[6];
+  auto alive = [](const auto &pool) {
+    unsigned n = 0;
+    for (const auto &entry : pool)
+      n += entry.active != 0;
+    return n;
+  };
+  counts[0] = alive(creature_pool);
+  counts[1] = alive(projectile_pool);
+  counts[2] = alive(secondary_projectile_pool);
+  counts[3] = alive(particle_pool);
+  counts[4] = alive(sprite_effect_pool);
+  counts[5] = 0;
+  for (const auto &bonus : bonus_pool)
+    counts[5] += bonus.bonus_id != 0;
+  return counts;
+}
+
 // Watch/preparing, menus, run-down and paused practice are not live gameplay.
 __attribute__((export_name("game_play_run"))) unsigned game_play_run() { return play_generation; }
 __attribute__((export_name("game_play_mode"))) int game_play_mode() {

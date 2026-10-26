@@ -52,10 +52,14 @@ std::vector<unsigned char> renderer_capture(int &width, int &height);
 // EDR headroom its tonemap rolls highlights toward (1 is SDR).
 bool renderer_set_rtx(bool enabled);
 void renderer_set_headroom(float headroom);
-// CRIMSON_GPU_TIMERS: the GPU time each pass of the last measured frame took,
-// as "pass=ms ..." (OpenGL timer queries, a frame late), or "" where unmeasured.
-std::string renderer_gpu_timings();
-std::string renderer_draw_stats();
+// CRIMSON_PROFILE (main.cpp): after the swap, the frame ends
+// (renderer_frame_end); then its record, as the members of a JSON object (its
+// CPU passes, draws, scene sizes and targets), and the GPU passes of frames
+// whose work has finished, oldest first, a few frames later. The WebGPU
+// renderer records nothing.
+void renderer_frame_end();
+bool renderer_profile_frame(long long &frame, std::string &record);
+bool renderer_profile_gpu(long long &frame, std::string &passes);
 // thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);
 // Monster Vision's silhouette density: two cell-local 5x5 alpha blurs.
