@@ -28,7 +28,7 @@ struct GroundVisibility {
   std::array<int, 4> bounds(int group, const float *positions, const float *directions,
                            const float *colors, const float *responses, const float *shapes,
                            bool beams) const {
-    float lo_x = rect[0] + rect[2], lo_y = rect[1] + rect[3], hi_x = rect[0], hi_y = rect[1];
+    float lo_x = INFINITY, lo_y = INFINITY, hi_x = -INFINITY, hi_y = -INFINITY;
     bool any = false;
     for (int i = group * 4; i < std::min(count, group * 4 + 4); ++i) {
       const float *p = positions + i * 4, *d = directions + i * 4, *r = responses + i * 4;
