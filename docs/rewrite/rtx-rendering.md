@@ -183,9 +183,9 @@ inputs, and native/browser rendering are unchanged.
 
 ### Remaining tradeoffs
 
-- Ground direct light and reflections share each source's coarse nearest-emitter
-  visibility. Beams retain analytic directional penumbrae; reflections reuse the
-  direct-light mask instead of tracing independent reflected rays. See see [Ground reflection occlusion](#ground-reflection-occlusion).
+- Ground direct light and reflections share each source's coarse visibility
+  mask. Beams retain analytic directional penumbrae; reflections reuse the
+  direct-light mask instead of tracing independent reflected rays. See [Ground reflection occlusion](#ground-reflection-occlusion).
 - Flame particles are grouped spatially, and a flame cell's light can still jump
   as the stream crosses cell boundaries.
 - Coverage, depth, and weighted wetness are per pixel, not a multilayer fluid
@@ -665,7 +665,7 @@ rather than tracing the displaced reflected-source point.
 ### Coarse visibility atlas
 
 OpenGL, WebGPU and Python/Raylib use the same `ground.frag` visibility pass and
-`ground_visibility.glsl` lookup. The atlas uses two world units per texel,
+`ground_visibility.glsl` lookup. The atlas uses four world units per texel,
 independent of display resolution. Its origin snaps to that world grid with a
 margin around the visible rectangle; its dimensions stay fixed during camera
 movement. All 32 canonical source IDs fit in eight RGBA groups, arranged 4×2.

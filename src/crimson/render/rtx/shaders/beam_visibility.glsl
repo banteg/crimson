@@ -209,8 +209,6 @@ float beamAtlasVisibility(int index, vec4 direction, vec2 world, vec4 sp_pos, ve
     float head_width = u_beam_shape[index].y;
     vec2 lit = x0 + vec2(min(ramp_window.x, head_window.x), max(ramp_window.y, head_window.y));
     float center = .5 * (lit.x + lit.y), halfspan = max(.5 * (lit.y - lit.x), 1e-3);
-    beamFanVisibility(vec3(world, 0.), vec3(sp_pos.xy + axis * center, max(.001, sp_pos.w)),
-                      max(.1, response.w), axis, halfspan);
     float width = halfspan * .25;
     vec4 s0 = center - halfspan + width * (vec4(0., 1., 2., 3.) + .5);
     vec4 s1 = s0 + 4. * width;
@@ -224,6 +222,11 @@ float beamAtlasVisibility(int index, vec4 direction, vec2 world, vec4 sp_pos, ve
     vec4 w0 = (r0 * width + head * h0) * f0 * f0;
     vec4 w1 = (r1 * width + head * h1) * f1 * f1;
     float total = dot(w0 + w1, vec4(1.));
-    return total > 0. ? (dot(w0, beam_bins[0]) + dot(w1, beam_bins[1])) / total : 1.;
+    // Halo support can include texels receiving no beam energy. Skip their
+    // gather before touching the grid; a nonpositive/invalid total stays white.
+    if (!(total > 0.)) return 1.;
+    beamFanVisibility(vec3(world, 0.), vec3(sp_pos.xy + axis * center, max(.001, sp_pos.w)),
+                      max(.1, response.w), axis, halfspan);
+    return (dot(w0, beam_bins[0]) + dot(w1, beam_bins[1])) / total;
 }
 

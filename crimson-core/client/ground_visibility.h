@@ -6,7 +6,7 @@
 // A color-independent field; its resolution is in world units, not display
 // pixels. One texel of margin keeps visible receivers inside the sampling grid.
 struct GroundVisibility {
-  static constexpr float texel = 2.f;
+  static constexpr float texel = 4.f;
   float rect[4] = {};
   int width = 0, height = 0, count = 0;
   void prepare(float camera_x, float camera_y, float view_width, float view_height, int sources, bool enabled) {

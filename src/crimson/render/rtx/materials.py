@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 # Every four selected sources share one RGBA group in a 4x2 coarse world-anchored
 # visibility atlas (ground_visibility.glsl), snapped to VISIBILITY_TEXEL world units.
 # The atlas binds past raylib's batch texture units, which hold the ground's maps.
-VISIBILITY_TEXEL = 2.0
+VISIBILITY_TEXEL = 4.0
 BEAM_VISIBILITY_ROWS = MAX_MATERIAL_LIGHTS // 16
 BEAM_VISIBILITY_UNIT = 5
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import struct
 from collections.abc import Sequence
 
@@ -330,6 +331,51 @@ def test_extended_beam_penumbra_is_directional_and_duplicate_lists_are_idempoten
             rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
             rl.end_shader_mode()
         assert _pixel(target)[:3] == pytest.approx(before, abs=.001)
+    finally:
+        renderer.close()
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
+
+
+
+def test_analytic_fan_finds_blocker_outside_the_center_ray_cells(raylib_context):
+    shader = _probe_shader("""
+    void main() {
+        vec3 receiver = vec3(64., 240., 0.), center = vec3(64., 20., 24.);
+        beamFanVisibility(receiver, center, 4.5, vec2(1., 0.), 160.);
+        float analytic = dot(beam_bins[0] + beam_bins[1], vec4(.125));
+        float reference = 0.;
+        for (int along = 0; along < 256; ++along) {
+            float offset = ((float(along) + .5) / 256. * 2. - 1.) * 160.;
+            for (int across = 0; across < 8; ++across) {
+                float transverse = ((float(across) + .5) / 8. * 2. - 1.) * 4.5;
+                reference += sourceVisibility(receiver, center + vec3(offset, transverse, 0.), .1, vec2(1e19));
+            }
+        }
+        finalColor = vec4(analytic, reference / 2048., sourceVisibility(receiver, center, .1, vec2(1e19)), 1.);
+    }
+    """)
+    target = load_float_render_texture(2, 2)
+    renderer = ReflectionOcclusion()
+    source = MaterialLight(Vec2(64, 20), 400, (1, 1, 1), height=24, source_width=4.5, length=320,
+                           direction=Vec2(1, 0))
+    body = BodyVolume(Vec2(160, 70), Vec2(16, 10), 40, 0)
+    try:
+        grid = build_occlusion_grid([body], [source], width=256, height=256)
+        # The center ray cannot discover this blocker through ordinary lists.
+        column = math.floor((64 - grid.origin.x) / grid.cell_size)
+        assert all(grid.values[(row * grid.columns + column) * 4 + 1] == 0 for row in range(grid.rows))
+        texture = renderer.upload(grid)
+        _uniform(shader, "u_occlusion_grid", [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)])
+        _uniform(shader, "u_occlusion_cell_size", [grid.cell_size])
+        with texture_mode(target):
+            rl.begin_shader_mode(shader)
+            rl.set_shader_value_texture(shader, rl.get_shader_location(shader, "u_occlusion_tex"), texture)
+            rl.draw_rectangle(0, 0, 2, 2, rl.WHITE)
+            rl.end_shader_mode()
+        analytic, reference, center = _pixel(target)[:3]
+        assert center == 1 and analytic < .95
+        assert analytic == pytest.approx(reference, abs=.05)
     finally:
         renderer.close()
         rl.unload_shader(shader)
