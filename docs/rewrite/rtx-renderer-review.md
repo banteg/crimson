@@ -7,8 +7,8 @@ tags:
 
 # RTX renderer review
 
-Reviewed: 2026-10-23. Updated: 2026-10-25, after follow-up reviews, measurements on
-the golden scenes and on a late-game replay, and the work they led to.
+Reviewed: 2026-10-23. Updated: 2026-10-26, after follow-up reviews, measurements on
+the golden scenes and on late-game replays, and the work they led to.
 
 Scope: Python RTX rendering and the client port that shares its shaders (the
 native GL client and the WebGPU web client): artistic direction, effect
@@ -54,6 +54,13 @@ The direction stays:
 | Frozen-crowd shadow cost | #895, #896 | Shadow lists were padded by the widest source's penumbra for every body; beam lists drop it, and the penumbra follows at most 8 units. A frozen crowd's ground fell from 118 to 39 ms |
 | Smoke half-circle | #897 | Smoke behind a shot with a dark tail cut off along a hard line; it now weights the shot's segment over its whole reach |
 | Ion arc pile | #900 | A Shock Chain into a piled crowd drew 5,351 arcs over the same pixels (93% of Classic's world fill). Each shot now draws at most two arcs per small cell, and RTX arcs batch: Classic's world 160 to 35 ms at the peak, RTX sprites 27.5 to 4.3 ms |
+| Volleys are one trigger pull | #905 | Volley merging joined any nearby shots of a kind, so converging spider plasma and crossing Fire Bullets merged and split frame to frame. A volley is now one pull's pellets; a pellet that leaves hands its light over across 6 ticks and never rejoins |
+| Players and bonus shells cast shadows | #906 | A torso ellipsoid per living player and the shell's dome per bonus join the creature body grid in Python and the client; their own muzzle flash and aura stay unshadowed |
+| Python-vs-client frame diff | #907 | `tools/rtx/golden.py` compares the two renderers on the golden scenes |
+| Pulse Gun | #908 | Shots draw as the original sprite's fitted dome with an HDR front glow, lit by a segment across the front |
+| Ground pass in late-game crowds | #909 | Beams light as one extended source (a closed-form integral of the stamp density, with one binned shadow walk), and their visibility is drawn at a quarter of the ground's resolution in passes of four. The late plasma run's ground fell from about 97 to 20 ms at its heaviest; costs and visual limits are in [RTX rendering](rtx-rendering.md#cost-and-visual-limits) |
+| Body grid upload | #910 | The client rotates the grid through three textures, so its upload never waits on the GPU |
+| Eval tooling | #911, #912 | One scripted run measures several moments of a replay (`CRIMSON_WATCH_MOMENTS`), and `CRIMSON_WATCH_CACHE` keeps a prepared replay on disk: classic 8.9 to 1.7 s and RTX 23.7 to 11.6 s per launch on the late plasma run |
 
 ## Disproven or dropped
 
@@ -87,27 +94,39 @@ The direction stays:
   crowds; with the crowd threshold scaled to cell area they were slower.
 - **A half-resolution additive layer.** It halved the arc pile but cost 0.4 to 0.9 ms
   in ordinary scenes.
+- **One-source beams at full resolution alone.** The single source made the light
+  more accurate but its shadow walk was mixed (18% faster to 65% slower against three
+  sections); the win came from drawing that visibility at a lower resolution.
+- **Reading CPU frame time with GPU timers on.** Each `CRIMSON_GPU_TIMERS` mark
+  submits work, which inflates the CPU's frame time. Profile the CPU with a sampler
+  and the timers off.
 
 ## Remaining, in priority order
 
-### 1. Ground pass cost in late-game crowds
+### 1. What is left of the late-game frame
 
-The ground pass is still most of RTX's GPU time: about 3 ms in quiet golden scenes,
-16 ms in the densest, and 65 to 75 ms at the late plasma run's arc peak, where all of
-Classic now takes 35. What is left there is beam-section shadow walks: every body is
-padded by a section's half-span (about 48 units). Try half-resolution beam
-visibility next; cell size is not a lever. Profile with `CRIMSON_GPU_TIMERS` and the
-draw counts before and after each change. Stable light selection (#886) may still
-need ranking by contribution to the visible receivers if captures show pops.
+With #909 the ground pass no longer dominates. Next, measured on the late plasma
+run with the timers off:
 
-### 2. Players and bonus shells as shadow casters
+- **CPU stalls.** The viewer's frame hold copies the back buffer every frame (about
+  42% of the stalled CPU time), and smoke switches framebuffers per slice (about
+  24%). Both are client-side and invisible in GPU timers.
+- **RTX seeks.** Rebuilding the terrain from a kept copy bakes the logged decals
+  again, and RTX bakes about 23 times slower than Classic (9.3 against 0.4 s for
+  the run's 34,000 batches), so a seek far from a copy stalls for seconds.
+- **Quarter-resolution beam shadows.** Shadow tips step by four pixels in direct
+  light, and blockers thinner than a texel lose their contact shadow; the shaded
+  frame hides most of it (p99.9 within two levels on the golden moments). If it
+  shows in play, try an edge-aware upsample before raising the resolution.
 
-Only creature bodies enter the occlusion grid; players and bonus shells receive
-light but cast nothing, and `player.frag` and `bonus.frag` skip body visibility.
-Add one body per player and per bonus shell to `build_occlusion_grid` (and
-`rtx_build_occlusion` in the client), with the self-exclusion creatures already
-use. Then keep only a restrained contact-shadow part of the native blob shadow
-where dynamic lights take over, so lit areas do not show a pasted-on double shadow.
+Stable light selection (#886) may still need ranking by contribution to the visible
+receivers if captures show pops.
+
+### 2. Contact shadows under lit players
+
+Players and bonus shells now cast body shadows (#906), but the native blob shadow
+still draws under them. Keep only a restrained contact-shadow part of it where
+dynamic lights take over, so lit areas do not show a pasted-on double shadow.
 
 ### 3. Lit freezing, then hot smoke
 
@@ -163,10 +182,14 @@ lit shaders would leave the frame with two conventions, and macOS and Wayland
 presentation assume the current gamma-domain frame. Write the color contract
 first, then move every world path together, with SDR and HDR comparisons.
 
+A first prototype keeps the whole world in linear light (artwork decoded on load,
+encoded once before the tonemap). Without smoke it matches today's frame (44.5
+against 44.9 mean luma on a late moment), but today's fluid smoke adds about 66
+levels of haze there and only about 3 in linear, and why is not yet understood.
+The smoke decides it: find that mechanism before choosing a look.
+
 ### Housekeeping
 
-- A Python-vs-client RTX frame diff. #885 compared one golden scene by hand
-  (heat pixels within about five levels); a tool would make it routine.
 - Late-activation note for the client, as above.
 
 ## Later polish
@@ -225,14 +248,14 @@ reflection and scattering rather than broad red light.
 
 | Effect or material | Already connected | Still missing |
 | --- | --- | --- |
-| Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers; stable budgets with fades | Player and bonus occlusion (2) |
-| Ion and fire beams | Analytic visible body; segment lighting with one shared profile; continuous ground response; projected shadows; smoke scattering; ion arcs | Ice and material-specific response (3) |
+| Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers; stable budgets with fades; players and bonuses shadow them | Contact shadows under lit players (2) |
+| Ion and fire beams | Analytic visible body; one extended source with closed-form ground light; binned shadows at a quarter resolution; smoke scattering; ion arcs | Ice and material-specific response (3) |
 | Explosions | Fireball, warm shell, light, pressure refraction, smoke, blast airflow and scorch coordinated | Hot smoke (3); heat on ice and wet ground |
 | Blood, corpses, brass, scorch | Ordered coverage, displacement, wetness, aging, absorption, relief, reflections; neutral sky over blood | Saturation (4); footprints later |
 | Ice and freeze | Ground ice attenuates blood and changes roughness and height; heat cools frozen monsters | Lit frozen-creature material, shatter glint and steam (3) |
-| Creatures and players | Creatures cast body-proxy shadows and receive diffuse, specular and transmission; players receive cloth lighting | Players as occluders and contact shadows (2); per-species materials (later) |
+| Creatures and players | Creatures and players cast body-proxy shadows; creatures receive diffuse, specular and transmission, players cloth lighting | Contact shadows under lit players (2); per-species materials (later) |
 | Smoke | Density, heat, advection, self-extinction, scattering with the shared beam profile, sight attenuation, blast response | Bands (6); body occlusion after profiling; soot, heat and steam profiles (3) |
-| Bonuses | Obsidian shell, foil emblem, clear coat, dynamic reflections | Shadows and contact (2); fewer own limiters (5) |
+| Bonuses | Obsidian shell, foil emblem, clear coat, dynamic reflections; shells cast body shadows | Fewer own limiters (5) |
 | Shockwaves | Distort world and smoke together, keep the HUD, reuse explosion shell timing | Optional small wet-surface ripple |
 | Radioactive, Monster Vision, Sharpshooter | Distinct responses: a pulsing material light, heat bodies and trails, a narrow sight | Keep their gameplay roles distinct |
 
