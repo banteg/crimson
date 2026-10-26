@@ -6,6 +6,7 @@
 #include "client.h"
 #include "network.h"
 #include "assets.h"
+#include <algorithm>
 #include <memory>
 #include <ctime>
 #include "../game/host_input.h"
@@ -429,6 +430,12 @@ u32 w2c_host_render_mode(struct w2c_host *, u32 requested) {
 // CRIMSON_WATCH_CACHE=1 keeps the prepared replay in the game folder's
 // cache/prepared under this build (host/watch_cache.inc), so the next run of it
 // skips preparing.
+// CRIMSON_WATCH_MOMENTS=<tick>,<tick>,... measures several moments of one
+// prepared replay instead: playback goes CRIMSON_WATCH_WINDOW ticks (240) before
+// each, plays to it and pauses there, then goes on to the next; the run ends
+// once the last has drawn. With CRIMSON_CAPTURE each moment's frame is saved.
+std::vector<int> watch_moments;
+int watch_window = 240;
 void watch_from_env() {
   static bool asked;
   const char *path = getenv("CRIMSON_WATCH");
@@ -445,7 +452,16 @@ void watch_from_env() {
   snprintf((char *)client_memory() + w2c_game_game_watch_name(&game), 32, "%s", name);
   if (!w2c_game_game_replay_open(&game) || !w2c_game_game_watch(&game, rank, day, month, year))
     client_fatal("CRIMSON_WATCH: this replay does not play");
-  if (const char *seek = getenv("CRIMSON_WATCH_SEEK"))
+  if (const char *window = getenv("CRIMSON_WATCH_WINDOW"))
+    watch_window = atoi(window);
+  for (const char *p = getenv("CRIMSON_WATCH_MOMENTS"); p && *p; p = strchr(p, ',') ? strchr(p, ',') + 1 : "")
+    watch_moments.push_back(atoi(p));
+  // Each moment plays its window up to it, past the run's first tick.
+  if (!watch_moments.empty() && (watch_window < 1 || *std::min_element(watch_moments.begin(), watch_moments.end()) < 2))
+    client_fatal("CRIMSON_WATCH_MOMENTS: moments start at tick 2, CRIMSON_WATCH_WINDOW at 1");
+  if (!watch_moments.empty())
+    w2c_game_game_watch_seek(&game, std::max(1, watch_moments[0] - watch_window));
+  else if (const char *seek = getenv("CRIMSON_WATCH_SEEK"))
     w2c_game_game_watch_seek(&game, atoi(seek));
   // A hash-named replay goes by its first 8 digits.
   std::string file = path;
@@ -457,7 +473,10 @@ void watch_from_env() {
   const char *stop = getenv("CRIMSON_WATCH_STOP");
   if (!stop)
     stop = getenv("CRIMSON_CAPTURE_TICK");
-  if (stop) {
+  if (!watch_moments.empty()) {
+    w2c_game_game_watch_stop_at(&game, watch_moments[0]);
+    watch_label += " at " + std::to_string(watch_moments.size()) + " moments";
+  } else if (stop) {
     w2c_game_game_watch_stop_at(&game, atoi(stop));
     watch_label += " to tick " + std::to_string(atoi(stop));
   }
@@ -1267,15 +1286,26 @@ SDL_AppResult SDL_AppIterate(void *) {
   // A moment's frame, once the replay has held on it for a frame. A run that
   // only stops there ends there too, unless it captures frames past it.
   static const int capture_tick = unattended && getenv("CRIMSON_CAPTURE_TICK") ? atoi(getenv("CRIMSON_CAPTURE_TICK")) : 0;
-  static const int end_tick = capture_tick ? capture_tick
-                              : getenv("CRIMSON_WATCH_STOP") && !getenv("CRIMSON_CAPTURE_FRAMES")
-                                  ? atoi(getenv("CRIMSON_WATCH_STOP"))
-                                  : 0;
+  // Moments go first, as watch_from_env arms them; with CRIMSON_CAPTURE each one's frame is kept.
+  static int end_tick = !watch_moments.empty()                                             ? watch_moments[0]
+                        : capture_tick                                                     ? capture_tick
+                        : getenv("CRIMSON_WATCH_STOP") && !getenv("CRIMSON_CAPTURE_FRAMES") ? atoi(getenv("CRIMSON_WATCH_STOP"))
+                                                                                            : 0;
   static int held_frames;
-  if (end_tick && (int)w2c_game_game_watch_paused_tick(&game) == end_tick && ++held_frames == 2) {
-    if (capture_tick)
-      write_capture("tick_" + std::to_string(capture_tick));
-    w2c_game_game_close(&game);
+  static size_t moment;
+  int paused_tick = end_tick ? (int)w2c_game_game_watch_paused_tick(&game) : 0;
+  if (end_tick && !paused_tick && (int)w2c_game_game_watch_status(&game) > 0)
+    client_fatal(("CRIMSON_WATCH: the replay ended before tick " + std::to_string(end_tick)).c_str());
+  if (end_tick && paused_tick == end_tick && ++held_frames == 2) {
+    if (capture_tick || (unattended && !watch_moments.empty()))
+      write_capture("tick_" + std::to_string(end_tick));
+    if (++moment < watch_moments.size()) {
+      end_tick = watch_moments[moment];
+      held_frames = 0;
+      if (!w2c_game_game_watch_moment(&game, std::max(1, end_tick - watch_window), end_tick))
+        client_fatal(("CRIMSON_WATCH_MOMENTS: tick " + std::to_string(end_tick) + " is not in the replay").c_str());
+    } else
+      w2c_game_game_close(&game);
   }
 #ifdef __EMSCRIPTEN__
   // At most once a second, and on gameplay transitions. The browser measures
