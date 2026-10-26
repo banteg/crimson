@@ -458,7 +458,7 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
                      : 1.0f;
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
-@@ -204,6 +204,12 @@
+@@ -204,6 +204,14 @@
          "openurl", console_cmd_open_url);
      console_log_queue.console_register_command(
          "sndfreqadjustment", console_cmd_snd_freq_adjustment);
@@ -468,6 +468,8 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
 +        "togglertx", console_cmd_toggle_rtx);
 +    console_log_queue.console_register_command(
 +        "rtxsmoke", console_cmd_rtx_smoke);
++    console_log_queue.console_register_command(
++        "rendersize", console_cmd_render_size);
  
      memset(registry_key_status_root_path, 0, 0xff);
      registry_key_status_root_path[0] = 'S';

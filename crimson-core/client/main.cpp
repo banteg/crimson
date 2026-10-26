@@ -32,6 +32,7 @@
 
 struct w2c_host {};
 struct w2c_wasi__snapshot__preview1 {};
+float render_size = 2;
 
 namespace {
 
@@ -419,6 +420,12 @@ u32 w2c_host_render_mode(struct w2c_host *, u32 requested) {
   MAIN_THREAD_EM_ASM({ Module.renderMode?.($0); }, rtx);
 #endif
   return rtx;
+}
+// The console's rendersize (game/rtx.cpp), which the next world drawn takes.
+f32 w2c_host_render_size(struct w2c_host *, f32 limit) {
+  if (limit >= 0)
+    render_size = limit;
+  return render_size;
 }
 }
 

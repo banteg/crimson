@@ -1647,10 +1647,12 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
   if (!rtx || !back.texture)
     return;
   if (pass_kind == HOST_PASS_WORLD_BEGIN) { // The world goes over what the frame drew so far.
-    if (hdr.width != back.width || hdr.height != back.height || !hdr.texture) {
+    int width = back.width, height = back.height;
+    world_size(back.logical_width, width, height);
+    if (hdr.width != width || hdr.height != height || !hdr.texture) {
       release(hdr);
-      hdr.width = back.width;
-      hdr.height = back.height;
+      hdr.width = width;
+      hdr.height = height;
       hdr.flags = back.flags | TARGET_HALF_FLOAT;
       allocate(hdr);
     }
@@ -1700,7 +1702,10 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     Uniforms fragment(*tonemap.frag);
     fragment.v4("colDiffuse", 1, 1, 1, 1).f("u_edr_headroom", edr_headroom);
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(tonemap, o));
-    bind(tonemap, fragment_group(tonemap, {{"texture0", world_image->view, nearest_clamp()}}), nullptr, &fragment);
+    // A world drawn smaller (render_size) scales up as it tonemaps.
+    bool exact = world_image->width == back.width && world_image->height == back.height;
+    bind(tonemap, fragment_group(tonemap, {{"texture0", world_image->view, exact ? nearest_clamp() : linear_clamp()}}),
+         nullptr, &fragment);
     wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
     end_pass();
   }

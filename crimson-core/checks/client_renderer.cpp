@@ -9,6 +9,7 @@
 
 alignas(16) u8 memory[1024 * 1024];
 u8 *client_memory() { return memory; }
+float render_size = 2;
 [[noreturn]] void client_fatal(const char *message) {
   fprintf(stderr, "%s\n", message);
   abort();
@@ -593,6 +594,19 @@ void check_rtx() {
     assert(highlight > 0.85f && (headroom == 1 ? highlight <= 1 : highlight > 1 && highlight < powf(4, 1 / 2.2f)));
     limit = highlight;
   }
+  // Past twice the game's resolution the world draws at twice it (rendersize)
+  // and scales up as it tonemaps, while the back buffer keeps the display's
+  // pixels for the HUD; 0 lifts the cap.
+  int window_width = drawable_width, window_height = drawable_height;
+  renderer_resize(3840, 2160);
+  world();
+  assert(textures[0].width == 2880 && hdr.width == 2048 && hdr.height == 1536);
+  assert(fabsf(back_red(100, 100) - limit) < 1e-3f && fabsf(back_red(700, 100) - 128 / 255.0f) < 1e-3f);
+  render_size = 0;
+  world();
+  assert(hdr.width == 2880 && hdr.height == 2160);
+  render_size = 2;
+  renderer_resize(window_width, window_height);
   assert(!renderer_set_rtx(false) && !(textures[0].flags & TARGET_HALF_FLOAT));
   assert(fabsf(back_red(100, 100) - 1) < 1e-3f && limit > 1); // the switch kept the image, clipped to 8 bits
   world();

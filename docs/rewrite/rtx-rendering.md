@@ -412,6 +412,13 @@ Controls:
 - console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`, `rtxsmoke <on|off>`
 - `rendermode rtx` in the game folder's `autoexec.txt`, which the original runs at
   startup, keeps the mode across launches
+- `rendersize <multiple|native>` caps the world's pixels at a multiple of the game's
+  resolution, at least 1 (2 by default, the terrain's own density), or lifts the cap.
+  On a larger display, such as a 5K screen in full screen, the world draws at the cap
+  and the tonemap scales it up, while the HUD and its text keep the display's pixels;
+  past twice the game's resolution a display gains little sharpness for a GPU cost
+  that grows with every pixel. Classic always draws at the display's resolution. The
+  browser's WebGPU renderer takes the same cap
 
 ## Browser client
 
