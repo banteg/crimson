@@ -44,10 +44,10 @@ bool renderer_uses_gl() { return true; }
 namespace {
 
 // CRIMSON_PROFILE (client/main.cpp): each frame's passes, as the marks between
-// them name them (gpu_mark), with the CPU time from one mark to the next and the
-// GPU time a timer query measures. The queries are read once the GPU has
-// finished them, a few frames on, so the CPU never waits on them (more than
-// PROFILE_PENDING frames behind, it does). Also the frame's draws by pass,
+// them name them (gpu_mark), with the CPU time from one mark to the next and, on
+// timed frames (gpu_every), the GPU time a timer query measures. A timed frame
+// reads the earlier ones' queries, finished by then (a frame more than
+// PROFILE_PENDING timed frames behind is waited on). Also the frame's draws by pass,
 // texture and target (quads and the target pixels they cover), the scene's
 // sizes the host imports send (profile_stat), and the targets the frame has.
 // WebGL2 has no timer queries.
@@ -63,6 +63,13 @@ const bool profiling = false;
 #else
 const bool profiling = getenv("CRIMSON_PROFILE");
 #endif
+// CRIMSON_PROFILE_GPU=<n>: the GPU's times on every n-th frame (8 by default; 0
+// none, 1 all). On macOS ending or reading a timer query flushes the driver's
+// command buffer, so a timed frame splits into one per pass: a GPU-bound frame
+// then runs slower (about 4 ms late in a run) and waits in the pass after a
+// costly one instead of at the swap. The frames in between run as they would.
+const int gpu_every = !profiling ? 0 : getenv("CRIMSON_PROFILE_GPU") ? atoi(getenv("CRIMSON_PROFILE_GPU")) : 8;
+bool gpu_timed; // this frame's passes are timed
 constexpr size_t PROFILE_PENDING = 4;
 struct PendingFrame {
   long long frame;
@@ -91,16 +98,18 @@ double profile_now() {
 void gpu_mark(const char *label) {
   if (!profiling || (!gpu_frame.empty() && !strcmp(gpu_frame.back().label, label)))
     return;
-  if (!gpu_frame.empty())
-    glEndQuery(GL_TIME_ELAPSED);
-  GLuint query;
-  if (gpu_queries.empty()) {
-    glGenQueries(1, &query);
-  } else {
-    query = gpu_queries.back();
-    gpu_queries.pop_back();
+  GLuint query = 0;
+  if (gpu_timed) {
+    if (!gpu_frame.empty())
+      glEndQuery(GL_TIME_ELAPSED);
+    if (gpu_queries.empty()) {
+      glGenQueries(1, &query);
+    } else {
+      query = gpu_queries.back();
+      gpu_queries.pop_back();
+    }
+    glBeginQuery(GL_TIME_ELAPSED, query);
   }
-  glBeginQuery(GL_TIME_ELAPSED, query);
   gpu_frame.push_back({label, query, profile_now()});
 }
 // Drawing off the back buffer outside the world's passes (terrain decal bakes,
@@ -1026,7 +1035,8 @@ static double target_bytes(const Target &t) {
 void GL_ENTRY(renderer_frame_end)() {
   if (!profiling || gpu_frame.empty())
     return gpu_mark("frame");
-  glEndQuery(GL_TIME_ELAPSED);
+  if (gpu_timed)
+    glEndQuery(GL_TIME_ELAPSED);
   double end = profile_now();
   std::string draws, scene;
   char entry[192];
@@ -1048,15 +1058,18 @@ void GL_ENTRY(renderer_frame_end)() {
            back.height, rtx ? hdr.width : back.width, rtx ? hdr.height : back.height, textures.size(), bytes / (1 << 20));
   profile_cpu = "\"cpu\":" + pass_times(gpu_frame, [&](size_t i) {
                   return (i + 1 < gpu_frame.size() ? gpu_frame[i + 1].cpu_at : end) - gpu_frame[i].cpu_at;
-                }) + ",\"draws\":{" + draws + "},\"scene\":{" + scene + "}" + entry;
+                }) + ",\"timed\":" + (gpu_timed ? "true" : "false") + ",\"draws\":{" + draws + "},\"scene\":{" + scene + "}" + entry;
   profile_cpu_ready = true;
-  gpu_pending.push_back({profile_frames++, std::move(gpu_frame)});
-  gpu_frame.clear();
+  ++profile_frames;
   draw_frame.clear();
   profile_scene.clear();
   gpu_resume_label = nullptr;
-  // Queries finish in order: a frame whose last has is done.
-  while (!gpu_pending.empty()) {
+  // Earlier timed frames are read only after a timed one, which reading them
+  // perturbs no further: queries finish in order, so a frame whose last has is
+  // done.
+  if (gpu_timed)
+    gpu_pending.push_back({profile_frames - 1, std::move(gpu_frame)});
+  while (gpu_timed && !gpu_pending.empty()) {
     PendingFrame &f = gpu_pending.front();
     GLuint available = 0;
     glGetQueryObjectuiv(f.timers.back().query, GL_QUERY_RESULT_AVAILABLE, &available);
@@ -1072,6 +1085,8 @@ void GL_ENTRY(renderer_frame_end)() {
     profile_gpu.emplace_back(f.frame, pass_times(f.timers, [&](size_t i) { return ms[i]; }));
     gpu_pending.pop_front();
   }
+  gpu_frame.clear();
+  gpu_timed = gpu_every && profile_frames % gpu_every == 0;
   gpu_mark("frame");
 }
 // The last frame's record (its CPU passes, draws, scene and targets), once.

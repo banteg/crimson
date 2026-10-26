@@ -73,6 +73,8 @@ def capture_scene(scene: dict, mode: str, game: Path, out: Path, client: Path) -
         # Scenes share replays, and runs repeat: each replay prepares once per client build and mode.
         "CRIMSON_WATCH_CACHE": "1",
         "CRIMSON_PROFILE": str(work / "profile.jsonl"),
+        # Every frame's GPU passes: a capture's own frame times do not count.
+        "CRIMSON_PROFILE_GPU": "1",
         "CRIMSON_MUTE": "1",
         "CRIMSON_RTX": "1" if mode == "rtx" else "0",
     }
