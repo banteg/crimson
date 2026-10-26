@@ -1104,7 +1104,7 @@ bool wgpu_renderer_set_rtx(bool enabled) {
 void wgpu_renderer_set_headroom(float) {}
 // WebGPU's timestamp queries need a device feature the page does not ask for.
 void wgpu_renderer_frame_end() {}
-bool wgpu_renderer_profile_frame(long long &, std::string &) { return false; }
+bool wgpu_renderer_profile_frame(long long &, std::string &, bool &) { return false; }
 bool wgpu_renderer_profile_gpu(long long &, std::string &) { return false; }
 
 extern "C" {

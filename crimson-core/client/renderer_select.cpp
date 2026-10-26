@@ -15,7 +15,7 @@
   X(bool, renderer_set_rtx, (bool enabled), (enabled))                                                                \
   X(void, renderer_set_headroom, (float headroom), (headroom))                                                        \
   X(void, renderer_frame_end, (), ())                                                                                 \
-  X(bool, renderer_profile_frame, (long long &f, std::string &r), (f, r))                                             \
+  X(bool, renderer_profile_frame, (long long &f, std::string &r, bool &t), (f, r, t))                                 \
   X(bool, renderer_profile_gpu, (long long &f, std::string &p), (f, p))
 #define HOST_ENTRIES(X)                                                                                               \
   X(frame_hold, (struct w2c_host * h, u32 op), (h, op))                                                               \
