@@ -27,9 +27,10 @@ from .continuous_beam import FIRE_DIRECT_GAIN, ION_DIRECT_GAIN, prepare_beam_lig
 from .hdr import _HDR_TONEMAP_VS_330
 from .heat_vision import HeatVision
 from .material_history import MaterialHistory
-from .material_lights import MaterialLight, collect_material_lights
+from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight, collect_material_lights
 from .material_shaders import BEAM_VISIBILITY_FRAGMENT, GROUND_FRAGMENT, STAMP_FRAGMENT
 from .reflection_occlusion import (
+    PENUMBRA_WIDTH,
     ReflectionOcclusion,
     bonus_body_volumes,
     build_occlusion_grid,
@@ -41,11 +42,12 @@ if TYPE_CHECKING:
     from ..frame import RenderFrame
 
 
-# Beams whose visibility a pass draws at 1/BEAM_VISIBILITY_SCALE of the ground's resolution (ground.frag's
-# BEAM_VISIBILITY_PASS), which the ground then reads instead of walking the body grid per pixel: four groups of four
-# slots side by side in one atlas. The atlas binds past raylib's batch texture units, which hold the ground's maps.
+# Soft sources (beams, and discs and rings at least PENUMBRA_WIDTH wide) whose visibility a pass draws at
+# 1/BEAM_VISIBILITY_SCALE of the ground's resolution (ground.frag's BEAM_VISIBILITY_PASS), which the ground then reads
+# instead of walking the body grid per pixel: a group of four slots per four lights, four groups a row in one atlas.
+# The atlas binds past raylib's batch texture units, which hold the ground's maps.
 BEAM_VISIBILITY_SCALE = 4
-BEAM_VISIBILITY_SLOTS = 16
+BEAM_VISIBILITY_ROWS = MAX_MATERIAL_LIGHTS // 16
 BEAM_VISIBILITY_UNIT = 5
 
 _FLOAT_UNIFORM_KINDS = {
@@ -490,20 +492,28 @@ class MaterialGroundRenderer(GroundRenderer):
         put("u_spec_dir[0]", [v for light in lights for v in
                               (light.direction.x, light.direction.y, float(light.broad_illumination), light.length)], 4)
         put("u_spec_response[0]", [v for light in lights for v in light.response], 4)
-        # Lit beams take the slots in light order; the rest walk the grid in the ground's own pass.
-        slots = [0.0] * (len(lights) + -len(lights) % 4)
+        # Lit beams take the slots in light order, then wide discs and rings join them (a pass of their own would
+        # cost the world its render pass for less than it saves); the rest walk the grid in the ground's own pass.
+        slots = [0.0] * (4 * len(lights))
         count = 0
         if draw_view is not None and shadows and grid.body_count:
             for i in range(len(lights)):
-                if shapes[i * 4 + 3] > 0 and count < BEAM_VISIBILITY_SLOTS:
+                if shapes[i * 4 + 3] > 0:
                     count += 1
-                    slots[i] = float(count)
+                    slots[4 * i] = float(count)
+            for i, light in enumerate(lights):
+                illumination, _, _, width = light.response
+                if count and shapes[i * 4 + 3] <= 0 and illumination > 0 and (
+                    light.ring_radius > 0 or width >= PENUMBRA_WIDTH
+                ):
+                    count += 1
+                    slots[4 * i] = float(count)
         put("u_beam_slots[0]", slots or [0.0] * 4, 4)
         atlas = self._beam_visibility(uniforms, draw_view, occlusion_texture, count) if count else None
         if atlas is not None:
             render_w, render_h = current_target_size()
-            put("u_beam_vis_target", [float(render_w), float(render_h),
-                                      float(atlas.texture.width // 4), float(atlas.texture.height)])
+            put("u_beam_vis_target", [float(render_w), float(render_h), float(atlas.texture.width // 4),
+                                      float(atlas.texture.height // BEAM_VISIBILITY_ROWS)])
         _apply_uniforms(sh, self.material_locations, uniforms)
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,
         # since rlgl flushes (and clears sampler bindings) when changing blend modes.
@@ -532,7 +542,7 @@ class MaterialGroundRenderer(GroundRenderer):
         self, uniforms: list[tuple[str, list[float], int]], draw_view: Callable[[], None] | None,
         occlusion: rl.Texture | None, count: int,
     ) -> rl.RenderTexture:
-        """The atlas the slots' groups draw into, a quarter of it each, at BEAM_VISIBILITY_SCALE of the target."""
+        """The atlas the slots' groups draw into, a part of it each, at BEAM_VISIBILITY_SCALE of the target."""
         assert draw_view is not None
         if self.beam_shader is None:
             self.beam_shader = _shader(BEAM_VISIBILITY_FRAGMENT)
@@ -540,19 +550,21 @@ class MaterialGroundRenderer(GroundRenderer):
         scale_x, scale_y = current_target_scale()
         width, height = max(1, render_w // BEAM_VISIBILITY_SCALE), max(1, render_h // BEAM_VISIBILITY_SCALE)
         atlas = self.beam_atlas
-        if atlas is None or int(atlas.texture.width) != 4 * width or int(atlas.texture.height) != height:
+        rows = BEAM_VISIBILITY_ROWS
+        if atlas is None or int(atlas.texture.width) != 4 * width or int(atlas.texture.height) != rows * height:
             if atlas is not None:
                 rl.unload_render_texture(atlas)
-            atlas = self.beam_atlas = load_float_render_texture(4 * width, height)
+            atlas = self.beam_atlas = load_float_render_texture(4 * width, rows * height)
             rl.set_texture_filter(atlas.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         shader = self.beam_shader
         _apply_uniforms(shader, self.beam_locations, uniforms)
-        # The view fills the atlas's projection; each group's viewport squeezes it into its quarter.
-        with texture_mode(atlas, scale_x=scale_x * 4 * width / render_w, scale_y=scale_y * height / render_h), opaque_blend():
+        # The view fills the atlas's projection; each group's viewport squeezes it into its part.
+        with texture_mode(atlas, scale_x=scale_x * 4 * width / render_w, scale_y=scale_y * rows * height / render_h), \
+                opaque_blend():
             rl.clear_background(rl.WHITE)
             for group in range((count + 3) // 4):
                 rl.rl_draw_render_batch_active()
-                rl.rl_viewport(group * width, 0, width, height)
+                rl.rl_viewport(group % 4 * width, group // 4 * height, width, height)
                 rl.begin_shader_mode(shader)
                 try:
                     if occlusion is not None:
@@ -562,5 +574,5 @@ class MaterialGroundRenderer(GroundRenderer):
                     draw_view()
                 finally:
                     rl.end_shader_mode()
-            rl.rl_viewport(0, 0, 4 * width, height)
+            rl.rl_viewport(0, 0, 4 * width, rows * height)
         return atlas

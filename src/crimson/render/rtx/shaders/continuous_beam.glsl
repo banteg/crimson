@@ -91,13 +91,15 @@ float beamVisibility(int index, vec4 direction, vec2 world, vec4 sp_pos, vec4 re
     return total > 0. ? (dot(w0, beam_bins[0]) + dot(w1, beam_bins[1])) / total : 1.;
 }
 
-// The beams' visibility from passes at a lower resolution (ground.frag's BEAM_VISIBILITY_PASS): an atlas of four
-// groups side by side, each group's four slots in a texel's channels. A beam without a slot (no pass ran, or more
-// beams than slots) walks the grid itself.
-uniform vec4 u_beam_slots[MAX_SPEC_LIGHTS / 4]; // each light's slot plus one, four a vec4; 0 for none
+// The soft sources' visibility (beams, wide discs and rings) from passes at a lower resolution (ground.frag's
+// BEAM_VISIBILITY_PASS): an atlas of a group per four lights, four groups a row, each group's four slots in a texel's
+// channels. A source without a slot (no pass ran, or a sharp one) walks the grid itself.
+// A vec4 a light, its slot plus one in x (0 for none): a per-light component select costs the ground's loop.
+uniform vec4 u_beam_slots[MAX_SPEC_LIGHTS];
+const int VISIBILITY_ROWS = MAX_SPEC_LIGHTS / 16;
 
 int beamSlot(int index) {
-    return int(u_beam_slots[index / 4][index - index / 4 * 4] + .5) - 1;
+    return int(u_beam_slots[index].x + .5) - 1;
 }
 
 #ifdef BEAM_VISIBILITY_PASS
@@ -109,11 +111,12 @@ uniform vec4 u_beam_vis_target; // the receiving target's pixels, then one group
 
 float beamVisibilityRead(int slot) {
     int group = slot / 4, lane = slot - group * 4;
-    // Kept half a texel inside the group's quarter, so filtering never reaches the next group's.
+    // Kept half a texel inside the group's part, so filtering never reaches the next group's.
     vec2 inset = .5 / u_beam_vis_target.zw;
     vec2 uv = clamp(gl_FragCoord.xy / u_beam_vis_target.xy, inset, 1. - inset);
     // An explicit level: WGSL samples only in uniform control flow otherwise, and the atlas has no mipmaps.
-    vec4 v = textureLod(u_beam_vis, vec2((float(group) + uv.x) * .25, uv.y), 0.);
+    vec2 corner = vec2(float(group - group / 4 * 4), float(group / 4));
+    vec4 v = textureLod(u_beam_vis, (corner + uv) / vec2(4., float(VISIBILITY_ROWS)), 0.);
     return lane == 0 ? v.x : lane == 1 ? v.y : lane == 2 ? v.z : v.w;
 }
 #endif

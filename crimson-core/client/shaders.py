@@ -38,7 +38,7 @@ PROGRAMS = {
     "tonemap": (CLIENT_SHADERS / "fullscreen.vert", RTX_SHADERS / "hdr_tonemap.frag"),
     "beam": (CLIENT_SHADERS / "beam.vert", RTX_SHADERS / "beam.frag"),
     "effect": (CLIENT_SHADERS / "effect.vert", RTX_SHADERS / "effect.frag"),
-    "creature": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "creature.frag"),
+    "creature": (CLIENT_SHADERS / "creature_lit.vert", RTX_SHADERS / "creature.frag"),
     "player": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "player.frag"),
     "bonus": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "bonus.frag"),
     "ground": (CLIENT_SHADERS / "creature.vert", CLIENT_SHADERS / "ground_lit.frag"),
@@ -57,7 +57,7 @@ PROGRAMS = {
 }
 # glslang's arguments per stage: where each stage's uniform block and textures go.
 STAGE_ARGS = {
-    "vert": ["--sdub", "VertexUniforms", "1", "0"],
+    "vert": ["--sdub", "VertexUniforms", "1", "0", "--rsb", "vert", "1", "--stb", "vert", "1"],
     "frag": ["--sdub", "FragmentUniforms", "0", "0", "--stb", "frag", "1"],
 }
 # GL type codes of glslang's reflection, by byte size.

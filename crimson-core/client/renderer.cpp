@@ -156,6 +156,9 @@ unsigned render_states[256];
 unsigned stage_states[STAGES][32];
 int bound[STAGES];
 GLuint program, present_program, vertex_array, vertex_buffer, index_buffer, samplers[STAGES], gamma_texture;
+// The lit creatures' quad centers (quad_centers), vertex attribute 3 while they draw.
+GLuint center_buffer;
+std::vector<float> centers;
 // Bound to a stage with no texture: the shader never samples it, but a sampler
 // needs a complete texture behind it.
 GLuint blank_texture;
@@ -182,6 +185,7 @@ const char *tonemap_fragment_source = SHADER_HEADER RTX_SHADER_HDR_TONEMAP_FRAG;
 const char *beam_vertex_source = SHADER_HEADER SHADER_BEAM_VERT;
 const char *beam_fragment_source = SHADER_HEADER RTX_SHADER_BEAM_FRAG;
 const char *lit_vertex_source = SHADER_HEADER SHADER_CREATURE_VERT;
+const char *creature_lit_vertex_source = SHADER_HEADER SHADER_CREATURE_LIT_VERT;
 const char *creature_fragment_source = SHADER_HEADER RTX_SHADER_CREATURE_FRAG;
 const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
 const char *bonus_fragment_source = SHADER_HEADER RTX_SHADER_BONUS_FRAG;
@@ -266,10 +270,11 @@ std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
 GLuint ground_program, stamp_program, fill_program;
-// The beams' visibility at a quarter of the ground's resolution (ground.frag's
-// BEAM_VISIBILITY_PASS): four groups of four slots side by side in one atlas,
-// which the ground reads instead of walking the body grid per pixel.
-enum { BEAM_VISIBILITY_SCALE = 4, BEAM_VISIBILITY_SLOTS = 16 };
+// The soft sources' visibility at a quarter of the ground's resolution
+// (ground.frag's BEAM_VISIBILITY_PASS): a group of four slots per four lights,
+// four groups a row in one atlas, which the ground reads instead of walking the
+// body grid per pixel.
+enum { BEAM_VISIBILITY_SCALE = 4, BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
 GLuint ground_beam_vis_program, beam_vis_framebuffer, beam_vis_texture;
 int beam_vis_width, beam_vis_height;
 GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
@@ -461,8 +466,8 @@ void apply_output_state(const Target &t) {
   glColorMask(mask & 1, mask & 2, mask & 4, (mask & 8) && !(t.flags & 2));
 }
 
-void create_lit(LitProgram &p, const char *fragment) {
-  p.id = link(lit_vertex_source, fragment);
+void create_lit(LitProgram &p, const char *vertex, const char *fragment) {
+  p.id = link(vertex, fragment);
   glUseProgram(p.id);
   glUniform1i(glGetUniformLocation(p.id, "texture0"), 0);
   glUniform1i(glGetUniformLocation(p.id, "u_thickness"), 1);
@@ -612,7 +617,18 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   glActiveTexture(GL_TEXTURE0);
   apply_output_state(t);
   glDisable(GL_CULL_FACE);
+  bool creatures = &p == &creature_lit;
+  if (creatures) {
+    centers.resize((size_t)vertex_count * 2);
+    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data());
+    glBindVertexArray(vertex_array);
+    glBindBuffer(GL_ARRAY_BUFFER, center_buffer);
+    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(centers.size() * sizeof(float)), centers.data(), GL_STREAM_DRAW);
+    glEnableVertexAttribArray(3);
+  }
   submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
+  if (creatures)
+    glDisableVertexAttribArray(3);
   return true;
 }
 
@@ -800,13 +816,20 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
-  // Lit beams take the slots in light order; the rest walk the grid in the ground's own pass.
-  float slots[MAX_LIGHTS] = {};
+  // Lit beams take the slots in light order, then wide discs and rings join
+  // them (a pass of their own would cost the world its render pass for less
+  // than it saves); the rest walk the grid in the ground's own pass.
+  float slots[MAX_LIGHTS * 4] = {};
   int count = 0;
-  if (beam_lights && dynamic_shadows && occlusion_grid[2])
-    for (int i = 0; i < light_count && count < BEAM_VISIBILITY_SLOTS; ++i)
+  if (beam_lights && dynamic_shadows && occlusion_grid[2]) {
+    for (int i = 0; i < light_count; ++i)
       if (beam_shape[i * 4 + 3] > 0)
-        slots[i] = (float)++count;
+        slots[i * 4] = (float)++count;
+    for (int i = 0; i < light_count && count; ++i)
+      if (beam_shape[i * 4 + 3] <= 0 && light_response[i * 4] > 0 &&
+          (light_rgb[i * 4 + 3] > 0 || light_response[i * 4 + 3] >= RTX_SOFT_WIDTH))
+        slots[i * 4] = (float)++count;
+  }
   auto prepare = [&](GLuint p) {
     glUseProgram(p);
     auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
@@ -829,7 +852,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
       glUniform4fv(at("u_spec_response"), light_count, light_response);
       glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
       glUniform4fv(at("u_beam_shape"), light_count, beam_shape);
-      glUniform4fv(at("u_beam_slots"), (light_count + 3) / 4, slots);
+      glUniform4fv(at("u_beam_slots"), light_count, slots);
     }
     const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
                              occlusion_grid[2] ? occlusion_texture : blank_texture,
@@ -851,7 +874,8 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
         glGenTextures(1, &beam_vis_texture);
       }
       glBindTexture(GL_TEXTURE_2D, beam_vis_texture);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4 * width, height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4 * width, BEAM_VISIBILITY_ROWS * height, 0, GL_RGBA,
+                   GL_HALF_FLOAT, nullptr);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -864,13 +888,13 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glViewport(0, 0, 4 * width, height);
+    glViewport(0, 0, 4 * width, BEAM_VISIBILITY_ROWS * height);
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     prepare(ground_beam_vis_program);
     GLint group_at = glGetUniformLocation(ground_beam_vis_program, "u_beam_group");
     for (int group = 0; group * 4 < count; ++group) {
-      glViewport(group * width, 0, width, height);
+      glViewport(group % 4 * width, group / 4 * height, width, height);
       glUniform1f(group_at, (float)group);
       submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
     }
@@ -923,6 +947,9 @@ void GL_ENTRY(renderer_init)() {
   glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, 28, (void *)16);
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 28, (void *)20);
+  glGenBuffers(1, &center_buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, center_buffer);
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 8, (void *)0);
   glGenSamplers(STAGES, samplers);
 
   // An identity ramp until the device sets one.
@@ -1119,9 +1146,9 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     u_effect_target_size = glGetUniformLocation(effect_program, "target_size");
     u_effect_kind = glGetUniformLocation(effect_program, "u_kind");
     u_effect_params = glGetUniformLocation(effect_program, "u_params");
-    create_lit(creature_lit, creature_fragment_source);
-    create_lit(player_lit, player_fragment_source);
-    create_lit(bonus_lit, bonus_fragment_source);
+    create_lit(creature_lit, creature_lit_vertex_source, creature_fragment_source);
+    create_lit(player_lit, lit_vertex_source, player_fragment_source);
+    create_lit(bonus_lit, lit_vertex_source, bonus_fragment_source);
     heat_body_program = link(lit_vertex_source, heat_body_fragment_source);
     glUseProgram(heat_body_program);
     glUniform1i(glGetUniformLocation(heat_body_program, "texture0"), 0);

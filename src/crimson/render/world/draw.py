@@ -395,6 +395,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                         tint=tint,
                         shadow=shadow,
                         body=not shadow,
+                        lit=lighting is not None and lighting.active and not shadow,
                     )
 
         if heat is not None:

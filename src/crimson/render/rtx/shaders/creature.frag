@@ -1,10 +1,19 @@
 #version 330
 // Art-directed dome and silhouette lighting for the original 8x8 creature atlases.
 #include "filtering.glsl"
-#include "light_visibility.glsl"
+#include "source_geometry.glsl"
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
+// Each light's visibility across the quad, four lights a vec4, from its corners (creature_visibility.glsl).
+in vec4 lightVisibility0;
+in vec4 lightVisibility1;
+in vec4 lightVisibility2;
+in vec4 lightVisibility3;
+in vec4 lightVisibility4;
+in vec4 lightVisibility5;
+in vec4 lightVisibility6;
+in vec4 lightVisibility7;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -18,6 +27,12 @@ out vec4 finalColor;
 const float DOME_STRENGTH = 0.65;
 const float RIM_STRENGTH = 0.65;
 const float TRANSMISSION_STRENGTH = 1.4;
+float lightVisibility(int i) {
+    vec4 group = i < 16 ? (i < 8 ? (i < 4 ? lightVisibility0 : lightVisibility1) : (i < 12 ? lightVisibility2 : lightVisibility3))
+                        : (i < 24 ? (i < 20 ? lightVisibility4 : lightVisibility5) : (i < 28 ? lightVisibility6 : lightVisibility7));
+    int lane = i - i / 4 * 4;
+    return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
+}
 vec4 spriteSample(vec2 uv) {
     vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
     vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
@@ -51,11 +66,9 @@ void main() {
     float determinant = dxq.x * dyq.y - dxq.y * dyq.x;
     // Collapsed atlas coordinates have no recoverable orientation.
     mat2 rot = mat2(1.0);
-    vec2 owner = vec2(1e19);
     if (abs(determinant) > 1e-12) {
         mat2 basis = mat2(dxw * dyq.y - dyw * dxq.y, dyw * dxq.x - dxw * dyq.x) / determinant;
         rot = mat2(normalize(basis[0]), normalize(basis[1]));
-        owner = world - basis * q;
     }
     vec2 wp = world;
     float lum = dot(texel.rgb, vec3(.299, .587, .114));
@@ -90,7 +103,6 @@ void main() {
         float spec_distance = length(source - wp);
         if (spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
-        float point_visibility = -1.;
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
             float s = 1.0 - smoothstep(0.0, u_response[i].z, spec_distance);
             float axial_gain = beam ? segmentRadiance(along / max(u_dir[i].w, 1.0) + .5, u_dir[i].z) : 1.;
@@ -100,11 +112,7 @@ void main() {
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            if (spec_amount * max(u_rgb[i].r, max(u_rgb[i].g, u_rgb[i].b)) > .00001) {
-                float visibility = illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), source_width, owner);
-                if (!beam) point_visibility = visibility;
-                added += u_rgb[i].rgb * spec_amount * visibility;
-            }
+            added += u_rgb[i].rgb * spec_amount * lightVisibility(i);
         }
         if (u_response[i].x <= 0. || spec_distance >= u_pos[i].z) continue;
         vec2 light_source = ring ? source : illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
@@ -133,12 +141,7 @@ void main() {
                 (baseLin * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
                  edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum) +
                  transmission_tint * transmission * elevation * TRANSMISSION_STRENGTH));
-        if (max(diffuse.r, max(diffuse.g, diffuse.b)) > .00001) {
-            float visibility = point_visibility >= 0. ? point_visibility :
-                illuminationVisibility(vec3(wp, 8.), vec3(light_source, u_pos[i].w), source_width, owner);
-            diffuse *= visibility;
-        }
-        added += diffuse;
+        added += diffuse * lightVisibility(i);
     }
     // Bound aggregate illumination in dense fights without changing hue.
     float peak = max(added.r, max(added.g, added.b));
