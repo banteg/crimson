@@ -348,8 +348,8 @@ the device's shading until lit. Thin-part transmission uses the same
 part-size map (`crimson-core/client/thickness.cpp`, a port of
 `creature_translucency.py`), made from the atlas texels the module keeps on a
 creature atlas's first lit draw. Creature shadows use the same body grid
-(`rtx_build_occlusion`, a port of `reflection_occlusion.py`): the module builds
-it from the creature pool against the selected lights and sends it each frame
+(`rtx_build_occlusion`, a port of `reflection_occlusion.py`): with shadows enabled,
+the module builds it from the creature pool against the selected lights and sends it each frame
 (`host_occlusion`, crowd cells included), and the hosts upload it as the RGBA32F texture the shader
 walks (unfilterable in WebGPU, which reads it with `textureLoad` alone). The
 shadows setting turns direct-light visibility off as in the Python port.
@@ -718,7 +718,12 @@ traverses only cells crossed by the receiver-to-source segment, rejects nearby
 cell members with a conservative planar bound, and exits when
 visibility is effectively zero. Ground traversal occurs only in the coarse atlas.
 The grid includes the selected source endpoints outside the arena, and expanded
-cell bounds account for the finite-source filter.
+cell bounds account for the finite-source filter. Each cell has one ordinary
+point-ray list; the former padded beam fan lists, range metadata and secondary
+uploads are removed. Header xy holds the list offset/count or crowd height/density;
+zw is reserved and zero. The beam head halo still extends source support for
+culling. When shadows are off, the native builder returns an empty descriptor
+before collecting bodies or inspecting lights; the hosts skip the empty upload.
 
 Visibility uses closest approach to each ellipsoid in its local coordinates,
 with a smooth transition whose width grows toward the finite source. Wider
@@ -749,7 +754,7 @@ as a share of the cell's area (each body's footprint shared among its cells by
 overlap), and its footprint-weighted top height. A ray crosses a crowd cell as an
 absorbing medium, `exp(-3 × cover × length crossed in cells)`, over the part of its
 path below that height; a body's own cell does not shade it. A body centered in a
-crowd is listed in the cells around it only where it stands, without its soft or beam
+crowd is listed in the cells around it only where it stands, without its soft
 padding, so a crowd's neighbors keep short exact lists, and a cell after a crowd
 tests its whole list (the crowd tested none of the padded entries it shares). The
 cost no longer grows with the crowd (that frame dropped to about 0.2 s, most of it

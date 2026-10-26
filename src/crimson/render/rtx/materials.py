@@ -473,14 +473,13 @@ class MaterialGroundRenderer(GroundRenderer):
             light.beam_profile is not None and light.illumination_gain > 0 for light in lights
         )
         put_int("u_has_beam_lights", int(has_beam_lights))
-        grid_lights, beam_margin, shapes = lights, 0.0, [0.0] * (4 * len(lights))
+        grid_lights, shapes = lights, [0.0] * (4 * len(lights))
         if has_beam_lights:
             shapes, grid_lights = prepare_beam_lights(lights)
-            beam_margin = max(shapes[3::4])
             put("u_beam_gain", [ION_DIRECT_GAIN, FIRE_DIRECT_GAIN])
             put("u_beam_shape[0]", shapes, 4)
         grid = build_occlusion_grid(
-            bodies, grid_lights, width=self.width, height=self.height, illumination=shadows, beam_margin=beam_margin,
+            bodies, grid_lights, width=self.width, height=self.height, illumination=shadows,
         )
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
         put("u_occlusion_grid", [

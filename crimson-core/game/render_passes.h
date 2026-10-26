@@ -15,10 +15,6 @@ enum {
 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).
 enum { RTX_LIGHT_FLOATS = 32 };
-// A light at least this wide (light_visibility.glsl's PENUMBRA_WIDTH, the widest
-// a body shadow's penumbra follows), or a ring, casts soft shadows: like a
-// beam's, the ground reads them from its lower-resolution visibility atlas.
-enum { RTX_SOFT_WIDTH = 8 };
 // The fluid smoke solver's commands (host_smoke, game/rtx_smoke.cpp), each an
 // opcode and its floats: RESET clears the field targets (resolution, world
 // size, step seconds, pressure iterations); FADE scales density and heat;

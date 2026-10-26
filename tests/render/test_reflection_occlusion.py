@@ -81,7 +81,7 @@ def test_crowded_cell_holds_density_and_top_height_instead_of_its_list() -> None
     area = math.pi * 8 * 14 / grid.cell_size ** 2
     # Its members stand wholly inside it: none is uploaded.
     assert grid.body_count == 0
-    assert header(grid, 100, 100) == pytest.approx([(30 * 200 + 10 * 100) / 300, -area * 300] * 2)
+    assert header(grid, 100, 100) == pytest.approx([(30 * 200 + 10 * 100) / 300, -area * 300, 0, 0])
 
 
 def test_crowd_follows_what_stands_in_a_cell_not_its_padded_lists() -> None:
@@ -91,8 +91,8 @@ def test_crowd_follows_what_stands_in_a_cell_not_its_padded_lists() -> None:
     # Centered left of the cell edge at x = 128, reaching 4 units across it: it stands in both cells.
     straddling = BodyVolume(Vec2(124, 100), Vec2(8, 14), 24, 0)
     grid = build_occlusion_grid([straddling] * (CROWD_BODIES + 1), [light], width=1024, height=1024)
-    assert header(grid, 124, 100) == pytest.approx([24, -area * (CROWD_BODIES + 1) * .75] * 2)
-    assert header(grid, 130, 100) == pytest.approx([24, -area * (CROWD_BODIES + 1) * .25] * 2)
+    assert header(grid, 124, 100) == pytest.approx([24, -area * (CROWD_BODIES + 1) * .75, 0, 0])
+    assert header(grid, 130, 100) == pytest.approx([24, -area * (CROWD_BODIES + 1) * .25, 0, 0])
     # Standing short of the edge, only its padding reaches across: there a crowd's members are dropped, and the
     # cell stays a list.
     short = BodyVolume(Vec2(118, 100), Vec2(8, 14), 24, 0)
