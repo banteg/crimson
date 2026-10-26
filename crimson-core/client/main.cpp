@@ -6,6 +6,7 @@
 #include "client.h"
 #include "network.h"
 #include "assets.h"
+#include <algorithm>
 #include <memory>
 #include <ctime>
 #include "../game/host_input.h"
