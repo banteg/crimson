@@ -665,12 +665,13 @@ void profile_record() {
     snprintf(header, sizeof header,
              "{\"profile\":1,\"client\":\"%s\",\"build\":\"%s\",\"platform\":\"%s\",\"started\":%lld,"
              "\"drawable\":[%d,%d],\"render_size\":%g,\"scripted\":%s,\"watch\":%s,\"seek\":%s,\"stop\":%s,"
-             "\"moments\":%s,\"window\":%s,\"input\":%s}",
+             "\"moments\":%s,\"window\":%s,\"input\":%s,\"gpu_every\":%d}",
              CRIMSON_CLIENT_VERSION, CRIMSON_CLIENT_FINGERPRINT, SDL_GetPlatform(), (long long)time(nullptr), width,
              height, render_size, scripted ? "true" : "false", profile_env("CRIMSON_WATCH").c_str(),
              profile_env("CRIMSON_WATCH_SEEK").c_str(), profile_env("CRIMSON_WATCH_STOP").c_str(),
              profile_env("CRIMSON_WATCH_MOMENTS").c_str(), profile_env("CRIMSON_WATCH_WINDOW").c_str(),
-             profile_env("CRIMSON_INPUT").c_str());
+             profile_env("CRIMSON_INPUT").c_str(),
+             getenv("CRIMSON_PROFILE_GPU") ? atoi(getenv("CRIMSON_PROFILE_GPU")) : 8);
     profile_write(header);
   }
   static double last_wall;

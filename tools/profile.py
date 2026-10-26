@@ -8,7 +8,7 @@
 
 A profile is a JSON line for the run, then one per frame the client showed: the replay tick it drew and the ticks it
 covered, the wall time since the last frame, the game's live entities, the process's memory, each pass's CPU time
-(from its mark to the next) and GPU time (timer queries read once finished, so they never stall the CPU), the draws
+(from its mark to the next) and, on timed frames, GPU time (timer queries read once finished), the draws
 by pass, texture and target as [quads, pixels], the scene's sizes and the targets (crimson-core/client/main.cpp).
 
 A replay recorded with no tick to stop at plays to its end; CRIMSON_WATCH_MOMENTS records only its moments, each
@@ -16,6 +16,13 @@ with CRIMSON_WATCH_WINDOW ticks of history. Frames before playback (the preparin
 moments are left out unless --all keeps them. A key names a measure: wall, cpu, gpu (each pass's sum), cpu.<pass>,
 gpu.<pass>, scene.<size>, entities.<kind>, rss. The GPU's `frame` pass spans the simulation's ticks, before anything
 draws: it counts that time as idle GPU time, so the gpu sum leaves it out.
+
+Timing the GPU costs the frame on macOS: ending or reading a timer query flushes the driver's command buffer, so a
+timed GPU-bound frame waits in the pass after a costly one (whose CPU time then shows that wait) instead of at the
+swap, and runs slower (about 4 ms a late-game frame). The client times every 8th frame (CRIMSON_PROFILE_GPU=<n>, 0
+for none, 1 for all): GPU measures come from the timed frames. A timed frame drains the GPU and the frames after it
+make that up, so wall and CPU measures are each run of 8 frames' mean (within a few percent of an untimed run's),
+while `worst` and the timeline's worst wall time rank single untimed frames.
 """
 
 import argparse
@@ -53,11 +60,38 @@ def ticks_range(text: str | None) -> tuple[float, float]:
 
 def played(profile: Profile, args: argparse.Namespace) -> list[dict]:
     """The frames playback drew, within --ticks: a replay's, once prepared, and none that jumped."""
-    frames = profile.frames
+    every = profile.header.get("gpu_every", 1)
+    frames = [{**f, "every": every} for f in profile.frames]
     if not args.all and any(f["tick"] >= 0 for f in frames):
         frames = [f for f in frames if f["tick"] >= 0 and 0 <= f["ticks"] <= PLAYED_TICKS and f["wall"] > 0]
     lo, hi = ticks_range(args.ticks)
     return [f for f in frames if lo <= f["tick"] <= hi]
+
+
+def measured(frames: list[dict], key: str, *, spikes: bool = False) -> list[dict]:
+    """The frames that measure `key`: the GPU's on timed frames; the rest over runs of frames that each hold one
+    timed frame, as their means (a timed frame drains the GPU and the frames after it make that up), or with
+    `spikes` on single untimed frames."""
+    if key == "gpu" or key.startswith("gpu."):
+        return [f for f in frames if "gpu" in f]
+    every = max(1, frames[0].get("every", 1)) if frames else 1
+    if every == 1 or not any(f.get("timed") for f in frames):
+        return frames
+    if spikes:
+        return [f for f in frames if not f.get("timed")]
+    runs: dict[int, list[dict]] = {}
+    for f in frames:
+        runs.setdefault(f["frame"] // every, []).append(f)
+    means = []
+    for run in runs.values():
+        if len(run) < every:
+            continue
+        cpu: dict[str, float] = {}
+        for f in run:
+            for name, ms in f["cpu"].items():
+                cpu[name] = cpu.get(name, 0.0) + ms / every
+        means.append({**run[-1], "wall": sum(f["wall"] for f in run) / every, "cpu": cpu, "timed": False})
+    return means
 
 
 def value(frame: dict, key: str) -> float:
@@ -89,9 +123,11 @@ def describe(profile: Profile, frames: list[dict]) -> str:
     h = profile.header
     ticks = [f["tick"] for f in frames if f["tick"] >= 0]
     span = f", ticks {min(ticks)}-{max(ticks)}" if ticks else ""
+    every = h.get("gpu_every", 1)
+    timers = f"GPU timed every {every} frames" if every > 1 else "GPU timed every frame" if every else "GPU untimed"
     return (
         f"{profile.path.name}: client {h['client']} ({h['platform']}), drawable {h['drawable'][0]}x{h['drawable'][1]}, "
-        f"render size {h['render_size']}, {h.get('watch') or 'live play'}; {len(frames)} frames{span}"
+        f"render size {h['render_size']}, {timers}, {h.get('watch') or 'live play'}; {len(frames)} frames{span}"
     )
 
 
@@ -122,9 +158,8 @@ def summary(args: argparse.Namespace) -> None:
                 [
                     f"{start}-{start + args.by}",
                     len(chunk),
-                    *[float(np.percentile([value(f, k) for f in chunk], q)) for k in ("wall",) for q in (50, 90)],
-                    float(np.median([value(f, "cpu") for f in chunk])),
-                    float(np.median([value(f, "gpu") for f in chunk])),
+                    *[float(np.percentile([value(f, "wall") for f in measured(chunk, "wall")], q)) for q in (50, 90)],
+                    *[float(np.median([value(f, k) for f in measured(chunk, k)])) for k in ("cpu", "gpu")],
                     gpu_top[0],
                     cpu_top[0],
                     int(np.mean([value(f, "entities.creatures") for f in chunk])),
@@ -138,7 +173,7 @@ def summary(args: argparse.Namespace) -> None:
         )
         return
     measures = ["wall", "cpu", "gpu", *keys(frames, "cpu"), *keys(frames, "gpu")]
-    rows = [[k, *stats(np.array([value(f, k) for f in frames]))] for k in measures]
+    rows = [[k, *stats(np.array([value(f, k) for f in measured(frames, k)]))] for k in measures]
     print(table(rows, ["ms", "mean", "p50", "p90", "p99", "max"]))
     sizes = ["rss", *keys(frames, "entities"), *keys(frames, "scene")]
     rows = [[k, *stats(np.array([value(f, k) for f in frames]))] for k in sizes]
@@ -155,7 +190,7 @@ def worst(args: argparse.Namespace) -> None:
     profile = load(args.profile)
     frames = played(profile, args)
     print(describe(profile, frames))
-    chosen = sorted(frames, key=lambda f: -value(f, args.key))[: args.count]
+    chosen = sorted(measured(frames, args.key, spikes=True), key=lambda f: -value(f, args.key))[: args.count]
     rows = [
         [
             f["frame"],
@@ -179,6 +214,8 @@ def compare(args: argparse.Namespace) -> None:
     sides = [played(p, args) for p in profiles]
     for profile, frames in zip(profiles, sides, strict=True):
         print(describe(profile, frames))
+    if len({p.header.get("gpu_every", 1) for p in profiles}) > 1:
+        print("warning: the profiles timed the GPU on different shares of their frames")
     by_tick = [{f["tick"]: f for f in frames if f["tick"] >= 0} for frames in sides]
     common = sorted(set(by_tick[0]) & set(by_tick[1]))
     if common:
@@ -191,7 +228,9 @@ def compare(args: argparse.Namespace) -> None:
         measures += [k for k in keys(sides[0] + sides[1], group) if k not in measures]
     rows = []
     for k in measures:
-        a, b = (np.array([value(f, k) for f in frames]) for frames in sides)
+        a, b = (np.array([value(f, k) for f in measured(frames, k)]) for frames in sides)
+        if not len(a) or not len(b):
+            continue
         before, after = float(np.median(a)), float(np.median(b))
         change = f"{(after / before - 1) * 100:+.0f}%" if before > 0.05 else "-"
         rows.append(
@@ -208,9 +247,13 @@ def timeline(args: argparse.Namespace) -> None:
     width, buckets = 1400, min(700, len(frames))
     which = np.arange(len(frames)) * buckets // len(frames)
 
-    def series(key: str, reduce=np.mean) -> np.ndarray:
-        v = np.array([value(f, key) for f in frames])
-        return np.array([reduce(v[which == b]) if np.any(which == b) else np.nan for b in range(buckets)])
+    bucket_of = {f["frame"]: int(b) for f, b in zip(frames, which, strict=True)}
+
+    def series(key: str, reduce=np.mean, *, spikes: bool = False) -> np.ndarray:
+        values: list[list[float]] = [[] for _ in range(buckets)]
+        for f in measured(frames, key, spikes=spikes):
+            values[bucket_of[f["frame"]]].append(value(f, key))
+        return np.array([reduce(v) if v else np.nan for v in values])
 
     passes = keys(frames, "gpu")
     shown, rest = passes[:8], passes[8:]
@@ -275,7 +318,7 @@ def timeline(args: argparse.Namespace) -> None:
             f"frame time, ms: the mean of frames drawn together, and their worst wall time (axis: {axis})",
             [
                 ("wall", series("wall"), "#222"),
-                ("wall max", series("wall", np.max), "#aaa"),
+                ("wall max", series("wall", np.max, spikes=True), "#aaa"),
                 ("cpu", series("cpu"), "#e15759"),
                 ("gpu", series("gpu"), "#4e79a7"),
             ],

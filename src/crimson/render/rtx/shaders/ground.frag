@@ -216,6 +216,14 @@ void main() {
         vec4 sp_col = u_spec_color[i];
         vec4 sp_dir = u_spec_dir[i];
         vec4 response = u_spec_response[i];
+        // Everything a source gives this pixel comes from within the larger of its light and
+        // reflection radii of its segment (a beam's support, if longer) or ring: past that, skip it.
+        vec2 reach_delta = world - sp_pos.xy;
+        vec2 reach_axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(1., 0.);
+        float reach_half = max(sp_dir.w * .5, u_has_beam_lights != 0 ? u_beam_shape[i].w : 0.);
+        float reach_distance = sp_col.w > 0. ? abs(length(reach_delta) - sp_col.w)
+            : length(reach_delta - reach_axis * clamp(dot(reach_delta, reach_axis), -reach_half, reach_half));
+        if (reach_distance >= max(max(1., sp_pos.z), response.z)) continue;
 
         vec2 axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(0.);
         float tail = u_spec_tail[i / 4][i % 4];

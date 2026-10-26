@@ -253,8 +253,11 @@ its own (`bake` for terrain decal bakes, `heat-stamp` for Monster Vision's trail
 kept frame), so `frame` holds no drawing. Classic marks the world's bounds too (`world`, then `hud`), with nothing
 drawn differently. A pass's GPU time also counts the time the GPU waits for the CPU, so `frame`'s is idle time and
 `profile.py` and `golden.py` leave it out of the GPU's sum. A pass's CPU time runs from its mark to the next, so it
-also holds the time the driver blocks the CPU on the GPU: a pass that waits on an earlier pass's results shows that
-pass's GPU time as its own CPU time. Each frame's draws are counted per pass, texture (or `beam` / `effect<kind>`) and
+also holds the time the driver blocks the CPU on the GPU. On macOS the timer queries themselves flush the driver's
+command buffer at every mark, so a frame timed this way drains the GPU pass by pass and waits in the pass after a
+costly one: with every frame timed, late in a run the players pass showed the ground's GPU time as its own CPU time,
+and frames ran about 4 ms slower. The client therefore times every 8th frame by default, and `profile.py` reads wall
+and CPU times as means over runs of 8 frames, where an untimed frame waits at the swap. Each frame's draws are counted per pass, texture (or `beam` / `effect<kind>`) and
 target as the quads drawn and the target pixels they cover.
 
 The two RTX renderers share their GLSL, but light collection and selection, volley merging, beams and smoke are
@@ -350,9 +353,12 @@ the terrain's decals in `fx_queue_render` by the same materials as
 `MaterialGroundRenderer._commands` (`host_ground`): blood, corpse bodies,
 casings, black scorches and freeze shards, or no material. Each mark carries the
 run's clock, which ages wet blood. While RTX is on, the host keeps the same three
-companions of the terrain target and draws each marked decal into them as it
-lands: the substrate (everything but blood), the ordered coverage, and the float
-surface's three stamp passes. It draws the terrain into the world with the ground
+companions of the terrain target and draws each marked decal into them: the
+substrate (everything but blood), the ordered coverage, and the float surface's
+three stamp passes. The native client queues a bake's marked decals and stamps
+them pass-major as the Python port does, each companion bound once and its
+decals in the bake's order (the WebGPU client still stamps each decal as it
+lands). It draws the terrain into the world with the ground
 program (`HOST_PASS_GROUND`). The lights carry what the ground adds: the
 reflection tail, broad illumination, and a beam's energy shape, computed by the
 module as `continuous_beam.py` does (its support also sizes the body grid). The companions start from the terrain as it stands the first time
