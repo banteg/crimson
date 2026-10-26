@@ -64,7 +64,7 @@ int volley_ident(const projectile_t &p) {
 }
 
 // A luminous disc, tapered segment or annulus (MaterialLight). A beam's streak
-// (its stamp radius, spacing and head size) lights the ground in energy sections.
+// (its stamp radius, spacing and head size) lights the ground as one source.
 struct Light {
   float x, y, radius, r, g, b;
   float height = 18, dx = 0, dy = 0, length = 0, width = 3;
@@ -695,13 +695,11 @@ void merge_volleys(int first) {
   }
 }
 
-// --- Beam energy sections (render/rtx/continuous_beam.py) ---------------------------
-// A streak lights the ground as three energy-weighted sections of its stamps
-// and head: mass, offset from the beam's midpoint, longitudinal half-span, and
-// whether it is an ion beam. An appearance approximation, as in Python, in its
-// double precision.
+// --- Beam energy (render/rtx/continuous_beam.py) ----------------------------------
+// A streak lights the ground as one source: a ramp of its stamps from the tail
+// to the head, and the head's own stamp as a uniform stretch around the head
+// end. An appearance approximation, as in Python, in its double precision.
 const double SUPPORT = 0.85998995;
-enum { SOURCE_CELLS = 3 };
 
 const double *radial_marginal() {
   static double values[65];
@@ -719,56 +717,37 @@ const double *radial_marginal() {
   return values;
 }
 
-double radial_density(double r) {
-  const double *radial = radial_marginal();
-  r = fabs(r);
-  if (r >= SUPPORT)
-    return 0;
-  double t = r / SUPPORT * 64;
-  int index = (int)t;
-  return radial[index] + (radial[index + 1] - radial[index]) * (t - index);
-}
-
-// source_cells: each cell samples the authored stamps near it plus the head.
-void source_cells(double length, double radius, double step, double head_multiplier, float *out) {
-  double support = radius * SUPPORT, head_radius = radius * head_multiplier, pad = head_radius * SUPPORT;
-  double span = length + 2 * pad;
-  int stamp_count = (int)ceil(length / step), samples = 32;
-  double values[SOURCE_CELLS * 4], total = 0;
-  for (int cell = 0; cell < SOURCE_CELLS; ++cell) {
-    double mass = 0, first = 0, second = 0;
-    for (int j = 0; j < samples; ++j) {
-      double u = (cell + (j + 0.5) / samples) / SOURCE_CELLS, x = -pad + u * span;
-      double energy = head_radius * radial_density((x - length) / head_radius);
-      if (length > 0) {
-        int lo = std::max(0, (int)ceil((x - support) / step));
-        int hi = std::min(stamp_count - 1, (int)floor((x + support) / step));
-        for (int k = lo; k <= hi; ++k) {
-          double position = k * step;
-          energy += position / length * radius * radial_density((x - position) / radius);
-        }
-      }
-      mass += energy, first += energy * u, second += energy * u * u;
+// A stamp's longitudinal extent as a uniform stretch of equal variance, in stamp radii.
+double stamp_half_width() {
+  static double width;
+  if (!width) {
+    const double *radial = radial_marginal();
+    double step = SUPPORT / 64, mass = 0, second = 0;
+    for (int i = 0; i < 65; ++i) {
+      double weight = radial[i] * (i == 0 || i == 64 ? 0.5 : 1.0);
+      mass += weight, second += weight * (i * step) * (i * step);
     }
-    double mean = mass ? first / mass : (cell + 0.5) / SOURCE_CELLS;
-    double half_span = mass ? sqrt(fmax(0.0, 3 * (second / mass - mean * mean))) : 0.0;
-    double cell_values[4] = {mass, -pad + mean * span - length * 0.5, half_span * span, 0};
-    memcpy(values + cell * 4, cell_values, sizeof cell_values);
-    total += mass;
+    width = sqrt(3 * second / mass);
   }
-  for (int i = 0; i < SOURCE_CELLS * 4; ++i)
-    out[i] = (float)(i % 4 == 0 ? values[i] / total : values[i]);
+  return width;
 }
 
-// beam_cells: unselected lamps stay dark, as do reflection-only sources.
-void beam_cells(const Light &light, float illumination, float *out) {
-  memset(out, 0, SOURCE_CELLS * 4 * sizeof(float));
+// beam_shape: the head's share of the beam's energy (each stamp holds its radius
+// squared times the same projected mass; the ramp's stamps weigh their position
+// over the length), the head's half-width, Ion, and the support's half-extent:
+// the half length plus the head's halo. Zero for unselected lamps and
+// reflection-only sources.
+void beam_shape(const Light &light, float illumination, float *out) {
+  memset(out, 0, 4 * sizeof(float));
   if (!light.beam_radius || illumination <= 0)
     return;
-  source_cells(light.length, light.beam_radius, light.beam_step, light.beam_head, out);
-  for (int i = 0; i < SOURCE_CELLS * 4; ++i)
-    if (i % 4 == 3)
-      out[i] = light.beam_ion;
+  double length = light.length, radius = light.beam_radius, head_radius = radius * light.beam_head;
+  int stamps = length > 0 ? (int)ceil(length / light.beam_step) : 0;
+  double ramp = stamps > 1 ? radius * radius * light.beam_step * stamps * (stamps - 1) / (2 * length) : 0;
+  out[0] = (float)(head_radius * head_radius / (head_radius * head_radius + ramp));
+  out[1] = (float)(stamp_half_width() * head_radius);
+  out[2] = light.beam_ion;
+  out[3] = (float)(length * 0.5 + head_radius * SUPPORT);
 }
 
 } // namespace
@@ -851,8 +830,8 @@ std::vector<float> grid_values;
 // them): every body near a source's support, no nearest-N cap. `grid` gets the
 // origin, columns (0 for no bodies), rows and cell size; the values are cell
 // headers, body transforms and cell lists, four floats per texel. A header
-// holds the ordinary list, then the beam sections' list, padded by the largest
-// section half-span and its taps' reach (not the point lights' penumbra margin)
+// holds the ordinary list, then the beams' list, padded by the largest beam
+// support half-extent and its taps' reach (not the point lights' penumbra margin)
 // near beam sources only (build_occlusion_grid).
 // A cell where more than CROWD_BODIES bodies stand is a crowd: both headers hold
 // the footprint-weighted top height of what stands there, then minus the
@@ -880,11 +859,11 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   } supports[32];
   int support_count = 0;
   for (int i = 0; i < count; ++i) {
-    // A beam's sections lengthen its support (prepare_beam_lights).
+    // A beam's head halo lengthens its support (prepare_beam_lights).
     float l[16];
     memcpy(l, lights + i * RTX_LIGHT_FLOATS, sizeof l);
     const float *cells = lights + i * RTX_LIGHT_FLOATS + 20;
-    if (cells[0] > 0) {
+    if (cells[3] > 0) {
       if (l[8] * l[8] + l[9] * l[9] <= 0.0001f)
         l[8] = 1, l[9] = 0;
       l[11] += 2 * lights[i * RTX_LIGHT_FLOATS + 18];
@@ -894,9 +873,9 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
       continue;
     // A body shadow's penumbra follows sources up to PENUMBRA_WIDTH wide (reflection_occlusion.py).
     padding = fminf(PENUMBRA_WIDTH, fmaxf(padding, fmaxf(0.1f, l[15])));
-    bool beam = cells[0] > 0 && shadows && illumination > 0;
+    bool beam = cells[3] > 0 && shadows && illumination > 0;
     if (beam) {
-      beam_margin = fmaxf(beam_margin, fmaxf(cells[2], fmaxf(cells[6], cells[10])));
+      beam_margin = fmaxf(beam_margin, cells[3]);
       beam_width = fmaxf(beam_width, l[15]);
     }
     float ax = l[8], ay = l[9];
@@ -992,7 +971,7 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
           }
     };
     cover(rx, ry, active, cells, false);
-    // A section's rays fan out from the walked center ray by at most its half-span,
+    // A beam's rays fan out from the walked center ray by at most its half-extent,
     // and its two transverse taps by a fraction of its width; it never uses the
     // point lights' penumbra margin (build_occlusion_grid).
     float beam_pad = member ? 0 : beam_margin + 0.57735027f * beam_width;
@@ -1026,14 +1005,14 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
   return grid_values.data();
 }
 
-// A beam section's ground gain: ion beams', then Fire Bullets' (render/rtx/continuous_beam.py).
+// A beam's ground gain: ion beams', then Fire Bullets' (render/rtx/continuous_beam.py).
 extern "C" const float rtx_beam_gain[2] = {4.0f, 3.0f};
 
 // The frame's lights for the view, RTX_LIGHT_FLOATS each: position, radius,
 // height; linear RGB, ring radius; direction, 0, length; illumination and
 // reflection gains, reflection reach, source width; reflection tail, broad
-// illumination, a beam's padding past its ends, its smoke gain; its three
-// energy sections.
+// illumination, a beam's padding past its ends, its smoke gain; its energy
+// shape (beam_shape).
 // At most `capacity`.
 extern "C" int rtx_collect_lights(float *out, int capacity) {
   source_count = 0;
@@ -1095,7 +1074,7 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
                             illumination, l.reflection * weights[1][i], l.reflection_reach(), l.width,
                             l.tail, (float)l.broad, (float)(l.beam_radius * l.beam_head * SUPPORT), l.smoke_gain};
     memcpy(packed, head, sizeof head);
-    beam_cells(l, illumination, packed + 20);
+    beam_shape(l, illumination, packed + 20);
   }
   return count;
 }

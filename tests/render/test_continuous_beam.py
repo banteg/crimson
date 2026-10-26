@@ -6,9 +6,9 @@ import msgspec
 import pytest
 
 from crimson.render.rtx.continuous_beam import (
-    SOURCE_CELLS,
     SUPPORT,
-    beam_cells,
+    beam_shape,
+    beam_uniform,
     prepare_beam_lights,
 )
 from crimson.render.rtx.material_lights import MaterialLight
@@ -41,32 +41,24 @@ def test_shared_streak_profiles_match_authored_weapon_sizes() -> None:
         assert source.beam_profile == (16 * scale, min(scale * 3.1, 9), 1.35 if kind == PT.FIRE_BULLETS else 1.05)
 
 
-def test_source_cells_preserve_energy_head_and_finite_growing_profiles() -> None:
-    from crimson.render.rtx.continuous_beam import SOURCE_CELLS, SUPPORT, source_cells
-
+def test_beam_shape_gives_the_head_less_of_a_longer_beam() -> None:
     for profile in ((16.8, 3.255, 1.05), (35.2, 6.82, 1.05), (56.0, 9.0, 1.05), (12.8, 2.48, 1.35)):
+        radius, _, head = profile
+        shares = []
         for length in (0.0, 0.001, 1.0, 16.0, 193.7, 256.0):
-            values = source_cells(length, *profile)
-            assert len(values) == SOURCE_CELLS * 4
-            assert sum(values[::4]) == pytest.approx(1.0)
-            assert all(math.isfinite(v) for v in values)
-            pad = profile[0] * profile[2] * SUPPORT
-            span = length + 2 * pad
-            for i in range(SOURCE_CELLS):
-                mass, position, half_span, _ = values[i * 4 : i * 4 + 4]
-                assert mass >= 0
-                assert -pad - length * 0.5 + i * span / SOURCE_CELLS <= position
-                assert position <= -pad - length * 0.5 + (i + 1) * span / SOURCE_CELLS
-                assert 0 <= half_span <= span / SOURCE_CELLS
-            if length == 0:
-                assert values[0] == pytest.approx(values[8])
-                assert values[1] == pytest.approx(-values[9])
-            if length == 256:
-                assert values[0] < values[4] < values[8]
-    assert source_cells.cache_info().maxsize == 128
-    assert not any(beam_cells(msgspec.structs.replace(light(), illumination_gain=0)))
-    assert not any(beam_cells(msgspec.structs.replace(light(), beam_profile=None)))
-    assert beam_cells(light())[3::4] == (1.0, 1.0, 1.0)
+            head_share, head_half_width, support = beam_shape(length, *profile)
+            assert all(math.isfinite(value) for value in (head_share, head_half_width, support))
+            assert 0 < head_share <= 1
+            assert 0 < head_half_width < radius * head * SUPPORT
+            assert support == pytest.approx(length * .5 + radius * head * SUPPORT)
+            shares.append(head_share)
+        # A shot just fired is all head; its growing trail takes ever more of the energy.
+        assert shares[0] == 1 and shares == sorted(shares, reverse=True) and shares[-1] < .5
+    assert beam_shape.cache_info().maxsize == 128
+    assert not any(beam_uniform(msgspec.structs.replace(light(), illumination_gain=0)))
+    assert not any(beam_uniform(msgspec.structs.replace(light(), beam_profile=None)))
+    assert beam_uniform(light())[2] == 1.0
+    assert beam_uniform(msgspec.structs.replace(light(), beam_ion=False))[2] == 0.0
 
 
 def test_lit_slot_keeps_its_mask_profile_when_sources_swap() -> None:
@@ -100,7 +92,7 @@ def test_lit_slot_keeps_its_mask_profile_when_sources_swap() -> None:
     assert len(second) == 17 and second[-2].illumination_gain > 0 and second[-1].illumination_gain == 0
     assert (second[-2].ident, second[-1].ident) == (16, 15)
     after, _ = prepare_beam_lights(second)
-    row_size = SOURCE_CELLS * 4
+    row_size = 4
     for rows in (before, after):
         assert any(rows[15 * row_size : 16 * row_size]) and not any(rows[16 * row_size : 17 * row_size])
     assert prepare_beam_lights([]) == ([], [])
@@ -109,13 +101,13 @@ def test_lit_slot_keeps_its_mask_profile_when_sources_swap() -> None:
     assert not any(values) and grid == [nonbeam]
 
 
-def test_full_section_extent_pads_only_beam_cell_lists() -> None:
+def test_beam_support_pads_only_beam_cell_lists() -> None:
     from crimson.render.rtx.reflection_occlusion import CROWD_BODIES, BodyVolume, build_occlusion_grid
 
     original = light()
-    cells, grid_sources = prepare_beam_lights([original])
-    margin = max(cells[2::4])
-    assert margin > 4.0
+    shapes, grid_sources = prepare_beam_lights([original])
+    margin = max(shapes[3::4])
+    assert margin == pytest.approx(original.length / 2 + 56 * 1.05 * SUPPORT)
     assert grid_sources[0].source_width == original.source_width
     assert grid_sources[0].length == original.length + 2 * 56 * 1.05 * SUPPORT
     assert original.source_width == 3 and original.length == 256
@@ -123,18 +115,18 @@ def test_full_section_extent_pads_only_beam_cell_lists() -> None:
     bodies = [BodyVolume(Vec2(110, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(CROWD_BODIES)]
     grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256, beam_margin=margin)
     assert grid.body_count == len(bodies)
-    # Section walks get the half-span; other lights keep the transverse margin.
+    # Beam walks get the support; other lights keep the transverse margin.
     plain = build_occlusion_grid(bodies, grid_sources, width=256, height=256)
     assert grid.references == plain.references < grid.beam_references
-    # A wide point light (an explosion) widens the ordinary lists' penumbra margin, never the sections' lists.
+    # A wide point light (an explosion) widens the ordinary lists' penumbra margin, never the beams' lists.
     blast = MaterialLight(Vec2(100, 90), 300, (1, 1, 1), source_width=28)
     widened = build_occlusion_grid(bodies, [*grid_sources, blast], width=256, height=256, beam_margin=margin)
     assert widened.references > grid.references
     assert widened.beam_references == grid.beam_references
     zero = msgspec.structs.replace(original, length=0, direction=Vec2())
-    zero_cells, zero_grid = prepare_beam_lights([zero])
+    zero_shapes, zero_grid = prepare_beam_lights([zero])
     assert zero_grid[0].direction == Vec2(1, 0)
-    assert zero_grid[0].length > 0 and all(math.isfinite(value) for value in zero_cells)
+    assert zero_grid[0].length > 0 and all(math.isfinite(value) for value in zero_shapes)
 
 
 @pytest.mark.parametrize("heading", [0.0, 0.7, 2.5, -1.3])
@@ -156,6 +148,6 @@ def test_new_beam_uses_stored_heading_before_its_trail_grows(heading) -> None:
         assert source is not None
         assert source.direction.x == pytest.approx(direction.x, abs=1e-7)
         assert source.direction.y == pytest.approx(direction.y, abs=1e-7)
-        cells, grid_sources = prepare_beam_lights([source])
-        assert all(math.isfinite(value) for value in cells)
+        shapes, grid_sources = prepare_beam_lights([source])
+        assert all(math.isfinite(value) for value in shapes)
         assert grid_sources[0].direction == source.direction

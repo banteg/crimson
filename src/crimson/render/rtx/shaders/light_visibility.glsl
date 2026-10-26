@@ -12,14 +12,16 @@ const float CROWD_EXTINCTION = 3.;
 // lists for no wider.
 const float PENUMBRA_WIDTH = 8.;
 
+// The texture is 256 texels wide on every host (reflection_occlusion.py's TEXTURE_WIDTH).
 vec4 occlusionData(int address) {
-    int width = textureSize(u_occlusion_tex, 0).x;
-    return texelFetch(u_occlusion_tex, ivec2(address % width, address / width), 0);
+    return texelFetch(u_occlusion_tex, ivec2(address & 255, address >> 8), 0);
 }
 
 #ifdef CONTINUOUS_BEAM
 vec2 beam_section_axis = vec2(0.);
 float beam_section_halfspan = 0.;
+// A section walk's visibility per eighth of the section, from its start (continuous_beam.glsl).
+vec4 beam_bins[2];
 
 // Interval where a*s^2 + b*s + c <= 0 for a > 0; hi <= lo when empty.
 // The product form keeps the root nearest zero accurate when one is huge.
@@ -57,33 +59,37 @@ float fanDistance2(vec2 receiver, vec2 to_source, vec2 half_axis) {
     return min(edgeDistance2(receiver, first), min(edgeDistance2(first, second), edgeDistance2(second, receiver)));
 }
 
-float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfspan) {
+// The source positions in [-halfspan, halfspan] whose rays from the receiver meet the body: up to two intervals
+// (hi <= lo when empty), and `beyond`, those whose chord through the body lies past the light. False when the
+// receiver is inside the body.
+bool beamChordIntervals(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfspan,
+                        out vec2 first, out vec2 second, out vec2 beyond) {
+    first = second = beyond = vec2(1., -1.);
     float quadratic_c = dot(relative, relative) - 1.;
     float quadratic_a = dot(base_ray, base_ray);
     float quadratic_b = dot(relative, base_ray);
     float linear_a = 2. * dot(base_ray, axis_ray);
     float linear_b = dot(relative, axis_ray);
     float constant_a = dot(axis_ray, axis_ray);
-    if (quadratic_c <= 0.) return 1.;
+    if (quadratic_c <= 0.) return false;
     float lo = -halfspan;
     float hi = halfspan;
     if (abs(linear_b) < 1e-8) {
-        if (quadratic_b > 0.) return 0.;
+        if (quadratic_b > 0.) return true;
     } else {
         float bound = -quadratic_b / linear_b;
         if (linear_b > 0.) hi = min(hi, bound);
         else lo = max(lo, bound);
     }
-    if (hi <= lo) return 0.;
+    if (hi <= lo) return true;
     // Source positions whose infinite ray meets the body: one or two intervals.
     float a = linear_b * linear_b - constant_a * quadratic_c;
     float b = 2. * (quadratic_b * linear_b - .5 * linear_a * quadratic_c);
     float d = quadratic_b * quadratic_b - quadratic_a * quadratic_c;
-    vec2 first = vec2(lo, hi);
-    vec2 second = vec2(1., -1.);
+    first = vec2(lo, hi);
     if (abs(a) < 1e-8) {
         if (abs(b) < 1e-8) {
-            if (d < 0.) return 0.;
+            if (d < 0.) first = vec2(1., -1.);
         } else if (b > 0.) {
             first.x = max(lo, -d / b);
         } else {
@@ -100,17 +106,54 @@ float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfs
         }
     }
     // The ray must reach the body before the light. Bodies taller than the
-    // emitter otherwise shadow from beyond it. Where the chord's midpoint lies
-    // past the light, only a light inside the body is still blocked.
-    vec2 beyond = quadraticBelow(constant_a, linear_a + linear_b, quadratic_a + quadratic_b);
+    // emitter otherwise shadow from beyond it.
+    beyond = quadraticBelow(constant_a, linear_a + linear_b, quadratic_a + quadratic_b);
+    return true;
+}
+
+float beamChordCoverage(vec3 relative, vec3 base_ray, vec3 axis_ray, float halfspan) {
+    vec2 first, second, beyond;
+    if (!beamChordIntervals(relative, base_ray, axis_ray, halfspan, first, second, beyond)) return 1.;
+    // Where the chord's midpoint lies past the light, only a light inside the body is still blocked.
     vec3 source_relative = relative + base_ray;
-    vec2 inside = quadraticBelow(constant_a, 2. * dot(source_relative, axis_ray),
+    vec2 inside = quadraticBelow(dot(axis_ray, axis_ray), 2. * dot(source_relative, axis_ray),
                                  dot(source_relative, source_relative) - 1.);
     inside = vec2(max(inside.x, -halfspan), min(inside.y, halfspan));
     float blocked = max(0., first.y - first.x) - intervalOverlap(first, beyond)
         + max(0., second.y - second.x) - intervalOverlap(second, beyond)
         + intervalOverlap(inside, beyond);
     return clamp(blocked / max(2. * halfspan, 1e-6), 0., 1.);
+}
+
+// How much of each of four bins [lo, hi] an interval covers.
+vec4 binOverlap(vec2 interval, vec4 lo, vec4 hi) {
+    return max(vec4(0.), min(vec4(interval.y), hi) - max(vec4(interval.x), lo));
+}
+
+// One transverse tap's blocked share of each eighth of the section, from its chord's intervals (`outside` false:
+// the receiver is in the body): those short of the light, less the stretch where the light sits in or against the
+// body (`spared`, already per eighth).
+void beamTapBlocked(bool outside, vec2 first, vec2 second, vec2 beyond, float halfspan, vec4 spared0, vec4 spared1,
+                    inout vec4 blocked0, inout vec4 blocked1) {
+    float width = .25 * halfspan;
+    if (!outside) {
+        blocked0 += .5 * clamp(1. - spared0 / width, 0., 1.);
+        blocked1 += .5 * clamp(1. - spared1 / width, 0., 1.);
+        return;
+    }
+    vec4 lo0 = -halfspan + width * vec4(0., 1., 2., 3.), lo1 = lo0 + 4. * width;
+    vec2 first_beyond = vec2(max(first.x, beyond.x), min(first.y, beyond.y));
+    vec2 second_beyond = vec2(max(second.x, beyond.x), min(second.y, beyond.y));
+    blocked0 += .5 * clamp((binOverlap(first, lo0, lo0 + width) + binOverlap(second, lo0, lo0 + width)
+        - binOverlap(first_beyond, lo0, lo0 + width) - binOverlap(second_beyond, lo0, lo0 + width) - spared0) / width, 0., 1.);
+    blocked1 += .5 * clamp((binOverlap(first, lo1, lo1 + width) + binOverlap(second, lo1, lo1 + width)
+        - binOverlap(first_beyond, lo1, lo1 + width) - binOverlap(second_beyond, lo1, lo1 + width) - spared1) / width, 0., 1.);
+}
+
+// The brightest eighth left: a section's walk stops once every eighth is dark.
+float beamBrightest() {
+    vec4 brightest = max(beam_bins[0], beam_bins[1]);
+    return max(max(brightest.x, brightest.y), max(brightest.z, brightest.w));
 }
 
 #endif
@@ -157,20 +200,32 @@ float bodyVisibility(int address, vec3 origin, vec3 ray, float source_width, flo
     // coordinates. Otherwise the body's near face cuts the light's pool along a straight line through the source.
     #ifdef CONTINUOUS_BEAM
     if (beam_section_halfspan > 0.) {
+        // Marks the eighths of the section this body blocks (beam_bins).
         vec3 source_axis = vec3(local * beam_section_axis, 0.) * inverse_radius;
         vec2 transverse_axis = vec2(-beam_section_axis.y, beam_section_axis.x);
-        vec3 transverse_ray = vec3(local * transverse_axis, 0.) * inverse_radius;
-        float coverage = .5 * (
-            beamChordCoverage(q, ray - transverse_ray * (.57735027 * source_width),
-                              source_axis, beam_section_halfspan)
-            + beamChordCoverage(q, ray + transverse_ray * (.57735027 * source_width),
-                                source_axis, beam_section_halfspan));
-        // Only the section's embedded stretch is spared: the share of its length the fade covers, which the chord
-        // counted as blocked. The rest of the section is shadowed as before.
-        float spared = 0.;
-        for (int k = 0; k < 8; k++)
-            spared += 1. - smoothstep(1., 1.5, length(q + ray + source_axis * (beam_section_halfspan * ((float(k) + .5) / 4. - 1.))));
-        return 1. - orientation.z * max(0., coverage - spared / 8.);
+        vec3 transverse_ray = vec3(local * transverse_axis, 0.) * inverse_radius * (.57735027 * source_width);
+        float halfspan = beam_section_halfspan, width = .25 * halfspan;
+        vec2 first_a, second_a, beyond_a, first_b, second_b, beyond_b;
+        bool outside_a = beamChordIntervals(q, ray - transverse_ray, source_axis, halfspan, first_a, second_a, beyond_a);
+        bool outside_b = beamChordIntervals(q, ray + transverse_ray, source_axis, halfspan, first_b, second_b, beyond_b);
+        // Most candidates hide none of the section.
+        if (outside_a && outside_b && max(max(first_a.y - first_a.x, second_a.y - second_a.x),
+                                          max(first_b.y - first_b.x, second_b.y - second_b.x)) <= 0.)
+            return beamBrightest();
+        vec4 lo0 = -halfspan + width * vec4(0., 1., 2., 3.), lo1 = lo0 + 4. * width;
+        // A light in or against the body is spared over the last half radius before the body (the point
+        // lights' fade below), taken at its two quarter points.
+        vec3 source = q + ray;
+        float a = dot(source_axis, source_axis), b = 2. * dot(source, source_axis), c = dot(source, source);
+        vec2 near = quadraticBelow(a, b, c - 1.265625), far = quadraticBelow(a, b, c - 1.890625);
+        vec4 spared0 = .5 * (binOverlap(near, lo0, lo0 + width) + binOverlap(far, lo0, lo0 + width));
+        vec4 spared1 = .5 * (binOverlap(near, lo1, lo1 + width) + binOverlap(far, lo1, lo1 + width));
+        vec4 blocked0 = vec4(0.), blocked1 = vec4(0.);
+        beamTapBlocked(outside_a, first_a, second_a, beyond_a, halfspan, spared0, spared1, blocked0, blocked1);
+        beamTapBlocked(outside_b, first_b, second_b, beyond_b, halfspan, spared0, spared1, blocked0, blocked1);
+        beam_bins[0] = min(beam_bins[0], 1. - orientation.z * blocked0);
+        beam_bins[1] = min(beam_bins[1], 1. - orientation.z * blocked1);
+        return beamBrightest();
     }
     #endif
     float t = clamp(-dot(q, ray) / max(dot(ray, ray), 1e-8), 0., 1.);
@@ -218,7 +273,13 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
             vec2 below = ray.z >= 0. ? vec2(-1e20, t_top) : vec2(t_top, 1e20);
             float crossed = max(0., min(t_exit, below.y) - max(t_enter, below.x));
             if (crossed > 0. && !(cell == first_cell && owner.x < 1e18)) {
-                visibility *= exp(CROWD_EXTINCTION * header.y * crossed * cells_crossed);
+                float transmitted = exp(CROWD_EXTINCTION * header.y * crossed * cells_crossed);
+                visibility *= transmitted;
+                #ifdef CONTINUOUS_BEAM
+                // A section's eighths all cross the medium.
+                beam_bins[0] *= transmitted;
+                beam_bins[1] *= transmitted;
+                #endif
                 if (visibility < .001) return visibility;
             }
             header.y = 0.;

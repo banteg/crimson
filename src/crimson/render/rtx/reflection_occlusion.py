@@ -127,10 +127,10 @@ def build_occlusion_grid(
     cannot intersect an in-arena receiver/source segment unless the source is
     outside too; extend the grid to include those selected source endpoints.
 
-    Beam sections walk their own cell lists, padded by `beam_margin` (the
-    largest section half-span) in world units near beam sources only, plus the
+    Beams walk their own cell lists, padded by `beam_margin` (the largest
+    beam support half-extent) in world units near beam sources only, plus the
     reach of their two transverse taps (0.577 of the widest beam's width): a
-    section's coverage never uses the point lights' penumbra margin, which the
+    beam's coverage never uses the point lights' penumbra margin, which the
     widest source of the frame (an explosion, an aura) sets. Other lights keep
     that source-width margin.
 
@@ -229,7 +229,7 @@ def build_occlusion_grid(
         rx, ry = (ex, ey) if member else (ex + soft_margin, ey + soft_margin)
         margin = 0.0 if member else beam_margin + .57735027 * beam_width
         occupied = [cell for cell in covered(bounds(body.pos.x, body.pos.y, rx, ry), active) if not crowd[cell]]
-        # A section's rays fan out from the walked center ray by at most its half-span, and its two transverse taps
+        # A beam's rays fan out from the walked center ray by at most its half-extent, and its two transverse taps
         # (light_visibility.glsl's sectionVisibility) by a fraction of its width.
         beam_box = bounds(body.pos.x, body.pos.y, ex + margin, ey + margin)
         beam_occupied = [cell for cell in covered(beam_box, beam_active) if not crowd[cell]]
@@ -247,7 +247,7 @@ def build_occlusion_grid(
         x0, x1, y0, y1 = beam_box
         for cell in beam_occupied:
             beam_cells[cell].append((address, x0 + x1 * 4096, y0 + y1 * 4096))
-    # Headers: ordinary list offset and count, then the beam sections' list.
+    # Headers: ordinary list offset and count, then the beams' list.
     for i, (cell, beam_cell) in enumerate(zip(cells, beam_cells, strict=True)):
         if crowd[i]:
             values[i * 4:i * 4 + 4] = (crowd_top[i] / crowd_cover[i], -crowd_cover[i]) * 2
