@@ -350,9 +350,12 @@ the terrain's decals in `fx_queue_render` by the same materials as
 `MaterialGroundRenderer._commands` (`host_ground`): blood, corpse bodies,
 casings, black scorches and freeze shards, or no material. Each mark carries the
 run's clock, which ages wet blood. While RTX is on, the host keeps the same three
-companions of the terrain target and draws each marked decal into them as it
-lands: the substrate (everything but blood), the ordered coverage, and the float
-surface's three stamp passes. It draws the terrain into the world with the ground
+companions of the terrain target and draws each marked decal into them: the
+substrate (everything but blood), the ordered coverage, and the float surface's
+three stamp passes. The native client queues a bake's marked decals and stamps
+them pass-major as the Python port does, each companion bound once and its
+decals in the bake's order (the WebGPU client still stamps each decal as it
+lands). It draws the terrain into the world with the ground
 program (`HOST_PASS_GROUND`). The lights carry what the ground adds: the
 reflection tail, broad illumination, and a beam's energy shape, computed by the
 module as `continuous_beam.py` does (its support also sizes the body grid). The companions start from the terrain as it stands the first time
