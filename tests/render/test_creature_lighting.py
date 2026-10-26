@@ -437,6 +437,29 @@ def test_own_body_is_excluded_without_excluding_nearby_creatures(lit_sprite, rot
         occlusion.close()
 
 
+def test_corner_shadows_hold_as_corners_leave_the_lights_reach(lit_sprite):
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    owner = Vec2(64, 64)
+    # A neighbor's body shadows the quad's far side, whose pixels the light still reaches and whose corners'
+    # traces they interpolate, so those corners keep their shadow as they cross the light's reach.
+    body = BodyVolume(owner + Vec2(.1, 0), Vec2(12, 10), 28, 0., owner=owner + Vec2(.1, 0))
+    occlusion = ReflectionOcclusion()
+    edge = 48 + math.sqrt(40**2 - 16**2)  # the light's x with the far corners at its reach
+
+    def frame(x: float) -> list[tuple[float, float, float, float]]:
+        light = MaterialLight(Vec2(x, 64), 40, (1.4, .68, .2), height=24)
+        occlusion.upload(build_occlusion_grid([body], [light], width=1024, height=1024))
+        return render([light], occlusion=occlusion, center=owner)
+
+    try:
+        inside, outside = frame(edge - .002), frame(edge + .002)
+        assert max(abs(a[0] - b[0]) for a, b in zip(inside, outside, strict=True)) < .005
+    finally:
+        occlusion.close()
+
+
 def test_unlit_ambient_fill_preserves_alpha_without_loading_thickness(lit_sprite):
     render, lighting = lit_sprite
     native = render([], use_shader=False)

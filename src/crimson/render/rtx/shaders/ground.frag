@@ -269,14 +269,14 @@ void main() {
             // As with reflections, retain negligible radiance without tracing a
             // shadow whose maximum possible change is below 1e-5 linear RGB.
             if (max(direct.r, max(direct.g, direct.b)) > .00001) {
-                // A wide disc or ring with a slot reads its visibility, its reflection's too, from the atlas.
+                // A wide disc or ring with a slot reads its visibility from the atlas.
                 int slot = beamSlot(i);
                 float visibility = slot >= 0 ? beamVisibilityRead(slot)
                     : illuminationVisibility(vec3(world, 0.), vec3(light_xy, sp_pos.w), response.w, vec2(1e19));
                 direct *= visibility;
-                // Reflection clamps height/width; only identical point rays can reuse this trace.
-                // Disabled diffuse shadows must never disable reflection shadows.
-                if (slot >= 0 || (u_dynamic_shadows != 0 && !ring && sp_dir.w == 0. && sp_pos.w >= 12. && response.w >= .1))
+                // Reflection clamps height/width; only identical point rays can reuse this trace, the atlas's
+                // included. Disabled diffuse shadows must never disable reflection shadows.
+                if (u_dynamic_shadows != 0 && !ring && sp_dir.w == 0. && sp_pos.w >= 12. && response.w >= .1)
                     point_visibility = visibility;
             }
             diffuse_lit += direct;
