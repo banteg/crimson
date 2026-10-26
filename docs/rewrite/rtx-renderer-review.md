@@ -112,18 +112,11 @@ the material without lights at 1.5 ms, the beams' direct light at about 3 ms, sh
 1.2 and 1.6 ms, and most of the rest in the per-light loop. #917 skips each light where it cannot reach (about 2 ms,
 pixel-identical). Timings here move by tens of percent between runs: compare paired, alternating runs.
 
-Next, all exact (no pixel changes), once the in-flight soft-source visibility work that reshapes the same loop lands:
-
-- **Per-light setup.** A beam still computes the point source's centroid, ring point and reflection point it never
-  uses; move each to the branch that reads it, and reuse one normalized axis and one beam frame.
-- **Shadows off.** `continuousLight` walks `beamVisibility` for every beam when shadows are off (no slots), only to
-  return 1.
-- **Beam visibility pass.** Return the bins' value when all eight are equal (most pixels), and reuse the frame
-  `beamFrame` already built.
-- **Integrals.** Skip pieces with zero density or an empty window; the head needs no third moment; one logarithm per
-  interval in place of two `asinh` (algebraically equal, not bit-identical: check near the axis and the falloff edge).
-- **Preamble.** Defer the eight neighbouring material taps and the fluid normal until a pixel's reflections or sky
-  specular need them.
+With #919 (creature shadows at quad corners, wide lights in the atlas) and #917 the same moments run at about
+10.7 ms against 12.0 on master. Exact restructurings that Codex and Gemini proposed measured no faster on top of them:
+each branch building only the geometry it reads, reusing the beam frame, skipping zero-density and head-only
+integral terms, returning early from fully lit visibility bins, and skipping the fluid normal's eight material taps
+on dry pixels. The shader compiler already drops the dead work, and late-game ground is mostly blood.
 
 Then measure: per-tile light masks (32×32 pixels, one bit per light, an RGBA8 texture) if most tiles hold few lights;
 the beam visibility passes before the HDR target is bound (a fraction of a millisecond on Apple GPUs at most).
