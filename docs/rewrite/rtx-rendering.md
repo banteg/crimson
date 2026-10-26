@@ -751,6 +751,9 @@ frame. Shadows across a creature become a gradient between its corners; thin lim
 lose the sharp edge of a neighbor's shadow. Each quad carries its center (the
 client's hosts average its four vertices, `quad_centers`; the Python port passes it
 in the vertex normal), and the corners exclude proxies carrying that owner center.
+A corner skips a light only when the light's reach misses the whole quad: past it
+alone, the corner still traces, since the pixels inside the reach interpolate it
+and a corner snapping to unshadowed would pop as the light moves.
 A 0.02-world-unit tolerance prevents precision speckles at fractional zoom without
 requiring per-quad uniforms or breaking batches. Exactly coincident creatures
 share exclusion; this is a documented limitation of the batch-preserving owner
@@ -1036,10 +1039,12 @@ beam lights the ground, into one channel of a texel in its group's part of an at
 (four groups a row), and the ground reads it back filtered (`beamVisibilityRead`).
 Lit beams take the slots in light order. Wide discs and rings (an explosion's
 fireball and shell, at least `PENUMBRA_WIDTH` wide) join them, their soft shadows
-drawn the same way for the ground's direct light and its reflection: a Nuke's
+drawn the same way for the ground's direct light: a Nuke's
 fireball reaches across a late crowd, and walking it per pixel cost the frame more
 than all the beams. They only join passes the beams already draw; a pass of their
-own cost ordinary explosion scenes more than their walks did. Each light's slot is
+own cost ordinary explosion scenes more than their walks did. A reflection reuses
+the atlas only on the ray it was drawn for (a point source at least 12 units up);
+a ring or a segment reflects from other points, and walks its own. Each light's slot is
 a vec4 of its own: selecting a packed component per light slowed the ground's loop.
 The golden scenes draw the same at this resolution (99% of pixels within a level
 of the per-pixel walk), and late-game ground passes cost about a fifth of what

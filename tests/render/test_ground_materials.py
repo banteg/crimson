@@ -1085,3 +1085,24 @@ def test_beam_visibility_passes_shadow_as_the_grounds_own_walk(ground_material, 
     assert blocked > .1
     assert passed != walked
     assert sum(a[0] - b[0] for a, b in zip(clear, passed, strict=True)) == pytest.approx(blocked, rel=.2)
+
+
+def test_atlas_visibility_never_stands_in_for_a_rings_reflection(ground_material, mocker):
+    # A ring joins the beams' atlas for its light, but reflects from other points on it than it lights from: its
+    # reflection walks the grid itself, the same with the atlas as without.
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 34), size=35)
+    body = BodyVolume(Vec2(32, 34), Vec2(10, 10), 30, 0)
+    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    ring = MaterialLight(Vec2(32, 16), 80, (1, .5, .2), height=30, ring_radius=12, source_width=2)
+    # Far off and unreflected, the beam only draws the atlas.
+    beam = MaterialLight(Vec2(32, 4000), 150, (.5, .8, 1.4), height=24, direction=Vec2(1, 0), length=40,
+                         beam_profile=(35.2, 6.82, 1.05), beam_ion=True, reflection_gain=0)
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[ring, beam])
+    clear = debug_pixels(ground, texture, mode=5)
+    walked = debug_pixels(ground, texture, mode=5, creatures=pool)
+    passed = debug_pixels(ground, texture, mode=5, creatures=pool, beam_passes=True)
+    assert sum(a[0] - b[0] for a, b in zip(clear, walked, strict=True)) > 10
+    assert max(abs(a - b) for p, q in zip(passed, walked, strict=True) for a, b in zip(p, q, strict=True)) < 1e-6
