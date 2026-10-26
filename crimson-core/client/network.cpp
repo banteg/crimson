@@ -354,7 +354,11 @@ std::string LeaderboardNetwork::path(const std::string &relative,
   }
   return out.string();
 }
-bool LeaderboardNetwork::upload(std::string &error) {
+// Each queued run's outcome goes to event.lines in the Python port's words
+// (src/crimson/leaderboard/client.py); a run this pass cannot read, to
+// event.error.
+bool LeaderboardNetwork::upload(Event &event) {
+  std::string &error = event.error;
   std::string outbox = path("leaderboard/outbox");
   if (!fs::exists(outbox))
     return true;
@@ -380,11 +384,17 @@ bool LeaderboardNetwork::upload(std::string &error) {
         error = "Invalid queued run JSON; skipping it";
         continue;
       }
+      std::string run = file.stem().string().substr(0, 12);
       Event answer = http(UPLOAD, api_ + "/runs", &entry, JSON_LIMIT);
-      if (!answer.ok || answer.status >= 500 || answer.status == 429 ||
-          answer.status < 200 ||
+      if (!answer.ok) {
+        event.lines.push_back("leaderboard: can't reach " + api_ + " (" + answer.error + "); runs wait in " + outbox);
+        return false;
+      }
+      // A service error, or the service asking to slow down (429): the runs wait.
+      if (answer.status >= 500 || answer.status == 429 || answer.status < 200 ||
           (answer.status >= 300 && answer.status < 400)) {
-        error = "Can't reach the leaderboard; queued runs will retry";
+        event.lines.push_back("leaderboard: service error (HTTP " + std::to_string(answer.status) +
+                              "); runs wait in " + outbox);
         return false;
       }
       if (answer.status >= 400 && answer.status != 409) {
@@ -405,7 +415,11 @@ bool LeaderboardNetwork::upload(std::string &error) {
           error = "Could not save rejected run; keeping it queued";
           return false;
         }
-      }
+        event.lines.push_back("leaderboard: run " + run + " rejected (" +
+                              (reason ? reason->text : "HTTP " + std::to_string(answer.status)) + ")");
+      } else
+        event.lines.push_back(answer.status == 409 ? "leaderboard: run " + run + " was already uploaded"
+                                                   : "leaderboard: uploaded run " + run);
       fs::remove(source);
     } catch (const std::exception &) {
       error = "Could not process queued run; skipping it";
@@ -416,19 +430,20 @@ bool LeaderboardNetwork::upload(std::string &error) {
 LeaderboardNetwork::Event LeaderboardNetwork::perform(const Request &request) {
   if (request.kind == UPLOAD) {
     Event event{UPLOAD};
-    event.ok = upload(event.error);
+    event.ok = upload(event);
     return event;
   }
   if (request.kind == SCORES) {
-    std::string error;
+    Event sent{UPLOAD};
     // Outbox failures do not make a read-only board request fail.
     try {
-      upload(error);
+      upload(sent);
     } catch (const std::exception &) {
     }
     Event event = http(SCORES, api_ + "/scores", &request.body, JSON_LIMIT);
     event.ok = event.ok && event.status == 200 &&
                event.body.find('\0') == std::string::npos;
+    event.lines = std::move(sent.lines);
     return event;
   }
   if (request.kind == CHALLENGE || request.kind == LOGIN) {

@@ -6,6 +6,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
 // The desktop transport never touches module memory. Requests own their input;
 // the main thread drains completions before running the next game frame.
@@ -17,6 +18,8 @@ public:
     bool ok = false;
     int status = 0;
     std::string body, error;
+    // What the uploader made of each queued run, for the console.
+    std::vector<std::string> lines;
     std::string runner;
     int rank = 0;
     double accepted_at = 0;
@@ -49,7 +52,7 @@ private:
   Event perform(const Request &request);
   Event http(Kind kind, const std::string &url, const std::string *body,
              size_t limit);
-  bool upload(std::string &error);
+  bool upload(Event &event);
   std::string path(const std::string &relative, bool create_parent = false);
 };
 #endif
