@@ -87,6 +87,13 @@ HOST_IMPORT(frame_hold) void host_frame_hold(int op);
 // A render target's pixels copied into another texture, made like it if it is
 // new: a replay keeps its terrain at points along the run (host/keyframes.inc).
 HOST_IMPORT(texture_copy) void host_texture_copy(int destination, int source);
+// A render target's RGBA pixels at the size it is drawn, for a copy kept on disk
+// (host/watch_cache.inc): the bytes it holds, into `out` when `capacity` takes
+// them; 0 for a host that cannot read them back.
+HOST_IMPORT(texture_read) int host_texture_read(int id, void *out, int capacity);
+// Pixels texture_read gave, into a render target `id` made like `like`: 0 when
+// they are not its size.
+HOST_IMPORT(texture_write) int host_texture_write(int id, int like, const void *pixels, int size);
 HOST_IMPORT(gamma_ramp) void host_gamma_ramp(const unsigned short *red, const unsigned short *green,
                                              const unsigned short *blue);
 [[noreturn]] HOST_IMPORT(fatal) void host_fatal(const char *message);

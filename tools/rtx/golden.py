@@ -70,6 +70,8 @@ def capture_scene(scene: dict, mode: str, game: Path, out: Path, client: Path) -
         "CRIMSON_CAPTURE_TICK": str(tick),
         "CRIMSON_WATCH": str(replay.relative_to(game)),
         "CRIMSON_WATCH_SEEK": str(seek_tick(scene)),
+        # Scenes share replays, and runs repeat: each replay prepares once per client build and mode.
+        "CRIMSON_WATCH_CACHE": "1",
         "CRIMSON_GPU_TIMERS": "1",
         "CRIMSON_MUTE": "1",
         "CRIMSON_RTX": "1" if mode == "rtx" else "0",

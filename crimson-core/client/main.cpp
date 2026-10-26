@@ -426,7 +426,10 @@ u32 w2c_host_render_mode(struct w2c_host *, u32 requested) {
 // run does, for unattended captures: CRIMSON_WATCH_SEEK=<tick> goes to a tick
 // once it is prepared, and CRIMSON_WATCH_STOP=<tick> pauses playback there and
 // ends the run once that tick has drawn (unless it captures frames past it);
-// CRIMSON_WATCH_CARD=<name>,<rank>,<day>,<month>,<year> gives its card's runner.
+// CRIMSON_WATCH_CARD=<name>,<rank>,<day>,<month>,<year> gives its card's runner;
+// CRIMSON_WATCH_CACHE=1 keeps the prepared replay in the game folder's
+// cache/prepared under this build (host/watch_cache.inc), so the next run of it
+// skips preparing.
 // CRIMSON_WATCH_MOMENTS=<tick>,<tick>,... measures several moments of one
 // prepared replay instead: playback goes CRIMSON_WATCH_WINDOW ticks (240) before
 // each, plays to it and pauses there, then goes on to the next; the run ends
@@ -439,6 +442,8 @@ void watch_from_env() {
   if (asked || !path)
     return;
   asked = true;
+  if (getenv("CRIMSON_WATCH_CACHE") && strcmp(getenv("CRIMSON_WATCH_CACHE"), "0"))
+    snprintf((char *)client_memory() + w2c_game_game_watch_cache(&game), 65, "%s", CRIMSON_CLIENT_FINGERPRINT);
   snprintf((char *)client_memory() + w2c_game_game_replay_path(&game), 256, "%s", path);
   char name[32] = "";
   int rank = 0, day = 0, month = 0, year = 2000;

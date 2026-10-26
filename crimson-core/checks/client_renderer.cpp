@@ -679,6 +679,21 @@ int main() {
   glReadPixels(200, 200, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, restored);
   assert(!memcmp(baked, restored, sizeof baked));
 
+  // A copy kept on disk (host/watch_cache.inc): a target's pixels at the size
+  // it is drawn, back into a target made like it, and refused by one of
+  // another size.
+  w2c_host_texture_create(nullptr, 11, 64, 32, 1);
+  w2c_host_set_render_target(nullptr, 11);
+  w2c_host_clear(nullptr, 0xff123456);
+  rectangle(10, 10, 20.5f, 20, 0xffffffff);
+  u32 size = w2c_host_texture_read(nullptr, 11, 4096, 0);
+  assert(size == 128 * 64 * 4 && w2c_host_texture_read(nullptr, 11, 4096, size) == size);
+  assert(!w2c_host_texture_write(nullptr, 12, 8, 4096, size));
+  assert(w2c_host_texture_write(nullptr, 12, 11, 4096, size));
+  assert(textures[12].width == 128 && textures[12].logical_width == 64);
+  assert(w2c_host_texture_read(nullptr, 12, 4096 + size, size) == size);
+  assert(!memcmp(memory + 4096, memory + 4096 + size, size));
+
   // Uploads to a scaled target read only the logical CPU buffer and fill the
   // physical texture. Sentinels would become visible if the source was overread.
   w2c_host_texture_create(nullptr, 10, 2, 1, 1);

@@ -538,6 +538,7 @@ static void live_poll_prompt() {
 
 #include "keyframes.inc"
 #include "watch.inc"
+#include "watch_cache.inc"
 #include "practice.inc"
 #include "coop.inc"
 #include "coop_wire.inc"
