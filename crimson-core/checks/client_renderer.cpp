@@ -630,6 +630,113 @@ void check_rtx() {
   puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams integrate their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, ion contacts glow, pressure fronts ripple; classic stays 8-bit");
 }
 
+
+// Reusing indices and applied state must survive arbitrary indexed draws,
+// helper passes, changing device arrays, and returning to the same shader.
+void check_submission_reuse() {
+  w2c_host_set_render_target(nullptr, 0);
+  renderer_resize(128, 128);
+  w2c_host_back_buffer(nullptr, 64, 64);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_set_texture(nullptr, 1, 0);
+  w2c_host_render_state(nullptr, RS_CULLMODE, 1);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_render_state(nullptr, RS_ALPHATESTENABLE, 0);
+  w2c_host_render_state(nullptr, RS_COLORWRITEENABLE, 15);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 1, TSS_COLOROP, 1);
+  Vertex vertices[] = {{-.5f, -.5f, 0, 1, 0xffff0000, 0, 0}, {31.5f, -.5f, 0, 1, 0xffff0000, 1, 0},
+                       {31.5f, 63.5f, 0, 1, 0xffff0000, 1, 1}, {-.5f, 63.5f, 0, 1, 0xffff0000, 0, 1},
+                       {31.5f, -.5f, 0, 1, 0xff00ff00, 0, 0}, {63.5f, -.5f, 0, 1, 0xff00ff00, 1, 0},
+                       {63.5f, 63.5f, 0, 1, 0xff00ff00, 1, 1}, {31.5f, 63.5f, 0, 1, 0xff00ff00, 0, 1}};
+  const unsigned short quads[] = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
+  unsigned short reordered[] = {4, 5, 6, 6, 7, 4, 0, 1, 2, 2, 3, 0};
+  auto draw = [&](const unsigned short *indices, u32 primitive = 4, u32 count = 4) {
+    memcpy(memory, vertices, sizeof vertices);
+    memcpy(memory + 4096, indices, (primitive == 4 ? count * 3 : count + 2) * sizeof *indices);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_draw(nullptr, primitive, 0, 8, 4096, count);
+    int width, height;
+    return renderer_capture(width, height);
+  };
+  // These checks use an RGBA8 target. WebGL2 does not permit FLOAT readback
+  // from it, unlike the desktop HDR checks' back_pixel helper.
+  auto sample = [](int x, int y) {
+    Target &back = textures[0];
+    u8 rgba[4];
+    glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
+    glReadPixels(x * back.width / back.logical_width, y * back.height / back.logical_height,
+                 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    bind_target();
+    return Pixel{rgba[0] / 255.f, rgba[1] / 255.f, rgba[2] / 255.f, rgba[3] / 255.f};
+  };
+  auto reference = draw(quads);
+  Pixel left = sample(16, 32), right = sample(48, 32);
+  assert(left.r == 1 && left.g == 0 && right.g == 1 && right.r == 0);
+  // Streaming fallback, static quads, then a different fallback at the same
+  // CPU address: neither buffer bindings nor a pointer's identity are content.
+  assert(draw(reordered) == reference);
+  renderer_present(128, 128);
+  renderer_resume();
+  assert(draw(quads) == reference);
+  memcpy(reordered, quads, sizeof quads);
+  std::swap(reordered[0], reordered[1]);
+  assert(draw(reordered) == reference); // culling is disabled
+  const unsigned short strip[] = {0, 1, 3, 2};
+  draw(strip, 5, 2);
+  assert(sample(16, 32).r == 1 && sample(48, 32).r == 0);
+  assert(draw(quads) == reference);
+
+  // The last representable uint16 index is valid in desktop GL. A full-range
+  // static EBO must not wrap its final quad back onto the first one's indices.
+#ifndef __EMSCRIPTEN__
+  std::vector<Vertex> large(65536);
+  std::copy(vertices, vertices + 4, large.end() - 4);
+  std::vector<unsigned short> indices(QUAD_INDEX_COUNT);
+  for (int i = 0; i < QUAD_INDEX_COUNT; i += 6) {
+    unsigned short base = (unsigned short)(i / 6 * 4);
+    unsigned short quad[] = {base, (unsigned short)(base + 1), (unsigned short)(base + 2),
+                             (unsigned short)(base + 2), (unsigned short)(base + 3), base};
+    std::copy(quad, quad + 6, indices.begin() + i);
+  }
+  w2c_host_clear(nullptr, 0xff000000);
+  device_draw(textures[0], 4, large.data(), (u32)large.size(), indices.data(), QUAD_INDEX_COUNT / 3);
+  assert(sample(16, 32).r == 1 && sample(48, 32).r == 0);
+#endif
+
+  // A companion can change the persistent sampler while desired device states
+  // stay put. The next classic draw must restore those exact device settings.
+  unsigned helper_states[32];
+  memcpy(helper_states, stage_states[0], sizeof helper_states);
+  helper_states[TSS_ADDRESSU] = 3;
+  helper_states[TSS_MAGFILTER] = 1;
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ADDRESSU, 1);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_MAGFILTER, 2);
+  draw(quads);
+  apply_sampler(0, helper_states);
+  assert(draw(quads) == reference);
+  GLint wrap, filter;
+  glGetSamplerParameteriv(samplers[0], GL_TEXTURE_WRAP_S, &wrap);
+  glGetSamplerParameteriv(samplers[0], GL_TEXTURE_MAG_FILTER, &filter);
+  assert(wrap == GL_REPEAT && filter == GL_LINEAR);
+
+  // Change a texture-stage array and the factor, then return to the old state.
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 3);
+  for (u32 color : {0xffff0000u, 0xff0000ffu, 0xffff0000u}) {
+    w2c_host_render_state(nullptr, RS_TEXTUREFACTOR, color);
+    draw(quads);
+    Pixel pixel = sample(48, 32);
+    assert(pixel.r == (color == 0xffff0000u ? 1 : 0) && pixel.b == (color == 0xff0000ffu ? 1 : 0));
+  }
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  assert(draw(quads) == reference);
+  assert(glGetError() == GL_NO_ERROR);
+  puts("renderer: static quad indices, streaming fallback, helper sampler state and cached uniform transitions passed");
+}
+
 int main() {
   assert(SDL_Init(SDL_INIT_VIDEO));
 #ifdef __EMSCRIPTEN__
@@ -881,6 +988,9 @@ int main() {
     assert(edge[0] == 255 && edge[1] == 0 && edge[2] == 0 && edge[3] == 255);
   }
   puts("renderer: associated bilinear and cubic reject transparent RGB contamination");
+#endif
+#ifndef RENDERER_BENCHMARK
+  check_submission_reuse();
 #endif
 #ifdef RENDERER_BENCHMARK
   benchmark(true);

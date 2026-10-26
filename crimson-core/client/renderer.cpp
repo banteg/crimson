@@ -41,6 +41,53 @@
 bool renderer_uses_gl() { return true; }
 #endif
 
+// Each helper changes the same GL context. Keep the applied program and sampler
+// state here, rather than inferring it from the host device's desired states.
+namespace {
+GLuint applied_program;
+void use_program(GLuint id) {
+  if (applied_program != id) {
+    glUseProgram(id);
+    applied_program = id;
+  }
+}
+std::unordered_map<GLuint, std::unordered_map<std::string, GLint>> uniform_locations;
+GLint uniform_location(GLuint id, const char *name) {
+  auto &locations = uniform_locations[id];
+  auto found = locations.find(name);
+  if (found != locations.end())
+    return found->second;
+  GLint location = glGetUniformLocation(id, name);
+  locations.emplace(name, location); // -1 (an inactive uniform) is cached too.
+  return location;
+}
+
+// Compare the values sent to GL, including array contents, not their addresses.
+// Unknown values always write, even when the desired value happens to be zero.
+template <class T> struct AppliedValue {
+  T value{};
+  bool known = false;
+  bool change(const T &next) {
+    if (known && !memcmp(&value, &next, sizeof value))
+      return false;
+    memcpy(&value, &next, sizeof value);
+    known = true;
+    return true;
+  }
+};
+struct ClassicUniforms {
+  AppliedValue<float[2]> target_size;
+  AppliedValue<GLint[STAGES]> has_texture, reconstruction, color_op, color_arg1, color_arg2;
+  AppliedValue<GLint[STAGES]> alpha_op, alpha_arg1, alpha_arg2;
+  AppliedValue<float[4]> factor, circle, circle_uv;
+  AppliedValue<GLint> alpha_test, alpha_func;
+  AppliedValue<float> alpha_ref;
+} classic_uniforms;
+struct SamplerState {
+  AppliedValue<GLint> wrap_s, wrap_t, mag, min;
+} sampler_states[STAGES];
+} // namespace
+
 // The marked decal draws a bake queues for the terrain's companions (w2c_host_draw):
 // drawn, or dropped with the companions of terrain `id`.
 extern "C" {
@@ -171,7 +218,7 @@ int drawable_width = 0, drawable_height = 0;
 unsigned render_states[256];
 unsigned stage_states[STAGES][32];
 int bound[STAGES];
-GLuint program, present_program, vertex_array, vertex_buffer, index_buffer, samplers[STAGES], gamma_texture;
+GLuint program, present_program, vertex_array, vertex_buffer, index_buffer, quad_index_buffer, samplers[STAGES], gamma_texture;
 // The lit creatures' quad centers (quad_centers), vertex attribute 3 while they draw.
 GLuint center_buffer;
 std::vector<float> centers;
@@ -482,27 +529,38 @@ void apply_output_state(const Target &t) {
   glColorMask(mask & 1, mask & 2, mask & 4, (mask & 8) && !(t.flags & 2));
 }
 
+void apply_sampler(int stage, const unsigned *states) {
+  SamplerState &s = sampler_states[stage];
+  GLint wrap_s = address(states[TSS_ADDRESSU]), wrap_t = address(states[TSS_ADDRESSV]);
+  GLint mag = states[TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST;
+  GLint min = states[TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST;
+  if (s.wrap_s.change(wrap_s)) glSamplerParameteri(samplers[stage], GL_TEXTURE_WRAP_S, wrap_s);
+  if (s.wrap_t.change(wrap_t)) glSamplerParameteri(samplers[stage], GL_TEXTURE_WRAP_T, wrap_t);
+  if (s.mag.change(mag)) glSamplerParameteri(samplers[stage], GL_TEXTURE_MAG_FILTER, mag);
+  if (s.min.change(min)) glSamplerParameteri(samplers[stage], GL_TEXTURE_MIN_FILTER, min);
+}
+
 void create_lit(LitProgram &p, const char *vertex, const char *fragment) {
   p.id = link(vertex, fragment);
-  glUseProgram(p.id);
-  glUniform1i(glGetUniformLocation(p.id, "texture0"), 0);
-  glUniform1i(glGetUniformLocation(p.id, "u_thickness"), 1);
-  glUniform1i(glGetUniformLocation(p.id, "u_occlusion_tex"), 2);
-  glUniform4f(glGetUniformLocation(p.id, "colDiffuse"), 1, 1, 1, 1);
-  p.target_size = glGetUniformLocation(p.id, "target_size");
-  p.camera = glGetUniformLocation(p.id, "camera");
-  p.count = glGetUniformLocation(p.id, "u_count");
-  p.ambient = glGetUniformLocation(p.id, "u_ambient");
-  p.pos = glGetUniformLocation(p.id, "u_pos");
-  p.rgb = glGetUniformLocation(p.id, "u_rgb");
-  p.dir = glGetUniformLocation(p.id, "u_dir");
-  p.response = glGetUniformLocation(p.id, "u_response");
-  p.occlusion_grid = glGetUniformLocation(p.id, "u_occlusion_grid");
-  p.occlusion_cell = glGetUniformLocation(p.id, "u_occlusion_cell_size");
-  p.shadows = glGetUniformLocation(p.id, "u_dynamic_shadows");
-  p.pass = glGetUniformLocation(p.id, "u_pass");
-  p.grid = glGetUniformLocation(p.id, "u_grid");
-  p.shell_center = glGetUniformLocation(p.id, "u_shell_center");
+  use_program(p.id);
+  glUniform1i(uniform_location(p.id, "texture0"), 0);
+  glUniform1i(uniform_location(p.id, "u_thickness"), 1);
+  glUniform1i(uniform_location(p.id, "u_occlusion_tex"), 2);
+  glUniform4f(uniform_location(p.id, "colDiffuse"), 1, 1, 1, 1);
+  p.target_size = uniform_location(p.id, "target_size");
+  p.camera = uniform_location(p.id, "camera");
+  p.count = uniform_location(p.id, "u_count");
+  p.ambient = uniform_location(p.id, "u_ambient");
+  p.pos = uniform_location(p.id, "u_pos");
+  p.rgb = uniform_location(p.id, "u_rgb");
+  p.dir = uniform_location(p.id, "u_dir");
+  p.response = uniform_location(p.id, "u_response");
+  p.occlusion_grid = uniform_location(p.id, "u_occlusion_grid");
+  p.occlusion_cell = uniform_location(p.id, "u_occlusion_cell_size");
+  p.shadows = uniform_location(p.id, "u_dynamic_shadows");
+  p.pass = uniform_location(p.id, "u_pass");
+  p.grid = uniform_location(p.id, "u_grid");
+  p.shell_center = uniform_location(p.id, "u_shell_center");
 }
 
 // A creature atlas's transmission part sizes or Monster Vision silhouette
@@ -539,6 +597,20 @@ int index_count(u32 primitive, u32 primitive_count) {
   return primitive == 4 ? primitive_count * 3 : primitive == 5 || primitive == 6 ? primitive_count + 2
          : primitive == 2 ? primitive_count * 2 : primitive == 3 ? primitive_count + 1 : primitive_count;
 }
+// Grim's shared quad indices cover the full uint16 vertex range. Arbitrary
+// indexed triangles, strips and fans still use the streaming index buffer.
+constexpr int QUAD_INDEX_COUNT = (65536 / 4) * 6;
+bool canonical_quad_indices(u32 primitive, const unsigned short *indices, int count) {
+  if (primitive != 4 || !indices || count <= 0 || count > QUAD_INDEX_COUNT || count % 6)
+    return false;
+  for (int i = 0; i < count; i += 6) {
+    int base = i / 6 * 4;
+    if (indices[i] != base || indices[i + 1] != base + 1 || indices[i + 2] != base + 2 ||
+        indices[i + 3] != base + 2 || indices[i + 4] != base + 3 || indices[i + 5] != base)
+      return false;
+  }
+  return true;
+}
 void submit_geometry(u32 primitive, const void *vertices, u32 vertex_count, const unsigned short *indices,
                      u32 primitive_count) {
   static const GLenum modes[] = {GL_POINTS, GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
@@ -548,8 +620,10 @@ void submit_geometry(u32 primitive, const void *vertices, u32 vertex_count, cons
   glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vertex_count * 28, vertices, GL_STREAM_DRAW);
   int count = index_count(primitive, primitive_count);
   if (indices) {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)count * 2, indices, GL_STREAM_DRAW);
+    bool quads = canonical_quad_indices(primitive, indices, count);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quads ? quad_index_buffer : index_buffer);
+    if (!quads)
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)count * 2, indices, GL_STREAM_DRAW);
     glDrawElements(mode, count, GL_UNSIGNED_SHORT, nullptr);
   } else {
     glDrawArrays(mode, 0, count);
@@ -563,9 +637,9 @@ void submit_geometry(u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
 // A creature batch drawn again as heat (heat_body.frag): the atlas and its
 // smooth silhouette density, blended as the device's states say.
 bool heat_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
-  glUseProgram(heat_body_program);
-  glUniform2f(glGetUniformLocation(heat_body_program, "target_size"), (float)t.logical_width, (float)t.logical_height);
-  glUniform2f(glGetUniformLocation(heat_body_program, "camera"), scene_camera[0], scene_camera[1]);
+  use_program(heat_body_program);
+  glUniform2f(uniform_location(heat_body_program, "target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(uniform_location(heat_body_program, "camera"), scene_camera[0], scene_camera[1]);
   auto it = textures.find(bound[0]);
   bool present = bound[0] && it != textures.end() && it->second.texture;
   glActiveTexture(GL_TEXTURE0);
@@ -584,9 +658,9 @@ bool heat_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 ind
 // Ion arcs' contact glows (contact_glow.frag): discs over the quads' UVs in
 // their vertex colors, blended as the device's states say.
 bool glow_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
-  glUseProgram(contact_glow_program);
-  glUniform2f(glGetUniformLocation(contact_glow_program, "target_size"), (float)t.logical_width, (float)t.logical_height);
-  glUniform2f(glGetUniformLocation(contact_glow_program, "camera"), scene_camera[0], scene_camera[1]);
+  use_program(contact_glow_program);
+  glUniform2f(uniform_location(contact_glow_program, "target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(uniform_location(contact_glow_program, "camera"), scene_camera[0], scene_camera[1]);
   apply_output_state(t);
   glDisable(GL_CULL_FACE);
   submit_geometry(primitive, vertices, vertex_count, indices, primitive_count);
@@ -607,7 +681,7 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   LitProgram &p = material == HOST_PASS_PLAYERS ? player_lit
                   : material == MATERIAL_BONUS  ? bonus_lit
                                                 : creature_lit;
-  glUseProgram(p.id);
+  use_program(p.id);
   glUniform1i(p.pass, bonus_emblem);
   glUniform2fv(p.grid, 1, bonus_grid);
   glUniform2fv(p.shell_center, 1, bonus_center);
@@ -629,10 +703,7 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
   glBindSampler(0, samplers[0]);
-  glSamplerParameteri(samplers[0], GL_TEXTURE_WRAP_S, address(stage_states[0][TSS_ADDRESSU]));
-  glSamplerParameteri(samplers[0], GL_TEXTURE_WRAP_T, address(stage_states[0][TSS_ADDRESSV]));
-  glSamplerParameteri(samplers[0], GL_TEXTURE_MAG_FILTER, stage_states[0][TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
-  glSamplerParameteri(samplers[0], GL_TEXTURE_MIN_FILTER, stage_states[0][TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
+  apply_sampler(0, stage_states[0]);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, material == HOST_PASS_CREATURES && present ? shape_map(bound[0]) : blank_texture);
   glBindSampler(1, 0);
@@ -660,7 +731,7 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
 // A ground pass over a whole companion: the stamp shader's `kind` and `pass`
 // over `source`, into the bound framebuffer.
 void ground_fill(GLuint source, int kind, int pass, float wetness) {
-  glUseProgram(fill_program);
+  use_program(fill_program);
   glUniform1i(u_fill_kind, kind);
   glUniform1i(u_fill_pass, pass);
   glUniform1f(u_fill_wetness, wetness);
@@ -732,9 +803,9 @@ void rebase_wetness(Ground &g, float epoch) {
 
 // A rect of a smoke target through one of the solver's programs, its uniforms set.
 void smoke_rect(GLuint p, const float *rect) {
-  glUniform4fv(glGetUniformLocation(p, "rect"), 1, rect);
-  glUniform2f(glGetUniformLocation(p, "u_resolution"), smoke_resolution, smoke_resolution);
-  glUniform2fv(glGetUniformLocation(p, "u_world_size"), 1, smoke_world);
+  glUniform4fv(uniform_location(p, "rect"), 1, rect);
+  glUniform2f(uniform_location(p, "u_resolution"), smoke_resolution, smoke_resolution);
+  glUniform2fv(uniform_location(p, "u_world_size"), 1, smoke_world);
   glDisable(GL_CULL_FACE);
   glBindVertexArray(vertex_array);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -747,13 +818,13 @@ void smoke_pass(int destination, int source, int mode, int aux = -1) {
   glDisable(GL_BLEND);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   GLuint p = smoke_solver_program;
-  glUseProgram(p);
-  glUniform1i(glGetUniformLocation(p, "texture0"), 0);
-  glUniform1i(glGetUniformLocation(p, "u_aux"), 1);
-  glUniform1i(glGetUniformLocation(p, "u_mode"), mode);
-  glUniform1f(glGetUniformLocation(p, "u_dt"), smoke_dt);
-  glUniform1f(glGetUniformLocation(p, "u_decay"), smoke_decay);
-  glUniform1f(glGetUniformLocation(p, "u_fade"), smoke_fade);
+  use_program(p);
+  glUniform1i(uniform_location(p, "texture0"), 0);
+  glUniform1i(uniform_location(p, "u_aux"), 1);
+  glUniform1i(uniform_location(p, "u_mode"), mode);
+  glUniform1f(uniform_location(p, "u_dt"), smoke_dt);
+  glUniform1f(uniform_location(p, "u_decay"), smoke_decay);
+  glUniform1f(uniform_location(p, "u_fade"), smoke_fade);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, aux >= 0 ? smoke_targets[aux].texture : blank_texture);
   glBindSampler(1, 0);
@@ -818,8 +889,8 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
         slots[i * 4] = (float)++count;
   }
   auto prepare = [&](GLuint p) {
-    glUseProgram(p);
-    auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
+    use_program(p);
+    auto at = [p](const char *name) { return uniform_location(p, name); };
     glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
     glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
     glUniform2fv(at("u_ground_size"), 1, ground_size);
@@ -879,7 +950,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     prepare(ground_beam_vis_program);
-    GLint group_at = glGetUniformLocation(ground_beam_vis_program, "u_beam_group");
+    GLint group_at = uniform_location(ground_beam_vis_program, "u_beam_group");
     for (int group = 0; group * 4 < count; ++group) {
       glViewport(group % 4 * width, group / 4 * height, width, height);
       glUniform1f(group_at, (float)group);
@@ -889,7 +960,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   }
   prepare(ground_program);
   if (count)
-    glUniform4f(glGetUniformLocation(ground_program, "u_beam_vis_target"), (float)t.width, (float)t.height,
+    glUniform4f(uniform_location(ground_program, "u_beam_vis_target"), (float)t.width, (float)t.height,
                 (float)beam_vis_width, (float)beam_vis_height);
   apply_output_state(t);
   glDisable(GL_BLEND); // the ground is opaque
@@ -901,34 +972,53 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
 } // namespace
 
 void GL_ENTRY(renderer_init)() {
+  applied_program = 0;
+  uniform_locations.clear();
+  classic_uniforms = {};
+  for (SamplerState &s : sampler_states)
+    s = {};
   program = link(vertex_source, fragment_source);
   present_program = link(present_vertex_source, present_fragment_source);
-  u_target_size = glGetUniformLocation(program, "target_size");
-  u_has_texture = glGetUniformLocation(program, "has_texture");
-  u_reconstruction = glGetUniformLocation(program, "reconstruction");
-  u_color_op = glGetUniformLocation(program, "color_op");
-  u_color_arg1 = glGetUniformLocation(program, "color_arg1");
-  u_color_arg2 = glGetUniformLocation(program, "color_arg2");
-  u_alpha_op = glGetUniformLocation(program, "alpha_op");
-  u_alpha_arg1 = glGetUniformLocation(program, "alpha_arg1");
-  u_alpha_arg2 = glGetUniformLocation(program, "alpha_arg2");
-  u_factor = glGetUniformLocation(program, "factor");
-  u_alpha_test = glGetUniformLocation(program, "alpha_test");
-  u_alpha_ref = glGetUniformLocation(program, "alpha_ref");
-  u_alpha_func = glGetUniformLocation(program, "alpha_func");
-  u_circle = glGetUniformLocation(program, "circle");
-  u_circle_uv = glGetUniformLocation(program, "circle_uv");
-  glUseProgram(program);
-  glUniform1i(glGetUniformLocation(program, "texture0"), 0);
-  glUniform1i(glGetUniformLocation(program, "texture1"), 1);
-  glUseProgram(present_program);
-  glUniform1i(glGetUniformLocation(present_program, "back_buffer"), 0);
-  glUniform1i(glGetUniformLocation(present_program, "gamma"), 1);
+  u_target_size = uniform_location(program, "target_size");
+  u_has_texture = uniform_location(program, "has_texture");
+  u_reconstruction = uniform_location(program, "reconstruction");
+  u_color_op = uniform_location(program, "color_op");
+  u_color_arg1 = uniform_location(program, "color_arg1");
+  u_color_arg2 = uniform_location(program, "color_arg2");
+  u_alpha_op = uniform_location(program, "alpha_op");
+  u_alpha_arg1 = uniform_location(program, "alpha_arg1");
+  u_alpha_arg2 = uniform_location(program, "alpha_arg2");
+  u_factor = uniform_location(program, "factor");
+  u_alpha_test = uniform_location(program, "alpha_test");
+  u_alpha_ref = uniform_location(program, "alpha_ref");
+  u_alpha_func = uniform_location(program, "alpha_func");
+  u_circle = uniform_location(program, "circle");
+  u_circle_uv = uniform_location(program, "circle_uv");
+  use_program(program);
+  glUniform1i(uniform_location(program, "texture0"), 0);
+  glUniform1i(uniform_location(program, "texture1"), 1);
+  use_program(present_program);
+  glUniform1i(uniform_location(present_program, "back_buffer"), 0);
+  glUniform1i(uniform_location(present_program, "gamma"), 1);
 
   glGenVertexArrays(1, &vertex_array);
   glBindVertexArray(vertex_array);
   glGenBuffers(1, &vertex_buffer);
   glGenBuffers(1, &index_buffer);
+  glGenBuffers(1, &quad_index_buffer);
+  std::vector<unsigned short> quad_indices(QUAD_INDEX_COUNT);
+  for (int i = 0; i < QUAD_INDEX_COUNT; i += 6) {
+    unsigned short base = (unsigned short)(i / 6 * 4);
+    quad_indices[i] = base;
+    quad_indices[i + 1] = base + 1;
+    quad_indices[i + 2] = base + 2;
+    quad_indices[i + 3] = base + 2;
+    quad_indices[i + 4] = base + 3;
+    quad_indices[i + 5] = base;
+  }
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad_index_buffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)quad_indices.size() * sizeof(unsigned short),
+               quad_indices.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 28, (void *)0);
@@ -1017,7 +1107,7 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   glClearColor(0, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
   glViewport(v.x, window_height - v.y - v.height, v.width, v.height);
-  glUseProgram(present_program);
+  use_program(present_program);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, gamma_texture);
   glActiveTexture(GL_TEXTURE0);
@@ -1127,58 +1217,58 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
 #endif
   if (enabled && !tonemap_program) {
     tonemap_program = link(tonemap_vertex_source, tonemap_fragment_source);
-    glUseProgram(tonemap_program);
-    glUniform1i(glGetUniformLocation(tonemap_program, "texture0"), 0);
-    glUniform4f(glGetUniformLocation(tonemap_program, "colDiffuse"), 1, 1, 1, 1);
-    u_tonemap_headroom = glGetUniformLocation(tonemap_program, "u_edr_headroom");
+    use_program(tonemap_program);
+    glUniform1i(uniform_location(tonemap_program, "texture0"), 0);
+    glUniform4f(uniform_location(tonemap_program, "colDiffuse"), 1, 1, 1, 1);
+    u_tonemap_headroom = uniform_location(tonemap_program, "u_edr_headroom");
     beam_program = link(beam_vertex_source, beam_fragment_source);
-    glUseProgram(beam_program);
-    glUniform4f(glGetUniformLocation(beam_program, "colDiffuse"), 1, 1, 1, 1);
-    u_beam_target_size = glGetUniformLocation(beam_program, "target_size");
-    u_beam_length = glGetUniformLocation(beam_program, "beam_length");
-    u_beam_step = glGetUniformLocation(beam_program, "beam_step");
-    u_beam_color = glGetUniformLocation(beam_program, "beam_color");
+    use_program(beam_program);
+    glUniform4f(uniform_location(beam_program, "colDiffuse"), 1, 1, 1, 1);
+    u_beam_target_size = uniform_location(beam_program, "target_size");
+    u_beam_length = uniform_location(beam_program, "beam_length");
+    u_beam_step = uniform_location(beam_program, "beam_step");
+    u_beam_color = uniform_location(beam_program, "beam_color");
     effect_program = link(SHADER_HEADER SHADER_EFFECT_VERT, SHADER_HEADER RTX_SHADER_EFFECT_FRAG);
-    glUseProgram(effect_program);
-    glUniform4f(glGetUniformLocation(effect_program, "colDiffuse"), 1, 1, 1, 1);
-    u_effect_target_size = glGetUniformLocation(effect_program, "target_size");
-    u_effect_kind = glGetUniformLocation(effect_program, "u_kind");
-    u_effect_params = glGetUniformLocation(effect_program, "u_params");
+    use_program(effect_program);
+    glUniform4f(uniform_location(effect_program, "colDiffuse"), 1, 1, 1, 1);
+    u_effect_target_size = uniform_location(effect_program, "target_size");
+    u_effect_kind = uniform_location(effect_program, "u_kind");
+    u_effect_params = uniform_location(effect_program, "u_params");
     create_lit(creature_lit, creature_lit_vertex_source, creature_fragment_source);
     create_lit(player_lit, lit_vertex_source, player_fragment_source);
     create_lit(bonus_lit, lit_vertex_source, bonus_fragment_source);
     heat_body_program = link(lit_vertex_source, heat_body_fragment_source);
-    glUseProgram(heat_body_program);
-    glUniform1i(glGetUniformLocation(heat_body_program, "texture0"), 0);
-    glUniform1i(glGetUniformLocation(heat_body_program, "u_density"), 1);
+    use_program(heat_body_program);
+    glUniform1i(uniform_location(heat_body_program, "texture0"), 0);
+    glUniform1i(uniform_location(heat_body_program, "u_density"), 1);
     heat_stamp_program = link(lit_vertex_source, heat_stamp_fragment_source);
     contact_glow_program = link(lit_vertex_source, contact_glow_fragment_source);
     heat_trail_program = link(lit_vertex_source, heat_trail_fragment_source);
-    glUseProgram(heat_trail_program);
-    glUniform1i(glGetUniformLocation(heat_trail_program, "u_heat"), 0);
+    use_program(heat_trail_program);
+    glUniform1i(uniform_location(heat_trail_program, "u_heat"), 0);
     pressure_program = link(tonemap_vertex_source, pressure_fragment_source);
     ground_program = link(lit_vertex_source, ground_fragment_source);
     ground_beam_vis_program = link(lit_vertex_source, ground_beam_vis_source);
     stamp_program = link(lit_vertex_source, stamp_fragment_source);
-    glUseProgram(stamp_program);
-    glUniform1i(glGetUniformLocation(stamp_program, "texture0"), 0);
-    u_stamp_target_size = glGetUniformLocation(stamp_program, "target_size");
-    u_stamp_kind = glGetUniformLocation(stamp_program, "u_kind");
-    u_stamp_pass = glGetUniformLocation(stamp_program, "u_pass");
-    u_stamp_wetness = glGetUniformLocation(stamp_program, "u_wetness");
+    use_program(stamp_program);
+    glUniform1i(uniform_location(stamp_program, "texture0"), 0);
+    u_stamp_target_size = uniform_location(stamp_program, "target_size");
+    u_stamp_kind = uniform_location(stamp_program, "u_kind");
+    u_stamp_pass = uniform_location(stamp_program, "u_pass");
+    u_stamp_wetness = uniform_location(stamp_program, "u_wetness");
     smoke_solver_program = link(smoke_rect_source, smoke_solver_source);
     smoke_splat_program = link(smoke_rect_source, smoke_splat_source);
     smoke_impulse_program = link(smoke_rect_source, smoke_impulse_source);
     smoke_program = link(smoke_field_source, smoke_fragment_source);
     blit_program = link(tonemap_vertex_source, blit_fragment_source);
-    glUseProgram(blit_program);
-    glUniform1i(glGetUniformLocation(blit_program, "source"), 0);
+    use_program(blit_program);
+    glUniform1i(uniform_location(blit_program, "source"), 0);
     fill_program = link(tonemap_vertex_source, stamp_fragment_source);
-    glUseProgram(fill_program);
-    glUniform1i(glGetUniformLocation(fill_program, "texture0"), 0);
-    u_fill_kind = glGetUniformLocation(fill_program, "u_kind");
-    u_fill_pass = glGetUniformLocation(fill_program, "u_pass");
-    u_fill_wetness = glGetUniformLocation(fill_program, "u_wetness");
+    use_program(fill_program);
+    glUniform1i(uniform_location(fill_program, "texture0"), 0);
+    u_fill_kind = uniform_location(fill_program, "u_kind");
+    u_fill_pass = uniform_location(fill_program, "u_pass");
+    u_fill_wetness = uniform_location(fill_program, "u_wetness");
     glGenVertexArrays(1, &beam_array);
     glBindVertexArray(beam_array);
     glGenBuffers(1, &beam_buffer);
@@ -1419,8 +1509,11 @@ static float circle[8];
 // A draw through the device's own shading into the bound target `t`.
 static void device_draw(const Target &t, u32 primitive, const void *vertices, u32 vertex_count,
                         const unsigned short *indices, u32 primitive_count) {
-  glUseProgram(program);
-  glUniform2f(u_target_size, (float)t.logical_width, (float)t.logical_height);
+  use_program(program);
+  ClassicUniforms &c = classic_uniforms;
+  const float size[] = {(float)t.logical_width, (float)t.logical_height};
+  if (c.target_size.change(size))
+    glUniform2fv(u_target_size, 1, size);
   GLint has[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES], filters[STAGES];
   for (int s = 0; s < STAGES; ++s) {
     auto it = textures.find(bound[s]);
@@ -1439,27 +1532,40 @@ static void device_draw(const Target &t, u32 primitive, const void *vertices, u3
     glActiveTexture(GL_TEXTURE0 + s);
     glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
     glBindSampler(s, samplers[s]);
-    glSamplerParameteri(samplers[s], GL_TEXTURE_WRAP_S, address(stage_states[s][TSS_ADDRESSU]));
-    glSamplerParameteri(samplers[s], GL_TEXTURE_WRAP_T, address(stage_states[s][TSS_ADDRESSV]));
-    glSamplerParameteri(samplers[s], GL_TEXTURE_MAG_FILTER, stage_states[s][TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
-    glSamplerParameteri(samplers[s], GL_TEXTURE_MIN_FILTER, stage_states[s][TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
+    apply_sampler(s, stage_states[s]);
   }
   glActiveTexture(GL_TEXTURE0);
-  glUniform2iv(u_has_texture, 1, has);
-  glUniform2iv(u_reconstruction, 1, filters);
-  glUniform2iv(u_color_op, 1, cop);
-  glUniform2iv(u_color_arg1, 1, ca1);
-  glUniform2iv(u_color_arg2, 1, ca2);
-  glUniform2iv(u_alpha_op, 1, aop);
-  glUniform2iv(u_alpha_arg1, 1, aa1);
-  glUniform2iv(u_alpha_arg2, 1, aa2);
+  if (c.has_texture.change(has))
+    glUniform2iv(u_has_texture, 1, has);
+  if (c.reconstruction.change(filters))
+    glUniform2iv(u_reconstruction, 1, filters);
+  if (c.color_op.change(cop))
+    glUniform2iv(u_color_op, 1, cop);
+  if (c.color_arg1.change(ca1))
+    glUniform2iv(u_color_arg1, 1, ca1);
+  if (c.color_arg2.change(ca2))
+    glUniform2iv(u_color_arg2, 1, ca2);
+  if (c.alpha_op.change(aop))
+    glUniform2iv(u_alpha_op, 1, aop);
+  if (c.alpha_arg1.change(aa1))
+    glUniform2iv(u_alpha_arg1, 1, aa1);
+  if (c.alpha_arg2.change(aa2))
+    glUniform2iv(u_alpha_arg2, 1, aa2);
   unsigned f = render_states[RS_TEXTUREFACTOR];
-  glUniform4f(u_factor, (f >> 16 & 255) / 255.0f, (f >> 8 & 255) / 255.0f, (f & 255) / 255.0f, (f >> 24) / 255.0f);
-  glUniform1i(u_alpha_test, render_states[RS_ALPHATESTENABLE] != 0);
-  glUniform1f(u_alpha_ref, (float)(render_states[RS_ALPHAREF] & 255));
-  glUniform1i(u_alpha_func, (GLint)render_states[RS_ALPHAFUNC]);
-  glUniform4fv(u_circle, 1, circle);
-  glUniform4fv(u_circle_uv, 1, circle + 4);
+  const float factor[] = {(f >> 16 & 255) / 255.0f, (f >> 8 & 255) / 255.0f,
+                          (f & 255) / 255.0f, (f >> 24) / 255.0f};
+  GLint alpha_test = render_states[RS_ALPHATESTENABLE] != 0;
+  float alpha_ref = (float)(render_states[RS_ALPHAREF] & 255);
+  GLint alpha_func = (GLint)render_states[RS_ALPHAFUNC];
+  if (c.factor.change(factor)) glUniform4fv(u_factor, 1, factor);
+  if (c.alpha_test.change(alpha_test)) glUniform1i(u_alpha_test, alpha_test);
+  if (c.alpha_ref.change(alpha_ref)) glUniform1f(u_alpha_ref, alpha_ref);
+  if (c.alpha_func.change(alpha_func)) glUniform1i(u_alpha_func, alpha_func);
+  // `circle + 4` is a pointer; preserve the four actual values in each cache.
+  const float circle_rect[] = {circle[0], circle[1], circle[2], circle[3]};
+  const float circle_uv[] = {circle[4], circle[5], circle[6], circle[7]};
+  if (c.circle.change(circle_rect)) glUniform4fv(u_circle, 1, circle_rect);
+  if (c.circle_uv.change(circle_uv)) glUniform4fv(u_circle_uv, 1, circle_uv);
 
   apply_output_state(t);
   unsigned cull = render_states[RS_CULLMODE];
@@ -1559,7 +1665,7 @@ void flush_ground_stamps() {
   current_target = saved_target;
   // Each material's coverage, then specularity, wetness and volume, then
   // height (materials.py's _stamp_commands), each with its own blend and channels.
-  glUseProgram(stamp_program);
+  use_program(stamp_program);
   glUniform2f(u_stamp_target_size, (float)g.surface.logical_width, (float)g.surface.logical_height);
   glDisable(GL_CULL_FACE);
   glEnable(GL_BLEND);
@@ -1578,10 +1684,7 @@ void flush_ground_stamps() {
       glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
       glBindSampler(0, samplers[0]);
       // The decal samples as the device's stage 0 was set for its draw.
-      glSamplerParameteri(samplers[0], GL_TEXTURE_WRAP_S, address(s.stage_states[0][TSS_ADDRESSU]));
-      glSamplerParameteri(samplers[0], GL_TEXTURE_WRAP_T, address(s.stage_states[0][TSS_ADDRESSV]));
-      glSamplerParameteri(samplers[0], GL_TEXTURE_MAG_FILTER, s.stage_states[0][TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
-      glSamplerParameteri(samplers[0], GL_TEXTURE_MIN_FILTER, s.stage_states[0][TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST);
+      apply_sampler(0, s.stage_states[0]);
       if (pass == 0) {
         // RGB weighs the materials alpha-over; A is ice coverage, which every later material occludes.
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -1647,7 +1750,7 @@ void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 ste
   if (!rtx)
     return;
   Target &t = drawing_target(current_target);
-  glUseProgram(beam_program);
+  use_program(beam_program);
   glUniform2f(u_beam_target_size, (float)t.logical_width, (float)t.logical_height);
   glUniform1f(u_beam_length, length);
   glUniform1f(u_beam_step, step);
@@ -1666,7 +1769,7 @@ static void draw_effect_vertices(const EffectVertex *vertices, int count,
                                  int kind, const float *params) {
   count_draw("effect" + std::to_string(kind), (const float *)vertices, 7, nullptr, 4, count / 3);
   Target &t = drawing_target(current_target);
-  glUseProgram(effect_program);
+  use_program(effect_program);
   glUniform2f(u_effect_target_size, (float)t.logical_width,
               (float)t.logical_height);
   glUniform1i(u_effect_kind, kind);
@@ -1748,9 +1851,9 @@ void GL_ENTRY(w2c_host_heat)(struct w2c_host *, u32 footprints, u32 count) {
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glDisable(GL_CULL_FACE);
   GLuint p = heat_stamp_program;
-  glUseProgram(p);
-  glUniform2f(glGetUniformLocation(p, "target_size"), (float)width, (float)height);
-  glUniform2f(glGetUniformLocation(p, "camera"), 0, 0);
+  use_program(p);
+  glUniform2f(uniform_location(p, "target_size"), (float)width, (float)height);
+  glUniform2f(uniform_location(p, "camera"), 0, 0);
   auto quad = [](std::vector<HostVertex> &v, float x0, float y0, float x1, float y1, u32 color) {
     auto corner = [&](float x, float y, float u, float w) { return HostVertex{x, y, 0, 1, color, u, w}; };
     for (HostVertex c : {corner(x0, y0, 0, 0), corner(x0, y1, 0, 1), corner(x1, y1, 1, 1), corner(x0, y0, 0, 0),
@@ -1761,7 +1864,7 @@ void GL_ENTRY(w2c_host_heat)(struct w2c_host *, u32 footprints, u32 count) {
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
   } else if (gap > 0) {
-    glUniform1f(glGetUniformLocation(p, "u_fade"), 1 - powf(0.5f, gap / HEAT_HALF_LIFE_S));
+    glUniform1f(uniform_location(p, "u_fade"), 1 - powf(0.5f, gap / HEAT_HALF_LIFE_S));
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
@@ -1776,7 +1879,7 @@ void GL_ENTRY(w2c_host_heat)(struct w2c_host *, u32 footprints, u32 count) {
     quad(stamps, x - r, y - r, x + r, y + r, (u32)(std::min(1.0f, f[3]) * 255 + 0.5f) << 24 | 0xffffff);
   }
   if (!stamps.empty()) {
-    glUniform1f(glGetUniformLocation(p, "u_fade"), -1);
+    glUniform1f(uniform_location(p, "u_fade"), -1);
     glEnable(GL_BLEND);
     glBlendEquation(GL_MAX);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -1791,11 +1894,11 @@ void GL_ENTRY(w2c_host_heat_trails)(struct w2c_host *, f32 alpha) {
   gpu_mark("heat");
   Target &t = drawing_target(current_target);
   GLuint p = heat_trail_program;
-  glUseProgram(p);
-  glUniform2f(glGetUniformLocation(p, "target_size"), (float)t.logical_width, (float)t.logical_height);
-  glUniform2f(glGetUniformLocation(p, "camera"), scene_camera[0], scene_camera[1]);
-  glUniform2fv(glGetUniformLocation(p, "u_ground_size"), 1, ground_size);
-  glUniform1f(glGetUniformLocation(p, "u_alpha"), alpha);
+  use_program(p);
+  glUniform2f(uniform_location(p, "target_size"), (float)t.logical_width, (float)t.logical_height);
+  glUniform2f(uniform_location(p, "camera"), scene_camera[0], scene_camera[1]);
+  glUniform2fv(uniform_location(p, "u_ground_size"), 1, ground_size);
+  glUniform1f(uniform_location(p, "u_alpha"), alpha);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, heat_trail.texture);
   glBindSampler(0, 0);
@@ -1846,21 +1949,21 @@ void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
       break;
     case SMOKE_SPLAT: {
       GLuint p = smoke_splat_program;
-      glUseProgram(p);
-      glUniform4fv(glGetUniformLocation(p, "u_source"), 1, c + 5);
-      glUniform4fv(glGetUniformLocation(p, "u_motion"), 1, c + 9);
-      glUniform1f(glGetUniformLocation(p, "u_rotation"), c[13]);
-      glUniform4fv(glGetUniformLocation(p, "u_flow"), 1, c + 14);
+      use_program(p);
+      glUniform4fv(uniform_location(p, "u_source"), 1, c + 5);
+      glUniform4fv(uniform_location(p, "u_motion"), 1, c + 9);
+      glUniform1f(uniform_location(p, "u_rotation"), c[13]);
+      glUniform4fv(uniform_location(p, "u_flow"), 1, c + 14);
       smoke_add(p, c + 1);
       c += 18;
       break;
     }
     case SMOKE_IMPULSE: {
       GLuint p = smoke_impulse_program;
-      glUseProgram(p);
-      glUniform4fv(glGetUniformLocation(p, "u_segment"), 1, c + 5);
-      glUniform4fv(glGetUniformLocation(p, "u_impulse"), 1, c + 9);
-      glUniform4fv(glGetUniformLocation(p, "u_phase"), 1, c + 13);
+      use_program(p);
+      glUniform4fv(uniform_location(p, "u_segment"), 1, c + 5);
+      glUniform4fv(uniform_location(p, "u_impulse"), 1, c + 9);
+      glUniform4fv(uniform_location(p, "u_phase"), 1, c + 13);
       smoke_add(p, c + 1);
       c += 17;
       break;
@@ -1919,8 +2022,8 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
   glBlendEquation(GL_FUNC_ADD);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   GLuint p = smoke_program;
-  glUseProgram(p);
-  auto at = [p](const char *name) { return glGetUniformLocation(p, name); };
+  use_program(p);
+  auto at = [p](const char *name) { return uniform_location(p, name); };
   glUniform4fv(at("rect"), 1, v);
   glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
   glUniform1i(at("texture0"), 0);
@@ -1955,7 +2058,7 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   // The premultiplied composite over the world.
   bind_target();
-  glUseProgram(blit_program);
+  use_program(blit_program);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glBindTexture(GL_TEXTURE_2D, smoke_composite.texture);
@@ -2052,12 +2155,12 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
         strengths[i] = f[3];
       }
       bind_framebuffer(pressured);
-      glUseProgram(pressure_program);
-      glUniform1i(glGetUniformLocation(pressure_program, "texture0"), 0);
-      glUniform2f(glGetUniformLocation(pressure_program, "u_size"), (float)hdr.width, (float)hdr.height);
-      glUniform1i(glGetUniformLocation(pressure_program, "u_count"), count);
-      glUniform4fv(glGetUniformLocation(pressure_program, "u_fronts"), count, fronts.data());
-      glUniform4fv(glGetUniformLocation(pressure_program, "u_strength"), (count + 3) / 4, strengths.data());
+      use_program(pressure_program);
+      glUniform1i(uniform_location(pressure_program, "texture0"), 0);
+      glUniform2f(uniform_location(pressure_program, "u_size"), (float)hdr.width, (float)hdr.height);
+      glUniform1i(uniform_location(pressure_program, "u_count"), count);
+      glUniform4fv(uniform_location(pressure_program, "u_fronts"), count, fronts.data());
+      glUniform4fv(uniform_location(pressure_program, "u_strength"), (count + 3) / 4, strengths.data());
       glDisable(GL_BLEND);
       glDisable(GL_CULL_FACE);
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -2071,7 +2174,7 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     // A world drawn smaller (render_size) scales up as it tonemaps.
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
-    glUseProgram(tonemap_program);
+    use_program(tonemap_program);
     glUniform1f(u_tonemap_headroom, edr_headroom);
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
