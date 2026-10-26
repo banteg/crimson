@@ -253,8 +253,11 @@ its own (`bake` for terrain decal bakes, `heat-stamp` for Monster Vision's trail
 kept frame), so `frame` holds no drawing. Classic marks the world's bounds too (`world`, then `hud`), with nothing
 drawn differently. A pass's GPU time also counts the time the GPU waits for the CPU, so `frame`'s is idle time and
 `profile.py` and `golden.py` leave it out of the GPU's sum. A pass's CPU time runs from its mark to the next, so it
-also holds the time the driver blocks the CPU on the GPU: a pass that waits on an earlier pass's results shows that
-pass's GPU time as its own CPU time. Each frame's draws are counted per pass, texture (or `beam` / `effect<kind>`) and
+also holds the time the driver blocks the CPU on the GPU. On macOS the timer queries themselves flush the driver's
+command buffer at every mark, so a frame timed this way drains the GPU pass by pass and waits in the pass after a
+costly one: with every frame timed, late in a run the players pass showed the ground's GPU time as its own CPU time,
+and frames ran about 4 ms slower. The client therefore times every 8th frame by default, and `profile.py` reads wall
+and CPU times as means over runs of 8 frames, where an untimed frame waits at the swap. Each frame's draws are counted per pass, texture (or `beam` / `effect<kind>`) and
 target as the quads drawn and the target pixels they cover.
 
 The two RTX renderers share their GLSL, but light collection and selection, volley merging, beams and smoke are
