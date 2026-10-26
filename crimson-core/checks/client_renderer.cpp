@@ -479,6 +479,19 @@ void check_rtx() {
   const std::initializer_list<float> mirror = {600, 390, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 200, 40};
   assert(ground(mirror, 1, 600, 400).r > ground({}, 0, 600, 400).r + 0.1f);
   assert(fabsf(ground(mirror, 1, 400, 400).r - ground({}, 0, 400, 400).r) < 1e-3f);
+  // Three minutes on, a bake's stamp rebases the surface's wetness, and the
+  // terrain stays bound: the decal after it still lands in the terrain.
+  w2c_host_set_render_target(nullptr, 400);
+  w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 200);
+  rectangle(100, 700, 150, 750, 0xc8ffffff);
+  w2c_host_ground(nullptr, HOST_GROUND_DECAL, 200);
+  rectangle(800, 100, 1000, 900, 0xffff0000);
+  w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+  w2c_host_set_render_target(nullptr, 400);
+  u8 stamped[4];
+  glReadPixels(1800, 1000, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, stamped);
+  assert(stamped[0] == 255 && stamped[1] == 0 && stamped[2] == 0);
+  w2c_host_set_render_target(nullptr, 0);
   terrain();
   Pixel cleared = ground({}, 0, 200, 200);
   assert(fabsf(cleared.g - bare.g) < 1e-3f);

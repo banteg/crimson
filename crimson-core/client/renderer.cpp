@@ -1496,6 +1496,8 @@ void queue_ground_stamp(Ground &g, u32 primitive, const void *vertices, u32 vert
   if (ground_kind != HOST_GROUND_DECAL && ground_seconds - g.epoch > 180) {
     flush_ground_stamps();
     rebase_wetness(g, ground_seconds);
+    // The bake's next draws go to the terrain again.
+    bind_target();
   }
   ground_stamp_target = current_target;
   GroundStamp s;
