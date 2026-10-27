@@ -705,9 +705,12 @@ void profile_record() {
   }
   std::string passes;
   while (renderer_profile_gpu(frame, passes)) {
-    ProfileFrame &f = profile_waiting.at(frame);
-    f.record += ",\"gpu\":" + passes;
-    f.timed = false;
+    // A frame drawn after another in the same loop (the renderer keeps one record) has none to join.
+    auto it = profile_waiting.find(frame);
+    if (it == profile_waiting.end())
+      continue;
+    it->second.record += ",\"gpu\":" + passes;
+    it->second.timed = false;
   }
   // The renderer finishes every timed frame within a few timed frames.
   while (!profile_waiting.empty() && !profile_waiting.begin()->second.timed) {
