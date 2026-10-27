@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Generator, Iterator, Sequence
+from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
 from itertools import groupby
 from typing import TYPE_CHECKING, NamedTuple
@@ -16,7 +16,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 from grim.terrain_render import GroundRenderer
 from grim.terrain_stamps import TerrainLayers
-from grim.texture_mode import current_target_scale, current_target_size, texture_mode
+from grim.texture_mode import texture_mode
 
 from ...creatures.anim import creature_corpse_frame_for_type
 from ...effects_atlas import EffectId
@@ -30,7 +30,6 @@ from .material_history import MaterialHistory
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight, collect_material_lights
 from .material_shaders import BEAM_VISIBILITY_FRAGMENT, GROUND_FRAGMENT, STAMP_FRAGMENT
 from .reflection_occlusion import (
-    PENUMBRA_WIDTH,
     ReflectionOcclusion,
     bonus_body_volumes,
     build_occlusion_grid,
@@ -42,11 +41,10 @@ if TYPE_CHECKING:
     from ..frame import RenderFrame
 
 
-# Soft sources (beams, and discs and rings at least PENUMBRA_WIDTH wide) whose visibility a pass draws at
-# 1/BEAM_VISIBILITY_SCALE of the ground's resolution (ground.frag's BEAM_VISIBILITY_PASS), which the ground then reads
-# instead of walking the body grid per pixel: a group of four slots per four lights, four groups a row in one atlas.
+# Every four selected sources share one RGBA group in a 4x2 coarse world-anchored
+# visibility atlas (ground_visibility.glsl), snapped to VISIBILITY_TEXEL world units.
 # The atlas binds past raylib's batch texture units, which hold the ground's maps.
-BEAM_VISIBILITY_SCALE = 4
+VISIBILITY_TEXEL = 4.0
 BEAM_VISIBILITY_ROWS = MAX_MATERIAL_LIGHTS // 16
 BEAM_VISIBILITY_UNIT = 5
 
@@ -430,11 +428,15 @@ class MaterialGroundRenderer(GroundRenderer):
 
     @contextmanager
     def material_scope(
-        self, frame: RenderFrame, *, view_center: Vec2 = Vec2(512, 512), debug: int | None = None,
-        lights: Sequence[MaterialLight] | None = None, draw_view: Callable[[], None] | None = None,
+        self,
+        frame: RenderFrame,
+        *,
+        view_center: Vec2 = Vec2(512, 512),
+        view_size: Vec2 | None = None,
+        debug: int | None = None,
+        lights: Sequence[MaterialLight] | None = None,
     ) -> Generator[None]:
-        """The ground's material program for the frame's lights. `draw_view` draws the ground's view as the caller
-        then does: with it, the beams' visibility comes from passes at a lower resolution (BEAM_VISIBILITY_SCALE)."""
+        """The ground's material program for the frame's lights and coarse world-anchored visibility atlas."""
         from grim.assets import TextureId
 
         self.reflection_occlusion.grid = None
@@ -457,28 +459,27 @@ class MaterialGroundRenderer(GroundRenderer):
         put_int("u_debug", int(frame.rtx_debug) if debug is None else debug)
         put_int("u_debug_display", int(debug is None))
         shadows = frame.config is None or frame.config.display.shadows_enabled
-        put_int("u_dynamic_shadows", int(shadows))
         if lights is None:
             lights = collect_material_lights(frame, view_center=view_center)
+        lights = lights[:MAX_MATERIAL_LIGHTS]
         put_int("u_spec_light_count", len(lights))
         bodies = (
             [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
             + [body for player in frame.players for body in player_body_volumes(player)]
             + [body for bonus in frame.state.bonus_pool.entries for body in bonus_body_volumes(bonus)]
-            if any(light.reflection_gain > 0 or (shadows and light.illumination_gain > 0) for light in lights) else []
+            if shadows and any(light.reflection_gain > 0 or light.illumination_gain > 0 for light in lights) else []
         )
         has_beam_lights = any(
             light.beam_profile is not None and light.illumination_gain > 0 for light in lights
         )
         put_int("u_has_beam_lights", int(has_beam_lights))
-        grid_lights, beam_margin, shapes = lights, 0., [0.0] * (4 * len(lights))
+        grid_lights, shapes = lights, [0.0] * (4 * len(lights))
         if has_beam_lights:
             shapes, grid_lights = prepare_beam_lights(lights)
-            beam_margin = max(shapes[3::4])
             put("u_beam_gain", [ION_DIRECT_GAIN, FIRE_DIRECT_GAIN])
             put("u_beam_shape[0]", shapes, 4)
         grid = build_occlusion_grid(
-            bodies, grid_lights, width=self.width, height=self.height, illumination=shadows, beam_margin=beam_margin,
+            bodies, grid_lights, width=self.width, height=self.height, illumination=shadows,
         )
         occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
         put("u_occlusion_grid", [
@@ -492,36 +493,42 @@ class MaterialGroundRenderer(GroundRenderer):
         put("u_spec_dir[0]", [v for light in lights for v in
                               (light.direction.x, light.direction.y, float(light.broad_illumination), light.length)], 4)
         put("u_spec_response[0]", [v for light in lights for v in light.response], 4)
-        # Lit beams take the slots in light order, then wide discs and rings join them (a pass of their own would
-        # cost the world its render pass for less than it saves); the rest walk the grid in the ground's own pass.
-        slots = [0.0] * (4 * len(lights))
-        count = 0
-        if draw_view is not None and shadows and grid.body_count:
-            for i in range(len(lights)):
-                if shapes[i * 4 + 3] > 0:
-                    count += 1
-                    slots[4 * i] = float(count)
-            for i, light in enumerate(lights):
-                illumination, _, _, width = light.response
-                if count and shapes[i * 4 + 3] <= 0 and illumination > 0 and (
-                    light.ring_radius > 0 or width >= PENUMBRA_WIDTH
-                ):
-                    count += 1
-                    slots[4 * i] = float(count)
-        put("u_beam_slots[0]", slots or [0.0] * 4, 4)
-        atlas = self._beam_visibility(uniforms, draw_view, occlusion_texture, count) if count else None
-        if atlas is not None:
-            render_w, render_h = current_target_size()
-            put("u_beam_vis_target", [float(render_w), float(render_h), float(atlas.texture.width // 4),
-                                      float(atlas.texture.height // BEAM_VISIBILITY_ROWS)])
+        if view_size is None:
+            view_min = Vec2(0.0, 0.0)
+            view_max = Vec2(float(self.width), float(self.height))
+        else:
+            view_min = view_center - view_size * 0.5
+            view_max = view_min + view_size
+        atlas = None
+        if occlusion_texture is not None and lights and view_max.x > view_min.x and view_max.y > view_min.y:
+            origin = Vec2(
+                math.floor(view_min.x / VISIBILITY_TEXEL) * VISIBILITY_TEXEL - VISIBILITY_TEXEL,
+                math.floor(view_min.y / VISIBILITY_TEXEL) * VISIBILITY_TEXEL - VISIBILITY_TEXEL,
+            )
+            group_width = math.ceil((view_max.x - view_min.x) / VISIBILITY_TEXEL) + 3
+            group_height = math.ceil((view_max.y - view_min.y) / VISIBILITY_TEXEL) + 3
+            extent = Vec2(group_width * VISIBILITY_TEXEL, group_height * VISIBILITY_TEXEL)
+            put("u_visibility_world", [origin.x, origin.y, extent.x, extent.y])
+            put("u_visibility_size", [float(group_width), float(group_height)])
+            atlas = self._beam_visibility(
+                uniforms,
+                occlusion_texture,
+                lights,
+                shapes,
+                origin=origin,
+                extent=extent,
+                width=group_width,
+                height=group_height,
+            )
+        else:
+            put("u_visibility_world", [0.0, 0.0, 0.0, 0.0])
+            put("u_visibility_size", [0.0, 0.0])
         _apply_uniforms(sh, self.material_locations, uniforms)
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,
         # since rlgl flushes (and clears sampler bindings) when changing blend modes.
         with opaque_blend():
             rl.begin_shader_mode(sh)
             try:
-                if occlusion_texture is not None:
-                    rl.set_shader_value_texture(sh, self._material_location("u_occlusion_tex"), occlusion_texture)
                 rl.set_shader_value_texture(sh, self._material_location("u_surface_tex"), self.surface.texture)
                 rl.set_shader_value_texture(sh, self._material_location("u_material_tex"), self.coverage.texture)
                 assert self.substrate is not None and self.substrate.render_target is not None
@@ -531,7 +538,7 @@ class MaterialGroundRenderer(GroundRenderer):
                     self.substrate.render_target.texture,
                 )
                 if atlas is not None:
-                    _bind_unit(sh, self._material_location("u_beam_vis"), atlas.texture)
+                    _bind_unit(sh, self._material_location("u_visibility_tex"), atlas.texture)
                 yield
             finally:
                 rl.end_shader_mode()
@@ -539,16 +546,20 @@ class MaterialGroundRenderer(GroundRenderer):
                     _bind_unit(None, -1, None)
 
     def _beam_visibility(
-        self, uniforms: list[tuple[str, list[float], int]], draw_view: Callable[[], None] | None,
-        occlusion: rl.Texture | None, count: int,
+        self,
+        uniforms: list[tuple[str, list[float], int]],
+        occlusion: rl.Texture,
+        lights: Sequence[MaterialLight],
+        shapes: Sequence[float],
+        *,
+        origin: Vec2,
+        extent: Vec2,
+        width: int,
+        height: int,
     ) -> rl.RenderTexture:
-        """The atlas the slots' groups draw into, a part of it each, at BEAM_VISIBILITY_SCALE of the target."""
-        assert draw_view is not None
+        """Render the 4x2 coarse world-anchored visibility atlas for `count` canonical sources."""
         if self.beam_shader is None:
             self.beam_shader = _shader(BEAM_VISIBILITY_FRAGMENT)
-        render_w, render_h = current_target_size()
-        scale_x, scale_y = current_target_scale()
-        width, height = max(1, render_w // BEAM_VISIBILITY_SCALE), max(1, render_h // BEAM_VISIBILITY_SCALE)
         atlas = self.beam_atlas
         rows = BEAM_VISIBILITY_ROWS
         if atlas is None or int(atlas.texture.width) != 4 * width or int(atlas.texture.height) != rows * height:
@@ -558,21 +569,49 @@ class MaterialGroundRenderer(GroundRenderer):
             rl.set_texture_filter(atlas.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         shader = self.beam_shader
         _apply_uniforms(shader, self.beam_locations, uniforms)
-        # The view fills the atlas's projection; each group's viewport squeezes it into its part.
-        with texture_mode(atlas, scale_x=scale_x * 4 * width / render_w, scale_y=scale_y * rows * height / render_h), \
-                opaque_blend():
+        camera = Vec2(-origin.x, -origin.y)
+        # The virtual view fills the atlas's projection; each group's viewport squeezes it into its tile.
+        with texture_mode(atlas, scale_x=4 * width / extent.x, scale_y=rows * height / extent.y):
+            rl.rl_disable_scissor_test()
             rl.clear_background(rl.WHITE)
-            for group in range((count + 3) // 4):
+            rl.rl_enable_scissor_test()
+            for group in range((min(len(lights), MAX_MATERIAL_LIGHTS) + 3) // 4):
+                # The same conservative support bounds as client/ground_visibility.h.
+                support = []
+                for i in range(group * 4, min(len(lights), group * 4 + 4)):
+                    light = lights[i]
+                    if light.illumination_gain <= 0 and light.reflection_gain <= 0:
+                        continue
+                    reach = max(1.0, light.radius, light.reflection_reach)
+                    half = max(0.0, light.length * 0.5, shapes[i * 4 + 3])
+                    square = light.direction.x ** 2 + light.direction.y ** 2
+                    axis = light.direction / math.sqrt(square) if square > 0.0001 else Vec2(1, 0)
+                    ex = reach + (light.ring_radius if light.ring_radius > 0 else abs(axis.x) * half)
+                    ey = reach + (light.ring_radius if light.ring_radius > 0 else abs(axis.y) * half)
+                    support.append((light.pos.x - ex, light.pos.y - ey, light.pos.x + ex, light.pos.y + ey))
+                if not support:
+                    continue
+                x0 = max(0, min(width, math.floor((min(b[0] for b in support) - origin.x) / VISIBILITY_TEXEL) - 1))
+                y0 = max(0, min(height, math.floor((min(b[1] for b in support) - origin.y) / VISIBILITY_TEXEL) - 1))
+                x1 = max(0, min(width, math.ceil((max(b[2] for b in support) - origin.x) / VISIBILITY_TEXEL) + 1))
+                y1 = max(0, min(height, math.ceil((max(b[3] for b in support) - origin.y) / VISIBILITY_TEXEL) + 1))
+                if x1 <= x0 or y1 <= y0:
+                    continue
                 rl.rl_draw_render_batch_active()
                 rl.rl_viewport(group % 4 * width, group // 4 * height, width, height)
-                rl.begin_shader_mode(shader)
-                try:
-                    if occlusion is not None:
-                        rl.set_shader_value_texture(shader, _location(shader, self.beam_locations, "u_occlusion_tex"),
-                                                    occlusion)
-                    _apply_uniforms(shader, self.beam_locations, [("u_beam_group", [float(group)], 1)])
-                    draw_view()
-                finally:
-                    rl.end_shader_mode()
+                # Raylib's world top maps to the GL viewport's top.
+                rl.rl_scissor(group % 4 * width + x0, group // 4 * height + height - y1, x1 - x0, y1 - y0)
+                with opaque_blend():
+                    rl.begin_shader_mode(shader)
+                    try:
+                        rl.set_shader_value_texture(
+                            shader, _location(shader, self.beam_locations, "u_occlusion_tex"), occlusion,
+                        )
+                        _apply_uniforms(shader, self.beam_locations, [("u_visibility_group", [float(group)], 1)])
+                        self.draw_view(camera, screen_w=extent.x, screen_h=extent.y, out_w=extent.x, out_h=extent.y)
+                    finally:
+                        rl.end_shader_mode()
+            rl.rl_draw_render_batch_active()
+            rl.rl_disable_scissor_test()
             rl.rl_viewport(0, 0, 4 * width, rows * height)
         return atlas

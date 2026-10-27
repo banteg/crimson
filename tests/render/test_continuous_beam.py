@@ -101,7 +101,7 @@ def test_lit_slot_keeps_its_mask_profile_when_sources_swap() -> None:
     assert not any(values) and grid == [nonbeam]
 
 
-def test_beam_support_pads_only_beam_cell_lists() -> None:
+def test_beam_support_extends_source_culling_without_secondary_lists() -> None:
     from crimson.render.rtx.reflection_occlusion import CROWD_BODIES, BodyVolume, build_occlusion_grid
 
     original = light()
@@ -113,16 +113,17 @@ def test_beam_support_pads_only_beam_cell_lists() -> None:
     assert original.source_width == 3 and original.length == 256
     # As many as one cell lists before it is a crowd.
     bodies = [BodyVolume(Vec2(110, 90), Vec2(12, 9), 50, 0, opacity=0.5) for _ in range(CROWD_BODIES)]
-    grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256, beam_margin=margin)
+    grid = build_occlusion_grid(bodies, grid_sources, width=256, height=256)
     assert grid.body_count == len(bodies)
-    # Beam walks get the support; other lights keep the transverse margin.
-    plain = build_occlusion_grid(bodies, grid_sources, width=256, height=256)
-    assert grid.references == plain.references < grid.beam_references
-    # A wide point light (an explosion) widens the ordinary lists' penumbra margin, never the beams' lists.
+    # Only ordinary point-ray lists are packed, including for beams. No unused
+    # transforms or secondary entries can remain behind those lists.
+    headers = grid.columns * grid.rows
+    assert all(grid.values[i * 4 + 2:i * 4 + 4] == [0, 0] for i in range(headers))
+    assert len(grid.values) == headers * 4 + grid.body_count * 12 + grid.references * 4
+    # A wide point source still widens the shared ordinary penumbra lists.
     blast = MaterialLight(Vec2(100, 90), 300, (1, 1, 1), source_width=28)
-    widened = build_occlusion_grid(bodies, [*grid_sources, blast], width=256, height=256, beam_margin=margin)
+    widened = build_occlusion_grid(bodies, [*grid_sources, blast], width=256, height=256)
     assert widened.references > grid.references
-    assert widened.beam_references == grid.beam_references
     zero = msgspec.structs.replace(original, length=0, direction=Vec2())
     zero_shapes, zero_grid = prepare_beam_lights([zero])
     assert zero_grid[0].direction == Vec2(1, 0)

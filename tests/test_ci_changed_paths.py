@@ -97,6 +97,8 @@ def test_a_suite_runs_for_the_code_its_checks_import(monkeypatch: pytest.MonkeyP
 
     # The gate steps the simulation; the menus never run in it.
     assert relevant("core-gate", ["src/crimson/sim/world_state.py"])
+    assert relevant("core-game", ["crimson-core/checks/rtx_occlusion.cpp"])
+    assert relevant("core-game", ["crimson-core/checks/rtx_occlusion.py"])
     assert not relevant("core-gate", ["src/crimson/screens/actions.py"])
     # The decomp report runs the matching tools, not the trace debugger.
     assert relevant("decomp", ["crimson-re/src/crimson_re/match.py"])

@@ -737,6 +737,98 @@ void check_submission_reuse() {
   puts("renderer: static quad indices, streaming fallback, helper sampler state and cached uniform transitions passed");
 }
 
+
+#ifndef __EMSCRIPTEN__
+void check_ground_visibility() {
+  // Bounds must include reflection-only reach, long segments and rings,
+  // while sources wholly outside the view produce no fragments.
+  GroundVisibility region;
+  region.prepare(0, 0, 64, 64, 1, true);
+  float p[4] = {200, 32, 5, 24}, d[4] = {1, 0, 0, 0}, c[4] = {}, r[4] = {0, 1, 180, 1}, shape[4] = {};
+  auto bounds = [&] { return region.bounds(0, p, d, c, r, shape, true); };
+  assert(bounds()[2] > 0); // reflection reach exceeds illumination radius
+  r[2] = 5;
+  assert(bounds()[2] == 0);
+  d[3] = 400;
+  assert(bounds()[2] > 0); // segment reaches the view though its center does not
+  d[3] = 0; shape[3] = 200;
+  assert(bounds()[2] > 0); // extended analytic beam support
+  shape[3] = 0; c[3] = 180;
+  assert(bounds()[2] > 0); // ring's near edge
+  r[1] = 0;
+  assert(bounds()[2] == 0); // no eligible response
+  renderer_resize(128, 128);
+  w2c_host_back_buffer(nullptr, 64, 64);
+  w2c_host_set_render_target(nullptr, 0);
+  assert(renderer_set_rtx(true));
+  float lights[32 * RTX_LIGHT_FLOATS] = {};
+  for (int i = 0; i < 32; ++i) {
+    float *l = lights + i * RTX_LIGHT_FLOATS;
+    l[0] = 32; l[1] = 4; l[2] = 100; l[3] = 24;
+    l[4] = l[5] = l[6] = 1;
+    l[13] = 1; l[14] = 100; l[15] = 2; l[16] = 1;
+  }
+  const float values[20] = {4, 1, 0, 0, 32, 24, 9.6f, 12,
+                            .1f, .1f, 1 / 24.f, 1e20f, 1, 0, 1, 1e20f, 1, 0, 0, 0};
+  auto begin = [&](int count, float camera_x, float shadows, bool bodies = true) {
+    const float view[7] = {camera_x, 0, 0, 64, 64, 1, 1};
+    const float grid[6] = {0, 0, bodies ? 1.f : 0.f, bodies ? 1.f : 0.f, 64, shadows};
+    memcpy(memory + 4096, view, sizeof view);
+    memcpy(memory + 8192, lights, sizeof lights);
+    memcpy(memory + 16384, grid, sizeof grid);
+    memcpy(memory + 16512, values, sizeof values);
+    w2c_host_scene(nullptr, 4096, 8192, count);
+    w2c_host_occlusion(nullptr, 16384, 16512, bodies ? 20 : 0);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  };
+  auto end = [] { w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END); };
+  auto mask = [](int index, float x, float y) {
+    const GroundVisibility &v = ground_visibility;
+    int group = index / 4;
+    int px = group % 4 * v.width + (int)floorf((x - v.rect[0]) / GroundVisibility::texel);
+    int py = group / 4 * v.height + (int)floorf((y - v.rect[1]) / GroundVisibility::texel);
+    float rgba[4];
+    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+    glReadPixels(px, py, 1, 1, GL_RGBA, GL_FLOAT, rgba);
+    bind_target();
+    return rgba[index % 4];
+  };
+  // Reflection-only sources without beams get masks, including the last lane
+  // of the last group. A body between the receiver and source darkens both.
+  begin(32, 0, 1);
+  assert(ground_visibility.count == 32 && !beam_lights);
+  float blocked = mask(0, 31, 49);
+  assert(blocked < .3f && fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
+  GLuint texture = beam_vis_texture;
+  int width = beam_vis_width, height = beam_vis_height;
+  end();
+  // Visibility is scalar data: HDR color/gain changes never encode, clip or
+  // rescale it. World sample positions also survive fractional/snapped pans.
+  for (int i = 0; i < 32; ++i) {
+    float *l = lights + i * RTX_LIGHT_FLOATS;
+    l[4] = 64; l[5] = 8; l[6] = .25f; l[13] = 100;
+  }
+  for (float camera : {-.25f, 2.25f, -5.75f, 0.f}) {
+    begin(32, camera, 1);
+    assert(beam_vis_texture == texture && beam_vis_width == width && beam_vis_height == height);
+    assert(fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
+    end();
+  }
+  begin(1, 0, 1);
+  assert(mask(31, 31, 49) == 1); // unused groups must be cleared, not kept from the previous frame
+  end();
+  for (int state = 0; state < 3; ++state) {
+    begin(state == 0 ? 0 : 1, 0, state == 1 ? 0 : 1, state != 2);
+    assert(ground_visibility.count == 0 && ground_visibility.rect[2] == 0);
+    end();
+  }
+  assert(!renderer_set_rtx(false));
+  assert(!beam_vis_texture && !ground_visibility.count);
+  assert(glGetError() == GL_NO_ERROR);
+  puts("renderer: world-anchored scalar visibility, reflection-only sources, all 32 lanes and mask invalidation passed");
+}
+#endif
+
 int main() {
   assert(SDL_Init(SDL_INIT_VIDEO));
 #ifdef __EMSCRIPTEN__
@@ -991,6 +1083,9 @@ int main() {
 #endif
 #ifndef RENDERER_BENCHMARK
   check_submission_reuse();
+#ifndef __EMSCRIPTEN__
+  check_ground_visibility();
+#endif
 #endif
 #ifdef RENDERER_BENCHMARK
   benchmark(true);

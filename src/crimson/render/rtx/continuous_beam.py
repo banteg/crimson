@@ -79,10 +79,9 @@ def beam_uniform(light: MaterialLight) -> tuple[float, float, float, float]:
 def prepare_beam_lights(lights: Sequence[MaterialLight]) -> tuple[list[float], list[MaterialLight]]:
     """Pack one uniform array and conservative grid-only copies of the sources.
 
-    The copies only lengthen and orient a beam's support; pass the largest
-    support half-extent as the grid's beam margin, so a beam's one walk
-    retains every body across the stretch it lights while other lights keep
-    their own margin. Upload original lights for reflection/illumination radiance.
+    The copies lengthen and orient a beam's support to include its head halo.
+    Nearest-emitter atlas rays and entity rays use the ordinary point-ray grid;
+    upload original lights for reflection/illumination radiance.
     """
     assert len(lights) <= MAX_MATERIAL_LIGHTS
     values: list[float] = []

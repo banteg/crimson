@@ -114,12 +114,11 @@ class OcclusionGrid(msgspec.Struct, frozen=True):
     values: list[float]
     body_count: int
     references: int
-    beam_references: int = 0
 
 
 def build_occlusion_grid(
     bodies: Sequence[BodyVolume], lights: Sequence[MaterialLight], *, width: float, height: float,
-    illumination: bool = True, beam_margin: float = 0.,
+    illumination: bool = True,
 ) -> OcclusionGrid:
     """Retain every relevant body; no priority cap or nearest-N popping.
 
@@ -127,19 +126,15 @@ def build_occlusion_grid(
     cannot intersect an in-arena receiver/source segment unless the source is
     outside too; extend the grid to include those selected source endpoints.
 
-    Beams walk their own cell lists, padded by `beam_margin` (the largest
-    beam support half-extent) in world units near beam sources only, plus the
-    reach of their two transverse taps (0.577 of the widest beam's width): a
-    beam's coverage never uses the point lights' penumbra margin, which the
-    widest source of the frame (an explosion, an aura) sets. Other lights keep
-    that source-width margin.
+    All production rays use one ordinary list per cell. Header xy stores its
+    offset/count (or crowd height/density); zw is reserved and stays zero.
 
     A cell where more than CROWD_BODIES bodies stand (their planar extent
-    overlaps it) is a crowd: both its headers hold the footprint-weighted top
+    overlaps it) is a crowd: its header holds the footprint-weighted top
     height of what stands there, then minus the opacity-weighted footprint over
     the cell's area, each body's footprint shared among the cells it overlaps by
     area. A body centered in a crowd cell is listed only where it stands, without
-    its soft or beam padding, and only outside crowd cells.
+    its soft padding, and only outside crowd cells.
     """
     sources = [light for light in lights if light.reflection_gain > 0 or (illumination and light.illumination_gain > 0)]
     if not sources:
@@ -149,17 +144,13 @@ def build_occlusion_grid(
     lo = Vec2(-cell_size, -cell_size)
     hi = Vec2(width + cell_size, height + cell_size)
     supports = []
-    beam_width = 0.0
     for light in sources:
         direction = light.direction.normalized() if light.direction.length_sq() > .0001 else Vec2()
         reach = max(
             light.reflection_reach if light.reflection_gain > 0 else 0.,
             light.radius if illumination and light.illumination_gain > 0 else 0.,
         )
-        beam = beam_margin > 0 and illumination and light.beam_profile is not None and light.illumination_gain > 0
-        if beam:
-            beam_width = max(beam_width, light.source_width)
-        supports.append((light.pos.x, light.pos.y, direction.x, direction.y, light.length * .5, reach + light.ring_radius, beam))
+        supports.append((light.pos.x, light.pos.y, direction.x, direction.y, light.length * .5, reach + light.ring_radius))
         axis = direction * (light.length * .5)
         extent = Vec2(abs(axis.x) + light.ring_radius, abs(axis.y) + light.ring_radius)
         for point in (light.pos - extent, light.pos + extent):
@@ -185,11 +176,9 @@ def build_occlusion_grid(
     # Mark the conservative source-support rectangles once. Body-cell overlap
     # then culls against all sources together, avoiding bodies * sources work.
     active = [False] * (columns * rows)
-    beam_active = [False] * (columns * rows)
-    for x, y, ax, ay, half, reach, beam in supports:
+    for x, y, ax, ay, half, reach in supports:
         for cell in covered(bounds(x, y, abs(ax) * half + reach, abs(ay) * half + reach)):
             active[cell] = True
-            beam_active[cell] |= beam
     # Each body's footprint, shared among the cells its planar extent overlaps by
     # area: how many bodies stand in a cell, and their cover and top height there.
     standing = [0] * (columns * rows)
@@ -216,7 +205,6 @@ def build_occlusion_grid(
                     crowd_top[row * columns + column] += body.height * footprint * share
     crowd = [count > CROWD_BODIES for count in standing]
     cells: list[list[int]] = [[] for _ in range(columns * rows)]
-    beam_cells: list[list[tuple[int, int, int]]] = [[] for _ in range(columns * rows)]
     values = [0.0] * (columns * rows * 4)
     body_count = 0
     for body, c, s, ex, ey in shapes:
@@ -227,13 +215,8 @@ def build_occlusion_grid(
         member = 0 <= home_x < columns and 0 <= home_y < rows and crowd[home_y * columns + home_x]
         # A crowd's member shades the cells around it only where it stands; its crowd's medium stands for it.
         rx, ry = (ex, ey) if member else (ex + soft_margin, ey + soft_margin)
-        margin = 0.0 if member else beam_margin + .57735027 * beam_width
         occupied = [cell for cell in covered(bounds(body.pos.x, body.pos.y, rx, ry), active) if not crowd[cell]]
-        # A beam's rays fan out from the walked center ray by at most its half-extent, and its two transverse taps
-        # (light_visibility.glsl's sectionVisibility) by a fraction of its width.
-        beam_box = bounds(body.pos.x, body.pos.y, ex + margin, ey + margin)
-        beam_occupied = [cell for cell in covered(beam_box, beam_active) if not crowd[cell]]
-        if not occupied and not beam_occupied:
+        if not occupied:
             continue
         address = len(values) // 4
         body_count += 1
@@ -242,25 +225,15 @@ def build_occlusion_grid(
         values.extend((c, s, body.opacity, body.owner.y))
         for cell in occupied:
             cells[cell].append(address)
-        # Beam entries carry their cell range, packed as first + last * 4096 per
-        # axis, so a walk tests each body only in the first walked cell holding it.
-        x0, x1, y0, y1 = beam_box
-        for cell in beam_occupied:
-            beam_cells[cell].append((address, x0 + x1 * 4096, y0 + y1 * 4096))
-    # Headers: ordinary list offset and count, then the beams' list.
-    for i, (cell, beam_cell) in enumerate(zip(cells, beam_cells, strict=True)):
+    for i, cell in enumerate(cells):
         if crowd[i]:
-            values[i * 4:i * 4 + 4] = (crowd_top[i] / crowd_cover[i], -crowd_cover[i]) * 2
+            values[i * 4:i * 4 + 2] = (crowd_top[i] / crowd_cover[i], -crowd_cover[i])
             continue
         values[i * 4:i * 4 + 2] = (len(values) // 4, len(cell))
         for address in cell:
             values.extend((address, 0, 0, 0))
-        values[i * 4 + 2:i * 4 + 4] = (len(values) // 4, len(beam_cell))
-        for entry in beam_cell:
-            values.extend((*entry, 0))
     references = sum(map(len, cells))
-    beam_references = sum(map(len, beam_cells))
-    return OcclusionGrid(origin, cell_size, columns, rows, values, body_count, references, beam_references)
+    return OcclusionGrid(origin, cell_size, columns, rows, values, body_count, references)
 
 
 class ReflectionOcclusion(msgspec.Struct):

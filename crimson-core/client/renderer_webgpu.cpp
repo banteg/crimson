@@ -8,6 +8,7 @@
 #include "../game/effect_vertices.h"
 #include "client.h"
 #include "device_states.h"
+#include "ground_visibility.h"
 #include "wgsl_shaders.h"
 #include <emscripten.h>
 #include <math.h>
@@ -167,7 +168,7 @@ Program creature_lit{&WGSL_CREATURE_LIT_VERT, &WGSL_CREATURE_FRAG, CENTERED_VERT
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
 Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
 Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_FRAG, DEVICE_VERTICES};
-Program ground_beam_vis{&WGSL_CREATURE_VERT, &WGSL_GROUND_BEAM_VIS_FRAG, DEVICE_VERTICES};
+Program ground_beam_vis{&WGSL_GROUND_VISIBILITY_VERT, &WGSL_GROUND_BEAM_VIS_FRAG, NO_VERTICES};
 Program ground_stamp{&WGSL_CREATURE_VERT, &WGSL_GROUND_STAMP_FRAG, DEVICE_VERTICES};
 Program ground_fill{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_STAMP_FRAG, NO_VERTICES};
 Program smoke_solver{&WGSL_SMOKE_RECT_VERT, &WGSL_SMOKE_SOLVER_FRAG, NO_VERTICES};
@@ -193,6 +194,8 @@ float heat_seconds = -1;
 enum { MAX_LIGHTS = 32 };
 int material;
 float scene_camera[2];
+GroundVisibility ground_visibility;
+bool visibility_dirty = true;
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
 int bonus_emblem;
@@ -950,87 +953,97 @@ struct HostVertex {
   float u, v;
 };
 
-// The soft sources' visibility at a quarter of the ground's resolution
-// (ground.frag's BEAM_VISIBILITY_PASS): a group of four slots per four lights,
-// four groups a row in one atlas, which the ground reads instead of walking the
-// body grid per pixel.
-enum { BEAM_VISIBILITY_SCALE = 4, BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
+// The sources' visibility over the world in view (ground_visibility.glsl), in
+// world texels independent of the display: a group of four sources per RGBA
+// texel, four groups a row in one atlas, which the ground reads instead of
+// walking the body grid per pixel.
+enum { BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
 Target beam_vis;
 
-// The terrain drawn into the world, lit as the Python port's ground.
+// The stream space `groups` atlas draws take: each block at the stream's alignment.
+uint64_t visibility_uniforms(int groups) {
+  auto aligned = [](uint64_t size) {
+    return (size + uniform_stream.alignment - 1) / uniform_stream.alignment * uniform_stream.alignment;
+  };
+  return groups * (aligned(ground_beam_vis.frag->uniform_size) + aligned(ground_beam_vis.vert->uniform_size));
+}
+
+// Prepare the color-independent masks before the world's HDR pass opens. A
+// late scene/occlusion import can also rebuild them before the next ground draw.
+void prepare_ground_visibility(int view_width, int view_height) {
+  visibility_dirty = false;
+  ground_visibility.prepare(scene_camera[0], scene_camera[1], (float)view_width, (float)view_height, light_count,
+                            dynamic_shadows && occlusion_grid[2] > 0 && ground_size[0] > 0 && ground_size[1] > 0);
+  const GroundVisibility &v = ground_visibility;
+  if (!v.count)
+    return;
+  int groups = (v.count + 3) / 4;
+  if (!fits(uniform_stream, visibility_uniforms(groups)))
+    submit();
+  if (beam_vis.width != 4 * v.width || beam_vis.height != BEAM_VISIBILITY_ROWS * v.height) {
+    release(beam_vis);
+    beam_vis.width = beam_vis.logical_width = 4 * v.width;
+    beam_vis.height = beam_vis.logical_height = BEAM_VISIBILITY_ROWS * v.height;
+    beam_vis.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(beam_vis);
+  }
+  WGPUColor white = {1, 1, 1, 1};
+  begin_pass(beam_vis, &white);
+  Output o;
+  o.format = format_of(beam_vis);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_beam_vis, o));
+  Uniforms vertex(*ground_beam_vis.vert), fragment(*ground_beam_vis.frag);
+  vertex.set("u_visibility_world", v.rect, 16).set("u_ground_size", ground_size, 8);
+  fragment.set("u_ground_size", ground_size, 8).i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights);
+  fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
+  fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
+  fragment.set("u_beam_shape", beam_shape, light_count * 16);
+  fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
+  WGPUBindGroup group_inputs = fragment_group(ground_beam_vis, {{"u_occlusion_tex", occlusion_view, nearest_clamp()}});
+  for (int group = 0; group < groups; ++group) {
+    auto bounds = v.bounds(group, light_pos, ground_dir, light_rgb, light_response, beam_shape, beam_lights);
+    if (!bounds[2] || !bounds[3]) continue;
+    wgpuRenderPassEncoderSetScissorRect(pass, group % 4 * v.width + bounds[0], group / 4 * v.height + bounds[1],
+                                      bounds[2], bounds[3]);
+    fragment.f("u_visibility_group", (float)group);
+    wgpuRenderPassEncoderSetViewport(pass, (float)(group % 4 * v.width), (float)(group / 4 * v.height), (float)v.width,
+                                     (float)v.height, 0, 1);
+    bind(ground_beam_vis, group_inputs, &vertex, &fragment);
+    wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+  }
+  end_pass();
+}
+
+// Full-resolution material shading samples one coarse RGBA group per four
+// lights. No body-grid texture or shadow walk is bound to this program.
 bool ground_draw(const Geometry &geometry) {
   auto it = textures.find(bound[0]);
   if (!bound[0] || it == textures.end() || !(it->second.flags & TARGET_RENDER))
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
-  // Lit beams take the slots in light order, then wide discs and rings join
-  // them (a pass of their own would cost the world its render pass for less
-  // than it saves); the rest walk the grid in the ground's own pass.
-  float slots[MAX_LIGHTS * 4] = {};
-  int count = 0;
-  if (beam_lights && dynamic_shadows && occlusion_grid[2]) {
-    for (int i = 0; i < light_count; ++i)
-      if (beam_shape[i * 4 + 3] > 0)
-        slots[i * 4] = (float)++count;
-    for (int i = 0; i < light_count && count; ++i)
-      if (beam_shape[i * 4 + 3] <= 0 && light_response[i * 4] > 0 &&
-          (light_rgb[i * 4 + 3] > 0 || light_response[i * 4 + 3] >= RTX_SOFT_WIDTH))
-        slots[i * 4] = (float)++count;
-  }
-  auto uniforms = [&](Program &program, Uniforms &vertex, Uniforms &fragment) {
-    vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
-    fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
-    fragment.i("u_debug_display", 1).i("u_dynamic_shadows", dynamic_shadows);
-    fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
-    fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
-    fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
-    fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
-    fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_beam_shape", beam_shape, light_count * 16);
-    fragment.set("u_beam_slots", slots, light_count * 16);
-    return fragment_group(program, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
-                                    {"u_surface_tex", g.surface.view, linear_clamp()},
-                                    {"u_material_tex", g.coverage.view, linear_clamp()},
-                                    {"u_occlusion_tex", occlusion_grid[2] ? occlusion_view : blank_view, nearest_clamp()},
-                                    // The passes draw the atlas the ground reads.
-                                    {"u_beam_vis", count && &program == &ground_lit ? beam_vis.view : blank_view,
-                                     linear_clamp()}});
-  };
-  if (count) {
-    int width = std::max(1, t.width / BEAM_VISIBILITY_SCALE), height = std::max(1, t.height / BEAM_VISIBILITY_SCALE);
-    if (beam_vis.width != 4 * width || beam_vis.height != BEAM_VISIBILITY_ROWS * height) {
-      release(beam_vis);
-      beam_vis.width = beam_vis.logical_width = 4 * width;
-      beam_vis.height = beam_vis.logical_height = BEAM_VISIBILITY_ROWS * height;
-      beam_vis.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
-      allocate(beam_vis);
-    }
-    WGPUColor white = {1, 1, 1, 1};
-    begin_pass(beam_vis, &white);
-    Output o = device_output(beam_vis, geometry.topology);
-    o.blend = false;
-    o.mask = 0xf;
-    wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_beam_vis, o));
-    for (int group = 0; group * 4 < count; ++group) {
-      Uniforms vertex(*ground_beam_vis.vert), fragment(*ground_beam_vis.frag);
-      WGPUBindGroup textures_group = uniforms(ground_beam_vis, vertex, fragment);
-      fragment.f("u_beam_group", (float)group);
-      wgpuRenderPassEncoderSetViewport(pass, (float)(group % 4 * width), (float)(group / 4 * height), (float)width,
-                                       (float)height, 0, 1);
-      bind(ground_beam_vis, textures_group, &vertex, &fragment);
-      draw_geometry(geometry);
-    }
-    end_pass();
-  }
+  if (visibility_dirty)
+    prepare_ground_visibility(t.logical_width, t.logical_height);
   pass_into(t);
   Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
-  WGPUBindGroup textures_group = uniforms(ground_lit, vertex, fragment);
-  fragment.v4("u_beam_vis_target", (float)t.width, (float)t.height, (float)(beam_vis.width / 4),
-              (float)(beam_vis.height / BEAM_VISIBILITY_ROWS));
+  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
+  fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
+  fragment.i("u_debug_display", 1);
+  fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
+  fragment.set("u_visibility_world", ground_visibility.rect, 16);
+  fragment.v2("u_visibility_size", (float)std::max(1, ground_visibility.width), (float)std::max(1, ground_visibility.height));
+  fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
+  fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
+  fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_beam_shape", beam_shape, light_count * 16);
+  WGPUBindGroup group = fragment_group(ground_lit, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
+                                                    {"u_surface_tex", g.surface.view, linear_clamp()},
+                                                    {"u_material_tex", g.coverage.view, linear_clamp()},
+                                                    {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
+                                                     linear_clamp()}});
   Output o = device_output(t, geometry.topology);
   o.blend = false; // the ground is opaque
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_lit, o));
-  bind(ground_lit, textures_group, &vertex, &fragment);
+  bind(ground_lit, group, &vertex, &fragment);
   draw_geometry(geometry);
   return true;
 }
@@ -1081,6 +1094,8 @@ Output smoke_adding() {
 bool wgpu_renderer_set_rtx(bool enabled) {
   rtx = enabled;
   world = false;
+  visibility_dirty = true;
+  ground_visibility = {};
   release(hdr);
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())
@@ -1271,6 +1286,9 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   geometry.index_count = index_count;
   // Room for the draw and what a marked decal adds: its substrate, stamps, and the companions' first passes.
   uint64_t uniforms = 8 * (ground_lit.frag->uniform_size + ground_lit.vert->uniform_size + 512);
+  // A late scene or body grid rebuilds the atlas in the ground's draw, after its geometry is in the streams.
+  if (rtx && world && material == HOST_PASS_GROUND && visibility_dirty)
+    uniforms += visibility_uniforms(MAX_LIGHTS / 4);
   if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 8) || !fits(index_stream, geometry.index_bytes + 3) ||
       !fits(uniform_stream, uniforms))
     submit();
@@ -1428,6 +1446,7 @@ void wgpu_w2c_host_effect_sprites(struct w2c_host *, u32 vertices, u32 kind,
                        count, kind, params);
 }
 void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
+  visibility_dirty = true;
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
@@ -1670,6 +1689,7 @@ void wgpu_w2c_host_smoke_draw(struct w2c_host *, u32 view, u32 lights, u32 light
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
 }
 void wgpu_w2c_host_occlusion(struct w2c_host *, u32 grid, u32 values, u32 count) {
+  visibility_dirty = true;
   const float *g = (const float *)(client_memory() + grid);
   occlusion_grid[0] = g[0], occlusion_grid[1] = g[1], occlusion_grid[2] = count ? g[2] : 0, occlusion_grid[3] = g[3];
   occlusion_cell = g[4];
@@ -1718,7 +1738,8 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
   Target &back = textures[0];
   if (!rtx || !back.texture)
     return;
-  if (pass_kind == HOST_PASS_WORLD_BEGIN) { // The world goes over what the frame drew so far.
+  if (pass_kind == HOST_PASS_WORLD_BEGIN) { // Scene/occlusion inputs have arrived; shade masks before HDR.
+    prepare_ground_visibility(back.logical_width, back.logical_height);
     int width = back.width, height = back.height;
     world_size(back.logical_width, width, height);
     if (hdr.width != width || hdr.height != height || !hdr.texture) {

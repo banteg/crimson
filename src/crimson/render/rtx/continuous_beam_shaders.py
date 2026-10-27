@@ -1,4 +1,4 @@
-"""Bounded three-section beam lighting for Python RTX."""
+"""Analytic continuous beam lighting for Python RTX."""
 
 from .shaders import glsl
 
