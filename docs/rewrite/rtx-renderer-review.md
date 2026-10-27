@@ -108,6 +108,12 @@ The direction stays:
   the driver, which inflates the CPU's frame time and showed as a stall in the pass
   after the ground. Profiles time the GPU on every 8th frame (#916); compare wall
   times untimed (`CRIMSON_PROFILE_GPU=0`) and only between builds that both sample.
+- **Dropping the original's drop shadows in RTX.** Players draw a darkened copy of
+  their sprite at 35% one pixel down and right, creatures one at 40% while shadows
+  are on and Monster Vision is off, under the RTX body shadows. Off, the golden
+  scenes change in 20,000 to 114,000 pixels by up to 89 levels, nearly all
+  creatures', and bodies float: the drop shadows are what ground them, and the
+  body shadows are faint beside them. Kept as the original draws them.
 - **Exact ground restructurings.** Each branch building only the geometry it reads,
   reusing the beam frame, skipping zero-density and head-only integral terms,
   returning early from fully lit visibility bins and skipping the fluid normal's
@@ -155,18 +161,13 @@ samplers. Left:
 Also:
 
 - **Coarse shadow edges.** The atlas's texel is four world units (eight pixels at twice the game's resolution), so
-  shadow edges step by it and blockers thinner than a texel lose their contact shadow. Not yet judged in motion. If
-  it shows in play, try an edge-aware upsample.
-- **Non-finite direct light.** About a hundred pixels of a dense ion frame come out NaN and show as dark specks,
-  before and after #925. Find where the beams' direct light divides by zero.
+  blockers thinner than a texel lose their contact shadow. In motion it holds: 60 consecutive frames of a crowd
+  under Fire Bullets, matched tick for tick against the build before #925, jitter as much from frame to frame (0.89
+  against 0.90 levels on average). If edges show in play, try an edge-aware upsample.
+- **Non-finite direct light.** #931: the beams' falloff took `asinh` of thousands beside a beam's axis, which the
+  GL driver cancels to `log(0)`; 252 dark specks across the golden scenes, none after.
 
-### 2. Contact shadows under lit players
-
-Players and bonus shells now cast body shadows (#906), but the native blob shadow
-still draws under them. Keep only a restrained contact-shadow part of it where
-dynamic lights take over, so lit areas do not show a pasted-on double shadow.
-
-### 3. Lit freezing, then hot smoke
+### 2. Lit freezing, then hot smoke
 
 - **Frozen creatures as a material.** `draw_freeze_overlay` still stamps an unlit
   shard sprite over lit bodies. Feed freeze into the creature material instead:
@@ -178,7 +179,7 @@ dynamic lights take over, so lit areas do not show a pasted-on double shadow.
   column. Give fresh explosion smoke a short warm emission that cools quickly, keep
   old smoke neutral, and separate soot, heat and steam source profiles.
 
-### 4. The unlit baseline (a decision, made from captures)
+### 3. The unlit baseline (a decision, made from captures)
 
 - **Ambient level.** The ground ambient was cut from 0.94 to 0.50 in #813 so weapon
   light reads against it; unlit RTX ground is now noticeably darker than Classic.
@@ -194,7 +195,7 @@ dynamic lights take over, so lit areas do not show a pasted-on double shadow.
   gray sheen and wet-soil darkening. Tune those first; a pigment target is the
   fallback.
 
-### 5. Highlight limiters
+### 4. Highlight limiters
 
 Creatures, players and bonuses each compress added light before the display
 shoulder (`peak / 1.4` in `creature.frag` and `player.frag`; `1.7`, `2.4` in
@@ -206,7 +207,7 @@ core: piles of additive light reach hundreds of times white in the half-float wo
 target, so a limiter belongs before the tonemap, and the moiré may come from
 half-float accumulation.
 
-### 6. Smoke bands (an experiment)
+### 5. Smoke bands (an experiment)
 
 Smoke composites after every entity, so the whole volume sits in front of the
 world. Try ground, then low smoke, then entities, then high smoke. The client draws
@@ -215,7 +216,7 @@ the terrain. A low band under top-down sprites can read as baked into the dirt, 
 judge it on captures. Add body shadows inside smoke only after profiling: per-pixel
 shadow traces are what blew the ion-chain budget before #880.
 
-### 7. Linear color, last and all at once
+### 6. Linear color, last and all at once
 
 Several lit passes decode albedo, add light and gamma-encode before the HDR target,
 while unlit sprites, additive effects and smoke blend in gamma space as the
@@ -290,14 +291,14 @@ reflection and scattering rather than broad red light.
 
 | Effect or material | Already connected | Still missing |
 | --- | --- | --- |
-| Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers; stable budgets with fades; players and bonuses shadow them | Contact shadows under lit players (2) |
-| Ion and fire beams | Analytic visible body; one extended source with closed-form ground light; directional shadows from the coarse visibility atlas; smoke scattering; ion arcs | Ice and material-specific response (3) |
-| Explosions | Fireball, warm shell, light, pressure refraction, smoke, blast airflow and scorch coordinated | Hot smoke (3); heat on ice and wet ground |
-| Blood, corpses, brass, scorch | Ordered coverage, displacement, wetness, aging, absorption, relief, reflections; neutral sky over blood | Saturation (4); footprints later |
-| Ice and freeze | Ground ice attenuates blood and changes roughness and height; heat cools frozen monsters | Lit frozen-creature material, shatter glint and steam (3) |
-| Creatures and players | Creatures and players cast body-proxy shadows; creatures receive diffuse, specular and transmission, players cloth lighting | Contact shadows under lit players (2); per-species materials (later) |
-| Smoke | Density, heat, advection, self-extinction, scattering with the shared beam profile, sight attenuation, blast response | Bands (6); body occlusion after profiling; soot, heat and steam profiles (3) |
-| Bonuses | Obsidian shell, foil emblem, clear coat, dynamic reflections; shells cast body shadows | Fewer own limiters (5) |
+| Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers; stable budgets with fades; players and bonuses shadow them | - |
+| Ion and fire beams | Analytic visible body; one extended source with closed-form ground light; directional shadows from the coarse visibility atlas; smoke scattering; ion arcs | Ice and material-specific response (2) |
+| Explosions | Fireball, warm shell, light, pressure refraction, smoke, blast airflow and scorch coordinated | Hot smoke (2); heat on ice and wet ground |
+| Blood, corpses, brass, scorch | Ordered coverage, displacement, wetness, aging, absorption, relief, reflections; cyan sky over blood | Saturation (3); footprints later |
+| Ice and freeze | Ground ice attenuates blood and changes roughness and height; heat cools frozen monsters | Lit frozen-creature material, shatter glint and steam (2) |
+| Creatures and players | Creatures and players cast body-proxy shadows over the original's drop shadows; creatures receive diffuse, specular and transmission, players cloth lighting | Per-species materials (later) |
+| Smoke | Density, heat, advection, self-extinction, scattering with the shared beam profile, sight attenuation, blast response | Bands (5); body occlusion after profiling; soot, heat and steam profiles (2) |
+| Bonuses | Obsidian shell, foil emblem, clear coat, dynamic reflections; shells cast body shadows | Fewer own limiters (4) |
 | Shockwaves | Distort world and smoke together, keep the HUD, reuse explosion shell timing | Optional small wet-surface ripple |
 | Radioactive, Monster Vision, Sharpshooter | Distinct responses: a pulsing material light, heat bodies and trails, a narrow sight | Keep their gameplay roles distinct |
 
