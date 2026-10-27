@@ -8,7 +8,6 @@ from crimson.creatures.anim import CREATURE_ANIM, creature_anim_select_frame
 from crimson.render.rtx.heat_heads import heat_head_color
 from crimson.render.rtx.heat_vision import (
     BODY_OPACITY,
-    FROZEN_WARMTH,
     TRAIL_HALF_LIFE_S,
     HeatVision,
     heat_visibility,
@@ -31,22 +30,21 @@ def test_hidden_evil_aliens_show_in_full_and_corpses_cool() -> None:
     alien = snapshot.creatures.entries[0]
     # Hidden Evil's faintest alien: Monster Vision is the only way to see it.
     alien.active, alien.death_timer, alien.tint = True, 16.0, RGBA(.1, .7, .51, .04)
-    assert heat_visibility(alien, entity_alpha=1.0) == heat_warmth(alien, snapshot) == 1.0
+    assert heat_visibility(alien, snapshot, entity_alpha=1.0) == heat_warmth(alien, snapshot) == 1.0
     alien.death_timer = -5.0
     assert heat_warmth(alien, snapshot) == .5
-    assert heat_visibility(alien, entity_alpha=.5) == .25
+    assert heat_visibility(alien, snapshot, entity_alpha=.5) == .25
     assert heat_warmth(alien, snapshot) == .5  # a scene fade dims the heat, never cools it
 
 
-def test_freeze_cools_monsters_without_hiding_them() -> None:
+def test_frozen_monsters_show_no_heat_until_the_ice_fades() -> None:
     snapshot = frame()
     spider = snapshot.creatures.entries[0]
     spider.active, spider.death_timer = True, 16.0
     snapshot.state.bonuses.freeze = 4.0
-    assert heat_visibility(spider, entity_alpha=1.0) == 1.0
-    assert heat_warmth(spider, snapshot) == pytest.approx(FROZEN_WARMTH)
+    assert heat_visibility(spider, snapshot, entity_alpha=1.0) == heat_warmth(spider, snapshot) == 0.0
     snapshot.state.bonuses.freeze = .5  # thawing with the ice's own fade
-    assert FROZEN_WARMTH < heat_warmth(spider, snapshot) < 1.0
+    assert heat_visibility(spider, snapshot, entity_alpha=1.0) == heat_warmth(spider, snapshot) == pytest.approx(.5)
 
 
 def trail_texels(heat: HeatVision) -> list[float]:

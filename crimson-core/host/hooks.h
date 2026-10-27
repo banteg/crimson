@@ -51,6 +51,7 @@ void rtx_material(int pass); // a HOST_PASS_* of game/render_passes.h
 void rtx_bonus(int emblem, float grid_x, float grid_y, float center_x, float center_y);
 void rtx_ground(int kind); // a HOST_GROUND_* of game/render_passes.h
 void rtx_ground_decal(int effect_id, float red);
+void rtx_ice(int effect_id); // an effect's material among the effects (effects_render), -1 after the last
 // RTX fluid smoke (game/rtx_smoke.cpp): the smoke the run's ticks make, and the
 // field drawn after the world's sprites, in place of native puffs while active.
 extern int rtx_smoke_on;

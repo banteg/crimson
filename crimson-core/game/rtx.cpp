@@ -205,6 +205,20 @@ void rtx_ground_decal(int effect_id, float red) {
                                                                     : HOST_GROUND_DECAL);
 }
 
+// The freeze's ice among the effects (effects_render): the shatter's cubes and
+// shards lit as ice, a mark only where the material changes, so the effects keep
+// their order. -1 after the last returns to sprites.
+void rtx_ice(int effect_id) {
+  static int marked = HOST_PASS_SPRITES;
+  int pass = effect_id == 0xe                       ? HOST_PASS_ICE_CUBES
+             : effect_id >= 8 && effect_id <= 10 ? HOST_PASS_ICE_SHARDS
+                                                 : HOST_PASS_SPRITES;
+  if (!rtx_drawing() || pass == marked)
+    return;
+  rtx_material(pass);
+  marked = pass;
+}
+
 // One bonus quad in its material (host_bonus): each carries its own shell center.
 void rtx_bonus(int emblem, float grid_x, float grid_y, float center_x, float center_y) {
   if (!rtx_drawing())

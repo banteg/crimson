@@ -8,7 +8,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...effects import EffectEntry, ParticleStyleId
-from ...effects_atlas import EffectId
+from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
 from ..rtx.effects import SPRITE_SHAPES, EffectShape, draw_sprite, sprite_batch
 from ..rtx.explosion_shell import explosion_shell
 from ..rtx.mode import RtxRenderMode
@@ -16,6 +16,10 @@ from . import viewport
 from .atlas import effect_cell_src, effect_cell_src_inset
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
+from .creatures import draw_centered_quad
+
+# The freeze shatter's ice, which RTX lights as ice.
+_ICE_EFFECTS = frozenset({EffectId.FREEZE_SHATTER, EffectId.FREEZE_SHARD_0, EffectId.FREEZE_SHARD_1, EffectId.FREEZE_SHARD_2})
 
 
 def draw_particle_pool(
@@ -192,6 +196,8 @@ def draw_effect_pool(
         if frame.rtx_mode is RtxRenderMode.RTX
         else set()
     )
+    # RTX lights the freeze shatter's cubes and shards as ice, in their places among the effects.
+    lighting = frame.creature_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
 
     def draw_entry(entry: EffectEntry) -> None:
         if (
@@ -222,6 +228,13 @@ def draw_effect_pool(
 
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
         tint = entry.color.to_rl()
+
+        if lighting is not None and effect_id in _ICE_EFFECTS:
+            batch.end()
+            with lighting.scope(texture=texture, restore_shader=frame.resources.alpha_test.shader,
+                                ice=EFFECT_ID_ATLAS_TABLE_BY_ID[effect_id].grid):
+                draw_centered_quad(texture, src, screen, w, h, float(entry.rotation), tint)
+            return
 
         shape = SPRITE_SHAPES.get(effect_id)
         if (

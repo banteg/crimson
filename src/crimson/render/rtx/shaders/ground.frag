@@ -307,11 +307,14 @@ void main() {
     }
     if (u_debug == 13) { finalColor = vec4(debug_radiance(ambient_lit), 1.); return; }
 
-    // Subtle sky reflection across smooth liquid pools (stronger on fresh blood). It stays neutral over blood,
-    // where a cool tint on the dark red body read as magenta, and cold over ice.
+    // Subtle sky reflection across smooth liquid pools (stronger on fresh blood), cold over ice. Over blood it is
+    // cyan, half again as bright: the ice's blue on the dark red body read as magenta, a neutral gray read flat, and
+    // cyan sums toward white there.
     vec3 H_sky = normalize(normalize(vec3(-0.30, -0.40, 0.86)) + V);
     float ndh_sky = max(0.0, dot(N_spec, H_sky));
-    vec3 sky_tint = mix(vec3(dot(sky_reflection, vec3(0.2126, 0.7152, 0.0722))), sky_reflection, is_ice);
+    vec3 sky_cyan = pow(vec3(0.16, 0.27, 0.30), vec3(2.2));
+    sky_cyan *= 1.5 * dot(sky_reflection, vec3(0.2126, 0.7152, 0.0722)) / dot(sky_cyan, vec3(0.2126, 0.7152, 0.0722));
+    vec3 sky_tint = mix(sky_cyan, sky_reflection, is_ice);
     vec3 sky_wet_spec = sky_tint * pow(ndh_sky, 20.0) *
         ((wet_film * 0.12 + deep_pool * 0.30) * mix(0.45, 1.0, freshness) * (1.0 - is_ice) + is_ice * .30);
 

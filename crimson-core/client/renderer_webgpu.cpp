@@ -9,6 +9,7 @@
 #include "client.h"
 #include "device_states.h"
 #include "ground_visibility.h"
+#include "ice_surface.h"
 #include "wgsl_shaders.h"
 #include <emscripten.h>
 #include <math.h>
@@ -48,6 +49,9 @@ int canvas_width, canvas_height;
 bool canvas_extended;
 WGPUTexture blank, gamma_texture;
 WGPUTextureView blank_view, gamma_view;
+// The freeze ice's surface (HOST_PASS_ICE_*), as in renderer.cpp.
+WGPUTexture ice_texture;
+WGPUTextureView ice_view;
 
 WGPUStringView text(const char *s) { return WGPUStringView{s, strlen(s)}; }
 // The RTX ground's float surface: 32-bit where the device filters and blends it
@@ -638,18 +642,18 @@ WGPUBuffer stream_buffer(Stream &s, WGPUBufferUsage usage) {
   return s.buffer = wgpuDeviceCreateBuffer(device, &descriptor);
 }
 
-WGPUTexture small_texture(int width, const unsigned char *rgba, WGPUTextureView &view) {
+WGPUTexture small_texture(int width, const unsigned char *rgba, WGPUTextureView &view, int height = 1) {
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
-  descriptor.size = {(uint32_t)width, 1, 1};
+  descriptor.size = {(uint32_t)width, (uint32_t)height, 1};
   descriptor.format = WGPUTextureFormat_RGBA8Unorm;
   descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
   WGPUTexture texture = wgpuDeviceCreateTexture(device, &descriptor);
   view = wgpuTextureCreateView(texture, nullptr);
   WGPUTexelCopyTextureInfo destination = WGPU_TEXEL_COPY_TEXTURE_INFO_INIT;
   destination.texture = texture;
-  WGPUTexelCopyBufferLayout layout = {0, (uint32_t)width * 4, 1};
-  WGPUExtent3D extent = {(uint32_t)width, 1, 1};
-  wgpuQueueWriteTexture(queue, &destination, rgba, (size_t)width * 4, &layout, &extent);
+  WGPUTexelCopyBufferLayout layout = {0, (uint32_t)width * 4, (uint32_t)height};
+  WGPUExtent3D extent = {(uint32_t)width, (uint32_t)height, 1};
+  wgpuQueueWriteTexture(queue, &destination, rgba, (size_t)width * height * 4, &layout, &extent);
   return texture;
 }
 
@@ -708,6 +712,7 @@ void wgpu_renderer_init() {
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
+  ice_texture = small_texture(ICE_SURFACE_WIDTH, ice_surface, ice_view, ICE_SURFACE_HEIGHT);
   // An identity ramp until the device sets one.
   unsigned char identity[256 * 4];
   for (int i = 0; i < 256; ++i)
@@ -1333,13 +1338,16 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
     fragment.i("u_dynamic_shadows", dynamic_shadows);
     fragment.i("u_pass", bonus_emblem).set("u_grid", bonus_grid, 8).set("u_shell_center", bonus_center, 8);
+    int ice = material == HOST_PASS_ICE_CUBES || material == HOST_PASS_ICE_FROZEN ? 4 : material == HOST_PASS_ICE_SHARDS ? 8 : 0;
+    fragment.i("u_ice", ice).i("u_ice_frozen", material == HOST_PASS_ICE_FROZEN);
     fragment.set("u_pos", light_pos, light_count * 16).set("u_rgb", light_rgb, light_count * 16);
     fragment.set("u_dir", light_dir, light_count * 16).set("u_response", light_response, light_count * 16);
     auto it = textures.find(bound[0]);
     bool present = bound[0] && it != textures.end() && it->second.texture;
     WGPUSampler atlas_sampler = sampler(stage_states[0][TSS_ADDRESSU], stage_states[0][TSS_ADDRESSV],
                                         stage_states[0][TSS_MAGFILTER] >= 2, stage_states[0][TSS_MINFILTER] >= 2);
-    WGPUTextureView shape = !present                          ? blank_view
+    WGPUTextureView shape = ice                               ? ice_view
+                           : !present                        ? blank_view
                            : material == HOST_PASS_CREATURES ? shape_map(bound[0])
                            : material == HOST_PASS_HEAT      ? shape_map(bound[0], true)
                                                             : blank_view;

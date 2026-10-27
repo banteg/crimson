@@ -344,7 +344,18 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
          int flags = entry->flags;
  #if CL_BUILD == 10908
          // 1.9.8 spells the test !(age < 0); 8966 compiles both spellings alike, but only
-@@ -110,9 +112,12 @@
+@@ -98,8 +100,10 @@
+         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) != 0) {
+ #endif
++            rtx_ice(entry->effect_id);
+             effect_render_entry(entry, color);
+         }
+     }
++    rtx_ice(-1);
+ 
+     grim_interface_ptr->grim_end_batch();
+     grim_interface_ptr->grim_set_config_var(0x14, 2u);
+@@ -110,9 +114,12 @@
  #else
          if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) == 0) {
  #endif
@@ -456,6 +467,19 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
                  float alpha = *death_timer < 0.0f
                      ? (*death_timer + 10.0f) * 0.1f
                      : 1.0f;
+@@ -114,5 +116,6 @@
+         freeze_alpha = freeze_alpha * transition_alpha * 0.7f;
+ 
++        rtx_material(HOST_PASS_ICE_FROZEN);
+         grim_interface_ptr->grim_begin_batch();
+ 
+         for (int creature_index = 0; creature_index < 384; creature_index++) {
+@@ -135,4 +138,5 @@
+ 
+         grim_interface_ptr->grim_end_batch();
++        rtx_material(HOST_PASS_SPRITES);
+         grim_interface_ptr->grim_set_config_var(0x13, 5u);
+         grim_interface_ptr->grim_set_config_var(0x14, 6u);
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 @@ -204,6 +204,14 @@

@@ -1,5 +1,5 @@
 #version 330
-// Art-directed dome and silhouette lighting for the original 8x8 creature atlases.
+// Art-directed dome and silhouette lighting for the original 8x8 creature atlases, and the freeze's ice lit as ice.
 #include "filtering.glsl"
 #include "source_geometry.glsl"
 in vec2 fragTexCoord;
@@ -23,6 +23,14 @@ uniform vec4 u_pos[32];
 uniform vec4 u_rgb[32];
 uniform vec4 u_dir[32];
 uniform vec4 u_response[32]; // illumination, reflection, reflection reach, source width
+// The freeze's ice in the particles atlas (0 for a creature body): the grid of its cells, 4 for the cubes and 8 for
+// the shatter's shards. Its surface takes the thickness map's place on u_thickness (tools/rtx/ice_surface.py), laid
+// out like the atlas: RG the sprite-frame normal's x and y (x right, y down, z toward the viewer), B the ice's own
+// mottling over 2.5.
+uniform int u_ice;
+// The cubes over frozen bodies: their darkest faces lose ICE_CLEAR of the ice's opacity, so the body shows through.
+uniform int u_ice_frozen;
+const float ICE_CLEAR = 0.32;
 out vec4 finalColor;
 const float DOME_STRENGTH = 0.65;
 const float RIM_STRENGTH = 0.65;
@@ -33,17 +41,18 @@ float lightVisibility(int i) {
     int lane = i - i / 4 * 4;
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
 }
+float cellGrid() { return u_ice != 0 ? float(u_ice) : 8.0; }
 vec4 spriteSample(vec2 uv) {
-    vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
+    vec2 cell = floor(fragTexCoord * cellGrid()) / cellGrid();
     vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
-    return textureLod(texture0, clamp(uv, cell + half_texel, cell + vec2(.125) - half_texel), 0.);
+    return textureLod(texture0, clamp(uv, cell + half_texel, cell + vec2(1. / cellGrid()) - half_texel), 0.);
 }
 float spriteLuminance(vec2 uv) {
     return dot(spriteSample(uv).rgb, vec3(.299, .587, .114));
 }
 float spriteAlpha(vec2 uv) {
-    vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
-    if (any(lessThan(uv, cell)) || any(greaterThanEqual(uv, cell + vec2(.125))))
+    vec2 cell = floor(fragTexCoord * cellGrid()) / cellGrid();
+    if (any(lessThan(uv, cell)) || any(greaterThanEqual(uv, cell + vec2(1. / cellGrid()))))
         return 0.0;
     // Explicit LOD keeps alpha taps defined inside per-pixel light branches.
     return spriteSample(uv).a;
@@ -54,13 +63,16 @@ void main() {
     // Save derivatives before alpha discard makes neighboring lanes diverge.
     vec2 dxq = dFdx(fragTexCoord) * 16., dyq = dFdy(fragTexCoord) * 16.;
     vec2 dxw = dFdx(world), dyw = dFdy(world);
+    // Ice a little more solid than the original's overlay: its draws already carry its 0.7, or the shatter's fade.
+    if (u_ice != 0)
+        base.a = min(.95, base.a * 1.15);
     if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
-    if (u_count == 0) {
+    if (u_count == 0 && u_ice == 0) {
         finalColor = vec4(base.rgb * pow(u_ambient, 1. / 2.2), base.a);
         return;
     }
-    vec2 q = fract(fragTexCoord * 8.0) * 2.0 - 1.0;
+    vec2 q = fract(fragTexCoord * cellGrid()) * 2.0 - 1.0;
     // Recover the rotated sprite basis from interpolated world/atlas coordinates.
     // No per-creature uniforms: rotated and differently sized quads can stay batched.
     float determinant = dxq.x * dyq.y - dxq.y * dyq.x;
@@ -92,6 +104,33 @@ void main() {
     float thickness = textureLod(u_thickness, thickness_uv, 0.).r * 16.0;
     float transmission = exp(-.48 * thickness);
     vec3 transmission_tint = mix(vec3(.15), baseLin, .85);
+    // What the lights shade, how they catch, how much the rim follows them, and how much colour the light the
+    // surface scatters keeps; light that needs no emitter.
+    vec3 albedo = baseLin;
+    float spec_gain = 1., spec_sharp = 1., rim_gain = 1., light_desat = 0.;
+    vec3 glow = vec3(0);
+    if (u_ice != 0) {
+        // The sprite's own model: a rounded, lumpy cube or a chunk of it, and its mottling.
+        vec3 ice = textureLod(u_thickness, fragTexCoord, 0.).rgb;
+        vec2 ice_xy = ice.xy * 2. - 1.;
+        N = normalize(vec3(rot * ice_xy, sqrt(max(0., 1. - dot(ice_xy, ice_xy)))));
+        // Unlit it keeps the original's look, a little colder; the lights shade an ice colour with the sprite's
+        // mottling but not its baked light, so a fire on the dark side lights that side. Ice scatters little and
+        // keeps its blue under fire: the lights mostly glint off it, at its edges rather than along its outline.
+        albedo = vec3(.07, .12, .17) * ice.b * 2.5;
+        baseLin *= vec3(.8, .92, 1.05);
+        transmission = 0.;
+        spec_gain = 5., spec_sharp = 3., rim_gain = .25, light_desat = .45;
+        // The cold sky in the faces that turn toward it, and its hard glint, so the ice reads with no light near.
+        float fresnel = .04 + .96 * pow(1. - max(dot(N, V), 0.), 5.);
+        // The sprite's dark faces are a window into the ice; its bright frost and glancing edges stay solid.
+        if (u_ice_frozen != 0)
+            base.a *= mix(1. - ICE_CLEAR, 1., max(smoothstep(.06, .54, lum), .85 * fresnel));
+        vec3 sky_dir = normalize(vec3(-.30, -.40, .86));
+        float sky = dot(reflect(-V, N), sky_dir);
+        glow = vec3(.05, .09, .13) * smoothstep(-.1, .9, sky) * (.35 + fresnel) +
+               vec3(.6, .8, .95) * pow(max(sky, 0.), 80.) * .5;
+    }
     vec3 added = vec3(0);
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
@@ -108,11 +147,11 @@ void main() {
             float axial_gain = beam ? segmentRadiance(along / max(u_dir[i].w, 1.0) + .5, u_dir[i].z) : 1.;
             vec3 spec_L = normalize(vec3(source - wp, max(8., u_pos[i].w - 8.)));
             vec3 H = normalize(spec_L + V);
-            float catchlight = pow(max(dot(N, H), 0.0), clamp(84.0 / source_width, 8.0, 100.0)) *
+            float catchlight = pow(max(dot(N, H), 0.0), clamp(84.0 / source_width, 8.0, 100.0) * spec_sharp) *
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            added += u_rgb[i].rgb * spec_amount * lightVisibility(i);
+            added += u_rgb[i].rgb * spec_amount * spec_gain * lightVisibility(i);
         }
         if (u_response[i].x <= 0. || spec_distance >= u_pos[i].z) continue;
         vec2 light_source = ring ? source : illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
@@ -136,15 +175,16 @@ void main() {
         // Rim and lateral thin-part transmission follow illumination, never
         // bypassing a restrained tracer's gain. Specular catches stay independent.
         // The cell-center dome normal cannot describe individual limbs.
-        vec3 diffuse = u_rgb[i].rgb * (
+        vec3 diffuse = mix(u_rgb[i].rgb, vec3(dot(u_rgb[i].rgb, vec3(.2126, .7152, .0722))), light_desat) * (
             u_response[i].x * a * a *
-                (baseLin * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
-                 edge * (2.6 * RIM_STRENGTH) * elevation * (.65 + .35 * lum) +
+                (albedo * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
+                 edge * (2.6 * RIM_STRENGTH) * rim_gain * elevation * (.65 + .35 * lum) +
                  transmission_tint * transmission * elevation * TRANSMISSION_STRENGTH));
         added += diffuse * lightVisibility(i);
     }
     // Bound aggregate illumination in dense fights without changing hue.
     float peak = max(added.r, max(added.g, added.b));
     added *= 1.0 / (1.0 + peak / 1.4);
-    finalColor = peak > 0.0 || u_ambient != 1.0 ? vec4(pow(baseLin * u_ambient + added, vec3(1.0 / 2.2)), base.a) : base;
+    finalColor = peak > 0.0 || u_ambient != 1.0 || u_ice != 0 ? vec4(pow(baseLin * u_ambient + added + glow, vec3(1.0 / 2.2)), base.a)
+                                                                : base;
 }

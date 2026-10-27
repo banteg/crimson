@@ -539,12 +539,37 @@ Each 512×512 atlas adds a 256 KiB single-channel texture without mipmaps; gener
 has a one-time readback and CPU preprocessing cost. Atlas binding happens once per
 species body batch, with no per-creature texture uploads or additional render pass.
 
-Only creature body passes use this shader. Contact shadows, hit flashes, freeze
-and poison overlays, players, and baked corpses keep their existing paths.
+Creature body passes and the freeze's ice (below) use this shader. Contact shadows, hit flashes,
+poison overlays, players, and baked corpses keep their existing paths.
 RTX creature bodies retain a 0.60 linear ambient fill, with dynamic visibility
 applied per emitter. Classic bypasses lighting entirely. GPU
 resources are lazy and released with the world's render resources. The existing
 HDR world target and display shoulder handle the added highlights.
+
+## Freeze ice
+
+The freeze's ice cubes, over frozen creatures and in the shatter, and the shatter's shards are lit as ice
+by the creature shader (`u_ice`, the grid of their particles cells). The original cube is a render of a
+rounded, lumpy cube, and the shards are chunks of the same ice. `tools/rtx/ice_surface.py` recovers a
+surface for each from the original art: for the cube, a rounded box bent by smooth terms, traced through
+the render's camera (both fitted to the sprite's corners, outline and shading); for a shard, a dome grown
+from its outline. A height field on top makes each body's relative shading match the sprite's under one
+light, and what that shading leaves of the sprite is the ice's own mottling. The result,
+`src/crimson/render/rtx/ice_surface.tga`, keeps the atlas's layout and takes the thickness map's place
+for ice draws.
+
+Unlit, the ice keeps the original's look, a little colder, plus a cold sky reflected in the faces that turn
+toward it. The lights shade an ice colour with the mottling but not the sprite's baked light, so a fire on
+the dark side lights that side. Ice scatters little and keeps its blue under fire: lights mostly glint off
+it (five times the body's catchlight, three times as sharp), its scattered light keeps 55% of its colour,
+the silhouette rim keeps a quarter of its strength so overlapping pieces don't outline each other, and
+nothing transmits. The ice is a little more solid than the original's overlay (alpha x1.15, at most 0.95).
+Over a frozen body, the cube's darkest faces lose a third of that (to about 0.55), so the body shows
+through while its bright frost and glancing edges stay solid; the shatter keeps the full opacity.
+
+The module marks the ice's batches: the freeze overlay's batch in `creature_render_all`
+(`HOST_PASS_ICE_FROZEN`), and among the effects (`HOST_PASS_ICE_CUBES`, `HOST_PASS_ICE_SHARDS`) a mark only
+where an effect's material changes, so the shatter keeps its place in the effects' order.
 
 ## Bonus materials
 
@@ -1271,9 +1296,10 @@ suppression; classic keeps the original yellow aura texture.
   thickness proxy.
   The overlay's opacity is Monster Vision's fade times
   `.88`, never the creature's tint alpha, so Hidden Evil's near-invisible aliens
-  show in full. Red in the tint carries warmth: the native death fade, cooled to
-  30% while Freeze holds the monsters, following Freeze's own fade out. Scene
-  transitions fade the overlay's opacity, never its warmth.
+  show in full. Red in the tint carries warmth: the native death fade. While
+  Freeze holds the monsters they show no heat, overlay or footprints, so they
+  read as themselves inside its ice; the heat returns with Freeze's own fade
+  out. Scene transitions fade the overlay's opacity, never its warmth.
 - Trails: a world-space float buffer at half the terrain's resolution. Each
   drawn frame fades it by the game time since the last (half-life 0.3 s, so
   slow motion leaves the same trail per distance), then max-blends a soft
