@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 from contextlib import ExitStack
 from pathlib import Path
-from typing import cast
 
 import msgspec
 
@@ -121,7 +120,7 @@ def init_sfx_state(
 def _load_sample_from_data(state: SfxState, *, entry_name: str, data: bytes) -> SfxSample:
     file_type = Path(entry_name).suffix.lower()
     with ExitStack() as cleanup:
-        wave = rl.load_wave_from_memory(file_type, cast(str, data), len(data))
+        wave = rl.load_wave_from_memory(file_type, data, len(data))
         try:
             if not rl.is_wave_valid(wave):
                 raise ValueError(f"audio: failed to decode sfx '{entry_name}'")
