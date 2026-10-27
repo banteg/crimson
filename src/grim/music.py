@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from contextlib import ExitStack
 from pathlib import Path
-from typing import cast
 
 import msgspec
 
@@ -93,7 +92,7 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
         for track_name, data in payloads.items():
             if track_name in state.tracks:
                 continue
-            stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
+            stream = rl.load_music_stream_from_memory(".ogg", data, len(data))
             track = MusicTrack(stream=stream, track_id=state.next_track_id + len(tracks), source_data=data)
             cleanup.callback(track.close)
             if not rl.is_music_valid(stream):
@@ -155,7 +154,7 @@ def load_music_track(
         if data is None:
             data = entries.get(Path(normalized).name)
         if data is not None:
-            music_stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
+            music_stream = rl.load_music_stream_from_memory(".ogg", data, len(data))
     file_path = assets_dir / normalized
     if music_stream is None and file_path.is_file():
         music_stream = rl.load_music_stream(str(file_path))
