@@ -183,7 +183,9 @@ def capture(args: argparse.Namespace) -> None:
         for mode in args.modes.split(","):
             gpu = capture_scene(scene, mode, args.game, args.out, args.client)
             timings[f"{scene['name']}-{mode}"] = gpu
-            print(f"{scene['name']:<16} {mode:<8} gpu {sum(gpu.values()):6.2f} ms  ground {gpu.get('ground', 0):6.2f} ms")
+            # The ground's passes: its mark, its visibility atlas (ground-vis) and its shading (ground-shade).
+            ground = sum(ms for name, ms in gpu.items() if name.split("-")[0] == "ground")
+            print(f"{scene['name']:<16} {mode:<8} gpu {sum(gpu.values()):6.2f} ms  ground {ground:6.2f} ms")
     (args.out / "timings.json").write_text(json.dumps(timings, indent=1, sort_keys=True) + "\n")
 
 
