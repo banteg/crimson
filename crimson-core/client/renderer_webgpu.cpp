@@ -49,7 +49,7 @@ int canvas_width, canvas_height;
 bool canvas_extended;
 WGPUTexture blank, gamma_texture;
 WGPUTextureView blank_view, gamma_view;
-// The freeze ice's surface (HOST_PASS_ICE_CUBES, _SHARDS), as in renderer.cpp.
+// The freeze ice's surface (HOST_PASS_ICE_*), as in renderer.cpp.
 WGPUTexture ice_texture;
 WGPUTextureView ice_view;
 
@@ -1338,8 +1338,8 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
     fragment.i("u_dynamic_shadows", dynamic_shadows);
     fragment.i("u_pass", bonus_emblem).set("u_grid", bonus_grid, 8).set("u_shell_center", bonus_center, 8);
-    int ice = material == HOST_PASS_ICE_CUBES ? 4 : material == HOST_PASS_ICE_SHARDS ? 8 : 0;
-    fragment.i("u_ice", ice);
+    int ice = material == HOST_PASS_ICE_CUBES || material == HOST_PASS_ICE_FROZEN ? 4 : material == HOST_PASS_ICE_SHARDS ? 8 : 0;
+    fragment.i("u_ice", ice).i("u_ice_frozen", material == HOST_PASS_ICE_FROZEN);
     fragment.set("u_pos", light_pos, light_count * 16).set("u_rgb", light_rgb, light_count * 16);
     fragment.set("u_dir", light_dir, light_count * 16).set("u_response", light_response, light_count * 16);
     auto it = textures.find(bound[0]);

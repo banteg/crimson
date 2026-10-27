@@ -16,6 +16,8 @@ enum {
   // bodies and in the shatter, and the shatter's shards (8x8 cells).
   HOST_PASS_ICE_CUBES = 9,
   HOST_PASS_ICE_SHARDS = 10,
+  // The cubes over frozen bodies (creature_render_all): their dark faces partly clear, so the body shows through.
+  HOST_PASS_ICE_FROZEN = 11,
 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).
 enum { RTX_LIGHT_FLOATS = 32 };

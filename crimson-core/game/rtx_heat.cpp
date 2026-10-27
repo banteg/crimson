@@ -21,18 +21,20 @@ bool rtx_drawing();
 namespace {
 
 // A footprint's radius, as a share of the creature's size; the bodies' overlay
-// opacity; the share of its warmth a monster keeps while Freeze holds it.
-const float FOOTPRINT = 0.45f, BODY_OPACITY = 0.88f, FROZEN_WARMTH = 0.3f;
+// opacity.
+const float FOOTPRINT = 0.45f, BODY_OPACITY = 0.88f;
 
 float fade(const creature_t &c) {
   return c.death_timer >= 0 ? 1.0f : fminf(1, fmaxf(0, (c.death_timer + 10) * 0.1f));
 }
 
-// Its native fade, cooled while Freeze holds it, with Freeze's own fade out.
-// Scene transitions fade the heat's opacity, never its warmth.
-float warmth(const creature_t &c) {
-  return fade(c) * (1 - (1 - FROZEN_WARMTH) * fminf(1, fmaxf(0, bonus_freeze_timer)));
-}
+// How much heat monsters show: none while Freeze holds them in its ice, so they
+// read as themselves inside it, returning with Freeze's own fade out.
+float thaw() { return 1 - fminf(1, fmaxf(0, bonus_freeze_timer)); }
+
+// Its native fade, thawing with Freeze's fade out. Scene transitions fade the
+// heat's opacity, never its warmth.
+float warmth(const creature_t &c) { return fade(c) * thaw(); }
 
 bool heat_vision() { return rtx_drawing() && perk_count_get(perk_id_monster_vision); }
 
@@ -73,7 +75,7 @@ extern "C" void rtx_heat(int type_id, float transition_alpha) {
   host_render_pass(HOST_PASS_HEAT);
   grim_interface_ptr->grim_begin_batch();
   for (const creature_t &c : creature_pool) {
-    float opacity = c.active && c.type_id == type_id ? fade(c) * transition_alpha : 0;
+    float opacity = c.active && c.type_id == type_id ? fade(c) * transition_alpha * thaw() : 0;
     if (opacity <= 1e-3f)
       continue;
     int flags = c.flags, frame;

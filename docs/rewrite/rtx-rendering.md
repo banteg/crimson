@@ -564,10 +564,12 @@ the dark side lights that side. Ice scatters little and keeps its blue under fir
 it (five times the body's catchlight, three times as sharp), its scattered light keeps 55% of its colour,
 the silhouette rim keeps a quarter of its strength so overlapping pieces don't outline each other, and
 nothing transmits. The ice is a little more solid than the original's overlay (alpha x1.15, at most 0.95).
+Over a frozen body, the cube's darkest faces lose a third of that (to about 0.55), so the body shows
+through while its bright frost and glancing edges stay solid; the shatter keeps the full opacity.
 
-The module marks the ice's batches (`HOST_PASS_ICE_CUBES`, `HOST_PASS_ICE_SHARDS`): the freeze overlay's
-batch in `creature_render_all`, and among the effects a mark only where an effect's material changes, so
-the shatter keeps its place in the effects' order.
+The module marks the ice's batches: the freeze overlay's batch in `creature_render_all`
+(`HOST_PASS_ICE_FROZEN`), and among the effects (`HOST_PASS_ICE_CUBES`, `HOST_PASS_ICE_SHARDS`) a mark only
+where an effect's material changes, so the shatter keeps its place in the effects' order.
 
 ## Bonus materials
 
@@ -1294,9 +1296,10 @@ suppression; classic keeps the original yellow aura texture.
   thickness proxy.
   The overlay's opacity is Monster Vision's fade times
   `.88`, never the creature's tint alpha, so Hidden Evil's near-invisible aliens
-  show in full. Red in the tint carries warmth: the native death fade, cooled to
-  30% while Freeze holds the monsters, following Freeze's own fade out. Scene
-  transitions fade the overlay's opacity, never its warmth.
+  show in full. Red in the tint carries warmth: the native death fade. While
+  Freeze holds the monsters they show no heat, overlay or footprints, so they
+  read as themselves inside its ice; the heat returns with Freeze's own fade
+  out. Scene transitions fade the overlay's opacity, never its warmth.
 - Trails: a world-space float buffer at half the terrain's resolution. Each
   drawn frame fades it by the game time since the last (half-life 0.3 s, so
   slow motion leaves the same trail per distance), then max-blends a soft

@@ -88,6 +88,7 @@ def test_lazy_lifecycle_and_exception_restore(mocker, tmp_path):
     lighting.active = True
     lighting.locations["u_thickness"] = 12
     lighting.locations["u_ice"] = 13
+    lighting.locations["u_ice_frozen"] = 14
     lighting.thickness_textures[texture.id] = thickness
     mocker.patch.object(rl, "set_shader_value_texture")
     mocker.patch.object(rl, "set_shader_value")

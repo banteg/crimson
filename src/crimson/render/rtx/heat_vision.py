@@ -36,8 +36,6 @@ TRAIL_HALF_LIFE_S = 0.3
 # A footprint's radius, as a share of the creature's size.
 FOOTPRINT = 0.45
 BODY_OPACITY = 0.88
-# A monster frozen in Freeze's ice keeps this share of its warmth.
-FROZEN_WARMTH = 0.3
 # Longer gaps between frames (a seek, a stall) start the trails over.
 MAX_GAP_MS = 1000.0
 
@@ -51,18 +49,23 @@ def _load(vertex: str, fragment: str) -> rl.Shader:
     return shader
 
 
-def heat_visibility(creature: CreatureState, *, entity_alpha: float) -> float:
+def heat_thaw(frame: RenderFrame) -> float:
+    """How much heat monsters show: none while Freeze holds them in its ice, so they read as themselves inside it,
+    returning with Freeze's own fade out."""
+    return 1.0 - min(max(frame.state.bonuses.freeze, 0.0), 1.0)
+
+
+def heat_visibility(creature: CreatureState, frame: RenderFrame, *, entity_alpha: float) -> float:
     """How strongly Monster Vision shows a monster: its native fade, never the creature's own tint alpha."""
-    return min(monster_vision_fade_alpha(creature.death_timer) * entity_alpha, 1.0)
+    return min(monster_vision_fade_alpha(creature.death_timer) * entity_alpha, 1.0) * heat_thaw(frame)
 
 
 def heat_warmth(creature: CreatureState, frame: RenderFrame) -> float:
-    """How hot it reads: the native death fade, cooled while Freeze holds it, with Freeze's own fade out.
+    """How hot it reads: the native death fade, thawing with Freeze's fade out.
 
     Scene transitions fade the heat's opacity, never its warmth.
     """
-    frozen = min(max(frame.state.bonuses.freeze, 0.0), 1.0)
-    return monster_vision_fade_alpha(creature.death_timer) * (1.0 - (1.0 - FROZEN_WARMTH) * frozen)
+    return monster_vision_fade_alpha(creature.death_timer) * heat_thaw(frame)
 
 
 class HeatVision(msgspec.Struct):

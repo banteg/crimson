@@ -44,7 +44,7 @@ class CreatureLighting(msgspec.Struct):
                 name: int(rl.get_shader_location(shader, name))
                 for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response", "u_thickness",
                              "u_occlusion_tex", "u_occlusion_grid", "u_occlusion_cell_size", "u_dynamic_shadows", "u_ambient",
-                             "u_ice")
+                             "u_ice", "u_ice_frozen")
             }
         shader = self.shader
         # Flush preceding draws before changing values on a possibly reused shader.
@@ -86,8 +86,11 @@ class CreatureLighting(msgspec.Struct):
             )
 
     @contextmanager
-    def scope(self, *, texture: rl.Texture, restore_shader: rl.Shader | None, ice: int = 0) -> Generator[None]:
-        """Creature bodies drawn from `texture`, or with `ice` the freeze's ice: the grid of its particles cells."""
+    def scope(
+        self, *, texture: rl.Texture, restore_shader: rl.Shader | None, ice: int = 0, frozen: bool = False,
+    ) -> Generator[None]:
+        """Creature bodies drawn from `texture`, or with `ice` the freeze's ice: the grid of its particles cells;
+        `frozen` for its cubes over frozen bodies, whose dark faces let the body show."""
         if not self.active or self.shader is None:
             yield
             return
@@ -106,8 +109,9 @@ class CreatureLighting(msgspec.Struct):
         rl.rl_draw_render_batch_active()
         try:
             rl.begin_shader_mode(self.shader)
-            rl.set_shader_value(self.shader, self.locations["u_ice"], rl.ffi.new("int *", ice),
-                                rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+            for name, value in (("u_ice", ice), ("u_ice_frozen", int(frozen))):
+                rl.set_shader_value(self.shader, self.locations[name], rl.ffi.new("int *", value),
+                                    rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
             if thickness is not None:
                 rl.set_shader_value_texture(self.shader, self.locations["u_thickness"], thickness)
             if self.occlusion is not None and self.occlusion.grid is not None and self.occlusion.grid.body_count and self.occlusion.texture is not None:

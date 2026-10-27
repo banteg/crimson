@@ -227,7 +227,7 @@ std::vector<float> centers;
 // Bound to a stage with no texture: the shader never samples it, but a sampler
 // needs a complete texture behind it.
 GLuint blank_texture;
-// The freeze ice's surface (HOST_PASS_ICE_CUBES, _SHARDS), on the creature program's thickness unit.
+// The freeze ice's surface (HOST_PASS_ICE_*), on the creature program's thickness unit.
 GLuint ice_texture;
 GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_alpha_op, u_alpha_arg1, u_alpha_arg2,
     u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction, u_circle, u_circle_uv;
@@ -295,7 +295,7 @@ float bonus_grid[2], bonus_center[2];
 struct LitProgram {
   GLuint id = 0;
   GLint target_size, camera, count, ambient, pos, rgb, dir, response, occlusion_grid, occlusion_cell, shadows;
-  GLint pass, grid, shell_center, ice;
+  GLint pass, grid, shell_center, ice, ice_frozen;
 };
 // The creature body grid (host_occlusion): origin, columns (0 for none) and rows,
 // cell size, the shadows setting, and its texels in an RGBA32F texture 256 wide.
@@ -566,6 +566,7 @@ void create_lit(LitProgram &p, const char *vertex, const char *fragment) {
   p.grid = uniform_location(p.id, "u_grid");
   p.shell_center = uniform_location(p.id, "u_shell_center");
   p.ice = uniform_location(p.id, "u_ice");
+  p.ice_frozen = uniform_location(p.id, "u_ice_frozen");
 }
 
 // A creature atlas's transmission part sizes or Monster Vision silhouette
@@ -688,8 +689,9 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
                                                 : creature_lit;
   use_program(p.id);
   glUniform1i(p.pass, bonus_emblem);
-  int ice = material == HOST_PASS_ICE_CUBES ? 4 : material == HOST_PASS_ICE_SHARDS ? 8 : 0;
+  int ice = material == HOST_PASS_ICE_CUBES || material == HOST_PASS_ICE_FROZEN ? 4 : material == HOST_PASS_ICE_SHARDS ? 8 : 0;
   glUniform1i(p.ice, ice);
+  glUniform1i(p.ice_frozen, material == HOST_PASS_ICE_FROZEN);
   glUniform2fv(p.grid, 1, bonus_grid);
   glUniform2fv(p.shell_center, 1, bonus_center);
   glUniform2f(p.target_size, (float)t.logical_width, (float)t.logical_height);

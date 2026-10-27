@@ -421,7 +421,7 @@ def draw_creature_heat(
     """Heat bodies: red is warmth, green/blue a tracked head, alpha Monster Vision's opacity."""
     with heat.body_scope(texture=texture, restore_shader=render_ctx.frame.resources.alpha_test.shader):
         for creature in render_ctx.frame.creatures.entries:
-            opacity = heat_visibility(creature, entity_alpha=ctx.entity_alpha) if creature.active else 0.0
+            opacity = heat_visibility(creature, render_ctx.frame, entity_alpha=ctx.entity_alpha) if creature.active else 0.0
             if creature.type_id != type_id or opacity <= 1e-3:
                 continue
             warmth = heat_warmth(creature, render_ctx.frame)
@@ -504,12 +504,12 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
 
     tint = rl_color(255, 255, 255, int(freeze_alpha * 255.0 + 0.5))
     frame = render_ctx.frame
-    # RTX lights the cubes as ice, each over its creature's body.
+    # RTX lights the cubes as ice, each over its creature's body, which shows through their dark faces.
     lighting = frame.creature_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
     with (
         lighting.scope(texture=ctx.particles_texture, restore_shader=frame.resources.alpha_test.shader,
-                       ice=EFFECT_ID_ATLAS_TABLE_BY_ID[EffectId.FREEZE_SHATTER].grid)
+                       ice=EFFECT_ID_ATLAS_TABLE_BY_ID[EffectId.FREEZE_SHATTER].grid, frozen=True)
         if lighting is not None else nullcontext()
     ):
         for idx, creature in enumerate(frame.creatures.entries):

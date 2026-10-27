@@ -28,6 +28,9 @@ uniform vec4 u_response[32]; // illumination, reflection, reflection reach, sour
 // out like the atlas: RG the sprite-frame normal's x and y (x right, y down, z toward the viewer), B the ice's own
 // mottling over 2.5.
 uniform int u_ice;
+// The cubes over frozen bodies: their darkest faces lose ICE_CLEAR of the ice's opacity, so the body shows through.
+uniform int u_ice_frozen;
+const float ICE_CLEAR = 0.32;
 out vec4 finalColor;
 const float DOME_STRENGTH = 0.65;
 const float RIM_STRENGTH = 0.65;
@@ -120,6 +123,9 @@ void main() {
         spec_gain = 5., spec_sharp = 3., rim_gain = .25, light_desat = .45;
         // The cold sky in the faces that turn toward it, and its hard glint, so the ice reads with no light near.
         float fresnel = .04 + .96 * pow(1. - max(dot(N, V), 0.), 5.);
+        // The sprite's dark faces are a window into the ice; its bright frost and glancing edges stay solid.
+        if (u_ice_frozen != 0)
+            base.a *= mix(1. - ICE_CLEAR, 1., max(smoothstep(.06, .54, lum), .85 * fresnel));
         vec3 sky_dir = normalize(vec3(-.30, -.40, .86));
         float sky = dot(reflect(-V, N), sky_dir);
         glow = vec3(.05, .09, .13) * smoothstep(-.1, .9, sky) * (.35 + fresnel) +

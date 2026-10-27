@@ -470,7 +470,7 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
 @@ -114,5 +116,6 @@
          freeze_alpha = freeze_alpha * transition_alpha * 0.7f;
  
-+        rtx_material(HOST_PASS_ICE_CUBES);
++        rtx_material(HOST_PASS_ICE_FROZEN);
          grim_interface_ptr->grim_begin_batch();
  
          for (int creature_index = 0; creature_index < 384; creature_index++) {
