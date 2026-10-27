@@ -185,11 +185,10 @@ dynamic lights take over, so lit areas do not show a pasted-on double shadow.
   Whether to raise it is an art call to settle on the golden scenes. Either way,
   `rtx-rendering.md` still says unlit terrain keeps its Classic brightness, which is
   out of date.
-- **The sky over wet ground.** #882 made the sky's reflection on wet pools neutral
-  gray everywhere but ice, since its cool blue over red blood read magenta. Gray
-  reads flatter and less interesting. Try on the golden scenes: a cyan-leaning sky
-  (cyan over red sums toward white, not magenta), the cool tint kept off blood
-  coverage only, or a weaker tint.
+- **The sky over wet ground.** #882 made it neutral gray over blood, since the cool
+  blue read magenta there, and gray read flat. #930 makes it cyan at 1.5× its
+  luminance, picked in play from gray, blue and cyan: cyan over red sums toward
+  white instead of magenta.
 - **Blood saturation.** With the hue fixed, RTX blood is still grayer than Classic's
   deep red (red about three times green, against four to six in Classic), from the
   gray sheen and wet-soil darkening. Tune those first; a pigment target is the
