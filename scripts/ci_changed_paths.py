@@ -61,7 +61,7 @@ CORE_CORPUS = (
     "src/crimson/quests/dsl/",
 )
 CORE_GATE = ("crimson-core/checks/gate.py", "crimson-core/checks/replay.py")
-CORE_GAME = ("crimson-core/checks/game_*", "crimson-core/build.py", *CORE_GATE)
+CORE_GAME = ("crimson-core/checks/game_*", "crimson-core/checks/rtx_occlusion.*", "crimson-core/build.py", *CORE_GATE)
 CORE_ORACLES = (
     "crimson-core/checks/spawn_batch.*",
     "crimson-core/checks/creature_optimizations.*",

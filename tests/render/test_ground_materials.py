@@ -112,6 +112,7 @@ def test_fresh_blood_reflects_hdr_then_dries(ground_material) -> None:
     target = load_float_render_texture(64, 64)
     try:
         _uniform(sh, "u_ground_size", [64, 64])
+        _uniform(sh, "u_visibility_world", [0, 0, 0, 0])
         _integer(sh, "u_spec_light_count", 1)
         _uniform(sh, "u_spec_pos[0]", [32, 14, 150, 30])
         _uniform(sh, "u_spec_color[0]", [4, 4, 4, 0])
@@ -267,7 +268,19 @@ def test_partial_scorch_removes_film_without_diluting_its_age(ground_material) -
     assert pixels(ground.coverage)[center][0] < 0.6
 
 
-def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: CreaturePool | None = None, shadows: bool = True, pixel_format: int | None = None, live: bool = False, beam_passes: bool = False) -> list[tuple[float, float, float, float]]:
+def debug_pixels(
+    ground,
+    texture,
+    *,
+    mode: int,
+    time: float = 0,
+    creatures: CreaturePool | None = None,
+    shadows: bool = True,
+    pixel_format: int | None = None,
+    live: bool = False,
+    view_center: Vec2 = Vec2(512, 512),
+    view_size: Vec2 | None = None,
+) -> list[tuple[float, float, float, float]]:
     class Textures:
         def texture(self, _texture_id):
             return texture
@@ -285,8 +298,15 @@ def debug_pixels(ground, texture, *, mode: int, time: float = 0, creatures: Crea
         def draw_view() -> None:
             ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
 
-        with texture_mode(target), ground.material_scope(frame, debug=None if live else mode,
-                                                         draw_view=draw_view if beam_passes else None):
+        with (
+            texture_mode(target),
+            ground.material_scope(
+                frame,
+                view_center=view_center,
+                view_size=view_size,
+                debug=None if live else mode,
+            ),
+        ):
             draw_view()
         return pixels(target)
     finally:
@@ -740,7 +760,7 @@ def test_spatial_cell_crossing_does_not_drop_a_soft_body(ground_material, mocker
     assert max(energies) < sum(p[0] for p in base) * .9
 
 
-def test_dynamic_shadow_switch_does_not_disable_reflection_visibility(ground_material, mocker):
+def test_dynamic_shadow_switch_disables_direct_and_reflected_visibility(ground_material, mocker):
     ground, texture = ground_material
     uniform_deep_film(ground, texture)
     pool = CreaturePool()
@@ -750,11 +770,18 @@ def test_dynamic_shadow_switch_does_not_disable_reflection_visibility(ground_mat
     source = MaterialLight(Vec2(32, 16), 150, (2, 1, .5), height=24, reflection_gain=0, broad_illumination=True)
     collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
     clear = debug_pixels(ground, texture, mode=0, creatures=pool, shadows=False)
+    assert ground.reflection_occlusion.grid is None
+    assert clear == debug_pixels(ground, texture, mode=0)
     shadow = debug_pixels(ground, texture, mode=0, creatures=pool)
     assert sum(p[0] for p in shadow) < sum(p[0] for p in clear) * .95
     assert all(b[0] <= a[0] for a, b in zip(clear, shadow, strict=True))
     collector.return_value = [msgspec.structs.replace(source, illumination_gain=0, reflection_gain=1)]
-    assert debug_pixels(ground, texture, mode=5, creatures=pool) == debug_pixels(ground, texture, mode=5, creatures=pool, shadows=False)
+    clear_reflection = debug_pixels(ground, texture, mode=5, creatures=pool, shadows=False)
+    assert ground.reflection_occlusion.grid is None
+    assert clear_reflection == debug_pixels(ground, texture, mode=5)
+    shadow_reflection = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert sum(p[0] for p in shadow_reflection) < sum(p[0] for p in clear_reflection) * .8
+    assert all(b[0] <= a[0] for a, b in zip(clear_reflection, shadow_reflection, strict=True))
     collector.return_value = []
     debug_pixels(ground, texture, mode=0, creatures=pool)
     assert ground.reflection_occlusion.grid is None
@@ -799,33 +826,20 @@ def test_weak_sources_keep_cosine_response_without_broad_grazing_fill(ground_mat
     assert increments[0] / increments[1] == pytest.approx(expected[0] / expected[1], rel=.025)
 
 
-def test_negligible_ground_diffuse_skip_has_bounded_linear_error(ground_material, mocker):
-    from crimson.render.rtx.material_shaders import GROUND_FRAGMENT
-
+def test_visibility_mask_does_not_depend_on_hdr_color_or_positive_gains(ground_material, mocker):
     ground, texture = ground_material
-    uniform_deep_film(ground, texture)
     pool = CreaturePool()
     pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=35)
-    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
-    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
     source = MaterialLight(Vec2(32, 16), 150, (.0001, .0001, .0001), height=24,
                            reflection_gain=0, broad_illumination=True)
-    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
-    pixel_format = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32
-    approximate = debug_pixels(ground, texture, mode=0, creatures=pool, pixel_format=pixel_format)
-    original = ground.material_shader
-    reference = ground_materials._shader(GROUND_FRAGMENT.replace(
-        "max(direct.r, max(direct.g, direct.b)) > .00001", "max(direct.r, max(direct.g, direct.b)) > 0."))
-    try:
-        ground.material_shader = reference
-        exact = debug_pixels(ground, texture, mode=0, creatures=pool, pixel_format=pixel_format)
-    finally:
-        ground.material_shader = original
-        rl.unload_shader(reference)
-    errors = [a[c] ** 2.2 - b[c] ** 2.2 for a, b in zip(approximate, exact, strict=True) for c in range(3)]
-    assert max(errors) > 0
-    assert min(errors) >= -1e-7
-    assert max(errors) <= 1.01e-5
+    collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
+    debug_pixels(ground, texture, mode=0, creatures=pool)
+    reference = pixels(ground.beam_atlas)
+    assert min(p[0] for p in reference) < .9
+    for color, gain in (((64., 8., .25), 100.), ((.2, .3, .4), 1e-10)):
+        collector.return_value = [msgspec.structs.replace(source, rgb=color, illumination_gain=gain)]
+        debug_pixels(ground, texture, mode=0, creatures=pool)
+        assert pixels(ground.beam_atlas) == reference
 
 
 def test_ring_reflection_tracks_annular_footprint_instead_of_center(ground_material, mocker):
@@ -1032,9 +1046,12 @@ def test_reflection_visibility_is_independent_of_diffuse_trace(
     )
     collect = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
     reference = debug_pixels(ground, texture, mode=5, creatures=pool, shadows=shadows)
-    assert max(p[0] for p in reference) > 0
+    # A very narrow reflected lobe may now fall wholly in the nearest-source
+    # shadow. It must still exist with the mask disabled and stay finite when enabled.
+    assert max(p[0] for p in debug_pixels(ground, texture, mode=5, shadows=False)) > 0
+    assert all(math.isfinite(c) and c >= 0 for p in reference for c in p)
     # Diffuse disabled is an independent reference: it cannot populate a cached trace.
-    # Include a negligible diffuse source, for which tracing is also skipped.
+    # Positive diffuse gain cannot change the color-independent reflected mask.
     for gain in (1e-10, 1.):
         collect.return_value = [msgspec.structs.replace(source, illumination_gain=gain)]
         assert debug_pixels(ground, texture, mode=5, creatures=pool, shadows=shadows) == reference
@@ -1068,9 +1085,9 @@ def test_bulk_light_upload_matches_scalar_upload_after_source_count_changes(grou
         assert debug_pixels(ground, texture, mode=0) == reference
 
 
-def test_beam_visibility_passes_shadow_as_the_grounds_own_walk(ground_material, mocker):
-    # With the view to draw, the ground reads a beam's visibility from passes at a quarter of its resolution
-    # instead of walking the grid per pixel: the same shadow, softened at its edge.
+def test_visibility_atlas_is_internal_and_world_anchored(ground_material, mocker):
+    # The coarse world-anchored visibility atlas is always prepared through the internal virtual view,
+    # whether or not a caller supplies draw_view, and stays stable across sub-texel camera shifts.
     ground, texture = ground_material
     pool = CreaturePool()
     pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 30), size=44,
@@ -1080,8 +1097,33 @@ def test_beam_visibility_passes_shadow_as_the_grounds_own_walk(ground_material, 
     mocker.patch.object(ground_materials, "collect_material_lights", return_value=[beam])
     clear = debug_pixels(ground, texture, mode=7, creatures=pool)
     walked = debug_pixels(ground, texture, mode=6, creatures=pool)
-    passed = debug_pixels(ground, texture, mode=6, creatures=pool, beam_passes=True)
+    atlas_id = ground.beam_atlas.id
+    atlas_size = (ground.beam_atlas.texture.width, ground.beam_atlas.texture.height)
+    anchored = debug_pixels(
+        ground, texture, mode=6, creatures=pool, view_center=Vec2(32.4, 32.3), view_size=Vec2(64, 64),
+    )
     blocked = sum(a[0] - b[0] for a, b in zip(clear, walked, strict=True))
     assert blocked > .1
-    assert passed != walked
-    assert sum(a[0] - b[0] for a, b in zip(clear, passed, strict=True)) == pytest.approx(blocked, rel=.2)
+    assert ground.beam_atlas.id == atlas_id
+    assert (ground.beam_atlas.texture.width, ground.beam_atlas.texture.height) == atlas_size
+    assert [p[0] for p in anchored] == pytest.approx([p[0] for p in walked], abs=1e-3)
+
+
+def test_ring_visibility_uses_canonical_sources_across_atlas_rows(ground_material, mocker):
+    # Canonical visibility masks cover rings and later atlas groups without a caller draw_view closure.
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 34), size=35)
+    body = BodyVolume(Vec2(32, 34), Vec2(10, 10), 30, 0)
+    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] if c.active else [])
+    ring = MaterialLight(Vec2(32, 16), 80, (1, .5, .2), height=30, ring_radius=12, source_width=2)
+    beam = MaterialLight(Vec2(32, 4000), 150, (.5, .8, 1.4), height=24, direction=Vec2(1, 0), length=40,
+                         beam_profile=(35.2, 6.82, 1.05), beam_ion=True, reflection_gain=0)
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[ring, beam])
+    clear = debug_pixels(ground, texture, mode=5)
+    walked = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert sum(a[0] - b[0] for a, b in zip(clear, walked, strict=True)) > 10
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[beam] * 17 + [ring])
+    later_group = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert max(abs(a - b) for p, q in zip(later_group, walked, strict=True) for a, b in zip(p, q, strict=True)) < 1e-6

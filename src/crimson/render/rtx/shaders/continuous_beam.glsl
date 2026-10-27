@@ -1,24 +1,9 @@
-// One-source beam lighting with analytic finite-source visibility.
+// Analytic beam lighting, attenuated by a supplied coarse visibility mask.
 uniform int u_has_beam_lights;
 uniform vec2 u_beam_gain; // ion, Fire Bullets direct gain
 // Per source (continuous_beam.py's beam_uniform): the head's share of the beam's energy, its half-width, Ion, and
 // the support's half-extent past the midpoint (0: not a beam). The rest is a ramp from the tail to the head.
 uniform vec4 u_beam_shape[MAX_SPEC_LIGHTS];
-
-// Visibility through a section of a beam: the source stretch `axis` * [-halfspan, halfspan] around `source`. The
-// walk leaves each eighth's own visibility in beam_bins (light_visibility.glsl); this returns their mean.
-float sectionVisibility(vec3 receiver, vec3 source, float width, vec2 axis, float halfspan, vec2 owner) {
-    beam_bins[0] = beam_bins[1] = vec4(1.);
-    if (u_dynamic_shadows == 0) return 1.;
-    beam_section_axis = axis;
-    beam_section_halfspan = halfspan;
-    // Bodies mark the eighths they block and crowd cells dim them all; the walk ends once all are dark.
-    sourceVisibility(receiver, source, width, owner);
-    // Reflection rays later in the same fragment retain standard visibility.
-    beam_section_axis = vec2(0.);
-    beam_section_halfspan = 0.;
-    return dot(beam_bins[0] + beam_bins[1], vec4(.125));
-}
 
 // Antiderivatives in u of (1, u, u^2) * (1 - d/R)^2, d = sqrt(u^2 + b^2): the falloff along the beam's axis at
 // perpendicular distance b, u from the receiver's foot on the axis.
@@ -63,64 +48,13 @@ bool beamFrame(int index, vec4 direction, vec2 world, vec4 sp_pos, out vec2 axis
     return true;
 }
 
-// One walk across the stretch that lights this receiver. Its eighths keep their own visibility, so bodies blocking
-// different parts of the beam add up; each eighth weighs the energy it delivers.
-float beamVisibility(int index, vec4 direction, vec2 world, vec4 sp_pos, vec4 response) {
-    vec2 axis, ramp_window, head_window;
-    float x0, b, R, half_length, ramp, head;
-    if (!beamFrame(index, direction, world, sp_pos, axis, x0, b, R, half_length, ramp, head, ramp_window, head_window))
-        return 1.;
-    float head_width = u_beam_shape[index].y;
-    vec2 lit = x0 + vec2(min(ramp_window.x, head_window.x), max(ramp_window.y, head_window.y));
-    float center = .5 * (lit.x + lit.y), halfspan = max(.5 * (lit.y - lit.x), 1e-3);
-    sectionVisibility(vec3(world, 0.), vec3(sp_pos.xy + axis * center, sp_pos.w), response.w, axis, halfspan,
-                      vec2(1e19));
-    float width = halfspan * .25;
-    vec4 s0 = center - halfspan + width * (vec4(0., 1., 2., 3.) + .5);
-    vec4 s1 = s0 + 4. * width;
-    vec4 f0 = max(vec4(0.), 1. - sqrt((s0 - x0) * (s0 - x0) + b * b) / R);
-    vec4 f1 = max(vec4(0.), 1. - sqrt((s1 - x0) * (s1 - x0) + b * b) / R);
-    vec4 r0 = ramp * max(vec4(0.), s0 + half_length) * step(s0, vec4(half_length));
-    vec4 r1 = ramp * max(vec4(0.), s1 + half_length) * step(s1, vec4(half_length));
-    // The head's share lands in the eighths it overlaps, through each eighth's own falloff.
-    vec4 h0 = max(vec4(0.), min(s0 + .5 * width, vec4(half_length + head_width)) - max(s0 - .5 * width, vec4(half_length - head_width)));
-    vec4 h1 = max(vec4(0.), min(s1 + .5 * width, vec4(half_length + head_width)) - max(s1 - .5 * width, vec4(half_length - head_width)));
-    vec4 w0 = (r0 * width + head * h0) * f0 * f0;
-    vec4 w1 = (r1 * width + head * h1) * f1 * f1;
-    float total = dot(w0 + w1, vec4(1.));
-    return total > 0. ? (dot(w0, beam_bins[0]) + dot(w1, beam_bins[1])) / total : 1.;
-}
-
-// The beams' visibility from passes at a lower resolution (ground.frag's BEAM_VISIBILITY_PASS): an atlas of four
-// groups side by side, each group's four slots in a texel's channels. A beam without a slot (no pass ran, or more
-// beams than slots) walks the grid itself.
-uniform vec4 u_beam_slots[MAX_SPEC_LIGHTS / 4]; // each light's slot plus one, four a vec4; 0 for none
-
-int beamSlot(int index) {
-    return int(u_beam_slots[index / 4][index - index / 4 * 4] + .5) - 1;
-}
-
 #ifdef BEAM_VISIBILITY_PASS
-// The passes draw the atlas, and never read it.
-float beamVisibilityRead(int slot) { return 1.; }
-#else
-uniform sampler2D u_beam_vis;
-uniform vec4 u_beam_vis_target; // the receiving target's pixels, then one group's texels in the atlas
-
-float beamVisibilityRead(int slot) {
-    int group = slot / 4, lane = slot - group * 4;
-    // Kept half a texel inside the group's quarter, so filtering never reaches the next group's.
-    vec2 inset = .5 / u_beam_vis_target.zw;
-    vec2 uv = clamp(gl_FragCoord.xy / u_beam_vis_target.xy, inset, 1. - inset);
-    // An explicit level: WGSL samples only in uniform control flow otherwise, and the atlas has no mipmaps.
-    vec4 v = textureLod(u_beam_vis, vec2((float(group) + uv.x) * .25, uv.y), 0.);
-    return lane == 0 ? v.x : lane == 1 ? v.y : lane == 2 ? v.z : v.w;
-}
+#include "beam_visibility.glsl"
 #endif
 
 vec3 continuousLight(int index, vec4 direction, vec2 world, vec3 N_sub, vec3 absorption,
                      vec3 wetted, vec3 blood, vec3 albedo, float ice, vec4 sp_pos,
-                     vec4 sp_col, vec4 response, float broad, out vec3 unshadowed) {
+                     vec4 sp_col, vec4 response, float broad, float visibility, out vec3 unshadowed) {
     unshadowed = vec3(0.);
     vec2 axis, ramp_window, head_window;
     float x0, b, R, half_length, ramp, head;
@@ -141,7 +75,5 @@ vec3 continuousLight(int index, vec4 direction, vec2 world, vec3 N_sub, vec3 abs
     float angular = broad > .5 ? .22 + .78 * ndl : .22 * ndl;
     vec3 direct = direct_albedo * sp_col.rgb * (gain * energy.x * angular * relief);
     unshadowed = direct;
-    if (max(direct.r, max(direct.g, direct.b)) <= .00001) return direct;
-    int slot = beamSlot(index);
-    return direct * (slot >= 0 ? beamVisibilityRead(slot) : beamVisibility(index, direction, world, sp_pos, response));
+    return direct * visibility;
 }

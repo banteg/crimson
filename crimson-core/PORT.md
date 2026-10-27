@@ -541,7 +541,15 @@ then goes on to the next, and the run ends after the last; `CRIMSON_CAPTURE` sav
 ([replay-viewer.md](../docs/rewrite/replay-viewer.md#preparing)). A run any of these drive opens behind the
 player's windows and plays on there; it ignores the desktop's mouse and keyboard, draws no cursor until its script
 moves one, and reports errors on stderr instead of in a dialog.
-`CRIMSON_GPU_TIMERS=1` prints each frame's GPU time per pass to stderr (OpenGL only). `CRIMSON_MUTE=1` silences the output
+`CRIMSON_PROFILE=<file>` records each frame the client shows as a JSON line: the replay tick and the ticks the frame
+covered, wall time, live entities, memory, each pass's CPU time, the draws by pass, texture and target, the scene's
+sizes and the targets, and on every 8th frame each pass's GPU time (`CRIMSON_PROFILE_GPU=<n>`: every n-th, 0 none, 1
+all; OpenGL only, the browser records nothing). On macOS a timer query flushes the driver's command buffer, so a
+timed frame drains the GPU and runs slow, and the frames after it make that up: `tools/profile.py` takes GPU times
+from the timed frames and wall and CPU times as means over runs of 8 frames, within a few percent of an untimed run,
+and slices a recording (`summary`, `worst`, `compare`, `timeline`). A scripted run it records keeps the unattended
+clock and does not wait on vsync, and a watched replay with no tick to stop at plays to its end and quits. Compare
+runs taken back to back. `CRIMSON_MUTE=1` silences the output
 device and nothing else: the game still mixes its sounds and music, so a muted
 run plays the same game ([`client/audio.cpp`](client/audio.cpp)).
 

@@ -9,6 +9,7 @@
 
 alignas(16) u8 memory[1024 * 1024];
 u8 *client_memory() { return memory; }
+float render_size = 2;
 [[noreturn]] void client_fatal(const char *message) {
   fprintf(stderr, "%s\n", message);
   abort();
@@ -408,8 +409,8 @@ void check_rtx() {
   float shell = bonus(0, 0);
   assert(shell < 0.3f && bonus(0, 1) > shell + 0.5f);
   assert(fabsf(bonus(1, 0) - device) < 2e-3f);
-  // A body between the light and the batch (one grid cell holding it) shades it,
-  // unless the shadows setting is off.
+  // A body between the light and a creature-sized batch (one grid cell holding
+  // it) shades it from the quad's corners, unless the shadows setting is off.
   auto occluded = [&](float shadows) {
     const float grid[6] = {0, 0, 1, 1, 2048, shadows};
     const float values[20] = {4, 1, 0, 0,                     // cell 0: its list at texel 4, one body
@@ -423,7 +424,7 @@ void check_rtx() {
     scene({200, 384, 600, 18, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 600, 3}, 1);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
     w2c_host_render_pass(nullptr, HOST_PASS_CREATURES);
-    rectangle(0, 0, 1024, 768, 0xffffffff);
+    rectangle(568, 352, 632, 416, 0xffffffff);
     w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
     return back_red(600, 384);
@@ -478,6 +479,19 @@ void check_rtx() {
   const std::initializer_list<float> mirror = {600, 390, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 200, 40};
   assert(ground(mirror, 1, 600, 400).r > ground({}, 0, 600, 400).r + 0.1f);
   assert(fabsf(ground(mirror, 1, 400, 400).r - ground({}, 0, 400, 400).r) < 1e-3f);
+  // Three minutes on, a bake's stamp rebases the surface's wetness, and the
+  // terrain stays bound: the decal after it still lands in the terrain.
+  w2c_host_set_render_target(nullptr, 400);
+  w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 200);
+  rectangle(100, 700, 150, 750, 0xc8ffffff);
+  w2c_host_ground(nullptr, HOST_GROUND_DECAL, 200);
+  rectangle(800, 100, 1000, 900, 0xffff0000);
+  w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+  w2c_host_set_render_target(nullptr, 400);
+  u8 stamped[4];
+  glReadPixels(1800, 1000, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, stamped);
+  assert(stamped[0] == 255 && stamped[1] == 0 && stamped[2] == 0);
+  w2c_host_set_render_target(nullptr, 0);
   terrain();
   Pixel cleared = ground({}, 0, 200, 200);
   assert(fabsf(cleared.g - bare.g) < 1e-3f);
@@ -593,6 +607,19 @@ void check_rtx() {
     assert(highlight > 0.85f && (headroom == 1 ? highlight <= 1 : highlight > 1 && highlight < powf(4, 1 / 2.2f)));
     limit = highlight;
   }
+  // Past twice the game's resolution the world draws at twice it (rendersize)
+  // and scales up as it tonemaps, while the back buffer keeps the display's
+  // pixels for the HUD; 0 lifts the cap.
+  int window_width = drawable_width, window_height = drawable_height;
+  renderer_resize(3840, 2160);
+  world();
+  assert(textures[0].width == 2880 && hdr.width == 2048 && hdr.height == 1536);
+  assert(fabsf(back_red(100, 100) - limit) < 1e-3f && fabsf(back_red(700, 100) - 128 / 255.0f) < 1e-3f);
+  render_size = 0;
+  world();
+  assert(hdr.width == 2880 && hdr.height == 2160);
+  render_size = 2;
+  renderer_resize(window_width, window_height);
   assert(!renderer_set_rtx(false) && !(textures[0].flags & TARGET_HALF_FLOAT));
   assert(fabsf(back_red(100, 100) - 1) < 1e-3f && limit > 1); // the switch kept the image, clipped to 8 bits
   world();
@@ -602,6 +629,205 @@ void check_rtx() {
 #endif
   puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams integrate their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, ion contacts glow, pressure fronts ripple; classic stays 8-bit");
 }
+
+
+// Reusing indices and applied state must survive arbitrary indexed draws,
+// helper passes, changing device arrays, and returning to the same shader.
+void check_submission_reuse() {
+  w2c_host_set_render_target(nullptr, 0);
+  renderer_resize(128, 128);
+  w2c_host_back_buffer(nullptr, 64, 64);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_set_texture(nullptr, 1, 0);
+  w2c_host_render_state(nullptr, RS_CULLMODE, 1);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_render_state(nullptr, RS_ALPHATESTENABLE, 0);
+  w2c_host_render_state(nullptr, RS_COLORWRITEENABLE, 15);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 1, TSS_COLOROP, 1);
+  Vertex vertices[] = {{-.5f, -.5f, 0, 1, 0xffff0000, 0, 0}, {31.5f, -.5f, 0, 1, 0xffff0000, 1, 0},
+                       {31.5f, 63.5f, 0, 1, 0xffff0000, 1, 1}, {-.5f, 63.5f, 0, 1, 0xffff0000, 0, 1},
+                       {31.5f, -.5f, 0, 1, 0xff00ff00, 0, 0}, {63.5f, -.5f, 0, 1, 0xff00ff00, 1, 0},
+                       {63.5f, 63.5f, 0, 1, 0xff00ff00, 1, 1}, {31.5f, 63.5f, 0, 1, 0xff00ff00, 0, 1}};
+  const unsigned short quads[] = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
+  unsigned short reordered[] = {4, 5, 6, 6, 7, 4, 0, 1, 2, 2, 3, 0};
+  auto draw = [&](const unsigned short *indices, u32 primitive = 4, u32 count = 4) {
+    memcpy(memory, vertices, sizeof vertices);
+    memcpy(memory + 4096, indices, (primitive == 4 ? count * 3 : count + 2) * sizeof *indices);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_draw(nullptr, primitive, 0, 8, 4096, count);
+    int width, height;
+    return renderer_capture(width, height);
+  };
+  // These checks use an RGBA8 target. WebGL2 does not permit FLOAT readback
+  // from it, unlike the desktop HDR checks' back_pixel helper.
+  auto sample = [](int x, int y) {
+    Target &back = textures[0];
+    u8 rgba[4];
+    glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
+    glReadPixels(x * back.width / back.logical_width, y * back.height / back.logical_height,
+                 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    bind_target();
+    return Pixel{rgba[0] / 255.f, rgba[1] / 255.f, rgba[2] / 255.f, rgba[3] / 255.f};
+  };
+  auto reference = draw(quads);
+  Pixel left = sample(16, 32), right = sample(48, 32);
+  assert(left.r == 1 && left.g == 0 && right.g == 1 && right.r == 0);
+  // Streaming fallback, static quads, then a different fallback at the same
+  // CPU address: neither buffer bindings nor a pointer's identity are content.
+  assert(draw(reordered) == reference);
+  renderer_present(128, 128);
+  renderer_resume();
+  assert(draw(quads) == reference);
+  memcpy(reordered, quads, sizeof quads);
+  std::swap(reordered[0], reordered[1]);
+  assert(draw(reordered) == reference); // culling is disabled
+  const unsigned short strip[] = {0, 1, 3, 2};
+  draw(strip, 5, 2);
+  assert(sample(16, 32).r == 1 && sample(48, 32).r == 0);
+  assert(draw(quads) == reference);
+
+  // The last representable uint16 index is valid in desktop GL. A full-range
+  // static EBO must not wrap its final quad back onto the first one's indices.
+#ifndef __EMSCRIPTEN__
+  std::vector<Vertex> large(65536);
+  std::copy(vertices, vertices + 4, large.end() - 4);
+  std::vector<unsigned short> indices(QUAD_INDEX_COUNT);
+  for (int i = 0; i < QUAD_INDEX_COUNT; i += 6) {
+    unsigned short base = (unsigned short)(i / 6 * 4);
+    unsigned short quad[] = {base, (unsigned short)(base + 1), (unsigned short)(base + 2),
+                             (unsigned short)(base + 2), (unsigned short)(base + 3), base};
+    std::copy(quad, quad + 6, indices.begin() + i);
+  }
+  w2c_host_clear(nullptr, 0xff000000);
+  device_draw(textures[0], 4, large.data(), (u32)large.size(), indices.data(), QUAD_INDEX_COUNT / 3);
+  assert(sample(16, 32).r == 1 && sample(48, 32).r == 0);
+#endif
+
+  // A companion can change the persistent sampler while desired device states
+  // stay put. The next classic draw must restore those exact device settings.
+  unsigned helper_states[32];
+  memcpy(helper_states, stage_states[0], sizeof helper_states);
+  helper_states[TSS_ADDRESSU] = 3;
+  helper_states[TSS_MAGFILTER] = 1;
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ADDRESSU, 1);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_MAGFILTER, 2);
+  draw(quads);
+  apply_sampler(0, helper_states);
+  assert(draw(quads) == reference);
+  GLint wrap, filter;
+  glGetSamplerParameteriv(samplers[0], GL_TEXTURE_WRAP_S, &wrap);
+  glGetSamplerParameteriv(samplers[0], GL_TEXTURE_MAG_FILTER, &filter);
+  assert(wrap == GL_REPEAT && filter == GL_LINEAR);
+
+  // Change a texture-stage array and the factor, then return to the old state.
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 3);
+  for (u32 color : {0xffff0000u, 0xff0000ffu, 0xffff0000u}) {
+    w2c_host_render_state(nullptr, RS_TEXTUREFACTOR, color);
+    draw(quads);
+    Pixel pixel = sample(48, 32);
+    assert(pixel.r == (color == 0xffff0000u ? 1 : 0) && pixel.b == (color == 0xff0000ffu ? 1 : 0));
+  }
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  assert(draw(quads) == reference);
+  assert(glGetError() == GL_NO_ERROR);
+  puts("renderer: static quad indices, streaming fallback, helper sampler state and cached uniform transitions passed");
+}
+
+
+#ifndef __EMSCRIPTEN__
+void check_ground_visibility() {
+  // Bounds must include reflection-only reach, long segments and rings,
+  // while sources wholly outside the view produce no fragments.
+  GroundVisibility region;
+  region.prepare(0, 0, 64, 64, 1, true);
+  float p[4] = {200, 32, 5, 24}, d[4] = {1, 0, 0, 0}, c[4] = {}, r[4] = {0, 1, 180, 1}, shape[4] = {};
+  auto bounds = [&] { return region.bounds(0, p, d, c, r, shape, true); };
+  assert(bounds()[2] > 0); // reflection reach exceeds illumination radius
+  r[2] = 5;
+  assert(bounds()[2] == 0);
+  d[3] = 400;
+  assert(bounds()[2] > 0); // segment reaches the view though its center does not
+  d[3] = 0; shape[3] = 200;
+  assert(bounds()[2] > 0); // extended analytic beam support
+  shape[3] = 0; c[3] = 180;
+  assert(bounds()[2] > 0); // ring's near edge
+  r[1] = 0;
+  assert(bounds()[2] == 0); // no eligible response
+  renderer_resize(128, 128);
+  w2c_host_back_buffer(nullptr, 64, 64);
+  w2c_host_set_render_target(nullptr, 0);
+  assert(renderer_set_rtx(true));
+  float lights[32 * RTX_LIGHT_FLOATS] = {};
+  for (int i = 0; i < 32; ++i) {
+    float *l = lights + i * RTX_LIGHT_FLOATS;
+    l[0] = 32; l[1] = 4; l[2] = 100; l[3] = 24;
+    l[4] = l[5] = l[6] = 1;
+    l[13] = 1; l[14] = 100; l[15] = 2; l[16] = 1;
+  }
+  const float values[20] = {4, 1, 0, 0, 32, 24, 9.6f, 12,
+                            .1f, .1f, 1 / 24.f, 1e20f, 1, 0, 1, 1e20f, 1, 0, 0, 0};
+  auto begin = [&](int count, float camera_x, float shadows, bool bodies = true) {
+    const float view[7] = {camera_x, 0, 0, 64, 64, 1, 1};
+    const float grid[6] = {0, 0, bodies ? 1.f : 0.f, bodies ? 1.f : 0.f, 64, shadows};
+    memcpy(memory + 4096, view, sizeof view);
+    memcpy(memory + 8192, lights, sizeof lights);
+    memcpy(memory + 16384, grid, sizeof grid);
+    memcpy(memory + 16512, values, sizeof values);
+    w2c_host_scene(nullptr, 4096, 8192, count);
+    w2c_host_occlusion(nullptr, 16384, 16512, bodies ? 20 : 0);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  };
+  auto end = [] { w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END); };
+  auto mask = [](int index, float x, float y) {
+    const GroundVisibility &v = ground_visibility;
+    int group = index / 4;
+    int px = group % 4 * v.width + (int)floorf((x - v.rect[0]) / GroundVisibility::texel);
+    int py = group / 4 * v.height + (int)floorf((y - v.rect[1]) / GroundVisibility::texel);
+    float rgba[4];
+    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+    glReadPixels(px, py, 1, 1, GL_RGBA, GL_FLOAT, rgba);
+    bind_target();
+    return rgba[index % 4];
+  };
+  // Reflection-only sources without beams get masks, including the last lane
+  // of the last group. A body between the receiver and source darkens both.
+  begin(32, 0, 1);
+  assert(ground_visibility.count == 32 && !beam_lights);
+  float blocked = mask(0, 31, 49);
+  assert(blocked < .3f && fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
+  GLuint texture = beam_vis_texture;
+  int width = beam_vis_width, height = beam_vis_height;
+  end();
+  // Visibility is scalar data: HDR color/gain changes never encode, clip or
+  // rescale it. World sample positions also survive fractional/snapped pans.
+  for (int i = 0; i < 32; ++i) {
+    float *l = lights + i * RTX_LIGHT_FLOATS;
+    l[4] = 64; l[5] = 8; l[6] = .25f; l[13] = 100;
+  }
+  for (float camera : {-.25f, 2.25f, -5.75f, 0.f}) {
+    begin(32, camera, 1);
+    assert(beam_vis_texture == texture && beam_vis_width == width && beam_vis_height == height);
+    assert(fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
+    end();
+  }
+  begin(1, 0, 1);
+  assert(mask(31, 31, 49) == 1); // unused groups must be cleared, not kept from the previous frame
+  end();
+  for (int state = 0; state < 3; ++state) {
+    begin(state == 0 ? 0 : 1, 0, state == 1 ? 0 : 1, state != 2);
+    assert(ground_visibility.count == 0 && ground_visibility.rect[2] == 0);
+    end();
+  }
+  assert(!renderer_set_rtx(false));
+  assert(!beam_vis_texture && !ground_visibility.count);
+  assert(glGetError() == GL_NO_ERROR);
+  puts("renderer: world-anchored scalar visibility, reflection-only sources, all 32 lanes and mask invalidation passed");
+}
+#endif
 
 int main() {
   assert(SDL_Init(SDL_INIT_VIDEO));
@@ -621,10 +847,10 @@ int main() {
   assert(context);
 #if defined(RENDERER_BENCHMARK) && RENDERER_BENCHMARK == 0
   std::string baseline = fragment_source;
-  for (const char *call : {"alphaCatmullRom(image, v_uv)", "alphaBilinear(image, v_uv)"}) {
+  for (const char *call : {"alphaCatmullRom(image, uv)", "alphaBilinear(image, uv)"}) {
     size_t at = baseline.find(call);
     assert(at != std::string::npos);
-    baseline.replace(at, strlen(call), "texture(image, v_uv)");
+    baseline.replace(at, strlen(call), "texture(image, uv)");
   }
   fragment_source = baseline.c_str();
 #endif
@@ -657,6 +883,38 @@ int main() {
   for (int y = 200; y < 202; ++y)
     for (int x = 199; x < 202; ++x)
       assert(pixels[((size_t)y * width + x) * 4] == (x == 200 ? 255 : 0));
+
+  // Grim's circles (host_circle) are round: a disc and a 2px band, covered within
+  // three quarters of a logical pixel of their radii and clear beyond, where the
+  // original's polygons cut up to 0.86 inside them.
+  w2c_host_clear(nullptr, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+  const float circles[2][7] = {{300, 384, 0, 100, 0, 0, 0}, {700, 384, 100, 102, 0, 0, 1}};
+  for (const float *shape : circles) {
+    memcpy(memory, shape, sizeof circles[0]);
+    w2c_host_circle(nullptr, 0, 0xffffffff);
+  }
+  pixels = renderer_capture(width, height);
+  int partial = 0;
+  for (const float *shape : circles)
+    for (int y = 0; y < height; ++y)
+      for (int x = 0; x < width; ++x) {
+        // The pixel's center in the device's logical coordinates.
+        float d = hypotf((x + .5f) / 2 - .5f - shape[0], (y + .5f) / 2 - .5f - shape[1]);
+        if (d > shape[3] + 4)
+          continue;
+        u8 value = pixels[((size_t)y * width + x) * 4];
+        if (d >= shape[3] + .75f || d <= shape[2] - .75f)
+          assert(value == 0);
+        else if (d <= shape[3] - .75f && d >= shape[2] + .75f)
+          assert(value == 255);
+        else
+          partial += value > 0 && value < 255;
+      }
+  assert(partial > 1000); // Antialiased edges.
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
 
   // Terrain is fixed at 2x logical density, independent of scene resolution.
   w2c_host_texture_create(nullptr, 7, 1024, 1024, 1);
@@ -822,6 +1080,12 @@ int main() {
     assert(edge[0] == 255 && edge[1] == 0 && edge[2] == 0 && edge[3] == 255);
   }
   puts("renderer: associated bilinear and cubic reject transparent RGB contamination");
+#endif
+#ifndef RENDERER_BENCHMARK
+  check_submission_reuse();
+#ifndef __EMSCRIPTEN__
+  check_ground_visibility();
+#endif
 #endif
 #ifdef RENDERER_BENCHMARK
   benchmark(true);

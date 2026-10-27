@@ -13,11 +13,12 @@ from crimson.render.rtx.creature_lighting import CreatureLighting
 from crimson.render.rtx.material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import draw as world_draw
+from crimson.render.world.creatures import draw_centered_quad
 from crimson.world.render_resources import RenderResources
 from grim.assets import TextureId
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
-from grim.raylib_api import rl, rl_rectangle, rl_vector2
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.shaders import AlphaTestShader
 from grim.texture_mode import texture_mode
 from tests.support.creature_draw_capture import render_ctx_for_creatures
@@ -140,9 +141,13 @@ def lit_sprite(raylib_context):
                 def draw():
                     pos = (center + camera) * scale
                     source = rl_rectangle(20, 16, 0, 0) if degenerate_uv else rl_rectangle(0, 0, 32, 32)
-                    rl.draw_texture_pro(texture, source,
-                                        rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
-                                        rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
+                    if use_shader:
+                        # As the world draws lit bodies: the quad carries its center for the shadows.
+                        draw_centered_quad(texture, source, pos, 32 * scale, 32 * scale, math.radians(rotation), rl_color(255, 255, 255, 255))
+                    else:
+                        rl.draw_texture_pro(texture, source,
+                                            rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
+                                            rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
                 if use_shader:
                     with lighting.scope(texture=texture, restore_shader=alpha.shader):
                         draw()
@@ -420,13 +425,37 @@ def test_own_body_is_excluded_without_excluding_nearby_creatures(lit_sprite, rot
         occlusion.upload(build_occlusion_grid([body], [source], width=1024, height=1024))
         own = render([source], occlusion=occlusion, **options)
         assert own == clear
-        # A different owner very close to this sprite must remain a blocker.
+        # A different owner very close to this sprite must remain a blocker: from the quad's corners it shadows the
+        # side whose rays cross it.
         neighbor = msgspec.structs.replace(body, owner=owner + Vec2(.1, 0))
         occlusion.upload(build_occlusion_grid([neighbor], [source], width=1024, height=1024))
         blocked = render([source], occlusion=occlusion, **options)
-        assert sum(p[0] for p in blocked) < sum(p[0] for p in clear) * .95
+        assert sum(p[0] for p in blocked) < sum(p[0] for p in clear) * .997
         assert render([source], occlusion=occlusion, shadows=False, **options) == clear
         assert render([], occlusion=occlusion, ambient=.6, **options) == render([], ambient=.6, **options)
+    finally:
+        occlusion.close()
+
+
+def test_corner_shadows_hold_as_corners_leave_the_lights_reach(lit_sprite):
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    owner = Vec2(64, 64)
+    # A neighbor's body shadows the quad's far side, whose pixels the light still reaches and whose corners'
+    # traces they interpolate, so those corners keep their shadow as they cross the light's reach.
+    body = BodyVolume(owner + Vec2(.1, 0), Vec2(12, 10), 28, 0., owner=owner + Vec2(.1, 0))
+    occlusion = ReflectionOcclusion()
+    edge = 48 + math.sqrt(40**2 - 16**2)  # the light's x with the far corners at its reach
+
+    def frame(x: float) -> list[tuple[float, float, float, float]]:
+        light = MaterialLight(Vec2(x, 64), 40, (1.4, .68, .2), height=24)
+        occlusion.upload(build_occlusion_grid([body], [light], width=1024, height=1024))
+        return render([light], occlusion=occlusion, center=owner)
+
+    try:
+        inside, outside = frame(edge - .002), frame(edge + .002)
+        assert max(abs(a[0] - b[0]) for a, b in zip(inside, outside, strict=True)) < .005
     finally:
         occlusion.close()
 
@@ -492,30 +521,6 @@ def test_empty_grid_disables_creature_traversal_and_unlit_uniform_arrays(lit_spr
         arrays.assert_not_called()
     finally:
         empty.close()
-
-
-def test_negligible_creature_diffuse_skip_has_bounded_linear_error(lit_sprite, monkeypatch):
-    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
-
-    render, lighting = lit_sprite
-    source = MaterialLight(Vec2(93, 64), 110, (.00001, .00001, .00001), height=24, reflection_gain=0)
-    occlusion = ReflectionOcclusion()
-    body = BodyVolume(Vec2(76, 64), Vec2(8, 12), 28, 0)
-    target = load_float_render_texture(128, 128, pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
-    try:
-        occlusion.upload(build_occlusion_grid([body], [source], width=128, height=128))
-        approximate = render([source], occlusion=occlusion, target_override=target)
-        monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", creature_lighting.CREATURE_FRAGMENT.replace(
-            "max(diffuse.r, max(diffuse.g, diffuse.b)) > .00001", "max(diffuse.r, max(diffuse.g, diffuse.b)) > 0."))
-        lighting.close()
-        exact = render([source], occlusion=occlusion, target_override=target)
-        errors = [a[c] ** 2.2 - b[c] ** 2.2 for a, b in zip(approximate, exact, strict=True) for c in range(3)]
-        assert max(errors) > 0
-        assert min(errors) >= -1e-7
-        assert max(errors) <= 1.01e-5
-    finally:
-        occlusion.close()
-        rl.unload_render_texture(target)
 
 
 def test_annular_source_lights_the_front_and_leaves_distant_center_unlit(lit_sprite):

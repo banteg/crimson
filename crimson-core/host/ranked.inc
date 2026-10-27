@@ -80,10 +80,11 @@ static std::string ranked_json_string(const char *text) {
   return out + "\"";
 }
 
-// An upload goes to the outbox under its payload's digest, and the host is
-// told. The native uploader runs on another thread: only a whole entry shows.
-// The web host also keeps a failed write out of its upload pass.
-static void ranked_queue(const uint8_t digest[32], const std::string &entry) {
+// An upload goes to the outbox under its payload's digest, the console says
+// whose run it is (`as`), as the Python port's does, and the host is told. The
+// native uploader runs on another thread: only a whole entry shows. The web
+// host also keeps a failed write out of its upload pass.
+static void ranked_queue(const uint8_t digest[32], const std::string &entry, const std::string &as) {
   mkdir("leaderboard", 0755);
   mkdir("leaderboard/outbox", 0755);
   std::string path = "leaderboard/outbox/" + hex(digest, 32) + ".json";
@@ -95,6 +96,8 @@ static void ranked_queue(const uint8_t digest[32], const std::string &entry) {
       unlink(temp.c_str());
       return;
     }
+    console_printf(&console_log_queue, (char *)"leaderboard: queued run %.12s as %s\n", hex(digest, 32).c_str(),
+                   as.c_str());
     host_leaderboard(HOST_LEADERBOARD_UPLOAD);
   }
 }
@@ -118,7 +121,8 @@ static void ranked_release() {
   identity_sign(identity, message.data(), message.size(), signature);
   ranked_queue(digest, "{\"replay\": \"" + base64(zstd_pack(payload)) + "\", \"name\": " + ranked_json_string(name) +
                            ", \"public_key\": \"" + hex(identity.public_key, 32) + "\", \"signature\": \"" +
-                           hex(signature, 64) + "\"}");
+                           hex(signature, 64) + "\"}",
+               "'" + std::string(name) + "'");
 }
 
 // Runs waiting in the outbox, for the Profile tip.
@@ -450,6 +454,14 @@ __attribute__((export_name("game_identity_public_key"))) const char *game_identi
     return "";
   snprintf(key, sizeof key, "%s", hex(identity.public_key, 32).c_str());
   return key;
+}
+// What the host's uploader made of a queued run (client/network.cpp,
+// shell.html), which it writes here for game_leaderboard_report to print in
+// the console, in the Python port's words.
+static char ranked_report[512];
+__attribute__((export_name("game_leaderboard_line"))) char *game_leaderboard_line() { return ranked_report; }
+__attribute__((export_name("game_leaderboard_report"))) void game_leaderboard_report() {
+  console_printf(&console_log_queue, (char *)"%s\n", ranked_report);
 }
 // A sign-in challenge (64 hex digits) the host writes here, then its signature
 // (identity.py sign_login), as hex.

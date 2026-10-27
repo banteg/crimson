@@ -7,6 +7,7 @@
 #include "network.h"
 #include "assets.h"
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <ctime>
 #include "../game/host_input.h"
@@ -19,6 +20,7 @@
 #include <curl/curl.h>
 #endif
 #ifdef __APPLE__
+#include <mach/mach.h>
 #include <objc/message.h>
 #include <objc/runtime.h>
 #endif
@@ -32,6 +34,7 @@
 
 struct w2c_host {};
 struct w2c_wasi__snapshot__preview1 {};
+float render_size = 2;
 
 namespace {
 
@@ -182,10 +185,21 @@ const bool unattended = getenv("CRIMSON_CAPTURE");
 // itself: its messages go to stderr, never to a dialog that waits for a click.
 // It takes its input from its script alone, and plays on in the background.
 const bool scripted = unattended || getenv("CRIMSON_WATCH") || getenv("CRIMSON_INPUT");
+// CRIMSON_PROFILE=<file> records every frame (profile_record). A scripted run
+// it records keeps an unattended run's clock, 16 ms a frame, and never waits
+// on vsync, so each frame takes what it costs; one the player plays keeps
+// real time.
+const bool profiling = getenv("CRIMSON_PROFILE");
+const bool fixed_clock = unattended || (profiling && scripted);
 void client_message(SDL_MessageBoxFlags flags, const char *title, const char *text) {
   fprintf(stderr, "%s: %s\n", title, text);
   if (!scripted)
     SDL_ShowSimpleMessageBox(flags, title, text, window);
+}
+// The uploader's word on a queued run, in the game's console (host/ranked.inc).
+void leaderboard_line(const char *line) {
+  snprintf((char *)client_memory() + w2c_game_game_leaderboard_line(&game), 512, "%s", line);
+  w2c_game_game_leaderboard_report(&game);
 }
 void write_capture(const std::string &name) {
   int width, height;
@@ -390,10 +404,10 @@ void w2c_host_leaderboard(struct w2c_host *, u32 request) {
   network_request((int)request);
 #endif
 }
-// An unattended run's clock moves 16 ms a frame, and a millisecond each time it is read.
+// An unattended run's clock (fixed_clock) moves 16 ms a frame, and a millisecond each time it is read.
 u32 w2c_host_time_ms(struct w2c_host *) {
   static u32 reads;
-  return unattended ? (u32)frames * 16 + reads++ : (u32)SDL_GetTicks();
+  return fixed_clock ? (u32)frames * 16 + reads++ : (u32)SDL_GetTicks();
 }
 // The clock the game times its own work by, to the nanosecond SDL reads.
 f64 w2c_host_clock_ms(struct w2c_host *) { return SDL_GetTicksNS() / 1e6; }
@@ -402,6 +416,7 @@ static void show_frame(int width, int height) {
   // WebGPU shows its frame when the browser composites the canvas.
   if (renderer_uses_gl())
     SDL_GL_SwapWindow(window);
+  renderer_frame_end();
   renderer_resume();
 }
 void w2c_host_present(struct w2c_host *) {
@@ -419,6 +434,12 @@ u32 w2c_host_render_mode(struct w2c_host *, u32 requested) {
   MAIN_THREAD_EM_ASM({ Module.renderMode?.($0); }, rtx);
 #endif
   return rtx;
+}
+// The console's rendersize (game/rtx.cpp), which the next world drawn takes.
+f32 w2c_host_render_size(struct w2c_host *, f32 limit) {
+  if (limit >= 0)
+    render_size = limit;
+  return render_size;
 }
 }
 
@@ -593,12 +614,118 @@ void network_update() {
     }
     if (!event.error.empty())
       fprintf(stderr, "leaderboard: %s\n", event.error.c_str());
+    for (const std::string &line : event.lines)
+      leaderboard_line(line.c_str());
   }
   Uint64 now = SDL_GetTicks();
   if (now >= next_upload) {
     network->request(N::UPLOAD);
     next_upload = now + 600000;
   }
+}
+// CRIMSON_PROFILE=<file>: one JSON line for the run (the build, the platform,
+// what it plays and how it draws), then one per frame shown: where playback is
+// and the ticks the frame covered (-1 for its first), the wall time since the last, the game's
+// live entities, the process's memory, the renderer's record of the frame (its
+// passes' CPU time, its draws, the scene's sizes and its targets) and, once the
+// GPU has finished it, its passes' GPU time. tools/profile.py reads it.
+FILE *profile_file;
+// The frames not yet written, in order: a timed frame waits for its GPU time,
+// and the frames after it wait for it.
+struct ProfileFrame {
+  std::string record;
+  bool timed;
+};
+std::map<long long, ProfileFrame> profile_waiting;
+double resident_mb() {
+#ifdef __APPLE__
+  mach_task_basic_info_data_t info;
+  mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
+  if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS)
+    return info.resident_size / 1048576.0;
+#else
+  long pages = 0;
+  if (FILE *fp = fopen("/proc/self/statm", "r")) {
+    if (fscanf(fp, "%*ld %ld", &pages) != 1)
+      pages = 0;
+    fclose(fp);
+  }
+  return pages * (double)sysconf(_SC_PAGESIZE) / 1048576.0;
+#endif
+  return 0;
+}
+std::string profile_env(const char *name) {
+  const char *value = getenv(name);
+  return value ? LeaderboardNetwork::quote(value) : "null";
+}
+void profile_write(const std::string &line) { fputs((line + "\n").c_str(), profile_file); }
+void profile_record() {
+  if (!profiling)
+    return;
+  if (!profile_file) {
+    if (!(profile_file = fopen(getenv("CRIMSON_PROFILE"), "w")))
+      client_fatal("CRIMSON_PROFILE: cannot write the profile");
+    int width, height;
+    SDL_GetWindowSizeInPixels(window, &width, &height);
+    char header[1024];
+    snprintf(header, sizeof header,
+             "{\"profile\":1,\"client\":\"%s\",\"build\":\"%s\",\"platform\":\"%s\",\"started\":%lld,"
+             "\"drawable\":[%d,%d],\"render_size\":%g,\"scripted\":%s,\"watch\":%s,\"seek\":%s,\"stop\":%s,"
+             "\"moments\":%s,\"window\":%s,\"input\":%s,\"gpu_every\":%d}",
+             CRIMSON_CLIENT_VERSION, CRIMSON_CLIENT_FINGERPRINT, SDL_GetPlatform(), (long long)time(nullptr), width,
+             height, render_size, scripted ? "true" : "false", profile_env("CRIMSON_WATCH").c_str(),
+             profile_env("CRIMSON_WATCH_SEEK").c_str(), profile_env("CRIMSON_WATCH_STOP").c_str(),
+             profile_env("CRIMSON_WATCH_MOMENTS").c_str(), profile_env("CRIMSON_WATCH_WINDOW").c_str(),
+             profile_env("CRIMSON_INPUT").c_str(),
+             getenv("CRIMSON_PROFILE_GPU") ? atoi(getenv("CRIMSON_PROFILE_GPU")) : 8);
+    profile_write(header);
+  }
+  static double last_wall;
+  static int last_tick = -1;
+  long long frame;
+  std::string record;
+  bool timed;
+  if (renderer_profile_frame(frame, record, timed)) {
+    double now = SDL_GetTicksNS() / 1e6;
+    // A replay's tick once it is prepared (its run's ticks known), else -1.
+    int tick = (int)w2c_game_game_watch_status(&game) >= 0 && w2c_game_game_watch_ticks(&game)
+                   ? (int)w2c_game_game_watch_tick(&game)
+                   : -1;
+    const u32 *alive = (const u32 *)(client_memory() + w2c_game_game_entity_counts(&game));
+    char head[512];
+    snprintf(head, sizeof head,
+             "{\"frame\":%lld,\"tick\":%d,\"ticks\":%d,\"wall\":%.3f,\"rtx\":%s,\"rss\":%.1f,"
+             "\"entities\":{\"creatures\":%u,\"projectiles\":%u,\"secondary\":%u,\"particles\":%u,"
+             "\"sprites\":%u,\"bonuses\":%u},",
+             frame, tick, tick >= 0 && last_tick >= 0 ? tick - last_tick : -1, last_wall ? now - last_wall : 0,
+             rtx_shown ? "true" : "false", resident_mb(), alive[0], alive[1], alive[2], alive[3], alive[4], alive[5]);
+    last_wall = now;
+    last_tick = tick;
+    profile_waiting[frame] = {head + record, timed};
+  }
+  std::string passes;
+  while (renderer_profile_gpu(frame, passes)) {
+    // A frame drawn after another in the same loop (the renderer keeps one record) has none to join.
+    auto it = profile_waiting.find(frame);
+    if (it == profile_waiting.end())
+      continue;
+    it->second.record += ",\"gpu\":" + passes;
+    it->second.timed = false;
+  }
+  // The renderer finishes every timed frame within a few timed frames.
+  while (!profile_waiting.empty() && !profile_waiting.begin()->second.timed) {
+    profile_write(profile_waiting.begin()->second.record + "}");
+    profile_waiting.erase(profile_waiting.begin());
+  }
+}
+void profile_close() {
+  if (!profile_file)
+    return;
+  for (const auto &[frame, f] : profile_waiting)
+    profile_write(f.record + "}");
+  profile_waiting.clear();
+  fclose(profile_file);
+  profile_file = nullptr;
 }
 // The window says what it shows, so windows side by side tell apart: the rendering mode and the replay playing, by
 // the name the host gave it as it starts (watch_label) or its run on the leaderboard.
@@ -748,9 +875,9 @@ bool start_game() {
   const char *api = getenv("CRIMSON_LEADERBOARD_URL");
   try {
     network = std::make_unique<LeaderboardNetwork>(
-        api          ? api
-        : unattended ? ""
-                     : "https://crimson.land/api",
+        api           ? api
+        : fixed_clock ? ""
+                      : "https://crimson.land/api",
         game_directory, CRIMSON_CLIENT_VERSION);
   } catch (const std::exception &error) {
     client_fatal(error.what());
@@ -843,6 +970,11 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch_run() {
 }
 extern "C" EMSCRIPTEN_KEEPALIVE int client_watch_tick() {
   return started ? (int)w2c_game_game_watch_tick(&game) : 0;
+}
+// The page's uploader's word on a queued run (shell.html), for the console.
+extern "C" EMSCRIPTEN_KEEPALIVE void client_leaderboard_line(const char *line) {
+  if (started)
+    leaderboard_line(line);
 }
 // The page's RTX switch: the rendering mode, as the console's rendermode sets it.
 extern "C" EMSCRIPTEN_KEEPALIVE void client_render_mode(int mode) {
@@ -1069,9 +1201,9 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
                             (gl ? SDL_WINDOW_OPENGL : 0) | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
   if (!window || (gl && !(context = SDL_GL_CreateContext(window))))
     client_fatal(SDL_GetError());
-  // Unattended captures run unthrottled: a hidden window would otherwise wait on vsync.
+  // Unattended captures and profiles run unthrottled: a hidden window would otherwise wait on vsync.
   if (gl)
-    SDL_GL_SetSwapInterval(unattended ? 0 : 1);
+    SDL_GL_SetSwapInterval(fixed_clock ? 0 : 1);
   SDL_HideCursor();
   SDL_StartTextInput(window);
   renderer_init();
@@ -1271,18 +1403,6 @@ SDL_AppResult SDL_AppIterate(void *) {
     }
     captured_frame = -1;
   }
-  // CRIMSON_GPU_TIMERS: the GPU time per pass, a frame late, with the replay tick it drew,
-  // and that frame's draws by pass, texture and target: quads and covered pixels.
-  static const bool gpu_timers = getenv("CRIMSON_GPU_TIMERS");
-  static int timed_tick;
-  if (gpu_timers) {
-    std::string timings = renderer_gpu_timings();
-    if (!timings.empty()) {
-      fprintf(stderr, "gpu tick=%d %s\n", timed_tick, timings.c_str());
-      fprintf(stderr, "draws tick=%d %s\n", timed_tick, renderer_draw_stats().c_str());
-    }
-    timed_tick = (int)w2c_game_game_watch_tick(&game);
-  }
   // A moment's frame, once the replay has held on it for a frame. A run that
   // only stops there ends there too, unless it captures frames past it.
   static const int capture_tick = unattended && getenv("CRIMSON_CAPTURE_TICK") ? atoi(getenv("CRIMSON_CAPTURE_TICK")) : 0;
@@ -1307,6 +1427,9 @@ SDL_AppResult SDL_AppIterate(void *) {
     } else
       w2c_game_game_close(&game);
   }
+  // A replay profiled with no tick to stop at plays to its end, where the run ends.
+  if (profiling && !end_tick && getenv("CRIMSON_WATCH") && (int)w2c_game_game_watch_status(&game) > 0)
+    w2c_game_game_close(&game);
 #ifdef __EMSCRIPTEN__
   // At most once a second, and on gameplay transitions. The browser measures
   // visible wall time; the game exposes only a mode and local run generation.
@@ -1338,6 +1461,9 @@ SDL_AppResult SDL_AppIterate(void *) {
   // again.
   if (running && presented == before)
     show_frame(pixel_width, pixel_height);
+#ifndef __EMSCRIPTEN__
+  profile_record();
+#endif
   for (int button = 0; button < 8; ++button)
     if (hold_frames[button] && !--hold_frames[button] && !held[button])
       input()->mouse_buttons[button] = 0;
@@ -1355,5 +1481,6 @@ SDL_AppResult SDL_AppIterate(void *) {
 void SDL_AppQuit(void *, SDL_AppResult) {
 #ifndef __EMSCRIPTEN__
   network.reset(); // Cancels network work before the module and host go away.
+  profile_close();
 #endif
 }

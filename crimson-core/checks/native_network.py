@@ -101,6 +101,8 @@ class NativeNetwork(unittest.TestCase):
         )
         status, _, answer = done.stdout.partition(b"\n")
         ok, code = map(int, status.split())
+        # The console lines the uploader reported, in the Python port's words (Latin-1, as the game's text).
+        self.lines = [line for line in done.stderr.decode("latin-1").splitlines() if line.startswith("leaderboard: ")]
         return bool(ok), code, answer
 
     def queue(self):
@@ -116,6 +118,8 @@ class NativeNetwork(unittest.TestCase):
                 self.status = status
                 self.assertTrue(self.request(0)[0])
                 self.assertFalse(source.exists())
+                self.assertEqual(self.lines, [f"leaderboard: run {RUN[:12]} was already uploaded" if status == 409
+                                              else f"leaderboard: uploaded run {RUN[:12]}"])
                 method, path, body, headers = self.calls[-1]
                 self.assertEqual((method, path), ("POST", "/api/runs"))
                 self.assertEqual(json.loads(body)["signature"], "signed")
@@ -130,6 +134,7 @@ class NativeNetwork(unittest.TestCase):
                 self.status = status
                 self.assertFalse(self.request(0)[0])
                 self.assertEqual(source.read_bytes(), original)
+                self.assertEqual(self.lines, [f"leaderboard: service error (HTTP {status}); runs wait in {source.parent}"])
                 self.assertFalse(any(call[1] == "/api/redirected" for call in self.calls))
 
     def test_rejection_saved_before_removal(self):
@@ -137,9 +142,19 @@ class NativeNetwork(unittest.TestCase):
         self.status, self.reply = 422, json.dumps({"reason": 'bad "run"\n\u00e9'}).encode()
         self.assertTrue(self.request(0)[0])
         self.assertFalse(source.exists())
+        self.assertEqual(self.lines, [f'leaderboard: run {RUN[:12]} rejected (bad "run"'])
         rejected = json.loads((self.root / "leaderboard/rejected" / source.name).read_bytes())
         self.assertEqual(rejected["reason"], 'bad "run"\n\u00e9')
         self.assertEqual(rejected["signature"], "signed")
+
+    def test_unreachable_service_keeps_queue(self):
+        source = self.queue()
+        api = "http://127.0.0.1:9/api"  # the discard port: nothing listens
+        self.assertFalse(self.request(0, api=api)[0])
+        self.assertTrue(source.exists())
+        (line,) = self.lines
+        self.assertTrue(line.startswith(f"leaderboard: can't reach {api} ("), line)
+        self.assertTrue(line.endswith(f"); runs wait in {source.parent}"), line)
 
     def test_rejection_write_failure_keeps_queue(self):
         source = self.queue()

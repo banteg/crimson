@@ -14,8 +14,9 @@
   X(std::vector<unsigned char>, renderer_capture, (int &w, int &h), (w, h))                                           \
   X(bool, renderer_set_rtx, (bool enabled), (enabled))                                                                \
   X(void, renderer_set_headroom, (float headroom), (headroom))                                                        \
-  X(std::string, renderer_gpu_timings, (), ())                                                                         \
-  X(std::string, renderer_draw_stats, (), ())
+  X(void, renderer_frame_end, (), ())                                                                                 \
+  X(bool, renderer_profile_frame, (long long &f, std::string &r, bool &t), (f, r, t))                                 \
+  X(bool, renderer_profile_gpu, (long long &f, std::string &p), (f, p))
 #define HOST_ENTRIES(X)                                                                                               \
   X(frame_hold, (struct w2c_host * h, u32 op), (h, op))                                                               \
   X(texture_copy, (struct w2c_host * h, u32 d, u32 s), (h, d, s))                                                     \
@@ -30,6 +31,7 @@
   X(clear, (struct w2c_host * h, u32 c), (h, c))                                                                      \
   X(draw, (struct w2c_host * h, u32 p, u32 v, u32 vc, u32 i, u32 pc), (h, p, v, vc, i, pc))                           \
   X(beam, (struct w2c_host * h, u32 c, f32 l, f32 s, u32 col), (h, c, l, s, col))                                     \
+  X(circle, (struct w2c_host * h, u32 s, u32 col), (h, s, col))                                                       \
   X(effect, (struct w2c_host * h, u32 c, u32 k, u32 p, u32 col), (h, c, k, p, col))                                    \
   X(effect_sprites, (struct w2c_host * h, u32 v, u32 k, u32 n), (h, v, k, n))                                          \
   X(render_pass, (struct w2c_host * h, u32 p), (h, p))                                                                \

@@ -97,6 +97,9 @@ def main():
                 raise RuntimeError(done.stderr.decode(errors="replace"))
             assert (game / f"replays/online/{RUN}.crd").read_bytes() == replay
             assert not list(outbox.glob("*.json")), "startup upload left the outbox queued"
+            # The game's console says so, in the Python port's words.
+            console = (game / "console.log").read_text("latin-1")
+            assert f"leaderboard: uploaded run {QUEUED[:12]}" in console, console[-2000:]
             assert any(
                 method == "POST" and path == "/api/runs" and json.loads(body) == envelope
                 for method, path, body in calls

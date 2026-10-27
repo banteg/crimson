@@ -38,11 +38,11 @@ PROGRAMS = {
     "tonemap": (CLIENT_SHADERS / "fullscreen.vert", RTX_SHADERS / "hdr_tonemap.frag"),
     "beam": (CLIENT_SHADERS / "beam.vert", RTX_SHADERS / "beam.frag"),
     "effect": (CLIENT_SHADERS / "effect.vert", RTX_SHADERS / "effect.frag"),
-    "creature": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "creature.frag"),
+    "creature": (CLIENT_SHADERS / "creature_lit.vert", RTX_SHADERS / "creature.frag"),
     "player": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "player.frag"),
     "bonus": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "bonus.frag"),
     "ground": (CLIENT_SHADERS / "creature.vert", CLIENT_SHADERS / "ground_lit.frag"),
-    "ground_beam_vis": (CLIENT_SHADERS / "creature.vert", CLIENT_SHADERS / "ground_beam_vis.frag"),
+    "ground_beam_vis": (CLIENT_SHADERS / "ground_visibility.vert", CLIENT_SHADERS / "ground_beam_vis.frag"),
     "ground_stamp": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "ground_stamp.frag"),
     "ground_fill": (CLIENT_SHADERS / "fullscreen.vert", RTX_SHADERS / "ground_stamp.frag"),
     "smoke_solver": (CLIENT_SHADERS / "smoke_rect.vert", RTX_SHADERS / "smoke_solver.frag"),
@@ -57,7 +57,7 @@ PROGRAMS = {
 }
 # glslang's arguments per stage: where each stage's uniform block and textures go.
 STAGE_ARGS = {
-    "vert": ["--sdub", "VertexUniforms", "1", "0"],
+    "vert": ["--sdub", "VertexUniforms", "1", "0", "--rsb", "vert", "1", "--stb", "vert", "1"],
     "frag": ["--sdub", "FragmentUniforms", "0", "0", "--stb", "frag", "1"],
 }
 # GL type codes of glslang's reflection, by byte size.
@@ -144,7 +144,7 @@ def translate(path: Path, folder: Path) -> dict:
     wgsl_path = folder / f"{path.name}.wgsl"
     # The GLSL states WebGPU's clip space itself (common.glsl): naga keeps it rather than flip y again.
     run(tool("naga"), "--keep-coordinate-space", str(split), str(wgsl_path))
-    wgsl = wgsl_path.read_text()
+    wgsl = "\n".join(line.rstrip() for line in wgsl_path.read_text().splitlines()) + "\n"
 
     uniforms, size = [], 0
     block = reflection.split("Uniform block reflection:")

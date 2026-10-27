@@ -87,6 +87,18 @@ When render mode is `rtx`, `WorldRuntime.draw()` wraps `draw_world()` in `HdrRen
 The native and browser clients run the same HDR world target and tonemap (see [Native client](#native-client)
 and [Browser client](#browser-client)).
 
+The world compositor still blends approximately gamma-encoded RGB: float storage
+preserves range but does not make that blending linear. A future linear-color,
+32bpc migration should decode color assets once, accumulate light and alpha blends
+in linear float RGB, refit effect/smoke profiles to that domain, and tone-map and
+encode only at output. Classic combiner clamps and byte vertex colors also need
+review; changing target precision alone cannot recover values clipped upstream.
+The coarse visibility atlas is unitless and already multiplies linear ground
+radiance, so it does not depend on the eventual color target format. Useful probes
+include pre-tonemap HDR ramps, overlapping colored emitters, bright alpha edges,
+and smoke over fire, alongside the replay scenes. This migration remains separate
+from the visibility change.
+
 In-game PNG screenshots still use an 8-bit SDR readback, taken from the frame before Wayland's presentation scaling. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
 
 ## Ground materials and wet blood
@@ -171,10 +183,9 @@ inputs, and native/browser rendering are unchanged.
 
 ### Remaining tradeoffs
 
-- Ground illumination is currently unshadowed. A future visibility pass should gate
-  each light's reflection individually, rather than multiply every light by the
-  prototype's average shadow value. Entity lighting also needs to be tuned alongside
-  terrain lighting while retaining a readable ambient floor.
+- Ground direct light and reflections share each source's coarse visibility
+  mask. Beams retain analytic directional penumbrae; reflections reuse the
+  direct-light mask instead of tracing independent reflected rays. See [Ground reflection occlusion](#ground-reflection-occlusion).
 - Flame particles are grouped spatially, and a flame cell's light can still jump
   as the stream crosses cell boundaries.
 - Coverage, depth, and weighted wetness are per pixel, not a multilayer fluid
@@ -243,17 +254,22 @@ Benchmark controls:
 
 `uv run python tools/rtx/golden.py capture --game <game folder> --out <dir>` captures each one, classic and RTX, with
 the native client. The client seeks a little before the tick, pauses on it (`CRIMSON_CAPTURE_TICK`) and records the
-median GPU time per pass over the frames leading to it (`CRIMSON_GPU_TIMERS`). `golden.py compare <before> <after>`
+median GPU time per pass over the frames leading to it from a profile (`CRIMSON_PROFILE`, `tools/profile.py`). `golden.py compare <before> <after>`
 puts two captures side by side with a difference map, the mean change and the GPU time per scene. Captures tonemap
 for SDR, so they read the same on any display.
 
-A GPU timer also counts the time the GPU waits for the CPU. The client's `frame` timer runs from the last present
-until the first pass mark, so it holds the frame's simulation ticks; `golden.py` leaves it out. Drawing off the back
-buffer in between has timers of its own (`bake` for terrain decal bakes, `heat-stamp` for Monster Vision's trail
-stamps), so the `frame` timer holds no drawing. Classic marks the world's bounds too (`world`, then `hud`), with
-nothing drawn differently. Each `gpu` line
-is followed by a `draws` line for the same frame: per pass, texture (or `beam` / `effect<kind>`) and target, the quads
-drawn and the target pixels they cover, as `pass:what:target=quads/pixels`.
+A profile's passes are the marks the frame passes: `frame` from the last swap to the first mark, holding the frame's
+simulation ticks, the world's passes, `hud`, `present` and `swap`. Drawing off the back buffer in between has passes of
+its own (`bake` for terrain decal bakes, `heat-stamp` for Monster Vision's trail stamps, `hold` for the replay viewer's
+kept frame), so `frame` holds no drawing. Classic marks the world's bounds too (`world`, then `hud`), with nothing
+drawn differently. A pass's GPU time also counts the time the GPU waits for the CPU, so `frame`'s is idle time and
+`profile.py` and `golden.py` leave it out of the GPU's sum. A pass's CPU time runs from its mark to the next, so it
+also holds the time the driver blocks the CPU on the GPU. On macOS the timer queries themselves flush the driver's
+command buffer at every mark, so a frame timed this way drains the GPU pass by pass and waits in the pass after a
+costly one: with every frame timed, late in a run the players pass showed the ground's GPU time as its own CPU time,
+and frames ran about 4 ms slower. The client therefore times every 8th frame by default, and `profile.py` reads wall
+and CPU times as means over runs of 8 frames, where an untimed frame waits at the swap. Each frame's draws are counted per pass, texture (or `beam` / `effect<kind>`) and
+target as the quads drawn and the target pixels they cover.
 
 The two RTX renderers share their GLSL, but light collection and selection, volley merging, beams and smoke are
 ported twice (`render/rtx/*.py`, `crimson-core/game/rtx_*.cpp`, `crimson-core/client/renderer*.cpp`).
@@ -332,8 +348,8 @@ the device's shading until lit. Thin-part transmission uses the same
 part-size map (`crimson-core/client/thickness.cpp`, a port of
 `creature_translucency.py`), made from the atlas texels the module keeps on a
 creature atlas's first lit draw. Creature shadows use the same body grid
-(`rtx_build_occlusion`, a port of `reflection_occlusion.py`): the module builds
-it from the creature pool against the selected lights and sends it each frame
+(`rtx_build_occlusion`, a port of `reflection_occlusion.py`): with shadows enabled,
+the module builds it from the creature pool against the selected lights and sends it each frame
 (`host_occlusion`, crowd cells included), and the hosts upload it as the RGBA32F texture the shader
 walks (unfilterable in WebGPU, which reads it with `textureLoad` alone). The
 shadows setting turns direct-light visibility off as in the Python port.
@@ -348,9 +364,12 @@ the terrain's decals in `fx_queue_render` by the same materials as
 `MaterialGroundRenderer._commands` (`host_ground`): blood, corpse bodies,
 casings, black scorches and freeze shards, or no material. Each mark carries the
 run's clock, which ages wet blood. While RTX is on, the host keeps the same three
-companions of the terrain target and draws each marked decal into them as it
-lands: the substrate (everything but blood), the ordered coverage, and the float
-surface's three stamp passes. It draws the terrain into the world with the ground
+companions of the terrain target and draws each marked decal into them: the
+substrate (everything but blood), the ordered coverage, and the float surface's
+three stamp passes. The native client queues a bake's marked decals and stamps
+them pass-major as the Python port does, each companion bound once and its
+decals in the bake's order (the WebGPU client still stamps each decal as it
+lands). It draws the terrain into the world with the ground
 program (`HOST_PASS_GROUND`). The lights carry what the ground adds: the
 reflection tail, broad illumination, and a beam's energy shape, computed by the
 module as `continuous_beam.py` does (its support also sizes the body grid). The companions start from the terrain as it stands the first time
@@ -412,6 +431,13 @@ Controls:
 - console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`, `rtxsmoke <on|off>`
 - `rendermode rtx` in the game folder's `autoexec.txt`, which the original runs at
   startup, keeps the mode across launches
+- `rendersize <multiple|native>` caps the world's pixels at a multiple of the game's
+  resolution, at least 1 (2 by default, the terrain's own density), or lifts the cap.
+  On a larger display, such as a 5K screen in full screen, the world draws at the cap
+  and the tonemap scales it up, while the HUD and its text keep the display's pixels;
+  past twice the game's resolution a display gains little sharpness for a GPU cost
+  that grows with every pixel. Classic always draws at the display's resolution. The
+  browser's WebGPU renderer takes the same cap
 
 ## Browser client
 
@@ -629,12 +655,49 @@ unchanged.
 
 ## Ground reflection occlusion
 
-Dynamic ground reflections now test the path from the receiving surface to the
-same finite source point and height used by the reflection calculation. Each
-source's specular contribution gets its own visibility. Ambient daylight and sky
-reflection remain independent of that visibility. Projectile artwork and the
-classic renderer are unchanged. Reflection-only tracers are occluded even when
-their illumination gain is zero.
+Ground direct light and reflections now share a coarse, color-independent
+visibility mask for each selected source. Ambient daylight and sky reflection
+remain independent of it. Reflection-only tracers get masks even with zero
+illumination gain. This is an intentional visual approximation in the experimental
+RTX renderer: the direct-light visibility also attenuates the reflection,
+rather than tracing the displaced reflected-source point.
+
+### Coarse visibility atlas
+
+OpenGL, WebGPU and Python/Raylib use the same `ground.frag` visibility pass and
+`ground_visibility.glsl` lookup. The atlas uses four world units per texel,
+independent of display resolution. Its origin snaps to that world grid with a
+margin around the visible rectangle; its dimensions stay fixed during camera
+movement. All 32 canonical source IDs fit in eight RGBA groups, arranged 4×2.
+Every source keeps its original index (`group = i / 4`, `lane = i % 4`), including
+point, segment, ring, beam and reflection-only sources.
+
+Each frame clears the atlas white. A group's draw is scissored to its sources'
+combined support, including reflection reach, ring radius and extended beam
+length. Points and rings use a nearest-emitter ray. Beams retain analytic blocker
+intervals along their emitting length, two transverse taps and eight energy-weighted
+visibility bins, preserving directional penumbrae. The shader gathers ordinary body
+lists from cells intersecting the receiver-to-beam triangle; repeated body entries
+combine by minimum visibility. A center-ray crowd estimate attenuates the whole
+beam, independently of body-list order. The full-resolution
+material pass samples one filtered RGBA value per four sources and applies its
+lanes to their linear direct/reflected radiance. It binds no body-grid texture and
+contains no body-grid traversal. Half-texel clamps isolate neighboring groups.
+No radiance, gamma, exposure or tone mapping is stored in the mask.
+
+The native and WebGPU clients prepare masks after scene/body inputs arrive and
+before opening the HDR world pass. A late input import invalidates the masks and
+rebuilds them before the next ground draw. Python prepares them internally in
+`material_scope`, using the supplied view size or the full terrain for diagnostic
+callers. Zero sources, no bodies or disabled shadows select an unshadowed mask;
+source-count changes clear unused groups, and RTX toggles release the atlas.
+
+Coarse filtering softens small details, and reflections can have displaced
+occlusion because they share the direct-light mask. Beam visibility retains its
+finite extent and directional penumbra: collapsing it to one nearest point loses
+that characteristic. The renderer owns this look; matching every previous pixel
+is not a constraint. Camera stability, finite values, readable materials and
+measured replay performance remain the checks for further changes.
 
 The five standard creature species use one rotated, size-scaled ellipsoid each, fitted
 to the combined planar bounds of their former two body parts and retaining the
@@ -658,9 +721,14 @@ renderer-owned RGBA32F texture holds cell lists and body transforms; no nearest-
 blocker cap causes shadows to switch between creatures in a crowd. The shader
 traverses only cells crossed by the receiver-to-source segment, rejects nearby
 cell members with a conservative planar bound, and exits when
-visibility is effectively zero. Negligible reflections skip traversal entirely.
+visibility is effectively zero. Ground traversal occurs only in the coarse atlas.
 The grid includes the selected source endpoints outside the arena, and expanded
-cell bounds account for the finite-source filter.
+cell bounds account for the finite-source filter. Each cell has one ordinary
+point-ray list. Beam fans gather from these same lists, with no secondary
+packing or range metadata. Header xy holds the list offset/count or crowd height/density;
+zw is reserved and zero. The beam head halo still extends source support for
+culling. When shadows are off, the native builder returns an empty descriptor
+before collecting bodies or inspecting lights; the hosts skip the empty upload.
 
 Visibility uses closest approach to each ellipsoid in its local coordinates,
 with a smooth transition whose width grows toward the finite source. Wider
@@ -677,8 +745,8 @@ approximation, not multi-sample area-light integration; overlapping partially op
 volumes combine by strongest occlusion, avoiding seams between creatures. The
 visibility test does not add ambient darkness, lengthen shadows artificially,
 or lower the emitter for the occlusion test. Large source widths and heavily
-animated silhouettes remain approximations. Direct lighting shares these volumes
-and the grid while evaluating its own receiver/source segment.
+animated silhouettes remain approximations. Ground direct lighting and reflections share the atlas; entity lighting uses
+these volumes and the grid with its own receiver/source segments.
 
 ### Crowd cells
 
@@ -691,9 +759,9 @@ as a share of the cell's area (each body's footprint shared among its cells by
 overlap), and its footprint-weighted top height. A ray crosses a crowd cell as an
 absorbing medium, `exp(-3 × cover × length crossed in cells)`, over the part of its
 path below that height; a body's own cell does not shade it. A body centered in a
-crowd is listed in the cells around it only where it stands, without its soft or beam
-padding, so a crowd's neighbors keep short exact lists, and a cell after a crowd
-tests its whole list (the crowd tested none of the padded entries it shares). The
+crowd is listed in the cells around it only where it stands, without its soft
+padding, so a crowd's neighbors keep short exact lists. Beam fans can encounter a sparse
+body in several cells; repeating its minimum occlusion does not deepen its shadow. The
 cost no longer grows with the crowd (that frame dropped to about 0.2 s, most of it
 the original's own sprite fill), and packed bodies' shadows merge into one dark mass
 anyway. Sparse cells keep exact
@@ -728,16 +796,25 @@ Ordinary tracers remain reflection-only, and Gauss stays restrained.
 
 The ground pass builds and uploads the spatial index once; the following creature
 pass reuses it. Ground rays start at the surface; the artistic sprite lighting
-receiver is 8 units high. Each sprite recovers its center from the unnormalized
-UV/world derivative basis and excludes proxies carrying that owner center.
+receiver is 8 units high. A creature's visibility is walked at its quad's four
+corners in the vertex stage (`creature_visibility.glsl`), four lights a vec4, and
+`creature.frag` interpolates it across the body: a body pixel no longer walks the
+grid once per light, which a Nuke over a late crowd made the costliest pass of the
+frame. Shadows across a creature become a gradient between its corners; thin limbs
+lose the sharp edge of a neighbor's shadow. Each quad carries its center (the
+client's hosts average its four vertices, `quad_centers`; the Python port passes it
+in the vertex normal), and the corners exclude proxies carrying that owner center.
+A corner skips a light only when the light's reach misses the whole quad: past it
+alone, the corner still traces, since the pixels inside the reach interpolate it
+and a corner snapping to unshadowed would pop as the light moves.
 A 0.02-world-unit tolerance prevents precision speckles at fractional zoom without
 requiring per-quad uniforms or breaking batches. Exactly coincident creatures
 share exclusion; this is a documented limitation of the batch-preserving owner
-representation. Tests retain blocking from a distinct owner only 0.1 units away.
+representation. Tests retain blocking from a distinct owner only 0.1 units away,
+from the corners whose rays cross it.
 
-The existing shadows setting disables the new direct-light and creature visibility
-along with native contact shadows. Ground reflection visibility stays active,
-preserving its independent policy. A blocked emitter does not subtract ambient or
+The shadows setting disables ground direct and reflection masks, creature visibility,
+and native contact shadows. A blocked emitter does not subtract ambient or
 other emitters' light. Bonuses still receive their existing analytical lighting
 without these cast shadows; players and overlays remain on their original paths
 (both cast body shadows, neither receives them).
@@ -771,14 +848,13 @@ in that synthetic case; the shipped single centroid avoids the extra integration
 cost. The corresponding earlier before measurement was 12.32 ms.
 
 
-Review follow-ups normalize or collapse degenerate source axes consistently,
-disable nonpositive reflection reaches before evaluating `smoothstep`, and avoid
-empty grid traversal/uniform-array uploads. Shadows-off grid construction considers
-only reflection support. Point-source creature reflections and diffuse lighting
-reuse the same visibility result. Diffuse contributions below `1e-5` linear RGB
-retain their radiance but skip shadow traversal, matching the existing reflection
-policy. R32F native tests compare against tracing every positive contribution and
-bound the additional light by `1.01e-5` per source (including float tolerance).
+Earlier review follow-ups (before the coarse ground atlas) normalized degenerate source axes consistently,
+disabled nonpositive reflection reaches before evaluating `smoothstep`, and avoided
+empty grid traversal/uniform-array uploads. Those measurements below describe the
+older per-pixel ground path. The coarse atlas now gates all positive ground
+contributions with the same scalar visibility, independent of their color/gain;
+shadows-off no longer builds ground reflection masks. Point-source creature
+reflections and diffuse lighting still reuse their visibility result.
 
 A matched follow-up run with the same hardware, resolution and warmup measured:
 
@@ -968,33 +1044,13 @@ stays within a few percent (up to 8% for a short Ion Cannon shot, whose head is
 wide), where the three sections it replaced were up to a quarter off for long
 beams.
 
-One visibility walk covers the stretch of the beam that lights the receiver
-(the beam clipped to the falloff's reach). For each body, a ray/ellipsoid
-discriminant becomes a quadratic in the longitudinal source position; its
-roots are the source positions the body hides, clipped where the chord lies
-past the light, so a body taller than the emitter does not shadow from beyond
-it. Two Gauss-Legendre taps at plus/minus `1/sqrt(3)` of the transverse
-half-width average the remaining emitter dimension. The stretch keeps its
-eighths apart: each body lowers only the eighths its intervals cover, so bodies
-hiding different parts of the beam add up instead of passing what each leaves
-open, and each eighth weighs the energy it delivers to the receiver. A light in
-or against a body is spared over the last half radius before it, as the point
-lights' fade, taken at the fade's two quarter points; a crowd cell's medium
-dims every eighth. Overlapping proxies within an eighth retain the
-minimum-visibility semantics, and dying bodies retain their shared
-collapse/fade behavior.
-
-Preparation uploads one `vec4` per light (`u_beam_shape`) and reuses the
-occlusion texture. Each cell near a beam source also holds a beam list, its
-bodies padded by the largest beam support (half its length plus the head's
-halo) plus the reach of the two transverse taps (0.577 of the widest beam's
-width). The point lights' penumbra margin, which the frame's widest source sets,
-never pads them. Point lights, reflections and creature shadows keep their
-narrow lists. A beam walks the beam lists along its center ray, rejects bodies
-outside its ray fan (the triangle from the receiver to both ends of the
-stretch), and tests each body only in the first walked cell that lists it.
-Conservative grid-only source copies add the head halo. They never replace the
-original light uniforms used by reflections or creature lighting.
+Beam energy and its shading centroid use this analytic integral. The coarse
+atlas preserves the analytic per-body projected blocker intervals, two transverse
+taps, and eight longitudinal visibility bins weighted by their light energy.
+`beam_visibility.glsl` gathers blockers from ordinary grid cells intersecting the
+beam fan instead of requiring CPU-padded beam lists. Grid preparation includes
+the extended head support so those blockers remain available. Only the atlas
+runs this solver; full-resolution material shading reads the resulting mask.
 
 Beams only add light. They used to dim the ambient within 300 units of the beam (up to 25% for ion, 15% for Fire
 Bullets), regardless of visibility. Past the beam's lighting radius that left a ring darker than plain ground. The
@@ -1003,25 +1059,14 @@ give the contrast. Use F6 `direct`, `direct-unshadowed`, `visibility`, and `ambi
 
 ### Cost and visual limits
 
-Visibility, not shading, is the beam's cost: in late frames with ten beams over
-two hundred bodies, the walks were nine tenths of the ground pass. One walk across
-the lit stretch replaced three section walks, but a wider fan and a longer padded
-list made it no cheaper at the ground's own resolution. Beam shadows are soft,
-though, so their visibility is drawn at a quarter of the ground's resolution in
-each direction instead: before the ground, a pass per group of four beams
-(`ground.frag`'s `BEAM_VISIBILITY_PASS`) walks for each of its beams where that
-beam lights the ground, into one channel of a texel in its quarter of an atlas,
-and the ground reads it back filtered (`beamVisibilityRead`). Up to sixteen lit
-beams take a slot in light order; any others still walk in the ground's own pass.
-The golden scenes draw the same at this resolution (99% of pixels within a level
-of the per-pixel walk), and late-game ground passes cost about a fifth of what
-they did.
-The Python port draws the passes when `material_scope` is given the view to draw,
-and binds the atlas past raylib's batch texture units.
-
-Two transverse taps do not reproduce a dense sampled reference exactly, but avoid
-separate shadow lobes; eighths are coarse for a long beam, so two bodies inside the
-same eighth still combine by their minimum.
+The ground's expensive visibility walks now run only on the coarse world grid,
+for all selected source families. The material pass retains its full-resolution
+blood normals, absorption and reflection footprint. Dense scenes benefit most;
+quiet scenes still pay for the material work and any small atlas preparation.
+GPU timer queries can perturb the macOS driver, so use separate queries-off replay
+runs for wall-time acceptance and timer-enabled runs to diagnose the
+`ground-vis`/`ground-shade` split. Reflection shadows intentionally differ from independent
+reflected-ray traversal; the beam's analytic directional penumbra remains.
 
 ### Ion impact arcs
 

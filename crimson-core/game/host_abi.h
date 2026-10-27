@@ -25,11 +25,19 @@ HOST_IMPORT(clear) void host_clear(unsigned color);
 HOST_IMPORT(draw) void host_draw(int primitive, const void *vertices, int vertex_count, const unsigned short *indices,
                                  int primitive_count);
 HOST_IMPORT(present) void host_present(void);
+// A circle the device shades analytically with its current states (client/shaders/classic.frag), in place of
+// Grim's polygons (game/changes/round-circles.patch): `shape` is its center x and y and inner and outer radius in
+// pixels, then the texture's u and its v at the inner and outer edges; `color` its D3DCOLOR.
+HOST_IMPORT(circle) void host_circle(const float *shape, unsigned color);
 // RTX, the rendering mode beyond the original's look (game/rtx.cpp): the mode
 // the host shows of the one asked for (0 classic, 1 RTX), and the world's bounds
 // in the frame, which the host draws into its HDR target and then tonemaps onto
 // the back buffer.
 HOST_IMPORT(render_mode) int host_render_mode(int requested);
+// The most the host draws, as a multiple of the game's resolution (the console's
+// rendersize): a new limit (0 for every pixel of the display), or none below 0;
+// the limit in force.
+HOST_IMPORT(render_size) float host_render_size(float limit);
 #include "render_passes.h"
 HOST_IMPORT(render_pass) void host_render_pass(int pass);
 // The world's light sources, sent before its begin mark (game/rtx_lights.cpp):

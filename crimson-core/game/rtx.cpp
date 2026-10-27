@@ -1,6 +1,7 @@
 // RTX, the client's rendering mode beyond the original's look, after the Python
 // port's src/crimson/render/rtx. The mode lives here, where the console's
-// commands change it (rendermode, togglertx, registered by game/rtx/rtx.patch);
+// commands change it (rendermode, togglertx, registered by game/rtx/rtx.patch,
+// beside rendersize for the host's render size);
 // the host shows it, shades what the world's marks enclose and draws the beams
 // sent in place of the original's stamped streaks. Nothing here reaches a run's
 // state: only drawing reads the mode.
@@ -9,6 +10,7 @@
 #include "grim2d_cpp.h"
 #include "host_abi.h"
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 bool platform_outputs();
@@ -60,6 +62,26 @@ void console_cmd_toggle_rtx(void) {
   int requested = !rtx_render_mode;
   rtx_set_mode(requested);
   rtx_report(requested);
+}
+
+// rendersize <multiple|native>: the most the host draws, as a multiple of the
+// game's resolution (at least 1), or every pixel of the display; the display
+// scales the rest up.
+void console_cmd_render_size(void) {
+  char *name = console_cmd_argc_get() == 2 ? console_cmd_arg_get(1) : nullptr;
+  if (name) {
+    float limit = strcmp(name, "native") ? (float)atof(name) : 0;
+    if (limit && limit < 1) {
+      console_printf(&console_log_queue, "rendersize <multiple of the game's resolution, at least 1|native>\n");
+      return;
+    }
+    host_render_size(limit);
+  }
+  float limit = host_render_size(-1);
+  if (limit)
+    console_printf(&console_log_queue, "Render size is at most %gx the game's resolution.\n", limit);
+  else
+    console_printf(&console_log_queue, "Render size is the display's.\n");
 }
 
 // rtxsmoke <on|off>: RTX's fluid smoke, on by default; off brings native puffs back.

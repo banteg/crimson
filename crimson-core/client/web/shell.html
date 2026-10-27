@@ -837,8 +837,10 @@
   // in /game/leaderboard/outbox/ and asks for an upload, or for the player's
   // profile. As the Python port (src/crimson/leaderboard/client.py): a run the
   // service took, or already has, leaves the outbox; one it refuses moves to
-  // rejected/ with the reason; offline, runs wait for the next try.
+  // rejected/ with the reason; offline, runs wait for the next try. Each outcome
+  // goes to the game's console in the Python port's words.
   const OUTBOX = "/game/leaderboard/outbox", REJECTED = "/game/leaderboard/rejected";
+  const report = (line) => Module.ccall("client_leaderboard_line", null, ["string"], [`leaderboard: ${line}`]);
   const post = (path, body) =>
     fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body });
   let uploading = null;
@@ -850,19 +852,25 @@
       } catch {}
       for (const name of names) {
         const path = `${OUTBOX}/${name}`, entry = FS.readFile(path, { encoding: "utf8" });
+        const run = name.slice(0, 12);
         let response;
         try {
           response = await post("/api/runs", entry);
-        } catch {
+        } catch (error) {
+          report(`can't reach ${location.origin}/api (${error.message}); runs wait in ${OUTBOX}`);
           break;
         }
         // The service is down or asks to slow down: the run waits.
-        if (response.status >= 500 || response.status === 429) break;
+        if (response.status >= 500 || response.status === 429) {
+          report(`service error (HTTP ${response.status}); runs wait in ${OUTBOX}`);
+          break;
+        }
         if (!response.ok && response.status !== 409) {
           const reason = (await response.json().catch(() => ({}))).reason ?? `HTTP ${response.status}`;
           FS.mkdirTree(REJECTED);
           FS.writeFile(`${REJECTED}/${name}`, JSON.stringify({ ...JSON.parse(entry), reason }));
-        }
+          report(`run ${run} rejected (${reason})`);
+        } else report(response.status === 409 ? `run ${run} was already uploaded` : `uploaded run ${run}`);
         FS.unlink(path);
       }
       if (names.length) await persist();

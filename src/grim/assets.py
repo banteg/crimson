@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 from contextlib import ExitStack
 from pathlib import Path
-from typing import TYPE_CHECKING, Final, cast
+from typing import TYPE_CHECKING, Final
 
 import msgspec
 from PIL import Image
@@ -176,7 +176,7 @@ def _select_texture_asset(entries: dict[str, bytes], rel_path: str) -> tuple[str
 
 
 def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture:
-    image = rl.load_image_from_memory(fmt, cast(str, data), len(data))
+    image = rl.load_image_from_memory(fmt, data, len(data))
     try:
         texture = rl.load_texture_from_image(image)
     finally:
