@@ -7,7 +7,7 @@ tags:
 
 # RTX renderer review
 
-Reviewed: 2026-10-23. Updated: 2026-10-27, after follow-up reviews, measurements on
+Reviewed: 2026-10-23. Updated: 2026-10-28, after follow-up reviews, measurements on
 the golden scenes and on late-game replays, and the work they led to.
 
 Scope: Python RTX rendering and the client port that shares its shaders (the
@@ -68,6 +68,7 @@ The direction stays:
 | Creature shadows at quad corners | #919, #923 | Creature visibility is traced at each quad's corners and interpolated: a Nuke over a late crowd went from about 50 to 29 ms of GPU. #923 culls a light only when it misses the whole quad, so corner shadows no longer pop |
 | GL submission state | #924 | The native client caches uniform locations, uniform values and sampler state and reuses one quad index buffer: in the dense-beams window, uniform calls drop from about 1,600 to 440 a frame and sampler calls from 680 to 24. CPU submission only, no frame-rate change claimed |
 | Coarse visibility atlas | #925, #927 | Every ground shadow comes from one world-anchored atlas at four world units a texel, four lights a texel, drawn before the HDR world; the ground pass walks no body grid. Beams keep their directional penumbrae. Reflections share the direct light's mask (an intended approximation that supersedes #923's reflection rule), and turning shadows off also clears reflection occlusion. Late Survival frames 10.8 to 9.7 ms (9 to 11% in paired runs); golden scenes differ only at soft shadow edges |
+| Lit freeze ice | #932 | The freeze's cubes and the shatter's cubes and shards are lit as ice instead of stamped unlit. `tools/rtx/ice_surface.py` recovers a surface from the original sprite: the cube's render camera and bent, rounded body fitted to its corners, outline and shading, domes for the shards, and on each a height field matching the sprite's relative shading, with the mottling that leaves. Lights glint off the ice and shade it blue, and it keeps the original's look unlit. Cubes over frozen bodies let them show through their dark faces; the shatter stays solid. Monster Vision shows no heat on frozen monsters, which read as themselves inside the ice |
 
 ## Disproven or dropped
 
@@ -114,6 +115,15 @@ The direction stays:
   scenes change in 20,000 to 114,000 pixels by up to 89 levels, nearly all
   creatures', and bodies float: the drop shadows are what ground them, and the
   body shadows are faint beside them. Kept as the original draws them.
+- **Light through the ice.** Under many lights, transmission outweighed the faces and
+  flattened every cube into a grey pillow. Ice only glints and scatters a little.
+- **Procedural ice.** A raymarched cube with chipped corners, tumbling with each
+  piece's turn, read as 3D but as glass or plastic, not the original's chunky ice.
+  The surface recovered from the sprite keeps its silhouette and fractures.
+- **Mostly clear ice.** Opacity following the sprite's brightness (dark faces near
+  0.4) with a cyan scatter inside let frozen bodies show, but cubes turned ghostly,
+  the shatter nearly vanished and the tint barely showed. Only cubes over bodies
+  got a partial window, to about 0.55.
 - **Exact ground restructurings.** Each branch building only the geometry it reads,
   reusing the beam frame, skipping zero-density and head-only integral terms,
   returning early from fully lit visibility bins and skipping the fluid normal's
@@ -167,17 +177,13 @@ Also:
 - **Non-finite direct light.** #931: the beams' falloff took `asinh` of thousands beside a beam's axis, which the
   GL driver cancels to `log(0)`; 252 dark specks across the golden scenes, none after.
 
-### 2. Lit freezing, then hot smoke
+### 2. Hot smoke and shatter steam
 
-- **Frozen creatures as a material.** `draw_freeze_overlay` still stamps an unlit
-  shard sprite over lit bodies. Feed freeze into the creature material instead:
-  reduced transmission, thin edge Fresnel, restrained specular, the silhouette and
-  lighting kept, and a brief glint and cold steam on shatter. Heat already cools
-  frozen monsters, so the two read together. In the client the freeze overlay is
-  one loop in `creature_render_all` and can be marked like the heat pass.
 - **Hot smoke.** Every emission adds temperature, but temperature mostly shapes the
   column. Give fresh explosion smoke a short warm emission that cools quickly, keep
   old smoke neutral, and separate soot, heat and steam source profiles.
+- **Shatter steam.** A brief puff of cold steam where the freeze's ice breaks, from
+  the steam profile above.
 
 ### 3. The unlit baseline (a decision, made from captures)
 
@@ -239,9 +245,8 @@ The smoke decides it: find that mechanism before choosing a look.
 
 - **Per-species materials.** Chitin with tighter highlights and harder rims; flesh
   with broader highlights and restrained transmission; scales with broken,
-  higher-frequency specular; cloth mostly diffuse; brass as tiny warm glints; ice
-  with edge Fresnel and thickness tint. Data-driven and approximate; no authored
-  normal maps.
+  higher-frequency specular; cloth mostly diffuse; brass as tiny warm glints.
+  Data-driven and approximate; no authored normal maps.
 - **Emissive-only bloom**, after the baseline and limiters settle: half-resolution,
   driven by tagged emissive sources, never whole-frame luminance; white corpses,
   bright terrain and the HUD never bloom.
@@ -292,10 +297,10 @@ reflection and scattering rather than broad red light.
 | Effect or material | Already connected | Still missing |
 | --- | --- | --- |
 | Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers; stable budgets with fades; players and bonuses shadow them | - |
-| Ion and fire beams | Analytic visible body; one extended source with closed-form ground light; directional shadows from the coarse visibility atlas; smoke scattering; ion arcs | Ice and material-specific response (2) |
+| Ion and fire beams | Analytic visible body; one extended source with closed-form ground light; directional shadows from the coarse visibility atlas; smoke scattering; ion arcs | Material-specific response (later) |
 | Explosions | Fireball, warm shell, light, pressure refraction, smoke, blast airflow and scorch coordinated | Hot smoke (2); heat on ice and wet ground |
 | Blood, corpses, brass, scorch | Ordered coverage, displacement, wetness, aging, absorption, relief, reflections; cyan sky over blood | Saturation (3); footprints later |
-| Ice and freeze | Ground ice attenuates blood and changes roughness and height; heat cools frozen monsters | Lit frozen-creature material, shatter glint and steam (2) |
+| Ice and freeze | Ground ice attenuates blood and changes roughness and height; the freeze's cubes and shatter lit as ice; frozen bodies show through their cubes, without Monster Vision's heat | Shatter steam (2) |
 | Creatures and players | Creatures and players cast body-proxy shadows over the original's drop shadows; creatures receive diffuse, specular and transmission, players cloth lighting | Per-species materials (later) |
 | Smoke | Density, heat, advection, self-extinction, scattering with the shared beam profile, sight attenuation, blast response | Bands (5); body occlusion after profiling; soot, heat and steam profiles (2) |
 | Bonuses | Obsidian shell, foil emblem, clear coat, dynamic reflections; shells cast body shadows | Fewer own limiters (4) |
