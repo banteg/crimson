@@ -142,8 +142,9 @@ def game_over_go(action):
     return ("hook", lambda gs: game_over_ui(gs)._begin_close_transition(action))
 
 
-def results_go(action):
-    return ("hook", lambda gs: gs.screens.active._ui._begin_close_transition(action))
+def results_go(button):
+    """Press a quest results button through its activator, which picks the route."""
+    return ("hook", lambda gs: getattr(gs.screens.active, f"_activate_{button}")())
 
 
 def die_to_game_over():
