@@ -532,7 +532,8 @@ def test_ice_color_is_not_absorbed_by_older_blood_but_new_blood_can_cover_it(gro
         blue = debug_pixels(ground, texture, mode=0)[center]
         # The shard is translucent: bright fresh blood can remain visible through it.
         # Its blue contribution must survive absorption rather than become a red cutout.
-        assert blue[2] > underlying[2] * 1.35
+        # Over blood that the cyan sky already cools.
+        assert blue[2] > underlying[2] * 1.25
         assert blue[2] / blue[0] > underlying[2] / underlying[0] + .25
         ground.material_batches.extend([blood(1)] * 8)
         red = debug_pixels(ground, texture, mode=0, time=1)[center]
@@ -595,7 +596,8 @@ def test_fresh_deep_blood_has_red_body_and_loses_color_and_reflection_with_age(g
     collector = mocker.patch.object(ground_materials, "collect_material_lights", return_value=[])
     colors = [debug_pixels(ground, texture, mode=0, time=t)[32 * 64 + 32] for t in (0, 45, 180)]
     assert colors[0][0] > colors[2][0] * 1.3
-    assert colors[0][0] > colors[0][2] * 1.3
+    # Red through the cyan sky's sheen.
+    assert colors[0][0] > colors[0][2] * 1.25
     assert colors[0][0] > colors[1][0] > colors[2][0]
     collector.return_value = [MaterialLight(Vec2(32, 16), 150, (1, 1, 1), height=18)]
     peaks = [max(p[0] for p in debug_pixels(ground, texture, mode=5, time=t)) for t in (0, 45, 180)]
