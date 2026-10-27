@@ -1,4 +1,6 @@
-"""Atlas-local body proxies for artistic transmission and Monster Vision heat."""
+"""Atlas-local body proxies for artistic transmission and Monster Vision heat, and the freeze ice's surface."""
+
+from importlib.resources import files
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
@@ -100,7 +102,8 @@ def _upload_proxy(proxy: Image.Image) -> rl.Texture:
     buffer = rl.ffi.new("unsigned char[]", proxy.tobytes())
     upload = rl.Image(
         rl.ffi.cast("void *", buffer), proxy.width, proxy.height, 1,
-        rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAYSCALE,
+        rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAYSCALE if proxy.mode == "L"
+        else rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8,
     )
     texture = rl.load_texture_from_image(upload)
     if texture.id <= 0:
@@ -122,3 +125,8 @@ def load_thickness_texture(source: rl.Texture) -> rl.Texture:
 def load_heat_density_texture(source: rl.Texture) -> rl.Texture:
     """Read source alpha once and upload the single-channel heat density."""
     return _upload_proxy(build_heat_density(_source_alpha(source)))
+
+
+def load_ice_texture() -> rl.Texture:
+    """The freeze ice's surface in the particles atlas's layout (tools/rtx/ice_surface.py), as creature.frag reads it."""
+    return _upload_proxy(Image.open(files(__package__).joinpath("ice_surface.tga").open("rb")).convert("RGB"))

@@ -28,6 +28,8 @@ ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 CLIENT_SHADERS = HERE / "shaders"
 RTX_SHADERS = ROOT / "src/crimson/render/rtx/shaders"
+# creature.frag's ice surface (tools/rtx/ice_surface.py).
+ICE_SURFACE = ROOT / "src/crimson/render/rtx/ice_surface.tga"
 INCLUDES = (CLIENT_SHADERS, RTX_SHADERS, ROOT / "src/grim")
 WGSL_HEADER = HERE / "wgsl_shaders.h"
 # The WebGPU renderer's programs: a vertex and a fragment stage each.
@@ -104,8 +106,24 @@ def sources_hash() -> str:
     return digest.hexdigest()
 
 
+def write_ice_surface(out: Path) -> None:
+    """The freeze ice's surface (creature.frag's u_ice) as RGBA rows, from its uncompressed, top-down TGA."""
+    tga = ICE_SURFACE.read_bytes()
+    width, height = int.from_bytes(tga[12:14], "little"), int.from_bytes(tga[14:16], "little")
+    bgr = tga[18 : 18 + width * height * 3]
+    rows = (
+        ", ".join(f"{bgr[i + 2]}, {bgr[i + 1]}, {bgr[i]}, 255" for i in range(row, row + width * 3, 3))
+        for row in range(0, len(bgr), width * 3)
+    )
+    (out / "ice_surface.h").write_text(
+        "// Generated from src/crimson/render/rtx/ice_surface.tga (tools/rtx/ice_surface.py).\n"
+        f"enum {{ ICE_SURFACE_WIDTH = {width}, ICE_SURFACE_HEIGHT = {height} }};\n"
+        "inline constexpr unsigned char ice_surface[] = {\n" + ",\n".join(rows) + "};\n",
+    )
+
+
 def write_shader_headers(out: Path) -> None:
-    """client_shaders.h for the build, after checking wgsl_shaders.h still matches its sources."""
+    """client_shaders.h and ice_surface.h for the build, after checking wgsl_shaders.h still matches its sources."""
 
     recorded = re.search(r"Source hash: (\w+)", WGSL_HEADER.read_text())
     if not recorded or recorded[1] != sources_hash():
@@ -115,6 +133,7 @@ def write_shader_headers(out: Path) -> None:
         for path in sorted(p for p in folder.iterdir() if p.suffix in (".frag", ".vert")):
             lines.append(f'#define {macro(prefix, path)} R"GLSL({without_version(source(path))})GLSL"')
     (out / "client_shaders.h").write_text("\n".join(lines) + "\n")
+    write_ice_surface(out)
 
 
 def tool(name: str) -> str:

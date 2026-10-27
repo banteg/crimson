@@ -12,6 +12,12 @@ enum {
   HOST_PASS_GROUND = 6,
   HOST_PASS_HEAT = 7, // Monster Vision's heat bodies (game/rtx_heat.cpp): red is warmth, alpha opacity
   HOST_PASS_GLOW = 8, // ion arcs' contact glows (game/rtx_lights.cpp): hue, and peak over GLOW_PEAK in alpha
+  // The freeze's ice in the particles atlas, lit as ice (creature.frag's u_ice): its cubes (4x4 cells) over frozen
+  // bodies and in the shatter, and the shatter's shards (8x8 cells).
+  HOST_PASS_ICE_CUBES = 9,
+  HOST_PASS_ICE_SHARDS = 10,
+  // The cubes over frozen bodies (creature_render_all): their dark faces partly clear, so the body shows through.
+  HOST_PASS_ICE_FROZEN = 11,
 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).
 enum { RTX_LIGHT_FLOATS = 32 };

@@ -13,7 +13,7 @@ from grim.math import clamp
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
-from ...effects_atlas import EffectId
+from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...ui.cursor import draw_aim_cursor
@@ -31,6 +31,7 @@ from .creatures import (
     creature_color_to_rl,
     creature_render_tint,
     creature_shadow_alpha,
+    draw_centered_quad,
     draw_creature_sprite,
 )
 from .effects import draw_effect_pool, draw_particle_pool, draw_sprite_effect_pool
@@ -420,7 +421,7 @@ def draw_creature_heat(
     """Heat bodies: red is warmth, green/blue a tracked head, alpha Monster Vision's opacity."""
     with heat.body_scope(texture=texture, restore_shader=render_ctx.frame.resources.alpha_test.shader):
         for creature in render_ctx.frame.creatures.entries:
-            opacity = heat_visibility(creature, entity_alpha=ctx.entity_alpha) if creature.active else 0.0
+            opacity = heat_visibility(creature, render_ctx.frame, entity_alpha=ctx.entity_alpha) if creature.active else 0.0
             if creature.type_id != type_id or opacity <= 1e-3:
                 continue
             warmth = heat_warmth(creature, render_ctx.frame)
@@ -502,22 +503,33 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
         return
 
     tint = rl_color(255, 255, 255, int(freeze_alpha * 255.0 + 0.5))
+    frame = render_ctx.frame
+    # RTX lights the cubes as ice, each over its creature's body, which shows through their dark faces.
+    lighting = frame.creature_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
-    for idx, creature in enumerate(render_ctx.frame.creatures.entries):
-        if not creature.active:
-            continue
-        size = float(creature.size) * render_ctx.view.scale
-        if size <= 1e-3:
-            continue
-        creature_screen = viewport.world_to_screen_with(
-            creature.pos,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-        )
-        dst = rl_rectangle(creature_screen.x, creature_screen.y, size, size)
-        origin = rl_vector2(size * 0.5, size * 0.5)
-        rotation_deg = (float(idx) * 0.01 + float(creature.heading)) * _RAD_TO_DEG
-        rl.draw_texture_pro(ctx.particles_texture, src, dst, origin, rotation_deg, tint)
+    with (
+        lighting.scope(texture=ctx.particles_texture, restore_shader=frame.resources.alpha_test.shader,
+                       ice=EFFECT_ID_ATLAS_TABLE_BY_ID[EffectId.FREEZE_SHATTER].grid, frozen=True)
+        if lighting is not None else nullcontext()
+    ):
+        for idx, creature in enumerate(frame.creatures.entries):
+            if not creature.active:
+                continue
+            size = float(creature.size) * render_ctx.view.scale
+            if size <= 1e-3:
+                continue
+            creature_screen = viewport.world_to_screen_with(
+                creature.pos,
+                camera=render_ctx.view.camera,
+                view_scale=render_ctx.view.view_scale,
+            )
+            rotation = float(idx) * 0.01 + float(creature.heading)
+            if lighting is not None:
+                draw_centered_quad(ctx.particles_texture, src, creature_screen, size, size, rotation, tint)
+                continue
+            dst = rl_rectangle(creature_screen.x, creature_screen.y, size, size)
+            origin = rl_vector2(size * 0.5, size * 0.5)
+            rl.draw_texture_pro(ctx.particles_texture, src, dst, origin, rotation * _RAD_TO_DEG, tint)
     rl.end_blend_mode()
 
 

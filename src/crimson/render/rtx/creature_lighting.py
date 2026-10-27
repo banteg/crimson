@@ -11,7 +11,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from .creature_shaders import CREATURE_FRAGMENT, CREATURE_VERTEX
-from .creature_translucency import load_thickness_texture
+from .creature_translucency import load_ice_texture, load_thickness_texture
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 from .reflection_occlusion import ReflectionOcclusion
 
@@ -22,6 +22,7 @@ class CreatureLighting(msgspec.Struct):
     active: bool = False
     light_count: int = 0
     thickness_textures: dict[int, rl.Texture] = msgspec.field(default_factory=dict)
+    ice_texture: rl.Texture | None = None
     occlusion: ReflectionOcclusion | None = None
 
     def prepare(
@@ -42,7 +43,8 @@ class CreatureLighting(msgspec.Struct):
             self.locations = {
                 name: int(rl.get_shader_location(shader, name))
                 for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response", "u_thickness",
-                             "u_occlusion_tex", "u_occlusion_grid", "u_occlusion_cell_size", "u_dynamic_shadows", "u_ambient")
+                             "u_occlusion_tex", "u_occlusion_grid", "u_occlusion_cell_size", "u_dynamic_shadows", "u_ambient",
+                             "u_ice", "u_ice_frozen")
             }
         shader = self.shader
         # Flush preceding draws before changing values on a possibly reused shader.
@@ -84,19 +86,32 @@ class CreatureLighting(msgspec.Struct):
             )
 
     @contextmanager
-    def scope(self, *, texture: rl.Texture, restore_shader: rl.Shader | None) -> Generator[None]:
+    def scope(
+        self, *, texture: rl.Texture, restore_shader: rl.Shader | None, ice: int = 0, frozen: bool = False,
+    ) -> Generator[None]:
+        """Creature bodies drawn from `texture`, or with `ice` the freeze's ice: the grid of its particles cells;
+        `frozen` for its cubes over frozen bodies, whose dark faces let the body show."""
         if not self.active or self.shader is None:
             yield
             return
-        # Texture IDs remain stable for the owning render resources' lifetime.
-        thickness = self.thickness_textures.get(int(texture.id))
-        if thickness is None and self.light_count:
-            rl.rl_draw_render_batch_active()
-            thickness = load_thickness_texture(texture)
-            self.thickness_textures[int(texture.id)] = thickness
+        if ice:
+            if self.ice_texture is None:
+                rl.rl_draw_render_batch_active()
+                self.ice_texture = load_ice_texture()
+            thickness = self.ice_texture
+        else:
+            # Texture IDs remain stable for the owning render resources' lifetime.
+            thickness = self.thickness_textures.get(int(texture.id))
+            if thickness is None and self.light_count:
+                rl.rl_draw_render_batch_active()
+                thickness = load_thickness_texture(texture)
+                self.thickness_textures[int(texture.id)] = thickness
         rl.rl_draw_render_batch_active()
         try:
             rl.begin_shader_mode(self.shader)
+            for name, value in (("u_ice", ice), ("u_ice_frozen", int(frozen))):
+                rl.set_shader_value(self.shader, self.locations[name], rl.ffi.new("int *", value),
+                                    rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
             if thickness is not None:
                 rl.set_shader_value_texture(self.shader, self.locations["u_thickness"], thickness)
             if self.occlusion is not None and self.occlusion.grid is not None and self.occlusion.grid.body_count and self.occlusion.texture is not None:
@@ -113,6 +128,9 @@ class CreatureLighting(msgspec.Struct):
         for texture in self.thickness_textures.values():
             rl.unload_texture(texture)
         self.thickness_textures.clear()
+        if self.ice_texture is not None:
+            rl.unload_texture(self.ice_texture)
+        self.ice_texture = None
         if self.shader is not None:
             rl.unload_shader(self.shader)
         self.shader = None

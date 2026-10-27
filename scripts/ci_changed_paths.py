@@ -140,6 +140,7 @@ SUITES = {
             "crimson-core/client/",
             "src/grim/filtering.glsl",
             "src/crimson/render/rtx/shaders/",
+            "src/crimson/render/rtx/ice_surface.tga",
             "src/crimson/assets_version.json",
             "crimson-core/checks/assets.*",
             "crimson-core/checks/analytics.test.mjs",
