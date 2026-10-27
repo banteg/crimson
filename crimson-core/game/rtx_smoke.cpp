@@ -29,6 +29,8 @@ enum { GRID_SIZE = 320, PRESSURE_ITERATIONS = 12, MAX_PENDING = 1024, MAX_IMPULS
 // A minute of ticks, should frames stop draining them.
 enum { MAX_BATCHES = 3600 };
 enum Profile { ORDINARY, NUKE, MUZZLE, ROCKET };
+// Heat per unit of smoke by profile (render/rtx/smoke_constants.py's SOURCE_HEAT).
+const float SOURCE_HEAT[] = {2.5f, 2.5f, 1.0f, 2.0f};
 enum Kind { BLAST, MUZZLE_JET, WAKE }; // in the order the solver ranks them
 
 // A copied spawn (sim/smoke_events.py's SmokeEmission): scale is the full world
@@ -199,7 +201,7 @@ void splat(const Emission &e) {
                   {(float)SMOKE_SPLAT, (cx - radius) / smoke.size_x, (cy - radius) / smoke.size_y,
                    radius * 2 / smoke.size_x, radius * 2 / smoke.size_y, cx / smoke.size_x, cy / smoke.size_y, size,
                    strength, e.vx, e.vy, e.expansion, (float)(e.profile == NUKE), e.rotation, dx, dy,
-                   (float)(e.profile == MUZZLE), 0});
+                   (float)(e.profile == MUZZLE), SOURCE_HEAT[e.profile]});
 }
 
 void impulse(const Impulse &i, float age, float fraction) {

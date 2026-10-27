@@ -42,6 +42,14 @@ vec3 heat(float temperature) {
     float t=clamp(temperature/2.,0.,1.)*3.;
     return clamp(vec3(t,t-1.,t-2.),0.,1.);
 }
+// Fresh smoke glows with the heat its source added beyond a muzzle's: heat per unit of smoke starts at its source's
+// share (smoke_constants.py's SOURCE_HEAT) and falls as heat cools faster than smoke thins, so the glow is an
+// explosion's first second, from yellow through deep red to nothing. Old smoke and muzzle smoke never glow.
+const float EMBER_COLD = 1.6, EMBER_HOT = 2.7, EMBER_GAIN = 2.2;
+vec3 ember(float ratio) {
+    float g = smoothstep(EMBER_COLD, EMBER_HOT, ratio);
+    return vec3(1., .22 + .45 * g * g, .04 + .2 * g * g * g) * g * g * EMBER_GAIN;
+}
 vec3 flow(vec2 velocity) {
     float hue=atan(velocity.y,velocity.x)/6.2831853+.5;
     vec3 rgb=clamp(abs(mod(hue*6.+vec3(0,4,2),6.)-3.)-1.,0.,1.);
@@ -74,6 +82,11 @@ void main() {
     if(u_debug==17) { finalColor=vec4(flow(state.zw),1.); return; }
     vec3 local=column(xy);
     if(local.x<=.00001) { finalColor=u_debug!=0 ? vec4(0,0,0,1) : vec4(0); return; }
+    // Heat per unit of smoke, from the raw fields: the edge fade thins the smoke, not its heat's share.
+    vec2 raw_uv=(xy-u_origin)/u_size;
+    vec2 raw=textureLod(texture0,vec2(raw_uv.x,u_state_flip!=0 ? 1.-raw_uv.y : raw_uv.y),0.).xy;
+    // The light map shows what emitters add: no glow, as no sky.
+    vec3 glow=u_debug==18 ? vec3(0) : ember(raw.y/max(raw.x,.0001));
     vec3 sky1=column(xy-vec2(12,9)),sky2=column(xy-vec2(24,18));
     vec3 sights=vec3(0);
     for(int j=0;j<4;j++) { if(j>=u_sight_count) break; sights+=sight_scattering(xy,u_sights[j]); }
@@ -90,7 +103,7 @@ void main() {
         weights[i]=transmission*opacity;
         float sky_depth=vertical(sky1,z+16.)+vertical(sky2,z+32.);
         vec3 color=u_debug==18 ? vec3(0) : vec3(.29,.32,.35)+vec3(.22,.23,.24)*exp(-sky_depth*.55);
-        color+=sights*exp(-pow((z-28.)/5.,2.));
+        color+=sights*exp(-pow((z-28.)/5.,2.))+glow;
         scattered+=weights[i]*color;
         transmission*=1.-opacity;
     }
