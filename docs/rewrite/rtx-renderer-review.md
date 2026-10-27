@@ -7,7 +7,7 @@ tags:
 
 # RTX renderer review
 
-Reviewed: 2026-10-23. Updated: 2026-10-26, after follow-up reviews, measurements on
+Reviewed: 2026-10-23. Updated: 2026-10-27, after follow-up reviews, measurements on
 the golden scenes and on late-game replays, and the work they led to.
 
 Scope: Python RTX rendering and the client port that shares its shaders (the
@@ -40,7 +40,7 @@ The direction stays:
 
 | What | Where | Result |
 | --- | --- | --- |
-| Comparison tooling | #882 | `crimson replay render --rtx`; golden scenes in `tools/rtx/scenes.toml` captured classic and RTX by `tools/rtx/golden.py`; native client GPU time per pass (`CRIMSON_GPU_TIMERS`) and exact-tick captures (`CRIMSON_CAPTURE_TICK`) |
+| Comparison tooling | #882 | `crimson replay render --rtx`; golden scenes in `tools/rtx/scenes.toml` captured classic and RTX by `tools/rtx/golden.py`; native client GPU time per pass (since folded into `CRIMSON_PROFILE`, #915) and exact-tick captures (`CRIMSON_CAPTURE_TICK`) |
 | Magenta blood | #882 | The cool sky reflection over wet pools was the only blue term; it stays cool over ice and goes neutral over blood, so pools read red again |
 | Negative light around beams | #882 | The ion and Fire Bullets ambient dips are gone from Python and the client: beams only add light, shadows give the contrast |
 | Beam light along a segment | #883 | Ground, reflections, creatures, players, bonuses and smoke weight a segment with one profile (`segmentRadiance` in `source_geometry.glsl`) |
@@ -61,6 +61,13 @@ The direction stays:
 | Ground pass in late-game crowds | #909 | Beams light as one extended source (a closed-form integral of the stamp density, with one binned shadow walk), and their visibility is drawn at a quarter of the ground's resolution in passes of four. The late plasma run's ground fell from about 97 to 20 ms at its heaviest; costs and visual limits are in [RTX rendering](rtx-rendering.md#cost-and-visual-limits) |
 | Body grid upload | #910 | The client rotates the grid through three textures, so its upload never waits on the GPU |
 | Eval tooling | #911, #912 | One scripted run measures several moments of a replay (`CRIMSON_WATCH_MOMENTS`), and `CRIMSON_WATCH_CACHE` keeps a prepared replay on disk: classic 8.9 to 1.7 s and RTX 23.7 to 11.6 s per launch on the late plasma run |
+| Render size cap | #913 | The RTX world draws at most at twice the game's resolution (the terrain's density) and is scaled up on present; the HUD stays native. `rendersize` raises or lowers the cap. Fullscreen on a large display stopped stuttering |
+| Frame profiles | #915, #916, #922, #926 | `CRIMSON_PROFILE` writes one record per frame (CPU and GPU per pass, draws, scene sizes, targets) and `tools/profile.py` slices it (`summary`, `worst`, `compare`, `timeline`). The GPU is timed on every 8th frame: on macOS each timer query flushes the driver, which made a fake 6 to 8 ms stall in the players pass. Records come out in frame order and keep their GPU times |
+| Light reach | #917 | The ground skips each light where neither its light nor its reflection reaches, before any of its work: about 2 ms of the late-game ground, pixel-identical |
+| Decal bakes pass by pass | #918, #921 | The native client stamps a bake's marked decals into each terrain companion in turn, each bound once: a seek's bake 25 to 33% faster. #921 fixed the terrain left unbound after a wetness rebase |
+| Creature shadows at quad corners | #919, #923 | Creature visibility is traced at each quad's corners and interpolated: a Nuke over a late crowd went from about 50 to 29 ms of GPU. #923 culls a light only when it misses the whole quad, so corner shadows no longer pop |
+| GL submission state | #924 | The native client caches uniform locations, uniform values and sampler state and reuses one quad index buffer: in the dense-beams window, uniform calls drop from about 1,600 to 440 a frame and sampler calls from 680 to 24. CPU submission only, no frame-rate change claimed |
+| Coarse visibility atlas | #925, #927 | Every ground shadow comes from one world-anchored atlas at four world units a texel, four lights a texel, drawn before the HDR world; the ground pass walks no body grid. Beams keep their directional penumbrae. Reflections share the direct light's mask (an intended approximation that supersedes #923's reflection rule), and turning shadows off also clears reflection occlusion. Late Survival frames 10.8 to 9.7 ms (9 to 11% in paired runs); golden scenes differ only at soft shadow edges |
 
 ## Disproven or dropped
 
@@ -97,41 +104,61 @@ The direction stays:
 - **One-source beams at full resolution alone.** The single source made the light
   more accurate but its shadow walk was mixed (18% faster to 65% slower against three
   sections); the win came from drawing that visibility at a lower resolution.
-- **Reading CPU frame time with GPU timers on.** Each `CRIMSON_GPU_TIMERS` mark
-  submits work, which inflates the CPU's frame time. Profile the CPU with a sampler
-  and the timers off.
+- **Reading CPU frame time with GPU timers on.** On macOS each timer query flushes
+  the driver, which inflates the CPU's frame time and showed as a stall in the pass
+  after the ground. Profiles time the GPU on every 8th frame (#916); compare wall
+  times untimed (`CRIMSON_PROFILE_GPU=0`) and only between builds that both sample.
+- **Exact ground restructurings.** Each branch building only the geometry it reads,
+  reusing the beam frame, skipping zero-density and head-only integral terms,
+  returning early from fully lit visibility bins and skipping the fluid normal's
+  material taps on dry pixels all measured no faster: the shader compiler already
+  drops the dead work, and late-game ground is mostly blood.
 
 ## Remaining, in priority order
 
 ### 1. What is left of the late-game frame
 
-Profiles (`CRIMSON_PROFILE`, #915 and #916) of a late Survival run (RTX at 2048×1536, an M1 Pro) show the frame
-GPU-bound at about 13 ms, the CPU waiting at the swap. The ground pass is about 10.7 ms of it; the smoke solver
-(0.6 ms), terrain bakes (0.1 ms) and beams with the other sprites (0.25 ms) are small. Within the ground, probes put
-the material without lights at 1.5 ms, the beams' direct light at about 3 ms, shadows and beam visibility at about
-1.2 and 1.6 ms, and most of the rest in the per-light loop. #917 skips each light where it cannot reach (about 2 ms,
-pixel-identical). Timings here move by tens of percent between runs: compare paired, alternating runs.
+Profiles of a late Survival run (Run 26 around ticks 41000 and 47000, RTX at 2048×1536 on an M1 Pro) after #925: frames
+take about 9.7 ms, GPU-bound at about 8.2 ms, the CPU waiting at the swap. The ground's shading is about 5.9 ms of it
+and its visibility atlas 0.15 ms; the smoke solver (0.8 ms) and everything else are small. Probes on master
+(2026-10-27, two rounds) split the shading:
 
-With #919 (creature shadows at quad corners, wide lights in the atlas) and #917 the same moments run at about
-10.7 ms against 12.0 on master. Exact restructurings that Codex and Gemini proposed measured no faster on top of them:
-each branch building only the geometry it reads, reusing the beam frame, skipping zero-density and head-only
-integral terms, returning early from fully lit visibility bins, and skipping the fluid normal's eight material taps
-on dry pixels. The shader compiler already drops the dead work, and late-game ground is mostly blood.
+| Part | Cost |
+| --- | --- |
+| The material with no lights | 0.9 ms |
+| Beams' direct light | 1.4 ms |
+| Reflections | 0.9 ms |
+| The rest of the per-light loop (reach tests, discs' and rings' direct light, atlas reads) | about 2.7 ms |
 
-Then measure: per-tile light masks (32×32 pixels, one bit per light, an RGBA8 texture) if most tiles hold few lights;
-the beam visibility passes before the HDR target is bound (a fraction of a millisecond on Apple GPUs at most).
-Approximate options, for later: per-beam energy and centroid at a lower resolution with the material response kept
-at full resolution, and a half-float surface target.
+Timings move by tens of percent between runs: compare paired, alternating runs.
 
-The CPU's own work matters where the CPU limits (the browser): cached uniform locations and samplers, shared light
-uniforms, batched beams. Also:
+Next, in order of what they could save:
 
+- **Per-tile light lists.** The per-light loop is now the largest part. Bin the lights into 32×32-pixel tiles (one
+  bit per light, an RGBA8 texture) so a pixel only visits the lights that reach its tile.
+- **The beams' light at a lower resolution.** A prototype before #925 summed the beams' light (shadowed) and an
+  energy-weighted direction at a quarter of the resolution, stored as flat ground receives it, and the ground scaled
+  it by its own relief: within 0.16 of 255 on the golden scenes, 0.4 to 0.7 ms faster late in a run. It needs
+  rebuilding on the atlas; beams' direct light now costs 1.4 ms, which bounds it.
+- **Reflections at a lower resolution**, bounded by their 0.9 ms.
+- **A half-float surface target**, for bandwidth.
+
+The CPU's own work matters where the CPU limits (the browser). #924 caches the native client's uniforms and
+samplers. Left:
+
+- **Submission.** Shared light uniforms across passes, batched beams and effects, fewer smoke submissions; the
+  WebGPU client still stamps each decal as it lands instead of pass by pass.
 - **CPU stalls.** The viewer's frame hold copies the back buffer every frame, and smoke switches framebuffers per
   slice.
-- **RTX seeks.** A seek rebakes the logged decals; RTX bakes much slower than Classic. #918 stamps a bake's decals
-  pass by pass in the native client (a seek's bake 25 to 33% faster); the WebGPU client still stamps each as it lands.
-- **Quarter-resolution beam shadows.** Shadow tips step by four pixels in direct light, and blockers thinner than a
-  texel lose their contact shadow; the shaded frame hides most of it. If it shows in play, try an edge-aware upsample.
+- **Light selection and the body grid** are built on the CPU every frame.
+
+Also:
+
+- **Coarse shadow edges.** The atlas's texel is four world units (eight pixels at twice the game's resolution), so
+  shadow edges step by it and blockers thinner than a texel lose their contact shadow. Not yet judged in motion. If
+  it shows in play, try an edge-aware upsample.
+- **Non-finite direct light.** About a hundred pixels of a dense ion frame come out NaN and show as dark specks,
+  before and after #925. Find where the beams' direct light divides by zero.
 
 ### 2. Contact shadows under lit players
 
@@ -158,6 +185,11 @@ dynamic lights take over, so lit areas do not show a pasted-on double shadow.
   Whether to raise it is an art call to settle on the golden scenes. Either way,
   `rtx-rendering.md` still says unlit terrain keeps its Classic brightness, which is
   out of date.
+- **The sky over wet ground.** #882 made the sky's reflection on wet pools neutral
+  gray everywhere but ice, since its cool blue over red blood read magenta. Gray
+  reads flatter and less interesting. Try on the golden scenes: a cyan-leaning sky
+  (cyan over red sums toward white, not magenta), the cool tint kept off blood
+  coverage only, or a weaker tint.
 - **Blood saturation.** With the hue fixed, RTX blood is still grayer than Classic's
   deep red (red about three times green, against four to six in Classic), from the
   gray sheen and wet-soil darkening. Tune those first; a pigment target is the
@@ -260,7 +292,7 @@ reflection and scattering rather than broad red light.
 | Effect or material | Already connected | Still missing |
 | --- | --- | --- |
 | Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers; stable budgets with fades; players and bonuses shadow them | Contact shadows under lit players (2) |
-| Ion and fire beams | Analytic visible body; one extended source with closed-form ground light; binned shadows at a quarter resolution; smoke scattering; ion arcs | Ice and material-specific response (3) |
+| Ion and fire beams | Analytic visible body; one extended source with closed-form ground light; directional shadows from the coarse visibility atlas; smoke scattering; ion arcs | Ice and material-specific response (3) |
 | Explosions | Fireball, warm shell, light, pressure refraction, smoke, blast airflow and scorch coordinated | Hot smoke (3); heat on ice and wet ground |
 | Blood, corpses, brass, scorch | Ordered coverage, displacement, wetness, aging, absorption, relief, reflections; neutral sky over blood | Saturation (4); footprints later |
 | Ice and freeze | Ground ice attenuates blood and changes roughness and height; heat cools frozen monsters | Lit frozen-creature material, shatter glint and steam (3) |
