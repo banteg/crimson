@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 from grim.geom import Vec2
 
 from ...math_parity import f32
-from .smoke_constants import FADE_SECONDS, MAX_PENDING_EMISSIONS, STEP_SECONDS
+from .smoke_constants import FADE_SECONDS, MAX_PENDING_EMISSIONS, SOURCE_HEAT, STEP_SECONDS
 
 if TYPE_CHECKING:
     from ...sim.smoke_events import SmokeEmission
@@ -152,7 +152,7 @@ class SmokeField:
             wx, wy = self.x + self.origin.x / CELL_SIZE, self.y + self.origin.y / CELL_SIZE
             source *= .75 + .125 * (np.sin(wx * .27 + wy * .14) + np.sin(wx * .11 - wy * .23))
         self.density += source * strength * 1.7
-        self.temperature += source * strength * 2.0
+        self.temperature += source * strength * 2.0 * SOURCE_HEAT[emission.profile]
         self.u += source * emission.vel.x * .22
         self.v += source * emission.vel.y * .22
         if emission.expansion > 0.0:

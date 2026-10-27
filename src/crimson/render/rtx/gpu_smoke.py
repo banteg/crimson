@@ -13,7 +13,7 @@ from grim.texture_mode import restore_current_target, texture_mode
 from ...math_parity import f32
 from ...sim.smoke_events import AtmosphereImpulse, SmokeEmission
 from .gpu_smoke_shaders import GPU_ATMOSPHERE_IMPULSE_FRAGMENT, GPU_SMOKE_FRAGMENT, GPU_SMOKE_SPLAT_FRAGMENT
-from .smoke_constants import FADE_SECONDS, MAX_PENDING_EMISSIONS, STEP_SECONDS
+from .smoke_constants import FADE_SECONDS, MAX_PENDING_EMISSIONS, SOURCE_HEAT, STEP_SECONDS
 from .smoke_shaders import SMOKE_VERTEX
 
 GRID_SIZE = 320
@@ -226,7 +226,7 @@ class GpuSmokeSimulation:
                     self._set(self.splat_shader, self.splat_locations, "u_motion", (emission.vel.x, emission.vel.y, emission.expansion, float(emission.profile == "nuke")))
                     self._set(self.splat_shader, self.splat_locations, "u_rotation", (emission.rotation,))
                     self._set(self.splat_shader, self.splat_locations, "u_flow", (
-                        direction.x, direction.y, float(emission.profile == "muzzle"), 0.,
+                        direction.x, direction.y, float(emission.profile == "muzzle"), SOURCE_HEAT[emission.profile],
                     ))
                     radius = max(16., size*2.5)
                     x, y = (center.x-radius)/self.size.x*self.resolution, (center.y-radius)/self.size.y*self.resolution

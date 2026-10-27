@@ -1229,6 +1229,15 @@ controls an assumed vertical density profile in the display shader. This is a
 shallow 2D flow approximation with a 2.5D display, not a simulated 3D volume or
 vertical buoyancy model.
 
+Sources deposit heat by profile (`smoke_constants.py`'s `SOURCE_HEAT`, per unit of
+smoke): explosion puffs and the nuke 2.5 times a muzzle's, rockets twice. Heat
+cools faster than smoke thins, so heat per unit of smoke is the smoke's age, and
+fresh smoke hotter than a muzzle's glows (`smoke.frag`'s `ember`): yellow-orange
+from an explosion's first instant, through deep red, to the ordinary gray within
+about a second. Rocket exhaust trails glow for their first instants too. Muzzle
+smoke and old smoke never glow, and the glow lights nothing else. Hotter explosion
+smoke also takes a slightly taller, thicker column.
+
 The display integrates 14 vertical samples and six transmittance samples per
 light into a reusable RGBA16F viewport buffer capped at 640 pixels on its longest
 axis. Premultiplied reconstruction preserves HDR radiance and translucent edges;
