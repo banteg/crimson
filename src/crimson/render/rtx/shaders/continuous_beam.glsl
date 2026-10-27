@@ -5,10 +5,17 @@ uniform vec2 u_beam_gain; // ion, Fire Bullets direct gain
 // the support's half-extent past the midpoint (0: not a beam). The rest is a ramp from the tail to the head.
 uniform vec4 u_beam_shape[MAX_SPEC_LIGHTS];
 
+// asinh, odd by construction: log(x + sqrt(x^2 + 1)) cancels to log(0) for large negative x in single precision, as
+// on a receiver within hundredths of a unit of a beam's axis, where u / b reaches the thousands.
+float oddAsinh(float x) {
+    float a = abs(x);
+    return sign(x) * log(a + sqrt(a * a + 1.));
+}
+
 // Antiderivatives in u of (1, u, u^2) * (1 - d/R)^2, d = sqrt(u^2 + b^2): the falloff along the beam's axis at
 // perpendicular distance b, u from the receiver's foot on the axis.
 vec3 beamFalloffIntegrals(float u, float b, float R) {
-    float d = sqrt(u * u + b * b), b2 = b * b, arc = b2 * asinh(u / b);
+    float d = sqrt(u * u + b * b), b2 = b * b, arc = b2 * oddAsinh(u / b);
     float d_line = .5 * (u * d + arc);                                 // ∫ d
     float d_moment = d * d * d / 3.;                                   // ∫ u d
     float d_second = .25 * u * d * d * d - .125 * b2 * (u * d + arc); // ∫ u^2 d
