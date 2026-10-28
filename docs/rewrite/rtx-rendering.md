@@ -1232,8 +1232,9 @@ Bodies move the air too. Each tick, every living creature and player that moved
 drags the air under it toward its own velocity (`smoke_events.py`'s `body_wakes`,
 the solver's drag pass, mode 6 of `smoke_solver.frag`), over a radius about a third
 of its size. Air near several bodies eases toward their weighted mean velocity, so
-it never moves faster than the bodies moving it, however long a crowd walks through
-it; pressure projection then turns the drag into flow around them. A step longer
+the drag never pushes it faster than the bodies move, however long a crowd walks
+through it; pressure projection then turns the drag into flow around them, which,
+as around any obstacle, runs up to about a third faster at their sides. A step longer
 than 30 units is a spawn, a reused slot or a teleport, not motion. Bodies have
 their own budget of 64 a tick, fastest and largest first, so a swarm never crowds
 out blasts, muzzle jets or shots. Trails keep their shape; smoke gathers where a

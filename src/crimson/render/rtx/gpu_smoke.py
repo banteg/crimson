@@ -368,7 +368,8 @@ class GpuSmokeSimulation:
         rl.set_shader_value(self.shader, self.locations["u_body_count"], rl.ffi.new("int *", len(bodies)),
                             rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
         for name, values in (("u_body_path", paths), ("u_body_motion", motions)):
-            rl.set_shader_value_v(self.shader, self.locations[name], rl.ffi.cast("void *", rl.ffi.new("float[]", values)),
+            buffer = rl.ffi.new("float[]", values)  # kept alive across the call: a cast does not own it
+            rl.set_shader_value_v(self.shader, self.locations[name], rl.ffi.cast("void *", buffer),
                                   rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4, len(bodies))
         self._pass(1-self.current, self.current, 6)
         self.current = 1-self.current

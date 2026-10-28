@@ -49,13 +49,22 @@ def test_body_drag_carries_air_toward_the_body_but_never_past_it(raylib_context)
     sim = GpuSmokeSimulation(resolution=128)
     try:
         sim.consume((emission(pos=Vec2(300, 300), vel=Vec2()),), 0.)
-        # A body standing in one place but moving at 90 units a second, tick after tick.
+        sim.prepare()
+        # A body standing in one place but moving at 90 units a second.
         body = AtmosphereImpulse(Vec2(500, 500), Vec2(501.5, 500), 17.5, 90., kind="body")
-        for _ in range(120):
+        speeds = []
+        for _ in range(240):
+            sim._drag([body])
+            speeds.append(np.hypot(*pixels(sim)[:, :, 2:].transpose(2, 0, 1)).max())
+        assert speeds[0] > 5 and speeds == sorted(speeds)
+        assert 85 < speeds[-1] <= 90 * 1.01
+        # Tick after tick through the solver, the flow it turns into around the body stays bounded.
+        sim.reset()
+        sim.consume((emission(pos=Vec2(300, 300), vel=Vec2()),), 0.)
+        for _ in range(300):
             sim.consume((), 1/60, impulses=(body,))
         sim.prepare()
-        speed = np.hypot(*pixels(sim)[:, :, 2:].transpose(2, 0, 1))
-        assert 5 < speed.max() <= 90 * 1.02
+        assert np.hypot(*pixels(sim)[:, :, 2:].transpose(2, 0, 1)).max() <= 90 * 1.5
     finally:
         sim.close()
 

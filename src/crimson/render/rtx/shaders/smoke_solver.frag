@@ -79,7 +79,7 @@ void main() {
         finalColor=vec4(q.rg*u_fade,q.ba);
     } else if(u_mode==6) {
         // Bodies drag the air under them toward their own velocity: toward the weighted mean of the bodies near it, so
-        // it never moves faster than they do however long a crowd walks through it.
+        // the drag never pushes it faster than they move, however long a crowd walks through it.
         vec2 world=uv*u_world_size;
         float weight=0.0;
         vec2 target=vec2(0);
