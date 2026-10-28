@@ -27,6 +27,7 @@ The port plays like the 2003 game, and adds what a modern release needs:
 - **Runs anywhere.** Windows, macOS and Linux (Wayland included) instead of Direct3D 8 on Windows, at any resolution, with borderless fullscreen that keeps the aspect ratio.
 - **Modern controllers.** PlayStation, Xbox and Switch Pro controllers are recognized on connect and switch a player to twin-stick controls, with reload on the shoulder like the 2014 remake. Every menu, list and slider works from the controller, with the focus always visible, and each co-op player can use their own controller.
 - **Original bugs fixed, and kept on request.** [The original's gameplay bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed by default, each traced to the decompiled code: Greater Regeneration did nothing, Bandage multiplied health instead of healing, some bonuses never dropped while you held certain weapons, and several co-op perks only worked for player 1. `--preserve-bugs` restores every one of them, exactly as the original behaves. The original's text stays as written, typos like "Fire Caugh" and "Plague Sphreader Gun" included.
+- **RTX lighting.** An optional look, behind the RTX lighting box in Options: muzzle flashes, beams, plasma and explosions light the wet ground, the creatures and you, and cast soft shadows through fluid smoke. On macOS and Linux Wayland, HDR displays show highlights past white.
 - **Replays.** Every run is recorded and can be played back, verified tick by tick, or rendered to 60 fps video.
 - **Sharper art.** The original shipped its textures as JPEG-compressed JAZ files. The game uses the uncompressed source art from 10tons instead, free of JPEG artifacts, wherever it matches what shipped.
 
@@ -66,6 +67,7 @@ crimson --width 1280 --height 960   # game resolution (1024x768 is native)
 crimson --fullscreen                # or --windowed; both are saved
 crimson --seed 1234                 # a deterministic run
 crimson --preserve-bugs             # keep the original's known bugs
+crimson --rtx                       # RTX lighting for this launch
 ```
 
 Saves, settings, high scores and replays go to your per-user data directory. Set `CRIMSON_RUNTIME_DIR` or pass
