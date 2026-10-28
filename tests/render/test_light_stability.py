@@ -6,8 +6,8 @@ import pytest
 from crimson.render.rtx.contact_glow import GLOW_PEAK, glow_color
 from crimson.render.rtx.material_lights import (
     IDENT_VOLLEY,
-    MAX_ILLUMINATION_SOURCES,
     MAX_MATERIAL_LIGHTS,
+    MAX_SELECTED_SOURCES,
     SLEW_TICKS,
     VOLLEY_UNITS,
     LightSelection,
@@ -97,6 +97,22 @@ def test_a_pellet_leaving_its_volley_starts_from_the_volleys_place_in_the_budget
     assert lit_now.illumination_gain == pytest.approx(.25 + 1. / SLEW_TICKS)
 
 
+def test_a_splitting_volley_keeps_its_light_through_selection() -> None:
+    def delivered(lights: list[MaterialLight]) -> float:
+        return sum(light.rgb[2] * light.illumination_gain for light in lights)
+
+    selection = LightSelection()
+    near = [shot(0, -4, ident=1), shot(0, 0, ident=2), shot(0, 4, ident=3)]
+    stray = [*near[:2], shot(0, VOLLEY_UNITS * 1.5, ident=3)]
+    selection.advance(0.)
+    whole = delivered(select_material_lights(merge_volleys(near, selection), view_center=Vec2(), selection=selection))
+    # The stray leaves with none of its light handed over yet; its light comes up as the volley's share goes down.
+    for tick in range(1, SLEW_TICKS + 2):
+        selection.advance(tick * TICK_MS)
+        lights = select_material_lights(merge_volleys(stray, selection), view_center=Vec2(), selection=selection)
+        assert delivered(lights) == pytest.approx(whole)
+
+
 def lamps(count: int, *, near: int) -> list[MaterialLight]:
     """Point lights 40 apart along x with ident = index; the one at index `near` sits on the view center."""
     return [MaterialLight(Vec2(0. if i == near else 40. * (i + 1), 0.), 100., (1., 1., 1.), reflection_gain=0.,
@@ -109,10 +125,10 @@ def lit(lights: list[MaterialLight]) -> dict[int, float]:
 
 def test_selection_fades_sources_across_the_budget_edge_and_new_ones_start_lit() -> None:
     selection = LightSelection()
-    count = MAX_ILLUMINATION_SOURCES + 1
+    count = MAX_SELECTED_SOURCES + 1
     selection.advance(0.)
     first = lit(select_material_lights(lamps(count, near=0), view_center=Vec2(), selection=selection))
-    assert first == dict.fromkeys(range(MAX_ILLUMINATION_SOURCES), 1.)
+    assert first == dict.fromkeys(range(MAX_SELECTED_SOURCES), 1.)
     # The farthest lamp moves onto the view: it fades in as the farthest selected one fades out.
     for tick in range(1, SLEW_TICKS + 1):
         selection.advance(tick * TICK_MS)
@@ -128,7 +144,7 @@ def test_selection_fades_sources_across_the_budget_edge_and_new_ones_start_lit()
 
 @pytest.mark.parametrize('elapsed_ms', [0., 1200. + TICK_MS])
 def test_selection_starts_over_after_a_rewind_or_a_long_gap(elapsed_ms) -> None:
-    count = MAX_ILLUMINATION_SOURCES + 1
+    count = MAX_SELECTED_SOURCES + 1
     selection = LightSelection()
     selection.advance(200.)
     select_material_lights(lamps(count, near=0), view_center=Vec2(), selection=selection)
@@ -137,11 +153,11 @@ def test_selection_starts_over_after_a_rewind_or_a_long_gap(elapsed_ms) -> None:
     assert after == lit(select_material_lights(lamps(count, near=count - 1), view_center=Vec2()))
 
 
-def test_fading_union_keeps_what_delivers_most_within_the_shader_budget() -> None:
+def test_full_arrays_keep_the_selected_sources_and_the_brightest_fading_ones() -> None:
     def group(x: float, *, reflection: bool) -> list[MaterialLight]:
         return [MaterialLight(Vec2(x + i, 0.), 100., (1., 1., 1.), illumination_gain=0. if reflection else 1.,
                               reflection_gain=1. if reflection else 0., ident=int(x) + i + 100 * reflection)
-                for i in range(MAX_ILLUMINATION_SOURCES)]
+                for i in range(MAX_SELECTED_SOURCES // 2)]
 
     lights = [light for x in (0., 1000.) for reflection in (False, True) for light in group(x, reflection=reflection)]
     selection = LightSelection()
@@ -151,9 +167,13 @@ def test_fading_union_keeps_what_delivers_most_within_the_shader_budget() -> Non
     selection.advance(TICK_MS)
     chosen = select_material_lights(lights, view_center=Vec2(1000., 0.), selection=selection)
     assert len(chosen) == MAX_MATERIAL_LIGHTS
-    # The near groups fading out deliver less than the groups fading in under the view.
-    assert all(light.pos.x >= 1000. for light in chosen)
-    assert all(max(light.illumination_gain, light.reflection_gain) == pytest.approx(1. / SLEW_TICKS) for light in chosen)
+    # The far groups, selected, keep their places though they deliver less while fading in; the brightest of the
+    # near ones fading out take the rest.
+    far = [light for light in chosen if light.pos.x >= 1000.]
+    assert len(far) == MAX_SELECTED_SOURCES
+    assert all(max(light.illumination_gain, light.reflection_gain) == pytest.approx(1. / SLEW_TICKS) for light in far)
+    assert all(max(light.illumination_gain, light.reflection_gain) == pytest.approx(1. - 1. / SLEW_TICKS)
+               for light in chosen if light not in far)
 
 
 def test_glow_color_carries_hue_at_full_value_and_peak_in_alpha() -> None:

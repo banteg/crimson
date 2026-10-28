@@ -7,7 +7,7 @@ import pytest
 from crimson.creatures.runtime import CreaturePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.render.frame import RenderFrame
-from crimson.render.rtx.material_lights import MAX_ILLUMINATION_SOURCES, MAX_MATERIAL_LIGHTS, collect_material_lights
+from crimson.render.rtx.material_lights import MAX_SELECTED_SOURCES, collect_material_lights
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
@@ -24,17 +24,18 @@ def frame() -> RenderFrame:
 
 def test_light_budget_follows_view_not_player_order() -> None:
     snapshot = frame()
-    for i, projectile in enumerate(snapshot.state.projectiles.entries[:MAX_MATERIAL_LIGHTS * 2]):
+    for i, projectile in enumerate(snapshot.state.projectiles.entries[:MAX_SELECTED_SOURCES * 2]):
         projectile.active = True
         projectile.type_id = ProjectileTemplateId.PLASMA_RIFLE
         projectile.life_timer = .4
         # Apart enough not to merge as one volley.
-        projectile.pos = Vec2(40 * i, 0)
-    right = collect_material_lights(snapshot, view_center=Vec2(1800, 0))
+        projectile.pos = Vec2(80 * i, 0)
+    far = Vec2(80 * (MAX_SELECTED_SOURCES * 2 - 1), 0)
+    right = collect_material_lights(snapshot, view_center=far)
     snapshot.players.reverse()
-    assert collect_material_lights(snapshot, view_center=Vec2(1800, 0)) == right
+    assert collect_material_lights(snapshot, view_center=far) == right
     left = collect_material_lights(snapshot, view_center=Vec2(0, 0))
-    assert len(right) == len(left) == MAX_ILLUMINATION_SOURCES
+    assert len(right) == len(left) == MAX_SELECTED_SOURCES
     assert min(light.pos.x for light in right) > max(light.pos.x for light in left)
 
 
@@ -62,30 +63,32 @@ def test_projectile_uses_one_height_for_illumination_and_reflection(kind, height
     assert light.length == (100 if kind == ProjectileTemplateId.ION_RIFLE else 17.5)
 
 
-def test_reflection_only_tracers_survive_full_illumination_budget() -> None:
+def test_reflection_only_tracers_take_turns_with_brighter_lamps() -> None:
     from crimson.render.rtx.material_lights import MaterialLight, select_material_lights
 
-    lamps = [MaterialLight(Vec2(i, 0), 200, (2, 1, .5), reflection_gain=0) for i in range(20)]
-    tracers = [MaterialLight(Vec2(i, 0), 50, (.1, .1, .1), illumination_gain=0) for i in range(20)]
+    lamps = [MaterialLight(Vec2(i, 0), 200, (2, 1, .5), reflection_gain=0) for i in range(MAX_SELECTED_SOURCES)]
+    tracers = [MaterialLight(Vec2(i, 0), 50, (.1, .1, .1), illumination_gain=0) for i in range(MAX_SELECTED_SOURCES)]
     selected = select_material_lights(lamps + tracers, view_center=Vec2())
-    assert len(selected) == MAX_MATERIAL_LIGHTS
-    assert sum(s.illumination_gain > 0 for s in selected) == 16
-    assert sum(s.reflection_gain > 0 for s in selected) == 16
-    assert all(not (s.illumination_gain and s.reflection_gain) for s in selected)
+    assert len(selected) == MAX_SELECTED_SOURCES
+    assert sum(s.illumination_gain > 0 for s in selected) == MAX_SELECTED_SOURCES // 2
+    assert sum(s.reflection_gain > 0 for s in selected) == MAX_SELECTED_SOURCES // 2
+    # Alone, either takes the whole budget.
+    assert len(select_material_lights(lamps, view_center=Vec2())) == MAX_SELECTED_SOURCES
 
 
 def test_source_union_masks_unselected_response_without_double_counting() -> None:
     from crimson.render.rtx.material_lights import MaterialLight, select_material_lights
 
     shared = MaterialLight(Vec2(), 200, (4, 4, 4))
-    lamps = [MaterialLight(Vec2(), 200, (2, 2, 2), reflection_gain=.001) for _ in range(20)]
-    mirrors = [MaterialLight(Vec2(), 200, (.5, .5, .5), illumination_gain=.001) for _ in range(20)]
+    lamps = [MaterialLight(Vec2(), 200, (2, 2, 2), reflection_gain=.001) for _ in range(MAX_SELECTED_SOURCES)]
+    mirrors = [MaterialLight(Vec2(), 200, (.5, .5, .5), illumination_gain=.001) for _ in range(MAX_SELECTED_SOURCES)]
     selected = select_material_lights([shared, *lamps, *mirrors], view_center=Vec2())
     assert selected[0] == shared
     assert selected.count(shared) == 1
-    assert len(selected) == 31
-    assert all(s.reflection_gain == 0 for s in selected[1:16])
-    assert all(s.illumination_gain == 0 for s in selected[16:])
+    assert len(selected) == MAX_SELECTED_SOURCES
+    # The budgets' last places are the other response's: a lamp outside the reflection budget reflects nothing.
+    assert all(s.reflection_gain == 0 for s in selected[1:] if s.illumination_gain > 0)
+    assert all(s.illumination_gain == 0 for s in selected[1:] if s.reflection_gain > 0)
 
 
 def test_long_segment_reflects_by_nearest_point_and_lights_by_its_centroid() -> None:
@@ -93,7 +96,7 @@ def test_long_segment_reflects_by_nearest_point_and_lights_by_its_centroid() -> 
 
     # Reflections place a segment at its nearest point; illumination at its energy centroid, as the shaders do.
     beam = MaterialLight(Vec2(5000, 0), 100, (1, 1, 1), direction=Vec2(1, 0), length=10000, ident=99)
-    competitors = [MaterialLight(Vec2(200, 0), 100, (1, 1, 1), ident=i) for i in range(20)]
+    competitors = [MaterialLight(Vec2(200, 0), 100, (1, 1, 1), ident=i) for i in range(MAX_SELECTED_SOURCES)]
     chosen = next(light for light in select_material_lights([*competitors, beam], view_center=Vec2())
                   if light.ident == 99)
     assert chosen.reflection_gain == beam.reflection_gain and chosen.illumination_gain == 0.
@@ -105,7 +108,7 @@ def test_outbound_streak_ranks_by_where_its_light_lands_not_its_muzzle() -> None
     # A streak whose dark tail sits at the view's center but whose light has flown 240 units away.
     streak = MaterialLight(Vec2(120, 0), 200, (1, 1, 1), direction=Vec2(1, 0), length=240, reflection_tail=0.,
                            reflection_gain=0., ident=99)
-    nearby = [MaterialLight(Vec2(0, 60 + i), 200, (1, 1, 1), reflection_gain=0., ident=i) for i in range(16)]
+    nearby = [MaterialLight(Vec2(0, 60 + i), 200, (1, 1, 1), reflection_gain=0., ident=i) for i in range(MAX_SELECTED_SOURCES)]
     assert all(light.ident != 99 for light in select_material_lights([*nearby, streak], view_center=Vec2()))
 
 

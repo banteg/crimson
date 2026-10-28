@@ -636,13 +636,16 @@ emitter RGB is never gamma-decoded again in a material shader. Muzzle lights fol
 the visible flash's suppression flags and warm artwork, with restrained spill for
 ordinary weapons. Blade, Plague, and bubbles do not gain luminous sources.
 
-Illumination and reflection independently select at most 16 sources by radiance,
+Illumination and reflection independently select at most 28 sources by radiance,
 response gain, and distance from the view center: to a segment's energy centroid
 for illumination (so a streak's dark tail at the muzzle does not pull it toward the
-view) and to the nearest point of the segment for reflection. Their union uploads
-at most 32 entries; an entry selected for only one response has the other gain
-zeroed. Shared sources are not counted twice, and reflection-only tracers do not
-consume illumination slots.
+view) and to the nearest point of the segment for reflection. Their union selects at
+most 28 too; an entry selected for only one response has the other gain zeroed.
+Shared sources are not counted twice, and reflection-only tracers do not consume
+illumination slots. When the two want more together, the union takes their sources
+rank by rank, each response's strongest first, so a storm of tracers cannot crowd
+out the lamps, nor the other way round. The shaders' arrays hold 32 entries: the
+other four are for sources fading out.
 
 One trigger pull's pellets (a shotgun's, or Fire Bullets' converted ones) leave the
 muzzle together, so shots that share a kind, an owner, a spawn point and the tick
@@ -663,9 +666,14 @@ explosion's spawn position, since the effect list reorders). Each response fades
 source across its budget's edge over 6 ticks of the run's clock instead of popping
 it: one leaving the budget dims out while the one taking its place brightens. A
 source never seen before starts at its target, so a new shot lights at once, and a
-rewind or a gap over a second starts the fades over. While sources fade the union
-can outgrow 32 entries; it keeps the ones delivering the most light (both responses'
-faded scores summed) and drops the faintest.
+rewind or a gap over a second starts the fades over. While many sources fade at once
+the union can outgrow 32 entries; the selected sources keep theirs, and of the ones
+fading out, those delivering the least light (both responses' faded scores summed)
+give way. Holding every fading source's entry instead, so that a new one waited for a
+free entry, was tried: in late Survival the entries were full on a tenth of the ticks,
+and the shots waiting there lost far more light than the cut ever does. The fading
+sources it drops are dim by then; in long late runs none carried 5% of its
+response's light.
 
 Ground roughness broadens the explicit source footprint. Creature diffuse dome
 shading, the artistic silhouette rim, and thin-part transmission follow illumination
@@ -1128,7 +1136,7 @@ per impact contribute sources, ranked by segment distance to the view center
 at most two per shot into one small cell ([rendering pipeline](rendering-pipeline.md#projectile-render-and-bonus-render)).
 This bounds source preparation as well as brightness in dense crowds. This
 is an artistic brightness cap, not a physical energy simulation. Ordinary global
-source ranking and its 16 illumination / 16 reflection limits still apply.
+source ranking and its 28-source budgets still apply.
 
 The original beam stays lit during its fade. Arc sources add illumination and
 reflections through the shared ground, creature, and bonus light list. Classic
@@ -1282,8 +1290,8 @@ The display integrates 14 vertical samples and six transmittance samples per
 light into a reusable RGBA16F viewport buffer capped at 640 pixels on its longest
 axis. Premultiplied reconstruction preserves HDR radiance and translucent edges;
 the world itself stays at full output resolution. It uses the shared native weapon sources, including rocket exhaust,
-Fire/Ion beams, and explosion lights, with the existing 16 illumination-source
-limit. Fractional source gains are preserved; gains above four are capped for
+Fire/Ion beams, and explosion lights: of those reaching the domain, the 16 that
+scatter most. Fractional source gains are preserved; gains above four are capped for
 smoke response. A segment scatters by the shared beam profile, so a streak's
 tail lights the cloud less than its head: the smoke sees that radiance ramp
 averaged over as much of the segment as it is far from it. Smoke beside a long

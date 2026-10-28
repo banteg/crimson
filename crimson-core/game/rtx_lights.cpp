@@ -3,9 +3,10 @@
 // segments and annuli read from the frame's projectiles, muzzle flashes, perks,
 // rockets, detonations and flame particles. RGB is linear source radiance; the
 // illumination and reflection gains and reaches are art controls. A volley's
-// co-located shots are one source. Each response keeps its 16 strongest sources
+// co-located shots are one source. Each response keeps its 28 strongest sources
 // for the view, fading them across that edge by a per-source ident, and their
-// union goes to the host (game/rtx.cpp), at most 32. Ion arcs' contacts glow on
+// union of at most 28 (taking turns past that) goes to the host (game/rtx.cpp)
+// with sources fading out, at most 32. Ion arcs' contacts glow on
 // the ground instead (rtx_contact_glows). Reading the run only: nothing here
 // writes it.
 #include "crimsonland_gameplay.h"
@@ -40,7 +41,8 @@ namespace {
 
 const float HALF_PI = 1.5707964f;
 const float INF = 1e30f;
-enum { MAX_ILLUMINATION = 16, MAX_REFLECTION = 16, MAX_EXPLOSIONS = 128, MAX_FLAME_CELLS = 128 };
+// MAX_SELECTED: each response's budget, and their union's (material_lights.py's MAX_SELECTED_SOURCES).
+enum { MAX_SELECTED = 28, MAX_EXPLOSIONS = 128, MAX_FLAME_CELLS = 128 };
 // Every source a frame can hold, so selection sees them all: each player's aura,
 // sight and muzzle; each projectile and its four arcs; each secondary; each
 // explosion's shell and fireball; each flame cell.
@@ -506,17 +508,19 @@ float score(const Light &light, bool reflection, float view_x, float view_y) {
          (1 + distance_sq(light, view_x, view_y, reflection) / fmaxf(1, radius * radius));
 }
 
-// The `limit` best-scoring sources of one response, as flags; ties go to the lower ident.
-void select(const float *scores, int limit, bool *chosen) {
-  for (int n = 0; n < limit; ++n) {
+// The MAX_SELECTED best-scoring sources of one response, as their ranks (-1
+// for the rest); ties go to the lower ident.
+void select(const float *scores, int *ranks) {
+  std::fill(ranks, ranks + source_count, -1);
+  for (int n = 0; n < MAX_SELECTED; ++n) {
     int best = -1;
     for (int i = 0; i < source_count; ++i)
-      if (!chosen[i] && scores[i] > 0 &&
+      if (ranks[i] < 0 && scores[i] > 0 &&
           (best < 0 || scores[i] > scores[best] || (scores[i] == scores[best] && sources[i].ident < sources[best].ident)))
         best = i;
     if (best < 0)
       break;
-    chosen[best] = true;
+    ranks[best] = n;
   }
 }
 
@@ -1017,20 +1021,36 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   explosion_sources();
   flame_sources();
 
-  // Each response selects independently and fades across its budget's edge; a
-  // source chosen by one alone has the other's gain zeroed.
+  // Each response selects independently; past MAX_SELECTED their union takes
+  // the responses' sources rank by rank. Each fades across its budget's edge;
+  // a source chosen by one alone has the other's gain zeroed.
   static float scores[2][MAX_SOURCES], weights[2][MAX_SOURCES];
-  static bool chosen[2][MAX_SOURCES];
-  memset(chosen, 0, sizeof chosen);
+  static int ranks[2][MAX_SOURCES], first_rank[MAX_SOURCES], order[MAX_SOURCES];
+  static bool selected[MAX_SOURCES], chosen[2][MAX_SOURCES];
   for (int reflection = 0; reflection < 2; ++reflection) {
     for (int i = 0; i < source_count; ++i)
       scores[reflection][i] = score(sources[i], reflection, view_x, view_y);
-    select(scores[reflection], reflection ? MAX_REFLECTION : MAX_ILLUMINATION, chosen[reflection]);
+    select(scores[reflection], ranks[reflection]);
+  }
+  int ranked = 0;
+  for (int i = 0; i < source_count; ++i)
+    if (ranks[0][i] >= 0 || ranks[1][i] >= 0) {
+      first_rank[i] = ranks[1][i] < 0 || (ranks[0][i] >= 0 && ranks[0][i] < ranks[1][i]) ? ranks[0][i] : ranks[1][i];
+      order[ranked++] = i;
+    }
+  std::sort(order, order + ranked, [&](int a, int b) {
+    return first_rank[a] != first_rank[b] ? first_rank[a] < first_rank[b] : sources[a].ident < sources[b].ident;
+  });
+  memset(selected, 0, sizeof selected);
+  for (int n = 0; n < std::min(ranked, (int)MAX_SELECTED); ++n)
+    selected[order[n]] = true;
+  for (int reflection = 0; reflection < 2; ++reflection) {
+    for (int i = 0; i < source_count; ++i)
+      chosen[reflection][i] = selected[i] && ranks[reflection][i] >= 0;
     selection.slew(reflection, chosen[reflection], weights[reflection]);
   }
-  // The union, brightest first (both responses' delivered scores summed); the
-  // faintest fading sources give way past `capacity`.
-  static int order[MAX_SOURCES];
+  // The union, brightest first (both responses' delivered scores summed); past
+  // `capacity` the faintest fading sources give way, never a selected one.
   static float delivered[MAX_SOURCES];
   int union_count = 0;
   for (int i = 0; i < source_count; ++i)
@@ -1038,10 +1058,12 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
       delivered[i] = scores[0][i] * weights[0][i] + scores[1][i] * weights[1][i];
       order[union_count++] = i;
     }
-  std::sort(order, order + union_count, [&](int a, int b) {
+  auto brighter = [&](int a, int b) {
     return delivered[a] != delivered[b] ? delivered[a] > delivered[b] : sources[a].ident < sources[b].ident;
-  });
+  };
+  std::sort(order, order + union_count, [&](int a, int b) { return selected[a] != selected[b] ? selected[a] : brighter(a, b); });
   int count = std::min(union_count, capacity);
+  std::sort(order, order + count, brighter);
   for (int n = 0; n < count; ++n) {
     int i = order[n];
     const Light &l = sources[i];
