@@ -239,6 +239,8 @@ class ParticlePool:
             alive = entry.intensity > (0.0 if style == int(ParticleStyleId.FLAMETHROWER) else f32(0.8))
             if not alive:
                 entry.active = False
+                if not bubblegun:
+                    sprite_effects.soot(idx, pos=entry.pos, vel=entry.vel)
                 if style == int(ParticleStyleId.BUBBLEGUN) and entry.target_id != -1:
                     target_id = int(entry.target_id)
                     if 0 <= target_id < len(creatures):
@@ -438,6 +440,15 @@ class _SmokeCapturePool:
             yield
         finally:
             capture.retention_seconds, capture.profile = previous
+
+    def soot(self, slot: int, *, pos: Vec2, vel: Vec2) -> None:
+        """A flame particle burning out leaves a faint puff of soot, briefly warm, drifting on at a fraction of its speed."""
+        capture = self._smoke_capture()
+        if capture.sink is not None:
+            capture.sink.append(SmokeEmission(
+                slot=slot, generation=0, pos=pos, vel=vel*.075, scale=16., color=RGBA(1., 1., 1., .06), rotation=0.,
+                source="particle", profile="soot",
+            ))
 
     def _smoke_capture(self) -> _SmokeCapture:
         capture = _smoke_captures.get(self)
