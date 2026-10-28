@@ -9,7 +9,6 @@ import {
   type CustomQuest,
   type CustomQuestDetailView,
   type CustomQuestsListView,
-  type CustomQuestsSort,
   type GameCustomQuests,
   type GameScore,
   type JoinView,
@@ -419,18 +418,16 @@ export async function customQuestPortableBytes(env: Env, id: string): Promise<Ui
   return encodePortableQuest(JSON.parse(row.definition) as CustomQuest);
 }
 
-// Published quests whose creator is not banned, with how many players their boards have, newest first or the most
-// played first.
-async function customQuestRows(env: Env, category: Category, sort: CustomQuestsSort, limit: number, offset = 0) {
+// Published quests whose creator is not banned, newest first, with how many players their boards have.
+async function customQuestRows(env: Env, category: Category, limit: number, offset = 0) {
   const { results } = await env.DB.prepare(
-    `SELECT q.id, q.account_id, q.title, q.author, q.source IS NOT NULL AS has_source, q.definition, q.first_run_id, q.created_at,
+    `SELECT q.id, q.account_id, q.title, q.author, q.source IS NOT NULL AS has_source, q.definition, q.created_at,
        (SELECT count(DISTINCT r.account_id) FROM runs r JOIN accounts a ON a.id = r.account_id
         WHERE r.board = 'quests' AND r.quest = q.id AND ${RANKED_RUN} AND ${runCategory("r")} = ?) AS players,
        (SELECT min(r.score) FROM runs r JOIN accounts a ON a.id = r.account_id
         WHERE r.board = 'quests' AND r.quest = q.id AND ${RANKED_RUN} AND ${runCategory("r")} = ?) AS top_score
      FROM custom_quests q LEFT JOIN accounts ca ON ca.id = q.account_id
-     WHERE ca.banned IS NULL OR ca.banned = 0
-     ORDER BY ${sort === "popular" ? "players DESC, " : ""}q.created_at DESC LIMIT ? OFFSET ?`,
+     WHERE ca.banned IS NULL OR ca.banned = 0 ORDER BY q.created_at DESC LIMIT ? OFFSET ?`,
   )
     .bind(category, category, limit, offset)
     .all<{
@@ -440,7 +437,6 @@ async function customQuestRows(env: Env, category: Category, sort: CustomQuestsS
       author: string | null;
       has_source: number;
       definition: string;
-      first_run_id: string;
       created_at: number;
       players: number;
       top_score: number | null;
@@ -449,25 +445,21 @@ async function customQuestRows(env: Env, category: Category, sort: CustomQuestsS
   return { results, who };
 }
 
-// A page of the game's custom quest browser, with the best three runs of each quest's board.
-export async function gameCustomQuests(env: Env, sort: CustomQuestsSort, page: number, size: number): Promise<GameCustomQuests> {
-  const { results, who } = await customQuestRows(env, "human", sort, size + 1, page * size);
-  const shown = results.slice(0, size);
-  const best = await Promise.all(shown.map((row) => gameScores(env, "quests", row.id, "human", 3)));
+// A page of the game's custom quest browser.
+export async function gameCustomQuests(env: Env, page: number, size: number): Promise<GameCustomQuests> {
+  const { results, who } = await customQuestRows(env, "human", size + 1, page * size);
   return {
-    quests: shown.map((row, i) => {
+    quests: results.slice(0, size).map((row) => {
       const def = JSON.parse(row.definition) as CustomQuest;
       return {
         id: row.id,
         title: row.title,
         author: row.author ?? (row.account_id !== null ? who.get(row.account_id)?.name : null) ?? "",
         players: row.players,
-        proof: row.first_run_id,
         start_weapon_id: def.start_weapon_id,
         no_bonuses: def.no_bonuses,
         no_perks: def.no_perks,
         no_weapons: def.no_weapons,
-        best: best[i]!.map(({ name, score }) => ({ name, score })),
       };
     }),
     more: results.length > size,
@@ -475,7 +467,7 @@ export async function gameCustomQuests(env: Env, sort: CustomQuestsSort, page: n
 }
 
 export async function customQuestsListView(env: Env, category: Category, limit = 100): Promise<CustomQuestsListView> {
-  const { results, who } = await customQuestRows(env, category, "newest", limit);
+  const { results, who } = await customQuestRows(env, category, limit);
   return {
     category,
     quests: results.map((row) => {

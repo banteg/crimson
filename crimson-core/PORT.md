@@ -299,21 +299,23 @@ The main menu's Mods entry, which no version runs, browses the
 [custom quests](../docs/formats/quest-dsl.md) published on the leaderboard
 ([`host/custom_quests.inc`](host/custom_quests.inc)). It shows where the host
 takes runs to the leaderboard, not inside another site's page, since a custom
-quest plays ranked. The screen is the databases' two panels: the left lists a
-page of ten quests, newest or most played first, in the quest list's rows; the
-right shows the selected one's start weapon, what it takes out of the run,
-how many players cleared it and its board's best three times, with Play and
-Watch proof, which plays the clear that published it as a board run's Watch
-does. A click, or the focus moving to a row, selects it; Enter plays the
-focused one; the arrow keys and the panel's buttons page.
+quest plays ranked. The screen is the databases' two panels. The left lists the
+quests newest first in the quest list's rows, each title with its author in the
+list's grey, ten at a time: the list scrolls (the wheel, the arrow keys, the
+pad) and loads the next page as it nears the end. A click or the arrow keys
+select a quest, and Play or Enter plays it; Back returns to the main menu. The
+right panel shows the selected quest as the weapon database shows a weapon:
+how many players cleared it in the corner, its title and author, its start
+weapon's icon and name (with no other weapons when none drops), and the
+weapons, bonuses and perks it turns off.
 
 The host fetches a page from `POST /api/custom/browse`
 (`HOST_LEADERBOARD_CUSTOM`, `game_custom_request`) and a quest's table from
 `/custom/<id>.bin` into `quests/online/<id>.bin` (`HOST_LEADERBOARD_QUEST`,
 `game_quest_download`), which later plays reuse. Play starts the quest as a
 link to it does, the player's own menu settings kept for after it. A failed
-page says the leaderboard can't be reached, and a failed table fetch is asked
-for again on the next Play. `node crimson-core/checks/game_custom.mjs <copy>`
+first page says the leaderboard can't be reached, and a failed table fetch is
+asked for again on the next Play. `node crimson-core/checks/game_custom.mjs <copy>`
 walks the screen as the browser host serves it.
 
 ### Gamepads

@@ -556,29 +556,27 @@ describe("custom quests", () => {
       }),
     ]);
 
-    // The game's browser: the quest with its proof and board, and no page past it.
+    // The game's browser: the quest, and no page past it.
     const browse = async (body: unknown) => (await post("/api/custom/browse", body)).json() as Promise<GameCustomQuests>;
     const quest = detail.definition;
-    expect(await browse({ sort: "popular", page: 0 })).toEqual({
+    expect(await browse({ page: 0 })).toEqual({
       quests: [
         {
           id: questId,
           title: "Quick Clear",
           author: "banteg",
           players: 1,
-          proof: published.id,
           start_weapon_id: quest.start_weapon_id,
           no_bonuses: quest.no_bonuses,
           no_perks: quest.no_perks,
           no_weapons: quest.no_weapons,
-          best: [{ name: "banteg", score: vectors.custom_quest_run.score }],
         },
       ],
       more: false,
     });
     expect(await browse({ page: 1 })).toEqual({ quests: [], more: false });
-    expect((await post("/api/custom/browse", { sort: "oldest" })).status).toBe(400);
     expect((await post("/api/custom/browse", { page: -1 })).status).toBe(400);
+    expect((await post("/api/custom/browse", { page: "1" })).status).toBe(400);
 
     const bin = await SELF.fetch(`${ORIGIN}/custom/${questId}.bin`);
     expect(bin.status).toBe(200);
