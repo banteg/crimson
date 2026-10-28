@@ -569,10 +569,22 @@ Target &target_or_back(int id) {
   return it != textures.end() ? it->second : textures[0];
 }
 
+// The RTX debug view the world shows (host_scene, game/rtx.cpp): 0 shaded, the
+// ground's maps up to no-direct, then the smoke's. A map keeps only the ground's
+// shade, or the smoke's, of the world: its other draws land in `discarded`.
+enum { DEBUG_NO_DIRECT = 14, DEBUG_SMOKE = 15 };
+int scene_debug;
+bool smoke_drawing;
+Target discarded;
+bool debug_map() { return rtx && scene_debug && scene_debug != DEBUG_NO_DIRECT; }
+bool world_kept() {
+  return !debug_map() || (scene_debug >= DEBUG_SMOKE ? smoke_drawing : material == HOST_PASS_GROUND);
+}
+
 // While the RTX world draws, the back buffer's draws go to the HDR target.
 Target &drawing_target(int id) {
   Target &t = target_or_back(id);
-  return world && &t == &textures[0] ? hdr : t;
+  return world && &t == &textures[0] ? world_kept() ? hdr : discarded : t;
 }
 
 // One target's image onto another: a copy when they match, else drawn scaled.
@@ -1032,7 +1044,7 @@ bool ground_draw(const Geometry &geometry) {
   pass_into(t);
   Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
-  fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", 0);
+  fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", scene_debug < DEBUG_SMOKE ? scene_debug : 0);
   fragment.i("u_debug_display", 1);
   fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
   fragment.set("u_visibility_world", ground_visibility.rect, 16);
@@ -1110,6 +1122,7 @@ bool wgpu_renderer_set_rtx(bool enabled) {
   release(beam_vis);
   heat_seconds = -1;
   release(pressured);
+  release(discarded);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -1459,6 +1472,7 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
   memcpy(beam_gain, v + 5, sizeof beam_gain);
+  scene_debug = (int)v[7];
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
   beam_lights = false;
   for (int i = 0; i < light_count; ++i) {
@@ -1668,7 +1682,7 @@ void wgpu_w2c_host_smoke_draw(struct w2c_host *, u32 view, u32 lights, u32 light
   o.alpha_src = WGPUBlendFactor_One, o.alpha_dst = WGPUBlendFactor_OneMinusSrcAlpha;
   Uniforms vertex(*smoke_display.vert), fragment(*smoke_display.frag);
   vertex.set("rect", v, 16).v2("target_size", (float)t.logical_width, (float)t.logical_height);
-  fragment.i("u_state_flip", 1).set("u_origin", v + 4, 8).set("u_size", v + 6, 8).f("u_opacity", v[8]).i("u_debug", 0);
+  fragment.i("u_state_flip", 1).set("u_origin", v + 4, 8).set("u_size", v + 6, 8).f("u_opacity", v[8]).i("u_debug", scene_debug >= DEBUG_SMOKE ? scene_debug : 0);
   fragment.i("u_light_count", (int)light_count).i("u_sight_count", (int)sight_count);
   float pos[SMOKE_MAX_LIGHTS * 4], rgb[SMOKE_MAX_LIGHTS * 4], shape[SMOKE_MAX_LIGHTS * 4], tails[SMOKE_MAX_LIGHTS] = {};
   const float *l = (const float *)(client_memory() + lights);
@@ -1687,11 +1701,14 @@ void wgpu_w2c_host_smoke_draw(struct w2c_host *, u32 view, u32 lights, u32 light
        &fragment);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
   // The premultiplied composite over the world.
-  pass_into(t);
+  smoke_drawing = true;
+  Target &into = drawing_target(current_target);
+  smoke_drawing = false;
+  pass_into(into);
   Output over;
-  over.format = format_of(t);
+  over.format = format_of(into);
   over.blend = true, over.src = WGPUBlendFactor_One, over.dst = WGPUBlendFactor_OneMinusSrcAlpha;
-  over.mask = t.flags & TARGET_OPAQUE ? 7 : 15;
+  over.mask = into.flags & TARGET_OPAQUE ? 7 : 15;
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(blit, over));
   bind(blit, fragment_group(blit, {{"source", smoke_composite.view, linear_clamp()}}), nullptr, nullptr);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
@@ -1759,7 +1776,18 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     }
     hdr.logical_width = back.logical_width;
     hdr.logical_height = back.logical_height;
-    copy(back, hdr);
+    if (debug_map() && (discarded.width != width || discarded.height != height || !discarded.texture)) {
+      release(discarded);
+      discarded.width = width, discarded.height = height, discarded.flags = hdr.flags;
+      allocate(discarded);
+    }
+    discarded.logical_width = hdr.logical_width, discarded.logical_height = hdr.logical_height;
+    if (scene_debug >= DEBUG_SMOKE) { // the smoke's maps over black
+      WGPUColor black = {0, 0, 0, 1};
+      begin_pass(hdr, &black);
+    } else {
+      copy(back, hdr);
+    }
     world = true;
   } else if (pass_kind == HOST_PASS_WORLD_END && world) {
     world = false;
@@ -1800,11 +1828,20 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     Output o;
     o.format = format_of(back);
     o.mask = 7;
+    // A world drawn smaller (render_size) scales up as it tonemaps; a debug
+    // map's values go to the display as they are.
+    bool exact = world_image->width == back.width && world_image->height == back.height;
+    if (debug_map()) {
+      wgpuRenderPassEncoderSetPipeline(pass, pipeline(blit, o));
+      bind(blit, fragment_group(blit, {{"source", world_image->view, exact ? nearest_clamp() : linear_clamp()}}),
+           nullptr, nullptr);
+      wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+      end_pass();
+      return;
+    }
     Uniforms fragment(*tonemap.frag);
     fragment.v4("colDiffuse", 1, 1, 1, 1).f("u_edr_headroom", edr_headroom);
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(tonemap, o));
-    // A world drawn smaller (render_size) scales up as it tonemaps.
-    bool exact = world_image->width == back.width && world_image->height == back.height;
     bind(tonemap, fragment_group(tonemap, {{"texture0", world_image->view, exact ? nearest_clamp() : linear_clamp()}}),
          nullptr, &fragment);
     wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);

@@ -101,6 +101,8 @@ void perk_apply(int);
 #include "game.inc"
 // What RTX keeps beside a run (game/rtx.cpp), which a new or restored run clears.
 extern "C" void rtx_reset();
+// An RTX debug view picked since the world last drew (game/rtx.cpp), which a paused replay draws again.
+extern "C" bool rtx_debug_redraw();
 #endif
 static cvar_float_t friendly, transparency, verbose, pad_distance, bodies_fade;
 // Device output does not consume gameplay RNG; a tick's music call draws its
