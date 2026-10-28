@@ -172,7 +172,7 @@ The relevant table indices are:
 | ---: | --- | --- |
 | 0 | `ui_sign_crimson` | Logo sign (`ui_signCrimson`) |
 | 1 | `ui_element_slot_01_main_menu_aux` | Unused/mystery (participates in layout adjustments) |
-| 2 | `ui_element_slot_02_main_menu_primary` | Top item: `BUY NOW` (demo) or `MODS` (full). **Rewrite note:** `BUY NOW` is out of scope. |
+| 2 | `ui_element_slot_02_main_menu_primary` | Top item: `BUY NOW` (demo) or `MODS` (full). **Rewrite note:** `BUY NOW` is out of scope; the web and native clients' `MODS` browses custom quests. |
 | 3 | `ui_element_slot_03_main_menu_play_game` | `PLAY GAME` |
 | 4 | `ui_element_slot_04_main_menu_options` | `OPTIONS` |
 | 5 | `ui_element_slot_05_main_menu_statistics` | `STATISTICS` |

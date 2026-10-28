@@ -8,6 +8,8 @@
     "dxversion/win32_file_get_version_words.cpp",
     "gameplay/bonus_meta.cpp",
     "gameplay/quest_meta.cpp",
+    "mods/mods_any_available.cpp",
+    "mods/mods_menu_update.cpp",
     "perks/perk_meta.cpp",
     "platform/grim_load_interface.cpp"
   ],

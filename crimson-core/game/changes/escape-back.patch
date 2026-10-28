@@ -1,6 +1,6 @@
 Escape takes every screen's way out, as it does in the Python port, so a pad's B, which presses Escape (game/pad.cpp),
 does too: the original's options, statistics, play game, high score, database and credits screens went back on Escape,
-but the controls screen took it only to cancel a rebind, and the quest list, the perk screen, the mods menu and the
+but the controls screen took it only to cancel a rebind, and the quest list, the perk screen and the
 secret credits only from their Back, Cancel or Main Menu buttons. Escape now presses those buttons, and Main Menu on
 the end screens once their buttons show (game over, quest results, quest failed and the final quest's end note), past
 the name entry, which a stray press would otherwise leave without saving the score. An open list closes on Escape
@@ -31,14 +31,6 @@ before the screen takes it (game/pad.cpp ui_list_widget_update).
                  (float *)&button_position,
 -                (ui_button_t *)&cancel_button)) {
 +                (ui_button_t *)&cancel_button)
-+            || grim_interface_ptr->grim_was_key_pressed(1)) {
---- a/decomp/1.9/crimsonland/mods/mods_menu_update.cpp
-+++ b/decomp/1.9/crimsonland/mods/mods_menu_update.cpp
-@@ -362,3 +362,4 @@
-         if (ui_button_update(
-                 (float *)&button_position,
--                (ui_button_t *)&main_menu_button)) {
-+                (ui_button_t *)&main_menu_button)
 +            || grim_interface_ptr->grim_was_key_pressed(1)) {
 --- a/decomp/1.9/crimsonland/mods/credits_secret_alien_zookeeper_update.cpp
 +++ b/decomp/1.9/crimsonland/mods/credits_secret_alien_zookeeper_update.cpp

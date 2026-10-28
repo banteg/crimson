@@ -28,6 +28,8 @@ namespace {
 namespace fs = std::filesystem;
 constexpr size_t JSON_LIMIT = 4 << 20, REPLAY_LIMIT = 16 << 20,
                  ENVELOPE_LIMIT = 24 << 20;
+// A custom quest's table (PortableQuest, crimson-core/host/api.h).
+constexpr size_t QUEST_BYTES = 6184;
 struct Url {
   CURLU *handle = curl_url();
   explicit Url(const std::string &text) {
@@ -122,6 +124,19 @@ bool LeaderboardNetwork::run_id(const std::string &id) {
   return id.size() == 64 && std::all_of(id.begin(), id.end(), [](char c) {
            return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
          });
+}
+// A custom quest's id: its digest's first 12 hex digits.
+bool LeaderboardNetwork::quest_id(const std::string &id) {
+  return id.size() == 12 && std::all_of(id.begin(), id.end(), [](char c) {
+           return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+         });
+}
+// The site the API is under, which serves replays and quest tables.
+std::string LeaderboardNetwork::site() const {
+  std::string site = api_;
+  if (site.size() >= 4 && site.compare(site.size() - 4, 4, "/api") == 0)
+    site.resize(site.size() - 4);
+  return site;
 }
 std::string LeaderboardNetwork::replay_link(const std::string &text,
                                             const std::string &api) {
@@ -236,11 +251,12 @@ bool LeaderboardNetwork::poll(Event &event) {
 }
 void LeaderboardNetwork::work(int lane) {
   // Scores follow the upload pass, as Update scores does in the web host.
-  // Login and replay downloads never wait behind that pass.
+  // Login, custom quest pages and downloads never wait behind that pass.
   auto belongs = [lane](const Request &r) {
-    return lane == ((r.kind == REPLAY || r.kind == LINK)     ? 2
-                    : r.kind == CHALLENGE || r.kind == LOGIN ? 1
-                                                             : 0);
+    return lane == ((r.kind == REPLAY || r.kind == LINK || r.kind == QUEST) ? 2
+                    : r.kind == CHALLENGE || r.kind == LOGIN || r.kind == CUSTOM
+                        ? 1
+                        : 0);
   };
   for (;;) {
     Request request;
@@ -446,6 +462,29 @@ LeaderboardNetwork::Event LeaderboardNetwork::perform(const Request &request) {
     event.lines = std::move(sent.lines);
     return event;
   }
+  if (request.kind == CUSTOM) {
+    Event event =
+        http(CUSTOM, api_ + "/custom/browse", &request.body, JSON_LIMIT);
+    event.ok = event.ok && event.status == 200 &&
+               event.body.find('\0') == std::string::npos;
+    return event;
+  }
+  if (request.kind == QUEST) {
+    if (!quest_id(request.body))
+      return {QUEST, false, 0, {}, "Invalid quest id"};
+    Event event = http(QUEST, site() + "/custom/" + request.body + ".bin",
+                       nullptr, QUEST_BYTES);
+    event.ok =
+        event.ok && event.status == 200 && event.body.size() == QUEST_BYTES;
+    if (event.ok) {
+      std::string file = path("quests/online/" + request.body + ".bin", true);
+      event.ok = atomic_write(file, event.body);
+      if (!event.ok)
+        event.error = "Could not save downloaded quest";
+    }
+    event.body.clear();
+    return event;
+  }
   if (request.kind == CHALLENGE || request.kind == LOGIN) {
     Event event = http(
         request.kind,
@@ -506,11 +545,8 @@ LeaderboardNetwork::Event LeaderboardNetwork::perform(const Request &request) {
   }
   if (!run_id(request.body))
     return {REPLAY, false, 0, {}, "Invalid replay id"};
-  std::string site = api_;
-  if (site.size() >= 4 && site.compare(site.size() - 4, 4, "/api") == 0)
-    site.resize(site.size() - 4);
-  Event event = http(REPLAY, site + "/runs/" + request.body + ".crd", nullptr,
-                     REPLAY_LIMIT);
+  Event event = http(REPLAY, site() + "/runs/" + request.body + ".crd",
+                     nullptr, REPLAY_LIMIT);
   event.ok = event.ok && event.status == 200;
   if (event.ok) {
     std::string file = path("replays/online/" + request.body + ".crd", true);

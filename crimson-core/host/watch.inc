@@ -584,6 +584,7 @@ static bool watch_on_menu() {
 // replay is the first thing heard. A link that comes to nothing leaves the
 // menu its tune after all.
 static bool custom_quest_linked;
+static void custom_quest_begin(); // host/custom_quests.inc
 static int watch_held_tune = -1;
 static bool watch_holds_tune(int sfx_id) {
   if (!watch.awaited && !watch.linked && !custom_quest_linked)
@@ -615,25 +616,7 @@ static void watch_follow_link() {
       watch_start(watch.link, watch.link_card, watch.link_id);
     } else {
       custom_quest_linked = false;
-      if (!custom_quest_restore_menu) {
-        watch.menu = menu_shown();
-        custom_quest_saved_ranked = ranked_checked;
-        custom_quest_restore_menu = true;
-      }
-      config_blob.game_mode = GAME_MODE_QUEST;
-      config_blob.hardcore = 0;
-      config_blob.player_count = 1;
-      quest_stage_major = 0;
-      quest_stage_minor = 0;
-      ranked_checked = true;
-      run_active = 0;
-      ui_sign_crimson.focus_disabled = 0;
-      ui_transition_direction = 0;
-      game_state_pending = GAME_STATE_GAMEPLAY;
-      music_fade_out_all(music_track_crimson_theme_id);
-      music_fade_out_all(music_track_shortie_monk_id);
-      music_fade_out_all(music_track_game_playlist);
-      screen_fade_ramp_flag = 1;
+      custom_quest_begin();
     }
     ui_elements_timeline = 0;
     // The intro's tune and the menu's theme, which a link that came after them

@@ -544,6 +544,7 @@ static void live_poll_prompt() {
 #include "coop_wire.inc"
 #include "coop_ranked.inc"
 #include "coop_live.inc"
+#include "custom_quests.inc"
 
 extern "C" {
 // game_frame (game/frame.cpp), after polling input: the ticks this pass runs,
@@ -710,6 +711,12 @@ void game_state_set(game_state_id_t state) {
       custom_quest_restore();
     }
     game_state_set_recovered(state);
+    // The Mods entry's custom quests show a quest on the databases' second
+    // panel, and ask for their first page each time they open (host/custom_quests.inc).
+    if (state == GAME_STATE_MODS_MENU) {
+      ui_element_slot_33.active = 1;
+      mods_menu_refresh_pending = 1;
+    }
     if (watches || coop)
       game_status_blob = status;
     if (watches)

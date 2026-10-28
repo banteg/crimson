@@ -278,6 +278,30 @@ class NativeNetwork(unittest.TestCase):
         self.assertFalse(self.request(4, "../escape")[0])
         self.assertEqual(len(self.calls), 2)
 
+    def test_custom_quests_page(self):
+        self.reply = b'{"quests": [], "more": false}'
+        body = '{"sort": "popular", "page": 2}'
+        self.assertEqual(self.request(6, body), (True, 200, self.reply))
+        self.assertEqual(self.calls[-1][:3], ("POST", "/api/custom/browse", body.encode()))
+        self.status = 500
+        self.assertFalse(self.request(6, body)[0])
+
+    def test_quest_download_and_missing(self):
+        quest = "06c4073e94c5"
+        self.reply = bytes(range(256)) * 24 + b"\0" * 40
+        self.assertTrue(self.request(7, quest)[0])
+        target = self.root / "quests/online" / f"{quest}.bin"
+        self.assertEqual(target.read_bytes(), self.reply)
+        self.assertEqual(self.calls[-1][:2], ("GET", f"/custom/{quest}.bin"))
+        # A table of another size is none the game plays, and leaves the one it has.
+        self.reply = b"short"
+        self.assertFalse(self.request(7, quest)[0])
+        self.assertEqual(len(target.read_bytes()), 6184)
+        self.status = 404
+        self.assertEqual(self.request(7, "0" * 12)[:2], (False, 404))
+        self.assertFalse(self.request(7, "../escape")[0])
+        self.assertEqual(len(self.calls), 3)
+
     def test_oversized_replay_keeps_existing_file(self):
         self.reply = b"old"
         self.assertTrue(self.request(4, RUN)[0])

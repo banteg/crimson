@@ -12,7 +12,7 @@
 // the main thread drains completions before running the next game frame.
 class LeaderboardNetwork {
 public:
-  enum Kind { UPLOAD, SCORES, CHALLENGE, LOGIN, REPLAY, LINK, COUNT };
+  enum Kind { UPLOAD, SCORES, CHALLENGE, LOGIN, REPLAY, LINK, CUSTOM, QUEST, COUNT };
   struct Event {
     Kind kind;
     bool ok = false;
@@ -33,6 +33,7 @@ public:
   static std::string replay_link(const std::string &text,
                                  const std::string &api);
   static bool run_id(const std::string &id);
+  static bool quest_id(const std::string &id);
   static std::string quote(const std::string &latin1);
 
 private:
@@ -54,5 +55,6 @@ private:
              size_t limit);
   bool upload(Event &event);
   std::string path(const std::string &relative, bool create_parent = false);
+  std::string site() const;
 };
 #endif

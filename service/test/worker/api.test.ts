@@ -4,7 +4,7 @@ import { concat, COOP_RUN_DOMAIN, fromHex, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256
 import { confirmMerge } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
 import { decodeReplay, inflateReplay, REPLAY_RULES } from "../../src/replay";
-import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameScore, LoginView, ProfileView, ReplaysView, RunDetailView, Timeline } from "../../src/api-types";
+import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameCustomQuests, GameScore, LoginView, ProfileView, ReplaysView, RunDetailView, Timeline } from "../../src/api-types";
 import { STALE, timelineFor, validateRecipeSource } from "../../src/runs";
 import vectors from "../vectors.json";
 
@@ -555,6 +555,30 @@ describe("custom quests", () => {
         top_score: vectors.custom_quest_run.score,
       }),
     ]);
+
+    // The game's browser: the quest with its proof and board, and no page past it.
+    const browse = async (body: unknown) => (await post("/api/custom/browse", body)).json() as Promise<GameCustomQuests>;
+    const quest = detail.definition;
+    expect(await browse({ sort: "popular", page: 0 })).toEqual({
+      quests: [
+        {
+          id: questId,
+          title: "Quick Clear",
+          author: "banteg",
+          players: 1,
+          proof: published.id,
+          start_weapon_id: quest.start_weapon_id,
+          no_bonuses: quest.no_bonuses,
+          no_perks: quest.no_perks,
+          no_weapons: quest.no_weapons,
+          best: [{ name: "banteg", score: vectors.custom_quest_run.score }],
+        },
+      ],
+      more: false,
+    });
+    expect(await browse({ page: 1 })).toEqual({ quests: [], more: false });
+    expect((await post("/api/custom/browse", { sort: "oldest" })).status).toBe(400);
+    expect((await post("/api/custom/browse", { page: -1 })).status).toBe(400);
 
     const bin = await SELF.fetch(`${ORIGIN}/custom/${questId}.bin`);
     expect(bin.status).toBe(200);

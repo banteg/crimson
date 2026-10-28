@@ -293,6 +293,29 @@ atomically and at most 16 MiB, where the newest few stay, and Watch plays it;
 "This run is no longer on the leaderboard" and "Could not download this run"
 tell a dropped run from a failed download, which the next pin tries again.
 
+### Custom quests
+
+The main menu's Mods entry, which no version runs, browses the
+[custom quests](../docs/formats/quest-dsl.md) published on the leaderboard
+([`host/custom_quests.inc`](host/custom_quests.inc)). It shows where the host
+takes runs to the leaderboard, not inside another site's page, since a custom
+quest plays ranked. The screen is the databases' two panels: the left lists a
+page of ten quests, newest or most played first, in the quest list's rows; the
+right shows the selected one's start weapon, what it takes out of the run,
+how many players cleared it and its board's best three times, with Play and
+Watch proof, which plays the clear that published it as a board run's Watch
+does. A click, or the focus moving to a row, selects it; Enter plays the
+focused one; the arrow keys and the panel's buttons page.
+
+The host fetches a page from `POST /api/custom/browse`
+(`HOST_LEADERBOARD_CUSTOM`, `game_custom_request`) and a quest's table from
+`/custom/<id>.bin` into `quests/online/<id>.bin` (`HOST_LEADERBOARD_QUEST`,
+`game_quest_download`), which later plays reuse. Play starts the quest as a
+link to it does, the player's own menu settings kept for after it. A failed
+page says the leaderboard can't be reached, and a failed table fetch is asked
+for again on the next Play. `node crimson-core/checks/game_custom.mjs <copy>`
+walks the screen as the browser host serves it.
+
 ### Gamepads
 
 SDL lays PlayStation, Xbox and Switch Pro pads out alike, the face buttons by
@@ -338,8 +361,8 @@ answer the standard codes from the joystick state they already poll
   Start is Escape everywhere: it pauses a run, and Start or B resumes it, as in
   the 2014 remake.
 - **Back**: B is Escape, and every screen takes Escape as its way out, as in
-  the Python port: the original's controls screen, quest list, perk screen,
-  mods menu and secret credits went back only from their buttons, and its end
+  the Python port: the original's controls screen, quest list, perk screen
+  and secret credits went back only from their buttons, and its end
   screens take Escape as Main Menu once their buttons show, past the name
   entry ([`game/changes/escape-back.patch`](game/changes/escape-back.patch)).
   An open list closes on Escape before the screen takes it, a rebind waiting

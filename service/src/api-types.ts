@@ -148,6 +148,27 @@ export interface CustomQuestDetailView {
   board: BoardView;
 }
 
+// The game's custom quest browser (crimson-core/host/custom_quests.inc): a page of quests, each with what its screen
+// shows and the run that published it (`proof`, whose replay is /runs/<proof>.crd), its board's best names and times
+// first; `more` when a next page follows.
+export type CustomQuestsSort = "newest" | "popular";
+export interface GameCustomQuest {
+  id: string;
+  title: string;
+  author: string;
+  players: number;
+  proof: string;
+  start_weapon_id: number;
+  no_bonuses: number[];
+  no_perks: number[];
+  no_weapons: number[];
+  best: { name: string; score: number }[];
+}
+export interface GameCustomQuests {
+  quests: GameCustomQuest[];
+  more: boolean;
+}
+
 export interface RunView {
   id: string;
   board: Board;
