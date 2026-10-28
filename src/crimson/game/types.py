@@ -11,7 +11,7 @@ from grim.rand import Crand
 from ..leaderboard import Leaderboard
 from ..paths import default_runtime_dir
 from ..quests.custom import CustomQuest
-from ..render.rtx.mode import RtxRenderMode
+from ..render.rtx.mode import RtxRenderMode, save_rtx_choice
 from ..replay.saver import ReplaySaver
 from ..screens.stack import ScreenStack
 from ..screens.ui_timeline import UiTimeline
@@ -107,6 +107,11 @@ class GameState(msgspec.Struct):
     @property
     def pause_background(self) -> BaseGameplayMode | None:
         return self.screens.background
+
+    def choose_rtx_mode(self, mode: RtxRenderMode) -> None:
+        """The player's choice (Options' RTX lighting, rendermode, togglertx), kept for the next launch."""
+        self.rtx_mode = mode
+        save_rtx_choice(self.base_dir, mode)
 
 
 __all__ = [

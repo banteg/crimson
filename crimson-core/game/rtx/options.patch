@@ -1,0 +1,76 @@
+The Options panel's RTX lighting (game/rtx.cpp's rtx_choose) replaces Graphics detail: Mouse sensitivity moves up
+into its row, so the sliders stay together, and the box goes below them, beside UI Info texts. crimson.cfg keeps the
+preset, the most detail by default. The box shows the mode drawn, so it stays clear where only classic draws.
+--- a/decomp/1.9/crimsonland/menus/options_menu_update.cpp
++++ b/decomp/1.9/crimsonland/menus/options_menu_update.cpp
+@@ -104,7 +104,8 @@
+     float *xy,
+     ui_segmented_slider_t *slider);
+ bool ui_button_update(float *xy, ui_button_t *button);
+-void config_apply_detail_preset(void);
++extern int rtx_render_mode;
++void rtx_choose(int requested);
+ void ui_menu_main_click_controls(void);
+ void ui_menu_click_back_contextual(void);
+ }
+@@ -146,10 +147,6 @@
+     grim_interface_ptr->grim_draw_text_small_fmt(
+         panel_position.x,
+         panel_position.y + 85.0f,
+-        "Graphics detail:");
+-    grim_interface_ptr->grim_draw_text_small_fmt(
+-        panel_position.x,
+-        panel_position.y + 105.0f,
+         "Mouse sensitivity:");
+ 
+     static options_checkbox_t info_checkbox;
+@@ -185,30 +182,12 @@
+     config_blob.music_volume =
+         (float)music_volume_slider.value * 0.1f;
+ 
+-    static options_slider_t graphics_detail_slider;
+-    int detail_max = 5;
+-    graphics_detail_slider.max = detail_max;
+-    graphics_detail_slider.min = 1;
+-    graphics_detail_slider.value = config_blob.detail_preset;
+-    slider_position.x = slider_x;
+-    slider_position.y = panel_position.y + 87.0f;
+-    ui_segmented_slider_update(
+-        (float *)&slider_position,
+-        (ui_segmented_slider_t *)&graphics_detail_slider);
+-    config_blob.detail_preset = graphics_detail_slider.value;
+-    if (graphics_detail_slider.value < 1) {
+-        config_blob.detail_preset = 1;
+-    } else if (graphics_detail_slider.value > detail_max) {
+-        config_blob.detail_preset = detail_max;
+-    }
+-    config_apply_detail_preset();
+-
+     static options_slider_t mouse_sensitivity_slider;
+     mouse_sensitivity_slider.max = 10;
+     mouse_sensitivity_slider.min = 1;
+     mouse_sensitivity_slider.value =
+         (int)(config_blob.mouse_sensitivity * 10.0f + 0.5f);
+-    slider_position.set(slider_x, panel_position.y + 107.0f);
++    slider_position.set(slider_x, panel_position.y + 87.0f);
+     ui_segmented_slider_update(
+         (float *)&slider_position,
+         (ui_segmented_slider_t *)&mouse_sensitivity_slider);
+@@ -220,6 +199,17 @@
+         config_blob.mouse_sensitivity = 1.0f;
+     }
+ 
++    static options_checkbox_t rtx_checkbox;
++    rtx_checkbox.label = "RTX lighting";
++    rtx_checkbox.checked = rtx_render_mode;
++    {
++        options_vec2_t checkbox_position(panel_position.x + 18.0f, panel_position.y + 110.0f);
++        ui_checkbox_update((float *)&checkbox_position, (ui_checkbox_t *)&rtx_checkbox);
++    }
++    if (rtx_checkbox.checked != rtx_render_mode) {
++        rtx_choose(rtx_checkbox.checked);
++    }
++
+     static options_button_t controls_button;
+     controls_button.label = "Controls";
+     slider_position.x = panel_position.x + 10.0f;

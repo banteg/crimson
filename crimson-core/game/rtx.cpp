@@ -37,8 +37,36 @@ static void rtx_set_mode(int requested) {
   rtx_reset();
 }
 
-// The mode the host's launch options ask for (--rtx, CRIMSON_RTX).
-__attribute__((export_name("game_render_mode"))) void game_render_mode(int mode) { rtx_set_mode(mode); }
+// The player's choice, kept in the game folder (the Python port's render/rtx/mode.py keeps the same file).
+static const char rtx_choice_file[] = "render_mode.txt";
+
+static int rtx_saved_mode() {
+  char name[8] = {};
+  if (FILE *fp = fopen(rtx_choice_file, "rb")) {
+    fread(name, 1, sizeof name - 1, fp);
+    fclose(fp);
+  }
+  return !strncmp(name, "rtx", 3);
+}
+
+// The player chooses a mode: the Options panel, the console, the page's switch. It is kept once drawn, so a host
+// that only draws classic (WebGL2) leaves the choice for one that can.
+void rtx_choose(int requested) {
+  rtx_set_mode(requested);
+  if (!platform_outputs() || rtx_render_mode != requested)
+    return;
+  if (FILE *fp = fopen(rtx_choice_file, "wb")) {
+    fprintf(fp, "%s\n", rtx_mode_name(rtx_render_mode));
+    fclose(fp);
+  }
+}
+
+// The mode the host's launch options ask for (--rtx, CRIMSON_RTX, the page's ?rtx=) for this launch only, or with
+// none (-1) the player's choice.
+__attribute__((export_name("game_render_mode"))) void game_render_mode(int mode) {
+  rtx_set_mode(mode < 0 ? rtx_saved_mode() : mode);
+}
+__attribute__((export_name("game_render_choice"))) void game_render_choice(int mode) { rtx_choose(mode); }
 
 static void rtx_report(int requested) {
   if (rtx_render_mode != requested)
@@ -53,7 +81,7 @@ void console_cmd_render_mode(void) {
     console_printf(&console_log_queue, "Render mode is '%s'.\n", rtx_mode_name(rtx_render_mode));
   } else if (name && (!strcmp(name, "classic") || !strcmp(name, "rtx"))) {
     int requested = !strcmp(name, "rtx");
-    rtx_set_mode(requested);
+    rtx_choose(requested);
     rtx_report(requested);
   } else {
     console_printf(&console_log_queue, "rendermode <classic|rtx>\n");
@@ -62,7 +90,7 @@ void console_cmd_render_mode(void) {
 
 void console_cmd_toggle_rtx(void) {
   int requested = !rtx_render_mode;
-  rtx_set_mode(requested);
+  rtx_choose(requested);
   rtx_report(requested);
 }
 

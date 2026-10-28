@@ -1,7 +1,8 @@
 // The client: an SDL3 window running the game module one frame per callback.
 // Usage: crimson [game directory] [--watch <run>] [--rtx]. Without a directory it
 // plays from the player's data folder, the Python game's too, and downloads the
-// game's files it lacks. --rtx (or CRIMSON_RTX=1) starts in the RTX rendering mode.
+// game's files it lacks. --rtx (or CRIMSON_RTX=1) starts in the RTX rendering mode, CRIMSON_RTX=0 in classic;
+// otherwise the player's last choice, the Options panel's RTX lighting (game/rtx.cpp).
 #define SDL_MAIN_USE_CALLBACKS
 #include "client.h"
 #include "network.h"
@@ -58,9 +59,9 @@ int hold_frames[8];
 // The window has the player: away (blurred, minimized, a hidden tab), no input reaches the game, the pad's
 // neither (a co-op session plays on there, on neutral records).
 bool focused = true;
-// The RTX mode the launch asks for (--rtx, CRIMSON_RTX=1), the one the renderer shows, and whether the window shows
-// extended range.
-bool rtx_requested = getenv("CRIMSON_RTX") && strcmp(getenv("CRIMSON_RTX"), "0");
+// The RTX mode the launch asks for (--rtx, CRIMSON_RTX=1 or 0; -1 leaves the player's choice), the one the renderer
+// shows, and whether the window shows extended range.
+int rtx_requested = getenv("CRIMSON_RTX") ? strcmp(getenv("CRIMSON_RTX"), "0") != 0 : -1;
 bool rtx_shown;
 bool edr;
 // The replay the host asks to play, named for the window title (show_title): its file and the tick it stops at
@@ -976,10 +977,10 @@ extern "C" EMSCRIPTEN_KEEPALIVE void client_leaderboard_line(const char *line) {
   if (started)
     leaderboard_line(line);
 }
-// The page's RTX switch: the rendering mode, as the console's rendermode sets it.
+// The page's RTX switch: the player's choice, as the Options panel's RTX lighting makes it.
 extern "C" EMSCRIPTEN_KEEPALIVE void client_render_mode(int mode) {
   if (started)
-    w2c_game_game_render_mode(&game, mode);
+    w2c_game_game_render_choice(&game, mode);
 }
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_play_quest(const char *path, const char *title, const char *author) {
   if (!started)
@@ -1138,7 +1139,7 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   const char *usage = "Usage: crimson [game directory] [--watch <run id or replay URL>] [--rtx]";
   for (int i = 1; i < argc; ++i) {
     if (!strcmp(argv[i], "--rtx")) {
-      rtx_requested = true;
+      rtx_requested = 1;
       continue;
     }
 #ifndef __EMSCRIPTEN__
@@ -1214,11 +1215,10 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   if (!start_game())
     return SDL_APP_FAILURE;
 #ifdef __EMSCRIPTEN__
-  // The page's choice (?rtx=1, the player's last one; shell.html).
-  rtx_requested = EM_ASM_INT({ return Module.rtxWanted?.() ? 1 : 0; });
+  // The page's ?rtx= (shell.html).
+  rtx_requested = EM_ASM_INT({ return Module.rtxWanted?.() ?? -1; });
 #endif
-  if (rtx_requested)
-    w2c_game_game_render_mode(&game, 1);
+  w2c_game_game_render_mode(&game, rtx_requested);
 #ifndef __EMSCRIPTEN__
   // The page's fullscreen is the player's to ask for; a desktop window opens as crimson.cfg left it.
   if (!w2c_game_game_windowed(&game))

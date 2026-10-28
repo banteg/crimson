@@ -19,7 +19,7 @@ from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_code_name,
 from ..leaderboard import Leaderboard
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.debug import RtxDebugView
-from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
+from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode, load_rtx_choice, parse_rtx_render_mode
 from ..runtime_boot import boot_runtime
 from ..screens.quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .loop_view import GameLoopView
@@ -116,14 +116,14 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         except ValueError:
             console.log.log("rendermode <classic|rtx>")
             return
-        state.rtx_mode = mode
+        state.choose_rtx_mode(mode)
         console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
 
     def cmd_toggle_rtx(args: list[str]) -> None:
         if args:
             console.log.log("togglertx")
             return
-        state.rtx_mode = cycle_rtx_render_mode(state.rtx_mode)
+        state.choose_rtx_mode(cycle_rtx_render_mode(state.rtx_mode))
         console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
 
     def cmd_rtx_smoke(args: list[str]) -> None:
@@ -266,7 +266,7 @@ def run_game(config: GameConfig) -> None:
             resources=None,
             audio=None,
             session_start=time.monotonic(),
-            rtx_mode=mode_from_rtx_flag(bool(config.rtx)),
+            rtx_mode=RtxRenderMode.RTX if config.rtx else load_rtx_choice(base_dir),
         )
         register_boot_commands(console, _boot_command_handlers(state))
         _apply_debug_console_defaults(console, debug=config.debug)

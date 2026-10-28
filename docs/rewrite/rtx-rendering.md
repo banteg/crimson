@@ -235,8 +235,12 @@ Render mode enum and helpers: `src/crimson/render/rtx/mode.py` (`classic|rtx`).
 
 Runtime/launch controls:
 
+- Options: the RTX lighting box, below the sliders, in place of the original's Graphics detail slider
 - launch flag: `--rtx` (game entrypoint or `crimson replay play <replay.crd> --rtx`)
 - console commands: `rendermode <classic|rtx>`, `togglertx`
+
+The box and the console commands are the player's choice, which `render_mode.txt` in the runtime folder keeps for
+the next launch; the native client shares the file. `--rtx` starts that one launch in RTX.
 - debug hotkey: `F4` toggles mode (debug builds)
 
 Benchmark controls:
@@ -435,10 +439,15 @@ without it.
 
 Controls:
 
-- launch flag: `crimson --rtx`, or `CRIMSON_RTX=1` (unattended captures)
+- Options: the RTX lighting box (`crimson-core/game/rtx/options.patch`) replaces Graphics detail: Mouse sensitivity
+  moves up into its row and the box goes below the sliders, beside UI Info texts; `crimson.cfg` keeps the detail
+  preset, the most detail by default
 - console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`, `rtxsmoke <on|off>`
-- `rendermode rtx` in the game folder's `autoexec.txt`, which the original runs at
-  startup, keeps the mode across launches
+- launch flag: `crimson --rtx`, or `CRIMSON_RTX=1` or `0` (unattended captures), for that launch only
+
+The box, `rendermode` and `togglertx` are the player's choice: the game module (`game/rtx.cpp`) writes the mode
+drawn to `render_mode.txt` in the game folder, which the Python port shares, and a launch without a flag starts in
+it. It lives outside `crimson.cfg`, which co-op hashes and live ticks swap with the run's copy.
 - `rendersize <multiple|native>` caps the world's pixels at a multiple of the game's
   resolution, at least 1 (2 by default, the terrain's own density), or lifts the cap.
   On a larger display, such as a 5K screen in full screen, the world draws at the cap
@@ -456,9 +465,10 @@ and beams through the same GLSL, translated to WGSL (`crimson-core/client/shader
 no headroom, so the tonemap rolls highlights off toward twice SDR white, which most HDR displays show without
 clipping. Elsewhere it tonemaps to SDR.
 
-The page's RTX switch sits beside fullscreen and shows only with WebGPU. `?rtx=1` or `?rtx=0` picks the mode for a
-link, otherwise the switch's last state is kept in the browser. The console's `rendermode` and `togglertx` work as
-on the desktop, and the switch follows them.
+The page's RTX switch sits beside fullscreen and shows only with WebGPU. It makes the same choice as the Options box,
+kept in the game folder in the browser's storage, and follows the mode whatever changed it. `?rtx=1` or `?rtx=0`
+picks the mode for a link without changing the choice. A choice the switch saved in `localStorage` before the game
+kept it moves into the game folder once.
 
 ## Future direction
 
