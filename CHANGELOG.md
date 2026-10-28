@@ -2,6 +2,18 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.23.2
+
+### For players
+
+- RTX in the browser and desktop games no longer draws a glow at the gun's muzzle when nothing is firing.
+- Bonus pickup sparkles keep their rays under RTX instead of turning into round beads.
+- RTX shades textures and fading colors in linear light from the start, so filtered detail and the Sharpshooter laser's fade no longer darken, and impact and pickup artwork that shares the ring's atlas cell keeps its own look.
+
+### Under the hood
+
+- `tools/rtx/capture.py` captures a list or range of replay ticks per render mode and build in one client launch each, with a manifest of the replay's hash.
+
 ## 0.23.1
 
 ### For players
