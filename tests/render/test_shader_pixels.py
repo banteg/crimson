@@ -7,6 +7,7 @@ import pytest
 from crimson.game.loop_view import GameLoopView
 from crimson.render.rtx.hdr import HDR_PIXEL_FORMAT, HdrRenderer, load_float_target
 from grim import edr
+from grim.blend import additive_blend
 from grim.geom import Vec2
 from grim.raylib_api import ffi, rl
 from grim.shaders import AlphaTestShader
@@ -64,6 +65,42 @@ def test_alpha_test_decodes_colors_only_into_linear_light(raylib_context) -> Non
         alpha_test.close()
         rl.unload_render_texture(world)
         rl.unload_render_texture(bake)
+
+
+@pytest.mark.parametrize("linear", [False, True])
+@pytest.mark.parametrize("source_alpha", [3, 255])
+def test_emissive_art_fades_without_relaxing_surrounding_coverage(raylib_context, linear, source_alpha) -> None:
+    alpha_test = AlphaTestShader()
+    target = load_float_target(80, 16)
+    art = rl.gen_image_color(1, 1, rl.Color(128, 153, 255, source_alpha))
+    texture = rl.load_texture_from_image(art)
+    rl.unload_image(art)
+    alpha = 255 if source_alpha == 3 else 3
+
+    def stamp(x):
+        rl.draw_texture_ex(texture, rl.Vector2(x, 0), 0, 16, rl.Color(255, 255, 255, alpha))
+
+    try:
+        with texture_mode(target, linear=linear), alpha_test.scope():
+            rl.clear_background(rl.BLANK)
+            stamp(0)  # Queued before emission: must still fail the coverage test.
+            with additive_blend():
+                stamp(16)
+            stamp(32)  # Restored without leaving the enclosing sprite shader.
+            with pytest.raises(RuntimeError, match="draw failed"), additive_blend():
+                stamp(48)
+                raise RuntimeError("draw failed")
+            stamp(64)
+        result = pixels(target)
+        for x in (8, 40, 72):
+            assert result[8 * 80 + x][:3] == (0, 0, 0)
+        expected = tuple((c / 255) ** 2.2 * (3 / 255) for c in (128, 153, 255)) if linear else (0, 0, 0)
+        for x in (24, 56):
+            assert result[8 * 80 + x][:3] == pytest.approx(expected, abs=1e-5)
+    finally:
+        alpha_test.close()
+        rl.unload_texture(texture)
+        rl.unload_render_texture(target)
 
 
 def test_alpha_test_scope_ends_after_an_error_and_keeps_its_handle_until_close(raylib_context) -> None:

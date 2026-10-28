@@ -567,10 +567,16 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
     if selection is not None:
         selection.advance(frame.elapsed_ms)
     sources.extend(merge_volleys(shots, selection))
+    fireball_owners = {
+        visual.rocket_source for visual in frame.state.effects.explosion_visuals
+        if visual.rocket_source is not None and visual.has_fireball_light
+    }
     for slot, sec in enumerate(frame.state.secondary_projectiles.entries):
         if not sec.active:
             continue
         if sec.type_id == ST.DETONATION:
+            if (slot, sec.generation) in fireball_owners:
+                continue
             t = max(0.0, min(1.0, sec.detonation_t))
             gain = (1.0 - t) ** 1.35
             if gain > 0.02:
@@ -620,7 +626,23 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
                 illumination_gain=1.8, reflection_gain=0.65, reflection_radius=100.0 * scale,
                 broad_illumination=True, ident=source_ident(IDENT_EXPLOSION, spot),
             ))
-        if not visual.emit_light or not visual.fireballs or visual.age < 0.0 or visual.age >= visual.lifetime:
+        if not visual.has_fireball_light:
+            continue
+        if visual.rocket_source is not None:
+            # One blast: a short impact flash then an expanding, cooling fireball.
+            # Native rocket sprites last .7 s, independently of the damage timer.
+            t = visual.age
+            phase = max(0.0, min(1.0, t / visual.lifetime))
+            gain = .35 * math.exp(-t / .045) + .9 * (1.0 - phase) ** 1.1
+            rise = phase * phase * (3.0 - 2.0 * phase)
+            scale = max(.1, visual.scale) / .4
+            sources.append(MaterialLight(
+                visual.pos, 240.0 * scale,
+                (1.8 * gain, (1.05 - .35 * phase) * gain, (.38 - .24 * phase) * gain),
+                height=(24.0 + 40.0 * rise) * scale, source_width=visual.fireball_radius,
+                illumination_gain=6.0, reflection_gain=1.2, broad_illumination=True,
+                ident=source_ident(IDENT_EXPLOSION, spot | 1),
+            ))
             continue
         # Keep the flash fast, sustain the visible fireball, then fade with its
         # retimed alpha. Height is art-directed: native sprites have no Z data.

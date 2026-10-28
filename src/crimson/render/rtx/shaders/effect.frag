@@ -4,19 +4,15 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 in float fragShape; // an ion arc's length in strip scales, negative when its strips end in the native cut
 uniform vec4 colDiffuse;
-uniform int u_kind; // 0 warm glow, 1 white aura, 2 ring, 3 plasma, 4 ion arc, 5 pulse shot
+uniform int u_kind; // 0 warm glow, 1 white aura, 2 ring, 3 plasma, 4 ion arc, 5 pulse shot, 6 burst flash
 uniform vec4 u_params[3];
 uniform int u_in_world; // drawing into the RTX world's linear light (linear_light.glsl)
 out vec4 finalColor;
 #include "effect_profiles.glsl"
 #include "linear_light.glsl"
 
-float alphaTest(float alpha) {
-    return floor(alpha * 255. + .5) >= 4. ? alpha : 0.;
-}
-
 vec3 plasmaGlow(vec2 p, float radius, float alpha) {
-    if (radius <= 0. || alphaTest(alpha) == 0.) return vec3(0.);
+    if (radius <= 0. || alpha <= 0.) return vec3(0.);
     vec2 axis = u_params[2].xy;
     vec2 offset = vec2(dot(WARM_OFFSET, axis), dot(WARM_OFFSET, vec2(-axis.y, axis.x)));
     return warmProfile(p / radius - offset) * alpha;
@@ -24,7 +20,7 @@ vec3 plasmaGlow(vec2 p, float radius, float alpha) {
 
 vec3 plasmaTrail(vec2 p) {
     float radius = u_params[0].x, len = u_params[0].w, step_size = u_params[1].x;
-    float alpha = alphaTest(u_params[1].y);
+    float alpha = u_params[1].y;
     if (len <= 0. || alpha == 0.) return vec3(0.);
     vec2 axis = u_params[2].xy;
     vec2 offset = vec2(dot(WARM_OFFSET, axis), dot(WARM_OFFSET, vec2(-axis.y, axis.x)));
@@ -42,22 +38,22 @@ vec3 plasmaTrail(vec2 p) {
 }
 
 // projs.jaz cell 0 of 2x2, the Pulse Gun's shot: a dome with a circular front edge and a body fading behind it,
-// thinning toward its straight sides, cut square at the sides and back. Fitted against the 62x62 cell in sprite
-// units (x across, y back from the travel direction); `front` is the depth behind the front edge.
+// thinning toward its straight sides. Based on the 62x62 cell in sprite units (x across, y back from travel),
+// with a shorter body and softer back for linear light; `front` is the depth behind the front edge.
 float pulseFront(vec2 p) {
     return 1.83 - length(p - vec2(0., 1.708));
 }
 
 float pulseProfile(vec2 p, float front, float aa) {
     float edge = smoothstep(-.035 - aa, .035 + aa, front);
-    float body = exp(-pow(max(front - .06, 0.) / (.34 * (1. - .9 * p.x * p.x)), 1.4));
-    float box = (1. - smoothstep(.84 - aa, .9 + aa, abs(p.x))) * (1. - smoothstep(.65 - aa, .71 + aa, p.y));
+    float body = exp(-pow(max(front - .06, 0.) / (.26 * (1. - .9 * p.x * p.x)), 1.4));
+    float box = (1. - smoothstep(.84 - aa, .9 + aa, abs(p.x))) * (1. - smoothstep(.45 - aa, .71 + aa, p.y));
     return edge * body * box;
 }
 
 // The shot's HDR glow on top of the native artwork: a hot line just inside its front edge and a short halo around
 // it, brightest in the middle and gone at the sides. A sub-pixel line dims instead of swelling.
-const float PULSE_GAIN = 1.3, PULSE_GLOW = 1.6;
+const float PULSE_GAIN = .8, PULSE_GLOW = 1.8;
 float pulseGlow(vec2 p, float front, float aa) {
     float width2 = .025 * .025 + aa * aa;
     float line = .025 * inversesqrt(width2) * exp(-(front - .03) * (front - .03) / width2);
@@ -77,19 +73,25 @@ void main() {
             + plasmaGlow(p, u_params[0].z, u_params[1].w);
         finalColor = vec4(value * tint.rgb, 1.);
         if (u_in_world != 0) finalColor.rgb = decodeGlow(finalColor.rgb);
+    } else if (u_kind == 6) {
+        // A brief concentrated flash under the fireball, not the original burst
+        // sprite's broad grey cutout. Its energy stays in the linear-light world.
+        float r2 = dot(p, p);
+        float flash = (2.4 * exp(-100. * r2) + .08 * exp(-32. * r2))
+                    * (1. - smoothstep(.65, .9, sqrt(r2)));
+        finalColor = vec4(tint.rgb * flash * tint.a, 1.);
     } else if (u_kind == 5) {
         float front = pulseFront(p), aa = .5 * fwidth(front);
         vec3 glow = mix(tint.rgb, vec3(1.), .45);
-        finalColor = vec4(tint.rgb * alphaTest(pulseProfile(p, front, aa) * tint.a) * PULSE_GAIN
+        finalColor = vec4(tint.rgb * pulseProfile(p, front, aa) * tint.a * PULSE_GAIN
                           + glow * pulseGlow(p, front, aa) * tint.a * PULSE_GLOW, 1.);
     } else if (u_kind == 4) {
         // Per vertex, so a run of arcs draws at once: p is in strip scales too.
         float len = abs(fragShape);
         vec2 nearest = vec2(p.x - clamp(p.x, 0., len), p.y);
-        float body = alphaTest(ionProfile(nearest / 10.) * tint.a)
-                   + alphaTest(ionProfile(nearest / 14.) * tint.a);
+        float body = (ionProfile(nearest / 10.) + ionProfile(nearest / 14.)) * tint.a;
         if (fragShape < 0. && (p.x < 0. || p.x > len)) body = 0.;
-        float head = alphaTest(ionProfile((p - vec2(len, 0.)) / 16.) * tint.a);
+        float head = ionProfile((p - vec2(len, 0.)) / 16.) * tint.a;
         finalColor = vec4(tint.rgb * (body + head), 1.);
     } else {
         float alpha;
@@ -103,7 +105,8 @@ void main() {
             color = tint.rgb;
             alpha = (u_kind == 1 ? auraProfile(p) : ringProfile(p)) * tint.a;
         }
-        alpha = alphaTest(alpha);
+        // Emission is continuous light, not cutout coverage. A byte alpha test
+        // leaves visible contours and makes the last part of a fade snap off.
         if (alpha == 0.) discard;
         finalColor = vec4(color, alpha);
     }

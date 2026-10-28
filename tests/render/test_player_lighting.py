@@ -8,10 +8,12 @@ import msgspec
 import pytest
 
 from crimson.render.rtx.creature_lighting import CreatureLighting
+from crimson.render.rtx.effects import EffectShape
 from crimson.render.rtx.material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.rtx.player_lighting import PlayerLighting
 from crimson.render.world import draw as world_draw
+from crimson.render.world import trooper
 from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.trooper import draw_player_trooper_sprite
 from crimson.sim.state_types import PlayerState
@@ -178,6 +180,7 @@ def test_native_layers_exclude_shadows_and_effects(mocker, headless_resources, m
     mocker.patch.object(PlayerLighting, 'scope', side_effect=scope)
     mocker.patch.object(WorldRenderCtx, '_draw_atlas_sprite', side_effect=lambda *a, **k: atlas(k['tint'], active))
     mocker.patch.object(rl, 'draw_texture_pro', side_effect=lambda *a: effects(active))
+    glow = mocker.patch.object(trooper, 'draw_sprite', side_effect=lambda *a, **k: effects(active))
     mocker.patch.object(rl, 'begin_blend_mode')
     mocker.patch.object(rl, 'end_blend_mode')
     draw_player_trooper_sprite(ctx, headless_resources.texture(TextureId.TROOPER), player,
@@ -188,6 +191,9 @@ def test_native_layers_exclude_shadows_and_effects(mocker, headless_resources, m
         assert lit == (mode is RtxRenderMode.RTX and max(tint.r, tint.g, tint.b) > 0)
     assert effects.call_count > 0
     assert not any(call.args[0] for call in effects.call_args_list)
+    assert glow.call_count == (mode is RtxRenderMode.RTX)
+    if glow.call_count:
+        assert glow.call_args.args[0] is EffectShape.AURA
 
 
 def test_shared_selection_and_resource_cleanup(mocker, headless_resources, tmp_path):

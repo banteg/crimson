@@ -14,10 +14,12 @@ from grim.rand import Crand
 from tests.render.test_material_lights import frame
 
 
-def burst(pool: EffectPool, *, detail: int = 5, emit_light: bool = True) -> int:
+def burst(pool: EffectPool, *, detail: int = 5, emit_light: bool = True,
+          rocket_source: tuple[int, int] | None = None) -> int:
     rng = Crand(123)
     pool.spawn_explosion_burst(
         pos=Vec2(100, 120), scale=1, rng=rng, detail_preset=detail, preserve_bugs=False, emit_light=emit_light,
+        rocket_source=rocket_source,
     )
     return rng.state
 
@@ -184,6 +186,63 @@ def test_rocket_burst_keeps_native_lifetime_and_no_archived_fireballs() -> None:
     assert pool.explosion_visuals == []
 
 
+def test_rocket_light_follows_visible_fireball_without_retiming_or_changing_native_effects() -> None:
+    snapshot = frame()
+    pool = snapshot.state.effects
+    unlit = EffectPool()
+    assert burst(pool, emit_light=False, rocket_source=(0, 7)) == burst(unlit, emit_light=False)
+    assert msgspec.to_builtins(pool.entries) == msgspec.to_builtins(unlit.entries)
+    visual = pool.explosion_visuals[0]
+    first = collect_material_lights(snapshot, view_center=visual.pos)[0]
+    pool.update(.4)  # the gameplay detonation has ended, but the fireball has not
+    assert visual.fireball_age == pytest.approx(.4)
+    assert all(sprite.native is not None for sprite in visual.fireballs)
+    light, = collect_material_lights(snapshot, view_center=visual.pos)
+    assert light.ident == first.ident and light.ring_radius == 0
+    assert 0 < light.rgb[0] < first.rgb[0]
+    assert light.rgb[2] / light.rgb[0] < first.rgb[2] / first.rgb[0]
+    assert light.source_width > first.source_width and light.height > first.height
+    pool.update(.31)
+    assert pool.explosion_visuals == []
+    assert collect_material_lights(snapshot, view_center=Vec2()) == []
+
+
+def test_rocket_fireball_replaces_only_its_own_detonation_and_releases_freed_effects() -> None:
+    from crimson.projectiles.types import SecondaryProjectileTypeId
+
+    snapshot = frame()
+    pool = snapshot.state.effects
+    burst(pool, emit_light=False, rocket_source=(0, 7))
+    sec = snapshot.state.secondary_projectiles.entries[0]
+    sec.active, sec.generation = True, 7
+    sec.type_id = SecondaryProjectileTypeId.DETONATION
+    sec.pos = Vec2(100, 120)
+    pool.update(.15)
+    visual = pool.explosion_visuals[0]
+    ctx = WorldRenderCtx(snapshot, ViewTransform(Vec2(), Vec2(1, 1), Vec2(200, 200), Vec2(200, 200)))
+    assert collect_pressure_fronts(ctx) == []
+    assert len(collect_material_lights(snapshot, view_center=Vec2())) == 1
+    sec.generation += 1  # a later rocket may reuse the same slot at the same spot
+    assert len(collect_material_lights(snapshot, view_center=Vec2())) == 2
+    for sprite in visual.fireballs:
+        index = next(i for i, entry in enumerate(pool.entries) if entry is sprite.native)
+        pool.free(index)
+    assert not visual.has_fireball_light
+    assert len(collect_material_lights(snapshot, view_center=Vec2())) == 1
+
+
+def test_rocket_without_allocated_fireballs_keeps_its_detonation_lamp() -> None:
+    from crimson.projectiles.types import SecondaryProjectileTypeId
+
+    snapshot = frame()
+    burst(snapshot.state.effects, emit_light=False, rocket_source=(0, 0))
+    snapshot.state.effects.explosion_visuals[0].fireballs.clear()
+    sec = snapshot.state.secondary_projectiles.entries[0]
+    sec.active, sec.type_id = True, SecondaryProjectileTypeId.DETONATION
+    light, = collect_material_lights(snapshot, view_center=Vec2())
+    assert light.illumination_gain == 1
+
+
 def test_no_invisible_lamp_when_fireball_allocation_is_exhausted() -> None:
     snapshot = frame()
     burst(snapshot.state.effects)
@@ -237,10 +296,11 @@ def test_rocket_burst_omits_shell_light_and_refraction_but_keeps_detonation(age)
     assert lights[0].illumination_gain > 0 and lights[0].reflection_gain > 0
 
 
-@pytest.mark.parametrize("rtx, emit_light, rings", [(True, False, 0), (False, False, 1), (True, True, 1)])
-def test_rocket_ring_is_hidden_only_in_rtx_while_nuke_shell_remains(
-    rtx, emit_light, rings, headless_window, headless_resources, mocker,
+@pytest.mark.parametrize("rtx, emit_light", [(True, False), (False, False), (True, True)])
+def test_each_burst_draws_one_ring_and_rtx_swaps_only_a_lit_burst_for_its_shell(
+    rtx, emit_light, headless_window, headless_resources, mocker,
 ) -> None:
+    from crimson.render.rtx.effects import EffectShape
     from crimson.render.rtx.mode import RtxRenderMode
     from crimson.render.world import effects
     from tests.support.creature_draw_capture import render_ctx_for_creatures
@@ -252,9 +312,17 @@ def test_rocket_ring_is_hidden_only_in_rtx_while_nuke_shell_remains(
     pool = ctx.frame.state.effects
     burst(pool, emit_light=emit_light)
     pool.update(.2)
+    native = pool.explosion_visuals[0].active_ring
+    assert native is not None
     select = mocker.spy(effects, "effect_cell_src_inset")
+    sprite = mocker.spy(effects, "draw_sprite")
     effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    rings = 1
     assert sum(call.args[1] == EffectId.RING for call in select.call_args_list) == rings
+    # RTX draws a rocket's own ring as the analytic ring; a lit burst's shell replaces its native ring.
+    drawn = [call.kwargs["width"] for call in sprite.call_args_list if call.args[0] is EffectShape.RING]
+    if rtx:
+        assert (pytest.approx(2 * native.half_width * native.scale) in drawn) == (not emit_light)
 
     # A separate ring, such as freeze/shield, must never inherit the exclusion.
     unrelated = pool.spawn(EffectId.RING, Vec2(200, 200), 5, preserve_bugs=False)

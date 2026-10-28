@@ -309,19 +309,26 @@ void check_rtx() {
   };
   w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
   const float empty[12] = {};
-  for (int kind = 0; kind < 3; ++kind) {
+  for (int kind : {0, 1, 2, 6}) {
     w2c_host_clear(nullptr, 0xff000000);
     effect(kind, empty, 0xffffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
-    if (kind < 2) assert(back_red(512,384) > .7f);
+    if (kind != 2) assert(back_red(512,384) > .7f);
     else assert(back_red(512,384) == 0 && back_red(526,384) > .1f);
     assert(back_red(492,384) == 0);
+    const int sample_x = kind == 2 ? 526 : 512;
+    const float bright = back_red(sample_x,384);
     w2c_host_clear(nullptr, 0xff000000);
     effect(kind, empty, 0x01ffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
-    assert(back_red(512,384) == 0 && back_red(526,384) == 0);
+    // All analytic emission dissolves below the old four-byte-level cutoff.
+    const float faded = back_red(sample_x,384);
+    assert(faded > 0 && fabsf(faded * 255 / bright - 1) < .01f);
+    w2c_host_clear(nullptr, 0xff000000);
+    effect(kind, empty, 0x00ffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
+    assert(back_red(sample_x,384) == 0);
   }
   // One device-vertex batch retains different sprite tints exactly, including
   // byte color swizzling and alpha, through the actual GPU vertex layout.
-  for (int kind = 0; kind < 3; ++kind) {
+  for (int kind : {0, 1, 2, 6}) {
     w2c_host_clear(nullptr, 0xff000000);
     effect(kind, empty, 0xff408020, 495.75f, 527.75f, 367.75f, 399.75f, -1, 1,
            -1, 1);
@@ -630,6 +637,45 @@ void check_rtx() {
   puts("renderer: RTX world tonemaps highlights toward the EDR headroom, beams integrate their stamps, lit batches light, bodies shade them, bonus shells mirror lights, blood soaks and brass mirrors the ground, smoke scatters, Monster Vision shows heat and trails, ion contacts glow, pressure fronts ripple; classic stays 8-bit");
 }
 
+
+void check_emissive_fades() {
+#ifndef __EMSCRIPTEN__
+  w2c_host_set_render_target(nullptr, 0);
+  renderer_resize(2048, 1536);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG2, 0);
+  w2c_host_render_state(nullptr, RS_ALPHATESTENABLE, 1);
+  w2c_host_render_state(nullptr, RS_ALPHAFUNC, 7);
+  w2c_host_render_state(nullptr, RS_ALPHAREF, 4);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  w2c_host_render_state(nullptr, RS_BLENDOP, 1);
+  for (bool linear : {false, true}) {
+    renderer_set_rtx(linear);
+    w2c_host_clear(nullptr, 0xff000000);
+    w2c_host_render_pass(nullptr, 1);
+    // The same low-alpha artwork survives only as additive linear emission.
+    w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
+    rectangle(0, 0, 128, 128, 0x038080ff);
+    w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+    rectangle(128, 0, 256, 128, 0x038080ff);
+    w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
+    rectangle(256, 0, 384, 128, 0x008080ff);
+    w2c_host_render_pass(nullptr, 2);
+    Pixel faded = back_pixel(64, 64);
+    if (linear) {
+      assert(fabsf(faded.b - powf(3 / 255.f, 1 / 2.2f)) < .001f);
+      assert(fabsf(faded.r / faded.b - 128 / 255.f) < .002f);
+    } else assert(faded.r == 0 && faded.b == 0);
+    assert(back_red(192, 64) == 0 && back_red(320, 64) == 0);
+  }
+  renderer_set_rtx(false);
+  w2c_host_render_state(nullptr, RS_ALPHATESTENABLE, 0);
+#endif
+}
 
 // Reusing indices and applied state must survive arbitrary indexed draws,
 // helper passes, changing device arrays, and returning to the same shader.
@@ -1053,6 +1099,7 @@ int main() {
   assert(glGetError() == GL_NO_ERROR);
   puts("renderer: native density, logical projection/input, terrain, holds, anchors, alpha and presentation passed");
   check_rtx();
+  check_emissive_fades();
 #if !defined(RENDERER_BENCHMARK) || RENDERER_BENCHMARK != 0
   // A transparent blue texel must never turn the opaque red neighbor purple.
   w2c_host_texture_create(nullptr, 201, 2, 1, 0);

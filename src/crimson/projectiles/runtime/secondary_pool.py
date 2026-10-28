@@ -318,7 +318,7 @@ class SecondaryProjectilePool:
         creature_spatial = step_runtime.creature_spatial
         hit_count = 0
 
-        for entry in self._entries:
+        for slot, entry in enumerate(self._entries):
             if not entry.active:
                 continue
 
@@ -377,6 +377,7 @@ class SecondaryProjectilePool:
                                 preserve_bugs=runtime_state.preserve_bugs,
                                 emit_light=False,
                                 emit_atmosphere=False,
+                                rocket_source=(slot, entry.generation),
                             )
                     case SecondaryProjectileTypeId.HOMING_ROCKET:
                         damage = x87_pc24_add(x87_pc24_mul(entry.life_timer, 20.0), 80.0)
