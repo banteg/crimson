@@ -332,8 +332,9 @@ async function home(): Promise<Screen> {
           <p>Fight off hordes of aliens, spiders, lizards and zombies with 28 weapons and 57 perks, across Quests, Rush and Survival.</p>
           <p>
             Crimsonland, as it was in 2003, rebuilt from <code>crimsonland.exe</code> with a few dozen of its bugs fixed, and running in your
-            browser. Now with online co-op: send a friend a link and fight side by side. Chase internet high scores where every run is a
-            replay you can watch, build your own quests, and play on a gamepad.
+            browser. Now with RTX lighting: every shot, beam and explosion lights the wet ground, the creatures and you, casting soft
+            shadows through drifting smoke. Turn it on in Options, in a browser with WebGPU. Send a friend a link to play online co-op,
+            chase internet high scores where every run is a replay you can watch, build your own quests, and play on a gamepad.
           </p>
           <PlayGame />
         </>

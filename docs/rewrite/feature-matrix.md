@@ -37,6 +37,7 @@ what a modern release needs. All three fix the
 | Local co-op | 2–4 players | 2 players, as the original | 2 players, as the original |
 | Online co-op | No | 2 players from an invite link, with rollback | No |
 | Original bugs | Fixed by default, kept with `--preserve-bugs` | Fixed | Fixed |
+| RTX lighting | Yes; HDR on macOS and Linux Wayland | With WebGPU; HDR where the browser shows WebGPU in HDR | Yes; HDR on macOS |
 | Resolution | Any, with borderless fullscreen | 1024x768, scaled to the page; fullscreen button | 1024x768, scaled to the window; Alt+Enter fullscreen |
 | Keyboard and mouse | Yes | Yes | Yes |
 | Gamepads | PlayStation, Xbox and Switch Pro, twin-stick, every menu by pad | PlayStation, Xbox and Switch Pro, twin-stick, menus by pad; one pad at a time | PlayStation, Xbox and Switch Pro, twin-stick, menus by pad; one pad at a time |
