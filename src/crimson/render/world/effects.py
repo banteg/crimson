@@ -7,6 +7,7 @@ from grim.blend import additive_blend
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
+from grim.shaders import glint_scope
 
 from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
@@ -237,6 +238,10 @@ def draw_effect_pool(
             return
 
         shape = SPRITE_SHAPES.get(effect_id)
+        # The same atlas cell supplies an explosion's stationary flash and the
+        # moving bonus glints. Preserve the latter's asymmetric textured rays.
+        if effect_id == EffectId.BURST and not entry.flags & 0x4:
+            shape = EffectShape.BURST
         if (
             frame.rtx_mode is RtxRenderMode.RTX
             and shape is not None
@@ -249,6 +254,15 @@ def draw_effect_pool(
         batch.end()
         dst = rl_rectangle(screen.x, screen.y, float(w), float(h))
         origin = rl_vector2(float(w) * 0.5, float(h) * 0.5)
+        if (
+            frame.rtx_mode is RtxRenderMode.RTX
+            and effect_id == EffectId.BURST
+            and entry.flags & 0x4
+            and not entry.flags & 0x40
+        ):
+            with glint_scope():
+                rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
+            return
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)

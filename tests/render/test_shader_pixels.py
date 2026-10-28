@@ -10,7 +10,7 @@ from grim import edr
 from grim.blend import additive_blend
 from grim.geom import Vec2
 from grim.raylib_api import ffi, rl
-from grim.shaders import AlphaTestShader
+from grim.shaders import AlphaTestShader, glint_scope
 from grim.texture_mode import texture_mode
 from tests.render.test_ground_materials import pixels
 
@@ -97,6 +97,42 @@ def test_emissive_art_fades_without_relaxing_surrounding_coverage(raylib_context
         expected = tuple((c / 255) ** 2.2 * (3 / 255) for c in (128, 153, 255)) if linear else (0, 0, 0)
         for x in (24, 56):
             assert result[8 * 80 + x][:3] == pytest.approx(expected, abs=1e-5)
+    finally:
+        alpha_test.close()
+        rl.unload_texture(texture)
+        rl.unload_render_texture(target)
+
+
+@pytest.mark.parametrize("linear", [False, True])
+def test_glint_mask_decodes_separately_from_fade_and_restores_artwork(raylib_context, linear) -> None:
+    alpha_test = AlphaTestShader()
+    target = load_float_target(80, 16)
+    art = rl.gen_image_color(1, 1, rl.Color(255, 255, 255, 128))
+    texture = rl.load_texture_from_image(art)
+    rl.unload_image(art)
+    try:
+        with texture_mode(target, linear=linear), alpha_test.scope(), additive_blend():
+            rl.clear_background(rl.BLANK)
+            for i, alpha in enumerate((128, 3, 0)):
+                with glint_scope():
+                    rl.draw_texture_ex(texture, rl.Vector2(i * 16, 0), 0, 16, rl.Color(102, 128, 255, alpha))
+            with pytest.raises(RuntimeError, match="glint failed"), glint_scope():
+                raise RuntimeError("glint failed")
+            rl.draw_texture_ex(texture, rl.Vector2(48, 0), 0, 16, rl.Color(102, 128, 255, 128))
+        result = pixels(target)
+        if linear:
+            hue = tuple(.75 * (c / 255) ** 2.2 + .25 for c in (102, 128, 255))
+            profile = 3 * (128 / 255) ** 2.2
+            for i, alpha in enumerate((128, 3, 0)):
+                assert result[8 * 80 + i * 16 + 8][:3] == pytest.approx(
+                    tuple(c * profile * alpha / 255 for c in hue), abs=.0004,
+                )
+            ordinary = tuple((c / 255) ** 2.2 * (128 / 255) ** 2 for c in (102, 128, 255))
+            assert result[8 * 80 + 56][:3] == pytest.approx(ordinary, abs=.0002)
+        else:
+            assert result[8 * 80 + 8][:3] == result[8 * 80 + 56][:3]
+            assert result[8 * 80 + 24][:3] == (0, 0, 0)
+        assert result[8 * 80 + 40][:3] == (0, 0, 0)
     finally:
         alpha_test.close()
         rl.unload_texture(texture)

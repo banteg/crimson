@@ -38,6 +38,27 @@ def test_emissive_profile_is_used_only_for_additive_entries(mocker, flags, effec
     assert texture.call_count == (flags == 0x40)
 
 
+@pytest.mark.parametrize("mode", [RtxRenderMode.RTX, RtxRenderMode.CLASSIC])
+@pytest.mark.parametrize("flags", [0x19, 0x1D, 0x59, 0x5D])
+def test_bonus_glints_keep_their_texture_while_explosion_flashes_are_radial(mocker, mode, flags):
+    ctx = _render_ctx(rtx_mode=mode)
+    ctx.frame.state.effects.entries[0] = EffectEntry(
+        effect_id=EffectId.BURST, pos=Vec2(40, 40), flags=flags,
+        half_width=32, half_height=32, scale=1, rotation=.7, color=RGBA(.4, .5, 1, .5),
+    )
+    sprite = mocker.patch.object(world_effects, "draw_sprite")
+    texture = mocker.patch.object(rl, "draw_texture_pro")
+    mocker.patch.object(rl, "begin_blend_mode")
+    mocker.patch.object(rl, "end_blend_mode")
+    world_effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    analytic = mode is RtxRenderMode.RTX and flags == 0x19
+    assert sprite.call_count == analytic
+    assert texture.call_count == (not analytic)
+    if not analytic:
+        assert texture.call_args.args[4] == pytest.approx(.7 * 180 / np.pi)
+        assert texture.call_args.args[5].b == 255
+
+
 @pytest.fixture
 def effect_shader(raylib_context, mocker):
     mocker.patch.object(effects, "_shader", None)

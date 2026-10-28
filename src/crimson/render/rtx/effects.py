@@ -29,7 +29,7 @@ class EffectShape(IntEnum):
 
 SPRITE_SHAPES = {
     EffectId.GLOW: EffectShape.GLOW, EffectId.AURA: EffectShape.AURA,
-    EffectId.RING: EffectShape.RING, EffectId.BURST: EffectShape.BURST,
+    EffectId.RING: EffectShape.RING,
 }
 _VERTEX = """#version 330
 in vec3 vertexPosition;

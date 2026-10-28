@@ -3,6 +3,7 @@
 #include "common.glsl"
 #include "filtering.glsl"
 #include "linear_light.glsl"
+#include "glint.glsl"
 LOC(0) in vec4 v_diffuse;
 LOC(1) in vec2 v_uv;
 LOC(2) in vec2 v_pos;
@@ -14,6 +15,7 @@ uniform vec4 factor;
 uniform int alpha_test, alpha_func;
 uniform float alpha_ref;
 uniform int in_world; // drawing into the RTX world's linear light (linear_light.glsl)
+uniform int glint;
 // A circle the device shades itself (host_circle), else an outer radius of 0: its center and inner and outer radius
 // in the vertices' pixels, then the texture's u and its v at the inner and outer edges.
 uniform vec4 circle, circle_uv;
@@ -68,6 +70,10 @@ void main() {
     vec4 texels[2] = vec4[2](has_texture[0] != 0 ? sampleColor(texture0, reconstruction[0], uv) : vec4(1.0),
                              has_texture[1] != 0 ? sampleColor(texture1, reconstruction[1], uv) : vec4(1.0));
     vec4 current = v_diffuse;
+    if (in_world != 0 && glint != 0) {
+        color = glintEmission(texels[0], v_diffuse);
+        return;
+    }
     for (int s = 0; s < 2; ++s) {
         if (color_op[s] == 1) break;
         vec4 texel = texels[s];
