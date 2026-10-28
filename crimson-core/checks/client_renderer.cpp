@@ -664,13 +664,17 @@ void check_emissive_fades() {
     rectangle(128, 0, 256, 128, 0x038080ff);
     w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
     rectangle(256, 0, 384, 128, 0x008080ff);
+    // (ONE, ONE) ignores alpha, so only the test hides it at alpha 0, as the muzzle flash draws when nothing fires.
+    w2c_host_render_state(nullptr, RS_SRCBLEND, 2);
+    rectangle(384, 0, 512, 128, 0x008080ff);
+    w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
     w2c_host_render_pass(nullptr, 2);
     Pixel faded = back_pixel(64, 64);
     if (linear) {
       assert(fabsf(faded.b - powf(3 / 255.f, 1 / 2.2f)) < .001f);
       assert(fabsf(faded.r / faded.b - 128 / 255.f) < .002f);
     } else assert(faded.r == 0 && faded.b == 0);
-    assert(back_red(192, 64) == 0 && back_red(320, 64) == 0);
+    assert(back_red(192, 64) == 0 && back_red(320, 64) == 0 && back_red(448, 64) == 0);
   }
   renderer_set_rtx(false);
   w2c_host_render_state(nullptr, RS_ALPHATESTENABLE, 0);

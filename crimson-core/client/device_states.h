@@ -30,11 +30,15 @@ enum {
 // own half-float storage, which the RTX back buffer and world target use, and
 // float storage, the RTX ground's surface.
 enum { TARGET_RENDER = 1, TARGET_OPAQUE = 2, TARGET_HALF_FLOAT = 4, TARGET_FLOAT = 8 };
-// Only additive emission may bypass the art's coverage cutoff in linear light.
-// Keep opaque, alpha-composited, subtractive and mask draws on their native test.
+// Only additive emission may bypass the art's coverage cutoff in linear light,
+// and only where its alpha scales what it adds (SRCALPHA, ONE): there the cutoff
+// was a step, and below it the light fades on. A (ONE, ONE) draw adds its color
+// whatever its alpha, so the test is all that hides it: the muzzle flash draws
+// every frame at alpha 0. Keep those, and opaque, alpha-composited, subtractive
+// and mask draws, on their native test.
 inline bool additive_emission(const unsigned *states) {
   return states[RS_ALPHABLENDENABLE] && states[RS_BLENDOP] == 1 &&
-         states[RS_DESTBLEND] == 2 && (states[RS_SRCBLEND] == 2 || states[RS_SRCBLEND] == 5);
+         states[RS_DESTBLEND] == 2 && states[RS_SRCBLEND] == 5;
 }
 #include "../game/render_passes.h"
 // The material host_bonus starts, beside the lit passes, until the next pass.
