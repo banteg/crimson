@@ -238,9 +238,10 @@ def test_atlas_isolation(lit_bonus, pass_id, offset):
 def test_coating_normal_stays_on_shell_during_icon_pulse_rotation_and_weapon_stretch(lit_bonus, monkeypatch):
     # Instrument the production normal calculation so foil shading cannot hide coat movement.
     fragment = module.BONUS_FRAGMENT.replace(
-        '    float lum = dot(texel.rgb,',
-        '    finalColor = vec4(N_dome*.5+.5, 1.0); return;\n    float lum = dot(texel.rgb,',
+        '    vec3 base_lin = base.rgb;',
+        '    finalColor = vec4(N_dome*.5+.5, 1.0); return;\n    vec3 base_lin = base.rgb;',
     )
+    assert fragment != module.BONUS_FRAGMENT
     monkeypatch.setattr(module, 'BONUS_FRAGMENT', fragment)
     render, lighting = lit_bonus
     lighting.close()

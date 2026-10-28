@@ -17,8 +17,7 @@ from .texture_mode import current_target_linear
 # discard shader for world drawing and terrain stamps. This shim is
 # required for parity; if it fails to compile, rendering should stop rather than
 # silently drift away from the native cutoff behavior.
-_ALPHA_TEST_VS_330 = r"""
-#version 330
+_ALPHA_TEST_VS_330 = "\n#version 330\n" + LINEAR_LIGHT_GLSL + r"""
 
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
@@ -28,10 +27,11 @@ out vec2 fragTexCoord;
 out vec4 fragColor;
 
 uniform mat4 mvp;
+uniform int in_world;
 
 void main() {
     fragTexCoord = vertexTexCoord;
-    fragColor = vertexColor;
+    fragColor = vec4(worldColor(vertexColor.rgb, in_world), vertexColor.a);
     gl_Position = mvp * vec4(vertexPosition, 1.0);
 }
 """
@@ -53,14 +53,15 @@ void main() {
     // Emulate DX8 fixed-function alpha test after stage-0 modulation:
     // Compare the rounded byte alpha, as in the C/WebGL D3D8 host.
     // GREATEREQUAL with ALPHAREF=4 accepts byte alpha 4 after modulation.
-    vec4 art = alphaBilinear(texture0, fragTexCoord);
+    vec4 art = alphaBilinear(texture0, fragTexCoord, in_world != 0);
+    vec4 tint = fragColor * vec4(worldColor(colDiffuse.rgb, in_world), colDiffuse.a);
     if (in_world != 0 && glint != 0) {
-        finalColor = glintEmission(art, fragColor * colDiffuse);
+        finalColor = glintEmission(art, tint);
         return;
     }
-    vec4 texel = art * fragColor * colDiffuse;
+    vec4 texel = art * tint;
     if (!(in_world != 0 && emissive != 0) && floor(texel.a * 255.0 + 0.5) < 4.0) discard;
-    finalColor = vec4(worldColor(texel.rgb, in_world), texel.a);
+    finalColor = texel;
 }
 """
 
@@ -159,8 +160,8 @@ class AlphaTestShader(msgspec.Struct):
         if self.shader is None:
             fragment = _ALPHA_TEST_FS_330
             if self.cubic:
-                fragment = fragment.replace("alphaBilinear(texture0, fragTexCoord)",
-                                            "alphaCatmullRom(texture0, fragTexCoord)")
+                fragment = fragment.replace("alphaBilinear(texture0, fragTexCoord, in_world != 0)",
+                                            "alphaCatmullRom(texture0, fragTexCoord, in_world != 0)")
             shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, fragment)
             if shader.id <= 0 or shader.id == rl.rl_get_shader_id_default():
                 raise RuntimeError("alpha-test shader compilation failed")

@@ -22,6 +22,7 @@ extern unsigned int grim_vertex_count;
 extern unsigned char portable_preserve_bugs;
 extern float effect_uv_step_2, effect_uv_step_4, effect_uv_step_8, effect_uv_step_16;
 bool rtx_drawing();
+bool rtx_explosion_ring(const effect_entry_t *entry);
 int rtx_effects_active;
 }
 
@@ -76,7 +77,7 @@ int sprite_cell(const EffectVertex *v) {
   // texels short of the next cell.
   const struct {
     int id, kind;
-  } cells[] = {{13, WARM}, {16, AURA}, {1, RING}};
+  } cells[] = {{13, WARM}, {16, AURA}};
   for (const auto &cell : cells) {
     const auto &entry = effect_id_table[cell.id];
     const uv2f_t *table = entry.size_code == 0x10   ? effect_uv16
@@ -91,8 +92,7 @@ int sprite_cell(const EffectVertex *v) {
       return v[0].u == u && v[0].v == w && v[1].u == u + size && v[1].v == w &&
              v[2].u == u + size && v[2].v == w + size && v[3].u == u && v[3].v == w + size;
     };
-    // Retained explosion shells use effect_select_texture / grim_set_atlas_frame,
-    // whose immediate quads cover the full cell rather than effect_spawn's inset.
+    // Immediate quads cover the full cell rather than effect_spawn's inset.
     int grid = 256 / entry.size_code;
     float unit = 1.f / grid;
     if (matches(table[entry.frame].u, table[entry.frame].v, step) ||
@@ -171,10 +171,17 @@ extern "C" bool rtx_effect_quad(const float *points) {
 // Cell 0 is shared by the stationary explosion flash and moving bonus glints.
 // Only the former is radial; glints keep the atlas's asymmetric rays, sampled
 // by the linear-light textured path. Flag 0x4 enables particle motion.
-extern "C" bool rtx_burst_flash(const effect_entry_t *entry, unsigned color) {
-  if (!drawing() || entry->effect_id != 0 || (entry->flags & (4 | 0x40)) || !additive())
+extern "C" bool rtx_effect_sprite(const effect_entry_t *entry, unsigned color) {
+  if (!drawing())
     return false;
-  sprite(BURST, camera_offset.x + entry->position.x, camera_offset.y + entry->position.y,
+  int kind;
+  if (entry->effect_id == 1 && rtx_explosion_ring(entry))
+    kind = RING;
+  else if (entry->effect_id == 0 && !(entry->flags & (4 | 0x40)) && additive())
+    kind = BURST;
+  else
+    return false;
+  sprite(kind, camera_offset.x + entry->position.x, camera_offset.y + entry->position.y,
          entry->half_extent.x * 2 * entry->scale, entry->half_extent.y * 2 * entry->scale,
          entry->rotation, color);
   return true;
@@ -190,6 +197,14 @@ extern "C" void rtx_glint(bool active) {
   grim_interface_ptr->grim_flush_batch();
   host_render_pass(active ? HOST_PASS_GLINT : HOST_PASS_SPRITES);
   glint_marked = active;
+}
+
+// Explicitly owned explosion shell: generic ring atlas draws also represent
+// projectile impacts and bonus pulses, whose original artwork must survive.
+extern "C" void rtx_pressure_ring(float x, float y, float radius, float alpha) {
+  if (drawing())
+    sprite(RING, camera_offset.x + x, camera_offset.y + y, radius * 2, radius * 2,
+           0, rgba(190 / 255.f, 163 / 255.f, 122 / 255.f, alpha));
 }
 
 extern "C" void rtx_plasma(int slot, float alpha) {

@@ -29,6 +29,8 @@ std::vector<unsigned> blends;
 std::vector<int> passes;
 extern "C" void host_render_pass(int pass) { passes.push_back(pass); }
 extern "C" bool rtx_drawing() { return enabled && outputs && !disabled; }
+const effect_entry_t *explosion_ring;
+extern "C" bool rtx_explosion_ring(const effect_entry_t *entry) { return entry == explosion_ring; }
 void IGrim2D_cpp::grim_flush_batch() {
   ++flushes;
   rtx_effect_flush();
@@ -158,35 +160,48 @@ int main() {
   submissions.clear();
   blends.clear();
   grim_config_values[0x14].words[0] = 6;
-  assert(rtx_effect_quad(points));
+  assert(!rtx_effect_quad(points));
+  rtx_pressure_ring(20, 30, 40, .5f);
   grim_vertex_count = 4;
   grim_interface_ptr->grim_end_batch();
   grim_config_values[0x14].words[0] = 2;
-  assert(rtx_effect_quad(points));
+  assert(!rtx_effect_quad(points));
+  rtx_pressure_ring(20, 30, 40, .5f);
   grim_interface_ptr->grim_end_batch();
   assert((submissions == std::vector<int>{2, -1, 2}));
   assert((blends == std::vector<unsigned>{6, 2}));
-  // Native 2x2 ring cells stop two texels short. They must use the analytic
-  // profile too; matching a full half-atlas rectangle silently kept the sprite.
+  // Full and inset atlas rings retain their artwork. Only an explicit owned
+  // explosion shell gets the pressure profile.
   float lo = .5f, hi = lo + effect_uv_step_2;
   const float ring_uv[8] = {lo, lo, hi, lo, hi, hi, lo, hi};
   memcpy(grim_uv_u0, ring_uv, sizeof ring_uv);
-  assert(rtx_effect_quad(points));
-  rtx_effect_flush();
-  assert(submissions.back() == 2);
+  assert(!rtx_effect_quad(points));
   for (int i = 0; i < 4; ++i) {
     vertices[i].u = ring_uv[i * 2];
     vertices[i].v = ring_uv[i * 2 + 1];
   }
-  assert(rtx_effect_vertices(vertices, 4));
-  rtx_effect_flush();
-  assert(submissions.back() == 2);
-  // Immediate shells use full cells; both paths share the same ring shader.
+  assert(!rtx_effect_vertices(vertices, 4));
   const float shell_uv[8] = {.5f, .5f, 1, .5f, 1, 1, .5f, 1};
   memcpy(grim_uv_u0, shell_uv, sizeof shell_uv);
-  assert(rtx_effect_quad(points));
+  assert(!rtx_effect_quad(points));
+  rtx_pressure_ring(20, 30, 40, .5f);
   rtx_effect_flush();
   assert(submissions.back() == 2);
+  effect_entry_t ring{};
+  ring.effect_id = 1;
+  ring.flags = 0x19;
+  ring.position = {23, 45};
+  ring.half_extent = {32, 32};
+  ring.scale = 2;
+  assert(!rtx_effect_sprite(&ring, 0x80123456));
+  explosion_ring = &ring;
+  assert(rtx_effect_sprite(&ring, 0x80123456));
+  rtx_effect_flush();
+  assert(submissions.back() == 2);
+  assert(captured_sprites[0].color == 0x80123456);
+  assert(captured_sprites[0].x == 23 - 64 && captured_sprites[0].y == 45 - 64);
+  explosion_ring = nullptr; // A released/reused slot no longer gets the pressure profile.
+  assert(!rtx_effect_sprite(&ring, 0x80123456));
   // Atlas matching alone cannot distinguish glints from explosion flashes.
   const float burst_uv[8] = {0, lo, effect_uv_step_2, lo, effect_uv_step_2, hi, 0, hi};
   memcpy(grim_uv_u0, burst_uv, sizeof burst_uv);
@@ -200,14 +215,14 @@ int main() {
   flash.position = {23, 45};
   flash.half_extent = {32, 32};
   flash.scale = 2;
-  assert(rtx_burst_flash(&flash, 0x80123456));
+  assert(rtx_effect_sprite(&flash, 0x80123456));
   rtx_effect_flush();
   assert(submissions.back() == 6);
   assert(captured_sprites[0].color == 0x80123456);
   assert(captured_sprites[0].x == 23 - 64 && captured_sprites[0].y == 45 - 64);
   // Bonus glints retain their original textured rays, even at zero velocity.
   flash.flags = 0x1d;
-  assert(!rtx_burst_flash(&flash, 0x80123456));
+  assert(!rtx_effect_sprite(&flash, 0x80123456));
   flushes = 0;
   rtx_glint(true);
   rtx_glint(true);
@@ -231,13 +246,13 @@ int main() {
   rtx_glint(false);
   assert(passes.empty()); // Do not override the first alpha effect's ice material.
   flash.flags = 0x59;
-  assert(!rtx_burst_flash(&flash, 0x80123456));
+  assert(!rtx_effect_sprite(&flash, 0x80123456));
   flash.flags = 0x19;
   enabled = false;
-  assert(!rtx_burst_flash(&flash, 0x80123456));
+  assert(!rtx_effect_sprite(&flash, 0x80123456));
   enabled = true;
   grim_config_values[0x14].words[0] = 6;
-  assert(!rtx_burst_flash(&flash, 0x80123456));
+  assert(!rtx_effect_sprite(&flash, 0x80123456));
   puts("analytic hooks: output suppression, alpha coverage, original corners, "
        "batch-end submission and 100-to-1 sprite batching passed");
 }

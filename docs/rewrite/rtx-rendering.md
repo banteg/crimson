@@ -7,6 +7,28 @@ tags:
 
 # RTX rendering
 
+## Replay comparisons
+
+Capture a tick list or inclusive range in one continuous playback per render mode:
+
+```sh
+uv run python tools/rtx/capture.py --game /path/to/game --replay /path/to/run.crd \
+  --ticks 490,494,500 --modes classic,rtx --out /tmp/rtx-comparison
+```
+
+`--ticks 490:500:2` captures every other tick through 500. `--history 240` sets the
+initial rendered warmup; playback then continues through every requested tick without
+rewinding. Add `--before-client /path/to/baseline/crimson` to compare two builds.
+Each build/mode folder contains PNG frames, the original PPMs, a client log, and a
+manifest recording the replay hash, ticks, dimensions, and history window. Clients
+must support `CRIMSON_CAPTURE_TICKS`; missing frames fail the command.
+
+The equivalent native environment is `CRIMSON_CAPTURE=<existing directory>`,
+`CRIMSON_WATCH=<replay relative to game directory>`,
+`CRIMSON_CAPTURE_TICKS=490,494,500`, and `CRIMSON_WATCH_WINDOW=240`.
+This is separate from `CRIMSON_WATCH_MOMENTS`, which retains independent seek/warmup
+windows for profiling isolated moments.
+
 RTX is the Python port's alternative rendering mode. It combines analytic beam
 shaders, wet ground materials, and creature lighting with HDR world rendering and extended dynamic range (EDR) output on macOS and Wayland.
 This page covers those paths, their controls, and how they differ from classic

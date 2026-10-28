@@ -319,15 +319,19 @@ def test_each_burst_draws_one_ring_and_rtx_swaps_only_a_lit_burst_for_its_shell(
     effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
     rings = 1
     assert sum(call.args[1] == EffectId.RING for call in select.call_args_list) == rings
-    # RTX draws a rocket's own ring as the analytic ring; a lit burst's shell replaces its native ring.
+    # Only owned pressure shells are analytic. Other rings retain the atlas artwork.
     drawn = [call.kwargs["width"] for call in sprite.call_args_list if call.args[0] is EffectShape.RING]
     if rtx:
-        assert (pytest.approx(2 * native.half_width * native.scale) in drawn) == (not emit_light)
+        assert len(drawn) == 1
+        if not emit_light:
+            assert drawn[0] == pytest.approx(native.half_width * 2 * native.scale)
 
     # A separate ring, such as freeze/shield, must never inherit the exclusion.
     unrelated = pool.spawn(EffectId.RING, Vec2(200, 200), 5, preserve_bugs=False)
     assert unrelated is not None
     unrelated.age = 0
     select.reset_mock()
+    sprite.reset_mock()
     effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
     assert sum(call.args[1] == EffectId.RING for call in select.call_args_list) == rings + 1
+    assert sum(call.args[0] is EffectShape.RING for call in sprite.call_args_list) == int(rtx)

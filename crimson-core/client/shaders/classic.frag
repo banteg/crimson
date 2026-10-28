@@ -20,13 +20,14 @@ uniform int glint;
 // in the vertices' pixels, then the texture's u and its v at the inner and outer edges.
 uniform vec4 circle, circle_uv;
 vec4 sampleColor(sampler2D image, int mode, vec2 uv) {
-    if (mode == 2) return alphaCatmullRom(image, uv);
-    if (mode == 1) return alphaBilinear(image, uv);
-    return texture(image, uv);
+    if (mode == 2) return alphaCatmullRom(image, uv, in_world != 0);
+    if (mode == 1) return alphaBilinear(image, uv, in_world != 0);
+    vec4 art = texture(image, uv);
+    return vec4(worldColor(art.rgb, in_world), art.a);
 }
 vec4 argument(int a, vec4 current, vec4 texel) {
     int which = a & 7;
-    vec4 v = which == 1 ? current : which == 2 ? texel : which == 3 ? factor : v_diffuse;
+    vec4 v = which == 1 ? current : which == 2 ? texel : which == 3 ? vec4(worldColor(factor.rgb, in_world), factor.a) : v_diffuse;
     if ((a & 0x10) != 0) v = 1.0 - v;
     if ((a & 0x20) != 0) v = vec4(v.a);
     return v;
@@ -85,5 +86,5 @@ void main() {
     current.a *= coverage;
     // Direct3D compares the 8-bit alpha with the reference.
     if (alpha_test != 0 && !passes(floor(current.a * 255.0 + 0.5))) discard;
-    color = vec4(worldColor(current.rgb, in_world), current.a);
+    color = current;
 }

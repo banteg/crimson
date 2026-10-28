@@ -163,9 +163,12 @@ def draw_effect_pool(
     pool = frame.state.effects
     effects = (*pool.entries, *pool.overflow_entries) if pool.overflow_entries else pool.entries
     fireball_slots: set[int] = set()
+    pressure_shells: set[int] = set()
     if frame.rtx_mode is RtxRenderMode.RTX:
         archived = []
         for visual in pool.explosion_visuals:
+            if visual.active_ring is not None:
+                pressure_shells.add(id(visual.active_ring))
             shell = explosion_shell(visual.age, visual.scale) if visual.emit_light and visual.ring_spawned else None
             if shell is not None:
                 archived.append(
@@ -180,6 +183,7 @@ def draw_effect_pool(
                         color=RGBA(190 / 255, 163 / 255, 122 / 255, shell.alpha),
                     ),
                 )
+                pressure_shells.add(id(archived[-1]))
             if not visual.emit_light or not 0.0 <= visual.age < visual.lifetime:
                 continue
             for sprite in visual.fireballs:
@@ -192,8 +196,8 @@ def draw_effect_pool(
 
     scale = viewport.view_scale_avg(view_scale)
 
-    # Lit explosions use the warm shell above; rocket, freeze and shield rings
-    # keep their native timing and draw through the shared linear-light profile.
+    # Only explosion rings use the narrow pressure profile. Impact and
+    # pickup pulses keep the original ring artwork and their native timing.
     pressure_rings = (
         {id(ring) for v in pool.explosion_visuals if v.emit_light and (ring := v.active_ring) is not None}
         if frame.rtx_mode is RtxRenderMode.RTX
@@ -240,6 +244,8 @@ def draw_effect_pool(
             return
 
         shape = SPRITE_SHAPES.get(effect_id)
+        if id(entry) in pressure_shells:
+            shape = EffectShape.RING
         # The same atlas cell supplies an explosion's stationary flash and the
         # moving bonus glints. Preserve the latter's asymmetric textured rays.
         if effect_id == EffectId.BURST and not entry.flags & 0x4:

@@ -19,7 +19,7 @@ const float RIM_STRENGTH = 0.8;
 vec4 spriteSample(vec2 uv) {
     vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
     vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
-    return textureLod(texture0, clamp(uv, cell + half_texel, cell + vec2(.125) - half_texel), 0.);
+    return alphaBilinear(texture0, clamp(uv, cell + half_texel, cell + vec2(.125) - half_texel));
 }
 float spriteLuminance(vec2 uv) {
     return dot(spriteSample(uv).rgb, vec3(.299, .587, .114));
@@ -32,15 +32,16 @@ float spriteAlpha(vec2 uv) {
     return spriteSample(uv).a;
 }
 void main() {
-    vec4 texel = alphaBilinear(texture0, fragTexCoord);
-    vec4 base = texel * fragColor * colDiffuse;
+    vec4 texel = alphaBilinear(texture0, fragTexCoord, true);
+    vec4 tint = fragColor * colDiffuse;
+    vec4 base = texel * vec4(decodeArt(tint.rgb), tint.a);
     // Save derivatives before alpha discard makes neighboring lanes diverge.
     vec2 dxq = dFdx(fragTexCoord) * 16., dyq = dFdy(fragTexCoord) * 16.;
     vec2 dxw = dFdx(world), dyw = dFdy(world);
     if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0) {
-        finalColor = vec4(decodeArt(base.rgb), base.a);
+        finalColor = vec4(base.rgb, base.a);
         return;
     }
     vec2 q = fract(fragTexCoord * 8.0) * 2.0 - 1.0;
@@ -65,7 +66,7 @@ void main() {
     // Brighter texels are raised: the height-field normal points downhill.
     slope -= rot * relief * 0.65;
     vec3 N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
-    vec3 baseLin = decodeArt(base.rgb);
+    vec3 baseLin = base.rgb;
     vec3 added = vec3(0);
     for (int i = 0; i < u_count; i++) {
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);

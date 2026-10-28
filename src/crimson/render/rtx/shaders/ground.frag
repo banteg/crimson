@@ -40,6 +40,7 @@ uniform vec4 u_spec_response[MAX_SPEC_LIGHTS]; // illumination, reflection, refl
 #include "ground_visibility.glsl"
 #include "continuous_beam.glsl"
 #include "linear_light.glsl"
+#include "filtering.glsl"
 
 float blood_below_ice(vec4 surface, vec4 coverage) {
     // Ice occludes the film; it does not thin it into a new red meniscus.
@@ -86,8 +87,7 @@ void main() {
     vec2 ground_uv = fragTexCoord;
     vec2 world = vec2(ground_uv.x, V_UP > 0. ? 1.0 - ground_uv.y : ground_uv.y) * u_ground_size;
     // The terrain is artwork: shade its decoded albedo, into the world's linear light.
-    vec4 albedo_tex = texture(u_substrate_tex, ground_uv);
-    albedo_tex.rgb = decodeArt(albedo_tex.rgb);
+    vec4 albedo_tex = alphaBilinear(u_substrate_tex, ground_uv, true);
     vec4 surf = texture(u_surface_tex, ground_uv);
 
     // Samples named up (U) lie toward the world's top in either orientation.
