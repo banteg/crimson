@@ -4,3 +4,4 @@ from importlib.resources import files
 
 FILTERING_GLSL = files("grim").joinpath("filtering.glsl").read_text()
 LINEAR_LIGHT_GLSL = files("grim").joinpath("linear_light.glsl").read_text()
+GLINT_GLSL = files("grim").joinpath("glint.glsl").read_text()

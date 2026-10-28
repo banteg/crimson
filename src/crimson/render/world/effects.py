@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import math
+from contextlib import nullcontext
+from itertools import groupby
 
 from grim.assets import TextureId
 from grim.blend import additive_blend
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
+from grim.shaders import glint_scope
 
 from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
@@ -237,6 +240,10 @@ def draw_effect_pool(
             return
 
         shape = SPRITE_SHAPES.get(effect_id)
+        # The same atlas cell supplies an explosion's stationary flash and the
+        # moving bonus glints. Preserve the latter's asymmetric textured rays.
+        if effect_id == EffectId.BURST and not entry.flags & 0x4:
+            shape = EffectShape.BURST
         if (
             frame.rtx_mode is RtxRenderMode.RTX
             and shape is not None
@@ -261,8 +268,14 @@ def draw_effect_pool(
     rl.end_blend_mode()
 
     with additive_blend(), sprite_batch() as batch:
-        for entry in effects:
-            if not entry.flags or entry.age < 0.0:
-                continue
-            if not (int(entry.flags) & 0x40):
-                draw_entry(entry)
+        additive = (entry for entry in effects if entry.flags and entry.age >= 0.0 and not entry.flags & 0x40)
+        for glints, entries in groupby(additive, key=lambda entry: (
+            frame.rtx_mode is RtxRenderMode.RTX and entry.effect_id == EffectId.BURST and bool(entry.flags & 0x4)
+        )):
+            # Preserve draw order and flush analytic work before changing the
+            # enclosing textured shader. Consecutive glints share one scope.
+            batch.end()
+            with glint_scope() if glints else nullcontext():
+                for entry in entries:
+                    draw_entry(entry)
+                batch.end()

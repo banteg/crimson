@@ -18,6 +18,7 @@ enum {
   HOST_PASS_ICE_SHARDS = 10,
   // The cubes over frozen bodies (creature_render_all): their dark faces partly clear, so the body shows through.
   HOST_PASS_ICE_FROZEN = 11,
+  HOST_PASS_GLINT = 12, // textured bonus sparks: alpha contains painted intensity, not coverage
 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).
 enum { RTX_LIGHT_FLOATS = 32 };

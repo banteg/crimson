@@ -5,6 +5,7 @@
 #include "effect_vertices.h"
 #include "grim2d_cpp.h"
 #include "host_abi.h"
+#include "render_passes.h"
 #include <algorithm>
 #include <math.h>
 #include <vector>
@@ -28,6 +29,7 @@ namespace {
 enum { WARM, AURA, RING, PLASMA, ARC, PULSE, BURST };
 std::vector<EffectVertex> sprite_vertices;
 int sprite_kind = -1;
+bool glint_marked;
 float byte_alpha(float a) {
   return floorf(std::clamp(a, 0.f, 1.f) * 255.f + .5f) / 255.f;
 }
@@ -74,7 +76,7 @@ int sprite_cell(const EffectVertex *v) {
   // texels short of the next cell.
   const struct {
     int id, kind;
-  } cells[] = {{13, WARM}, {16, AURA}, {1, RING}, {0, BURST}};
+  } cells[] = {{13, WARM}, {16, AURA}, {1, RING}};
   for (const auto &cell : cells) {
     const auto &entry = effect_id_table[cell.id];
     const uv2f_t *table = entry.size_code == 0x10   ? effect_uv16
@@ -141,7 +143,7 @@ extern "C" bool rtx_effect_vertices(const void *vertices, int count) {
     return false;
   const auto *v = (const EffectVertex *)vertices;
   int kind = sprite_cell(v);
-  if (kind < 0 || ((kind == WARM || kind == AURA || kind == BURST) && !additive()))
+  if (kind < 0 || ((kind == WARM || kind == AURA) && !additive()))
     return false;
   // The source can be Grim's mapped buffer, which a flush may relock.
   EffectVertex quad[4];
@@ -164,6 +166,30 @@ extern "C" bool rtx_effect_quad(const float *points) {
                grim_uv_u0[2 * i],
                grim_uv_u0[2 * i + 1]};
   return rtx_effect_vertices(quad, 4);
+}
+
+// Cell 0 is shared by the stationary explosion flash and moving bonus glints.
+// Only the former is radial; glints keep the atlas's asymmetric rays, sampled
+// by the linear-light textured path. Flag 0x4 enables particle motion.
+extern "C" bool rtx_burst_flash(const effect_entry_t *entry, unsigned color) {
+  if (!drawing() || entry->effect_id != 0 || (entry->flags & (4 | 0x40)) || !additive())
+    return false;
+  sprite(BURST, camera_offset.x + entry->position.x, camera_offset.y + entry->position.y,
+         entry->half_extent.x * 2 * entry->scale, entry->half_extent.y * 2 * entry->scale,
+         entry->rotation, color);
+  return true;
+}
+
+// A new world leaves the previous glint run behind, even if output suppression
+// skipped its closing transition. Non-glints may already be in an ice material.
+extern "C" void rtx_glint_reset() { glint_marked = false; }
+
+extern "C" void rtx_glint(bool active) {
+  if (!drawing() || active == glint_marked)
+    return;
+  grim_interface_ptr->grim_flush_batch();
+  host_render_pass(active ? HOST_PASS_GLINT : HOST_PASS_SPRITES);
+  glint_marked = active;
 }
 
 extern "C" void rtx_plasma(int slot, float alpha) {

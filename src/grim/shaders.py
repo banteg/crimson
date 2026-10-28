@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 import msgspec
 
-from .filtering import FILTERING_GLSL, LINEAR_LIGHT_GLSL
+from .filtering import FILTERING_GLSL, GLINT_GLSL, LINEAR_LIGHT_GLSL
 from .raylib_api import rl
 from .texture_mode import current_target_linear
 
@@ -36,7 +36,7 @@ void main() {
 }
 """
 
-_ALPHA_TEST_FS_330 = "\n#version 330\n" + FILTERING_GLSL + LINEAR_LIGHT_GLSL + r"""
+_ALPHA_TEST_FS_330 = "\n#version 330\n" + FILTERING_GLSL + LINEAR_LIGHT_GLSL + GLINT_GLSL + r"""
 
 in vec2 fragTexCoord;
 in vec4 fragColor;
@@ -45,6 +45,7 @@ uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 uniform int in_world;
 uniform int emissive;
+uniform int glint;
 
 out vec4 finalColor;
 
@@ -52,7 +53,12 @@ void main() {
     // Emulate DX8 fixed-function alpha test after stage-0 modulation:
     // Compare the rounded byte alpha, as in the C/WebGL D3D8 host.
     // GREATEREQUAL with ALPHAREF=4 accepts byte alpha 4 after modulation.
-    vec4 texel = alphaBilinear(texture0, fragTexCoord) * fragColor * colDiffuse;
+    vec4 art = alphaBilinear(texture0, fragTexCoord);
+    if (in_world != 0 && glint != 0) {
+        finalColor = glintEmission(art, fragColor * colDiffuse);
+        return;
+    }
+    vec4 texel = art * fragColor * colDiffuse;
     if (!(in_world != 0 && emissive != 0) && floor(texel.a * 255.0 + 0.5) < 4.0) discard;
     finalColor = vec4(worldColor(texel.rgb, in_world), texel.a);
 }
@@ -62,6 +68,26 @@ void main() {
 # Raylib's EndShaderMode resets to the default shader, not the enclosing one.
 # Bonus hover text runs inside the world's alpha-test scope.
 _shader_stack: list[tuple[rl.Shader, bool]] = []
+
+
+@contextmanager
+def glint_scope() -> Generator[None]:
+    """Read the bonus glint's painted alpha as light, retaining its linear fade."""
+    if not current_target_linear() or not _shader_stack:
+        yield
+        return
+    shader = _shader_stack[-1][0]
+    location = rl.get_shader_location(shader, "glint")
+    if location < 0:
+        yield
+        return
+    rl.rl_draw_render_batch_active()
+    rl.set_shader_value(shader, location, rl.ffi.new("int *", 1), rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+    try:
+        yield
+    finally:
+        rl.rl_draw_render_batch_active()
+        rl.set_shader_value(shader, location, rl.ffi.new("int *", 0), rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
 
 
 @contextmanager

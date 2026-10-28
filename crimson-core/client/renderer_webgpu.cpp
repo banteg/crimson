@@ -865,6 +865,7 @@ void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
   fragment.f("alpha_ref", (float)(render_states[RS_ALPHAREF] & 255));
   fragment.i("alpha_func", (int)render_states[RS_ALPHAFUNC]);
   fragment.i("in_world", in_world(t));
+  fragment.i("glint", in_world(t) && material == HOST_PASS_GLINT);
   fragment.set("circle", circle, 16).set("circle_uv", circle + 4, 16);
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(classic, device_output(t, topology)));
   bind(classic, fragment_group(classic, {inputs[0], inputs[1]}), &vertex, &fragment);
@@ -1326,7 +1327,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     return;
 
   pass_into(t);
-  bool lit = rtx && world && material && material != HOST_PASS_GROUND && (material != HOST_PASS_PLAYERS || light_count);
+  bool lit = rtx && world && material && material != HOST_PASS_GLINT && material != HOST_PASS_GROUND && (material != HOST_PASS_PLAYERS || light_count);
   Program &program = !lit                           ? classic
                      : material == HOST_PASS_PLAYERS ? player_lit
                      : material == MATERIAL_BONUS    ? bonus_lit

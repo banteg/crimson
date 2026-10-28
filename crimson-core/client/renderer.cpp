@@ -82,7 +82,7 @@ struct ClassicUniforms {
   AppliedValue<GLint[STAGES]> has_texture, reconstruction, color_op, color_arg1, color_arg2;
   AppliedValue<GLint[STAGES]> alpha_op, alpha_arg1, alpha_arg2;
   AppliedValue<float[4]> factor, circle, circle_uv;
-  AppliedValue<GLint> alpha_test, alpha_func, in_world;
+  AppliedValue<GLint> alpha_test, alpha_func, in_world, glint;
   AppliedValue<float> alpha_ref;
 } classic_uniforms;
 struct SamplerState {
@@ -230,7 +230,7 @@ GLuint blank_texture;
 // The freeze ice's surface (HOST_PASS_ICE_*), on the creature program's thickness unit.
 GLuint ice_texture;
 GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_alpha_op, u_alpha_arg1, u_alpha_arg2,
-    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction, u_circle, u_circle_uv, u_in_world;
+    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction, u_circle, u_circle_uv, u_in_world, u_glint;
 // RTX: the world's HDR target while the world draws (host_render_pass), and the
 // tonemap that puts it on the back buffer toward the display's EDR headroom.
 bool rtx, world;
@@ -691,7 +691,7 @@ bool glow_draw(Target &t, u32 primitive, u32 vertices, u32 vertex_count, u32 ind
 // lights them: creatures (their ambient fill is 0.6) and bonuses always, players
 // only under lights.
 bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 primitive_count) {
-  if (!rtx || !world || !material || material == HOST_PASS_GROUND || (material == HOST_PASS_PLAYERS && !light_count))
+  if (!rtx || !world || !material || material == HOST_PASS_GLINT || material == HOST_PASS_GROUND || (material == HOST_PASS_PLAYERS && !light_count))
     return false;
   Target &t = drawing_target(current_target);
   if (material == HOST_PASS_HEAT)
@@ -1038,6 +1038,7 @@ void GL_ENTRY(renderer_init)() {
   u_circle = uniform_location(program, "circle");
   u_circle_uv = uniform_location(program, "circle_uv");
   u_in_world = uniform_location(program, "in_world");
+  u_glint = uniform_location(program, "glint");
   use_program(program);
   glUniform1i(uniform_location(program, "texture0"), 0);
   glUniform1i(uniform_location(program, "texture1"), 1);
@@ -1618,6 +1619,8 @@ static void device_draw(const Target &t, u32 primitive, const void *vertices, u3
   if (c.alpha_func.change(alpha_func)) glUniform1i(u_alpha_func, alpha_func);
   GLint world_light = in_world(t);
   if (c.in_world.change(world_light)) glUniform1i(u_in_world, world_light);
+  GLint glint = world_light && material == HOST_PASS_GLINT;
+  if (c.glint.change(glint)) glUniform1i(u_glint, glint);
   // `circle + 4` is a pointer; preserve the four actual values in each cache.
   const float circle_rect[] = {circle[0], circle[1], circle[2], circle[3]};
   const float circle_uv[] = {circle[4], circle[5], circle[6], circle[7]};

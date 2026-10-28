@@ -677,6 +677,38 @@ void check_emissive_fades() {
 #endif
 }
 
+void check_glint_mask() {
+#ifndef __EMSCRIPTEN__
+  w2c_host_texture_create(nullptr, 112, 1, 1, 0);
+  *(u32 *)(memory + 1024) = 0x80ffffff;
+  w2c_host_texture_upload(nullptr, 112, 1024);
+  w2c_host_set_texture(nullptr, 0, 112);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG1, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 4);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG1, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG2, 0);
+  renderer_set_rtx(true);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  w2c_host_clear(nullptr, 0xff000000);
+  w2c_host_render_pass(nullptr, HOST_PASS_GLINT);
+  rectangle(0, 0, 128, 128, 0x806680ff);
+  rectangle(128, 0, 256, 128, 0x036680ff);
+  rectangle(256, 0, 384, 128, 0x006680ff);
+  w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+  rectangle(384, 0, 512, 128, 0x806680ff);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  float profile = 3 * powf(128 / 255.f, 2.2f);
+  assert(fabsf(back_pixel(64, 64).b - powf(profile * 128 / 255.f, 1 / 2.2f)) < .002f);
+  assert(fabsf(back_pixel(192, 64).b - powf(profile * 3 / 255.f, 1 / 2.2f)) < .002f);
+  assert(back_pixel(320, 64).b == 0);
+  assert(fabsf(back_pixel(448, 64).b - powf(powf(128 / 255.f, 2), 1 / 2.2f)) < .002f);
+  renderer_set_rtx(false);
+  w2c_host_set_texture(nullptr, 0, 0);
+#endif
+}
+
 // Reusing indices and applied state must survive arbitrary indexed draws,
 // helper passes, changing device arrays, and returning to the same shader.
 void check_submission_reuse() {
@@ -1100,6 +1132,7 @@ int main() {
   puts("renderer: native density, logical projection/input, terrain, holds, anchors, alpha and presentation passed");
   check_rtx();
   check_emissive_fades();
+  check_glint_mask();
 #if !defined(RENDERER_BENCHMARK) || RENDERER_BENCHMARK != 0
   // A transparent blue texel must never turn the opaque red neighbor purple.
   w2c_host_texture_create(nullptr, 201, 2, 1, 0);

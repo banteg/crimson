@@ -38,7 +38,7 @@ inline bool additive_emission(const unsigned *states) {
 }
 #include "../game/render_passes.h"
 // The material host_bonus starts, beside the lit passes, until the next pass.
-enum { MATERIAL_BONUS = HOST_PASS_ICE_FROZEN + 1 };
+enum { MATERIAL_BONUS = HOST_PASS_GLINT + 1 };
 // Each device vertex's quad center (x, y), the mean of its quad's vertices: Grim
 // batches quads as four consecutive vertices. The RTX creature lighting spares
 // that creature's own body (creature_lit.vert).

@@ -26,6 +26,8 @@ float captured[16];
 std::vector<EffectVertex> captured_sprites;
 std::vector<int> submissions;
 std::vector<unsigned> blends;
+std::vector<int> passes;
+extern "C" void host_render_pass(int pass) { passes.push_back(pass); }
 extern "C" bool rtx_drawing() { return enabled && outputs && !disabled; }
 void IGrim2D_cpp::grim_flush_batch() {
   ++flushes;
@@ -185,15 +187,57 @@ int main() {
   assert(rtx_effect_quad(points));
   rtx_effect_flush();
   assert(submissions.back() == 2);
-  // The companion flash is analytic only in additive draws.
+  // Atlas matching alone cannot distinguish glints from explosion flashes.
   const float burst_uv[8] = {0, lo, effect_uv_step_2, lo, effect_uv_step_2, hi, 0, hi};
   memcpy(grim_uv_u0, burst_uv, sizeof burst_uv);
   grim_config_values[0x14].words[0] = 6;
   assert(!rtx_effect_quad(points));
   grim_config_values[0x14].words[0] = 2;
-  assert(rtx_effect_quad(points));
+  assert(!rtx_effect_quad(points));
+  effect_entry_t flash{};
+  flash.effect_id = 0;
+  flash.flags = 0x19;
+  flash.position = {23, 45};
+  flash.half_extent = {32, 32};
+  flash.scale = 2;
+  assert(rtx_burst_flash(&flash, 0x80123456));
   rtx_effect_flush();
   assert(submissions.back() == 6);
+  assert(captured_sprites[0].color == 0x80123456);
+  assert(captured_sprites[0].x == 23 - 64 && captured_sprites[0].y == 45 - 64);
+  // Bonus glints retain their original textured rays, even at zero velocity.
+  flash.flags = 0x1d;
+  assert(!rtx_burst_flash(&flash, 0x80123456));
+  flushes = 0;
+  rtx_glint(true);
+  rtx_glint(true);
+  rtx_glint(false);
+  assert(flushes == 2);
+  assert((passes == std::vector<int>{HOST_PASS_GLINT, HOST_PASS_SPRITES}));
+  // Output suppression can skip the closing transition. A new world starts
+  // in sprite mode, so its first glint must select the material again.
+  passes.clear();
+  rtx_glint(true);
+  disabled = true;
+  rtx_glint(false);
+  rtx_glint_reset();
+  disabled = false;
+  rtx_glint(true);
+  rtx_glint(false);
+  assert((passes == std::vector<int>{HOST_PASS_GLINT, HOST_PASS_GLINT, HOST_PASS_SPRITES}));
+  rtx_glint_reset();
+  passes.clear();
+  rtx_glint(false);
+  rtx_glint(false);
+  assert(passes.empty()); // Do not override the first alpha effect's ice material.
+  flash.flags = 0x59;
+  assert(!rtx_burst_flash(&flash, 0x80123456));
+  flash.flags = 0x19;
+  enabled = false;
+  assert(!rtx_burst_flash(&flash, 0x80123456));
+  enabled = true;
+  grim_config_values[0x14].words[0] = 6;
+  assert(!rtx_burst_flash(&flash, 0x80123456));
   puts("analytic hooks: output suppression, alpha coverage, original corners, "
        "batch-end submission and 100-to-1 sprite batching passed");
 }

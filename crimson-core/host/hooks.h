@@ -89,6 +89,8 @@ void rtx_explosions_draw();
 bool rtx_drawing();
 bool rtx_effect_quad(const float *points);
 bool rtx_effect_vertices(const void *vertices, int count);
+bool rtx_burst_flash(const struct effect_entry_t *entry, unsigned color);
+void rtx_glint(bool active);
 void rtx_effect_flush();
 void rtx_plasma(int slot, float alpha);
 void rtx_ion_arc(float sx, float sy, float ex, float ey, float scale, float alpha);
