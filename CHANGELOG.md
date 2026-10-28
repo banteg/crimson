@@ -2,6 +2,56 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.23.0
+
+### For players
+
+#### RTX lighting in the browser and desktop games
+
+- The browser and desktop games now have the Python port's RTX lighting. Wet ground reflects the sky and every light, creatures and players are lit and cast soft shadows, and beams and plasma glow. Smoke is fluid, explosions have fireballs and pressure fronts, and Monster Vision shows heat.
+- RTX lighting is a checkbox in Options, in place of Graphics detail, in every version. It applies at once, and the game remembers it, in the browser too. On crimson.land/play the RTX switch in the corner does the same.
+- In the browser RTX needs WebGPU. Browsers without it, and `?renderer=webgl`, keep the classic look, and the box stays unticked there.
+- RTX works on any display. On HDR displays highlights go past white: in the desktop game on macOS, in browsers that show WebGPU in HDR, and in the Python port on macOS and now Linux Wayland. Other displays get the same lighting tonemapped to SDR.
+
+#### A truer RTX look
+
+These apply in the Python port and the browser and desktop games.
+
+- Light adds up the way light does, and one tonemap compresses it at the end. Piled light no longer clips to flat white, and creatures, players and bonuses keep their color in bright scenes.
+- Fresh explosion smoke glows hot and cools to gray, and flames that burn out leave faint soot. Creatures and players stir the smoke as they walk through it, and Final Revenge's smoke forms with its blast.
+- Monster Vision shows living monsters as heat, with short trails, in place of the yellow aura. Hidden Evil's aliens show in full, and frozen monsters cool down.
+- Freeze's ice cubes and shards are lit as ice. Wet ground reflects a cyan sky. Pulse Gun shots are glowing domes, and plasma, glows, ion arcs and rings draw as smooth shapes instead of stamped sprites. Players and bonus shells cast shadows.
+- Up to 28 lights reach each surface instead of 16, and a light leaving the budget fades out instead of popping.
+- Fixed: black specks along dense beams, contour bands in bright glows, a hard line through smoke behind a shot, lights flickering where bullets cross, and shadows popping at quad corners.
+
+#### Custom quests from the main menu
+
+- The Mods entry in the browser and desktop games opens a Custom Quests browser: published quests newest first, each with its author, start weapon, how many players cleared it and what it turns off. Play fetches the quest and starts it ranked, as a link to it does.
+- The desktop game can now play custom quests. The Python port keeps `crimson quest play`.
+
+#### Faster RTX in long runs
+
+- Late-game RTX frames cost several times less. Beams cast their shadows at a quarter of the ground's resolution, crowds shade as one, and lights skip ground they can't reach. A Nuke over a late crowd no longer stutters.
+- Full-screen RTX on large displays draws the world at up to twice the game's resolution, with the HUD at the display's own.
+
+#### Other changes
+
+- Fire Bullets that leave the arena fly off its edge instead of hanging just past it while they fade. `--preserve-bugs` keeps the old trail.
+- The browser and desktop games draw the aim circle as a smooth circle instead of a polygon.
+- In the browser and desktop games, opening a replay link skips the intro and the menu, picture and sound.
+- The browser and desktop games report each leaderboard upload in the console, as the Python port does, rejected runs included.
+- The desktop window's title names the render mode and the replay it shows.
+- Python port: leaving fullscreen on Linux Wayland restores the window's size and title bar, and the mouse reaches the whole window again.
+- Python port: RTX keeps its full range on Linux arm64 and 32-bit Windows, where it used to clip.
+
+### Under the hood
+
+- The Python port requires raylib 6.2. Locked dependencies are updated, including releases with security fixes.
+- F6 and Shift+F6 step through the RTX debug views in the browser and desktop games, as in the Python port, also under the pause menu.
+- `tools/rtx/golden.py` captures a set of golden RTX scenes and compares the Python and client renderers on them. The desktop client records per-frame profiles for `tools/profile.py`, times GPU passes with their draw counts, measures several replay moments in one run and keeps prepared replays on disk. Scripted runs close themselves, play in the background and ignore the desktop mouse.
+- A framebuffer probe and notes cover HDR output on Windows and Linux.
+- The verifier core gives the original's owner overlays their full span, as a sanitizer sweep found they need.
+
 ## 0.22.0
 
 ### For players
