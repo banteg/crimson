@@ -469,11 +469,23 @@ void release(Target &t) {
   t = Target{};
 }
 
+// The RTX debug view the world shows (host_scene, game/rtx.cpp): 0 shaded, the
+// ground's maps up to no-direct, then the smoke's. A map keeps only the ground's
+// shade, or the smoke's, of the world: its other draws land in `discarded`.
+enum { DEBUG_NO_DIRECT = 14, DEBUG_SMOKE = 15 };
+int scene_debug;
+bool smoke_drawing;
+Target discarded;
+bool debug_map() { return rtx && scene_debug && scene_debug != DEBUG_NO_DIRECT; }
+bool world_kept() {
+  return !debug_map() || (scene_debug >= DEBUG_SMOKE ? smoke_drawing : material == HOST_PASS_GROUND);
+}
+
 // Where a draw lands: while the RTX world draws, the back buffer's draws go to
 // the HDR target.
 Target &drawing_target(int id) {
   Target &t = target_or_back(id);
-  return world && &t == &textures[0] ? hdr : t;
+  return world && &t == &textures[0] ? world_kept() ? hdr : discarded : t;
 }
 
 // Counts a draw for the timers: `what` it draws, its triangles as corner
@@ -966,7 +978,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   glUniform2f(at("camera"), scene_camera[0], scene_camera[1]);
   glUniform2fv(at("u_ground_size"), 1, ground_size);
   glUniform1f(at("u_time_s"), scene_seconds - g.epoch);
-  glUniform1i(at("u_debug"), 0);
+  glUniform1i(at("u_debug"), scene_debug < DEBUG_SMOKE ? scene_debug : 0);
   glUniform1i(at("u_debug_display"), 1);
   glUniform1i(at("u_spec_light_count"), light_count);
   glUniform1i(at("u_has_beam_lights"), beam_lights);
@@ -1328,6 +1340,7 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   beam_vis_framebuffer = beam_vis_texture = 0;
   heat_seconds = -1;
   release(pressured);
+  release(discarded);
   // Classic keeps an 8-bit back buffer: its draws saturate at white one by one.
   Target &back = textures[0];
   int flags = enabled ? back.flags | TARGET_HALF_FLOAT : back.flags & ~TARGET_HALF_FLOAT;
@@ -1841,6 +1854,7 @@ void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
   ground_size[0] = v[3], ground_size[1] = v[4];
   memcpy(beam_gain, v + 5, sizeof beam_gain);
+  scene_debug = (int)v[7];
   light_count = (int)count < MAX_LIGHTS ? (int)count : MAX_LIGHTS;
   beam_lights = false;
   for (int i = 0; i < light_count; ++i) {
@@ -2069,7 +2083,7 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
   glUniform2fv(at("u_origin"), 1, v + 4);
   glUniform2fv(at("u_size"), 1, v + 6);
   glUniform1f(at("u_opacity"), v[8]);
-  glUniform1i(at("u_debug"), 0);
+  glUniform1i(at("u_debug"), scene_debug >= DEBUG_SMOKE ? scene_debug : 0);
   glUniform1i(at("u_light_count"), (int)light_count);
   std::vector<float> pos, rgb, shape, tails((light_count + 3) / 4 * 4);
   const float *l = (const float *)(client_memory() + lights);
@@ -2095,12 +2109,15 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
   glBindVertexArray(vertex_array);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   // The premultiplied composite over the world.
+  smoke_drawing = true;
   bind_target();
   use_program(blit_program);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glBindTexture(GL_TEXTURE_2D, smoke_composite.texture);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  smoke_drawing = false;
+  bind_target();
 }
 void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 count) {
   visibility_dirty = true;
@@ -2148,6 +2165,8 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   gpu_mark(!rtx && pass == HOST_PASS_WORLD_END ? "hud" : pass < sizeof labels / sizeof *labels ? labels[pass] : "sprites");
   if (pass >= HOST_PASS_CREATURES) {
     material = pass == HOST_PASS_SPRITES ? 0 : (int)pass;
+    if (world && debug_map()) // in or out of the ground's map
+      bind_target();
     return;
   }
   Target &back = textures[0];
@@ -2166,10 +2185,23 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     }
     hdr.logical_width = back.logical_width;
     hdr.logical_height = back.logical_height;
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, back.framebuffer);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, hdr.framebuffer);
-    glBlitFramebuffer(0, 0, back.width, back.height, 0, 0, hdr.width, hdr.height, GL_COLOR_BUFFER_BIT,
-                      hdr.width == back.width ? GL_NEAREST : GL_LINEAR);
+    if (debug_map() && (discarded.width != width || discarded.height != height || !discarded.framebuffer)) {
+      release(discarded);
+      discarded.width = width, discarded.height = height, discarded.flags = hdr.flags;
+      allocate(discarded);
+    }
+    discarded.logical_width = hdr.logical_width, discarded.logical_height = hdr.logical_height;
+    if (scene_debug >= DEBUG_SMOKE) { // the smoke's maps over black
+      glBindFramebuffer(GL_FRAMEBUFFER, hdr.framebuffer);
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glClearColor(0, 0, 0, 1);
+      glClear(GL_COLOR_BUFFER_BIT);
+    } else {
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, back.framebuffer);
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, hdr.framebuffer);
+      glBlitFramebuffer(0, 0, back.width, back.height, 0, 0, hdr.width, hdr.height, GL_COLOR_BUFFER_BIT,
+                        hdr.width == back.width ? GL_NEAREST : GL_LINEAR);
+    }
     world = true;
   } else if (pass == HOST_PASS_WORLD_END && world) {
     world = false;
@@ -2211,11 +2243,16 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
       glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
       world_image = &pressured;
     }
-    // A world drawn smaller (render_size) scales up as it tonemaps.
+    // A world drawn smaller (render_size) scales up as it tonemaps; a debug
+    // map's values go to the display as they are.
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
-    use_program(tonemap_program);
-    glUniform1f(u_tonemap_headroom, edr_headroom);
+    if (debug_map()) {
+      use_program(blit_program);
+    } else {
+      use_program(tonemap_program);
+      glUniform1f(u_tonemap_headroom, edr_headroom);
+    }
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

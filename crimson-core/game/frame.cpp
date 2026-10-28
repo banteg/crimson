@@ -58,6 +58,7 @@ extern "C" bool game_coop_pump(void);
 extern "C" bool game_coop_focus(int active);
 extern "C" void dinput_away(bool away);
 extern "C" void pad_frame(void);
+extern "C" void rtx_debug_keys(void);
 
 static bool quit_posted;
 static bool away; // the window lost the focus
@@ -114,6 +115,7 @@ GAME_EXPORT(game_frame) int game_frame() {
     ((bool (*)(void))grim_on_device_restore)();
     grim_device_restore_callback_pending = false;
   }
+  rtx_debug_keys();
   // A run the client plays draws once per pass that ticks; the host shows the
   // last frame again for one that does not (host/session.inc).
   if (game_live_frame() == 0)

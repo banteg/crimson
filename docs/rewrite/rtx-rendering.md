@@ -282,7 +282,7 @@ world alone) and the client's replay bar are reported apart from the world. The 
 Python one to the pixel first (the shift is reported, with the unaligned difference): a renderer placing everything
 a pixel off differs at every edge. Classic shows how far the two draw apart outside RTX (filtering, terrain decals),
 so the RTX difference beyond the classic one is what to look into. `--window n` lets the Python frame up to `n`
-ticks either side stand in, and `--views` saves `rtxdebug` views of the Python frame (the client has none) to
+ticks either side stand in, and `--views` saves `rtxdebug` views of the Python frame to
 narrow a difference down to a pass.
 
 ### Analytic glow effects
@@ -923,6 +923,13 @@ Return to `shaded` for the normal scene. The in-game console also accepts
 `blood-depth`, `reflections`, `direct`, `direct-unshadowed`, `visibility`,
 `albedo`, `roughness`, `height`, `materials`, `ambient`, `no-direct`,
 `smoke-density`, `smoke-heat`, `smoke-flow`, or `smoke-light`.
+
+The client has the same views, keys and console command (`game/rtx.cpp`): the
+module sends the view with the frame's scene, and the host keeps only the
+ground's shade, or the smoke's, of a map's world and shows it without the
+tonemap; the aim overlay, which a tick draws, stays. A view picked in a paused
+replay draws the world again between ticks, without the HUD until the next tick.
+The web page keeps F6 from the browser.
 
 These are display-only selections: they survive replay seeks, do not affect the
 simulation/recording, and have no effect in classic mode. Ground maps hide live

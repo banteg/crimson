@@ -10,16 +10,18 @@
 #include "grim2d_cpp.h"
 #include "host_abi.h"
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 bool platform_outputs();
 extern IGrim2D_cpp *grim_interface_ptr;
 extern "C" {
-extern unsigned char grim_render_disabled;
+extern unsigned char grim_render_disabled, console_open_flag;
 int console_cmd_argc_get(void);
 
 int rtx_render_mode;
+extern crimson_cfg_t config_blob;
 extern int rtx_effects_active;
 void rtx_effect_flush();
 
@@ -99,6 +101,91 @@ void console_cmd_rtx_smoke(void) {
 
 bool rtx_drawing() { return rtx_render_mode && platform_outputs() && !grim_render_disabled; }
 
+// RTX's diagnostic views (render/rtx/debug.py's RtxDebugView), presentation
+// only: F6 steps to the next, Shift+F6 back, and the console's rtxdebug picks
+// one. The host shows the ground's maps and the smoke's as they are, with
+// nothing else of the world and no tonemap; no-direct only takes the ground's
+// direct light away.
+static const char *const rtx_debug_names[] = {
+    "shaded",    "substrate-normal", "fluid-normal", "freshness",  "blood-depth",   "reflections",
+    "direct",    "direct-unshadowed", "visibility",  "albedo",     "roughness",     "height",
+    "materials", "ambient",          "no-direct",    "smoke-density", "smoke-heat", "smoke-flow",
+    "smoke-light"};
+static const char *const rtx_debug_help[] = {
+    nullptr,
+    "Diffuse normal: RGB = XYZ * 0.5 + 0.5",
+    "Liquid normal: RGB = XYZ * 0.5 + 0.5",
+    "Black = dry; white = fresh (45 s exponential decay)",
+    "Exposed blood amount: black = none; white = deep",
+    nullptr,
+    nullptr,
+    nullptr,
+    "Direct-radiance weighted: white = visible; black = blocked; blue = no light",
+    "Substrate color before blood absorption and lighting",
+    "Black = smooth; white = rough",
+    "Substrate height; blood never adds diffuse relief",
+    "R = blood, G = corpse, B = brass; ice = cyan",
+    nullptr,
+    "Ground direct lighting removed; ordinary scene, reflections and display mapping",
+    "Smoke opacity through the column: black = clear; white = opaque",
+    "Smoke temperature: black = cold; red, yellow, white = hotter, taller columns",
+    "Planar air velocity: hue = direction; brightness = speed",
+    "Weapon and sight light scattered by smoke, no sky fill: c/(1+c), then gamma"};
+enum { RTX_DEBUG_VIEWS = sizeof rtx_debug_names / sizeof *rtx_debug_names, RTX_DEBUG_NO_DIRECT = 14 };
+static int rtx_debug_view;
+// A view picked since the world last drew, which a paused replay draws again
+// (host/watch.inc).
+static bool rtx_debug_picked;
+
+static void rtx_debug_pick(int view) {
+  rtx_debug_view = view;
+  rtx_debug_picked = true;
+}
+bool rtx_debug_redraw() { return rtx_drawing() && rtx_debug_picked; }
+
+// Once a frame, outside the run's ticks, which read the replay's keys
+// (game/frame.cpp).
+void rtx_debug_keys() {
+  if (!rtx_render_mode || console_open_flag || !grim_interface_ptr->grim_was_key_pressed(0x40)) // F6
+    return;
+  bool back = grim_interface_ptr->grim_is_key_down(0x2a) || grim_interface_ptr->grim_is_key_down(0x36); // Shift
+  rtx_debug_pick((rtx_debug_view + (back ? RTX_DEBUG_VIEWS - 1 : 1)) % RTX_DEBUG_VIEWS);
+}
+
+void console_cmd_rtx_debug(void) {
+  char *name = console_cmd_argc_get() == 2 ? console_cmd_arg_get(1) : nullptr;
+  for (int view = 0; name && view < RTX_DEBUG_VIEWS; ++view)
+    if (!strcmp(name, rtx_debug_names[view])) {
+      rtx_debug_pick(view);
+      console_printf(&console_log_queue, "RTX debug view is '%s'.\n", name);
+      return;
+    }
+  char usage[320] = "rtxdebug <";
+  for (int view = 0; view < RTX_DEBUG_VIEWS; ++view)
+    snprintf(usage + strlen(usage), sizeof usage - strlen(usage), "%s%s", view ? "|" : "", rtx_debug_names[view]);
+  console_printf(&console_log_queue, "%s>\n", usage);
+}
+
+// The view's name and how to read it, over the world's lower left.
+static void rtx_debug_label() {
+  if (!rtx_debug_view)
+    return;
+  char title[96];
+  snprintf(title, sizeof title, "RTX / %s    F6 next / Shift+F6 previous", rtx_debug_names[rtx_debug_view]);
+  const char *help = rtx_debug_help[rtx_debug_view] ? rtx_debug_help[rtx_debug_view]
+                                                    : "Linear contribution mapped as c/(1+c), then gamma encoded";
+  IGrim2D_cpp *grim = grim_interface_ptr;
+  float y = fmaxf(8, (float)config_blob.screen_height - 104);
+  float width = fminf((float)config_blob.screen_width - 16,
+                      fmaxf(grim->grim_measure_text_width(title), grim->grim_measure_text_width((char *)help)) + 20);
+  float pos[2] = {8, y}, back[4] = {0, 0, 0, 220 / 255.0f};
+  grim->grim_draw_rect_filled(pos, width, 52, back);
+  grim->grim_set_color(1, 1, 1, 1);
+  grim->grim_draw_text_small(18, y + 8, title);
+  grim->grim_set_color(200 / 255.0f, 200 / 255.0f, 200 / 255.0f, 1);
+  grim->grim_draw_text_small(18, y + 28, (char *)help);
+}
+
 int rtx_collect_lights(float *out, int capacity);
 extern const float rtx_beam_gain[2];
 int rtx_collect_heat(float *out, int capacity);
@@ -107,7 +194,6 @@ void rtx_lights_reset();
 extern float ui_transition_alpha;
 const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count);
 extern vec2f_t camera_offset;
-extern crimson_cfg_t config_blob;
 extern int terrain_texture_width, terrain_texture_height;
 extern int run_elapsed_ms;
 float rtx_ground_ms = -1;
@@ -137,8 +223,8 @@ void rtx_world(int begin) {
     rtx_effects_active = 1;
     int count = rtx_light_count = rtx_collect_lights(rtx_lights, 32);
     const float *lights = rtx_lights;
-    const float view[7] = {camera_offset.x, camera_offset.y, rtx_seconds(), (float)terrain_texture_width,
-                           (float)terrain_texture_height, rtx_beam_gain[0], rtx_beam_gain[1]};
+    const float view[8] = {camera_offset.x, camera_offset.y, rtx_seconds(), (float)terrain_texture_width,
+                           (float)terrain_texture_height, rtx_beam_gain[0], rtx_beam_gain[1], (float)rtx_debug_view};
     host_scene(view, lights, count);
     float grid[6];
     int value_count;
@@ -149,10 +235,16 @@ void rtx_world(int begin) {
     static float footprints[385 * 4];
     host_heat(footprints, rtx_collect_heat(footprints, 385));
     static float fronts[16 * 4];
-    host_pressure(fronts, ui_transition_alpha > 1e-3f ? rtx_collect_fronts(fronts, 16) : 0);
+    // A diagnostic map shows its values where they are.
+    bool map = rtx_debug_view && rtx_debug_view != RTX_DEBUG_NO_DIRECT;
+    host_pressure(fronts, ui_transition_alpha > 1e-3f && !map ? rtx_collect_fronts(fronts, 16) : 0);
+    rtx_debug_picked = false;
   }
   host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
-  if (!begin) rtx_effects_active = 0;
+  if (!begin) {
+    rtx_effects_active = 0;
+    rtx_debug_label();
+  }
 }
 
 // The fluid smoke field after the world's sprites, at its transition `alpha`.

@@ -491,7 +491,7 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
          grim_interface_ptr->grim_set_config_var(0x14, 6u);
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
-@@ -204,6 +204,14 @@
+@@ -204,6 +204,16 @@
          "openurl", console_cmd_open_url);
      console_log_queue.console_register_command(
          "sndfreqadjustment", console_cmd_snd_freq_adjustment);
@@ -501,6 +501,8 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
 +        "togglertx", console_cmd_toggle_rtx);
 +    console_log_queue.console_register_command(
 +        "rtxsmoke", console_cmd_rtx_smoke);
++    console_log_queue.console_register_command(
++        "rtxdebug", console_cmd_rtx_debug);
 +    console_log_queue.console_register_command(
 +        "rendersize", console_cmd_render_size);
  

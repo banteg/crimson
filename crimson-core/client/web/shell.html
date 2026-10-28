@@ -150,6 +150,8 @@
   };
   // The right button is the game's (reload, by default), not the browser's menu.
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  // F6 steps RTX's debug views (game/rtx.cpp), not the browser's focus.
+  canvas.addEventListener("keydown", (event) => event.code === "F6" && event.preventDefault());
   // Watching needs no controls.
   if (!linked && matchMedia("(pointer: coarse)").matches && !matchMedia("(any-pointer: fine)").matches)
     document.getElementById("touch").hidden = false;
