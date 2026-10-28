@@ -3,7 +3,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from crimson.render.rtx.gpu_smoke import GpuSmokeSimulation
+from crimson.render.rtx.gpu_smoke import MAX_BODY_IMPULSES_PER_TICK, MAX_IMPULSES_PER_TICK, GpuSmokeSimulation
+from crimson.sim.smoke_events import AtmosphereImpulse
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from tests.render.test_smoke_simulation import emission
@@ -30,6 +31,18 @@ def test_gpu_events_do_not_allocate_or_advance_gl_until_prepared():
     assert not sim.pending and not sim.batches and not sim.fields
     with pytest.raises(ValueError):
         sim.consume((), float("nan"))
+
+
+def test_body_wakes_keep_their_own_budget_beside_shots():
+    sim = GpuSmokeSimulation()
+    wake = AtmosphereImpulse(Vec2(), Vec2(10, 0), 5., 3.)
+    impulses = tuple(wake for _ in range(100)) + tuple(
+        AtmosphereImpulse(Vec2(), Vec2(1, 0), 17.5, float(i), kind="body") for i in range(100))
+    sim.consume((emission(),), 1/60, impulses=impulses)
+    kept = sim.batches[0][3]
+    assert [i.kind for i in kept] == ["wake"] * MAX_IMPULSES_PER_TICK + ["body"] * MAX_BODY_IMPULSES_PER_TICK
+    # The strongest bodies are kept.
+    assert min(i.strength for i in kept if i.kind == "body") == 100 - MAX_BODY_IMPULSES_PER_TICK
 
 
 def test_native_gpu_smoke_transport_pause_and_reset(raylib_context):

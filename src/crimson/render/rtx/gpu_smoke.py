@@ -20,6 +20,8 @@ GRID_SIZE = 320
 GUARD_BAND = 128.0
 PRESSURE_ITERATIONS = 12
 MAX_IMPULSES_PER_TICK = 64
+# Moving bodies' wakes, on a budget of their own: a swarm cannot crowd out blasts, muzzle jets or shots.
+MAX_BODY_IMPULSES_PER_TICK = 64
 MAX_ACTIVE_BLASTS = 16
 
 
@@ -99,18 +101,22 @@ class GpuSmokeSimulation:
                     self.pending.append((-emission.delay_seconds, emission))
             else:
                 ready.append(emission)
-        valid_impulses = tuple(sorted((
+        valid = sorted((
             impulse for impulse in impulses
-            if impulse.kind in ("blast", "muzzle", "wake")
+            if impulse.kind in ("blast", "muzzle", "wake", "body")
             and impulse.radius > 0 and impulse.strength >= 0 and impulse.duration > 0
             and all(math.isfinite(value) for value in (
                 impulse.start.x, impulse.start.y, impulse.end.x, impulse.end.y,
                 impulse.radius, impulse.strength, impulse.curl, impulse.duration, impulse.expansion_speed,
             ))
         ), key=lambda impulse: (
-            {"blast": 0, "muzzle": 1, "wake": 2}[impulse.kind],
+            {"blast": 0, "muzzle": 1, "wake": 2, "body": 3}[impulse.kind],
             -impulse.strength*impulse.radius,
-        )))[:MAX_IMPULSES_PER_TICK]
+        ))
+        valid_impulses = (
+            *[impulse for impulse in valid if impulse.kind != "body"][:MAX_IMPULSES_PER_TICK],
+            *[impulse for impulse in valid if impulse.kind == "body"][:MAX_BODY_IMPULSES_PER_TICK],
+        )
         # Air without smoke is invisible. Keep its motion only when there is an
         # existing medium or a pending native deposit that can reveal it.
         if not ready and not self.fields and not self.pending:
@@ -245,7 +251,7 @@ class GpuSmokeSimulation:
             try:
                 for impulse, age, fraction in impulses:
                     start, end = impulse.start-self.origin, impulse.end-self.origin
-                    kind = {"muzzle": 0., "wake": 1., "blast": 2.}[impulse.kind]
+                    kind = {"muzzle": 0., "wake": 1., "body": 1., "blast": 2.}[impulse.kind]
                     self._set(self.impulse_shader, self.impulse_locations, "u_segment", (
                         start.x, start.y, end.x, end.y,
                     ))
@@ -305,9 +311,9 @@ class GpuSmokeSimulation:
             del self.blasts[MAX_ACTIVE_BLASTS:]
             self.waiting_impulses.extend(impulse for impulse in impulses if impulse.kind != "blast")
             self.waiting_impulses.sort(key=lambda impulse: (
-                0 if impulse.kind == "muzzle" else 1, -impulse.strength*impulse.radius,
+                {"muzzle": 0, "body": 2}.get(impulse.kind, 1), -impulse.strength*impulse.radius,
             ))
-            del self.waiting_impulses[MAX_IMPULSES_PER_TICK:]
+            del self.waiting_impulses[MAX_IMPULSES_PER_TICK+MAX_BODY_IMPULSES_PER_TICK:]
             if fade < 1.:
                 self._set(self.shader, self.locations, "u_fade", (fade,))
                 self._pass(1-self.current, self.current, 5)

@@ -401,6 +401,7 @@ hooks in `game/rtx/rtx.patch`):
 - the nuke's 15-second billows
 - projectile and rocket wakes, and blast fronts from explosion bursts and rocket
   detonations
+- the wakes of moving creatures and players
 
 These hooks only read the run: no RNG, no state, and the verifier builds without
 them. The module also runs `GpuSmokeSimulation`'s CPU side: delayed deposits,
@@ -1226,6 +1227,15 @@ smoke puffs. No visible medium means no additional fluid simulation is needed.
 Per-tick GPU impulses are capped at 64, prioritizing blasts and muzzle jets before
 wakes; at most 16 blast fronts persist. New forces reuse the existing solver and
 pressure iterations.
+
+Bodies push the air too. Each tick, every living creature and player that moved
+drags the air along its path and parts it to its sides with a wake of its own
+(`smoke_events.py`'s `body_wakes`): its radius about a third of the body's size,
+its strength in proportion to the distance the body moved. A step longer than 30 units is a spawn, a reused slot or a
+teleport, not motion. Bodies have their own budget of 64 a tick, strongest first,
+so a swarm never crowds out blasts, muzzle jets or shots. A crowd charging through
+smoke breaks up trails and swirls the haze where it walks; the solver costs about
+the same.
 
 Rocket exhaust and impact deposits use 40% of the old source strength, and ordinary
 general-effect explosion puffs use 60%. The nuke profile retains its existing
