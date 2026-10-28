@@ -1288,7 +1288,8 @@ newly killed victims outward without adding a live-creature impulse. Rotation
 happens after death handling so splitter children inherit the pre-death state.
 
 Zero-direction hits and special deaths retain their heading. Pinned spawners
-remain stationary; mobile spawners retain their existing slide eligibility.
+never slide, so they keep their heading too and their dead frame lines up with
+the living one; mobile spawners retain their existing slide eligibility.
 Slide speed, duration, corpse collision window and piercing damage pools are
 unchanged. The heading also determines the collapsed sprite orientation.
 `--preserve-bugs` retains cosine/cosine impulses and heading-based original slides.

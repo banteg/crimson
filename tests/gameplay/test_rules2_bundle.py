@@ -258,9 +258,11 @@ def test_split_children_keep_pre_impact_heading(rules, preserve_bugs):
 def test_impact_alignment_retains_spawner_slide_eligibility(flags):
     world = make_world()
     world.state.game_mode = GameMode.RUSH
-    creature = CreatureState(active=True, hp=1, pos=Vec2(500, 500), flags=flags)
+    creature = CreatureState(active=True, hp=1, heading=0.7, pos=Vec2(500, 500), flags=flags)
     world.creatures.entries[0] = creature
     creature_apply_damage(make_step_runtime(world, dt=0.01), 0, 2, CreatureDamageType.EXPLOSION, Vec2(1, 0))
     step_creatures(world, 0.01)
     assert (creature.pos.x > 500) == (flags != CreatureFlags.SPAWNER)
     assert creature.pos.y == pytest.approx(500, abs=1e-4)
+    # A pinned nest's corpse keeps the heading it was drawn with alive.
+    assert (creature.heading == 0.7) == (flags == CreatureFlags.SPAWNER)
