@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.assets import TextureId
+from grim.blend import additive_blend
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
@@ -149,22 +150,21 @@ def draw_bullet_trail_quad(
     head = rl_color(head_rgb[0], head_rgb[1], head_rgb[2], alpha)
     tail = rl_color(tail_rgb[0], tail_rgb[1], tail_rgb[2], 0)
 
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    rl.rl_set_texture(bullet_trail_texture.id)
-    rl.rl_begin(rd.RL_QUADS)
-    rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
-    rl.rl_tex_coord2f(0.0, 0.0)
-    rl.rl_vertex2f(p0.x, p0.y)
-    rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
-    rl.rl_tex_coord2f(1.0, 0.0)
-    rl.rl_vertex2f(p1.x, p1.y)
-    rl.rl_color4ub(head.r, head.g, head.b, head.a)
-    rl.rl_tex_coord2f(1.0, 0.5)
-    rl.rl_vertex2f(p2.x, p2.y)
-    rl.rl_color4ub(head.r, head.g, head.b, head.a)
-    rl.rl_tex_coord2f(0.0, 0.5)
-    rl.rl_vertex2f(p3.x, p3.y)
-    rl.rl_end()
-    rl.rl_set_texture(0)
-    rl.end_blend_mode()
+    with additive_blend():
+        rl.rl_set_texture(bullet_trail_texture.id)
+        rl.rl_begin(rd.RL_QUADS)
+        rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+        rl.rl_tex_coord2f(0.0, 0.0)
+        rl.rl_vertex2f(p0.x, p0.y)
+        rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+        rl.rl_tex_coord2f(1.0, 0.0)
+        rl.rl_vertex2f(p1.x, p1.y)
+        rl.rl_color4ub(head.r, head.g, head.b, head.a)
+        rl.rl_tex_coord2f(1.0, 0.5)
+        rl.rl_vertex2f(p2.x, p2.y)
+        rl.rl_color4ub(head.r, head.g, head.b, head.a)
+        rl.rl_tex_coord2f(0.0, 0.5)
+        rl.rl_vertex2f(p3.x, p3.y)
+        rl.rl_end()
+        rl.rl_set_texture(0)
     return True

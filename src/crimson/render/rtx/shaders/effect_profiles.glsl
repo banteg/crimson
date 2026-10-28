@@ -12,27 +12,38 @@ vec3 warmProfile(vec2 p) {
     return WARM_COLOR * exp(-WARM_BETA * dot(p, p)) * (1. - smoothstep(.94, 1., r));
 }
 
-// particles.jaz effect 16: white color, radial alpha.
+// particles.jaz effect 16, retuned for linear light: concentrate the core and
+// lower the broad skirt so removing the cutoff does not leave a luminous disc.
 float auraProfile(vec2 p) {
     p -= vec2(.027797, .037006);
-    return dot(vec3(.262220, .322753, .372035),
-               exp(-vec3(107.953114, 32.756217, 5.411207) * dot(p, p)))
+    return dot(vec3(.34, .38, .24),
+               exp(-vec3(107.953114, 32.756217, 7.2) * dot(p, p)))
         * (1. - smoothstep(.94, 1., length(p)));
 }
 
-// particles.jaz effect 1 is a thick shell: a broad inward gradient and a compact rim.
+// RTX pressure front: a narrow crest with a soft inward wake, leaving the interior
+// clear. The old artwork's broad white fill becomes a milky disc in linear light.
+// Filter the crest in screen space, conserving its energy when it is sub-pixel.
 float ringProfile(vec2 p) {
-    float r = length(p - vec2(.020362, .011385));
-    float r2 = r * r;
-    float inner = clamp((r - .15) / .09, 0., 1.);
-    float edge = 1. - smoothstep(.902, .933, r);
-    return (.485166 * r2 + 1.415130 * r2*r2*r2*r2) * inner * edge;
+    float r = length(p);
+    // Small, broad variations break the perfect hoop without adding noisy detail
+    // or changing its silhouette enough to compete with the expanding motion.
+    vec2 n = p / max(r, .001);
+    float ripple = n.x * n.y * (n.x * n.x - n.y * n.y);
+    float d = r - (.90 + .012 * ripple);
+    float aa = .5 * fwidth(r);
+    float band = mix(.065, .024, smoothstep(-.02, .02, d));
+    float width = sqrt(band * band + aa * aa);
+    float crest = .30 * (band / width) * exp(-d * d / (width * width));
+    float variation = .82 + .18 * n.x + .12 * ripple;
+    return crest * variation * (1. - smoothstep(.94, .99, r));
 }
 
-// projs.jaz effect 2, shared with the ion streak's fitted core/halo.
+// Chain arcs retain the ion streak's widths, with more energy in the core and
+// less in the halo: overlapping arcs stay legible instead of filling a blue slab.
 float ionProfile(vec2 p) {
     float r2 = dot(p, p);
-    return dot(vec2(.47467, .3886), exp(-vec2(49.18833, 5.9273) * r2))
+    return dot(vec2(.60, .26), exp(-vec2(49.18833, 5.9273) * r2))
         * (1. - smoothstep(.75, 1., sqrt(r2)));
 }
 

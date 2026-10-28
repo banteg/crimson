@@ -47,6 +47,10 @@
 // A replay a link asks for as the run starts (host/watch.inc game_watch) gives
 // way to it: the run plays, and its end screen stays.
 //
+// A Survival run by mouse that is not ranked ends by typing a name around the
+// console key, whose character, like what the open console takes, stays out of
+// the name field (original bug 53).
+//
 //   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] <game directory> [core.wasm] [game.wasm]
 import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
@@ -209,6 +213,41 @@ function checkSavedScore(file) {
     "print(*(r.run for r in read_highscore_records(Path(sys.argv[1]))))";
   const read = execFileSync("uv", ["run", "--no-sync", "python", "-c", script, directory], { encoding: "utf8" }).trim();
   if (read !== expected.run) throw Error(`the Python port reads the saved scores as ${read || "none"}`);
+}
+
+// The end screen's name field takes what is typed, but neither the console
+// key's character (` on a US keyboard) nor what the open console takes
+// (original bug 53): "ab", then "qu" with the console open, then "e" and Enter
+// save "abe". The console kept "qu": "it" and Enter there quit the game.
+function nameEntry() {
+  const cursor = [700, 700];
+  const type = (text) => [...text].forEach((char) => frame(16, { cursor, chars: char }));
+  const toggle = () => {
+    frame(16, { cursor, taps: [CONSOLE], chars: "`" });
+    frame(16, { cursor });
+  };
+  settle(GAME_OVER, cursor);
+  type("\b".repeat(32) + "ab");
+  toggle();
+  type("qu");
+  toggle();
+  type("e\r");
+  const scores = path.join(directory, "scores.jsonl");
+  for (let frames = 0; !fs.existsSync(scores); ++frames) {
+    if (frames > 120) throw Error("Enter in the name field saved no score");
+    frame(16, { cursor });
+  }
+  const { name } = JSON.parse(fs.readFileSync(scores, "utf8"));
+  if (name !== "abe") throw Error(`the name field saved ${JSON.stringify(name)}, not "abe"`);
+  toggle();
+  try {
+    type("it\r");
+    for (let i = 0; i < 10; ++i) frame(16, { cursor });
+  } catch (error) {
+    if (error.message === "the game quit") return;
+    throw error;
+  }
+  throw Error("the console lost what it took over the name field");
 }
 
 // Holds the cursor on a spot until the screen settles, then clicks it. A menu
@@ -485,6 +524,7 @@ const reread = memory().subarray(game.game_replay_recording(), game.game_replay_
 if (!reread.equals(replay())) throw Error("the saved replay reads back differently from the recording");
 if (ranked) checkRanked();
 if (padded) leaveByPad(quest ? QUEST_RESULTS : GAME_OVER);
+if (!ranked && !padded && !quest) nameEntry();
 console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, consoles, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}), ...(tunes ? { tunes: true } : {}) }));
 
 // The quests the player's save unlocks (game.cfg, src/crimson/persistence/save_status.py).

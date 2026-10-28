@@ -19,12 +19,13 @@ extern unsigned long grim_color_slot0[4];
 extern float grim_uv_u0[8];
 extern unsigned int grim_vertex_count;
 extern unsigned char portable_preserve_bugs;
+extern float effect_uv_step_2, effect_uv_step_4, effect_uv_step_8, effect_uv_step_16;
 bool rtx_drawing();
 int rtx_effects_active;
 }
 
 namespace {
-enum { WARM, AURA, RING, PLASMA, ARC, PULSE };
+enum { WARM, AURA, RING, PLASMA, ARC, PULSE, BURST };
 std::vector<EffectVertex> sprite_vertices;
 int sprite_kind = -1;
 float byte_alpha(float a) {
@@ -68,18 +69,33 @@ extern "C" void rtx_effect_flush() {
 
 namespace {
 int sprite_cell(const EffectVertex *v) {
-  // Derive each rectangle from the original effect atlas table, rather than
-  // maintaining UV copies.
-  const int ids[3] = {13, 16, 1};
-  for (int kind = 0; kind < 3; ++kind) {
-    const auto &entry = effect_id_table[ids[kind]];
-    int grid = 256 / entry.size_code, frame = entry.frame;
-    float unit = 1.f / grid, u = (frame % grid) * unit,
-          w = (frame / grid) * unit;
-    if (v[0].u == u && v[0].v == w && v[1].u == u + unit && v[1].v == w &&
-        v[2].u == u + unit && v[2].v == w + unit && v[3].u == u &&
-        v[3].v == w + unit)
-      return kind;
+  // Each rectangle as effect_spawn builds it from the original effect atlas and
+  // UV tables, rather than maintaining UV copies: the 2x2 cells' step stops two
+  // texels short of the next cell.
+  const struct {
+    int id, kind;
+  } cells[] = {{13, WARM}, {16, AURA}, {1, RING}, {0, BURST}};
+  for (const auto &cell : cells) {
+    const auto &entry = effect_id_table[cell.id];
+    const uv2f_t *table = entry.size_code == 0x10   ? effect_uv16
+                          : entry.size_code == 0x20 ? effect_uv8
+                          : entry.size_code == 0x40 ? effect_uv4
+                                                    : effect_uv2;
+    float step = entry.size_code == 0x10   ? effect_uv_step_16
+                 : entry.size_code == 0x20 ? effect_uv_step_8
+                 : entry.size_code == 0x40 ? effect_uv_step_4
+                                           : effect_uv_step_2;
+    auto matches = [&](float u, float w, float size) {
+      return v[0].u == u && v[0].v == w && v[1].u == u + size && v[1].v == w &&
+             v[2].u == u + size && v[2].v == w + size && v[3].u == u && v[3].v == w + size;
+    };
+    // Retained explosion shells use effect_select_texture / grim_set_atlas_frame,
+    // whose immediate quads cover the full cell rather than effect_spawn's inset.
+    int grid = 256 / entry.size_code;
+    float unit = 1.f / grid;
+    if (matches(table[entry.frame].u, table[entry.frame].v, step) ||
+        matches((entry.frame % grid) * unit, (entry.frame / grid) * unit, unit))
+      return cell.kind;
   }
   return -1;
 }
@@ -125,7 +141,7 @@ extern "C" bool rtx_effect_vertices(const void *vertices, int count) {
     return false;
   const auto *v = (const EffectVertex *)vertices;
   int kind = sprite_cell(v);
-  if (kind < 0 || (kind == WARM && !additive()))
+  if (kind < 0 || ((kind == WARM || kind == AURA || kind == BURST) && !additive()))
     return false;
   // The source can be Grim's mapped buffer, which a flush may relock.
   EffectVertex quad[4];

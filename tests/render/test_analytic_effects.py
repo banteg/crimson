@@ -18,10 +18,11 @@ from tests.render.test_projectile_render import _render_ctx
 
 
 @pytest.mark.parametrize("flags", [0x40, 0x19])
-def test_warm_glow_uses_analytic_profile_only_for_additive_entries(mocker, flags):
+@pytest.mark.parametrize("effect_id", [EffectId.GLOW, EffectId.AURA, EffectId.BURST])
+def test_emissive_profile_is_used_only_for_additive_entries(mocker, flags, effect_id):
     ctx = _render_ctx(rtx_mode=RtxRenderMode.RTX)
     ctx.frame.state.effects.entries[0] = EffectEntry(
-        effect_id=EffectId.GLOW,
+        effect_id=effect_id,
         pos=Vec2(40, 40),
         flags=flags,
         half_width=20.0,
@@ -45,10 +46,10 @@ def effect_shader(raylib_context, mocker):
         rl.unload_shader(effects._shader.shader)
 
 
-def _render(draw):
+def _render(draw, *, linear=True):
     target = load_float_render_texture(128, 128, pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
     try:
-        with texture_mode(target):
+        with texture_mode(target, linear=linear):
             rl.clear_background(rl.BLANK)
             rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
             draw()
@@ -65,23 +66,29 @@ def _render(draw):
         rl.unload_render_texture(target)
 
 
-@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING])
-def test_sprite_profiles_fade_and_leave_the_quad_edge_clear(effect_shader, shape):
+@pytest.mark.parametrize("linear", [False, True])
+@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING, effects.EffectShape.BURST, effects.EffectShape.PULSE])
+def test_sprite_profiles_fade_and_leave_the_quad_edge_clear(effect_shader, shape, linear):
     def render(alpha):
         return _render(
             lambda: effects.draw_sprite(shape, center=Vec2(64, 64), width=80, height=60, color=RGBA(a=alpha)),
+            linear=linear,
         )
 
     bright, faded, invisible = render(1.0), render(0.2), render(0.005)
     assert np.isfinite(bright).all()
     assert bright[..., :3].max() > 0.1
     assert 0 < faded[..., :3].sum() < bright[..., :3].sum()
-    assert invisible[..., :3].max() == 0
+    # Even one byte of emission remains light; zero is still exactly invisible.
+    assert 0 < invisible[..., :3].sum() < faded[..., :3].sum()
+    np.testing.assert_allclose(invisible[..., :3] * 255, bright[..., :3], atol=2e-6)
+    assert render(0.0)[..., :3].max() == 0
     assert bright[:25, :, :3].max() == 0
     assert bright[:, :20, :3].max() == 0
 
 
-def test_plasma_integral_matches_dense_actual_glow_draws(effect_shader):
+@pytest.mark.parametrize("linear", [False, True])
+def test_plasma_integral_matches_dense_actual_glow_draws(effect_shader, linear):
     actual = _render(
         lambda: effects.draw_plasma(
             center=Vec2(90, 64),
@@ -96,6 +103,7 @@ def test_plasma_integral_matches_dense_actual_glow_draws(effect_shader):
             alpha=1.0,
             color=(1.0, 1.0, 1.0),
         ),
+        linear=linear,
     )
     samples = 160
 
@@ -104,7 +112,7 @@ def test_plasma_integral_matches_dense_actual_glow_draws(effect_shader):
             x = 90 - 26.25 + (i + 0.5) * 27 / samples
             effects.draw_sprite(effects.EffectShape.GLOW, center=Vec2(x, 64), width=16, height=16, color=RGBA(a=0.4))
 
-    expected = _render(dense_reference)[..., :3] * (18 / samples)
+    expected = _render(dense_reference, linear=linear)[..., :3] * (18 / samples)
     error = actual[..., :3] - expected
     assert np.isfinite(actual).all()
     assert actual[..., :3].max() > 1.0  # Do not clip overlapping layers before tonemapping.
@@ -150,8 +158,9 @@ def test_analytic_draw_restores_enclosing_alpha_test(effect_shader):
         rl.unload_texture(texture)
 
 
-@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING])
-def test_sprite_batch_preserves_pixels_and_binds_shader_once(effect_shader, mocker, shape):
+@pytest.mark.parametrize("linear", [False, True])
+@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING, effects.EffectShape.BURST, effects.EffectShape.PULSE])
+def test_sprite_batch_preserves_pixels_and_binds_shader_once(effect_shader, mocker, shape, linear):
     def draw(batched):
         with effects.sprite_batch() as batch:
             for i in range(12):
@@ -165,8 +174,42 @@ def test_sprite_batch_preserves_pixels_and_binds_shader_once(effect_shader, mock
                     batch=batch if batched else None,
                 )
 
-    reference = _render(lambda: draw(False))
+    reference = _render(lambda: draw(False), linear=linear)
     binds = mocker.spy(rl, "begin_shader_mode")
-    actual = _render(lambda: draw(True))
+    actual = _render(lambda: draw(True), linear=linear)
     np.testing.assert_array_equal(actual, reference)
     assert binds.call_count == 1
+
+
+@pytest.mark.parametrize("shape", [effects.EffectShape.AURA, effects.EffectShape.ION_ARC, effects.EffectShape.PULSE])
+def test_linear_effects_decode_hue_but_preserve_faint_emission(effect_shader, shape):
+    def draw(alpha):
+        if shape is effects.EffectShape.ION_ARC:
+            effects.draw_ion_arc(start=Vec2(24, 64), end=Vec2(104, 64), effect_scale=1, alpha=alpha, capped=True)
+        else:
+            effects.draw_sprite(shape, center=Vec2(64, 64), width=80, height=80, color=RGBA(.5, .6, 1, alpha))
+
+    bright = _render(lambda: draw(1.0))
+    faint = _render(lambda: draw(3 / 255))
+    np.testing.assert_allclose(faint[..., :3] * 85, bright[..., :3], atol=2e-6)
+    assert bright[..., 2].max() > .1
+    if shape is not effects.EffectShape.PULSE:  # Pulse adds a deliberately whiter front edge.
+        np.testing.assert_allclose(bright[..., 0], bright[..., 2] * (128 / 255) ** 2.2, atol=2e-6)
+        np.testing.assert_allclose(bright[..., 1], bright[..., 2] * .6 ** 2.2, atol=2e-6)
+
+
+@pytest.mark.parametrize("part", ["tail", "head", "aura"])
+def test_plasma_components_survive_below_the_art_cutoff_in_linear_light(effect_shader, part):
+    def render(alpha):
+        return _render(lambda: effects.draw_plasma(
+            center=Vec2(90, 64), tail_axis=Vec2(-1, 0),
+            segments=8 if part == "tail" else 0, step=2, tail_radius=8,
+            head_radius=16 if part == "head" else 0, head_alpha=.4,
+            aura_radius=50 if part == "aura" else 0, aura_alpha=.4,
+            alpha=alpha, color=(.3, 1, .3),
+        ))
+
+    bright, faint, zero = render(1), render(3 / 102), render(0)
+    assert faint[..., :3].max() > 0
+    np.testing.assert_allclose(faint[..., :3] * 34, bright[..., :3], atol=2e-6)
+    assert zero[..., :3].max() == 0

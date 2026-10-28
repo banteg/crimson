@@ -19,6 +19,8 @@ struct IGrim2D_cpp { void grim_flush_batch(); void grim_end_batch(); };
 """)
         (out / "crimsonland_gameplay.h").write_text("""#pragma once
 struct vec2f_t { float x,y; };
+struct uv2f_t { float u,v; };
+extern uv2f_t effect_uv2[4], effect_uv4[16], effect_uv8[64], effect_uv16[256];
 enum { PROJECTILE_TYPE_PLASMA_RIFLE=9, PROJECTILE_TYPE_PLASMA_CANNON=28,
        PROJECTILE_TYPE_SPIDER_PLASMA=26, PROJECTILE_TYPE_SHRINKIFIER=24 };
 struct Fields { int type_id; float life_timer,speed_scale,pos_x,pos_y,origin_x,origin_y; };

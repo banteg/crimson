@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from grim.assets import TextureId
+from grim.blend import additive_blend
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
@@ -174,32 +175,31 @@ def _sharpshooter_laser_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> Non
     tail = rl_color(255, 0, 0, tail_alpha)
     head = rl_color(0, 0, 0, head_alpha)
 
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    rl.rl_set_texture(bullet_trail_texture.id)
-    rl.rl_begin(rd.RL_QUADS)
+    with additive_blend():
+        rl.rl_set_texture(bullet_trail_texture.id)
+        rl.rl_begin(rd.RL_QUADS)
 
-    for player in render_ctx.frame.players:
-        if float(player.health) <= 0.0:
-            continue
-        corners = _sharpshooter_laser_corners(player.pos, player.aim_heading, camera=camera)
-        p0, p1, p2, p3 = (point.mul_components(view_scale) for point in corners)
+        for player in render_ctx.frame.players:
+            if float(player.health) <= 0.0:
+                continue
+            corners = _sharpshooter_laser_corners(player.pos, player.aim_heading, camera=camera)
+            p0, p1, p2, p3 = (point.mul_components(view_scale) for point in corners)
 
-        rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
-        rl.rl_tex_coord2f(0.0, 0.0)
-        rl.rl_vertex2f(p0.x, p0.y)
-        rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
-        rl.rl_tex_coord2f(1.0, 0.0)
-        rl.rl_vertex2f(p1.x, p1.y)
-        rl.rl_color4ub(head.r, head.g, head.b, head.a)
-        rl.rl_tex_coord2f(1.0, 0.5)
-        rl.rl_vertex2f(p2.x, p2.y)
-        rl.rl_color4ub(head.r, head.g, head.b, head.a)
-        rl.rl_tex_coord2f(0.0, 0.5)
-        rl.rl_vertex2f(p3.x, p3.y)
+            rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+            rl.rl_tex_coord2f(0.0, 0.0)
+            rl.rl_vertex2f(p0.x, p0.y)
+            rl.rl_color4ub(tail.r, tail.g, tail.b, tail.a)
+            rl.rl_tex_coord2f(1.0, 0.0)
+            rl.rl_vertex2f(p1.x, p1.y)
+            rl.rl_color4ub(head.r, head.g, head.b, head.a)
+            rl.rl_tex_coord2f(1.0, 0.5)
+            rl.rl_vertex2f(p2.x, p2.y)
+            rl.rl_color4ub(head.r, head.g, head.b, head.a)
+            rl.rl_tex_coord2f(0.0, 0.5)
+            rl.rl_vertex2f(p3.x, p3.y)
 
-    rl.rl_end()
-    rl.rl_set_texture(0)
-    rl.end_blend_mode()
+        rl.rl_end()
+        rl.rl_set_texture(0)
 
 
 def _bullet_trail_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
@@ -243,8 +243,7 @@ def _plasma_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
     flame_glow = _flame_glow_enabled(render_ctx)
     scale = render_ctx.view.scale
 
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    with sprite_batch() as batch:
+    with additive_blend(), sprite_batch() as batch:
         for proj in render_ctx.frame.state.projectiles.entries:
             if not proj.active:
                 continue
@@ -331,7 +330,6 @@ def _plasma_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
                     rgba=RGBA(red, green, blue, alpha * aura_alpha),
                     batch=batch,
                 )
-    rl.end_blend_mode()
 
 
 def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tuple[int, int, float]:
@@ -343,117 +341,116 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tupl
     # are the plasma glow's effect 13 UVs and zero rotation. Even a zero-size
     # sprite changes native state, so track selections independently of draws.
     atlas_state = (4, 3, 0.0)
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    beam_batch = BeamBatch()
-    try:
-        for proj_index, proj in enumerate(render_ctx.frame.state.projectiles.entries):
-            if not proj.active:
-                continue
-            life = float(proj.life_timer)
-            angle = float(proj.angle)
-            screen = render_ctx.world_to_screen(proj.pos)
-            dist = proj.origin.distance_to(proj.pos)
-            match int(proj.type_id):
-                case ProjectileTemplateId.PULSE_GUN:
-                    atlas_state = (2, 0, angle)
-                    if life >= 0.4:
-                        size, rgba = dist * 0.16, RGBA(0.1, 0.6, 0.2, alpha * 0.7)
-                    else:
-                        size, rgba = 56.0, RGBA(1.0, 1.0, 1.0, clamp(life * 2.5, 0.0, 1.0) * alpha)
-                    if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
-                        if rgba.a > 1e-3 and size > 1e-3:
-                            beam_batch.end()
-                            draw_sprite(EffectShape.PULSE, center=screen, width=size * scale, height=size * scale,
-                                        color=rgba, rotation=angle)
-                        continue
-                    _draw_atlas(
-                        render_ctx,
-                        texture,
-                        grid=2,
-                        frame=0,
-                        pos=screen,
-                        size=size * scale,
-                        rgba=rgba,
-                        rotation_rad=angle,
-                        beam_batch=beam_batch,
-                    )
-                case ProjectileTemplateId.SPLITTER_GUN:
-                    if life >= 0.4:
-                        atlas_state = (4, 3, angle)
+    with additive_blend():
+        beam_batch = BeamBatch()
+        try:
+            for proj_index, proj in enumerate(render_ctx.frame.state.projectiles.entries):
+                if not proj.active:
+                    continue
+                life = float(proj.life_timer)
+                angle = float(proj.angle)
+                screen = render_ctx.world_to_screen(proj.pos)
+                dist = proj.origin.distance_to(proj.pos)
+                match int(proj.type_id):
+                    case ProjectileTemplateId.PULSE_GUN:
+                        atlas_state = (2, 0, angle)
+                        if life >= 0.4:
+                            size, rgba = dist * 0.16, RGBA(0.1, 0.6, 0.2, alpha * 0.7)
+                        else:
+                            size, rgba = 56.0, RGBA(1.0, 1.0, 1.0, clamp(life * 2.5, 0.0, 1.0) * alpha)
+                        if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
+                            if rgba.a > 1e-3 and size > 1e-3:
+                                beam_batch.end()
+                                draw_sprite(EffectShape.PULSE, center=screen, width=size * scale, height=size * scale,
+                                            color=rgba, rotation=angle)
+                            continue
                         _draw_atlas(
                             render_ctx,
                             texture,
-                            grid=4,
-                            frame=3,
+                            grid=2,
+                            frame=0,
                             pos=screen,
-                            size=min(dist, 20.0) * scale,
-                            rgba=RGBA(1.0, 1.0, 1.0, alpha),
+                            size=size * scale,
+                            rgba=rgba,
                             rotation_rad=angle,
                             beam_batch=beam_batch,
                         )
-                case ProjectileTemplateId.BLADE_GUN:
-                    if life >= 0.4:
-                        atlas_state = (4, 6, float(proj_index) * 0.1 - float(render_ctx.frame.elapsed_ms) * 0.1)
-                        _draw_atlas(
+                    case ProjectileTemplateId.SPLITTER_GUN:
+                        if life >= 0.4:
+                            atlas_state = (4, 3, angle)
+                            _draw_atlas(
+                                render_ctx,
+                                texture,
+                                grid=4,
+                                frame=3,
+                                pos=screen,
+                                size=min(dist, 20.0) * scale,
+                                rgba=RGBA(1.0, 1.0, 1.0, alpha),
+                                rotation_rad=angle,
+                                beam_batch=beam_batch,
+                            )
+                    case ProjectileTemplateId.BLADE_GUN:
+                        if life >= 0.4:
+                            atlas_state = (4, 6, float(proj_index) * 0.1 - float(render_ctx.frame.elapsed_ms) * 0.1)
+                            _draw_atlas(
+                                render_ctx,
+                                texture,
+                                grid=4,
+                                frame=6,
+                                pos=screen,
+                                size=min(dist, 20.0) * scale,
+                                rgba=RGBA(0.8, 0.8, 0.8, alpha),
+                                rotation_rad=atlas_state[2],
+                                beam_batch=beam_batch,
+                            )
+                    case ProjectileTemplateId.ION_MINIGUN:
+                        atlas_state = (4, 2, angle)
+                        _draw_streak(
                             render_ctx,
                             texture,
-                            grid=4,
-                            frame=6,
-                            pos=screen,
-                            size=min(dist, 20.0) * scale,
-                            rgba=RGBA(0.8, 0.8, 0.8, alpha),
-                            rotation_rad=atlas_state[2],
+                            proj,
+                            effect_scale=STREAK_SCALES[proj.type_id],
+                            alpha=alpha,
+                            chain=True,
                             beam_batch=beam_batch,
                         )
-                case ProjectileTemplateId.ION_MINIGUN:
-                    atlas_state = (4, 2, angle)
-                    _draw_streak(
-                        render_ctx,
-                        texture,
-                        proj,
-                        effect_scale=STREAK_SCALES[proj.type_id],
-                        alpha=alpha,
-                        chain=True,
-                        beam_batch=beam_batch,
-                    )
-                case ProjectileTemplateId.ION_RIFLE:
-                    atlas_state = (4, 2, angle)
-                    _draw_streak(
-                        render_ctx,
-                        texture,
-                        proj,
-                        effect_scale=STREAK_SCALES[proj.type_id],
-                        alpha=alpha,
-                        chain=True,
-                        beam_batch=beam_batch,
-                    )
-                case ProjectileTemplateId.ION_CANNON:
-                    atlas_state = (4, 2, angle)
-                    _draw_streak(
-                        render_ctx,
-                        texture,
-                        proj,
-                        effect_scale=STREAK_SCALES[proj.type_id],
-                        alpha=alpha,
-                        chain=True,
-                        beam_batch=beam_batch,
-                    )
-                case ProjectileTemplateId.FIRE_BULLETS:
-                    atlas_state = (4, 2, angle)
-                    _draw_streak(
-                        render_ctx,
-                        texture,
-                        proj,
-                        effect_scale=STREAK_SCALES[proj.type_id],
-                        alpha=alpha,
-                        chain=False,
-                        beam_batch=beam_batch,
-                    )
-                case _:
-                    pass
-    finally:
-        beam_batch.end()
-        rl.end_blend_mode()
+                    case ProjectileTemplateId.ION_RIFLE:
+                        atlas_state = (4, 2, angle)
+                        _draw_streak(
+                            render_ctx,
+                            texture,
+                            proj,
+                            effect_scale=STREAK_SCALES[proj.type_id],
+                            alpha=alpha,
+                            chain=True,
+                            beam_batch=beam_batch,
+                        )
+                    case ProjectileTemplateId.ION_CANNON:
+                        atlas_state = (4, 2, angle)
+                        _draw_streak(
+                            render_ctx,
+                            texture,
+                            proj,
+                            effect_scale=STREAK_SCALES[proj.type_id],
+                            alpha=alpha,
+                            chain=True,
+                            beam_batch=beam_batch,
+                        )
+                    case ProjectileTemplateId.FIRE_BULLETS:
+                        atlas_state = (4, 2, angle)
+                        _draw_streak(
+                            render_ctx,
+                            texture,
+                            proj,
+                            effect_scale=STREAK_SCALES[proj.type_id],
+                            alpha=alpha,
+                            chain=False,
+                            beam_batch=beam_batch,
+                        )
+                    case _:
+                        pass
+        finally:
+            beam_batch.end()
     return atlas_state
 
 
@@ -677,8 +674,7 @@ def _fire_bullets_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
     texture = render_ctx.frame.resources.texture(TextureId.PARTICLES)
     src = _glow_src(texture)
     scale = render_ctx.view.scale
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    with sprite_batch() as batch:
+    with additive_blend(), sprite_batch() as batch:
         for proj in entries:
             if not proj.active or float(proj.life_timer) < 0.4:
                 continue
@@ -694,7 +690,6 @@ def _fire_bullets_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
                 rotation_rad=float(proj.angle),
                 batch=batch,
             )
-    rl.end_blend_mode()
 
 
 def _bullet_head_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
@@ -748,8 +743,7 @@ def _secondary_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
     texture = render_ctx.frame.resources.texture(TextureId.PARTICLES)
     src = _glow_src(texture)
     scale = render_ctx.view.scale
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    with sprite_batch() as batch:
+    with additive_blend(), sprite_batch() as batch:
         for proj in render_ctx.frame.state.secondary_projectiles.entries:
             if not proj.active:
                 continue
@@ -762,7 +756,6 @@ def _secondary_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
                 rgba=RGBA(1.0, 1.0, 1.0, alpha * 0.48),
                 batch=batch,
             )
-    rl.end_blend_mode()
 
 
 def _secondary_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
@@ -802,8 +795,7 @@ def _secondary_flame_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
     texture = render_ctx.frame.resources.texture(TextureId.PARTICLES)
     src = _glow_src(texture)
     scale = render_ctx.view.scale
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    with sprite_batch() as batch:
+    with additive_blend(), sprite_batch() as batch:
         for proj in render_ctx.frame.state.secondary_projectiles.entries:
             if not proj.active:
                 continue
@@ -825,7 +817,6 @@ def _secondary_flame_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
                 rgba=rgba,
                 batch=batch,
             )
-    rl.end_blend_mode()
 
 
 def secondary_detonation_pass(render_ctx: WorldRenderCtx) -> None:
@@ -843,8 +834,7 @@ def secondary_detonation_pass(render_ctx: WorldRenderCtx) -> None:
         src = effect_cell_src_inset(texture, EffectId.AURA)
         assert src is not None
     scale = render_ctx.view.scale
-    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    with sprite_batch() as batch:
+    with additive_blend(), sprite_batch() as batch:
         for proj in render_ctx.frame.state.secondary_projectiles.entries:
             if not proj.active or int(proj.type_id) != SecondaryProjectileTypeId.DETONATION:
                 continue
@@ -873,7 +863,6 @@ def secondary_detonation_pass(render_ctx: WorldRenderCtx) -> None:
                 effect_id=effect_id,
                 batch=batch,
             )
-    rl.end_blend_mode()
 
 
 __all__ = ["plasma_trail_segment_count", "projectile_render", "secondary_detonation_pass"]

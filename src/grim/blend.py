@@ -4,6 +4,18 @@ from collections.abc import Generator
 from contextlib import contextmanager
 
 from .raylib_api import rd, rl
+from .shaders import emissive_scope
+
+
+@contextmanager
+def additive_blend() -> Generator[None]:
+    """Add light; RTX emission has no coverage cutoff, classic keeps its art test."""
+    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
+    try:
+        with emissive_scope():
+            yield
+    finally:
+        rl.end_blend_mode()
 
 
 @contextmanager

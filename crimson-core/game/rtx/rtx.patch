@@ -1,6 +1,14 @@
 The RTX mode (game/rtx.cpp) marks the world's bounds in the frame, for the host's HDR target, the terrain's
 decals by material, the batches the host lights, Monster Vision's heat, and the explosions and smoke the ticks make
 (game/rtx_lights.cpp, rtx_smoke.cpp); it draws analytic beams, pressure shells and fluid smoke, and registers commands.
+--- a/decomp/1.9/crimsonland/crimsonland/fx_spawn_secondary_projectile.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/fx_spawn_secondary_projectile.cpp
+@@ -28,4 +28,5 @@
+     projectile = &secondary_projectile_pool[index];
++    rtx_secondary_spawn(index);
+     projectile->active = 1;
+     projectile->position = *pos;
+     projectile->life_timer = 2.0f;
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 @@ -89,6 +89,7 @@
@@ -67,7 +75,7 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
                      if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
                          damage = secondary_projectile_pool[secondary_index].life_timer * 50.0f + 500.0f;
                          if (config_detail_preset >= 3) {
-+                            RtxDarkExplosion rtx_dark;
++                            RtxRocketExplosion rtx_rocket(secondary_index);
                              effect_spawn_explosion_burst((vec2f_t*)&secondary_position, 0.4f);
                          }
                      } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {

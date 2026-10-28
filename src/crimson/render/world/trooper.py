@@ -5,6 +5,8 @@ from contextlib import nullcontext
 from typing import TYPE_CHECKING
 
 from grim.assets import TextureId
+from grim.blend import additive_blend
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
@@ -12,6 +14,7 @@ from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
 from ...weapons import WEAPON_BY_ID
+from ..rtx.effects import EffectShape, draw_sprite
 from ..rtx.mode import RtxRenderMode
 from . import viewport
 from .constants import _RAD_TO_DEG
@@ -77,9 +80,12 @@ def draw_player_trooper_sprite(
                     dst = rl_rectangle(screen_pos.x, screen_pos.y, float(size), float(size))
                     origin = rl_vector2(size * 0.5, size * 0.5)
                     tint = rl_color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
-                    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                    rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
-                    rl.end_blend_mode()
+                    with additive_blend():
+                        if render_frame.rtx_mode is RtxRenderMode.RTX:
+                            draw_sprite(EffectShape.AURA, center=screen_pos, width=size, height=size,
+                                        color=RGBA(77 / 255, 153 / 255, 77 / 255, tint.a / 255))
+                        else:
+                            rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
 
     tint = rl_color(240, 240, 255, int(255 * alpha + 0.5))
     shadow_tint = rl_color(0, 0, 0, int(90 * alpha + 0.5))
@@ -188,10 +194,9 @@ def draw_player_trooper_sprite(
                         origin2 = rl_vector2(size2 * 0.5, size2 * 0.5)
                         rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
-                        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                        rl.draw_texture_pro(particles_texture, src, dst, origin, rotation_deg, tint)
-                        rl.draw_texture_pro(particles_texture, src, dst2, origin2, rotation2_deg, tint2)
-                        rl.end_blend_mode()
+                        with additive_blend():
+                            rl.draw_texture_pro(particles_texture, src, dst, origin, rotation_deg, tint)
+                            rl.draw_texture_pro(particles_texture, src, dst2, origin2, rotation2_deg, tint2)
 
         if float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
             weapon = WEAPON_BY_ID[player.weapon.weapon_id]
@@ -212,16 +217,15 @@ def draw_player_trooper_sprite(
                     dst = rl_rectangle(flash_pos.x, flash_pos.y, size, size)
                     origin = rl_vector2(size * 0.5, size * 0.5)
                     tint_flash = rl_color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
-                    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                    rl.draw_texture_pro(
-                        muzzle_flash_texture,
-                        src,
-                        dst,
-                        origin,
-                        float(player.aim_heading * _RAD_TO_DEG),
-                        tint_flash,
-                    )
-                    rl.end_blend_mode()
+                    with additive_blend():
+                        rl.draw_texture_pro(
+                            muzzle_flash_texture,
+                            src,
+                            dst,
+                            origin,
+                            float(player.aim_heading * _RAD_TO_DEG),
+                            tint_flash,
+                        )
         return
 
     if player.death_timer >= 0.0:

@@ -7,7 +7,10 @@
 projectile_t projectile_pool[96];
 Config config_blob{true};
 EffectAtlasEntry effect_id_table[19]{};
+uv2f_t effect_uv2[4]{}, effect_uv4[16]{}, effect_uv8[64]{}, effect_uv16[256]{};
 extern "C" {
+float effect_uv_step_2 = .4921875f, effect_uv_step_4 = .25f;
+float effect_uv_step_8 = .125f, effect_uv_step_16 = .0625f;
 vec2f_t camera_offset{};
 int particles_texture = 7, grim_bound_texture_handle = 7;
 grim_config_value_t grim_config_values[128]{};
@@ -59,6 +62,11 @@ int main() {
   effect_id_table[13] = {64, 3};
   effect_id_table[16] = {64, 6};
   effect_id_table[1] = {128, 3};
+  effect_id_table[0] = {128, 2};
+  effect_uv4[3] = {.75f, 0};
+  effect_uv4[6] = {.5f, .25f};
+  effect_uv2[3] = {.5f, .5f};
+  effect_uv2[2] = {0, .5f};
   projectile_pool[0].fields.type_id = PROJECTILE_TYPE_PLASMA_CANNON;
   projectile_pool[0].fields.life_timer = .4f;
   projectile_pool[0].fields.speed_scale = 1;
@@ -140,6 +148,11 @@ int main() {
   assert(calls == 0);
   // Ending a batch submits its pending sprites before the blend changes for the
   // next one, as effects_render switches from normal alpha to additive.
+  // Alpha-composited auras (including dark plague overlays) keep their artwork.
+  grim_config_values[0x14].words[0] = 6;
+  assert(!rtx_effect_quad(points));
+  const float ring_full[8] = {.5f, .5f, 1, .5f, 1, 1, .5f, 1};
+  memcpy(grim_uv_u0, ring_full, sizeof ring_full);
   submissions.clear();
   blends.clear();
   grim_config_values[0x14].words[0] = 6;
@@ -149,8 +162,38 @@ int main() {
   grim_config_values[0x14].words[0] = 2;
   assert(rtx_effect_quad(points));
   grim_interface_ptr->grim_end_batch();
-  assert((submissions == std::vector<int>{1, -1, 1}));
+  assert((submissions == std::vector<int>{2, -1, 2}));
   assert((blends == std::vector<unsigned>{6, 2}));
+  // Native 2x2 ring cells stop two texels short. They must use the analytic
+  // profile too; matching a full half-atlas rectangle silently kept the sprite.
+  float lo = .5f, hi = lo + effect_uv_step_2;
+  const float ring_uv[8] = {lo, lo, hi, lo, hi, hi, lo, hi};
+  memcpy(grim_uv_u0, ring_uv, sizeof ring_uv);
+  assert(rtx_effect_quad(points));
+  rtx_effect_flush();
+  assert(submissions.back() == 2);
+  for (int i = 0; i < 4; ++i) {
+    vertices[i].u = ring_uv[i * 2];
+    vertices[i].v = ring_uv[i * 2 + 1];
+  }
+  assert(rtx_effect_vertices(vertices, 4));
+  rtx_effect_flush();
+  assert(submissions.back() == 2);
+  // Immediate shells use full cells; both paths share the same ring shader.
+  const float shell_uv[8] = {.5f, .5f, 1, .5f, 1, 1, .5f, 1};
+  memcpy(grim_uv_u0, shell_uv, sizeof shell_uv);
+  assert(rtx_effect_quad(points));
+  rtx_effect_flush();
+  assert(submissions.back() == 2);
+  // The companion flash is analytic only in additive draws.
+  const float burst_uv[8] = {0, lo, effect_uv_step_2, lo, effect_uv_step_2, hi, 0, hi};
+  memcpy(grim_uv_u0, burst_uv, sizeof burst_uv);
+  grim_config_values[0x14].words[0] = 6;
+  assert(!rtx_effect_quad(points));
+  grim_config_values[0x14].words[0] = 2;
+  assert(rtx_effect_quad(points));
+  rtx_effect_flush();
+  assert(submissions.back() == 6);
   puts("analytic hooks: output suppression, alpha coverage, original corners, "
        "batch-end submission and 100-to-1 sprite batching passed");
 }
