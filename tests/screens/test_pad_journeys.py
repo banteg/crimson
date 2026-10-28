@@ -151,12 +151,12 @@ def test_options_slider_with_the_pad(loop, mocker) -> None:
 
     options = loop.state.screens.active
     assert isinstance(options, OptionsMenuView)
-    slider = options._slider_detail
+    slider = options._slider_music
     slider.value = 3
     dpad_to(loop, mocker, lambda: slider.focused)
     press(loop, mocker, DPAD_RIGHT)
     assert slider.value == 4
-    assert loop.state.config.display.detail_preset == 4
+    assert loop.state.config.audio.music_volume == pytest.approx(0.4)
 
 
 @pytest.mark.parametrize(

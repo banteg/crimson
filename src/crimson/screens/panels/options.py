@@ -8,7 +8,6 @@ from crimson.ui.menu_chrome import draw_ui_quad
 from crimson.ui.menu_layout import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_OPTIONS
 from grim import canvas
 from grim.assets import TextureId
-from grim.config import apply_detail_preset
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.music import set_music_volume
@@ -16,6 +15,7 @@ from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.sfx import set_sfx_volume
 
 from ...game.types import GameState
+from ...render.rtx.mode import RtxRenderMode, mode_from_rtx_flag
 from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.slider import UiSegmentedSlider, ui_segmented_slider_draw, ui_segmented_slider_update
@@ -35,7 +35,6 @@ class OptionsMenuView(PanelMenuView):
     _LABELS = (
         "Sound volume:",
         "Music volume:",
-        "Graphics detail:",
     )
 
     def __init__(self, state: GameState) -> None:
@@ -45,7 +44,8 @@ class OptionsMenuView(PanelMenuView):
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = UiSegmentedSlider(value=10)
         self._slider_music = UiSegmentedSlider(value=10)
-        self._slider_detail = UiSegmentedSlider(value=5, max=5, min=1)
+        # Graphics detail's row; crimson.cfg keeps the preset (crimson-core/game/rtx/options.patch).
+        self._rtx_checkbox = UiCheckbox("RTX lighting")
         self._info_checkbox = UiCheckbox("UI Info texts")
 
     def open(self) -> None:
@@ -101,12 +101,16 @@ class OptionsMenuView(PanelMenuView):
                 set_music_volume(self.state.audio.music, config.audio.music_volume)
             self._dirty = True
 
-        detail_value = self._slider_detail.value
-        ui_segmented_slider_update(focus, self._slider_detail, slider_pos.offset(dy=87.0), mouse=mouse, down=down)
-        if self._slider_detail.value != detail_value:
-            # The keys step the slider down to 0; the preset stays within 1..5.
-            self._slider_detail.value = apply_detail_preset(config, max(1, self._slider_detail.value))
-            self._dirty = True
+        self._rtx_checkbox.checked = self.state.rtx_mode is RtxRenderMode.RTX
+        if ui_checkbox_update(
+            resources,
+            self._rtx_checkbox,
+            label_pos.offset(dy=86.0),
+            focus=focus,
+            mouse=mouse,
+            click=canvas.mouse_pressed(),
+        ):
+            self.state.choose_rtx_mode(mode_from_rtx_flag(self._rtx_checkbox.checked))
 
         # `options_menu_update`: controls button is aligned with the panel content base.
         controls_pos = base_pos.offset(dy=155.0)
@@ -129,11 +133,9 @@ class OptionsMenuView(PanelMenuView):
 
         sfx_volume = config.audio.sfx_volume
         music_volume = config.audio.music_volume
-        detail_preset = config.display.detail_preset
 
         self._slider_sfx.value = max(self._slider_sfx.min, min(self._slider_sfx.max, int(sfx_volume * 10.0)))
         self._slider_music.value = max(self._slider_music.min, min(self._slider_music.max, int(music_volume * 10.0)))
-        self._slider_detail.value = max(self._slider_detail.min, min(self._slider_detail.max, detail_preset))
 
     def _content_layout(self) -> _OptionsContentLayout:
         panel_top_left = self._panel_rect(self._panel_element).top_left
@@ -180,15 +182,14 @@ class OptionsMenuView(PanelMenuView):
             tint=rl.WHITE,
         )
 
-        y_offsets = (47.0, 67.0, 87.0)
+        y_offsets = (47.0, 67.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
             draw_small_text(font, label, label_pos.offset(dy=offset), text_color)
 
         focus = self.state.focus
         ui_segmented_slider_draw(resources, focus, self._slider_sfx, slider_pos.offset(dy=47.0))
         ui_segmented_slider_draw(resources, focus, self._slider_music, slider_pos.offset(dy=67.0))
-        ui_segmented_slider_draw(resources, focus, self._slider_detail, slider_pos.offset(dy=87.0))
-
+        ui_checkbox_draw(resources, self._rtx_checkbox, label_pos.offset(dy=86.0), focus=focus)
         ui_checkbox_draw(resources, self._info_checkbox, label_pos.offset(dy=135.0), focus=self.state.focus)
 
         button_pos = base_pos.offset(dy=155.0)

@@ -183,24 +183,13 @@
   // game where the browser allows it (the Keyboard Lock API); holding Escape
   // still leaves.
   const fullscreen = document.getElementById("fullscreen"), home = document.getElementById("home");
-  // RTX lighting, where the game draws with WebGPU (client/renderer_webgpu.cpp): ?rtx=1 or ?rtx=0, else the player's
-  // last choice. The switch follows the game's mode, which the console's rendermode changes too.
+  // RTX lighting, where the game draws with WebGPU (client/renderer_webgpu.cpp): ?rtx=1 or ?rtx=0 for this visit,
+  // else the player's last choice, which the game keeps (game/rtx.cpp). The switch makes that choice as the Options
+  // panel's RTX lighting does, and follows the game's mode, whatever changed it.
   const rtx = document.getElementById("rtx");
-  const RTX_CHOICE = "crimson.rtx";
-  const rtxWanted = () => {
-    if (query.has("rtx")) return query.get("rtx") !== "0";
-    try {
-      return localStorage.getItem(RTX_CHOICE) === "1";
-    } catch {
-      return false;
-    }
-  };
   rtx.onclick = () => {
     const on = rtx.getAttribute("aria-pressed") !== "true";
     Module.ccall("client_render_mode", null, ["number"], [on ? 1 : 0]);
-    try {
-      localStorage.setItem(RTX_CHOICE, on ? "1" : "0");
-    } catch {}
     canvas.focus();
   };
   const share = document.getElementById("share"), shareStop = document.getElementById("share-stop"),
@@ -450,6 +439,12 @@
 
   async function hydrate() {
     await new Promise((resolve, reject) => FS.syncfs(true, (error) => (error ? reject(error) : resolve())));
+    // The switch's choice from before the game kept it (game/rtx.cpp) moves into the game folder.
+    try {
+      const choice = localStorage.getItem("crimson.rtx");
+      if (choice !== null && !exists("render_mode.txt")) store("render_mode.txt", choice === "1" ? "rtx\n" : "classic\n");
+      localStorage.removeItem("crimson.rtx");
+    } catch {}
     for (;;) {
       try {
         await fetchMissing();
@@ -1073,8 +1068,8 @@
       if (!navigator.locks) return stuck("Crimsonland needs HTTPS (or localhost) to keep its saves.");
       navigator.locks.request(LOCK, { ifAvailable: true }, (lock) => (lock ? own() : elsewhere())).catch(lost);
     }],
-    // Whether the game starts in RTX (client/main.cpp), which only WebGPU draws.
-    rtxWanted: () => !!Module.preinitializedWebGPUDevice && rtxWanted(),
+    // The mode ?rtx= starts the game in (client/main.cpp), or -1 for the player's choice; only WebGPU draws RTX.
+    rtxWanted: () => (!Module.preinitializedWebGPUDevice ? 0 : !query.has("rtx") ? -1 : query.get("rtx") !== "0" ? 1 : 0),
     // Whether the game starts waiting for a linked run's replay (client/main.cpp).
     watchAwaited: () => watchAwaited,
     // The rendering mode the game shows (client/main.cpp): HDR displays get its highlights past white.

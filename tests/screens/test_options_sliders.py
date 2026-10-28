@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.game.loop_view import GameLoopView
+from crimson.render.rtx.mode import RtxRenderMode, load_rtx_choice
 from crimson.screens.actions import Route
 from crimson.screens.panels.options import OptionsMenuView
 from grim.raylib_api import rl
@@ -33,17 +34,15 @@ def test_holding_the_button_on_a_volume_segment_sets_that_volume(loop, mocker) -
     assert options._slider_sfx.value == 0
 
 
-def test_the_detail_slider_keeps_the_preset_at_one(loop, mocker) -> None:
+def test_the_rtx_box_switches_the_mode_and_keeps_the_choice(loop, mocker) -> None:
     options = open_options(loop)
-    detail = options._content_layout().slider_pos.offset(dy=87.0)
-    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(detail.x + 3.0, detail.y + 6.0))
-    mocker.patch.object(rl, "is_mouse_button_down", return_value=True)
+    box = options._content_layout().label_pos.offset(dy=86.0)
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(box.x + 8.0, box.y + 8.0))
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     loop.update(0.016)
-    assert loop.state.config.display.detail_preset == 1
+    assert loop.state.rtx_mode is RtxRenderMode.RTX
+    assert load_rtx_choice(loop.state.base_dir) is RtxRenderMode.RTX
 
-    # Hovering focused it; Left takes the slider to 0 and the preset stays 1.
-    mocker.patch.object(rl, "is_mouse_button_down", return_value=False)
-    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_LEFT)
     loop.update(0.016)
-    assert options._slider_detail.value == 1
-    assert loop.state.config.display.detail_preset == 1
+    assert loop.state.rtx_mode is RtxRenderMode.CLASSIC
+    assert load_rtx_choice(loop.state.base_dir) is RtxRenderMode.CLASSIC
