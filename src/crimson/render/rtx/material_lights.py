@@ -31,11 +31,11 @@ if TYPE_CHECKING:
 
 from .explosion_shell import explosion_shell
 
-MAX_ILLUMINATION_SOURCES = 16
-MAX_REFLECTION_SOURCES = 16
-# The independently selected sets share one upload; overlapping sources occur only once. Sources fading out of a
-# budget still upload until they reach zero, within the same bound.
-MAX_MATERIAL_LIGHTS = MAX_ILLUMINATION_SOURCES + MAX_REFLECTION_SOURCES
+# The shaders' light arrays.
+MAX_MATERIAL_LIGHTS = 32
+# Each response's budget, and their union's: overlapping sources count once, and when the two want more together they
+# take turns rank by rank. The arrays' other entries hold sources fading out, so a swap at the edge crossfades.
+MAX_SELECTED_SOURCES = 28
 # A volley's pellets light as one source while their heads lie within this many world units of the lead's.
 VOLLEY_UNITS = 28.0
 # Ticks (1/60 s of game time) over which a source fades into or out of a budget.
@@ -370,9 +370,10 @@ def select_material_lights(
 ) -> list[MaterialLight]:
     """Select each response independently, then mask unselected channels in their union.
 
-    Ties go to the lower ident. With a selection, sources fade in and out of the budgets (LightSelection). The union
+    Ties go to the lower ident. Past MAX_SELECTED_SOURCES the union takes the responses' sources rank by rank, so
+    neither crowds the other out. With a selection, sources fade in and out of the budgets (LightSelection). The union
     comes brightest first (both responses' delivered scores summed) and holds at most MAX_MATERIAL_LIGHTS: the faintest
-    fading sources give way."""
+    fading sources give way, never a selected one."""
 
     def score(index: int, *, reflection: bool) -> float:
         source = sources[index]
@@ -381,21 +382,28 @@ def select_material_lights(
         distance_sq = _distance_sq(source, view_center, reflection=reflection)
         return max(source.rgb) * gain / (1.0 + distance_sq / max(1.0, radius * radius))
 
-    def chosen(reflection: bool, limit: int) -> set[int]:
-        scores = [score(i, reflection=reflection) for i in range(len(sources))]
+    def ranks(scores: list[float]) -> dict[int, int]:
         ranked = sorted((i for i in range(len(sources)) if scores[i] > 0.0), key=lambda i: (-scores[i], sources[i].ident))
-        return set(ranked[:limit])
+        return {i: rank for rank, i in enumerate(ranked[:MAX_SELECTED_SOURCES])}
 
-    lit_set, reflected_set = chosen(False, MAX_ILLUMINATION_SOURCES), chosen(True, MAX_REFLECTION_SOURCES)
+    lit_scores, reflected_scores = ([score(i, reflection=reflection) for i in range(len(sources))]
+                                    for reflection in (False, True))
+    lit_ranks, reflected_ranks = ranks(lit_scores), ranks(reflected_scores)
+    selected = set(sorted(lit_ranks.keys() | reflected_ranks.keys(), key=lambda i: (
+        min(lit_ranks.get(i, len(sources)), reflected_ranks.get(i, len(sources))), sources[i].ident,
+    ))[:MAX_SELECTED_SOURCES])
+    lit_set, reflected_set = lit_ranks.keys() & selected, reflected_ranks.keys() & selected
     if selection is None:
         lit, reflected = dict.fromkeys(lit_set, 1.), dict.fromkeys(reflected_set, 1.)
     else:
         lit = selection.slew(sources, lit_set, reflection=False)
         reflected = selection.slew(sources, reflected_set, reflection=True)
-    order = sorted(set(lit) | set(reflected), key=lambda i: (
-        -(score(i, reflection=False) * lit.get(i, 0.) + score(i, reflection=True) * reflected.get(i, 0.)),
-        sources[i].ident,
-    ))[:MAX_MATERIAL_LIGHTS]
+
+    def delivered(i: int) -> float:
+        return lit_scores[i] * lit.get(i, 0.) + reflected_scores[i] * reflected.get(i, 0.)
+
+    kept = sorted(set(lit) | set(reflected), key=lambda i: (i not in selected, -delivered(i), sources[i].ident))
+    order = sorted(kept[:MAX_MATERIAL_LIGHTS], key=lambda i: (-delivered(i), sources[i].ident))
     return [
         msgspec.structs.replace(
             sources[i],

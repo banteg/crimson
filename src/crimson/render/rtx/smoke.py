@@ -13,7 +13,7 @@ from ...perks import PerkId
 from ..laser_sight import laser_sight_geometry
 from .debug import RtxDebugView
 from .gpu_smoke import GpuSmokeSimulation
-from .material_lights import MAX_ILLUMINATION_SOURCES, MaterialLight
+from .material_lights import MaterialLight
 from .smoke_composite import SmokeComposite
 from .smoke_shaders import SMOKE_FRAGMENT, SMOKE_VERTEX
 
@@ -23,6 +23,9 @@ if TYPE_CHECKING:
     from ..world.context import WorldRenderCtx
     from ..world.viewport import ViewTransform
     from .smoke_simulation import SmokeSimulation
+
+# smoke.frag's light arrays.
+MAX_SMOKE_LIGHTS = 16
 
 
 class SmokeRenderer:
@@ -88,7 +91,7 @@ class SmokeRenderer:
                     ranked.append((strength, light))
                     break
         ranked.sort(key=lambda pair: pair[0], reverse=True)
-        return [light for _, light in ranked[:MAX_ILLUMINATION_SOURCES]]
+        return [light for _, light in ranked[:MAX_SMOKE_LIGHTS]]
 
     def prepare(self, frame: RenderFrame, lights: Sequence[MaterialLight]) -> None:
         self.prepared = False

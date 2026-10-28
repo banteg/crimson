@@ -11,7 +11,7 @@ from crimson.render.rtx.continuous_beam import (
     beam_uniform,
     prepare_beam_lights,
 )
-from crimson.render.rtx.material_lights import MaterialLight
+from crimson.render.rtx.material_lights import MAX_SELECTED_SOURCES, MaterialLight
 from grim.geom import Vec2
 
 
@@ -66,9 +66,11 @@ def test_lit_slot_keeps_its_mask_profile_when_sources_swap() -> None:
     from crimson.projectiles.types import ProjectileTemplateId as PT
     from crimson.render.rtx.material_lights import projectile_source, select_material_lights
 
+    # Lamps that fill the illumination budget but one; the union takes turns, so the last of them gives way.
+    lamps = MAX_SELECTED_SOURCES - 1
     projectiles = [
         Projectile(active=True, type_id=PT.ION_CANNON, life_timer=0.4, origin=Vec2(-28, 300), pos=Vec2(228, 300))
-        for _ in range(15)
+        for _ in range(lamps)
     ]
     projectiles += [
         Projectile(active=True, type_id=PT.ION_MINIGUN, life_timer=life, origin=Vec2(-28, 100), pos=Vec2(228, 100))
@@ -76,25 +78,24 @@ def test_lit_slot_keeps_its_mask_profile_when_sources_swap() -> None:
     ]
 
     def selected():
-        return select_material_lights(
-            [source for ident, projectile in enumerate(projectiles)
-             if (source := projectile_source(projectile, ident)) is not None],
-            view_center=Vec2(100, 100),
-        )
+        sources = [source for ident, projectile in enumerate(projectiles)
+                   if (source := projectile_source(projectile, ident)) is not None]
+        sources[:lamps] = [msgspec.structs.replace(source, reflection_gain=0.) for source in sources[:lamps]]
+        return select_material_lights(sources, view_center=Vec2(100, 100))
 
     first = selected()
-    assert len(first) == 17 and first[-2].illumination_gain > 0 and first[-1].illumination_gain == 0
-    assert (first[-2].ident, first[-1].ident) == (15, 16)
+    assert len(first) == MAX_SELECTED_SOURCES and first[-2].illumination_gain > 0 and first[-1].illumination_gain == 0
+    assert (first[-2].ident, first[-1].ident) == (lamps, lamps + 1)
     before, _ = prepare_beam_lights(first)
     projectiles[-2].life_timer, projectiles[-1].life_timer = 0.36, 0.4
     second = selected()
     # The brighter source takes the lit slot; the mask profile follows the slot, not the source.
-    assert len(second) == 17 and second[-2].illumination_gain > 0 and second[-1].illumination_gain == 0
-    assert (second[-2].ident, second[-1].ident) == (16, 15)
+    assert len(second) == MAX_SELECTED_SOURCES and second[-2].illumination_gain > 0 and second[-1].illumination_gain == 0
+    assert (second[-2].ident, second[-1].ident) == (lamps + 1, lamps)
     after, _ = prepare_beam_lights(second)
-    row_size = 4
+    row_size, lit = 4, MAX_SELECTED_SOURCES - 2
     for rows in (before, after):
-        assert any(rows[15 * row_size : 16 * row_size]) and not any(rows[16 * row_size : 17 * row_size])
+        assert any(rows[lit * row_size : (lit + 1) * row_size]) and not any(rows[(lit + 1) * row_size :])
     assert prepare_beam_lights([]) == ([], [])
     nonbeam = MaterialLight(Vec2(), 100, (1, 1, 1), length=250)
     values, grid = prepare_beam_lights([nonbeam])
