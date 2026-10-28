@@ -289,7 +289,7 @@ class DeterministicSession(msgspec.Struct):
             )
             self.perk_menu_open = events.perk_menu_opened
 
-        atmosphere_impulses.extend(body_wakes(bodies, body_positions(self.world)))
+        atmosphere_impulses.extend(body_wakes(bodies, body_positions(self.world), timing.dt_sim))
         quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:
             post_apply_sfx.append(SfxId.QUESTHIT)

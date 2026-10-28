@@ -1091,7 +1091,7 @@ void smoke_rect(Program &p, Target &into, const float *rect, Uniforms &fragment,
 }
 
 void smoke_pass(int destination, int source, int mode, int aux = -1) {
-  if (!fits(uniform_stream, 2048))
+  if (!fits(uniform_stream, 4096))
     submit();
   Uniforms fragment(*smoke_solver.frag);
   fragment.i("u_mode", mode).f("u_dt", smoke_dt).f("u_decay", smoke_decay).f("u_fade", smoke_fade);
@@ -1650,6 +1650,25 @@ void wgpu_w2c_host_smoke(struct w2c_host *, u32 commands, u32 count) {
       smoke_current = 1 - smoke_current;
       c += 2;
       break;
+    case SMOKE_DRAG: {
+      int count = std::min((int)c[1], 64);
+      float paths[64 * 4], motions[64 * 4];
+      for (int i = 0; i < count; ++i) {
+        memcpy(paths + i * 4, c + 2 + i * 8, 16);
+        memcpy(motions + i * 4, c + 6 + i * 8, 16);
+      }
+      if (!fits(uniform_stream, 4096))
+        submit();
+      Uniforms fragment(*smoke_solver.frag);
+      fragment.i("u_mode", 6).f("u_dt", smoke_dt).i("u_body_count", count);
+      fragment.set("u_body_path", paths, count * 16).set("u_body_motion", motions, count * 16);
+      const float whole[4] = {0, 0, 1, 1};
+      smoke_rect(smoke_solver, smoke_targets[1 - smoke_current], whole, fragment, Output{},
+                 {{"texture0", smoke_targets[smoke_current].view, linear_clamp()}, {"u_aux", blank_view, linear_clamp()}});
+      smoke_current = 1 - smoke_current;
+      c += 2 + (int)c[1] * 8;
+      break;
+    }
     default:
       client_fatal("Unknown smoke command");
     }

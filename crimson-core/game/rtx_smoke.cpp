@@ -26,7 +26,7 @@ namespace {
 
 const float STEP_SECONDS = 1.0f / 60.0f, FADE_SECONDS = 2.0f, GUARD_BAND = 128;
 enum { GRID_SIZE = 320, PRESSURE_ITERATIONS = 12, MAX_PENDING = 1024, MAX_IMPULSES = 64, MAX_BLASTS = 16 };
-// Moving bodies' wakes, on a budget of their own (gpu_smoke.py's MAX_BODY_IMPULSES_PER_TICK).
+// Moving bodies' drag, on a budget of its own (gpu_smoke.py's MAX_BODY_IMPULSES_PER_TICK).
 enum { MAX_BODY_IMPULSES = 64 };
 // A minute of ticks, should frames stop draining them.
 enum { MAX_BATCHES = 3600 };
@@ -34,10 +34,10 @@ enum Profile { ORDINARY, NUKE, MUZZLE, ROCKET, SOOT };
 // Heat per unit of smoke by profile (render/rtx/smoke_constants.py's SOURCE_HEAT).
 const float SOURCE_HEAT[] = {2.5f, 2.5f, 1.0f, 2.0f, 1.6f};
 enum Kind { BLAST, MUZZLE_JET, WAKE, BODY }; // in the order the solver ranks them
-// A moving body's wake (sim/smoke_events.py's body_wakes): its radius a share of the
-// body's size, strength and curl per world unit it moved in the tick; a longer step
-// is a spawn, a reused slot or a teleport.
-const float BODY_RADIUS = 0.35f, BODY_PUSH = 4.0f, BODY_CURL = 1.0f, BODY_STEP_LIMIT = 30.0f;
+// A moving body (sim/smoke_events.py's body_wakes): its path through the tick, its
+// speed as the strength, its radius a share of its size; the air under it eases
+// toward its velocity (SMOKE_DRAG). A longer step is a spawn, a reused slot or a teleport.
+const float BODY_RADIUS = 0.35f, BODY_STEP_LIMIT = 30.0f;
 
 // A copied spawn (sim/smoke_events.py's SmokeEmission): scale is the full world
 // diameter, expansion radial units a second.
@@ -239,7 +239,7 @@ void impulse(const Impulse &i, float age, float fraction) {
   hi_x = std::min(smoke.size_x, hi_x), hi_y = std::min(smoke.size_y, hi_y);
   if (hi_x <= lo_x || hi_y <= lo_y)
     return;
-  const float kinds[] = {2, 0, 1, 1}; // the shader's: muzzle 0, wake and body 1, blast 2
+  const float kinds[] = {2, 0, 1}; // the shader's: muzzle 0, wake 1, blast 2
   commands.insert(commands.end(),
                   {(float)SMOKE_IMPULSE, lo_x / smoke.size_x, lo_y / smoke.size_y, (hi_x - lo_x) / smoke.size_x,
                    (hi_y - lo_y) / smoke.size_y, sx, sy, ex, ey, i.radius, std::min(800.0f, i.strength),
@@ -284,9 +284,21 @@ void prepare() {
       splat(e);
     smoke.accumulator += batch.dt;
     while (smoke.accumulator + 1e-9f >= STEP_SECONDS) {
-      for (const Impulse &i : smoke.waiting)
-        impulse(i, 0, 1);
+      std::vector<float> bodies;
+      for (const Impulse &i : smoke.waiting) {
+        if (i.kind != BODY) {
+          impulse(i, 0, 1);
+          continue;
+        }
+        float dx = i.ex - i.sx, dy = i.ey - i.sy, scale = i.strength / sqrtf(dx * dx + dy * dy);
+        bodies.insert(bodies.end(), {i.sx + GUARD_BAND, i.sy + GUARD_BAND, i.ex + GUARD_BAND, i.ey + GUARD_BAND,
+                                     i.radius, dx * scale, dy * scale, 0});
+      }
       smoke.waiting.clear();
+      if (!bodies.empty()) {
+        commands.insert(commands.end(), {(float)SMOKE_DRAG, (float)(bodies.size() / 8)});
+        commands.insert(commands.end(), bodies.begin(), bodies.end());
+      }
       commands.push_back((float)SMOKE_PROJECT);
       // Blast fronts come after projection, which would otherwise erase their expansion.
       std::vector<std::pair<Impulse, float>> lasting;
@@ -468,15 +480,14 @@ void rtx_smoke_impulse(float sx, float sy, float ex, float ey, float radius, flo
   capture.impulses.push_back({sx, sy, ex, ey, radius, strength, curl, (Kind)kind, duration, expansion_speed});
 }
 
-// The air each body that lived through the tick pushed along its path in it.
-void body_wakes(bool capture_wakes) {
+// Each body that lived through a tick of `dt` seconds and moved in it: its path and speed.
+void body_wakes(bool capture_wakes, float dt) {
   int n = 0;
   auto body = [&](bool alive, float x, float y, float size) {
     BodyAt &last = bodies_last[n++];
     float step = sqrtf((x - last.x) * (x - last.x) + (y - last.y) * (y - last.y));
-    if (capture_wakes && alive && last.alive && step > 0 && step <= BODY_STEP_LIMIT)
-      capture.impulses.push_back(
-          {last.x, last.y, x, y, size * BODY_RADIUS, step * BODY_PUSH, step * BODY_CURL, BODY, 0.15f, 0});
+    if (capture_wakes && alive && last.alive && step > 0 && step <= BODY_STEP_LIMIT && dt > 0)
+      capture.impulses.push_back({last.x, last.y, x, y, size * BODY_RADIUS, step / dt, 0, BODY, 0.15f, 0});
     last = {alive, x, y};
   };
   for (const creature_t &c : creature_pool)
@@ -490,7 +501,7 @@ void body_wakes(bool capture_wakes) {
 // The end of a tick of `dt` seconds: its capture joins the field's queue.
 void rtx_smoke_tick(float dt) {
   rtx_smoke_flush();
-  body_wakes(rtx_smoke_active());
+  body_wakes(rtx_smoke_active(), dt);
   if (!rtx_smoke_active()) {
     if (smoke.field || !smoke.batches.empty() || !smoke.pending.empty())
       rtx_smoke_reset();

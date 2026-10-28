@@ -401,7 +401,7 @@ hooks in `game/rtx/rtx.patch`):
 - the nuke's 15-second billows
 - projectile and rocket wakes, and blast fronts from explosion bursts and rocket
   detonations
-- the wakes of moving creatures and players
+- the drag of moving creatures and players
 
 These hooks only read the run: no RNG, no state, and the verifier builds without
 them. The module also runs `GpuSmokeSimulation`'s CPU side: delayed deposits,
@@ -1228,14 +1228,17 @@ Per-tick GPU impulses are capped at 64, prioritizing blasts and muzzle jets befo
 wakes; at most 16 blast fronts persist. New forces reuse the existing solver and
 pressure iterations.
 
-Bodies push the air too. Each tick, every living creature and player that moved
-drags the air along its path and parts it to its sides with a wake of its own
-(`smoke_events.py`'s `body_wakes`): its radius about a third of the body's size,
-its strength in proportion to the distance the body moved. A step longer than 30 units is a spawn, a reused slot or a
-teleport, not motion. Bodies have their own budget of 64 a tick, strongest first,
-so a swarm never crowds out blasts, muzzle jets or shots. A crowd charging through
-smoke breaks up trails and swirls the haze where it walks; the solver costs about
-the same.
+Bodies move the air too. Each tick, every living creature and player that moved
+drags the air under it toward its own velocity (`smoke_events.py`'s `body_wakes`,
+the solver's drag pass, mode 6 of `smoke_solver.frag`), over a radius about a third
+of its size. Air near several bodies eases toward their weighted mean velocity, so
+it never moves faster than the bodies moving it, however long a crowd walks through
+it; pressure projection then turns the drag into flow around them. A step longer
+than 30 units is a spawn, a reused slot or a teleport, not motion. Bodies have
+their own budget of 64 a tick, fastest and largest first, so a swarm never crowds
+out blasts, muzzle jets or shots. Trails keep their shape; smoke gathers where a
+crowd converges and is carried along with it. The drag is one full-field pass per
+step.
 
 Rocket exhaust and impact deposits use 40% of the old source strength, and ordinary
 general-effect explosion puffs use 60%. The nuke profile retains its existing

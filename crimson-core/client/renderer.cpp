@@ -2041,6 +2041,23 @@ void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
       smoke_current = 1 - smoke_current;
       c += 2;
       break;
+    case SMOKE_DRAG: {
+      int count = std::min((int)c[1], 64);
+      std::vector<float> paths, motions;
+      for (int i = 0; i < count; ++i) {
+        paths.insert(paths.end(), c + 2 + i * 8, c + 6 + i * 8);
+        motions.insert(motions.end(), c + 6 + i * 8, c + 10 + i * 8);
+      }
+      GLuint p = smoke_solver_program;
+      use_program(p);
+      glUniform1i(uniform_location(p, "u_body_count"), count);
+      glUniform4fv(uniform_location(p, "u_body_path"), count, paths.data());
+      glUniform4fv(uniform_location(p, "u_body_motion"), count, motions.data());
+      smoke_pass(1 - smoke_current, smoke_current, 6);
+      smoke_current = 1 - smoke_current;
+      c += 2 + (int)c[1] * 8;
+      break;
+    }
     default:
       client_fatal("Unknown smoke command");
     }

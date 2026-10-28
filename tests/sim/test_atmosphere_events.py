@@ -109,10 +109,10 @@ def test_only_bodies_alive_on_both_sides_of_a_tick_push_and_never_across_a_jump(
     a, b, c = Vec2(0, 0), Vec2(3, 4), Vec2(0, BODY_STEP_LIMIT + 1)
     before = [(a, 50.), (a, 50.), None, (a, 50.), (a, 50.)]
     after = [(b, 50.), None, (b, 50.), (c, 50.), (a, 50.)]
-    wakes = body_wakes(before, after)
+    wakes = body_wakes(before, after, 1 / 60)
     assert len(wakes) == 1
     assert (wakes[0].start, wakes[0].end, wakes[0].kind) == (a, b, "body")
-    assert wakes[0].strength == pytest.approx(5 * 4.)
+    assert wakes[0].strength == pytest.approx(5 * 60.)
 
 
 def test_atmosphere_batches_preserve_tick_order_including_empty_ticks(mocker):

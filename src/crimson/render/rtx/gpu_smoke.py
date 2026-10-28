@@ -20,7 +20,7 @@ GRID_SIZE = 320
 GUARD_BAND = 128.0
 PRESSURE_ITERATIONS = 12
 MAX_IMPULSES_PER_TICK = 64
-# Moving bodies' wakes, on a budget of their own: a swarm cannot crowd out blasts, muzzle jets or shots.
+# Moving bodies' drag, on a budget of its own: a swarm cannot crowd out blasts, muzzle jets or shots.
 MAX_BODY_IMPULSES_PER_TICK = 64
 MAX_ACTIVE_BLASTS = 16
 
@@ -165,7 +165,8 @@ class GpuSmokeSimulation:
                     raise RuntimeError("GPU smoke solver shader compilation failed")
                 setattr(self, attr, shader)
                 if attr == "shader":
-                    names = ("u_resolution", "u_world_size", "u_aux", "u_mode", "u_dt", "u_decay", "u_fade")
+                    names = ("u_resolution", "u_world_size", "u_aux", "u_mode", "u_dt", "u_decay", "u_fade",
+                             "u_body_count", "u_body_path", "u_body_motion")
                 elif attr == "splat_shader":
                     names = ("u_resolution", "u_world_size", "u_source", "u_motion", "u_rotation", "u_flow")
                 else:
@@ -251,7 +252,7 @@ class GpuSmokeSimulation:
             try:
                 for impulse, age, fraction in impulses:
                     start, end = impulse.start-self.origin, impulse.end-self.origin
-                    kind = {"muzzle": 0., "wake": 1., "body": 1., "blast": 2.}[impulse.kind]
+                    kind = {"muzzle": 0., "wake": 1., "blast": 2.}[impulse.kind]
                     self._set(self.impulse_shader, self.impulse_locations, "u_segment", (
                         start.x, start.y, end.x, end.y,
                     ))
@@ -322,9 +323,13 @@ class GpuSmokeSimulation:
                 self._inject(emissions)
             self.accumulator += dt
             while self.accumulator+1e-9 >= STEP_SECONDS:
-                if self.waiting_impulses:
-                    self._inject_impulses(tuple((impulse, 0., 1.) for impulse in self.waiting_impulses))
-                    self.waiting_impulses.clear()
+                pushes = [impulse for impulse in self.waiting_impulses if impulse.kind != "body"]
+                bodies = [impulse for impulse in self.waiting_impulses if impulse.kind == "body"]
+                self.waiting_impulses.clear()
+                if pushes:
+                    self._inject_impulses(tuple((impulse, 0., 1.) for impulse in pushes))
+                if bodies:
+                    self._drag(bodies)
                 other = 1-self.current
                 self._pass(other, self.current, 0)
                 self._pass(2, other, 1)
@@ -349,6 +354,24 @@ class GpuSmokeSimulation:
                 self.current = other
                 self.accumulator = max(0., self.accumulator-STEP_SECONDS)
                 self.executed_steps += 1
+
+    def _drag(self, bodies: list[AtmosphereImpulse]) -> None:
+        """The air under moving bodies eases toward their velocity (smoke_solver.frag's mode 6)."""
+        assert self.shader is not None
+        paths, motions = [], []
+        for body in bodies:
+            start, end = body.start-self.origin, body.end-self.origin
+            span = end-start
+            velocity = span*(body.strength/span.length())
+            paths += [start.x, start.y, end.x, end.y]
+            motions += [body.radius, velocity.x, velocity.y, 0.]
+        rl.set_shader_value(self.shader, self.locations["u_body_count"], rl.ffi.new("int *", len(bodies)),
+                            rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+        for name, values in (("u_body_path", paths), ("u_body_motion", motions)):
+            rl.set_shader_value_v(self.shader, self.locations[name], rl.ffi.cast("void *", rl.ffi.new("float[]", values)),
+                                  rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4, len(bodies))
+        self._pass(1-self.current, self.current, 6)
+        self.current = 1-self.current
 
     def close(self) -> None:
         self.reset()
