@@ -30,6 +30,7 @@ namespace {
 enum { WARM, AURA, RING, PLASMA, ARC, PULSE, BURST };
 std::vector<EffectVertex> sprite_vertices;
 int sprite_kind = -1;
+bool glint_marked;
 float byte_alpha(float a) {
   return floorf(std::clamp(a, 0.f, 1.f) * 255.f + .5f) / 255.f;
 }
@@ -186,13 +187,16 @@ extern "C" bool rtx_effect_sprite(const effect_entry_t *entry, unsigned color) {
   return true;
 }
 
+// A new world leaves the previous glint run behind, even if output suppression
+// skipped its closing transition. Non-glints may already be in an ice material.
+extern "C" void rtx_glint_reset() { glint_marked = false; }
+
 extern "C" void rtx_glint(bool active) {
-  static bool marked = false;
-  if (!drawing() || active == marked)
+  if (!drawing() || active == glint_marked)
     return;
   grim_interface_ptr->grim_flush_batch();
   host_render_pass(active ? HOST_PASS_GLINT : HOST_PASS_SPRITES);
-  marked = active;
+  glint_marked = active;
 }
 
 // Explicitly owned explosion shell: generic ring atlas draws also represent

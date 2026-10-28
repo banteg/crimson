@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import math
+from contextlib import nullcontext
+from itertools import groupby
 
 from grim.assets import TextureId
 from grim.blend import additive_blend
@@ -260,15 +262,6 @@ def draw_effect_pool(
         batch.end()
         dst = rl_rectangle(screen.x, screen.y, float(w), float(h))
         origin = rl_vector2(float(w) * 0.5, float(h) * 0.5)
-        if (
-            frame.rtx_mode is RtxRenderMode.RTX
-            and effect_id == EffectId.BURST
-            and entry.flags & 0x4
-            and not entry.flags & 0x40
-        ):
-            with glint_scope():
-                rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
-            return
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
@@ -281,8 +274,14 @@ def draw_effect_pool(
     rl.end_blend_mode()
 
     with additive_blend(), sprite_batch() as batch:
-        for entry in effects:
-            if not entry.flags or entry.age < 0.0:
-                continue
-            if not (int(entry.flags) & 0x40):
-                draw_entry(entry)
+        additive = (entry for entry in effects if entry.flags and entry.age >= 0.0 and not entry.flags & 0x40)
+        for glints, entries in groupby(additive, key=lambda entry: (
+            frame.rtx_mode is RtxRenderMode.RTX and entry.effect_id == EffectId.BURST and bool(entry.flags & 0x4)
+        )):
+            # Preserve draw order and flush analytic work before changing the
+            # enclosing textured shader. Consecutive glints share one scope.
+            batch.end()
+            with glint_scope() if glints else nullcontext():
+                for entry in entries:
+                    draw_entry(entry)
+                batch.end()
