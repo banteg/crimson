@@ -969,7 +969,7 @@ __attribute__((export_name("game_watch_paused_tick"))) int game_watch_paused_tic
 }
 // A link to a moment: a tick to go to (0 stays where playback is) and one to
 // pause on reaching (0 none, else past the first), which playback plays on to
-// from a tick it goes to, within the run, or the recording of the run about to
+// from its current tick or a tick it goes to, within the run, or the recording of the run about to
 // play until it is prepared. 0 when outside it.
 __attribute__((export_name("game_watch_moment"))) int game_watch_moment(int tick, int stop) {
   bool prepared = live.watching && watch.phase != WATCH_PREPARING;
@@ -980,7 +980,7 @@ __attribute__((export_name("game_watch_moment"))) int game_watch_moment(int tick
   if (tick)
     watch_ask(tick);
   watch.stop_at = stop;
-  if (tick && stop)
+  if (stop)
     watch.paused = false;
   return 1;
 }

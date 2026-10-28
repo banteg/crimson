@@ -87,9 +87,18 @@ if (game.game_watch_tick() !== 300) throw Error(`a link's seek to 300 landed on 
 for (let i = 0; i < 20; ++i) frame();
 if (game.game_watch_tick() !== 305) throw Error(`a link's stop at 305 stopped on ${game.game_watch_tick()}`);
 if (game.game_watch_moment(0, 305)) throw Error("a stop at the tick playback is on took");
+// Batched captures resume without a seek, including adjacent ticks and a frame
+// long enough to advance several simulation steps. Each stop must still land exactly.
+for (const tick of [306, 307, 310]) {
+  if (!game.game_watch_moment(0, tick)) throw Error(`resume to ${tick} was refused`);
+  if (game.game_watch_tick() !== (tick === 306 ? 305 : tick === 307 ? 306 : 307))
+    throw Error("arming a capture stop changed the current tick");
+  for (let i = 0; i < 10; ++i) frame(50);
+  if (game.game_watch_paused_tick() !== tick) throw Error(`capture stop ${tick} landed on ${game.game_watch_tick()}`);
+}
 frame(16, [SPACE]);
 for (let i = 0; i < 5; ++i) frame();
-if (game.game_watch_tick() <= 305) throw Error("resuming after a stop tick did not play on");
+if (game.game_watch_tick() <= 310) throw Error("resuming after a stop tick did not play on");
 // A seek past a stop is done with it: scrubbing back plays through.
 if (!game.game_watch_moment(0, 400)) throw Error("a stop ahead of playback was refused");
 game.game_watch_seek(600);
