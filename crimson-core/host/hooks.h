@@ -60,6 +60,7 @@ void rtx_smoke_reset();
 void rtx_smoke_spawned(int index);
 void rtx_smoke_flush();
 void rtx_smoke_puff(const struct effect_entry_t *entry);
+void rtx_smoke_soot(int index);
 void rtx_smoke_muzzle(float heading);
 void rtx_smoke_rocket(float flow_x, float flow_y, float vx, float vy);
 void rtx_smoke_nuke();

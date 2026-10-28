@@ -209,6 +209,27 @@ def test_native_rocket_ticks_preserve_rng_and_complete_session_state() -> None:
     assert len(events) > 10
 
 
+def test_flames_burning_out_leave_soot_where_they_die_without_gameplay_changes() -> None:
+    captured, captured_world = make_session(seed=73, perk_progression_enabled=False)
+    plain, plain_world = make_session(seed=73, perk_progression_enabled=False)
+    for world in (captured_world, plain_world):
+        weapon_assign_player(world.players[0], WeaponId.FLAMETHROWER, state=world.state)
+    soot = []
+    for tick in range(150):
+        inputs = [player_input(aim=Vec2(1000, 512), fire_down=tick < 30)]
+        live = {i: p.pos for i, p in enumerate(captured_world.state.particles.entries) if p.active}
+        output = captured.step_tick(dt=1 / 60, inputs=inputs)
+        plain._step_tick(dt=1 / 60, inputs=inputs, commands=None, smoke_emissions=[], atmosphere_impulses=[])
+        for event in output.presentation.smoke_emissions:
+            if event.profile == "soot":
+                assert event.slot in live and not captured_world.state.particles.entries[event.slot].active
+                assert event.pos == captured_world.state.particles.entries[event.slot].pos
+                soot.append(event)
+        assert session_digest(captured) == session_digest(plain)
+    assert len(soot) > 10
+    assert all(event.source == "particle" and event.color.a == .06 for event in soot)
+
+
 @pytest.mark.parametrize("partition", [(1, 1, 1), (3,), (0, 2, 0, 1)])
 def test_every_plan_hands_off_smoke_and_dt_in_tick_order(mocker, partition) -> None:
     pool = SpriteEffectPool()

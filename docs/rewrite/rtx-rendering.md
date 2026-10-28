@@ -1238,6 +1238,12 @@ about a second. Rocket exhaust trails glow for their first instants too. Muzzle
 smoke and old smoke never glow, and the glow lights nothing else. Hotter explosion
 smoke also takes a slightly taller, thicker column.
 
+Flames leave soot. Each flamethrower, Blow Torch or HR Flamer particle that burns
+out drops a small, faint puff where it died, drifting on at a fraction of the
+flame's speed. Its heat is just above a muzzle's, so it glows dimly for a moment
+before it turns gray. The flame sprites themselves are unchanged, and Bubblegun
+particles leave nothing.
+
 The display integrates 14 vertical samples and six transmittance samples per
 light into a reusable RGBA16F viewport buffer capped at 640 pixels on its longest
 axis. Premultiplied reconstruction preserves HDR radiance and translucent edges;

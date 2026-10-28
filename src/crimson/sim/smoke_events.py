@@ -24,11 +24,11 @@ class SmokeEmission(msgspec.Struct, frozen=True):
     scale: float
     color: RGBA
     rotation: float
-    source: Literal["sprite", "effect"] = "sprite"
+    source: Literal["sprite", "effect", "particle"] = "sprite"
     delay_seconds: float = 0.0
     expansion: float = 0.0
     retention_seconds: float = 10.0
-    profile: Literal["ordinary", "nuke", "muzzle", "rocket"] = "ordinary"
+    profile: Literal["ordinary", "nuke", "muzzle", "rocket", "soot"] = "ordinary"
     flow_dir: Vec2 = Vec2()
 
 
