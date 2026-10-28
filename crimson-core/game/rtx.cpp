@@ -24,6 +24,7 @@ int rtx_render_mode;
 extern crimson_cfg_t config_blob;
 extern int rtx_effects_active;
 void rtx_effect_flush();
+void rtx_glint_reset();
 
 static const char *rtx_mode_name(int mode) { return mode ? "rtx" : "classic"; }
 
@@ -240,6 +241,8 @@ static int rtx_light_count;
 // Classic marks the bounds too, only so the host's timers can tell its drawing
 // from the frame's simulation and HUD.
 void rtx_world(int begin) {
+  if (begin)
+    rtx_glint_reset();
   if (!platform_outputs() || grim_render_disabled)
     return;
   grim_interface_ptr->grim_flush_batch();

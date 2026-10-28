@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+
 import numpy as np
 import pytest
 
@@ -57,6 +59,38 @@ def test_bonus_glints_keep_their_texture_while_explosion_flashes_are_radial(mock
     if not analytic:
         assert texture.call_args.args[4] == pytest.approx(.7 * 180 / np.pi)
         assert texture.call_args.args[5].b == 255
+
+
+@pytest.mark.parametrize("mode", [RtxRenderMode.RTX, RtxRenderMode.CLASSIC])
+def test_consecutive_glints_share_scope_without_reordering_other_effects(mocker, mode):
+    ctx = _render_ctx(rtx_mode=mode)
+    # A texture and an analytic flash split two runs of moving glints.
+    kinds = [(EffectId.BURST, 0x1D)] * 32 + [(EffectId.EXPLOSION_PUFF, 0x19), (EffectId.BURST, 0x19)] + [(EffectId.BURST, 0x1D)] * 3
+    for i, (kind, flags) in enumerate(kinds):
+        ctx.frame.state.effects.entries[i] = EffectEntry(
+            effect_id=kind, flags=flags, pos=Vec2(i, 40), half_width=16, half_height=16, scale=1,
+        )
+    events = mocker.Mock()
+
+    @contextmanager
+    def scope():
+        events.begin()
+        try:
+            yield
+        finally:
+            events.end()
+
+    mocker.patch.object(world_effects, "glint_scope", scope)
+    mocker.patch.object(world_effects, "draw_sprite", side_effect=lambda *a, **kw: events.draw(int(kw["center"].x)))
+    mocker.patch.object(rl, "draw_texture_pro", side_effect=lambda texture, src, dst, *a: events.draw(int(dst.x)))
+    mocker.patch.object(rl, "begin_blend_mode")
+    mocker.patch.object(rl, "end_blend_mode")
+    world_effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    expected = [mocker.call.draw(i) for i in range(len(kinds))]
+    if mode is RtxRenderMode.RTX:
+        expected = [mocker.call.begin(), *expected[:32], mocker.call.end(), *expected[32:34],
+                    mocker.call.begin(), *expected[34:], mocker.call.end()]
+    assert events.mock_calls == expected
 
 
 @pytest.fixture

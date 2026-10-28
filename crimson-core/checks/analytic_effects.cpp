@@ -214,6 +214,22 @@ int main() {
   rtx_glint(false);
   assert(flushes == 2);
   assert((passes == std::vector<int>{HOST_PASS_GLINT, HOST_PASS_SPRITES}));
+  // Output suppression can skip the closing transition. A new world starts
+  // in sprite mode, so its first glint must select the material again.
+  passes.clear();
+  rtx_glint(true);
+  disabled = true;
+  rtx_glint(false);
+  rtx_glint_reset();
+  disabled = false;
+  rtx_glint(true);
+  rtx_glint(false);
+  assert((passes == std::vector<int>{HOST_PASS_GLINT, HOST_PASS_GLINT, HOST_PASS_SPRITES}));
+  rtx_glint_reset();
+  passes.clear();
+  rtx_glint(false);
+  rtx_glint(false);
+  assert(passes.empty()); // Do not override the first alpha effect's ice material.
   flash.flags = 0x59;
   assert(!rtx_burst_flash(&flash, 0x80123456));
   flash.flags = 0x19;
