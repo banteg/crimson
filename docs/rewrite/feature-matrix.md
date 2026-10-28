@@ -43,6 +43,7 @@ what a modern release needs. All three fix the
 | Music, sound, addon tunes | Yes | Yes | Yes |
 | Uncompressed source art | Yes | Yes | With the distributed files |
 | Mods | No | No | No |
+| Custom quests | `crimson quest play` | Browse and play from the Mods entry, or open by link | Browse and play from the Mods entry |
 | Console | Yes | Yes, outside runs | Yes, outside runs |
 
 ## Replays

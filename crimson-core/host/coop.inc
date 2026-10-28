@@ -34,14 +34,15 @@ extern int creature_update_tick, projectile_update_tick, demo_time_limit_ms, dem
     player_alt_weapon_swap_cooldown_ms;
 extern bool mouse_button_down;
 // And those it leaves out on purpose (COOP_UNHASHED).
-extern char bonus_label_format_buffer[128], default_player_name[7], s_unhandled_creature_type[25];
+extern char bonus_label_format_buffer[128], default_player_name[7], s_unhandled_creature_type[25], menu_label_back[5];
 extern vec2f_t fx_rotated_pos_x[64];
 extern float fx_rotated_scale[64], fx_rotated_rotation[64];
 extern int fx_rotated_creature_type_id[64];
 extern effect_color_t fx_rotated_color_r[64];
 extern effect_id_entry_t effect_id_table[19];
 extern unsigned char bonus_hud_slot_table[512], demo_trial_overlay_active, gameplay_transition_latch, perk_prompt_hover_active,
-    player_overlay_suppressed_latch, plugin_runtime_active_latch, survival_reward_handout_aux_enabled;
+    mods_menu_refresh_pending, player_overlay_suppressed_latch, ui_mouse_blocked, plugin_runtime_active_latch,
+    survival_reward_handout_aux_enabled;
 extern float bonus_render_anim_phase, game_time_s, frame_dt_copy, effect_uv_step_2, effect_uv_step_4, effect_uv_step_8,
     effect_uv_step_16, gameplay_reset_unused_timer, render_scratch_f0, render_scratch_f2,
     effect_template_position[2];
@@ -463,9 +464,11 @@ static const CoopBytes COOP_UNHASHED[] = {
     COOP_GLOBAL(perk_prompt_pulse), COOP_GLOBAL(perk_prompt_timer), COOP_GLOBAL(perk_slot_1_name_wrapped_primary),
     COOP_GLOBAL(perk_slot_1_name_wrapped_alternate), COOP_GLOBAL(perk_slot_1_desc_wrapped_primary),
     COOP_GLOBAL(perk_slot_1_desc_wrapped_alternate), COOP_GLOBAL(player_overlay_suppressed_latch),
-    COOP_GLOBAL(ui_mouse_x), COOP_GLOBAL(ui_mouse_y), COOP_GLOBAL(game_time_s), COOP_GLOBAL(frame_dt_copy),
+    COOP_GLOBAL(ui_mouse_x), COOP_GLOBAL(ui_mouse_y), COOP_GLOBAL(ui_mouse_blocked), COOP_GLOBAL(game_time_s),
+    COOP_GLOBAL(frame_dt_copy),
     COOP_GLOBAL(screen_fade_alpha), COOP_GLOBAL(screen_fade_ramp_flag), COOP_GLOBAL(gameplay_transition_latch),
     COOP_GLOBAL(ui_sign_crimson), COOP_GLOBAL(main_menu_full_version_layout_latch),
+    COOP_GLOBAL(menu_label_back), COOP_GLOBAL(mods_menu_refresh_pending),
     COOP_GLOBAL(pause_keybind_help_alpha_ms), COOP_GLOBAL(startup_skip_requested), COOP_GLOBAL(startup_async_load_ready),
     COOP_GLOBAL(startup_loading_fade_complete), COOP_GLOBAL(startup_splash_timer), COOP_GLOBAL(online_sync_status),
     COOP_GLOBAL(demo_trial_overlay_active), COOP_GLOBAL(demo_trial_overlay_alpha_ms),

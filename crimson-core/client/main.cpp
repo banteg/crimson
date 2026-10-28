@@ -525,6 +525,12 @@ void network_submit(int request) {
   else if (request == HOST_LEADERBOARD_REPLAY)
     network->request(N::REPLAY, (char *)client_memory() +
                                     w2c_game_game_replay_download(&game));
+  else if (request == HOST_LEADERBOARD_CUSTOM)
+    network->request(N::CUSTOM, (char *)client_memory() +
+                                    w2c_game_game_custom_request(&game));
+  else if (request == HOST_LEADERBOARD_QUEST)
+    network->request(N::QUEST, (char *)client_memory() +
+                                   w2c_game_game_quest_download(&game));
   else if (request == HOST_LEADERBOARD_PROFILE) {
     if (profile_pending)
       return;
@@ -560,10 +566,19 @@ void network_update() {
         memcpy(client_memory() + buffer, event.body.data(), event.body.size());
       }
       w2c_game_game_scores_received(&game, size);
-    } else if (event.kind == N::REPLAY) {
-      w2c_game_game_replay_downloaded(&game, event.ok              ? 0
-                                             : event.status == 404 ? 1
-                                                                   : 2);
+    } else if (event.kind == N::CUSTOM) {
+      int size = event.ok ? (int)event.body.size() : -1;
+      if (event.ok) {
+        u32 buffer = w2c_game_game_custom_buffer(&game, size);
+        memcpy(client_memory() + buffer, event.body.data(), event.body.size());
+      }
+      w2c_game_game_custom_received(&game, size);
+    } else if (event.kind == N::REPLAY || event.kind == N::QUEST) {
+      int result = event.ok ? 0 : event.status == 404 ? 1 : 2;
+      if (event.kind == N::REPLAY)
+        w2c_game_game_replay_downloaded(&game, result);
+      else
+        w2c_game_game_quest_downloaded(&game, result);
     } else if (event.kind == N::LINK) {
       w2c_game_game_watch_awaited(&game, 0);
       const char *reason = event.status == 404
@@ -928,6 +943,28 @@ extern "C" EMSCRIPTEN_KEEPALIVE void client_scores_received(const char *answer) 
     memcpy(client_memory() + buffer, answer, size);
   }
   w2c_game_game_scores_received(&game, size);
+}
+// The custom quest browser's page: what it asks for, then the service's
+// answer, or none when it could not be fetched (host/custom_quests.inc).
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_custom_request() {
+  return (const char *)client_memory() + w2c_game_game_custom_request(&game);
+}
+extern "C" EMSCRIPTEN_KEEPALIVE void client_custom_received(const char *answer) {
+  int size = answer ? (int)strlen(answer) : -1;
+  // The buffer first: making room can move the module's memory.
+  if (answer) {
+    uint32_t buffer = w2c_game_game_custom_buffer(&game, size);
+    memcpy(client_memory() + buffer, answer, size);
+  }
+  w2c_game_game_custom_received(&game, size);
+}
+// A custom quest's table to play: the quest the page fetches into
+// /game/quests/online/<id>.bin, then how it went (0 written, 1 gone, 2 failed).
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_quest_download() {
+  return (const char *)client_memory() + w2c_game_game_quest_download(&game);
+}
+extern "C" EMSCRIPTEN_KEEPALIVE void client_quest_downloaded(int result) {
+  w2c_game_game_quest_downloaded(&game, result);
 }
 // A board run's replay to watch: the run the page fetches into
 // /game/replays/online/<run>.crd, then how it went (0 written, 1 gone, 2 failed).

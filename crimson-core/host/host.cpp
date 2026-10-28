@@ -25,6 +25,8 @@ static quest_meta_t custom_quest_meta;
 static char custom_quest_title[65] = "Custom quest";
 static char custom_quest_author[32] = "";
 static bool custom_quest_valid_for(const PortableQuest &q);
+// The weapons a custom quest can start with: none of the unused ids.
+static bool custom_quest_weapon_valid(int id) { return id >= 1 && id <= 53 && (id < 34 || id > 40) && (id < 46 || id > 49); }
 static void custom_quest_build(quest_spawn_entry_t *entries, int *count);
 extern "C" quest_meta_t *portable_custom_quest;
 quest_meta_t *portable_custom_quest;
@@ -288,8 +290,7 @@ static void custom_quest_build(quest_spawn_entry_t *entries, int *count) {
 // The table src/crimson/quests/custom.py's validate_custom_quest accepts: positions a full arena beyond each edge,
 // copies bounded per entry, per trigger time and in total, and restriction bitmasks within the droppable/offerable IDs.
 static bool custom_quest_valid_for(const PortableQuest &q) {
-  if (q.weapon_id < 1 || q.weapon_id > 53 || (q.weapon_id >= 34 && q.weapon_id <= 40) ||
-      (q.weapon_id >= 46 && q.weapon_id <= 49) || q.count < 1 || q.count > 256)
+  if (!custom_quest_weapon_valid((int)q.weapon_id) || q.count < 1 || q.count > 256)
     return false;
   if ((q.disable_bonuses & ~0x7ffcu) || (q.disable_perks[0] & ((1u << 0) | (1u << 7))) ||
       (q.disable_perks[1] & ~0x03ffffffu) || (q.disable_weapons[0] & 3u) || (q.disable_weapons[1] & ~3u))

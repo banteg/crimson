@@ -44,6 +44,9 @@ the recipe; `--replay` names one instead. A quest's ID is the first 12 hex digit
 of the resolved definition's digest, so any change to what a recipe produces is a
 new quest that needs its own clear. The browser plays published quests only.
 
+The browser and desktop games list published quests on the main menu's Mods entry, newest first, with each
+quest's author, start weapon and what it turns off.
+
 From a checkout, the compiler also takes stock quests and other construction inputs:
 
 ```sh

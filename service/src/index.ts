@@ -14,6 +14,7 @@ import {
   customQuestDetailView,
   customQuestPortableBytes,
   customQuestsListView,
+  gameCustomQuests,
   gameScores,
   joinView,
   loginView,
@@ -39,6 +40,9 @@ const GAME_FILES = new Set(["crimson.paq", "sfx.paq", "music.paq"]);
 const GAME_VERSION = "v1.9.93";
 // The game's high score tables hold 100 records (TABLE_MAX).
 const SCORES_LIMIT = 100;
+// A page of the game's custom quest browser (crimson-core/host/custom_quests.inc), which loads the next as it
+// scrolls near the end.
+const CUSTOM_PAGE = 30;
 // How long the edge keeps a run's card: link previews fetch it once, and a rank or a moderator's change shows soon.
 const CARD_MAX_AGE_S = 600;
 const REPLAY_MAX_AGE_S = 300;
@@ -105,6 +109,12 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       const known = board && (BOARDS[board].quests ? QUEST.test(quest) || (board === "quests" && CUSTOM_QUEST_ID.test(quest)) : quest === "");
       if (!known) return refuse(400, "no such board");
       return json({ scores: await gameScores(env, board, quest, category, SCORES_LIMIT) });
+    }
+    case "POST /api/custom/browse": {
+      // The game's custom quest browser: a page of quests, newest first, {page}.
+      const page = ((await request.json().catch(() => ({}))) as { page?: unknown }).page ?? 0;
+      if (!Number.isSafeInteger(page) || (page as number) < 0) return refuse(400, "no such page");
+      return json(await gameCustomQuests(env, page as number, CUSTOM_PAGE));
     }
   }
 

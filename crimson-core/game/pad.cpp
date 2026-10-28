@@ -601,6 +601,20 @@ bool ui_focus_row(int row, float x, float y) {
   }
   return focused;
 }
+// A list a screen draws itself (host/custom_quests.inc) takes the focus as a
+// whole, with its marker, and while focused the pad's up/down as arrow keys,
+// which move its selection, until it reaches that end (`up`, `down`).
+bool ui_focus_list(void *list, float x, float y, bool up, bool down) {
+  place(list, x, y);
+  bool focused = ui_focus_update((int)(size_t)list);
+  if (focused) {
+    float at[2] = {x - 16.0f, y};
+    ui_focus_draw(at);
+    nav.hold_up |= up;
+    nav.hold_down |= down;
+  }
+  return focused;
+}
 bool game_pad_connected() { return connected(); }
 
 // The motion the host asks for to bring the game's cursor to the window's

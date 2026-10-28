@@ -114,8 +114,10 @@ HOST_IMPORT(time_ms) unsigned host_time_ms(void);
 HOST_IMPORT(clock_ms) double host_clock_ms(void);
 // The leaderboard (host/ranked.inc): open the player's profile, signed in
 // (game_login_challenge), upload the runs waiting in leaderboard/outbox/,
-// fetch a board's scores for the high score screen (game_scores_request), or
-// fetch a board run's replay to watch (game_replay_download, host/watch.inc).
+// fetch a board's scores for the high score screen (game_scores_request),
+// fetch a board run's replay to watch (game_replay_download, host/watch.inc),
+// fetch a page of custom quests (game_custom_request, host/custom_quests.inc), or
+// fetch a custom quest's table to play (game_quest_download).
 #include "leaderboard_requests.h"
 HOST_IMPORT(leaderboard) void host_leaderboard(int request);
 }
