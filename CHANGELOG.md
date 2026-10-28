@@ -2,6 +2,15 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.23.1
+
+### For players
+
+- RTX rocket explosions light their surroundings for as long as the fireball burns, instead of going dark after a third of a second. The blast keeps its expanding ring, drawn as a thin pressure crest with a clear middle, and the flash is a compact glow instead of a gray star.
+- Quest nests no longer turn when they die: a dead den lies the way it stood. Replays and leaderboard runs are unchanged.
+- In the browser and desktop games, the console key no longer types into the high score name, and text typed into the open console stays out of it.
+- The console opens during runs that are not ranked, and the run waits while it is open. Ranked runs, co-op and replays keep it closed.
+
 ## 0.23.0
 
 ### For players
