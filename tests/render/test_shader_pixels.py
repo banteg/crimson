@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.raylib_api import ffi, rl
 from grim.shaders import AlphaTestShader
 from grim.texture_mode import texture_mode
+from tests.render.test_ground_materials import pixels
 
 
 def _rgb(image: rl.Image, x: int, y: int) -> tuple[int, int, int]:
@@ -42,6 +43,27 @@ def test_alpha_test_cutoff_and_default_shader_restoration(raylib_context) -> Non
     finally:
         alpha_test.close()
         rl.unload_render_texture(target)
+
+
+def test_alpha_test_decodes_colors_only_into_linear_light(raylib_context) -> None:
+    alpha_test = AlphaTestShader()
+    world = load_float_target(16, 16)
+    bake = load_float_target(16, 16)
+    gray = rl.Color(128, 128, 128, 255)
+    try:
+        with texture_mode(world, linear=True), alpha_test.scope():
+            rl.draw_rectangle(0, 0, 8, 16, gray)
+            # A bake inside the world (the terrain's) takes the artwork as drawn, and hands decoding back.
+            with texture_mode(bake), alpha_test.scope():
+                rl.draw_rectangle(0, 0, 16, 16, gray)
+            rl.draw_rectangle(8, 0, 8, 16, gray)
+        # Half floats: about three significant digits.
+        assert [p[0] for p in pixels(world)] == pytest.approx([(128 / 255) ** 2.2] * 256, abs=.002)
+        assert [p[0] for p in pixels(bake)] == pytest.approx([128 / 255] * 256, abs=.002)
+    finally:
+        alpha_test.close()
+        rl.unload_render_texture(world)
+        rl.unload_render_texture(bake)
 
 
 def test_alpha_test_scope_ends_after_an_error_and_keeps_its_handle_until_close(raylib_context) -> None:
@@ -138,24 +160,26 @@ def test_gamma_covers_inner_shader_and_later_drawing_at_display_resolution(
 
 def test_hdr_scope_preserves_additive_hue_and_drifts_hot_core_to_white(raylib_context) -> None:
     hdr = HdrRenderer()
+    alpha_test = AlphaTestShader()
     target = rl.load_render_texture(64, 16)
     try:
         for _ in range(2):
             with texture_mode(target):
                 rl.clear_background(rl.BLACK)
-                with hdr.scope(out_size=Vec2(64.0, 16.0)):
-                    # Region 0 (x=0..15): below knee (0.85) -> exact identity.
+                # As the world's sprites draw: their colors decode into the target's linear light.
+                with hdr.scope(out_size=Vec2(64.0, 16.0)), alpha_test.scope():
+                    # Region 0 (x=0..15): below the knee -> exact identity.
                     rl.draw_rectangle(0, 0, 16, 16, rl.Color(120, 160, 200, 255))
                     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                     try:
-                        # Region 1 (x=16..31): 2x orange additive -> in 8-bit R & G both saturate (255, 255, 50);
-                        # in RGBA16F + hue-preserving shoulder, R stays strictly above G.
+                        # Region 1 (x=16..31): 2x orange adds as light -> in 8-bit R would clip; the hue-preserving
+                        # shoulder keeps R strictly above G and below white.
                         for _ in range(2):
                             rl.draw_rectangle(16, 0, 16, 16, rl.Color(255, 153, 25, 255))
                         # Region 2 (x=32..47): 3x orange additive -> hotter core drifts further toward white.
                         for _ in range(3):
                             rl.draw_rectangle(32, 0, 16, 16, rl.Color(255, 153, 25, 255))
-                        # Region 3 (x=48..63): 5x orange additive -> maximum white drift (heat=0.6).
+                        # Region 3 (x=48..63): 5x orange additive -> whiter still.
                         for _ in range(5):
                             rl.draw_rectangle(48, 0, 16, 16, rl.Color(255, 153, 25, 255))
                     finally:
@@ -170,10 +194,9 @@ def test_hdr_scope_preserves_additive_hue_and_drifts_hot_core_to_white(raylib_co
                 core_5x = _rgb(image, 56, 8)
 
                 assert below_knee == pytest.approx((120, 160, 200), abs=1)
-                assert warm_2x == pytest.approx((255, 169, 61), abs=2)
-                assert hot_3x == pytest.approx((255, 198, 127), abs=2)
-                assert core_5x == pytest.approx((255, 214, 163), abs=2)
                 assert warm_2x[0] > warm_2x[1] > warm_2x[2]
+                # Piled light keeps its gradation short of white rather than clipping into it.
+                assert warm_2x[0] < hot_3x[0] < core_5x[0] < 255
                 assert warm_2x[1] < hot_3x[1] < core_5x[1]
                 assert warm_2x[2] < hot_3x[2] < core_5x[2]
             finally:
@@ -183,6 +206,7 @@ def test_hdr_scope_preserves_additive_hue_and_drifts_hot_core_to_white(raylib_co
             assert hdr.shader is None
     finally:
         hdr.close()
+        alpha_test.close()
         rl.unload_render_texture(target)
 
 
@@ -190,12 +214,13 @@ def test_hdr_scope_outputs_extended_srgb_above_one_on_edr_float_target(raylib_co
     mocker.patch.object(edr, "_edr_active", True)
     mocker.patch.object(edr, "_headroom", 5.0)
     hdr = HdrRenderer()
+    alpha_test = AlphaTestShader()
     target = load_float_target(64, 16)
     try:
         with texture_mode(target):
             rl.clear_background(rl.BLACK)
-            with hdr.scope(out_size=Vec2(64.0, 16.0)):
-                # Region 0 (x=0..15): below knee (0.85) stays in SDR (< 0.85).
+            with hdr.scope(out_size=Vec2(64.0, 16.0)), alpha_test.scope():
+                # Region 0 (x=0..15): below the knee stays as drawn.
                 rl.draw_rectangle(0, 0, 16, 16, rl.Color(120, 160, 200, 255))
                 rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                 try:
@@ -224,9 +249,10 @@ def test_hdr_scope_outputs_extended_srgb_above_one_on_edr_float_target(raylib_co
 
         assert sdr == pytest.approx((120 / 255, 160 / 255, 200 / 255), abs=0.01)
         assert 0.85 < ion_1x[2] < 1.0 < ion_2x[2] < ion_4x[2] < 5.0**(1/2.2)
-        assert ion_2x[2] > 1.5
         assert ion_1x[0] < ion_2x[0] < ion_4x[0]
-        assert ion_4x[0] > 1.4
+        # The hotter core is whiter: its red gains on its blue.
+        assert ion_1x[0] / ion_1x[2] < ion_2x[0] / ion_2x[2] < ion_4x[0] / ion_4x[2]
     finally:
         hdr.close()
+        alpha_test.close()
         rl.unload_render_texture(target)

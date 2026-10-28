@@ -97,8 +97,8 @@ def test_trails_follow_the_camera_and_fade_with_the_scene(raylib_context) -> Non
         full = composite(1.0)
         peak = max(full)
         assert full.index(peak) % 64 in (31, 32)
-        # Stored heat ignores the transition; the composite fades with the scene (gamma-encoded output).
-        assert max(composite(.1)) == pytest.approx(peak * .1 ** (1 / 2.2), rel=.02)
+        # Stored heat ignores the transition; the composite fades with the scene (linear light).
+        assert max(composite(.1)) == pytest.approx(peak * .1, rel=.02)
         assert max(composite(1.0)) == pytest.approx(peak)
     finally:
         rl.unload_render_texture(target)
@@ -140,10 +140,11 @@ def test_every_monster_living_cycle_has_stable_heat(raylib_context, assets_dir) 
             info = CREATURE_ANIM[type_id]
             texture = resources.texture(TextureId[type_id.name])
             alpha = texels(texture)[:, :, 3]
-            target = rl.load_render_texture(texture.width, texture.height)
+            target = load_float_render_texture(texture.width, texture.height)
             try:
-                with texture_mode(target):
-                    rl.clear_background(rl.Color(15, 18, 25, 255))
+                with texture_mode(target, linear=True):
+                    # The ground's (15, 18, 25), in linear light.
+                    rl.clear_background(rl.Color(1, 1, 2, 255))
                     with heat.body_scope(texture=texture, restore_shader=None):
                         w, h = texture.width // 8, texture.height // 8
                         for index in range(64):
@@ -153,7 +154,9 @@ def test_every_monster_living_cycle_has_stable_heat(raylib_context, assets_dir) 
                                 texture, rl_rectangle(x, y, w, h), rl_rectangle(x, y, w, h), rl_vector2(0, 0),
                                 0, rl.Color(255, head_x, head_y, round(BODY_OPACITY * 255)),
                             )
-                rgb = texels(target.texture)[::-1, :, :3].astype(float) / 255
+                # Judged as shown: the linear light, encoded for the display.
+                linear = np.array(pixels(target)).reshape(texture.height, texture.width, 4)[::-1, :, :3]
+                rgb = np.clip(linear, 0, 1) ** (1 / 2.2)
             finally:
                 rl.unload_render_texture(target)
             luminance = rgb @ np.array([.2126, .7152, .0722])

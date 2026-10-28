@@ -2,6 +2,7 @@
 // Analytical dark bonus shells and lit foil emblems, adapted from the Argon lookdev.
 #include "filtering.glsl"
 #include "source_geometry.glsl"
+#include "linear_light.glsl"
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
@@ -131,10 +132,7 @@ void main() {
         vec3 coat_spec = sphereCoatLight(N, r_clamped, V, rim_caustic);
         vec3 dyn_accum = coat_spec + rim_caustic;
 
-        float peak = max(dyn_accum.r, max(dyn_accum.g, dyn_accum.b));
-        dyn_accum *= 1.0 / (1.0 + peak / 2.4);
-        vec3 out_rgb = pow(max(sphere_lin + dyn_accum, vec3(0.0)), vec3(1.0 / 2.2));
-        finalColor = vec4(out_rgb, sphere_a);
+        finalColor = vec4(max(sphere_lin + dyn_accum, vec3(0.0)), sphere_a);
         return;
     }
 
@@ -142,7 +140,7 @@ void main() {
     if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0) {
-        finalColor = base;
+        finalColor = vec4(decodeArt(base.rgb), base.a);
         return;
     }
 
@@ -170,7 +168,7 @@ void main() {
     vec3 N_dome = normalize(vec3(p_dome, sqrt(max(0.015, 1.0 - r_dome * r_dome))));
 
     float lum = dot(texel.rgb, vec3(0.299, 0.587, 0.114));
-    vec3 base_lin = pow(max(base.rgb, vec3(0.0)), vec3(2.2));
+    vec3 base_lin = decodeArt(base.rgb);
     vec3 added = vec3(0.0);
 
     for (int i = 0; i < u_count; i++) {
@@ -208,19 +206,14 @@ void main() {
         );
     }
 
-    float peak = max(added.r, max(added.g, added.b));
-    added *= 1.0 / (1.0 + peak / 1.7);
-    // Share the shell's exact reflection, crescent, and limiter over the emblem.
+    // Share the shell's exact reflection and crescent over the emblem.
     // Weapon barrels outside its footprint retain foil lighting but have no spherical coat.
     float coat_gate = 1.0 - smoothstep(0.98, 1.0, length(p_dome));
     if (coat_gate > 0.0) {
         vec3 rim_caustic = vec3(0.0);
         vec3 coat = sphereCoatLight(N_dome, r_dome, V, rim_caustic);
         coat += rim_caustic;
-        float coat_peak = max(coat.r, max(coat.g, coat.b));
-        coat *= 1.0 / (1.0 + coat_peak / 2.4);
         added += coat * coat_gate;
     }
-    finalColor = max(added.r, max(added.g, added.b)) > 0.0
-        ? vec4(pow(base_lin + added, vec3(1.0 / 2.2)), base.a) : base;
+    finalColor = vec4(base_lin + added, base.a);
 }

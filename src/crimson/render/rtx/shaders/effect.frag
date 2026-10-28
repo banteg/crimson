@@ -6,8 +6,10 @@ in float fragShape; // an ion arc's length in strip scales, negative when its st
 uniform vec4 colDiffuse;
 uniform int u_kind; // 0 warm glow, 1 white aura, 2 ring, 3 plasma, 4 ion arc, 5 pulse shot
 uniform vec4 u_params[3];
+uniform int u_in_world; // drawing into the RTX world's linear light (linear_light.glsl)
 out vec4 finalColor;
 #include "effect_profiles.glsl"
+#include "linear_light.glsl"
 
 float alphaTest(float alpha) {
     return floor(alpha * 255. + .5) >= 4. ? alpha : 0.;
@@ -66,11 +68,15 @@ float pulseGlow(vec2 p, float front, float aa) {
 void main() {
     vec2 p = fragTexCoord;
     vec4 tint = fragColor * colDiffuse;
+    // The warm glows' fitted profiles carry their own hue with the tint's; the rest take the tint's alone.
+    bool warm = u_kind == 0 || u_kind == 3;
+    if (!warm) tint.rgb = worldColor(tint.rgb, u_in_world);
     if (u_kind == 3) {
         vec3 value = plasmaTrail(p)
             + plasmaGlow(p, u_params[0].y, u_params[1].z)
             + plasmaGlow(p, u_params[0].z, u_params[1].w);
         finalColor = vec4(value * tint.rgb, 1.);
+        if (u_in_world != 0) finalColor.rgb = decodeGlow(finalColor.rgb);
     } else if (u_kind == 5) {
         float front = pulseFront(p), aa = .5 * fwidth(front);
         vec3 glow = mix(tint.rgb, vec3(1.), .45);
@@ -91,6 +97,7 @@ void main() {
         if (u_kind == 0) {
             if (length(p - WARM_OFFSET) >= 1.) discard;
             color = warmProfile(p - WARM_OFFSET) * tint.rgb;
+            if (u_in_world != 0) color = decodeGlow(color);
             alpha = tint.a;
         } else {
             color = tint.rgb;

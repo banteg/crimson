@@ -5,8 +5,9 @@ from contextlib import contextmanager
 
 import msgspec
 
-from .filtering import FILTERING_GLSL
+from .filtering import FILTERING_GLSL, LINEAR_LIGHT_GLSL
 from .raylib_api import rl
+from .texture_mode import current_target_linear
 
 # Grim2D enables alpha test globally with:
 #   ALPHATESTENABLE=1, ALPHAFUNC=GREATEREQUAL, ALPHAREF=4
@@ -35,13 +36,14 @@ void main() {
 }
 """
 
-_ALPHA_TEST_FS_330 = "\n#version 330\n" + FILTERING_GLSL + r"""
+_ALPHA_TEST_FS_330 = "\n#version 330\n" + FILTERING_GLSL + LINEAR_LIGHT_GLSL + r"""
 
 in vec2 fragTexCoord;
 in vec4 fragColor;
 
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
+uniform int in_world;
 
 out vec4 finalColor;
 
@@ -51,7 +53,7 @@ void main() {
     // GREATEREQUAL with ALPHAREF=4 accepts byte alpha 4 after modulation.
     vec4 texel = alphaBilinear(texture0, fragTexCoord) * fragColor * colDiffuse;
     if (floor(texel.a * 255.0 + 0.5) < 4.0) discard;
-    finalColor = texel;
+    finalColor = vec4(worldColor(texel.rgb, in_world), texel.a);
 }
 """
 
@@ -75,11 +77,30 @@ def _shader_scope(shader: rl.Shader, *, alpha_test: bool) -> Generator[None]:
             rl.end_shader_mode()
 
 
+def set_world_light(shader: rl.Shader, location: int) -> None:
+    """Tell a shader whether it draws into linear light (linear_light.glsl's worldColor), by the current target."""
+    value = rl.ffi.new("int *", int(current_target_linear()))
+    rl.set_shader_value(shader, location, value, rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+
+
 class AlphaTestShader(msgspec.Struct):
     """Lazily loaded alpha-test shader owned by a graphics resource lifetime."""
 
     shader: rl.Shader | None = None
     cubic: bool = False
+    in_world: int = -1
+    in_world_value: bool = False
+
+    def _land_in(self, shader: rl.Shader, linear: bool) -> bool:
+        """Draw from here on into linear light or not; the setting it replaces."""
+        previous = self.in_world_value
+        if linear != previous:
+            # Batched sprites keep the setting they were drawn with.
+            rl.rl_draw_render_batch_active()
+            rl.set_shader_value(shader, self.in_world, rl.ffi.new("int *", int(linear)),
+                                rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+            self.in_world_value = linear
+        return previous
 
     @contextmanager
     def scope(self) -> Generator[None]:
@@ -92,13 +113,20 @@ class AlphaTestShader(msgspec.Struct):
             if shader.id <= 0 or shader.id == rl.rl_get_shader_id_default():
                 raise RuntimeError("alpha-test shader compilation failed")
             self.shader = shader
-        with _shader_scope(self.shader, alpha_test=True):
-            yield
+            self.in_world = int(rl.get_shader_location(shader, "in_world"))
+        shader = self.shader
+        with _shader_scope(shader, alpha_test=True):
+            previous = self._land_in(shader, current_target_linear())
+            try:
+                yield
+            finally:
+                self._land_in(shader, previous)
 
     def close(self) -> None:
         if self.shader is not None:
             rl.unload_shader(self.shader)
             self.shader = None
+            self.in_world_value = False
 
 
 # Pixel-area coverage for magnified, axis-aligned bitmap text. This is the

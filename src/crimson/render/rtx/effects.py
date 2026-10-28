@@ -11,7 +11,7 @@ import msgspec
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl
-from grim.shaders import _shader_scope
+from grim.shaders import _shader_scope, set_world_light
 
 from ...effects_atlas import EffectId
 from .shaders import glsl
@@ -48,6 +48,7 @@ class _EffectShader(msgspec.Struct, frozen=True):
     shader: rl.Shader
     kind: int
     params: int
+    in_world: int
 
 
 _shader: _EffectShader | None = None
@@ -69,6 +70,7 @@ def _require_shader() -> _EffectShader:
             shader,
             rl.get_shader_location(shader, "u_kind"),
             rl.get_shader_location(shader, "u_params"),
+            rl.get_shader_location(shader, "u_in_world"),
         )
     return _shader
 
@@ -77,6 +79,7 @@ def _parameters(data: _EffectShader, shape: EffectShape, params: tuple[float, ..
     rl.set_shader_value(
         data.shader, data.kind, rl.ffi.new("int *", int(shape)), rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
     )
+    set_world_light(data.shader, data.in_world)
     if shape is EffectShape.PLASMA:
         buffer = rl.ffi.new("float[]", params)
         rl.set_shader_value_v(

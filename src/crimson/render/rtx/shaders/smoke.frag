@@ -4,6 +4,7 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 out vec4 finalColor;
 #include "source_geometry.glsl"
+#include "linear_light.glsl"
 uniform sampler2D texture0;
 uniform int u_state_flip;
 uniform vec2 u_origin;
@@ -36,19 +37,21 @@ vec3 column(vec2 xy) {
 }
 vec3 debug_radiance(vec3 value) {
     vec3 positive=max(value,vec3(0));
-    return pow(positive/(vec3(1)+positive),vec3(1./2.2));
+    return encodeDisplay(positive/(vec3(1)+positive));
 }
 vec3 heat(float temperature) {
     float t=clamp(temperature/2.,0.,1.)*3.;
     return clamp(vec3(t,t-1.,t-2.),0.,1.);
 }
+// How thick smoke is per unit of density: thin smoke veils more in linear light than it did blended in gamma.
+const float SMOKE_THICKNESS = .4;
 // Fresh smoke glows with the heat its source added beyond a muzzle's: heat per unit of smoke starts at its source's
 // share (smoke_constants.py's SOURCE_HEAT) and falls as heat cools faster than smoke thins, so the glow is an
 // explosion's first second, from yellow through deep red to nothing. Old smoke and muzzle smoke never glow.
 const float EMBER_COLD = 1.6, EMBER_HOT = 2.7, EMBER_GAIN = 2.2;
 vec3 ember(float ratio) {
     float g = smoothstep(EMBER_COLD, EMBER_HOT, ratio);
-    return vec3(1., .22 + .45 * g * g, .04 + .2 * g * g * g) * g * g * EMBER_GAIN;
+    return decodeArt(vec3(1., .22 + .45 * g * g, .04 + .2 * g * g * g)) * g * g * EMBER_GAIN;
 }
 vec3 flow(vec2 velocity) {
     float hue=atan(velocity.y,velocity.x)/6.2831853+.5;
@@ -70,8 +73,8 @@ vec3 sight_scattering(vec2 xy,vec4 sight) {
     if(core+halo<.0001) return vec3(0);
     float optical_depth=0.;
     for(int j=0;j<6;j++) optical_depth+=density(vec3(mix(a,q,(float(j)+.5)/6.),28.));
-    float transmission=exp(-optical_depth*length(q-a)/6.*.012);
-    return vec3(1.,.018,.008)*(core+halo)*transmission*18.*(1.-.65*along);
+    float transmission=exp(-optical_depth*length(q-a)/6.*.012*SMOKE_THICKNESS);
+    return decodeArt(vec3(1.,.018,.008))*(core+halo)*transmission*18.*(1.-.65*along);
 }
 
 void main() {
@@ -97,12 +100,13 @@ void main() {
     vec3 scattered=vec3(0);
     for(int i=0;i<14;i++) {
         float z=70.-float(i)*5.;
-        float opacity=1.-exp(-vertical(local,z)*.024*5.);
+        float opacity=1.-exp(-vertical(local,z)*.024*SMOKE_THICKNESS*5.);
         weights[i]=0.;
         if(opacity<=.00001) continue;
         weights[i]=transmission*opacity;
         float sky_depth=vertical(sky1,z+16.)+vertical(sky2,z+32.);
-        vec3 color=u_debug==18 ? vec3(0) : vec3(.29,.32,.35)+vec3(.22,.23,.24)*exp(-sky_depth*.55);
+        // The smoke's sky fill is a look-dev color; the sights' and the embers' glows add as light.
+        vec3 color=u_debug==18 ? vec3(0) : decodeArt(vec3(.29,.32,.35)+vec3(.22,.23,.24)*exp(-sky_depth*.55));
         color+=sights*exp(-pow((z-28.)/5.,2.))+glow;
         scattered+=weights[i]*color;
         transmission*=1.-opacity;
@@ -141,7 +145,7 @@ void main() {
             if(attenuation<=0.) continue;
             float optical_depth=0.;
             for(int j=0;j<6;j++) optical_depth+=vertical(columns[j],z+dz*((float(j)+.5)/6.));
-            float shadow=exp(-optical_depth*distance/6.*.020);
+            float shadow=exp(-optical_depth*distance/6.*.020*SMOKE_THICKNESS);
             float phase=.7-.35*dz/max(distance,.001);
             scattered+=weights[i]*radiance.rgb*attenuation*shadow*phase*radiance.w*profile;
         }

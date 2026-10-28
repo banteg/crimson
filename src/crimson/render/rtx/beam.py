@@ -5,6 +5,7 @@ import msgspec
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
+from grim.shaders import set_world_light
 
 from .shaders import glsl
 
@@ -41,6 +42,7 @@ _BEAM_FAST_STAMPED_FS_330 = glsl("beam.frag")
 class _BeamFastStampedShader(msgspec.Struct, frozen=True):
     shader: rl.Shader
     color_loc: int
+    in_world_loc: int
 
 
 _BEAM_FAST_STAMPED_SHADER_TRIED = False
@@ -78,6 +80,7 @@ def _get_beam_fast_stamped_shader() -> _BeamFastStampedShader | None:
     _BEAM_FAST_STAMPED_SHADER = _BeamFastStampedShader(
         shader=shader,
         color_loc=int(rl.get_shader_location(shader, "colDiffuse")),
+        in_world_loc=int(rl.get_shader_location(shader, "u_in_world")),
     )
     return _BEAM_FAST_STAMPED_SHADER
 
@@ -91,6 +94,7 @@ def _require_beam_fast_stamped_shader() -> _BeamFastStampedShader:
 
 def _apply_virtual_beam_uniforms(*, shader_data: _BeamFastStampedShader) -> None:
     _set_shader_vec4(shader_data.shader, shader_data.color_loc, 1.0, 1.0, 1.0, 1.0)
+    set_world_light(shader_data.shader, shader_data.in_world_loc)
 
 
 class BeamBatch:

@@ -7,6 +7,7 @@ const float V_UP = -1.0;
 #else
 const float V_UP = 1.0;
 #endif
+#include "linear_light.glsl"
 in vec2 fragTexCoord;
 out vec4 finalColor;
 uniform sampler2D texture0;
@@ -35,5 +36,6 @@ void main() {
     displacement = clamp(displacement, vec2(-6.0), vec2(6.0));
     vec2 offset = vec2(displacement.x, -V_UP * displacement.y) / u_size;
     vec3 color = texture(texture0, clamp(uv + offset, 0.5 / u_size, 1.0 - 0.5 / u_size)).rgb;
-    finalColor = vec4(color * (1.0 + clamp(contrast, -0.15, 0.15)), 1.0);
+    // The shading scales the world as it shows; in its linear light that is the scale's power.
+    finalColor = vec4(color * pow(1.0 + clamp(contrast, -0.15, 0.15), ART_GAMMA), 1.0);
 }

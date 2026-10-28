@@ -39,6 +39,7 @@ uniform vec4 u_spec_response[MAX_SPEC_LIGHTS]; // illumination, reflection, refl
 #endif
 #include "ground_visibility.glsl"
 #include "continuous_beam.glsl"
+#include "linear_light.glsl"
 
 float blood_below_ice(vec4 surface, vec4 coverage) {
     // Ice occludes the film; it does not thin it into a new red meniscus.
@@ -50,7 +51,7 @@ float blood_below_ice(vec4 surface, vec4 coverage) {
 vec3 debug_radiance(vec3 value) {
     if (u_debug_display == 0) return value;
     vec3 positive = max(value, vec3(0.));
-    return pow(positive / (vec3(1.) + positive), vec3(1. / 2.2));
+    return encodeDisplay(positive / (vec3(1.) + positive));
 }
 
 #ifdef BEAM_VISIBILITY_PASS
@@ -84,10 +85,9 @@ void main() {
 void main() {
     vec2 ground_uv = fragTexCoord;
     vec2 world = vec2(ground_uv.x, V_UP > 0. ? 1.0 - ground_uv.y : ground_uv.y) * u_ground_size;
-    // Source textures and the existing world compositor are approximately gamma-2.2 encoded.
-    // Shade in linear RGB and encode exactly once when returning to that compositor.
+    // The terrain is artwork: shade its decoded albedo, into the world's linear light.
     vec4 albedo_tex = texture(u_substrate_tex, ground_uv);
-    albedo_tex.rgb = pow(max(albedo_tex.rgb, vec3(0.)), vec3(2.2));
+    albedo_tex.rgb = decodeArt(albedo_tex.rgb);
     vec4 surf = texture(u_surface_tex, ground_uv);
 
     // Samples named up (U) lie toward the world's top in either orientation.
@@ -147,7 +147,7 @@ void main() {
     if (u_debug == 2) { finalColor = vec4(N_fluid * .5 + .5, 1.); return; }
     if (u_debug == 3) { finalColor = vec4(vec3(freshness), 1.); return; }
     if (u_debug == 4) { finalColor = vec4(vec3(blood_amount), 1.); return; }
-    if (u_debug == 9) { finalColor = vec4(pow(albedo_tex.rgb, vec3(1./2.2)), 1.); return; }
+    if (u_debug == 9) { finalColor = vec4(encodeDisplay(albedo_tex.rgb), 1.); return; }
     if (u_debug == 11) { finalColor = vec4(vec3(surf.a), 1.); return; }
     if (u_debug == 12) { finalColor = vec4(mix(weights.rgb, vec3(0.,1.,1.), weights.a), 1.); return; }
     float is_metal = weights.b;
@@ -163,7 +163,7 @@ void main() {
     // Readable daylight floor: lighting adds to the scene, never blacks out its unlit regions.
     float daylight_ndl = clamp(dot(N_sub, normalize(vec3(-0.38, -0.48, 0.79))), 0.0, 1.0);
     vec3 ambient_term = vec3(0.50 + 0.12 * daylight_ndl);
-    vec3 sky_reflection = pow(vec3(0.22, 0.25, 0.30), vec3(2.2));
+    vec3 sky_reflection = decodeArt(vec3(0.22, 0.25, 0.30));
     float soil_lum = dot(albedo_tex.rgb, vec3(0.299, 0.587, 0.114));
     vec3 base_substrate = mix(albedo_tex.rgb, vec3(soil_lum * 1.04, soil_lum * 0.98, soil_lum * 0.92), wet_film * 0.85);
     vec3 wetted_substrate = base_substrate * mix(1.0, 0.38, wet_film);
@@ -287,8 +287,6 @@ void main() {
                 float footprint = exp(-.5 * pow(source_distance / blur_width, 2.0)) *
                     ((beam || ring) ? blur_gain : blur_gain * blur_gain);
                 vec3 reflected = sp_col.rgb * tint * (response.y * F * 24. * footprint * source_gain * material_gate * support);
-                // Unitless visibility multiplies radiance before world encoding;
-                // it remains reusable when the color pipeline becomes fully linear.
                 reflected *= visibility[lane];
                 spec_accum += reflected;
             }
@@ -312,7 +310,7 @@ void main() {
     // cyan sums toward white there.
     vec3 H_sky = normalize(normalize(vec3(-0.30, -0.40, 0.86)) + V);
     float ndh_sky = max(0.0, dot(N_spec, H_sky));
-    vec3 sky_cyan = pow(vec3(0.16, 0.27, 0.30), vec3(2.2));
+    vec3 sky_cyan = decodeArt(vec3(0.16, 0.27, 0.30));
     sky_cyan *= 1.5 * dot(sky_reflection, vec3(0.2126, 0.7152, 0.0722)) / dot(sky_cyan, vec3(0.2126, 0.7152, 0.0722));
     vec3 sky_tint = mix(sky_cyan, sky_reflection, is_ice);
     vec3 sky_wet_spec = sky_tint * pow(ndh_sky, 20.0) *
@@ -321,7 +319,7 @@ void main() {
     // Each dynamic reflection has its own visibility; the sky stays unchanged.
     vec3 reflected_light = spec_accum + sky_wet_spec;
     if (u_debug == 14) diffuse_lit = ambient_lit;
-    // HdrRenderer owns the only display shoulder; preserve highlights above 1 here.
-    finalColor = vec4(pow(max(diffuse_lit + reflected_light, vec3(0.0)), vec3(1.0 / 2.2)), 1.0);
+    // The tonemap owns the only display shoulder; highlights above 1 stay as they are here.
+    finalColor = vec4(max(diffuse_lit + reflected_light, vec3(0.0)), 1.0);
 }
 #endif

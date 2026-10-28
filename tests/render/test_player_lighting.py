@@ -50,7 +50,7 @@ def player_sprite(raylib_context):
         rl.update_texture(texture, image.data)
         rl.unload_image(image)
         lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale))
-        with texture_mode(target):
+        with texture_mode(target, linear=True):
             rl.clear_background(rl.BLANK)
             with alpha.scope():
                 def draw():

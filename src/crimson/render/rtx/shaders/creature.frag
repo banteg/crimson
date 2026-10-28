@@ -2,6 +2,7 @@
 // Art-directed dome and silhouette lighting for the original 8x8 creature atlases, and the freeze's ice lit as ice.
 #include "filtering.glsl"
 #include "source_geometry.glsl"
+#include "linear_light.glsl"
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
@@ -69,7 +70,7 @@ void main() {
     if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0 && u_ice == 0) {
-        finalColor = vec4(base.rgb * pow(u_ambient, 1. / 2.2), base.a);
+        finalColor = vec4(decodeArt(base.rgb) * u_ambient, base.a);
         return;
     }
     vec2 q = fract(fragTexCoord * cellGrid()) * 2.0 - 1.0;
@@ -96,7 +97,7 @@ void main() {
     slope -= rot * relief * .8;
     vec3 N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
     vec3 V = normalize(vec3(0, .57735, 1));
-    vec3 baseLin = pow(max(base.rgb, vec3(0)), vec3(2.2));
+    vec3 baseLin = decodeArt(base.rgb);
     // Per-cell morphological openings estimate part size, not anatomical depth.
     vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
     vec2 half_texel = .5 / vec2(textureSize(u_thickness, 0));
@@ -182,9 +183,6 @@ void main() {
                  transmission_tint * transmission * elevation * TRANSMISSION_STRENGTH));
         added += diffuse * lightVisibility(i);
     }
-    // Bound aggregate illumination in dense fights without changing hue.
-    float peak = max(added.r, max(added.g, added.b));
-    added *= 1.0 / (1.0 + peak / 1.4);
-    finalColor = peak > 0.0 || u_ambient != 1.0 || u_ice != 0 ? vec4(pow(baseLin * u_ambient + added + glow, vec3(1.0 / 2.2)), base.a)
-                                                                : base;
+    // Dense fights add up as light; the tonemap alone compresses them.
+    finalColor = vec4(baseLin * u_ambient + added + glow, base.a);
 }

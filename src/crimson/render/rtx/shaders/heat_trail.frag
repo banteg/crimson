@@ -31,7 +31,8 @@ void main() {
     vec2 uv = vec2(world.x, u_ground_size.y - world.y) / u_ground_size;
 #endif
     float h = all(greaterThanEqual(uv, vec2(0.))) && all(lessThanEqual(uv, vec2(1.))) ? textureLod(u_heat, uv, 0.).r : 0.;
-    vec3 heat = ironbow(.12 + .4 * h) * pow(h, 1.5) * .45 * u_alpha;
-    finalColor = vec4(pow(heat, vec3(1. / 2.2)), 1.);
+    // Faint heat adds as light now, not encoded first: a stronger gain keeps old trails readable.
+    vec3 heat = ironbow(.12 + .4 * h) * pow(h, 1.5) * 1.2 * u_alpha;
+    finalColor = vec4(heat, 1.);
 #endif
 }

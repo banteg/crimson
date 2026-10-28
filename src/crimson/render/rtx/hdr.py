@@ -39,7 +39,7 @@ load_float_target = load_float_render_texture
 
 
 class HdrRenderer(msgspec.Struct):
-    """Lazily allocated RGBA16F world target and EDR/SDR hue-preserving tonemapper for RTX mode."""
+    """Lazily allocated RGBA16F world target of linear light and EDR/SDR hue-preserving tonemapper for RTX mode."""
 
     shockwaves: ShockwaveRenderer = msgspec.field(default_factory=ShockwaveRenderer)
 
@@ -77,7 +77,7 @@ class HdrRenderer(msgspec.Struct):
             yield
             return
         target, shader = self._ensure_resources(render_w, render_h)
-        with texture_mode(target, scale_x=render_w / out_w, scale_y=render_h / out_h):
+        with texture_mode(target, scale_x=render_w / out_w, scale_y=render_h / out_h, linear=True):
             rl.clear_background(rl.BLACK)
             yield
         texture = self.shockwaves.apply(target.texture, pressure_fronts, out_size=out_size)

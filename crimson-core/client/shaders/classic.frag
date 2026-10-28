@@ -2,6 +2,7 @@
 // The fixed-function texture stages, alpha test included: two stages, as the device has.
 #include "common.glsl"
 #include "filtering.glsl"
+#include "linear_light.glsl"
 LOC(0) in vec4 v_diffuse;
 LOC(1) in vec2 v_uv;
 LOC(2) in vec2 v_pos;
@@ -12,6 +13,7 @@ uniform ivec2 reconstruction; // 0 sampler state, 1 associated bilinear, 2 terra
 uniform vec4 factor;
 uniform int alpha_test, alpha_func;
 uniform float alpha_ref;
+uniform int in_world; // drawing into the RTX world's linear light (linear_light.glsl)
 // A circle the device shades itself (host_circle), else an outer radius of 0: its center and inner and outer radius
 // in the vertices' pixels, then the texture's u and its v at the inner and outer edges.
 uniform vec4 circle, circle_uv;
@@ -77,5 +79,5 @@ void main() {
     current.a *= coverage;
     // Direct3D compares the 8-bit alpha with the reference.
     if (alpha_test != 0 && !passes(floor(current.a * 255.0 + 0.5))) discard;
-    color = current;
+    color = vec4(worldColor(current.rgb, in_world), current.a);
 }

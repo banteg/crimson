@@ -33,5 +33,5 @@ void main() {
     // Red is warmth: 1 while alive, cooling with the corpse's fade.
     float warmth = fragColor.r;
     vec3 heat = ironbow(mix(.04, temperature, warmth)) * 1.25;
-    finalColor = vec4(pow(heat, vec3(1. / 2.2)), a * fragColor.a);
+    finalColor = vec4(heat, a * fragColor.a);
 }
