@@ -401,17 +401,18 @@ Fluid smoke takes the same solver and display shaders (`smoke_solver.frag`,
 `sim/smoke_events.py` captures as each tick runs (`crimson-core/game/rtx_smoke.cpp`,
 hooks in `game/rtx/rtx.patch`):
 - sprite smoke spawns, read back after their caller colors them
-- explosion puffs, with their delay and expansion
-- muzzle puffs, which follow the firing direction, each with a jet of air
+- explosion puffs, with their expansion, as the fireball starts
+- muzzle puffs, from guns, Fire Cough and Typ-o-Shooter's shotgun, which follow the firing direction, each with
+  a jet of air
 - rocket exhaust, which moves back along the flight, and detonation sprites
-- the nuke's 15-second billows
+- the nuke's and Final Revenge's 15-second billows
+- the smoke of creatures burning in a flame, as flame soot
 - projectile and rocket wakes, and blast fronts from explosion bursts and rocket
   detonations
-- the drag of moving creatures and players
+- the drag of moving creatures, their sliding corpses, and players
 
 These hooks only read the run: no RNG, no state, and the verifier builds without
-them. The module also runs `GpuSmokeSimulation`'s CPU side: delayed deposits,
-retention and fade, impulse budgets and fixed 60 Hz steps. It hands the host the
+them. The module also runs `GpuSmokeSimulation`'s CPU side: retention and fade, impulse budgets and fixed 60 Hz steps. It hands the host the
 solver passes as a command stream (`host_smoke`). The host runs them on its five
 RGBA16F field targets. After the world's sprites (`bonus_render`, which ends with
 the effects), the host integrates the display under the smoke's 16 lights and the
@@ -1164,10 +1165,11 @@ Failure to initialize the GPU solver or display restores native smoke.
 
 Each deterministic tick captures immutable copies of actual `SpriteEffectPool`
 smoke spawns and `EffectPool` explosion puffs, including command-triggered spawns.
-No additional gameplay random numbers are consumed. Negative native effect ages
-delay injection, and native expansion contributes planar velocity. Nuke retention
-is explicitly marked around the nuke burst, so ordinary rocket explosion puffs do
-not inherit the longer lifetime. Large general-effect puffs weight their source
+No additional gameplay random numbers are consumed. Native delays an explosion's
+puff sprites behind its fireball; their smoke deposits at once, so it forms with
+the fireball and its blast front. Native expansion contributes planar velocity.
+Nuke retention is explicitly marked around the Nuke's and Final Revenge's bursts, so
+ordinary rocket explosion puffs do not inherit the longer lifetime. Large general-effect puffs weight their source
 strength by native tint luminance: their dark tint must not become an opaque gray
 disc that obscures the finer sprite smoke. This is an artistic conversion into a
 shared scattering medium, not a physical mass calibration. The explicit nuke
@@ -1182,7 +1184,7 @@ Presentation consumes every tick's batch, including empty batches, using its
 simulation delta. Fixed 60 Hz substeps accumulate fractional slow-motion time;
 pause and extra draws do not advance the fields. Forward replay playback uses the
 same presentation handoff. Level/reset/session replacement, RTX mode changes, and
-disabling the smoke setting clear fields and delayed deposits. Re-enabling RTX
+disabling the smoke setting clear fields and queued deposits. Re-enabling RTX
 starts with new emissions. Native smoke sprites and general explosion puffs are
 not drawn while fluid smoke is enabled, including when the solver is empty or at its allocation cap.
 Classic retains the original sprites.
@@ -1201,9 +1203,8 @@ GPU occupancy readback is needed to resize it.
 Empty scenes perform no fluid steps. Domains retire at the end of their retention
 window. New deposits extend remaining retention, baking any existing final fade
 into density and temperature so old smoke is not restored. Nuke decay relaxes
-back toward the ordinary rate with a roughly 14-second time constant. Delayed
-emissions remain capped at 1024. Sources outside the padded arena do not allocate
-new simulation domains.
+back toward the ordinary rate with a roughly 14-second time constant. Sources
+outside the padded arena do not allocate new simulation domains.
 
 ### Motion and light
 
@@ -1220,21 +1221,25 @@ expansion; a small fixed planar breeze supplies background drift. RTX muzzle
 puffs use the firing direction instead of the native sideways velocity, with a
 resolved elongated footprint and a short jet with paired vortices. Rocket exhaust
 moves backward along the flight direction instead of inheriting the native
-cosine-for-both-components drift. These overrides affect only copied smoke events;
+cosine-for-both-components drift. A moving or jetting source deposits a little
+ahead of itself; a still one, as an explosion's puffs, where it is. These overrides affect only copied smoke events;
 native sprite values, RNG, collision, damage and replay checkpoints are unchanged.
 
-Projectiles deposit velocity-only wakes along their actual swept paths. Ion, fire,
-plasma and rockets have stronger wakes than ordinary bullets. Muzzle jets and
+Projectiles deposit velocity-only wakes along their actual swept paths. A shot
+drags the air along each stretch of its path once, however long the tick, over a
+width of a few cells, so its vortex pair resolves. Ion, fire, plasma and rockets
+have stronger wakes than ordinary bullets. Muzzle jets and
 wakes enter before pressure projection; explosion fronts deliver a short expanding
 radial impulse after projection so the incompressible solve does not erase their
 expansion. Neither impulse creates smoke or heat. All rocket detonation paths and
 nuke bursts contribute blast motion, including low-detail explosions without
 smoke puffs. No visible medium means no additional fluid simulation is needed.
 Per-tick GPU impulses are capped at 64, prioritizing blasts and muzzle jets before
-wakes; at most 16 blast fronts persist. New forces reuse the existing solver and
+wakes, and ticks that share a solver step in slow motion share a budget of twice
+that; at most 16 blast fronts persist. New forces reuse the existing solver and
 pressure iterations.
 
-Bodies move the air too. Each tick, every living creature and player that moved
+Bodies move the air too. Each tick, every creature, corpse and living player that moved
 drags the air under it toward its own velocity (`smoke_events.py`'s `body_wakes`,
 the solver's drag pass, mode 6 of `smoke_solver.frag`), over a radius about a third
 of its size. Air near several bodies eases toward their weighted mean velocity, so
@@ -1243,7 +1248,8 @@ through it; pressure projection then turns the drag into flow around them, which
 as around any obstacle, runs up to about a third faster at their sides. A step longer
 than 30 units is a spawn, a reused slot or a teleport, not motion. Bodies have
 their own budget of 64 a tick, fastest and largest first, so a swarm never crowds
-out blasts, muzzle jets or shots. Trails keep their shape; smoke gathers where a
+out blasts, muzzle jets or shots; a step drags each body once, where the latest
+tick left it. Trails keep their shape; smoke gathers where a
 crowd converges and is carried along with it. The drag is one full-field pass per
 step.
 
@@ -1268,8 +1274,9 @@ smoke also takes a slightly taller, thicker column.
 Flames leave soot. Each flamethrower, Blow Torch or HR Flamer particle that burns
 out drops a small, faint puff where it died, drifting on at a fraction of the
 flame's speed. Its heat is just above a muzzle's, so it glows dimly for a moment
-before it turns gray. The flame sprites themselves are unchanged, and Bubblegun
-particles leave nothing.
+before it turns gray. A creature burning in the flame smokes as flame soot too,
+never as an explosion's glowing cloud. The flame sprites themselves are unchanged,
+and Bubblegun particles leave nothing.
 
 The display integrates 14 vertical samples and six transmittance samples per
 light into a reusable RGBA16F viewport buffer capped at 640 pixels on its longest
@@ -1289,7 +1296,8 @@ Smoke composites after native sprites, outside their alpha-test shader, inside
 the HDR world and pressure-front composition. Ground diagnostic maps hide the composite while continuing to drain queued fluid updates; the smoke views show it alone.
 The renderer approximates single scattering and self-shadowing within the shared domain;
 the assumed slab does not resolve creature geometry. Broad sky extinction gives
-billows some form after local emitters fade. Rocket exhaust uses a separate
+billows some form after local emitters fade: where neighboring smoke blocks the sky, thick
+smoke shades well below its sunlit gray. Rocket exhaust uses a separate
 sixfold scattering response, without increasing its ground or creature lighting.
 Simulation cost scales with grid area and pass count; display cost scales with
 shaded pixels and lights. Density columns are sampled once and reused at every

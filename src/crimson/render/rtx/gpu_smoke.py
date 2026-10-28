@@ -10,10 +10,9 @@ from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import restore_current_target, texture_mode
 
-from ...math_parity import f32
 from ...sim.smoke_events import AtmosphereImpulse, SmokeEmission
 from .gpu_smoke_shaders import GPU_ATMOSPHERE_IMPULSE_FRAGMENT, GPU_SMOKE_FRAGMENT, GPU_SMOKE_SPLAT_FRAGMENT
-from .smoke_constants import FADE_SECONDS, MAX_PENDING_EMISSIONS, SOURCE_HEAT, STEP_SECONDS
+from .smoke_constants import FADE_SECONDS, SOURCE_HEAT, STEP_SECONDS
 from .smoke_shaders import SMOKE_VERTEX
 
 GRID_SIZE = 320
@@ -41,7 +40,6 @@ class GpuSmokeSimulation:
     def __init__(self, *, resolution: int = GRID_SIZE) -> None:
         self.resolution = resolution
         self.fields: dict[int, GpuSmokeField] = {}
-        self.pending: list[tuple[float, SmokeEmission]] = []
         self.batches: deque[tuple[tuple[SmokeEmission, ...], float, float, tuple[AtmosphereImpulse, ...]]] = deque()
         self.targets: list[rl.RenderTexture] = []
         self.shader: rl.Shader | None = None
@@ -49,6 +47,8 @@ class GpuSmokeSimulation:
         self.impulse_shader: rl.Shader | None = None
         self.impulse_locations: dict[str, int] = {}
         self.waiting_impulses: list[AtmosphereImpulse] = []
+        # Moving bodies as the latest tick left them: their drag is a state, which an older tick's would repeat.
+        self.moving_bodies: tuple[AtmosphereImpulse, ...] = ()
         self.blasts: list[tuple[AtmosphereImpulse, float]] = []
         self.locations: dict[str, int] = {}
         self.splat_locations: dict[str, int] = {}
@@ -66,9 +66,9 @@ class GpuSmokeSimulation:
 
     def reset(self) -> None:
         self.fields.clear()
-        self.pending.clear()
         self.batches.clear()
         self.waiting_impulses.clear()
+        self.moving_bodies = ()
         self.blasts.clear()
         self.accumulator = 0.0
         self.decay = .20
@@ -80,27 +80,13 @@ class GpuSmokeSimulation:
     ) -> None:
         if not math.isfinite(dt_sim) or dt_sim < 0:
             raise ValueError("smoke presentation delta must be finite and nonnegative")
-        ready: list[SmokeEmission] = []
-        waiting = []
-        for age, emission in self.pending:
-            age = f32(f32(age)+f32(dt_sim))
-            if age >= 0:
-                ready.append(emission)
-            else:
-                waiting.append((age, emission))
-        self.pending = waiting
-        for emission in emissions:
-            if emission.color.a <= 0 or max(emission.scale, emission.expansion*2*STEP_SECONDS) <= 0 or not all(math.isfinite(v) for v in (
-                emission.pos.x, emission.pos.y, emission.vel.x, emission.vel.y, emission.scale,
-                emission.color.r, emission.color.g, emission.color.b, emission.color.a,
-                emission.delay_seconds, emission.expansion, emission.retention_seconds, emission.rotation, emission.flow_dir.x, emission.flow_dir.y,
-            )):
-                continue
-            if emission.delay_seconds > 0:
-                if len(self.pending) < MAX_PENDING_EMISSIONS:
-                    self.pending.append((-emission.delay_seconds, emission))
-            else:
-                ready.append(emission)
+        ready = [emission for emission in emissions if emission.color.a > 0
+                 and max(emission.scale, emission.expansion*2*STEP_SECONDS) > 0 and all(math.isfinite(v) for v in (
+                     emission.pos.x, emission.pos.y, emission.vel.x, emission.vel.y, emission.scale,
+                     emission.color.r, emission.color.g, emission.color.b, emission.color.a,
+                     emission.expansion, emission.retention_seconds, emission.rotation,
+                     emission.flow_dir.x, emission.flow_dir.y,
+                 ))]
         valid = sorted((
             impulse for impulse in impulses
             if impulse.kind in ("blast", "muzzle", "wake", "body")
@@ -117,12 +103,9 @@ class GpuSmokeSimulation:
             *[impulse for impulse in valid if impulse.kind != "body"][:MAX_IMPULSES_PER_TICK],
             *[impulse for impulse in valid if impulse.kind == "body"][:MAX_BODY_IMPULSES_PER_TICK],
         )
-        # Air without smoke is invisible. Keep its motion only when there is an
-        # existing medium or a pending native deposit that can reveal it.
-        if not ready and not self.fields and not self.pending:
+        # Air without smoke is invisible: keep its motion only when there is a medium to reveal it.
+        if not ready and not self.fields:
             valid_impulses = ()
-        if valid_impulses and not self.fields and self.pending:
-            self.fields[0] = GpuSmokeField(self.origin, self.size)
         # Retain elapsed empty ticks: frame grouping must not change transport.
         if ready or self.fields:
             fade = self.fields[0].fade if ready and self.fields else 1.
@@ -213,10 +196,14 @@ class GpuSmokeSimulation:
                         # Resolve the narrow axis on the 4-world-unit production grid.
                         size = max(16., size)
                     speed = emission.vel.length()
-                    direction = emission.vel/speed if speed > 1e-5 else Vec2(1, 0)
+                    direction = emission.vel/speed if speed > 1e-5 else None
                     if emission.flow_dir.length() > 1e-5:
                         direction = emission.flow_dir / emission.flow_dir.length()
-                    center = emission.pos+direction*(size*.35)-self.origin
+                    # A moving or jetting source deposits a little ahead of itself; a still one where it is.
+                    if direction is None:
+                        center, direction = emission.pos-self.origin, Vec2(1, 0)
+                    else:
+                        center = emission.pos+direction*(size*.35)-self.origin
                     strength = emission.color.a
                     if emission.source == "effect":
                         strength *= min(1., max(0., emission.color.r*.2126+emission.color.g*.7152+emission.color.b*.0722))
@@ -310,11 +297,12 @@ class GpuSmokeSimulation:
             self.blasts.extend((impulse, 0.) for impulse in impulses if impulse.kind == "blast")
             self.blasts.sort(key=lambda item: -item[0].strength*item[0].radius)
             del self.blasts[MAX_ACTIVE_BLASTS:]
-            self.waiting_impulses.extend(impulse for impulse in impulses if impulse.kind != "blast")
-            self.waiting_impulses.sort(key=lambda impulse: (
-                {"muzzle": 0, "body": 2}.get(impulse.kind, 1), -impulse.strength*impulse.radius,
-            ))
-            del self.waiting_impulses[MAX_IMPULSES_PER_TICK+MAX_BODY_IMPULSES_PER_TICK:]
+            self.waiting_impulses.extend(impulse for impulse in impulses if impulse.kind not in ("blast", "body"))
+            self.waiting_impulses.sort(key=lambda impulse: (impulse.kind != "muzzle", -impulse.strength*impulse.radius))
+            # Ticks that share a step share its budget of pushes; bodies keep their own, as each tick does.
+            del self.waiting_impulses[2*MAX_IMPULSES_PER_TICK:]
+            if dt > 0:
+                self.moving_bodies = tuple(impulse for impulse in impulses if impulse.kind == "body")
             if fade < 1.:
                 self._set(self.shader, self.locations, "u_fade", (fade,))
                 self._pass(1-self.current, self.current, 5)
@@ -323,13 +311,12 @@ class GpuSmokeSimulation:
                 self._inject(emissions)
             self.accumulator += dt
             while self.accumulator+1e-9 >= STEP_SECONDS:
-                pushes = [impulse for impulse in self.waiting_impulses if impulse.kind != "body"]
-                bodies = [impulse for impulse in self.waiting_impulses if impulse.kind == "body"]
-                self.waiting_impulses.clear()
-                if pushes:
-                    self._inject_impulses(tuple((impulse, 0., 1.) for impulse in pushes))
-                if bodies:
-                    self._drag(bodies)
+                if self.waiting_impulses:
+                    self._inject_impulses(tuple((impulse, 0., 1.) for impulse in self.waiting_impulses))
+                    self.waiting_impulses.clear()
+                if self.moving_bodies:
+                    self._drag(self.moving_bodies)
+                    self.moving_bodies = ()
                 other = 1-self.current
                 self._pass(other, self.current, 0)
                 self._pass(2, other, 1)
@@ -355,7 +342,7 @@ class GpuSmokeSimulation:
                 self.accumulator = max(0., self.accumulator-STEP_SECONDS)
                 self.executed_steps += 1
 
-    def _drag(self, bodies: list[AtmosphereImpulse]) -> None:
+    def _drag(self, bodies: tuple[AtmosphereImpulse, ...]) -> None:
         """The air under moving bodies eases toward their velocity (smoke_solver.frag's mode 6)."""
         assert self.shader is not None
         paths, motions = [], []

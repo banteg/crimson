@@ -354,13 +354,15 @@ class ParticlePool:
                                     rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_Y) % 60 - 30,
                                 ),
                             )
-                            sprite_effects.spawn(
-                                pos=creature.pos,
-                                vel=sprite_vel,
-                                scale=13.0,
-                                color=RGBA(1.0, 1.0, 1.0, 0.7),
-                                rng=rng,
-                            )
+                            # The burning's smoke: flame soot, as the particle's own burnout leaves.
+                            with sprite_effects.smoke_retention(10.0, profile="soot"):
+                                sprite_effects.spawn(
+                                    pos=creature.pos,
+                                    vel=sprite_vel,
+                                    scale=13.0,
+                                    color=RGBA(1.0, 1.0, 1.0, 0.7),
+                                    rng=rng,
+                                )
 
                         fx_queue.add_random(
                             pos=creature.pos,
@@ -387,7 +389,7 @@ class _SmokeCapture(msgspec.Struct):
     generations: dict[int, int] = msgspec.field(default_factory=dict)
     sink: list[SmokeEmission] | None = None
     retention_seconds: float = 10.0
-    profile: Literal["ordinary", "nuke", "muzzle", "rocket"] = "ordinary"
+    profile: Literal["ordinary", "nuke", "muzzle", "rocket", "soot"] = "ordinary"
     flow_dir: Vec2 = Vec2()
     velocity_override: Vec2 | None = None
     impulses: list[AtmosphereImpulse] | None = None
@@ -411,6 +413,16 @@ class _SmokeCapturePool:
         finally:
             capture.profile, capture.flow_dir, capture.velocity_override = previous
 
+    @contextmanager
+    def muzzle_smoke(self, *, pos: Vec2, heading: float, speed: float, alpha: float) -> Generator[None]:
+        """A gun's puff at `pos`: its smoke leaves along the aim `heading` at `speed` (native spawns the sprite
+        sideways, along the raw heading) and pushes a short jet of air ahead."""
+        direction = Vec2.from_heading(heading)
+        self.atmosphere_impulse(start=pos, end=pos+direction*40., radius=10., strength=80.*alpha, curl=20.*alpha,
+                                kind="muzzle")
+        with self.smoke_source(profile="muzzle", flow_dir=direction, velocity=direction*speed):
+            yield
+
     def atmosphere_impulse(self, *, start: Vec2, end: Vec2, radius: float, strength: float,
                            curl: float = 0., kind: Literal["wake", "muzzle", "blast"] = "wake",
                            duration: float = .15, expansion_speed: float = 0.) -> None:
@@ -430,7 +442,8 @@ class _SmokeCapturePool:
         ))
 
     @contextmanager
-    def smoke_retention(self, seconds: float, *, profile: Literal["ordinary", "nuke"] = "ordinary") -> Generator[None]:
+    def smoke_retention(self, seconds: float, *,
+                        profile: Literal["ordinary", "nuke", "soot"] = "ordinary") -> Generator[None]:
         """Tag this source's emitted smoke without changing native effect state."""
         capture = self._smoke_capture()
         previous = capture.retention_seconds, capture.profile
@@ -968,7 +981,6 @@ class EffectPool(_SmokeCapturePool):
                 color=RGBA(entry.color.r, entry.color.g, entry.color.b, entry.color.a),
                 rotation=entry.rotation,
                 source="effect",
-                delay_seconds=max(0.0, -entry.age),
                 expansion=max(entry.half_width, entry.half_height) * entry.scale_step if entry.flags & 0x8 else 0.0,
                 retention_seconds=capture.retention_seconds,
                 profile=capture.profile,

@@ -25,7 +25,7 @@ int rtx_collect_sights(float *out, int capacity);
 namespace {
 
 const float STEP_SECONDS = 1.0f / 60.0f, FADE_SECONDS = 2.0f, GUARD_BAND = 128;
-enum { GRID_SIZE = 320, PRESSURE_ITERATIONS = 12, MAX_PENDING = 1024, MAX_IMPULSES = 64, MAX_BLASTS = 16 };
+enum { GRID_SIZE = 320, PRESSURE_ITERATIONS = 12, MAX_IMPULSES = 64, MAX_BLASTS = 16 };
 // Moving bodies' drag, on a budget of its own (gpu_smoke.py's MAX_BODY_IMPULSES_PER_TICK).
 enum { MAX_BODY_IMPULSES = 64 };
 // A minute of ticks, should frames stop draining them.
@@ -44,7 +44,7 @@ const float BODY_RADIUS = 0.35f, BODY_STEP_LIMIT = 30.0f;
 struct Emission {
   float x, y, vx, vy, scale, r, g, b, a, rotation;
   bool effect;
-  float delay, expansion, retention;
+  float expansion, retention;
   Profile profile;
   float flow_x, flow_y;
 };
@@ -84,20 +84,21 @@ struct {
   Source pending_source;
 } capture;
 
-// Each body where the last tick left it, creature slots then players, if alive.
+// Each body where the last tick left it, creature slots then living players.
 struct BodyAt {
-  bool alive;
+  bool present;
   float x, y;
 } bodies_last[sizeof creature_pool / sizeof *creature_pool + 2];
 
-// The field's state (GpuSmokeSimulation): one domain, its retention, pending
-// delayed emissions, batches waiting for a frame, and the solver's clocks.
+// The field's state (GpuSmokeSimulation): one domain, its retention, batches
+// waiting for a frame, the pushes waiting for a step, the moving bodies as the
+// latest tick left them (their drag is a state, which an older tick's would
+// repeat), and the solver's clocks.
 struct {
   bool field;
   float idle, retention = 10;
-  std::vector<std::pair<float, Emission>> pending;
   std::deque<Batch> batches;
-  std::vector<Impulse> waiting;
+  std::vector<Impulse> waiting, moving;
   std::vector<std::pair<Impulse, float>> blasts;
   float accumulator, decay = 0.20f;
   bool dirty_reset = true;
@@ -110,6 +111,7 @@ void clear_field() {
   smoke.field = false;
   smoke.batches.clear();
   smoke.waiting.clear();
+  smoke.moving.clear();
   smoke.blasts.clear();
   smoke.accumulator = 0;
   smoke.dirty_reset = true;
@@ -122,27 +124,11 @@ bool finite(std::initializer_list<float> values) {
 // One tick's emissions and impulses into the field's queue (consume).
 void consume(std::vector<Emission> &emissions, std::vector<Impulse> &impulses, float dt) {
   std::vector<Emission> ready;
-  std::vector<std::pair<float, Emission>> waiting;
-  for (auto &[age, emission] : smoke.pending) {
-    float aged = age + dt;
-    if (aged >= 0)
-      ready.push_back(emission);
-    else
-      waiting.push_back({aged, emission});
-  }
-  smoke.pending = waiting;
-  for (const Emission &e : emissions) {
-    if (e.a <= 0 || std::max(e.scale, e.expansion * 2 * STEP_SECONDS) <= 0 ||
-        !finite({e.x, e.y, e.vx, e.vy, e.scale, e.r, e.g, e.b, e.a, e.delay, e.expansion, e.retention, e.rotation,
-                 e.flow_x, e.flow_y}))
-      continue;
-    if (e.delay > 0) {
-      if (smoke.pending.size() < MAX_PENDING)
-        smoke.pending.push_back({-e.delay, e});
-    } else {
+  for (const Emission &e : emissions)
+    if (e.a > 0 && std::max(e.scale, e.expansion * 2 * STEP_SECONDS) > 0 &&
+        finite({e.x, e.y, e.vx, e.vy, e.scale, e.r, e.g, e.b, e.a, e.expansion, e.retention, e.rotation, e.flow_x,
+                e.flow_y}))
       ready.push_back(e);
-    }
-  }
   std::vector<Impulse> valid;
   for (const Impulse &i : impulses)
     if (i.radius > 0 && i.strength >= 0 && i.duration > 0 &&
@@ -159,12 +145,9 @@ void consume(std::vector<Emission> &emissions, std::vector<Impulse> &impulses, f
   if (body_wakes.size() > MAX_BODY_IMPULSES)
     body_wakes.resize(MAX_BODY_IMPULSES);
   valid.insert(valid.end(), body_wakes.begin(), body_wakes.end());
-  // Air without smoke is invisible: keep its motion only when a medium or a
-  // pending deposit can reveal it.
-  if (ready.empty() && !smoke.field && smoke.pending.empty())
+  // Air without smoke is invisible: keep its motion only when there is a medium to reveal it.
+  if (ready.empty() && !smoke.field)
     valid.clear();
-  if (!valid.empty() && !smoke.field && !smoke.pending.empty())
-    smoke.field = true, smoke.idle = 0, smoke.retention = 10;
   // Elapsed empty ticks stay: frame grouping must not change transport.
   if (!ready.empty() || smoke.field) {
     float fade = !ready.empty() && smoke.field ? field_fade() : 1;
@@ -196,11 +179,14 @@ void splat(const Emission &e) {
   if (e.profile == MUZZLE)
     size = std::max(16.0f, size); // the narrow axis resolved on the 4-world-unit grid
   float speed = sqrtf(e.vx * e.vx + e.vy * e.vy);
-  float dx = speed > 1e-5f ? e.vx / speed : 1, dy = speed > 1e-5f ? e.vy / speed : 0;
   float flow = sqrtf(e.flow_x * e.flow_x + e.flow_y * e.flow_y);
+  bool directed = speed > 1e-5f || flow > 1e-5f;
+  float dx = speed > 1e-5f ? e.vx / speed : 1, dy = speed > 1e-5f ? e.vy / speed : 0;
   if (flow > 1e-5f)
     dx = e.flow_x / flow, dy = e.flow_y / flow;
-  float cx = e.x + dx * (size * 0.35f) + GUARD_BAND, cy = e.y + dy * (size * 0.35f) + GUARD_BAND;
+  // A moving or jetting source deposits a little ahead of itself; a still one where it is.
+  float ahead = directed ? size * 0.35f : 0;
+  float cx = e.x + dx * ahead + GUARD_BAND, cy = e.y + dy * ahead + GUARD_BAND;
   float strength = e.a;
   if (e.effect)
     strength *= std::min(1.0f, std::max(0.0f, e.r * 0.2126f + e.g * 0.7152f + e.b * 0.0722f));
@@ -262,39 +248,42 @@ void prepare() {
   while (!smoke.batches.empty()) {
     Batch batch = std::move(smoke.batches.front());
     smoke.batches.pop_front();
+    if (batch.dt > 0)
+      smoke.moving.clear();
     for (const Impulse &i : batch.impulses)
       if (i.kind == BLAST)
         smoke.blasts.push_back({i, 0.0f});
+      else if (i.kind == BODY)
+        smoke.moving.push_back(i);
       else
         smoke.waiting.push_back(i);
     std::stable_sort(smoke.blasts.begin(), smoke.blasts.end(),
                      [](const auto &a, const auto &b) { return a.first.rank() > b.first.rank(); });
     if (smoke.blasts.size() > MAX_BLASTS)
       smoke.blasts.resize(MAX_BLASTS);
-    // Muzzle jets first, then shots, then bodies.
-    auto order = [](const Impulse &i) { return i.kind == MUZZLE_JET ? 0 : i.kind == BODY ? 2 : 1; };
-    std::stable_sort(smoke.waiting.begin(), smoke.waiting.end(), [&](const Impulse &a, const Impulse &b) {
-      return order(a) != order(b) ? order(a) < order(b) : a.rank() > b.rank();
+    // Muzzle jets first, then shots. Ticks that share a step share its budget of
+    // pushes; bodies keep their own, as each tick does.
+    std::stable_sort(smoke.waiting.begin(), smoke.waiting.end(), [](const Impulse &a, const Impulse &b) {
+      return (a.kind == MUZZLE_JET) != (b.kind == MUZZLE_JET) ? a.kind == MUZZLE_JET : a.rank() > b.rank();
     });
-    if (smoke.waiting.size() > MAX_IMPULSES + MAX_BODY_IMPULSES)
-      smoke.waiting.resize(MAX_IMPULSES + MAX_BODY_IMPULSES);
+    if (smoke.waiting.size() > 2 * MAX_IMPULSES)
+      smoke.waiting.resize(2 * MAX_IMPULSES);
     if (batch.fade < 1)
       commands.insert(commands.end(), {(float)SMOKE_FADE, batch.fade});
     for (const Emission &e : batch.emissions)
       splat(e);
     smoke.accumulator += batch.dt;
     while (smoke.accumulator + 1e-9f >= STEP_SECONDS) {
+      for (const Impulse &i : smoke.waiting)
+        impulse(i, 0, 1);
+      smoke.waiting.clear();
       std::vector<float> bodies;
-      for (const Impulse &i : smoke.waiting) {
-        if (i.kind != BODY) {
-          impulse(i, 0, 1);
-          continue;
-        }
+      for (const Impulse &i : smoke.moving) {
         float dx = i.ex - i.sx, dy = i.ey - i.sy, scale = i.strength / sqrtf(dx * dx + dy * dy);
         bodies.insert(bodies.end(), {i.sx + GUARD_BAND, i.sy + GUARD_BAND, i.ex + GUARD_BAND, i.ey + GUARD_BAND,
                                      i.radius, dx * scale, dy * scale, 0});
       }
-      smoke.waiting.clear();
+      smoke.moving.clear();
       if (!bodies.empty()) {
         commands.insert(commands.end(), {(float)SMOKE_DRAG, (float)(bodies.size() / 8)});
         commands.insert(commands.end(), bodies.begin(), bodies.end());
@@ -361,7 +350,6 @@ bool rtx_smoke_active() {
 // replay's seek. New emissions start afresh.
 void rtx_smoke_reset() {
   memset(bodies_last, 0, sizeof bodies_last);
-  smoke.pending.clear();
   clear_field();
   smoke.decay = 0.20f;
   capture.emissions.clear();
@@ -394,15 +382,16 @@ void rtx_smoke_flush() {
     vx = source.flow_x * speed, vy = source.flow_y * speed;
   }
   capture.emissions.push_back({sprite.pos_x, sprite.pos_y, vx, vy, sprite.scale, sprite.color_r, sprite.color_g,
-                               sprite.color_b, sprite.color_a, sprite.rotation, false, 0, 0, source.retention,
+                               sprite.color_b, sprite.color_a, sprite.rotation, false, 0, source.retention,
                                source.profile, source.flow_x, source.flow_y});
   if (source.profile == MUZZLE)
     rtx_smoke_impulse(sprite.pos_x, sprite.pos_y, sprite.pos_x + source.flow_x * 40, sprite.pos_y + source.flow_y * 40,
                       10, 80 * sprite.color_a, 20 * sprite.color_a, MUZZLE_JET, 0.15f, 0);
 }
 
-// A general explosion puff (effect_spawn): its delay is its negative age, its
-// growth the expansion of a scaling effect.
+// A general explosion puff (effect_spawn): its growth the expansion of a scaling
+// effect. Native delays the puff's sprite behind the fireball; the smoke it leaves
+// starts with the fireball and its blast.
 void rtx_smoke_puff(const effect_entry_t *e) {
   if (!rtx_smoke_active())
     return;
@@ -410,8 +399,7 @@ void rtx_smoke_puff(const effect_entry_t *e) {
   float rgba[4];
   memcpy(rgba, &e->color, sizeof rgba);
   capture.emissions.push_back({e->pos_x, e->pos_y, e->vel_x, e->vel_y, 2 * half * e->scale, rgba[0], rgba[1], rgba[2],
-                               rgba[3], e->rotation, true, std::max(0.0f, -e->age),
-                               e->flags & 8 ? half * e->scale_step : 0.0f, capture.source.retention,
+                               rgba[3], e->rotation, true, e->flags & 8 ? half * e->scale_step : 0.0f, capture.source.retention,
                                capture.source.profile, 0, 0});
 }
 
@@ -422,8 +410,8 @@ void rtx_smoke_soot(int index) {
   const particle_t &p = particle_pool[index];
   if (!rtx_smoke_active() || p.style_id == 8)
     return;
-  capture.emissions.push_back({p.pos_x, p.pos_y, p.vel_x * 0.075f, p.vel_y * 0.075f, 16, 1, 1, 1, 0.06f, 0, false, 0,
-                               0, 10, SOOT, 0, 0});
+  capture.emissions.push_back({p.pos_x, p.pos_y, p.vel_x * 0.075f, p.vel_y * 0.075f, 16, 1, 1, 1, 0.06f, 0, false, 0, 10,
+                               SOOT, 0, 0});
 }
 
 // The player's gun firing toward its aim `heading`: its puffs leave along it.
@@ -447,6 +435,12 @@ void rtx_smoke_nuke() {
   capture.source.retention = 15;
   capture.source.profile = NUKE;
 }
+// A flame's hit on a creature: the smoke of its burning, flame soot as the
+// particle's own burnout leaves (effects.py's flame hit).
+void rtx_smoke_flame() {
+  capture.source = Source{};
+  capture.source.profile = SOOT;
+}
 // Back to ordinary sources.
 void rtx_smoke_source_end() { capture.source = Source{}; }
 
@@ -457,13 +451,15 @@ void rtx_smoke_blast(float x, float y, float scale) {
 }
 
 // A projectile's wake along its path this tick: ion, fire and plasma stir more.
-void rtx_smoke_wake(int type, float sx, float sy, float ex, float ey, float dt) {
+// One passage drags the air along the stretch once, however long the tick
+// (projectile_pool.py's wake).
+void rtx_smoke_wake(int type, float sx, float sy, float ex, float ey, float) {
   bool energetic = type == PROJECTILE_TYPE_ION_RIFLE || type == PROJECTILE_TYPE_ION_MINIGUN ||
                    type == PROJECTILE_TYPE_ION_CANNON || type == PROJECTILE_TYPE_FIRE_BULLETS ||
                    type == PROJECTILE_TYPE_PLASMA_RIFLE || type == PROJECTILE_TYPE_PLASMA_MINIGUN ||
                    type == PROJECTILE_TYPE_PLASMA_CANNON;
-  rtx_smoke_impulse(sx, sy, ex, ey, energetic ? 9.0f : 5.0f, (energetic ? 420.0f : 180.0f) * dt,
-                    (energetic ? 120.0f : 60.0f) * dt, WAKE, 0.15f, 0);
+  rtx_smoke_impulse(sx, sy, ex, ey, energetic ? 12.0f : 8.0f, energetic ? 60.0f : 30.0f, energetic ? 20.0f : 10.0f,
+                    WAKE, 0.15f, 0);
 }
 
 // Airflow (atmosphere_impulse), each kind on its own budget: a volley's wakes
@@ -480,18 +476,19 @@ void rtx_smoke_impulse(float sx, float sy, float ex, float ey, float radius, flo
   capture.impulses.push_back({sx, sy, ex, ey, radius, strength, curl, (Kind)kind, duration, expansion_speed});
 }
 
-// Each body that lived through a tick of `dt` seconds and moved in it: its path and speed.
+// Each body present through a tick of `dt` seconds that moved in it: its path and
+// speed. A creature's corpse is a body too: a killing blow slides it through the air.
 void body_wakes(bool capture_wakes, float dt) {
   int n = 0;
-  auto body = [&](bool alive, float x, float y, float size) {
+  auto body = [&](bool present, float x, float y, float size) {
     BodyAt &last = bodies_last[n++];
     float step = sqrtf((x - last.x) * (x - last.x) + (y - last.y) * (y - last.y));
-    if (capture_wakes && alive && last.alive && step > 0 && step <= BODY_STEP_LIMIT && dt > 0)
+    if (capture_wakes && present && last.present && step > 0 && step <= BODY_STEP_LIMIT && dt > 0)
       capture.impulses.push_back({last.x, last.y, x, y, size * BODY_RADIUS, step / dt, 0, BODY, 0.15f, 0});
-    last = {alive, x, y};
+    last = {present, x, y};
   };
   for (const creature_t &c : creature_pool)
-    body(c.active && c.health > 0, c.pos_x, c.pos_y, c.size);
+    body(c.active, c.pos_x, c.pos_y, c.size);
   for (int i = 0; i < 2; ++i) {
     const player_state_t &p = player_state_table[i];
     body(i < config_blob.player_count && p.health > 0, p.pos_x, p.pos_y, p.size);
@@ -503,7 +500,7 @@ void rtx_smoke_tick(float dt) {
   rtx_smoke_flush();
   body_wakes(rtx_smoke_active(), dt);
   if (!rtx_smoke_active()) {
-    if (smoke.field || !smoke.batches.empty() || !smoke.pending.empty())
+    if (smoke.field || !smoke.batches.empty())
       rtx_smoke_reset();
     return;
   }

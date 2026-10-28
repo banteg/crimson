@@ -547,10 +547,11 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
                 state, players=players, pos=muzzle, angle=angle, type_id=ProjectileTemplateId.FIRE_BULLETS,
                 owner_id=owner_id, owner_player_index=player.index,
             )
-            state.sprite_effects.spawn(
-                pos=muzzle, vel=Vec2.from_angle(player.aim_heading) * 25.0, scale=1.0,
-                color=RGBA(0.5, 0.5, 0.5, 0.413), rng=rng,
-            )
+            with state.sprite_effects.muzzle_smoke(pos=muzzle, heading=player.aim_heading, speed=25.0, alpha=0.413):
+                state.sprite_effects.spawn(
+                    pos=muzzle, vel=Vec2.from_angle(player.aim_heading) * 25.0, scale=1.0,
+                    color=RGBA(0.5, 0.5, 0.5, 0.413), rng=rng,
+                )
             player.fire_cough_timer = x87_pc24_sub(player.fire_cough_timer, fire_cough_interval)
             next_interval = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET) % 4) + 2.0
             if not state.rules2_fixes:

@@ -52,10 +52,10 @@ def test_runtime_toggle_reset_restore_and_smoke_setting(tmp_path, headless_resou
     assert runtime.build_render_frame().smoke is None
     assert not resources.smoke.simulation.fields
     config.display.smoke_enabled = True
-    resources.consume_smoke_batch((emission(delay_seconds=.5),), dt_sim=0.)
-    assert resources.smoke.simulation.pending
+    resources.consume_smoke_batch((emission(),), dt_sim=0.)
+    assert resources.smoke.simulation.fields
     runtime.start_session(DeterministicSession.start(runtime.world, perk_progression_enabled=False))
-    assert not resources.smoke.simulation.pending
+    assert not resources.smoke.simulation.fields
     resources.consume_smoke_batch((emission(),), dt_sim=0.)
     runtime.reset()
     assert not resources.smoke.simulation.fields
@@ -285,7 +285,7 @@ def test_rtx_suppresses_general_explosion_puffs_but_keeps_other_effects(headless
     assert headless_window.draw_texture_pro.call_count == 2
 
 
-def test_default_rtx_queues_gpu_work_and_toggle_clears_delayed_deposits(tmp_path, mocker, headless_resources):
+def test_default_rtx_queues_gpu_work_and_toggle_clears_its_deposits(tmp_path, mocker, headless_resources):
     runtime = WorldRuntimeHost(assets_dir=tmp_path, rtx_mode=RtxRenderMode.RTX)
     resources = runtime.render_resources
     resources.resources = headless_resources
@@ -301,13 +301,13 @@ def test_default_rtx_queues_gpu_work_and_toggle_clears_delayed_deposits(tmp_path
     consume.assert_not_called()
     assert runtime.build_render_frame().smoke is None
     resources.set_simulated_smoke(True)
-    resources.consume_smoke_batch((emission(), emission(delay_seconds=.5)), dt_sim=0.)
-    assert resources.smoke.simulation.fields and resources.smoke.simulation.pending
+    resources.consume_smoke_batch((emission(),), dt_sim=0.)
+    assert resources.smoke.simulation.fields
     resources.set_simulated_smoke(False)
-    assert not resources.smoke.simulation.fields and not resources.smoke.simulation.pending
+    assert not resources.smoke.simulation.fields
     assert runtime.build_render_frame().smoke is None
     resources.set_simulated_smoke(True)
-    assert not resources.smoke.simulation.fields and not resources.smoke.simulation.pending
+    assert not resources.smoke.simulation.fields
 
 
 def test_disabled_rtx_smoke_restores_both_native_smoke_pools(headless_window, headless_resources):

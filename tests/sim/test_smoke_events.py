@@ -19,7 +19,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from tests.support.builders.session import make_session
-from tests.support.factories import player_input
+from tests.support.factories import make_creature_state, place_creatures, player_input
 from tests.support.state_digest import session_digest
 
 
@@ -83,7 +83,7 @@ def test_capture_lifetime_and_generations_are_not_pickled(pool_type) -> None:
     assert pickle.dumps(pool) == before
 
 
-def test_native_explosion_captures_only_delayed_puffs_with_native_expansion() -> None:
+def test_native_explosion_captures_its_puffs_at_once_with_native_expansion() -> None:
     captured, plain = EffectPool(), EffectPool()
     rng_captured, rng_plain = RecordingCrand(Crand(17)), RecordingCrand(Crand(17))
     with captured.capture_emissions() as events:
@@ -91,8 +91,8 @@ def test_native_explosion_captures_only_delayed_puffs_with_native_expansion() ->
                                        detail_preset=5, preserve_bugs=False)
     plain.spawn_explosion_burst(pos=Vec2(512, 512), scale=2, rng=rng_plain,
                                detail_preset=5, preserve_bugs=False)
+    # Native delays the puffs' sprites behind the fireball; their smoke starts with it and its blast.
     assert len(events) == 2
-    assert [event.delay_seconds for event in events] == [0.5, -f32(-0.3)]
     assert all(event.source == "effect" and event.scale == 64.0 for event in events)
     assert all(event.expansion == 320.0 for event in events)
     assert all(event.retention_seconds == 10.0 for event in events)
@@ -135,7 +135,7 @@ def test_failed_and_skipped_effect_spawns_emit_nothing() -> None:
     assert len(events) == EFFECT_POOL_SIZE - 1
 
 
-def test_zero_initial_size_keeps_native_delayed_expanding_puff() -> None:
+def test_zero_initial_size_keeps_native_expanding_puff() -> None:
     pool = EffectPool()
     pool.template.scale = 0.0
     with pool.capture_emissions() as events:
@@ -146,7 +146,7 @@ def test_zero_initial_size_keeps_native_delayed_expanding_puff() -> None:
     assert all(event.scale == 0.0 and event.expansion == 160.0 for event in events)
 
 
-def test_actual_nuke_pickup_captures_delayed_smoke_without_gameplay_changes() -> None:
+def test_actual_nuke_pickup_captures_nuke_smoke_without_gameplay_changes() -> None:
     captured, world = make_session(seed=45, perk_progression_enabled=False)
     plain, plain_world = make_session(seed=45, perk_progression_enabled=False)
     for sim in (world, plain_world):
@@ -156,7 +156,6 @@ def test_actual_nuke_pickup_captures_delayed_smoke_without_gameplay_changes() ->
     plain._step_tick(dt=1 / 60, inputs=[player_input()], commands=None, smoke_emissions=[], atmosphere_impulses=[])
     events = [event for event in tick.presentation.smoke_emissions if event.source == "effect"]
     assert len(events) == 2
-    assert [event.delay_seconds for event in events] == [0.5, -f32(-0.3)]
     assert all(event.expansion == 160.0 for event in events)
     assert all(event.retention_seconds == 15.0 for event in events)
     assert all(event.profile == "nuke" for event in events)
@@ -228,6 +227,18 @@ def test_flames_burning_out_leave_soot_where_they_die_without_gameplay_changes()
         assert session_digest(captured) == session_digest(plain)
     assert len(soot) > 10
     assert all(event.source == "particle" and event.color.a == .06 for event in soot)
+
+
+def test_flames_burning_a_creature_leave_flame_soot_not_explosion_smoke() -> None:
+    session, world = make_session(seed=73, perk_progression_enabled=False)
+    weapon_assign_player(world.players[0], WeaponId.FLAMETHROWER, state=world.state)
+    place_creatures(world, [make_creature_state(pos=world.players[0].pos + Vec2(60, 0), hp=100000.)])
+    burning = []
+    for _ in range(60):
+        output = session.step_tick(dt=1 / 60, inputs=[player_input(aim=world.players[0].pos + Vec2(300, 0),
+                                                                    fire_down=True)])
+        burning += [event for event in output.presentation.smoke_emissions if event.source == "sprite"]
+    assert burning and all(event.profile == "soot" for event in burning)
 
 
 @pytest.mark.parametrize("partition", [(1, 1, 1), (3,), (0, 2, 0, 1)])

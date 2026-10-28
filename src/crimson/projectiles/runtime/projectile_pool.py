@@ -606,10 +606,11 @@ class ProjectilePool:
                 ProjectileTemplateId.PLASMA_RIFLE, ProjectileTemplateId.PLASMA_MINIGUN,
                 ProjectileTemplateId.PLASMA_CANNON,
             )
+            # One passage drags the air along this tick's stretch of path once, however long the tick: a shot never
+            # dwells on a stretch. Its width spans a few of the smoke's 4-unit cells, so the vortex pair resolves.
             effects.atmosphere_impulse(
-                start=wake_start, end=proj.pos, radius=9. if energetic else 5.,
-                strength=(420. if energetic else 180.)*dt,
-                curl=(120. if energetic else 60.)*dt,
+                start=wake_start, end=proj.pos, radius=12. if energetic else 8.,
+                strength=60. if energetic else 30., curl=20. if energetic else 10.,
             )
 
         return hits

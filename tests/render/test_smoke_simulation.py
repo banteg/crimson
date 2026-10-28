@@ -4,8 +4,6 @@ import msgspec
 import numpy as np
 import pytest
 
-from crimson.math_parity import f32
-from crimson.render.rtx.smoke_constants import MAX_PENDING_EMISSIONS
 from crimson.render.rtx.smoke_simulation import (
     CELL_SIZE,
     MAX_GRID_SIZE,
@@ -104,26 +102,8 @@ def test_effect_and_sprite_deposits_both_contribute():
     assert float(sim.fields[0].density.sum()) == pytest.approx(before * 2.)
 
 
-def test_effect_delay_matches_native_float_age_and_reset_clears_it():
+def test_oversize_fallback_is_bounded():
     sim = SmokeSimulation()
-    event = emission(source="effect", delay_seconds=f32(.3), expansion=30.)
-    sim.consume((event,), 1 / 60)
-    assert not sim.fields and len(sim.pending) == 1
-    age = -event.delay_seconds
-    while age < 0:
-        age = f32(f32(age) + f32(1 / 60))
-        sim.consume((), 1 / 60)
-        assert bool(sim.fields) is (age >= 0)
-    sim.consume((msgspec.structs.replace(event, generation=2),), 0.)
-    sim.reset()
-    assert not sim.fields and not sim.pending
-
-
-def test_pending_queue_and_oversize_fallback_are_bounded():
-    sim = SmokeSimulation()
-    delayed = tuple(emission(slot=i, delay_seconds=1.) for i in range(MAX_PENDING_EMISSIONS + 10))
-    sim.consume(delayed, 0.)
-    assert len(sim.pending) == MAX_PENDING_EMISSIONS
     sim.consume((emission(scale=300.),), 0.)
     assert not sim.fields
 

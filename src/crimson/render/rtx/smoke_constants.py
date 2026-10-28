@@ -1,6 +1,5 @@
 """Shared timing and queue limits for GPU smoke and its CPU reference."""
 
-MAX_PENDING_EMISSIONS = 1024
 STEP_SECONDS = 1.0 / 60.0
 FADE_SECONDS = 2.0
 # Heat each source deposits per unit of smoke, relative to a muzzle's: explosions and rockets run hot, and the share

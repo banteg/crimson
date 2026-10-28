@@ -64,6 +64,7 @@ void rtx_smoke_soot(int index);
 void rtx_smoke_muzzle(float heading);
 void rtx_smoke_rocket(float flow_x, float flow_y, float vx, float vy);
 void rtx_smoke_nuke();
+void rtx_smoke_flame();
 void rtx_smoke_source_end();
 void rtx_smoke_blast(float x, float y, float scale);
 void rtx_smoke_wake(int type, float sx, float sy, float ex, float ey, float dt);
@@ -120,6 +121,10 @@ struct RtxDarkExplosion {
 struct RtxSmokeNuke {
   RtxSmokeNuke() { rtx_smoke_nuke(); }
   ~RtxSmokeNuke() { rtx_smoke_source_end(); }
+};
+struct RtxSmokeFlame {
+  RtxSmokeFlame() { rtx_smoke_flame(); }
+  ~RtxSmokeFlame() { rtx_smoke_source_end(); }
 };
 // A track's volume a tick sets, on the original's track for the one it names
 // (host/coop.inc).

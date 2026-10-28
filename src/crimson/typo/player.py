@@ -104,20 +104,22 @@ def typo_player_update(
                 # `fcos`/`fsin` stay wide for the first sprite; the second reloads their float stores.
                 heading_cos = math.cos(shot_heading)
                 heading_sin = math.sin(shot_heading)
-                state.sprite_effects.spawn(
-                    pos=muzzle,
-                    vel=Vec2(x87_pc24_mul(heading_cos, 25.0), x87_pc24_mul(heading_sin, 25.0)),
-                    scale=1.0,
-                    color=RGBA(0.5, 0.5, 0.5, 0.25),
-                    rng=state.rng,
-                )
-                state.sprite_effects.spawn(
-                    pos=muzzle,
-                    vel=Vec2(x87_pc24_mul(f32(heading_cos), 15.0), x87_pc24_mul(f32(heading_sin), 15.0)),
-                    scale=2.0,
-                    color=RGBA(0.5, 0.5, 0.5, 0.223),
-                    rng=state.rng,
-                )
+                with state.sprite_effects.muzzle_smoke(pos=muzzle, heading=shot_heading, speed=25.0, alpha=0.25):
+                    state.sprite_effects.spawn(
+                        pos=muzzle,
+                        vel=Vec2(x87_pc24_mul(heading_cos, 25.0), x87_pc24_mul(heading_sin, 25.0)),
+                        scale=1.0,
+                        color=RGBA(0.5, 0.5, 0.5, 0.25),
+                        rng=state.rng,
+                    )
+                with state.sprite_effects.muzzle_smoke(pos=muzzle, heading=shot_heading, speed=15.0, alpha=0.223):
+                    state.sprite_effects.spawn(
+                        pos=muzzle,
+                        vel=Vec2(x87_pc24_mul(f32(heading_cos), 15.0), x87_pc24_mul(f32(heading_sin), 15.0)),
+                        scale=2.0,
+                        color=RGBA(0.5, 0.5, 0.5, 0.223),
+                        rng=state.rng,
+                    )
                 for _ in range(12):
                     jitter = state.rng.rand_tagged(RngCallerStatic.PLAYER_FIRE_WEAPON_SHOTGUN_PELLET_JITTER) % 200 - 100
                     projectile_index = projectile_spawn(
