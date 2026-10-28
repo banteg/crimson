@@ -586,6 +586,8 @@ Target &drawing_target(int id) {
   Target &t = target_or_back(id);
   return world && &t == &textures[0] ? world_kept() ? hdr : discarded : t;
 }
+// Whether a draw into `t` enters the world's linear light.
+bool in_world(const Target &t) { return &t == &hdr || &t == &discarded; }
 
 // One target's image onto another: a copy when they match, else drawn scaled.
 void copy(Target &from, Target &to) {
@@ -862,6 +864,7 @@ void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
   fragment.i("alpha_test", render_states[RS_ALPHATESTENABLE] != 0);
   fragment.f("alpha_ref", (float)(render_states[RS_ALPHAREF] & 255));
   fragment.i("alpha_func", (int)render_states[RS_ALPHAFUNC]);
+  fragment.i("in_world", in_world(t));
   fragment.set("circle", circle, 16).set("circle_uv", circle + 4, 16);
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(classic, device_output(t, topology)));
   bind(classic, fragment_group(classic, {inputs[0], inputs[1]}), &vertex, &fragment);
@@ -1420,7 +1423,7 @@ void wgpu_w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u3
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).f("beam_length", length).f("beam_step", step);
   vertex.v4("beam_color", (color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f,
             (color >> 24) / 255.0f);
-  fragment.v4("colDiffuse", 1, 1, 1, 1);
+  fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_in_world", in_world(t));
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(beam, device_output(t, WGPUPrimitiveTopology_TriangleStrip)));
   bind(beam, fragment_group(beam, {}), &vertex, &fragment);
   // The quad's corners run around it; a strip takes them as 0, 1, 3, 2.
@@ -1442,7 +1445,8 @@ static void draw_effect_vertices(const EffectVertex *vertices, int count,
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height);
   fragment.v4("colDiffuse", 1, 1, 1, 1)
       .i("u_kind", kind)
-      .set("u_params", params, 48);
+      .set("u_params", params, 48)
+      .i("u_in_world", in_world(t));
   wgpuRenderPassEncoderSetPipeline(
       pass,
       pipeline(effect, device_output(t, WGPUPrimitiveTopology_TriangleList)));

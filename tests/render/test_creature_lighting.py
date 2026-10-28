@@ -138,7 +138,7 @@ def lit_sprite(raylib_context):
                               else rl.TextureFilter.TEXTURE_FILTER_POINT)
         lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale), occlusion=occlusion, shadows=shadows, ambient=ambient)
         render_target = target if target_override is None else target_override
-        with texture_mode(render_target):
+        with texture_mode(render_target, linear=True):
             rl.clear_background(rl.BLANK)
             with alpha.scope():
                 def draw():
@@ -355,7 +355,7 @@ def test_transmission_lights_thin_parts_on_either_side_of_light(lit_sprite, monk
     limb = 63 * 128 + 77
     core = 63 * 128 + 64
     gain = actual[limb][channel] - baseline[limb][channel]
-    assert gain > .02
+    assert gain > .005
     assert actual[core][channel] - baseline[core][channel] < gain * .5
     # Pigment modulates the source spectrum without emitting unlit channels.
     for other in set(range(3)) - {channel}:
@@ -377,10 +377,7 @@ def test_transmission_retains_pigment_and_restrains_black_parts(lit_sprite, monk
     assert reference != fragment
     monkeypatch.setattr(creature_lighting, "CREATURE_FRAGMENT", reference)
     baseline = [render([light], pigment=color)[limb] for color in pigments]
-    gain = [
-        [a[c] ** 2.2 - b[c] ** 2.2 for c in range(3)]
-        for a, b in zip(actual, baseline, strict=True)
-    ]
+    gain = [[a[c] - b[c] for c in range(3)] for a, b in zip(actual, baseline, strict=True)]
     assert 0 < gain[0][0] < gain[1][0] * .1
     assert gain[2][0] > gain[2][1] * 3
     assert gain[3][1] > gain[3][0] * 3
@@ -469,7 +466,7 @@ def test_unlit_ambient_fill_preserves_alpha_without_loading_thickness(lit_sprite
     filled = render([], ambient=.6)
     assert not lighting.thickness_textures
     assert [p[3] for p in filled] == [p[3] for p in native]
-    assert sum(p[0] for p in filled) == pytest.approx(sum(p[0] for p in native) * .6 ** (1 / 2.2), rel=.002)
+    assert sum(p[0] for p in filled) == pytest.approx(sum(p[0] for p in native) * .6, rel=.002)
 
 
 @pytest.mark.parametrize("gain", [(1., 0.), (0., 1.), (1., 1.)])

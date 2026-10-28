@@ -389,8 +389,7 @@ def test_shader_treats_emitter_rgb_as_linear_radiance(ground_material, mocker) -
     values = []
     for intensity in (1, 2, 3):
         collector.return_value = [MaterialLight(Vec2(32, 14), 150, (intensity, intensity, intensity), height=30)]
-        encoded = debug_pixels(ground, texture, mode=0)[32 * 64 + 32]
-        values.append(tuple(channel ** 2.2 for channel in encoded[:3]))
+        values.append(debug_pixels(ground, texture, mode=0)[32 * 64 + 32][:3])
     assert tuple(c - b for b, c in zip(values[1], values[2], strict=True)) == pytest.approx(
         tuple(b - a for a, b in zip(values[0], values[1], strict=True)), rel=.015,
     )
@@ -433,8 +432,7 @@ def test_each_light_adds_its_own_absorbed_radiance(ground_material, mocker) -> N
     values = []
     for lights in ([], [high], [low], [high, low]):
         collector.return_value = lights
-        encoded = debug_pixels(ground, texture, mode=0)[32 * 64 + 32][:3]
-        values.append(tuple(channel ** 2.2 for channel in encoded))
+        values.append(debug_pixels(ground, texture, mode=0)[32 * 64 + 32][:3])
     expected = tuple(a + b - ambient for ambient, a, b in zip(*values[:3], strict=True))
     assert values[3] == pytest.approx(expected, rel=.004, abs=.0001)
 
@@ -822,7 +820,7 @@ def test_weak_sources_keep_cosine_response_without_broad_grazing_fill(ground_mat
         collector.return_value = [MaterialLight(Vec2(32.5, 4.5), 100, (.7, 0, 0), height=height,
                                                reflection_gain=0, broad_illumination=broad)]
         lit = debug_pixels(ground, texture, mode=0)
-        increments.append(lit[center][0] ** 2.2 - base[center][0] ** 2.2)
+        increments.append(lit[center][0] - base[center][0])
     ndls = [height / math.hypot(height, 27.) for height in (12., 24.)]
     expected = [( .22 + .78 * ndl) if broad else .22 * ndl for ndl in ndls]
     assert increments[0] / increments[1] == pytest.approx(expected[0] / expected[1], rel=.025)

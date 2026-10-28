@@ -2,6 +2,7 @@
 // Opaque player cloth lighting: painted relief and a directional inner rim.
 #include "filtering.glsl"
 #include "source_geometry.glsl"
+#include "linear_light.glsl"
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec2 world;
@@ -39,7 +40,7 @@ void main() {
     if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0) {
-        finalColor = vec4(base.rgb, base.a);
+        finalColor = vec4(decodeArt(base.rgb), base.a);
         return;
     }
     vec2 q = fract(fragTexCoord * 8.0) * 2.0 - 1.0;
@@ -64,7 +65,7 @@ void main() {
     // Brighter texels are raised: the height-field normal points downhill.
     slope -= rot * relief * 0.65;
     vec3 N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
-    vec3 baseLin = pow(max(base.rgb, vec3(0)), vec3(2.2));
+    vec3 baseLin = decodeArt(base.rgb);
     vec3 added = vec3(0);
     for (int i = 0; i < u_count; i++) {
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
@@ -97,8 +98,6 @@ void main() {
         added += diffuse;
     }
     // Stronger cloth response; no specular or transmission.
-    // Bound aggregate illumination in dense fights without changing hue.
-    float peak = max(added.r, max(added.g, added.b));
-    added *= 1.0 / (1.0 + peak / 1.4);
-    finalColor = peak > 0.0 ? vec4(pow(baseLin + added, vec3(1.0 / 2.2)), base.a) : base;
+    // Dense fights add up as light; the tonemap alone compresses them.
+    finalColor = vec4(baseLin + added, base.a);
 }

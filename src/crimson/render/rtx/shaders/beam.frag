@@ -9,8 +9,10 @@ in float fragLen;
 flat in float fragStep;
 
 uniform vec4 colDiffuse;
+uniform int u_in_world; // drawing into the RTX world's linear light (linear_light.glsl)
 
 out vec4 finalColor;
+#include "linear_light.glsl"
 
 // The glow texel's alpha as two Gaussians, sum c * exp(-beta * r^2) with r in stamp radii:
 // a narrow core and a broad halo.
@@ -37,7 +39,7 @@ void main() {
     vec2 p = fragTexCoord;
     if (fragLen < 0.0) {
         float intensity = glow(dot(p, p)) * edge_fade(length(p)) * fragColor.a;
-        finalColor = vec4(fragColor.rgb * colDiffuse.rgb * intensity, 1.0);
+        finalColor = vec4(worldColor(fragColor.rgb * colDiffuse.rgb, u_in_world) * intensity, 1.0);
         return;
     }
 
@@ -55,5 +57,5 @@ void main() {
     accum *= edge_fade(length(vec2(p.x - clamp(p.x, 0.0, len_uv), p.y)));
 
     float intensity = accum * fragColor.a;
-    finalColor = vec4(fragColor.rgb * colDiffuse.rgb * intensity, 1.0);
+    finalColor = vec4(worldColor(fragColor.rgb * colDiffuse.rgb, u_in_world) * intensity, 1.0);
 }

@@ -72,14 +72,14 @@ Implementation module: [`src/crimson/render/rtx/hdr.py`](https://github.com/bant
 
 When render mode is `rtx`, `WorldRuntime.draw()` wraps `draw_world()` in `HdrRenderer.scope()`:
 
-- the world is drawn into a half-float (`RGBA16F`) framebuffer so additive passes (beams, plasma globes, fire particles, detonations, muzzle flashes) accumulate past `1.0` without 8-bit per-channel clipping
-- pixels at or below the shoulder knee (`0.85`) pass through the tonemapper unchanged; the material pass below shades RTX terrain before this step
-- on SDR/8-bit targets, values above `0.85` compress the peak channel with a $C^1$ exponential shoulder while scaling the remaining channels proportionally to preserve hue, and stacks above `1.0` drift smoothly toward an incandescent white core (`white = 0.6` over a `3.0` excess span)
+- the world is drawn into a half-float (`RGBA16F`) framebuffer of linear light (see [Linear light](#linear-light)), so additive passes (beams, plasma globes, fire particles, detonations, muzzle flashes) add as light and accumulate past `1.0` without 8-bit per-channel clipping
+- pixels at or below the shoulder knee (`0.7` linear, the original's `0.85` once encoded) pass through the tonemapper unchanged; the material pass below shades RTX terrain before this step
+- above the knee the peak channel compresses with a rational shoulder, whose slope eases from `1` at the knee, while the remaining channels scale proportionally to preserve hue: piled light keeps its gradation many times past white instead of flattening into it. Peaks past white drift smoothly toward an incandescent white core (`0.6` of the way over `4.4` stops)
 - selecting RTX always requests EDR; macOS uses a verified floating-point OpenGL backbuffer and Cocoa's `wantsExtendedDynamicRangeOpenGLSurface` opt-in, following [Apple's OpenGL EDR recipe](https://developer.apple.com/videos/play/wwdc2021/10161/)
 - on Wayland, the window gets an RGBA16F EGL surface where the driver and compositor share a float format, else a 10-bit one, and is tagged through `wp_color_management_v1` as gamma 2.2 sRGB whose signal `1.0` is the display peak and whose reference white is the compositor's; the canvas divides the frame by the shoulder's limit (`headroom^(1/2.2)`) so SDR white lands on the reference level. Headroom is the preferred description's target peak over its reference white, refreshed when the compositor reports a new preferred description (another output, HDR toggled). Compositors without parametric descriptions, `set_luminances` or gamma 2.2, and X11 sessions, stay SDR
 - the Python window runner reserves a deep surface for game windows so console/debug mode changes do not need to recreate the GL context; its temporary pixel-format hook (Cocoa) or EGL config filter (Wayland) is removed immediately after window creation
 - current display headroom is refreshed before each frame, including after display moves and fullscreen changes; potential headroom is not a rendering limit, and activation can ramp up from `1.0`
-- the tonemapper approximates the legacy OpenGL transfer with gamma 2.2 and rolls highlights off toward current headroom; this is display-relative rendering, not a calibrated nit target
+- the tonemapper rolls highlights off toward current headroom, linear as the world is, then encodes with gamma 2.2, the legacy OpenGL transfer; this is display-relative rendering, not a calibrated nit target
 - gamma and letterbox targets preserve extended values; HUD, aim indicators, perk prompts, and console overlays are drawn outside the world tonemapper and remain in the SDR range
 - returning to classic disables the Cocoa EDR opt-in or unsets the Wayland image description and composites through an 8-bit target, preserving classic's per-draw saturation even on the reserved deep window
 - Windows, unavailable deep surfaces, and displays with headroom `1.0` use SDR tonemapping; an SDR ancestor target also forces SDR output for capture/compositing
@@ -87,17 +87,24 @@ When render mode is `rtx`, `WorldRuntime.draw()` wraps `draw_world()` in `HdrRen
 The native and browser clients run the same HDR world target and tonemap (see [Native client](#native-client)
 and [Browser client](#browser-client)).
 
-The world compositor still blends approximately gamma-encoded RGB: float storage
-preserves range but does not make that blending linear. A future linear-color,
-32bpc migration should decode color assets once, accumulate light and alpha blends
-in linear float RGB, refit effect/smoke profiles to that domain, and tone-map and
-encode only at output. Classic combiner clamps and byte vertex colors also need
-review; changing target precision alone cannot recover values clipped upstream.
-The coarse visibility atlas is unitless and already multiplies linear ground
-radiance, so it does not depend on the eventual color target format. Useful probes
-include pre-tonemap HDR ramps, overlapping colored emitters, bright alpha edges,
-and smoke over fire, alongside the replay scenes. This migration remains separate
-from the visibility change.
+### Linear light
+
+Everything in the RTX world target is linear light: it blends and adds as light does, and the tonemap is the one
+place it is compressed and encoded for the display. One rule decides how a draw enters it
+([`src/grim/linear_light.glsl`](https://github.com/banteg/crimson/blob/master/src/grim/linear_light.glsl)): colors
+are the original's artwork or look-dev picks, gamma-2.2 encoded, and decode where they enter; amounts of light (an
+alpha, a glow's profile, an intensity) are already linear and stay as they are.
+
+- The world's sprites decode their color only while they draw into the world. The Python port's target stack marks
+  the world target linear (`texture_mode(..., linear=True)`), and the alpha-test, beam and effect shaders read it;
+  the clients mark draws that land in the HDR target. A bake inside the world, as the terrain's, takes artwork as
+  drawn.
+- The fitted warm glows (`effect_profiles.glsl`) are premultiplied art: their hue decodes and their amount stays.
+- The lit passes (ground, creatures, players, bonuses, smoke, heat, contact glows) shade in linear light and write
+  it as it is, with no limiter of their own: dense fights add up, and the tonemap alone compresses them.
+- Thin smoke veils dark ground more in linear light than it did blended in gamma, so the smoke is `0.4` times as thick
+  per unit of density as before, and Monster Vision's heat trails take a stronger gain to stay readable added as
+  light.
 
 In-game PNG screenshots still use an 8-bit SDR readback, taken from the frame before Wayland's presentation scaling. Extended values clip to `1.0`, so screenshots do not preserve the brightness or highlight detail visible on an EDR display.
 
@@ -159,9 +166,8 @@ resolution and world coordinates, including texture scale and DPI:
   their individual heights. Point-source blur spreads energy in two dimensions,
   degenerate segments fall back to points, and finite light support fades smoothly.
 - Substrate color inputs are decoded from approximate gamma 2.2; emitter colors are
-  already linear radiance, so lifetime gain stays linear. Shading is encoded once
-  back into the legacy compositor. Material output stays unclamped
-  until the existing HDR shoulder. No extra material
+  already linear radiance, so lifetime gain stays linear. Shading goes into the
+  world's linear light as it is, unclamped until the HDR shoulder. No extra material
   tonemapper, exposure reduction, or full-screen darkness is applied.
 - Ambient blood absorption uses a stable incidence. Each dynamic emitter computes
   its own transmission and diffuse relief before contributing radiance, so a faint
@@ -467,8 +473,8 @@ painted texture relief, and a directional inner rim. It preserves the original
 single-player and co-op tints and keeps a full ambient floor. There is no player
 specular, transmission or material mask; a player casts a body shadow (see Ground
 reflection occlusion) but receives none.
-The dome coefficient is 2.2, rim coefficient 0.8, relief strength 0.65, and the
-combined added linear radiance is limited without changing hue at a scale of 1.4.
+The dome coefficient is 2.2, rim coefficient 0.8 and relief strength 0.65; the
+added light is not limited, as the tonemap compresses it with the rest of the world.
 A small albedo lift and broad facing floor make the response readable on the
 already-painted atlas. These are art-directed sprite normals, not 3D anatomy.
 
@@ -493,8 +499,8 @@ illumination below), with squared radial attenuation.
 Python RTX creature bodies receive the same bounded weapon emitters as the ground
 pass. A rounded body normal and weak texture relief provide broad colored lighting
 and small highlights; three alpha taps toward each light produce an inner silhouette
-rim. The approved blend uses 65% of the dome study and 65% of the rim study, with a
-hue-preserving limit on their combined radiance, including thin-part transmission.
+rim. The approved blend uses 65% of the dome study and 65% of the rim study; their
+combined light, thin-part transmission included, goes to the tonemap unlimited.
 These are artistic shape estimates,
 not authored normal maps or physically calibrated skin/chitin models.
 
@@ -526,7 +532,7 @@ The lateral response uses the light's elevation, independent of the cell-center
 dome normal, so a narrow limb can scatter on either side of the sprite.
 The shader samples this map once per body pixel and adds its directional response
 inside the existing light loop, sharing each emitter's finite source, radial
-attenuation and visibility. It preserves sprite alpha and the existing HDR limit.
+attenuation and visibility. It preserves sprite alpha.
 This is a silhouette part-size appearance model, not anatomical thickness or traced
 subsurface scattering. Square openings are orientation-dependent and can still
 classify curved tips and corners as thin. The model does not distinguish skin from

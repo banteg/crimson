@@ -82,7 +82,7 @@ struct ClassicUniforms {
   AppliedValue<GLint[STAGES]> has_texture, reconstruction, color_op, color_arg1, color_arg2;
   AppliedValue<GLint[STAGES]> alpha_op, alpha_arg1, alpha_arg2;
   AppliedValue<float[4]> factor, circle, circle_uv;
-  AppliedValue<GLint> alpha_test, alpha_func;
+  AppliedValue<GLint> alpha_test, alpha_func, in_world;
   AppliedValue<float> alpha_ref;
 } classic_uniforms;
 struct SamplerState {
@@ -230,15 +230,15 @@ GLuint blank_texture;
 // The freeze ice's surface (HOST_PASS_ICE_*), on the creature program's thickness unit.
 GLuint ice_texture;
 GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_alpha_op, u_alpha_arg1, u_alpha_arg2,
-    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction, u_circle, u_circle_uv;
+    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_reconstruction, u_circle, u_circle_uv, u_in_world;
 // RTX: the world's HDR target while the world draws (host_render_pass), and the
 // tonemap that puts it on the back buffer toward the display's EDR headroom.
 bool rtx, world;
 Target hdr;
 GLuint tonemap_program, beam_program, beam_array, beam_buffer;
 GLuint effect_program;
-GLint u_effect_target_size, u_effect_kind, u_effect_params;
-GLint u_tonemap_headroom, u_beam_target_size, u_beam_length, u_beam_step, u_beam_color;
+GLint u_effect_target_size, u_effect_kind, u_effect_params, u_effect_in_world;
+GLint u_tonemap_headroom, u_beam_target_size, u_beam_length, u_beam_step, u_beam_color, u_beam_in_world;
 float edr_headroom = 1;
 
 // The shaders WebGPU runs too (crimson-core/client/shaders, client/shaders.py).
@@ -487,6 +487,8 @@ Target &drawing_target(int id) {
   Target &t = target_or_back(id);
   return world && &t == &textures[0] ? world_kept() ? hdr : discarded : t;
 }
+// Whether a draw into `t` enters the world's linear light.
+bool in_world(const Target &t) { return &t == &hdr || &t == &discarded; }
 
 // Counts a draw for the timers: `what` it draws, its triangles as corner
 // indices into x, y positions `stride` floats apart (the current target's
@@ -1035,6 +1037,7 @@ void GL_ENTRY(renderer_init)() {
   u_alpha_func = uniform_location(program, "alpha_func");
   u_circle = uniform_location(program, "circle");
   u_circle_uv = uniform_location(program, "circle_uv");
+  u_in_world = uniform_location(program, "in_world");
   use_program(program);
   glUniform1i(uniform_location(program, "texture0"), 0);
   glUniform1i(uniform_location(program, "texture1"), 1);
@@ -1275,12 +1278,14 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     u_beam_length = uniform_location(beam_program, "beam_length");
     u_beam_step = uniform_location(beam_program, "beam_step");
     u_beam_color = uniform_location(beam_program, "beam_color");
+    u_beam_in_world = uniform_location(beam_program, "u_in_world");
     effect_program = link(SHADER_HEADER SHADER_EFFECT_VERT, SHADER_HEADER RTX_SHADER_EFFECT_FRAG);
     use_program(effect_program);
     glUniform4f(uniform_location(effect_program, "colDiffuse"), 1, 1, 1, 1);
     u_effect_target_size = uniform_location(effect_program, "target_size");
     u_effect_kind = uniform_location(effect_program, "u_kind");
     u_effect_params = uniform_location(effect_program, "u_params");
+    u_effect_in_world = uniform_location(effect_program, "u_in_world");
     create_lit(creature_lit, creature_lit_vertex_source, creature_fragment_source);
     create_lit(player_lit, lit_vertex_source, player_fragment_source);
     create_lit(bonus_lit, lit_vertex_source, bonus_fragment_source);
@@ -1611,6 +1616,8 @@ static void device_draw(const Target &t, u32 primitive, const void *vertices, u3
   if (c.alpha_test.change(alpha_test)) glUniform1i(u_alpha_test, alpha_test);
   if (c.alpha_ref.change(alpha_ref)) glUniform1f(u_alpha_ref, alpha_ref);
   if (c.alpha_func.change(alpha_func)) glUniform1i(u_alpha_func, alpha_func);
+  GLint world_light = in_world(t);
+  if (c.in_world.change(world_light)) glUniform1i(u_in_world, world_light);
   // `circle + 4` is a pointer; preserve the four actual values in each cache.
   const float circle_rect[] = {circle[0], circle[1], circle[2], circle[3]};
   const float circle_uv[] = {circle[4], circle[5], circle[6], circle[7]};
@@ -1806,6 +1813,7 @@ void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 ste
   glUniform1f(u_beam_step, step);
   glUniform4f(u_beam_color, (color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f,
               (color >> 24) / 255.0f);
+  glUniform1i(u_beam_in_world, in_world(t));
   apply_output_state(t);
   // A flat quad, whichever way its corners turn.
   glDisable(GL_CULL_FACE);
@@ -1824,6 +1832,7 @@ static void draw_effect_vertices(const EffectVertex *vertices, int count,
               (float)t.logical_height);
   glUniform1i(u_effect_kind, kind);
   glUniform4fv(u_effect_params, 3, params);
+  glUniform1i(u_effect_in_world, in_world(t));
   apply_output_state(t);
   glDisable(GL_CULL_FACE);
   upload_analytic_vertices(vertex_array, vertex_buffer, vertices,

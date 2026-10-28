@@ -158,7 +158,7 @@ def lit_bonus(raylib_context):
                               else rl.TextureFilter.TEXTURE_FILTER_POINT)
         lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale))
         pos = (Vec2(64, 64)+camera)*scale
-        with texture_mode(target):
+        with texture_mode(target, linear=True):
             rl.clear_background(rl.BLANK)
             with alpha.scope():
                 def draw():
