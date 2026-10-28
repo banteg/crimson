@@ -309,19 +309,28 @@ void check_rtx() {
   };
   w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
   const float empty[12] = {};
-  for (int kind = 0; kind < 3; ++kind) {
+  for (int kind : {0, 1, 2, 6}) {
     w2c_host_clear(nullptr, 0xff000000);
     effect(kind, empty, 0xffffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
-    if (kind < 2) assert(back_red(512,384) > .7f);
+    if (kind != 2) assert(back_red(512,384) > .7f);
     else assert(back_red(512,384) == 0 && back_red(526,384) > .1f);
     assert(back_red(492,384) == 0);
+    const int sample_x = kind == 2 ? 526 : 512;
+    const float bright = back_red(sample_x,384);
     w2c_host_clear(nullptr, 0xff000000);
     effect(kind, empty, 0x01ffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
-    assert(back_red(512,384) == 0 && back_red(526,384) == 0);
+    if (kind == 2 || kind == 6) {
+      // Pressure and flash dissolve below the old four-byte-level cutoff.
+      const float faded = back_red(sample_x,384);
+      assert(faded > 0 && fabsf(faded * 255 / bright - 1) < .01f);
+    } else assert(back_red(512,384) == 0 && back_red(526,384) == 0);
+    w2c_host_clear(nullptr, 0xff000000);
+    effect(kind, empty, 0x00ffffff, 495.75f,527.75f,367.75f,399.75f,-1,1,-1,1);
+    assert(back_red(sample_x,384) == 0);
   }
   // One device-vertex batch retains different sprite tints exactly, including
   // byte color swizzling and alpha, through the actual GPU vertex layout.
-  for (int kind = 0; kind < 3; ++kind) {
+  for (int kind : {0, 1, 2, 6}) {
     w2c_host_clear(nullptr, 0xff000000);
     effect(kind, empty, 0xff408020, 495.75f, 527.75f, 367.75f, 399.75f, -1, 1,
            -1, 1);
