@@ -240,7 +240,7 @@ static int live_step(uint32_t count) {
 // (game_state_set), from `cfg`: false when the verifier cannot start it.
 static bool live_start() {
   LiveSettings player = live_settings();
-  // The console's flag pauses parts of a tick; a run keeps it closed.
+  // The console's flag pauses parts of a tick: a run starts with it closed.
   if (console_log_queue.open)
     console_log_queue.console_set_open(0);
   // The run's strings live in the session's arena, which the next run reuses.
@@ -551,7 +551,15 @@ extern "C" {
 // or -1 when no run is playing. A pass with none draws nothing new.
 int game_live_frame() {
   watch_follow_link();
-  if (!game_live || game_state_id != GAME_STATE_GAMEPLAY)
+  if (!game_live)
+    return -1;
+  // The console key of the player's own run that is not ranked, on every pass
+  // and every screen of the run, as Escape is (live_poll): a ranked run keeps
+  // the console closed, as do a co-op run, which plays on while its partner
+  // waits, and a replay or its practice, whose keys the viewer takes.
+  if (!ranked_run && !coop_live.playing && !live.watching && session_grim.IGrim2D_cpp::grim_was_key_pressed(0x29))
+    console_log_queue.console_set_open(!console_log_queue.open);
+  if (game_state_id != GAME_STATE_GAMEPLAY)
     return -1;
   if (coop_live.playing)
     return coop_frame();
@@ -559,6 +567,16 @@ int game_live_frame() {
     return practice_frame();
   if (live.watching)
     return watch_frame();
+  // The open console pauses the run, as its flag pauses the original's frame
+  // (game_frame_update): the frame runs for the console, no tick runs, nothing
+  // pressed reaches the run, and closing it picks up without catching up. Ticks
+  // never see the flag set.
+  if (console_open_flag) {
+    live.due = 0;
+    live.banked = 0;
+    live.click_down = true;
+    return 1;
+  }
   live_poll();
   live.banked += fminf(grim_frame_dt, 0.1f);
   live.due = (int)(live.banked * 60.0f + 1e-4f);
@@ -591,6 +609,9 @@ void gameplay_update_and_render() {
     return practice_render();
   if (live.watching)
     return watch_render();
+  // Under the open console the world draws between ticks (game_live_frame).
+  if (console_open_flag)
+    return gameplay_render_world();
   live_poll_prompt();
   for (int i = 0; i < live.due && live_tick(); ++i) {
   }

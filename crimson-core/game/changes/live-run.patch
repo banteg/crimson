@@ -1,7 +1,8 @@
 A run the client plays (host/session.inc). The verifier lays out no perk prompt, so a click in a tick never opens
 the menu; the run takes a click on it between ticks. The perk choice reaches the run as a command with its next
 tick, which applies it as the verifier does. Escape asks the run for the pause menu: the pending state is
-simulation state, which only ticks write. The console's flag pauses parts of a tick: a run keeps it closed.
+simulation state, which only ticks write. The console's flag pauses parts of a tick: in a run its key is the
+session's, which runs no tick while it is open.
 --- a/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
 @@ -249,7 +249,7 @@

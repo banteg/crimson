@@ -4,19 +4,22 @@
 // player aims at the nearest creature and fires in bursts, opens the perk menu
 // with Space and picks from it (double-clicking, and asking again at once),
 // pauses with Escape and resumes, presses Escape again as the run ends, which
-// opens no pause menu over its end screen, and taps the console key, which a
-// run ignores, at frame times that run several ticks a frame or none. After every
-// frame of play the verifier replays the run's own recording to the same tick
-// and must agree on every snapshot field; when the run ends the verifier must
-// end it at the same tick, and the replay the game saved must be the one it
-// recorded. Each run has a fresh seed, so repeated runs explore new paths; a
-// failing run names its seed, and --seed plays that run again.
+// opens no pause menu over its end screen, and opens the console at frame times
+// that run several ticks a frame or none: the run waits under it while a
+// command resets the camera and draws random numbers, then plays on as it
+// closes. After every frame of play the verifier replays the run's own
+// recording to the same tick and must agree on every snapshot field; when the
+// run ends the verifier must end it at the same tick, and the replay the game
+// saved must be the one it recorded. Each run has a fresh seed, so repeated
+// runs explore new paths; a failing run names its seed, and --seed plays that
+// run again.
 //
 // With --ranked the run is a ranked attempt (host/ranked.inc): the Play Game
 // menu's Ranked box is ticked first, and once the game closes on its end
 // screen, which queues the run under the name it offers, the run queued for the
 // leaderboard must be the one the game recorded, under the ranked rules, signed
 // by the player's key, with the result the verifier derives (service/src/verify.ts).
+// The console key does nothing in a ranked run, which plays on.
 // With --quest the run is quest 1.1 instead, and must be completed.
 //
 // With --pad a gamepad alone plays (game/pad.cpp), a quest too with --quest:
@@ -341,6 +344,12 @@ const stick = ([x, y]) => (x || y ? [(x * 1000) / Math.hypot(x, y), (y * 1000) /
 const times = [16, 7, 33, 16, 50, 4, 16, 12, 21];
 let started = false, seed, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, resumes = 0, picked = false,
   cancelled = false;
+// The console key opens the console for 40 frames, from the frame it is
+// pressed (`consoleAt`, -1 closed) and the tick the run had reached; a command
+// that resets the camera and draws random numbers between ticks runs in it.
+// The run waits until its first tick once the console closes (`waking`).
+const CONSOLE_FRAMES = 40, COMMAND = "generateterrain\r";
+let consoleAt = -1, consoleTicks = 0, consoles = 0, waking = false;
 // The verifier's run has ended and runs down for 500 ms; Escape goes once in that time.
 let ending = false, escapedEnd = false;
 // With --pad the pad is away for a stretch of the run, then comes back.
@@ -394,7 +403,7 @@ while (true) {
   }
   const taps = [];
   // Hold the cursor on the bottom edge through the multi-tick opening frame before creatures spawn.
-  let cursor = [512, 767], keys = [];
+  let cursor = [512, 767], keys = [], chars = "";
   if (started) {
     const { aim, away } = target();
     cursor = aim;
@@ -402,7 +411,20 @@ while (true) {
     // Another request right after a pick, which the pick may have used up.
     if (picked || (field(core, "globals.perk_pending_count") > 0 && frames % 30 === 0)) taps.push(SPACE);
     picked = false;
-    if (frames % 997 === 500) taps.push(CONSOLE);
+    // The console key, at frame times that run several ticks a frame or none:
+    // a run that is not ranked waits while the console is open, and plays on
+    // from where it stopped as it closes; a ranked run ignores the key.
+    if (frames % 997 === 500 && consoleAt < 0) {
+      taps.push(CONSOLE);
+      consoleAt = frames;
+      consoleTicks = ticks;
+      ++consoles;
+    } else if (consoleAt >= 0 && frames === consoleAt + CONSOLE_FRAMES) {
+      if (ranked && ticks === consoleTicks) throw Error(`the console key paused a ranked run at tick ${ticks}`);
+      taps.push(CONSOLE);
+      consoleAt = -1;
+      waking = !ranked;
+    } else if (consoleAt >= 0) chars = COMMAND[frames - consoleAt - 1] ?? "";
     // Escape as the run ends: the original's end screen comes first.
     if (ending && !escapedEnd) {
       taps.push(ESCAPE);
@@ -425,9 +447,9 @@ while (true) {
       ...(taps.includes(ESCAPE) ? [PAD_START] : [])];
     const connected = !(ticks > UNPLUGGED[0] && ticks < UNPLUGGED[1]);
     unplugged ||= !connected;
-    frame(started ? dt : 50, { cursor: PAD_CURSOR, taps: taps.filter((key) => key === CONSOLE),
+    frame(started ? dt : 50, { cursor: PAD_CURSOR, taps: taps.filter((key) => key === CONSOLE), chars,
       pad: connected ? { left: stick(away), right: stick(toward), press } : { connected } });
-  } else frame(started ? dt : 50, { cursor, buttons, keys, taps });
+  } else frame(started ? dt : 50, { cursor, buttons, keys, taps, chars });
 
   const recorded = replay();
   if (!started) {
@@ -441,6 +463,14 @@ while (true) {
     process.on("exit", (code) => code && console.error(`the run's seed was ${seed}: --seed ${seed} plays it again`));
   }
   const recording = decode(recorded);
+  // Firing, moving, the perk key and the command go on under the open console:
+  // none of it reaches the run, whose world the command changes only where its
+  // next tick puts it back (the camera, as the original's next frame does),
+  // compared from there on.
+  if (consoleAt >= 0 && !ranked && recording.records.length !== consoleTicks)
+    throw Error(`the run ticked under the open console at tick ${consoleTicks}`);
+  if ((consoleAt >= 0 && !ranked) || (waking && recording.records.length === consoleTicks)) continue;
+  waking = false;
   idle = recording.records.length === ticks && game.game_state() === GAMEPLAY ? idle + 1 : 0;
   for (const tick of recording.records.slice(ticks)) {
     if (!step(core, tick)) throw Error(`the verifier refused tick ${ticks}`);
@@ -455,6 +485,7 @@ while (true) {
   if (idle > 120) throw Error(`the run stopped ticking at tick ${ticks}`);
   if (frames > 60000) throw Error("the run never ended");
 }
+if (!consoles) throw Error(`the run ended at tick ${ticks}, before the console key was pressed`);
 // The end screen stays: the link gave way to the run.
 const ended = game.game_state();
 for (let i = 0; i < 120; ++i) frame(16, { cursor: padded ? PAD_CURSOR : [700, 700] });
@@ -494,7 +525,7 @@ if (!reread.equals(replay())) throw Error("the saved replay reads back different
 if (ranked) checkRanked();
 if (padded) leaveByPad(quest ? QUEST_RESULTS : GAME_OVER);
 if (!ranked && !padded && !quest) nameEntry();
-console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}), ...(tunes ? { tunes: true } : {}) }));
+console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, consoles, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}), ...(tunes ? { tunes: true } : {}) }));
 
 // The quests the player's save unlocks (game.cfg, src/crimson/persistence/save_status.py).
 function savedUnlocks() {

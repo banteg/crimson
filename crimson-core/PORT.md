@@ -210,8 +210,14 @@ end of the run shows the original's end screen after the verifier's 500 ms
 run-down, which takes no pause, as in the original; leaving any other way, quitting included, ends it unfinished and
 keeps its recording. The original's frame draws a gameplay random number every
 frame: in a run each tick draws it (`portable_step_many`), and between ticks the
-frame and the menus draw from a stream of their own. The console stays closed,
-since its flag pauses parts of a tick. The run's replay goes to `replays/` as
+frame and the menus draw from a stream of their own. The console's flag pauses
+parts of a tick, so no tick runs with it open: in the player's own run that is
+not ranked, the console key opens it on any of the run's screens and the run
+waits under it, its world drawn between ticks, until it closes. Its commands
+reach nothing a tick reads: between ticks the settings, random numbers and tunes
+are the player's, and `generateterrain` resets the camera, which the next tick
+recomputes, as the original's next frame does. Ranked and co-op runs and
+replays keep it closed. The run's replay goes to `replays/` as
 the next numbered `.crd`, `<n>-<mode>.crd`, the replay the Python port records
 and the leaderboard takes ([`host/replay.inc`](host/replay.inc)), with how the
 run ended, or `incomplete`; the run's high score record keeps its number in the
@@ -411,11 +417,13 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   through the menus at frame times from 4 to 50 ms (passes with no tick and
   passes with three) and, after every frame, compares the run with the verifier
   replaying the run's own recording; the run must end on the verifier's tick and
-  the saved replay must match. Each run has a fresh seed; a failing run names
-  its seed, and `--seed` plays it again. With `--ranked` it ticks Ranked
-  first (`--quest` plays quest 1.1), and the run it queues must be the one it
-  recorded, under the ranked rules, signed by the player's key, claiming the
-  result the verifier derives. With `--silent` the original starts with sound
+  the saved replay must match. It opens the console mid-run and runs a command
+  there: the run must not tick until it closes, and agree from its next tick.
+  Each run has a fresh seed; a failing run names its seed, and `--seed` plays
+  it again. With `--ranked` it ticks Ranked first (`--quest` plays quest 1.1),
+  and the run it queues must be the one it recorded, under the ranked rules,
+  signed by the player's key, claiming the result the verifier derives; the
+  console key must not pause it. With `--silent` the original starts with sound
   and music off, which leaves its music track ids all 0, and the run must still
   agree through its end tune; with `--tunes` it loads seven in-game tunes, which
   makes its `crimsonquest` the verifier's in-game tune request.
