@@ -9,6 +9,7 @@
 #include "grim_d3d8.h"
 #include "grim_joystick_state.h"
 #include "grim_timing.h"
+#include "host_input.h"
 
 class GrimInputProvider {
 public:
@@ -59,6 +60,7 @@ extern "C" bool game_coop_focus(int active);
 extern "C" void dinput_away(bool away);
 extern "C" void pad_frame(void);
 extern "C" void rtx_debug_keys(void);
+extern "C" HostInput *game_input(void);
 
 static bool quit_posted;
 static bool away; // the window lost the focus
@@ -211,12 +213,17 @@ GAME_EXPORT(game_mouse_move) void game_mouse_move(float x, float y) {
 }
 
 // WM_CHAR: typed text for the key-character queue and the bound text buffer.
+// Original bug 53: Grim kept out only §, the console key's character on the
+// developers' Finnish keyboards, and wrote the rest into the bound buffer with
+// the console open too. The fix drops what is typed while the console key
+// (game_frame_update's 0x29) is down, on any layout, and leaves the buffer to
+// the text field while the console takes the typing.
 GAME_EXPORT(game_key_char) void game_key_char(int character) {
-  if ((unsigned char)character == 0xa7 || (unsigned char)character == 9)
+  if ((unsigned char)character == 0xa7 || (unsigned char)character == 9 || game_input()->keys[0x29] & 0x80)
     return;
   if (grim_key_char_queue_count < 7)
     grim_key_char_queue[grim_key_char_queue_count++] = character;
-  if (!grim_key_char_buffer || !grim_key_char_buffer_count)
+  if (console_input_enabled || !grim_key_char_buffer || !grim_key_char_buffer_count)
     return;
   if (character == 8) {
     if (*grim_key_char_buffer_count > 0) {
