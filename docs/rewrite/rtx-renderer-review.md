@@ -97,6 +97,12 @@ The direction stays:
 - **Smoke bands.** Ground, low smoke, entities, high smoke: a second hook after the
   terrain and a second composite, for smoke under top-down sprites that reads as
   baked into the dirt. Smoke stays one layer over the world.
+- **Bodies shadowing the smoke.** Each smoke light read its mask from the ground's
+  visibility atlas where the ray through the smoke met the ground. It worked (shafts
+  past bodies in the smoke-light view, up to 40 levels) but shaded frames were
+  unchanged on every golden scene and four late-game moments: the smoke's look is
+  mostly its sky fill, and the weapon light it scatters is too small for shadows in
+  it to show. It cost the smoke pass up to 0.4 ms.
 - **Shatter steam.** The fluid carries density, heat and velocity, no color, so a
   cold puff where the ice breaks draws as the same gray smoke and reads as dust,
   not frost; a white vapor would need another channel through every smoke pass.
@@ -186,16 +192,14 @@ Also:
 - **Non-finite direct light.** #931: the beams' falloff took `asinh` of thousands beside a beam's axis, which the
   GL driver cancels to `log(0)`; 252 dark specks across the golden scenes, none after.
 
-### 2. Bodies shadow the smoke
+### 2. Bodies push the smoke
 
-Smoke scatters every light it is near, straight through the bodies between them,
-so a muzzle in a crowd lights the haze evenly. The coarse visibility atlas (#925)
-already holds, for every selected light, whether it reaches each ground point past
-the bodies. Each smoke light is one of those, so passing its index lets the smoke
-read its mask: one fetch per light per smoke pixel, not per slice, on a buffer at
-most 640 pixels across. Bodies are low, so the shadow fades up the column. Expect
-dark shafts behind bodies where a muzzle or beam lights the haze; judge them on the
-crowd scenes and measure the smoke pass before and after.
+Smoke flows around nothing that walks through it: a crowd charging through a cloud
+leaves it untouched, while every projectile already stirs a wake (`AtmosphereImpulse`).
+Each tick, give moving bodies a wake of their own along their path, sized by the
+body and scaled by its speed, under its own budget so a swarm cannot starve blasts,
+muzzle jets or shots. It moves the smoke itself, so it shows wherever smoke is; judge
+it on crowd scenes and time the solver before and after.
 
 ### 3. The unlit baseline (a decision, made from captures)
 
@@ -305,7 +309,7 @@ reflection and scattering rather than broad red light.
 | Blood, corpses, brass, scorch | Ordered coverage, displacement, wetness, aging, absorption, relief, reflections; cyan sky over blood | Saturation (3); footprints later |
 | Ice and freeze | Ground ice attenuates blood and changes roughness and height; the freeze's cubes and shatter lit as ice; frozen bodies show through their cubes, without Monster Vision's heat | - |
 | Creatures and players | Creatures and players cast body-proxy shadows over the original's drop shadows; creatures receive diffuse, specular and transmission, players cloth lighting | Per-species materials (later) |
-| Smoke | Density, heat by source with a glow while fresh, flame soot, advection, self-extinction, scattering with the shared beam profile, sight attenuation, blast response | Body shadows (2) |
+| Smoke | Density, heat by source with a glow while fresh, flame soot, advection, self-extinction, scattering with the shared beam profile, sight attenuation, blast response | Bodies pushing it (2) |
 | Bonuses | Obsidian shell, foil emblem, clear coat, dynamic reflections; shells cast body shadows | Fewer own limiters (4) |
 | Shockwaves | Distort world and smoke together, keep the HUD, reuse explosion shell timing | Optional small wet-surface ripple |
 | Radioactive, Monster Vision, Sharpshooter | Distinct responses: a pulsing material light, heat bodies and trails, a narrow sight | Keep their gameplay roles distinct |
