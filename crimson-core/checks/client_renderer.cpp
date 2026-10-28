@@ -373,7 +373,7 @@ void check_rtx() {
   // A frame's scene: no camera offset, the clock at zero, a 1024-unit terrain,
   // and up to one light (its first 16 floats; no tail, broad fill or beam).
   auto scene = [](std::initializer_list<float> light, int count) {
-    const float view[7] = {0, 0, 0, 1024, 1024, 4, 3};
+    const float view[8] = {0, 0, 0, 1024, 1024, 4, 3, 0};
     float packed[RTX_LIGHT_FLOATS] = {};
     std::copy(light.begin(), light.end(), packed);
     memcpy(memory + 32768, view, sizeof view);
@@ -500,7 +500,7 @@ void check_rtx() {
   // ironbow heat and nothing past it; the trail fades by its half-life on the
   // run's clock and starts over when the clock runs back.
   auto trail = [](float seconds, int count, int x, int y) {
-    const float view[7] = {0, 0, seconds, 1024, 1024, 4, 3};
+    const float view[8] = {0, 0, seconds, 1024, 1024, 4, 3, 0};
     const float footprint[4] = {700, 300, 20, 1};
     memcpy(memory + 32768, view, sizeof view);
     memcpy(memory + 33500, footprint, sizeof footprint);
@@ -771,7 +771,7 @@ void check_ground_visibility() {
   const float values[20] = {4, 1, 0, 0, 32, 24, 9.6f, 12,
                             .1f, .1f, 1 / 24.f, 1e20f, 1, 0, 1, 1e20f, 1, 0, 0, 0};
   auto begin = [&](int count, float camera_x, float shadows, bool bodies = true) {
-    const float view[7] = {camera_x, 0, 0, 64, 64, 1, 1};
+    const float view[8] = {camera_x, 0, 0, 64, 64, 1, 1, 0};
     const float grid[6] = {0, 0, bodies ? 1.f : 0.f, bodies ? 1.f : 0.f, 64, shadows};
     memcpy(memory + 4096, view, sizeof view);
     memcpy(memory + 8192, lights, sizeof lights);

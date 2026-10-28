@@ -94,6 +94,15 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
      for (int sprite_index = 0; sprite_index < 0x180; ++sprite_index) {
          sprite_effect_t* sprite = &sprite_effect_pool[sprite_index];
          if (sprite->active) {
+@@ -1030,6 +1045,8 @@
+             style_id = particle->style_id;
+             if (style_id == 0 && particle->intensity <= 0.0f) {
+                 active = 0;
++                rtx_smoke_soot(projectile_index);
+             } else if (style_id != 0 && particle->intensity <= 0.8f) {
++                rtx_smoke_soot(projectile_index);
+ #if CL_BUILD == 10908
+                 // 1.9.8 tests the cached style byte; 1.9.93 re-reads it through a reference.
 --- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 @@ -826,7 +826,17 @@
@@ -482,7 +491,7 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
          grim_interface_ptr->grim_set_config_var(0x14, 6u);
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
-@@ -204,6 +204,14 @@
+@@ -204,6 +204,16 @@
          "openurl", console_cmd_open_url);
      console_log_queue.console_register_command(
          "sndfreqadjustment", console_cmd_snd_freq_adjustment);
@@ -492,6 +501,8 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
 +        "togglertx", console_cmd_toggle_rtx);
 +    console_log_queue.console_register_command(
 +        "rtxsmoke", console_cmd_rtx_smoke);
++    console_log_queue.console_register_command(
++        "rtxdebug", console_cmd_rtx_debug);
 +    console_log_queue.console_register_command(
 +        "rendersize", console_cmd_render_size);
  

@@ -195,7 +195,7 @@ class WorldRuntime:
         else:
             draw_world(render_ctx, entity_alpha=entity_alpha)
         if self.rtx_debug_active:
-            draw_debug_label(self.rtx_debug)
+            draw_debug_label(self.rtx_debug, self.render_resources.resources.small_font)
 
     def draw_aim_indicators(self, *, show_aim: bool, aim_enhancement_fade: float, entity_alpha: float = 1.0) -> None:
         if self.rtx_debug_map_active:

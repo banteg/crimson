@@ -28,7 +28,9 @@ const float STEP_SECONDS = 1.0f / 60.0f, FADE_SECONDS = 2.0f, GUARD_BAND = 128;
 enum { GRID_SIZE = 320, PRESSURE_ITERATIONS = 12, MAX_PENDING = 1024, MAX_IMPULSES = 64, MAX_BLASTS = 16 };
 // A minute of ticks, should frames stop draining them.
 enum { MAX_BATCHES = 3600 };
-enum Profile { ORDINARY, NUKE, MUZZLE, ROCKET };
+enum Profile { ORDINARY, NUKE, MUZZLE, ROCKET, SOOT };
+// Heat per unit of smoke by profile (render/rtx/smoke_constants.py's SOURCE_HEAT).
+const float SOURCE_HEAT[] = {2.5f, 2.5f, 1.0f, 2.0f, 1.6f};
 enum Kind { BLAST, MUZZLE_JET, WAKE }; // in the order the solver ranks them
 
 // A copied spawn (sim/smoke_events.py's SmokeEmission): scale is the full world
@@ -199,7 +201,7 @@ void splat(const Emission &e) {
                   {(float)SMOKE_SPLAT, (cx - radius) / smoke.size_x, (cy - radius) / smoke.size_y,
                    radius * 2 / smoke.size_x, radius * 2 / smoke.size_y, cx / smoke.size_x, cy / smoke.size_y, size,
                    strength, e.vx, e.vy, e.expansion, (float)(e.profile == NUKE), e.rotation, dx, dy,
-                   (float)(e.profile == MUZZLE), 0});
+                   (float)(e.profile == MUZZLE), SOURCE_HEAT[e.profile]});
 }
 
 void impulse(const Impulse &i, float age, float fraction) {
@@ -378,6 +380,17 @@ void rtx_smoke_puff(const effect_entry_t *e) {
                                rgba[3], e->rotation, true, std::max(0.0f, -e->age),
                                e->flags & 8 ? half * e->scale_step : 0.0f, capture.source.retention,
                                capture.source.profile, 0, 0});
+}
+
+// A flame particle burning out in pool slot `index` (projectile_update): a faint
+// puff of soot, briefly warm, drifting on at a fraction of its speed (effects.py's
+// soot). Bubbles leave none.
+void rtx_smoke_soot(int index) {
+  const particle_t &p = particle_pool[index];
+  if (!rtx_smoke_active() || p.style_id == 8)
+    return;
+  capture.emissions.push_back({p.pos_x, p.pos_y, p.vel_x * 0.075f, p.vel_y * 0.075f, 16, 1, 1, 1, 0.06f, 0, false, 0,
+                               0, 10, SOOT, 0, 0});
 }
 
 // The player's gun firing toward its aim `heading`: its puffs leave along it.

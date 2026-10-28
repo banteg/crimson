@@ -60,6 +60,7 @@ void rtx_smoke_reset();
 void rtx_smoke_spawned(int index);
 void rtx_smoke_flush();
 void rtx_smoke_puff(const struct effect_entry_t *entry);
+void rtx_smoke_soot(int index);
 void rtx_smoke_muzzle(float heading);
 void rtx_smoke_rocket(float flow_x, float flow_y, float vx, float vy);
 void rtx_smoke_nuke();
@@ -94,6 +95,7 @@ void rtx_heat_trails(float alpha);
 void rtx_heat(int type_id, float transition_alpha);
 void rtx_smoke(float alpha);
 void console_cmd_rtx_smoke(void);
+void console_cmd_rtx_debug(void);
 void console_cmd_render_size(void);
 void rtx_beam_body(float origin_x, float origin_y, float head_x, float head_y, float start, float span, float step,
                    float effect_scale, float alpha, float r, float g, float b);

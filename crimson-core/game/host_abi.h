@@ -42,7 +42,8 @@ HOST_IMPORT(render_size) float host_render_size(float limit);
 HOST_IMPORT(render_pass) void host_render_pass(int pass);
 // The world's light sources, sent before its begin mark (game/rtx_lights.cpp):
 // the view (the camera offset, world to screen; the run's clock in seconds; the
-// terrain's size in world units; the beam sections' gains) and
+// terrain's size in world units; the beam sections' gains; the debug view
+// game/rtx.cpp names, 0 for the shaded world) and
 // `count` lights of RTX_LIGHT_FLOATS each.
 HOST_IMPORT(scene) void host_scene(const float *view, const float *lights, int count);
 // RTX fluid smoke (game/rtx_smoke.cpp): the solver's passes as SMOKE_* commands,

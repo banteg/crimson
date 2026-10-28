@@ -203,6 +203,10 @@ static void practice_render() {
       break;
   }
   terrain.baking = false;
+  if (!drew && rtx_debug_redraw()) {
+    gameplay_render_world();
+    drew = true;
+  }
   if (drew)
     host_frame_hold(HOST_FRAME_SAVE);
   else

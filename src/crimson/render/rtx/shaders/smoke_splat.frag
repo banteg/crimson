@@ -33,5 +33,6 @@ void main() {
         mass*=.75+.125*(sin(w.x*.135+w.y*.07)+sin(w.x*.055-w.y*.115));
     }
     vec2 flow=mass*(u_motion.xy*.44+d*(2.0*u_motion.z/max(u_source.z,.001)*.44))+swirl;
-    finalColor=vec4(mass*u_source.w*vec2(1.7,2.0),flow);
+    // u_flow.w: the source's heat per unit of smoke (smoke_constants.py's SOURCE_HEAT).
+    finalColor=vec4(mass*u_source.w*vec2(1.7,2.0*u_flow.w),flow);
 }

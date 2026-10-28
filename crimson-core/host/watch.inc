@@ -28,6 +28,7 @@ extern unsigned char startup_async_load_ready, startup_loading_fade_complete;
 extern float startup_splash_timer;
 extern ui_element_t ui_sign_crimson;
 void music_fade_out_all(int sfx_id);
+void gameplay_render_world(void);
 void music_play_exclusive(int sfx_id);
 void sfx_entry_stop(sfx_entry_t *entry);
 extern music_entry_t music_entry_table[];
@@ -735,6 +736,12 @@ static void watch_render() {
   // Ticks put the replay's aim on the cursor: the viewer's comes back.
   ui_mouse_x = watch.mouse_x;
   ui_mouse_y = watch.mouse_y;
+  // An RTX debug view picked while paused shows on the world drawn again,
+  // between ticks, without the HUD a tick draws.
+  if (!watch.drawn && watch.phase != WATCH_PREPARING && rtx_debug_redraw()) {
+    gameplay_render_world();
+    watch.drawn = true;
+  }
   if (watch.drawn)
     host_frame_hold(HOST_FRAME_SAVE);
   else if (watch.phase != WATCH_PREPARING)
