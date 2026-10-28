@@ -451,6 +451,23 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
                      effect_velocity.x = heading_cos * 15.0f;
                      effect_velocity.y = (heading_sin * 15.0f);
                      vec2f_t *player_position =
+--- a/decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp
++++ b/decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp
+@@ -273,5 +273,6 @@
+         *weapon_time += frame_dt_ms;
+     }
+ 
++    rtx_smoke_tick(frame_dt);
+     camera_update();
+     gameplay_render_world();
+--- a/decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp
++++ b/decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp
+@@ -113,4 +113,5 @@
+ void gameplay_reset_state(void)
+ {
++    rtx_reset();
+     player_overlay_suppressed_latch = 0;
+     for (int slot_index = 0; slot_index < 16; ++slot_index) {
 --- a/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
 @@ -294,6 +294,7 @@

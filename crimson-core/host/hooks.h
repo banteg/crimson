@@ -57,6 +57,9 @@ void rtx_ice(int effect_id); // an effect's material among the effects (effects_
 extern int rtx_smoke_on;
 bool rtx_smoke_active();
 void rtx_smoke_reset();
+// What RTX keeps beside a run (game/rtx.cpp), cleared as every run starts: Typ-o-Shooter, the tutorial and the
+// demo start theirs outside the host's sessions.
+void rtx_reset();
 void rtx_smoke_spawned(int index);
 void rtx_smoke_flush();
 void rtx_smoke_puff(const struct effect_entry_t *entry);
