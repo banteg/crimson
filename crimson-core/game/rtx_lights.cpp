@@ -34,6 +34,7 @@ int creature_find_in_radius(float *pos, float radius, int start_index);
 // How far a Fire Bullets shot has flown since the arena's edge stopped it (game/patches/52-fire-bullets-fly-off.patch).
 float projectile_fire_flown(const projectile_t *projectile);
 void effect_select_texture(int effect_id);
+void rtx_pressure_ring(float x, float y, float radius, float alpha);
 }
 extern IGrim2D_cpp *grim_interface_ptr;
 
@@ -1228,6 +1229,15 @@ extern "C" int rtx_explosion_owns(const effect_entry_t *entry) {
   return 0;
 }
 
+// Unretimed rocket rings keep the pressure profile too. Select by provenance,
+// since projectile impacts and bonus pulses share exactly the same atlas cell.
+extern "C" bool rtx_explosion_ring(const effect_entry_t *entry) {
+  for (const Explosion &e : explosions)
+    if (e.ring == entry && entry->effect_id == 0x01)
+      return true;
+  return false;
+}
+
 // The shells and retimed fireballs, added after the native additive effects:
 // each fireball sampled at half the explosion's age, so it lasts 1.4 s.
 extern "C" void rtx_explosions_draw() {
@@ -1244,7 +1254,7 @@ extern "C" void rtx_explosions_draw() {
   for (const Explosion &e : explosions) {
     Shell shell;
     if (e.has_shell(shell))
-      quad(0x01, e.x, e.y, shell.radius, shell.radius, 1, 0, 190 / 255.0f, 163 / 255.0f, 122 / 255.0f, shell.alpha);
+      rtx_pressure_ring(e.x, e.y, shell.radius, shell.alpha);
     if (!e.archives_fireballs())
       continue;
     float age = e.age * 0.5f;

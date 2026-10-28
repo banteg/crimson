@@ -22,7 +22,7 @@ vec4 cellSample(vec2 uv) {
     vec2 cell = floor(fragTexCoord * u_grid) / u_grid;
     vec2 step_uv = 1.0 / u_grid;
     vec2 half_texel = 0.5 / vec2(textureSize(texture0, 0));
-    return textureLod(texture0, clamp(uv, cell + half_texel, cell + step_uv - half_texel), 0.0);
+    return alphaBilinear(texture0, clamp(uv, cell + half_texel, cell + step_uv - half_texel));
 }
 
 float cellAlpha(vec2 uv) {
@@ -98,8 +98,9 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
 }
 
 void main() {
-    vec4 texel = alphaBilinear(texture0, fragTexCoord);
-    vec4 base = texel * fragColor * colDiffuse;
+    vec4 texel = alphaBilinear(texture0, fragTexCoord, true);
+    vec4 tint = fragColor * colDiffuse;
+    vec4 base = texel * vec4(decodeArt(tint.rgb), tint.a);
     vec2 dxq = dFdx(fragTexCoord * u_grid) * 2.0;
     vec2 dyq = dFdy(fragTexCoord * u_grid) * 2.0;
     vec2 dxw = dFdx(world);
@@ -140,7 +141,7 @@ void main() {
     if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
     if (u_count == 0) {
-        finalColor = vec4(decodeArt(base.rgb), base.a);
+        finalColor = vec4(base.rgb, base.a);
         return;
     }
 
@@ -167,8 +168,8 @@ void main() {
     float r_dome = min(1.0, length(p_dome));
     vec3 N_dome = normalize(vec3(p_dome, sqrt(max(0.015, 1.0 - r_dome * r_dome))));
 
-    float lum = dot(texel.rgb, vec3(0.299, 0.587, 0.114));
-    vec3 base_lin = decodeArt(base.rgb);
+    float lum = dot(encodeDisplay(texel.rgb), vec3(0.299, 0.587, 0.114));
+    vec3 base_lin = base.rgb;
     vec3 added = vec3(0.0);
 
     for (int i = 0; i < u_count; i++) {

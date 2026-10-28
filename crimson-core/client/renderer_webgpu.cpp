@@ -837,6 +837,7 @@ static float circle[8];
 void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
   Uniforms vertex(*classic.vert), fragment(*classic.frag);
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height);
+  vertex.i("in_world", in_world(t));
   int has[STAGES], filters[STAGES], cop[STAGES], ca1[STAGES], ca2[STAGES], aop[STAGES], aa1[STAGES], aa2[STAGES];
   Input inputs[STAGES];
   for (int s = 0; s < STAGES; ++s) {

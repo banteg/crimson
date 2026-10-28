@@ -1,4 +1,5 @@
 #version 330
+#include "filtering.glsl"
 // The ground material targets' stamps (render/rtx/materials.py): one pass per target channel.
 in vec2 fragTexCoord;
 in vec4 fragColor;
@@ -9,7 +10,7 @@ uniform float u_wetness; // exp((deposit - epoch) / 45), or multiplicative rebas
 out vec4 finalColor;
 void main() {
     if (u_pass == 3) { finalColor = vec4(0., u_wetness, 0., 0.); return; }
-    vec4 t = texture(texture0, fragTexCoord);
+    vec4 t = alphaBilinear(texture0, fragTexCoord);
     float a = t.a * fragColor.a;
     if (floor(a * 255.0 + 0.5) < 4.0) discard;
     float lum = dot(t.rgb, vec3(.299, .587, .114));

@@ -19,6 +19,7 @@ from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.materials import MaterialGroundRenderer, _integer, _uniform
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.rtx.reflection_occlusion import BodyVolume
+from crimson.render.rtx.shaders import glsl
 from crimson.render.terrain_fx import FxQueueTextures
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.terrain_fx import TerrainFxBatch
@@ -40,6 +41,35 @@ def pixels(target: rl.RenderTexture) -> list[tuple[float, float, float, float]]:
         return list(struct.iter_unpack("ffff", data))
     finally:
         rl.unload_image(image)
+
+
+def test_corpse_height_ignores_rgb_of_transparent_texels(raylib_context):
+    shader = rl.load_shader_from_memory(rl.ffi.NULL, glsl("ground_stamp.frag"))
+    target = load_float_render_texture(16, 16)
+    _integer(shader, "u_kind", 2)
+    _integer(shader, "u_pass", 2)
+    results = []
+    try:
+        for hidden_rgb in (0, 255):
+            image = rl.gen_image_color(2, 1, rl.Color(128, 128, 128, 255))
+            rl.image_draw_pixel(image, 1, 0, rl.Color(hidden_rgb, hidden_rgb, hidden_rgb, 0))
+            texture = rl.load_texture_from_image(image)
+            rl.unload_image(image)
+            rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+            try:
+                with texture_mode(target), opaque_blend():
+                    rl.clear_background(rl.BLANK)
+                    rl.begin_shader_mode(shader)
+                    rl.draw_texture_pro(texture, rl.Rectangle(1, .5, 0, 0), rl.Rectangle(0, 0, 16, 16),
+                                        rl.Vector2(), 0, rl.WHITE)
+                    rl.end_shader_mode()
+                results.append(pixels(target)[8 * 16 + 8][3])
+            finally:
+                rl.unload_texture(texture)
+        assert results == pytest.approx([(.045 + .075 * 128 / 255) * .5] * 2, abs=.0001)
+    finally:
+        rl.unload_shader(shader)
+        rl.unload_render_texture(target)
 
 
 @pytest.fixture

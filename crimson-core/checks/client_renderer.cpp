@@ -677,6 +677,44 @@ void check_emissive_fades() {
 #endif
 }
 
+void check_linear_art_and_vertex_ramps() {
+#ifndef __EMSCRIPTEN__
+  renderer_set_rtx(true);
+  w2c_host_texture_create(nullptr, 114, 2, 1, 0);
+  ((u32 *)(memory + 1024))[0] = 0xff000000;
+  ((u32 *)(memory + 1024))[1] = 0xffffffff;
+  w2c_host_texture_upload(nullptr, 114, 1024);
+  w2c_host_set_texture(nullptr, 0, 114);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG1, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_MINFILTER, 2);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_MAGFILTER, 2);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+  w2c_host_clear(nullptr, 0xff000000);
+  Vertex quad[] = {{-.5f, -.5f, 0, 1, 0xffffffff, .5f, .5f},
+                   {127.5f, -.5f, 0, 1, 0xffffffff, .5f, .5f},
+                   {-.5f, 127.5f, 0, 1, 0xffffffff, .5f, .5f},
+                   {127.5f, 127.5f, 0, 1, 0xffffffff, .5f, .5f}};
+  memcpy(memory, quad, sizeof quad);
+  w2c_host_draw(nullptr, 5, 0, 4, 0, 2);
+  w2c_host_set_texture(nullptr, 0, 0);
+  for (int i = 0; i < 4; ++i) {
+    quad[i].x += 128;
+    quad[i].color = i % 2 ? 0xff000000 : 0xffff0000;
+  }
+  memcpy(memory, quad, sizeof quad);
+  w2c_host_draw(nullptr, 5, 0, 4, 0, 2);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  assert(fabsf(back_red(64, 64) - powf(.5f, 1 / 2.2f)) < .003f);
+  assert(fabsf(back_red(192, 64) - powf(.5f, 1 / 2.2f)) < .008f);
+  renderer_set_rtx(false);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+#endif
+}
+
 void check_glint_mask() {
 #ifndef __EMSCRIPTEN__
   w2c_host_texture_create(nullptr, 112, 1, 1, 0);
@@ -1133,6 +1171,7 @@ int main() {
   check_rtx();
   check_emissive_fades();
   check_glint_mask();
+  check_linear_art_and_vertex_ramps();
 #if !defined(RENDERER_BENCHMARK) || RENDERER_BENCHMARK != 0
   // A transparent blue texel must never turn the opaque red neighbor purple.
   w2c_host_texture_create(nullptr, 201, 2, 1, 0);

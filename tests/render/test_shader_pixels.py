@@ -68,6 +68,50 @@ def test_alpha_test_decodes_colors_only_into_linear_light(raylib_context) -> Non
 
 
 @pytest.mark.parametrize("linear", [False, True])
+@pytest.mark.parametrize("cubic", [False, True])
+def test_artwork_is_decoded_before_filtering_and_alpha_is_not_gamma_corrected(raylib_context, linear, cubic):
+    shader = AlphaTestShader(cubic=cubic)
+    target = load_float_target(16, 16)
+    art = rl.gen_image_color(2, 1, rl.Color(0, 0, 0, 128))
+    rl.image_draw_pixel(art, 1, 0, rl.Color(255, 255, 255, 128))
+    tex = rl.load_texture_from_image(art)
+    rl.unload_image(art)
+    rl.set_texture_wrap(tex, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
+    try:
+        with texture_mode(target, linear=linear), shader.scope(), additive_blend():
+            rl.clear_background(rl.BLANK)
+            # All fragments sample exactly halfway between the two texels.
+            rl.draw_texture_pro(tex, rl.Rectangle(1, .5, 0, 0), rl.Rectangle(0, 0, 16, 16), rl.Vector2(), 0, rl.WHITE)
+        assert pixels(target)[8 * 16 + 8][:3] == pytest.approx((.5 * 128 / 255,) * 3, abs=.001)
+    finally:
+        shader.close()
+        rl.unload_texture(tex)
+        rl.unload_render_texture(target)
+
+
+def test_linear_vertex_ramp_preserves_laser_intensity(raylib_context):
+    from grim.raylib_api import rd
+
+    shader = AlphaTestShader()
+    target = load_float_target(128, 16)
+    try:
+        with texture_mode(target, linear=True), shader.scope(), additive_blend():
+            rl.clear_background(rl.BLANK)
+            rl.rl_set_texture(rl.rl_get_texture_id_default())
+            rl.rl_begin(rd.RL_QUADS)
+            for x, y, red in ((0, 0, 255), (0, 16, 255), (128, 16, 0), (128, 0, 0)):
+                rl.rl_color4ub(red, 0, 0, 255)
+                rl.rl_tex_coord2f(.5, .5)
+                rl.rl_vertex2f(x, y)
+            rl.rl_end()
+            rl.rl_set_texture(0)
+        assert pixels(target)[8 * 128 + 64][:3] == pytest.approx((1 - 64.5 / 128, 0, 0), abs=.001)
+    finally:
+        shader.close()
+        rl.unload_render_texture(target)
+
+
+@pytest.mark.parametrize("linear", [False, True])
 @pytest.mark.parametrize("source_alpha", [3, 255])
 def test_emissive_art_fades_without_relaxing_surrounding_coverage(raylib_context, linear, source_alpha) -> None:
     alpha_test = AlphaTestShader()
