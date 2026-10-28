@@ -44,6 +44,7 @@ in vec4 fragColor;
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 uniform int in_world;
+uniform int emissive;
 
 out vec4 finalColor;
 
@@ -52,7 +53,7 @@ void main() {
     // Compare the rounded byte alpha, as in the C/WebGL D3D8 host.
     // GREATEREQUAL with ALPHAREF=4 accepts byte alpha 4 after modulation.
     vec4 texel = alphaBilinear(texture0, fragTexCoord) * fragColor * colDiffuse;
-    if (floor(texel.a * 255.0 + 0.5) < 4.0) discard;
+    if (!(in_world != 0 && emissive != 0) && floor(texel.a * 255.0 + 0.5) < 4.0) discard;
     finalColor = vec4(worldColor(texel.rgb, in_world), texel.a);
 }
 """
@@ -61,6 +62,31 @@ void main() {
 # Raylib's EndShaderMode resets to the default shader, not the enclosing one.
 # Bonus hover text runs inside the world's alpha-test scope.
 _shader_stack: list[tuple[rl.Shader, bool]] = []
+
+
+@contextmanager
+def emissive_scope() -> Generator[None]:
+    """Let additive world artwork fade continuously, retaining its color decode.
+
+    The enclosing sprite shader owns coverage testing. Temporarily relax it for
+    linear emission, flushing both boundaries so queued opaque sprites keep it.
+    """
+    if not current_target_linear() or not _shader_stack or not _shader_stack[-1][1]:
+        yield
+        return
+    shader = _shader_stack[-1][0]
+    location = rl.get_shader_location(shader, "emissive")
+    if location < 0:
+        yield
+        return
+    rl.rl_draw_render_batch_active()
+    with _shader_scope(shader, alpha_test=False):
+        rl.set_shader_value(shader, location, rl.ffi.new("int *", 1), rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+        try:
+            yield
+        finally:
+            rl.rl_draw_render_batch_active()
+            rl.set_shader_value(shader, location, rl.ffi.new("int *", 0), rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
 
 
 @contextmanager

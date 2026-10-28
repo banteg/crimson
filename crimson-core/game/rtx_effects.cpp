@@ -141,7 +141,7 @@ extern "C" bool rtx_effect_vertices(const void *vertices, int count) {
     return false;
   const auto *v = (const EffectVertex *)vertices;
   int kind = sprite_cell(v);
-  if (kind < 0 || ((kind == WARM || kind == BURST) && !additive()))
+  if (kind < 0 || ((kind == WARM || kind == AURA || kind == BURST) && !additive()))
     return false;
   // The source can be Grim's mapped buffer, which a flush may relock.
   EffectVertex quad[4];

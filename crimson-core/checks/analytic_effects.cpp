@@ -148,6 +148,11 @@ int main() {
   assert(calls == 0);
   // Ending a batch submits its pending sprites before the blend changes for the
   // next one, as effects_render switches from normal alpha to additive.
+  // Alpha-composited auras (including dark plague overlays) keep their artwork.
+  grim_config_values[0x14].words[0] = 6;
+  assert(!rtx_effect_quad(points));
+  const float ring_full[8] = {.5f, .5f, 1, .5f, 1, 1, .5f, 1};
+  memcpy(grim_uv_u0, ring_full, sizeof ring_full);
   submissions.clear();
   blends.clear();
   grim_config_values[0x14].words[0] = 6;
@@ -157,7 +162,7 @@ int main() {
   grim_config_values[0x14].words[0] = 2;
   assert(rtx_effect_quad(points));
   grim_interface_ptr->grim_end_batch();
-  assert((submissions == std::vector<int>{1, -1, 1}));
+  assert((submissions == std::vector<int>{2, -1, 2}));
   assert((blends == std::vector<unsigned>{6, 2}));
   // Native 2x2 ring cells stop two texels short. They must use the analytic
   // profile too; matching a full half-atlas rectangle silently kept the sprite.

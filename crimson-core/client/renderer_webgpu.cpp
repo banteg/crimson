@@ -861,7 +861,7 @@ void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
   fragment.i2("color_arg2", ca2).i2("alpha_op", aop).i2("alpha_arg1", aa1).i2("alpha_arg2", aa2);
   unsigned f = render_states[RS_TEXTUREFACTOR];
   fragment.v4("factor", (f >> 16 & 255) / 255.0f, (f >> 8 & 255) / 255.0f, (f & 255) / 255.0f, (f >> 24) / 255.0f);
-  fragment.i("alpha_test", render_states[RS_ALPHATESTENABLE] != 0);
+  fragment.i("alpha_test", render_states[RS_ALPHATESTENABLE] != 0 && !(in_world(t) && additive_emission(render_states)));
   fragment.f("alpha_ref", (float)(render_states[RS_ALPHAREF] & 255));
   fragment.i("alpha_func", (int)render_states[RS_ALPHAFUNC]);
   fragment.i("in_world", in_world(t));

@@ -12,11 +12,12 @@ vec3 warmProfile(vec2 p) {
     return WARM_COLOR * exp(-WARM_BETA * dot(p, p)) * (1. - smoothstep(.94, 1., r));
 }
 
-// particles.jaz effect 16: white color, radial alpha.
+// particles.jaz effect 16, retuned for linear light: concentrate the core and
+// lower the broad skirt so removing the cutoff does not leave a luminous disc.
 float auraProfile(vec2 p) {
     p -= vec2(.027797, .037006);
-    return dot(vec3(.262220, .322753, .372035),
-               exp(-vec3(107.953114, 32.756217, 5.411207) * dot(p, p)))
+    return dot(vec3(.34, .38, .24),
+               exp(-vec3(107.953114, 32.756217, 7.2) * dot(p, p)))
         * (1. - smoothstep(.94, 1., length(p)));
 }
 
@@ -38,10 +39,11 @@ float ringProfile(vec2 p) {
     return crest * variation * (1. - smoothstep(.94, .99, r));
 }
 
-// projs.jaz effect 2, shared with the ion streak's fitted core/halo.
+// Chain arcs retain the ion streak's widths, with more energy in the core and
+// less in the halo: overlapping arcs stay legible instead of filling a blue slab.
 float ionProfile(vec2 p) {
     float r2 = dot(p, p);
-    return dot(vec2(.47467, .3886), exp(-vec2(49.18833, 5.9273) * r2))
+    return dot(vec2(.60, .26), exp(-vec2(49.18833, 5.9273) * r2))
         * (1. - smoothstep(.75, 1., sqrt(r2)));
 }
 

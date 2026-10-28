@@ -1609,7 +1609,7 @@ static void device_draw(const Target &t, u32 primitive, const void *vertices, u3
   unsigned f = render_states[RS_TEXTUREFACTOR];
   const float factor[] = {(f >> 16 & 255) / 255.0f, (f >> 8 & 255) / 255.0f,
                           (f & 255) / 255.0f, (f >> 24) / 255.0f};
-  GLint alpha_test = render_states[RS_ALPHATESTENABLE] != 0;
+  GLint alpha_test = render_states[RS_ALPHATESTENABLE] != 0 && !(in_world(t) && additive_emission(render_states));
   float alpha_ref = (float)(render_states[RS_ALPHAREF] & 255);
   GLint alpha_func = (GLint)render_states[RS_ALPHAFUNC];
   if (c.factor.change(factor)) glUniform4fv(u_factor, 1, factor);
