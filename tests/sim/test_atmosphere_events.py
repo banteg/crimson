@@ -9,7 +9,7 @@ from crimson.effects import EffectPool, SpriteEffectPool
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.presentation_step import DeterministicPresentationPlan
-from crimson.sim.smoke_events import AtmosphereImpulse
+from crimson.sim.smoke_events import BODY_STEP_LIMIT, AtmosphereImpulse, body_wakes
 from crimson.weapon_runtime.assign import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -84,6 +84,35 @@ def test_wake_budget_cannot_starve_blast_or_muzzle_and_capture_does_not_persist(
     assert pickle.dumps(pool) == before
     pool.atmosphere_impulse(start=Vec2(), end=Vec2(10, 0), radius=4., strength=1.)
     assert len(impulses) == 194
+
+
+def test_moving_bodies_push_air_along_their_paths_without_gameplay_changes():
+    captured, world = make_session(seed=73, perk_progression_enabled=False)
+    plain, plain_world = make_session(seed=73, perk_progression_enabled=False)
+    for sim in (world, plain_world):
+        place_creatures(sim, [make_creature_state(pos=Vec2(700, 500 + 60 * i)) for i in range(3)])
+    bodies = []
+    for _ in range(30):
+        inputs = [player_input(move=Vec2(1, 0))]
+        before = world.players[0].pos
+        tick = captured.step_tick(dt=1 / 60, inputs=inputs)
+        plain.step_tick(dt=1 / 60, inputs=inputs)
+        player = [i for i in tick.presentation.atmosphere_impulses if i.kind == "body" and i.start == before]
+        assert len(player) == 1 and player[0].end == world.players[0].pos
+        bodies.extend(i for i in tick.presentation.atmosphere_impulses if i.kind == "body")
+        assert session_digest(captured) == session_digest(plain)
+    assert {round(i.radius, 2) for i in bodies} == {round(48 * .35, 2), round(50 * .35, 2)}
+    assert all(i.strength > 0 for i in bodies)
+
+
+def test_only_bodies_alive_on_both_sides_of_a_tick_push_and_never_across_a_jump():
+    a, b, c = Vec2(0, 0), Vec2(3, 4), Vec2(0, BODY_STEP_LIMIT + 1)
+    before = [(a, 50.), (a, 50.), None, (a, 50.), (a, 50.)]
+    after = [(b, 50.), None, (b, 50.), (c, 50.), (a, 50.)]
+    wakes = body_wakes(before, after, 1 / 60)
+    assert len(wakes) == 1
+    assert (wakes[0].start, wakes[0].end, wakes[0].kind) == (a, b, "body")
+    assert wakes[0].strength == pytest.approx(5 * 60.)
 
 
 def test_atmosphere_batches_preserve_tick_order_including_empty_ticks(mocker):

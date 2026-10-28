@@ -27,8 +27,10 @@ enum { RTX_LIGHT_FLOATS = 32 };
 // SPLAT deposits an emission (its rect in the solver's uv, then source, motion,
 // rotation and flow) and IMPULSE an airflow (rect, segment, impulse, phase);
 // PROJECT advects velocity and removes its divergence; TRANSPORT carries density
-// and heat along it and decays them (decay).
-enum { SMOKE_RESET = 1, SMOKE_FADE, SMOKE_SPLAT, SMOKE_IMPULSE, SMOKE_PROJECT, SMOKE_TRANSPORT };
+// and heat along it and decays them (decay); DRAG eases the air under moving
+// bodies toward their velocity (a count, then each body's path, radius, velocity
+// and a spare float).
+enum { SMOKE_RESET = 1, SMOKE_FADE, SMOKE_SPLAT, SMOKE_IMPULSE, SMOKE_PROJECT, SMOKE_TRANSPORT, SMOKE_DRAG };
 // Floats per smoke light in host_smoke_draw: position, height, radius; RGB, gain;
 // direction, half length, ring radius; tail radiance (source_geometry.glsl).
 enum { SMOKE_LIGHT_FLOATS = 13, SMOKE_MAX_LIGHTS = 16, SMOKE_MAX_SIGHTS = 4 };

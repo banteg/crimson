@@ -8,6 +8,12 @@ uniform int u_mode;
 uniform float u_dt;
 uniform float u_decay;
 uniform float u_fade;
+// Moving bodies (mode 6): each one's path this tick in the field's world units, then its radius and velocity.
+uniform int u_body_count;
+uniform vec4 u_body_path[64];
+uniform vec4 u_body_motion[64];
+// How fast the air under a body takes on its velocity, per second.
+const float BODY_DRAG = 12.0;
 out vec4 finalColor;
 vec2 uv;
 vec2 cell;
@@ -71,6 +77,23 @@ void main() {
 
     } else if(u_mode==5) {
         finalColor=vec4(q.rg*u_fade,q.ba);
+    } else if(u_mode==6) {
+        // Bodies drag the air under them toward their own velocity: toward the weighted mean of the bodies near it, so
+        // the drag never pushes it faster than they move, however long a crowd walks through it.
+        vec2 world=uv*u_world_size;
+        float weight=0.0;
+        vec2 target=vec2(0);
+        for(int i=0;i<64;i++) {
+            if(i>=u_body_count) break;
+            vec4 path=u_body_path[i], motion=u_body_motion[i];
+            vec2 span=path.zw-path.xy;
+            vec2 offset=world-path.xy-span*clamp(dot(world-path.xy,span)/max(dot(span,span),.0001),0.0,1.0);
+            float w=exp(-dot(offset,offset)/(2.0*motion.x*motion.x));
+            weight+=w;
+            target+=w*motion.yz;
+        }
+        float k=weight>.0001 ? (1.0-exp(-u_dt*BODY_DRAG))*min(weight,1.0) : 0.0;
+        finalColor=vec4(q.rg,mix(q.ba,target/max(weight,.0001),k));
     } else {
         vec2 rg=q.rg-u_dt*(
             (faceFlux(uv,vec2(1,0),spacing)-faceFlux(uv-vec2(cell.x,0),vec2(1,0),spacing))/spacing.x

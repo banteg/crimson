@@ -3,7 +3,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from crimson.render.rtx.gpu_smoke import GpuSmokeSimulation
+from crimson.render.rtx.gpu_smoke import MAX_BODY_IMPULSES_PER_TICK, MAX_IMPULSES_PER_TICK, GpuSmokeSimulation
+from crimson.sim.smoke_events import AtmosphereImpulse
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from tests.render.test_smoke_simulation import emission
@@ -30,6 +31,42 @@ def test_gpu_events_do_not_allocate_or_advance_gl_until_prepared():
     assert not sim.pending and not sim.batches and not sim.fields
     with pytest.raises(ValueError):
         sim.consume((), float("nan"))
+
+
+def test_body_wakes_keep_their_own_budget_beside_shots():
+    sim = GpuSmokeSimulation()
+    wake = AtmosphereImpulse(Vec2(), Vec2(10, 0), 5., 3.)
+    impulses = tuple(wake for _ in range(100)) + tuple(
+        AtmosphereImpulse(Vec2(), Vec2(1, 0), 17.5, float(i), kind="body") for i in range(100))
+    sim.consume((emission(),), 1/60, impulses=impulses)
+    kept = sim.batches[0][3]
+    assert [i.kind for i in kept] == ["wake"] * MAX_IMPULSES_PER_TICK + ["body"] * MAX_BODY_IMPULSES_PER_TICK
+    # The strongest bodies are kept.
+    assert min(i.strength for i in kept if i.kind == "body") == 100 - MAX_BODY_IMPULSES_PER_TICK
+
+
+def test_body_drag_carries_air_toward_the_body_but_never_past_it(raylib_context):
+    sim = GpuSmokeSimulation(resolution=128)
+    try:
+        sim.consume((emission(pos=Vec2(300, 300), vel=Vec2()),), 0.)
+        sim.prepare()
+        # A body standing in one place but moving at 90 units a second.
+        body = AtmosphereImpulse(Vec2(500, 500), Vec2(501.5, 500), 17.5, 90., kind="body")
+        speeds = []
+        for _ in range(240):
+            sim._drag([body])
+            speeds.append(np.hypot(*pixels(sim)[:, :, 2:].transpose(2, 0, 1)).max())
+        assert speeds[0] > 5 and speeds == sorted(speeds)
+        assert 85 < speeds[-1] <= 90 * 1.01
+        # Tick after tick through the solver, the flow it turns into around the body stays bounded.
+        sim.reset()
+        sim.consume((emission(pos=Vec2(300, 300), vel=Vec2()),), 0.)
+        for _ in range(300):
+            sim.consume((), 1/60, impulses=(body,))
+        sim.prepare()
+        assert np.hypot(*pixels(sim)[:, :, 2:].transpose(2, 0, 1)).max() <= 90 * 1.5
+    finally:
+        sim.close()
 
 
 def test_native_gpu_smoke_transport_pause_and_reset(raylib_context):

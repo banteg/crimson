@@ -26,12 +26,18 @@ namespace {
 
 const float STEP_SECONDS = 1.0f / 60.0f, FADE_SECONDS = 2.0f, GUARD_BAND = 128;
 enum { GRID_SIZE = 320, PRESSURE_ITERATIONS = 12, MAX_PENDING = 1024, MAX_IMPULSES = 64, MAX_BLASTS = 16 };
+// Moving bodies' drag, on a budget of its own (gpu_smoke.py's MAX_BODY_IMPULSES_PER_TICK).
+enum { MAX_BODY_IMPULSES = 64 };
 // A minute of ticks, should frames stop draining them.
 enum { MAX_BATCHES = 3600 };
 enum Profile { ORDINARY, NUKE, MUZZLE, ROCKET, SOOT };
 // Heat per unit of smoke by profile (render/rtx/smoke_constants.py's SOURCE_HEAT).
 const float SOURCE_HEAT[] = {2.5f, 2.5f, 1.0f, 2.0f, 1.6f};
-enum Kind { BLAST, MUZZLE_JET, WAKE }; // in the order the solver ranks them
+enum Kind { BLAST, MUZZLE_JET, WAKE, BODY }; // in the order the solver ranks them
+// A moving body (sim/smoke_events.py's body_wakes): its path through the tick, its
+// speed as the strength, its radius a share of its size; the air under it eases
+// toward its velocity (SMOKE_DRAG). A longer step is a spawn, a reused slot or a teleport.
+const float BODY_RADIUS = 0.35f, BODY_STEP_LIMIT = 30.0f;
 
 // A copied spawn (sim/smoke_events.py's SmokeEmission): scale is the full world
 // diameter, expansion radial units a second.
@@ -77,6 +83,12 @@ struct {
   int pending = -1;
   Source pending_source;
 } capture;
+
+// Each body where the last tick left it, creature slots then players, if alive.
+struct BodyAt {
+  bool alive;
+  float x, y;
+} bodies_last[sizeof creature_pool / sizeof *creature_pool + 2];
 
 // The field's state (GpuSmokeSimulation): one domain, its retention, pending
 // delayed emissions, batches waiting for a frame, and the solver's clocks.
@@ -139,8 +151,14 @@ void consume(std::vector<Emission> &emissions, std::vector<Impulse> &impulses, f
   std::stable_sort(valid.begin(), valid.end(), [](const Impulse &a, const Impulse &b) {
     return a.kind != b.kind ? a.kind < b.kind : a.rank() > b.rank();
   });
+  auto bodies = std::find_if(valid.begin(), valid.end(), [](const Impulse &i) { return i.kind == BODY; });
+  std::vector<Impulse> body_wakes(bodies, valid.end());
+  valid.erase(bodies, valid.end());
   if (valid.size() > MAX_IMPULSES)
     valid.resize(MAX_IMPULSES);
+  if (body_wakes.size() > MAX_BODY_IMPULSES)
+    body_wakes.resize(MAX_BODY_IMPULSES);
+  valid.insert(valid.end(), body_wakes.begin(), body_wakes.end());
   // Air without smoke is invisible: keep its motion only when a medium or a
   // pending deposit can reveal it.
   if (ready.empty() && !smoke.field && smoke.pending.empty())
@@ -253,20 +271,34 @@ void prepare() {
                      [](const auto &a, const auto &b) { return a.first.rank() > b.first.rank(); });
     if (smoke.blasts.size() > MAX_BLASTS)
       smoke.blasts.resize(MAX_BLASTS);
-    std::stable_sort(smoke.waiting.begin(), smoke.waiting.end(), [](const Impulse &a, const Impulse &b) {
-      return (a.kind == MUZZLE_JET) != (b.kind == MUZZLE_JET) ? a.kind == MUZZLE_JET : a.rank() > b.rank();
+    // Muzzle jets first, then shots, then bodies.
+    auto order = [](const Impulse &i) { return i.kind == MUZZLE_JET ? 0 : i.kind == BODY ? 2 : 1; };
+    std::stable_sort(smoke.waiting.begin(), smoke.waiting.end(), [&](const Impulse &a, const Impulse &b) {
+      return order(a) != order(b) ? order(a) < order(b) : a.rank() > b.rank();
     });
-    if (smoke.waiting.size() > MAX_IMPULSES)
-      smoke.waiting.resize(MAX_IMPULSES);
+    if (smoke.waiting.size() > MAX_IMPULSES + MAX_BODY_IMPULSES)
+      smoke.waiting.resize(MAX_IMPULSES + MAX_BODY_IMPULSES);
     if (batch.fade < 1)
       commands.insert(commands.end(), {(float)SMOKE_FADE, batch.fade});
     for (const Emission &e : batch.emissions)
       splat(e);
     smoke.accumulator += batch.dt;
     while (smoke.accumulator + 1e-9f >= STEP_SECONDS) {
-      for (const Impulse &i : smoke.waiting)
-        impulse(i, 0, 1);
+      std::vector<float> bodies;
+      for (const Impulse &i : smoke.waiting) {
+        if (i.kind != BODY) {
+          impulse(i, 0, 1);
+          continue;
+        }
+        float dx = i.ex - i.sx, dy = i.ey - i.sy, scale = i.strength / sqrtf(dx * dx + dy * dy);
+        bodies.insert(bodies.end(), {i.sx + GUARD_BAND, i.sy + GUARD_BAND, i.ex + GUARD_BAND, i.ey + GUARD_BAND,
+                                     i.radius, dx * scale, dy * scale, 0});
+      }
       smoke.waiting.clear();
+      if (!bodies.empty()) {
+        commands.insert(commands.end(), {(float)SMOKE_DRAG, (float)(bodies.size() / 8)});
+        commands.insert(commands.end(), bodies.begin(), bodies.end());
+      }
       commands.push_back((float)SMOKE_PROJECT);
       // Blast fronts come after projection, which would otherwise erase their expansion.
       std::vector<std::pair<Impulse, float>> lasting;
@@ -328,6 +360,7 @@ bool rtx_smoke_active() {
 // Clears the field and everything queued for it: a mode change, a new run, a
 // replay's seek. New emissions start afresh.
 void rtx_smoke_reset() {
+  memset(bodies_last, 0, sizeof bodies_last);
   smoke.pending.clear();
   clear_field();
   smoke.decay = 0.20f;
@@ -447,9 +480,28 @@ void rtx_smoke_impulse(float sx, float sy, float ex, float ey, float radius, flo
   capture.impulses.push_back({sx, sy, ex, ey, radius, strength, curl, (Kind)kind, duration, expansion_speed});
 }
 
+// Each body that lived through a tick of `dt` seconds and moved in it: its path and speed.
+void body_wakes(bool capture_wakes, float dt) {
+  int n = 0;
+  auto body = [&](bool alive, float x, float y, float size) {
+    BodyAt &last = bodies_last[n++];
+    float step = sqrtf((x - last.x) * (x - last.x) + (y - last.y) * (y - last.y));
+    if (capture_wakes && alive && last.alive && step > 0 && step <= BODY_STEP_LIMIT && dt > 0)
+      capture.impulses.push_back({last.x, last.y, x, y, size * BODY_RADIUS, step / dt, 0, BODY, 0.15f, 0});
+    last = {alive, x, y};
+  };
+  for (const creature_t &c : creature_pool)
+    body(c.active && c.health > 0, c.pos_x, c.pos_y, c.size);
+  for (int i = 0; i < 2; ++i) {
+    const player_state_t &p = player_state_table[i];
+    body(i < config_blob.player_count && p.health > 0, p.pos_x, p.pos_y, p.size);
+  }
+}
+
 // The end of a tick of `dt` seconds: its capture joins the field's queue.
 void rtx_smoke_tick(float dt) {
   rtx_smoke_flush();
+  body_wakes(rtx_smoke_active(), dt);
   if (!rtx_smoke_active()) {
     if (smoke.field || !smoke.batches.empty() || !smoke.pending.empty())
       rtx_smoke_reset();

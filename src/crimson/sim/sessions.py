@@ -30,7 +30,7 @@ from .input import PlayerInput
 from .mode_updates import ModeState, QuestSpawnState
 from .presentation_step import DeterministicPresentationPlan
 from .run_result import RunOutcome, all_players_dead, death_transition_ready
-from .smoke_events import AtmosphereImpulse, SmokeEmission
+from .smoke_events import AtmosphereImpulse, SmokeEmission, body_positions, body_wakes
 from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming, reflex_boost_time_scale_factor
 from .world_state import WorldEvents, WorldState
@@ -266,6 +266,7 @@ class DeterministicSession(msgspec.Struct):
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
+        bodies = body_positions(self.world)
         if state.game_mode == GameMode.TYPO:
             events = typo_gameplay_update(
                 self.world,
@@ -288,6 +289,7 @@ class DeterministicSession(msgspec.Struct):
             )
             self.perk_menu_open = events.perk_menu_opened
 
+        atmosphere_impulses.extend(body_wakes(bodies, body_positions(self.world), timing.dt_sim))
         quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:
             post_apply_sfx.append(SfxId.QUESTHIT)

@@ -20,6 +20,8 @@ GRID_SIZE = 320
 GUARD_BAND = 128.0
 PRESSURE_ITERATIONS = 12
 MAX_IMPULSES_PER_TICK = 64
+# Moving bodies' drag, on a budget of its own: a swarm cannot crowd out blasts, muzzle jets or shots.
+MAX_BODY_IMPULSES_PER_TICK = 64
 MAX_ACTIVE_BLASTS = 16
 
 
@@ -99,18 +101,22 @@ class GpuSmokeSimulation:
                     self.pending.append((-emission.delay_seconds, emission))
             else:
                 ready.append(emission)
-        valid_impulses = tuple(sorted((
+        valid = sorted((
             impulse for impulse in impulses
-            if impulse.kind in ("blast", "muzzle", "wake")
+            if impulse.kind in ("blast", "muzzle", "wake", "body")
             and impulse.radius > 0 and impulse.strength >= 0 and impulse.duration > 0
             and all(math.isfinite(value) for value in (
                 impulse.start.x, impulse.start.y, impulse.end.x, impulse.end.y,
                 impulse.radius, impulse.strength, impulse.curl, impulse.duration, impulse.expansion_speed,
             ))
         ), key=lambda impulse: (
-            {"blast": 0, "muzzle": 1, "wake": 2}[impulse.kind],
+            {"blast": 0, "muzzle": 1, "wake": 2, "body": 3}[impulse.kind],
             -impulse.strength*impulse.radius,
-        )))[:MAX_IMPULSES_PER_TICK]
+        ))
+        valid_impulses = (
+            *[impulse for impulse in valid if impulse.kind != "body"][:MAX_IMPULSES_PER_TICK],
+            *[impulse for impulse in valid if impulse.kind == "body"][:MAX_BODY_IMPULSES_PER_TICK],
+        )
         # Air without smoke is invisible. Keep its motion only when there is an
         # existing medium or a pending native deposit that can reveal it.
         if not ready and not self.fields and not self.pending:
@@ -159,7 +165,8 @@ class GpuSmokeSimulation:
                     raise RuntimeError("GPU smoke solver shader compilation failed")
                 setattr(self, attr, shader)
                 if attr == "shader":
-                    names = ("u_resolution", "u_world_size", "u_aux", "u_mode", "u_dt", "u_decay", "u_fade")
+                    names = ("u_resolution", "u_world_size", "u_aux", "u_mode", "u_dt", "u_decay", "u_fade",
+                             "u_body_count", "u_body_path", "u_body_motion")
                 elif attr == "splat_shader":
                     names = ("u_resolution", "u_world_size", "u_source", "u_motion", "u_rotation", "u_flow")
                 else:
@@ -305,9 +312,9 @@ class GpuSmokeSimulation:
             del self.blasts[MAX_ACTIVE_BLASTS:]
             self.waiting_impulses.extend(impulse for impulse in impulses if impulse.kind != "blast")
             self.waiting_impulses.sort(key=lambda impulse: (
-                0 if impulse.kind == "muzzle" else 1, -impulse.strength*impulse.radius,
+                {"muzzle": 0, "body": 2}.get(impulse.kind, 1), -impulse.strength*impulse.radius,
             ))
-            del self.waiting_impulses[MAX_IMPULSES_PER_TICK:]
+            del self.waiting_impulses[MAX_IMPULSES_PER_TICK+MAX_BODY_IMPULSES_PER_TICK:]
             if fade < 1.:
                 self._set(self.shader, self.locations, "u_fade", (fade,))
                 self._pass(1-self.current, self.current, 5)
@@ -316,9 +323,13 @@ class GpuSmokeSimulation:
                 self._inject(emissions)
             self.accumulator += dt
             while self.accumulator+1e-9 >= STEP_SECONDS:
-                if self.waiting_impulses:
-                    self._inject_impulses(tuple((impulse, 0., 1.) for impulse in self.waiting_impulses))
-                    self.waiting_impulses.clear()
+                pushes = [impulse for impulse in self.waiting_impulses if impulse.kind != "body"]
+                bodies = [impulse for impulse in self.waiting_impulses if impulse.kind == "body"]
+                self.waiting_impulses.clear()
+                if pushes:
+                    self._inject_impulses(tuple((impulse, 0., 1.) for impulse in pushes))
+                if bodies:
+                    self._drag(bodies)
                 other = 1-self.current
                 self._pass(other, self.current, 0)
                 self._pass(2, other, 1)
@@ -343,6 +354,25 @@ class GpuSmokeSimulation:
                 self.current = other
                 self.accumulator = max(0., self.accumulator-STEP_SECONDS)
                 self.executed_steps += 1
+
+    def _drag(self, bodies: list[AtmosphereImpulse]) -> None:
+        """The air under moving bodies eases toward their velocity (smoke_solver.frag's mode 6)."""
+        assert self.shader is not None
+        paths, motions = [], []
+        for body in bodies:
+            start, end = body.start-self.origin, body.end-self.origin
+            span = end-start
+            velocity = span*(body.strength/span.length())
+            paths += [start.x, start.y, end.x, end.y]
+            motions += [body.radius, velocity.x, velocity.y, 0.]
+        rl.set_shader_value(self.shader, self.locations["u_body_count"], rl.ffi.new("int *", len(bodies)),
+                            rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+        for name, values in (("u_body_path", paths), ("u_body_motion", motions)):
+            buffer = rl.ffi.new("float[]", values)  # kept alive across the call: a cast does not own it
+            rl.set_shader_value_v(self.shader, self.locations[name], rl.ffi.cast("void *", buffer),
+                                  rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4, len(bodies))
+        self._pass(1-self.current, self.current, 6)
+        self.current = 1-self.current
 
     def close(self) -> None:
         self.reset()
