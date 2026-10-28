@@ -79,7 +79,8 @@ void rtx_reset();
 // which replaces its aura while RTX draws (rtx_drawing).
 void rtx_explosion_begin(float x, float y, float scale);
 void rtx_explosion_end();
-void rtx_explosion_dark(int dark);
+void rtx_explosion_rocket(int slot);
+void rtx_secondary_spawn(int slot);
 void rtx_explosion_effect(int effect_id, const struct effect_entry_t *entry);
 void rtx_explosions_age(float dt);
 void rtx_explosion_release(const struct effect_entry_t *entry);
@@ -117,9 +118,9 @@ struct RtxExplosion {
   RtxExplosion(float x, float y, float scale) { rtx_explosion_begin(x, y, scale); }
   ~RtxExplosion() { rtx_explosion_end(); }
 };
-struct RtxDarkExplosion {
-  RtxDarkExplosion() { rtx_explosion_dark(1); }
-  ~RtxDarkExplosion() { rtx_explosion_dark(0); }
+struct RtxRocketExplosion {
+  explicit RtxRocketExplosion(int slot) { rtx_explosion_rocket(slot); }
+  ~RtxRocketExplosion() { rtx_explosion_rocket(-1); }
 };
 struct RtxSmokeNuke {
   RtxSmokeNuke() { rtx_smoke_nuke(); }

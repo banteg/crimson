@@ -18,10 +18,11 @@ from tests.render.test_projectile_render import _render_ctx
 
 
 @pytest.mark.parametrize("flags", [0x40, 0x19])
-def test_warm_glow_uses_analytic_profile_only_for_additive_entries(mocker, flags):
+@pytest.mark.parametrize("effect_id", [EffectId.GLOW, EffectId.BURST])
+def test_emissive_profile_is_used_only_for_additive_entries(mocker, flags, effect_id):
     ctx = _render_ctx(rtx_mode=RtxRenderMode.RTX)
     ctx.frame.state.effects.entries[0] = EffectEntry(
-        effect_id=EffectId.GLOW,
+        effect_id=effect_id,
         pos=Vec2(40, 40),
         flags=flags,
         half_width=20.0,
@@ -65,7 +66,7 @@ def _render(draw):
         rl.unload_render_texture(target)
 
 
-@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING])
+@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING, effects.EffectShape.BURST])
 def test_sprite_profiles_fade_and_leave_the_quad_edge_clear(effect_shader, shape):
     def render(alpha):
         return _render(
@@ -76,7 +77,11 @@ def test_sprite_profiles_fade_and_leave_the_quad_edge_clear(effect_shader, shape
     assert np.isfinite(bright).all()
     assert bright[..., :3].max() > 0.1
     assert 0 < faded[..., :3].sum() < bright[..., :3].sum()
-    assert invisible[..., :3].max() == 0
+    if shape in (effects.EffectShape.RING, effects.EffectShape.BURST):
+        # Analytic pressure and flash dissolve continuously below the legacy art cutoff.
+        assert 0 < invisible[..., :3].sum() < faded[..., :3].sum()
+    else:
+        assert invisible[..., :3].max() == 0
     assert bright[:25, :, :3].max() == 0
     assert bright[:, :20, :3].max() == 0
 
@@ -150,7 +155,7 @@ def test_analytic_draw_restores_enclosing_alpha_test(effect_shader):
         rl.unload_texture(texture)
 
 
-@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING])
+@pytest.mark.parametrize("shape", [effects.EffectShape.GLOW, effects.EffectShape.AURA, effects.EffectShape.RING, effects.EffectShape.BURST])
 def test_sprite_batch_preserves_pixels_and_binds_shader_once(effect_shader, mocker, shape):
     def draw(batched):
         with effects.sprite_batch() as batch:

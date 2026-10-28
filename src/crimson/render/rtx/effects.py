@@ -24,9 +24,13 @@ class EffectShape(IntEnum):
     PLASMA = 3
     ION_ARC = 4
     PULSE = 5
+    BURST = 6
 
 
-SPRITE_SHAPES = {EffectId.GLOW: EffectShape.GLOW, EffectId.AURA: EffectShape.AURA, EffectId.RING: EffectShape.RING}
+SPRITE_SHAPES = {
+    EffectId.GLOW: EffectShape.GLOW, EffectId.AURA: EffectShape.AURA,
+    EffectId.RING: EffectShape.RING, EffectId.BURST: EffectShape.BURST,
+}
 _VERTEX = """#version 330
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;

@@ -189,10 +189,10 @@ def draw_effect_pool(
 
     scale = viewport.view_scale_avg(view_scale)
 
-    # Suppress native explosion rings in RTX: nuke/death bursts get the warm
-    # shell above; rocket bursts omit it. Unrelated freeze/shield rings remain.
+    # Lit explosions use the warm shell above; rocket, freeze and shield rings
+    # keep their native timing and draw through the shared linear-light profile.
     pressure_rings = (
-        {id(ring) for v in pool.explosion_visuals if (ring := v.active_ring) is not None}
+        {id(ring) for v in pool.explosion_visuals if v.emit_light and (ring := v.active_ring) is not None}
         if frame.rtx_mode is RtxRenderMode.RTX
         else set()
     )
@@ -240,7 +240,7 @@ def draw_effect_pool(
         if (
             frame.rtx_mode is RtxRenderMode.RTX
             and shape is not None
-            and not (shape is EffectShape.GLOW and entry.flags & 0x40)
+            and not (shape in (EffectShape.GLOW, EffectShape.BURST) and entry.flags & 0x40)
         ):
             draw_sprite(
                 shape, center=screen, width=w, height=h, color=entry.color, rotation=float(entry.rotation), batch=batch,

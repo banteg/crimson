@@ -796,7 +796,12 @@ class ExplosionVisual(msgspec.Struct):
 
     pos: Vec2
     scale: float
+    # Full retained explosion treatment, including retimed fireballs and shell.
+    # Native-timed rocket lighting is tracked separately by rocket_source.
     emit_light: bool = True
+    # Rocket fireballs keep native timing. Their (slot, generation) replaces only
+    # that impact's short detonation lamp, even if the projectile slot is reused.
+    rocket_source: tuple[int, int] | None = None
     age: float = 0.0
     ring: EffectEntry | None = None
     ring_spawned: bool = False
@@ -808,7 +813,15 @@ class ExplosionVisual(msgspec.Struct):
 
     @property
     def fireball_age(self) -> float:
-        return self.age * 0.5
+        return self.age * 0.5 if self.emit_light else self.age
+
+    @property
+    def has_fireball_light(self) -> bool:
+        if not 0.0 <= self.age < self.lifetime:
+            return False
+        if self.emit_light:
+            return bool(self.fireballs)
+        return self.rocket_source is not None and any(sprite.native is not None for sprite in self.fireballs)
 
     @property
     def fireball_radius(self) -> float:
@@ -820,6 +833,7 @@ class ExplosionVisual(msgspec.Struct):
             + max(sprite.initial.half_width, sprite.initial.half_height)
             * (sprite.initial.scale + sprite.initial.scale_step * age)
             for sprite in self.fireballs
+            if self.emit_light or sprite.native is not None
         ), default=32.0 * self.scale)
         return max(12.0 * self.scale, min(90.0 * self.scale, extent * 0.35))
 
@@ -1326,6 +1340,7 @@ class EffectPool(_SmokeCapturePool):
         preserve_bugs: bool,
         emit_light: bool = True,
         emit_atmosphere: bool = True,
+        rocket_source: tuple[int, int] | None = None,
     ) -> None:
         """Port of `effect_spawn_explosion_burst` (0x0042f6c0).
 
@@ -1333,14 +1348,14 @@ class EffectPool(_SmokeCapturePool):
         """
 
         scale = f32(scale)
-        # This does not consume RNG or alter the native atlas entries. Rocket hits
-        # already have a secondary detonation source, so they opt out of this light.
+        # Presentation metadata never consumes RNG or changes native atlas entries.
+        # Rocket hits replace their detonation light but retain native effect timing.
         if emit_atmosphere:
             self.atmosphere_impulse(
                 start=pos, end=pos, kind="blast", radius=max(6., 12.*scale),
                 strength=80.*scale, duration=.45, expansion_speed=180.*scale,
             )
-        visual = ExplosionVisual(pos=pos, scale=scale, emit_light=emit_light)
+        visual = ExplosionVisual(pos=pos, scale=scale, emit_light=emit_light, rocket_source=rocket_source)
         self.explosion_visuals.append(visual)
         del self.explosion_visuals[:-128]
         template = self.template
@@ -1415,5 +1430,5 @@ class EffectPool(_SmokeCapturePool):
                 (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION_STEP) + 3) & 7,
             )
             entry = self.spawn(EffectId.EXPLOSION_BURST, pos, detail_preset, preserve_bugs=preserve_bugs)
-            if emit_light and entry is not None:
+            if (emit_light or rocket_source is not None) and entry is not None:
                 visual.fireballs.append(ExplosionFireball(initial=msgspec.structs.replace(entry), native=entry))

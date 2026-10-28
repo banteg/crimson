@@ -4,7 +4,7 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 in float fragShape; // an ion arc's length in strip scales, negative when its strips end in the native cut
 uniform vec4 colDiffuse;
-uniform int u_kind; // 0 warm glow, 1 white aura, 2 ring, 3 plasma, 4 ion arc, 5 pulse shot
+uniform int u_kind; // 0 warm glow, 1 white aura, 2 ring, 3 plasma, 4 ion arc, 5 pulse shot, 6 burst flash
 uniform vec4 u_params[3];
 uniform int u_in_world; // drawing into the RTX world's linear light (linear_light.glsl)
 out vec4 finalColor;
@@ -77,6 +77,13 @@ void main() {
             + plasmaGlow(p, u_params[0].z, u_params[1].w);
         finalColor = vec4(value * tint.rgb, 1.);
         if (u_in_world != 0) finalColor.rgb = decodeGlow(finalColor.rgb);
+    } else if (u_kind == 6) {
+        // A brief concentrated flash under the fireball, not the original burst
+        // sprite's broad grey cutout. Its energy stays in the linear-light world.
+        float r2 = dot(p, p);
+        float flash = (2.4 * exp(-100. * r2) + .08 * exp(-32. * r2))
+                    * (1. - smoothstep(.65, .9, sqrt(r2)));
+        finalColor = vec4(tint.rgb * flash * tint.a, 1.);
     } else if (u_kind == 5) {
         float front = pulseFront(p), aa = .5 * fwidth(front);
         vec3 glow = mix(tint.rgb, vec3(1.), .45);
@@ -103,7 +110,9 @@ void main() {
             color = tint.rgb;
             alpha = (u_kind == 1 ? auraProfile(p) : ringProfile(p)) * tint.a;
         }
-        alpha = alphaTest(alpha);
+        // An expanding pressure front must dissolve, not snap off at the legacy
+        // four-byte-level alpha threshold. Other artwork keeps its native cut.
+        if (u_kind != 2) alpha = alphaTest(alpha);
         if (alpha == 0.) discard;
         finalColor = vec4(color, alpha);
     }

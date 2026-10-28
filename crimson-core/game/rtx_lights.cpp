@@ -321,11 +321,14 @@ void player_sources(const player_state_t &player, int number) {
   muzzle.broad = energetic;
 }
 
+bool fireball_owns_secondary(int slot);
 void secondary_sources(const secondary_projectile_t &s, int slot) {
   if (!s.active)
     return;
   int type = s.fields.type_id;
   if (type == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
+    if (fireball_owns_secondary(slot))
+      return;
     // A detonation keeps its progress and scale in its velocity.
     float t = fmaxf(0, fminf(1, s.fields.vel_x)), scale = s.fields.vel_y;
     float gain = powf(1 - t, 1.35f);
@@ -385,18 +388,31 @@ bool explosion_shell(float age, float scale, Shell &shell) {
 struct Explosion {
   float x, y, scale, age;
   bool emit_light, ring_spawned;
+  int rocket_slot;
   const effect_entry_t *ring; // its ring's slot, while it holds it
   int fireball_count;
   Fireball fireballs[4];
   bool has_shell(Shell &shell) const { return emit_light && ring_spawned && explosion_shell(age, scale, shell); }
   bool archives_fireballs() const { return emit_light && age >= 0 && age < lifetime(); }
   float lifetime() const { return emit_light ? 1.4f : 0.7f; }
+  bool has_fireball_light() const {
+    if (age < 0 || age >= lifetime())
+      return false;
+    if (emit_light)
+      return fireball_count > 0;
+    for (int i = 0; i < fireball_count; ++i)
+      if (fireballs[i].entry)
+        return true;
+    return false;
+  }
   // The moving sprites' bounds give the emitting footprint; the luminous core
   // fills about 35% of them.
   float fireball_radius() const {
-    float age = this->age * 0.5f, extent = fireball_count ? 0.0f : 32 * scale;
+    float age = this->age * (emit_light ? 0.5f : 1.f), extent = fireball_count ? 0.0f : 32 * scale;
     for (int i = 0; i < fireball_count; ++i) {
       const Fireball &f = fireballs[i];
+      if (!emit_light && !f.entry)
+        continue;
       float dx = f.vx * age + f.x - x, dy = f.vy * age + f.y - y;
       extent = fmaxf(extent, sqrtf(dx * dx + dy * dy) + f.half() * (f.scale + f.scale_step * age));
     }
@@ -405,7 +421,14 @@ struct Explosion {
 };
 std::vector<Explosion> explosions;
 Explosion *bursting; // the burst being spawned
-bool dark_bursts;    // a rocket hit's burst: its detonation lights it instead
+int rocket_burst_slot = -1; // rocket fireballs keep native timing and own this detonation's light
+
+bool fireball_owns_secondary(int slot) {
+  for (const Explosion &e : explosions)
+    if (e.rocket_slot == slot && e.has_fireball_light())
+      return true;
+  return false;
+}
 
 void explosion_sources() {
   for (const Explosion &e : explosions) {
@@ -420,8 +443,20 @@ void explosion_sources() {
       shell.height = 16 * scale, shell.ring = front.radius, shell.width = 8 * scale;
       shell.illumination = 1.8f, shell.reflection = 0.65f, shell.reach = 100 * scale, shell.broad = true;
     }
-    if (!e.emit_light || !e.fireball_count || e.age < 0 || e.age >= e.lifetime())
+    if (!e.has_fireball_light())
       continue;
+    if (!e.emit_light) {
+      // Native rocket fireballs outlive their gameplay detonation. One source
+      // follows the visible flame, expanding and cooling after the impact flash.
+      float t = e.age, phase = std::clamp(t / e.lifetime(), 0.f, 1.f);
+      float gain = .35f * expf(-t / .045f) + .9f * powf(1 - phase, 1.1f);
+      float rise = phase * phase * (3 - 2 * phase), rocket_scale = scale / .4f;
+      Light &fireball = add(source_ident(IDENT_EXPLOSION, spot | 1), e.x, e.y, 240 * rocket_scale,
+                            1.8f * gain, (1.05f - .35f * phase) * gain, (.38f - .24f * phase) * gain);
+      fireball.height = (24 + 40 * rise) * rocket_scale, fireball.width = e.fireball_radius();
+      fireball.illumination = 6, fireball.reflection = 1.2f, fireball.broad = true;
+      continue;
+    }
     // A fast flash, the visible fireball sustained, then a fade with its retimed alpha.
     float t = e.age;
     float fade = fminf(1, fmaxf(0, 1 - t / e.lifetime()) / 0.75f);
@@ -1136,12 +1171,18 @@ extern "C" int rtx_collect_sights(float *out, int capacity) {
 extern "C" void rtx_explosion_begin(float x, float y, float scale) {
   if (explosions.size() >= MAX_EXPLOSIONS)
     explosions.erase(explosions.begin());
-  explosions.push_back({x, y, scale, 0, !dark_bursts, false, nullptr, 0, {}});
+  explosions.push_back({x, y, scale, 0, rocket_burst_slot < 0, false, rocket_burst_slot, nullptr, 0, {}});
   bursting = &explosions.back();
 }
 extern "C" void rtx_explosion_end() { bursting = nullptr; }
-// Whether the next bursts are rocket hits, which the detonation lights instead.
-extern "C" void rtx_explosion_dark(int dark) { dark_bursts = dark; }
+extern "C" void rtx_explosion_rocket(int slot) { rocket_burst_slot = slot; }
+// A reused projectile slot must not inherit the old fireball's light ownership.
+// The old visible fireball continues to light its own position until it fades.
+extern "C" void rtx_secondary_spawn(int slot) {
+  for (Explosion &e : explosions)
+    if (e.rocket_slot == slot)
+      e.rocket_slot = -1;
+}
 
 // An effect the burst spawned (effect_spawn): its ring, and its fireball sprites
 // as they start out.
@@ -1151,7 +1192,7 @@ extern "C" void rtx_explosion_effect(int effect_id, const effect_entry_t *entry)
   if (effect_id == 0x01) {
     bursting->ring_spawned = true;
     bursting->ring = entry;
-  } else if (effect_id == 0x0c && bursting->emit_light && bursting->fireball_count < 4) {
+  } else if (effect_id == 0x0c && bursting->fireball_count < 4) {
     float rgba[4];
     memcpy(rgba, &entry->color, sizeof rgba);
     bursting->fireballs[bursting->fireball_count++] = {
@@ -1172,13 +1213,13 @@ extern "C" void rtx_explosion_release(const effect_entry_t *entry) {
   }
 }
 
-// Whether RTX draws a native effect itself (effects_render): an explosion's ring
-// becomes its pressure shell (or nothing, for a rocket's), and a lit explosion's
-// fireballs are drawn at half speed from how they spawned.
+// Whether RTX draws a native effect itself (effects_render): a lit explosion's
+// ring becomes its pressure shell, and its fireballs are drawn at half speed
+// from how they spawned. A rocket's ring keeps its native timing and uses the analytic profile.
 extern "C" int rtx_explosion_owns(const effect_entry_t *entry) {
   for (const Explosion &e : explosions) {
     if (e.ring == entry && entry->effect_id == 0x01)
-      return 1;
+      return e.emit_light;
     if (e.archives_fireballs())
       for (int i = 0; i < e.fireball_count; ++i)
         if (e.fireballs[i].entry == entry)
@@ -1246,5 +1287,6 @@ extern "C" void rtx_explosions_age(float dt) {
 extern "C" void rtx_lights_reset() {
   explosions.clear();
   bursting = nullptr;
+  rocket_burst_slot = -1;
   selection.reset();
 }
