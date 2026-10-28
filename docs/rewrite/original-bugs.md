@@ -1368,3 +1368,46 @@ out-of-bounds branch), `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 (the fading streak), `tests/render/test_material_lights.py`, and
 [`52-fire-bullets-fly-off.patch`](../../crimson-core/game/patches/52-fire-bullets-fly-off.patch).
 
+
+## 53) The console key and console typing reach the name field
+
+Native behavior:
+
+- Grim's window procedure queues each typed character (`WM_CHAR`) for
+  `console_input_poll` and also writes it straight into the buffer the last
+  `ui_text_input_update` bound. It keeps out only Tab and `§`, the console key's
+  character on a Finnish keyboard.
+- `game_frame_update` opens the console on the key left of 1 (DirectInput
+  `0x29`). On other layouts that key types another character, `` ` `` on a US
+  keyboard, which reaches the field before the console opens; opening flushes
+  the queue but not the field.
+- While the console is open, `console_input_poll` takes the queue, but the
+  window procedure still writes every character into the bound field: on the
+  high score name entry, a console command also lands in the name.
+
+Why it's likely a bug:
+
+- The `§` filter shows the console key's character was meant to stay out of
+  text fields; it covered the developers' own layout only.
+- An open console takes the keyboard: it pauses the game and takes Enter away
+  from the field, but the field keeps getting its text.
+
+Rewrite behavior:
+
+- The Python port's console drains typed text as it opens, closes and reads it,
+  so the port's text fields never get it.
+- The web and native clients drop what is typed while the console key is down,
+  on any layout, and leave the bound field alone while the console is open.
+  Their `WM_CHAR` (`game_key_char` in
+  [`crimson-core/game/frame.cpp`](../../crimson-core/game/frame.cpp)) stands in
+  for the window procedure, so the fix lives there rather than in a patch.
+- `--preserve-bugs` has nothing to restore: the Python port never had the leak,
+  and the clients' fix changes no run, only where typed text lands. Typ-o reads
+  the queue, whose console key character the console's opening flushed anyway.
+
+Evidence: `decomp/1.9/grim/window/window_proc.cpp` (`WM_CHAR`),
+`decomp/1.9/crimsonland/ui_widgets/ui_text_input_update.cpp`,
+`decomp/1.9/crimsonland/console/console_input_poll.cpp`,
+`decomp/1.9/crimsonland/console/console_set_open.cpp`, the console toggle in
+`decomp/1.9/crimsonland/game/game_frame_update.cpp`, and
+[`checks/game_session.mjs`](../../crimson-core/checks/game_session.mjs).
