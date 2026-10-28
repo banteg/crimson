@@ -229,7 +229,7 @@ Render mode enum and helpers: `src/crimson/render/rtx/mode.py` (`classic|rtx`).
 
 Runtime/launch controls:
 
-- Options: the RTX lighting box, in the row the original's Graphics detail slider had
+- Options: the RTX lighting box, below the sliders, in place of the original's Graphics detail slider
 - launch flag: `--rtx` (game entrypoint or `crimson replay play <replay.crd> --rtx`)
 - console commands: `rendermode <classic|rtx>`, `togglertx`
 
@@ -432,8 +432,9 @@ without it.
 
 Controls:
 
-- Options: the RTX lighting box (`crimson-core/game/rtx/options.patch`), in Graphics detail's row; `crimson.cfg`
-  keeps the detail preset, the most detail by default
+- Options: the RTX lighting box (`crimson-core/game/rtx/options.patch`) replaces Graphics detail: Mouse sensitivity
+  moves up into its row and the box goes below the sliders, beside UI Info texts; `crimson.cfg` keeps the detail
+  preset, the most detail by default
 - console commands, as in the Python port: `rendermode <classic|rtx>`, `togglertx`, `rtxsmoke <on|off>`
 - launch flag: `crimson --rtx`, or `CRIMSON_RTX=1` or `0` (unattended captures), for that launch only
 

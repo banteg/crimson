@@ -36,7 +36,7 @@ def test_holding_the_button_on_a_volume_segment_sets_that_volume(loop, mocker) -
 
 def test_the_rtx_box_switches_the_mode_and_keeps_the_choice(loop, mocker) -> None:
     options = open_options(loop)
-    box = options._content_layout().label_pos.offset(dy=86.0)
+    box = options._content_layout().label_pos.offset(dy=110.0)
     mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(box.x + 8.0, box.y + 8.0))
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     loop.update(0.016)

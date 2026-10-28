@@ -30,8 +30,9 @@ class _OptionsContentLayout(msgspec.Struct, frozen=True):
 
 
 class OptionsMenuView(PanelMenuView):
-    # Native also has a "Mouse sensitivity:" slider at +107 for its software cursor; the port uses the OS cursor,
-    # so the row is left empty and crimson.cfg keeps the value.
+    # Native also has a "Mouse sensitivity:" slider at +87, in Graphics detail's row
+    # (crimson-core/game/rtx/options.patch), for its software cursor; the port uses the OS cursor, so the row is left
+    # empty and crimson.cfg keeps the value.
     _LABELS = (
         "Sound volume:",
         "Music volume:",
@@ -44,7 +45,7 @@ class OptionsMenuView(PanelMenuView):
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = UiSegmentedSlider(value=10)
         self._slider_music = UiSegmentedSlider(value=10)
-        # Graphics detail's row; crimson.cfg keeps the preset (crimson-core/game/rtx/options.patch).
+        # In place of Graphics detail, below the sliders; crimson.cfg keeps the preset.
         self._rtx_checkbox = UiCheckbox("RTX lighting")
         self._info_checkbox = UiCheckbox("UI Info texts")
 
@@ -105,7 +106,7 @@ class OptionsMenuView(PanelMenuView):
         if ui_checkbox_update(
             resources,
             self._rtx_checkbox,
-            label_pos.offset(dy=86.0),
+            label_pos.offset(dy=110.0),
             focus=focus,
             mouse=mouse,
             click=canvas.mouse_pressed(),
@@ -189,7 +190,7 @@ class OptionsMenuView(PanelMenuView):
         focus = self.state.focus
         ui_segmented_slider_draw(resources, focus, self._slider_sfx, slider_pos.offset(dy=47.0))
         ui_segmented_slider_draw(resources, focus, self._slider_music, slider_pos.offset(dy=67.0))
-        ui_checkbox_draw(resources, self._rtx_checkbox, label_pos.offset(dy=86.0), focus=focus)
+        ui_checkbox_draw(resources, self._rtx_checkbox, label_pos.offset(dy=110.0), focus=focus)
         ui_checkbox_draw(resources, self._info_checkbox, label_pos.offset(dy=135.0), focus=self.state.focus)
 
         button_pos = base_pos.offset(dy=155.0)
