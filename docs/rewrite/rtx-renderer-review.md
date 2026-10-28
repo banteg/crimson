@@ -26,8 +26,8 @@ pressure fronts and simulated smoke form one system, with debug views, pixel
 tests and golden scenes behind it.
 
 Its remaining weakness is coherence. Ground, creatures, players, bonuses and smoke
-share a light list, but each still limits highlights its own way, players and
-bonuses do not take part in occlusion, and some passes behave like separate layers.
+share a light list, but each still limits highlights its own way, and some passes
+behave like separate layers.
 The direction stays:
 
 1. **Preserve the original art: albedo, silhouettes and readability.**
@@ -69,6 +69,9 @@ The direction stays:
 | GL submission state | #924 | The native client caches uniform locations, uniform values and sampler state and reuses one quad index buffer: in the dense-beams window, uniform calls drop from about 1,600 to 440 a frame and sampler calls from 680 to 24. CPU submission only, no frame-rate change claimed |
 | Coarse visibility atlas | #925, #927 | Every ground shadow comes from one world-anchored atlas at four world units a texel, four lights a texel, drawn before the HDR world; the ground pass walks no body grid. Beams keep their directional penumbrae. Reflections share the direct light's mask (an intended approximation that supersedes #923's reflection rule), and turning shadows off also clears reflection occlusion. Late Survival frames 10.8 to 9.7 ms (9 to 11% in paired runs); golden scenes differ only at soft shadow edges |
 | Lit freeze ice | #932 | The freeze's cubes and the shatter's cubes and shards are lit as ice instead of stamped unlit. `tools/rtx/ice_surface.py` recovers a surface from the original sprite: the cube's render camera and bent, rounded body fitted to its corners, outline and shading, domes for the shards, and on each a height field matching the sprite's relative shading, with the mottling that leaves. Lights glint off the ice and shade it blue, and it keeps the original's look unlit. Cubes over frozen bodies let them show through their dark faces; the shatter stays solid. Monster Vision shows no heat on frozen monsters, which read as themselves inside the ice |
+| Hot smoke | #933 | Sources deposit heat by profile (`SOURCE_HEAT`); heat cools faster than smoke thins, so heat per unit of smoke is its age. Fresh explosion smoke glows yellow-orange through deep red to gray within about a second, rocket trails for their first instants; muzzle and old smoke never glow, and the glow lights nothing else |
+| Flame soot | #934 | Each flame particle that burns out leaves a small, faint puff of soot, warm enough to glow dimly for a moment. The flame sprites stay: a fluid flame of hot gas swirled well but read redder and dimmer than the original's yellow-white flame |
+| Debug views everywhere | #935, #936 | F6 and Shift+F6 cycle the views under the pause menu too, labelled in the game's font, and in the native and web clients as in Python (`rtxdebug` in their console). A view picked in a paused replay draws the world again; map views keep only the ground's or the smoke's pass |
 
 ## Disproven or dropped
 
@@ -91,8 +94,14 @@ The direction stays:
   default; the client's documented gap (blood laid before RTX reads painted) stands.
 - **Exact equivalence between different approximations.** Compare approximations
   against a reference within stated tolerances instead.
-- **"Smoke bands double the smoke march."** Splitting the existing height slices
-  between a low and a high band adds one composite, not a second march.
+- **Smoke bands.** Ground, low smoke, entities, high smoke: a second hook after the
+  terrain and a second composite, for smoke under top-down sprites that reads as
+  baked into the dirt. Smoke stays one layer over the world.
+- **Shatter steam.** The fluid carries density, heat and velocity, no color, so a
+  cold puff where the ice breaks draws as the same gray smoke and reads as dust,
+  not frost; a white vapor would need another channel through every smoke pass.
+  Freeze shatters whole crowds at once, so the puffs would fog the screen just as
+  the shards should read, and the lit ice already carries the moment.
 - **A stencil cap on overlapping additive draws.** Counting the arc pile's fragments
   per pixel was pixel-exact, but on macOS GL a stencil-rejected fragment costs about
   as much as a drawn one (156 against 157 ms with every arc fragment rejected). Only
@@ -177,13 +186,16 @@ Also:
 - **Non-finite direct light.** #931: the beams' falloff took `asinh` of thousands beside a beam's axis, which the
   GL driver cancels to `log(0)`; 252 dark specks across the golden scenes, none after.
 
-### 2. Hot smoke and shatter steam
+### 2. Bodies shadow the smoke
 
-- **Hot smoke.** Every emission adds temperature, but temperature mostly shapes the
-  column. Give fresh explosion smoke a short warm emission that cools quickly, keep
-  old smoke neutral, and separate soot, heat and steam source profiles.
-- **Shatter steam.** A brief puff of cold steam where the freeze's ice breaks, from
-  the steam profile above.
+Smoke scatters every light it is near, straight through the bodies between them,
+so a muzzle in a crowd lights the haze evenly. The coarse visibility atlas (#925)
+already holds, for every selected light, whether it reaches each ground point past
+the bodies. Each smoke light is one of those, so passing its index lets the smoke
+read its mask: one fetch per light per smoke pixel, not per slice, on a buffer at
+most 640 pixels across. Bodies are low, so the shadow fades up the column. Expect
+dark shafts behind bodies where a muzzle or beam lights the haze; judge them on the
+crowd scenes and measure the smoke pass before and after.
 
 ### 3. The unlit baseline (a decision, made from captures)
 
@@ -213,16 +225,7 @@ core: piles of additive light reach hundreds of times white in the half-float wo
 target, so a limiter belongs before the tonemap, and the moiré may come from
 half-float accumulation.
 
-### 5. Smoke bands (an experiment)
-
-Smoke composites after every entity, so the whole volume sits in front of the
-world. Try ground, then low smoke, then entities, then high smoke. The client draws
-smoke from a hook after the world's sprites; a low band needs a second hook after
-the terrain. A low band under top-down sprites can read as baked into the dirt, so
-judge it on captures. Add body shadows inside smoke only after profiling: per-pixel
-shadow traces are what blew the ion-chain budget before #880.
-
-### 6. Linear color, last and all at once
+### 5. Linear color, last and all at once
 
 Several lit passes decode albedo, add light and gamma-encode before the HDR target,
 while unlit sprites, additive effects and smoke blend in gamma space as the
@@ -298,11 +301,11 @@ reflection and scattering rather than broad red light.
 | --- | --- | --- |
 | Muzzle flashes and projectiles | Light ground, creatures, players, bonuses and smoke; wet reflections; restrained tracers; stable budgets with fades; players and bonuses shadow them | - |
 | Ion and fire beams | Analytic visible body; one extended source with closed-form ground light; directional shadows from the coarse visibility atlas; smoke scattering; ion arcs | Material-specific response (later) |
-| Explosions | Fireball, warm shell, light, pressure refraction, smoke, blast airflow and scorch coordinated | Hot smoke (2); heat on ice and wet ground |
+| Explosions | Fireball, warm shell, light, pressure refraction, smoke and its heat glow, blast airflow and scorch coordinated | Heat on ice and wet ground |
 | Blood, corpses, brass, scorch | Ordered coverage, displacement, wetness, aging, absorption, relief, reflections; cyan sky over blood | Saturation (3); footprints later |
-| Ice and freeze | Ground ice attenuates blood and changes roughness and height; the freeze's cubes and shatter lit as ice; frozen bodies show through their cubes, without Monster Vision's heat | Shatter steam (2) |
+| Ice and freeze | Ground ice attenuates blood and changes roughness and height; the freeze's cubes and shatter lit as ice; frozen bodies show through their cubes, without Monster Vision's heat | - |
 | Creatures and players | Creatures and players cast body-proxy shadows over the original's drop shadows; creatures receive diffuse, specular and transmission, players cloth lighting | Per-species materials (later) |
-| Smoke | Density, heat, advection, self-extinction, scattering with the shared beam profile, sight attenuation, blast response | Bands (5); body occlusion after profiling; soot, heat and steam profiles (2) |
+| Smoke | Density, heat by source with a glow while fresh, flame soot, advection, self-extinction, scattering with the shared beam profile, sight attenuation, blast response | Body shadows (2) |
 | Bonuses | Obsidian shell, foil emblem, clear coat, dynamic reflections; shells cast body shadows | Fewer own limiters (4) |
 | Shockwaves | Distort world and smoke together, keep the HUD, reuse explosion shell timing | Optional small wet-surface ripple |
 | Radioactive, Monster Vision, Sharpshooter | Distinct responses: a pulsing material light, heat bodies and trails, a narrow sight | Keep their gameplay roles distinct |
@@ -314,13 +317,13 @@ full volumetric system would add complexity without solving the important proble
 
 - **One presentation descriptor per visual source**: visible geometry and lifetime,
   linear emission, point, segment or annulus shape, height and width, response
-  gains and priority, and optional heat, soot, steam and pressure outputs, so the
+  gains and priority, and optional heat, soot and pressure outputs, so the
   visible draw and its light sample the same age and geometry. The explosion
   visual already works this way.
 - **One receiver library** (`source_geometry.glsl` is its start): shared source
   evaluation and body visibility, with each material deciding only its response.
 - **Frame order**: terrain targets in stamp order; visible sources with stable
-  budgets; body occlusion; ground; low smoke; entities; high smoke; pressure
+  budgets; body occlusion; ground; entities; smoke; pressure
   fronts and, later, emissive bloom; one tonemap; then the HUD.
 
 Python is the single shader source for both clients (`crimson-core/client/shaders.py`
