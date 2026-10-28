@@ -22,6 +22,8 @@ def test_debug_hotkey_cycles_both_directions_without_touching_game_state(mocker)
 def test_diagnostics_bypass_hdr_but_classic_ignores_selection(assets_dir, mocker):
     runtime = WorldRuntimeHost(assets_dir=assets_dir)
     mocker.patch.object(type(runtime.render_resources), "process_ground_pending")
+    resources = SimpleNamespace(small_font=object())
+    mocker.patch.object(type(runtime.render_resources), "resources", new=resources)
     context = SimpleNamespace(view=SimpleNamespace(out_size=None))
     mocker.patch.object(runtime, "_render_ctx", return_value=context)
     draw = mocker.patch.object(runtime_module, "draw_world")
@@ -46,7 +48,7 @@ def test_diagnostics_bypass_hdr_but_classic_ignores_selection(assets_dir, mocker
     assert runtime.rtx_debug_active
     assert not scopes
     fronts.assert_not_called()
-    label.assert_called_once_with(RtxDebugView.SUBSTRATE_NORMAL)
+    label.assert_called_once_with(RtxDebugView.SUBSTRATE_NORMAL, resources.small_font)
     runtime.rtx_debug = RtxDebugView.SHADED
     runtime.draw()
     assert scopes == [None]

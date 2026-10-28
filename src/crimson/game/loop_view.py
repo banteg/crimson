@@ -133,8 +133,10 @@ class GameLoopView:
             self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._screenshot_requested = True
-        if gameplay is not None and not console.open_flag:
-            gameplay.handle_rtx_debug_hotkey()
+        # The pause menu draws the paused world behind it, so F6 reaches the gameplay under it too.
+        world_view = self.state.screens.gameplay
+        if world_view is not None and not console.open_flag:
+            world_view.handle_rtx_debug_hotkey()
         if console.open_flag:
             if console.quit_requested:
                 self.state.quit_requested = True

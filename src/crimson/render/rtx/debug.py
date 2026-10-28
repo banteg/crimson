@@ -4,6 +4,8 @@ from __future__ import annotations
 from enum import IntEnum
 
 from grim import canvas
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
+from grim.geom import Vec2
 from grim.raylib_api import rl, rl_color
 
 
@@ -73,13 +75,13 @@ def debug_hotkey(view: RtxDebugView) -> RtxDebugView:
     return view.cycle(-1 if reverse else 1)
 
 
-def draw_debug_label(view: RtxDebugView) -> None:
+def draw_debug_label(view: RtxDebugView, font: SmallFontData) -> None:
     if view is RtxDebugView.SHADED:
         return
     title = f"RTX / {view.token}    F6 next / Shift+F6 previous"
     help_text = _DEBUG_HELP.get(view, "Linear contribution mapped as c/(1+c), then gamma encoded")
     y = max(8, canvas.height() - 104)
-    width = min(canvas.width() - 16, max(rl.measure_text(title, 18), rl.measure_text(help_text, 14)) + 20)
-    rl.draw_rectangle(8, y, width, 56, rl_color(0, 0, 0, 220))
-    rl.draw_text(title, 18, y + 8, 18, rl.WHITE)
-    rl.draw_text(help_text, 18, y + 32, 14, rl.LIGHTGRAY)
+    width = min(canvas.width() - 16, max(measure_small_text_width(font, title), measure_small_text_width(font, help_text)) + 20)
+    rl.draw_rectangle(8, y, int(width), 52, rl_color(0, 0, 0, 220))
+    draw_small_text(font, title, Vec2(18, y + 8), rl.WHITE)
+    draw_small_text(font, help_text, Vec2(18, y + 28), rl.LIGHTGRAY)
