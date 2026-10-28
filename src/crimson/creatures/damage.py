@@ -133,7 +133,12 @@ def resolve_native_death_sfx(
 
 
 def align_death_heading(creature: CreatureState, direction: Vec2) -> None:
-    """The corpse slides backward along its heading; face against the impact."""
+    """The corpse slides backward along its heading; face against the impact.
+
+    Pinned spawners never slide, so they keep the heading their nest was drawn with.
+    """
+    if creature.flags & CreatureFlags.SPAWNER and not creature.flags & CreatureFlags.SPAWNER_MOBILE:
+        return
     if direction.x != 0.0 or direction.y != 0.0:
         creature.heading = x87_pc24_sub(x87_fpatan(direction.y, direction.x), NATIVE_HALF_PI)
 
