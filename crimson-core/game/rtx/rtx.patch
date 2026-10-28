@@ -103,6 +103,14 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
 +                rtx_smoke_soot(projectile_index);
  #if CL_BUILD == 10908
                  // 1.9.8 tests the cached style byte; 1.9.93 re-reads it through a reference.
+@@ -1203,6 +1220,7 @@
+                                 projectile_vec2_t velocity(
+                                     (float)velocity_x, (float)(crt_rand() % 60 - 30));
+ #endif
++                                RtxSmokeFlame rtx_smoke_source;
+                                 int effect_id = fx_spawn_sprite(
+                                     (vec2f_t*)&hit_position, (vec2f_t*)&velocity, 13.0f);
+                                 sprite_effect_pool[effect_id].color_a = 0.7f;
 --- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 @@ -826,7 +826,17 @@
@@ -395,17 +403,29 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
  
 --- a/decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp
-@@ -76,6 +76,7 @@
+@@ -76,6 +76,10 @@
          if (perk_count_get(perk_id_final_revenge) != 0) {
              const vec2f_t *player_pos =
                  &player_state_table[player_index].position;
+-            effect_spawn_explosion_burst(player_pos, 1.8f);
 +            rtx_smoke_blast(player_pos->x, player_pos->y, 1.8f);
-             effect_spawn_explosion_burst(player_pos, 1.8f);
++            {
++                RtxSmokeNuke rtx_smoke_source;
++                effect_spawn_explosion_burst(player_pos, 1.8f);
++            }
              scripted_burst_active = 1;
  
 --- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
 +++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
-@@ -1209,6 +1209,7 @@
+@@ -424,6 +424,7 @@
+             }
+ 
+             {
+                 vec2_t velocity;
++                RtxSmokeMuzzle rtx_smoke_source(aim_heading);
+                 velocity.x = cosf(aim_heading) * 25.0f;
+                 velocity.y = sinf(aim_heading) * 25.0f;
+@@ -1209,6 +1210,7 @@
              grim_interface_ptr->grim_is_key_active(player->input.fire_key)
                  || auto_fire)) {
          int owner_id;
@@ -413,6 +433,41 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
          survival_reward_fire_seen = 1;
  
          if (!normal_fire_ready) {
+--- a/decomp/1.9/crimsonland/typo/typo_player_update.cpp
++++ b/decomp/1.9/crimsonland/typo/typo_player_update.cpp
+@@ -165,6 +165,7 @@
+                 {
+                     vec2f_t effect_velocity;
+                     vec2f_t effect_position;
++                    RtxSmokeMuzzle rtx_smoke_source(shot_heading);
+                     heading_cos = (float)cos(shot_heading);
+                     effect_velocity.x = heading_cos * 25.0f;
+                     heading_sin = (float)sin(shot_heading);
+@@ -187,6 +188,7 @@
+                 {
+                     vec2f_t effect_velocity;
+                     vec2f_t effect_position;
++                    RtxSmokeMuzzle rtx_smoke_source(shot_heading);
+                     effect_velocity.x = heading_cos * 15.0f;
+                     effect_velocity.y = (heading_sin * 15.0f);
+                     vec2f_t *player_position =
+--- a/decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp
++++ b/decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp
+@@ -273,5 +273,6 @@
+         *weapon_time += frame_dt_ms;
+     }
+ 
++    rtx_smoke_tick(frame_dt);
+     camera_update();
+     gameplay_render_world();
+--- a/decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp
++++ b/decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp
+@@ -113,4 +113,5 @@
+ void gameplay_reset_state(void)
+ {
++    rtx_reset();
+     player_overlay_suppressed_latch = 0;
+     for (int slot_index = 0; slot_index < 16; ++slot_index) {
 --- a/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
 @@ -294,6 +294,7 @@

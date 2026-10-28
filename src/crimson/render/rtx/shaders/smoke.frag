@@ -106,7 +106,7 @@ void main() {
         weights[i]=transmission*opacity;
         float sky_depth=vertical(sky1,z+16.)+vertical(sky2,z+32.);
         // The smoke's sky fill is a look-dev color; the sights' and the embers' glows add as light.
-        vec3 color=u_debug==18 ? vec3(0) : decodeArt(vec3(.29,.32,.35)+vec3(.22,.23,.24)*exp(-sky_depth*.55));
+        vec3 color=u_debug==18 ? vec3(0) : decodeArt(vec3(.20,.22,.25)+vec3(.30,.32,.33)*exp(-sky_depth*1.4));
         color+=sights*exp(-pow((z-28.)/5.,2.))+glow;
         scattered+=weights[i]*color;
         transmission*=1.-opacity;

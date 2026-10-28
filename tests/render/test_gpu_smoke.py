@@ -23,12 +23,12 @@ def pixels(sim: GpuSmokeSimulation):
 
 def test_gpu_events_do_not_allocate_or_advance_gl_until_prepared():
     sim = GpuSmokeSimulation()
-    sim.consume((emission(), emission(delay_seconds=.5)), 1/60)
+    sim.consume((emission(),), 1/60)
     assert not sim.targets and sim.shader is None
-    assert len(sim.pending) == 1 and len(sim.batches) == 1
+    assert len(sim.batches) == 1
     assert sim.executed_steps == 0
     sim.reset()
-    assert not sim.pending and not sim.batches and not sim.fields
+    assert not sim.batches and not sim.fields
     with pytest.raises(ValueError):
         sim.consume((), float("nan"))
 
@@ -45,6 +45,38 @@ def test_body_wakes_keep_their_own_budget_beside_shots():
     assert min(i.strength for i in kept if i.kind == "body") == 100 - MAX_BODY_IMPULSES_PER_TICK
 
 
+def test_ticks_sharing_a_step_keep_their_moving_bodies_beside_a_full_volley(raylib_context, mocker):
+    sim = GpuSmokeSimulation(resolution=64)
+    try:
+        drag = mocker.spy(sim, "_drag")
+        pushes = mocker.spy(sim, "_inject_impulses")
+        wakes = tuple(AtmosphereImpulse(Vec2(), Vec2(10, 0), 5., 3.) for _ in range(MAX_IMPULSES_PER_TICK))
+        for tick in range(2):  # slow motion: two half ticks to one solver step
+            bodies = tuple(AtmosphereImpulse(Vec2(i, tick), Vec2(i, tick+1), 17.5, 60., kind="body")
+                           for i in range(MAX_BODY_IMPULSES_PER_TICK))
+            sim.consume((emission(),), 1/120, impulses=wakes+bodies)
+        sim.prepare()
+        assert sum(len(call.args[0]) for call in pushes.call_args_list) == 2*MAX_IMPULSES_PER_TICK
+        # Each body drags once, where the latest tick left it.
+        assert drag.call_count == 1 and drag.call_args.args[0] == bodies
+    finally:
+        sim.close()
+
+
+def test_a_still_source_deposits_where_it_is(raylib_context):
+    sim = GpuSmokeSimulation(resolution=320)
+    try:
+        sim.consume((emission(pos=Vec2(300, 300), vel=Vec2(), scale=64.),), 0.)
+        sim.prepare()
+        density = pixels(sim)[:, :, 0]
+        rows, cols = np.indices(density.shape)
+        cell = sim.size.x/sim.resolution
+        center = Vec2(*(float((index*density).sum()/density.sum()+.5)*cell for index in (cols, rows)))+sim.origin
+        assert (center-Vec2(300, 300)).length() < 2.
+    finally:
+        sim.close()
+
+
 def test_body_drag_carries_air_toward_the_body_but_never_past_it(raylib_context):
     sim = GpuSmokeSimulation(resolution=128)
     try:
@@ -54,7 +86,7 @@ def test_body_drag_carries_air_toward_the_body_but_never_past_it(raylib_context)
         body = AtmosphereImpulse(Vec2(500, 500), Vec2(501.5, 500), 17.5, 90., kind="body")
         speeds = []
         for _ in range(240):
-            sim._drag([body])
+            sim._drag((body,))
             speeds.append(np.hypot(*pixels(sim)[:, :, 2:].transpose(2, 0, 1)).max())
         assert speeds[0] > 5 and speeds == sorted(speeds)
         assert 85 < speeds[-1] <= 90 * 1.01

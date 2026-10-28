@@ -6,10 +6,11 @@ import pickle
 import pytest
 
 from crimson.effects import EffectPool, SpriteEffectPool
+from crimson.perks import PerkId
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.presentation_step import DeterministicPresentationPlan
-from crimson.sim.smoke_events import BODY_STEP_LIMIT, AtmosphereImpulse, body_wakes
+from crimson.sim.smoke_events import BODY_STEP_LIMIT, AtmosphereImpulse, body_positions, body_wakes
 from crimson.weapon_runtime.assign import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -39,7 +40,7 @@ def test_actual_shots_capture_swept_wakes_without_native_or_rng_changes(weapon):
     assert world.state.rng.records == plain_world.state.rng.records
     wakes = [event for event in impulses if event.kind == "wake"]
     assert wakes and all((event.end-event.start).length() > 0 for event in wakes)
-    expected_strength = {WeaponId.PISTOL: 3., WeaponId.ION_CANNON: 7., WeaponId.ROCKET_LAUNCHER: 10.}[weapon]
+    expected_strength = {WeaponId.PISTOL: 30., WeaponId.ION_CANNON: 60., WeaponId.ROCKET_LAUNCHER: 10.}[weapon]
     assert all(event.strength == pytest.approx(expected_strength) for event in wakes)
     if weapon == WeaponId.ROCKET_LAUNCHER:
         rocket = [event for event in smoke if event.profile == "rocket"]
@@ -113,6 +114,32 @@ def test_only_bodies_alive_on_both_sides_of_a_tick_push_and_never_across_a_jump(
     assert len(wakes) == 1
     assert (wakes[0].start, wakes[0].end, wakes[0].kind) == (a, b, "body")
     assert wakes[0].strength == pytest.approx(5 * 60.)
+
+
+def test_a_corpse_sliding_from_its_killing_blow_still_drags_the_air():
+    world = make_session(seed=5, perk_progression_enabled=False)[1]
+    corpse = place_creatures(world, [make_creature_state(pos=Vec2(400, 300), hp=0.)])[0]
+    before = body_positions(world)
+    corpse.pos = Vec2(404, 303)
+    wakes = body_wakes(before, body_positions(world), 1/60)
+    assert [(wake.start, wake.end) for wake in wakes] == [(Vec2(400, 300), Vec2(404, 303))]
+
+
+def test_fire_cough_puffs_leave_along_the_aim_as_muzzle_smoke_without_gameplay_changes():
+    captured, world = make_session(seed=71, perk_progression_enabled=False)
+    plain, plain_world = make_session(seed=71, perk_progression_enabled=False)
+    for sim in (world, plain_world):
+        sim.state.perks[PerkId.FIRE_CAUGH] = 1
+        sim.players[0].fire_cough_timer = 10.
+    inputs = [player_input(aim=Vec2(1000, 512))]
+    output = captured.step_tick(dt=1/60, inputs=inputs)
+    plain._step_tick(dt=1/60, inputs=inputs, commands=None, smoke_emissions=[], atmosphere_impulses=[])
+    assert session_digest(captured) == session_digest(plain)
+    puffs = [event for event in output.presentation.smoke_emissions if event.source == "sprite"]
+    # Native spawns the sprite sideways; its smoke leaves along the aim.
+    assert puffs and all(event.profile == "muzzle" for event in puffs)
+    assert all(event.flow_dir.length() == pytest.approx(1.) and event.vel.x*event.flow_dir.x+event.vel.y*event.flow_dir.y > 0 for event in puffs)
+    assert any(event.kind == "muzzle" for event in output.presentation.atmosphere_impulses)
 
 
 def test_atmosphere_batches_preserve_tick_order_including_empty_ticks(mocker):

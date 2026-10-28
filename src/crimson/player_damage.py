@@ -39,13 +39,15 @@ def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
 
     world = step_runtime.world
     state = world.state
-    state.effects.spawn_explosion_burst(
-        pos=player.pos,
-        scale=1.8,
-        rng=state.rng,
-        detail_preset=step_runtime.world.state.detail_preset,
-        preserve_bugs=state.preserve_bugs,
-    )
+    # Smoke as the Nuke's: the native burst's dark puffs would leave only a faint wisp of this blast.
+    with state.effects.smoke_retention(15.0, profile="nuke"):
+        state.effects.spawn_explosion_burst(
+            pos=player.pos,
+            scale=1.8,
+            rng=state.rng,
+            detail_preset=step_runtime.world.state.detail_preset,
+            preserve_bugs=state.preserve_bugs,
+        )
     state.scripted_burst_active = True
     for creature_idx, creature in enumerate(world.creatures.entries):
         if not creature.active:

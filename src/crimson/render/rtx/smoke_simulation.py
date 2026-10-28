@@ -14,8 +14,7 @@ from numpy.typing import NDArray
 
 from grim.geom import Vec2
 
-from ...math_parity import f32
-from .smoke_constants import FADE_SECONDS, MAX_PENDING_EMISSIONS, SOURCE_HEAT, STEP_SECONDS
+from .smoke_constants import FADE_SECONDS, SOURCE_HEAT, STEP_SECONDS
 
 if TYPE_CHECKING:
     from ...sim.smoke_events import SmokeEmission
@@ -253,37 +252,19 @@ class SmokeField:
 class SmokeSimulation:
     def __init__(self) -> None:
         self.fields: dict[int, SmokeField] = {}
-        self.pending: list[tuple[float, SmokeEmission]] = []
         self._next_identity = 0
 
     def reset(self) -> None:
         self.fields.clear()
-        self.pending.clear()
 
     def consume(self, emissions: tuple[SmokeEmission, ...], dt_sim: float) -> None:
         if not math.isfinite(dt_sim) or dt_sim < 0.0:
             raise ValueError("smoke presentation delta must be finite and nonnegative")
-        ready = []
-        waiting = []
-        for age, emission in self.pending:
-            age = f32(f32(age) + f32(dt_sim))
-            if age >= 0.0:
-                ready.append(emission)
-            else:
-                waiting.append((age, emission))
-        self.pending = waiting
-        for emission in emissions:
-            if emission.color.a <= 0.0 or not all(math.isfinite(v) for v in (
-                emission.pos.x, emission.pos.y, emission.vel.x, emission.vel.y, emission.scale,
-                emission.color.r, emission.color.g, emission.color.b, emission.color.a,
-                emission.delay_seconds, emission.expansion, emission.retention_seconds,
-            )):
-                continue
-            if emission.delay_seconds > 0.0:
-                if len(self.pending) < MAX_PENDING_EMISSIONS:
-                    self.pending.append((-emission.delay_seconds, emission))
-            else:
-                ready.append(emission)
+        ready = [emission for emission in emissions if emission.color.a > 0.0 and all(math.isfinite(v) for v in (
+            emission.pos.x, emission.pos.y, emission.vel.x, emission.vel.y, emission.scale,
+            emission.color.r, emission.color.g, emission.color.b, emission.color.a,
+            emission.expansion, emission.retention_seconds,
+        ))]
         for emission in ready:
             size = max(emission.scale, emission.expansion * 2.0 * STEP_SECONDS)
             if size <= 0.0:

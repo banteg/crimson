@@ -57,6 +57,9 @@ void rtx_ice(int effect_id); // an effect's material among the effects (effects_
 extern int rtx_smoke_on;
 bool rtx_smoke_active();
 void rtx_smoke_reset();
+// What RTX keeps beside a run (game/rtx.cpp), cleared as every run starts: Typ-o-Shooter, the tutorial and the
+// demo start theirs outside the host's sessions.
+void rtx_reset();
 void rtx_smoke_spawned(int index);
 void rtx_smoke_flush();
 void rtx_smoke_puff(const struct effect_entry_t *entry);
@@ -64,6 +67,7 @@ void rtx_smoke_soot(int index);
 void rtx_smoke_muzzle(float heading);
 void rtx_smoke_rocket(float flow_x, float flow_y, float vx, float vy);
 void rtx_smoke_nuke();
+void rtx_smoke_flame();
 void rtx_smoke_source_end();
 void rtx_smoke_blast(float x, float y, float scale);
 void rtx_smoke_wake(int type, float sx, float sy, float ex, float ey, float dt);
@@ -120,6 +124,10 @@ struct RtxDarkExplosion {
 struct RtxSmokeNuke {
   RtxSmokeNuke() { rtx_smoke_nuke(); }
   ~RtxSmokeNuke() { rtx_smoke_source_end(); }
+};
+struct RtxSmokeFlame {
+  RtxSmokeFlame() { rtx_smoke_flame(); }
+  ~RtxSmokeFlame() { rtx_smoke_source_end(); }
 };
 // A track's volume a tick sets, on the original's track for the one it names
 // (host/coop.inc).

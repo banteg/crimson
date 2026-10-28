@@ -29,7 +29,6 @@ class SmokeEmission(msgspec.Struct, frozen=True):
     color: RGBA
     rotation: float
     source: Literal["sprite", "effect", "particle"] = "sprite"
-    delay_seconds: float = 0.0
     expansion: float = 0.0
     retention_seconds: float = 10.0
     profile: Literal["ordinary", "nuke", "muzzle", "rocket", "soot"] = "ordinary"
@@ -64,16 +63,18 @@ Body = tuple[Vec2, float] | None
 
 
 def body_positions(world: WorldState) -> list[Body]:
-    """Each living body's position and size, creature slots then players; None for a slot without one."""
+    """Each body's position and size, creature slots then living players; None for a slot without one.
+
+    A creature's corpse is a body too: a killing blow slides it through the air.
+    """
     return [
-        *((creature.pos, creature.size) if creature.active and creature.hp > 0 else None
-          for creature in world.creatures.entries),
+        *((creature.pos, creature.size) if creature.active else None for creature in world.creatures.entries),
         *((player.pos, player.size) if player.health > 0 else None for player in world.players),
     ]
 
 
 def body_wakes(before: Sequence[Body], after: Sequence[Body], dt: float) -> list[AtmosphereImpulse]:
-    """Each body that lived through a tick of `dt` seconds and moved in it: its path and speed."""
+    """Each body present through a tick of `dt` seconds that moved in it: its path and speed."""
     wakes = []
     for start, end in zip(before, after, strict=True):
         if start is None or end is None:
