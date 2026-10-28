@@ -6,7 +6,7 @@
 // nears the end and stops once there is none. The pad's d-pad walks the list
 // and A plays a quest. Play asks for the quest's table, asks again after a
 // failed fetch, and starts the quest from quests/online/<id>.bin under its
-// title and byline.
+// title and byline; leaving the browser meanwhile drops it.
 //
 //   node crimson-core/checks/game_custom.mjs <game directory> [game.wasm]
 import { execFileSync } from "node:child_process";
@@ -111,8 +111,8 @@ const table = execFileSync(
   ],
   { input: Buffer.from(published.file, "base64"), maxBuffer: 1 << 20 },
 );
-const quest = (id, title) => ({
-  id, title, author: "banteg", players: 2, start_weapon_id: 3, no_bonuses: [3], no_perks: [9, 16], no_weapons: [2, 3],
+const quest = (id, title, start_weapon_id = 3) => ({
+  id, title, author: "banteg", players: 2, start_weapon_id, no_bonuses: [3], no_perks: [9, 16], no_weapons: [2, 3],
 });
 const page = (from, count) => Array.from({ length: count }, (_, i) => quest((from + i).toString(16).padStart(12, "0"), `Quest ${from + i}`));
 
@@ -144,12 +144,12 @@ if (requests.length) throw Error("the browser asked past its last page");
 
 // Play: the pad steps down the list and A plays the second quest; a failed
 // fetch is asked for again, and a quest the leaderboard no longer has starts
-// nothing.
+// nothing. The first starts with one of the weapons past the droppable ones.
 frame({ taps: [ESCAPE] });
 waitFor("the main menu", () => game.game_state() === MAIN_MENU);
 open();
 asked(0);
-answer([quest("000000000001", "Gone"), quest("06c4073e94c5", "Quick Clear")]);
+answer([quest("000000000001", "Gone", 41), quest("06c4073e94c5", "Quick Clear")]);
 const tableAsked = () => {
   if (requests.shift() !== QUEST || requests.length) throw Error("Play asked for no table");
   return text(game.game_quest_download());
@@ -170,9 +170,21 @@ game.game_quest_downloaded(1);
 frames(60);
 if (game.game_state() !== MODS_MENU) throw Error("a quest the leaderboard no longer has started");
 if (play(ROWS[1]) !== "06c4073e94c5") throw Error("Play did not ask again after a failed fetch");
+// Back while the table downloads: the quest waits for another Play, which
+// starts it from the table here.
 fs.mkdirSync(path.join(directory, "quests/online"), { recursive: true });
 fs.writeFileSync(path.join(directory, "quests/online/06c4073e94c5.bin"), table);
+frame({ taps: [ESCAPE] });
 game.game_quest_downloaded(0);
+waitFor("the main menu", () => game.game_state() === MAIN_MENU);
+frames(60);
+if (game.game_state() !== MAIN_MENU) throw Error("a quest started after leaving the browser");
+open();
+asked(0);
+answer([quest("000000000001", "Gone", 41), quest("06c4073e94c5", "Quick Clear")]);
+click(ROWS[1]);
+click(PLAY);
+if (requests.length) throw Error("Play asked for a table it has");
 waitFor("the quest", () => game.game_state() === GAMEPLAY);
 const named = [text(game.game_custom_quest_title()), text(game.game_custom_quest_author())];
 if (named.join() !== "Quick Clear,banteg") throw Error(`the quest started as ${named.join(" by ")}`);

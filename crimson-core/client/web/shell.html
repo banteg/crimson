@@ -843,8 +843,8 @@
   // goes to the game's console in the Python port's words.
   const OUTBOX = "/game/leaderboard/outbox", REJECTED = "/game/leaderboard/rejected";
   const report = (line) => Module.ccall("client_leaderboard_line", null, ["string"], [`leaderboard: ${line}`]);
-  const post = (path, body) =>
-    fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body });
+  const post = (path, body, init) =>
+    fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body, ...init });
   let uploading = null;
   function upload() {
     uploading ??= (async () => {
@@ -943,11 +943,15 @@
     Module.ccall("client_replay_downloaded", null, ["number"], [result]);
   }
   // The game's custom quest browser: a page of quests, and a quest's table to play, into the folder the game reads
-  // it from; the leaderboard no longer having it is told apart from a failed fetch.
+  // it from; the leaderboard no longer having it is told apart from a failed fetch. Each gives up after ten seconds,
+  // as the native client's do, so the screen can ask again.
+  const CUSTOM_TIMEOUT_MS = 10000;
   async function customQuests() {
     let answer = null;
     try {
-      const response = await post("/api/custom/browse", Module.ccall("client_custom_request", "string", [], []));
+      const response = await post("/api/custom/browse", Module.ccall("client_custom_request", "string", [], []), {
+        signal: AbortSignal.timeout(CUSTOM_TIMEOUT_MS),
+      });
       if (response.ok) answer = await response.text();
     } catch {}
     Module.ccall("client_custom_received", null, ["string"], [answer]);
@@ -956,7 +960,9 @@
     const id = Module.ccall("client_quest_download", "string", [], []);
     let result = 2;
     try {
-      const response = await fetch(`/custom/${encodeURIComponent(id)}.bin`);
+      const response = await fetch(`/custom/${encodeURIComponent(id)}.bin`, {
+        signal: AbortSignal.timeout(CUSTOM_TIMEOUT_MS),
+      });
       if (response.status === 404) result = 1;
       else if (response.ok) {
         const bytes = new Uint8Array(await response.arrayBuffer());

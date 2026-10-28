@@ -445,16 +445,17 @@ async function customQuestRows(env: Env, category: Category, limit: number, offs
   return { results, who };
 }
 
-// A page of the game's custom quest browser.
+// A page of the game's custom quest browser. The author is the recipe's own, which the game records into the runs
+// it plays, so no creator's name stands in for it.
 export async function gameCustomQuests(env: Env, page: number, size: number): Promise<GameCustomQuests> {
-  const { results, who } = await customQuestRows(env, "human", size + 1, page * size);
+  const { results } = await customQuestRows(env, "human", size + 1, page * size);
   return {
     quests: results.slice(0, size).map((row) => {
       const def = JSON.parse(row.definition) as CustomQuest;
       return {
         id: row.id,
         title: row.title,
-        author: row.author ?? (row.account_id !== null ? who.get(row.account_id)?.name : null) ?? "",
+        author: row.author ?? "",
         players: row.players,
         start_weapon_id: def.start_weapon_id,
         no_bonuses: def.no_bonuses,

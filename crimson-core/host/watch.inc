@@ -569,6 +569,7 @@ static bool watch_on_menu() {
   case GAME_STATE_WEAPON_DATABASE:
   case GAME_STATE_PERK_DATABASE:
   case GAME_STATE_CREDITS:
+  case GAME_STATE_MODS_MENU:
     return true;
   default:
     return false;

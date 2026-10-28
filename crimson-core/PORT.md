@@ -315,7 +315,8 @@ The host fetches a page from `POST /api/custom/browse`
 `game_quest_download`), which later plays reuse. Play starts the quest as a
 link to it does, the player's own menu settings kept for after it. A failed
 first page says the leaderboard can't be reached, and a failed table fetch is
-asked for again on the next Play. `node crimson-core/checks/game_custom.mjs <copy>`
+asked for again on the next Play. As with a link, Play waits out co-op and
+needs the 1024x768 screen; leaving the screen drops a Play still downloading. `node crimson-core/checks/game_custom.mjs <copy>`
 walks the screen as the browser host serves it.
 
 ### Gamepads

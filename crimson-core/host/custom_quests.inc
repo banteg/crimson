@@ -13,6 +13,7 @@ extern unsigned char mods_menu_refresh_pending;
 extern unsigned char ui_mouse_blocked;
 extern char menu_label_back[];
 bool ui_focus_list(void *list, float x, float y, bool up, bool down);
+void ui_focus_set(int id, char reset_timer);
 }
 #include "crimsonland_textures_owner.h"
 
@@ -23,9 +24,9 @@ struct CustomQuestShown {
   std::vector<int> no_bonuses, no_perks, no_weapons;
 };
 enum CustomQuestsStatus { CUSTOM_LOADING, CUSTOM_SHOWN, CUSTOM_FAILED };
-// Quest tables the host fetches: 0 written, 1 the leaderboard has no such quest, 2 not fetched; or one written
-// that is no table the game plays.
-enum CustomQuestDownload { CUSTOM_DOWNLOADED, CUSTOM_GONE, CUSTOM_DOWNLOAD_FAILED, CUSTOM_UNPLAYABLE };
+// How the fetch of a quest's table ended: 0 written, 1 the leaderboard has no such quest, 2 not fetched (the
+// host's results); or one written that is no table the game plays; or it has not yet.
+enum CustomQuestDownload { CUSTOM_DOWNLOADED, CUSTOM_GONE, CUSTOM_DOWNLOAD_FAILED, CUSTOM_UNPLAYABLE, CUSTOM_DOWNLOADING };
 static constexpr int CUSTOM_ROWS = 10; // the quest list's rows
 static struct {
   std::vector<CustomQuestShown> quests;
@@ -37,9 +38,9 @@ static struct {
   int selected, scroll;
   char request[32];
   std::vector<char> response;
-  // The quest whose table the host fetches, and the one Play waits for.
+  // The quest whose table the host fetches, the one Play waits for, and how its fetch ended.
   std::string download, playing;
-  std::map<std::string, CustomQuestDownload> downloads;
+  CustomQuestDownload fetched;
 } custom;
 
 static void custom_quests_send() {
@@ -53,6 +54,7 @@ static void custom_quests_open() {
   custom.quests.clear();
   custom.pages = 0;
   custom.selected = custom.scroll = 0;
+  custom.playing.clear();
   if (custom.out)
     custom.reopened = true;
   else
@@ -78,7 +80,7 @@ static bool custom_quests_read(const Json &item, CustomQuestShown &shown) {
   double players, weapon;
   if (!id || id->text.size() != 12 || id->text.find_first_not_of("0123456789abcdef") != std::string::npos || !title ||
       !author || !scores_count(item, "players", INT32_MAX, players) ||
-      !scores_count(item, "start_weapon_id", 33, weapon) || weapon < 1 ||
+      !scores_count(item, "start_weapon_id", 53, weapon) || !custom_quest_weapon_valid((int)weapon) ||
       !custom_quests_ids(item, "no_bonuses", 2, 14, shown.no_bonuses) ||
       !custom_quests_ids(item, "no_perks", 1, 57, shown.no_perks) ||
       !custom_quests_ids(item, "no_weapons", 2, 33, shown.no_weapons))
@@ -136,20 +138,20 @@ static void custom_quest_begin() {
 
 // Play: the quest starts from its table here, or once the host has fetched it,
 // one table at a time; another press after a failed fetch asks again. Selecting
-// another quest drops it. Returns what keeps it, or "".
+// another quest, leaving and co-op opening drop it. Returns what keeps it, or "".
 static const char *custom_quests_play(const CustomQuestShown &shown, bool pressed) {
   if (pressed) {
     if (custom_quests_load(shown))
       return custom_quest_begin(), "";
     custom.playing = shown.id;
-    custom.downloads.erase(shown.id);
+    custom.fetched = CUSTOM_DOWNLOADING;
   }
   if (custom.playing != shown.id) {
     custom.playing.clear();
     return "";
   }
-  auto known = custom.downloads.find(shown.id);
-  if (known == custom.downloads.end()) {
+  switch (custom.fetched) {
+  case CUSTOM_DOWNLOADING:
     if (custom.download.empty()) {
       mkdir("quests", 0755);
       mkdir("quests/online", 0755);
@@ -157,12 +159,10 @@ static const char *custom_quests_play(const CustomQuestShown &shown, bool presse
       host_leaderboard(HOST_LEADERBOARD_QUEST);
     }
     return "Downloading the quest...";
-  }
-  switch (known->second) {
   case CUSTOM_DOWNLOADED:
     if (custom_quests_load(shown))
       return custom.playing.clear(), custom_quest_begin(), "";
-    known->second = CUSTOM_UNPLAYABLE;
+    custom.fetched = CUSTOM_UNPLAYABLE;
     [[fallthrough]];
   case CUSTOM_UNPLAYABLE:
     return "This quest cannot play here";
@@ -220,15 +220,18 @@ static void custom_quests_detail(float x, float y, const CustomQuestShown &shown
     grim->grim_set_color(0.7f, 0.7f, 0.7f, 0.7f);
     grim->grim_draw_text_small(x, y + 16.0f, text);
   }
-  // The weapon the quest starts with, its icon as the database draws it; with
-  // no weapon to pick up, the only one.
+  // The weapon the quest starts with, its icon as the database draws it (the
+  // atlas holds the droppable weapons' alone); with no weapon to pick up, the
+  // only one.
   grim->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-  grim->grim_bind_texture(texture_handles.ui_weapon_icons_texture, 0);
-  grim->grim_set_sub_rect(8, 2, 1, weapon_table[shown.weapon].hud_icon_id << 1);
-  grim->grim_begin_batch();
-  grim->grim_draw_quad(x + 16.0f, y + 34.0f, 64.0f, 32.0f);
-  grim->grim_end_batch();
-  grim->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
+  if (int icon = weapon_table[shown.weapon].hud_icon_id; icon >= 0 && icon < 32) {
+    grim->grim_bind_texture(texture_handles.ui_weapon_icons_texture, 0);
+    grim->grim_set_sub_rect(8, 2, 1, icon << 1);
+    grim->grim_begin_batch();
+    grim->grim_draw_quad(x + 16.0f, y + 34.0f, 64.0f, 32.0f);
+    grim->grim_end_batch();
+    grim->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
+  }
   grim->grim_draw_text_small(x + 96.0f, y + 38.0f, weapon_table[shown.weapon].name);
   if (shown.no_weapons.size() == 32) {
     grim->grim_set_color(0.7f, 0.7f, 0.7f, 0.7f);
@@ -314,13 +317,18 @@ void mods_menu_update(void) {
     custom.selected = std::max(custom.selected - 1, 0);
   if (grim->grim_was_key_pressed(0xd0))
     custom.selected = std::max(std::min(custom.selected + 1, count - 1), 0);
-  // A selection the keys move stays in view; the wheel scrolls past it.
+  // A selection the keys move stays in view, and takes the focus for Enter;
+  // the wheel scrolls past it.
   if (custom.selected != moved) {
+    ui_focus_set((int)(size_t)&list, 0);
     custom.scroll = std::min(custom.scroll, custom.selected);
     custom.scroll = std::max(custom.scroll, custom.selected - CUSTOM_ROWS + 1);
   }
   bool over = ui_mouse_x > row_x - 10.0f && ui_mouse_x < row_x + width + 16.0f && ui_mouse_y > rows_y - 2.0f &&
               ui_mouse_y < rows_y + CUSTOM_ROWS * 20.0f;
+  // The mouse over the rows takes the focus, as over a button.
+  if (over && !ui_mouse_blocked)
+    ui_focus_set((int)(size_t)&list, 0);
   float wheel = grim->grim_get_mouse_wheel_delta();
   if (over && wheel)
     custom.scroll += wheel > 0 ? -1 : 1;
@@ -372,20 +380,27 @@ void mods_menu_update(void) {
 
   // Play and Back at the panel's foot, where the databases have Back, and above
   // them what keeps Play. While co-op is open (a session, or a room waiting for
-  // one), Play shows as the original's disabled buttons do, and says why.
+  // one), or the screen is not the one the verifier simulates (live_eligible),
+  // Play shows as the original's disabled buttons do, and says why. Once the
+  // screen leaves, for a quest or the main menu, neither acts.
   float bottom = ui_element_slot_09.pos_y + ui_element_slot_09.vertices[0].y + 40.0f + 265.0f + 8.0f;
-  bool coop = coop_open();
+  bool screen = config_blob.screen_width == 1024 && config_blob.screen_height == 768;
+  const char *blocked = coop_open() ? "Not during co-op" : !screen ? "Custom quests need the 1024x768 screen" : nullptr;
+  bool leaving = !ui_transition_direction && game_state_pending != GAME_STATE_PENDING_IDLE_SENTINEL;
   static ui_button_t play = {(char *)"Play", 0, 0, 1, 0, 0, 0, 1.0f}, back = {nullptr, 0, 0, 1, 0, 0, 0, 1.0f};
-  play.enabled = count > 0 && !coop;
+  play.enabled = count > 0 && !blocked;
   play.alpha = play.enabled ? 1.0f : 0.5f;
   back.label = menu_label_back;
   float play_at[2] = {x + 46.0f, bottom}, back_at[2] = {x + 134.0f, bottom};
-  bool pressed = ui_button_update(play_at, &play) || (enter && !coop);
-  const char *why = count ? custom_quests_play(custom.quests[custom.selected], pressed) : "";
-  const char *note = count && coop ? "Not during co-op" : why;
+  bool pressed = ui_button_update(play_at, &play) || (enter && !blocked);
+  if (blocked || leaving)
+    custom.playing.clear();
+  const char *why = count && !blocked && !leaving ? custom_quests_play(custom.quests[custom.selected], pressed) : "";
+  const char *note = count && blocked ? blocked : why;
   if (*note)
     viewer_text(row_x, bottom - 18.0f, note, 1.0f, 0.5f, 0.5f, 1.0f);
-  if (ui_button_update(back_at, &back) || grim->grim_was_key_pressed(1)) {
+  if ((ui_button_update(back_at, &back) || grim->grim_was_key_pressed(1)) && !leaving) {
+    custom.playing.clear();
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_MAIN_MENU;
   }
@@ -436,10 +451,8 @@ __attribute__((export_name("game_custom_received"))) void game_custom_received(i
 __attribute__((export_name("game_quest_download"))) const char *game_quest_download() { return custom.download.c_str(); }
 // The host's fetch ended (CustomQuestDownload).
 __attribute__((export_name("game_quest_downloaded"))) void game_quest_downloaded(int result) {
-  if (custom.download.empty())
-    return;
-  custom.downloads[custom.download] =
-      result == 0 ? CUSTOM_DOWNLOADED : result == 1 ? CUSTOM_GONE : CUSTOM_DOWNLOAD_FAILED;
+  if (custom.download == custom.playing)
+    custom.fetched = result == 0 ? CUSTOM_DOWNLOADED : result == 1 ? CUSTOM_GONE : CUSTOM_DOWNLOAD_FAILED;
   custom.download.clear();
 }
 }
