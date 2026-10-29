@@ -55,8 +55,14 @@ def _key(slot: int) -> int:
     return key ^ key >> 16
 
 
+def scaled_alpha(byte: int, share: float) -> int:
+    """A piece's alpha byte at its share, as the clients scale it in single precision (rtx_debris_color)."""
+    return int(f32(f32(byte * share) + .5))
+
+
 def candidates(pool: EffectPool, *, camera: Vec2, screen: Vec2) -> list[Candidate]:
     """The pool's debris that shows on a `screen` of logical pixels, in the clients' single precision."""
+    screen = Vec2(f32(screen.x), f32(screen.y))
     out = []
     for slot, entry in enumerate((*pool.entries, *pool.overflow_entries)):
         if not entry.flags or entry.age < 0. or entry.effect_id not in ICE_EFFECTS or entry.color.a < 1. / 255.:
@@ -94,6 +100,7 @@ class DebrisBudget(msgspec.Struct):
             self.reset()
             gap = 0.
         self.elapsed_ms = elapsed_ms
+        screen = Vec2(f32(screen.x), f32(screen.y))
         if not (screen.x > 0. and screen.y > 0.):
             self.pieces.clear()
             return

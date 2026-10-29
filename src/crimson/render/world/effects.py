@@ -13,7 +13,7 @@ from grim.shaders import glint_scope
 
 from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
-from ..rtx.debris import ICE_EFFECTS, candidates
+from ..rtx.debris import ICE_EFFECTS, candidates, scaled_alpha
 from ..rtx.effects import SPRITE_SHAPES, EffectShape, draw_sprite, sprite_batch
 from ..rtx.explosion_shell import explosion_shell
 from ..rtx.mode import RtxRenderMode
@@ -286,8 +286,7 @@ def draw_effect_pool(
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     def debris_alpha(entry: EffectEntry) -> int:
-        """A piece of debris's alpha byte at its share, as the clients scale it (rtx_debris_color)."""
-        return int(entry.color.to_rl().a * shares[id(entry)] + 0.5)
+        return scaled_alpha(entry.color.to_rl().a, shares[id(entry)])
 
     def drawn(entry: EffectEntry) -> bool:
         # Debris the budget leaves out, or fades to nothing, drops before the runs batch, so it never splits two

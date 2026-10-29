@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from crimson.effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
-from crimson.render.rtx.debris import ICE_EFFECTS, MAXIMUM, TARGET, Candidate, DebrisBudget
+from crimson.render.rtx.debris import FADE_SECONDS, ICE_EFFECTS, MAXIMUM, TARGET, Candidate, DebrisBudget, scaled_alpha
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import effects
 from crimson.render.world.context import WorldRenderCtx
@@ -207,13 +207,17 @@ def native_budget(tmp_path_factory: pytest.TempPathFactory):
         '  std::vector<RtxDebrisBudget::Candidate> shown;\n'
         '  for (int i = 0; i < n; ++i) shown.push_back({slots[i], xs[i], ys[i], areas[i]});\n'
         '  budget.select(shown, width, height, dt);\n'
-        '  for (int i = 0; i < RtxDebrisBudget::capacity; ++i) alpha[i] = budget.alpha(i);\n}\n',
+        '  for (int i = 0; i < RtxDebrisBudget::capacity; ++i) alpha[i] = budget.alpha(i);\n}\n'
+        # rtx_debris_color's scaling of a packed alpha byte.
+        'extern "C" unsigned scale(unsigned byte, float alpha) { return (unsigned)(byte * alpha + .5f); }\n',
     )
     library = work / "budget.so"
     subprocess.run([compiler, "-std=c++17", "-shared", "-fPIC", "-O2", f"-I{root / 'crimson-core/game/include'}",
                     str(source), "-o", str(library)], check=True)
     native = ctypes.CDLL(str(library))
     native.choose.argtypes = [ctypes.c_void_p] * 4 + [ctypes.c_int] + [ctypes.c_float] * 3 + [ctypes.c_void_p]
+    native.scale.argtypes = [ctypes.c_uint, ctypes.c_float]
+    native.scale.restype = ctypes.c_uint
     return native
 
 
@@ -261,7 +265,9 @@ def test_the_selection_is_the_clients_frame_for_frame(native_budget) -> None:
         assert same_choice(native_budget, budget, shown, screen=SCREEN, elapsed_ms=elapsed, dt=dt), frame
 
 
-@pytest.mark.parametrize("screen", [Vec2(1024, 768), Vec2(1024, 800), Vec2(1366, 768), Vec2(1280, 720)])
+# A window of another shape leaves the logical screen a fraction of a pixel off whole (1027x768: 765.7565...).
+@pytest.mark.parametrize("screen", [Vec2(1024, 768), Vec2(1024, 800), Vec2(1366, 768), Vec2(1280, 720),
+                                    Vec2(1024, 768 * 1024 / 1027)])
 def test_pieces_on_tile_edges_and_at_the_area_limit_choose_as_the_clients_do(native_budget, screen: Vec2) -> None:
     # Pieces a float apart either side of every tile edge, crowding one tile's neighbours...
     edges = [np.float32(k * screen.x / 8) for k in range(1, 8)], [np.float32(k * screen.y / 6) for k in range(1, 6)]
@@ -277,3 +283,15 @@ def test_pieces_on_tile_edges_and_at_the_area_limit_choose_as_the_clients_do(nat
              for slot in range(TARGET)]
     native_budget.reset()
     assert same_choice(native_budget, DebrisBudget(), shown, screen=screen, elapsed_ms=0., dt=0.)
+
+
+def test_a_piece_s_alpha_at_its_share_is_the_clients(native_budget) -> None:
+    # Every byte at the shares fades of 16, 17 and 33 ms steps pass through.
+    shares = {0., 1.}
+    for ms in (16., 17., 33.):
+        step = min(f32(f32(ms * f32(.001)) / f32(FADE_SECONDS)), 1.)
+        alpha = 1.
+        while alpha > 0.:
+            shares.add(alpha)
+            alpha = max(0., f32(alpha - step))
+    assert all(scaled_alpha(byte, share) == native_budget.scale(byte, share) for byte in range(256) for share in shares)
