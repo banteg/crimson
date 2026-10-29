@@ -118,6 +118,7 @@ int main() {
   expect("a 120 Hz display", play(display(120, 600), 120), "(01)+|(10)+", owed(120, 600));
   expect("a 240 Hz display", play(display(240, 600), 120), "(0001)+|(0010)+|(0100)+|(1000)+", owed(240, 600));
   expect("a 125 Hz display", play(display(125, 600), 120), "(?!.*(11|000))[01]+", owed(125, 600));
+  expect("a 118 Hz display", play(display(118, 600), 120), "(?!.*(111|000))[01]+", owed(118, 600));
   expect("a 144 Hz display", play(display(144, 600), 120), "(?!.*(11|000))[01]+", owed(144, 600));
   // A burst of 2.2 ms passes (an unthrottled moment), then the 60 Hz display.
   Frames burst;
@@ -134,12 +135,14 @@ int main() {
   moved.add(144, 840);
   expect("a 240 Hz display's window on a 144 Hz one", play(moved, 600), "(?!.*(11|000))[01]+", owed(144, 720));
   // A replay at 2x: a 59 or 61 Hz display's slips are a tick; at 32x a frame
-  // runs about 32, the clock's jitter of a few ticks of play aside.
+  // runs its share of the second, the clock's jitter and the pace's catching
+  // up with a display at the lock's edge a few ticks of play aside.
   struct Fast {
     double hz;
     float speed;
     int least, most;
-  } fast[] = {{59, 2, 2, 3}, {61, 2, 1, 2}, {59, 32, 28, 36}, {61, 32, 28, 36}, {60, 32, 28, 36}};
+  } fast[] = {{59, 2, 2, 3}, {61, 2, 1, 2}, {59, 32, 28, 36}, {61, 32, 28, 36}, {60, 32, 28, 36},
+              {57, 32, 29, 38}, {29, 32, 60, 72}};
   for (const Fast &c : fast) {
     static float speed;
     speed = c.speed;
