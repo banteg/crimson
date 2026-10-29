@@ -367,6 +367,12 @@ Each hit shrinks the target to 65% of its size. Anything that drops below
 size 16 dies on the spot, whatever its health: a size-50 creature dies on
 the third hit, a size-64 one on the fourth.
 
+When the shot that shrinks it away also finishes its health (9.5 damage),
+the kill pays its XP twice, with two chances at a bonus, and one more hit on
+the corpse right after pays it a third time
+([original bug](../../rewrite/original-bugs.md#54-a-shrinkifier-kill-pays-twice-and-once-more-on-the-corpse-documented-not-fixed)).
+Frozen targets pay once.
+
 ### 25. Blade Gun
 
 Clip 6 · Hit 49, pierces; last hit 637 (11x) · Fire 0.35 s · Reload 3.5 s · Bullet
