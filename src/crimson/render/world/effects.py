@@ -286,7 +286,7 @@ def draw_effect_pool(
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     def debris_alpha(entry: EffectEntry) -> int:
-        return scaled_alpha(entry.color.to_rl().a, shares[id(entry)])
+        return scaled_alpha(entry.color.a, shares[id(entry)])
 
     def drawn(entry: EffectEntry) -> bool:
         # Debris the budget leaves out, or fades to nothing, drops before the runs batch, so it never splits two

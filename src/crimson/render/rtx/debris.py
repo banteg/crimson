@@ -55,9 +55,10 @@ def _key(slot: int) -> int:
     return key ^ key >> 16
 
 
-def scaled_alpha(byte: int, share: float) -> int:
-    """A piece's alpha byte at its share, as the clients scale it in single precision (rtx_debris_color)."""
-    return int(f32(f32(byte * share) + .5))
+def scaled_alpha(alpha: float, share: float) -> int:
+    """A piece's alpha byte at its share, as the clients pack it, truncating (effect_pack_color), and scale it in
+    single precision (rtx_debris_color)."""
+    return int(f32(f32(int(f32(alpha * 255.)) * share) + .5))
 
 
 def candidates(pool: EffectPool, *, camera: Vec2, screen: Vec2) -> list[Candidate]:

@@ -150,8 +150,8 @@ def test_the_effect_pool_draws_only_the_selection_without_splitting_ice_runs(
     shown = [entry for slot, entry in enumerate((*pool.entries, *pool.overflow_entries))
              if entry.flags and entry.effect_id in ICE_EFFECTS and budget.alpha(slot) > 0.]
     assert len(shown) == len(quad.call_args_list) == TARGET
-    # New pieces draw at their own opacity; the pool is untouched.
-    assert [call.args[6].a for call in quad.call_args_list] == [entry.color.to_rl().a for entry in shown]
+    # New pieces draw at their own opacity, packed as the clients pack it; the pool is untouched.
+    assert [call.args[6].a for call in quad.call_args_list] == [scaled_alpha(entry.color.a, 1.) for entry in shown]
     assert msgspec.to_builtins([(e.effect_id, e.pos, e.color, e.age) for e in ice]) == state
     runs = [grid for grid, _ in groupby(EFFECT_ID_ATLAS_TABLE_BY_ID[int(e.effect_id)].grid for e in shown)]
     assert lighting.scopes == runs
@@ -219,8 +219,11 @@ def native_budget(tmp_path_factory: pytest.TempPathFactory):
         '  for (int i = 0; i < n; ++i) shown.push_back({slots[i], xs[i], ys[i], areas[i]});\n'
         '  budget.select(shown, width, height, dt);\n'
         '  for (int i = 0; i < RtxDebrisBudget::capacity; ++i) alpha[i] = budget.alpha(i);\n}\n'
-        # rtx_debris_color's scaling of a packed alpha byte, and rtx_debris_prepare's projection, as written there.
-        'extern "C" unsigned scale(unsigned byte, float alpha) { return (unsigned)(byte * alpha + .5f); }\n'
+        # effect_pack_color's alpha byte at rtx_debris_color's share, and rtx_debris_prepare's projection, as written
+        # there.
+        'extern "C" unsigned scale(float a, float alpha) {\n'
+        '  unsigned char byte = (unsigned char)(a * 255.0f);\n'
+        '  return (unsigned)(byte * alpha + .5f);\n}\n'
         'extern "C" void project(float px, float py, float rotation, float hx, float hy, float scale, float cx,\n'
         '                        float cy, float width, float height, float *out) {\n'
         '  float x = px + cx, y = py + cy;\n'
@@ -237,7 +240,7 @@ def native_budget(tmp_path_factory: pytest.TempPathFactory):
                     f"-I{root / 'crimson-core/game/include'}", str(source), "-o", str(library)], check=True)
     native = ctypes.CDLL(str(library))
     native.choose.argtypes = [ctypes.c_void_p] * 4 + [ctypes.c_int] + [ctypes.c_float] * 3 + [ctypes.c_void_p]
-    native.scale.argtypes = [ctypes.c_uint, ctypes.c_float]
+    native.scale.argtypes = [ctypes.c_float, ctypes.c_float]
     native.scale.restype = ctypes.c_uint
     native.project.argtypes = [ctypes.c_float] * 10 + [ctypes.c_void_p]
     return native
@@ -308,19 +311,23 @@ def test_pieces_on_tile_edges_and_at_the_area_limit_choose_as_the_clients_do(nat
 
 
 def test_a_piece_s_alpha_at_its_share_is_the_clients(native_budget) -> None:
-    # Every byte at the shares fades of 16, 17 and 33 ms steps pass through.
-    shares = {0., 1.}
+    # Alphas across the range, a faint shatter's among them, at the shares fades of 16, 17 and 33 ms steps pass through.
+    alphas = {f32(a) for a in np.linspace(0., 1., 2049)} | {f32(.0154545903)}
+    shares = {0., 1., f32(.14999987185)}
     for ms in (16., 17., 33.):
         step = min(f32(f32(ms * f32(.001)) / f32(FADE_SECONDS)), 1.)
         alpha = 1.
         while alpha > 0.:
             shares.add(alpha)
             alpha = max(0., f32(alpha - step))
-    assert all(scaled_alpha(byte, share) == native_budget.scale(byte, share) for byte in range(256) for share in shares)
+    assert all(scaled_alpha(a, share) == native_budget.scale(a, share) for a in alphas for share in shares)
 
 
 def test_a_piece_s_place_on_screen_is_the_clients(native_budget) -> None:
     # Shatter pieces in a pool, under a camera and screen a fraction of a pixel off whole, as a wide window leaves them.
+    # Their rotations stay within a turn or so: past that the clients' cosf (musl's, in the game module) and the host's
+    # here may each differ from a correctly rounded cosine by an ulp, which flips a piece whose visible part is a
+    # sliver at the screen's edge.
     pool = EffectPool()
     rng = np.random.default_rng(3)
     camera, screen = Vec2(-311.14285714285717, -240.28125), Vec2(1024, 575.7188872620791)
