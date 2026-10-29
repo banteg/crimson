@@ -779,6 +779,8 @@ void wgpu_renderer_present(int window_width, int window_height) {
   if (!back.texture || !v.width)
     return;
   configure_canvas(window_width, window_height);
+  if (!fits(uniform_stream, 512))
+    submit();
   end_pass();
   WGPUSurfaceTexture frame = WGPU_SURFACE_TEXTURE_INIT;
   wgpuSurfaceGetCurrentTexture(surface, &frame);
@@ -794,10 +796,12 @@ void wgpu_renderer_present(int window_width, int window_height) {
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(present_program, o));
   // Normally a one-to-one copy; a resize between draw and present may scale once.
   bool exact = v.width == back.width && v.height == back.height;
+  Uniforms fragment(*present_program.frag);
+  fragment.i("map_view", debug_map());
   bind(present_program,
        fragment_group(present_program, {{"back_buffer", back.view, exact ? nearest_clamp() : linear_clamp()},
-                                        {"gamma", gamma_view, nearest_clamp()}}),
-       nullptr, nullptr);
+                                        {"gamma", gamma_view, linear_clamp()}}),
+       nullptr, &fragment);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
   submit();
   wgpuTextureViewRelease(window.view);

@@ -1093,8 +1093,8 @@ void GL_ENTRY(renderer_init)() {
   glGenTextures(1, &gamma_texture);
   glBindTexture(GL_TEXTURE_2D, gamma_texture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, identity);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
   // Direct3D 8's defaults.
@@ -1159,6 +1159,7 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   glClear(GL_COLOR_BUFFER_BIT);
   glViewport(v.x, window_height - v.y - v.height, v.width, v.height);
   use_program(present_program);
+  glUniform1i(uniform_location(present_program, "map_view"), debug_map());
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, gamma_texture);
   glActiveTexture(GL_TEXTURE0);
