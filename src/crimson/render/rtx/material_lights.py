@@ -313,17 +313,18 @@ def _distance_sq(source: MaterialLight, point: Vec2, *, reflection: bool = True)
     return (point - source.pos - axis * along).length_sq()
 
 
-def _reaches_view(source: MaterialLight, view_center: Vec2, view_size: Vec2) -> bool:
-    """Whether the source can give the view anything: ground.frag's reach test, the larger of its light and reflection
-    radii around its segment (a beam's support, if longer) or ring, boxed."""
+def _reaches_view(source: MaterialLight, view_center: Vec2, view_size: Vec2, *, reflection: bool) -> bool:
+    """Whether one response of the source can give the view anything, by the receivers' cutoffs (ground.frag): its
+    light within its radius of its segment (a beam's support, if longer) or ring, its reflection within its reach of
+    its segment or ring. Boxed."""
     from .continuous_beam import beam_uniform
 
-    reach = max(1.0, source.radius, source.reflection_reach)
+    reach = max(1.0, source.reflection_reach if reflection else source.radius)
     if source.ring_radius > 0.0:
         extent = Vec2(source.ring_radius + reach, source.ring_radius + reach)
     else:
         axis = source.direction.normalized() if source.direction.length_sq() > .0001 else Vec2(1.0, 0.0)
-        half = max(source.length * 0.5, beam_uniform(source)[3])
+        half = source.length * 0.5 if reflection else max(source.length * 0.5, beam_uniform(source)[3])
         extent = Vec2(abs(axis.x) * half + reach, abs(axis.y) * half + reach)
     offset = source.pos - view_center
     return abs(offset.x) < view_size.x * 0.5 + extent.x and abs(offset.y) < view_size.y * 0.5 + extent.y
@@ -387,18 +388,20 @@ def select_material_lights(
 ) -> list[MaterialLight]:
     """Select each response independently, then mask unselected channels in their union.
 
-    With a view size, a source that cannot reach the view takes no place in either budget, however bright.
+    With a view size, a source takes no place in a response's budget, however bright, when that response cannot reach
+    the view.
 
     Ties go to the lower ident. Past MAX_SELECTED_SOURCES the union takes the responses' sources rank by rank, so
     neither crowds the other out. With a selection, sources fade in and out of the budgets (LightSelection). The union
     comes brightest first (both responses' delivered scores summed) and holds at most MAX_MATERIAL_LIGHTS: the faintest
     fading sources give way, never a selected one."""
 
-    visible = [view_size is None or _reaches_view(source, view_center, view_size) for source in sources]
+    visible = {reflection: [view_size is None or _reaches_view(source, view_center, view_size, reflection=reflection)
+                            for source in sources] for reflection in (False, True)}
 
     def score(index: int, *, reflection: bool) -> float:
         source = sources[index]
-        if not visible[index]:
+        if not visible[reflection][index]:
             return 0.0
         gain = source.reflection_gain if reflection else source.illumination_gain
         radius = source.reflection_reach if reflection else source.radius

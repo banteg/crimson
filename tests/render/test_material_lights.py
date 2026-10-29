@@ -294,3 +294,7 @@ def test_sources_that_cannot_reach_the_view_take_no_place_in_the_budgets() -> No
     # One whose reach crosses into the view keeps its place.
     near = MaterialLight(Vec2(500, 700), 160, (.6, 1.6, 2.4), illumination_gain=4, ident=200)
     assert near in select_material_lights([near, muzzle], view_center=center, view_size=size)
+    # Each response by its own reach: this light stops at y = 585, short of the view, while its reflection reaches.
+    split = MaterialLight(Vec2(500, 650), 65, (1, .6, .2), reflection_radius=140, ident=300)
+    [kept] = select_material_lights([split], view_center=center, view_size=size)
+    assert kept.illumination_gain == 0 and kept.reflection_gain == split.reflection_gain
