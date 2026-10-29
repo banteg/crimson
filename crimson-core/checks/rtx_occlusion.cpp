@@ -60,5 +60,20 @@ int main() {
   assert(values[(y * (int)grid[2] + x) * 4 + 1] < 0);
   for (int i = 0; i < headers; ++i)
     assert(values[i * 4 + 2] == 0 && values[i * 4 + 3] == 0);
-  puts("rtx occlusion: ordinary payload, beam head support, crowds and shadows-off early exit passed");
+
+  // Light selection skips sources that cannot reach the 1024x576 view around
+  // (512, 288): a reach of 160 from y = 800 stops short of it, from 700 does not.
+  Light below{512, 800, 160, 1, 1, 1}, near{512, 700, 160, 1, 1, 1};
+  assert(!reaches_view(below, 512, 288, 512, 288) && reaches_view(near, 512, 288, 512, 288));
+  // A segment's half length, a ring's radius and a beam's head halo all carry it further.
+  Light segment = below, ring = below, beam = below;
+  segment.dy = -1, segment.length = 160;
+  ring.ring = 80;
+  beam.dy = -1, beam.length = 40, beam.beam_radius = 60, beam.beam_step = 4, beam.beam_head = 2;
+  assert(reaches_view(segment, 512, 288, 512, 288) && reaches_view(ring, 512, 288, 512, 288));
+  assert(reaches_view(beam, 512, 288, 512, 288));
+  beam.beam_radius = 0;
+  assert(!reaches_view(beam, 512, 288, 512, 288));
+  puts("rtx occlusion: ordinary payload, beam head support, crowds and shadows-off early exit passed; light selection "
+       "skips sources out of the view's reach");
 }

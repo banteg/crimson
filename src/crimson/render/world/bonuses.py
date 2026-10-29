@@ -97,7 +97,9 @@ def draw_bonus_pickups(
     if lighting is not None and any(b.bonus_id != BonusId.UNUSED for b in entries):
         lighting.prepare(
             material_lights if material_lights is not None else
-            collect_material_lights(frame, view_center=render_ctx.view.screen_size * 0.5 - camera),
+            collect_material_lights(
+                frame, view_center=render_ctx.view.screen_size * 0.5 - camera, view_size=render_ctx.view.screen_size,
+            ),
             camera=camera, view_scale=view_scale,
         )
 
