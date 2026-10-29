@@ -626,6 +626,7 @@ void copy(Target &from, Target &to) {
 // Reallocate a target in place, keeping its image (scaled once if its size changed).
 void reallocate(Target &t, int width, int height, int flags) {
   Target previous = t;
+  bool shown = back_shown;
   t.texture = nullptr;
   t.view = nullptr;
   t.width = width;
@@ -634,6 +635,9 @@ void reallocate(Target &t, int width, int height, int flags) {
   allocate(t);
   copy(previous, t);
   release(previous);
+  // The same image at its new size: allocating cleared it, which is no new
+  // image (back_drawn), so it keeps its map mark.
+  t.map = previous.map, back_shown = shown;
 }
 
 // The canvas, sized to the window, half-float with extended tone mapping while the
