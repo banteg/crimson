@@ -641,8 +641,11 @@ void reallocate(Target &t, int width, int height, int flags) {
 }
 
 // The canvas, sized to the window, half-float with extended tone mapping while the
-// RTX world can show highlights on an HDR display.
-bool hdr_display() { return EM_ASM_INT({ return matchMedia("(dynamic-range: high)").matches ? 1 : 0; }); }
+// RTX world can show highlights on an HDR display. The page keeps one query, whose
+// answer follows the window from display to display, rather than a new one a frame.
+bool hdr_display() {
+  return EM_ASM_INT({ return (Module.hdrQuery ||= matchMedia("(dynamic-range: high)")).matches ? 1 : 0; });
+}
 void configure_canvas(int width, int height) {
   bool extended = rtx && hdr_display();
   if (width == canvas_width && height == canvas_height && extended == canvas_extended)
