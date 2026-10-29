@@ -2212,6 +2212,10 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     return;
   }
   Target &back = textures[0];
+  // Every world's end, classic too, says whether the back buffer now holds a
+  // map: a classic redraw after one clears it before a hold can keep it.
+  if (pass == HOST_PASS_WORLD_END)
+    back.map = debug_map(), map_marked = true;
   if (!rtx || !back.framebuffer)
     return;
   if (pass == HOST_PASS_WORLD_BEGIN) { // Scene/occlusion inputs have arrived; shade masks before HDR.
@@ -2289,7 +2293,6 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     // map's values go to the display as they are.
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
-    back.map = debug_map(), map_marked = true;
     if (back.map) {
       use_program(blit_program);
     } else {

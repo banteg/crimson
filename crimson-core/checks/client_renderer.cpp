@@ -1229,6 +1229,18 @@ int main() {
   renderer_present(present_w, present_h, true);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(center[0] == map);
+  // RTX switched off while paused: the classic world drawn again, and the hold
+  // kept of it, are no map, whatever the scene last asked for.
+  renderer_set_rtx(false);
+  w2c_host_clear(nullptr, 0xff000000);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  w2c_host_frame_hold(nullptr, 1); // HOST_FRAME_SAVE
+  renderer_present(present_w, present_h, true);
+  w2c_host_frame_hold(nullptr, 0); // HOST_FRAME_SHOW
+  renderer_present(present_w, present_h, true);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(center[0] == 255);
   scene_debug = 0;
   renderer_set_rtx(false);
   renderer_resume();

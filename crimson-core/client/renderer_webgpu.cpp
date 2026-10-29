@@ -1802,6 +1802,10 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     return;
   }
   Target &back = textures[0];
+  // Every world's end, classic too, says whether the back buffer now holds a
+  // map: a classic redraw after one clears it before a hold can keep it.
+  if (pass_kind == HOST_PASS_WORLD_END)
+    back.map = debug_map(), map_marked = true;
   if (!rtx || !back.texture)
     return;
   if (pass_kind == HOST_PASS_WORLD_BEGIN) { // Scene/occlusion inputs have arrived; shade masks before HDR.
@@ -1872,7 +1876,6 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     // A world drawn smaller (render_size) scales up as it tonemaps; a debug
     // map's values go to the display as they are.
     bool exact = world_image->width == back.width && world_image->height == back.height;
-    back.map = debug_map(), map_marked = true;
     if (back.map) {
       wgpuRenderPassEncoderSetPipeline(pass, pipeline(blit, o));
       bind(blit, fragment_group(blit, {{"source", world_image->view, exact ? nearest_clamp() : linear_clamp()}}),
