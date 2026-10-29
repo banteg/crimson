@@ -1,6 +1,22 @@
-Reset rendering-only debris state when an effect pool slot is reused.
+Reset reused debris slots and cull before render-state changes or transforms.
 --- a/decomp/1.9/crimsonland/effects/effect_spawn.cpp
 +++ b/decomp/1.9/crimsonland/effects/effect_spawn.cpp
 @@ -104,1 +104,2 @@
      entry->effect_id = (unsigned char)effect_id;
 +    rtx_debris_spawn(entry);
+--- a/decomp/1.9/crimsonland/effects/effects_render.cpp
++++ b/decomp/1.9/crimsonland/effects/effects_render.cpp
+@@ -48,1 +48,7 @@
++    effect_pack_color(&entry->color, &color);
++    if (!rtx_debris_color(entry, &color))
++        return;
++    if (entry->flags & 0x40)
++        rtx_ice(entry->effect_id);
++
+     rotation = entry->rotation;
+@@ -58,2 +64,1 @@
+-    effect_pack_color(&entry->color, &color);
+     rtx_glint(entry->effect_id == 0 && (entry->flags & 4) && !(entry->flags & 0x40));
+@@ -105,2 +110,1 @@
+-            rtx_ice(entry->effect_id);
+             effect_render_entry(entry, color);

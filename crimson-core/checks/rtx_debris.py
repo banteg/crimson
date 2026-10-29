@@ -24,6 +24,19 @@ def main():
             text = adapter.apply_diffs(str(path.relative_to(ROOT)), path.read_text(), hunks)
             text = adapter.prototypes(path, text, adapter.PROTOTYPES)
             (out / path.name).write_text(game.game_header(path, text))
+        # Compile the patched production render loop over a recording-only Grim boundary.
+        path = ROOT / "decomp/1.9/crimsonland/effects/effects_render.cpp"
+        text = adapter.apply_diffs(str(path.relative_to(ROOT)), path.read_text(), hunks)
+        (out / "effects_render_adapted.cpp").write_text(game.adapt_game(path, adapter.adapt(path, text)))
+        (out / "grim2d_cpp.h").write_text("""#pragma once
+struct IGrim2D_cpp {
+  void grim_set_config_var(int, unsigned) {}
+  void grim_bind_texture(int, int) {}
+  void grim_begin_batch() {}
+  void grim_end_batch() {}
+  void grim_submit_vertices_transform_color(float *, int, float *, float *, unsigned long *);
+};
+""")
         binary = out / "check"
         subprocess.run([
             compiler, "-std=c++17", "-O2", "-fms-extensions", "-fno-strict-aliasing", "-ffp-contract=off",

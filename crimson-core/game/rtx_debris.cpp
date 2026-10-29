@@ -31,9 +31,12 @@ extern "C" void rtx_debris_reset() { budget.reset(); last_ms = -1; }
 extern "C" void rtx_debris_spawn(const effect_entry_t *entry) { budget.forget(slot(entry)); }
 extern "C" void rtx_debris_prepare() {
   if (!rtx_drawing()) return;
-  int now = run_elapsed_ms;
-  if (last_ms < 0 || now < last_ms || now - last_ms > 250) budget.reset();
-  float dt = last_ms < 0 ? 0.f : std::max(0, now - last_ms) * .001f;
+  // Results screens reuse the run clock for the bonus-adjusted score while
+  // drawing a frozen world. Only gameplay advances presentation history.
+  int now = game_state_id == GAME_STATE_GAMEPLAY ? run_elapsed_ms : std::max(last_ms, 0);
+  bool discontinuity = last_ms < 0 || now < last_ms || now - last_ms > 250;
+  float dt = discontinuity ? 0.f : (now - last_ms) * .001f;
+  if (discontinuity) budget.reset();
   last_ms = now;
   float width = config_blob.screen_width, height = config_blob.screen_height;
   if (!(width > 0 && height > 0)) { budget.reset(); return; }

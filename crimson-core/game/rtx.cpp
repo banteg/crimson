@@ -243,10 +243,10 @@ static int rtx_light_count;
 // Classic marks the bounds too, only so the host's timers can tell its drawing
 // from the frame's simulation and HUD.
 void rtx_world(int begin) {
-  if (begin)
+  if (begin) {
     rtx_glint_reset();
-  if (begin)
     rtx_debris_prepare();
+  }
   if (!platform_outputs() || grim_render_disabled)
     return;
   grim_interface_ptr->grim_flush_batch();
