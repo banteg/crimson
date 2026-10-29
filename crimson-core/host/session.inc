@@ -48,6 +48,7 @@ static struct {
   LiveSettings outside; // the player's, while a tick runs
   float banked; // seconds of play not yet ticked
   int due;      // ticks this frame
+  unsigned worlds; // worlds drawn, which live_run_due counts per pass
   // Presses since the last tick, which only the next tick sees.
   bool fire_down, reload_down, pick_down, fire_pressed, reload_pressed, open_requested;
   bool click_down; // the left button, as the last pass of play saw it
@@ -543,23 +544,24 @@ static void live_poll_prompt() {
 // A pass's due ticks, drawing only the last, as playback (watch_run) and co-op
 // draw theirs: a pass that runs late owes several, and each drew a whole world
 // that the next overdrew before the pass presented. The terrain still takes
-// every tick's bake (fx_queue_render). A tick that stops the run's ticks (a
-// menu, its end) before the last went undrawn: the world draws once, between
-// ticks. Returns the ticks that ran. The count is the pass's own: ending a
-// practice resets live.due.
-template <class Tick> static int live_run_due(Tick run_tick) {
+// every tick's bake (fx_queue_render). A pass whose ticks drew no world, as one
+// stopped early by a menu or a practice's end did, draws it once between ticks;
+// a run that ended keeps the frame it last drew, as its end screen follows. The
+// count is the pass's own: ending a practice resets live.due.
+template <class Tick> static void live_run_due(Tick run_tick) {
   unsigned char disabled = grim_render_disabled;
-  int due = live.due, ran = 0;
+  unsigned worlds = live.worlds;
+  int due = live.due;
   terrain.baking = true;
-  for (bool more = true; more && ran < due; ++ran) {
+  for (int ran = 0; ran < due; ++ran) {
     grim_render_disabled = disabled || ran + 1 < due;
-    more = run_tick();
+    if (!run_tick())
+      break;
   }
   grim_render_disabled = disabled;
   terrain.baking = false;
-  if (ran < due)
+  if (live.worlds == worlds && game_live)
     gameplay_render_world();
-  return ran;
 }
 #include "practice.inc"
 #include "coop.inc"
@@ -613,6 +615,7 @@ int game_live_frame() {
 bool game_live_between_ticks() { return game_live && !game_ticking; }
 void gameplay_render_world_recovered();
 void gameplay_render_world() {
+  live.worlds += !grim_render_disabled;
   if (!game_live || game_ticking)
     return gameplay_render_world_recovered();
   live_enter_run();
