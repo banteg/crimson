@@ -1012,7 +1012,10 @@ class EffectPool(_SmokeCapturePool):
 
     def _release_visual_ring(self, entry: EffectEntry) -> None:
         # Native slots are reused in place. Never let an old explosion take
-        # ownership of a later ring (including another explosion's ring).
+        # ownership of a later ring (including another explosion's ring). Only
+        # rings and fireballs are ever owned, so blood or ice expiring skips the search.
+        if entry.effect_id not in (EffectId.RING, EffectId.EXPLOSION_BURST):
+            return
         for visual in self.explosion_visuals:
             if visual.ring is entry:
                 visual.ring = None

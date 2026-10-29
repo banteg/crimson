@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from contextlib import nullcontext
+from contextlib import AbstractContextManager, nullcontext
 from itertools import groupby
 
 from grim.assets import TextureId
@@ -203,8 +203,21 @@ def draw_effect_pool(
         if frame.rtx_mode is RtxRenderMode.RTX
         else set()
     )
-    # RTX lights the freeze shatter's cubes and shards as ice, in their places among the effects.
+    # RTX lights the freeze shatter's cubes and shards as ice, in their places among the effects: each run of
+    # one kind draws in one lighting scope, so a large shatter is a few batches, not one per particle.
     lighting = frame.creature_lighting if frame.rtx_mode is RtxRenderMode.RTX else None
+
+    def ice_grid(entry: EffectEntry) -> int:
+        """The atlas grid an ice particle is lit by (cubes and shards differ), 0 for anything else."""
+        if lighting is None or entry.effect_id not in _ICE_EFFECTS:
+            return 0
+        return EFFECT_ID_ATLAS_TABLE_BY_ID[int(entry.effect_id)].grid
+
+    def ice_scope(grid: int) -> AbstractContextManager[None]:
+        if not grid:
+            return nullcontext()
+        assert lighting is not None
+        return lighting.scope(texture=texture, restore_shader=frame.resources.alpha_test.shader, ice=grid)
 
     def draw_entry(entry: EffectEntry) -> None:
         if (
@@ -236,11 +249,9 @@ def draw_effect_pool(
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
         tint = entry.color.to_rl()
 
-        if lighting is not None and effect_id in _ICE_EFFECTS:
-            batch.end()
-            with lighting.scope(texture=texture, restore_shader=frame.resources.alpha_test.shader,
-                                ice=EFFECT_ID_ATLAS_TABLE_BY_ID[effect_id].grid):
-                draw_centered_quad(texture, src, screen, w, h, float(entry.rotation), tint)
+        if ice_grid(entry):
+            # Inside its run's ice scope.
+            draw_centered_quad(texture, src, screen, w, h, float(entry.rotation), tint)
             return
 
         shape = SPRITE_SHAPES.get(effect_id)
@@ -266,22 +277,25 @@ def draw_effect_pool(
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
     with sprite_batch() as batch:
-        for entry in effects:
-            if not entry.flags or entry.age < 0.0:
-                continue
-            if int(entry.flags) & 0x40:
-                draw_entry(entry)
+        blended = (entry for entry in effects if entry.flags and entry.age >= 0.0 and entry.flags & 0x40)
+        for ice, entries in groupby(blended, key=ice_grid):
+            if ice:
+                batch.end()
+            with ice_scope(ice):
+                for entry in entries:
+                    draw_entry(entry)
     rl.end_blend_mode()
 
     with additive_blend(), sprite_batch() as batch:
         additive = (entry for entry in effects if entry.flags and entry.age >= 0.0 and not entry.flags & 0x40)
-        for glints, entries in groupby(additive, key=lambda entry: (
-            frame.rtx_mode is RtxRenderMode.RTX and entry.effect_id == EffectId.BURST and bool(entry.flags & 0x4)
+        for (glints, ice), entries in groupby(additive, key=lambda entry: (
+            frame.rtx_mode is RtxRenderMode.RTX and entry.effect_id == EffectId.BURST and bool(entry.flags & 0x4),
+            ice_grid(entry),
         )):
             # Preserve draw order and flush analytic work before changing the
             # enclosing textured shader. Consecutive glints share one scope.
             batch.end()
-            with glint_scope() if glints else nullcontext():
+            with glint_scope() if glints else ice_scope(ice):
                 for entry in entries:
                     draw_entry(entry)
                 batch.end()
