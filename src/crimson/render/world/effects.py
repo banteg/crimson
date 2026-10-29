@@ -13,6 +13,7 @@ from grim.shaders import glint_scope
 
 from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
+from ..rtx.debris import ICE_EFFECTS, candidates
 from ..rtx.effects import SPRITE_SHAPES, EffectShape, draw_sprite, sprite_batch
 from ..rtx.explosion_shell import explosion_shell
 from ..rtx.mode import RtxRenderMode
@@ -21,9 +22,6 @@ from .atlas import effect_cell_src, effect_cell_src_inset
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 from .creatures import draw_centered_quad
-
-# The freeze shatter's ice, which RTX lights as ice.
-_ICE_EFFECTS = frozenset({EffectId.FREEZE_SHATTER, EffectId.FREEZE_SHARD_0, EffectId.FREEZE_SHARD_1, EffectId.FREEZE_SHARD_2})
 
 
 def draw_particle_pool(
@@ -191,6 +189,16 @@ def draw_effect_pool(
                     fireball_slots.add(id(sprite.native))
                 archived.append(sprite.sample(visual.fireball_age))
         effects = (*effects, *archived)
+    # RTX draws a bounded share of the loose ice (rtx/debris.py), each piece at its opacity there.
+    shares: dict[int, float] = {}
+    if frame.rtx_mode is RtxRenderMode.RTX and frame.debris is not None:
+        screen = render_ctx.view.screen_size
+        frame.debris.select(candidates(pool, camera=camera, screen=screen), screen=screen, elapsed_ms=frame.elapsed_ms)
+        shares = {
+            id(entry): frame.debris.alpha(slot)
+            for slot, entry in enumerate((*pool.entries, *pool.overflow_entries))
+            if entry.flags and entry.effect_id in ICE_EFFECTS
+        }
     if not any(entry.flags and entry.age >= 0.0 for entry in effects):
         return
 
@@ -209,7 +217,7 @@ def draw_effect_pool(
 
     def ice_grid(entry: EffectEntry) -> int:
         """The atlas grid an ice particle is lit by (cubes and shards differ), 0 for anything else."""
-        if lighting is None or entry.effect_id not in _ICE_EFFECTS:
+        if lighting is None or entry.effect_id not in ICE_EFFECTS:
             return 0
         return EFFECT_ID_ATLAS_TABLE_BY_ID[int(entry.effect_id)].grid
 
@@ -248,6 +256,8 @@ def draw_effect_pool(
 
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
         tint = entry.color.to_rl()
+        if (share := shares.get(id(entry), 1.0)) < 1.0:
+            tint = rl_color(tint.r, tint.g, tint.b, int(tint.a * share + 0.5))
 
         if ice_grid(entry):
             # Inside its run's ice scope.
@@ -275,9 +285,13 @@ def draw_effect_pool(
         origin = rl_vector2(float(w) * 0.5, float(h) * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
+    def drawn(entry: EffectEntry) -> bool:
+        # Debris the budget leaves out drops before the runs batch, so it never splits two pieces' ice scope.
+        return bool(entry.flags) and entry.age >= 0.0 and shares.get(id(entry), 1.0) > 0.0
+
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
     with sprite_batch() as batch:
-        blended = (entry for entry in effects if entry.flags and entry.age >= 0.0 and entry.flags & 0x40)
+        blended = (entry for entry in effects if drawn(entry) and entry.flags & 0x40)
         for ice, entries in groupby(blended, key=ice_grid):
             if ice:
                 batch.end()
@@ -287,7 +301,7 @@ def draw_effect_pool(
     rl.end_blend_mode()
 
     with additive_blend(), sprite_batch() as batch:
-        additive = (entry for entry in effects if entry.flags and entry.age >= 0.0 and not entry.flags & 0x40)
+        additive = (entry for entry in effects if drawn(entry) and not entry.flags & 0x40)
         for (glints, ice), entries in groupby(additive, key=lambda entry: (
             frame.rtx_mode is RtxRenderMode.RTX and entry.effect_id == EffectId.BURST and bool(entry.flags & 0x4),
             ice_grid(entry),

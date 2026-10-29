@@ -1,0 +1,200 @@
+from __future__ import annotations
+
+import ctypes
+import shutil
+import subprocess
+from pathlib import Path
+
+import msgspec
+import numpy as np
+import pytest
+
+from crimson.render.rtx.debris import MAXIMUM, TARGET, Candidate, DebrisBudget
+from grim.geom import Vec2
+from grim.math import f32
+from grim.rand import Crand
+
+SCREEN = Vec2(1024, 768)
+
+
+def grid(count: int, area: float = 100.) -> list[Candidate]:
+    """Pieces spread over the 8x6 tiles, in slot order."""
+    return [Candidate(slot, 1, (slot % 8) * 128 + 64., (slot % 6) * 128 + 64., area) for slot in range(count)]
+
+
+def drawn(budget: DebrisBudget) -> set[int]:
+    return {slot for slot, piece in budget.pieces.items() if piece.alpha > 0.}
+
+
+def test_a_dense_burst_draws_the_target_from_every_tile_whatever_the_pool_order() -> None:
+    shown = grid(1400)
+    budget = DebrisBudget()
+    budget.select(shown, screen=SCREEN, elapsed_ms=0.)
+    chosen = drawn(budget)
+    assert len(chosen) == TARGET
+    again = DebrisBudget()
+    again.select(shown[::-1], screen=SCREEN, elapsed_ms=0.)
+    assert drawn(again) == chosen
+    tiles = {(c.x // 128, c.y // 128) for c in shown}
+    assert {(c.x // 128, c.y // 128) for c in shown if c.slot in chosen} == tiles
+
+
+def test_a_piece_leaving_fades_out_as_its_replacement_fades_in_on_the_runs_clock() -> None:
+    shown = grid(1400)
+    budget = DebrisBudget()
+    budget.select(shown, screen=SCREEN, elapsed_ms=0.)
+    before = drawn(budget)
+    leaving = min(before)
+    # Too large for the selection's half of the screen.
+    shown = [msgspec.structs.replace(c, area=400000.) if c.slot == leaving else c for c in shown]
+    budget.select(shown, screen=SCREEN, elapsed_ms=20.)
+    (joining,) = drawn(budget) - before
+    assert (budget.alpha(leaving), budget.alpha(joining)) == pytest.approx((.75, .25))
+    # A paused redraw moves neither.
+    budget.select(shown, screen=SCREEN, elapsed_ms=20.)
+    assert (budget.alpha(leaving), budget.alpha(joining)) == pytest.approx((.75, .25))
+    for step in (2, 3, 4):
+        budget.select(shown, screen=SCREEN, elapsed_ms=20. * step)
+        assert (budget.alpha(leaving), budget.alpha(joining)) == pytest.approx((1 - step * .25, step * .25))
+    assert len(drawn(budget)) == TARGET
+
+
+def test_large_chunks_run_out_of_screen_before_count_and_churn_never_passes_the_cap() -> None:
+    budget = DebrisBudget()
+    budget.select(grid(1400, SCREEN.x * SCREEN.y / 16), screen=SCREEN, elapsed_ms=0.)
+    assert len(drawn(budget)) == 8
+    budget.reset()
+    for frame in range(120):
+        shown = [Candidate(slot, 1, (slot + frame) % 8 * 128 + 64., (slot + frame // 2) % 6 * 128 + 64.,
+                           100. if (slot + frame) % 3 else 1e9) for slot in range(1400)]
+        budget.select(shown, screen=SCREEN, elapsed_ms=frame * 4.)
+        assert len(drawn(budget)) <= MAXIMUM
+
+
+def test_a_respawned_slot_keeps_no_fade_and_a_rewind_starts_over() -> None:
+    shown = grid(12)
+    budget = DebrisBudget()
+    budget.select(shown, screen=SCREEN, elapsed_ms=1000.)
+    budget.pieces[0].alpha = .5
+    budget.select(shown, screen=SCREEN, elapsed_ms=1000.)
+    assert budget.alpha(0) == .5
+    shown[0] = msgspec.structs.replace(shown[0], generation=2)
+    budget.select(shown, screen=SCREEN, elapsed_ms=1000.)
+    assert budget.alpha(0) == 1.
+    budget.pieces[1].alpha = .5
+    budget.select(shown, screen=SCREEN, elapsed_ms=990.)
+    assert budget.alpha(1) == 1.
+    # A piece leaving the screen forgets its place.
+    budget.select(shown[2:], screen=SCREEN, elapsed_ms=1000.)
+    assert set(budget.pieces) == {c.slot for c in shown[2:]}
+
+
+def test_the_effect_pool_draws_only_the_selection_without_splitting_ice_runs(
+    headless_window, headless_resources, mocker,
+) -> None:
+    from contextlib import contextmanager
+    from itertools import groupby
+    from typing import Any, cast
+
+    from crimson.effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID
+    from crimson.render.rtx.debris import ICE_EFFECTS
+    from crimson.render.rtx.mode import RtxRenderMode
+    from crimson.render.world import effects
+    from tests.support.creature_draw_capture import render_ctx_for_creatures
+
+    class Lighting:
+        def __init__(self) -> None:
+            self.scopes: list[int] = []
+
+        @contextmanager
+        def scope(self, *, texture, restore_shader, ice=0, frozen=False):
+            self.scopes.append(ice)
+            yield
+
+    lighting = Lighting()
+    budget = DebrisBudget()
+    ctx = render_ctx_for_creatures(headless_resources, [])
+    ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(
+        ctx.frame, rtx_mode=RtxRenderMode.RTX, creature_lighting=cast(Any, lighting), debris=budget,
+    ))
+    pool = ctx.frame.state.effects
+    rng = Crand(7)
+    for corpse in range(80):
+        pool.spawn_freeze_shatter(pos=Vec2(40 + corpse % 20 * 48, 100 + corpse // 20 * 150), angle=.3, rng=rng,
+                                  detail_preset=5, preserve_bugs=False)
+    ice = [entry for entry in (*pool.entries, *pool.overflow_entries) if entry.flags and entry.effect_id in ICE_EFFECTS]
+    assert len(ice) == 80 * 8
+    state = msgspec.to_builtins([(e.effect_id, e.pos, e.color, e.age) for e in ice])
+    quad = mocker.spy(effects, "draw_centered_quad")
+    effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    shown = [entry for slot, entry in enumerate((*pool.entries, *pool.overflow_entries))
+             if entry.flags and entry.effect_id in ICE_EFFECTS and budget.alpha(slot) > 0.]
+    assert len(shown) == len(quad.call_args_list) == TARGET
+    # New pieces draw at their own opacity; the pool is untouched.
+    assert [call.args[6].a for call in quad.call_args_list] == [entry.color.to_rl().a for entry in shown]
+    assert msgspec.to_builtins([(e.effect_id, e.pos, e.color, e.age) for e in ice]) == state
+    runs = [grid for grid, _ in groupby(EFFECT_ID_ATLAS_TABLE_BY_ID[int(e.effect_id)].grid for e in shown)]
+    assert lighting.scopes == runs
+
+
+@pytest.fixture(scope="module")
+def native_budget(tmp_path_factory: pytest.TempPathFactory):
+    compiler = shutil.which("clang++") or shutil.which("c++")
+    if compiler is None:
+        pytest.skip("A C++ compiler is required for the clients' budget")
+    root = Path(__file__).resolve().parents[2]
+    work = tmp_path_factory.mktemp("debris-budget")
+    source = work / "budget.cpp"
+    source.write_text(
+        '#include "rtx_debris.h"\nstatic RtxDebrisBudget budget;\n'
+        'extern "C" void forget(int slot) { budget.forget(slot); }\n'
+        'extern "C" void reset() { budget.reset(); }\n'
+        'extern "C" void choose(const int *slots, const float *xs, const float *ys, const float *areas, int n, float dt,\n'
+        '                       float *alpha) {\n'
+        '  std::vector<RtxDebrisBudget::Candidate> shown;\n'
+        '  for (int i = 0; i < n; ++i) shown.push_back({slots[i], xs[i], ys[i], areas[i]});\n'
+        '  budget.select(shown, 1024, 768, dt);\n'
+        '  for (int i = 0; i < RtxDebrisBudget::capacity; ++i) alpha[i] = budget.alpha(i);\n}\n',
+    )
+    library = work / "budget.so"
+    subprocess.run([compiler, "-std=c++17", "-shared", "-fPIC", "-O2", f"-I{root / 'crimson-core/game/include'}",
+                    str(source), "-o", str(library)], check=True)
+    native = ctypes.CDLL(str(library))
+    native.choose.argtypes = [ctypes.c_void_p] * 4 + [ctypes.c_int, ctypes.c_float, ctypes.c_void_p]
+    return native
+
+
+def test_the_selection_is_the_clients_frame_for_frame(native_budget) -> None:
+    # Churning debris: slots respawn, pieces come and go, and the run's clock rewinds once.
+    rng = np.random.default_rng(5)
+    generations = np.ones(2560, dtype=np.int64)
+    live = rng.choice(2560, 1200, replace=False)
+    budget = DebrisBudget()
+    native_budget.reset()
+    alpha = np.zeros(2560, dtype=np.float32)
+    elapsed = last = -1
+    for frame in range(240):
+        if frame % 7 == 0:
+            for slot in rng.choice(live, 60):
+                generations[slot] += 1
+                native_budget.forget(int(slot))
+        if frame % 11 == 0:
+            live = np.unique(np.concatenate([live[rng.random(len(live)) > .05], rng.choice(2560, 40)]))
+        xs = rng.uniform(-20, 1044, len(live)).astype(np.float32)
+        ys = rng.uniform(-20, 788, len(live)).astype(np.float32)
+        areas = rng.choice(np.array([60, 300, 2500, 9000], dtype=np.float32), len(live))
+        elapsed = frame * 16 if frame < 200 else (frame - 60) * 16
+        # The clients' frame clock (rtx_debris_prepare).
+        if last < 0 or elapsed < last or elapsed - last > 250:
+            native_budget.reset()
+            dt = 0.
+        else:
+            dt = f32((elapsed - last) * f32(.001))
+        last = elapsed
+        slots = live.astype(np.int32)
+        native_budget.choose(slots.ctypes.data, xs.ctypes.data, ys.ctypes.data, areas.ctypes.data, len(live), dt,
+                             alpha.ctypes.data)
+        budget.select([Candidate(int(s), int(generations[s]), float(x), float(y), float(a))
+                       for s, x, y, a in zip(slots, xs, ys, areas, strict=True)], screen=SCREEN, elapsed_ms=elapsed)
+        assert {slot: budget.alpha(slot) for slot in budget.pieces if budget.alpha(slot) > 0.} == \
+            {int(slot): float(alpha[slot]) for slot in np.flatnonzero(alpha)}, frame

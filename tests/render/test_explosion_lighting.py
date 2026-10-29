@@ -357,6 +357,7 @@ def test_a_shatter_lights_each_run_of_ice_in_one_scope_in_draw_order(headless_wi
     from typing import Any, cast
 
     from crimson.effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID
+    from crimson.render.rtx.debris import ICE_EFFECTS
     from crimson.render.rtx.mode import RtxRenderMode
     from crimson.render.world import effects
     from tests.support.creature_draw_capture import render_ctx_for_creatures
@@ -380,7 +381,7 @@ def test_a_shatter_lights_each_run_of_ice_in_one_scope_in_draw_order(headless_wi
     for corpse in range(32):
         pool.spawn_freeze_shatter(pos=Vec2(100 + corpse * 20, 300), angle=.3, rng=rng, detail_preset=5,
                                   preserve_bugs=False)
-    ice = [entry for entry in pool.entries if entry.flags and entry.effect_id in effects._ICE_EFFECTS]
+    ice = [entry for entry in pool.entries if entry.flags and entry.effect_id in ICE_EFFECTS]
     quad = mocker.spy(effects, "draw_centered_quad")
     effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
     # Every particle draws, in the pool's order, and each run of one kind shares its scope.

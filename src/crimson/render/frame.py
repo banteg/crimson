@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from .rtx.bonus_lighting import BonusLighting
     from .rtx.contact_glow import ContactGlows
     from .rtx.creature_lighting import CreatureLighting
+    from .rtx.debris import DebrisBudget
     from .rtx.material_lights import LightSelection
     from .rtx.player_lighting import PlayerLighting
     from .rtx.smoke import SmokeRenderer
@@ -53,3 +54,5 @@ class RenderFrame(msgspec.Struct, frozen=True):
     # RTX: which lights fade in or out of the budgets (material_lights.LightSelection), and the ion contacts' glows.
     light_selection: LightSelection | None = None
     contact_glows: ContactGlows | None = None
+    # RTX: which loose freeze debris draws, and how opaque (debris.DebrisBudget).
+    debris: DebrisBudget | None = None

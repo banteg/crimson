@@ -611,6 +611,14 @@ The module marks the ice's batches: the freeze overlay's batch in `creature_rend
 (`HOST_PASS_ICE_FROZEN`), and among the effects (`HOST_PASS_ICE_CUBES`, `HOST_PASS_ICE_SHARDS`) a mark only
 where an effect's material changes, so the shatter keeps its place in the effects' order.
 
+A dense Freeze burst leaves a thousand or more loose cubes and shards, each lit in full, so RTX draws a bounded
+share of them (`crimson-core/game/include/rtx_debris.h`, and `render/rtx/debris.py` for the Python port, which a
+test holds to the same selection frame by frame): at most 256, taken in turn from the screen's 8x6 tiles in a
+stable order by pool slot, within half the screen's area. A piece leaving the selection fades out over 80 ms of the
+run's clock as its replacement fades in, and at most 320 draw at once. A respawned slot, a rewind and a gap of more
+than a quarter second start over. Only which pieces draw, and how opaque, changes: the effect pool, its order and
+the decals it bakes are the original's, and frozen creatures' ice is never budgeted.
+
 ## Bonus materials
 
 Python RTX replaces the pickup bubble bitmap with an analytical dark sphere and

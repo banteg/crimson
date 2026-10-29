@@ -239,5 +239,6 @@ class WorldRuntime:
             player_lighting=self.render_resources.player_lighting,
             bonus_lighting=self.render_resources.bonus_lighting,
             light_selection=self.render_resources.light_selection,
+            debris=self.render_resources.debris,
             contact_glows=self.render_resources.contact_glows,
         )
