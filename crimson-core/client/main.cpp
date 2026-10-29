@@ -417,8 +417,8 @@ u32 w2c_host_time_ms(struct w2c_host *) {
 }
 // The clock the game times its own work by, to the nanosecond SDL reads.
 f64 w2c_host_clock_ms(struct w2c_host *) { return SDL_GetTicksNS() / 1e6; }
-static void show_frame(int width, int height, bool drawn) {
-  renderer_present(width, height, drawn);
+static void show_frame(int width, int height) {
+  renderer_present(width, height);
   // WebGPU shows its frame when the browser composites the canvas.
   if (renderer_uses_gl())
     SDL_GL_SwapWindow(window);
@@ -429,7 +429,7 @@ void w2c_host_present(struct w2c_host *) {
   int width, height;
   SDL_GetWindowSizeInPixels(window, &width, &height);
   capture_frame();
-  show_frame(width, height, true);
+  show_frame(width, height);
 }
 // RTX (game/rtx.cpp): the mode the renderer shows of the one asked for. The page's
 // switch follows it, whoever changed it (shell.html).
@@ -1541,7 +1541,7 @@ SDL_AppResult SDL_AppIterate(void *) {
   // A pass of a run that covered no tick drew nothing: show the last frame
   // again.
   if (running && presented == before)
-    show_frame(pixel_width, pixel_height, false);
+    show_frame(pixel_width, pixel_height);
 #ifndef __EMSCRIPTEN__
   profile_record();
 #endif

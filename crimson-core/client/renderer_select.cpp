@@ -9,7 +9,7 @@
   X(void, renderer_init, (), ())                                                                                      \
   X(Viewport, renderer_viewport, (int w, int h), (w, h))                                                              \
   X(void, renderer_resize, (int w, int h), (w, h))                                                                    \
-  X(void, renderer_present, (int w, int h, bool d), (w, h, d))                                                        \
+  X(void, renderer_present, (int w, int h), (w, h))                                                                   \
   X(void, renderer_resume, (), ())                                                                                    \
   X(std::vector<unsigned char>, renderer_capture, (int &w, int &h), (w, h))                                           \
   X(bool, renderer_set_rtx, (bool enabled), (enabled))                                                                \

@@ -799,7 +799,7 @@ void check_submission_reuse() {
   // Streaming fallback, static quads, then a different fallback at the same
   // CPU address: neither buffer bindings nor a pointer's identity are content.
   assert(draw(reordered) == reference);
-  renderer_present(128, 128, true);
+  renderer_present(128, 128);
   renderer_resume();
   assert(draw(quads) == reference);
   memcpy(reordered, quads, sizeof quads);
@@ -1143,7 +1143,7 @@ int main() {
   Viewport v = renderer_viewport(present_w, present_h);
   w2c_host_clear(nullptr, 0xffff0000);
   rectangle(0, 384, 1024, 768, 0xff0000ff);
-  renderer_present(present_w, present_h, true);
+  renderer_present(present_w, present_h);
   glGetIntegerv(GL_VIEWPORT, viewport);
   assert(viewport[0] == v.x && viewport[1] == present_h - v.y - v.height);
   assert(viewport[2] == v.width && viewport[3] == v.height);
@@ -1165,7 +1165,7 @@ int main() {
     memcpy(memory + i * 2, &value, sizeof value);
   }
   w2c_host_gamma_ramp(nullptr, 0, 0, 0);
-  renderer_present(present_w, present_h, true);
+  renderer_present(present_w, present_h);
   u8 center[4];
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(center[0] == 0xdf && center[1] == 0xbf && center[2] == 0x7f);
@@ -1194,12 +1194,11 @@ int main() {
     memcpy(memory + i * 2, &value, sizeof value);
   }
   w2c_host_gamma_ramp(nullptr, 0, 0, 0);
-  renderer_present(present_w, present_h, true);
+  renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(abs(center[0] - 192) <= 2);
-  // A frame whose world drew a diagnostic map presents its values as they are;
-  // the next, a menu drawing no world after it, takes the ramp again, though
-  // the last scene asked for the map.
+  // A frame whose world drew a diagnostic map presents its values as they are
+  // until something else is drawn over it, though the last scene asked for the map.
   for (int i = 0; i < 256; ++i) {
     unsigned short value = (unsigned short)((255 - i) * 257);
     memcpy(memory + i * 2, &value, sizeof value);
@@ -1209,26 +1208,30 @@ int main() {
   w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
   w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
   int map = (int)lroundf(back_red(512, 384) * 255);
-  renderer_present(present_w, present_h, true);
+  renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(center[0] == map && map < 64);
-  // Shown again by a pass that ran no tick, it is still the map.
-  renderer_present(present_w, present_h, false);
+  // Shown again, by a pass that ran no tick or a frame that drew nothing new
+  // (a run's end), it is still the map.
+  renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(center[0] == map);
-  renderer_present(present_w, present_h, true);
+  // A menu drawn over it takes the ramp again.
+  w2c_host_clear(nullptr, 0xff000000);
+  renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
-  assert(center[0] == 255 - map);
+  assert(center[0] == 255);
   // A held map shown again (a paused replay's frame) is still a map.
   w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
   w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  int held = (int)lroundf(back_red(512, 384) * 255);
   w2c_host_frame_hold(nullptr, 1); // HOST_FRAME_SAVE
-  renderer_present(present_w, present_h, true);
+  renderer_present(present_w, present_h);
   w2c_host_clear(nullptr, 0xffffffff);
   w2c_host_frame_hold(nullptr, 0); // HOST_FRAME_SHOW
-  renderer_present(present_w, present_h, true);
+  renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
-  assert(center[0] == map);
+  assert(center[0] == held && held < 64);
   // RTX switched off while paused: the classic world drawn again, and the hold
   // kept of it, are no map, whatever the scene last asked for.
   renderer_set_rtx(false);
@@ -1236,9 +1239,9 @@ int main() {
   w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
   w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
   w2c_host_frame_hold(nullptr, 1); // HOST_FRAME_SAVE
-  renderer_present(present_w, present_h, true);
+  renderer_present(present_w, present_h);
   w2c_host_frame_hold(nullptr, 0); // HOST_FRAME_SHOW
-  renderer_present(present_w, present_h, true);
+  renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(center[0] == 255);
   scene_debug = 0;
