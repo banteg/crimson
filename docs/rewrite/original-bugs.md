@@ -1419,8 +1419,9 @@ Native behavior:
 
 - `projectile_update`'s Shrinkifier branch shrinks the target to 65% and calls
   `creature_handle_death` once it drops below size 16, then falls through to
-  the shot's ordinary damage. A shrink kill can leave health positive, so that
-  damage kills the same creature again: two rewards, two bonus rolls.
+  the shot's ordinary damage. A shrink kill leaves health as it was, so when
+  that damage (9.5) finishes what is left, it kills the same creature again:
+  two rewards, two bonus rolls. A target with more health left pays once.
 - The death keeps the corpse active, and a corpse stays hittable while its
   death timer is above 5. The next Shrinkifier shot shrinks it below 16 again
   and handles its death a third time.
