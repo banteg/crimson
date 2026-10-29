@@ -1197,11 +1197,24 @@ int main() {
   renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(abs(center[0] - 192) <= 2);
-  // A diagnostic map's values pass the ramp as they are.
+  // A frame whose world drew a diagnostic map presents its values as they are;
+  // the next, a menu drawing no world after it, takes the ramp again, though
+  // the last scene asked for the map.
+  for (int i = 0; i < 256; ++i) {
+    unsigned short value = (unsigned short)((255 - i) * 257);
+    memcpy(memory + i * 2, &value, sizeof value);
+  }
+  w2c_host_gamma_ramp(nullptr, 0, 0, 0);
   scene_debug = 5;
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  int map = (int)lroundf(back_red(512, 384) * 255);
   renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
-  assert(center[0] == 1);
+  assert(center[0] == map && map < 64);
+  renderer_present(present_w, present_h);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(center[0] == 255 - map);
   scene_debug = 0;
   renderer_set_rtx(false);
   renderer_resume();

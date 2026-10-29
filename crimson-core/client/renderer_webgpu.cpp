@@ -577,6 +577,9 @@ int scene_debug;
 bool smoke_drawing;
 Target discarded;
 bool debug_map() { return rtx && scene_debug && scene_debug != DEBUG_NO_DIRECT; }
+// Whether the frame presenting next ends with a map drawn (renderer_present):
+// the world that drew it, not the last scene, which a menu after it never resets.
+bool map_drawn;
 bool world_kept() {
   return !debug_map() || (scene_debug >= DEBUG_SMOKE ? smoke_drawing : material == HOST_PASS_GROUND);
 }
@@ -797,7 +800,8 @@ void wgpu_renderer_present(int window_width, int window_height) {
   // Normally a one-to-one copy; a resize between draw and present may scale once.
   bool exact = v.width == back.width && v.height == back.height;
   Uniforms fragment(*present_program.frag);
-  fragment.i("map_view", debug_map());
+  fragment.i("map_view", map_drawn);
+  map_drawn = false;
   bind(present_program,
        fragment_group(present_program, {{"back_buffer", back.view, exact ? nearest_clamp() : linear_clamp()},
                                         {"gamma", gamma_view, linear_clamp()}}),
@@ -1860,7 +1864,8 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     // A world drawn smaller (render_size) scales up as it tonemaps; a debug
     // map's values go to the display as they are.
     bool exact = world_image->width == back.width && world_image->height == back.height;
-    if (debug_map()) {
+    map_drawn = debug_map();
+    if (map_drawn) {
       wgpuRenderPassEncoderSetPipeline(pass, pipeline(blit, o));
       bind(blit, fragment_group(blit, {{"source", world_image->view, exact ? nearest_clamp() : linear_clamp()}}),
            nullptr, nullptr);

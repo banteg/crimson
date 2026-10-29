@@ -477,6 +477,9 @@ int scene_debug;
 bool smoke_drawing;
 Target discarded;
 bool debug_map() { return rtx && scene_debug && scene_debug != DEBUG_NO_DIRECT; }
+// Whether the frame presenting next ends with a map drawn (renderer_present):
+// the world that drew it, not the last scene, which a menu after it never resets.
+bool map_drawn;
 bool world_kept() {
   return !debug_map() || (scene_debug >= DEBUG_SMOKE ? smoke_drawing : material == HOST_PASS_GROUND);
 }
@@ -1159,7 +1162,8 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   glClear(GL_COLOR_BUFFER_BIT);
   glViewport(v.x, window_height - v.y - v.height, v.width, v.height);
   use_program(present_program);
-  glUniform1i(uniform_location(present_program, "map_view"), debug_map());
+  glUniform1i(uniform_location(present_program, "map_view"), map_drawn);
+  map_drawn = false;
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, gamma_texture);
   glActiveTexture(GL_TEXTURE0);
@@ -2277,7 +2281,8 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     // map's values go to the display as they are.
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
-    if (debug_map()) {
+    map_drawn = debug_map();
+    if (map_drawn) {
       use_program(blit_program);
     } else {
       use_program(tonemap_program);
