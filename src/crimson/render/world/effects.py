@@ -256,8 +256,8 @@ def draw_effect_pool(
 
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
         tint = entry.color.to_rl()
-        if (share := shares.get(id(entry), 1.0)) < 1.0:
-            tint = rl_color(tint.r, tint.g, tint.b, int(tint.a * share + 0.5))
+        if id(entry) in shares:
+            tint = rl_color(tint.r, tint.g, tint.b, debris_alpha(entry))
 
         if ice_grid(entry):
             # Inside its run's ice scope.
@@ -285,9 +285,14 @@ def draw_effect_pool(
         origin = rl_vector2(float(w) * 0.5, float(h) * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
+    def debris_alpha(entry: EffectEntry) -> int:
+        """A piece of debris's alpha byte at its share, as the clients scale it (rtx_debris_color)."""
+        return int(entry.color.to_rl().a * shares[id(entry)] + 0.5)
+
     def drawn(entry: EffectEntry) -> bool:
-        # Debris the budget leaves out drops before the runs batch, so it never splits two pieces' ice scope.
-        return bool(entry.flags) and entry.age >= 0.0 and shares.get(id(entry), 1.0) > 0.0
+        # Debris the budget leaves out, or fades to nothing, drops before the runs batch, so it never splits two
+        # pieces' ice scope.
+        return bool(entry.flags) and entry.age >= 0.0 and (id(entry) not in shares or debris_alpha(entry) > 0)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
     with sprite_batch() as batch:

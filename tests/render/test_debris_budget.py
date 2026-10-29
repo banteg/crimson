@@ -3,16 +3,28 @@ from __future__ import annotations
 import ctypes
 import shutil
 import subprocess
+from contextlib import contextmanager
+from itertools import groupby
 from pathlib import Path
+from typing import Any, cast
 
 import msgspec
 import numpy as np
 import pytest
 
-from crimson.render.rtx.debris import MAXIMUM, TARGET, Candidate, DebrisBudget
+from crimson.effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
+from crimson.render.rtx.debris import ICE_EFFECTS, MAXIMUM, TARGET, Candidate, DebrisBudget
+from crimson.render.rtx.mode import RtxRenderMode
+from crimson.render.world import effects
+from crimson.render.world.context import WorldRenderCtx
+from crimson.sim.sessions import DeterministicSession
+from grim.color import RGBA
+from grim.config import default_crimson_cfg
 from grim.geom import Vec2
 from grim.math import f32
 from grim.rand import Crand
+from tests.support.creature_draw_capture import render_ctx_for_creatures
+from tests.support.world_runtime import WorldRuntimeHost
 
 SCREEN = Vec2(1024, 768)
 
@@ -89,34 +101,31 @@ def test_a_respawned_slot_keeps_no_fade_and_a_rewind_starts_over() -> None:
     assert set(budget.pieces) == {c.slot for c in shown[2:]}
 
 
-def test_the_effect_pool_draws_only_the_selection_without_splitting_ice_runs(
-    headless_window, headless_resources, mocker,
-) -> None:
-    from contextlib import contextmanager
-    from itertools import groupby
-    from typing import Any, cast
+class Lighting:
+    """The creature lighting's scopes, as draw_effect_pool opens them."""
 
-    from crimson.effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID
-    from crimson.render.rtx.debris import ICE_EFFECTS
-    from crimson.render.rtx.mode import RtxRenderMode
-    from crimson.render.world import effects
-    from tests.support.creature_draw_capture import render_ctx_for_creatures
+    def __init__(self) -> None:
+        self.scopes: list[int] = []
 
-    class Lighting:
-        def __init__(self) -> None:
-            self.scopes: list[int] = []
+    @contextmanager
+    def scope(self, *, texture, restore_shader, ice=0, frozen=False):
+        self.scopes.append(ice)
+        yield
 
-        @contextmanager
-        def scope(self, *, texture, restore_shader, ice=0, frozen=False):
-            self.scopes.append(ice)
-            yield
 
-    lighting = Lighting()
-    budget = DebrisBudget()
-    ctx = render_ctx_for_creatures(headless_resources, [])
+def rtx_effects(resources) -> tuple[WorldRenderCtx, Lighting, DebrisBudget]:
+    lighting, budget = Lighting(), DebrisBudget()
+    ctx = render_ctx_for_creatures(resources, [])
     ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(
         ctx.frame, rtx_mode=RtxRenderMode.RTX, creature_lighting=cast(Any, lighting), debris=budget,
     ))
+    return ctx, lighting, budget
+
+
+def test_the_effect_pool_draws_only_the_selection_without_splitting_ice_runs(
+    headless_window, headless_resources, mocker,
+) -> None:
+    ctx, lighting, budget = rtx_effects(headless_resources)
     pool = ctx.frame.state.effects
     rng = Crand(7)
     for corpse in range(80):
@@ -135,6 +144,50 @@ def test_the_effect_pool_draws_only_the_selection_without_splitting_ice_runs(
     assert msgspec.to_builtins([(e.effect_id, e.pos, e.color, e.age) for e in ice]) == state
     runs = [grid for grid, _ in groupby(EFFECT_ID_ATLAS_TABLE_BY_ID[int(e.effect_id)].grid for e in shown)]
     assert lighting.scopes == runs
+
+
+def test_a_piece_faded_to_no_alpha_neither_draws_nor_splits_its_neighbours_scope(
+    headless_window, headless_resources, mocker,
+) -> None:
+    ctx, lighting, budget = rtx_effects(headless_resources)
+    # Two cubes with a faint shard between them, in the pool's draw order.
+    for slot, effect_id, alpha in ((0, EffectId.FREEZE_SHATTER, .7), (1, EffectId.FREEZE_SHARD_0, .02),
+                                   (2, EffectId.FREEZE_SHATTER, .7)):
+        entry = ctx.frame.state.effects.entries[slot]
+        entry.effect_id, entry.flags, entry.age, entry.scale = effect_id, 0x5D, 0., 1.
+        entry.pos, entry.half_width, entry.half_height = Vec2(100 + slot * 100, 100), 16., 16.
+        entry.color = RGBA(1., 1., 1., alpha)
+    effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    # The shard fading out: its alpha byte, 5, at a share of 0.05 rounds to nothing, as the clients round it.
+    budget.pieces[1].alpha = .05
+    lighting.scopes.clear()
+    quad = mocker.spy(effects, "draw_centered_quad")
+    effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    assert len(quad.call_args_list) == 2
+    assert lighting.scopes == [EFFECT_ID_ATLAS_TABLE_BY_ID[int(EffectId.FREEZE_SHATTER)].grid]
+
+
+def test_the_selection_starts_over_where_the_clients_start_theirs(tmp_path, headless_resources) -> None:
+    runtime = WorldRuntimeHost(assets_dir=tmp_path, config=default_crimson_cfg(), rtx_mode=RtxRenderMode.RTX)
+    runtime.render_resources.resources = headless_resources
+    debris = runtime.render_resources.debris
+    assert runtime.build_render_frame().debris is debris
+
+    def chosen() -> bool:
+        debris.select(grid(12), screen=SCREEN, elapsed_ms=100.)
+        return bool(debris.pieces)
+
+    # A change of render mode, a run (or a replay's keyframe) starting, and a reset world.
+    assert chosen()
+    runtime.rtx_mode = RtxRenderMode.CLASSIC
+    assert not debris.pieces and debris.elapsed_ms < 0.
+    runtime.rtx_mode = RtxRenderMode.RTX
+    assert chosen()
+    runtime.start_session(DeterministicSession.start(runtime.world, perk_progression_enabled=False))
+    assert not debris.pieces
+    assert chosen()
+    runtime.reset()
+    assert not debris.pieces
 
 
 @pytest.fixture(scope="module")

@@ -83,6 +83,7 @@ class WorldRuntime:
         if resources is not None and resources.rtx_mode is not mode:
             resources.rtx_mode = mode
             resources.smoke.reset()
+            resources.debris.reset()
 
     @property
     def audio(self) -> AudioState | None:
@@ -122,6 +123,7 @@ class WorldRuntime:
         self._reset_world(seed=int(seed), player_count=int(player_count))
         self.render_resources.clear_pending_terrain_fx()
         self.render_resources.smoke.reset()
+        self.render_resources.debris.reset()
         self.camera = Vec2(-1.0, -1.0)
 
     def _reset_world(self, *, seed: int, player_count: int) -> None:
@@ -137,7 +139,9 @@ class WorldRuntime:
         """Install a run: its world is the one stepped, drawn and read until the next reset."""
         self.session = session
         self.world = session.world
+        # A keyframe's restored pool numbers its spawns afresh (EffectPool.generation_for_slot).
         self.render_resources.smoke.reset()
+        self.render_resources.debris.reset()
 
     def end_session(self) -> None:
         """Stop stepping the run; its world stays on screen until the next reset."""
