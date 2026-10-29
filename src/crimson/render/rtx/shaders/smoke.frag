@@ -10,6 +10,9 @@ uniform int u_state_flip;
 uniform vec2 u_origin;
 uniform vec2 u_size;
 uniform float u_opacity;
+// The field's lifetime fade thins its smoke and heat rather than its final opacity, so folding it into the field as a
+// fresh source refreshes the lifetime leaves the old smoke as it was.
+uniform float u_fade;
 uniform int u_light_count;
 uniform vec4 u_light_pos[16];
 uniform vec4 u_light_rgb[16];
@@ -32,7 +35,7 @@ vec4 state_at(vec2 xy) {
 // A planar texel describes an entire vertical Gaussian column. Cache columns
 // before integrating height; their texture lookup and edge fade do not depend on z.
 vec3 column(vec2 xy) {
-    vec4 state=state_at(xy);
+    vec4 state=state_at(xy)*vec4(u_fade,u_fade,1,1);
     return vec3(state.x,16.+min(state.y,2.)*8.,11.+min(state.y,2.)*3.);
 }
 vec3 debug_radiance(vec3 value) {
@@ -80,14 +83,16 @@ vec3 sight_scattering(vec2 xy,vec4 sight) {
 void main() {
     vec2 xy=u_origin+fragTexCoord*u_size;
     vec4 state=state_at(xy);
-    // Raw fields cover the whole domain: air moves and stays warm where smoke has thinned out.
-    if(u_debug==16) { finalColor=vec4(heat(state.y),1.); return; }
+    // Raw fields cover the whole domain: air moves and stays warm where smoke has thinned out. Heat fades with the
+    // field's lifetime, as the columns see it, so a refresh folding the fade in leaves the map as it was.
+    if(u_debug==16) { finalColor=vec4(heat(state.y*u_fade),1.); return; }
     if(u_debug==17) { finalColor=vec4(flow(state.zw),1.); return; }
     vec3 local=column(xy);
     if(local.x<=.00001) { finalColor=u_debug!=0 ? vec4(0,0,0,1) : vec4(0); return; }
-    // Heat per unit of smoke, from the raw fields: the edge fade thins the smoke, not its heat's share.
+    // Heat per unit of smoke, from the raw fields: the edge fade thins the smoke, not its heat's share. The lifetime
+    // fade thins both, as the columns see them, so the share's floor holds when a refresh folds the fade in.
     vec2 raw_uv=(xy-u_origin)/u_size;
-    vec2 raw=textureLod(texture0,vec2(raw_uv.x,u_state_flip!=0 ? 1.-raw_uv.y : raw_uv.y),0.).xy;
+    vec2 raw=textureLod(texture0,vec2(raw_uv.x,u_state_flip!=0 ? 1.-raw_uv.y : raw_uv.y),0.).xy*u_fade;
     // The light map shows what emitters add: no glow, as no sky.
     vec3 glow=u_debug==18 ? vec3(0) : ember(raw.y/max(raw.x,.0001));
     vec3 sky1=column(xy-vec2(12,9)),sky2=column(xy-vec2(24,18));

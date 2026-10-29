@@ -519,8 +519,8 @@ void rtx_smoke_draw(const float *lights, int light_count, float alpha) {
   if (!smoke.field)
     return;
   float ox = -GUARD_BAND, oy = -GUARD_BAND;
-  const float view[9] = {ox + camera_offset.x, oy + camera_offset.y, smoke.size_x, smoke.size_y,
-                         ox, oy, smoke.size_x, smoke.size_y, alpha * field_fade()};
+  const float view[10] = {ox + camera_offset.x, oy + camera_offset.y, smoke.size_x, smoke.size_y,
+                          ox, oy, smoke.size_x, smoke.size_y, alpha, field_fade()};
   static float packed[SMOKE_MAX_LIGHTS * SMOKE_LIGHT_FLOATS], sights[SMOKE_MAX_SIGHTS * 4];
   int lit = smoke_lights(lights, light_count, packed);
   int sight_count = rtx_collect_sights(sights, SMOKE_MAX_SIGHTS);
