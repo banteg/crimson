@@ -1359,7 +1359,7 @@ for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
 // lost packets, which begin once the stall settled (a burst sets the runs apart as a stall does), and under
 // 120 ± 10 ms, where the Host's START_RUN puts the records further ahead (coop_live.inc coop_run_delay), the window
 // narrows 40 s into the run, as it does 15 minutes in. Once the pick is in and 1500 ticks are confirmed (2700 where
-// the window narrows, 3300 at 120 ms), the Guest pauses under 30 ± 5 ms and the Host's mouse presses the banner's
+// the window narrows, 3600 at 120 ms), the Guest pauses under 30 ± 5 ms and the Host's mouse presses the banner's
 // Leave; under the others both players die (dying, below). Under 60 ± 20 ms with loss both players then name the
 // run, which ranks: both machines queue the same upload of the replay of the run's confirmed end. At 120 ms the game
 // runs 59 ticks a second from a second past the narrowing to the run's end, the narrowed window and the longer delay
@@ -1375,7 +1375,7 @@ const PROFILES = [
   { name: "30 ± 5 ms", ms: 30, jitter: 5, picker: guest, pause: { by: guest, resumer: host }, end: "leave" },
   { name: "50 ± 15 ms, bursts", ms: 50, jitter: 15, bursts: { every: 4000, burst: 10 }, late: 40000, picker: host },
   { name: "60 ± 20 ms, 1% loss", ms: 60, jitter: 20, loss: 0.01, picker: guest, pause: { by: host, resumer: guest }, ranked: true },
-  { name: "120 ± 10 ms", ms: 120, jitter: 10, late: 40000, ticks: 3300, picker: guest, paced: true },
+  { name: "120 ± 10 ms", ms: 120, jitter: 10, late: 40000, ticks: 3600, picker: guest, paced: true },
 ];
 const LOSSY = PROFILES[3];
 // The window, and how it narrows (host/coop.inc COOP_LATE_RMAX, COOP_LATE_MS); the most a rollback takes back

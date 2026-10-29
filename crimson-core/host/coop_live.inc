@@ -477,7 +477,7 @@ static void coop_pick(int choice) {
 // Every pass draws.
 static int coop_frame() {
   live_poll();
-  coop_live.banked += live.paced * std::clamp(1 + 0.01f * coop_ahead(), 0.98f, 1.02f);
+  coop_live.banked += fminf(grim_frame_dt, 0.1f) * std::clamp(1 + 0.01f * coop_ahead(), 0.98f, 1.02f);
   live.due = (int)(coop_live.banked * 60.0f + 1e-4f);
   return 1;
 }
