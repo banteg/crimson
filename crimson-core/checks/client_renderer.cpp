@@ -1215,6 +1215,16 @@ int main() {
   renderer_present(present_w, present_h);
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(center[0] == 255 - map);
+  // A held map shown again (a paused replay's frame) is still a map.
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  w2c_host_frame_hold(nullptr, 1); // HOST_FRAME_SAVE
+  renderer_present(present_w, present_h);
+  w2c_host_clear(nullptr, 0xffffffff);
+  w2c_host_frame_hold(nullptr, 0); // HOST_FRAME_SHOW
+  renderer_present(present_w, present_h);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(center[0] == map);
   scene_debug = 0;
   renderer_set_rtx(false);
   renderer_resume();
