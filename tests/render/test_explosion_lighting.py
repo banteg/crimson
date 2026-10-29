@@ -136,6 +136,20 @@ def test_freeing_ring_ends_ownership_before_same_kind_slot_reuse() -> None:
     assert visual.ring is None and visual.active_ring is None
 
 
+def test_freeing_an_effect_no_explosion_can_own_skips_the_archive() -> None:
+    # Only rings and fireballs are ever owned: a burst of ice or blood expiring never walks the explosions.
+    class Untouchable(list):
+        def __iter__(self):
+            raise AssertionError("searched the explosion archive")
+
+    pool = EffectPool()
+    burst(pool)
+    shard = pool.spawn(EffectId.FREEZE_SHARD_0, Vec2(), 5, preserve_bugs=False)
+    assert shard is not None
+    pool.explosion_visuals = Untouchable(pool.explosion_visuals)
+    pool.free(next(i for i, entry in enumerate(pool.entries) if entry is shard))
+
+
 def test_effect_pool_deepcopy_preserves_ring_ownership_without_live_aliases() -> None:
     import copy
 
@@ -335,3 +349,41 @@ def test_each_burst_draws_one_ring_and_rtx_swaps_only_a_lit_burst_for_its_shell(
     effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
     assert sum(call.args[1] == EffectId.RING for call in select.call_args_list) == rings + 1
     assert sum(call.args[0] is EffectShape.RING for call in sprite.call_args_list) == int(rtx)
+
+
+def test_a_shatter_lights_each_run_of_ice_in_one_scope_in_draw_order(headless_window, headless_resources, mocker) -> None:
+    from contextlib import contextmanager
+    from itertools import groupby
+    from typing import Any, cast
+
+    from crimson.effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID
+    from crimson.render.rtx.mode import RtxRenderMode
+    from crimson.render.world import effects
+    from tests.support.creature_draw_capture import render_ctx_for_creatures
+
+    class Lighting:
+        def __init__(self) -> None:
+            self.scopes: list[int] = []
+
+        @contextmanager
+        def scope(self, *, texture, restore_shader, ice=0, frozen=False):
+            self.scopes.append(ice)
+            yield
+
+    lighting = Lighting()
+    ctx = render_ctx_for_creatures(headless_resources, [])
+    ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(
+        ctx.frame, rtx_mode=RtxRenderMode.RTX, creature_lighting=cast(Any, lighting),
+    ))
+    pool = ctx.frame.state.effects
+    rng = Crand(7)
+    for corpse in range(32):
+        pool.spawn_freeze_shatter(pos=Vec2(100 + corpse * 20, 300), angle=.3, rng=rng, detail_preset=5,
+                                  preserve_bugs=False)
+    ice = [entry for entry in pool.entries if entry.flags and entry.effect_id in effects._ICE_EFFECTS]
+    quad = mocker.spy(effects, "draw_centered_quad")
+    effects.draw_effect_pool(ctx, camera=Vec2(), view_scale=Vec2(1, 1))
+    # Every particle draws, in the pool's order, and each run of one kind shares its scope.
+    assert len(quad.call_args_list) == len(ice) == 32 * 8
+    runs = [grid for grid, _ in groupby(EFFECT_ID_ATLAS_TABLE_BY_ID[int(e.effect_id)].grid for e in ice)]
+    assert lighting.scopes == runs and len(runs) < len(ice) // 3

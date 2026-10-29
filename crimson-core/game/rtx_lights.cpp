@@ -1204,7 +1204,11 @@ extern "C" void rtx_explosion_effect(int effect_id, const effect_entry_t *entry)
 }
 
 // A freed slot (effect_free) is no longer any explosion's: a later effect may reuse it.
+// Only a ring or a fireball can be one's (rtx_explosion_effect), so a burst of
+// blood or ice expiring never searches the archive.
 extern "C" void rtx_explosion_release(const effect_entry_t *entry) {
+  if (entry->effect_id != 0x01 && entry->effect_id != 0x0c)
+    return;
   for (Explosion &e : explosions) {
     if (e.ring == entry)
       e.ring = nullptr;
