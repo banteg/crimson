@@ -112,8 +112,11 @@ class OcclusionGrid(msgspec.Struct, frozen=True):
     columns: int
     rows: int
     values: list[float]
+    # Bodies uploaded as their own transforms; a crowd's members stand for it in its cells' headers instead.
     body_count: int
     references: int
+    # Whether anything casts: listed bodies or crowds. A grid of crowds alone lists no body.
+    occludes: bool
 
 
 def build_occlusion_grid(
@@ -138,7 +141,7 @@ def build_occlusion_grid(
     """
     sources = [light for light in lights if light.reflection_gain > 0 or (illumination and light.illumination_gain > 0)]
     if not sources:
-        return OcclusionGrid(Vec2(), CELL_SIZE, 0, 0, [], 0, 0)
+        return OcclusionGrid(Vec2(), CELL_SIZE, 0, 0, [], 0, 0, False)
     cell_size = CELL_SIZE
     padding = min(PENUMBRA_WIDTH, max((max(.1, light.source_width) for light in sources), default=0.0))
     lo = Vec2(-cell_size, -cell_size)
@@ -233,7 +236,7 @@ def build_occlusion_grid(
         for address in cell:
             values.extend((address, 0, 0, 0))
     references = sum(map(len, cells))
-    return OcclusionGrid(origin, cell_size, columns, rows, values, body_count, references)
+    return OcclusionGrid(origin, cell_size, columns, rows, values, body_count, references, body_count > 0 or any(crowd))
 
 
 class ReflectionOcclusion(msgspec.Struct):

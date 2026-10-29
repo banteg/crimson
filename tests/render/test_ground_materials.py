@@ -18,7 +18,7 @@ from crimson.render.rtx.debug import RtxDebugView
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.materials import MaterialGroundRenderer, _integer, _uniform
 from crimson.render.rtx.mode import RtxRenderMode
-from crimson.render.rtx.reflection_occlusion import BodyVolume
+from crimson.render.rtx.reflection_occlusion import CROWD_BODIES, BodyVolume
 from crimson.render.rtx.shaders import glsl
 from crimson.render.terrain_fx import FxQueueTextures
 from crimson.sim.gameplay_state import GameplayState
@@ -717,6 +717,21 @@ def test_body_occludes_only_its_sources_reflection(ground_material, mocker, beam
     assert ground.reflection_occlusion.texture is not None
     ground.reset_materials()
     assert ground.reflection_occlusion.texture is None
+
+
+def test_crowd_alone_still_occludes(ground_material, mocker) -> None:
+    # Past CROWD_BODIES a cell keeps its crowd's density instead of its members: the grid lists no body, yet casts.
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    pool = CreaturePool()
+    pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 26), size=35)
+    body = BodyVolume(Vec2(32, 26), Vec2(7, 4), 24, 0)
+    mocker.patch.object(ground_materials, "creature_body_volumes", side_effect=lambda c: [body] * (CROWD_BODIES + 1) if c.active else [])
+    source = MaterialLight(Vec2(32, 16), 150, (2, 1, .5), height=30, illumination_gain=0)
+    mocker.patch.object(ground_materials, "collect_material_lights", return_value=[source])
+    unblocked = debug_pixels(ground, texture, mode=5)
+    blocked = debug_pixels(ground, texture, mode=5, creatures=pool)
+    assert sum(p[0] for p in blocked) < sum(p[0] for p in unblocked) * .8
 
 
 def test_rounded_body_rotation_and_source_width_change_the_occlusion(ground_material, mocker) -> None:
