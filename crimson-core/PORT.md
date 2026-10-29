@@ -189,7 +189,8 @@ A run the client plays is a verifier session inside the running original
 player's progress and settings (unlocks, weapon usage, detail, hardcore,
 violence, friendly fire, retries), and the Python port's policy on the
 original's bugs: the [documented fixes](../docs/rewrite/original-bugs.md).
-Each pass of the run loop banks wall time and runs the 60 Hz ticks it covers;
+Each pass of the run loop banks wall time, paced to the display so that its
+frames run even ticks (one each at 60 Hz), and runs the 60 Hz ticks it covers;
 each tick's input is built from the player's bindings and scheme as Python's
 recorder builds it ([`local_input.py`](../src/crimson/local_input.py)) and is
 recorded before the tick runs. A pass that covers no tick draws nothing, and

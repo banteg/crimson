@@ -106,6 +106,33 @@ frame();
 game.game_watch_seek(390);
 for (let i = 0; i < 20; ++i) frame();
 if (game.game_watch_tick() <= 400) throw Error(`a stop a seek passed paused on ${game.game_watch_tick()}`);
+// A display's frames, as Grim's clock reads them: in whole milliseconds, up to
+// 0.9 ms after each shows. Playback runs the ticks each frame holds, evenly
+// (host/session.inc live_pace): at 60 Hz one a frame and two on a frame the
+// display missed, at 59 or 61 Hz one a frame but for the second's one frame
+// that runs two or none, at 120 Hz one every other frame, at 144 Hz one every
+// two or three. The ticks of each frame once a second of them has passed.
+function display(hz, frames, missed) {
+  const ran = [], start = run.clock;
+  for (let k = -60, shown = 0; k < frames; ++k) {
+    shown += k === missed ? 2 : 1;
+    const from = game.game_watch_tick();
+    frame(start + Math.floor((shown * 1000) / hz + ((k * 0.618 + 60) % 1) * 0.9) - run.clock);
+    if (k >= 0) ran.push(game.game_watch_tick() - from);
+  }
+  return ran.join("");
+}
+for (const [hz, frames, expected, missed] of [
+  [60, 120, /^1+$/],
+  [60, 90, /^1{40}21+$/, 40],
+  [59, 150, /^(?!.*(0|2.{0,49}2))[12]+$/],
+  [61, 150, /^(?!.*(2|0.{0,49}0))[01]+$/],
+  [120, 120, /^(01)+$|^(10)+$/],
+  [144, 120, /^(?!.*(11|000))[01]+$/],
+]) {
+  const ran = display(hz, frames, missed);
+  if (!expected.test(ran)) throw Error(`a ${hz} Hz display${missed ? " missing a frame" : ""} ran ${ran}`);
+}
 frame(16, [ESCAPE]);
 for (let frames = 0; game.game_state() !== HIGHSCORES; ++frames) {
   if (frames > 600) throw Error("a linked replay does not return to the high scores");
