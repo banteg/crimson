@@ -2,6 +2,23 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.23.3
+
+### For players
+
+- In the browser and desktop games, a slow frame no longer makes the next one draw the world two or three times over. The game still plays every moment it owes, but draws the screen once, so a heavy moment under RTX no longer keeps the game slow after it passes.
+- Big Freeze shatters cost far less to draw under RTX: the browser and desktop games draw a bounded share of the loose ice spread across the screen, and the Python port draws each run of ice pieces in one batch.
+- RTX smoke no longer thickens again when a new puff appears while older smoke is fading out.
+- RTX lighting no longer spends its lights on bright sources just off screen, so a visible muzzle flash stays lit beside an Ion volley out of view.
+- RTX gradients no longer band on HDR displays, and RTX debug views show their values without the game's gamma setting applied.
+- In the Python port, a dense crowd keeps its RTX shadows when no other body stands near the light.
+
+### Under the hood
+
+- `just build` no longer fails when a stray folder sits in `crimson-core/host`.
+- The native profile counts the worlds drawn each frame (`scene.worlds`) and labels ice cubes, shards, frozen creatures and glints separately.
+- The original bugs page records the Shrinkifier's repeated death rewards and the Bubblegun's stale target, both kept as in the original game.
+
 ## 0.23.2
 
 ### For players
