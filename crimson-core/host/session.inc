@@ -539,6 +539,27 @@ static void live_poll_prompt() {
 #include "keyframes.inc"
 #include "watch.inc"
 #include "watch_cache.inc"
+
+// A pass's due ticks, drawing only the last, as playback (watch_run) and co-op
+// draw theirs: a pass that runs late owes several, and each drew a whole world
+// that the next overdrew before the pass presented. The terrain still takes
+// every tick's bake (fx_queue_render). A tick that stops the run's ticks (a
+// menu, its end) before the last went undrawn: the world draws once, between
+// ticks. Returns the ticks that ran.
+template <class Tick> static int live_run_due(Tick run_tick) {
+  unsigned char disabled = grim_render_disabled;
+  terrain.baking = true;
+  int ran = 0;
+  for (bool more = true; more && ran < live.due; ++ran) {
+    grim_render_disabled = disabled || ran + 1 < live.due;
+    more = run_tick();
+  }
+  grim_render_disabled = disabled;
+  terrain.baking = false;
+  if (ran < live.due)
+    gameplay_render_world();
+  return ran;
+}
 #include "practice.inc"
 #include "coop.inc"
 #include "coop_wire.inc"
@@ -613,8 +634,7 @@ void gameplay_update_and_render() {
   if (console_open_flag)
     return gameplay_render_world();
   live_poll_prompt();
-  for (int i = 0; i < live.due && live_tick(); ++i) {
-  }
+  live_run_due([] { return live_tick(); });
 }
 // The perk screen's choice (perk_selection_screen_update) reaches the run as a
 // command with its next tick.

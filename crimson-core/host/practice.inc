@@ -194,15 +194,11 @@ static void practice_render() {
   bool drew = false;
   if (practice.phase == PRACTICE_PLAYING)
     live_poll_prompt();
-  terrain.baking = true;
-  for (int i = 0; i < live.due && practice.phase == PRACTICE_PLAYING; ++i) {
+  if (practice.phase == PRACTICE_PLAYING) {
     unsigned before = tick;
-    bool again = live_tick();
-    drew |= tick != before;
-    if (!again)
-      break;
+    live_run_due([] { return live_tick() && practice.phase == PRACTICE_PLAYING; });
+    drew = tick != before;
   }
-  terrain.baking = false;
   if (!drew && rtx_debug_redraw()) {
     gameplay_render_world();
     drew = true;
