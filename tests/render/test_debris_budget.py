@@ -149,19 +149,32 @@ def native_budget(tmp_path_factory: pytest.TempPathFactory):
         '#include "rtx_debris.h"\nstatic RtxDebrisBudget budget;\n'
         'extern "C" void forget(int slot) { budget.forget(slot); }\n'
         'extern "C" void reset() { budget.reset(); }\n'
-        'extern "C" void choose(const int *slots, const float *xs, const float *ys, const float *areas, int n, float dt,\n'
-        '                       float *alpha) {\n'
+        'extern "C" void choose(const int *slots, const float *xs, const float *ys, const float *areas, int n, float width,\n'
+        '                       float height, float dt, float *alpha) {\n'
         '  std::vector<RtxDebrisBudget::Candidate> shown;\n'
         '  for (int i = 0; i < n; ++i) shown.push_back({slots[i], xs[i], ys[i], areas[i]});\n'
-        '  budget.select(shown, 1024, 768, dt);\n'
+        '  budget.select(shown, width, height, dt);\n'
         '  for (int i = 0; i < RtxDebrisBudget::capacity; ++i) alpha[i] = budget.alpha(i);\n}\n',
     )
     library = work / "budget.so"
     subprocess.run([compiler, "-std=c++17", "-shared", "-fPIC", "-O2", f"-I{root / 'crimson-core/game/include'}",
                     str(source), "-o", str(library)], check=True)
     native = ctypes.CDLL(str(library))
-    native.choose.argtypes = [ctypes.c_void_p] * 4 + [ctypes.c_int, ctypes.c_float, ctypes.c_void_p]
+    native.choose.argtypes = [ctypes.c_void_p] * 4 + [ctypes.c_int] + [ctypes.c_float] * 3 + [ctypes.c_void_p]
     return native
+
+
+def same_choice(native, budget: DebrisBudget, shown: list[Candidate], *, screen: Vec2, elapsed_ms: float,
+                dt: float) -> bool:
+    """One frame's selection by the clients' budget (`dt` from their frame clock) and by `budget`, compared."""
+    slots = np.array([c.slot for c in shown], dtype=np.int32)
+    xs, ys, areas = (np.array([getattr(c, name) for c in shown], dtype=np.float32) for name in ("x", "y", "area"))
+    alpha = np.zeros(2560, dtype=np.float32)
+    native.choose(slots.ctypes.data, xs.ctypes.data, ys.ctypes.data, areas.ctypes.data, len(shown), screen.x, screen.y,
+                  dt, alpha.ctypes.data)
+    budget.select(shown, screen=screen, elapsed_ms=elapsed_ms)
+    return {slot: budget.alpha(slot) for slot in budget.pieces if budget.alpha(slot) > 0.} == \
+        {int(slot): float(alpha[slot]) for slot in np.flatnonzero(alpha)}
 
 
 def test_the_selection_is_the_clients_frame_for_frame(native_budget) -> None:
@@ -171,8 +184,7 @@ def test_the_selection_is_the_clients_frame_for_frame(native_budget) -> None:
     live = rng.choice(2560, 1200, replace=False)
     budget = DebrisBudget()
     native_budget.reset()
-    alpha = np.zeros(2560, dtype=np.float32)
-    elapsed = last = -1
+    last = -1
     for frame in range(240):
         if frame % 7 == 0:
             for slot in rng.choice(live, 60):
@@ -191,10 +203,24 @@ def test_the_selection_is_the_clients_frame_for_frame(native_budget) -> None:
         else:
             dt = f32((elapsed - last) * f32(.001))
         last = elapsed
-        slots = live.astype(np.int32)
-        native_budget.choose(slots.ctypes.data, xs.ctypes.data, ys.ctypes.data, areas.ctypes.data, len(live), dt,
-                             alpha.ctypes.data)
-        budget.select([Candidate(int(s), int(generations[s]), float(x), float(y), float(a))
-                       for s, x, y, a in zip(slots, xs, ys, areas, strict=True)], screen=SCREEN, elapsed_ms=elapsed)
-        assert {slot: budget.alpha(slot) for slot in budget.pieces if budget.alpha(slot) > 0.} == \
-            {int(slot): float(alpha[slot]) for slot in np.flatnonzero(alpha)}, frame
+        shown = [Candidate(int(s), int(generations[s]), float(x), float(y), float(a))
+                 for s, x, y, a in zip(live, xs, ys, areas, strict=True)]
+        assert same_choice(native_budget, budget, shown, screen=SCREEN, elapsed_ms=elapsed, dt=dt), frame
+
+
+@pytest.mark.parametrize("screen", [Vec2(1024, 768), Vec2(1024, 800), Vec2(1366, 768), Vec2(1280, 720)])
+def test_pieces_on_tile_edges_and_at_the_area_limit_choose_as_the_clients_do(native_budget, screen: Vec2) -> None:
+    # Pieces a float apart either side of every tile edge, crowding one tile's neighbours...
+    edges = [np.float32(k * screen.x / 8) for k in range(1, 8)], [np.float32(k * screen.y / 6) for k in range(1, 6)]
+    near = [[float(np.nextafter(e, d, dtype=np.float32)) for e in axis for d in (-np.inf, np.inf)] + [float(e) for e in axis]
+            for axis in edges]
+    shown = [Candidate(slot, 1, x, y, 64.) for slot, (x, y) in enumerate((x, y) for x in near[0] for y in near[1])]
+    native_budget.reset()
+    assert same_choice(native_budget, DebrisBudget(), shown, screen=screen, elapsed_ms=0., dt=0.)
+    # ... and the target's worth of pieces just filling half the screen, the first a float over its share.
+    share = np.float32(screen.x * screen.y / 2 / TARGET)
+    shown = [Candidate(slot, 1, 64. + slot % 8 * screen.x / 8, 64. + slot % 6 * screen.y / 6,
+                       float(np.nextafter(share, np.inf, dtype=np.float32)) if slot == 0 else float(share))
+             for slot in range(TARGET)]
+    native_budget.reset()
+    assert same_choice(native_budget, DebrisBudget(), shown, screen=screen, elapsed_ms=0., dt=0.)

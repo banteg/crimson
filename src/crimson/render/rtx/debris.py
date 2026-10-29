@@ -56,16 +56,17 @@ def _key(slot: int) -> int:
 
 
 def candidates(pool: EffectPool, *, camera: Vec2, screen: Vec2) -> list[Candidate]:
-    """The pool's debris that shows on a `screen` of logical pixels."""
+    """The pool's debris that shows on a `screen` of logical pixels, in the clients' single precision."""
     out = []
     for slot, entry in enumerate((*pool.entries, *pool.overflow_entries)):
         if not entry.flags or entry.age < 0. or entry.effect_id not in ICE_EFFECTS or entry.color.a < 1. / 255.:
             continue
-        x, y = entry.pos.x + camera.x, entry.pos.y + camera.y
-        co, si = abs(math.cos(entry.rotation)), abs(math.sin(entry.rotation))
-        w = (co * entry.half_width + si * entry.half_height) * abs(entry.scale)
-        h = (si * entry.half_width + co * entry.half_height) * abs(entry.scale)
-        area = max(0., min(screen.x, x + w) - max(0., x - w)) * max(0., min(screen.y, y + h) - max(0., y - h))
+        x, y = f32(entry.pos.x + camera.x), f32(entry.pos.y + camera.y)
+        co, si = f32(abs(math.cos(entry.rotation))), f32(abs(math.sin(entry.rotation)))
+        w = f32(f32(f32(co * entry.half_width) + f32(si * entry.half_height)) * abs(entry.scale))
+        h = f32(f32(f32(si * entry.half_width) + f32(co * entry.half_height)) * abs(entry.scale))
+        area = f32(max(0., f32(min(screen.x, f32(x + w)) - max(0., f32(x - w)))) *
+                   max(0., f32(min(screen.y, f32(y + h)) - max(0., f32(y - h)))))
         if area > 0.:
             out.append(Candidate(slot, pool.generation_for_slot(slot), x, y, area))
     return out
@@ -102,40 +103,44 @@ class DebrisBudget(msgspec.Struct):
             piece = self.pieces.get(c.slot)
             pieces[c.slot] = piece if piece is not None and piece.generation == c.generation else _Piece(c.generation)
         self.pieces = pieces
-        # Round-robin across the occupied tiles, each in its pieces' stable order.
+        # Round-robin across the occupied tiles, each in its pieces' stable order. All of it in the clients' single
+        # precision, so a piece on a tile's edge or at an area limit, or a fade, ends where theirs does.
         tiles = []
         occupied = [0] * (TILES_X * TILES_Y)
         for c in sorted(shown, key=lambda c: _key(c.slot)):
-            tile = min(max(int(c.y * TILES_Y / screen.y), 0), TILES_Y - 1) * TILES_X + \
-                min(max(int(c.x * TILES_X / screen.x), 0), TILES_X - 1)
+            tile = min(max(int(f32(f32(c.y * TILES_Y) / screen.y)), 0), TILES_Y - 1) * TILES_X + \
+                min(max(int(f32(f32(c.x * TILES_X) / screen.x)), 0), TILES_X - 1)
             tiles.append((occupied[tile], _key(c.slot), c))
             occupied[tile] += 1
         ranked = [c for _, _, c in sorted(tiles, key=lambda t: t[:2])]
-        whole = screen.x * screen.y
+        whole = f32(screen.x * screen.y)
+        half, most = f32(whole * .5), f32(whole * .75)
         wanted = set()
         area = 0.
         for c in ranked:
-            if len(wanted) == TARGET or area + c.area > whole * .5:
+            if len(wanted) == TARGET or f32(area + c.area) > half:
                 continue
             wanted.add(c.slot)
-            area += c.area
-        # In the clients' single precision, so a fade ends where theirs does: on zero.
+            area = f32(area + c.area)
         step = min(max(f32(f32(gap * f32(.001)) / f32(FADE_SECONDS)), 0.), 1.)
         for slot, piece in pieces.items():
             if slot not in wanted:
                 piece.alpha = max(0., f32(piece.alpha - step))
         # The pieces still drawn hold their whole quads and areas while they fade; a joining piece waits for room.
-        drawn = [c for c in ranked if pieces[c.slot].alpha > 0.]
-        count, area = len(drawn), sum(c.area for c in drawn)
+        count, area = 0, 0.
+        for c in ranked:
+            if pieces[c.slot].alpha > 0.:
+                count += 1
+                area = f32(area + c.area)
         for c in ranked:
             piece = pieces[c.slot]
             if c.slot in wanted:
                 if piece.alpha > 0.:
                     piece.alpha = min(1., f32(piece.alpha + step))
-                elif count < MAXIMUM and area + c.area <= whole * .75:
+                elif count < MAXIMUM and f32(area + c.area) <= most:
                     # A new piece keeps its own onset; one the budget held back fades in.
                     piece.alpha = step if piece.seen else 1.
                     if piece.alpha > 0.:
                         count += 1
-                        area += c.area
+                        area = f32(area + c.area)
             piece.seen = True
