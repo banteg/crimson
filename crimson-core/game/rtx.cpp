@@ -25,6 +25,8 @@ extern crimson_cfg_t config_blob;
 extern int rtx_effects_active;
 void rtx_effect_flush();
 void rtx_glint_reset();
+void rtx_debris_prepare();
+void rtx_debris_reset();
 
 static const char *rtx_mode_name(int mode) { return mode ? "rtx" : "classic"; }
 
@@ -243,6 +245,8 @@ static int rtx_light_count;
 void rtx_world(int begin) {
   if (begin)
     rtx_glint_reset();
+  if (begin)
+    rtx_debris_prepare();
   if (!platform_outputs() || grim_render_disabled)
     return;
   grim_interface_ptr->grim_flush_batch();
@@ -296,6 +300,7 @@ void rtx_reset() {
   rtx_effect_flush();
   rtx_smoke_reset();
   rtx_lights_reset();
+  rtx_debris_reset();
 }
 
 // The batches the host lights (HOST_PASS_CREATURES, _PLAYERS), and the return to

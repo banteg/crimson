@@ -1,8 +1,10 @@
 World-only analytic glows, shells, plasma, Pulse Gun shots and ion arcs. Classic submission is unchanged.
 --- a/decomp/1.9/crimsonland/effects/effects_render.cpp
 +++ b/decomp/1.9/crimsonland/effects/effects_render.cpp
-@@ -58,1 +58,4 @@
+@@ -58,1 +58,6 @@
      effect_pack_color(&entry->color, &color);
++    if (!rtx_debris_color(entry, &color))
++        return;
 +    rtx_glint(entry->effect_id == 0 && (entry->flags & 4) && !(entry->flags & 0x40));
 +    if (rtx_effect_sprite(entry, (unsigned)color))
 +        return;

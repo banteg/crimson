@@ -91,6 +91,8 @@ bool rtx_effect_quad(const float *points);
 bool rtx_effect_vertices(const void *vertices, int count);
 bool rtx_effect_sprite(const struct effect_entry_t *entry, unsigned color);
 void rtx_glint(bool active);
+void rtx_debris_spawn(const struct effect_entry_t *entry);
+bool rtx_debris_color(const struct effect_entry_t *entry, unsigned long *color);
 void rtx_pressure_ring(float x, float y, float radius, float alpha);
 void rtx_effect_flush();
 void rtx_plasma(int slot, float alpha);

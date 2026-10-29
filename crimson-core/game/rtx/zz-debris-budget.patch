@@ -1,0 +1,6 @@
+Reset rendering-only debris state when an effect pool slot is reused.
+--- a/decomp/1.9/crimsonland/effects/effect_spawn.cpp
++++ b/decomp/1.9/crimsonland/effects/effect_spawn.cpp
+@@ -104,1 +104,2 @@
+     entry->effect_id = (unsigned char)effect_id;
++    rtx_debris_spawn(entry);
