@@ -214,11 +214,14 @@ struct Target {
   int width = 0, height = 0, flags = 0;
   int logical_width = 0, logical_height = 0;
   // It holds an RTX diagnostic map, whose values present past the gamma ramp:
-  // the world end draws one, holds carry it, and each present clears the back
-  // buffer's, so a menu drawn after it takes the ramp again.
+  // the world end draws one and holds carry it (map_marked).
   bool map = false;
 };
 std::unordered_map<int, Target> textures; // id 0 is the back buffer
+// Whether the frame being drawn set the back buffer's map mark (a world end, a
+// held frame shown): one the game presents without it, a menu after a map, takes
+// the ramp again; showing a frame again keeps its mark.
+bool map_marked;
 int current_target = 0;
 int drawable_width = 0, drawable_height = 0;
 unsigned render_states[256];
@@ -1145,7 +1148,7 @@ void GL_ENTRY(renderer_resize)(int window_width, int window_height) {
   bind_target();
 }
 
-void GL_ENTRY(renderer_present)(int window_width, int window_height) {
+void GL_ENTRY(renderer_present)(int window_width, int window_height, bool drawn) {
   flush_ground_stamps();
   gpu_mark("present");
   Target &back = textures[0];
@@ -1163,8 +1166,10 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   glClear(GL_COLOR_BUFFER_BIT);
   glViewport(v.x, window_height - v.y - v.height, v.width, v.height);
   use_program(present_program);
+  if (drawn && !map_marked)
+    back.map = false;
+  map_marked = map_marked && !drawn;
   glUniform1i(uniform_location(present_program, "map_view"), back.map);
-  back.map = false;
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, gamma_texture);
   glActiveTexture(GL_TEXTURE0);
@@ -1417,6 +1422,7 @@ void GL_ENTRY(w2c_host_frame_hold)(struct w2c_host *, u32 op) {
   glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, to.width, to.height, GL_COLOR_BUFFER_BIT,
                     to.width == from.width && to.height == from.height ? GL_NEAREST : GL_LINEAR);
   to.map = from.map;
+  map_marked |= &to == &back;
   bind_target();
 }
 // The render target `id`, made like `from` unless it already is.
@@ -2283,7 +2289,7 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
     // map's values go to the display as they are.
     glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
     glViewport(0, 0, back.width, back.height);
-    back.map = debug_map();
+    back.map = debug_map(), map_marked = true;
     if (back.map) {
       use_program(blit_program);
     } else {

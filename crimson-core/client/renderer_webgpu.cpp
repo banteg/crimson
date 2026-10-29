@@ -27,11 +27,14 @@ struct Target {
   int width = 0, height = 0, flags = 0;
   int logical_width = 0, logical_height = 0;
   // It holds an RTX diagnostic map, whose values present past the gamma ramp:
-  // the world end draws one, holds carry it, and each present clears the back
-  // buffer's, so a menu drawn after it takes the ramp again.
+  // the world end draws one and holds carry it (map_marked).
   bool map = false;
 };
 std::unordered_map<int, Target> textures; // id 0 is the back buffer
+// Whether the frame being drawn set the back buffer's map mark (a world end, a
+// held frame shown): one the game presents without it, a menu after a map, takes
+// the ramp again; showing a frame again keeps its mark.
+bool map_marked;
 int current_target = 0;
 int drawable_width = 0, drawable_height = 0;
 unsigned render_states[256];
@@ -777,7 +780,7 @@ void wgpu_renderer_resize(int window_width, int window_height) {
   reallocate(back, v.width, v.height, back.flags);
 }
 
-void wgpu_renderer_present(int window_width, int window_height) {
+void wgpu_renderer_present(int window_width, int window_height, bool drawn) {
   Target &back = textures[0];
   Viewport v = wgpu_renderer_viewport(window_width, window_height);
   if (!back.texture || !v.width)
@@ -801,8 +804,10 @@ void wgpu_renderer_present(int window_width, int window_height) {
   // Normally a one-to-one copy; a resize between draw and present may scale once.
   bool exact = v.width == back.width && v.height == back.height;
   Uniforms fragment(*present_program.frag);
+  if (drawn && !map_marked)
+    back.map = false;
+  map_marked = map_marked && !drawn;
   fragment.i("map_view", back.map);
-  back.map = false;
   bind(present_program,
        fragment_group(present_program, {{"back_buffer", back.view, exact ? nearest_clamp() : linear_clamp()},
                                         {"gamma", gamma_view, linear_clamp()}}),
@@ -1180,6 +1185,7 @@ void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {
   }
   copy(from, to);
   to.map = from.map;
+  map_marked |= &to == &back;
 }
 // Reading a target back waits on the GPU in WebGPU: a replay keeps no copies on disk there.
 u32 wgpu_w2c_host_texture_read(struct w2c_host *, u32, u32, u32) { return 0; }
@@ -1866,7 +1872,7 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     // A world drawn smaller (render_size) scales up as it tonemaps; a debug
     // map's values go to the display as they are.
     bool exact = world_image->width == back.width && world_image->height == back.height;
-    back.map = debug_map();
+    back.map = debug_map(), map_marked = true;
     if (back.map) {
       wgpuRenderPassEncoderSetPipeline(pass, pipeline(blit, o));
       bind(blit, fragment_group(blit, {{"source", world_image->view, exact ? nearest_clamp() : linear_clamp()}}),

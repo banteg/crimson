@@ -22,8 +22,9 @@ void renderer_init();
 void renderer_resize(int window_width, int window_height);
 // The back buffer to the window's framebuffer, which stays bound for the swap
 // (macOS shows a black window when the swap finds another framebuffer bound);
-// renderer_resume binds the game's render target again after it.
-void renderer_present(int window_width, int window_height);
+// renderer_resume binds the game's render target again after it. `drawn` for
+// the frame the game drew, false to show the last one again.
+void renderer_present(int window_width, int window_height, bool drawn);
 void renderer_resume();
 // Integer physical pixels, with a top-left origin shared by input and drawing.
 struct Viewport {
