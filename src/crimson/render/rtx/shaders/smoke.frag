@@ -89,9 +89,10 @@ void main() {
     if(u_debug==17) { finalColor=vec4(flow(state.zw),1.); return; }
     vec3 local=column(xy);
     if(local.x<=.00001) { finalColor=u_debug!=0 ? vec4(0,0,0,1) : vec4(0); return; }
-    // Heat per unit of smoke, from the raw fields: the edge fade thins the smoke, not its heat's share.
+    // Heat per unit of smoke, from the raw fields: the edge fade thins the smoke, not its heat's share. The lifetime
+    // fade thins both, as the columns see them, so the share's floor holds when a refresh folds the fade in.
     vec2 raw_uv=(xy-u_origin)/u_size;
-    vec2 raw=textureLod(texture0,vec2(raw_uv.x,u_state_flip!=0 ? 1.-raw_uv.y : raw_uv.y),0.).xy;
+    vec2 raw=textureLod(texture0,vec2(raw_uv.x,u_state_flip!=0 ? 1.-raw_uv.y : raw_uv.y),0.).xy*u_fade;
     // The light map shows what emitters add: no glow, as no sky.
     vec3 glow=u_debug==18 ? vec3(0) : ember(raw.y/max(raw.x,.0001));
     vec3 sky1=column(xy-vec2(12,9)),sky2=column(xy-vec2(24,18));
