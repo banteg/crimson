@@ -481,9 +481,9 @@ class MaterialGroundRenderer(GroundRenderer):
         grid = build_occlusion_grid(
             bodies, grid_lights, width=self.width, height=self.height, illumination=shadows,
         )
-        occlusion_texture = self.reflection_occlusion.upload(grid) if grid.body_count else None
+        occlusion_texture = self.reflection_occlusion.upload(grid) if grid.occludes else None
         put("u_occlusion_grid", [
-            grid.origin.x, grid.origin.y, float(grid.columns if grid.body_count else 0), float(grid.rows),
+            grid.origin.x, grid.origin.y, float(grid.columns if grid.occludes else 0), float(grid.rows),
         ])
         put("u_occlusion_cell_size", [grid.cell_size])
         put("u_spec_pos[0]", [v for light in lights for v in (light.pos.x, light.pos.y, light.radius, light.height)], 4)
