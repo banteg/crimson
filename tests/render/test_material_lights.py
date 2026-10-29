@@ -279,3 +279,22 @@ def test_pulse_source_lies_across_the_shot_front_and_widens_with_it() -> None:
     # The white impact sprite lights paler, across its fixed 56-unit width.
     assert impact.rgb[0] / impact.rgb[1] > far.rgb[0] / far.rgb[1]
     assert impact.length < far.length
+
+
+def test_sources_that_cannot_reach_the_view_take_no_place_in_the_budgets() -> None:
+    from crimson.render.rtx.material_lights import MaterialLight, select_material_lights
+
+    # Bright beams below the view, their 160-unit reach stopping short of it, against a faint muzzle flash in it.
+    beams = [MaterialLight(Vec2(500 + i, 800), 160, (.6, 1.6, 2.4), direction=Vec2(1, 0), length=24,
+                           illumination_gain=4, ident=i) for i in range(MAX_SELECTED_SOURCES)]
+    muzzle = MaterialLight(Vec2(100, 288), 40, (1, .6, .2), ident=100)
+    center, size = Vec2(512, 288), Vec2(1024, 576)
+    assert muzzle not in select_material_lights([*beams, muzzle], view_center=center)
+    assert select_material_lights([*beams, muzzle], view_center=center, view_size=size) == [muzzle]
+    # One whose reach crosses into the view keeps its place.
+    near = MaterialLight(Vec2(500, 700), 160, (.6, 1.6, 2.4), illumination_gain=4, ident=200)
+    assert near in select_material_lights([near, muzzle], view_center=center, view_size=size)
+    # Each response by its own reach: this light stops at y = 585, short of the view, while its reflection reaches.
+    split = MaterialLight(Vec2(500, 650), 65, (1, .6, .2), reflection_radius=140, ident=300)
+    [kept] = select_material_lights([split], view_center=center, view_size=size)
+    assert kept.illumination_gain == 0 and kept.reflection_gain == split.reflection_gain

@@ -313,6 +313,23 @@ def _distance_sq(source: MaterialLight, point: Vec2, *, reflection: bool = True)
     return (point - source.pos - axis * along).length_sq()
 
 
+def _reaches_view(source: MaterialLight, view_center: Vec2, view_size: Vec2, *, reflection: bool) -> bool:
+    """Whether one response of the source can give the view anything, by the receivers' cutoffs (ground.frag): its
+    light within its radius of its segment (a beam's support, if longer) or ring, its reflection within its reach of
+    its segment or ring. Boxed."""
+    from .continuous_beam import beam_uniform
+
+    reach = max(1.0, source.reflection_reach if reflection else source.radius)
+    if source.ring_radius > 0.0:
+        extent = Vec2(source.ring_radius + reach, source.ring_radius + reach)
+    else:
+        axis = source.direction.normalized() if source.direction.length_sq() > .0001 else Vec2(1.0, 0.0)
+        half = source.length * 0.5 if reflection else max(source.length * 0.5, beam_uniform(source)[3])
+        extent = Vec2(abs(axis.x) * half + reach, abs(axis.y) * half + reach)
+    offset = source.pos - view_center
+    return abs(offset.x) < view_size.x * 0.5 + extent.x and abs(offset.y) < view_size.y * 0.5 + extent.y
+
+
 class LightSelection(msgspec.Struct):
     """Each source's place in the two budgets, by ident: a weight that moves toward 1 while it is selected and 0 while
     it is not, by 1 / SLEW_TICKS per tick of the run's clock. A source seen for the first time starts where it
@@ -366,17 +383,26 @@ class LightSelection(msgspec.Struct):
 
 
 def select_material_lights(
-    sources: list[MaterialLight], *, view_center: Vec2, selection: LightSelection | None = None,
+    sources: list[MaterialLight], *, view_center: Vec2, view_size: Vec2 | None = None,
+    selection: LightSelection | None = None,
 ) -> list[MaterialLight]:
     """Select each response independently, then mask unselected channels in their union.
+
+    With a view size, a source takes no place in a response's budget, however bright, when that response cannot reach
+    the view.
 
     Ties go to the lower ident. Past MAX_SELECTED_SOURCES the union takes the responses' sources rank by rank, so
     neither crowds the other out. With a selection, sources fade in and out of the budgets (LightSelection). The union
     comes brightest first (both responses' delivered scores summed) and holds at most MAX_MATERIAL_LIGHTS: the faintest
     fading sources give way, never a selected one."""
 
+    visible = {reflection: [view_size is None or _reaches_view(source, view_center, view_size, reflection=reflection)
+                            for source in sources] for reflection in (False, True)}
+
     def score(index: int, *, reflection: bool) -> float:
         source = sources[index]
+        if not visible[reflection][index]:
+            return 0.0
         gain = source.reflection_gain if reflection else source.illumination_gain
         radius = source.reflection_reach if reflection else source.radius
         distance_sq = _distance_sq(source, view_center, reflection=reflection)
@@ -494,7 +520,9 @@ def merge_volleys(shots: list[MaterialLight], selection: LightSelection | None =
     return merged
 
 
-def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[MaterialLight]:
+def collect_material_lights(
+    frame: RenderFrame, *, view_center: Vec2, view_size: Vec2 | None = None,
+) -> list[MaterialLight]:
     sources: list[MaterialLight] = []
     for number, player in enumerate(frame.players):
         if PerkId.RADIOACTIVE in frame.state.perks:
@@ -666,4 +694,4 @@ def collect_material_lights(frame: RenderFrame, *, view_center: Vec2) -> list[Ma
             ),
         )
     sources.extend(_flame_sources(frame))
-    return select_material_lights(sources, view_center=view_center, selection=selection)
+    return select_material_lights(sources, view_center=view_center, view_size=view_size, selection=selection)

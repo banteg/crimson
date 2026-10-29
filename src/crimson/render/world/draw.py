@@ -85,7 +85,9 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
         return
     lights = ()
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX:
-        lights = tuple(collect_material_lights(render_ctx.frame, view_center=view.screen_size * .5 - view.camera))
+        lights = tuple(collect_material_lights(
+            render_ctx.frame, view_center=view.screen_size * .5 - view.camera, view_size=view.screen_size,
+        ))
     draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size,
                     material_lights=lights)
     if render_ctx.frame.rtx_mode is RtxRenderMode.RTX and render_ctx.frame.rtx_debug.is_map:
@@ -138,7 +140,9 @@ def draw_smoke_map(render_ctx: WorldRenderCtx) -> None:
     if frame.smoke is None:
         return
     view = render_ctx.view
-    frame.smoke.prepare(frame, tuple(collect_material_lights(frame, view_center=view.screen_size * .5 - view.camera)))
+    frame.smoke.prepare(frame, tuple(collect_material_lights(
+        frame, view_center=view.screen_size * .5 - view.camera, view_size=view.screen_size,
+    )))
     frame.smoke.draw(render_ctx, alpha=1.0, debug=frame.rtx_debug)
 
 
@@ -299,6 +303,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         lighting.prepare(
             ctx.material_lights if ctx.material_lights is not None else collect_material_lights(
                 frame, view_center=render_ctx.view.screen_size * .5 - render_ctx.view.camera,
+                view_size=render_ctx.view.screen_size,
             ),
             camera=render_ctx.view.camera,
             view_scale=render_ctx.view.view_scale,

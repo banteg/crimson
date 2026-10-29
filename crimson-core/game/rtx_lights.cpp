@@ -790,6 +790,37 @@ void beam_shape(const Light &light, float illumination, float *out) {
   out[3] = (float)(length * 0.5 + head_radius * SUPPORT);
 }
 
+// Whether one response of the source can give the view anything, by the
+// receivers' cutoffs (ground_lit.frag): its light within its radius of its
+// segment (a beam's support, if longer) or ring, its reflection within its
+// reach of its segment or ring. Boxed (material_lights.py's _reaches_view).
+bool reaches_view(const Light &light, bool reflection, float view_x, float view_y, float half_width,
+                  float half_height) {
+  float reach = fmaxf(1, reflection ? light.reflection_reach() : light.radius), extent_x, extent_y;
+  if (light.ring > 0) {
+    extent_x = extent_y = light.ring + reach;
+  } else {
+    float ax = light.dx, ay = light.dy, shape[4];
+    if (ax * ax + ay * ay > 0.0001f)
+      normalize(ax, ay);
+    else
+      ax = 1, ay = 0;
+    beam_shape(light, light.illumination, shape);
+    float half = reflection ? light.length * 0.5f : fmaxf(light.length * 0.5f, shape[3]);
+    extent_x = fabsf(ax) * half + reach, extent_y = fabsf(ay) * half + reach;
+  }
+  return fabsf(light.x - view_x) < half_width + extent_x && fabsf(light.y - view_y) < half_height + extent_y;
+}
+
+// A source's place in one response's budget for the view around (view_x,
+// view_y): none when that response cannot reach it, however bright.
+float view_score(const Light &light, bool reflection, float view_x, float view_y, float half_width,
+                 float half_height) {
+  return reaches_view(light, reflection, view_x, view_y, half_width, half_height)
+             ? score(light, reflection, view_x, view_y)
+             : 0;
+}
+
 } // namespace
 
 // --- Body shadows (render/rtx/reflection_occlusion.py) ------------------------------
@@ -1065,7 +1096,8 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
   static bool selected[MAX_SOURCES], chosen[2][MAX_SOURCES];
   for (int reflection = 0; reflection < 2; ++reflection) {
     for (int i = 0; i < source_count; ++i)
-      scores[reflection][i] = score(sources[i], reflection, view_x, view_y);
+      scores[reflection][i] = view_score(sources[i], reflection, view_x, view_y, grim_backbuffer_width * 0.5f,
+                                         grim_backbuffer_height * 0.5f);
     select(scores[reflection], ranks[reflection]);
   }
   int ranked = 0;

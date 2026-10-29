@@ -460,7 +460,7 @@ class MaterialGroundRenderer(GroundRenderer):
         put_int("u_debug_display", int(debug is None))
         shadows = frame.config is None or frame.config.display.shadows_enabled
         if lights is None:
-            lights = collect_material_lights(frame, view_center=view_center)
+            lights = collect_material_lights(frame, view_center=view_center, view_size=view_size)
         lights = lights[:MAX_MATERIAL_LIGHTS]
         put_int("u_spec_light_count", len(lights))
         bodies = (
