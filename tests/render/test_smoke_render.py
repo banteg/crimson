@@ -274,6 +274,9 @@ def test_refreshing_a_fading_field_leaves_its_old_smoke_as_it_was(smoke_pixels):
     refreshed = smoke_pixels(density=5., fade=.5, refresh=True)
     assert .1 < float(fading[:100, :100, 3].mean()) < smoke_pixels(density=5.)[:100, :100, 3].mean()
     np.testing.assert_allclose(refreshed[:100, :100], fading[:100, :100], atol=.001)
+    # So does the heat map.
+    heat = [smoke_pixels(density=5., fade=.5, refresh=refresh, debug=RtxDebugView.SMOKE_HEAT) for refresh in (False, True)]
+    np.testing.assert_allclose(heat[1][:100, :100], heat[0][:100, :100], atol=.002)
 
 
 def test_native_texture_resize_preserves_world_space_density(smoke_pixels):

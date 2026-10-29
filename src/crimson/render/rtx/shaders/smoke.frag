@@ -83,8 +83,9 @@ vec3 sight_scattering(vec2 xy,vec4 sight) {
 void main() {
     vec2 xy=u_origin+fragTexCoord*u_size;
     vec4 state=state_at(xy);
-    // Raw fields cover the whole domain: air moves and stays warm where smoke has thinned out.
-    if(u_debug==16) { finalColor=vec4(heat(state.y),1.); return; }
+    // Raw fields cover the whole domain: air moves and stays warm where smoke has thinned out. Heat fades with the
+    // field's lifetime, as the columns see it, so a refresh folding the fade in leaves the map as it was.
+    if(u_debug==16) { finalColor=vec4(heat(state.y*u_fade),1.); return; }
     if(u_debug==17) { finalColor=vec4(flow(state.zw),1.); return; }
     vec3 local=column(xy);
     if(local.x<=.00001) { finalColor=u_debug!=0 ? vec4(0,0,0,1) : vec4(0); return; }
