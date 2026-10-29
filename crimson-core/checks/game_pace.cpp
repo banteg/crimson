@@ -1,28 +1,29 @@
 // Live play's pace (host/live_pace.h) through displays as Grim's clock reads
 // them: in whole milliseconds, up to 0.9 ms after each frame shows. Each run
-// starts as a run's bank does, at zero, on a tick's edge, and banks as the
-// session does: at 60 Hz every frame runs one tick, two on a frame the display
-// missed; at 59 or 61 Hz one frame a second runs two or none, never a burst; at
-// 30 Hz two a frame; at 120 Hz one every other frame, at 240 Hz every fourth,
-// at 144 Hz every two or three. A pass that comes early banks nothing, even at
-// a replay's 32x, and play keeps the clock's time.
+// banks as the session does from a bank at zero, on a tick's edge, as a run's
+// starts, after a stall: at 60 Hz every frame runs one tick, two on a frame the
+// display missed; at 59 or 61 Hz one frame a second runs two or none, never a
+// burst; at 30 Hz two a frame; at 120 Hz one every other frame, at 240 Hz every
+// fourth, at 144 Hz every two or three. A replay played fast moves as evenly,
+// its display's slips a tick of play each. A pass that comes early banks
+// nothing, even at 32x, and play keeps the clock's time.
 //
 //   clang++ -std=c++17 -O2 crimson-core/checks/game_pace.cpp -o game_pace && ./game_pace
 #include "../host/live_pace.h"
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <regex>
 #include <string>
+#include <vector>
 
-// The pace has seen the display's frames before the run (game_live_frame
-// paces every pass, the menus' too); the run's bank starts at zero.
 struct Bank {
-  LivePace pace{};
+  LivePace pace;
   float banked = 0;
-  unsigned last;
+  unsigned last = 0;
   // The ticks a pass at `ms` on Grim's clock runs, at a replay's `speed`.
   int pass(unsigned ms, float speed = 1) {
-    float paced = pace(fminf((ms - last) * 0.001f, 0.1f));
+    float paced = pace(fminf((ms - last) * 0.001f, 0.1f), speed);
     last = ms;
     assert(paced >= 0);
     banked += paced * speed;
@@ -32,19 +33,27 @@ struct Bank {
   }
 };
 
-// Each frame's ticks once a second of frames has passed; `missed` is a frame
+// Each frame's ticks once 120 frames have passed (the pace settles on the
+// display in about 60, from a tick's); `missed` is a frame
 // the display skips, from there.
-static std::string display(double hz, int frames, int missed = -1) {
-  Bank bank{{}, 0, 1000};
-  std::string ran;
-  for (int k = -60, shown = 0; k < frames; ++k) {
+static std::vector<int> display(double hz, int frames, int missed = -1, float speed = 1) {
+  Bank bank;
+  std::vector<int> ran;
+  for (int k = -120, shown = 0; k < frames; ++k) {
     shown += k == missed ? 2 : 1;
-    double jitter = fmod(k * 0.618 + 60, 1) * 0.9;
-    int due = bank.pass((unsigned)floor(1000 + shown * 1000 / hz + jitter));
+    double jitter = fmod(k * 0.618 + 120, 1) * 0.9;
+    int due = bank.pass((unsigned)floor(1000 + shown * 1000 / hz + jitter), speed);
     if (k >= 0)
-      ran += std::to_string(due);
+      ran.push_back(due);
   }
   return ran;
+}
+
+static std::string digits(const std::vector<int> &ran) {
+  std::string out;
+  for (int due : ran)
+    out += std::to_string(due);
+  return out;
 }
 
 int main() {
@@ -63,17 +72,34 @@ int main() {
       {144, 600, -1, "(?!.*(11|000))[01]+"},
   };
   for (const Case &c : cases) {
-    std::string ran = display(c.hz, c.frames, c.missed);
+    std::string ran = digits(display(c.hz, c.frames, c.missed));
     if (!std::regex_match(ran, std::regex(c.expected))) {
       fprintf(stderr, "a %g Hz display%s ran %s\n", c.hz, c.missed >= 0 ? " missing a frame" : "", ran.c_str());
+      return 1;
+    }
+  }
+  // At 2x the 59 and 61 Hz displays' slips are a tick a frame, and at 32x a
+  // frame runs close to 32, the clock's jitter of a few ticks of play aside:
+  // never a frame of none, or of two frames' worth.
+  struct Fast {
+    double hz;
+    float speed;
+    int least, most;
+  } fast[] = {{59, 2, 2, 3}, {61, 2, 1, 2}, {59, 32, 28, 36}, {61, 32, 28, 36}, {60, 32, 28, 36}};
+  for (const Fast &f : fast) {
+    std::vector<int> ran = display(f.hz, 600, -1, f.speed);
+    auto [least, most] = std::minmax_element(ran.begin(), ran.end());
+    if (*least < f.least || *most > f.most) {
+      fprintf(stderr, "a %g Hz display at %gx ran from %d to %d ticks a frame\n", f.hz, f.speed, *least, *most);
       return 1;
     }
   }
   // 16 ms passes run up a debt to the ticks they bank; a pass 2 ms after one
   // banks nothing (the bank asserts no pass banks less), and a replay at 32x
   // runs no more ticks than the clock's time holds.
+  Bank bank;
   unsigned ms = 1000;
-  Bank bank{{}, 0, ms};
+  bank.last = ms;
   int ticks = 0;
   for (int k = 0; k < 600; ++k) {
     ms += k % 10 == 9 ? 2 : 16;
@@ -84,5 +110,5 @@ int main() {
     fprintf(stderr, "a 32x replay ran %d ticks in %u ms, not about %.0f\n", ticks, ms - 1000, owed);
     return 1;
   }
-  puts("live pace: 30, 59, 60, 61, 120, 144 and 240 Hz, a missed frame, early passes, 32x");
+  puts("live pace: 30, 59, 60, 61, 120, 144 and 240 Hz, a missed frame, 2x and 32x, early passes");
 }

@@ -578,10 +578,10 @@ extern "C" {
 // or -1 when no run is playing. A pass with none draws nothing new.
 int game_live_frame() {
   watch_follow_link();
-  // Every pass, so the display's period is known as a run starts. A stall
-  // banks at most a tenth of a second.
+  // Every pass, so the display's period is known as a run starts; a replay's
+  // at the viewer's speed. A stall banks at most a tenth of a second.
   static LivePace pace;
-  live.paced = pace(fminf(grim_frame_dt, 0.1f));
+  live.paced = pace(fminf(grim_frame_dt, 0.1f), live.watching && !live.practicing ? watch_speeds[watch.speed] : 1);
   if (!game_live)
     return -1;
   // The console key of the player's own run that is not ranked, on every pass
