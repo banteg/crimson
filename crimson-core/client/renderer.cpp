@@ -2125,6 +2125,7 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
   glUniform2fv(at("u_origin"), 1, v + 4);
   glUniform2fv(at("u_size"), 1, v + 6);
   glUniform1f(at("u_opacity"), v[8]);
+  glUniform1f(at("u_fade"), v[9]);
   glUniform1i(at("u_debug"), scene_debug >= DEBUG_SMOKE ? scene_debug : 0);
   glUniform1i(at("u_light_count"), (int)light_count);
   std::vector<float> pos, rgb, shape, tails((light_count + 3) / 4 * 4);
@@ -2202,7 +2203,8 @@ void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 gri
   bonus_center[0] = center_x, bonus_center[1] = center_y;
 }
 void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
-  static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "heat"};
+  static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "heat",
+                                     "glow", "ice-cubes", "ice-shards", "ice-frozen", "glint"};
   // Classic marks only the world's bounds: what follows is its HUD.
   gpu_mark(!rtx && pass == HOST_PASS_WORLD_END ? "hud" : pass < sizeof labels / sizeof *labels ? labels[pass] : "sprites");
   if (pass >= HOST_PASS_CREATURES) {

@@ -437,6 +437,30 @@ def test_own_body_is_excluded_without_excluding_nearby_creatures(lit_sprite, rot
         occlusion.close()
 
 
+def test_crowd_alone_shades_a_creature(lit_sprite):
+    from crimson.render.rtx.reflection_occlusion import (
+        CROWD_BODIES,
+        BodyVolume,
+        ReflectionOcclusion,
+        build_occlusion_grid,
+    )
+
+    render, _ = lit_sprite
+    source = MaterialLight(Vec2(124, 64), 110, (1.4, .68, .2), height=24)
+    # A crowd standing between the light and the sprite, which the grid keeps as density alone.
+    crowd = [BodyVolume(Vec2(96, 64), Vec2(12, 10), 28, 0, owner=Vec2(96, 64))] * (CROWD_BODIES + 1)
+    occlusion = ReflectionOcclusion()
+    try:
+        clear = render([source])
+        grid = build_occlusion_grid(crowd, [source], width=1024, height=1024)
+        assert grid.body_count == 0
+        occlusion.upload(grid)
+        blocked = render([source], occlusion=occlusion)
+        assert sum(p[0] for p in blocked) < sum(p[0] for p in clear) * .99
+    finally:
+        occlusion.close()
+
+
 def test_corner_shadows_hold_as_corners_leave_the_lights_reach(lit_sprite):
     from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
 

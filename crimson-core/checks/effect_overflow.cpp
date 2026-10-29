@@ -14,6 +14,7 @@ float frame_dt;
 int effect_defaults_reserved_zero, effect_pool_reserved_zero;
 fx_queue_entry_t fx_queue[128];
 int fx_queue_count, fx_queue_rotated;
+static const effect_entry_t *last_render_spawn;
 extern "C" {
 unsigned char portable_preserve_bugs, terrain_texture_failed;
 int config_detail_preset = 5, effect_spawn_detail_skip_counter;
@@ -21,6 +22,7 @@ float effect_uv_step_2 = 0.5f, effect_uv_step_4 = 0.25f, effect_uv_step_8 = 0.12
 // RTX records explosion puffs and burst effects as they spawn and ages them with
 // the effects (game/rtx_smoke.cpp, rtx_lights.cpp); nothing draws here.
 void rtx_smoke_puff(const effect_entry_t *) {}
+void rtx_debris_spawn(const effect_entry_t *entry) { last_render_spawn = entry; }
 void rtx_explosion_effect(int, const effect_entry_t *) {}
 void rtx_explosions_age(float) {}
 void rtx_explosion_release(const effect_entry_t *) {}
@@ -41,7 +43,10 @@ extern "C" void fx_queue_render_recovered() {
 }
 static effect_entry_t *spawn(int id = 1) {
   vec2f_t pos = {12, 34};
-  return effect_spawn(id, &pos);
+  auto *entry = effect_spawn(id, &pos);
+  if (entry != &effect_discard_entry)
+    assert(last_render_spawn == entry);
+  return entry;
 }
 static void fill_original() {
   for (int i = 0; i < GAME_EFFECT_POOL_CAPACITY - 1; ++i)

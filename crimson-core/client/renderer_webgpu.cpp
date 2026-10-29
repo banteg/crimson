@@ -1723,7 +1723,7 @@ void wgpu_w2c_host_smoke_draw(struct w2c_host *, u32 view, u32 lights, u32 light
   o.alpha_src = WGPUBlendFactor_One, o.alpha_dst = WGPUBlendFactor_OneMinusSrcAlpha;
   Uniforms vertex(*smoke_display.vert), fragment(*smoke_display.frag);
   vertex.set("rect", v, 16).v2("target_size", (float)t.logical_width, (float)t.logical_height);
-  fragment.i("u_state_flip", 1).set("u_origin", v + 4, 8).set("u_size", v + 6, 8).f("u_opacity", v[8]).i("u_debug", scene_debug >= DEBUG_SMOKE ? scene_debug : 0);
+  fragment.i("u_state_flip", 1).set("u_origin", v + 4, 8).set("u_size", v + 6, 8).f("u_opacity", v[8]).f("u_fade", v[9]).i("u_debug", scene_debug >= DEBUG_SMOKE ? scene_debug : 0);
   fragment.i("u_light_count", (int)light_count).i("u_sight_count", (int)sight_count);
   float pos[SMOKE_MAX_LIGHTS * 4], rgb[SMOKE_MAX_LIGHTS * 4], shape[SMOKE_MAX_LIGHTS * 4], tails[SMOKE_MAX_LIGHTS] = {};
   const float *l = (const float *)(client_memory() + lights);
