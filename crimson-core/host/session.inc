@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
+#include "live_pace.h"
 extern game_status_t game_status_blob;
 extern unsigned char grim_timing_frozen;
 extern "C" {
@@ -47,7 +48,7 @@ static struct {
   LiveSettings run;     // the verifier's, between ticks
   LiveSettings outside; // the player's, while a tick runs
   float banked; // seconds of play not yet ticked
-  float paced;  // seconds of play this pass banks (live_pace)
+  float paced;  // seconds of play this pass banks (live_pace.h)
   int due;      // ticks this frame
   unsigned worlds; // worlds drawn, which live_run_due counts per pass
   // Presses since the last tick, which only the next tick sees.
@@ -538,31 +539,6 @@ static void live_poll_prompt() {
                          y > perk_prompt_bounds_min_y && x < perk_prompt_bounds_max_x && y < perk_prompt_bounds_max_y;
 }
 
-// The play a pass banks toward the run's ticks, paced to the display. Grim's
-// clock reads whole milliseconds a little after each frame shows, so a 60 Hz
-// display's frames read 16 or 17 ms, or further off with jitter: banked as
-// read, the bank sits on a tick's edge, and a third of the frames or more run
-// none or two. A pass banks the display frames it spans (a missed one counts
-// two) at the display's period, which the passes average; where that period is
-// within 5% of whole ticks or of a tick split evenly (30, 60, 120 or 240 Hz),
-// at exactly that, so each of that display's frames runs the same ticks. What
-// that leaves of the clock's time waits until it comes to half a tick, so play
-// keeps the clock's time. A stall banks at most a tenth of a second.
-static float live_pace() {
-  static float period, held;
-  float dt = fminf(grim_frame_dt, 0.1f);
-  if (!period)
-    period = dt;
-  float spans = fmaxf(1, roundf(dt / period));
-  period += (dt / spans - period) / 16;
-  float ticks = period * 60, even = ticks >= 1 ? roundf(ticks) : 1 / roundf(1 / ticks);
-  float step = spans * (fabsf(ticks / even - 1) <= 0.05f ? even / 60 : period);
-  held += dt;
-  float paced = fabsf(held - step) < 0.5f / 60 ? step : held;
-  held -= paced;
-  return paced;
-}
-
 #include "keyframes.inc"
 #include "watch.inc"
 #include "watch_cache.inc"
@@ -602,8 +578,10 @@ extern "C" {
 // or -1 when no run is playing. A pass with none draws nothing new.
 int game_live_frame() {
   watch_follow_link();
-  // Every pass, so the display's period is known as a run starts.
-  live.paced = live_pace();
+  // Every pass, so the display's period is known as a run starts. A stall
+  // banks at most a tenth of a second.
+  static LivePace pace;
+  live.paced = pace(fminf(grim_frame_dt, 0.1f));
   if (!game_live)
     return -1;
   // The console key of the player's own run that is not ranked, on every pass

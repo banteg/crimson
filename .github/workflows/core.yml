@@ -249,6 +249,7 @@ jobs:
           uv run --no-sync python crimson-core/checks/analytic_effects.py
           uv run --no-sync python crimson-core/checks/rtx_occlusion.py
           uv run --no-sync python crimson-core/checks/rtx_debris.py
+          clang++ -std=c++17 -O2 crimson-core/checks/game_pace.cpp -o "$RUNNER_TEMP/game_pace" && "$RUNNER_TEMP/game_pace"
           uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
           fresh() { rm -rf "$RUNNER_TEMP/run" && cp -R "$RUNNER_TEMP/game" "$RUNNER_TEMP/run" && echo "$RUNNER_TEMP/run"; }
           node crimson-core/checks/game_boot.mjs "$(fresh)"

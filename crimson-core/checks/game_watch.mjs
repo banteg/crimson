@@ -106,32 +106,23 @@ frame();
 game.game_watch_seek(390);
 for (let i = 0; i < 20; ++i) frame();
 if (game.game_watch_tick() <= 400) throw Error(`a stop a seek passed paused on ${game.game_watch_tick()}`);
-// A display's frames, as Grim's clock reads them: in whole milliseconds, up to
-// 0.9 ms after each shows. Playback runs the ticks each frame holds, evenly
-// (host/session.inc live_pace): at 60 Hz one a frame and two on a frame the
-// display missed, at 59 or 61 Hz one a frame but for the second's one frame
-// that runs two or none, at 120 Hz one every other frame, at 144 Hz one every
-// two or three. The ticks of each frame once a second of them has passed.
-function display(hz, frames, missed) {
+// Playback banks the paced time live play does (host/live_pace.h, whose own
+// check, game_pace.cpp, takes it through every kind of display): through a 60
+// Hz display's frames, read as Grim's clock reads them, in whole milliseconds up
+// to 0.9 ms after each shows, it runs one tick a frame, and through a 59 Hz
+// one's, one a frame but for one frame a second that runs two.
+function display(hz, frames) {
   const ran = [], start = run.clock;
-  for (let k = -60, shown = 0; k < frames; ++k) {
-    shown += k === missed ? 2 : 1;
+  for (let k = -60; k < frames; ++k) {
     const from = game.game_watch_tick();
-    frame(start + Math.floor((shown * 1000) / hz + ((k * 0.618 + 60) % 1) * 0.9) - run.clock);
+    frame(start + Math.floor(((k + 61) * 1000) / hz + ((k * 0.618 + 60) % 1) * 0.9) - run.clock);
     if (k >= 0) ran.push(game.game_watch_tick() - from);
   }
   return ran.join("");
 }
-for (const [hz, frames, expected, missed] of [
-  [60, 120, /^1+$/],
-  [60, 90, /^1{40}21+$/, 40],
-  [59, 150, /^(?!.*(0|2.{0,49}2))[12]+$/],
-  [61, 150, /^(?!.*(2|0.{0,49}0))[01]+$/],
-  [120, 120, /^(01)+$|^(10)+$/],
-  [144, 120, /^(?!.*(11|000))[01]+$/],
-]) {
-  const ran = display(hz, frames, missed);
-  if (!expected.test(ran)) throw Error(`a ${hz} Hz display${missed ? " missing a frame" : ""} ran ${ran}`);
+for (const [hz, frames, expected] of [[60, 120, /^1+$/], [59, 150, /^(?!.*(0|2.{0,49}2))[12]+$/]]) {
+  const ran = display(hz, frames);
+  if (!expected.test(ran)) throw Error(`a ${hz} Hz display ran ${ran}`);
 }
 frame(16, [ESCAPE]);
 for (let frames = 0; game.game_state() !== HIGHSCORES; ++frames) {
