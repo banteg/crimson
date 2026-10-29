@@ -10,6 +10,9 @@ uniform int u_state_flip;
 uniform vec2 u_origin;
 uniform vec2 u_size;
 uniform float u_opacity;
+// The field's lifetime fade thins its smoke and heat rather than its final opacity, so folding it into the field as a
+// fresh source refreshes the lifetime leaves the old smoke as it was.
+uniform float u_fade;
 uniform int u_light_count;
 uniform vec4 u_light_pos[16];
 uniform vec4 u_light_rgb[16];
@@ -32,7 +35,7 @@ vec4 state_at(vec2 xy) {
 // A planar texel describes an entire vertical Gaussian column. Cache columns
 // before integrating height; their texture lookup and edge fade do not depend on z.
 vec3 column(vec2 xy) {
-    vec4 state=state_at(xy);
+    vec4 state=state_at(xy)*vec4(u_fade,u_fade,1,1);
     return vec3(state.x,16.+min(state.y,2.)*8.,11.+min(state.y,2.)*3.);
 }
 vec3 debug_radiance(vec3 value) {

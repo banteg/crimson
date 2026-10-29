@@ -51,7 +51,7 @@ HOST_IMPORT(scene) void host_scene(const float *view, const float *lights, int c
 HOST_IMPORT(smoke) void host_smoke(const float *commands, int count);
 // The field drawn over the world, after its sprites (render/rtx/smoke.py): the
 // view (the field's rect on the back buffer in logical pixels, its world origin
-// and size, its opacity), SMOKE_LIGHT_FLOATS per light and four floats per
+// and size, its opacity and lifetime fade), SMOKE_LIGHT_FLOATS per light and four floats per
 // Sharpshooter sight (its near and far ends).
 HOST_IMPORT(smoke_draw) void host_smoke_draw(const float *view, const float *lights, int light_count,
                                               const float *sights, int sight_count);

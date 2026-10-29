@@ -106,7 +106,7 @@ class SmokeRenderer:
                 return
             self.shader = shader
             self.locations = {name: int(rl.get_shader_location(shader, name)) for name in (
-                "u_origin", "u_size", "u_opacity", "u_light_count", "u_light_pos", "u_light_rgb", "u_light_shape",
+                "u_origin", "u_size", "u_opacity", "u_fade", "u_light_count", "u_light_pos", "u_light_rgb", "u_light_shape",
                 "u_sight_count", "u_sights", "u_state_flip", "u_debug", "u_light_tail",
             )}
         if isinstance(self.simulation, GpuSmokeSimulation):
@@ -211,7 +211,8 @@ class SmokeRenderer:
                 else:
                     texture = self.textures[slot]
                     width, height = texture.width, texture.height
-                self._uniform("u_opacity", (alpha * field.fade,))
+                self._uniform("u_opacity", (alpha,))
+                self._uniform("u_fade", (field.fade,))
                 origin = view.world_to_screen(field.origin)
                 rl.draw_texture_pro(
                     texture, rl_rectangle(0, 0, width, height),

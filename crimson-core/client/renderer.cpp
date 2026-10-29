@@ -2112,6 +2112,7 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
   glUniform2fv(at("u_origin"), 1, v + 4);
   glUniform2fv(at("u_size"), 1, v + 6);
   glUniform1f(at("u_opacity"), v[8]);
+  glUniform1f(at("u_fade"), v[9]);
   glUniform1i(at("u_debug"), scene_debug >= DEBUG_SMOKE ? scene_debug : 0);
   glUniform1i(at("u_light_count"), (int)light_count);
   std::vector<float> pos, rgb, shape, tails((light_count + 3) / 4 * 4);

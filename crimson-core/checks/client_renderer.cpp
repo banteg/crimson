@@ -583,7 +583,7 @@ void check_rtx() {
     w2c_host_clear(nullptr, 0xff000000);
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
     w2c_host_smoke(nullptr, 40000, (u32)commands.size());
-    const float view[9] = {-128, -128, 1280, 1280, -128, -128, 1280, 1280, 1};
+    const float view[10] = {-128, -128, 1280, 1280, -128, -128, 1280, 1280, 1, 1};
     const float light[SMOKE_LIGHT_FLOATS] = {534, 384, 30, 300, 1, 1, 1, 4, 0, 0, 0, 0, 1};
     memcpy(memory + 41000, view, sizeof view);
     memcpy(memory + 41100, light, sizeof light);

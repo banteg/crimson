@@ -13,6 +13,7 @@ from crimson.render.rtx.debug import RtxDebugView
 from crimson.render.rtx.material_lights import MaterialLight
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.rtx.smoke import SmokeRenderer
+from crimson.render.rtx.smoke_constants import FADE_SECONDS
 from crimson.render.rtx.smoke_simulation import SmokeField, SmokeSimulation
 from crimson.render.world import draw as world_draw
 from crimson.render.world import effects
@@ -148,10 +149,18 @@ def smoke_pixels(raylib_context, headless_resources):
     )
     target = load_float_render_texture(128, 128)
 
-    def render(*, lights=(), sight=False, density=.3, grow=False, velocity=(0., 0.), debug=RtxDebugView.SHADED):
+    def render(*, lights=(), sight=False, density=.3, grow=False, velocity=(0., 0.), fade=1., refresh=False,
+               debug=RtxDebugView.SHADED):
         field.density.fill(density)
+        field.temperature.fill(.5)
         field.u.fill(velocity[0])
         field.v.fill(velocity[1])
+        field.retention_seconds, field.idle_seconds = 10., 10. - FADE_SECONDS * fade
+        if refresh:
+            # A puff off the view renews the shared field's lifetime, as the simulation's consume does.
+            field.inject(emission(pos=Vec2(190, 190), vel=Vec2()))
+            field.idle_seconds = 0.
+            assert field.fade == 1.
         if grow:
             field.include(Vec2(350, 64), 200.)
         field.version += 1
@@ -257,6 +266,14 @@ def test_smoke_light_budget_culls_remote_sources_and_prioritizes_exhaust():
     selected = smoke.select_lights([*far, *nearby, exhaust])
     assert len(selected) == 16 and selected[0] is exhaust
     assert not any(light in far for light in selected)
+
+
+def test_refreshing_a_fading_field_leaves_its_old_smoke_as_it_was(smoke_pixels):
+    # Folding the fade into the field must draw what fading it drew: the old smoke neither thickens nor brightens.
+    fading = smoke_pixels(density=5., fade=.5)
+    refreshed = smoke_pixels(density=5., fade=.5, refresh=True)
+    assert .1 < float(fading[:100, :100, 3].mean()) < smoke_pixels(density=5.)[:100, :100, 3].mean()
+    np.testing.assert_allclose(refreshed[:100, :100], fading[:100, :100], atol=.001)
 
 
 def test_native_texture_resize_preserves_world_space_density(smoke_pixels):
