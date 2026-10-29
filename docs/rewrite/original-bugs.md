@@ -10,7 +10,7 @@ once you read the decompile and trace their gameplay impact.
 
 The gameplay fixes below apply **by default** where specified. For parity work
 and future differential testing, you can re-enable those original behaviors with
-`--preserve-bugs`. Original text quirks, the late-game Survival spawn rate and piercing damage-pool growth are documented only and always preserved.
+`--preserve-bugs`. Original text quirks, the late-game Survival spawn rate, piercing damage-pool growth, the Shrinkifier's repeated death rewards and the Bubblegun's stale target are documented only and always preserved.
 
 The historical [rules-2 candidate assessment](https://github.com/banteg/crimson/blob/1c710a97e997f924cc7d6a89aa1c7269fd9df516/docs/rewrite/original-bugs-triage.md)
 remains in git history. This ledger records adopted behavior; entry 50 is an
@@ -1411,3 +1411,53 @@ Evidence: `decomp/1.9/grim/window/window_proc.cpp` (`WM_CHAR`),
 `decomp/1.9/crimsonland/console/console_set_open.cpp`, the console toggle in
 `decomp/1.9/crimsonland/game/game_frame_update.cpp`, and
 [`checks/game_session.mjs`](../../crimson-core/checks/game_session.mjs).
+
+
+## 54) A Shrinkifier kill pays twice, and once more on the corpse (documented, not fixed)
+
+Native behavior:
+
+- `projectile_update`'s Shrinkifier branch shrinks the target to 65% and calls
+  `creature_handle_death` once it drops below size 16, then falls through to
+  the shot's ordinary damage. A shrink kill can leave health positive, so that
+  damage kills the same creature again: two rewards, two bonus rolls.
+- The death keeps the corpse active, and a corpse stays hittable while its
+  death timer is above 5. The next Shrinkifier shot shrinks it below 16 again
+  and handles its death a third time.
+
+A size-50, 20 HP, 110 XP alien (`ALIEN_CONST_GREEN_24`) dies on the third hit
+for 220 XP; firing on at the weapon's 0.21 s rate, the fourth hit pays 110
+more, and the corpse is out of reach by the fifth. Frozen targets pay once:
+Freeze removes the body on its first death.
+
+Why it stays:
+
+- It's a real economy bug, but the Shrinkifier is a one-run secret Survival
+  reward ([how to get it](../mechanics/secret-weapons.md#shrinkifier-5k)), and
+  fixing it changes kills, rewards and drops: a new rules version, not a patch.
+  Both bug policies keep the original sequence.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` (the
+Shrinkifier branch and the damage after it),
+`decomp/1.9/crimsonland/crimsonland/creature_handle_death.cpp` (the active
+check), `decomp/1.9/crimsonland/crimsonland/creature_find_in_radius.cpp` (the
+corpse cutoff), and `src/crimson/projectiles/runtime/projectile_pool.py`.
+
+## 55) An expiring bubble kills whatever holds its creature slot (documented, not fixed)
+
+Native behavior:
+
+- A Bubblegun bubble that lands stores only its target's creature slot. When it
+  expires it calls `creature_handle_death` on that slot, with no check that the
+  creature there is still the one it hit. The active check before it only
+  picks the death sound.
+- If the target died and a new creature took the slot, the bubble kills the new
+  one wherever it is, with its rewards, drops, splits and Freeze shatter.
+
+Why it stays:
+
+- Nothing hands out the Bubblegun (weapon 42): the weapon picker, quest unlocks
+  and Survival rewards all stop at weapon 33, so no normal run can fire one.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` (the
+particle expiry) and `src/crimson/effects.py` (the bubble's attach and expiry).
