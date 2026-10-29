@@ -546,8 +546,9 @@ static void live_poll_prompt() {
 // that the next overdrew before the pass presented. The terrain still takes
 // every tick's bake (fx_queue_render). A pass whose ticks drew no world, as one
 // stopped early by a menu or a practice's end did, draws it once between ticks;
-// a run that ended keeps the frame it last drew, as its end screen follows. The
-// count is the pass's own: ending a practice resets live.due.
+// a run that ended keeps the frame it last drew, as its end screen follows, and
+// a pass that owed none draws as its caller does. The count is the pass's own:
+// ending a practice resets live.due.
 template <class Tick> static void live_run_due(Tick run_tick) {
   unsigned char disabled = grim_render_disabled;
   unsigned worlds = live.worlds;
@@ -560,7 +561,7 @@ template <class Tick> static void live_run_due(Tick run_tick) {
   }
   grim_render_disabled = disabled;
   terrain.baking = false;
-  if (live.worlds == worlds && game_live)
+  if (due && live.worlds == worlds && game_live)
     gameplay_render_world();
 }
 #include "practice.inc"
