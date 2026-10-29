@@ -2204,6 +2204,7 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   if (!rtx || !back.framebuffer)
     return;
   if (pass == HOST_PASS_WORLD_BEGIN) { // Scene/occlusion inputs have arrived; shade masks before HDR.
+    profile_stat("worlds", 1); // more than one before a present is drawing nobody sees
     prepare_ground_visibility(back.logical_width, back.logical_height);
     int width = back.width, height = back.height;
     world_size(back.logical_width, width, height);
