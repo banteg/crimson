@@ -26,8 +26,20 @@ struct Target {
   // Texture storage and viewport pixels are independent of draw coordinates.
   int width = 0, height = 0, flags = 0;
   int logical_width = 0, logical_height = 0;
+  // It holds an RTX diagnostic map, whose values present past the gamma ramp:
+  // a world end marks whether it drew one, and holds carry the mark (back_drawn).
+  bool map = false;
 };
 std::unordered_map<int, Target> textures; // id 0 is the back buffer
+// The back buffer still holds the image last presented: showing it again, or a
+// frame that draws nothing new (a run's end), keeps its mark.
+bool back_shown;
+// A draw into the back buffer after it was presented starts a new image, a
+// menu's: no map unless a world end marks one.
+void back_drawn(const Target &t) {
+  if (&t == &textures[0] && back_shown)
+    textures[0].map = back_shown = false;
+}
 int current_target = 0;
 int drawable_width = 0, drawable_height = 0;
 unsigned render_states[256];
@@ -128,6 +140,7 @@ uint64_t put(Stream &s, const void *data, uint64_t size) {
 }
 
 void begin_pass(Target &t, const WGPUColor *clear) {
+  back_drawn(t);
   end_pass();
   WGPURenderPassColorAttachment color = WGPU_RENDER_PASS_COLOR_ATTACHMENT_INIT;
   color.view = t.view;
@@ -613,6 +626,7 @@ void copy(Target &from, Target &to) {
 // Reallocate a target in place, keeping its image (scaled once if its size changed).
 void reallocate(Target &t, int width, int height, int flags) {
   Target previous = t;
+  bool shown = back_shown;
   t.texture = nullptr;
   t.view = nullptr;
   t.width = width;
@@ -621,6 +635,9 @@ void reallocate(Target &t, int width, int height, int flags) {
   allocate(t);
   copy(previous, t);
   release(previous);
+  // The same image at its new size: allocating cleared it, which is no new
+  // image (back_drawn), so it keeps its map mark.
+  t.map = previous.map, back_shown = shown;
 }
 
 // The canvas, sized to the window, half-float with extended tone mapping while the
@@ -779,6 +796,8 @@ void wgpu_renderer_present(int window_width, int window_height) {
   if (!back.texture || !v.width)
     return;
   configure_canvas(window_width, window_height);
+  if (!fits(uniform_stream, 512))
+    submit();
   end_pass();
   WGPUSurfaceTexture frame = WGPU_SURFACE_TEXTURE_INIT;
   wgpuSurfaceGetCurrentTexture(surface, &frame);
@@ -794,10 +813,13 @@ void wgpu_renderer_present(int window_width, int window_height) {
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(present_program, o));
   // Normally a one-to-one copy; a resize between draw and present may scale once.
   bool exact = v.width == back.width && v.height == back.height;
+  Uniforms fragment(*present_program.frag);
+  fragment.i("map_view", back.map);
+  back_shown = true;
   bind(present_program,
        fragment_group(present_program, {{"back_buffer", back.view, exact ? nearest_clamp() : linear_clamp()},
-                                        {"gamma", gamma_view, nearest_clamp()}}),
-       nullptr, nullptr);
+                                        {"gamma", gamma_view, linear_clamp()}}),
+       nullptr, &fragment);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
   submit();
   wgpuTextureViewRelease(window.view);
@@ -1170,6 +1192,8 @@ void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {
     allocate(to);
   }
   copy(from, to);
+  to.map = from.map;
+  back_shown = back_shown && &to != &back;
 }
 // Reading a target back waits on the GPU in WebGPU: a replay keeps no copies on disk there.
 u32 wgpu_w2c_host_texture_read(struct w2c_host *, u32, u32, u32) { return 0; }
@@ -1786,6 +1810,10 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     return;
   }
   Target &back = textures[0];
+  // Every world's end, classic too, says whether the back buffer now holds a
+  // map: a classic redraw after one clears it before a hold can keep it.
+  if (pass_kind == HOST_PASS_WORLD_END)
+    back.map = debug_map(), back_shown = false;
   if (!rtx || !back.texture)
     return;
   if (pass_kind == HOST_PASS_WORLD_BEGIN) { // Scene/occlusion inputs have arrived; shade masks before HDR.
@@ -1856,7 +1884,7 @@ void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
     // A world drawn smaller (render_size) scales up as it tonemaps; a debug
     // map's values go to the display as they are.
     bool exact = world_image->width == back.width && world_image->height == back.height;
-    if (debug_map()) {
+    if (back.map) {
       wgpuRenderPassEncoderSetPipeline(pass, pipeline(blit, o));
       bind(blit, fragment_group(blit, {{"source", world_image->view, exact ? nearest_clamp() : linear_clamp()}}),
            nullptr, nullptr);

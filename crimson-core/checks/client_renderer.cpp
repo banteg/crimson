@@ -1170,6 +1170,84 @@ int main() {
   glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
   assert(center[0] == 0xdf && center[1] == 0xbf && center[2] == 0x7f);
   renderer_resume();
+#ifndef __EMSCRIPTEN__
+  // An RTX back buffer holds levels between the ramp's entries: presentation
+  // interpolates them, where picking the nearest entry jumps a whole step.
+  renderer_set_rtx(true);
+  w2c_host_clear(nullptr, 0xff000000);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG2, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+  rectangle(0, 0, 1024, 768, 0xc0010101);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 4);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 4);
+  // Three quarters of the way from the ramp's first entry to its second.
+  assert(fabsf(back_red(512, 384) * 255 - .753f) < .01f);
+  for (int i = 0; i < 256; ++i) {
+    unsigned short value = i ? 65535 : 0;
+    memcpy(memory + i * 2, &value, sizeof value);
+  }
+  w2c_host_gamma_ramp(nullptr, 0, 0, 0);
+  renderer_present(present_w, present_h);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(abs(center[0] - 192) <= 2);
+  // A frame whose world drew a diagnostic map presents its values as they are
+  // until something else is drawn over it, though the last scene asked for the map.
+  for (int i = 0; i < 256; ++i) {
+    unsigned short value = (unsigned short)((255 - i) * 257);
+    memcpy(memory + i * 2, &value, sizeof value);
+  }
+  w2c_host_gamma_ramp(nullptr, 0, 0, 0);
+  scene_debug = 5;
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  int map = (int)lroundf(back_red(512, 384) * 255);
+  renderer_present(present_w, present_h);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(center[0] == map && map < 64);
+  // Shown again, by a pass that ran no tick or a frame that drew nothing new
+  // (a run's end), it is still the map.
+  renderer_present(present_w, present_h);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(center[0] == map);
+  // A menu drawn over it takes the ramp again.
+  w2c_host_clear(nullptr, 0xff000000);
+  renderer_present(present_w, present_h);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(center[0] == 255);
+  // A held map shown again (a paused replay's frame) is still a map.
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  int held = (int)lroundf(back_red(512, 384) * 255);
+  w2c_host_frame_hold(nullptr, 1); // HOST_FRAME_SAVE
+  renderer_present(present_w, present_h);
+  w2c_host_clear(nullptr, 0xffffffff);
+  w2c_host_frame_hold(nullptr, 0); // HOST_FRAME_SHOW
+  renderer_present(present_w, present_h);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(center[0] == held && held < 64);
+  // RTX switched off while paused: the classic world drawn again, and the hold
+  // kept of it, are no map, whatever the scene last asked for.
+  renderer_set_rtx(false);
+  w2c_host_clear(nullptr, 0xff000000);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+  w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+  w2c_host_frame_hold(nullptr, 1); // HOST_FRAME_SAVE
+  renderer_present(present_w, present_h);
+  w2c_host_frame_hold(nullptr, 0); // HOST_FRAME_SHOW
+  renderer_present(present_w, present_h);
+  glReadPixels(present_w / 2, present_h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, center);
+  assert(center[0] == 255);
+  scene_debug = 0;
+  renderer_set_rtx(false);
+  renderer_resume();
+#endif
   assert(glGetError() == GL_NO_ERROR);
   puts("renderer: native density, logical projection/input, terrain, holds, anchors, alpha and presentation passed");
   check_rtx();
