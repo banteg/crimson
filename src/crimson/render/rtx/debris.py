@@ -62,7 +62,7 @@ def scaled_alpha(byte: int, share: float) -> int:
 
 def candidates(pool: EffectPool, *, camera: Vec2, screen: Vec2) -> list[Candidate]:
     """The pool's debris that shows on a `screen` of logical pixels, in the clients' single precision."""
-    screen = Vec2(f32(screen.x), f32(screen.y))
+    screen, camera = Vec2(f32(screen.x), f32(screen.y)), Vec2(f32(camera.x), f32(camera.y))
     out = []
     for slot, entry in enumerate((*pool.entries, *pool.overflow_entries)):
         if not entry.flags or entry.age < 0. or entry.effect_id not in ICE_EFFECTS or entry.color.a < 1. / 255.:

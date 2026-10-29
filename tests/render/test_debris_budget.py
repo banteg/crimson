@@ -12,8 +12,19 @@ import msgspec
 import numpy as np
 import pytest
 
+from crimson.effects import EffectPool
 from crimson.effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, EffectId
-from crimson.render.rtx.debris import FADE_SECONDS, ICE_EFFECTS, MAXIMUM, TARGET, Candidate, DebrisBudget, scaled_alpha
+from crimson.render.rtx.debris import (
+    FADE_SECONDS,
+    ICE_EFFECTS,
+    MAXIMUM,
+    TARGET,
+    Candidate,
+    DebrisBudget,
+    _key,
+    candidates,
+    scaled_alpha,
+)
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import effects
 from crimson.render.world.context import WorldRenderCtx
@@ -208,16 +219,27 @@ def native_budget(tmp_path_factory: pytest.TempPathFactory):
         '  for (int i = 0; i < n; ++i) shown.push_back({slots[i], xs[i], ys[i], areas[i]});\n'
         '  budget.select(shown, width, height, dt);\n'
         '  for (int i = 0; i < RtxDebrisBudget::capacity; ++i) alpha[i] = budget.alpha(i);\n}\n'
-        # rtx_debris_color's scaling of a packed alpha byte.
-        'extern "C" unsigned scale(unsigned byte, float alpha) { return (unsigned)(byte * alpha + .5f); }\n',
+        # rtx_debris_color's scaling of a packed alpha byte, and rtx_debris_prepare's projection, as written there.
+        'extern "C" unsigned scale(unsigned byte, float alpha) { return (unsigned)(byte * alpha + .5f); }\n'
+        'extern "C" void project(float px, float py, float rotation, float hx, float hy, float scale, float cx,\n'
+        '                        float cy, float width, float height, float *out) {\n'
+        '  float x = px + cx, y = py + cy;\n'
+        '  float co = fabsf(cosf(rotation)), si = fabsf(sinf(rotation));\n'
+        '  float w = (co * hx + si * hy) * fabsf(scale);\n'
+        '  float h = (si * hx + co * hy) * fabsf(scale);\n'
+        '  out[0] = x, out[1] = y;\n'
+        '  out[2] = std::max(0.f, std::min(width, x + w) - std::max(0.f, x - w)) *\n'
+        '           std::max(0.f, std::min(height, y + h) - std::max(0.f, y - h));\n}\n',
     )
     library = work / "budget.so"
-    subprocess.run([compiler, "-std=c++17", "-shared", "-fPIC", "-O2", f"-I{root / 'crimson-core/game/include'}",
-                    str(source), "-o", str(library)], check=True)
+    # The clients' builds keep each float operation's own rounding (crimson-core/build.py).
+    subprocess.run([compiler, "-std=c++17", "-shared", "-fPIC", "-O2", "-ffp-contract=off",
+                    f"-I{root / 'crimson-core/game/include'}", str(source), "-o", str(library)], check=True)
     native = ctypes.CDLL(str(library))
     native.choose.argtypes = [ctypes.c_void_p] * 4 + [ctypes.c_int] + [ctypes.c_float] * 3 + [ctypes.c_void_p]
     native.scale.argtypes = [ctypes.c_uint, ctypes.c_float]
     native.scale.restype = ctypes.c_uint
+    native.project.argtypes = [ctypes.c_float] * 10 + [ctypes.c_void_p]
     return native
 
 
@@ -295,3 +317,41 @@ def test_a_piece_s_alpha_at_its_share_is_the_clients(native_budget) -> None:
             shares.add(alpha)
             alpha = max(0., f32(alpha - step))
     assert all(scaled_alpha(byte, share) == native_budget.scale(byte, share) for byte in range(256) for share in shares)
+
+
+def test_a_piece_s_place_on_screen_is_the_clients(native_budget) -> None:
+    # Shatter pieces in a pool, under a camera and screen a fraction of a pixel off whole, as a wide window leaves them.
+    pool = EffectPool()
+    rng = np.random.default_rng(3)
+    camera, screen = Vec2(-311.14285714285717, -240.28125), Vec2(1024, 575.7188872620791)
+    for entry in pool.entries[:400]:
+        entry.effect_id, entry.flags, entry.age = int(EffectId.FREEZE_SHARD_1), 0x5D, 0.
+        entry.pos = Vec2(*(f32(v) for v in rng.uniform(250, 1400, 2)))
+        entry.rotation, entry.scale = f32(rng.uniform(-7, 7)), f32(rng.uniform(.3, 2.5))
+        entry.half_width, entry.half_height = f32(rng.uniform(2, 40)), f32(rng.uniform(2, 40))
+        entry.color = RGBA(1., 1., 1., .5)
+    shown = {c.slot: c for c in candidates(pool, camera=camera, screen=screen)}
+    out = np.zeros(3, dtype=np.float32)
+    for slot, entry in enumerate(pool.entries[:400]):
+        native_budget.project(entry.pos.x, entry.pos.y, entry.rotation, entry.half_width, entry.half_height,
+                              entry.scale, camera.x, camera.y, screen.x, screen.y, out.ctypes.data)
+        assert (slot in shown) == (out[2] > 0)
+        if slot in shown:
+            assert (shown[slot].x, shown[slot].y, shown[slot].area) == tuple(float(v) for v in out), slot
+
+
+def test_pieces_joining_retiring_ones_fill_the_reserve_as_the_clients_do(native_budget) -> None:
+    # The slots the selection takes first, all in one tile: the first frame draws the next 256 at half the screen,
+    # and the next wants the first 32 instead, which join while the retiring 256 still hold their half, until the
+    # three quarters are full, the last a float over its share.
+    slots = sorted(range(2560), key=_key)
+    share = np.float32(SCREEN.x * SCREEN.y / 64)
+    retiring = [Candidate(slot, 1, 64., 64., float(SCREEN.x * SCREEN.y / 2 / TARGET)) for slot in slots[32:32 + TARGET]]
+    joining = [Candidate(slot, 1, 64., 64., float(np.nextafter(share, np.inf, dtype=np.float32)) if i == 15
+                         else float(share)) for i, slot in enumerate(slots[:32])]
+    budget = DebrisBudget()
+    native_budget.reset()
+    assert same_choice(native_budget, budget, retiring, screen=SCREEN, elapsed_ms=0., dt=0.)
+    assert same_choice(native_budget, budget, joining + retiring, screen=SCREEN, elapsed_ms=20.,
+                       dt=f32(20 * f32(.001)))
+    assert 0 < sum(budget.alpha(c.slot) > 0. for c in joining) < 32
