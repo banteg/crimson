@@ -244,5 +244,6 @@ class WorldRuntime:
             bonus_lighting=self.render_resources.bonus_lighting,
             light_selection=self.render_resources.light_selection,
             debris=self.render_resources.debris,
+            run_elapsed_ms=None if self.session is None else float(self.session.elapsed_ms),
             contact_glows=self.render_resources.contact_glows,
         )

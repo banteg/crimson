@@ -54,5 +54,7 @@ class RenderFrame(msgspec.Struct, frozen=True):
     # RTX: which lights fade in or out of the budgets (material_lights.LightSelection), and the ion contacts' glows.
     light_selection: LightSelection | None = None
     contact_glows: ContactGlows | None = None
-    # RTX: which loose freeze debris draws, and how opaque (debris.DebrisBudget).
+    # RTX: which loose freeze debris draws, and how opaque (debris.DebrisBudget), by the run's clock: its whole
+    # milliseconds a tick (DeterministicSession.elapsed_ms), as the clients' run_elapsed_ms; None outside a run.
     debris: DebrisBudget | None = None
+    run_elapsed_ms: float | None = None

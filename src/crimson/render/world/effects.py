@@ -189,11 +189,13 @@ def draw_effect_pool(
                     fireball_slots.add(id(sprite.native))
                 archived.append(sprite.sample(visual.fireball_age))
         effects = (*effects, *archived)
-    # RTX draws a bounded share of the loose ice (rtx/debris.py), each piece at its opacity there.
+    # RTX draws a bounded share of the loose ice (rtx/debris.py), each piece at its opacity there. Its fades keep the
+    # run's clock, which stands still outside a run, as the clients' does on its results screens.
     shares: dict[int, float] = {}
     if frame.rtx_mode is RtxRenderMode.RTX and frame.debris is not None:
         screen = render_ctx.view.screen_size
-        frame.debris.select(candidates(pool, camera=camera, screen=screen), screen=screen, elapsed_ms=frame.elapsed_ms)
+        clock = frame.debris.elapsed_ms if frame.run_elapsed_ms is None else frame.run_elapsed_ms
+        frame.debris.select(candidates(pool, camera=camera, screen=screen), screen=screen, elapsed_ms=clock)
         shares = {
             id(entry): frame.debris.alpha(slot)
             for slot, entry in enumerate((*pool.entries, *pool.overflow_entries))

@@ -128,7 +128,7 @@ def rtx_effects(resources) -> tuple[WorldRenderCtx, Lighting, DebrisBudget]:
     lighting, budget = Lighting(), DebrisBudget()
     ctx = render_ctx_for_creatures(resources, [])
     ctx = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(
-        ctx.frame, rtx_mode=RtxRenderMode.RTX, creature_lighting=cast(Any, lighting), debris=budget,
+        ctx.frame, rtx_mode=RtxRenderMode.RTX, creature_lighting=cast(Any, lighting), debris=budget, run_elapsed_ms=0.,
     ))
     return ctx, lighting, budget
 
@@ -178,11 +178,22 @@ def test_a_piece_faded_to_no_alpha_neither_draws_nor_splits_its_neighbours_scope
     assert lighting.scopes == [EFFECT_ID_ATLAS_TABLE_BY_ID[int(EffectId.FREEZE_SHATTER)].grid]
 
 
+def test_the_selection_keeps_the_run_s_clock_and_holds_it_outside_a_run(headless_window, headless_resources) -> None:
+    ctx, _, budget = rtx_effects(headless_resources)
+    ctx.frame.state.effects.spawn_freeze_shatter(pos=Vec2(300, 300), angle=.3, rng=Crand(7), detail_preset=5,
+                                                  preserve_bugs=False)
+    for ms in (1000., 1016., None):
+        frame = msgspec.structs.replace(ctx.frame, run_elapsed_ms=ms)
+        effects.draw_effect_pool(msgspec.structs.replace(ctx, frame=frame), camera=Vec2(), view_scale=Vec2(1, 1))
+        assert budget.elapsed_ms == (1016. if ms is None else ms)
+
+
 def test_the_selection_starts_over_where_the_clients_start_theirs(tmp_path, headless_resources) -> None:
     runtime = WorldRuntimeHost(assets_dir=tmp_path, config=default_crimson_cfg(), rtx_mode=RtxRenderMode.RTX)
     runtime.render_resources.resources = headless_resources
     debris = runtime.render_resources.debris
     assert runtime.build_render_frame().debris is debris
+    assert runtime.build_render_frame().run_elapsed_ms is None
 
     def chosen() -> bool:
         debris.select(grid(12), screen=SCREEN, elapsed_ms=100.)
@@ -276,7 +287,7 @@ def test_the_selection_is_the_clients_frame_for_frame(native_budget) -> None:
             live = np.unique(np.concatenate([live[rng.random(len(live)) > .05], rng.choice(2560, 40)]))
         xs = rng.uniform(-20, 1044, len(live)).astype(np.float32)
         ys = rng.uniform(-20, 788, len(live)).astype(np.float32)
-        areas = rng.choice(np.array([60, 300, 2500, 9000], dtype=np.float32), len(live))
+        areas = rng.uniform(40, 9000, len(live)).astype(np.float32)
         elapsed = frame * 16 if frame < 200 else (frame - 60) * 16
         # The clients' frame clock (rtx_debris_prepare).
         if last < 0 or elapsed < last or elapsed - last > 250:
@@ -323,14 +334,16 @@ def test_a_piece_s_alpha_at_its_share_is_the_clients(native_budget) -> None:
     assert all(scaled_alpha(a, share) == native_budget.scale(a, share) for a in alphas for share in shares)
 
 
-def test_a_piece_s_place_on_screen_is_the_clients(native_budget) -> None:
+# A wide window's logical screen and camera, and a tall one's, each a fraction of a pixel off whole.
+@pytest.mark.parametrize(("camera", "screen"), [(Vec2(-311.14285714285717, -240.33333333333334), Vec2(1024, 575.7188872620791)),
+                                                (Vec2(-129.1210300292969, -88.77777777777777), Vec2(765.7565725413826, 1024))])
+def test_a_piece_s_place_on_screen_is_the_clients(native_budget, camera: Vec2, screen: Vec2) -> None:
     # Shatter pieces in a pool, under a camera and screen a fraction of a pixel off whole, as a wide window leaves them.
     # Their rotations stay within a turn or so: past that the clients' cosf (musl's, in the game module) and the host's
     # here may each differ from a correctly rounded cosine by an ulp, which flips a piece whose visible part is a
     # sliver at the screen's edge.
     pool = EffectPool()
     rng = np.random.default_rng(3)
-    camera, screen = Vec2(-311.14285714285717, -240.28125), Vec2(1024, 575.7188872620791)
     for entry in pool.entries[:400]:
         entry.effect_id, entry.flags, entry.age = int(EffectId.FREEZE_SHARD_1), 0x5D, 0.
         entry.pos = Vec2(*(f32(v) for v in rng.uniform(250, 1400, 2)))
