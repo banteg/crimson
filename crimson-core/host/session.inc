@@ -48,7 +48,7 @@ static struct {
   LiveSettings run;     // the verifier's, between ticks
   LiveSettings outside; // the player's, while a tick runs
   float banked; // seconds of play not yet ticked
-  float paced;  // seconds of play this pass banks (live_pace.h)
+  float paced;  // seconds of play this pass banks (live_pace.h), at a replay's speed
   int due;      // ticks this frame
   unsigned worlds; // worlds drawn, which live_run_due counts per pass
   // Presses since the last tick, which only the next tick sees.
@@ -579,7 +579,8 @@ extern "C" {
 int game_live_frame() {
   watch_follow_link();
   // Every pass, so the display's period is known as a run starts; a replay's
-  // at the viewer's speed. A stall banks at most a tenth of a second.
+  // at the viewer's speed, which a key this pass changes from the next. A
+  // stall banks at most a tenth of a second.
   static LivePace pace;
   live.paced = pace(fminf(grim_frame_dt, 0.1f), live.watching && !live.practicing ? watch_speeds[watch.speed] : 1);
   if (!game_live)
