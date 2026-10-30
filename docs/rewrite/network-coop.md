@@ -588,12 +588,23 @@ monotonically non-decreasing tick frontiers**:
 1. **Clock-drift micro-adjustment**:
    From incoming packets, estimate remote lead
    $\Delta T = (\text{remote\_head\_tick} - D) - \text{next\_sim\_tick} + \frac{\text{RTT}}{2 \times 16.667\text{ ms}}$.
-   Scale `grim_frame_dt` clamping (`fminf(grim_frame_dt, 0.1f)`) by
-   `clamp(1.0f + 0.01f * delta_T, 0.98f, 1.02f)` when accumulating `coop_banked_s`.
    The remote head is the newest `head_tick` the partner's ticks packets carried
-   (`coop_ahead`, `host/coop_wire.inc`). A peer stalled at its window still runs
-   on its banked reserve, so the one ahead slows only once that has drained:
-   two runs a stall left 8 ticks apart come back together within a few seconds.
+   (`coop_ahead`, `host/coop_wire.inc`). `coop_banked_s` takes the pass's play
+   time paced to the display as a run alone takes it (`live.paced`,
+   `host/live_pace.h`), and the lead's adjustment apart from it (`CatchUp`): the
+   play a pass's time at `clamp(0.01f * gap, -0.02f, 0.02f)` adds or takes, the
+   `gap` being $\Delta T$ less a tick either way, until it makes a whole tick,
+   which the next frame runs or leaves out. It reads $\Delta T$ once the pass's
+   ticks ran (and before a held-back pass's four-tick clamp, rule 3), as the
+   partner's head counts the ticks of the partner's pass;
+   read before them, it took every partner a tick ahead, and the runs
+   leapfrogged a tick at a time. Applied as a rate on the banked time
+   instead, the adjustment left the bank on a tick's edge, and frames ran none
+   or two ticks by turns; leaving out the first tick keeps the jitter in
+   $\Delta T$, a packet's tick or so, from adding up. A peer stalled at its
+   window still runs on its banked reserve, so the one ahead slows only once
+   that has drained: two runs a stall left 8 ticks apart come back together
+   within a few seconds, a tick at a time.
 
 2. **Monotonic, gap-free input production (`++input_produced_tick`)**:
    While `input_produced_tick < next_sim_tick + D` **and**

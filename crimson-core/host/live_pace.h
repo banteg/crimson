@@ -42,3 +42,23 @@ struct LivePace {
     return paced;
   }
 };
+
+// Co-op's catch-up (coop_frame; network-coop.md, Section 3.3): a run behind
+// its partner's runs faster by a hundredth for each tick it is behind, and one
+// ahead slower, 2% at most. As a rate on the play a pass banks, that leaves
+// the bank on a tick's edge, and the frames run none or two by turns; it adds
+// up apart instead, a frame running one tick more or less once it makes one.
+// How far ahead the partner seems jitters by a packet's tick or so either way,
+// so the first tick of it is taken for jitter and adds nothing.
+struct CatchUp {
+  float lead = 0; // play the catch-up owes, not yet banked
+  // The play, a whole tick or none, a pass `paced` long adds (or takes) while
+  // the partner's run is `ahead` ticks ahead.
+  float operator()(float paced, float ahead) {
+    float gap = copysignf(fmaxf(fabsf(ahead) - 1, 0), ahead);
+    lead += paced * fminf(fmaxf(0.01f * gap, -0.02f), 0.02f);
+    float tick = truncf(lead * 60) / 60;
+    lead -= tick;
+    return tick;
+  }
+};
