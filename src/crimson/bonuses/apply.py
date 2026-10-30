@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from grim.color import RGBA
@@ -34,7 +33,6 @@ from .ids import BONUS_BY_ID, BonusId
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
-    from ..creatures.runtime import CreatureState
     from ..sim.world_state import WorldStepRuntime
 
 # `bonus_apply` (crimsonland.exe @ 0x00409890) starts the Nuke screen shake.
@@ -51,19 +49,20 @@ def _activate_hud_slot(state: GameplayState, players: list[PlayerState], bonus_i
 
 
 def bonus_apply(
-    state: GameplayState,
+    step_runtime: WorldStepRuntime,
     player: PlayerState,
     bonus_id: BonusId,
     *,
     amount: int,
     origin: Vec2,
-    creatures: Sequence[CreatureState],
-    players: list[PlayerState],
-    detail_preset: int = 5,
-    step_runtime: WorldStepRuntime,
 ) -> None:
     """Port of `bonus_apply` (0x00409890)."""
 
+    world = step_runtime.world
+    state = world.state
+    players = world.players
+    creatures = world.creatures.entries
+    detail_preset = state.detail_preset
     state.sfx_queue.append(SfxRequest(SfxId.UI_BONUS, None))
     meta = BONUS_BY_ID.get(bonus_id)
     if meta is None:

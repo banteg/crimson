@@ -180,16 +180,7 @@ def test_nuke_aligns_new_deaths_outward_without_rotating_existing_corpses(rules,
     world.state.game_mode = GameMode.RUSH
     for index, hp in enumerate((1, -1)):
         world.creatures.entries[index] = CreatureState(active=True, hp=hp, heading=0.7, pos=Vec2(562, 512))
-    bonus_apply(
-        world.state,
-        world.players[0],
-        BonusId.NUKE,
-        amount=1,
-        step_runtime=make_step_runtime(world),
-        origin=Vec2(512, 512),
-        creatures=world.creatures.entries,
-        players=world.players,
-    )
+    bonus_apply(make_step_runtime(world), world.players[0], BonusId.NUKE, amount=1, origin=Vec2(512, 512))
     assert world.creatures.entries[0].heading == (0.7 if legacy else f32(-math.pi / 2))
     assert world.creatures.entries[1].heading == 0.7
 

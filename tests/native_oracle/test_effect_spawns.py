@@ -207,17 +207,7 @@ def _bonus_apply(case: _Case, pos: Vec2, rng: random.Random) -> str:
     oracle.write_u32(case.bonus_arg + _BONUS_ENTRY_AMOUNT, 5)
     oracle.call("bonus_apply", 0, case.bonus_arg)
     world = case.world
-    bonus_apply(
-        world.state,
-        world.players[0],
-        bonus_id,
-        amount=5,
-        origin=pos,
-        creatures=world.creatures.entries,
-        players=world.players,
-        detail_preset=case.detail,
-        step_runtime=_step_runtime(world, 0.0),
-    )
+    bonus_apply(_step_runtime(world, 0.0), world.players[0], bonus_id, amount=5, origin=pos)
     return f"bonus_apply({bonus_id.name})"
 
 

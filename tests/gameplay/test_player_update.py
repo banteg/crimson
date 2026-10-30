@@ -214,16 +214,7 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     state = world.state
     player = world.players[0]
 
-    bonus_apply(
-        state,
-        player,
-        BonusId.WEAPON_POWER_UP,
-        step_runtime=make_step_runtime(world),
-        amount=3,
-        origin=player.pos,
-        creatures=world.creatures.entries,
-        players=world.players,
-    )
+    bonus_apply(make_step_runtime(world), player, BonusId.WEAPON_POWER_UP, amount=3, origin=player.pos)
     for _ in range(40):
         bonus_hud_update(state, world.players, dt=1.0 / 60.0)
 
