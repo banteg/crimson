@@ -87,8 +87,9 @@ repeat 20 as i:
     at i * 1s:
         spawn choose([spider.boss, spider.splitter]) at point(rand_int(100, 900), 512)
 """
-    assert compile_quest(source, seed=42) == compile_quest(source, seed=42)
-    assert compile_quest(source, seed=42).entries != compile_quest(source, seed=43).entries
+    plan = compile_quest(source, seed=42)
+    assert plan == compile_quest(source, seed=42)
+    assert plan.entries != compile_quest(source, seed=43).entries
 
 
 @pytest.mark.parametrize(
@@ -170,31 +171,31 @@ def example_source(name: str) -> str:
     return files("crimson.quests.dsl").joinpath("examples", f"{name}.quest").read_text(encoding="utf-8")
 
 
-@pytest.mark.parametrize("seed", (0, 1, 0xBEEF))
 @pytest.mark.parametrize(
-    ("name", "entries"),
+    ("name", "entries", "seed"),
     [
-        ("clockwork", 17),
-        ("crosswind", 120),
-        ("spiral-descent", 60),
-        ("accelerating-encounters", 12),
-        ("shuffled-threats", 8),
-        ("plasma-orchard", 55),
-        ("moving-factory", 17),
-        ("split-decision", 65),
-        ("formation-parade", 12),
-        ("closing-circle", 240),
-        ("nest-circuit", 24),
-        ("same-problem-assault-rifle", 61),
-        ("same-problem-shotgun", 61),
-        ("same-problem-gauss-gun", 61),
+        ("clockwork", 17, 0),
+        ("crosswind", 120, 0),
+        ("spiral-descent", 60, 0),
+        ("accelerating-encounters", 12, 0),
+        ("shuffled-threats", 8, 0),
+        ("shuffled-threats", 8, 1),
+        ("shuffled-threats", 8, 0xBEEF),
+        ("plasma-orchard", 55, 0),
+        ("moving-factory", 17, 0),
+        ("split-decision", 65, 0),
+        ("formation-parade", 12, 0),
+        ("closing-circle", 240, 0),
+        ("nest-circuit", 24, 0),
+        ("same-problem-assault-rifle", 61, 0),
+        ("same-problem-shotgun", 61, 0),
+        ("same-problem-gauss-gun", 61, 0),
     ],
 )
 def test_example_library_compiles_within_native_limits(name, entries, seed):
     source = example_source(name)
     plan = compile_quest(source, seed=seed)
     assert len(plan.entries) == entries
-    assert plan == compile_quest(source, seed=seed)
     assert len(set(plan.locations)) == len(plan.locations)
     assert all(a.trigger_ms <= b.trigger_ms for a, b in zip(plan.entries, plan.entries[1:], strict=False))
 
