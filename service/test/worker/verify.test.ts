@@ -6,9 +6,9 @@ import { encodeTransport } from "../../src/transport";
 import { TickMonitor, verifyRun } from "../../src/verify";
 import vectors from "../vectors.json";
 
-const decode64 = (text: string) => Uint8Array.from(atob(text), (ch) => ch.charCodeAt(0));
+const fixtureReplay = (file: string) => decodeReplay(inflateReplay(Uint8Array.from(atob(file), (ch) => ch.charCodeAt(0))));
 const timelineOf = async (file: string) => {
-  const replay = decodeReplay(inflateReplay(decode64(file)));
+  const replay = fixtureReplay(file);
   const verdict = await verifyRun(env, replay, encodeTransport(replay));
   if (!verdict.ok) throw new Error(verdict.reason);
   return verdict.timeline;
@@ -59,12 +59,26 @@ describe("two players", () => {
     ["Survival run", vectors.coop_run.file],
     ["custom quest clear", vectors.coop_run.quest_file],
   ])("a co-op %s replays to the result Python recorded, player two's and the quest time too", async (_, file) => {
-    const replay = decodeReplay(inflateReplay(decode64(file)));
+    const replay = fixtureReplay(file);
     const verdict = await verifyRun(env, replay, encodeTransport(replay));
 
     expect(verdict).toMatchObject({ ok: true });
     expect(replay.result.players).toHaveLength(2);
     expect(verdict.signals.ticks).toBeGreaterThan(replay.ticks.length);
+  });
+
+  it("rejects a co-op Survival run claiming extra experience for player two", async () => {
+    const replay = fixtureReplay(vectors.coop_run.file);
+    replay.result.players[1]!.experience += 1;
+    const verdict = await verifyRun(env, replay, encodeTransport(replay));
+    expect(verdict).toMatchObject({ ok: false, reason: "the claimed result differs in players[1].experience" });
+  });
+
+  it("rejects a co-op quest claiming an earlier finish", async () => {
+    const replay = fixtureReplay(vectors.coop_run.quest_file);
+    replay.result.quest_final_ms! -= 1;
+    const verdict = await verifyRun(env, replay, encodeTransport(replay));
+    expect(verdict).toMatchObject({ ok: false, reason: "the claimed result differs in quest_final_ms" });
   });
 
   // Static movement with mouse aim, and point-click movement with mouse aim.

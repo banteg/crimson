@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import struct
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, cast
 from unittest.mock import patch
@@ -72,8 +73,8 @@ def test_corpse_height_ignores_rgb_of_transparent_texels(raylib_context):
         rl.unload_render_texture(target)
 
 
-@pytest.fixture
-def ground_material(raylib_context):
+@contextmanager
+def _ground_material():
     image = rl.gen_image_color(128, 128, rl.WHITE)
     texture = rl.load_texture_from_image(image)
     rl.unload_image(image)
@@ -85,6 +86,12 @@ def ground_material(raylib_context):
     finally:
         ground.close()
         rl.unload_texture(texture)
+
+
+@pytest.fixture
+def ground_material(raylib_context):
+    with _ground_material() as material:
+        yield material
 
 
 def blood(time: float) -> TerrainFxBatch:
@@ -1122,12 +1129,14 @@ def test_bulk_light_upload_matches_scalar_upload_after_source_count_changes(grou
             for i in range(len(values) // components):
                 _uniform(shader, name.replace("[0]", f"[{i}]"), values[i*components:(i+1)*components])
 
-    for count in (32, 1, 0, 17):
-        collect.return_value = sources[:count]
-        with patch.object(ground_materials, "_apply_uniforms", side_effect=scalar):
-            reference = debug_pixels(ground, texture, mode=0)
-        assert ground_materials._apply_uniforms == bulk
-        assert debug_pixels(ground, texture, mode=0) == reference
+    # Uniforms persist between draws. Each uploader needs its own shader for the whole sequence.
+    with _ground_material() as (reference_ground, reference_texture):
+        uniform_deep_film(reference_ground, reference_texture)
+        for count in (32, 1, 0, 17):
+            collect.return_value = sources[:count]
+            with patch.object(ground_materials, "_apply_uniforms", side_effect=scalar):
+                reference = debug_pixels(reference_ground, reference_texture, mode=0)
+            assert debug_pixels(ground, texture, mode=0) == reference
 
 
 def test_visibility_atlas_is_internal_and_world_anchored(ground_material, mocker):
