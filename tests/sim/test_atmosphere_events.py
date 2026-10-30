@@ -30,8 +30,8 @@ def test_actual_shots_capture_swept_wakes_without_native_or_rng_changes(weapon):
     impulses, smoke = [], []
     for tick in range(12):
         inputs = [player_input(aim=Vec2(1000, 512), fire_down=tick == 0)]
-        output = captured.step_tick(dt=1/60, inputs=inputs)
-        plain._step_tick(dt=1/60, inputs=inputs, commands=None, smoke_emissions=[], atmosphere_impulses=[])
+        output = captured.step_tick(capture_smoke=True, dt=1/60, inputs=inputs)
+        plain.step_tick(dt=1/60, inputs=inputs)
         impulses.extend(output.presentation.atmosphere_impulses)
         smoke.extend(output.presentation.smoke_emissions)
     assert session_digest(captured) == session_digest(plain)
@@ -96,8 +96,8 @@ def test_moving_bodies_push_air_along_their_paths_without_gameplay_changes():
     for _ in range(30):
         inputs = [player_input(move=Vec2(1, 0))]
         before = world.players[0].pos
-        tick = captured.step_tick(dt=1 / 60, inputs=inputs)
-        plain.step_tick(dt=1 / 60, inputs=inputs)
+        tick = captured.step_tick(capture_smoke=True, dt=1 / 60, inputs=inputs)
+        plain.step_tick(capture_smoke=True, dt=1 / 60, inputs=inputs)
         player = [i for i in tick.presentation.atmosphere_impulses if i.kind == "body" and i.start == before]
         assert len(player) == 1 and player[0].end == world.players[0].pos
         bodies.extend(i for i in tick.presentation.atmosphere_impulses if i.kind == "body")
@@ -132,8 +132,8 @@ def test_fire_cough_puffs_leave_along_the_aim_as_muzzle_smoke_without_gameplay_c
         sim.state.perks[PerkId.FIRE_CAUGH] = 1
         sim.players[0].fire_cough_timer = 10.
     inputs = [player_input(aim=Vec2(1000, 512))]
-    output = captured.step_tick(dt=1/60, inputs=inputs)
-    plain._step_tick(dt=1/60, inputs=inputs, commands=None, smoke_emissions=[], atmosphere_impulses=[])
+    output = captured.step_tick(capture_smoke=True, dt=1/60, inputs=inputs)
+    plain.step_tick(dt=1/60, inputs=inputs)
     assert session_digest(captured) == session_digest(plain)
     puffs = [event for event in output.presentation.smoke_emissions if event.source == "sprite"]
     # Native spawns the sprite sideways; its smoke leaves along the aim.
@@ -161,8 +161,8 @@ def test_every_rocket_ttl_transition_emits_exactly_one_blast(rocket_type):
     entry = world.state.secondary_projectiles.entries[0]
     entry.active, entry.type_id = True, rocket_type
     entry.pos, entry.vel, entry.life_timer = Vec2(400, 300), Vec2(100, 0), 0.
-    first = session.step_tick(dt=1/60, inputs=[player_input()])
-    second = session.step_tick(dt=1/60, inputs=[player_input()])
+    first = session.step_tick(capture_smoke=True, dt=1/60, inputs=[player_input()])
+    second = session.step_tick(capture_smoke=True, dt=1/60, inputs=[player_input()])
     blasts = [event for event in first.presentation.atmosphere_impulses if event.kind == "blast"]
     assert len(blasts) == 1 and blasts[0].strength == 40.
     assert not [event for event in second.presentation.atmosphere_impulses if event.kind == "blast"]

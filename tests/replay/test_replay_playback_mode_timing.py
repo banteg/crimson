@@ -23,8 +23,8 @@ def _capture_applied_plans(mocker, driver: FakePlaybackDriver, captured_ticks: l
     stepped: list[tuple[int, object]] = []
     step_tick = driver.step_tick
 
-    def _step(tick_index: int):
-        result = step_tick(tick_index)
+    def _step(tick_index: int, *, capture_smoke: bool):
+        result = step_tick(tick_index, capture_smoke=capture_smoke)
         stepped.append((tick_index, result.payload.presentation))
         return result
 
