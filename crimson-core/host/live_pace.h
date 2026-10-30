@@ -16,9 +16,14 @@
 struct LivePace {
   float period = 1 / 60.0f; // the display's frame time, as the passes average it
   float held = 0;           // play the clock's time owes, not yet banked
+  float played = 1;         // the replay's speed what it holds owes
   // The seconds of play a pass `dt` seconds after the last banks, at a
-  // replay's `speed`. What it holds is play, so a change of speed keeps it.
+  // replay's `speed`. A change of speed starts what it holds afresh: less
+  // than a tick of play, which the clock's jitter at 32x leaves and which at
+  // 1x would be a frame's.
   float operator()(float dt, float speed = 1) {
+    if (speed != played)
+      held = 0, played = speed;
     // The display frames this pass spans: two for a missed frame, none for a
     // stray pass early in one. Either moves the average as a quarter period
     // would, which keeps the display's lock.

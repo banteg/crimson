@@ -579,12 +579,17 @@ extern "C" {
 int game_live_frame() {
   watch_follow_link();
   // Every pass, so the display's period is known as a run starts, but a
-  // replay's preparing ones, which take what time they need (watch_prepare);
-  // a replay's at the viewer's speed, which a key this pass changes from the
-  // next. A stall banks at most a tenth of a second.
+  // replay's preparing ones and the one after the last, whose time preparing
+  // took (watch_prepare), which bank nothing; a replay's at the viewer's
+  // speed, which a key this pass changes from the next. A stall banks at most
+  // a tenth of a second.
   static LivePace pace;
-  if (!live.watching || watch.phase != WATCH_PREPARING)
-    live.paced = pace(fminf(grim_frame_dt, 0.1f), live.watching && !live.practicing ? watch_speeds[watch.speed] : 1);
+  static bool prepared; // the last pass prepared a replay
+  bool preparing = live.watching && watch.phase == WATCH_PREPARING;
+  live.paced = preparing || prepared ? 0
+                                     : pace(fminf(grim_frame_dt, 0.1f),
+                                            live.watching && !live.practicing ? watch_speeds[watch.speed] : 1);
+  prepared = preparing;
   if (!game_live)
     return -1;
   // The console key of the player's own run that is not ranked, on every pass

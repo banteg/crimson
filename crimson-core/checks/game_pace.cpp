@@ -88,10 +88,11 @@ static int total(const std::vector<int> &ran) {
   return sum;
 }
 
-// The frames' ticks match `pattern` and add up to about the clock's `ticks`.
-static void expect(const char *what, const std::vector<int> &ran, const char *pattern, double ticks) {
+// The frames' ticks match `pattern` and add up to the clock's `ticks` within
+// `slack` (a change of speed drops what the pace held, less than a tick).
+static void expect(const char *what, const std::vector<int> &ran, const char *pattern, double ticks, double slack = 2) {
   std::string got = digits(ran);
-  if (!std::regex_match(got, std::regex(pattern)) || fabs(total(ran) - ticks) > 2) {
+  if (!std::regex_match(got, std::regex(pattern)) || fabs(total(ran) - ticks) > slack) {
     fprintf(stderr, "%s ran %s (%d ticks, not about %.1f)\n", what, got.c_str(), total(ran), ticks);
     exit(1);
   }
@@ -175,14 +176,21 @@ int main() {
       std::vector<int> ran = play(display(hz, 300), 120, 1000, -1, [](int k) { return k < faster ? 1.0f : 32.0f; });
       auto [least, most] = std::minmax_element(ran.begin() + (at - 120), ran.end());
       double ticks = owed(hz, at - 120) + owed(hz, 420 - at) * 32;
-      if (*least < 28 || *most > 36 || fabs(total(ran) - ticks) > 2) {
+      if (*least < 28 || *most > 36 || fabs(total(ran) - ticks) > 3) {
         fprintf(stderr, "a %g Hz display at 32x from 1x at frame %d ran from %d to %d ticks a frame, %d in all, not about "
                 "%.1f\n", hz, at, *least, *most, total(ran), ticks);
         return 1;
       }
     }
-  expect("a 60 Hz display back at 1x from 32x",
-         play(display(60, 360), 240, 1000, -1, [](int k) { return k < 240 ? 32.0f : 1.0f; }), "1+", owed(60, 240));
+  for (double hz : {60.0, 120.0})
+    for (int at = 240; at < 300; ++at) {
+      static int slower;
+      slower = at;
+      std::string what = "a " + std::to_string((int)hz) + " Hz display back at 1x from 32x at frame " + std::to_string(at);
+      expect(what.c_str(),
+             play(display(hz, 300), at, 1000, -1, [](int k) { return k >= 120 && k < slower ? 32.0f : 1.0f; }),
+             hz == 60 ? "1+" : "(01)*0?|(10)*1?", owed(hz, 420 - at), 3);
+    }
   // The clock's time owed from the lattice when a pass comes early off it.
   LivePace pace;
   pace.period = 1 / 75.0f;
