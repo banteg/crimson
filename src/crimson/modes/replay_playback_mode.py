@@ -186,10 +186,6 @@ class ReplayPlaybackMode:
             rtx_mode=rtx_mode,
         )
         self._runtime = runtime
-        runtime.reset(
-            seed=int(replay.run.seed),
-            player_count=int(replay.run.player_count),
-        )
         runtime.open_runtime()
 
         try:

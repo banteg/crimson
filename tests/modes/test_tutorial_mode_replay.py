@@ -17,15 +17,14 @@ from tests.support.replay_runner_helpers import unverified_replay
 pytestmark = pytest.mark.usefixtures("headless_resources")
 
 
-def test_tutorial_open_creates_session_and_recorder(mocker, make_mode_config, assets_dir) -> None:
+def test_tutorial_open_creates_session_and_recorder(make_mode_config, assets_dir) -> None:
     cfg = make_mode_config(game_mode=GameMode.TUTORIAL, updates={"player_count": 4})
     mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=cfg, audio_rng=Crand(0xBEEF))
-    reset_runtime = mocker.spy(mode._world_runtime, "reset")
     mode.open()
 
     assert int(mode.config.gameplay.player_count) == 4
-    assert reset_runtime.call_args.kwargs["player_count"] == 1
     assert isinstance(mode._sim_session, DeterministicSession)
+    assert len(mode._sim_session.world.players) == 1
     assert mode._replay_recorder is not None
     assert mode._replay_recorder.run.game_mode_id == GameMode.TUTORIAL
     assert int(mode._replay_recorder.run.player_count) == 1

@@ -13,6 +13,7 @@ from crimson.modes import base_gameplay_mode, survival_mode
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
+from crimson.modes.tutorial_mode import TutorialMode
 from crimson.perks import PerkId
 from crimson.replay import load_replay
 from crimson.replay.checkpoints import load_checkpoints_file
@@ -93,16 +94,19 @@ def test_game_over_replay_result_is_taken_before_the_highscore_rng_draw(
     assert int(mode.state.rng.state) != rng_before_record[0]
 
 
+@pytest.mark.parametrize(("mode_cls", "game_mode"), [(SurvivalMode, GameMode.SURVIVAL), (TutorialMode, GameMode.TUTORIAL)])
 @pytest.mark.parametrize("replay_checkpoints", [False, True])
 def test_saved_live_replay_round_trips_and_verifies(
     make_mode_config,
     assets_dir,
     tmp_path,
     replay_checkpoints,
+    mode_cls,
+    game_mode,
 ) -> None:
     mode = _open_mode(
-        SurvivalMode,
-        GameMode.SURVIVAL,
+        mode_cls,
+        game_mode,
         make_mode_config=make_mode_config,
         assets_dir=assets_dir,
         replay_checkpoints=replay_checkpoints,

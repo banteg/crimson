@@ -13,7 +13,6 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
-from ..replay import ReplayRecorder
 from ..screens.actions import Route
 from ..ui.button import UiButtonState, button_draw, button_update, button_width
 from ..ui.overlays.tutorial_run import (
@@ -48,7 +47,6 @@ class TutorialMode(BaseGameplayMode):
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
-        self._replay_recorder: ReplayRecorder | None = None
 
     def _runtime_player_count(self) -> int:
         return 1
@@ -60,17 +58,7 @@ class TutorialMode(BaseGameplayMode):
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
 
-        self.state.perk_selection.pending_count = 0
-        self.state.perk_selection.choices.clear()
-        self.state.perk_selection.choices_dirty = True
-
         self._initialize_run(GameMode.TUTORIAL)
-
-    def close(self) -> None:
-        self._world_runtime.end_session()
-        self._replay_recorder = None
-        super().close()
-
 
     def _handle_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
