@@ -85,12 +85,11 @@ const checkMode = (available) => {
   const saved = fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null;
   for (const mode of [0, 1]) {
     game.game_render_choice(mode);
-    if (!available && (fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null) !== saved)
-      throw Error("locked renderer choice changed the saved preference");
+    const expected = available ? (mode ? "rtx\n" : "classic\n") : saved;
+    if ((fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null) !== expected)
+      throw Error("renderer choice did not preserve or save the expected preference");
   }
   if (run.calls.render_mode !== calls + (available ? 2 : 0)) throw Error("render-mode guard failed");
-  if (available && fs.readFileSync(path.join(directory, "render_mode.txt"), "utf8") !== "rtx\n")
-    throw Error("main-menu renderer choice was not saved");
 };
 checkMode(true);
 // The main menu's Play Game, Options and Statistics, top down.
