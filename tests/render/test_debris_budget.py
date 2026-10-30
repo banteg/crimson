@@ -186,6 +186,14 @@ def test_the_selection_keeps_the_run_s_clock_and_holds_it_outside_a_run(headless
         frame = msgspec.structs.replace(ctx.frame, run_elapsed_ms=ms)
         effects.draw_effect_pool(msgspec.structs.replace(ctx, frame=frame), camera=Vec2(), view_scale=Vec2(1, 1))
         assert budget.elapsed_ms == (1016. if ms is None else ms)
+    # A budget started over outside a run holds a clock from zero, so a redraw keeps what the last one chose.
+    budget.reset()
+    outside = msgspec.structs.replace(ctx, frame=msgspec.structs.replace(ctx.frame, run_elapsed_ms=None))
+    effects.draw_effect_pool(outside, camera=Vec2(), view_scale=Vec2(1, 1))
+    slot = next(iter(budget.pieces))
+    budget.pieces[slot].alpha = .5
+    effects.draw_effect_pool(outside, camera=Vec2(), view_scale=Vec2(1, 1))
+    assert (budget.elapsed_ms, budget.alpha(slot)) == (0., .5)
 
 
 def test_the_selection_starts_over_where_the_clients_start_theirs(tmp_path, headless_resources) -> None:
