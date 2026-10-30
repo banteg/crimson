@@ -41,10 +41,10 @@ struct Bank {
 // A display's frames: when each shows, in milliseconds after the first.
 struct Frames {
   std::vector<double> shown;
-  void add(double hz, int frames, int missed = -1) {
+  void add(double hz, int frames, std::vector<int> missed = {}) {
     double at = shown.empty() ? 0 : shown.back();
     for (int k = 0; k < frames; ++k)
-      shown.push_back(at += (k == missed ? 2 : 1) * 1000 / hz);
+      shown.push_back(at += (std::count(missed.begin(), missed.end(), k) ? 2 : 1) * 1000 / hz);
   }
 };
 
@@ -98,9 +98,11 @@ static void expect(const char *what, const std::vector<int> &ran, const char *pa
 }
 
 // `frames` frames at `hz` after 120 the pace settles in.
-static Frames display(double hz, int frames, int missed = -1) {
+static Frames display(double hz, int frames, std::vector<int> missed = {}) {
   Frames f;
-  f.add(hz, 120 + frames, missed < 0 ? -1 : 120 + missed);
+  for (int &k : missed)
+    k += 120;
+  f.add(hz, 120 + frames, missed);
   return f;
 }
 
@@ -110,8 +112,18 @@ static double owed(double hz, int frames, int missed = 0) { return (frames + mis
 int main() {
   expect("a 60 Hz display", play(display(60, 600), 120), "1+", owed(60, 600));
   expect("a 60 Hz display after a 2 ms first pass", play(display(60, 600), 120, 2), "1+", owed(60, 600));
-  expect("a 60 Hz display missing a frame", play(display(60, 120, 40), 120), "1{40}21+", owed(60, 120, 1));
-  expect("a 60 Hz display with a stray pass", play(display(60, 120), 120, 1000, 160), "1{41}01+", owed(60, 120));
+  // A missed frame, or a stray pass, wherever it falls against the clock's
+  // milliseconds; and a missed frame on a display already off the lattice.
+  for (int at = 30; at < 50; ++at) {
+    std::string missed = "1{" + std::to_string(at) + "}21+", stray = "1{" + std::to_string(at + 1) + "}01+";
+    expect("a 60 Hz display missing a frame", play(display(60, 120, {at}), 120), missed.c_str(), owed(60, 120, 1));
+    expect("a 60 Hz display with a stray pass", play(display(60, 120), 120, 1000, 120 + at), stray.c_str(),
+           owed(60, 120));
+    expect("a 59 Hz display missing a frame", play(display(59, 120, {at}), 120), "(?!.*2.?2)[12]+", owed(59, 120, 1));
+    std::string twice = "1{" + std::to_string(at) + "}212" + "1+";
+    expect("a 60 Hz display missing two frames", play(display(60, 120, {at, at + 2}), 120), twice.c_str(),
+           owed(60, 120, 2));
+  }
   expect("a 59 Hz display", play(display(59, 600), 120), "(?!.*(0|2.{0,49}2))[12]+", owed(59, 600));
   expect("a 61 Hz display", play(display(61, 600), 120), "(?!.*(2|0.{0,49}0))[01]+", owed(61, 600));
   expect("a 30 Hz display", play(display(30, 300), 120), "2+", owed(30, 300));
@@ -154,17 +166,21 @@ int main() {
       return 1;
     }
   }
-  // The speed changing between passes: 32x after 1x on a 61 Hz display,
-  // whatever the clock's time held at 1x when it changes, and 1x after 32x.
-  for (static int at = 240; at < 300; ++at) {
-    std::vector<int> ran = play(display(61, 300), 120, 1000, -1, [](int k) { return k < at ? 1.0f : 32.0f; });
-    auto [least, most] = std::minmax_element(ran.begin() + (at - 120), ran.end());
-    if (*least < 28 || *most > 36) {
-      fprintf(stderr, "a 61 Hz display at 32x from 1x at frame %d ran from %d to %d ticks a frame\n", at, *least,
-              *most);
-      return 1;
+  // The speed changing between passes: 32x after 1x on a 59 or 61 Hz display,
+  // whatever play was held at 1x when it changes, and 1x after 32x.
+  for (double hz : {59.0, 61.0})
+    for (int at = 240; at < 300; ++at) {
+      static int faster;
+      faster = at;
+      std::vector<int> ran = play(display(hz, 300), 120, 1000, -1, [](int k) { return k < faster ? 1.0f : 32.0f; });
+      auto [least, most] = std::minmax_element(ran.begin() + (at - 120), ran.end());
+      double ticks = owed(hz, at - 120) + owed(hz, 420 - at) * 32;
+      if (*least < 28 || *most > 36 || fabs(total(ran) - ticks) > 2) {
+        fprintf(stderr, "a %g Hz display at 32x from 1x at frame %d ran from %d to %d ticks a frame, %d in all, not about "
+                "%.1f\n", hz, at, *least, *most, total(ran), ticks);
+        return 1;
+      }
     }
-  }
   expect("a 60 Hz display back at 1x from 32x",
          play(display(60, 360), 240, 1000, -1, [](int k) { return k < 240 ? 32.0f : 1.0f; }), "1+", owed(60, 240));
   // The clock's time owed from the lattice when a pass comes early off it.
