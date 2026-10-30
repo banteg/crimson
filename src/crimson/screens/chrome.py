@@ -36,7 +36,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         detail = ground.overlay_detail
 
     if ground is None:
-        ground = GroundRenderer(
+        ground = MaterialGroundRenderer(
             texture=base,
             overlay=overlay,
             overlay_detail=detail,

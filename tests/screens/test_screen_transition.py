@@ -44,3 +44,9 @@ def test_panels_and_sign_keep_opposite_directions_and_staggered_intervals() -> N
 def test_pause_items_slide_in_100ms_apart_from_100ms() -> None:
     # `ui_menu_layout_init` shifts pause elements 23..25 by 100/200/300 ms, not the main-menu stagger.
     assert [ui_element_anim(250, index=index, width=300)[1] for index in (23, 24, 25)] == [-150.0, -250.0, -300.0]
+
+
+def test_fresh_menu_ground_supports_rtx_materials(loop) -> None:
+    from crimson.render.rtx.materials import MaterialGroundRenderer
+
+    assert isinstance(loop.state.menu_ground, MaterialGroundRenderer)

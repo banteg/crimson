@@ -577,7 +577,7 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
      if (run_active || game_state_id == GAME_STATE_PAUSE_MENU) {
          gameplay_render_world();
      } else {
-+        rtx_world(1);
++        rtx_menu_world(1);
          terrain_render();
-+        rtx_world(0);
++        rtx_menu_world(0);
      }

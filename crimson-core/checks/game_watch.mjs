@@ -25,12 +25,16 @@ const [
 ] = process.argv.slice(2);
 if (!directory) throw Error("usage: game_watch.mjs <game directory> [core.wasm] [game.wasm]");
 
-let passes = [], sceneLights = -1;
+let passes = [], sceneLights = -1, sceneTime = 0, lastWorldLights = -1;
 const run = bootGame(gameWasm, directory, 1, {
   rtx: true,
   onHost(name, args) {
     if (name === "render_pass") passes.push(args[0]);
-    if (name === "scene") sceneLights = args[2];
+    if (name === "scene") {
+      sceneLights = args[2];
+      lastWorldLights = args[2];
+      sceneTime = new DataView(game.memory.buffer).getFloat32(args[0] + 8, true);
+    }
   },
 });
 const { game } = run;
@@ -213,6 +217,11 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   for (const [i, tick] of records.entries()) if (!step(core, tick)) throw Error(`${name}: the verifier refuses tick ${i}`);
   const off = differences(state(core), state(game));
   if (off.length) throw Error(`${name}: at its end ${off.slice(0, 4).join(", ")} differ from the verifier`);
+  // This death fixture still has light sources in its frozen end frame.
+  // Clearing run_active must not turn off the gameplay world's RTX effects.
+  if (name === "survival-238852.crd" && lastWorldLights <= 0)
+    throw Error("death transition discarded the remaining world lights");
+  const frozenTime = sceneTime;
   frame(16, [ESCAPE]);
   for (let frames = 0; game.game_state() !== HIGHSCORES || game.game_watch_status() !== -1; ++frames) {
     if (frames > 600) throw Error(`${name}: Escape does not return to the high scores`);
@@ -222,7 +231,7 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   if (game.game_state() !== HIGHSCORES) throw Error(`${name}: the high scores close on their own`);
   // The retained terrain must stay in the RTX world/HDR pass after the run,
   // with its material shader and no lights belonging to the finished replay.
-  if (passes.join(",") !== "1,6,5,2" || sceneLights !== 0)
+  if (passes.join(",") !== "1,6,5,2" || sceneLights !== 0 || sceneTime !== frozenTime)
     throw Error(`${name}: menu terrain lost RTX materials or retained run lights: ${passes}, ${sceneLights}`);
   ++played;
 }
