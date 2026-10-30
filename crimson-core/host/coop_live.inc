@@ -620,13 +620,14 @@ static void coop_render() {
   if (ran)
     coop_live.ticked_at = host_time_ms();
   coop_live.banked -= ran / 60.0f;
-  if (ran < due)
-    coop_live.banked = fminf(coop_live.banked, 4.0f / 60.0f);
   // A tick more or less for the next pass by how far the partner's run is
   // ahead (§3.3; CatchUp, live_pace.h): the run ahead slows and the one behind
   // catches up, so both predict about as deep. Taken once this pass's ticks
-  // ran, as the head the partner sent counts its own pass's.
+  // ran, as the head the partner sent counts its own pass's, and within the
+  // reserve a pass held back keeps.
   coop_live.banked += coop_live.catch_up(live.paced, coop_ahead());
+  if (ran < due)
+    coop_live.banked = fminf(coop_live.banked, 4.0f / 60.0f);
   if (coop.draws != draws) {
     host_frame_hold(HOST_FRAME_SAVE);
     coop_live.shown = true;

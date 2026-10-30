@@ -595,7 +595,8 @@ monotonically non-decreasing tick frontiers**:
    play a pass's time at `clamp(0.01f * gap, -0.02f, 0.02f)` adds or takes, the
    `gap` being $\Delta T$ less a tick either way, until it makes a whole tick,
    which the next frame runs or leaves out. It reads $\Delta T$ once the pass's
-   ticks ran, as the partner's head counts the ticks of the partner's pass;
+   ticks ran (and before a held-back pass's four-tick clamp, rule 3), as the
+   partner's head counts the ticks of the partner's pass;
    read before them, it took every partner a tick ahead, and the runs
    leapfrogged a tick at a time. Applied as a rate on the banked time
    instead, the adjustment left the bank on a tick's edge, and frames ran none

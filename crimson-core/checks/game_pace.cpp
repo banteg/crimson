@@ -94,22 +94,26 @@ struct Machine {
   std::vector<int> ran;
   double at(int frame) const { return phase + frame * 1000 / hz; }
   // A pass at the frame's time on Grim's clock, as coop_frame and coop_render
-  // take it: the ticks its paced time banks run, then the catch-up for the
-  // next pass, by how far `ahead` the partner's run seems of this one's after
-  // them. The pace has seen the display's frames before the run starts.
-  template <typename Ahead> void pass(Ahead ahead) {
+  // take it: the ticks its paced time banks run (none while `held`, a pause or
+  // a full window), then the catch-up for the next pass, by how far `ahead`
+  // the partner's run seems of this one's after them, and a pass held back
+  // keeps four ticks at most. The pace has seen the display's frames before
+  // the run starts.
+  template <typename Ahead> void pass(Ahead ahead, bool held = false) {
     unsigned ms = (unsigned)floor(1000 + at(k) + fmod(k * spread, 1) * 0.9);
     if (k == 0)
       bank.last = ms - (unsigned)lround(1000 / hz);
     float paced = bank.pace(fminf((ms - bank.last) * 0.001f, 0.1f));
     bank.last = ms;
     bank.banked += paced;
-    int due = std::max((int)(bank.banked * 60.0f + 1e-4f), 0);
-    bank.banked -= due / 60.0f;
-    next += due;
-    ran.push_back(due);
+    int due = std::max((int)(bank.banked * 60.0f + 1e-4f), 0), run = held ? 0 : due;
+    bank.banked -= run / 60.0f;
+    next += run;
+    ran.push_back(run);
     heads.push_back({at(k), next});
     bank.banked += catch_up(paced, ahead(*this));
+    if (run < due)
+      bank.banked = fminf(bank.banked, 4.0f / 60.0f);
     ++k;
   }
 };
@@ -290,6 +294,19 @@ int main() {
     }
     if (abs(sum - ticks) > 1) {
       fprintf(stderr, "a catch-up %g ticks ahead ran %d ticks in 600 passes, not %d\n", ahead, sum, ticks);
+      return 1;
+    }
+  }
+  // A run held back two seconds or so well behind its partner (a pause, a
+  // full window) resumes with its four ticks' reserve and the frame's own at
+  // most, however much catch-up came due meanwhile, whenever the hold ends.
+  for (int until = 240; until < 300; ++until) {
+    Machine held{60, 0, 0.618};
+    for (int k = 0; k < until + 60; ++k)
+      held.pass([](const Machine &) { return 10.0; }, k >= 120 && k < until);
+    int most = *std::max_element(held.ran.begin() + until, held.ran.end());
+    if (most > 5) {
+      fprintf(stderr, "co-op held back until frame %d resumed with %d ticks in a frame\n", until, most);
       return 1;
     }
   }
