@@ -81,8 +81,13 @@ while (run.clock < 15000) frame();
 const checkMode = (available) => {
   if (!!game.game_render_mode_available() !== available) throw Error("wrong render-mode availability");
   const calls = run.calls.render_mode;
-  game.game_render_choice(0);
-  game.game_render_choice(1);
+  const choice = path.join(directory, "render_mode.txt");
+  const saved = fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null;
+  for (const mode of [0, 1]) {
+    game.game_render_choice(mode);
+    if (!available && (fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null) !== saved)
+      throw Error("locked renderer choice changed the saved preference");
+  }
   if (run.calls.render_mode !== calls + (available ? 2 : 0)) throw Error("render-mode guard failed");
   if (available && fs.readFileSync(path.join(directory, "render_mode.txt"), "utf8") !== "rtx\n")
     throw Error("main-menu renderer choice was not saved");

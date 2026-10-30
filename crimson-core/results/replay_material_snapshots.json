@@ -65,7 +65,7 @@
     "snapshot_mib": 240.0,
     "snapshot_budget_mib": 240
   },
-  "notes": "The original six-seek sample did not cover snapshot boundaries. Use boundary_seeks for the memory/latency tradeoff; native batching recovers the extra reconstruction cost. Snapshot cost is 240 MiB versus 128 MiB before; retaining eight complete RTX snapshots would require 800 MiB.",
+  "notes": "Final policy retains eight complete RTX checkpoints, matching original seek spacing, with an 800 MiB worst-case snapshot budget at 2048 square. Native reconstruction is batched. Earlier samples preserve the investigated three-checkpoint tradeoff; they are not the final retention policy.",
   "boundary_seeks": {
     "before": {
       "seeks": [
@@ -161,5 +161,38 @@
       "peak_snapshot_mib": 240.0
     }
   },
-  "boundary_method": "Native OpenGL, survival-rules2.crd, 30,000 ticks, moments 14399,28799,21599 repeated with a one-tick history window. Before: color-only eight-snapshot cache; after: complete three-snapshot cache before batching; batched: complete three-snapshot cache with up to 256 deferred material draws. First seek includes first-use rendering work. WebGPU latency was not measured."
+  "boundary_method": "Native OpenGL, survival-rules2.crd, 30,000 ticks, moments 14399,28799,21599 repeated with a one-tick history window. Before: color-only eight-snapshot cache; after: complete three-snapshot cache before batching; batched: complete three-snapshot cache with up to 256 deferred material draws. First seek includes first-use rendering work. WebGPU latency was not measured.",
+  "final_eight_snapshots": {
+    "seeks": [
+      {
+        "tick": 14398,
+        "milliseconds": 208.238
+      },
+      {
+        "tick": 28798,
+        "milliseconds": 37.682
+      },
+      {
+        "tick": 21598,
+        "milliseconds": 31.269
+      },
+      {
+        "tick": 14398,
+        "milliseconds": 24.611
+      },
+      {
+        "tick": 28798,
+        "milliseconds": 40.232
+      },
+      {
+        "tick": 21598,
+        "milliseconds": 32.313
+      }
+    ],
+    "warmed_median_ms": 32.313,
+    "peak_rss_mib": 250.3,
+    "peak_snapshot_mib": 800.0,
+    "snapshot_budget_mib": 800,
+    "note": "Final retention policy: eight complete checkpoints in both modes, with batched native reconstruction. Earlier after/batched entries document the superseded three-checkpoint experiment."
+  }
 }

@@ -912,7 +912,7 @@ void check_terrain_snapshots() {
     if (batched) w2c_host_ground(nullptr, (u32)HOST_GROUND_BATCH_BEGIN, 0);
     for (int i = 0; i < 300; ++i) {
       w2c_host_set_render_target(nullptr, id);
-      w2c_host_ground(nullptr, i % 2 ? HOST_GROUND_BRASS : HOST_GROUND_BLOOD, 200 + i);
+      w2c_host_ground(nullptr, i % 2 ? HOST_GROUND_BRASS : HOST_GROUND_BLOOD, 200 + i * 0.7f);
       rectangle(4 + i % 20, 4, 24, 24, 0x80ffffff);
       w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
       w2c_host_set_render_target(nullptr, 0);

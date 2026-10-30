@@ -88,6 +88,7 @@ if (silent) {
 const requests = []; // the host's leaderboard requests (game/leaderboard_requests.h)
 const run = bootGame(gameWasm, directory, seedOverride, { leaderboard: ranked, requests });
 const { game } = run;
+game.game_render_mode(0);
 const clientVersion = "0.14.2+build.000000000000000000000000";
 Buffer.from(game.memory.buffer).write(`${clientVersion}\0`, game.game_recorder_version(), "ascii");
 
@@ -393,6 +394,25 @@ while (true) {
   }
   if (screen === PAUSE_MENU) {
     if (ending) throw Error(`the pause menu opened over the run's end at tick ${ticks}`);
+    if (!padded && resumes === 0) {
+      // In-game Options retains the paused run and cannot change its renderer.
+      const OPTIONS = 2;
+      click(PAUSE_MENU, [232, 277]);
+      if (!settle(OPTIONS)) throw Error("in-game Options never opened");
+      if (game.game_render_mode_available()) throw Error("in-game Options permits renderer changes");
+      const calls = run.calls.render_mode;
+      const choice = path.join(directory, "render_mode.txt");
+      const saved = fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null;
+      for (const mode of [1, 0]) {
+        game.game_render_mode(mode);
+        game.game_render_choice(mode);
+        if ((fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null) !== saved)
+          throw Error("in-game Options saved a rejected renderer choice");
+      }
+      if (run.calls.render_mode !== calls) throw Error("in-game Options changed the renderer");
+      frame(16, { cursor: PAD_CURSOR, taps: [ESCAPE] });
+      if (!settle(PAUSE_MENU)) throw Error("Options did not return to the paused run");
+    }
     if (padded) {
       // Start resumes, and so does B.
       if (!settle(PAUSE_MENU)) continue;

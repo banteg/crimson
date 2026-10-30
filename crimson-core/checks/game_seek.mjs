@@ -15,7 +15,7 @@ import { bootGame, INPUT } from "./game_host.mjs";
 
 const ROOT = new URL("..", CORE).pathname;
 const rtx = process.argv.includes("--rtx");
-const maxShots = rtx ? 3 : 8;
+const maxShots = 8;
 const [
   directory,
   fixture,

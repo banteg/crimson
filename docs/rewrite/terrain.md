@@ -172,16 +172,18 @@ bonus and corpse visual parity still needs corresponding runtime evidence.
 
 ## Replay memory
 
-Both interactive clients retain at most eight classic color checkpoints (128 MiB)
-or three RTX checkpoints: the clean initial color target (16 MiB) and two material
-snapshots (112 MiB each), totaling 240 MiB at the default 2048×2048 size. Each RTX
+Both interactive clients retain at most eight checkpoints in either mode, preserving
+the original seek spacing. Classic color checkpoints cost 128 MiB; RTX's clean
+initial color target (16 MiB) and seven material snapshots (112 MiB each) cost
+800 MiB at the default 2048×2048 size. Each RTX
 snapshot preserves color, substrate and coverage as RGBA8, surface as RGBA32F
 (or the WebGPU device's half-float surface format), and the wetness epoch.
 These figures exclude other render targets; nondefault terrain sizes change the
 cost. Compaction frees old snapshots before allocating replacements and doubles
-the spacing. Keeping fewer RTX checkpoints trades memory for extra decal rebaking
-on some seeks; eight complete RTX snapshots would cost 800 MiB. Copies retain the
-full 2× resolution, avoiding cumulative blur on restoration.
+the spacing. Copies retain the full 2× resolution, avoiding cumulative blur on
+restoration. Native reconstruction batches material draws across logged bakes to
+reduce framebuffer switching. Disk snapshots are already losslessly zstd-compressed;
+resident GPU snapshots remain uncompressed.
 
 Backend simulation allocates no ground framebuffer. Server replay thumbnails
 retain their existing 1× software rasterizer; this change does not alter that path.
@@ -226,3 +228,30 @@ The Python benchmark interleaves the three modes using Q1 terrain and seed
 `0xC0FFEE`. The native/WebGL benchmark uses deterministic synthetic RGBA artwork,
 1,700 rotated overlapping terrain stamps, and a separate 500-quad sprite pass.
 It runs the production renderer's pixel regressions before timing.
+
+### Snapshot compression investigation
+
+On the 30,000-tick survival fixture, two complete 112 MiB snapshots compressed
+losslessly with zstd level 1 to 36.6 and 39.7 MiB. Warm CPU compression took about
+213 ms and decompression 94–97 ms. The production OpenGL snapshot readback took
+6.4 ms and upload/restoration 17.7 ms (medians after the first use, exact bytes
+verified). Fast zstd level -5 reduced the later snapshot to 57.1 MiB and decoded
+in 55.2 ms; GPU upload would still add about 17.7 ms. Disk snapshots already use
+zstd, but moving resident snapshots to compressed CPU storage would add this work
+to a cold seek. These are machine-specific timings, not browser measurements.
+See [raw measurements](../../crimson-core/results/replay_material_compression.json).
+
+GPU block compression is possible for immutable snapshots, but needs an encoder
+and a shader restore into the writable planes. It cannot replace the existing
+blits directly: [WebGPU texture copies require copy-compatible formats](https://www.w3.org/TR/webgpu/#copy-compatible),
+and [compressed formats are not render attachments](https://www.w3.org/TR/webgpu/#compressed-formats).
+BC7 stores normalized RGBA, while BC6H stores HDR RGB without the surface's height
+channel; neither directly preserves the four floating-point material channels.
+See the [BPTC format specification](https://registry.khronos.org/OpenGL/extensions/ARB/ARB_texture_compression_bptc.txt).
+The measured surface's wetness channel reached 9.17, beyond normalized color.
+
+An RGBA16F surface would lower the eight-checkpoint budget from 800 to 576 MiB.
+A CPU quantization probe changed 61.7% of the surface floats, with maximum absolute
+channel errors of 0.000122, 0.003906, 0.000244 and 0.000244. This is a possible
+separate visual-quality experiment, not a lossless replacement. The current fix
+keeps exact full-resolution material planes and the original eight-copy spacing.

@@ -197,14 +197,10 @@ struct TerrainShot {
 // Copies of the terrain start this far apart and spread out, every other one
 // dropped, past the cap: each holds a whole render target and its materials.
 static constexpr int TERRAIN_SHOT_TICKS = 1800;
-// The host draws ground targets at 2x density: eight default 2048-square RGBA
-// copies retain the previous 128 MiB budget (32 copies at 1024 square).
+// Keep the original eight-checkpoint spacing in both modes. At default 2x
+// density classic color copies cost 128 MiB; RTX's clean initial terrain
+// (16 MiB) plus seven complete material copies (112 MiB each) costs 800 MiB.
 static constexpr size_t TERRAIN_SHOTS = 8;
-// RTX keeps the clean initial terrain (16 MiB) and two material snapshots
-// (112 MiB each): 240 MiB at default density. Keeping only one material copy
-// makes mid-run seeks replay most of the bake log; eight would cost 800 MiB.
-extern "C" int rtx_render_mode;
-static constexpr size_t TERRAIN_SHOTS_RTX = 3;
 static constexpr int TERRAIN_SHOT_IDS = 1 << 30; // host texture ids the copies take
 
 // A bake log, zstd-packed a block at a time: a long run bakes millions of
@@ -278,7 +274,7 @@ static int terrain_host_id() { return platform_texture_host_id(terrain_render_ta
 static void terrain_shoot(int at_tick) {
   if (!terrain.shots.empty() && at_tick - terrain.shots.back().tick < terrain.shot_ticks)
     return;
-  if (terrain.shots.size() >= (rtx_render_mode ? TERRAIN_SHOTS_RTX : TERRAIN_SHOTS)) {
+  if (terrain.shots.size() >= TERRAIN_SHOTS) {
     // Release before allocating the next copy, so the peak also fits the cap.
     std::vector<TerrainShot> kept;
     for (size_t i = 0; i < terrain.shots.size(); ++i)
@@ -288,10 +284,6 @@ static void terrain_shoot(int at_tick) {
         host_texture_release(terrain.shots[i].id);
     terrain.shots = kept;
     terrain.shot_ticks *= 2;
-    // With an odd cap the newest copy survives compaction. Wait for the new
-    // spacing instead of inserting a copy halfway to it and shifting the grid.
-    if (at_tick - terrain.shots.back().tick < terrain.shot_ticks)
-      return;
   }
   int id = TERRAIN_SHOT_IDS + terrain.next_shot_id++;
   host_texture_copy(id, terrain_host_id());

@@ -255,6 +255,9 @@ optimization is deferred.
 
 Render mode enum and helpers: `src/crimson/render/rtx/mode.py` (`classic|rtx`).
 
+Mode changes are accepted only at launch or from the main menu and its Options panel.
+Runs, paused games, replays and in-game Options keep their renderer for the entire run.
+
 Runtime/launch controls:
 
 - Options: the RTX lighting box, below the sliders, in place of the original's Graphics detail slider
@@ -463,7 +466,7 @@ on, following the headroom SDL reports each frame. Other platforms tonemap to SD
 The mode never reaches a run's state, and the verifier (`core.wasm`) builds
 without it.
 
-Controls:
+Controls (mode changes only at launch or from the main menu and its Options):
 
 - Options: the RTX lighting box (`crimson-core/game/rtx/options.patch`) replaces Graphics detail: Mouse sensitivity
   moves up into its row and the box goes below the sliders, beside UI Info texts; `crimson.cfg` keeps the detail

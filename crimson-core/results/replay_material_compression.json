@@ -1,0 +1,128 @@
+{
+  "method": "Existing CWC2 prepared replay snapshots, 2048 square, zstd level 1, four CPU runs with first excluded from median; lossless decode verified. CPU timings exclude GPU readback/upload. Survival rules2 30,000 tick fixture; clean initial + two material snapshots from previous retention experiment.",
+  "samples": [
+    {
+      "materials": false,
+      "epoch": 0.0,
+      "raw_mib": 16.000019073486328,
+      "zstd1_mib": 8.886879920959473,
+      "compress_ms_median": 40.25845800060779,
+      "decompress_ms_median": 16.66658406611532,
+      "planes": {}
+    },
+    {
+      "materials": true,
+      "epoch": 180.5120086669922,
+      "raw_mib": 112.00001907348633,
+      "zstd1_mib": 36.624229431152344,
+      "compress_ms_median": 212.96791697386652,
+      "decompress_ms_median": 97.07749995868653,
+      "planes": {
+        "color": {
+          "raw_mib": 16.0,
+          "zstd1_mib": 9.280936241149902
+        },
+        "substrate": {
+          "raw_mib": 16.0,
+          "zstd1_mib": 9.382253646850586
+        },
+        "coverage": {
+          "raw_mib": 16.0,
+          "zstd1_mib": 1.0238046646118164
+        },
+        "surface": {
+          "raw_mib": 64.0,
+          "zstd1_mib": 16.940550804138184,
+          "channel_max": [
+            0.4834771752357483,
+            2.9790749549865723,
+            1.0,
+            0.7433817982673645
+          ]
+        }
+      }
+    },
+    {
+      "materials": true,
+      "epoch": 360.52801513671875,
+      "raw_mib": 112.00001907348633,
+      "zstd1_mib": 39.67577266693115,
+      "compress_ms_median": 212.66554191242903,
+      "decompress_ms_median": 93.98250002413988,
+      "planes": {
+        "color": {
+          "raw_mib": 16.0,
+          "zstd1_mib": 9.416936874389648
+        },
+        "substrate": {
+          "raw_mib": 16.0,
+          "zstd1_mib": 9.433387756347656
+        },
+        "coverage": {
+          "raw_mib": 16.0,
+          "zstd1_mib": 1.434976577758789
+        },
+        "surface": {
+          "raw_mib": 64.0,
+          "zstd1_mib": 19.39345932006836,
+          "channel_max": [
+            0.4834771752357483,
+            9.174123764038086,
+            1.0,
+            0.9223384857177734
+          ]
+        }
+      }
+    }
+  ],
+  "half_float_probe": {
+    "raw_surface_mib": 64,
+    "half_surface_mib": 32,
+    "eight_snapshot_total_mib": 576,
+    "channel_max_abs_error": [
+      0.0001220703125,
+      0.00390625,
+      0.000244140625,
+      0.000244140625
+    ],
+    "changed_float_fraction": 0.6165531277656555,
+    "note": "Lossy CPU quantization probe on one real surface; no visual-equivalence claim. GPU resident formats not changed."
+  },
+  "fast_levels": [
+    {
+      "level": -5,
+      "mib": 57.08402442932129,
+      "compress_ms": 124.43249998614192,
+      "decompress_ms": 55.21483300253749
+    },
+    {
+      "level": -1,
+      "mib": 46.94998264312744,
+      "compress_ms": 179.98883302789181,
+      "decompress_ms": 71.74608297646046
+    },
+    {
+      "level": 1,
+      "mib": 39.67577266693115,
+      "compress_ms": 213.59808300621808,
+      "decompress_ms": 95.42754094582051
+    }
+  ],
+  "gpu_transfer": {
+    "method": "Production OpenGL texture_write/read, one actual 112 MiB snapshot, glFinish at both ends, four iterations, first excluded. Upload includes companion allocation/initialization. Exact byte round-trip verified.",
+    "upload_ms": [
+      31.52,
+      19.137,
+      17.698,
+      17.609
+    ],
+    "readback_ms": [
+      24.867,
+      6.27,
+      6.441,
+      6.79
+    ],
+    "warm_upload_median_ms": 17.698,
+    "warm_readback_median_ms": 6.441
+  }
+}

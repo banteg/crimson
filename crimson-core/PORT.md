@@ -142,8 +142,8 @@ of window DPI: the default 1024×1024 logical terrain uses 2048×2048 physical
 pixels for terrain, blood and corpses. Source artwork keeps its own dimensions,
 and ground projection/stamping coordinates stay logical. Replay snapshots copy
 the physical ground and its RTX materials: eight classic copies cost 128 MiB;
-the clean initial terrain and two complete RTX snapshots cost 240 MiB at most
-(default size, 32-bit float surfaces). Compaction releases old copies before
+the clean initial terrain and seven complete RTX snapshots cost 800 MiB at most
+(default size, 32-bit float surfaces). Both modes retain eight checkpoints. Compaction releases old copies before
 allocating the next one. Fewer snapshots can require more decal rebaking per
 seek; the existing adaptive spacing still preserves the first snapshot and
 reconstructs every intervening bake.

@@ -23,7 +23,7 @@ int console_cmd_argc_get(void);
 int rtx_render_mode;
 extern unsigned char run_active;
 extern game_state_id_t game_state_id;
-int game_live_run();
+bool game_live_run();
 __attribute__((export_name("game_render_mode_available"))) int game_render_mode_available() {
   return !game_live_run() && !run_active &&
          (game_state_id == GAME_STATE_MAIN_MENU || game_state_id == GAME_STATE_OPTIONS_MENU);
