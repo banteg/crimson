@@ -134,7 +134,7 @@ static int practice_frame() {
       practice.fire_held = live.fire_down;
       live.fire_down = live.fire_pressed = false;
     }
-    live.banked += fminf(grim_frame_dt, 0.1f);
+    live.banked += live.paced;
     live.due = (int)(live.banked * 60.0f + 1e-4f);
     live.banked -= live.due / 60.0f;
   }

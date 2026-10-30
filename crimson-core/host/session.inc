@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
+#include "live_pace.h"
 extern game_status_t game_status_blob;
 extern unsigned char grim_timing_frozen;
 extern "C" {
@@ -47,6 +48,7 @@ static struct {
   LiveSettings run;     // the verifier's, between ticks
   LiveSettings outside; // the player's, while a tick runs
   float banked; // seconds of play not yet ticked
+  float paced;  // seconds of play this pass banks (live_pace.h), at a replay's speed
   int due;      // ticks this frame
   unsigned worlds; // worlds drawn, which live_run_due counts per pass
   // Presses since the last tick, which only the next tick sees.
@@ -576,6 +578,18 @@ extern "C" {
 // or -1 when no run is playing. A pass with none draws nothing new.
 int game_live_frame() {
   watch_follow_link();
+  // Every pass, so the display's period is known as a run starts, but a
+  // replay's preparing ones and the one after the last, whose time preparing
+  // took (watch_prepare), which bank nothing; a replay's at the viewer's
+  // speed, which a key this pass changes from the next. A stall banks at most
+  // a tenth of a second.
+  static LivePace pace;
+  static bool prepared; // the last pass prepared a replay
+  bool preparing = live.watching && watch.phase == WATCH_PREPARING;
+  live.paced = preparing || prepared ? 0
+                                     : pace(fminf(grim_frame_dt, 0.1f),
+                                            live.watching && !live.practicing ? watch_speeds[watch.speed] : 1);
+  prepared = preparing;
   if (!game_live)
     return -1;
   // The console key of the player's own run that is not ranked, on every pass
@@ -603,7 +617,7 @@ int game_live_frame() {
     return 1;
   }
   live_poll();
-  live.banked += fminf(grim_frame_dt, 0.1f);
+  live.banked += live.paced;
   live.due = (int)(live.banked * 60.0f + 1e-4f);
   live.banked -= live.due / 60.0f;
   return live.due;

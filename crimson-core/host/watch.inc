@@ -696,7 +696,7 @@ static void watch_render() {
     } else if (watch.phase == WATCH_PLAYING && (!watch.paused || watch.step)) {
       int due = 1;
       if (!watch.paused) {
-        live.banked += dt * watch_speeds[watch.speed];
+        live.banked += live.paced;
         due = (int)(live.banked * 60.0f + 1e-4f);
         live.banked -= due / 60.0f;
       }

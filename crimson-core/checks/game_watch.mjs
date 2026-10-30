@@ -106,6 +106,24 @@ frame();
 game.game_watch_seek(390);
 for (let i = 0; i < 20; ++i) frame();
 if (game.game_watch_tick() <= 400) throw Error(`a stop a seek passed paused on ${game.game_watch_tick()}`);
+// Playback banks the paced time live play does (host/live_pace.h, whose own
+// check, game_pace.cpp, takes it through every kind of display): through a 60
+// Hz display's frames, read as Grim's clock reads them, in whole milliseconds up
+// to 0.9 ms after each shows, it runs one tick a frame, and through a 59 Hz
+// one's, one a frame but for one frame a second that runs two.
+function display(hz, frames) {
+  const ran = [], start = run.clock;
+  for (let k = -60; k < frames; ++k) {
+    const from = game.game_watch_tick();
+    frame(start + Math.floor(((k + 61) * 1000) / hz + ((k * 0.618 + 60) % 1) * 0.9) - run.clock);
+    if (k >= 0) ran.push(game.game_watch_tick() - from);
+  }
+  return ran.join("");
+}
+for (const [hz, frames, expected] of [[60, 120, /^1+$/], [59, 150, /^(?!.*(0|2.{0,49}2))[12]+$/]]) {
+  const ran = display(hz, frames);
+  if (!expected.test(ran)) throw Error(`a ${hz} Hz display ran ${ran}`);
+}
 frame(16, [ESCAPE]);
 for (let frames = 0; game.game_state() !== HIGHSCORES; ++frames) {
   if (frames > 600) throw Error("a linked replay does not return to the high scores");
