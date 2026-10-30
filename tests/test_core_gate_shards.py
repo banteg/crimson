@@ -25,6 +25,8 @@ def test_every_stream_occurs_in_exactly_one_deterministic_shard(gate) -> None:
         shards = [gate.shard_streams(streams, i, count) for i in range(1, count + 1)]
         assert sorted(s.name for shard in shards for s in shard) == sorted(s.name for s in streams)
         assert shards == [gate.shard_streams(list(reversed(streams)), i, count) for i in range(1, count + 1)]
+        if count == 2:
+            assert sorted(sum(len(stream.ticks) for stream in shard) for shard in shards) == [135, 140]
 
 
 def test_merge_requires_complete_disjoint_reports_and_keeps_failures(gate, tmp_path: Path) -> None:

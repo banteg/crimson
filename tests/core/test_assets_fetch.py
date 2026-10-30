@@ -4,7 +4,6 @@ import hashlib
 import io
 import urllib.request
 from pathlib import Path
-from typing import cast
 
 import pytest
 
@@ -18,29 +17,29 @@ class _FakeResponse(io.BytesIO):
     pass
 
 
-def test_download_file_uses_unique_tempfile(mocker, tmp_path: Path) -> None:
-    payload = b"paq payload\n" * 128
-
-    def fake_urlopen(req: object, *, timeout: int) -> _FakeResponse:
-        return _FakeResponse(payload)
-
-    mocker.patch.object(urllib.request, "urlopen", side_effect=fake_urlopen)
-
-    original_replace = Path.replace
-
-    def spy_replace(self: Path, target: Path) -> Path:
-        return original_replace(self, target)
-
-    replace = mocker.patch.object(Path, "replace", autospec=True, side_effect=spy_replace)
-
+def test_overlapping_downloads_stage_separate_files_for_the_same_destination(mocker, tmp_path: Path) -> None:
     dest = tmp_path / "crimson.paq"
-    _download_file("http://example.invalid/crimson.paq", dest)
+    url = "http://example.invalid/crimson.paq"
+    mocker.patch.object(urllib.request, "urlopen", side_effect=[io.BytesIO(b"first"), io.BytesIO(b"second")])
+    staged_paths: list[Path] = []
+    replace = Path.replace
 
-    assert dest.read_bytes() == payload
-    replace.assert_called_once()
-    tmp_source = cast("Path", replace.call_args.args[0])
-    assert tmp_source.parent == dest.parent
-    assert tmp_source != dest.with_suffix(dest.suffix + ".tmp")
+    def publish(staged: Path, target: Path) -> Path:
+        assert staged.parent == dest.parent
+        assert staged not in staged_paths
+        staged_paths.append(staged)
+        if len(staged_paths) == 1:
+            # Let the second download finish while the first is waiting to publish.
+            _download_file(url, dest)
+            assert dest.read_bytes() == b"second"
+        return replace(staged, target)
+
+    mocker.patch.object(Path, "replace", autospec=True, side_effect=publish)
+    _download_file(url, dest)
+
+    assert len(staged_paths) == 2
+    assert dest.read_bytes() == b"first"
+    assert list(tmp_path.iterdir()) == [dest]
 
 
 def test_migrate_music_paq_renames_an_earlier_repack_once(tmp_path: Path) -> None:

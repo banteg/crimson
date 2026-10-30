@@ -24,32 +24,32 @@ from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
 
-def test_body_profiles_rotate_and_scale_with_the_drawn_sprite() -> None:
-    for species in CreatureTypeId:
-        creature = CreatureState(active=True, hp=100, type_id=species, pos=Vec2(100, 200), size=50)
-        bodies = creature_body_volumes(creature)
-        if not bodies:
-            continue
-        assert len(bodies) == 1
-        creature.heading += math.pi / 2
-        rotated = creature_body_volumes(creature)
-        creature.size *= 2
-        doubled = creature_body_volumes(creature)
-        for a, b, c in zip(bodies, rotated, doubled, strict=True):
-            delta = a.pos - creature.pos
-            assert (b.pos - creature.pos).x == pytest.approx(-delta.y)
-            assert (b.pos - creature.pos).y == pytest.approx(delta.x)
-            assert c.radii == b.radii * 2
-            assert c.height == b.height * 2
-            assert c.pos - creature.pos == (b.pos - creature.pos) * 2
-        creature.hp = 0
-        assert creature_body_volumes(creature) == doubled
-        creature.death_timer = 0
-        assert not creature_body_volumes(creature)
-        creature.death_timer = 16
-        creature.hp = 100
-        creature.active = False
-        assert not creature_body_volumes(creature)
+@pytest.mark.parametrize("species", [
+    CreatureTypeId.ZOMBIE, CreatureTypeId.LIZARD, CreatureTypeId.ALIEN,
+    CreatureTypeId.SPIDER_SP1, CreatureTypeId.SPIDER_SP2,
+], ids=lambda species: species.name)
+def test_body_profiles_rotate_and_scale_with_the_drawn_sprite(species: CreatureTypeId) -> None:
+    creature = CreatureState(active=True, hp=100, type_id=species, pos=Vec2(100, 200), size=50)
+    (body,) = creature_body_volumes(creature)
+    creature.heading += math.pi / 2
+    (rotated,) = creature_body_volumes(creature)
+    creature.size *= 2
+    (doubled,) = creature_body_volumes(creature)
+
+    delta = body.pos - creature.pos
+    assert (rotated.pos - creature.pos).x == pytest.approx(-delta.y)
+    assert (rotated.pos - creature.pos).y == pytest.approx(delta.x)
+    assert doubled.radii == rotated.radii * 2
+    assert doubled.height == rotated.height * 2
+    assert doubled.pos - creature.pos == (rotated.pos - creature.pos) * 2
+    creature.hp = 0
+    assert creature_body_volumes(creature) == [doubled]
+    creature.death_timer = 0
+    assert not creature_body_volumes(creature)
+    creature.death_timer = 16
+    creature.hp = 100
+    creature.active = False
+    assert not creature_body_volumes(creature)
 
 
 def test_spatial_grid_keeps_overlaps_up_to_a_crowd_without_priority_truncation() -> None:
