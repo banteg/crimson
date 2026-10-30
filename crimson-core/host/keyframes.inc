@@ -22,6 +22,7 @@ int platform_texture_host_id(int handle);
 extern int terrain_render_target;
 extern int run_elapsed_ms;
 extern float rtx_ground_ms; // a seek's bake time (game/rtx.cpp)
+void rtx_restore_clock();
 }
 
 // The session's own state a tick reads or writes (host.cpp), and the effect
@@ -104,6 +105,7 @@ static const uint8_t *run_state_read(const uint8_t *in) {
     memcpy(game_run_spans[i].at, in, game_run_spans[i].size);
     in += game_run_spans[i].size;
   }
+  rtx_restore_clock();
   KeyframeHost host;
   memcpy(&host, in, sizeof host);
   in += sizeof host;

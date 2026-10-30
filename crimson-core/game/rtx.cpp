@@ -238,6 +238,9 @@ static float rtx_seconds() { return (rtx_ground_ms >= 0 ? rtx_ground_ms : (float
 // retained menu ground keep the last gameplay presentation time instead.
 static float rtx_presentation_seconds;
 
+// A restore can return a held frame straight to a menu without drawing gameplay.
+void rtx_restore_clock() { rtx_presentation_seconds = (float)run_elapsed_ms * 0.001f; }
+
 // The frame's lights, collected as the world begins.
 static float rtx_lights[32 * RTX_LIGHT_FLOATS];
 static int rtx_light_count;
@@ -306,7 +309,7 @@ void rtx_smoke(float alpha) {
 // when the mode changes: the fluid smoke and the lights' explosions and fades.
 void rtx_smoke_reset();
 void rtx_reset() {
-  rtx_presentation_seconds = 0;
+  // Effect history resets independently of the retained terrain's presentation time.
   rtx_effects_active = 0;
   rtx_effect_flush();
   rtx_smoke_reset();

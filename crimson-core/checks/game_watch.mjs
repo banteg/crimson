@@ -236,6 +236,34 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   ++played;
 }
 if (played < 2 + Object.keys(coop).length) throw Error(`only ${played} replays played`);
+// Practice restores its anchor after re-rendering it, then holds the captured
+// frame. Leaving immediately must preserve that restored material clock even
+// though no gameplay world is drawn between the restore and the menu.
+memory().write("watched/linked.crd\0", game.game_replay_path(), "latin1");
+if (!game.game_replay_open() || !game.game_watch()) throw Error("clock regression replay did not open");
+for (let frames = 0; game.game_watch_status() < 0 || !game.game_watch_ticks(); ++frames) {
+  if (frames > 2000) throw Error("clock regression replay never became ready");
+  frame();
+}
+game.game_watch_stop_at(300);
+game.game_watch_seek(300);
+frame();
+const anchorTime = sceneTime;
+if (!(anchorTime > 0) || !game.game_practice_take()) throw Error("clock regression anchor was not drawn");
+game.game_practice_action(3);
+frame();
+if (game.game_watch_tick() !== 300 || game.game_practice_state() !== 0)
+  throw Error("practice did not restore the held original");
+frame(16, [ESCAPE]);
+for (let frames = 0; game.game_state() !== HIGHSCORES || game.game_watch_status() !== -1; ++frames) {
+  if (frames > 600) throw Error("practice original did not return to scores");
+  frame();
+}
+for (let i = 0; i < 60; ++i) frame();
+if (sceneTime !== anchorTime) throw Error(`practice restore reset material time: ${anchorTime} -> ${sceneTime}`);
+game.game_render_mode(1);
+frame();
+if (sceneTime !== anchorTime) throw Error("reapplying RTX reset the retained material time");
 game.game_close();
 try {
   frame();
