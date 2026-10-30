@@ -12,6 +12,13 @@
 // leaves no frame empty or crowded. Every display's frames run the ticks of
 // the clock's time, within a couple, and no pass banks less than nothing.
 //
+// Co-op's catch-up (CatchUp) between two machines, each pacing its run and
+// learning the other's head from packets a one-way trip late: with the
+// partner's display at 60 or 144 Hz and 40 to 120 ms each way, a 60 Hz
+// display's frames run a tick each but for a catch-up frame now and then,
+// never two within a second, and the runs stay within two ticks; started
+// eight ticks apart, they come together in 5 to 15 s, a tick at a time.
+//
 //   clang++ -std=c++17 -O2 crimson-core/checks/game_pace.cpp -o game_pace && ./game_pace
 #include "../host/live_pace.h"
 #include <algorithm>
@@ -73,6 +80,67 @@ static std::vector<int> play(const Frames &f, int from, unsigned first = 1000, i
   }
   return ran;
 }
+
+// A co-op machine: its display's frames, its pace and bank, its catch-up, and
+// the heads its packets carry.
+struct Machine {
+  double hz, phase, spread;
+  Bank bank;
+  CatchUp catch_up;
+  int next = 0, k = 0;
+  std::vector<std::pair<double, int>> heads; // when each frame showed, and the run's head after it
+  std::vector<int> ran;
+  double at(int frame) const { return phase + frame * 1000 / hz; }
+  // A pass at the frame's time on Grim's clock, `ahead` ticks behind the partner.
+  void pass(double ahead) {
+    unsigned ms = (unsigned)floor(1000 + at(k) + fmod(k * spread, 1) * 0.9);
+    if (k == 0)
+      bank.last = ms - 1000;
+    float paced = bank.pace(fminf((ms - bank.last) * 0.001f, 0.1f));
+    bank.last = ms;
+    bank.banked += paced + catch_up(paced, ahead);
+    int due = std::max((int)(bank.banked * 60.0f + 1e-4f), 0);
+    bank.banked -= due / 60.0f;
+    next += due;
+    ran.push_back(due);
+    heads.push_back({at(k), next});
+    ++k;
+  }
+};
+
+// Co-op's two machines: the first at 60 Hz, `start` ticks ahead, the partner at
+// `partner` Hz, `latency` ms one way; a machine's head estimate is the newest
+// its partner sent a trip ago, plus the trip in ticks (coop_ahead).
+struct Coop {
+  double partner, latency;
+  int start;
+  double most; // catch-up frames a minute the first may run
+};
+struct Pair {
+  Machine a, b;
+  double latency;
+  std::vector<int> gaps; // the first's head less the partner's, after each of its frames
+  explicit Pair(const Coop &c) : a{60, 0, 0.618}, b{c.partner, 3.7, 0.414}, latency(c.latency) { a.next = c.start; }
+  static double ahead(const Machine &me, const Machine &other, double at, double latency) {
+    int head = -1;
+    for (auto &[shown, next] : other.heads)
+      if (shown <= at - latency)
+        head = next;
+    return head < 0 ? 0 : head - me.next + latency * 60 / 1000;
+  }
+  void play(double seconds) {
+    while (a.at(a.k) < seconds * 1000 || b.at(b.k) < seconds * 1000) {
+      bool first = a.at(a.k) <= b.at(b.k);
+      Machine &me = first ? a : b, &other = first ? b : a;
+      me.pass(ahead(me, other, me.at(me.k), latency));
+      if (first)
+        gaps.push_back(a.next - b.next);
+    }
+  }
+};
+static const Coop coop[] = {
+    {60, 60, 0, 4}, {60, 120, 0, 10}, {60, 40, 0, 4}, {144, 60, 0, 4}, {59.94, 20, 0, 6}, {60, 60, 8, 4},
+};
 
 static std::string digits(const std::vector<int> &ran) {
   std::string out;
@@ -199,6 +267,41 @@ int main() {
     fprintf(stderr, "an early pass off the lattice, owing the clock, left %g held\n", pace.held);
     return 1;
   }
+  for (const Coop &c : coop) {
+    Pair pair(c);
+    pair.play(120);
+    std::vector<int> &ran = pair.a.ran;
+    int since = 1 << 30, close = 0, events = 0, wide = 0, together = -1, rushed = 0, last = -(1 << 30);
+    for (size_t k = 0; k < ran.size(); ++k) {
+      if (together < 0 && abs(pair.gaps[k]) <= 1)
+        together = (int)k;
+      // Closing a gap, a tick at a time and 2% at most: an extra frame's
+      // tick at most every 50 frames.
+      if (together < 0 && ran[k] != 1) {
+        rushed += (int)k - last < 40;
+        last = (int)k;
+      }
+      if (k < 600)
+        continue;
+      if (abs(pair.gaps[k]) > 2 && together >= 0)
+        ++wide;
+      if (ran[k] == 1) {
+        ++since;
+        continue;
+      }
+      ++events;
+      close += since < 60;
+      since = 0;
+    }
+    double minutes = (ran.size() - 600) / 3600.0;
+    if (close || wide || rushed || together < 0 || together > 900 || (c.start && together < 300) ||
+        events / minutes > c.most) {
+      fprintf(stderr, "co-op with a %g Hz partner %g ms away, %d ticks apart: %.1f catch-up frames a minute, %d within a "
+              "second of another, %d frames over two ticks apart, together after %d frames, %d rushed\n", c.partner,
+              c.latency, c.start, events / minutes, close, wide, together, rushed);
+      return 1;
+    }
+  }
   puts("live pace: 30 to 240 Hz, a missed frame, a stray pass, a short first pass, a moved window, 2x and 32x and "
-       "back, an early pass owing the clock");
+       "back, an early pass owing the clock; co-op's catch-up");
 }

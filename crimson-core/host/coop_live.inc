@@ -302,6 +302,7 @@ static bool coop_start_run() {
   coop_live.session = wire.nonce;
   coop_live.playing = true;
   coop_live.banked = 0;
+  coop_live.catch_up = {};
   coop_live.shown = coop_live.choosing = coop_live.escape = false;
   coop_live.ticked_at = host_time_ms();
   const ui_button_t plate = {(char *)"", 0, 0, 1, 0, 0, 0, 1.0f, 0, 1};
@@ -471,13 +472,14 @@ static void coop_pick(int choice) {
   game_coop_produce(host_time_ms());
 }
 
-// game_live_frame for a co-op run: the presses, and the pass's play time, which
-// runs up to 2% fast or slow by how far the partner's run is ahead (§3.3): the
-// run ahead slows and the one behind catches up, so both predict about as deep.
-// Every pass draws.
+// game_live_frame for a co-op run: the presses, and the pass's play time,
+// paced to the display as a run alone is, with a tick more or less now and
+// then by how far the partner's run is ahead (§3.3; CatchUp, live_pace.h): the
+// run ahead slows and the one behind catches up, so both predict about as
+// deep. Every pass draws.
 static int coop_frame() {
   live_poll();
-  coop_live.banked += fminf(grim_frame_dt, 0.1f) * std::clamp(1 + 0.01f * coop_ahead(), 0.98f, 1.02f);
+  coop_live.banked += live.paced + coop_live.catch_up(live.paced, coop_ahead());
   live.due = (int)(coop_live.banked * 60.0f + 1e-4f);
   return 1;
 }
