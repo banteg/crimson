@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from contextlib import ExitStack
+
 import msgspec
 
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
-from grim.shaders import set_world_light
+from grim.shaders import _shader_scope, set_world_light
 
 from .shaders import glsl
 
@@ -102,23 +104,23 @@ class BeamBatch:
 
     Stamp spacing travels per vertex, so every body and head shares the same
     uniforms. End the batch before drawing with another shader or changing
-    blend modes. Like the standalone beam draws, end() restores raylib's
-    default shader.
+    blend modes. Ending restores the enclosing shader, including its artwork
+    color decode and coverage filtering when drawing into linear light.
     """
 
     def __init__(self) -> None:
-        self.active = False
+        self.scope: ExitStack | None = None
 
     def begin(self, shader_data: _BeamFastStampedShader) -> None:
-        if not self.active:
-            rl.begin_shader_mode(shader_data.shader)
+        if self.scope is None:
+            self.scope = ExitStack()
+            self.scope.enter_context(_shader_scope(shader_data.shader, alpha_test=False))
             _apply_virtual_beam_uniforms(shader_data=shader_data)
-            self.active = True
 
     def end(self) -> None:
-        if self.active:
-            rl.end_shader_mode()
-            self.active = False
+        if self.scope is not None:
+            self.scope.close()
+            self.scope = None
 
 
 def draw_beam_fast_stamped_body(

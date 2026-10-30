@@ -12,12 +12,48 @@ from crimson.projectiles.types import ProjectileTemplateId as PT
 from crimson.render.rtx import beam
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import projectiles
+from grim.blend import additive_blend
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.shaders import AlphaTestShader
 from grim.texture_mode import texture_mode
+from tests.render.test_ground_materials import pixels
 from tests.render.test_projectile_render import _place, _render_ctx
 from tests.support.factories import make_creature_state
+
+
+@pytest.mark.parametrize("batched", [False, True])
+def test_beam_restores_linear_artwork_shader(raylib_context, mocker, batched):
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER_TRIED", False)
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER", None)
+    image = rl.gen_image_color(2, 2, rl.Color(128, 128, 128, 255))
+    texture = rl.load_texture_from_image(image)
+    rl.unload_image(image)
+    target = load_float_render_texture(64, 32)
+    shader = AlphaTestShader()
+    try:
+        with texture_mode(target, linear=True), shader.scope(), additive_blend():
+            rl.clear_background(rl.BLACK)
+            rl.draw_texture_ex(texture, rl.Vector2(0, 0), 0, 8, rl.WHITE)
+            batch = beam.BeamBatch() if batched else None
+            beam.draw_beam_fast_stamped_head(
+                center_screen=Vec2(48, 24), rotation_rad=0, effect_scale=.01,
+                scale=1, base_alpha=1, head_rgb=(1, 1, 1), is_fire=False, batch=batch,
+            )
+            if batch is not None:
+                batch.end()
+            rl.draw_texture_ex(texture, rl.Vector2(16, 0), 0, 8, rl.WHITE)
+        sampled = pixels(target)
+        before, after = sampled[24 * 64 + 8], sampled[24 * 64 + 24]
+        assert before[0] == pytest.approx((128 / 255) ** 2.2, abs=.001)
+        assert after == before
+    finally:
+        shader.close()
+        if beam._BEAM_FAST_STAMPED_SHADER is not None:
+            rl.unload_shader(beam._BEAM_FAST_STAMPED_SHADER.shader)
+        rl.unload_render_texture(target)
+        rl.unload_texture(texture)
 
 
 @pytest.mark.parametrize("preserve_bugs", [False, True])
