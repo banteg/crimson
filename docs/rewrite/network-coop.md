@@ -594,7 +594,10 @@ monotonically non-decreasing tick frontiers**:
    `host/live_pace.h`), and the lead's adjustment apart from it (`CatchUp`): the
    play a pass's time at `clamp(0.01f * gap, -0.02f, 0.02f)` adds or takes, the
    `gap` being $\Delta T$ less a tick either way, until it makes a whole tick,
-   which one frame then runs or leaves out. Applied as a rate on the banked time
+   which the next frame runs or leaves out. It reads $\Delta T$ once the pass's
+   ticks ran, as the partner's head counts the ticks of the partner's pass;
+   read before them, it took every partner a tick ahead, and the runs
+   leapfrogged a tick at a time. Applied as a rate on the banked time
    instead, the adjustment left the bank on a tick's edge, and frames ran none
    or two ticks by turns; leaving out the first tick keeps the jitter in
    $\Delta T$, a packet's tick or so, from adding up. A peer stalled at its

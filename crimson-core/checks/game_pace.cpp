@@ -15,9 +15,11 @@
 // Co-op's catch-up (CatchUp) between two machines, each pacing its run and
 // learning the other's head from packets a one-way trip late: with the
 // partner's display at 60 or 144 Hz and 40 to 120 ms each way, a 60 Hz
-// display's frames run a tick each but for a catch-up frame now and then,
-// never two within a second, and the runs stay within two ticks; started
-// eight ticks apart, they come together in 5 to 15 s, a tick at a time.
+// display's frames run a tick each, a 59.94 Hz partner's slips aside, never
+// two catch-up frames within a second, and the runs stay within two ticks;
+// started eight ticks apart, they come together in 5 to 15 s, a tick at a
+// time, the run ahead slowing and the one behind speeding up. The catch-up
+// itself comes in whole ticks of the lead's sign, at its rate.
 //
 //   clang++ -std=c++17 -O2 crimson-core/checks/game_pace.cpp -o game_pace && ./game_pace
 #include "../host/live_pace.h"
@@ -91,19 +93,23 @@ struct Machine {
   std::vector<std::pair<double, int>> heads; // when each frame showed, and the run's head after it
   std::vector<int> ran;
   double at(int frame) const { return phase + frame * 1000 / hz; }
-  // A pass at the frame's time on Grim's clock, `ahead` ticks behind the partner.
-  void pass(double ahead) {
+  // A pass at the frame's time on Grim's clock, as coop_frame and coop_render
+  // take it: the ticks its paced time banks run, then the catch-up for the
+  // next pass, by how far `ahead` the partner's run seems of this one's after
+  // them. The pace has seen the display's frames before the run starts.
+  template <typename Ahead> void pass(Ahead ahead) {
     unsigned ms = (unsigned)floor(1000 + at(k) + fmod(k * spread, 1) * 0.9);
     if (k == 0)
-      bank.last = ms - 1000;
+      bank.last = ms - (unsigned)lround(1000 / hz);
     float paced = bank.pace(fminf((ms - bank.last) * 0.001f, 0.1f));
     bank.last = ms;
-    bank.banked += paced + catch_up(paced, ahead);
+    bank.banked += paced;
     int due = std::max((int)(bank.banked * 60.0f + 1e-4f), 0);
     bank.banked -= due / 60.0f;
     next += due;
     ran.push_back(due);
     heads.push_back({at(k), next});
+    bank.banked += catch_up(paced, ahead(*this));
     ++k;
   }
 };
@@ -132,14 +138,15 @@ struct Pair {
     while (a.at(a.k) < seconds * 1000 || b.at(b.k) < seconds * 1000) {
       bool first = a.at(a.k) <= b.at(b.k);
       Machine &me = first ? a : b, &other = first ? b : a;
-      me.pass(ahead(me, other, me.at(me.k), latency));
+      double at = me.at(me.k), trip = latency;
+      me.pass([&](const Machine &self) { return ahead(self, other, at, trip); });
       if (first)
         gaps.push_back(a.next - b.next);
     }
   }
 };
 static const Coop coop[] = {
-    {60, 60, 0, 4}, {60, 120, 0, 10}, {60, 40, 0, 4}, {144, 60, 0, 4}, {59.94, 20, 0, 6}, {60, 60, 8, 4},
+    {60, 60, 0, 1}, {60, 120, 0, 1}, {60, 40, 0, 1}, {144, 60, 0, 1}, {59.94, 20, 0, 4}, {60, 60, 8, 1},
 };
 
 static std::string digits(const std::vector<int> &ran) {

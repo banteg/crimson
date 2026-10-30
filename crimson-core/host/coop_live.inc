@@ -473,13 +473,11 @@ static void coop_pick(int choice) {
 }
 
 // game_live_frame for a co-op run: the presses, and the pass's play time,
-// paced to the display as a run alone is, with a tick more or less now and
-// then by how far the partner's run is ahead (§3.3; CatchUp, live_pace.h): the
-// run ahead slows and the one behind catches up, so both predict about as
-// deep. Every pass draws.
+// paced to the display as a run alone is (coop_render adds the catch-up). Every
+// pass draws.
 static int coop_frame() {
   live_poll();
-  coop_live.banked += live.paced + coop_live.catch_up(live.paced, coop_ahead());
+  coop_live.banked += live.paced;
   live.due = (int)(coop_live.banked * 60.0f + 1e-4f);
   return 1;
 }
@@ -624,6 +622,11 @@ static void coop_render() {
   coop_live.banked -= ran / 60.0f;
   if (ran < due)
     coop_live.banked = fminf(coop_live.banked, 4.0f / 60.0f);
+  // A tick more or less for the next pass by how far the partner's run is
+  // ahead (§3.3; CatchUp, live_pace.h): the run ahead slows and the one behind
+  // catches up, so both predict about as deep. Taken once this pass's ticks
+  // ran, as the head the partner sent counts its own pass's.
+  coop_live.banked += coop_live.catch_up(live.paced, coop_ahead());
   if (coop.draws != draws) {
     host_frame_hold(HOST_FRAME_SAVE);
     coop_live.shown = true;
