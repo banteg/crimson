@@ -362,6 +362,7 @@ static void terrain_rebuild(size_t batches) {
   terrain_bakes(true, [&] {
     std::vector<fx_queue_entry_t> queue;
     std::vector<RotatedDecal> rotated;
+    host_ground(HOST_GROUND_BATCH_BEGIN, 0);
     for (size_t b = shot->batches; b < batches; ++b) {
       size_t queue_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].queue : terrain.queue.size();
       size_t rotated_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].rotated : terrain.rotated.size();
@@ -372,6 +373,7 @@ static void terrain_rebuild(size_t batches) {
       rtx_ground_ms = (float)terrain.batches[b].clock_ms;
       terrain_bake(queue.data(), queue.size(), rotated.data(), rotated.size());
     }
+    host_ground(HOST_GROUND_BATCH_END, 0);
     rtx_ground_ms = -1;
   });
 }

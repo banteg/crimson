@@ -116,15 +116,15 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         except ValueError:
             console.log.log("rendermode <classic|rtx>")
             return
-        state.choose_rtx_mode(mode)
-        console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
+        if state.choose_rtx_mode(mode):
+            console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
 
     def cmd_toggle_rtx(args: list[str]) -> None:
         if args:
             console.log.log("togglertx")
             return
-        state.choose_rtx_mode(cycle_rtx_render_mode(state.rtx_mode))
-        console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
+        if state.choose_rtx_mode(cycle_rtx_render_mode(state.rtx_mode)):
+            console.log.log(f"Render mode set to '{state.rtx_mode.value}'.")
 
     def cmd_rtx_smoke(args: list[str]) -> None:
         if len(args) != 1 or args[0] not in ("on", "off"):

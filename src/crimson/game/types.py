@@ -108,10 +108,18 @@ class GameState(msgspec.Struct):
     def pause_background(self) -> BaseGameplayMode | None:
         return self.screens.background
 
-    def choose_rtx_mode(self, mode: RtxRenderMode) -> None:
+    @property
+    def can_change_rtx_mode(self) -> bool:
+        return self.screens.render_mode_available and not self.ui.closing
+
+    def choose_rtx_mode(self, mode: RtxRenderMode) -> bool:
         """The player's choice (Options' RTX lighting, rendermode, togglertx), kept for the next launch."""
+        if not self.can_change_rtx_mode:
+            self.console.log.log("Change render mode from the main menu.")
+            return False
         self.rtx_mode = mode
         save_rtx_choice(self.base_dir, mode)
+        return True
 
 
 __all__ = [

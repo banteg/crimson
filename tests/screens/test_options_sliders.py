@@ -46,3 +46,31 @@ def test_the_rtx_box_switches_the_mode_and_keeps_the_choice(loop, mocker) -> Non
     loop.update(0.016)
     assert loop.state.rtx_mode is RtxRenderMode.CLASSIC
     assert load_rtx_choice(loop.state.base_dir) is RtxRenderMode.CLASSIC
+
+
+def test_rtx_choice_is_locked_through_a_run_pause_and_options(loop, mocker) -> None:
+    from crimson.game.runtime import _boot_command_handlers
+    from crimson.game_modes import GameMode
+    from crimson.screens.actions import StartRun
+
+    assert loop.state.choose_rtx_mode(RtxRenderMode.RTX)
+    loop.navigation.navigate(StartRun(GameMode.SURVIVAL))
+    for route in (None, Route.PAUSE, Route.OPTIONS):
+        if route is not None:
+            loop.navigation.navigate(route)
+        assert not loop.state.can_change_rtx_mode
+        handlers = _boot_command_handlers(loop.state)
+        handlers["rendermode"](["classic"])
+        handlers["togglertx"]([])
+        loop._set_rtx_mode(RtxRenderMode.CLASSIC, source="debug hotkey F4")
+        assert loop.state.rtx_mode is RtxRenderMode.RTX
+        assert load_rtx_choice(loop.state.base_dir) is RtxRenderMode.RTX
+        assert loop.state.console.log.lines[-1] == "Change render mode from the main menu."
+    options = loop.state.screens.active
+    assert isinstance(options, OptionsMenuView)
+    finish_transition(loop)
+    loop.update(0.016)
+    assert options._rtx_checkbox.disabled
+    loop.navigation.navigate(Route.MENU)
+    assert loop.state.choose_rtx_mode(RtxRenderMode.CLASSIC)
+    assert load_rtx_choice(loop.state.base_dir) is RtxRenderMode.CLASSIC

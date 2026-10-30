@@ -1106,6 +1106,10 @@
     // Whether the game starts waiting for a linked run's replay (client/main.cpp).
     watchAwaited: () => watchAwaited,
     // The rendering mode the game shows (client/main.cpp): HDR displays get its highlights past white.
+    renderModeAvailable: (available) => {
+      rtx.disabled = !available;
+      rtx.title = available ? "RTX lighting" : "Change RTX lighting from the main menu";
+    },
     renderMode: (on) => {
       rtx.classList.toggle("on", !!on);
       rtx.setAttribute("aria-pressed", on ? "true" : "false");

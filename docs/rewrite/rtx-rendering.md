@@ -405,10 +405,14 @@ lands). It draws the terrain into the world with the ground
 program (`HOST_PASS_GROUND`). The lights carry what the ground adds: the
 reflection tail, broad illumination, and a beam's energy shape, computed by the
 module as `continuous_beam.py` does (its support also sizes the body grid). The companions start from the terrain as it stands the first time
-RTX needs them. A clear, a replay's terrain copy, or leaving RTX drops them.
-Blood baked before then (in classic, or before the terrain copy a seek starts
-from) stays in the substrate as painted terrain, without its wet film. A seek
-bakes the logged decals after that copy again at their logged clock. WebGPU
+RTX needs them. A clear or leaving RTX drops them. Replay copies preserve the
+substrate, coverage, float surface, and wetness epoch; restoring the clean initial
+copy removes any later materials. Native prepared caches store the same planes
+in CWC2 files. A seek bakes the logged decals after that copy at their logged clock.
+Native reconstruction batches up to 256 material draws across bake boundaries,
+preserving order within each plane and flushing before wetness rebases or reads.
+Render mode changes are allowed at launch and from the main menu (including its
+Options panel), never during a run, replay, preparation, or in-game Options. WebGPU
 keeps the surface in 32-bit floats where the device filters and blends them,
 otherwise in half floats.
 Monster Vision is heat, as in the Python port (see Perk illumination;

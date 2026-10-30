@@ -1626,6 +1626,9 @@ void wgpu_w2c_host_heat_trails(struct w2c_host *, f32 alpha) {
   wgpuRenderPassEncoderDraw(pass, 6, 1, 0, 0);
 }
 void wgpu_w2c_host_ground(struct w2c_host *, u32 kind, f32 seconds) {
+  // WebGPU already records its draws into a command buffer.
+  if ((int)kind == HOST_GROUND_BATCH_BEGIN || (int)kind == HOST_GROUND_BATCH_END)
+    return;
   ground_kind = (int)kind;
   ground_seconds = seconds;
 }

@@ -22,6 +22,18 @@ class ScreenStack:
         self._entries: list[ScreenEntry] = []
 
     @property
+    def render_mode_available(self) -> bool:
+        from ..game_states import GameStateId
+        from .menu_screen import MenuScreen
+
+        if not self._entries:
+            return True  # launch, before a screen opens
+        active = self.active
+        return self.gameplay is None and isinstance(active, MenuScreen) and active.game_state in (
+            GameStateId.MAIN_MENU, GameStateId.OPTIONS_MENU,
+        )
+
+    @property
     def active(self) -> Screen:
         return self._entries[-1].view
 

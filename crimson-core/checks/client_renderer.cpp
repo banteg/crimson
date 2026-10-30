@@ -890,6 +890,7 @@ void check_terrain_snapshots() {
     assert(w2c_host_texture_read(nullptr, id, 500000, size) == size);
     assert(!memcmp(memory + 4096, memory + 500000, size));
   };
+  identical(600); // compare against the source after END flushed its pending stamps
   w2c_host_clear(nullptr, 0); // subsequent bakes cannot mutate a saved snapshot
   w2c_host_texture_copy(nullptr, 600, 601);
   identical(600);
@@ -904,6 +905,24 @@ void check_terrain_snapshots() {
   memory[4096] ^= 1;
   w2c_host_texture_copy(nullptr, 600, 602);
   assert(!grounds.count(600));
+  // Reconstruction may batch across bakes, but material ordering, epochs and
+  // the bounded queue must produce exactly the same planes as individual bakes.
+  auto bakes = [&](int id, bool batched) {
+    w2c_host_texture_copy(nullptr, id, 602);
+    if (batched) w2c_host_ground(nullptr, (u32)HOST_GROUND_BATCH_BEGIN, 0);
+    for (int i = 0; i < 300; ++i) {
+      w2c_host_set_render_target(nullptr, id);
+      w2c_host_ground(nullptr, i % 2 ? HOST_GROUND_BRASS : HOST_GROUND_BLOOD, 200 + i);
+      rectangle(4 + i % 20, 4, 24, 24, 0x80ffffff);
+      w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+      w2c_host_set_render_target(nullptr, 0);
+    }
+    if (batched) w2c_host_ground(nullptr, (u32)HOST_GROUND_BATCH_END, 0);
+  };
+  bakes(600, false);
+  bakes(603, true);
+  assert(w2c_host_texture_read(nullptr, 600, 4096, size) == size);
+  identical(603);
   w2c_host_set_render_target(nullptr, 0);
   for (int id : {600, 601, 602, 603})
     w2c_host_texture_release(nullptr, id);

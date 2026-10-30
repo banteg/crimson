@@ -39,6 +39,9 @@ enum { SMOKE_LIGHT_FLOATS = 13, SMOKE_MAX_LIGHTS = 16, SMOKE_MAX_SIGHTS = 4 };
 // sorts them: what the draws into the terrain until HOST_GROUND_END are.
 // A decal without a material reaches the ground's substrate alone.
 enum {
+  // A replay reconstructs many bakes without reading the terrain between them.
+  HOST_GROUND_BATCH_BEGIN = -2,
+  HOST_GROUND_BATCH_END = -3,
   HOST_GROUND_END = -1,
   HOST_GROUND_DECAL = 0,
   HOST_GROUND_BLOOD = 1,

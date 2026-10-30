@@ -172,13 +172,16 @@ bonus and corpse visual parity still needs corresponding runtime evidence.
 
 ## Replay memory
 
-Both interactive clients retain at most eight full-resolution ground checkpoints.
-At the default density, their RGBA8 color storage is 128 MiB (eight × 16 MiB),
-matching 32 old 1× color snapshots. This excludes depth attachments and other
-render targets; nondefault terrain sizes change the byte cost. Compaction frees
-old snapshots before allocating the next one, so allocation never briefly needs
-a ninth copy. Fewer checkpoints can require more decal rebaking on a seek.
-Keeping copies at 2× avoids progressively blurring baked decals after restoration.
+Both interactive clients retain at most eight classic color checkpoints (128 MiB)
+or three RTX checkpoints: the clean initial color target (16 MiB) and two material
+snapshots (112 MiB each), totaling 240 MiB at the default 2048×2048 size. Each RTX
+snapshot preserves color, substrate and coverage as RGBA8, surface as RGBA32F
+(or the WebGPU device's half-float surface format), and the wetness epoch.
+These figures exclude other render targets; nondefault terrain sizes change the
+cost. Compaction frees old snapshots before allocating replacements and doubles
+the spacing. Keeping fewer RTX checkpoints trades memory for extra decal rebaking
+on some seeks; eight complete RTX snapshots would cost 800 MiB. Copies retain the
+full 2× resolution, avoiding cumulative blur on restoration.
 
 Backend simulation allocates no ground framebuffer. Server replay thumbnails
 retain their existing 1× software rasterizer; this change does not alter that path.

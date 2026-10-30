@@ -35,7 +35,7 @@ const replays = fixture
     };
 
 let groundId = 0, renderTarget = 0, boundTexture = 0, srcBlend = 0, dstBlend = 0;
-let peakTerrainShots = 0, terrainCopies = 0;
+let peakTerrainShots = 0, terrainCopies = 0, terrainReleases = 0;
 const textures = new Map(), terrainAt = new Map();
 const shotTicks = new Map();
 const run = bootGame(gameWasm, directory, 1, {
@@ -63,6 +63,7 @@ const run = bootGame(gameWasm, directory, 1, {
       peakTerrainShots = Math.max(peakTerrainShots, shots);
       if (shots > maxShots) throw Error(`terrain copies exceeded the ${maxShots}-target budget`);
     } else if (name === "texture_release") {
+      if (shotTicks.has(args[0])) ++terrainReleases;
       textures.delete(args[0]);
       shotTicks.delete(args[0]);
     } else if ((name === "clear" || name === "draw") && renderTarget === groundId && groundId) {
@@ -99,7 +100,7 @@ const compared = names.map((name, i) => [name, i]).filter(([name]) => !PRESENTAT
 
 // Seeks across the replay `name` (`file`), which plays from the menus.
 function seeks(name, file) {
-  peakTerrainShots = terrainCopies = 0;
+  peakTerrainShots = terrainCopies = terrainReleases = 0;
   fs.writeFileSync(path.join(directory, "watched/seek.crd"), file);
   memory().write("watched/seek.crd\0", game.game_replay_path(), "latin1");
   if (!game.game_replay_open() || !game.game_watch()) throw Error(`${name} does not play`);
@@ -110,15 +111,30 @@ function seeks(name, file) {
     frame();
   }
   let t0 = performance.now(), frames = 0;
+  const lockedMode = () => {
+    if (game.game_render_mode_available()) throw Error("replay permits changing render mode");
+    const calls = run.calls.render_mode;
+    const choice = path.join(directory, "render_mode.txt");
+    const saved = fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null;
+    for (const mode of [0, 1]) {
+      game.game_render_mode(mode);
+      game.game_render_choice(mode);
+    }
+    if (run.calls.render_mode !== calls) throw Error("replay changed the renderer");
+    if ((fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null) !== saved)
+      throw Error("replay changed the saved render preference");
+  };
+  lockedMode();
   while (!game.game_watch_ticks()) {
     frame();
     if (++frames > 20000) throw Error(`${name}: the replay was never prepared`);
   }
+  lockedMode();
   const prepared = { ms: Math.round(performance.now() - t0), frames, ticks: game.game_watch_ticks() };
 
   // The verifier's world at every target, from one straight replay.
   const ticks = game.game_watch_ticks();
-  if (ticks >= maxShots * 1800 && (peakTerrainShots !== maxShots || terrainCopies <= maxShots))
+  if (ticks >= maxShots * 1800 && (peakTerrainShots !== maxShots || !terrainReleases))
     throw Error(`${name}: the long replay did not exercise terrain-cache compaction`);
   const targets = [1, 2, 59, 60, 61, 119, 120, 121, ticks - 1, ticks];
   for (let i = 0; targets.length < 40; ++i) targets.push(1 + ((i * 7919 + 13) % ticks));

@@ -16,8 +16,9 @@ import { bootGame, INPUT } from "./game_host.mjs";
 
 const [directory, gameWasm = new URL("build/game/game.wasm", CORE).pathname] = process.argv.slice(2);
 if (!directory) throw Error("usage: game_pad_back.mjs <game directory> [game.wasm]");
-const run = bootGame(gameWasm, directory, 1);
+const run = bootGame(gameWasm, directory, 1, { rtx: true });
 const { game } = run;
+game.game_render_mode(1);
 
 // game_state_id_t
 const MAIN_MENU = 0, PLAY_GAME = 1, OPTIONS = 2, CONTROLS = 3, STATISTICS = 4, QUEST_SELECT = 11, HIGHSCORES = 14,
@@ -77,8 +78,19 @@ function back(screen, back, stays) {
 // On a fresh profile the main menu shares its screen id with the startup
 // sequence, which ends after about 14 s.
 while (run.clock < 15000) frame();
+const checkMode = (available) => {
+  if (!!game.game_render_mode_available() !== available) throw Error("wrong render-mode availability");
+  const calls = run.calls.render_mode;
+  game.game_render_choice(0);
+  game.game_render_choice(1);
+  if (run.calls.render_mode !== calls + (available ? 2 : 0)) throw Error("render-mode guard failed");
+  if (available && fs.readFileSync(path.join(directory, "render_mode.txt"), "utf8") !== "rtx\n")
+    throw Error("main-menu renderer choice was not saved");
+};
+checkMode(true);
 // The main menu's Play Game, Options and Statistics, top down.
 open(MAIN_MENU, [], PLAY_GAME);
+checkMode(false);
 back(PLAY_GAME, MAIN_MENU);
 // The panel starts on its player-count list, which A opens.
 open(MAIN_MENU, [], PLAY_GAME);
@@ -91,6 +103,7 @@ back(QUEST_SELECT, PLAY_GAME);
 back(PLAY_GAME, MAIN_MENU);
 
 open(MAIN_MENU, down(1), OPTIONS);
+checkMode(true);
 back(OPTIONS, MAIN_MENU);
 // Controls, the last of the options' widgets.
 open(MAIN_MENU, down(1), OPTIONS);

@@ -21,6 +21,13 @@ extern unsigned char grim_render_disabled, console_open_flag;
 int console_cmd_argc_get(void);
 
 int rtx_render_mode;
+extern unsigned char run_active;
+extern game_state_id_t game_state_id;
+int game_live_run();
+__attribute__((export_name("game_render_mode_available"))) int game_render_mode_available() {
+  return !game_live_run() && !run_active &&
+         (game_state_id == GAME_STATE_MAIN_MENU || game_state_id == GAME_STATE_OPTIONS_MENU);
+}
 extern crimson_cfg_t config_blob;
 extern int rtx_effects_active;
 void rtx_effect_flush();
@@ -35,9 +42,16 @@ extern int rtx_smoke_on;
 
 void rtx_reset();
 
-static void rtx_set_mode(int requested) {
-  rtx_render_mode = platform_outputs() ? host_render_mode(requested) : 0;
-  rtx_reset();
+static bool rtx_set_mode(int requested, bool launch = false) {
+  static bool initialized;
+  if (!(launch && !initialized) && !game_render_mode_available())
+    return false;
+  if (!initialized || requested != rtx_render_mode) {
+    rtx_render_mode = platform_outputs() ? host_render_mode(requested) : 0;
+    rtx_reset();
+  }
+  initialized = true;
+  return true;
 }
 
 // The player's choice, kept in the game folder (the Python port's render/rtx/mode.py keeps the same file).
@@ -55,7 +69,8 @@ static int rtx_saved_mode() {
 // The player chooses a mode: the Options panel, the console, the page's switch. It is kept once drawn, so a host
 // that only draws classic (WebGL2) leaves the choice for one that can.
 void rtx_choose(int requested) {
-  rtx_set_mode(requested);
+  if (!rtx_set_mode(requested))
+    return;
   if (!platform_outputs() || rtx_render_mode != requested)
     return;
   if (FILE *fp = fopen(rtx_choice_file, "wb")) {
@@ -67,11 +82,15 @@ void rtx_choose(int requested) {
 // The mode the host's launch options ask for (--rtx, CRIMSON_RTX, the page's ?rtx=) for this launch only, or with
 // none (-1) the player's choice.
 __attribute__((export_name("game_render_mode"))) void game_render_mode(int mode) {
-  rtx_set_mode(mode < 0 ? rtx_saved_mode() : mode);
+  rtx_set_mode(mode < 0 ? rtx_saved_mode() : mode, true);
 }
 __attribute__((export_name("game_render_choice"))) void game_render_choice(int mode) { rtx_choose(mode); }
 
 static void rtx_report(int requested) {
+  if (!game_render_mode_available()) {
+    console_printf(&console_log_queue, "Change render mode from the main menu.\n");
+    return;
+  }
   if (rtx_render_mode != requested)
     console_printf(&console_log_queue, "Render mode '%s' is not available here.\n", rtx_mode_name(requested));
   console_printf(&console_log_queue, "Render mode set to '%s'.\n", rtx_mode_name(rtx_render_mode));

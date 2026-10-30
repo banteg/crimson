@@ -349,6 +349,7 @@ struct Ground {
 };
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
+bool ground_batch;
 float ground_seconds;
 GLuint ground_program, stamp_program, fill_program;
 // World-space, color-independent source visibility: four source masks per
@@ -1635,7 +1636,8 @@ void GL_ENTRY(w2c_host_set_texture)(struct w2c_host *, u32 stage, u32 id) {
     bound[stage] = (int)id;
 }
 void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
-  flush_ground_stamps();
+  if (!ground_batch)
+    flush_ground_stamps();
   current_target = (int)id;
   if (id)
     gpu_aside("bake");
@@ -1752,7 +1754,7 @@ int ground_stamp_target;
 
 void queue_ground_stamp(Ground &g, u32 primitive, const void *vertices, u32 vertex_count,
                         const unsigned short *indices, u32 primitive_count) {
-  if (ground_stamp_target != current_target)
+  if (ground_stamp_target != current_target || ground_stamps.size() >= 256)
     flush_ground_stamps();
   // The surface's wetness rebases onto a later epoch between the stamps before it and the ones after.
   if (ground_kind != HOST_GROUND_DECAL && ground_seconds - g.epoch > 180) {
@@ -2070,7 +2072,16 @@ void GL_ENTRY(w2c_host_heat_trails)(struct w2c_host *, f32 alpha) {
                    {0, 0, 0, 1, 0xffffffff, 0, 0}, {w, h, 0, 1, 0xffffffff, 0, 0}, {w, 0, 0, 1, 0xffffffff, 0, 0}});
 }
 void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
-  if (kind == HOST_GROUND_END)
+  if ((int)kind == HOST_GROUND_BATCH_BEGIN) {
+    ground_batch = true;
+    return;
+  }
+  if ((int)kind == HOST_GROUND_BATCH_END) {
+    flush_ground_stamps();
+    ground_batch = false;
+    return;
+  }
+  if (kind == HOST_GROUND_END && !ground_batch)
     flush_ground_stamps();
   ground_kind = (int)kind;
   ground_seconds = seconds;
