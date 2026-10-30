@@ -218,6 +218,9 @@ class GameLoopView:
     def _set_rtx_mode(self, mode: RtxRenderMode, *, source: str) -> None:
         if mode is self.state.rtx_mode:
             return
+        if not self.state.can_change_rtx_mode:
+            self.state.console.log.log("Change render mode from the main menu.")
+            return
         self.state.rtx_mode = mode
         self._sync_rtx_mode()
         self.state.console.log.log(f"render mode: {mode.value} ({source})")

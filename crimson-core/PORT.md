@@ -141,11 +141,12 @@ Ground targets render at a fixed 2× the configured texture density, independent
 of window DPI: the default 1024×1024 logical terrain uses 2048×2048 physical
 pixels for terrain, blood and corpses. Source artwork keeps its own dimensions,
 and ground projection/stamping coordinates stay logical. Replay snapshots copy
-the physical ground; at most eight copies keep the usual 128 MiB terrain-history
-budget (formerly 32 copies at 1024×1024). Compaction releases old copies before
-allocating the next one. Fewer snapshots can require more decal rebaking per
-seek; the existing adaptive spacing still preserves the first snapshot and
-reconstructs every intervening bake.
+the physical ground and its RTX materials: eight classic copies cost 128 MiB;
+the clean initial terrain and seven complete RTX snapshots cost 800 MiB at most
+(default size, 32-bit float surfaces). Both modes retain eight checkpoints.
+Compaction releases old copies before allocating the next one. The existing
+adaptive spacing preserves the first snapshot and reconstructs every
+intervening bake.
 
 Linearly filtered artwork reconstructs in premultiplied-alpha space using the
 shared `src/grim/filtering.glsl`. Terrain artwork uses Catmull–Rom during baking;

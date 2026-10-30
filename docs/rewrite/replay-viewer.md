@@ -70,8 +70,10 @@ way it:
 - logs every **bake into the terrain**: `fx_queue_render`'s decals and corpses,
   batch by batch, zstd-packed 65,536 entries at a time (a long run bakes
   millions), and copies the terrain render target as the run starts and
-  every 30 seconds (at most eight copies of the 2× ground target, the spacing
-  doubling past them; 128 MiB at the default 2048×2048 physical size);
+  every 30 seconds, with spacing doubling at eight copies in either mode. At the
+  default 2048×2048 physical size, classic costs at most 128 MiB; RTX's clean
+  initial terrain plus seven complete material copies costs at most 800 MiB.
+  RTX restores all material planes and their wetness epoch;
 - collects the **marks** the scrub bar shows: Survival's milestone waves (the
   spawn stage `survival_update` advances: alien rings, the red alien boss,
   spider swarms, fast aliens, stop-and-go spiders, the spider boss, splitters,

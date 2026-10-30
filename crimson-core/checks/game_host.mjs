@@ -27,7 +27,7 @@ export const INPUT = {
 // `leaderboard` enables the leaderboard (true, or "framed" as inside another
 // site's page, which offers no ranked play), and `requests` collects its host
 // requests (HOST_LEADERBOARD_*) for the check to answer between frames.
-export function bootGame(wasm, directory, seed, { leaderboard = false, requests, onHost, clocks = false } = {}) {
+export function bootGame(wasm, directory, seed, { leaderboard = false, requests, onHost, clocks = false, rtx = false } = {}) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
   const wasi = new WASI({ version: "preview1", preopens: { ".": directory }, returnOnExit: true });
   const calls = {};
@@ -47,6 +47,7 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests,
           if (name === "message") throw Error(`${text(args[1])}: ${text(args[0])}`);
           if (name === "time_ms") return clock++;
           if (name === "clock_ms") return performance.now();
+          if (name === "render_mode") return rtx && args[0] === 1 ? 1 : 0;
           if (name === "leaderboard") requests?.push(args[0]);
         },
     },
