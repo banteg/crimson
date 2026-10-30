@@ -47,6 +47,7 @@ extern int rtx_render_mode;
 void console_cmd_render_mode(void);
 void console_cmd_toggle_rtx(void);
 void rtx_world(int begin);
+void rtx_menu_world(int begin);
 void rtx_material(int pass); // a HOST_PASS_* of game/render_passes.h
 void rtx_bonus(int emblem, float grid_x, float grid_y, float center_x, float center_y);
 void rtx_ground(int kind); // a HOST_GROUND_* of game/render_passes.h

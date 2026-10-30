@@ -571,3 +571,13 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
  
      memset(registry_key_status_root_path, 0, 0xff);
      registry_key_status_root_path[0] = 'S';
+--- a/decomp/1.9/crimsonland/game/game_update_generic_menu.cpp
++++ b/decomp/1.9/crimsonland/game/game_update_generic_menu.cpp
+@@ -8,5 +8,7 @@
+     if (run_active || game_state_id == GAME_STATE_PAUSE_MENU) {
+         gameplay_render_world();
+     } else {
++        rtx_menu_world(1);
+         terrain_render();
++        rtx_menu_world(0);
+     }

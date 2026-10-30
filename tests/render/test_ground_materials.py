@@ -1172,3 +1172,61 @@ def test_ring_visibility_uses_canonical_sources_across_atlas_rows(ground_materia
     mocker.patch.object(ground_materials, "collect_material_lights", return_value=[beam] * 17 + [ring])
     later_group = debug_pixels(ground, texture, mode=5, creatures=pool)
     assert max(abs(a - b) for p, q in zip(later_group, walked, strict=True) for a, b in zip(p, q, strict=True)) < 1e-6
+
+
+def test_menu_keeps_the_runs_blood_material_at_the_same_age(ground_material, make_game_state, mocker):
+    from crimson.render.rtx.hdr import HdrRenderer
+    from crimson.render.world.viewport import ViewTransform
+    from crimson.screens.chrome import draw_screen_background
+    from crimson.world.runtime import WorldRuntime
+    from grim import canvas
+    from grim.rand import Crand
+
+    ground, texture = ground_material
+    ground.material_batches.append(blood(200))
+
+    class Textures:
+        def texture(self, _texture_id):
+            return texture
+
+    resources = cast(Any, Textures())
+    frame = RenderFrame(
+        config=None, camera=Vec2(), ground=ground, state=GameplayState(), players=[], creatures=CreaturePool(),
+        resources=resources, elapsed_ms=201000, bonus_anim_phase=0, rtx_mode=RtxRenderMode.RTX,
+    )
+    state = make_game_state(resources=resources)
+    state.rtx_mode = RtxRenderMode.RTX
+    state.run_elapsed_ms = frame.elapsed_ms
+    mocker.patch.object(canvas, "width", return_value=64)
+    mocker.patch.object(canvas, "height", return_value=64)
+    target = load_float_render_texture(64, 64)
+    hdr = HdrRenderer()
+    runtime = WorldRuntime(assets_dir=Path(), audio_rng=Crand(0), rtx_mode=RtxRenderMode.RTX)
+    runtime.render_resources.ground = ground
+    runtime.render_resources.resources = resources
+    runtime.presentation.elapsed_ms = frame.elapsed_ms
+    runtime.rtx_debug = RtxDebugView.SMOKE_DENSITY
+    mocker.patch.object(runtime, "view_transform", return_value=ViewTransform(
+        camera=Vec2(), view_scale=Vec2(1, 1), screen_size=Vec2(64, 64), out_size=Vec2(64, 64),
+    ))
+    try:
+        with texture_mode(target), hdr.scope(out_size=Vec2(64, 64)), ground.material_scope(frame, lights=()):
+            ground.draw(Vec2())
+        world = pixels(target)
+        with texture_mode(target):
+            draw_screen_background(state, ground)
+        assert pixels(target) == world
+        # High scores retains the dead runtime. It must not collect any of its scene sources or debug view.
+        mocker.patch.object(runtime, "build_render_frame", side_effect=AssertionError("menu collected the dead world"))
+        with texture_mode(target):
+            runtime.draw_menu_ground()
+        assert pixels(target) == world
+        state.rtx_mode = RtxRenderMode.CLASSIC
+        with texture_mode(target):
+            draw_screen_background(state, ground)
+        assert pixels(target) != world
+    finally:
+        hdr.close()
+        runtime.render_resources.hdr.close()
+        state.menu_hdr.close()
+        rl.unload_render_texture(target)

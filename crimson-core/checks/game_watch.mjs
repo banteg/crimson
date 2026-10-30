@@ -25,14 +25,28 @@ const [
 ] = process.argv.slice(2);
 if (!directory) throw Error("usage: game_watch.mjs <game directory> [core.wasm] [game.wasm]");
 
-const run = bootGame(gameWasm, directory, 1);
+let passes = [], sceneLights = -1, sceneTime = 0, lastWorldLights = -1;
+const run = bootGame(gameWasm, directory, 1, {
+  rtx: true,
+  onHost(name, args) {
+    if (name === "render_pass") passes.push(args[0]);
+    if (name === "scene") {
+      sceneLights = args[2];
+      lastWorldLights = args[2];
+      sceneTime = new DataView(game.memory.buffer).getFloat32(args[0] + 8, true);
+    }
+  },
+});
 const { game } = run;
+game.game_render_mode(1);
 const HIGHSCORES = 14;
 // DirectInput scancodes: Escape, 1, [, ], period, Space, Page Down.
 const [ESCAPE, ONE, SLOWER, FASTER, STEP, SPACE, PAGE_DOWN] = [0x01, 0x02, 0x1a, 0x1b, 0x34, 0x39, 0xd1];
 // A frame after `dt` milliseconds, with keys tapped for it; `mixed` is its sound.
 let mixed;
 function frame(dt = 16, taps = []) {
+  passes = [];
+  sceneLights = -1;
   const input = run.input();
   for (const key of taps) {
     const n = input.getInt32(INPUT.event_count, true);
@@ -203,6 +217,11 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   for (const [i, tick] of records.entries()) if (!step(core, tick)) throw Error(`${name}: the verifier refuses tick ${i}`);
   const off = differences(state(core), state(game));
   if (off.length) throw Error(`${name}: at its end ${off.slice(0, 4).join(", ")} differ from the verifier`);
+  // This death fixture still has light sources in its frozen end frame.
+  // Clearing run_active must not turn off the gameplay world's RTX effects.
+  if (name === "survival-238852.crd" && lastWorldLights <= 0)
+    throw Error("death transition discarded the remaining world lights");
+  const frozenTime = sceneTime;
   frame(16, [ESCAPE]);
   for (let frames = 0; game.game_state() !== HIGHSCORES || game.game_watch_status() !== -1; ++frames) {
     if (frames > 600) throw Error(`${name}: Escape does not return to the high scores`);
@@ -210,9 +229,41 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   }
   for (let i = 0; i < 60; ++i) frame();
   if (game.game_state() !== HIGHSCORES) throw Error(`${name}: the high scores close on their own`);
+  // The retained terrain must stay in the RTX world/HDR pass after the run,
+  // with its material shader and no lights belonging to the finished replay.
+  if (passes.join(",") !== "1,6,5,2" || sceneLights !== 0 || sceneTime !== frozenTime)
+    throw Error(`${name}: menu terrain lost RTX materials or retained run lights: ${passes}, ${sceneLights}`);
   ++played;
 }
 if (played < 2 + Object.keys(coop).length) throw Error(`only ${played} replays played`);
+// Practice restores its anchor after re-rendering it, then holds the captured
+// frame. Leaving immediately must preserve that restored material clock even
+// though no gameplay world is drawn between the restore and the menu.
+memory().write("watched/linked.crd\0", game.game_replay_path(), "latin1");
+if (!game.game_replay_open() || !game.game_watch()) throw Error("clock regression replay did not open");
+for (let frames = 0; game.game_watch_status() < 0 || !game.game_watch_ticks(); ++frames) {
+  if (frames > 2000) throw Error("clock regression replay never became ready");
+  frame();
+}
+game.game_watch_stop_at(300);
+game.game_watch_seek(300);
+frame();
+const anchorTime = sceneTime;
+if (!(anchorTime > 0) || !game.game_practice_take()) throw Error("clock regression anchor was not drawn");
+game.game_practice_action(3);
+frame();
+if (game.game_watch_tick() !== 300 || game.game_practice_state() !== 0)
+  throw Error("practice did not restore the held original");
+frame(16, [ESCAPE]);
+for (let frames = 0; game.game_state() !== HIGHSCORES || game.game_watch_status() !== -1; ++frames) {
+  if (frames > 600) throw Error("practice original did not return to scores");
+  frame();
+}
+for (let i = 0; i < 60; ++i) frame();
+if (sceneTime !== anchorTime) throw Error(`practice restore reset material time: ${anchorTime} -> ${sceneTime}`);
+game.game_render_mode(1);
+frame();
+if (sceneTime !== anchorTime) throw Error("reapplying RTX reset the retained material time");
 game.game_close();
 try {
   frame();
