@@ -17,7 +17,7 @@
 bool platform_outputs();
 extern IGrim2D_cpp *grim_interface_ptr;
 extern "C" {
-extern unsigned char grim_render_disabled, console_open_flag;
+extern unsigned char grim_render_disabled, console_open_flag, run_active;
 int console_cmd_argc_get(void);
 
 int rtx_render_mode;
@@ -256,7 +256,7 @@ void rtx_world(int begin) {
   }
   if (begin) {
     rtx_effects_active = 1;
-    int count = rtx_light_count = rtx_collect_lights(rtx_lights, 32);
+    int count = rtx_light_count = run_active ? rtx_collect_lights(rtx_lights, 32) : 0;
     const float *lights = rtx_lights;
     const float view[8] = {camera_offset.x, camera_offset.y, rtx_seconds(), (float)terrain_texture_width,
                            (float)terrain_texture_height, rtx_beam_gain[0], rtx_beam_gain[1], (float)rtx_debug_view};
@@ -268,11 +268,11 @@ void rtx_world(int begin) {
     grid[5] = shadows;
     host_occlusion(grid, values, value_count);
     static float footprints[385 * 4];
-    host_heat(footprints, rtx_collect_heat(footprints, 385));
+    host_heat(footprints, run_active ? rtx_collect_heat(footprints, 385) : 0);
     static float fronts[16 * 4];
     // A diagnostic map shows its values where they are.
     bool map = rtx_debug_view && rtx_debug_view != RTX_DEBUG_NO_DIRECT;
-    host_pressure(fronts, ui_transition_alpha > 1e-3f && !map ? rtx_collect_fronts(fronts, 16) : 0);
+    host_pressure(fronts, run_active && ui_transition_alpha > 1e-3f && !map ? rtx_collect_fronts(fronts, 16) : 0);
     rtx_debug_picked = false;
   }
   host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);

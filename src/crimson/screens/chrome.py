@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from grim import canvas
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
+from ..render.rtx.materials import MaterialGroundRenderer
+from ..render.rtx.mode import RtxRenderMode
 from ..sim.terrain_generate import terrain_generate_random
 from ..terrain_slots import resolve_terrain_slots
 from .assets import require_runtime_resources
@@ -60,4 +63,12 @@ def draw_screen_background(state: GameState, ground: GroundRenderer | None, *, e
     elif ground is not None:
         terrain_filter = state.console.cvars.get("cv_terrainFilter")
         ground.point_filter = terrain_filter is not None and terrain_filter.value_f == 2.0
-        ground.draw(menu_ground_camera(state))
+        if isinstance(ground, MaterialGroundRenderer) and state.rtx_mode is RtxRenderMode.RTX:
+            out_size = Vec2(float(canvas.width()), float(canvas.height()))
+            with (
+                state.menu_hdr.scope(out_size=out_size),
+                ground.surface_scope(require_runtime_resources(state), elapsed_ms=state.run_elapsed_ms),
+            ):
+                ground.draw(menu_ground_camera(state))
+        else:
+            ground.draw(menu_ground_camera(state))

@@ -207,6 +207,8 @@ class ScreenNavigator:
         gameplay = self.state.screens.gameplay
         if gameplay is None:
             return
+        gameplay.render_resources.process_ground_pending()
+        self.state.run_elapsed_ms = gameplay.console_elapsed_ms()
         camera = gameplay.menu_ground_camera()
         ground = gameplay.steal_ground_for_menu()
         if ground is None:

@@ -25,14 +25,24 @@ const [
 ] = process.argv.slice(2);
 if (!directory) throw Error("usage: game_watch.mjs <game directory> [core.wasm] [game.wasm]");
 
-const run = bootGame(gameWasm, directory, 1);
+let passes = [], sceneLights = -1;
+const run = bootGame(gameWasm, directory, 1, {
+  rtx: true,
+  onHost(name, args) {
+    if (name === "render_pass") passes.push(args[0]);
+    if (name === "scene") sceneLights = args[2];
+  },
+});
 const { game } = run;
+game.game_render_mode(1);
 const HIGHSCORES = 14;
 // DirectInput scancodes: Escape, 1, [, ], period, Space, Page Down.
 const [ESCAPE, ONE, SLOWER, FASTER, STEP, SPACE, PAGE_DOWN] = [0x01, 0x02, 0x1a, 0x1b, 0x34, 0x39, 0xd1];
 // A frame after `dt` milliseconds, with keys tapped for it; `mixed` is its sound.
 let mixed;
 function frame(dt = 16, taps = []) {
+  passes = [];
+  sceneLights = -1;
   const input = run.input();
   for (const key of taps) {
     const n = input.getInt32(INPUT.event_count, true);
@@ -210,6 +220,10 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   }
   for (let i = 0; i < 60; ++i) frame();
   if (game.game_state() !== HIGHSCORES) throw Error(`${name}: the high scores close on their own`);
+  // The retained terrain must stay in the RTX world/HDR pass after the run,
+  // with its material shader and no lights belonging to the finished replay.
+  if (passes.join(",") !== "1,6,5,2" || sceneLights !== 0)
+    throw Error(`${name}: menu terrain lost RTX materials or retained run lights: ${passes}, ${sceneLights}`);
   ++played;
 }
 if (played < 2 + Object.keys(coop).length) throw Error(`only ${played} replays played`);

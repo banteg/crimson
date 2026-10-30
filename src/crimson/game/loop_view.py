@@ -344,6 +344,7 @@ class GameLoopView:
     def close(self) -> None:
         try:
             self.state.screens.close()
+            self.state.menu_hdr.close()
             ground = self.state.menu_ground
             if ground is not None:
                 ground.close()

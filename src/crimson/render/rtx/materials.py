@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, NamedTuple
 
 import msgspec
 
+from grim.assets import RuntimeResources, TextureId
 from grim.blend import blend_custom, opaque_blend
 from grim.edr import load_float_render_texture
 from grim.geom import Vec2
@@ -30,6 +31,7 @@ from .material_history import MaterialHistory
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight, collect_material_lights
 from .material_shaders import BEAM_VISIBILITY_FRAGMENT, GROUND_FRAGMENT, STAMP_FRAGMENT
 from .reflection_occlusion import (
+    BodyVolume,
     ReflectionOcclusion,
     bonus_body_volumes,
     build_occlusion_grid,
@@ -436,14 +438,44 @@ class MaterialGroundRenderer(GroundRenderer):
         debug: int | None = None,
         lights: Sequence[MaterialLight] | None = None,
     ) -> Generator[None]:
-        """The ground's material program for the frame's lights and coarse world-anchored visibility atlas."""
-        from grim.assets import TextureId
+        """The live world's material program and body visibility."""
+        shadows = frame.config is None or frame.config.display.shadows_enabled
+        if lights is None:
+            lights = collect_material_lights(frame, view_center=view_center, view_size=view_size)
+        lights = lights[:MAX_MATERIAL_LIGHTS]
+        bodies = (
+            [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
+            + [body for player in frame.players for body in player_body_volumes(player)]
+            + [body for bonus in frame.state.bonus_pool.entries for body in bonus_body_volumes(bonus)]
+            if shadows and any(light.reflection_gain > 0 or light.illumination_gain > 0 for light in lights) else []
+        )
+        with self.surface_scope(
+            frame.resources, elapsed_ms=frame.elapsed_ms, lights=lights, bodies=bodies, shadows=shadows,
+            view_center=view_center, view_size=view_size,
+            debug=int(frame.rtx_debug) if debug is None else debug, debug_display=debug is None,
+        ):
+            yield
 
+    @contextmanager
+    def surface_scope(
+        self,
+        resources: RuntimeResources,
+        *,
+        elapsed_ms: float,
+        lights: Sequence[MaterialLight] = (),
+        bodies: Sequence[BodyVolume] = (),
+        shadows: bool = False,
+        view_center: Vec2 = Vec2(512, 512),
+        view_size: Vec2 | None = None,
+        debug: int = 0,
+        debug_display: bool = True,
+    ) -> Generator[None]:
+        """Shade retained materials, including menu terrain without a live world."""
         self.reflection_occlusion.grid = None
         if not self.render_target_ready():
             yield
             return
-        self.bake_materials(frame.resources.texture(TextureId.PARTICLES), frame.resources.texture(TextureId.BODYSET))
+        self.bake_materials(resources.texture(TextureId.PARTICLES), resources.texture(TextureId.BODYSET))
         assert self.material_shader is not None and self.surface is not None and self.coverage is not None
         sh = self.material_shader
         uniforms: list[tuple[str, list[float], int]] = []
@@ -455,20 +487,10 @@ class MaterialGroundRenderer(GroundRenderer):
             uniforms.append((name, [value], 0))
 
         put("u_ground_size", [float(self.width), float(self.height)])
-        put("u_time_s", [frame.elapsed_ms * 0.001 - self.wetness_epoch])
-        put_int("u_debug", int(frame.rtx_debug) if debug is None else debug)
-        put_int("u_debug_display", int(debug is None))
-        shadows = frame.config is None or frame.config.display.shadows_enabled
-        if lights is None:
-            lights = collect_material_lights(frame, view_center=view_center, view_size=view_size)
-        lights = lights[:MAX_MATERIAL_LIGHTS]
+        put("u_time_s", [elapsed_ms * 0.001 - self.wetness_epoch])
+        put_int("u_debug", debug)
+        put_int("u_debug_display", int(debug_display))
         put_int("u_spec_light_count", len(lights))
-        bodies = (
-            [body for creature in frame.creatures.entries for body in creature_body_volumes(creature)]
-            + [body for player in frame.players for body in player_body_volumes(player)]
-            + [body for bonus in frame.state.bonus_pool.entries for body in bonus_body_volumes(bonus)]
-            if shadows and any(light.reflection_gain > 0 or light.illumination_gain > 0 for light in lights) else []
-        )
         has_beam_lights = any(
             light.beam_profile is not None and light.illumination_gain > 0 for light in lights
         )

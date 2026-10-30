@@ -11,6 +11,7 @@ from grim.rand import Crand
 from ..leaderboard import Leaderboard
 from ..paths import default_runtime_dir
 from ..quests.custom import CustomQuest
+from ..render.rtx.hdr import HdrRenderer
 from ..render.rtx.mode import RtxRenderMode, save_rtx_choice
 from ..replay.saver import ReplaySaver
 from ..screens.stack import ScreenStack
@@ -83,6 +84,7 @@ class GameState(msgspec.Struct):
     snd_freq_adjustment_enabled: bool = True
     menu_ground: GroundRenderer | None = None
     menu_ground_camera: Vec2 | None = None
+    menu_hdr: HdrRenderer = msgspec.field(default_factory=HdrRenderer)
     menu_sign_locked: bool = False
     stats_menu_easter_egg_roll: int = -1
     screens: ScreenStack = msgspec.field(default_factory=ScreenStack)

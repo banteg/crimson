@@ -411,6 +411,11 @@ from) stays in the substrate as painted terrain, without its wet film. A seek
 bakes the logged decals after that copy again at their logged clock. WebGPU
 keeps the surface in 32-bit floats where the device filters and blends them,
 otherwise in half floats.
+When a run returns to a menu, the retained terrain still uses its material shader
+inside the HDR composition pass. Its blood film, substrate and wetness epoch remain
+at the run's last presentation time. Menus supply no dynamic lights, bodies, heat
+footprints or pressure fronts from the finished run. Python transfers the ground
+renderer before closing the run and uses a separate, lazily allocated menu HDR target.
 Monster Vision is heat, as in the Python port (see Perk illumination;
 `crimson-core/game/rtx_heat.cpp`). While RTX draws, `creature_render_all` skips
 the native aura quad and marks the trails instead (`host_heat_trails`, drawn
