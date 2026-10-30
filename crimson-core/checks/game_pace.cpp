@@ -267,6 +267,25 @@ int main() {
     fprintf(stderr, "an early pass off the lattice, owing the clock, left %g held\n", pace.held);
     return 1;
   }
+  // The catch-up itself, over ten seconds of 60 Hz passes: whole ticks or
+  // none, the lead's sign, a tick each 50 passes (2%) for a lead past three
+  // ticks, each 200 for a tick and a half, none within a tick.
+  for (auto [ahead, ticks] : {std::pair{5.0f, 12}, {-5.0f, -12}, {1.5f, 3}, {-1.5f, -3}, {0.8f, 0}, {-0.8f, 0}}) {
+    CatchUp catch_up;
+    int sum = 0;
+    for (int k = 0; k < 600; ++k) {
+      float tick = catch_up(1 / 60.0f, ahead);
+      if (tick != 0 && fabsf(fabsf(tick) - 1 / 60.0f) > 1e-7f) {
+        fprintf(stderr, "a catch-up %g ticks ahead returned %g of a tick\n", ahead, tick * 60);
+        return 1;
+      }
+      sum += (int)roundf(tick * 60);
+    }
+    if (abs(sum - ticks) > 1) {
+      fprintf(stderr, "a catch-up %g ticks ahead ran %d ticks in 600 passes, not %d\n", ahead, sum, ticks);
+      return 1;
+    }
+  }
   for (const Coop &c : coop) {
     Pair pair(c);
     pair.play(120);
@@ -294,6 +313,17 @@ int main() {
       since = 0;
     }
     double minutes = (ran.size() - 600) / 3600.0;
+    // Started apart, the run ahead slows and the one behind speeds up.
+    if (c.start) {
+      auto before = [&](const std::vector<int> &frames, int due) {
+        return std::count(frames.begin(), frames.begin() + std::max(together, 0), due);
+      };
+      if (!before(ran, 0) || !before(pair.b.ran, 2)) {
+        fprintf(stderr, "co-op %d ticks apart: the run ahead skipped %ld ticks, the one behind ran %ld more\n", c.start,
+                before(ran, 0), before(pair.b.ran, 2));
+        return 1;
+      }
+    }
     if (close || wide || rushed || together < 0 || together > 900 || (c.start && together < 300) ||
         events / minutes > c.most) {
       fprintf(stderr, "co-op with a %g Hz partner %g ms away, %d ticks apart: %.1f catch-up frames a minute, %d within a "
