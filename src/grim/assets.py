@@ -175,44 +175,42 @@ def _select_texture_asset(entries: dict[str, bytes], rel_path: str) -> tuple[str
     return rel_path, entries.get(rel_path)
 
 
-def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture:
-    image = rl.load_image_from_memory(fmt, data, len(data))
-    try:
-        texture = rl.load_texture_from_image(image)
-    finally:
-        rl.unload_image(image)
-    if int(texture.id) <= 0:
+_PIXEL_FORMATS = {
+    "L": rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAYSCALE,
+    "LA": rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA,
+    "RGB": rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8,
+    "RGBA": rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+}
+
+
+def upload_texture(image: Image.Image, *, clamp: bool = False) -> rl.Texture:
+    """Upload decoded pixels. The raylib image borrows the buffer for this call."""
+    if image.mode not in _PIXEL_FORMATS:
+        image = image.convert("RGBA")
+    pixels = rl.ffi.from_buffer(image.tobytes())
+    upload = rl.Image(rl.ffi.cast("void *", pixels), image.width, image.height, 1, _PIXEL_FORMATS[image.mode])
+    texture = rl.load_texture_from_image(upload)
+    if texture.id <= 0:
         raise RuntimeError("Could not upload runtime texture")
     try:
         rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+        if clamp:
+            rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
     except Exception:
         rl.unload_texture(texture)
         raise
     return texture
 
 
-def _apply_texture_settings(texture: rl.Texture, *, clamp: bool) -> None:
-    if clamp:
-        rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
-
-
-def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> rl.Texture | None:
+def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None, *, clamp: bool = False) -> rl.Texture:
     if data is None:
         raise FileNotFoundError(f"Missing asset data: {rel_path}")
-    texture: rl.Texture | None
     if rel_path.lower().endswith(".jaz"):
-        jaz_image = jaz.decode_jaz_bytes(data)
-        buf = io.BytesIO()
-        jaz_image.composite_image().save(buf, format="PNG")
-        texture = _load_texture_from_bytes(buf.getvalue(), ".png")
-    elif rel_path.lower().endswith(".tga") or rel_path.lower().endswith((".jpg", ".jpeg")):
-        img = Image.open(io.BytesIO(data))
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        texture = _load_texture_from_bytes(buf.getvalue(), ".png")
-    else:
-        texture = None
-    return texture
+        return upload_texture(jaz.decode_jaz_bytes(data).composite_image(), clamp=clamp)
+    if rel_path.lower().endswith((".tga", ".jpg", ".jpeg")):
+        with Image.open(io.BytesIO(data)) as image:
+            return upload_texture(image, clamp=clamp)
+    raise ValueError(f"Unsupported texture format: {rel_path}")
 
 
 def _texture_asset_size(rel_path: str, data: bytes | None) -> tuple[int, int]:
@@ -253,11 +251,8 @@ def load_runtime_resources(assets_dir: Path, *, upload: bool = True) -> RuntimeR
                 width, height = _texture_asset_size(asset_path, payload)
                 textures[texture_id] = rl.Texture(0, width, height, 1, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
                 continue
-            texture = _load_texture_asset_from_bytes(asset_path, payload)
-            if texture is None:
-                raise FileNotFoundError(f"Missing runtime texture: {spec.rel_path}")
+            texture = _load_texture_asset_from_bytes(asset_path, payload, clamp=spec.clamp)
             cleanup.callback(rl.unload_texture, texture)
-            _apply_texture_settings(texture, clamp=bool(spec.clamp))
             textures[texture_id] = texture
 
         resources = RuntimeResources(

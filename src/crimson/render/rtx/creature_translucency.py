@@ -4,6 +4,7 @@ from importlib.resources import files
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
+from grim.assets import upload_texture
 from grim.raylib_api import rl
 
 
@@ -97,36 +98,17 @@ def _source_alpha(source: rl.Texture) -> Image.Image:
         rl.unload_image(image)
 
 
-def _upload_proxy(proxy: Image.Image) -> rl.Texture:
-    # The Image borrows this buffer only for the synchronous upload; raylib must not free it.
-    buffer = rl.ffi.new("unsigned char[]", proxy.tobytes())
-    upload = rl.Image(
-        rl.ffi.cast("void *", buffer), proxy.width, proxy.height, 1,
-        rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAYSCALE if proxy.mode == "L"
-        else rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8,
-    )
-    texture = rl.load_texture_from_image(upload)
-    if texture.id <= 0:
-        raise RuntimeError("Could not upload creature body proxy texture")
-    try:
-        rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
-        rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
-    except Exception:
-        rl.unload_texture(texture)
-        raise
-    return texture
-
-
 def load_thickness_texture(source: rl.Texture) -> rl.Texture:
     """Read source alpha once and upload the single-channel transmission proxy."""
-    return _upload_proxy(build_thickness_proxy(_source_alpha(source)))
+    return upload_texture(build_thickness_proxy(_source_alpha(source)), clamp=True)
 
 
 def load_heat_density_texture(source: rl.Texture) -> rl.Texture:
     """Read source alpha once and upload the single-channel heat density."""
-    return _upload_proxy(build_heat_density(_source_alpha(source)))
+    return upload_texture(build_heat_density(_source_alpha(source)), clamp=True)
 
 
 def load_ice_texture() -> rl.Texture:
     """The freeze ice's surface in the particles atlas's layout (tools/rtx/ice_surface.py), as creature.frag reads it."""
-    return _upload_proxy(Image.open(files(__package__).joinpath("ice_surface.tga").open("rb")).convert("RGB"))
+    with files(__package__).joinpath("ice_surface.tga").open("rb") as source, Image.open(source) as image:
+        return upload_texture(image.convert("RGB"), clamp=True)
