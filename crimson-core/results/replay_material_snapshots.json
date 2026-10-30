@@ -1,0 +1,73 @@
+{
+  "before": {
+    "seeks": [
+      {
+        "tick": 5999,
+        "milliseconds": 247.955
+      },
+      {
+        "tick": 17999,
+        "milliseconds": 140.433
+      },
+      {
+        "tick": 29999,
+        "milliseconds": 66.385
+      },
+      {
+        "tick": 17999,
+        "milliseconds": 173.715
+      },
+      {
+        "tick": 5999,
+        "milliseconds": 149.853
+      },
+      {
+        "tick": 29999,
+        "milliseconds": 70.831
+      }
+    ],
+    "median_ms": 145.143,
+    "max_ms": 247.955,
+    "peak_rss_mib": 215.5,
+    "snapshot_mib": null,
+    "snapshot_budget_mib": 128
+  },
+  "after": {
+    "seeks": [
+      {
+        "tick": 5999,
+        "milliseconds": 253.871
+      },
+      {
+        "tick": 17999,
+        "milliseconds": 120.176
+      },
+      {
+        "tick": 29999,
+        "milliseconds": 59.277
+      },
+      {
+        "tick": 17999,
+        "milliseconds": 113.557
+      },
+      {
+        "tick": 5999,
+        "milliseconds": 126.171
+      },
+      {
+        "tick": 29999,
+        "milliseconds": 54.55
+      }
+    ],
+    "median_ms": 116.8665,
+    "max_ms": 253.871,
+    "peak_rss_mib": 232.2,
+    "snapshot_mib": 240.0,
+    "snapshot_budget_mib": 240
+  },
+  "notes": [
+    "Native OpenGL on this Mac, 2048x2048 terrain. Six scripted seek frames including first post-prepare seek.",
+    "The old profiler did not report snapshot bytes; before snapshot_mib is unavailable.",
+    "GPU synchronized copy microbenchmark: baseline median save/restore 0.487/0.479 ms; full materials 1.641/1.622 ms."
+  ]
+}

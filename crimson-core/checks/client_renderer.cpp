@@ -486,6 +486,14 @@ void check_rtx() {
   const std::initializer_list<float> mirror = {600, 390, 200, 18, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 200, 40};
   assert(ground(mirror, 1, 600, 400).r > ground({}, 0, 600, 400).r + 0.1f);
   assert(fabsf(ground(mirror, 1, 400, 400).r - ground({}, 0, 400, 400).r) < 1e-3f);
+  // Restoring a replay snapshot must keep material shading, not just color.
+  Pixel brass = ground(mirror, 1, 600, 400);
+  w2c_host_texture_copy(nullptr, 401, 400);
+  w2c_host_texture_copy(nullptr, 400, 401);
+  Pixel restored_blood = ground({}, 0, 200, 200), restored_brass = ground(mirror, 1, 600, 400);
+  assert(!memcmp(&blood, &restored_blood, sizeof blood));
+  assert(!memcmp(&brass, &restored_brass, sizeof brass));
+  w2c_host_texture_release(nullptr, 401);
   // Three minutes on, a bake's stamp rebases the surface's wetness, and the
   // terrain stays bound: the decal after it still lands in the terrain.
   w2c_host_set_render_target(nullptr, 400);
@@ -859,6 +867,50 @@ void check_submission_reuse() {
 
 
 #ifndef __EMSCRIPTEN__
+void check_terrain_snapshots() {
+  renderer_set_rtx(true);
+  w2c_host_texture_create(nullptr, 600, 64, 32, TARGET_RENDER);
+  w2c_host_set_render_target(nullptr, 600);
+  w2c_host_clear(nullptr, 0xff808080);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+  w2c_host_texture_copy(nullptr, 602, 600); // the clean, initial terrain
+  w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 200);
+  rectangle(4, 4, 24, 24, 0xc8ffffff);
+  // Copy while stamps are pending: the snapshot must include them too.
+  w2c_host_texture_copy(nullptr, 601, 600);
+  w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+  assert(grounds.at(601).epoch == 200);
+  u32 size = w2c_host_texture_read(nullptr, 601, 4096, 0);
+  assert(size == sizeof(TextureSnapshot) + 128 * 64 * 28);
+  assert(w2c_host_texture_read(nullptr, 601, 4096, size) == size);
+  auto identical = [&](int id) {
+    assert(w2c_host_texture_read(nullptr, id, 500000, size) == size);
+    assert(!memcmp(memory + 4096, memory + 500000, size));
+  };
+  w2c_host_clear(nullptr, 0); // subsequent bakes cannot mutate a saved snapshot
+  w2c_host_texture_copy(nullptr, 600, 601);
+  identical(600);
+  w2c_host_texture_copy(nullptr, 600, 600);
+  identical(600);
+  // Disk round-trip preserves every float of the surface and the wetness epoch.
+  assert(w2c_host_texture_write(nullptr, 603, 600, 4096, size));
+  identical(603);
+  assert(!w2c_host_texture_write(nullptr, 603, 600, 4096, size - 1));
+  memory[4096] ^= 1;
+  assert(!w2c_host_texture_write(nullptr, 603, 600, 4096, size));
+  memory[4096] ^= 1;
+  w2c_host_texture_copy(nullptr, 600, 602);
+  assert(!grounds.count(600));
+  w2c_host_set_render_target(nullptr, 0);
+  for (int id : {600, 601, 602, 603})
+    w2c_host_texture_release(nullptr, id);
+  assert(glGetError() == GL_NO_ERROR);
+  puts("renderer: replay snapshots preserve pending materials, wetness epochs and disk round-trips");
+}
+
 void check_ground_visibility() {
   // Bounds must include reflection-only reach, long segments and rings,
   // while sources wholly outside the view produce no fragments.
@@ -1065,7 +1117,7 @@ int main() {
   w2c_host_clear(nullptr, 0xff123456);
   rectangle(10, 10, 20.5f, 20, 0xffffffff);
   u32 size = w2c_host_texture_read(nullptr, 11, 4096, 0);
-  assert(size == 128 * 64 * 4 && w2c_host_texture_read(nullptr, 11, 4096, size) == size);
+  assert(size == sizeof(TextureSnapshot) + 128 * 64 * 4 && w2c_host_texture_read(nullptr, 11, 4096, size) == size);
   assert(!w2c_host_texture_write(nullptr, 12, 8, 4096, size));
   assert(w2c_host_texture_write(nullptr, 12, 11, 4096, size));
   assert(textures[12].width == 128 && textures[12].logical_width == 64);
@@ -1286,6 +1338,7 @@ int main() {
   check_submission_reuse();
 #ifndef __EMSCRIPTEN__
   check_ground_visibility();
+  check_terrain_snapshots();
 #endif
 #endif
 #ifdef RENDERER_BENCHMARK

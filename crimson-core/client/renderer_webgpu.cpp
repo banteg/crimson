@@ -1201,22 +1201,37 @@ void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {
 // Reading a target back waits on the GPU in WebGPU: a replay keeps no copies on disk there.
 u32 wgpu_w2c_host_texture_read(struct w2c_host *, u32, u32, u32) { return 0; }
 u32 wgpu_w2c_host_texture_write(struct w2c_host *, u32, u32, u32, u32) { return 0; }
-void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
-  Target &from = target_or_back((int)source);
-  if (!from.texture)
-    return;
-  drop_ground((int)destination);
-  Target &to = textures[(int)destination];
+static void copy_target(Target &to, Target &from) {
   if (to.width != from.width || to.height != from.height || format_of(to) != format_of(from) || !to.texture) {
     release(to);
+    to = {};
     to.width = from.width;
     to.height = from.height;
     to.logical_width = from.logical_width;
     to.logical_height = from.logical_height;
-    to.flags = TARGET_RENDER | (from.flags & TARGET_HALF_FLOAT);
+    to.flags = from.flags;
     allocate(to);
   }
   copy(from, to);
+}
+void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
+  if (destination == source)
+    return;
+  Target &from = target_or_back((int)source);
+  if (!from.texture)
+    return;
+  copy_target(textures[(int)destination], from);
+  auto material = grounds.find((int)source);
+  if (material == grounds.end()) {
+    drop_ground((int)destination);
+  } else {
+    Ground &g = material->second;
+    Ground &to = grounds[(int)destination];
+    copy_target(to.substrate, g.substrate);
+    copy_target(to.coverage, g.coverage);
+    copy_target(to.surface, g.surface);
+    to.epoch = g.epoch;
+  }
 }
 void wgpu_w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
   Target &back = textures[0];
