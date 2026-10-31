@@ -69,7 +69,7 @@ static void frame() {
   auto &in = c.in;
   in.click = in.accept = in.previous = in.next = in.escape = in.backspace = false;
   in.console = false;
-  in.level_up = false;
+  in.level_up = in.perk_button = false;
   in.fire_edge[0] = in.fire_edge[1] = false;
   in.reload = false;
   in.key = 0;
@@ -106,6 +106,8 @@ static void frame() {
     if ((e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || e.type == SDL_EVENT_MOUSE_BUTTON_UP) &&
         e.button.button == SDL_BUTTON_RIGHT)
       in.mouse_reload = e.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
+    if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && e.button.button == SDL_BUTTON_MIDDLE)
+      in.perk_button = true;
     if (e.type == SDL_EVENT_WINDOW_FOCUS_LOST)
       in.fire = in.mouse_reload = false;
     if (e.type == SDL_EVENT_TEXT_INPUT)
@@ -173,6 +175,7 @@ static void frame() {
       in.aim_y[i] = int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_DOWN)) -
                     int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_UP));
     }
+    in.pad_perk[i] = c.pads[i] && SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_EAST);
     in.pad_fire[i] = c.pads[i] && (SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_SOUTH) ||
                                    axis(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > .3f);
   }
@@ -184,6 +187,7 @@ static void frame() {
   controls.mouse_fire = in.fire;
   controls.fire = held(0, 4);
   controls.reload |= keys[SDL_SCANCODE_R];
+  controls.level_up |= keys[SDL_SCANCODE_SPACE] || keys[SDL_SCANCODE_KP_PLUS];
   c.game.update(dt, controls);
   bool wants_text = c.game.screen == Screen::Death || c.game.console_open;
   if (was_text != wants_text) {

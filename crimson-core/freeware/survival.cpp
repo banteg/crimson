@@ -47,17 +47,8 @@ static_assert(offsetof(freeware_player_t, aim) == 0x4c && offsetof(freeware_play
 static_assert(offsetof(freeware_player_t, walk_phase) == 0x7c && offsetof(freeware_player_t, keys) == 0x17c);
 static_assert(sizeof(freeware_perk_entry_t) == 20 && sizeof(particle_t) == 0x38);
 
-static vec2f_t camera_subject(const Game &g) {
-  if (!g.two_players || g.run.partner.health <= 0)
-    return g.run.player;
-  if (g.run.health <= 0)
-    return g.run.partner.player;
-  return {(g.run.player.x + g.run.partner.player.x) * .5f, (g.run.player.y + g.run.partner.player.y) * .5f};
-}
-float camera_x(const Game &g) { return std::clamp(width * .5f - camera_subject(g).x, float(width - arena), 0.f); }
-float camera_y(const Game &g) {
-  return std::clamp(height * .5f - camera_subject(g).y, float(height - arena), -1.f);
-}
+float camera_x(const Game &g) { return g.camera.x; }
+float camera_y(const Game &g) { return g.camera.y; }
 
 extern "C" {
 unsigned freeware_rng_state = 1;
@@ -84,6 +75,7 @@ void Game::generate_terrain() {
 void Game::start() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
   run = Run{};
+  active_run = true;
   current_player_index = plaguebearer_infection_count = 0;
   freeware_rainbow_enabled = freeware_rainbow_armed = freeware_secret_weapon_unlocked = 0;
   radial_cursor = {320, 140};
@@ -176,7 +168,7 @@ void Game::update_creatures(float dt) {
   frame_dt = dt;
   bonus_freeze_timer = run.freeze;
   freeware_berserk_timer = run.berserk;
-  freeware_game_active = 1;
+  freeware_game_active = active_run;
   for (int i = 0; i < 2; ++i) {
     auto &p = player_state_table[i].freeware;
     p.position = actor(i).player;
@@ -210,100 +202,4 @@ void Game::update_projectiles(float dt) {
   combat_game = nullptr;
 }
 
-// Gameplay block 0x4183cd..0x418587. Living players act after the existing combat pools.
-void Game::combat_frame(float dt, const Input &in, vec2f_t mouse_world) {
-  current_player_index = 0;
-  frame_dt = dt;
-  run.exp_clock -= dt;
-  if (run.exp_clock < 0) {
-    run.exp_clock = .25f;
-    run.experience += run.perks[6] * 10;
-  }
-  update_creatures(dt);
-  update_projectiles(dt);
-  for (int i = 0; i < players(); ++i)
-    step_player(i, dt, in, mouse_world);
-  current_player_index = 0;
-  if (!survival)
-    check_level();
-}
-
-void Game::tick(float dt, const Input &in) {
-  if (dt > 0) {
-    ++run.frames;
-    run.min_fps = std::min(run.min_fps, 1 / dt);
-    run.max_fps = std::max(run.max_fps, 1 / dt);
-  }
-  if (run.perks[15])
-    run.speed_scale = std::min(.85f, run.speed_scale);
-  dt *= run.speed_scale;
-  freeware_simulation_clock += dt;
-  combat_frame(dt, in, {in.x - camera_x(*this), in.y - camera_y(*this)});
-  // The HUD advances the run clock after simulation, before the mode spawner.
-  run.seconds += dt;
-  freeware_elapsed_seconds = run.seconds;
-  run.freeze = std::max(0.f, run.freeze - dt);
-  run.slow = std::max(0.f, run.slow - dt);
-  bonus_fire_bullets_timer = std::max(0.f, bonus_fire_bullets_timer - dt);
-  update_bomb(dt);
-  if (!survival)
-    update_career(dt);
-  if (survival)
-    for (auto &p : player_state_table) {
-      p.freeware.weapon = 2;
-      p.freeware.ammo = 30;
-    }
-  // The Survival arm at 0x41cc55 locks weapon 2 and emits a pair every quarter second.
-  run.next_spawn -= dt * players();
-  while (run.next_spawn < 0) {
-    if (!survival) {
-      run.next_spawn = std::max(.01f, run.next_spawn + 1 - run.experience / 60000.f);
-      spawn_career();
-      continue;
-    }
-    run.next_spawn += .25f;
-    effect_color_t tint{std::min(1.f, run.seconds / 120 + .3f), std::min(1.f, 10 / run.seconds + .3f),
-                        std::clamp(std::sin(run.seconds * .1f) + .3f, 0.f, 1.f), 1};
-    vec2f_t right{arena + 64, arena * .5f + std::cos(run.seconds) * 256};
-    vec2f_t left{-64, arena * .5f + std::sin(run.seconds) * 256};
-    creature_spawn(&right, &tint, 1);
-    creature_spawn(&left, &tint, 1);
-  }
-  resolve_corpses();
-  if (!two_players && !survival && run.health <= 0 && run.plague_time < 1 &&
-      (run.experience == 6 || run.experience == 66 || run.experience == 666 || run.experience == 6666)) {
-    run.health = 1;
-    run.plague_time += dt * 10;
-    freeware_secret_weapon_unlocked = 1;
-    weapon_assign_player(0, 17);
-  }
-  if (run.health <= 0 && (!two_players || run.partner.health <= 0)) {
-    run.health = 0;
-    if (run.perks[23]) {
-      run.bomb_pos = run.player;
-      run.bomb_age = 0;
-      play_sound(Sound::Explosion);
-    }
-    death_clock = 0;
-    screen = Screen::Dying;
-    std::printf("1.4.0 death %d kills %.2f seconds\n", run.kills, run.seconds);
-  }
-}
-
-void Game::finish_death(float dt) {
-  // Switch case 6 continues combat without spawning and hands off to case 9 after three seconds.
-  dt *= run.speed_scale;
-  frame_dt = dt;
-  freeware_simulation_clock += dt;
-  update_creatures(dt);
-  update_projectiles(dt);
-  update_bomb(dt);
-  resolve_corpses();
-  freeware_simulation_clock += dt * .5f;
-  death_clock += dt * 1.5f;
-  if (death_clock >= 3.f) {
-    screen = run.cheated ? Screen::Scores : Screen::Death;
-    std::puts("1.4.0 name entry");
-  }
-}
 } // namespace freeware

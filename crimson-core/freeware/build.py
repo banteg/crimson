@@ -36,6 +36,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
             core / "freeware" / name
             for name in (
                 "menu.cpp",
+                "frame.cpp",
                 "survival.cpp",
                 "career.cpp",
                 "weapons.cpp",
@@ -65,6 +66,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "creatures/creature_reset_all.cpp",
                 "player/player_heading_approach_target.cpp",
                 "player/player_update.cpp",
+                "game/game_frame_update.cpp",
                 "player/angle_approach.cpp",
                 "projectiles/projectile_spawn.cpp",
                 "projectiles/projectile_update.cpp",
@@ -86,6 +88,7 @@ def game_flags(root: Path) -> list[str]:
         "-DCL_BUILD=10400",
         "-DCRIMSON_FREEWARE_CLIENT",
         "-I" + str(root / "tools/match/include"),
+        "-I" + str(root / "crimson-core/freeware"),
         "-I" + str(root / "third_party/headers"),
     ]
 

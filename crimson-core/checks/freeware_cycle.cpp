@@ -43,6 +43,7 @@ int main() {
   // Poison untouched fields, force slot 2 and check all 128 bytes against the PE.
   std::memset(creature_pool, 0x5a, sizeof(creature_pool));
   creature_pool[2].active = 0;
+  seed_random(1);
   freeware_elapsed_seconds = 1.25f;
   vec2f_t pos{1088, 643};
   effect_color_t tint{.4f, .8f, .6f, 1};

@@ -46,7 +46,7 @@ struct Input {
   bool ctrl{}, console{}, mouse_fire{};
   int key{};
   float stick_x[2]{}, stick_y[2]{}, aim_x[2]{}, aim_y[2]{};
-  bool pad_fire[2]{}, fire_edge[2]{}, mouse_reload{};
+  bool pad_fire[2]{}, pad_perk[2]{}, fire_edge[2]{}, mouse_reload{}, perk_button{};
   std::string text;
 };
 // A zero size selects a four-corner textured trail. Sprites use the first point as the top-left.
@@ -74,6 +74,7 @@ struct Corpse {
   float size, heading;
   effect_color_t color;
 };
+struct FrameLabel { std::string text; float x, y, scale; effect_color_t color; };
 struct Fighter {
   vec2f_t player{512, 512};
   float health = 100, body_angle{}, aim_angle{}, walk{}, cooldown = .8f;
@@ -109,7 +110,12 @@ struct Game {
   float menu_clock{}, cursor_x = 320, cursor_y = 140;
   int selected{}, generation{};
   float death_clock{}, screen_started{};
-  vec2f_t radial_cursor{320, 140};
+  vec2f_t radial_cursor{320, 140}, camera{0, -128}, camera_shake{};
+  float camera_timer{}, state_since{};
+  unsigned char random_flags[8]{};
+  bool active_run{}, resumed_this_frame{}, paused_perks{}, menu_music_pending=true;
+  int assembly_sequence{};
+  std::vector<FrameLabel> frame_labels;
   std::array<std::vector<Score>, 4> rankings;
   std::array<bool, 4> invalid_scores{};
   int tips_sequence{};
@@ -147,7 +153,8 @@ struct Game {
   void step_player(int index, float dt, const Input &in, vec2f_t mouse_world);
   void spawn_career();
   void kill(int slot, int owner, bool corpse = true);
-  void update_career(float dt);
+  void collect_pickup(int player);
+  void apply_bomb_damage(float dt);
   void update_bomb(float dt);
   void update_projectiles(float dt);
   void update_creatures(float dt);
@@ -160,12 +167,14 @@ struct Game {
   bool merge_scores(const std::string &filename);
   int next_level_xp() const;
 
-  void tick(float dt, const Input &input);
+  void update_ui(const Input &input);
+  int frame_state() const;
+  void enter_state(int id);
   void combat_frame(float dt, const Input &in, vec2f_t mouse_world);
   void check_level();
-  void finish_death(float dt);
+
 };
-extern const char *const main_labels[8];
+extern const char *const main_labels[8], *const online_labels[5];
 bool decode_scores(std::vector<uint8_t>, int board, std::vector<Score> &);
 std::vector<uint8_t> encode_scores(const std::vector<Score> &, int board);
 struct MenuRow {

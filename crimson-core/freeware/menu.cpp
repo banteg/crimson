@@ -8,6 +8,8 @@ namespace freeware {
 // 0x4211d5 initializes these eight rows, and the frame callback at 0x418190 owns their input.
 const char *const main_labels[] = {"Begin game.", "Players: one",  "Game mode: career", "Highscores.",
                                    "Credits.",    "Game options.", "Online options.",   "End."};
+const char *const online_labels[5] = {"Visit Crimsonland website", "Check for updates", "View online highscores",
+                                      "", "back to main menu"};
 static const char *menu_label(const Game &g, int row) {
   if (row == 0 && g.paused)
     return "Resume game.";
@@ -30,54 +32,9 @@ int menu_hover(const Game &g) {
   return -1;
 }
 
-void Game::update(float dt, const Input &in) {
-  decals.clear();
-  marks.clear();
-  shells.clear();
-  if (console_open) {
-    console_input(in);
-    return;
-  }
-  if (in.console && screen != Screen::Death) {
-    console_open = true;
-    command.clear();
-    return;
-  }
-  menu_clock += dt;
-  if (screen != Screen::Playing && screen != Screen::Dying)
-    freeware_simulation_clock += dt * run.speed_scale;
-  mouse_dx = in.x - cursor_x;
-  mouse_dy = in.y - cursor_y;
-  if (dt > 0)
-    fps = 1 / dt;
-  cursor_x = in.x;
-  cursor_y = in.y;
-  if (screen == Screen::Menu && in.ctrl && in.key) {
-    constexpr int tips[] = {23, 12, 19, 22}; // SDL scancodes for Ctrl+TIPS at 0x4197c4.
-    if (in.key == tips[tips_sequence] && ++tips_sequence == 4) {
-      tips_sequence = 0;
-      secret_hints = true;
-      play_sound(Sound::Level);
-    }
-  }
-  if (screen == Screen::Playing) {
-    if (in.escape) {
-      paused = true;
-      selected = 0;
-      screen = Screen::Menu;
-    } else if (run.pending && !survival &&
-               (in.level_up || (in.click && in.x > width - 240 && in.y > height - 58))) {
-      open_perks();
-    } else
-      tick(dt, in);
-    return;
-  }
-  if (screen == Screen::Dying) {
-    finish_death(dt);
-    return;
-  }
+void Game::update_ui(const Input &in) {
   if (screen == Screen::Death) {
-    death_clock += dt;
+    death_clock = freeware_simulation_clock - state_since;
     if (in.backspace && !name.empty())
       name.pop_back();
     for (char c : in.text)
@@ -154,61 +111,6 @@ void Game::update(float dt, const Input &in) {
       save_options();
     return;
   }
-  if (screen == Screen::Options && !in.escape) {
-    constexpr int count = 12;
-    if (in.previous)
-      selected = (selected + count - 1) % count;
-    if (in.next)
-      selected = (selected + 1) % count;
-    int hover = (in.x > width / 2 - 140 && in.y > 170) ? int((in.y - 170) / 21) : -1;
-    if (hover >= 0 && hover < count && in.x >= width / 2 - 140 + option(hover).size() * 13)
-      hover = -1;
-    if (hover >= 0 && hover < count && (mouse_dx || mouse_dy || in.click))
-      selected = hover;
-    if (!in.accept && !(in.click && hover >= 0 && hover < count))
-      return;
-    switch (selected) {
-    case 0:
-      configuring = 1 - configuring;
-      break;
-    case 1:
-      movement[configuring] = (movement[configuring] + 1) % 3;
-      break;
-    case 2:
-      aiming[configuring] = (aiming[configuring] + 1) % 4;
-      break;
-    case 3:
-      music_enabled = !music_enabled;
-      break;
-    case 4:
-      smooth = !smooth;
-      break;
-    case 5:
-      show_fps = !show_fps;
-      break;
-    case 6:
-      effects = !effects;
-      break;
-    case 7:
-      shell_marks = !shell_marks;
-      break;
-    case 8:
-      direction_arrow = !direction_arrow;
-      break;
-    case 9:
-      rebind = 0;
-      break;
-    case 10:
-      calibration = 0;
-      break;
-    case 11:
-      screen = Screen::Menu;
-      selected = 0;
-      break;
-    }
-    save_options();
-    return;
-  }
   if (screen == Screen::Scores && !in.escape && !in.accept && !in.click) {
     int last = std::max(0, int(std::min<size_t>(100, scores().size())) - 10);
     if (in.next)
@@ -217,86 +119,9 @@ void Game::update(float dt, const Input &in) {
       score_offset = std::max(0, score_offset - 1);
     return;
   }
-  if (screen == Screen::Online && !in.escape) {
-    if (in.previous)
-      selected = std::max(0, selected - 1);
-    if (in.next)
-      selected = std::min(3, selected + 1);
-    int hover = (in.x >= 180 && in.x < 650 && in.y >= 170) ? int((in.y - 170) / 32) : -1;
-    if (hover >= 0 && hover < 4 && (mouse_dx || mouse_dy || in.click))
-      selected = hover;
-    if (!in.accept && !(in.click && hover >= 0 && hover < 4))
-      return;
-    if (selected == 0)
-      visit_website = true;
-    else if (selected == 1)
-      notice = "Installed version: 1.4.0. The 2002 update service is unavailable.";
-    else if (selected == 2)
-      notice = "The 2002 online highscore service is unavailable.";
-    else {
-      screen = Screen::Menu;
-      selected = 0;
-      notice = nullptr;
-    }
-    return;
-  }
-  if (screen != Screen::Menu) {
-    if (in.accept || in.click || in.escape) {
-      screen = Screen::Menu;
-      selected = 0;
-    }
-    return;
-  }
-  if (in.previous)
-    selected = std::max(0, selected - 1);
-  if (in.next)
-    selected = std::min(7, selected + 1);
-  int row = in.click ? menu_hover(*this) : in.accept ? selected : -1;
-  if (in.escape && paused)
-    row = 0;
-  if (row < 0)
-    return;
-  selected = row;
-  notice = nullptr;
-  switch (row) {
-  case 0:
-    if (paused) {
-      screen = Screen::Playing;
-      paused = false;
-    } else
-      start();
-    break;
-  case 1:
-    if (!paused)
-      two_players = !two_players;
-    break;
-  case 2:
-    if (!paused)
-      survival = !survival;
-    break;
-  case 3:
-    score_offset = 0;
-    screen = Screen::Scores;
-    break;
-  case 4:
-    screen_started = menu_clock;
-    screen = Screen::Credits;
-    break;
-  case 5:
+  if (in.accept || in.click || in.escape) {
+    screen = Screen::Menu;
     selected = 0;
-    screen = Screen::Options;
-    break;
-  case 6:
-    selected = 0;
-    screen = Screen::Online;
-    break;
-  case 7:
-    if (paused) {
-      paused = false;
-      selected = 0;
-    } else
-      quit = true;
-    break;
   }
 }
 std::string Game::option(int row) const {

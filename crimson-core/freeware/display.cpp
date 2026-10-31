@@ -197,11 +197,6 @@ void Display::draw(const Game &g) {
   if (g.screen == Screen::Menu) {
     const float clock = g.menu_clock;
     sprite("crimsonland", width / 2 - 256 + std::cos(clock) * 5, 90 - 64 + std::sin(clock) * 5, 512, 512);
-    for (int i = 0; i < 8; ++i) {
-      const float alpha = menu_hover(g) == i ? .9f : g.selected == i ? .7f : .6f;
-      const auto row = menu_row(g, i);
-      text(row.label, row.x, row.y, .75435f, {1, 1, 1, alpha});
-    }
     if (g.notice)
       text(g.notice, width / 2 - 220, 478, .65f, white);
     text("v1.4.0", 10, height - 25, .65435f, {1, 1, 1, .4f});
@@ -303,19 +298,12 @@ void Display::draw(const Game &g) {
         text(steps[g.calibration], 50, 190, .65f, white);
         std::snprintf(line, sizeof(line), "X/Y-Axis threshold: %d%%", int(g.pad_threshold[g.configuring] * 100));
         text(line, 50, 225, .65f, muted);
-      } else if (g.rebind < 0) {
-        for (int i = 0; i < 12; ++i)
-          text(g.option(i), width / 2 - 140, 170 + i * 21, .65f, g.selected == i ? white : muted);
-      } else {
+      } else if (g.rebind >= 0) {
         static const char *actions[] = {"forward", "backward", "left", "right", "fire"};
         std::snprintf(line, sizeof(line), "Player %d: press key for %s", g.rebind / 5 + 1, actions[g.rebind % 5]);
         text(line, 180, 200, .72f, white);
       }
     } else if (g.screen == Screen::Online) {
-      static const char *rows[] = {"Visit Crimsonland website", "Check for updates", "View online highscores",
-                                   "back to main menu"};
-      for (int i = 0; i < 4; ++i)
-        text(rows[i], 180, 170 + 32 * i, .75f, i == g.selected ? white : muted);
       if (g.notice)
         text(g.notice, 50, 345, .55f, white);
     }
@@ -323,6 +311,8 @@ void Display::draw(const Game &g) {
         g.screen != Screen::Online)
       text("back to main menu", 180, 410, .75435f, muted);
   }
+  for (const auto &label : g.frame_labels)
+    text(label.text,label.x,label.y,label.scale,{label.color.r,label.color.g,label.color.b,label.color.a});
   if (g.screen == Screen::Playing) {
     for (int i = 0; i < g.players(); ++i) {
       auto &player = g.actor(i);

@@ -228,6 +228,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/game/game_frame_update.cpp",
+          "configs": [
+            "tools/match/scratches/game_frame_update"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/perks/perk_meta.cpp",
           "configs": [
             "tools/match/scratches/perk_meta_global_construct_and_register",

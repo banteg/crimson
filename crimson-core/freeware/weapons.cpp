@@ -111,6 +111,5 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
   fighter.walk = p.walk_phase;
   fighter.cooldown = p.cooldown;
   fighter.spread = p.spread;
-  fighter.shield = std::max(0.f, fighter.shield - dt);
 }
 } // namespace freeware

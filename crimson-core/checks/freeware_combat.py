@@ -18,6 +18,7 @@ from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "crimson-core"))
 from freeware.build import game_flags, game_sources
+from freeware_frame_cases import check_frames
 from freeware_player_cases import check_controls
 
 # symbol, original VA, record format (preserves the exact x86 padding), capacity
@@ -584,9 +585,10 @@ def check_client(dll, exe, address, target):
     comparison.rewards()
     comparison.projectiles()
     check_controls(comparison)
+    dispatch_frames = check_frames(comparison, exe)
     visual_cases = comparison.draws()
     print(
-        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants and {visual_cases} draw traces.",
+        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants, {dispatch_frames} full frame callbacks and {visual_cases} draw traces.",
         flush=True,
     )
 
@@ -610,6 +612,8 @@ def check_web(stage, exe, sources):
         "combat_player",
         "combat_arm",
         "combat_controls",
+        "combat_frame_start",
+        "combat_frame_step",
         "combat_choose",
         "combat_message",
         "combat_health",
@@ -629,6 +633,8 @@ def check_web(stage, exe, sources):
         "freeware_rainbow_armed",
         "freeware_rainbow_enabled",
         "freeware_secret_weapon_unlocked",
+        "combat_frame_fields",
+        "combat_frame_flags",
         "combat_draw_capture",
         "combat_terrain_capture",
         "freeware_rng_state",
@@ -657,7 +663,17 @@ def check_web(stage, exe, sources):
     store.set_wasi(wasmtime.WasiConfig())
     linker = wasmtime.Linker(engine)
     linker.define_wasi()
-    exports = linker.instantiate(store, wasmtime.Module.from_file(engine, str(out))).exports(store)
+    module = wasmtime.Module.from_file(engine, str(out))
+
+    # Linking the real frame dispatcher also links atomic score-file saves.
+    # The oracle uses in-memory boards. Any attempted filesystem mutation is a test failure.
+    def unexpected_rename(*_args):
+        raise AssertionError("the combat oracle tried to persist a score")
+
+    for entry in module.imports:
+        if entry.module == "env" and entry.name == "__syscall_renameat":
+            linker.define_func("env", entry.name, entry.type, unexpected_rename)
+    exports = linker.instantiate(store, module).exports(store)
     exports["_initialize"](store)
     memory = exports["memory"]
 
@@ -711,6 +727,7 @@ def main():
         dll.combat_actors.argtypes = [ctypes.c_int] * 3 + [ctypes.c_float]
         dll.combat_reward.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_bool]
         dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_int]
+        dll.combat_frame_step.argtypes = [ctypes.c_float, ctypes.c_int]
         dll.combat_controls.argtypes = [ctypes.c_int] * 6 + [ctypes.c_float]
         dll.combat_message.restype = ctypes.c_char_p
         dll.combat_health.restype = ctypes.c_float
