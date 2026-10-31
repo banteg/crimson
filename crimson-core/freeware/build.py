@@ -41,7 +41,6 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "weapons.cpp",
                 "perks.cpp",
                 "scores.cpp",
-                "particles.cpp",
                 "console.cpp",
             )
         ),
@@ -61,6 +60,8 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "player/player_heading_approach_target.cpp",
                 "player/angle_approach.cpp",
                 "projectiles/projectile_spawn.cpp",
+                "projectiles/projectile_update.cpp",
+                "effects/fx_spawn_sprite.cpp",
                 "effects/fx_spawn_secondary_projectile.cpp",
             )
         ),

@@ -89,13 +89,16 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
   }
 }
 void Display::draw(const Game &g) {
-  if (g.generation != ground_generation || !g.decals.empty() || !g.shells.empty()) {
+  if (g.generation != ground_generation || !g.decals.empty() || !g.marks.empty() || !g.shells.empty()) {
     SDL_SetRenderTarget(renderer, stains);
     if (g.generation != ground_generation) {
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       SDL_RenderClear(renderer);
       ground_generation = g.generation;
     }
+    for (const auto &m : g.marks)
+      sprite(m.frozen ? "icemold" : "blood", m.pos.x - m.size / 2, m.pos.y - m.size / 2, m.size, m.size,
+             m.rotation);
     for (auto &pos : g.shells)
       sprite("bullet_real_16", pos.x - 2, pos.y - 3, 4, 6, 0, 0, 1, {.55f, .45f, .25f, .75f});
     for (const auto &c : g.decals) {
@@ -143,6 +146,10 @@ void Display::draw(const Game &g) {
       if (r.shield > 0)
         sprite("bubble", x - 8, y - 8, 64, 64, 0, 0, 1, {.4f, .8f, 1, .6f});
     }
+    for (const auto &s : sprite_effect_pool)
+      if (s.active)
+        sprite("glow64", cx + s.pos_x - s.scale / 2, cy + s.pos_y - s.scale / 2, s.scale, s.scale, s.rotation, 0,
+               1, {s.color_r, s.color_g, s.color_b, s.color_a});
     for (const auto &p : particle_pool)
       if (p.active) {
         bool bubble = p.style_id == 8;

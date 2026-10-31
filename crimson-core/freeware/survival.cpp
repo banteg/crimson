@@ -18,7 +18,9 @@ float frame_dt, bonus_fire_bullets_timer, freeware_elapsed_seconds;
 game_mode_id_t config_game_mode = static_cast<game_mode_id_t>(2);
 int creature_spawned_count;
 int creature_spawn(const vec2f_t *, const effect_color_t *, int);
-int highscore_record_shots_fired;
+int highscore_record_shots_fired, highscore_record_hits;
+float freeware_simulation_clock, freeware_hit_sound_timer, bonus_freeze_timer;
+sprite_effect_t sprite_effect_pool[384];
 int current_player_index;
 player_state_t player_state_table[2];
 float player_heading_approach_target(float);
@@ -73,7 +75,9 @@ void Game::start() {
   for (int i = 0; i < 512; ++i)
     creature_pool[i].freeware.player = i % players();
   std::memset(projectile_pool, 0, sizeof(projectile_pool));
-  highscore_record_shots_fired = 0;
+  highscore_record_shots_fired = highscore_record_hits = 0;
+  freeware_hit_sound_timer = 0;
+  std::memset(sprite_effect_pool, 0, sizeof(sprite_effect_pool));
   creature_spawned_count = 0;
   freeware_elapsed_seconds = 0;
   bonus_fire_bullets_timer = 0;
@@ -172,140 +176,32 @@ static void update_creatures(Game &g, float dt) {
   }
 }
 
-static void update_shots(Game &g, float dt) {
-  // 0x4094e0. The AutoRifle advances in short steps and tests the actual creature pool after each step.
-  for (auto &shot : projectile_pool) {
-    if (!shot.active)
-      continue;
-    auto &p = shot.fields;
-    if (p.life_timer < .4f) {
-      p.life_timer -= dt;
-      if (p.life_timer <= 0)
-        shot.active = 0;
-      continue;
-    }
-    const int type = int(p.type_id);
-    const int owner = g.run.shot_owner[&shot - projectile_pool];
-    const float dx = std::cos(shot.angle - pi / 2) * dt * 20;
-    const float dy = std::sin(shot.angle - pi / 2) * dt * 20;
-    int steps = 50;
-    switch (type) {
-    case 2:
-      steps = 60;
-      break;
-    case 4:
-      steps = 55;
-      break;
-    case 7:
-      steps = 30;
-      break;
-    case 9:
-      steps = 35;
-      break;
-    case 10:
-      steps = 215;
-      break;
-    case 17:
-      steps = 15;
-      break;
-    case 18:
-      steps = 10;
-      break;
-    }
-    for (int step = 0; step < steps; ++step) {
-      shot.position.x += dx * p.speed_scale;
-      shot.position.y += dy * p.speed_scale;
-      if (shot.position.x < -10 || shot.position.y < -10 || shot.position.x > arena + 10 ||
-          shot.position.y > arena + 10) {
-        shot.active = 0;
-        break;
-      }
-      int id = creature_find_in_radius(&shot.position, 0);
-      if (id < 0)
-        continue;
-      auto &c = creature_pool[id];
-      const float distance =
-          std::max(50.f, std::hypot(p.origin.x - shot.position.x, p.origin.y - shot.position.y));
-      if (c.death_timer == 16)
-        ++g.run.hits;
-      if (c.health > 0) {
-        const float multiplier = type == 2 ? 1.2f : type == 4 ? 4.1f : type == 7 ? 5.f : type == 9 ? 2.f : 1.f;
-        float damage = (3000 / distance + 10) * multiplier * .95f;
-        if (type == 17) {
-          c.plague_infected = 1;
-          damage = 0;
-        }
-        if (p.damage_pool > 1) {
-          damage = p.damage_pool - 1;
-          p.damage_pool = std::max(0.f, damage - c.health);
-        } else
-          p.damage_pool = 0;
-        c.health -= damage;
-        if (c.health <= 0)
-          g.kill(id, owner);
-        else
-          play_sound(Sound::Hit);
-      }
-      if (p.damage_pool > 1 && c.health <= 0)
-        continue;
-      p.life_timer = .25f;
-      break;
-    }
-  }
+// These callbacks are synchronous during combat, just as the original global pools are.
+static Game *combat_game;
+extern "C" void freeware_blood(const vec2f_t *pos) {
+  if (combat_game->marks.size() < 128)
+    combat_game->marks.push_back({*pos, 16, 0, false});
 }
-
-static void update_rockets(Game &g, float dt) {
-  for (auto &r : secondary_projectile_pool) {
-    if (!r.active)
-      continue;
-    auto &v = r.fields.velocity;
-    auto type = r.fields.type_id;
-    int owner = g.run.rocket_owner[&r - secondary_projectile_pool];
-    if (type == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
-      // In state 3 the velocity slots become expansion phase and blast scale.
-      v.x += dt * 3;
-      for (int i = 0; i < 512; ++i) {
-        auto &c = creature_pool[i];
-        if (c.active && c.health > 0 && std::hypot(c.pos_x - r.pos_x, c.pos_y - r.position.y) < v.x * v.y * 80) {
-          c.health -= dt * v.y * 700;
-          if (c.health <= 0)
-            g.kill(i, owner);
-        }
-      }
-      if (v.x > 1)
-        r.active = 0;
-      continue;
-    }
-    r.position.x += v.x * dt;
-    r.position.y += v.y * dt;
-    if (type == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
-      int &id = r.fields.target_id;
-      if (id < 0 || id >= 512 || !creature_pool[id].active)
-        id = creature_find_nearest(&r.position);
-      auto &c = creature_pool[id];
-      r.angle = std::atan2(c.pos_y - r.position.y, c.pos_x - r.position.x) + pi / 2;
-      vec2f_t accelerated{v.x + std::sin(r.angle) * dt * 800, v.y - std::cos(r.angle) * dt * 800};
-      if (std::hypot(accelerated.x, accelerated.y) <= 350)
-        v = accelerated;
-      r.life_timer -= dt * .5f;
-    } else {
-      v.x *= 1 + dt * 3;
-      v.y *= 1 + dt * 3;
-      r.life_timer -= dt;
-    }
-    int hit = creature_find_in_radius(&r.position, 0);
-    if (hit >= 0) {
-      auto &c = creature_pool[hit];
-      c.health -= r.life_timer * 50 + (type == SECONDARY_PROJECTILE_TYPE_ROCKET ? 500 : 100);
-      ++g.run.hits;
-      if (c.health <= 0)
-        g.kill(hit, owner);
-      play_sound(Sound::Explosion);
-      r.fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
-      v = {0, type == SECONDARY_PROJECTILE_TYPE_ROCKET ? 1.f : .5f};
-    } else if (r.life_timer <= 0)
-      r.active = 0;
-  }
+extern "C" void freeware_shard(const vec2f_t *pos, float size, float rotation) {
+  if (combat_game->marks.size() < 128)
+    combat_game->marks.push_back({*pos, size, rotation, true});
+}
+extern "C" void freeware_combat_sound(int id, float) {
+  if (id == 31)
+    freeware_hit_sound_timer = 1; // 0x405760 starts the combat music.
+  else
+    play_original_sample(id);
+}
+extern "C" void creature_handle_death(int id, int owner, unsigned char corpse) {
+  combat_game->kill(id, owner, corpse != 0);
+}
+void Game::update_projectiles(float dt) {
+  combat_game = this;
+  frame_dt = dt;
+  bonus_freeze_timer = run.freeze;
+  projectile_update();
+  run.hits = highscore_record_hits;
+  combat_game = nullptr;
 }
 
 void Game::tick(float dt, const Input &in) {
@@ -324,13 +220,13 @@ void Game::tick(float dt, const Input &in) {
     run.speed_scale = std::min(.85f, run.speed_scale);
   dt *= run.speed_scale;
   frame_dt = dt;
+  freeware_simulation_clock += dt;
+  current_player_index = 0;
+  update_creatures(*this, dt);
+  update_projectiles(dt);
   for (int i = 0; i < players(); ++i)
     step_player(i, dt, in);
   current_player_index = 0;
-  update_creatures(*this, dt);
-  update_shots(*this, dt);
-  update_rockets(*this, dt);
-  update_particles(dt);
   if (!survival)
     update_career(dt);
   // The Survival arm at 0x41cc55 locks weapon 2 and emits a pair every quarter second.
@@ -373,10 +269,9 @@ void Game::tick(float dt, const Input &in) {
 void Game::finish_death(float dt) {
   // Switch case 6 continues combat without spawning and hands off to case 9 after three seconds.
   frame_dt = dt;
+  freeware_simulation_clock += dt;
   update_creatures(*this, dt);
-  update_shots(*this, dt);
-  update_rockets(*this, dt);
-  update_particles(dt);
+  update_projectiles(dt);
   if (run.final_revenge)
     update_career(dt);
   death_clock += dt;

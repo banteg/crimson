@@ -71,22 +71,24 @@ void Game::spawn_career() {
       break;
   }
 }
-void Game::kill(int slot, int owner) {
+void Game::kill(int slot, int owner, bool corpse) {
   auto &c = creature_pool[slot];
   if (!c.active || c.death_timer < 16)
     return;
-  c.health = std::min(0.f, c.health);
-  c.death_timer = 15.999f;
+  if (corpse)
+    c.death_timer -= frame_dt;
+  else
+    c.active = 0;
   --creature_spawned_count;
   int reward = int(c.freeware.reward * (run.perks[1] ? 1.5 : 1.0));
   if (!run.experience && !run.moved) {
-    run.first_kill_xp = reward;
+    run.first_kill_xp = int(c.freeware.reward);
     run.first_kill_pos = c.position;
   }
   run.experience += reward;
   if (++run.kills == 1)
     std::puts("1.4.0 first kill");
-  play_sound(Sound::Die);
+
   if (survival || run.pickup.time > 0)
     return;
   auto &weapon = player_state_table[owner].freeware.weapon;

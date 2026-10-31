@@ -32,6 +32,7 @@ int menu_hover(const Game &g) {
 
 void Game::update(float dt, const Input &in) {
   decals.clear();
+  marks.clear();
   shells.clear();
   if (console_open) {
     console_input(in);

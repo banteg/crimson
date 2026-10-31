@@ -58,14 +58,11 @@ void Game::fire_weapon(int index) {
                                 : fx_spawn_particle(&muzzle, heading, nullptr, 1);
       if (w.weapon == 15)
         particle_pool[slot].style_id = 1;
-      run.particle_owner[slot] = index;
     } else if (w.weapon == 11 || w.weapon == 12) {
-      int slot = fx_spawn_secondary_projectile(&muzzle, p.aim_angle + jitter,
-                                               static_cast<secondary_projectile_type_id_t>(w.weapon - 10));
-      run.rocket_owner[slot] = index;
+      fx_spawn_secondary_projectile(&muzzle, p.aim_angle + jitter,
+                                    static_cast<secondary_projectile_type_id_t>(w.weapon - 10));
     } else {
       int slot = projectile_spawn(&muzzle, p.aim_angle + jitter, def.projectile);
-      run.shot_owner[slot] = index;
       if (shotgun)
         projectile_pool[slot].fields.speed_scale = 1 + (crt_rand() % 100) * .01f;
     }
@@ -188,7 +185,7 @@ void Game::step_player(int index, float dt, const Input &in) {
     if (c.active && std::hypot(c.pos_x - p.player.x, c.pos_y - p.player.y) < 500) {
       float a = std::atan2(c.pos_y - p.player.y, c.pos_x - p.player.x) + 1.5707964f;
       vec2f_t muzzle{p.player.x + 12 * std::sin(a), p.player.y - 12 * std::cos(a)};
-      run.shot_owner[projectile_spawn(&muzzle, a, 1)] = index;
+      projectile_spawn(&muzzle, a, 1);
       p.cooldown = .1f;
       play_sound(Sound::Shot);
       return;

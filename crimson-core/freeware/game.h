@@ -49,6 +49,11 @@ struct Input {
   bool pad_fire[2]{};
   std::string text;
 };
+struct ImpactMark {
+  vec2f_t pos;
+  float size, rotation;
+  bool frozen;
+};
 struct Corpse {
   vec2f_t position;
   float size, heading;
@@ -72,8 +77,6 @@ struct Run : Fighter {
   Pickup pickup;
   std::array<int, 48> perks{};
   std::vector<int> choices;
-  std::array<int, 64> shot_owner{}, rocket_owner{};
-  std::array<int, 128> particle_owner{};
   int kills{}, hits{}, experience{};
 };
 struct Score {
@@ -86,6 +89,7 @@ struct Game {
   Screen screen = Screen::Menu;
   Run run;
   std::vector<Corpse> decals;
+  std::vector<ImpactMark> marks;
   float menu_clock{}, cursor_x = 320, cursor_y = 140;
   int selected{}, generation{};
   float death_clock{}, screen_started{};
@@ -126,9 +130,9 @@ struct Game {
   void step_player(int index, float dt, const Input &in);
   void fire_weapon(int index);
   void spawn_career();
-  void kill(int slot, int owner);
+  void kill(int slot, int owner, bool corpse = true);
   void update_career(float dt);
-  void update_particles(float dt);
+  void update_projectiles(float dt);
   void open_perks();
   void choose_perk(int choice);
   void load_scores();
@@ -178,5 +182,8 @@ int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int fx_spawn_particle_slow(const vec2f_t *, float, const vec2f_t *);
 extern projectile_pool_t projectile_pool;
 extern secondary_projectile_pool_t secondary_projectile_pool;
-extern int highscore_record_shots_fired;
+extern int highscore_record_shots_fired, highscore_record_hits;
+extern float frame_dt, freeware_simulation_clock, freeware_hit_sound_timer, bonus_freeze_timer;
+extern sprite_effect_t sprite_effect_pool[384];
+void projectile_update();
 }

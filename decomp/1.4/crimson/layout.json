@@ -261,6 +261,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/projectiles/projectile_update.cpp",
+          "configs": [
+            "tools/match/scratches/projectile_update"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/projectiles/secondary_projectile_pool_global_init.cpp",
           "configs": [
             "tools/match/scratches/secondary_projectile_pool_global_init"
