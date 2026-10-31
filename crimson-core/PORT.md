@@ -601,6 +601,34 @@ and SDL_Renderer has no alpha test or write masks. raylib would mean fitting
 Grim's device state around rlgl and raudio; keep it for the Python port, where
 its workarounds are already solved.
 
+## Freeware 1.4.0
+
+The 2002 freeware client builds its single-player Survival loop from C++ on desktop and with Emscripten for browsers. Both use the original menu labels and hit boxes, Grim's embedded font, the freeware graphics and sound packs, and the three original music tracks. The build converts the MP3s with FFmpeg for the existing Vorbis decoder.
+
+Install the development dependencies with `uv sync --dev`. The desktop build needs clang++, pkg-config and SDL3. The browser build needs Emscripten with its SDL3 port. Both need FFmpeg. Extract the [original 1.4.0 ZIP](https://paq.crimson.banteg.xyz/freeware/crimsonland_v1.4.0.zip) and give `--game-dir` the folder containing `grim.dll`, `crimson.paq`, `sounds.paq` and `music/`. Worktrees automatically find the main checkout's `game_bins/crimsonland/1.4.0` installation.
+
+```sh
+uv run python crimson-core/client/build.py --edition 1.4.0 --target native
+./crimson-core/build/freeware-1.4.0/native/crimson
+
+uv run python crimson-core/client/build.py --edition 1.4.0 --target web
+uv run python -m http.server 8140 --bind 127.0.0.1 --directory crimson-core/build/freeware-1.4.0/web
+```
+
+Open the local server in a browser. Click **Game mode: career** to select **Game mode: survival**, then **Begin game.** Move with WASD or the arrow keys, aim with the mouse, and fire with the left mouse button or Tab. Escape pauses. After death, the reaper appears and name entry opens. Enter submits the name to the session's score table. Escape returns to the main menu, where **Begin game.** resets the run.
+
+The playable route covers one-player AutoRifle Survival, with in-session scores and a music setting. Career, two-player gameplay, the remaining settings and original score-file compatibility are outside this milestone.
+
+### Recovery checks
+
+```sh
+uv run python crimson-core/checks/freeware_oracle.py game_bins/crimsonland/1.4.0
+uv run crimson match scratch tools/match/scratches/creature_alloc_slot --build 1.4.0
+uv run crimson match scratch tools/match/scratches/creature_spawn --build 1.4.0
+```
+
+The first check compares the port with the original EXE's eight menu draws, 32 mouse boundary cases and every byte of a spawned creature. It also drives the shared game through movement, a kill, contact death, name entry and restart. The matching checks compile the creature allocator and spawner with VC6. The larger frame, creature update and projectile update routines have partially recovered portable paths.
+
 ## Running the native client
 
 ```sh

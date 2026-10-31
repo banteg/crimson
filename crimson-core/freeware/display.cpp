@@ -10,6 +10,7 @@ Display::~Display() {
   for (auto &entry : textures)
     SDL_DestroyTexture(entry.second);
   SDL_DestroyTexture(ground);
+  SDL_DestroyTexture(stains);
 }
 bool Display::load(const std::string &folder) {
   for (const char *name : {"font", "grass1", "mud1", "ground_tile", "crimsonland", "borg_t", "eiliens",
@@ -34,11 +35,12 @@ bool Display::load(const std::string &folder) {
     if (!texture)
       return false;
     textures.emplace(name, texture);
-    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(texture, std::strcmp(name, "part64") == 0 ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND);
     SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_LINEAR);
   }
   ground = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, arena, arena);
-  if (!ground || !SDL_SetRenderTarget(renderer, ground))
+  stains = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, arena, arena);
+  if (!stains || !ground || !SDL_SetRenderTarget(renderer, ground))
     return false;
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
@@ -56,6 +58,7 @@ bool Display::load(const std::string &folder) {
       sprite(name, x, y, 128, 128, rotation);
     }
   }
+  SDL_SetTextureBlendMode(stains, SDL_BLENDMODE_BLEND);
   return SDL_SetRenderTarget(renderer, nullptr);
 }
 void Display::sprite(const char *name, float x, float y, float w, float h, float angle, int frame, int columns,
@@ -82,28 +85,46 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
   }
 }
 void Display::draw(const Game &g) {
+  if (g.generation != ground_generation || !g.decals.empty()) {
+    SDL_SetRenderTarget(renderer, stains);
+    if (g.generation != ground_generation) {
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+      SDL_RenderClear(renderer);
+      ground_generation = g.generation;
+    }
+    for (const auto &c : g.decals) {
+      sprite("blood", c.position.x - 16, c.position.y - 16, 32, 32, c.heading);
+      sprite("eiliens", c.position.x - c.size / 2, c.position.y - c.size / 2, c.size, c.size, c.heading, 63, 8,
+             {c.color.r, c.color.g, c.color.b, c.color.a});
+    }
+    SDL_SetRenderTarget(renderer, nullptr);
+  }
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
   const float cx = camera_x(g), cy = camera_y(g);
   SDL_FRect field{cx, cy, arena, arena};
   SDL_RenderTexture(renderer, ground, nullptr, &field);
-  if (g.screen == Screen::Playing || g.screen == Screen::Death || g.paused) {
+  SDL_RenderTexture(renderer, stains, nullptr, &field);
+  if (g.screen == Screen::Playing || g.screen == Screen::Dying || g.screen == Screen::Death || g.paused) {
     for (const auto &c : creature_pool) {
       if (!c.active)
         continue;
       const auto &s = c.freeware;
       const float x = cx + c.pos_x - s.size / 2, y = cy + c.pos_y - s.size / 2;
+      // 0x41010d: the type-1 sheet starts at cell 32 and walks its sixteen frames in both directions.
+      int cell = int(s.animation + .5f);
+      if (cell > 15)
+        cell = 31 - cell;
       if (c.death_timer < 16)
-        sprite("blood", x, y, s.size, s.size, s.heading, 0, 1, {.65f, .2f, .2f, .8f});
-      else
-        sprite("eiliens", x, y, s.size, s.size, s.heading, int(s.animation) % 32, 8,
-               {s.color.r, s.color.g, s.color.b, 1});
+        cell = int(31 - c.death_timer);
+      sprite("eiliens", x, y, s.size, s.size, s.heading - 1.5707964f, 32 + std::clamp(cell, 0, 31), 8,
+             {s.color.r, s.color.g, s.color.b, s.color.a});
     }
     const auto &r = g.run;
     if (r.health > 0) {
       float x = cx + r.player.x - 24, y = cy + r.player.y - 24;
-      sprite("borg_t", x, y, 48, 48, r.body_angle, int(r.walk), 8);
-      sprite("borg_t", x + 1, y + 1, 48, 48, r.aim_angle, 16 + int(r.walk), 8);
+      sprite("borg_t", x, y, 48, 48, r.body_angle, int(r.walk + .5f), 8);
+      sprite("borg_t", x + 1, y + 1, 48, 48, r.aim_angle, 16 + int(r.walk + .5f), 8);
     }
     for (const auto &shot : projectile_pool) {
       if (shot.active && shot.fields.life_timer >= .4f) {
@@ -118,28 +139,42 @@ void Display::draw(const Game &g) {
   char line[128];
   if (g.screen == Screen::Menu) {
     const float clock = g.menu_clock;
-    sprite("crimsonland", width / 2 - 256 + std::cos(clock) * 5, 82 - 64 + std::sin(clock) * 5, 512, 512);
+    sprite("crimsonland", width / 2 - 256 + std::cos(clock) * 5, 90 - 64 + std::sin(clock) * 5, 512, 512);
     for (int i = 0; i < 8; ++i) {
       const float alpha = menu_hover(g) == i ? .9f : g.selected == i ? .7f : .6f;
-      text(menu_label(g, i), width / 2 - 100, 200 + i * 32, .75435f, {1, 1, 1, alpha});
+      const auto row = menu_row(g, i);
+      text(row.label, row.x, row.y, .75435f, {1, 1, 1, alpha});
     }
+    if (g.notice)
+      text(g.notice, width / 2 - 220, 478, .65f, white);
     text("v1.4.0", 10, height - 25, .65435f, {1, 1, 1, .4f});
     text("2002 (c) 10tons entertainment", width - 330, height - 25, .65435f, {1, 1, 1, .4f});
   } else if (g.screen == Screen::Playing) {
-    std::snprintf(line, sizeof(line), "health %d", int(std::max(0.f, g.run.health)));
-    text(line, 8, 8, .75435f, white);
+    // The one-player Survival arm of 0x416a00 draws the time on the original panel.
+    sprite("panel", 0, 0, 640, 64, 0, 0, 1, {.7f, .7f, .7f, 1});
     std::snprintf(line, sizeof(line), "Seconds survived: %d", int(g.run.seconds));
-    text(line, 8, 30, .65f, muted);
+    text(line, 3, 7, .7f, white);
+  } else if (g.screen == Screen::Dying) {
+    const float fade = std::clamp(std::min(g.death_clock, 3.f - g.death_clock), 0.f, 1.f);
+    sprite("reaper", width / 2 - 64, height / 2 - 64, 128, 128, 0, 0, 1, {1, 1, 1, fade});
   } else if (g.screen == Screen::Death) {
-    sprite("reaper", width - 280, 55, 180, 180);
-    text("The Reaper got you.", 100, 50, 1.6f, {.75f, .35f, .22f, 1});
+    // State 9 in 0x418190. Fade the field to black, then draw the name screen with Grim's mono font.
+    const float fade = std::clamp(g.death_clock - 3.f, 0.f, 1.f);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, static_cast<Uint8>(255 * fade));
+    SDL_RenderFillRect(renderer, nullptr);
+    sprite("reaper", 10, 10, 128, 128, 0, 0, 1, {1, 1, 1, fade});
+    for (int i = 0; i < 2; ++i)
+      text("The Reaper got you.", 100, 50, .975435f, {.75f, .35f, .22f, .9f * fade});
     std::snprintf(line, sizeof(line), "Seconds survived: %d", int(g.run.seconds));
-    text(line, 100, 150, .75435f, white);
-    text("Who were you:", 100, 220, .75435f, white);
-    text(g.name + "_", 100, 250, .75435f, white);
-    std::snprintf(line, sizeof(line), "Frags: %d   Hit accuracy: %d%%", g.run.kills,
-                  highscore_record_shots_fired ? g.run.hits * 100 / highscore_record_shots_fired : 0);
-    text(line, 100, 320, .75435f, muted);
+    text(line, 120, 90, .75435f, {.85f, .55f, .35f, .8f * fade});
+    text("Who were you:", 10, 165, .75435f, {1, 1, 1, fade});
+    text(g.name, 50, 190, 1, {1, 1, 1, fade});
+    if (std::fmod(g.menu_clock, 1.f) < .5f)
+      text("_", 50 + 16 * g.name.size(), 190, 1, {1, 1, 1, .4f});
+    std::snprintf(line, sizeof(line), "Gained level: 1\nHit accuracy: %d%%\nFrags: %d\n",
+                  highscore_record_shots_fired ? g.run.hits * 100 / highscore_record_shots_fired : 0, g.run.kills);
+    text(line, 60, 320, .66f, white);
   } else {
     const char *heading = g.screen == Screen::Scores    ? "Highscores:"
                           : g.screen == Screen::Credits ? "Project Crimsonland"
@@ -148,16 +183,39 @@ void Display::draw(const Game &g) {
     text(heading, 180, 120, 1, white);
     if (g.screen == Screen::Scores) {
       text("-SURVIVAL--", 180, 170, .75435f, white);
-      std::snprintf(line, sizeof(line), "%s   %.0f", g.name.c_str(), g.best_seconds);
-      if (g.best_seconds > 0)
-        text(line, 180, 210, .75435f, muted);
-    } else if (g.screen == Screen::Credits)
-      text("Game coded & designed by\nTero Alatalo", 180, 170, .75435f, white);
-    text("back to main menu", 180, 350, .75435f, muted);
+      for (size_t i = 0; i < std::min<size_t>(g.scores.size(), 7); ++i) {
+        const auto &score = g.scores[i];
+        std::snprintf(line, sizeof(line), "%zu.  %-31s  %d", i + 1, score.name.c_str(), int(score.seconds));
+        text(line, 180, 210 + i * 23, .75435f, muted);
+      }
+    } else if (g.screen == Screen::Credits) {
+      text("Game coded & designed by\nTero Alatalo\n3D Art modelled by\nTimo Palonen\nMusic performed by\nValtteri "
+           "Pihlajamaki",
+           180, 170, .75435f, white);
+    } else if (g.screen == Screen::Options) {
+      text(g.music_enabled ? "Music: on" : "Music: off", 180, 200, .75435f, g.selected == 0 ? white : muted);
+      text("Done", 180, 238, .75435f, g.selected == 1 ? white : muted);
+    } else if (g.screen == Screen::Online) {
+      text("Online highscores are offline.", 180, 170, .75435f, white);
+    }
+    if (g.screen != Screen::Options)
+      text("back to main menu", 180, 410, .75435f, muted);
   }
-  const bool aiming = g.screen == Screen::Playing;
-  sprite(aiming ? "aim64" : "aim32", g.cursor_x - (aiming ? 32 : 16), g.cursor_y - (aiming ? 32 : 16),
-         aiming ? 64 : 32, aiming ? 64 : 32);
+  if (g.screen == Screen::Playing) {
+    sprite("aim64", g.cursor_x - 32, g.cursor_y - 32, 64, 64);
+  } else if (g.screen != Screen::Dying) {
+    // The menu and score cursor bind part64 additively, then the 32-pixel reticle at 64% opacity.
+    const float speed = g.screen == Screen::Death ? 2.f : 1.f;
+    const float light = std::cos(g.menu_clock);
+    const float alpha = (light * light + 1) * .5f;
+    sprite("part64", g.cursor_x - 32, g.cursor_y - 32, 64, 64);
+    for (int i = 0; i < 3; ++i) {
+      float angle = g.menu_clock * speed + i * 2.0943952f;
+      sprite("part64", g.cursor_x - 32 + 16 * std::cos(angle), g.cursor_y - 32 + 16 * std::sin(angle), 64, 64, 0, 0,
+             1, {1, 1, 1, alpha});
+    }
+    sprite("aim32", g.cursor_x - 16, g.cursor_y - 16, 32, 32, 0, 0, 1, {1, 1, 1, .64f});
+  }
   SDL_RenderPresent(renderer);
 }
 } // namespace freeware

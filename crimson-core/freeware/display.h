@@ -8,7 +8,8 @@ namespace freeware {
 struct Display {
   SDL_Renderer *renderer;
   std::unordered_map<std::string, SDL_Texture *> textures;
-  SDL_Texture *ground{};
+  SDL_Texture *ground{}, *stains{};
+  int ground_generation = -1;
   explicit Display(SDL_Renderer *r) : renderer(r) {}
   ~Display();
   bool load(const std::string &folder);

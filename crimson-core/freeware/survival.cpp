@@ -13,7 +13,9 @@ game_mode_id_t config_game_mode = static_cast<game_mode_id_t>(2);
 int creature_spawned_count;
 int creature_spawn(const vec2f_t *, const effect_color_t *, int);
 int highscore_record_shots_fired;
-int creature_alloc_slot();
+int current_player_index;
+player_state_t player_state_table[2];
+float player_heading_approach_target(float);
 void creature_reset_all();
 int creature_find_in_radius(const vec2f_t *, float);
 int projectile_spawn(const vec2f_t *, float, int);
@@ -28,6 +30,7 @@ float camera_x(const Game &g) { return std::clamp(width * .5f - g.run.player.x, 
 float camera_y(const Game &g) { return std::clamp(height * .5f - g.run.player.y, float(height - arena), -1.f); }
 
 static unsigned rng = 1;
+void seed_random(unsigned seed) { rng = seed; }
 extern "C" int crt_rand() {
   rng = rng * 214013u + 2531011u;
   return (rng >> 16) & 0x7fff;
@@ -36,6 +39,7 @@ extern "C" int crt_rand() {
 void Game::start() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
   run = Run{};
+  player_state_table[0].heading = 0;
   creature_reset_all();
   std::memset(projectile_pool, 0, sizeof(projectile_pool));
   highscore_record_shots_fired = 0;
@@ -58,8 +62,12 @@ static void update_creatures(Game &g, float dt) {
     auto &s = c.freeware;
     if (c.health <= 0 || c.death_timer < 16) {
       c.death_timer -= dt * 28;
-      if (c.death_timer <= 0)
+      c.pos_x -= std::cos(s.heading - pi / 2) * c.death_timer * dt * 9;
+      c.pos_y -= std::sin(s.heading - pi / 2) * c.death_timer * dt * 9;
+      if (c.death_timer < 0) {
+        g.decals.push_back({c.position, s.size, s.heading - pi / 2, s.color});
         c.active = 0;
+      }
       continue;
     }
     const auto p = g.run.player;
@@ -120,6 +128,7 @@ static void update_shots(Game &g, float dt) {
       if (c.health > 0) {
         c.health -= (3000 / distance + 10) * 1.2f * .95f;
         if (c.health <= 0) {
+          --creature_spawned_count;
           ++g.run.kills;
           g.run.experience += static_cast<int>(c.freeware.reward);
           c.death_timer -= dt;
@@ -139,28 +148,38 @@ void Game::tick(float dt, const Input &in) {
   run.seconds += dt;
   freeware_elapsed_seconds = run.seconds;
   float dx = float(in.right) - float(in.left), dy = float(in.down) - float(in.up);
+  float distance;
+  // Static keyboard movement at 0x41341e. The original turns before accelerating,
+  // and coasts briefly when the last movement key is released.
   if (dx || dy) {
-    float length = std::hypot(dx, dy);
-    run.player.x = std::clamp(run.player.x + dx / length * 120 * dt, 16.f, float(arena - 16));
-    run.player.y = std::clamp(run.player.y + dy / length * 120 * dt, 16.f, float(arena - 16));
-    run.walk = std::fmod(run.walk + dt * 20, 16.f);
-    angle_approach(&run.body_angle, std::atan2(dy, dx) + pi / 2, 0);
+    float target = std::atan2(dy, dx) + pi / 2;
+    if (target < 0)
+      target += 2 * pi;
+    const float turn = player_heading_approach_target(target);
+    run.move_speed = std::min(2.f, run.move_speed + dt * 5);
+    distance = (pi - turn) * 2 * run.move_speed * 7.957747f * dt;
+  } else {
+    run.move_speed = std::max(0.f, run.move_speed - dt * 15);
+    distance = 2 * run.move_speed * 25 * dt;
   }
+  run.body_angle = player_state_table[0].heading;
+  run.player.x = std::clamp(run.player.x + std::cos(run.body_angle - pi / 2) * distance, 24.f, float(arena - 24));
+  run.player.y = std::clamp(run.player.y + std::sin(run.body_angle - pi / 2) * distance, 24.f, float(arena - 24));
+  run.walk = std::fmod(run.walk + dt * run.move_speed * 19, 14.f);
   run.aim_angle = std::atan2(in.y - camera_y(*this) - run.player.y, in.x - camera_x(*this) - run.player.x) + pi / 2;
   run.cooldown = std::max(0.f, run.cooldown - dt);
-  run.spread = std::max(0.f, run.spread - dt);
+  run.spread = dx || dy ? std::max(.5f, run.spread - dt) : std::max(.25f, run.spread - 2 * dt);
   // The frame callback writes AutoRifle and 30 rounds back on every Survival frame.
   if ((in.fire || in.click) && run.cooldown <= 0) {
     const float angle = run.aim_angle - pi / 2 - .25f;
     vec2f_t muzzle{run.player.x + std::cos(angle) * 12, run.player.y + std::sin(angle) * 12};
     projectile_spawn(&muzzle, run.aim_angle + ((crt_rand() % 200) - 100) * run.spread * .001f, 2);
     run.cooldown = .117f;
-    run.spread += .07f;
     play_sound(Sound::Shot);
   }
   update_creatures(*this, dt);
   update_shots(*this, dt);
-  // The Survival arm at 0x41ccxx locks weapon 2 and emits a pair every quarter second.
+  // The Survival arm at 0x41cc55 locks weapon 2 and emits a pair every quarter second.
   run.next_spawn -= dt;
   while (run.next_spawn < 0) {
     run.next_spawn += .25f;
@@ -172,8 +191,22 @@ void Game::tick(float dt, const Input &in) {
     creature_spawn(&left, &tint, 1);
   }
   if (run.health <= 0) {
-    screen = Screen::Death;
+    run.health = 0;
+    death_clock = 0;
+    screen = Screen::Dying;
     std::printf("1.4.0 death %d kills %.2f seconds\n", run.kills, run.seconds);
+  }
+}
+
+void Game::finish_death(float dt) {
+  // Switch case 6 continues combat without spawning and hands off to case 9 after three seconds.
+  frame_dt = dt;
+  update_creatures(*this, dt);
+  update_shots(*this, dt);
+  death_clock += dt;
+  if (death_clock >= 3.f) {
+    screen = Screen::Death;
+    std::puts("1.4.0 name entry");
   }
 }
 } // namespace freeware

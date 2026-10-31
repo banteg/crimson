@@ -9,6 +9,7 @@
 #endif
 
 namespace freeware {
+void update_music(const Game &, const std::string &);
 struct Sample {
   SDL_AudioStream *stream{};
   Uint8 *data{};
@@ -41,6 +42,7 @@ struct Client {
   SDL_Renderer *renderer{};
   std::unique_ptr<Display> display;
   Game game;
+  std::string assets;
   Input in;
   Uint64 previous{};
 };
@@ -111,6 +113,7 @@ static void frame() {
     else
       SDL_StopTextInput(c.window);
   }
+  update_music(c.game, c.assets);
   c.display->draw(c.game);
 #ifdef __EMSCRIPTEN__
   if (c.game.quit)
@@ -145,7 +148,9 @@ int main(int argc, char **argv) {
   }
   SDL_SetRenderLogicalPresentation(client.renderer, width, height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
   SDL_HideCursor();
+  client.assets = folder;
   load_audio(folder);
+  seed_random(static_cast<unsigned>(SDL_GetPerformanceCounter()));
   client.previous = SDL_GetTicksNS();
   std::setvbuf(stdout, nullptr, _IOLBF, 0);
 #ifdef __EMSCRIPTEN__
