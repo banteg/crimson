@@ -10,8 +10,9 @@ Each source is read as `decomp/` has it and changed in two steps:
 
 Diffs come first, so they read against the source of truth and the code they add takes the same rules. The sources
 compile as 1.9.93 (CL_BUILD); a run plays 1.9.93's or 1.9.8's rules, which editions/ turns from guards into branches
-on the run's build. Every other guard that tells the two apart stays the preprocessor's, as editions/guards.json
-classifies them (check_guards).
+on the run's build, or which a source names (tools/match/include/cl_rules.h) and host/rules.h defines as the run's.
+Every other guard that tells the two apart stays the preprocessor's, as editions/guards.json classifies them
+(check_guards).
 """
 
 import argparse
@@ -148,6 +149,20 @@ def build_guards(txt):
     return sorted(found)
 
 
+# A rule a recovered source names rather than guards (tools/match/include/cl_rules.h): a macro defined as a condition
+# on CL_BUILD, so it takes the value of the build a source compiles as. host/rules.h defines each first, as the run's;
+# one it left out would compile 1.9.93's value for a 1.9.8 run, as a guard the ledger doesn't list would.
+RULES = HERE / "host" / "rules.h"
+_RULE = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(\w+)[ \t]+(.*\bCL_BUILD\b.*)$", re.MULTILINE)
+_DEFINE = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(\w+)", re.MULTILINE)
+
+
+def build_rules(txt):
+    """The macros `txt` defines as a condition on CL_BUILD whose value differs for RUN_BUILDS."""
+
+    return [name for name, condition in _RULE.findall(txt) if len({_holds(condition, b) for b in RUN_BUILDS}) > 1]
+
+
 def guarded_files(root, sources):
     """The `sources` and the headers every target compiles them with."""
 
@@ -186,8 +201,19 @@ def _unclassified(guards):
 
 def check_guards(root, hunks, sources):
     """Every guard telling RUN_BUILDS apart in `sources` and their headers after the diffs is one editions/guards.json
-    lists, with one of its classes."""
+    lists, with one of its classes, and every rule they name by build (build_rules) is one host/rules.h defines."""
 
+    defined = set(_DEFINE.findall(RULES.read_text()))
+    if undecided := [
+        f"{rel}: {name}"
+        for rel in guarded_files(root, sources)
+        for name in build_rules(apply_diffs(rel, (root / rel).read_text(), hunks))
+        if name not in defined
+    ]:
+        raise SystemExit(
+            f"Rules a source names by build that {RULES.parent.name}/{RULES.name} leaves to the build a source "
+            "compiles as; define each there as the run's:\n" + "\n".join(undecided),
+        )
     ledger = json.loads(GUARDS.read_text())
     unlisted = [
         (rel, key, line, text)

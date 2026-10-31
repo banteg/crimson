@@ -1,3 +1,4 @@
+#include "cl_rules.h"
 #include "crimsonland_gameplay.h"
 
 struct perk_effect_vec2_t {
@@ -185,11 +186,9 @@ extern "C" void perks_update_effects(void)
         + perk_jinxed_proc_timer_s
         + 2.0f;
 
-#if CL_BUILD != 10908
-    if (bonus_freeze_timer > 0.0f) {
+    if (CL_JINXED_RESPECTS_FREEZE && bonus_freeze_timer > 0.0f) {
         return;
     }
-#endif
 
     int creature_id = crt_rand() % 0x17f;
     for (current_player_index = 0;

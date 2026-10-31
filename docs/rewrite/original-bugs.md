@@ -1572,8 +1572,11 @@ Rewrite behavior:
 - Victim selection follows
   [original bug 42](#42-jinxed-can-reward-an-already-dead-creature) either way.
 
-Evidence: `decomp/1.9/crimsonland/game/perks_update_effects.cpp` (the
-`CL_BUILD != 10908` Freeze return before the creature pick), and
+Evidence: `decomp/1.9/crimsonland/game/perks_update_effects.cpp` (the Freeze
+return before the creature pick, under `CL_JINXED_RESPECTS_FREEZE`, which
+[`cl_rules.h`](../../tools/match/include/cl_rules.h) sets by build and
+[`host/rules.h`](../../crimson-core/host/rules.h) by a run's build and bug
+policy), and
 `perks_update_effects` in the 1.9.9 (`0x00406b80`) and 1.9.92 (`0x00406bd0`)
 executables, of which only 1.9.92 reads `bonus_freeze_timer`. Tests:
 `tests/perks/test_jinxed_perk.py`.
