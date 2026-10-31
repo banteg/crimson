@@ -117,6 +117,8 @@ const broken = {
   "an unknown build": "v35({'cl_build': 10992})",
   "a build before format 35": "pack({**wire, 'format_version': 34, 'run': {**wire['run'], 'cl_build': 10993}})",
   "1.9.8 rules under rules 1": "pack({**wire, 'format_version': 35, 'rules': 1, 'run': {**wire['run'], 'cl_build': 10908}})",
+  "1.9.8's build past 32 bits": "v35({'cl_build': 10908 + 2**32})",
+  "1.9.8's build less 32 bits": "v35({'cl_build': 10908 - 2**32})",
   "no seat's key": "v34([])",
   "a key per two seats": "v34([bytes(32), bytes(range(32))])",
   "a short seat key": "v34([bytes(31)])",

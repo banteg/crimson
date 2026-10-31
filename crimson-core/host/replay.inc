@@ -596,7 +596,12 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
     else if (key == "detail_preset") config.detail = (uint32_t)r.integer();
     else if (key == "violence_disabled") config.violence = (uint32_t)r.integer();
     else if (key == "friendly_fire") config.friendly_fire = r.boolean();
-    else if (key == "cl_build") config.cl_build = (uint32_t)r.integer(), has_build = true;
+    else if (key == "cl_build") {
+      // Python reads only the builds it plays, and a value past 32 bits narrows to any of them.
+      int64_t build = r.integer();
+      config.cl_build = (uint32_t)build, has_build = true;
+      if (config.cl_build != build) r.ok = false;
+    }
     else if (key == "status")
       for (uint32_t m = r.map(); r.ok && m; --m) {
         std::string field = r.str();
