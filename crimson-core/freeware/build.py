@@ -1,0 +1,50 @@
+"""Build the source-recovered 1.4.0 Survival client with SDL3 or Emscripten."""
+
+import shlex
+import shutil
+import subprocess
+from pathlib import Path
+
+from .assets import prepare
+
+
+def _tool(name: str) -> str:
+    path = shutil.which(name)
+    if path is None:
+        raise SystemExit(f"{name} is required for the freeware client build")
+    return path
+
+
+def build(root: Path, target: str, out: Path, install: Path | None) -> None:
+    if install is None:
+        git_dir = subprocess.check_output(
+            [_tool("git"), "rev-parse", "--path-format=absolute", "--git-common-dir"], cwd=root, text=True,
+        ).strip()
+        install = Path(git_dir).parent / "game_bins/crimsonland/1.4.0"
+    if not (install / "sounds.paq").is_file():
+        raise SystemExit("Supply an extracted Crimsonland 1.4.0 install with --game-dir.")
+    assets = out / "assets"
+    prepare(root, install, assets)
+    core = root / "crimson-core"
+    recovered = root / "decomp/1.4/crimson/crimson"
+    sources = [
+        *(core / "freeware" / name for name in ("client.cpp", "display.cpp", "menu.cpp", "survival.cpp")),
+        *(recovered / name for name in (
+            "creatures/creature_alloc_slot.cpp", "creatures/creature_find_in_radius.cpp", "creatures/creature_reset_all.cpp",
+            "player/angle_approach.cpp", "projectiles/projectile_spawn.cpp",
+        )),
+    ]
+    flags = [
+        "-std=c++17", "-O2", "-fms-extensions", "-Wno-ignored-attributes", "-fno-strict-aliasing",
+        "-DCL_BUILD=10400", "-I" + str(root / "tools/match/include"), "-I" + str(root / "third_party/headers"),
+    ]
+    if target == "web":
+        binary = out / "index.html"
+        cmd = [_tool("em++"), *flags, *sources, "-sUSE_SDL=3", "-sALLOW_MEMORY_GROWTH", "--preload-file",
+               f"{assets}@/assets", "--shell-file", core / "freeware/shell.html", "-o", binary]
+    else:
+        binary = out / "crimson"
+        sdl = shlex.split(subprocess.check_output([_tool("pkg-config"), "--cflags", "--libs", "sdl3"], text=True))
+        cmd = [_tool("clang++"), *flags, *sources, *sdl, "-o", binary]
+    subprocess.run(cmd, check=True)
+    print(binary)

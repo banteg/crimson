@@ -558,6 +558,29 @@ typedef struct creature_t {
         vec2f_t velocity;
     };
     float health;
+#if CL_BUILD == 10400
+    // 0x40fb70 constructs this record; the Survival step at 0x40d8c0 consumes it.
+    // The anonymous view below retains the donor names used by the matcher.
+    union {
+        struct {
+            float heading;
+            float target_heading;
+            float size;
+            effect_color_t color;
+            unsigned char force_target;
+            unsigned char pad[3];
+            vec2f_t target;
+            float contact_damage;
+            float move_speed;
+            float attack_cooldown;
+            unsigned int reward_words[2];
+            unsigned char unknown_68[12];
+            int type;
+            int player;
+            float animation;
+        } freeware;
+        struct {
+#endif
     float max_health;
     float heading;
     float size;
@@ -605,6 +628,10 @@ typedef struct creature_t {
         float dot_tick_timer;
     };
     int entity_reserved_74;
+#if CL_BUILD == 10400
+        };
+    };
+#endif
 } creature_t;
 #else
 typedef struct creature_t {

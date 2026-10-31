@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crimsonland v1.4.0</title>
+<style>
+html,body{height:100%;margin:0;background:#080808;color:#ddd;font:16px monospace}
+body{display:grid;place-items:center}canvas{width:min(100vw,133.333vh);height:min(75vw,100vh);outline:none}
+#status{position:absolute}
+</style>
+<canvas id="canvas" width="1024" height="768" tabindex="0" aria-label="Crimsonland v1.4.0"></canvas>
+<div id="status">Loading Crimsonland v1.4.0…</div>
+<script>
+const canvas=document.querySelector("canvas");canvas.focus();
+canvas.addEventListener("pointerdown",()=>canvas.focus());
+canvas.addEventListener("contextmenu",event=>event.preventDefault());
+var Module={canvas, onRuntimeInitialized(){document.querySelector("#status").hidden=true;}};
+</script>
+{{{ SCRIPT }}}
+</html>
