@@ -43,3 +43,31 @@ extern "C" void combat_reward(float dt, float freeze, bool corpse) {
   game.run.freeze = freeze;
   game.kill(0, 0, corpse);
 }
+extern "C" void combat_arm(int weapon) {
+  game.survival = false;
+  game.run.health = 4;
+  game.run.cooldown = 0;
+  game.run.player = {512, 512};
+  freeware_secret_weapon_unlocked = 1;
+  auto &w = player_state_table[0].freeware;
+  w.ammo = 10;
+  w.clip_size = 10;
+  w.weapon = weapon;
+}
+extern "C" void combat_player(float dt, int keys, float x, float y) {
+  frame_dt = dt;
+  freeware::Input in;
+  in.fire = keys & 1;
+  in.right = keys & 2;
+  in.down = keys & 4;
+  in.left = keys & 8;
+  in.up = keys & 16;
+  in.x = x + freeware::camera_x(game);
+  in.y = y + freeware::camera_y(game);
+  game.step_player(0, dt, in, {x, y});
+  auto &p = player_state_table[0].freeware;
+  p.position = game.run.player;
+  p.cooldown = game.run.cooldown;
+  p.spread = game.run.spread;
+  p.aim_heading = game.run.aim_angle;
+}

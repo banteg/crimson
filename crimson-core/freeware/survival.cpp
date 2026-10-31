@@ -168,13 +168,19 @@ void Game::tick(float dt, const Input &in) {
   frame_dt = dt;
   freeware_simulation_clock += dt;
   current_player_index = 0;
+  const vec2f_t mouse_world{in.x - camera_x(*this), in.y - camera_y(*this)};
   update_creatures(dt);
   update_projectiles(dt);
   for (int i = 0; i < players(); ++i)
-    step_player(i, dt, in);
+    step_player(i, dt, in, mouse_world);
   current_player_index = 0;
   if (!survival)
     update_career(dt);
+  if (survival)
+    for (auto &p : player_state_table) {
+      p.freeware.weapon = 2;
+      p.freeware.ammo = 30;
+    }
   // The Survival arm at 0x41cc55 locks weapon 2 and emits a pair every quarter second.
   run.next_spawn -= dt * players();
   while (run.next_spawn < 0) {

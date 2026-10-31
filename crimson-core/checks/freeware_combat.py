@@ -64,6 +64,16 @@ class Comparison:
             pe.write_u32(va, v)
         pe.write_u32(0x43C5C8, 6)
         pe.write_u32(0x4385D4, 2)
+        self.keys = 0
+        for offset, fn in [
+            (0x40, lambda call: (self.keys << 8) >> (call.arg_u32(0) & 31) & 1),
+            (0x44, 0),
+            (0x48, 0),
+            (0x4C, 0),
+        ]:
+            address = pe.load_code(b"\xc3")
+            pe.stub(address, fn, pop=4)
+            pe.write_u32(table + offset, address)
         self.initial = pe.snapshot()
         self.frames = 0
 
@@ -292,6 +302,70 @@ class Comparison:
                 assert self.dll.combat_drop_weapon() == pe.read_i32(0x452E68)
             assert self.pe.call(0x422414).eax == self.dll.crt_rand(), ("reward", seed, "next rand")
 
+    def players(self):
+        pe = self.pe
+        for weapon in range(1, 21):
+            self.reset(42)
+            self.dll.combat_arm(weapon)
+            for va, value in [
+                (0x4428A8, 1),
+                (0x4428A0, 1),
+                (0x4428AC, 2),
+                (0x4428B4, 0),
+                (0x4385D4, weapon),
+                (0x452DDC, 3),
+                (0x452DE0, 8),
+                (0x452DE4, 14),
+                (0x452E14, 11),
+                (0x452DEC, 4),
+                (0x452DE8, 2),
+                (0x452E24, 22),
+                (0x452DFC, 7),
+                (0x452E1C, 18),
+            ]:
+                pe.write_u32(va, value)
+            for va, value in [
+                (0x42FB8C, 1),
+                (0x452DC4, 7),
+                (0x438490, 512),
+                (0x438494, 512),
+                (0x4384A0, 4),
+                (0x4384AC, 48),
+                (0x4385CC, 1),
+                (0x4384D0, 2),
+                (0x4384E4, 10),
+                (0x4385DC, 10),
+                (0x438508, 1),
+            ]:
+                pe.write_f32(va, value)
+            for va in (0x452D59, 0x4428F4, 0x452D4D):
+                pe.write_u8(va, 1)
+            # The port uses the platform's scancodes. Give the original five distinct bits for the same keys.
+            for offset, bit in [(0, 4), (1, 2), (2, 3), (3, 1), (4, 0)]:
+                pe.write_u8(0x4385F4 + offset, 8 + bit)
+            for j in range(4):
+                pe.write_u8(0x43877C + j, 24)
+            for i, (keys, x, y) in enumerate(
+                [(1, 712, 512), (2, 514, 774), (6, 391, 514), (16, 620, 477), (0, 712, 514), (9, 600, 520)],
+            ):
+                self.keys = keys
+                dt = 0.017
+                pe.write_f32(0x438800, x)
+                pe.write_f32(0x438804, y)
+                pe.write_f32(0x452E94, dt)
+                pe.call(0x4126E0)
+                self.dll.combat_player(dt, keys, x, y)
+                player = self.address(("player_state_table",))
+                for offset in (0x18, 0x1C, 0x4C, 0x50, 0x6C, 0x8C, 0x154, 0x168, 0x16C):
+                    expected = pe.read_f32(0x438478 + offset)
+                    got = ctypes.c_float.from_address(player + offset).value
+                    assert math.isclose(got, expected, abs_tol=0.001), (weapon, i, hex(offset), got, expected)
+                for pool, count in [(BULLET, 16), (ROCKET, 2), (PARTICLE, 5), (SPRITE, 5)]:
+                    for slot in range(count):
+                        self.compare(pool, slot, ("player", weapon, i))
+                self.frames += 1
+            assert pe.call(0x422414).eax == self.dll.crt_rand(), ("player", weapon, "next rand")
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -328,6 +402,8 @@ def main():
         dll.combat_actors.argtypes = [ctypes.c_int] * 3 + [ctypes.c_float]
         dll.combat_reward.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_bool]
         comparison = Comparison(dll, exe)
+        dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float]
+        comparison.players()
         comparison.creatures()
         comparison.rewards()
         comparison.projectiles()

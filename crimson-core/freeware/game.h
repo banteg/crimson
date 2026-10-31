@@ -127,7 +127,7 @@ struct Game {
 
   void update(float dt, const Input &input);
   void start();
-  void step_player(int index, float dt, const Input &in);
+  void step_player(int index, float dt, const Input &in, vec2f_t mouse_world);
   void fire_weapon(int index);
   void spawn_career();
   void kill(int slot, int owner, bool corpse = true);
