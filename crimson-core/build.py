@@ -10,10 +10,12 @@ import shlex
 import shutil
 import subprocess
 import sys
+import sysconfig
 from pathlib import Path
 
 from adapter import (
     DIFFS,
+    GENERATED,
     PROTOTYPES,
     adapt,
     apply_diffs,
@@ -27,7 +29,7 @@ from adapter import (
 from data import data_source
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.build_identity import WASI_SDK_VERSION, runtime_identity, write_manifest
+from scripts.build_identity import WASI_SDK_VERSION, file_hash, runtime_identity, write_manifest
 
 HERE = Path(__file__).resolve().parent
 HOST = HERE / "host"
@@ -76,7 +78,7 @@ PROBE_READS = {
 # /opt/wasi-sdk.
 def wasi_sdk() -> Path:
     if "WASI_SDK_PATH" in os.environ:
-        candidates = [Path(os.environ["WASI_SDK_PATH"])]
+        candidates = [Path(os.environ["WASI_SDK_PATH"]).resolve()]
     else:
         git = shutil.which("git") or "git"
         common = subprocess.check_output([git, "rev-parse", "--path-format=absolute", "--git-common-dir"], cwd=HERE, text=True).strip()
@@ -97,6 +99,13 @@ def ninja_command(args):
     return shlex.join(args).replace("$", "$$")
 
 
+# Whether a module is the one the build last linked and recorded: Ninja keeps any module newer than its objects,
+# whatever its bytes, and the build writes the manifest only after a link and the checks that follow it.
+def recorded(binary):
+    manifest = binary.with_name(binary.name + ".build.json")
+    return manifest.exists() and json.loads(manifest.read_text())["artifacts"] == {binary.name: file_hash(binary)}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--root", type=Path, default=HERE.parent)
@@ -108,6 +117,12 @@ def main():
         help="Write the adapted sources and adapted.diff, their changes from decomp/, without compiling",
     )
     a = p.parse_args()
+    # Ninja runs in the output directory, where what the build writes goes by its relative name; everything else goes
+    # by its absolute path, which Ninja's depfiles must be able to spell: they split a path at these characters.
+    a.root = a.root.resolve()
+    for path in (HERE, a.root):
+        if re.search(r"[|;<>*^`\\\x00-\x1f\x7f]", str(path)):
+            raise SystemExit(f"Ninja cannot track files under {path}, which holds | ; < > * ^ ` \\ or a control character")
     a.out = (a.out or HERE / "build" / a.target).resolve()
     a.out.mkdir(parents=True, exist_ok=True)
     headers = a.out / "include"
@@ -203,7 +218,7 @@ def main():
         "-Wno-int-to-pointer-cast",
         *(["-DCRIMSON_GAME", "-I" + str(HERE / "game/include")] if a.target == "game" else []),
         "-I" + str(HOST),
-        "-I" + str(headers),
+        "-I" + str(headers.relative_to(a.out)),
         "-I" + str(a.root / "third_party/headers"),
     ]
     darwin = ["-mmacosx-version-min=11.0"] if not wasm and os.uname().sysname == "Darwin" else []
@@ -311,6 +326,28 @@ def main():
     # object and the link also read what the compilers say they are.
     toolchain = a.out / "toolchain.txt"
     write_if_changed(toolchain, "".join(subprocess.check_output([*tool, "--version"], text=True) for tool in (c, cc)))
+    # A header the build no longer generates goes, or the includes that found it would go on finding it.
+    for path in headers.rglob("*"):
+        if path.is_file() and path not in GENERATED:
+            path.unlink()
+    # Depfiles name the headers an object read, not the ones its includes would find now, which a file added to or
+    # removed from a directory they search changes: each rule's objects also read the names of the files under its -I
+    # directories and its sources' own (the output directory holds only what the build writes).
+    searched = {}
+    for rule, command in rules.items():
+        dirs = {a.out / arg[2:] for arg in command if arg.startswith("-I")}
+        dirs |= {src.parent for r, src, _ in objects if r == rule} - {a.out}
+        searched[rule] = a.out / f"search_{rule}.txt"
+        write_if_changed(
+            searched[rule],
+            "".join(f"{path}\n" for d in sorted(dirs) for path in sorted(d.rglob("*")) if path.is_file()),
+        )
+
+    # Ninja runs in the output directory, so what lands there goes by its name in it, and the output directory never
+    # reaches Ninja's syntax or its depfiles.
+    def node(path):
+        return ninja_path(path.relative_to(a.out) if path.is_relative_to(a.out) else path)
+
     lines = []
     for rule, command in rules.items():
         lines += [
@@ -319,32 +356,40 @@ def main():
             "  depfile = $out.d",
             "  deps = gcc",
         ]
-    # The linker's warnings stay in link.log until it links again, so the ABI check below reads the module's own.
     lines += [
         "rule link",
         f"  command = {ninja_command([*cc, *darwin])} $in -o $out {ninja_command(link_flags)} 2> link.log",
     ]
-    # Ninja runs in the output directory, so what lands there goes by its name.
-    lines += [f"build {ninja_path(obj)}: {rule} {ninja_path(src)} | {toolchain.name}" for rule, src, obj in objects]
+    lines += [
+        f"build {ninja_path(obj)}: {rule} {node(src)} | {node(toolchain)} {node(searched[rule])}"
+        for rule, src, obj in objects
+    ]
     names = " ".join(ninja_path(obj) for *_, obj in objects)
     lines += [
         f"build objects: phony {names}",
-        f"build {ninja_path(binary.name)}: link {names} | {toolchain.name}",
-        f"default {ninja_path(binary.name)}",
+        # The linker's warnings, which the ABI check below reads, come out of the link with the module.
+        f"build {node(binary)} | link.log: link {names} | {node(toolchain)}",
+        f"default {node(binary)}",
     ]
     write_if_changed(a.out / "build.ninja", "\n".join(lines) + "\n")
-    ninja = [shutil.which("ninja") or "ninja", "-C", str(a.out), "--quiet", "-k", "0"]
+    # The locked Ninja, beside the interpreter running the build, before any other.
+    ninja = [shutil.which("ninja", path=f"{sysconfig.get_path('scripts')}{os.pathsep}{os.environ['PATH']}") or "ninja"]
+    ninja += ["-C", str(a.out), "--quiet", "-k", "0"]
     # Every object before the link, so every compile error comes at once.
     proc = subprocess.run([*ninja, "objects"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False)
     (a.out / "errors.txt").write_text(proc.stdout)
     print(f"{len(objects) - proc.stdout.count('FAILED: ')}/{len(objects)} compiled; errors: {a.out / 'errors.txt'}")
     if proc.returncode:
         raise SystemExit(1)
+    if binary.exists() and not recorded(binary):
+        binary.unlink()
     proc = subprocess.run(ninja, capture_output=True, check=False)
     log = (a.out / "link.log").read_text()
     if proc.returncode:
         print(log[-12000:])
     if wasm and "function signature mismatch" in log:
+        # Nothing loads a module that fails the check, and the next build links it again.
+        binary.unlink(missing_ok=True)
         raise SystemExit("WASM ABI warning; see link.log")
     if proc.returncode == 0:
         write_manifest(binary.with_name(binary.name + ".build.json"), build_identity, [binary])

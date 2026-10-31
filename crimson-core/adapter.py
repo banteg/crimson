@@ -261,10 +261,15 @@ def guard_targets(root):
     return [(load_diffs(DIFFS), core), (load_diffs(GAME_DIFFS), core + game_sources(root))]
 
 
+# Every file write_if_changed wrote or found current in this run, so a build can drop what it no longer generates.
+GENERATED = set()
+
+
 def write_if_changed(path, text):
     """Write a generated file only when its bytes change: one that stays the same keeps its time, so Ninja leaves
     what reads it alone."""
 
+    GENERATED.add(path)
     if not path.exists() or path.read_text() != text:
         path.write_text(text)
 

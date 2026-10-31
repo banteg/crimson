@@ -112,8 +112,9 @@ The build is incremental. Python writes each generated source and header only
 when its bytes change, then a `build.ninja` beside them, and Ninja compiles
 and links: a second build of the same inputs compiles and links nothing, and an
 edit compiles again only the objects that read what changed (their generated
-source, a header they include, their flags, or the compilers, whose own account
-of themselves `toolchain.txt` holds). `errors.txt` keeps the compilers'
+source, a header they include, the files in the directories their includes
+search, which `search_<rule>.txt` lists, their flags, or the compilers, whose
+own account of themselves `toolchain.txt` holds). `errors.txt` keeps the compilers'
 diagnostics and `link.log` the linker's. In the game module, the version a
 replay records carries the source fingerprint
 ([`scripts/build_identity.py`](../scripts/build_identity.py)), so it comes in a
