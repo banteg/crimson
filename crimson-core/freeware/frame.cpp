@@ -83,7 +83,19 @@ void Game::update(float dt, const Input &in) {
   Input quiet;
   quiet.x = cursor_x;
   quiet.y = cursor_y;
-  freeware_frame_input = console_open ? &quiet : &in;
+  freeware_frame_input = &in;
+  if (console_open) {
+    freeware_frame_input = &quiet;
+  } else if (screen == Screen::Perks && !run.choices.empty() && (in.previous || in.next || in.accept)) {
+    // Keyboard navigation positions the same cursor used by the original mouse hit test.
+    selected = std::clamp(selected + int(in.next) - int(in.previous), 0, int(run.choices.size()) - 1);
+    quiet = in;
+    quiet.relative = false;
+    quiet.x = 100;
+    quiet.y = 90.f + selected * 20;
+    quiet.click |= in.accept;
+    freeware_frame_input = &quiet;
+  }
   freeware_frame_delta = dt;
   if (!game_frame_update())
     quit = true;

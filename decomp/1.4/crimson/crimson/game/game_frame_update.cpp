@@ -46,7 +46,7 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
-void gameplay_render_hud(), game_show_message();
+void gameplay_render_hud(), game_show_message(), perk_selection_screen_update();
 unsigned char freeware_overlay_begin(), game_highscores_update(), game_credits_update();
 
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -62,8 +62,7 @@ extern float freeware_xp_timer, freeware_pickup_time, freeware_next_spawn, freew
 extern vec2f_t freeware_camera_shake, freeware_bomb_position;
 extern unsigned char freeware_random_flags[8], quit_requested;
 void player_render(), gameplay_render_hud(), terrain_render(), fx_queue_render(), projectile_render(),
-    effect_render_all(), creature_render_all(), perk_selection_screen_update(), gameplay_reset_state(),
-    sfx_update();
+    effect_render_all(), creature_render_all(), gameplay_reset_state(), sfx_update();
 #endif
 }
 
@@ -571,12 +570,7 @@ extern "C" unsigned char game_frame_update() {
         break;
     case 4:
         hud();
-#ifdef CRIMSON_FREEWARE_CLIENT
-        begin_overlay();
-        G.update_ui(INPUT);
-#else
         perk_selection_screen_update();
-#endif
         break;
     case 6:
         update_wave();

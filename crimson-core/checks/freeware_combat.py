@@ -353,21 +353,16 @@ class Comparison:
 
         pe.stub(0x42C2EC, duplicate)
         pe.stub(0x421B81, 0)
+        pe.stub(0x421DD6, lambda c: pe.alloc(c.arg_u32(0)))
         for seed in (1, 42):
             for perk in range(1, 33):
                 self.reset(seed)
-                pe.stub(0x4078B0, lambda call: call.arg_u32(0))
                 pe.call(0x407920)  # Native registration binds the perk IDs.
                 pe.write_u32(0x452DA8, perk)
                 pe.write_u32(0x452E70, 2)
                 pe.write_u32(0x438500, 1)
                 pe.write_f32(0x4384A0, 100)
                 pe.write_f32(0x4385DC, 30)
-                message = []
-                pe.stub(
-                    0x4078B0,
-                    lambda call, message=message: message.append(read_string(call.arg_u32(0)).decode("ascii")) or 0,
-                )
                 pe.rand_state = seed
                 # Accepted mouse click, through the native co-op copy at the common exit.
                 pe.run(0x415DD7, 0x416551, regs={"ebp": 0, "ebx": 2})
@@ -387,7 +382,9 @@ class Comparison:
                 for j in range(2):
                     assert ctypes.string_at(player + 392 * j + 0x94, 192) == pe.read(0x43850C + 392 * j, 192)
                 assert ctypes.c_uint8.from_address(player + 12).value == pe.read_u8(0x438484)
-                assert self.dll.combat_message().decode() == (message[0] if message else ""), (
+                addr = pe.read_u32(0x452D48)
+                message = read_string(addr).decode("ascii") if addr else ""
+                assert self.dll.combat_message().decode() == message, (
                     perk,
                     seed,
                     self.dll.combat_message(),
@@ -619,6 +616,7 @@ def check_web(stage, exe, sources):
         "combat_wall",
         "combat_ui_hud",
         "combat_ui_page",
+        "combat_ui_perk",
         "player_reset_all",
         "combat_frame_start",
         "combat_frame_step",

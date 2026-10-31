@@ -64,7 +64,7 @@ class UiOracle:
             0x48: (1, lambda c: c.arg_u32(0) in self.down),
             0x4C: (1, lambda c: c.arg_u32(0) in self.clicks),
             0x90: (1, texture),
-            0x94: (2, lambda c: setattr(self, "texture", self.textures[c.arg_u32(0)])),
+            0x94: (2, lambda c: setattr(self, "texture", self.textures.get(c.arg_u32(0), f"handle {c.arg_u32(0)}"))),
             0x98: (0, 0),
             0xA0: (0, 0),
             0xAC: (1, lambda c: setattr(self, "angle", c.arg_f32(0))),
@@ -149,7 +149,7 @@ def check_ui(check, exe):
                 state = (pe.read_f32(0x452DC4), pe.read_f32(0x452D74), pe.read_i32(0x4384FC), pe.read_i32(0x452D8C))
                 got = (ctypes.c_float * 4).from_address(check.symbol("combat_ui_result"))
                 assert tuple(got) == state, (case, tuple(got), state)
-    return calls + check_pages(oracle, check)
+    return calls + check_pages(oracle, check) + check_perk_draws(oracle, check)
 
 
 def check_pages(oracle, check):
@@ -220,4 +220,66 @@ def check_pages(oracle, check):
                     tuple(got),
                     state,
                 )
+    return calls
+
+
+def check_perk_draws(oracle, check):
+    pe = oracle.pe
+    pe.stub(0x421DD6, lambda c: pe.alloc(c.arg_u32(0)))
+    pe.stub(0x421B81, 0)
+
+    def duplicate(c):
+        data = oracle.string(c.arg_u32(0)).encode("latin1") + b"\0"
+        return pe.alloc(len(data), data=data)
+
+    pe.stub(0x42C2EC, duplicate)
+    # Run registration, including its original 25-column text wrapping.
+    for i in range(48):
+        pe.write_u8(0x441FC0 + 20 * i + 16, 1)
+    pe.call(0x407920)
+    snap = pe.snapshot()
+    calls = 0
+    for perk in range(1, 33):
+        for flags in (0, 3, 4 | 32, 8, 16, 64):
+            pe.restore(snap)
+            oracle.reset_draw()
+            oracle.down.clear()
+            oracle.clicks.clear()
+            oracle.edges.clear()
+            oracle.keys.clear()
+            if flags & 8:
+                oracle.down.add(0)
+            if flags & 16:
+                oracle.clicks.add(0)
+            pe.write_u32(0x452DA8, 0xFFFFFFFF if flags & 32 else perk)
+            pe.write_u32(0x452E70, 2)
+            pe.write_u32(0x452D8C, 0)
+            pe.write_u32(0x42FBAC, 4)
+            pe.write_u32(0x4428A0, 2 if flags & 2 else 1)
+            pe.write_u32(0x4428A8, 1)
+            pe.write_u8(0x42FBB4, 0)
+            pe.write_u8(0x452D4F, 0)
+            pe.write_u32(0x452D48, 0)
+            pe.write(0x43850C, b"\0" * (48 * 4))
+            pe.write_u32(0x43850C + 25 * 4, flags & 1)
+            pe.write_u32(0x43850C + perk * 4, pe.read_u32(0x43850C + perk * 4) + int(bool(flags & 4)))
+            pe.write(0x43C598, b"\0" * 48)
+            pe.write_u8(0x43C598 + perk, 1)
+            pe.write_u8(0x43C598 + (2 if perk == 1 else 1), 1)
+            for addr, value in [
+                (0x452D40, 4.625),
+                (0x452D54, 4),
+                (0x42FB9C, 1),
+                (0x438800, 430 if flags & 8 else 295 if flags & 64 else 100),
+                (0x438804, 15 if flags & 8 else 90 + int(perk != 1) * 20),
+            ]:
+                pe.write_f32(addr, value)
+            pe.rand_state = 815
+            pe.call(0x415690)
+            n = check.dll.combat_ui_perk(perk, flags)
+            case = ("perk", perk, flags)
+            calls += oracle.compare(check, n, case)
+            state = tuple(pe.read_i32(a) for a in (0x452DA8, 0x42FBAC, 0x452E70, 0x43850C + perk * 4))
+            observed = tuple((ctypes.c_float * 4).from_address(check.symbol("combat_ui_result")))
+            assert state == observed, (case, state, observed)
     return calls

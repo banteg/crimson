@@ -2,6 +2,8 @@
 #include "game.h"
 #include <algorithm>
 #include <cmath>
+extern freeware::Game *freeware_frame_game;
+extern "C" void freeware_grant_perk(int);
 namespace freeware {
 struct Perk {
   const char *name, *description;
@@ -114,20 +116,21 @@ static const Perk perks[] = {
      "letters)",
      true},
 };
-static const char *const hints[] = {
-    "As newly born stay still waiting for a monster to come. Slay it with a single shot and go standing on the "
-    "dead body of the monster waiting for its friends to come tear you apart. When at near death condition one "
-    "will be given a gift one can keep if still remaining alive.",
-    "To get one of them, one has to as said. One has to                                                           "
-    "                            weapon.",
-    "Beware of the false information. Some may try to lead you astray. Everything doesn't make sense.",
-    "Always the same about the Secret Weapon: jymrmpibftxkmnmstqvxz",
-    "Mitahan ihmeellista kielta taakin on? Eipa tasta taida mitaan hyotya olla kuitenkaan.. vai?",
-    "One left, two right, four forth and six back. And again. What does it form if left is back and Ceasar is not "
-    "only an emperor?",
-    "Only a true bubble boy survives peacefully over kaksi minuuttia without a scratch."};
+extern "C" char *wrap_text_to_width_alloc(char *, int);
+static const auto &wrapped_descriptions() {
+  static const auto result = [] {
+    std::array<std::string, sizeof(perks) / sizeof(*perks)> descriptions;
+    for (size_t i = 0; i < descriptions.size(); ++i) {
+      char *wrapped = wrap_text_to_width_alloc(const_cast<char *>(perks[i].description), 25);
+      descriptions[i] = wrapped;
+      delete[] wrapped;
+    }
+    return descriptions;
+  }();
+  return result;
+}
 const char *perk_name(int i) { return perks[i].name; }
-const char *perk_description(int i) { return perks[i].description; }
+const char *perk_description(int i) { return wrapped_descriptions()[i].c_str(); }
 extern "C" {
 unsigned char perk_choice_flags[48], freeware_show_secret_hints;
 int config_player_count = 1, perk_id_count = 32, perk_id_perk_expert = 25;
@@ -156,47 +159,10 @@ void Game::open_perks() {
 void Game::choose_perk(int choice) {
   if (choice < 0 || choice >= int(run.choices.size()))
     return;
-  const int id = run.choices[choice];
-  ++run.perks[id];
-  switch (id) {
-  case 8:
-    run.experience += 2500;
-    break;
-  case 9:
-    run.experience += 6666;
-    run.health = -1;
-    break;
-  case 19:
-    if (crt_rand() % 2 == 0)
-      run.experience += 10000;
-    else
-      run.health = -1;
-    break;
-  case 20:
-  case 21:
-    weapon_assign_player(0, id == 20 ? 2 : 3);
-    player_state_table[0].freeware.clip_size += id == 20 ? 10 : 5;
-    break;
-  case 24:
-    run.level += 3;
-    run.pending += 3;
-    run.health = .1f;
-    break;
-  }
-  for (auto &p : player_state_table)
-    std::copy(run.perks.begin(), run.perks.end(), p.freeware.perks);
-  if (id == 10)
-    player_state_table[0].freeware.plaguebearer = 1;
-  --run.pending;
-  run.choices.clear();
-  screen = Screen::Playing;
-  if (id >= 26 && id <= 32) {
-    message = hints[id - 26];
-    if (id != 29)
-      for (char &c : message)
-        if (c != ' ' && (id == 30 ? crt_rand() % 2 == 0 : crt_rand() % 5 < 2))
-          c = char('a' + crt_rand() % 26);
-    screen = Screen::Message;
-  }
+  auto *previous = freeware_frame_game;
+  freeware_frame_game = this;
+  current_player_index = 0;
+  freeware_grant_perk(run.choices[choice]);
+  freeware_frame_game = previous;
 }
 } // namespace freeware

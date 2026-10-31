@@ -60,11 +60,9 @@ __forceinline void show_page(int id) {
         break;
     case credits_page:
         G.screen = freeware::Screen::Credits;
-        G.screen_started = G.menu_clock;
         break;
     case scores_page:
         G.screen = freeware::Screen::Scores;
-        G.score_offset = 0;
         break;
     }
     G.notice = 0;

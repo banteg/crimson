@@ -32,49 +32,6 @@ int menu_hover(const Game &g) {
   return -1;
 }
 
-void Game::update_ui(const Input &in) {
-  if (screen == Screen::Message) {
-    if (in.level_up || in.click || in.accept)
-      screen = Screen::Playing;
-    return;
-  }
-  if (screen == Screen::Perks) {
-    int count = int(run.choices.size());
-    if (in.previous)
-      selected = std::max(0, selected - 1);
-    if (in.next)
-      selected = std::min(count - 1, selected + 1);
-    if (in.click && in.x > 390 && in.x < 590 && in.y > 5 && in.y < 37) {
-      perk_transparent = !perk_transparent;
-      return;
-    }
-    int hover = (in.x > 45 && in.x < 395 && in.y >= 80) ? int((in.y - 80) / 20) : -1;
-    if (hover >= 0 && hover < count && (mouse_dx || mouse_dy || in.click))
-      selected = hover;
-    if (in.accept || (in.click && hover >= 0 && hover < count))
-      choose_perk(selected);
-    return;
-  }
-  if (screen == Screen::Scores || screen == Screen::Credits) {
-    if (screen == Screen::Scores) {
-      int last = std::max(0, int(std::min<size_t>(100, scores().size())) - 10);
-      if (in.next)
-        score_offset = std::min(last, score_offset + 1);
-      if (in.previous)
-        score_offset = std::max(0, score_offset - 1);
-    }
-    if (transition_alpha < 1)
-      transition_alpha -= frame_dt * 2.4f;
-    if (in.accept || in.click || in.escape)
-      transition_alpha -= frame_dt;
-    if (transition_alpha <= 0) {
-      transition_pending = true;
-      state_since = freeware_simulation_clock;
-      screen = Screen::Menu;
-      selected = 0;
-    }
-  }
-}
 std::string Game::option(int row) const {
   static const char *moves[] = {"Control method: kb static", "Control method: kb relative",
                                 "Control method: joystick static"};

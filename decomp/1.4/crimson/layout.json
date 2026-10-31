@@ -363,6 +363,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/ui/perk_selection_screen_update.cpp",
+          "configs": [
+            "tools/match/scratches/perk_selection_screen_update"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/weapons/player_start_reload.cpp",
           "configs": [
             "tools/match/scratches/player_start_reload"

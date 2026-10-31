@@ -74,6 +74,8 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "ui/hud_set_row.cpp",
                 "ui/overlay_begin.cpp",
                 "ui/game_show_message.cpp",
+                "ui/perk_selection_screen_update.cpp",
+                "perks/wrap_text_to_width_alloc.cpp",
                 "ui/game_credits_update.cpp",
                 "ui/game_highscores_update.cpp",
                 "player/angle_approach.cpp",

@@ -49,7 +49,8 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     def quad(call):
         # Capture the quads issued by the dispatcher, including both of its animated cursors.
         if (
-            0x416560 < call.return_address < 0x4167A6
+            0x415690 < call.return_address < 0x416559
+            or 0x416560 < call.return_address < 0x4167A6
             or 0x41EFA0 < call.return_address < 0x41F230
             or 0x41E330 < call.return_address < 0x41EF9D
             or 0x41F480 < call.return_address < 0x41FB93

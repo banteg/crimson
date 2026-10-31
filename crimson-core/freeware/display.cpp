@@ -227,31 +227,9 @@ void Display::draw(Game &g) {
       SDL_SetTextureBlendMode(texture, previous);
     }
   }
-  const SDL_FColor white{1, 1, 1, 1}, muted{1, 1, 1, .65f};
+  const SDL_FColor white{1, 1, 1, 1};
   if (g.presented_screen == Screen::Menu && g.notice)
     text(g.notice, width / 2 - 220, 478, .65f, white);
-  if (g.presented_screen == Screen::Perks) {
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, g.perk_transparent ? 65 : 205);
-    SDL_RenderFillRect(renderer, nullptr);
-    text("Pick a perk:", 150, 40, .65f, white);
-    text(g.run.perks[25] ? "(of random 7)" : "(of random 5)", 285, 43, .55f, {.68f, .68f, .89f, 1});
-    text("(click to see through)", 390, 5, .65f, {.78f, .78f, .49f, .65f});
-    for (size_t i = 0; i < g.run.choices.size(); ++i)
-      text(perk_name(g.run.choices[i]), 50, 80 + 20 * i, .65f, i == size_t(g.selected) ? white : muted);
-    if (!g.run.choices.empty()) {
-      std::string description = perk_description(g.run.choices[g.selected]);
-      size_t col = 0;
-      for (char &c : description) {
-        if (c == ' ' && col > 25) {
-          c = '\n';
-          col = 0;
-        } else
-          ++col;
-      }
-      text(description, 400, 80, .65f, white);
-    }
-  }
   frame_art(g);
   if (g.presented_screen == Screen::Online && g.notice)
     text(g.notice, 50, 345, .55f, white);

@@ -142,8 +142,8 @@ struct Game {
   std::vector<TerrainStamp> terrain;
   void generate_terrain();
   float menu_clock{}, cursor_x = 320, cursor_y = 140;
-  int selected{}, generation{};
-  float death_clock{}, screen_started{};
+  int selected{}, generation{}, perk_hover{};
+  float death_clock{};
   vec2f_t radial_cursor{320, 140}, camera{0, -128}, camera_shake{};
   float camera_timer{}, state_since{};
   unsigned char random_flags[8]{};
@@ -194,7 +194,7 @@ struct Game {
   const char *notice = nullptr;
   std::string name, message, command;
   std::vector<std::string> console_lines, history;
-  int history_index{}, spawn_health = 100, score_offset{};
+  int history_index{}, spawn_health = 100;
   bool console_open{}, visit_website{};
   effect_color_t spawn_color{1, 1, 1, 1};
   void console_input(const Input &);
@@ -220,7 +220,6 @@ struct Game {
   bool merge_scores(const std::string &filename);
   int next_level_xp() const;
 
-  void update_ui(const Input &input);
   int frame_state() const;
   void enter_state(int id);
   void combat_frame(float dt, const Input &in, vec2f_t mouse_world);

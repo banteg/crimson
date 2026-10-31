@@ -536,3 +536,40 @@ extern "C" int combat_ui_page(int kind, int ticks, int flags, int board) {
   freeware_frame_input = nullptr;
   return capture_ui();
 }
+extern "C" void perk_selection_screen_update();
+extern "C" unsigned char perk_choice_flags[48];
+extern "C" int combat_ui_perk(int id, int flags) {
+  game = freeware::Game{};
+  freeware::Input in;
+  game.two_players = flags & 2;
+  game.run.pending = 2;
+  game.run.perks[25] = flags & 1;
+  game.run.perks[id] += bool(flags & 4);
+  game.open_perks();
+  std::fill_n(perk_choice_flags, 48, 0);
+  perk_choice_flags[id] = 1;
+  perk_choice_flags[id == 1 ? 2 : 1] = 1;
+  game.run.choices = {1, id == 1 ? 2 : id};
+  game.perk_hover = flags & 32 ? -1 : id;
+  game.cursor_x = flags & 8 ? 430 : flags & 64 ? 295 : 100;
+  game.cursor_y = flags & 8 ? 15 : 90 + int(id != 1) * 20;
+  game.state_since = 4;
+  freeware_simulation_clock = 4.625f;
+  game.transition_alpha = 1;
+  game.transition_pending = false;
+  current_player_index = 0;
+  freeware_frame_input = &in;
+  freeware_frame_game = &game;
+  freeware_frame_delta = .125f;
+  in.click = flags & 16;
+  in.mouse_fire = flags & 8;
+  freeware::seed_random(815);
+  perk_selection_screen_update();
+  combat_ui_result[0] = (float)game.perk_hover;
+  combat_ui_result[1] = (float)game.frame_state();
+  combat_ui_result[2] = (float)game.run.pending;
+  combat_ui_result[3] = (float)game.run.perks[id];
+  freeware_frame_game = nullptr;
+  freeware_frame_input = nullptr;
+  return capture_ui();
+}
