@@ -22,7 +22,7 @@ __forceinline void rounds(float multiplier, float y, float h) {
          i < (int)(P(current_player_index).clip_size * multiplier); ++i)
         quad(320 + i * spacing * 10, y, spacing * 16, h);
 }
-__forceinline void health_bar(float hp, float y) {
+__forceinline void health_bar(const float &hp, float y) {
     tint(.38f, .04f, .04f, .9f);
     float fraction = hp * .01f;
     if (fraction > 1) {
@@ -184,7 +184,7 @@ extern "C" void gameplay_render_hud() {
         angle(0);
         begin();
         freeware_hud_set_row(0);
-        quad(width - 240.f, height - 50.f, 256, 50);
+        quad(viewport_width() - 240.f, viewport_height() - 50.f, 256, 50);
         end();
         filter(2);
     }

@@ -252,6 +252,9 @@ __forceinline void render_world() {
     freeware_current_map->render_layer(2, 0);
 #else
     G.apply_bomb_damage(frame_dt);
+    G.ui.filter = 2;
+    G.ui.destination_blend = 6;
+    G.ui.scale = .5f; // effect_render_all leaves this font scale for the menu.
 #endif
 }
 __forceinline void spawn_edge() {
@@ -421,6 +424,7 @@ __forceinline void timed_perks() {
 }
 __forceinline void label(const char *text, float x, float y, float scale, float r, float g, float b, float alpha) {
 #ifdef CRIMSON_FREEWARE_CLIENT
+    G.ui.scale = scale;
     G.frame_labels.push_back({text, x, y, scale, {r, g, b, alpha}, G.frame_sprites.size()});
 #else
     grim_interface_ptr->grim_set_config_var(0x18, scale);
@@ -431,7 +435,7 @@ __forceinline void label(const char *text, float x, float y, float scale, float 
 __forceinline void sprite(const char *name, float x, float y, float w, float h, float angle, float r, float g,
                           float b, float a) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-    G.frame_sprites.push_back({name, x, y, w, h, angle, {r, g, b, a}});
+    G.frame_sprites.push_back({name, x, y, w, h, angle, {r, g, b, a}, {}, G.ui.filter, G.ui.destination_blend});
 #else
     grim_interface_ptr->grim_bind_texture(grim_interface_ptr->grim_get_texture_handle((char *)name), 0);
     grim_interface_ptr->grim_set_rotation(angle);

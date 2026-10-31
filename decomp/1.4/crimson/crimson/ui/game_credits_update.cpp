@@ -9,7 +9,7 @@ extern "C" unsigned char game_credits_update() {
     float time = (freeware_simulation_clock - UI_SINCE) * 1.3f;
     backdrop(time, false);
     draw_backdrop();
-    float top = height - time * 17;
+    float top = viewport_height() - time * 17;
     int lines = 30;
     if (top + 540 > -30) {
         text(50, top + 0, "Project Crimsonland");
@@ -28,7 +28,7 @@ extern "C" unsigned char game_credits_update() {
         text(50, top + 450, "Jarkko Forsbacka");
         text(50, top + 468, "Wille Mantyla");
     }
-    if (top + 540 <= -30 || top + 540 - 32 < height) {
+    if (top + 540 <= -30 || top + 540 - 32 < viewport_height()) {
         lines = 66;
         text(50, top + 540, "Beta testers / thanks / greets");
         text(50, top + 558, "                (alphabetical)");

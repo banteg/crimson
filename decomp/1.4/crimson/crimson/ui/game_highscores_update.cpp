@@ -19,6 +19,7 @@ __declspec(dllimport) int __stdcall DeleteFileA(const char *);
 #endif
 }
 namespace {
+__forceinline float row_y(float travel, int offset) { return (viewport_height() - travel) + offset; }
 __forceinline bool scroll_key(int key) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     return key == 0xd0 ? freeware_frame_input->arrow_down : freeware_frame_input->arrow_up;
@@ -63,17 +64,18 @@ extern "C" unsigned char game_highscores_update() {
         scroll -= frame_dt * 5;
     float travel = (elapsed + scroll) * 17.f;
     draw_backdrop();
-    float top = height - travel;
-    text(50, top, "Highscores:");
+
+    text(50, row_y(travel, 0), "Highscores:");
     if (config_player_count == 2)
-        text(50, top + 18, config_game_mode == 2 ? "-SURVIVAL2-" : "-CAREER2---");
+        text(50, row_y(travel, 18), config_game_mode == 2 ? "-SURVIVAL2-" : "-CAREER2---");
     else
-        text(50, top + 18, config_game_mode == 2 ? "-SURVIVAL--" : "-CAREER----");
+        text(50, row_y(travel, 18), config_game_mode == 2 ? "-SURVIVAL--" : "-CAREER----");
     for (int i = 0; i < 100; ++i) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         const char *name = "10tons";
         int value = 0;
         if (corrupt) {
+            name = " ";
             if (i == 0)
                 name = "Corrupted high score file.";
             else if (i == 1)
@@ -101,19 +103,19 @@ extern "C" unsigned char game_highscores_update() {
             UI_FIELD(freeware_score_highlighted, score_highlighted) = 1;
         } else
             tint(1, 1, 1, .88f);
-        float y = top + 54.f + i * 18;
-        if (y <= height && y >= -32) {
+        float y = row_y(travel, 54 + i * 18);
+        if (y <= viewport_height() && y >= -32) {
             char buffer[32];
             sprintf(buffer, "%d", i + 1);
-            text(30, y, buffer);
-            text(80, y, name);
+            text(30, row_y(travel, 54 + i * 18), buffer);
+            text(80, row_y(travel, 54 + i * 18), name);
             sprintf(buffer, "%d", value);
-            text(460, y, buffer);
+            text(460, row_y(travel, 54 + i * 18), buffer);
         }
     }
     if (UI_ALPHA < 1)
         UI_FIELD(freeware_scores_closing, scores_closing) = 1;
-    if (dismiss_scroll(top + 1854 < 0)) {
+    if (dismiss_scroll(row_y(travel, 1854) < 0)) {
 #ifndef CRIMSON_FREEWARE_CLIENT
         freeware_scores_open = 0;
 #endif

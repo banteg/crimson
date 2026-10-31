@@ -60,7 +60,7 @@ __forceinline void draw_backdrop() {
     bind(freeware_bullet_texture);
 #endif
     begin();
-    quad(-300, -300, (float)(width + 300), (float)(height + 600));
+    quad(-300, -300, (float)(viewport_width() + 300), (float)(viewport_height() + 600));
     end();
     tint(1, 1, 1, .68f);
     scale(.76f);
@@ -68,6 +68,8 @@ __forceinline void draw_backdrop() {
     grim_interface_ptr->grim_set_config_var(0x12, 1u);
     grim_interface_ptr->grim_set_config_var(0x13, 5u);
     grim_interface_ptr->grim_set_config_var(0x14, 6u);
+#else
+    UI_GAME.ui.destination_blend = 6;
 #endif
     tint(1, 1, 1, .88f);
     if (UI_ALPHA < 1)

@@ -185,6 +185,7 @@ struct CapturedQuad {
   effect_color_t color;
 };
 CapturedQuad combat_frame_quads[128];
+int combat_frame_blends[128], combat_frame_label_positions[64];
 struct CapturedLabel {
   char text[160];
   float x, y, scale;
@@ -223,6 +224,25 @@ void combat_frame_start(int mode, int count, int phase, int flags) {
   game.active_run = phase != 1;
   game.state_since = flags & 512 ? 2.01f : 5;
   game.menu_music_pending = true;
+  if (flags >= 4096) {
+    game.birthday = flags & 4096;
+    game.memorial = flags & 8192;
+    game.christmas = flags & 16384;
+    game.solstice = flags & 32768;
+    game.assembly_sequence = flags & 65536 ? 8 : 0;
+    game.state_since = 2;
+    game.menu_music_pending = false;
+    if (flags & 131072)
+      game.screen = freeware::Screen::Online;
+    if (flags & 262144) {
+      game.screen = freeware::Screen::Options;
+      game.calibration = 0;
+    }
+    if (flags & 524288) {
+      game.screen = freeware::Screen::Options;
+      game.rebind = 0;
+    }
+  }
   freeware_simulation_clock = 5;
   game.run.seconds = 7;
   game.run.next_spawn = flags & 1 ? 0 : 2;
@@ -290,6 +310,7 @@ int combat_frame_step(float dt, int input) {
   for (size_t i = 0; i < game.frame_sprites.size(); ++i) {
     auto &out = combat_frame_quads[i];
     const auto &draw = game.frame_sprites[i];
+    combat_frame_blends[i] = draw.destination_blend;
     std::snprintf(out.name, sizeof(out.name), "%s", draw.name);
     out.x = draw.x;
     out.y = draw.y;
@@ -304,6 +325,7 @@ int combat_frame_step(float dt, int input) {
   for (size_t i = 0; i < game.frame_labels.size(); ++i) {
     const auto &label = game.frame_labels[i];
     auto &out = combat_frame_labels[i];
+    combat_frame_label_positions[i] = (int)label.preceding_sprites;
     std::snprintf(out.text, sizeof(out.text), "%s", label.text.c_str());
     out.x = label.x;
     out.y = label.y;
@@ -397,7 +419,7 @@ extern int config_player_count;
 extern game_mode_id_t config_game_mode;
 struct UiDrawCapture {
   char value[384];
-  int label, filter;
+  int label, filter, blend;
   float x, y, width, height, angle, uv[4], scale, color[4];
 };
 UiDrawCapture combat_ui_draws[512];
@@ -406,8 +428,8 @@ float combat_ui_result[4];
 static int capture_ui() {
   int n = 0;
   size_t sprite = 0;
-  auto emit = [&](const char *value, bool label, unsigned filter, float x, float y, float w, float h, float angle,
-                  freeware::UiUv uv, float scale, effect_color_t color) {
+  auto emit = [&](const char *value, bool label, unsigned filter, unsigned blend, float x, float y, float w,
+                  float h, float angle, freeware::UiUv uv, float scale, effect_color_t color) {
     if (n == 512)
       std::abort();
     auto &out = combat_ui_draws[n++];
@@ -415,6 +437,7 @@ static int capture_ui() {
     std::snprintf(out.value, sizeof(out.value), "%s", value);
     out.label = label;
     out.filter = filter;
+    out.blend = blend;
     out.x = x;
     out.y = y;
     out.width = w;
@@ -432,12 +455,12 @@ static int capture_ui() {
   };
   auto quad = [&]() {
     const auto &q = game.frame_sprites[sprite++];
-    emit(q.name, false, q.filter, q.x, q.y, q.width, q.height, q.angle, q.uv, 0, q.color);
+    emit(q.name, false, q.filter, q.destination_blend, q.x, q.y, q.width, q.height, q.angle, q.uv, 0, q.color);
   };
   for (const auto &t : game.frame_labels) {
     while (sprite < t.preceding_sprites)
       quad();
-    emit(t.text.c_str(), true, 0, t.x, t.y, 0, 0, 0, {}, t.scale, t.color);
+    emit(t.text.c_str(), true, 0, 0, t.x, t.y, 0, 0, 0, {}, t.scale, t.color);
   }
   while (sprite < game.frame_sprites.size())
     quad();
@@ -520,6 +543,7 @@ extern "C" int combat_ui_page(int kind, int ticks, int flags, int board) {
     game.scores().push_back(entry);
   }
   game.last_score = game.scores()[1];
+  game.invalid_scores[board] = flags & 1024;
   if (kind == 0)
     game_show_message();
   else if (kind == 1)

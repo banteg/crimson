@@ -31,7 +31,8 @@ char *weapon_name_get(int);
 namespace ui140 {
 #ifdef CRIMSON_FREEWARE_CLIENT
 typedef const char *Texture;
-const int width = freeware::width, height = freeware::height;
+__forceinline int viewport_width() { return freeware::width; }
+__forceinline int viewport_height() { return freeware::height; }
 __forceinline Texture texture(const char *name) { return name; }
 __forceinline void bind(Texture value) { UI_GAME.ui.texture = value; }
 __forceinline void filter(unsigned value) { UI_GAME.ui.filter = value; }
@@ -43,15 +44,16 @@ __forceinline void begin() {}
 __forceinline void end() {}
 __forceinline void quad(float x, float y, float w, float h) {
     const freeware::UiState &state = UI_GAME.ui;
-    UI_GAME.frame_sprites.push_back({state.texture, x, y, w, h, state.angle, state.color, state.uv, state.filter});
+    UI_GAME.frame_sprites.push_back(
+        {state.texture, x, y, w, h, state.angle, state.color, state.uv, state.filter, state.destination_blend});
 }
 __forceinline void text(float x, float y, const char *s) {
     UI_GAME.frame_labels.push_back({s, x, y, UI_GAME.ui.scale, UI_GAME.ui.color, UI_GAME.frame_sprites.size()});
 }
 #else
 typedef int Texture;
-#define width screen_width
-#define height screen_height
+__forceinline int viewport_width() { return screen_width; }
+__forceinline int viewport_height() { return screen_height; }
 __forceinline Texture texture(const char *name) {
     return grim_interface_ptr->grim_get_texture_handle((char *)name);
 }

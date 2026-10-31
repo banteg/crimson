@@ -23,7 +23,7 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     pe.write_u32(0x43BB74, 401)
     pe.write_u32(0x442490, 400)
     draw = {"texture": 0, "angle": 0, "color": (1, 1, 1, 1)}
-    quads, labels = [], []
+    quads, labels, blends, label_positions = [], [], [], []
 
     def text(call):
         site = call.return_address
@@ -32,13 +32,16 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             or 0x41E330 < site < 0x41EF9D
             or 0x41F480 < site < 0x41FB93
             or 0x416A00 < site < 0x417CB8
-            or 0x41AF00 < site < 0x41B655
+            or 0x419990 < site < 0x41B655
             or 0x41D700 < site < 0x41DF00
         ):
             value = pe.read(call.arg_u32(2), 160).split(b"\0", 1)[0].decode("ascii")
+            label_positions.append(len(quads))
             labels.append((value, call.arg_f32(0), call.arg_f32(1), draw.get("scale", 1), *draw["color"]))
 
     def config(call):
+        if call.arg_u32(0) == 0x14:
+            draw["blend"] = call.arg_u32(1)
         if call.arg_u32(0) == 0x18:
             draw["scale"] = call.arg_f32(1)
 
@@ -64,6 +67,7 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             name = next((name for name, handle in textures.items() if handle == draw["texture"]), None)
             if draw["texture"] == 999:
                 name = "arrow"
+            blends.append(draw.get("blend", 6))
             quads.append((name, tuple(call.arg_f32(i) for i in range(4)), draw["angle"], draw["color"]))
 
     slots = {
@@ -82,6 +86,8 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         0x5C: 0,
         0x60: 0,
         0x64: 0,
+        0x68: 0,
+        0x6C: 0,
         0x74: 1,
         0x78: 1,
         0x90: 1,
@@ -97,17 +103,31 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         0xC0: 4,
         0xC4: 8,
         0xC8: 3,
+        0xCC: 0,
     }
     for slot, argc in slots.items():
         addr = pe.load_code(b"\xc3")
         ret = {
             0x1C: config,
             0xC8: text,
+            0xCC: lambda c: (
+                label_positions.append(len(quads))
+                or labels.append(
+                    (
+                        pe.read(c.arg_u32(4), 64).split(b"\0")[0].decode(),
+                        c.arg_f32(1),
+                        c.arg_f32(2),
+                        draw["scale"],
+                        *draw["color"],
+                    ),
+                )
+            ),
             0x90: texture,
             0x94: lambda c: draw.update(texture=c.arg_u32(0)),
             0xAC: lambda c: draw.update(angle=c.arg_f32(0)),
             0xB8: lambda c: draw.update(color=tuple(c.arg_f32(i) for i in range(4))),
             0xC0: quad,
+            0x74: lambda _: -1,
             0x60: lambda _: dx,
             0x64: lambda _: dy,
             0x38: lambda _: dt,
@@ -135,13 +155,14 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     name_key = 0xA7
     pe.stub(0x417CC0, lambda _: name_key)
     pe.stub(0x406FF0, 0)  # Score writes are exercised separately against the original .top codec.
+    pe.write_u32(0x452D34, pe.alloc(1, data=b"\0"))
     pe.write_u32(0x43BB70, 999)
     # Use the same explicit graphics options on each machine.
     for va in (0x44289E, 0x44289F, 0x44289B, 0x4428D4):
         pe.write_u8(va, 1)
     pe.stub(0x42C2EC, lambda c: c.arg_u32(0))
     # Original register-perks initializer binds indices used by both the dispatcher and its callees.
-    pe.stub(0x4078B0, lambda c: c.arg_u32(0))
+    pe.stub(0x421DD6, lambda c: pe.alloc(c.arg_u32(0)))
     pe.call(0x407920)
     for i, addr in enumerate((0x431BC8, 0x431BB8, 0x431B94, 0x432580, 0x432574, 0x432564, 0x432554, 0x431B34)):
         pe.write_u32(0x4387C8 + 4 * i, addr)
@@ -213,6 +234,18 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         ("return to game", 2, 1, 6, 512 | 32, [0, 0, 256, 4, 1] + [0] * 16 + [4, 0]),
         ("options", 1, 1, 1, 0, [32, 32, 32, 32, 32, 4, 0, 32, 4]),
     ]
+    title_cases = {
+        "birthday": 4096,
+        "memorial": 8192,
+        "snow": 16384,
+        "solstice": 32768,
+        "assembly": 65536,
+        "online": 131072,
+        "calibration": 262144,
+        "rebinding": 524288,
+    }
+    for title, flag in title_cases.items():
+        scenarios.append((title, 1, 1, 1, flag, [0, 4, 64, 32, 4, 0, 4, 0, 4] if title == "calibration" else [0, 0, 0]))
     fields = (
         0x452D40,
         0x452E94,
@@ -282,6 +315,22 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             ):
                 pe.write_u32(va + offset, val)
             pe.write(0x4385F4 + offset, bytes(range(32 + i * 5, 37 + i * 5)))
+        if name in title_cases:
+            for mask, addr in (
+                (4096, 0x452D68),
+                (8192, 0x452D69),
+                (16384, 0x452D6B),
+                (32768, 0x452D6A),
+                (131072, 0x452E75),
+                (262144, 0x452D6D),
+                (524288, 0x452D6C),
+            ):
+                pe.write_u8(addr, int(bool(flags & mask)))
+            pe.write_u8(0x452E74, int(bool(flags & (262144 | 524288))))
+            pe.write_u32(0x4428C0, 100)
+            pe.write_u32(0x452D60, 8 if flags & 65536 else 0)
+            pe.write_f32(0x452D54, 2)
+            pe.write_u8(0x42FBA0, 0)
         pe.rand_state = 42
         for frame, bits in enumerate(inputs):
             dx, dy = (43, -17) if bits & 4096 else (0, 0)
@@ -314,6 +363,8 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             name_key = 9 if bits & 4 else 8 if bits & 128 else ord("x") if bits & 256 else 0xA7
             quads.clear()
             labels.clear()
+            blends.clear()
+            label_positions.clear()
             pe.call(0x418190)
             state = check.dll.combat_frame_step(dt, bits)
             label = name, frame
@@ -334,16 +385,21 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
                 for j, (texture_name, coords, angle, color) in enumerate(quads):
                     buf = ctypes.string_at(check.symbol("combat_frame_quads") + 52 * j, 52)
                     ours, *values = struct.unpack("<16s9f", buf)
+                    if name in title_cases or name in ("menu", "options"):
+                        blend = ctypes.c_int.from_address(check.symbol("combat_frame_blends") + j * 4).value
+                        assert blend == blends[j], (label, texture_name, "destination blend", blend, blends[j])
                     ours = ours.split(b"\0", 1)[0].decode()
                     assert texture_name == ours and all(
                         math.isclose(x, y, abs_tol=0.002) for x, y in zip(values, (*coords, angle, *color), strict=True)
                     ), (label, texture_name, ours, (*coords, angle, *color), values)
-            if name in ("menu", "options", "name", "return to game", "begin and fire"):
+            if name in title_cases or name in ("menu", "options", "name", "return to game", "begin and fire"):
                 size = check.dll_globals("combat_frame_label_count").value
                 assert size == len(labels), (label, "label count", labels, size)
                 for j, (value, *numbers) in enumerate(labels):
                     buf = ctypes.string_at(check.symbol("combat_frame_labels") + 188 * j, 188)
                     raw, *values = struct.unpack("<160s7f", buf)
+                    before = ctypes.c_int.from_address(check.symbol("combat_frame_label_positions") + j * 4).value
+                    assert before == label_positions[j], (label, value, "submission order", before, label_positions[j])
                     ours = raw.split(b"\0", 1)[0].decode()
                     assert ours == value and all(
                         math.isclose(x, y, abs_tol=0.0001) for x, y in zip(values, numbers, strict=True)

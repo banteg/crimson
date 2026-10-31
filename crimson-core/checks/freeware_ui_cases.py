@@ -33,6 +33,8 @@ class UiOracle:
         def config(c):
             if c.arg_u32(0) == 0x18:
                 self.scale = c.arg_f32(1)
+            elif c.arg_u32(0) == 0x14:
+                self.blend = c.arg_u32(1)
             elif c.arg_u32(0) == 0x15:
                 self.filter = c.arg_u32(1)
 
@@ -42,6 +44,7 @@ class UiOracle:
                     self.texture,
                     0,
                     self.filter,
+                    self.blend,
                     tuple(c.arg_f32(i) for i in range(4)) + (self.angle, *self.uv, 0, *self.color),
                 ),
             )
@@ -51,6 +54,7 @@ class UiOracle:
                 (
                     self.string(c.arg_u32(2)),
                     1,
+                    0,
                     0,
                     (c.arg_f32(0), c.arg_f32(1), 0, 0, 0, 0, 0, 1, 1, self.scale, *self.color),
                 ),
@@ -90,23 +94,29 @@ class UiOracle:
         self.calls.clear()
         self.scale = self.angle = 0
         self.filter = 2
+        self.blend = 6
         self.uv = (0, 0, 1, 1)
         self.color = (1, 1, 1, 1)
         self.texture = "bullet"
 
     def compare(self, check, n, case):
         assert n == len(self.calls), (case, "draw count", n, len(self.calls))
-        fmt = "<384sii14f"
+        fmt = "<384siii14f"
         size = struct.calcsize(fmt)
-        for i, (value, kind, filt, floats) in enumerate(self.calls):
+        for i, (value, kind, filt, blend, floats) in enumerate(self.calls):
             got = struct.unpack(fmt, ctypes.string_at(check.symbol("combat_ui_draws") + size * i, size))
             actual = got[0].split(b"\0", 1)[0].decode("latin1")
-            assert (actual, *got[1:3]) == (value, kind, filt), (case, i, (actual, *got[1:3]), (value, kind, filt))
-            assert all(math.isclose(a, b, abs_tol=0.002) for a, b in zip(got[3:], floats, strict=True)), (
+            assert (actual, *got[1:4]) == (value, kind, filt, blend), (
+                case,
+                i,
+                (actual, *got[1:4]),
+                (value, kind, filt, blend),
+            )
+            assert all(math.isclose(a, b, abs_tol=0.002) for a, b in zip(got[4:], floats, strict=True)), (
                 case,
                 i,
                 value,
-                got[3:],
+                got[4:],
                 floats,
             )
         return n
@@ -172,6 +182,7 @@ def check_pages(oracle, check):
                 (583, 512),
                 (930, 0),
                 (1600, 64 | 32),
+                (128, 1024),
             ]:
                 oracle.reset_draw()
                 oracle.keys.clear()
@@ -190,6 +201,7 @@ def check_pages(oracle, check):
                 pe.write_u32(0x4428A8, 2 if board & 2 else 1)
                 pe.write_u8(0x42FBB4, bool(flags & 1))
                 pe.write_u8(0x452D4F, bool(flags & 4))
+                pe.write_u8(0x452D4E, bool(flags & 1024))
                 pe.write_u8(0x452EEC, 0)
                 pe.write_u8(0x452ED5, 0)
                 for addr, value in (
@@ -206,6 +218,10 @@ def check_pages(oracle, check):
                     who = ("Gunner" if i == 1 else "Other") if i < 4 else "10tons"
                     seconds = 160 - i * 7 if i < 4 else 0
                     xp = 2700 - i * 13 if i < 4 else 0
+                    if flags & 1024:
+                        names = ("Corrupted high score file.", "  (delete *.top files)", "(or press D to do it now)")
+                        who = names[i] if i < 3 else " "
+                        seconds = xp = 0
                     row = struct.pack("<32sii4f", who.encode(), seconds, seconds if board & 2 else xp, 0, 0, 0, 0)
                     pe.write(0x436CF8 + 56 * i, row)
                 pe.write(0x439228, struct.pack("<32sii", b"Gunner", 153, 2687))

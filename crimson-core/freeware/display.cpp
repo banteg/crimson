@@ -51,8 +51,12 @@ bool Display::load(const std::string &folder) {
   return SDL_SetRenderTarget(renderer, nullptr);
 }
 void Display::sprite(const char *name, float x, float y, float w, float h, float angle, int frame, int columns,
-                     SDL_FColor tint, UiUv uv, unsigned filter) {
-  auto *t = textures.at(name);
+                     SDL_FColor tint, UiUv uv, unsigned filter, unsigned destination_blend) {
+  // A failed Grim texture lookup leaves the previous binding in place (grim.dll 0x10004d07).
+  auto *t = !std::strcmp(name, "tl_tolmec") ? last_texture : textures.at(name);
+  if (!t)
+    return;
+  last_texture = t;
   float tw, th;
   SDL_GetTextureSize(t, &tw, &th);
   float cw = tw / columns, ch = th / columns;
@@ -63,9 +67,16 @@ void Display::sprite(const char *name, float x, float y, float w, float h, float
   src.h *= uv.t - uv.v;
   if (filter)
     SDL_SetTextureScaleMode(t, filter == 1 ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_LINEAR);
+  SDL_BlendMode previous = SDL_BLENDMODE_BLEND;
+  if (destination_blend) {
+    SDL_GetTextureBlendMode(t, &previous);
+    SDL_SetTextureBlendMode(t, destination_blend == 2 ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND);
+  }
   SDL_SetTextureColorModFloat(t, tint.r, tint.g, tint.b);
   SDL_SetTextureAlphaModFloat(t, tint.a);
   SDL_RenderTextureRotated(renderer, t, &src, &dst, angle * degrees, nullptr, SDL_FLIP_NONE);
+  if (destination_blend)
+    SDL_SetTextureBlendMode(t, previous);
   if (filter == 1)
     SDL_SetTextureScaleMode(t, SDL_SCALEMODE_LINEAR);
 }
@@ -96,10 +107,8 @@ void Display::frame_art(const Game &g) {
       name = "bonus_freeze";
     else if (!std::strcmp(name, "part"))
       name = "part64";
-    else if (!std::strcmp(name, "tl_tolmec"))
-      return; // No texture with this handle ships in the 1.4.0 PAQ.
     sprite(name, draw.x, draw.y, draw.width, draw.height, draw.angle, 0, 1,
-           {draw.color.r, draw.color.g, draw.color.b, draw.color.a}, draw.uv, draw.filter);
+           {draw.color.r, draw.color.g, draw.color.b, draw.color.a}, draw.uv, draw.filter, draw.destination_blend);
   };
   size_t i = 0;
   for (const auto &label : g.frame_labels) {
@@ -231,8 +240,6 @@ void Display::draw(Game &g) {
   if (g.presented_screen == Screen::Menu && g.notice)
     text(g.notice, width / 2 - 220, 478, .65f, white);
   frame_art(g);
-  if (g.presented_screen == Screen::Online && g.notice)
-    text(g.notice, 50, 345, .55f, white);
   if (g.console_open) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 12, 16, 20, 238);

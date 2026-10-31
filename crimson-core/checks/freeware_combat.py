@@ -641,6 +641,8 @@ def check_web(stage, exe, sources):
         "freeware_secret_weapon_unlocked",
         "combat_frame_fields",
         "combat_frame_quads",
+        "combat_frame_blends",
+        "combat_frame_label_positions",
         "combat_frame_labels",
         "combat_frame_label_count",
         "combat_level_fields",

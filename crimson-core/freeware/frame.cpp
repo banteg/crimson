@@ -72,7 +72,6 @@ void Game::update(float dt, const Input &in) {
       command.clear();
   } else if (console_open)
     console_input(in);
-  menu_clock += dt;
   mouse_dx = in.relative ? in.dx : in.x - cursor_x;
   mouse_dy = in.relative ? in.dy : in.y - cursor_y;
   if (dt > 0)

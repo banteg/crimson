@@ -86,14 +86,14 @@ struct UiState {
   UiUv uv;
   effect_color_t color{1, 1, 1, 1};
   float angle{}, scale = 1;
-  unsigned filter = 2;
+  unsigned filter = 2, destination_blend = 6;
 };
 struct FrameSprite {
   const char *name;
   float x, y, width, height, angle;
   effect_color_t color;
   UiUv uv{};
-  unsigned filter{};
+  unsigned filter{}, destination_blend{};
 };
 struct FrameLabel {
   std::string text;
@@ -141,7 +141,7 @@ struct Game {
   std::vector<ImpactMark> marks;
   std::vector<TerrainStamp> terrain;
   void generate_terrain();
-  float menu_clock{}, cursor_x = 320, cursor_y = 140;
+  float cursor_x = 320, cursor_y = 140;
   int selected{}, generation{}, perk_hover{};
   float death_clock{};
   vec2f_t radial_cursor{320, 140}, camera{0, -128}, camera_shake{};
@@ -192,7 +192,7 @@ struct Game {
   void save_options() const;
   bool survival{}, paused{}, quit{}, two_players{}, music_enabled = true;
   const char *notice = nullptr;
-  std::string name, message, command;
+  std::string name, message, command, update_info;
   std::vector<std::string> console_lines, history;
   int history_index{}, spawn_health = 100;
   bool console_open{}, visit_website{};

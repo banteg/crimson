@@ -2,7 +2,7 @@
 enum menu_page { main_page, options_page, online_page, scores_page, credits_page };
 #ifndef CRIMSON_FREEWARE_CLIENT
 extern "C" {
-extern int freeware_menu_selected, freeware_configuring, config_movement_schemes[2];
+extern int freeware_menu_selected, freeware_perk_hover, freeware_configuring, config_movement_schemes[2];
 extern int freeware_tips_sequence, freeware_assembly_sequence;
 extern unsigned char freeware_show_secret_hints, freeware_options_open, freeware_online_open, freeware_scores_open,
     freeware_credits_open, freeware_menu_music_pending, freeware_music_disabled, freeware_filter_sharp,
@@ -186,7 +186,20 @@ __forceinline void refresh_labels(int which) {
 __forceinline int menu_rows(int which) {
     const int count = which == main_page ? 8 : which == options_page ? 12 : 5;
     float x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
-    int hover = -1;
+    float font_scale = which == main_page ? .75435f : .65f;
+#ifndef CRIMSON_FREEWARE_CLIENT
+    grim_interface_ptr->grim_set_config_var(0x18, font_scale);
+#endif
+    if (which == online_page) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+        label(G.update_info.c_str(), 10, 10, font_scale, .2f, 1, .7f, .9f);
+#else
+        grim_interface_ptr->grim_set_color(.2f, 1, .7f, .9f);
+        grim_interface_ptr->grim_draw_text_mono_fmt(10, 10, "%s", freeware_update_info);
+#endif
+    }
+    int &hover = FIELD(freeware_perk_hover, perk_hover);
+    hover = -1;
     for (int i = 0; i < count; ++i) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         std::string label = which == main_page      ? freeware::menu_row(G, i).label
@@ -204,17 +217,14 @@ __forceinline int menu_rows(int which) {
         if (mx > x && my > y && mx < x + strlen(name) * 16.f && my < y + (which == main_page ? 30.f : 21.f))
             hover = i;
         float light = 1, alpha = hover == i ? .9f : SELECTED == i ? .7f : .6f;
-        if ((which == main_page && ACTIVE && (i == 1 || i == 2)) || (which == online_page && i == 2)) {
+        if (which == online_page && i == 2)
+            alpha = .2f;
+        if (which == main_page && ACTIVE && (i == 1 || i == 2)) {
             light = .6f;
             alpha = .4f;
         }
 #ifdef CRIMSON_FREEWARE_CLIENT
-        G.frame_labels.push_back({name,
-                                  x,
-                                  y,
-                                  which == options_page ? .65f : .75435f,
-                                  {light, light, light, alpha},
-                                  G.frame_sprites.size()});
+        G.frame_labels.push_back({name, x, y, font_scale, {light, light, light, alpha}, G.frame_sprites.size()});
 #else
         grim_interface_ptr->grim_set_color(light, light, light, alpha);
         grim_interface_ptr->grim_draw_text_mono(x, y, (char *)name);
@@ -224,14 +234,18 @@ __forceinline int menu_rows(int which) {
         --SELECTED;
         if (SELECTED < 0)
             SELECTED = 0;
+        hover = SELECTED;
     }
     if (menu_key(0xd0)) {
         ++SELECTED;
         if (SELECTED >= count)
             SELECTED = count - 1;
+        hover = SELECTED;
     }
-    if (menu_key(0x1c))
-        return SELECTED;
+    if (menu_key(0x1c)) {
+        hover = SELECTED;
+        return hover;
+    }
 #ifdef CRIMSON_FREEWARE_CLIENT
     return INPUT.click ? hover : -1;
 #else
@@ -318,9 +332,18 @@ extern unsigned char freeware_logo_visible, freeware_birthday, freeware_memorial
     freeware_christmas;
 }
 #endif
+__forceinline void menu_blend(bool additive) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    G.ui.destination_blend = additive ? 2 : 6;
+#else
+    grim_interface_ptr->grim_set_config_var(0x13, 5u);
+    grim_interface_ptr->grim_set_config_var(0x14, additive ? 2u : 6u);
+#endif
+}
 __forceinline void menu_title(int which) {
     float age = CLOCK - STATE_SINCE;
     if (FIELD(freeware_assembly_sequence, assembly_sequence) == 8) {
+        menu_blend(true);
         double wave = cos((double)age - .2f) * 5;
         float x = (float)(screen_width / 2 + wave), y = (float)(140 + wave);
         double dx = (double)x - MOUSE_X, dy = (double)y - MOUSE_Y;
@@ -360,14 +383,22 @@ __forceinline void menu_title(int which) {
         float x = screen_width / 2 + cs * 5 - 100, y = cs * 5 + 170;
         for (float d = 0; d < 16; d += .5f) {
             float fade = d * .0625f;
-            label("The World Grieves..", x - cs * d, y + sn * d * 2, .6f + d * .002f, 0, 0, 0, fade);
+            label("The World Grieves..", x - cs * d, y + sn * d * 2, .6f + fade * .05f, .1f, .4f, .7f,
+                  (1 - fade) * .2f);
         }
         label("The World Grieves..", x, y, .6f, 1, 1, 1, 1);
     }
     if (FIELD(freeware_solstice, solstice)) {
         float wave = (float)cos((double)age - .2f) * 5;
         sprite("tl_tolmec", 100, 100, 256, 256, age * .2f, 1, 1, 1, .15f);
-        label("Have a Nice End of the World !", screen_width / 2 + wave - 100, wave + 170, 1, 1, .8f, .2f, 1);
+#ifdef CRIMSON_FREEWARE_CLIENT
+        label("Have a Nice End of the World !", screen_width / 2 + wave - 100, wave + 170, G.ui.scale, 1, .8f, .2f,
+              1);
+#else
+        grim_interface_ptr->grim_set_color(1, .8f, .2f, 1);
+        grim_interface_ptr->grim_draw_text_mono(screen_width / 2 + wave - 100, wave + 170,
+                                                "Have a Nice End of the World !");
+#endif
     }
     float &angle = FIELD(freeware_logo_angle, logo_angle);
     if (age < 1) {
@@ -390,6 +421,7 @@ __forceinline void menu_title(int which) {
         else
             alpha = age;
     }
+    menu_blend(false);
     sprite("crimsonland", x, y, 512, 512 - angle * 30, ACTIVE ? 0 : angle, 1, 1, 1, alpha);
 }
 
@@ -399,8 +431,10 @@ extern int freeware_setup_step, freeware_pad_threshold, freeware_pad_center_x, f
     freeware_pov_left, freeware_pov_right;
 extern unsigned char freeware_saved_keys[10];
 void freeware_save_config(), config_load_presets();
+bool input_move_up_active(), input_move_down_active(), input_move_left_active(), input_move_right_active();
 }
 #endif
+extern "C" char *wrap_text_to_width_alloc(char *, int);
 __forceinline bool setup_controls() {
 #ifdef CRIMSON_FREEWARE_CLIENT
     bool binding = G.rebind >= 0;
@@ -419,7 +453,7 @@ __forceinline bool setup_controls() {
         const char *actions[] = {"UP", "DOWN", "LEFT", "RIGHT", "FIRE"};
         char prompt[48];
         sprintf(prompt, "Player %d %s", 1 + step / 5, actions[step % 5]);
-        label("Press down key for..", 50, 200, .75435f, 1, 1, 1, .6f);
+        label("Press down key for..", 50, 200, .85435f, 1, 1, 1, .6f);
         label(prompt, 120, 250, .75435f, 1, 1, 1, .6f);
 #ifdef CRIMSON_FREEWARE_CLIENT
         if (INPUT.key > 0) {
@@ -447,10 +481,10 @@ __forceinline bool setup_controls() {
         int pov = grim_interface_ptr->grim_get_joystick_pov(0);
 #endif
         const char *prompts[] = {
-            "Center the joystick and press enter or a\njoystick button",
-            "Set the joystick X/Y-Axis threshold with\narrow keys up/down, press enter when done.",
-            "If your joystick has 'hat' press it LEFT now\nand press enter. (press enter to skip this)",
-            "If your joystick has 'hat' press it RIGHT\nnow and press enter. (press enter to skip\nthis)"};
+            "Center the joystick and press enter or a joystick button",
+            "Set the joystick X/Y-Axis threshold with arrow keys up/down, press enter when done.",
+            "If your joystick has 'hat' press it LEFT now and press enter. (press enter to skip this)",
+            "If your joystick has 'hat' press it RIGHT now and press enter. (press enter to skip this)"};
         char status[128];
         if (step > 3) {
             step = end;
@@ -463,7 +497,14 @@ __forceinline bool setup_controls() {
 #endif
             return true;
         }
-        label(prompts[step], 50, 120, .70435f, 1, 1, 1, .6f);
+        char *prompt = wrap_text_to_width_alloc((char *)prompts[step], 45);
+        label(prompt, 50, 120, .70435f, 1, 1, 1, .6f);
+#ifdef CRIMSON_FREEWARE_CLIENT
+        delete[] prompt;
+#else
+        crt_free(prompt);
+#endif
+        int display_step = step;
         if (step == 0) {
             sprintf(status, "X-Axis: %d\nY-Axis: %d", x, y);
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -515,6 +556,18 @@ __forceinline bool setup_controls() {
             }
         }
         label(status, 40, 250, .70435f, 1, 1, 1, .6f);
+        if (display_step == 1) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+            int dx = x - (int)(G.pad_center[CONFIGURING].x * 1000),
+                dy = y - (int)(G.pad_center[CONFIGURING].y * 1000);
+            sprintf(status, "Status:\n\nUp: %d\nDown: %d\nLeft: %d\nRight: %d", dy<-threshold, dy> threshold,
+                    dx<-threshold, dx> threshold);
+#else
+            sprintf(status, "Status:\n\nUp: %d\nDown: %d\nLeft: %d\nRight: %d", input_move_up_active(),
+                    input_move_down_active(), input_move_left_active(), input_move_right_active());
+#endif
+            label(status, 40, 300, .70435f, 1, 1, 1, .6f);
+        }
         return true;
     }
     step = end;
@@ -538,6 +591,7 @@ __forceinline void cursor_particles(float pulse, float orbit) {
     grim_interface_ptr->grim_begin_batch();
     grim_interface_ptr->grim_draw_quad(x, y, 64, 64);
 #else
+    G.ui.destination_blend = 2;
     const float rotation = G.frame_sprites.empty() ? 0 : G.frame_sprites.back().angle;
     sprite("part", x, y, 64, 64, rotation, 1, 1, 1, 1);
 #endif
@@ -563,6 +617,7 @@ __forceinline void cursor_particles(float pulse, float orbit) {
     grim_interface_ptr->grim_draw_quad(MOUSE_X - 16, MOUSE_Y - 16, 32, 32);
     grim_interface_ptr->grim_end_batch();
 #else
+    G.ui.destination_blend = 6;
     sprite("aim32", MOUSE_X - 16, MOUSE_Y - 16, 32, 32, rotation, 1, 1, 1, .64f);
 #endif
 }
@@ -628,7 +683,7 @@ __forceinline bool main_menu() {
         else if (row == 0)
             G.visit_website = true;
         else if (row == 1)
-            G.notice = "Installed version: 1.4.0. The 2002 update service is unavailable.";
+            G.update_info = "Installed version: 1.4.0. The 2002 update service is unavailable.";
 #else
         else if (row == 0) {
             freeware_open_site = 1;
