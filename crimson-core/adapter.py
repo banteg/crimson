@@ -150,44 +150,60 @@ def build_guards(txt):
     return sorted(found)
 
 
-# A rule a recovered source names rather than guards: a macro tools/match/include/cl_rules.h defines as a condition on
-# CL_BUILD, so it takes the value of the build a source compiles as. host/rules.h defines each first, as the run's, for
-# every target; one it leaves out, or defines only for some targets, would compile 1.9.93's value for a 1.9.8 run, as
-# a guard the ledger doesn't list would. The preprocessor reads both, so a definition counts as a compiler sees it.
+# A rule a recovered source names rather than guards: a macro tools/match/include/cl_rules.h defines so it expands by
+# the build a source compiles as (CL_BUILD). host/rules.h defines each first, as the run's, for every target; one it
+# leaves out, defines for some targets only, or defines by build, would compile 1.9.93's value for a 1.9.8 run, as a
+# guard the ledger doesn't list would. The preprocessor decides both, so a rule counts as a compiler expands it.
 CL_RULES = "tools/match/include/cl_rules.h"
-RULES = HERE / "host" / "rules.h"
+HOOKS = HERE / "host" / "hooks.h"
 _DEFINE_ON_BUILD = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(\w+)\b(.*\bCL_BUILD\b.*)$", re.MULTILINE)
+_DEFINE_NAME = re.compile(r"^#define (\w+)", re.MULTILINE)
+# What names nothing to the preprocessor: string and character literals, and comments.
+_INERT = re.compile(r'"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'|/\*.*?\*/|//[^\n]*', re.DOTALL)
 
 
 def rule_definitions(txt):
-    """The macros `txt` defines in terms of CL_BUILD, as written: a definition may continue over lines, and comments
-    name nothing."""
+    """The macros `txt` defines in terms of CL_BUILD, as the preprocessor reads the text: continued lines join, and
+    literals and comments name nothing."""
 
-    code = re.sub(r"/\*.*?\*/|//[^\n]*", " ", txt.replace("\\\n", " "), flags=re.DOTALL)
+    code = _INERT.sub(lambda m: " " if m[0][0] == "/" else '""', txt.replace("\\\n", ""))
     return [name for name, _ in _DEFINE_ON_BUILD.findall(code)]
 
 
-def _macros(cc, args, text):
-    """{name: definition} for every macro `cc` defines after preprocessing `text` with `args`."""
-
-    out = subprocess.run(
-        [*cc, *args, "-x", "c++", "-E", "-dM", "-"], input=text, capture_output=True, text=True, check=True,
+def _preprocess(cc, args, text):
+    return subprocess.run(
+        [*cc, *args, "-x", "c++", "-E", "-P", "-"], input=text, capture_output=True, text=True, check=True,
     ).stdout
-    return dict(re.findall(r"^#define (\w+)(?:\([^)]*\))? ?(.*)$", out, re.MULTILINE))
 
 
-def check_rules(root, cc, flags, rules=RULES):
-    """Every rule cl_rules.h names is the run's, not the build's, where a recovered source reads it: after `rules`
-    (host/rules.h, which build.py includes first) and cl_rules.h, as `cc` preprocesses them with a target's `flags`."""
+def _expansions(cc, args, text, names):
+    """What each of `names` expands to after `text`, as `cc` preprocesses it with `args`, for each of RUN_BUILDS as
+    CL_BUILD."""
 
-    include = ["-I", str((root / CL_RULES).parent)]
+    # Parenthesized, so a macro that expands to nothing still leaves its line.
+    probe = text + "".join(f"__rule__ ({name}) __rule__\n" for name in names)
+    return [
+        re.findall(r"^__rule__ \((.*)\) __rule__$", _preprocess(cc, [*args, f"-DCL_BUILD={build}"], probe), re.MULTILINE)
+        for build in RUN_BUILDS
+    ]
+
+
+def check_rules(root, cc, flags, first=HOOKS):
+    """Every rule cl_rules.h names, with a target's `flags`, expands alike for every build, and to a condition, where a
+    recovered source reads it: after `first` (host/hooks.h, which build.py includes ahead of every recovered source,
+    and which brings host/rules.h) and cl_rules.h, as `cc` preprocesses them."""
+
+    args = [*flags, "-I", str((root / CL_RULES).parent)]
     header = f'#include "{Path(CL_RULES).name}"\n'
-    named = _macros(cc, include, header)
-    seen = _macros(cc, [*flags, *include], f'#include "{rules}"\n' + header)
-    if undecided := [name for name, body in sorted(named.items()) if _ON_BUILD.search(body) and _ON_BUILD.search(seen[name])]:
+    defined = [_DEFINE_NAME.findall(_preprocess(cc, [*args, "-dM"], text)) for text in (header, "")]
+    names = sorted(set(defined[0]) - set(defined[1]) - {"CL_BUILD"})
+    rules = [name for name, *ways in zip(names, *_expansions(cc, args, header, names), strict=True) if len(set(ways)) > 1]
+    seen = _expansions(cc, [*args, "-include", str(first)], header, rules)
+    # Nothing, or the rule's own name (a function-like macro a bare use leaves alone), is no condition.
+    if undecided := [name for name, *ways in zip(rules, *seen, strict=True) if len(set(ways)) > 1 or ways[0] in ("", name)]:
         raise SystemExit(
-            f"Rules {CL_RULES} names that {rules.parent.name}/{rules.name} doesn't define as the run's for this "
-            f"target ({' '.join(cc + flags)}): {', '.join(undecided)}",
+            f"Rules {CL_RULES} names that host/rules.h doesn't define as the run's for this target "
+            f"({' '.join(cc + flags)}): {', '.join(undecided)}",
         )
 
 

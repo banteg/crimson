@@ -453,9 +453,10 @@ branch stops the build. A rule can instead be named where the recovered source
 checks it, as a condition in [`cl_rules.h`](../tools/match/include/cl_rules.h)
 that defaults to the build a source compiles as, so the matcher still compiles
 each build's code; [`host/rules.h`](host/rules.h) defines it first as the run's.
-Each target's build preprocesses the two as a recovered source reads them, with
-that target's compiler and flags, and stops at a named rule still defined by
-build there; a macro defined by build anywhere else stops it too. Jinxed's
+Each target's build preprocesses the two as a recovered source reads them, after
+`host/hooks.h`, with that target's compiler and flags, once for each build as
+`CL_BUILD`, and stops at a named rule that doesn't expand to the same condition
+both times; a macro defined by build anywhere else stops it too. Jinxed's
 Freeze gate is one, `CL_JINXED_RESPECTS_FREEZE`, which carries bug 57 too. Editions apply after
 the patches: 1.9.8's other bugs (56, 58-60) are patches against its guarded
 branch, kept only in a 1.9.8 run with `preserve_bugs` (`portable_bugs_1_9_8`),
