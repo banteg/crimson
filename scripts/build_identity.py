@@ -101,6 +101,8 @@ def source_hashes(root: Path, patterns: tuple[str, ...]) -> dict[str, str]:
             path.relative_to(root).as_posix()
             for path in candidates
             if path.is_file() and not any(part == "__pycache__" for part in path.parts)
+            # Dot-files are no build's input, only what Finder and editors leave beside them.
+            and not any(part.startswith(".") for part in path.relative_to(root).parts)
             and path.name != "_build.json" and path.suffix not in {".pyc", ".pyo"}
         )
     return {path: file_hash(root / path) for path in sorted(paths)}

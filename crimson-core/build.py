@@ -32,7 +32,6 @@ from data import data_source
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts.build_identity import (
     WASI_SDK_VERSION,
-    core_paths,
     file_hash,
     game_paths,
     runtime_identity,
@@ -155,9 +154,11 @@ def main():
         raise SystemExit(f"The output directory {a.out} holds files git tracks")
     if any(path.is_relative_to(a.out) for path in (a.root, HERE)):
         raise SystemExit(f"The output directory {a.out} holds the build's inputs")
-    inside = f"{a.out.relative_to(a.root).as_posix()}/" if a.out.is_relative_to(a.root) else ""
-    if any(inside.startswith(p) for p in (game_paths if a.target == "game" else core_paths)(a.root) if p.endswith("/")):
-        raise SystemExit(f"The output directory {a.out} lies among the build's inputs")
+    # Nor may it sit in a directory any target's includes search or its identity hashes whole (the game's take in the
+    # verifier's), where other builds would find its files.
+    searched = [HOST, HERE / "game/include", a.root / "third_party/headers", a.root / "tools/match/include"]
+    if any(a.out.is_relative_to(d) for d in [*searched, *(a.root / p for p in game_paths(a.root) if p.endswith("/"))]):
+        raise SystemExit(f"The output directory {a.out} lies among the build's inputs or include directories")
     a.out.mkdir(parents=True, exist_ok=True)
     headers = a.out / "include"
     headers.mkdir(exist_ok=True)
@@ -276,10 +277,8 @@ def main():
     if a.target == "game":
         sources += game_sources(a.root)
     # The guards between 1.9.8 and 1.9.93 that the diffs leave to the preprocessor must be the ones
-    # editions/guards.json lists, each with its class, and the rules the sources name are the run's for this target.
+    # editions/guards.json lists, each with its class.
     check_guards(a.root, hunks, sources)
-    # The flags' relative include names the output directory's, where the compiles run.
-    check_rules(a.root, cc, [f"-I{a.out / arg[2:]}" if arg.startswith("-I") else arg for arg in flags])
     name = object_name if a.target == "game" else lambda rel: Path(rel).stem
 
     # The game module compiles every source the verifier does, so every diff applies there; the verifier skips
@@ -301,10 +300,13 @@ def main():
     if a.target == "game":
         game_initializers(a.root, source_dir)
     # Whatever sits among the generated headers and sources that this run did not generate goes (one it no longer
-    # generates, or a stray), or the includes that found it would go on finding it.
+    # generates, or a stray), before anything reads them, or the includes that found it would go on finding it.
     for path in [*headers.rglob("*"), *source_dir.rglob("*")]:
         if path.is_file() and path not in GENERATED:
             path.unlink()
+    # The rules the sources name are the run's for this target. The flags' relative include names the output
+    # directory's, where the compiles run.
+    check_rules(a.root, cc, [f"-I{a.out / arg[2:]}" if arg.startswith("-I") else arg for arg in flags])
     if a.prepare:
         changed = {rel: texts for rel, texts in sorted(adapted.items()) if texts[0] != texts[1]}
         (a.out / "adapted.diff").write_text(
@@ -426,14 +428,15 @@ def main():
     # The locked Ninja, beside the interpreter running the build, before any other.
     ninja = [shutil.which("ninja", path=f"{sysconfig.get_path('scripts')}{os.pathsep}{os.environ['PATH']}") or "ninja"]
     ninja += ["-C", str(a.out), "--quiet", "-k", "0"]
+    # The module is this build's or none, whatever the compiles below come to.
+    if not recorded(binary, build_identity["fingerprint"]):
+        discard(binary)
     # Every object before the link, so every compile error comes at once.
     proc = subprocess.run([*ninja, "objects"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False)
     (a.out / "errors.txt").write_text(proc.stdout)
     print(f"{len(objects) - proc.stdout.count('FAILED: ')}/{len(objects)} compiled; errors: {a.out / 'errors.txt'}")
     if proc.returncode:
         raise SystemExit(1)
-    if not recorded(binary, build_identity["fingerprint"]):
-        discard(binary)
     proc = subprocess.run(ninja, capture_output=True, check=False)
     log = (a.out / "link.log").read_text()
     if proc.returncode:

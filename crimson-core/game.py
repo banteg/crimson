@@ -291,7 +291,11 @@ def simulation_names(root):
     # executable's globals a simulation reads or writes.
     sources = json.loads((root / "crimson-core/sources.json").read_text())
     texts = [(root / rel).read_text() for rel in sources]
-    texts += [path.read_text() for path in (root / "crimson-core/host").glob("*.*") if path.is_file()]
+    texts += [
+        path.read_text()
+        for path in (root / "crimson-core/host").glob("*.*")
+        if path.is_file() and not path.name.startswith(".")
+    ]
     return {name for text in texts for name in re.findall(r"[A-Za-z_]\w*", text)}
 
 

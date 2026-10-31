@@ -3,6 +3,8 @@
 import json
 import re
 import subprocess
+import tempfile
+from pathlib import Path
 
 from adapter import write_if_changed
 
@@ -15,7 +17,7 @@ RECORD = re.compile(
 )
 
 
-def overlay_spans(root, out, cc):
+def overlay_spans(root, cc):
     """Each owner overlay's root and the size its type has in the original 32-bit layout.
 
     A type the build's target lays out differently is left out: its members leave the original offsets there (a
@@ -24,15 +26,7 @@ def overlay_spans(root, out, cc):
     include = root / "tools/match/include"
     owners = sorted(include.glob("*_owner.h"))
     overlays = {m[1]: m[2] for h in owners for m in OVERLAY.finditer(h.read_text())}
-    probe = out / "overlays.cpp"
-    write_if_changed(
-        probe,
-        '#include "crimsonland_types.h"\n'
-        + "".join(f'#include "{h.name}"\n' for h in owners)
-        + f"unsigned overlay_sizes[] = {{{','.join(f'sizeof({t})' for t in overlays)}}};\n",
-    )
-
-    def layouts(compiler):
+    def layouts(compiler, probe):
         proc = subprocess.run(
             [*compiler, "-std=c++17", "-fms-extensions", "-fsyntax-only", "-w"]
             + ["-Xclang", "-fdump-record-layouts-simple", f"-I{include}", f"-I{root / 'third_party/headers'}"]
@@ -43,7 +37,15 @@ def overlay_spans(root, out, cc):
         )
         return {name: (int(bits), offsets) for name, bits, offsets in RECORD.findall(proc.stdout)}
 
-    original, target = layouts([cc[0], "-target", "i686-pc-windows-msvc"]), layouts(cc)
+    # The probe sits alone in a directory of its own, so its quoted includes find nothing there first.
+    with tempfile.TemporaryDirectory() as directory:
+        probe = Path(directory) / "overlays.cpp"
+        probe.write_text(
+            '#include "crimsonland_types.h"\n'
+            + "".join(f'#include "{h.name}"\n' for h in owners)
+            + f"unsigned overlay_sizes[] = {{{','.join(f'sizeof({t})' for t in overlays)}}};\n",
+        )
+        original, target = layouts([cc[0], "-target", "i686-pc-windows-msvc"], probe), layouts(cc, probe)
     return [(first, original[t][0] // 8) for t, first in overlays.items() if original[t] == target[t]]
 
 
@@ -74,7 +76,7 @@ def data_source(root, out, cc):
     entries = [e for e in entries if not any(a <= int(e["address"], 16) < b for a, b, _ in ownranges)]
     extents = {e["name"]: (int(e["address"], 16), int(e["address"], 16) + e["size"]) for e in entries}
     # Recovered owner headers intentionally access a contiguous aggregate through its first symbol.
-    ranges = [(extents[first][0], extents[first][0] + size) for first, size in overlay_spans(root, out, cc)]
+    ranges = [(extents[first][0], extents[first][0] + size) for first, size in overlay_spans(root, cc)]
     # Spans from the first symbol through the end of the last keep native overreads on the original bytes:
     # `fx_queue_render` reads the corpse frame of type 7 (ping-pong strips) from `creature_type_count`, and with two
     # players `projectile_render` reads the muzzle flash of player 3 from `effect_uv4`.
