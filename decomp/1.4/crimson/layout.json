@@ -120,6 +120,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_alloc_slot.cpp",
+          "configs": [
+            "tools/match/scratches/creature_alloc_slot"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/creatures/creature_find_in_radius.cpp",
           "configs": [
             "tools/match/scratches/creature_find_in_radius"
