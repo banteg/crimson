@@ -19,6 +19,7 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 import textwrap
 from collections import Counter
 from pathlib import Path
@@ -149,18 +150,45 @@ def build_guards(txt):
     return sorted(found)
 
 
-# A rule a recovered source names rather than guards (tools/match/include/cl_rules.h): a macro defined as a condition
-# on CL_BUILD, so it takes the value of the build a source compiles as. host/rules.h defines each first, as the run's;
-# one it left out would compile 1.9.93's value for a 1.9.8 run, as a guard the ledger doesn't list would.
+# A rule a recovered source names rather than guards: a macro tools/match/include/cl_rules.h defines as a condition on
+# CL_BUILD, so it takes the value of the build a source compiles as. host/rules.h defines each first, as the run's, for
+# every target; one it leaves out, or defines only for some targets, would compile 1.9.93's value for a 1.9.8 run, as
+# a guard the ledger doesn't list would. The preprocessor reads both, so a definition counts as a compiler sees it.
+CL_RULES = "tools/match/include/cl_rules.h"
 RULES = HERE / "host" / "rules.h"
-_RULE = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(\w+)[ \t]+(.*\bCL_BUILD\b.*)$", re.MULTILINE)
-_DEFINE = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(\w+)", re.MULTILINE)
+_DEFINE_ON_BUILD = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(\w+)\b(.*\bCL_BUILD\b.*)$", re.MULTILINE)
 
 
-def build_rules(txt):
-    """The macros `txt` defines as a condition on CL_BUILD whose value differs for RUN_BUILDS."""
+def rule_definitions(txt):
+    """The macros `txt` defines in terms of CL_BUILD, as written: a definition may continue over lines, and comments
+    name nothing."""
 
-    return [name for name, condition in _RULE.findall(txt) if len({_holds(condition, b) for b in RUN_BUILDS}) > 1]
+    code = re.sub(r"/\*.*?\*/|//[^\n]*", " ", txt.replace("\\\n", " "), flags=re.DOTALL)
+    return [name for name, _ in _DEFINE_ON_BUILD.findall(code)]
+
+
+def _macros(cc, args, text):
+    """{name: definition} for every macro `cc` defines after preprocessing `text` with `args`."""
+
+    out = subprocess.run(
+        [*cc, *args, "-x", "c++", "-E", "-dM", "-"], input=text, capture_output=True, text=True, check=True,
+    ).stdout
+    return dict(re.findall(r"^#define (\w+)(?:\([^)]*\))? ?(.*)$", out, re.MULTILINE))
+
+
+def check_rules(root, cc, flags, rules=RULES):
+    """Every rule cl_rules.h names is the run's, not the build's, where a recovered source reads it: after `rules`
+    (host/rules.h, which build.py includes first) and cl_rules.h, as `cc` preprocesses them with a target's `flags`."""
+
+    include = ["-I", str((root / CL_RULES).parent)]
+    header = f'#include "{Path(CL_RULES).name}"\n'
+    named = _macros(cc, include, header)
+    seen = _macros(cc, [*flags, *include], f'#include "{rules}"\n' + header)
+    if undecided := [name for name, body in sorted(named.items()) if _ON_BUILD.search(body) and _ON_BUILD.search(seen[name])]:
+        raise SystemExit(
+            f"Rules {CL_RULES} names that {rules.parent.name}/{rules.name} doesn't define as the run's for this "
+            f"target ({' '.join(cc + flags)}): {', '.join(undecided)}",
+        )
 
 
 def guarded_files(root, sources):
@@ -201,19 +229,16 @@ def _unclassified(guards):
 
 def check_guards(root, hunks, sources):
     """Every guard telling RUN_BUILDS apart in `sources` and their headers after the diffs is one editions/guards.json
-    lists, with one of its classes, and every rule they name by build (build_rules) is one host/rules.h defines."""
+    lists, with one of its classes, and every macro they define in terms of CL_BUILD is a rule cl_rules.h names, which
+    check_rules holds host/rules.h to."""
 
-    defined = set(_DEFINE.findall(RULES.read_text()))
-    if undecided := [
+    if strays := [
         f"{rel}: {name}"
         for rel in guarded_files(root, sources)
-        for name in build_rules(apply_diffs(rel, (root / rel).read_text(), hunks))
-        if name not in defined
+        if rel not in (CL_RULES, "tools/match/include/cl_build.h")
+        for name in rule_definitions(apply_diffs(rel, (root / rel).read_text(), hunks))
     ]:
-        raise SystemExit(
-            f"Rules a source names by build that {RULES.parent.name}/{RULES.name} leaves to the build a source "
-            "compiles as; define each there as the run's:\n" + "\n".join(undecided),
-        )
+        raise SystemExit(f"Macros defined by build outside {CL_RULES}; name each rule there:\n" + "\n".join(strays))
     ledger = json.loads(GUARDS.read_text())
     unlisted = [
         (rel, key, line, text)
