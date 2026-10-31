@@ -16,21 +16,24 @@
 // 1.9.8's rules. A link to a custom quest (game_custom_quest_play) plays it by
 // the rules of the build it names, as the game starts, and leaves the menus on
 // 1.9.93's. Left, its run's replay holds the quest it played, written as the
-// Python port writes it.
+// Python port writes it. Cleared, Quest Results' Play Next starts the player's
+// own run on their own settings: on a menu of two players on 1.9.93, the
+// original's own Survival for both on 1.9.93's rules, which no session records.
 //
 //   node crimson-core/checks/game_custom.mjs <game directory> [game.wasm]
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { CL_BUILD_1_9_8, CL_BUILD_1_9_93, CORE, field, state } from "./engine.mjs";
+import { CL_BUILD_1_9_8, CL_BUILD_1_9_93, CORE, field, names, state } from "./engine.mjs";
 import { bootGame, INPUT } from "./game_host.mjs";
 
 const ROOT = new URL("..", CORE).pathname;
 const [directory, gameWasm = new URL("build/game/game.wasm", CORE).pathname] = process.argv.slice(2);
 if (!directory) throw Error("usage: game_custom.mjs <game directory> [game.wasm]");
 
-// game_state_id_t, HOST_LEADERBOARD_* (game/leaderboard_requests.h), DirectInput scancodes.
-const [MAIN_MENU, PLAY_GAME_MENU, PAUSE_MENU, GAMEPLAY, MODS_MENU] = [0, 1, 5, 9, 20];
+// game_state_id_t, game_mode_id_t, HOST_LEADERBOARD_* (game/leaderboard_requests.h), DirectInput scancodes.
+const [MAIN_MENU, PLAY_GAME_MENU, PAUSE_MENU, QUEST_RESULTS, GAMEPLAY, MODS_MENU] = [0, 1, 5, 8, 9, 20];
+const SURVIVAL = 1;
 const [CUSTOM, QUEST] = [5, 6];
 const [ESCAPE, DOWN] = [0x01, 0xd0];
 // The pad as the host lays it out (game/host_input.h): A by index, the d-pad's down as the hat, in hundredths of a degree.
@@ -43,8 +46,12 @@ const PLAY_GAME = [240, 338], RULES_1_9_8 = [210, 489];
 
 let run, game;
 const requests = [];
-function frame({ cursor = CLEAR, buttons = 0, taps = [] } = {}) {
+// A frame: the cursor as DirectInput motion, a mouse button, `keys` held for the frame and `taps` delivered as presses.
+let held = [];
+function frame({ cursor = CLEAR, buttons = 0, taps = [], keys = [] } = {}) {
   const input = run.input();
+  for (const key of held) input.setUint8(INPUT.keys + key, 0);
+  for (const key of (held = keys)) input.setUint8(INPUT.keys + key, 0x80);
   for (const key of taps) {
     const n = input.getInt32(INPUT.event_count, true);
     input.setUint8(INPUT.events + n * 2, key);
@@ -265,4 +272,60 @@ if (!saved.table.equals(table)) throw Error("the linked quest's replay holds ano
 if (saved.cl_build !== CL_BUILD_1_9_8) throw Error(`the quest linked on 1.9.8's boards recorded ${saved.cl_build}`);
 open();
 asked(0);
-console.log(JSON.stringify({ played: named[0], other_builds_ignored: ignored.length, linked, recorded: saved.cl_build }));
+
+// Two players on 1.9.93 in the player's own menu, and the link's quest cleared on 1.9.8's boards: Quest Results' Play
+// Next starts the player's own run, the menu's Survival for both players on 1.9.93's rules, which the original sets up
+// itself rather than a session of the one player the quest had. The pad the scenes above pressed gave player one its
+// profile; the stock controls play the quest by the mouse.
+execFileSync("uv", [
+  "run", "--no-sync", "python", "-c",
+  "import sys; from pathlib import Path; from grim.config import default_crimson_cfg, load_crimson_cfg; " +
+    "c = load_crimson_cfg(Path(sys.argv[1]) / 'crimson.cfg'); c.gameplay.player_count = 2; " +
+    "c.controls = default_crimson_cfg().controls; c.save()",
+  directory,
+]);
+run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
+game = run.game;
+memory().set(table, game.portable_quest());
+if (game.game_custom_quest_play(CL_BUILD_1_9_8) !== 1) throw Error("the link's quest does not start for two players' menu");
+waitFor("the linked quest", () => game.game_state() === GAMEPLAY, 3000);
+// The mouse aims at the quest's one creature and fires until the quest ends.
+const CREATURES = names.filter((name) => /^creatures\[\d+\]\.active$/.test(name)).length;
+function aim() {
+  state(game);
+  const f = (name) => field(game, name, true);
+  for (let i = 0; i < CREATURES; ++i)
+    if (field(game, `creatures[${i}].active`) && f(`creatures[${i}].health`) > 0)
+      return [f(`creatures[${i}].pos_x`) + f("globals.camera_offset_x"), f(`creatures[${i}].pos_y`) + f("globals.camera_offset_y")];
+  return CLEAR;
+}
+for (let n = 0; game.game_state() === GAMEPLAY; ++n) {
+  if (n > 3000) throw Error("the linked quest never ended");
+  frame({ cursor: aim(), buttons: 1 });
+}
+waitFor("Quest Results", () => game.game_state() === QUEST_RESULTS);
+// The final time shows, the name field below Ok takes A as Enter, and A then presses Play Next, the first button.
+frames(300);
+padTap({ hat: HAT_DOWN });
+padTap({ press: [PAD_SOUTH] });
+frames(60);
+padTap({ press: [PAD_SOUTH] });
+waitFor("the run Play Next starts", () => game.game_state() === GAMEPLAY);
+frames(60);
+// The second player's keys, the arrows, walk it down, and no session records the run.
+state(game);
+const [walkedFrom, recording] = [field(game, "players[1].pos_y", true), game.game_replay_size()];
+for (let i = 0; i < 60; ++i) frame({ keys: [DOWN] });
+frame();
+state(game);
+const next = {
+  mode: game.game_play_mode(),
+  walked: Math.round(field(game, "players[1].pos_y", true) - walkedFrom),
+  build: field(game, "globals.portable_cl_build"),
+  recorded: game.game_replay_size() - recording,
+};
+if (next.mode !== SURVIVAL) throw Error(`Play Next past the linked quest plays mode ${next.mode}`);
+if (next.walked <= 0) throw Error("Play Next past the linked quest plays no second player");
+if (next.build !== CL_BUILD_1_9_93) throw Error(`Play Next past the linked quest plays ${next.build}`);
+if (next.recorded) throw Error(`Play Next past the linked quest plays as a session, which recorded ${next.recorded} bytes`);
+console.log(JSON.stringify({ played: named[0], other_builds_ignored: ignored.length, linked, recorded: saved.cl_build, next }));
