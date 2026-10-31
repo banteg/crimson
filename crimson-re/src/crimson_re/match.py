@@ -5819,9 +5819,15 @@ def compile_scratch(
 
     build_dir.parent.mkdir(parents=True, exist_ok=True)
     command = list(_scratch_compile_argv(config, match_root))
-    # MSVC 7 objects embed the compiled source's path, so the staging directory is fixed per
-    # build key (a random temp name would change every rebuild's bytes); the lock serializes it.
-    with _locked_staging_dir(build_dir.parent / f".{build_dir.name}.stage") as temp_dir:
+    # MSVC embeds the staged path. Keep it stable per profile, including in deep worktrees
+    # where the Z:-prefixed absolute filename would overflow VC6's MAX_PATH buffer.
+    stage = build_dir.parent / f".{build_dir.name}.stage"
+    windows_source = "Z:" + str((stage / Path(config.source).name).resolve())
+    if len(os.fsencode(windows_source)) >= 260:
+        key = hashlib.sha256(os.fsencode(build_dir.resolve())).hexdigest()[:16]
+        stage = match_root / ".cache" / key
+        stage.parent.mkdir(parents=True, exist_ok=True)
+    with _locked_staging_dir(stage) as temp_dir:
         temp_source = temp_dir / Path(config.source).name
         temp_obj = temp_dir / obj_name
         temp_source.write_bytes(staged_source_text.encode("latin1"))
@@ -5841,8 +5847,9 @@ def compile_scratch(
         if completed.returncode != 0 or not temp_obj.exists():
             raise RuntimeError(f"cl failed:\n{completed.stdout}{completed.stderr}")
         build_dir.mkdir(parents=True, exist_ok=True)
-        os.replace(temp_source, build_dir / Path(config.source).name)
-        os.replace(temp_obj, obj_path)
+        # A short compiler stage can live on another volume from the scratch.
+        _write_bytes_atomic(build_dir / temp_source.name, temp_source.read_bytes())
+        _write_bytes_atomic(obj_path, temp_obj.read_bytes())
     _write_text_atomic(
         build_dir / "scratch-build.json",
         json.dumps(

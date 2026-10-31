@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import struct
 import subprocess
 from dataclasses import replace
@@ -3870,12 +3871,14 @@ def test_scratch_build_key_tracks_transitive_headers(tmp_path: Path) -> None:
     assert after != before
 
 
+@pytest.mark.parametrize("scratch_name", ["scratch", "long-worktree-" + "x" * 180])
 def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    scratch_name: str,
 ) -> None:
     match_root = tmp_path / "match"
-    scratch = tmp_path / "scratch"
+    scratch = tmp_path / scratch_name
     compiler = match_root / "compilers" / "msvc6.5" / "Bin"
     scratch.mkdir()
     compiler.mkdir(parents=True)
@@ -3902,6 +3905,7 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
         commands.append(command)
         environments.append(cast(dict[str, str], kwargs["env"]))
         cwd = Path(str(kwargs["cwd"]))
+        assert len(os.fsencode("Z:" + str(cwd / command[-1]))) < 260
         (cwd / "scratch.obj").write_bytes(" ".join(command).encode())
         return subprocess.CompletedProcess(command, 0, stdout="scratch.c\n", stderr=compiler_warning)
 
