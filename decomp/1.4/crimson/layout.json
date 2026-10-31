@@ -156,6 +156,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_update_all.cpp",
+          "configs": [
+            "tools/match/scratches/creature_update_all"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/creatures/creatures_none_active.cpp",
           "configs": [
             "tools/match/scratches/creatures_none_active"

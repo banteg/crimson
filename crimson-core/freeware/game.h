@@ -133,6 +133,8 @@ struct Game {
   void kill(int slot, int owner, bool corpse = true);
   void update_career(float dt);
   void update_projectiles(float dt);
+  void update_creatures(float dt);
+  void resolve_corpses();
   void open_perks();
   void choose_perk(int choice);
   void load_scores();
@@ -186,4 +188,6 @@ extern int highscore_record_shots_fired, highscore_record_hits;
 extern float frame_dt, freeware_simulation_clock, freeware_hit_sound_timer, bonus_freeze_timer;
 extern sprite_effect_t sprite_effect_pool[384];
 void projectile_update();
+void creature_update_all();
+int fx_spawn_sprite(const vec2f_t *, const vec2f_t *, float);
 }

@@ -300,7 +300,13 @@ typedef struct freeware_perk_entry_t {
 } freeware_perk_entry_t;
 
 typedef struct freeware_player_t {
+#if CL_BUILD == 10400
+    unsigned char prefix[0x0c];
+    unsigned char plaguebearer;
+    unsigned char entity_padding[0x0b];
+#else
     unsigned char prefix[0x18];
+#endif
     vec2f_t position, movement;
     float health, heading;
     unsigned char body[0x4c - 0x30];
@@ -318,7 +324,13 @@ typedef struct freeware_player_t {
     float spread;
     int unused, weapon, previous_weapon;
     float clip_size, muzzle_flash, aim_heading;
+#if CL_BUILD == 10400
+    unsigned char control_prefix[8];
+    float shield;
+    unsigned char controls[0x0c];
+#else
     unsigned char controls[0x18];
+#endif
 } freeware_player_t;
 #endif
 

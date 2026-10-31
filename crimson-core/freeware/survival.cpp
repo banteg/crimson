@@ -21,6 +21,8 @@ int creature_spawn(const vec2f_t *, const effect_color_t *, int);
 int highscore_record_shots_fired, highscore_record_hits;
 float freeware_simulation_clock, freeware_hit_sound_timer, bonus_freeze_timer;
 sprite_effect_t sprite_effect_pool[384];
+float freeware_berserk_timer;
+unsigned char freeware_game_active;
 int current_player_index;
 player_state_t player_state_table[2];
 float player_heading_approach_target(float);
@@ -88,94 +90,6 @@ void Game::start() {
   std::printf("1.4.0 %s start %d\n", survival ? "survival" : "career", generation);
 }
 
-static void update_creatures(Game &g, float dt) {
-  // 0x40d8c0. Each living creature steers toward a point offset around its target.
-  for (int i = 0; i < 512; ++i) {
-    auto &c = creature_pool[i];
-    if (!c.active)
-      continue;
-    auto &s = c.freeware;
-    if (c.health <= 0 || c.death_timer < 16) {
-      c.death_timer -= dt * 28;
-      c.pos_x -= std::cos(s.heading - pi / 2) * c.death_timer * dt * 9;
-      c.pos_y -= std::sin(s.heading - pi / 2) * c.death_timer * dt * 9;
-      if (c.death_timer < 0) {
-        g.decals.push_back({c.position, s.size, s.heading - pi / 2, s.color});
-        c.active = 0;
-      }
-      continue;
-    }
-    if (g.run.freeze > 0 || !c.ai_mode)
-      continue;
-    // Level 8 and 17 bosses stop to spawn a small alien every four seconds.
-    if (c.hit_flash_timer != -1) {
-      c.hit_flash_timer += dt;
-      if (c.hit_flash_timer > 4) {
-        effect_color_t tint{.8f, .8f, .8f, 1};
-        auto &child = creature_pool[creature_spawn(&c.position, &tint, 1)];
-        child.freeware.size = 30;
-        child.freeware.move_speed *= .6f;
-        c.hit_flash_timer -= 4;
-      }
-      if (c.hit_flash_timer > 2.5f)
-        continue;
-    }
-    if (s.player < 0 || s.player >= g.players())
-      s.player = 0;
-    if (g.two_players && g.actor(s.player).health <= 0)
-      s.player = 1 - s.player;
-    auto &target = g.actor(s.player);
-    const auto p = target.player;
-    float distance = std::hypot(p.x - c.pos_x, p.y - c.pos_y);
-    if (c.plague_infected || (g.run.perks[12] && distance < 100.f)) {
-      c.anim_phase -= dt;
-      if (c.anim_phase <= 0) {
-        c.anim_phase = .5f;
-        c.health -= c.plague_infected ? 15.f : (100 - distance) * .3f;
-        if (c.health <= 0) {
-          if (c.plague_infected)
-            ++plaguebearer_infection_count;
-          g.kill(i, 0);
-          continue;
-        }
-      }
-    }
-    if (c.plague_infected)
-      plaguebearer_spread_infection(i);
-    float offset = i * 3.7f * pi;
-    if (g.run.perks[2])
-      offset += (1 - (std::sin(g.run.seconds) * .35f + .5f) * .5f) * pi / 2;
-    s.target = {p.x + std::cos(offset) * distance * .85f, p.y + std::sin(offset) * distance * .85f};
-    s.target_heading = std::atan2(s.target.y - c.pos_y, s.target.x - c.pos_x) + pi / 2;
-    if (c.plague_infected)
-      s.target_heading += pi;
-    angle_approach(&s.heading, s.target_heading, 0);
-    c.velocity = {std::cos(s.heading - pi / 2) * s.move_speed * dt * 30,
-                  std::sin(s.heading - pi / 2) * s.move_speed * dt * 30};
-    c.pos_x += c.velocity.x;
-    c.pos_y += c.velocity.y;
-    s.animation = std::fmod(s.animation + dt * s.move_speed * 26, 31.f);
-    s.attack_cooldown = std::max(0.f, s.attack_cooldown - dt);
-    distance = std::hypot(p.x - c.pos_x, p.y - c.pos_y);
-    if (distance < 20) {
-      c.pos_x -= c.velocity.x;
-      c.pos_y -= c.velocity.y;
-    }
-    if (distance < 30 && s.attack_cooldown <= 0 && target.health > 0) {
-      if (target.shield <= 0)
-        target.health -= s.contact_damage;
-      if (g.run.perks[10] && c.health < 150 && plaguebearer_infection_count < 50)
-        c.plague_infected = 1;
-      s.attack_cooldown += 1;
-      if (s.size <= 30) {
-        c.health = 0;
-        c.death_timer -= dt;
-      }
-      play_sound(Sound::Attack);
-    }
-  }
-}
-
 // These callbacks are synchronous during combat, just as the original global pools are.
 static Game *combat_game;
 extern "C" void freeware_blood(const vec2f_t *pos) {
@@ -193,10 +107,42 @@ extern "C" void freeware_combat_sound(int id, float) {
     play_original_sample(id);
 }
 extern "C" void creature_handle_death(int id, int owner, unsigned char corpse) {
+  combat_game->run.experience = player_state_table[0].freeware.experience;
   combat_game->kill(id, owner, corpse != 0);
+  player_state_table[0].freeware.experience = combat_game->run.experience;
+}
+void Game::update_creatures(float dt) {
+  combat_game = this;
+  frame_dt = dt;
+  bonus_freeze_timer = run.freeze;
+  freeware_berserk_timer = run.berserk;
+  freeware_game_active = 1;
+  for (int i = 0; i < 2; ++i) {
+    auto &p = player_state_table[i].freeware;
+    p.position = actor(i).player;
+    p.health = actor(i).health;
+    p.shield = actor(i).shield;
+    p.plaguebearer = run.perks[10] > 0;
+  }
+  player_state_table[0].freeware.experience = run.experience;
+  creature_update_all();
+  run.experience = player_state_table[0].freeware.experience;
+  for (int i = 0; i < players(); ++i)
+    actor(i).health = player_state_table[i].freeware.health;
+  combat_game = nullptr;
+}
+void Game::resolve_corpses() {
+  for (auto &c : creature_pool) {
+    if (!c.active || c.death_timer >= 0)
+      continue;
+    decals.push_back(
+        {c.position, c.freeware.size, c.freeware.heading - (c.freeware.type == 1 ? pi / 2 : 0), c.freeware.color});
+    c.active = 0;
+  }
 }
 void Game::update_projectiles(float dt) {
   combat_game = this;
+  player_state_table[0].freeware.experience = run.experience;
   frame_dt = dt;
   bonus_freeze_timer = run.freeze;
   projectile_update();
@@ -222,7 +168,7 @@ void Game::tick(float dt, const Input &in) {
   frame_dt = dt;
   freeware_simulation_clock += dt;
   current_player_index = 0;
-  update_creatures(*this, dt);
+  update_creatures(dt);
   update_projectiles(dt);
   for (int i = 0; i < players(); ++i)
     step_player(i, dt, in);
@@ -245,6 +191,7 @@ void Game::tick(float dt, const Input &in) {
     creature_spawn(&right, &tint, 1);
     creature_spawn(&left, &tint, 1);
   }
+  resolve_corpses();
   if (!two_players && !survival && run.health <= 0 && run.plague_time < 1 &&
       (run.experience == 6 || run.experience == 66 || run.experience == 666 || run.experience == 6666)) {
     run.health = 1;
@@ -270,10 +217,11 @@ void Game::finish_death(float dt) {
   // Switch case 6 continues combat without spawning and hands off to case 9 after three seconds.
   frame_dt = dt;
   freeware_simulation_clock += dt;
-  update_creatures(*this, dt);
+  update_creatures(dt);
   update_projectiles(dt);
   if (run.final_revenge)
     update_career(dt);
+  resolve_corpses();
   death_clock += dt;
   if (death_clock >= 3.f) {
     screen = run.cheated ? Screen::Scores : Screen::Death;

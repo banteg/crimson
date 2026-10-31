@@ -50,6 +50,8 @@ int main() {
   for (auto c : *reinterpret_cast<unsigned char (*)[sizeof(creature_t)]>(&creature_pool[2]))
     std::printf("%02x", c);
   std::puts("");
+  // The allocation probe poisons even the animation phase retained on slot reuse.
+  std::memset(creature_pool, 0, sizeof(creature_pool));
   click(460, 210);
   assert(game.screen == Screen::Playing && game.generation == 1);
   in.up = true;

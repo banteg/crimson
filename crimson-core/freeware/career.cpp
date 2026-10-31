@@ -73,7 +73,7 @@ void Game::spawn_career() {
 }
 void Game::kill(int slot, int owner, bool corpse) {
   auto &c = creature_pool[slot];
-  if (!c.active || c.death_timer < 16)
+  if (!c.active)
     return;
   if (corpse)
     c.death_timer -= frame_dt;
@@ -89,24 +89,40 @@ void Game::kill(int slot, int owner, bool corpse) {
   if (++run.kills == 1)
     std::puts("1.4.0 first kill");
 
-  if (survival || run.pickup.time > 0)
-    return;
-  auto &weapon = player_state_table[owner].freeware.weapon;
-  if (crt_rand() % 8 != 1 && (weapon != 1 || crt_rand() % 3 != 1))
-    return;
-  auto pos = c.position;
-  if (std::hypot(pos.x - actor(owner).player.x, pos.y - actor(owner).player.y) <= 64 || pos.x < 32 || pos.y < 32 ||
-      pos.x > arena - 32 || pos.y > arena - 32)
-    return;
-  auto kind = static_cast<Bonus>(crt_rand() % 6);
-  if (weapon == 1)
-    kind = Bonus::Weapon;
-  int item = 0;
-  if (kind == Bonus::Weapon)
-    do {
-      item = crt_rand() % 14 + 2;
-    } while (item == weapon);
-  run.pickup = {pos, kind, 10, item};
+  if (!survival && run.pickup.time <= 0) {
+    auto &weapon = player_state_table[owner].freeware.weapon;
+    bool drop = crt_rand() % 8 == 1 || (weapon == 1 && crt_rand() % 3 == 1);
+    auto pos = c.position;
+    if (drop && std::hypot(pos.x - actor(owner).player.x, pos.y - actor(owner).player.y) > 64 && pos.x >= 32 &&
+        pos.y >= 32 && pos.x <= arena - 32 && pos.y <= arena - 32) {
+      auto kind = static_cast<Bonus>(crt_rand() % 6);
+      if (weapon == 1)
+        kind = Bonus::Weapon;
+      int item = 0;
+      if (kind == Bonus::Weapon)
+        do {
+          item = crt_rand() % 14 + 2;
+        } while (item == weapon);
+      run.pickup = {pos, kind, 10, item};
+    }
+  }
+  if (run.freeze != 0) {
+    for (int i = 0; i < 30; ++i) {
+      float size = float(crt_rand() % 10 + 5);
+      float heading = (crt_rand() % 628) * .01f;
+      float radius = i * .04f * (crt_rand() % 55);
+      vec2f_t mark{c.pos_x + std::cos(heading) * radius, c.pos_y + std::sin(heading) * radius};
+      float rotation = (crt_rand() % 612) * .01f;
+      if (marks.size() < 128)
+        marks.push_back({mark, size, rotation, true});
+    }
+    vec2f_t zero{};
+    auto &mist = sprite_effect_pool[fx_spawn_sprite(&c.position, &zero, 12)];
+    mist.color_r *= .56f;
+    mist.color_g *= .7f;
+    mist.color_b *= .9f;
+    c.active = 0;
+  }
 }
 int Game::next_level_xp() const { return int(1000 * std::pow(run.level + 1., 1.75)); }
 static void spawn_boss(int level) {
@@ -183,9 +199,11 @@ void Game::update_career(float dt) {
     run.bomb_age += dt;
     for (int i = 0; i < 512; ++i) {
       auto &c = creature_pool[i];
-      if (c.active && c.health > 0 &&
-          std::hypot(c.pos_x - run.bomb_pos.x, c.pos_y - run.bomb_pos.y) < run.bomb_age * 360)
+      if (c.active && c.death_timer == 16 && c.health > 0 &&
+          std::hypot(c.pos_x - run.bomb_pos.x, c.pos_y - run.bomb_pos.y) < run.bomb_age * 360) {
+        c.health = 0;
         kill(i, 0);
+      }
     }
     if (run.bomb_age > 1)
       run.bomb_age = -1;

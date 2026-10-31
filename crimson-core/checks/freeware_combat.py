@@ -23,7 +23,7 @@ BULLET = ("projectile_pool", 0x439260, "<B3x7fi4f", 64)
 ROCKET = ("secondary_projectile_pool", 0x43BB78, "<B3x6fifi", 64)
 PARTICLE = ("particle_pool", 0x439F60, "<BB2x11fB3xi", 128)
 SPRITE = ("sprite_effect_pool", 0x43CBC8, "<B3x10f", 384)
-CREATURE = ("creature_pool", 0x442AF8, "<BB2xffB3x14fB3x5fd2f2i2f", 512)
+CREATURE = ("creature_pool", 0x442AF8, "<BB2xffB3x14fB3x5fd12xiif", 512)
 
 
 def creature(x, y, health):
@@ -62,6 +62,8 @@ class Comparison:
         pe.write_u32(0x43CBB8, pe.alloc(0x80))
         for va, v in [(0x4428A8, 2), (0x4428A0, 1), (0x42FBD8, 1024), (0x42FBDC, 1024), (0x452DD8, 1)]:
             pe.write_u32(va, v)
+        pe.write_u32(0x43C5C8, 6)
+        pe.write_u32(0x4385D4, 2)
         self.initial = pe.snapshot()
         self.frames = 0
 
@@ -138,7 +140,9 @@ class Comparison:
                     self.pe.write_f32(0x452DB8, 2)
                     ctypes.c_float.in_dll(self.dll, "bonus_fire_bullets_timer").value = 2
                 self.write(
-                    BULLET, slot, struct.pack(BULLET[2], 1, angle, x, 500, x, 500, 1, 2, kind, 0.4, 1, 1.07, pool),
+                    BULLET,
+                    slot,
+                    struct.pack(BULLET[2], 1, angle, x, 500, x, 500, 1, 2, kind, 0.4, 1, 1.07, pool),
                 )
                 if scenario in ("impact", "kill", "fire"):
                     self.write(CREATURE, 0, creature(510, 500, 1000 if scenario == "impact" else 9))
@@ -187,6 +191,107 @@ class Comparison:
                     self.write(CREATURE, 0, creature(512, 500, 5 if scenario == "kill" else 100))
                 self.projectile_frames(("particle", style, scenario), PARTICLE, 0, 8, 0.05)
 
+    def actors(self, mode, perk, partner, shield):
+        self.dll.combat_actors(mode, perk, partner, shield)
+        pe = self.pe
+        pe.write_u32(0x4428A8, mode)
+        pe.write_u32(0x4428A0, 2)
+        pe.write_u32(0x43850C + perk * 4, 1)
+        pe.write_u8(0x438484, perk == 10)
+        pe.write_f32(0x4385F0, shield)
+        for i, (x, health) in enumerate([(500, 0 if partner else 100), (600, 100)]):
+            for va, value in [(0x438490, x), (0x438494, 500), (0x4384A0, health)]:
+                pe.write_f32(va + i * 392, value)
+
+    def creatures(self):
+        pe = self.pe
+        for scenario in (
+            "pursuit",
+            "melee",
+            "shield",
+            "invisible",
+            "plague",
+            "radioactive",
+            "inactive",
+            "dead",
+            "child",
+            "retarget",
+            "suicide",
+            "freeze",
+        ):
+            self.reset(187)
+            perk = {"radioactive": 12, "invisible": 2, "melee": 10}.get(scenario, 0)
+            self.actors(1, perk, scenario == "retarget", float(scenario == "shield"))
+            for va, v in [(0x452DE8, 2), (0x452E10, 12), (0x452DB4, 1)]:
+                pe.write_u8(va, v)
+            data = creature(
+                517 if scenario in ("melee", "shield", "suicide", "radioactive") else 420,
+                500,
+                7 if scenario in ("plague", "radioactive") else 90,
+            )
+            for off, v in [(44, 1.3), (80, 0), (84, 7), (88, 1.65), (92, 0), (124, 30.8)]:
+                struct.pack_into("<f", data, off, v)
+            if scenario == "plague":
+                data[12] = 1
+            if scenario == "dead":
+                struct.pack_into("<f", data, 20, 8)
+            if scenario == "child":
+                struct.pack_into("<f", data, 8, 3.98)
+            if scenario == "suicide":
+                struct.pack_into("<f", data, 52, 29)
+            if scenario == "inactive":
+                data[1] = 0
+            self.write(CREATURE, 0, data)
+            self.write(CREATURE, 1, creature(450, 500, 120))
+            ctypes.c_float.in_dll(self.dll, "freeware_elapsed_seconds").value = 0
+            for i in range(6):
+                clock = 0.5 + i * 0.05
+                pe.write_f32(0x452E94, 0.05)
+                pe.write_f32(0x452D40, clock)
+                ice = float(scenario == "freeze")
+                pe.write_f32(0x452DBC, ice)
+                pe.call(0x40D8C0)
+                self.dll.combat_creatures(0.05, clock, ice)
+                for j in range(3):
+                    self.compare(CREATURE, j, (scenario, i))
+                for j in range(2):
+                    player = self.address(("player_state_table",))
+                    health = ctypes.c_float.from_address(player + 392 * j + 40).value
+                    assert math.isclose(health, pe.read_f32(0x4384A0 + j * 392), abs_tol=0.0001), (scenario, i, health)
+                assert self.dll.combat_experience() == pe.read_i32(0x4384F8), (scenario, i, "XP")
+                self.frames += 1
+            assert self.pe.call(0x422414).eax == self.dll.crt_rand(), (scenario, "next rand")
+
+    def rewards(self):
+        for seed in range(24):
+            self.reset(seed)
+            self.actors(1, seed % 2, False, 0)
+            pe = self.pe
+            pe.write_u32(0x4385D4, 2)  # Survival reset gives the port an AutoRifle.
+            pe.write_u32(0x43C5C8, 6)
+            pe.write_u32(0x452E60, 99)
+            pe.write_u32(0x4387E8, 99)
+            for j in range(6):
+                pe.write_u32(0x42FBBC + 4 * j, j)
+            data = creature(650, 500, 0)
+            self.write(CREATURE, 0, data)
+            dt = 0.032
+            ice = 1 if seed % 3 == 0 else 0
+            pe.write_f32(0x452E94, dt)
+            pe.write_f32(0x452DBC, ice)
+            corpse = bool(seed % 2)
+            pe.call(0x405E10, 0, 0, corpse)
+            self.dll.combat_reward(dt, ice, corpse)
+            self.compare(CREATURE, 0, ("reward", seed))
+            self.compare(SPRITE, 0, ("reward", seed))
+            assert self.dll.combat_first_xp() == pe.read_i32(0x452D80)
+            assert self.dll.combat_experience() == pe.read_i32(0x4384F8)
+            pickup = pe.read_i32(0x4387E8)
+            assert self.dll.combat_drop() == (-1 if pickup == 99 else pickup)
+            if pickup == 2:
+                assert self.dll.combat_drop_weapon() == pe.read_i32(0x452E68)
+            assert self.pe.call(0x422414).eax == self.dll.crt_rand(), ("reward", seed, "next rand")
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -219,7 +324,12 @@ def main():
         )
         dll = ctypes.CDLL(str(lib))
         dll.combat_projectiles.argtypes = [ctypes.c_float] * 3
+        dll.combat_creatures.argtypes = [ctypes.c_float] * 3
+        dll.combat_actors.argtypes = [ctypes.c_int] * 3 + [ctypes.c_float]
+        dll.combat_reward.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_bool]
         comparison = Comparison(dll, exe)
+        comparison.creatures()
+        comparison.rewards()
         comparison.projectiles()
         print(f"1.4.0 combat oracle passed {comparison.frames} frames.")
 
