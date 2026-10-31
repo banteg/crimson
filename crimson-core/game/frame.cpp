@@ -55,7 +55,8 @@ extern "C" int crimsonland_main_exit(void);
 extern "C" int game_live_frame(void);
 extern "C" void game_live_quit(void);
 extern "C" void game_live_focus_lost(void);
-extern "C" bool game_coop_pump(void);
+extern "C" unsigned char game_startup_init(void);
+extern "C" bool game_coop_pump(bool startup);
 extern "C" bool game_coop_focus(int active);
 extern "C" void dinput_away(bool away);
 extern "C" void pad_frame(void);
@@ -84,7 +85,8 @@ GAME_EXPORT(game_frame) int game_frame() {
   // A co-op session runs in every pass, whatever the screen, and in the
   // background too (host/coop_live.inc): one that began there resumes the game,
   // and the game in the background stops once the session needs it no more.
-  bool plays = game_coop_pump();
+  bool startup = grim_frame_callback == reinterpret_cast<decltype(grim_frame_callback)>(game_startup_init);
+  bool plays = game_coop_pump(startup);
   if (plays && grim_timing_frozen)
     game_resume();
   else if (!plays && away && !grim_timing_frozen)

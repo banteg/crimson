@@ -877,7 +877,22 @@ if (pacingOnly) {
   left(host);
   assert.ok(time() - leaving < 2000, "final hashes drained before closing");
   const result = ended("incomplete");
-  console.log(JSON.stringify({ slowDisplay, changedRoute, longerRoute, changes, closeMs: time() - leaving, ticks: result.ticks }));
+  const closeMs = time() - leaving;
+  // A fresh guest receives START_RUN during its intro, which shares screen
+  // zero with the main menu. The pending offer must survive that handoff.
+  machines.profile.ms = 10;
+  FRAMES[1] = [16, 17, 17];
+  machines.flights = [];
+  guest.g.game_close();
+  assert.throws(() => guest.run.frame(16), /the game quit/);
+  guest.g.game_exit();
+  Object.assign(guest, boot(guest, time()));
+  connect();
+  click(host, MAIN_MENU, PLAY_GAME);
+  click(host, PLAY_GAME_MENU, SURVIVAL);
+  machines.input = idle;
+  machines.until(started, "join a host that starts immediately after the guest connects", 3000);
+  console.log(JSON.stringify({ slowDisplay, changedRoute, longerRoute, changes, closeMs, ticks: result.ticks }));
   process.exit(0);
 }
 // The Guest's game closes and starts again, its settings changed first (`change`, Python on `config`): what it

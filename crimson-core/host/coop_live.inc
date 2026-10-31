@@ -715,7 +715,14 @@ extern "C" {
 // takes nothing until it shows, and the end screens' Main Menu leaves at the
 // click. True while the game plays on for the session, in the background too
 // (not under a run of the player's own), and for a co-op run still to end.
-bool game_coop_pump() {
+bool game_coop_pump(bool startup) {
+  // The intro shares the main menu's screen id, but its callback cannot
+  // perform the transition into gameplay. Keep any START_RUN offer until the
+  // actual menu takes over and skip the logo as a joining player's click would.
+  if (startup && coop_open()) {
+    startup_skip_requested = 1;
+    return coop_on();
+  }
   // A perk screen whose pick the session no longer takes (a leave) closes as
   // its Cancel does.
   if (coop_live.choosing && !coop.picking && game_state_id == GAME_STATE_PERK_SELECTION &&

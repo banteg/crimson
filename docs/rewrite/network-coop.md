@@ -1646,7 +1646,9 @@ later epoch than the receiver's. Every other message of another epoch is ignored
 
 Ticks packets of the new epoch are taken only once the run started on the
 receiving peer: on the Guest from `START_RUN`, on the Host from `START_ACK`. Each
-peer seeds ticks `0 .. delay - 1` with neutral records.
+peer seeds ticks `0 .. delay - 1` with neutral records. A guest still starting the game skips the
+intro and holds the offer until the menu's frame callback can transition to
+gameplay. The loading screen and main menu share a screen ID.
 
 #### Timeouts
 

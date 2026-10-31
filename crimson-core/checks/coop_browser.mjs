@@ -373,8 +373,9 @@ async function press(peer, screen, [x, y]) {
   if (screen !== null) await until(`screen ${screen}`, async () => (await peer.screen()) === screen, 30000);
   await peer.move(x, y);
   await sleep(1000);
+  if (screen !== null && await peer.screen() !== screen) return;
   await peer.down();
-  await sleep(120);
+  await peer.frame();
   await peer.up();
 }
 // A key tap the game sees: held through one of the page's frames. The original reads a key as it is down when a
@@ -398,9 +399,20 @@ const webrtc = (peer) =>
 const both = (what, test, ms) => until(what, async () => (await test(host)) && (await test(guest)), ms);
 // A run on both pages.
 const started = (what) => both(what, async (peer) => (await peer.status()) & STATUS.started && (await peer.screen()) === GAMEPLAY);
-// The host's menus start Survival once the startup sequence is over; the guest's screen follows.
+// The intro shares the main menu's state id. On a slow renderer the first
+// click can skip the logo. Wait for the panel to actually open.
+async function openPlayMenu(peer) {
+  await until("the Play Game panel", async () => {
+    if (await peer.screen() === MAIN_MENU) {
+      await press(peer, MAIN_MENU, PLAY_GAME);
+      await sleep(600);
+    }
+    return (await peer.screen()) === PLAY_GAME_MENU;
+  }, 60000);
+}
+// The host starts Survival and the guest's screen follows.
 async function survival(host, guest) {
-  await press(host, MAIN_MENU, PLAY_GAME);
+  await openPlayMenu(host);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
   await started("the run on both");
 }
@@ -527,7 +539,7 @@ try {
   // The host's game, in the room without its partner, starts no run alone: Survival starts nothing, and Escape goes
   // back to the main menu.
   await sleep(STARTUP_MS);
-  await press(host, MAIN_MENU, PLAY_GAME);
+  await openPlayMenu(host);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
   await sleep(2000);
   assert.equal(await host.screen(), PLAY_GAME_MENU, "a run alone in a room");
