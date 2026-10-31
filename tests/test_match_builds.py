@@ -14,6 +14,13 @@ REGISTRY = match_builds.load_registry()
 MAPPED_IMAGES = match_builds.mapped_images(REGISTRY)
 
 
+def test_build_map_generates_freeware_donor_before_consumers() -> None:
+    order = [(image.build, image.name) for image in match_builds.mapped_images(REGISTRY)]
+    for build in ("1.0.2", "1.3.0"):
+        assert order.index(("1.4.0", "crimson.exe")) < order.index((build, "crimson.exe"))
+        assert order.index((build, "grim.dll")) < order.index((build, "crimson.exe"))
+
+
 @pytest.fixture
 def recovered_198_map():
     image = REGISTRY.image("1.9.8", "crimsonland.exe")

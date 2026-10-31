@@ -22,6 +22,7 @@ from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from functools import cache
+from graphlib import TopologicalSorter
 from itertools import pairwise
 from pathlib import Path
 from typing import Any
@@ -1198,13 +1199,19 @@ def stale_build_map_files(image: BuildImage, payload: dict[str, Any]) -> list[Pa
 
 
 def mapped_images(registry: Registry) -> list[BuildImage]:
-    """Configured targets, with Grim mapped before callers that use its interface."""
-    return sorted((
-        image
-        for images in registry.builds.values()
-        for image in images.values()
-        if image.source_build is not None and not image.is_canonical
-    ), key=lambda image: (image.build, image.name != "grim.dll", image.name))
+    """Generate each donor before its dependents, and each Grim interface before its EXE."""
+    by_build = {
+        build: sorted(
+            (image for image in images.values() if image.source_build is not None and not image.is_canonical),
+            key=lambda image: (image.name != "grim.dll", image.name),
+        )
+        for build, images in sorted(registry.builds.items())
+    }
+    dependencies = {
+        build: sorted({image.source_build for image in images if image.source_build in by_build and image.source_build != build})
+        for build, images in by_build.items()
+    }
+    return [image for build in TopologicalSorter(dependencies).static_order() for image in by_build[build]]
 
 
 @dataclass(frozen=True, slots=True)

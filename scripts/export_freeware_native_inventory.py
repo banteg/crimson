@@ -21,7 +21,7 @@ registry = json.loads((root / "decomp/builds.json").read_text())
 result = []
 for build in registry["builds"]:
     for spec in build["images"]:
-        if not spec.get("native_inventory"):
+        if not spec.get("native_inventory") or (image_name and image_name != spec["name"]):
             continue
         path = root / build["tree"] / spec["name"]
         if hashlib.sha256(path.read_bytes()).hexdigest() != spec["sha256"]:
@@ -86,6 +86,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", required=True, help="explicit bn target selector from `bn target list`")
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--image", choices=["crimson.exe", "grim.dll"], help="only refresh this image in each freeware build")
     args = parser.parse_args()
     executable = shutil.which("bn")
     if executable is None:
@@ -94,7 +95,7 @@ def main() -> None:
     # as a Python literal, never through shell interpolation.
     with tempfile.TemporaryDirectory(prefix="crimson-native-export-") as temporary:
         script = Path(temporary) / "export_bn.py"
-        script.write_text(f"from pathlib import Path\nroot = Path({str(args.root.resolve())!r})\n" + BN_EXPORT)
+        script.write_text(f"from pathlib import Path\nroot = Path({str(args.root.resolve())!r})\nimage_name = {args.image!r}\n" + BN_EXPORT)
         subprocess.run([executable, "--target", args.target, "py", "--script", str(script)], check=True)
 
 
