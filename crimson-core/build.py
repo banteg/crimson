@@ -153,6 +153,8 @@ def main():
     git = shutil.which("git")
     if git and a.out.is_dir() and subprocess.run([git, "ls-files"], cwd=a.out, capture_output=True, check=False).stdout:
         raise SystemExit(f"The output directory {a.out} holds files git tracks")
+    if any(path.is_relative_to(a.out) for path in (a.root, HERE)):
+        raise SystemExit(f"The output directory {a.out} holds the build's inputs")
     inside = f"{a.out.relative_to(a.root).as_posix()}/" if a.out.is_relative_to(a.root) else ""
     if any(inside.startswith(p) for p in (game_paths if a.target == "game" else core_paths)(a.root) if p.endswith("/")):
         raise SystemExit(f"The output directory {a.out} lies among the build's inputs")
@@ -276,8 +278,8 @@ def main():
     # The guards between 1.9.8 and 1.9.93 that the diffs leave to the preprocessor must be the ones
     # editions/guards.json lists, each with its class, and the rules the sources name are the run's for this target.
     check_guards(a.root, hunks, sources)
-    # From the output directory, where the compiles run and the flags' relative include resolves.
-    check_rules(a.root, cc, flags, cwd=a.out)
+    # The flags' relative include names the output directory's, where the compiles run.
+    check_rules(a.root, cc, [f"-I{a.out / arg[2:]}" if arg.startswith("-I") else arg for arg in flags])
     name = object_name if a.target == "game" else lambda rel: Path(rel).stem
 
     # The game module compiles every source the verifier does, so every diff applies there; the verifier skips

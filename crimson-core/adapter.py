@@ -20,6 +20,7 @@ import hashlib
 import json
 import re
 import subprocess
+import tempfile
 import textwrap
 from collections import Counter
 from pathlib import Path
@@ -189,27 +190,29 @@ def _expansions(cc, args, text, names, cwd):
     ]
 
 
-def check_rules(root, cc, flags, first=HOOKS, cwd=None):
+def check_rules(root, cc, flags, first=HOOKS):
     """Every rule cl_rules.h names, with a target's `flags`, expands alike for every build, and to a condition, where a
     recovered source reads it: after `first` (host/hooks.h, which build.py includes ahead of every recovered source,
-    and which brings host/rules.h) and cl_rules.h, as `cc` preprocesses them from `cwd`, where the target compiles."""
+    and which brings host/rules.h) and cl_rules.h, as `cc` preprocesses them, with absolute include paths. It runs in an
+    empty directory, as a recovered source's own holds no header for its quoted includes to find first."""
 
-    args = [*flags, "-I", str((root / CL_RULES).parent)]
-    header = f'#include "{Path(CL_RULES).name}"\n'
-    own, builtin = (set(_DEFINE_NAME.findall(_preprocess(cc, [*args, "-dM"], text, cwd))) for text in (header, ""))
-    own = [(name, call) for name, call in sorted(own - builtin) if name != "CL_BUILD"]
-    # A rule is a condition a source names bare; a function-like macro's bare name expands to nothing to compare.
-    if functions := [name for name, call in own if call]:
-        raise SystemExit(f"{CL_RULES} defines {', '.join(functions)} as a function; a rule is a condition, named bare")
-    names = sorted(name for name, _ in own)
-    rules = [name for name, *ways in zip(names, *_expansions(cc, args, header, names, cwd), strict=True) if len(set(ways)) > 1]
-    seen = _expansions(cc, [*args, "-include", str(first)], header, rules, cwd)
-    # Nothing, or the rule's own name (a function-like macro a bare use leaves alone), is no condition.
-    if undecided := [name for name, *ways in zip(rules, *seen, strict=True) if len(set(ways)) > 1 or ways[0] in ("", name)]:
-        raise SystemExit(
-            f"Rules {CL_RULES} names that host/rules.h doesn't define as the run's for this target "
-            f"({' '.join(cc + flags)}): {', '.join(undecided)}",
-        )
+    with tempfile.TemporaryDirectory() as cwd:
+        args = [*flags, "-I", str((root / CL_RULES).parent)]
+        header = f'#include "{Path(CL_RULES).name}"\n'
+        own, builtin = (set(_DEFINE_NAME.findall(_preprocess(cc, [*args, "-dM"], text, cwd))) for text in (header, ""))
+        own = [(name, call) for name, call in sorted(own - builtin) if name != "CL_BUILD"]
+        # A rule is a condition a source names bare; a function-like macro's bare name expands to nothing to compare.
+        if functions := [name for name, call in own if call]:
+            raise SystemExit(f"{CL_RULES} defines {', '.join(functions)} as a function; a rule is a condition, named bare")
+        names = sorted(name for name, _ in own)
+        rules = [name for name, *ways in zip(names, *_expansions(cc, args, header, names, cwd), strict=True) if len(set(ways)) > 1]
+        seen = _expansions(cc, [*args, "-include", str(first)], header, rules, cwd)
+        # Nothing, or the rule's own name (a function-like macro a bare use leaves alone), is no condition.
+        if undecided := [name for name, *ways in zip(rules, *seen, strict=True) if len(set(ways)) > 1 or ways[0] in ("", name)]:
+            raise SystemExit(
+                f"Rules {CL_RULES} names that host/rules.h doesn't define as the run's for this target "
+                f"({' '.join(cc + flags)}): {', '.join(undecided)}",
+            )
 
 
 def guarded_files(root, sources):
