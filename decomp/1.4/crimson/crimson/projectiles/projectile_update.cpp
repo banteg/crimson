@@ -30,11 +30,11 @@ void freeware_combat_sound(int sample, float volume);
 #endif
 namespace {
 const float half_pi = 1.57079637f, tau = 6.28318548f;
-__forceinline vec2f_t offset(vec2f_t p, float x, float y) {
+__forceinline vec2f_t offset(const vec2f_t &p, float x, float y) {
     vec2f_t v = {p.x + x, p.y + y};
     return v;
 }
-__forceinline float distance(vec2f_t a, vec2f_t b) {
+__forceinline float distance(const vec2f_t &a, const vec2f_t &b) {
     double x = a.x - b.x, y = a.y - b.y;
     return (float)sqrt(x * x + y * y);
 }
