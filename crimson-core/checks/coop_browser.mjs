@@ -58,6 +58,7 @@
 //
 //   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir] [game.wasm]
 //
+// CRIMSON_CHROME_ANGLE selects the graphics backend (e.g. metal on macOS); the default is SwiftShader.
 // <asset dir> holds crimson.paq, sfx.paq and music.paq (artifacts/assets).
 // CRIMSON_CHROME is a Chrome or Chromium binary with the new headless mode (not
 // the headless shell, whose tabs are never hidden). The check drives it over the
@@ -164,7 +165,7 @@ const chrome = spawn(
     `--user-data-dir=${profile}`, "--headless=new", "--remote-debugging-port=0", "--no-first-run", "--no-default-browser-check",
     "--use-mock-keychain", "--password-store=basic", "--autoplay-policy=no-user-gesture-required",
     // Host candidates by address, not mDNS names, so the pages connect directly.
-    "--allow-loopback-in-peer-connection", "--disable-features=WebRtcHideLocalIpsWithMdns", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
+    "--allow-loopback-in-peer-connection", "--disable-features=WebRtcHideLocalIpsWithMdns", `--use-angle=${process.env.CRIMSON_CHROME_ANGLE ?? "swiftshader"}`, "--enable-unsafe-swiftshader",
     "about:blank",
   ],
   { stdio: "ignore", detached: true },
