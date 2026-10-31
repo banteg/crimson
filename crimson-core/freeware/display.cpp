@@ -51,15 +51,23 @@ bool Display::load(const std::string &folder) {
   return SDL_SetRenderTarget(renderer, nullptr);
 }
 void Display::sprite(const char *name, float x, float y, float w, float h, float angle, int frame, int columns,
-                     SDL_FColor tint) {
+                     SDL_FColor tint, UiUv uv, unsigned filter) {
   auto *t = textures.at(name);
   float tw, th;
   SDL_GetTextureSize(t, &tw, &th);
   float cw = tw / columns, ch = th / columns;
   SDL_FRect src{(frame % columns) * cw, (frame / columns) * ch, cw, ch}, dst{x, y, w, h};
+  src.x += uv.u * cw;
+  src.y += uv.v * ch;
+  src.w *= uv.s - uv.u;
+  src.h *= uv.t - uv.v;
+  if (filter)
+    SDL_SetTextureScaleMode(t, filter == 1 ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_LINEAR);
   SDL_SetTextureColorModFloat(t, tint.r, tint.g, tint.b);
   SDL_SetTextureAlphaModFloat(t, tint.a);
   SDL_RenderTextureRotated(renderer, t, &src, &dst, angle * degrees, nullptr, SDL_FLIP_NONE);
+  if (filter == 1)
+    SDL_SetTextureScaleMode(t, SDL_SCALEMODE_LINEAR);
 }
 void Display::text(const std::string &value, float x, float y, float scale, SDL_FColor tint) {
   // Grim's pre-1.9 mono path pre-advances even the first glyph.
@@ -76,7 +84,9 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
 void Display::frame_art(const Game &g) {
   auto draw_sprite = [this](const FrameSprite &draw) {
     const char *name = draw.name;
-    if (!std::strcmp(name, "aimen"))
+    if (!std::strcmp(name, "bullet_i"))
+      name = "bullet_real_16";
+    else if (!std::strcmp(name, "aimen"))
       name = "aim_enh";
     else if (!std::strcmp(name, "radius"))
       name = "radius256";
@@ -89,7 +99,7 @@ void Display::frame_art(const Game &g) {
     else if (!std::strcmp(name, "tl_tolmec"))
       return; // No texture with this handle ships in the 1.4.0 PAQ.
     sprite(name, draw.x, draw.y, draw.width, draw.height, draw.angle, 0, 1,
-           {draw.color.r, draw.color.g, draw.color.b, draw.color.a});
+           {draw.color.r, draw.color.g, draw.color.b, draw.color.a}, draw.uv, draw.filter);
   };
   size_t i = 0;
   for (const auto &label : g.frame_labels) {
@@ -223,7 +233,7 @@ void Display::draw(Game &g) {
     if (g.notice)
       text(g.notice, width / 2 - 220, 478, .65f, white);
   } else if (g.presented_screen == Screen::Playing) {
-    hud(g);
+    // The recovered HUD is queued by the dispatcher.
   } else if (g.presented_screen == Screen::Message) {
     text("Message:", 150, 40, .9f, white);
     std::string hint = g.message;

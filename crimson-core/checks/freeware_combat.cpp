@@ -386,3 +386,97 @@ extern "C" bool combat_level_file(const char *path, bool load) {
   freeware_frame_game = nullptr;
   return ok;
 }
+
+// Capture the same ordered submissions consumed by Display::frame_art, before rasterization.
+extern freeware::Game *freeware_frame_game;
+extern const freeware::Input *freeware_frame_input;
+extern float freeware_frame_delta;
+extern "C" {
+void gameplay_render_hud();
+extern int config_player_count;
+extern game_mode_id_t config_game_mode;
+struct UiDrawCapture {
+  char value[384];
+  int label, filter;
+  float x, y, width, height, angle, uv[4], scale, color[4];
+};
+UiDrawCapture combat_ui_draws[512];
+float combat_ui_result[4];
+}
+static int capture_ui() {
+  int n = 0;
+  size_t sprite = 0;
+  auto emit = [&](const char *value, bool label, unsigned filter, float x, float y, float w, float h, float angle,
+                  freeware::UiUv uv, float scale, effect_color_t color) {
+    if (n == 512)
+      std::abort();
+    auto &out = combat_ui_draws[n++];
+    out = {};
+    std::snprintf(out.value, sizeof(out.value), "%s", value);
+    out.label = label;
+    out.filter = filter;
+    out.x = x;
+    out.y = y;
+    out.width = w;
+    out.height = h;
+    out.angle = angle;
+    out.uv[0] = uv.u;
+    out.uv[1] = uv.v;
+    out.uv[2] = uv.s;
+    out.uv[3] = uv.t;
+    out.scale = scale;
+    out.color[0] = color.r;
+    out.color[1] = color.g;
+    out.color[2] = color.b;
+    out.color[3] = color.a;
+  };
+  auto quad = [&]() {
+    const auto &q = game.frame_sprites[sprite++];
+    emit(q.name, false, q.filter, q.x, q.y, q.width, q.height, q.angle, q.uv, 0, q.color);
+  };
+  for (const auto &t : game.frame_labels) {
+    while (sprite < t.preceding_sprites)
+      quad();
+    emit(t.text.c_str(), true, 0, t.x, t.y, 0, 0, 0, {}, t.scale, t.color);
+  }
+  while (sprite < game.frame_sprites.size())
+    quad();
+  return n;
+}
+extern "C" int combat_ui_hud(int mode, int count, int variant) {
+  game = freeware::Game{};
+  freeware_frame_game = &game;
+  config_game_mode = static_cast<game_mode_id_t>(mode);
+  config_player_count = count;
+  game.two_players = count == 2;
+  game.enter_state(variant & 2 ? 6 : 3);
+  game.active_run = !(variant & 4);
+  game.run.pending = variant & 1;
+  game.run.perks[11] = variant & 1;
+  game.run.seconds = 13.875f;
+  game.run.experience = variant & 4 ? 12 : 146;
+  game.hud_xp_timer = variant & 2 ? .25f : 0;
+  frame_dt = .03125f;
+  current_player_index = 0;
+  for (int i = 0; i < 2; ++i) {
+    auto &p = player_state_table[i].freeware;
+    p.health = game.actor(i).health = i ? (variant & 2 ? 0.f : 37.f)
+                                        : (variant & 4   ? 0.f
+                                           : variant & 1 ? 180.f
+                                                         : 75.f);
+    p.ammo = i ? 2.5f : 7.75f;
+    p.clip_size = i ? 12.f : 45.f;
+    p.reload = i ? -.5f : variant & 2 ? 2.2f : .625f;
+    p.reload_duration = 1.25f;
+    p.displayed_experience = 30;
+    p.experience = game.run.experience;
+    p.weapon = i ? 2 : 1;
+  }
+  gameplay_render_hud();
+  combat_ui_result[0] = game.run.seconds;
+  combat_ui_result[1] = game.hud_xp_timer;
+  combat_ui_result[2] = (float)player_state_table[0].freeware.displayed_experience;
+  combat_ui_result[3] = (float)current_player_index;
+  freeware_frame_game = nullptr;
+  return capture_ui();
+}

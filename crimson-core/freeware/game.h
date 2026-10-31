@@ -78,10 +78,22 @@ struct Corpse {
   float size, heading;
   effect_color_t color;
 };
+struct UiUv {
+  float u = 0, v = 0, s = 1, t = 1;
+};
+struct UiState {
+  const char *texture = "bullet";
+  UiUv uv;
+  effect_color_t color{1, 1, 1, 1};
+  float angle{}, scale = 1;
+  unsigned filter = 2;
+};
 struct FrameSprite {
   const char *name;
   float x, y, width, height, angle;
   effect_color_t color;
+  UiUv uv{};
+  unsigned filter{};
 };
 struct FrameLabel {
   std::string text;
@@ -144,6 +156,8 @@ struct Game {
   float fps_history[50]{};
   bool smoke = true, shadows = true, screenshot_requested{};
   int screenshot_index{};
+  UiState ui;
+  float hud_xp_timer{};
   std::vector<FrameSprite> frame_sprites;
   std::vector<FrameLabel> frame_labels;
   std::array<std::vector<Score>, 4> rankings;

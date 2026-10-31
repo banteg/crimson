@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "crimson-core"))
 from freeware.build import game_flags, game_sources
 from freeware_frame_cases import check_frames
 from freeware_player_cases import check_controls, check_reset, check_walls
+from freeware_ui_cases import check_ui
 
 # symbol, original VA, record format (preserves the exact x86 padding), capacity
 BULLET = ("projectile_pool", 0x439260, "<B3x7fi4f", 64)
@@ -588,9 +589,10 @@ def check_client(dll, exe, address, target):
     check_walls(comparison)
     check_controls(comparison)
     dispatch_frames = check_frames(comparison, exe, BULLET, creature, files=target == "native")
+    ui_draws = check_ui(comparison, exe)
     visual_cases = comparison.draws()
     print(
-        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants, {dispatch_frames} full frame callbacks and {visual_cases} draw traces.",
+        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants, {dispatch_frames} full frame callbacks and {visual_cases} draw traces, plus {ui_draws} ordered UI draws.",
         flush=True,
     )
 
@@ -615,6 +617,7 @@ def check_web(stage, exe, sources):
         "combat_arm",
         "combat_controls",
         "combat_wall",
+        "combat_ui_hud",
         "player_reset_all",
         "combat_frame_start",
         "combat_frame_step",
@@ -645,6 +648,8 @@ def check_web(stage, exe, sources):
         "combat_frame_quad_count",
         "combat_frame_flags",
         "combat_wall_result",
+        "combat_ui_draws",
+        "combat_ui_result",
         "combat_draw_capture",
         "combat_terrain_capture",
         "freeware_rng_state",

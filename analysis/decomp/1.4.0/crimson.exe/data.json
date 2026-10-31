@@ -866,6 +866,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00436cf8",
+      "name": "freeware_score_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x004382d8",
       "name": "freeware_ui_buffer",
       "program": "1.4.0/crimson.exe"
@@ -943,6 +948,11 @@
     {
       "address": "0x00438808",
       "name": "freeware_editor_offset",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00438824",
+      "name": "freeware_last_perk_id",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1026,8 +1036,18 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0043bb74",
+      "name": "freeware_bullet_texture",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0043bb78",
       "name": "secondary_projectile_pool",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043c598",
+      "name": "freeware_perk_available",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1077,12 +1097,22 @@
     },
     {
       "address": "0x00441fc0",
+      "name": "freeware_perk_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00441fc0",
       "name": "perk_meta_table",
       "program": "1.4.0/crimson.exe"
     },
     {
       "address": "0x00442380",
       "name": "unused_fx_rotated_creature_type_id_prefix_color",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00442490",
+      "name": "freeware_bullet_icon",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1276,6 +1306,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452d48",
+      "name": "freeware_message",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452d4c",
       "name": "freeware_pause_perks",
       "program": "1.4.0/crimson.exe"
@@ -1283,6 +1318,11 @@
     {
       "address": "0x00452d4d",
       "name": "freeware_rainbow_armed",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452d4f",
+      "name": "freeware_see_through",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1346,6 +1386,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452d74",
+      "name": "freeware_hud_xp_timer",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452d78",
       "name": "freeware_camera_timer",
       "program": "1.4.0/crimson.exe"
@@ -1403,6 +1448,11 @@
     {
       "address": "0x00452da4",
       "name": "freeware_spawn_enabled",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452da8",
+      "name": "freeware_perk_hover",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1611,6 +1661,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452ed5",
+      "name": "freeware_scores_closing",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452ed8",
       "name": "freeware_name_length",
       "program": "1.4.0/crimson.exe"
@@ -1633,6 +1688,16 @@
     {
       "address": "0x00452ee8",
       "name": "freeware_low_fps_frames",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452eec",
+      "name": "freeware_score_highlighted",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452ef0",
+      "name": "freeware_score_scroll",
       "program": "1.4.0/crimson.exe"
     },
     {

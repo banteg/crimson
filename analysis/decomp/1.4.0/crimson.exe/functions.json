@@ -1321,6 +1321,14 @@
     "evidence": "recovered"
   },
   {
+    "address": "0x004169C0",
+    "end": "0x004169FD",
+    "size": 61,
+    "build_only": true,
+    "name": "freeware_hud_set_row",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00416A00",
     "end": "0x00417CB8",
     "size": 4792,

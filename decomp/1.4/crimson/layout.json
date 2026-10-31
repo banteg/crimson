@@ -327,6 +327,18 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/ui/gameplay_render_hud.cpp",
+          "configs": [
+            "tools/match/scratches/gameplay_render_hud"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/hud_set_row.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_hud_set_row"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/weapons/player_start_reload.cpp",
           "configs": [
             "tools/match/scratches/player_start_reload"

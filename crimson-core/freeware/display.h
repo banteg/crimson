@@ -16,10 +16,9 @@ struct Display {
   bool load(const std::string &folder);
   void draw(Game &game);
   void frame_art(const Game &game);
-  void hud(const Game &game);
   void credits(float clock);
   void sprite(const char *name, float x, float y, float w, float h, float angle = 0, int frame = 0,
-              int columns = 1, SDL_FColor tint = {1, 1, 1, 1});
+              int columns = 1, SDL_FColor tint = {1, 1, 1, 1}, UiUv uv = {}, unsigned filter = 0);
   void text(const std::string &value, float x, float y, float scale, SDL_FColor color);
 };
 } // namespace freeware

@@ -698,6 +698,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_hud_set_row",
+      "address": "0x004169c0",
+      "end": "0x004169fd",
+      "body_sha256": "8548ec808e5882fa39347dcbf6f7ede888b0d8ade03348ff62e93d7e6d3e364d",
+      "build_only": true
+    },
+    {
       "name": "gameplay_render_hud",
       "address": "0x00416a00",
       "end": "0x00417cb8",
@@ -1330,6 +1337,14 @@
       "build_only": true
     },
     {
+      "name": "freeware_score_table",
+      "address": "0x00436cf8",
+      "reference": "0x0041f863",
+      "bytes": "bf1c6d4300",
+      "offset": 36,
+      "build_only": true
+    },
+    {
       "name": "freeware_ui_buffer",
       "address": "0x004382d8",
       "reference": "0x004181cc",
@@ -1445,6 +1460,13 @@
       "bytes": "f73d24884300"
     },
     {
+      "name": "freeware_last_perk_id",
+      "address": "0x00438824",
+      "reference": "0x00415a32",
+      "bytes": "8b0d24884300",
+      "build_only": true
+    },
+    {
       "name": "fx_queue",
       "address": "0x00438828",
       "reference": "0x004034a3",
@@ -1466,6 +1488,13 @@
       "offset": 44
     },
     {
+      "name": "freeware_bullet_texture",
+      "address": "0x0043bb74",
+      "reference": "0x00415987",
+      "bytes": "8b1574bb4300",
+      "build_only": true
+    },
+    {
       "name": "secondary_projectile_pool",
       "address": "0x0043bb78",
       "reference": "0x004037c0",
@@ -1477,6 +1506,13 @@
       "address": "0x0043c598",
       "reference": "0x00408cf8",
       "bytes": "bf98c54300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_perk_available",
+      "address": "0x0043c598",
+      "reference": "0x00415926",
+      "bytes": "8a9098c54300",
       "build_only": true
     },
     {
@@ -1533,10 +1569,24 @@
       "bytes": "68c01f4400"
     },
     {
+      "name": "freeware_perk_table",
+      "address": "0x00441fc0",
+      "reference": "0x00415a56",
+      "bytes": "bfc01f4400",
+      "build_only": true
+    },
+    {
       "name": "unused_fx_rotated_creature_type_id_prefix_color",
       "address": "0x00442380",
       "reference": "0x00403280",
       "bytes": "c705802344000000003f"
+    },
+    {
+      "name": "freeware_bullet_icon",
+      "address": "0x00442490",
+      "reference": "0x00416b05",
+      "bytes": "8b1590244400",
+      "build_only": true
     },
     {
       "name": "config_blob",
@@ -1794,6 +1844,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_message",
+      "address": "0x00452d48",
+      "reference": "0x00415faa",
+      "bytes": "a1482d4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_pause_perks",
       "address": "0x00452d4c",
       "reference": "0x0041bc3c",
@@ -1805,6 +1862,13 @@
       "address": "0x00452d4d",
       "reference": "0x00412874",
       "bytes": "c6054d2d450001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_see_through",
+      "address": "0x00452d4f",
+      "reference": "0x0041571a",
+      "bytes": "c6054f2d450001",
       "build_only": true
     },
     {
@@ -1892,6 +1956,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_hud_xp_timer",
+      "address": "0x00452d74",
+      "reference": "0x004176d3",
+      "bytes": "d905742d4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_camera_timer",
       "address": "0x00452d78",
       "reference": "0x00418786",
@@ -1970,6 +2041,13 @@
       "address": "0x00452da4",
       "reference": "0x00408660",
       "bytes": "a0a42d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_perk_hover",
+      "address": "0x00452da8",
+      "reference": "0x0041591a",
+      "bytes": "8b0da82d4500",
       "build_only": true
     },
     {
@@ -2248,6 +2326,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_scores_closing",
+      "address": "0x00452ed5",
+      "reference": "0x0041fae5",
+      "bytes": "c605d52e450001",
+      "build_only": true
+    },
+    {
       "name": "freeware_name_length",
       "address": "0x00452ed8",
       "reference": "0x0041d688",
@@ -2280,6 +2365,20 @@
       "address": "0x00452ee8",
       "reference": "0x0041db58",
       "bytes": "a1e82e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_highlighted",
+      "address": "0x00452eec",
+      "reference": "0x0041f4cf",
+      "bytes": "c605ec2e450000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_scroll",
+      "address": "0x00452ef0",
+      "reference": "0x0041f5bd",
+      "bytes": "d805f02e4500",
       "build_only": true
     }
   ],

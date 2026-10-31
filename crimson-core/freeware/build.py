@@ -70,6 +70,8 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "player/player_reset_all.cpp",
                 "level/move_with_collision.cpp",
                 "game/game_frame_update.cpp",
+                "ui/gameplay_render_hud.cpp",
+                "ui/hud_set_row.cpp",
                 "player/angle_approach.cpp",
                 "projectiles/projectile_spawn.cpp",
                 "projectiles/projectile_update.cpp",

@@ -46,6 +46,7 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
+void gameplay_render_hud();
 
 #ifndef CRIMSON_FREEWARE_CLIENT
 extern console_queue_t freeware_console;
@@ -115,11 +116,7 @@ __forceinline bool open_perk() {
 }
 __forceinline void level_check() { G.check_level(); }
 __forceinline void open_choices() { G.open_perks(); }
-__forceinline void hud() {
-    if (state() == 3 && ACTIVE)
-        SECONDS += frame_dt;
-    freeware_elapsed_seconds = SECONDS;
-}
+__forceinline void hud() { gameplay_render_hud(); }
 __forceinline void blood(vec2f_t *p) { G.queue_blood(*p); }
 #else
 __forceinline int state() { return game_state_id; }
