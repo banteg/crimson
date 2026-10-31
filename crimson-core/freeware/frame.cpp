@@ -61,6 +61,7 @@ void Game::enter_state(int id) {
   }
 }
 void Game::update(float dt, const Input &in) {
+  actor_sprites.clear();
   frame_sprites.clear();
   frame_labels.clear();
   decals.clear();

@@ -74,6 +74,7 @@ struct ImpactMark {
   bool frozen;
 };
 struct Corpse {
+  int cell;
   vec2f_t position;
   float size, heading;
   effect_color_t color;
@@ -86,14 +87,14 @@ struct UiState {
   UiUv uv;
   effect_color_t color{1, 1, 1, 1};
   float angle{}, scale = 1;
-  unsigned filter = 2, destination_blend = 6;
+  unsigned filter = 2, destination_blend = 6, source_blend = 5;
 };
 struct FrameSprite {
   const char *name;
   float x, y, width, height, angle;
   effect_color_t color;
   UiUv uv{};
-  unsigned filter{}, destination_blend{};
+  unsigned filter{}, destination_blend{}, source_blend = 5;
 };
 struct FrameLabel {
   std::string text;
@@ -137,7 +138,8 @@ struct Game {
   std::vector<LevelBrush> brushes;
   void load_next_level();
   Run run;
-  std::vector<Corpse> decals;
+  std::vector<Corpse> decals, pending_decals;
+  std::vector<FrameSprite> actor_sprites;
   std::vector<ImpactMark> marks;
   std::vector<TerrainStamp> terrain;
   void generate_terrain();
@@ -210,7 +212,7 @@ struct Game {
   void update_bomb(float dt);
   void update_projectiles(float dt);
   void update_creatures(float dt);
-  void resolve_corpses();
+
   void open_perks();
   void choose_perk(int choice);
   void load_scores();

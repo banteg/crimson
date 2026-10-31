@@ -419,7 +419,7 @@ extern int config_player_count;
 extern game_mode_id_t config_game_mode;
 struct UiDrawCapture {
   char value[384];
-  int label, filter, blend;
+  int label, filter, blend, source;
   float x, y, width, height, angle, uv[4], scale, color[4];
 };
 UiDrawCapture combat_ui_draws[512];
@@ -428,8 +428,8 @@ float combat_ui_result[4];
 static int capture_ui() {
   int n = 0;
   size_t sprite = 0;
-  auto emit = [&](const char *value, bool label, unsigned filter, unsigned blend, float x, float y, float w,
-                  float h, float angle, freeware::UiUv uv, float scale, effect_color_t color) {
+  auto emit = [&](const char *value, bool label, unsigned filter, unsigned blend, unsigned source, float x,
+                  float y, float w, float h, float angle, freeware::UiUv uv, float scale, effect_color_t color) {
     if (n == 512)
       std::abort();
     auto &out = combat_ui_draws[n++];
@@ -438,6 +438,7 @@ static int capture_ui() {
     out.label = label;
     out.filter = filter;
     out.blend = blend;
+    out.source = source;
     out.x = x;
     out.y = y;
     out.width = w;
@@ -455,12 +456,13 @@ static int capture_ui() {
   };
   auto quad = [&]() {
     const auto &q = game.frame_sprites[sprite++];
-    emit(q.name, false, q.filter, q.destination_blend, q.x, q.y, q.width, q.height, q.angle, q.uv, 0, q.color);
+    emit(q.name, false, q.filter, q.destination_blend, q.source_blend, q.x, q.y, q.width, q.height, q.angle, q.uv,
+         0, q.color);
   };
   for (const auto &t : game.frame_labels) {
     while (sprite < t.preceding_sprites)
       quad();
-    emit(t.text.c_str(), true, 0, 0, t.x, t.y, 0, 0, 0, {}, t.scale, t.color);
+    emit(t.text.c_str(), true, 0, 0, 0, t.x, t.y, 0, 0, 0, {}, t.scale, t.color);
   }
   while (sprite < game.frame_sprites.size())
     quad();
@@ -596,4 +598,35 @@ extern "C" int combat_ui_perk(int id, int flags) {
   freeware_frame_game = nullptr;
   freeware_frame_input = nullptr;
   return capture_ui();
+}
+extern "C" {
+void creature_render_all();
+float combat_world_state[24];
+void combat_world_start(int flags) {
+  game = freeware::Game{};
+  game.shadows = flags & 1;
+  game.run.freeze = flags & 2 ? 2.f : 0.f;
+  game.camera = {-27.5f, 11.25f};
+  freeware_frame_game = &game;
+  memset(creature_pool, 0, sizeof(creature_pool));
+  freeware::seed_random(73);
+}
+int combat_world_render(int pass) {
+  game.frame_sprites.clear();
+  game.frame_labels.clear();
+  if (pass == 0)
+    creature_render_all();
+  combat_world_state[0] = (float)game.run.kills;
+  combat_world_state[1] = (float)game.pending_blood.size();
+  combat_world_state[2] = (float)game.pending_decals.size();
+  if (!game.pending_decals.empty()) {
+    auto &m = game.pending_decals.back();
+    combat_world_state[3] = m.position.x;
+    combat_world_state[4] = m.position.y;
+    combat_world_state[5] = m.size;
+    combat_world_state[6] = m.heading;
+    combat_world_state[7] = (float)m.cell;
+  }
+  return capture_ui();
+}
 }

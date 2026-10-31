@@ -44,8 +44,8 @@ __forceinline void begin() {}
 __forceinline void end() {}
 __forceinline void quad(float x, float y, float w, float h) {
     const freeware::UiState &state = UI_GAME.ui;
-    UI_GAME.frame_sprites.push_back(
-        {state.texture, x, y, w, h, state.angle, state.color, state.uv, state.filter, state.destination_blend});
+    UI_GAME.frame_sprites.push_back({state.texture, x, y, w, h, state.angle, state.color, state.uv, state.filter,
+                                     state.destination_blend, state.source_blend});
 }
 __forceinline void text(float x, float y, const char *s) {
     UI_GAME.frame_labels.push_back({s, x, y, UI_GAME.ui.scale, UI_GAME.ui.color, UI_GAME.frame_sprites.size()});

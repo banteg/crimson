@@ -40,8 +40,12 @@ int projectile_spawn(const vec2f_t *, float, int);
 float angle_approach(float *, float, float);
 }
 
+extern freeware::Game *freeware_frame_game;
+extern "C" {
+vec2f_t freeware_draw_point[2];
+}
 namespace freeware {
-constexpr float pi = 3.14159265f;
+
 static_assert(sizeof(creature_t) == 0x80 && sizeof(projectile_t) == 0x34);
 static_assert(sizeof(freeware_player_t) == 0x188 && sizeof(player_state_t) == 0x188);
 static_assert(offsetof(freeware_player_t, aim) == 0x4c && offsetof(freeware_player_t, perks) == 0x94);
@@ -80,6 +84,7 @@ void Game::reset_gameplay() {
   run = Run{};
   active_run = true;
   wind_started = false;
+  pending_decals.clear();
   pending_blood.clear();
   pending_shells.clear();
   pending_shards.clear();
@@ -128,6 +133,8 @@ void Game::queue_blood(vec2f_t p) {
     pending_blood.push_back(p);
 }
 void Game::flush_marks() {
+  decals.swap(pending_decals);
+  pending_decals.clear();
   marks.swap(pending_shards);
   pending_shards.clear();
   for (auto p : pending_blood) {
@@ -203,16 +210,16 @@ void Game::update_creatures(float dt) {
     actor(i).health = player_state_table[i].freeware.health;
   combat_game = nullptr;
 }
-void Game::resolve_corpses() {
-  for (auto &c : creature_pool) {
-    if (!c.active || c.death_timer >= 0)
-      continue;
-    decals.push_back(
-        {c.position, c.freeware.size, c.freeware.heading - (c.freeware.type == 1 ? pi / 2 : 0), c.freeware.color});
-    queue_blood(c.position);
-    if (++run.kills == 1)
-      std::puts("1.4.0 first kill");
-    c.active = 0;
+extern "C" void fx_queue_add_rotated(const vec2f_t *pos, const effect_color_t *color, float angle, float size,
+                                     int alien) {
+  auto &queue = freeware_frame_game->pending_decals;
+  Corpse mark{alien ? 62 : 31, *pos, size, angle, *color};
+  if (queue.size() < 63)
+    queue.push_back(mark);
+  else {
+    int slot = crt_rand() % 64;
+    if (slot < 63)
+      queue[slot] = mark;
   }
 }
 void Game::update_projectiles(float dt) {

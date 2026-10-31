@@ -46,7 +46,7 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
-void gameplay_render_hud(), game_show_message(), perk_selection_screen_update();
+void gameplay_render_hud(), game_show_message(), perk_selection_screen_update(), creature_render_all();
 unsigned char freeware_overlay_begin(), game_highscores_update(), game_credits_update();
 
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -214,7 +214,8 @@ __forceinline void render_world() {
     creature_render_all();
 #else
     G.flush_marks();
-    G.resolve_corpses();
+    creature_render_all();
+    G.actor_sprites.swap(G.frame_sprites);
 #endif
     if (ACTIVE) {
         if (SLOW <= 0)

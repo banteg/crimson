@@ -70,6 +70,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "player/player_reset_all.cpp",
                 "level/move_with_collision.cpp",
                 "game/game_frame_update.cpp",
+                "render/creature_render_all.cpp",
                 "ui/gameplay_render_hud.cpp",
                 "ui/hud_set_row.cpp",
                 "ui/overlay_begin.cpp",

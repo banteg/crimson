@@ -51,7 +51,8 @@ bool Display::load(const std::string &folder) {
   return SDL_SetRenderTarget(renderer, nullptr);
 }
 void Display::sprite(const char *name, float x, float y, float w, float h, float angle, int frame, int columns,
-                     SDL_FColor tint, UiUv uv, unsigned filter, unsigned destination_blend) {
+                     SDL_FColor tint, UiUv uv, unsigned filter, unsigned destination_blend,
+                     unsigned source_blend) {
   // A failed Grim texture lookup leaves the previous binding in place (grim.dll 0x10004d07).
   auto *t = !std::strcmp(name, "tl_tolmec") ? last_texture : textures.at(name);
   if (!t)
@@ -70,7 +71,12 @@ void Display::sprite(const char *name, float x, float y, float w, float h, float
   SDL_BlendMode previous = SDL_BLENDMODE_BLEND;
   if (destination_blend) {
     SDL_GetTextureBlendMode(t, &previous);
-    SDL_SetTextureBlendMode(t, destination_blend == 2 ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(t, source_blend == 1        ? SDL_ComposeCustomBlendMode(
+                                                              SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+                                                              SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ZERO,
+                                                              SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD)
+                               : destination_blend == 2 ? SDL_BLENDMODE_ADD
+                                                        : SDL_BLENDMODE_BLEND);
   }
   SDL_SetTextureColorModFloat(t, tint.r, tint.g, tint.b);
   SDL_SetTextureAlphaModFloat(t, tint.a);
@@ -92,32 +98,37 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
       sprite("font", pen, y, 32 * scale, 32 * scale, 0, c, 16, tint);
   }
 }
+void Display::frame_sprite(const FrameSprite &draw) {
+  const char *name = draw.name;
+  if (!std::strcmp(name, "goblin"))
+    name = "eiliens";
+  else if (!std::strcmp(name, "glow"))
+    name = "glow64";
+  else if (!std::strcmp(name, "bullet_i"))
+    name = "bullet_real_16";
+  else if (!std::strcmp(name, "aimen"))
+    name = "aim_enh";
+  else if (!std::strcmp(name, "radius"))
+    name = "radius256";
+  else if (!std::strcmp(name, "asmlogo"))
+    name = "assembly-logo";
+  else if (!std::strcmp(name, "b_freeze"))
+    name = "bonus_freeze";
+  else if (!std::strcmp(name, "part"))
+    name = "part64";
+  sprite(name, draw.x, draw.y, draw.width, draw.height, draw.angle, 0, 1,
+         {draw.color.r, draw.color.g, draw.color.b, draw.color.a}, draw.uv, draw.filter, draw.destination_blend,
+         draw.source_blend);
+}
 void Display::frame_art(const Game &g) {
-  auto draw_sprite = [this](const FrameSprite &draw) {
-    const char *name = draw.name;
-    if (!std::strcmp(name, "bullet_i"))
-      name = "bullet_real_16";
-    else if (!std::strcmp(name, "aimen"))
-      name = "aim_enh";
-    else if (!std::strcmp(name, "radius"))
-      name = "radius256";
-    else if (!std::strcmp(name, "asmlogo"))
-      name = "assembly-logo";
-    else if (!std::strcmp(name, "b_freeze"))
-      name = "bonus_freeze";
-    else if (!std::strcmp(name, "part"))
-      name = "part64";
-    sprite(name, draw.x, draw.y, draw.width, draw.height, draw.angle, 0, 1,
-           {draw.color.r, draw.color.g, draw.color.b, draw.color.a}, draw.uv, draw.filter, draw.destination_blend);
-  };
   size_t i = 0;
   for (const auto &label : g.frame_labels) {
     while (i < label.preceding_sprites)
-      draw_sprite(g.frame_sprites[i++]);
+      frame_sprite(g.frame_sprites[i++]);
     text(label.text, label.x, label.y, label.scale, {label.color.r, label.color.g, label.color.b, label.color.a});
   }
   while (i < g.frame_sprites.size())
-    draw_sprite(g.frame_sprites[i++]);
+    frame_sprite(g.frame_sprites[i++]);
 }
 void Display::draw(Game &g) {
   if (g.generation != ground_generation) {
@@ -141,9 +152,11 @@ void Display::draw(Game &g) {
              m.rotation);
     for (const auto &s : g.shells)
       sprite("bullet_real_16", s.pos.x - 2, s.pos.y - 2, 4, 4, s.rotation, 0, 1, {1, 1, 1, .8f});
+    for (const auto &c : g.decals)
+      sprite("eiliens", c.position.x + 2, c.position.y + 2, c.size * 1.04f, c.size * 1.04f, c.heading, c.cell, 8,
+             {c.color.r, c.color.g, c.color.b, .5f}, {}, 2, 6, 1);
     for (const auto &c : g.decals) {
-      sprite("blood", c.position.x - 16, c.position.y - 16, 32, 32, c.heading);
-      sprite("eiliens", c.position.x - c.size / 2, c.position.y - c.size / 2, c.size, c.size, c.heading, 63, 8,
+      sprite("eiliens", c.position.x, c.position.y, c.size, c.size, c.heading, c.cell, 8,
              {c.color.r, c.color.g, c.color.b, c.color.a});
     }
     SDL_SetRenderTarget(renderer, nullptr);
@@ -155,22 +168,10 @@ void Display::draw(Game &g) {
   SDL_SetTextureScaleMode(ground, g.smooth ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
   SDL_RenderTexture(renderer, ground, nullptr, &field);
   SDL_RenderTexture(renderer, stains, nullptr, &field);
+  for (const auto &draw : g.actor_sprites)
+    frame_sprite(draw);
   if (g.presented_screen == Screen::Playing || g.presented_screen == Screen::Dying ||
       g.presented_screen == Screen::Death || g.presented_screen == Screen::Perks || g.paused) {
-    for (const auto &c : creature_pool) {
-      if (!c.active)
-        continue;
-      const auto &s = c.freeware;
-      const float x = cx + c.pos_x - s.size / 2, y = cy + c.pos_y - s.size / 2;
-      // 0x41010d: the type-1 sheet starts at cell 32 and walks its sixteen frames in both directions.
-      int cell = int(s.animation + .5f);
-      if (cell > 15)
-        cell = 31 - cell;
-      if (c.death_timer < 16)
-        cell = int(31 - c.death_timer);
-      sprite("eiliens", x, y, s.size, s.size, s.heading - 1.5707964f,
-             (s.type == 1 ? 32 : 0) + std::clamp(cell, 0, 31), 8, {s.color.r, s.color.g, s.color.b, s.color.a});
-    }
     for (int i = 0; i < g.players(); ++i) {
       const auto &r = g.actor(i);
       if (r.health <= 0)

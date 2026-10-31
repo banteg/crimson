@@ -327,6 +327,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/render/creature_render_all.cpp",
+          "configs": [
+            "tools/match/scratches/creature_render_all"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/ui/game_credits_update.cpp",
           "configs": [
             "tools/match/scratches/game_credits_update"
