@@ -17,6 +17,8 @@ int perk_id_lean_mean_exp_machine = 6, perk_id_spontaneously_combusteous = 7, pe
     perk_id_reflex_boosted = 15, perk_id_jinxed = 17, perk_id_evil_eyes = 18, perk_id_final_revenge = 23;
 }
 namespace freeware {
+FrameGameScope::FrameGameScope(Game &game) : previous(freeware_frame_game) { freeware_frame_game = &game; }
+FrameGameScope::~FrameGameScope() { freeware_frame_game = previous; }
 int Game::frame_state() const {
   switch (screen) {
   case Screen::Playing:

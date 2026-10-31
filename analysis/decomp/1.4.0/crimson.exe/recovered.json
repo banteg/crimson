@@ -621,11 +621,23 @@
       "body_sha256": "5ef704ad7007011b4041cbb59e9b01d5e0e287dfeaaf1899e787b01a7c13b0b7"
     },
     {
+      "name": "fx_queue_add_random",
+      "address": "0x0040e6b0",
+      "end": "0x0040e6e2",
+      "body_sha256": "84d159cb5ea784ecdddf2937c5e7b7518d41712a14f1188f1c66eba2679ee760"
+    },
+    {
       "name": "fx_queue_add_shell",
       "address": "0x0040e6f0",
       "end": "0x0040e72b",
       "body_sha256": "76f126dcb9505dbd8c86e59c4d7bb197f0340d7bd3386c38eea9d0dc55f13297",
       "build_only": true
+    },
+    {
+      "name": "fx_queue_add_rotated",
+      "address": "0x0040e730",
+      "end": "0x0040e824",
+      "body_sha256": "e385c77180be41c47c9bfb22b7aba4ee0cd809528467f274812257b3719fbb5b"
     },
     {
       "name": "fx_queue_render",
@@ -1534,6 +1546,13 @@
       "offset": 44
     },
     {
+      "name": "freeware_ice_tint",
+      "address": "0x0043bb60",
+      "reference": "0x00406013",
+      "bytes": "a160bb4300",
+      "build_only": true
+    },
+    {
       "name": "freeware_bullet_texture",
       "address": "0x0043bb74",
       "reference": "0x00415987",
@@ -1593,6 +1612,13 @@
       "address": "0x0043c6b0",
       "reference": "0x0040ed98",
       "bytes": "beb0c64300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_ice_texture",
+      "address": "0x0043c8b0",
+      "reference": "0x00406098",
+      "bytes": "a1b0c84300",
       "build_only": true
     },
     {

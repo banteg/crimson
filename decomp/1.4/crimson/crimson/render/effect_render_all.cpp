@@ -1,4 +1,5 @@
 // crimson.exe 1.4.0, 0x4110a0. The bomb damages creatures during this draw pass.
+#include "../effects/freeware_fx_queues.h"
 #include "world_render.h"
 #include <math.h>
 extern "C" {
@@ -10,9 +11,8 @@ extern creature_t creature_pool[512];
 extern particle_t particle_pool[128];
 extern secondary_projectile_pool_t secondary_projectile_pool;
 extern sprite_effect_t sprite_effect_pool[384];
-void fx_queue_add(int, vec2f_t *, float, float, float, effect_color_t);
 void creature_handle_death(int, int, unsigned char);
-void freeware_blood(const vec2f_t *);
+void fx_queue_add_random(const vec2f_t *);
 }
 using namespace world140;
 namespace {
@@ -164,11 +164,7 @@ __forceinline void labels() {
 __forceinline void scorch(float dx, float dy) {
     vec2f_t pos = {BOMB_POS.x + dx, BOMB_POS.y + dy};
     effect_color_t black = {0, 0, 0, .3f};
-#ifdef CRIMSON_FREEWARE_CLIENT
-    UI_GAME.queue_impact(texture("glow"), pos, 600, 600, 0, black);
-#else
     fx_queue_add(texture("glow"), &pos, 600, 600, 0, black);
-#endif
 }
 __forceinline void blast() {
     if (BOMB_AGE < 0)
@@ -212,12 +208,11 @@ __forceinline void blast() {
             double x = c.pos_x - BOMB_POS.x, y = c.pos_y - BOMB_POS.y;
             if (sqrt(x * x + y * y) < BOMB_AGE * 256) {
                 c.health -= frame_dt * 2000;
+                fx_queue_add_random(&c.position);
 #ifdef CRIMSON_FREEWARE_CLIENT
-                UI_GAME.queue_blood(c.position);
                 if (c.health <= 0)
                     UI_GAME.kill(i, 0);
 #else
-                freeware_blood(&c.position);
                 if (c.health <= 0)
                     creature_handle_death(i, 0, 1);
 #endif

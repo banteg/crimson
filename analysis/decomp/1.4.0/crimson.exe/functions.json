@@ -1188,7 +1188,7 @@
     "address": "0x0040E6B0",
     "canonical_address": "0x00427700",
     "end": "0x0040E6E2",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "fx_queue_add_random",
     "size": 50
   },
@@ -1204,7 +1204,7 @@
     "address": "0x0040E730",
     "canonical_address": "0x00427840",
     "end": "0x0040E824",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "fx_queue_add_rotated",
     "size": 244
   },

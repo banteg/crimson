@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "crimson-core"))
 from freeware.build import game_flags, game_sources
 from freeware_frame_cases import check_frames
+from freeware_fx_cases import compare_queues
 from freeware_player_cases import check_controls, check_reset, check_walls
 from freeware_terrain_cases import check_generation
 from freeware_ui_cases import check_ui
@@ -58,14 +59,15 @@ class Comparison:
         self.symbol = symbol
         self.pe = pe = NativeOracle(exe, symbols=SymbolTable({}), rand_state_address=0x432C40)
         # Keep collision, damage, sound choices, death, drop rolls and the RNG running in the PE.
-        # Stub only sound playback, texture lookup and the render queue.
+        # Only device boundaries are stubbed. The original queue writers run during combat.
         pe.write_u32(0x452EA0, pe.alloc(0x30))  # Inactive music buffer, including its native thiscall returns.
-        for address in (0x405630, 0x405C80):
-            pe.stub(address, 0)
+        pe.stub(0x405630, 0)
+        pe.call(0x403390)  # Initialize the gray half-alpha ice tint.
+        pe.write_u32(0x43C8B0, 712)
         table = pe.alloc(256)
         pe.write_u32(0x452D94, pe.alloc(4, data=struct.pack("<I", table)))
         lookup = pe.load_code(b"\xc3")
-        pe.stub(lookup, 0, pop=4)
+        pe.stub(lookup, lambda c: 713 if pe.read(c.arg_u32(0), 5) == b"glow\0" else 0, pop=4)
         pe.write_u32(table + 0x90, lookup)
         pe.write_u32(0x43CBB8, pe.alloc(0x80))
         for va, v in [(0x4428A8, 2), (0x4428A0, 1), (0x42FBD8, 1024), (0x42FBDC, 1024), (0x452DD8, 1)]:
@@ -145,6 +147,7 @@ class Comparison:
                     self.dll_globals(name).value,
                 )
             assert self.pe.read_i32(0x4384F8) == self.dll.combat_experience(), frame
+            compare_queues(self, self.pe, frame, exact=False)
             self.frames += 1
         assert self.pe.call(0x422414).eax == self.dll.crt_rand(), (label, "next rand")
 
@@ -192,6 +195,9 @@ class Comparison:
                     creature(415 if scenario in ("impact", "kill") else 680, 401, 24 if scenario == "kill" else 850),
                 )
                 self.projectile_frames(("rocket", kind, scenario), ROCKET, 0, 8, 0.04)
+        self.reset(73)
+        self.write(ROCKET, 0, struct.pack(ROCKET[2], 1, 0.53, 1, 321, 543, 0.98, 0.75, 3, 0, 0))
+        self.projectile_frames(("expired rocket", "scorch"), ROCKET, 0, 2, 0.04)
         for style in (0, 1, 8):
             for scenario in ("flight", "impact", "kill", "expire"):
                 self.reset(523)
@@ -704,7 +710,9 @@ def check_web(stage, exe, sources):
         "combat_world_player",
         "combat_world_effect",
         "combat_world_ground",
-        "combat_world_queue_seed",
+        "combat_fx_enqueue",
+        "combat_fx_restart",
+        "combat_fx_snapshot",
         "combat_world_queue",
         "combat_world_impacts",
         "player_reset_all",
@@ -744,6 +752,7 @@ def check_web(stage, exe, sources):
         "combat_world_state",
         "combat_draw_capture",
         "combat_ground_state",
+        "combat_fx_storage",
         "combat_ground_objects",
         "freeware_rng_state",
         "bonus_fire_bullets_timer",

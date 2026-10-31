@@ -43,6 +43,7 @@ def check_generation(check, exe):
         (0, 1, 0, 1024, 1024, 87),
         (0, 1, 0, 1024, 1024, 13456),
         (0, 1, 1, 765, 513, 177),
+        (0, 1, 0, 2048, 2048, 42),  # The original area-times-density calculation wraps at 32 bits.
         (0, 0, 1, 1024, 1024, 951),
         (0, 1, 1, 15, 3, 234),
         (0, 0, 0, 0, 0, 9),

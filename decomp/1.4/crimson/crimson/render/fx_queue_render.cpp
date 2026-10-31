@@ -1,34 +1,20 @@
 // crimson.exe 1.4.0, 0x40e830. Safe mode keeps the corpse queue for the next frame.
+#include "../effects/freeware_fx_queues.h"
 #include "world_render.h"
 extern "C" {
 extern unsigned char freeware_safe_mode;
 extern int terrain_render_target, freeware_blood_texture;
-extern int fx_queue_count, freeware_blood_count, freeware_shell_count, freeware_corpse_count;
-extern fx_queue_entry_t fx_queue[];
-extern vec2f_t freeware_blood_positions[], freeware_shell_positions[], freeware_corpse_positions[];
-extern float freeware_corpse_angles[], freeware_corpse_sizes[];
-extern int freeware_corpse_species[];
-extern effect_color_t freeware_corpse_colors[];
 int crt_rand();
 }
 using namespace world140;
 
 namespace {
-#ifdef CRIMSON_FREEWARE_CLIENT
-#define COUNT(native, member) ((int)UI_GAME.member.size())
-#define IMPACT(i) UI_GAME.pending_impacts[i]
-typedef freeware::QueuedImpact Impact;
-#else
-#define COUNT(native, member) (native)
-#define IMPACT(i) fx_queue[i]
-typedef fx_queue_entry_t Impact;
-#endif
-#define IMPACTS COUNT(fx_queue_count, pending_impacts)
-#define BLOOD COUNT(freeware_blood_count, pending_blood)
-#define CORPSES COUNT(freeware_corpse_count, pending_decals)
-#define SHELLS COUNT(freeware_shell_count, pending_shells)
-#define CORPSE_POS(i) UI_FIELD(freeware_corpse_positions[i], pending_decals[i].position)
-#define CORPSE_SIZE(i) UI_FIELD(freeware_corpse_sizes[i], pending_decals[i].size)
+#define IMPACTS FX_STORE(fx_queue_count, impact_count)
+#define BLOOD FX_STORE(freeware_blood_count, blood_count)
+#define CORPSES FX_STORE(freeware_corpse_count, corpse_count)
+#define SHELLS FX_STORE(freeware_shell_count, shell_count)
+#define CORPSE_POS(i) FX_STORE(freeware_corpse_positions, corpse_positions)[i]
+#define CORPSE_SIZE(i) FX_STORE(freeware_corpse_sizes, corpse_sizes)[i]
 __forceinline void ground_target(bool enable) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     // Swap at both target changes so draws already on the backbuffer stay in order.
@@ -43,7 +29,7 @@ __forceinline void mark_uv(int index) {
              freeware_draw_point[1].y);
 }
 __forceinline void corpse_uv(int i) {
-    if (!UI_FIELD(freeware_corpse_species[i], pending_decals[i].cell == 62))
+    if (!FX_STORE(freeware_corpse_species, corpse_species)[i])
         mark_uv(31);
     else
         mark_uv(62);
@@ -55,9 +41,9 @@ __forceinline void corpses(bool screen) {
     begin();
     for (int i = 0; i < CORPSES; ++i) {
         corpse_uv(i);
-        const effect_color_t &c = UI_FIELD(freeware_corpse_colors[i], pending_decals[i].color);
+        const effect_color_t &c = FX_STORE(freeware_corpse_colors, corpse_colors)[i];
         world_tint(c.r, c.g, c.b, .5f);
-        world_angle(UI_FIELD(freeware_corpse_angles[i], pending_decals[i].heading));
+        world_angle(FX_STORE(freeware_corpse_angles, corpse_angles)[i]);
         const vec2f_t &pos = CORPSE_POS(i);
         vec2f_t top = {pos.x + 2, pos.y + 2};
         freeware_draw_point[0] = top;
@@ -73,9 +59,9 @@ __forceinline void corpses(bool screen) {
     begin();
     for (int j = 0; j < CORPSES; ++j) {
         corpse_uv(j);
-        const effect_color_t &c = UI_FIELD(freeware_corpse_colors[j], pending_decals[j].color);
+        const effect_color_t &c = FX_STORE(freeware_corpse_colors, corpse_colors)[j];
         world_tint(c.r, c.g, c.b, c.a);
-        world_angle(UI_FIELD(freeware_corpse_angles[j], pending_decals[j].heading));
+        world_angle(FX_STORE(freeware_corpse_angles, corpse_angles)[j]);
         float size = CORPSE_SIZE(j);
         if (screen)
             world_quad(CAMERA.x + CORPSE_POS(j).x, CAMERA.y + CORPSE_POS(j).y, size, size);
@@ -98,8 +84,12 @@ extern "C" void fx_queue_render() {
         begin();
         uv(0, 0, 1, 1);
         for (int i = 0; i < IMPACTS; ++i) {
-            const Impact &e = IMPACT(i);
-            bind(UI_FIELD(e.effect_id, pending_impacts[i].texture));
+#ifdef CRIMSON_FREEWARE_CLIENT
+            const freeware::QueuedImpact &e = FX_STORE(fx_queue, impacts)[i];
+#else
+            const fx_queue_entry_t &e = fx_queue[i];
+#endif
+            bind(e.effect_id);
             world_tint(e.color.r, e.color.g, e.color.b, e.color.a);
             world_angle(e.rotation);
             world_quad(e.position.x - e.width * .5f, e.position.y - e.height * .5f, e.width, e.height);
@@ -114,7 +104,7 @@ extern "C" void fx_queue_render() {
         for (int blood = 0; blood < BLOOD; ++blood) {
             world_angle((crt_rand() % 628) * .01f);
             float size = (float)(crt_rand() % 20 - 10) + 32.f;
-            const vec2f_t &p = UI_FIELD(freeware_blood_positions[blood], pending_blood[blood]);
+            const vec2f_t &p = FX_STORE(freeware_blood_positions, blood)[blood];
             vec2f_t top = {p.x - size * .5f, p.y - size * .5f};
             freeware_draw_point[0] = top;
             world_quad(freeware_draw_point[0].x, freeware_draw_point[0].y, size, size);
@@ -130,23 +120,16 @@ extern "C" void fx_queue_render() {
         uv(0, 0, 1, 1);
         for (int shell = 0; shell < SHELLS; ++shell) {
             world_angle((crt_rand() % 628) * .01f);
-            const vec2f_t &p = UI_FIELD(freeware_shell_positions[shell], pending_shells[shell]);
+            const vec2f_t &p = FX_STORE(freeware_shell_positions, shells)[shell];
             vec2f_t top = {p.x - 2, p.y - 2};
             freeware_draw_point[0] = top;
             world_quad(freeware_draw_point[0].x, freeware_draw_point[0].y, 4, 4);
         }
         end();
     }
-#ifdef CRIMSON_FREEWARE_CLIENT
-    UI_GAME.pending_impacts.clear();
-    UI_GAME.pending_shells.clear();
-    UI_GAME.pending_decals.clear();
-    UI_GAME.pending_blood.clear();
-#else
-    fx_queue_count = 0;
-    freeware_shell_count = 0;
-    freeware_corpse_count = 0;
-    freeware_blood_count = 0;
-#endif
+    IMPACTS = 0;
+    SHELLS = 0;
+    CORPSES = 0;
+    BLOOD = 0;
     ground_target(false);
 }

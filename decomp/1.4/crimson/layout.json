@@ -198,6 +198,24 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_queue_add_random.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_add_random"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_queue_add_rotated.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_add_rotated"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_queue_add_shell.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_add_shell"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/effects/fx_queue_global_init.cpp",
           "configs": [
             "tools/match/scratches/fx_queue_global_init"

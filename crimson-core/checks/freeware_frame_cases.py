@@ -148,7 +148,6 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         0x4056D0,
         0x405760,
         0x405890,
-        0x405C80,
         0x402390,
         0x421B81,
         0x421B40,  # The PE host owns atexit registration for the editor cursor.

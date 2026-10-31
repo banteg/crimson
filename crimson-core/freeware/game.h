@@ -60,16 +60,19 @@ struct TrailDraw {
   unsigned filter, source_blend, destination_blend;
 };
 struct QueuedImpact {
-  const char *texture;
+  const char *effect_id;
   vec2f_t position;
   float width, height, rotation;
   effect_color_t color;
 };
-struct Corpse {
-  int cell;
-  vec2f_t position;
-  float size, heading;
-  effect_color_t color;
+struct FxQueues {
+  int impact_count{}, blood_count{}, shell_count{}, corpse_count{};
+  std::array<QueuedImpact, 64> impacts{};
+  std::array<vec2f_t, 64> blood{}, corpse_positions{};
+  std::array<vec2f_t, 32> shells{};
+  std::array<effect_color_t, 64> corpse_colors{};
+  std::array<float, 64> corpse_angles{}, corpse_sizes{};
+  std::array<int, 64> corpse_species{};
 };
 struct UiUv {
   float u = 0, v = 0, s = 1, t = 1;
@@ -130,7 +133,7 @@ struct Game {
   std::vector<LevelBrush> brushes;
   void load_next_level();
   Run run;
-  std::vector<Corpse> pending_decals;
+  FxQueues fx;
   std::vector<FrameSprite> terrain_sprites, actor_sprites, effect_sprites;
   std::vector<FrameLabel> effect_labels;
   std::array<effect_color_t, 4> trail_colors;
@@ -180,10 +183,6 @@ struct Game {
   vec2f_t pad_center[2]{};
   float pad_threshold[2]{.1f, .1f};
   int pad_left_pov[2]{27000, 27000}, pad_right_pov[2]{9000, 9000};
-  std::vector<vec2f_t> pending_blood, pending_shells;
-  std::vector<QueuedImpact> pending_impacts;
-  void queue_impact(const char *texture, vec2f_t center, float w, float h, float rotation, effect_color_t color);
-  void queue_blood(vec2f_t p);
 
   float mouse_dx{}, mouse_dy{}, fps{};
   std::string option(int row) const;
@@ -239,6 +238,16 @@ void play_original_sample(int);
 void seed_random(unsigned seed);
 const char *perk_name(int);
 const char *perk_description(int);
+// Combat routines can also be stepped outside Game::update. Nested calls restore their caller.
+class FrameGameScope {
+  Game *previous;
+
+public:
+  explicit FrameGameScope(Game &game);
+  ~FrameGameScope();
+  FrameGameScope(const FrameGameScope &) = delete;
+  FrameGameScope &operator=(const FrameGameScope &) = delete;
+};
 } // namespace freeware
 extern "C" {
 int crt_rand();

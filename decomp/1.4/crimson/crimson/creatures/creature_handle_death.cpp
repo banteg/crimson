@@ -5,6 +5,7 @@
 // The client wrapper also publishes XP, pickup and first-kill changes to its Run.
 #define creature_handle_death freeware_creature_handle_death_body
 #endif
+#include "../effects/freeware_ice_mark.h"
 extern "C" {
 extern creature_t creature_pool[512];
 extern player_state_t player_state_table[2];
@@ -16,7 +17,6 @@ extern vec2f_t freeware_first_kill_position;
 extern float frame_dt, bonus_freeze_timer;
 extern game_mode_id_t config_game_mode;
 void bonus_spawn_at(const vec2f_t *);
-void freeware_shard(const vec2f_t *, float, float);
 int fx_spawn_sprite(const vec2f_t *, const vec2f_t *, float);
 int crt_rand();
 }
@@ -51,7 +51,7 @@ extern "C" void creature_handle_death(int slot, int, unsigned char leave_corpse)
             int radius = crt_rand() % 55;
             vec2f_t mark = {(float)(c.pos_x + cos(heading) * i * .04f * radius),
                             (float)(c.pos_y + sin(heading) * i * .04f * radius)};
-            freeware_shard(&mark, size, (crt_rand() % 612) * .01f);
+            freeware_shard(&mark, size);
         }
         vec2f_t zero = {0, 0};
         int idx = fx_spawn_sprite(&c.position, &zero, 12);

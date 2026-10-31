@@ -13,7 +13,7 @@ float angle_approach(float *, float, float);
 int plaguebearer_spread_infection(int);
 int crt_rand();
 void creature_handle_death(int, int, unsigned char);
-void freeware_blood(const vec2f_t *);
+void fx_queue_add_random(const vec2f_t *);
 void freeware_combat_sound(int, float);
 }
 namespace {
@@ -77,7 +77,7 @@ extern "C" void creature_update_all() {
                     creature_handle_death(i, current_player_index, 1);
                     freeware_combat_sound(28, (crt_rand() % 70) * .1f + .3f);
                 }
-                freeware_blood(&c.position);
+                fx_queue_add_random(&c.position);
             }
         }
         freeware_player_t &p = player_state_table[target].freeware;
@@ -120,7 +120,7 @@ extern "C" void creature_update_all() {
                     current.experience = (int)(current.experience + c.freeware.reward);
                     c.death_timer -= frame_dt;
                 }
-                freeware_blood(&c.position);
+                fx_queue_add_random(&c.position);
             }
         }
         if (dist < 20) {
@@ -141,7 +141,7 @@ extern "C" void creature_update_all() {
                         mark.x += dx / length * 3;
                         mark.y += dy / length * 3;
                     }
-                    freeware_blood(&mark);
+                    fx_queue_add_random(&mark);
                 }
                 c.freeware.attack_cooldown += 1;
             }

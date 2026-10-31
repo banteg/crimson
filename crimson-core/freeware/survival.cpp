@@ -15,6 +15,7 @@ extern int freeware_pickup_id, freeware_pickup_weapon;
 extern vec2f_t freeware_pickup_position;
 extern float freeware_pickup_time;
 void freeware_creature_handle_death_body(int, int, unsigned char);
+effect_color_t freeware_ice_tint = {.6f, .6f, .6f, .5f};
 creature_t creature_pool[512];
 projectile_pool_t projectile_pool;
 secondary_projectile_pool_t secondary_projectile_pool;
@@ -67,20 +68,17 @@ extern "C" int crt_rand() {
 
 extern "C" void terrain_generate(unsigned char textured);
 void Game::generate_terrain(bool textured) {
-  Game *previous = freeware_frame_game;
-  freeware_frame_game = this;
+  FrameGameScope scope(*this);
   terrain_generate(textured);
-  freeware_frame_game = previous;
 }
 void Game::reset_gameplay() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
   run = Run{};
   active_run = true;
   wind_started = false;
-  pending_decals.clear();
-  pending_blood.clear();
-  pending_shells.clear();
-  pending_impacts.clear();
+  // 0x408fd3 resets these two counts. Pending impacts and shells survive the restart.
+  fx.corpse_count = 0;
+  fx.blood_count = 0;
   current_player_index = plaguebearer_infection_count = 0;
   radial_cursor = {320, 140};
   cursor_x = 320;
@@ -120,20 +118,6 @@ void Game::start() {
 }
 
 // These callbacks are synchronous during combat, just as the original global pools are.
-static Game *combat_game;
-void Game::queue_blood(vec2f_t p) {
-  if (pending_blood.size() < 63)
-    pending_blood.push_back(p);
-}
-void Game::queue_impact(const char *texture, vec2f_t center, float w, float h, float rotation,
-                        effect_color_t color) {
-  if (pending_impacts.size() < 63)
-    pending_impacts.push_back({texture, center, w, h, rotation, color});
-}
-extern "C" void freeware_blood(const vec2f_t *pos) { combat_game->queue_blood(*pos); }
-extern "C" void freeware_shard(const vec2f_t *pos, float size, float rotation) {
-  combat_game->queue_impact("icemold", *pos, size, size, rotation, {1, 1, 1, 1});
-}
 extern "C" void freeware_combat_sound(int id, float) {
   if (id == 31)
     freeware_hit_sound_timer = 1; // 0x405760 starts the combat music.
@@ -143,8 +127,7 @@ extern "C" void freeware_combat_sound(int id, float) {
 void Game::kill(int id, int owner, bool corpse) {
   if (!creature_pool[id].active)
     return;
-  Game *previous = combat_game;
-  combat_game = this;
+  FrameGameScope scope(*this);
   int old = current_player_index;
   current_player_index = owner;
   auto &p = player_state_table[owner].freeware;
@@ -165,15 +148,14 @@ void Game::kill(int id, int owner, bool corpse) {
     run.pickup = {freeware_pickup_position, static_cast<Bonus>(freeware_pickup_id), freeware_pickup_time,
                   freeware_pickup_weapon};
   current_player_index = old;
-  combat_game = previous;
 }
 extern "C" void creature_handle_death(int id, int owner, unsigned char corpse) {
-  combat_game->run.experience = player_state_table[0].freeware.experience;
-  combat_game->kill(id, owner, corpse != 0);
-  player_state_table[0].freeware.experience = combat_game->run.experience;
+  freeware_frame_game->run.experience = player_state_table[0].freeware.experience;
+  freeware_frame_game->kill(id, owner, corpse != 0);
+  player_state_table[0].freeware.experience = freeware_frame_game->run.experience;
 }
 void Game::update_creatures(float dt) {
-  combat_game = this;
+  FrameGameScope scope(*this);
   frame_dt = dt;
   bonus_freeze_timer = run.freeze;
   freeware_berserk_timer = run.berserk;
@@ -190,28 +172,14 @@ void Game::update_creatures(float dt) {
   run.experience = player_state_table[0].freeware.experience;
   for (int i = 0; i < players(); ++i)
     actor(i).health = player_state_table[i].freeware.health;
-  combat_game = nullptr;
-}
-extern "C" void fx_queue_add_rotated(const vec2f_t *pos, const effect_color_t *color, float angle, float size,
-                                     int alien) {
-  auto &queue = freeware_frame_game->pending_decals;
-  Corpse mark{alien ? 62 : 31, *pos, size, angle, *color};
-  if (queue.size() < 63)
-    queue.push_back(mark);
-  else {
-    int slot = crt_rand() % 64;
-    if (slot < 63)
-      queue[slot] = mark;
-  }
 }
 void Game::update_projectiles(float dt) {
-  combat_game = this;
+  FrameGameScope scope(*this);
   player_state_table[0].freeware.experience = run.experience;
   frame_dt = dt;
   bonus_freeze_timer = run.freeze;
   projectile_update();
   run.hits = highscore_record_hits;
-  combat_game = nullptr;
 }
 
 } // namespace freeware

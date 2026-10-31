@@ -45,7 +45,7 @@ unsigned char creature_spawn_random(const vec2f_t *);
 int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
-void freeware_blood(const vec2f_t *);
+void fx_queue_add_random(const vec2f_t *);
 void fx_queue_render(), terrain_render(), projectile_render(), effect_render_all(), player_render(),
     gameplay_render_hud(), game_show_message(), perk_selection_screen_update(), creature_render_all();
 unsigned char freeware_overlay_begin(), game_highscores_update(), game_credits_update();
@@ -118,7 +118,6 @@ __forceinline bool open_perk() {
 __forceinline void level_check() { G.check_level(); }
 __forceinline void open_choices() { G.open_perks(); }
 __forceinline void hud() { gameplay_render_hud(); }
-__forceinline void blood(vec2f_t *p) { G.queue_blood(*p); }
 #else
 __forceinline int state() { return game_state_id; }
 __forceinline void enter(int id) { game_state_id = id; }
@@ -137,7 +136,6 @@ __forceinline bool open_perk() {
 __forceinline void level_check() { player_check_level(); }
 __forceinline void open_choices() { perks_generate_choices(); }
 __forceinline void hud() { gameplay_render_hud(); }
-__forceinline void blood(vec2f_t *p) { freeware_blood(p); }
 #endif
 
 __forceinline void request_transition() {
@@ -376,7 +374,7 @@ __forceinline void target_perks() {
                 fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, .4f);
                 fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, .3f);
                 fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, .2f);
-                blood(&c.position);
+                fx_queue_add_random(&c.position);
             }
         }
         if (P(current_player_index).perks[perk_id_evil_eyes] > 0 && FREEZE <= 0) {
@@ -392,8 +390,8 @@ __forceinline void timed_perks() {
     if (JINX < 0 && PERK(perk_id_jinxed) > 0) {
         if (crt_rand() % 10 == 3) {
             HP(0) -= 5;
-            blood(&POS(0));
-            blood(&POS(0));
+            fx_queue_add_random(&POS(0));
+            fx_queue_add_random(&POS(0));
         }
         JINX += (crt_rand() % 20) * .1f + 2;
         int id = crt_rand() % 511;

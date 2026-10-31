@@ -25,7 +25,7 @@ __forceinline void clear_ground(float r, float g, float b) {
 }
 __forceinline void scatter(int density) {
     begin();
-    for (int i = 0; i < freeware_arena_height * freeware_arena_width * density / 524288; ++i) {
+    for (int i = 0; i < (int)((unsigned)freeware_arena_height * freeware_arena_width * density) / 524288; ++i) {
         world_angle((crt_rand() % 314) * .01f);
         int h = freeware_arena_height + 64, w = freeware_arena_width + 64;
         vec2f_t p = {(float)(crt_rand() % (w + 64) - 64), (float)(crt_rand() % (h + 64) - 64)};

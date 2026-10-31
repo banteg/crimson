@@ -694,20 +694,65 @@ void combat_world_effect(int flags, int kind, int time, int age) {
   freeware_simulation_clock = 1.375f;
   frame_dt = .03125f;
 }
+void fx_queue_add(const char *, const vec2f_t *, float, float, float, effect_color_t);
+void fx_queue_add_random(const vec2f_t *);
+void fx_queue_add_shell(const vec2f_t *);
 void fx_queue_add_rotated(const vec2f_t *, const effect_color_t *, float, float, int);
-void combat_world_queue_seed(int mask, int count) {
-  for (int i = 0; i < count; ++i) {
-    vec2f_t p = {134.f + i * 1.25f, 241.f - i * .5f};
-    effect_color_t color = {.25f, .375f, .625f, .75f};
-    if (mask & 1)
-      game.queue_impact("icemold", p, 14.f + i, 23.5f + i, .125f * i, color);
-    if (mask & 2)
-      game.queue_blood(p);
-    if (mask & 4)
-      fx_queue_add_rotated(&p, &color, .125f * i, 32.f + i, i % 2);
-    if ((mask & 8) && game.pending_shells.size() < 31)
-      game.pending_shells.push_back(p);
+void combat_fx_enqueue(int mask, int i, int shells) {
+  game.shell_marks = shells;
+  vec2f_t p = {134.f + i * 1.25f, 241.f - i * .5f};
+  effect_color_t color = {.25f, .375f, .625f, .75f};
+  if (mask & 1)
+    fx_queue_add("icemold", &p, 14.f + i, 23.5f + i, .125f * i, color);
+  if (mask & 2)
+    fx_queue_add_random(&p);
+  if (mask & 4)
+    fx_queue_add_rotated(&p, &color, .125f * i, 32.f + i, i % 2);
+  if (mask & 8)
+    fx_queue_add_shell(&p);
+}
+// Use native 32-bit texture handles to compare the PE-format queue arrays on both ABIs.
+struct FxSnapshot {
+  int counts[4];
+  fx_queue_entry_t impacts[64];
+  vec2f_t blood[64], shells[32], corpses[64];
+  effect_color_t colors[64];
+  float angles[64], sizes[64];
+  int species[64];
+};
+FxSnapshot combat_fx_storage;
+void combat_fx_snapshot() {
+  auto &out = combat_fx_storage;
+  const auto &q = game.fx;
+  out.counts[0] = q.impact_count;
+  out.counts[1] = q.blood_count;
+  out.counts[2] = q.corpse_count;
+  out.counts[3] = q.shell_count;
+  for (int i = 0; i < 64; ++i) {
+    const auto &in = q.impacts[i];
+    auto &e = out.impacts[i];
+    e.effect_id = !in.effect_id                               ? 0
+                  : std::strcmp(in.effect_id, "icemold") == 0 ? 712
+                  : std::strcmp(in.effect_id, "glow") == 0    ? 713
+                                                              : -1;
+    e.position = in.position;
+    e.rotation = in.rotation;
+    e.width = in.width;
+    e.height = in.height;
+    e.color = in.color;
   }
+  std::copy(q.blood.begin(), q.blood.end(), out.blood);
+  std::copy(q.shells.begin(), q.shells.end(), out.shells);
+  std::copy(q.corpse_positions.begin(), q.corpse_positions.end(), out.corpses);
+  std::copy(q.corpse_colors.begin(), q.corpse_colors.end(), out.colors);
+  std::copy(q.corpse_angles.begin(), q.corpse_angles.end(), out.angles);
+  std::copy(q.corpse_sizes.begin(), q.corpse_sizes.end(), out.sizes);
+  std::copy(q.corpse_species.begin(), q.corpse_species.end(), out.species);
+}
+void combat_fx_restart() {
+  game.safe_mode = true;
+  game.survival = true;
+  game.reset_gameplay();
 }
 int combat_world_queue(int safe, int frame) {
   game.safe_mode = safe;
@@ -716,10 +761,10 @@ int combat_world_queue(int safe, int frame) {
   game.frame_sprites.clear();
   game.frame_labels.clear();
   fx_queue_render();
-  combat_world_state[0] = (float)game.pending_impacts.size();
-  combat_world_state[1] = (float)game.pending_blood.size();
-  combat_world_state[2] = (float)game.pending_decals.size();
-  combat_world_state[3] = (float)game.pending_shells.size();
+  combat_world_state[0] = (float)game.fx.impact_count;
+  combat_world_state[1] = (float)game.fx.blood_count;
+  combat_world_state[2] = (float)game.fx.corpse_count;
+  combat_world_state[3] = (float)game.fx.shell_count;
   combat_world_state[4] = (float)game.terrain_marks.size();
   combat_world_state[5] = (float)game.frame_sprites.size();
   if (!safe)
@@ -813,18 +858,18 @@ int combat_world_render(int pass) {
   if (pass == 2) {
     effect_render_all();
     combat_world_state[12] = game.run.bomb_age;
-    combat_world_state[19] = (float)game.pending_impacts.size();
+    combat_world_state[19] = (float)game.fx.impact_count;
   }
   combat_world_state[0] = (float)game.run.kills;
-  combat_world_state[1] = (float)game.pending_blood.size();
-  combat_world_state[2] = (float)game.pending_decals.size();
-  if (!game.pending_decals.empty()) {
-    auto &m = game.pending_decals.back();
-    combat_world_state[3] = m.position.x;
-    combat_world_state[4] = m.position.y;
-    combat_world_state[5] = m.size;
-    combat_world_state[6] = m.heading;
-    combat_world_state[7] = (float)m.cell;
+  combat_world_state[1] = (float)game.fx.blood_count;
+  combat_world_state[2] = (float)game.fx.corpse_count;
+  if (game.fx.corpse_count) {
+    int i = game.fx.corpse_count - 1;
+    combat_world_state[3] = game.fx.corpse_positions[i].x;
+    combat_world_state[4] = game.fx.corpse_positions[i].y;
+    combat_world_state[5] = game.fx.corpse_sizes[i];
+    combat_world_state[6] = game.fx.corpse_angles[i];
+    combat_world_state[7] = game.fx.corpse_species[i] ? 62 : 31;
   }
   return capture_ui();
 }

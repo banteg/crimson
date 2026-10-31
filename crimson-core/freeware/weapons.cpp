@@ -30,11 +30,6 @@ int sfx_play_panned(int sample, float, float) {
   freeware::play_original_sample(sample);
   return 0;
 }
-static freeware::Game *player_game;
-void fx_queue_add_shell(const vec2f_t *p) {
-  if (player_game->shell_marks && player_game->pending_shells.size() < 31)
-    player_game->pending_shells.push_back(*p);
-}
 void player_update();
 }
 
@@ -104,9 +99,8 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
   p.aim_heading = fighter.aim_angle;
   if (!index)
     p.experience = run.experience;
-  player_game = this;
+  FrameGameScope scope(*this);
   player_update();
-  player_game = nullptr;
   if (aiming[index] == 1)
     radial_cursor = freeware_aim_screen;
   if (aiming[index] == 1 && in.relative) {

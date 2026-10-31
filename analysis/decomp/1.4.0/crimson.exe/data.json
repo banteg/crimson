@@ -1047,6 +1047,11 @@
     },
     {
       "address": "0x0043bb60",
+      "name": "freeware_ice_tint",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043bb60",
       "name": "unused_particle_pool_suffix_color",
       "program": "1.4.0/crimson.exe"
     },
@@ -1093,6 +1098,11 @@
     {
       "address": "0x0043c6b0",
       "name": "freeware_blood_positions",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043c8b0",
+      "name": "freeware_ice_texture",
       "program": "1.4.0/crimson.exe"
     },
     {

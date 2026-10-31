@@ -89,6 +89,10 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "player/angle_approach.cpp",
                 "projectiles/projectile_spawn.cpp",
                 "projectiles/projectile_update.cpp",
+                "effects/fx_queue_add.cpp",
+                "effects/fx_queue_add_random.cpp",
+                "effects/fx_queue_add_rotated.cpp",
+                "effects/fx_queue_add_shell.cpp",
                 "effects/fx_spawn_sprite.cpp",
                 "effects/fx_spawn_secondary_projectile.cpp",
             )

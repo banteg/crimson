@@ -4,7 +4,7 @@ extern "C" {
 extern creature_t creature_pool[512];
 extern int freeware_kills;
 void fx_queue_add_rotated(const vec2f_t *, const effect_color_t *, float, float, int);
-void freeware_blood(const vec2f_t *);
+void fx_queue_add_random(const vec2f_t *);
 }
 using namespace world140;
 namespace {
@@ -87,12 +87,11 @@ extern "C" void creature_render_all() {
                 bool alien = body->freeware.type == 1;
                 float rot = alien ? body->freeware.heading - 1.57079637f : body->freeware.heading;
                 fx_queue_add_rotated(&pos, &color, rot, body->freeware.size, (int)alien);
+                fx_queue_add_random(&body->position);
 #ifdef CRIMSON_FREEWARE_CLIENT
-                UI_GAME.queue_blood(body->position);
                 if (++UI_GAME.run.kills == 1)
                     std::puts("1.4.0 first kill");
 #else
-                freeware_blood(&body->position);
                 ++freeware_kills;
 #endif
                 body->active = 0;

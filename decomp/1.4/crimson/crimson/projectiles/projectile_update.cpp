@@ -1,4 +1,6 @@
 // crimson.exe 1.4.0, 0x4094e0. The four passes share both the pools and the CRT random stream.
+#include "../effects/freeware_ice_mark.h"
+#include "../ui/freeware_ui.h"
 #include "crimsonland_types.h"
 #include <math.h>
 extern "C" {
@@ -18,8 +20,7 @@ int creature_find_nearest(const vec2f_t *);
 int fx_spawn_sprite(const vec2f_t *, const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 void creature_handle_death(int slot, int player, unsigned char leave_corpse);
-void freeware_blood(const vec2f_t *);
-void freeware_shard(const vec2f_t *, float size, float rotation);
+void fx_queue_add_random(const vec2f_t *);
 void freeware_combat_sound(int sample, float volume);
 }
 
@@ -37,8 +38,8 @@ __forceinline float distance(vec2f_t a, vec2f_t b) {
     double x = a.x - b.x, y = a.y - b.y;
     return (float)sqrt(x * x + y * y);
 }
-__forceinline void blood(vec2f_t p) { freeware_blood(&p); }
-__forceinline void shard(vec2f_t p, float size) { freeware_shard(&p, size, (crt_rand() % 612) * .01f); }
+__forceinline void blood(vec2f_t p) { fx_queue_add_random(&p); }
+__forceinline void shard(vec2f_t p, float size) { freeware_shard(&p, size); }
 __forceinline vec2f_t scatter_shards(vec2f_t p, int count) {
     vec2f_t mark = p;
     for (int i = 0; i < count; ++i) {
@@ -72,7 +73,7 @@ __forceinline void impact_marks(projectile_t &shot, creature_t &c) {
         } else {
             shard(c.position, (float)(crt_rand() % 10 + 5));
             shard(offset(c.position, x * 1.5f, y * 1.5f), (float)(crt_rand() % 10 + 5));
-            shard(offset(c.position, x * 2.5f, y * 2.5f), (float)(crt_rand() % 10 + 5));
+            shard(offset(c.position, x + x, y + y), (float)(crt_rand() % 10 + 5));
         }
     }
     if (type == 10) {
@@ -235,8 +236,12 @@ __forceinline void rockets() {
         int type = r.fields.type_id;
         if (type == 3) {
             v.x += frame_dt * 3;
-            if (v.x > 1)
+            if (v.x > 1) {
+                float size = v.y * 256;
+                effect_color_t black = {0, 0, 0, .25f};
+                fx_queue_add(ui140::texture("glow"), &r.position, size, size, 0, black);
                 r.active = 0;
+            }
             for (int j = 0; j < 512; ++j) {
                 creature_t &c = creature_pool[j];
                 if (c.active && c.health > 0 && distance(c.position, r.position) < v.x * v.y * 80) {
@@ -379,8 +384,8 @@ __forceinline void particles() {
             p.angle -= tau;
         while (p.angle < 0)
             p.angle += tau;
-        double bearing = atan2(p.pos_y - (double)frame_dt * p.vel_y - c.pos_y,
-                               (float)(p.pos_x - frame_dt * p.vel_x) - c.pos_x);
+        double bearing =
+            atan2(p.pos_y - (double)frame_dt * p.vel_y - c.pos_y, (float)(p.pos_x - frame_dt * p.vel_x) - c.pos_x);
         if (bearing < 0)
             bearing += tau;
         p.angle += p.angle <= bearing ? 1.2566371f : -1.2566371f;
