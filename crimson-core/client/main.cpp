@@ -54,7 +54,7 @@ struct Pad {
 };
 std::vector<Pad> gamepads;
 SDL_Gamepad *gamepad;
-bool held[8];
+Uint64 pad_presses; // down transitions on the active pad since pad() last sampled it
 int hold_frames[8];
 // The window has the player: away (blurred, minimized, a hidden tab), no input reaches the game, the pad's
 // neither (a co-op session plays on there, on neutral records).
@@ -159,17 +159,38 @@ unsigned char dik(SDL_Scancode s) {
 
 HostInput *input() { return (HostInput *)(client_memory() + w2c_game_game_input(&game)); }
 
+void key_state(unsigned char code, bool down) {
+  HostInput *in = input();
+  if (down && !in->keys[code])
+    in->presses.add(code);
+  in->keys[code] = down ? 0x80 : 0;
+  if (in->key_event_count < 32)
+    in->key_events[in->key_event_count++] = {code, (unsigned char)down};
+}
+
 void key(SDL_Scancode scancode, bool down) {
   unsigned char code = dik(scancode);
   if (!code)
     return;
-  HostInput *in = input();
-  in->keys[code] = down ? 0x80 : 0;
-  if (in->key_event_count < 32)
-    in->key_events[in->key_event_count++] = {code, (unsigned char)down};
+  key_state(code, down);
   // WM_CHAR delivers these control characters too.
   if (down && (scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_RETURN))
     w2c_game_game_key_char(&game, scancode == SDL_SCANCODE_BACKSPACE ? 8 : 13);
+}
+
+void mouse_button(int button, bool down) {
+  if ((unsigned)button >= 8)
+    return;
+  HostInput *in = input();
+  if (down && !in->mouse_buttons[button]) {
+    if (button < 5) // Grim's bindable mouse buttons
+      in->presses.add(0x100 + button);
+    // A touchpad click stays visible to the menu for two polls. A run reads
+    // the physical hold and the press separately.
+    hold_frames[button] = 2;
+    in->mouse_clicks |= 1u << button;
+  }
+  in->mouse_buttons[button] = down ? 0x80 : 0;
 }
 
 // CRIMSON_CAPTURE=<directory> saves the back buffer of the frames listed in
@@ -298,7 +319,6 @@ void run_script(int frame) {
     char verb[16] = {}, name[32] = {};
     float a = 0, b = 0;
     sscanf(s.action.c_str(), "%15s %f %f", verb, &a, &b);
-    HostInput *in = input();
     if (!strncmp(verb, "pad", 3)) {
       int value = 0, index = 0;
       if (!strcmp(verb, "padattach") || !strcmp(verb, "paddetach"))
@@ -314,28 +334,47 @@ void run_script(int frame) {
       scripted_y = b;
       w2c_game_game_hide_cursor(&game, 0);
     } else if (!strcmp(verb, "press") || !strcmp(verb, "release")) {
-      in->mouse_buttons[(int)a] = verb[0] == 'p' ? 0x80 : 0;
+      mouse_button((int)a, verb[0] == 'p');
     } else if (!strcmp(verb, "key") || !strcmp(verb, "unkey")) {
       unsigned code = (unsigned)strtoul(s.action.c_str() + strlen(verb), nullptr, 16);
-      in->keys[code & 255] = verb[0] == 'k' ? 0x80 : 0;
-      if (in->key_event_count < 32)
-        in->key_events[in->key_event_count++] = {(unsigned char)code, (unsigned char)(verb[0] == 'k')};
+      key_state((unsigned char)code, verb[0] == 'k');
     }
   }
 }
 
 // The buttons held, and the sticks and triggers past half travel, either way, as bits.
 static_assert(SDL_GAMEPAD_BUTTON_COUNT + 2 * SDL_GAMEPAD_AXIS_COUNT <= 64, "a pad's inputs fit its bits");
+constexpr Uint64 axis_bit(int axis) { return Uint64{1} << (SDL_GAMEPAD_BUTTON_COUNT + 2 * axis); }
+Uint64 axis_bits(int axis, int value) {
+  if (value > 16384)
+    return axis_bit(axis);
+  return value < -16384 ? axis_bit(axis) << 1 : 0;
+}
 Uint64 pad_held(SDL_Gamepad *pad) {
   Uint64 held = 0;
   for (int button = 0; button < SDL_GAMEPAD_BUTTON_COUNT; ++button)
     held |= (Uint64)SDL_GetGamepadButton(pad, (SDL_GamepadButton)button) << button;
-  for (int axis = 0; axis < SDL_GAMEPAD_AXIS_COUNT; ++axis) {
-    int value = SDL_GetGamepadAxis(pad, (SDL_GamepadAxis)axis);
-    held |= (Uint64)(value > 16384) << (SDL_GAMEPAD_BUTTON_COUNT + 2 * axis);
-    held |= (Uint64)(value < -16384) << (SDL_GAMEPAD_BUTTON_COUNT + 2 * axis + 1);
-  }
+  for (int axis = 0; axis < SDL_GAMEPAD_AXIS_COUNT; ++axis)
+    held |= axis_bits(axis, SDL_GetGamepadAxis(pad, (SDL_GamepadAxis)axis));
   return held;
+}
+
+void pad_changed(Pad &pad, Uint64 held) {
+  if (Uint64 down = held & ~pad.held) {
+    if (gamepad != pad.gamepad)
+      pad_presses = 0;
+    gamepad = pad.gamepad;
+    pad_presses |= down;
+  }
+  pad.held = held;
+}
+
+void pad_event(SDL_JoystickID id, Uint64 mask, Uint64 value) {
+  for (Pad &pad : gamepads)
+    if (SDL_GetGamepadID(pad.gamepad) == id) {
+      pad_changed(pad, (pad.held & ~mask) | value);
+      return;
+    }
 }
 
 // No stick pushed, no button held, the hat centred.
@@ -351,30 +390,40 @@ void pad_release(HostInput *in) {
 // PlayStation, Xbox and Switch pads alike, the faces by position.
 void pad(HostInput *in) {
   pad_release(in);
+  Uint64 held = 0;
   for (Pad &pad : gamepads) {
-    Uint64 held = pad_held(pad.gamepad);
-    if (held & ~pad.held)
-      gamepad = pad.gamepad;
-    pad.held = held;
+    pad_changed(pad, pad_held(pad.gamepad));
+    if (pad.gamepad == gamepad)
+      held = pad.held;
   }
   in->pad_connected = gamepad != nullptr;
   if (!gamepad)
     return;
   static const SDL_GamepadAxis axes[] = {SDL_GAMEPAD_AXIS_LEFTX, SDL_GAMEPAD_AXIS_LEFTY, SDL_GAMEPAD_AXIS_RIGHTX,
                                          SDL_GAMEPAD_AXIS_RIGHTY};
-  for (int i = 0; i < 4; ++i)
+  for (int i = 0; i < 4; ++i) {
     in->pad_axes[i] = SDL_GetGamepadAxis(gamepad, axes[i]) * 1000 / 32767;
-  static const SDL_GamepadButton buttons[] = {SDL_GAMEPAD_BUTTON_WEST,       SDL_GAMEPAD_BUTTON_SOUTH,
-                                              SDL_GAMEPAD_BUTTON_EAST,       SDL_GAMEPAD_BUTTON_NORTH,
-                                              SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER};
-  for (int i = 0; i < 6; ++i)
-    in->pad_buttons[i] = SDL_GetGamepadButton(gamepad, buttons[i]) ? 0x80 : 0;
-  in->pad_buttons[6] = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 16384 ? 0x80 : 0;
-  in->pad_buttons[7] = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 16384 ? 0x80 : 0;
-  static const SDL_GamepadButton rest[] = {SDL_GAMEPAD_BUTTON_BACK, SDL_GAMEPAD_BUTTON_START,
-                                           SDL_GAMEPAD_BUTTON_LEFT_STICK, SDL_GAMEPAD_BUTTON_RIGHT_STICK};
+    if (pad_presses & (3 * axis_bit(axes[i])))
+      in->presses.add(0x200 + i);
+  }
+  static constexpr auto button_bit = [](SDL_GamepadButton button) { return Uint64{1} << button; };
+  static constexpr Uint64 buttons[] = {
+      button_bit(SDL_GAMEPAD_BUTTON_WEST), button_bit(SDL_GAMEPAD_BUTTON_SOUTH), button_bit(SDL_GAMEPAD_BUTTON_EAST),
+      button_bit(SDL_GAMEPAD_BUTTON_NORTH), button_bit(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER),
+      button_bit(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER), axis_bit(SDL_GAMEPAD_AXIS_LEFT_TRIGGER),
+      axis_bit(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER), button_bit(SDL_GAMEPAD_BUTTON_BACK), button_bit(SDL_GAMEPAD_BUTTON_START),
+      button_bit(SDL_GAMEPAD_BUTTON_LEFT_STICK), button_bit(SDL_GAMEPAD_BUTTON_RIGHT_STICK)};
+  for (int i = 0; i < 12; ++i) {
+    in->pad_buttons[i] = (held & buttons[i]) ? 0x80 : 0;
+    if (pad_presses & buttons[i])
+      in->presses.add(0x11f + i);
+  }
+  static constexpr SDL_GamepadButton directions[] = {SDL_GAMEPAD_BUTTON_DPAD_UP, SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+                                                      SDL_GAMEPAD_BUTTON_DPAD_LEFT, SDL_GAMEPAD_BUTTON_DPAD_RIGHT};
   for (int i = 0; i < 4; ++i)
-    in->pad_buttons[8 + i] = SDL_GetGamepadButton(gamepad, rest[i]) ? 0x80 : 0;
+    if (pad_presses & button_bit(directions[i]))
+      in->presses.add(0x21c + i);
+  pad_presses = 0;
   int x = SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT) - SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_DPAD_LEFT);
   int y = SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_DPAD_DOWN) - SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_DPAD_UP);
   if (x || y)
@@ -1313,7 +1362,8 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     memset(in->mouse_buttons, 0, sizeof in->mouse_buttons);
     in->key_event_count = 0;
     pad_release(in);
-    memset(held, 0, sizeof held);
+    in->mouse_clicks = 0;
+    pad_presses = 0;
     memset(hold_frames, 0, sizeof hold_frames);
     w2c_game_game_activate(&game, 0);
     break;
@@ -1330,7 +1380,7 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     break;
   case SDL_EVENT_KEY_DOWN:
   case SDL_EVENT_KEY_UP:
-    if (scripted)
+    if (scripted || !focused)
       break;
 #ifndef __EMSCRIPTEN__
     // Alt+Enter toggles fullscreen, as in the Python port; the game never sees that Enter.
@@ -1359,23 +1409,25 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     break;
   case SDL_EVENT_MOUSE_BUTTON_DOWN:
   case SDL_EVENT_MOUSE_BUTTON_UP: {
-    if (scripted)
+    if (scripted || !focused)
       break;
     // DirectInput's order: left, right, middle, then the side buttons.
     int button = event->button.button == SDL_BUTTON_LEFT ? 0 : event->button.button == SDL_BUTTON_RIGHT ? 1
                  : event->button.button == SDL_BUTTON_MIDDLE ? 2 : event->button.button - 1;
-    if (button >= 8)
-      break;
-    // The game polls button state once a frame, so a tap shorter than a frame
-    // (a touchpad's) still shows for two before letting go (SDL_AppIterate).
-    bool down = event->type == SDL_EVENT_MOUSE_BUTTON_DOWN;
-    held[button] = down;
-    if (down)
-      hold_frames[button] = 2;
-    if (down || !hold_frames[button])
-      input()->mouse_buttons[button] = down ? 0x80 : 0;
+    mouse_button(button, event->type == SDL_EVENT_MOUSE_BUTTON_DOWN);
     break;
   }
+  case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+  case SDL_EVENT_GAMEPAD_BUTTON_UP:
+    if (focused && event->gbutton.button < SDL_GAMEPAD_BUTTON_COUNT) {
+      Uint64 bit = Uint64{1} << event->gbutton.button;
+      pad_event(event->gbutton.which, bit, event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? bit : 0);
+    }
+    break;
+  case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+    if (focused && event->gaxis.axis < SDL_GAMEPAD_AXIS_COUNT)
+      pad_event(event->gaxis.which, 3 * axis_bit(event->gaxis.axis), axis_bits(event->gaxis.axis, event->gaxis.value));
+    break;
   case SDL_EVENT_GAMEPAD_ADDED:
     if (SDL_Gamepad *added = SDL_OpenGamepad(event->gdevice.which)) {
       gamepads.push_back({added, 0});
@@ -1388,8 +1440,10 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
       if (SDL_GetGamepadID(gamepads[i].gamepad) == event->gdevice.which) {
         SDL_CloseGamepad(gamepads[i].gamepad);
         // Another pad still connected takes over.
-        if (gamepads[i].gamepad == gamepad)
+        if (gamepads[i].gamepad == gamepad) {
+          pad_presses = 0;
           gamepad = gamepads.size() > 1 ? gamepads[i ? 0 : 1].gamepad : nullptr;
+        }
         gamepads.erase(gamepads.begin() + i);
         break;
       }
@@ -1554,8 +1608,8 @@ SDL_AppResult SDL_AppIterate(void *) {
   profile_record();
 #endif
   for (int button = 0; button < 8; ++button)
-    if (hold_frames[button] && !--hold_frames[button] && !held[button])
-      input()->mouse_buttons[button] = 0;
+    if (hold_frames[button] && !--hold_frames[button])
+      input()->mouse_clicks &= ~(1u << button);
   if (!running) {
     w2c_game_game_exit(&game);
 #ifdef __EMSCRIPTEN__

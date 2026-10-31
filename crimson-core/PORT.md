@@ -194,7 +194,10 @@ Each pass of the run loop banks wall time, paced to the display so that its
 frames run even ticks (one each at 60 Hz), and runs the 60 Hz ticks it covers;
 each tick's input is built from the player's bindings and scheme as Python's
 recorder builds it ([`local_input.py`](../src/crimson/local_input.py)) and is
-recorded before the tick runs. A pass that covers no tick draws nothing, and
+recorded before the tick runs. A fire press delivered between frames survives
+until a tick records it, even if the button has already been released. Such a
+tap fires for one tick. The menus keep their two-frame touchpad click.
+A pass that covers no tick draws nothing, and
 the host shows the last frame again. Runs are single-player Survival, Rush and
 Quests at 1024x768, the resolution the verifier simulates; the rest play as the
 original. A fresh configuration is the Python port's: windowed, since the host

@@ -120,7 +120,9 @@ GAME_EXPORT(game_frame) int game_frame() {
   rtx_debug_keys();
   // A run the client plays draws once per pass that ticks; the host shows the
   // last frame again for one that does not (host/session.inc).
-  if (game_live_frame() == 0)
+  int due = game_live_frame();
+  game_input()->presses = {};
+  if (due == 0)
     return 1;
   if (!grim_frame_callback()) {
     quit_posted = true;

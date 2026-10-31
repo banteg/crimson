@@ -25,6 +25,7 @@ extern IGrim2D_cpp *grim_interface_ptr;
 extern float grim_frame_dt;
 extern "C" {
 HostInput *game_input();
+bool dinput_pressed(int code);
 void config_init_defaults(void);
 bool config_sync_from_grim(void);
 void ui_menu_pause_click_resume(void);
@@ -114,6 +115,15 @@ const float AXIS_DOWN = 0.5f; // an axis read as a button (_AXIS_DOWN_THRESHOLD)
 bool connected() { return game_input()->pad_connected; }
 
 } // namespace
+
+// Buttons have both a standard controller binding and the original joystick
+// binding. The host records a single press in their shared button slot.
+extern "C" bool game_input_pressed(int code) {
+  const PadSource *source = pad_source(code);
+  if (source && source->kind == PadSource::BUTTON)
+    code = 0x11f + source->index;
+  return dinput_pressed(code);
+}
 
 extern "C" float grim_pad_code_axis(int code) {
   const PadSource *source = pad_source(code);
@@ -242,10 +252,10 @@ void apply(int player, int upgrades) {
 // A standard button held or a stick pushed past half travel (gamepad_has_activity).
 bool pad_used() {
   for (int code = FACE_DOWN; code < PAD_CODE_END; ++code)
-    if (grim_pad_code_active(code))
+    if (grim_pad_code_active(code) || game_input_pressed(code))
       return true;
   for (int code = LEFT_STICK_X; code <= RIGHT_STICK_Y; ++code)
-    if (grim_pad_code_active(code))
+    if (grim_pad_code_active(code) || game_input_pressed(code))
       return true;
   return false;
 }

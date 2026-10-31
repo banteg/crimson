@@ -13,7 +13,13 @@ extern "C" __attribute__((export_name("game_input"))) HostInput *game_input() { 
 // machine's player reaches it: no pause, perk request or pick, only the
 // neutral record.
 static bool away;
-extern "C" void dinput_away(bool value) { away = value; }
+extern "C" bool dinput_pressed(int code) { return !away && input.presses.has(code); }
+extern "C" bool dinput_mouse_down(int button) { return !away && input.mouse_buttons[button] != 0; }
+extern "C" void dinput_away(bool value) {
+  if (away != value)
+    input.presses = {};
+  away = value;
+}
 
 extern "C" const GUID GUID_SysKeyboard, GUID_SysMouse;
 extern "C" bool pad_clicking(void);
@@ -49,6 +55,9 @@ struct Device : UnimplementedIDirectInputDevice8A {
     input.mouse_dx = input.mouse_dy = input.mouse_dz = 0;
     if (size > 12) {
       memcpy(state + 3, input.mouse_buttons, size - 12 < 8 ? size - 12 : 8);
+      for (unsigned i = 0; i < size - 12 && i < 8; ++i)
+        if (input.mouse_clicks & (1u << i))
+          ((unsigned char *)(state + 3))[i] = 0x80;
       // The pad's A clicks where its right stick points (game/pad.cpp).
       if (pad_clicking())
         *(unsigned char *)(state + 3) = 0x80;

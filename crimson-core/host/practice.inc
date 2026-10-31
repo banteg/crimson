@@ -196,7 +196,7 @@ static void practice_render() {
     live_poll_prompt();
   if (practice.phase == PRACTICE_PLAYING) {
     unsigned before = tick;
-    live_run_due([] { return live_tick() && practice.phase == PRACTICE_PLAYING; });
+    live_run_due([](bool latest) { return live_tick(latest) && practice.phase == PRACTICE_PLAYING; });
     drew = tick != before;
   }
   if (!drew && rtx_debug_redraw()) {
