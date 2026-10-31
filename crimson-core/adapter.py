@@ -10,14 +10,16 @@ Each source is read as `decomp/` has it and changed in two steps:
 
 Diffs come first, so they read against the source of truth and the code they add takes the same rules. The sources
 compile as 1.9.93 (CL_BUILD); a run plays 1.9.93's or 1.9.8's rules, which editions/ turns from guards into branches
-on the run's build. Every other guard that tells the two apart stays the preprocessor's, as editions/guards.json
-classifies them (check_guards).
+on the run's build, or which a source names (tools/match/include/cl_rules.h) and host/rules.h defines as the run's.
+Every other guard that tells the two apart stays the preprocessor's, as editions/guards.json classifies them
+(check_guards).
 """
 
 import argparse
 import hashlib
 import json
 import re
+import subprocess
 import textwrap
 from collections import Counter
 from pathlib import Path
@@ -148,6 +150,68 @@ def build_guards(txt):
     return sorted(found)
 
 
+# A rule a recovered source names rather than guards: a macro tools/match/include/cl_rules.h defines so it expands by
+# the build a source compiles as (CL_BUILD). host/rules.h defines each first, as the run's, for every target; one it
+# leaves out, defines for some targets only, or defines by build, would compile 1.9.93's value for a 1.9.8 run, as a
+# guard the ledger doesn't list would. The preprocessor decides both, so a rule counts as a compiler expands it.
+CL_RULES = "tools/match/include/cl_rules.h"
+HOOKS = HERE / "host" / "hooks.h"
+_DEFINE_ON_BUILD = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(\w+)\b(.*\bCL_BUILD\b.*)$", re.MULTILINE)
+_DEFINE_NAME = re.compile(r"^#define (\w+)(\(?)", re.MULTILINE)
+# What names nothing to the preprocessor: string and character literals, and comments. A quote after a digit
+# separates digits (10'908) rather than opening a character.
+_INERT = re.compile(r'"(?:\\.|[^"\\\n])*"|(?<![0-9A-Fa-f])\'(?:\\.|[^\'\\\n])*\'|/\*.*?\*/|//[^\n]*', re.DOTALL)
+
+
+def rule_definitions(txt):
+    """The macros `txt` defines in terms of CL_BUILD, as the preprocessor reads the text: continued lines join, and
+    literals and comments name nothing."""
+
+    code = _INERT.sub(lambda m: " " if m[0][0] == "/" else '""', txt.replace("\\\n", ""))
+    return [name for name, _ in _DEFINE_ON_BUILD.findall(code)]
+
+
+def _preprocess(cc, args, text):
+    return subprocess.run(
+        [*cc, *args, "-x", "c++", "-E", "-P", "-"], input=text, capture_output=True, text=True, check=True,
+    ).stdout
+
+
+def _expansions(cc, args, text, names):
+    """What each of `names` expands to after `text`, as `cc` preprocesses it with `args`, for each of RUN_BUILDS as
+    CL_BUILD."""
+
+    # Parenthesized, so a macro that expands to nothing still leaves its line.
+    probe = text + "".join(f"__rule__ ({name}) __rule__\n" for name in names)
+    return [
+        re.findall(r"^__rule__ \((.*)\) __rule__$", _preprocess(cc, [*args, f"-DCL_BUILD={build}"], probe), re.MULTILINE)
+        for build in RUN_BUILDS
+    ]
+
+
+def check_rules(root, cc, flags, first=HOOKS):
+    """Every rule cl_rules.h names, with a target's `flags`, expands alike for every build, and to a condition, where a
+    recovered source reads it: after `first` (host/hooks.h, which build.py includes ahead of every recovered source,
+    and which brings host/rules.h) and cl_rules.h, as `cc` preprocesses them."""
+
+    args = [*flags, "-I", str((root / CL_RULES).parent)]
+    header = f'#include "{Path(CL_RULES).name}"\n'
+    own, builtin = (set(_DEFINE_NAME.findall(_preprocess(cc, [*args, "-dM"], text))) for text in (header, ""))
+    own = [(name, call) for name, call in sorted(own - builtin) if name != "CL_BUILD"]
+    # A rule is a condition a source names bare; a function-like macro's bare name expands to nothing to compare.
+    if functions := [name for name, call in own if call]:
+        raise SystemExit(f"{CL_RULES} defines {', '.join(functions)} as a function; a rule is a condition, named bare")
+    names = sorted(name for name, _ in own)
+    rules = [name for name, *ways in zip(names, *_expansions(cc, args, header, names), strict=True) if len(set(ways)) > 1]
+    seen = _expansions(cc, [*args, "-include", str(first)], header, rules)
+    # Nothing, or the rule's own name (a function-like macro a bare use leaves alone), is no condition.
+    if undecided := [name for name, *ways in zip(rules, *seen, strict=True) if len(set(ways)) > 1 or ways[0] in ("", name)]:
+        raise SystemExit(
+            f"Rules {CL_RULES} names that host/rules.h doesn't define as the run's for this target "
+            f"({' '.join(cc + flags)}): {', '.join(undecided)}",
+        )
+
+
 def guarded_files(root, sources):
     """The `sources` and the headers every target compiles them with."""
 
@@ -186,8 +250,16 @@ def _unclassified(guards):
 
 def check_guards(root, hunks, sources):
     """Every guard telling RUN_BUILDS apart in `sources` and their headers after the diffs is one editions/guards.json
-    lists, with one of its classes."""
+    lists, with one of its classes, and every macro they define in terms of CL_BUILD is a rule cl_rules.h names, which
+    check_rules holds host/rules.h to."""
 
+    if strays := [
+        f"{rel}: {name}"
+        for rel in guarded_files(root, sources)
+        if rel not in (CL_RULES, "tools/match/include/cl_build.h")
+        for name in rule_definitions(apply_diffs(rel, (root / rel).read_text(), hunks))
+    ]:
+        raise SystemExit(f"Macros defined by build outside {CL_RULES}; name each rule there:\n" + "\n".join(strays))
     ledger = json.loads(GUARDS.read_text())
     unlisted = [
         (rel, key, line, text)

@@ -449,10 +449,18 @@ The configuration's `cl_build` sets `portable_cl_build`, Python's
 [`editions/`](editions) turns into a branch on the run's build
 (`portable_rules_1_9_8`), one file a rule. An edition's hunk replaces the
 whole `#if ... #endif` region as the patches leave it, so a change to either
-branch stops the build. Editions apply after the patches: 1.9.8's own bugs
-(56-60) are patches against its guarded branch, kept only in a 1.9.8 run with
-`preserve_bugs` (`portable_bugs_1_9_8`), and patch 13 covers 1.9.8's Fire
-Bullets shot too. Every other guard that tells the builds apart stays the
+branch stops the build. A rule can instead be named where the recovered source
+checks it, as a condition in [`cl_rules.h`](../tools/match/include/cl_rules.h)
+that defaults to the build a source compiles as, so the matcher still compiles
+each build's code; [`host/rules.h`](host/rules.h) defines it first as the run's.
+Each target's build preprocesses the two as a recovered source reads them, after
+`host/hooks.h`, with that target's compiler and flags, once for each build as
+`CL_BUILD`, and stops at a named rule that doesn't expand to the same condition
+both times; a macro defined by build anywhere else stops it too. Jinxed's
+Freeze gate is one, `CL_JINXED_RESPECTS_FREEZE`, which carries bug 57 too. Editions apply after
+the patches: 1.9.8's other bugs (56, 58-60) are patches against its guarded
+branch, kept only in a 1.9.8 run with `preserve_bugs` (`portable_bugs_1_9_8`),
+and patch 13 covers 1.9.8's Fire Bullets shot too. Every other guard that tells the builds apart stays the
 preprocessor's, so a 1.9.8 run takes 1.9.93's branch there, as the Python port
 does. [`editions/guards.json`](editions/guards.json) lists each one by file and
 a hash of its text (`hash#N` for the Nth copy of one text in a file), with the
@@ -475,7 +483,7 @@ stops at an entry that no target compiles any more.
 | 05 | Angry Reloader has no 0.5 s reload minimum |
 | 06 | Radioactive kills lizards; its region carries bug 56 too |
 | 07 | Typ-o names come from 42 fragments (the game module; the verifier has no Typ-o) |
-| 08-10 | Jinxed, Infernal Contract and My Favourite Weapon: the regions of bugs 57-60, which play 1.9.93's code unless `preserve_bugs` |
+| 09-10 | Infernal Contract and My Favourite Weapon: the regions of bugs 58-60, which play 1.9.93's code unless `preserve_bugs` |
 
 1.9.8's Fire Bullets reroll compares shot sound ids, which tell the sounds
 apart only with all of them loaded: the verifier loads none, and the original
@@ -517,7 +525,6 @@ without sound or assets gives every sound one id. The run compares the sounds'
 | 48 | Plague/Radioactive handle zero HP and stop death-frame live behavior |
 | 49 | Primary impulses use sine for Y; lethal impacts align corpse slides |
 | 56 | 1.9.8's Radioactive pulse burns only living creatures |
-| 57 | 1.9.8's Jinxed kills nothing during Freeze |
 | 58 | 1.9.8's Infernal Contract drops each living player to 0.1 health |
 | 59 | 1.9.8's My Favourite Weapon adds its clip bonus on every weapon assignment |
 | 60 | 1.9.8's My Favourite Weapon cancels the Pistol holder's forced Weapon drops |

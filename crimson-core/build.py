@@ -12,7 +12,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, check_diffs, check_guards, load_diffs, prototypes, wrap
+from adapter import (
+    DIFFS,
+    PROTOTYPES,
+    adapt,
+    apply_diffs,
+    check_diffs,
+    check_guards,
+    check_rules,
+    load_diffs,
+    prototypes,
+    wrap,
+)
 from data import data_source
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -199,8 +210,9 @@ def main():
     if a.target == "game":
         sources += game_sources(a.root)
     # The guards between 1.9.8 and 1.9.93 that the diffs leave to the preprocessor must be the ones
-    # editions/guards.json lists, each with its class.
+    # editions/guards.json lists, each with its class, and the rules the sources name are the run's for this target.
     check_guards(a.root, hunks, sources)
+    check_rules(a.root, cc, flags)
     name = object_name if a.target == "game" else lambda rel: Path(rel).stem
 
     # The game module compiles every source the verifier does, so every diff applies there; the verifier skips

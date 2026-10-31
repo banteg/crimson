@@ -449,7 +449,7 @@
     "source_sha256": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "status": "passed"
   },
-  "audit_digest": "5b50431564e3e043ee23d2ebf807d2411061f7fa9792124e0245c737e1aca71c",
+  "audit_digest": "ee67fe4cb28ed8b5be543151cc3b3464c35177b7a4804ca1c121b60fe84f1617",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -28285,7 +28285,7 @@
         {
           "path": "decomp/1.9/crimsonland/game/perks_update_effects.cpp",
           "repository_relative": true,
-          "sha256": "f6f229537fc2240ac5a3977162086edc68ba1417ac851759964f3b0429c54cca"
+          "sha256": "dbaffb4394ceec95d9d5e5c7d1104810ed5860e5465ae3d003648aae71560b08"
         },
         {
           "path": "tools/match/scratches/perks_update_effects/scratch.conf",
@@ -28313,6 +28313,11 @@
           "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
         },
         {
+          "path": "tools/match/include/cl_rules.h",
+          "repository_relative": true,
+          "sha256": "b6d1cd4257a4605b2ab15625686faf6063f90e14942d9cc2acf9433aff5139ba"
+        },
+        {
           "path": "tools/match/include/crimsonland_console.h",
           "repository_relative": true,
           "sha256": "99c6cd5e00e2a95136ab0c3b5dfec5ace7ffebf2d9f56467d095d3b2b13464e9"
@@ -28336,10 +28341,10 @@
           "canonical_config_sha256": "6e0bfb936713012c9d5daa90e7ccf6ae78228b0a94c76353e8a18e672eab7339",
           "canonical_scratch": "tools/match/scratches/perks_update_effects",
           "canonical_source": "decomp/1.9/crimsonland/game/perks_update_effects.cpp",
-          "canonical_source_sha256": "f6f229537fc2240ac5a3977162086edc68ba1417ac851759964f3b0429c54cca",
+          "canonical_source_sha256": "dbaffb4394ceec95d9d5e5c7d1104810ed5860e5465ae3d003648aae71560b08",
           "effective_end": 4223197,
           "end": 4223197,
-          "experiment_epoch": "5b6bba7b108724bcdee949228b496a8e788c389d3eb7f8ccac746ccb91c9a178",
+          "experiment_epoch": "5072383153e6f18f6e4d2c10d82ee46f45808c294fdc61328c0a7f8818e4ac7e",
           "function": "perks_update_effects",
           "match": {
             "body_byte_exact": true,
@@ -28380,7 +28385,7 @@
       "object_sha256": "66ddac46d80e1c3d9ab76064b39a684d96431ae9cfc58e034b4b9ff6669aedbe",
       "scratch": "tools/match/scratches/perks_update_effects",
       "source": "decomp/1.9/crimsonland/game/perks_update_effects.cpp",
-      "source_sha256": "f6f229537fc2240ac5a3977162086edc68ba1417ac851759964f3b0429c54cca",
+      "source_sha256": "dbaffb4394ceec95d9d5e5c7d1104810ed5860e5465ae3d003648aae71560b08",
       "target_size": 1437,
       "translation_unit": {
         "kind": "isolated",
