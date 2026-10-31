@@ -88,7 +88,7 @@ void Game::reset_gameplay() {
   pending_decals.clear();
   pending_blood.clear();
   pending_shells.clear();
-  pending_shards.clear();
+  pending_impacts.clear();
   current_player_index = plaguebearer_infection_count = 0;
   radial_cursor = {320, 140};
   cursor_x = 320;
@@ -133,25 +133,30 @@ void Game::queue_blood(vec2f_t p) {
   if (pending_blood.size() < 63)
     pending_blood.push_back(p);
 }
+void Game::queue_impact(const char *texture, vec2f_t center, float w, float h, float rotation,
+                        effect_color_t color) {
+  if (pending_impacts.size() < 63)
+    pending_impacts.push_back(
+        {texture, center.x - w * .5f, center.y - h * .5f, w, h, rotation, color, {}, 2, 6, 5});
+}
 void Game::flush_marks() {
   decals.swap(pending_decals);
   pending_decals.clear();
-  marks.swap(pending_shards);
-  pending_shards.clear();
+  impacts.swap(pending_impacts);
+  pending_impacts.clear();
   for (auto p : pending_blood) {
     float angle = (crt_rand() % 628) * .01f;
     float size = float(crt_rand() % 20 - 10) + 32.f;
-    marks.push_back({p, size, angle, false});
+    marks.push_back({p, size, angle});
   }
   pending_blood.clear();
   for (auto p : pending_shells)
-    shells.push_back({p, 4, (crt_rand() % 628) * .01f, false});
+    shells.push_back({p, 4, (crt_rand() % 628) * .01f});
   pending_shells.clear();
 }
 extern "C" void freeware_blood(const vec2f_t *pos) { combat_game->queue_blood(*pos); }
 extern "C" void freeware_shard(const vec2f_t *pos, float size, float rotation) {
-  if (combat_game->pending_shards.size() < 128)
-    combat_game->pending_shards.push_back({*pos, size, rotation, true});
+  combat_game->queue_impact("icemold", *pos, size, size, rotation, {1, 1, 1, 1});
 }
 extern "C" void freeware_combat_sound(int id, float) {
   if (id == 31)
@@ -173,14 +178,14 @@ void Game::kill(int id, int owner, bool corpse) {
   freeware_first_kill_xp = run.first_kill_xp;
   freeware_first_kill_position = run.first_kill_pos;
   freeware_player_moved = run.moved;
-  freeware_pickup_id = run.pickup.time > 0 ? int(run.pickup.kind) : freeware_no_pickup;
+  freeware_pickup_id = int(run.pickup.kind);
   freeware_pickup_time = run.pickup.time;
   bonus_freeze_timer = run.freeze;
   freeware_creature_handle_death_body(id, owner, corpse);
   run.experience = p.experience;
   run.first_kill_pos = freeware_first_kill_position;
   run.first_kill_xp = freeware_first_kill_xp;
-  if (run.pickup.time <= 0 && freeware_pickup_time > 0)
+  if (run.pickup.kind == Bonus::None && freeware_pickup_id != freeware_no_pickup)
     run.pickup = {freeware_pickup_position, static_cast<Bonus>(freeware_pickup_id), freeware_pickup_time,
                   freeware_pickup_weapon};
   current_player_index = old;

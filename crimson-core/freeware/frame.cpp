@@ -7,6 +7,7 @@ freeware::Game *freeware_frame_game;
 const freeware::Input *freeware_frame_input;
 float freeware_frame_delta;
 extern "C" {
+void effect_render_all();
 unsigned char game_frame_update();
 void freeware_playing_stage(), freeware_spawn_edge(), freeware_bomb_advance();
 extern int config_player_count;
@@ -62,10 +63,14 @@ void Game::enter_state(int id) {
 }
 void Game::update(float dt, const Input &in) {
   actor_sprites.clear();
+  effect_sprites.clear();
+  effect_labels.clear();
+  frame_shots.clear();
   frame_sprites.clear();
   frame_labels.clear();
   decals.clear();
   marks.clear();
+  impacts.clear();
   shells.clear();
   if (in.console) {
     console_open = !console_open;
@@ -122,7 +127,7 @@ void Game::update_bomb(float dt) {
   freeware_frame_game = this;
   frame_dt = dt;
   freeware_bomb_advance();
-  apply_bomb_damage(dt);
+  effect_render_all();
   freeware_frame_game = nullptr;
 }
 } // namespace freeware

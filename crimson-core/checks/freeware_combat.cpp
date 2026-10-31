@@ -178,7 +178,7 @@ extern "C" void combat_controls(int index, int count, int movement, int aim, int
 }
 
 extern "C" {
-float combat_frame_fields[28];
+float combat_frame_fields[31];
 struct CapturedQuad {
   char name[16];
   float x, y, w, h, angle;
@@ -224,7 +224,7 @@ void combat_frame_start(int mode, int count, int phase, int flags) {
   game.active_run = phase != 1;
   game.state_since = flags & 512 ? 2.01f : 5;
   game.menu_music_pending = true;
-  if (flags >= 4096) {
+  if (flags & (4096 | 8192 | 16384 | 32768 | 65536 | 131072 | 262144 | 524288)) {
     game.birthday = flags & 4096;
     game.memorial = flags & 8192;
     game.christmas = flags & 16384;
@@ -260,6 +260,8 @@ void combat_frame_start(int mode, int count, int phase, int flags) {
     player_state_table[i].freeware.perks[6] = game.run.perks[6];
     player_state_table[i].freeware.perks[23] = game.run.perks[23];
   }
+  if (flags & 1048576)
+    game.run.pickup = {{310, 297}, freeware::Bonus::Freeze, .015625f, 0};
   game.camera = {0, -128};
   game.cursor_x = 310;
   game.cursor_y = 169;
@@ -381,7 +383,10 @@ int combat_frame_step(float dt, int input) {
                float(game.screen == freeware::Screen::Scores),
                float(game.screen == freeware::Screen::Options),
                float(game.selected),
-               float(game.name.size())};
+               float(game.name.size()),
+               game.run.pickup.time,
+               float(game.run.pickup.kind),
+               float(game.effect_labels.size())};
   std::copy(std::begin(f), std::end(f), combat_frame_fields);
   std::copy(std::begin(game.random_flags), std::end(game.random_flags), combat_frame_flags);
   return game.frame_state();
@@ -600,7 +605,7 @@ extern "C" int combat_ui_perk(int id, int flags) {
   return capture_ui();
 }
 extern "C" {
-void creature_render_all(), player_render();
+void creature_render_all(), player_render(), effect_render_all();
 float combat_world_state[24];
 void combat_world_start(int flags) {
   game = freeware::Game{};
@@ -626,6 +631,27 @@ void combat_world_player(int slot, int count, int kind, int distance) {
   bonus_fire_bullets_timer = 0;
   freeware_simulation_clock = 1.375f;
 }
+int combat_world_impacts() {
+  game.frame_sprites = game.pending_impacts;
+  game.frame_labels.clear();
+  return capture_ui();
+}
+void combat_world_effect(int flags, int kind, int time, int age) {
+  game.effects = flags & 1;
+  game.smoke = flags & 2;
+  game.active_run = flags & 4;
+  game.run.berserk = flags & 8 ? 11.f : 10.f;
+  config_player_count = flags & 16 ? 2 : 1;
+  for (int i = 0; i < config_player_count; ++i)
+    game.actor(i).health = player_state_table[i].freeware.health;
+  game.run.pickup = {{350.5f, 210.25f}, static_cast<freeware::Bonus>(kind), time / 100.f, 8};
+  game.run.bomb_pos = {97, 105};
+  game.run.bomb_age = age / 100.f;
+  game.cursor_x = 166.25f;
+  game.cursor_y = 135.75f;
+  freeware_simulation_clock = 1.375f;
+  frame_dt = .03125f;
+}
 int combat_world_render(int pass) {
   game.frame_sprites.clear();
   game.frame_labels.clear();
@@ -645,6 +671,11 @@ int combat_world_render(int pass) {
     combat_world_state[16] = game.camera_shake.y;
     combat_world_state[17] = bonus_fire_bullets_timer;
     combat_world_state[18] = game.actor(current_player_index).cooldown;
+  }
+  if (pass == 2) {
+    effect_render_all();
+    combat_world_state[12] = game.run.bomb_age;
+    combat_world_state[19] = (float)game.pending_impacts.size();
   }
   combat_world_state[0] = (float)game.run.kills;
   combat_world_state[1] = (float)game.pending_blood.size();

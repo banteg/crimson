@@ -24,7 +24,7 @@ def check_world(check, exe):
         for addr in (0x4387F8, 0x452E80, 0x452E88):
             pe.write_u32(addr, 0)
         for i, (kind, animation, death, infected) in enumerate(
-            [(0, 4, 16, 0), (1, 18, 16, 1), (0, 19.5, 16, 0), (1, 15.45, 6.5, 0), (0, 4, -0.25, 0), (1, 4, -0.125, 1)],
+            [(0, 4, 16, 0), (1, 18, 16, 1), (0, 19.5, 16, 0), (1, 15.45, 6.5, 0), (0, 4, -0.25, 0), (1, 4, -2.375, 1)],
         ):
             slot = (0, 1, 19, 63, 220, 511)[i]
             record = bytearray(128)
@@ -64,7 +64,7 @@ def check_world(check, exe):
             )
             assert all(math.isclose(a, b, abs_tol=0.0001) for a, b in zip(state[3:8], expected, strict=True))
             assert ctypes.string_at(check.symbol("creature_pool"), 512 * 128) == pe.read(0x442AF8, 512 * 128)
-    return total + check_player_draws(check, original)
+    return total + check_player_draws(check, original) + check_effect_draws(check, original)
 
 
 def check_player_draws(check, original):
@@ -147,4 +147,124 @@ def check_player_draws(check, original):
             )
         ]
         assert list(state[8:19]) == expected, ("pickup", i, list(state[8:19]), expected)
+    return total
+
+
+def check_effect_draws(check, original):
+    pe = original.pe
+    original.textures[703] = "part"
+    pe.write_u32(0x452C14, 703)
+    total = 0
+
+    def record(name, base, size, index, data):
+        assert len(data) == size
+        pe.write(base + size * index, data)
+        ctypes.memmove(check.symbol(name) + size * index, data, size)
+
+    # The PE and both clients see the same raw pools, including the last slot.
+    for i in range(36):
+        flags = (i * 13) % 32
+        kind = i % 8
+        time = (265, 39, 59, 0, 100)[i // 8]
+        age = (-1, 0, 38, 100, 113, 38)[i % 6]
+        check.dll.combat_world_start(0)
+        for addr, size in ((0x439F60, 128 * 56), (0x43BB78, 64 * 40), (0x43CBC8, 384 * 44), (0x442AF8, 512 * 128)):
+            pe.write(addr, bytes(size))
+        for name, size in (
+            ("particle_pool", 128 * 56),
+            ("secondary_projectile_pool", 64 * 40),
+            ("sprite_effect_pool", 384 * 44),
+        ):
+            ctypes.memset(check.symbol(name), 0, size)
+        for j, slot in enumerate((0, 1, 2, 3, 126, 127)):
+            data = struct.pack(
+                "<BB2x11fB3xi",
+                1,
+                1,
+                240 + j * 13,
+                290 - j * 17,
+                4,
+                5,
+                0.75,
+                0.23,
+                0.39,
+                0.617,
+                (1, 0.01, -0.2, 0.34, 0.75, 0.91)[j],
+                0.27,
+                0.32 * j,
+                (0, 0, 1, 8, 8, 1)[j],
+                0,
+            )
+            record("particle_pool", 0x439F60, 56, slot, data)
+        for j, slot in enumerate((0, 1, 383)):
+            record(
+                "sprite_effect_pool",
+                0x43CBC8,
+                44,
+                slot,
+                struct.pack("<B3x10f", 1, 0.15, 0.41, 0.7, 0.81, 1 + j, 222 + j, 146 - j, 0, 0, 25 + j * 6),
+            )
+        for j, slot in enumerate((0, 1, 63)):
+            record(
+                "secondary_projectile_pool",
+                0x43BB78,
+                40,
+                slot,
+                struct.pack("<B3x6fifi", 1, 0, 1, 132 + j, 105 - j, 0.35, 0.8, 3 if j != 1 else 2, 0, 0),
+            )
+        for j, slot in enumerate((0, 1, 511)):
+            data = bytearray(128)
+            data[0] = 1
+            for offset, val in ((20, 16), (24, (98, 194.28, 353)[j]), (28, 105), (40, 825 if j != 2 else 0)):
+                struct.pack_into("<f", data, offset, val)
+            record("creature_pool", 0x442AF8, 128, slot, bytes(data))
+        for slot in range(2):
+            data = bytearray(0x188)
+            for offset, val in (
+                (0x28, 0 if slot and i % 3 == 2 else 55),
+                (0x4C, 350.5 + (24 if i % 5 == 0 else slot * 3)),
+                (0x50, 210.25),
+            ):
+                struct.pack_into("<f", data, offset, val)
+            record("player_state_table", 0x438478, 0x188, slot, bytes(data))
+        for addr, val in ((0x44289E, flags & 1), (0x44289F, int(bool(flags & 2))), (0x452DB4, int(bool(flags & 4)))):
+            pe.write_u8(addr, val)
+        for addr, val in (
+            (0x4428A0, 2 if flags & 16 else 1),
+            (0x4387E8, kind),
+            (0x452E68, 8),
+            (0x452E80, 0),
+            (0x452DA0, 0),
+        ):
+            pe.write_u32(addr, val)
+        for addr, val in (
+            (0x452D40, 1.375),
+            (0x452E94, 0.03125),
+            (0x452E5C, 11 if flags & 8 else 10),
+            (0x452E64, time / 100),
+            (0x452DC8, age / 100),
+            (0x4387B8, 97),
+            (0x4387BC, 105),
+            (0x4369F0, 350.5),
+            (0x4369F4, 210.25),
+            (0x438800, 166.25),
+            (0x438804, 135.75),
+        ):
+            pe.write_f32(addr, val)
+        check.dll.combat_world_effect(flags, kind, time, age)
+        original.reset_draw()
+        pe.call(0x4110A0)
+        n = check.dll.combat_world_render(2)
+        total += original.compare(check, n, ("effects", i, flags, kind, time, age))
+        state = (ctypes.c_float * 24).from_address(check.symbol("combat_world_state"))
+        assert (state[1], state[12], state[19]) == (pe.read_i32(0x452E80), pe.read_f32(0x452DC8), pe.read_i32(0x452DA0))
+        assert ctypes.string_at(check.symbol("creature_pool"), 512 * 128) == pe.read(0x442AF8, 512 * 128)
+        if age > 100:
+            # Submit the four queued scorches to the terrain target on the following frame.
+            for a in (0x452E80, 0x452E84, 0x452E88):
+                pe.write_u32(a, 0)
+            pe.write_u8(0x452D51, 0)
+            original.reset_draw()
+            pe.call(0x40E830)
+            total += original.compare(check, check.dll.combat_world_impacts(), ("scorches", i))
     return total

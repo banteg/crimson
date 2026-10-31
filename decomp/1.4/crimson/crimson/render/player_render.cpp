@@ -22,8 +22,8 @@ __forceinline void player_sheet() {
 #endif
 }
 __forceinline void upper_left(float inset, float dx, float dy) {
-    freeware_draw_point[0].x = CAMERA.x + POS.x - inset + dx;
-    freeware_draw_point[0].y = CAMERA.y + POS.y - inset + dy;
+    vec2f_t corner = {CAMERA.x + POS.x - inset + dx, CAMERA.y + POS.y - inset + dy};
+    freeware_draw_point[0] = corner;
 }
 __forceinline float visibility() { return (float)(sin(freeware_simulation_clock) * .35f + .5f); }
 __forceinline void collect() {
@@ -81,10 +81,14 @@ extern "C" void player_render() {
     player_sheet();
     source(1);
     destination(6);
-    int cell = (int)(PLAYER.walk_phase + .5f);
-    float dx = (float)(cos((double)PLAYER.aim_heading + 1.57079637f) * PLAYER.muzzle_flash * 12);
-    float dy = (float)(sin((double)PLAYER.aim_heading + 1.57079637f) * PLAYER.muzzle_flash * 12);
-    tint(1, 1, 1, PLAYER.perks[perk_id_almost_invisible] > 0 ? visibility() * .5f : .35f);
+    const freeware_player_t &pose = PLAYER;
+    int cell = (int)(pose.walk_phase + .5f);
+    float dx = (float)(cos((double)pose.aim_heading + 1.57079637f) * pose.muzzle_flash * 12);
+    float dy = (float)(sin((double)pose.aim_heading + 1.57079637f) * pose.muzzle_flash * 12);
+    if (PLAYER.perks[perk_id_almost_invisible] > 0)
+        tint(1, 1, 1, visibility() * .5f);
+    else
+        tint(1, 1, 1, .35f);
     angle(PLAYER.heading);
     atlas(cell);
     begin();
@@ -99,7 +103,10 @@ extern "C" void player_render() {
     source(5);
     destination(6);
     begin();
-    tint(1, 1, 1, PLAYER.perks[perk_id_almost_invisible] > 0 ? visibility() : 1.f);
+    if (PLAYER.perks[perk_id_almost_invisible] > 0)
+        tint(1, 1, 1, visibility());
+    else
+        tint(1, 1, 1, 1);
     angle(PLAYER.heading);
     atlas(cell);
     upper_left(PLAYER.size * .5f, 0, 0);
@@ -131,7 +138,7 @@ extern "C" void player_render() {
             alpha = 1;
         tint(91.f / 255, 180.f / 255, 1, alpha * .4f);
         uv(0, 0, 1, 1);
-        float r = (float)(sin(freeware_simulation_clock * 3) + 17.5);
+        float r = (float)sin(freeware_simulation_clock * 3) + 17.5f;
         dx = (float)(cos((double)PLAYER.aim_heading - 1.57079637f) * 3);
         dy = (float)(sin((double)PLAYER.aim_heading - 1.57079637f) * 3);
         angle(freeware_simulation_clock * 2);

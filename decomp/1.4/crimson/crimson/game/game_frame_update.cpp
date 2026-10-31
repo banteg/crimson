@@ -46,8 +46,8 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
-void player_render(), gameplay_render_hud(), game_show_message(), perk_selection_screen_update(),
-    creature_render_all();
+void effect_render_all(), player_render(), gameplay_render_hud(), game_show_message(),
+    perk_selection_screen_update(), creature_render_all();
 unsigned char freeware_overlay_begin(), game_highscores_update(), game_credits_update();
 
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -243,16 +243,17 @@ __forceinline void render_world() {
     current_player_index = 0;
 #ifndef CRIMSON_FREEWARE_CLIENT
     projectile_render();
+#else
+    G.actor_sprites.swap(G.frame_sprites);
+    freeware::projectile_draws(G.frame_shots, CAM, SECONDS, G.effects);
+#endif
     freeware_current_map->render_layer(1, 0);
     freeware_current_map->render_triggers(1);
     effect_render_all();
     freeware_current_map->render_layer(2, 0);
-#else
-    G.actor_sprites.swap(G.frame_sprites);
-    G.apply_bomb_damage(frame_dt);
-    G.ui.filter = 2;
-    G.ui.destination_blend = 6;
-    G.ui.scale = .5f; // effect_render_all leaves this font scale for the menu.
+#ifdef CRIMSON_FREEWARE_CLIENT
+    G.effect_sprites.swap(G.frame_sprites);
+    G.effect_labels.swap(G.frame_labels);
 #endif
 }
 __forceinline void spawn_edge() {
@@ -545,7 +546,9 @@ extern "C" unsigned char game_frame_update() {
             deaths();
             if (PICKUP_TIME <= 0) {
                 PICKUP_TIME = 0;
-#ifndef CRIMSON_FREEWARE_CLIENT
+#ifdef CRIMSON_FREEWARE_CLIENT
+                G.run.pickup.kind = freeware::Bonus::None;
+#else
                 freeware_pickup_id = freeware_no_pickup;
 #endif
             } else

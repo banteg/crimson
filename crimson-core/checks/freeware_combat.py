@@ -622,6 +622,8 @@ def check_web(stage, exe, sources):
         "combat_world_start",
         "combat_world_render",
         "combat_world_player",
+        "combat_world_effect",
+        "combat_world_impacts",
         "player_reset_all",
         "combat_frame_start",
         "combat_frame_step",

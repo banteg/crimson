@@ -32,7 +32,7 @@ enum class Sound {
   Decay = 28,
   Count = 29
 };
-enum class Bonus { Fire = 1, Freeze, Weapon, Nuke, Shield, Time };
+enum class Bonus { None, Fire, Freeze, Weapon, Nuke, Shield, Time };
 struct Pickup {
   vec2f_t pos{};
   Bonus kind{};
@@ -71,7 +71,6 @@ struct TerrainStamp {
 struct ImpactMark {
   vec2f_t pos;
   float size, rotation;
-  bool frozen;
 };
 struct Corpse {
   int cell;
@@ -139,7 +138,9 @@ struct Game {
   void load_next_level();
   Run run;
   std::vector<Corpse> decals, pending_decals;
-  std::vector<FrameSprite> actor_sprites;
+  std::vector<FrameSprite> actor_sprites, effect_sprites;
+  std::vector<FrameLabel> effect_labels;
+  std::vector<ShotDraw> frame_shots;
   std::vector<ImpactMark> marks;
   std::vector<TerrainStamp> terrain;
   void generate_terrain();
@@ -184,7 +185,9 @@ struct Game {
   float pad_threshold[2]{.1f, .1f};
   int pad_left_pov[2]{27000, 27000}, pad_right_pov[2]{9000, 9000};
   std::vector<vec2f_t> pending_blood, pending_shells;
-  std::vector<ImpactMark> pending_shards, shells;
+  std::vector<ImpactMark> shells;
+  std::vector<FrameSprite> pending_impacts, impacts;
+  void queue_impact(const char *texture, vec2f_t center, float w, float h, float rotation, effect_color_t color);
   void queue_blood(vec2f_t p);
   void flush_marks();
 
@@ -207,7 +210,6 @@ struct Game {
   void step_player(int index, float dt, const Input &in, vec2f_t mouse_world);
   void spawn_career();
   void kill(int slot, int owner, bool corpse = true);
-  void apply_bomb_damage(float dt);
   void update_bomb(float dt);
   void update_projectiles(float dt);
   void update_creatures(float dt);

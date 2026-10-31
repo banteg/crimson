@@ -339,6 +339,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/render/effect_render_all.cpp",
+          "configs": [
+            "tools/match/scratches/effect_render_all"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/render/player_render.cpp",
           "configs": [
             "tools/match/scratches/player_render"

@@ -26,23 +26,4 @@ void Game::check_level() {
   run.level = player_state_table[0].freeware.level;
   run.pending = freeware_pending_perks;
 }
-// The dispatcher advances the wave. The effects pass (0x4121e6) damages each living creature inside it.
-void Game::apply_bomb_damage(float dt) {
-  if (run.bomb_age < 0)
-    return;
-  if (run.bomb_age > 1) {
-    run.bomb_age = -1;
-    return;
-  }
-  for (int i = 0; i < 512; ++i) {
-    auto &c = creature_pool[i];
-    if (!c.active || c.health <= 0 ||
-        std::hypot(c.pos_x - run.bomb_pos.x, c.pos_y - run.bomb_pos.y) >= run.bomb_age * 256)
-      continue;
-    c.health -= dt * 2000;
-    queue_blood(c.position);
-    if (c.health <= 0)
-      kill(i, 0);
-  }
-}
 } // namespace freeware

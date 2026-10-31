@@ -17,21 +17,27 @@ __forceinline void creature_sheet() {
 }
 __forceinline void pose(const creature_t &c, bool shadow) {
     int cell = (int)(c.freeware.animation + .5f);
-    if (cell > 15)
-        cell = shadow && c.freeware.type == 1 ? 0 : 31 - cell;
+    const int bank = c.freeware.type;
+    if (shadow && bank == 1) {
+        if (cell > 15)
+            cell = 0;
+    } else if (cell > 15)
+        cell = 31 - cell;
     if (c.death_timer != 16)
         cell = (int)(31.f - c.death_timer);
-    if (c.freeware.type == 1) {
+    if (bank == 1) {
         angle(c.freeware.heading - 1.57079637f);
-        atlas(32 + cell);
+        atlas_origin(32 + cell);
     } else {
         angle(c.freeware.heading);
-        atlas(cell);
+        atlas_origin(cell);
     }
+    uv(freeware_draw_point[0].x, freeware_draw_point[0].y, freeware_draw_point[1].x, freeware_draw_point[1].y);
 }
 __forceinline void draw_body(const creature_t &c, float inset, float size) {
-    freeware_draw_point[0].x = (CAMERA.x + c.position.x) - inset;
-    freeware_draw_point[0].y = (CAMERA.y + c.position.y) - inset;
+    vec2f_t center = {CAMERA.x + c.position.x, CAMERA.y + c.position.y};
+    vec2f_t pos = {center.x - inset, center.y - inset};
+    freeware_draw_point[0] = pos;
     quad(freeware_draw_point[0].x, freeware_draw_point[0].y, size, size);
 }
 } // namespace
@@ -45,7 +51,7 @@ extern "C" void creature_render_all() {
         for (creature_t *c = creature_pool; c != creature_pool + 512; ++c)
             if (c->active) {
                 pose(*c, true);
-                const effect_color_t &color = c->freeware.color;
+                const effect_color_t color = c->freeware.color;
                 tint(color.r, color.g, color.b, color.a * .5f);
                 draw_body(*c, c->freeware.size * .5f - 2.f, c->freeware.size * 1.04f);
             }

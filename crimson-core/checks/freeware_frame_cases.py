@@ -25,8 +25,12 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     draw = {"texture": 0, "angle": 0, "color": (1, 1, 1, 1)}
     quads, labels, blends, label_positions = [], [], [], []
 
+    world_labels = []
+
     def text(call):
         site = call.return_address
+        if 0x411900 < site < 0x411BC8:
+            world_labels.append(pe.read(call.arg_u32(2), 32).split(b"\0", 1)[0])
         if (
             0x416560 < site < 0x4167A6
             or 0x41E330 < site < 0x41EF9D
@@ -212,6 +216,7 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     callbacks = 0
     scenarios = [
         ("survival", 2, 1, 3, 1, [0, 8, 0, 1, 0]),
+        ("pickup expiry", 2, 1, 3, 1048576, [0, 0, 0]),
         ("co-op", 2, 2, 3, 1 | 4 | 8, [0, 0, 0]),
         ("career", 1, 1, 3, 1 | 16, [0, 8, 0]),
         ("pause", 1, 1, 3, 16, [1, 0, 0]),
@@ -273,6 +278,12 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     for name, mode, count, phase, flags, inputs in scenarios:
         pe.restore(base)
         check.dll.combat_frame_start(mode, count, phase, flags)
+        if name == "pickup expiry":
+            pe.write_u32(0x452E60, 0)  # The released no-pickup sentinel is zero-initialized.
+            pe.write_f32(0x4369F0, 310)
+            pe.write_f32(0x4369F4, 297)
+            pe.write_f32(0x452E64, 0.015625)
+            pe.write_u32(0x4387E8, 2)
         if name == "level test start":
             pe.stub(0x421DC3, 0)  # No level files are present in the released install.
         for va, val in ((0x4428A8, mode), (0x4428A0, count), (0x42FBAC, phase), (0x452E70, int(bool(flags & 2)))):
@@ -363,11 +374,20 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             name_key = 9 if bits & 4 else 8 if bits & 128 else ord("x") if bits & 256 else 0xA7
             quads.clear()
             labels.clear()
+            world_labels.clear()
             blends.clear()
             label_positions.clear()
             pe.call(0x418190)
             state = check.dll.combat_frame_step(dt, bits)
             label = name, frame
+            if name == "pickup expiry":
+                state_fields = (ctypes.c_float * 31).from_address(check.symbol("combat_frame_fields"))
+                assert list(state_fields[28:31]) == [pe.read_f32(0x452E64), pe.read_i32(0x4387E8), len(world_labels)], (
+                    label,
+                    world_labels,
+                    list(state_fields[28:31]),
+                )
+                assert world_labels == ([b"Freeze"] if frame < 2 else []), (label, world_labels)
             assert state == pe.read_i32(0x42FBAC), (label, "state", state, pe.read_i32(0x42FBAC))
             for off, va in enumerate(fields):
                 expected = pe.read_i32(va) if off in (17, 18) else pe.read_u8(va) if off == 19 else pe.read_f32(va)
