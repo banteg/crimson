@@ -918,8 +918,13 @@ class BaseGameplayMode:
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
         # `game_update_generic_menu` renders the world only while `run_active` holds; the death clears it, so
         # the high scores over a game over show just the terrain.
-        alpha = 0.0 if self._game_over_active else self._world_entity_alpha() * entity_alpha
-        self._draw_world(entity_alpha=alpha)
+        if self._game_over_active:
+            ground = self.render_resources.ground
+            if ground is not None:
+                ground.point_filter = self._cvar_float("cv_terrainFilter", 1.0) == 2.0
+            self._world_runtime.draw_menu_ground()
+        else:
+            self._draw_world(entity_alpha=self._world_entity_alpha() * entity_alpha)
 
     def steal_ground_for_menu(self):
         ground = self.render_resources.ground

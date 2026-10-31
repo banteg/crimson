@@ -22,6 +22,7 @@ int platform_texture_host_id(int handle);
 extern int terrain_render_target;
 extern int run_elapsed_ms;
 extern float rtx_ground_ms; // a seek's bake time (game/rtx.cpp)
+void rtx_restore_clock();
 }
 
 // The session's own state a tick reads or writes (host.cpp), and the effect
@@ -102,6 +103,7 @@ static const uint8_t *run_state_read(const uint8_t *in) {
     memcpy(game_run_spans[i].at, in, game_run_spans[i].size);
     in += game_run_spans[i].size;
   }
+  rtx_restore_clock();
   KeyframeHost host;
   memcpy(&host, in, sizeof host);
   in += sizeof host;
@@ -191,10 +193,11 @@ struct TerrainShot {
   int tick, id;
 };
 // Copies of the terrain start this far apart and spread out, every other one
-// dropped, past the cap: each holds a whole render target.
+// dropped, past the cap: each holds a whole render target and its materials.
 static constexpr int TERRAIN_SHOT_TICKS = 1800;
-// The host draws ground targets at 2x density: eight default 2048-square RGBA
-// copies retain the previous 128 MiB budget (32 copies at 1024 square).
+// Keep the original eight-checkpoint spacing in both modes. At default 2x
+// density classic color copies cost 128 MiB; RTX's clean initial terrain
+// (16 MiB) plus seven complete material copies (112 MiB each) costs 800 MiB.
 static constexpr size_t TERRAIN_SHOTS = 8;
 static constexpr int TERRAIN_SHOT_IDS = 1 << 30; // host texture ids the copies take
 
@@ -349,6 +352,7 @@ static void terrain_rebuild(size_t batches) {
   terrain_bakes(true, [&] {
     std::vector<fx_queue_entry_t> queue;
     std::vector<RotatedDecal> rotated;
+    host_ground(HOST_GROUND_BATCH_BEGIN, 0);
     for (size_t b = shot->batches; b < batches; ++b) {
       size_t queue_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].queue : terrain.queue.size();
       size_t rotated_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].rotated : terrain.rotated.size();
@@ -359,6 +363,7 @@ static void terrain_rebuild(size_t batches) {
       rtx_ground_ms = (float)terrain.batches[b].clock_ms;
       terrain_bake(queue.data(), queue.size(), rotated.data(), rotated.size());
     }
+    host_ground(HOST_GROUND_BATCH_END, 0);
     rtx_ground_ms = -1;
   });
 }

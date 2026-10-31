@@ -102,6 +102,8 @@ class OptionsMenuView(PanelMenuView):
                 set_music_volume(self.state.audio.music, config.audio.music_volume)
             self._dirty = True
 
+        self._rtx_checkbox.disabled = not self.state.can_change_rtx_mode
+        self._rtx_checkbox.label = "RTX lighting (main menu)" if self._rtx_checkbox.disabled else "RTX lighting"
         self._rtx_checkbox.checked = self.state.rtx_mode is RtxRenderMode.RTX
         if ui_checkbox_update(
             resources,

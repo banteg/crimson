@@ -5,7 +5,7 @@
 // co-op runs (service/test/vectors.json) seek after a one-player fixture, in
 // the same game. It reports how long the preparing passes and the seeks take.
 //
-//   node crimson-core/checks/game_seek.mjs <game directory> [fixture.crd] [core.wasm] [game.wasm]
+//   node crimson-core/checks/game_seek.mjs <game directory> [fixture.crd] [core.wasm] [game.wasm] [--rtx]
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -14,12 +14,14 @@ import { loadGame, PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT } from "./game_host.mjs";
 
 const ROOT = new URL("..", CORE).pathname;
+const rtx = process.argv.includes("--rtx");
+const maxShots = 8;
 const [
   directory,
   fixture,
   coreWasm = new URL("build/wasm/core.wasm", CORE).pathname,
   gameWasm = new URL("build/game/game.wasm", CORE).pathname,
-] = process.argv.slice(2);
+] = process.argv.slice(2).filter((arg) => arg !== "--rtx");
 if (!directory) throw Error("usage: game_seek.mjs <game directory> [fixture.crd] [core.wasm] [game.wasm]");
 const vectors = JSON.parse(fs.readFileSync(path.join(ROOT, "service/test/vectors.json"))).coop_run;
 const replays = fixture
@@ -33,9 +35,11 @@ const replays = fixture
     };
 
 let groundId = 0, renderTarget = 0, boundTexture = 0, srcBlend = 0, dstBlend = 0;
-let peakTerrainShots = 0, terrainCopies = 0;
+let peakTerrainShots = 0, terrainCopies = 0, terrainReleases = 0;
 const textures = new Map(), terrainAt = new Map();
+const shotTicks = new Map();
 const run = bootGame(gameWasm, directory, 1, {
+  rtx,
   onHost(name, args) {
     if (name === "texture_create" && (args[3] & 1)) {
       groundId = args[0];
@@ -47,12 +51,22 @@ const run = bootGame(gameWasm, directory, 1, {
       else if (args[0] === 20) dstBlend = args[1];
     } else if (name === "texture_copy") {
       textures.set(args[0], Buffer.from(textures.get(args[1]) ?? Buffer.alloc(32)));
-      if (args[0] >= (1 << 30)) ++terrainCopies;
+      if (args[0] >= (1 << 30)) {
+        ++terrainCopies;
+        shotTicks.set(args[0], game.game_watch_tick());
+        const ticks = [...shotTicks.values()].sort((a, b) => a - b);
+        for (let i = 2; i < ticks.length; ++i)
+          if (ticks[i] - ticks[i - 1] !== ticks[1] - ticks[0])
+            throw Error("terrain snapshot compaction shifted the uniform tick spacing");
+      }
       const shots = [...textures.keys()].filter((id) => id >= (1 << 30)).length;
       peakTerrainShots = Math.max(peakTerrainShots, shots);
-      if (shots > 8) throw Error("terrain copies exceeded the eight-target budget");
-    } else if (name === "texture_release") textures.delete(args[0]);
-    else if ((name === "clear" || name === "draw") && renderTarget === groundId && groundId) {
+      if (shots > maxShots) throw Error(`terrain copies exceeded the ${maxShots}-target budget`);
+    } else if (name === "texture_release") {
+      if (shotTicks.has(args[0])) ++terrainReleases;
+      textures.delete(args[0]);
+      shotTicks.delete(args[0]);
+    } else if ((name === "clear" || name === "draw") && renderTarget === groundId && groundId) {
       const hash = crypto.createHash("sha256").update(textures.get(groundId));
       if (name === "clear") hash.update(Buffer.from([0, args[0] & 255, (args[0] >>> 8) & 255, (args[0] >>> 16) & 255, (args[0] >>> 24) & 255]));
       else {
@@ -68,6 +82,7 @@ const run = bootGame(gameWasm, directory, 1, {
   },
 });
 const { game } = run;
+game.game_render_mode(rtx ? 1 : 0);
 const frame = (taps = []) => {
   const input = run.input();
   for (const key of taps) {
@@ -85,7 +100,7 @@ const compared = names.map((name, i) => [name, i]).filter(([name]) => !PRESENTAT
 
 // Seeks across the replay `name` (`file`), which plays from the menus.
 function seeks(name, file) {
-  peakTerrainShots = terrainCopies = 0;
+  peakTerrainShots = terrainCopies = terrainReleases = 0;
   fs.writeFileSync(path.join(directory, "watched/seek.crd"), file);
   memory().write("watched/seek.crd\0", game.game_replay_path(), "latin1");
   if (!game.game_replay_open() || !game.game_watch()) throw Error(`${name} does not play`);
@@ -96,15 +111,30 @@ function seeks(name, file) {
     frame();
   }
   let t0 = performance.now(), frames = 0;
+  const lockedMode = () => {
+    if (game.game_render_mode_available()) throw Error("replay permits changing render mode");
+    const calls = run.calls.render_mode;
+    const choice = path.join(directory, "render_mode.txt");
+    const saved = fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null;
+    for (const mode of [0, 1]) {
+      game.game_render_mode(mode);
+      game.game_render_choice(mode);
+    }
+    if (run.calls.render_mode !== calls) throw Error("replay changed the renderer");
+    if ((fs.existsSync(choice) ? fs.readFileSync(choice, "utf8") : null) !== saved)
+      throw Error("replay changed the saved render preference");
+  };
+  lockedMode();
   while (!game.game_watch_ticks()) {
     frame();
     if (++frames > 20000) throw Error(`${name}: the replay was never prepared`);
   }
+  lockedMode();
   const prepared = { ms: Math.round(performance.now() - t0), frames, ticks: game.game_watch_ticks() };
 
   // The verifier's world at every target, from one straight replay.
   const ticks = game.game_watch_ticks();
-  if (ticks >= 8 * 1800 && (peakTerrainShots !== 8 || terrainCopies <= 8))
+  if (ticks >= maxShots * 1800 && (peakTerrainShots !== maxShots || !terrainReleases))
     throw Error(`${name}: the long replay did not exercise terrain-cache compaction`);
   const targets = [1, 2, 59, 60, 61, 119, 120, 121, ticks - 1, ticks];
   for (let i = 0; targets.length < 40; ++i) targets.push(1 + ((i * 7919 + 13) % ticks));

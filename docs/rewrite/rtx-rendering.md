@@ -255,6 +255,9 @@ optimization is deferred.
 
 Render mode enum and helpers: `src/crimson/render/rtx/mode.py` (`classic|rtx`).
 
+Mode changes are accepted only at launch or from the main menu and its Options panel.
+Runs, paused games, replays and in-game Options keep their renderer for the entire run.
+
 Runtime/launch controls:
 
 - Options: the RTX lighting box, below the sliders, in place of the original's Graphics detail slider
@@ -405,12 +408,24 @@ lands). It draws the terrain into the world with the ground
 program (`HOST_PASS_GROUND`). The lights carry what the ground adds: the
 reflection tail, broad illumination, and a beam's energy shape, computed by the
 module as `continuous_beam.py` does (its support also sizes the body grid). The companions start from the terrain as it stands the first time
-RTX needs them. A clear, a replay's terrain copy, or leaving RTX drops them.
-Blood baked before then (in classic, or before the terrain copy a seek starts
-from) stays in the substrate as painted terrain, without its wet film. A seek
-bakes the logged decals after that copy again at their logged clock. WebGPU
+RTX needs them. A clear or leaving RTX drops them. Replay copies preserve the
+substrate, coverage, float surface, and wetness epoch; restoring the clean initial
+copy removes any later materials. Native prepared caches store the same planes
+in CWC2 files. A seek bakes the logged decals after that copy at their logged clock.
+Native reconstruction batches up to 256 material draws across bake boundaries,
+preserving order within each plane and flushing before wetness rebases or reads.
+Render mode changes are allowed at launch and from the main menu (including its
+Options panel), never during a run, replay, preparation, or in-game Options. WebGPU
 keeps the surface in 32-bit floats where the device filters and blends them,
 otherwise in half floats.
+When a run returns to a menu, the retained terrain still uses its material shader
+inside the HDR composition pass. Its blood film, substrate and wetness epoch remain
+at the run's last gameplay presentation time, before quest results reuse the clock
+for their bonus-adjusted score. Only the terrain-only menu pass suppresses dynamic
+lights, heat footprints and pressure fronts: the gameplay world's death transition
+and end screens retain their effects. Fresh RTX menus use the same material path
+in all clients. Python transfers the ground before closing the run and uses a
+separate, lazily allocated menu HDR target.
 Monster Vision is heat, as in the Python port (see Perk illumination;
 `crimson-core/game/rtx_heat.cpp`). While RTX draws, `creature_render_all` skips
 the native aura quad and marks the trails instead (`host_heat_trails`, drawn
@@ -459,7 +474,7 @@ on, following the headroom SDL reports each frame. Other platforms tonemap to SD
 The mode never reaches a run's state, and the verifier (`core.wasm`) builds
 without it.
 
-Controls:
+Controls (mode changes only at launch or from the main menu and its Options):
 
 - Options: the RTX lighting box (`crimson-core/game/rtx/options.patch`) replaces Graphics detail: Mouse sensitivity
   moves up into its row and the box goes below the sliders, beside UI Info texts; `crimson.cfg` keeps the detail

@@ -100,6 +100,7 @@ static struct {
   bool unfocused; // the window lost the focus: this machine's records are neutral
   bool escape;    // Escape this pass of play
   float banked;   // seconds of play not yet ticked
+  CatchUp catch_up; // the partner's lead, as whole ticks (live_pace.h)
   bool shown;     // a tick of the run drew, and the host holds its frame
   bool choosing;  // this machine's perk screen is open for its pick
   bool ended;     // the screen shows a co-op run's end, until the next run starts

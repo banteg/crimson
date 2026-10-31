@@ -275,6 +275,7 @@ jobs:
           node crimson-core/checks/game_replay_read.mjs "$(fresh)"
           node crimson-core/checks/game_watch.mjs "$(fresh)"
           node crimson-core/checks/game_seek.mjs "$(fresh)"
+          node crimson-core/checks/game_seek.mjs "$(fresh)" --rtx
           node crimson-core/checks/game_practice.mjs "$(fresh)"
           node crimson-core/checks/game_online.mjs "$(fresh)"
           node crimson-core/checks/game_custom.mjs "$(fresh)"

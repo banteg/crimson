@@ -18,9 +18,17 @@ bool platform_outputs();
 extern IGrim2D_cpp *grim_interface_ptr;
 extern "C" {
 extern unsigned char grim_render_disabled, console_open_flag;
+extern game_state_id_t game_state_id;
 int console_cmd_argc_get(void);
 
 int rtx_render_mode;
+extern unsigned char run_active;
+extern game_state_id_t game_state_id;
+bool game_live_run();
+__attribute__((export_name("game_render_mode_available"))) int game_render_mode_available() {
+  return !game_live_run() && !run_active &&
+         (game_state_id == GAME_STATE_MAIN_MENU || game_state_id == GAME_STATE_OPTIONS_MENU);
+}
 extern crimson_cfg_t config_blob;
 extern int rtx_effects_active;
 void rtx_effect_flush();
@@ -35,9 +43,16 @@ extern int rtx_smoke_on;
 
 void rtx_reset();
 
-static void rtx_set_mode(int requested) {
-  rtx_render_mode = platform_outputs() ? host_render_mode(requested) : 0;
-  rtx_reset();
+static bool rtx_set_mode(int requested, bool launch = false) {
+  static bool initialized;
+  if (!(launch && !initialized) && !game_render_mode_available())
+    return false;
+  if (!initialized || requested != rtx_render_mode) {
+    rtx_render_mode = platform_outputs() ? host_render_mode(requested) : 0;
+    rtx_reset();
+  }
+  initialized = true;
+  return true;
 }
 
 // The player's choice, kept in the game folder (the Python port's render/rtx/mode.py keeps the same file).
@@ -55,7 +70,8 @@ static int rtx_saved_mode() {
 // The player chooses a mode: the Options panel, the console, the page's switch. It is kept once drawn, so a host
 // that only draws classic (WebGL2) leaves the choice for one that can.
 void rtx_choose(int requested) {
-  rtx_set_mode(requested);
+  if (!rtx_set_mode(requested))
+    return;
   if (!platform_outputs() || rtx_render_mode != requested)
     return;
   if (FILE *fp = fopen(rtx_choice_file, "wb")) {
@@ -67,11 +83,15 @@ void rtx_choose(int requested) {
 // The mode the host's launch options ask for (--rtx, CRIMSON_RTX, the page's ?rtx=) for this launch only, or with
 // none (-1) the player's choice.
 __attribute__((export_name("game_render_mode"))) void game_render_mode(int mode) {
-  rtx_set_mode(mode < 0 ? rtx_saved_mode() : mode);
+  rtx_set_mode(mode < 0 ? rtx_saved_mode() : mode, true);
 }
 __attribute__((export_name("game_render_choice"))) void game_render_choice(int mode) { rtx_choose(mode); }
 
 static void rtx_report(int requested) {
+  if (!game_render_mode_available()) {
+    console_printf(&console_log_queue, "Change render mode from the main menu.\n");
+    return;
+  }
   if (rtx_render_mode != requested)
     console_printf(&console_log_queue, "Render mode '%s' is not available here.\n", rtx_mode_name(requested));
   console_printf(&console_log_queue, "Render mode set to '%s'.\n", rtx_mode_name(rtx_render_mode));
@@ -233,6 +253,12 @@ float rtx_ground_ms = -1;
 // included, paused with the run; or a logged bake's own time while a replay's
 // seek bakes it again (host/keyframes.inc).
 static float rtx_seconds() { return (rtx_ground_ms >= 0 ? rtx_ground_ms : (float)run_elapsed_ms) * 0.001f; }
+// Results reuse run_elapsed_ms for the bonus-adjusted score. Frozen worlds and
+// retained menu ground keep the last gameplay presentation time instead.
+static float rtx_presentation_seconds;
+
+// A restore can return a held frame straight to a menu without drawing gameplay.
+void rtx_restore_clock() { rtx_presentation_seconds = (float)run_elapsed_ms * 0.001f; }
 
 // The frame's lights, collected as the world begins.
 static float rtx_lights[32 * RTX_LIGHT_FLOATS];
@@ -242,8 +268,10 @@ static int rtx_light_count;
 // a bound belongs to the side it was drawn on. The world's lights go first.
 // Classic marks the bounds too, only so the host's timers can tell its drawing
 // from the frame's simulation and HUD.
-void rtx_world(int begin) {
-  if (begin) {
+static void rtx_world_pass(int begin, bool menu) {
+  if (begin && !menu) {
+    if (game_state_id == GAME_STATE_GAMEPLAY || game_state_id == GAME_STATE_TYPO_GAMEPLAY)
+      rtx_presentation_seconds = rtx_seconds();
     rtx_glint_reset();
     rtx_debris_prepare();
   }
@@ -255,11 +283,11 @@ void rtx_world(int begin) {
     return;
   }
   if (begin) {
-    rtx_effects_active = 1;
-    int count = rtx_light_count = rtx_collect_lights(rtx_lights, 32);
+    rtx_effects_active = !menu;
+    int count = rtx_light_count = menu ? 0 : rtx_collect_lights(rtx_lights, 32);
     const float *lights = rtx_lights;
-    const float view[8] = {camera_offset.x, camera_offset.y, rtx_seconds(), (float)terrain_texture_width,
-                           (float)terrain_texture_height, rtx_beam_gain[0], rtx_beam_gain[1], (float)rtx_debug_view};
+    const float view[8] = {camera_offset.x, camera_offset.y, rtx_presentation_seconds, (float)terrain_texture_width,
+                           (float)terrain_texture_height, rtx_beam_gain[0], rtx_beam_gain[1], (float)(menu ? 0 : rtx_debug_view)};
     host_scene(view, lights, count);
     float grid[6];
     int value_count;
@@ -268,19 +296,23 @@ void rtx_world(int begin) {
     grid[5] = shadows;
     host_occlusion(grid, values, value_count);
     static float footprints[385 * 4];
-    host_heat(footprints, rtx_collect_heat(footprints, 385));
+    host_heat(footprints, menu ? 0 : rtx_collect_heat(footprints, 385));
     static float fronts[16 * 4];
     // A diagnostic map shows its values where they are.
     bool map = rtx_debug_view && rtx_debug_view != RTX_DEBUG_NO_DIRECT;
-    host_pressure(fronts, ui_transition_alpha > 1e-3f && !map ? rtx_collect_fronts(fronts, 16) : 0);
+    host_pressure(fronts, !menu && ui_transition_alpha > 1e-3f && !map ? rtx_collect_fronts(fronts, 16) : 0);
     rtx_debug_picked = false;
   }
   host_render_pass(begin ? HOST_PASS_WORLD_BEGIN : HOST_PASS_WORLD_END);
   if (!begin) {
     rtx_effects_active = 0;
-    rtx_debug_label();
+    if (!menu)
+      rtx_debug_label();
   }
 }
+
+void rtx_world(int begin) { rtx_world_pass(begin, false); }
+void rtx_menu_world(int begin) { rtx_world_pass(begin, true); }
 
 // The fluid smoke field after the world's sprites, at its transition `alpha`.
 bool rtx_smoke_active();
@@ -296,6 +328,7 @@ void rtx_smoke(float alpha) {
 // when the mode changes: the fluid smoke and the lights' explosions and fades.
 void rtx_smoke_reset();
 void rtx_reset() {
+  // Effect history resets independently of the retained terrain's presentation time.
   rtx_effects_active = 0;
   rtx_effect_flush();
   rtx_smoke_reset();

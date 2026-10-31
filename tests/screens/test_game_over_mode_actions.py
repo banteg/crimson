@@ -119,10 +119,12 @@ def test_high_scores_over_a_game_over_draw_only_the_terrain(mocker, make_mode_co
     mode = _game_over(make_mode_config, assets_dir)
     _press_result_button(mode, ResultAction.HIGH_SCORES)
     world_draw = mocker.spy(mode, "_draw_world")
+    terrain_draw = mocker.spy(mode._world_runtime, "draw_menu_ground")
 
     mode.draw_pause_background(entity_alpha=1.0)
 
-    world_draw.assert_called_once_with(entity_alpha=0.0)
+    world_draw.assert_not_called()
+    terrain_draw.assert_called_once_with()
 
 
 def test_rush_elapsed_helpers_use_authoritative_session_timer(make_mode_config, assets_dir) -> None:

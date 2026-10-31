@@ -1111,11 +1111,16 @@
     rtxWanted: () => (!Module.preinitializedWebGPUDevice ? 0 : !query.has("rtx") ? -1 : query.get("rtx") !== "0" ? 1 : 0),
     // Whether the game starts waiting for a linked run's replay (client/main.cpp).
     watchAwaited: () => watchAwaited,
-    // The rendering mode the game shows (client/main.cpp): HDR displays get its highlights past white.
+    // The game permits mode changes only from the main menu and its Options.
+    renderModeAvailable: (available) => {
+      rtx.disabled = !available;
+      Module.renderMode(rtx.getAttribute("aria-pressed") === "true");
+    },
+    // The rendering mode the game shows: HDR displays get its highlights past white.
     renderMode: (on) => {
       rtx.classList.toggle("on", !!on);
       rtx.setAttribute("aria-pressed", on ? "true" : "false");
-      rtx.title = !on ? "RTX lighting" : matchMedia("(dynamic-range: high)").matches ? "RTX lighting · HDR" : "RTX lighting · SDR";
+      rtx.title = rtx.disabled ? "Change RTX lighting from the main menu" : !on ? "RTX lighting" : matchMedia("(dynamic-range: high)").matches ? "RTX lighting · HDR" : "RTX lighting · SDR";
     },
     // The host is running: the game takes the page.
     onRuntimeInitialized: () => {

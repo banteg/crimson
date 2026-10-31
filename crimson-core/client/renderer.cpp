@@ -349,6 +349,7 @@ struct Ground {
 };
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
+bool ground_batch;
 float ground_seconds;
 GLuint ground_program, stamp_program, fill_program;
 // World-space, color-independent source visibility: four source masks per
@@ -1213,12 +1214,21 @@ void GL_ENTRY(renderer_frame_end)() {
     scene += entry;
   }
   double bytes = target_bytes(hdr);
-  for (const auto &[id, t] : textures)
+  double snapshots = 0;
+  for (const auto &[id, t] : textures) {
     bytes += target_bytes(t);
+    snapshots += id >= (1 << 30) ? target_bytes(t) : 0;
+  }
+  for (const auto &[id, g] : grounds) {
+    double material_bytes = target_bytes(g.substrate) + target_bytes(g.coverage) + target_bytes(g.surface);
+    bytes += material_bytes;
+    snapshots += id >= (1 << 30) ? material_bytes : 0;
+  }
   const Target &back = textures[0];
   snprintf(entry, sizeof entry,
-           ",\"targets\":{\"back\":[%d,%d],\"world\":[%d,%d],\"count\":%zu,\"mb\":%.1f}", back.width,
-           back.height, rtx ? hdr.width : back.width, rtx ? hdr.height : back.height, textures.size(), bytes / (1 << 20));
+           ",\"targets\":{\"back\":[%d,%d],\"world\":[%d,%d],\"count\":%zu,\"mb\":%.1f,\"snapshots_mb\":%.1f}", back.width,
+           back.height, rtx ? hdr.width : back.width, rtx ? hdr.height : back.height, textures.size(), bytes / (1 << 20),
+           snapshots / (1 << 20));
   profile_cpu = "\"cpu\":" + pass_times(gpu_frame, [&](size_t i) {
                   return (i + 1 < gpu_frame.size() ? gpu_frame[i + 1].cpu_at : end) - gpu_frame[i].cpu_at;
                 }) + ",\"timed\":" + (gpu_timed ? "true" : "false") + ",\"draws\":{" + draws + "},\"scene\":{" + scene + "}" + entry;
@@ -1428,48 +1438,115 @@ void GL_ENTRY(w2c_host_frame_hold)(struct w2c_host *, u32 op) {
   back_shown = back_shown && &to != &back;
   bind_target();
 }
-// The render target `id`, made like `from` unless it already is.
-static Target &target_like(int id, const Target &from) {
-  drop_ground(id);
-  Target &to = textures[id];
-  if (to.width != from.width || to.height != from.height || !to.framebuffer) {
+// Replay copies include the terrain's material state, not just its baked color.
+static void size_target_like(Target &to, const Target &from) {
+  if (to.width != from.width || to.height != from.height || to.flags != from.flags || !to.framebuffer) {
     release(to);
+    to = {};
     to.width = from.width;
     to.height = from.height;
     to.logical_width = from.logical_width;
     to.logical_height = from.logical_height;
-    to.flags = 1;
+    to.flags = from.flags;
     allocate(to);
   }
-  return to;
 }
-void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
-  Target &from = target_or_back((int)source);
-  if (!from.framebuffer)
-    return;
-  Target &to = target_like((int)destination, from);
+static void copy_target(Target &to, const Target &from) {
+  size_target_like(to, from);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, from.framebuffer);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.framebuffer);
   glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, from.width, from.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
+  if (destination == source)
+    return;
+  flush_ground_stamps();
+  Target &from = target_or_back((int)source);
+  if (!from.framebuffer)
+    return;
+  copy_target(textures[(int)destination], from);
+  auto material = grounds.find((int)source);
+  if (material == grounds.end()) {
+    drop_ground((int)destination);
+  } else {
+    const Ground &g = material->second;
+    Ground &to = grounds[(int)destination];
+    copy_target(to.substrate, g.substrate);
+    copy_target(to.coverage, g.coverage);
+    copy_target(to.surface, g.surface);
+    to.epoch = g.epoch;
+  }
   bind_target();
 }
+// Disk snapshots carry dimensions and the wetness epoch, followed by RGBA8
+// color and, when present, RGBA8 substrate/coverage and RGBA32F surface planes.
+struct TextureSnapshot {
+  u32 magic, width, height, materials;
+  float epoch;
+};
+static constexpr u32 TEXTURE_SNAPSHOT_MAGIC = 0x31535443; // "CTS1"
 u32 GL_ENTRY(w2c_host_texture_read)(struct w2c_host *, u32 id, u32 out, u32 capacity) {
+  flush_ground_stamps();
   const Target &t = textures[(int)id];
-  u32 size = (u32)t.width * t.height * 4;
-  if (!t.framebuffer || capacity < size)
-    return t.framebuffer ? size : 0;
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, t.framebuffer);
-  glReadPixels(0, 0, t.width, t.height, GL_RGBA, GL_UNSIGNED_BYTE, client_memory() + out);
+  if (!t.framebuffer)
+    return 0;
+  auto material = grounds.find((int)id);
+  bool has_ground = material != grounds.end();
+  u32 plane = (u32)t.width * t.height * 4;
+  u32 size = sizeof(TextureSnapshot) + plane * (has_ground ? 7 : 1);
+  if (capacity < size)
+    return size;
+  TextureSnapshot header = {TEXTURE_SNAPSHOT_MAGIC, (u32)t.width, (u32)t.height, (u32)has_ground,
+                            has_ground ? material->second.epoch : 0};
+  u8 *pixels = client_memory() + out;
+  memcpy(pixels, &header, sizeof header);
+  pixels += sizeof header;
+  auto read = [&](const Target &target, bool floating) {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, target.framebuffer);
+    glReadPixels(0, 0, t.width, t.height, GL_RGBA, floating ? GL_FLOAT : GL_UNSIGNED_BYTE, pixels);
+    pixels += plane * (floating ? 4 : 1);
+  };
+  read(t, false);
+  if (has_ground) {
+    const Ground &g = material->second;
+    read(g.substrate, false);
+    read(g.coverage, false);
+    read(g.surface, true);
+  }
   bind_target();
   return size;
 }
 u32 GL_ENTRY(w2c_host_texture_write)(struct w2c_host *, u32 id, u32 like, u32 pixels, u32 size) {
   const Target &from = textures[(int)like];
-  if (!from.framebuffer || size != (u32)from.width * from.height * 4)
+  if (!from.framebuffer || size < sizeof(TextureSnapshot))
     return 0;
-  Target &to = target_like((int)id, from);
-  glBindTexture(GL_TEXTURE_2D, to.texture);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, to.width, to.height, GL_RGBA, GL_UNSIGNED_BYTE, client_memory() + pixels);
+  TextureSnapshot header;
+  memcpy(&header, client_memory() + pixels, sizeof header);
+  uint64_t plane = (uint64_t)from.width * from.height * 4;
+  if (header.magic != TEXTURE_SNAPSHOT_MAGIC || header.width != (u32)from.width ||
+      header.height != (u32)from.height || header.materials > 1 || !std::isfinite(header.epoch) ||
+      size != sizeof header + plane * (header.materials ? 7 : 1))
+    return 0;
+  flush_ground_stamps();
+  drop_ground((int)id);
+  Target &to = textures[(int)id];
+  size_target_like(to, from);
+  const u8 *at = client_memory() + pixels + sizeof header;
+  auto upload = [&](Target &target, bool floating) {
+    glBindTexture(GL_TEXTURE_2D, target.texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, from.width, from.height, GL_RGBA,
+                    floating ? GL_FLOAT : GL_UNSIGNED_BYTE, at);
+    at += plane * (floating ? 4 : 1);
+  };
+  upload(to, false);
+  if (header.materials) {
+    Ground &g = ground_of((int)id);
+    upload(g.substrate, false);
+    upload(g.coverage, false);
+    upload(g.surface, true);
+    g.epoch = header.epoch;
+  }
+  bind_target();
   return 1;
 }
 void GL_ENTRY(w2c_host_back_buffer)(struct w2c_host *, u32 width, u32 height) {
@@ -1559,7 +1636,8 @@ void GL_ENTRY(w2c_host_set_texture)(struct w2c_host *, u32 stage, u32 id) {
     bound[stage] = (int)id;
 }
 void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
-  flush_ground_stamps();
+  if (!ground_batch)
+    flush_ground_stamps();
   current_target = (int)id;
   if (id)
     gpu_aside("bake");
@@ -1676,7 +1754,7 @@ int ground_stamp_target;
 
 void queue_ground_stamp(Ground &g, u32 primitive, const void *vertices, u32 vertex_count,
                         const unsigned short *indices, u32 primitive_count) {
-  if (ground_stamp_target != current_target)
+  if (ground_stamp_target != current_target || ground_stamps.size() >= 256)
     flush_ground_stamps();
   // The surface's wetness rebases onto a later epoch between the stamps before it and the ones after.
   if (ground_kind != HOST_GROUND_DECAL && ground_seconds - g.epoch > 180) {
@@ -1994,7 +2072,16 @@ void GL_ENTRY(w2c_host_heat_trails)(struct w2c_host *, f32 alpha) {
                    {0, 0, 0, 1, 0xffffffff, 0, 0}, {w, h, 0, 1, 0xffffffff, 0, 0}, {w, 0, 0, 1, 0xffffffff, 0, 0}});
 }
 void GL_ENTRY(w2c_host_ground)(struct w2c_host *, u32 kind, f32 seconds) {
-  if (kind == HOST_GROUND_END)
+  if ((int)kind == HOST_GROUND_BATCH_BEGIN) {
+    ground_batch = true;
+    return;
+  }
+  if ((int)kind == HOST_GROUND_BATCH_END) {
+    flush_ground_stamps();
+    ground_batch = false;
+    return;
+  }
+  if (kind == HOST_GROUND_END && !ground_batch)
     flush_ground_stamps();
   ground_kind = (int)kind;
   ground_seconds = seconds;

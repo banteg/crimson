@@ -3,13 +3,14 @@ into its row, so the sliders stay together, and the box goes below them, beside 
 preset, the most detail by default. The box shows the mode drawn, so it stays clear where only classic draws.
 --- a/decomp/1.9/crimsonland/menus/options_menu_update.cpp
 +++ b/decomp/1.9/crimsonland/menus/options_menu_update.cpp
-@@ -104,7 +104,8 @@
+@@ -104,7 +104,9 @@
      float *xy,
      ui_segmented_slider_t *slider);
  bool ui_button_update(float *xy, ui_button_t *button);
 -void config_apply_detail_preset(void);
 +extern int rtx_render_mode;
 +void rtx_choose(int requested);
++int game_render_mode_available();
  void ui_menu_main_click_controls(void);
  void ui_menu_click_back_contextual(void);
  }
@@ -56,12 +57,13 @@ preset, the most detail by default. The box shows the mode drawn, so it stays cl
      ui_segmented_slider_update(
          (float *)&slider_position,
          (ui_segmented_slider_t *)&mouse_sensitivity_slider);
-@@ -220,6 +199,17 @@
+@@ -220,6 +199,18 @@
          config_blob.mouse_sensitivity = 1.0f;
      }
  
 +    static options_checkbox_t rtx_checkbox;
-+    rtx_checkbox.label = "RTX lighting";
++    rtx_checkbox.disabled = !game_render_mode_available();
++    rtx_checkbox.label = (char *)(rtx_checkbox.disabled ? "RTX lighting (main menu)" : "RTX lighting");
 +    rtx_checkbox.checked = rtx_render_mode;
 +    {
 +        options_vec2_t checkbox_position(panel_position.x + 18.0f, panel_position.y + 110.0f);

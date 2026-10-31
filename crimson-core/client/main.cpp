@@ -1450,6 +1450,14 @@ SDL_AppResult SDL_AppIterate(void *) {
   if (edr && !unattended)
     renderer_set_headroom(SDL_GetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1));
   bool running = w2c_game_game_frame(&game);
+#ifdef __EMSCRIPTEN__
+  static int mode_available = -1;
+  int available = w2c_game_game_render_mode_available(&game);
+  if (available != mode_available) {
+    mode_available = available;
+    MAIN_THREAD_EM_ASM({ Module.renderModeAvailable?.($0); }, available);
+  }
+#endif
   coop_send();
 #ifndef __EMSCRIPTEN__
   show_title();

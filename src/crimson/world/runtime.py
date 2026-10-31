@@ -11,6 +11,7 @@ from grim.rand import CrandLike
 from ..camera import CameraUpdate, camera_update_for_players
 from ..render.frame import RenderFrame
 from ..render.rtx.debug import RtxDebugView, draw_debug_label
+from ..render.rtx.materials import MaterialGroundRenderer
 from ..render.rtx.mode import RtxRenderMode
 from ..render.rtx.shockwaves import collect_pressure_fronts
 from ..render.world import viewport
@@ -207,6 +208,29 @@ class WorldRuntime:
         ui_render_aim_indicators(
             self._render_ctx(), show_aim=show_aim, aim_enhancement_fade=aim_enhancement_fade, entity_alpha=entity_alpha,
         )
+
+    def draw_menu_ground(self) -> None:
+        """Draw retained terrain without the finished run's lights, bodies, effects or debug view."""
+        self.render_resources.process_ground_pending()
+        ground = self.render_resources.ground
+        if ground is None:
+            return
+        view = self.view_transform()
+
+        def draw() -> None:
+            ground.draw_view(
+                view.camera, screen_w=view.screen_size.x, screen_h=view.screen_size.y,
+                out_w=view.out_size.x, out_h=view.out_size.y,
+            )
+
+        if isinstance(ground, MaterialGroundRenderer) and self.rtx_mode is RtxRenderMode.RTX:
+            with (
+                self.render_resources.hdr.scope(out_size=view.out_size),
+                ground.surface_scope(self.render_resources.resources, elapsed_ms=float(self.presentation.elapsed_ms)),
+            ):
+                draw()
+        else:
+            draw()
 
     def _render_ctx(self) -> WorldRenderCtx:
         return WorldRenderCtx(frame=self.build_render_frame(), view=self.view_transform())

@@ -6,7 +6,7 @@
 extern "C" int rtx_render_mode; // game/rtx.cpp
 static char watch_cache_build[65]; // the host's build, or "" for none
 static constexpr int WATCH_CACHE_KEPT = 16;
-static constexpr uint32_t WATCH_CACHE_MAGIC = 0x31435743; // "CWC1"
+static constexpr uint32_t WATCH_CACHE_MAGIC = 0x32435743; // "CWC2": material-aware terrain snapshots
 
 __attribute__((export_name("game_watch_cache"))) char *game_watch_cache() { return watch_cache_build; }
 
