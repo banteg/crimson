@@ -176,7 +176,8 @@ def main():
             ),
             *(
                 [cxx, *cxxflags, "-c", str(source), "-o", str(out / f"host_{source.stem}.o")]
-                for source in [*sorted(HERE.glob("*.cpp")), CORE / "game/sha256.cpp"]
+                # A dot-file is no input, as the client's identity leaves it out (scripts/build_identity.py).
+                for source in [*sorted(p for p in HERE.glob("*.cpp") if not p.name.startswith(".")), CORE / "game/sha256.cpp"]
             ),
         ],
     )

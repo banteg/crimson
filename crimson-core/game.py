@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from adapter import DIFFS, prototypes, sub, wrap
+from adapter import DIFFS, prototypes, sub, visible, wrap, write_if_changed
 
 HERE = Path(__file__).resolve().parent
 GAME = HERE / "game"
@@ -37,9 +37,8 @@ def game_sources(root):
             raise SystemExit(f"Replaced {image} sources not found: {', '.join(missing)}")
         found += sorted(
             str(path.relative_to(root))
-            for path in tree.rglob("*")
+            for path in visible(root, tree.rglob("*"))
             if path.suffix in (".c", ".cpp")
-            and ".claude" not in path.relative_to(root).parts
             and path.relative_to(tree).as_posix() not in replaced
             and str(path.relative_to(root)) not in verifier
         )
@@ -75,7 +74,7 @@ def game_header(path, text):
 
 
 def game_platform():
-    return sorted(GAME.glob("*.cpp"))
+    return visible(GAME, GAME.glob("*.cpp"))
 
 
 # The vendored C the platform layer links (game/leaderboard.cpp): zstd 1.5.7's
@@ -93,7 +92,7 @@ def _blank_comments(text):
 @functools.cache
 def _rng_draws(tree):
     # crt_rand and every recovered function that reaches it, by file name.
-    bodies = {path.stem: _blank_comments(path.read_text()) for path in tree.rglob("*") if path.suffix in (".c", ".cpp")}
+    bodies = {path.stem: _blank_comments(path.read_text()) for path in visible(tree, tree.rglob("*")) if path.suffix in (".c", ".cpp")}
     names = {"crt_rand"}
     while new := {
         stem
@@ -207,7 +206,7 @@ def com_defaults(root, headers):
                 name = re.match(r"STDMETHOD_?\((?:[^,()]*,)?\s*(\w+)\s*\)", method)[1]
                 lines.append(f'  {" ".join(method.split())} {{ platform_unimplemented("{interface}::{name}"); }}')
             lines.append("};")
-    (headers / "com_defaults.h").write_text("\n".join(lines) + "\n")
+    write_if_changed(headers / "com_defaults.h", "\n".join(lines) + "\n")
 
 
 def engine_globals(root):
@@ -291,7 +290,11 @@ def simulation_names(root):
     # executable's globals a simulation reads or writes.
     sources = json.loads((root / "crimson-core/sources.json").read_text())
     texts = [(root / rel).read_text() for rel in sources]
-    texts += [path.read_text() for path in (root / "crimson-core/host").glob("*.*") if path.is_file()]
+    texts += [
+        path.read_text()
+        for path in visible(root / "crimson-core/host", (root / "crimson-core/host").glob("*.*"))
+        if path.is_file()
+    ]
     return {name for text in texts for name in re.findall(r"[A-Za-z_]\w*", text)}
 
 
@@ -334,7 +337,6 @@ def heat_heads_header(root):
 
 
 def game_data(root, out, engine, simulation):
-    (out / "include/rtx_heat_heads.h").write_text(heat_heads_header(root))
     # wasm32 keeps the original pointer width, so each image's data keeps its
     # original layout: aggregates read through a first symbol, overreads and
     # interior names land on the original bytes. Engine state (Grim's, and the
@@ -421,7 +423,7 @@ def game_data(root, out, engine, simulation):
     lines += reset("portable_reset_data", "run", "presentation")
     lines += reset("portable_reset_simulation_data", "run")
     lines += [*reset("portable_reset_engine_data", "engine"), "}"]
-    (out / "data.cpp").write_text("\n".join(lines) + "\n")
+    write_if_changed(out / "data.cpp", "\n".join(lines) + "\n")
 
 
 # The executable's C++ static initializers, in the order of its .CRT$XCU table
@@ -491,8 +493,7 @@ def game_initializers(root, out):
     # through the CRT's void(void) type would not match.
     sources = {
         path.stem: path
-        for path in (root / "decomp/1.9/crimsonland").rglob("*.c*")
-        if ".claude" not in path.relative_to(root).parts
+        for path in visible(root, (root / "decomp/1.9/crimsonland").rglob("*.c*"))
     }
     lines = ['extern "C" {']
     for name in STATIC_INITIALIZERS:
@@ -504,4 +505,4 @@ def game_initializers(root, out):
             kind = definition[1]
         lines.append(f"{kind} {name}(void);")
     lines += ["void game_static_init() {", *(f"  {name}();" for name in STATIC_INITIALIZERS), "}", "}"]
-    (out / "initializers.cpp").write_text("\n".join(lines) + "\n")
+    write_if_changed(out / "initializers.cpp", "\n".join(lines) + "\n")

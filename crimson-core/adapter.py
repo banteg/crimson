@@ -20,6 +20,7 @@ import hashlib
 import json
 import re
 import subprocess
+import tempfile
 import textwrap
 from collections import Counter
 from pathlib import Path
@@ -42,7 +43,7 @@ def load_diffs(folders):
     """(patch:line of the hunk header, old text, new text) hunks by source path, in folder then name order."""
 
     hunks = {}
-    for patch in (path for folder in folders for path in sorted(folder.glob("*.patch"))):
+    for patch in (path for folder in folders for path in visible(folder, folder.glob("*.patch"))):
         lines = patch.read_text().splitlines(keepends=True)
         rel = None
         i = 0
@@ -171,20 +172,20 @@ def rule_definitions(txt):
     return [name for name, _ in _DEFINE_ON_BUILD.findall(code)]
 
 
-def _preprocess(cc, args, text):
+def _preprocess(cc, args, text, cwd):
     return subprocess.run(
-        [*cc, *args, "-x", "c++", "-E", "-P", "-"], input=text, capture_output=True, text=True, check=True,
+        [*cc, *args, "-x", "c++", "-E", "-P", "-"], input=text, capture_output=True, text=True, check=True, cwd=cwd,
     ).stdout
 
 
-def _expansions(cc, args, text, names):
+def _expansions(cc, args, text, names, cwd):
     """What each of `names` expands to after `text`, as `cc` preprocesses it with `args`, for each of RUN_BUILDS as
     CL_BUILD."""
 
     # Parenthesized, so a macro that expands to nothing still leaves its line.
     probe = text + "".join(f"__rule__ ({name}) __rule__\n" for name in names)
     return [
-        re.findall(r"^__rule__ \((.*)\) __rule__$", _preprocess(cc, [*args, f"-DCL_BUILD={build}"], probe), re.MULTILINE)
+        re.findall(r"^__rule__ \((.*)\) __rule__$", _preprocess(cc, [*args, f"-DCL_BUILD={build}"], probe, cwd), re.MULTILINE)
         for build in RUN_BUILDS
     ]
 
@@ -192,31 +193,33 @@ def _expansions(cc, args, text, names):
 def check_rules(root, cc, flags, first=HOOKS):
     """Every rule cl_rules.h names, with a target's `flags`, expands alike for every build, and to a condition, where a
     recovered source reads it: after `first` (host/hooks.h, which build.py includes ahead of every recovered source,
-    and which brings host/rules.h) and cl_rules.h, as `cc` preprocesses them."""
+    and which brings host/rules.h) and cl_rules.h, as `cc` preprocesses them, with absolute include paths. It runs in an
+    empty directory, as a recovered source's own holds no header for its quoted includes to find first."""
 
-    args = [*flags, "-I", str((root / CL_RULES).parent)]
-    header = f'#include "{Path(CL_RULES).name}"\n'
-    own, builtin = (set(_DEFINE_NAME.findall(_preprocess(cc, [*args, "-dM"], text))) for text in (header, ""))
-    own = [(name, call) for name, call in sorted(own - builtin) if name != "CL_BUILD"]
-    # A rule is a condition a source names bare; a function-like macro's bare name expands to nothing to compare.
-    if functions := [name for name, call in own if call]:
-        raise SystemExit(f"{CL_RULES} defines {', '.join(functions)} as a function; a rule is a condition, named bare")
-    names = sorted(name for name, _ in own)
-    rules = [name for name, *ways in zip(names, *_expansions(cc, args, header, names), strict=True) if len(set(ways)) > 1]
-    seen = _expansions(cc, [*args, "-include", str(first)], header, rules)
-    # Nothing, or the rule's own name (a function-like macro a bare use leaves alone), is no condition.
-    if undecided := [name for name, *ways in zip(rules, *seen, strict=True) if len(set(ways)) > 1 or ways[0] in ("", name)]:
-        raise SystemExit(
-            f"Rules {CL_RULES} names that host/rules.h doesn't define as the run's for this target "
-            f"({' '.join(cc + flags)}): {', '.join(undecided)}",
-        )
+    with tempfile.TemporaryDirectory() as cwd:
+        args = [*flags, "-I", str((root / CL_RULES).parent)]
+        header = f'#include "{Path(CL_RULES).name}"\n'
+        own, builtin = (set(_DEFINE_NAME.findall(_preprocess(cc, [*args, "-dM"], text, cwd))) for text in (header, ""))
+        own = [(name, call) for name, call in sorted(own - builtin) if name != "CL_BUILD"]
+        # A rule is a condition a source names bare; a function-like macro's bare name expands to nothing to compare.
+        if functions := [name for name, call in own if call]:
+            raise SystemExit(f"{CL_RULES} defines {', '.join(functions)} as a function; a rule is a condition, named bare")
+        names = sorted(name for name, _ in own)
+        rules = [name for name, *ways in zip(names, *_expansions(cc, args, header, names, cwd), strict=True) if len(set(ways)) > 1]
+        seen = _expansions(cc, [*args, "-include", str(first)], header, rules, cwd)
+        # Nothing, or the rule's own name (a function-like macro a bare use leaves alone), is no condition.
+        if undecided := [name for name, *ways in zip(rules, *seen, strict=True) if len(set(ways)) > 1 or ways[0] in ("", name)]:
+            raise SystemExit(
+                f"Rules {CL_RULES} names that host/rules.h doesn't define as the run's for this target "
+                f"({' '.join(cc + flags)}): {', '.join(undecided)}",
+            )
 
 
 def guarded_files(root, sources):
     """The `sources` and the headers every target compiles them with."""
 
     headers = (root / "tools/match/include", root / "third_party/headers")
-    return [*sources, *(str(h.relative_to(root)) for d in headers for h in sorted(d.glob("*.h")))]
+    return [*sources, *(str(h.relative_to(root)) for d in headers for h in visible(d, d.glob("*.h")))]
 
 
 def guards(root, hunks, sources):
@@ -331,6 +334,26 @@ def guard_targets(root):
 
     core = json.loads((root / "crimson-core/sources.json").read_text())
     return [(load_diffs(DIFFS), core), (load_diffs(GAME_DIFFS), core + game_sources(root))]
+
+
+def visible(base, paths):
+    """`paths` under `base`, sorted, but those a dot-file or dot-directory holds: what Finder, editors and tools leave in
+    a tree is no build's input, as scripts/build_identity.py leaves them out of the identity."""
+
+    return sorted(path for path in paths if not any(part.startswith(".") for part in path.relative_to(base).parts))
+
+
+# Every file write_if_changed wrote or found current in this run, so a build can drop what it no longer generates.
+GENERATED = set()
+
+
+def write_if_changed(path, text):
+    """Write a generated file only when its bytes change: one that stays the same keeps its time, so Ninja leaves
+    what reads it alone."""
+
+    GENERATED.add(path)
+    if not path.exists() or path.read_text() != text:
+        path.write_text(text)
 
 
 def replace(src, txt, old, new, count=1):

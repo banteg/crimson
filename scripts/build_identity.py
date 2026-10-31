@@ -101,6 +101,8 @@ def source_hashes(root: Path, patterns: tuple[str, ...]) -> dict[str, str]:
             path.relative_to(root).as_posix()
             for path in candidates
             if path.is_file() and not any(part == "__pycache__" for part in path.parts)
+            # Dot-files are no build's input, only what Finder and editors leave beside them.
+            and not any(part.startswith(".") for part in path.relative_to(root).parts)
             and path.name != "_build.json" and path.suffix not in {".pyc", ".pyo"}
         )
     return {path: file_hash(root / path) for path in sorted(paths)}
@@ -219,7 +221,10 @@ def client_identity(target: str, root: Path = ROOT, *, wabt: str | None = None, 
 
 def write_manifest(path: Path, result: dict[str, Any], artifacts: list[Path]) -> None:
     result["artifacts"] = {artifact.name: file_hash(artifact) for artifact in artifacts}
-    path.write_text(json.dumps(result, sort_keys=True, indent=2) + "\n")
+    # Whole or not at all: an interrupted write leaves a partial file beside the manifest, never in its place.
+    partial = path.with_name(path.name + ".partial")
+    partial.write_text(json.dumps(result, sort_keys=True, indent=2) + "\n")
+    partial.replace(path)
 
 
 def main() -> None:

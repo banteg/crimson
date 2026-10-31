@@ -187,3 +187,26 @@ def test_a_rule_cl_rules_defines_as_a_function_stops_the_build(monkeypatch: pyte
 
     with pytest.raises(SystemExit, match="CL_JINXED_FREEZE_ACTIVE"):
         adapter.check_rules(_rules_root(tmp_path, adapter, text), ["clang++"], VERIFIER)
+
+
+def test_the_rule_audit_reads_no_header_beside_where_it_runs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.syspath_prepend(str(ROOT / "crimson-core"))
+    adapter = importlib.import_module("adapter")
+    # A recovered source's own directory holds no header, so a quoted include never finds one beside the audit.
+    (tmp_path / "cl_rules.h").write_text("#define CL_STRAY_RULE (CL_BUILD != 10908)\n")
+    monkeypatch.chdir(tmp_path)
+
+    adapter.check_rules(ROOT, ["clang++"], VERIFIER)
+
+
+def test_a_hidden_patch_is_no_input_to_the_build(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.syspath_prepend(str(ROOT / "crimson-core"))
+    adapter = importlib.import_module("adapter")
+    # The build identity leaves dot-files out, so the build must not read them either.
+    patch = "--- a/one.cpp\n+++ b/one.cpp\n@@ -1 +1 @@\n-one\n+two\n"
+    (tmp_path / "01-one.patch").write_text(patch)
+    (tmp_path / ".local.patch").write_text(patch.replace("one.cpp", "other.cpp"))
+    # Hunks name their patch from crimson-core.
+    monkeypatch.setattr(adapter, "HERE", tmp_path)
+
+    assert list(adapter.load_diffs([tmp_path])) == ["one.cpp"]

@@ -114,6 +114,15 @@ def test_edits_and_new_untracked_game_inputs_change_the_identity(source: Path, p
     assert build.runtime_identity("game", source)["fingerprint"] != after["fingerprint"]
 
 
+@pytest.mark.parametrize("path", ["crimson-core/host/.DS_Store", "decomp/1.9/crimsonland/gameplay/.step.cpp.swp", "crimson-core/host/.cache/state"])
+def test_dot_files_beside_game_inputs_leave_the_identity_alone(source: Path, path: str) -> None:
+    before = build.runtime_identity("game", source)
+    left = source / path
+    left.parent.mkdir(parents=True, exist_ok=True)
+    left.write_bytes(b"\xff\xfe editor state")
+    assert build.runtime_identity("game", source)["fingerprint"] == before["fingerprint"]
+
+
 def test_python_content_tracks_its_sources_and_dependency_lock(source: Path) -> None:
     before = build.python_identity(source)
     game = build.runtime_identity("game", source)
