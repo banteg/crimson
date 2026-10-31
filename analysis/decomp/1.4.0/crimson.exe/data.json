@@ -916,6 +916,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452df4",
+      "name": "perk_id_fastloader",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452e78",
       "name": "creature_spawned_count",
       "program": "1.4.0/crimson.exe"

@@ -225,10 +225,22 @@
       "body_sha256": "2e013fe362e7f139346703d984ca2b08623f99446e5bb0c21e277c38a78d6053"
     },
     {
+      "name": "weapon_assign_player",
+      "address": "0x00403c00",
+      "end": "0x00403df3",
+      "body_sha256": "60fcf50e75060478ebeb6005a02279971d6de4f77c5db54d06d34df870e13c26"
+    },
+    {
       "name": "fx_spawn_sprite",
       "address": "0x00404040",
       "end": "0x004040d0",
       "body_sha256": "ce8a67c3a10bcc64bc9dd496979b3d60b3ec46b6da0769fbdb13e1ea434431d8"
+    },
+    {
+      "name": "weapon_name_get",
+      "address": "0x00404120",
+      "end": "0x00404329",
+      "body_sha256": "d6220933b2400030251b7e9f57a5a68b2ac2aa5ec3aa02ca4d3aa691beacbcb0"
     },
     {
       "name": "wrap_text_to_width_alloc",
@@ -589,6 +601,13 @@
       "address": "0x004374f8",
       "reference": "0x004061e7",
       "bytes": "b9f8744300"
+    },
+    {
+      "name": "freeware_text_buffer",
+      "address": "0x004474f8",
+      "reference": "0x0040412e",
+      "bytes": "68f8744400",
+      "build_only": true
     },
     {
       "name": "unused_effect_uv16_prefix_vec2",

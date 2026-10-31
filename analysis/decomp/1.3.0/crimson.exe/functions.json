@@ -383,6 +383,14 @@
     "size": 1
   },
   {
+    "address": "0x00403000",
+    "canonical_address": "0x0043D260",
+    "end": "0x00403082",
+    "evidence": "called",
+    "name": "sfx_play_panned",
+    "size": 130
+  },
+  {
     "address": "0x00403340",
     "canonical_address": "0x0041E840",
     "end": "0x004033C3",
@@ -442,7 +450,7 @@
     "address": "0x00403C00",
     "canonical_address": "0x00452D40",
     "end": "0x00403DF3",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "weapon_assign_player",
     "size": 499
   },
@@ -463,6 +471,14 @@
     "size": 306
   },
   {
+    "address": "0x00404020",
+    "canonical_address": "0x0041F8D0",
+    "end": "0x0040403E",
+    "evidence": "ordered",
+    "name": "bonus_try_spawn_on_kill",
+    "size": 30
+  },
+  {
     "address": "0x00404040",
     "canonical_address": "0x0041FBB0",
     "end": "0x004040D0",
@@ -474,7 +490,7 @@
     "address": "0x00404120",
     "canonical_address": "0x0041FC60",
     "end": "0x00404329",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "weapon_name_get",
     "size": 521
   },

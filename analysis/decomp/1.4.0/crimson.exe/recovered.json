@@ -315,6 +315,12 @@
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
     },
     {
+      "name": "sfx_play_panned",
+      "address": "0x00405630",
+      "end": "0x004056cc",
+      "body_sha256": "e69645371ce13580bfbabb0889cbbd4ace7b227995f12ed03278be1afa86b1cc"
+    },
+    {
       "name": "fx_queue_add",
       "address": "0x00405c80",
       "end": "0x00405d03",
@@ -1023,6 +1029,12 @@
       "reference": "0x0040fbed",
       "bytes": "d905c42d4500",
       "build_only": true
+    },
+    {
+      "name": "perk_id_fastloader",
+      "address": "0x00452df4",
+      "reference": "0x004068b3",
+      "bytes": "8b15f42d4500"
     },
     {
       "name": "creature_spawned_count",

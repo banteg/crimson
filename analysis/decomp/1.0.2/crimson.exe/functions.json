@@ -303,14 +303,6 @@
     "size": 1
   },
   {
-    "address": "0x00401440",
-    "canonical_address": "0x0041E8D0",
-    "end": "0x0040146D",
-    "evidence": "ordered",
-    "name": "input_aim_pov_left_active",
-    "size": 45
-  },
-  {
     "address": "0x00401630",
     "canonical_address": "0x0041F130",
     "end": "0x004016A5",
@@ -325,6 +317,14 @@
     "evidence": "ordered",
     "name": "angle_approach",
     "size": 322
+  },
+  {
+    "address": "0x00401800",
+    "canonical_address": "0x0043D260",
+    "end": "0x00401878",
+    "evidence": "ordered",
+    "name": "sfx_play_panned",
+    "size": 120
   },
   {
     "address": "0x004018E0",
@@ -344,26 +344,18 @@
   },
   {
     "address": "0x00401940",
-    "canonical_address": "0x0041FBB0",
+    "canonical_address": "0x0041E840",
     "end": "0x004019C9",
     "evidence": "ordered",
-    "name": "fx_spawn_sprite",
+    "name": "fx_queue_add",
     "size": 137
   },
   {
-    "address": "0x004019D0",
-    "canonical_address": "0x004411A0",
-    "end": "0x004019D5",
-    "evidence": "exact",
-    "name": "crimson_crt_empty_initializer_slot_54_thunk",
-    "size": 5
-  },
-  {
     "address": "0x004019E0",
-    "canonical_address": "0x004411B0",
+    "canonical_address": "0x0041E8D0",
     "end": "0x00401A0A",
-    "evidence": "referenced",
-    "name": "crimson_crt_empty_initializer_slot_54",
+    "evidence": "ordered",
+    "name": "input_aim_pov_left_active",
     "size": 42
   },
   {

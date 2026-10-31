@@ -772,6 +772,14 @@
     "size": 1
   },
   {
+    "address": "0x00405630",
+    "canonical_address": "0x0043D260",
+    "end": "0x004056CC",
+    "evidence": "recovered",
+    "name": "sfx_play_panned",
+    "size": 156
+  },
+  {
     "address": "0x00405C80",
     "canonical_address": "0x0041E840",
     "end": "0x00405D03",

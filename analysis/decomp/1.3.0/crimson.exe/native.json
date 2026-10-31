@@ -41242,7 +41242,9 @@
     4207824,
     4207856,
     4208592,
+    4209664,
     4210752,
+    4210976,
     4213344,
     4218096,
     4218592,
@@ -41509,5 +41511,5 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "6218b4b3a060572b741fb7570491d9137795fd542fd54f377096e76237acc465"
+  "maps_sha256": "065b91b7f70c5ef083b12f73e86e11523f456786f2e20d87ed5639e31e431ce2"
 }
