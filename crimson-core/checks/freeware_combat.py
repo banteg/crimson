@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
 
@@ -47,8 +48,9 @@ def creature(x, y, health):
 
 
 class Comparison:
-    def __init__(self, dll, exe):
+    def __init__(self, dll, exe, symbol):
         self.dll = dll
+        self.symbol = symbol
         self.pe = pe = NativeOracle(exe, symbols=SymbolTable({}), rand_state_address=0x432C40)
         # Keep collision, damage, sound choices, death, drop rolls and the RNG running in the PE.
         # Stub only sound playback, texture lookup and the render queue.
@@ -87,10 +89,10 @@ class Comparison:
         self.dll_globals("creature_spawned_count").value = 0
 
     def dll_globals(self, name):
-        return ctypes.c_int.in_dll(self.dll, name)
+        return ctypes.c_int.from_address(self.symbol(name))
 
     def address(self, pool):
-        return ctypes.addressof(ctypes.c_char.in_dll(self.dll, pool[0]))
+        return self.symbol(pool[0])
 
     def write(self, pool, slot, data):
         offset = struct.calcsize(pool[2]) * slot
@@ -148,7 +150,7 @@ class Comparison:
                 pool = 300 if kind == 10 else 240 if scenario == "fire" else 1
                 if scenario == "fire":
                     self.pe.write_f32(0x452DB8, 2)
-                    ctypes.c_float.in_dll(self.dll, "bonus_fire_bullets_timer").value = 2
+                    ctypes.c_float.from_address(self.symbol("bonus_fire_bullets_timer")).value = 2
                 self.write(
                     BULLET,
                     slot,
@@ -253,7 +255,7 @@ class Comparison:
                 data[1] = 0
             self.write(CREATURE, 0, data)
             self.write(CREATURE, 1, creature(450, 500, 120))
-            ctypes.c_float.in_dll(self.dll, "freeware_elapsed_seconds").value = 0
+            ctypes.c_float.from_address(self.symbol("freeware_elapsed_seconds")).value = 0
             for i in range(6):
                 clock = 0.5 + i * 0.05
                 pe.write_f32(0x452E94, 0.05)
@@ -301,6 +303,60 @@ class Comparison:
             if pickup == 2:
                 assert self.dll.combat_drop_weapon() == pe.read_i32(0x452E68)
             assert self.pe.call(0x422414).eax == self.dll.crt_rand(), ("reward", seed, "next rand")
+
+    def grants(self):
+        pe = self.pe
+
+        def read_string(pointer):
+            return pe.read(pointer, 1024).split(b"\x00", 1)[0]
+
+        def duplicate(call):
+            raw = read_string(call.arg_u32(0)) + b"\x00"
+            return pe.alloc(len(raw), data=raw)
+
+        pe.stub(0x42C2EC, duplicate)
+        pe.stub(0x421B81, 0)
+        for seed in (1, 42):
+            for perk in range(1, 33):
+                self.reset(seed)
+                pe.stub(0x4078B0, lambda call: call.arg_u32(0))
+                pe.call(0x407920)  # Native registration binds the perk IDs.
+                pe.write_u32(0x452DA8, perk)
+                pe.write_u32(0x452E70, 2)
+                pe.write_u32(0x438500, 1)
+                pe.write_f32(0x4384A0, 100)
+                pe.write_f32(0x4385DC, 30)
+                message = []
+                pe.stub(
+                    0x4078B0,
+                    lambda call, message=message: message.append(read_string(call.arg_u32(0)).decode("ascii")) or 0,
+                )
+                pe.rand_state = seed
+                # Accepted mouse click, through the native co-op copy at the common exit.
+                pe.run(0x415DD7, 0x416551, regs={"ebp": 0, "ebx": 2})
+                self.dll.combat_choose(perk)
+                assert self.dll.combat_experience() == pe.read_i32(0x4384F8)
+                assert self.dll.combat_health() == pe.read_f32(0x4384A0)
+                assert self.dll.combat_pending() == pe.read_i32(0x452E70)
+                assert self.dll.combat_level() == pe.read_i32(0x438500)
+                player = self.address(("player_state_table",))
+                assert ctypes.c_int.from_address(player + 0x15C).value == pe.read_i32(0x4385D4), (
+                    perk,
+                    seed,
+                    ctypes.c_int.from_address(player + 0x15C).value,
+                    pe.read_i32(0x4385D4),
+                )
+                assert ctypes.c_float.from_address(player + 0x164).value == pe.read_f32(0x4385DC)
+                for j in range(2):
+                    assert ctypes.string_at(player + 392 * j + 0x94, 192) == pe.read(0x43850C + 392 * j, 192)
+                assert ctypes.c_uint8.from_address(player + 12).value == pe.read_u8(0x438484)
+                assert self.dll.combat_message().decode() == (message[0] if message else ""), (
+                    perk,
+                    seed,
+                    self.dll.combat_message(),
+                    message,
+                )
+                assert self.pe.call(0x422414).eax == self.dll.crt_rand(), ("perk", perk, seed)
 
     def players(self):
         pe = self.pe
@@ -367,9 +423,93 @@ class Comparison:
             assert pe.call(0x422414).eax == self.dll.crt_rand(), ("player", weapon, "next rand")
 
 
+def check_client(dll, exe, address, target):
+    comparison = Comparison(dll, exe, address)
+    comparison.grants()
+    comparison.players()
+    comparison.creatures()
+    comparison.rewards()
+    comparison.projectiles()
+    print(
+        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls and 64 perk grants.",
+        flush=True,
+    )
+
+
+def check_web(stage, exe, sources):
+    # Emscripten builds the same translation units as the browser. WASI supplies stdio to the test host.
+    import wasmtime
+
+    compiler = shutil.which("em++")
+    if not compiler:
+        raise SystemExit("em++ is required for --web")
+    functions = (
+        "combat_reset",
+        "combat_projectiles",
+        "combat_creatures",
+        "combat_actors",
+        "combat_reward",
+        "combat_player",
+        "combat_arm",
+        "combat_choose",
+        "combat_message",
+        "combat_health",
+        "combat_level",
+        "combat_pending",
+        "combat_drop",
+        "combat_drop_weapon",
+        "combat_first_xp",
+        "combat_experience",
+        "crt_rand",
+    )
+    data = [p[0] for p in (CREATURE, BULLET, ROCKET, PARTICLE, SPRITE)] + [
+        "bonus_fire_bullets_timer",
+        "freeware_elapsed_seconds",
+        "player_state_table",
+        "creature_spawned_count",
+        "highscore_record_hits",
+    ]
+    out = stage / "combat.wasm"
+    subprocess.run(
+        [
+            compiler,
+            *game_flags(ROOT),
+            *sources,
+            "--no-entry",
+            "-sSTANDALONE_WASM",
+            *("-Wl,--export=" + name for name in (*functions, *data)),
+            "-o",
+            out,
+        ],
+        check=True,
+    )
+    engine = wasmtime.Engine()
+    store = wasmtime.Store(engine)
+    store.set_wasi(wasmtime.WasiConfig())
+    linker = wasmtime.Linker(engine)
+    linker.define_wasi()
+    exports = linker.instantiate(store, wasmtime.Module.from_file(engine, str(out))).exports(store)
+    exports["_initialize"](store)
+    memory = exports["memory"]
+
+    def pointer(offset):
+        return ctypes.addressof(memory.data_ptr(store).contents) + offset
+
+    def function(name):
+        fn = exports[name]
+        if name == "combat_message":
+            return lambda: ctypes.string_at(pointer(fn(store)))
+        converters = [float if str(param) in {"f32","f64"} else int for param in fn.type(store).params]
+        return lambda *args: fn(store, *(cast(arg) for cast,arg in zip(converters,args,strict=True)))
+
+    exports_host = SimpleNamespace(**{name: function(name) for name in functions})
+    check_client(exports_host, exe, lambda name: pointer(exports[name].value(store)), "WebAssembly")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("install", type=Path)
+    p.add_argument("--web", action="store_true", help="also compare Emscripten output (requires wasmtime)")
     args = p.parse_args()
     exe = args.install / "crimson.exe"
     spec = next(b for b in json.loads((ROOT / "decomp/builds.json").read_text())["builds"] if b["id"] == "1.4.0")
@@ -378,6 +518,7 @@ def main():
     )
     with tempfile.TemporaryDirectory() as tmp:
         stage = Path(tmp)
+        sources = [*game_sources(ROOT, stage), ROOT / "crimson-core/checks/freeware_combat.cpp"]
         lib = stage / "combat.so"
         compiler = shutil.which("clang++")
         if not compiler:
@@ -389,8 +530,7 @@ def main():
                 "-shared",
                 "-fPIC",
                 "-Wno-deprecated-declarations",
-                *game_sources(ROOT, stage),
-                ROOT / "crimson-core/checks/freeware_combat.cpp",
+                *sources,
                 "-o",
                 lib,
             ],
@@ -401,13 +541,12 @@ def main():
         dll.combat_creatures.argtypes = [ctypes.c_float] * 3
         dll.combat_actors.argtypes = [ctypes.c_int] * 3 + [ctypes.c_float]
         dll.combat_reward.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_bool]
-        comparison = Comparison(dll, exe)
         dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float]
-        comparison.players()
-        comparison.creatures()
-        comparison.rewards()
-        comparison.projectiles()
-        print(f"1.4.0 combat oracle passed {comparison.frames} frames.")
+        dll.combat_message.restype = ctypes.c_char_p
+        dll.combat_health.restype = ctypes.c_float
+        check_client(dll, exe, lambda name: ctypes.addressof(ctypes.c_char.in_dll(dll, name)), "native")
+        if args.web:
+            check_web(stage, exe, sources)
 
 
 if __name__ == "__main__":

@@ -122,8 +122,7 @@ void Game::fire_weapon(int index) {
 extern "C" {
 int perk_id_fastloader = 5;
 int sfx_play_panned(int sample, float, float) {
-  if (sample == 16)
-    play_sound(Sound::Reload);
+  play_original_sample(sample);
   return 0;
 }
 void player_start_reload();

@@ -384,10 +384,10 @@
   },
   {
     "address": "0x00401C80",
-    "canonical_address": "0x0041FC80",
+    "build_only": true,
     "end": "0x0040222B",
     "evidence": "ordered",
-    "name": "player_reset_all",
+    "name": "player_check_level",
     "size": 1451
   },
   {
@@ -458,7 +458,7 @@
     "address": "0x00404AC0",
     "canonical_address": "0x00425D80",
     "end": "0x00404B63",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "plaguebearer_spread_infection",
     "size": 163
   },
@@ -525,7 +525,7 @@
     "address": "0x004062A0",
     "canonical_address": "0x00428140",
     "end": "0x004062BB",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "creature_alloc_slot",
     "size": 27
   },
@@ -539,10 +539,10 @@
   },
   {
     "address": "0x004062E0",
-    "canonical_address": "0x00428210",
+    "build_only": true,
     "end": "0x00406795",
     "evidence": "ordered",
-    "name": "creatures_none_active",
+    "name": "creature_spawn_random",
     "size": 1205
   },
   {

@@ -48,12 +48,15 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
             recovered / name
             for name in (
                 "creatures/creature_spawn.cpp",
+                "creatures/creature_spawn_random.cpp",
+                "bonuses/bonus_spawn_at.cpp",
                 "creatures/creature_update_all.cpp",
                 "creatures/creature_find_nearest.cpp",
                 "creatures/plaguebearer_spread_infection.cpp",
                 "weapons/weapon_assign_player.cpp",
                 "weapons/player_start_reload.cpp",
                 "perks/perks_generate_choices.cpp",
+                "perks/player_check_level.cpp",
                 "weapons/weapon_name_get.cpp",
                 "creatures/creature_alloc_slot.cpp",
                 "creatures/creature_find_in_radius.cpp",

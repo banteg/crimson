@@ -183,8 +183,10 @@ void Game::choose_perk(int choice) {
     run.health = .1f;
     break;
   }
-  for (int i = 0; i < players(); ++i)
-    std::copy(run.perks.begin(), run.perks.end(), player_state_table[i].freeware.perks);
+  for (auto &p : player_state_table)
+    std::copy(run.perks.begin(), run.perks.end(), p.freeware.perks);
+  if (id == 10)
+    player_state_table[0].freeware.plaguebearer = 1;
   --run.pending;
   run.choices.clear();
   screen = Screen::Playing;
@@ -192,7 +194,7 @@ void Game::choose_perk(int choice) {
     message = hints[id - 26];
     if (id != 29)
       for (char &c : message)
-        if (c != ' ' && crt_rand() % 5 < 2)
+        if (c != ' ' && (id == 30 ? crt_rand() % 2 == 0 : crt_rand() % 5 < 2))
           c = char('a' + crt_rand() % 26);
     screen = Screen::Message;
   }

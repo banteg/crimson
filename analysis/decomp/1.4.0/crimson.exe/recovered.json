@@ -387,6 +387,13 @@
       "body_sha256": "91b68a8b8fc0ffc254f39a4cb7b976fff31ae226ed7086a046a74aa09eb45bc8"
     },
     {
+      "name": "player_check_level",
+      "address": "0x00408600",
+      "end": "0x00408cea",
+      "body_sha256": "110c076b74596fffb34f1bbe8e649a48aa72d06684299096fea022c4c6c697a0",
+      "build_only": true
+    },
+    {
       "name": "perks_generate_choices",
       "address": "0x00408cf0",
       "end": "0x00408db8",
@@ -463,6 +470,13 @@
       "address": "0x0040f630",
       "end": "0x0040f64c",
       "body_sha256": "77f4a1d092e4b893bbd26666db850c7f85deedf1eeea560c12be582a739d3aa1"
+    },
+    {
+      "name": "creature_spawn_random",
+      "address": "0x0040f650",
+      "end": "0x0040fb70",
+      "body_sha256": "e488d5db61703c03ef5342bbdf47300713bf1d998366101a8b9c90403c68b969",
+      "build_only": true
     },
     {
       "name": "creature_spawn",

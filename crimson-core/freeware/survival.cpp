@@ -74,8 +74,10 @@ void Game::start() {
   std::memset(particle_pool, 0, sizeof(particle_pool));
   std::memset(secondary_projectile_pool, 0, sizeof(secondary_projectile_pool));
   creature_reset_all();
-  for (int i = 0; i < 512; ++i)
+  for (int i = 0; i < 512; ++i) {
     creature_pool[i].freeware.player = i % players();
+    creature_pool[i].ai_mode = 1;
+  }
   std::memset(projectile_pool, 0, sizeof(projectile_pool));
   highscore_record_shots_fired = highscore_record_hits = 0;
   freeware_hit_sound_timer = 0;

@@ -167,6 +167,8 @@ const char *perk_description(int);
 extern "C" {
 int crt_rand();
 int creature_alloc_slot();
+unsigned char creature_spawn_random(const vec2f_t *);
+void bonus_spawn_at(const vec2f_t *);
 int creature_spawn(const vec2f_t *, const effect_color_t *, int);
 int creature_find_nearest(const vec2f_t *);
 int creature_find_in_radius(const vec2f_t *, float);

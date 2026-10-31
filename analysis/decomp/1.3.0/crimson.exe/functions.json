@@ -519,6 +519,14 @@
     "size": 441
   },
   {
+    "address": "0x004054C0",
+    "build_only": true,
+    "end": "0x00405BA2",
+    "evidence": "ordered",
+    "name": "player_check_level",
+    "size": 1762
+  },
+  {
     "address": "0x00405BB0",
     "canonical_address": "0x004045A0",
     "end": "0x00405C84",
@@ -680,6 +688,14 @@
     "evidence": "recovered",
     "name": "creatures_none_active",
     "size": 28
+  },
+  {
+    "address": "0x0040B550",
+    "build_only": true,
+    "end": "0x0040BA65",
+    "evidence": "ordered",
+    "name": "creature_spawn_random",
+    "size": 1301
   },
   {
     "address": "0x0040BA70",

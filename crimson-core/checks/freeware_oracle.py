@@ -102,6 +102,8 @@ def check_choices(oracle: NativeOracle, lines: list[str]) -> None:
             oracle.rand_state = 1234
             oracle.call(0x408600)
             assert oracle.read_u32(0x438500) == int(level)
+            flags=oracle.read(0x43C598,48)
+            assert f"levelroll {level} {oracle.call(0x422414).eax} {flags.hex()}" in lines
             actual = oracle.read(0x442AF8, 128)
             assert actual == bytes.fromhex(body), (
                 level,

@@ -12,6 +12,7 @@ void play_original_sample(int) {}
 } // namespace freeware
 extern "C" {
 extern float freeware_elapsed_seconds;
+extern unsigned char perk_choice_flags[48];
 extern int creature_spawned_count;
 int creature_spawn(const vec2f_t *, const effect_color_t *, int);
 }
@@ -203,6 +204,10 @@ int main() {
     g.run.experience = g.next_level_xp() + 2;
     g.update_career(1.f / 60);
     assert(g.run.level == level && g.run.pending == 1 && creature_pool[0].active);
+    std::printf("levelroll %d %d ", level, crt_rand());
+    for (unsigned char flag : perk_choice_flags)
+      std::printf("%02x", flag);
+    std::puts("");
     std::printf("boss %d %d ", level, g.run.experience);
     for (auto c : *reinterpret_cast<unsigned char (*)[sizeof(creature_t)]>(&creature_pool[0]))
       std::printf("%02x", c);

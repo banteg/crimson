@@ -102,6 +102,12 @@
       ],
       "sources": [
         {
+          "path": "decomp/1.4/crimson/crimson/bonuses/bonus_spawn_at.cpp",
+          "configs": [
+            "tools/match/scratches/bonus_spawn_at"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/console/console_cmd_open_url.cpp",
           "configs": [
             "tools/match/scratches/console_cmd_open_url"
@@ -153,6 +159,12 @@
           "path": "decomp/1.4/crimson/crimson/creatures/creature_spawn.cpp",
           "configs": [
             "tools/match/scratches/creature_spawn"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_spawn_random.cpp",
+          "configs": [
+            "tools/match/scratches/creature_spawn_random"
           ]
         },
         {
@@ -228,6 +240,12 @@
           "path": "decomp/1.4/crimson/crimson/perks/perks_generate_choices.cpp",
           "configs": [
             "tools/match/scratches/perks_generate_choices"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/perks/player_check_level.cpp",
+          "configs": [
+            "tools/match/scratches/player_check_level"
           ]
         },
         {

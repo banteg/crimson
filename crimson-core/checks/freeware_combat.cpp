@@ -71,3 +71,12 @@ extern "C" void combat_player(float dt, int keys, float x, float y) {
   p.spread = game.run.spread;
   p.aim_heading = game.run.aim_angle;
 }
+extern "C" void combat_choose(int id) {
+  game.run.pending = 2;
+  game.run.choices = {id};
+  game.choose_perk(0);
+}
+extern "C" const char *combat_message() { return game.message.c_str(); }
+extern "C" float combat_health() { return game.run.health; }
+extern "C" int combat_level() { return game.run.level; }
+extern "C" int combat_pending() { return game.run.pending; }
