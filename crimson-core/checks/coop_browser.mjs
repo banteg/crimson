@@ -245,6 +245,8 @@ async function open(name, origin, { webrtc = true } = {}) {
   await send("Emulation.setFocusEmulationEnabled", { enabled: true });
   if (!webrtc) await send("Page.addScriptToEvaluateOnNewDocument", { source: "delete window.RTCPeerConnection;" });
   else await send("Page.addScriptToEvaluateOnNewDocument", { source: `
+    const displayFrame = requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = cb => displayFrame(t => { if (!window.testHoldDisplay) cb(t); });
     window.RTCPeerConnection = class extends RTCPeerConnection {
       constructor(config) {
         // Both peers run on loopback. An external STUN or TURN server would
@@ -572,6 +574,14 @@ try {
   await Promise.all([host.shot("lobby"), guest.shot("lobby")]);
   await survival(host, guest);
 
+  const beforeDisplayStall = await Promise.all([host, guest].map(p => p.confirmed()));
+  for (const p of [host, guest]) await p.evaluate(() => { window.testHoldDisplay = true; });
+  try {
+    await both("both visible pages play through a display stall", async p =>
+      (await p.confirmed()) >= beforeDisplayStall[p === host ? 0 : 1] + 60, 8000);
+  } finally {
+    for (const p of [host, guest]) await p.evaluate(() => { window.testHoldDisplay = false; });
+  }
   await fight();
   await Promise.all([host.shot("run"), guest.shot("run")]);
 

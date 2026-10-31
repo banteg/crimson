@@ -47,6 +47,34 @@ async function settle() {
 }
 const other = (role) => (role === "host" ? "guest" : "host");
 
+it("rescues a visible co-op frame when display callbacks stop, and delivers each handle once", () => {
+  const create = vm.runInNewContext(source + "\ncoopFrameClock");
+  let time = 0, id = 0;
+  const native = new Map(), calls = [];
+  const frames = create(fn => (native.set(++id, fn), id), key => native.delete(key), () => time);
+  const first = frames.request(t => { calls.push(t); frames.request(t => calls.push(t)); });
+  const late = native.get(first);
+  time = 99;
+  frames.pump(false);
+  assert.deepEqual(calls, []);
+  time = 100;
+  frames.pump(false);
+  late(time);
+  frames.pump(false);
+  assert.deepEqual(calls, [100]);
+  time = 116;
+  native.get(2)(time);
+  assert.deepEqual(calls, [100, 116]);
+  const hidden = frames.request(t => calls.push(t)), stale = native.get(hidden);
+  time = 121;
+  frames.pump(false);
+  frames.pump(true);
+  stale(time);
+  frames.cancel(frames.request(t => calls.push(t)));
+  frames.pump(true);
+  assert.deepEqual(calls, [100, 116, 121]);
+});
+
 // Timers run only when a test advances the clock; sockets and peer connections deliver on the event loop. Each
 // timer belongs to the page that set it.
 function clock() {

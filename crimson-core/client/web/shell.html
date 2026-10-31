@@ -649,7 +649,10 @@
     // connection's changes after the frame.
     current.onstate = (state) => queueMicrotask(() => {
       if (current !== coop) return;
-      if ((state === "error" || state === "closed") && coopSession) coopEnd(COOP_DISCONNECTED);
+      if (state === "error" || state === "closed") {
+        if (coopSession) coopEnd(COOP_DISCONNECTED);
+        frameSource();
+      }
       if (state === "connected") coopConnect();
       coopShow(0);
     });
@@ -813,33 +816,39 @@
   };
   // A page that goes tells the partner's at once.
   addEventListener("pagehide", () => coop?.close());
-  // A hidden tab gets no animation frames, which run the game's loop (SDL's on Emscripten), and its timers slow to
-  // one a second: while co-op is open, a hidden page's frames come from a worker's timer, which browsers leave
-  // alone, so the session plays on (on neutral records, as in a window in the background). Each frame runs once,
-  // whichever source comes first.
-  const animationFrame = requestAnimationFrame.bind(window), framesDue = new Set();
+  // Some visible windows also stop receiving display callbacks while timers
+  // and WebRTC keep running. Give those a 20 Hz fallback after 100 ms of
+  // silence. Hidden tabs use the worker at 60 Hz for their neutral inputs.
+  const coopFrames = coopFrameClock(requestAnimationFrame.bind(window), cancelAnimationFrame.bind(window), () => performance.now());
+  window.requestAnimationFrame = coopFrames.request;
+  window.cancelAnimationFrame = coopFrames.cancel;
   let frameWorker = null;
-  window.requestAnimationFrame = (callback) => {
-    const run = (time) => framesDue.delete(run) && callback(time);
-    framesDue.add(run);
-    return frameWorker ? 0 : animationFrame(run);
-  };
   function frameSource() {
-    const background = document.hidden && coop !== null;
-    if (background === (frameWorker !== null)) return;
-    if (background) {
-      const url = URL.createObjectURL(new Blob(["setInterval(() => postMessage(0), 1000 / 60);"], { type: "text/javascript" }));
+    if (!coop || coop.state === "error" || coop.state === "closed") {
+      frameWorker?.terminate();
+      frameWorker = null;
+      return;
+    }
+    if (!frameWorker) {
+      const url = URL.createObjectURL(new Blob([`
+        let timer;
+        onmessage = ({data: hidden}) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => postMessage(0), hidden ? 1000 / 60 : 50);
+        };
+      `], { type: "text/javascript" }));
       frameWorker = new Worker(url);
       URL.revokeObjectURL(url);
-      frameWorker.onmessage = () => {
-        const time = performance.now();
-        for (const run of [...framesDue]) run(time);
+      const worker = frameWorker;
+      worker.onmessage = () => {
+        if (frameWorker !== worker) return;
+        // Arm one wake before drawing. An expensive frame can leave at most
+        // one wake in the main thread's queue.
+        worker.postMessage(document.hidden);
+        coopFrames.pump(document.hidden);
       };
-    } else {
-      frameWorker.terminate();
-      frameWorker = null;
-      for (const run of framesDue) animationFrame(run);
     }
+    frameWorker.postMessage(document.hidden);
   }
   document.addEventListener("visibilitychange", frameSource);
 

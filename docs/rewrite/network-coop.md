@@ -1400,6 +1400,11 @@ retakes its seat. The old peer connection keeps delivering until the reply
 comes or a moment passes. Relayed frames are binary room frames
 `[u8 channel][payload]` (telemetry `ws-relay`).
 
+**Browser frame source.** A co-op page uses native animation frames while they arrive.
+If a visible window goes 100 ms without one, a worker services pending callbacks at
+20 Hz until the display resumes. In a hidden tab it does so at 60 Hz. Each callback
+runs once and can still be canceled through its browser handle.
+
 **Tick backpressure.** On either path the browser allows two tick packets’
 worth of queued bytes, capped at 432 bytes. While the queue drains, the newest
 unsent tick replaces the previous one and expires after 50 ms. Reliable

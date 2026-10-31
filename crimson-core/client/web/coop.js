@@ -724,3 +724,37 @@ function createCoop({
   };
   return api;
 }
+
+// A native callback and a worker tick may race. Whichever runs it first
+// removes the handle; callbacks requested during dispatch belong to the next
+// frame. The browser's native handle remains usable by cancelAnimationFrame.
+function coopFrameClock(request, cancel, now) {
+  const pending = new Map();
+  let lastNative = now(), lastPump = -Infinity;
+  return {
+    request(callback) {
+      const id = request(time => {
+        if (!pending.delete(id)) return;
+        lastNative = now();
+        callback(time);
+      });
+      pending.set(id, callback);
+      return id;
+    },
+    cancel(id) {
+      pending.delete(id);
+      cancel(id);
+    },
+    pump(hidden) {
+      const time = now();
+      // Timer messages queued behind a blocked main thread share one pass.
+      if (!pending.size || (!hidden && time - lastNative < 100) || time - lastPump < (hidden ? 8 : 25)) return;
+      lastPump = time;
+      for (const [id, callback] of [...pending]) {
+        if (!pending.delete(id)) continue;
+        cancel(id);
+        callback(time);
+      }
+    },
+  };
+}
