@@ -2,7 +2,9 @@
 // tick each player's four f32 axes and flag word (player one first), the command count and each command as (kind,
 // argument). A perk command carries no player: the core knows whose perk menu is open.
 
-import { ClBuild, type CustomQuest, GameMode, type Replay } from "./replay";
+import { BUILDS } from "./api-types";
+import { concat, hex, sha256 } from "./crypto";
+import { ClBuild, type CustomQuest, GameMode, type Replay, SEED_BITS, VERIFIED_RULES } from "./replay";
 
 export const CONFIG_BYTES = 69 * 4;
 const SEED_WORD = 0;
@@ -125,45 +127,71 @@ export function encodeTransport(replay: Replay): Uint8Array {
 // count, which the stream gained later; a co-op run hashes its whole stream, the count included. (A ranked run's
 // weapon usage words are zero, so the shifted one-player bytes never spell a co-op stream.) A rules-2 run tags those
 // bytes with its rules, and a run of another build than 1.9.93 tags that with its build, so the same inputs under
-// 1.9.8's rules are another run; 1.9.93's ids, which predate builds, stay as they were.
-export function runIdentity(transport: Uint8Array): Uint8Array {
-  const view = new DataView(transport.buffer, transport.byteOffset, transport.byteLength);
-  const rules = view.getUint32(RULES_WORD * 4, true);
-  const build = view.getUint32(BUILD_WORD * 4, true);
-  // Freeze the old identity independently of the appended config words.
-  const legacy = new Uint8Array(transport.length - (CONFIG_BYTES - RULES_WORD * 4));
-  legacy.set(transport.subarray(0, RULES_WORD * 4));
-  legacy.set(transport.subarray(CONFIG_BYTES), RULES_WORD * 4);
+// 1.9.8's rules are another run; 1.9.93's ids, which predate builds, stay as they were. `claim` reads the stream as
+// it would stream from another seed, under other rules or another build's rules: only those three words differ.
+export function runIdentity(transport: Uint8Array, claim: Claim = claimOf(transport)): Uint8Array {
+  const { seed, rules, build } = claim;
   if (rules !== 1 && rules !== 2) throw new TransportError(`Unsupported rules ${rules}`);
-  const identity = rules === 1 ? legacyIdentity(legacy) : tagged("crimson:run:rules\0", rules, legacy);
-  return build === ClBuild.V1_9_93 ? identity : tagged("crimson:run:build\0", build, identity);
-}
-
-// `transport`'s ticks as they stream from `seed` under `rules` and `clBuild`'s rules: only those three words differ.
-export function asClaimed(transport: Uint8Array, seed: number, rules: number, clBuild: number): Uint8Array {
-  const bytes = transport.slice();
-  const view = new DataView(bytes.buffer);
-  view.setUint32(SEED_WORD * 4, seed, true);
-  view.setUint32(RULES_WORD * 4, rules, true);
-  view.setUint32(BUILD_WORD * 4, clBuild, true);
+  const tags = concat(
+    ...(build === ClBuild.V1_9_93 ? [] : [tag("crimson:run:build\0", build)]),
+    ...(rules === 1 ? [] : [tag("crimson:run:rules\0", rules)]),
+  );
+  // Freeze the old identity independently of the appended config words, and a rules-1 one-player run's without
+  // its player count.
+  const players = new DataView(transport.buffer, transport.byteOffset, transport.byteLength).getUint32(PLAYERS_WORD * 4, true);
+  const config =
+    rules === 1 && players === 1
+      ? [transport.subarray(0, PLAYERS_WORD * 4), transport.subarray(PLAYERS_WORD * 4 + 4, RULES_WORD * 4)]
+      : [transport.subarray(0, RULES_WORD * 4)];
+  // One copy of the stream: a long run's is tens of megabytes, and a Worker holds 128.
+  const bytes = concat(tags, ...config, transport.subarray(CONFIG_BYTES));
+  new DataView(bytes.buffer).setUint32(tags.length + SEED_WORD * 4, seed, true);
   return bytes;
 }
 
-// `bytes` after a tag, its NUL included, and a little-endian word.
-function tagged(tag: string, word: number, bytes: Uint8Array): Uint8Array {
-  const head = new TextEncoder().encode(tag);
-  const out = new Uint8Array(head.length + 4 + bytes.length);
-  out.set(head);
-  new DataView(out.buffer).setUint32(head.length, word, true);
-  out.set(bytes, head.length + 4);
-  return out;
+// The words a stream claims besides its inputs.
+export interface Claim {
+  seed: number;
+  rules: number;
+  build: number;
 }
 
-function legacyIdentity(transport: Uint8Array): Uint8Array {
-  const at = PLAYERS_WORD * 4;
-  if (new DataView(transport.buffer, transport.byteOffset + at, 4).getUint32(0, true) !== 1) return transport;
-  const bytes = new Uint8Array(transport.length - 4);
-  bytes.set(transport.subarray(0, at));
-  bytes.set(transport.subarray(at + 4), at);
+function claimOf(transport: Uint8Array): Claim {
+  const view = new DataView(transport.buffer, transport.byteOffset, transport.byteLength);
+  const word = (index: number) => view.getUint32(index * 4, true);
+  return { seed: word(SEED_WORD), rules: word(RULES_WORD), build: word(BUILD_WORD) };
+}
+
+// A tag, its NUL included, and a little-endian word.
+function tag(text: string, word: number): Uint8Array {
+  const head = new TextEncoder().encode(text);
+  const bytes = new Uint8Array(head.length + 4);
+  bytes.set(head);
+  new DataView(bytes.buffer).setUint32(head.length, word, true);
   return bytes;
+}
+
+// A run's twins: the ids its play takes under other claims that verify alike. A play ranks on one board only, and
+// anyone could rewrite a public replay and sign it again: its build, and its rules with it, for another build's
+// board, or a one-player run's seed by bit 31, which rand never reads (SEED_BITS), and its result's rng_state with
+// it, for any board. So a run is refused once a twin of it was taken, whoever took it: its ticks under every other
+// build, each under every rules this service verifies, and a one-player run's from its other seed under its own
+// build and rules too. Co-op seeds keep bit 31 clear (runs.ts roomReason). Its own build's other rules make no twin:
+// a play's runs under the first ranked rules and the current ones both rank.
+export async function twinIds(transport: Uint8Array, replay: Replay): Promise<string[]> {
+  const { seed, player_count, cl_build } = replay.run;
+  const seeds = player_count > 1 ? [seed] : [seed, (seed ^ ~SEED_BITS) >>> 0];
+  const claims = seeds.flatMap((claimed) =>
+    Object.values(BUILDS).flatMap((build) =>
+      VERIFIED_RULES.filter((rules) => build !== cl_build || (claimed !== seed && rules === replay.rules)).map((rules) => ({
+        seed: claimed,
+        rules,
+        build,
+      })),
+    ),
+  );
+  // One identity at a time, each as long as the stream.
+  const ids: string[] = [];
+  for (const claim of claims) ids.push(hex(await sha256(runIdentity(transport, claim))));
+  return ids;
 }

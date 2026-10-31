@@ -36,6 +36,8 @@ export const SEAT_KEY_BYTES = 32;
 export const SEED_BITS = 0x7fffffff;
 // The simulation rules this service verifies (src/crimson/game_version.py REPLAY_RULES).
 export const REPLAY_RULES = 2;
+// The rules this service verifies: the first ranked runs' and the current ones.
+export const VERIFIED_RULES = [1, REPLAY_RULES];
 const MAX_FILE_BYTES = 65 * 1024 * 1024;
 const MAX_PAYLOAD_BYTES = 64 * 1024 * 1024;
 const MAX_WINDOW_BYTES = 8 * 1024 * 1024;

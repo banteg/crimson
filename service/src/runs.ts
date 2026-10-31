@@ -3,12 +3,12 @@
 import { concat, COOP_RUN_DOMAIN, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
-import { buildOf, BUILDS, FIXED_WEAPON_BONUSES, FIXED_WEAPON_PERKS, type Signals, type Timeline } from "./api-types";
-import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError, SEED_BITS } from "./replay";
+import { buildOf, FIXED_WEAPON_BONUSES, FIXED_WEAPON_PERKS, type Signals, type Timeline } from "./api-types";
+import { type CustomQuest, decodeReplay, inflateReplay, type Replay, ReplayError, SEED_BITS, VERIFIED_RULES } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
 import { withBuild } from "./paths";
-import { asClaimed, encodePortableQuest, encodeTransport, runIdentity, TransportError } from "./transport";
+import { encodePortableQuest, encodeTransport, runIdentity, TransportError, twinIds } from "./transport";
 import questDsl from "./quest-dsl.json";
 import { runGround, SIZE } from "../web/src/terrain/rules";
 import { type Verdict, verifyRun } from "./verify";
@@ -17,28 +17,6 @@ const MAX_BODY_BYTES = 16 * 1024 * 1024;
 const NAME_MAX_CHARS = 31;
 // The replay format's most players.
 const MAX_SIGNERS = 4;
-// The rules this service verifies: the first ranked runs' and the current ones.
-const VERIFIED_RULES = [1, REPLAY_RULES];
-
-// A run's twins: the ids its play takes under other claims that verify alike. A play ranks on one board only, and
-// anyone could rewrite a public replay and sign it again: its build, and its rules with it, for another build's
-// board, or a one-player run's seed by bit 31, which rand never reads (SEED_BITS), and its result's rng_state with
-// it, for any board. So a run is refused once a twin of it was taken, whoever took it: its ticks under every other
-// build, each under every rules this service verifies, and a one-player run's from its other seed under its own
-// build and rules too. Co-op seeds keep bit 31 clear (roomReason). Its own build's other rules make no twin: a
-// play's runs under the first ranked rules and the current ones both rank.
-function twinIds(transport: Uint8Array, replay: Replay): Promise<string[]> {
-  const { seed, player_count, cl_build } = replay.run;
-  const seeds = player_count > 1 ? [seed] : [seed, (seed ^ ~SEED_BITS) >>> 0];
-  const claims = seeds.flatMap((claimed) =>
-    Object.values(BUILDS).flatMap((build) =>
-      VERIFIED_RULES.filter((rules) => build !== cl_build || (claimed !== seed && rules === replay.rules)).map((rules) =>
-        asClaimed(transport, claimed, rules, build),
-      ),
-    ),
-  );
-  return Promise.all(claims.map(async (claim) => hex(await sha256(runIdentity(claim)))));
-}
 
 // A player's signature over the run: the one-player envelope's top-level name, key and signature, or one entry of a
 // co-op envelope's `signers`, whose signature binds its seat too.

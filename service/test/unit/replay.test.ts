@@ -1,11 +1,13 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { setFlagsFromString } from "node:v8";
+import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vitest";
 import { type Head, PayloadError, Reader } from "../../src/msgpack";
 import { outcomeReasons, rankedBoard, unrankedReasons } from "../../src/ranked";
-import { ClBuild, decodeReplay, inflateReplay, ReplayError, validateReplay } from "../../src/replay";
-import { encodePortableQuest, encodeTransport, runIdentity, TransportError } from "../../src/transport";
+import { ClBuild, decodeReplay, inflateReplay, ReplayError, Ticks, validateReplay } from "../../src/replay";
+import { encodePortableQuest, encodeTransport, runIdentity, TransportError, twinIds } from "../../src/transport";
 import questDsl from "../../src/quest-dsl.json";
 import vectors from "../vectors.json";
 
@@ -73,6 +75,39 @@ it("a 1.9.8 run's id names its build; 1.9.93's ids stay as they were", () => {
   expect(sha256(identity)).not.toBe(vectors.rules_1_9_8_run.run_id);
   expect(new TextDecoder().decode(identity.subarray(0, 18))).toBe("crimson:run:rules\0");
   expect(new TextDecoder().decode(runIdentity(encodeTransport(replay)).subarray(0, 18))).toBe("crimson:run:build\0");
+});
+
+it("a long run's twins hash one at a time, each from a single copy of its stream", async () => {
+  setFlagsFromString("--expose-gc");
+  const gc = runInNewContext("gc") as () => void;
+  const recorded = decodeReplay(inflateReplay(base64(vectors.rules_1_9_8_run.file)));
+  const length = 1_000_000;
+  const replay = { ...recorded, ticks: new Ticks(length, 1, new Float32Array(length * 4), new Uint32Array(length), new Map()) };
+  const transport = encodeTransport(replay);
+  // A plain wrapper rather than a spy, which would keep every identity it was called with.
+  const digest = crypto.subtle.digest;
+  gc();
+  const floor = process.memoryUsage().arrayBuffers;
+  let hashed = 0;
+  let held = 0;
+  crypto.subtle.digest = async (algorithm, data) => {
+    // Freed buffers leave the count a turn after a collection.
+    gc();
+    await new Promise(setImmediate);
+    gc();
+    hashed += 1;
+    held = Math.max(held, process.memoryUsage().arrayBuffers - floor);
+    return digest.call(crypto.subtle, algorithm, data);
+  };
+  let ids: string[];
+  try {
+    ids = await twinIds(transport, replay);
+  } finally {
+    crypto.subtle.digest = digest;
+  }
+
+  expect(hashed).toBe(ids.length);
+  expect(held).toBeLessThan(2 * transport.length);
 });
 
 it("a custom quest decodes, ranks under the canonical profile, and matches Python's portable quest and transport bytes", () => {
