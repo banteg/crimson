@@ -61,7 +61,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
   // and run again, frames stalled on the network and on a perk pick, rollbacks by depth, frames by their work).
   const HEAD = 6, DEPTHS = 12, FRAME_BUCKETS = 6;
   // A headless host: no assets, the clock real.
-  function instance() {
+  async function instance() {
     let memory;
     const refuse = (scope) =>
       Object.fromEntries(
@@ -81,7 +81,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
       fd_prestat_get: () => 8,
     };
     const host = { ...refuse("host"), fatal: () => { throw Error("game module: fatal"); }, time_ms: () => performance.now(), clock_ms: () => performance.now() };
-    const exports = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi, host }).exports;
+    const { exports } = await WebAssembly.instantiate(module, { wasi_snapshot_preview1: wasi, host });
     const g = Object.create(exports);
     memory = g.memory;
     g._initialize();
@@ -169,7 +169,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
   const minutes = (ms) => Math.round((ms / MINUTE) * 10) / 10;
 
   // (1) The plain run.
-  const plain = instance(), plainTicks = [];
+  const plain = await instance(), plainTicks = [];
   const pool = { first_full_minute: null, full_share: 0, min_active: CREATURES };
   let perksAtFrom = null;
   for (let asked = false, view = bot(plain); view.ms < to * MINUTE; ) {
@@ -200,7 +200,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
   pool.full_share = Math.round((pool.full_share / plainTicks.length) * 1000) / 1000;
 
   // (2) The run through the co-op engine.
-  const g = instance();
+  const g = await instance();
   const telemetry = () => Array.from(new Int32Array(g.memory.buffer, g.game_coop_telemetry(), HEAD + DEPTHS + FRAME_BUCKETS));
   // Ticks run and run again so far.
   const worked = () => ran.reduce((n, at) => n + new Int32Array(g.memory.buffer, g.game_coop_stats(), at + 1)[at], 0);
