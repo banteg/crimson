@@ -876,6 +876,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0043831c",
+      "name": "freeware_player_texture",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00438320",
       "name": "unused_fx_rotated_scale_prefix_color",
       "program": "1.4.0/crimson.exe"
@@ -1046,6 +1051,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0043c578",
+      "name": "freeware_draw_point",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0043c598",
       "name": "perk_choice_flags",
       "program": "1.4.0/crimson.exe"
@@ -1063,6 +1073,11 @@
     {
       "address": "0x0043c5e0",
       "name": "freeware_fps",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043c9b8",
+      "name": "freeware_atlas_uv",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1251,6 +1266,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452c14",
+      "name": "freeware_particle_texture",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452d1c",
       "name": "freeware_brush_begin",
       "program": "1.4.0/crimson.exe"
@@ -1258,6 +1278,11 @@
     {
       "address": "0x00452d20",
       "name": "freeware_brush_end",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452d2c",
+      "name": "freeware_creature_texture",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1516,6 +1541,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452de8",
+      "name": "perk_id_almost_invisible",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452dec",
       "name": "perk_id_long_distance_runner",
       "program": "1.4.0/crimson.exe"
@@ -1558,6 +1588,11 @@
     {
       "address": "0x00452e0c",
       "name": "perk_id_plaguebearer",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e10",
+      "name": "perk_id_radioactive",
       "program": "1.4.0/crimson.exe"
     },
     {

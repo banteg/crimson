@@ -45,38 +45,4 @@ void Game::apply_bomb_damage(float dt) {
       kill(i, 0);
   }
 }
-void Game::collect_pickup(int i) {
-  auto &p = actor(i);
-  if (p.health <= 0 || run.pickup.time <= 0 ||
-      std::hypot(p.player.x - run.pickup.pos.x, p.player.y - run.pickup.pos.y) >= 32)
-    return;
-  auto &w = player_state_table[i].freeware;
-  switch (run.pickup.kind) {
-  case Bonus::Fire:
-    bonus_fire_bullets_timer = 8;
-    break;
-  case Bonus::Freeze:
-    run.freeze = 5;
-    break;
-  case Bonus::Weapon:
-    weapon_assign_player(i, run.pickup.weapon);
-    break;
-  case Bonus::Nuke:
-    run.bomb_age = 0;
-    run.bomb_pos = run.pickup.pos;
-    camera_shake = {10, 10};
-    play_sound(Sound::Explosion);
-    break;
-  case Bonus::Shield:
-    p.shield = 6;
-    break;
-  case Bonus::Time:
-    w.ammo = w.clip_size;
-    p.cooldown = -.1f;
-    run.slow = 4;
-    break;
-  }
-  play_sound(Sound::Bonus);
-  run.pickup.time = 0;
-}
 } // namespace freeware

@@ -33,8 +33,8 @@ class UiOracle:
         def config(c):
             if c.arg_u32(0) == 0x18:
                 self.scale = c.arg_f32(1)
-            elif c.arg_u32(0)==0x13:
-                self.source=c.arg_u32(1)
+            elif c.arg_u32(0) == 0x13:
+                self.source = c.arg_u32(1)
             elif c.arg_u32(0) == 0x14:
                 self.blend = c.arg_u32(1)
             elif c.arg_u32(0) == 0x15:
@@ -46,7 +46,8 @@ class UiOracle:
                     self.texture,
                     0,
                     self.filter,
-                    self.blend,self.source,
+                    self.blend,
+                    self.source,
                     tuple(c.arg_f32(i) for i in range(4)) + (self.angle, *self.uv, 0, *self.color),
                 ),
             )
@@ -57,7 +58,8 @@ class UiOracle:
                     self.string(c.arg_u32(2)),
                     1,
                     0,
-                    0,0,
+                    0,
+                    0,
                     (c.arg_f32(0), c.arg_f32(1), 0, 0, 0, 0, 0, 1, 1, self.scale, *self.color),
                 ),
             )
@@ -97,7 +99,7 @@ class UiOracle:
         self.scale = self.angle = 0
         self.filter = 2
         self.blend = 6
-        self.source=5
+        self.source = 5
         self.uv = (0, 0, 1, 1)
         self.color = (1, 1, 1, 1)
         self.texture = "bullet"
@@ -109,11 +111,11 @@ class UiOracle:
         for i, (value, kind, filt, blend, source, floats) in enumerate(self.calls):
             got = struct.unpack(fmt, ctypes.string_at(check.symbol("combat_ui_draws") + size * i, size))
             actual = got[0].split(b"\0", 1)[0].decode("latin1")
-            assert (actual, *got[1:5]) == (value, kind, filt, blend,source), (
+            assert (actual, *got[1:5]) == (value, kind, filt, blend, source), (
                 case,
                 i,
                 (actual, *got[1:5]),
-                (value, kind, filt, blend,source),
+                (value, kind, filt, blend, source),
             )
             assert all(math.isclose(a, b, abs_tol=0.002) for a, b in zip(got[5:], floats, strict=True)), (
                 case,

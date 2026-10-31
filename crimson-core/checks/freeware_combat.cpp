@@ -600,7 +600,7 @@ extern "C" int combat_ui_perk(int id, int flags) {
   return capture_ui();
 }
 extern "C" {
-void creature_render_all();
+void creature_render_all(), player_render();
 float combat_world_state[24];
 void combat_world_start(int flags) {
   game = freeware::Game{};
@@ -611,11 +611,41 @@ void combat_world_start(int flags) {
   memset(creature_pool, 0, sizeof(creature_pool));
   freeware::seed_random(73);
 }
+// A raw player record is shared with the oracle. Only mirror fields owned by the live client.
+void combat_world_player(int slot, int count, int kind, int distance) {
+  config_player_count = count;
+  current_player_index = slot;
+  auto &p = player_state_table[slot].freeware;
+  game.actor(slot).player = p.position;
+  game.actor(slot).health = p.health;
+  game.actor(slot).shield = p.shield;
+  game.actor(slot).cooldown = p.cooldown;
+  game.run.pickup = {
+      {p.position.x + distance, p.position.y}, static_cast<freeware::Bonus>(kind), kind ? 2.5f : 0.f, 8};
+  game.run.freeze = 0;
+  bonus_fire_bullets_timer = 0;
+  freeware_simulation_clock = 1.375f;
+}
 int combat_world_render(int pass) {
   game.frame_sprites.clear();
   game.frame_labels.clear();
   if (pass == 0)
     creature_render_all();
+  else if (pass == 1) {
+    player_render();
+    player_state_table[current_player_index].freeware.shield = game.actor(current_player_index).shield;
+    combat_world_state[8] = game.run.pickup.time;
+    combat_world_state[9] = (float)game.run.pickup.kind;
+    combat_world_state[10] = game.run.freeze;
+    combat_world_state[11] = game.run.slow;
+    combat_world_state[12] = game.run.bomb_age;
+    combat_world_state[13] = game.run.bomb_pos.x;
+    combat_world_state[14] = game.run.bomb_pos.y;
+    combat_world_state[15] = game.camera_shake.x;
+    combat_world_state[16] = game.camera_shake.y;
+    combat_world_state[17] = bonus_fire_bullets_timer;
+    combat_world_state[18] = game.actor(current_player_index).cooldown;
+  }
   combat_world_state[0] = (float)game.run.kills;
   combat_world_state[1] = (float)game.pending_blood.size();
   combat_world_state[2] = (float)game.pending_decals.size();

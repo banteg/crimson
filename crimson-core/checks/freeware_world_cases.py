@@ -64,4 +64,87 @@ def check_world(check, exe):
             )
             assert all(math.isclose(a, b, abs_tol=0.0001) for a, b in zip(state[3:8], expected, strict=True))
             assert ctypes.string_at(check.symbol("creature_pool"), 512 * 128) == pe.read(0x442AF8, 512 * 128)
+    return total + check_player_draws(check, original)
+
+
+def check_player_draws(check, original):
+    pe = original.pe
+    original.textures[702] = "ugluk"
+    pe.write_u32(0x43831C, 702)
+    pe.stub(0x405630, 0)
+    pe.write_u32(0x452E10, 12)
+    pe.write_u32(0x452DE8, 2)
+    total = 0
+    for i in range(27):
+        slot = i % 2
+        count = 2 if slot or i % 4 else 1
+        kind = i % 7
+        distance = (31, 32, 33)[i // 7 % 3]
+        check.dll.combat_world_start(0)
+        data = bytearray(0x310)
+        for j in range(2):
+            offset = j * 0x188
+            for field, value in (
+                (0x18, 235.5 + 100 * j),
+                (0x1C, 97.25 - 32 * j),
+                (0x28, 0 if i == 26 else 71),
+                (0x2C, 2.55),
+                (0x34, 46.5),
+                (0x6C, 3),
+                (0x7C, (0, 7.25, 14.8)[i % 3]),
+                (0x8C, 0.625),
+                (0x164, 17),
+                (0x168, 0.245 if i % 2 else 0),
+                (0x16C, -1.123),
+                (0x178, (0, 0.42, 3)[i % 3]),
+            ):
+                struct.pack_into("<f", data, offset + field, value)
+            for perk, value in ((2, i % 3 == 1), (12, i % 4 == 0)):
+                struct.pack_into("<i", data, offset + 0x94 + perk * 4, value)
+        pe.write(0x438478, bytes(data))
+        ctypes.memmove(check.symbol("player_state_table"), bytes(data), len(data))
+        check.dll.combat_world_player(slot, count, kind, distance)
+        for addr, value in ((0x452D8C, slot), (0x4428A0, count), (0x4387E8, kind), (0x452E60, 0), (0x452E68, 8)):
+            pe.write_u32(addr, value)
+        for addr, value in (
+            (0x452D40, 1.375),
+            (0x452E64, 2.5 if kind else 0),
+            (0x4369F0, 235.5 + 100 * slot + distance),
+            (0x4369F4, 97.25 - 32 * slot),
+            (0x452DBC, 0),
+            (0x452E6C, 0),
+            (0x452DC8, -1),
+            (0x4387B8, 0),
+            (0x4387BC, 0),
+            (0x452BF8, 0),
+            (0x452BFC, 0),
+            (0x452DB8, 0),
+        ):
+            pe.write_f32(addr, value)
+        original.reset_draw()
+        pe.call(0x4103B0)
+        n = check.dll.combat_world_render(1)
+        total += original.compare(check, n, ("player", i, kind, distance))
+        got = ctypes.string_at(check.symbol("player_state_table"), len(data))
+        assert got == pe.read(0x438478, len(data)), (
+            "player record",
+            i,
+            next((k for k, (a, b) in enumerate(zip(got, pe.read(0x438478, len(data)), strict=True)) if a != b), None),
+        )
+        state = (ctypes.c_float * 24).from_address(check.symbol("combat_world_state"))
+        expected = [pe.read_f32(0x452E64), pe.read_i32(0x4387E8)] + [
+            pe.read_f32(a)
+            for a in (
+                0x452DBC,
+                0x452E6C,
+                0x452DC8,
+                0x4387B8,
+                0x4387BC,
+                0x452BF8,
+                0x452BFC,
+                0x452DB8,
+                0x438504 + slot * 0x188,
+            )
+        ]
+        assert list(state[8:19]) == expected, ("pickup", i, list(state[8:19]), expected)
     return total

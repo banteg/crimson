@@ -279,6 +279,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/player/freeware_refill_clip.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_refill_clip"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/player/player_heading_approach_target.cpp",
           "configs": [
             "tools/match/scratches/player_heading_approach_target"
@@ -330,6 +336,12 @@
           "path": "decomp/1.4/crimson/crimson/render/creature_render_all.cpp",
           "configs": [
             "tools/match/scratches/creature_render_all"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/player_render.cpp",
+          "configs": [
+            "tools/match/scratches/player_render"
           ]
         },
         {

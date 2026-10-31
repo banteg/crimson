@@ -100,7 +100,9 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
 }
 void Display::frame_sprite(const FrameSprite &draw) {
   const char *name = draw.name;
-  if (!std::strcmp(name, "goblin"))
+  if (!std::strcmp(name, "ugluk"))
+    name = "borg_t";
+  else if (!std::strcmp(name, "goblin"))
     name = "eiliens";
   else if (!std::strcmp(name, "glow"))
     name = "glow64";
@@ -172,18 +174,6 @@ void Display::draw(Game &g) {
     frame_sprite(draw);
   if (g.presented_screen == Screen::Playing || g.presented_screen == Screen::Dying ||
       g.presented_screen == Screen::Death || g.presented_screen == Screen::Perks || g.paused) {
-    for (int i = 0; i < g.players(); ++i) {
-      const auto &r = g.actor(i);
-      if (r.health <= 0)
-        continue;
-      float x = cx + r.player.x - 24, y = cy + r.player.y - 24;
-      SDL_FColor tint = i ? SDL_FColor{.6f, .8f, 1, 1} : SDL_FColor{1, 1, 1, 1};
-      sprite("borg_t", x, y, 48, 48, r.body_angle, int(r.walk + .5f), 8, tint);
-      sprite("borg_t", x + 1, y + 1, 48, 48, r.aim_angle, 16 + int(r.walk + .5f), 8, tint);
-
-      if (r.shield > 0)
-        sprite("bubble", x - 8, y - 8, 64, 64, 0, 0, 1, {.4f, .8f, 1, .6f});
-    }
     for (const auto &s : sprite_effect_pool)
       if (s.active)
         sprite("glow64", cx + s.pos_x - s.scale / 2, cy + s.pos_y - s.scale / 2, s.scale, s.scale, s.rotation, 0,

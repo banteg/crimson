@@ -7,6 +7,7 @@
 #include <cstring>
 
 extern "C" {
+int perk_id_radioactive = 12, perk_id_almost_invisible = 2;
 int freeware_first_kill_xp, freeware_no_pickup, perk_id_bloody_mess = 1;
 unsigned char freeware_player_moved;
 vec2f_t freeware_first_kill_position;

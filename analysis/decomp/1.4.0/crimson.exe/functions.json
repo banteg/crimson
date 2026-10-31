@@ -977,6 +977,14 @@
     "size": 555
   },
   {
+    "address": "0x004067E0",
+    "end": "0x00406808",
+    "size": 40,
+    "build_only": true,
+    "name": "freeware_refill_clip",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00406810",
     "canonical_address": "0x00413430",
     "end": "0x004068F3",
@@ -1268,7 +1276,7 @@
     "address": "0x004103B0",
     "canonical_address": "0x00428390",
     "end": "0x004110A0",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "player_render",
     "size": 3312
   },

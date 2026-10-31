@@ -588,7 +588,7 @@ def check_client(dll, exe, address, target):
     check_controls(comparison)
     dispatch_frames = check_frames(comparison, exe, BULLET, creature, files=target == "native")
     ui_draws = check_ui(comparison, exe)
-    world_draws=check_world(comparison,exe)
+    world_draws = check_world(comparison, exe)
     visual_cases = comparison.draws()
     print(
         f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants, {dispatch_frames} full frame callbacks and {visual_cases} draw traces, plus {ui_draws} ordered UI draws and {world_draws} ordered world draws.",
@@ -621,6 +621,7 @@ def check_web(stage, exe, sources):
         "combat_ui_perk",
         "combat_world_start",
         "combat_world_render",
+        "combat_world_player",
         "player_reset_all",
         "combat_frame_start",
         "combat_frame_step",

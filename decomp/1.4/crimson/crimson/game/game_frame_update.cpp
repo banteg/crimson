@@ -46,7 +46,8 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
-void gameplay_render_hud(), game_show_message(), perk_selection_screen_update(), creature_render_all();
+void player_render(), gameplay_render_hud(), game_show_message(), perk_selection_screen_update(),
+    creature_render_all();
 unsigned char freeware_overlay_begin(), game_highscores_update(), game_credits_update();
 
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -215,7 +216,6 @@ __forceinline void render_world() {
 #else
     G.flush_marks();
     creature_render_all();
-    G.actor_sprites.swap(G.frame_sprites);
 #endif
     if (ACTIVE) {
         if (SLOW <= 0)
@@ -237,11 +237,7 @@ __forceinline void render_world() {
                 else
                     SHIELD(current_player_index) -= frame_dt;
             }
-#ifdef CRIMSON_FREEWARE_CLIENT
-            G.collect_pickup(current_player_index);
-#else
             player_render();
-#endif
         }
     }
     current_player_index = 0;
@@ -252,6 +248,7 @@ __forceinline void render_world() {
     effect_render_all();
     freeware_current_map->render_layer(2, 0);
 #else
+    G.actor_sprites.swap(G.frame_sprites);
     G.apply_bomb_damage(frame_dt);
     G.ui.filter = 2;
     G.ui.destination_blend = 6;

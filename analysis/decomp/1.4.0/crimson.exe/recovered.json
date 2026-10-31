@@ -489,6 +489,13 @@
       "body_sha256": "82e451e5514356ee03e5902cdd2abd7fa4936a6dcf2c3c3c839cab69921b98d7"
     },
     {
+      "name": "freeware_refill_clip",
+      "address": "0x004067e0",
+      "end": "0x00406808",
+      "body_sha256": "37cc3285a0a0c9ba41598f629f0b76665422902aae925bcc62b18c8999b24241",
+      "build_only": true
+    },
+    {
       "name": "player_start_reload",
       "address": "0x00406810",
       "end": "0x004068f3",
@@ -657,6 +664,12 @@
       "end": "0x004103a4",
       "body_sha256": "739518e970a646dc94c1cca844105a295fa7a2d484b023f01a2dc7b6767dfdef",
       "build_only": true
+    },
+    {
+      "name": "player_render",
+      "address": "0x004103b0",
+      "end": "0x004110a0",
+      "body_sha256": "46deb88d6d2c61a341288eb990730014342707db811c4bad7842b21eb71b9ac1"
     },
     {
       "name": "effect_render_all",
@@ -1352,6 +1365,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_player_texture",
+      "address": "0x0043831c",
+      "reference": "0x00410543",
+      "bytes": "a11c834300",
+      "build_only": true
+    },
+    {
       "name": "unused_fx_rotated_scale_prefix_color",
       "address": "0x00438320",
       "reference": "0x00403300",
@@ -1502,6 +1522,13 @@
       "offset": 8
     },
     {
+      "name": "freeware_draw_point",
+      "address": "0x0043c578",
+      "reference": "0x0040fe19",
+      "bytes": "a378c54300",
+      "build_only": true
+    },
+    {
       "name": "perk_choice_flags",
       "address": "0x0043c598",
       "reference": "0x00408cf8",
@@ -1526,6 +1553,13 @@
       "address": "0x0043c5e0",
       "reference": "0x0041e1d7",
       "bytes": "d81495e0c54300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_atlas_uv",
+      "address": "0x0043c9b8",
+      "reference": "0x0040fe62",
+      "bytes": "8b04fdb8c94300",
       "build_only": true
     },
     {
@@ -1767,6 +1801,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_particle_texture",
+      "address": "0x00452c14",
+      "reference": "0x0041152d",
+      "bytes": "8b15142c4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_brush_begin",
       "address": "0x00452d1c",
       "reference": "0x00418c9b",
@@ -1778,6 +1819,13 @@
       "address": "0x00452d20",
       "reference": "0x00418ca9",
       "bytes": "a1202d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_creature_texture",
+      "address": "0x00452d2c",
+      "reference": "0x0040fd16",
+      "bytes": "8b152c2d4500",
       "build_only": true
     },
     {
@@ -2134,6 +2182,13 @@
       "build_only": true
     },
     {
+      "name": "perk_id_almost_invisible",
+      "address": "0x00452de8",
+      "reference": "0x004105b1",
+      "bytes": "8b15e82d4500",
+      "build_only": true
+    },
+    {
       "name": "perk_id_long_distance_runner",
       "address": "0x00452dec",
       "reference": "0x00412e40",
@@ -2193,6 +2248,13 @@
       "address": "0x00452e0c",
       "reference": "0x00415f72",
       "bytes": "3b150c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_radioactive",
+      "address": "0x00452e10",
+      "reference": "0x004103dd",
+      "bytes": "a1102e4500",
       "build_only": true
     },
     {
