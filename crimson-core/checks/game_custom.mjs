@@ -120,19 +120,21 @@ function answer(quests, more = false, build = "1.9.93") {
 
 // A replay file's quest table, as the Python port reads it. Its codec takes a replay only in the form it writes
 // itself, every map's keys in its order, which the service's decoder requires too (service/src/replay.ts).
-const questTable = (replay) =>
-  execFileSync(
+const replayRun = (replay) => {
+  const out = execFileSync(
     "uv",
     [
       "run", "--no-sync", "python", "-c",
-      "import sys; from crimson.replay.codec import load_replay; " +
-        "sys.stdout.buffer.write(load_replay(sys.stdin.buffer.read()).run.custom_quest.to_portable_bytes())",
+      "import sys; from crimson.replay.codec import load_replay; run = load_replay(sys.stdin.buffer.read()).run; " +
+        "sys.stdout.buffer.write(int(run.cl_build).to_bytes(4, 'little') + run.custom_quest.to_portable_bytes())",
     ],
     { input: replay, maxBuffer: 1 << 20 },
   );
+  return { cl_build: out.readUInt32LE(0), table: out.subarray(4) };
+};
 // The quest the service test publishes, its table as the site serves it.
 const published = JSON.parse(fs.readFileSync(path.join(ROOT, "service/test/vectors.json"), "utf8")).custom_quest_run;
-const table = questTable(Buffer.from(published.file, "base64"));
+const table = replayRun(Buffer.from(published.file, "base64")).table;
 const quest = (id, title, start_weapon_id = 3) => ({
   id, title, author: "banteg", players: 2, start_weapon_id, no_bonuses: [3], no_perks: [9, 16], no_weapons: [2, 3],
 });
@@ -258,8 +260,9 @@ padTap({ press: [PAD_SOUTH] });
 waitFor("the main menu", () => game.game_state() === MAIN_MENU, 3000);
 // The run left saved its replay, the first numbered one in a fresh game folder, which the Python port reads back as
 // the quest the link played.
-if (!questTable(fs.readFileSync(path.join(directory, "replays/1-quest.crd"))).equals(table))
-  throw Error("the linked quest's replay holds another quest");
+const saved = replayRun(fs.readFileSync(path.join(directory, "replays/1-quest.crd")));
+if (!saved.table.equals(table)) throw Error("the linked quest's replay holds another quest");
+if (saved.cl_build !== CL_BUILD_1_9_8) throw Error(`the quest linked on 1.9.8's boards recorded ${saved.cl_build}`);
 open();
 asked(0);
-console.log(JSON.stringify({ played: named[0], other_builds_ignored: ignored.length, linked }));
+console.log(JSON.stringify({ played: named[0], other_builds_ignored: ignored.length, linked, recorded: saved.cl_build }));

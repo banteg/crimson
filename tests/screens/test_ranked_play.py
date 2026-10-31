@@ -10,6 +10,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.leaderboard import Leaderboard
 from crimson.modes.survival_mode import SurvivalMode
+from crimson.projectiles.types import MAIN_PROJECTILE_POOL_SIZE_1_9_8
 from crimson.quests.level import QUEST_COUNT
 from crimson.replay.ranked import RANKED_VIEW, ranked_board, unranked_reasons
 from crimson.screens.actions import ResultAction, Route, StartRun
@@ -110,6 +111,7 @@ def test_a_ranked_1_9_8_attempt_plays_its_rules_on_the_ranked_profile(loop, mock
     assert run.ranked_run
     world = run.world
     assert world.state.rules_1_9_8
+    assert len(world.state.projectiles.entries) == MAIN_PROJECTILE_POOL_SIZE_1_9_8
     assert len(world.players) == 1
     assert run.world_runtime.view_cap == RANKED_VIEW
     assert world.state.status is not state.status
