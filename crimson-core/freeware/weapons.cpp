@@ -17,12 +17,12 @@ static constexpr Weapon weapons[] = {{},
                                      {2, 1, .088117f, .001f, 1, Sound::Shot},
                                      {7, 1, .290812f, .003f, 1, Sound::Plasma},
                                      {7, 3, .640812f, .003f, 1, Sound::Plasma},
-                                     {9, 1, .109081f, .003f, 1, Sound::Plasma},
+                                     {9, 1, .109081f, .003f, 1, Sound::PlasmaFast},
                                      {10, 1, .950812f, .003f, 1, Sound::Plasma},
                                      {11, 1, .740812f, .003f, 1, Sound::Rocket},
                                      {12, 1, .310812f, .003f, 1, Sound::Rocket},
-                                     {4, 1, .07f, .012f, 1, Sound::Shot},
-                                     {7, 14, .288117f, .0013f, 1, Sound::Shotgun},
+                                     {4, 1, .07f, .012f, 1, Sound::Burst},
+                                     {9, 14, .288117f, .0013f, 1, Sound::Shotgun},
                                      {15, 1, .006113f, .001f, .05f, Sound::Flame},
                                      {},
                                      {17, 1, .2f, .001f, 1, Sound::Plasma},
@@ -32,7 +32,13 @@ extern "C" int fx_spawn_secondary_projectile(const vec2f_t *, float, secondary_p
 void Game::fire_weapon(int index) {
   auto &p = actor(index);
   auto &w = player_state_table[index].freeware;
-  if (w.weapon < 1 || w.weapon >= int(sizeof(weapons) / sizeof(*weapons)))
+  // IDs 16 and 20 have names and clips but no firing arm in the released executable.
+  if (w.weapon == 16 || w.weapon == 20) {
+    w.ammo -= 1;
+    return;
+  }
+  if (w.weapon < 1 || w.weapon >= int(sizeof(weapons) / sizeof(*weapons)) ||
+      (w.weapon == 18 && (!freeware_secret_weapon_unlocked || p.health >= 5)))
     return;
   const auto &def = weapons[w.weapon];
   if (!def.count)
@@ -46,7 +52,14 @@ void Game::fire_weapon(int index) {
         float(crt_rand() % (wide ? 200 : 20) - (wide ? 100 : 10)) * def.jitter * (shotgun ? 1 : p.spread);
     if (w.weapon == 8)
       jitter += (i - 1) * .31415927f;
-    if (w.weapon == 11 || w.weapon == 12) {
+    if (w.weapon == 5 || w.weapon == 15 || w.weapon == 19) {
+      float heading = p.aim_angle - 1.5707964f;
+      int slot = w.weapon == 19 ? fx_spawn_particle_slow(&muzzle, heading, nullptr)
+                                : fx_spawn_particle(&muzzle, heading, nullptr, 1);
+      if (w.weapon == 15)
+        particle_pool[slot].style_id = 1;
+      run.particle_owner[slot] = index;
+    } else if (w.weapon == 11 || w.weapon == 12) {
       int slot = fx_spawn_secondary_projectile(&muzzle, p.aim_angle + jitter,
                                                static_cast<secondary_projectile_type_id_t>(w.weapon - 10));
       run.rocket_owner[slot] = index;
@@ -57,6 +70,8 @@ void Game::fire_weapon(int index) {
         projectile_pool[slot].fields.speed_scale = 1 + (crt_rand() % 100) * .01f;
     }
   }
+  if (shell_marks && (w.weapon <= 4 || w.weapon == 6 || w.weapon == 13))
+    shells.push_back({p.player.x + std::cos(p.aim_angle) * 12, p.player.y + std::sin(p.aim_angle) * 12});
   p.cooldown = def.cooldown * (run.perks[14] ? .88f : 1) * (run.perks[3] ? 1.05f : 1);
   w.ammo -= def.ammo * (run.perks[11] ? .8f : 1);
   play_sound(def.sound);
@@ -80,24 +95,36 @@ void Game::step_player(int index, float dt, const Input &in) {
   float dx = index ? float(in.right2) - float(in.left2) : float(in.right) - float(in.left);
   float dy = index ? float(in.down2) - float(in.up2) : float(in.down) - float(in.up);
   if (movement[index] == 2) {
-    dx = in.stick_x[index];
-    dy = in.stick_y[index];
-  }
-  if (movement[index] == 1) {
-    player_state_table[index].heading += dx * dt * 3.5f;
-    p.body_angle = player_state_table[index].heading;
-    float throttle = -dy;
-    dx = std::sin(p.body_angle) * throttle;
-    dy = -std::cos(p.body_angle) * throttle;
+    dx = in.stick_x[index] - pad_center[index].x;
+    dy = in.stick_y[index] - pad_center[index].y;
+    if (std::abs(dx) < pad_threshold[index])
+      dx = 0;
+    if (std::abs(dy) < pad_threshold[index])
+      dy = 0;
   }
   float distance;
-  if (dx || dy) {
+  if (movement[index] == 1) {
+    if (dx != 0)
+      p.turn_speed = std::min(7.f, p.turn_speed + dt * 10);
+    else
+      p.turn_speed = std::max(1.f, p.turn_speed - dt * 10);
+    player_state_table[index].heading += dx * p.turn_speed * dt * .5f;
+    float forwards = std::max(0.f, -dy);
+    p.move_speed = forwards ? std::min(run.perks[4] ? 2.8f : 2.f, p.move_speed + dt * 5)
+                            : std::max(0.f, p.move_speed - dt * 15);
+    distance = (2 * p.move_speed * 25 - std::max(0.f, dy) * 35) * dt;
+    if (dx || dy)
+      run.moved = true;
+  } else if (dx || dy) {
     run.moved = true;
     float direction = std::atan2(dy, dx) + 1.5707964f;
     if (direction < 0)
       direction += 6.2831855f;
     const float turn = player_heading_approach_target(direction);
-    p.move_speed = std::min(run.perks[4] ? 2.8f : 2.f, p.move_speed + dt * 5);
+    p.move_speed =
+        std::min(run.perks[4] ? 2.8f : 2.f, p.move_speed + dt * (run.perks[4] && p.move_speed >= 2 ? 1 : 5));
+    if (w.weapon == 13)
+      p.move_speed = std::min(p.move_speed, .8f);
     distance = (3.14159265f - turn) * 2 * p.move_speed * 7.957747f * dt;
   } else {
     p.move_speed = std::max(0.f, p.move_speed - dt * 15);
@@ -107,17 +134,22 @@ void Game::step_player(int index, float dt, const Input &in) {
   p.player.x = std::clamp(p.player.x + std::cos(p.body_angle - 1.5707964f) * distance, 24.f, float(arena - 24));
   p.player.y = std::clamp(p.player.y + std::sin(p.body_angle - 1.5707964f) * distance, 24.f, float(arena - 24));
   p.walk = std::fmod(p.walk + dt * p.move_speed * 19, 14.f);
-  bool trigger = index ? in.fire2 : in.fire || in.click;
+  bool trigger = index ? in.fire2 || (aiming[index] < 2 && (in.mouse_fire || in.click)) : in.fire || in.click;
   if (aiming[index] == 3) {
-    if (in.aim_x[index] || in.aim_y[index])
-      p.aim_angle = std::atan2(in.aim_y[index], in.aim_x[index]) + 1.5707964f;
+    if (std::hypot(in.aim_x[index], in.aim_y[index]) > pad_threshold[index])
+      p.aim_angle = std::atan2(in.aim_y[index], in.aim_x[index]) -
+                    std::atan2(hat_right[index].y, hat_right[index].x) + 1.5707964f;
     trigger |= in.pad_fire[index];
   } else if (aiming[index] == 1) {
     p.aim_angle += mouse_dx * .012f;
   } else if (aiming[index] == 2) {
-    if (!p.firing || !trigger)
-      p.locked_aim = p.body_angle;
-    p.aim_angle = p.locked_aim;
+    if (movement[index] == 1)
+      p.aim_angle = p.body_angle + 3.14159265f / 6;
+    else {
+      if (!p.firing || !trigger)
+        p.locked_aim = p.body_angle;
+      p.aim_angle = p.locked_aim;
+    }
   } else
     p.aim_angle =
         std::atan2(in.y - camera_y(*this) - p.player.y, in.x - camera_x(*this) - p.player.x) + 1.5707964f;

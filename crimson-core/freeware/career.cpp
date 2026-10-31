@@ -116,8 +116,8 @@ static void spawn_boss(int level) {
   };
   static const Boss bosses[] = {{3, 1, 92, 1200, 10, 1.2f, 2000, {28 / 255.f, 131 / 255.f, 174 / 255.f, 1}},
                                 {5, 2, 98, 1400, 10, 1.2f, 3000, {192 / 255.f, 0, 192 / 255.f, 1}},
-                                {8, 1, 128, 3000, 10, 1.2f, 4000, {192 / 255.f, 0, 0, 1}},
-                                {13, 1, 128, 10000, 30, 2.6f, 4000, {.7f, .7f, .7f, 1}},
+                                {8, 1, 128, 3000, 10, 1.2f, 5000, {192 / 255.f, 0, 0, 1}},
+                                {13, 1, 128, 10000, 30, 2.6f, 4000, {.7f, .7f, .7f, .4f}},
                                 {17, 1, 100, 10000, 30, 2.8f, 5000, {1, 1, 1, 1}}};
   for (auto &b : bosses)
     if (level == b.level) {
@@ -128,6 +128,8 @@ static void spawn_boss(int level) {
       c.death_timer = 16;
       c.health = b.health;
       auto &s = c.freeware;
+      if (level == 8 || level == 17)
+        c.hit_flash_timer = -.5f;
       s.type = b.type;
       s.heading = crt_rand() % 314 * .01f;
       s.size = b.size;

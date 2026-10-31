@@ -128,27 +128,27 @@ static const char *const hints[] = {
     "Only a true bubble boy survives peacefully over kaksi minuuttia without a scratch."};
 const char *perk_name(int i) { return perks[i].name; }
 const char *perk_description(int i) { return perks[i].description; }
+extern "C" {
+unsigned char perk_choice_flags[48], freeware_show_secret_hints;
+int config_player_count = 1, perk_id_count = 32, perk_id_perk_expert = 25;
+freeware_perk_entry_t perk_meta_table[48];
+void perks_generate_choices();
+}
 void Game::open_perks() {
   if (!run.pending || survival)
     return;
   if (run.choices.empty()) {
-    // 0x408cf0 rolls distinct eligible choices and displays them in registration order.
-    std::vector<int> available;
-    for (int i = 1; i <= 32; ++i)
-      if ((two_players ? perks[i].coop : (i < 26 || secret_hints)) && !run.perks[i])
-        available.push_back(i);
-    if (available.empty()) { // Repeat eligible perks once the remaining pool is exhausted.
-      for (int i = 1; i <= 32; ++i)
-        if ((two_players ? perks[i].coop : (i < 26 || secret_hints)))
-          available.push_back(i);
+    config_player_count = players();
+    freeware_show_secret_hints = secret_hints;
+    for (int i = 0; i <= perk_id_count; ++i) {
+      perk_meta_table[i].available = perks[i].coop;
+      perk_meta_table[i].secret = i >= 26;
     }
-    int count = run.perks[25] ? 7 : 5;
-    while (count-- && !available.empty()) {
-      int index = crt_rand() % int(available.size());
-      run.choices.push_back(available[index]);
-      available.erase(available.begin() + index);
-    }
-    std::sort(run.choices.begin(), run.choices.end());
+    std::copy(run.perks.begin(), run.perks.end(), player_state_table[0].freeware.perks);
+    perks_generate_choices();
+    for (int i = 1; i <= perk_id_count; ++i)
+      if (perk_choice_flags[i])
+        run.choices.push_back(i);
   }
   selected = 0;
   screen = Screen::Perks;

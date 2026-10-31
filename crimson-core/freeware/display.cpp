@@ -14,10 +14,11 @@ Display::~Display() {
 }
 bool Display::load(const std::string &folder) {
   for (const char *name :
-       {"font",           "grass1",       "mud1",       "ground_tile",    "crimsonland", "borg_t", "eiliens",
-        "bullet_real_16", "blood",        "aim32",      "aim64",          "part64",      "reaper", "panel",
-        "ui_text",        "rocket",       "flame",      "bubble",         "glow64",      "bar",    "bonus_fire",
-        "bonus_freeze",   "bonus_weapon", "bonus_bomb", "bonus_timebend", "shockwave",   "icemold"}) {
+       {"font",       "grass1",         "mud1",      "ground_tile", "crimsonland",  "borg_t",
+        "eiliens",    "bullet_real_16", "blood",     "aim32",       "aim64",        "part64",
+        "reaper",     "bullet",         "arrow",     "ui_text",     "rocket",       "flame",
+        "bubble",     "glow64",         "bar",       "bonus_fire",  "bonus_freeze", "bonus_weapon",
+        "bonus_bomb", "bonus_timebend", "shockwave", "icemold"}) {
     size_t bytes;
     auto *data = static_cast<unsigned char *>(SDL_LoadFile((folder + "/" + name + ".rgba").c_str(), &bytes));
     if (!data)
@@ -88,13 +89,15 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
   }
 }
 void Display::draw(const Game &g) {
-  if (g.generation != ground_generation || !g.decals.empty()) {
+  if (g.generation != ground_generation || !g.decals.empty() || !g.shells.empty()) {
     SDL_SetRenderTarget(renderer, stains);
     if (g.generation != ground_generation) {
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       SDL_RenderClear(renderer);
       ground_generation = g.generation;
     }
+    for (auto &pos : g.shells)
+      sprite("bullet_real_16", pos.x - 2, pos.y - 3, 4, 6, 0, 0, 1, {.55f, .45f, .25f, .75f});
     for (const auto &c : g.decals) {
       sprite("blood", c.position.x - 16, c.position.y - 16, 32, 32, c.heading);
       sprite("eiliens", c.position.x - c.size / 2, c.position.y - c.size / 2, c.size, c.size, c.heading, 63, 8,
@@ -133,12 +136,28 @@ void Display::draw(const Game &g) {
       SDL_FColor tint = i ? SDL_FColor{.6f, .8f, 1, 1} : SDL_FColor{1, 1, 1, 1};
       sprite("borg_t", x, y, 48, 48, r.body_angle, int(r.walk + .5f), 8, tint);
       sprite("borg_t", x + 1, y + 1, 48, 48, r.aim_angle, 16 + int(r.walk + .5f), 8, tint);
+      if (g.direction_arrow && (g.two_players || g.aiming[i] == 2)) {
+        sprite("arrow", x + 16 + 32 * std::sin(r.body_angle), y + 16 - 32 * std::cos(r.body_angle), 16, 16,
+               r.body_angle, 0, 1, tint);
+      }
       if (r.shield > 0)
         sprite("bubble", x - 8, y - 8, 64, 64, 0, 0, 1, {.4f, .8f, 1, .6f});
     }
+    for (const auto &p : particle_pool)
+      if (p.active) {
+        bool bubble = p.style_id == 8;
+        float size = bubble ? 36 : (1.2f - p.intensity) * 32 + 12;
+        sprite(bubble ? "bubble" : "flame", cx + p.position.x - size / 2, cy + p.position.y - size / 2, size, size,
+               p.rotation, 0, 1, {1, 1, 1, std::clamp(p.intensity, 0.f, 1.f)});
+      }
     for (const auto &r : secondary_projectile_pool)
-      if (r.active)
-        sprite("rocket", cx + r.position.x - 8, cy + r.position.y - 8, 16, 16, r.angle);
+      if (r.active) {
+        if (r.fields.type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
+          float size = r.fields.velocity.x * r.fields.velocity.y * 160;
+          sprite("shockwave", cx + r.pos_x - size / 2, cy + r.position.y - size / 2, size, size);
+        } else
+          sprite("rocket", cx + r.pos_x - 8, cy + r.position.y - 8, 16, 16, r.angle);
+      }
     if (g.run.pickup.time > 0) {
       auto &b = g.run.pickup;
       const char *icons[] = {"bonus_fire", "bonus_freeze", "bonus_weapon",
@@ -184,32 +203,7 @@ void Display::draw(const Game &g) {
     text("v1.4.0", 10, height - 25, .65435f, {1, 1, 1, .4f});
     text("2002 (c) 10tons entertainment", width - 330, height - 25, .65435f, {1, 1, 1, .4f});
   } else if (g.screen == Screen::Playing) {
-    // The one-player Survival arm of 0x416a00 draws the time on the original panel.
-    sprite("panel", 0, 0, 640, 64, 0, 0, 1, {.7f, .7f, .7f, 1});
-    if (g.run.perks[16]) {
-      int id = creature_find_in_radius(&player_state_table[0].freeware.aim, 10);
-      if (id >= 0) {
-        std::snprintf(line, sizeof(line), "health %d", int(creature_pool[id].health));
-        text(line, g.cursor_x + 8, g.cursor_y + 8, .55f, white);
-      }
-    }
-    if (g.survival) {
-      std::snprintf(line, sizeof(line), "Seconds survived: %d", int(g.run.seconds));
-      text(line, 3, 7, .7f, white);
-    } else {
-      for (int i = 0; i < g.players(); ++i) {
-        const auto &w = player_state_table[i].freeware;
-        float x = i * 490.f;
-        std::snprintf(line, sizeof(line), "%s  %d/%d  %s", weapon_name_get(w.weapon), int(std::ceil(w.ammo)),
-                      int(w.clip_size), w.reload > 0 ? "Reloading" : "");
-        text(line, x + 4, 3, .58f, white);
-        std::snprintf(line, sizeof(line), "Health %d   Experience %d   Level %d",
-                      int(std::ceil(g.actor(i).health)), g.run.experience, g.run.level);
-        text(line, x + 4, 24, .55f, white);
-      }
-      if (g.run.pending)
-        text("+Level Up", width - 175, height - 50, .95f, {1, .8f, .1f, 1});
-    }
+    hud(g);
   } else if (g.screen == Screen::Message) {
     text("Message:", 150, 40, .9f, white);
     std::string hint = g.message;
@@ -225,22 +219,24 @@ void Display::draw(const Game &g) {
     text("(press space or left mouse button)", 150, 340, .65f, muted);
   } else if (g.screen == Screen::Perks) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 205);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, g.perk_transparent ? 65 : 205);
     SDL_RenderFillRect(renderer, nullptr);
-    text("Pick a perk!", 150, 40, 1, white);
+    text("Pick a perk:", 150, 40, .65f, white);
+    text(g.run.perks[25] ? "(of random 7)" : "(of random 5)", 285, 43, .55f, {.68f, .68f, .89f, 1});
+    text("(click to see through)", 390, 5, .65f, {.78f, .78f, .49f, .65f});
     for (size_t i = 0; i < g.run.choices.size(); ++i)
-      text(perk_name(g.run.choices[i]), 150, 94 + 27 * i, .7f, i == size_t(g.selected) ? white : muted);
+      text(perk_name(g.run.choices[i]), 50, 80 + 20 * i, .65f, i == size_t(g.selected) ? white : muted);
     if (!g.run.choices.empty()) {
       std::string description = perk_description(g.run.choices[g.selected]);
       size_t col = 0;
       for (char &c : description) {
-        if (c == ' ' && col > 32) {
+        if (c == ' ' && col > 25) {
           c = '\n';
           col = 0;
         } else
           ++col;
       }
-      text(description, 520, 108, .68f, white);
+      text(description, 400, 80, .65f, white);
     }
   } else if (g.screen == Screen::Dying) {
     const float fade = std::clamp(std::min(g.death_clock, 3.f - g.death_clock), 0.f, 1.f);
@@ -257,6 +253,16 @@ void Display::draw(const Game &g) {
     std::snprintf(line, sizeof(line), g.survival ? "Seconds survived: %d" : "Gained experience: %d",
                   g.survival ? int(g.run.seconds) : g.run.experience);
     text(line, 120, 90, .75435f, {.85f, .55f, .35f, .8f * fade});
+    int value = g.survival ? int(g.run.seconds) : g.run.experience;
+    auto &table = g.scores();
+    size_t rank = 0;
+    while (rank < table.size() && (g.survival ? table[rank].seconds : table[rank].experience) >= value)
+      ++rank;
+    if (rank < 100 && value > 0)
+      std::snprintf(line, sizeof(line), "(You scored %zu# in top 100 scores)", rank + 1);
+    else
+      std::snprintf(line, sizeof(line), "(You didn't make the top 100 scores)");
+    text(line, 120, 118, .62f, {.85f, .55f, .35f, .8f * fade});
     text("Who were you:", 10, 165, .75435f, {1, 1, 1, fade});
     text(g.name, 50, 190, 1, {1, 1, 1, fade});
     if (std::fmod(g.menu_clock, 1.f) < .5f)
@@ -271,35 +277,59 @@ void Display::draw(const Game &g) {
                                                         : "Online options.";
     text(heading, 180, 120, 1, white);
     if (g.screen == Screen::Scores) {
-      text(g.survival ? "-SURVIVAL--" : "-CAREER--", 180, 170, .75435f, white);
-      for (size_t i = 0; i < std::min<size_t>(g.scores().size(), 10); ++i) {
-        const auto &score = g.scores()[i];
-        std::snprintf(line, sizeof(line), "%zu.  %-31s  %d", i + 1, score.name.c_str(),
+      text(g.survival ? (g.two_players ? "-SURVIVAL2-" : "-SURVIVAL--")
+                      : (g.two_players ? "-CAREER2---" : "-CAREER----"),
+           180, 170, .75435f, white);
+      for (size_t i = 0;
+           i < std::min<size_t>(g.scores().size() - std::min<size_t>(g.score_offset, g.scores().size()), 10);
+           ++i) {
+        const auto &score = g.scores()[g.score_offset + i];
+        std::snprintf(line, sizeof(line), "%zu.  %-31s  %d", g.score_offset + i + 1, score.name.c_str(),
                       g.survival ? int(score.seconds) : score.experience);
         text(line, 180, 210 + i * 23, .75435f, muted);
       }
     } else if (g.screen == Screen::Credits) {
-      text(
-          "Game coded & designed by\nTero Alatalo\n3D Art modelled by\nTimo Palonen\nMusic performed by\nValtteri "
-          "Pihlajamaki",
-          180, 170, .75435f, white);
+      credits(g.menu_clock - g.screen_started);
     } else if (g.screen == Screen::Options) {
-      if (g.rebind < 0) {
-        for (int i = 0; i < 9; ++i)
-          text(g.option(i), 180, 170 + i * 30, .72f, g.selected == i ? white : muted);
+      if (g.calibration >= 0) {
+        static const char *steps[] = {"Center the joystick and press enter or a joystick button",
+                                      "Set X/Y threshold with up/down, then press enter",
+                                      "Press the hat LEFT and press enter (enter to skip)",
+                                      "Press the hat RIGHT and press enter (enter to skip)"};
+        text(steps[g.calibration], 50, 190, .65f, white);
+        std::snprintf(line, sizeof(line), "X/Y-Axis threshold: %d%%", int(g.pad_threshold[g.configuring] * 100));
+        text(line, 50, 225, .65f, muted);
+      } else if (g.rebind < 0) {
+        for (int i = 0; i < 12; ++i)
+          text(g.option(i), width / 2 - 140, 170 + i * 21, .65f, g.selected == i ? white : muted);
       } else {
         static const char *actions[] = {"forward", "backward", "left", "right", "fire"};
         std::snprintf(line, sizeof(line), "Player %d: press key for %s", g.rebind / 5 + 1, actions[g.rebind % 5]);
         text(line, 180, 200, .72f, white);
       }
     } else if (g.screen == Screen::Online) {
-      text("Online highscores are offline.", 180, 170, .75435f, white);
+      static const char *rows[] = {"Visit Crimsonland website", "Check for updates", "View online highscores",
+                                   "back to main menu"};
+      for (int i = 0; i < 4; ++i)
+        text(rows[i], 180, 170 + 32 * i, .75f, i == g.selected ? white : muted);
+      if (g.notice)
+        text(g.notice, 50, 345, .55f, white);
     }
-    if (g.screen != Screen::Options && g.screen != Screen::Scores)
+    if (g.screen != Screen::Options && g.screen != Screen::Scores && g.screen != Screen::Credits &&
+        g.screen != Screen::Online)
       text("back to main menu", 180, 410, .75435f, muted);
   }
   if (g.screen == Screen::Playing) {
-    sprite("aim64", g.cursor_x - 32, g.cursor_y - 32, 64, 64);
+    for (int i = 0; i < g.players(); ++i) {
+      auto &player = g.actor(i);
+      if (player.health <= 0)
+        continue;
+      auto aim = player_state_table[i].freeware.aim;
+      float size = std::clamp(std::hypot(aim.x - player.player.x, aim.y - player.player.y) * player.spread * .25f,
+                              16.f, 64.f);
+      SDL_FColor tint = i ? SDL_FColor{.45f, .75f, 1, 1} : SDL_FColor{1, 1, 1, 1};
+      sprite("aim64", cx + aim.x - size / 2, cy + aim.y - size / 2, size, size, 0, 0, 1, tint);
+    }
   } else if (g.screen != Screen::Dying) {
     // The menu and score cursor bind part64 additively, then the 32-pixel reticle at 64% opacity.
     const float speed = g.screen == Screen::Death ? 2.f : 1.f;
@@ -316,6 +346,18 @@ void Display::draw(const Game &g) {
   if (g.show_fps) {
     std::snprintf(line, sizeof(line), "%.0f FPS", g.fps);
     text(line, width - 110, 4, .55f, white);
+  }
+  if (g.console_open) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 12, 16, 20, 238);
+    SDL_FRect area{0, 0, width, 220};
+    SDL_RenderFillRect(renderer, &area);
+    int y = 8;
+    for (size_t i = g.console_lines.size() > 9 ? g.console_lines.size() - 9 : 0; i < g.console_lines.size(); ++i) {
+      text(g.console_lines[i], 3, y, .58f, white);
+      y += 19;
+    }
+    text("> " + g.command + "_", 3, 192, .65f, white);
   }
   SDL_RenderPresent(renderer);
 }

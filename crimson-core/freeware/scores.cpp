@@ -47,7 +47,7 @@ bool decode_scores(std::vector<uint8_t> bytes, int board, std::vector<Score> &ou
       return false;
     Score s{};
     s.name.assign(reinterpret_cast<const char *>(p), len);
-    s.seconds = float(load<int32_t>(p + 32));
+    s.seconds = load<int32_t>(p + 32);
     s.experience = load<int32_t>(p + 36);
     s.min_fps = load<float>(p + 40);
     s.average_fps = load<float>(p + 44);
@@ -105,18 +105,36 @@ void Game::record_score() {
   auto &table = scores();
   table.push_back(score);
   sort_scores(table, survival);
-  if (save_dir.empty())
-    return;
+  if (!save_dir.empty() && !store_scores(table))
+    std::fprintf(stderr, "Could not persist 1.4.0 score file\n");
+}
+bool Game::merge_scores(const std::string &filename) {
+  if (filename.empty() || filename.find_first_of("/\\") != std::string::npos || save_dir.empty())
+    return false;
+  int board = (survival ? 2 : 0) + int(two_players);
+  if (filename == files[board])
+    return false;
+  std::ifstream f(save_dir + filename, std::ios::binary);
+  std::vector<Score> imported;
+  if (!f || !decode_scores({std::istreambuf_iterator<char>(f), {}}, board, imported))
+    return false;
+  auto merged = scores();
+  merged.insert(merged.end(), imported.begin(), imported.end());
+  sort_scores(merged, survival);
+  if (!store_scores(merged))
+    return false;
+  scores().swap(merged);
+  return true;
+}
+bool Game::store_scores(const std::vector<Score> &table) const {
   const int board = (survival ? 2 : 0) + int(two_players);
-  std::string path = save_dir + files[board], tmp = path + ".tmp";
-  // A damaged original score file remains available for inspection and repair.
   if (invalid_scores[board])
-    return;
+    return false;
+  std::string path = save_dir + files[board], tmp = path + ".tmp";
   auto bytes = encode_scores(table, board);
   std::ofstream f(tmp, std::ios::binary | std::ios::trunc);
   f.write(reinterpret_cast<const char *>(bytes.data()), bytes.size());
   f.close();
-  if (!f || std::rename(tmp.c_str(), path.c_str()) != 0)
-    std::fprintf(stderr, "Could not save %s\n", path.c_str());
+  return f && std::rename(tmp.c_str(), path.c_str()) == 0;
 }
 } // namespace freeware

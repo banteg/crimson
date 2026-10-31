@@ -8,6 +8,7 @@
 
 namespace freeware {
 void play_sound(Sound) {}
+void play_original_sample(int) {}
 } // namespace freeware
 extern "C" {
 extern float freeware_elapsed_seconds;
@@ -176,7 +177,7 @@ int main() {
   }
   std::vector<Score> table;
   for (int i = 0; i < 6; ++i)
-    table.push_back({"Oracle " + std::to_string(i), float(130 - i), 0, 5000 - i, 29, 59.75f, 120, 1.4f});
+    table.push_back({"Oracle " + std::to_string(i), 130 - i, 0, 5000 - i, 29, 59.75f, 120, 1.4f});
   for (int i = 0; i < 4; ++i) {
     auto bytes = encode_scores(table, i);
     std::printf("scores %d ", i);
@@ -189,4 +190,114 @@ int main() {
     bytes[7] ^= 1;
     assert(!decode_scores(bytes, i, decoded));
   }
+
+  for (int level : {3, 5, 8, 13, 17}) {
+    Game g;
+    g.start();
+    std::memset(creature_pool, 0, sizeof(creature_pool));
+    creature_pool[0].ai_mode = 1;
+    seed_random(1234);
+    g.run.level = level - 1;
+    g.run.experience = g.next_level_xp() + 2;
+    g.update_career(1.f / 60);
+    assert(g.run.level == level && g.run.pending == 1 && creature_pool[0].active);
+    std::printf("boss %d %d ", level, g.run.experience);
+    for (auto c : *reinterpret_cast<unsigned char (*)[sizeof(creature_t)]>(&creature_pool[0]))
+      std::printf("%02x", c);
+    std::puts("");
+  }
+  // Compare the chooser's draws, including the next RNG value, for every eligibility policy.
+  for (int mode = 0; mode < 8; ++mode)
+    for (int seed : {1, 42, 431, 1987}) {
+      Game g;
+      g.two_players = mode & 1;
+      g.secret_hints = mode & 2;
+      g.start();
+      g.run.pending = 1;
+      g.run.perks[1] = g.run.perks[4] = 1;
+      g.run.perks[25] = (mode & 4) != 0;
+      seed_random(seed);
+      g.open_perks();
+      std::printf("choices %d %d %d", mode, seed, crt_rand());
+      for (auto id : g.run.choices)
+        std::printf(" %d", id);
+      std::puts("");
+    }
+  for (int id = 1; id <= 20; ++id) {
+    Game g;
+    g.start();
+    freeware_secret_weapon_unlocked = 1;
+    weapon_assign_player(0, id);
+    auto &w = player_state_table[0].freeware;
+    g.run.health = 4;
+    w.ammo = 10;
+    g.run.aim_angle = 1.5707964f;
+    g.run.cooldown = 0;
+    seed_random(42);
+    g.fire_weapon(0);
+    std::printf("volley %d %.6f %.3f", id, g.run.cooldown, w.ammo);
+    for (const auto &shot : projectile_pool)
+      if (shot.active)
+        std::printf(" b%d", int(shot.fields.type_id));
+    for (const auto &r : secondary_projectile_pool)
+      if (r.active)
+        std::printf(" r%d", int(r.fields.type_id));
+    for (const auto &part : particle_pool)
+      if (part.active)
+        std::printf(" p%d", int(part.style_id));
+    std::puts("");
+  }
+  Game g;
+  Input input;
+  input.accept = true;
+  g.update(1.f / 60, input);
+  input = {};
+  seed_random(42);
+  bool picked = false, leveled = false;
+  int gun = 1;
+  for (int n = 0; n < 60 * 300 && g.screen == Screen::Playing; ++n) {
+    const auto &p = g.run.player;
+    const creature_t *closest = nullptr;
+    float distance = 1.e9f;
+    for (auto &c : creature_pool)
+      if (c.active && c.health > 0) {
+        float d = std::hypot(c.pos_x - p.x, c.pos_y - p.y);
+        if (d < distance) {
+          distance = d;
+          closest = &c;
+        }
+      }
+    input = {};
+    if (closest) {
+      input.x = closest->pos_x + camera_x(g);
+      input.y = closest->pos_y + camera_y(g);
+      input.fire = true;
+    }
+    vec2f_t target{512.f + 325.f * std::cos(n * .0034f), 512.f + 325.f * std::sin(n * .0034f)};
+    if (g.run.pickup.time > 0 && distance > 85)
+      target = g.run.pickup.pos;
+    input.left = target.x < p.x - 5;
+    input.right = target.x > p.x + 5;
+    input.up = target.y < p.y - 5;
+    input.down = target.y > p.y + 5;
+    if (g.run.pending)
+      input.level_up = true;
+    g.update(1.f / 60, input);
+    if (g.screen == Screen::Perks) {
+      leveled = true;
+      input = {};
+      input.accept = true;
+      g.update(1.f / 60, input);
+    }
+    if (player_state_table[0].freeware.weapon != gun) {
+      gun = player_state_table[0].freeware.weapon;
+      picked = true;
+    }
+    if (picked && leveled) {
+      std::printf("Natural Career: %d kills, %d XP, level %d, %s at %.1fs\n", g.run.kills, g.run.experience,
+                  g.run.level, weapon_name_get(gun), g.run.seconds);
+      break;
+    }
+  }
+  assert(picked && leveled);
 }

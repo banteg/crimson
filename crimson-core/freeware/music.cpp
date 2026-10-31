@@ -15,7 +15,7 @@ void update_music(const Game &g, const std::string &folder) {
     wanted = "survo41";
   else if (g.screen == Screen::Dying)
     wanted = nullptr;
-  else if (g.screen == Screen::Playing || g.paused)
+  else if (g.screen == Screen::Playing || g.screen == Screen::Perks || g.screen == Screen::Message || g.paused)
     wanted = g.run.hits ? "3cwonder" : nullptr;
   if (!g.music_enabled || g.quit)
     wanted = nullptr;

@@ -1,5 +1,6 @@
 #include "game.h"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <fstream>
 
@@ -31,6 +32,16 @@ int menu_hover(const Game &g) {
 
 void Game::update(float dt, const Input &in) {
   decals.clear();
+  shells.clear();
+  if (console_open) {
+    console_input(in);
+    return;
+  }
+  if (in.console && screen != Screen::Death) {
+    console_open = true;
+    command.clear();
+    return;
+  }
   menu_clock += dt;
   mouse_dx = in.x - cursor_x;
   mouse_dy = in.y - cursor_y;
@@ -52,7 +63,7 @@ void Game::update(float dt, const Input &in) {
       selected = 0;
       screen = Screen::Menu;
     } else if (run.pending && !survival &&
-               (in.level_up || (in.click && in.x > width - 190 && in.y > height - 58))) {
+               (in.level_up || (in.click && in.x > width - 240 && in.y > height - 58))) {
       open_perks();
     } else
       tick(dt, in);
@@ -70,7 +81,9 @@ void Game::update(float dt, const Input &in) {
       if (c >= 32 && c < 127 && name.size() < 31)
         name += c;
     if (in.accept || in.escape) {
-      record_score();
+      if (!run.cheated)
+        record_score();
+      score_offset = 0;
       screen = Screen::Scores;
       selected = 0;
     }
@@ -91,11 +104,39 @@ void Game::update(float dt, const Input &in) {
       selected = std::max(0, selected - 1);
     if (in.next)
       selected = std::min(count - 1, selected + 1);
-    int hover = (in.x >= 145 && in.x <= 500 && in.y >= 94) ? int((in.y - 94) / 27) : -1;
+    if (in.click && in.x > 390 && in.x < 590 && in.y > 5 && in.y < 37) {
+      perk_transparent = !perk_transparent;
+      return;
+    }
+    int hover = (in.x > 45 && in.x < 395 && in.y >= 80) ? int((in.y - 80) / 20) : -1;
     if (hover >= 0 && hover < count && (mouse_dx || mouse_dy || in.click))
       selected = hover;
     if (in.accept || (in.click && hover >= 0 && hover < count))
       choose_perk(selected);
+    return;
+  }
+  if (screen == Screen::Options && calibration >= 0) {
+    if (in.escape)
+      calibration = -1;
+    else if (calibration == 0 && (in.accept || in.pad_fire[configuring])) {
+      pad_center[configuring] = {in.stick_x[configuring], in.stick_y[configuring]};
+      ++calibration;
+    } else if (calibration == 1) {
+      pad_threshold[configuring] =
+          std::clamp(pad_threshold[configuring] + .025f * (int(in.next) - int(in.previous)), .025f, .9f);
+      if (in.accept)
+        ++calibration;
+    } else if (calibration >= 2 && in.accept) {
+      float x = in.aim_x[configuring], y = in.aim_y[configuring], len = std::hypot(x, y);
+      if (len > .5f) {
+        float sign = calibration == 2 ? -1.f : 1.f;
+        hat_right[configuring] = {sign * x / len, sign * y / len};
+      }
+      if (++calibration > 3)
+        calibration = -1;
+    }
+    if (calibration == -1)
+      save_options();
     return;
   }
   if (screen == Screen::Options && rebind >= 0) {
@@ -111,12 +152,14 @@ void Game::update(float dt, const Input &in) {
     return;
   }
   if (screen == Screen::Options && !in.escape) {
-    constexpr int count = 9;
+    constexpr int count = 12;
     if (in.previous)
       selected = (selected + count - 1) % count;
     if (in.next)
       selected = (selected + 1) % count;
-    int hover = (in.x >= 170 && in.x < 650 && in.y >= 170) ? int((in.y - 170) / 30) : -1;
+    int hover = (in.x > width / 2 - 140 && in.y > 170) ? int((in.y - 170) / 21) : -1;
+    if (hover >= 0 && hover < count && in.x >= width / 2 - 140 + option(hover).size() * 13)
+      hover = -1;
     if (hover >= 0 && hover < count && (mouse_dx || mouse_dy || in.click))
       selected = hover;
     if (!in.accept && !(in.click && hover >= 0 && hover < count))
@@ -132,26 +175,66 @@ void Game::update(float dt, const Input &in) {
       aiming[configuring] = (aiming[configuring] + 1) % 4;
       break;
     case 3:
-      rebind = 0;
-      break;
-    case 4:
       music_enabled = !music_enabled;
       break;
-    case 5:
+    case 4:
       smooth = !smooth;
       break;
-    case 6:
+    case 5:
       show_fps = !show_fps;
       break;
-    case 7:
+    case 6:
       effects = !effects;
       break;
+    case 7:
+      shell_marks = !shell_marks;
+      break;
     case 8:
+      direction_arrow = !direction_arrow;
+      break;
+    case 9:
+      rebind = 0;
+      break;
+    case 10:
+      calibration = 0;
+      break;
+    case 11:
       screen = Screen::Menu;
       selected = 0;
       break;
     }
     save_options();
+    return;
+  }
+  if (screen == Screen::Scores && !in.escape && !in.accept && !in.click) {
+    int last = std::max(0, int(std::min<size_t>(100, scores().size())) - 10);
+    if (in.next)
+      score_offset = std::min(last, score_offset + 1);
+    if (in.previous)
+      score_offset = std::max(0, score_offset - 1);
+    return;
+  }
+  if (screen == Screen::Online && !in.escape) {
+    if (in.previous)
+      selected = std::max(0, selected - 1);
+    if (in.next)
+      selected = std::min(3, selected + 1);
+    int hover = (in.x >= 180 && in.x < 650 && in.y >= 170) ? int((in.y - 170) / 32) : -1;
+    if (hover >= 0 && hover < 4 && (mouse_dx || mouse_dy || in.click))
+      selected = hover;
+    if (!in.accept && !(in.click && hover >= 0 && hover < 4))
+      return;
+    if (selected == 0)
+      visit_website = true;
+    else if (selected == 1)
+      notice = "Installed version: 1.4.0. The 2002 update service is unavailable.";
+    else if (selected == 2)
+      notice = "The 2002 online highscore service is unavailable.";
+    else {
+      screen = Screen::Menu;
+      selected = 0;
+      notice = nullptr;
+    }
     return;
   }
   if (screen != Screen::Menu) {
@@ -189,9 +272,11 @@ void Game::update(float dt, const Input &in) {
       survival = !survival;
     break;
   case 3:
+    score_offset = 0;
     screen = Screen::Scores;
     break;
   case 4:
+    screen_started = menu_clock;
     screen = Screen::Credits;
     break;
   case 5:
@@ -199,6 +284,7 @@ void Game::update(float dt, const Input &in) {
     screen = Screen::Options;
     break;
   case 6:
+    selected = 0;
     screen = Screen::Online;
     break;
   case 7:
@@ -223,15 +309,21 @@ std::string Game::option(int row) const {
   case 2:
     return aims[aiming[configuring]];
   case 3:
-    return "Redefine controls.";
-  case 4:
     return music_enabled ? "Music: on" : "Music: off";
-  case 5:
+  case 4:
     return smooth ? "Background filter: smooth" : "Background filter: sharp";
-  case 6:
+  case 5:
     return show_fps ? "Show FPS: on" : "Show FPS: off";
-  case 7:
+  case 6:
     return effects ? "Glow, Smoke & Shadow FX: on" : "Glow, Smoke & Shadow FX: off";
+  case 7:
+    return shell_marks ? "Shell marks: on" : "Shell marks: off";
+  case 8:
+    return direction_arrow ? "Direction Arrow: on" : "Direction Arrow: off";
+  case 9:
+    return "Redefine controls";
+  case 10:
+    return "Calibrate joystick";
   default:
     return "Done.";
   }
@@ -247,8 +339,15 @@ void Game::save_options() const {
       f << ' ' << k;
     f << '\n';
   }
+  f << shell_marks << ' ' << direction_arrow << '\n';
+  for (int i = 0; i < 2; ++i)
+    f << pad_center[i].x << ' ' << pad_center[i].y << ' ' << pad_threshold[i] << '\n';
+  for (auto dir : hat_right)
+    f << dir.x << ' ' << dir.y << '\n';
 }
 void Game::load_options() {
+  if (save_dir.empty())
+    return;
   std::ifstream f(save_dir + "freeware-options.cfg");
   int opts[4], controls[2][7];
   for (auto &v : opts)
@@ -269,6 +368,23 @@ void Game::load_options() {
     movement[i] = controls[i][0];
     aiming[i] = controls[i][1];
     std::copy_n(controls[i] + 2, 5, keys[i]);
+  }
+  int shells_on, arrow_on;
+  if (f >> shells_on >> arrow_on) {
+    shell_marks = shells_on != 0;
+    direction_arrow = arrow_on != 0;
+  }
+  for (int i = 0; i < 2; ++i) {
+    float x, y, t;
+    if (f >> x >> y >> t && x >= -1 && x <= 1 && y >= -1 && y <= 1 && t > 0 && t < 1) {
+      pad_center[i] = {x, y};
+      pad_threshold[i] = t;
+    }
+  }
+  for (auto &dir : hat_right) {
+    float x, y;
+    if (f >> x >> y && std::abs(std::hypot(x, y) - 1) < .01f)
+      dir = {x, y};
   }
 }
 } // namespace freeware

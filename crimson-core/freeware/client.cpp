@@ -15,14 +15,21 @@ struct Sample {
   SDL_AudioStream *stream{};
   Uint8 *data{};
   Uint32 size{};
+  Uint64 last{};
 };
 static Sample samples[int(Sound::Count)];
 static void load_audio(const std::string &folder) {
-  const char *names[] = {"gunshot_01.wav", "hit_01.wav",    "die_01.wav",    "attack_01.wav", "pistol_01.wav",
-                         "shotgun_01.wav", "plasma_01.wav", "rocket_01.wav", "flamer_01.wav", "gunreload_01.wav",
-                         "bonus.wav",      "levelup.wav",   "explo_01.wav"};
+  static const char *names[] = {
+      "hit_01.wav",     "hit_02.wav",       "pistol_01.wav",  "die_01.wav",    "die_02.wav",
+      "die_03.wav",     "die_02.wav",       "gunshot_01.wav", "plasma_01.wav", "attack_01.wav",
+      "attack_02.wav",  "attack_03.wav",    "plasma_02.wav",  "wind.wav",      "flamer_01.wav",
+      "shotgun_01.wav", "gunreload_01.wav", "levelup.wav",    "bonus.wav",     "berserk.wav",
+      "rocket_01.wav",  "explo_01.wav",     nullptr,          nullptr,         nullptr,
+      nullptr,          "gunburst.wav",     "drip.wav",       "decay_01.wav"};
   static_assert(sizeof(names) / sizeof(*names) == int(Sound::Count));
   for (int i = 0; i < int(Sound::Count); ++i) {
+    if (!names[i])
+      continue;
     SDL_AudioSpec spec{};
     auto &s = samples[i];
     if (SDL_LoadWAV((folder + "/" + names[i]).c_str(), &spec, &s.data, &s.size)) {
@@ -34,13 +41,18 @@ static void load_audio(const std::string &folder) {
     }
   }
 }
-void play_sound(Sound which) {
-  auto &s = samples[static_cast<int>(which)];
-  if (s.stream) {
-    SDL_ClearAudioStream(s.stream);
-    SDL_PutAudioStreamData(s.stream, s.data, s.size);
-  }
+void play_original_sample(int id) {
+  if (id < 0 || id >= int(Sound::Count))
+    return;
+  auto &s = samples[id];
+  auto now = SDL_GetTicks();
+  if (!s.stream || (s.last && now - s.last < (id == 14 ? 580 : 80)))
+    return;
+  s.last = now;
+  SDL_ClearAudioStream(s.stream);
+  SDL_PutAudioStreamData(s.stream, s.data, s.size);
 }
+void play_sound(Sound which) { play_original_sample(int(which)); }
 struct Client {
   SDL_Window *window{};
   SDL_Renderer *renderer{};
@@ -56,6 +68,7 @@ static void frame() {
   auto &c = client;
   auto &in = c.in;
   in.click = in.accept = in.previous = in.next = in.escape = in.backspace = false;
+  in.console = false;
   in.level_up = false;
   in.reload = false;
   in.key = 0;
@@ -98,6 +111,9 @@ static void frame() {
       if (e.key.scancode == SDL_SCANCODE_Q && (e.key.mod & SDL_KMOD_ALT))
         c.game.quit = true;
       switch (e.key.scancode) {
+      case SDL_SCANCODE_GRAVE:
+        in.console = true;
+        break;
       case SDL_SCANCODE_SPACE:
       case SDL_SCANCODE_KP_PLUS:
       case SDL_SCANCODE_EQUALS:
@@ -140,15 +156,12 @@ static void frame() {
   in.left = held(0, 2) || (!c.game.two_players && in.left2);
   in.right = held(0, 3) || (!c.game.two_players && in.right2);
   for (int i = 0; i < 2; ++i) {
-    auto axis = [&](SDL_GamepadAxis a) {
-      float v = c.pads[i] ? SDL_GetGamepadAxis(c.pads[i], a) / 32768.f : 0.f;
-      return std::abs(v) > .18f ? v : 0.f;
-    };
+    auto axis = [&](SDL_GamepadAxis a) { return c.pads[i] ? SDL_GetGamepadAxis(c.pads[i], a) / 32768.f : 0.f; };
     in.stick_x[i] = axis(SDL_GAMEPAD_AXIS_LEFTX);
     in.stick_y[i] = axis(SDL_GAMEPAD_AXIS_LEFTY);
     in.aim_x[i] = axis(SDL_GAMEPAD_AXIS_RIGHTX);
     in.aim_y[i] = axis(SDL_GAMEPAD_AXIS_RIGHTY);
-    if (c.pads[i] && !in.aim_x[i] && !in.aim_y[i]) {
+    if (c.pads[i] && std::hypot(in.aim_x[i], in.aim_y[i]) < c.game.pad_threshold[i]) {
       in.aim_x[i] = int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) -
                     int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_LEFT));
       in.aim_y[i] = int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_DOWN)) -
@@ -160,15 +173,21 @@ static void frame() {
   const Uint64 now = SDL_GetTicksNS();
   float dt = std::min(.1f, float(now - c.previous) / 1e9f);
   c.previous = now;
-  auto before = c.game.screen;
+  bool was_text = c.game.screen == Screen::Death || c.game.console_open;
   Input controls = in;
+  controls.mouse_fire = in.fire;
   controls.fire |= held(0, 4) || (!c.game.two_players && in.fire2);
   c.game.update(dt, controls);
-  if (before != c.game.screen) {
-    if (c.game.screen == Screen::Death)
+  bool wants_text = c.game.screen == Screen::Death || c.game.console_open;
+  if (was_text != wants_text) {
+    if (wants_text)
       SDL_StartTextInput(c.window);
     else
       SDL_StopTextInput(c.window);
+  }
+  if (c.game.visit_website) {
+    SDL_OpenURL("https://www.crimsonland.com/");
+    c.game.visit_website = false;
   }
   update_music(c.game, c.assets);
   c.display->draw(c.game);
