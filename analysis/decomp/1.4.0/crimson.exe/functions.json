@@ -892,6 +892,14 @@
     "size": 443
   },
   {
+    "address": "0x00408CF0",
+    "canonical_address": "0x004045A0",
+    "end": "0x00408DB8",
+    "evidence": "recovered",
+    "name": "perks_generate_choices",
+    "size": 200
+  },
+  {
     "address": "0x00408E20",
     "canonical_address": "0x00420040",
     "end": "0x00408E84",
@@ -1101,14 +1109,6 @@
     "evidence": "recovered",
     "name": "perk_selection_screen_update",
     "size": 3785
-  },
-  {
-    "address": "0x004169C0",
-    "canonical_address": "0x0042A5F0",
-    "end": "0x004169FD",
-    "evidence": "ordered",
-    "name": "audio_resume_all",
-    "size": 61
   },
   {
     "address": "0x00418190",

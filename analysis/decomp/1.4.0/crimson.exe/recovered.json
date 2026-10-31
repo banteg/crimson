@@ -387,6 +387,12 @@
       "body_sha256": "91b68a8b8fc0ffc254f39a4cb7b976fff31ae226ed7086a046a74aa09eb45bc8"
     },
     {
+      "name": "perks_generate_choices",
+      "address": "0x00408cf0",
+      "end": "0x00408db8",
+      "body_sha256": "12be0bff89908af64b1375a08d9203d543320c20430c31377a151779b02a4d10"
+    },
+    {
       "name": "gameplay_reset_state",
       "address": "0x00408e90",
       "end": "0x0040900b",
@@ -895,6 +901,12 @@
       "bytes": "8b35f0874300"
     },
     {
+      "name": "perk_id_count",
+      "address": "0x00438824",
+      "reference": "0x00408d3d",
+      "bytes": "f73d24884300"
+    },
+    {
       "name": "fx_queue",
       "address": "0x00438828",
       "reference": "0x004034a3",
@@ -914,6 +926,13 @@
       "reference": "0x004037c0",
       "bytes": "b880bb4300",
       "offset": 8
+    },
+    {
+      "name": "perk_choice_flags",
+      "address": "0x0043c598",
+      "reference": "0x00408cf8",
+      "bytes": "bf98c54300",
+      "build_only": true
     },
     {
       "name": "unused_aim64_prefix_color",
@@ -945,6 +964,12 @@
       "reference": "0x00405ddd",
       "bytes": "8b15d0284400",
       "offset": 436
+    },
+    {
+      "name": "config_player_count",
+      "address": "0x004428a0",
+      "reference": "0x00408d29",
+      "bytes": "a1a0284400"
     },
     {
       "name": "config_game_mode",
@@ -983,6 +1008,13 @@
       "address": "0x00452d59",
       "reference": "0x004065b0",
       "bytes": "a0592d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_show_secret_hints",
+      "address": "0x00452d84",
+      "reference": "0x00408d78",
+      "bytes": "a0842d4500",
       "build_only": true
     },
     {
@@ -1037,6 +1069,12 @@
       "bytes": "8b15f42d4500"
     },
     {
+      "name": "perk_id_perk_expert",
+      "address": "0x00452e30",
+      "reference": "0x00408cff",
+      "bytes": "8b0d302e4500"
+    },
+    {
       "name": "creature_spawned_count",
       "address": "0x00452e78",
       "reference": "0x0040fcec",
@@ -1064,6 +1102,9 @@
     },
     {
       "name": "bonus_render"
+    },
+    {
+      "name": "audio_resume_all"
     }
   ]
 }

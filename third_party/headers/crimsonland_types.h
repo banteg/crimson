@@ -292,6 +292,13 @@ typedef struct player_input_config_t {
 } player_input_config_t;
 
 #if CL_BUILD == 10300 || CL_BUILD == 10400
+typedef struct freeware_perk_entry_t {
+    unsigned int name_va, description_va;
+    int texture, frame;
+    unsigned char available, secret;
+    unsigned char padding[2];
+} freeware_perk_entry_t;
+
 typedef struct freeware_player_t {
     unsigned char prefix[0x18];
     vec2f_t position, movement;

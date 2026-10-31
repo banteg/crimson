@@ -741,6 +741,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00438824",
+      "name": "perk_id_count",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00438828",
       "name": "fx_queue",
       "program": "1.4.0/crimson.exe"
@@ -816,6 +821,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0043c598",
+      "name": "perk_choice_flags",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0043c5d0",
       "name": "unused_aim64_prefix_color",
       "program": "1.4.0/crimson.exe"
@@ -843,6 +853,11 @@
     {
       "address": "0x0044271c",
       "name": "config_blob",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004428a0",
+      "name": "config_player_count",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -878,6 +893,11 @@
     {
       "address": "0x00452d59",
       "name": "freeware_secret_weapon_unlocked",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452d84",
+      "name": "freeware_show_secret_hints",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -918,6 +938,11 @@
     {
       "address": "0x00452df4",
       "name": "perk_id_fastloader",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e30",
+      "name": "perk_id_perk_expert",
       "program": "1.4.0/crimson.exe"
     },
     {

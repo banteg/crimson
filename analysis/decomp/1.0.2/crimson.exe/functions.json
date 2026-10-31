@@ -383,11 +383,19 @@
     "size": 107
   },
   {
+    "address": "0x00401C80",
+    "canonical_address": "0x0041FC80",
+    "end": "0x0040222B",
+    "evidence": "ordered",
+    "name": "player_reset_all",
+    "size": 1451
+  },
+  {
     "address": "0x00402230",
-    "canonical_address": "0x0041FED0",
+    "canonical_address": "0x004045A0",
     "end": "0x0040234E",
     "evidence": "ordered",
-    "name": "effect_uv_tables_init",
+    "name": "perks_generate_choices",
     "size": 286
   },
   {

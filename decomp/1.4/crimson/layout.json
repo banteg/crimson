@@ -219,6 +219,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/perks/perks_generate_choices.cpp",
+          "configs": [
+            "tools/match/scratches/perks_generate_choices"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/perks/wrap_text_to_width_alloc.cpp",
           "configs": [
             "tools/match/scratches/wrap_text_to_width_alloc"

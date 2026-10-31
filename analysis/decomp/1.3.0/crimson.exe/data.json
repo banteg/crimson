@@ -616,6 +616,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x004374a8",
+      "name": "config_player_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x004374b0",
       "name": "config_game_mode",
       "program": "1.3.0/crimson.exe"
