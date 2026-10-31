@@ -11,34 +11,9 @@ int freeware_read_name_key(), freeware_score_rank(int), freeware_save_score();
 void freeware_music_start(int);
 }
 #endif
-__forceinline void label(const char *text, float x, float y, float scale, float r, float g, float b, float alpha) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-    G.frame_labels.push_back({text, x, y, scale, {r, g, b, alpha}});
-#else
-    grim_interface_ptr->grim_set_config_var(0x18, scale);
-    grim_interface_ptr->grim_set_color(r, g, b, alpha);
-    grim_interface_ptr->grim_draw_text_mono(x, y, (char *)text);
-#endif
-}
-__forceinline void sprite(const char *name, float x, float y, float w, float h, float angle, float r, float g,
-                          float b, float a) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-    G.frame_sprites.push_back({name, x, y, w, h, angle, {r, g, b, a}});
-#else
-    grim_interface_ptr->grim_bind_texture(grim_interface_ptr->grim_get_texture_handle((char *)name), 0);
-    grim_interface_ptr->grim_set_rotation(angle);
-    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
-    grim_interface_ptr->grim_set_color(r, g, b, a);
-    grim_interface_ptr->grim_begin_batch();
-    grim_interface_ptr->grim_draw_quad(x, y, w, h);
-    grim_interface_ptr->grim_end_batch();
-#endif
-}
-#define MOUSE_X FIELD(freeware_aim_screen.x, cursor_x)
-#define MOUSE_Y FIELD(freeware_aim_screen.y, cursor_y)
 __forceinline void aim_overlays() {
     if (bonus_fire_bullets_timer > 0 && config_player_count == 1)
-        sprite("part64", MOUSE_X - 32, MOUSE_Y - 32, 64, 64, 0, 1, 1, 1, saturate(bonus_fire_bullets_timer));
+        sprite("part", MOUSE_X - 32, MOUSE_Y - 32, 64, 64, 0, 1, 1, 1, saturate(bonus_fire_bullets_timer));
     for (current_player_index = 0; current_player_index < config_player_count; ++current_player_index) {
         if (HP(current_player_index) <= 0)
             continue;
@@ -106,6 +81,7 @@ __forceinline void name_screen() {
 #endif
     }
     ACTIVE = 0;
+    begin_overlay();
     float alpha = CLOCK - STATE_SINCE;
     if (alpha >= 1)
         alpha = 1;
@@ -183,6 +159,7 @@ __forceinline void name_screen() {
         enter(1);
         show_page(scores_page);
         STATE_SINCE = CLOCK - 1;
+        FIELD(freeware_transition_pending, transition_pending) = 0;
         PERK(perk_id_reflex_boosted) = 0;
     }
     int hits = highscore_record_hits, fired = highscore_record_shots_fired;

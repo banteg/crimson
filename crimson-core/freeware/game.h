@@ -1,14 +1,15 @@
 #pragma once
 
-#include "crimsonland_types.h"
+#include "freeware_level.h"
 #include <array>
+#include <bitset>
 #include <cstdint>
 #include <string>
 #include <vector>
 
 namespace freeware {
 constexpr int width = 1024, height = 768, arena = 1024;
-enum class Screen { Menu, Playing, Dying, Death, Perks, Message, Scores, Credits, Options, Online };
+enum class Screen { Menu, Playing, Dying, Death, LevelCleared, Perks, Message, Scores, Credits, Options, Online };
 enum class Sound {
   Hit = 0,
   Pistol = 2,
@@ -46,9 +47,10 @@ struct Input {
   bool ctrl{}, console{}, mouse_fire{};
   bool screenshot{}, relative{};
   float dx{}, dy{};
+  std::bitset<256> level_down, level_pressed;
   int key{};
   float stick_x[2]{}, stick_y[2]{}, aim_x[2]{}, aim_y[2]{};
-  bool pad_fire[2]{}, pad_perk[2]{}, fire_edge[2]{}, mouse_reload{}, perk_button{};
+  bool pad_any[2]{}, pad_fire[2]{}, pad_perk[2]{}, fire_edge[2]{}, mouse_reload{}, perk_button{};
   std::string text;
 };
 // A zero size selects a four-corner textured trail. Sprites use the first point as the top-left.
@@ -110,8 +112,17 @@ struct Score {
   int kills{}, experience{};
   float min_fps{}, average_fps{}, max_fps{}, version = 1.4f;
 };
+struct LevelBrush {
+  std::string name;
+  freeware_level_object object;
+};
 struct Game {
-  Screen screen = Screen::Menu;
+  Screen screen = Screen::Menu, presented_screen = Screen::Menu;
+  int level_mode{}, level_number{}, editor_brush{}, editor_layer{};
+  float editor_rotation{}, editor_light = 1, editor_alpha = 1, editor_radius = 20;
+  vec2f_t editor_offset{};
+  std::vector<LevelBrush> brushes;
+  void load_next_level();
   Run run;
   std::vector<Corpse> decals;
   std::vector<ImpactMark> marks;
@@ -123,7 +134,11 @@ struct Game {
   vec2f_t radial_cursor{320, 140}, camera{0, -128}, camera_shake{};
   float camera_timer{}, state_since{};
   unsigned char random_flags[8]{};
-  bool active_run{}, resumed_this_frame{}, paused_perks{}, menu_music_pending = true;
+  bool transition_pending = true;
+  float transition_alpha = 1;
+  bool wind_started{}, active_run{}, paused_perks{}, menu_music_pending = true;
+  float logo_angle{}, snow_y[width]{};
+  bool logo_visible{}, birthday{}, memorial{}, solstice{}, christmas{};
   int assembly_sequence{}, fps_count{}, low_fps_frames{};
   float fps_history[50]{};
   bool smoke = true, shadows = true, screenshot_requested{};
@@ -145,8 +160,9 @@ struct Game {
   int keys[2][5]{{26, 22, 4, 7, 43}, {82, 81, 80, 79, 228}};
   bool show_fps{}, effects = true, smooth = true, shell_marks{}, direction_arrow = true;
   int calibration = -1;
-  vec2f_t pad_center[2]{}, hat_right[2]{{1, 0}, {1, 0}};
-  float pad_threshold[2]{.18f, .18f};
+  vec2f_t pad_center[2]{};
+  float pad_threshold[2]{.1f, .1f};
+  int pad_left_pov[2]{27000, 27000}, pad_right_pov[2]{9000, 9000};
   std::vector<vec2f_t> pending_blood, pending_shells;
   std::vector<ImpactMark> pending_shards, shells;
   void queue_blood(vec2f_t p);

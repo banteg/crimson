@@ -9,8 +9,8 @@ int freeware_level_map::move_with_collision(vec2f_t *pos, const vec2f_t *delta, 
     int blocked = 0;
     pos->x += delta->x;
     pos->y += delta->y;
-    for (unsigned i = 0; walls_begin && i < (unsigned)(walls_end - walls_begin); ++i) {
-        const freeware_level_object &wall = *walls_begin[i];
+    for (unsigned i = 0; layers[1].begin && i < (unsigned)(layers[1].end - layers[1].begin); ++i) {
+        const freeware_level_object &wall = *layers[1].begin[i];
         if (!within(wall, *pos, radius))
             continue;
         pos->y -= delta->y;

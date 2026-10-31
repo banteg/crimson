@@ -11,6 +11,7 @@ unsigned char game_frame_update();
 void freeware_playing_stage(), freeware_spawn_edge(), freeware_bomb_advance();
 extern int config_player_count;
 extern game_mode_id_t config_game_mode;
+int perk_id_see_health = 16;
 int perk_id_lean_mean_exp_machine = 6, perk_id_spontaneously_combusteous = 7, perk_id_berserk_attack = 13,
     perk_id_reflex_boosted = 15, perk_id_jinxed = 17, perk_id_evil_eyes = 18, perk_id_final_revenge = 23;
 }
@@ -21,6 +22,8 @@ int Game::frame_state() const {
     return 3;
   case Screen::Perks:
     return 4;
+  case Screen::LevelCleared:
+    return 8;
   case Screen::Dying:
     return 6;
   case Screen::Message:
@@ -45,6 +48,9 @@ void Game::enter_state(int id) {
   case 6:
     screen = Screen::Dying;
     break;
+  case 8:
+    screen = Screen::LevelCleared;
+    break;
   case 9:
     screen = Screen::Death;
     std::puts("1.4.0 name entry");
@@ -64,13 +70,12 @@ void Game::update(float dt, const Input &in) {
   } else if (console_open)
     console_input(in);
   menu_clock += dt;
-  resumed_this_frame = false;
   mouse_dx = in.relative ? in.dx : in.x - cursor_x;
   mouse_dy = in.relative ? in.dy : in.y - cursor_y;
   if (dt > 0)
     fps = 1 / dt;
   config_player_count = players();
-  config_game_mode = static_cast<game_mode_id_t>(survival ? 2 : 1);
+  config_game_mode = static_cast<game_mode_id_t>(level_mode ? level_mode : survival ? 2 : 1);
   freeware_frame_game = this;
   Input quiet;
   quiet.x = cursor_x;

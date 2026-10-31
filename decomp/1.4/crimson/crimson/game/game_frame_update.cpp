@@ -1,6 +1,6 @@
 // crimson.exe 1.4.0, 0x418190. The camera and the secret flags consume the
 // gameplay CRT stream between the early combat pass and the state dispatch.
-#include "crimsonland_types.h"
+#include "freeware_level.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -29,6 +29,7 @@ extern int current_player_index, config_player_count, config_aim_schemes[2], fre
     freeware_arena_height;
 extern int perk_id_reflex_boosted, perk_id_lean_mean_exp_machine, perk_id_final_revenge, perk_id_jinxed,
     perk_id_spontaneously_combusteous, perk_id_evil_eyes, perk_id_berserk_attack;
+extern int perk_id_see_health;
 extern game_mode_id_t config_game_mode;
 extern unsigned char console_open_flag, time_scale_active, freeware_spawn_enabled, freeware_game_active,
     freeware_rainbow_armed, freeware_rainbow_enabled, freeware_secret_weapon_unlocked;
@@ -59,11 +60,17 @@ extern vec2f_t freeware_camera_shake, freeware_bomb_position;
 extern unsigned char freeware_random_flags[8], quit_requested;
 void player_render(), gameplay_render_hud(), terrain_render(), fx_queue_render(), projectile_render(),
     effect_render_all(), creature_render_all(), perk_selection_screen_update(), game_show_message(),
-    gameplay_reset_state(), level_load_next(), level_editor_update(), sfx_update(), freeware_menu_update(),
-    freeware_name_entry();
+    gameplay_reset_state(), sfx_update();
 #endif
 }
 
+extern "C" {
+#ifndef CRIMSON_FREEWARE_CLIENT
+extern unsigned char freeware_transition_pending;
+extern float freeware_transition_alpha;
+void freeware_overlay_begin();
+#endif
+}
 namespace {
 #define P(i) player_state_table[i].freeware
 #define XP FIELD(P(0).experience, run.experience)
@@ -134,6 +141,23 @@ __forceinline void hud() { gameplay_render_hud(); }
 __forceinline void blood(vec2f_t *p) { freeware_blood(p); }
 #endif
 
+__forceinline void request_transition() {
+    FIELD(freeware_transition_pending, transition_pending) = 1;
+    FIELD(freeware_transition_alpha, transition_alpha) = 1;
+}
+__forceinline void begin_overlay() {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    frame_dt = freeware_frame_delta * .8f;
+    if (G.transition_pending) {
+        G.transition_pending = false;
+        STATE_SINCE = CLOCK;
+    }
+    if (G.transition_alpha < 1)
+        G.transition_alpha -= frame_dt * 2.4f;
+#else
+    freeware_overlay_begin();
+#endif
+}
 __forceinline void simulate_players() {
     XP_TIMER -= frame_dt;
     if (XP_TIMER < 0) {
@@ -146,6 +170,7 @@ __forceinline void simulate_players() {
     if (PENDING > 0 && config_game_mode != 2 && open_perk()) {
         enter(4);
         open_choices();
+        request_transition();
         STATE_SINCE = CLOCK;
     } else {
         for (current_player_index = 0; current_player_index < config_player_count; ++current_player_index)
@@ -158,8 +183,10 @@ __forceinline void simulate_players() {
 __forceinline float shake(float value) { return (float)(value * .125 * (crt_rand() % 200 - 100) * .15f); }
 __forceinline void position_camera() {
     if (config_game_mode == 4 && state() == 3) {
-        CAM.x = screen_width / 2 - freeware_aim_screen.x / (screen_width * .8f) * freeware_arena_width;
-        CAM.y = screen_height / 2 - freeware_aim_screen.y / (screen_height * .8f) * freeware_arena_height;
+        CAM.x = screen_width / 2 -
+                FIELD(freeware_aim_screen.x, cursor_x) / (screen_width * .8f) * freeware_arena_width;
+        CAM.y = screen_height / 2 -
+                FIELD(freeware_aim_screen.y, cursor_y) / (screen_height * .8f) * freeware_arena_height;
     } else {
         vec2f_t target = POS(0);
         if (config_player_count != 1) {
@@ -233,7 +260,10 @@ __forceinline void render_world() {
     current_player_index = 0;
 #ifndef CRIMSON_FREEWARE_CLIENT
     projectile_render();
+    freeware_current_map->render_layer(1, 0);
+    freeware_current_map->render_triggers(1);
     effect_render_all();
+    freeware_current_map->render_layer(2, 0);
 #else
     G.apply_bomb_damage(frame_dt);
 #endif
@@ -333,16 +363,24 @@ __forceinline void update_wave() {
     if (BOMB >= 0)
         BOMB += (BOMB + 1) * frame_dt * 1.8f;
 }
+__forceinline void label(const char *, float, float, float, float, float, float, float);
 __forceinline void target_perks() {
     for (current_player_index = 0; current_player_index < config_player_count; ++current_player_index) {
         if (HP(current_player_index) <= 0 ||
             (P(current_player_index).perks[perk_id_spontaneously_combusteous] <= 0 &&
-             P(current_player_index).perks[perk_id_evil_eyes] <= 0))
+             P(current_player_index).perks[perk_id_evil_eyes] <= 0 &&
+             P(current_player_index).perks[perk_id_see_health] <= 0))
             continue;
         int id = creature_find_in_radius(&P(current_player_index).aim, 10);
         if (id < 0)
             continue;
         creature_t &c = creature_pool[id];
+        if (P(current_player_index).perks[perk_id_see_health] > 0) {
+            char buf[40];
+            sprintf(buf, "health %d", (int)c.health);
+            label(buf, FIELD(freeware_aim_screen.x, cursor_x), FIELD(freeware_aim_screen.y, cursor_y) + 32, .5f, 1,
+                  1, 1, .64f);
+        }
         if (P(current_player_index).perks[perk_id_spontaneously_combusteous] > 0) {
             c.anim_phase -= frame_dt;
             if (c.anim_phase < 0) {
@@ -395,6 +433,33 @@ __forceinline void timed_perks() {
         }
     }
 }
+__forceinline void label(const char *text, float x, float y, float scale, float r, float g, float b, float alpha) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    G.frame_labels.push_back({text, x, y, scale, {r, g, b, alpha}});
+#else
+    grim_interface_ptr->grim_set_config_var(0x18, scale);
+    grim_interface_ptr->grim_set_color(r, g, b, alpha);
+    grim_interface_ptr->grim_draw_text_mono(x, y, (char *)text);
+#endif
+}
+__forceinline void sprite(const char *name, float x, float y, float w, float h, float angle, float r, float g,
+                          float b, float a) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    G.frame_sprites.push_back({name, x, y, w, h, angle, {r, g, b, a}});
+#else
+    grim_interface_ptr->grim_bind_texture(grim_interface_ptr->grim_get_texture_handle((char *)name), 0);
+    grim_interface_ptr->grim_set_rotation(angle);
+    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+    grim_interface_ptr->grim_set_color(r, g, b, a);
+    grim_interface_ptr->grim_begin_batch();
+    grim_interface_ptr->grim_draw_quad(x, y, w, h);
+    grim_interface_ptr->grim_end_batch();
+#endif
+}
+#define MOUSE_X FIELD(freeware_aim_screen.x, cursor_x)
+#define MOUSE_Y FIELD(freeware_aim_screen.y, cursor_y)
+
+#include "frame_level.inc"
 #include "frame_menu.inc"
 #include "frame_overlays.inc"
 } // namespace
@@ -452,7 +517,17 @@ extern "C" unsigned char game_frame_update() {
     if (state() == 3 && config_game_mode != 4)
         simulate_players();
     position_camera();
-    render_world();
+    if (config_game_mode == 3 && state() == 3) {
+        freeware_current_map->update_triggers();
+        if (level_cleared()) {
+            enter(8);
+            STATE_SINCE = CLOCK;
+        }
+    }
+    if (config_game_mode == 4 && state() == 3)
+        editor();
+    else
+        render_world();
     if (!freeware_rainbow_armed) {
         for (int i = 0; i < 8; ++i) {
             unsigned char bit = crt_rand() % 2 == 0;
@@ -465,6 +540,9 @@ extern "C" unsigned char game_frame_update() {
 #endif
         }
     }
+#ifdef CRIMSON_FREEWARE_CLIENT
+    G.presented_screen = G.screen;
+#endif
     switch (state()) {
     case 1:
         if (!ACTIVE) {
@@ -497,12 +575,17 @@ extern "C" unsigned char game_frame_update() {
             target_perks();
             timed_perks();
             spawn_wave();
+            hud();
+            if (!FIELD(freeware_music_started, wind_started) && CLOCK > 1.1f) {
+                sfx_play_panned(13, .45f, .5f);
+                FIELD(freeware_music_started, wind_started) = 1;
+            }
         }
-        hud();
         break;
     case 4:
         hud();
 #ifdef CRIMSON_FREEWARE_CLIENT
+        begin_overlay();
         G.update_ui(INPUT);
 #else
         perk_selection_screen_update();
@@ -526,12 +609,14 @@ extern "C" unsigned char game_frame_update() {
         }
         if (CLOCK - STATE_SINCE >= 3) {
             enter(9);
+            request_transition();
             STATE_SINCE = CLOCK;
         }
         break;
     case 7:
         hud();
 #ifdef CRIMSON_FREEWARE_CLIENT
+        begin_overlay();
         G.update_ui(INPUT);
 #else
         game_show_message();
@@ -539,9 +624,18 @@ extern "C" unsigned char game_frame_update() {
         break;
     case 8:
         hud();
+        if (CLOCK - STATE_SINCE < 3) {
+            float elapsed = CLOCK - STATE_SINCE;
+            label("Level Cleared!", screen_width / 2.f - 112, screen_height / 2.f - 32, 1, 1, 1, 1,
+                  elapsed < 1   ? elapsed
+                  : elapsed < 2 ? 1.f
+                                : 3.f - elapsed);
+        }
         if (CLOCK - STATE_SINCE >= 3) {
 #ifndef CRIMSON_FREEWARE_CLIENT
             level_load_next();
+#else
+            G.load_next_level();
 #endif
             enter(3);
         }
@@ -551,12 +645,16 @@ extern "C" unsigned char game_frame_update() {
         break;
     }
 #ifdef CRIMSON_FREEWARE_CLIENT
-    if (INPUT.escape && (G.screen == freeware::Screen::Playing || G.screen == freeware::Screen::Perks) &&
-        !G.resumed_this_frame) {
+    if (INPUT.escape && state() != 6 && state() != 1) {
         G.paused_perks = G.screen == freeware::Screen::Perks;
-        G.paused = true;
+        G.paused = ACTIVE;
         G.selected = 0;
         enter(1);
+    }
+    if (G.show_fps) {
+        char buf[64];
+        sprintf(buf, "fps: %.2f", G.fps);
+        label(buf, 5, screen_height - 25.f, .7f, 1, 1, 1, 1);
     }
     update_fps(G.fps);
     return !G.quit;
@@ -569,6 +667,10 @@ extern "C" unsigned char game_frame_update() {
     if (quit_requested)
         return 0;
     update_fps(grim_interface_ptr->grim_get_fps());
+    if (freeware_show_fps) {
+        sprintf(freeware_ui_buffer, "fps: %.2f", (double)grim_interface_ptr->grim_get_fps());
+        label(freeware_ui_buffer, 5, screen_height - 25.f, .7f, 1, 1, 1, 1);
+    }
     return 1;
 #endif
 }

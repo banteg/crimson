@@ -39,10 +39,6 @@ void Game::update_ui(const Input &in) {
     return;
   }
   if (screen == Screen::Perks) {
-    if (in.escape) {
-      screen = Screen::Playing;
-      return;
-    }
     int count = int(run.choices.size());
     if (in.previous)
       selected = std::max(0, selected - 1);
@@ -59,60 +55,31 @@ void Game::update_ui(const Input &in) {
       choose_perk(selected);
     return;
   }
-  if (screen == Screen::Options && calibration >= 0) {
-    if (in.escape)
-      calibration = -1;
-    else if (calibration == 0 && (in.accept || in.pad_fire[configuring])) {
-      pad_center[configuring] = {in.stick_x[configuring], in.stick_y[configuring]};
-      ++calibration;
-    } else if (calibration == 1) {
-      pad_threshold[configuring] =
-          std::clamp(pad_threshold[configuring] + .025f * (int(in.next) - int(in.previous)), .025f, .9f);
-      if (in.accept)
-        ++calibration;
-    } else if (calibration >= 2 && in.accept) {
-      float x = in.aim_x[configuring], y = in.aim_y[configuring], len = std::hypot(x, y);
-      if (len > .5f) {
-        float sign = calibration == 2 ? -1.f : 1.f;
-        hat_right[configuring] = {sign * x / len, sign * y / len};
-      }
-      if (++calibration > 3)
-        calibration = -1;
+  if (screen == Screen::Scores || screen == Screen::Credits) {
+    if (screen == Screen::Scores) {
+      int last = std::max(0, int(std::min<size_t>(100, scores().size())) - 10);
+      if (in.next)
+        score_offset = std::min(last, score_offset + 1);
+      if (in.previous)
+        score_offset = std::max(0, score_offset - 1);
     }
-    if (calibration == -1)
-      save_options();
-    return;
-  }
-  if (screen == Screen::Options && rebind >= 0) {
-    if (in.escape)
-      rebind = -1;
-    else if (in.key) {
-      keys[rebind / 5][rebind % 5] = in.key;
-      if (++rebind == 10)
-        rebind = -1;
+    if (transition_alpha < 1)
+      transition_alpha -= frame_dt * 2.4f;
+    if (in.accept || in.click || in.escape)
+      transition_alpha -= frame_dt;
+    if (transition_alpha <= 0) {
+      transition_pending = true;
+      state_since = freeware_simulation_clock;
+      screen = Screen::Menu;
+      selected = 0;
     }
-    if (rebind < 0)
-      save_options();
-    return;
-  }
-  if (screen == Screen::Scores && !in.escape && !in.accept && !in.click) {
-    int last = std::max(0, int(std::min<size_t>(100, scores().size())) - 10);
-    if (in.next)
-      score_offset = std::min(last, score_offset + 1);
-    if (in.previous)
-      score_offset = std::max(0, score_offset - 1);
-    return;
-  }
-  if (in.accept || in.click || in.escape) {
-    screen = Screen::Menu;
-    selected = 0;
   }
 }
 std::string Game::option(int row) const {
   static const char *moves[] = {"Control method: kb static", "Control method: kb relative",
                                 "Control method: joystick static"};
   static const char *aims[] = {"Aiming device: mouse static", "Aiming device: mouse relative",
-                               "Aiming device: keyboard", "Aiming device: joystick hat"};
+                               "Aiming device: keyboard", "Aiming device: joystickk 'hat'"};
   switch (row) {
   case 0:
     return configuring ? "Configure for: Player 2" : "Configure for: Player 1";
@@ -137,7 +104,7 @@ std::string Game::option(int row) const {
   case 10:
     return "Calibrate joystick";
   default:
-    return "Done.";
+    return "Done";
   }
 }
 void Game::save_options() const {
@@ -154,8 +121,12 @@ void Game::save_options() const {
   f << shell_marks << ' ' << direction_arrow << '\n';
   for (int i = 0; i < 2; ++i)
     f << pad_center[i].x << ' ' << pad_center[i].y << ' ' << pad_threshold[i] << '\n';
-  for (auto dir : hat_right)
-    f << dir.x << ' ' << dir.y << '\n';
+  for (auto pov : pad_right_pov) {
+    double angle = pov / 5729.5779513;
+    f << std::sin(angle) << ' ' << -std::cos(angle) << '\n';
+  }
+  for (int i = 0; i < 2; ++i)
+    f << pad_left_pov[i] << ' ' << pad_right_pov[i] << '\n';
 }
 void Game::load_options() {
   if (save_dir.empty())
@@ -188,15 +159,24 @@ void Game::load_options() {
   }
   for (int i = 0; i < 2; ++i) {
     float x, y, t;
-    if (f >> x >> y >> t && x >= -1 && x <= 1 && y >= -1 && y <= 1 && t > 0 && t < 1) {
+    if (f >> x >> y >> t && x >= -1 && x <= 1 && y >= -1 && y <= 1 && t >= 0 && t <= 65.535f) {
       pad_center[i] = {x, y};
       pad_threshold[i] = t;
     }
   }
-  for (auto &dir : hat_right) {
+  for (int i = 0; i < 2; ++i) {
     float x, y;
-    if (f >> x >> y && std::abs(std::hypot(x, y) - 1) < .01f)
-      dir = {x, y};
+    if (f >> x >> y && std::abs(std::hypot(x, y) - 1) < .01f) {
+      pad_right_pov[i] = int(std::atan2(x, -y) * 5729.5779513 + 36000.5) % 36000;
+      pad_left_pov[i] = (pad_right_pov[i] + 18000) % 36000;
+    }
+  }
+  for (int i = 0; i < 2; ++i) {
+    int left, right;
+    if (f >> left >> right && left >= -1 && left < 36000 && right >= -1 && right < 36000) {
+      pad_left_pov[i] = left;
+      pad_right_pov[i] = right;
+    }
   }
 }
 } // namespace freeware

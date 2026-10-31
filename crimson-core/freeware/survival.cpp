@@ -72,16 +72,21 @@ void Game::generate_terrain() {
       terrain.push_back({{x, y}, angle, grass});
     }
   }
+  // The final level-shadow pass leaves its drawing offset in the camera globals.
+  camera = {7 * 1.1f, 7 * 1.1f};
 }
 void Game::start() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
   run = Run{};
   active_run = true;
+  wind_started = false;
   pending_blood.clear();
   pending_shells.clear();
   pending_shards.clear();
   current_player_index = plaguebearer_infection_count = 0;
   radial_cursor = {320, 140};
+  cursor_x = 320;
+  cursor_y = 140;
   config_game_mode = static_cast<game_mode_id_t>(survival ? 2 : 1);
   player_reset_all();
   for (int i = 0; i < 2; ++i) {

@@ -37,6 +37,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
             for name in (
                 "menu.cpp",
                 "frame.cpp",
+                "level.cpp",
                 "survival.cpp",
                 "career.cpp",
                 "weapons.cpp",

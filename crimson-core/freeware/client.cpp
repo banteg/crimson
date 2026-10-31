@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <memory>
 #include <string>
 #ifdef __EMSCRIPTEN__
@@ -63,6 +64,21 @@ struct Client {
   SDL_Gamepad *pads[2]{};
   Uint64 previous{};
 };
+// DirectInput values read by the original editor's fixed (non-rebindable) shortcuts.
+struct LevelKey {
+  unsigned char code;
+  SDL_Scancode scan;
+};
+static constexpr LevelKey level_keys[] = {
+    {0x4a, SDL_SCANCODE_KP_MINUS}, {0x4e, SDL_SCANCODE_KP_PLUS}, {0xc9, SDL_SCANCODE_PAGEUP},
+    {0xd1, SDL_SCANCODE_PAGEDOWN}, {0xc7, SDL_SCANCODE_HOME},    {0xcf, SDL_SCANCODE_END},
+    {0x2a, SDL_SCANCODE_LSHIFT},   {0xd2, SDL_SCANCODE_INSERT},  {0xd3, SDL_SCANCODE_DELETE},
+    {0xcb, SDL_SCANCODE_LEFT},     {0xcd, SDL_SCANCODE_RIGHT},   {0xc8, SDL_SCANCODE_UP},
+    {0xd0, SDL_SCANCODE_DOWN},     {2, SDL_SCANCODE_1},          {3, SDL_SCANCODE_2},
+    {4, SDL_SCANCODE_3},           {0x1f, SDL_SCANCODE_S},       {0x26, SDL_SCANCODE_L},
+    {0x13, SDL_SCANCODE_R},        {0x2e, SDL_SCANCODE_C},       {0x11, SDL_SCANCODE_W},
+    {0x39, SDL_SCANCODE_SPACE},    {0x2f, SDL_SCANCODE_V},       {0x1e, SDL_SCANCODE_A},
+    {0x2c, SDL_SCANCODE_Z},        {0x14, SDL_SCANCODE_T},       {0x30, SDL_SCANCODE_B}};
 static Client client;
 static void frame() {
   auto &c = client;
@@ -74,6 +90,7 @@ static void frame() {
   in.fire_edge[0] = in.fire_edge[1] = false;
   in.reload = false;
   in.key = 0;
+  in.level_pressed.reset();
   in.text.clear();
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
@@ -94,8 +111,8 @@ static void frame() {
     if (e.type == SDL_EVENT_QUIT)
       c.game.quit = true;
     if (e.type == SDL_EVENT_MOUSE_MOTION) {
-      in.dx += e.motion.xrel;
-      in.dy += e.motion.yrel;
+      in.dx += e.motion.xrel != 0 ? e.motion.xrel : e.motion.x - in.x;
+      in.dy += e.motion.yrel != 0 ? e.motion.yrel : e.motion.y - in.y;
       in.x = e.motion.x;
       in.y = e.motion.y;
     }
@@ -107,9 +124,9 @@ static void frame() {
       in.click |= in.fire;
     }
     if ((e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || e.type == SDL_EVENT_MOUSE_BUTTON_UP) &&
-        e.button.button == SDL_BUTTON_RIGHT)
+        e.button.button == SDL_BUTTON_MIDDLE)
       in.mouse_reload = e.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
-    if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && e.button.button == SDL_BUTTON_MIDDLE)
+    if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && e.button.button == SDL_BUTTON_RIGHT)
       in.perk_button = true;
     if (e.type == SDL_EVENT_WINDOW_FOCUS_LOST)
       in.fire = in.mouse_reload = false;
@@ -117,6 +134,10 @@ static void frame() {
       in.text += e.text.text;
     if (e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
       in.key = e.key.scancode;
+      if (c.game.level_mode == 4)
+        for (auto k : level_keys)
+          if (k.scan == e.key.scancode)
+            in.level_pressed.set(k.code);
       for (int i = 0; i < 2; ++i)
         in.fire_edge[i] |= int(e.key.scancode) == c.game.keys[i][4];
       if (e.key.scancode == SDL_SCANCODE_Q && (e.key.mod & SDL_KMOD_ALT))
@@ -159,6 +180,9 @@ static void frame() {
   }
   const bool *keys = SDL_GetKeyboardState(nullptr);
   in.ctrl = keys[SDL_SCANCODE_LCTRL];
+  if (c.game.level_mode == 4)
+    for (auto k : level_keys)
+      in.level_down.set(k.code, keys[k.scan]);
   auto held = [&](int actor, int key) { return keys[c.game.keys[actor][key]]; };
   in.up2 = held(1, 0);
   in.down2 = held(1, 1);
@@ -181,6 +205,10 @@ static void frame() {
       in.aim_y[i] = int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_DOWN)) -
                     int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_UP));
     }
+    in.pad_any[i] = false;
+    if (c.pads[i])
+      for (int b = 0; b < 5; ++b)
+        in.pad_any[i] |= SDL_GetGamepadButton(c.pads[i], static_cast<SDL_GamepadButton>(b));
     in.pad_perk[i] = c.pads[i] && SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_EAST);
     in.pad_fire[i] = c.pads[i] && (SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_SOUTH) ||
                                    axis(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > .3f);
@@ -190,8 +218,7 @@ static void frame() {
   c.previous = now;
   bool was_text = c.game.screen == Screen::Death || c.game.console_open;
   Input controls = in;
-  controls.relative =
-      c.game.screen == Screen::Playing && (c.game.aiming[0] == 1 || (c.game.two_players && c.game.aiming[1] == 1));
+  controls.relative = c.game.screen == Screen::Playing;
   controls.mouse_fire = in.fire;
   controls.fire = held(0, 4);
   controls.reload |= keys[SDL_SCANCODE_R];
@@ -218,6 +245,17 @@ static void frame() {
 } // namespace freeware
 
 int main(int argc, char **argv) {
+  std::time_t now = std::time(nullptr);
+  if (const std::tm *date = std::localtime(&now)) {
+    auto &game = freeware::client.game;
+    game.birthday = date->tm_mon == 8 && date->tm_mday == 12;
+    game.memorial = date->tm_mon == 8 && date->tm_mday == 11;
+    game.christmas = date->tm_mon == 11 && (date->tm_mday == 24 || date->tm_mday == 25);
+    game.solstice = date->tm_mon == 11 && date->tm_year == 112;
+    if (date->tm_mon == 7 && date->tm_mday >= 1 && date->tm_mday <= 4)
+      game.assembly_sequence = 8;
+  }
+
   using namespace freeware;
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     std::fprintf(stderr, "%s\n", SDL_GetError());

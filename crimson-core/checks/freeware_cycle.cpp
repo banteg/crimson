@@ -96,6 +96,8 @@ int main() {
   in.escape = true;
   step();
   in.escape = false;
+  for (int n = 0; n < 30 && game.screen == Screen::Scores; ++n)
+    step();
   assert(game.screen == Screen::Menu);
   click(460, 210);
   assert(game.screen == Screen::Playing && game.generation == 2 && game.run.health == 100);
@@ -245,7 +247,7 @@ int main() {
     freeware_rainbow_enabled = freeware_rainbow_armed = 1;
     Input trigger;
     trigger.fire = true;
-    g.step_player(0, 1.f/60, trigger, {712, 512});
+    g.step_player(0, 1.f / 60, trigger, {712, 512});
     std::printf("volley %d %.6f %.3f", id, g.run.cooldown, w.ammo);
     for (const auto &shot : projectile_pool)
       if (shot.active)

@@ -587,7 +587,7 @@ def check_client(dll, exe, address, target):
     check_reset(comparison)
     check_walls(comparison)
     check_controls(comparison)
-    dispatch_frames = check_frames(comparison, exe)
+    dispatch_frames = check_frames(comparison, exe, BULLET, creature, files=target == "native")
     visual_cases = comparison.draws()
     print(
         f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants, {dispatch_frames} full frame callbacks and {visual_cases} draw traces.",
@@ -639,6 +639,9 @@ def check_web(stage, exe, sources):
         "freeware_secret_weapon_unlocked",
         "combat_frame_fields",
         "combat_frame_quads",
+        "combat_frame_labels",
+        "combat_frame_label_count",
+        "combat_level_fields",
         "combat_frame_quad_count",
         "combat_frame_flags",
         "combat_wall_result",
@@ -674,12 +677,12 @@ def check_web(stage, exe, sources):
 
     # Linking the real frame dispatcher also links atomic score-file saves.
     # The oracle uses in-memory boards. Any attempted filesystem mutation is a test failure.
-    def unexpected_rename(*_args):
-        raise AssertionError("the combat oracle tried to persist a score")
+    def unexpected_write(*_args):
+        raise AssertionError("the in-memory combat oracle tried to modify a file")
 
     for entry in module.imports:
-        if entry.module == "env" and entry.name == "__syscall_renameat":
-            linker.define_func("env", entry.name, entry.type, unexpected_rename)
+        if entry.module == "env" and entry.name in {"__syscall_renameat", "__syscall_unlinkat"}:
+            linker.define_func("env", entry.name, entry.type, unexpected_write)
     exports = linker.instantiate(store, module).exports(store)
     exports["_initialize"](store)
     memory = exports["memory"]
@@ -735,6 +738,8 @@ def main():
         dll.combat_reward.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_bool]
         dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_int]
         dll.combat_wall.argtypes = [ctypes.c_float] * 4 + [ctypes.c_int]
+        dll.combat_level_file.argtypes = [ctypes.c_char_p, ctypes.c_bool]
+        dll.combat_level_file.restype = ctypes.c_bool
         dll.combat_frame_step.argtypes = [ctypes.c_float, ctypes.c_int]
         dll.combat_controls.argtypes = [ctypes.c_int] * 6 + [ctypes.c_float]
         dll.combat_message.restype = ctypes.c_char_p

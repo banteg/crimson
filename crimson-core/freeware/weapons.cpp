@@ -64,9 +64,12 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
   pad_down = dy > threshold;
   pad_left = dx < -threshold;
   pad_right = dx > threshold;
-  float side = in.aim_x[index] * hat_right[index].x + in.aim_y[index] * hat_right[index].y;
-  aim_left = side < -threshold;
-  aim_right = side > threshold;
+  float ax = in.aim_x[index], ay = in.aim_y[index];
+  int pov = std::hypot(ax, ay) < threshold || (ax == 0 && ay == 0)
+                ? -1
+                : int(std::atan2(ax, -ay) * 5729.5779513 + 36000.5) % 36000;
+  aim_left = pov == pad_left_pov[index];
+  aim_right = pov == pad_right_pov[index];
   config_movement_schemes[index] = schemes[movement[index]];
   config_aim_schemes[index] = aiming[index];
   config_player_count = players();
