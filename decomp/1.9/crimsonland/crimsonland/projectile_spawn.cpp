@@ -1,8 +1,8 @@
+#include <math.h>
 #include <string.h>
+
 #include "cl_build.h"
 #include "crimsonland_gameplay.h"
-extern "C" float cos(float angle);
-extern "C" float sin(float angle);
 
 extern "C" int projectile_spawn(
     const vec2f_t *pos,
@@ -64,8 +64,8 @@ initialize:
     spawned->fields.life_timer = 0.4f;
     spawned->fields.reserved = 0.0f;
     spawned->fields.speed_scale = 1.0f;
-    spawned->fields.velocity.x = (float)(cos(angle) * 1.5f);
-    spawned->fields.velocity.y = (float)(sin(angle) * 1.5f);
+    spawned->fields.velocity.x = cosf(angle) * 1.5f;
+    spawned->fields.velocity.y = sinf(angle) * 1.5f;
 
     if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
         spawned->fields.hit_radius = 3.0f;

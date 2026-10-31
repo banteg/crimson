@@ -1,3 +1,4 @@
+#include "crimsonland_ui.h"
 #include "grim2d_cpp.h"
 
 extern IGrim2D_cpp *grim_interface_ptr;
@@ -50,11 +51,6 @@ struct list_widget_t {
 extern "C" {
 bool ui_focus_update(int id);
 void ui_focus_draw(float *xy);
-void ui_focus_set(int id, char reset_timer);
-bool ui_mouse_inside_rect(float *xy, int h, int w);
-// The widget consumes byte results, like the other widget callers. Declaring
-// the padded test as int and narrowing at the call changes C2 9044's allocation.
-bool ui_mouse_inside_rect_with_padding(float *xy, int h, int w);
 }
 
 extern "C" int ui_list_widget_update(

@@ -2253,6 +2253,19 @@
       ]
     },
     {
+      "name": "controls-rebind-axis-peaks",
+      "types": ["float[16]"],
+      "size": 64,
+      "size_source": "controls_menu_update at 0x0044d9db sets ECX to 16 before REP STOSD at 0x0044d9ee. The capture loop reads consecutive floats from the same base.",
+      "alignment": 4,
+      "alignment_source": "VC6 float alignment and the original dword-aligned base address",
+      "initializer_fill": "00",
+      "initializer_source": "Original .data bytes at 0x004d79e4..0x004d7a24",
+      "members": [
+        ["0x004d79e4", "controls_rebind_axis_peaks"]
+      ]
+    },
+    {
       "name": "zero-float32",
       "types": ["float"],
       "size": 4,
@@ -2403,7 +2416,6 @@
         ["0x004d1208", "ui_stats_hover_weapon"],
         ["0x004d120c", "ui_stats_hover_time"],
         ["0x004d1210", "ui_stats_hover_hit_ratio"],
-        ["0x004d79e4", "controls_rebind_axis_peak_abs_13f"],
         ["0x004d79e8", "controls_rebind_axis_peak_abs_140"],
         ["0x004d79ec", "controls_rebind_axis_peak_abs_141"],
         ["0x004d79f0", "controls_rebind_axis_peak_abs_153"],

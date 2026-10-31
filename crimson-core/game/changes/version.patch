@@ -16,9 +16,9 @@ a build's longer name, and its banner, from the header the build writes (build.p
              1.0f,
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
-@@ -5,3 +5,4 @@
- #include "crimsonland_console.h"
+@@ -6,3 +6,4 @@
  #include "crimsonland_types.h"
+ #include "crimsonland_input_bindings.h"
 +#include "game_version.h"
  #include "grim2d_cpp.h"
 @@ -146,6 +147,7 @@

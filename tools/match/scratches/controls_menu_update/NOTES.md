@@ -897,7 +897,8 @@ Exact at 4194/4194 under `--build 1.9.8`; canonical stays exact.
   inlined. Plain `__inline` key names inline only two copies under 9044.
 - Behaviour guard: key rows do not accept an analog axis
   (`input_detect_active_analog_axis` is absent).
-- Code-generation-only guard: the axis-peak scan is an indexed loop over seven
-  peaks. Searched shared spellings: indexed `for`, pointer plus index `for`,
-  `while (axis_index < 7)` and a typed pointer compare. Every index form loses
-  0.9% canonically and the pointer forms leave 9044 with a pointer cursor.
+- Axis capture clears 16 dwords (`rep stosd` at `0x0044d9ee` in 1.9.93),
+  updates six named device axes and scans the first seven slots. With a single
+  `float[16]` as the storage owner, an indexed loop is byte-exact on 1.9.8,
+  1.9.9, 1.9.92 and 1.9.93. The previous scalar declarations led to a
+  build-specific pointer walk.

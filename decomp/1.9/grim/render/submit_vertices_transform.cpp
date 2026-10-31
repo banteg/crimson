@@ -13,9 +13,9 @@ extern unsigned int grim_vertex_capacity;
 // the same code for every shared spelling; only the inline-copy ids differ,
 // with the matrix parameter first and the offsets added directly. See
 // NOTES.md.
-inline void grim_rotate_point(float *matrix, float *point)
+static inline void grim_rotate_point(float *matrix, float *point)
 #else
-inline void grim_rotate_point(float *point, float *matrix)
+static inline void grim_rotate_point(float *point, float *matrix)
 #endif
 {
     float x = point[0] * matrix[0] + point[1] * matrix[1];
@@ -23,7 +23,7 @@ inline void grim_rotate_point(float *point, float *matrix)
     point[0] = x;
 }
 
-inline void grim_translate_point(float *point, float *offset)
+static inline void grim_translate_point(float *point, float *offset)
 {
 #if CL_BUILD == 10908
     point[0] += offset[0];

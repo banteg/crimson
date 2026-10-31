@@ -3452,7 +3452,7 @@
       "note": "Instruction-exact under 1.9.8: controls_menu_update."
     },
     {
-      "name": "controls_rebind_axis_peak_abs_13f",
+      "name": "controls_rebind_axis_peaks",
       "address": "0x4d4c28",
       "reference": "0x44bdb3",
       "bytes": "bf284c4d00",

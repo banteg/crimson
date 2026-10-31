@@ -19,13 +19,17 @@ extern int ui_focus_index;
 extern int ui_focus_timer_ms;
 
 #ifdef __cplusplus
+typedef bool ui_hit_result_t;
 extern "C" {
+#else
+// VC6 C consumes the C++ Boolean return in AL.
+typedef unsigned char ui_hit_result_t;
 #endif
 
 void ui_focus_set(int id, char reset_timer);
 int ui_get_element_index(ui_element_t *element);
-int ui_mouse_inside_rect(float *xy, int h, int w);
-int ui_mouse_inside_rect_with_padding(float *xy, int h, int w);
+ui_hit_result_t ui_mouse_inside_rect(float *xy, int h, int w);
+ui_hit_result_t ui_mouse_inside_rect_with_padding(float *xy, int h, int w);
 void ui_element_init_defaults(ui_element_t *element);
 void ui_element_layout_calc(ui_element_t *element);
 void ui_element_load(

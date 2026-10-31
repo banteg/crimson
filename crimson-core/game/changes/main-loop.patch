@@ -2,9 +2,9 @@ The host owns the main loop: startup ends where Grim's run loop began, and the c
 entry point (game/frame.cpp).
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
-@@ -444,7 +444,12 @@
-         player_state_table[player_index].input.axis_move_x = binding_cursor[0];
-     }
+@@ -456,7 +456,12 @@
+     config_sync_from_grim();
+     config_apply_player_bindings();
  
 -    grim_interface_ptr->grim_apply_settings();
 +    return 1;
