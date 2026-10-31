@@ -23,19 +23,23 @@ void freeware_shard(const vec2f_t *, float size, float rotation);
 void freeware_combat_sound(int sample, float volume);
 }
 
+// VC6 emitted all four pool walks and their arithmetic inside this one native body.
+#ifndef _MSC_VER
+#define __forceinline inline
+#endif
 namespace {
 const float half_pi = 1.57079637f, tau = 6.28318548f;
-vec2f_t offset(vec2f_t p, float x, float y) {
+__forceinline vec2f_t offset(vec2f_t p, float x, float y) {
     vec2f_t v = {p.x + x, p.y + y};
     return v;
 }
-float distance(vec2f_t a, vec2f_t b) {
+__forceinline float distance(vec2f_t a, vec2f_t b) {
     double x = a.x - b.x, y = a.y - b.y;
     return (float)sqrt(x * x + y * y);
 }
-void blood(vec2f_t p) { freeware_blood(&p); }
-void shard(vec2f_t p, float size) { freeware_shard(&p, size, (crt_rand() % 612) * .01f); }
-vec2f_t scatter_shards(vec2f_t p, int count) {
+__forceinline void blood(vec2f_t p) { freeware_blood(&p); }
+__forceinline void shard(vec2f_t p, float size) { freeware_shard(&p, size, (crt_rand() % 612) * .01f); }
+__forceinline vec2f_t scatter_shards(vec2f_t p, int count) {
     vec2f_t mark = p;
     for (int i = 0; i < count; ++i) {
         float size = (float)(crt_rand() % 10 + 5);
@@ -46,17 +50,17 @@ vec2f_t scatter_shards(vec2f_t p, int count) {
     }
     return mark;
 }
-void sprite(vec2f_t pos, float vx, float vy, float scale, float alpha) {
+__forceinline void sprite(vec2f_t pos, float vx, float vy, float scale, float alpha) {
     vec2f_t velocity = {vx, vy};
     sprite_effect_pool[fx_spawn_sprite(&pos, &velocity, scale)].color_a = alpha;
 }
-void sparks(vec2f_t pos) {
+__forceinline void sparks(vec2f_t pos) {
     for (int i = 0; i < 10; ++i) {
         float speed = (crt_rand() % 800) * .1f;
         sprite(pos, (float)cos(i * .62831855f) * speed, (float)sin(i * .62831855f) * speed, 14, .37f);
     }
 }
-void impact_marks(projectile_t &shot, creature_t &c) {
+__forceinline void impact_marks(projectile_t &shot, creature_t &c) {
     float angle = shot.angle - half_pi + (crt_rand() % 20 - 10) * .1f;
     float x = (float)cos(angle) * 20, y = (float)sin(angle) * 20;
     int type = shot.fields.type_id;
@@ -85,7 +89,7 @@ void impact_marks(projectile_t &shot, creature_t &c) {
         blood(mark);
     }
 }
-void hit(projectile_t &shot, int id) {
+__forceinline void hit(projectile_t &shot, int id) {
     creature_t &c = creature_pool[id];
     int type = shot.fields.type_id;
     if (c.death_timer == 16)
@@ -153,7 +157,7 @@ void hit(projectile_t &shot, int id) {
         c.death_timer -= frame_dt * 20;
     }
 }
-void bullets() {
+__forceinline void bullets() {
     for (int i = 0; i < 64; ++i) {
         projectile_t &s = projectile_pool[i];
         if (!s.active)
@@ -222,7 +226,7 @@ void bullets() {
         }
     }
 }
-void rockets() {
+__forceinline void rockets() {
     for (int i = 0; i < 64; ++i) {
         secondary_projectile_t &r = secondary_projectile_pool[i];
         if (!r.active)
@@ -320,8 +324,8 @@ void rockets() {
         }
     }
 }
-float clamp_color(float value) { return value < 0 ? 0 : value > 1 ? 1 : value; }
-void particles() {
+__forceinline float clamp_color(float value) { return value < 0 ? 0 : value > 1 ? 1 : value; }
+__forceinline void particles() {
     for (int i = 0; i < 128; ++i) {
         particle_t &p = particle_pool[i];
         if (!p.active)
