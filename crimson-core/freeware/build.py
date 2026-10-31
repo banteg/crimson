@@ -39,6 +39,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "survival.cpp",
                 "career.cpp",
                 "weapons.cpp",
+                "projectile_draw.cpp",
                 "perks.cpp",
                 "scores.cpp",
                 "console.cpp",

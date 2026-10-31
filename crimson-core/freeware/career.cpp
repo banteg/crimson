@@ -37,6 +37,27 @@ void Game::check_level() {
   run.level = player_state_table[0].freeware.level;
   run.pending = freeware_pending_perks;
 }
+// The dispatcher advances the wave. The effects pass (0x4121e6) damages each living creature inside it.
+void Game::update_bomb(float dt) {
+  if (run.bomb_age < 0)
+    return;
+  run.bomb_age += (1 + run.bomb_age) * dt * 1.8f;
+  if (run.bomb_age > 1) {
+    run.bomb_age = -1;
+    return;
+  }
+  for (int i = 0; i < 512; ++i) {
+    auto &c = creature_pool[i];
+    if (!c.active || c.health <= 0 ||
+        std::hypot(c.pos_x - run.bomb_pos.x, c.pos_y - run.bomb_pos.y) >= run.bomb_age * 256)
+      continue;
+    c.health -= dt * 2000;
+    if (marks.size() < 128)
+      marks.push_back({c.position, 16, 0, false});
+    if (c.health <= 0)
+      kill(i, 0);
+  }
+}
 void Game::update_career(float dt) {
   run.pickup.time -= dt;
   for (int i = 0; i < players(); ++i) {
@@ -65,25 +86,12 @@ void Game::update_career(float dt) {
       break;
     case Bonus::Time:
       w.ammo = w.clip_size;
-      w.reload = 0;
+      p.cooldown = -.1f;
       run.slow = 4;
       break;
     }
     play_sound(Sound::Bonus);
     run.pickup.time = 0;
-  }
-  if (run.bomb_age >= 0) {
-    run.bomb_age += dt;
-    for (int i = 0; i < 512; ++i) {
-      auto &c = creature_pool[i];
-      if (c.active && c.death_timer == 16 && c.health > 0 &&
-          std::hypot(c.pos_x - run.bomb_pos.x, c.pos_y - run.bomb_pos.y) < run.bomb_age * 360) {
-        c.health = 0;
-        kill(i, 0);
-      }
-    }
-    if (run.bomb_age > 1)
-      run.bomb_age = -1;
   }
   if (run.perks[7] || run.perks[18]) {
     for (int i = 0; i < players(); ++i) {

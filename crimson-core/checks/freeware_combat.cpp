@@ -4,6 +4,7 @@ namespace freeware {
 void play_sound(Sound) {}
 void play_original_sample(int) {}
 } // namespace freeware
+extern "C" game_mode_id_t config_game_mode;
 static freeware::Game game;
 extern "C" void combat_reset(unsigned seed) {
   game = freeware::Game{};
@@ -27,7 +28,6 @@ extern "C" void combat_actors(int mode, int perk, int partner, float shield) {
   game.run.shield = shield;
   game.run.perks[perk] = 1;
   player_state_table[0].freeware.perks[perk] = 1;
-  extern game_mode_id_t config_game_mode;
   config_game_mode = static_cast<game_mode_id_t>(mode);
 }
 extern "C" void combat_creatures(float dt, float clock, float freeze) {
@@ -45,6 +45,7 @@ extern "C" void combat_reward(float dt, float freeze, bool corpse) {
 }
 extern "C" void combat_arm(int weapon) {
   game.survival = false;
+  config_game_mode = static_cast<game_mode_id_t>(1);
   game.run.health = 4;
   game.run.cooldown = 0;
   game.run.player = {512, 512};
@@ -83,3 +84,35 @@ extern "C" const char *combat_message() { return game.message.c_str(); }
 extern "C" float combat_health() { return game.run.health; }
 extern "C" int combat_level() { return game.run.level; }
 extern "C" int combat_pending() { return game.run.pending; }
+extern "C" {
+freeware::ShotDraw combat_draw_capture[24];
+int combat_draw(float seconds, int effects) {
+  std::vector<freeware::ShotDraw> draws;
+  freeware::projectile_draws(draws, {5, -8}, seconds, effects != 0);
+  if (draws.size() > 24)
+    return -1;
+  std::copy(draws.begin(), draws.end(), combat_draw_capture);
+  return int(draws.size());
+}
+}
+extern "C" {
+freeware::TerrainStamp combat_terrain_capture[1470];
+int combat_terrain(unsigned seed) {
+  freeware::seed_random(seed);
+  game.generate_terrain();
+  if (game.terrain.size() != 1470)
+    return -1;
+  std::copy(game.terrain.begin(), game.terrain.end(), combat_terrain_capture);
+  return int(game.terrain.size());
+}
+}
+
+extern "C" float combat_bomb(float dt, int start) {
+  frame_dt = dt;
+  if (start) {
+    game.run.bomb_age = 0;
+    game.run.bomb_pos = {500, 500};
+  }
+  game.update_bomb(dt);
+  return game.run.bomb_age;
+}

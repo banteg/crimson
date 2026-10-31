@@ -241,6 +241,7 @@ int main(int argc, char **argv) {
   client.assets = folder;
   load_audio(folder);
   seed_random(static_cast<unsigned>(SDL_GetPerformanceCounter()));
+  client.game.generate_terrain();
   client.previous = SDL_GetTicksNS();
   std::setvbuf(stdout, nullptr, _IOLBF, 0);
 #ifdef __EMSCRIPTEN__

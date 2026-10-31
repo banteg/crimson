@@ -44,6 +44,8 @@ void Game::update(float dt, const Input &in) {
     return;
   }
   menu_clock += dt;
+  if (screen != Screen::Playing && screen != Screen::Dying)
+    freeware_simulation_clock += dt * run.speed_scale;
   mouse_dx = in.x - cursor_x;
   mouse_dy = in.y - cursor_y;
   if (dt > 0)

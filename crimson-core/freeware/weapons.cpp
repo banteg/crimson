@@ -255,5 +255,7 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
     if (w.ammo <= 0)
       player_start_reload();
   }
+  w.position = p.player;
+  w.aim_heading = p.aim_angle;
 }
 } // namespace freeware

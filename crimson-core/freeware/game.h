@@ -49,6 +49,21 @@ struct Input {
   bool pad_fire[2]{};
   std::string text;
 };
+// A zero size selects a four-corner textured trail. Sprites use the first point as the top-left.
+enum class ShotTexture { Trail = 1, Particle, Bullet, Glow, Rocket };
+struct ShotDraw {
+  ShotTexture texture;
+  vec2f_t points[4];
+  float size, angle;
+  effect_color_t color;
+  bool additive;
+};
+void projectile_draws(std::vector<ShotDraw> &, vec2f_t camera, float seconds, bool effects);
+struct TerrainStamp {
+  vec2f_t pos;
+  float angle;
+  bool grass;
+};
 struct ImpactMark {
   vec2f_t pos;
   float size, rotation;
@@ -70,7 +85,7 @@ struct Run : Fighter {
   float seconds{}, next_spawn{}, freeze{}, slow{}, speed_scale = 1, exp_clock{}, jinx{}, berserk{}, plague_time{},
                                                    bomb_age = -1;
   vec2f_t bomb_pos{}, first_kill_pos{-100, 0};
-  bool moved{}, final_revenge{}, cheated{};
+  bool moved{}, cheated{};
   int first_kill_xp = 0, level = 1, pending{}, infections{};
   int frames{};
   float min_fps = 10000, max_fps{};
@@ -90,6 +105,8 @@ struct Game {
   Run run;
   std::vector<Corpse> decals;
   std::vector<ImpactMark> marks;
+  std::vector<TerrainStamp> terrain;
+  void generate_terrain();
   float menu_clock{}, cursor_x = 320, cursor_y = 140;
   int selected{}, generation{};
   float death_clock{}, screen_started{};
@@ -132,6 +149,7 @@ struct Game {
   void spawn_career();
   void kill(int slot, int owner, bool corpse = true);
   void update_career(float dt);
+  void update_bomb(float dt);
   void update_projectiles(float dt);
   void update_creatures(float dt);
   void resolve_corpses();

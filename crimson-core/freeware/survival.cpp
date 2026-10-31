@@ -67,6 +67,19 @@ extern "C" int crt_rand() {
   return (freeware_rng_state >> 16) & 0x7fff;
 }
 
+// terrain_generate (0x40e060) uses the gameplay CRT stream, including on restart.
+void Game::generate_terrain() {
+  terrain.clear();
+  for (bool grass : {true, false}) {
+    const int count = arena * arena * (grass ? 700 : 35) / 524288;
+    for (int i = 0; i < count; ++i) {
+      float angle = (crt_rand() % 314) * .01f;
+      float x = float(crt_rand() % (arena + 128) - 64);
+      float y = float(crt_rand() % (arena + 128) - 64);
+      terrain.push_back({{x, y}, angle, grass});
+    }
+  }
+}
 void Game::start() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
   run = Run{};
@@ -97,6 +110,7 @@ void Game::start() {
   name.clear();
   paused = false;
   screen = Screen::Playing;
+  generate_terrain();
   ++generation;
   std::printf("1.4.0 %s start %d\n", survival ? "survival" : "career", generation);
 }
@@ -225,6 +239,7 @@ void Game::tick(float dt, const Input &in) {
   run.freeze = std::max(0.f, run.freeze - dt);
   run.slow = std::max(0.f, run.slow - dt);
   bonus_fire_bullets_timer = std::max(0.f, bonus_fire_bullets_timer - dt);
+  update_bomb(dt);
   if (!survival)
     update_career(dt);
   if (survival)
@@ -261,7 +276,6 @@ void Game::tick(float dt, const Input &in) {
     if (run.perks[23]) {
       run.bomb_pos = run.player;
       run.bomb_age = 0;
-      run.final_revenge = true;
       play_sound(Sound::Explosion);
     }
     death_clock = 0;
@@ -272,12 +286,12 @@ void Game::tick(float dt, const Input &in) {
 
 void Game::finish_death(float dt) {
   // Switch case 6 continues combat without spawning and hands off to case 9 after three seconds.
+  dt *= run.speed_scale;
   frame_dt = dt;
   freeware_simulation_clock += dt;
   update_creatures(dt);
   update_projectiles(dt);
-  if (run.final_revenge)
-    update_career(dt);
+  update_bomb(dt);
   resolve_corpses();
   freeware_simulation_clock += dt * .5f;
   death_clock += dt * 1.5f;

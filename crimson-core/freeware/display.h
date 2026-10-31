@@ -9,6 +9,7 @@ struct Display {
   SDL_Renderer *renderer;
   std::unordered_map<std::string, SDL_Texture *> textures;
   SDL_Texture *ground{}, *stains{};
+  std::vector<ShotDraw> shots;
   int ground_generation = -1;
   explicit Display(SDL_Renderer *r) : renderer(r) {}
   ~Display();

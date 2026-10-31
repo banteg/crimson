@@ -44,24 +44,8 @@ bool Display::load(const std::string &folder) {
   }
   ground = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, arena, arena);
   stains = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, arena, arena);
-  if (!stains || !ground || !SDL_SetRenderTarget(renderer, ground))
+  if (!stains || !ground)
     return false;
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  SDL_RenderClear(renderer);
-  // Ground target build at 0x40e060 stamps rotated 128-pixel grass and mud quads.
-  unsigned seed = 1;
-  auto roll = [&]() {
-    seed = seed * 214013u + 2531011u;
-    return (seed >> 16) & 0x7fffu;
-  };
-  for (const char *name : {"grass1", "mud1"}) {
-    const int count = arena * arena / 524288 * (name[0] == 'g' ? 700 : 35);
-    for (int i = 0; i < count; ++i) {
-      float rotation = (roll() % 314) * .01f;
-      float x = float(roll() % (arena + 128)) - 64, y = float(roll() % (arena + 128)) - 64;
-      sprite(name, x, y, 128, 128, rotation);
-    }
-  }
   SDL_SetTextureBlendMode(stains, SDL_BLENDMODE_BLEND);
   return SDL_SetRenderTarget(renderer, nullptr);
 }
@@ -89,6 +73,15 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
   }
 }
 void Display::draw(const Game &g) {
+  if (g.generation != ground_generation) {
+    SDL_SetRenderTarget(renderer, ground);
+    SDL_SetRenderDrawColor(renderer, 63, 56, 25, 255);
+    SDL_RenderClear(renderer);
+    for (const auto &stamp : g.terrain)
+      sprite(stamp.grass ? "grass1" : "mud1", stamp.pos.x, stamp.pos.y, 128, 128, stamp.angle, 0, 1,
+             {.7f, .7f, .7f, .9f});
+    SDL_SetRenderTarget(renderer, nullptr);
+  }
   if (g.generation != ground_generation || !g.decals.empty() || !g.marks.empty() || !g.shells.empty()) {
     SDL_SetRenderTarget(renderer, stains);
     if (g.generation != ground_generation) {
@@ -162,8 +155,7 @@ void Display::draw(const Game &g) {
         if (r.fields.type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
           float size = r.fields.velocity.x * r.fields.velocity.y * 160;
           sprite("shockwave", cx + r.pos_x - size / 2, cy + r.position.y - size / 2, size, size);
-        } else
-          sprite("rocket", cx + r.pos_x - 8, cy + r.position.y - 8, 16, 16, r.angle);
+        }
       }
     if (g.run.pickup.time > 0) {
       auto &b = g.run.pickup;
@@ -175,24 +167,29 @@ void Display::draw(const Game &g) {
         text(weapon_name_get(b.weapon), x + 8, y - 10, .5f, {1, 1, .7f, .9f});
     }
     if (g.run.bomb_age >= 0) {
-      float size = g.run.bomb_age * 720;
+      float size = g.run.bomb_age * 512;
       sprite("shockwave", cx + g.run.bomb_pos.x - size / 2, cy + g.run.bomb_pos.y - size / 2, size, size);
     }
-    for (const auto &shot : projectile_pool) {
-      if (shot.active && shot.fields.life_timer >= .4f) {
-        SDL_SetRenderDrawColor(renderer, 233, 204, 137, 160);
-        const float x = cx + shot.position.x, y = cy + shot.position.y;
-        int kind = int(shot.fields.type_id);
-        if (kind == 5 || kind == 15 || kind == 19 || kind == 7 || kind == 9 || kind == 17 || kind == 18) {
-          const char *name = kind == 19 ? "bubble" : (kind == 5 || kind == 15) ? "flame" : "glow64";
-          SDL_FColor color = kind == 17 ? SDL_FColor{.4f, 1, .2f, .9f} : SDL_FColor{.7f, .8f, 1, .9f};
-          sprite(name, x - 9, y - 9, 18, 18, shot.angle, 0, 1, color);
-          continue;
-        }
-        if (g.effects)
-          SDL_RenderLine(renderer, x, y, x - std::sin(shot.angle) * 15, y + std::cos(shot.angle) * 15);
-        sprite("bullet_real_16", x - 3, y - 3, 6, 6, shot.angle);
+    projectile_draws(shots, {cx, cy}, g.run.seconds, g.effects);
+    const char *shot_textures[] = {"", "bullet", "part64", "bullet_real_16", "glow64", "rocket"};
+    for (const auto &d : shots) {
+      const auto *name = shot_textures[static_cast<int>(d.texture)];
+      auto *texture = textures.at(name);
+      SDL_BlendMode previous;
+      SDL_GetTextureBlendMode(texture, &previous);
+      SDL_SetTextureBlendMode(texture, d.additive ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND);
+      SDL_FColor tint{d.color.r, d.color.g, d.color.b, d.color.a};
+      if (d.size > 0)
+        sprite(name, d.points[0].x, d.points[0].y, d.size, d.size, d.angle, 0, 1, tint);
+      else {
+        SDL_Vertex v[4];
+        const SDL_FPoint uv[] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+        for (int i = 0; i < 4; ++i)
+          v[i] = {{d.points[i].x, d.points[i].y}, i < 2 ? SDL_FColor{.6f, .6f, .6f, 0} : tint, uv[i]};
+        const int indices[] = {0, 1, 2, 0, 2, 3};
+        SDL_RenderGeometry(renderer, texture, v, 4, indices, 6);
       }
+      SDL_SetTextureBlendMode(texture, previous);
     }
   }
   const SDL_FColor white{1, 1, 1, 1}, muted{1, 1, 1, .65f};

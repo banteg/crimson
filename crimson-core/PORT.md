@@ -630,12 +630,16 @@ The 1.4.0 release disabled Level Test and shipped without map files. The port co
 
 ```sh
 uv run python crimson-core/checks/freeware_oracle.py game_bins/crimsonland/1.4.0
+uv run --with wasmtime==49.0.0 python crimson-core/checks/freeware_combat.py game_bins/crimsonland/1.4.0 --web
+uv run crimson match scratch tools/match/scratches/projectile_update --build 1.4.0
 uv run crimson match scratch tools/match/scratches/weapon_assign_player --build 1.4.0
 uv run crimson match scratch tools/match/scratches/player_start_reload --build 1.4.0
 uv run crimson match scratch tools/match/scratches/perks_generate_choices --build 1.4.0
 ```
 
 The oracle executes the original PE and compares menu draws and mouse boundaries, creature records, all twenty weapon IDs, perk choices and RNG consumption, and all four score formats. A seeded input run plays Career through kills, a weapon pickup and a first earned perk. Separate checks exercise co-op, reloading, death and restart.
+
+The combat check runs the pinned x86 executable alongside the native game code and, with `--web`, the same sources compiled by Emscripten. It compares projectile trajectories, impacts, hit and XP counters, random state, homing, particle capture and expiry, creature movement, player firing and perk grants. It also exercises the original frame dispatcher from the creature pass through the level check. Renderer calls are captured before rasterization, including projectile trail vertices, impact sprites and all 1,470 terrain stamps per seed.
 
 ## Running the native client
 

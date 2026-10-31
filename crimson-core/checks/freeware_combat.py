@@ -116,7 +116,7 @@ class Comparison:
                 b,
             )
 
-    def projectile_frames(self, label, pool, slot, frames, dt, freeze=0):
+    def projectile_frames(self, label, pool, slot, frames, dt, freeze=0, fragments=0):
         for i in range(frames):
             clock = 0.87 + (i + 1) * dt
             self.pe.write_f32(0x452E94, dt)
@@ -126,6 +126,8 @@ class Comparison:
             self.dll.combat_projectiles(dt, clock, freeze)
             frame = (label, i + 1)
             self.compare(pool, slot, frame)
+            for child in range(fragments):
+                self.compare(PARTICLE, child, frame)
             for j in range(2):
                 self.compare(CREATURE, j, frame)
             for j in (0, 1, 9):
@@ -143,7 +145,7 @@ class Comparison:
 
     def projectiles(self):
         for kind in (1, 2, 4, 7, 9, 10, 17, 18):
-            for scenario in ("flight", "impact", "kill", "edge", "fire"):
+            for scenario in ("flight", "impact", "kill", "edge", "fire", "frozen"):
                 self.reset(814)
                 x = 1032 if scenario == "edge" else 500
                 slot = 5 if kind == 18 else 0
@@ -157,10 +159,20 @@ class Comparison:
                     slot,
                     struct.pack(BULLET[2], 1, angle, x, 500, x, 500, 1, 2, kind, 0.4, 1, 1.07, pool),
                 )
-                if scenario in ("impact", "kill", "fire"):
+                if scenario in ("impact", "kill", "fire", "frozen"):
                     self.write(CREATURE, 0, creature(510, 500, 1000 if scenario == "impact" else 9))
                     self.write(CREATURE, 1, creature(525, 500, 75))
-                self.projectile_frames((kind, scenario), BULLET, slot, 4, 0.02 if scenario == "flight" else 0.035)
+                self.projectile_frames(
+                    (kind, scenario),
+                    BULLET,
+                    slot,
+                    4,
+                    0.02 if scenario == "flight" else 0.035,
+                    float(scenario == "frozen"),
+                )
+        self.reset(987)
+        self.write(BULLET, 63, struct.pack(BULLET[2], 1, 0.6, 512, 512, 512, 512, 1, 1, 3, 0.4, 0.04, 1, 1))
+        self.projectile_frames("delayed burst", BULLET, 63, 5, 0.017, fragments=40)
         for kind in (1, 2):
             for scenario in ("flight", "impact", "kill", "timeout"):
                 self.reset(71)
@@ -303,6 +315,29 @@ class Comparison:
                 assert self.dll.combat_drop_weapon() == pe.read_i32(0x452E68)
             assert self.pe.call(0x422414).eax == self.dll.crt_rand(), ("reward", seed, "next rand")
 
+    def bombs(self):
+        pe = self.pe
+        self.reset(42)
+        pe.write_u8(0x452DB4, 1)
+        for va in (0x4387B8, 0x4387BC):
+            pe.write_f32(va, 500)
+        pe.write_f32(0x452DC8, 0)
+        self.write(CREATURE, 0, creature(530, 500, 120))
+        self.write(CREATURE, 1, creature(700, 500, 990))
+        for frame in range(10):
+            pe.write_f32(0x452E94, 0.04)
+            pe.run(0x41C094, 0x41C0CB)
+            age = pe.read_f32(0x452DC8)
+            if age > 1:
+                pe.write_f32(0x452DC8, -1)
+            elif age >= 0:
+                pe.run(0x4121E6, 0x412291, regs={"ebp": 0})
+            assert math.isclose(self.dll.combat_bomb(0.04, int(frame == 0)), pe.read_f32(0x452DC8), abs_tol=1e-6)
+            for slot in range(2):
+                self.compare(CREATURE, slot, ("bomb", frame))
+            assert self.dll.combat_experience() == pe.read_i32(0x4384F8)
+            self.frames += 1
+
     def grants(self):
         pe = self.pe
 
@@ -437,16 +472,119 @@ class Comparison:
                 self.frames += 1
             assert pe.call(0x422414).eax == self.dll.crt_rand(), ("player", weapon, "next rand")
 
+    def draws(self):
+        pe = self.pe
+        pe.restore(self.initial)
+        table = pe.read_u32(pe.read_u32(0x452D94))
+        calls = []
+        state = {}
+
+        def method(slot, n):
+            def invoke(call):
+                values = tuple(call.arg_f32(i) for i in range(n))
+                if slot == 0x90:
+                    name = pe.read(call.arg_u32(0), 12).split(b"\x00", 1)[0]
+                    return {b"grass1.tga": 6, b"mud1.tga": 7, b"rocket": 5, b"glow": 4}.get(name, 0)
+                if slot == 0x94:
+                    state["texture"] = call.arg_u32(0)
+                elif slot == 0xB8:
+                    for i in range(4):
+                        state[i] = values
+                elif slot == 0xBC:
+                    state[call.arg_u32(0)] = values[1:]
+                elif slot == 0xAC:
+                    state["angle"] = values[0]
+                elif slot in (0xC0, 0xC4):
+                    calls.append((state["texture"], values, state[2], state.get("angle", 0)))
+                return 0
+
+            va = pe.load_code(b"\xc3")
+            pe.stub(va, invoke, pop=n * 4)
+            pe.write_u32(table + slot, va)
+
+        for slot, n in [
+            (0x1C, 5),
+            (0x90, 1),
+            (0x94, 2),
+            (0x98, 0),
+            (0xA0, 0),
+            (0xAC, 1),
+            (0xB0, 4),
+            (0xB8, 4),
+            (0xBC, 5),
+            (0xC0, 4),
+            (0xC4, 8),
+        ]:
+            method(slot, n)
+        for va, v in [(0x43BB74, 1), (0x452C14, 2), (0x442490, 3)]:
+            pe.write_u32(va, v)
+        pe.write_f32(0x43CBC0, 5)
+        pe.write_f32(0x43CBC4, -8)
+        pe.write_f32(0x452DC4, 1.125)
+        self.write(BULLET, 0, bytes(64 * 52))
+        samples = 0
+        for t in (1, 2, 4, 7, 9, 10, 17, 18):
+            for life in (0.4, 0.24):
+                for fire in (0, 2):
+                    for effects in (0, 1):
+                        self.write(
+                            BULLET,
+                            2,
+                            struct.pack(BULLET[2], 1, 0.8, 200, 180, 160, 155, 1.5, 2, t, life, 1, 1, 1),
+                        )
+                        pe.write_f32(0x452DB8, fire)
+                        pe.write_u8(0x44289E, effects)
+                        ctypes.c_float.from_address(self.symbol("bonus_fire_bullets_timer")).value = fire
+                        calls.clear()
+                        pe.call(0x40B570)
+                        count = self.dll.combat_draw(1.125, effects)
+                        case = (t, life, fire, effects)
+                        assert len(calls) == count, (case, len(calls), count)
+                        for i, (texture, points, color, angle) in enumerate(calls):
+                            record = ctypes.string_at(self.symbol("combat_draw_capture") + i * 64, 64)
+                            tex, *floats = struct.unpack("<i14f4x", record)
+                            corners = floats[:8]
+                            size, rotate = floats[8:10]
+                            ours = corners if not size else [*corners[:2], size, size]
+                            assert tex == texture and all(
+                                math.isclose(a, b, abs_tol=0.001) for a, b in zip(ours, points, strict=True)
+                            ), (case, i, tex, texture, ours, points)
+                            assert all(
+                                math.isclose(a, b, abs_tol=1e-6) for a, b in zip(floats[10:], color, strict=True)
+                            ), (case, i, color, floats[10:])
+                            if size:
+                                assert abs(rotate - angle) < 1e-6, (case, i, rotate, angle)
+                        samples += 1
+        method(0x28, 4)
+        method(0x2C, 1)
+        pe.stub(0x404D70, 0, pop=8)  # Empty level-object list in both shipped modes.
+        for seed in (1, 87, 13456):
+            calls.clear()
+            pe.rand_state = seed
+            pe.call(0x40E060, 1)
+            count = self.dll.combat_terrain(seed)
+            assert len(calls) == count == 1470
+            base = self.symbol("combat_terrain_capture")
+            for i, (texture, points, color, angle) in enumerate(calls):
+                x, y, rotation, grass = struct.unpack("<fff?3x", ctypes.string_at(base + 16 * i, 16))
+                assert texture == (6 if grass else 7) and points == (x, y, 128, 128)
+                assert abs(rotation - angle) < 1e-6
+                assert all(abs(a - b) < 1e-6 for a, b in zip(color, (0.7, 0.7, 0.7, 0.9), strict=True))
+            assert self.dll.crt_rand() == pe.call(0x422414).eax
+        return samples
+
 
 def check_client(dll, exe, address, target):
     comparison = Comparison(dll, exe, address)
+    comparison.bombs()
     comparison.grants()
     comparison.players()
     comparison.creatures()
     comparison.rewards()
     comparison.projectiles()
+    visual_cases = comparison.draws()
     print(
-        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls and 64 perk grants.",
+        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants and {visual_cases} draw traces.",
         flush=True,
     )
 
@@ -459,6 +597,9 @@ def check_web(stage, exe, sources):
     if not compiler:
         raise SystemExit("em++ is required for --web")
     functions = (
+        "combat_bomb",
+        "combat_draw",
+        "combat_terrain",
         "combat_reset",
         "combat_projectiles",
         "combat_creatures",
@@ -478,6 +619,8 @@ def check_web(stage, exe, sources):
         "crt_rand",
     )
     data = [p[0] for p in (CREATURE, BULLET, ROCKET, PARTICLE, SPRITE)] + [
+        "combat_draw_capture",
+        "combat_terrain_capture",
         "freeware_rng_state",
         "bonus_fire_bullets_timer",
         "freeware_elapsed_seconds",
@@ -560,6 +703,9 @@ def main():
         dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_int]
         dll.combat_message.restype = ctypes.c_char_p
         dll.combat_health.restype = ctypes.c_float
+        dll.combat_bomb.restype = ctypes.c_float
+        dll.combat_bomb.argtypes = [ctypes.c_float, ctypes.c_int]
+        dll.combat_draw.argtypes = [ctypes.c_float, ctypes.c_int]
         check_client(dll, exe, lambda name: ctypes.addressof(ctypes.c_char.in_dll(dll, name)), "native")
         if args.web:
             check_web(stage, exe, sources)
