@@ -25,7 +25,8 @@ def overlay_spans(root, out, cc):
     owners = sorted(include.glob("*_owner.h"))
     overlays = {m[1]: m[2] for h in owners for m in OVERLAY.finditer(h.read_text())}
     probe = out / "overlays.cpp"
-    probe.write_text(
+    write_if_changed(
+        probe,
         '#include "crimsonland_types.h"\n'
         + "".join(f'#include "{h.name}"\n' for h in owners)
         + f"unsigned overlay_sizes[] = {{{','.join(f'sizeof({t})' for t in overlays)}}};\n",

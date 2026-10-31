@@ -29,7 +29,14 @@ from adapter import (
 from data import data_source
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.build_identity import WASI_SDK_VERSION, file_hash, runtime_identity, write_manifest
+from scripts.build_identity import (
+    WASI_SDK_VERSION,
+    core_paths,
+    file_hash,
+    game_paths,
+    runtime_identity,
+    write_manifest,
+)
 
 HERE = Path(__file__).resolve().parent
 HOST = HERE / "host"
@@ -99,11 +106,25 @@ def ninja_command(args):
     return shlex.join(args).replace("$", "$$")
 
 
-# Whether a module is the one the build last linked and recorded: Ninja keeps any module newer than its objects,
-# whatever its bytes, and the build writes the manifest only after a link and the checks that follow it.
-def recorded(binary):
-    manifest = binary.with_name(binary.name + ".build.json")
-    return manifest.exists() and json.loads(manifest.read_text())["artifacts"] == {binary.name: file_hash(binary)}
+# The manifest beside a module, which the build writes once Ninja has linked it and the checks after the link pass.
+def manifest(binary):
+    return binary.with_name(binary.name + ".build.json")
+
+
+# Whether a module is the one the build last linked and checked from these inputs: Ninja keeps any module newer than
+# its objects, whatever its bytes.
+def recorded(binary, fingerprint):
+    if not (binary.exists() and manifest(binary).exists()):
+        return False
+    result = json.loads(manifest(binary).read_text())
+    return result["fingerprint"] == fingerprint and result["artifacts"] == {binary.name: file_hash(binary)}
+
+
+# A module the build cannot vouch for goes, and its manifest with it, which stands only beside a module the build
+# linked and checked: Ninja links it again.
+def discard(binary):
+    binary.unlink(missing_ok=True)
+    manifest(binary).unlink(missing_ok=True)
 
 
 def main():
@@ -117,6 +138,8 @@ def main():
         help="Write the adapted sources and adapted.diff, their changes from decomp/, without compiling",
     )
     a = p.parse_args()
+    # What this run generates, for the pruning below.
+    GENERATED.clear()
     # Ninja runs in the output directory, where what the build writes goes by its relative name; everything else goes
     # by its absolute path, which Ninja's depfiles must be able to spell: they split a path at these characters.
     a.root = a.root.resolve()
@@ -124,9 +147,21 @@ def main():
         if re.search(r"[|;<>*^`\\\x00-\x1f\x7f]", str(path)):
             raise SystemExit(f"Ninja cannot track files under {path}, which holds | ; < > * ^ ` \\ or a control character")
     a.out = (a.out or HERE / "build" / a.target).resolve()
+    # The build overwrites and prunes in its output directory and hashes its inputs into its identity: an output
+    # directory holding files git tracks would lose them, and one among the inputs would change the identity every run.
+    git = shutil.which("git")
+    if git and a.out.is_dir() and subprocess.run([git, "ls-files"], cwd=a.out, capture_output=True, check=False).stdout:
+        raise SystemExit(f"The output directory {a.out} holds files git tracks")
+    inside = f"{a.out.relative_to(a.root).as_posix()}/" if a.out.is_relative_to(a.root) else ""
+    if any(inside.startswith(p) for p in (game_paths if a.target == "game" else core_paths)(a.root) if p.endswith("/")):
+        raise SystemExit(f"The output directory {a.out} lies among the build's inputs")
     a.out.mkdir(parents=True, exist_ok=True)
     headers = a.out / "include"
     headers.mkdir(exist_ok=True)
+    # The generated sources, apart from the objects and logs, so their quoted includes, which look beside them first,
+    # find nothing the build did not generate.
+    source_dir = a.out / "src"
+    source_dir.mkdir(exist_ok=True)
     wasm = a.target != "native"
     if wasm:
         sdk = wasi_sdk()
@@ -147,14 +182,15 @@ def main():
             game_third_party,
             game_vendor_c,
             game_wrapped,
+            heat_heads_header,
             object_name,
             simulation_names,
         )
 
-        game_data(a.root, a.out, engine_globals(a.root), simulation_names(a.root))
+        game_data(a.root, source_dir, engine_globals(a.root), simulation_names(a.root))
         alignments = {}
     else:
-        alignments = data_source(a.root, a.out, cc)
+        alignments = data_source(a.root, source_dir, cc)
 
     def align_externs(text):
         return EXTERN.sub(
@@ -181,6 +217,7 @@ def main():
     write_if_changed(headers / "new.h", "#include <new>\n")
     if a.target == "game":
         com_defaults(a.root, headers)
+        write_if_changed(headers / "rtx_heat_heads.h", heat_heads_header(a.root))
     schema = json.loads((HERE / "schema.json").read_text())
     # The snapshot's words, and the indices of those only presentation reads (schema.json's `presentation`), which a
     # run inside the original may hold apart from the verifier's: a hash of its state leaves them out.
@@ -255,7 +292,14 @@ def main():
         elif rel in wrapped:
             txt = wrap(src, txt)
         adapted[rel] = (raw, txt)
-        write_if_changed(a.out / (name(rel) + ".cpp"), f'#line 1 "{src}"\n' + txt)
+        write_if_changed(source_dir / (name(rel) + ".cpp"), f'#line 1 "{src}"\n' + txt)
+    if a.target == "game":
+        game_initializers(a.root, source_dir)
+    # Whatever sits among the generated headers and sources that this run did not generate goes (one it no longer
+    # generates, or a stray), or the includes that found it would go on finding it.
+    for path in [*headers.rglob("*"), *source_dir.rglob("*")]:
+        if path.is_file() and path not in GENERATED:
+            path.unlink()
     if a.prepare:
         changed = {rel: texts for rel, texts in sorted(adapted.items()) if texts[0] != texts[1]}
         (a.out / "adapted.diff").write_text(
@@ -267,14 +311,13 @@ def main():
         )
         print(f"{len(changed)}/{len(adapted)} files differ from decomp/: {a.out / 'adapted.diff'}")
         return
-    glue = [a.out / "data.cpp", HOST / "host.cpp", *(game_platform() if a.target == "game" else [])]
+    glue = [source_dir / "data.cpp", HOST / "host.cpp", *(game_platform() if a.target == "game" else [])]
     if a.target == "game":
-        game_initializers(a.root, a.out)
-        glue.append(a.out / "initializers.cpp")
+        glue.append(source_dir / "initializers.cpp")
     third_party = game_third_party(a.root) if a.target == "game" else []
     vendor = game_vendor_c() if a.target == "game" else []
     # Each object's rule, source and name, in link order.
-    objects = [("recovered", a.out / (name(rel) + ".cpp"), name(rel) + ".o") for rel in sources]
+    objects = [("recovered", source_dir / (name(rel) + ".cpp"), name(rel) + ".o") for rel in sources]
     objects += [("glue", src, src.stem + ".o") for src in glue]
     objects += [("third_party", src, f"third_party_{src.stem}.o") for src in third_party]
     objects += [("vendor", src, f"vendor_{src.stem}.o") for src in vendor]
@@ -326,22 +369,25 @@ def main():
     # object and the link also read what the compilers say they are.
     toolchain = a.out / "toolchain.txt"
     write_if_changed(toolchain, "".join(subprocess.check_output([*tool, "--version"], text=True) for tool in (c, cc)))
-    # A header the build no longer generates goes, or the includes that found it would go on finding it.
-    for path in headers.rglob("*"):
-        if path.is_file() and path not in GENERATED:
-            path.unlink()
     # Depfiles name the headers an object read, not the ones its includes would find now, which a file added to or
     # removed from a directory they search changes: each rule's objects also read the names of the files under its -I
-    # directories and its sources' own (the output directory holds only what the build writes).
+    # directories and its sources' own, except the generated sources', which hold nothing else. No include names a
+    # dot-file, which Finder and editors leave about, and a searched directory holding the output directory leaves
+    # out the build's own files there.
     searched = {}
     for rule, command in rules.items():
         dirs = {a.out / arg[2:] for arg in command if arg.startswith("-I")}
-        dirs |= {src.parent for r, src, _ in objects if r == rule} - {a.out}
+        dirs |= {src.parent for r, src, _ in objects if r == rule} - {source_dir}
+        files = [
+            path
+            for d in sorted(dirs)
+            for path in sorted(d.rglob("*"))
+            if path.is_file()
+            and not any(part.startswith(".") for part in path.relative_to(d).parts)
+            and (d.is_relative_to(a.out) or not path.is_relative_to(a.out))
+        ]
         searched[rule] = a.out / f"search_{rule}.txt"
-        write_if_changed(
-            searched[rule],
-            "".join(f"{path}\n" for d in sorted(dirs) for path in sorted(d.rglob("*")) if path.is_file()),
-        )
+        write_if_changed(searched[rule], "".join(f"{path}\n" for path in files))
 
     # Ninja runs in the output directory, so what lands there goes by its name in it, and the output directory never
     # reaches Ninja's syntax or its depfiles.
@@ -381,19 +427,18 @@ def main():
     print(f"{len(objects) - proc.stdout.count('FAILED: ')}/{len(objects)} compiled; errors: {a.out / 'errors.txt'}")
     if proc.returncode:
         raise SystemExit(1)
-    if binary.exists() and not recorded(binary):
-        binary.unlink()
+    if not recorded(binary, build_identity["fingerprint"]):
+        discard(binary)
     proc = subprocess.run(ninja, capture_output=True, check=False)
     log = (a.out / "link.log").read_text()
     if proc.returncode:
         print(log[-12000:])
-    if wasm and "function signature mismatch" in log:
-        # Nothing loads a module that fails the check, and the next build links it again.
-        binary.unlink(missing_ok=True)
-        raise SystemExit("WASM ABI warning; see link.log")
-    if proc.returncode == 0:
-        write_manifest(binary.with_name(binary.name + ".build.json"), build_identity, [binary])
-    raise SystemExit(proc.returncode)
+    abi = wasm and "function signature mismatch" in log
+    # Nothing loads a module that failed to link or the check, and the next build links it again.
+    if proc.returncode or abi:
+        discard(binary)
+        raise SystemExit("WASM ABI warning; see link.log" if abi else proc.returncode)
+    write_manifest(manifest(binary), build_identity, [binary])
 
 
 if __name__ == "__main__":

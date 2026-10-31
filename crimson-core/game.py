@@ -334,7 +334,6 @@ def heat_heads_header(root):
 
 
 def game_data(root, out, engine, simulation):
-    write_if_changed(out / "include/rtx_heat_heads.h", heat_heads_header(root))
     # wasm32 keeps the original pointer width, so each image's data keeps its
     # original layout: aggregates read through a first symbol, overreads and
     # interior names land on the original bytes. Engine state (Grim's, and the

@@ -219,7 +219,10 @@ def client_identity(target: str, root: Path = ROOT, *, wabt: str | None = None, 
 
 def write_manifest(path: Path, result: dict[str, Any], artifacts: list[Path]) -> None:
     result["artifacts"] = {artifact.name: file_hash(artifact) for artifact in artifacts}
-    path.write_text(json.dumps(result, sort_keys=True, indent=2) + "\n")
+    # Whole or not at all: an interrupted write leaves a partial file beside the manifest, never in its place.
+    partial = path.with_name(path.name + ".partial")
+    partial.write_text(json.dumps(result, sort_keys=True, indent=2) + "\n")
+    partial.replace(path)
 
 
 def main() -> None:

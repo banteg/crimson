@@ -104,12 +104,12 @@ Outputs land in `crimson-core/build/{native,wasm}`. Recovered sources are read
 as they are and changed in generated copies ([How the build
 works](#how-the-build-works)): every diff hunk must match its exact text once
 and every pass its expected number of sites, so a decomp edit that moves one
-stops the build there. `--prepare` writes the adapted sources and
+stops the build there. `--prepare` writes the adapted sources (to `src/`) and
 `adapted.diff`, everything the target changes from `decomp/`, without
 compiling.
 
 The build is incremental. Python writes each generated source and header only
-when its bytes change, then a `build.ninja` beside them, and Ninja compiles
+when its bytes change, then a `build.ninja` in the output directory, and Ninja compiles
 and links: a second build of the same inputs compiles and links nothing, and an
 edit compiles again only the objects that read what changed (their generated
 source, a header they include, the files in the directories their includes
