@@ -144,6 +144,20 @@ def test_a_compiled_gameplay_source_reaches_every_runtime_consumer(path: str) ->
         assert relevant(suite, [path]), suite
 
 
+@pytest.mark.parametrize("path", ["crimson-core/editions/11-new-rule.patch", "crimson-core/editions/guards.json"])
+def test_an_edition_reaches_every_suite_a_patch_does(path: str) -> None:
+    from scripts.ci_changed_paths import SUITES
+
+    assert relevant("core-build", [path])
+    for suite in SUITES:
+        assert relevant(suite, [path]) == relevant(suite, ["crimson-core/patches/61-new-fix.patch"]), suite
+
+
+@pytest.mark.parametrize("path", ["crimson-core/sources.json", "crimson-core/game/sources.json"])
+def test_a_target_source_list_rechecks_the_guard_ledger(path: str) -> None:
+    assert relevant("core-patches", [path])
+
+
 def test_new_presentation_sources_and_headers_keep_build_coverage() -> None:
     assert relevant("game-build", ["decomp/1.9/grim/render/new_renderer.cpp"])
     assert not relevant("core-build", ["decomp/1.9/grim/render/new_renderer.cpp"])
@@ -222,6 +236,27 @@ def test_client_and_pytest_suites_cover_audio_practice_renderer_and_build_backen
     ):
         assert relevant("client", [path]), path
     assert relevant("pytest", ["build_backend.py"])
+
+
+def test_client_suite_reruns_the_asset_tests_when_the_engine_they_import_changes() -> None:
+    assert relevant("client", ["crimson-core/checks/engine.mjs"])
+
+
+def test_pytest_suite_rechecks_the_service_vectors_against_the_codec() -> None:
+    assert relevant("pytest", ["service/test/vectors.json"])
+    assert not relevant("pytest", ["service/src/replay.ts"])
+
+
+def test_pytest_suite_rechecks_the_score_contract_when_the_host_decoder_changes() -> None:
+    for path in (
+        "crimson-core/host/json.inc",
+        "crimson-core/host/scores_format.inc",
+        "crimson-core/host/rules.h",
+        "crimson-core/client/wasi.cpp",
+        "crimson-core/client/client.h",
+    ):
+        assert relevant("pytest", [path]), path
+    assert not relevant("pytest", ["crimson-core/host/session.inc"])
 
 
 def test_client_suite_reruns_the_coop_transport_when_the_room_protocol_changes() -> None:

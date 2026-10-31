@@ -8,11 +8,21 @@
 // failed fetch, and starts the quest from quests/online/<id>.bin under its
 // title and byline; leaving the browser meanwhile drops it.
 //
+// Each page names the build whose boards it counts the quests' clears on, the
+// Play Game menu's 1.9.8 box's, and the browser takes an answer only for that
+// build. One without a build is 1.9.93's, the only one a service from before
+// builds has: the browser takes it with the box unticked and, ticked, takes
+// neither it nor one naming 1.9.93, but one naming 1.9.8, whose quests play by
+// 1.9.8's rules. A link to a custom quest (game_custom_quest_play) plays it by
+// the rules of the build it names, as the game starts, and leaves the menus on
+// 1.9.93's. Left, its run's replay holds the quest it played, written as the
+// Python port writes it.
+//
 //   node crimson-core/checks/game_custom.mjs <game directory> [game.wasm]
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { CORE } from "./engine.mjs";
+import { CL_BUILD_1_9_8, CL_BUILD_1_9_93, CORE, field, state } from "./engine.mjs";
 import { bootGame, INPUT } from "./game_host.mjs";
 
 const ROOT = new URL("..", CORE).pathname;
@@ -20,7 +30,7 @@ const [directory, gameWasm = new URL("build/game/game.wasm", CORE).pathname] = p
 if (!directory) throw Error("usage: game_custom.mjs <game directory> [game.wasm]");
 
 // game_state_id_t, HOST_LEADERBOARD_* (game/leaderboard_requests.h), DirectInput scancodes.
-const [MAIN_MENU, GAMEPLAY, MODS_MENU] = [0, 9, 20];
+const [MAIN_MENU, PLAY_GAME_MENU, PAUSE_MENU, GAMEPLAY, MODS_MENU] = [0, 1, 5, 9, 20];
 const [CUSTOM, QUEST] = [5, 6];
 const [ESCAPE, DOWN] = [0x01, 0xd0];
 // The pad as the host lays it out (game/host_input.h): A by index, the d-pad's down as the hat, in hundredths of a degree.
@@ -28,6 +38,8 @@ const [PAD_SOUTH, HAT_DOWN] = [1, 18000];
 // Where a fresh 1024x768 profile lays these out: the main menu's Mods, the
 // browser's first two rows and Play, and a spot clear of the panels.
 const MODS = [230, 270], ROWS = [296, 316].map((y) => [150, y]), PLAY = [191, 522], CLEAR = [600, 700];
+// The main menu's Play Game, and its panel's 1.9.8 box, left of Ranked.
+const PLAY_GAME = [240, 338], RULES_1_9_8 = [210, 489];
 
 let run, game;
 const requests = [];
@@ -75,6 +87,12 @@ function waitFor(what, done, limit = 600) {
 }
 const memory = () => Buffer.from(game.memory.buffer);
 const text = (at) => memory().toString("latin1", at, memory().indexOf(0, at));
+// The build a run plays by, of a snapshot taken once it has started.
+function build() {
+  frames(60);
+  state(game);
+  return field(game, "globals.portable_cl_build");
+}
 function boot(leaderboard) {
   run = bootGame(gameWasm, directory, 1, { leaderboard, requests });
   game = run.game;
@@ -86,31 +104,37 @@ function open() {
   waitFor("the browser", () => game.game_state() === MODS_MENU && requests.length);
 }
 
-// The page the browser asks for, answered with `quests` (service/src/views.ts
-// gameCustomQuests), or as a failed fetch.
-function asked(page) {
+// The page the browser asks for, on `build`'s boards, answered with `quests` (service/src/views.ts
+// gameCustomQuests) on the boards of the build the answer names (null for none), or as a failed fetch.
+function asked(page, build = "1.9.93") {
   if (requests.shift() !== CUSTOM || requests.length) throw Error("the browser asked for no page");
   const request = text(game.game_custom_request());
-  if (request !== `{"page": ${page}}`) throw Error(`the browser asked for ${request}`);
+  if (request !== `{"page": ${page}, "build": "${build}"}`) throw Error(`the browser asked for ${request}`);
 }
-function answer(quests, more = false) {
-  const body = JSON.stringify({ quests, more });
+function answer(quests, more = false, build = "1.9.93") {
+  const body = JSON.stringify(build === null ? { quests, more } : { build, quests, more });
   memory().write(body, game.game_custom_buffer(body.length), "latin1");
   game.game_custom_received(body.length);
   frames(10);
 }
 
+// A replay file's quest table, as the Python port reads it. Its codec takes a replay only in the form it writes
+// itself, every map's keys in its order, which the service's decoder requires too (service/src/replay.ts).
+const replayRun = (replay) => {
+  const out = execFileSync(
+    "uv",
+    [
+      "run", "--no-sync", "python", "-c",
+      "import sys; from crimson.replay.codec import load_replay; run = load_replay(sys.stdin.buffer.read()).run; " +
+        "sys.stdout.buffer.write(int(run.cl_build).to_bytes(4, 'little') + run.custom_quest.to_portable_bytes())",
+    ],
+    { input: replay, maxBuffer: 1 << 20 },
+  );
+  return { cl_build: out.readUInt32LE(0), table: out.subarray(4) };
+};
 // The quest the service test publishes, its table as the site serves it.
 const published = JSON.parse(fs.readFileSync(path.join(ROOT, "service/test/vectors.json"), "utf8")).custom_quest_run;
-const table = execFileSync(
-  "uv",
-  [
-    "run", "--no-sync", "python", "-c",
-    "import sys; from crimson.replay.codec import load_replay; " +
-      "sys.stdout.buffer.write(load_replay(sys.stdin.buffer.read()).run.custom_quest.to_portable_bytes())",
-  ],
-  { input: Buffer.from(published.file, "base64"), maxBuffer: 1 << 20 },
-);
+const table = replayRun(Buffer.from(published.file, "base64")).table;
 const quest = (id, title, start_weapon_id = 3) => ({
   id, title, author: "banteg", players: 2, start_weapon_id, no_bonuses: [3], no_perks: [9, 16], no_weapons: [2, 3],
 });
@@ -149,7 +173,8 @@ frame({ taps: [ESCAPE] });
 waitFor("the main menu", () => game.game_state() === MAIN_MENU);
 open();
 asked(0);
-answer([quest("000000000001", "Gone", 41), quest("06c4073e94c5", "Quick Clear")]);
+// From a service before builds, whose answer names none: 1.9.93's.
+answer([quest("000000000001", "Gone", 41), quest("06c4073e94c5", "Quick Clear")], false, null);
 const tableAsked = () => {
   if (requests.shift() !== QUEST || requests.length) throw Error("Play asked for no table");
   return text(game.game_quest_download());
@@ -188,4 +213,56 @@ if (requests.length) throw Error("Play asked for a table it has");
 waitFor("the quest", () => game.game_state() === GAMEPLAY);
 const named = [text(game.game_custom_quest_title()), text(game.game_custom_quest_author())];
 if (named.join() !== "Quick Clear,banteg") throw Error(`the quest started as ${named.join(" by ")}`);
-console.log(JSON.stringify({ played: named[0] }));
+if (build() !== CL_BUILD_1_9_93) throw Error("the quest Play started with the box unticked plays another build");
+
+// The 1.9.8 box ticked: the browser asks for 1.9.8's boards, and takes neither an answer naming no build nor one naming
+// 1.9.93, whose quest Play starts nothing, but one naming 1.9.8, whose quest plays by 1.9.8's rules.
+boot(true);
+click(PLAY_GAME);
+waitFor("the Play Game menu", () => game.game_state() === PLAY_GAME_MENU);
+click(RULES_1_9_8);
+frame({ taps: [ESCAPE] });
+waitFor("the main menu", () => game.game_state() === MAIN_MENU);
+const ignored = [null, "1.9.93"];
+for (const other of ignored) {
+  open();
+  asked(0, "1.9.8");
+  answer([quest("06c4073e94c5", "Quick Clear")], false, other);
+  click(ROWS[0]);
+  click(PLAY);
+  frames(60);
+  if (game.game_state() !== MODS_MENU || requests.length) throw Error(`1.9.8's browser took an answer naming ${other}`);
+  frame({ taps: [ESCAPE] });
+  waitFor("the main menu", () => game.game_state() === MAIN_MENU);
+}
+open();
+asked(0, "1.9.8");
+answer([quest("06c4073e94c5", "Quick Clear")], false, "1.9.8");
+click(ROWS[0]);
+click(PLAY);
+waitFor("1.9.8's quest", () => game.game_state() === GAMEPLAY);
+if (build() !== CL_BUILD_1_9_8) throw Error("the quest Play started with the box ticked plays another build");
+
+// A link to the quest on 1.9.8's boards, as the game starts, plays by 1.9.8's rules; leaving it, the browser asks for
+// 1.9.93's boards.
+run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
+game = run.game;
+memory().set(table, game.portable_quest());
+if (game.game_custom_quest_play(CL_BUILD_1_9_8) !== 1) throw Error("the link's quest does not start");
+waitFor("the linked quest", () => game.game_state() === GAMEPLAY, 3000);
+const linked = build();
+if (linked !== CL_BUILD_1_9_8) throw Error(`the quest linked on 1.9.8's boards plays ${linked}`);
+frame({ taps: [ESCAPE] });
+waitFor("the pause menu", () => game.game_state() === PAUSE_MENU);
+frames(60);
+padTap({ hat: HAT_DOWN });
+padTap({ press: [PAD_SOUTH] });
+waitFor("the main menu", () => game.game_state() === MAIN_MENU, 3000);
+// The run left saved its replay, the first numbered one in a fresh game folder, which the Python port reads back as
+// the quest the link played.
+const saved = replayRun(fs.readFileSync(path.join(directory, "replays/1-quest.crd")));
+if (!saved.table.equals(table)) throw Error("the linked quest's replay holds another quest");
+if (saved.cl_build !== CL_BUILD_1_9_8) throw Error(`the quest linked on 1.9.8's boards recorded ${saved.cl_build}`);
+open();
+asked(0);
+console.log(JSON.stringify({ played: named[0], other_builds_ignored: ignored.length, linked, recorded: saved.cl_build }));

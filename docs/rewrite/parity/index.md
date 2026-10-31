@@ -10,6 +10,7 @@ Parity status and known behavior deltas.
 
 - [Rewrite status](../status.md)
 - [Original bugs and rewrite policy](../original-bugs.md)
+- [1.9.8 rules](../rules-1.9.8.md) - what changes when a run plays 1.9.8 instead of 1.9.93
 - [Typ-o-Shooter text input parity](typo-mode-text-input.md)
 - [Settings that steer the RNG](environment-rng.md) - audio, detail and violence gates, and the ranked policy
 

@@ -70,7 +70,10 @@
 // A timeout alone. The Guest's packets stop reaching the Host mid-run: the
 // Host's machine times out and goes to the menu while the Guest's waits in the
 // run, until the Host's session connects again and the Guest's begins anew on
-// its hello. The Host's menus start the next run.
+// its hello. The Host's menus start the next run with its 1.9.8 box ticked:
+// both machines play it on the 1.9.8 rules, and the next one, unticked, on
+// 1.9.93's, whose table both names go to, the Guest's box ticked before that
+// session: in the session it stands down, a click on it ticking nothing.
 //
 // At its first level the Guest's window goes to the background, where its pad
 // asks for no perk menu; in front again it asks for one.
@@ -94,7 +97,8 @@
 // same.
 //
 // A lost connection, the machines in each other's seats: the Guest's machine
-// starts the run by its mouse, and its window is in the background as the
+// starts the run by its mouse, on the 1.9.8 rules its box kept ticked through
+// its Guest's sessions, and its window is in the background as the
 // transport closes on both sides a few seconds into it: each machine ends it
 // where it confirmed it and goes to the menu, where the Guest's game stops. The
 // Host's menus are its own again: its quest list starts none of the quests the
@@ -168,7 +172,21 @@ import os from "node:os";
 import path from "node:path";
 import zlib from "node:zlib";
 import { coopStats, Link, prng } from "./coop_link.mjs";
-import { config, CONFIG_BYTES, CORE, decode, field, init, INPUT_BYTES, names, state, step } from "./engine.mjs";
+import {
+  CL_BUILD_1_9_8,
+  CL_BUILD_1_9_93,
+  clBuild,
+  config,
+  CONFIG_BYTES,
+  CORE,
+  decode,
+  field,
+  init,
+  INPUT_BYTES,
+  names,
+  state,
+  step,
+} from "./engine.mjs";
 import { loadGame, PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT, sevenTunes } from "./game_host.mjs";
 
@@ -219,6 +237,9 @@ const PERK_CHOICE = [150, 216], PAD_CURSOR = [1000, 740];
 // Quests; the high scores' Play a game.
 const PLAY_GAME = [240, 338], RANKED = [285, 489], SURVIVAL = [232, 372], OWN_QUESTS = [232, 322], FRESH_QUESTS = [232, 350];
 const PLAY_A_GAME = [190, 500];
+// The Play Game panel's 1.9.8 box, left of Ranked; the build a machine's run plays.
+const RULES_1_9_8 = [210, 489];
+const build = (peer) => clBuild(Buffer.from(peer.g.memory.buffer, peer.g.portable_config(), CONFIG_BYTES));
 // The quest list's Hardcore box, which shows with the campaign's 40 quests unlocked.
 const HARDCORE = [323, 284];
 // A fresh save's Play Game panel lays out the Tutorial first, above Quests.
@@ -606,20 +627,19 @@ function queued(file) {
   assert.deepEqual(uploadable(entry).names, ["banteg", "Zo\u00eb"]);
 }
 
-// A machine's saved scores (host/scores.inc), and the tables they went to, named as the original named its
-// files; its newest replay.
+// A machine's saved scores (host/scores.inc); each one's table, oldest first, named as the original named its files,
+// 1.9.93's in scores5 and 1.9.8's in scores4; the tables they went to; its newest replay.
 const scores = (peer) => {
   const file = path.join(peer.directory, "scores.jsonl");
   return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
 };
-const tables = (peer) => {
-  const modes = { 1: "survival", 2: "rush" };
-  const names = scores(peer).split("\n").filter(Boolean).map((line) => {
-    const { game_mode_id, player_count = 1 } = JSON.parse(line);
-    return `${modes[game_mode_id] ?? game_mode_id}${player_count > 1 ? `_${player_count}` : ""}.hi`;
+const scored = (peer) =>
+  scores(peer).split("\n").filter(Boolean).map((line) => {
+    const { game_mode_id, player_count = 1, cl_build = CL_BUILD_1_9_93 } = JSON.parse(line);
+    const modes = { 1: "survival", 2: "rush" };
+    return `${cl_build === CL_BUILD_1_9_8 ? "scores4" : "scores5"}/${modes[game_mode_id] ?? game_mode_id}${player_count > 1 ? `_${player_count}` : ""}.hi`;
   });
-  return [...new Set(names)].sort();
-};
+const tables = (peer) => [...new Set(scored(peer))].sort();
 const newest = (peer) => {
   const replays = path.join(peer.directory, "replays");
   const numbered = fs.readdirSync(replays).filter((name) => /^\d+-/.test(name));
@@ -964,7 +984,7 @@ custom.setUint32(0, 1, true);
 custom.setUint32(16, 1, true);
 [560, 512, 0].forEach((value, i) => custom.setFloat32(40 + 4 * i, value, true));
 custom.setInt32(40 + 20, 40, true);
-assert.equal(guest.g.game_custom_quest_play(), 1);
+assert.equal(guest.g.game_custom_quest_play(CL_BUILD_1_9_93), 1);
 assert.ok(status(guest) & STATUS.connected, "the run alone's session");
 hold(1000, () => screen(guest) === MAIN_MENU, "a custom quest's link in a session");
 for (const peer of peers) assert.equal(peer.g.game_coop_disconnect(DISCONNECTED), 1);
@@ -989,7 +1009,7 @@ settle(guest, GAME_OVER);
 const solo_tables = tables(guest);
 tap(guest, DOWN, A);
 play(idle, () => tables(guest).length > solo_tables.length, "the Guest's co-op score");
-assert.deepEqual(tables(guest), [...solo_tables, "survival_2.hi"].sort(), "the Guest's co-op table");
+assert.deepEqual(tables(guest), [...solo_tables, "scores5/survival_2.hi"].sort(), "the Guest's co-op table");
 assert.equal(header(newest(guest)).seat_keys, null, "seats' keys in an unattested run");
 // The room's word to the Guest's page waits from here until the next run has started on both machines.
 room.held = [];
@@ -1174,8 +1194,11 @@ for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
 click(host, MAIN_MENU, PLAY_GAME);
 // The Ranked box stands down in a session: a click where it sits ticks nothing, so the mode list keeps its place.
 click(host, PLAY_GAME_MENU, RANKED);
+// The Host's 1.9.8 box is the session's: START_RUN's config carries its build, which both machines' runs play.
+click(host, PLAY_GAME_MENU, RULES_1_9_8);
 click(host, PLAY_GAME_MENU, SURVIVAL);
 play(idle, started, "the run after the timeout");
+assert.deepEqual(peers.map(build), [CL_BUILD_1_9_8, CL_BUILD_1_9_8], "the Host's 1.9.8 run");
 
 // At the run's first level the Guest's window goes to the background, where its Triangle asks for no perk menu.
 // Back in front it asks for one; in the background again its d-pad and A pick nothing on its perk screen, and back
@@ -1237,11 +1260,22 @@ function reconnect() {
 // again presses Play Again, which waits for the Guest's name; then the transport opens again before either machine's
 // next frame. Their end screens are the ended session's, whose names go to the two players' table, then the menu,
 // while the new session goes on: the Host's Play Again was the last session's, and no run starts in the new one.
+// Alone between sessions the Guest's machine ticks its 1.9.8 box, which stands down there once the session opens:
+// a click where it sits ticks nothing. The Host's box, unticked, is the session's: both machines play 1.9.93's rules,
+// and their names go to 1.9.93's table.
+click(guest, MAIN_MENU, PLAY_GAME);
+click(guest, PLAY_GAME_MENU, RULES_1_9_8);
 connect();
+click(guest, PLAY_GAME_MENU, RULES_1_9_8);
+tap(guest, key(ESCAPE));
+settle(guest, MAIN_MENU);
 still = true;
 click(host, MAIN_MENU, PLAY_GAME);
+click(host, PLAY_GAME_MENU, RULES_1_9_8);
 click(host, PLAY_GAME_MENU, SURVIVAL);
 play(idle, started, "the run before the reconnect at its end");
+assert.deepEqual(peers.map(build), [CL_BUILD_1_9_93, CL_BUILD_1_9_93], "the Host's 1.9.93 run, the Guest's box ticked");
+const lines = peers.map((p) => scored(p).length);
 play(player, () => peers.every((p) => screen(p) === GAME_OVER), "the team's death");
 settle(host, GAME_OVER);
 const unnamed = scores(host);
@@ -1257,8 +1291,9 @@ settle(guest, GAME_OVER);
 tap(guest, DOWN, A);
 play(idle, () => (assert.ok(none(), "the last session's Play Again"), screen(guest) === MAIN_MENU), "the Guest's menu");
 hold(2000, () => none() && peers.every((p) => screen(p) === MAIN_MENU), "the last session's Play Again");
-for (const peer of peers) {
-  assert.ok(tables(peer).includes("survival_2.hi") && !tables(peer).includes("survival.hi"), `${tables(peer)}`);
+for (const [i, peer] of peers.entries()) {
+  assert.ok(!tables(peer).includes("scores5/survival.hi"), `${tables(peer)}`);
+  assert.deepEqual(scored(peer).slice(lines[i]), ["scores5/survival_2.hi"], `machine ${peer.seat}'s name, the Host's build`);
   assert.equal(status(peer) & STATUS.connected, STATUS.connected, `machine ${peer.seat}'s new session`);
 }
 // The transport opens again as the Host's screen fades to the run its click chose: the fade, the last session's,
@@ -1321,6 +1356,7 @@ connect();
 click(host, MAIN_MENU, PLAY_GAME);
 click(host, PLAY_GAME_MENU, SURVIVAL);
 play(idle, started, "the run before the close");
+const closing = scored(guest).length;
 play(player, () => peers.every((p) => screen(p) === GAME_OVER), "the team's death before the close");
 still = false;
 settle(guest, GAME_OVER);
@@ -1329,7 +1365,7 @@ assert.equal(guest.g.game_coop_disconnect(PARTNER_GONE), 1);
 hold(1000, () => screen(guest) === GAME_OVER, "the Guest's name entry after the close");
 tap(guest, DOWN, A);
 play(idle, () => screen(guest) === MAIN_MENU, "the Guest's name and the menu after the close");
-assert.ok(!tables(guest).includes("survival.hi"), `${tables(guest)}`);
+assert.deepEqual(scored(guest).slice(closing), ["scores5/survival_2.hi"], "the Guest's name after the close, the Host's build");
 tap(host, key(ENTER));
 play(idle, () => screen(host) === MAIN_MENU, "the Host's name and the menu after the close");
 
@@ -1337,6 +1373,9 @@ play(idle, () => screen(host) === MAIN_MENU, "the Host's name and the menu after
 // ticks in, the Host's machine's page closes, so the Guest's machine's transport says the partner left the room and
 // the Host's that it closed. Each machine ends the run where it confirmed it, saves it and goes to the menu.
 survival([1, 0]);
+// Its 1.9.8 box stayed ticked through the sessions it held the Guest's seat in: the run it starts in the Host's
+// seat plays 1.9.8's rules on both machines.
+assert.deepEqual(peers.map(build), [CL_BUILD_1_9_8, CL_BUILD_1_9_8], "the 1.9.8 run the Guest's machine starts");
 play(player, () => peers.every((p) => confirmed(p) >= 200), "the fifth run's 200 ticks");
 guest.g.game_activate(0);
 assert.equal(guest.g.game_coop_disconnect(PARTNER_GONE), 1);
@@ -1350,6 +1389,11 @@ assert.deepEqual(peers.map(reason), [DISCONNECTED, PARTNER_GONE]);
 agreed();
 midpointAim();
 for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
+// The Guest's machine unticks its box again, for the runs below.
+click(guest, MAIN_MENU, PLAY_GAME);
+click(guest, PLAY_GAME_MENU, RULES_1_9_8);
+tap(guest, key(ESCAPE));
+settle(guest, MAIN_MENU);
 // Bounded rollback (§3.3, M2) under the network's profiles: a Survival run each, which the Host's menus start, the
 // Host's machine stalling 250 ms as the Guest's run starts, so that run begins ahead. Both players fight, and at the
 // first level one asks for the perk menu (the Host's perk key under 10 ms and 50 ± 15 ms, the Guest's Triangle under

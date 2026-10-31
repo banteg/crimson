@@ -15,10 +15,19 @@ from grim import jaz, paq
 from grim.geom import Vec2
 from grim.rand import Crand
 
+from ..cl_build import ClBuild
 from ..creatures.spawn import SpawnId, spawn_id_label
 from ..paths import default_runtime_dir
 
 app = typer.Typer(add_completion=False)
+
+_BUILD = typer.Option(
+    ClBuild.V1_9_93.label,
+    "--build",
+    parser=ClBuild.from_label,
+    metavar="|".join(build.label for build in ClBuild),
+    help="the original version whose rules runs play; 1.9.8 starts with the Play Game menu's 1.9.8 box ticked",
+)
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreaturePool
@@ -218,6 +227,7 @@ def cmd_game(
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
     rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
     preserve_bugs: bool = typer.Option(False, "--preserve-bugs", help="preserve known original exe bugs/quirks"),
+    cl_build: ClBuild = _BUILD,
     replay_checkpoints: bool = typer.Option(
         False,
         "--replay-checkpoints",
@@ -252,6 +262,7 @@ def cmd_game(
         rtx=bool(rtx),
         preserve_bugs=bool(preserve_bugs),
         replay_checkpoints=bool(replay_checkpoints),
+        cl_build=cl_build,
     )
     run_game(config)
 

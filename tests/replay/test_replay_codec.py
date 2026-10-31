@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import json
 import re
 from pathlib import Path
 
@@ -11,6 +13,7 @@ import crimson
 import crimson.replay.codec as replay_codec_mod
 from crimson import game_version
 from crimson.aim_schemes import AimScheme
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
 from crimson.math_parity import f32
@@ -239,6 +242,21 @@ def test_decode_rejects_noncanonical_payloads(case: str) -> None:
         decode_replay_payload(payload)
 
 
+SERVICE_VECTORS = Path(__file__).resolve().parents[2] / "service/test/vectors.json"
+
+
+# The service's decoder takes each map's keys only in its own order (service/src/replay.ts), as its tests of these
+# replays show, and the game checks hold the game module's replays to this codec's form. So the module writes the order
+# the service reads while these are that form, in the current format: a Survival run's maps, and a custom quest's.
+@pytest.mark.parametrize("vector", ["valid_payload", "custom_quest_run.payload"])
+def test_the_service_vectors_are_this_codecs_current_form(vector: str) -> None:
+    value = json.loads(SERVICE_VECTORS.read_text())
+    for key in vector.split("."):
+        value = value[key]
+
+    assert decode_replay_payload(base64.b64decode(value)).format_version == REPLAY_FORMAT_VERSION
+
+
 @pytest.mark.parametrize(
     ("wire", "version"),
     [
@@ -248,28 +266,44 @@ def test_decode_rejects_noncanonical_payloads(case: str) -> None:
     ],
 )
 def test_decode_names_the_format_of_another_version(wire: dict, version: int) -> None:
-    with pytest.raises(ReplayCodecError, match=rf"format version: {version} \(this build reads versions 30, 31, 32, 33, {REPLAY_FORMAT_VERSION}\)"):
+    with pytest.raises(
+        ReplayCodecError, match=rf"format version: {version} \(this build reads versions 30, 31, 32, 33, 34, {REPLAY_FORMAT_VERSION}\)",
+    ):
         decode_replay_payload(msgspec.msgpack.encode(wire))
 
 
 @pytest.mark.parametrize(
     ("version", "left_out"),
-    [(30, {"rules", "pilot", "seat_keys"}), (31, {"pilot", "seat_keys"}), (32, {"seat_keys"}), (33, {"seat_keys"})],
+    [(30, {"rules", "pilot", "seat_keys"}), (31, {"pilot", "seat_keys"}), (32, {"seat_keys"}), (33, {"seat_keys"}), (34, set())],
 )
 def test_earlier_formats_read_with_what_they_left_out_and_are_written_as_the_current_format(version: int, left_out: set) -> None:
     wire = {key: value for key, value in _wire().items() if key not in left_out}
     wire["format_version"] = version
     if "rules" not in left_out:
         wire["rules"] = 1
-    if version < 33:
-        # Runs had no custom quest before v33.
-        wire["run"] = {key: value for key, value in wire["run"].items() if key != "custom_quest"}
+    # Runs had no custom quest before v33 and no build before v35.
+    run_left_out = {"cl_build"} | ({"custom_quest"} if version < 33 else set())
+    wire["run"] = {key: value for key, value in wire["run"].items() if key not in run_left_out}
 
     replay = decode_replay_payload(msgspec.msgpack.encode(wire))
 
     assert (replay.format_version, replay.rules, replay.pilot, replay.seat_keys) == (version, 1, None, None)
     # Updating the envelope must not upgrade the gameplay rules.
     assert encode_replay_payload(replay) == encode_replay_payload(msgspec.structs.replace(_replay(), rules=1))
+
+
+def test_a_1_9_8_run_round_trips_its_build() -> None:
+    replay = _replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, cl_build=ClBuild.V1_9_8))
+
+    assert _wire(replay)["run"]["cl_build"] == 10908
+    assert decode_replay_payload(encode_replay_payload(replay)) == replay
+
+
+def test_1_9_8_rules_need_rules_2() -> None:
+    replay = msgspec.structs.replace(_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, cl_build=ClBuild.V1_9_8)), rules=1)
+
+    with pytest.raises(ReplayCodecError, match="1.9.8 rules need rules 2"):
+        encode_replay_payload(replay)
 
 
 def test_a_declared_pilot_round_trips() -> None:

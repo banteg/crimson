@@ -1,0 +1,14 @@
+Original bug 56 (1.9.8 only): 1.9.8's Radioactive pulse burns creatures already at zero health or below and pays
+their reward again. The fix burns only living ones, as 1.9.93 does; the lizard exemption stays 1.9.93's alone.
+--- a/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
+@@ -652,7 +652,8 @@
+ #if CL_BUILD == 10908
+                             // 1.9.8 burns creatures that are already dying and
+                             // has no lizard exemption.
+-                            if (creatures[creature_index].dot_tick_timer < 0.0f) {
++                            if (creatures[creature_index].dot_tick_timer < 0.0f
++                                && (portable_preserve_bugs || *health > 0.0f)) {
+                                 creatures[creature_index].dot_tick_timer = 0.5f;
+                                 creatures[creature_index].state_flag = 1;
+                                 *health -= (100.0f - interaction_distance) * 0.3f;

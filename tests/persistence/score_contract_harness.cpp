@@ -26,7 +26,7 @@ int main() {
       continue;
     }
     hex((const char *)&stored.record, sizeof stored.record);
-    printf(" %d ", stored.table.players);
+    printf(" %d %u ", stored.table.players, stored.table.cl_build);
     hex(stored.table.list.data(), stored.table.list.size());
     printf(" %s %s\n", stored.run.c_str(), stored.import_id.c_str());
   }

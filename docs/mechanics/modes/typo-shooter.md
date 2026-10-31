@@ -41,8 +41,9 @@ never change during a run.
 ## Names
 
 Names are built from 52 short words like "lamb", "gun", "head", "fox" and
-"boom". "The" can only start a name. Longer names come in as your kills
-grow:
+"boom". "The" can only start a name. A run on the
+[1.9.8 rules](../../rewrite/rules-1.9.8.md) builds names from 42 of these
+words. Longer names come in as your kills grow:
 
 | Kills | Name length |
 | ---: | --- |

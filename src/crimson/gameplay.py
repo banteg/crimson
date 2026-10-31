@@ -867,7 +867,8 @@ def _player_tick_reload(
     if player.weapon.reload_timer > 0.0:
         if (
             PerkId.ANGRY_RELOADER in state.perks
-            and player.weapon.reload_timer_max > 0.5
+            # 1.9.8 has no `reload_timer_max > 0.5` gate: a short reload rings too.
+            and (state.rules_1_9_8 or player.weapon.reload_timer_max > 0.5)
             and x87_pc24_mul(player.weapon.reload_timer_max, f32(0.5)) < player.weapon.reload_timer
         ):
             half = x87_pc24_mul(player.weapon.reload_timer_max, f32(0.5))

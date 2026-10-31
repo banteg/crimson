@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+import pytest
+
+from crimson.cl_build import ClBuild
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
+from crimson.perks import PerkId
 from crimson.persistence.highscores import HighScoreRecord, append_highscore_records
 from crimson.screens.actions import Route, ScoreQuery, ShowScores
 from crimson.screens.high_scores_view.view import HighScoresView
@@ -156,6 +160,19 @@ def test_perk_database_details_follow_the_keyboard(loop, mocker) -> None:
         press(loop, mocker, rl.KeyboardKey.KEY_DOWN)
     assert database._detail_perk_id() == database._perk_ids[12]
     assert database.list_scroll.scroll_offset == 3
+
+
+@pytest.mark.parametrize(("cl_build", "listed"), [(ClBuild.V1_9_8, False), (ClBuild.V1_9_93, True)])
+def test_perk_database_lists_the_perks_of_the_boxs_build(loop, cl_build: ClBuild, listed: bool) -> None:
+    # The Play Game menu's 1.9.8 box picks the build whose perks the database lists; 1.9.8 predates these, which
+    # 1.9.93 lists at every unlock.
+    later = {PerkId.MAN_BOMB, PerkId.FIRE_CAUGH, PerkId.LIVING_FORTRESS, PerkId.TOUGH_RELOADER}
+    loop.state.cl_build = cl_build
+    loop.navigation.navigate(Route.PERKS)
+    finish_transition(loop)
+    database = loop.state.screens.active
+    assert isinstance(database, UnlockedPerksDatabaseView)
+    assert later & set(database._perk_ids) == (later if listed else set())
 
 
 def test_named_score_list_added_and_deleted_by_keyboard(loop, mocker) -> None:

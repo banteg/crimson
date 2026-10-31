@@ -8,6 +8,7 @@ import msgspec
 from crimson.screens.actions import ScreenAction
 from grim.rand import Crand
 
+from ..cl_build import ClBuild
 from ..leaderboard import Leaderboard
 from ..paths import default_runtime_dir
 from ..quests.custom import CustomQuest
@@ -50,6 +51,8 @@ class GameConfig(msgspec.Struct, frozen=True):
     replay_checkpoints: bool = False
     # A custom quest to play straight after boot instead of opening the menu.
     custom_quest: CustomQuest | None = None
+    # The build whose rules runs play as the game starts: the Play Game menu's 1.9.8 box starts ticked for 1.9.8.
+    cl_build: ClBuild = ClBuild.V1_9_93
 
 
 class Screen(Protocol):
@@ -91,6 +94,8 @@ class GameState(msgspec.Struct):
     quest_fail_retry_count: int = 0
     # Play Game menu's Ranked box: Survival and quest runs start from the ranked profile.
     ranked: bool = False
+    # Play Game menu's 1.9.8 box: the build whose rules the next run plays. A ranked 1.9.8 run ranks on 1.9.8's boards.
+    cl_build: ClBuild = ClBuild.V1_9_93
     replay_saver: ReplaySaver = msgspec.field(default_factory=ReplaySaver)
     # The live game's leaderboard client; headless and test states run without one.
     leaderboard: Leaderboard | None = None

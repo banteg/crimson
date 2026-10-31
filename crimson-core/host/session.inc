@@ -66,18 +66,25 @@ static struct {
   bool watching; // the run plays a replay (watch.inc)
   bool practicing; // detached Watch state driven by live input (practice.inc)
 } live;
-// The menu settings that name a run: its mode, difficulty, players and quest. A
-// replay, a custom quest's link and a co-op run put theirs in place of the
-// player's for their screens; crimson.cfg keeps the player's
-// (config_sync_from_grim).
+// The Play Game menu's 1.9.8 box (host/ranked.inc ranked_menu): the build whose
+// rules the runs the menus start play, Typ-o and the tutorial too, and whose
+// high score tables the screens show (host/scores.inc). A launch starts on
+// 1.9.93's, as Python's GameState.cl_build does.
+static unsigned menu_cl_build = PORTABLE_CL_BUILD_1_9_93;
+// The menu settings that name a run: its mode, difficulty, players, quest and
+// build. A replay, a custom quest's link and a co-op run put theirs in place
+// of the player's for their screens; crimson.cfg keeps the player's
+// (config_sync_from_grim), and the build no file keeps.
 struct MenuSettings {
   decltype(config_blob.game_mode) mode;
   decltype(config_blob.hardcore) hardcore;
   decltype(config_blob.player_count) player_count;
   int major, minor;
+  unsigned cl_build;
 };
 static MenuSettings menu_shown() {
-  return {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major, quest_stage_minor};
+  return {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major, quest_stage_minor,
+          menu_cl_build};
 }
 static void menu_install(const MenuSettings &menu) {
   config_blob.game_mode = menu.mode;
@@ -85,6 +92,7 @@ static void menu_install(const MenuSettings &menu) {
   config_blob.player_count = menu.player_count;
   quest_stage_major = menu.major;
   quest_stage_minor = menu.minor;
+  menu_cl_build = menu.cl_build;
 }
 // A co-op session inside the original (host/coop_live.inc).
 static struct {
@@ -143,9 +151,11 @@ static int practice_frame();
 static void practice_render();
 // A co-op session is on (host/coop_live.inc); co-op is open, a session or a
 // room waiting for one: no replay starts, no practice takes one over, the
-// Ranked box stands down, and the menus show a line for the player.
+// Ranked box stands down, and the menus show a line for the player. The Guest's
+// seat, in a session or a room, plays the Host's build: its 1.9.8 box stands down.
 static bool coop_on();
 static bool coop_open();
+static bool coop_guest();
 static void coop_note(const char *note);
 // A co-op tick's terrain bake and music wait for its confirmation (host/coop.inc):
 // a track, the in-game tune, a fade, a volume.
@@ -275,10 +285,31 @@ static bool live_start() {
   return true;
 }
 
+// The profile of the player's own runs, those the session plays (live_begin) and those the original sets up itself
+// (game_state_set), as Python's navigation gives every mode: the current rules with the documented fixes, the port's
+// policy (docs/rewrite/original-bugs.md), on the menus' build, ranked or not (ranked_spec keeps it).
+static PortableConfig live_profile() {
+  PortableConfig profile = {};
+  profile.rules = CRIMSON_REPLAY_RULES;
+  profile.cl_build = menu_cl_build;
+  return profile;
+}
+// Typ-o's high score names (typo_word_pick_highscore_name): the original loads
+// them from its Typ-o table at the process's first pick and keeps them. Each
+// build keeps its own tables (host/scores.inc), so a Typ-o run on another build
+// than the last drops them, and its first pick loads its own build's, as a
+// fresh process's would: the Python port's TypoSession.start.
+extern "C" unsigned char typo_word_highscore_cache_ready;
+static unsigned typo_names_cl_build = PORTABLE_CL_BUILD_1_9_93;
+static void typo_names_start(unsigned cl_build) {
+  if (cl_build != typo_names_cl_build)
+    typo_word_highscore_cache_ready = 0;
+  typo_names_cl_build = cl_build;
+}
+
 // A run the player plays: seeded afresh, with their progress and settings.
 static void live_begin() {
-  cfg = {};
-  cfg.rules = CRIMSON_REPLAY_RULES;
+  cfg = live_profile();
   getentropy(&cfg.seed, sizeof cfg.seed);
   cfg.mode = config_blob.game_mode;
   cfg.major = cfg.mode == GAME_MODE_QUEST ? quest_stage_major : 1;
@@ -290,7 +321,6 @@ static void live_begin() {
   cfg.friendly_fire = cv_friendlyFire->value != 0;
   cfg.hardcore = config_blob.hardcore;
   cfg.retry = quest_fail_retry_count;
-  cfg.preserve_bugs = 0; // the port's policy: the documented fixes (docs/rewrite/original-bugs.md)
   cfg.players = 1;
   memcpy(cfg.weapon_usage, game_status_blob.weapon_usage_counts, sizeof cfg.weapon_usage);
   ranked_run = ranked_attempt();
@@ -738,8 +768,16 @@ void game_state_set(game_state_id_t state) {
   bool entering_gameplay = state == GAME_STATE_GAMEPLAY && !run_active;
   if (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active))
     scores_unlink();
-  if (!watches && (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active)))
+  if (!watches && (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active))) {
     ++play_generation;
+    // Runs the original sets up itself (Typ-o, the tutorial, more players, another resolution) play the player's
+    // profile, whatever profile a replay or the last run played, and start from a fresh game's state, which the
+    // original would carry over from the last run; portable_init sets both again for every other run.
+    portable_profile_set(live_profile());
+    portable_fresh_game();
+    if (state == GAME_STATE_TYPO_GAMEPLAY)
+      typo_names_start(portable_cl_build);
+  }
   bool starts = entering_gameplay && !coop && live_eligible();
   // The run a replay or a co-op session starts counts in none of the player's
   // statistics.
@@ -777,6 +815,13 @@ void game_state_set(game_state_id_t state) {
     if (state == GAME_STATE_MODS_MENU) {
       ui_element_slot_33.active = 1;
       mods_menu_refresh_pending = 1;
+    }
+    // The perk database lists the perks of the menus' build, as the high score
+    // screens show its tables and Python's view does: no run holds the table
+    // there, and every run rebuilds it on its own build.
+    if (state == GAME_STATE_PERK_DATABASE) {
+      portable_profile_set(live_profile());
+      perks_rebuild_available();
     }
     if (watches || coop)
       game_status_blob = status;
@@ -828,6 +873,53 @@ bool config_sync_from_grim() {
 }
 __attribute__((export_name("game_replay"))) const unsigned char *game_replay() { return live.replay.data(); }
 __attribute__((export_name("game_replay_size"))) int game_replay_size() { return (int)live.replay.size(); }
+
+// For checks/game_rules.mjs, what the game's run state draws by the profile it
+// holds, whichever run set it: the bug policy, which the snapshot leaves out,
+// the perk range, the weapons' shot sounds 1.9.8's Fire Bullets reroll reads,
+// the Typ-o fragment typo_word_pick_fragment draws from the random state
+// `state` (its extended pool with `extended`) and the high score name
+// typo_word_pick_highscore_name draws from it, loading the names if none are,
+// the stream left as it was; and Lean Mean Exp Machine's tick, which every
+// run's frames count down whatever its perks, the snapshot leaves out, and
+// only a fresh game sets (portable_fresh_game).
+__attribute__((export_name("game_preserve_bugs"))) int game_preserve_bugs() { return portable_preserve_bugs; }
+__attribute__((export_name("game_perk_id_max"))) int game_perk_id_max() { return perk_id_max; }
+__attribute__((export_name("game_lean_mean_timer"))) float *game_lean_mean_timer() {
+  return &perk_lean_mean_exp_tick_timer_s;
+}
+__attribute__((export_name("game_weapon_shot_slots"))) const int *game_weapon_shot_slots() {
+  return portable_weapon_shot_slot;
+}
+char *typo_word_pick_fragment(unsigned char include_extended_pool);
+__attribute__((export_name("game_typo_fragment"))) const char *game_typo_fragment(uint32_t state, int extended) {
+  uint32_t *stream = crt_rand_stream(), kept = *stream;
+  *stream = state;
+  const char *fragment = typo_word_pick_fragment((unsigned char)extended);
+  *stream = kept;
+  return fragment;
+}
+char *typo_word_pick_highscore_name(void);
+__attribute__((export_name("game_typo_highscore_name"))) const char *game_typo_highscore_name(uint32_t state) {
+  uint32_t *stream = crt_rand_stream(), kept = *stream;
+  *stream = state;
+  const char *name = typo_word_pick_highscore_name();
+  *stream = kept;
+  return name;
+}
+// And the high score screen as it shows: the records its table holds, and the
+// strings the small font drew since the last call, a line each, which the first
+// call starts recording.
+__attribute__((export_name("game_highscore_table_count"))) int game_highscore_table_count() {
+  return highscore_table_count;
+}
+__attribute__((export_name("game_drawn_text"))) const char *game_drawn_text() {
+  static std::string record, read;
+  read.swap(record);
+  record.clear();
+  drawn_text = &record;
+  return read.c_str();
+}
 
 // The world's live entities, for a profile (CRIMSON_PROFILE, client/main.cpp):
 // creatures, projectiles, secondary projectiles, particles, sprite effects and

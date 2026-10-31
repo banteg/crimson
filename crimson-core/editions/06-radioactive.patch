@@ -1,0 +1,50 @@
+1.9.8 rule: Radioactive kills lizards like any other creature, where 1.9.93 leaves them at 1 health. 1.9.8 also
+burns creatures already at zero health or below, which original bug 56 fixes
+(patches/56-radioactive-dying-creatures.patch): the run keeps it only with preserve_bugs.
+--- a/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
+@@ -652,40 +652,22 @@
+-#if CL_BUILD == 10908
+-                            // 1.9.8 burns creatures that are already dying and
+-                            // has no lizard exemption.
++                            // 1.9.8 has no lizard exemption, and burns creatures already at zero health or
++                            // below with preserve_bugs (original bug 56).
+                             if (creatures[creature_index].dot_tick_timer < 0.0f
+-                                && (portable_preserve_bugs || *health > 0.0f)) {
++                                && (portable_bugs_1_9_8 || *health > 0.0f)) {
+                                 creatures[creature_index].dot_tick_timer = 0.5f;
+                                 creatures[creature_index].state_flag = 1;
+                                 *health -= (100.0f - interaction_distance) * 0.3f;
+                                 if (*health < 0.0f || (portable_rules2_fixes && *health == 0.0f)) {
+-                                    player_state_table[0].experience = (int)(
+-                                        (float)player_state_table[0].experience
+-                                        + creatures[creature_index].reward_value);
+-                                    *death_timer -= frame_dt;
+-                                }
+-                                fx_queue_add_random(position);
+-                                if (portable_rules2_fixes && *health <= 0.0f)
+-                                    goto next_creature;
+-                            }
+-#else
+-                            if (creatures[creature_index].dot_tick_timer < 0.0f
+-                                && *health > 0.0f) {
+-                                creatures[creature_index].dot_tick_timer = 0.5f;
+-                                creatures[creature_index].state_flag = 1;
+-                                *health -= (100.0f - interaction_distance) * 0.3f;
+-                                if (*health < 0.0f || (portable_rules2_fixes && *health == 0.0f)) {
+-                                    if (creatures[creature_index].type_id
++                                    if (!portable_rules_1_9_8 && creatures[creature_index].type_id
+                                         == CREATURE_TYPE_LIZARD) {
+                                         *health = 1.0f;
+                                     } else {
+                                         player_state_table[0].experience = (int)(
+                                             (float)player_state_table[0].experience
+                                             + creatures[creature_index].reward_value);
+                                         *death_timer -= frame_dt;
+                                     }
+                                 }
+                                 fx_queue_add_random(position);
+                                 if (portable_rules2_fixes && *health <= 0.0f)
+                                     goto next_creature;
+                             }
+-#endif

@@ -5,8 +5,9 @@ tags:
 
 # Rewrite
 
-The Python + raylib implementation reproduces Crimsonland Classic v1.9.93, with
-live gameplay and deterministic replay tooling. The recovered core
+The Python + raylib implementation reproduces Crimsonland Classic v1.9.93, and
+per run the [1.9.8 rules](rules-1.9.8.md), with live gameplay and deterministic
+replay tooling. The recovered core
 (`crimson-core/`) compiles the recovered C/C++ into a native executable and a
 WASM module; it verifies replays and agrees with Python under both bug policies.
 Native behavior is established from the executable and recovered source;

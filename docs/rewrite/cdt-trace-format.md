@@ -25,7 +25,7 @@ and the [recovered core gate](https://github.com/banteg/crimson/tree/master/crim
 | --- | ---: | --- |
 | CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CDT payload schema | 21 | `crimson-re/src/crimson_re/dbg/schema.py` |
-| CRD replay | 34 | `src/crimson/game_version.py` |
+| CRD replay | 35 | `src/crimson/game_version.py` |
 
 `scripts/check_docs.py` keeps this table in step with the sources. Traces are
 throwaway debugging data: a trace reader requires exactly the CDT versions and
@@ -133,7 +133,7 @@ The replay step is the authoritative driving evidence for the tick:
 Replays step a fixed 60 Hz schedule, so their traces report
 `dt = float32(1/60)` and empty `prelude` and `postlude`. Input bit 17,
 `fire_bullets_key_down`, records the native G-key Fire Bullets shortcut;
-playback honors it only with `preserve_bugs` enabled.
+playback honors it only in a 1.9.93 run with `preserve_bugs` enabled.
 
 Checkpoint and simulation player counts must equal the input count.
 

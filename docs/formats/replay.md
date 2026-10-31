@@ -53,7 +53,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `34` |
+| `format_version` | int | `35` |
 | `game_version` | str | The build that recorded the run, which boards are versioned by (see below) |
 | `rules` | int | The simulation rules the run plays under (since v31) |
 | `recorder` | `Recorder` | The program that recorded the run (since v30) |
@@ -78,8 +78,8 @@ service still re-simulates ranked runs.
 `rules` is a number each build carries (`REPLAY_RULES`), raised whenever a change makes earlier replays play
 differently: a replay plays back only under the rules it was recorded under. Readers accept v30, which had no
 `rules`, as rules 1, v30 and v31, which had no `pilot`, as declaring none, v30 to v32, which had no
-`run.custom_quest`, as playing stock quests, and v30 to v33, which had no `seat_keys`, as naming no seat's key;
-writers always write v34.
+`run.custom_quest`, as playing stock quests, v30 to v33, which had no `seat_keys`, as naming no seat's key, and
+v30 to v34, which had no `run.cl_build`, as playing 1.9.93; writers always write v35.
 
 Rules 2 includes exact-zero reload completion, Jinxed/chain living-target
 selection, independent randomized perk intervals and swap cooldowns, post-swap
@@ -89,6 +89,15 @@ Gauss Shotgun/Multi-Plasma Fire Bullets volleys at normal multi-pellet cooldowns
 Both rules 1 and 2 are playable and verifiable using explicit simulation profiles;
 new runs default to rules 2. `preserve_bugs` selects original behavior, not the
 previous fixed default. Existing payloads, signatures and results remain intact.
+
+`run.cl_build` selects the original build whose rules the run plays, 1.9.93 or
+[1.9.8](../rewrite/rules-1.9.8.md). The 1.9.8 rules arrived with rules 2 and have
+no rules-1 profile, so readers refuse a 1.9.8 run with rules 1. They apply under
+both bug policies; `preserve_bugs` also keeps 1.9.8's own bugs
+([original bugs 56-60](../rewrite/original-bugs.md#56-radioactive-burns-creatures-already-at-zero-health-or-below-198-only)).
+The Python port and the core verifier play both builds' runs, and the web and
+native clients start either; the leaderboard ranks 1.9.8 runs on boards of
+their own ([ranked rules](../rewrite/ranked-rules.md)).
 
 Historical profile selection, identity stability and the reload exception are
 specified under [historical rules profiles](#historical-rules-profiles).
@@ -138,14 +147,16 @@ it does `recorder` and `pilot`.
 | `typo_highscore_names` | array of str | Typ-o name pool from the local score table: at most 512 names of 1..31 ASCII letters or `.` |
 | `typo_carry` | `TypoCarry` | Typ-o state the game keeps between runs (since v28); defaults outside Typ-o |
 | `custom_quest` | `CustomQuest` or nil | The quest a custom run plays in place of `quest_level` (since v33) |
+| `cl_build` | int | The original build whose rules the run plays: `10993` for 1.9.93 or `10908` for the [1.9.8 rules](../rewrite/rules-1.9.8.md), which need `rules` 2 (since v35) |
 
 `TypoCarry` is a map of `target_world` (`{x, y}` f32 map or nil: the aim point
 the last Typ-o run left, nil before the game's first Typ-o run),
 `submit_count` and `match_count` (i32 word counters the game never resets;
 a run scores only its own words unless `preserve_bugs`), and
-`highscore_names_loaded` (bool: an earlier run already loaded the score-table
-name cache, so this run's first highscore-name pick skips the table load's RNG
-draws).
+`highscore_names_loaded` (bool: the last Typ-o run played the same build and
+left the score-table name cache loaded, so this run's first highscore-name pick
+skips the table load's RNG draws; a run on another build than the last loads
+its own build's table).
 
 `CustomQuest` is a map of `title` (1..64 printable ASCII characters), `author` (1..31 printable ASCII
 characters or nil; like the title, presentation), `start_weapon_id` (int, not 0),
@@ -276,16 +287,30 @@ Resolve the profile once at run initialization and carry it through recording,
 reset, snapshots, state hashes, keyframes, seeking, retry, practice takeover and
 co-op rollback. Co-op setup agrees on rules. A fresh ordinary run returns to the
 current default; continuation keeps its source profile. The internal core config
-has 68 little-endian uint32 words (272 bytes): rules at word 66 and the legacy
-co-op reload flag at word 67. The flag is valid only with rules 1. These internal
-words do not change replay format 34 or historical run identities.
+has 69 little-endian uint32 words (276 bytes): rules at word 66, the legacy
+co-op reload flag at word 67 and `run.cl_build` at word 68. The flag is valid
+only with rules 1. These internal words do not change the replay format, and
+run identities hash none of the three words, though a rules-2 ID names its
+rules and a 1.9.8 run's ID its build, as below.
 
 Rules-1 IDs retain the original hash input byte for byte: the old 66-word
 transport including player count for co-op, with the player-count word removed
 for solo, followed by quest/input bytes. Rules-2 IDs hash UTF-8
 `crimson:run:rules`, a NUL byte, a little-endian uint32 rules number, and that old
 66-word transport including player count and quest/input bytes. Internal profile
-words are excluded. Existing payloads and signatures are never rewritten.
+words are excluded. A run of another build than 1.9.93 (`run.cl_build` 10908)
+hashes UTF-8 `crimson:run:build`, a NUL byte, a little-endian uint32 build and
+then the input its rules-2 ID would hash, so the same inputs under 1.9.8's
+rules are another run, while 1.9.93's IDs stay as they were. The leaderboard
+ranks the same inputs on one board only
+([leaderboard identity](../rewrite/leaderboard-identity.md#duplicates-and-stolen-runs)):
+it refuses a run whose inputs it accepted under the other build, whatever rules
+either claims, and a one-player run whose inputs it accepted from the other
+seed, `run.seed` with bit 31 flipped, which the game never reads, under the
+run's own build and rules or under the other build. The same inputs under one
+build's two rules are two runs that both rank, and a replay whose inputs differ
+in anything is another run.
+Existing payloads and signatures are never rewritten.
 
 ### Unversioned co-op reload exception
 
@@ -303,5 +328,5 @@ through 0.18.0 use legacy reload, and 0.19.0 onward use the fix. The known
 post-fix build `0.18.0+build.64a9589f5fbefdc036f0559b` also uses the fix.
 Other ambiguous keyless 0.18 development builds require explicit provenance;
 readers do not try both simulations and choose whichever matches a claimed
-score. Format 34 alone is not provenance because saving an older replay upgrades
-its format. Solo, rules 2 and `preserve_bugs` do not need this exception.
+score. The format version alone is not provenance because saving an older replay
+upgrades its format. Solo, rules 2 and `preserve_bugs` do not need this exception.

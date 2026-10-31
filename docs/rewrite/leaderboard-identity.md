@@ -56,7 +56,7 @@ hex, except the replay, which is base64.
 | `runs` | `replay` (the `.crd` file), `name`, `public_key`, `signature`; or for a [co-op run](#co-op-runs), `replay` and `signers` | 200 or 201 accepted, 409 already accepted, other 4xx refused with a `reason`, 5xx retried later |
 | `auth/challenge` | `public_key` | 200 with `challenge` (ASCII) |
 | `auth/login` | `public_key`, `challenge`, `signature` | 200 with `url`, a login link on the service's own host |
-| `scores` | `board`, `quest` (`"major.minor"`, empty for Survival) | 200 with `scores`: each account's (or co-op pair's) best human run, up to 100, as the run's id (`run`), its name, its players' `names` and a high score record's fields |
+| `scores` | `board`, `quest` (`"major.minor"`, empty for Survival), `build` (`"1.9.8"` for the [1.9.8 rules](rules-1.9.8.md)' boards, 1.9.93's when left out) | 200 with `build`, the build whose board it is (`"1.9.8"` or `"1.9.93"`), and `scores`: each account's (or co-op pair's) best human run, up to 100, as the run's id (`run`), its name, its players' `names` and a high score record's fields |
 
 The signatures cover byte strings that start with their purpose, so a run signature never passes as a login:
 
@@ -66,7 +66,9 @@ The signatures cover byte strings that start with their purpose, so a run signat
 - a login: `crimson-login-v1\n`, then the challenge.
 
 A refused run moves to `leaderboard/rejected/` with its reason, so it stops retrying but stays on disk. The game
-opens a login link only when it leads to the service's own host.
+opens a login link only when it leads to the service's own host. It reads a board whose answer names no build as
+1.9.93's, the only board a service from before builds has, which it answers whatever build is asked for, and drops a
+board whose answer names another build than it asked for.
 
 ## Co-op runs
 
@@ -119,10 +121,25 @@ A run two players play together ([online co-op](network-coop.md)) is both player
 - A run's identity is the SHA-256 of its input stream (seed, settings and every tick's input) in the layout the
   service first verified, so recompressing a file or changing anything outside its play does not make it a new run,
   and ids stay put when the verifier's stream changes (`runIdentity` in `service/src/transport.ts`); a co-op run's
-  stream holds both players' inputs and their count. The service
+  stream holds both players' inputs and their count, and a 1.9.8 run's id names its build, so the same inputs under
+  the other build's rules are another run. The service
   accepts a run once; a second upload of the same run is rejected, whoever sends it.
-- Replays become public only after the service accepts them. A copied replay can only beat its owner if it leaves
-  their machine before they upload it.
+- A play ranks on one board only, whoever uploads it. A replay names its build and its seed in its file, so anyone
+  holding a public replay could claim its inputs under the other build's rules and sign them again for that build's
+  boards, or flip a one-player run's seed by its top bit (bit 31), which the game's `rand` never reads. So the
+  service also refuses, as already accepted, a run whose inputs it accepted under the other build, whatever rules
+  either run claims, and a one-player run whose inputs it accepted from the other seed (`s ^ 0x80000000`), under the
+  run's own build and rules or under the other build. A co-op room never issues a seed with bit 31 set
+  ([co-op runs](#co-op-runs)).
+- The same inputs under one build's two rules are two runs, and both rank on that build's boards, as runs under the
+  first ranked rules and the current ones always have.
+- The service compares exact inputs only. A copy whose inputs differ in anything, even in what the game never reads
+  (an aim a hair off, a key held after the run ended), or one cut short or edited, is another run on any board,
+  ranked by the score its own play reaches.
+- The service checks before verifying an upload and again as it stores the run, so the same inputs uploaded under
+  both builds at once still rank once.
+- Replays become public only after the service accepts them, so a copy can beat its owner only if the replay
+  leaves their machine before they upload it.
 - Ties keep the earlier accepted upload ahead.
 
 ## Names
@@ -177,17 +194,22 @@ in its seat.
 
 ## In the game
 
-- The Play Game panel shows a **Profile** button at the left of its bottom row, opposite the Ranked box, ticked or
-  not, so a player who only plays co-op (which ranks without the box) signs in too; it follows the box in focus
-  order. It opens the signed login link.
+- The Play Game panel grows a row under its modes: the **1.9.8** box, which plays the next runs by the
+  [1.9.8 rules](rules-1.9.8.md), the Ranked box right of it, and where the game has a leaderboard, a **Profile**
+  button at the row's left. The row and its 1.9.8 box show with or without a leaderboard. Profile shows with Ranked
+  ticked or not, so a player who only plays co-op (which ranks without the box) signs in too; it follows the boxes in
+  focus order.
+  It opens the signed login link. The button's plate is 32 px tall against the boxes' 16, so the row is 40 px and
+  the boxes sit centred on the plate. At 640x480 the grown panel would push Back off the window, so the panel and
+  Back rise by the overflow instead.
 - Inside another site's page, such as a post's player card, the browser keeps the game's storage apart from
   crimson.land's, so the game there has a key of its own. It offers no Ranked box or Profile button, so that key
-  never starts an account; it still receives the boards and plays their runs. The button's plate is 32 px
-  tall against the box's 16, so the row is 40 px and the box sits centred on the plate. At 640x480 the grown panel
-  would push Back off the window, so the panel and Back rise by the overflow instead.
-- The Ranked tooltip names the player, "Play for the online leaderboard as banteg.", when that fits the panel and
-  the name is not a fresh config's default `10tons`. The Profile tooltip says how many runs wait to upload, or that
-  the leaderboard can't be reached after a failed login. Both stay on one line, above the bottom row.
+  never starts an account, and shows the 1.9.8 box in Ranked's place; it still receives the boards and plays their
+  runs.
+- The Ranked tooltip names the player, "Play for the online leaderboard as banteg.", or with the 1.9.8 box ticked
+  "Play for the online 1.9.8 leaderboard as banteg.", when that fits the panel and the name is not a fresh config's
+  default `10tons`. The Profile tooltip says how many runs wait to upload, or that the leaderboard can't be reached
+  after a failed login. Each tip stays on one line, above the bottom row.
 - The high score screen's **Update scores** works as the original's did against `scores.crimsonland.com`
   ([online high scores](../crimsonland-exe/online-scores.md)): it sends the waiting runs, then receives the shown
   board, with the original's status lines under the buttons and Play a game disabled meanwhile. Only the verified

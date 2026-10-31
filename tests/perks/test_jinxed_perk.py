@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.cl_build import ClBuild
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
@@ -11,8 +12,9 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.builders.session import make_world
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 _FX_QUEUE_CALLERS = [
     RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
@@ -171,3 +173,29 @@ def test_perks_update_effects_jinxed_default_skips_dead_players_without_extra_pi
         *_FX_QUEUE_CALLERS,
         RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET,
     ]
+
+
+@pytest.mark.parametrize(
+    ("cl_build", "preserve_bugs", "kills"),
+    [
+        (ClBuild.V1_9_8, True, True),
+        (ClBuild.V1_9_8, False, False),
+        (ClBuild.V1_9_93, True, False),
+    ],
+)
+def test_jinxed_kills_during_freeze_only_with_1_9_8_bugs(cl_build: ClBuild, preserve_bugs: bool, kills: bool) -> None:
+    # 1.9.8 picks a creature with Freeze active (original bug 57); 1.9.93 returns after the timer reset.
+    draws = 3 if kills else 2
+    rng = ScriptedCrand([0] * draws)  # no accident, timer, creature pick
+    state = GameplayState(cl_build=cl_build, preserve_bugs=preserve_bugs, rng=rng)
+    state.perks[PerkId.JINXED] = 1
+    state.bonuses.freeze = 1.0
+    player = PlayerState(index=0, pos=Vec2())
+    target = CreatureState(active=True, hp=50.0, death_timer=16.0, reward_value=200.0)
+
+    perks_update_effects(state, [player], 0.01, creatures=[target], fx_queue=FxQueue())
+
+    assert target.hp == (-1.0 if kills else 50.0)
+    assert player.experience == (200 if kills else 0)
+    assert [request.sfx_id for request in state.sfx_queue] == [SfxId.TROOPER_INPAIN_01] * kills
+    assert_rng_progression(rng, before_calls=0, before_state=0, expected_draws=draws)

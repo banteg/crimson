@@ -263,6 +263,7 @@ def run_game(config: GameConfig) -> None:
             leaderboard=Leaderboard(base_dir),
             skip_intro=config.no_intro,
             custom_quest=config.custom_quest,
+            cl_build=config.cl_build,
             resources=None,
             audio=None,
             session_start=time.monotonic(),

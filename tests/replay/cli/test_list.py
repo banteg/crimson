@@ -8,12 +8,14 @@ import msgspec
 from click import unstyle
 from typer.testing import CliRunner
 
+from crimson.cl_build import ClBuild
 from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay
 from crimson.replay.checkpoints import dump_checkpoints_file, load_checkpoints_file
+from crimson.sim.run_spec import RunSpec
 
-from ._helpers import build_replay, write_checkpoint_sidecar, write_replay
+from ._helpers import build_idle_replay, build_replay, write_checkpoint_sidecar, write_replay
 
 
 def test_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
@@ -98,6 +100,19 @@ def test_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) -> N
 
     assert result.exit_code == 0, result.output
     assert "quest 3.10 2p" in unstyle(result.output)
+
+
+def test_replay_list_labels_runs_that_played_1_9_8_rules(tmp_path: Path) -> None:
+    write_replay(tmp_path / "replays", replay=build_replay(mode=GameMode.SURVIVAL, ticks=1), name="v1993.crd")
+    run = RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF, player_count=2, cl_build=ClBuild.V1_9_8)
+    write_replay(tmp_path / "replays", replay=build_idle_replay(run, ticks=1), name="v198.crd")
+
+    result = CliRunner().invoke(app, ["replay", "list", "--base-dir", str(tmp_path), "--no-color"])
+
+    assert result.exit_code == 0, result.output
+    rows = {line.split()[0]: line for line in unstyle(result.output).splitlines() if ".crd" in line}
+    assert "survival 2p 1.9.8" in rows["v198.crd"]
+    assert "1.9.8" not in rows["v1993.crd"]
 
 
 def _with_stored_result(replay: Replay, *, score_xp: int, kills: int) -> Replay:

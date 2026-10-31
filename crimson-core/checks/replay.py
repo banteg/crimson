@@ -37,7 +37,7 @@ def encode(replay, limit):
     # A custom quest starts at stage 0.0, its table after the config.
     stage = (0, 0) if custom is not None else (level.major, level.minor) if level else (1, 1)
     config = struct.pack(
-        "<68I",
+        "<69I",
         run.seed,
         int(run.game_mode_id),
         *stage,
@@ -53,6 +53,7 @@ def encode(replay, limit):
         *run.status.weapon_usage_counts,
         replay.rules,
         legacy_coop_reload(replay),
+        run.cl_build,
     )
     if custom is not None:
         config += portable_quest(custom)

@@ -116,8 +116,15 @@ export function refusal(e) {
   return Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString();
 }
 
-// `PortableConfig` in host/api.h: 13 uint32 settings, the player count last, then 53 weapon usage counts and two profile words.
-export const CONFIG_BYTES = 272;
+// `PortableConfig` in host/api.h: 13 uint32 settings, the player count last, then 53 weapon usage counts, two profile
+// words and the build whose rules the run plays.
+export const CONFIG_BYTES = 276;
+const CL_BUILD_OFFSET = 272;
+// `PortableConfig.cl_build`'s builds (src/crimson/cl_build.py ClBuild).
+export const CL_BUILD_1_9_8 = 10908;
+export const CL_BUILD_1_9_93 = 10993;
+// A stream's build.
+export const clBuild = (head) => head.readUInt32LE(CL_BUILD_OFFSET);
 const PLAYERS_OFFSET = 48;
 // `PortableInput`: four axes and the flag word.
 export const INPUT_BYTES = 20;
@@ -151,6 +158,7 @@ export function config(mode, major = 1, minor = 1, options = {}) {
     ...Array.from({ length: 53 }, (_, i) => (options.usage ? i * 3 : 0)),
     options.rules ?? 2,
     options.legacyCoopReload ?? 0,
+    options.clBuild ?? CL_BUILD_1_9_93,
   ].forEach((v, i) => b.writeUInt32LE(v, i * 4));
   return b;
 }

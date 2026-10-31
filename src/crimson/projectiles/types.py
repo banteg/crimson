@@ -7,6 +7,8 @@ import msgspec
 from grim.geom import Vec2
 
 MAIN_PROJECTILE_POOL_SIZE = 0x60
+# 1.9.8's `PROJECTILE_POOL_CAPACITY` (third_party/headers/crimsonland_types.h).
+MAIN_PROJECTILE_POOL_SIZE_1_9_8 = 0x40
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
 
 
@@ -85,6 +87,7 @@ class SecondaryProjectile(msgspec.Struct):
 
 __all__ = [
     "MAIN_PROJECTILE_POOL_SIZE",
+    "MAIN_PROJECTILE_POOL_SIZE_1_9_8",
     "SECONDARY_PROJECTILE_POOL_SIZE",
     "Projectile",
     "ProjectileHit",

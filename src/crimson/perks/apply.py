@@ -86,12 +86,17 @@ def perk_apply(
         case PerkId.INFERNAL_CONTRACT:
             owner.level += 3
             state.perk_selection.pending_count += 3
-            # Native sets its two player slots, the second being the dormant one in a one-player run;
-            # the co-op fix covers every player.
-            native_slots = [*players, state.dormant_player][:2]
-            for player in native_slots if state.preserve_bugs or len(players) <= 2 else players:
-                if player.health > 0.0:
-                    player.health = f32(0.1)
+            if state.bugs_1_9_8:
+                # 1.9.8 sets player one's health unchecked, reviving a dead player one, and leaves player
+                # two alone (original bug 58).
+                owner.health = f32(0.1)
+            else:
+                # Native sets its two player slots, the second being the dormant one in a one-player run;
+                # the co-op fix covers every player.
+                native_slots = [*players, state.dormant_player][:2]
+                for player in native_slots if state.preserve_bugs or len(players) <= 2 else players:
+                    if player.health > 0.0:
+                        player.health = f32(0.1)
 
         case PerkId.GRIM_DEAL:
             experience = int(owner.experience)

@@ -1,0 +1,15 @@
+Original bug 59 (1.9.8 only): 1.9.8 adds My Favourite Weapon's +2 clip only when the perk is taken, so the next
+weapon a player gets loses it. The fix adds it on every assignment while the perk is held, as 1.9.93 does.
+--- a/decomp/1.9/crimsonland/weapons/weapon_assign_player.cpp
++++ b/decomp/1.9/crimsonland/weapons/weapon_assign_player.cpp
+@@ -23,6 +23,10 @@
+     if (perk_count_get(perk_id_my_favourite_weapon) != 0) {
+         player_state_table[player_index].clip_size += 2.0f;
+     }
++#else
++    if (!portable_preserve_bugs && perk_count_get(perk_id_my_favourite_weapon) != 0) {
++        player_state_table[player_index].clip_size += 2.0f;
++    }
+ #endif
+ 
+     {

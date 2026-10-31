@@ -1046,7 +1046,11 @@ extern "C" EMSCRIPTEN_KEEPALIVE void client_render_mode(int mode) {
   if (started)
     w2c_game_game_render_choice(&game, mode);
 }
-extern "C" EMSCRIPTEN_KEEPALIVE const char *client_play_quest(const char *path, const char *title, const char *author) {
+// A link to a custom quest: plays the table at `path` (in the game folder) once the game is up, under its title and
+// byline, by `cl_build`'s rules (the decomp's CL_BUILD), which the link names. "" when it will, "wait" before the game
+// has started, else why not.
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_play_quest(const char *path, const char *title, const char *author,
+                                                              int cl_build) {
   if (!started)
     return "wait";
   size_t size = 0;
@@ -1059,7 +1063,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_play_quest(const char *path, 
   SDL_free(bytes);
   snprintf((char *)client_memory() + w2c_game_game_custom_quest_title(&game), 65, "%s", title);
   snprintf((char *)client_memory() + w2c_game_game_custom_quest_author(&game), 32, "%s", author);
-  return w2c_game_game_custom_quest_play(&game) ? "" : "This quest cannot start now.";
+  return w2c_game_game_custom_quest_play(&game, cl_build) ? "" : "This quest cannot start now.";
 }
 #endif
 

@@ -1,0 +1,28 @@
+1.9.8's Infernal Contract sets player 1's health unchecked and leaves player 2's alone, which original bug 58 fixes
+(patches/58-infernal-contract-players.patch): the run does so only with preserve_bugs.
+--- a/decomp/1.9/crimsonland/game/perk_apply.cpp
++++ b/decomp/1.9/crimsonland/game/perk_apply.cpp
+@@ -97,20 +97,12 @@
+-#if CL_BUILD == 10908
+-        // 1.9.8 sets player one's health without checking it, and leaves player two alone.
+-        if (portable_preserve_bugs) {
++        // 1.9.8 sets player one's health without checking it, and leaves player two alone, with preserve_bugs
++        // (original bug 58).
++        if (portable_bugs_1_9_8) {
+             player_state_table[0].health = 0.1f;
+         } else {
+             if (player_state_table[0].health > 0.0f) {
+                 player_state_table[0].health = 0.1f;
+             }
+             if (player_state_table[1].health > 0.0f) {
+                 player_state_table[1].health = 0.1f;
+             }
+         }
+-#else
+-        if (player_state_table[0].health > 0.0f) {
+-            player_state_table[0].health = 0.1f;
+-        }
+-        if (player_state_table[1].health > 0.0f) {
+-            player_state_table[1].health = 0.1f;
+-        }
+-#endif

@@ -30,11 +30,16 @@ bool game_coop_next_run(int choice);
 void game_coop_end_ready();
 // Presentation metadata shared by live custom quests and their replays (host/watch.inc).
 char *game_custom_quest_author();
-// The Ranked row (host/ranked.inc). Its table reader returns a FILE, which some
-// recovered files define themselves, so highscore_load_table declares it.
+// The Play Game panel's row, the 1.9.8 and Ranked boxes (host/ranked.inc). Its
+// table reader returns a FILE, which some recovered files define themselves, so
+// highscore_load_table declares it.
 extern bool ranked_checked;
 void ranked_layout(void);
 void ranked_menu(float *base, float *tips, bool list_open);
+// What the high score title adds for 1.9.8's tables, and a score card's origin
+// line, which names 1.9.8's runs (host/scores.inc, game/changes/build-labels.patch).
+const char *scores_title_build(void);
+const char *scores_card_origin(int received);
 // A pinned row's card and its replay (host/watch.inc).
 int highscore_watch_row(int hovered, int rows, int *selected);
 void highscore_watch(float *card, struct highscore_record_t *record);

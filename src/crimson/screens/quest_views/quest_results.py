@@ -159,7 +159,9 @@ class QuestResultsView(MenuScreen):
             self._log_nonfatal("failed to save status", exc)
 
         config = self.state.config
-        self._score_table = ScoreTable.for_config(config, game_mode_id=GameMode.QUESTS, quest_level=level)
+        self._score_table = ScoreTable.for_config(
+            config, cl_build=record.cl_build, game_mode_id=GameMode.QUESTS, quest_level=level,
+        )
         try:
             records = read_highscore_table(
                 self.state.base_dir, self._score_table, date_mode=config.profile.score_date_mode,

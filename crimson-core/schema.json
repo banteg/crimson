@@ -115,7 +115,8 @@
       "weapon_usage_time[51]",
       "weapon_usage_time[52]",
       "portable_rules",
-      "portable_legacy_coop_reload"
+      "portable_legacy_coop_reload",
+      "portable_cl_build"
     ],
     "presentation": [
       "player_weapon_popup_timer[0]",

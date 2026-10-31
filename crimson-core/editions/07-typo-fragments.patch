@@ -1,0 +1,43 @@
+1.9.8 rule: Typ-o builds names from 42 word fragments, 1.9.93's first 41 and "the", with no "sleep" through "boom".
+typo_word_pick_fragment keeps 1.9.93's cases; a 1.9.8 run draws none past 41, its "the".
+--- a/decomp/1.9/crimsonland/typo/typo_word_pick_fragment.cpp
++++ b/decomp/1.9/crimsonland/typo/typo_word_pick_fragment.cpp
+@@ -8,15 +8,6 @@
+-#if CL_BUILD == 10908
+     // 1.9.8 has 42 fragments: no "sleep" through "boom".
+-    int index;
+-    if (include_extended_pool) {
+-        index = crt_rand() % 42;
+-    } else {
+-        index = crt_rand() % 41;
+-    }
+-#else
+-    int word_count = 52;
++    int word_count = portable_rules_1_9_8 ? 42 : 52;
+     if (!include_extended_pool) {
+-        word_count = 51;
++        word_count = word_count - 1;
+     }
+     int index = crt_rand() % word_count;
+-#endif
+@@ -65,15 +56,15 @@
+-#if CL_BUILD == 10908
+-    case 41: return "the";
+-#else
+-    case 41: return "sleep";
++    case 41:
++        if (portable_rules_1_9_8) {
++            return "the";
++        }
++        return "sleep";
+     case 42: return "onyx";
+     case 43: return "mill";
+     case 44: return "blue";
+     case 45: return "below";
+     case 46: return "scape";
+     case 47: return "reap";
+     case 48: return "damo";
+     case 49: return "break";
+     case 50: return "boom";
+     case 51: return "the";
+-#endif

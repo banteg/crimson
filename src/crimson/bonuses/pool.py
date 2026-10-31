@@ -339,7 +339,11 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == WeaponId.PISTOL or PerkId.MY_FAVOURITE_WEAPON in state.perks:
+                # 1.9.8 has no My Favourite Weapon rejection here, so the pistol
+                # holder still gets the forced Weapon drop (original bug 60).
+                if entry.amount == WeaponId.PISTOL or (
+                    PerkId.MY_FAVOURITE_WEAPON in state.perks and not state.bugs_1_9_8
+                ):
                     self._clear_entry(entry)
                     return None
 

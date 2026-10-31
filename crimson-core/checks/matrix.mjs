@@ -21,6 +21,8 @@ import {
   fieldRanges,
   firstDifference,
   QUEST_BYTES,
+  CL_BUILD_1_9_8,
+  clBuild,
 } from "./engine.mjs";
 
 const out = path.resolve(
@@ -81,14 +83,18 @@ function encodeControls(scheme, { x, y, heading, aimHeading, mx, my, wx, wy, mov
   return [moveX, moveY, aimX, aimY, flags];
 }
 
-// Perk ids (`PerkId` in src/crimson/perks) that ranked-rules fixes touch.
+// Perk ids (`PerkId` in src/crimson/perks) that ranked-rules fixes or the 1.9.8 rules touch.
 const PERK = {
   pyrokinetic: 6,
+  instantWinner: 7,
   alternateWeapon: 9,
   hotTempered: 31,
   fireCough: 54,
   plaguebearer: 10,
   evilEyes: 11,
+  ammoManiac: 12,
+  radioactive: 13,
+  infernalContract: 24,
   doctor: 29,
   regeneration: 38,
   pyromaniac: 39,
@@ -96,8 +102,12 @@ const PERK = {
   jinxed: 42,
   greaterRegeneration: 45,
   deathClock: 47,
+  myFavouriteWeapon: 48,
   bandage: 49,
+  angryReloader: 50,
 };
+// Man Bomb, Fire Cough, Living Fortress and Tough Reloader, which 1.9.8 lacks: a 1.9.8 menu never offers them.
+const ABSENT_1_9_8 = new Set([53, 54, 55, 56]);
 const PERK_COUNTS = names.filter((n) => n.startsWith("players[0].perk_counts[")).length;
 // FIRE_BULLETS_KEY_DOWN_FLAG in src/crimson/replay/types.py: the G key.
 const G_KEY = 131072;
@@ -105,11 +115,203 @@ const G_KEY = 131072;
 // Snapshot byte offsets of the creature fields the bot reads every tick.
 const CREATURES = Array.from({ length: 384 }, (_, c) =>
   Object.fromEntries(
-    ["active", "health", "pos_x", "pos_y"].map((f) => [f, index.get(`creatures[${c}].${f}`) * 4]),
+    ["active", "health", "pos_x", "pos_y", "dot_tick_timer", "type_id"].map((f) => [f, index.get(`creatures[${c}].${f}`) * 4]),
   ),
 );
 
-// `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, most wanted first; `gKey` holds G at times.
+// What a 1.9.8 run's coverage reads of each snapshot, to tell which of the 1.9.8 rules and bugs
+// (docs/rewrite/rules-1.9.8.md) a step reached.
+const at = (name) => index.get(name) * 4;
+const PROJECTILES = Array.from({ length: names.filter((n) => /^projectiles\[\d+\]\.active$/.test(n)).length }, (_, i) =>
+  Object.fromEntries(
+    ["active", "fields.type_id", "fields.owner_id", "fields.origin_x", "fields.origin_y"].map((f) => [
+      f,
+      at(`projectiles[${i}].${f}`),
+    ]),
+  ),
+);
+const BONUS_IDS = Array.from({ length: 16 }, (_, b) => at(`bonuses[${b}].bonus_id`));
+const AI_MODES = CREATURES.map((_, c) => at(`creatures[${c}].ai_mode`));
+// A bonus carrier's flags, and the bonus its death drops, in the low half of its `link_index` (`bonus_args`).
+const CARRIERS = CREATURES.map((_, c) => [at(`creatures[${c}].flags`), at(`creatures[${c}].link_index`)]);
+// Each creature's `phase_seed`, drawn when its slot is handed out (`creature_alloc_slot`) and kept for its life: a
+// slot freed and handed out again within one step most likely holds another seed.
+const SEEDS = CREATURES.map((_, c) => at(`creatures[${c}].phase_seed`));
+const CREATURE_FLAG_BONUS_ON_DEATH = 0x400;
+// `CreatureAiMode`: flanking, which a creature turns to when its tether breaks, and the two tethered modes.
+const FLANK_PLAYER = 0,
+  TETHERED = new Set([4, 5]);
+// `ProjectileTemplateId` in src/crimson/projectiles/types.py: Angry Reloader's ring, and the Fire Bullets shot.
+const PLASMA_MINIGUN = 0x0b,
+  FIRE_BULLETS = 0x2d;
+// `CreatureTypeId.LIZARD`; `WeaponId.PISTOL`, and the flame and rocket weapons whose holder rerolls a Fire Bullets drop.
+const LIZARD = 1,
+  PISTOL = 1,
+  FLAME_OR_ROCKET = new Set([8, 12, 13, 15, 16, 17, 18, 32]);
+// How far from a player their shots start: the muzzle's 16 units (`native_fire_muzzle_pos`) and a step's walk.
+const MUZZLE_REACH = 32;
+
+function look198(s, players) {
+  const u = (offset) => s.readUInt32LE(offset),
+    f = (offset) => s.readFloatLE(offset),
+    perk = (id) => u(at(`players[0].perk_counts[${id}]`)),
+    each = (read) => Array.from({ length: players }, (_, p) => read(p));
+  const radioactive = perk(PERK.radioactive),
+    jinxed = perk(PERK.jinxed),
+    favourite = perk(PERK.myFavouriteWeapon);
+  return {
+    radioactive,
+    jinxed,
+    contract: perk(PERK.infernalContract),
+    favourite,
+    ammoManiac: perk(PERK.ammoManiac),
+    angry: perk(PERK.angryReloader),
+    freeze: f(at("globals.bonus_freeze_timer")),
+    jinxedTimer: f(at("globals.perk_jinxed_proc_timer_s")),
+    kills: u(at("globals.creature_kill_count")),
+    choices: Array.from({ length: 7 }, (_, i) => u(at(`globals.perk_choice_ids[${i}]`))),
+    health: each((p) => f(at(`players[${p}].health`))),
+    pos: each((p) => [f(at(`players[${p}].pos_x`)), f(at(`players[${p}].pos_y`))]),
+    weapons: each((p) => u(at(`players[${p}].weapon_id`))),
+    // Each player's clip, and their weapon's in the weapon table.
+    clip: each((p) => f(at(`players[${p}].clip_size`))),
+    tableClip: each((p) => u(at(`weapons[${u(at(`players[${p}].weapon_id`))}].clip_size`))),
+    reloadMax: each((p) => f(at(`players[${p}].reload_timer_max`))),
+    fireBullets: each((p) => f(at(`players[${p}].fire_bullets_timer`))),
+    projectiles: PROJECTILES.map((p) => [
+      u(p.active),
+      u(p["fields.type_id"]),
+      s.readInt32LE(p["fields.owner_id"]),
+      f(p["fields.origin_x"]),
+      f(p["fields.origin_y"]),
+    ]),
+    bonuses: BONUS_IDS.map(u),
+    // Creatures only matter to Radioactive, Jinxed and My Favourite Weapon: the last, the bonus a carrier drops and
+    // its seed.
+    creatures:
+      radioactive || jinxed || favourite
+        ? CREATURES.map((c, i) => [
+            u(c.active),
+            f(c.health),
+            f(c.dot_tick_timer),
+            u(c.type_id),
+            u(AI_MODES[i]),
+            u(CARRIERS[i][0]) & CREATURE_FLAG_BONUS_ON_DEATH ? u(CARRIERS[i][1]) & 0xffff : 0,
+            u(SEEDS[i]),
+          ])
+        : [],
+  };
+}
+
+// What one step of a 1.9.8 run reached, and how it played, from the snapshots before and after it and its commands.
+// The matrix's end checks the counts: outcomes no run may show, then what some run must reach.
+function observe198(b, a, commands, cov) {
+  const ownersFresh = new Map(),
+    playerShots = [];
+  let ring = 0,
+    active = 0;
+  a.projectiles.forEach(([live, type, owner, x, y], i) => {
+    if (!live) return;
+    active++;
+    cov.last_projectile_slot = Math.max(cov.last_projectile_slot, i);
+    // A shot is new where the slot held none, or another, of another type or from another origin.
+    const [wasLive, wasType, , wasX, wasY] = b.projectiles[i];
+    if (wasLive && wasType === type && wasX === x && wasY === y) return;
+    ring += type === PLASMA_MINIGUN;
+    const fresh = ownersFresh.get(owner) ?? new Set();
+    ownersFresh.set(owner, fresh.add(type === FIRE_BULLETS));
+    if (owner < 0) playerShots.push({ type, x, y });
+  });
+  cov.peak_projectiles = Math.max(cov.peak_projectiles, active);
+  // R1: an owner's Fire Bullets shot beside another of its shots.
+  cov.add_on_volleys += [...ownersFresh.values()].filter((fresh) => fresh.size === 2).length;
+  // R5: Angry Reloader's ring (7 shots and up) while a player's reload is 0.5 s or shorter.
+  cov.angry_short_rings += Number(b.angry > 0 && ring >= 7 && a.reloadMax.some((max) => max <= 0.5));
+  // R2: while a player, dead or alive, holds a flame or rocket weapon through the step, Fire Bullets rerolls: no
+  // drop of it, and drops of the other bonuses show the reroll was due.
+  const dropped = a.bonuses.filter((id, i) => id && id !== b.bonuses[i]);
+  if (b.weapons.some((w, p) => FLAME_OR_ROCKET.has(w) && FLAME_OR_ROCKET.has(a.weapons[p]))) {
+    cov.flame_or_rocket_fire_bullets_drops += dropped.filter((id) => id === BONUS.fireBullets).length;
+    cov.flame_or_rocket_drops += dropped.filter((id) => id !== BONUS.fireBullets).length;
+  }
+  // R4: a menu the step opened never offers the perks 1.9.8 lacks.
+  if (commands.some(([type]) => type === 2)) {
+    cov.menus++;
+    cov.absent_perk_offers += a.choices.filter((id) => ABSENT_1_9_8.has(id)).length;
+  }
+  // Bug 13: new shots starting at one player's muzzle, and no other's, while only the other player's Fire Bullets
+  // timer runs: 1.9.8's bugs add Fire Bullets shots to them, the fixes none.
+  const timer = (p) => [b.fireBullets[p], a.fireBullets[p]];
+  a.pos.forEach((own, q) => {
+    const other = a.pos[1 - q];
+    if (!other || !timer(1 - q).every((left) => left > 0) || timer(q).some((left) => left > 0)) return;
+    const near = (shot, [x, y]) => Math.hypot(shot.x - x, shot.y - y) < MUZZLE_REACH;
+    const shots = playerShots.filter((shot) => near(shot, own) && !near(shot, other));
+    if (shots.some((shot) => shot.type === FIRE_BULLETS)) cov.other_timer_add_ons++;
+    else if (shots.length) cov.other_timer_plain_shots++;
+  });
+  if (b.favourite) {
+    // Bug 59: Ammo Maniac taken while My Favourite Weapon is held reassigns each player's weapon, whose clip, the
+    // table's and Ammo Maniac's quarter, keeps the perk's 2 only under the fixes.
+    if (a.ammoManiac > b.ammoManiac)
+      a.clip.forEach((clip, p) => {
+        const table = a.tableClip[p];
+        cov.favourite_reassignments++;
+        cov.favourite_clip_bonus_kept += Number(clip === table + Math.max(1, Math.trunc(table * 0.25)) + 2);
+      });
+    // Bug 60: kills while a player holds the Pistol, and the Weapon drops they bring, which the perk refuses unless
+    // 1.9.8's bugs are kept. A Weapon carrier's own drop (`creature_handle_death`) ignores the perk in both builds:
+    // one from a carrier alive before the step whose slot no longer holds it alive after (its seed, still carrying),
+    // since a kill that frees the slot at once, during Freeze say, lets a spawn later in the same frame take it.
+    if (b.weapons.includes(PISTOL)) {
+      const carried = b.creatures.filter(([live, health, , , , bonus, seed], c) => {
+        const [still, left, , , , carries, kept] = a.creatures[c];
+        const alive = still && left > 0 && carries === bonus && kept === seed;
+        return live && health > 0 && bonus === BONUS.weapon && !alive;
+      }).length;
+      cov.favourite_pistol_kills += a.kills - b.kills;
+      cov.favourite_pistol_weapon_drops += Math.max(0, dropped.filter((id) => id === BONUS.weapon).length - carried);
+    }
+  }
+  // Bug 57: Jinxed's proc (its timer rising) during Freeze, and the creatures it sets to -1 health, which only 1.9.8's
+  // bugs kill.
+  if (b.jinxed > 0 && b.freeze > 0 && a.freeze > 0 && a.jinxedTimer > b.jinxedTimer) {
+    cov.jinxed_freeze_procs++;
+    cov.jinxed_freeze_kills += a.creatures.filter(
+      ([live, health], c) => live && b.creatures[c][0] && b.creatures[c][1] !== -1 && health === -1,
+    ).length;
+  }
+  // Bug 58: Infernal Contract taken while player one is dead, which only 1.9.8's bugs bring back, at 0.1 health: the
+  // step plays on after the pick, so a creature can take that again, but the fixes leave a dead player's health alone.
+  if (a.contract > b.contract && b.health[0] <= 0) {
+    cov.contract_dead_player_one++;
+    cov.contract_charges += Number(a.health[0] !== b.health[0]);
+  }
+  if (b.radioactive) {
+    a.creatures.forEach(([live, health, dot, type, mode], c) => {
+      const [wasLive, wasHealth, wasDot, , wasMode] = b.creatures[c];
+      if (!live || !wasLive) return;
+      // R6: a lizard the pulse (its timer back at 0.5, and at most 30 health off) kills.
+      cov.radioactive_lizard_kills += Number(
+        type === LIZARD && wasHealth > 0 && health <= 0 && wasHealth - health <= 30 && dot === 0.5,
+      );
+      // Bug 56: the pulse's timer ran out on a creature already at zero health or below. The fixes leave it alone;
+      // 1.9.8's bugs burn it, as when its tether broke this step (tethered before, flanking after): the tether's 1000
+      // damage comes before the pulse in the creature's own update, so one with 1000 health or less was dead when
+      // the pulse (its timer back at 0.5) came. A creature pulsed alive in its update dies to its leader's death only
+      // on a later step.
+      cov.radioactive_dying_skips += Number(health <= 0 && dot < 0 && dot < wasDot);
+      cov.radioactive_corpse_pulses += Number(
+        TETHERED.has(wasMode) && mode === FLANK_PLAYER && wasHealth <= 1000 && dot === 0.5 && wasDot !== 0.5,
+      );
+    });
+  }
+}
+
+// `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, most wanted first, or gives
+// that list for the players' views; `gKey` holds G at times; `skip` lists bonuses the bot neither goes for nor steps
+// on; `evade` is how near a creature comes before the bot turns away (210 by default); `still` lists players who
+// do not move.
 // `scheme` is each player's controls, or one for all of them.
 function play(cfg, bot, limit, scheme, hunt = {}) {
   init(e, cfg);
@@ -131,6 +333,32 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
       transitions: false,
       run_down: 0,
     };
+  // A 1.9.8 run also counts what it reached of the 1.9.8 rules and bugs (observe198).
+  const rules198 = clBuild(cfg) === CL_BUILD_1_9_8 && {
+    preserve_bugs: cfg.readUInt32LE(44),
+    add_on_volleys: 0,
+    peak_projectiles: 0,
+    last_projectile_slot: -1,
+    flame_or_rocket_drops: 0,
+    flame_or_rocket_fire_bullets_drops: 0,
+    menus: 0,
+    absent_perk_offers: 0,
+    other_timer_add_ons: 0,
+    other_timer_plain_shots: 0,
+    angry_short_rings: 0,
+    radioactive_lizard_kills: 0,
+    radioactive_dying_skips: 0,
+    radioactive_corpse_pulses: 0,
+    jinxed_freeze_procs: 0,
+    jinxed_freeze_kills: 0,
+    contract_dead_player_one: 0,
+    contract_charges: 0,
+    favourite_reassignments: 0,
+    favourite_clip_bonus_kept: 0,
+    favourite_pistol_kills: 0,
+    favourite_pistol_weapon_drops: 0,
+  };
+  if (rules198) coverage.rules_1_9_8 = rules198;
   const summary = () => {
     state(e);
     return {
@@ -186,7 +414,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
       let mx = 0,
         my = 0;
       if (bot) {
-        if (target && nearest < 210) {
+        if (target && nearest < (hunt.evade ?? 210)) {
           mx = x - target[0];
           my = y - target[1];
         } else {
@@ -202,7 +430,8 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
           let distance = 300,
             pickup;
           for (let b = 0; b < 16; b++) {
-            if (!u(`bonuses[${b}].bonus_id`) || u(`bonuses[${b}].picked`) !== 0)
+            const bonus = u(`bonuses[${b}].bonus_id`);
+            if (!bonus || u(`bonuses[${b}].picked`) !== 0 || hunt.skip?.includes(bonus))
               continue;
             const bx = f(`bonuses[${b}].time.pos_x`),
               by = f(`bonuses[${b}].time.pos_y`),
@@ -217,7 +446,16 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
             my = pickup[1] - y;
           }
         }
-        const n = Math.hypot(mx, my);
+        // The bot steps away from a bonus it skips.
+        for (let b = 0; hunt.skip && b < 16; b++) {
+          if (!hunt.skip.includes(u(`bonuses[${b}].bonus_id`)) || u(`bonuses[${b}].picked`) !== 0) continue;
+          const dx = x - f(`bonuses[${b}].time.pos_x`),
+            dy = y - f(`bonuses[${b}].time.pos_y`),
+            d = Math.hypot(dx, dy);
+          if (d > 0 && d < 60) [mx, my] = bot === 2 || bot === 4 ? [dx, dy] : [-dx, -dy];
+        }
+        // A player the hunt holds still only aims and shoots.
+        const n = hunt.still?.includes(p) ? Infinity : Math.hypot(mx, my);
         mx = (bot === 2 || bot === 4 ? mx : -mx) / n;
         my = (bot === 2 || bot === 4 ? my : -my) / n;
       }
@@ -247,9 +485,10 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     ) {
       if (menuOpen) {
         let choice = 0;
-        if (hunt.prefer) {
+        const prefer = typeof hunt.prefer === "function" ? hunt.prefer(views) : hunt.prefer;
+        if (prefer) {
           const offered = [0, 1, 2, 3, 4].map((i) => u(`globals.perk_choice_ids[${i}]`));
-          choice = Math.max(0, offered.indexOf(hunt.prefer.find((id) => offered.includes(id))));
+          choice = Math.max(0, offered.indexOf(prefer.find((id) => offered.includes(id))));
         }
         if (bot === 4) {
           while (
@@ -290,10 +529,12 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     });
     const fireBullets = players === 1 && f("players[0].fire_bullets_timer") > 1 / 60;
     const shotsBefore = u("globals.highscore_record_shots_fired");
+    const before198 = rules198 && look198(snapshot, players);
     const r = record(inputs, commands);
     if (!step(e, r)) throw Error(`Bot rejected tick ${tick} in mode ${mode}: ${refusal(e)}`);
     records.push(r);
     final = summary();
+    if (rules198) observe198(before198, look198(state(e), players), commands, rules198);
     const emitted = u("globals.highscore_record_shots_fired") - shotsBefore;
     if (fireBullets && emitted > 0) coverage.fire_bullets_volleys.add(emitted);
     if (countsBefore)
@@ -401,9 +642,8 @@ function displacement(magnitude) {
 if (JSON.stringify(displacement(1)) !== JSON.stringify(displacement(100)))
   throw Error("Large vector speeds up movement");
 
-// A run of no players or more than two never starts.
-for (const players of [0, 3]) {
-  const head = config(1, 1, 1, { players });
+// A config that never starts: WASM refuses its init and the native host exits 3.
+function unstartable(label, head) {
   let refused = false;
   try {
     init(e, head);
@@ -411,21 +651,15 @@ for (const players of [0, 3]) {
     refused = true;
   }
   const n = spawnSync(native, [], { input: head, timeout: 60000 });
-  if (!refused || n.status !== 3) throw Error(`A ${players}-player run started: wasm=${!refused} native=${n.status}`);
+  if (!refused || n.status !== 3) throw Error(`${label} started: wasm=${!refused} native=${n.status}`);
 }
-
-// A malformed custom quest never starts: WASM refuses its init and the native host exits 3.
-{
-  const empty = Buffer.concat([config(3, 0, 0), Buffer.alloc(QUEST_BYTES)]);
-  let refused = false;
-  try {
-    init(e, empty);
-  } catch {
-    refused = true;
-  }
-  const n = spawnSync(native, [], { input: empty, timeout: 60000 });
-  if (!refused || n.status !== 3) throw Error(`An empty custom quest started: wasm=${!refused} native=${n.status}`);
-}
+// A run of no players or more than two.
+for (const players of [0, 3]) unstartable(`A ${players}-player run`, config(1, 1, 1, { players }));
+// A malformed custom quest.
+unstartable("An empty custom quest", Buffer.concat([config(3, 0, 0), Buffer.alloc(QUEST_BYTES)]));
+// A build other than 1.9.93 and 1.9.8, and 1.9.8 under the rules-1 profile, which predates it.
+for (const [build, rules] of [[0, 2], [10992, 2], [CL_BUILD_1_9_8, 1]])
+  unstartable(`A build ${build} run under rules ${rules}`, config(1, 1, 1, { clBuild: build, rules }));
 
 // A custom quest's table, as checks/replay.py writes it from a recipe; its scenario starts the quest at stage 0.0.
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "custom-quest-"));
@@ -455,6 +689,35 @@ function pelletQuest(weapon) {
   }
   return q;
 }
+
+// `BonusId` in src/crimson/bonuses.
+const BONUS = { weapon: 3, freeze: 11, medikit: 12, fireBullets: 14 };
+// A custom quest for a hunter: its starting weapon, the drops and perks it keeps (every other one disabled but Points
+// and the mandatory fallback perk), and `waves` of `[template, count]` taking turns around the arena, one every
+// `every` ms.
+function huntQuest(weapon, bonuses, perks, waves, every) {
+  const q = Buffer.alloc(QUEST_BYTES);
+  // The disabled-id mask that keeps `ids` out of `mask`.
+  const kept = (ids, mask) => ids.reduce((m, id) => m & ~(1 << id), mask);
+  const count = 80;
+  [weapon, 2, 5, 1, count, kept(bonuses, 0x7ffc), kept(perks.filter((id) => id < 32), 0xffffff7e),
+    kept(perks.filter((id) => id >= 32).map((id) => id - 32), 0x3ffffff), 0, 0]
+    .forEach((v, i) => q.writeUInt32LE(v >>> 0, i * 4));
+  for (let i = 0; i < count; i++) {
+    const at = 40 + i * 24, angle = i * 2.4, [template, copies] = waves[i % waves.length];
+    q.writeFloatLE(512 + 450 * Math.cos(angle), at);
+    q.writeFloatLE(512 + 450 * Math.sin(angle), at + 4);
+    q.writeFloatLE(angle, at + 8);
+    q.writeInt32LE(template, at + 12);
+    q.writeInt32LE(1000 + i * every, at + 16);
+    q.writeInt32LE(copies, at + 20);
+  }
+  return q;
+}
+// Zombies (ZOMBIE_SMALL_WHITE), lone lizards (LIZARD_RANDOM), which only 1.9.8's Radioactive kills, and a lizard grid
+// (FORMATION_GRID_LIZARD_WHITE), whose 27 lizards die with their leader: Radioactive pays again for one it burns on
+// that frame under 1.9.8's bugs (bug 56).
+const HUNT_WAVES = [[0x42, 3], [0x2e, 2], [0x42, 3], [0x16, 1]];
 
 // [name, config arguments, bot, tick limit, controls, hunt]; a `quest` option plays that custom quest.
 const scenarios = [
@@ -499,10 +762,13 @@ const scenarios = [
   ["rush-unknown-aim", [2, 1, 1, { seed: 25 }], 2, 30000, { move: MOVE.pad, aim: AIM.unknown }],
   ["quest-point-click", [3, 2, 3, { seed: 26 }], true, 30000, { move: MOVE.pointClick, aim: AIM.mouseRelative }],
 ];
-for (const [weapon, name] of [[30, "gauss"], [10, "multi-plasma"]])
+for (const [weapon, name] of [[30, "gauss"], [10, "multi-plasma"]]) {
   for (const rules of [1, 2])
     scenarios.push([`fire-bullets-${name}-rules${rules}`,
       [3, 0, 0, { seed: 1, rules, quest: pelletQuest(weapon) }], 2, 12000, MOUSE]);
+  scenarios.push([`fire-bullets-${name}-1.9.8`,
+    [3, 0, 0, { seed: 1, clBuild: CL_BUILD_1_9_8, quest: pelletQuest(weapon) }], 2, 12000, MOUSE]);
+}
 for (let major = 1; major <= 5; major++)
   for (let minor = 1; minor <= 10; minor++)
     scenarios.push([`quest-${major}.${minor}`, [3, major, minor], true, 30000, minor % 2 ? PAD : MOUSE]);
@@ -551,6 +817,70 @@ scenarios.push(
   // A co-op quest completed: its end tune, which co-op music waits to confirm.
   ["coop-quest-1.1", [3, 1, 1, { seed: 46, players: 2 }], true, 30000, [PAD, MOUSE]],
 );
+// The 1.9.8 rules (docs/rewrite/rules-1.9.8.md), each run under 1.9.8's own bugs and again under their fixes. The
+// hunters prefer the perks whose rules or bugs 1.9.8 changes and pick up Fire Bullets, which 1.9.8 adds to each shot.
+const V1_9_8 = { clBuild: CL_BUILD_1_9_8 };
+const DROPS_1_9_8 = [BONUS.freeze, BONUS.medikit, BONUS.fireBullets];
+scenarios.push(
+  ["1.9.8-survival", [1, 1, 1, { ...V1_9_8, seed: 44 }], 2, 30000, MOUSE],
+  ["1.9.8-rush", [2, 1, 1, { ...V1_9_8, seed: 1337 }], 2, 30000, PAD],
+  ["1.9.8-quest-1.5", [3, 1, 5, V1_9_8], true, 30000, PAD],
+  ["1.9.8-quest-3.3", [3, 3, 3, V1_9_8], true, 30000, MOUSE],
+  ["1.9.8-quest-5.10", [3, 5, 10, V1_9_8], true, 30000, PAD],
+  // Hardcore: Gauntlet's larger rings, its zombie groups grown by eight and tougher creatures from faster nests.
+  ["1.9.8-quest-4.7-hardcore", [3, 4, 7, { ...V1_9_8, hardcore: 1 }], true, 30000, MOUSE],
+  // G does nothing in 1.9.8.
+  [
+    "1.9.8-survival-hunt",
+    [1, 1, 1, { ...V1_9_8, seed: 28 }],
+    2,
+    30000,
+    PAD,
+    { prefer: [PERK.myFavouriteWeapon, PERK.ammoManiac, PERK.radioactive, PERK.jinxed, PERK.angryReloader], gKey: true },
+  ],
+  // Under the fixes, two players fill the 64-slot projectile pool.
+  ["1.9.8-coop-survival", [1, 1, 1, { ...V1_9_8, seed: 44, players: 2 }], 2, 30000, [MOUSE, PAD],
+    { prefer: [PERK.jinxed, PERK.radioactive, PERK.angryReloader, PERK.myFavouriteWeapon, PERK.infernalContract] }],
+  // The Pulse Gun, the one weapon whose reload (0.1 s) is under the 0.5 s Angry Reloader gate 1.9.8 lacks, with no
+  // Weapon drops to replace it; Freeze for Jinxed (bug 57); creatures let near for Radioactive, which kills lizards
+  // and, as a grid leader's death kills its lizards, has a pulse due on one: 1.9.8's bugs burn it again and the
+  // fixes leave it (bug 56).
+  [
+    "1.9.8-pulse-hunt",
+    [3, 0, 0, { ...V1_9_8, seed: 55, quest: huntQuest(19, DROPS_1_9_8,
+      [PERK.angryReloader, PERK.radioactive, PERK.jinxed], HUNT_WAVES, 2500) }],
+    2,
+    30000,
+    MOUSE,
+    { prefer: [PERK.angryReloader, PERK.radioactive, PERK.jinxed], evade: 90 },
+  ],
+  // The Pistol kept, stepping around Weapon drops, for My Favourite Weapon, which in 1.9.8 lets the Pistol's forced
+  // Weapon drops through (bug 60); then Ammo Maniac, whose reassignment loses the perk's clip bonus (bug 59).
+  [
+    "1.9.8-favourite-hunt",
+    [3, 0, 0, { ...V1_9_8, seed: 63, quest: huntQuest(1, DROPS_1_9_8,
+      [PERK.myFavouriteWeapon, PERK.ammoManiac], [[0x42, 2], [0x2e, 1]], 3000) }],
+    2,
+    30000,
+    PAD,
+    { prefer: [PERK.myFavouriteWeapon, PERK.ammoManiac], skip: [BONUS.weapon] },
+  ],
+  // Two players: each one's Fire Bullets adds to their own shots only, unless 1.9.8's bugs are kept (bug 13). Player
+  // one stands to die, and Infernal Contract, taken only then, brings them back in 1.9.8 (bug 58).
+  [
+    "1.9.8-coop-hunt",
+    [3, 0, 0, { ...V1_9_8, seed: 62, players: 2, quest: huntQuest(5, DROPS_1_9_8,
+      [PERK.infernalContract, PERK.radioactive, PERK.jinxed], HUNT_WAVES, 2000) }],
+    2,
+    30000,
+    [MOUSE, PAD],
+    {
+      prefer: ([one]) => one.health > 0 ? [PERK.radioactive, PERK.jinxed, PERK.instantWinner] : [PERK.infernalContract],
+      evade: 90,
+      still: [0],
+    },
+  ],
+);
 scenarios.push([
   "quest-settings",
   [3, 1, 1, { seed: 2345, detail: 0, violence: 1, hardcore: 1, retry: 3, friendly: 1, usage: true }],
@@ -577,7 +907,7 @@ function rankedPlaysAlike(run, cfg) {
 }
 
 const report = {
-  guards: "17 native/WASM rejection probes; unstartable player counts and custom quest; large-vector speed cap",
+  guards: "17 native/WASM rejection probes; unstartable player counts, custom quest and builds; large-vector speed cap",
   cases: [],
 };
 // Each scenario plays under the original's bugs, and again under the documented
@@ -596,7 +926,9 @@ for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] o
     if (scenario.startsWith("fire-bullets-")) {
       const gauss = scenario.includes("-gauss-");
       const fixed = options.rules === 2 && run.input.readUInt32LE(44) === 0;
-      const expected = fixed ? (gauss ? 6 : 5) : (gauss ? 1 : 3);
+      // 1.9.8 keeps the weapon's own shots, six Gauss Shotgun pellets or five Multi-Plasma shots, and adds a Fire
+      // Bullets shot to each.
+      const expected = options.clBuild === CL_BUILD_1_9_8 ? (gauss ? 12 : 10) : fixed ? (gauss ? 6 : 5) : (gauss ? 1 : 3);
       if (JSON.stringify(run.coverage.fire_bullets_volleys) !== JSON.stringify([expected]))
         throw Error(`${name}: expected Fire Bullets volleys of ${expected}, got ${run.coverage.fire_bullets_volleys}`);
     }
@@ -651,6 +983,63 @@ if (!report.cases.some((c) => c.final.pending === 12))
   throw Error("No quest failure covered");
 if (!report.cases.some((c) => c.final.pending === 7))
   throw Error("No game over covered");
+// The 1.9.8 rules and bugs in the streams (observe198), under the bug policy given (1 keeps 1.9.8's bugs, 0 fixes
+// them) where the two decide it apart: what no 1.9.8 run may show, then what some run must reach.
+const cases198 = report.cases
+  .filter((c) => c.coverage.rules_1_9_8)
+  .map((c) => ({ name: c.name, ...c.coverage.rules_1_9_8 }));
+const underPolicy = (policy) => (policy === undefined ? "" : policy ? " under its bugs" : " under the fixes");
+const runs = (shows, policy) =>
+  cases198.filter((c) => shows(c) && (policy === undefined || c.preserve_bugs === policy));
+const shown = [
+  ["projectile slot past 64 used", (c) => c.last_projectile_slot >= 64],
+  ["perk menu offering a perk 1.9.8 lacks", (c) => c.absent_perk_offers],
+  ["Fire Bullets drop while a flame or rocket weapon is held", (c) => c.flame_or_rocket_fire_bullets_drops],
+  ["Fire Bullets shot on the other player's timer", (c) => c.other_timer_add_ons, 0],
+  ["Radioactive pulse left to a dying creature", (c) => c.radioactive_dying_skips, 1],
+  ["Radioactive pulse burning a creature already dead", (c) => c.radioactive_corpse_pulses, 0],
+  ["Jinxed kill during Freeze", (c) => c.jinxed_freeze_kills, 0],
+  [
+    "Infernal Contract leaving a dead player one's health alone",
+    (c) => c.contract_charges < c.contract_dead_player_one,
+    1,
+  ],
+  ["Infernal Contract changing a dead player one's health", (c) => c.contract_charges, 0],
+  ["reassigned clip keeping My Favourite Weapon's 2", (c) => c.favourite_clip_bonus_kept, 1],
+  ["reassigned clip losing My Favourite Weapon's 2", (c) => c.favourite_clip_bonus_kept < c.favourite_reassignments, 0],
+  ["Weapon drop while a Pistol holder has My Favourite Weapon", (c) => c.favourite_pistol_weapon_drops, 0],
+].flatMap(([what, shows, policy]) =>
+  runs(shows, policy).map((c) => `${c.name}: a 1.9.8 ${what}${underPolicy(policy)}`),
+);
+if (shown.length) throw Error(shown.join("\n"));
+// Several of these only one stream reaches (a corpse pulse, a pulse left to a dying creature, Infernal Contract, Ammo
+// Maniac with My Favourite Weapon, Fire Bullets on the other player's timer), so a change that only moves its bots
+// loses them. All are named at once, as a defect that loses one can move a hunt off another.
+const missed = [
+  ["Fire Bullets shot added beside another", (c) => c.add_on_volleys],
+  ["full 64-slot projectile pool", (c) => c.peak_projectiles === 64],
+  ["perk menu", (c) => c.menus],
+  ["drop of another bonus while a flame or rocket weapon is held", (c) => c.flame_or_rocket_drops],
+  ["Fire Bullets shot on the other player's timer", (c) => c.other_timer_add_ons, 1],
+  ["shot without Fire Bullets while only the other player's timer runs", (c) => c.other_timer_plain_shots, 0],
+  ["Angry Reloader ring on a short reload", (c) => c.angry_short_rings],
+  ["Radioactive lizard kill", (c) => c.radioactive_lizard_kills],
+  ["Radioactive pulse burning a creature already dead", (c) => c.radioactive_corpse_pulses, 1],
+  ["Radioactive pulse left to a dying creature", (c) => c.radioactive_dying_skips, 0],
+  ["Jinxed kill during Freeze", (c) => c.jinxed_freeze_kills, 1],
+  ["Jinxed proc during Freeze", (c) => c.jinxed_freeze_procs, 0],
+  ["Infernal Contract with player one dead", (c) => c.contract_dead_player_one, 1],
+  ["Infernal Contract with player one dead", (c) => c.contract_dead_player_one, 0],
+  ["Ammo Maniac reassignment with My Favourite Weapon", (c) => c.favourite_reassignments, 1],
+  ["Ammo Maniac reassignment with My Favourite Weapon", (c) => c.favourite_reassignments, 0],
+  ["Weapon drop while a Pistol holder has My Favourite Weapon", (c) => c.favourite_pistol_weapon_drops, 1],
+  ["Pistol holder's kill with My Favourite Weapon", (c) => c.favourite_pistol_kills, 0],
+].flatMap(([what, reached, policy]) => (runs(reached, policy).length ? [] : [`${what}${underPolicy(policy)}`]));
+if (missed.length)
+  throw Error(
+    "No 1.9.8 run covered these (a coverage loss, not necessarily a defect, where the bots only took another path; " +
+      `retune or reseed the hunt that reached it):\n${missed.join("\n")}`,
+  );
 console.log(
   `Passed ${report.cases.length} scenarios; ${path.join(out, "report.json")}`,
 );

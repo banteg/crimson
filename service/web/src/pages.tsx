@@ -3,6 +3,8 @@ import {
   type Board,
   BOARDS,
   type BoardView,
+  type Build,
+  BUILDS,
   type CustomQuest,
   type CustomQuestDetailView,
   type CustomQuestsListView,
@@ -15,10 +17,24 @@ import {
   type QuestMenuView,
   type Role,
   type RunDetailView,
+  DEFAULT_BUILD,
   FIXED_WEAPON_BONUSES,
   FIXED_WEAPON_PERKS,
 } from "../../src/api-types";
-import { boardFor, boardPath, type QuestBoard, questPage, type QuestPage, questsPath, type SurvivalBoard, survivalPage } from "../../src/paths";
+import {
+  boardFor,
+  boardPath,
+  buildTitle,
+  pageBuild,
+  type QuestBoard,
+  questPage,
+  type QuestPage,
+  questPlayPath,
+  questsPath,
+  type SurvivalBoard,
+  survivalPage,
+  withBuild,
+} from "../../src/paths";
 import { get, moderate, post } from "./api";
 import NEWS from "virtual:news";
 import { formatLongDuration, formatPostDate, formatScore, quantity } from "./format";
@@ -62,6 +78,7 @@ export interface Navigator {
 const STAGES = ["I", "II", "III", "IV", "V"];
 export const DOCS = "https://crimson.banteg.xyz/";
 const RULES = `${DOCS}rewrite/ranked-rules/`;
+const RULES_1_9_8 = `${DOCS}rewrite/rules-1.9.8/`;
 const BUGS = `${DOCS}rewrite/original-bugs/`;
 const BOTS = `${DOCS}rewrite/bots/`;
 
@@ -222,18 +239,22 @@ const BotInvite = () => (
 );
 
 // The game's quest screen: its layout and colors (quest_select_menu_update), red rows on hardcore. The hardcore box
-// keeps to one player's or the co-op boards.
+// keeps to one player's or the co-op boards, and every link to the menu's build.
 function QuestMenu(props: { view: QuestMenuView; current?: string }) {
   const hardcore = () => BOARDS[props.view.board].hardcore;
   const toggle = () =>
-    questsPath(boardFor(true, !hardcore(), BOARDS[props.view.board].players > 1) as QuestMenuView["board"], props.current ?? props.view.stage);
+    questsPath(
+      boardFor(true, !hardcore(), BOARDS[props.view.board].players > 1) as QuestMenuView["board"],
+      props.current ?? props.view.stage,
+      props.view.build,
+    );
   return (
     <div class="quest-menu" classList={{ "hardcore-on": hardcore() }}>
       <span class="label">Quest:</span>
       <nav class="stages">
         <For each={STAGES}>
           {(numeral, i) => (
-            <a classList={{ on: i() + 1 === props.view.stage }} style={{ left: `${88 + i() * 36}px` }} href={questsPath(props.view.board, i() + 1)}>
+            <a classList={{ on: i() + 1 === props.view.stage }} style={{ left: `${88 + i() * 36}px` }} href={questsPath(props.view.board, i() + 1, props.view.build)}>
               <img src={`/ui/stage${i() + 1}.png`} alt={numeral} />
             </a>
           )}
@@ -247,7 +268,7 @@ function QuestMenu(props: { view: QuestMenuView; current?: string }) {
         <For each={props.view.quests}>
           {(quest) => (
             <li>
-              <a classList={{ on: quest.quest === props.current }} href={questsPath(props.view.board, quest.quest)}>
+              <a classList={{ on: quest.quest === props.current }} href={questsPath(props.view.board, quest.quest, props.view.build)}>
                 <span class="n">{quest.quest}</span>
                 {quest.title}
               </a>
@@ -291,7 +312,7 @@ async function runPage(id: string, nav: Navigator): Promise<Screen> {
   const detail = await get<RunDetailView>(`/api/runs/${id}`);
   if (!detail) return notFound();
   const quest = detail.custom_slots ? `slots:${detail.custom_slots.join(",")}` : detail.quest.includes(".") ? detail.quest : null;
-  return { title: `${runLabel(detail)} · ${detail.title}`, quest, panels: runPanels(detail, nav.reload) };
+  return { title: `${runLabel(detail)} · ${buildTitle(detail.title, detail.build)}`, quest, panels: runPanels(detail, nav.reload) };
 }
 
 function notFound(): Screen {
@@ -422,7 +443,10 @@ function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
     () => (
       <>
         <h2>{humans.title}</h2>
-        <RulesFilter />
+        {/* Only 1.9.93's boards have rules to filter: 1.9.8 rules arrived with rules 2 (validateReplay). */}
+        <Show when={humans.build === DEFAULT_BUILD}>
+          <RulesFilter />
+        </Show>
         <BoardTotals view={humans} />
         <BoardTable view={humans} />
       </>
@@ -438,14 +462,33 @@ function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
   ];
 }
 
-// The leaderboards' switch: Survival or the quests, one player's boards or a co-op pair's. Each switch keeps the
-// other, and on the quests the stage or quest and the hardcore box too.
-function BoardSwitch(props: { board: Board; at?: number | string }) {
+// The builds' boards of the page at `path`: 1.9.93's, or 1.9.8's, whose runs rank apart.
+function BuildSwitch(props: { path: string; build: Build }) {
+  return (
+    <span class="buttons">
+      <For each={Object.keys(BUILDS) as Build[]}>
+        {(build) => <GameButton label={build} href={withBuild(props.path, build)} on={build === props.build} />}
+      </For>
+    </span>
+  );
+}
+
+// What a 1.9.8 board holds.
+const BuildNote = (props: { build: Build }) => (
+  <Show when={props.build !== DEFAULT_BUILD}>
+    <p class="muted">Runs played under the <a href={RULES_1_9_8}>1.9.8 rules</a>, ranked apart from 1.9.93's.</p>
+  </Show>
+);
+
+// The leaderboards' switch: Survival or the quests, one player's boards or a co-op pair's, 1.9.93's boards or 1.9.8's.
+// Each switch keeps the others, and on the quests the stage or quest and the hardcore box too.
+function BoardSwitch(props: { board: Board; build: Build; at?: number | string }) {
   const quests = BOARDS[props.board].quests, coop = BOARDS[props.board].players > 1;
   const to = (inQuests: boolean, inCoop: boolean) =>
     inQuests
-      ? questsPath(boardFor(true, BOARDS[props.board].hardcore, inCoop) as QuestBoard, quests ? (props.at ?? 1) : 1)
-      : boardPath(boardFor(false, false, inCoop), "");
+      ? questsPath(boardFor(true, BOARDS[props.board].hardcore, inCoop) as QuestBoard, quests ? (props.at ?? 1) : 1, props.build)
+      : boardPath(boardFor(false, false, inCoop), "", props.build);
+  const here = quests ? questsPath(props.board as QuestBoard, props.at ?? 1) : boardPath(props.board, "");
   return (
     <>
       <nav class="board-switch">
@@ -457,33 +500,38 @@ function BoardSwitch(props: { board: Board; at?: number | string }) {
           <GameButton label="1 player" href={to(quests, false)} on={!coop} />
           <GameButton label="2 players" href={to(quests, true)} on={coop} />
         </span>
+        <BuildSwitch path={here} build={props.build} />
       </nav>
       <Show when={coop}>
         <p class="muted">Two-player co-op over the internet, ranked as a pair. Start one with <em>Play co-op</em> on the Play page.</p>
       </Show>
+      <BuildNote build={props.build} />
     </>
   );
 }
 
-async function survival(board: SurvivalBoard): Promise<Screen> {
+async function survival(board: SurvivalBoard, build: Build): Promise<Screen> {
   const path = boardPath(board, "");
-  const [humans, bots] = await Promise.all([get<BoardView>(`/api${path}?category=human${rulesQuery()}`), get<BoardView>(`/api${path}?category=bot${rulesQuery()}`)]);
-  return { title: humans!.title, quest: null, panels: [() => <BoardSwitch board={board} />, ...boardPanels(humans!, bots!)] };
+  const [humans, bots] = await Promise.all([
+    get<BoardView>(`/api${path}?category=human&build=${build}${rulesQuery()}`),
+    get<BoardView>(`/api${path}?category=bot&build=${build}${rulesQuery()}`),
+  ]);
+  return { title: buildTitle(humans!.title, build), quest: null, panels: [() => <BoardSwitch board={board} build={build} />, ...boardPanels(humans!, bots!)] };
 }
 
 // A stage's quest menu, and with a quest, its boards.
-async function quests(page: QuestPage): Promise<Screen> {
-  const api = (at: number | string) => `/api${questsPath(page.board, at)}`;
+async function quests(page: QuestPage, build: Build): Promise<Screen> {
+  const api = (at: number | string) => `/api${questsPath(page.board, at)}?build=${build}`;
   const [menu, humans, bots] = await Promise.all([
     get<QuestMenuView>(api(page.stage)),
-    page.quest && get<BoardView>(`${api(page.quest)}?category=human${rulesQuery()}`),
-    page.quest && get<BoardView>(`${api(page.quest)}?category=bot${rulesQuery()}`),
+    page.quest && get<BoardView>(`${api(page.quest)}&category=human${rulesQuery()}`),
+    page.quest && get<BoardView>(`${api(page.quest)}&category=bot${rulesQuery()}`),
   ]);
   const menuPanel = keep("quest-menu", { menu: menu!, quest: page.quest ?? undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />);
   const coop = BOARDS[page.board].players > 1;
-  const panel = [() => <BoardSwitch board={page.board} at={page.quest ?? page.stage} />, menuPanel];
-  if (!humans || !bots) return { title: `Quests ${STAGES[page.stage - 1]}${coop ? " · co-op" : ""}`, quest: `${page.stage}.1`, panels: panel };
-  return { title: humans.title, quest: page.quest, panels: [...panel, ...boardPanels(humans, bots)] };
+  const panel = [() => <BoardSwitch board={page.board} build={build} at={page.quest ?? page.stage} />, menuPanel];
+  if (!humans || !bots) return { title: buildTitle(`Quests ${STAGES[page.stage - 1]}${coop ? " · co-op" : ""}`, build), quest: `${page.stage}.1`, panels: panel };
+  return { title: buildTitle(humans.title, build), quest: page.quest, panels: [...panel, ...boardPanels(humans, bots)] };
 }
 
 function spawnColor(spawnId: number): string {
@@ -571,12 +619,21 @@ function QuestRestrictions(props: { quest: CustomQuest }) {
   );
 }
 
-async function customQuests(): Promise<Screen> {
-  const list = (await get<CustomQuestsListView>("/api/custom"))!;
+// The custom quests, with their best times and players on a build's boards.
+async function customQuests(build: Build): Promise<Screen> {
+  const list = (await get<CustomQuestsListView>(`/api/custom?build=${build}`))!;
   return {
-    title: "Custom Quests",
+    title: buildTitle("Custom Quests", build),
     quest: null,
     panels: [
+      () => (
+        <>
+          <nav class="board-switch">
+            <BuildSwitch path="/custom" build={build} />
+          </nav>
+          <BuildNote build={build} />
+        </>
+      ),
       () => (
         <>
           <h2>Custom Quests</h2>
@@ -605,7 +662,7 @@ async function customQuests(): Promise<Screen> {
                     {(q) => (
                       <tr>
                         <td>
-                          <a href={`/custom/${q.id}`}>{q.title}</a>
+                          <a href={withBuild(`/custom/${q.id}`, build)}>{q.title}</a>
                         </td>
                         <td>
                           {q.creator ? <PlayerName player={q.creator} tag={false} /> : (q.author ?? "-")}
@@ -617,7 +674,7 @@ async function customQuests(): Promise<Screen> {
                         <td class="n">{q.top_score !== null ? formatScore("quests", q.top_score) : "-"}</td>
                         <td class="n">{q.players}</td>
                         <td>
-                          <a class="watch" href={`/play/?quest=${q.id}`} data-native>
+                          <a class="watch" href={questPlayPath(q.id, build)} data-native>
                             Play →
                           </a>
                         </td>
@@ -634,16 +691,16 @@ async function customQuests(): Promise<Screen> {
   };
 }
 
-async function customQuestPage(id: string): Promise<Screen> {
+async function customQuestPage(id: string, build: Build): Promise<Screen> {
   const [detail, bots] = await Promise.all([
-    get<CustomQuestDetailView>(`/api/custom/${id}?category=human${rulesQuery()}`),
-    get<CustomQuestDetailView>(`/api/custom/${id}?category=bot${rulesQuery()}`),
+    get<CustomQuestDetailView>(`/api/custom/${id}?category=human&build=${build}${rulesQuery()}`),
+    get<CustomQuestDetailView>(`/api/custom/${id}?category=bot&build=${build}${rulesQuery()}`),
   ]);
   if (!detail || !bots) return notFound();
   const def = detail.definition;
   const slots = `slots:${def.terrain_slots.join(",")}`;
   return {
-    title: detail.title,
+    title: buildTitle(detail.title, build),
     quest: slots,
     panels: [
       () => (
@@ -666,9 +723,17 @@ async function customQuestPage(id: string): Promise<Screen> {
           <QuestRestrictions quest={def} />
           <QuestPreviewSvg quest={def} />
           <p class="buttons">
-            <GameButton label="Play level" href={`/play/?quest=${detail.id}`} native />
+            <GameButton label="Play level" href={questPlayPath(detail.id, build)} native />
             <GameButton label="Watch author's run" href={`/play/?watch=${detail.first_run_id}`} native />
           </p>
+        </>
+      ),
+      () => (
+        <>
+          <nav class="board-switch">
+            <BuildSwitch path={`/custom/${detail.id}`} build={build} />
+          </nav>
+          <BuildNote build={build} />
         </>
       ),
       ...boardPanels(detail.board, bots.board),
@@ -816,7 +881,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                     {(run) => (
                       <tr>
                         <td>
-                          <a href={boardPath(run.board, run.quest)}>
+                          <a href={boardPath(run.board, run.quest, run.build)}>
                             {BOARD_NAMES[run.board]} {run.quest}
                           </a>
                           <Show when={run.team?.filter((seat) => seat.player?.id !== view.player.id)}>
@@ -831,6 +896,9 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                           </Show>
                           <Show when={run.category === "bot"}>
                             <span class="tag">bot</span>
+                          </Show>
+                          <Show when={run.build !== DEFAULT_BUILD}>
+                            <span class="tag">{run.build} rules</span>
                           </Show>
                           <Show when={run.retired}>
                             {(reason) => <span class="tag" title={reason()}>retired</span>}
@@ -919,6 +987,9 @@ async function moderation(nav: Navigator): Promise<Screen> {
                         </td>
                         <td>
                           {BOARD_NAMES[run.board]} {run.quest}
+                          <Show when={run.build !== DEFAULT_BUILD}>
+                            <span class="tag">{run.build} rules</span>
+                          </Show>
                         </td>
                         <td class="n">
                           <a class="run" href={`/runs/${run.id}`}>
@@ -1150,7 +1221,8 @@ const ABOUT: Screen = {
         </p>
         <p>
           Survival ranks by experience and quests by final time, which takes 50 ms off per remaining HP and 1 second per unpicked perk.
-          Hardcore and 2-player co-op have their own lists. Only your best run on each list counts.
+          Hardcore and 2-player co-op have their own lists. Tick <em>1.9.8</em> as well and the run plays by the{" "}
+          <a href={RULES_1_9_8}>1.9.8 rules</a> and ranks on 1.9.8's own lists. Only your best run on each list counts.
         </p>
         <p>
           Every score comes with a recording of the run. The server replays it using the same recovered game code and checks that the
@@ -1322,10 +1394,10 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   let board: SurvivalBoard | null;
   let screen: Screen;
   if (path === "/") screen = await home();
-  else if ((board = survivalPage(path))) screen = await survival(board);
-  else if ((page = questPage(path))) screen = await quests(page);
-  else if (path === "/custom") screen = await customQuests();
-  else if ((match = /^\/custom\/([0-9a-f]{12})$/.exec(path))) screen = await customQuestPage(match[1]!);
+  else if ((board = survivalPage(path))) screen = await survival(board, pageBuild(url));
+  else if ((page = questPage(path))) screen = await quests(page, pageBuild(url));
+  else if (path === "/custom") screen = await customQuests(pageBuild(url));
+  else if ((match = /^\/custom\/([0-9a-f]{12})$/.exec(path))) screen = await customQuestPage(match[1]!, pageBuild(url));
   else if (path === "/mod") screen = await moderation(nav);
   else if (path === "/analytics") screen = await playAnalytics();
   else if ((match = /^\/players\/(\d+)$/.exec(path))) screen = await profile(Number(match[1]), nav);

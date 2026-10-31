@@ -2,14 +2,19 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.perks import PerkId
-from crimson.perks.availability import prepare_perk_availability
-from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
+from crimson.perks.availability import perk_id_max, prepare_perk_availability
+from crimson.perks.selection import perk_generate_choices
 from crimson.persistence import save_status
 from crimson.quests.level import QuestLevel
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.run_init import initialize_run
+from crimson.sim.run_spec import RunSpec, RunStatus
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -169,7 +174,7 @@ def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
         PerkId.RANDOM_WEAPON,
         PerkId.INSTANT_WINNER,
     ]
-    assert calls <= PERK_ID_MAX
+    assert calls <= perk_id_max(state.cl_build)
 
 
 _TWO_PLAYER_EXCLUDED = {
@@ -199,3 +204,45 @@ def test_perk_generate_choices_excludes_two_player_perks_for_every_coop_count() 
     assert _offered_over_seeds(1) >= _TWO_PLAYER_EXCLUDED
     for player_count in (2, 3, 4):
         assert not _TWO_PLAYER_EXCLUDED & _offered_over_seeds(player_count)
+
+
+@pytest.mark.parametrize(
+    ("cl_build", "first"),
+    [(ClBuild.V1_9_93, PerkId.MAN_BOMB), (ClBuild.V1_9_8, PerkId.LEAN_MEAN_EXP_MACHINE)],
+)
+def test_perk_roll_spans_the_builds_perk_ids(cl_build: ClBuild, first: PerkId) -> None:
+    # 1.9.93 rolls `% 57 + 1`: 52 is Man Bomb and 56 the never-available Lifeline 50-50. 1.9.8 rolls
+    # `% 53 + 1`: 52 lands on the 53 it has no perk for and 56 on Lean Mean Exp Machine.
+    rng = ScriptedCrand([52, 56, 0, 1, 2, 4, 5, 6])
+    state = GameplayState(rng=rng, cl_build=cl_build)
+    prepare_perk_availability(state)
+
+    choices = perk_generate_choices(state, [PlayerState(index=0, pos=Vec2())], game_mode=GameMode.SURVIVAL)
+
+    assert choices == [
+        first,
+        PerkId.BLOODY_MESS_QUICK_LEARNER,
+        PerkId.SHARPSHOOTER,
+        PerkId.FASTLOADER,
+        PerkId.LONG_DISTANCE_RUNNER,
+        PerkId.PYROKINETIC,
+        PerkId.INSTANT_WINNER,
+    ]
+    assert_rng_progression(rng, before_calls=0, before_state=0, expected_draws=8)
+
+
+_PERKS_AFTER_1_9_8 = {PerkId.MAN_BOMB, PerkId.FIRE_CAUGH, PerkId.LIVING_FORTRESS, PerkId.TOUGH_RELOADER}
+
+
+def _run_offers(cl_build: ClBuild) -> set[PerkId]:
+    offered: set[PerkId] = set()
+    for seed in range(32):
+        spec = RunSpec(game_mode_id=GameMode.SURVIVAL, seed=seed, status=RunStatus(quest_unlock_index=49), cl_build=cl_build)
+        world = initialize_run(spec).session.world
+        offered.update(perk_generate_choices(world.state, world.players, game_mode=GameMode.SURVIVAL))
+    return offered
+
+
+def test_a_1_9_8_run_never_offers_the_perks_it_predates() -> None:
+    assert _run_offers(ClBuild.V1_9_93) >= _PERKS_AFTER_1_9_8
+    assert not _run_offers(ClBuild.V1_9_8) & _PERKS_AFTER_1_9_8

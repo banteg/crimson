@@ -220,7 +220,7 @@ jobs:
           if-no-files-found: error
 
   game-smoke:
-    needs: [changes, build-wasm, build-game]
+    needs: [changes, build-wasm, build-game, corpus]
     if: needs.changes.outputs.game == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -242,7 +242,12 @@ jobs:
         with:
           name: runtime-game
           path: crimson-core/build/game
-      - name: Boot, play by mouse and by pad, go back by pad, rank, read, watch, seek, and load online scores
+      # Watch and the 1.9.8 rules play replays recorded from the corpus's streams.
+      - uses: actions/download-artifact@v8
+        with:
+          name: runtime-corpus
+          path: crimson-core/build
+      - name: Boot, play by mouse and by pad, go back by pad, rank, read, watch, seek, load online scores, and play the 1.9.8 rules
         run: |
           uv run --no-sync python crimson-core/checks/effect_overflow.py
           uv run --no-sync python crimson-core/checks/projectile_colors.py
@@ -254,6 +259,7 @@ jobs:
           fresh() { rm -rf "$RUNNER_TEMP/run" && cp -R "$RUNNER_TEMP/game" "$RUNNER_TEMP/run" && echo "$RUNNER_TEMP/run"; }
           node crimson-core/checks/game_boot.mjs "$(fresh)"
           node crimson-core/checks/game_session.mjs --seed 4069574050 "$(fresh)"
+          node crimson-core/checks/game_session.mjs --1.9.8 --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --quest --seed 1 "$(fresh)"
@@ -262,6 +268,7 @@ jobs:
           # Breathing Room, picked off a 16 ms frame, ages the creatures by the last tick's time step.
           node crimson-core/checks/game_session.mjs --ranked --seed 23 "$(fresh)"
           node crimson-core/checks/game_session.mjs --ranked --quest --seed 1 "$(fresh)"
+          node crimson-core/checks/game_session.mjs --ranked --quest --1.9.8 --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --silent --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --quest --silent --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --quest --tunes --seed 1 "$(fresh)"
@@ -272,6 +279,7 @@ jobs:
           node crimson-core/checks/game_practice.mjs "$(fresh)"
           node crimson-core/checks/game_online.mjs "$(fresh)"
           node crimson-core/checks/game_custom.mjs "$(fresh)"
+          node crimson-core/checks/game_rules.mjs "$(fresh)"
   game-parity:
     needs: [changes, build-wasm, build-game, corpus]
     if: needs.changes.outputs.game == 'true'

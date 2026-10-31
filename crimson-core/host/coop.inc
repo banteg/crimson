@@ -485,7 +485,8 @@ static const CoopBytes COOP_UNHASHED[] = {
     // and each machine came to the run its own way. The mods' runtime, which no
     // run starts.
     COOP_GLOBAL(game_state_prev), COOP_GLOBAL(plugin_runtime_active_latch),
-    // Tables the game sets up at startup and no tick writes: the perk ids, the
+    // Tables the game sets up at startup and no tick writes: the perk ids and
+    // range (the range the run's build sets, which the snapshot hashes), the
     // quest, perk, bonus, weapon and effect tables' fixed parts (the weapons'
     // storage view, weapon_ammo_class, starts four bytes before the table), the
     // effects' atlas steps, a message, and the Grim interface.

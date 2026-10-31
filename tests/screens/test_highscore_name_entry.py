@@ -2,8 +2,17 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
-from crimson.persistence.highscores import NAME_MAX_EDIT, ScoreTable, read_highscore_table, scores_path
+from crimson.persistence.highscores import (
+    NAME_MAX_EDIT,
+    TABLE_MAX,
+    HighScoreRecord,
+    ScoreTable,
+    append_highscore_records,
+    read_highscore_table,
+    scores_path,
+)
 from crimson.screens.actions import StartRun
 from grim.config import CRIMSON_CFG_NAME, load_crimson_cfg
 from grim.raylib_api import rl
@@ -38,13 +47,14 @@ class RaylibInput:
 class GameOver:
     """A survival run that just ended, its game-over panel asking the player for a name."""
 
-    def __init__(self, make_game_state, headless_resources, mocker) -> None:
+    def __init__(self, make_game_state, headless_resources, mocker, *, cl_build: ClBuild = ClBuild.V1_9_93) -> None:
         self.audio = HeadlessAudio(mocker)
         self.input = RaylibInput(mocker)
         self.state = make_game_state(
             resources=headless_resources, audio=self.audio.state, config_updates={"player_name": PROFILE_NAME},
         )
         self.state.config.save()
+        self.state.cl_build = cl_build
         _navigator, self.run = start_run(self.state, StartRun(GameMode.SURVIVAL))
         self.run._enter_game_over()
         self.ui = self.run._game_over_ui
@@ -75,7 +85,7 @@ class GameOver:
         assert self.entry.text == ""
 
     def saved_names(self) -> list[str]:
-        table = read_highscore_table(self.state.base_dir, ScoreTable(GameMode.SURVIVAL))
+        table = read_highscore_table(self.state.base_dir, ScoreTable(GameMode.SURVIVAL, cl_build=self.state.cl_build))
         return [record.name for record in table]
 
     def remembered_name(self) -> str:
@@ -106,6 +116,18 @@ def test_enter_saves_the_prefilled_profile_name_once_controls_are_released(game_
     assert game_over.audio.played()[-1] == SfxId.UI_TYPEENTER
     assert game_over.saved_names() == [prefill]
     assert game_over.remembered_name() == prefill
+
+
+def test_a_1_9_8_run_ranks_and_saves_in_the_1_9_8_table(make_game_state, headless_resources, mocker, tmp_path) -> None:
+    # A full 1.9.93 table of better scores leaves the 1.9.8 run's own table empty, so its score qualifies.
+    append_highscore_records(tmp_path, [HighScoreRecord(game_mode_id=GameMode.SURVIVAL, score_xp=1000)] * TABLE_MAX)
+    game_over = GameOver(make_game_state, headless_resources, mocker, cl_build=ClBuild.V1_9_8)
+    game_over.release_controls()
+
+    game_over.frame(rl.KeyboardKey.KEY_ENTER)
+
+    assert game_over.saved_names() == [PROFILE_NAME[:NAME_MAX_EDIT]]
+    assert [record.score_xp for record in read_highscore_table(tmp_path, ScoreTable(GameMode.SURVIVAL))] == [1000] * TABLE_MAX
 
 
 def test_ok_button_submits_a_typed_name(game_over: GameOver) -> None:

@@ -16,6 +16,15 @@ The historical [rules-2 candidate assessment](https://github.com/banteg/crimson/
 remains in git history. This ledger records adopted behavior; entry 50 is an
 explicit consistency/balance choice, not a proven original defect.
 
+The ledger covers both builds a run can play: 1.9.93, the default, and 1.9.8
+under the [1.9.8 rules](rules-1.9.8.md). Entries 1-55 describe 1.9.93; most
+are shared with 1.9.8 and keep their treatment there, and a **1.9.8:** note
+says where the older build differs. Entries 56-60 exist only in 1.9.8. Their
+default plays as 1.9.93 does, and `--preserve-bugs` keeps 1.9.8's native
+behavior. The 1.9.8 rules themselves (the additive Fire Bullets model, the
+missing perks and the other changes listed on their page) are not bugs and
+apply under both policies.
+
 ## 1) Bonus drop suppression: `amount == current weapon id`
 
 Native behavior:
@@ -137,6 +146,9 @@ The following inventory records the original wording for reference.
 | Game over hit-ratio tooltip | `The % of shot bullets hit the target` |
 | Statistics panel line | `played for 1 hours 1 minutes` |
 
+**1.9.8:** shared, except that 1.9.8 has no Fire Cough or Living Fortress
+(`perks_init_database`), so a 1.9.8 run never offers the perks behind the
+`Fire Caugh` and `Living Fortress` rows above.
 
 ## 5) Stationary Reloader can finish a reload without refilling ammo
 
@@ -331,6 +343,13 @@ Rewrite behavior:
 - Default: Fire Bullets conversion is owner-aware; spawned projectiles only
   convert when the firing player's timer is active.
 - With `--preserve-bugs`: keep native player-1/player-2 global coupling.
+
+**1.9.8:** different form, same coupling. 1.9.8's `projectile_spawn`
+(`0x0041fc20`) keeps the shot and adds a Fire Bullets shot before it (the
+recursive call at `0x0041fc91`), on either player's timer. In a 1.9.8 run the
+default adds it only on the shooter's own timer, for any player's shot;
+`--preserve-bugs` reads both timers and keeps the native owner list (`-100`
+and `-1` to `-3`, so a fourth player's friendly-fire shots get none).
 
 ## 14) Pyromaniac offer gating checks player 1 weapon only in co-op
 
@@ -603,6 +622,10 @@ Rewrite behavior:
   so fixed-step catch-up retains it; it is not a press edge or a configurable
   bonus action. Python enforces the policy in the firing routine.
 
+**1.9.8:** absent. Neither 1.9.8's nor 1.9.9's `player_update` queries the G
+scan code; among recovered builds it first appears in 1.9.92. A 1.9.8 run
+ignores G and bit 17 under both policies.
+
 Evidence: [player-fire-bullets-shortcut-2026-09-11](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/README.md)
 and the [Fire Bullets version comparison](../re/static/fire-bullets-1.9.8-vs-1.9.93.md).
 
@@ -874,6 +897,9 @@ Rewrite behavior:
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (the glow
 loop after the Plague Spreader pass). Executable-backed coverage is in
 `tests/native_oracle/test_projectile_render.py`.
+
+**1.9.8:** shared, with the same treatment; the last slot is 63 in its 64-slot
+pool.
 
 ## 35) Rocket detonation flashes draw the whole particle atlas
 
@@ -1191,6 +1217,10 @@ Rewrite behavior (rules 2):
   death paths. Rejecting corpses can consume extra retry RNG draws.
 - With `--preserve-bugs`: retain active-only selection and duplicate rewards.
 
+**1.9.8:** shared, with the same treatment. 1.9.8 also has no Freeze gate, so
+its Jinxed kills during Freeze too: see
+[57)](#57-jinxed-kills-creatures-during-freeze-198-only).
+
 Evidence: `decomp/1.9/crimsonland/game/perks_update_effects.cpp:194-211`,
 `tests/perks/test_jinxed_perk.py`, and
 [`42-jinxed-living-target.patch`](../../crimson-core/patches/42-jinxed-living-target.patch).
@@ -1211,6 +1241,9 @@ Added state is reset with each run, compared in Python/core snapshots, hashed
 in co-op, and restored by watch/practice/rollback keyframes without changing
 the recovered player structure. [Issue #821](https://github.com/banteg/crimson/issues/821),
 `43-independent-perk-intervals.patch`, `tests/gameplay/test_rules2_bundle.py`.
+
+**1.9.8:** shared for Hot Tempered only, which keeps the same treatment. 1.9.8
+has no Fire Cough.
 
 ## 44) Alternate Weapon uses stale readiness and a shared cooldown
 
@@ -1275,6 +1308,10 @@ their normal update on the next tick. `--preserve-bugs` keeps strict-negative
 tests and live-branch fallthrough. [Issue #826](https://github.com/banteg/crimson/issues/826),
 `48-dot-death-boundaries.patch`.
 
+**1.9.8:** shared, with the same treatment. 1.9.8's Radioactive has no lizard
+exemption (a 1.9.8 rule: a lethal pulse kills a lizard like any other
+creature) and no `health > 0` gate ([56)](#56-radioactive-burns-creatures-already-at-zero-health-or-below-198-only)).
+
 ## 49) Death slides ignore impact direction; primary impulses use cosine twice
 
 The original overwrites corpse velocity from its heading every tick. Primary
@@ -1312,6 +1349,10 @@ suppression during the bonus, perk multipliers, spread and casing flags retain
 their existing behavior. Muzzle brightness follows the existing multi-pellet
 branch. Legacy weapon metadata remains unchanged.
 [Issue #832](https://github.com/banteg/crimson/issues/832), `50-fire-bullets-conversion.patch`.
+
+**1.9.8:** absent. 1.9.8 has no Fire Bullets volley: each Gauss Shotgun and
+Multi-Plasma projectile gains its own Fire Bullets shot, six and five, at the
+weapon's own cadence, under both policies.
 
 ## 51) Piercing damage pools grow on overkill (documented, not fixed)
 
@@ -1462,3 +1503,174 @@ Why it stays:
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` (the
 particle expiry) and `src/crimson/effects.py` (the bubble's attach and expiry).
+
+## 56) Radioactive burns creatures already at zero health or below (1.9.8 only)
+
+1.9.8 only (`CL_BUILD == 10908`); 1.9.93 burns only creatures with health above
+zero.
+
+Native behavior:
+
+- In 1.9.8's `creature_update_all` (`0x00425950`), a Radioactive pulse hurts a
+  creature within 100 units of its target player whenever the creature's pulse
+  timer runs out, with no health check. A pulse that leaves it below zero adds
+  its reward to player 1's XP and takes a frame off its death timer.
+- A creature can die earlier in its own update and still reach the pulse: one
+  tethered to a creature that has died takes 1000 damage there, and death
+  handling pays its reward. If its pulse timer runs out on that frame, the
+  pulse burns the corpse and pays its base XP again.
+
+Why it's likely a bug:
+
+- A dead creature has already paid for its kill; the pulse pays the same kill
+  again.
+- 1.9.93 adds the check together with the lizard exemption, under notes that
+  list "Fixed Radioactive perk and Spideroids bug". The 1.9.9 and 1.9.92
+  executables still pulse without either.
+
+Rewrite behavior:
+
+- Default: pulses skip creatures at zero health or below, as in 1.9.93.
+- `--preserve-bugs`: a 1.9.8 run pulses them and pays again, as native.
+- Lizards die to the pulse in a 1.9.8 run under both policies: that is one of
+  the [1.9.8 rules](rules-1.9.8.md), not this entry.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp` (the
+guarded Radioactive branch, and the 1000-damage tether kills before it), and
+the Radioactive branch of `creature_update_all` in the 1.9.8, 1.9.9
+(`0x00426380`) and 1.9.92 (`0x00426510`) executables in `game_bins/crimsonland/`.
+Tests: `tests/creatures/test_radioactive_pulse.py`.
+
+## 57) Jinxed kills creatures during Freeze (1.9.8 only)
+
+1.9.8 only (`CL_BUILD == 10908`); 1.9.93 skips the kill while Freeze is active.
+
+Native behavior:
+
+- In 1.9.8's `perks_update_effects` (`0x00405b60`), every Jinxed proc runs the
+  random kill, Freeze or not: it picks a creature slot with up to ten retries,
+  sets the creature's health to -1, cuts its death timer, pays its base XP and
+  plays the Jinxed kill sound.
+- 1.9.93 returns after the accident roll and the next proc delay while
+  `bonus_freeze_timer` runs, so during Freeze a 1.9.8 run also draws the slot
+  pick and its retries.
+
+Why it's likely a bug:
+
+- Freeze pauses the creature update, and with it the creature's own damage
+  over time: Plague, Radioactive and poison. 1.9.93 pauses Jinxed's kill along
+  with them.
+- The gate first appears in 1.9.92 among
+  [recovered builds](../re/static/reference/history.md); 1.9.9 has none. The
+  notes of 1.9.91 and 1.9.92 have no line for it beyond "Minor bug fixes", and
+  1.9.91 is not recovered.
+
+Rewrite behavior:
+
+- Default: Jinxed kills nothing while Freeze is active, as in 1.9.93.
+- `--preserve-bugs`: a 1.9.8 run kills during Freeze too, as native.
+- Victim selection follows
+  [original bug 42](#42-jinxed-can-reward-an-already-dead-creature) either way.
+
+Evidence: `decomp/1.9/crimsonland/game/perks_update_effects.cpp` (the
+`CL_BUILD != 10908` Freeze return before the creature pick), and
+`perks_update_effects` in the 1.9.9 (`0x00406b80`) and 1.9.92 (`0x00406bd0`)
+executables, of which only 1.9.92 reads `bonus_freeze_timer`. Tests:
+`tests/perks/test_jinxed_perk.py`.
+
+## 58) Infernal Contract revives a dead player 1 and spares player 2 in co-op (1.9.8 only)
+
+1.9.8 only (`CL_BUILD == 10908`); 1.9.93 drops every living player to 0.1
+health.
+
+Native behavior:
+
+- 1.9.8's `perk_apply` (`0x00404660`) grants the three levels and perks, then
+  writes 0.1 to player 1's health (`0x00404839`) without checking it, and
+  leaves player 2's alone.
+- In co-op, taking the perk while player 1 is dead brings them back at 0.1
+  health, and player 2 keeps theirs.
+
+Why it's likely a bug:
+
+- The price is near-death health for whoever takes the deal, and in co-op both
+  players get its perks. Writing player 1's slot alone charges one player, even
+  a dead one, and lets the other go free.
+- 1.9.9 already checks each player's health and sets both (`perk_apply`,
+  `0x00405620`); its notes have no line for the fix beyond "Minor bug fixes".
+
+Rewrite behavior:
+
+- Default: every living player drops to 0.1 health, as in 1.9.93.
+- `--preserve-bugs`: a 1.9.8 run sets player 1's health to 0.1, alive or dead,
+  and leaves player 2's alone, as native.
+
+Evidence: `decomp/1.9/crimsonland/game/perk_apply.cpp` (the Infernal Contract
+branch), and `perk_apply` in the 1.9.8 and 1.9.9 executables. Tests:
+`tests/perks/test_infernal_contract_perk.py`.
+
+## 59) My Favourite Weapon's clip bonus is lost on the next weapon (1.9.8 only)
+
+1.9.8 only (`CL_BUILD == 10908`); 1.9.93 adds the bonus to every weapon a
+player gets while the perk is held.
+
+Native behavior:
+
+- Taking My Favourite Weapon adds 2 to each player's current clip size
+  (`perk_apply`), in both builds.
+- 1.9.8's `weapon_assign_player` (`0x00450940`) sets the clip from the weapon
+  table and Ammo Maniac, and never adds the 2. The next weapon a player gets
+  loses it for good: a Weapon pickup, Random Weapon, a Survival secret weapon,
+  or Ammo Maniac, which reassigns the current weapon to enlarge its clip.
+
+Why it's likely a bug:
+
+- The perk promises "+2 clip size" for good, and taking Ammo Maniac after it
+  should not shrink the clip.
+- The bonus on assignment first appears in 1.9.92 among recovered builds
+  (1.9.9 has none), under notes that list "Minor bug fixes".
+
+Rewrite behavior:
+
+- Default: every assignment adds the 2 while the perk is held, as in 1.9.93.
+- `--preserve-bugs`: a 1.9.8 run adds it only when the perk is taken, as
+  native.
+
+Evidence: `decomp/1.9/crimsonland/weapons/weapon_assign_player.cpp` (the
+`CL_BUILD != 10908` bonus), `decomp/1.9/crimsonland/game/perk_apply.cpp` (the
+pick-time bonus and the Ammo Maniac reassignment), and `weapon_assign_player`
+in the 1.9.9 (`0x00452dc0`) and 1.9.92 (`0x00452fa0`) executables. Tests:
+`tests/weapons/test_weapon_assign_side_effects.py`.
+
+## 60) My Favourite Weapon lets the Pistol's forced Weapon drops through (1.9.8 only)
+
+1.9.8 only (`CL_BUILD == 10908`); 1.9.93 cancels them while the perk is held.
+
+Native behavior:
+
+- `bonus_try_spawn_on_kill` (1.9.8: `0x0041f140`) first tries a forced Weapon
+  drop on 3 kills in 4 while player 1, or player 2 in a two-player game, holds
+  the Pistol. This drop bypasses `bonus_pick_random_type`, which rerolls Weapon
+  bonuses for My Favourite Weapon in both builds.
+- 1.9.93 cancels the forced drop while the perk is held. 1.9.8 cancels it only
+  when its weapon roll gives the Pistol twice or another Weapon drop is on the
+  ground, so a Pistol holder with the perk still gets weapon drops.
+
+Why it's likely a bug:
+
+- The perk text promises "no more random weapon bonuses", and the normal drop
+  path keeps that promise; only the Pistol's path misses it.
+- The check first appears in 1.9.92 among recovered builds (1.9.9 has none),
+  under notes that list "Minor bug fixes".
+
+Rewrite behavior:
+
+- Default: no forced Weapon drop while the perk is held, as in 1.9.93.
+- `--preserve-bugs`: a 1.9.8 run lets it through, as native. Picking it up
+  then also loses the clip bonus
+  ([59)](#59-my-favourite-weapons-clip-bonus-is-lost-on-the-next-weapon-198-only)).
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp` (the
+`CL_BUILD != 10908` term in the forced drop's reject), and
+`bonus_try_spawn_on_kill` in the 1.9.9 (`0x0041fa70`) and 1.9.92 (`0x0041fbc0`)
+executables. Tests: `tests/bonuses/test_bonus_pistol_rules.py`.

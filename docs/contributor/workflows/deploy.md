@@ -129,6 +129,19 @@ retirement SQL; the workflow does not execute that SQL. Follow the
 [ranked rules](../../rewrite/ranked-rules.md#when-the-verifier-changes)
 to decide whether to fix the verifier or retire affected runs.
 
+### Replay format bumps
+
+A release's Python and native clients write its newest replay format, and a
+service that does not read that format yet refuses their runs with a 422. Both
+clients move a run refused with any 4xx other than 409 or 429 into
+`leaderboard/rejected/` with the service's reason and never send it again, so a
+run recorded before the service reads its format never ranks. The browser game
+ships with the Worker, so it never runs ahead of the service. When a release
+bumps the [replay format](../../formats/replay.md), deploy first: apply the
+release's migrations (the 1.9.8 rules' format 35 needs `service/migrations/0011_cl_build.sql`),
+deploy crimson.land from the release's merge commit, and only then push the
+release tag that publishes to PyPI and hand out native client packages.
+
 ### CI replay verdicts
 
 The Crimson service CI job replays every ranked run (`GET /api/replays`, each

@@ -1,0 +1,16 @@
+1.9.8 has no Freeze gate before Jinxed's kill, which original bug 57 fixes
+(patches/57-jinxed-during-freeze.patch): the run kills during Freeze only with preserve_bugs.
+--- a/decomp/1.9/crimsonland/game/perks_update_effects.cpp
++++ b/decomp/1.9/crimsonland/game/perks_update_effects.cpp
+@@ -215,9 +215,4 @@
+-#if CL_BUILD != 10908
+-    if (bonus_freeze_timer > 0.0f) {
++    // 1.9.8 has no Freeze gate: Jinxed kills during Freeze with preserve_bugs (original bug 57).
++    if (!portable_bugs_1_9_8 && bonus_freeze_timer > 0.0f) {
+         return;
+     }
+-#else
+-    if (!portable_preserve_bugs && bonus_freeze_timer > 0.0f) {
+-        return;
+-    }
+-#endif

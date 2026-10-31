@@ -5,6 +5,7 @@
 // seed its runs (host/session.inc); `clocks` sets the system clocks by that clock
 // too (from 2026-01-01), which seed the original's own randomness, so a run the
 // original plays comes out the same each time.
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -101,4 +102,32 @@ export function sevenTunes(directory) {
   const lines = [...tunes, ...tunes.slice(0, 2)].map((tune) => `snd_addGameTune ${tune}.ogg\n`);
   fs.writeFileSync(`${copy}/music/game_tunes.txt`, lines.join(""));
   return copy;
+}
+
+// A matrix stream (checks/matrix.mjs writes build/fixtures/<name>.rsi) as the replay the Python port records of it,
+// written to `out`: the stream's run and ticks under the current build's version, with the result the Python port
+// plays it to (checks/gate.py Stream, as checks/record_rules_fixtures.py makes the fixtures).
+const STREAM_REPLAY = `
+import sys
+from pathlib import Path
+import msgspec
+sys.path.insert(0, sys.argv[1])
+from gate import Stream
+from crimson.game_version import current_replay_game_version
+from crimson.replay.codec import dump_replay_file
+from crimson.replay.driver.playback_driver import PlaybackDriver
+from crimson.replay.types import current_recorder
+stream = Path(sys.argv[2])
+replay = Stream(stream.stem, stream.read_bytes()).replay()
+replay = msgspec.structs.replace(replay, game_version=current_replay_game_version(), recorder=current_recorder())
+driver = PlaybackDriver(replay, warn_on_version_mismatch=False)
+for tick in range(len(replay.ticks)):
+    driver.step_tick(tick)
+dump_replay_file(Path(sys.argv[3]), msgspec.structs.replace(replay, result=driver.build_result()))
+`;
+export function streamReplay(name, out) {
+  const checks = new URL(".", import.meta.url).pathname;
+  const stream = new URL(`../build/fixtures/${name}.rsi`, import.meta.url).pathname;
+  if (!fs.existsSync(stream)) throw Error(`no ${name} stream: run checks/matrix.mjs`);
+  execFileSync("uv", ["run", "--no-sync", "python", "-c", STREAM_REPLAY, checks, stream, out], { stdio: "pipe" });
 }

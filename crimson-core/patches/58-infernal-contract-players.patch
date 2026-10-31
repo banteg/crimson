@@ -1,0 +1,22 @@
+Original bug 58 (1.9.8 only): 1.9.8's Infernal Contract sets player 1's health to 0.1 unchecked, reviving a dead
+player 1, and leaves player 2's alone. The fix drops each living player to 0.1, as 1.9.93 does.
+--- a/decomp/1.9/crimsonland/game/perk_apply.cpp
++++ b/decomp/1.9/crimsonland/game/perk_apply.cpp
+@@ -96,7 +96,16 @@
+         perk_pending_count += 3;
+ #if CL_BUILD == 10908
+         // 1.9.8 sets player one's health without checking it, and leaves player two alone.
+-        player_state_table[0].health = 0.1f;
++        if (portable_preserve_bugs) {
++            player_state_table[0].health = 0.1f;
++        } else {
++            if (player_state_table[0].health > 0.0f) {
++                player_state_table[0].health = 0.1f;
++            }
++            if (player_state_table[1].health > 0.0f) {
++                player_state_table[1].health = 0.1f;
++            }
++        }
+ #else
+         if (player_state_table[0].health > 0.0f) {
+             player_state_table[0].health = 0.1f;

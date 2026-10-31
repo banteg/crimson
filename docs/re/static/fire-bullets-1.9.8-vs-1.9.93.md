@@ -8,8 +8,8 @@ tags:
 
 ## Scope
 
-Compare how Fire Bullets modifies player shots in Crimsonland 1.9.8 vs 1.9.93.
-Cross-check against the rewrite (`src/crimson/weapon_runtime/fire.py`) for parity.
+Compare how Fire Bullets modifies player shots in Crimsonland 1.9.8 vs 1.9.93,
+and how the rewrite plays each.
 
 ## Architectural differences
 
@@ -146,14 +146,40 @@ When Fire Bullets IS the equipped weapon (shot_cooldown=0.14s, pellet_count=1, s
 - 1.9.93: dedicated branch emits 1x `0x2d` at fallback cadence. No behavioral difference.
 - **7.1 fb/s**, **170 dps** in both.
 
-## Rewrite parity
+## How the rewrite plays both models
 
-The Python gameplay matches the 1.9.93 model (replacement + dedicated fire branch).
+A run plays the 1.9.93 model by default and the 1.9.8 model under the
+[1.9.8 rules](../../rewrite/rules-1.9.8.md); the replay records the choice
+(`run.cl_build`).
 
-- Dedicated Fire Bullets dispatch, single-pellet cadence, and ammo bypass:
-  `src/crimson/weapon_runtime/fire.py` (`fire_weapon`).
-- Projectile conversion policy: `src/crimson/projectiles/runtime/projectile_pool.py`
-  (`projectile_spawn`).
+- **1.9.93 runs**: `fire_weapon` (`src/crimson/weapon_runtime/fire.py`) takes
+  the dedicated Fire Bullets branch, with the pellet count, fallback cadence
+  and ammo bypass above, and `projectile_spawn`
+  (`src/crimson/projectiles/runtime/projectile_pool.py`) converts the type in
+  place. The rules-2 default fires full Gauss Shotgun and Multi-Plasma volleys
+  ([original bug 50](../../rewrite/original-bugs.md#50-fire-bullets-loses-gauss-shotgun-and-multi-plasma-pellets)).
+- **1.9.8 runs**: `fire_weapon` has no Fire Bullets branch, so the weapon's own
+  cadence, ammo, reloads, shot sound and spread heat apply. `projectile_spawn`
+  spawns the extra `0x2d` shot through a recursive call before allocating the
+  original; both calls count a shot fired, and the original's index is
+  returned. The pool has 64 slots. Weapons that never call `projectile_spawn`
+  (the flamers, the rocket weapons and the Bubblegun) get no Fire Bullets: that
+  is the 1.9.8 model, which the rewrite keeps. `bonus_pick_random_type`
+  (`src/crimson/bonuses/selection.py`) rerolls the Fire Bullets bonus while any
+  player holds a weapon with the flamer, rocket or rocket-minigun shot sound.
+  Original bugs 24 (the G key) and 50 (the volley counts) do not exist here.
+- **Both**: [original bug 13](../../rewrite/original-bugs.md#13-fire-bullets-projectile-override-is-globally-coupled-in-co-op)
+  decides whose timer counts. By default only the shooter's own timer converts
+  a shot or adds one, for any player's shot; `--preserve-bugs` reads both
+  players' timers and keeps the native owner list.
+
+Among recovered builds, 1.9.9 still adds the shot recursively (its
+`projectile_spawn` at `0x004205d0` calls itself at `0x0042063d`) but falls
+back to slot 95, as 1.9.93 does, and its `bonus_pick_random_type`
+(`0x004126c0`) no longer rerolls the bonus for flame and rocket holders. Its
+notes list a "Fire Bullets bug fix (now works with all weapons)". 1.9.92's
+`projectile_spawn` (`0x00420730`) converts in place, as 1.9.93 does, under
+notes that list a "Fire bullets tweak".
 
 ## Evidence anchors
 
@@ -217,7 +243,7 @@ uv run crimson match scratch tools/match/scratches/weapon_table_init --build 1.9
 - Pellet count field: `docs/re/static/reference/weapon-table.md:102`
 - Projectile hit damage formula: `src/crimson/projectiles/runtime/projectile_pool.py`
 
-## Fixed G-key shortcut in 1.9.93
+## The G-key shortcut
 
 The supplied 1.9.93-gog image also grants Fire Bullets without a pickup:
 `player_update` queries DIK_G (`0x22`) on an eligible shot and writes `10.0f`
@@ -226,8 +252,11 @@ Bullets branch, and holding G refreshes the timer on later eligible shots.
 This assignment follows the readiness/input gates, any reload-bypass perk
 cost, casing effects, and jitter; no developer-mode flag guards it.
 
-The rewrite deliberately enables this legacy cheat hook only with
-`--preserve-bugs`, including during replay playback. See the
+The rewrite deliberately enables this legacy cheat hook only in a 1.9.93 run
+with `--preserve-bugs`, including during replay playback. See the
 [policy and bounded native witnesses](../../rewrite/original-bugs.md#24-holding-g-while-firing-grants-free-fire-bullets).
-This finding concerns the supplied 1.9.93 image; it does not establish whether
-1.9.8 has the same shortcut.
+
+Among recovered builds the shortcut first appears in 1.9.92: its
+`player_update` (`0x00413990`) pushes the G scan code at `0x00415f76`, while
+neither 1.9.8's (`0x00413c10`) nor 1.9.9's (`0x00413900`) queries it. A 1.9.8
+run therefore ignores G under both bug policies.

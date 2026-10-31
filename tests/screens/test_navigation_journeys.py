@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from crimson.cl_build import ClBuild
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.leaderboard import Leaderboard, OnlineScore
@@ -237,7 +238,7 @@ def test_watch_plays_a_pinned_rows_replay_over_the_scores_and_esc_returns(loop, 
     record = HighScoreRecord(
         name="banteg", game_mode_id=GameMode.SURVIVAL, score_xp=10, run_elapsed_ms=500, replay_number=1,
     )
-    upsert_highscore_record(state.base_dir, ScoreTable.for_config(state.config), record)
+    upsert_highscore_record(state.base_dir, ScoreTable.for_config(state.config, cl_build=state.cl_build), record)
 
     loop.navigation.navigate(ShowScores(ScoreQuery(GameMode.SURVIVAL)))
     finish_transition(loop)
@@ -272,7 +273,7 @@ def test_watch_downloads_a_board_runs_replay_for_its_row(loop, tmp_path) -> None
     replay = finish_replay(recorder)
     run = "c" * 64
     leaderboard = Leaderboard(tmp_path, url="https://crimson.test/api", transport=lambda *_: (200, {}), download=lambda _url: dump_replay(replay))
-    leaderboard.scores[("survival", "")] = [
+    leaderboard.scores[("survival", "", ClBuild.V1_9_93)] = [
         OnlineScore(name="ranker", score=99, elapsed_ms=1000, experience=99, most_used_weapon_id=1, shots_fired=0, shots_hit=0, kills=0, accepted_at=0, run=run),
     ]
     state.leaderboard = leaderboard

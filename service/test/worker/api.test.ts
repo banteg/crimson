@@ -4,8 +4,11 @@ import { concat, COOP_RUN_DOMAIN, fromHex, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256
 import { confirmMerge } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
 import { decodeReplay, inflateReplay, REPLAY_RULES } from "../../src/replay";
-import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameCustomQuests, GameScore, LoginView, ProfileView, ReplaysView, RunDetailView, Timeline } from "../../src/api-types";
-import { STALE, timelineFor, validateRecipeSource } from "../../src/runs";
+import {
+  type BoardView, type Build, BUILDS, type CustomQuestDetailView, type CustomQuestsListView, type FlagsView, type GameCustomQuests, type GameScore, type GameScores,
+  type LoginView, type ProfileView, type QuestMenuView, type ReplaysView, type RunDetailView, type Timeline,
+} from "../../src/api-types";
+import { postRun, runObjects, STALE, timelineFor, validateRecipeSource } from "../../src/runs";
 import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
@@ -26,11 +29,11 @@ function zstdRaw(payload: Uint8Array): Uint8Array {
   return concat(...parts);
 }
 
-// The replay `file` with the bytes `from` in its payload rewritten to `to`, as anyone holding it could.
+// The replay `file` with the first bytes `from` in its payload rewritten to `to`, as anyone holding it could.
 function rewritten(file: string, from: Uint8Array, to: Uint8Array): string {
   const payload = inflateReplay(decode64(file));
-  payload.set(to, payload.findIndex((_, i) => from.every((byte, j) => payload[i + j] === byte)));
-  return encode64(zstdRaw(payload));
+  const at = payload.findIndex((_, i) => from.every((byte, j) => payload[i + j] === byte));
+  return encode64(zstdRaw(concat(payload.subarray(0, at), to, payload.subarray(at + from.length))));
 }
 // A seat key and a 32-bit number as the payload holds them: msgpack bin 8 and uint 32.
 const seatKey = (key: string) => concat(Uint8Array.of(0xc4, 32), fromHex(key, 32)!);
@@ -61,10 +64,14 @@ class Player {
   }
 
   // The game's upload envelope (src/crimson/leaderboard/client.py).
-  async upload(file: string, name: string, signed = name): Promise<Response> {
+  async envelope(file: string, name: string, signed = name): Promise<{ replay: string; name: string; public_key: string; signature: string }> {
     const payloadSha = await sha256(inflateReplay(decode64(file)));
     const signature = await this.sign(concat(RUN_DOMAIN, payloadSha, new TextEncoder().encode(signed)));
-    return post("/api/runs", { replay: file, name, public_key: this.publicKey, signature });
+    return { replay: file, name, public_key: this.publicKey, signature };
+  }
+
+  async upload(file: string, name: string, signed = name): Promise<Response> {
+    return post("/api/runs", await this.envelope(file, name, signed));
   }
 
   // This player's entry in a co-op upload's `signers`, signing `seat`.
@@ -75,14 +82,35 @@ class Player {
   }
 }
 
-// A co-op run uploaded with each player's signature, player one first.
+// A co-op run's upload envelope, with each player's signature, player one first.
+async function pairEnvelope(file: string, players: [Player, string][]): Promise<{ replay: string; signers: Awaited<ReturnType<Player["signer"]>>[] }> {
+  return { replay: file, signers: await Promise.all(players.map(([player, name], seat) => player.signer(file, seat, name))) };
+}
+
 async function uploadPair(file: string, ...players: [Player, string][]): Promise<Response> {
-  const signers = await Promise.all(players.map(([player, name], seat) => player.signer(file, seat, name)));
-  return post("/api/runs", { replay: file, signers });
+  return post("/api/runs", await pairEnvelope(file, players));
 }
 
 function post(path: string, body: unknown): Promise<Response> {
   return SELF.fetch(`${ORIGIN}${path}`, { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json" } });
+}
+
+// env.REPLAYS for an upload that `other` overtakes: it runs once, as the upload's first file goes up, which is after
+// the upload verified and before its insert. Its response is `overtook()`.
+function overtaking(other: () => Promise<Response>): { REPLAYS: R2Bucket; overtook: () => Response } {
+  let response: Response | undefined;
+  const REPLAYS = new Proxy(env.REPLAYS, {
+    get(target, key) {
+      if (key === "put")
+        return async (...args: Parameters<R2Bucket["put"]>) => {
+          response ??= await other();
+          return target.put(...args);
+        };
+      const value = Reflect.get(target, key);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+  return { REPLAYS, overtook: () => response! };
 }
 
 async function reason(response: Response): Promise<string> {
@@ -312,6 +340,18 @@ describe("runs", () => {
     expect((await copier.upload(vectors.ranked_run, "copier")).status).toBe(409);
   });
 
+  // The game sends a run again when it missed the answer, so a second upload can land while the first verifies, after
+  // its read for the run: only its insert tells, and the run keeps its files.
+  it("a run uploaded again while it verifies is taken once", async () => {
+    const player = await Player.create();
+    const { REPLAYS, overtook } = overtaking(() => player.upload(vectors.ranked_run, "banteg"));
+    const body = JSON.stringify(await player.envelope(vectors.ranked_run, "banteg"));
+    const response = await postRun(new Request(`${ORIGIN}/api/runs`, { method: "POST", body }), { ...env, REPLAYS });
+
+    expect([overtook().status, response.status, await reason(response)]).toEqual([201, 409, "this run was already accepted"]);
+    expect((await env.REPLAYS.list()).objects.map((object) => object.key).sort()).toEqual(runObjects(vectors.ranked_run_id).sort());
+  });
+
   it("a claimed result the simulation does not reach is refused", async () => {
     const response = await (await Player.create()).upload(vectors.ranked_run_inflated, "banteg");
 
@@ -338,6 +378,178 @@ describe("runs", () => {
 
     expect(response.status).toBe(422);
     expect(await reason(response)).toBe("not a ranked run: mode, weapon_usage, unfinished");
+  });
+});
+
+describe("1.9.8 runs", () => {
+  const get = async <T>(path: string) => (await (await SELF.fetch(`${ORIGIN}${path}`)).json()) as T;
+  const RULES_1_9_8 = vectors.rules_1_9_8_run;
+
+  it("a 1.9.8 run verifies under its rules and ranks on 1.9.8's boards, apart from 1.9.93's", async () => {
+    const player = await Player.create();
+    expect((await player.upload(vectors.ranked_run, "banteg")).status).toBe(201);
+    const response = await player.upload(RULES_1_9_8.file, "banteg");
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ id: RULES_1_9_8.run_id, board: "survival", quest: "", score: RULES_1_9_8.score, build: "1.9.8" });
+    const builds = await env.DB.prepare("SELECT id, cl_build FROM runs ORDER BY cl_build").all();
+    expect(builds.results).toEqual([{ id: RULES_1_9_8.run_id, cl_build: 10908 }, { id: vectors.ranked_run_id, cl_build: 10993 }]);
+    // Each board holds its own build's runs: the player's best 1.9.8 run, which outscores their 1.9.93 one, stays
+    // off 1.9.93's board, its totals, the game's scores, and the 1.9.93 run's rank and personal best.
+    const [current, old] = [await get<BoardView>("/api/survival"), await get<BoardView>("/api/survival?build=1.9.8")];
+    expect([current.build, current.rows.map((row) => row.run), current.totals.runs]).toEqual(["1.9.93", [vectors.ranked_run_id], 1]);
+    expect([old.build, old.rows.map((row) => [row.rank, row.run, row.score]), old.totals.runs]).toEqual([
+      "1.9.8", [[1, RULES_1_9_8.run_id, RULES_1_9_8.score]], 1,
+    ]);
+    // The game's scores name the build whose board they are, so a game can tell a service from before builds.
+    const scores = async (body: object) => {
+      const answer = (await (await post("/api/scores", { board: "survival", quest: "", ...body })).json()) as GameScores;
+      return [answer.build, answer.scores.map((score) => score.run)];
+    };
+    expect(await scores({})).toEqual(["1.9.93", [vectors.ranked_run_id]]);
+    expect(await scores({ build: "1.9.93" })).toEqual(["1.9.93", [vectors.ranked_run_id]]);
+    expect(await scores({ build: "1.9.8" })).toEqual(["1.9.8", [RULES_1_9_8.run_id]]);
+    for (const [id, build] of [[RULES_1_9_8.run_id, "1.9.8"], [vectors.ranked_run_id, "1.9.93"]])
+      expect(await get<RunDetailView>(`/api/runs/${id}`)).toMatchObject({ build, rank: 1, top: null, best: null });
+    // A shared link to the 1.9.8 run names 1.9.8's board.
+    const page = await (await SELF.fetch(`${ORIGIN}/runs/${RULES_1_9_8.run_id}`)).text();
+    expect(page).toContain("<title>banteg · Survival · 1.9.8 · crimson.land</title>");
+    expect(page).toMatch(/, #1 on the 1\.9\.8 board\. /);
+    const profile = await get<ProfileView>(`/api/players/${(await env.DB.prepare("SELECT id FROM accounts").first<{ id: number }>())!.id}`);
+    expect(profile.runs.map((run) => [run.id, run.build]).sort()).toEqual([[RULES_1_9_8.run_id, "1.9.8"], [vectors.ranked_run_id, "1.9.93"]].sort());
+
+    // A quest menu counts its build's players.
+    await env.DB.prepare("UPDATE runs SET board = 'quests', quest = '1.2' WHERE cl_build = 10908").run();
+    const players = async (query: string) => (await get<QuestMenuView>(`/api/quests/1${query}`)).quests[1]!.players;
+    expect([await players(""), await players("?build=1.9.8")]).toEqual([0, 1]);
+  });
+
+  // A payload's map entry: its key, a msgpack fixstr, and the bytes of its value.
+  const entry = (key: string, ...value: number[]) => concat(Uint8Array.of(0xa0 | key.length), new TextEncoder().encode(key), Uint8Array.of(...value));
+  // A run.cl_build entry, a msgpack uint 16.
+  const clBuildEntry = (clBuild: number) => entry("cl_build", 0xcd, clBuild >> 8, clBuild & 255);
+  // The replay `file` claimed under `build`'s rules, as anyone holding it could: its run.cl_build rewritten.
+  const claimedAs = (file: string, build: Build) =>
+    rewritten(file, clBuildEntry(decodeReplay(inflateReplay(decode64(file))).run.cl_build), clBuildEntry(BUILDS[build]));
+  // The rules-1 run's file rewritten for 1.9.8's boards as anyone holding it could: format 35, rules 2, and a
+  // run.cl_build, the run's sixteenth key, after its custom quest.
+  const legacyAs1_9_8 = () =>
+    [
+      [entry("format_version", 34), entry("format_version", 35)],
+      [entry("rules", 1), entry("rules", 2)],
+      [entry("run", 0x8f), entry("run", 0xde, 0, 16)],
+      [entry("custom_quest", 0xc0), concat(entry("custom_quest", 0xc0), clBuildEntry(BUILDS["1.9.8"]))],
+    ].reduce((file, [from, to]) => rewritten(file, from!, to!), vectors.legacy_ranked_run);
+  // The one-player replay `file` claimed from its seed's twin by bit 31, which rand never reads, as anyone holding it
+  // could: its run.seed and its result's rng_state each with bit 31 flipped.
+  const otherSeed = (file: string) => {
+    const { run, result } = decodeReplay(inflateReplay(decode64(file)));
+    const flip = (file: string, key: string, value: number) => rewritten(file, entry(key, ...uint32(value)), entry(key, ...uint32((value ^ 0x80000000) >>> 0)));
+    return flip(flip(file, "seed", run.seed), "rng_state", result.rng_state);
+  };
+  // The rules-2 replay `file` claimed under its build's first ranked rules, as anyone holding it could: its rules
+  // rewritten.
+  const asRules1 = (file: string) => rewritten(file, entry("rules", 2), entry("rules", 1));
+
+  it("the verifier plays each run's own build: the same ticks claimed as a 1.9.93 run reach another result", async () => {
+    const file = claimedAs(RULES_1_9_8.file, "1.9.93");
+    expect(decodeReplay(inflateReplay(decode64(file))).run.cl_build).toBe(10993);
+
+    const response = await (await Player.create()).upload(file, "banteg");
+
+    expect([response.status, await reason(response)]).toEqual([422, "the claimed result differs in rng_state, players[0].health"]);
+  });
+
+  // The rules-1 run is the ranked run's play under rules 1 (scripts/vectors.py), so either is the other's copy under
+  // other rules, and a copy for another build's boards can change its rules too. A one-player run's copy from its
+  // other seed is the same play on any board, its own build's too. The 1.9.8 run's ticks play out otherwise under
+  // 1.9.93, so only its ticks tell its copy there, whichever was accepted first.
+  it.each([
+    { build: "1.9.93", file: () => vectors.ranked_run, claimed: "1.9.8 rules 2", copy: () => claimedAs(vectors.ranked_run, "1.9.8") },
+    { build: "1.9.8", file: () => RULES_1_9_8.file, claimed: "1.9.93 rules 2", copy: () => claimedAs(RULES_1_9_8.file, "1.9.93") },
+    { build: "1.9.8", file: () => claimedAs(vectors.ranked_run, "1.9.8"), claimed: "1.9.93 rules 1", copy: () => vectors.legacy_ranked_run },
+    { build: "1.9.93", file: () => vectors.legacy_ranked_run, claimed: "1.9.8 rules 2", copy: legacyAs1_9_8 },
+    { build: "1.9.93", file: () => vectors.ranked_run, claimed: "1.9.93 from its other seed", copy: () => otherSeed(vectors.ranked_run) },
+    { build: "1.9.8", file: () => RULES_1_9_8.file, claimed: "1.9.8 from its other seed", copy: () => otherSeed(RULES_1_9_8.file) },
+    { build: "1.9.93", file: () => vectors.ranked_run, claimed: "1.9.8 from its other seed", copy: () => claimedAs(otherSeed(vectors.ranked_run), "1.9.8") },
+    { build: "1.9.93", file: () => vectors.legacy_ranked_run, claimed: "1.9.8 rules 2 from its other seed", copy: () => otherSeed(legacyAs1_9_8()) },
+    { build: "1.9.8", file: () => RULES_1_9_8.file, claimed: "1.9.93 rules 2 with the result they reach there", copy: () => RULES_1_9_8.as_1_9_93 },
+    { build: "1.9.8", file: () => RULES_1_9_8.file, claimed: "1.9.93 rules 1 with the result they reach there", copy: () => asRules1(RULES_1_9_8.as_1_9_93) },
+    {
+      build: "1.9.8", file: () => RULES_1_9_8.file, claimed: "1.9.93 from its other seed with the result they reach there",
+      copy: () => otherSeed(RULES_1_9_8.as_1_9_93),
+    },
+    { build: "1.9.93", file: () => asRules1(RULES_1_9_8.as_1_9_93), claimed: "1.9.8, the play they were copied from", copy: () => RULES_1_9_8.file },
+    { build: "1.9.93", file: () => otherSeed(RULES_1_9_8.as_1_9_93), claimed: "1.9.8, the play they were copied from", copy: () => RULES_1_9_8.file },
+  ] as const)("a play ranks on one board: a $build run's ticks claimed as $claimed are refused, whoever signs them", async ({ build, file, copy }) => {
+    const [owner, copier] = [await Player.create(), await Player.create()];
+    const accepted = await owner.upload(file(), "owner");
+    expect([accepted.status, ((await accepted.json()) as { build: Build }).build]).toEqual([201, build]);
+
+    for (const [player, name] of [[owner, "owner"], [copier, "copier"]] as const) {
+      const response = await player.upload(copy(), name);
+      expect([response.status, await reason(response)]).toEqual([409, `this run was already accepted under the ${build} rules`]);
+    }
+    expect((await env.DB.prepare("SELECT cl_build FROM runs").all()).results).toEqual([{ cl_build: BUILDS[build] }]);
+  });
+
+  // A play's own players upload it under both builds at once: its copy under the other build lands while the run
+  // verifies, after the run's read for a twin, so only the run's insert can refuse it. The run is signed under other
+  // names, and the custom quest's brings its recipe, so anything of it that landed would show.
+  it.each<{ name: string; file: string; seats: number; recipe: object; copy?: (file: string) => string; build?: Build }>([
+    { name: "a player", file: vectors.ranked_run, seats: 1, recipe: {} },
+    { name: "a player from both seeds", file: vectors.ranked_run, seats: 1, recipe: {}, copy: (file) => claimedAs(otherSeed(file), "1.9.8") },
+    { name: "a co-op pair", file: vectors.coop_run.file, seats: 2, recipe: {} },
+    { name: "a custom quest's author", file: vectors.custom_quest_run.file, seats: 1, recipe: { source: vectors.custom_quest_run.source, seed: 0 } },
+    { name: "a 1.9.8 player", file: RULES_1_9_8.file, seats: 1, recipe: {}, copy: () => RULES_1_9_8.as_1_9_93, build: "1.9.93" },
+    { name: "a 1.9.8 player from both seeds", file: RULES_1_9_8.file, seats: 1, recipe: {}, copy: () => otherSeed(RULES_1_9_8.as_1_9_93), build: "1.9.93" },
+    { name: "a 1.9.8 player under both rules", file: RULES_1_9_8.file, seats: 1, recipe: {}, copy: () => asRules1(RULES_1_9_8.as_1_9_93), build: "1.9.93" },
+  ])("$name uploading a play under both builds at once lands it on one board", async ({ file, seats, recipe, copy = (file) => claimedAs(file, "1.9.8"), build = "1.9.8" }) => {
+    const players = seats > 1 ? [await Player.seated(0), await Player.seated(1)] : [await Player.create()];
+    const signed = async (file: string, names: string[]) =>
+      seats > 1 ? pairEnvelope(file, players.map((player, seat): [Player, string] => [player, names[seat]!])) : players[0]!.envelope(file, names[0]!);
+    if (seats > 1)
+      await env.DB.prepare("INSERT INTO coop_runs (seed, room_id, seat0_key, seat1_key, issued_at) VALUES (?, 'roomroom00', ?, ?, ?)")
+        .bind(decodeReplay(inflateReplay(decode64(file))).run.seed, ...vectors.coop_run.seat_keys, Date.now())
+        .run();
+    const { REPLAYS, overtook } = overtaking(async () => post("/api/runs", await signed(copy(file), ["alice", "bob"])));
+    const body = { ...(await signed(file, ["carol", "dave"])), ...recipe };
+    const path = Object.keys(recipe).length ? "/api/custom" : "/api/runs";
+    const response = await postRun(
+      new Request(`${ORIGIN}${path}`, { method: "POST", body: JSON.stringify(body) }), { ...env, REPLAYS }, { requireCustomQuest: path === "/api/custom" },
+    );
+
+    const twin = overtook();
+    const { id } = (await twin.json()) as { id: string };
+    expect([twin.status, response.status, await reason(response)]).toEqual([201, 409, `this run was already accepted under the ${build} rules`]);
+    const rows = async (sql: string) => (await env.DB.prepare(sql).all()).results;
+    const named = ["alice", "bob"].slice(0, seats).map((name) => ({ name }));
+    expect(await rows("SELECT id, cl_build FROM runs")).toEqual([{ id, cl_build: BUILDS[build] }]);
+    expect(await rows("SELECT DISTINCT run_id FROM run_players")).toEqual(seats > 1 ? [{ run_id: id }] : []);
+    expect([await rows("SELECT name FROM accounts ORDER BY name"), await rows("SELECT name FROM names ORDER BY name")]).toEqual([named, named]);
+    expect(await rows("SELECT first_run_id, source FROM custom_quests")).toEqual(path === "/api/custom" ? [{ first_run_id: id, source: null }] : []);
+    expect((await env.REPLAYS.list()).objects.map((object) => object.key).sort()).toEqual(runObjects(id).sort());
+  });
+
+  // A custom quest published from a 1.9.8 clear opens on 1.9.8's boards, where its clear ranks.
+  it.each([
+    { when: "as it is published", status: 201, accepted: false },
+    { when: "as its recipe joins its clear, accepted before", status: 200, accepted: true },
+  ])("a 1.9.8 clear's quest links to its 1.9.8 boards $when", async ({ status, accepted }) => {
+    const player = await Player.create();
+    const clear = claimedAs(vectors.custom_quest_run.file, "1.9.8");
+    if (accepted) expect((await player.upload(clear, "banteg")).status).toBe(201);
+    const response = await post("/api/custom", { ...(await player.envelope(clear, "banteg")), source: vectors.custom_quest_run.source, seed: 0 });
+
+    const { url } = (await response.json()) as { url: string };
+    expect([response.status, url]).toEqual([status, `/custom/${vectors.custom_quest_run.digest.slice(0, 12)}?build=1.9.8`]);
+  });
+
+  it("boards refuse a build they do not know", async () => {
+    expect((await SELF.fetch(`${ORIGIN}/api/survival?build=1.9.9`)).status).toBe(400);
+    expect((await SELF.fetch(`${ORIGIN}/api/quests/1?build=10908`)).status).toBe(400);
+    expect((await post("/api/scores", { board: "survival", quest: "", build: "1.9.9" })).status).toBe(400);
+    expect((await post("/api/custom/browse", { page: 0, build: 10908 })).status).toBe(400);
   });
 });
 
@@ -480,8 +692,11 @@ describe("bots and moderation", () => {
 
     // A flagged human run is listed; once it is a bot run it is not.
     await env.DB.prepare("UPDATE runs SET signals = ?").bind(JSON.stringify({ ...signals, aim_on_creature: 0.3 })).run();
-    const flags = (await (await session.get("/api/mod/flags")).json()) as { runs: { id: string; flagged: string[] }[] };
-    expect(flags.runs).toEqual([expect.objectContaining({ id, flagged: ["aim_on_creature"] })]);
+    const flags = async () => ((await (await session.get("/api/mod/flags")).json()) as FlagsView).runs;
+    expect(await flags()).toEqual([expect.objectContaining({ id, build: "1.9.93", flagged: ["aim_on_creature"] })]);
+    // A 1.9.8 run's flag names its build.
+    await env.DB.prepare("UPDATE runs SET cl_build = ?").bind(BUILDS["1.9.8"]).run();
+    expect(await flags()).toEqual([expect.objectContaining({ id, build: "1.9.8" })]);
     await session.post(`/api/mod/accounts/${owner}`, { bot: true, note: "" });
     expect(((await (await session.get("/api/mod/flags")).json()) as { runs: unknown[] }).runs).toEqual([]);
 
@@ -555,11 +770,15 @@ describe("custom quests", () => {
         top_score: vectors.custom_quest_run.score,
       }),
     ]);
+    // 1.9.8's boards count only 1.9.8 runs of it.
+    const old = (await (await SELF.fetch(`${ORIGIN}/api/custom?build=1.9.8`)).json()) as CustomQuestsListView;
+    expect([old.build, old.quests]).toEqual(["1.9.8", [expect.objectContaining({ id: questId, players: 0, top_score: null })]]);
 
     // The game's browser: the quest, and no page past it.
     const browse = async (body: unknown) => (await post("/api/custom/browse", body)).json() as Promise<GameCustomQuests>;
     const quest = detail.definition;
     expect(await browse({ page: 0 })).toEqual({
+      build: "1.9.93",
       quests: [
         {
           id: questId,
@@ -574,7 +793,15 @@ describe("custom quests", () => {
       ],
       more: false,
     });
-    expect(await browse({ page: 1 })).toEqual({ quests: [], more: false });
+    expect(await browse({ page: 1 })).toEqual({ build: "1.9.93", quests: [], more: false });
+    // 1.9.8's boards hold no run of it yet.
+    expect(await browse({ page: 0, build: "1.9.8" })).toMatchObject({ build: "1.9.8", quests: [{ id: questId, players: 0 }] });
+    // A shared link to the quest's page for 1.9.8's boards names that build, and its player plays the quest under it.
+    for (const [query, title, play] of [["", "Quick Clear by banteg", ""], ["?build=1.9.8", "Quick Clear by banteg · 1.9.8", "&#38;build=1.9.8"]]) {
+      const page = await (await SELF.fetch(`${ORIGIN}/custom/${questId}${query}`)).text();
+      expect(page).toContain(`<title>${title} · crimson.land</title>`);
+      expect(page).toContain(`<meta name="twitter:player" content="${ORIGIN}/play/?quest=${questId}${play}">`);
+    }
     expect((await post("/api/custom/browse", { page: -1 })).status).toBe(400);
     expect((await post("/api/custom/browse", { page: "1" })).status).toBe(400);
 
@@ -708,7 +935,7 @@ describe("co-op runs", () => {
     expect(response.status).toBe(201);
     const run = (await response.json()) as { id: string; board: string; score: number };
     const result = decodeReplay(inflateReplay(decode64(file))).result;
-    expect(run).toEqual({ id: vectors.coop_run.run_id, board: "survival-coop", quest: "", score: result.players[0]!.experience });
+    expect(run).toEqual({ id: vectors.coop_run.run_id, board: "survival-coop", quest: "", score: result.players[0]!.experience, build: "1.9.93" });
     expect((await get<BoardView>("/api/survival")).rows).toEqual([]);
     const board = await get<BoardView>("/api/survival/coop");
     expect(board).toMatchObject({ board: "survival-coop", title: "Survival · co-op", rows: [{ rank: 1, run: run.id, player: { id: await accountOf(alice) } }] });

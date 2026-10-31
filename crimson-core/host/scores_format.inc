@@ -1,9 +1,14 @@
 // The scores.jsonl v1 decoder, shared by the game and the contract harness.
+#include "rules.h"
+// A table: the mode, a quest's level and difficulty, the players, the named
+// list and the build whose rules its runs played, as highscore_build_path named
+// the original's file and 1.9.8 kept its own (scores4).
 struct ScoresTable {
   int mode, major, minor;
   bool hardcore;
   int players;
   std::string list;
+  unsigned cl_build;
 };
 struct ScoresStored {
   highscore_record_t record;
@@ -45,6 +50,9 @@ static bool scores_read(const Json &line, ScoresStored &out) {
       valid = score_integer(value, 0, 53);
     else if (key == "player_count")
       valid = score_integer(value, 1, 4);
+    else if (key == "cl_build")
+      valid = score_integer(value, PORTABLE_CL_BUILD_1_9_8, PORTABLE_CL_BUILD_1_9_8) ||
+              score_integer(value, PORTABLE_CL_BUILD_1_9_93, PORTABLE_CL_BUILD_1_9_93);
     else if (key == "run_elapsed_ms")
       valid = score_integer(value, -2147483648.0, 2147483647.0);
     else if (key == "score_xp" || key == "shots_fired" || key == "shots_hit" || key == "creature_kill_count" ||
@@ -92,7 +100,8 @@ static bool scores_read(const Json &line, ScoresStored &out) {
   }
   const Json *hardcore = line.field("hardcore", Json::BOOLEAN);
   out.table = {record.game_mode_id, record.quest_stage_major, record.quest_stage_minor, hardcore && hardcore->number,
-               (int)number("player_count", 1), text("score_list")};
+               (int)number("player_count", 1), text("score_list"),
+               (unsigned)number("cl_build", PORTABLE_CL_BUILD_1_9_93)};
   record.run_elapsed_ms = (uint32_t)(int32_t)number("run_elapsed_ms");
   record.score_xp = (uint32_t)number("score_xp");
   record.most_used_weapon_id = (unsigned char)number("most_used_weapon_id");

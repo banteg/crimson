@@ -19,6 +19,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
+from ...cl_build import ClBuild
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...replay.ranked import RANKED_MODES, human_controls
@@ -55,13 +56,16 @@ class PlayGameMenuView(PanelMenuView):
 
     _PLAYER_COUNT_LABELS = ("1 player", "2 players", "3 players", "4 players")
     # The port's row under the native panel, below every mode tooltip: the Ranked box flush right with the
-    # player-count list and, while it is ticked, the Profile button on the left. The row fits the button's 32px
-    # plate, with the box centred on it.
+    # player-count list, the 1.9.8 box left of it and the Profile button on the left. The row fits the button's 32px
+    # plate, with the boxes centred on it.
     _RANKED_ROW = 40.0
     _RANKED_Y = 212.0
     # From the content origin: the plate's visible edge on the mode tips' column, centred on the box's row.
     _PROFILE_OFFSET = Vec2(-62.0, _RANKED_Y - 8.0)
     _PROFILE_TOOLTIP = "Open your profile in the browser."
+    # The 1.9.8 label ends clear of the Ranked box's focus marker, which sits 16px left of that box.
+    _RULES_GAP = 24.0
+    _RULES_TOOLTIP = "Play by the rules of version 1.9.8."
 
     def __init__(self, state: GameState) -> None:
         super().__init__(
@@ -74,6 +78,7 @@ class PlayGameMenuView(PanelMenuView):
         # Native lists two players; the port plays up to four.
         self.player_count_list = UiListWidget(items=self._PLAYER_COUNT_LABELS)
         self.ranked_checkbox = UiCheckbox("Ranked")
+        self.rules_checkbox = UiCheckbox(ClBuild.V1_9_8.label)
         self.profile_button = UiButtonState("Profile")
         self._login: Future[str] | None = None
         self._profile_note = ""
@@ -132,16 +137,20 @@ class PlayGameMenuView(PanelMenuView):
             y += y_step
 
         # Decay timers for modes that aren't visible right now.
-        visible = {m.key for m in entries} | {"ranked", "profile"}
+        visible = {m.key for m in entries} | {"ranked", "cl_build", "profile"}
         for key in list(self._tooltip_ms):
             if key in visible:
                 continue
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
 
-        # A ranked attempt is single-player; the list stays shut. The Ranked box follows it in focus order.
+        # A ranked attempt is single-player; the list stays shut. The Ranked box, then the 1.9.8 box, follow it in
+        # focus order.
         took_list = not self.state.ranked and self._update_player_count(layout.drop_pos, resources=resources)
         ranked_pos = self._ranked_pos(layout, resources)
         self._update_ranked(ranked_pos, resources=resources, mouse=Vec2.from_xy(mouse), click=click, dt_ms=dt_ms)
+        self._update_rules(
+            self._rules_pos(ranked_pos, resources), resources=resources, mouse=Vec2.from_xy(mouse), click=click, dt_ms=dt_ms,
+        )
         self._update_profile(layout.base_pos + self._PROFILE_OFFSET, resources=resources, mouse=mouse, click=click, dt_ms=dt_ms)
         if took_list or activated is None:
             return
@@ -171,6 +180,19 @@ class PlayGameMenuView(PanelMenuView):
                 self.state.config.gameplay.player_count = 1
                 self._dirty = True
         self._update_tooltip_timer("ranked", checkbox.hovered, dt_ms)
+
+    def _rules_pos(self, ranked_pos: Vec2, resources: RuntimeResources) -> Vec2:
+        return ranked_pos.offset(dx=-(self._RULES_GAP + ui_checkbox_width(resources, self.rules_checkbox)))
+
+    def _update_rules(self, pos: Vec2, *, resources: RuntimeResources, mouse: Vec2, click: bool, dt_ms: int) -> None:
+        """The 1.9.8 box: whether the next run plays 1.9.8's rules instead of 1.9.93's. With Ranked, it ranks on 1.9.8's
+        boards."""
+        checkbox = self.rules_checkbox
+        checkbox.disabled = self.player_count_list.open
+        checkbox.checked = self.state.cl_build == ClBuild.V1_9_8
+        if ui_checkbox_update(resources, checkbox, pos, focus=self.state.focus, mouse=mouse, click=click):
+            self.state.cl_build = ClBuild.V1_9_8 if checkbox.checked else ClBuild.V1_9_93
+        self._update_tooltip_timer("cl_build", checkbox.hovered, dt_ms)
 
     def _profile_shown(self) -> bool:
         # Ranked or not: a player who only plays co-op, which ranks without the box, signs in here too.
@@ -203,18 +225,21 @@ class PlayGameMenuView(PanelMenuView):
         self._update_tooltip_timer("profile", button.hovered, dt_ms)
 
     def _port_tooltips(self, entries: list[_PlayGameModeEntry], font: SmallFontData) -> list[tuple[str, str]]:
-        """The Ranked and Profile tips, one line each and no wider than the widest mode tip, so they fit the panel
-        above the bottom row. The Ranked tip leaves out a fresh config's default name, which is nobody's."""
+        """The Ranked, 1.9.8 and Profile tips, one line each and no wider than the widest mode tip, so they fit the
+        panel above the bottom row. The Ranked tip names the build's leaderboard while 1.9.8 is ticked, and leaves out
+        a fresh config's default name, which is nobody's."""
         width = max(measure_small_text_width(font, mode.tooltip) for mode in entries)
         name = str(self.state.config.profile.player_name or "")
-        ranked = f"Play for the online leaderboard as {name}."
+        cl_build = self.state.cl_build
+        board = "online leaderboard" if cl_build == ClBuild.V1_9_93 else f"online {cl_build.label} leaderboard"
+        ranked = f"Play for the {board} as {name}."
         if name in ("", DEFAULT_PROFILE_NAME) or measure_small_text_width(font, ranked) > width:
-            ranked = "Play for the online leaderboard."
+            ranked = f"Play for the {board}."
         profile = self._profile_note or self._PROFILE_TOOLTIP
         leaderboard = self.state.leaderboard
         if not self._profile_note and leaderboard is not None and leaderboard.waiting:
             profile = f"{leaderboard.waiting} run{'s' if leaderboard.waiting != 1 else ''} waiting to upload."
-        return [("ranked", ranked), ("profile", profile)]
+        return [("ranked", ranked), ("cl_build", self._RULES_TOOLTIP), ("profile", profile)]
 
     def _content_layout(self) -> _PlayGameContentLayout:
         panel_top_left = self._panel_rect(self._panel_element).top_left
@@ -464,6 +489,7 @@ class PlayGameMenuView(PanelMenuView):
 
         ranked_pos = self._ranked_pos(layout, resources)
         ui_checkbox_draw(resources, self.ranked_checkbox, ranked_pos, focus=self.state.focus)
+        ui_checkbox_draw(resources, self.rules_checkbox, self._rules_pos(ranked_pos, resources), focus=self.state.focus)
         if self._profile_shown():
             button_draw(resources, self.profile_button, focus=self.state.focus, pos=layout.base_pos + self._PROFILE_OFFSET)
         # `play_game_menu_update`: the list widget is drawn before tooltips, so tooltips can overlay it.

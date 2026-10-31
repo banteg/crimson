@@ -197,7 +197,22 @@ recorder builds it ([`local_input.py`](../src/crimson/local_input.py)) and is
 recorded before the tick runs. A pass that covers no tick draws nothing, and
 the host shows the last frame again. Runs are single-player Survival, Rush and
 Quests at 1024x768, the resolution the verifier simulates; the rest play as the
-original. A fresh configuration is the Python port's: windowed, since the host
+original. Every run the menus start plays the build the Play Game panel's
+**1.9.8** box picks, left of Ranked ([`host/ranked.inc`](host/ranked.inc)):
+1.9.93's rules as a launch starts, or the
+[1.9.8 rules](../docs/rewrite/rules-1.9.8.md), ranked too. Its sessions record
+the build in their config, and a run the original sets up itself (Typ-o, the
+tutorial, two players, another resolution) takes it as it starts, with the
+perk range the game derives from it and the rest of the player's profile, the
+current rules with the documented fixes (`portable_profile_set`), whatever a
+replay or the last run played. It starts from a fresh game's state, as every
+other run does and as the Python port starts every mode
+(`portable_fresh_game`), not from what the last run left: with no Shock Chain
+under the fixes
+([original bug 32](../docs/rewrite/original-bugs.md#32-projectile-slot-0-cannot-hit-the-player-at-first)),
+Lean Mean Exp Machine's tick at 0, and the players' Fire Cough and Hot
+Tempered intervals afresh. Its 1.9.8 Fire Bullets reroll reads the weapons'
+shot sounds the game works out as it starts (`game_start`). A fresh configuration is the Python port's: windowed, since the host
 owns the window, at 1024x768, with violence on (the original turns it off when
 it writes a missing `crimson.cfg`). The main menu leaves out Other Games, 10tons'
 catalogue of the time, as the Python port does. The console names the build,
@@ -227,7 +242,18 @@ bytes the original reserved. The high score tables are the Python port's
 `scores.jsonl` ([local high scores](../docs/formats/highscores.md)): the
 original's loader reads its table from there, a saved score appends its record
 with the replay's number, leaderboard id and rules, and the original's `scores5`
-tables import as the game starts ([`host/scores.inc`](host/scores.inc)). A tick takes at most one
+tables import as the game starts ([`host/scores.inc`](host/scores.inc)). Each
+build keeps tables of its own: a run's screens read and save its build's, and
+the high score screen shows the 1.9.8 box's, its title naming 1.9.8's and its
+online board 1.9.8's. Typ-o's high score names are its build's: the original
+loads them from the Typ-o table at the process's first pick and keeps them,
+and the game keeps them while its Typ-o runs stay on that build: a Typ-o run
+on another build than the last drops them and loads its own
+(`typo_names_start` in [`host/session.inc`](host/session.inc)), as the Python
+port's `TypoSession` does. A board request names its build (`"build": "1.9.8"` or
+`"1.9.93"`), and the table takes an answer only when it names that build. One
+that names none is 1.9.93's: a service from before builds has only 1.9.93's
+boards, and answers with them whatever was asked for. A tick takes at most one
 perk command, judged by the state it starts from, since a pick can use up the
 last perk or kill the player; commands the verifier would refuse (in Rush, once
 dead, with no perk left) are dropped, as the original ignores them, and the
@@ -262,7 +288,9 @@ quests need the HUD's title and byline first) plays as a run whose ticks come
 from its recording ([`host/watch.inc`](host/watch.inc)); the card of one it
 cannot play says why ([`host/replay.inc`](host/replay.inc)). Nothing it plays
 reaches the player: no settings or progress carry over, nothing is saved, and
-the run counts in no statistics. The [replay viewer](../docs/rewrite/replay-viewer.md)
+the run counts in no statistics. It plays the build it recorded (`run.cl_build`),
+whose rules its score card names where it says the score is from ("Local score,
+1.9.8 rules", "Internet score, 1.9.8 rules"), as the high score screen's cards do. The [replay viewer](../docs/rewrite/replay-viewer.md)
 covers preparing, seeking, the viewer, links and practice
 ([`host/keyframes.inc`](host/keyframes.inc), [`host/viewer.inc`](host/viewer.inc)).
 A host plays a replay file with `game_replay_open` and `game_watch`. Since the
@@ -318,10 +346,15 @@ weapon's icon and name (with no other weapons when none drops), and the
 weapons, bonuses and perks it turns off.
 
 The host fetches a page from `POST /api/custom/browse`
-(`HOST_LEADERBOARD_CUSTOM`, `game_custom_request`) and a quest's table from
+(`HOST_LEADERBOARD_CUSTOM`, `game_custom_request`), whose clears are the 1.9.8
+box's build's, named in the request and its answer as a board's are, and a quest's table from
 `/custom/<id>.bin` into `quests/online/<id>.bin` (`HOST_LEADERBOARD_QUEST`,
 `game_quest_download`), which later plays reuse. Play starts the quest as a
-link to it does, the player's own menu settings kept for after it. A failed
+link to it does, the player's own menu settings kept for after it. The web page
+follows a link to a quest (`/play/?quest=<id>`, from its page) as the game
+starts; the link names the build of the page's boards (`&build=1.9.8`, else
+1.9.93), whose rules its run plays (`game_custom_quest_play`), and the menus
+keep 1.9.93's after it. A failed
 first page says the leaderboard can't be reached, and a failed table fetch is
 asked for again on the next Play. As with a link, Play waits out co-op and
 needs the 1024x768 screen; leaving the screen drops a Play still downloading. `node crimson-core/checks/game_custom.mjs <copy>`
@@ -429,6 +462,36 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   and music off, which leaves its music track ids all 0, and the run must still
   agree through its end tune; with `--tunes` it loads seven in-game tunes, which
   makes its `crimsonquest` the verifier's in-game tune request.
+- [`checks/game_rules.mjs`](checks/game_rules.mjs) plays the runs the original
+  sets up itself on the 1.9.8 box's build, before any other run and after a
+  replay on the other build or with 1.9.8's bugs: the player's own profile (the
+  current rules, the fixes), the tutorial's perk range, the one its build's
+  perk database numbers (the Python port's `perk_id_max`,
+  [`perks/availability.py`](../src/crimson/perks/availability.py)), the perks
+  every run holds available (the Python port's `build_perk_availability`), and
+  Typ-o's word fragments, which must be the Python port's table for its build
+  ([`typo/names.py`](../src/crimson/typo/names.py)), the box ticked by the pad.
+  Typ-o's high score names must be those the Python port's `TypoSession`
+  ([`typo/state.py`](../src/crimson/typo/state.py)) picks through the same
+  runs, a name joining a table between some: on 1.9.8, on 1.9.93 twice, on
+  1.9.8 twice with a tutorial on 1.9.93 between them, and on 1.9.93 again. A
+  Typ-o run on another build than the last loads its own build's table, and
+  one on the same build keeps the names the last loaded. The tutorial must
+  start from a fresh game's state, whatever the game held before: its players' Fire Cough and Hot Tempered intervals afresh, no Shock
+  Chain under the fixes (original bug 32) and Lean Mean Exp Machine's tick
+  at 0. The weapons' shot sounds 1.9.8's Fire Bullets reroll reads must be
+  known as the game starts, alike where the Python port's weapons share a
+  sound. A Survival run on each build goes to that build's high score table
+  alone: with the box set to a build, the table holds that one run, and its
+  first row's Watch plays it. The perk database, before any run with the box
+  ticked and after the 1.9.8 tutorial with it unticked, must list the box's
+  build's perks, whichever build set the table last. The high score screen
+  must draw a title that names 1.9.8's table, and a score card's origin line
+  the Python port's for the build
+  ([`ui/highscore_card.py`](../src/crimson/ui/highscore_card.py)), a replay's
+  build while it plays.
+  `game_session.mjs --1.9.8` plays its run on the 1.9.8 rules, and
+  `game_watch.mjs` watches one.
 - [`checks/game_coop.mjs`](checks/game_coop.mjs) plays every co-op stream of the
   corpus through the co-op engine ([`host/coop.inc`](host/coop.inc)), headless,
   with both players local: each stream's perk commands become the players'

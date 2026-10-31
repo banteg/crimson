@@ -1,0 +1,134 @@
+1.9.8 rule: Fire Bullets adds a Fire Bullets shot to every player shot instead of replacing it. projectile_spawn
+keeps the shot and spawns the Fire Bullets shot first, through a recursive call that counts it as fired too, and
+returns the shot's index; player_update has no Fire Bullets branch and no G key, so the weapon keeps its own cadence,
+ammo, reloads and sound. Original bug 13's fix applies to both forms (patches/13-fire-bullets-owner.patch).
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp
+@@ -22,31 +22,33 @@
+-#if CL_BUILD == 10908
+-        if (portable_preserve_bugs
+-                ? owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3
+-                : owner_id < 0) {
+-            ++highscore_record_shots_fired;
+-            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS
+-                && (portable_preserve_bugs
+-                        ? player_state_table[0].fire_bullets_timer > 0.0f
+-                              || player_state_table[1].fire_bullets_timer > 0.0f
+-                        : player_state_table[current_player_index].fire_bullets_timer > 0.0f)) {
+-                projectile_spawn(pos, angle, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);
+-            }
+-        }
+-#else
+-        while (
+-            (portable_preserve_bugs
+-                 ? owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3
+-                 : owner_id < 0)
+-            && (
+-                ++highscore_record_shots_fired,
+-                type_id != PROJECTILE_TYPE_FIRE_BULLETS
++        // 1.9.8 keeps the shot and adds a Fire Bullets shot, spawned first through a recursive call that counts
++        // it as fired too; 1.9.93 converts the shot.
++        if (portable_rules_1_9_8) {
++            if (portable_preserve_bugs
++                    ? owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3
++                    : owner_id < 0) {
++                ++highscore_record_shots_fired;
++                if (type_id != PROJECTILE_TYPE_FIRE_BULLETS
+                     && (portable_preserve_bugs
+                             ? player_state_table[0].fire_bullets_timer > 0.0f
+                                   || player_state_table[1].fire_bullets_timer > 0.0f
+-                            : player_state_table[current_player_index].fire_bullets_timer > 0.0f)
+-            )
+-        ) {
+-            type_id = PROJECTILE_TYPE_FIRE_BULLETS;
+-            default_damage = 1.0f;
++                            : player_state_table[current_player_index].fire_bullets_timer > 0.0f)) {
++                    projectile_spawn(pos, angle, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);
++                }
++            }
++        } else {
++            while (
++                (portable_preserve_bugs
++                     ? owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3
++                     : owner_id < 0)
++                && (
++                    ++highscore_record_shots_fired,
++                    type_id != PROJECTILE_TYPE_FIRE_BULLETS
++                        && (portable_preserve_bugs
++                                ? player_state_table[0].fire_bullets_timer > 0.0f
++                                      || player_state_table[1].fire_bullets_timer > 0.0f
++                                : player_state_table[current_player_index].fire_bullets_timer > 0.0f)
++                )
++            ) {
++                type_id = PROJECTILE_TYPE_FIRE_BULLETS;
++                default_damage = 1.0f;
++            }
+         }
+-#endif
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -1296,60 +1296,58 @@
+-#if CL_BUILD != 10908
+-        if (portable_preserve_bugs && grim_interface_ptr->grim_is_key_active(0x22)) {
++        // 1.9.8 has neither the G key nor this Fire Bullets branch: the weapon fires as it would without the
++        // bonus, and projectile_spawn adds the Fire Bullets shots.
++        if (!portable_rules_1_9_8 && portable_preserve_bugs && grim_interface_ptr->grim_is_key_active(0x22)) {
+             player->fire_bullets_timer = 10.0f;
+         }
+-        if (player->fire_bullets_timer > 0.0f) {
++        if (!portable_rules_1_9_8 && player->fire_bullets_timer > 0.0f) {
+             sfx_play_panned(
+                 fire_bullets_primary_shot_sfx_id,
+                 &player->position,
+                 1.0f);
+             sfx_play_panned(
+                 fire_bullets_secondary_shot_sfx_id,
+                 &player->position,
+                 1.0f);
+ 
+             int conversion_pellets = weapon_table[player->weapon_id].pellet_count;
+             if (portable_rules2_fixes) {
+                 if (player->weapon_id == WEAPON_ID_GAUSS_SHOTGUN) conversion_pellets = 6;
+                 if (player->weapon_id == WEAPON_ID_MULTI_PLASMA) conversion_pellets = 5;
+             }
+             if (conversion_pellets == 1) {
+                 player->shot_cooldown =
+                     fire_bullets_fallback_shot_cooldown;
+                 player->muzzle_flash_alpha = player->muzzle_flash_alpha
+                     + fire_bullets_fallback_spread_heat;
+             } else {
+                 player->shot_cooldown =
+                     weapon_table[player->weapon_id].shot_cooldown;
+                 player->muzzle_flash_alpha = player->muzzle_flash_alpha
+                     + weapon_table[player->weapon_id].spread_heat;
+             }
+ 
+             for (int pellet_index = 0;
+                  pellet_index < conversion_pellets;
+                  ++pellet_index) {
+                 float pellet_angle = (float)(crt_rand() % 200 - 100) * 0.0015f
+                     + angle_step;
+                 projectile_spawn(
+                     &(muzzle_offset + *(vec2_t *)&player->position),
+                     pellet_angle,
+                     PROJECTILE_TYPE_FIRE_BULLETS,
+                     owner_id);
+             }
+ 
+             {
+                 vec2_t velocity(cosf(fire_heading) * 25.0f, sinf(fire_heading) * 25.0f);
+                 int effect_index = fx_spawn_sprite(&(muzzle_offset + *(vec2_t *)&player->position), &velocity, 1.0f);
+                 sprite_effect_pool[effect_index].color_r = 0.5f;
+                 sprite_effect_pool[effect_index].color_g = 0.5f;
+                 sprite_effect_pool[effect_index].color_b = 0.5f;
+                 sprite_effect_pool[effect_index].color_a = 0.413f;
+             }
+ 
+             if (perk_count_get(perk_id_sharpshooter) == 0) {
+                 player->spread_heat = player->spread_heat
+                     + fire_bullets_fallback_spread_heat * 1.3f;
+             }
+         } else {
+-#else
+-        {
+-#endif

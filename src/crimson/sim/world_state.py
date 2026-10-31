@@ -11,6 +11,7 @@ from grim.sfx_types import SfxRequest
 
 from ..bonuses.update import bonus_telekinetic_update, bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
+from ..cl_build import ClBuild
 from ..creatures.damage import creature_death_sfx_for_slot
 from ..creatures.runtime import CreatureDeath, CreaturePool
 from ..creatures.spatial_hash import CreatureSpatialHash
@@ -27,7 +28,8 @@ from ..perks import PerkId
 from ..perks.effects import perks_update_effects
 from ..perks.selection import perk_selection_open_choices
 from ..player_damage import player_take_projectile_damage
-from ..projectiles.types import ProjectileHit
+from ..projectiles.runtime import ProjectilePool
+from ..projectiles.types import MAIN_PROJECTILE_POOL_SIZE, MAIN_PROJECTILE_POOL_SIZE_1_9_8, ProjectileHit
 from ..rng_caller_static import RngCallerStatic
 from ..tutorial.timeline import tutorial_timeline_update
 from .input import PlayerInput
@@ -164,8 +166,10 @@ class WorldState(msgspec.Struct):
         hardcore: bool,
         quest_fail_retry_count: int,
         preserve_bugs: bool = False,
+        cl_build: ClBuild = ClBuild.V1_9_93,
     ) -> WorldState:
-        state = GameplayState()
+        pool_size = MAIN_PROJECTILE_POOL_SIZE_1_9_8 if cl_build == ClBuild.V1_9_8 else MAIN_PROJECTILE_POOL_SIZE
+        state = GameplayState(cl_build=cl_build, projectiles=ProjectilePool(pool_size))
         state.hardcore = hardcore
         state.quest_fail_retry_count = int(quest_fail_retry_count)
         state.preserve_bugs = preserve_bugs

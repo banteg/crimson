@@ -1,0 +1,12 @@
+1.9.8 rule: Angry Reloader rings on every reload, with no 0.5 s minimum reload time.
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -968,7 +968,3 @@
+-#if CL_BUILD == 10908
+     // 1.9.8 has no reload_timer_max > 0.5 gate on Angry Reloader.
+-    if (perk_count_get(perk_id_angry_reloader) != 0) {
+-#else
+     if (perk_count_get(perk_id_angry_reloader) != 0
+-        && player->reload_timer_max > 0.5f) {
+-#endif
++        && (portable_rules_1_9_8 || player->reload_timer_max > 0.5f)) {

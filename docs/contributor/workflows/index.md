@@ -18,7 +18,9 @@ Open a `chore(release): release X.Y.Z` PR that bumps the version in
 After it merges, push an annotated `vX.Y.Z` tag on the merge commit. The Release
 workflow checks the tag against the package version, takes the release notes
 from that changelog section, publishes to PyPI and creates the GitHub release.
-Deploy crimson.land afterwards so the site and browser game carry the release.
+Deploy crimson.land afterwards so the site and browser game carry the release,
+or before pushing the tag when the release bumps the replay format
+([replay format bumps](deploy.md#replay-format-bumps)).
 
 ## Documentation maintenance
 

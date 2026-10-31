@@ -51,13 +51,35 @@
 // console key, whose character, like what the open console takes, stays out of
 // the name field (original bug 53).
 //
-//   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] <game directory> [core.wasm] [game.wasm]
+// With --1.9.8 the Play Game menu's 1.9.8 box is ticked first, by mouse (with
+// --ranked too, after Ranked): the run plays the 1.9.8 rules
+// (docs/rewrite/rules-1.9.8.md), its recording, its replay (run.cl_build) and
+// the verifier say so, and its score goes to 1.9.8's table, which the Python
+// port reads apart from 1.9.93's.
+//
+//   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] [--1.9.8] <game directory> [core.wasm] [game.wasm]
 import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
-import { CONFIG_BYTES, CORE, decode, field, fieldRanges, firstDifference, init, loadCore, names, record, state, step } from "./engine.mjs";
+import {
+  CL_BUILD_1_9_8,
+  CL_BUILD_1_9_93,
+  clBuild,
+  CONFIG_BYTES,
+  CORE,
+  decode,
+  field,
+  fieldRanges,
+  firstDifference,
+  init,
+  loadCore,
+  names,
+  record,
+  state,
+  step,
+} from "./engine.mjs";
 import { PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT, sevenTunes } from "./game_host.mjs";
 
@@ -66,14 +88,17 @@ const seedAt = args.indexOf("--seed");
 const seedOverride = seedAt < 0 ? undefined : Number(args[seedAt + 1]);
 if (seedAt >= 0) args = args.toSpliced(seedAt, 2);
 const ranked = args.includes("--ranked"), quest = args.includes("--quest"), padded = args.includes("--pad"),
-  silent = args.includes("--silent"), tunes = args.includes("--tunes");
-args = args.filter((arg) => !["--ranked", "--quest", "--pad", "--silent", "--tunes"].includes(arg));
+  silent = args.includes("--silent"), tunes = args.includes("--tunes"), rules198 = args.includes("--1.9.8");
+args = args.filter((arg) => !["--ranked", "--quest", "--pad", "--silent", "--tunes", "--1.9.8"].includes(arg));
+// The build the run plays.
+const CL_BUILD = rules198 ? CL_BUILD_1_9_8 : CL_BUILD_1_9_93;
 const [
   given,
   coreWasm = new URL("build/wasm/core.wasm", CORE).pathname,
   gameWasm = new URL("build/game/game.wasm", CORE).pathname,
 ] = args;
-if (!given) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] <game directory> [core.wasm] [game.wasm]");
+if (!given) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] [--1.9.8] <game directory> [core.wasm] [game.wasm]");
+if (rules198 && padded) throw Error("--1.9.8 ticks its box by mouse");
 const directory = tunes ? sevenTunes(given) : given;
 
 if (silent) {
@@ -202,6 +227,7 @@ function checkSavedScore(file) {
     v: 1,
     game_mode_id: quest ? 3 : 1,
     quest_level: quest ? { major: 1, minor: 1 } : undefined,
+    cl_build: rules198 ? CL_BUILD : undefined,
     replay_number: 1,
     run: crypto.createHash("sha256").update(savedPayload).digest("hex"),
     rules: savedCrd.rules,
@@ -209,11 +235,15 @@ function checkSavedScore(file) {
   };
   for (const [key, value] of Object.entries(expected))
     if (JSON.stringify(score[key]) !== JSON.stringify(value)) throw Error(`the saved score's ${key} is ${JSON.stringify(score[key])}`);
+  const read = pythonScores();
+  if (read !== `${expected.run} ${CL_BUILD}`) throw Error(`the Python port reads the saved scores as ${read || "none"}`);
+}
+// The saved scores as the Python port reads them: each one's run and the build whose table holds it.
+function pythonScores() {
   const script =
     "import sys; from pathlib import Path; from crimson.persistence.highscores import read_highscore_records; " +
-    "print(*(r.run for r in read_highscore_records(Path(sys.argv[1]))))";
-  const read = execFileSync("uv", ["run", "--no-sync", "python", "-c", script, directory], { encoding: "utf8" }).trim();
-  if (read !== expected.run) throw Error(`the Python port reads the saved scores as ${read || "none"}`);
+    "print(*(f'{r.run} {int(r.cl_build)}' for r in read_highscore_records(Path(sys.argv[1]))))";
+  return execFileSync("uv", ["run", "--no-sync", "python", "-c", script, directory], { encoding: "utf8" }).trim();
 }
 
 // The end screen's name field takes what is typed, but neither the console
@@ -238,8 +268,11 @@ function nameEntry() {
     if (frames > 120) throw Error("Enter in the name field saved no score");
     frame(16, { cursor });
   }
-  const { name } = JSON.parse(fs.readFileSync(scores, "utf8"));
+  const { name, cl_build } = JSON.parse(fs.readFileSync(scores, "utf8"));
   if (name !== "abe") throw Error(`the name field saved ${JSON.stringify(name)}, not "abe"`);
+  // 1.9.93's table leaves its build out (docs/formats/highscores.md).
+  if (cl_build !== (rules198 ? CL_BUILD : undefined)) throw Error(`the score saved build ${cl_build}`);
+  if (!pythonScores().endsWith(` ${CL_BUILD}`)) throw Error(`the Python port reads the score as ${pythonScores()}`);
   toggle();
   try {
     type("it\r");
@@ -301,6 +334,8 @@ if (padded) {
     if (requests.join() !== "1") throw Error(`Profile without Ranked asked the host for ${JSON.stringify(requests)}`);
     click(PLAY_GAME_MENU, [285, 489]);
   }
+  // The 1.9.8 box, left of Ranked (by its focus marker's room) or in its place.
+  if (rules198) click(PLAY_GAME_MENU, ranked ? [210, 489] : [298, 489]);
   if (quest) {
     // Quests, then 1.1 on the quest list.
     click(PLAY_GAME_MENU, [232, ranked ? 318 : 350]);
@@ -477,6 +512,7 @@ while (true) {
       if (frames > 600) throw Error("the Survival run did not play as a session");
       continue;
     }
+    if (clBuild(recorded) !== CL_BUILD) throw Error(`the run records build ${clBuild(recorded)}`);
     init(core, recorded.subarray(0, CONFIG_BYTES));
     started = true;
     seed = recorded.readUInt32LE(0);
@@ -536,6 +572,7 @@ const savedCrd = unpack(savedPayload);
 requireRecording(savedCrd, "the saved replay");
 if (savedCrd.recorder.version !== clientVersion || savedCrd.game_version === clientVersion) throw Error("replay conflates the host and game identities");
 if (savedCrd.result.outcome !== (quest ? "quest_completed" : "death")) throw Error(`the saved replay ends in ${savedCrd.result.outcome}`);
+if (savedCrd.run.cl_build !== CL_BUILD) throw Error(`the saved replay plays build ${savedCrd.run.cl_build}`);
 // The module reads its own replay back as the run it recorded.
 const memory = () => Buffer.from(game.memory.buffer);
 memory().write(`replays/${saved[0]}\0`, game.game_replay_path(), "latin1");
@@ -545,7 +582,7 @@ if (!reread.equals(replay())) throw Error("the saved replay reads back different
 if (ranked) checkRanked();
 if (padded) leaveByPad(quest ? QUEST_RESULTS : GAME_OVER);
 if (!ranked && !padded && !quest) nameEntry();
-console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, consoles, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}), ...(tunes ? { tunes: true } : {}) }));
+console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, consoles, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}), ...(tunes ? { tunes: true } : {}), ...(rules198 ? { cl_build: CL_BUILD } : {}) }));
 
 // The quests the player's save unlocks (game.cfg, src/crimson/persistence/save_status.py).
 function savedUnlocks() {
@@ -601,6 +638,7 @@ function checkRanked() {
   if (!crypto.verify(null, message, key, Buffer.from(entry.signature, "hex"))) throw Error("the signature does not verify");
   const crd = unpack(payload);
   const spec = crd.run;
+  if (spec.cl_build !== CL_BUILD) throw Error(`the queued run plays build ${spec.cl_build}`);
   const reasons = unrankedReasons(payload);
   if (reasons) throw Error(`the queued run breaks the ranked rules: ${reasons}`);
   requireRecording(crd, "the queued run");

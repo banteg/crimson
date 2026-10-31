@@ -18,6 +18,14 @@ export type ProviderName = "github" | "discord" | "x" | "twitch";
 // docs/rewrite/bots.md: every board ranks human runs and bot runs apart.
 export type Category = "human" | "bot";
 export const CATEGORIES: readonly Category[] = ["human", "bot"];
+// The original builds whose rules a run plays, by version, with their CL_BUILD (src/crimson/cl_build.py ClBuild), which
+// the database keeps. Each build ranks on boards of its own (docs/rewrite/ranked-rules.md); the API takes
+// ?build=1.9.8 and shows 1.9.93's without it.
+export const BUILDS = { "1.9.93": 10993, "1.9.8": 10908 } as const;
+export type Build = keyof typeof BUILDS;
+export const DEFAULT_BUILD: Build = "1.9.93";
+// A run's build by its CL_BUILD.
+export const buildOf = (clBuild: number): Build => (Object.keys(BUILDS) as Build[]).find((build) => BUILDS[build] === clBuild)!;
 export type Role = "" | "mod" | "admin";
 
 // The program that played a run, as its replay declares it: the operator's claim.
@@ -75,6 +83,7 @@ export interface BoardView {
   board: Board;
   quest: string;
   category: Category;
+  build: Build;
   title: string;
   rows: BoardRow[];
   totals: BoardTotals;
@@ -103,11 +112,18 @@ export interface GameScore {
   kills: number;
   accepted_at: number;
 }
+// POST /api/scores: a board's rows, with the build whose board it is, so a game asking for 1.9.8's board can tell a
+// service from before builds, which answers 1.9.93's, from one that ranks 1.9.8 runs apart.
+export interface GameScores {
+  build: Build;
+  scores: GameScore[];
+}
 
 // `players` counts the accounts with a run on each quest's board, or the pairs on a co-op one.
 export interface QuestMenuView {
   board: Exclude<Board, "survival" | "survival-coop">;
   category: Category;
+  build: Build;
   stage: number;
   quests: { quest: string; title: string; players: number }[];
 }
@@ -129,8 +145,10 @@ export interface CustomQuestSummary {
   created_at: number;
 }
 
+// The custom quests, each with its best time and players on `build`'s boards.
 export interface CustomQuestsListView {
   category: Category;
+  build: Build;
   quests: CustomQuestSummary[];
 }
 
@@ -149,7 +167,8 @@ export interface CustomQuestDetailView {
 }
 
 // The game's custom quest browser (crimson-core/host/custom_quests.inc): a page of quests, newest first, each with
-// what its screen shows; `more` when a next page follows.
+// what its screen shows and its players on `build`'s boards; `more` when a next page follows. `build` names the build
+// as GameScores does.
 export interface GameCustomQuest {
   id: string;
   title: string;
@@ -161,6 +180,7 @@ export interface GameCustomQuest {
   no_weapons: number[];
 }
 export interface GameCustomQuests {
+  build: Build;
   quests: GameCustomQuest[];
   more: boolean;
 }
@@ -170,6 +190,7 @@ export interface RunView {
   board: Board;
   quest: string;
   category: Category;
+  build: Build;
   score: number;
   // A co-op run's players.
   team: SeatView[] | null;
@@ -256,6 +277,8 @@ export interface RunDetailView {
   quest: string;
   custom_slots?: [number, number, number] | null;
   category: Category;
+  // The build whose rules the run played, and whose board ranks it.
+  build: Build;
   pilot: Pilot | null;
   title: string;
   // The name the run carries for player one, and their account (see BoardRow); a co-op run has both players in `team`.
@@ -305,6 +328,8 @@ export interface FlaggedRun {
   id: string;
   board: Board;
   quest: string;
+  // The build whose rules the run played, and whose board ranks it.
+  build: Build;
   score: number;
   accepted_at: number;
   player: PlayerView;

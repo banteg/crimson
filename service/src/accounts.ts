@@ -5,8 +5,7 @@ import type { Identity, ProviderName } from "./oauth";
 
 import { randomToken } from "./crypto";
 import { tokenHash } from "./auth";
-import { groundKey } from "./ground";
-import { timelineKey } from "./runs";
+import { runObjects } from "./runs";
 import { accountRun } from "./views";
 
 const MERGE_TTL_MS = 10 * 60 * 1000;
@@ -143,7 +142,7 @@ export async function deleteAccount(env: Env, accountId: number): Promise<boolea
       "DELETE FROM accounts WHERE (id = ? OR deleted_at IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM run_players WHERE account_id = accounts.id)",
     ).bind(accountId),
   ]);
-  if (results.length) await env.REPLAYS.delete(results.flatMap((run) => [`runs/${run.id}.crd`, timelineKey(run.id), groundKey(run.id)]));
+  if (results.length) await env.REPLAYS.delete(results.flatMap((run) => runObjects(run.id)));
   return true;
 }
 

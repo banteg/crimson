@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Literal, NoReturn
 import msgspec
 import typer
 
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 from ..quests.level import QuestLevel
@@ -253,6 +254,7 @@ def _replay_list_mode_label(
     game_mode_id: GameMode,
     player_count: int,
     quest_level: QuestLevel | None,
+    cl_build: ClBuild,
 ) -> str:
     match game_mode_id:
         case GameMode.QUESTS:
@@ -263,6 +265,9 @@ def _replay_list_mode_label(
             label = _replay_mode_label(game_mode_id)
     if int(player_count) > 1:
         label = f"{label} {int(player_count)}p"
+    # Runs that played 1.9.8's rules say so; 1.9.93 is the default.
+    if cl_build != ClBuild.V1_9_93:
+        label = f"{label} {cl_build.label}"
     return label
 
 
@@ -350,6 +355,7 @@ def _build_replay_list_row(
         game_mode_id=game_mode_id,
         player_count=player_count,
         quest_level=run.quest_level,
+        cl_build=run.cl_build,
     )
     score_xp, kills = _replay_list_score_kills(
         replay=replay,
@@ -614,6 +620,8 @@ def cmd_replay_verify(
         "ranked": not unranked,
         "unranked_reasons": unranked,
         "board": ranked_board(replay.run) if not unranked else None,
+        # The build whose rules the run played; each build's runs rank on boards of their own.
+        "build": replay.run.cl_build.label,
     }
     if not _emit_json_report(payload, output_format=output_format, json_out=json_out):
         player = result.players[0]

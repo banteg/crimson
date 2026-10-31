@@ -9,6 +9,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { CL_BUILD_1_9_8, clBuild } from "./engine.mjs";
 import { bootGame } from "./game_host.mjs";
 
 const CORE = new URL("..", import.meta.url).pathname;
@@ -71,6 +72,7 @@ const rewrite = (expression, source = path.join(fixtures, fixture)) => {
     "v34 = lambda seat_keys: pack({'format_version': 34, 'game_version': wire['game_version'], 'rules': wire['rules'], " +
     "'recorder': wire['recorder'], 'pilot': None, 'seat_keys': seat_keys, " +
     "**{key: wire[key] for key in ('run', 'result', 'ticks')}}); " +
+    "v35 = lambda run: pack({**wire, 'format_version': 35, 'run': {k: v for k, v in wire['run'].items() if k != 'cl_build'} | run}); " +
     `open(sys.argv[2], 'wb').write(${expression})`;
   execFileSync("uv", ["run", "--no-sync", "python", "-c", script, source, path.join(directory, "replays", "rewritten.crd")]);
   return open("rewritten.crd");
@@ -78,7 +80,8 @@ const rewrite = (expression, source = path.join(fixtures, fixture)) => {
 // Format 34 names each seat's key, or none: either reads as the fixture does.
 const fixtureRecording = path.join(scratch, "fixture.rsi");
 execFileSync("uv", ["run", "--no-sync", "python", path.join(CORE, "checks/replay.py"), path.join(fixtures, fixture), "--out", fixtureRecording], { stdio: "pipe" });
-const seated = { "no seat keys": "v34(None)", "a seat key": "v34([bytes(range(32))])" };
+// Format 35 names the run's build: 1.9.93's reads as the fixture does too.
+const seated = { "no seat keys": "v34(None)", "a seat key": "v34([bytes(range(32))])", "1.9.93 rules": "v35({'cl_build': 10993})" };
 for (const [name, expression] of Object.entries(seated)) {
   if (!rewrite(expression)) throw Error(`a replay with ${name} reads as unplayable`);
   const recording = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
@@ -110,6 +113,12 @@ const broken = {
   "format 34 without seat keys": "pack({k: v for k, v in wire.items() if k != 'seat_keys'})",
   "seat keys before format 34": "pack({**wire, 'format_version': 33, 'seat_keys': None})",
   "future rules": "pack({**wire, 'rules': wire['rules'] + 1})",
+  "format 35 without a build": "v35({})",
+  "an unknown build": "v35({'cl_build': 10992})",
+  "a build before format 35": "pack({**wire, 'format_version': 34, 'run': {**wire['run'], 'cl_build': 10993}})",
+  "1.9.8 rules under rules 1": "pack({**wire, 'format_version': 35, 'rules': 1, 'run': {**wire['run'], 'cl_build': 10908}})",
+  "1.9.8's build past 32 bits": "v35({'cl_build': 10908 + 2**32})",
+  "1.9.8's build less 32 bits": "v35({'cl_build': 10908 - 2**32})",
   "no seat's key": "v34([])",
   "a key per two seats": "v34([bytes(32), bytes(range(32))])",
   "a short seat key": "v34([bytes(31)])",
@@ -137,6 +146,14 @@ for (const [name, expression] of Object.entries(coopBroken)) {
 }
 const three = "pack({**wire, 'run': {**wire['run'], 'player_count': 3}, 'seat_keys': None, 'ticks': [[t[0] + t[0][:1], t[1]] for t in wire['ticks']]})";
 if (rewrite(three, coopRun) || reason() !== "This run needs the Python port") throw Error(`three players: ${reason()}`);
+// A 1.9.8 run reads as checks/replay.py converts it, its build in the config.
+{
+  if (!rewrite("v35({'cl_build': 10908})")) throw Error(`1.9.8 rules: ${reason()}`);
+  const expected = path.join(scratch, "rules-1.9.8.rsi");
+  execFileSync("uv", ["run", "--no-sync", "python", path.join(CORE, "checks/replay.py"), path.join(directory, "replays", "rewritten.crd"), "--out", expected], { stdio: "pipe" });
+  const recording = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
+  if (clBuild(recording) !== CL_BUILD_1_9_8 || !recording.equals(fs.readFileSync(expected))) throw Error("1.9.8 rules: reads differently from checks/replay.py");
+}
 fs.rmSync(scratch, { recursive: true });
 console.log(
   JSON.stringify({ read, seated: Object.keys(seated).length, broken: Object.keys(broken).length, coop_broken: Object.keys(coopBroken).length }),

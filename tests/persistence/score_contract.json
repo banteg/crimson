@@ -95,6 +95,56 @@
     "valid": false
   },
   {
+    "name": "cl_build 1.9.8",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":10908,\"score_xp\":5}",
+    "valid": true
+  },
+  {
+    "name": "cl_build 1.9.93 written out",
+    "line": "{\"v\":1,\"game_mode_id\":3,\"quest_level\":{\"major\":1,\"minor\":5},\"cl_build\":10993}",
+    "valid": true
+  },
+  {
+    "name": "cl_build invalid 0",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":10992}",
+    "valid": false
+  },
+  {
+    "name": "cl_build invalid 1",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":10900}",
+    "valid": false
+  },
+  {
+    "name": "cl_build invalid 2",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":0}",
+    "valid": false
+  },
+  {
+    "name": "cl_build invalid 3",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":\"10908\"}",
+    "valid": false
+  },
+  {
+    "name": "cl_build invalid 4",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":10908.0}",
+    "valid": false
+  },
+  {
+    "name": "cl_build invalid 5",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":null}",
+    "valid": false
+  },
+  {
+    "name": "cl_build invalid 6",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":true}",
+    "valid": false
+  },
+  {
+    "name": "cl_build invalid 7",
+    "line": "{\"v\":1,\"game_mode_id\":1,\"cl_build\":\"1.9.8\"}",
+    "valid": false
+  },
+  {
     "name": "run_elapsed_ms invalid 0",
     "line": "{\"v\":1,\"game_mode_id\":3,\"run_elapsed_ms\":-2147483649}",
     "valid": false

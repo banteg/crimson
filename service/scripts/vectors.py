@@ -17,6 +17,7 @@ from pathlib import Path
 import msgspec
 from nacl.signing import SigningKey
 
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
 from crimson.math_parity import f32
@@ -34,6 +35,7 @@ from crimson.replay.types import Pilot, Replay, ReplayTick, current_recorder
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec
+from crimson.sim.world_state import WorldState
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests" / "fixtures" / "replays"
@@ -58,14 +60,21 @@ def _sha(data: bytes) -> str:
 
 def _run_id(transport: bytes) -> str:
     """The service's id for a run (runIdentity in service/src/transport.ts): a one-player stream without its player
-    count, a co-op one whole."""
+    count, a co-op one whole, neither with the config words after the weapon usage counts (rules, the legacy co-op
+    reload and the build); a rules-2 run's tagged with its rules, and a run of another build than 1.9.93 tagged with
+    its build too."""
     rules = int.from_bytes(transport[264:268], "little")
-    transport = transport[:264] + transport[272:]
+    build = int.from_bytes(transport[272:276], "little")
+    transport = transport[:264] + transport[276:]
     if rules != 1:
-        return _sha(b"crimson:run:rules\0" + rules.to_bytes(4, "little") + transport)
-    if transport[48:52] != (1).to_bytes(4, "little"):
-        return _sha(transport)
-    return _sha(transport[:48] + transport[52:])
+        identity = b"crimson:run:rules\0" + rules.to_bytes(4, "little") + transport
+    elif transport[48:52] != (1).to_bytes(4, "little"):
+        identity = transport
+    else:
+        identity = transport[:48] + transport[52:]
+    if build != ClBuild.V1_9_93:
+        identity = b"crimson:run:build\0" + build.to_bytes(4, "little") + identity
+    return _sha(identity)
 
 
 def fixture_vectors() -> list[dict]:
@@ -221,6 +230,9 @@ def corrupted_vectors() -> tuple[str, list[dict]]:
         "seat key as a string": edit(lambda w: w["seat_keys"].__setitem__(0, SEAT_KEYS[0].hex())),
         "seat keys as a map": edit(lambda w: w.__setitem__("seat_keys", {"0": SEAT_KEYS[0]})),
         "no seat keys": edit(lambda w: w.pop("seat_keys")),
+        "no build": edit(lambda w: w["run"].pop("cl_build")),
+        "unknown build": edit(lambda w: w["run"].__setitem__("cl_build", ClBuild.V1_9_93 - 1)),
+        "1.9.8 rules under rules 1": edit(lambda w: w.update(rules=1, run={**w["run"], "cl_build": ClBuild.V1_9_8})),
     }
     vectors = []
     for name, payload in corrupted.items():
@@ -248,8 +260,23 @@ def _circling(i: int, phase: float = 0.0) -> tuple[float, float, float, float, i
     return (0.0, 0.0, f32(512.0 + 150.0 * math.cos(angle)), f32(512.0 + 150.0 * math.sin(angle)), FIRING)
 
 
-def _played(run: RunSpec, tick, limit: int, seat_keys: tuple[bytes, ...] | None = None) -> Replay:
-    """The run played with `tick`'s inputs until it ends, recorded through the run-down, with the result it reaches."""
+def _hunting(ticks: list[ReplayTick], index: int, world: WorldState) -> None:
+    """After tick `index`: player one, standing, fires at the nearest living creature, at a point kept inside the
+    ranked view, and once a perk is pending opens the perk menu, then picks its first choice."""
+    player = world.players[0].pos
+    living = [creature.pos for creature in world.creatures.entries if creature.active and creature.hp > 0]
+    if index + 1 < len(ticks):
+        aim = min(living, key=lambda pos: (pos - player).length()) if living else None
+        inputs = _circling(index + 1) if aim is None else (0.0, 0.0, f32(min(max(aim.x, 0.0), 1024.0)), f32(min(max(aim.y, 160.0), 864.0)), FIRING)
+        ticks[index + 1] = msgspec.structs.replace(ticks[index + 1], inputs=[inputs])
+    if world.state.perk_selection.pending_count and not ticks[index].commands and index + 2 < len(ticks):
+        for at, command in ((index + 1, PerkMenuOpenCommand(0)), (index + 2, PerkPickCommand(0, 0))):
+            ticks[at] = msgspec.structs.replace(ticks[at], commands=[command])
+
+
+def _played(run: RunSpec, tick, limit: int, seat_keys: tuple[bytes, ...] | None = None, *, steer=None) -> Replay:
+    """The run played with `tick`'s inputs until it ends, recorded through the run-down, with the result it reaches.
+    `steer`, given the ticks, a tick's index and the world after it, may rewrite the ticks that follow (`_hunting`)."""
 
     def replay(ticks: list[ReplayTick], result: RunResult) -> Replay:
         return Replay(
@@ -264,6 +291,8 @@ def _played(run: RunSpec, tick, limit: int, seat_keys: tuple[bytes, ...] | None 
     try:
         for end in range(len(long.ticks)):
             driver.step_tick(end)
+            if steer is not None:
+                steer(long.ticks, end, driver.world)
     except ReplayRunnerError:
         pass
     ticks = long.ticks[: end + 1]
@@ -467,6 +496,34 @@ def unranked_run() -> str:
     return base64.b64encode(dump_replay(msgspec.structs.replace(replay, result=result))).decode("ascii")
 
 
+def rules_1_9_8_run() -> dict[str, object]:
+    """A ranked Survival run under the 1.9.8 rules that verifies: hunting the nearest creature until the player dies,
+    picking the first perk its level-up offers. It ranks on 1.9.8's Survival board. 1.9.8 rolls perk offers from fewer
+    perks, so the same ticks under 1.9.93's rules reach another result: only a verifier playing 1.9.8's rules takes it."""
+    run = ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE, cl_build=ClBuild.V1_9_8)
+    recorded = _played(run, lambda i: ReplayTick(inputs=[_circling(i)]), 60 * 60 * 10, steer=_hunting)
+    monitor = RankedTickMonitor(replay=recorded)
+    assert PlaybackDriver(recorded, version_mismatch_action=None).run(observer=monitor) == recorded.result
+    assert not monitor.reasons and not unranked_reasons(recorded.run) and not outcome_reasons(recorded.run, recorded.result)
+    as_1_9_93 = msgspec.structs.replace(recorded, run=msgspec.structs.replace(run, cl_build=ClBuild.V1_9_93))
+    result_1_9_93 = PlaybackDriver(as_1_9_93, version_mismatch_action=None).run()
+    assert result_1_9_93 != recorded.result
+    result = recorded.result
+    print(f"1.9.8 run: {len(recorded.ticks)} ticks, {result.players[0].experience} xp, {result.kills} kills")
+    transport = _core_transport()(recorded, None)
+    return {
+        "file": base64.b64encode(dump_replay(recorded)).decode("ascii"),
+        # The same ticks claimed under 1.9.93's rules with the result they reach there, as anyone holding the file
+        # could: its play ends elsewhere, so only its ticks tell it for this run's copy.
+        "as_1_9_93": base64.b64encode(dump_replay(msgspec.structs.replace(as_1_9_93, result=result_1_9_93))).decode("ascii"),
+        "transport_sha256": _sha(transport),
+        "run_id": _run_id(transport),
+        "board": ranked_board(recorded.run),
+        "score": result.players[0].experience,
+        "unranked_reasons": unranked_reasons(recorded.run),
+    }
+
+
 def main() -> None:
     from quests import quest_dsl_tables
 
@@ -480,6 +537,7 @@ def main() -> None:
         "legacy_coop_run": base64.b64encode((FIXTURES / "rules1-ranked-coop.crd").read_bytes()).decode(),
         "ranked_run_id": ranked_id, "ranked_run_inflated": inflated, "piloted_run": piloted, "illegal_command_run": illegal,
         "unranked_run": unranked_run(),
+        "rules_1_9_8_run": rules_1_9_8_run(),
         "coop_run": coop_runs(),
         "terrain": terrain_vectors(),
         "run_terrain": run_terrain_vectors(),

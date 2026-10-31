@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..persistence.save_status import GameStatusData
 from ..quests import QUESTS
@@ -14,7 +15,9 @@ if TYPE_CHECKING:
 
 
 _PERK_BASE_AVAILABLE_MAX_ID = int(PerkId.BONUS_MAGNET)
-_PERK_ALWAYS_AVAILABLE: tuple[PerkId, ...] = (
+# 1.9.93's `perks_rebuild_available` always marks these available; 1.9.8 predates them, so its
+# `perks_init_database` registers none of them.
+_PERKS_AFTER_1_9_8: tuple[PerkId, ...] = (
     PerkId.MAN_BOMB,
     PerkId.LIVING_FORTRESS,
     PerkId.FIRE_CAUGH,
@@ -22,7 +25,17 @@ _PERK_ALWAYS_AVAILABLE: tuple[PerkId, ...] = (
 )
 
 
-def build_perk_availability(*, status: GameStatusData) -> list[bool]:
+def perk_id_max(cl_build: ClBuild) -> int:
+    """Native `perk_id_max`: `perks_init_database` numbers the build's perks from AntiPerk at 0 to Lifeline 50-50.
+
+    1.9.8's Lifeline 50-50 is 53 where the port keeps 1.9.93's 57, so a 1.9.8 roll of 53 lands on Man Bomb;
+    neither is ever available, so both reroll.
+    """
+    last_id = int(max(PERK_BY_ID))
+    return last_id - len(_PERKS_AFTER_1_9_8) if cl_build == ClBuild.V1_9_8 else last_id
+
+
+def build_perk_availability(*, status: GameStatusData, cl_build: ClBuild = ClBuild.V1_9_93) -> list[bool]:
     available = [False] * PERK_COUNT_SIZE
     unlock_index = status.quest_unlock_index
 
@@ -30,8 +43,8 @@ def build_perk_availability(*, status: GameStatusData) -> list[bool]:
         if 0 <= perk_id < len(available):
             available[perk_id] = True
 
-    for perk_id in _PERK_ALWAYS_AVAILABLE:
-        if 0 <= perk_id < len(available):
+    if cl_build != ClBuild.V1_9_8:
+        for perk_id in _PERKS_AFTER_1_9_8:
             available[perk_id] = True
 
     if unlock_index > 0:
@@ -46,7 +59,7 @@ def build_perk_availability(*, status: GameStatusData) -> list[bool]:
 
 
 def prepare_perk_availability(state: GameplayState) -> None:
-    state.perk_available[:] = build_perk_availability(status=state.status)
+    state.perk_available[:] = build_perk_availability(status=state.status, cl_build=state.cl_build)
 
 
 def perk_can_offer(

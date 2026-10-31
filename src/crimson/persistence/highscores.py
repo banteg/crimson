@@ -17,6 +17,7 @@ from crimson.msgspec_types import I32, U32, PlayerCount
 from crimson.quests.level import QuestLevel
 from grim.config import CrimsonConfig, HighScoreDateMode
 
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..weapons import WeaponId
 
@@ -54,7 +55,8 @@ def _today() -> dt.date:
 class ScoreTable(msgspec.Struct, frozen=True):
     """A high score list: `highscore_build_path`'s file in the original, a key on each record here.
 
-    Only quests keep hardcore runs apart; the original filters them by the record's hardcore marker.
+    Only quests keep hardcore runs apart; the original filters them by the record's hardcore marker. Each build's
+    runs keep tables of their own, as 1.9.8's `scores4` directory kept its scores apart from 1.9.93's `scores5`.
     """
 
     game_mode_id: GameMode
@@ -62,12 +64,19 @@ class ScoreTable(msgspec.Struct, frozen=True):
     hardcore: bool = False
     player_count: PlayerCount = 1
     score_list: str = ""
+    cl_build: ClBuild = ClBuild.V1_9_93
 
     @classmethod
     def for_config(
-        cls, config: CrimsonConfig, *, game_mode_id: GameMode | None = None, quest_level: QuestLevel | None = None,
+        cls,
+        config: CrimsonConfig,
+        *,
+        cl_build: ClBuild,
+        game_mode_id: GameMode | None = None,
+        quest_level: QuestLevel | None = None,
     ) -> ScoreTable:
-        """The table a run of the configured (or given) mode saves into: the configured team and selected list."""
+        """The table a run of the configured (or given) mode and `cl_build` saves into: the configured team and selected
+        list."""
         mode = GameMode(config.gameplay.mode) if game_mode_id is None else game_mode_id
         quests = mode == GameMode.QUESTS
         return cls(
@@ -76,12 +85,18 @@ class ScoreTable(msgspec.Struct, frozen=True):
             hardcore=config.gameplay.hardcore and quests,
             player_count=config.gameplay.player_count,
             score_list=config.profile.named_score_list,
+            cl_build=cl_build,
         )
 
     def stamp(self, record: HighScoreRecord) -> HighScoreRecord:
-        """The record as this table saves it: its mode, team and list, and a quest table's level and difficulty."""
+        """The record as this table saves it: its mode, team, list and build, and a quest table's level and
+        difficulty."""
         record = msgspec.structs.replace(
-            record, game_mode_id=self.game_mode_id, player_count=self.player_count, score_list=self.score_list,
+            record,
+            game_mode_id=self.game_mode_id,
+            player_count=self.player_count,
+            score_list=self.score_list,
+            cl_build=self.cl_build,
         )
         if self.game_mode_id == GameMode.QUESTS:
             record = msgspec.structs.replace(record, quest_level=self.quest_level, hardcore=self.hardcore)
@@ -95,6 +110,7 @@ class ScoreTable(msgspec.Struct, frozen=True):
             record.game_mode_id == self.game_mode_id
             and record.player_count == self.player_count
             and record.score_list == self.score_list
+            and record.cl_build == self.cl_build
             and (not quests or (record.quest_level == self.quest_level and record.hardcore == self.hardcore))
         )
 
@@ -114,6 +130,8 @@ class HighScoreRecord(msgspec.Struct, kw_only=True, omit_defaults=True, forbid_u
     hardcore: bool = False
     player_count: PlayerCount = 1
     score_list: ScoreName = ""
+    # The build whose rules the run played; left out for 1.9.93, so older readers still take those lines.
+    cl_build: ClBuild = ClBuild.V1_9_93
     run_elapsed_ms: I32 = 0
     score_xp: U32 = 0
     most_used_weapon_id: WeaponId = WeaponId.NONE

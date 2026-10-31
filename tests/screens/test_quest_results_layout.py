@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+import msgspec
 import pytest
 
 import crimson.screens.quest_views.quest_results as quest_results_module
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestRunOutcome
-from crimson.persistence.highscores import HighScoreRecord, read_highscore_records, scores_path
+from crimson.persistence.highscores import (
+    TABLE_MAX,
+    HighScoreRecord,
+    ScoreTable,
+    append_highscore_records,
+    read_highscore_records,
+    read_highscore_table,
+    scores_path,
+)
 from crimson.quests.level import QuestLevel
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.actions import Route, StartRun
@@ -47,6 +57,7 @@ def _open_view(
     *,
     phase: int,
     faded_in: bool = True,
+    cl_build: ClBuild = ClBuild.V1_9_93,
 ) -> tuple[QuestResultsView, HeadlessAudio]:
     """Open the results for a first-place quest time, then jump to `phase` with the panel slid in."""
     audio = HeadlessAudio(mocker)
@@ -57,13 +68,15 @@ def _open_view(
     )
     state.config.display.shadows_enabled = False
     mocker.patch.object(canvas, "mouse_position", return_value=rl.Vector2(0.0, 0.0))
+    record = _record()
+    record.cl_build = cl_build
     outcome = QuestRunOutcome(
         kind="completed",
         level=QuestLevel(1, 1),
         base_time_ms=17_610,
         player_health_values=(0.0,),
         pending_perk_count=0,
-        record=_record(),
+        record=record,
     )
     view = QuestResultsView(state, outcome)
     view.open()
@@ -208,3 +221,21 @@ def test_score_write_failure_stays_on_name_entry_and_can_retry(make_game_state, 
     assert view.name_entry.save_error is None
     assert [record.name for record in read_highscore_records(view.state.base_dir)] == ["banteg"]
     assert audio.played() == [SfxId.UI_TYPEENTER, SfxId.UI_TYPEENTER]
+
+
+def test_a_1_9_8_quest_clear_ranks_and_saves_in_the_1_9_8_table(make_game_state, headless_resources, mocker, tmp_path) -> None:
+    # A full 1.9.93 table of faster clears leaves the 1.9.8 run's own table empty, so its time qualifies.
+    faster = HighScoreRecord(game_mode_id=GameMode.QUESTS, quest_level=QuestLevel(1, 1), run_elapsed_ms=1000)
+    append_highscore_records(tmp_path, [faster] * TABLE_MAX)
+    view, _audio = _open_view(make_game_state, headless_resources, mocker, phase=1, cl_build=ClBuild.V1_9_8)
+    assert view.rank == 0
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ENTER)
+
+    view.state.focus.begin_frame(0)
+    view.update(0.05)
+
+    assert view.name_entry.saved
+    table = ScoreTable(GameMode.QUESTS, quest_level=QuestLevel(1, 1))
+    assert [record.name for record in read_highscore_table(tmp_path, table)] == [""] * TABLE_MAX
+    saved = read_highscore_table(tmp_path, msgspec.structs.replace(table, cl_build=ClBuild.V1_9_8))
+    assert [record.name for record in saved] == ["banteg"]

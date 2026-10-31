@@ -1,0 +1,40 @@
+1.9.8 rule: bonus_pick_random_type rerolls Fire Bullets while any player, dead or alive, holds a weapon whose shot
+sound is the flamer, rocket or rocket-minigun one. The original compares loaded sound ids, which tell the sounds apart
+only with every sound loaded: the verifier loads none, and the original without sound or assets gives every sound one
+id. The run compares the sounds' audio_asset_id_table slots instead (host/rules.h), as a run with its sounds loaded
+tells them apart.
+--- a/decomp/1.9/crimsonland/gameplay/bonus_pick_random_type.cpp
++++ b/decomp/1.9/crimsonland/gameplay/bonus_pick_random_type.cpp
+@@ -3,7 +3,6 @@
+-#if CL_BUILD == 10908
++// The shot sounds 1.9.8's Fire Bullets reroll looks for.
+ extern "C" {
+ extern int sfx_flamer_fire_01;
+ extern int sfx_rocket_fire;
+ extern int sfx_rocketmini_fire;
+ }
+-#endif
+@@ -92,18 +91,17 @@
+-#if CL_BUILD == 10908
+         // 1.9.8 rerolls Fire Bullets while any player holds a flame or rocket weapon.
+-        {
++        if (portable_rules_1_9_8) {
+             bool fire_weapon_held = false;
+             if (bonus_id == BONUS_ID_FIRE_BULLETS) {
+                 for (int i = 0; i < config_blob.player_count; i++) {
+-                    int shot_sfx = weapon_table[player_state_table[i].weapon_id].shot_sfx_base_id;
+-                    if (shot_sfx == sfx_flamer_fire_01 || shot_sfx == sfx_rocket_fire
+-                        || shot_sfx == sfx_rocketmini_fire) {
++                    int shot_sfx = portable_weapon_shot_slot[player_state_table[i].weapon_id];
++                    if (shot_sfx == portable_sound_slot(&sfx_flamer_fire_01)
++                        || shot_sfx == portable_sound_slot(&sfx_rocket_fire)
++                        || shot_sfx == portable_sound_slot(&sfx_rocketmini_fire)) {
+                         fire_weapon_held = true;
+                     }
+                 }
+             }
+             if (fire_weapon_held) {
+                 continue;
+             }
+         }
+-#endif

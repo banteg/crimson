@@ -1,7 +1,7 @@
 // A run's page: its stats, experience against the board's top run and the player's best, kill rate or damage, weapons,
 // perks and timed bonuses, and where it was played, all from the timeline verification recorded (src/timeline.ts).
 import { type Accessor, createMemo, createResource, createSignal, For, type JSX, Show } from "solid-js";
-import { BOARDS, type Category, PLAYER_EFFECTS, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
+import { BOARDS, type Category, DEFAULT_BUILD, PLAYER_EFFECTS, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
 import { boardPath } from "../../src/paths";
 import { lifeBonusMs } from "../../src/quest-time";
 import { get, moderate } from "./api";
@@ -738,6 +738,9 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
           <Show when={detail.category === "bot"}>
             <span class="tag">bot</span>
           </Show>
+          <Show when={detail.build !== DEFAULT_BUILD}>
+            <span class="tag">{detail.build} rules</span>
+          </Show>
         </h2>
         <p class="run-player">
           <Show
@@ -776,7 +779,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
             <GameButton label="Watch" href={`/play/?watch=${detail.id}`} native />
           </Show>
           <GameButton label="Download replay" href={`/runs/${detail.id}.crd`} native />
-          <GameButton label="High scores" href={boardPath(detail.board, detail.quest)} />
+          <GameButton label="High scores" href={boardPath(detail.board, detail.quest, detail.build)} />
         </p>
       </div>
       <Show when={run}>{(run) => <Stats run={run()} detail={detail} />}</Show>

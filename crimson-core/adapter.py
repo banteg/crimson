@@ -8,17 +8,27 @@ Each source is read as `decomp/` has it and changed in two steps:
 2. Passes make the edits a rule decides: the x87 boundaries below, each expecting its number of sites, then the
    dialect a modern compiler needs everywhere.
 
-Diffs come first, so they read against the source of truth and the code they add takes the same rules.
+Diffs come first, so they read against the source of truth and the code they add takes the same rules. The sources
+compile as 1.9.93 (CL_BUILD); a run plays 1.9.93's or 1.9.8's rules, which editions/ turns from guards into branches
+on the run's build. Every other guard that tells the two apart stays the preprocessor's, as editions/guards.json
+classifies them (check_guards).
 """
 
+import argparse
+import hashlib
+import json
 import re
+import textwrap
+from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 # abi/: compiler repairs at one place; seams/: where the recording replaces a live read, and a custom quest the quest table;
 # optimizations/: behavior-preserving performance changes; patches/: the ranked rules,
-# where `patches/NN-*.patch` fixes original bug NN of docs/rewrite/original-bugs.md behind `portable_preserve_bugs`.
-DIFFS = (HERE / "abi", HERE / "seams", HERE / "optimizations", HERE / "patches")
+# where `patches/NN-*.patch` fixes original bug NN of docs/rewrite/original-bugs.md behind `portable_preserve_bugs`;
+# editions/: the 1.9.8 rules, each guard of one a branch on `portable_cl_build`, read after the rules' fixes (1.9.8's
+# own bugs are patches too) and before the game module's changes.
+DIFFS = (HERE / "abi", HERE / "seams", HERE / "optimizations", HERE / "patches", HERE / "editions")
 _HUNK = re.compile(r"@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@")
 # Signatures the recovered files disagree on, as their definitions have them; every declaration takes its definition's.
 PROTOTYPES = {
@@ -92,6 +102,163 @@ def stale_hunks(root, hunks):
 def check_diffs(root, hunks):
     if stale := stale_hunks(root, hunks):
         raise _audit(stale)
+
+
+# The builds a run plays (host/rules.h), and the guards that tell them apart: a `#if` chain whose branch differs for
+# them. Those editions/ leaves to the preprocessor, which compiles 1.9.93's branch for both. editions/guards.json lists
+# each one by file and the hash of its text, with the class that says why 1.9.93's branch plays a 1.9.8 run, so a new
+# or changed guard stops the build until a rule's becomes a branch or the ledger classifies it.
+RUN_BUILDS = (10908, 10993)
+GUARDS = HERE / "editions" / "guards.json"
+_DIRECTIVE = re.compile(r"^[ \t]*#[ \t]*(if|ifdef|ifndef|elif|else|endif)\b(.*)$", re.MULTILINE)
+_ON_BUILD = re.compile(r"\bCL_BUILD\b")
+RECORD_GUARDS = "uv run python crimson-core/adapter.py --record-guards"
+
+
+def _holds(condition, build):
+    """Whether a `#if`/`#elif` condition on CL_BUILD holds for `build`, in C++ (where __cplusplus is defined)."""
+
+    expression = re.sub(r"\bdefined\s*\(?\s*__cplusplus\s*\)?", "1", condition.split("//")[0])
+    expression = _ON_BUILD.sub(str(build), expression).replace("&&", " and ").replace("||", " or ")
+    return bool(eval(re.sub(r"!(?!=)", " not ", expression), {}))
+
+
+def build_guards(txt):
+    """The `#if` chains in `txt` that take a different branch for each of RUN_BUILDS: each one's offset and text,
+    from its `#if` through its `#endif`, in source order."""
+
+    found, chains = [], []  # each open chain's start, its branch so far and the branch each build takes, None before
+    for directive in _DIRECTIVE.finditer(txt):
+        kind, condition = directive.groups()
+        if kind == "endif":
+            start, _, taken = chains.pop()
+            if len(set(taken.values())) > 1:
+                found.append((start, txt[start : directive.end()]))
+            continue
+        if kind in ("if", "ifdef", "ifndef"):
+            chains.append([directive.start(), 0, dict.fromkeys(RUN_BUILDS)])
+        else:
+            chains[-1][1] += 1
+        _, branch, taken = chains[-1]
+        # A condition without CL_BUILD is the same for both builds, so either both take its branch or neither does.
+        on_build = kind in ("if", "elif") and _ON_BUILD.search(condition)
+        for build in RUN_BUILDS:
+            if taken[build] is None and (kind == "else" or on_build and _holds(condition, build)):
+                taken[build] = branch
+    return sorted(found)
+
+
+def guarded_files(root, sources):
+    """The `sources` and the headers every target compiles them with."""
+
+    headers = (root / "tools/match/include", root / "third_party/headers")
+    return [*sources, *(str(h.relative_to(root)) for d in headers for h in sorted(d.glob("*.h")))]
+
+
+def guards(root, hunks, sources):
+    """{file: {key: (line, text)}} for every guard telling RUN_BUILDS apart in `sources` and their headers after the
+    diffs. A key is the hash of the guard's text with whitespace runs collapsed, `hash#N` for the Nth copy of one text
+    in a file; the line is the recovered file's, or the diffed text's where a diff changed the guard."""
+
+    found = {}
+    for rel in guarded_files(root, sources):
+        raw = (root / rel).read_text()
+        txt = apply_diffs(rel, raw, hunks)
+        copies, after = Counter(), {}  # each text's copies so far, and where the recovered file's last one ends
+        for start, text in build_guards(txt):
+            digest = hashlib.sha256(" ".join(text.split()).encode()).hexdigest()[:12]
+            copies[digest] += 1
+            if (at := raw.find(text, after.get(digest, 0))) >= 0:
+                after[digest] = at + len(text)
+                line = str(raw.count("\n", 0, at) + 1)
+            else:
+                line = f"{txt.count('\n', 0, start) + 1} after the diffs"
+            found.setdefault(rel, {})[digest if copies[digest] == 1 else f"{digest}#{copies[digest]}"] = (line, text)
+    return found
+
+
+def _unclassified(guards):
+    return "".join(
+        f"{rel}:{line} (hash {key.split('#')[0]}):\n{textwrap.indent(text, '    ')}\n"
+        for rel, key, line, text in guards
+    )
+
+
+def check_guards(root, hunks, sources):
+    """Every guard telling RUN_BUILDS apart in `sources` and their headers after the diffs is one editions/guards.json
+    lists, with one of its classes."""
+
+    ledger = json.loads(GUARDS.read_text())
+    unlisted = [
+        (rel, key, line, text)
+        for rel, found in guards(root, hunks, sources).items()
+        for key, (line, text) in found.items()
+        if ledger["guards"].get(rel, {}).get(key) not in ledger["classes"]
+    ]
+    if unlisted:
+        raise SystemExit(
+            "Guards telling 1.9.8 from 1.9.93 changed. Turn a 1.9.8 rule's into a branch in editions/; for each other "
+            f"one, pick the class in {GUARDS.parent.name}/{GUARDS.name} ({', '.join(ledger['classes'])}) that says "
+            f"why 1.9.93's branch plays a 1.9.8 run, and record it with\n  {RECORD_GUARDS} HASH=CLASS ...\n"
+            + _unclassified(unlisted),
+        )
+
+
+def stale_guards(root, targets):
+    """The ledger's entries that no target, a (hunks, sources) pair, finds: (file, key, class) each."""
+
+    found = {
+        (rel, key) for hunks, sources in targets for rel, keys in guards(root, hunks, sources).items() for key in keys
+    }
+    listed = json.loads(GUARDS.read_text())["guards"]
+    return [(rel, key, cls) for rel, keys in listed.items() for key, cls in keys.items() if (rel, key) not in found]
+
+
+def record_guards(root, targets, assigned):
+    """Rewrite the ledger with the guards of `targets`, (hunks, sources) pairs: a guard it lists by file and key keeps
+    that class, and another, a new copy of a listed text among them, takes the one `assigned` gives its hash. Nothing
+    is written while a guard has no class, or one the ledger doesn't define; returns the entries it dropped."""
+
+    ledger = json.loads(GUARDS.read_text())
+    if unknown := sorted(set(assigned.values()) - set(ledger["classes"])):
+        raise SystemExit(f"Unknown guard classes {', '.join(unknown)}; the ledger's are {', '.join(ledger['classes'])}")
+    known = {
+        (rel, key): cls
+        for rel, keys in ledger["guards"].items()
+        for key, cls in keys.items()
+        if cls in ledger["classes"]
+    }
+    found, missing = {}, {}
+    for hunks, sources in targets:
+        for rel, keys in guards(root, hunks, sources).items():
+            for key, (line, text) in keys.items():
+                if cls := known.get((rel, key)) or assigned.get(key.split("#")[0]):
+                    found.setdefault(rel, {})[key] = cls
+                else:
+                    missing[rel, key] = (rel, key, line, text)
+    if missing:
+        raise SystemExit(
+            f"Guards without a class; record each one's with {RECORD_GUARDS} HASH=CLASS ...\n"
+            + _unclassified(missing.values()),
+        )
+    dropped = [
+        (rel, key, cls)
+        for rel, keys in ledger["guards"].items()
+        for key, cls in keys.items()
+        if key not in found.get(rel, {})
+    ]
+    ledger["guards"] = {rel: dict(sorted(found[rel].items())) for rel in sorted(found)}
+    GUARDS.write_text(json.dumps(ledger, indent=2) + "\n")
+    return dropped
+
+
+def guard_targets(root):
+    """Each target's (hunks, sources): the verifier's, and the game module's, which compiles every verifier source."""
+
+    from game import GAME_DIFFS, game_sources
+
+    core = json.loads((root / "crimson-core/sources.json").read_text())
+    return [(load_diffs(DIFFS), core), (load_diffs(GAME_DIFFS), core + game_sources(root))]
 
 
 def replace(src, txt, old, new, count=1):
@@ -214,8 +381,7 @@ def x87(src, txt):
         # 0x0042704b, Jinxed 0x004070a6); converting to float first rounds it too, which past 2^24 drifts.
         adds, muls = {
             "creature_handle_death": (2, 0),
-            # Plus the 1.9.8-only Radioactive branch, which never compiles here.
-            "creature_update_all": (3, 0),
+            "creature_update_all": (2, 0),
             "perks_update_effects": (1, 0),
         }.get(
             src.stem,
@@ -307,3 +473,24 @@ def dialect(src, txt):
 
 def adapt(src, txt):
     return dialect(src, x87(src, txt))
+
+
+def main():
+    p = argparse.ArgumentParser(description="Rewrite editions/guards.json from the guards both targets compile.")
+    p.add_argument("--root", type=Path, default=HERE.parent)
+    p.add_argument(
+        "--record-guards",
+        nargs="*",
+        metavar="HASH=CLASS",
+        required=True,
+        help="Classify each new or changed guard by the hash a failed check printed",
+    )
+    a = p.parse_args()
+    assigned = dict(pair.split("=", 1) for pair in a.record_guards)
+    for rel, key, cls in record_guards(a.root, guard_targets(a.root), assigned):
+        print(f"Dropped {rel} {key} ({cls}): no target compiles it")
+    print(f"Wrote {GUARDS}")
+
+
+if __name__ == "__main__":
+    main()

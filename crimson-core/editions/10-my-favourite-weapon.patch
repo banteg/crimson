@@ -1,0 +1,29 @@
+1.9.8's My Favourite Weapon adds its +2 clip only when taken and lets the Pistol holder's forced Weapon drops
+through, which original bugs 59 and 60 fix (patches/59-favourite-weapon-clip.patch and
+patches/60-favourite-weapon-pistol-drop.patch): the run does so only with preserve_bugs.
+--- a/decomp/1.9/crimsonland/weapons/weapon_assign_player.cpp
++++ b/decomp/1.9/crimsonland/weapons/weapon_assign_player.cpp
+@@ -21,10 +21,4 @@
+-#if CL_BUILD != 10908
+-    // 1.9.8 does not add My Favourite Weapon's clip bonus here.
+-    if (perk_count_get(perk_id_my_favourite_weapon) != 0) {
++    // 1.9.8 adds My Favourite Weapon's clip bonus only when the perk is taken, with preserve_bugs (original bug 59).
++    if (!portable_bugs_1_9_8 && perk_count_get(perk_id_my_favourite_weapon) != 0) {
+         player_state_table[player_index].clip_size += 2.0f;
+     }
+-#else
+-    if (!portable_preserve_bugs && perk_count_get(perk_id_my_favourite_weapon) != 0) {
+-        player_state_table[player_index].clip_size += 2.0f;
+-    }
+-#endif
+--- a/decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp
+@@ -52,6 +52,2 @@
+-#if CL_BUILD != 10908
+-            // 1.9.8 has no My Favourite Weapon rejection.
+-            || perk_count_get(perk_id_my_favourite_weapon) != 0
+-#else
+-            || (!portable_preserve_bugs && perk_count_get(perk_id_my_favourite_weapon) != 0)
+-#endif
++            // 1.9.8 has no My Favourite Weapon rejection, with preserve_bugs (original bug 60).
++            || (!portable_bugs_1_9_8 && perk_count_get(perk_id_my_favourite_weapon) != 0)

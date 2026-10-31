@@ -12,6 +12,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
+from ...cl_build import ClBuild
 from ...game_modes import GameMode
 from ...leaderboard import SyncStatus
 from ...quests import quest_by_level
@@ -61,6 +62,10 @@ def draw_main_panel(
             title = "High scores - Quests"
         case _:
             title = f"High scores - {mode_label(mode_id, quest_major, quest_minor)}"
+    cl_build = view.state.cl_build
+    if cl_build != ClBuild.V1_9_93:
+        # The port's 1.9.8 runs keep tables of their own, which the title names.
+        title = f"{title} ({cl_build.label})"
     # `highscore_screen_update` centres the title 128px into the column at (202, 41) off the panel, on the int
     # text width halved with C integer division, and underlines it at 0.7.
     title_w = int(measure_small_text_width(font, title))

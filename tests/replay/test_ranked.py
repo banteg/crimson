@@ -4,6 +4,7 @@ import msgspec
 import pytest
 
 from crimson.aim_schemes import AimScheme
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES
 from crimson.movement_controls import MovementControlType
@@ -54,6 +55,18 @@ def test_a_co_op_pair_ranks_on_the_co_op_boards() -> None:
     assert [ranked_board(run) for run in (_COOP, quest, hardcore)] == ["survival-coop", "quests-coop", "quests-hardcore-coop"]
     # A custom quest's board and its publishing clear are one player's.
     assert unranked_reasons(coop(GameMode.QUESTS, custom_quest=_CUSTOM)) == ["custom_quest_players"]
+
+
+def test_either_build_ranks_under_the_same_profile() -> None:
+    quest = ranked_run_spec(GameMode.QUESTS, seed=1, quest_level=QuestLevel(2, 3), hardcore=True, cl_build=ClBuild.V1_9_8)
+    survival = ranked_run_spec(GameMode.SURVIVAL, seed=1, cl_build=ClBuild.V1_9_8)
+
+    assert (survival.cl_build, quest.cl_build, _SURVIVAL.cl_build) == (ClBuild.V1_9_8, ClBuild.V1_9_8, ClBuild.V1_9_93)
+    # The build picks the boards' build, not the board, and every other rule holds as for 1.9.93.
+    assert unranked_reasons(survival) == unranked_reasons(quest) == []
+    assert [ranked_board(survival), ranked_board(quest)] == ["survival", "quests-hardcore"]
+    assert unranked_reasons(msgspec.structs.replace(survival, detail_preset=3, preserve_bugs=True)) == ["original_rules", "detail_preset"]
+
 
 def test_a_quest_plays_on_the_save_that_unlocked_it() -> None:
     normal = ranked_run_spec(GameMode.QUESTS, seed=1, quest_level=QuestLevel(2, 3))

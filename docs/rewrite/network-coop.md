@@ -1207,6 +1207,13 @@ any other.
   Play Again waiting for the partner's name, the Guest's choice, the run
   `START_RUN` offered, or a fade to the last session's run.
 
+- **The Host's build**: the session's runs play the build the Host's 1.9.8
+  box picks ([1.9.8 rules](rules-1.9.8.md)), which `START_RUN`'s config
+  carries to the Guest. The Guest's 1.9.8 box stands down while co-op is open,
+  as its Ranked box does, and its screens show the run's build. An end
+  screen's Play Again or Play Next, whichever player asks, keeps the last
+  run's build (`coop_latch_next`).
+
 ---
 
 ## 6. Research question 5: Invitation links, lobby, signalling & transport

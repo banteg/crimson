@@ -3,11 +3,12 @@
 import { concat, COOP_RUN_DOMAIN, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
-import { FIXED_WEAPON_BONUSES, FIXED_WEAPON_PERKS, type Signals, type Timeline } from "./api-types";
-import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError, SEED_BITS } from "./replay";
+import { buildOf, FIXED_WEAPON_BONUSES, FIXED_WEAPON_PERKS, type Signals, type Timeline } from "./api-types";
+import { type CustomQuest, decodeReplay, inflateReplay, type Replay, ReplayError, SEED_BITS, VERIFIED_RULES } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
-import { encodePortableQuest, encodeTransport, runIdentity, TransportError } from "./transport";
+import { withBuild } from "./paths";
+import { encodePortableQuest, encodeTransport, runIdentity, TransportError, twinIds } from "./transport";
 import questDsl from "./quest-dsl.json";
 import { runGround, SIZE } from "../web/src/terrain/rules";
 import { type Verdict, verifyRun } from "./verify";
@@ -295,8 +296,8 @@ export async function postRun(request: Request, env: Env, options: { requireCust
     return refuse(422, "expected a custom quest replay");
   if (upload.source !== null && (!options.requireCustomQuest || !replay.run.custom_quest || !validateRecipeSource(upload.source, replay.run.custom_quest)))
     return refuse(422, "recipe source does not match the replay's custom quest");
-  if (replay.rules !== 1 && replay.rules !== REPLAY_RULES)
-    return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules 1 and ${REPLAY_RULES}`);
+  if (!VERIFIED_RULES.includes(replay.rules))
+    return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${VERIFIED_RULES.join(" and ")}`);
   const signersRefusal = signersReason(upload.signers, replay.run.player_count, replay.seat_keys);
   if (signersRefusal) return refuse(422, signersRefusal);
   for (const [i, signer] of upload.signers.entries()) {
@@ -351,10 +352,18 @@ export async function postRun(request: Request, env: Env, options: { requireCust
       )
         .bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source, upload.seed ?? 0, JSON.stringify(custom), now)
         .run();
-      return json({ id: runId, board: "quests", quest, digest, url: `/custom/${quest}` }, 200);
+      return json({ id: runId, board: "quests", quest, digest, url: withBuild(`/custom/${quest}`, buildOf(replay.run.cl_build)) }, 200);
     }
     return refuse(409, "this run was already accepted");
   }
+  // A play ranks on one board only (twinIds). This read spares the verifier a taken play; the run's insert below
+  // holds the rule against a twin accepted while this one verified.
+  const twins = await twinIds(transport, replay);
+  const twinMarks = twins.map(() => "?").join(", ");
+  const twinOf = () => env.DB.prepare(`SELECT cl_build FROM runs WHERE id IN (${twinMarks})`).bind(...twins).first<{ cl_build: number }>();
+  const takenUnder = (twin: { cl_build: number }) => refuse(409, `this run was already accepted under the ${buildOf(twin.cl_build)} rules`);
+  const twin = await twinOf();
+  if (twin) return takenUnder(twin);
 
   const { verdict, ground } = await verifyWithGround(env, new URL(request.url).origin, replay, transport);
   if (!verdict.ok) return refuse(422, verdict.reason);
@@ -373,54 +382,66 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   await env.REPLAYS.put(`runs/${runId}.crd`, file, { httpMetadata: { contentType: "application/octet-stream" } });
   await putTimeline(env, runId, verdict.timeline);
   await putGround(env, runId, ground!);
+  // The run lands only while no twin of it is in, and the rest of its rows only with it.
+  const landed = "EXISTS (SELECT 1 FROM runs WHERE id = ?)";
   const statements = [
     env.DB.prepare(
       `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
-         client_version, platform, pilot, ticks, result, signals, accepted_at, rules)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         client_version, platform, pilot, ticks, result, signals, accepted_at, rules, cl_build)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM runs WHERE id IN (${twinMarks}))`,
     ).bind(
       runId, hex(payloadSha), accountId, owner.public_key, owner.name, board, quest, score, replay.game_version,
       replay.recorder.client, replay.recorder.version, replay.recorder.platform, replay.pilot ? JSON.stringify(replay.pilot) : "",
-      replay.ticks.length, JSON.stringify(replay.result), JSON.stringify(verdict.signals), now, replay.rules,
+      replay.ticks.length, JSON.stringify(replay.result), JSON.stringify(verdict.signals), now, replay.rules, replay.run.cl_build, ...twins,
     ),
     // A co-op run's seats; a one-player run has only its own columns.
     ...(seated.length > 1
       ? seated.map((signer, seat) =>
-          env.DB.prepare("INSERT INTO run_players (run_id, seat, account_id, public_key, name) VALUES (?, ?, ?, ?, ?)")
-            .bind(runId, seat, accounts[seat], signer.public_key, signer.name),
+          env.DB.prepare(`INSERT INTO run_players (run_id, seat, account_id, public_key, name) SELECT ?, ?, ?, ?, ? WHERE ${landed}`)
+            .bind(runId, seat, accounts[seat], signer.public_key, signer.name, runId),
         )
       : []),
     ...seated.flatMap((signer, seat) => [
-      env.DB.prepare("UPDATE accounts SET name = ? WHERE id = ?").bind(signer.name, accounts[seat]),
+      env.DB.prepare(`UPDATE accounts SET name = ? WHERE id = ? AND ${landed}`).bind(signer.name, accounts[seat], runId),
       env.DB.prepare(
-        `INSERT INTO names (account_id, name, first_at, last_at) VALUES (?, ?, ?, ?)
+        `INSERT INTO names (account_id, name, first_at, last_at) SELECT ?, ?, ?, ? WHERE ${landed}
          ON CONFLICT (account_id, name) DO UPDATE SET last_at = excluded.last_at`,
-      ).bind(accounts[seat], signer.name, now, now),
+      ).bind(accounts[seat], signer.name, now, now, runId),
     ]),
   ];
   if (custom && digest) {
     statements.push(
       env.DB.prepare(
         `INSERT INTO custom_quests (id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${landed}
          ON CONFLICT (id) DO UPDATE SET
            source = CASE WHEN custom_quests.account_id = excluded.account_id AND custom_quests.source IS NULL THEN excluded.source ELSE custom_quests.source END,
            seed = CASE WHEN custom_quests.account_id = excluded.account_id AND custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END
          WHERE custom_quests.digest = excluded.digest`,
-      ).bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source ?? null, upload.seed ?? 0, JSON.stringify(custom), now),
+      ).bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source ?? null, upload.seed ?? 0, JSON.stringify(custom), now, runId),
     );
   }
+  let results: D1Result[];
   try {
-    await env.DB.batch(statements);
+    results = await env.DB.batch(statements);
   } catch (error) {
     // Another upload of the run got there while this one verified: a co-op pair's pages each upload it at its end.
     if (await env.DB.prepare("SELECT 1 FROM runs WHERE id = ?").bind(runId).first()) return refuse(409, "this run was already accepted");
     throw error;
   }
-  return json(custom ? { id: runId, board, quest, score, digest, url: `/custom/${quest}` } : { id: runId, board, quest, score }, 201);
+  // A twin got there while this one verified: nothing of the run landed, and its files go.
+  if (!results[0]!.meta.changes) {
+    await env.REPLAYS.delete(runObjects(runId));
+    return takenUnder((await twinOf())!);
+  }
+  // A 1.9.8 run ranks on 1.9.8's boards, which its quest's page shows with ?build=1.9.8.
+  const build = buildOf(replay.run.cl_build);
+  return json(custom ? { id: runId, board, quest, score, build, digest, url: withBuild(`/custom/${quest}`, build) } : { id: runId, board, quest, score, build }, 201);
 }
 
 export const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
+// A run's stored files: its replay, timeline and ground.
+export const runObjects = (runId: string) => [`runs/${runId}.crd`, timelineKey(runId), groundKey(runId)];
 
 const questOf = (replay: Replay) => (replay.run.quest_level ? `${replay.run.quest_level.major}.${replay.run.quest_level.minor}` : "");
 

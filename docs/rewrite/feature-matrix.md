@@ -6,7 +6,8 @@ tags:
 
 # Feature matrix
 
-Where each way to play stands. Three clients play Crimsonland 1.9.93:
+Where each way to play stands. Three clients play Crimsonland 1.9.93 or, per
+run, the [1.9.8 rules](rules-1.9.8.md):
 
 - **Python port**: the reimplementation in Python and raylib (`uvx crimsonland@latest`).
 - **Web**: the original game, compiled from the recovered source, in the
@@ -37,6 +38,7 @@ what a modern release needs. All three fix the
 | Local co-op | 2–4 players | 2 players, as the original | 2 players, as the original |
 | Online co-op | No | 2 players from an invite link, with rollback | No |
 | Original bugs | Fixed by default, kept with `--preserve-bugs` | Fixed | Fixed |
+| [1.9.8 rules](rules-1.9.8.md) | The Play Game menu's 1.9.8 box, per run; `--build 1.9.8` on `crimson` and `crimson quest play`; 1.9.8's own bugs with `--preserve-bugs` | The Play Game menu's 1.9.8 box, per run, the Host's for an online co-op pair; links to custom quests from the site's 1.9.8 boards | The Play Game menu's 1.9.8 box, per run |
 | RTX lighting | Yes; HDR on macOS and Linux Wayland | With WebGPU; HDR where the browser shows WebGPU in HDR | Yes; HDR on macOS |
 | Resolution | Any, with borderless fullscreen | 1024x768, scaled to the page; fullscreen button | 1024x768, scaled to the window; Alt+Enter fullscreen |
 | Keyboard and mouse | Yes | Yes | Yes |
@@ -60,7 +62,7 @@ what a modern release needs. All three fix the
 
 | | Python port | Web | Native |
 | --- | --- | --- | --- |
-| Ranked play | Survival and Quests | Survival and Quests, alone or as an online co-op pair | Survival and Quests |
+| Ranked play | Survival and Quests, each build's runs on its own boards | Survival and Quests, alone or as an online co-op pair, each build's runs on its own boards | Survival and Quests, each build's runs on its own boards |
 | Uploads, offline queue | Yes | Yes | Yes |
 | Profile, signed in | Yes | Yes | Yes, in your browser |
 | Update scores on the high score screen | Yes | Yes | Yes |

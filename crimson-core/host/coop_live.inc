@@ -38,6 +38,8 @@
 static bool coop_on() { return wire.session && !wire.closed; }
 // Co-op is open: a session, or a seat in a room that waits for one.
 static bool coop_open() { return coop_on() || coop_live.room >= 0; }
+// This machine holds the Guest's seat, in a session or a room waiting for one.
+static bool coop_guest() { return coop_on() ? wire.seat == 1 : coop_live.room == 1; }
 // What a run's start waits for in a room without a session: the partner.
 static const char *coop_waiting() { return coop_live.room == 0 ? "Co-op: waiting for Player 2" : "Co-op: waiting for Player 1"; }
 
@@ -160,7 +162,8 @@ static void coop_menu_restore() {
 }
 
 // The screen comes to the run `config` names as the original's start buttons
-// bring it: the menu settings name the run, and the fade ends in gameplay. The
+// bring it: the menu settings name the run, its build too (the Guest's screens
+// show the Host's), and the fade ends in gameplay. The
 // end screen it leaves stays the last run's until the run starts: its Main Menu
 // still leaves.
 static void coop_enter_run(const PortableConfig &config) {
@@ -180,6 +183,7 @@ static void coop_enter_run(const PortableConfig &config) {
     quest_stage_major = (int)config.major;
     quest_stage_minor = (int)config.minor;
   }
+  menu_cl_build = config.cl_build;
   coop_live.next = config;
   coop_live.entering = true;
   coop_live.entered = wire.nonce;
@@ -196,12 +200,14 @@ static void coop_enter_run(const PortableConfig &config) {
 }
 
 // The Host's choice of run, which starts once the Guest can start one: a fresh
-// seed, which the room's takes the place of (coop_seeded), and the ranked
-// profile for two players (ranked_spec).
-static void coop_latch(int mode, int major, int minor, int hardcore, int choice) {
+// seed, which the room's takes the place of (coop_seeded), the ranked profile
+// for two players (ranked_spec) and the Host's build, which START_RUN's config
+// carries to the Guest with the rest.
+static void coop_latch(int mode, int major, int minor, int hardcore, unsigned cl_build, int choice) {
   PortableConfig &config = coop_live.next;
   config = {};
   config.rules = CRIMSON_REPLAY_RULES;
+  config.cl_build = cl_build;
   getentropy(&config.seed, sizeof config.seed);
   config.mode = (uint32_t)mode;
   config.major = mode == GAME_MODE_QUEST ? (uint32_t)major : 1;
@@ -218,13 +224,13 @@ static void coop_next_quest(int &major, int &minor) {
   if (++minor > 10)
     ++major, minor = 1;
 }
-// The run after the last: the same again (0), or the next quest (1).
+// The run after the last, on its build: the same again (0), or the next quest (1).
 static void coop_latch_next(int choice) {
   const PortableConfig &last = coop_live.last;
   int major = (int)last.major, minor = (int)last.minor;
   if (choice == 1)
     coop_next_quest(major, minor);
-  coop_latch((int)last.mode, major, minor, (int)last.hardcore, choice);
+  coop_latch((int)last.mode, major, minor, (int)last.hardcore, last.cl_build, choice);
 }
 // The Host's run setup after a failed quest: its quest list, as Play Another
 // opens it.
@@ -751,7 +757,7 @@ bool game_coop_setup_run(int mode, int major, int minor) {
   else if (wire.seat == 1)
     coop_note("The host picks the run");
   else if (!(coop_live.ended && coop_live.latched))
-    coop_latch(mode, major, minor, config_blob.hardcore, 2);
+    coop_latch(mode, major, minor, config_blob.hardcore, menu_cl_build, 2);
   return true;
 }
 // An end screen's button that starts the next run (`choice` 0 again, 1 next, 2

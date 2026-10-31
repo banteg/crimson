@@ -1,7 +1,8 @@
 // Watches replays in the game module (host/watch.inc), as a link to a run
 // plays one: a replay asked for as the game boots skips the intro and plays,
-// then every recorded fixture the module can play, and the service's co-op
-// runs (a Survival run and a custom quest's clear), starts from the menus,
+// then every recorded fixture the module can play, the service's co-op runs
+// (a Survival run and a custom quest's clear) and a run on the 1.9.8 rules (a
+// matrix stream as the Python port records it), plays its build, starts from the menus,
 // plays a while at normal speed, holds still while paused and moves one tick
 // on a step, then skips to its end, which must be the result it recorded, with
 // the world where the verifier leaves it, though the host reads another replay
@@ -13,9 +14,9 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { CORE, decode, field, init, loadCore, names, state, step } from "./engine.mjs";
+import { CL_BUILD_1_9_8, clBuild, CORE, decode, field, init, loadCore, names, state, step } from "./engine.mjs";
 import { PRESENTATION } from "./game_compare.mjs";
-import { bootGame, INPUT } from "./game_host.mjs";
+import { bootGame, INPUT, streamReplay } from "./game_host.mjs";
 
 const ROOT = new URL("..", CORE).pathname;
 const [
@@ -148,14 +149,17 @@ const before = files().sort().join("\n");
 const core = loadCore(coreWasm);
 const vectors = JSON.parse(fs.readFileSync(path.join(ROOT, "service/test/vectors.json"))).coop_run;
 const coop = { "coop-survival.crd": vectors.file, "coop-quest.crd": vectors.quest_file };
+// A quest on the 1.9.8 rules, recorded from the matrix's stream.
+const streams = { "rules-1.9.8.crd": "1.9.8-quest-1.5-ranked" };
 const replays = fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).sort();
-let played = 0;
-for (const name of [...replays, ...Object.keys(coop)]) {
+let played = 0, played198 = 0;
+for (const name of [...replays, ...Object.keys(coop), ...Object.keys(streams)]) {
   if (coop[name]) fs.writeFileSync(path.join(watched, name), Buffer.from(coop[name], "base64"));
+  else if (streams[name]) streamReplay(streams[name], path.join(watched, name));
   else fs.copyFileSync(path.join(fixtures, name), path.join(watched, name));
   memory().write(`watched/${name}\0`, game.game_replay_path(), "latin1");
   if (!game.game_replay_open()) {
-    if (coop[name]) throw Error(`${name} does not read`);
+    if (coop[name] || streams[name]) throw Error(`${name} does not read`);
     continue; // one the Python port plays (game_replay_read.mjs)
   }
   const recording = Buffer.from(memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size()));
@@ -195,6 +199,9 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   for (let i = 0; i < 120; ++i) frame(i % 2 ? 33 : 16);
   frame(16, [SPACE]);
   const paused = Buffer.from(state(game));
+  const build = clBuild(recording);
+  if (field(game, "globals.portable_cl_build") !== build) throw Error(`${name}: plays build ${field(game, "globals.portable_cl_build")}, not ${build}`);
+  played198 += build === CL_BUILD_1_9_8;
   for (let i = 0; i < 30; ++i) frame();
   if (differences(paused, state(game)).length) throw Error(`${name}: the world moves while paused`);
   frame(16, [STEP]);
@@ -235,7 +242,8 @@ for (const name of [...replays, ...Object.keys(coop)]) {
     throw Error(`${name}: menu terrain lost RTX materials or retained run lights: ${passes}, ${sceneLights}`);
   ++played;
 }
-if (played < 2 + Object.keys(coop).length) throw Error(`only ${played} replays played`);
+if (played < 2 + Object.keys(coop).length + Object.keys(streams).length) throw Error(`only ${played} replays played`);
+if (!played198) throw Error("no replay played the 1.9.8 rules");
 // Practice restores its anchor after re-rendering it, then holds the captured
 // frame. Leaving immediately must preserve that restored material clock even
 // though no gameplay world is drawn between the restore and the menu.
@@ -277,4 +285,4 @@ if (after !== before) throw Error(`watching changed the game folder:\n${before}\
 const played_ms = /timePlayed=(\d+)/.exec(fs.readFileSync(registry, "latin1"))?.[1];
 if (played_ms !== "0") throw Error(`watching counted ${played_ms} ms as played`);
 fs.rmSync(watched, { recursive: true });
-console.log(JSON.stringify({ played }));
+console.log(JSON.stringify({ played, played_1_9_8: played198 }));

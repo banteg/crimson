@@ -7,6 +7,7 @@
 #include "portable_math.h"
 #include <float.h>
 #include <math.h>
+#include <iterator>
 #include <new>
 #include <stdarg.h>
 #include <stdio.h>
@@ -32,8 +33,43 @@ extern "C" quest_meta_t *portable_custom_quest;
 quest_meta_t *portable_custom_quest;
 extern "C" unsigned char portable_preserve_bugs;
 unsigned char portable_preserve_bugs;
-unsigned int portable_rules, portable_legacy_coop_reload;
+unsigned int portable_rules, portable_legacy_coop_reload, portable_cl_build;
+// The perks the run's build numbers, as perks_init_database sets them: 1.9.8's end at 53, before Man Bomb.
+extern "C" int perk_id_max, perk_id_count;
+void portable_perk_range() {
+  perk_id_max = portable_rules_1_9_8 ? 53 : 57;
+  perk_id_count = perk_id_max + 1;
+}
+// The run's profile, from its config: its bug policy, rules and build, with the perk range the build sets. A run whose
+// start runs no portable_init (a keyframe's, or in the client one the original sets up itself, host/session.inc)
+// keeps no other run's.
+static void portable_profile_set(const PortableConfig &config) {
+  portable_preserve_bugs = (unsigned char)config.preserve_bugs;
+  portable_rules = config.rules;
+  portable_legacy_coop_reload = config.legacy_coop_reload;
+  portable_cl_build = config.cl_build;
+  portable_perk_range();
+}
 PortablePlayerRules portable_player_rules[2];
+// Each weapon's shot sound as its audio_asset_id_table slot, which the sound globals name (rules.h), for 1.9.8's Fire
+// Bullets reroll. The original compares loaded ids, which tell the sounds apart only with every one loaded: the
+// verifier loads none, and the original without sound or assets gives them all one id. weapon_table_init over
+// distinct ids gives the slots instead, whatever ids the run holds. No build or run changes them: portable_init fills
+// them, and inside the original game_start too, for the runs the original sets up itself.
+extern "C" int audio_asset_id_table[83];
+extern "C" void weapon_table_init(void);
+int portable_weapon_shot_slot[64];
+int portable_sound_slot(const int *sound) { return (int)(sound - audio_asset_id_table); }
+static void weapon_shot_slots() {
+  int loaded[std::size(audio_asset_id_table)];
+  memcpy(loaded, audio_asset_id_table, sizeof loaded);
+  for (int &id : audio_asset_id_table)
+    id = portable_sound_slot(&id);
+  weapon_table_init();
+  for (size_t i = 0; i < std::size(portable_weapon_shot_slot); ++i)
+    portable_weapon_shot_slot[i] = weapon_table[i].shot_sfx_base_id;
+  memcpy(audio_asset_id_table, loaded, sizeof loaded);
+}
 float portable_impact_heading(float x, float y) {
   return (float)(portable_atan2(y, x) - 1.5707964f);
 }
@@ -93,11 +129,23 @@ void projectile_pool_global_init();
 void weapon_table_defaults_global_init();
 void bonus_metadata_init();
 void perks_init_database();
+void perks_rebuild_available();
 void gameplay_reset_state();
 void gameplay_update_and_render();
 void quest_start_selected(int, int);
 void perks_generate_choices();
 void perk_apply(int);
+}
+// A fresh game's state, which nothing resets between runs, on the run's profile (portable_profile_set), for every
+// run: those portable_init sets up, and in the client those the original sets up itself (host/session.inc), as
+// Python's initialize_run starts every mode. The players' added run state starts with a fresh game's intervals, as
+// Python's PlayerState does, and Lean Mean Exp Machine's tick with none. Original bug 32: the Shock Chain id a fresh
+// game starts with, 0, matches projectile slot 0, so the fix starts with no chain.
+static void portable_fresh_game() {
+  for (auto &player : portable_player_rules)
+    player = {1.4f, 1.4f, 0};
+  perk_lean_mean_exp_tick_timer_s = 0;
+  shock_chain_projectile_id = portable_preserve_bugs ? 0 : -1;
 }
 #ifdef CRIMSON_GAME
 #include "game.inc"
@@ -455,9 +503,10 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   if (cfg.detail > 5 || cfg.unlock > 50 || cfg.unlock_full > 50 ||
       cfg.retry > 2147483647u || cfg.preserve_bugs > 1 || cfg.players < 1 || cfg.players > 2 || (cfg.rules != 1 && cfg.rules != 2) || cfg.legacy_coop_reload > 1 || (cfg.rules != 1 && cfg.legacy_coop_reload))
     return 0;
-  portable_preserve_bugs = (unsigned char)cfg.preserve_bugs;
-  portable_rules = cfg.rules;
-  portable_legacy_coop_reload = cfg.legacy_coop_reload;
+  // 1.9.8's rules arrived with rules 2 and have no rules-1 profile.
+  if (cfg.cl_build != PORTABLE_CL_BUILD_1_9_93 && (cfg.cl_build != PORTABLE_CL_BUILD_1_9_8 || cfg.rules < 2))
+    return 0;
+  portable_profile_set(cfg);
   for (auto n : cfg.weapon_usage)
     if (n > 2147483647u)
       return 0;
@@ -478,8 +527,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
 #else
   portable_reset_data();
 #endif
-  for (auto &player : portable_player_rules)
-    player = {1.4f, 1.4f, 0};
+  portable_fresh_game();
   string_used = 0;
   rng = seed;
   menu_requested = false;
@@ -487,10 +535,6 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   tick = 0;
   running_down = false;
   run_down_ms = 500;
-  // A fresh game's values; nothing resets them between runs. Original bug 32:
-  // slot 0 matches the chain id, so the fix starts with no chain.
-  shock_chain_projectile_id = portable_preserve_bugs ? 0 : -1;
-  perk_lean_mean_exp_tick_timer_s = 0;
   in[0] = in[1] = {0, 0, 512, 512, 0};
 #ifdef CRIMSON_GAME
   game_init_run();
@@ -560,6 +604,8 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   game_state_id = GAME_STATE_GAMEPLAY;
   game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
   run_active = 1;
+  trace_init("weapon shot sounds");
+  weapon_shot_slots();
   trace_init("gameplay reset");
   gameplay_reset_state();
   // Codes the host's grim_is_key_active maps to each player's recorded key flags.
@@ -817,6 +863,7 @@ extern "C" int portable_builder_probe(uint32_t seed, uint32_t index,
     return 0;
   cfg = {};
   cfg.rules = CRIMSON_REPLAY_RULES;
+  cfg.cl_build = PORTABLE_CL_BUILD_1_9_93;
   cfg.detail = 5;
   cfg.hardcore = hardcore;
   cfg.players = 1;
@@ -954,6 +1001,10 @@ int main(int argc, char **argv) {
   if (reset_check) {
     std::vector<uint32_t> final(output, output + n);
     PortableConfig a = cfg;
+    // B plays the other build, whose rules leave nothing behind for A either.
+    cfg.cl_build = a.cl_build == PORTABLE_CL_BUILD_1_9_8 ? PORTABLE_CL_BUILD_1_9_93 : PORTABLE_CL_BUILD_1_9_8;
+    cfg.rules = 2;
+    cfg.legacy_coop_reload = 0;
     cfg.detail = 0;
     cfg.players = 1;
     cfg.unlock = 0;

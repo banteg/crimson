@@ -34,6 +34,7 @@ def build_highscore_record(
     record.game_mode_id = state.game_mode
     record.quest_level = state.quest_level
     record.hardcore = state.hardcore
+    record.cl_build = state.cl_build
     return record
 
 

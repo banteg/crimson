@@ -1,0 +1,17 @@
+1.9.8 rule: the projectile pool has 64 slots (crimsonland_types.h's CL_BUILD <= 10908 capacity) where 1.9.93's has
+96. projectile_spawn, the only allocator, looks for a free slot among the first 64 and takes slot 63 when none is
+free; the layout keeps 1.9.93's 96, whose last 32 stay inactive, as every other loop skips inactive slots.
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp
+@@ -55,7 +55,9 @@
+-    for (index = 0; index < PROJECTILE_POOL_CAPACITY; index++) {
++    // 1.9.8's pool has 64 slots.
++    int capacity = portable_rules_1_9_8 ? 0x40 : PROJECTILE_POOL_CAPACITY;
++    for (index = 0; index < capacity; index++) {
+         if (!projectile_pool[index].active) {
+             result = index;
+             goto initialize;
+         }
+     }
+-    result = PROJECTILE_POOL_CAPACITY - 1;
++    result = capacity - 1;
