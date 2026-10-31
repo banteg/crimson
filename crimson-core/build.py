@@ -24,6 +24,7 @@ from adapter import (
     check_rules,
     load_diffs,
     prototypes,
+    visible,
     wrap,
     write_if_changed,
 )
@@ -206,7 +207,7 @@ def main():
     # Every stale hunk at once, before anything compiles.
     check_diffs(a.root, hunks)
     adapted = {}  # repository-relative path: (decomp text, adapted text)
-    for f in sorted((a.root / "tools/match/include").glob("*.h")):
+    for f in visible(a.root / "tools/match/include", (a.root / "tools/match/include").glob("*.h")):
         rel, raw = str(f.relative_to(a.root)), f.read_text()
         text = prototypes(f, apply_diffs(rel, raw, hunks), PROTOTYPES)
         if a.target == "game":

@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from adapter import DIFFS, prototypes, sub, wrap, write_if_changed
+from adapter import DIFFS, prototypes, sub, visible, wrap, write_if_changed
 
 HERE = Path(__file__).resolve().parent
 GAME = HERE / "game"
@@ -37,9 +37,8 @@ def game_sources(root):
             raise SystemExit(f"Replaced {image} sources not found: {', '.join(missing)}")
         found += sorted(
             str(path.relative_to(root))
-            for path in tree.rglob("*")
+            for path in visible(root, tree.rglob("*"))
             if path.suffix in (".c", ".cpp")
-            and ".claude" not in path.relative_to(root).parts
             and path.relative_to(tree).as_posix() not in replaced
             and str(path.relative_to(root)) not in verifier
         )
@@ -75,7 +74,7 @@ def game_header(path, text):
 
 
 def game_platform():
-    return sorted(GAME.glob("*.cpp"))
+    return visible(GAME, GAME.glob("*.cpp"))
 
 
 # The vendored C the platform layer links (game/leaderboard.cpp): zstd 1.5.7's
@@ -93,7 +92,7 @@ def _blank_comments(text):
 @functools.cache
 def _rng_draws(tree):
     # crt_rand and every recovered function that reaches it, by file name.
-    bodies = {path.stem: _blank_comments(path.read_text()) for path in tree.rglob("*") if path.suffix in (".c", ".cpp")}
+    bodies = {path.stem: _blank_comments(path.read_text()) for path in visible(tree, tree.rglob("*")) if path.suffix in (".c", ".cpp")}
     names = {"crt_rand"}
     while new := {
         stem
@@ -293,8 +292,8 @@ def simulation_names(root):
     texts = [(root / rel).read_text() for rel in sources]
     texts += [
         path.read_text()
-        for path in (root / "crimson-core/host").glob("*.*")
-        if path.is_file() and not path.name.startswith(".")
+        for path in visible(root / "crimson-core/host", (root / "crimson-core/host").glob("*.*"))
+        if path.is_file()
     ]
     return {name for text in texts for name in re.findall(r"[A-Za-z_]\w*", text)}
 
@@ -494,8 +493,7 @@ def game_initializers(root, out):
     # through the CRT's void(void) type would not match.
     sources = {
         path.stem: path
-        for path in (root / "decomp/1.9/crimsonland").rglob("*.c*")
-        if ".claude" not in path.relative_to(root).parts
+        for path in visible(root, (root / "decomp/1.9/crimsonland").rglob("*.c*"))
     }
     lines = ['extern "C" {']
     for name in STATIC_INITIALIZERS:

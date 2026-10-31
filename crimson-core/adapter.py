@@ -43,7 +43,7 @@ def load_diffs(folders):
     """(patch:line of the hunk header, old text, new text) hunks by source path, in folder then name order."""
 
     hunks = {}
-    for patch in (path for folder in folders for path in sorted(folder.glob("*.patch"))):
+    for patch in (path for folder in folders for path in visible(folder, folder.glob("*.patch"))):
         lines = patch.read_text().splitlines(keepends=True)
         rel = None
         i = 0
@@ -219,7 +219,7 @@ def guarded_files(root, sources):
     """The `sources` and the headers every target compiles them with."""
 
     headers = (root / "tools/match/include", root / "third_party/headers")
-    return [*sources, *(str(h.relative_to(root)) for d in headers for h in sorted(d.glob("*.h")))]
+    return [*sources, *(str(h.relative_to(root)) for d in headers for h in visible(d, d.glob("*.h")))]
 
 
 def guards(root, hunks, sources):
@@ -334,6 +334,13 @@ def guard_targets(root):
 
     core = json.loads((root / "crimson-core/sources.json").read_text())
     return [(load_diffs(DIFFS), core), (load_diffs(GAME_DIFFS), core + game_sources(root))]
+
+
+def visible(base, paths):
+    """`paths` under `base`, sorted, but those a dot-file or dot-directory holds: what Finder, editors and tools leave in
+    a tree is no build's input, as scripts/build_identity.py leaves them out of the identity."""
+
+    return sorted(path for path in paths if not any(part.startswith(".") for part in path.relative_to(base).parts))
 
 
 # Every file write_if_changed wrote or found current in this run, so a build can drop what it no longer generates.

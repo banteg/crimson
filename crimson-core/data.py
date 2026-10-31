@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from adapter import write_if_changed
+from adapter import visible, write_if_changed
 
 # An owner header reads a contiguous aggregate through its first symbol: `#define name (*(type *)&root)`.
 OVERLAY = re.compile(r"\(\*\((\w+)\s*\*\)&(\w+)\)")
@@ -24,7 +24,7 @@ def overlay_spans(root, cc):
     64-bit host's pointers move every member after the first), and its names keep blocks of their own.
     """
     include = root / "tools/match/include"
-    owners = sorted(include.glob("*_owner.h"))
+    owners = visible(include, include.glob("*_owner.h"))
     overlays = {m[1]: m[2] for h in owners for m in OVERLAY.finditer(h.read_text())}
     def layouts(compiler, probe):
         proc = subprocess.run(
