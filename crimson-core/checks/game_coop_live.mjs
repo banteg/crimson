@@ -91,7 +91,10 @@
 // (the Host's Play Again waiting for the Guest's name) and once mid-run: the end
 // screens are the ended session's, whose names go to the two players' table
 // before the menu, the Host's Play Again starts nothing in the new session, and
-// the run in progress ends where each machine confirmed it, its replay saved. As the Guest's screen fades from an end
+// the run in progress ends where each machine confirmed it, its replay saved.
+// Between them the Guest, its 1.9.8 box ticked, leaves the end screens of a
+// Host's 1.9.93 run by its high scores for the Statistics menu, where the menus
+// show its own settings again: its Perks lists 1.9.8's perks. As the Guest's screen fades from an end
 // screen to the Host's next run, its Main Menu leaves. The transport closes
 // before the Guest names its score, which goes to the two players' table all the
 // same.
@@ -195,7 +198,7 @@ if (!given) throw Error("usage: game_coop_live.mjs <game directory> [game.wasm]"
 
 // game_state_id_t, DirectInput scancodes, and the session's (host/coop_wire.inc).
 const MAIN_MENU = 0, PLAY_GAME_MENU = 1, PERK_SELECTION = 6, GAME_OVER = 7, QUEST_RESULTS = 8, GAMEPLAY = 9;
-const QUEST_SELECT = 11, QUEST_FAILED = 12, HIGHSCORES = 14;
+const STATISTICS = 4, QUEST_SELECT = 11, QUEST_FAILED = 12, HIGHSCORES = 14, PERK_DATABASE = 16;
 const KEYS = [0x01, 0x02, 0x03, 0x0a, 0x0b, 0x0f, 0x10, 0x12, 0x1c, 0x1f, 0x20, 0x21, 0x38, 0xcd];
 const [ESCAPE, ONE, TWO, NINE, ZERO, TAB, Q, E, ENTER, S, D, F, ALT, ARROW_RIGHT] = KEYS;
 const STATUS = {
@@ -237,6 +240,8 @@ const PERK_CHOICE = [150, 216], PAD_CURSOR = [1000, 740];
 // Quests; the high scores' Play a game.
 const PLAY_GAME = [240, 338], RANKED = [285, 489], SURVIVAL = [232, 372], OWN_QUESTS = [232, 322], FRESH_QUESTS = [232, 350];
 const PLAY_A_GAME = [190, 500];
+// The Statistics menu's Perks.
+const PERKS = [275, 384];
 // The Play Game panel's 1.9.8 box, left of Ranked; the build a machine's run plays.
 const RULES_1_9_8 = [210, 489];
 const build = (peer) => clBuild(Buffer.from(peer.g.memory.buffer, peer.g.portable_config(), CONFIG_BYTES));
@@ -593,6 +598,21 @@ keys = [key.hex() for key in r.seat_keys] if r.seat_keys is not None else None
 print(json.dumps({"seat_keys": keys, "seed": r.run.seed, "players": r.run.player_count, "recorder": r.recorder.platform}))
 `;
 const header = (file) => JSON.parse(python(HEADER, file));
+// Each build's available perks with every quest unlocked, as a session's menus show them: the Python port's
+// build_perk_availability.
+const EVERY_QUEST_PERKS = `
+import json
+from crimson.cl_build import ClBuild
+from crimson.perks.availability import build_perk_availability
+from crimson.persistence.save_status import GameStatusData
+from crimson.quests import QUESTS
+status = GameStatusData(quest_unlock_index=len(QUESTS))
+print(json.dumps({int(b): [i for i, a in enumerate(build_perk_availability(status=status, cl_build=b)) if a] for b in ClBuild}))
+`;
+const everyQuestPerks = JSON.parse(python(EVERY_QUEST_PERKS));
+// The perks a game's table holds available, those its perk database lists (unlocked_perks_database_update).
+const available = (g) =>
+  (state(g), names.filter((n) => /^perk_metadata\[\d+\]\.available$/.test(n)).flatMap((n, i) => (field(g, n) & 0xff ? [i] : [])));
 // An outbox entry the service takes (service/src/runs.ts): named by its payload's SHA-256, the replay with both
 // seats' signers in order, each signing "crimson-coop-run-v1\n", the digest, its seat and its name in Latin-1 with the
 // key the replay records for its seat, which the room recorded, on a seed the room issued to those keys. Its replay
@@ -1295,6 +1315,34 @@ for (const [i, peer] of peers.entries()) {
   assert.ok(!tables(peer).includes("scores5/survival.hi"), `${tables(peer)}`);
   assert.deepEqual(scored(peer).slice(lines[i]), ["scores5/survival_2.hi"], `machine ${peer.seat}'s name, the Host's build`);
   assert.equal(status(peer) & STATUS.connected, STATUS.connected, `machine ${peer.seat}'s new session`);
+}
+// In that session the Host's menus start another 1.9.93 run, which both stand through until they die and name. The
+// Guest's pad opens the high scores, the second button, and its Escape goes on to the Statistics menu, where the
+// menus show its own settings again: its Perks lists the perks of its box's build, 1.9.8's, with every quest unlocked
+// as the session's menus show them. Both go back to the main menu by the high scores, the session going on.
+click(host, MAIN_MENU, PLAY_GAME);
+click(host, PLAY_GAME_MENU, SURVIVAL);
+play(idle, started, "the run before the Guest's perk database");
+assert.deepEqual(peers.map(build), [CL_BUILD_1_9_93, CL_BUILD_1_9_93], "the Host's 1.9.93 run, the Guest's box ticked");
+play(player, () => peers.every((p) => screen(p) === GAME_OVER), "the team's death before the perk database");
+settle(guest, GAME_OVER);
+tap(guest, DOWN, A);
+tap(host, key(ENTER));
+play(idle, () => peers.every((p) => status(p) & STATUS.signed), "both names before the perk database");
+tap(guest, DOWN, A);
+settle(guest, HIGHSCORES);
+tap(guest, key(ESCAPE));
+click(guest, STATISTICS, PERKS);
+settle(guest, PERK_DATABASE);
+assert.deepEqual(available(guest.g), everyQuestPerks[CL_BUILD_1_9_8], "the Guest's perk database after the Host's run");
+tap(host, key(TAB), key(ENTER));
+settle(host, HIGHSCORES);
+for (const peer of peers) {
+  tap(peer, key(ESCAPE));
+  settle(peer, STATISTICS);
+  tap(peer, key(ESCAPE));
+  settle(peer, MAIN_MENU);
+  assert.equal(status(peer) & STATUS.connected, STATUS.connected, `machine ${peer.seat}'s session past the statistics`);
 }
 // The transport opens again as the Host's screen fades to the run its click chose: the fade, the last session's,
 // ends on the menu, and no run starts in the new session.

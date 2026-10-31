@@ -766,6 +766,15 @@ void game_state_set(game_state_id_t state) {
            state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
     coop_live.playing ? coop_quit() : live_end("incomplete");
   bool entering_gameplay = state == GAME_STATE_GAMEPLAY && !run_active;
+  bool custom = entering_gameplay && config_blob.game_mode == GAME_MODE_QUEST && quest_stage_major == 0 &&
+                quest_stage_minor == 0;
+  // Any other run, Play Next past a custom quest's too, plays the player's own settings, which come back before the
+  // run is set up and judged below.
+  if (entering_gameplay && !custom) {
+    custom_quest_restore();
+    if (config_blob.game_mode == GAME_MODE_QUEST && (quest_stage_major < 1 || quest_stage_minor < 1))
+      quest_stage_major = quest_stage_minor = 1;
+  }
   if (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active))
     scores_unlink();
   if (!watches && (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active))) {
@@ -787,7 +796,6 @@ void game_state_set(game_state_id_t state) {
     // the preparing pass that follows plays it.
     WatchUnheard unheard(watches);
     if (entering_gameplay) {
-      bool custom = config_blob.game_mode == GAME_MODE_QUEST && quest_stage_major == 0 && quest_stage_minor == 0;
       if (custom) {
         custom_quest_meta = quest_meta_t{};
         custom_quest_meta.name = custom_quest_title;
@@ -796,10 +804,6 @@ void game_state_set(game_state_id_t state) {
         custom_quest_meta.terrain_id_c = (int)quest.terrain[2];
         custom_quest_meta.builder = custom_quest_build;
         custom_quest_meta.start_weapon_id = (int)quest.weapon_id;
-      } else {
-        custom_quest_restore();
-        if (config_blob.game_mode == GAME_MODE_QUEST && (quest_stage_major < 1 || quest_stage_minor < 1))
-          quest_stage_major = quest_stage_minor = 1;
       }
       portable_custom_quest = custom ? &custom_quest_meta : nullptr;
     } else if (state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&

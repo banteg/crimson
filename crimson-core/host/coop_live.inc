@@ -371,9 +371,10 @@ static bool coop_withdraw(uint32_t epoch) {
 
 // game_state_set's screens while a session is on: a fade to gameplay coop_enter_run
 // began starts its run (true); the end screen's Main Menu leaves the session, also
-// once a fade to the next run began; the menus show the player's settings;
-// another screen drops the Host's choice, and the run it was coming to (the
-// Guest's comes again). An end screen shows its name entry first.
+// once a fade to the next run began; the menus show the player's settings, the
+// Statistics menu too, which the run's high scores go back to; another screen
+// drops the Host's choice, and the run it was coming to (the Guest's comes
+// again). An end screen shows its name entry first.
 static bool coop_screen_set(game_state_id_t state) {
   bool starts = state == GAME_STATE_GAMEPLAY && !run_active && coop_live.entering;
   if (!starts)
@@ -382,7 +383,8 @@ static bool coop_screen_set(game_state_id_t state) {
       state == GAME_STATE_GAME_OVER || state == GAME_STATE_QUEST_RESULTS || state == GAME_STATE_QUEST_FAILED;
   if (coop_live.ended && !coop_gone() && state == GAME_STATE_MAIN_MENU)
     game_coop_request(COOP_ASK_LEAVE, 0, 0, 0, host_time_ms());
-  if (state == GAME_STATE_MAIN_MENU || state == GAME_STATE_PLAY_GAME_MENU || state == GAME_STATE_QUEST_SELECT)
+  if (state == GAME_STATE_MAIN_MENU || state == GAME_STATE_PLAY_GAME_MENU || state == GAME_STATE_QUEST_SELECT ||
+      state == GAME_STATE_STATISTICS_MENU)
     coop_menu_restore();
   coop_live.ended &= state == GAME_STATE_GAME_OVER || state == GAME_STATE_QUEST_RESULTS ||
                      state == GAME_STATE_QUEST_FAILED || state == GAME_STATE_HIGHSCORES ||
