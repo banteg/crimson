@@ -25,7 +25,7 @@ from . import match_builds, match_data_report, match_native_inventory, match_too
 from . import match_report_accounting as accounting
 
 # The canonical build: curated inventory, data evidence and the ownership ranges every build reuses.
-VERSION = "1.9.93"
+VERSION = matchlib.CANONICAL_BUILD
 DEFAULT_REPORTS = matchlib.REPO_ROOT / "artifacts" / "decomp"
 BUILD_MAP_RE = re.compile(r"analysis/decomp/[^/]+/[^/]+/(?:functions|data|imports|metadata|recovered|native)\.json")
 
@@ -256,10 +256,6 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
     before = repository_inputs()
     inventory = _inventory(version)
     if version == VERSION:
-        configs = [
-            matchlib.load_scratch_config(p.parent)
-            for p in sorted(matchlib.DEFAULT_MATCH_ROOT.glob("scratches/*/scratch.conf"))
-        ]
         statuses = matchlib.collect_scratch_statuses(scope="all", jobs=jobs)
         if errors := [s for s in statuses if s.error]:
             raise ValueError("matching failed: " + "; ".join(f"{s.config.function}: {s.error}" for s in errors))
@@ -270,7 +266,7 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
             for row in match_builds.scan_build(match_builds.load_registry(), version, jobs=jobs, native_inventory=True)
             if row.status.error is None
         ]
-        configs = [status.config for status in statuses]
+    configs = [status.config for status in statuses]
     external, toolchains = _external_inputs(configs, before, version)
     _score(inventory, statuses)
     data = match_data_report.refresh_evidence(configs) if version == VERSION else None

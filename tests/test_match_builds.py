@@ -47,6 +47,15 @@ def test_reviewed_historical_map_rejects_unbound_evidence(recovered_198_map, inv
         match_builds.apply_recovered_map(image, canonical, payload, recovery)
 
 
+def test_build_only_scratch_stays_out_of_other_compiler_and_report_runs() -> None:
+    config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/player_check_level")
+    assert not matchlib._filter_scoped_scratch_configs([config], scope="all")
+    assert REGISTRY.image("1.4.0", "crimson.exe").scratch_configs(config)
+    assert not REGISTRY.image("1.3.0", "crimson.exe").scratch_configs(config)
+    with pytest.raises(ValueError, match="configured only for"):
+        REGISTRY.image("1.9.93", "crimsonland.exe").scratch_config(config)
+
+
 def test_reviewed_build_only_function_requires_an_explicit_byte_pin(recovered_198_map) -> None:
     image, canonical, payload, original = recovered_198_map
     recovery = deepcopy(original)

@@ -22,7 +22,8 @@ from . import match_experiments, match_process, match_toolchain
 from .match_process import run_compiler
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_VERSION = "1.9.93-gog"
+CANONICAL_BUILD = "1.9.93"
+DEFAULT_VERSION = f"{CANONICAL_BUILD}-gog"
 DEFAULT_GAME_DIR = REPO_ROOT / "game_bins" / "crimsonland" / DEFAULT_VERSION
 DEFAULT_IMAGE_NAME = "crimsonland.exe"
 TRACKED_IMAGE_NAMES = ("crimsonland.exe", "grim.dll")
@@ -4231,6 +4232,7 @@ SCRATCH_CONFIG_KEYS = frozenset(
         "ARCHIVE_SHA256",
         "ARCHIVE_SIZE",
         "AUTO_INLINE_OFF",
+        "BUILDS",
         "CFLAGS",
         "COMPILER",
         "DISPROVEN_COMPILERS",
@@ -4267,6 +4269,7 @@ class ScratchConfig:
     reference_aliases: tuple[tuple[str, str], ...] = ()
     build_reference_aliases: tuple[tuple[int, tuple[tuple[str, str], ...]], ...] = ()
     family_sources: tuple[tuple[str, str], ...] = ()
+    builds: tuple[str, ...] = ()
     recovery: str | None = None
     residuals: tuple[str, ...] = ()
     archive: str | None = None
@@ -4279,6 +4282,9 @@ class ScratchConfig:
     auto_inline_off: tuple[str, ...] = ()
     disproven_compilers: tuple[str, ...] = ()
     include_overlay: Path | None = None
+
+    def supports_build(self, build: str) -> bool:
+        return not self.builds or build in self.builds
 
 
 @dataclass(frozen=True, slots=True)
@@ -4674,6 +4680,12 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             aliases.append((object_symbol, target_symbol))
         return tuple(aliases)
 
+    builds = tuple(values["BUILDS"].split(",")) if "BUILDS" in values else ()
+    if builds:
+        from .match_builds import load_registry
+        if unknown := set(builds).difference(load_registry().builds):
+            raise ValueError(f"{directory}/scratch.conf has unknown builds: {sorted(unknown)}")
+
     reference_aliases = parse_aliases("REFERENCE_ALIASES")
     # Compiler-local names that only one build's code has, aliased to that build's identities.
     build_reference_aliases = tuple(
@@ -4844,6 +4856,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         reference_aliases=reference_aliases,
         build_reference_aliases=build_reference_aliases,
         family_sources=family_sources,
+        builds=builds,
         recovery=recovery,
         residuals=residuals,
         archive=archive,
@@ -6441,7 +6454,8 @@ def _filter_scoped_scratch_configs(
     *,
     scope: str | None,
 ) -> list[ScratchConfig]:
-    """Keep every out-of-scope scratch out of the active scoped corpus."""
+    """Keep every out-of-scope scratch out of the active canonical corpus."""
+    configs = [config for config in configs if config.supports_build(CANONICAL_BUILD)]
     if scope is None or scope == "all":
         return list(configs)
     ranges = load_matching_scope(scope)

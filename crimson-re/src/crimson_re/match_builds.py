@@ -94,6 +94,8 @@ class BuildImage:
         Game code takes the build's profiles, several for an incrementally rebuilt image;
         a prebuilt library keeps its own toolchain.
         """
+        if not config.supports_build(self.build):
+            return ()
         if self.is_canonical:
             return (config,)
         names = _reference_catalog(self)
@@ -129,7 +131,10 @@ class BuildImage:
 
     def scratch_config(self, config: matchlib.ScratchConfig) -> matchlib.ScratchConfig:
         """Compile a canonical scratch as this build with its first applicable compiler."""
-        return self.scratch_configs(config)[0]
+        configs = self.scratch_configs(config)
+        if not configs:
+            raise ValueError(f"{config.function} is configured only for {', '.join(config.builds)}")
+        return configs[0]
 
     def state(self) -> str:
         if not self.path.is_file():
