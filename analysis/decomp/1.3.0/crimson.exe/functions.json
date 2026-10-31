@@ -383,6 +383,14 @@
     "size": 1
   },
   {
+    "address": "0x00402B90",
+    "build_only": true,
+    "end": "0x00402D8D",
+    "evidence": "exact",
+    "name": "freeware_level_move_with_collision",
+    "size": 509
+  },
+  {
     "address": "0x00403000",
     "canonical_address": "0x0043D260",
     "end": "0x00403082",
@@ -391,12 +399,52 @@
     "size": 130
   },
   {
+    "address": "0x00403090",
+    "build_only": true,
+    "end": "0x00403227",
+    "evidence": "ordered",
+    "name": "freeware_music_start",
+    "size": 407
+  },
+  {
     "address": "0x00403340",
     "canonical_address": "0x0041E840",
     "end": "0x004033C3",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "fx_queue_add",
     "size": 131
+  },
+  {
+    "address": "0x00403410",
+    "build_only": true,
+    "end": "0x00403435",
+    "evidence": "exact",
+    "name": "input_move_up_active",
+    "size": 37
+  },
+  {
+    "address": "0x00403440",
+    "build_only": true,
+    "end": "0x00403463",
+    "evidence": "exact",
+    "name": "input_move_down_active",
+    "size": 35
+  },
+  {
+    "address": "0x00403470",
+    "build_only": true,
+    "end": "0x00403495",
+    "evidence": "exact",
+    "name": "input_move_left_active",
+    "size": 37
+  },
+  {
+    "address": "0x004034A0",
+    "build_only": true,
+    "end": "0x004034C3",
+    "evidence": "exact",
+    "name": "input_move_right_active",
+    "size": 35
   },
   {
     "address": "0x004034D0",
@@ -418,7 +466,7 @@
     "address": "0x00403510",
     "canonical_address": "0x0041E910",
     "end": "0x004037C6",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "creature_handle_death",
     "size": 694
   },
@@ -487,6 +535,14 @@
     "size": 144
   },
   {
+    "address": "0x004040D0",
+    "build_only": true,
+    "end": "0x00404115",
+    "evidence": "exact",
+    "name": "freeware_point_in_rect",
+    "size": 69
+  },
+  {
     "address": "0x00404120",
     "canonical_address": "0x0041FC60",
     "end": "0x00404329",
@@ -496,11 +552,19 @@
   },
   {
     "address": "0x00404510",
-    "canonical_address": "0x0041FED0",
+    "build_only": true,
     "end": "0x00404687",
     "evidence": "ordered",
-    "name": "effect_uv_tables_init",
+    "name": "freeware_save_score",
     "size": 375
+  },
+  {
+    "address": "0x004046C0",
+    "canonical_address": "0x0043AFA0",
+    "end": "0x00404A59",
+    "evidence": "called",
+    "name": "highscore_load_table",
+    "size": 921
   },
   {
     "address": "0x00404A60",
@@ -628,24 +692,24 @@
     "end": "0x0040AA32",
     "evidence": "exact",
     "name": "fx_queue_add_random",
-    "size": 50
+    "size": 50,
+    "aliases": [
+      "freeware_blood"
+    ]
   },
   {
     "address": "0x0040AA40",
-    "canonical_address": "0x00427830",
+    "build_only": true,
     "end": "0x0040AA7B",
     "evidence": "exact",
-    "name": "fx_queue_random_color_destroy",
-    "size": 59,
-    "aliases": [
-      "$E2"
-    ]
+    "name": "fx_queue_add_shell",
+    "size": 59
   },
   {
     "address": "0x0040AA80",
     "canonical_address": "0x00427840",
     "end": "0x0040AAFA",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "fx_queue_add_rotated",
     "size": 122
   },
@@ -707,10 +771,10 @@
   },
   {
     "address": "0x0040BC10",
-    "canonical_address": "0x0042E120",
+    "canonical_address": "0x00419680",
     "end": "0x0040C29E",
     "evidence": "ordered",
-    "name": "effect_spawn",
+    "name": "creature_render_all",
     "size": 1678
   },
   {
@@ -723,10 +787,10 @@
   },
   {
     "address": "0x0040CF60",
-    "canonical_address": "0x00439230",
+    "build_only": true,
     "end": "0x0040E2BF",
     "evidence": "ordered",
-    "name": "quest_database_init",
+    "name": "effect_render_all",
     "size": 4959
   },
   {
@@ -747,10 +811,10 @@
   },
   {
     "address": "0x00411610",
-    "canonical_address": "0x0043C740",
+    "build_only": true,
     "end": "0x0041181D",
     "evidence": "ordered",
-    "name": "sfx_load_sample",
+    "name": "level_load_next",
     "size": 525
   },
   {
@@ -770,19 +834,11 @@
     "size": 1648
   },
   {
-    "address": "0x00411ED0",
-    "canonical_address": "0x00405BE0",
-    "end": "0x00412AFC",
-    "evidence": "ordered",
-    "name": "perk_selection_screen_update",
-    "size": 3116
-  },
-  {
     "address": "0x00412B00",
-    "canonical_address": "0x0043E830",
+    "build_only": true,
     "end": "0x00412FD0",
-    "evidence": "ordered",
-    "name": "ui_button_update",
+    "evidence": "exact",
+    "name": "freeware_read_name_key",
     "size": 1232
   },
   {
@@ -803,10 +859,10 @@
   },
   {
     "address": "0x004183F0",
-    "canonical_address": "0x0042B290",
+    "build_only": true,
     "end": "0x0041920F",
     "evidence": "ordered",
-    "name": "game_startup_init",
+    "name": "game_credits_update",
     "size": 3615
   },
   {
@@ -819,10 +875,10 @@
   },
   {
     "address": "0x004196F0",
-    "canonical_address": "0x00446C40",
+    "build_only": true,
     "end": "0x00419D12",
     "evidence": "ordered",
-    "name": "ui_element_render",
+    "name": "game_highscores_update",
     "size": 1570
   },
   {
@@ -835,10 +891,10 @@
   },
   {
     "address": "0x00419D40",
-    "canonical_address": "0x00447370",
+    "canonical_address": "0x0042A860",
     "end": "0x00419D55",
     "evidence": "ordered",
-    "name": "ui_menu_main_click_options",
+    "name": "console_cmd_tell_time_survived",
     "size": 21
   },
   {
@@ -990,14 +1046,11 @@
   },
   {
     "address": "0x0041BB00",
-    "canonical_address": "0x00454E49",
+    "canonical_address": "0x00401870",
     "end": "0x0041BB06",
-    "evidence": "ordered",
-    "name": "D3DXQuaternionInverse",
-    "size": 6,
-    "aliases": [
-      "_D3DXQuaternionInverse@8"
-    ]
+    "evidence": "called",
+    "name": "console_printf",
+    "size": 6
   },
   {
     "address": "0x0041BB06",
@@ -1259,7 +1312,7 @@
     "address": "0x0041C4C1",
     "canonical_address": "0x00456EEC",
     "end": "0x0041C58D",
-    "evidence": "called",
+    "evidence": "referenced",
     "name": "d3dx_x86_vec3_normalize",
     "size": 204,
     "aliases": [

@@ -234,6 +234,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/level/move_with_collision.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_move_with_collision"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/perks/perk_meta.cpp",
           "configs": [
             "tools/match/scratches/perk_meta_global_construct_and_register",

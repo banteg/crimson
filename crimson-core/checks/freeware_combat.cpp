@@ -1,5 +1,6 @@
 // Minimal host for stepping the same combat bodies linked into both clients.
 #include "../freeware/game.h"
+#include "freeware_level.h"
 namespace freeware {
 void play_sound(Sound) {}
 void play_original_sample(int) {}
@@ -235,5 +236,19 @@ int combat_frame_step(float dt, int input) {
   std::copy(std::begin(f), std::end(f), combat_frame_fields);
   std::copy(std::begin(game.random_flags), std::end(game.random_flags), combat_frame_flags);
   return game.frame_state();
+}
+}
+
+extern "C" {
+vec2f_t combat_wall_result;
+int combat_wall(float x, float y, float dx, float dy, int count) {
+  freeware_level_object walls[] = {{{40, 50}, 0, 20, 15}, {{60, 35}, 0, 10, 30}};
+  freeware_level_object *entries[] = {&walls[0], &walls[1]};
+  freeware_level_map map = {};
+  map.walls_begin = entries;
+  map.walls_end = entries + count;
+  combat_wall_result = {x, y};
+  vec2f_t delta = {dx, dy};
+  return map.move_with_collision(&combat_wall_result, &delta, 8);
 }
 }

@@ -303,27 +303,51 @@
     "size": 1
   },
   {
+    "address": "0x00401440",
+    "canonical_address": "0x0041E8D0",
+    "end": "0x0040146D",
+    "evidence": "ordered",
+    "name": "input_aim_pov_left_active",
+    "size": 45
+  },
+  {
+    "address": "0x00401470",
+    "build_only": true,
+    "end": "0x004015FF",
+    "evidence": "ordered",
+    "name": "freeware_level_move_with_collision",
+    "size": 399
+  },
+  {
+    "address": "0x00401600",
+    "canonical_address": "0x0043D260",
+    "end": "0x00401624",
+    "evidence": "ordered",
+    "name": "sfx_play_panned",
+    "size": 36
+  },
+  {
     "address": "0x00401630",
-    "canonical_address": "0x0041F130",
+    "build_only": true,
     "end": "0x004016A5",
     "evidence": "ordered",
-    "name": "config_ensure_file",
+    "name": "sfx_update",
     "size": 117
   },
   {
     "address": "0x004016B0",
-    "canonical_address": "0x0041F430",
+    "build_only": true,
     "end": "0x004017F2",
     "evidence": "ordered",
-    "name": "angle_approach",
+    "name": "freeware_music_start",
     "size": 322
   },
   {
     "address": "0x00401800",
-    "canonical_address": "0x0043D260",
+    "canonical_address": "0x0041E840",
     "end": "0x00401878",
     "evidence": "ordered",
-    "name": "sfx_play_panned",
+    "name": "fx_queue_add",
     "size": 120
   },
   {
@@ -336,42 +360,26 @@
   },
   {
     "address": "0x004018F0",
-    "canonical_address": "0x0041F580",
+    "build_only": true,
     "end": "0x00401935",
-    "evidence": "ordered",
-    "name": "bonus_alloc_slot",
+    "evidence": "exact",
+    "name": "freeware_point_in_rect",
     "size": 69
   },
   {
     "address": "0x00401940",
-    "canonical_address": "0x0041E840",
+    "canonical_address": "0x0041FBB0",
     "end": "0x004019C9",
     "evidence": "ordered",
-    "name": "fx_queue_add",
+    "name": "fx_spawn_sprite",
     "size": 137
   },
   {
-    "address": "0x004019E0",
-    "canonical_address": "0x0041E8D0",
-    "end": "0x00401A0A",
-    "evidence": "ordered",
-    "name": "input_aim_pov_left_active",
-    "size": 42
-  },
-  {
-    "address": "0x00401A10",
-    "canonical_address": "0x0041E8F0",
-    "end": "0x00401A38",
-    "evidence": "ordered",
-    "name": "input_aim_pov_right_active",
-    "size": 40
-  },
-  {
     "address": "0x00401A40",
-    "canonical_address": "0x0041F1A0",
+    "build_only": true,
     "end": "0x00401C07",
     "evidence": "ordered",
-    "name": "config_load_presets",
+    "name": "freeware_save_score",
     "size": 455
   },
   {
@@ -484,24 +492,24 @@
     "end": "0x00405902",
     "evidence": "exact",
     "name": "fx_queue_add_random",
-    "size": 50
+    "size": 50,
+    "aliases": [
+      "freeware_blood"
+    ]
   },
   {
     "address": "0x00405910",
-    "canonical_address": "0x00427830",
+    "build_only": true,
     "end": "0x0040594B",
     "evidence": "exact",
-    "name": "fx_queue_random_color_destroy",
-    "size": 59,
-    "aliases": [
-      "$E2"
-    ]
+    "name": "fx_queue_add_shell",
+    "size": 59
   },
   {
     "address": "0x00405950",
     "canonical_address": "0x00427840",
     "end": "0x004059CA",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "fx_queue_add_rotated",
     "size": 122
   },
@@ -555,10 +563,10 @@
   },
   {
     "address": "0x004068F0",
-    "canonical_address": "0x0042D0E0",
+    "canonical_address": "0x00419680",
     "end": "0x00406F4C",
     "evidence": "ordered",
-    "name": "highscore_sync_worker",
+    "name": "creature_render_all",
     "size": 1628
   },
   {
@@ -602,6 +610,14 @@
     "size": 383
   },
   {
+    "address": "0x00408040",
+    "build_only": true,
+    "end": "0x004097C5",
+    "evidence": "ordered",
+    "name": "gameplay_render_hud",
+    "size": 6021
+  },
+  {
     "address": "0x004097D0",
     "canonical_address": "0x00434480",
     "end": "0x00409BD8",
@@ -611,10 +627,10 @@
   },
   {
     "address": "0x00409BE0",
-    "canonical_address": "0x00437060",
+    "build_only": true,
     "end": "0x0040A090",
     "evidence": "ordered",
-    "name": "quest_build_survival_of_the_fastest",
+    "name": "freeware_read_name_key",
     "size": 1200
   },
   {
@@ -624,6 +640,14 @@
     "evidence": "ordered",
     "name": "quest_build_the_unblitzkrieg",
     "size": 1364
+  },
+  {
+    "address": "0x0040A5F0",
+    "build_only": true,
+    "end": "0x0040ACBC",
+    "evidence": "ordered",
+    "name": "game_highscores_update",
+    "size": 1740
   },
   {
     "address": "0x0040ACC0",

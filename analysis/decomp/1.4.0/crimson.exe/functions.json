@@ -772,6 +772,14 @@
     "size": 1
   },
   {
+    "address": "0x00404EE0",
+    "end": "0x004050DD",
+    "size": 509,
+    "build_only": true,
+    "name": "freeware_level_move_with_collision",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00405630",
     "canonical_address": "0x0043D260",
     "end": "0x004056CC",
@@ -780,12 +788,68 @@
     "size": 156
   },
   {
+    "address": "0x004056D0",
+    "end": "0x00405751",
+    "size": 129,
+    "build_only": true,
+    "name": "sfx_update",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00405760",
+    "end": "0x0040588B",
+    "size": 299,
+    "build_only": true,
+    "name": "freeware_music_start",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00405890",
+    "end": "0x004058D2",
+    "size": 66,
+    "build_only": true,
+    "name": "freeware_music_stop",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00405C80",
     "canonical_address": "0x0041E840",
     "end": "0x00405D03",
     "evidence": "recovered",
     "name": "fx_queue_add",
     "size": 131
+  },
+  {
+    "address": "0x00405D10",
+    "end": "0x00405D35",
+    "size": 37,
+    "build_only": true,
+    "name": "input_move_up_active",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00405D40",
+    "end": "0x00405D63",
+    "size": 35,
+    "build_only": true,
+    "name": "input_move_down_active",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00405D70",
+    "end": "0x00405D95",
+    "size": 37,
+    "build_only": true,
+    "name": "input_move_left_active",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00405DA0",
+    "end": "0x00405DC3",
+    "size": 35,
+    "build_only": true,
+    "name": "input_move_right_active",
+    "evidence": "recovered"
   },
   {
     "address": "0x00405DD0",
@@ -868,12 +932,44 @@
     "size": 189
   },
   {
+    "address": "0x00406B60",
+    "end": "0x00406BA5",
+    "size": 69,
+    "build_only": true,
+    "name": "freeware_point_in_rect",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00406BB0",
     "canonical_address": "0x0041FC60",
     "end": "0x00406E10",
     "evidence": "recovered",
     "name": "weapon_name_get",
     "size": 608
+  },
+  {
+    "address": "0x00406FF0",
+    "end": "0x00407178",
+    "size": 392,
+    "build_only": true,
+    "name": "freeware_save_score",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004073C0",
+    "canonical_address": "0x0043AFA0",
+    "end": "0x00407771",
+    "evidence": "recovered",
+    "name": "highscore_load_table",
+    "size": 945
+  },
+  {
+    "address": "0x00407780",
+    "end": "0x004078A9",
+    "size": 297,
+    "build_only": true,
+    "name": "freeware_score_rank",
+    "evidence": "recovered"
   },
   {
     "address": "0x004078B0",
@@ -1021,14 +1117,11 @@
   },
   {
     "address": "0x0040E6F0",
-    "canonical_address": "0x00427830",
     "end": "0x0040E72B",
-    "evidence": "ordered",
-    "name": "fx_queue_random_color_destroy",
     "size": 59,
-    "aliases": [
-      "$E2"
-    ]
+    "build_only": true,
+    "name": "fx_queue_add_shell",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040E730",
@@ -1095,12 +1188,28 @@
     "size": 410
   },
   {
+    "address": "0x0040FD10",
+    "canonical_address": "0x00419680",
+    "end": "0x004103A4",
+    "evidence": "recovered",
+    "name": "creature_render_all",
+    "size": 1684
+  },
+  {
     "address": "0x004103B0",
     "canonical_address": "0x00428390",
     "end": "0x004110A0",
     "evidence": "ordered",
     "name": "player_render",
     "size": 3312
+  },
+  {
+    "address": "0x004110A0",
+    "end": "0x00412565",
+    "size": 5317,
+    "build_only": true,
+    "name": "effect_render_all",
+    "evidence": "recovered"
   },
   {
     "address": "0x00412570",
@@ -1127,12 +1236,60 @@
     "size": 3785
   },
   {
+    "address": "0x00416560",
+    "end": "0x004167A6",
+    "size": 582,
+    "build_only": true,
+    "name": "game_show_message",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004167B0",
+    "end": "0x004169BF",
+    "size": 527,
+    "build_only": true,
+    "name": "level_load_next",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00416A00",
+    "end": "0x00417CB8",
+    "size": 4792,
+    "build_only": true,
+    "name": "gameplay_render_hud",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00417CC0",
+    "end": "0x00418190",
+    "size": 1232,
+    "build_only": true,
+    "name": "freeware_read_name_key",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00418190",
     "canonical_address": "0x0040C1C0",
     "end": "0x0041E2E4",
     "evidence": "recovered",
     "name": "game_frame_update",
     "size": 24916
+  },
+  {
+    "address": "0x0041E330",
+    "end": "0x0041EF9D",
+    "size": 3181,
+    "build_only": true,
+    "name": "game_credits_update",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x0041F480",
+    "end": "0x0041FB93",
+    "size": 1811,
+    "build_only": true,
+    "name": "game_highscores_update",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041FC00",

@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "crimson-core"))
 from freeware.build import game_flags, game_sources
 from freeware_frame_cases import check_frames
-from freeware_player_cases import check_controls
+from freeware_player_cases import check_controls, check_walls
 
 # symbol, original VA, record format (preserves the exact x86 padding), capacity
 BULLET = ("projectile_pool", 0x439260, "<B3x7fi4f", 64)
@@ -584,6 +584,7 @@ def check_client(dll, exe, address, target):
     comparison.creatures()
     comparison.rewards()
     comparison.projectiles()
+    check_walls(comparison)
     check_controls(comparison)
     dispatch_frames = check_frames(comparison, exe)
     visual_cases = comparison.draws()
@@ -612,6 +613,7 @@ def check_web(stage, exe, sources):
         "combat_player",
         "combat_arm",
         "combat_controls",
+        "combat_wall",
         "combat_frame_start",
         "combat_frame_step",
         "combat_choose",
@@ -635,6 +637,7 @@ def check_web(stage, exe, sources):
         "freeware_secret_weapon_unlocked",
         "combat_frame_fields",
         "combat_frame_flags",
+        "combat_wall_result",
         "combat_draw_capture",
         "combat_terrain_capture",
         "freeware_rng_state",
@@ -727,6 +730,7 @@ def main():
         dll.combat_actors.argtypes = [ctypes.c_int] * 3 + [ctypes.c_float]
         dll.combat_reward.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_bool]
         dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_int]
+        dll.combat_wall.argtypes = [ctypes.c_float] * 4 + [ctypes.c_int]
         dll.combat_frame_step.argtypes = [ctypes.c_float, ctypes.c_int]
         dll.combat_controls.argtypes = [ctypes.c_int] * 6 + [ctypes.c_float]
         dll.combat_message.restype = ctypes.c_char_p

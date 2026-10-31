@@ -471,8 +471,8 @@
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x004220e4",
-      "name": "highscore_record_hits",
+      "address": "0x004220f0",
+      "name": "freeware_aim_screen",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -486,8 +486,8 @@
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x004244e0",
-      "name": "unused_aim64_prefix_color",
+      "address": "0x004244f0",
+      "name": "freeware_fps",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -501,18 +501,23 @@
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x00428674",
-      "name": "config_blob",
+      "address": "0x004287f4",
+      "name": "freeware_shell_marks",
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x00428868",
-      "name": "creature_spawned_count",
+      "address": "0x0042886c",
+      "name": "freeware_next_spawn",
       "program": "1.0.2/crimson.exe"
     },
     {
       "address": "0x00428880",
       "name": "d3dx_sse_math_bss",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428894",
+      "name": "freeware_low_fps_frames",
       "program": "1.0.2/crimson.exe"
     },
     {

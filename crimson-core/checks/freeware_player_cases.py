@@ -213,3 +213,20 @@ def check_controls(check):
             abs_tol=0.001,
         ), label
         check.frames += 1
+
+
+def check_walls(check):
+    pe = check.pe
+    level, pos, delta = pe.alloc(0x60), pe.alloc(8), pe.alloc(8)
+    walls = [pe.alloc_f32s(40, 50, 0, 20, 15), pe.alloc_f32s(60, 35, 0, 10, 30)]
+    entries = pe.alloc(8, data=struct.pack("<II", *walls))
+    pe.write_u32(level + 0x28, entries)
+    for count in range(3):
+        pe.write_u32(level + 0x2C, entries + 4 * count)
+        for x, y in ((30, 47), (55, 35), (66, 62), (38, 75), (80, 30)):
+            for dx, dy in ((0, 0), (4, 10), (-8, -6), (-12, 9), (16, -12)):
+                pe.write(pos, struct.pack("<ff", x, y))
+                pe.write(delta, struct.pack("<ff", dx, dy))
+                blocked = pe.call(0x404EE0, pos, delta, 8.0, ecx=level).eax
+                assert check.dll.combat_wall(x, y, dx, dy, count) == blocked
+                assert ctypes.string_at(check.symbol("combat_wall_result"), 8) == pe.read(pos, 8)

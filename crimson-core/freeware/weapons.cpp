@@ -1,9 +1,12 @@
 // SDL input and presentation boundaries for the 1.4.0 player simulation.
 #include "game.h"
+#include "freeware_level.h"
 #include <algorithm>
 #include <cmath>
 
+static freeware_level_map arena_level{};
 extern "C" {
+freeware_level_map *freeware_current_map = &arena_level;
 extern int config_player_count, freeware_first_kill_xp;
 extern float freeware_berserk_timer, freeware_elapsed_seconds;
 extern unsigned char freeware_player_moved;

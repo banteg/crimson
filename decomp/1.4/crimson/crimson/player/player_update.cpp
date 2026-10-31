@@ -1,5 +1,5 @@
 // crimson.exe 1.4.0, 0x4126e0..0x41568a.
-#include "crimsonland_types.h"
+#include "freeware_level.h"
 #include <math.h>
 #ifndef _MSC_VER
 #define __forceinline inline
@@ -83,21 +83,11 @@ __forceinline void decelerate() {
     if (P.move_speed < 0)
         P.move_speed = 0;
 }
-struct level_map_t {
-    int move_with_collision(vec2f_t *pos, const vec2f_t *delta, float radius);
-};
-extern "C" level_map_t *freeware_level_map;
 __forceinline void move(double speed) {
     P.movement.x = (float)(cos((double)P.heading - half) * speed);
     P.movement.y = (float)(sin((double)P.heading - half) * speed);
     vec2f_t delta = {frame_dt * P.movement.x, frame_dt * P.movement.y};
-#ifdef CRIMSON_FREEWARE_CLIENT
-    // Career and Survival both initialize the level with an empty wall list (0x408440).
-    P.position.x += delta.x;
-    P.position.y += delta.y;
-#else
-    freeware_level_map->move_with_collision(&P.position, &delta, 8.f);
-#endif
+    freeware_current_map->move_with_collision(&P.position, &delta, 8.f);
 }
 __forceinline float aim_angle() {
     return (float)(atan2((double)P.position.y - P.aim.y, (double)P.position.x - P.aim.x) - half);

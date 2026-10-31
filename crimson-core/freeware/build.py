@@ -66,6 +66,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "creatures/creature_reset_all.cpp",
                 "player/player_heading_approach_target.cpp",
                 "player/player_update.cpp",
+                "level/move_with_collision.cpp",
                 "game/game_frame_update.cpp",
                 "player/angle_approach.cpp",
                 "projectiles/projectile_spawn.cpp",
