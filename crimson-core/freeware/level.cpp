@@ -132,17 +132,6 @@ void freeware_level_map::update_triggers() {
   }
 }
 
-void freeware_level_map::render_layer(int layer, int) {
-  auto &g = *freeware_frame_game;
-  for (auto it = layers[layer].begin; it != layers[layer].end; ++it) {
-    auto &o = **it;
-    auto brush = std::find_if(g.brushes.begin(), g.brushes.end(),
-                              [&o](const auto &b) { return b.object.texture == o.texture; });
-    if (brush != g.brushes.end())
-      g.frame_sprites.push_back({brush->name.c_str(), g.camera.x + o.position.x, g.camera.y + o.position.y,
-                                 o.width, o.height, o.rotation, o.color});
-  }
-}
 void freeware_level_map::render_triggers(unsigned char playing) {
   if (playing)
     return;
@@ -168,7 +157,7 @@ void freeware::Game::load_next_level() {
     level_number = 1;
     freeware_current_map->load("levels/level_1.lvl");
   }
-  generate_terrain();
+  generate_terrain(!freeware_current_map->flag);
   for (auto &shot : projectile_pool)
     shot.active = 0;
   for (auto &sprite : sprite_effect_pool)

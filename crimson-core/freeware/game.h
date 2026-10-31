@@ -59,11 +59,6 @@ struct TrailDraw {
   std::array<effect_color_t, 4> colors;
   unsigned filter, source_blend, destination_blend;
 };
-struct TerrainStamp {
-  vec2f_t pos;
-  float angle;
-  bool grass;
-};
 struct QueuedImpact {
   const char *texture;
   vec2f_t position;
@@ -87,7 +82,7 @@ struct UiState {
   unsigned filter = 2, destination_blend = 6, source_blend = 5;
 };
 struct FrameSprite {
-  const char *name;
+  std::string name;
   float x, y, width, height, angle;
   effect_color_t color;
   UiUv uv{};
@@ -142,8 +137,9 @@ struct Game {
   std::vector<TrailDraw> frame_trails;
   std::vector<FrameSprite> terrain_marks;
   int terrain_revision{}, presented_terrain_revision{};
-  std::vector<TerrainStamp> terrain;
-  void generate_terrain();
+  std::vector<FrameSprite> terrain;
+  effect_color_t terrain_clear{};
+  void generate_terrain(bool textured = true);
   float cursor_x = 320, cursor_y = 140;
   int selected{}, generation{}, perk_hover{};
   float death_clock{};

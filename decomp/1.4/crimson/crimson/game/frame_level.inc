@@ -6,7 +6,7 @@ extern int freeware_editor_brush, freeware_editor_layer;
 extern float freeware_editor_rotation, freeware_editor_light, freeware_editor_alpha, freeware_editor_radius;
 extern vec2f_t freeware_editor_offset;
 extern freeware_level_object **freeware_brush_begin, **freeware_brush_end;
-void terrain_generate(int), level_load_next();
+void terrain_generate(unsigned char), level_load_next();
 unsigned char creatures_none_active();
 }
 #endif
@@ -20,9 +20,9 @@ __forceinline bool editor_key(int code, bool pressed) {
 }
 __forceinline void rebuild_terrain() {
 #ifdef CRIMSON_FREEWARE_CLIENT
-    G.generate_terrain();
+    G.generate_terrain(!freeware_current_map->flag);
 #else
-    terrain_generate(1);
+    terrain_generate(!freeware_current_map->flag);
 #endif
 }
 struct editor_object : freeware_level_object {

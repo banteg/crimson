@@ -66,6 +66,8 @@ class UiOracle:
 
         for slot, (count, callback) in {
             0x1C: (5, config),
+            0x28: (4, lambda c: self.clears.append(tuple(c.arg_f32(i) for i in range(4)))),
+            0x9C: (0, 0),
             0x2C: (1, lambda c: self.targets.append(c.arg_u32(0))),
             0x38: (0, lambda _: self.dt),
             0x40: (1, lambda c: (c.arg_u32(0) & 255) in self.keys),
@@ -96,6 +98,7 @@ class UiOracle:
         raise AssertionError("unterminated UI text")
 
     def reset_draw(self):
+        self.clears = []
         self.targets = []
         self.calls.clear()
         self.scale = self.angle = 0

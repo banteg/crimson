@@ -255,7 +255,7 @@ def test_freeware_scratches_use_the_original_image_and_donor_maps(build: str) ->
     assert REGISTRY.identity(image) == REGISTRY.image("1.9.93", "crimsonland.exe")
     assert image == REGISTRY.image(build, "crimson.exe")
     config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/console_init")
-    built, = image.scratch_configs(config)
+    (built,) = image.scratch_configs(config)
     assert built.image == "crimson.exe"
     assert built.compiler == "msvc6.5"
     assert f"/DCL_BUILD={image.cl_build}" in built.cflags
@@ -279,7 +279,8 @@ def test_order_candidates_inside_verified_bodies_cannot_split_functions() -> Non
 
 
 FAMILY_LAYOUTS = sorted(
-    path for path in (matchlib.REPO_ROOT / "decomp").glob("*/*/layout.json")
+    path
+    for path in (matchlib.REPO_ROOT / "decomp").glob("*/*/layout.json")
     if json.loads(path.read_text(encoding="utf-8"))["kind"] == "crimson-family-source-layout"
 )
 
@@ -296,12 +297,11 @@ def test_family_layout_places_each_source_in_its_native_object(layout_path: Path
         for row in json.loads(image.target.functions_path.read_text(encoding="utf-8"))
     }
     seen: set[Path] = set()
-    previous_end = 0
+    all_ranges: list[tuple[int, int]] = []
     for module in payload["modules"]:
         ranges = [(int(start, 16), int(end, 16)) for start, end in module["ranges"]]
-        for start, end in ranges:
-            assert previous_end <= start < end
-            previous_end = end
+        assert ranges == sorted(ranges)
+        all_ranges.extend(ranges)
         for row in module["sources"]:
             source = (matchlib.REPO_ROOT / row["path"]).resolve()
             assert source.is_relative_to(root) and source.is_file() and source not in seen
@@ -313,4 +313,8 @@ def test_family_layout_places_each_source_in_its_native_object(layout_path: Path
                 assert (config.directory / override).resolve() == source
                 if config.function in mapped:
                     assert any(start <= mapped[config.function] < end for start, end in ranges)
+    previous_end = 0
+    for start, end in sorted(all_ranges):
+        assert previous_end <= start < end
+        previous_end = end
     assert seen == {path.resolve() for path in root.rglob("*") if path.suffix in {".c", ".cpp"}}

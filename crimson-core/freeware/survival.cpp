@@ -65,23 +65,12 @@ extern "C" int crt_rand() {
   return (freeware_rng_state >> 16) & 0x7fff;
 }
 
-// terrain_generate (0x40e060) uses the gameplay CRT stream, including on restart.
-void Game::generate_terrain() {
-  if (safe_mode)
-    return;
-  ++terrain_revision;
-  terrain.clear();
-  for (bool grass : {true, false}) {
-    const int count = arena * arena * (grass ? 700 : 35) / 524288;
-    for (int i = 0; i < count; ++i) {
-      float angle = (crt_rand() % 314) * .01f;
-      float x = float(crt_rand() % (arena + 128) - 64);
-      float y = float(crt_rand() % (arena + 128) - 64);
-      terrain.push_back({{x, y}, angle, grass});
-    }
-  }
-  // The final level-shadow pass leaves its drawing offset in the camera globals.
-  camera = {7 * 1.1f, 7 * 1.1f};
+extern "C" void terrain_generate(unsigned char textured);
+void Game::generate_terrain(bool textured) {
+  Game *previous = freeware_frame_game;
+  freeware_frame_game = this;
+  terrain_generate(textured);
+  freeware_frame_game = previous;
 }
 void Game::reset_gameplay() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
@@ -122,7 +111,7 @@ void Game::reset_gameplay() {
   name.clear();
   paused = false;
   screen = Screen::Playing;
-  generate_terrain();
+  generate_terrain(config_game_mode < 3 || !freeware_current_map->flag);
 }
 void Game::start() {
   reset_gameplay();

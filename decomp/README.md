@@ -173,7 +173,7 @@ A function whose freeware body differs from 1.9's has its own file under
 file keeps only the 1.9 builds' code. A version override such as `SOURCE_1.4.0` takes precedence over the family source. Set `BUILDS=1.4.0` on a scratch that can only be compiled for that release. A function with no known canonical counterpart can be registered in the historical image’s `recovered.json` with `build_only: true`, its extent and its body hash. `CL_BUILD` guards there separate 1.0.2,
 1.3.0 and 1.4.0. [crimson/layout.json](1.4/crimson/layout.json) places each
 file in the 1.4.0 object whose address range holds its function: `console`,
-`grim_loader`, and `crimson` (the main game object, grouped by subsystem).
+`grim_loader`, `level`, and `crimson` (the main game object, grouped by subsystem).
 Shared headers still carry the freeware structure layouts behind guards.
 
 The [freeware setup record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/FREEWARE-SETUP-2026-09-30.md)

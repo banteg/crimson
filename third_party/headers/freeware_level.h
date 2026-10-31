@@ -38,7 +38,7 @@ struct freeware_level_map {
     bool load(const char *path);
     void update_triggers();
     void arm_triggers();
-    void render_layer(int layer, int preview);
+    void render_layer(int layer, unsigned char preserve_color);
     void render_triggers(unsigned char game);
 };
 extern "C" freeware_level_map *freeware_current_map;

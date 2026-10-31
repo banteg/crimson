@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "crimson-core"))
 from freeware.build import game_flags, game_sources
 from freeware_frame_cases import check_frames
 from freeware_player_cases import check_controls, check_reset, check_walls
+from freeware_terrain_cases import check_generation
 from freeware_ui_cases import check_ui
 from freeware_world_cases import check_world
 
@@ -650,24 +651,6 @@ class Comparison:
                     struct.pack(ROCKET[2], 1, -0.37 + 0.51 * k, 1, 415 + 10 * k, 480, 3, 4, t, 0, 0),
                 )
             probe(("mixed", j), j % 2, 2, j % 2, (1.125, 3599.75, 28453.5625)[j % 3])
-        method(0x28, 4)
-        method(0x2C, 1)
-        pe.stub(0x404D70, 0, pop=8)  # Empty level-object list in both shipped modes.
-        for safe in (0, 1):
-            for seed in (1, 87, 13456):
-                calls.clear()
-                pe.rand_state = seed
-                pe.write_u8(0x452D51, safe)
-                pe.call(0x40E060, 1)
-                count = self.dll.combat_terrain(seed, safe)
-                assert len(calls) == count == (0 if safe else 1470)
-                base = self.symbol("combat_terrain_capture")
-                for i, (texture, points, colors, angle, *_state) in enumerate(calls):
-                    x, y, rotation, grass = struct.unpack("<fff?3x", ctypes.string_at(base + 16 * i, 16))
-                    assert texture == (6 if grass else 7) and points == (x, y, 128, 128)
-                    assert abs(rotation - angle) < 1e-6
-                    assert all(abs(a - b) < 1e-6 for a, b in zip(colors[2], (0.7, 0.7, 0.7, 0.9), strict=True))
-                assert self.dll.crt_rand() == pe.call(0x422414).eax
         return samples
 
 
@@ -685,9 +668,10 @@ def check_client(dll, exe, address, target):
     dispatch_frames = check_frames(comparison, exe, BULLET, creature, files=target == "native")
     ui_draws = check_ui(comparison, exe)
     world_draws = check_world(comparison, exe)
+    terrain_draws = check_generation(comparison, exe)
     visual_cases = comparison.draws()
     print(
-        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants, {dispatch_frames} full frame callbacks and {visual_cases} draw traces, plus {ui_draws} ordered UI draws and {world_draws} ordered world draws.",
+        f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants, {dispatch_frames} full frame callbacks and {visual_cases} draw traces, plus {ui_draws} ordered UI draws, {world_draws} ordered world draws and {terrain_draws} terrain-generation draws.",
         flush=True,
     )
 
@@ -702,7 +686,7 @@ def check_web(stage, exe, sources):
     functions = (
         "combat_bomb",
         "combat_draw",
-        "combat_terrain",
+        "combat_generate",
         "combat_reset",
         "combat_projectiles",
         "combat_creatures",
@@ -759,7 +743,8 @@ def check_web(stage, exe, sources):
         "combat_ui_result",
         "combat_world_state",
         "combat_draw_capture",
-        "combat_terrain_capture",
+        "combat_ground_state",
+        "combat_ground_objects",
         "freeware_rng_state",
         "bonus_fire_bullets_timer",
         "freeware_elapsed_seconds",

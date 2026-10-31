@@ -93,10 +93,10 @@
       "ranges": [
         [
           "0x403230",
-          "0x403fc0"
+          "0x403ac0"
         ],
         [
-          "0x404ec0",
+          "0x404ee0",
           "0x4216c2"
         ]
       ],
@@ -363,6 +363,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/render/terrain_generate.cpp",
+          "configs": [
+            "tools/match/scratches/terrain_generate"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/render/terrain_render.cpp",
           "configs": [
             "tools/match/scratches/terrain_render"
@@ -426,6 +432,25 @@
           "path": "decomp/1.4/crimson/crimson/weapons/weapon_name_get.cpp",
           "configs": [
             "tools/match/scratches/weapon_name_get"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "level",
+      "object": "level.obj",
+      "evidence": "The brush-list initializer at 0x403ac0 precedes the level methods. The last renderer returns at 0x404ed5 with an eight-byte stack pop.",
+      "ranges": [
+        [
+          "0x403ac0",
+          "0x404ed8"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.4/crimson/level/render_layer.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_render_layer"
           ]
         }
       ]

@@ -143,7 +143,7 @@ int combat_draw(float seconds, int effects, int count, int index) {
     r.uv[2] = r.uv[3] = 1;
   }
   for (const auto &d : game.frame_sprites) {
-    auto &r = record(d.name, 4, d.source_blend, d.destination_blend, d.filter);
+    auto &r = record(d.name.c_str(), 4, d.source_blend, d.destination_blend, d.filter);
     r.points[0] = d.x;
     r.points[1] = d.y;
     r.points[2] = d.width;
@@ -155,22 +155,6 @@ int combat_draw(float seconds, int effects, int count, int index) {
   return n;
 }
 }
-extern "C" {
-freeware::TerrainStamp combat_terrain_capture[1470];
-int combat_terrain(unsigned seed, int safe) {
-  game.safe_mode = safe != 0;
-  int revision = game.terrain_revision;
-  freeware::seed_random(seed);
-  game.generate_terrain();
-  if (game.terrain_revision == revision)
-    return 0;
-  if (game.terrain.size() > 1470)
-    return -1;
-  std::copy(game.terrain.begin(), game.terrain.end(), combat_terrain_capture);
-  return int(game.terrain.size());
-}
-}
-
 extern "C" float combat_bomb(float dt, int start) {
   frame_dt = dt;
   if (start) {
@@ -367,7 +351,7 @@ int combat_frame_step(float dt, int input) {
     auto &out = combat_frame_quads[i];
     const auto &draw = game.frame_sprites[i];
     combat_frame_blends[i] = draw.destination_blend;
-    std::snprintf(out.name, sizeof(out.name), "%s", draw.name);
+    std::snprintf(out.name, sizeof(out.name), "%s", draw.name.c_str());
     out.x = draw.x;
     out.y = draw.y;
     out.w = draw.width;
@@ -481,7 +465,7 @@ struct UiDrawCapture {
   int label, filter, blend, source;
   float x, y, width, height, angle, uv[4], scale, color[4];
 };
-UiDrawCapture combat_ui_draws[512];
+UiDrawCapture combat_ui_draws[2048];
 float combat_ui_result[4];
 }
 static int capture_ui() {
@@ -489,7 +473,7 @@ static int capture_ui() {
   size_t sprite = 0;
   auto emit = [&](const char *value, bool label, unsigned filter, unsigned blend, unsigned source, float x,
                   float y, float w, float h, float angle, freeware::UiUv uv, float scale, effect_color_t color) {
-    if (n == 512)
+    if (n == 2048)
       std::abort();
     auto &out = combat_ui_draws[n++];
     out = {};
@@ -515,8 +499,8 @@ static int capture_ui() {
   };
   auto quad = [&]() {
     const auto &q = game.frame_sprites[sprite++];
-    emit(q.name, false, q.filter, q.destination_blend, q.source_blend, q.x, q.y, q.width, q.height, q.angle, q.uv,
-         0, q.color);
+    emit(q.name.c_str(), false, q.filter, q.destination_blend, q.source_blend, q.x, q.y, q.width, q.height,
+         q.angle, q.uv, 0, q.color);
   };
   for (const auto &t : game.frame_labels) {
     while (sprite < t.preceding_sprites)
@@ -744,6 +728,54 @@ int combat_world_queue(int safe, int frame) {
 }
 extern int freeware_arena_width, freeware_arena_height;
 void terrain_render();
+freeware_level_object combat_ground_objects[6];
+float combat_ground_state[16];
+int combat_generate(unsigned seed, int safe, int textured, int w, int h, int populated) {
+  game.safe_mode = safe;
+  game.terrain_clear = {.25f, .5f, .75f, 1};
+  game.terrain = {{"ground", 3, 4, 5, 6, 0, {1, 1, 1, 1}}};
+  game.terrain_revision = 7;
+  game.frame_sprites = {{"arrow", 1, 2, 3, 4, 0, {1, 1, 1, 1}}};
+  game.camera = {-27.5f, 11.25f};
+  freeware_simulation_clock = .625f;
+  freeware_current_map->clear();
+  game.brushes.clear();
+  if (populated) {
+    for (int i = 0; i < 6; ++i)
+      freeware_current_map->add_object(i / 3, new freeware_level_object(combat_ground_objects[i]));
+    game.brushes.push_back({"arrow", combat_ground_objects[0]});
+    game.brushes.push_back({"blood", combat_ground_objects[2]});
+  }
+  int old_w = freeware_arena_width, old_h = freeware_arena_height;
+  freeware_arena_width = w;
+  freeware_arena_height = h;
+  freeware::seed_random(seed);
+  game.generate_terrain(textured != 0);
+  freeware_arena_width = old_w;
+  freeware_arena_height = old_h;
+  freeware_current_map->clear();
+  game.brushes.clear();
+  const float state[] = {(float)game.terrain_revision,
+                         (float)game.frame_sprites.size(),
+                         game.frame_sprites.at(0).x,
+                         game.camera.x,
+                         game.camera.y,
+                         (float)game.ui.filter,
+                         (float)game.ui.source_blend,
+                         (float)game.ui.destination_blend,
+                         game.terrain_clear.r,
+                         game.terrain_clear.g,
+                         game.terrain_clear.b,
+                         game.terrain_clear.a,
+                         (float)game.terrain.size()};
+  std::copy(std::begin(state), std::end(state), combat_ground_state);
+  if (game.terrain_revision == 7)
+    return 0;
+  game.frame_sprites.swap(game.terrain);
+  int n = capture_ui();
+  game.frame_sprites.swap(game.terrain);
+  return n;
+}
 int combat_world_ground(int safe, int sharp, int w, int h) {
   game.safe_mode = safe;
   game.smooth = !sharp;

@@ -104,7 +104,11 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
   }
 }
 void Display::frame_sprite(const FrameSprite &draw) {
-  const char *name = draw.name;
+  const char *name = draw.name.c_str();
+  if (!std::strcmp(name, "grass1.tga"))
+    name = "grass1";
+  else if (!std::strcmp(name, "mud1.tga"))
+    name = "mud1";
   if (!std::strcmp(name, "ugluk"))
     name = "borg_t";
   else if (!std::strcmp(name, "goblin"))
@@ -147,11 +151,11 @@ void Display::frame_art(const std::vector<FrameSprite> &sprites, const std::vect
 }
 void Display::rebuild_ground(const Game &g) {
   SDL_SetRenderTarget(renderer, ground);
-  SDL_SetRenderDrawColor(renderer, 63, 56, 25, 255);
+  SDL_SetRenderDrawColorFloat(renderer, g.terrain_clear.r, g.terrain_clear.g, g.terrain_clear.b,
+                              g.terrain_clear.a);
   SDL_RenderClear(renderer);
-  for (const auto &stamp : g.terrain)
-    sprite(stamp.grass ? "grass1" : "mud1", stamp.pos.x, stamp.pos.y, 128, 128, stamp.angle, 0, 1,
-           {.7f, .7f, .7f, .9f});
+  for (const auto &draw : g.terrain)
+    frame_sprite(draw);
   SDL_SetRenderTarget(renderer, nullptr);
   ground_revision = g.terrain_revision;
 }
