@@ -543,15 +543,16 @@ class Comparison:
         samples = 0
         pe.write_u32(0x452DDC, 3)
 
-        def probe(case, effects, count=1, index=0):
+        def probe(case, effects, count=1, index=0, seconds=1.125):
             nonlocal samples
             state.update({0x13: 5, 0x14: 6, 0x15: 2, "angle": 0})
             pe.write_u8(0x44289E, effects)
             pe.write_u32(0x4428A0, count)
             pe.write_u32(0x452D8C, index)
+            pe.write_f32(0x452DC4, seconds)
             calls.clear()
             pe.call(0x40B570)
-            n = self.dll.combat_draw(1.125, effects, count, index)
+            n = self.dll.combat_draw(seconds, effects, count, index)
             assert len(calls) == n, (case, len(calls), n)
             fmt = "<5i29f"
             size = struct.calcsize(fmt)
@@ -648,7 +649,7 @@ class Comparison:
                     (0, 1, 63)[k],
                     struct.pack(ROCKET[2], 1, -0.37 + 0.51 * k, 1, 415 + 10 * k, 480, 3, 4, t, 0, 0),
                 )
-            probe(("mixed", j), j % 2, 2, j % 2)
+            probe(("mixed", j), j % 2, 2, j % 2, (1.125, 3599.75, 28453.5625)[j % 3])
         method(0x28, 4)
         method(0x2C, 1)
         pe.stub(0x404D70, 0, pop=8)  # Empty level-object list in both shipped modes.

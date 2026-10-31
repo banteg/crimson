@@ -13,16 +13,11 @@ namespace {
 const float half_pi = 1.57079637f, muzzle_offset = .150915f;
 #define GLOW UI_FIELD(freeware_glow, effects)
 #define SECONDS UI_FIELD(freeware_elapsed_seconds, run.seconds)
-#ifdef CRIMSON_FREEWARE_CLIENT
-#define SHEET(handle, name) bind(name)
-#else
-#define SHEET(handle, name) bind(handle)
-#endif
 __forceinline float clamp_alpha(float a) {
     if (a > 1)
-        return 1;
-    if (a < 0)
-        return 0;
+        a = 1;
+    else if (a < 0)
+        a = 0;
     return a;
 }
 __forceinline void corner(int slot, float r, float g, float b, float a) {
@@ -56,25 +51,39 @@ __forceinline void sights() {
         float oy = pos.y + (float)(sin(angle - muzzle_offset) * 15) + CAMERA.y;
         float ex = pos.x + (float)(cos(angle) * 512) + CAMERA.x;
         float ey = pos.y + (float)(sin(angle) * 512) + CAMERA.y;
-        float wx = (float)(cos(p.aim_heading) * 1.1f), wy = (float)(sin(p.aim_heading) * 1.1f);
+        vec2f_t half = {(float)(cos(p.aim_heading) * 1.1f), (float)(sin(p.aim_heading) * 1.1f)};
         if (player_state_table[0].freeware.perks[perk_id_sharpshooter] > 0) {
             destination(2);
             begin();
-            ribbon(ox - wx, oy - wy, ox + wx, oy + wy, ex + wx, ey + wy, ex - wx, ey - wy);
+            ribbon(ox - half.x, oy - half.y, ox + half.x, oy + half.y, ex + half.x, ey + half.y, ex - half.x,
+                   ey - half.y);
             end();
             destination(6);
         }
     }
 }
-__forceinline void trail(const projectile_t &p, float width) {
-    float x = CAMERA.x + p.position.x, y = CAMERA.y + p.position.y, ox = CAMERA.x + p.fields.origin.x,
-          oy = CAMERA.y + p.fields.origin.y;
-    float dx = p.fields.vel_x * width, dy = p.fields.vel_y * width;
-    ribbon(ox - dx, oy - dy, ox + dx, oy + dy, x + dx, y + dy, x - dx, y - dy);
+__forceinline vec2f_t operator+(const vec2f_t &a, const vec2f_t &b) {
+    vec2f_t v = {a.x + b.x, a.y + b.y};
+    return v;
+}
+__forceinline vec2f_t operator-(const vec2f_t &a, const vec2f_t &b) {
+    vec2f_t v = {a.x - b.x, a.y - b.y};
+    return v;
+}
+__forceinline vec2f_t operator*(const vec2f_t &v, const float &scale) {
+    vec2f_t r = {v.x * scale, v.y * scale};
+    return r;
+}
+__forceinline void trail(const projectile_t &p, float width, vec2f_t (&point)[4]) {
+    // Calculate the width at each corner, as in the original inlined vector expressions.
+    point[0] = (CAMERA + p.fields.origin) - p.fields.velocity * width;
+    point[1] = (CAMERA + p.fields.origin) + p.fields.velocity * width;
+    point[2] = (CAMERA + p.position) + p.fields.velocity * width;
+    point[3] = (CAMERA + p.position) - p.fields.velocity * width;
 }
 __forceinline void trails(bool fire) {
     for (projectile_t *p = projectile_pool; p < projectile_pool + 64; ++p) {
-        int type = p->fields.type_id;
+        const projectile_type_id_t &type = p->fields.type_id;
         if (!p->active || type == 7 || type == 9 || (!fire && (type == 18 || type == 17)))
             continue;
         if (type == 0)
@@ -82,16 +91,18 @@ __forceinline void trails(bool fire) {
         float alpha = clamp_alpha(p->fields.life_timer);
         corner(2, .8f, .6f, .6f, alpha);
         corner(3, .8f, .6f, .6f, alpha);
+        vec2f_t point[4];
         if (type == 1)
-            trail(*p, fire ? 3.f : 1.f);
+            trail(*p, fire ? 3.f : 1.f, point);
         else if (type == 4)
-            trail(*p, fire ? 3.f : 1.3f);
+            trail(*p, fire ? 3.f : 1.3f, point);
         else if (!fire && type == 10) {
             corner(2, .2f, .5f, 1, alpha);
             corner(3, .2f, .5f, 1, alpha);
-            trail(*p, 1.2f);
+            trail(*p, 1.2f, point);
         } else
-            trail(*p, fire ? 1.f : .7f);
+            trail(*p, fire ? 1.f : .7f, point);
+        ribbon(point[0].x, point[0].y, point[1].x, point[1].y, point[2].x, point[2].y, point[3].x, point[3].y);
     }
 }
 __forceinline void centered(const vec2f_t &p, float size) {
@@ -122,7 +133,7 @@ __forceinline void plasma(const projectile_t &p, float gap, int cap, float bead,
     if (GLOW)
         centered(p.position, glow);
 }
-__forceinline void orbit(const projectile_t &p, double phase, float radius, float offset, float size) {
+__forceinline void orbit(const projectile_t &p, float phase, float radius, float offset, float size) {
     quad((float)(CAMERA.x + p.pos_x - offset + cos(phase) * radius),
          (float)(CAMERA.y + p.position.y - offset + sin(phase) * radius), size, size);
 }
@@ -139,7 +150,8 @@ __forceinline void energy(int type) {
         }
         tint(1, 1, 1, 1);
         centered(p.position, 60);
-        double phase = (double)SECONDS * 9 + i;
+        // The game's x87 precision control rounds each phase addition to a float.
+        float phase = SECONDS * 9 + i;
         if (type == 18) {
             tint(1, .2f, .2f, .9f);
             orbit(p, phase, 13, 21, 42);
@@ -164,7 +176,7 @@ __forceinline void energy(int type) {
 __forceinline void rocket_glow(float reach, float size, float alpha) {
     source(5);
     destination(2);
-    SHEET(freeware_particle_texture, "part");
+    world_sheet(freeware_particle_texture, "part");
     begin();
     for (secondary_projectile_t *r = secondary_projectile_pool; r < secondary_projectile_pool + 64; ++r)
         if (r->active) {
@@ -179,7 +191,7 @@ __forceinline void rocket_glow(float reach, float size, float alpha) {
 } // namespace
 extern "C" void projectile_render() {
     uv(0, 0, 1, 1);
-    SHEET(freeware_bullet_texture, "bullet");
+    world_sheet(freeware_bullet_texture, "bullet");
     tint(1, 0, 0, .5f);
 #ifdef CRIMSON_FREEWARE_CLIENT
     UI_GAME.trail_colors.fill(UI_GAME.ui.color);
@@ -191,10 +203,10 @@ extern "C" void projectile_render() {
     corner(1, .6f, .6f, .6f, 0);
     begin();
     if (bonus_fire_bullets_timer <= 0) {
-        SHEET(freeware_bullet_texture, "bullet");
+        world_sheet(freeware_bullet_texture, "bullet");
         trails(false);
     } else {
-        SHEET(freeware_particle_texture, "part");
+        world_sheet(freeware_particle_texture, "part");
         source(5);
         destination(2);
         trails(true);
@@ -202,7 +214,7 @@ extern "C" void projectile_render() {
     end();
     source(5);
     destination(2);
-    SHEET(freeware_particle_texture, "part");
+    world_sheet(freeware_particle_texture, "part");
     uv(0, 0, 1, 1);
     angle(0);
     const freeware_player_t &player = player_state_table[current_player_index].freeware;
@@ -241,7 +253,7 @@ extern "C" void projectile_render() {
     if (bonus_fire_bullets_timer > 0) {
         source(5);
         destination(2);
-        SHEET(freeware_particle_texture, "part");
+        world_sheet(freeware_particle_texture, "part");
         float a = bonus_fire_bullets_timer * .25f;
         if (a >= 1)
             a = 1;
@@ -249,7 +261,7 @@ extern "C" void projectile_render() {
         begin();
         for (projectile_t *f = projectile_pool; f < projectile_pool + 64; ++f)
             if (f->active && f->fields.life_timer == .4f) {
-                angle(f->angle);
+                world_angle(f->angle);
                 centered(f->position, 64);
             }
         end();
@@ -257,11 +269,11 @@ extern "C" void projectile_render() {
     source(5);
     destination(6);
     tint(.8f, .8f, .8f, .9f);
-    SHEET(freeware_bullet_icon, "bullet_i");
+    world_sheet(freeware_bullet_icon, "bullet_i");
     begin();
     for (projectile_t *b = projectile_pool; b < projectile_pool + 64; ++b)
         if (b->active && b->fields.life_timer == .4f && b->fields.type_id != 7 && b->fields.type_id != 9) {
-            angle(b->angle);
+            world_angle(b->angle);
             if (b->fields.type_id == 1)
                 centered(b->position, 6);
             else if (b->fields.type_id == 4)
@@ -279,7 +291,7 @@ extern "C" void projectile_render() {
     begin();
     for (secondary_projectile_t *r = secondary_projectile_pool; r < secondary_projectile_pool + 64; ++r)
         if (r->active && r->fields.type_id != 3) {
-            angle(r->angle);
+            world_angle(r->angle);
             centered(r->position, 10);
         }
     end();

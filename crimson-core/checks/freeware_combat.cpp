@@ -159,8 +159,11 @@ extern "C" {
 freeware::TerrainStamp combat_terrain_capture[1470];
 int combat_terrain(unsigned seed, int safe) {
   game.safe_mode = safe != 0;
+  int revision = game.terrain_revision;
   freeware::seed_random(seed);
   game.generate_terrain();
+  if (game.terrain_revision == revision)
+    return 0;
   if (game.terrain.size() > 1470)
     return -1;
   std::copy(game.terrain.begin(), game.terrain.end(), combat_terrain_capture);
