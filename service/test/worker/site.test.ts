@@ -59,7 +59,16 @@ async function api<T>(path: string, cookie = ""): Promise<T> {
 
 describe("site", () => {
   it("every route gets the site's page, titled for what a shared link points at", async () => {
-    for (const [path, title] of [["/", "crimson.land"], ["/quests/1.1", `1.1: ${questTitles["1.1"]} · crimson.land`], ["/about", "About · crimson.land"]]) {
+    for (const [path, title] of [
+      ["/", "crimson.land"],
+      ["/quests/1.1", `1.1: ${questTitles["1.1"]} · crimson.land`],
+      ["/about", "About · crimson.land"],
+      // A board's page for 1.9.8's boards names that build.
+      ["/survival?build=1.9.8", "Survival · 1.9.8 · crimson.land"],
+      ["/quests/hardcore/2.3?build=1.9.8", `2.3: ${questTitles["2.3"]} · hardcore · 1.9.8 · crimson.land`],
+      ["/quests/coop/4?build=1.9.8", "Quests IV · co-op · 1.9.8 · crimson.land"],
+      ["/custom?build=1.9.8", "Custom Quests · 1.9.8 · crimson.land"],
+    ]) {
       const html = await (await call(path!)).text();
       expect(html).toContain(`<title>${title}</title>`);
       expect(html).toContain(`<meta property="og:title" content="${title}">`);

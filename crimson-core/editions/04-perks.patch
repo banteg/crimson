@@ -1,0 +1,33 @@
+1.9.8 rule: Man Bomb, Fire Cough, Living Fortress and Tough Reloader do not exist, and perk offers roll
+`rand % 53 + 1`. perks_init_database keeps 1.9.93's registrations and ids, so a 1.9.8 roll of 53 lands on Man Bomb,
+which perks_rebuild_available never makes available, and rolls again, as 1.9.8's Lifeline 50-50 at 53 does. The four
+perks' code stays 1.9.93's and never runs, their counts staying zero. The range is the host's (portable_perk_range),
+which sets it wherever a run's build changes, so a run perks_init_database does not start keeps no other build's.
+--- a/decomp/1.9/crimsonland/perks/perks_init_database.cpp
++++ b/decomp/1.9/crimsonland/perks/perks_init_database.cpp
+@@ -433,7 +433,2 @@
+-#if CL_BUILD == 10908
+-    perk_id_max = 53;
+-    perk_id_count = 54;
+-#else
+-    perk_id_max = 57;
+-    perk_id_count = 58;
+-#endif
++    // 1.9.8 numbers its perks up to 53, 1.9.93 up to 57.
++    portable_perk_range();
+--- a/decomp/1.9/crimsonland/perks/perks_rebuild_available.cpp
++++ b/decomp/1.9/crimsonland/perks/perks_rebuild_available.cpp
+@@ -15,7 +15,7 @@
+-#if CL_BUILD != 10908
+     // 1.9.8 predates these perks.
+-    perk_meta_table[perk_id_man_bomb].available = 1;
+-    perk_meta_table[perk_id_living_fortress].available = 1;
+-    perk_meta_table[perk_id_fire_caugh].available = 1;
+-    perk_meta_table[perk_id_tough_reloader].available = 1;
+-#endif
++    if (!portable_rules_1_9_8) {
++        perk_meta_table[perk_id_man_bomb].available = 1;
++        perk_meta_table[perk_id_living_fortress].available = 1;
++        perk_meta_table[perk_id_fire_caugh].available = 1;
++        perk_meta_table[perk_id_tough_reloader].available = 1;
++    }

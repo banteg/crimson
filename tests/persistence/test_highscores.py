@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.persistence.highscores import (
     HighScoreRecord,
@@ -30,8 +31,10 @@ def test_table_uses_configured_quest_and_clears_nonquest_stages() -> None:
     config = default_crimson_cfg()
     config.gameplay.mode = GameMode.QUESTS
     config.gameplay.quest_level = QuestLevel(2, 7)
-    assert ScoreTable.for_config(config).quest_level == QuestLevel(2, 7)
-    assert ScoreTable.for_config(config, quest_level=QuestLevel(1, 1)).quest_level == QuestLevel(1, 1)
+    assert ScoreTable.for_config(config, cl_build=ClBuild.V1_9_93).quest_level == QuestLevel(2, 7)
+    assert ScoreTable.for_config(
+        config, cl_build=ClBuild.V1_9_93, quest_level=QuestLevel(1, 1),
+    ).quest_level == QuestLevel(1, 1)
     stale = HighScoreRecord(game_mode_id=GameMode.QUESTS, quest_level=QuestLevel(2, 7))
     assert SURVIVAL.stamp(stale).quest_level is None
 
@@ -81,7 +84,7 @@ def test_negative_quest_final_time_survives_saving_and_loading(tmp_path: Path) -
     assert read_highscore_table(tmp_path, table)[0].run_elapsed_ms == -500
 
 
-def test_tables_keep_teams_lists_and_hardcore_quests_apart(tmp_path: Path) -> None:
+def test_tables_keep_teams_lists_builds_and_hardcore_quests_apart(tmp_path: Path) -> None:
     level = QuestLevel(2, 7)
     tables = [
         SURVIVAL,
@@ -89,6 +92,8 @@ def test_tables_keep_teams_lists_and_hardcore_quests_apart(tmp_path: Path) -> No
         ScoreTable(GameMode.SURVIVAL, score_list="Bob"),
         ScoreTable(GameMode.QUESTS, quest_level=level),
         ScoreTable(GameMode.QUESTS, quest_level=level, hardcore=True),
+        ScoreTable(GameMode.SURVIVAL, cl_build=ClBuild.V1_9_8),
+        ScoreTable(GameMode.QUESTS, quest_level=level, cl_build=ClBuild.V1_9_8),
     ]
     for xp, table in enumerate(tables, start=1):
         record = HighScoreRecord(
@@ -98,7 +103,19 @@ def test_tables_keep_teams_lists_and_hardcore_quests_apart(tmp_path: Path) -> No
     # A hardcore Survival run shares the Survival table, as in the original.
     upsert_highscore_record(tmp_path, SURVIVAL, HighScoreRecord(game_mode_id=GameMode.SURVIVAL, hardcore=True, score_xp=9))
 
-    assert [[r.score_xp for r in read_highscore_table(tmp_path, table)] for table in tables] == [[9, 1], [2], [3], [4], [5]]
+    assert [[r.score_xp for r in read_highscore_table(tmp_path, table)] for table in tables] == [
+        [9, 1], [2], [3], [4], [5], [6], [7],
+    ]
+
+
+def test_only_a_1_9_8_record_writes_its_build(tmp_path: Path) -> None:
+    # A line without the field is one an older reader, which rejects unknown fields, still takes.
+    for table in (SURVIVAL, ScoreTable(GameMode.SURVIVAL, cl_build=ClBuild.V1_9_8)):
+        upsert_highscore_record(tmp_path, table, HighScoreRecord(game_mode_id=GameMode.SURVIVAL, score_xp=1))
+
+    lines = scores_path(tmp_path).read_bytes().splitlines()
+    assert [b'"cl_build"' in line for line in lines] == [False, True]
+    assert [record.cl_build for record in read_highscore_records(tmp_path)] == [ClBuild.V1_9_93, ClBuild.V1_9_8]
 
 
 def test_a_torn_last_line_is_skipped_and_the_next_record_survives(tmp_path: Path) -> None:

@@ -116,7 +116,8 @@ Flames, rockets, explosions and Shock Chain never hurt a partner.
 - Typ-o-Shooter and the Tutorial.
 - The Shrinkifier 5k and Blade Gun handouts in Survival. See
   [Secret weapons](../secret-weapons.md).
-- Ranked runs in the rewrite.
+- Ranked runs on one machine. A pair playing online ranks on its own
+  [boards](../../rewrite/ranked-rules.md#boards-and-scores).
 
 ## Player-one quirks of the original
 

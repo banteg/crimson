@@ -20,25 +20,21 @@ from ...weapons import WeaponId
 
 
 def online_board(state: GameState, request: ScoreQuery) -> Board | None:
-    """The verified board for the scores on screen: Survival and quests, for one player or a co-op pair; other modes
-    and teams have none."""
+    """The verified board for the scores on screen: Survival and quests, for one player or a co-op pair, of the build
+    whose table the screen shows; other modes and teams have none."""
     gameplay = state.config.gameplay
     board = board_for(request.game_mode_id, hardcore=gameplay.hardcore, player_count=gameplay.player_count)
     if board is None:
         return None
     if request.game_mode_id != GameMode.QUESTS:
-        return board, ""
-    return None if request.quest_level is None else (board, request.quest_level.text)
+        return board, "", state.cl_build
+    return None if request.quest_level is None else (board, request.quest_level.text, state.cl_build)
 
 
 def _online_record(score: OnlineScore, table: ScoreTable) -> HighScoreRecord:
-    return HighScoreRecord(
+    """A board's run as a record of the table showing it, the board of the table's build."""
+    return table.stamp(HighScoreRecord(
         name=score.name,
-        game_mode_id=table.game_mode_id,
-        quest_level=table.quest_level,
-        hardcore=table.hardcore,
-        player_count=table.player_count,
-        score_list=table.score_list,
         score_xp=score.experience,
         # A quest record's time is its final time, which the quest boards rank.
         run_elapsed_ms=score.score if table.game_mode_id == GameMode.QUESTS else score.elapsed_ms,
@@ -49,7 +45,7 @@ def _online_record(score: OnlineScore, table: ScoreTable) -> HighScoreRecord:
         date=dt.datetime.fromtimestamp(score.accepted_at / 1000, tz=dt.UTC).astimezone().date(),
         run=score.run,
         received=True,
-    )
+    ))
 
 
 def _run_key(record: HighScoreRecord) -> tuple[str, int, int]:
@@ -79,7 +75,10 @@ def _with_online(local: list[HighScoreRecord], online: list[HighScoreRecord]) ->
 
 def load_records(state: GameState, request: ScoreQuery) -> list[HighScoreRecord]:
     """`highscore_load_table`: the table's records, with the board's received runs while Show internet scores is on."""
-    table = ScoreTable.for_config(state.config, game_mode_id=request.game_mode_id, quest_level=request.quest_level)
+    # The tables of the build the Play Game menu chose, which its runs save into.
+    table = ScoreTable.for_config(
+        state.config, cl_build=state.cl_build, game_mode_id=request.game_mode_id, quest_level=request.quest_level,
+    )
     try:
         records = [record for record in read_highscore_records(state.base_dir) if table.holds(record)]
     except OSError:

@@ -1,0 +1,15 @@
+The 1.9.8 rules on the screens (host/scores.inc): the high score screen's title names a 1.9.8 table, and a score card's
+origin line the rules its run played, as the Python port's high score panel and card do.
+--- a/decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp
++++ b/decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp
+@@ -213,1 +213,1 @@
+-    crt_sprintf(title_buffer, "High scores - %s", game_mode_label());
++    crt_sprintf(title_buffer, "High scores - %s%s", game_mode_label(), scores_title_build());
+--- a/decomp/1.9/crimsonland/ui_screens/ui_text_input_render.cpp
++++ b/decomp/1.9/crimsonland/ui_screens/ui_text_input_render.cpp
+@@ -121,1 +121,1 @@
+-                    "Score from the Internet");
++                    "%s", scores_card_origin(1));
+@@ -128,1 +128,1 @@
+-                    "Local score");
++                    "%s", scores_card_origin(0));

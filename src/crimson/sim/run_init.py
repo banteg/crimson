@@ -4,6 +4,7 @@ import msgspec
 
 from grim.geom import Vec2
 
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..game_version import REPLAY_RULES
 from ..math_parity import x87_pc24_add
@@ -49,6 +50,8 @@ def initialize_run(
     """
     if rules not in (1, 2):
         raise ValueError(f"unsupported replay rules {rules}")
+    if spec.cl_build == ClBuild.V1_9_8 and rules < 2:
+        raise ValueError("1.9.8 rules need rules 2")
     quest = None
     custom = spec.custom_quest
     if spec.game_mode_id == GameMode.QUESTS:
@@ -71,6 +74,7 @@ def initialize_run(
         hardcore=spec.hardcore and quest_settings,
         quest_fail_retry_count=spec.quest_fail_retry_count if quest_settings else 0,
         preserve_bugs=spec.preserve_bugs,
+        cl_build=spec.cl_build,
     )
     world.state.rules = rules
     world.state.legacy_coop_reload = legacy_coop_reload
@@ -138,6 +142,7 @@ def initialize_run(
                 carry=spec.typo_carry,
                 dictionary_words=spec.typo_dictionary_words,
                 highscore_names=spec.typo_highscore_names,
+                cl_build=spec.cl_build,
             )
         case GameMode.TUTORIAL:
             weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)

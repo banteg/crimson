@@ -14,6 +14,7 @@ struct PortableConfig {
   uint32_t weapon_usage[53];
   uint32_t rules; // Explicit simulation profile, independent of preserve_bugs.
   uint32_t legacy_coop_reload; // Pre-fix rules-1 co-op recording, resolved from provenance.
+  uint32_t cl_build; // The original build whose rules the run plays: 10993 (1.9.93) or 10908 (1.9.8, rules 2).
 };
 // The run after a tick, for its timeline (service/src/timeline.ts). `damage` is the health creatures have lost since
 // the run started (overkill excluded) and `nukes` the Nukes picked up; `pick_ids` are the perks picked since the
@@ -55,7 +56,7 @@ struct PortableQuest {
   uint32_t disable_bonuses, disable_perks[2], disable_weapons[2];
   PortableSpawn entries[256];
 };
-static_assert(sizeof(PortableConfig) == 272);
+static_assert(sizeof(PortableConfig) == 276);
 static_assert(sizeof(PortableSpawn) == 24);
 static_assert(sizeof(PortableQuest) == 6184);
 static_assert(sizeof(PortableProbe) == 136);

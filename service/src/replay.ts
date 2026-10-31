@@ -4,12 +4,13 @@
 // the two in step.
 
 import { decompress } from "fzstd";
+import { BUILDS } from "./api-types";
 import { F64, Head, MapValue, PayloadError, Reader, type Value } from "./msgpack";
 
-export const REPLAY_FORMAT_VERSION = 34;
+export const REPLAY_FORMAT_VERSION = 35;
 // Each readable format's keys, in order. Format 30 had no `rules`, so its replays play under rules 1; formats before
 // 32 had no `pilot`, so their runs declare none; format 33 adds `run.custom_quest` (RUN_KEYS); formats before 34 had
-// no `seat_keys`, so their runs name no seat's key.
+// no `seat_keys`, so their runs name no seat's key; formats before 35 had no `run.cl_build`, so their runs play 1.9.93.
 type ReplayKey = "format_version" | "game_version" | "rules" | "recorder" | "pilot" | "seat_keys" | "run" | "result" | "ticks";
 const REPLAY_KEYS: Record<number, readonly ReplayKey[]> = {
   30: ["format_version", "game_version", "recorder", "run", "result", "ticks"],
@@ -17,6 +18,7 @@ const REPLAY_KEYS: Record<number, readonly ReplayKey[]> = {
   32: ["format_version", "game_version", "rules", "recorder", "pilot", "run", "result", "ticks"],
   33: ["format_version", "game_version", "rules", "recorder", "pilot", "run", "result", "ticks"],
   34: ["format_version", "game_version", "rules", "recorder", "pilot", "seat_keys", "run", "result", "ticks"],
+  35: ["format_version", "game_version", "rules", "recorder", "pilot", "seat_keys", "run", "result", "ticks"],
 };
 const RUN_KEYS = [
   "game_mode_id", "seed", "quest_level", "player_count", "hardcore", "preserve_bugs", "quest_fail_retry_count",
@@ -24,6 +26,9 @@ const RUN_KEYS = [
   "typo_highscore_names", "typo_carry",
 ] as const;
 const V30_RULES = 1;
+// The original builds whose rules a run can play (src/crimson/cl_build.py ClBuild).
+export const ClBuild = { V1_9_8: BUILDS["1.9.8"], V1_9_93: BUILDS["1.9.93"] } as const;
+const CL_BUILDS = new Set<number>(Object.values(BUILDS));
 // An Ed25519 public key's bytes (src/crimson/replay/types.py SEAT_KEY_BYTES).
 export const SEAT_KEY_BYTES = 32;
 // The bits of a run's seed the game reads: MSVC's rand never reads bit 31 of its state, so seeds s and s ^ 0x80000000
@@ -134,6 +139,8 @@ export interface RunSpec {
   typo_dictionary_words: string[];
   typo_highscore_names: string[];
   typo_carry: TypoCarry;
+  // The original build whose rules the run plays (ClBuild).
+  cl_build: number;
 }
 export interface PlayerResult {
   experience: number;
@@ -448,9 +455,13 @@ class Schema {
   }
 
   private runSpec(value: Value, format: number): RunSpec {
-    const f = this.fields(value, "run", format < 33 ? RUN_KEYS : [...RUN_KEYS, "custom_quest"]);
+    const f = this.fields(
+      value, "run", format < 33 ? RUN_KEYS : format < 35 ? [...RUN_KEYS, "custom_quest"] : [...RUN_KEYS, "custom_quest", "cl_build"],
+    );
     const game_mode_id = this.int(f.game_mode_id, "run.game_mode_id");
     require(KNOWN_GAME_MODES.has(game_mode_id), `run.game_mode_id ${game_mode_id} is not a game mode`);
+    const cl_build = format < 35 ? ClBuild.V1_9_93 : this.int(f.cl_build!, "run.cl_build");
+    require(CL_BUILDS.has(cl_build), `run.cl_build ${cl_build} is not a build`);
     let quest_level: QuestLevel | null = null;
     if (f.quest_level !== null) {
       const level = this.fields(f.quest_level, "run.quest_level", ["major", "minor"]);
@@ -506,6 +517,7 @@ class Schema {
         match_count: this.int(carry.match_count, "run.typo_carry.match_count"),
         highscore_names_loaded: this.bool(carry.highscore_names_loaded, "run.typo_carry.highscore_names_loaded"),
       },
+      cl_build,
     };
   }
 
@@ -674,6 +686,8 @@ export function validateCustomQuest(quest: CustomQuest): void {
 export function validateReplay(replay: Replay): void {
   require(Boolean(replay.game_version), "game_version must be non-empty");
   require(replay.rules >= 1, "rules must be at least 1");
+  // 1.9.8 rules arrived with rules 2; no earlier profile plays them.
+  require(replay.run.cl_build === ClBuild.V1_9_93 || replay.rules >= 2, "1.9.8 rules need rules 2");
   for (const field of ["client", "version", "platform"] as const) {
     const value = replay.recorder[field];
     require(

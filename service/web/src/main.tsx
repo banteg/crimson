@@ -56,7 +56,8 @@ function App() {
   const [panels, setPanels] = createSignal<Shown[]>([]);
   const [grounds, setGrounds] = createSignal<Layer[]>([]);
   const [path, setPath] = createSignal(location.pathname);
-  const [board, setBoard] = createSignal(boardPage(location.pathname) ? location.pathname : "/survival");
+  // The board last looked at, with its build.
+  const [board, setBoard] = createSignal(boardPage(location.pathname) ? location.pathname + location.search : "/survival");
   const [me, setMe] = createSignal<{ account: number | null; role: Role }>({ account: null, role: "" });
   let navigation = 0;
   let groundKey: string | null = null;
@@ -81,7 +82,7 @@ function App() {
     if (history_ === "push") history.pushState(null, "", url);
     else if (history_ === "replace") history.replaceState(null, "", url);
     setPath(url.pathname);
-    if (boardPage(url.pathname)) setBoard(url.pathname);
+    if (boardPage(url.pathname)) setBoard(url.pathname + url.search);
     void get<{ account: number | null; role: Role }>("/api/me").then((answer) => setMe(answer!));
     const moving = animate && motion();
     const old = panels();

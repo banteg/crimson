@@ -9,9 +9,9 @@ tags:
 
 The original game's bugs, as a player meets them. The rewrite fixes most of
 them by default; run it with `--preserve-bugs` to bring every fixed one
-back. A few stay in both modes. The # column links each one's full write-up
-in [Original bugs](../../rewrite/original-bugs.md); the last column links
-the page that covers it.
+back. A few stay in both modes. Where a table has them, the # column links
+each one's full write-up in [Original bugs](../../rewrite/original-bugs.md),
+and the Page column the page that covers it.
 
 ## Gameplay
 
@@ -75,6 +75,20 @@ meant the player in question.
 | [36](../../rewrite/original-bugs.md#36-ion-chain-arcs-end-in-a-hard-cut) | Ion arcs | Ion chain arcs end in a straight cut across the creature. | Fixed: round ends | — |
 | [39](../../rewrite/original-bugs.md#39-blood-splatters-and-corpse-shatters-exhaust-the-511-slot-effect-pool) | Missing pickup rings and bursts | Heavy blood from Bloody Mess or a large Freeze corpse shatter fills the effect pool, so pickup rings, hit cores and bursts vanish. | Fixed | — |
 | [52](../../rewrite/original-bugs.md#52-shots-past-the-arena-edge-stop-and-fade-in-place) | Frozen Fire Bullets trails | Shots leaving the arena stop just past its edge, and their trails hang on screen while they fade. | Fixed: they fly off | — |
+
+## 1.9.8 rules
+
+These are 1.9.8's own, fixed by later releases, so you meet them only in a run
+on the [1.9.8 rules](../../rewrite/rules-1.9.8.md). The rewrite plays them as
+1.9.93 does; `--preserve-bugs` brings them back.
+
+| # | Quirk | In 1.9.8 | Rewrite |
+| ---: | --- | --- | --- |
+| [56](../../rewrite/original-bugs.md#56-radioactive-burns-creatures-already-at-zero-health-or-below-198-only) | Radioactive pays twice | A creature that dies in its own update, as one tethered to a dead creature does, can still take a Radioactive pulse and pay its XP again. | Fixed |
+| [57](../../rewrite/original-bugs.md#57-jinxed-kills-creatures-during-freeze-198-only) | Jinxed through Freeze | Jinxed's random kill keeps going while Freeze holds the creatures. | Fixed: no kill during Freeze |
+| [58](../../rewrite/original-bugs.md#58-infernal-contract-revives-a-dead-player-1-and-spares-player-2-in-co-op-198-only) | One-sided Infernal Contract | In co-op only player 1 drops to 0.1 health, and a dead player 1 comes back. | Fixed: every living player drops |
+| [59](../../rewrite/original-bugs.md#59-my-favourite-weapons-clip-bonus-is-lost-on-the-next-weapon-198-only) | Lost favourite clip | My Favourite Weapon's +2 clip is gone after the next weapon you get, or after taking Ammo Maniac. | Fixed |
+| [60](../../rewrite/original-bugs.md#60-my-favourite-weapon-lets-the-pistols-forced-weapon-drops-through-198-only) | Favourite weapon drops | A Pistol holder with My Favourite Weapon still gets weapon drops. | Fixed |
 
 ## Kept in both modes
 

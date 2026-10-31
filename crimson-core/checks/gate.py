@@ -3,8 +3,9 @@
 Both implementations step the identical input/command stream. Each stream is
 either an input-only `.rsi` from the bot corpus (`matrix.mjs`) or a recorded
 `.crd` fixture converted with `replay.encode`. The gate compares a set of
-per-tick fields to locate the first divergence, the first terminal tick and its
-outcome, and the complete `RunResult` after the last tick both sides stepped.
+per-tick fields, with the projectile slots each shot takes, to locate the first
+divergence, the first terminal tick and its outcome, and the complete
+`RunResult` after the last tick both sides stepped.
 Python steps through the verification `PlaybackDriver`, so a recorded fixture
 is also checked against its claimed result and its `.chk` checkpoints (state
 and RNG caller order at each recorded tick) in the same pass.
@@ -30,6 +31,7 @@ from types import SimpleNamespace
 import msgspec
 from replay import QUEST_BYTES, custom_quest, encode
 
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.game_version import REPLAY_FORMAT_VERSION
 from crimson.quests.level import QuestLevel
@@ -55,8 +57,9 @@ from crimson.weapons import WeaponId
 
 CORE = Path(__file__).resolve().parents[1]
 ROOT = CORE.parent
-# `PortableConfig` in host/api.h: 13 uint32 settings, the player count last, then the weapon usage counts and two profile words.
-CONFIG_BYTES = 272
+# `PortableConfig` in host/api.h: 13 uint32 settings, the player count last, then the weapon usage counts, two profile
+# words (rules and the legacy co-op reload) and the build whose rules the run plays.
+CONFIG_BYTES = 276
 SETTINGS = 13
 
 # Native `game_state_pending` values that end a run (third_party/headers/crimsonland_types.h).
@@ -67,12 +70,14 @@ TERMINAL_OUTCOMES = {
     QUEST_RESULTS: RunOutcome.QUEST_COMPLETED,
 }
 WEAPON_USAGE_SLOTS = 53
+RULES, LEGACY_COOP_RELOAD, CL_BUILD = range(SETTINGS + WEAPON_USAGE_SLOTS, SETTINGS + WEAPON_USAGE_SLOTS + 3)
 
 
 # Per-tick comparison: (label, core snapshot field, Python getter, f32?). Floats compare as F32 bits.
 GLOBAL_FIELDS: tuple[tuple[str, str, Callable, bool], ...] = (
     ("legacy_coop_reload", "globals.portable_legacy_coop_reload", lambda s: s.world.state.legacy_coop_reload, False),
     ("rules", "globals.portable_rules", lambda s: s.world.state.rules, False),
+    ("cl_build", "globals.portable_cl_build", lambda s: int(s.world.state.cl_build), False),
     ("rng", "globals.rng", lambda s: s.world.state.rng.state, False),
     ("kills", "globals.creature_kill_count", lambda s: s.world.creatures.kill_count, False),
     ("pending_perks", "globals.perk_pending_count", lambda s: s.world.state.perk_selection.pending_count, False),
@@ -123,6 +128,22 @@ def fields(players: int) -> tuple[tuple[str, str, Callable, bool], ...]:
                                ("alt_weapon_swap_cooldown_ms", False))
     )
     return GLOBAL_FIELDS + own + rules
+
+
+# Every tick also compares each projectile slot's active flag and, while it is active, its type: the slot each shot
+# takes, so the pool's size and its full-pool fallback (1.9.8's 64 slots, editions/03) are pinned too. Python's 1.9.8
+# pool has its 64 entries; the core keeps 1.9.93's layout of 96, whose slots past them must stay idle.
+PROJECTILE_FIELDS = ("active", "fields.type_id")
+
+
+def projectile_slots(session, slots: int) -> list[int]:
+    """Python's projectile slots as the core's columns: `slots` active flags, then each slot's type, 0 while idle."""
+
+    entries = session.world.state.projectiles.entries
+    idle = [0] * (slots - len(entries))
+    return [int(e.active) for e in entries] + idle + [int(e.type_id) if e.active else 0 for e in entries] + idle
+
+
 # Result-only fields read from the core's last compared snapshot.
 RESULT_FIELDS = (
     "globals.game_state_pending",
@@ -195,8 +216,8 @@ class Stream:
             return self.recorded
         return Replay(
             format_version=REPLAY_FORMAT_VERSION,
-            game_version="0.18.0" if self.config[67] else "0.19.2",
-            rules=self.config[66],
+            game_version="0.18.0" if self.config[LEGACY_COOP_RELOAD] else "0.19.2",
+            rules=self.config[RULES],
             recorder=current_recorder(),
             pilot=None,
             seat_keys=None,
@@ -227,6 +248,7 @@ class Stream:
                 quest_unlock_index_hardcore=unlock_full,
                 weapon_usage_counts=tuple(self.config[SETTINGS : SETTINGS + WEAPON_USAGE_SLOTS]),
             ),
+            cl_build=ClBuild(self.config[CL_BUILD]),
         )
 
 
@@ -321,7 +343,9 @@ def compare(stream: Stream, native: Path) -> dict:
     names = [core for _, core, _, _ in compared] + [
         name for name in RESULT_FIELDS if name not in {f[1] for f in compared}
     ]
-    core_rows, exit_code, stderr = run_core(native, stream, [index[name] for name in names])
+    slots = sum(name.startswith("projectiles[") and name.endswith("].active") for name in index)
+    slot_names = [f"projectiles[{slot}].{field}" for field in PROJECTILE_FIELDS for slot in range(slots)]
+    core_rows, exit_code, stderr = run_core(native, stream, [index[name] for name in names + slot_names])
 
     replay = stream.replay()
     spec = replay.run
@@ -357,7 +381,8 @@ def compare(stream: Stream, native: Path) -> dict:
                 run_down = RunDown(outcome=step.outcome, end_tick=tick_index - 1)
             if run_down is not None and run_down_over is None and run_down.tick(step.timing.frame_dt_ms_i32):
                 run_down_over = tick_index
-        row = dict(zip(names, core_rows[tick_index], strict=True))
+        values = core_rows[tick_index]
+        row = dict(zip(names, values[: len(names)], strict=True))
         if terminal["python"] is None and session.terminal_outcome() is not None:
             terminal["python"] = {"tick": tick_index, "outcome": str(session.terminal_outcome())}
         if terminal["core"] is None and row["globals.game_state_pending"] in TERMINAL_OUTCOMES:
@@ -374,11 +399,19 @@ def compare(stream: Stream, native: Path) -> dict:
                         "python": _from_bits(python_bits, floating),
                         "core": _from_bits(row[core_name], floating),
                     }
+            active, types = values[len(names) : len(names) + slots], values[len(names) + slots :]
+            core_slots = [int(live != 0) for live in active]
+            core_slots += [kind if live else 0 for live, kind in zip(active, types, strict=True)]
+            python_slots = projectile_slots(session, slots)
+            if core_slots != python_slots:
+                for name, python, core in zip(slot_names, python_slots, core_slots, strict=True):
+                    if python != core and len(differences) < 8:
+                        differences[name] = {"python": python, "core": core}
             if differences:
                 first_divergence = {"snapshot": tick_index, "fields": differences}
 
     compared_tick = python_ticks
-    row = dict(zip(names, core_rows[compared_tick], strict=True))
+    row = dict(zip(names, core_rows[compared_tick][: len(names)], strict=True))
     expected = build_run_result(session, outcome=session.end_outcome())
     actual = core_result(row, spec.game_mode_id, stream.players, spec.preserve_bugs, replay.rules)
     mismatches = run_result_mismatches(expected, actual)

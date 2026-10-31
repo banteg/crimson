@@ -7,6 +7,7 @@ from pathlib import Path
 import msgspec
 from typer.testing import CliRunner
 
+from crimson.cl_build import ClBuild
 from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, encode_replay_payload
@@ -72,7 +73,19 @@ def test_replay_verify_ranks_a_co_op_pair_on_its_board(tmp_path: Path) -> None:
     assert payload["status"] == "ok"
     assert payload["result"]["outcome"] == "death"
     assert len(payload["result"]["players"]) == 2
-    assert (payload["ranked"], payload["unranked_reasons"], payload["board"]) == (True, [], "survival-coop")
+    assert (payload["ranked"], payload["unranked_reasons"], payload["board"], payload["build"]) == (True, [], "survival-coop", "1.9.93")
+
+
+def test_replay_verify_names_the_build_whose_boards_rank_the_run(tmp_path: Path) -> None:
+    run = ranked_run_spec(GameMode.SURVIVAL, seed=0xBEEF, cl_build=ClBuild.V1_9_8)
+    replay = build_idle_replay(run, ticks=idle_run_ticks(run))
+    replay_path = write_replay(tmp_path, replay=replay, name="survival-1.9.8.crd")
+
+    result = CliRunner().invoke(app, ["replay", "verify", str(replay_path), "--format", "json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert (payload["status"], payload["ranked"], payload["board"], payload["build"]) == ("ok", True, "survival", "1.9.8")
 
 
 def test_replay_verify_reports_result_mismatch(tmp_path: Path) -> None:

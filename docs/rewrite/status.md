@@ -22,7 +22,7 @@ supported scope, not a claim that every native branch has been verified.
 | `tests/replay/test_live_run_start.py` | Live mode startup and recorder/playback agree on complete session state, including non-default settings. |
 | `tests/modes/test_live_replay_invariant.py` | Live tick batching, controller input, and perk commands replay to identical complete session state. |
 | `tests/render/test_ground_dump_fixtures.py` | Captured terrain images agree within the test's documented tolerances; requires assets and a display. |
-| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one or two players in Rush, Survival and Quests with every control scheme. Typ-o, Tutorial and three or four players are outside the verifier's scope; the service verifies one- and two-player runs. |
+| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one or two players in Rush, Survival and Quests with every control scheme, on 1.9.93's rules and on the [1.9.8 rules](rules-1.9.8.md). Typ-o, Tutorial and three or four players are outside the verifier's scope; the service verifies one- and two-player runs. |
 | `tests/native_oracle/` | Ported functions agree bit for bit with the original code run under the [native execution oracle](../verification/differential-testing/native-oracle.md) on the tested cases. |
 
 `just check` runs the repository gates. Skipped display-dependent tests do not
@@ -34,6 +34,9 @@ address-keyed source evidence, a native-oracle test, or the core gate. See [evid
 ## Intentional differences
 
 - `--preserve-bugs` selects the documented [native quirks](original-bugs.md).
+- A run on the [1.9.8 rules](rules-1.9.8.md) plays 1.9.8's rule changes only,
+  with 1.9.93's float arithmetic, menus and input; see
+  [what stays 1.9.93's](rules-1.9.8.md#what-stays-1993s).
 - Exact multiplayer parity targets the native 1/2-player paths. The 3/4-player
   extension must preserve those outcomes; see [local multiplayer](local-multiplayer.md).
 - Rendering has explicit options and sampling differences; see [terrain](terrain.md)

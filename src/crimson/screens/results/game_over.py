@@ -128,8 +128,9 @@ class GameOverUi(msgspec.Struct):
         """`game_over_screen_update` lays out on `ui_element_slot_30`'s panel."""
         return ui_panel_rect(30, self.timeline.timeline_ms, screen_w)
 
-    def _score_table(self) -> ScoreTable:
-        return ScoreTable.for_config(self.config)
+    def _score_table(self, record: HighScoreRecord) -> ScoreTable:
+        """The configured table for the run's build."""
+        return ScoreTable.for_config(self.config, cl_build=record.cl_build)
 
     def _begin_close_transition(self, action: ResultAction) -> None:
         if self.timeline.closing:
@@ -178,7 +179,7 @@ class GameOverUi(msgspec.Struct):
             self._candidate_record = candidate
 
             records = read_highscore_table(
-                self.base_dir, self._score_table(), date_mode=self.config.profile.score_date_mode,
+                self.base_dir, self._score_table(candidate), date_mode=self.config.profile.score_date_mode,
             )
             idx = rank_index(records, candidate)
             self.rank = int(idx)
@@ -204,8 +205,9 @@ class GameOverUi(msgspec.Struct):
                 rng=rng,
                 play_sfx=play_sfx,
             )
+            candidate = self._candidate_record or record
             if name is not None and self.name_entry.save(
-                self._candidate_record or record, self.base_dir, self._score_table(), config=self.config,
+                candidate, self.base_dir, self._score_table(candidate), config=self.config,
             ) is not None:
                 self.phase = 1
         else:

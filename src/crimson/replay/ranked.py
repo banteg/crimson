@@ -3,6 +3,7 @@
 docs/rewrite/ranked-rules.md is the contract. A ranked run starts from the canonical profile
 (`ranked_run_spec`): one player or a co-op pair (custom quests take one), full detail with violence on, friendly fire
 off, the documented fixes, the quests the run's own progression has unlocked, no weapon history and no quest retries.
+It plays either build's rules, 1.9.93's or 1.9.8's, and ranks on that build's boards.
 Every tick uses human controls for every player, and every aim point is one a cursor clamped to a 1024x768 view could
 reach. Only finished runs rank: a Survival death or a completed quest.
 """
@@ -17,6 +18,7 @@ from grim.geom import Vec2
 
 from ..aim_schemes import AimScheme
 from ..camera import camera_update_for_players
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..local_input import PAD_AIM_DIST_MUL_DEFAULT
 from ..movement_controls import MovementControlType
@@ -88,8 +90,10 @@ def ranked_run_spec(
     custom_quest: CustomQuest | None = None,
     hardcore: bool = False,
     player_count: int = 1,
+    cl_build: ClBuild = ClBuild.V1_9_93,
 ) -> RunSpec:
-    """The run a ranked attempt plays; hardcore only changes stock quests, so Survival and custom quests have one board."""
+    """The run a ranked attempt plays, under `cl_build`'s rules; hardcore only changes stock quests, so Survival and
+    custom quests have one board."""
 
     hardcore = hardcore and game_mode == GameMode.QUESTS and custom_quest is None
     return RunSpec(
@@ -105,6 +109,7 @@ def ranked_run_spec(
         violence_disabled=0,
         friendly_fire=False,
         status=ranked_status(quest_level, hardcore=hardcore),
+        cl_build=cl_build,
     )
 
 

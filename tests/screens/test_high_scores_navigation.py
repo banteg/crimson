@@ -172,8 +172,8 @@ def test_update_scores_shows_the_board_green_beside_local_runs(scores_view, mock
 
     def service(url: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
         assert url.endswith("/scores")
-        assert body == {"board": "quests", "quest": "1.1"}
-        return 200, {"scores": [score("zhenya", 15000, 900), score("banteg", 16936, 1200)]}
+        assert body == {"board": "quests", "quest": "1.1", "build": "1.9.93"}
+        return 200, {"build": "1.9.93", "scores": [score("zhenya", 15000, 900), score("banteg", 16936, 1200)]}
 
     state.leaderboard = Leaderboard(state.base_dir, url="https://crimson.test/api", transport=service)
     view.open()

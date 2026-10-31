@@ -31,6 +31,8 @@ them.
   and Random Weapon.
 - Perks 1–27, Man Bomb, Fire Cough, Living Fortress and Tough Reloader are
   always available. The rest unlock by finishing quests, as listed below.
+- A run on the [1.9.8 rules](../rewrite/rules-1.9.8.md) never offers Man Bomb, Fire Cough, Living Fortress or
+  Tough Reloader, which 1.9.8 lacks.
 - Toxic Avenger, Ninja, Perk Master and Greater Regeneration need their base
   perk first.
 - Jinxed, Ammunition Within, Anxious Loader and Monster Vision are rare:
@@ -136,7 +138,13 @@ your clip.
 A green aura hurts creatures within 100 units of you: (100 − distance) × 0.3
 damage three times a second, up to 90 damage/s point-blank. Aura kills give
 base XP only (no Bloody Mess bonus, no Double Experience) and never drop
-bonuses. Lizards can't be finished off: the aura leaves them at 1 HP.
+bonuses. Lizards can't be finished off: the aura leaves them at 1 HP. In a
+run on the [1.9.8 rules](../rewrite/rules-1.9.8.md), the aura kills lizards too.
+
+!!! bug "Original bug"
+    In the 1.9.8 executable, the aura also burns creatures that are already
+    dead and pays their XP again. Use `--preserve-bugs` to keep that in a run
+    on the 1.9.8 rules.
 
 ## 14. Fastshot
 
@@ -206,6 +214,11 @@ Rifle), or 4 per second for flamers (8 for the Flamethrower). Needs XP above
 
 Immediately grants +3 levels and +3 perk picks, but drops every living player
 to 0.1 health.
+
+!!! bug "Original bug"
+    In the 1.9.8 executable, Infernal Contract sets only player 1's health to
+    0.1, bringing them back if they were dead, and leaves player 2's alone.
+    Use `--preserve-bugs` to keep that in a run on the 1.9.8 rules.
 
 ## 25. Poison Bullets
 
@@ -370,6 +383,10 @@ retried within the same ten-retry limit as empty slots.
     co-op, and the random kill can select a corpse and pay its XP again.
     Use `--preserve-bugs` to keep those behaviors.
 
+!!! bug "Original bug"
+    In the 1.9.8 executable, the random kill happens during Freeze too. Use
+    `--preserve-bugs` to keep that in a run on the 1.9.8 rules.
+
 Unlocked by quest 4.1 (*Major Alien Breach*).
 
 ## 43. Perk Master
@@ -428,6 +445,12 @@ Unlocked by quest 5.2 (*The Spanking Of The Dead*).
 +2 clip size, now and on every weapon you get later. Weapon bonuses stop
 dropping.
 
+!!! bug "Original bug"
+    In the 1.9.8 executable, only the weapon you hold when you take the perk
+    gets the +2: the next weapon you get loses it, even Ammo Maniac's
+    reassignment. Holding the Pistol still brings Weapon bonuses. Use
+    `--preserve-bugs` to keep those in a run on the 1.9.8 rules.
+
 Unlocked by quest 5.3 (*The Fortress*).
 
 ## 49. Bandage
@@ -446,7 +469,8 @@ Halfway through a reload, fires a ring of Plasma Minigun shots: 7 + 4 per
 second of reload, rounded down (15 for a 2 s reload). Fastloader and Weapon
 Power Up shorten the reload and shrink the ring; Stationary Reloader just gets
 you there sooner. Reloads of 0.5 s or less (the Pulse Gun's 0.1 s) never
-trigger it. Friendly fire applies when enabled.
+trigger it. In a run on the [1.9.8 rules](../rewrite/rules-1.9.8.md), every reload triggers it,
+the short ones included. Friendly fire applies when enabled.
 
 Unlocked by quest 5.6 (*Cross Fire*).
 
@@ -475,7 +499,8 @@ Ion Minigun and Ion Rifle, slightly jittered). Moving resets the count. While
 you have Fire Bullets, the ring is Fire Bullets instead. Friendly fire applies
 when enabled.
 
-Always available.
+Always available, except in a run on the [1.9.8 rules](../rewrite/rules-1.9.8.md),
+which never offers it.
 
 ## 54. Fire Cough
 
@@ -486,7 +511,8 @@ enabled.
 In co-op, each player owns their timer and next random interval, as with Hot
 Tempered. `--preserve-bugs` retains the shared interval.
 
-Always available.
+Always available, except in a run on the [1.9.8 rules](../rewrite/rules-1.9.8.md),
+which never offers it.
 
 ## 55. Living Fortress
 
@@ -494,13 +520,15 @@ Standing still builds bullet damage by 5% a second, up to ×2.5 after 30 s.
 Moving resets it. In co-op the bonuses multiply: each living player's charge
 counts.
 
-Always available.
+Always available, except in a run on the [1.9.8 rules](../rewrite/rules-1.9.8.md),
+which never offers it.
 
 ## 56. Tough Reloader
 
 Creature attacks deal half damage (×0.5) while you're reloading.
 
-Always available.
+Always available, except in a run on the [1.9.8 rules](../rewrite/rules-1.9.8.md),
+which never offers it.
 
 ## 57. Lifeline 50-50
 

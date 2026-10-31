@@ -157,13 +157,14 @@ char *highscore_read_record(char *buffer, FILE *fp);
 void highscore_write_record(highscore_record_t *record, FILE *fp);
 }
 // A board: Survival's, or a quest's on either difficulty, for one player or a
-// co-op pair.
+// co-op pair, of a build's, which each rank their runs apart.
 struct ScoresBoard {
   game_mode_id_t mode;
   int major, minor;
   unsigned char hardcore;
   int players;
-  auto key() const { return std::tie(mode, major, minor, hardcore, players); }
+  unsigned cl_build;
+  auto key() const { return std::tie(mode, major, minor, hardcore, players, cl_build); }
   bool operator<(const ScoresBoard &other) const { return key() < other.key(); }
 };
 // A board's run as the table reads it, and its id on the leaderboard ("" when
@@ -180,21 +181,23 @@ static std::vector<ScoresRun> scores_shown;
 // settings can change while it is. Update scores pressed meanwhile waits for it.
 static ScoresBoard scores_board_asked;
 static bool scores_out, scores_out_quiet, scores_update_waiting;
-static char scores_request[64];
+static char scores_request[96];
 static std::vector<char> scores_response;
 
 // Survival and quests have a board for one player and one for two, the co-op
-// pairs' (survival-coop, quests-coop, quests-hardcore-coop); other tables have
-// none.
+// pairs' (survival-coop, quests-coop, quests-hardcore-coop), on each build the
+// table is of (scores_table); other tables have none.
 static bool scores_board(ScoresBoard &board) {
   bool quest = config_blob.game_mode == GAME_MODE_QUEST;
   int players = config_blob.player_count;
   if (players < 1 || players > 2 || (!quest && config_blob.game_mode != GAME_MODE_SURVIVAL))
     return false;
   board = {config_blob.game_mode, quest ? quest_stage_major : 0, quest ? quest_stage_minor : 0,
-           (unsigned char)(quest && config_blob.hardcore), players};
+           (unsigned char)(quest && config_blob.hardcore), players, menu_cl_build};
   return true;
 }
+// A board's build as the service spells it in a request and in its answer.
+static const char *scores_build_name(unsigned cl_build) { return cl_build == PORTABLE_CL_BUILD_1_9_8 ? "1.9.8" : "1.9.93"; }
 // Asks for a board's runs; a quiet request shows no status and its failure
 // leaves the board's runs out.
 static void scores_send(const ScoresBoard &board, bool quiet) {
@@ -202,16 +205,24 @@ static void scores_send(const ScoresBoard &board, bool quiet) {
   scores_asked[board] = true;
   scores_out = true;
   scores_out_quiet = quiet;
-  const char *pair = board.players == 2 ? "-coop" : "";
+  const char *pair = board.players == 2 ? "-coop" : "", *build = scores_build_name(board.cl_build);
   if (board.mode == GAME_MODE_QUEST)
-    snprintf(scores_request, sizeof scores_request, "{\"board\": \"%s%s\", \"quest\": \"%d.%d\"}",
-             board.hardcore ? "quests-hardcore" : "quests", pair, board.major, board.minor);
+    snprintf(scores_request, sizeof scores_request, "{\"board\": \"%s%s\", \"quest\": \"%d.%d\", \"build\": \"%s\"}",
+             board.hardcore ? "quests-hardcore" : "quests", pair, board.major, board.minor, build);
   else
-    snprintf(scores_request, sizeof scores_request, "{\"board\": \"survival%s\", \"quest\": \"\"}", pair);
+    snprintf(scores_request, sizeof scores_request, "{\"board\": \"survival%s\", \"quest\": \"\", \"build\": \"%s\"}", pair,
+             build);
   host_leaderboard(HOST_LEADERBOARD_SCORES);
 }
 
 #include "json.inc"
+
+// An answer holds the board of the build its request named only when it names that build. One that names none is
+// 1.9.93's: a service from before builds has only 1.9.93's boards, and answers with them whatever build was asked for.
+static bool scores_build_answered(const Json &answer, unsigned cl_build) {
+  const Json *build = answer.field("build", Json::STRING);
+  return !strcmp(build ? build->text.c_str() : scores_build_name(PORTABLE_CL_BUILD_1_9_93), scores_build_name(cl_build));
+}
 
 // A whole number in [0, max] under `key`.
 static bool scores_count(const Json &run, const char *key, double max, double &out) {
@@ -310,7 +321,9 @@ __attribute__((export_name("game_scores_buffer"))) char *game_scores_buffer(int 
 }
 __attribute__((export_name("game_scores_received"))) void game_scores_received(int size) {
   Json answer;
-  const Json *runs = size >= 0 && (size_t)size < scores_response.size() && json_parse(scores_response.data(), size, answer)
+  const Json *runs = size >= 0 && (size_t)size < scores_response.size() &&
+                             json_parse(scores_response.data(), size, answer) &&
+                             scores_build_answered(answer, scores_board_asked.cl_build)
                          ? answer.field("scores", Json::ARRAY)
                          : nullptr;
   scores_out = false;
@@ -357,85 +370,106 @@ bool ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);
 bool ui_button_update(float *xy, ui_button_t *button);
 extern ui_element_t ui_element_slot_11, ui_element_slot_12_layout_a;
 
-// The Ranked row under the Play Game panel's modes (screens/panels/play_game.py):
-// the panel grows by it and Back moves down (ui_menu_layout_init, before the
-// elements' bounds).
+// The row under the Play Game panel's modes (screens/panels/play_game.py): the
+// 1.9.8 box, and where the host takes runs to the leaderboard the Ranked box
+// and the Profile button. The panel grows by it and Back moves down
+// (ui_menu_layout_init, before the elements' bounds).
 static const float RANKED_ROW = 40.0f;
 void ranked_layout() {
-  if (!ranked_offered)
-    return;
   // The panel is ui_menuPanelTallSmall's 3-slice; its bottom slice moves down.
   for (int i = 4; i < 8; ++i)
     ui_element_slot_11.vertices[i].y += RANKED_ROW;
   ui_element_slot_12_layout_a.pos_y += RANKED_ROW;
 }
 
-// The Ranked box and the Profile button, and their tips with the modes'
+// A tip's fade, as the modes' hover_anim: in while hovered, out after.
+static void ranked_tip_fade(int &fade, bool hovered) {
+  fade += hovered ? frame_dt_ms * 6 : -frame_dt_ms * 2;
+  fade = fade < 0 ? 0 : fade > 1000 ? 1000 : fade;
+}
+
+// The row's boxes and button, and their tips with the modes'
 // (play_game_menu_update, with `base` its content origin and `tips` where it
-// draws the modes' tips). Ticking the box makes the game one player's.
+// draws the modes' tips). Ticking Ranked makes the game one player's; the 1.9.8
+// box picks the build the menus' runs play (menu_cl_build), a ranked attempt's
+// too.
 void ranked_menu(float *base, float *tips, bool list_open) {
-  if (!ranked_offered)
-    return;
   static ui_checkbox_t box = {0, 0, 0, 0, (char *)"Ranked"};
+  static ui_checkbox_t rules = {0, 0, 0, 0, (char *)"1.9.8"};
   // As the original constructs its buttons (play_game_menu_update): drawn opaque.
   static ui_button_t profile = {(char *)"Profile", 0, 0, 1, 0, 0, 0, 1.0f};
-  static int box_tip, profile_tip; // the tips' fade, as the modes' hover_anim
+  static int box_tip, rules_tip, profile_tip; // the tips' fade
   static char note[48];
-  // A co-op session plays its runs under the ranked rules for two players
-  // whatever the box says, so the box stands down while co-op is open (a
-  // session, or a room waiting for one, whose menus start no run of one player).
-  bool boxed = !coop_open();
-  if (!ranked_controls() || !boxed)
-    ranked_checked = false;
-  // Like the modes, it neither hovers nor toggles while the list is open.
-  box.disabled = !ranked_controls() || list_open;
-  box.checked = ranked_checked;
+  auto width = [](const char *text) { return (float)grim_interface_ptr->grim_measure_text_width((char *)text); };
+  // The Ranked box ends flush right with the player-count list; the 1.9.8 box
+  // ends left of its focus marker, 16px left of it, or in its place without it.
   const char *items[] = {"1 player", "2 players"};
   float list_width = 0;
   for (const char *item : items)
-    list_width = fmaxf(list_width, (float)grim_interface_ptr->grim_measure_text_width((char *)item));
-  float at[2] = {base[0] + 80.0f + list_width + 48.0f -
-                     ((float)grim_interface_ptr->grim_measure_text_width(box.label) + 22.0f),
-                 base[1] + 212.0f};
-  if (boxed && ui_checkbox_update(at, &box)) {
-    ranked_checked = box.checked;
-    if (ranked_checked)
-      config_blob.player_count = 1;
+    list_width = fmaxf(list_width, width(item));
+  float right = base[0] + 80.0f + list_width + 48.0f;
+  float at[2] = {right - (width(box.label) + 22.0f), base[1] + 212.0f};
+  float rules_at[2] = {(ranked_offered ? at[0] - 24.0f : right) - (width(rules.label) + 22.0f), at[1]};
+  // A co-op session plays its runs under the ranked rules for two players
+  // whatever the box says, so the box stands down while co-op is open (a
+  // session, or a room waiting for one, whose menus start no run of one
+  // player). The Host's build is the session's.
+  bool boxed = !coop_open();
+  if (ranked_offered) {
+    if (!ranked_controls() || !boxed)
+      ranked_checked = false;
+    // Like the modes, it neither hovers nor toggles while the list is open.
+    box.disabled = !ranked_controls() || list_open;
+    box.checked = ranked_checked;
+    if (boxed && ui_checkbox_update(at, &box)) {
+      ranked_checked = box.checked;
+      if (ranked_checked)
+        config_blob.player_count = 1;
+    }
   }
-  int dt = frame_dt_ms;
-  box_tip = boxed && box.hovered ? box_tip + dt * 6 : box_tip - dt * 2;
+  ranked_tip_fade(box_tip, ranked_offered && boxed && box.hovered);
+  // The Guest's co-op runs play the Host's build whatever its 1.9.8 box says,
+  // so that box stands down on the Guest's machine the same way.
+  bool ruled = !coop_guest();
+  rules.disabled = list_open;
+  rules.checked = menu_cl_build == PORTABLE_CL_BUILD_1_9_8;
+  if (ruled && ui_checkbox_update(rules_at, &rules))
+    menu_cl_build = rules.checked ? PORTABLE_CL_BUILD_1_9_8 : PORTABLE_CL_BUILD_1_9_93;
+  ranked_tip_fade(rules_tip, ruled && rules.hovered);
   // Profile stands whether or not the box is ticked: a player who only plays
   // co-op, which ranks without it, signs in to the site here too.
-  profile.enabled = !list_open;
-  float profile_at[2] = {base[0] - 62.0f, base[1] + 204.0f};
-  if (ui_button_update(profile_at, &profile)) {
-    snprintf(note, sizeof note, "Opening the leaderboard site...");
-    host_leaderboard(HOST_LEADERBOARD_PROFILE);
+  if (ranked_offered) {
+    profile.enabled = !list_open;
+    float profile_at[2] = {base[0] - 62.0f, base[1] + 204.0f};
+    if (ui_button_update(profile_at, &profile)) {
+      snprintf(note, sizeof note, "Opening the leaderboard site...");
+      host_leaderboard(HOST_LEADERBOARD_PROFILE);
+    }
   }
-  profile_tip = profile.hovered ? profile_tip + dt * 6 : profile_tip - dt * 2;
-  box_tip = box_tip < 0 ? 0 : box_tip > 1000 ? 1000 : box_tip;
-  profile_tip = profile_tip < 0 ? 0 : profile_tip > 1000 ? 1000 : profile_tip;
+  ranked_tip_fade(profile_tip, ranked_offered && profile.hovered);
   // Each tip one line, centred under the modes' buttons (the port's own tips).
-  char ranked_tip[64], profile_text[64];
+  // The Ranked tip names the build's leaderboard while 1.9.8 is ticked.
+  char ranked_tip[96], profile_text[64];
   const char *name = config_blob.player_name;
-  snprintf(ranked_tip, sizeof ranked_tip, "Play for the online leaderboard as %s.", name);
+  const char *board = menu_cl_build == PORTABLE_CL_BUILD_1_9_8 ? "online 1.9.8 leaderboard" : "online leaderboard";
+  snprintf(ranked_tip, sizeof ranked_tip, "Play for the %s as %s.", board, name);
   // A fresh config's default name (config defaults) is nobody's, so the tip leaves it out.
-  if (!*name || !strcmp(name, "10tons") || grim_interface_ptr->grim_measure_text_width(ranked_tip) >
-                    grim_interface_ptr->grim_measure_text_width((char *)"Unlock new weapons and perks in Quest mode."))
-    snprintf(ranked_tip, sizeof ranked_tip, "Play for the online leaderboard.");
-  int waiting = ranked_waiting();
+  if (!*name || !strcmp(name, "10tons") || width(ranked_tip) > width("Unlock new weapons and perks in Quest mode."))
+    snprintf(ranked_tip, sizeof ranked_tip, "Play for the %s.", board);
+  int waiting = ranked_offered ? ranked_waiting() : 0;
   if (note[0])
     snprintf(profile_text, sizeof profile_text, "%s", note);
   else if (waiting)
     snprintf(profile_text, sizeof profile_text, "%d run%s waiting to upload.", waiting, waiting == 1 ? "" : "s");
   else
     snprintf(profile_text, sizeof profile_text, "Open your profile in the browser.");
-  const struct { int fade; const char *text; } shown[] = {{box_tip, ranked_tip}, {profile_tip, profile_text}};
+  const struct { int fade; const char *text; } shown[] = {
+      {box_tip, ranked_tip}, {rules_tip, "Play by the rules of version 1.9.8."}, {profile_tip, profile_text}};
   for (const auto &tip : shown) {
     if (tip.fade <= 0)
       continue;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, (float)tip.fade * 0.000900000043f);
-    float x = tips[0] + 55.0f + 145.0f * 0.5f - (float)grim_interface_ptr->grim_measure_text_width((char *)tip.text) * 0.5f;
+    float x = tips[0] + 55.0f + 145.0f * 0.5f - width(tip.text) * 0.5f;
     grim_interface_ptr->grim_draw_text_small(x, tips[1], (char *)tip.text);
   }
 }

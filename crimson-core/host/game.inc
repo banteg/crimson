@@ -7,6 +7,10 @@ void register_core_cvars();
 void game_audio_tick(float dt);
 }
 void grim_state_init();
+#include <string>
+// The strings the small font draws, while a check records them (game_drawn_text,
+// host/session.inc).
+static std::string *drawn_text;
 class SessionGrim final : public IGrim2D_cpp {
 public:
 #define GAME_TICK_QUERY(ret, name, params, args)                               \
@@ -39,6 +43,11 @@ public:
   GAME_TICK_QUERY(int, grim_get_joystick_pov, (int index), (index))
   GAME_TICK_QUERY(unsigned char, grim_is_joystick_button_down, (int button), (button))
 #undef GAME_TICK_QUERY
+  void grim_draw_text_small(float x, float y, char *text) override {
+    if (drawn_text && text)
+      drawn_text->append(text) += '\n';
+    IGrim2D_cpp::grim_draw_text_small(x, y, text);
+  }
   // The interface outlives every caller; the original deleted its heap copy.
   void grim_release(void) override {}
 };
@@ -244,6 +253,10 @@ __attribute__((export_name("game_start"))) int game_start() {
   portable_reset_data();
   rng = 1; // the CRT's rand seed before any srand
   game_static_init();
+  // The weapons' shot sounds 1.9.8's Fire Bullets reroll reads (host.cpp), for the runs the original sets up itself,
+  // which no portable_init fills them for. The original's startup (game_startup_init_prelude) and each
+  // gameplay_reset_state then run weapon_table_init over the ids it loads.
+  weapon_shot_slots();
   game_outputs(1);
   scores_import();
   static char command_line[] = "";

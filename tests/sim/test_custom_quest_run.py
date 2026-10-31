@@ -119,6 +119,8 @@ def test_legacy_v33_custom_quest_replays_upgrade_on_decode():
         variants=(0,) * 8,
     )
     run_dict = msgspec.structs.asdict(replay.run)
+    # Format 33 runs had no build.
+    del run_dict["cl_build"]
     run_dict["quest_level"] = None
     run_dict["custom_quest"] = legacy_cq
     legacy_replay = _ReplayV33Legacy(

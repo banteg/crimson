@@ -12,7 +12,8 @@ and `recorder` identifies the recording client/platform. The rules-2
 rollout retains rules-1 records and verifies them under their own behavior;
 a rules upgrade alone does not withdraw them.
 `crimson replay verify` reports `ranked`,
-the `board` and every `unranked_reasons` entry from the run rules
+the `board`, the `build` whose boards rank the run and every
+`unranked_reasons` entry from the run rules
 (`src/crimson/replay/ranked.py`); the leaderboard service applies the same
 checks to each upload, along with its signatures
 ([leaderboard identity](leaderboard-identity.md#uploads)).
@@ -47,6 +48,15 @@ which the ranked rules fix; a ranked Survival run also records it off.) Each que
 on its own. Equal scores keep the earlier submission ahead. Accounts, uploads and
 names are in [leaderboard identity](leaderboard-identity.md). Rush, Typ-o and the
 Tutorial do not rank.
+
+Each board comes twice, once for each build's rules. A run on the
+[1.9.8 rules](rules-1.9.8.md) (`run.cl_build` 10908) ranks on 1.9.8's boards,
+which keep their own ranks, best runs, totals, quest menu counts and personal
+bests: 1.9.93's boards never count a 1.9.8 run, nor 1.9.8's a 1.9.93 one. Every
+other rule here holds for both builds alike. The site's high score pages switch
+between the builds' boards (`?build=1.9.8` on the read API, 1.9.93's without
+it), and the game's high score screen shows the boards of the build its table
+holds.
 
 A [custom quest](../formats/quest-dsl.md) ranks one player only: its board, and
 the clear that publishes it, are a single player's, so a two-player run of one
@@ -108,6 +118,7 @@ every setting that steers the RNG ([settings that steer the RNG](parity/environm
 is pinned:
 
 - one player, or two on the co-op boards (`players` names any other count);
+- 1.9.93's rules or 1.9.8's, each ranked on its own boards;
 - the recorded rules' documented fixes and adopted balance changes on (`preserve_bugs` off; see
   [original bugs](original-bugs.md));
 - detail preset 5, violence on, friendly fire off;
@@ -160,6 +171,8 @@ inside the 1024x768 one, so it ranks too.
 The Play Game menu's **Ranked** box starts Survival and quest runs from the
 ranked profile: it lists only those modes, keeps one player, draws a fresh
 seed, caps the view at 1024x768 and uses the default pad reach. It is off while
-player one uses computer controls. A ranked run plays on a detached copy of the
-canonical save, exactly as verification replays it, so it does not change the
-player's progress, and it leaves the regular quest retry count alone.
+player one uses computer controls. With the **1.9.8** box ticked too, the run
+plays 1.9.8's rules and ranks on 1.9.8's boards. A ranked run plays on a
+detached copy of the canonical save, exactly as verification replays it, so it
+does not change the player's progress, and it leaves the regular quest retry
+count alone.

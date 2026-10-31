@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { createHash, webcrypto } from "node:crypto";
 import { test } from "node:test";
 import vm from "node:vm";
+import { CL_BUILD_1_9_8, CL_BUILD_1_9_93, QUEST_BYTES } from "./engine.mjs";
 
 const shell = readFileSync(new URL("../client/web/shell.html", import.meta.url), "utf8");
 // The shell's code from one line to another, both of which must be there.
@@ -77,6 +78,9 @@ const watchFunctions = [
   between("  const REPLAY_LIMIT =", "  var Module ="),
 ].join("\n");
 
+// Module.ccall's arguments as the game gets them: one the call declares a "string" as text, any other as a number.
+const ccallArgs = (types, args) => Array.from(args, (arg, i) => (types[i] === "string" ? String(arg) : Number(arg)));
+
 // The game takes a moment within `ticks` past `tick` (host/watch.inc, which
 // checks/game_watch.mjs holds to its bounds), or refuses it with `momentWhy`.
 function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]), watchWhy = "", momentWhy = "", runId = "run_1", tick = 240, ticks = 1000 } = {}) {
@@ -106,13 +110,14 @@ function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]),
     shareFull,
     FS: { mkdirTree() {}, writeFile() {} },
     Module: {
-      ccall: (name, _ret, _types, args) => {
-        calls.push([name, [...args]]);
+      ccall: (name, _ret, types, args) => {
+        const got = ccallArgs(types, args);
+        calls.push([name, got]);
         if (name === "client_watch") return watchWhy;
         if (name === "client_watch_run") return runId;
         if (name === "client_watch_tick") return tick;
         if (name === "client_watch_moment") {
-          const [start, stop] = args;
+          const [start, stop] = got;
           return momentWhy || (!start && stop && (stop <= tick || stop > ticks) ? "refused" : "");
         }
         return "";
@@ -197,3 +202,45 @@ for (const [status, expected] of [
     assert.deepEqual(b.notices, [[expected, null]]);
   });
 }
+
+// A quest link (?quest=<id>, &build=1.9.8 from its page's 1.9.8 boards) plays the quest once its file is in, by its
+// build's rules as the game takes them, the decomp's CL_BUILD; a build the game does not play only says so.
+function questBrowser(search) {
+  const notices = [], calls = [], requests = [];
+  const context = vm.createContext({
+    location: { search, href: `https://example.invalid/play/${search}` },
+    URL,
+    URLSearchParams,
+    Uint8Array,
+    setTimeout,
+    tell: (text) => notices.push(text),
+    FS: { mkdirTree() {}, writeFile() {} },
+    Module: { ccall: (name, _ret, types, args) => (calls.push([name, ...ccallArgs(types, args)]), "") },
+    fetch: async (url) => {
+      requests.push(String(url));
+      return { ok: true, status: 200, arrayBuffer: async () => new Uint8Array(QUEST_BYTES).buffer };
+    },
+    questSummary: Promise.resolve({ title: "Crosswind", author: "Author" }),
+  });
+  const code = [between("  const query =", "  // Inside another page"), between("  async function questLink(id)", "  async function watchLink(run)")];
+  vm.runInContext(code.join("\n") + "\nglobalThis.linkedQuestLink = () => questLink(linkedQuest);", context);
+  return { run: () => context.linkedQuestLink(), notices, calls, requests };
+}
+
+for (const [build, clBuild] of [["", CL_BUILD_1_9_93], ["&build=1.9.93", CL_BUILD_1_9_93], ["&build=1.9.8", CL_BUILD_1_9_8]]) {
+  test(`questLink plays a quest link${build ? ` with ${build}` : ""} on build ${clBuild}`, async () => {
+    const b = questBrowser(`?quest=0123456789ab${build}`);
+    await b.run();
+    assert.deepEqual(b.notices, []);
+    assert.deepEqual(b.requests, ["/custom/0123456789ab.bin"]);
+    assert.deepEqual(b.calls, [["client_play_quest", "quests/online/0123456789ab.bin", "Crosswind", "Author", clBuild]]);
+  });
+}
+
+test("questLink refuses a build the game does not play", async () => {
+  const b = questBrowser("?quest=0123456789ab&build=2.0");
+  await b.run();
+  assert.deepEqual(b.notices, ["This quest link names a version the game does not play."]);
+  assert.deepEqual(b.requests, []);
+  assert.deepEqual(b.calls, []);
+});

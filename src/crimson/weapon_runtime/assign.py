@@ -7,7 +7,7 @@ from grim.sfx_types import SfxRequest
 
 from ..math_parity import f32, x87_pc24_mul
 from ..perks import PerkId
-from ..sim.state_types import PerkCounts, PlayerState, WeaponSlot
+from ..sim.state_types import PlayerState, WeaponSlot
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
@@ -19,11 +19,13 @@ def weapon_entry(weapon_id: WeaponId) -> Weapon:
     return WEAPON_BY_ID[weapon_id]
 
 
-def _clip_size_with_perks(perks: PerkCounts, clip_size: int) -> int:
+def _clip_size_with_perks(state: GameplayState, clip_size: int) -> int:
     clip_size = max(0, clip_size)
-    if PerkId.AMMO_MANIAC in perks:
+    if PerkId.AMMO_MANIAC in state.perks:
         clip_size += max(1, int(float(clip_size) * 0.25))
-    if PerkId.MY_FAVOURITE_WEAPON in perks:
+    # 1.9.8 adds My Favourite Weapon's +2 only when the perk is picked, so the next
+    # assign loses it (original bug 59).
+    if PerkId.MY_FAVOURITE_WEAPON in state.perks and not state.bugs_1_9_8:
         clip_size += 2
     return clip_size
 
@@ -53,7 +55,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     weapon = weapon_entry(weapon_id)
     player.weapon.weapon_id = weapon_id
 
-    player.weapon.clip_size = _clip_size_with_perks(state.perks, int(weapon.clip_size))
+    player.weapon.clip_size = _clip_size_with_perks(state, int(weapon.clip_size))
     player.weapon.ammo = float(player.weapon.clip_size)
     player.weapon_reset_latch = 0
     # Native resets only ammo, the reset latch, shot cooldown, reload timer,

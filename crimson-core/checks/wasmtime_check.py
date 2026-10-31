@@ -16,9 +16,13 @@ import wasmtime
 CORE = Path(__file__).resolve().parents[1]
 
 
-# `PortableConfig`: 13 settings, the player count last, then the weapon usage counts and two profile words.
-CONFIG_BYTES = 272
+# `PortableConfig`: 13 settings, the player count last, then the weapon usage counts, two profile words (rules and the
+# legacy co-op reload) and the build whose rules the run plays.
+CONFIG_BYTES = 276
 PLAYERS_OFFSET = 48
+RULES_OFFSET = 264
+# `PortableConfig.cl_build`'s builds (src/crimson/cl_build.py ClBuild).
+CL_BUILD_1_9_8, CL_BUILD_1_9_93 = 10908, 10993
 # `PortableInput`, one per player each tick.
 INPUT_BYTES = 20
 # `PortableQuest`, which follows the config of a quest at stage 0.0.
@@ -34,6 +38,7 @@ SMOKE = {
     "quest-settings",
     "coop-survival-ranked",
     "coop-quest-2.4-ranked",
+    "1.9.8-coop-hunt",
 }
 
 
@@ -106,9 +111,16 @@ def main():
         return memory.read(store, pointers["output"], pointers["output"] + count * 4)
 
     results = []
-    # Use the same instance across all runs; repeat each A after a different B.
+    # Use the same instance across all runs; repeat each A after a different B, which plays the other build.
     other, other_records = decode((args.build / "fixtures/rush-idle.rsi").read_bytes())
-    # One run per mode, policy, control family and player count is enough to show the module runs the same here.
+
+    def other_build(config):
+        build = struct.unpack_from("<I", config, RULES_OFFSET + 8)[0]
+        b = bytearray(other)
+        struct.pack_into("<3I", b, RULES_OFFSET, 2, 0, CL_BUILD_1_9_93 if build == CL_BUILD_1_9_8 else CL_BUILD_1_9_8)
+        return bytes(b)
+
+    # One run per mode, policy, control family, player count and build is enough to show the module runs the same here.
     for case in (case for case in report["cases"] if case["name"] in SMOKE):
         config, records = decode((args.build / "fixtures" / (case["name"] + ".rsi")).read_bytes())
         init(config)
@@ -120,7 +132,7 @@ def main():
         final_digest = hashlib.sha256(last).hexdigest()
         if digest.hexdigest() != case["sha256"] or final_digest != case["final_sha256"]:
             raise ValueError(f"Wasmtime differs from native/Node: {case['name']}")
-        init(other)
+        init(other_build(config))
         for record in other_records[:200]:
             step(record)
         init(config)
@@ -138,7 +150,7 @@ def main():
         "ticks": sum(case["ticks"] for case in results),
         "fields_per_snapshot": snapshot_fields,
         "comparison": "every snapshot hash matches native/Node",
-        "reset": "all Wasmtime A/B/A passed",
+        "reset": "all Wasmtime A/B/A passed, B on the other build",
         "linear_memory_mib": memory.data_len(store) / 1048576,
         "results": results,
     }

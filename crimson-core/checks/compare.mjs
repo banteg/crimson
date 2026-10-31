@@ -11,6 +11,9 @@ import {
   names,
   config,
   record,
+  clBuild,
+  CL_BUILD_1_9_8,
+  CL_BUILD_1_9_93,
 } from "./engine.mjs";
 
 // Consume each view before requesting the next snapshot: the frame storage is reused.
@@ -86,9 +89,11 @@ export async function compare(input, native, wasm) {
     clearTimeout(timeout);
   }
   const last = Buffer.from(state(e));
+  // B plays the other build, whose rules leave nothing behind for A either.
+  const other = clBuild(run.config) === CL_BUILD_1_9_8 ? CL_BUILD_1_9_93 : CL_BUILD_1_9_8;
   init(
     e,
-    config(2, 1, 1, { seed: 12345, unlock: 0, unlockFull: 0, detail: 0 }),
+    config(2, 1, 1, { seed: 12345, unlock: 0, unlockFull: 0, detail: 0, clBuild: other }),
   );
   for (let i = 0; i < 200; i++)
     if (!step(e, record([1, 0, 512, 512, 0x1700]))) throw Error("B reset run");
@@ -102,7 +107,7 @@ export async function compare(input, native, wasm) {
     sha256: hash.digest("hex"),
     final_sha256: crypto.createHash("sha256").update(last).digest("hex"),
     wasm_memory_mib: e.memory.buffer.byteLength / 1048576,
-    reset: "native and WASM A/B/A passed",
+    reset: "native and WASM A/B/A passed, B on the other build",
     imports: 0,
   };
 }

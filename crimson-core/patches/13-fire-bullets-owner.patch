@@ -1,7 +1,28 @@
 Original bug 13: Fire Bullets converts a player's shot while either player's timer runs. The fix converts it only on
-its shooter's timer: current_player_index, which the player updates set and a Nuke sets to its picker.
+its shooter's timer: current_player_index, which the player updates set and a Nuke sets to its picker. 1.9.8, which
+keeps the shot and adds a Fire Bullets shot before it, adds that shot for the listed owners on either player's timer;
+the fix adds it for any player's shot on the shooter's timer, as it converts.
 --- a/decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp
+@@ -20,11 +20,15 @@
+ 
+     if (!scripted_burst_active) {
+ #if CL_BUILD == 10908
+-        if (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {
++        if (portable_preserve_bugs
++                ? owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3
++                : owner_id < 0) {
+             ++highscore_record_shots_fired;
+             if (type_id != PROJECTILE_TYPE_FIRE_BULLETS
+-                && (player_state_table[0].fire_bullets_timer > 0.0f
+-                    || player_state_table[1].fire_bullets_timer > 0.0f)) {
++                && (portable_preserve_bugs
++                        ? player_state_table[0].fire_bullets_timer > 0.0f
++                              || player_state_table[1].fire_bullets_timer > 0.0f
++                        : player_state_table[current_player_index].fire_bullets_timer > 0.0f)) {
+                 projectile_spawn(pos, angle, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);
+             }
+         }
 @@ -30,12 +30,16 @@
          }
  #else

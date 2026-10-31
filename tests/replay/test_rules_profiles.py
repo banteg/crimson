@@ -5,6 +5,7 @@ from pathlib import Path
 import msgspec
 import pytest
 
+from crimson.cl_build import ClBuild
 from crimson.replay.codec import load_replay_file
 from crimson.replay.driver.playback_driver import PlaybackDriver, ReplayRunnerError
 from crimson.replay.recorder import ReplayRecorder
@@ -65,3 +66,11 @@ def test_recorded_coop_seats_postdate_the_manual_reload_fix(version):
     assert not legacy_coop_reload(replay)
     driver = PlaybackDriver(replay, warn_on_version_mismatch=False)
     assert not driver.world.state.legacy_coop_reload
+
+
+def test_a_1_9_8_run_does_not_play_under_rules_1():
+    # The codec refuses such a file; a replay built in memory meets the run's own check.
+    replay = load_replay_file(FIXTURE)
+    replay = msgspec.structs.replace(replay, rules=1, run=msgspec.structs.replace(replay.run, cl_build=ClBuild.V1_9_8))
+    with pytest.raises(ReplayRunnerError, match="1.9.8 rules need rules 2"):
+        PlaybackDriver(replay, warn_on_version_mismatch=False)

@@ -72,6 +72,13 @@ def _stop_on_hit_jitter_axis_f32(direction: float, jitter: int, pos: float) -> f
     return x87_pc24_add(offset, pos)
 
 
+def _fire_bullets_active(state: GameplayState, players: Sequence[PlayerState], owner_player_index: int) -> bool:
+    # Native reads both players' timers whoever fired; the rewrite reads the shooter's (original bug 13).
+    if state.preserve_bugs:
+        return any(player.fire_bullets_timer > 0.0 for player in players[:2])
+    return players[owner_player_index].fire_bullets_timer > 0.0
+
+
 def projectile_spawn(
     state: GameplayState,
     *,
@@ -82,7 +89,10 @@ def projectile_spawn(
     owner_id: int,
     owner_player_index: int,
 ) -> int:
-    """Port of `projectile_spawn` (0x00420440): a player's shot counts as fired and becomes Fire Bullets."""
+    """Port of `projectile_spawn` (0x00420440): a player's shot counts as fired and becomes Fire Bullets.
+
+    In 1.9.8 the shot stays and gains a Fire Bullets shot, spawned first; the original's index is returned.
+    """
 
     if not state.scripted_burst_active:
         # Native lists -100, -1, -2 and -3, so a fourth player's friendly-fire shots skip it; the rewrite takes any player.
@@ -90,22 +100,32 @@ def projectile_spawn(
             player_owned = owner_id == OWNER_LOCAL_PLAYER or -3 <= owner_id <= -1
         else:
             player_owned = owner_id < 0
-        # Native loops once more after converting, so a converted shot counts twice.
-        while player_owned:
-            state.shots_fired += 1
-            if type_id == ProjectileTemplateId.FIRE_BULLETS:
-                break
-            # Native reads both players' timers whoever fired; the rewrite reads the shooter's.
-            if state.preserve_bugs:
-                fire_bullets_active = any(player.fire_bullets_timer > 0.0 for player in players[:2])
-            else:
-                fire_bullets_active = players[owner_player_index].fire_bullets_timer > 0.0
-            if not fire_bullets_active:
-                break
-            type_id = ProjectileTemplateId.FIRE_BULLETS
+        if state.rules_1_9_8:
+            # 1.9.8 spawns the Fire Bullets shot through a recursive call, which counts it as fired too.
+            if player_owned:
+                state.shots_fired += 1
+                if type_id != ProjectileTemplateId.FIRE_BULLETS and _fire_bullets_active(state, players, owner_player_index):
+                    projectile_spawn(
+                        state,
+                        players=players,
+                        pos=pos,
+                        angle=angle,
+                        type_id=ProjectileTemplateId.FIRE_BULLETS,
+                        owner_id=owner_id,
+                        owner_player_index=owner_player_index,
+                    )
+        else:
+            # Native loops once more after converting, so a converted shot counts twice.
+            while player_owned:
+                state.shots_fired += 1
+                if type_id == ProjectileTemplateId.FIRE_BULLETS:
+                    break
+                if not _fire_bullets_active(state, players, owner_player_index):
+                    break
+                type_id = ProjectileTemplateId.FIRE_BULLETS
 
     entries = state.projectiles.entries
-    index = next((i for i, entry in enumerate(entries) if not entry.active), MAIN_PROJECTILE_POOL_SIZE - 1)
+    index = next((i for i, entry in enumerate(entries) if not entry.active), len(entries) - 1)
     entry = entries[index]
     entry.generation += 1
     entry.owner_id = owner_id
@@ -146,8 +166,8 @@ def projectile_spawn(
 
 
 class ProjectilePool:
-    def __init__(self) -> None:
-        self._entries = [Projectile() for _ in range(MAIN_PROJECTILE_POOL_SIZE)]
+    def __init__(self, size: int = MAIN_PROJECTILE_POOL_SIZE) -> None:
+        self._entries = [Projectile() for _ in range(size)]
 
     @property
     def entries(self) -> list[Projectile]:

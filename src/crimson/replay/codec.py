@@ -10,6 +10,7 @@ import zstandard as zstd
 
 from grim.atomic_write import atomic_write_bytes
 
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..game_version import REPLAY_FORMAT_VERSION
 from ..math_parity import f32
@@ -18,7 +19,7 @@ from ..quests.level import QuestLevel
 from ..quests.types import SpawnEntry
 from ..sim.commands import PerkPickCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.run_result import RunOutcome, RunResult
-from ..sim.run_spec import RunSpec, RunSpecV32, RunStatus
+from ..sim.run_spec import RunSpec, RunSpecV32, RunSpecV34, RunStatus
 from ..terrain_slots import TerrainSlotTriplet
 from ..typo.names import (
     HIGHSCORE_NAME_MAX_CHARS,
@@ -101,7 +102,21 @@ class _ReplayV33(msgspec.Struct, forbid_unknown_fields=True):
     rules: int
     recorder: Recorder
     pilot: Pilot | None
-    run: RunSpec
+    run: RunSpecV34
+    result: RunResult
+    ticks: list[ReplayTick]
+
+
+class _ReplayV34(msgspec.Struct, forbid_unknown_fields=True):
+    """Format 34, whose runs had no `cl_build`: they play 1.9.93."""
+
+    format_version: int
+    game_version: str
+    rules: int
+    recorder: Recorder
+    pilot: Pilot | None
+    seat_keys: tuple[bytes, ...] | None
+    run: RunSpecV34
     result: RunResult
     ticks: list[ReplayTick]
 
@@ -153,6 +168,7 @@ _V30_RULES = 1
 _ENCODER = msgspec.msgpack.Encoder()
 _DECODERS: dict[int, msgspec.msgpack.Decoder] = {
     REPLAY_FORMAT_VERSION: msgspec.msgpack.Decoder(type=Replay),
+    34: msgspec.msgpack.Decoder(type=_ReplayV34),
     33: msgspec.msgpack.Decoder(type=_ReplayV33),
     32: msgspec.msgpack.Decoder(type=_ReplayV32),
     31: msgspec.msgpack.Decoder(type=_ReplayV31),
@@ -182,7 +198,9 @@ def _upgrade_v33_custom_quest(cq: _CustomQuestV33Legacy, *, player_count: int) -
     )
 
 
-def _upgrade(decoded: Replay | _ReplayV33 | _ReplayV33Legacy | _ReplayV32 | _ReplayV31 | _ReplayV30) -> Replay:
+def _upgrade(
+    decoded: Replay | _ReplayV34 | _ReplayV33 | _ReplayV33Legacy | _ReplayV32 | _ReplayV31 | _ReplayV30,
+) -> Replay:
     """A replay read from an earlier format, with what that format left out."""
 
     if isinstance(decoded, Replay):
@@ -210,6 +228,8 @@ def _upgrade(decoded: Replay | _ReplayV33 | _ReplayV33Legacy | _ReplayV32 | _Rep
             return Replay(**fields, pilot=None, seat_keys=None)
         case _ReplayV32() | _ReplayV33():
             return Replay(**fields, seat_keys=None)
+        case _ReplayV34():
+            return Replay(**fields)
 _FORMAT_PROBE = msgspec.msgpack.Decoder(type=_FormatVersion)
 
 
@@ -442,6 +462,8 @@ def _validate_seat_keys(seat_keys: tuple[bytes, ...], *, player_count: int) -> N
 def validate_replay(replay: Replay) -> None:
     _require(replay.format_version in _DECODERS, _unsupported_format(replay.format_version))
     _require(replay.rules >= 1, "rules must be at least 1")
+    # 1.9.8 rules arrived with rules 2; no earlier profile plays them.
+    _require(replay.run.cl_build == ClBuild.V1_9_93 or replay.rules >= 2, "1.9.8 rules need rules 2")
     _require(bool(replay.game_version), "game_version must be non-empty")
     _validate_recorder(replay.recorder)
     if replay.pilot is not None:

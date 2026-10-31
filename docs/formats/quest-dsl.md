@@ -38,9 +38,12 @@ From a repository checkout, `uv run crimson quest ...` includes authoring depend
 
 `quest build` compiles a recipe and prints its ID, weapon, terrain, entry count and
 copies; `--json` prints the resolved `CustomQuest`. `quest play` opens the game
-straight into the quest, and every attempt saves a replay. `quest publish` uploads
+straight into the quest, and every attempt saves a replay; `--build 1.9.8` plays it
+on the [1.9.8 rules](../rewrite/rules-1.9.8.md), so its clear is a 1.9.8 run, ranked
+on the quest's 1.9.8 board. `quest publish` uploads
 the recipe with a clear of it as proof. It picks the newest clear in the replays folder whose quest matches
-the recipe; `--replay` names one instead. A quest's ID is the first 12 hex digits
+the recipe, whichever rules it played; `--replay` names one instead. It prints the quest's link, which
+shows the boards of the clear's rules. A quest's ID is the first 12 hex digits
 of the resolved definition's digest, so any change to what a recipe produces is a
 new quest that needs its own clear. The browser plays published quests only.
 
@@ -305,8 +308,9 @@ resolves a recipe into the single-table definition a custom quest run plays
 (`RunSpec.custom_quest`): the title, author, starting weapon, terrain slots,
 resolved `entries`, and drop/offer restrictions (`no_bonuses`, `no_perks`, `no_weapons`).
 `crimson quest play` builds one (construction seed 0 unless `--seed`) and starts it in ranked mode
-straight after boot; `crimson quest publish` uploads the recipe alongside a completed
-replay to establish its leaderboard on `crimson.land/custom/<id>`.
+straight after boot, on 1.9.93's rules unless `--build 1.9.8` (`RunSpec.cl_build`);
+`crimson quest publish` uploads the recipe alongside a completed replay of either build
+to establish its leaderboard on `crimson.land/custom/<id>`.
 
 ## Bounds and runtime semantics
 

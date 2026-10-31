@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WASI_SDK_VERSION = "34.0"
 
 # The verifier compiles this manifest, not the recovered presentation or the game-only host includes.
-# Keep directory patterns for headers and patches: adding either can affect an existing compilation.
+# Keep directory patterns for headers and diffs: adding either can affect an existing compilation.
 CORE_BUILD = (
     "scripts/build_identity.py",
     "src/crimson/game_version.py",
@@ -38,6 +38,7 @@ CORE_BUILD = (
     "crimson-core/host/math.c",
     "crimson-core/host/musl/",
     "crimson-core/abi/",
+    "crimson-core/editions/",
     "crimson-core/optimizations/",
     "crimson-core/patches/",
     "crimson-core/seams/",

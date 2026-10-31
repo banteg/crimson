@@ -97,6 +97,7 @@ def replay_card(replay: Replay, *, name: str, day: dt.date) -> WatchCard:
     record.name = name
     record.game_mode_id = replay.run.game_mode_id
     record.quest_level = replay.run.quest_level
+    record.cl_build = replay.run.cl_build
     record.run_elapsed_ms = result.quest_final_ms if result.quest_final_ms is not None else result.elapsed_ms
     if result.players:
         record.score_xp = result.players[0].experience

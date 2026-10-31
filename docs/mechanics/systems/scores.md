@@ -30,6 +30,10 @@ Each quest has its own table on each difficulty; once you've beaten quest
 and Typ-o have one table each. One- and two-player runs keep separate
 tables (the rewrite adds 3- and 4-player ones); Typ-o is one-player only.
 
+Runs on the [1.9.8 rules](../../rewrite/rules-1.9.8.md) keep tables of their
+own. While **1.9.8** is ticked in the Play Game menu, High scores shows them,
+with 1.9.8 in its title.
+
 **Show scores** filters by date: best of all time, of this month, this week
 or today. The filter applies before the 100-row cut.
 
@@ -85,9 +89,11 @@ strength.
 ## Ranked play
 
 The leaderboard at [crimson.land](https://crimson.land) has one board for
-Survival and one per quest on each difficulty. The server replays every run
-before it counts, and keeps each account's best run per board. Bot runs rank
-on their own boards.
+Survival and one per quest on each difficulty, and each comes once for each
+build's rules: runs on the [1.9.8 rules](../../rewrite/rules-1.9.8.md#ranking)
+rank on 1.9.8's boards. The server replays every run before it counts, and
+keeps each account's best run per board. Bot runs and co-op pairs rank on
+their own boards; see [Ranked rules](../../rewrite/ranked-rules.md#boards-and-scores).
 
 Tick **Ranked** in the Play Game menu to play a run that can rank. A ranked
 run plays the same setup for everyone:
@@ -102,7 +108,10 @@ run plays the same setup for everyone:
 - your view capped at 1024×768, and the default pad aim reach.
 
 Only a finished run ranks: a Survival run that ends in death, or a completed
-quest. Rush, Typ-o, the Tutorial and co-op don't rank yet. Computer
+quest. Rush, Typ-o, the Tutorial and local co-op don't rank. Online co-op
+ranks without the box: every run two players start from an invite link at
+[crimson.land/play](https://crimson.land/play/) is a ranked attempt for the
+pair. Tick **1.9.8** as well for a ranked run on the 1.9.8 rules. Computer
 controls never rank; the Ranked box is off while player 1 uses them.
 
 A ranked run plays on a copy of the save, so it changes neither your

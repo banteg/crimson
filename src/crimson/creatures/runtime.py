@@ -887,14 +887,16 @@ class CreaturePool:
             # synthesis inside the live-creature branch. The distance is measured
             # to the creature's target player, the perk gate reads player slot
             # zero, the kill XP is credited to player 1, and the timer-fire
-            # requires the creature to still be alive (hp > 0).
+            # requires the creature to still be alive (hp > 0). 1.9.8 has no hp
+            # gate: a creature killed earlier this pass burns again and pays its
+            # reward a second time (original bug 56).
             if PerkId.RADIOACTIVE in state.perks and target_dist < 100.0:
                 pulse_timer_step = x87_pc24_mul(float(dt), f32(1.5))
                 creature.dot_tick_timer = x87_pc24_sub(
                     float(creature.dot_tick_timer),
                     pulse_timer_step,
                 )
-                if creature.dot_tick_timer < 0.0 and float(creature.hp) > 0.0:
+                if creature.dot_tick_timer < 0.0 and (state.bugs_1_9_8 or float(creature.hp) > 0.0):
                     creature.dot_tick_timer = DOT_TICK_PERIOD
                     pulse_damage = x87_pc24_mul(
                         x87_pc24_sub(f32(100.0), target_dist),
@@ -904,7 +906,8 @@ class CreaturePool:
                     fx_queue.add_random(pos=creature.pos, rng=rng)
 
                     if creature.hp < 0.0 or (state.rules2_fixes and creature.hp == 0.0):
-                        if creature.type_id == CreatureTypeId.LIZARD:
+                        # 1.9.93 spares lizards at 1 hp; 1.9.8 kills them like any creature.
+                        if creature.type_id == CreatureTypeId.LIZARD and not state.rules_1_9_8:
                             creature.hp = 1.0
                         else:
                             players[0].experience = experience_plus_reward(

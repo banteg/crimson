@@ -34,6 +34,10 @@ everything it adds lives here.
   computer), read from each tick's flags as Python does; see
   [the input seam](#transport-and-input-seam), each player's from their own
   input. Typ-o, the tutorial and more players fail explicitly.
+- 1.9.93's rules, or the [1.9.8 rules](../docs/rewrite/rules-1.9.8.md)
+  (replay `run.cl_build` 10908), chosen per run: one module plays both; see
+  [Rules](#rules). The clients' runs, co-op's the Host's, play the Play Game
+  menu's choice ([PORT.md](PORT.md#runs-the-client-plays)).
 - The run's bug policy comes with its configuration; see [Rules](#rules).
 
 ## Low-level bot API
@@ -46,8 +50,10 @@ the [input seam](#transport-and-input-seam) defines command timing. An instance
 holds one run, so concurrent simulations require separate module instances.
 Breaking API or layout changes must include migration notes for callers.
 
-Migration: `PortableConfig` is now 272 bytes: its original 66 words are followed
-by `rules` and `legacy_coop_reload` (see [Rules compatibility](#rules-compatibility)).
+Migration: `PortableConfig` is now 276 bytes: its original 66 words are followed
+by `rules`, `legacy_coop_reload` and `cl_build` (see [Rules compatibility](#rules-compatibility));
+write 10993 in `cl_build` for 1.9.93's rules, as every run had before, and
+initialization refuses any other value but 10908, the 1.9.8 rules, which need rules 2.
 The 13th setting, `players`, follows `preserve_bugs` (write 1 for a one-player run;
 zero is refused), and
 `portable_input` points at one `PortableInput` per player, player one first.
@@ -75,7 +81,7 @@ a stable bot observation format or a language-specific SDK.
 | [`build.py`](build.py), [`adapter.py`](adapter.py), [`data.py`](data.py) | Generate, adapt and compile the recovered sources; recreate the globals. |
 | [`sources.json`](sources.json), [`schema.json`](schema.json) | Selected bodies, snapshot fields. |
 | [`host/`](host) | The host the recovered code runs in: API, input, timing, stubs, portable math. |
-| [`abi/`](abi), [`seams/`](seams), [`optimizations/`](optimizations), [`patches/`](patches) | Diffs against `decomp/`: compiler repairs, the recording in place of live reads, behavior-preserving optimizations, and the ranked rules, one patch per fixed original bug. |
+| [`abi/`](abi), [`seams/`](seams), [`optimizations/`](optimizations), [`patches/`](patches), [`editions/`](editions) | Diffs against `decomp/`: compiler repairs, the recording in place of live reads, behavior-preserving optimizations, the ranked rules, one patch per fixed original bug, and the 1.9.8 rules, each a branch on the run's build, with the ledger of the guards left to the preprocessor. |
 | [`checks/`](checks) | Native/WASM matrix, Python whole-run gate, original-executable oracles, Wasmtime probe. |
 | [`results/`](results) | Checked-in results of those checks. |
 | [`game.py`](game.py), [`game/`](game), [`client/`](client) | The game module (the whole recovered game over a platform layer) and its native and web clients; see [PORT.md](PORT.md). |
@@ -123,12 +129,54 @@ Regenerations) and hold G at times; the Highlander hunter's run reaches no
 fix, so it runs once. Two Survival scenarios carry quest difficulty: with the Hardcore box ticked
 the milestone waves play hardcore under the original rules, and with a quest
 retry count they play eased; under the ranked rules each is the plain run,
-state for state. The matrix compares every named field of
+state for state. Runs under the [1.9.8 rules](../docs/rewrite/rules-1.9.8.md)
+(`1.9.8` streams) play Survival, Rush, quests (Gauntlet on hardcore among
+them) and the Fire Bullets volley quests, where each shot keeps its Fire
+Bullets shot beside it; their original
+rules keep 1.9.8's own bugs, and their `-ranked` twins play 1.9.8 with every
+bug fixed. Hunters prefer the perks the 1.9.8 rules and bugs touch: a Survival
+one holding G, which 1.9.8 ignores; a co-op Survival one, whose two players
+fill the projectile pool under the fixes; a Pulse Gun custom quest for Angry
+Reloader's short reload, Radioactive among lizards and a lizard grid, whose
+leader's death leaves a pulse due on a dead lizard under
+both policies (bug 56), and Jinxed during Freeze (bug 57); a Pistol custom
+quest stepping around Weapon drops for My Favourite Weapon and Ammo Maniac
+(bugs 59 and 60); and a co-op custom quest picking up Fire Bullets (bug 13),
+whose player one stands until killed and Infernal Contract brings them back
+(bug 58). Each 1.9.8 run also reads, from the snapshots around each step, what
+it reached of those rules and bugs and how they played. The matrix fails on an
+outcome they rule out: a projectile slot past 64 used, a perk menu offering one
+of the four perks 1.9.8 lacks, a Fire Bullets drop while a player holds a flame
+or rocket weapon, a co-op player's Fire Bullets shot while only the other's Fire
+Bullets timer runs under the fixes, a pulse left to a dying creature under
+1.9.8's bugs and one on a creature its leader's death just killed under the
+fixes, a Jinxed kill (a creature a proc sets to -1 health) during Freeze under
+the fixes, Infernal Contract taken while player one is dead leaving their health
+alone under the bugs or changing it under the fixes, Ammo Maniac's reassignment
+with My Favourite Weapon keeping the perk's 2 clip under the bugs or losing it
+under the fixes, and a Weapon drop, other than a bonus carrier's own, while a
+Pistol holder has My Favourite Weapon under the fixes. It also fails unless some
+run covers each of: a Fire Bullets shot added beside another, the pool full at
+64 slots, a perk menu, a drop of another bonus while a flame or rocket weapon is
+held, a co-op player's shots while only the other's Fire Bullets timer runs,
+with Fire Bullets shots under the bugs and without under the fixes (bug 13), an
+Angry Reloader ring on a short reload, a Radioactive lizard kill, a pulse on a
+creature its leader's death just killed under the bugs and one left to a dying
+creature under the fixes, a Jinxed kill during Freeze under the bugs and a proc
+during it under the fixes, Infernal Contract with player one dead and Ammo
+Maniac with My Favourite Weapon under both policies, a Weapon drop while a
+Pistol holder has My Favourite Weapon under the bugs and a Pistol holder's kills
+with it under the fixes. Several of these only one stream reaches, so a change
+that only moves the bots can lose them: the matrix names every miss at once, as
+a coverage loss, not necessarily a defect. The matrix
+compares every named field of
 [`schema.json`](schema.json) at initialization and **every tick** between native and WASM, then checks A/B/A
-reuse in both. It also probes rejection of bad input, commands, entitlement and
+reuse in both, with B on the other build: after a 1.9.8 run, a 1.9.93 one must play as on a fresh instance. It also probes rejection of bad input, commands, entitlement and
 picks and menu requests the perk rules do not allow, each for the reason both
-builds give (`portable_refusal`), and that a large movement vector does not
-move faster than a unit one.
+builds give (`portable_refusal`), that neither build starts a run of no players
+or more than two, or under a build other than 1.9.93 and 1.9.8 (or 1.9.8 with
+rules 1), and that a large movement vector does not move faster than a unit
+one.
 
 The [results](results/matrix.json) list each stream with its ticks, coverage
 and hashes. All 50 quests run to an outcome; the bot completes 1.1, 1.3 and 1.5. Custom quests built from
@@ -154,8 +202,10 @@ The gate feeds each bot stream and each supported recorded fixture to Python
 and the native core, both under the bug policy the stream's configuration
 carries; recorded fixtures replay under the rules they were recorded with. Per tick it compares the RNG state, kills, shots, pending
 perks, bonus timers and each player's position, health, death timer, headings,
-experience, level, ammo and weapon, floats as F32 bits, keeping the first
-divergence. It compares the terminal tick and outcome, and the complete
+experience, level, ammo and weapon, floats as F32 bits, and which projectile
+slots are active with which shot types, so the slot a shot takes and the pool's
+size (1.9.8's 64 slots, whose full-pool fallback is the last of them) are
+pinned; it keeps the first divergence. It compares the terminal tick and outcome, and the complete
 `RunResult` after the last tick both stepped. Both sides simulate the run-down
 after the end, at most 500 ms of frames, as live play and verification do; a
 core rejection counts only where Python's run-down ends, and the gate refuses
@@ -374,7 +424,7 @@ uv run --with wasmtime==49.0.0 python crimson-core/checks/wasmtime_check.py \
 The [probe](results/wasmtime.json) loads the exact `core.wasm` used by Node and
 the [service](../service/src/verify.ts) in
 [wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/), compares the hash of every snapshot of a smoke set (one run per mode, bug
-policy, control family and player count) and checks A/B/A resets in one instance, without
+policy, control family, player count and build) and checks A/B/A resets in one instance, without
 adding a project dependency; the matrix already compares every run between
 native and Node. The results record the module's hash and its linear memory.
 
@@ -392,6 +442,47 @@ matches exactly once stops the build. Bug 32 (the Shock Chain slot's starting
 value) is set by the host at run start, and bug 15 (player 2's joystick hat) is
 the input seam: each player's turn flags arrive with their own input.
 
+The configuration's `cl_build` sets `portable_cl_build`, Python's
+`RunSpec.cl_build`: 10993 plays 1.9.93's rules and 10908 the
+[1.9.8 rules](../docs/rewrite/rules-1.9.8.md). The sources compile as 1.9.93
+(`CL_BUILD`), and each 1.9.8 rule is a guard in `decomp/` that a diff in
+[`editions/`](editions) turns into a branch on the run's build
+(`portable_rules_1_9_8`), one file a rule. An edition's hunk replaces the
+whole `#if ... #endif` region as the patches leave it, so a change to either
+branch stops the build. Editions apply after the patches: 1.9.8's own bugs
+(56-60) are patches against its guarded branch, kept only in a 1.9.8 run with
+`preserve_bugs` (`portable_bugs_1_9_8`), and patch 13 covers 1.9.8's Fire
+Bullets shot too. Every other guard that tells the builds apart stays the
+preprocessor's, so a 1.9.8 run takes 1.9.93's branch there, as the Python port
+does. [`editions/guards.json`](editions/guards.json) lists each one by file and
+a hash of its text (`hash#N` for the Nth copy of one text in a file), with the
+class that says why 1.9.93's branch plays a 1.9.8 run: code generation, translation-unit context, float operand order, NaN-only
+spellings, layouts, the four perks 1.9.8 lacks, sprite recycling, and the
+front end's trial, seasonal, input, text and platform code. The build and
+`tests/test_core_patches.py` stop at a guard the ledger doesn't list, new or
+edited, and print it; `uv run python crimson-core/adapter.py --record-guards
+HASH=CLASS ...` rewrites the ledger, keeping the class of every guard it lists
+by file and key; any other, a new copy of a listed text too, takes the class
+given for its hash, and nothing is written while a guard has none. The test also
+stops at an entry that no target compiles any more.
+
+| Edition | 1.9.8 rule |
+| --- | --- |
+| 01 | Fire Bullets keeps each player shot and adds a Fire Bullets shot before it, counted too; player_update has no Fire Bullets branch or G key |
+| 02 | Fire Bullets rerolls while any player holds a weapon with the flamer, rocket or rocket-minigun shot sound |
+| 03 | The projectile pool has 64 slots: the free-slot search and its fallback; the layout keeps 96 |
+| 04 | Perks roll `rand % 53 + 1` with 1.9.93's ids, and Man Bomb, Fire Cough, Living Fortress and Tough Reloader are never available |
+| 05 | Angry Reloader has no 0.5 s reload minimum |
+| 06 | Radioactive kills lizards; its region carries bug 56 too |
+| 07 | Typ-o names come from 42 fragments (the game module; the verifier has no Typ-o) |
+| 08-10 | Jinxed, Infernal Contract and My Favourite Weapon: the regions of bugs 57-60, which play 1.9.93's code unless `preserve_bugs` |
+
+1.9.8's Fire Bullets reroll compares shot sound ids, which tell the sounds
+apart only with all of them loaded: the verifier loads none, and the original
+without sound or assets gives every sound one id. The run compares the sounds'
+`audio_asset_id_table` slots instead, which the host takes by running
+`weapon_table_init` over distinct ids at each run start.
+
 | Patch | Fix |
 | --- | --- |
 | 01 | Weapon drops are suppressed only for a weapon a player carries, not any matching amount |
@@ -404,7 +495,7 @@ the input seam: each player's turn flags arrive with their own input.
 | 10 | Jinxed can pick the last creature slot |
 | 11 | Doctor, Pyrokinetic and Evil Eyes work from each living player's aim |
 | 12 | The Jinxed accident hurts a random living player |
-| 13 | Fire Bullets converts only its shooter's shots |
+| 13 | Fire Bullets converts (1.9.8: adds a shot to) only its shooter's shots |
 | 14 | Pyromaniac is offered while any living player holds the Flamethrower |
 | 16 | The Pistol fallback drop roll checks every player's weapon |
 | 17 | Mini-Rocket Swarmers spread evenly over 120 degrees around the aim |
@@ -425,6 +516,11 @@ the input seam: each player's turn flags arrive with their own input.
 | 47 | Initial and continuation Shock Chain targets must be living |
 | 48 | Plague/Radioactive handle zero HP and stop death-frame live behavior |
 | 49 | Primary impulses use sine for Y; lethal impacts align corpse slides |
+| 56 | 1.9.8's Radioactive pulse burns only living creatures |
+| 57 | 1.9.8's Jinxed kills nothing during Freeze |
+| 58 | 1.9.8's Infernal Contract drops each living player to 0.1 health |
+| 59 | 1.9.8's My Favourite Weapon adds its clip bonus on every weapon assignment |
+| 60 | 1.9.8's My Favourite Weapon cancels the Pistol holder's forced Weapon drops |
 
 Fixes that only change what is drawn are patches in
 [`game/patches/`](game/patches), which only the game module applies, so the
@@ -451,9 +547,9 @@ core's input stream as a test file; the service builds the same stream in
 memory ([`service/src/transport.ts`](../service/src/transport.ts)). It carries
 no claimed score:
 
-- 272-byte config: 68 little-endian uint32 values (13 settings ending with
-  `preserve_bugs` and the player count, 1 or 2, then 53 weapon usage counts, rules and legacy-co-op-reload),
-  laid out in [`host/api.h`](host/api.h).
+- 276-byte config: 69 little-endian uint32 values (13 settings ending with
+  `preserve_bugs` and the player count, 1 or 2, then 53 weapon usage counts, rules, legacy-co-op-reload and
+  the build, 10993 or 10908), laid out in [`host/api.h`](host/api.h).
 - A quest at stage 0.0 plays a custom quest, whose 6,164-byte `PortableQuest`
   follows the config: its starting weapon, three terrain slots and entry count,
   then 256 entries of three float32 (position, heading) and three int32
@@ -502,7 +598,8 @@ calls and definitions that disagree on arguments, `size_t` spelled as a 32-bit
 int), [`seams/`](seams) puts the recording where the original reads live input,
 behind `PORTABLE_RECORDED`, which the verifier fixes at 1 and the game module
 sets inside a tick, and a custom quest where it reads the quest table, [`optimizations/`](optimizations) changes performance while
-preserving both bug policies, and [`patches/`](patches) holds the ranked rules;
+preserving both bug policies, [`patches/`](patches) holds the ranked rules,
+and [`editions/`](editions) the 1.9.8 rules;
 the game module adds [`game/changes/`](game/changes) and [`game/patches/`](game/patches).
 A diff names its files by their paths from the repository root and reads
 against them as `decomp/` has them; a hunk matches by its exact old text, which
@@ -565,8 +662,11 @@ original executable is the fidelity oracle.
 
 ### Rules compatibility
 
-The config appends `rules` (1 or 2) and
-`legacy_coop_reload` (0 or 1) after its 53 weapon-use words. New runs use rules 2
-and zero for the legacy flag. Replay readers resolve the flag from documented
-build provenance; it is valid only under rules 1. Both fields survive keyframes
-and participate in state hashing. See `docs/formats/replay.md` (Historical rules profiles).
+The config appends `rules` (1 or 2),
+`legacy_coop_reload` (0 or 1) and `cl_build` (10993 or 10908) after its 53
+weapon-use words: 69 words. New runs use rules 2, zero for the legacy flag and
+1.9.93's build unless they choose 1.9.8's. Replay readers resolve the flag from
+documented build provenance; it is valid only under rules 1. The build is the
+replay's `run.cl_build` (1.9.93 before format 35), and 1.9.8's needs rules 2.
+All three fields survive keyframes and participate in state hashing. See
+`docs/formats/replay.md` (Historical rules profiles).

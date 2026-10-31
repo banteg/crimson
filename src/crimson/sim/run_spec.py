@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..msgspec_types import NonNegativeInt, PlayerCount
 from ..persistence.save_status import GameStatusData
@@ -51,13 +52,20 @@ class RunSpecV32(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     status: RunStatus = msgspec.field(default_factory=RunStatus)
     typo_dictionary_words: tuple[str, ...] = ()
     # The score table's names as `typo_word_pick_highscore_name`'s cache holds them: loaded by an
-    # earlier run of the process (see `typo_carry`), or the table as this run would load it.
+    # earlier run of the process on the build (see `typo_carry`), or the table as this run would load it.
     typo_highscore_names: tuple[str, ...] = ()
     typo_carry: TypoCarry = msgspec.field(default_factory=TypoCarry)
 
 
-class RunSpec(RunSpecV32, frozen=True, forbid_unknown_fields=True):
-    """Inputs captured before any run-start mutation, shared by live and replay."""
+class RunSpecV34(RunSpecV32, frozen=True, forbid_unknown_fields=True):
+    """Run start settings as replay formats 33 and 34 carry them."""
 
     # A quest run plays either a stock level or a custom quest (since replay format 33).
     custom_quest: CustomQuest | None = None
+
+
+class RunSpec(RunSpecV34, frozen=True, forbid_unknown_fields=True):
+    """Inputs captured before any run-start mutation, shared by live and replay."""
+
+    # The original build whose rules the run plays (since replay format 35).
+    cl_build: ClBuild = ClBuild.V1_9_93

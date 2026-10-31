@@ -6,7 +6,8 @@ import msgspec
 
 from grim.geom import Vec2
 
-from .names import CreatureNameTable, TypoHighscoreNames
+from ..cl_build import ClBuild
+from .names import CreatureNameTable, TypoHighscoreNames, typo_fragments
 from .typing import TypingBuffer
 
 
@@ -51,11 +52,12 @@ def reset_typo_state(
     carry: TypoCarry | None = None,
     dictionary_words: Sequence[str] = (),
     highscore_names: Sequence[str] = (),
+    cl_build: ClBuild = ClBuild.V1_9_93,
 ) -> None:
     carry = TypoCarry() if carry is None else carry
     typo.typing = TypingBuffer(submit_count=carry.submit_count, match_count=carry.match_count)
     # One more name than creatures: native names the phantom slot one past its table.
-    typo.names = CreatureNameTable.sized(int(creature_capacity) + 1)
+    typo.names = CreatureNameTable.sized(int(creature_capacity) + 1, fragments=typo_fragments(cl_build))
     typo.spawn_cooldown_ms = 0
     typo.dictionary_words = tuple(str(word) for word in dictionary_words)
     typo.highscore_names = TypoHighscoreNames(
@@ -83,6 +85,17 @@ class TypoSession(msgspec.Struct):
     carry: TypoCarry = msgspec.field(default_factory=TypoCarry)
     # `typo_word_highscore_cache`, once `carry.highscore_names_loaded`.
     highscore_names: tuple[str, ...] = ()
+    # The last Typ-o run's build, whose table the names came from.
+    cl_build: ClBuild = ClBuild.V1_9_93
+
+    def start(self, cl_build: ClBuild) -> None:
+        """Native loads the names once a process, but each build keeps its own table: a run on another build
+        drops them, so its first pick loads its own build's table, as a fresh process's would."""
+
+        if cl_build != self.cl_build:
+            self.carry = msgspec.structs.replace(self.carry, highscore_names_loaded=False)
+            self.highscore_names = ()
+            self.cl_build = cl_build
 
     def keep(self, typo: TypoState) -> None:
         self.carry = typo.carry()

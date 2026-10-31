@@ -143,7 +143,8 @@ def perks_update_effects(
         f32(2.0),
     )
 
-    if state.bonuses.freeze > 0.0:
+    # 1.9.8 has no Freeze gate, so Jinxed kills a frozen creature (original bug 57).
+    if state.bonuses.freeze > 0.0 and not state.bugs_1_9_8:
         return
 
     # Native rolls `% 0x17f`, so the last pool slot is never picked.

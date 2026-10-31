@@ -54,7 +54,10 @@ def test_shared_decoding_corpus(score_decoder: Path) -> None:
             highscore_date_week(date.year, date.month, date.day) if date else 0,
             date.month if date else 0, date.year - 2000 if date else 0, 0, 0x75 if record.hardcore else 0,
         )[:-2] + b"\x7c\xff"
-        expected = f"{raw.hex()} {record.player_count} {record.score_list.encode('latin-1').hex()} {record.run} {record.import_id}"
+        expected = (
+            f"{raw.hex()} {record.player_count} {int(record.cl_build)} {record.score_list.encode('latin-1').hex()} "
+            f"{record.run} {record.import_id}"
+        )
         assert actual == expected, case["name"]
 
 

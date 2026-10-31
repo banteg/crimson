@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from grim.sfx_map import SfxId
+
 from ..game_modes import GameMode
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
+from ..weapons import WEAPON_BY_ID
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
@@ -12,6 +15,9 @@ if TYPE_CHECKING:
 
     from ..sim.state_types import PlayerState
     from .pool import BonusPool
+
+# The `shot_sfx_base_id`s whose holders keep 1.9.8 from picking Fire Bullets.
+_FIRE_BULLETS_REROLL_SHOT_SFX = frozenset({SfxId.FLAMER_FIRE_01, SfxId.ROCKET_FIRE, SfxId.ROCKETMINI_FIRE})
 
 
 def _bonus_enabled(bonus_id: BonusId) -> bool:
@@ -37,6 +43,17 @@ def _bonus_pick_suppressed(
     # Native reads both shield slots directly, but its global perk helper only
     # reads player 0. Preserve that asymmetry even if the port has more players.
     if bonus_id == BonusId.SHIELD and any(player.shield_timer > 0.0 for player in players[:2]):
+        return True
+    # 1.9.8 rerolls Fire Bullets while any player, dead or alive, holds a weapon whose shot sound
+    # is the flamer, rocket or rocket-minigun one.
+    if (
+        bonus_id == BonusId.FIRE_BULLETS
+        and state.rules_1_9_8
+        and any(
+            WEAPON_BY_ID[player.weapon.weapon_id].fire_sounds[0] in _FIRE_BULLETS_REROLL_SHOT_SFX
+            for player in players
+        )
+    ):
         return True
     if bonus_id == BonusId.WEAPON and has_fire_bullets_drop:
         return True

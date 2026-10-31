@@ -10,26 +10,44 @@
 
 static const char SCORES_FILE[] = "scores.jsonl";
 
-// A table: the mode, a quest's level and difficulty, the players and the named
-// list, as highscore_build_path names the original's file.
 #include "scores_format.inc"
-// The table the menus' settings name.
+// The table the menus' settings name: on the high score screen the Play Game
+// menu's build, and on a run's screens (its end, Typ-o's names, which a Typ-o
+// run on another build than the last loads again: host/session.inc
+// typo_names_start) the run's, which takes the menus' place for them
+// (menu_cl_build).
 static ScoresTable scores_table() {
   bool quest = config_blob.game_mode == GAME_MODE_QUEST;
   int slot = config_blob.selected_saved_name_slot;
   const char *list = config_blob.saved_names[slot];
   return {config_blob.game_mode, quest ? quest_stage_major : 0, quest ? quest_stage_minor : 0,
           quest && config_blob.hardcore, config_blob.player_count,
-          slot ? std::string(list, strnlen(list, sizeof config_blob.saved_names[slot])) : ""};
+          slot ? std::string(list, strnlen(list, sizeof config_blob.saved_names[slot])) : "", menu_cl_build};
 }
 
 // A saved record: the original's, its table, and its run on the leaderboard ("" for none).
-// ScoreTable.holds: only quests keep hardcore runs apart.
+// ScoreTable.holds: only quests keep hardcore runs apart; each build keeps its own.
 static bool scores_holds(const ScoresTable &table, const ScoresStored &stored) {
   const ScoresTable &own = stored.table;
   bool quest = table.mode == GAME_MODE_QUEST;
   return own.mode == table.mode && own.players == table.players && own.list == table.list &&
+         own.cl_build == table.cl_build &&
          (!quest || (own.major == table.major && own.minor == table.minor && own.hardcore == table.hardcore));
+}
+// The high score screen's title and a score card name 1.9.8's tables and runs
+// (screens/high_scores_view/main_panel.py, ui/highscore_card.py): the menus'
+// build, which a run's screens and a replay's viewer take the place of. A 1.9.8
+// card's origin line names the rules, and for a score from the Internet takes
+// the original's shorter "Internet score" (its "Internet score of local
+// origin"), within the card's widest native line. checks/game_rules.mjs reads
+// both as the screens would draw them now, and finds them on the screens.
+extern "C" __attribute__((export_name("game_scores_title_build"))) const char *scores_title_build() {
+  return menu_cl_build == PORTABLE_CL_BUILD_1_9_8 ? " (1.9.8)" : "";
+}
+extern "C" __attribute__((export_name("game_scores_card_origin"))) const char *scores_card_origin(int received) {
+  if (menu_cl_build != PORTABLE_CL_BUILD_1_9_8)
+    return received ? "Score from the Internet" : "Local score";
+  return received ? "Internet score, 1.9.8 rules" : "Local score, 1.9.8 rules";
 }
 
 // The replay the run that just ended saved, which its score names by number.
@@ -69,10 +87,11 @@ static void scores_json_text(std::string &out, const char *text, size_t size) {
   out += '"';
 }
 
-// A record's line, its fields in HighScoreRecord's order and those at their
-// defaults left out, as the Python port writes it; `linked` adds the run's.
-static std::string scores_line(const highscore_record_t &record, bool hardcore, int players, const std::string &list,
-                               bool linked, const std::string &import_id = "") {
+// A record's line on `table`, its fields in HighScoreRecord's order and those
+// at their defaults left out, as the Python port writes it; `linked` adds the
+// run's.
+static std::string scores_line(const highscore_record_t &record, bool hardcore, const ScoresTable &table, bool linked,
+                               const std::string &import_id = "") {
   std::string out = "{\"v\":1";
   auto number = [&](const char *key, long long value) {
     if (value)
@@ -86,10 +105,12 @@ static std::string scores_line(const highscore_record_t &record, bool hardcore, 
            ",\"minor\":" + std::to_string(record.quest_stage_minor) + "}";
   if (hardcore)
     out += ",\"hardcore\":true";
-  if (players != 1)
-    number("player_count", players);
-  if (!list.empty())
-    out += ",\"score_list\":", scores_json_text(out, list.data(), list.size());
+  if (table.players != 1)
+    number("player_count", table.players);
+  if (!table.list.empty())
+    out += ",\"score_list\":", scores_json_text(out, table.list.data(), table.list.size());
+  if (table.cl_build != PORTABLE_CL_BUILD_1_9_93)
+    number("cl_build", table.cl_build);
   number("run_elapsed_ms", (int32_t)record.run_elapsed_ms);
   number("score_xp", record.score_xp);
   number("most_used_weapon_id", record.most_used_weapon_id);
@@ -285,12 +306,12 @@ bool highscore_store(highscore_record_t *record) {
   int replay;
   memcpy(&replay, saved.reserved0, sizeof replay);
   bool hardcore = quest ? table.hardcore : saved.hardcore_marker == 0x75;
-  return scores_append(scores_line(saved, hardcore, table.players, table.list, replay && replay == scores_linked.number));
+  return scores_append(scores_line(saved, hardcore, table, replay && replay == scores_linked.number));
 }
 
 // The original's tables, appended to scores.jsonl in name order, each then
-// moved to scores5/imported/ (with .1, .2... when that name is taken). Records
-// the original received from the internet stay out.
+// moved to scores5/imported/ (with .1, .2... when that name is taken), 1.9.93's
+// runs. Records the original received from the internet stay out.
 void scores_import() {
   DIR *dir = opendir("scores5");
   if (!dir)
@@ -330,8 +351,9 @@ void scores_import() {
       long offset = ftell(fp);
       if (!highscore_read_record((char *)&record, fp) || ((record.flags & 1) && !(record.flags & 2)))
         continue;
-      std::string line = scores_line(record, record.hardcore_marker == 0x75, players, list, false,
-                                    id + ":" + std::to_string(offset));
+      ScoresTable table = {record.game_mode_id, record.quest_stage_major, record.quest_stage_minor, false, players, list,
+                           PORTABLE_CL_BUILD_1_9_93};
+      std::string line = scores_line(record, record.hardcore_marker == 0x75, table, false, id + ":" + std::to_string(offset));
       Json parsed;
       ScoresStored checked;
       if (json_parse(line.data(), line.size(), parsed, true) && scores_read(parsed, checked))

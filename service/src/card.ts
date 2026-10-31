@@ -15,6 +15,7 @@ import { decodePng, encodePng, type Pixels } from "./png";
 import { Canvas, paintImage, paintPanel, shrink } from "./raster";
 import { decodeJpeg } from "./jpeg";
 import { groundFor } from "./runs";
+import { buildTitle } from "./paths";
 import { runDetailView } from "./views";
 
 const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
@@ -148,7 +149,7 @@ function cardSvg(detail: RunDetailView, timeline: Timeline, art: CardArt, backgr
   </defs>
   <image href="${background}" width="${CARD_WIDTH}" height="${CARD_HEIGHT}"/>
   <g transform="translate(${ARENA.x} ${ARENA.y}) scale(${ARENA.width / SIZE})">${trail(detail, timeline)}</g>
-  ${text(LEFT, TOP + 45, 2, detail.title, LABEL)}
+  ${text(LEFT, TOP + 45, 2, buildTitle(detail.title, detail.build), LABEL)}
   ${text(RIGHT, TOP + 45, 2, "crimson.land", DIM, "end")}
   ${art.avatar ? `<image href="${art.avatar}" x="${LEFT}" y="${NAME_Y}" width="${AVATAR}" height="${AVATAR}" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/>` : ""}
   ${detail.rank ? number(RIGHT, NAME_Y + 46, 44, RIGHT - LEFT, `#${detail.rank}`, `rgb(${GOLD})`, "end") : ""}

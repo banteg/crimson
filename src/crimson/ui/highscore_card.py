@@ -10,6 +10,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..game_states import GameStateId
 from ..persistence.highscores import HighScoreRecord
@@ -36,6 +37,15 @@ _hover = _StatsHover()
 def _half_width(font: SmallFontData, text: str) -> int:
     # Native divides the int text width by 2 with C integer division.
     return int(measure_small_text_width(font, text)) // 2
+
+
+def _origin_label(record: HighScoreRecord) -> str:
+    """Where the score is from. A 1.9.8 run's card names its rules, and an Internet one takes the native card's
+    shorter "Internet score" (its "Internet score of local origin"), which keeps the line within the card's widest
+    native one."""
+    if record.cl_build == ClBuild.V1_9_93:
+        return "Score from the Internet" if record.received else "Local score"
+    return f"{'Internet' if record.received else 'Local'} score, {record.cl_build.label} rules"
 
 
 def _divider(pos: Vec2, width: float, height: float, color: rl.Color) -> None:
@@ -91,10 +101,8 @@ def ui_text_input_render(
         name = record.name
         draw_small_text(font, name, pos, grim_color(1.0, 1.0, 1.0, alpha))
         grim_draw_rect_outline(pos.offset(dy=13.0), float(int(measure_small_text_width(font, name))), 1.0, divider_color)
-        if record.received:
-            draw_small_text(font, "Score from the Internet", pos.offset(dy=14.0), grim_color(0.7, 1.0, 0.7, alpha * 0.8))
-        else:
-            draw_small_text(font, "Local score", pos.offset(dy=14.0), grim_color(0.8, 0.8, 0.8, alpha * 0.8))
+        origin_color = grim_color(0.7, 1.0, 0.7, alpha * 0.8) if record.received else grim_color(0.8, 0.8, 0.8, alpha * 0.8)
+        draw_small_text(font, _origin_label(record), pos.offset(dy=14.0), origin_color)
 
         pos = pos.offset(dy=15.0)
         # A record never saved has no date: the zeroed fields native prints.

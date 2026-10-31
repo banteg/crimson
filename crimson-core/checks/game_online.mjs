@@ -11,7 +11,12 @@
 // runs whole. Nothing online is stored: the imported row is the only score, and
 // only the downloaded replay is new. Then the game starts again for two players:
 // the two players' table fetches the co-op pairs' Survival board, whose runs name
-// both players.
+// both players, and with the Play Game menu's 1.9.8 box ticked, 1.9.8's. Every
+// request names its build, and the table takes an answer only for the build it
+// names. One without a build holds 1.9.93's board, the only one a service from
+// before builds has and the one it answers whatever build was asked for: 1.9.93's
+// table takes it, and 1.9.8's shows none of its runs. A pinned run's card names
+// the rules of its table's build.
 //
 //   node crimson-core/checks/game_online.mjs <game directory> [game.wasm]
 import { execFileSync } from "node:child_process";
@@ -35,13 +40,15 @@ const requests = [];
 let run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
 let { game } = run;
 // game_state_id_t, HOST_LEADERBOARD_* (game/host_abi.h), DirectInput scancodes.
-const [STATISTICS_MENU, HIGHSCORES] = [4, 14];
+const [MAIN_MENU, PLAY_GAME_MENU, STATISTICS_MENU, HIGHSCORES] = [0, 1, 4, 14];
 const [SCORES, REPLAY] = [3, 4];
 const [ESCAPE, PAGE_DOWN] = [0x01, 0xd1];
 // Where a fresh 1024x768 profile lays these out: the main menu's Statistics,
 // its High scores, Show internet scores, the first two rows, Update scores, a
 // spot clear of the panels, and the pinned card's Watch.
 const STATISTICS = [200, 458], HIGH_SCORES = [275, 316], INTERNET = [682, 261];
+// The main menu's Play Game, and its panel's 1.9.8 box, left of Ranked.
+const PLAY_GAME = [240, 338], RULES_1_9_8 = [210, 489];
 const ROWS = [305, 321, 337, 353].map((y) => [180, y]), UPDATE = [209, 480], CLEAR = [700, 650], WATCH = [745, 421];
 
 function frame({ cursor = CLEAR, buttons = 0, taps = [] } = {}) {
@@ -80,11 +87,19 @@ const score = (run, name, experience) => ({
   run, name, score: experience, elapsed_ms: 512000, experience, most_used_weapon_id: 1,
   shots_fired: 9000, shots_hit: 7000, kills: 1400, accepted_at: Date.now(),
 });
-function answerScores(scores) {
+// The answer names the board's build, the request's, unless `build` gives another (null for none).
+function answerScores(scores, build = JSON.parse(text(game.game_scores_request())).build) {
   if (requests.shift() !== SCORES) throw Error("the screen asked for no scores");
-  const body = JSON.stringify({ scores });
+  const body = JSON.stringify(build === null ? { scores } : { build, scores });
   memory().write(body, game.game_scores_buffer(body.length), "latin1");
   game.game_scores_received(body.length);
+}
+// The pinned run's card names its build's rules as the screen draws it (host/scores.inc scores_card_origin).
+function drawsCard(what) {
+  game.game_drawn_text();
+  frame();
+  const drawn = text(game.game_drawn_text()).split("\n");
+  if (!drawn.includes(text(game.game_scores_card_origin(1)))) throw Error(`${what}'s card draws ${JSON.stringify(drawn)}`);
 }
 
 // A Survival row of the original's table, as highscore_write_record writes it:
@@ -118,7 +133,11 @@ waitFor("the high scores", () => game.game_state() === HIGHSCORES);
 if (requests.length) throw Error("the screen fetched a board before Show internet scores was ticked");
 click(INTERNET);
 waitFor("a quiet fetch", () => requests.length);
-answerScores([score("r1", "pilot", 135302), score("gone", "ghost", 1000), score("twin-a", "twin", 500), score("twin-b", "twin", 500)]);
+// From a service before builds: its answer names none, and 1.9.93's table takes it.
+answerScores(
+  [score("r1", "pilot", 135302), score("gone", "ghost", 1000), score("twin-a", "twin", 500), score("twin-b", "twin", 500)],
+  null,
+);
 for (let i = 0; i < 30; ++i) frame();
 if (requests.length) throw Error("the screen fetched the board twice");
 
@@ -222,10 +241,46 @@ waitFor("the Statistics menu", () => game.game_state() === STATISTICS_MENU);
 click(HIGH_SCORES);
 waitFor("the two players' high scores", () => game.game_state() === HIGHSCORES && requests.length);
 const asked = text(game.game_scores_request());
-if (asked !== '{"board": "survival-coop", "quest": ""}') throw Error(`the two players' table asked for ${asked}`);
+if (asked !== '{"board": "survival-coop", "quest": "", "build": "1.9.93"}') throw Error(`the two players' table asked for ${asked}`);
 answerScores([score("pair", "banteg & razenpok", 90000)]);
 for (let i = 0; i < 30; ++i) frame();
 click(ROWS[0]);
 for (let i = 0; i < 10; ++i) frame();
 if (requests.shift() !== REPLAY || text(game.game_replay_download()) !== "pair") throw Error("the pair's run is not on the table");
-console.log(JSON.stringify({ watched: 2 }));
+drawsCard("the pair's run");
+game.game_replay_downloaded(2);
+// Escape back to the main menu, the 1.9.8 box, and the high scores again: 1.9.8's table asks for 1.9.8's board.
+for (const screen of [STATISTICS_MENU, MAIN_MENU]) {
+  frame({ taps: [ESCAPE] });
+  waitFor(`screen ${screen}`, () => game.game_state() === screen);
+}
+click(PLAY_GAME);
+waitFor("the Play Game menu", () => game.game_state() === PLAY_GAME_MENU);
+click(RULES_1_9_8);
+frame({ taps: [ESCAPE] });
+waitFor("the main menu", () => game.game_state() === MAIN_MENU);
+click(STATISTICS);
+waitFor("the Statistics menu", () => game.game_state() === STATISTICS_MENU);
+click(HIGH_SCORES);
+waitFor("1.9.8's high scores", () => game.game_state() === HIGHSCORES && requests.length);
+const asked198 = text(game.game_scores_request());
+if (asked198 !== '{"board": "survival-coop", "quest": "", "build": "1.9.8"}') throw Error(`1.9.8's table asked for ${asked198}`);
+// Neither the answer of a service from before builds, which names none and holds 1.9.93's board, nor one naming 1.9.93
+// puts a run on 1.9.8's table. Update scores asks again after each, and an answer naming 1.9.8 fills the table.
+const ignored = [["unnamed", null], ["pair193", "1.9.93"]];
+for (const [id, build] of ignored) {
+  answerScores([score(id, "banteg & razenpok", 90000)], build);
+  for (let i = 0; i < 30; ++i) frame();
+  click(ROWS[0]);
+  for (let i = 0; i < 10; ++i) frame();
+  if (requests.length) throw Error(`an answer naming ${build} put a run on 1.9.8's table (asked for ${requests.join()})`);
+  click(UPDATE);
+  waitFor("Update scores on 1.9.8's table", () => requests.length);
+}
+answerScores([score("pair198", "banteg & razenpok", 1000)]);
+for (let i = 0; i < 30; ++i) frame();
+click(ROWS[0]);
+for (let i = 0; i < 10; ++i) frame();
+if (requests.shift() !== REPLAY || text(game.game_replay_download()) !== "pair198") throw Error("1.9.8's run is not on its table");
+drawsCard("1.9.8's run");
+console.log(JSON.stringify({ watched: 2, boards_1_9_8: 1, other_builds_ignored: ignored.length }));

@@ -4,7 +4,11 @@ from importlib.resources import files
 
 import msgspec
 import pytest
+from typer.testing import CliRunner
 
+from crimson.cl_build import ClBuild
+from crimson.cli.app import app
+from crimson.game.types import GameState
 from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode, quest_mode
 from crimson.modes.quest_mode import QuestMode
@@ -30,9 +34,12 @@ from tests.support.screens import start_run, update_frame
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
 
+_RECIPE = files("crimson.quests.dsl").joinpath("examples", "crosswind.quest")
+
+
 @pytest.fixture
 def quest() -> CustomQuest:
-    return build_custom_quest(files("crimson.quests.dsl").joinpath("examples", "crosswind.quest").read_text())
+    return build_custom_quest(_RECIPE.read_text())
 
 
 def _ended(make_game_state, headless_resources, mocker, quest: CustomQuest, outcome: RunOutcome):
@@ -62,6 +69,55 @@ def _settle(view: QuestFailedView, mocker) -> ScreenAction | None:
         if (action := view.take_action()) is not None:
             return action
     return None
+
+
+def test_a_custom_quest_plays_and_records_the_menus_1_9_8_rules(make_game_state, headless_resources, quest):
+    state = make_game_state(resources=headless_resources)
+    state.cl_build = ClBuild.V1_9_8
+    _navigator, run = start_run(state, StartRun(GameMode.QUESTS, custom_quest=quest))
+    assert isinstance(run, QuestMode)
+    recorder = run._replay_recorder
+    assert recorder is not None
+    assert (recorder.run.custom_quest, recorder.run.cl_build) == (quest, ClBuild.V1_9_8)
+    assert run.world.state.rules_1_9_8
+
+
+def _booted(mocker, headless_resources, *args: str) -> tuple[GameState, ScreenAction | None]:
+    """The game a `crimson` command boots, with the resources its window would load, and where it goes past the
+    intro."""
+    from crimson import runtime_boot
+    from crimson.game import runtime
+
+    mocker.patch.object(runtime, "faulthandler")
+    mocker.patch.object(runtime_boot, "download_missing_paqs")
+    mocker.patch.object(runtime, "_require_runtime_assets")
+    window = mocker.patch.object(runtime, "run_view")
+    result = CliRunner().invoke(app, list(args))
+    assert result.exit_code == 0, result.output
+    state = window.call_args.args[0].state
+    state.assets_dir, state.resources = headless_resources.assets_dir, headless_resources
+    boot = BootView(state)
+    boot._theme_started = True
+    return state, boot.take_action()
+
+
+def test_quest_play_starts_the_quest_by_the_rules_of_the_build_it_names(tmp_path, mocker, headless_resources, quest):
+    args = ["quest", "play", str(_RECIPE), "--build", "1.9.8", "--base-dir", str(tmp_path)]
+    state, action = _booted(mocker, headless_resources, *args)
+    assert isinstance(action, StartRun)
+    _navigator, run = start_run(state, action)
+    recorder = run._replay_recorder
+    assert recorder is not None
+    assert (recorder.run.custom_quest, recorder.run.cl_build) == (quest, ClBuild.V1_9_8)
+
+
+def test_the_game_starts_its_runs_on_the_build_it_names(tmp_path, mocker, headless_resources):
+    state, action = _booted(mocker, headless_resources, "--build", "1.9.8", "--base-dir", str(tmp_path))
+    assert action == Route.MENU
+    _navigator, run = start_run(state, StartRun(GameMode.SURVIVAL))
+    recorder = run._replay_recorder
+    assert recorder is not None
+    assert recorder.run.cl_build == ClBuild.V1_9_8
 
 
 def test_boot_starts_the_custom_quest_instead_of_the_menu(make_game_state, headless_resources, quest):

@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import json
 import stat
+from collections.abc import Callable
 from typing import Any
 
 import msgspec
@@ -10,6 +11,7 @@ import pytest
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
+from crimson.cl_build import ClBuild
 from crimson.leaderboard import Identity, Leaderboard, LeaderboardError, OnlineScore, SyncStatus
 from crimson.leaderboard.identity import IDENTITY_FILE, login_message, run_message
 from crimson.replay import REPLAY_FORMAT_VERSION, load_replay
@@ -30,12 +32,18 @@ class _Service:
     """Answers like the leaderboard service, with one scripted status per upload."""
 
     def __init__(
-        self, *statuses: int | OSError, login_url: str = "https://crimson.test/login/once", scores: list[dict[str, Any]] | None = None,
+        self,
+        *statuses: int | OSError,
+        login_url: str = "https://crimson.test/login/once",
+        scores: list[dict[str, Any]] | None = None,
+        board: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     ) -> None:
         self.statuses = list(statuses)
         self.login_url = login_url
-        # A board's answer; None is a service that can't be reached.
+        # A board's rows; None is a service that can't be reached.
         self.scores = scores
+        # A board's answer to its request: the asked build's board, named, by default.
+        self.board = board or (lambda body: {"build": body["build"], "scores": self.scores})
         self.calls: list[tuple[str, dict[str, Any]]] = []
 
     def __call__(self, url: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
@@ -43,7 +51,7 @@ class _Service:
         if url.endswith("/scores"):
             if self.scores is None:
                 raise OSError("no route")
-            return 200, {"scores": self.scores}
+            return 200, self.board(body)
         if url.endswith("/auth/challenge"):
             return 200, {"challenge": "c0ffee"}
         if url.endswith("/auth/login"):
@@ -123,19 +131,50 @@ def test_update_scores_sends_waiting_runs_then_receives_the_board(tmp_path, repl
     service = _Service(201, scores=[score])
     leaderboard = Leaderboard(tmp_path, url=_URL, transport=service)
 
-    leaderboard.sync(("survival", ""))
+    leaderboard.sync(("survival", "", ClBuild.V1_9_93))
     _finish(leaderboard)
 
     assert [url.rsplit("/", 1)[1] for url, _body in service.calls] == ["runs", "scores"]
-    assert service.calls[1][1] == {"board": "survival", "quest": ""}
+    assert service.calls[1][1] == {"board": "survival", "quest": "", "build": "1.9.93"}
     assert leaderboard.sync_status == SyncStatus.DONE
-    assert leaderboard.scores[("survival", "")] == [msgspec.convert(score, OnlineScore)]
+    assert leaderboard.scores == {("survival", "", ClBuild.V1_9_93): [msgspec.convert(score, OnlineScore)]}
     assert leaderboard.waiting == 0
+
+
+def test_each_build_has_boards_of_its_own(tmp_path) -> None:
+    service = _Service(scores=[])
+    leaderboard = Leaderboard(tmp_path, url=_URL, transport=service)
+
+    leaderboard.sync(("quests", "2.3", ClBuild.V1_9_8))
+
+    assert _finish(leaderboard)[-1] == "leaderboard: received 0 quests 2.3 1.9.8 scores"
+    assert service.calls[-1][1] == {"board": "quests", "quest": "2.3", "build": "1.9.8"}
+    assert leaderboard.scores == {("quests", "2.3", ClBuild.V1_9_8): []}
+
+
+@pytest.mark.parametrize(
+    ("cl_build", "answer", "status"),
+    [
+        pytest.param(ClBuild.V1_9_93, {"scores": []}, SyncStatus.DONE, id="1.9.93 from a service before builds"),
+        pytest.param(ClBuild.V1_9_8, {"scores": []}, SyncStatus.FAILED, id="1.9.8 from a service before builds"),
+        pytest.param(ClBuild.V1_9_8, {"build": "1.9.93", "scores": []}, SyncStatus.FAILED, id="1.9.8 given 1.9.93's"),
+        pytest.param(ClBuild.V1_9_93, {"build": "1.9.8", "scores": []}, SyncStatus.FAILED, id="1.9.93 given 1.9.8's"),
+    ],
+)
+def test_an_answer_without_a_build_holds_1_9_93s_board(tmp_path, cl_build, answer, status) -> None:
+    leaderboard = Leaderboard(tmp_path, url=_URL, transport=_Service(scores=[], board=lambda _body: answer))
+    board = ("survival", "", cl_build)
+
+    leaderboard.sync(board)
+    _finish(leaderboard)
+
+    assert leaderboard.sync_status == status
+    assert leaderboard.scores == ({board: []} if status == SyncStatus.DONE else {})
 
 
 def test_update_scores_fails_without_the_service(tmp_path) -> None:
     leaderboard = Leaderboard(tmp_path, url=_URL, transport=_Service())
-    leaderboard.sync(("quests", "1.1"))
+    leaderboard.sync(("quests", "1.1", ClBuild.V1_9_93))
     assert "can't reach" in _finish(leaderboard)[-1]
     assert leaderboard.sync_status == SyncStatus.FAILED
     assert leaderboard.scores == {}
@@ -239,7 +278,7 @@ def test_close_saves_held_run_even_when_a_background_job_failed(tmp_path, replay
         raise RuntimeError("boom")
 
     leaderboard = Leaderboard(tmp_path, url=_URL, transport=broken_transport)
-    leaderboard.sync(("survival", ""))
+    leaderboard.sync(("survival", "", ClBuild.V1_9_93))
     leaderboard.hold(replay)
     with pytest.raises(RuntimeError, match="boom"):
         leaderboard.close("banteg")

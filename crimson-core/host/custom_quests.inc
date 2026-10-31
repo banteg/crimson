@@ -36,16 +36,20 @@ static struct {
   bool out;      // a page is asked for
   bool reopened; // the screen opened again while one was out: its answer starts the list afresh
   int selected, scroll;
-  char request[32];
+  char request[64];
+  unsigned build; // the build whose boards the page asked for
   std::vector<char> response;
   // The quest whose table the host fetches, the one Play waits for, and how its fetch ended.
   std::string download, playing;
   CustomQuestDownload fetched;
 } custom;
 
+// A page, with the players who cleared each quest on the boards of the build Play starts it on (menu_cl_build).
 static void custom_quests_send() {
   custom.out = true;
-  snprintf(custom.request, sizeof custom.request, "{\"page\": %d}", custom.pages);
+  custom.build = menu_cl_build;
+  snprintf(custom.request, sizeof custom.request, "{\"page\": %d, \"build\": \"%s\"}", custom.pages,
+           scores_build_name(custom.build));
   host_leaderboard(HOST_LEADERBOARD_CUSTOM);
 }
 // The list from its first page, asked for afresh.
@@ -430,7 +434,8 @@ __attribute__((export_name("game_custom_received"))) void game_custom_received(i
   }
   Json answer;
   const Json *quests = size >= 0 && (size_t)size < custom.response.size() &&
-                               json_parse(custom.response.data(), size, answer)
+                               json_parse(custom.response.data(), size, answer) &&
+                               scores_build_answered(answer, custom.build)
                            ? answer.field("quests", Json::ARRAY)
                            : nullptr;
   const Json *more = quests ? answer.field("more", Json::BOOLEAN) : nullptr;

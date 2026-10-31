@@ -1,5 +1,6 @@
 """Build inputs, compatibility and deployment provenance must remain distinct."""
 
+import importlib
 import json
 import os
 import shutil
@@ -68,6 +69,15 @@ def test_optimization_patches_change_runtime_identity(source: Path, target: str)
     commit(source)
     patch.write_text("updated optimization patch")
     assert build.runtime_identity(target, source)["fingerprint"] != added["fingerprint"]
+
+
+def test_every_diff_directory_the_adapters_apply_is_a_build_input(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.syspath_prepend(str(build.ROOT / "crimson-core"))
+    game = importlib.import_module("game")
+    for diffs, inputs in ((game.DIFFS, build.CORE_BUILD), (game.GAME_DIFFS, build.GAME_BUILD)):
+        for directory in diffs:
+            path = f"{directory.relative_to(build.ROOT).as_posix()}/new.patch"
+            assert any(build.matches(path, pattern) for pattern in inputs), path
 
 
 @pytest.mark.parametrize("target", ["native", "wasm", "game"])

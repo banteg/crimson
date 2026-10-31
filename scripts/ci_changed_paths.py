@@ -144,6 +144,8 @@ SUITES = {
             "src/crimson/render/rtx/ice_surface.tga",
             "src/crimson/assets_version.json",
             "crimson-core/checks/assets.*",
+            # assets.test.mjs imports the builds and the quest table's size from it.
+            "crimson-core/checks/engine.mjs",
             "crimson-core/checks/analytics.test.mjs",
             "crimson-core/checks/coop.test.mjs",
             # coop.test.mjs runs the client against the room's protocol and limits, read from its source.
@@ -176,7 +178,8 @@ SUITES = {
         ),
         ("service/scripts/assets.py",),
     ),
-    # Every diff hunk against the sources it edits, checked without compilers before any build runs.
+    # Every diff hunk against the sources it edits, and the guard ledger against the sources each target compiles,
+    # checked without compilers before any build runs.
     "core-patches": Suite(
         (
             "decomp/",
@@ -184,7 +187,10 @@ SUITES = {
             "third_party/headers/",
             "crimson-core/adapter.py",
             "crimson-core/game.py",
+            "crimson-core/sources.json",
+            "crimson-core/game/sources.json",
             "crimson-core/*/*.patch",
+            "crimson-core/editions/guards.json",
             "crimson-core/game/*/*.patch",
             ".github/workflows/ci.yml",
         ),
@@ -214,6 +220,14 @@ SUITES = {
             "analysis/",
             "tools/",
             "third_party/",
+            # The codec tests hold the service's replay vectors to the codec's current form.
+            "service/test/vectors.json",
+            # The score contract compiles the host's score decoder and the desktop WASI adapter.
+            "crimson-core/host/json.inc",
+            "crimson-core/host/scores_format.inc",
+            "crimson-core/host/rules.h",
+            "crimson-core/client/wasi.cpp",
+            "crimson-core/client/client.h",
             ".github/workflows/ci.yml",
         ),
     ),

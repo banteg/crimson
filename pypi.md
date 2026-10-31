@@ -67,6 +67,7 @@ crimson --width 1280 --height 960   # game resolution (1024x768 is native)
 crimson --fullscreen                # or --windowed; both are saved
 crimson --seed 1234                 # a deterministic run
 crimson --preserve-bugs             # keep the original's known bugs
+crimson --build 1.9.8               # play by version 1.9.8's rules, its box in the Play Game menu ticked
 crimson --rtx                       # RTX lighting for this launch
 ```
 
@@ -124,6 +125,8 @@ uvx --from 'crimsonland[quests]' crimson quest build <file>      # check a recip
 uvx --from 'crimsonland[quests]' crimson quest play <file>       # play it; every attempt saves a replay
 uvx --from 'crimsonland[quests]' crimson quest publish <file>    # upload it with your newest clear
 ```
+
+`quest play --build 1.9.8` plays the quest by version 1.9.8's rules.
 
 [crimson.land/custom/llm.txt](https://crimson.land/custom/llm.txt) is the whole language in one file, for writing
 quests with an LLM.

@@ -1,52 +1,57 @@
 {
   "wasmtime_version": "49.0.0",
-  "module_sha256": "ca710de28259ea0cc49ba99398eb52b332a1c3a8e681a04d4464a6f3644681c1",
-  "cases": 8,
-  "ticks": 28988,
-  "fields_per_snapshot": 36343,
+  "module_sha256": "47e801afef2e913977df9ab0f2529aa5bc5fc49b364fde05868db8092f27e04d",
+  "cases": 9,
+  "ticks": 53039,
+  "fields_per_snapshot": 36352,
   "comparison": "every snapshot hash matches native/Node",
-  "reset": "all Wasmtime A/B/A passed",
+  "reset": "all Wasmtime A/B/A passed, B on the other build",
   "linear_memory_mib": 2.5625,
   "results": [
     {
       "name": "rush-evade",
       "ticks": 1246,
-      "sha256": "818a6c95f46b34386f24c2651a486a3353c0faea6005371db16137aa7da14a16"
+      "sha256": "6b3b03ee69a479aaceeec504e196faa90420a7c50d7cabf60a151257a2b05487"
     },
     {
       "name": "survival-command-batches-ranked",
-      "ticks": 8328,
-      "sha256": "4ea19062703e6d851555dad453d206e824d0c594b000d3e2c8a6f7baedd92354"
+      "ticks": 6954,
+      "sha256": "6537de258f0f829dcd53532f12fc2441e329cd60ce80fe9b2bc060104baccf2b"
     },
     {
       "name": "survival-relative-keyboard",
       "ticks": 3793,
-      "sha256": "15719f25aa6db568084f5c121a5785400e99fcffb8c828d7622bac04ce0c5d43"
+      "sha256": "917bc2e1ba06848351f31fb9f39f2663de7f7447c59173ff5c24f7ca986babe9"
     },
     {
       "name": "quest-point-click",
       "ticks": 999,
-      "sha256": "a5ab93598a95f9ea9752c1314669555bee3db54942287d4a353bb20ca3cef3e9"
+      "sha256": "5741f474ea5089bb83a003ce79a58dcd549307c55cacef2a67c71df9b011d94f"
     },
     {
       "name": "quest-5.6-ranked",
       "ticks": 1207,
-      "sha256": "92bd3f56d2319ae644e7c4c52172de484eddb612653f444b74c370a51670799f"
+      "sha256": "a39b7c3cafadd2436c83c1ca844ed5e48389bf8a18712668ba80b10556d34fbd"
     },
     {
       "name": "coop-survival-ranked",
-      "ticks": 9463,
-      "sha256": "3015bfbe0a0461069aad88867bb6cc6ede2145e465c5f287d76f43383ad29789"
+      "ticks": 10605,
+      "sha256": "d5b9d985631f622bb1786e154d32e310098f8ee77a9b68d16f88bc5a3babd455"
     },
     {
       "name": "coop-quest-2.4-ranked",
-      "ticks": 3037,
-      "sha256": "f2725aa721c660e49fc17569fd30739788e4d47399190acca42765ee17da77b5"
+      "ticks": 23825,
+      "sha256": "62b851689a41f589e3b7d67d734a317e5480e23628d220c6796868f1251675b8"
+    },
+    {
+      "name": "1.9.8-coop-hunt",
+      "ticks": 3495,
+      "sha256": "8d3994fffa9d0faa5b9bd7c86cd4370cc6211b383f7ac1de093ea824e3bbde1e"
     },
     {
       "name": "quest-settings",
       "ticks": 915,
-      "sha256": "98571a15ca38b12afd804e17674f24b5039abd2a3191ea178aa5cba4f06bbac2"
+      "sha256": "f35feb2a93a30f8cbce85950a346e6a7636665a237cb9a58a801f9a480075d60"
     }
   ]
 }

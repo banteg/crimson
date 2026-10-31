@@ -11,15 +11,13 @@ from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PerkCounts, PlayerState
 from ..weapons import WeaponId
 from .apply import perk_apply
-from .availability import perk_can_offer
+from .availability import perk_can_offer, perk_id_max
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ..creatures.runtime import CreatureState
-
-PERK_ID_MAX = max(int(perk_id) for perk_id in PERK_BY_ID)
 
 _DEATH_CLOCK_BLOCKED: frozenset[PerkId] = frozenset(
     (
@@ -61,9 +59,10 @@ def perk_select_random(state: GameplayState, *, game_mode: GameMode, player_coun
     Port of `perk_select_random` (0x0042fbd0).
     """
 
+    id_max = perk_id_max(state.cl_build)
     for _ in range(1000):
         perk_id = PerkId(
-            state.rng.rand_tagged(RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1,
+            state.rng.rand_tagged(RngCallerStatic.PERK_SELECT_RANDOM) % id_max + 1,
         )
         if not (0 <= int(perk_id) < len(state.perk_available)):
             continue
@@ -78,12 +77,13 @@ def perk_select_random(state: GameplayState, *, game_mode: GameMode, player_coun
 def _perk_offerable_mask(
     state: GameplayState,
     *,
+    id_max: int,
     game_mode: GameMode,
     player_count: int,
 ) -> list[bool]:
-    """Build a cached `perk_select_random` eligibility mask for `1..PERK_ID_MAX`."""
-    offerable: list[bool] = [False] * (PERK_ID_MAX + 1)
-    max_perk_index = min(PERK_ID_MAX, len(state.perk_available) - 1)
+    """Build a cached `perk_select_random` eligibility mask for `1..id_max`."""
+    offerable: list[bool] = [False] * (id_max + 1)
+    max_perk_index = min(id_max, len(state.perk_available) - 1)
     for perk_index in range(1, max_perk_index + 1):
         if not state.perk_available[perk_index]:
             continue
@@ -103,8 +103,10 @@ def perk_generate_choices(
 
     player = players[0]
     player_count = len(players)
+    id_max = perk_id_max(state.cl_build)
     offerable_mask = _perk_offerable_mask(
         state,
+        id_max=id_max,
         game_mode=game_mode,
         player_count=player_count,
     )
@@ -125,7 +127,7 @@ def perk_generate_choices(
 
     def _select_random_offer() -> PerkId:
         for _ in range(1000):
-            perk_index = state.rng.rand_tagged(RngCallerStatic.PERK_SELECT_RANDOM) % PERK_ID_MAX + 1
+            perk_index = state.rng.rand_tagged(RngCallerStatic.PERK_SELECT_RANDOM) % id_max + 1
             if offerable_mask[perk_index]:
                 return PerkId(perk_index)
         return PerkId.INSTANT_WINNER

@@ -19,16 +19,18 @@ One JSON object per line, appended when a run is saved:
 ```
 
 `v` is the record version. A field at its default is left out: no quest, not
-hardcore, one player, the default list, zero counters, no replay. A reader
-skips a line it cannot decode, such as one a crash left half written, and a
-writer starts a new line after it.
+hardcore, one player, the default list, 1.9.93's rules, zero counters, no
+replay. A reader skips a line it cannot decode, such as one a crash left half
+written, and a writer starts a new line after it.
 
 The v1 readers use the same strict contract. `v` is required and must be the
 integer `1`; unknown or duplicate fields reject the line. Integer fields take
 integer JSON tokens (not `1.0`, strings or booleans), with the signed/unsigned
 32-bit bounds below. Modes must be known, weapons are `0..53`, and player count
 is `1..4`. A quest level is null or `{major: 1..5, minor: 1..10}`, and only quest
-scores may carry one. Booleans must be JSON booleans. Dates are null or valid
+scores may carry one. A build is `10908` or `10993`; writers leave 1.9.93's
+out, so a reader from before builds, which rejects the field, still takes
+every 1.9.93 line and skips only 1.9.8's. Booleans must be JSON booleans. Dates are null or valid
 `YYYY-MM-DD` dates in `2000..2255`, the original's representable calendar.
 
 Names and named lists are at most 31 Latin-1 characters; build strings also
@@ -41,7 +43,7 @@ both production decoders, including malformed and boundary values.
 | Field | Holds |
 | --- | --- |
 | `name` | The name typed at the results screen, trailing spaces trimmed down to the first character, as `highscore_save_record` does. |
-| `game_mode_id`, `quest_level`, `hardcore`, `player_count`, `score_list` | The table the record belongs to. |
+| `game_mode_id`, `quest_level`, `hardcore`, `player_count`, `score_list`, `cl_build` | The table the record belongs to; `cl_build` is `10908` for a run on the [1.9.8 rules](../rewrite/rules-1.9.8.md). |
 | `run_elapsed_ms` | Game time in ms, signed; a quest stores its final time, which bonuses can make negative. |
 | `score_xp` | XP, or kills in Typ-o. |
 | `most_used_weapon_id`, `shots_fired`, `shots_hit`, `creature_kill_count` | The score card's stats. |
@@ -52,10 +54,13 @@ both production decoders, including malformed and boundary values.
 | `rules`, `game_version` | The replay's rules and build. |
 | `import_id` | Empty for a new run; for an imported row, the source digest followed by `:` and its decimal byte offset. |
 
-A table is a mode, its player count and the selected named list; each quest
-has a table per difficulty. Survival, Rush and Typ-o keep hardcore runs in
-their one table, as the original does. Typ-o's table also gives Typ-o its
-high-score target names.
+A table is a mode, its player count, the selected named list and the build
+whose rules its runs played, as 1.9.8 kept its scores in `scores4` apart from
+1.9.93's `scores5`; each quest has a table per difficulty. Survival, Rush and
+Typ-o keep hardcore runs in their one table, as the original does. Typ-o's
+table also gives Typ-o its high-score target names. Every game shows the
+tables of the build the Play Game menu's 1.9.8 box picks, and saves a run in
+its own build's; `scores5` imports into 1.9.93's.
 
 Survival and Typ-o rank by score descending, Rush by time descending, quests
 by time ascending with zero last; both fields compare as signed 32-bit values,

@@ -145,8 +145,9 @@ static WatchCard watch_card(const LoadedReplay &replay, const char *name, int ra
 
 #include "viewer.inc"
 
-// The replay's run is the menu's: its mode, quest, difficulty and players.
-// Watch pressed again before the run starts keeps the player's menu settings.
+// The replay's run is the menu's: its mode, quest, difficulty, players and
+// build, which its card names (scores_card_origin). Watch pressed again before
+// the run starts keeps the player's menu settings.
 static void watch_arm(const LoadedReplay &replay, const WatchCard &card, const std::string &id = {}) {
   watch.replay = replay;
   watch.run = card;
@@ -158,6 +159,7 @@ static void watch_arm(const LoadedReplay &replay, const WatchCard &card, const s
   config_blob.game_mode = (decltype(config_blob.game_mode))recorded.mode;
   config_blob.hardcore = (decltype(config_blob.hardcore))recorded.hardcore;
   config_blob.player_count = (decltype(config_blob.player_count))recorded.players;
+  menu_cl_build = recorded.cl_build;
   if (recorded.mode == GAME_MODE_QUEST) {
     quest_stage_major = (int)recorded.major;
     quest_stage_minor = (int)recorded.minor;
@@ -585,6 +587,7 @@ static bool watch_on_menu() {
 // replay is the first thing heard. A link that comes to nothing leaves the
 // menu its tune after all.
 static bool custom_quest_linked;
+static unsigned custom_quest_linked_build; // the build the link's run plays (game_custom_quest_play)
 static void custom_quest_begin(); // host/custom_quests.inc
 static int watch_held_tune = -1;
 static bool watch_holds_tune(int sfx_id) {
@@ -618,6 +621,8 @@ static void watch_follow_link() {
     } else {
       custom_quest_linked = false;
       custom_quest_begin();
+      // Its run plays the link's build; the menus get theirs back with the rest of their settings (custom_quest_restore).
+      menu_cl_build = custom_quest_linked_build;
     }
     ui_elements_timeline = 0;
     // The intro's tune and the menu's theme, which a link that came after them
@@ -994,10 +999,13 @@ __attribute__((export_name("game_watch_status"))) int game_watch_status() {
 bool game_watching() { return live.watching && !live.practicing; }
 __attribute__((export_name("game_custom_quest_title"))) char *game_custom_quest_title() { return custom_quest_title; }
 __attribute__((export_name("game_custom_quest_author"))) char *game_custom_quest_author() { return custom_quest_author; }
-__attribute__((export_name("game_custom_quest_play"))) int game_custom_quest_play() {
+// A link to a custom quest, whose table the host wrote at portable_quest: its run plays `cl_build`'s rules, which the
+// link names, as a launch has no menu to tick the 1.9.8 box on.
+__attribute__((export_name("game_custom_quest_play"))) int game_custom_quest_play(unsigned cl_build) {
   if (game_live || !custom_quest_valid() || config_blob.screen_width != 1024 || config_blob.screen_height != 768)
     return 0;
   custom_quest_linked = true;
+  custom_quest_linked_build = cl_build;
   // Its run waits for co-op's end (a session's, or a room's), as a link to a
   // replay does.
   if (coop_open())

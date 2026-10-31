@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import msgspec
 import typer
 
+from ..cl_build import ClBuild
 from ..paths import default_runtime_dir
 
 if TYPE_CHECKING:
@@ -19,6 +20,13 @@ _BASE_DIR = typer.Option(
     "--base-dir",
     "--runtime-dir",
     help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
+)
+_BUILD = typer.Option(
+    ClBuild.V1_9_93.label,
+    "--build",
+    parser=ClBuild.from_label,
+    metavar="|".join(build.label for build in ClBuild),
+    help="the original version whose rules the quest plays; 1.9.8 also ticks the Play Game menu's 1.9.8 box",
 )
 
 
@@ -89,13 +97,14 @@ def cmd_quest_build(
 def cmd_quest_play(
     quest_file: Path = typer.Argument(..., exists=True, dir_okay=False, help="path to a .quest recipe file"),
     seed: int = typer.Option(0, "--seed", help="uint32 construction seed"),
+    cl_build: ClBuild = _BUILD,
     base_dir: Path = _BASE_DIR,
 ) -> None:
     """Play a .quest recipe straight after boot; every attempt saves a replay to publish with."""
     from ..game import GameConfig, run_game
 
     _source, quest = _compile(quest_file, seed)
-    run_game(GameConfig(base_dir=base_dir, custom_quest=quest))
+    run_game(GameConfig(base_dir=base_dir, custom_quest=quest, cl_build=cl_build))
 
 
 @quest_app.command("publish")

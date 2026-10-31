@@ -30,6 +30,7 @@ import msgspec
 from grim.atomic_write import atomic_write_bytes
 
 from .. import __version__
+from ..cl_build import ClBuild
 from ..replay.codec import MAX_REPLAY_FILE_BYTES, encode_replay_payload, run_id, zstd_pack
 from ..replay.types import Replay
 from .identity import Identity
@@ -129,8 +130,9 @@ class OnlineScore(msgspec.Struct, frozen=True):
     run: str = ""
 
 
-# A verified board: its name (`ranked_board`'s, one player's or a co-op pair's) and, for quests, the "major.minor" level.
-type Board = tuple[str, str]
+# A verified board: its name (`ranked_board`'s, one player's or a co-op pair's), for quests the "major.minor" level, and
+# the build whose runs it ranks, since each build's runs rank on boards of their own.
+type Board = tuple[str, str, ClBuild]
 
 
 class Leaderboard:
@@ -301,19 +303,25 @@ class Leaderboard:
             self.sync_status = SyncStatus.DONE
             return sent
         self.sync_status = SyncStatus.RECEIVING
-        name, quest = board
+        name, quest, cl_build = board
         try:
-            status, answer = self._transport(f"{self._url}/scores", {"board": name, "quest": quest})
+            status, answer = self._transport(f"{self._url}/scores", {"board": name, "quest": quest, "build": cl_build.label})
         except OSError as exc:
             self.sync_status = SyncStatus.FAILED
             return _Report([*sent.lines, f"leaderboard: can't reach {self._url} ({exc})"], sent.waiting)
         if status != 200:
             self.sync_status = SyncStatus.FAILED
             return _Report([*sent.lines, f"leaderboard: scores: HTTP {status}"], sent.waiting)
+        # An answer that names no build is 1.9.93's: a service from before builds has only 1.9.93's boards, and answers
+        # with them whatever build was asked for.
+        if answer.get("build", ClBuild.V1_9_93.label) != cl_build.label:
+            self.sync_status = SyncStatus.FAILED
+            return _Report([*sent.lines, f"leaderboard: scores: the service sent no {cl_build.label} board"], sent.waiting)
         scores = msgspec.convert(answer["scores"], list[OnlineScore])
         self.scores[board] = scores
         self.sync_status = SyncStatus.DONE
-        return _Report([*sent.lines, f"leaderboard: received {len(scores)} {f'{name} {quest}'.strip()} scores"], sent.waiting)
+        what = " ".join(part for part in (name, quest, "" if cl_build == ClBuild.V1_9_93 else cl_build.label) if part)
+        return _Report([*sent.lines, f"leaderboard: received {len(scores)} {what} scores"], sent.waiting)
 
     def _login(self) -> str:
         if not self._url:

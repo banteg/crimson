@@ -1,12 +1,17 @@
-// The crimson-core input stream for a replay, a port of crimson-core/checks/replay.py: a 68-word config, then per
+// The crimson-core input stream for a replay, a port of crimson-core/checks/replay.py: a 69-word config, then per
 // tick each player's four f32 axes and flag word (player one first), the command count and each command as (kind,
 // argument). A perk command carries no player: the core knows whose perk menu is open.
 
-import { type CustomQuest, GameMode, type Replay } from "./replay";
+import { ClBuild, type CustomQuest, GameMode, type Replay } from "./replay";
 
-export const CONFIG_BYTES = 68 * 4;
+export const CONFIG_BYTES = 69 * 4;
+const SEED_WORD = 0;
 // The config word holding the player count, which the stream gained after runs were first accepted.
 const PLAYERS_WORD = 12;
+// The first of the words the config gained after its runs' ids were frozen: rules, the legacy co-op reload and the
+// build whose rules the run plays.
+const RULES_WORD = 66;
+const BUILD_WORD = 68;
 export const QUEST_HEAD_BYTES = 10 * 4;
 export const QUEST_SPAWN_BYTES = 24;
 export const QUEST_BYTES = QUEST_HEAD_BYTES + 256 * QUEST_SPAWN_BYTES;
@@ -89,6 +94,7 @@ export function encodeTransport(replay: Replay): Uint8Array {
     // Ranked co-op (#768) shipped after the manual-reload fix (#758).
     // The service never verifies the older local-only co-op profile.
     0,
+    run.cl_build,
   ];
   config.forEach((word, i) => view.setUint32(i * 4, word >>> 0, true));
   if (custom) bytes.set(encodePortableQuest(custom), CONFIG_BYTES);
@@ -117,21 +123,40 @@ export function encodeTransport(replay: Replay): Uint8Array {
 // The bytes a run's id hashes. Ids name stored replays, links and the duplicate check, so they stay put when the
 // stream's layout changes: a one-player run hashes its stream as the service first encoded it, without the player
 // count, which the stream gained later; a co-op run hashes its whole stream, the count included. (A ranked run's
-// weapon usage words are zero, so the shifted one-player bytes never spell a co-op stream.)
+// weapon usage words are zero, so the shifted one-player bytes never spell a co-op stream.) A rules-2 run tags those
+// bytes with its rules, and a run of another build than 1.9.93 tags that with its build, so the same inputs under
+// 1.9.8's rules are another run; 1.9.93's ids, which predate builds, stay as they were.
 export function runIdentity(transport: Uint8Array): Uint8Array {
-  const rules = new DataView(transport.buffer, transport.byteOffset, transport.byteLength).getUint32(66 * 4, true);
-  // Freeze the old identity independently of the appended internal config word.
-  const legacy = new Uint8Array(transport.length - 8);
-  legacy.set(transport.subarray(0, 66 * 4));
-  legacy.set(transport.subarray(CONFIG_BYTES), 66 * 4);
-  if (rules === 1) return legacyIdentity(legacy);
-  if (rules !== 2) throw new TransportError(`Unsupported rules ${rules}`);
-  const tag = new TextEncoder().encode("crimson:run:rules\0");
-  const bytes = new Uint8Array(tag.length + 4 + legacy.length);
-  bytes.set(tag);
-  new DataView(bytes.buffer).setUint32(tag.length, rules, true);
-  bytes.set(legacy, tag.length + 4);
+  const view = new DataView(transport.buffer, transport.byteOffset, transport.byteLength);
+  const rules = view.getUint32(RULES_WORD * 4, true);
+  const build = view.getUint32(BUILD_WORD * 4, true);
+  // Freeze the old identity independently of the appended config words.
+  const legacy = new Uint8Array(transport.length - (CONFIG_BYTES - RULES_WORD * 4));
+  legacy.set(transport.subarray(0, RULES_WORD * 4));
+  legacy.set(transport.subarray(CONFIG_BYTES), RULES_WORD * 4);
+  if (rules !== 1 && rules !== 2) throw new TransportError(`Unsupported rules ${rules}`);
+  const identity = rules === 1 ? legacyIdentity(legacy) : tagged("crimson:run:rules\0", rules, legacy);
+  return build === ClBuild.V1_9_93 ? identity : tagged("crimson:run:build\0", build, identity);
+}
+
+// `transport`'s ticks as they stream from `seed` under `rules` and `clBuild`'s rules: only those three words differ.
+export function asClaimed(transport: Uint8Array, seed: number, rules: number, clBuild: number): Uint8Array {
+  const bytes = transport.slice();
+  const view = new DataView(bytes.buffer);
+  view.setUint32(SEED_WORD * 4, seed, true);
+  view.setUint32(RULES_WORD * 4, rules, true);
+  view.setUint32(BUILD_WORD * 4, clBuild, true);
   return bytes;
+}
+
+// `bytes` after a tag, its NUL included, and a little-endian word.
+function tagged(tag: string, word: number, bytes: Uint8Array): Uint8Array {
+  const head = new TextEncoder().encode(tag);
+  const out = new Uint8Array(head.length + 4 + bytes.length);
+  out.set(head);
+  new DataView(out.buffer).setUint32(head.length, word, true);
+  out.set(bytes, head.length + 4);
+  return out;
 }
 
 function legacyIdentity(transport: Uint8Array): Uint8Array {

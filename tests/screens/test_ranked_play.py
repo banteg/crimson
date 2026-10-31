@@ -5,12 +5,13 @@ import json
 import pytest
 
 from crimson.aim_schemes import AimScheme
+from crimson.cl_build import ClBuild
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.leaderboard import Leaderboard
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.quests.level import QUEST_COUNT
-from crimson.replay.ranked import RANKED_VIEW
+from crimson.replay.ranked import RANKED_VIEW, ranked_board, unranked_reasons
 from crimson.screens.actions import ResultAction, Route, StartRun
 from crimson.screens.assets import require_runtime_resources
 from crimson.screens.panels import play_game
@@ -31,12 +32,20 @@ def _play_game(loop: GameLoopView) -> PlayGameMenuView:
     return panel
 
 
-def _click_ranked(loop: GameLoopView, panel: PlayGameMenuView, mocker) -> None:
-    box = panel._ranked_pos(panel._content_layout(), require_runtime_resources(loop.state)) + Vec2(4.0, 8.0)
-    mocker.patch.object(canvas, "mouse_position", return_value=box.to_rl())
+def _click(loop: GameLoopView, box: Vec2, mocker) -> None:
+    mocker.patch.object(canvas, "mouse_position", return_value=(box + Vec2(4.0, 8.0)).to_rl())
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     loop.update(1.0 / 60.0)
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=False)
+
+
+def _click_ranked(loop: GameLoopView, panel: PlayGameMenuView, mocker) -> None:
+    _click(loop, panel._ranked_pos(panel._content_layout(), require_runtime_resources(loop.state)), mocker)
+
+
+def _click_rules(loop: GameLoopView, panel: PlayGameMenuView, mocker) -> None:
+    resources = require_runtime_resources(loop.state)
+    _click(loop, panel._rules_pos(panel._ranked_pos(panel._content_layout(), resources), resources), mocker)
 
 
 def test_a_ranked_attempt_plays_the_ranked_profile(loop, mocker) -> None:
@@ -63,6 +72,81 @@ def test_a_ranked_attempt_plays_the_ranked_profile(loop, mocker) -> None:
     assert run.world_runtime.view_cap == RANKED_VIEW
     # The player's own save is untouched by the run.
     assert world.state.status is not state.status
+
+
+def test_the_1_9_8_box_and_ranked_tick_together(loop, mocker) -> None:
+    state = loop.state
+    state.config.profile.set_player_name_input("")
+    panel = _play_game(loop)
+    _click_ranked(loop, panel, mocker)
+
+    _click_rules(loop, panel, mocker)
+
+    assert (state.cl_build, state.ranked) == (ClBuild.V1_9_8, True)
+    assert panel.ranked_checkbox.checked
+    # A ranked 1.9.8 attempt lists the ranked modes, and its tip names 1.9.8's leaderboard.
+    entries = panel._mode_entries()[0]
+    assert [entry.key for entry in entries] == ["quests", "survival"]
+    tips = dict(panel._port_tooltips(entries, require_runtime_resources(state).small_font))
+    assert tips["ranked"] == "Play for the online 1.9.8 leaderboard."
+
+    _click_rules(loop, panel, mocker)
+
+    assert (state.cl_build, state.ranked) == (ClBuild.V1_9_93, True)
+
+
+def test_a_ranked_1_9_8_attempt_plays_its_rules_on_the_ranked_profile(loop, mocker, tmp_path) -> None:
+    leaderboard = _leaderboard(loop, tmp_path, transport=mocker.Mock(side_effect=OSError("offline")))
+    state = loop.state
+    state.config.gameplay.player_count = 2
+    panel = _play_game(loop)
+    _click_rules(loop, panel, mocker)
+    _click_ranked(loop, panel, mocker)
+
+    loop.navigation.navigate(StartRun(GameMode.SURVIVAL))
+
+    run = state.screens.gameplay
+    assert isinstance(run, SurvivalMode)
+    assert run.ranked_run
+    world = run.world
+    assert world.state.rules_1_9_8
+    assert len(world.players) == 1
+    assert run.world_runtime.view_cap == RANKED_VIEW
+    assert world.state.status is not state.status
+    loop.update(1.0 / 60.0)
+    run.player.health = 0.0
+    run.player.death_timer = 0.0
+    while not run._game_over_active:
+        loop.update(1.0 / 60.0)
+    held = leaderboard._held
+    assert held is not None and held.run.cl_build == ClBuild.V1_9_8
+    assert ranked_board(held.run) == "survival" and not unranked_reasons(held.run)
+
+
+def test_an_unranked_1_9_8_run_plays_its_rules_on_the_players_own_team(loop, mocker, tmp_path) -> None:
+    leaderboard = _leaderboard(loop, tmp_path, transport=mocker.Mock(side_effect=OSError("offline")))
+    state = loop.state
+    state.config.gameplay.player_count = 2
+    _click_rules(loop, _play_game(loop), mocker)
+
+    loop.navigation.navigate(StartRun(GameMode.SURVIVAL))
+
+    run = state.screens.gameplay
+    assert isinstance(run, SurvivalMode)
+    assert not run.ranked_run
+    world = run.world
+    assert world.state.rules_1_9_8
+    assert len(world.players) == 2
+    assert run.world_runtime.view_cap != RANKED_VIEW
+    assert run._replay_recorder is not None and run._replay_recorder.run.cl_build == ClBuild.V1_9_8
+    loop.update(1.0 / 60.0)
+    for player in world.players:
+        player.health = 0.0
+        player.death_timer = 0.0
+    while not run._game_over_active:
+        loop.update(1.0 / 60.0)
+    assert leaderboard._held is None
+    assert run._game_over_record is not None and run._game_over_record.cl_build == ClBuild.V1_9_8
 
 
 def test_computer_controls_turn_ranked_off(loop, mocker) -> None:

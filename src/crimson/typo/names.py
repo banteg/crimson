@@ -7,6 +7,7 @@ import msgspec
 
 from grim.rand import CrandLike
 
+from ..cl_build import ClBuild
 from ..persistence.highscores import TABLE_MAX, ScoreTable, read_highscore_table
 from ..rng_caller_static import RngCallerStatic
 
@@ -27,7 +28,8 @@ def is_typo_highscore_name(text: str) -> bool:
     return 0 < len(text) <= HIGHSCORE_NAME_MAX_CHARS and all(ch.isascii() and (ch.isalpha() or ch == ".") for ch in text)
 
 
-_NAME_PARTS: tuple[str, ...] = (
+# `typo_word_pick_fragment`'s table; only the extended pool reaches the last fragment, "the".
+_TYPO_FRAGMENTS: tuple[str, ...] = (
     "lamb",
     "gun",
     "head",
@@ -81,6 +83,12 @@ _NAME_PARTS: tuple[str, ...] = (
     "boom",
     "the",
 )
+# 1.9.8 has 42 fragments: no "sleep" through "boom".
+_TYPO_FRAGMENTS_1_9_8: tuple[str, ...] = (*_TYPO_FRAGMENTS[:41], "the")
+
+
+def typo_fragments(cl_build: ClBuild) -> tuple[str, ...]:
+    return _TYPO_FRAGMENTS_1_9_8 if cl_build == ClBuild.V1_9_8 else _TYPO_FRAGMENTS
 
 
 def _draw(rng: CrandLike, *, caller: int) -> int:
@@ -107,20 +115,20 @@ class TypoHighscoreNames(msgspec.Struct):
         return self.names[_draw(rng, caller=RngCallerStatic.TYPO_WORD_PICK_HIGHSCORE_NAME) % len(self.names)]
 
 
-def typo_name_part(rng: CrandLike, *, allow_the: bool) -> str:
-    mod = 52 if allow_the else 51
+def typo_name_part(rng: CrandLike, *, fragments: tuple[str, ...], allow_the: bool) -> str:
+    mod = len(fragments) if allow_the else len(fragments) - 1
     idx = _draw(rng, caller=RngCallerStatic.TYPO_WORD_PICK_FRAGMENT) % mod
     if idx == 39:
         return "nerd"
-    return _NAME_PARTS[idx]
+    return fragments[idx]
 
 
-def _typo_name_parts(rng: CrandLike, count: int) -> str:
+def _typo_name_parts(rng: CrandLike, count: int, *, fragments: tuple[str, ...]) -> str:
     """`crt_sprintf(name, "%s%s...", pick(1), pick(0), ...)`: MSVC evaluates the arguments right to
     left, so the last part draws first and only the first part, drawn last, may be "the"."""
 
-    tail = [typo_name_part(rng, allow_the=False) for _ in range(count - 1)]
-    return typo_name_part(rng, allow_the=True) + "".join(reversed(tail))
+    tail = [typo_name_part(rng, fragments=fragments, allow_the=False) for _ in range(count - 1)]
+    return typo_name_part(rng, fragments=fragments, allow_the=True) + "".join(reversed(tail))
 
 
 def typo_build_name(
@@ -129,6 +137,7 @@ def typo_build_name(
     score_xp: int,
     highscore_names: TypoHighscoreNames,
     dictionary_words: Sequence[str] | None = None,
+    fragments: tuple[str, ...] = _TYPO_FRAGMENTS,
 ) -> str:
     score_xp = int(score_xp)
     if dictionary_words:
@@ -141,21 +150,21 @@ def typo_build_name(
         if _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE) % 100 < 10:
             return highscore_names.pick(rng)
         if _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_FOUR_WORD_GATE) % 100 < 80:
-            return _typo_name_parts(rng, 4)
+            return _typo_name_parts(rng, 4, fragments=fragments)
 
     if (score_xp > 80 and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT80) % 100 < 80) or (
         score_xp > 60
         and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT60) % 100 < 40
     ):
-        return _typo_name_parts(rng, 3)
+        return _typo_name_parts(rng, 3, fragments=fragments)
 
     if (score_xp > 40 and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT40) % 100 < 80) or (
         score_xp > 20
         and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT20) % 100 < 40
     ):
-        return _typo_name_parts(rng, 2)
+        return _typo_name_parts(rng, 2, fragments=fragments)
 
-    return typo_name_part(rng, allow_the=False)
+    return typo_name_part(rng, fragments=fragments, allow_the=False)
 
 
 def _pick_word(rng: CrandLike, words: Sequence[str]) -> str:
@@ -245,10 +254,12 @@ def load_typo_highscore_names(base_dir: Path, table: ScoreTable) -> list[str]:
 
 class CreatureNameTable(msgspec.Struct):
     names: list[str]
+    # The run's `typo_word_pick_fragment` table the names are built from.
+    fragments: tuple[str, ...] = _TYPO_FRAGMENTS
 
     @classmethod
-    def sized(cls, size: int) -> CreatureNameTable:
-        return cls(names=[""] * int(size))
+    def sized(cls, size: int, *, fragments: tuple[str, ...] = _TYPO_FRAGMENTS) -> CreatureNameTable:
+        return cls(names=[""] * int(size), fragments=fragments)
 
     def clear(self, idx: int) -> None:
         if 0 <= int(idx) < len(self.names):
@@ -305,6 +316,7 @@ class CreatureNameTable(msgspec.Struct):
                 score_xp=score_xp,
                 dictionary_words=dictionary_words,
                 highscore_names=highscore_names,
+                fragments=self.fragments,
             )
             if not self.is_unique(name, exclude_idx=idx, active_mask=active_mask):
                 attempts += 1

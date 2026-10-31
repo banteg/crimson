@@ -96,7 +96,8 @@ Bullets on every shot, with no cheat mode needed. Each shot resets the timer
 to 10 s, even when a Fire Bullets pickup had left you more.
 
 The rewrite ignores G; `--preserve-bugs` brings it back
-([original bug 24](../../rewrite/original-bugs.md#24-holding-g-while-firing-grants-free-fire-bullets)).
+([original bug 24](../../rewrite/original-bugs.md#24-holding-g-while-firing-grants-free-fire-bullets)),
+except under the [1.9.8 rules](../../rewrite/rules-1.9.8.md), which predate it.
 
 ## Hidden control schemes
 

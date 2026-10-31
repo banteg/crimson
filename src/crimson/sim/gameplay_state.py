@@ -8,6 +8,7 @@ from grim.sfx_types import SfxRequest
 
 from ..bonuses.hud import BonusHudState
 from ..bonuses.pool import BonusPool
+from ..cl_build import ClBuild
 from ..effects import EffectPool, ParticlePool, SpriteEffectPool
 from ..game_modes import GameMode
 from ..game_version import REPLAY_RULES
@@ -66,10 +67,20 @@ class GameplayState(msgspec.Struct):
     preserve_bugs: bool = False
     rules: int = REPLAY_RULES
     legacy_coop_reload: bool = False
+    cl_build: ClBuild = ClBuild.V1_9_93
 
     @property
     def rules2_fixes(self) -> bool:
         return self.rules >= 2 and not self.preserve_bugs
+
+    @property
+    def rules_1_9_8(self) -> bool:
+        return self.cl_build == ClBuild.V1_9_8
+
+    @property
+    def bugs_1_9_8(self) -> bool:
+        """A 1.9.8 run keeps the bugs 1.9.93 fixed only with `--preserve-bugs` (docs/rewrite/original-bugs.md)."""
+        return self.rules_1_9_8 and self.preserve_bugs
 
     status: GameStatus = msgspec.field(default_factory=lambda: GameStatus.detached(GameStatusData()))
     quest_level: QuestLevel | None = None

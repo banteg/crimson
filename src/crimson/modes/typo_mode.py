@@ -50,11 +50,12 @@ class TypoShooterMode(BaseGameplayMode):
         dictionary_words: tuple[str, ...] = ()
         if dictionary_path.is_file():
             dictionary_words = tuple(load_typo_dictionary(dictionary_path))
-        # The names a run picks from: the process's cache, or the table as the run's first pick loads it.
+        # The names a run picks from: the process's cache of its build's, or the table as the run's first pick loads it.
         session = self.typo_session
+        session.start(self.cl_build)
         highscore_names = session.highscore_names
         if not session.carry.highscore_names_loaded:
-            table = ScoreTable(GameMode.TYPO, score_list=self.config.profile.named_score_list)
+            table = ScoreTable(GameMode.TYPO, score_list=self.config.profile.named_score_list, cl_build=self.cl_build)
             highscore_names = tuple(load_typo_highscore_names(self._base_dir, table))
 
         self._initialize_run(

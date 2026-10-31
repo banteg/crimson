@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import msgspec
 import pytest
 
+from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence.highscores import HighScoreRecord, ScoreTable, append_highscore_records
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.run_init import initialize_run
+from crimson.sim.run_spec import RunSpec
 from crimson.typo.names import (
     NAME_MAX_CHARS,
     CreatureNameTable,
@@ -166,19 +170,91 @@ def test_load_typo_highscore_names_filters_and_deduplicates(tmp_path: Path) -> N
 
 
 @pytest.mark.usefixtures("headless_resources")
-def test_typo_mode_open_loads_highscore_names_into_state_and_replay_header(
+@pytest.mark.parametrize(
+    ("cl_build", "names"), [(ClBuild.V1_9_93, ("Alpha", "Beta.Test")), (ClBuild.V1_9_8, ("Gamma",))],
+)
+def test_typo_mode_open_loads_its_builds_highscore_names_into_state_and_replay_header(
     make_mode_config,
     assets_dir: Path,
     tmp_path: Path,
+    cl_build: ClBuild,
+    names: tuple[str, ...],
 ) -> None:
-    names = ("Alpha", "Beta.Test")
-    append_highscore_records(tmp_path, [HighScoreRecord(name=name, game_mode_id=GameMode.TYPO) for name in names])
+    append_highscore_records(
+        tmp_path,
+        [HighScoreRecord(name=name, game_mode_id=GameMode.TYPO) for name in ("Alpha", "Beta.Test")]
+        + [HighScoreRecord(name="Gamma", game_mode_id=GameMode.TYPO, cl_build=ClBuild.V1_9_8)],
+    )
 
     config = make_mode_config(game_mode=GameMode.TYPO, base_dir=tmp_path)
     mode = TypoShooterMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))
+    mode.cl_build = cl_build
 
     mode.open()
 
-    assert mode.state.typo.highscore_names.names == ("Alpha", "Beta.Test")
+    assert mode.state.typo.highscore_names.names == names
     assert mode._replay_recorder is not None
-    assert mode._replay_recorder.run.typo_highscore_names == ("Alpha", "Beta.Test")
+    assert mode._replay_recorder.run.typo_highscore_names == names
+
+
+@pytest.mark.usefixtures("headless_resources")
+def test_typo_highscore_names_load_once_per_build(make_mode_config, assets_dir: Path, tmp_path: Path) -> None:
+    def save(name: str, cl_build: ClBuild) -> None:
+        append_highscore_records(tmp_path, [HighScoreRecord(name=name, game_mode_id=GameMode.TYPO, cl_build=cl_build)])
+
+    save("Alpha", ClBuild.V1_9_93)
+    save("Gamma", ClBuild.V1_9_8)
+    config = make_mode_config(game_mode=GameMode.TYPO, base_dir=tmp_path)
+    mode = TypoShooterMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))
+
+    def play(cl_build: ClBuild) -> tuple[tuple[str, ...], bool]:
+        """A Typ-o run on `cl_build` that picks a high-score name: the names it picks from, and whether it found them
+        loaded."""
+
+        kept = mode.typo_session.carry
+        mode.cl_build = cl_build
+        mode.open()
+        assert mode._replay_recorder is not None
+        run = mode._replay_recorder.run
+        # Its replay plays it with the names it picks from; the rest of the carry ignores builds.
+        assert initialize_run(run).session.world.state.typo.highscore_names == mode.state.typo.highscore_names
+        assert msgspec.structs.replace(run.typo_carry, highscore_names_loaded=kept.highscore_names_loaded) == kept
+        mode.state.typo.highscore_names.pick(Crand(0))
+        mode.typo_session.keep(mode.state.typo)
+        return run.typo_highscore_names, run.typo_carry.highscore_names_loaded
+
+    assert play(ClBuild.V1_9_93) == (("Alpha",), False)
+    save("Delta", ClBuild.V1_9_93)
+    # Another run on the build picks from the names the first loaded.
+    assert play(ClBuild.V1_9_93) == (("Alpha",), True)
+    # A run on the other build loads its own table, which the next run on that build keeps too.
+    assert play(ClBuild.V1_9_8) == (("Gamma",), False)
+    save("Zeta", ClBuild.V1_9_8)
+    assert play(ClBuild.V1_9_8) == (("Gamma",), True)
+    # A run back on the first loads that one afresh.
+    assert play(ClBuild.V1_9_93) == (("Alpha", "Delta"), False)
+
+
+@pytest.mark.parametrize(
+    ("cl_build", "expected"),
+    [
+        # 1.9.93: 41 % 51 is "sleep", 83 % 52 is "brown".
+        (ClBuild.V1_9_93, "brownsleep"),
+        # 1.9.8's 42 fragments: 41 % 41 is "lamb", 83 % 42 is its last fragment, "the".
+        (ClBuild.V1_9_8, "thelamb"),
+    ],
+)
+def test_typo_run_builds_names_from_its_build_fragments(cl_build: ClBuild, expected: str) -> None:
+    typo = initialize_run(RunSpec(game_mode_id=GameMode.TYPO, seed=1, cl_build=cl_build)).session.world.state.typo
+    rng = ScriptedCrand([79, 41, 83], fallback=ScriptedCrand.Fallback.RAISE)
+
+    name = typo.names.assign_random(
+        0, rng, score_xp=41, active_mask=[False] * len(typo.names.names), highscore_names=typo.highscore_names,
+    )
+
+    assert name == expected
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT40,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
+    ]

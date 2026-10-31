@@ -190,11 +190,16 @@ def fire_weapon(
 
             cost = 0.15 if ammo_class == 1 else 1.0
             player_take_damage(step_runtime, player, cost, dt=dt)
-    # Native player_update grants ten seconds for DIK_G on an eligible shot.
-    # Keep this legacy cheat opt-in, including when replay input supplies it.
-    if state.preserve_bugs and input_state.fire_bullets_key_down:
-        player.fire_bullets_timer = 10.0
-    is_fire_bullets = float(player.fire_bullets_timer) > 0.0
+    if state.rules_1_9_8:
+        # 1.9.8 has neither the G shortcut nor a Fire Bullets branch here: the weapon fires, costs ammo
+        # and reloads as normal, and `projectile_spawn` adds the Fire Bullets shots.
+        is_fire_bullets = False
+    else:
+        # Native player_update grants ten seconds for DIK_G on an eligible shot.
+        # Keep this legacy cheat opt-in, including when replay input supplies it (original bug 24).
+        if state.preserve_bugs and input_state.fire_bullets_key_down:
+            player.fire_bullets_timer = 10.0
+        is_fire_bullets = float(player.fire_bullets_timer) > 0.0
 
     pellet_count = int(weapon.pellet_count)
     if is_fire_bullets and state.rules2_fixes:

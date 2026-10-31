@@ -185,7 +185,7 @@ static std::vector<uint8_t> replay_payload(const char *outcome, const ReplayHead
     for (const ReplaySeatKey &key : header.seat_keys)
       m.bin(key.data(), REPLAY_SEAT_KEY_BYTES);
   }
-  m.str("run"), m.map(15);
+  m.str("run"), m.map(16);
   m.str("game_mode_id"), m.integer(cfg.mode);
   m.str("seed"), m.integer(cfg.seed);
   bool custom = cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0;
@@ -219,6 +219,7 @@ static std::vector<uint8_t> replay_payload(const char *outcome, const ReplayHead
     replay_write_custom_quest(m);
   else
     m.nil();
+  m.str("cl_build"), m.integer(cfg.cl_build);
   m.str("result");
   replay_result(m, outcome);
   // The recording after its configuration: each tick's inputs, one a player,
@@ -562,7 +563,7 @@ static bool replay_read_custom_quest(MsgpackReader &r, PortableQuest &q, LoadedR
   return r.ok && has_title && has_weapon && has_terrain && has_entries && custom_quest_valid_for(q);
 }
 
-static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedReplay &out) {
+static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedReplay &out, bool &has_build) {
   config.major = config.minor = 1;
   bool has_level = false, has_custom = false;
   PortableQuest custom = {};
@@ -595,6 +596,7 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
     else if (key == "detail_preset") config.detail = (uint32_t)r.integer();
     else if (key == "violence_disabled") config.violence = (uint32_t)r.integer();
     else if (key == "friendly_fire") config.friendly_fire = r.boolean();
+    else if (key == "cl_build") config.cl_build = (uint32_t)r.integer(), has_build = true;
     else if (key == "status")
       for (uint32_t m = r.map(); r.ok && m; --m) {
         std::string field = r.str();
@@ -632,7 +634,9 @@ static bool replay_config_valid(const PortableConfig &config) {
   bool counts = true;
   for (uint32_t n : config.weapon_usage)
     counts = counts && n <= 2147483647u;
-  return quest && counts && (!custom || !config.hardcore) && config.detail <= 5 && config.unlock <= 50 &&
+  // 1.9.8's rules arrived with rules 2 and have no rules-1 profile.
+  bool build = config.cl_build == PORTABLE_CL_BUILD_1_9_93 || (config.cl_build == PORTABLE_CL_BUILD_1_9_8 && config.rules >= 2);
+  return quest && counts && build && (!custom || !config.hardcore) && config.detail <= 5 && config.unlock <= 50 &&
          config.unlock_full <= 50 && config.retry <= 2147483647u && config.preserve_bugs <= 1;
 }
 
@@ -728,7 +732,7 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
   MsgpackReader r{payload.data(), payload.data() + payload.size()};
   PortableConfig config = {};
   int format = 0;
-  bool run = false, has_seat_keys = false, named_seats = false;
+  bool run = false, has_seat_keys = false, named_seats = false, has_build = false;
   std::vector<std::string> seat_keys;
   uint32_t players = 0;
   int64_t picker = 0;
@@ -745,7 +749,7 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
         for (uint32_t keys = r.array(); r.ok && keys; --keys)
           seat_keys.push_back(r.bin());
       }
-    } else if (key == "run") replay_read_run(r, config, out), run = true;
+    } else if (key == "run") replay_read_run(r, config, out, has_build), run = true;
     else if (key == "result") replay_read_result(r, out);
     else if (key == "ticks") replay_read_ticks(r, out, players, picker);
     else r.skip();
@@ -760,17 +764,21 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
     for (size_t j = 0; j < i; ++j)
       seats = seats && seat_keys[i] != seat_keys[j];
   }
+  // Format 35 names the build whose rules the run plays; earlier formats' runs play 1.9.93's.
+  bool build = has_build == (format >= 35);
+  if (!has_build)
+    config.cl_build = PORTABLE_CL_BUILD_1_9_93;
   // A whole replay: its run, its result, a tick of its players' inputs and
   // commands for them, and nothing after its map.
   size_t head = sizeof config + (config.mode == GAME_MODE_QUEST && !config.major && !config.minor ? sizeof(PortableQuest) : 0);
+  config.rules = out.rules;
   bool whole = r.at == r.end && run && !out.result.empty() && out.recording.size() > head &&
-               !out.game_version.empty() && seats && players == config.players && picker < players;
+               !out.game_version.empty() && seats && build && players == config.players && picker < players;
   // Formats 30 to this build's read alike: each adds a field (docs/formats/replay.md).
   if (out.reason.empty() && (!r.ok || !whole || format < 30 || format > CRIMSON_REPLAY_FORMAT || !replay_config_valid(config)))
     out.reason = "This version cannot read its replay";
   else if (out.reason.empty() && out.rules != 1 && out.rules != CRIMSON_REPLAY_RULES)
     out.reason = "Recorded under other rules (" + out.game_version.substr(0, out.game_version.find('+')) + ")";
-  config.rules = out.rules;
   // Recorded seat keys arrived with ranked co-op (#768), after reload was fixed (#758).
   if (out.reason.empty() && out.rules == 1 && config.players > 1 && !config.preserve_bugs && !named_seats
       && out.game_version != "0.18.0+build.64a9589f5fbefdc036f0559b") {

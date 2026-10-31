@@ -22,6 +22,7 @@ from grim.raylib_api import rl, rl_color
 from grim.sfx_map import SfxId
 from grim.view import ViewContext
 
+from ..cl_build import ClBuild
 from ..game_modes import GameMode
 from ..game_states import GameStateId
 from ..input_codes import PadCode, pad_nav_pressed
@@ -143,6 +144,7 @@ class BaseGameplayMode:
         # The next run's flags; the run spec carries them into the gameplay state.
         self.quest_fail_retry_count = 0
         self.ranked = False
+        self.cl_build = ClBuild.V1_9_93
         # The runtime owns the run (session, world), audio and render mode; the mode reads them from it.
         self._world_runtime = WorldRuntime(
             assets_dir=self.assets_dir,
@@ -789,8 +791,10 @@ class BaseGameplayMode:
         self.ranked_run = ranked
         # Every stock run carries the saved Hardcore box, as the original's does; custom quests do not use hardcore.
         hardcore = False if custom_quest is not None else self.config.gameplay.hardcore
+        # Every run plays the build the Play Game menu chose; a ranked one ranks on that build's boards.
         spec = ranked_run_spec(
             game_mode, seed=self._run_reset_seed, quest_level=quest_level, custom_quest=custom_quest, hardcore=hardcore,
+            cl_build=self.cl_build,
         ) if canonical else RunSpec(
             game_mode_id=game_mode,
             seed=self._run_reset_seed,
@@ -807,6 +811,7 @@ class BaseGameplayMode:
             typo_dictionary_words=dictionary_words,
             typo_highscore_names=highscore_names,
             typo_carry=TypoCarry() if typo_carry is None else typo_carry,
+            cl_build=self.cl_build,
         )
         prepared = initialize_run(spec, status=status)
         self._world_runtime.start_session(prepared.session)

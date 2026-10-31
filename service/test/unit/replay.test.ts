@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { type Head, PayloadError, Reader } from "../../src/msgpack";
 import { outcomeReasons, rankedBoard, unrankedReasons } from "../../src/ranked";
-import { decodeReplay, inflateReplay, ReplayError, validateReplay } from "../../src/replay";
+import { ClBuild, decodeReplay, inflateReplay, ReplayError, validateReplay } from "../../src/replay";
 import { encodePortableQuest, encodeTransport, runIdentity, TransportError } from "../../src/transport";
 import questDsl from "../../src/quest-dsl.json";
 import vectors from "../vectors.json";
@@ -24,6 +24,8 @@ describe("the recorded fixtures decode as the Python codec decodes them", () => 
       expect(rankedBoard(replay.run)).toBe(fixture.board);
       // Formats before 34 name no seat's key.
       if (replay.format_version < 34) expect(replay.seat_keys).toBeNull();
+      // Formats before 35 play 1.9.93's rules.
+      if (replay.format_version < 35) expect(replay.run.cl_build).toBe(ClBuild.V1_9_93);
       expect(unrankedReasons(replay.run)).toEqual(fixture.unranked_reasons);
       expect(outcomeReasons(replay.run, replay.result)).toEqual(fixture.outcome_reasons);
       if (fixture.transport_sha256 === null) expect(() => encodeTransport(replay)).toThrow(TransportError);
@@ -46,6 +48,31 @@ describe("payloads the Python codec refuses are refused", () => {
       expect(() => decodeReplay(base64(vector.payload))).toThrow(ReplayError);
     });
   }
+});
+
+it("a 1.9.8 run decodes as Python's codec wrote it, streams to the core as Python's transport does, and ranks", () => {
+  expect(decodeReplay(base64(vectors.valid_payload)).run.cl_build).toBe(ClBuild.V1_9_93);
+  const replay = decodeReplay(inflateReplay(base64(vectors.rules_1_9_8_run.file)));
+  expect(replay.run.cl_build).toBe(ClBuild.V1_9_8);
+  expect(unrankedReasons(replay.run)).toEqual(vectors.rules_1_9_8_run.unranked_reasons);
+  expect(unrankedReasons(replay.run)).toEqual([]);
+  expect(rankedBoard(replay.run)).toBe(vectors.rules_1_9_8_run.board);
+  expect(outcomeReasons(replay.run, replay.result)).toEqual([]);
+  const transport = encodeTransport(replay);
+  expect(sha256(transport)).toBe(vectors.rules_1_9_8_run.transport_sha256);
+  expect(new DataView(transport.buffer).getUint32(68 * 4, true)).toBe(ClBuild.V1_9_8);
+  expect(() => validateReplay({ ...replay, rules: 1 })).toThrow("1.9.8 rules need rules 2");
+});
+
+it("a 1.9.8 run's id names its build; 1.9.93's ids stay as they were", () => {
+  const replay = decodeReplay(inflateReplay(base64(vectors.rules_1_9_8_run.file)));
+  expect(sha256(runIdentity(encodeTransport(replay)))).toBe(vectors.rules_1_9_8_run.run_id);
+  // The same stream under 1.9.93's rules is another run, and hashes as 1.9.93's runs always have.
+  const as1993 = encodeTransport({ ...replay, run: { ...replay.run, cl_build: ClBuild.V1_9_93 } });
+  const identity = runIdentity(as1993);
+  expect(sha256(identity)).not.toBe(vectors.rules_1_9_8_run.run_id);
+  expect(new TextDecoder().decode(identity.subarray(0, 18))).toBe("crimson:run:rules\0");
+  expect(new TextDecoder().decode(runIdentity(encodeTransport(replay)).subarray(0, 18))).toBe("crimson:run:build\0");
 });
 
 it("a custom quest decodes, ranks under the canonical profile, and matches Python's portable quest and transport bytes", () => {
