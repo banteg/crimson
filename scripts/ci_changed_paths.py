@@ -191,6 +191,8 @@ SUITES = {
             "crimson-core/game/sources.json",
             "crimson-core/*/*.patch",
             "crimson-core/editions/guards.json",
+            # The port's definitions of the rules the sources name (adapter.check_rules).
+            "crimson-core/host/rules.h",
             "crimson-core/game/*/*.patch",
             ".github/workflows/ci.yml",
         ),

@@ -153,8 +153,8 @@ def test_an_edition_reaches_every_suite_a_patch_does(path: str) -> None:
         assert relevant(suite, [path]) == relevant(suite, ["crimson-core/patches/61-new-fix.patch"]), suite
 
 
-@pytest.mark.parametrize("path", ["crimson-core/sources.json", "crimson-core/game/sources.json"])
-def test_a_target_source_list_rechecks_the_guard_ledger(path: str) -> None:
+@pytest.mark.parametrize("path", ["crimson-core/sources.json", "crimson-core/game/sources.json", "crimson-core/host/rules.h"])
+def test_what_the_guard_audit_reads_rechecks_it(path: str) -> None:
     assert relevant("core-patches", [path])
 
 

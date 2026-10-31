@@ -11,6 +11,10 @@ enum : unsigned { PORTABLE_CL_BUILD_1_9_8 = 10908, PORTABLE_CL_BUILD_1_9_93 = 10
 extern "C" unsigned int portable_cl_build;
 #define portable_rules_1_9_8 (portable_cl_build == PORTABLE_CL_BUILD_1_9_8)
 #define portable_bugs_1_9_8 (portable_rules_1_9_8 && portable_preserve_bugs)
+// The rules recovered sources name (tools/match/include/cl_rules.h), as the run's: each defaults to the build a source
+// compiles as, and is defined here first.
+// 1.9.8's Jinxed kills during Freeze, kept only with preserve_bugs (original bug 57).
+#define CL_JINXED_RESPECTS_FREEZE (!portable_bugs_1_9_8)
 // What the game derives from the build once, at startup: the perk range perks_init_database sets
 // (editions/04-perks.patch), which changes with the build wherever a run, or the perk database, sets it (host.cpp
 // portable_profile_set).

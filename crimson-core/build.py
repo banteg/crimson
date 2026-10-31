@@ -21,6 +21,7 @@ from adapter import (
     apply_diffs,
     check_diffs,
     check_guards,
+    check_rules,
     load_diffs,
     prototypes,
     wrap,
@@ -273,8 +274,10 @@ def main():
     if a.target == "game":
         sources += game_sources(a.root)
     # The guards between 1.9.8 and 1.9.93 that the diffs leave to the preprocessor must be the ones
-    # editions/guards.json lists, each with its class.
+    # editions/guards.json lists, each with its class, and the rules the sources name are the run's for this target.
     check_guards(a.root, hunks, sources)
+    # From the output directory, where the compiles run and the flags' relative include resolves.
+    check_rules(a.root, cc, flags, cwd=a.out)
     name = object_name if a.target == "game" else lambda rel: Path(rel).stem
 
     # The game module compiles every source the verifier does, so every diff applies there; the verifier skips
