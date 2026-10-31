@@ -157,9 +157,10 @@ def build_guards(txt):
 CL_RULES = "tools/match/include/cl_rules.h"
 HOOKS = HERE / "host" / "hooks.h"
 _DEFINE_ON_BUILD = re.compile(r"^[ \t]*#[ \t]*define[ \t]+(\w+)\b(.*\bCL_BUILD\b.*)$", re.MULTILINE)
-_DEFINE_NAME = re.compile(r"^#define (\w+)", re.MULTILINE)
-# What names nothing to the preprocessor: string and character literals, and comments.
-_INERT = re.compile(r'"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'|/\*.*?\*/|//[^\n]*', re.DOTALL)
+_DEFINE_NAME = re.compile(r"^#define (\w+)(\(?)", re.MULTILINE)
+# What names nothing to the preprocessor: string and character literals, and comments. A quote after a digit
+# separates digits (10'908) rather than opening a character.
+_INERT = re.compile(r'"(?:\\.|[^"\\\n])*"|(?<![0-9A-Fa-f])\'(?:\\.|[^\'\\\n])*\'|/\*.*?\*/|//[^\n]*', re.DOTALL)
 
 
 def rule_definitions(txt):
@@ -195,8 +196,12 @@ def check_rules(root, cc, flags, first=HOOKS):
 
     args = [*flags, "-I", str((root / CL_RULES).parent)]
     header = f'#include "{Path(CL_RULES).name}"\n'
-    defined = [_DEFINE_NAME.findall(_preprocess(cc, [*args, "-dM"], text)) for text in (header, "")]
-    names = sorted(set(defined[0]) - set(defined[1]) - {"CL_BUILD"})
+    own, builtin = (set(_DEFINE_NAME.findall(_preprocess(cc, [*args, "-dM"], text))) for text in (header, ""))
+    own = [(name, call) for name, call in sorted(own - builtin) if name != "CL_BUILD"]
+    # A rule is a condition a source names bare; a function-like macro's bare name expands to nothing to compare.
+    if functions := [name for name, call in own if call]:
+        raise SystemExit(f"{CL_RULES} defines {', '.join(functions)} as a function; a rule is a condition, named bare")
+    names = sorted(name for name, _ in own)
     rules = [name for name, *ways in zip(names, *_expansions(cc, args, header, names), strict=True) if len(set(ways)) > 1]
     seen = _expansions(cc, [*args, "-include", str(first)], header, rules)
     # Nothing, or the rule's own name (a function-like macro a bare use leaves alone), is no condition.

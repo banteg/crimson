@@ -173,5 +173,17 @@ def test_the_tripwire_reads_a_definition_by_build_as_the_preprocessor_does(monke
         "#define PISTOL 0x01 // as CL_BUILD 10993 has it\n"
         '#define LABEL "CL_BUILD"\n'
         '#define OPEN "/*"\n#define HIDDEN (CL_BUILD != 10908)\n#define CLOSE "*/"\n'
+        "#define RANGE (10'908 <= CL_BUILD && CL_BUILD < 10'993)\n"
     )
-    assert adapter.rule_definitions(text) == ["CONTINUED", "SPLIT", "HIDDEN"]
+    assert adapter.rule_definitions(text) == ["CONTINUED", "SPLIT", "HIDDEN", "RANGE"]
+
+
+def test_a_rule_cl_rules_defines_as_a_function_stops_the_build(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.syspath_prepend(str(ROOT / "crimson-core"))
+    adapter = importlib.import_module("adapter")
+    text = (ROOT / adapter.CL_RULES).read_text().replace(
+        "\n#endif\n", "\n#define CL_JINXED_FREEZE_ACTIVE(timer) (CL_BUILD != 10908 && (timer) > 0.0f)\n\n#endif\n",
+    )
+
+    with pytest.raises(SystemExit, match="CL_JINXED_FREEZE_ACTIVE"):
+        adapter.check_rules(_rules_root(tmp_path, adapter, text), ["clang++"], VERIFIER)
