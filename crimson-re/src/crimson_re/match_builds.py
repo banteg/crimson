@@ -102,14 +102,15 @@ class BuildImage:
         if _links_static_crt(self.map_dir / "imports.json"):
             # Without MSVCRT.DLL the image calls its CRT directly, as /MT code does.
             cflags = re.sub(r"(?<!\S)/MD(?!\S)", "/MT", cflags)
+        sources = dict(config.family_sources)
         return tuple(
             replace(
                 config,
                 image=self.name,
                 compiler=compiler,
                 cflags=cflags,
-                # A family with its own tree compiles its own body for the function.
-                source=dict(config.family_sources).get(self.family or "", config.source),
+                # A version-specific recovery takes precedence over the family donor.
+                source=sources.get(self.build, sources.get(self.family or "", config.source)),
                 # END_VA is a canonical address; this build's map carries its own extent.
                 end_va=None,
                 # An alias to a global this build's maps do not name leaves the reference unresolved.
@@ -471,17 +472,21 @@ def apply_recovered_map(
             raise ValueError(f"unknown absent function: {absent['name']}")
         rows.pop(absent["name"], None)
     for recovered in recovery.get("functions", ()):
-        function = functions[recovered["name"]]
+        name = recovered["name"]
+        function = functions.get(name)
+        if function is None and not recovered.get("build_only"):
+            raise ValueError(f"unknown recovered function: {name}")
         start, end = (matchlib.parse_int(recovered[key]) for key in ("address", "end"))
         if end <= start or hashlib.sha256(native.function_bytes(start, end)).hexdigest() != recovered["body_sha256"]:
-            raise ValueError(f"recovered function body hash mismatch: {function.name}")
-        row = dict(rows.get(function.name, {}))
+            raise ValueError(f"recovered function body hash mismatch: {name}")
+        row = dict(rows.get(name, {}))
+        root_address = _identity_addresses(canonical)(function.address) if function else None
         row.update(
             address=f"0x{start:08X}", end=f"0x{end:08X}", size=end - start,
-            canonical_address=f"0x{_identity_addresses(canonical)(function.address):08X}", name=function.name,
-            evidence="recovered",
+            **({"build_only": True} if root_address is None else {"canonical_address": f"0x{root_address:08X}"}),
+            name=name, evidence="recovered",
         )
-        rows[function.name] = row
+        rows[name] = row
     entries = {row["name"]: row for row in payload["data"]["entries"]}
     names = _reference_catalog(canonical)
     # A runtime function linked statically keeps the name the canonical image imports it by.
@@ -526,12 +531,15 @@ def apply_recovered_map(
     payload["summary"]["data"] = len(entries)
 
 
-def _identity_addresses(canonical: BuildImage) -> Callable[[int], int]:
+def _identity_addresses(canonical: BuildImage) -> Callable[[int], int | None]:
     """Translate the mapping source's addresses to its identity root's, through the source's own map."""
     if canonical.is_canonical:
         return lambda address: address
     rows = json.loads(canonical.target.functions_path.read_text(encoding="utf-8"))
-    identities = {matchlib.parse_int(row["address"]): matchlib.parse_int(row["canonical_address"]) for row in rows}
+    identities = {
+        matchlib.parse_int(row["address"]): None if row.get("build_only") else matchlib.parse_int(row["canonical_address"])
+        for row in rows
+    }
     return identities.__getitem__
 
 
@@ -550,7 +558,7 @@ def _grim_slot_offsets(source_build: str, build: str) -> dict[int, int]:
         rows = json.loads(image.target.functions_path.read_text(encoding="utf-8"))
         identities = {
             matchlib.parse_int(row["address"]): matchlib.parse_int(row.get("canonical_address", row["address"]))
-            for row in rows
+            for row in rows if not row.get("build_only")
         }
         result = {}
         # Stop at the first pointer outside executable memory; do not assume a slot count.
@@ -1051,9 +1059,10 @@ class _Mapper:
             evidence = self.evidence[address]
             # A changed body runs at most to the next known function.
             end = target + self.bodies[address].size if evidence in {"exact", "interface"} else self.changed_end(target)
+            root_address = self.identity_address(address)
             rows[target] = {
                 "address": f"0x{target:08X}",
-                "canonical_address": f"0x{self.identity_address(address):08X}",
+                **({"build_only": True} if root_address is None else {"canonical_address": f"0x{root_address:08X}"}),
                 "end": f"0x{end:08X}",
                 "evidence": evidence,
                 "name": function.name,

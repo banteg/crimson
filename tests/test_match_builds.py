@@ -47,6 +47,22 @@ def test_reviewed_historical_map_rejects_unbound_evidence(recovered_198_map, inv
         match_builds.apply_recovered_map(image, canonical, payload, recovery)
 
 
+def test_reviewed_build_only_function_requires_an_explicit_byte_pin(recovered_198_map) -> None:
+    image, canonical, payload, original = recovered_198_map
+    recovery = deepcopy(original)
+    pin = recovery["functions"][0]
+    # Replace a known placement with a local identity for the same bytes.
+    payload["functions"] = [row for row in payload["functions"] if row["name"] != pin["name"]]
+    pin["name"] = "local_gameplay_routine"
+    with pytest.raises(ValueError, match="unknown recovered function"):
+        match_builds.apply_recovered_map(image, canonical, deepcopy(payload), recovery)
+    pin["build_only"] = True
+    match_builds.apply_recovered_map(image, canonical, payload, recovery)
+    row = next(row for row in payload["functions"] if row["name"] == pin["name"])
+    assert row["build_only"] and "canonical_address" not in row
+    assert row["evidence"] == "recovered"
+
+
 @pytest.mark.parametrize("image", MAPPED_IMAGES, ids=lambda image: image.target.image_name)
 def test_committed_build_maps_bind_canonical_names_to_the_pinned_image(image: match_builds.BuildImage) -> None:
     canonical = REGISTRY.canonical(image)
@@ -67,7 +83,10 @@ def test_committed_build_maps_bind_canonical_names_to_the_pinned_image(image: ma
     rows = json.loads(target.functions_path.read_text(encoding="utf-8"))
     for row in rows:
         assert row["evidence"] in match_builds.EVIDENCE
-        assert canonical_addresses[row["name"]] == int(row["canonical_address"], 16)
+        if row.get("build_only"):
+            assert row["name"] not in canonical_addresses and "canonical_address" not in row
+        else:
+            assert canonical_addresses[row["name"]] == int(row["canonical_address"], 16)
         assert int(row["end"], 16) - int(row["address"], 16) == row["size"] > 0
     for row, following in pairwise(rows):
         assert int(row["end"], 16) <= int(following["address"], 16)
@@ -275,7 +294,9 @@ def test_family_layout_places_each_source_in_its_native_object(layout_path: Path
             seen.add(source)
             for config_dir in row["configs"]:
                 config = matchlib.load_scratch_config(matchlib.REPO_ROOT / config_dir)
-                assert (config.directory / dict(config.family_sources)[payload["family"]]).resolve() == source
+                overrides = dict(config.family_sources)
+                override = overrides.get(payload["build"]) or overrides[payload["family"]]
+                assert (config.directory / override).resolve() == source
                 if config.function in mapped:
                     assert any(start <= mapped[config.function] < end for start, end in ranges)
     assert seen == {path.resolve() for path in root.rglob("*") if path.suffix in {".c", ".cpp"}}

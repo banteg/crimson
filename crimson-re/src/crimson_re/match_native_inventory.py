@@ -35,7 +35,7 @@ def _library_owners(image: match_builds.BuildImage) -> dict[int, str]:
     excluded = {row.address for row in scope.function_dispositions[source.name] if row.disposition == "third-party"}
     result = {}
     for row in json.loads(image.target.functions_path.read_text()):
-        if row["evidence"] not in {"exact", "interface", "recovered"}:
+        if row.get("build_only") or row["evidence"] not in {"exact", "interface", "recovered"}:
             continue
         canonical = matchlib.parse_int(row["canonical_address"])
         owners = {owner for lo, hi, owner in regions if lo <= canonical < hi}
@@ -103,7 +103,7 @@ def _partition(
                    "native_kind": "function", "ownership": owner(start, retained_end)}
             if row["ownership"] == "unknown" and start in library_owners:
                 row["ownership"] = library_owners[start]
-            if identity is not None:
+            if identity is not None and not identity.get("build_only"):
                 row["canonical_address"] = matchlib.parse_int(identity["canonical_address"])
             result.append(row)
             cursor = retained_end

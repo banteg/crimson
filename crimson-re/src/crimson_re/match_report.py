@@ -153,7 +153,7 @@ def _inventory(version: str = VERSION) -> list[dict[str, Any]]:
         image = matchlib.load_image(target.image_path, manifest.image_base)
         canonical = {} if build_image.is_canonical else {
             matchlib.parse_int(row["address"]): matchlib.parse_int(row["canonical_address"])
-            for row in json.loads(target.functions_path.read_text(encoding="utf-8"))
+            for row in json.loads(target.functions_path.read_text(encoding="utf-8")) if not row.get("build_only")
         }
         for function in manifest.functions:
             data = image.function_bytes(function.address, function.end)
@@ -166,7 +166,7 @@ def _inventory(version: str = VERSION) -> list[dict[str, Any]]:
                 # but instruction operands and undecodable body bytes remain.
                 "size": max((line.offset + line.size for line in lines), default=0),
             }
-            if canonical:
+            if function.address in canonical:
                 row["canonical_address"] = canonical[function.address]
             rows.append(row)
     return rows
