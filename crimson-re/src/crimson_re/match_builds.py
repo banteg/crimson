@@ -1268,7 +1268,10 @@ def scan_build(
         address = addresses[image.name, config.function]
         if image.name in bounds and address not in bounds[image.name]:
             continue
-        for build_config in image.scratch_configs(config):
+        build_configs = image.scratch_configs(config)
+        if not build_configs:
+            continue
+        for build_config in build_configs:
             if image.name in bounds:
                 build_config = replace(build_config, end_va=bounds[image.name][address])
             configs.append(build_config)

@@ -47,11 +47,16 @@ def test_reviewed_historical_map_rejects_unbound_evidence(recovered_198_map, inv
         match_builds.apply_recovered_map(image, canonical, payload, recovery)
 
 
-def test_build_only_scratch_stays_out_of_other_compiler_and_report_runs() -> None:
+def test_build_only_scratch_stays_out_of_other_compiler_and_report_runs(tmp_path: Path) -> None:
     config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/player_check_level")
     assert not matchlib._filter_scoped_scratch_configs([config], scope="all")
     assert REGISTRY.image("1.4.0", "crimson.exe").scratch_configs(config)
     assert not REGISTRY.image("1.3.0", "crimson.exe").scratch_configs(config)
+    # An older map can identify the function even though its recovered source targets 1.4.0 only.
+    scratch = tmp_path / "scratches" / config.function
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text((config.directory / "scratch.conf").read_text())
+    assert match_builds.scan_build(REGISTRY, "1.0.2", tmp_path) == []
     with pytest.raises(ValueError, match="configured only for"):
         REGISTRY.image("1.9.93", "crimsonland.exe").scratch_config(config)
 
