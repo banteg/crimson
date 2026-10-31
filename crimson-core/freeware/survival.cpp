@@ -67,6 +67,7 @@ extern "C" int crt_rand() {
 
 // terrain_generate (0x40e060) uses the gameplay CRT stream, including on restart.
 void Game::generate_terrain() {
+  ++terrain_revision;
   terrain.clear();
   if (safe_mode)
     return;
@@ -138,23 +139,7 @@ void Game::queue_blood(vec2f_t p) {
 void Game::queue_impact(const char *texture, vec2f_t center, float w, float h, float rotation,
                         effect_color_t color) {
   if (pending_impacts.size() < 63)
-    pending_impacts.push_back(
-        {texture, center.x - w * .5f, center.y - h * .5f, w, h, rotation, color, {}, 2, 6, 5});
-}
-void Game::flush_marks() {
-  decals.swap(pending_decals);
-  pending_decals.clear();
-  impacts.swap(pending_impacts);
-  pending_impacts.clear();
-  for (auto p : pending_blood) {
-    float angle = (crt_rand() % 628) * .01f;
-    float size = float(crt_rand() % 20 - 10) + 32.f;
-    marks.push_back({p, size, angle});
-  }
-  pending_blood.clear();
-  for (auto p : pending_shells)
-    shells.push_back({p, 4, (crt_rand() % 628) * .01f});
-  pending_shells.clear();
+    pending_impacts.push_back({texture, center, w, h, rotation, color});
 }
 extern "C" void freeware_blood(const vec2f_t *pos) { combat_game->queue_blood(*pos); }
 extern "C" void freeware_shard(const vec2f_t *pos, float size, float rotation) {

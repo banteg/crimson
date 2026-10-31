@@ -71,6 +71,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "game/game_frame_update.cpp",
                 "render/projectile_render.cpp",
                 "render/terrain_render.cpp",
+                "render/fx_queue_render.cpp",
                 "render/creature_render_all.cpp",
                 "render/player_render.cpp",
                 "render/effect_render_all.cpp",

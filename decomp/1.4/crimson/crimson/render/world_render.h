@@ -22,6 +22,19 @@ extern float freeware_pickup_time, freeware_bomb_age;
 #define PICKUP_POS UI_FIELD(freeware_pickup_position, run.pickup.pos)
 #define BOMB_AGE UI_FIELD(freeware_bomb_age, run.bomb_age)
 #define BOMB_POS UI_FIELD(freeware_bomb_position, run.bomb_pos)
+#ifdef CRIMSON_FREEWARE_CLIENT
+#define world_angle ui140::angle
+#define world_tint ui140::tint
+#define world_uv ui140::uv
+#define world_quad ui140::quad
+#define world_sheet(handle, name) ui140::bind(name)
+#else
+#define world_angle grim_interface_ptr->grim_set_rotation
+#define world_tint grim_interface_ptr->grim_set_color
+#define world_uv grim_interface_ptr->grim_set_uv
+#define world_quad grim_interface_ptr->grim_draw_quad
+#define world_sheet(handle, name) grim_interface_ptr->grim_bind_texture((handle), 0)
+#endif
 namespace world140 {
 using namespace ui140;
 #define CAMERA UI_FIELD(freeware_camera, camera)

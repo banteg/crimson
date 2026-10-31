@@ -69,10 +69,7 @@ void Game::update(float dt, const Input &in) {
   frame_trails.clear();
   frame_sprites.clear();
   frame_labels.clear();
-  decals.clear();
-  marks.clear();
-  impacts.clear();
-  shells.clear();
+  terrain_marks.clear();
   if (in.console) {
     console_open = !console_open;
     if (console_open)

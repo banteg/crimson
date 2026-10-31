@@ -598,7 +598,9 @@ class Comparison:
                 for fire in (0, 2):
                     for effects in (0, 1):
                         self.write(
-                            BULLET, 2, struct.pack(BULLET[2], 1, 0.8, 200, 180, 160, 155, 1.5, 2, t, life, 1, 1, 1),
+                            BULLET,
+                            2,
+                            struct.pack(BULLET[2], 1, 0.8, 200, 180, 160, 155, 1.5, 2, t, life, 1, 1, 1),
                         )
                         pe.write_f32(0x452DB8, fire)
                         ctypes.c_float.from_address(self.symbol("bonus_fire_bullets_timer")).value = fire
@@ -650,19 +652,21 @@ class Comparison:
         method(0x28, 4)
         method(0x2C, 1)
         pe.stub(0x404D70, 0, pop=8)  # Empty level-object list in both shipped modes.
-        for seed in (1, 87, 13456):
-            calls.clear()
-            pe.rand_state = seed
-            pe.call(0x40E060, 1)
-            count = self.dll.combat_terrain(seed)
-            assert len(calls) == count == 1470
-            base = self.symbol("combat_terrain_capture")
-            for i, (texture, points, colors, angle, *_state) in enumerate(calls):
-                x, y, rotation, grass = struct.unpack("<fff?3x", ctypes.string_at(base + 16 * i, 16))
-                assert texture == (6 if grass else 7) and points == (x, y, 128, 128)
-                assert abs(rotation - angle) < 1e-6
-                assert all(abs(a - b) < 1e-6 for a, b in zip(colors[2], (0.7, 0.7, 0.7, 0.9), strict=True))
-            assert self.dll.crt_rand() == pe.call(0x422414).eax
+        for safe in (0, 1):
+            for seed in (1, 87, 13456):
+                calls.clear()
+                pe.rand_state = seed
+                pe.write_u8(0x452D51, safe)
+                pe.call(0x40E060, 1)
+                count = self.dll.combat_terrain(seed, safe)
+                assert len(calls) == count == (0 if safe else 1470)
+                base = self.symbol("combat_terrain_capture")
+                for i, (texture, points, colors, angle, *_state) in enumerate(calls):
+                    x, y, rotation, grass = struct.unpack("<fff?3x", ctypes.string_at(base + 16 * i, 16))
+                    assert texture == (6 if grass else 7) and points == (x, y, 128, 128)
+                    assert abs(rotation - angle) < 1e-6
+                    assert all(abs(a - b) < 1e-6 for a, b in zip(colors[2], (0.7, 0.7, 0.7, 0.9), strict=True))
+                assert self.dll.crt_rand() == pe.call(0x422414).eax
         return samples
 
 
@@ -715,6 +719,8 @@ def check_web(stage, exe, sources):
         "combat_world_player",
         "combat_world_effect",
         "combat_world_ground",
+        "combat_world_queue_seed",
+        "combat_world_queue",
         "combat_world_impacts",
         "player_reset_all",
         "combat_frame_start",

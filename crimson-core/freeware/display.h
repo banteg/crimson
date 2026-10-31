@@ -9,7 +9,8 @@ struct Display {
   SDL_Renderer *renderer;
   std::unordered_map<std::string, SDL_Texture *> textures;
   SDL_Texture *ground{}, *last_texture{};
-  int ground_generation = -1;
+  int ground_revision = -1;
+  void rebuild_ground(const Game &g);
   explicit Display(SDL_Renderer *r) : renderer(r) {}
   ~Display();
   bool load(const std::string &folder, bool &safe_mode);

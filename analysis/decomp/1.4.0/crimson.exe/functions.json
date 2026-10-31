@@ -1156,7 +1156,7 @@
     "address": "0x0040B570",
     "canonical_address": "0x00422C70",
     "end": "0x0040D7F1",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "projectile_render",
     "size": 8833
   },
@@ -1212,7 +1212,7 @@
     "address": "0x0040E830",
     "canonical_address": "0x00427920",
     "end": "0x0040F333",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "fx_queue_render",
     "size": 2819
   },

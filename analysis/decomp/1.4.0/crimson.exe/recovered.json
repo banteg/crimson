@@ -597,6 +597,12 @@
       "body_sha256": "b2dbdf5adee985d07255e9b45da41c327a407fc8e290504a6a65545230c3a594"
     },
     {
+      "name": "projectile_render",
+      "address": "0x0040b570",
+      "end": "0x0040d7f1",
+      "body_sha256": "aa66209a27c31a49f2e29fe838d90df734caad7f3831f8f8e402bb73ba5d3b1c"
+    },
+    {
       "name": "plaguebearer_spread_infection",
       "address": "0x0040d800",
       "end": "0x0040d8be",
@@ -620,6 +626,12 @@
       "end": "0x0040e72b",
       "body_sha256": "76f126dcb9505dbd8c86e59c4d7bb197f0340d7bd3386c38eea9d0dc55f13297",
       "build_only": true
+    },
+    {
+      "name": "fx_queue_render",
+      "address": "0x0040e830",
+      "end": "0x0040f333",
+      "body_sha256": "46374e739b83f3dc0245aa52f69b6a3749962fd93cc304e8720831182f4dc5bc"
     },
     {
       "name": "terrain_render",
@@ -1350,6 +1362,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_corpse_positions",
+      "address": "0x00436af8",
+      "reference": "0x0040e8b5",
+      "bytes": "bdf86a4300",
+      "build_only": true
+    },
+    {
       "name": "freeware_score_table",
       "address": "0x00436cf8",
       "reference": "0x0041f863",
@@ -1389,6 +1408,13 @@
       "address": "0x00438334",
       "reference": "0x00418247",
       "bytes": "d91d34834300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_sizes",
+      "address": "0x00438378",
+      "reference": "0x0040e9e7",
+      "bytes": "d904b578834300",
       "build_only": true
     },
     {
@@ -1556,6 +1582,27 @@
       "build_only": true
     },
     {
+      "name": "freeware_blood_texture",
+      "address": "0x0043c6ac",
+      "reference": "0x0040ed2f",
+      "bytes": "8b15acc64300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_blood_positions",
+      "address": "0x0043c6b0",
+      "reference": "0x0040ed98",
+      "bytes": "beb0c64300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_angles",
+      "address": "0x0043c8b4",
+      "reference": "0x0040e9ad",
+      "bytes": "8b04b5b4c84300",
+      "build_only": true
+    },
+    {
       "name": "freeware_atlas_uv",
       "address": "0x0043c9b8",
       "reference": "0x0040fe62",
@@ -1583,6 +1630,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_shell_positions",
+      "address": "0x00440dc8",
+      "reference": "0x0040f269",
+      "bytes": "bec80d4400",
+      "build_only": true
+    },
+    {
       "name": "freeware_snow_y",
       "address": "0x00440ec8",
       "reference": "0x00419e63",
@@ -1602,10 +1656,25 @@
       "bytes": "c705802344000000003f"
     },
     {
+      "name": "freeware_corpse_species",
+      "address": "0x00442390",
+      "reference": "0x0040e8bf",
+      "bytes": "8b04b590234400",
+      "build_only": true
+    },
+    {
       "name": "freeware_bullet_icon",
       "address": "0x00442490",
       "reference": "0x00416b05",
       "bytes": "8b1590244400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_colors",
+      "address": "0x00442498",
+      "reference": "0x0040e8ba",
+      "bytes": "bf9c244400",
+      "offset": 4,
       "build_only": true
     },
     {
@@ -1820,6 +1889,12 @@
       "reference": "0x00418ca9",
       "bytes": "a1202d4500",
       "build_only": true
+    },
+    {
+      "name": "terrain_render_target",
+      "address": "0x00452d28",
+      "reference": "0x0040f374",
+      "bytes": "a1282d4500"
     },
     {
       "name": "freeware_creature_texture",
@@ -2393,6 +2468,27 @@
       "address": "0x00452e7c",
       "reference": "0x0041cc7e",
       "bytes": "d82d7c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_blood_count",
+      "address": "0x00452e80",
+      "reference": "0x0040ec06",
+      "bytes": "a1802e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_shell_count",
+      "address": "0x00452e84",
+      "reference": "0x0040ec19",
+      "bytes": "391d842e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_count",
+      "address": "0x00452e88",
+      "reference": "0x0040e844",
+      "bytes": "a1882e4500",
       "build_only": true
     },
     {

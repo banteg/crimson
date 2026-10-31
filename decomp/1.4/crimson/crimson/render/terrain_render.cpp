@@ -5,18 +5,10 @@ extern unsigned char freeware_filter_sharp, freeware_safe_mode;
 extern int freeware_arena_width, freeware_arena_height, terrain_render_target;
 }
 using namespace world140;
-#ifdef CRIMSON_FREEWARE_CLIENT
-#define world_quad ui140::quad
-#else
-#define world_quad grim_interface_ptr->grim_draw_quad
-#endif
+
 namespace {
 __forceinline void ground() {
-#ifdef CRIMSON_FREEWARE_CLIENT
-    bind("ground");
-#else
-    bind(terrain_render_target);
-#endif
+    world_sheet(terrain_render_target, "ground");
     begin();
     tint(1, 1, 1, 1);
     uv(0, 0, 1, 1);

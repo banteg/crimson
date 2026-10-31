@@ -866,6 +866,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00436af8",
+      "name": "freeware_corpse_positions",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00436cf8",
       "name": "freeware_score_table",
       "program": "1.4.0/crimson.exe"
@@ -893,6 +898,11 @@
     {
       "address": "0x00438334",
       "name": "freeware_mouse_dx",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00438378",
+      "name": "freeware_corpse_sizes",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1076,6 +1086,21 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0043c6ac",
+      "name": "freeware_blood_texture",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043c6b0",
+      "name": "freeware_blood_positions",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043c8b4",
+      "name": "freeware_corpse_angles",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0043c9b8",
       "name": "freeware_atlas_uv",
       "program": "1.4.0/crimson.exe"
@@ -1101,6 +1126,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00440dc8",
+      "name": "freeware_shell_positions",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00440ec8",
       "name": "freeware_snow_y",
       "program": "1.4.0/crimson.exe"
@@ -1116,8 +1146,18 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00442390",
+      "name": "freeware_corpse_species",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00442490",
       "name": "freeware_bullet_icon",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00442498",
+      "name": "freeware_corpse_colors",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1278,6 +1318,11 @@
     {
       "address": "0x00452d20",
       "name": "freeware_brush_end",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452d28",
+      "name": "terrain_render_target",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1693,6 +1738,21 @@
     {
       "address": "0x00452e7c",
       "name": "freeware_next_spawn",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e80",
+      "name": "freeware_blood_count",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e84",
+      "name": "freeware_shell_count",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e88",
+      "name": "freeware_corpse_count",
       "program": "1.4.0/crimson.exe"
     },
     {

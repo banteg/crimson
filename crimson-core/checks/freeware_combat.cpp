@@ -157,10 +157,11 @@ int combat_draw(float seconds, int effects, int count, int index) {
 }
 extern "C" {
 freeware::TerrainStamp combat_terrain_capture[1470];
-int combat_terrain(unsigned seed) {
+int combat_terrain(unsigned seed, int safe) {
+  game.safe_mode = safe != 0;
   freeware::seed_random(seed);
   game.generate_terrain();
-  if (game.terrain.size() != 1470)
+  if (game.terrain.size() > 1470)
     return -1;
   std::copy(game.terrain.begin(), game.terrain.end(), combat_terrain_capture);
   return int(game.terrain.size());
@@ -681,8 +682,12 @@ void combat_world_player(int slot, int count, int kind, int distance) {
   bonus_fire_bullets_timer = 0;
   freeware_simulation_clock = 1.375f;
 }
+void fx_queue_render();
 int combat_world_impacts() {
-  game.frame_sprites = game.pending_impacts;
+  game.frame_sprites.clear();
+  game.terrain_marks.clear();
+  fx_queue_render();
+  game.frame_sprites.swap(game.terrain_marks);
   game.frame_labels.clear();
   return capture_ui();
 }
@@ -701,6 +706,38 @@ void combat_world_effect(int flags, int kind, int time, int age) {
   game.cursor_y = 135.75f;
   freeware_simulation_clock = 1.375f;
   frame_dt = .03125f;
+}
+void fx_queue_add_rotated(const vec2f_t *, const effect_color_t *, float, float, int);
+void combat_world_queue_seed(int mask, int count) {
+  for (int i = 0; i < count; ++i) {
+    vec2f_t p = {134.f + i * 1.25f, 241.f - i * .5f};
+    effect_color_t color = {.25f, .375f, .625f, .75f};
+    if (mask & 1)
+      game.queue_impact("icemold", p, 14.f + i, 23.5f + i, .125f * i, color);
+    if (mask & 2)
+      game.queue_blood(p);
+    if (mask & 4)
+      fx_queue_add_rotated(&p, &color, .125f * i, 32.f + i, i % 2);
+    if ((mask & 8) && game.pending_shells.size() < 31)
+      game.pending_shells.push_back(p);
+  }
+}
+int combat_world_queue(int safe, int frame) {
+  game.safe_mode = safe;
+  game.camera = {-27.5f + frame * 7, 11.25f - frame * 3};
+  game.terrain_marks.clear();
+  game.frame_sprites.clear();
+  game.frame_labels.clear();
+  fx_queue_render();
+  combat_world_state[0] = (float)game.pending_impacts.size();
+  combat_world_state[1] = (float)game.pending_blood.size();
+  combat_world_state[2] = (float)game.pending_decals.size();
+  combat_world_state[3] = (float)game.pending_shells.size();
+  combat_world_state[4] = (float)game.terrain_marks.size();
+  combat_world_state[5] = (float)game.frame_sprites.size();
+  if (!safe)
+    game.frame_sprites.swap(game.terrain_marks);
+  return capture_ui();
 }
 extern int freeware_arena_width, freeware_arena_height;
 void terrain_render();

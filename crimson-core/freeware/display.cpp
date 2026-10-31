@@ -145,40 +145,32 @@ void Display::frame_art(const std::vector<FrameSprite> &sprites, const std::vect
   while (i < sprites.size())
     frame_sprite(sprites[i++]);
 }
+void Display::rebuild_ground(const Game &g) {
+  SDL_SetRenderTarget(renderer, ground);
+  SDL_SetRenderDrawColor(renderer, 63, 56, 25, 255);
+  SDL_RenderClear(renderer);
+  for (const auto &stamp : g.terrain)
+    sprite(stamp.grass ? "grass1" : "mud1", stamp.pos.x, stamp.pos.y, 128, 128, stamp.angle, 0, 1,
+           {.7f, .7f, .7f, .9f});
+  SDL_SetRenderTarget(renderer, nullptr);
+  ground_revision = g.terrain_revision;
+}
 void Display::draw(Game &g) {
-  if (!g.safe_mode && g.generation != ground_generation) {
-    SDL_SetRenderTarget(renderer, ground);
-    SDL_SetRenderDrawColor(renderer, 63, 56, 25, 255);
-    SDL_RenderClear(renderer);
-    for (const auto &stamp : g.terrain)
-      sprite(stamp.grass ? "grass1" : "mud1", stamp.pos.x, stamp.pos.y, 128, 128, stamp.angle, 0, 1,
-             {.7f, .7f, .7f, .9f});
-    SDL_SetRenderTarget(renderer, nullptr);
-  }
-  if (!g.safe_mode && (g.generation != ground_generation || !g.decals.empty() || !g.impacts.empty() ||
-                       !g.marks.empty() || !g.shells.empty())) {
-    SDL_SetRenderTarget(renderer, ground);
-    ground_generation = g.generation;
-    for (const auto &impact : g.impacts)
-      frame_sprite(impact);
-    for (const auto &m : g.marks)
-      sprite("blood", m.pos.x - m.size / 2, m.pos.y - m.size / 2, m.size, m.size, m.rotation, 0, 1,
-             {1, 1, 1, .78f});
-    for (const auto &c : g.decals)
-      sprite("eiliens", c.position.x + 2, c.position.y + 2, c.size * 1.04f, c.size * 1.04f, c.heading, c.cell, 8,
-             {c.color.r, c.color.g, c.color.b, .5f}, {}, 2, 6, 1);
-    for (const auto &c : g.decals) {
-      sprite("eiliens", c.position.x, c.position.y, c.size, c.size, c.heading, c.cell, 8,
-             {c.color.r, c.color.g, c.color.b, c.color.a});
-    }
-    for (const auto &s : g.shells)
-      sprite("bullet_real_16", s.pos.x - 2, s.pos.y - 2, 4, 4, s.rotation, 0, 1, {1, 1, 1, .8f});
-    SDL_SetRenderTarget(renderer, nullptr);
-  }
+  if (!g.safe_mode && ground_revision != g.terrain_revision && g.presented_terrain_revision == g.terrain_revision)
+    rebuild_ground(g);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
   for (const auto &draw : g.terrain_sprites)
     frame_sprite(draw);
+  // The PE presents the old terrain before baking this frame's marks into it.
+  if (!g.terrain_marks.empty()) {
+    SDL_SetRenderTarget(renderer, ground);
+    for (const auto &draw : g.terrain_marks)
+      frame_sprite(draw);
+    SDL_SetRenderTarget(renderer, nullptr);
+  }
+  if (!g.safe_mode && ground_revision != g.terrain_revision)
+    rebuild_ground(g);
   for (const auto &draw : g.actor_sprites)
     frame_sprite(draw);
   for (const auto &d : g.frame_trails) {

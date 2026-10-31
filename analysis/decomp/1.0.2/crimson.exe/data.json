@@ -491,6 +491,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x004245bc",
+      "name": "freeware_blood_texture",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00424ac0",
       "name": "unused_fx_queue_random_prefix_vec2",
       "program": "1.0.2/crimson.exe"
@@ -506,8 +511,13 @@
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x0042886c",
-      "name": "freeware_next_spawn",
+      "address": "0x00428870",
+      "name": "freeware_blood_count",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428874",
+      "name": "freeware_shell_count",
       "program": "1.0.2/crimson.exe"
     },
     {

@@ -69,6 +69,7 @@ def check_world(check, exe):
         + check_player_draws(check, original)
         + check_effect_draws(check, original)
         + check_terrain_draws(check, original)
+        + check_fx_queue(check, original)
     )
 
 
@@ -296,4 +297,50 @@ def check_terrain_draws(check, original):
                 total += original.compare(check, n, ("terrain", safe, sharp, w, h))
                 fields = (ctypes.c_float * 24).from_address(check.symbol("combat_world_state"))
                 assert fields[20] == original.filter == 2
+    return total
+
+
+def check_fx_queue(check, original):
+    pe = original.pe
+    original.textures.update({711: "blood", 712: "icemold"})
+    pe.write_u32(0x43C6AC, 711)
+    pe.write_u32(0x452D2C, 701)
+    pe.write_u32(0x452D28, 710)
+    pe.write_u8(0x44289C, 1)
+    args = pe.alloc(24)
+    total = 0
+    counters = (0x452DA0, 0x452E80, 0x452E88, 0x452E84)
+    for mask in range(16):
+        for safe in (0, 1):
+            for a in counters:
+                pe.write_u32(a, 0)
+            pe.rand_state = 73
+            check.dll.combat_world_start(0)
+            count = 70 if mask == 15 else 3
+            check.dll.combat_world_queue_seed(mask, count)
+            for i in range(count):
+                color = (0.25, 0.375, 0.625, 0.75)
+                pe.write(args, struct.pack("<6f", 134 + i * 1.25, 241 - i * 0.5, *color))
+                if mask & 1:
+                    pe.call(0x405C80, 712, args, 14.0 + i, 23.5 + i, 0.125 * i, *color)
+                if mask & 2:
+                    pe.call(0x40E6B0, args)
+                if mask & 4:
+                    pe.call(0x40E730, args, args + 8, 0.125 * i, 32.0 + i, i % 2)
+                if mask & 8:
+                    pe.call(0x40E6F0, args)
+            for frame, mode in enumerate((safe, safe, 0)):
+                before = [pe.read_i32(a) for a in counters]
+                pe.write_u8(0x452D51, mode)
+                pe.write_f32(0x43CBC0, -27.5 + frame * 7)
+                pe.write_f32(0x43CBC4, 11.25 - frame * 3)
+                original.reset_draw()
+                pe.call(0x40E830)
+                n = check.dll.combat_world_queue(mode, frame)
+                total += original.compare(check, n, ("fx queue", mask, mode, frame))
+                fields = (ctypes.c_float * 24).from_address(check.symbol("combat_world_state"))
+                assert list(fields[:4]) == [pe.read_i32(a) for a in counters]
+                assert list(fields[4:6]) == ([0, n] if mode else [n, 0])
+                assert original.targets == ([710, 0xFFFFFFFF] if any(before) and not mode else [])
+                assert pe.rand_state == ctypes.c_uint32.from_address(check.symbol("freeware_rng_state")).value
     return total

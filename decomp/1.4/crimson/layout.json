@@ -345,6 +345,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/render/fx_queue_render.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_render"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/render/player_render.cpp",
           "configs": [
             "tools/match/scratches/player_render"

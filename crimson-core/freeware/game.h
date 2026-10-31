@@ -64,9 +64,11 @@ struct TerrainStamp {
   float angle;
   bool grass;
 };
-struct ImpactMark {
-  vec2f_t pos;
-  float size, rotation;
+struct QueuedImpact {
+  const char *texture;
+  vec2f_t position;
+  float width, height, rotation;
+  effect_color_t color;
 };
 struct Corpse {
   int cell;
@@ -133,12 +135,13 @@ struct Game {
   std::vector<LevelBrush> brushes;
   void load_next_level();
   Run run;
-  std::vector<Corpse> decals, pending_decals;
+  std::vector<Corpse> pending_decals;
   std::vector<FrameSprite> terrain_sprites, actor_sprites, effect_sprites;
   std::vector<FrameLabel> effect_labels;
   std::array<effect_color_t, 4> trail_colors;
   std::vector<TrailDraw> frame_trails;
-  std::vector<ImpactMark> marks;
+  std::vector<FrameSprite> terrain_marks;
+  int terrain_revision{}, presented_terrain_revision{};
   std::vector<TerrainStamp> terrain;
   void generate_terrain();
   float cursor_x = 320, cursor_y = 140;
@@ -182,11 +185,9 @@ struct Game {
   float pad_threshold[2]{.1f, .1f};
   int pad_left_pov[2]{27000, 27000}, pad_right_pov[2]{9000, 9000};
   std::vector<vec2f_t> pending_blood, pending_shells;
-  std::vector<ImpactMark> shells;
-  std::vector<FrameSprite> pending_impacts, impacts;
+  std::vector<QueuedImpact> pending_impacts;
   void queue_impact(const char *texture, vec2f_t center, float w, float h, float rotation, effect_color_t color);
   void queue_blood(vec2f_t p);
-  void flush_marks();
 
   float mouse_dx{}, mouse_dy{}, fps{};
   std::string option(int row) const;
