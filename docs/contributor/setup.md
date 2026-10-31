@@ -14,7 +14,7 @@ tags:
 - for `crimson-core/`: clang++ (native verifier), [wasi-sdk](https://github.com/WebAssembly/wasi-sdk)
   (the version `scripts/build_identity.py` pins, at `WASI_SDK_PATH`, the main checkout's `artifacts/wasi-sdk`
   (shared by its worktrees) or `/opt/wasi-sdk`; it compiles the
-  WASM targets) and Node.js
+  WASM targets), Ninja (the `build` dependency group, which the dev group includes) and Node.js
 - for the browser and desktop clients: wabt's `wasm2c`, SDL3, libcurl, and Emscripten for the
   browser build; see the [port notes](https://github.com/banteg/crimson/blob/master/crimson-core/PORT.md)
 

@@ -1,18 +1,29 @@
 """Compile recovered gameplay bodies with isolated platform glue."""
 
 import argparse
-import concurrent.futures
 import difflib
 import json
 import os
 import re
 import runpy
+import shlex
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, check_diffs, check_guards, load_diffs, prototypes, wrap
+from adapter import (
+    DIFFS,
+    PROTOTYPES,
+    adapt,
+    apply_diffs,
+    check_diffs,
+    check_guards,
+    load_diffs,
+    prototypes,
+    wrap,
+    write_if_changed,
+)
 from data import data_source
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -76,6 +87,16 @@ def wasi_sdk() -> Path:
     raise SystemExit(f"WASM targets require wasi-sdk {WASI_SDK_VERSION} at one of: {', '.join(map(str, candidates))}")
 
 
+# A path in a build statement, where spaces, colons and dollars are Ninja's own syntax.
+def ninja_path(path):
+    return re.sub(r"[$ :]", lambda m: "$" + m[0], str(path))
+
+
+# A command Ninja hands the shell: quoted for the shell, then with its dollars escaped for Ninja.
+def ninja_command(args):
+    return shlex.join(args).replace("$", "$$")
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--root", type=Path, default=HERE.parent)
@@ -136,12 +157,13 @@ def main():
         if a.target == "game":
             text = game_header(f, text)
         adapted[rel] = (raw, align_externs(text))
-        (headers / f.name).write_text(adapted[rel][1])
+        write_if_changed(headers / f.name, adapted[rel][1])
     (headers / "ogg").mkdir(exist_ok=True)
-    (headers / "ogg/config_types.h").write_text(
+    write_if_changed(
+        headers / "ogg/config_types.h",
         "#include <stdint.h>\ntypedef int16_t ogg_int16_t; typedef uint16_t ogg_uint16_t; typedef int32_t ogg_int32_t; typedef uint32_t ogg_uint32_t; typedef int64_t ogg_int64_t;\n",
     )
-    (headers / "new.h").write_text("#include <new>\n")
+    write_if_changed(headers / "new.h", "#include <new>\n")
     if a.target == "game":
         com_defaults(a.root, headers)
     schema = json.loads((HERE / "schema.json").read_text())
@@ -162,8 +184,8 @@ def main():
             lines.append("}")
         else:
             lines.extend(f"put({f});" for f in group["fields"])
-    (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
-    (headers / "presentation.inc").write_text(",".join(map(str, presentation)) + "\n")
+    write_if_changed(headers / "snapshot.inc", "\n".join(lines) + "\n")
+    write_if_changed(headers / "presentation.inc", ",".join(map(str, presentation)) + "\n")
     flags = [
         "-g",
         "-std=c++17",
@@ -184,17 +206,17 @@ def main():
         "-I" + str(headers),
         "-I" + str(a.root / "third_party/headers"),
     ]
-    if not wasm and os.uname().sysname == "Darwin":
-        flags.append("-mmacosx-version-min=11.0")
+    darwin = ["-mmacosx-version-min=11.0"] if not wasm and os.uname().sysname == "Darwin" else []
+    flags += darwin
     build_identity = runtime_identity(a.target, a.root)
     versions = runpy.run_path(str(a.root / "src/crimson/game_version.py"))
     flags.append(f"-DCRIMSON_REPLAY_RULES={versions["REPLAY_RULES"]}")
     if a.target == "game":
-        # The version, format and rules a replay names, as the Python port names its own (host/ranked.inc).
-        flags += [
-            f'-DCRIMSON_GAME_VERSION="{build_identity["version"]}"',
-            f"-DCRIMSON_REPLAY_FORMAT={versions["REPLAY_FORMAT_VERSION"]}",
-        ]
+        # The version, format and rules a replay names, as the Python port names its own (host/ranked.inc). The
+        # version holds the source fingerprint, which any edit changes, so a header brings it to the files that name
+        # it (host/host.cpp, game/changes/version.patch) and every other object stays compiled.
+        flags.append(f"-DCRIMSON_REPLAY_FORMAT={versions["REPLAY_FORMAT_VERSION"]}")
+        write_if_changed(headers / "game_version.h", f'#define CRIMSON_GAME_VERSION "{build_identity["version"]}"\n')
     sources = json.loads((HERE / "sources.json").read_text())
     if a.target == "game":
         sources += game_sources(a.root)
@@ -209,7 +231,7 @@ def main():
         raise SystemExit(f"Diffs for files outside the build: {', '.join(missing)}")
     wrapped = game_wrapped(a.root) if a.target == "game" else CORE_WRAPPED
 
-    def compile_one(rel):
+    for rel in sources:
         src = a.root / rel
         raw = src.read_text()
         txt = align_externs(adapt(src, apply_diffs(rel, raw, hunks)))
@@ -218,24 +240,7 @@ def main():
         elif rel in wrapped:
             txt = wrap(src, txt)
         adapted[rel] = (raw, txt)
-        dst = a.out / (name(rel) + ".cpp")
-        dst.write_text(f'#line 1 "{src}"\n' + txt)
-        if a.prepare:
-            return None
-        obj = a.out / (name(rel) + ".o")
-        proc = subprocess.run(
-            # Every recovered source sees what the edits to it call (host/hooks.h).
-            cc + flags + ["-include", str(HOST / "hooks.h"), "-c", str(dst), "-o", str(obj)],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if proc.returncode:
-            return rel, proc.stderr
-        return None
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-        errors = [r for r in pool.map(compile_one, sources) if r]
+        write_if_changed(a.out / (name(rel) + ".cpp"), f'#line 1 "{src}"\n' + txt)
     if a.prepare:
         changed = {rel: texts for rel, texts in sorted(adapted.items()) if texts[0] != texts[1]}
         (a.out / "adapted.diff").write_text(
@@ -247,88 +252,49 @@ def main():
         )
         print(f"{len(changed)}/{len(adapted)} files differ from decomp/: {a.out / 'adapted.diff'}")
         return
-    (a.out / "errors.txt").write_text("\n".join(f"{s}\n{e}" for s, e in errors))
-    print(f"{len(sources) - len(errors)}/{len(sources)} compiled; errors: {a.out / 'errors.txt'}")
-    if errors:
-        raise SystemExit(1)
     glue = [a.out / "data.cpp", HOST / "host.cpp", *(game_platform() if a.target == "game" else [])]
     if a.target == "game":
         game_initializers(a.root, a.out)
         glue.append(a.out / "initializers.cpp")
     third_party = game_third_party(a.root) if a.target == "game" else []
-    for src in third_party:
-        proc = subprocess.run(
-            [
-                *c,
-                "-std=gnu89",
-                "-O2",
-                "-w",
-                "-DHAVE_BOOLEAN",
-                "-Dboolean=unsigned char",
-                "-I" + str(HERE / "game/include"),
-                "-I" + str(a.root / "third_party/headers"),
-                "-c",
-                str(src),
-                "-o",
-                str(a.out / f"third_party_{src.stem}.o"),
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if proc.returncode:
-            print(proc.stderr)
-            raise SystemExit(1)
     vendor = game_vendor_c() if a.target == "game" else []
-    for src in vendor:
-        proc = subprocess.run(
-            [
-                *c,
-                "-std=c11",
-                "-O2",
-                "-w",
-                "-c",
-                str(src),
-                "-o",
-                str(a.out / f"vendor_{src.stem}.o"),
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if proc.returncode:
-            print(proc.stderr)
-            raise SystemExit(1)
-    for src in glue:
-        proc = subprocess.run(
-            cc + flags + ["-c", str(src), "-o", str(a.out / (src.stem + ".o"))],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if proc.returncode:
-            print(proc.stderr)
-            raise SystemExit(1)
-    # The portable math (host/math.c over musl's sources) is C for the same compiler as everything else.
-    subprocess.run(
-        c
-        + (["-mmacosx-version-min=11.0"] if not wasm and os.uname().sysname == "Darwin" else [])
-        + ["-std=c11", "-O2", "-ffp-contract=off", "-fno-builtin", "-I" + str(HOST / "musl/shim")]
-        + ["-I" + str(HOST / "musl/src/internal"), "-c", str(HOST / "math.c"), "-o", str(a.out / "math.o")],
-        check=True,
-    )
-    objs = [str(a.out / (name(f) + ".o")) for f in sources] + [str(a.out / (src.stem + ".o")) for src in glue]
-    objs += [str(a.out / f"third_party_{src.stem}.o") for src in third_party]
-    objs += [str(a.out / f"vendor_{src.stem}.o") for src in vendor]
-    objs.append(str(a.out / "math.o"))
-    link = (
-        cc
-        + (["-mmacosx-version-min=11.0"] if not wasm and os.uname().sysname == "Darwin" else [])
-        + objs
-        + ["-o", str(a.out / {"native": "core", "wasm": "core.wasm", "game": "game.wasm"}[a.target])]
-    )
+    # Each object's rule, source and name, in link order.
+    objects = [("recovered", a.out / (name(rel) + ".cpp"), name(rel) + ".o") for rel in sources]
+    objects += [("glue", src, src.stem + ".o") for src in glue]
+    objects += [("third_party", src, f"third_party_{src.stem}.o") for src in third_party]
+    objects += [("vendor", src, f"vendor_{src.stem}.o") for src in vendor]
+    objects.append(("math", HOST / "math.c", "math.o"))
+    rules = {
+        # Every recovered source sees what the edits to it call (host/hooks.h).
+        "recovered": [*cc, *flags, "-include", str(HOST / "hooks.h")],
+        "glue": [*cc, *flags],
+        "third_party": [
+            *c,
+            "-std=gnu89",
+            "-O2",
+            "-w",
+            "-DHAVE_BOOLEAN",
+            "-Dboolean=unsigned char",
+            "-I" + str(HERE / "game/include"),
+            "-I" + str(a.root / "third_party/headers"),
+        ],
+        "vendor": [*c, "-std=c11", "-O2", "-w"],
+        # The portable math (host/math.c over musl's sources) is C for the same compiler as everything else.
+        "math": [
+            *c,
+            *darwin,
+            "-std=c11",
+            "-O2",
+            "-ffp-contract=off",
+            "-fno-builtin",
+            "-I" + str(HOST / "musl/shim"),
+            "-I" + str(HOST / "musl/src/internal"),
+        ],
+    }
+    binary = a.out / {"native": "core", "wasm": "core.wasm", "game": "game.wasm"}[a.target]
+    link_flags = []
     if wasm:
-        link += [
+        link_flags += [
             "-mexec-model=reactor",
             # Without it wasi-libc's printf reports unsupported long doubles on stderr, a WASI import core.wasm
             # must not have.
@@ -341,14 +307,46 @@ def main():
             ),
             "-Wl,-z,stack-size=1048576",
         ]
-    proc = subprocess.run(link, capture_output=True, text=True, check=False)
-    (a.out / "link.log").write_text(proc.stderr)
+    # Ninja knows a compiler by its command, which stays the same when another compiler takes its path: every
+    # object and the link also read what the compilers say they are.
+    toolchain = a.out / "toolchain.txt"
+    write_if_changed(toolchain, "".join(subprocess.check_output([*tool, "--version"], text=True) for tool in (c, cc)))
+    lines = []
+    for rule, command in rules.items():
+        lines += [
+            f"rule {rule}",
+            f"  command = {ninja_command(command)} -MMD -MF $out.d -c $in -o $out",
+            "  depfile = $out.d",
+            "  deps = gcc",
+        ]
+    # The linker's warnings stay in link.log until it links again, so the ABI check below reads the module's own.
+    lines += [
+        "rule link",
+        f"  command = {ninja_command([*cc, *darwin])} $in -o $out {ninja_command(link_flags)} 2> link.log",
+    ]
+    # Ninja runs in the output directory, so what lands there goes by its name.
+    lines += [f"build {ninja_path(obj)}: {rule} {ninja_path(src)} | {toolchain.name}" for rule, src, obj in objects]
+    names = " ".join(ninja_path(obj) for *_, obj in objects)
+    lines += [
+        f"build objects: phony {names}",
+        f"build {ninja_path(binary.name)}: link {names} | {toolchain.name}",
+        f"default {ninja_path(binary.name)}",
+    ]
+    write_if_changed(a.out / "build.ninja", "\n".join(lines) + "\n")
+    ninja = [shutil.which("ninja") or "ninja", "-C", str(a.out), "--quiet", "-k", "0"]
+    # Every object before the link, so every compile error comes at once.
+    proc = subprocess.run([*ninja, "objects"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False)
+    (a.out / "errors.txt").write_text(proc.stdout)
+    print(f"{len(objects) - proc.stdout.count('FAILED: ')}/{len(objects)} compiled; errors: {a.out / 'errors.txt'}")
     if proc.returncode:
-        print(proc.stderr[-12000:])
-    if wasm and "function signature mismatch" in proc.stderr:
+        raise SystemExit(1)
+    proc = subprocess.run(ninja, capture_output=True, check=False)
+    log = (a.out / "link.log").read_text()
+    if proc.returncode:
+        print(log[-12000:])
+    if wasm and "function signature mismatch" in log:
         raise SystemExit("WASM ABI warning; see link.log")
     if proc.returncode == 0:
-        binary = a.out / {"native": "core", "wasm": "core.wasm", "game": "game.wasm"}[a.target]
         write_manifest(binary.with_name(binary.name + ".build.json"), build_identity, [binary])
     raise SystemExit(proc.returncode)
 

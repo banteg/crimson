@@ -148,6 +148,8 @@ static void portable_fresh_game() {
   shock_chain_projectile_id = portable_preserve_bugs ? 0 : -1;
 }
 #ifdef CRIMSON_GAME
+// The build's version (build.py), which replays, scores and the console name.
+#include "game_version.h"
 #include "game.inc"
 // What RTX keeps beside a run (game/rtx.cpp), which a new or restored run clears.
 extern "C" void rtx_reset();

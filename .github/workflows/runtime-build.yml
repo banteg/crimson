@@ -36,8 +36,9 @@ jobs:
             crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}
             crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}.build.json
           key: runtime-v3-${{ runner.os }}-${{ runner.arch }}-${{ steps.inputs.outputs.fingerprint }}
-      - run: uv sync --frozen --no-dev
-        if: steps.binary.outputs.cache-hit != 'true' && inputs.target == 'game'
+      # Every target compiles and links through Ninja, the locked build group.
+      - run: uv sync --frozen ${{ inputs.target == 'game' && '--no-dev --group build' || '--only-group build' }}
+        if: steps.binary.outputs.cache-hit != 'true'
       - name: Restore wasi-sdk
         id: wasi-sdk
         if: steps.binary.outputs.cache-hit != 'true' && inputs.target != 'native'

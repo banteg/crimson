@@ -1,5 +1,5 @@
 The console names this build where the original named its release (host/game.inc): its corner, right-aligned for
-a build's longer name, and its banner.
+a build's longer name, and its banner, from the header the build writes (build.py).
 --- a/decomp/1.9/crimsonland/console/console_render.cpp
 +++ b/decomp/1.9/crimsonland/console/console_render.cpp
 @@ -116,9 +116,9 @@
@@ -16,7 +16,12 @@ a build's longer name, and its banner.
              1.0f,
 --- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
-@@ -146,6 +146,7 @@
+@@ -5,3 +5,4 @@
+ #include "crimsonland_console.h"
+ #include "crimsonland_types.h"
++#include "game_version.h"
+ #include "grim2d_cpp.h"
+@@ -146,6 +147,7 @@
      IUnknown *direct3d = Direct3DCreate8(0xdc);
      console_printf(&console_log_queue, "Crimsonland\n");
      console_printf(&console_log_queue, "-----------\n");

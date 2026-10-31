@@ -261,6 +261,14 @@ def guard_targets(root):
     return [(load_diffs(DIFFS), core), (load_diffs(GAME_DIFFS), core + game_sources(root))]
 
 
+def write_if_changed(path, text):
+    """Write a generated file only when its bytes change: one that stays the same keeps its time, so Ninja leaves
+    what reads it alone."""
+
+    if not path.exists() or path.read_text() != text:
+        path.write_text(text)
+
+
 def replace(src, txt, old, new, count=1):
     """Replace `old`, which must occur `count` times; None leaves the count to a rule that applies wherever it can."""
 

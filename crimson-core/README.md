@@ -91,7 +91,8 @@ a stable bot observation format or a language-specific SDK.
 Run from the repository root. Requires clang++, wasi-sdk **34.0** (at
 `WASI_SDK_PATH`, else the main checkout's `artifacts/wasi-sdk` or `/opt/wasi-sdk`; WASM
 targets only), Node.js and the
-project's Python environment. Tested on macOS ARM64; CI runs Linux x86-64.
+project's Python environment with its `build` group (Ninja, which `uv sync`
+installs with `dev`). Tested on macOS ARM64; CI runs Linux x86-64.
 The transport assumes little-endian hosts.
 
 ```sh
@@ -106,6 +107,18 @@ and every pass its expected number of sites, so a decomp edit that moves one
 stops the build there. `--prepare` writes the adapted sources and
 `adapted.diff`, everything the target changes from `decomp/`, without
 compiling.
+
+The build is incremental. Python writes each generated source and header only
+when its bytes change, then a `build.ninja` beside them, and Ninja compiles
+and links: a second build of the same inputs compiles and links nothing, and an
+edit compiles again only the objects that read what changed (their generated
+source, a header they include, their flags, or the compilers, whose own account
+of themselves `toolchain.txt` holds). `errors.txt` keeps the compilers'
+diagnostics and `link.log` the linker's. In the game module, the version a
+replay records carries the source fingerprint
+([`scripts/build_identity.py`](../scripts/build_identity.py)), so it comes in a
+generated `game_version.h` that only [`host/host.cpp`](host/host.cpp) and the
+startup banner include: every edit also compiles those two again, and no others.
 
 ## Checks
 

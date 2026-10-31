@@ -4,6 +4,8 @@ import json
 import re
 import subprocess
 
+from adapter import write_if_changed
+
 # An owner header reads a contiguous aggregate through its first symbol: `#define name (*(type *)&root)`.
 OVERLAY = re.compile(r"\(\*\((\w+)\s*\*\)&(\w+)\)")
 # A record's size and field offsets in bits, as clang's layout dump prints them.
@@ -169,5 +171,5 @@ def data_source(root, out, cc):
             "#endif",
         ]
     lines += ["void portable_reset_data() {", *resets, *reloc, "}", "}"]
-    (out / "data.cpp").write_text("\n".join(lines) + "\n")
+    write_if_changed(out / "data.cpp", "\n".join(lines) + "\n")
     return alignments
