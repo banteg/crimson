@@ -172,7 +172,10 @@ import { config, CONFIG_BYTES, CORE, decode, field, init, INPUT_BYTES, names, st
 import { loadGame, PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT, sevenTunes } from "./game_host.mjs";
 
-const [given, gameWasm = new URL("build/game/game.wasm", CORE).pathname] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const pacingOnly = args[0] === "--pacing";
+if (pacingOnly) args.shift();
+const [given, gameWasm = new URL("build/game/game.wasm", CORE).pathname] = args;
 if (!given) throw Error("usage: game_coop_live.mjs <game directory> [game.wasm]");
 
 // game_state_id_t, DirectInput scancodes, and the session's (host/coop_wire.inc).
@@ -319,7 +322,7 @@ const [host, guest] = peers;
 function boot(peer, at, leaderboard = true) {
   const run = bootGame(gameWasm, peer.directory, peer.seat + 1, { clocks: true, leaderboard });
   return { run, g: run.game, at: at + peer.seat * 3, zero: at + peer.seat * 3 - 16 - run.clock, frames: 0,
-    gone: false, held: new Set(), ticks: new Map(), top: -1, config: null, first: null, offered: -1 };
+    frameAt: at, gone: false, held: new Set(), ticks: new Map(), top: -1, config: null, first: null, offered: -1 };
 }
 // What a machine's game drew and played (its host calls but the clock's): none while it stops in the background.
 const drawn = (peer) =>
@@ -389,9 +392,11 @@ class Machines extends Link {
     if (channel === 1 && bytes[0] === 2) [peer.offered, peer.delay] = [this.now, bytes[1 + 4]];
     const at = g.game_coop_rx(bytes.length);
     new Uint8Array(g.memory.buffer, at, bytes.length).set(bytes);
-    g.game_coop_receive(channel, bytes.length, run.clock);
+    // Packet arrivals have their own timestamps between display frames.
+    g.game_coop_receive(channel, bytes.length, run.clock + Math.round(this.now - peer.frameAt));
   }
   frame(peer) {
+    peer.frameAt = this.now;
     const { run, g } = peer;
     const { cursor = PAD_CURSOR, keys = [], taps = [], button = false, pad } = this.input(peer);
     const input = run.input();
@@ -794,6 +799,87 @@ function left(leaver) {
 const startup = () => play(idle, () => peers.every((p) => p.at > p.booted + 15000), "the startup");
 for (const peer of peers) peer.booted = 0;
 startup();
+// Exercise the production path from polled input through rendering and the
+// wire on two deliberately mismatched displays, then change the route in play.
+if (pacingOnly) {
+  machines.loss = 0;
+  machines.profile = { ms: 10, jitter: 0 };
+  const span = (ms, input = player) => {
+    const until = time() + ms;
+    play(input, () => time() >= until, "pacing interval");
+  };
+  // CoopTelemetry's final three words are active milliseconds, network wait
+  // milliseconds and confirmed ticks over all runs in this session.
+  const timing = (p) => [...new Int32Array(p.g.memory.buffer, p.g.game_coop_telemetry() + 4 * (6 + 12 + 6), 3)];
+  const pace = () => {
+    const before = peers.map(confirmed), counters = peers.map(timing), from = time();
+    span(5000);
+    const rates = peers.map((p, i) => (confirmed(p) - before[i]) * 1000 / (time() - from));
+    assert.ok(rates.every(n => n >= 58.5), `slow simulation: ${rates}`);
+    peers.forEach((p, i) => {
+      const [ms, wait, ticks] = timing(p).map((n, j) => n - counters[i][j]);
+      assert.ok(Math.abs(ms - (time() - from)) < 150 && wait >= 0 && wait <= ms, `invalid play timing: ${ms}, ${wait}`);
+      assert.equal(ticks, confirmed(p) - before[i]);
+    });
+    return rates;
+  };
+  const send = machines.send.bind(machines), changes = [];
+  machines.send = (p, ch, bytes) => {
+    if (p === host && ch === 1 && bytes[0] === 14) changes.push(bytes[9]);
+    send(p, ch, bytes);
+  };
+  connect();
+  const before = peers.map(p => coopStats(p.g).wire.sent);
+  span(5000, idle);
+  assert.ok(peers.every((p, i) => coopStats(p.g).wire.sent - before[i] <= 21), "idle packet rate");
+  click(host, MAIN_MENU, PLAY_GAME);
+  click(host, PLAY_GAME_MENU, SURVIVAL);
+  play(idle, started, "the run's start");
+  span(1000, idle);
+  let sampleTick;
+  play(p => {
+    if (p !== host) return {};
+    sampleTick ??= host.g.game_coop_next();
+    return { keys: [F] };
+  }, () => {
+    if (sampleTick === undefined || confirmed(host) < sampleTick + guest.delay) return false;
+    for (let t = sampleTick; t < sampleTick + guest.delay; t++)
+      assert.equal(host.ticks.get(t).used[0].readUInt32LE(16) & 128, 0);
+    const input = host.ticks.get(sampleTick + guest.delay).used[0];
+    assert.ok(input.readUInt32LE(16) & 128, "movement reached the configured input tick");
+    return true;
+  }, "sampled movement");
+  FRAMES[1] = [67, 67, 66]; // 15 FPS
+  span(2000);
+  const slowDisplay = pace();
+  FRAMES[1] = [7, 7, 7, 6, 7];
+  for (const p of peers) p.g.game_coop_late(0);
+  machines.profile.ms = 160;
+  span(6000);
+  const changedRoute = pace();
+  // Even eight speculative ticks cannot cover the next route on the
+  // original delay. The host must send a higher delay over reliable control.
+  machines.profile.ms = 240;
+  span(8000);
+  const longerRoute = pace();
+  assert.ok(changes.some(d => d > guest.delay), `a longer delay was scheduled: ${changes}, ${longerRoute}`);
+  machines.profile.ms = 10;
+  span(7500);
+  assert.equal(changes.at(-1), 2, `input delay recovered on the short route: ${changes}`);
+  pace();
+  machines.profile.ms = 240;
+  span(6500);
+  FRAMES[1] = [100]; // 10 FPS, six hashes a pass plus retransmissions
+  span(4000);
+  assert.ok(confirmed(host) + 1 - coopStats(host.g).checked < 80, "hashes kept up with confirmations");
+  const leaving = time();
+  host.g.game_coop_request(3, 0, 0, 0, host.run.clock);
+  left(host);
+  assert.ok(time() - leaving < 2000, "final hashes drained before closing");
+  const result = ended("incomplete");
+  console.log(JSON.stringify({ slowDisplay, changedRoute, longerRoute, changes, closeMs: time() - leaving, ticks: result.ticks }));
+  process.exit(0);
+}
 // The Guest's game closes and starts again, its settings changed first (`change`, Python on `config`): what it
 // saved is its player's own from then on. The Host's transport says the partner left the room.
 function restart(change, leaderboard) {
@@ -1498,7 +1584,8 @@ for (const profile of PROFILES) {
   const ticks = profile.ticks ?? (profile.late ? 2700 : 1500);
   play(
     player,
-    () => peers.every((p) => confirmed(p) >= ticks && screen(p) === GAMEPLAY) && picks[picker.role] && !pause && hitch,
+    () => (peers.every((p) => confirmed(p) >= ticks && screen(p) === GAMEPLAY) ||
+      (profile.end !== "leave" && peers.every(p => screen(p) === GAME_OVER))) && picks[picker.role] && !pause && hitch,
     `${profile.name}: ${ticks} confirmed ticks and the pick`,
   );
   assert.ok(time() > hitch.to + SETTLE + 1000, `${profile.name}: the stall settled`);
@@ -1506,6 +1593,7 @@ for (const profile of PROFILES) {
   let pace;
   if (profile.paced) {
     const [from, to] = [paced.find(([, t]) => t >= ((profile.late + 1000) * 60) / 1000), paced.at(-1)];
+    assert.ok(from && to[0] - from[0] >= 1000, "measured at least a second under the late window");
     pace = +(((to[1] - from[1]) * 1000) / (to[0] - from[0])).toFixed(2);
     assert.ok(pace >= 59, `${profile.name}: ${pace} ticks a second past the narrowing`);
   }
@@ -1537,8 +1625,8 @@ for (const profile of PROFILES) {
     assert.equal(s.depths.reduce((a, b) => a + b), s.rollbacks, `${what}'s rollbacks by depth`);
     assert.ok(s.guessed_lead <= RMAX && s.max_depth <= LEAD, `${what} predicted ${s.guessed_lead} ahead`);
     if (profile.late) {
-      assert.ok(s.late_ticks > 0 && s.late_lead <= LATE_RMAX, `${what} predicted ${s.late_lead} ahead, late`);
-      assert.ok(s.guessed_lead > LATE_RMAX, `${what} predicted no deeper than the late window before it`);
+      assert.ok(s.late_ticks > 0 && s.late_lead < RMAX, `${what} predicted ${s.late_lead} ahead, late`);
+      assert.ok(s.guessed_lead > LATE_RMAX, `${what} never used more than the four-tick default`);
     }
   }
   // The runs apart right after each stall, then together a second after settling.

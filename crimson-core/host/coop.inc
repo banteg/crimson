@@ -174,6 +174,7 @@ struct CoopWireStats {
 struct CoopSessionStats {
   int32_t ticks, resimulated, stalled_network, stalled_perk;
   int32_t depths[COOP_LEAD], frame_ms[COOP_FRAME_BUCKETS];
+  int32_t play_ms, network_ms, confirmed_ticks;
 };
 // Counters for the gate and the session's telemetry. checks/coop_link.mjs reads
 // them by position.
@@ -213,7 +214,8 @@ struct CoopStats {
 static struct {
   bool active;
   int local; // the seat this machine plays, -1 both
-  int delay, rmax;
+  int delay, rmax, window_floor;
+  double work_ms;
   uint32_t epoch;
   // The frontiers: the last tick produced, acknowledged by the peer, confirmed,
   // baked into the terrain and played; the partner's records held without a gap
@@ -681,7 +683,7 @@ static bool coop_perk_valid() {
 // machine's speculation: each peer narrows its own.
 static int coop_window() {
   bool late = cfg.mode == GAME_MODE_SURVIVAL && (int)run_elapsed_ms > coop.late_ms;
-  return late ? std::min(coop.rmax, COOP_LATE_RMAX) : coop.rmax;
+  return late ? std::min(coop.rmax, std::max(COOP_LATE_RMAX, coop.window_floor)) : coop.rmax;
 }
 
 // The choices the open perk menu offers, as portable_step_many counts them.
@@ -935,6 +937,7 @@ static void coop_record(const CoopTick &entry) {
 static void coop_confirm() {
   while (coop.confirmed + 1 < coop.next && coop_final(coop.confirmed + 1)) {
     int t = ++coop.confirmed;
+    ++coop.stats.session.confirmed_ticks;
     if (game_live)
       coop_record(coop.ticks[t & (COOP_RING - 1)]);
     if (coop.local < 0)
@@ -1070,6 +1073,7 @@ __attribute__((export_name("game_coop_start"))) int game_coop_start(int local, i
   coop.local = local;
   coop.delay = delay;
   coop.rmax = rmax;
+  coop.window_floor = 0;
   coop.epoch = epoch;
   coop.produced = coop.peer_ack = coop.remote = delay - 1;
   coop.hold = 0;
@@ -1111,9 +1115,9 @@ __attribute__((export_name("game_coop_input"))) uintptr_t game_coop_input() {
 // request opened the menu, takes the choice its input names (0 cancels). A
 // pause holds back the players' input but not the picker's choice, which the
 // run waits on: a leave that follows ends the run after it.
-__attribute__((export_name("game_coop_produce"))) int game_coop_produce(double) {
+static int coop_produce_until(int last) {
   uint32_t hold = coop.picking ? coop.hold & ~COOP_HOLD_PAUSE : coop.hold;
-  if (!coop.active || hold || coop.request >= 0 || coop.produced >= coop.next + coop.delay ||
+  if (!coop.active || hold || coop.request >= 0 || coop.produced >= last ||
       coop.produced - coop.peer_ack >= COOP_UNACKED)
     return -1;
   int t = coop.produced + 1;
@@ -1134,6 +1138,9 @@ __attribute__((export_name("game_coop_produce"))) int game_coop_produce(double) 
   if (coop.local < 0)
     coop.peer_ack = t;
   return t;
+}
+__attribute__((export_name("game_coop_produce"))) int game_coop_produce(double) {
+  return coop_produce_until(coop.next + coop.delay);
 }
 // Test hook: a seat's record for a tick from game_coop_input_for(seat), as the
 // wire takes the partner's (coop_take).
@@ -1245,8 +1252,16 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
     coop.picking = perk_menu_open && perk_picker == coop.local;
     coop.request = -1;
   }
+  if (game_live && !(coop.hold & (COOP_HOLD_START | COOP_HOLD_PAUSE | COOP_HOLD_LEAVE | COOP_HOLD_STOP)) &&
+      !coop_over() && !perk && !coop.picking && coop.request < 0) {
+    int elapsed = (int)lroundf(grim_frame_dt * 1000);
+    coop.stats.session.play_ms += elapsed;
+    if (stalled && budget > 0)
+      coop.stats.session.network_ms += (int)lround((double)elapsed * (budget - fresh) / budget);
+  }
+  coop.work_ms = 0;
   if (fresh || again) {
-    double ms = host_clock_ms() - start;
+    double ms = coop.work_ms = host_clock_ms() - start;
     int bucket = 0;
     while (bucket < COOP_FRAME_BUCKETS - 1 && ms >= 1 << bucket)
       ++bucket;

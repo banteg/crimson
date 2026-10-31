@@ -1269,10 +1269,10 @@ const PRIVACY: Screen = {
         <p>
           The browser game also counts loading, play sessions, sessions reaching five active minutes, runs and active time by mode.
           It sends these as anonymous daily totals, without your name, account, game key, replay, URL or IP address. The service does not store IP addresses for these counters.
-          When a co-op session ends, it also sends how the connection went: whether it was direct, relayed through TURN (over UDP or
-          TCP from your browser, or a relay whose protocol your browser cannot see, such as your partner's), through the room, or not
-          yet known, the round trip's range, minutes played, whether the two games ran differently, and how often the game had to
-          correct, or wait for the connection or a perk pick. That summary names no room or partner, and only daily totals of it are kept.
+          Co-op reports connection quality when its route changes and when the session ends. For each route it counts
+          play time, confirmed game ticks, corrections and waits for input or a perk choice. The route can be direct,
+          through TURN or through the room relay. The last report includes the round-trip range and whether the games
+          diverged. Reports name no room or partner. The service keeps daily totals by route.
         </p>
         <p>
           To count a browser once per UTC day of actual play, it keeps a random daily token in first-party browser storage. The token changes on

@@ -11,7 +11,7 @@ const PLAY_MODES = PLAY_ANALYTICS.modes.filter((mode) => mode !== null);
 const COOP = PLAY_ANALYTICS.coop;
 // A summary's stalled frames: on the network and on a perk pick apart, or together as `stalled` from pages before
 // the split, which keep posting while they stay open.
-const COOP_FIELDS = ["day", "transport", "rtt", "seconds", "desync", "stalled_network", "stalled_perk", "stalled", "depths", "frames"];
+const COOP_FIELDS = ["day", "transport", "rtt", "seconds", "desync", "stalled_network", "stalled_perk", "stalled", "depths", "frames", "pace"];
 // A histogram of `length` buckets counting at most `max` in all.
 const counts = (value: unknown, length: number, max: number): value is number[] =>
   Array.isArray(value) && value.length === length && value.every((n) => integer(n, max)) && value.reduce((a, b) => a + b, 0) <= max;
@@ -70,13 +70,25 @@ export async function postAnalytics(request: Request, env: Env, kind: "totals" |
     // leave out the seconds of combined ones, which keep their old metric.
     const stalls: [string, number, number][] = combined ? [["stalled", 0, value.stalled as number]] :
       [["stalled_network", 0, value.stalled_network as number], ["stalled_perk", 0, value.stalled_perk as number], ["split_seconds", 0, seconds]];
+    const pace = value.pace;
+    const timing: [string, number, number][] = [];
+    let final = true;
+    if ("pace" in value) {
+      if (combined || !object(pace) || !fields(pace, ["play_ms", "network_ms", "confirmed", "final"]) ||
+          !integer(pace.play_ms, COOP.max_seconds * 1000) || !integer(pace.network_ms, pace.play_ms) ||
+          !integer(pace.confirmed, seconds * 60 + COOP.depths) || typeof pace.final !== "boolean" || (!pace.final && value.desync))
+        return refuse(400, "invalid co-op timing");
+      final = pace.final;
+      timing.push(["play_ms", 0, pace.play_ms], ["network_ms", 0, pace.network_ms], ["confirmed", 0, pace.confirmed]);
+    }
     const rows: [string, number, number][] = [
-      ["sessions", 0, 1], ["seconds", 0, seconds], ["desyncs", 0, value.desync], ...stalls,
-      ["rtt", value.rtt, 1],
+      ...timing, ["sessions", 0, Number(final)], ["seconds", 0, seconds], ["desyncs", 0, value.desync], ...stalls,
+      ["rtt", value.rtt, Number(final)],
       ...value.depths.map((n, i): [string, number, number] => ["depth", i, n]),
       ...value.frames.map((n, i): [string, number, number] => ["frame", i, n]),
     ];
-    await env.DB.batch(rows.filter(([, , n]) => n > 0).map(([metric, bucket, n]) =>
+    const nonempty = rows.filter(([, , n]) => n > 0);
+    if (nonempty.length) await env.DB.batch(nonempty.map(([metric, bucket, n]) =>
       env.DB.prepare(`INSERT INTO coop_totals (day, transport, metric, bucket, count) VALUES (?, ?, ?, ?, ?)
         ON CONFLICT (day, transport, metric, bucket) DO UPDATE SET count = count + excluded.count`)
         .bind(value.day, value.transport, metric, bucket, n)));

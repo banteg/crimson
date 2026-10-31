@@ -253,7 +253,7 @@ static void coop_to_menu() {
   game_state_set_recovered(GAME_STATE_MAIN_MENU);
 }
 
-// A co-op run's input delay and window (§1, §3.3): the run runs up to eight
+// A co-op run's input delay and window (§1, §3.3): the run initially allows up to eight
 // ticks past the last confirmed one on predictions (COOP_LATE_RMAX late in a
 // long Survival run, host/coop.inc), and each machine's records go at least two
 // ticks ahead of its run, more when the narrowed window alone would not cover a
@@ -565,25 +565,66 @@ static void coop_overlay_draw(float dt) {
   }
 }
 
-// This machine's records up to the input delay ahead of its run, the pass's
-// input in each (its presses in the first).
-static void coop_produce(double now) {
-  for (;;) {
-    coop.scratch[coop.local].input = coop_sample(coop_live.unfocused);
-    if (game_coop_produce(now) < 0)
-      return;
+// Each due tick gets a local sample D ticks in its future. Sample the controls
+// once per display pass and consume each press once. A blocked run banks at
+// most four ticks of catch-up, so it can still send inputs while waiting.
+static void coop_sample_due(int due) {
+  int last = coop.next + coop.delay - 1 + due;
+  if (coop.produced >= last)
+    return;
+  coop.scratch[coop.local].input = coop_sample(coop_live.unfocused);
+  while (coop_produce_until(last) >= 0) {
     live.fire_pressed = live.reload_pressed = false;
+    coop.scratch[coop.local].input.flags &= ~(2u | 4u);
   }
 }
 
-// gameplay_update_and_render for a co-op run: Escape and the perk requests go to
-// the session; this machine's records up to the input delay ahead (the first
-// cancels for a picker back from its perk screen without a choice), the ticks
-// the engine runs, the newest drawing, and the records those ticks made room
-// for, which the pass's ticks packet carries; once the run reached its last
-// tick, its end. A tick that ran pays for its time, and a pass held back keeps
-// at most a few ticks' worth, so play resumes without a burst. The overlays go
-// on top.
+// Reconsider the route once per second of play. Buy back missing input time
+// with rollback while a frame's work fits half a tick. When that cannot cover
+// sustained waits, either seat can request more lead. The host announces the
+// change on reliable control. Published records are immutable even if the
+// announcement arrives after its tick.
+static void coop_adapt(double now, int waited_ms) {
+  if (!wire.started || wire.left || wire.paused || coop_over())
+    return;
+  wire.worst_work_ms = std::max(wire.worst_work_ms, coop.work_ms);
+  wire.sample_wait_ms += waited_ms;
+  if (now - wire.sample_at < 1000)
+    return;
+  int trip = (int)ceil(std::max(0.0, wire.rtt) / (2 * COOP_TICK_MS));
+  if (wire.sample_wait_ms >= 50) {
+    int window = coop_window();
+    int needed = std::max(trip + 1 - coop.delay, wire.late_input_ticks + 1);
+    if (wire.worst_work_ms < COOP_TICK_MS / 2 && window < coop.rmax) {
+      coop.window_floor = std::clamp(needed, window + 1, coop.rmax);
+    } else if (needed >= window) {
+      wire.delay_vote = std::min(COOP_DELAY, coop.delay + std::max(1, needed - window));
+    }
+    wire.last_change = now;
+  } else if (now - wire.last_change >= 5000) {
+    // Recover a shorter local response once the route has stayed good.
+    if (trip + 2 < coop.delay + coop_window()) {
+      coop.window_floor = std::max(coop.window_floor - 1, 0);
+      wire.delay_vote = std::min(coop.delay, coop_run_delay());
+    }
+    wire.last_change = now;
+  }
+  if (wire.seat == 0 && wire.delay_at < 0) {
+    int delay = std::max(wire.delay_vote, wire.peer_vote);
+    if (delay != coop.delay) {
+      wire.next_delay = delay;
+      wire.delay_at = coop.next + 2 * trip + COOP_DELAY;
+      CoopWriter message = coop_message(COOP_DELAY_CHANGE, wire.epoch).put((uint32_t)wire.delay_at).put((uint8_t)delay);
+      coop_send(message);
+    }
+  }
+  wire.worst_work_ms = 0;
+  wire.sample_wait_ms = wire.late_input_ticks = 0;
+  wire.sample_at = now;
+}
+
+// Handle the pass's input before advancing so a slow display can run and
+// transmit a whole batch. Only its newest simulation tick draws.
 static void coop_render() {
   double now = host_time_ms();
   // Escape pauses or resumes; a run stopped (a desync, an error) it leaves.
@@ -611,12 +652,15 @@ static void coop_render() {
     live.fire_down = live.fire_pressed = false;
   }
   int due = live.due;
-  coop_produce(now);
+  if (wire.delay_at >= 0 && coop.next >= wire.delay_at) {
+    coop.delay = wire.next_delay;
+    wire.delay_at = -1;
+  }
+  coop_sample_due(due);
+  int waited = coop.stats.session.network_ms;
   int draws = coop.draws;
   int ran = game_coop_advance(due, now);
-  // A picker's next record is its choice, from the perk screen this pass opens.
-  if (!coop.picking)
-    coop_produce(now);
+  coop_adapt(now, coop.stats.session.network_ms - waited);
   if (ran)
     coop_live.ticked_at = host_time_ms();
   coop_live.banked -= ran / 60.0f;

@@ -164,7 +164,7 @@ const chrome = spawn(
     `--user-data-dir=${profile}`, "--headless=new", "--remote-debugging-port=0", "--no-first-run", "--no-default-browser-check",
     "--use-mock-keychain", "--password-store=basic", "--autoplay-policy=no-user-gesture-required",
     // Host candidates by address, not mDNS names, so the pages connect directly.
-    "--disable-features=WebRtcHideLocalIpsWithMdns", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
+    "--allow-loopback-in-peer-connection", "--disable-features=WebRtcHideLocalIpsWithMdns", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
     "about:blank",
   ],
   { stdio: "ignore", detached: true },
@@ -244,6 +244,16 @@ async function open(name, origin, { webrtc = true } = {}) {
   await send("Emulation.setDeviceMetricsOverride", { width: 1024, height: 768, deviceScaleFactor: 1, mobile: false });
   await send("Emulation.setFocusEmulationEnabled", { enabled: true });
   if (!webrtc) await send("Page.addScriptToEvaluateOnNewDocument", { source: "delete window.RTCPeerConnection;" });
+  else await send("Page.addScriptToEvaluateOnNewDocument", { source: `
+    window.RTCPeerConnection = class extends RTCPeerConnection {
+      constructor(config) {
+        // Both peers run on loopback. An external STUN or TURN server would
+        // make this local direct-path test depend on the machine's network.
+        super({ ...config, iceServers: [] });
+        window.testPeerConnection = this;
+      }
+    };
+  ` });
   async function evaluate(fn, ...args) {
     const { result, exceptionDetails } = await send("Runtime.evaluate", {
       expression: `(${fn})(...${JSON.stringify(args)})`,
@@ -662,6 +672,18 @@ try {
   // neither address names the room any more.
   await tap(host, "Enter");
   await started("the next run on both");
+  // Change the real transport mid-session. The old route gets its play time
+  // now, without counting another seat. The final route gets the close.
+  await fight();
+  await host.evaluate(() => window.testPeerConnection.close());
+  await both("the relay after WebRTC closed", async (p) => (await p.transport()) === "ws-relay", 10000);
+  const switched = await until("the direct timing segment", () => {
+    const totals = coopTotals();
+    return totals["direct play_ms"] > direct["direct play_ms"] && totals;
+  }, 10000);
+  assert.equal(switched["direct sessions"], direct["direct sessions"]);
+  assert.ok(switched["direct confirmed"] > direct["direct confirmed"]);
+  await fight();
   await tap(host, "Escape");
   await until("the pause", async () => (await host.status()) & STATUS.paused && (await guest.status()) & STATUS.paused);
   await host.shot("paused");

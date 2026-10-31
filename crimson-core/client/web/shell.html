@@ -573,20 +573,27 @@
   // (a desync). The game sends over the room the session connected over, and nowhere once another replaced it.
   let coop = null, coopLink = null, coopMet = false, coopSession = false, coopHello = false, coopEnded = null,
     coopNote = null;
-  // Each session whose hello came reports its summary to the page's analytics once, as it ends (analytics.js
-  // coop): the transport it last ran over, kept here while the page's session runs (its link's, for one that ended
-  // before the page saw it connected), and the game's summary of it (client_coop_report: the round trip, why it
-  // ended, then host/coop.inc CoopSessionStats). The game keeps the summary of a session the partner's new hello
-  // replaced, which never closed, until the page takes it.
-  let coopRan = null;
+  // Session counters are monotonic across runs. Attribute their increments to
+  // the selected route and count the seat once, when its final report arrives.
+  let coopRan = null, coopBase = null;
   const COOP_DEPTHS = PLAY_ANALYTICS.coop.depths, COOP_FRAMES = PLAY_ANALYTICS.coop.frame_ms.length + 1;
+  function coopSegment(at, final) {
+    const [rtt, reason, ...total] = new Int32Array(Module.HEAPU8.buffer, at, 9 + COOP_DEPTHS + COOP_FRAMES);
+    const delta = total.map((n, i) => n - (coopBase?.[i] ?? 0));
+    coopBase = final ? null : total;
+    if (!final && !delta.some(Boolean)) return;
+    const [ticks, , network, perk, ...counts] = delta;
+    const [play_ms, network_ms, confirmed] = counts.slice(-3);
+    playAnalytics.coop({
+      transport: coopRan ?? coopLink?.stats().transport, rtt, ticks, desync: final && reason === COOP_DIVERGED,
+      stalled: [network, perk], depths: counts.slice(0, COOP_DEPTHS), frames: counts.slice(COOP_DEPTHS, -3),
+      pace: { play_ms, network_ms, confirmed, final },
+    });
+  }
   function coopReport() {
     for (let at; (at = Module.ccall("client_coop_report", "number", [], [])); ) {
-      const [rtt, reason, ticks, , network, perk, ...counts] = new Int32Array(Module.HEAPU8.slice(at, at + 4 * (6 + COOP_DEPTHS + COOP_FRAMES)).buffer);
-      playAnalytics.coop({
-        transport: coopRan ?? coopLink?.stats().transport, rtt, ticks, desync: reason === COOP_DIVERGED, stalled: [network, perk],
-        depths: counts.slice(0, COOP_DEPTHS), frames: counts.slice(COOP_DEPTHS),
-      });
+      coopSegment(at, true);
+      coopRan = null;
     }
   }
   // This page's address names the room it plays in, so a reload goes back to it.
@@ -628,6 +635,7 @@
   // Hosts a room (`room` true) or joins one.
   function startCoop(room) {
     const current = coop = createCoop({ log: (...args) => console.info("co-op:", ...args), prove: coopProve });
+    current.ontransport = () => queueMicrotask(() => { if (current === coopLink && coopSession) coopWatch(); });
     current.onkey = (role, key) => {
       if (current === coop) coopTell(() => Module.ccall("client_coop_key", "number", ["number", "string"], [role === "host" ? 0 : 1, key]));
     };
@@ -693,8 +701,13 @@
   function coopWatch() {
     if (!coopSession) return coopConnect();
     const status = coopStatus(), reason = (status >> 16) & 255;
-    if (status & COOP_CONNECTED) coopRan = coopLink.stats().transport ?? coopRan;
     coopReport();
+    if (status & COOP_CONNECTED) {
+      const transport = coopLink.stats().transport;
+      if (transport && coopRan && coopTransport(transport) !== coopTransport(coopRan))
+        coopSegment(Module.ccall("client_coop_telemetry", "number", [], []), false);
+      coopRan = transport ?? coopRan;
+    }
     if (status & COOP_CONNECTED && !coopHello) {
       coopHello = true;
       coopNote = null;
