@@ -134,7 +134,7 @@ struct Game {
   void load_next_level();
   Run run;
   std::vector<Corpse> decals, pending_decals;
-  std::vector<FrameSprite> actor_sprites, effect_sprites;
+  std::vector<FrameSprite> terrain_sprites, actor_sprites, effect_sprites;
   std::vector<FrameLabel> effect_labels;
   std::array<effect_color_t, 4> trail_colors;
   std::vector<TrailDraw> frame_trails;

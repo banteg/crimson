@@ -62,6 +62,7 @@ void Game::enter_state(int id) {
   }
 }
 void Game::update(float dt, const Input &in) {
+  terrain_sprites.clear();
   actor_sprites.clear();
   effect_sprites.clear();
   effect_labels.clear();

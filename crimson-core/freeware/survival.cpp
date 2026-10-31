@@ -68,6 +68,8 @@ extern "C" int crt_rand() {
 // terrain_generate (0x40e060) uses the gameplay CRT stream, including on restart.
 void Game::generate_terrain() {
   terrain.clear();
+  if (safe_mode)
+    return;
   for (bool grass : {true, false}) {
     const int count = arena * arena * (grass ? 700 : 35) / 524288;
     for (int i = 0; i < count; ++i) {

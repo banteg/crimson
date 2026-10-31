@@ -64,7 +64,12 @@ def check_world(check, exe):
             )
             assert all(math.isclose(a, b, abs_tol=0.0001) for a, b in zip(state[3:8], expected, strict=True))
             assert ctypes.string_at(check.symbol("creature_pool"), 512 * 128) == pe.read(0x442AF8, 512 * 128)
-    return total + check_player_draws(check, original) + check_effect_draws(check, original)
+    return (
+        total
+        + check_player_draws(check, original)
+        + check_effect_draws(check, original)
+        + check_terrain_draws(check, original)
+    )
 
 
 def check_player_draws(check, original):
@@ -267,4 +272,28 @@ def check_effect_draws(check, original):
             original.reset_draw()
             pe.call(0x40E830)
             total += original.compare(check, check.dll.combat_world_impacts(), ("scorches", i))
+    return total
+
+
+def check_terrain_draws(check, original):
+    pe = original.pe
+    original.textures[710] = "ground"
+    pe.write_u32(0x452D28, 710)
+    total = 0
+    for safe in (0, 1):
+        for sharp in (0, 1):
+            for w, h in ((1024, 1024), (255, 257), (513, 256), (0, 0)):
+                check.dll.combat_world_start(0)
+                pe.write_f32(0x43CBC0, -27.5)
+                pe.write_f32(0x43CBC4, 11.25)
+                pe.write_u32(0x42FBD8, w)
+                pe.write_u32(0x42FBDC, h)
+                pe.write_u8(0x44289D, sharp)
+                pe.write_u8(0x452D51, safe)
+                original.reset_draw()
+                pe.call(0x40F340)
+                n = check.dll.combat_world_ground(safe, sharp, w, h)
+                total += original.compare(check, n, ("terrain", safe, sharp, w, h))
+                fields = (ctypes.c_float * 24).from_address(check.symbol("combat_world_state"))
+                assert fields[20] == original.filter == 2
     return total

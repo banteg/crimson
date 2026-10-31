@@ -46,8 +46,8 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
-void projectile_render(), effect_render_all(), player_render(), gameplay_render_hud(), game_show_message(),
-    perk_selection_screen_update(), creature_render_all();
+void terrain_render(), projectile_render(), effect_render_all(), player_render(), gameplay_render_hud(),
+    game_show_message(), perk_selection_screen_update(), creature_render_all();
 unsigned char freeware_overlay_begin(), game_highscores_update(), game_credits_update();
 
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -209,11 +209,12 @@ __forceinline void position_camera() {
         CAM.y = (float)(screen_height - freeware_arena_height);
 }
 __forceinline void render_world() {
-#ifndef CRIMSON_FREEWARE_CLIENT
     terrain_render();
+#ifndef CRIMSON_FREEWARE_CLIENT
     fx_queue_render();
     creature_render_all();
 #else
+    G.terrain_sprites.swap(G.frame_sprites);
     G.flush_marks();
     creature_render_all();
 #endif

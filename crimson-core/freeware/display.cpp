@@ -11,7 +11,7 @@ Display::~Display() {
     SDL_DestroyTexture(entry.second);
   SDL_DestroyTexture(ground);
 }
-bool Display::load(const std::string &folder) {
+bool Display::load(const std::string &folder, bool &safe_mode) {
   for (const char *name :
        {"font",      "grass1",         "mud1",         "ground_tile",  "crimsonland", "borg_t",
         "eiliens",   "bullet_real_16", "blood",        "aim32",        "radius256",   "assembly-logo",
@@ -42,10 +42,13 @@ bool Display::load(const std::string &folder) {
     SDL_SetTextureBlendMode(texture, std::strcmp(name, "part64") == 0 ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND);
     SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_LINEAR);
   }
-  ground = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, arena, arena);
-  if (!ground)
-    return false;
-  SDL_SetTextureBlendMode(ground, SDL_BLENDMODE_NONE);
+  if (!safe_mode) {
+    ground = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, arena, arena);
+    if (ground)
+      SDL_SetTextureBlendMode(ground, SDL_BLENDMODE_NONE);
+    else
+      safe_mode = true;
+  }
   return SDL_SetRenderTarget(renderer, nullptr);
 }
 static SDL_BlendMode blend_mode(unsigned source, unsigned destination) {
@@ -59,7 +62,9 @@ void Display::sprite(const char *name, float x, float y, float w, float h, float
                      SDL_FColor tint, UiUv uv, unsigned filter, unsigned destination_blend,
                      unsigned source_blend) {
   // A failed Grim texture lookup leaves the previous binding in place (grim.dll 0x10004d07).
-  auto *t = !std::strcmp(name, "tl_tolmec") ? last_texture : textures.at(name);
+  auto *t = !std::strcmp(name, "tl_tolmec") ? last_texture
+            : !std::strcmp(name, "ground")  ? (ground ? ground : textures.at("ground_tile"))
+                                            : textures.at(name);
   if (!t)
     return;
   last_texture = t;
@@ -141,7 +146,7 @@ void Display::frame_art(const std::vector<FrameSprite> &sprites, const std::vect
     frame_sprite(sprites[i++]);
 }
 void Display::draw(Game &g) {
-  if (g.generation != ground_generation) {
+  if (!g.safe_mode && g.generation != ground_generation) {
     SDL_SetRenderTarget(renderer, ground);
     SDL_SetRenderDrawColor(renderer, 63, 56, 25, 255);
     SDL_RenderClear(renderer);
@@ -150,8 +155,8 @@ void Display::draw(Game &g) {
              {.7f, .7f, .7f, .9f});
     SDL_SetRenderTarget(renderer, nullptr);
   }
-  if (g.generation != ground_generation || !g.decals.empty() || !g.impacts.empty() || !g.marks.empty() ||
-      !g.shells.empty()) {
+  if (!g.safe_mode && (g.generation != ground_generation || !g.decals.empty() || !g.impacts.empty() ||
+                       !g.marks.empty() || !g.shells.empty())) {
     SDL_SetRenderTarget(renderer, ground);
     ground_generation = g.generation;
     for (const auto &impact : g.impacts)
@@ -172,10 +177,8 @@ void Display::draw(Game &g) {
   }
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
-  const float cx = camera_x(g), cy = camera_y(g);
-  SDL_FRect field{cx, cy, arena, arena};
-  SDL_SetTextureScaleMode(ground, g.smooth ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
-  SDL_RenderTexture(renderer, ground, nullptr, &field);
+  for (const auto &draw : g.terrain_sprites)
+    frame_sprite(draw);
   for (const auto &draw : g.actor_sprites)
     frame_sprite(draw);
   for (const auto &d : g.frame_trails) {

@@ -12,7 +12,7 @@ struct Display {
   int ground_generation = -1;
   explicit Display(SDL_Renderer *r) : renderer(r) {}
   ~Display();
-  bool load(const std::string &folder);
+  bool load(const std::string &folder, bool &safe_mode);
   void draw(Game &game);
   void frame_sprite(const FrameSprite &draw);
   void frame_art(const std::vector<FrameSprite> &sprites, const std::vector<FrameLabel> &labels);

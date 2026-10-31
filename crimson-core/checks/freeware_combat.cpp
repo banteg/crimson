@@ -702,6 +702,22 @@ void combat_world_effect(int flags, int kind, int time, int age) {
   freeware_simulation_clock = 1.375f;
   frame_dt = .03125f;
 }
+extern int freeware_arena_width, freeware_arena_height;
+void terrain_render();
+int combat_world_ground(int safe, int sharp, int w, int h) {
+  game.safe_mode = safe;
+  game.smooth = !sharp;
+  int old_w = freeware_arena_width, old_h = freeware_arena_height;
+  freeware_arena_width = w;
+  freeware_arena_height = h;
+  game.frame_sprites.clear();
+  game.frame_labels.clear();
+  terrain_render();
+  combat_world_state[20] = (float)game.ui.filter;
+  freeware_arena_width = old_w;
+  freeware_arena_height = old_h;
+  return capture_ui();
+}
 int combat_world_render(int pass) {
   game.frame_sprites.clear();
   game.frame_labels.clear();
