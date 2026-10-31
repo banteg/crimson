@@ -14,3 +14,5 @@ steps bot streams and recorded runs through the recovered core and Python and
 compares them tick by tick; [evidence records](evidence-ledger/index.md) say what each kind of
 evidence establishes. Known deltas live in [coverage and scope](../rewrite/status.md)
 and [original bugs](../rewrite/original-bugs.md).
+
+[Crowded combat and perk-menu stalls](gameplay-performance.md) measures the Python port and recovered verifier against controlled scenes and a recorded Survival run.
