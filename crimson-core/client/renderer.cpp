@@ -550,7 +550,13 @@ void reallocate(Target &t, int width, int height, int flags) {
 void apply_output_state(const Target &t) {
   if (render_states[RS_ALPHABLENDENABLE]) {
     glEnable(GL_BLEND);
-    glBlendFunc(blend_factor(render_states[RS_SRCBLEND]), blend_factor(render_states[RS_DESTBLEND]));
+    GLenum src = blend_factor(render_states[RS_SRCBLEND]), dst = blend_factor(render_states[RS_DESTBLEND]);
+    // The reticle stores color plus the coverage it takes from the scene.
+    // Its additive glow contributes light with no coverage.
+    if (current_target == HOST_MOUSE_AIM_TEXTURE)
+      glBlendFuncSeparate(src, dst, dst == GL_ONE ? GL_ZERO : GL_ONE, dst);
+    else
+      glBlendFunc(src, dst);
     glBlendEquation(blend_equation(render_states[RS_BLENDOP]));
   } else {
     glDisable(GL_BLEND);
@@ -1058,6 +1064,7 @@ void GL_ENTRY(renderer_init)() {
   use_program(present_program);
   glUniform1i(uniform_location(present_program, "back_buffer"), 0);
   glUniform1i(uniform_location(present_program, "gamma"), 1);
+  glUniform1i(uniform_location(present_program, "aim_layer"), 2);
 
   glGenVertexArrays(1, &vertex_array);
   glBindVertexArray(vertex_array);
@@ -1174,6 +1181,13 @@ void GL_ENTRY(renderer_present)(int window_width, int window_height) {
   use_program(present_program);
   glUniform1i(uniform_location(present_program, "map_view"), back.map);
   back_shown = true;
+  float rect[4];
+  mouse_aim_rect(v, rect);
+  glUniform4fv(uniform_location(present_program, "aim_rect"), 1, rect);
+  glUniform1f(uniform_location(present_program, "aim_limit"), rtx ? 65504.0f : 1.0f);
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, mouse_aim.half_size ? textures.at(HOST_MOUSE_AIM_TEXTURE).texture : blank_texture);
+  glBindSampler(2, 0);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, gamma_texture);
   glActiveTexture(GL_TEXTURE0);
@@ -1640,7 +1654,7 @@ void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
     flush_ground_stamps();
   current_target = (int)id;
   if (id)
-    gpu_aside("bake");
+    gpu_aside(current_target == HOST_MOUSE_AIM_TEXTURE ? "aim" : "bake");
   else
     gpu_resume();
   bind_target();

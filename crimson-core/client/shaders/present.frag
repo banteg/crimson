@@ -2,11 +2,21 @@
 #include "common.glsl"
 LOC(0) in vec2 v_uv;
 out vec4 color;
-uniform sampler2D back_buffer, gamma;
+uniform sampler2D back_buffer, gamma, aim_layer;
+// The local reticle's upper left and size, in normalized back-buffer coordinates.
+uniform vec4 aim_rect;
+uniform float aim_limit; // classic saturates at white; RTX can carry brighter UI highlights
 // An RTX diagnostic map: its values go to the display as they are, past the device's gamma ramp.
 uniform int map_view;
 void main() {
     vec3 c = texture(back_buffer, v_uv).rgb;
+    if (aim_rect.z > 0.0) {
+        vec2 uv = (v_uv - aim_rect.xy) / aim_rect.zw;
+        if (all(greaterThanEqual(uv, vec2(0.0))) && all(lessThan(uv, vec2(1.0)))) {
+            vec4 aim = textureLod(aim_layer, uv, 0.0);
+            c = min(c * (1.0 - aim.a) + aim.rgb, vec3(aim_limit));
+        }
+    }
     if (map_view != 0) {
         color = vec4(c, 1.0);
         return;

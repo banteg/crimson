@@ -68,6 +68,9 @@ static struct {
   bool watching; // the run plays a replay (watch.inc)
   bool practicing; // detached Watch state driven by live input (practice.inc)
 } live;
+// A clean scene can be presented several times while its local reticle moves.
+static int mouse_aim_half_size;
+static bool display_aim_enabled, mouse_aim_drawn;
 // The Play Game menu's 1.9.8 box (host/ranked.inc ranked_menu): the build whose
 // rules the runs the menus start play, Typ-o and the tutorial too, and whose
 // high score tables the screens show (host/scores.inc). A launch starts on
@@ -278,6 +281,7 @@ static bool live_start() {
     return false;
   }
   game_live = true;
+  mouse_aim_drawn = false;
   live.banked = 0;
   live.fire_down = live.reload_down = live.pick_down = false;
   live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing = live.picked = false;
@@ -620,6 +624,39 @@ template <class Tick> static void live_run_due(Tick run_tick) {
 #include "custom_quests.inc"
 
 extern "C" {
+__attribute__((export_name("game_display_aim"))) void game_display_aim(int enabled) { display_aim_enabled = enabled; }
+
+static bool live_mouse_aim() {
+  return display_aim_enabled && game_live && (!live.watching || (live.practicing && practice.phase == PRACTICE_PLAYING));
+}
+int game_mouse_aim_begin(int player, float radius) {
+  if (!live_mouse_aim() || !game_ticking || grim_render_disabled || player != (coop_live.playing ? coop.local : 0) ||
+      config_blob.aim_schemes[player] != 0 || live.outside.config.aim_schemes[0] != 0)
+    return 0;
+  if (radius > 0) {
+    // The rotated reload clock extends almost 39 pixels from the cursor. Grow
+    // in blocks so that a widening spread ring doesn't allocate every tick.
+    int half = std::max(48, (int)ceilf((radius + 4) / 16) * 16);
+    if (half > mouse_aim_half_size) {
+      mouse_aim_half_size = half;
+      host_texture_create(HOST_MOUSE_AIM_TEXTURE, half * 2, half * 2, 1);
+    }
+    mouse_aim_drawn = true;
+  }
+  if (mouse_aim_drawn) {
+    host_set_render_target(HOST_MOUSE_AIM_TEXTURE);
+    if (radius > 0)
+      host_clear(0);
+  }
+  return mouse_aim_drawn ? mouse_aim_half_size : 0;
+}
+void game_mouse_aim_end() { host_set_render_target(0); }
+int game_mouse_aim_extent() {
+  if (!mouse_aim_drawn || !live_mouse_aim() || game_state_id != GAME_STATE_GAMEPLAY || console_open_flag ||
+      (coop_live.playing && coop_ui.banner))
+    return 0;
+  return mouse_aim_half_size;
+}
 // game_frame (game/frame.cpp), after polling input: the ticks this pass runs,
 // or -1 when no run is playing. A pass with none draws nothing new.
 int game_live_frame() {
@@ -676,6 +713,8 @@ int game_live_frame() {
 bool game_live_between_ticks() { return game_live && !game_ticking; }
 void gameplay_render_world_recovered();
 void gameplay_render_world() {
+  if (!grim_render_disabled)
+    mouse_aim_drawn = false;
   live.worlds += !grim_render_disabled;
   if (!game_live || game_ticking)
     return gameplay_render_world_recovered();

@@ -1106,6 +1106,7 @@
     canvas,
     arguments: ["/game"],
     preRun: [() => {
+      if (query.get("displayAim") === "0") ENV.CRIMSON_DISPLAY_AIM = "0";
       FS.mkdir("/game");
       FS.mount(IDBFS, {}, "/game");
       addRunDependency("game files");

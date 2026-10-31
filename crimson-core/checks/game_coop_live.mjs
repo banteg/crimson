@@ -346,7 +346,16 @@ const [host, guest] = peers;
 // replay viewer's preparing pass reads it until its time is up): it goes on from there. With the leaderboard on as the
 // site's page has it, or `leaderboard` "framed" as inside another site's page.
 function boot(peer, at, leaderboard = true) {
-  const run = bootGame(gameWasm, peer.directory, peer.seat + 1, { clocks: true, leaderboard });
+  const run = bootGame(gameWasm, peer.directory, peer.seat + 1, {
+    clocks: true, leaderboard,
+    onHost(name, args) {
+      if (name === "mouse_aim" && args[2]) {
+        assert.equal(peer.schemes, "2/0", "only the local mouse gets a display reticle");
+        peer.displayAimSeat = peer.role;
+      }
+    },
+  });
+  run.game.game_display_aim(1);
   return { run, g: run.game, at: at + peer.seat * 3, zero: at + peer.seat * 3 - 16 - run.clock, frames: 0,
     frameAt: at, gone: false, held: new Set(), ticks: new Map(), top: -1, config: null, first: null, offered: -1 };
 }
@@ -437,6 +446,7 @@ class Machines extends Link {
     for (const key of KEYS) input.setUint8(INPUT.keys + key, keys.includes(key) || peer.held.has(key) ? 0x80 : 0);
     input.setInt32(INPUT.motion_x, Math.round(g.game_motion_x(cursor[0])), true);
     input.setInt32(INPUT.motion_y, Math.round(g.game_motion_y(cursor[1])), true);
+    g.game_mouse_move(...cursor);
     input.setUint8(INPUT.buttons, button ? 0x80 : 0);
     // The Guest's pad is always there.
     input.setUint8(INPUT.pad_connected, peer === guest ? 1 : 0);
@@ -782,6 +792,7 @@ function verified(peer, ticks, outcome) {
 // The mouse aim of the first record the Host's machine sampled before its run's first tick: the cursor through
 // the camera on the two players' midpoint, clamped to the arena (session.inc live_input), in either seat.
 function midpointAim() {
+  assert.equal(host.displayAimSeat, host.role, "the local mouse gets its reticle in either seat");
   const { tick, cursor, spawn } = host.first;
   const record = host.ticks.get(tick).used[host.role];
   assert.equal(schemes(record), host.schemes);

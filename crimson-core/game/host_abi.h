@@ -25,6 +25,9 @@ HOST_IMPORT(clear) void host_clear(unsigned color);
 HOST_IMPORT(draw) void host_draw(int primitive, const void *vertices, int vertex_count, const unsigned short *indices,
                                  int primitive_count);
 HOST_IMPORT(present) void host_present(void);
+// Composite the local mouse reticle at this logical screen point on the next present.
+// A zero half-size hides it. The layer contains premultiplied color and coverage.
+HOST_IMPORT(mouse_aim) void host_mouse_aim(float x, float y, int half_size);
 // A circle the device shades analytically with its current states (client/shaders/classic.frag), in place of
 // Grim's polygons (game/changes/round-circles.patch): `shape` is its center x and y and inner and outer radius in
 // pixels, then the texture's u and its v at the inner and outer edges; `color` its D3DCOLOR.

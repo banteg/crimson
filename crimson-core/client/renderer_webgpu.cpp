@@ -370,6 +370,10 @@ Output device_output(const Target &t, WGPUPrimitiveTopology topology) {
     bool extreme = o.op == WGPUBlendOperation_Min || o.op == WGPUBlendOperation_Max;
     o.src = extreme ? WGPUBlendFactor_One : blend_factor(render_states[RS_SRCBLEND]);
     o.dst = extreme ? WGPUBlendFactor_One : blend_factor(render_states[RS_DESTBLEND]);
+    if (current_target == HOST_MOUSE_AIM_TEXTURE) {
+      o.alpha_src = o.dst == WGPUBlendFactor_One ? WGPUBlendFactor_Zero : WGPUBlendFactor_One;
+      o.alpha_dst = o.dst;
+    }
   }
   // An X8R8G8B8 surface keeps its alpha at one.
   o.mask = render_states[RS_COLORWRITEENABLE] & (t.flags & TARGET_OPAQUE ? 7 : 15);
@@ -817,11 +821,15 @@ void wgpu_renderer_present(int window_width, int window_height) {
   // Normally a one-to-one copy; a resize between draw and present may scale once.
   bool exact = v.width == back.width && v.height == back.height;
   Uniforms fragment(*present_program.frag);
-  fragment.i("map_view", back.map);
+  float rect[4];
+  mouse_aim_rect(v, rect);
+  fragment.i("map_view", back.map).set("aim_rect", rect, sizeof rect).f("aim_limit", rtx ? 65504.0f : 1.0f);
   back_shown = true;
   bind(present_program,
        fragment_group(present_program, {{"back_buffer", back.view, exact ? nearest_clamp() : linear_clamp()},
-                                        {"gamma", gamma_view, linear_clamp()}}),
+                                        {"gamma", gamma_view, linear_clamp()},
+                                        {"aim_layer", mouse_aim.half_size ? textures.at(HOST_MOUSE_AIM_TEXTURE).view : blank_view,
+                                         linear_clamp()}}),
        nullptr, &fragment);
   wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
   submit();

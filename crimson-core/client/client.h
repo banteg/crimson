@@ -40,6 +40,17 @@ Viewport renderer_viewport(int window_width, int window_height);
 // world up onto the back buffer, so the HUD and its text keep the display's
 // pixels, and Classic, which costs little, draws at the display's resolution.
 extern float render_size;
+struct MouseAim {
+  float x, y, half_size;
+};
+extern MouseAim mouse_aim;
+inline void mouse_aim_rect(const Viewport &v, float (&rect)[4]) {
+  float half = mouse_aim.half_size;
+  rect[0] = (mouse_aim.x - half) / v.back_width;
+  rect[1] = (mouse_aim.y - half) / v.back_height;
+  rect[2] = 2 * half / v.back_width;
+  rect[3] = 2 * half / v.back_height;
+}
 // The RTX world's pixels for a back buffer `width` x `height` (both in, then
 // out) showing `logical_width` of the game across.
 inline void world_size(int logical_width, int &width, int &height) {

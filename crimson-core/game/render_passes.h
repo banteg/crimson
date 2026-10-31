@@ -20,6 +20,8 @@ enum {
   HOST_PASS_ICE_FROZEN = 11,
   HOST_PASS_GLINT = 12, // textured bonus sparks: alpha contains painted intensity, not coverage
 };
+// The host texture for the local mouse reticle. Game textures and terrain snapshots have positive IDs.
+enum { HOST_MOUSE_AIM_TEXTURE = -1 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).
 enum { RTX_LIGHT_FLOATS = 32 };
 // The fluid smoke solver's commands (host_smoke, game/rtx_smoke.cpp), each an
