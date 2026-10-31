@@ -14,7 +14,12 @@ body{display:grid;place-items:center}canvas{width:min(100vw,133.333vh);height:mi
 const canvas=document.querySelector("canvas");canvas.focus();
 canvas.addEventListener("pointerdown",()=>canvas.focus());
 canvas.addEventListener("contextmenu",event=>event.preventDefault());
-var Module={canvas, onRuntimeInitialized(){document.querySelector("#status").hidden=true;}};
+var Module={canvas, preRun:[function() {
+  Module.FS.mkdir("/freeware");
+  Module.FS.mount(Module.IDBFS,{autoPersist:true},"/freeware");
+  Module.addRunDependency("load-scores");
+  Module.FS.syncfs(true,error=>{if(error) console.warn("Score storage unavailable",error);Module.removeRunDependency("load-scores");});
+}], onRuntimeInitialized(){document.querySelector("#status").hidden=true;}};
 </script>
 {{{ SCRIPT }}}
 </html>

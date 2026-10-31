@@ -19,17 +19,26 @@ def game_sources(root: Path) -> list[Path]:
     core = root / "crimson-core"
     recovered = root / "decomp/1.4/crimson/crimson"
     return [
-        *(core / "freeware" / name for name in ("menu.cpp", "survival.cpp")),
+        *(
+            core / "freeware" / name
+            for name in ("menu.cpp", "survival.cpp", "career.cpp", "weapons.cpp", "perks.cpp", "scores.cpp")
+        ),
         *(
             recovered / name
             for name in (
                 "creatures/creature_spawn.cpp",
+                "creatures/creature_find_nearest.cpp",
+                "creatures/plaguebearer_spread_infection.cpp",
+                "weapons/weapon_assign_player.cpp",
+                "weapons/player_start_reload.cpp",
+                "weapons/weapon_name_get.cpp",
                 "creatures/creature_alloc_slot.cpp",
                 "creatures/creature_find_in_radius.cpp",
                 "creatures/creature_reset_all.cpp",
                 "player/player_heading_approach_target.cpp",
                 "player/angle_approach.cpp",
                 "projectiles/projectile_spawn.cpp",
+                "effects/fx_spawn_secondary_projectile.cpp",
             )
         ),
     ]
@@ -76,6 +85,8 @@ def build(root: Path, target: str, out: Path, install: Path | None) -> None:
             *flags,
             *sources,
             "-sUSE_SDL=3",
+            "-lidbfs.js",
+            "-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,addRunDependency,removeRunDependency",
             "-sALLOW_MEMORY_GROWTH",
             "--preload-file",
             f"{assets}@/assets",

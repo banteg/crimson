@@ -8,6 +8,10 @@
 extern "C" {
 creature_t creature_pool[512];
 projectile_pool_t projectile_pool;
+secondary_projectile_pool_t secondary_projectile_pool;
+char freeware_text_buffer[256];
+unsigned char freeware_secret_weapon_unlocked;
+int plaguebearer_infection_count;
 float frame_dt, bonus_fire_bullets_timer, freeware_elapsed_seconds;
 game_mode_id_t config_game_mode = static_cast<game_mode_id_t>(2);
 int creature_spawned_count;
@@ -39,8 +43,20 @@ extern "C" int crt_rand() {
 void Game::start() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
   run = Run{};
-  player_state_table[0].heading = 0;
+  current_player_index = plaguebearer_infection_count = 0;
+  freeware_secret_weapon_unlocked = 0;
+  config_game_mode = static_cast<game_mode_id_t>(survival ? 2 : 1);
+  std::memset(player_state_table, 0, sizeof(player_state_table));
+  for (int i = 0; i < players(); ++i) {
+    auto &w = player_state_table[i].freeware;
+    w.weapon = survival ? 2 : 1;
+    w.ammo = w.clip_size = survival ? 30.f : 10.f;
+    actor(i).player.x += i * 80;
+  }
+  std::memset(secondary_projectile_pool, 0, sizeof(secondary_projectile_pool));
   creature_reset_all();
+  for (int i = 0; i < 512; ++i)
+    creature_pool[i].freeware.player = i % players();
   std::memset(projectile_pool, 0, sizeof(projectile_pool));
   highscore_record_shots_fired = 0;
   creature_spawned_count = 0;
@@ -50,7 +66,7 @@ void Game::start() {
   paused = false;
   screen = Screen::Playing;
   ++generation;
-  std::printf("1.4.0 survival start %d\n", generation);
+  std::printf("1.4.0 %s start %d\n", survival ? "survival" : "career", generation);
 }
 
 static void update_creatures(Game &g, float dt) {
@@ -70,11 +86,37 @@ static void update_creatures(Game &g, float dt) {
       }
       continue;
     }
-    const auto p = g.run.player;
+    if (g.run.freeze > 0)
+      continue;
+    if (s.player < 0 || s.player >= g.players())
+      s.player = 0;
+    if (g.two_players && g.actor(s.player).health <= 0)
+      s.player = 1 - s.player;
+    auto &target = g.actor(s.player);
+    const auto p = target.player;
     float distance = std::hypot(p.x - c.pos_x, p.y - c.pos_y);
-    const float offset = i * 3.7f * pi;
+    if (c.plague_infected || (g.run.perks[12] && distance < 100.f)) {
+      c.anim_phase -= dt;
+      if (c.anim_phase <= 0) {
+        c.anim_phase = .5f;
+        c.health -= c.plague_infected ? 15.f : (100 - distance) * .3f;
+        if (c.health <= 0) {
+          if (c.plague_infected)
+            ++plaguebearer_infection_count;
+          g.kill(i, 0);
+          continue;
+        }
+      }
+    }
+    if (c.plague_infected)
+      plaguebearer_spread_infection(i);
+    float offset = i * 3.7f * pi;
+    if (g.run.perks[2])
+      offset += (1 - (std::sin(g.run.seconds) * .35f + .5f) * .5f) * pi / 2;
     s.target = {p.x + std::cos(offset) * distance * .85f, p.y + std::sin(offset) * distance * .85f};
     s.target_heading = std::atan2(s.target.y - c.pos_y, s.target.x - c.pos_x) + pi / 2;
+    if (c.plague_infected)
+      s.target_heading += pi;
     angle_approach(&s.heading, s.target_heading, 0);
     c.velocity = {std::cos(s.heading - pi / 2) * s.move_speed * dt * 30,
                   std::sin(s.heading - pi / 2) * s.move_speed * dt * 30};
@@ -87,8 +129,11 @@ static void update_creatures(Game &g, float dt) {
       c.pos_x -= c.velocity.x;
       c.pos_y -= c.velocity.y;
     }
-    if (distance < 30 && s.attack_cooldown <= 0 && g.run.health > 0) {
-      g.run.health -= s.contact_damage;
+    if (distance < 30 && s.attack_cooldown <= 0 && target.health > 0) {
+      if (target.shield <= 0)
+        target.health -= s.contact_damage;
+      if (g.run.perks[10] && c.health < 150)
+        c.plague_infected = 1;
       s.attack_cooldown += 1;
       play_sound(Sound::Attack);
     }
@@ -107,9 +152,46 @@ static void update_shots(Game &g, float dt) {
         shot.active = 0;
       continue;
     }
+    const int type = int(p.type_id);
+    const int owner = g.run.shot_owner[&shot - projectile_pool];
+    const bool flame = type == 5 || type == 15;
+    const float travelled = std::hypot(p.origin.x - shot.position.x, p.origin.y - shot.position.y);
+    if ((flame || type == 19) && travelled > (type == 15 ? 80 : 150)) {
+      shot.active = 0;
+      continue;
+    }
     const float dx = std::cos(shot.angle - pi / 2) * dt * 20;
     const float dy = std::sin(shot.angle - pi / 2) * dt * 20;
-    for (int step = 0; step < 60; ++step) {
+    int steps = 50;
+    switch (type) {
+    case 2:
+      steps = 60;
+      break;
+    case 4:
+      steps = 55;
+      break;
+    case 7:
+      steps = 30;
+      break;
+    case 9:
+      steps = 35;
+      break;
+    case 10:
+      steps = 215;
+      break;
+    case 17:
+      steps = 15;
+      break;
+    case 18:
+      steps = 10;
+      break;
+    case 5:
+    case 15:
+    case 19:
+      steps = 8;
+      break;
+    }
+    for (int step = 0; step < steps; ++step) {
       shot.position.x += dx * p.speed_scale;
       shot.position.y += dy * p.speed_scale;
       if (shot.position.x < -10 || shot.position.y < -10 || shot.position.x > arena + 10 ||
@@ -121,67 +203,106 @@ static void update_shots(Game &g, float dt) {
       if (id < 0)
         continue;
       auto &c = creature_pool[id];
-      const float distance = std::max(50.f, std::hypot(p.origin.x - shot.position.x, p.origin.y - shot.position.y));
+      const float distance =
+          std::max(50.f, std::hypot(p.origin.x - shot.position.x, p.origin.y - shot.position.y));
       if (c.death_timer == 16)
         ++g.run.hits;
-      p.life_timer = .25f;
       if (c.health > 0) {
-        c.health -= (3000 / distance + 10) * 1.2f * .95f;
-        if (c.health <= 0) {
-          --creature_spawned_count;
-          ++g.run.kills;
-          g.run.experience += static_cast<int>(c.freeware.reward);
-          c.death_timer -= dt;
-          play_sound(Sound::Die);
-          if (g.run.kills == 1)
-            std::puts("1.4.0 first kill");
+        const float multiplier = type == 2 ? 1.2f : type == 4 ? 4.1f : type == 7 ? 5.f : type == 9 ? 2.f : 1.f;
+        float damage = (3000 / distance + 10) * multiplier * .95f;
+        if (type == 17) {
+          c.plague_infected = 1;
+          damage = 0;
+        }
+        if (type == 19)
+          damage = 4;
+        if (flame)
+          damage = 5;
+        if (p.damage_pool > 1) {
+          damage = p.damage_pool - 1;
+          p.damage_pool = std::max(0.f, damage - c.health);
         } else
+          p.damage_pool = 0;
+        c.health -= damage;
+        if (c.health <= 0)
+          g.kill(id, owner);
+        else
           play_sound(Sound::Hit);
       }
+      if (p.damage_pool > 1 && c.health <= 0)
+        continue;
+      p.life_timer = .25f;
       break;
     }
   }
 }
 
+static void update_rockets(Game &g, float dt) {
+  for (auto &r : secondary_projectile_pool) {
+    if (!r.active)
+      continue;
+    auto &v = r.fields.velocity;
+    if (int(r.fields.type_id) == 2) {
+      int id = r.fields.target_id;
+      if (id >= 0 && id < 512 && creature_pool[id].active) {
+        auto &c = creature_pool[id];
+        r.angle = std::atan2(c.pos_y - r.position.y, c.pos_x - r.position.x) + pi / 2;
+        v = {std::sin(r.angle) * 190, -std::cos(r.angle) * 190};
+      }
+    }
+    r.position.x += v.x * dt * 2;
+    r.position.y += v.y * dt * 2;
+    r.life_timer -= dt;
+    if (r.life_timer > 0 && creature_find_in_radius(&r.position, 8) < 0)
+      continue;
+    int owner = g.run.rocket_owner[&r - secondary_projectile_pool];
+    for (int i = 0; i < 512; ++i) {
+      auto &c = creature_pool[i];
+      float d = std::hypot(c.pos_x - r.position.x, c.pos_y - r.position.y);
+      if (c.active && c.health > 0 && d < 100) {
+        ++g.run.hits;
+        c.health -= 100 - d;
+        if (c.health <= 0)
+          g.kill(i, owner);
+      }
+    }
+    play_sound(Sound::Explosion);
+    r.active = 0;
+  }
+}
+
 void Game::tick(float dt, const Input &in) {
-  frame_dt = dt;
+  if (dt > 0) {
+    ++run.frames;
+    run.min_fps = std::min(run.min_fps, 1 / dt);
+    run.max_fps = std::max(run.max_fps, 1 / dt);
+  }
   run.seconds += dt;
   freeware_elapsed_seconds = run.seconds;
-  float dx = float(in.right) - float(in.left), dy = float(in.down) - float(in.up);
-  float distance;
-  // Static keyboard movement at 0x41341e. The original turns before accelerating,
-  // and coasts briefly when the last movement key is released.
-  if (dx || dy) {
-    float target = std::atan2(dy, dx) + pi / 2;
-    if (target < 0)
-      target += 2 * pi;
-    const float turn = player_heading_approach_target(target);
-    run.move_speed = std::min(2.f, run.move_speed + dt * 5);
-    distance = (pi - turn) * 2 * run.move_speed * 7.957747f * dt;
-  } else {
-    run.move_speed = std::max(0.f, run.move_speed - dt * 15);
-    distance = 2 * run.move_speed * 25 * dt;
-  }
-  run.body_angle = player_state_table[0].heading;
-  run.player.x = std::clamp(run.player.x + std::cos(run.body_angle - pi / 2) * distance, 24.f, float(arena - 24));
-  run.player.y = std::clamp(run.player.y + std::sin(run.body_angle - pi / 2) * distance, 24.f, float(arena - 24));
-  run.walk = std::fmod(run.walk + dt * run.move_speed * 19, 14.f);
-  run.aim_angle = std::atan2(in.y - camera_y(*this) - run.player.y, in.x - camera_x(*this) - run.player.x) + pi / 2;
-  run.cooldown = std::max(0.f, run.cooldown - dt);
-  run.spread = dx || dy ? std::max(.5f, run.spread - dt) : std::max(.25f, run.spread - 2 * dt);
-  // The frame callback writes AutoRifle and 30 rounds back on every Survival frame.
-  if ((in.fire || in.click) && run.cooldown <= 0) {
-    const float angle = run.aim_angle - pi / 2 - .25f;
-    vec2f_t muzzle{run.player.x + std::cos(angle) * 12, run.player.y + std::sin(angle) * 12};
-    projectile_spawn(&muzzle, run.aim_angle + ((crt_rand() % 200) - 100) * run.spread * .001f, 2);
-    run.cooldown = .117f;
-    play_sound(Sound::Shot);
-  }
+  run.freeze = std::max(0.f, run.freeze - dt);
+  run.slow = std::max(0.f, run.slow - dt);
+  bonus_fire_bullets_timer = std::max(0.f, bonus_fire_bullets_timer - dt);
+  run.speed_scale = run.slow > 0 ? std::max(.3f, run.speed_scale - dt) : std::min(1.f, run.speed_scale + dt * .8f);
+  if (run.perks[15])
+    run.speed_scale = std::min(.85f, run.speed_scale);
+  dt *= run.speed_scale;
+  frame_dt = dt;
+  for (int i = 0; i < players(); ++i)
+    step_player(i, dt, in);
+  current_player_index = 0;
   update_creatures(*this, dt);
   update_shots(*this, dt);
+  update_rockets(*this, dt);
+  if (!survival)
+    update_career(dt);
   // The Survival arm at 0x41cc55 locks weapon 2 and emits a pair every quarter second.
-  run.next_spawn -= dt;
+  run.next_spawn -= dt * players();
   while (run.next_spawn < 0) {
+    if (!survival) {
+      run.next_spawn = std::max(.01f, run.next_spawn + 1 - run.experience / 60000.f);
+      spawn_career();
+      continue;
+    }
     run.next_spawn += .25f;
     effect_color_t tint{std::min(1.f, run.seconds / 120 + .3f), std::min(1.f, 10 / run.seconds + .3f),
                         std::clamp(std::sin(run.seconds * .1f) + .3f, 0.f, 1.f), 1};
@@ -190,8 +311,21 @@ void Game::tick(float dt, const Input &in) {
     creature_spawn(&right, &tint, 1);
     creature_spawn(&left, &tint, 1);
   }
-  if (run.health <= 0) {
+  if (!two_players && !survival && run.health <= 0 && run.plague_time < 1 &&
+      (run.experience == 6 || run.experience == 66 || run.experience == 666 || run.experience == 6666)) {
+    run.health = 1;
+    run.plague_time += dt * 10;
+    freeware_secret_weapon_unlocked = 1;
+    weapon_assign_player(0, 17);
+  }
+  if (run.health <= 0 && (!two_players || run.partner.health <= 0)) {
     run.health = 0;
+    if (run.perks[23]) {
+      run.bomb_pos = run.player;
+      run.bomb_age = 0;
+      run.final_revenge = true;
+      play_sound(Sound::Explosion);
+    }
     death_clock = 0;
     screen = Screen::Dying;
     std::printf("1.4.0 death %d kills %.2f seconds\n", run.kills, run.seconds);
@@ -203,6 +337,9 @@ void Game::finish_death(float dt) {
   frame_dt = dt;
   update_creatures(*this, dt);
   update_shots(*this, dt);
+  update_rockets(*this, dt);
+  if (run.final_revenge)
+    update_career(dt);
   death_clock += dt;
   if (death_clock >= 3.f) {
     screen = Screen::Death;

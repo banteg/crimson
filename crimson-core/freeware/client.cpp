@@ -1,5 +1,6 @@
 #include "display.h"
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
@@ -15,10 +16,13 @@ struct Sample {
   Uint8 *data{};
   Uint32 size{};
 };
-static Sample samples[4];
+static Sample samples[int(Sound::Count)];
 static void load_audio(const std::string &folder) {
-  const char *names[] = {"gunshot_01.wav", "hit_01.wav", "die_01.wav", "attack_01.wav"};
-  for (int i = 0; i < 4; ++i) {
+  const char *names[] = {"gunshot_01.wav", "hit_01.wav",    "die_01.wav",    "attack_01.wav", "pistol_01.wav",
+                         "shotgun_01.wav", "plasma_01.wav", "rocket_01.wav", "flamer_01.wav", "gunreload_01.wav",
+                         "bonus.wav",      "levelup.wav",   "explo_01.wav"};
+  static_assert(sizeof(names) / sizeof(*names) == int(Sound::Count));
+  for (int i = 0; i < int(Sound::Count); ++i) {
     SDL_AudioSpec spec{};
     auto &s = samples[i];
     if (SDL_LoadWAV((folder + "/" + names[i]).c_str(), &spec, &s.data, &s.size)) {
@@ -44,6 +48,7 @@ struct Client {
   Game game;
   std::string assets;
   Input in;
+  SDL_Gamepad *pads[2]{};
   Uint64 previous{};
 };
 static Client client;
@@ -51,10 +56,26 @@ static void frame() {
   auto &c = client;
   auto &in = c.in;
   in.click = in.accept = in.previous = in.next = in.escape = in.backspace = false;
+  in.level_up = false;
+  in.reload = false;
+  in.key = 0;
   in.text.clear();
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
     SDL_ConvertEventToRenderCoordinates(c.renderer, &e);
+    if (e.type == SDL_EVENT_GAMEPAD_ADDED) {
+      for (auto &pad : c.pads)
+        if (!pad) {
+          pad = SDL_OpenGamepad(e.gdevice.which);
+          break;
+        }
+    } else if (e.type == SDL_EVENT_GAMEPAD_REMOVED) {
+      for (auto &pad : c.pads)
+        if (pad && SDL_GetGamepadID(pad) == e.gdevice.which) {
+          SDL_CloseGamepad(pad);
+          pad = nullptr;
+        }
+    }
     if (e.type == SDL_EVENT_QUIT)
       c.game.quit = true;
     if (e.type == SDL_EVENT_MOUSE_MOTION) {
@@ -73,7 +94,18 @@ static void frame() {
     if (e.type == SDL_EVENT_TEXT_INPUT)
       in.text += e.text.text;
     if (e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
+      in.key = e.key.scancode;
+      if (e.key.scancode == SDL_SCANCODE_Q && (e.key.mod & SDL_KMOD_ALT))
+        c.game.quit = true;
       switch (e.key.scancode) {
+      case SDL_SCANCODE_SPACE:
+      case SDL_SCANCODE_KP_PLUS:
+      case SDL_SCANCODE_EQUALS:
+        in.level_up = true;
+        break;
+      case SDL_SCANCODE_R:
+        in.reload = true;
+        break;
       case SDL_SCANCODE_UP:
         in.previous = true;
         break;
@@ -96,16 +128,41 @@ static void frame() {
     }
   }
   const bool *keys = SDL_GetKeyboardState(nullptr);
-  in.up = keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP];
-  in.down = keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN];
-  in.left = keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT];
-  in.right = keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT];
+  in.ctrl = keys[SDL_SCANCODE_LCTRL];
+  auto held = [&](int actor, int key) { return keys[c.game.keys[actor][key]]; };
+  in.up2 = held(1, 0);
+  in.down2 = held(1, 1);
+  in.left2 = held(1, 2);
+  in.right2 = held(1, 3);
+  in.fire2 = held(1, 4);
+  in.up = held(0, 0) || (!c.game.two_players && in.up2);
+  in.down = held(0, 1) || (!c.game.two_players && in.down2);
+  in.left = held(0, 2) || (!c.game.two_players && in.left2);
+  in.right = held(0, 3) || (!c.game.two_players && in.right2);
+  for (int i = 0; i < 2; ++i) {
+    auto axis = [&](SDL_GamepadAxis a) {
+      float v = c.pads[i] ? SDL_GetGamepadAxis(c.pads[i], a) / 32768.f : 0.f;
+      return std::abs(v) > .18f ? v : 0.f;
+    };
+    in.stick_x[i] = axis(SDL_GAMEPAD_AXIS_LEFTX);
+    in.stick_y[i] = axis(SDL_GAMEPAD_AXIS_LEFTY);
+    in.aim_x[i] = axis(SDL_GAMEPAD_AXIS_RIGHTX);
+    in.aim_y[i] = axis(SDL_GAMEPAD_AXIS_RIGHTY);
+    if (c.pads[i] && !in.aim_x[i] && !in.aim_y[i]) {
+      in.aim_x[i] = int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) -
+                    int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_LEFT));
+      in.aim_y[i] = int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_DOWN)) -
+                    int(SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_DPAD_UP));
+    }
+    in.pad_fire[i] = c.pads[i] && (SDL_GetGamepadButton(c.pads[i], SDL_GAMEPAD_BUTTON_SOUTH) ||
+                                   axis(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > .3f);
+  }
   const Uint64 now = SDL_GetTicksNS();
   float dt = std::min(.1f, float(now - c.previous) / 1e9f);
   c.previous = now;
   auto before = c.game.screen;
   Input controls = in;
-  controls.fire |= keys[SDL_SCANCODE_TAB];
+  controls.fire |= held(0, 4) || (!c.game.two_players && in.fire2);
   c.game.update(dt, controls);
   if (before != c.game.screen) {
     if (c.game.screen == Screen::Death)
@@ -129,6 +186,20 @@ int main(int argc, char **argv) {
     return 1;
   }
   SDL_InitSubSystem(SDL_INIT_AUDIO);
+  SDL_InitSubSystem(SDL_INIT_GAMEPAD);
+#ifdef __EMSCRIPTEN__
+  client.game.save_dir = "/freeware/";
+#else
+  if (const char *path = std::getenv("CRIMSON_FREEWARE_SAVE_DIR")) {
+    client.game.save_dir = std::string(path) + "/";
+    SDL_CreateDirectory(path);
+  } else if (char *path = SDL_GetPrefPath("10tons", "Crimsonland-1.4.0")) {
+    client.game.save_dir = path;
+    SDL_free(path);
+  }
+#endif
+  client.game.load_scores();
+  client.game.load_options();
   std::string folder;
 #ifdef __EMSCRIPTEN__
   folder = "/assets";
@@ -165,6 +236,9 @@ int main(int argc, char **argv) {
     SDL_DestroyAudioStream(s.stream);
     SDL_free(s.data);
   }
+  for (auto *pad : client.pads)
+    if (pad)
+      SDL_CloseGamepad(pad);
   SDL_DestroyRenderer(client.renderer);
   SDL_DestroyWindow(client.window);
   SDL_Quit();

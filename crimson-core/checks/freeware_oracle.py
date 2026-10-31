@@ -52,6 +52,45 @@ def main() -> None:
     slot = oracle.call(0x40FB70, oracle.alloc_f32s(1088, 643), oracle.alloc_f32s(0.4, 0.8, 0.6, 1), 1).eax_i32
     assert slot == 2
     assert f"spawn {oracle.read(0x442AF8 + slot * 128, 128).hex()}" in lines
+    # Compare the Career spawner, armory (including both player strides) and the native .top codec.
+    assert len([line for line in lines if line.startswith("career ")]) == 9
+    for line in lines:
+        if line.startswith("career "):
+            _, seed, body = line.split()
+            oracle.write(0x442AF8, bytes(512 * 128))
+            oracle.write_u32(0x4384F8, 1731)
+            oracle.write_u32(0x4428A8, 1)
+            oracle.write_u32(0x452D8C, 0)
+            oracle.rand_state = int(seed)
+            edge = oracle.call(0x422414).eax % 4
+            coord = oracle.call(0x422414).eax % 1024
+            pos = [(coord, -40), (coord, 1064), (-40, coord), (1064, coord)][edge]
+            assert oracle.call(0x40F650, oracle.alloc_f32s(*pos)).eax & 255 == 1
+            original = oracle.read(0x442AF8, 128)
+            assert original == bytes.fromhex(body), (
+                seed,
+                [(hex(i), a, b) for i, (a, b) in enumerate(zip(original, bytes.fromhex(body), strict=True)) if a != b],
+            )
+        elif line.startswith("weapon "):
+            _, who, weapon, rounds, name = line.split(" ", 4)
+            who, weapon = int(who), int(weapon)
+            oracle.write_u8(0x452D59, 1)
+            oracle.call(0x4065B0, who, weapon)
+            assert oracle.read_f32(0x4384E4 + 392 * who) == float(rounds)
+            ptr = oracle.call(0x406BB0, weapon).eax
+            assert oracle.read(ptr, 64).split(b"\0")[0].decode() == name
+        elif line.startswith("scores "):
+            _, board, encoded = line.split()
+            board = int(board)
+            raw = bytes.fromhex(encoded)
+            oracle.write_u32(0x4428A0, board % 2 + 1)
+            oracle.write_u32(0x4428A8, board // 2 + 1)
+            oracle.call(0x406E10)
+            blob = oracle.alloc(len(raw), data=raw)
+            assert oracle.call(0x406F20, blob, len(raw) - 4).eax & 255 == 1
+            assert oracle.read(blob, 9) == b"Oracle 0\0"
+            oracle.call(0x406EB0, blob, len(raw) - 4)
+            assert oracle.read(blob, len(raw)) == raw
     # Capture the actual Grim calls made by the eight-row loop. Only the backend is replaced.
     vtable = oracle.alloc(256)
     oracle.write_u32(0x452D94, oracle.alloc(4, data=struct.pack("<I", vtable)))
@@ -79,7 +118,9 @@ def main() -> None:
             oracle.run(0x41B38A, 0x41B527, regs={"ebp": 0})
             assert rows == draws
             assert oracle.read_i32(0x452DA8) == int(expected), line
-    print("1.4.0: eight original menu draws, 32 boundary hits, all 128 spawn bytes, kill, death and restart passed")
+    print(
+        "1.4.0: eight original menu draws, 32 boundary hits, Career and Survival spawns, all weapon names and clips, co-op, perks, four score formats, death and restart passed",
+    )
 
 
 if __name__ == "__main__":

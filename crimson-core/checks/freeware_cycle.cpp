@@ -95,4 +95,98 @@ int main() {
   click(460, 210);
   assert(game.screen == Screen::Playing && game.generation == 2 && game.run.health == 100);
   assert(game.run.kills == 0 && highscore_record_shots_fired == 0 && creature_spawned_count == 2);
+
+  // Both player counts can start Career through Begin, with independent movement and firing.
+  Game career;
+  Input keys;
+  keys.accept = true;
+  career.update(1.f / 60, keys);
+  keys.accept = false;
+  assert(!career.survival && career.screen == Screen::Playing);
+  assert(player_state_table[0].freeware.weapon == 1 && player_state_table[0].freeware.ammo == 10);
+  for (unsigned seed : {1, 7, 39, 131, 219, 901, 1975, 4132, 6543}) {
+    std::memset(creature_pool, 0, sizeof(creature_pool));
+    seed_random(seed);
+    career.run.experience = 1731;
+    career.spawn_career();
+    std::printf("career %u ", seed);
+    auto &c = creature_pool[0];
+    assert(c.active);
+    for (auto b : *reinterpret_cast<unsigned char (*)[sizeof(c)]>(&c))
+      std::printf("%02x", b);
+    std::puts("");
+  }
+  for (int players : {1, 2}) {
+    Game g;
+    g.two_players = players == 2;
+    g.start();
+    keys = {};
+    for (int i = 0; i < players; ++i) {
+      auto &w = player_state_table[i].freeware;
+      for (int id = 1; id <= 20; ++id) {
+        freeware_secret_weapon_unlocked = 1;
+        weapon_assign_player(i, id);
+        std::printf("weapon %d %d %.0f %s\n", i, id, w.ammo, weapon_name_get(id));
+      }
+      weapon_assign_player(i, 1);
+    }
+    keys.right = true;
+    keys.up2 = true;
+    keys.fire = keys.fire2 = true;
+    for (int i = 0; i < 180; ++i)
+      g.update(1.f / 60, keys);
+    assert(g.run.player.x > 512 && player_state_table[0].freeware.ammo < 15);
+    if (players == 2)
+      assert(g.run.partner.player.y < 512 && player_state_table[1].freeware.ammo < 15);
+    keys = {};
+    g.run.pickup = {g.run.player, Bonus::Weapon, 10, 12};
+    g.update(1.f / 60, keys);
+    assert(player_state_table[0].freeware.weapon == 12);
+    auto &gun = player_state_table[0].freeware;
+    gun.ammo = 1;
+    g.run.cooldown = 0;
+    keys.fire = true;
+    g.update(1.f / 60, keys);
+    keys.fire = false;
+    assert(gun.reload > 0 && secondary_projectile_pool[0].active);
+    for (int i = 0; i < 150; ++i)
+      g.update(1.f / 60, keys);
+    assert(gun.reload == 0 && gun.ammo == gun.clip_size);
+    g.run.experience = g.next_level_xp() + 1;
+    g.update(1.f / 60, keys);
+    assert(g.run.pending && g.run.level == 2);
+    keys.level_up = true;
+    g.update(1.f / 60, keys);
+    keys.level_up = false;
+    assert(g.screen == Screen::Perks && g.run.choices.size() == 5);
+    int picked = g.run.choices[0];
+    keys.accept = true;
+    g.update(1.f / 60, keys);
+    keys.accept = false;
+    assert(g.screen == Screen::Playing && g.run.perks[picked]);
+    if (g.two_players) {
+      g.run.health = 0;
+      g.update(1.f / 60, keys);
+      assert(g.screen == Screen::Playing);
+      g.run.partner.health = 0;
+    } else
+      g.run.health = 0;
+    g.update(1.f / 60, keys);
+    assert(g.screen == Screen::Dying);
+  }
+  std::vector<Score> table;
+  for (int i = 0; i < 6; ++i)
+    table.push_back({"Oracle " + std::to_string(i), float(130 - i), 0, 5000 - i, 29, 59.75f, 120, 1.4f});
+  for (int i = 0; i < 4; ++i) {
+    auto bytes = encode_scores(table, i);
+    std::printf("scores %d ", i);
+    for (auto b : bytes)
+      std::printf("%02x", b);
+    std::puts("");
+    std::vector<Score> decoded;
+    assert(decode_scores(bytes, i, decoded) && decoded.size() == table.size());
+    assert(encode_scores(decoded, i) == bytes);
+    bytes[7] ^= 1;
+    assert(!decode_scores(bytes, i, decoded));
+  }
 }

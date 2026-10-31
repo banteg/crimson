@@ -13,8 +13,11 @@ Display::~Display() {
   SDL_DestroyTexture(stains);
 }
 bool Display::load(const std::string &folder) {
-  for (const char *name : {"font", "grass1", "mud1", "ground_tile", "crimsonland", "borg_t", "eiliens",
-                           "bullet_real_16", "blood", "aim32", "aim64", "part64", "reaper", "panel", "ui_text"}) {
+  for (const char *name :
+       {"font",           "grass1",       "mud1",       "ground_tile",    "crimsonland", "borg_t", "eiliens",
+        "bullet_real_16", "blood",        "aim32",      "aim64",          "part64",      "reaper", "panel",
+        "ui_text",        "rocket",       "flame",      "bubble",         "glow64",      "bar",    "bonus_fire",
+        "bonus_freeze",   "bonus_weapon", "bonus_bomb", "bonus_timebend", "shockwave",   "icemold"}) {
     size_t bytes;
     auto *data = static_cast<unsigned char *>(SDL_LoadFile((folder + "/" + name + ".rgba").c_str(), &bytes));
     if (!data)
@@ -103,9 +106,11 @@ void Display::draw(const Game &g) {
   SDL_RenderClear(renderer);
   const float cx = camera_x(g), cy = camera_y(g);
   SDL_FRect field{cx, cy, arena, arena};
+  SDL_SetTextureScaleMode(ground, g.smooth ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
   SDL_RenderTexture(renderer, ground, nullptr, &field);
   SDL_RenderTexture(renderer, stains, nullptr, &field);
-  if (g.screen == Screen::Playing || g.screen == Screen::Dying || g.screen == Screen::Death || g.paused) {
+  if (g.screen == Screen::Playing || g.screen == Screen::Dying || g.screen == Screen::Death ||
+      g.screen == Screen::Perks || g.paused) {
     for (const auto &c : creature_pool) {
       if (!c.active)
         continue;
@@ -117,20 +122,49 @@ void Display::draw(const Game &g) {
         cell = 31 - cell;
       if (c.death_timer < 16)
         cell = int(31 - c.death_timer);
-      sprite("eiliens", x, y, s.size, s.size, s.heading - 1.5707964f, 32 + std::clamp(cell, 0, 31), 8,
-             {s.color.r, s.color.g, s.color.b, s.color.a});
+      sprite("eiliens", x, y, s.size, s.size, s.heading - 1.5707964f,
+             (s.type == 1 ? 32 : 0) + std::clamp(cell, 0, 31), 8, {s.color.r, s.color.g, s.color.b, s.color.a});
     }
-    const auto &r = g.run;
-    if (r.health > 0) {
+    for (int i = 0; i < g.players(); ++i) {
+      const auto &r = g.actor(i);
+      if (r.health <= 0)
+        continue;
       float x = cx + r.player.x - 24, y = cy + r.player.y - 24;
-      sprite("borg_t", x, y, 48, 48, r.body_angle, int(r.walk + .5f), 8);
-      sprite("borg_t", x + 1, y + 1, 48, 48, r.aim_angle, 16 + int(r.walk + .5f), 8);
+      SDL_FColor tint = i ? SDL_FColor{.6f, .8f, 1, 1} : SDL_FColor{1, 1, 1, 1};
+      sprite("borg_t", x, y, 48, 48, r.body_angle, int(r.walk + .5f), 8, tint);
+      sprite("borg_t", x + 1, y + 1, 48, 48, r.aim_angle, 16 + int(r.walk + .5f), 8, tint);
+      if (r.shield > 0)
+        sprite("bubble", x - 8, y - 8, 64, 64, 0, 0, 1, {.4f, .8f, 1, .6f});
+    }
+    for (const auto &r : secondary_projectile_pool)
+      if (r.active)
+        sprite("rocket", cx + r.position.x - 8, cy + r.position.y - 8, 16, 16, r.angle);
+    if (g.run.pickup.time > 0) {
+      auto &b = g.run.pickup;
+      const char *icons[] = {"bonus_fire", "bonus_freeze", "bonus_weapon",
+                             "bonus_bomb", "bubble",       "bonus_timebend"};
+      float x = b.pos.x + cx, y = b.pos.y + cy;
+      sprite(icons[int(b.kind)], x - 16, y - 16, 32, 32);
+      if (b.kind == Bonus::Weapon)
+        text(weapon_name_get(b.weapon), x + 8, y - 10, .5f, {1, 1, .7f, .9f});
+    }
+    if (g.run.bomb_age >= 0) {
+      float size = g.run.bomb_age * 720;
+      sprite("shockwave", cx + g.run.bomb_pos.x - size / 2, cy + g.run.bomb_pos.y - size / 2, size, size);
     }
     for (const auto &shot : projectile_pool) {
       if (shot.active && shot.fields.life_timer >= .4f) {
         SDL_SetRenderDrawColor(renderer, 233, 204, 137, 160);
         const float x = cx + shot.position.x, y = cy + shot.position.y;
-        SDL_RenderLine(renderer, x, y, x - std::sin(shot.angle) * 15, y + std::cos(shot.angle) * 15);
+        int kind = int(shot.fields.type_id);
+        if (kind == 5 || kind == 15 || kind == 19 || kind == 7 || kind == 9 || kind == 17 || kind == 18) {
+          const char *name = kind == 19 ? "bubble" : (kind == 5 || kind == 15) ? "flame" : "glow64";
+          SDL_FColor color = kind == 17 ? SDL_FColor{.4f, 1, .2f, .9f} : SDL_FColor{.7f, .8f, 1, .9f};
+          sprite(name, x - 9, y - 9, 18, 18, shot.angle, 0, 1, color);
+          continue;
+        }
+        if (g.effects)
+          SDL_RenderLine(renderer, x, y, x - std::sin(shot.angle) * 15, y + std::cos(shot.angle) * 15);
         sprite("bullet_real_16", x - 3, y - 3, 6, 6, shot.angle);
       }
     }
@@ -152,8 +186,62 @@ void Display::draw(const Game &g) {
   } else if (g.screen == Screen::Playing) {
     // The one-player Survival arm of 0x416a00 draws the time on the original panel.
     sprite("panel", 0, 0, 640, 64, 0, 0, 1, {.7f, .7f, .7f, 1});
-    std::snprintf(line, sizeof(line), "Seconds survived: %d", int(g.run.seconds));
-    text(line, 3, 7, .7f, white);
+    if (g.run.perks[16]) {
+      int id = creature_find_in_radius(&player_state_table[0].freeware.aim, 10);
+      if (id >= 0) {
+        std::snprintf(line, sizeof(line), "health %d", int(creature_pool[id].health));
+        text(line, g.cursor_x + 8, g.cursor_y + 8, .55f, white);
+      }
+    }
+    if (g.survival) {
+      std::snprintf(line, sizeof(line), "Seconds survived: %d", int(g.run.seconds));
+      text(line, 3, 7, .7f, white);
+    } else {
+      for (int i = 0; i < g.players(); ++i) {
+        const auto &w = player_state_table[i].freeware;
+        float x = i * 490.f;
+        std::snprintf(line, sizeof(line), "%s  %d/%d  %s", weapon_name_get(w.weapon), int(std::ceil(w.ammo)),
+                      int(w.clip_size), w.reload > 0 ? "Reloading" : "");
+        text(line, x + 4, 3, .58f, white);
+        std::snprintf(line, sizeof(line), "Health %d   Experience %d   Level %d",
+                      int(std::ceil(g.actor(i).health)), g.run.experience, g.run.level);
+        text(line, x + 4, 24, .55f, white);
+      }
+      if (g.run.pending)
+        text("+Level Up", width - 175, height - 50, .95f, {1, .8f, .1f, 1});
+    }
+  } else if (g.screen == Screen::Message) {
+    text("Message:", 150, 40, .9f, white);
+    std::string hint = g.message;
+    size_t col = 0;
+    for (char &c : hint) {
+      if (c == ' ' && col > 25) {
+        c = '\n';
+        col = 0;
+      } else
+        ++col;
+    }
+    text(hint, 150, 90, .65f, white);
+    text("(press space or left mouse button)", 150, 340, .65f, muted);
+  } else if (g.screen == Screen::Perks) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 205);
+    SDL_RenderFillRect(renderer, nullptr);
+    text("Pick a perk!", 150, 40, 1, white);
+    for (size_t i = 0; i < g.run.choices.size(); ++i)
+      text(perk_name(g.run.choices[i]), 150, 94 + 27 * i, .7f, i == size_t(g.selected) ? white : muted);
+    if (!g.run.choices.empty()) {
+      std::string description = perk_description(g.run.choices[g.selected]);
+      size_t col = 0;
+      for (char &c : description) {
+        if (c == ' ' && col > 32) {
+          c = '\n';
+          col = 0;
+        } else
+          ++col;
+      }
+      text(description, 520, 108, .68f, white);
+    }
   } else if (g.screen == Screen::Dying) {
     const float fade = std::clamp(std::min(g.death_clock, 3.f - g.death_clock), 0.f, 1.f);
     sprite("reaper", width / 2 - 64, height / 2 - 64, 128, 128, 0, 0, 1, {1, 1, 1, fade});
@@ -166,13 +254,14 @@ void Display::draw(const Game &g) {
     sprite("reaper", 10, 10, 128, 128, 0, 0, 1, {1, 1, 1, fade});
     for (int i = 0; i < 2; ++i)
       text("The Reaper got you.", 100, 50, .975435f, {.75f, .35f, .22f, .9f * fade});
-    std::snprintf(line, sizeof(line), "Seconds survived: %d", int(g.run.seconds));
+    std::snprintf(line, sizeof(line), g.survival ? "Seconds survived: %d" : "Gained experience: %d",
+                  g.survival ? int(g.run.seconds) : g.run.experience);
     text(line, 120, 90, .75435f, {.85f, .55f, .35f, .8f * fade});
     text("Who were you:", 10, 165, .75435f, {1, 1, 1, fade});
     text(g.name, 50, 190, 1, {1, 1, 1, fade});
     if (std::fmod(g.menu_clock, 1.f) < .5f)
       text("_", 50 + 16 * g.name.size(), 190, 1, {1, 1, 1, .4f});
-    std::snprintf(line, sizeof(line), "Gained level: 1\nHit accuracy: %d%%\nFrags: %d\n",
+    std::snprintf(line, sizeof(line), "Gained level: %d\nHit accuracy: %d%%\nFrags: %d\n", g.run.level,
                   highscore_record_shots_fired ? g.run.hits * 100 / highscore_record_shots_fired : 0, g.run.kills);
     text(line, 60, 320, .66f, white);
   } else {
@@ -182,23 +271,31 @@ void Display::draw(const Game &g) {
                                                         : "Online options.";
     text(heading, 180, 120, 1, white);
     if (g.screen == Screen::Scores) {
-      text("-SURVIVAL--", 180, 170, .75435f, white);
-      for (size_t i = 0; i < std::min<size_t>(g.scores.size(), 7); ++i) {
-        const auto &score = g.scores[i];
-        std::snprintf(line, sizeof(line), "%zu.  %-31s  %d", i + 1, score.name.c_str(), int(score.seconds));
+      text(g.survival ? "-SURVIVAL--" : "-CAREER--", 180, 170, .75435f, white);
+      for (size_t i = 0; i < std::min<size_t>(g.scores().size(), 10); ++i) {
+        const auto &score = g.scores()[i];
+        std::snprintf(line, sizeof(line), "%zu.  %-31s  %d", i + 1, score.name.c_str(),
+                      g.survival ? int(score.seconds) : score.experience);
         text(line, 180, 210 + i * 23, .75435f, muted);
       }
     } else if (g.screen == Screen::Credits) {
-      text("Game coded & designed by\nTero Alatalo\n3D Art modelled by\nTimo Palonen\nMusic performed by\nValtteri "
-           "Pihlajamaki",
-           180, 170, .75435f, white);
+      text(
+          "Game coded & designed by\nTero Alatalo\n3D Art modelled by\nTimo Palonen\nMusic performed by\nValtteri "
+          "Pihlajamaki",
+          180, 170, .75435f, white);
     } else if (g.screen == Screen::Options) {
-      text(g.music_enabled ? "Music: on" : "Music: off", 180, 200, .75435f, g.selected == 0 ? white : muted);
-      text("Done", 180, 238, .75435f, g.selected == 1 ? white : muted);
+      if (g.rebind < 0) {
+        for (int i = 0; i < 9; ++i)
+          text(g.option(i), 180, 170 + i * 30, .72f, g.selected == i ? white : muted);
+      } else {
+        static const char *actions[] = {"forward", "backward", "left", "right", "fire"};
+        std::snprintf(line, sizeof(line), "Player %d: press key for %s", g.rebind / 5 + 1, actions[g.rebind % 5]);
+        text(line, 180, 200, .72f, white);
+      }
     } else if (g.screen == Screen::Online) {
       text("Online highscores are offline.", 180, 170, .75435f, white);
     }
-    if (g.screen != Screen::Options)
+    if (g.screen != Screen::Options && g.screen != Screen::Scores)
       text("back to main menu", 180, 410, .75435f, muted);
   }
   if (g.screen == Screen::Playing) {
@@ -211,10 +308,14 @@ void Display::draw(const Game &g) {
     sprite("part64", g.cursor_x - 32, g.cursor_y - 32, 64, 64);
     for (int i = 0; i < 3; ++i) {
       float angle = g.menu_clock * speed + i * 2.0943952f;
-      sprite("part64", g.cursor_x - 32 + 16 * std::cos(angle), g.cursor_y - 32 + 16 * std::sin(angle), 64, 64, 0, 0,
-             1, {1, 1, 1, alpha});
+      sprite("part64", g.cursor_x - 32 + 16 * std::cos(angle), g.cursor_y - 32 + 16 * std::sin(angle), 64, 64, 0,
+             0, 1, {1, 1, 1, alpha});
     }
     sprite("aim32", g.cursor_x - 16, g.cursor_y - 16, 32, 32, 0, 0, 1, {1, 1, 1, .64f});
+  }
+  if (g.show_fps) {
+    std::snprintf(line, sizeof(line), "%.0f FPS", g.fps);
+    text(line, width - 110, 4, .55f, white);
   }
   SDL_RenderPresent(renderer);
 }
