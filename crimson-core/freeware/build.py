@@ -30,7 +30,7 @@ def build(root: Path, target: str, out: Path, install: Path | None) -> None:
     sources = [
         *(core / "freeware" / name for name in ("client.cpp", "display.cpp", "menu.cpp", "survival.cpp")),
         *(recovered / name for name in (
-            "creatures/creature_alloc_slot.cpp", "creatures/creature_find_in_radius.cpp", "creatures/creature_reset_all.cpp",
+            "creatures/creature_spawn.cpp", "creatures/creature_alloc_slot.cpp", "creatures/creature_find_in_radius.cpp", "creatures/creature_reset_all.cpp",
             "player/angle_approach.cpp", "projectiles/projectile_spawn.cpp",
         )),
     ]

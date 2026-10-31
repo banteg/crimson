@@ -860,28 +860,12 @@
     "size": 189
   },
   {
-    "address": "0x00406B60",
-    "canonical_address": "0x0041FC60",
-    "end": "0x00406BA5",
-    "evidence": "ordered",
-    "name": "weapon_name_get",
-    "size": 69
-  },
-  {
     "address": "0x00406BB0",
-    "canonical_address": "0x0041FC80",
+    "canonical_address": "0x0041FC60",
     "end": "0x00406E10",
-    "evidence": "ordered",
-    "name": "player_reset_all",
+    "evidence": "recovered",
+    "name": "weapon_name_get",
     "size": 608
-  },
-  {
-    "address": "0x00406FF0",
-    "canonical_address": "0x0041FED0",
-    "end": "0x00407178",
-    "evidence": "ordered",
-    "name": "effect_uv_tables_init",
-    "size": 392
   },
   {
     "address": "0x004078B0",
@@ -892,12 +876,28 @@
     "size": 107
   },
   {
+    "address": "0x00408440",
+    "canonical_address": "0x0041FC80",
+    "end": "0x004085FB",
+    "evidence": "recovered",
+    "name": "player_reset_all",
+    "size": 443
+  },
+  {
     "address": "0x00408E20",
     "canonical_address": "0x00420040",
     "end": "0x00408E84",
     "evidence": "called",
     "name": "creature_find_nearest",
     "size": 100
+  },
+  {
+    "address": "0x00408E90",
+    "canonical_address": "0x0041FED0",
+    "end": "0x0040900B",
+    "evidence": "ordered",
+    "name": "effect_uv_tables_init",
+    "size": 379
   },
   {
     "address": "0x00409010",
@@ -973,18 +973,18 @@
   },
   {
     "address": "0x0040D8C0",
-    "canonical_address": "0x00425E50",
+    "canonical_address": "0x00426220",
     "end": "0x0040E05C",
-    "evidence": "ordered",
-    "name": "player_take_damage",
+    "evidence": "recovered",
+    "name": "creature_update_all",
     "size": 1948
   },
   {
     "address": "0x0040E060",
-    "canonical_address": "0x00426220",
+    "canonical_address": "0x00417B80",
     "end": "0x0040E6A1",
-    "evidence": "ordered",
-    "name": "creature_update_all",
+    "evidence": "recovered",
+    "name": "terrain_generate",
     "size": 1601
   },
   {
@@ -1026,7 +1026,7 @@
     "address": "0x0040F5E0",
     "canonical_address": "0x00428140",
     "end": "0x0040F60E",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "creature_alloc_slot",
     "size": 46
   },
@@ -1050,7 +1050,7 @@
     "address": "0x0040FB70",
     "canonical_address": "0x00428240",
     "end": "0x0040FD0A",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "creature_spawn",
     "size": 410
   },
@@ -1093,6 +1093,14 @@
     "evidence": "ordered",
     "name": "audio_resume_all",
     "size": 61
+  },
+  {
+    "address": "0x00418190",
+    "canonical_address": "0x0040C1C0",
+    "end": "0x0041E2E4",
+    "evidence": "recovered",
+    "name": "game_frame_update",
+    "size": 24916
   },
   {
     "address": "0x0041FC00",

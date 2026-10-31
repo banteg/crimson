@@ -27,7 +27,6 @@ struct Game {
   float best_seconds{};
   bool survival{}, paused{}, quit{};
   std::string name;
-  unsigned rng = 1;
   void update(float dt, const Input &input);
   void start();
   void tick(float dt, const Input &input);

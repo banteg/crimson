@@ -345,10 +345,22 @@
       "body_sha256": "1d521d9274f269ea2a46a34799884df95ffc7705704d262831ce5a203dd84c41"
     },
     {
+      "name": "weapon_name_get",
+      "address": "0x00406bb0",
+      "end": "0x00406e10",
+      "body_sha256": "3d31eadfc1fefc6ce0ad15e81ea35fb01782c7a9bd2c8a08a556fbda462b2b62"
+    },
+    {
       "name": "wrap_text_to_width_alloc",
       "address": "0x004078b0",
       "end": "0x0040791b",
       "body_sha256": "7084ac19a5da5e2e3af7104cbb8f6f82e788645fe39c92d16204a2f727a2ca83"
+    },
+    {
+      "name": "player_reset_all",
+      "address": "0x00408440",
+      "end": "0x004085fb",
+      "body_sha256": "91b68a8b8fc0ffc254f39a4cb7b976fff31ae226ed7086a046a74aa09eb45bc8"
     },
     {
       "name": "fx_spawn_secondary_projectile",
@@ -381,6 +393,24 @@
       "body_sha256": "10a642600bf113f8091e1d0517cae418c927773dd08063fda61c9761b63c6c97"
     },
     {
+      "name": "creature_update_all",
+      "address": "0x0040d8c0",
+      "end": "0x0040e05c",
+      "body_sha256": "26cbc72b1338389cd9ffd58f40565b0f8584b9adbfbf055b0c46a97ce21bc967"
+    },
+    {
+      "name": "terrain_generate",
+      "address": "0x0040e060",
+      "end": "0x0040e6a1",
+      "body_sha256": "5ef704ad7007011b4041cbb59e9b01d5e0e287dfeaaf1899e787b01a7c13b0b7"
+    },
+    {
+      "name": "creature_alloc_slot",
+      "address": "0x0040f5e0",
+      "end": "0x0040f60e",
+      "body_sha256": "153a854bcd076d31e6757e9a9ea23a459465a719b3e712210c021fe573913f92"
+    },
+    {
       "name": "creature_reset_all",
       "address": "0x0040f610",
       "end": "0x0040f625",
@@ -393,10 +423,22 @@
       "body_sha256": "77f4a1d092e4b893bbd26666db850c7f85deedf1eeea560c12be582a739d3aa1"
     },
     {
+      "name": "creature_spawn",
+      "address": "0x0040fb70",
+      "end": "0x0040fd0a",
+      "body_sha256": "f59cb7721136e95da7e72f23f6d77b12f582a72676ba10e9a974e4618bf74824"
+    },
+    {
       "name": "player_heading_approach_target",
       "address": "0x00412570",
       "end": "0x004126de",
       "body_sha256": "d0d967f1233a8058cf427f4779a408dec422f8fba81ac9a09978a0a853379bcd"
+    },
+    {
+      "name": "game_frame_update",
+      "address": "0x00418190",
+      "end": "0x0041e2e4",
+      "body_sha256": "3decabce76335112fa8905f485ef70272b8ae10b959212e50489fe4b3c64887d"
     },
     {
       "name": "console_cmd_load_texture",
@@ -857,6 +899,12 @@
       "offset": 436
     },
     {
+      "name": "config_game_mode",
+      "address": "0x004428a8",
+      "reference": "0x0040fbc3",
+      "bytes": "a1a8284400"
+    },
+    {
       "name": "config_sound_freq_adjustment",
       "address": "0x004428e5",
       "reference": "0x004206d0",
@@ -912,6 +960,19 @@
       "address": "0x00452dc4",
       "reference": "0x004205c0",
       "bytes": "d905c42d4500"
+    },
+    {
+      "name": "freeware_elapsed_seconds",
+      "address": "0x00452dc4",
+      "reference": "0x0040fbed",
+      "bytes": "d905c42d4500",
+      "build_only": true
+    },
+    {
+      "name": "creature_spawned_count",
+      "address": "0x00452e78",
+      "reference": "0x0040fcec",
+      "bytes": "a1782e4500"
     },
     {
       "name": "frame_dt",

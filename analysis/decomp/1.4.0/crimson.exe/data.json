@@ -846,6 +846,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x004428a8",
+      "name": "config_game_mode",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x004428e5",
       "name": "config_sound_freq_adjustment",
       "program": "1.4.0/crimson.exe"
@@ -892,7 +897,17 @@
     },
     {
       "address": "0x00452dc4",
+      "name": "freeware_elapsed_seconds",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452dc4",
       "name": "run_elapsed_ms",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e78",
+      "name": "creature_spawned_count",
       "program": "1.4.0/crimson.exe"
     },
     {

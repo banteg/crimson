@@ -303,27 +303,11 @@
     "size": 1
   },
   {
-    "address": "0x00401440",
-    "canonical_address": "0x0041E8D0",
-    "end": "0x0040146D",
-    "evidence": "ordered",
-    "name": "input_aim_pov_left_active",
-    "size": 45
-  },
-  {
-    "address": "0x00401470",
-    "canonical_address": "0x0041F1A0",
-    "end": "0x004015FF",
-    "evidence": "ordered",
-    "name": "config_load_presets",
-    "size": 399
-  },
-  {
     "address": "0x00401600",
-    "canonical_address": "0x0041F580",
+    "canonical_address": "0x0041E8D0",
     "end": "0x00401624",
     "evidence": "ordered",
-    "name": "bonus_alloc_slot",
+    "name": "input_aim_pov_left_active",
     "size": 36
   },
   {
@@ -336,10 +320,10 @@
   },
   {
     "address": "0x004016B0",
-    "canonical_address": "0x0041F5B0",
+    "canonical_address": "0x0041F430",
     "end": "0x004017F2",
     "evidence": "ordered",
-    "name": "bonus_spawn_at",
+    "name": "angle_approach",
     "size": 322
   },
   {
@@ -351,14 +335,6 @@
     "size": 11
   },
   {
-    "address": "0x004018F0",
-    "canonical_address": "0x0041FC60",
-    "end": "0x00401935",
-    "evidence": "exact",
-    "name": "weapon_name_get",
-    "size": 69
-  },
-  {
     "address": "0x00401940",
     "canonical_address": "0x0041FBB0",
     "end": "0x004019C9",
@@ -367,11 +343,19 @@
     "size": 137
   },
   {
+    "address": "0x00401A10",
+    "canonical_address": "0x0041F580",
+    "end": "0x00401A38",
+    "evidence": "ordered",
+    "name": "bonus_alloc_slot",
+    "size": 40
+  },
+  {
     "address": "0x00401A40",
-    "canonical_address": "0x0041FED0",
+    "canonical_address": "0x0041F5B0",
     "end": "0x00401C07",
     "evidence": "ordered",
-    "name": "effect_uv_tables_init",
+    "name": "bonus_spawn_at",
     "size": 455
   },
   {
@@ -381,6 +365,14 @@
     "evidence": "recovered",
     "name": "wrap_text_to_width_alloc",
     "size": 107
+  },
+  {
+    "address": "0x00402230",
+    "canonical_address": "0x0041FED0",
+    "end": "0x0040234E",
+    "evidence": "ordered",
+    "name": "effect_uv_tables_init",
+    "size": 286
   },
   {
     "address": "0x00402940",
@@ -448,18 +440,18 @@
   },
   {
     "address": "0x00404B70",
-    "canonical_address": "0x00425E50",
+    "canonical_address": "0x00426220",
     "end": "0x0040508C",
     "evidence": "ordered",
-    "name": "player_take_damage",
+    "name": "creature_update_all",
     "size": 1308
   },
   {
     "address": "0x00405090",
-    "canonical_address": "0x00426220",
+    "canonical_address": "0x00417B80",
     "end": "0x004058C7",
     "evidence": "ordered",
-    "name": "creature_update_all",
+    "name": "terrain_generate",
     "size": 2103
   },
   {

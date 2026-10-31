@@ -616,6 +616,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x004374b0",
+      "name": "config_game_mode",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x004374f8",
       "name": "creature_pool",
       "program": "1.3.0/crimson.exe"
@@ -641,13 +646,18 @@
       "program": "1.3.0/crimson.exe"
     },
     {
-      "address": "0x00447758",
-      "name": "run_elapsed_ms",
+      "address": "0x00447778",
+      "name": "bonus_fire_bullets_timer",
       "program": "1.3.0/crimson.exe"
     },
     {
-      "address": "0x00447778",
-      "name": "bonus_fire_bullets_timer",
+      "address": "0x00447784",
+      "name": "freeware_elapsed_seconds",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044780c",
+      "name": "creature_spawned_count",
       "program": "1.3.0/crimson.exe"
     },
     {

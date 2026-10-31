@@ -279,6 +279,12 @@
       "body_sha256": "58b0f201f3d48560d8731306bed99a12ab1a0c708f979b51172c22cc2d65fed9"
     },
     {
+      "name": "creature_alloc_slot",
+      "address": "0x0040b4e0",
+      "end": "0x0040b50e",
+      "body_sha256": "93ff31bd3c533117019135cd24297325c002ee4eee3d44c66098970fd5299eab"
+    },
+    {
       "name": "creature_reset_all",
       "address": "0x0040b510",
       "end": "0x0040b525",
@@ -289,6 +295,12 @@
       "address": "0x0040b530",
       "end": "0x0040b54c",
       "body_sha256": "bc8776abc0abc21703861176bf1129ffc51ca3e1206f1fd23afcd1975edb78ca"
+    },
+    {
+      "name": "creature_spawn",
+      "address": "0x0040ba70",
+      "end": "0x0040bc09",
+      "body_sha256": "618725a5ec0a2eacfc138c4722b8691b9cf7f802732a0b98327169a1546d4f65"
     }
   ],
   "data": [
@@ -567,6 +579,12 @@
       "offset": 436
     },
     {
+      "name": "config_game_mode",
+      "address": "0x004374b0",
+      "reference": "0x0040baaf",
+      "bytes": "a1b0744300"
+    },
+    {
       "name": "creature_pool",
       "address": "0x004374f8",
       "reference": "0x004061e7",
@@ -603,6 +621,19 @@
       "reference": "0x0040617d",
       "bytes": "d90578774400",
       "build_only": true
+    },
+    {
+      "name": "freeware_elapsed_seconds",
+      "address": "0x00447784",
+      "reference": "0x0040baec",
+      "bytes": "d90584774400",
+      "build_only": true
+    },
+    {
+      "name": "creature_spawned_count",
+      "address": "0x0044780c",
+      "reference": "0x0040bbeb",
+      "bytes": "a10c784400"
     }
   ],
   "absent": [

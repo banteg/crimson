@@ -532,12 +532,15 @@ typedef struct creature_t {
     int entity_reserved_74;
 } creature_t;
 #elif CL_BUILD < 10900
+#pragma pack(push, 4)
 typedef struct creature_t {
     unsigned char active;
     unsigned char ai_mode;
     unsigned char _pad0[2];
-    unsigned char state_flag;
-    unsigned char _pad1[3];
+    union {
+        unsigned char state_flag;
+        float activation_radius;
+    };
     float hit_flash_timer;
     unsigned char plague_infected;
     unsigned char _pad2[3];
@@ -558,7 +561,6 @@ typedef struct creature_t {
         vec2f_t velocity;
     };
     float health;
-#if CL_BUILD == 10400
     // 0x40fb70 constructs this record; the Survival step at 0x40d8c0 consumes it.
     // The anonymous view below retains the donor names used by the matcher.
     union {
@@ -573,66 +575,64 @@ typedef struct creature_t {
             float contact_damage;
             float move_speed;
             float attack_cooldown;
-            unsigned int reward_words[2];
+            double reward;
             unsigned char unknown_68[12];
             int type;
             int player;
             float animation;
         } freeware;
         struct {
-#endif
-    float max_health;
-    float heading;
-    float size;
-    float target_heading;
-    union {
-        struct {
-            float tint_r;
-            float tint_g;
-            float tint_b;
-            float tint_a;
-        };
-        effect_color_t color;
-    };
-    unsigned char force_target;
-    signed char target_player;
-    unsigned char _pad_force_target[2];
-    union {
-        struct {
-            float target_x;
-            float target_y;
-        };
-        vec2f_t target_position;
-    };
-    float contact_damage;
-    float move_speed;
-    float attack_cooldown;
-    float reward_value;
-    int type_id;
-    union {
-        int link_index;
-        creature_bonus_args_t bonus_args;
-    };
-    union {
-        struct {
-            float target_offset_x;
-            float target_offset_y;
-        };
-        vec2f_t target_offset;
-    };
-    union {
-        float orbit_angle;
-        creature_orbit_radius_t orbit_radius;
-        int flags;
-        int phase_seed;
-        float dot_tick_timer;
-    };
-    int entity_reserved_74;
-#if CL_BUILD == 10400
+            float max_health;
+            float heading;
+            float size;
+            float target_heading;
+            union {
+                struct {
+                    float tint_r;
+                    float tint_g;
+                    float tint_b;
+                    float tint_a;
+                };
+                effect_color_t color;
+            };
+            unsigned char force_target;
+            signed char target_player;
+            unsigned char _pad_force_target[2];
+            union {
+                struct {
+                    float target_x;
+                    float target_y;
+                };
+                vec2f_t target_position;
+            };
+            float contact_damage;
+            float move_speed;
+            float attack_cooldown;
+            float reward_value;
+            int type_id;
+            union {
+                int link_index;
+                creature_bonus_args_t bonus_args;
+            };
+            union {
+                struct {
+                    float target_offset_x;
+                    float target_offset_y;
+                };
+                vec2f_t target_offset;
+            };
+            union {
+                float orbit_angle;
+                creature_orbit_radius_t orbit_radius;
+                int flags;
+                int phase_seed;
+                float dot_tick_timer;
+            };
+            int entity_reserved_74;
         };
     };
-#endif
 } creature_t;
+#pragma pack(pop)
 #else
 typedef struct creature_t {
     unsigned char active;

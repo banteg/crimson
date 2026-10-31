@@ -8,7 +8,10 @@
 extern "C" {
 creature_t creature_pool[512];
 projectile_pool_t projectile_pool;
-float frame_dt, bonus_fire_bullets_timer;
+float frame_dt, bonus_fire_bullets_timer, freeware_elapsed_seconds;
+game_mode_id_t config_game_mode = static_cast<game_mode_id_t>(2);
+int creature_spawned_count;
+int creature_spawn(const vec2f_t *, const effect_color_t *, int);
 int highscore_record_shots_fired;
 int creature_alloc_slot();
 void creature_reset_all();
@@ -24,9 +27,10 @@ static_assert(sizeof(creature_t) == 0x80 && sizeof(projectile_t) == 0x34);
 float camera_x(const Game &g) { return std::clamp(width * .5f - g.run.player.x, float(width - arena), 0.f); }
 float camera_y(const Game &g) { return std::clamp(height * .5f - g.run.player.y, float(height - arena), -1.f); }
 
-static int random(Game &g) {
-  g.rng = g.rng * 214013u + 2531011u;
-  return (g.rng >> 16) & 0x7fff;
+static unsigned rng = 1;
+extern "C" int crt_rand() {
+  rng = rng * 214013u + 2531011u;
+  return (rng >> 16) & 0x7fff;
 }
 
 void Game::start() {
@@ -35,36 +39,14 @@ void Game::start() {
   creature_reset_all();
   std::memset(projectile_pool, 0, sizeof(projectile_pool));
   highscore_record_shots_fired = 0;
+  creature_spawned_count = 0;
+  freeware_elapsed_seconds = 0;
   bonus_fire_bullets_timer = 0;
   name.clear();
   paused = false;
   screen = Screen::Playing;
   ++generation;
   std::printf("1.4.0 survival start %d\n", generation);
-}
-
-// 0x40fb70. Survival always asks for a type-1 creature, from each side in the same frame.
-static void spawn(Game &g, float x, float y) {
-  auto &c = creature_pool[creature_alloc_slot()];
-  auto &s = c.freeware;
-  c.active = c.ai_mode = 1;
-  c.plague_infected = 0;
-  c.anim_phase = 0;
-  c.death_timer = 16;
-  c.position = {x, y};
-  c.velocity = {};
-  c.health = 10 + g.run.seconds * .1f;
-  s.heading = (random(g) % 314) * .01f;
-  s.size = 47 + g.run.seconds * .01f;
-  s.move_speed = 2.5f + g.run.seconds * .01f;
-  s.contact_damage = 4;
-  s.attack_cooldown = 0;
-  double reward = random(g) % 30 + 140;
-  std::memcpy(s.reward_words, &reward, sizeof(reward));
-  s.color = {std::min(1.f, g.run.seconds / 120 + .3f), std::min(1.f, 10 / g.run.seconds + .3f),
-             std::clamp(std::sin(g.run.seconds * .1f) + .3f, 0.f, 1.f), 1};
-  s.type = 1;
-  s.animation = 0;
 }
 
 static void update_creatures(Game &g, float dt) {
@@ -139,9 +121,7 @@ static void update_shots(Game &g, float dt) {
         c.health -= (3000 / distance + 10) * 1.2f * .95f;
         if (c.health <= 0) {
           ++g.run.kills;
-          double reward;
-          std::memcpy(&reward, c.freeware.reward_words, sizeof(reward));
-          g.run.experience += static_cast<int>(reward);
+          g.run.experience += static_cast<int>(c.freeware.reward);
           c.death_timer -= dt;
           play_sound(Sound::Die);
           if (g.run.kills == 1)
@@ -157,6 +137,7 @@ static void update_shots(Game &g, float dt) {
 void Game::tick(float dt, const Input &in) {
   frame_dt = dt;
   run.seconds += dt;
+  freeware_elapsed_seconds = run.seconds;
   float dx = float(in.right) - float(in.left), dy = float(in.down) - float(in.up);
   if (dx || dy) {
     float length = std::hypot(dx, dy);
@@ -172,7 +153,7 @@ void Game::tick(float dt, const Input &in) {
   if ((in.fire || in.click) && run.cooldown <= 0) {
     const float angle = run.aim_angle - pi / 2 - .25f;
     vec2f_t muzzle{run.player.x + std::cos(angle) * 12, run.player.y + std::sin(angle) * 12};
-    projectile_spawn(&muzzle, run.aim_angle + ((random(*this) % 200) - 100) * run.spread * .001f, 2);
+    projectile_spawn(&muzzle, run.aim_angle + ((crt_rand() % 200) - 100) * run.spread * .001f, 2);
     run.cooldown = .117f;
     run.spread += .07f;
     play_sound(Sound::Shot);
@@ -183,8 +164,12 @@ void Game::tick(float dt, const Input &in) {
   run.next_spawn -= dt;
   while (run.next_spawn < 0) {
     run.next_spawn += .25f;
-    spawn(*this, arena + 64, arena * .5f + std::cos(run.seconds) * 256);
-    spawn(*this, -64, arena * .5f + std::sin(run.seconds) * 256);
+    effect_color_t tint{std::min(1.f, run.seconds / 120 + .3f), std::min(1.f, 10 / run.seconds + .3f),
+                        std::clamp(std::sin(run.seconds * .1f) + .3f, 0.f, 1.f), 1};
+    vec2f_t right{arena + 64, arena * .5f + std::cos(run.seconds) * 256};
+    vec2f_t left{-64, arena * .5f + std::sin(run.seconds) * 256};
+    creature_spawn(&right, &tint, 1);
+    creature_spawn(&left, &tint, 1);
   }
   if (run.health <= 0) {
     screen = Screen::Death;

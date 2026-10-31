@@ -506,8 +506,8 @@
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x004287b4",
-      "name": "run_elapsed_ms",
+      "address": "0x00428868",
+      "name": "creature_spawned_count",
       "program": "1.0.2/crimson.exe"
     },
     {

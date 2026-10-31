@@ -144,6 +144,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_spawn.cpp",
+          "configs": [
+            "tools/match/scratches/creature_spawn"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/creatures/creatures_none_active.cpp",
           "configs": [
             "tools/match/scratches/creatures_none_active"

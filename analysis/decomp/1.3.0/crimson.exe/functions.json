@@ -479,19 +479,11 @@
     "size": 144
   },
   {
-    "address": "0x004040D0",
-    "canonical_address": "0x0041FC60",
-    "end": "0x00404115",
-    "evidence": "exact",
-    "name": "weapon_name_get",
-    "size": 69
-  },
-  {
     "address": "0x00404120",
-    "canonical_address": "0x0041FC80",
+    "canonical_address": "0x0041FC60",
     "end": "0x00404329",
     "evidence": "called",
-    "name": "player_reset_all",
+    "name": "weapon_name_get",
     "size": 521
   },
   {
@@ -509,6 +501,14 @@
     "evidence": "recovered",
     "name": "wrap_text_to_width_alloc",
     "size": 107
+  },
+  {
+    "address": "0x00405300",
+    "canonical_address": "0x0041FC80",
+    "end": "0x004054B9",
+    "evidence": "ordered",
+    "name": "player_reset_all",
+    "size": 441
   },
   {
     "address": "0x00405CF0",
@@ -584,18 +584,18 @@
   },
   {
     "address": "0x00409C80",
-    "canonical_address": "0x00425E50",
+    "canonical_address": "0x00426220",
     "end": "0x0040A3B8",
     "evidence": "ordered",
-    "name": "player_take_damage",
+    "name": "creature_update_all",
     "size": 1848
   },
   {
     "address": "0x0040A3C0",
-    "canonical_address": "0x00426220",
+    "canonical_address": "0x00417B80",
     "end": "0x0040A9FE",
     "evidence": "ordered",
-    "name": "creature_update_all",
+    "name": "terrain_generate",
     "size": 1598
   },
   {
@@ -618,10 +618,26 @@
     ]
   },
   {
+    "address": "0x0040AA80",
+    "canonical_address": "0x00427840",
+    "end": "0x0040AAFA",
+    "evidence": "ordered",
+    "name": "fx_queue_add_rotated",
+    "size": 122
+  },
+  {
+    "address": "0x0040AB00",
+    "canonical_address": "0x00427920",
+    "end": "0x0040B250",
+    "evidence": "ordered",
+    "name": "fx_queue_render",
+    "size": 1872
+  },
+  {
     "address": "0x0040B4E0",
     "canonical_address": "0x00428140",
     "end": "0x0040B50E",
-    "evidence": "exact",
+    "evidence": "recovered",
     "name": "creature_alloc_slot",
     "size": 46
   },
@@ -642,18 +658,10 @@
     "size": 28
   },
   {
-    "address": "0x0040B550",
-    "canonical_address": "0x0042ABD0",
-    "end": "0x0040BA65",
-    "evidence": "ordered",
-    "name": "load_textures_step",
-    "size": 1301
-  },
-  {
     "address": "0x0040BA70",
     "canonical_address": "0x00428240",
     "end": "0x0040BC09",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "creature_spawn",
     "size": 409
   },
@@ -728,6 +736,14 @@
     "evidence": "ordered",
     "name": "ui_button_update",
     "size": 1232
+  },
+  {
+    "address": "0x00412FD0",
+    "canonical_address": "0x0040C1C0",
+    "end": "0x004183A3",
+    "evidence": "ordered",
+    "name": "game_frame_update",
+    "size": 21459
   },
   {
     "address": "0x004183E0",

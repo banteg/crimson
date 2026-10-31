@@ -5,7 +5,7 @@
   "sha256": "5c56641e7205631f4ea87394d8cbfd87bfc88f8211d199d439eae0a5ca6ad4d8",
   "analyzer": {
     "name": "Binary Ninja",
-    "version": "6.1.10626-dev Personal",
+    "version": "6.1.11003-dev Personal",
     "mode": "controlFlow",
     "seeds": "Verified relinking-invariant bodies from the donor map; independent control-flow discovery retained."
   },
@@ -41243,7 +41243,6 @@
     4207856,
     4208592,
     4210752,
-    4210896,
     4213344,
     4218096,
     4218592,
@@ -41257,6 +41256,7 @@
     4240608,
     4240656,
     4240688,
+    4242032,
     4293600,
     4306912,
     4306960,
@@ -41509,5 +41509,5 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "11c3023d5c46db7041b0d668065a3d8ac58cd10006ca8b138d383fbc1a0eb37c"
+  "maps_sha256": "0ca28a9920691511b5daaf6ffaf49bc2ba6b0aa8e50087b148403526c1e3370f"
 }
