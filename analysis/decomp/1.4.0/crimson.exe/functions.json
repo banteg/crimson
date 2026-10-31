@@ -323,14 +323,11 @@
   },
   {
     "address": "0x00402FE0",
-    "canonical_address": "0x0041DDD0",
     "end": "0x004030E6",
-    "evidence": "ordered",
-    "name": "vorbis_mem_open",
     "size": 262,
-    "aliases": [
-      "?open@vorbis_stream_t@@QAEEPAXI@Z"
-    ]
+    "build_only": true,
+    "name": "freeware_http_get",
+    "evidence": "recovered"
   },
   {
     "address": "0x00403230",
@@ -772,6 +769,70 @@
     "size": 1
   },
   {
+    "address": "0x00403C10",
+    "end": "0x00403CC8",
+    "size": 184,
+    "build_only": true,
+    "name": "freeware_level_clear",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00403D10",
+    "end": "0x004040E7",
+    "size": 983,
+    "build_only": true,
+    "name": "freeware_level_load",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004040F0",
+    "end": "0x00404227",
+    "size": 311,
+    "build_only": true,
+    "name": "freeware_level_save",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00404230",
+    "end": "0x004043DB",
+    "size": 427,
+    "build_only": true,
+    "name": "freeware_level_add_trigger",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00404410",
+    "end": "0x00404507",
+    "size": 247,
+    "build_only": true,
+    "name": "freeware_level_update_triggers",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00404510",
+    "end": "0x00404BAF",
+    "size": 1695,
+    "build_only": true,
+    "name": "freeware_level_render_triggers",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00404BC0",
+    "end": "0x00404D6A",
+    "size": 426,
+    "build_only": true,
+    "name": "freeware_level_add_object",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00404D70",
+    "end": "0x00404ED8",
+    "size": 360,
+    "build_only": true,
+    "name": "freeware_level_render_layer",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00404EE0",
     "end": "0x004050DD",
     "size": 509,
@@ -884,10 +945,18 @@
     "size": 213
   },
   {
+    "address": "0x00406210",
+    "end": "0x004062B9",
+    "size": 169,
+    "build_only": true,
+    "name": "freeware_save_config",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x004062C0",
     "canonical_address": "0x0041F1A0",
     "end": "0x00406477",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "config_load_presets",
     "size": 439
   },
@@ -1281,6 +1350,14 @@
     "size": 3181,
     "build_only": true,
     "name": "game_credits_update",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x0041EFA0",
+    "end": "0x0041F230",
+    "size": 656,
+    "build_only": true,
+    "name": "freeware_overlay_begin",
     "evidence": "recovered"
   },
   {

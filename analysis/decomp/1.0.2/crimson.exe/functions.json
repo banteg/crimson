@@ -315,15 +315,15 @@
     "build_only": true,
     "end": "0x004015FF",
     "evidence": "ordered",
-    "name": "freeware_level_move_with_collision",
+    "name": "freeware_level_add_object",
     "size": 399
   },
   {
     "address": "0x00401600",
-    "canonical_address": "0x0043D260",
+    "canonical_address": "0x0041E8F0",
     "end": "0x00401624",
     "evidence": "ordered",
-    "name": "sfx_play_panned",
+    "name": "input_aim_pov_right_active",
     "size": 36
   },
   {

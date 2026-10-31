@@ -256,8 +256,8 @@
       "program": "1.3.0/crimson.exe"
     },
     {
-      "address": "0x004285e4",
-      "name": "freeware_arena_height",
+      "address": "0x004285f4",
+      "name": "freeware_editor_radius",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -636,8 +636,18 @@
       "program": "1.3.0/crimson.exe"
     },
     {
-      "address": "0x004374c4",
-      "name": "freeware_configuring",
+      "address": "0x004374c8",
+      "name": "freeware_pad_threshold",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374cc",
+      "name": "freeware_pad_center_x",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374d0",
+      "name": "freeware_pad_center_y",
       "program": "1.3.0/crimson.exe"
     },
     {
