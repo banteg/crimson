@@ -383,6 +383,70 @@
     "size": 1
   },
   {
+    "address": "0x004018C0",
+    "build_only": true,
+    "end": "0x00401978",
+    "evidence": "exact",
+    "name": "freeware_level_clear",
+    "size": 184
+  },
+  {
+    "address": "0x004019C0",
+    "build_only": true,
+    "end": "0x00401D97",
+    "evidence": "exact",
+    "name": "freeware_level_load",
+    "size": 983
+  },
+  {
+    "address": "0x00401DA0",
+    "build_only": true,
+    "end": "0x00401ED7",
+    "evidence": "exact",
+    "name": "freeware_level_save",
+    "size": 311
+  },
+  {
+    "address": "0x00401EE0",
+    "build_only": true,
+    "end": "0x0040208B",
+    "evidence": "exact",
+    "name": "freeware_level_add_trigger",
+    "size": 427
+  },
+  {
+    "address": "0x004020C0",
+    "build_only": true,
+    "end": "0x004021B5",
+    "evidence": "ordered",
+    "name": "freeware_level_update_triggers",
+    "size": 245
+  },
+  {
+    "address": "0x004021C0",
+    "build_only": true,
+    "end": "0x00402859",
+    "evidence": "ordered",
+    "name": "freeware_level_render_triggers",
+    "size": 1689
+  },
+  {
+    "address": "0x00402870",
+    "build_only": true,
+    "end": "0x00402A1A",
+    "evidence": "exact",
+    "name": "freeware_level_add_object",
+    "size": 426
+  },
+  {
+    "address": "0x00402A20",
+    "build_only": true,
+    "end": "0x00402B86",
+    "evidence": "called",
+    "name": "freeware_level_render_layer",
+    "size": 358
+  },
+  {
     "address": "0x00402B90",
     "build_only": true,
     "end": "0x00402D8D",
@@ -477,6 +541,14 @@
     "evidence": "exact",
     "name": "highscore_build_path",
     "size": 213
+  },
+  {
+    "address": "0x004038B0",
+    "build_only": true,
+    "end": "0x0040395A",
+    "evidence": "ordered",
+    "name": "freeware_save_config",
+    "size": 170
   },
   {
     "address": "0x00403960",
@@ -819,10 +891,10 @@
   },
   {
     "address": "0x00411820",
-    "canonical_address": "0x0043D730",
+    "build_only": true,
     "end": "0x0041185D",
     "evidence": "ordered",
-    "name": "audio_suspend_channels",
+    "name": "freeware_hud_set_row",
     "size": 61
   },
   {
@@ -867,10 +939,10 @@
   },
   {
     "address": "0x00419210",
-    "canonical_address": "0x00442150",
+    "build_only": true,
     "end": "0x004194A0",
     "evidence": "ordered",
-    "name": "ui_update_notice_update",
+    "name": "freeware_overlay_begin",
     "size": 656
   },
   {

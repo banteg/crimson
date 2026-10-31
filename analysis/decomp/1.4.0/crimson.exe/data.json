@@ -952,17 +952,17 @@
     },
     {
       "address": "0x00438824",
-      "name": "freeware_last_perk_id",
-      "program": "1.4.0/crimson.exe"
-    },
-    {
-      "address": "0x00438824",
       "name": "perk_id_count",
       "program": "1.4.0/crimson.exe"
     },
     {
       "address": "0x00438828",
       "name": "fx_queue",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439228",
+      "name": "freeware_last_score",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1047,11 +1047,6 @@
     },
     {
       "address": "0x0043c598",
-      "name": "freeware_perk_available",
-      "program": "1.4.0/crimson.exe"
-    },
-    {
-      "address": "0x0043c598",
       "name": "perk_choice_flags",
       "program": "1.4.0/crimson.exe"
     },
@@ -1093,11 +1088,6 @@
     {
       "address": "0x00440ec8",
       "name": "freeware_snow_y",
-      "program": "1.4.0/crimson.exe"
-    },
-    {
-      "address": "0x00441fc0",
-      "name": "freeware_perk_table",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1321,6 +1311,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452d4e",
+      "name": "freeware_score_corrupt",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452d4f",
       "name": "freeware_see_through",
       "program": "1.4.0/crimson.exe"
@@ -1511,6 +1506,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452de0",
+      "name": "perk_id_instant_winner",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452de4",
       "name": "perk_id_fastshot",
       "program": "1.4.0/crimson.exe"
@@ -1551,6 +1551,16 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452e08",
+      "name": "perk_id_grim_deal",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e0c",
+      "name": "perk_id_plaguebearer",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452e14",
       "name": "perk_id_ammo_maniac",
       "program": "1.4.0/crimson.exe"
@@ -1576,8 +1586,33 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452e2c",
+      "name": "perk_id_infernal_contract",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452e30",
       "name": "perk_id_perk_expert",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e34",
+      "name": "perk_id_weapon_shotgun",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e38",
+      "name": "perk_id_weapon_assault_rifle",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e3c",
+      "name": "perk_id_fatal_lottery",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e40",
+      "name": "freeware_hint_ids",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1623,6 +1658,11 @@
     {
       "address": "0x00452e7c",
       "name": "freeware_next_spawn",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e8c",
+      "name": "freeware_perk_choice_timer",
       "program": "1.4.0/crimson.exe"
     },
     {

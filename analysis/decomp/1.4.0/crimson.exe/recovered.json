@@ -1460,13 +1460,6 @@
       "bytes": "f73d24884300"
     },
     {
-      "name": "freeware_last_perk_id",
-      "address": "0x00438824",
-      "reference": "0x00415a32",
-      "bytes": "8b0d24884300",
-      "build_only": true
-    },
-    {
       "name": "fx_queue",
       "address": "0x00438828",
       "reference": "0x004034a3",
@@ -1478,6 +1471,13 @@
       "address": "0x00439228",
       "reference": "0x0041dd77",
       "bytes": "889828924300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_last_score",
+      "address": "0x00439228",
+      "reference": "0x0041f8d6",
+      "bytes": "b828924300",
       "build_only": true
     },
     {
@@ -1506,13 +1506,6 @@
       "address": "0x0043c598",
       "reference": "0x00408cf8",
       "bytes": "bf98c54300",
-      "build_only": true
-    },
-    {
-      "name": "freeware_perk_available",
-      "address": "0x0043c598",
-      "reference": "0x00415926",
-      "bytes": "8a9098c54300",
       "build_only": true
     },
     {
@@ -1567,13 +1560,6 @@
       "address": "0x00441fc0",
       "reference": "0x004036ae",
       "bytes": "68c01f4400"
-    },
-    {
-      "name": "freeware_perk_table",
-      "address": "0x00441fc0",
-      "reference": "0x00415a56",
-      "bytes": "bfc01f4400",
-      "build_only": true
     },
     {
       "name": "unused_fx_rotated_creature_type_id_prefix_color",
@@ -1865,6 +1851,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_score_corrupt",
+      "address": "0x00452d4e",
+      "reference": "0x0041f4d6",
+      "bytes": "a04e2d4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_see_through",
       "address": "0x00452d4f",
       "reference": "0x0041571a",
@@ -2127,6 +2120,13 @@
       "build_only": true
     },
     {
+      "name": "perk_id_instant_winner",
+      "address": "0x00452de0",
+      "reference": "0x00415e0d",
+      "bytes": "8b0de02d4500",
+      "build_only": true
+    },
+    {
       "name": "perk_id_fastshot",
       "address": "0x00452de4",
       "reference": "0x00415555",
@@ -2182,6 +2182,20 @@
       "build_only": true
     },
     {
+      "name": "perk_id_grim_deal",
+      "address": "0x00452e08",
+      "reference": "0x00415f47",
+      "bytes": "3b15082e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_plaguebearer",
+      "address": "0x00452e0c",
+      "reference": "0x00415f72",
+      "bytes": "3b150c2e4500",
+      "build_only": true
+    },
+    {
       "name": "perk_id_ammo_maniac",
       "address": "0x00452e14",
       "reference": "0x00415525",
@@ -2217,10 +2231,45 @@
       "build_only": true
     },
     {
+      "name": "perk_id_infernal_contract",
+      "address": "0x00452e2c",
+      "reference": "0x00415f0e",
+      "bytes": "3b152c2e4500",
+      "build_only": true
+    },
+    {
       "name": "perk_id_perk_expert",
       "address": "0x00452e30",
       "reference": "0x00408cff",
       "bytes": "8b0d302e4500"
+    },
+    {
+      "name": "perk_id_weapon_shotgun",
+      "address": "0x00452e34",
+      "reference": "0x00415e91",
+      "bytes": "8b0d342e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_weapon_assault_rifle",
+      "address": "0x00452e38",
+      "reference": "0x00415ed3",
+      "bytes": "3b15382e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_fatal_lottery",
+      "address": "0x00452e3c",
+      "reference": "0x00415e35",
+      "bytes": "8b0d3c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_hint_ids",
+      "address": "0x00452e40",
+      "reference": "0x00415f90",
+      "bytes": "a1402e4500",
+      "build_only": true
     },
     {
       "name": "freeware_berserk_timer",
@@ -2282,6 +2331,13 @@
       "address": "0x00452e7c",
       "reference": "0x0041cc7e",
       "bytes": "d82d7c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_perk_choice_timer",
+      "address": "0x00452e8c",
+      "reference": "0x00415de9",
+      "bytes": "c7058c2e450000000000",
       "build_only": true
     },
     {

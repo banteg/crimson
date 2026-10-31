@@ -121,6 +121,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00419dc0",
+      "name": "texture_get_or_load",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x0041bbc6",
       "name": "?_L",
       "program": "1.3.0/crimson.exe"
@@ -706,8 +711,8 @@
       "program": "1.3.0/crimson.exe"
     },
     {
-      "address": "0x0044784c",
-      "name": "freeware_low_fps_frames",
+      "address": "0x00447854",
+      "name": "freeware_score_scroll",
       "program": "1.3.0/crimson.exe"
     },
     {
