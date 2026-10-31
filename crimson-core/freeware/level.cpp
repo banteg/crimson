@@ -13,6 +13,7 @@ extern freeware::Game *freeware_frame_game;
 extern "C" void creature_reset_all();
 extern "C" float freeware_elapsed_seconds, freeware_pickup_time, freeware_berserk_timer;
 extern "C" int freeware_pickup_id, freeware_no_pickup;
+extern "C" unsigned char freeware_spawn_enabled;
 static_assert(sizeof(freeware_level_object) == 0x30 && sizeof(freeware_level_trigger) == 0x28);
 
 namespace {
@@ -160,6 +161,7 @@ void freeware_level_map::render_triggers(unsigned char playing) {
 void freeware::Game::load_next_level() {
   creature_reset_all();
   ++level_number;
+  freeware_spawn_enabled = 0;
   char path[48];
   std::snprintf(path, sizeof(path), "levels/level_%d.lvl", level_number);
   if (!freeware_current_map->load(path)) {

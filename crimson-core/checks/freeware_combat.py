@@ -681,7 +681,7 @@ def check_web(stage, exe, sources):
         raise AssertionError("the in-memory combat oracle tried to modify a file")
 
     for entry in module.imports:
-        if entry.module == "env" and entry.name in {"__syscall_renameat", "__syscall_unlinkat"}:
+        if entry.module == "env" and entry.name in {"__syscall_renameat", "__syscall_unlinkat", "__syscall_rmdir"}:
             linker.define_func("env", entry.name, entry.type, unexpected_write)
     exports = linker.instantiate(store, module).exports(store)
     exports["_initialize"](store)

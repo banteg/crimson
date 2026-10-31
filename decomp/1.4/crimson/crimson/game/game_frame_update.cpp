@@ -37,7 +37,8 @@ extern float frame_dt, freeware_simulation_clock, freeware_elapsed_seconds, time
     bonus_reflex_boost_timer, bonus_fire_bullets_timer, bonus_freeze_timer, freeware_berserk_timer;
 extern vec2f_t freeware_aim_screen, freeware_camera;
 int crt_rand();
-void player_update(), player_check_level(), creature_update_all(), projectile_update(), perks_generate_choices();
+void player_update(), player_check_level(), creature_update_all(), creature_reset_all(), projectile_update(),
+    perks_generate_choices();
 void weapon_assign_player(int, int);
 int creature_spawn(const vec2f_t *, const effect_color_t *, int);
 unsigned char creature_spawn_random(const vec2f_t *);
@@ -66,7 +67,7 @@ void player_render(), gameplay_render_hud(), terrain_render(), fx_queue_render()
 
 extern "C" {
 #ifndef CRIMSON_FREEWARE_CLIENT
-extern unsigned char freeware_transition_pending;
+extern unsigned char freeware_transition_pending, freeware_safe_mode;
 extern float freeware_transition_alpha;
 void freeware_overlay_begin();
 #endif
@@ -435,7 +436,7 @@ __forceinline void timed_perks() {
 }
 __forceinline void label(const char *text, float x, float y, float scale, float r, float g, float b, float alpha) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-    G.frame_labels.push_back({text, x, y, scale, {r, g, b, alpha}});
+    G.frame_labels.push_back({text, x, y, scale, {r, g, b, alpha}, G.frame_sprites.size()});
 #else
     grim_interface_ptr->grim_set_config_var(0x18, scale);
     grim_interface_ptr->grim_set_color(r, g, b, alpha);
@@ -656,6 +657,8 @@ extern "C" unsigned char game_frame_update() {
         sprintf(buf, "fps: %.2f", G.fps);
         label(buf, 5, screen_height - 25.f, .7f, 1, 1, 1, 1);
     }
+    if (G.safe_mode)
+        label("(Safemode)", 150, screen_height - 25.f, .695f, 1, 1, 1, 1);
     update_fps(G.fps);
     return !G.quit;
 #else
@@ -666,11 +669,16 @@ extern "C" unsigned char game_frame_update() {
         return 0;
     if (quit_requested)
         return 0;
+    grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+    grim_interface_ptr->grim_set_config_var(0x18, .7f);
     update_fps(grim_interface_ptr->grim_get_fps());
     if (freeware_show_fps) {
         sprintf(freeware_ui_buffer, "fps: %.2f", (double)grim_interface_ptr->grim_get_fps());
-        label(freeware_ui_buffer, 5, screen_height - 25.f, .7f, 1, 1, 1, 1);
+        grim_interface_ptr->grim_draw_text_mono(5, screen_height - 25.f, freeware_ui_buffer);
     }
+    if (freeware_safe_mode)
+        label("(Safemode)", 150, screen_height - 25.f, .695f, 1, 1, 1, 1);
+    freeware_console.render();
     return 1;
 #endif
 }

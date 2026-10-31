@@ -73,7 +73,8 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
   config_movement_schemes[index] = schemes[movement[index]];
   config_aim_schemes[index] = aiming[index];
   config_player_count = players();
-  freeware_camera = {in.x - mouse_world.x, in.y - mouse_world.y};
+  vec2f_t pointer = in.relative ? vec2f_t{cursor_x, cursor_y} : vec2f_t{in.x, in.y};
+  freeware_camera = {pointer.x - mouse_world.x, pointer.y - mouse_world.y};
   if (aiming[index] == 1 && in.relative) {
     freeware_aim_screen = {cursor_x, cursor_y};
   } else if (aiming[index] == 1) {
@@ -83,7 +84,7 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
     }
     freeware_aim_screen = radial_cursor;
   } else
-    freeware_aim_screen = {in.x, in.y};
+    freeware_aim_screen = pointer;
   current_player_index = index;
   frame_dt = dt;
   console_open_flag = console_open;

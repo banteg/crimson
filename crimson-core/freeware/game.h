@@ -87,6 +87,7 @@ struct FrameLabel {
   std::string text;
   float x, y, scale;
   effect_color_t color;
+  size_t preceding_sprites;
 };
 struct Fighter {
   vec2f_t player{512, 512};
@@ -158,7 +159,7 @@ struct Game {
   int configuring{}, rebind = -1;
   int movement[2]{0, 0}, aiming[2]{0, 2};
   int keys[2][5]{{26, 22, 4, 7, 43}, {82, 81, 80, 79, 228}};
-  bool show_fps{}, effects = true, smooth = true, shell_marks{}, direction_arrow = true;
+  bool show_fps{}, safe_mode{}, effects = true, smooth = true, shell_marks{}, direction_arrow = true;
   int calibration = -1;
   vec2f_t pad_center[2]{};
   float pad_threshold[2]{.1f, .1f};
@@ -182,6 +183,7 @@ struct Game {
   void console_input(const Input &);
 
   void update(float dt, const Input &input);
+  void reset_gameplay();
   void start();
   void step_player(int index, float dt, const Input &in, vec2f_t mouse_world);
   void spawn_career();

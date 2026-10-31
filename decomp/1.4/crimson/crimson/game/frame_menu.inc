@@ -10,8 +10,10 @@ extern unsigned char freeware_show_secret_hints, freeware_options_open, freeware
     freeware_direction_arrow, freeware_rebinding, freeware_calibrating, freeware_pause_perks;
 extern char *freeware_main_labels[8], *freeware_option_labels[12], *freeware_online_labels[5];
 void game_credits_update(), game_highscores_update(), highscore_load_table();
-void *freeware_fetch_version();
-extern unsigned char freeware_open_site;
+void *freeware_http_get(const char *server, const char *path, const char *filename);
+extern unsigned char freeware_open_site, freeware_music_started;
+extern int freeware_level_number;
+void freeware_music_start(int), freeware_music_stop(int);
 extern void *freeware_update_info;
 }
 #endif
@@ -209,8 +211,12 @@ __forceinline int menu_rows(int which) {
             alpha = .4f;
         }
 #ifdef CRIMSON_FREEWARE_CLIENT
-        G.frame_labels.push_back(
-            {name, x, y, which == options_page ? .65f : .75435f, {light, light, light, alpha}});
+        G.frame_labels.push_back({name,
+                                  x,
+                                  y,
+                                  which == options_page ? .65f : .75435f,
+                                  {light, light, light, alpha},
+                                  G.frame_sprites.size()});
 #else
         grim_interface_ptr->grim_set_color(light, light, light, alpha);
         grim_interface_ptr->grim_draw_text_mono(x, y, (char *)name);
@@ -394,7 +400,7 @@ extern "C" {
 extern int freeware_setup_step, freeware_pad_threshold, freeware_pad_center_x, freeware_pad_center_y,
     freeware_pov_left, freeware_pov_right;
 extern unsigned char freeware_saved_keys[10];
-void freeware_save_config(), freeware_read_config();
+void freeware_save_config(), config_load_presets();
 }
 #endif
 __forceinline bool setup_controls() {
@@ -453,7 +459,7 @@ __forceinline bool setup_controls() {
 #ifndef CRIMSON_FREEWARE_CLIENT
             freeware_calibrating = 0;
             freeware_save_config();
-            freeware_read_config();
+            config_load_presets();
 #else
             G.save_options();
 #endif
@@ -519,63 +525,105 @@ __forceinline bool setup_controls() {
 #else
     freeware_rebinding = 0;
     freeware_save_config();
-    freeware_read_config();
+    config_load_presets();
 #endif
     return true;
+}
+__forceinline void cursor_particles(float pulse, float orbit) {
+    float x = MOUSE_X - 32, y = MOUSE_Y - 32;
+#ifndef CRIMSON_FREEWARE_CLIENT
+    grim_interface_ptr->grim_set_config_var(0x13, 5u);
+    grim_interface_ptr->grim_set_config_var(0x14, 2u);
+    grim_interface_ptr->grim_bind_texture(grim_interface_ptr->grim_get_texture_handle("part"), 0);
+    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+    grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+    grim_interface_ptr->grim_begin_batch();
+    grim_interface_ptr->grim_draw_quad(x, y, 64, 64);
+#else
+    const float rotation = G.frame_sprites.empty() ? 0 : G.frame_sprites.back().angle;
+    sprite("part", x, y, 64, 64, rotation, 1, 1, 1, 1);
+#endif
+    float alpha = (float)((pow(cos(pulse), 2) + 1) * .5);
+    for (int step = 0; step < 6; step += 2) {
+        double angle = orbit + (double)step * 1.0471976f;
+        float px = (float)(x + cos(angle) * 16), py = (float)(y + sin(angle) * 16);
+#ifdef CRIMSON_FREEWARE_CLIENT
+        sprite("part", px, py, 64, 64, rotation, 1, 1, 1, alpha);
+#else
+        grim_interface_ptr->grim_set_color(1, 1, 1, alpha);
+        grim_interface_ptr->grim_draw_quad(px, py, 64, 64);
+#endif
+    }
+#ifndef CRIMSON_FREEWARE_CLIENT
+    grim_interface_ptr->grim_end_batch();
+    grim_interface_ptr->grim_set_config_var(0x13, 5u);
+    grim_interface_ptr->grim_set_config_var(0x14, 6u);
+    grim_interface_ptr->grim_bind_texture(grim_interface_ptr->grim_get_texture_handle("aim32"), 0);
+    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+    grim_interface_ptr->grim_set_color(1, 1, 1, .64f);
+    grim_interface_ptr->grim_begin_batch();
+    grim_interface_ptr->grim_draw_quad(MOUSE_X - 16, MOUSE_Y - 16, 32, 32);
+    grim_interface_ptr->grim_end_batch();
+#else
+    sprite("aim32", MOUSE_X - 16, MOUSE_Y - 16, 32, 32, rotation, 1, 1, 1, .64f);
+#endif
 }
 __forceinline void menu_footer() {
     label("v1.4.0", 10, (float)screen_height - 25, .65435f, 1, 1, 1, .4f);
     label("2002 (c) 10tons entertainment", (float)screen_width - 330, (float)screen_height - 25, .65435f, 1, 1, 1,
           .4f);
+    cursor_particles(CLOCK - STATE_SINCE, CLOCK);
+}
+__forceinline void menu_tracks(bool play_title) {
+#ifndef CRIMSON_FREEWARE_CLIENT
+    freeware_music_stop(30);
+    freeware_music_stop(29);
+    freeware_music_stop(31);
+    if (play_title)
+        freeware_music_start(30);
+#endif
 }
 __forceinline bool main_menu() {
     menu_secrets();
     int which = page();
     if (which != scores_page && MENU_MUSIC && !ACTIVE) {
+        menu_tracks(true);
         MENU_MUSIC = 0;
         STATE_SINCE = CLOCK;
+        FIELD(freeware_logo_angle, logo_angle) = 0;
     }
 #ifndef CRIMSON_FREEWARE_CLIENT
     refresh_labels(which);
 #endif
     menu_title(which);
+    bool overlay = which == scores_page || which == credits_page;
 #ifdef CRIMSON_FREEWARE_CLIENT
-    if (which == scores_page || which == credits_page) {
-        menu_rows(main_page);
-        menu_footer();
+    if (!overlay && INPUT.escape && which != main_page) {
+        show_page(main_page);
+        SELECTED = 0;
+        return true;
+    }
+#endif
+    int row = -1;
+    if (overlay || !setup_controls())
+        row = menu_rows(overlay ? main_page : which);
+    menu_footer();
+    if (overlay) {
+#ifdef CRIMSON_FREEWARE_CLIENT
         frame_dt = freeware_frame_delta;
         if (G.transition_pending) {
             G.transition_pending = false;
             STATE_SINCE = CLOCK;
         }
         G.update_ui(INPUT);
-        return true;
-    }
-    if (INPUT.escape && which != main_page) {
-        show_page(main_page);
-        SELECTED = 0;
-        return true;
-    }
 #else
-    if (which == scores_page) {
-        menu_rows(main_page);
-        menu_footer();
-        game_highscores_update();
-        return true;
-    }
-    if (which == credits_page) {
-        menu_rows(main_page);
-        menu_footer();
-        game_credits_update();
-        return true;
-    }
+        if (which == scores_page)
+            game_highscores_update();
+        else
+            game_credits_update();
 #endif
-    if (setup_controls()) {
-        menu_footer();
         return true;
     }
-    int row = menu_rows(which);
-    menu_footer();
     if (row < 0)
         return true;
     if (which == options_page) {
@@ -597,7 +645,7 @@ __forceinline bool main_menu() {
             freeware_open_site = 1;
             quit_requested = 1;
         } else if (row == 1) {
-            void **response = (void **)freeware_fetch_version();
+            void **response = (void **)freeware_http_get("www.mbnet.fi", "~temper/crimsonland", "versioninfo.txt");
             if (response) {
                 crt_free(freeware_update_info);
                 freeware_update_info = *response;
@@ -609,15 +657,33 @@ __forceinline bool main_menu() {
     switch (row) {
     case 0:
         if (!ACTIVE) {
+            FIELD(freeware_logo_visible, logo_visible) = 0;
+            MENU_MUSIC = 1;
             enter(3);
+            FIELD(freeware_music_started, wind_started) = 1;
+            menu_tracks(false);
+            freeware_current_map->clear();
 #ifdef CRIMSON_FREEWARE_CLIENT
             G.start();
 #else
             gameplay_reset_state();
-            ACTIVE = 1;
-            freeware_spawn_enabled = config_game_mode != 3;
 #endif
-            MENU_MUSIC = 1;
+            if (config_game_mode == 1 || config_game_mode == 2) {
+                freeware_spawn_enabled = 1;
+            } else if (config_game_mode == 3) {
+                creature_reset_all();
+                freeware_spawn_enabled = 0;
+                FIELD(freeware_level_number, level_number) = 0;
+#ifdef CRIMSON_FREEWARE_CLIENT
+                G.reset_gameplay();
+                G.load_next_level();
+#else
+                gameplay_reset_state();
+                level_load_next();
+#endif
+                freeware_current_map->arm_triggers();
+            }
+            ACTIVE = 1;
         } else {
             enter(FIELD(freeware_pause_perks, paused_perks) ? 4 : 3);
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -658,7 +724,9 @@ __forceinline bool main_menu() {
     case 7:
         if (!ACTIVE)
             return false;
+        menu_tracks(true);
         ACTIVE = 0;
+        FIELD(freeware_logo_angle, logo_angle) = 0;
         MENU_MUSIC = 0;
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.paused = false;

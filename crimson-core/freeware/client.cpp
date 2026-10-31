@@ -287,6 +287,7 @@ int main(int argc, char **argv) {
     std::fprintf(stderr, "%s\n", SDL_GetError());
     return 1;
   }
+  client.game.safe_mode = std::string(SDL_GetRendererName(client.renderer)) == "software";
   SDL_SetRenderVSync(client.renderer, 1);
   client.display = std::make_unique<Display>(client.renderer);
   if (!client.display->load(folder)) {

@@ -248,8 +248,14 @@ void combat_frame_start(int mode, int count, int phase, int flags) {
 int combat_frame_step(float dt, int input) {
   freeware::Input in;
   in.relative = true;
+  // Absolute host coordinates may differ from the recovered virtual cursor after a reset.
   in.x = 310;
   in.y = 169;
+  if (input & 4096) {
+    in.dx = 43;
+    in.dy = -17;
+  }
+  in.ctrl = input & 8192;
   in.escape = input & 1;
   in.level_up = input & 2;
   in.accept = input & 4;

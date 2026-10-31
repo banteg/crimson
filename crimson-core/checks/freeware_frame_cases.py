@@ -38,9 +38,11 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         return textures.setdefault(value, len(textures) + 1)
 
     def quad(call):
-        # Only game_frame_update's aim and death quads, excluding HUD/menu cursor submissions.
+        # Capture the quads issued by the dispatcher, including both of its animated cursors.
         if (
             0x419990 < call.return_address < 0x41A560
+            or 0x41B650 < call.return_address < 0x41B910
+            or 0x41DE37 < call.return_address < 0x41E0E1
             or 0x41C000 < call.return_address < 0x41C743
             or 0x41D000 < call.return_address < 0x41D790
         ):
@@ -91,6 +93,8 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             0xAC: lambda c: draw.update(angle=c.arg_f32(0)),
             0xB8: lambda c: draw.update(color=tuple(c.arg_f32(i) for i in range(4))),
             0xC0: quad,
+            0x60: lambda _: dx,
+            0x64: lambda _: dy,
             0x38: lambda _: dt,
             0x3C: lambda _: 1 / dt,
             0x40: lambda c: (c.arg_u32(0) & 255) in keys,
@@ -181,12 +185,14 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         ("surviving partner", 2, 2, 3, 32, [0, 0]),
         ("revive", 1, 1, 3, 32 | 128, [0, 0]),
         ("menu", 2, 1, 1, 0, [0, 0, 0]),
+        ("mouse motion", 2, 1, 3, 0, [4096, 4096 | 8192, 4096, 0]),
         ("name", 2, 1, 9, 0, [0, 256, 128, 256, 4]),
         ("handoff", 1, 2, 6, 512 | 32 | 64, [0, 0, 0]),
         ("rifle burst", 2, 1, 3, 1024, [16, 16, 16, 16, 16]),
         ("first kill", 2, 1, 3, 2048, [0] * 22),
         ("resume", 2, 1, 3, 0, [1, 0, 4, 0]),
         ("level clear", 3, 1, 3, 0, [0, 0]),
+        ("level test start", 3, 1, 1, 0, [0, 4, 0]),
         ("editor", 4, 1, 3, 0, [0, 512, 1024, 2048]),
         ("begin and fire", 2, 1, 1, 0, [0, 4, 0, 16]),
         ("return to game", 2, 1, 6, 512 | 32, [0, 0, 256, 4, 1] + [0] * 16 + [4, 0]),
@@ -219,6 +225,8 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     for name, mode, count, phase, flags, inputs in scenarios:
         pe.restore(base)
         check.dll.combat_frame_start(mode, count, phase, flags)
+        if name == "level test start":
+            pe.stub(0x421DC3, 0)  # No level files are present in the released install.
         for va, val in ((0x4428A8, mode), (0x4428A0, count), (0x42FBAC, phase), (0x452E70, int(bool(flags & 2)))):
             pe.write_u32(va, val)
         pe.write_u8(0x452DB4, phase != 1)
@@ -261,7 +269,10 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             pe.write(0x4385F4 + offset, bytes(range(32 + i * 5, 37 + i * 5)))
         pe.rand_state = 42
         for frame, bits in enumerate(inputs):
+            dx, dy = (43, -17) if bits & 4096 else (0, 0)
             keys.clear()
+            if bits & 8192:
+                keys.add(0x1D)
             edges.clear()
             for mask, key in ((1, 1), (2, 0x39), (8, 32), (16, 36)):
                 if bits & mask:
@@ -311,7 +322,7 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
                     ours = ours.split(b"\0", 1)[0].decode()
                     assert texture_name == ours and all(
                         math.isclose(x, y, abs_tol=0.002) for x, y in zip(values, (*coords, angle, *color), strict=True)
-                    ), (label, texture_name, ours, coords, values)
+                    ), (label, texture_name, ours, (*coords, angle, *color), values)
             if name in ("menu", "options", "name", "return to game", "begin and fire"):
                 size = check.dll_globals("combat_frame_label_count").value
                 assert size == len(labels), (label, "label count", labels, size)

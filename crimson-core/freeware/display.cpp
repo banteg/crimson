@@ -74,7 +74,7 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
   }
 }
 void Display::frame_art(const Game &g) {
-  for (const auto &draw : g.frame_sprites) {
+  auto draw_sprite = [this](const FrameSprite &draw) {
     const char *name = draw.name;
     if (!std::strcmp(name, "aimen"))
       name = "aim_enh";
@@ -87,12 +87,18 @@ void Display::frame_art(const Game &g) {
     else if (!std::strcmp(name, "part"))
       name = "part64";
     else if (!std::strcmp(name, "tl_tolmec"))
-      continue; // No texture with this handle ships in the 1.4.0 PAQ.
+      return; // No texture with this handle ships in the 1.4.0 PAQ.
     sprite(name, draw.x, draw.y, draw.width, draw.height, draw.angle, 0, 1,
            {draw.color.r, draw.color.g, draw.color.b, draw.color.a});
-  }
-  for (const auto &label : g.frame_labels)
+  };
+  size_t i = 0;
+  for (const auto &label : g.frame_labels) {
+    while (i < label.preceding_sprites)
+      draw_sprite(g.frame_sprites[i++]);
     text(label.text, label.x, label.y, label.scale, {label.color.r, label.color.g, label.color.b, label.color.a});
+  }
+  while (i < g.frame_sprites.size())
+    draw_sprite(g.frame_sprites[i++]);
 }
 void Display::draw(Game &g) {
   if (g.generation != ground_generation) {
@@ -288,14 +294,14 @@ void Display::draw(Game &g) {
   }
   if (g.presented_screen != Screen::Scores && g.presented_screen != Screen::Credits)
     frame_art(g);
-  if (g.presented_screen != Screen::Playing && g.presented_screen != Screen::Dying) {
-    // The menu and score cursor bind part64 additively, then the 32-pixel reticle at 64% opacity.
-    const float speed = g.presented_screen == Screen::Death ? 2.f : 1.f;
+  if (g.presented_screen == Screen::Perks || g.presented_screen == Screen::Message ||
+      g.presented_screen == Screen::Scores || g.presented_screen == Screen::Credits) {
+    // These overlays have their own cursor above the frame beneath them.
     const float light = std::cos(g.menu_clock);
     const float alpha = (light * light + 1) * .5f;
     sprite("part64", g.cursor_x - 32, g.cursor_y - 32, 64, 64);
     for (int i = 0; i < 3; ++i) {
-      float angle = g.menu_clock * speed + i * 2.0943952f;
+      float angle = g.menu_clock + i * 2.0943952f;
       sprite("part64", g.cursor_x - 32 + 16 * std::cos(angle), g.cursor_y - 32 + 16 * std::sin(angle), 64, 64, 0,
              0, 1, {1, 1, 1, alpha});
     }

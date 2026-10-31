@@ -166,4 +166,5 @@ __forceinline void name_screen() {
     sprintf(buf, "Gained level: %d\nHit accuracy: %d%%\nFrags: %d\n", FIELD(P(0).level, run.level),
             fired ? (int)((double)hits / fired * 100) : 0, FIELD(freeware_kills, run.kills));
     label(buf, 60, 320, .66f, 1, 1, 1, 1);
+    cursor_particles(CLOCK, CLOCK + CLOCK);
 }
