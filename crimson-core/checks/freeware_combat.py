@@ -618,6 +618,7 @@ def check_web(stage, exe, sources):
         "combat_controls",
         "combat_wall",
         "combat_ui_hud",
+        "combat_ui_page",
         "player_reset_all",
         "combat_frame_start",
         "combat_frame_step",

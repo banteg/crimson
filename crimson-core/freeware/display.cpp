@@ -228,26 +228,9 @@ void Display::draw(Game &g) {
     }
   }
   const SDL_FColor white{1, 1, 1, 1}, muted{1, 1, 1, .65f};
-  char line[128];
-  if (g.presented_screen == Screen::Menu) {
-    if (g.notice)
-      text(g.notice, width / 2 - 220, 478, .65f, white);
-  } else if (g.presented_screen == Screen::Playing) {
-    // The recovered HUD is queued by the dispatcher.
-  } else if (g.presented_screen == Screen::Message) {
-    text("Message:", 150, 40, .9f, white);
-    std::string hint = g.message;
-    size_t col = 0;
-    for (char &c : hint) {
-      if (c == ' ' && col > 25) {
-        c = '\n';
-        col = 0;
-      } else
-        ++col;
-    }
-    text(hint, 150, 90, .65f, white);
-    text("(press space or left mouse button)", 150, 340, .65f, muted);
-  } else if (g.presented_screen == Screen::Perks) {
+  if (g.presented_screen == Screen::Menu && g.notice)
+    text(g.notice, width / 2 - 220, 478, .65f, white);
+  if (g.presented_screen == Screen::Perks) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, g.perk_transparent ? 65 : 205);
     SDL_RenderFillRect(renderer, nullptr);
@@ -268,55 +251,10 @@ void Display::draw(Game &g) {
       }
       text(description, 400, 80, .65f, white);
     }
-  } else if (g.presented_screen == Screen::Death) {
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, static_cast<Uint8>(255 * std::clamp(g.death_clock, 0.f, 1.f)));
-    SDL_RenderFillRect(renderer, nullptr);
-  } else if (g.presented_screen != Screen::Dying && g.presented_screen != Screen::LevelCleared) {
-    if (g.presented_screen == Screen::Scores || g.presented_screen == Screen::Credits)
-      frame_art(g);
-    const char *heading = g.presented_screen == Screen::Scores    ? "Highscores:"
-                          : g.presented_screen == Screen::Credits ? "Project Crimsonland"
-                          : g.presented_screen == Screen::Options ? "Game options."
-                                                                  : "Online options.";
-    text(heading, 180, 120, 1, white);
-    if (g.presented_screen == Screen::Scores) {
-      text(g.survival ? (g.two_players ? "-SURVIVAL2-" : "-SURVIVAL--")
-                      : (g.two_players ? "-CAREER2---" : "-CAREER----"),
-           180, 170, .75435f, white);
-      for (size_t i = 0;
-           i < std::min<size_t>(g.scores().size() - std::min<size_t>(g.score_offset, g.scores().size()), 10);
-           ++i) {
-        const auto &score = g.scores()[g.score_offset + i];
-        std::snprintf(line, sizeof(line), "%zu.  %-31s  %d", g.score_offset + i + 1, score.name.c_str(),
-                      g.survival ? int(score.seconds) : score.experience);
-        text(line, 180, 210 + i * 23, .75435f, muted);
-      }
-    } else if (g.presented_screen == Screen::Credits) {
-      credits(g.menu_clock - g.screen_started);
-    } else if (g.presented_screen == Screen::Online) {
-      if (g.notice)
-        text(g.notice, 50, 345, .55f, white);
-    }
-    if (g.presented_screen != Screen::Options && g.presented_screen != Screen::Scores &&
-        g.presented_screen != Screen::Credits && g.presented_screen != Screen::Online)
-      text("back to main menu", 180, 410, .75435f, muted);
   }
-  if (g.presented_screen != Screen::Scores && g.presented_screen != Screen::Credits)
-    frame_art(g);
-  if (g.presented_screen == Screen::Perks || g.presented_screen == Screen::Message ||
-      g.presented_screen == Screen::Scores || g.presented_screen == Screen::Credits) {
-    // These overlays have their own cursor above the frame beneath them.
-    const float light = std::cos(g.menu_clock);
-    const float alpha = (light * light + 1) * .5f;
-    sprite("part64", g.cursor_x - 32, g.cursor_y - 32, 64, 64);
-    for (int i = 0; i < 3; ++i) {
-      float angle = g.menu_clock + i * 2.0943952f;
-      sprite("part64", g.cursor_x - 32 + 16 * std::cos(angle), g.cursor_y - 32 + 16 * std::sin(angle), 64, 64, 0,
-             0, 1, {1, 1, 1, alpha});
-    }
-    sprite("aim32", g.cursor_x - 16, g.cursor_y - 16, 32, 32, 0, 0, 1, {1, 1, 1, .64f});
-  }
+  frame_art(g);
+  if (g.presented_screen == Screen::Online && g.notice)
+    text(g.notice, 50, 345, .55f, white);
   if (g.console_open) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 12, 16, 20, 238);

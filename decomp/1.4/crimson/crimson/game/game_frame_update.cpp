@@ -46,7 +46,8 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
-void gameplay_render_hud();
+void gameplay_render_hud(), game_show_message();
+unsigned char freeware_overlay_begin(), game_highscores_update(), game_credits_update();
 
 #ifndef CRIMSON_FREEWARE_CLIENT
 extern console_queue_t freeware_console;
@@ -61,8 +62,8 @@ extern float freeware_xp_timer, freeware_pickup_time, freeware_next_spawn, freew
 extern vec2f_t freeware_camera_shake, freeware_bomb_position;
 extern unsigned char freeware_random_flags[8], quit_requested;
 void player_render(), gameplay_render_hud(), terrain_render(), fx_queue_render(), projectile_render(),
-    effect_render_all(), creature_render_all(), perk_selection_screen_update(), game_show_message(),
-    gameplay_reset_state(), sfx_update();
+    effect_render_all(), creature_render_all(), perk_selection_screen_update(), gameplay_reset_state(),
+    sfx_update();
 #endif
 }
 
@@ -70,7 +71,7 @@ extern "C" {
 #ifndef CRIMSON_FREEWARE_CLIENT
 extern unsigned char freeware_transition_pending, freeware_safe_mode;
 extern float freeware_transition_alpha;
-void freeware_overlay_begin();
+
 #endif
 }
 namespace {
@@ -143,19 +144,7 @@ __forceinline void request_transition() {
     FIELD(freeware_transition_pending, transition_pending) = 1;
     FIELD(freeware_transition_alpha, transition_alpha) = 1;
 }
-__forceinline void begin_overlay() {
-#ifdef CRIMSON_FREEWARE_CLIENT
-    frame_dt = freeware_frame_delta * .8f;
-    if (G.transition_pending) {
-        G.transition_pending = false;
-        STATE_SINCE = CLOCK;
-    }
-    if (G.transition_alpha < 1)
-        G.transition_alpha -= frame_dt * 2.4f;
-#else
-    freeware_overlay_begin();
-#endif
-}
+__forceinline void begin_overlay() { freeware_overlay_begin(); }
 __forceinline void simulate_players() {
     XP_TIMER -= frame_dt;
     if (XP_TIMER < 0) {
@@ -613,12 +602,7 @@ extern "C" unsigned char game_frame_update() {
         break;
     case 7:
         hud();
-#ifdef CRIMSON_FREEWARE_CLIENT
-        begin_overlay();
-        G.update_ui(INPUT);
-#else
         game_show_message();
-#endif
         break;
     case 8:
         hud();

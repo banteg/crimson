@@ -19,14 +19,22 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     pe.write_u32(0x452EA0, pe.alloc(0x30))
     keys, edges, clicks = set(), set(), set()
     dt = 0.03125
-    textures = {"bullet_i": 400}
+    textures = {"bullet_i": 400, "bullet": 401}
+    pe.write_u32(0x43BB74, 401)
     pe.write_u32(0x442490, 400)
     draw = {"texture": 0, "angle": 0, "color": (1, 1, 1, 1)}
     quads, labels = [], []
 
     def text(call):
         site = call.return_address
-        if 0x416A00 < site < 0x417CB8 or 0x41AF00 < site < 0x41B655 or 0x41D700 < site < 0x41DF00:
+        if (
+            0x416560 < site < 0x4167A6
+            or 0x41E330 < site < 0x41EF9D
+            or 0x41F480 < site < 0x41FB93
+            or 0x416A00 < site < 0x417CB8
+            or 0x41AF00 < site < 0x41B655
+            or 0x41D700 < site < 0x41DF00
+        ):
             value = pe.read(call.arg_u32(2), 160).split(b"\0", 1)[0].decode("ascii")
             labels.append((value, call.arg_f32(0), call.arg_f32(1), draw.get("scale", 1), *draw["color"]))
 
@@ -41,7 +49,11 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     def quad(call):
         # Capture the quads issued by the dispatcher, including both of its animated cursors.
         if (
-            0x416A00 < call.return_address < 0x417CB8
+            0x416560 < call.return_address < 0x4167A6
+            or 0x41EFA0 < call.return_address < 0x41F230
+            or 0x41E330 < call.return_address < 0x41EF9D
+            or 0x41F480 < call.return_address < 0x41FB93
+            or 0x416A00 < call.return_address < 0x417CB8
             or 0x419990 < call.return_address < 0x41A560
             or 0x41B650 < call.return_address < 0x41B910
             or 0x41DE37 < call.return_address < 0x41E0E1

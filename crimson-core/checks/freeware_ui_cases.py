@@ -78,7 +78,13 @@ class UiOracle:
             pe.write_u32(table + slot, fn)
 
     def string(self, addr):
-        return self.pe.read(addr, 384).split(b"\0", 1)[0].decode("latin1")
+        data = bytearray()
+        while len(data) < 384:
+            c = self.pe.read_u8(addr + len(data))
+            if not c:
+                return data.decode("latin1")
+            data.append(c)
+        raise AssertionError("unterminated UI text")
 
     def reset_draw(self):
         self.calls.clear()
@@ -143,4 +149,75 @@ def check_ui(check, exe):
                 state = (pe.read_f32(0x452DC4), pe.read_f32(0x452D74), pe.read_i32(0x4384FC), pe.read_i32(0x452D8C))
                 got = (ctypes.c_float * 4).from_address(check.symbol("combat_ui_result"))
                 assert tuple(got) == state, (case, tuple(got), state)
+    return calls + check_pages(oracle, check)
+
+
+def check_pages(oracle, check):
+    pe = oracle.pe
+    pe.stub(0x4073C0, 0)  # Records are supplied at the score-file boundary.
+    message = b"A message\non two lines.\0"
+    pe.write_u32(0x452D48, pe.alloc(len(message), data=message))
+    oracle.dt = 0.125
+    calls = 0
+    for kind, va in enumerate((0x416560, 0x41E330, 0x41F480, 0x41EFA0)):
+        for board in range(4) if kind == 2 else [0]:
+            for ticks, flags in [
+                (0, 1),
+                (4, 0),
+                (5, 4),
+                (20, 2),
+                (32, 8),
+                (32, 16),
+                (140, 128 | 256),
+                (583, 512),
+                (930, 0),
+                (1600, 64 | 32),
+            ]:
+                oracle.reset_draw()
+                oracle.keys.clear()
+                oracle.edges.clear()
+                oracle.clicks.clear()
+                for bit, key in [(16, 0x39), (32, 1)]:
+                    if flags & bit:
+                        oracle.edges.add(key)
+                for bit, key in [(256, 0xD0), (512, 0xC8)]:
+                    if flags & bit:
+                        oracle.keys.add(key)
+                if flags & 8:
+                    oracle.clicks.add(0)
+                pe.write_u32(0x42FBAC, 1 if kind in (1, 2) else 7)
+                pe.write_u32(0x4428A0, 1 + (board & 1))
+                pe.write_u32(0x4428A8, 2 if board & 2 else 1)
+                pe.write_u8(0x42FBB4, bool(flags & 1))
+                pe.write_u8(0x452D4F, bool(flags & 4))
+                pe.write_u8(0x452EEC, 0)
+                pe.write_u8(0x452ED5, 0)
+                for addr, value in (
+                    (0x452D40, 4 + ticks / 16),
+                    (0x452D54, 4),
+                    (0x42FB9C, 0.5 if flags & 2 else 0.04 if flags & 64 else 1),
+                    (0x452EF0, 3),
+                    (0x438330, 8 if flags & 128 else 0),
+                    (0x438800, 312),
+                    (0x438804, 148),
+                ):
+                    pe.write_f32(addr, value)
+                for i in range(100):
+                    who = ("Gunner" if i == 1 else "Other") if i < 4 else "10tons"
+                    seconds = 160 - i * 7 if i < 4 else 0
+                    xp = 2700 - i * 13 if i < 4 else 0
+                    row = struct.pack("<32sii4f", who.encode(), seconds, seconds if board & 2 else xp, 0, 0, 0, 0)
+                    pe.write(0x436CF8 + 56 * i, row)
+                pe.write(0x439228, struct.pack("<32sii", b"Gunner", 153, 2687))
+                pe.call(va)
+                n = check.dll.combat_ui_page(kind, ticks, flags, board)
+                case = (hex(va), ticks, flags, board)
+                calls += oracle.compare(check, n, case)
+                state = (pe.read_f32(0x452E94), pe.read_f32(0x452D54), pe.read_f32(0x42FB9C), pe.read_i32(0x42FBAC))
+                got = (ctypes.c_float * 4).from_address(check.symbol("combat_ui_result"))
+                assert all(math.isclose(a, b, abs_tol=1e-6) for a, b in zip(got, state, strict=True)), (
+                    case,
+                    tuple(got),
+                    state,
+                )
     return calls

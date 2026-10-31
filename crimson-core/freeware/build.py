@@ -72,6 +72,10 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "game/game_frame_update.cpp",
                 "ui/gameplay_render_hud.cpp",
                 "ui/hud_set_row.cpp",
+                "ui/overlay_begin.cpp",
+                "ui/game_show_message.cpp",
+                "ui/game_credits_update.cpp",
+                "ui/game_highscores_update.cpp",
                 "player/angle_approach.cpp",
                 "projectiles/projectile_spawn.cpp",
                 "projectiles/projectile_update.cpp",
@@ -115,7 +119,6 @@ def build(root: Path, target: str, out: Path, install: Path | None) -> None:
         sources = [
             core / "freeware/client.cpp",
             core / "freeware/display.cpp",
-            core / "freeware/hud.cpp",
             core / "freeware/music.cpp",
             *game_sources(root, Path(stage)),
         ]

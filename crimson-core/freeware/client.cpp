@@ -84,7 +84,7 @@ static void frame() {
   auto &c = client;
   auto &in = c.in;
   in.click = in.accept = in.previous = in.next = in.escape = in.backspace = false;
-  in.console = in.screenshot = false;
+  in.console = in.screenshot = in.space_pressed = in.delete_scores = false;
   in.dx = in.dy = 0;
   in.level_up = in.perk_button = false;
   in.fire_edge[0] = in.fire_edge[1] = false;
@@ -149,7 +149,13 @@ static void frame() {
       case SDL_SCANCODE_GRAVE:
         in.console = true;
         break;
+      case SDL_SCANCODE_D:
+        in.delete_scores = true;
+        break;
       case SDL_SCANCODE_SPACE:
+        in.space_pressed = true;
+        in.level_up = true;
+        break;
       case SDL_SCANCODE_KP_PLUS:
       case SDL_SCANCODE_EQUALS:
         in.level_up = true;
@@ -218,6 +224,8 @@ static void frame() {
   c.previous = now;
   bool was_text = c.game.screen == Screen::Death || c.game.console_open;
   Input controls = in;
+  controls.arrow_down = keys[SDL_SCANCODE_DOWN];
+  controls.arrow_up = keys[SDL_SCANCODE_UP];
   controls.relative = c.game.screen == Screen::Playing;
   controls.mouse_fire = in.fire;
   controls.fire = held(0, 4);

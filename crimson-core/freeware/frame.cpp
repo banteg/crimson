@@ -48,6 +48,9 @@ void Game::enter_state(int id) {
   case 6:
     screen = Screen::Dying;
     break;
+  case 7:
+    screen = Screen::Message;
+    break;
   case 8:
     screen = Screen::LevelCleared;
     break;

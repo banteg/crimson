@@ -9,7 +9,7 @@ extern unsigned char freeware_show_secret_hints, freeware_options_open, freeware
     freeware_show_fps, freeware_glow, freeware_smoke, freeware_shadows, freeware_shell_marks,
     freeware_direction_arrow, freeware_rebinding, freeware_calibrating, freeware_pause_perks;
 extern char *freeware_main_labels[8], *freeware_option_labels[12], *freeware_online_labels[5];
-void game_credits_update(), game_highscores_update(), highscore_load_table();
+void highscore_load_table();
 void *freeware_http_get(const char *server, const char *path, const char *filename);
 extern unsigned char freeware_open_site, freeware_music_started;
 extern int freeware_level_number;
@@ -609,19 +609,10 @@ __forceinline bool main_menu() {
         row = menu_rows(overlay ? main_page : which);
     menu_footer();
     if (overlay) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-        frame_dt = freeware_frame_delta;
-        if (G.transition_pending) {
-            G.transition_pending = false;
-            STATE_SINCE = CLOCK;
-        }
-        G.update_ui(INPUT);
-#else
         if (which == scores_page)
             game_highscores_update();
         else
             game_credits_update();
-#endif
         return true;
     }
     if (row < 0)

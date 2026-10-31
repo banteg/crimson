@@ -45,7 +45,7 @@ struct Input {
   bool previous{}, next{}, accept{}, escape{}, backspace{};
   bool up2{}, down2{}, left2{}, right2{}, fire2{}, reload{}, level_up{};
   bool ctrl{}, console{}, mouse_fire{};
-  bool screenshot{}, relative{};
+  bool screenshot{}, relative{}, arrow_down{}, arrow_up{}, space_pressed{}, delete_scores{};
   float dx{}, dy{};
   std::bitset<256> level_down, level_pressed;
   int key{};
@@ -160,6 +160,9 @@ struct Game {
   float hud_xp_timer{};
   std::vector<FrameSprite> frame_sprites;
   std::vector<FrameLabel> frame_labels;
+  float score_scroll{};
+  bool score_highlighted{}, scores_closing{};
+  Score last_score;
   std::array<std::vector<Score>, 4> rankings;
   std::array<bool, 4> invalid_scores{};
   int tips_sequence{};
@@ -211,6 +214,7 @@ struct Game {
   void open_perks();
   void choose_perk(int choice);
   void load_scores();
+  void discard_corrupt_score();
   void record_score(float average_fps);
   bool store_scores(const std::vector<Score> &) const;
   bool merge_scores(const std::string &filename);

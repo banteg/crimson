@@ -480,3 +480,59 @@ extern "C" int combat_ui_hud(int mode, int count, int variant) {
   freeware_frame_game = nullptr;
   return capture_ui();
 }
+extern "C" unsigned char game_highscores_update(), game_credits_update(), freeware_overlay_begin();
+extern "C" void game_show_message();
+extern "C" int combat_ui_page(int kind, int ticks, int flags, int board) {
+  game = freeware::Game{};
+  freeware::Input in;
+  freeware_frame_game = &game;
+  freeware_frame_input = &in;
+  freeware_frame_delta = .125f;
+  game.two_players = board & 1;
+  game.survival = board & 2;
+  config_player_count = game.players();
+  config_game_mode = static_cast<game_mode_id_t>(game.survival ? 2 : 1);
+  game.enter_state(7);
+  if (kind == 1)
+    game.screen = freeware::Screen::Credits;
+  if (kind == 2)
+    game.screen = freeware::Screen::Scores;
+  freeware_simulation_clock = 4.f + ticks * .0625f;
+  game.state_since = 4;
+  game.transition_pending = flags & 1;
+  game.transition_alpha = flags & 2 ? .5f : flags & 64 ? .04f : 1.f;
+  game.perk_transparent = flags & 4;
+  in.click = flags & 8;
+  in.space_pressed = flags & 16;
+  in.escape = flags & 32;
+  game.mouse_dy = flags & 128 ? 8.f : 0.f;
+  in.arrow_down = flags & 256;
+  in.arrow_up = flags & 512;
+  game.score_scroll = 3;
+  game.cursor_x = 312;
+  game.cursor_y = 148;
+  game.message = "A message\non two lines.";
+  for (int i = 0; i < 4; ++i) {
+    freeware::Score entry{};
+    entry.name = i == 1 ? "Gunner" : "Other";
+    entry.seconds = 160 - i * 7;
+    entry.experience = 2700 - i * 13;
+    game.scores().push_back(entry);
+  }
+  game.last_score = game.scores()[1];
+  if (kind == 0)
+    game_show_message();
+  else if (kind == 1)
+    game_credits_update();
+  else if (kind == 2)
+    game_highscores_update();
+  else
+    freeware_overlay_begin();
+  combat_ui_result[0] = frame_dt;
+  combat_ui_result[1] = game.state_since;
+  combat_ui_result[2] = game.transition_alpha;
+  combat_ui_result[3] = (float)game.frame_state();
+  freeware_frame_game = nullptr;
+  freeware_frame_input = nullptr;
+  return capture_ui();
+}

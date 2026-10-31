@@ -93,6 +93,13 @@ void Game::load_scores() {
       std::fprintf(stderr, "Invalid 1.4.0 score file %s\n", files[i]);
   }
 }
+void Game::discard_corrupt_score() {
+  const int board = (survival ? 2 : 0) + int(two_players);
+  if (invalid_scores[board] && !save_dir.empty() && std::remove((save_dir + files[board]).c_str()) == 0) {
+    invalid_scores[board] = false;
+    scores().clear();
+  }
+}
 void Game::record_score(float average_fps) {
   Score score{};
   score.name = name;
@@ -102,6 +109,7 @@ void Game::record_score(float average_fps) {
   score.min_fps = run.min_fps;
   score.average_fps = average_fps;
   score.max_fps = run.max_fps;
+  last_score = score;
   auto &table = scores();
   table.push_back(score);
   sort_scores(table, survival);
