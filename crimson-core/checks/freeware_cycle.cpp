@@ -202,7 +202,7 @@ int main() {
     seed_random(1234);
     g.run.level = level - 1;
     g.run.experience = g.next_level_xp() + 2;
-    g.update_career(1.f / 60);
+    g.check_level();
     assert(g.run.level == level && g.run.pending == 1 && creature_pool[0].active);
     std::printf("levelroll %d %d ", level, crt_rand());
     for (unsigned char flag : perk_choice_flags)

@@ -31,7 +31,7 @@ enum class Sound {
   Decay = 28,
   Count = 29
 };
-enum class Bonus { Fire, Freeze, Weapon, Nuke, Shield, Time };
+enum class Bonus { Fire = 1, Freeze, Weapon, Nuke, Shield, Time };
 struct Pickup {
   vec2f_t pos{};
   Bonus kind{};
@@ -69,9 +69,9 @@ struct Run : Fighter {
   Fighter partner;
   float seconds{}, next_spawn{}, freeze{}, slow{}, speed_scale = 1, exp_clock{}, jinx{}, berserk{}, plague_time{},
                                                    bomb_age = -1;
-  vec2f_t bomb_pos{}, first_kill_pos{-100, -100};
+  vec2f_t bomb_pos{}, first_kill_pos{-100, 0};
   bool moved{}, final_revenge{}, cheated{};
-  int first_kill_xp = -1, level = 1, pending{}, infections{};
+  int first_kill_xp = 0, level = 1, pending{}, infections{};
   int frames{};
   float min_fps = 10000, max_fps{};
   Pickup pickup;
@@ -144,6 +144,8 @@ struct Game {
   int next_level_xp() const;
 
   void tick(float dt, const Input &input);
+  void combat_frame(float dt, const Input &in, vec2f_t mouse_world);
+  void check_level();
   void finish_death(float dt);
 };
 extern const char *const main_labels[8];

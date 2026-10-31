@@ -54,7 +54,8 @@ class Comparison:
         self.pe = pe = NativeOracle(exe, symbols=SymbolTable({}), rand_state_address=0x432C40)
         # Keep collision, damage, sound choices, death, drop rolls and the RNG running in the PE.
         # Stub only sound playback, texture lookup and the render queue.
-        for address in (0x405630, 0x405760, 0x405C80):
+        pe.write_u32(0x452EA0, pe.alloc(0x30))  # Inactive music buffer, including its native thiscall returns.
+        for address in (0x405630, 0x405C80):
             pe.stub(address, 0)
         table = pe.alloc(256)
         pe.write_u32(0x452D94, pe.alloc(4, data=struct.pack("<I", table)))
@@ -283,8 +284,6 @@ class Comparison:
             pe.write_u32(0x43C5C8, 6)
             pe.write_u32(0x452E60, 99)
             pe.write_u32(0x4387E8, 99)
-            for j in range(6):
-                pe.write_u32(0x42FBBC + 4 * j, j)
             data = creature(650, 500, 0)
             self.write(CREATURE, 0, data)
             dt = 0.032
@@ -300,7 +299,7 @@ class Comparison:
             assert self.dll.combat_experience() == pe.read_i32(0x4384F8)
             pickup = pe.read_i32(0x4387E8)
             assert self.dll.combat_drop() == (-1 if pickup == 99 else pickup)
-            if pickup == 2:
+            if pickup == 3:
                 assert self.dll.combat_drop_weapon() == pe.read_i32(0x452E68)
             assert self.pe.call(0x422414).eax == self.dll.crt_rand(), ("reward", seed, "next rand")
 
@@ -360,7 +359,7 @@ class Comparison:
 
     def players(self):
         pe = self.pe
-        for weapon in range(1, 21):
+        for weapon, whole_frame in [(w, False) for w in range(1, 21)] + [(2, True), (3, True), (12, True)]:
             self.reset(42)
             self.dll.combat_arm(weapon)
             for va, value in [
@@ -401,6 +400,14 @@ class Comparison:
                 pe.write_u8(0x4385F4 + offset, 8 + bit)
             for j in range(4):
                 pe.write_u8(0x43877C + j, 24)
+            if whole_frame:
+                pe.write_u32(0x438500, 1)
+                pe.write_f32(0x438628, 100)
+                pe.write_f32(0x4387C0, -100)
+                pe.write_u32(0x452E18, 6)
+                pe.write_u32(0x452E10, 12)
+                self.write(CREATURE, 0, creature(555, 510, 20))
+                self.write(BULLET, 2, struct.pack(BULLET[2], 1, 1.57079637, 512, 510, 512, 510, 1, 2, 1, 0.4, 1, 1, 1))
             for i, (keys, x, y) in enumerate(
                 [(1, 712, 512), (2, 514, 774), (6, 391, 514), (16, 620, 477), (0, 712, 514), (9, 600, 520)],
             ):
@@ -409,8 +416,16 @@ class Comparison:
                 pe.write_f32(0x438800, x)
                 pe.write_f32(0x438804, y)
                 pe.write_f32(0x452E94, dt)
-                pe.call(0x4126E0)
-                self.dll.combat_player(dt, keys, x, y)
+                if whole_frame:
+                    self.dll.combat_player(dt, keys, x, y, 1)
+                    pe.run(0x4183CD, 0x418587, regs={"ebp": 0, "edi": 1, "ebx": 3})
+                    self.compare(CREATURE, 0, ("frame", weapon, i))
+                    assert self.dll.combat_experience() == pe.read_i32(0x4384F8)
+                else:
+                    pe.call(0x4126E0)
+                    self.dll.combat_player(dt, keys, x, y, 0)
+                state = ctypes.c_uint32.from_address(self.symbol("freeware_rng_state")).value
+                assert state == pe.rand_state, (weapon, whole_frame, i, state, pe.rand_state)
                 player = self.address(("player_state_table",))
                 for offset in (0x18, 0x1C, 0x4C, 0x50, 0x6C, 0x8C, 0x154, 0x168, 0x16C):
                     expected = pe.read_f32(0x438478 + offset)
@@ -463,6 +478,7 @@ def check_web(stage, exe, sources):
         "crt_rand",
     )
     data = [p[0] for p in (CREATURE, BULLET, ROCKET, PARTICLE, SPRITE)] + [
+        "freeware_rng_state",
         "bonus_fire_bullets_timer",
         "freeware_elapsed_seconds",
         "player_state_table",
@@ -499,8 +515,8 @@ def check_web(stage, exe, sources):
         fn = exports[name]
         if name == "combat_message":
             return lambda: ctypes.string_at(pointer(fn(store)))
-        converters = [float if str(param) in {"f32","f64"} else int for param in fn.type(store).params]
-        return lambda *args: fn(store, *(cast(arg) for cast,arg in zip(converters,args,strict=True)))
+        converters = [float if str(param) in {"f32", "f64"} else int for param in fn.type(store).params]
+        return lambda *args: fn(store, *(cast(arg) for cast, arg in zip(converters, args, strict=True)))
 
     exports_host = SimpleNamespace(**{name: function(name) for name in functions})
     check_client(exports_host, exe, lambda name: pointer(exports[name].value(store)), "WebAssembly")
@@ -541,7 +557,7 @@ def main():
         dll.combat_creatures.argtypes = [ctypes.c_float] * 3
         dll.combat_actors.argtypes = [ctypes.c_int] * 3 + [ctypes.c_float]
         dll.combat_reward.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_bool]
-        dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float]
+        dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_int]
         dll.combat_message.restype = ctypes.c_char_p
         dll.combat_health.restype = ctypes.c_float
         check_client(dll, exe, lambda name: ctypes.addressof(ctypes.c_char.in_dll(dll, name)), "native")

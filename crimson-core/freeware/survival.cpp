@@ -7,6 +7,13 @@
 #include <cstring>
 
 extern "C" {
+int freeware_first_kill_xp, freeware_no_pickup, perk_id_bloody_mess = 1;
+unsigned char freeware_player_moved;
+vec2f_t freeware_first_kill_position;
+extern int freeware_pickup_id, freeware_pickup_weapon;
+extern vec2f_t freeware_pickup_position;
+extern float freeware_pickup_time;
+void freeware_creature_handle_death_body(int, int, unsigned char);
 creature_t creature_pool[512];
 projectile_pool_t projectile_pool;
 secondary_projectile_pool_t secondary_projectile_pool;
@@ -51,11 +58,13 @@ float camera_y(const Game &g) {
   return std::clamp(height * .5f - camera_subject(g).y, float(height - arena), -1.f);
 }
 
-static unsigned rng = 1;
-void seed_random(unsigned seed) { rng = seed; }
+extern "C" {
+unsigned freeware_rng_state = 1;
+}
+void seed_random(unsigned seed) { freeware_rng_state = seed; }
 extern "C" int crt_rand() {
-  rng = rng * 214013u + 2531011u;
-  return (rng >> 16) & 0x7fff;
+  freeware_rng_state = freeware_rng_state * 214013u + 2531011u;
+  return (freeware_rng_state >> 16) & 0x7fff;
 }
 
 void Game::start() {
@@ -108,6 +117,35 @@ extern "C" void freeware_combat_sound(int id, float) {
   else
     play_original_sample(id);
 }
+void Game::kill(int id, int owner, bool corpse) {
+  if (!creature_pool[id].active)
+    return;
+  Game *previous = combat_game;
+  combat_game = this;
+  int old = current_player_index;
+  current_player_index = owner;
+  auto &p = player_state_table[owner].freeware;
+  p.position = actor(owner).player;
+  p.experience = run.experience;
+  p.perks[1] = run.perks[1];
+  freeware_first_kill_xp = run.first_kill_xp;
+  freeware_first_kill_position = run.first_kill_pos;
+  freeware_player_moved = run.moved;
+  freeware_pickup_id = run.pickup.time > 0 ? int(run.pickup.kind) : freeware_no_pickup;
+  freeware_pickup_time = run.pickup.time;
+  bonus_freeze_timer = run.freeze;
+  freeware_creature_handle_death_body(id, owner, corpse);
+  run.experience = p.experience;
+  run.first_kill_pos = freeware_first_kill_position;
+  run.first_kill_xp = freeware_first_kill_xp;
+  if (run.pickup.time <= 0 && freeware_pickup_time > 0)
+    run.pickup = {freeware_pickup_position, static_cast<Bonus>(freeware_pickup_id), freeware_pickup_time,
+                  freeware_pickup_weapon};
+  if (++run.kills == 1)
+    std::puts("1.4.0 first kill");
+  current_player_index = old;
+  combat_game = previous;
+}
 extern "C" void creature_handle_death(int id, int owner, unsigned char corpse) {
   combat_game->run.experience = player_state_table[0].freeware.experience;
   combat_game->kill(id, owner, corpse != 0);
@@ -152,30 +190,41 @@ void Game::update_projectiles(float dt) {
   combat_game = nullptr;
 }
 
+// Gameplay block 0x4183cd..0x418587. Living players act after the existing combat pools.
+void Game::combat_frame(float dt, const Input &in, vec2f_t mouse_world) {
+  current_player_index = 0;
+  frame_dt = dt;
+  run.exp_clock -= dt;
+  if (run.exp_clock < 0) {
+    run.exp_clock = .25f;
+    run.experience += run.perks[6] * 10;
+  }
+  update_creatures(dt);
+  update_projectiles(dt);
+  for (int i = 0; i < players(); ++i)
+    step_player(i, dt, in, mouse_world);
+  current_player_index = 0;
+  if (!survival)
+    check_level();
+}
+
 void Game::tick(float dt, const Input &in) {
   if (dt > 0) {
     ++run.frames;
     run.min_fps = std::min(run.min_fps, 1 / dt);
     run.max_fps = std::max(run.max_fps, 1 / dt);
   }
+  if (run.perks[15])
+    run.speed_scale = std::min(.85f, run.speed_scale);
+  dt *= run.speed_scale;
+  freeware_simulation_clock += dt;
+  combat_frame(dt, in, {in.x - camera_x(*this), in.y - camera_y(*this)});
+  // The HUD advances the run clock after simulation, before the mode spawner.
   run.seconds += dt;
   freeware_elapsed_seconds = run.seconds;
   run.freeze = std::max(0.f, run.freeze - dt);
   run.slow = std::max(0.f, run.slow - dt);
   bonus_fire_bullets_timer = std::max(0.f, bonus_fire_bullets_timer - dt);
-  run.speed_scale = run.slow > 0 ? std::max(.3f, run.speed_scale - dt) : std::min(1.f, run.speed_scale + dt * .8f);
-  if (run.perks[15])
-    run.speed_scale = std::min(.85f, run.speed_scale);
-  dt *= run.speed_scale;
-  frame_dt = dt;
-  freeware_simulation_clock += dt;
-  current_player_index = 0;
-  const vec2f_t mouse_world{in.x - camera_x(*this), in.y - camera_y(*this)};
-  update_creatures(dt);
-  update_projectiles(dt);
-  for (int i = 0; i < players(); ++i)
-    step_player(i, dt, in, mouse_world);
-  current_player_index = 0;
   if (!survival)
     update_career(dt);
   if (survival)
@@ -230,7 +279,8 @@ void Game::finish_death(float dt) {
   if (run.final_revenge)
     update_career(dt);
   resolve_corpses();
-  death_clock += dt;
+  freeware_simulation_clock += dt * .5f;
+  death_clock += dt * 1.5f;
   if (death_clock >= 3.f) {
     screen = run.cheated ? Screen::Scores : Screen::Death;
     std::puts("1.4.0 name entry");

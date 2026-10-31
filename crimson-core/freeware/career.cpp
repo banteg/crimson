@@ -7,8 +7,9 @@
 
 extern "C" {
 int freeware_arena_width = freeware::arena, freeware_arena_height = freeware::arena;
-int freeware_bonus_count = 6, freeware_bonus_ids[6] = {0, 1, 2, 3, 4, 5}, freeware_pickup_id,
-    freeware_pickup_weapon;
+int freeware_bonus_count = 6, freeware_pickup_id, freeware_pickup_weapon;
+int freeware_bonus_fire = 1, freeware_bonus_freeze = 2, freeware_bonus_weapon = 3;
+int freeware_bonus_nuke = 4, freeware_bonus_shield = 5, freeware_bonus_time = 6;
 vec2f_t freeware_pickup_position;
 float freeware_pickup_time;
 unsigned char freeware_spawn_enabled = 1;
@@ -27,62 +28,16 @@ void Game::spawn_career() {
       break;
   }
 }
-void Game::kill(int slot, int owner, bool corpse) {
-  auto &c = creature_pool[slot];
-  if (!c.active)
-    return;
-  if (corpse)
-    c.death_timer -= frame_dt;
-  else
-    c.active = 0;
-  --creature_spawned_count;
-  int reward = int(c.freeware.reward * (run.perks[1] ? 1.5 : 1.0));
-  if (!run.experience && !run.moved) {
-    run.first_kill_xp = int(c.freeware.reward);
-    run.first_kill_pos = c.position;
-  }
-  run.experience += reward;
-  if (++run.kills == 1)
-    std::puts("1.4.0 first kill");
-
-  if (!survival && run.pickup.time <= 0) {
-    auto &weapon = player_state_table[owner].freeware.weapon;
-    bool drop = crt_rand() % 8 == 1 || (weapon == 1 && crt_rand() % 3 == 1);
-    auto pos = c.position;
-    if (drop && std::hypot(pos.x - actor(owner).player.x, pos.y - actor(owner).player.y) > 64) {
-      freeware_pickup_time = 0;
-      bonus_spawn_at(&pos);
-      if (freeware_pickup_time > 0)
-        run.pickup = {freeware_pickup_position, static_cast<Bonus>(freeware_pickup_id), freeware_pickup_time,
-                      freeware_pickup_weapon};
-    }
-  }
-  if (run.freeze != 0) {
-    for (int i = 0; i < 30; ++i) {
-      float size = float(crt_rand() % 10 + 5);
-      float heading = (crt_rand() % 628) * .01f;
-      float radius = i * .04f * (crt_rand() % 55);
-      vec2f_t mark{c.pos_x + std::cos(heading) * radius, c.pos_y + std::sin(heading) * radius};
-      float rotation = (crt_rand() % 612) * .01f;
-      if (marks.size() < 128)
-        marks.push_back({mark, size, rotation, true});
-    }
-    vec2f_t zero{};
-    auto &mist = sprite_effect_pool[fx_spawn_sprite(&c.position, &zero, 12)];
-    mist.color_r *= .56f;
-    mist.color_g *= .7f;
-    mist.color_b *= .9f;
-    c.active = 0;
-  }
-}
 int Game::next_level_xp() const { return int(1000 * std::pow(run.level + 1., 1.75)); }
-void Game::update_career(float dt) {
+void Game::check_level() {
   player_state_table[0].freeware.experience = run.experience;
   player_state_table[0].freeware.level = run.level;
   freeware_pending_perks = run.pending;
   player_check_level();
   run.level = player_state_table[0].freeware.level;
   run.pending = freeware_pending_perks;
+}
+void Game::update_career(float dt) {
   run.pickup.time -= dt;
   for (int i = 0; i < players(); ++i) {
     auto &p = actor(i);
@@ -130,49 +85,56 @@ void Game::update_career(float dt) {
     if (run.bomb_age > 1)
       run.bomb_age = -1;
   }
-  if (run.perks[6]) {
-    run.exp_clock -= dt;
-    if (run.exp_clock < 0) {
-      run.experience += 10 * run.perks[6];
-      run.exp_clock = .25f;
+  if (run.perks[7] || run.perks[18]) {
+    for (int i = 0; i < players(); ++i) {
+      if (actor(i).health <= 0)
+        continue;
+      int target = creature_find_in_radius(&player_state_table[i].freeware.aim, 10);
+      if (target < 0)
+        continue;
+      auto &c = creature_pool[target];
+      if (run.perks[7]) {
+        c.anim_phase -= dt;
+        if (c.anim_phase < 0) {
+          c.anim_phase = .5f;
+          vec2f_t zero{};
+          for (float energy : {.8f, .6f, .4f, .3f, .2f})
+            fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, energy);
+          if (marks.size() < 128)
+            marks.push_back({c.position, 16, 0, false});
+        }
+      }
+      if (run.perks[18] && run.freeze <= 0) {
+        c.pos_x -= c.vel_x;
+        c.pos_y -= c.vel_y;
+      }
     }
   }
-  if (!two_players && !survival && run.health > 0) {
-    float dist = std::hypot(run.player.x - run.first_kill_pos.x, run.player.y - run.first_kill_pos.y);
-    if (run.health < 100 && dist >= 48)
-      run.first_kill_xp = -10;
-    if (run.health < 5 && dist < 48 && run.first_kill_xp == run.experience &&
-        player_state_table[0].freeware.weapon != 18) {
-      freeware_secret_weapon_unlocked = 1;
-      weapon_assign_player(0, 18);
-    }
-    if (!run.experience && run.seconds >= 120 && !highscore_record_shots_fired && run.health == 100) {
-      run.experience = 1;
-      freeware_secret_weapon_unlocked = 1;
-      weapon_assign_player(0, 19);
+  if (run.perks[17]) {
+    run.jinx -= dt;
+    if (run.jinx < 0) {
+      if (crt_rand() % 10 == 3) {
+        run.health -= 5;
+        marks.push_back({run.player, 16, 0, false});
+        marks.push_back({run.player, 16, 0, false});
+      }
+      run.jinx += (crt_rand() % 20) * .1f + 2;
+      int id = crt_rand() % 511;
+      for (int attempt = 0; attempt < 10 && !creature_pool[id].active; ++attempt)
+        id = crt_rand() % 511;
+      auto &c = creature_pool[id];
+      if (c.active) {
+        c.health = -1;
+        c.death_timer -= dt * 20;
+        run.experience = int(run.experience + c.freeware.reward);
+        play_sound(Sound::Die);
+      }
     }
   }
   if (run.perks[13]) {
     run.berserk -= dt;
     if (run.berserk < 0)
       run.berserk = crt_rand() % 15 == 2 ? 12 : 2;
-  }
-  if (run.perks[17]) {
-    run.jinx -= dt;
-    if (run.jinx <= 0) {
-      if (crt_rand() % 10 == 3)
-        run.health -= 1;
-      run.jinx = 2 + (crt_rand() % 20) * .1f;
-      for (int attempt = 0; attempt < 10; ++attempt) {
-        int id = crt_rand() % 511;
-        if (!creature_pool[id].active || creature_pool[id].health <= 0)
-          continue;
-        creature_pool[id].health -= dt * 100;
-        if (creature_pool[id].health <= 0)
-          kill(id, 0);
-        break;
-      }
-    }
   }
 }
 } // namespace freeware

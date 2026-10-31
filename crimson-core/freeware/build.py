@@ -51,6 +51,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "creatures/creature_spawn_random.cpp",
                 "bonuses/bonus_spawn_at.cpp",
                 "creatures/creature_update_all.cpp",
+                "creatures/creature_handle_death.cpp",
                 "creatures/creature_find_nearest.cpp",
                 "creatures/plaguebearer_spread_infection.cpp",
                 "weapons/weapon_assign_player.cpp",
@@ -81,6 +82,7 @@ def game_flags(root: Path) -> list[str]:
         "-fno-strict-aliasing",
         "-ffp-contract=off",
         "-DCL_BUILD=10400",
+        "-DCRIMSON_FREEWARE_CLIENT",
         "-I" + str(root / "tools/match/include"),
         "-I" + str(root / "third_party/headers"),
     ]

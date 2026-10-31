@@ -471,8 +471,8 @@
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x004220e0",
-      "name": "highscore_record_shots_fired",
+      "address": "0x004220e4",
+      "name": "highscore_record_hits",
       "program": "1.0.2/crimson.exe"
     },
     {

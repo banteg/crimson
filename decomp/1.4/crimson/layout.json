@@ -144,6 +144,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_handle_death.cpp",
+          "configs": [
+            "tools/match/scratches/creature_handle_death"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/creatures/creature_pool_global_init.cpp",
           "configs": [
             "tools/match/scratches/creature_pool_global_init"

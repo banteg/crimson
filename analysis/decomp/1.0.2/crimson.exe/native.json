@@ -31126,5 +31126,5 @@
       "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
     }
   ],
-  "maps_sha256": "e850a972758da886c1ab7b6feed85bd4adc115e57b180df267d9ef5e1bead810"
+  "maps_sha256": "c39b0d376b0c682c29b62c0347b12af91ee08053c0febfc5e7be7ca29942297e"
 }

@@ -130,6 +130,21 @@ void player_start_reload();
 
 void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world) {
   auto &p = actor(index);
+  if (!two_players && !survival && run.health > 0) {
+    float dist = std::hypot(run.player.x - run.first_kill_pos.x, run.player.y - run.first_kill_pos.y);
+    if (run.health < 100 && dist >= 48)
+      run.first_kill_xp = -10;
+    if (run.health < 5 && dist < 48 && run.first_kill_xp == run.experience &&
+        player_state_table[0].freeware.weapon != 18) {
+      freeware_secret_weapon_unlocked = 1;
+      weapon_assign_player(0, 18);
+    }
+    if (!run.experience && run.seconds >= 120 && !highscore_record_shots_fired && run.health == 100) {
+      run.experience = 1;
+      freeware_secret_weapon_unlocked = 1;
+      weapon_assign_player(0, 19);
+    }
+  }
   if (p.health <= 0)
     return;
   auto &w = player_state_table[index].freeware;
@@ -154,6 +169,7 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
     play_sound(Sound::Shot);
     return;
   }
+  run.speed_scale = run.slow > 0 ? std::max(.3f, run.speed_scale - dt) : std::min(1.f, run.speed_scale + dt * .8f);
   float dx = index ? float(in.right2) - float(in.left2) : float(in.right) - float(in.left);
   float dy = index ? float(in.down2) - float(in.up2) : float(in.down) - float(in.up);
   if (movement[index] == 2) {
@@ -224,25 +240,6 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
   if (movement[index] == 0 && !dx && !dy)
     p.spread = std::max(.25f, p.spread - dt);
   p.spread = run.perks[3] ? 0.f : std::max(.5f, p.spread - dt);
-  if (run.perks[7] || run.perks[18]) {
-    int target = creature_find_in_radius(&aim, 10);
-    if (target >= 0) {
-      auto &c = creature_pool[target];
-      if (run.perks[18] && run.freeze <= 0) {
-        c.pos_x -= c.vel_x;
-        c.pos_y -= c.vel_y;
-      }
-      if (run.perks[7] && c.health > 0) {
-        c.anim_phase -= dt;
-        if (c.anim_phase < 0) {
-          c.anim_phase = .5f;
-          c.health -= 3;
-          if (c.health <= 0)
-            kill(target, index);
-        }
-      }
-    }
-  }
   if (w.reload > 0 && in.click && run.perks[22]) {
     w.reload -= .05f;
     if (w.reload <= 0)

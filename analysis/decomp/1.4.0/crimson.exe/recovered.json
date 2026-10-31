@@ -866,6 +866,62 @@
       "bytes": "a1c8f04200"
     },
     {
+      "name": "freeware_bonus_fire",
+      "address": "0x0042fbbc",
+      "reference": "0x004069ca",
+      "bytes": "8b15bcfb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_freeze",
+      "address": "0x0042fbc0",
+      "reference": "0x004069e6",
+      "bytes": "a1c0fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_weapon",
+      "address": "0x0042fbc4",
+      "reference": "0x00406a00",
+      "bytes": "8b0dc4fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_nuke",
+      "address": "0x0042fbc8",
+      "reference": "0x00406a4a",
+      "bytes": "8b15c8fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_shield",
+      "address": "0x0042fbcc",
+      "reference": "0x00406a66",
+      "bytes": "a1ccfb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_time",
+      "address": "0x0042fbd0",
+      "reference": "0x00406a80",
+      "bytes": "8b0dd0fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_arena_width",
+      "address": "0x0042fbd8",
+      "reference": "0x00406924",
+      "bytes": "a1d8fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_arena_height",
+      "address": "0x0042fbdc",
+      "reference": "0x00406955",
+      "bytes": "8b15dcfb4200",
+      "build_only": true
+    },
+    {
       "name": "console_exec_line_buf",
       "address": "0x00435f10",
       "reference": "0x00401c0f",
@@ -890,6 +946,13 @@
       "bytes": "c705f069430000000000"
     },
     {
+      "name": "freeware_pickup_position",
+      "address": "0x004369f0",
+      "reference": "0x00406976",
+      "bytes": "a3f0694300",
+      "build_only": true
+    },
+    {
       "name": "unused_fx_rotated_scale_prefix_color",
       "address": "0x00438320",
       "reference": "0x00403300",
@@ -909,10 +972,24 @@
       "bytes": "c705c087430000000000"
     },
     {
+      "name": "freeware_pickup_id",
+      "address": "0x004387e8",
+      "reference": "0x004069da",
+      "bytes": "8915e8874300",
+      "build_only": true
+    },
+    {
       "name": "highscore_record_shots_fired",
       "address": "0x004387f0",
       "reference": "0x00409269",
       "bytes": "8b35f0874300"
+    },
+    {
+      "name": "highscore_record_hits",
+      "address": "0x004387f4",
+      "reference": "0x0040975a",
+      "bytes": "ff05f4874300",
+      "build_only": true
     },
     {
       "name": "perk_id_count",
@@ -946,6 +1023,13 @@
       "address": "0x0043c598",
       "reference": "0x00408cf8",
       "bytes": "bf98c54300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_count",
+      "address": "0x0043c5c8",
+      "reference": "0x0040698a",
+      "bytes": "f73dc8c54300",
       "build_only": true
     },
     {
@@ -1018,6 +1102,13 @@
       "bytes": "c705f82b450000000000"
     },
     {
+      "name": "freeware_simulation_clock",
+      "address": "0x00452d40",
+      "reference": "0x004183a9",
+      "bytes": "d905402d4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_secret_weapon_unlocked",
       "address": "0x00452d59",
       "reference": "0x004065b0",
@@ -1057,10 +1148,31 @@
       "bytes": "8b0da02d4500"
     },
     {
+      "name": "freeware_spawn_enabled",
+      "address": "0x00452da4",
+      "reference": "0x00408660",
+      "bytes": "a0a42d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_game_active",
+      "address": "0x00452db4",
+      "reference": "0x0040d9a8",
+      "bytes": "a0b42d4500",
+      "build_only": true
+    },
+    {
       "name": "bonus_fire_bullets_timer",
       "address": "0x00452db8",
       "reference": "0x00409402",
       "bytes": "d905b82d4500",
+      "build_only": true
+    },
+    {
+      "name": "bonus_freeze_timer",
+      "address": "0x00452dbc",
+      "reference": "0x004099b5",
+      "bytes": "d905bc2d4500",
       "build_only": true
     },
     {
@@ -1089,6 +1201,34 @@
       "bytes": "8b0d302e4500"
     },
     {
+      "name": "freeware_berserk_timer",
+      "address": "0x00452e5c",
+      "reference": "0x0040dead",
+      "bytes": "d9055c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_time",
+      "address": "0x00452e64",
+      "reference": "0x004069d0",
+      "bytes": "c705642e450000002041",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_weapon",
+      "address": "0x00452e68",
+      "reference": "0x00406a32",
+      "bytes": "8915682e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pending_perks",
+      "address": "0x00452e70",
+      "reference": "0x00408cb8",
+      "bytes": "8b3d702e4500",
+      "build_only": true
+    },
+    {
       "name": "creature_spawned_count",
       "address": "0x00452e78",
       "reference": "0x0040fcec",
@@ -1099,6 +1239,13 @@
       "address": "0x00452e94",
       "reference": "0x00406577",
       "bytes": "d905942e4500"
+    },
+    {
+      "name": "freeware_hit_sound_timer",
+      "address": "0x00452eac",
+      "reference": "0x00409e7a",
+      "bytes": "d905ac2e4500",
+      "build_only": true
     }
   ],
   "absent": [

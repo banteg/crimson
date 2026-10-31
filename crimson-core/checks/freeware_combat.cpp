@@ -54,7 +54,7 @@ extern "C" void combat_arm(int weapon) {
   w.clip_size = 10;
   w.weapon = weapon;
 }
-extern "C" void combat_player(float dt, int keys, float x, float y) {
+extern "C" void combat_player(float dt, int keys, float x, float y, int whole_frame) {
   frame_dt = dt;
   freeware::Input in;
   in.fire = keys & 1;
@@ -64,7 +64,10 @@ extern "C" void combat_player(float dt, int keys, float x, float y) {
   in.up = keys & 16;
   in.x = x + freeware::camera_x(game);
   in.y = y + freeware::camera_y(game);
-  game.step_player(0, dt, in, {x, y});
+  if (whole_frame)
+    game.combat_frame(dt, in, {x, y});
+  else
+    game.step_player(0, dt, in, {x, y});
   auto &p = player_state_table[0].freeware;
   p.position = game.run.player;
   p.cooldown = game.run.cooldown;

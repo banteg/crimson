@@ -170,7 +170,7 @@ void Display::draw(const Game &g) {
       const char *icons[] = {"bonus_fire", "bonus_freeze", "bonus_weapon",
                              "bonus_bomb", "bubble",       "bonus_timebend"};
       float x = b.pos.x + cx, y = b.pos.y + cy;
-      sprite(icons[int(b.kind)], x - 16, y - 16, 32, 32);
+      sprite(icons[int(b.kind) - 1], x - 16, y - 16, 32, 32);
       if (b.kind == Bonus::Weapon)
         text(weapon_name_get(b.weapon), x + 8, y - 10, .5f, {1, 1, .7f, .9f});
     }
