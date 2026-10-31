@@ -241,7 +241,10 @@ int main() {
     g.run.aim_angle = 1.5707964f;
     g.run.cooldown = 0;
     seed_random(42);
-    g.fire_weapon(0);
+    freeware_rainbow_enabled = freeware_rainbow_armed = 1;
+    Input trigger;
+    trigger.fire = true;
+    g.step_player(0, 1.f/60, trigger, {712, 512});
     std::printf("volley %d %.6f %.3f", id, g.run.cooldown, w.ammo);
     for (const auto &shot : projectile_pool)
       if (shot.active)

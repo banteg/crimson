@@ -18,6 +18,7 @@ from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "crimson-core"))
 from freeware.build import game_flags, game_sources
+from freeware_player_cases import check_controls
 
 # symbol, original VA, record format (preserves the exact x86 padding), capacity
 BULLET = ("projectile_pool", 0x439260, "<B3x7fi4f", 64)
@@ -473,8 +474,8 @@ class Comparison:
             assert pe.call(0x422414).eax == self.dll.crt_rand(), ("player", weapon, "next rand")
 
     def draws(self):
+        self.reset(1)
         pe = self.pe
-        pe.restore(self.initial)
         table = pe.read_u32(pe.read_u32(0x452D94))
         calls = []
         state = {}
@@ -582,6 +583,7 @@ def check_client(dll, exe, address, target):
     comparison.creatures()
     comparison.rewards()
     comparison.projectiles()
+    check_controls(comparison)
     visual_cases = comparison.draws()
     print(
         f"1.4.0 {target} combat oracle passed {comparison.frames} frames, 24 reward rolls, 64 perk grants and {visual_cases} draw traces.",
@@ -607,6 +609,7 @@ def check_web(stage, exe, sources):
         "combat_reward",
         "combat_player",
         "combat_arm",
+        "combat_controls",
         "combat_choose",
         "combat_message",
         "combat_health",
@@ -619,6 +622,13 @@ def check_web(stage, exe, sources):
         "crt_rand",
     )
     data = [p[0] for p in (CREATURE, BULLET, ROCKET, PARTICLE, SPRITE)] + [
+        "freeware_player_moved",
+        "freeware_first_kill_xp",
+        "time_scale_factor",
+        "freeware_aim_screen",
+        "freeware_rainbow_armed",
+        "freeware_rainbow_enabled",
+        "freeware_secret_weapon_unlocked",
         "combat_draw_capture",
         "combat_terrain_capture",
         "freeware_rng_state",
@@ -701,6 +711,7 @@ def main():
         dll.combat_actors.argtypes = [ctypes.c_int] * 3 + [ctypes.c_float]
         dll.combat_reward.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_bool]
         dll.combat_player.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_int]
+        dll.combat_controls.argtypes = [ctypes.c_int] * 6 + [ctypes.c_float]
         dll.combat_message.restype = ctypes.c_char_p
         dll.combat_health.restype = ctypes.c_float
         dll.combat_bomb.restype = ctypes.c_float

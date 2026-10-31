@@ -309,11 +309,16 @@ typedef struct freeware_player_t {
 #endif
     vec2f_t position, movement;
     float health, heading;
-    unsigned char body[0x4c - 0x30];
+    float target_heading, size;
+    unsigned char body[0x4c - 0x38];
     vec2f_t aim;
-    unsigned char motion[0x6c - 0x54];
+    unsigned char motion_prefix[4];
+    float speed_multiplier;
+    unsigned char motion[0x68 - 0x5c];
+    float move_speed;
     float ammo, reload;
-    unsigned char animation[0x80 - 0x74];
+    unsigned char animation[8];
+    float walk_phase;
     int experience, displayed_experience, level;
     float cooldown, reload_duration;
 #if CL_BUILD == 10300
@@ -325,9 +330,9 @@ typedef struct freeware_player_t {
     int unused, weapon, previous_weapon;
     float clip_size, muzzle_flash, aim_heading;
 #if CL_BUILD == 10400
-    unsigned char control_prefix[8];
+    float turn_speed, control_reserved;
     float shield;
-    unsigned char controls[0x0c];
+    unsigned char keys[5], controls[7];
 #else
     unsigned char controls[0x18];
 #endif

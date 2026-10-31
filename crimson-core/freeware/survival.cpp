@@ -44,6 +44,7 @@ constexpr float pi = 3.14159265f;
 static_assert(sizeof(creature_t) == 0x80 && sizeof(projectile_t) == 0x34);
 static_assert(sizeof(freeware_player_t) == 0x188 && sizeof(player_state_t) == 0x188);
 static_assert(offsetof(freeware_player_t, aim) == 0x4c && offsetof(freeware_player_t, perks) == 0x94);
+static_assert(offsetof(freeware_player_t, walk_phase) == 0x7c && offsetof(freeware_player_t, keys) == 0x17c);
 static_assert(sizeof(freeware_perk_entry_t) == 20 && sizeof(particle_t) == 0x38);
 
 static vec2f_t camera_subject(const Game &g) {
@@ -84,11 +85,16 @@ void Game::start() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
   run = Run{};
   current_player_index = plaguebearer_infection_count = 0;
-  freeware_secret_weapon_unlocked = 0;
+  freeware_rainbow_enabled = freeware_rainbow_armed = freeware_secret_weapon_unlocked = 0;
+  radial_cursor = {320, 140};
   config_game_mode = static_cast<game_mode_id_t>(survival ? 2 : 1);
   std::memset(player_state_table, 0, sizeof(player_state_table));
   for (int i = 0; i < players(); ++i) {
     auto &w = player_state_table[i].freeware;
+    w.size = 48;
+    w.speed_multiplier = 2;
+    w.level = 1;
+    w.reload_duration = 1;
     w.weapon = survival ? 2 : 1;
     w.ammo = w.clip_size = survival ? 30.f : 10.f;
     actor(i).player.x += i * 80;

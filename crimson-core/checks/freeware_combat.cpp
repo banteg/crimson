@@ -49,7 +49,7 @@ extern "C" void combat_arm(int weapon) {
   game.run.health = 4;
   game.run.cooldown = 0;
   game.run.player = {512, 512};
-  freeware_secret_weapon_unlocked = 1;
+  freeware_secret_weapon_unlocked = freeware_rainbow_armed = freeware_rainbow_enabled = 1;
   auto &w = player_state_table[0].freeware;
   w.ammo = 10;
   w.clip_size = 10;
@@ -115,4 +115,54 @@ extern "C" float combat_bomb(float dt, int start) {
   }
   game.update_bomb(dt);
   return game.run.bomb_age;
+}
+
+// Seed the input boundary from a complete PE-format record. All rule decisions
+// and output mutations still go through the normal Game::step_player entry.
+extern "C" void combat_controls(int index, int count, int movement, int aim, int held, int extra, float dt) {
+  auto &p = player_state_table[index].freeware;
+  auto &f = game.actor(index);
+  game.two_players = count == 2;
+  game.movement[index] = movement;
+  game.aiming[index] = aim;
+  f.player = p.position;
+  f.health = p.health;
+  f.aim_angle = p.aim_heading;
+  f.cooldown = p.cooldown;
+  f.spread = p.spread;
+  game.run.experience = player_state_table[0].freeware.experience;
+  game.run.first_kill_pos = {512, 512};
+  game.run.first_kill_xp = 7;
+  game.run.seconds = (extra & 256) ? 120 : 7;
+  game.run.berserk = (extra & 512) ? 11 : 0;
+  game.run.slow = (extra & 1024) ? 1 : 0;
+  game.run.speed_scale = .73f;
+  game.run.moved = false;
+  game.console_open = extra & 2048;
+  game.radial_cursor = {310, 169};
+  game.mouse_dx = game.mouse_dy = 0;
+  freeware::Input in;
+  in.x = 310;
+  in.y = 169;
+  in.up = held & 1;
+  in.down = held & 2;
+  in.left = held & 4;
+  in.right = held & 8;
+  in.fire = held & 16;
+  in.up2 = held & 32;
+  in.down2 = held & 64;
+  in.left2 = held & 128;
+  in.right2 = held & 256;
+  in.fire2 = held & 512;
+  in.fire_edge[index] = extra & 1;
+  in.fire_edge[1 - index] = extra & 128;
+  in.mouse_fire = extra & 2;
+  in.click = extra & 4;
+  in.reload = extra & 8;
+  in.pad_fire[index] = extra & 16;
+  in.mouse_reload = extra & 32;
+  in.stick_x[index] = int(bool(held & 8)) - int(bool(held & 4));
+  in.stick_y[index] = int(bool(held & 2)) - int(bool(held & 1));
+  in.aim_x[index] = extra & 64 ? -1 : 1;
+  game.step_player(index, dt, in, {312, 177});
 }

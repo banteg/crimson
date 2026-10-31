@@ -46,7 +46,7 @@ struct Input {
   bool ctrl{}, console{}, mouse_fire{};
   int key{};
   float stick_x[2]{}, stick_y[2]{}, aim_x[2]{}, aim_y[2]{};
-  bool pad_fire[2]{};
+  bool pad_fire[2]{}, fire_edge[2]{}, mouse_reload{};
   std::string text;
 };
 // A zero size selects a four-corner textured trail. Sprites use the first point as the top-left.
@@ -77,8 +77,7 @@ struct Corpse {
 struct Fighter {
   vec2f_t player{512, 512};
   float health = 100, body_angle{}, aim_angle{}, walk{}, cooldown = .8f;
-  float spread = 1, move_speed{}, shield{}, locked_aim{}, turn_speed = 1;
-  bool firing{};
+  float spread = 1, shield{};
 };
 struct Run : Fighter {
   Fighter partner;
@@ -110,6 +109,7 @@ struct Game {
   float menu_clock{}, cursor_x = 320, cursor_y = 140;
   int selected{}, generation{};
   float death_clock{}, screen_started{};
+  vec2f_t radial_cursor{320, 140};
   std::array<std::vector<Score>, 4> rankings;
   std::array<bool, 4> invalid_scores{};
   int tips_sequence{};
@@ -145,7 +145,6 @@ struct Game {
   void update(float dt, const Input &input);
   void start();
   void step_player(int index, float dt, const Input &in, vec2f_t mouse_world);
-  void fire_weapon(int index);
   void spawn_career();
   void kill(int slot, int owner, bool corpse = true);
   void update_career(float dt);
@@ -197,7 +196,7 @@ int projectile_spawn(const vec2f_t *, float, int);
 void weapon_assign_player(int, int);
 char *weapon_name_get(int);
 extern player_state_t player_state_table[2];
-extern unsigned char freeware_secret_weapon_unlocked;
+extern unsigned char freeware_secret_weapon_unlocked, freeware_rainbow_armed, freeware_rainbow_enabled;
 extern int current_player_index, creature_spawned_count, plaguebearer_infection_count;
 extern float bonus_fire_bullets_timer;
 extern creature_t creature_pool[512];

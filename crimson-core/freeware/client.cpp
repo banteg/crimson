@@ -70,6 +70,7 @@ static void frame() {
   in.click = in.accept = in.previous = in.next = in.escape = in.backspace = false;
   in.console = false;
   in.level_up = false;
+  in.fire_edge[0] = in.fire_edge[1] = false;
   in.reload = false;
   in.key = 0;
   in.text.clear();
@@ -102,12 +103,17 @@ static void frame() {
       in.fire = e.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
       in.click |= in.fire;
     }
+    if ((e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || e.type == SDL_EVENT_MOUSE_BUTTON_UP) &&
+        e.button.button == SDL_BUTTON_RIGHT)
+      in.mouse_reload = e.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
     if (e.type == SDL_EVENT_WINDOW_FOCUS_LOST)
-      in.fire = false;
+      in.fire = in.mouse_reload = false;
     if (e.type == SDL_EVENT_TEXT_INPUT)
       in.text += e.text.text;
     if (e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
       in.key = e.key.scancode;
+      for (int i = 0; i < 2; ++i)
+        in.fire_edge[i] |= int(e.key.scancode) == c.game.keys[i][4];
       if (e.key.scancode == SDL_SCANCODE_Q && (e.key.mod & SDL_KMOD_ALT))
         c.game.quit = true;
       switch (e.key.scancode) {
@@ -151,10 +157,10 @@ static void frame() {
   in.left2 = held(1, 2);
   in.right2 = held(1, 3);
   in.fire2 = held(1, 4);
-  in.up = held(0, 0) || (!c.game.two_players && in.up2);
-  in.down = held(0, 1) || (!c.game.two_players && in.down2);
-  in.left = held(0, 2) || (!c.game.two_players && in.left2);
-  in.right = held(0, 3) || (!c.game.two_players && in.right2);
+  in.up = held(0, 0);
+  in.down = held(0, 1);
+  in.left = held(0, 2);
+  in.right = held(0, 3);
   for (int i = 0; i < 2; ++i) {
     auto axis = [&](SDL_GamepadAxis a) { return c.pads[i] ? SDL_GetGamepadAxis(c.pads[i], a) / 32768.f : 0.f; };
     in.stick_x[i] = axis(SDL_GAMEPAD_AXIS_LEFTX);
@@ -176,7 +182,8 @@ static void frame() {
   bool was_text = c.game.screen == Screen::Death || c.game.console_open;
   Input controls = in;
   controls.mouse_fire = in.fire;
-  controls.fire |= held(0, 4) || (!c.game.two_players && in.fire2);
+  controls.fire = held(0, 4);
+  controls.reload |= keys[SDL_SCANCODE_R];
   c.game.update(dt, controls);
   bool wants_text = c.game.screen == Screen::Death || c.game.console_open;
   if (was_text != wants_text) {
