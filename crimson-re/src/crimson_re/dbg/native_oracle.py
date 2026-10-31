@@ -344,6 +344,7 @@ class NativeOracle:
         exe_path: Path = DEFAULT_EXE_PATH,
         *,
         symbols: SymbolTable | None = None,
+        rand_state_address: int | None = None,
         control_word: int = GAMEPLAY_CONTROL_WORD,
         timeout_us: int = _DEFAULT_TIMEOUT_US,
     ) -> None:
@@ -379,6 +380,9 @@ class NativeOracle:
         self._install_hooks()
         self._install_thread_segment()
         self._install_crt_thread_data()
+        self._rand_state_address = rand_state_address
+        if rand_state_address is None and "TlsGetValue" in self._imports_by_name:
+            self._rand_state_address = self.tiddata + _TIDDATA_HOLDRAND
 
     # -- loading -----------------------------------------------------------------
 
@@ -455,18 +459,24 @@ class NativeOracle:
         # answering with a heap block lets crt_rand/crt_srand run natively.
         self.tiddata = self.alloc(_TIDDATA_SIZE)
         self.write_u32(self.tiddata + _TIDDATA_HOLDRAND, 1)
-        self.stub_import("GetLastError", 0)
-        self.stub_import("SetLastError", None, pop=4)
-        self.stub_import("TlsGetValue", self.tiddata, pop=4)
+        # The single-threaded freeware CRT has no TLS imports. Install defaults only for
+        # entry points present in this PE; explicit stub_import calls still reject typos.
+        def install(name: str, fn: StubFn | int | None, *, pop: int = 0) -> None:
+            if name in self._imports_by_name:
+                self.stub_import(name, fn, pop=pop)
+
+        install("GetLastError", 0)
+        install("SetLastError", None, pop=4)
+        install("TlsGetValue", self.tiddata, pop=4)
         # The CRT heap falls through to the Win32 heap; serve it from the scratch heap.
         self._win32_blocks: dict[int, int] = {}
-        self.stub_import("HeapAlloc", lambda call: self._heap_alloc(call.arg_u32(2)), pop=12)
-        self.stub_import("HeapReAlloc", lambda call: self._heap_realloc(call.arg_u32(2), call.arg_u32(3)), pop=16)
-        self.stub_import("HeapSize", lambda call: self._win32_blocks.get(call.arg_u32(2), 0xFFFF_FFFF), pop=12)
-        self.stub_import("HeapFree", 1, pop=12)
+        install("HeapAlloc", lambda call: self._heap_alloc(call.arg_u32(2)), pop=12)
+        install("HeapReAlloc", lambda call: self._heap_realloc(call.arg_u32(2), call.arg_u32(3)), pop=16)
+        install("HeapSize", lambda call: self._win32_blocks.get(call.arg_u32(2), 0xFFFF_FFFF), pop=12)
+        install("HeapFree", 1, pop=12)
         # Single-threaded emulation: CRT locks are no-ops.
         for name in ("InitializeCriticalSection", "EnterCriticalSection", "LeaveCriticalSection"):
-            self.stub_import(name, None, pop=4)
+            install(name, None, pop=4)
 
     def _heap_alloc(self, size: int) -> int:
         address = self.alloc(max(size, 1))
@@ -571,15 +581,19 @@ class NativeOracle:
         self.write(address, code)
         return address
 
+    def _holdrand_address(self) -> int:
+        if self._rand_state_address is None:
+            raise NativeOracleError("supply the original CRT's global rand_state_address for this single-threaded image")
+        return self._rand_state_address
+
     @property
     def rand_state(self) -> int:
-        """CRT `rand()` seed (`_tiddata._holdrand`)."""
-
-        return self.read_u32(self.tiddata + _TIDDATA_HOLDRAND)
+        """CRT rand seed, in thread data on Classic and a process global in freeware."""
+        return self.read_u32(self._holdrand_address())
 
     @rand_state.setter
     def rand_state(self, value: int) -> None:
-        self.write_u32(self.tiddata + _TIDDATA_HOLDRAND, value)
+        self.write_u32(self._holdrand_address(), value)
 
     def snapshot(self) -> tuple[bytes, ...]:
         """Capture the writable image sections and the scratch heap."""

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import struct
+from pathlib import Path
 
 import pytest
 
@@ -17,6 +18,23 @@ def test_crt_rand_runs_natively_and_matches_port(oracle) -> None:
         assert result.eax == port.rand()
         assert oracle.rand_state == port.state
         assert result.stack_popped == 0
+
+
+def test_freeware_crt_uses_global_rng_without_tls_imports() -> None:
+    from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
+
+    exe = Path(__file__).resolve().parents[2] / "game_bins/crimsonland/1.4.0/crimson.exe"
+    if not exe.is_file():
+        pytest.skip("1.4.0 original executable unavailable")
+    # 0x422414 reads and writes 0x432c40 directly. Classic uses _tiddata._holdrand.
+    oracle = NativeOracle(exe, symbols=SymbolTable({}), rand_state_address=0x432C40)
+    oracle.rand_state = 0x1234_5678
+    port = CrtRand(oracle.rand_state)
+    for _ in range(8):
+        assert oracle.call(0x422414).eax == port.rand()
+        assert oracle.rand_state == port.state
+    with pytest.raises(KeyError, match="SetLastError"):
+        oracle.stub_import("SetLastError")
 
 
 def test_float_argument_float_return_and_callee_cleanup(oracle) -> None:
