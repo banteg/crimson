@@ -34,6 +34,7 @@ int current_player_index;
 player_state_t player_state_table[2];
 float player_heading_approach_target(float);
 void creature_reset_all();
+void player_reset_all();
 int creature_find_in_radius(const vec2f_t *, float);
 int projectile_spawn(const vec2f_t *, float, int);
 float angle_approach(float *, float, float);
@@ -76,20 +77,19 @@ void Game::start() {
   // Reset path 0x408e90 calls 0x408440 and clears all 64 shots and 512 creatures.
   run = Run{};
   active_run = true;
+  pending_blood.clear();
+  pending_shells.clear();
+  pending_shards.clear();
   current_player_index = plaguebearer_infection_count = 0;
-  freeware_rainbow_enabled = freeware_rainbow_armed = freeware_secret_weapon_unlocked = 0;
   radial_cursor = {320, 140};
   config_game_mode = static_cast<game_mode_id_t>(survival ? 2 : 1);
-  std::memset(player_state_table, 0, sizeof(player_state_table));
-  for (int i = 0; i < players(); ++i) {
-    auto &w = player_state_table[i].freeware;
-    w.size = 48;
-    w.speed_multiplier = 2;
-    w.level = 1;
-    w.reload_duration = 1;
-    w.weapon = survival ? 2 : 1;
-    w.ammo = w.clip_size = survival ? 30.f : 10.f;
-    actor(i).player.x += i * 80;
+  player_reset_all();
+  for (int i = 0; i < 2; ++i) {
+    const auto &p = player_state_table[i].freeware;
+    actor(i).player = p.position;
+    actor(i).body_angle = p.heading;
+    actor(i).aim_angle = p.aim_heading;
+    actor(i).walk = p.walk_phase;
   }
   std::memset(particle_pool, 0, sizeof(particle_pool));
   std::memset(secondary_projectile_pool, 0, sizeof(secondary_projectile_pool));
@@ -115,13 +115,27 @@ void Game::start() {
 
 // These callbacks are synchronous during combat, just as the original global pools are.
 static Game *combat_game;
-extern "C" void freeware_blood(const vec2f_t *pos) {
-  if (combat_game->marks.size() < 128)
-    combat_game->marks.push_back({*pos, 16, 0, false});
+void Game::queue_blood(vec2f_t p) {
+  if (pending_blood.size() < 63)
+    pending_blood.push_back(p);
 }
+void Game::flush_marks() {
+  marks.swap(pending_shards);
+  pending_shards.clear();
+  for (auto p : pending_blood) {
+    float angle = (crt_rand() % 628) * .01f;
+    float size = float(crt_rand() % 20 - 10) + 32.f;
+    marks.push_back({p, size, angle, false});
+  }
+  pending_blood.clear();
+  for (auto p : pending_shells)
+    shells.push_back({p, 4, (crt_rand() % 628) * .01f, false});
+  pending_shells.clear();
+}
+extern "C" void freeware_blood(const vec2f_t *pos) { combat_game->queue_blood(*pos); }
 extern "C" void freeware_shard(const vec2f_t *pos, float size, float rotation) {
-  if (combat_game->marks.size() < 128)
-    combat_game->marks.push_back({*pos, size, rotation, true});
+  if (combat_game->pending_shards.size() < 128)
+    combat_game->pending_shards.push_back({*pos, size, rotation, true});
 }
 extern "C" void freeware_combat_sound(int id, float) {
   if (id == 31)
@@ -153,8 +167,6 @@ void Game::kill(int id, int owner, bool corpse) {
   if (run.pickup.time <= 0 && freeware_pickup_time > 0)
     run.pickup = {freeware_pickup_position, static_cast<Bonus>(freeware_pickup_id), freeware_pickup_time,
                   freeware_pickup_weapon};
-  if (++run.kills == 1)
-    std::puts("1.4.0 first kill");
   current_player_index = old;
   combat_game = previous;
 }
@@ -189,6 +201,9 @@ void Game::resolve_corpses() {
       continue;
     decals.push_back(
         {c.position, c.freeware.size, c.freeware.heading - (c.freeware.type == 1 ? pi / 2 : 0), c.freeware.color});
+    queue_blood(c.position);
+    if (++run.kills == 1)
+      std::puts("1.4.0 first kill");
     c.active = 0;
   }
 }

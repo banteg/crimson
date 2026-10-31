@@ -17,6 +17,22 @@ def check_frames(check, exe):
     pe.write_u32(0x452EA0, pe.alloc(0x30))
     keys, edges = set(), set()
     dt = 0.03125
+    textures = {}
+    draw = {"texture": 0, "angle": 0, "color": (1, 1, 1, 1)}
+    quads = []
+
+    def texture(call):
+        value = pe.read(call.arg_u32(0), 64).split(b"\0", 1)[0].decode("latin1")
+        return textures.setdefault(value, len(textures) + 1)
+
+    def quad(call):
+        # Only game_frame_update's aim and death quads, excluding HUD/menu cursor submissions.
+        if 0x41C000 < call.return_address < 0x41C743 or 0x41D000 < call.return_address < 0x41D790:
+            name = next((name for name, handle in textures.items() if handle == draw["texture"]), None)
+            if draw["texture"] == 999:
+                name = "arrow"
+            quads.append((name, tuple(call.arg_f32(i) for i in range(4)), draw["angle"], draw["color"]))
+
     slots = {
         8: 1,
         0x1C: 5,
@@ -52,6 +68,11 @@ def check_frames(check, exe):
     for slot, argc in slots.items():
         addr = pe.load_code(b"\xc3")
         ret = {
+            0x90: texture,
+            0x94: lambda c: draw.update(texture=c.arg_u32(0)),
+            0xAC: lambda c: draw.update(angle=c.arg_f32(0)),
+            0xB8: lambda c: draw.update(color=tuple(c.arg_f32(i) for i in range(4))),
+            0xC0: quad,
             0x38: lambda _: dt,
             0x3C: lambda _: 1 / dt,
             0x40: lambda c: (c.arg_u32(0) & 255) in keys,
@@ -74,7 +95,11 @@ def check_frames(check, exe):
         0x41EFA0,
     ):
         pe.stub(va, 0)
-    pe.stub(0x417CC0, 0xA7)
+    name_key = 0xA7
+    pe.stub(0x417CC0, lambda _: name_key)
+    pe.stub(0x406FF0, 0)  # Score writes are exercised separately against the original .top codec.
+    pe.write_u32(0x43BB70, 999)
+    pe.write_u8(0x4428D4, 1)
     pe.stub(0x42C2EC, lambda c: c.arg_u32(0))
     # Original register-perks initializer binds indices used by both the dispatcher and its callees.
     pe.stub(0x4078B0, lambda c: c.arg_u32(0))
@@ -121,7 +146,11 @@ def check_frames(check, exe):
         ("surviving partner", 2, 2, 3, 32, [0, 0]),
         ("revive", 1, 1, 3, 32 | 128, [0, 0]),
         ("menu", 2, 1, 1, 0, [0, 0, 0]),
-        ("name", 2, 1, 9, 0, [0, 0]),
+        ("name", 2, 1, 9, 0, [0, 256, 128, 256, 4]),
+        ("handoff", 1, 2, 6, 512 | 32 | 64, [0, 0, 0]),
+        ("rifle burst", 2, 1, 3, 1024, [16, 16, 16, 16, 16]),
+        ("first kill", 2, 1, 3, 2048, [0] * 22),
+        ("resume", 2, 1, 3, 0, [1, 0, 4, 0]),
     ]
     fields = (
         0x452D40,
@@ -153,6 +182,16 @@ def check_frames(check, exe):
         for va, val in ((0x4428A8, mode), (0x4428A0, count), (0x42FBAC, phase), (0x452E70, int(bool(flags & 2)))):
             pe.write_u32(va, val)
         pe.write_u8(0x452DB4, phase != 1)
+        pe.write_f32(0x452D54, 2.01 if flags & 512 else 5)
+        if flags & 2048:
+            from freeware_combat import BULLET, creature
+
+            data = creature(522, 512, 1)
+            # Existing bullet intersects the first slot before the players move this frame.
+            bullet = struct.pack(BULLET[2], 1, 1.57079637, 512, 512, 512, 512, 1, 2, 1, 0.4, 1, 1, 1)
+            for va, symbol, record in [(0x442AF8, "creature_pool", data), (BULLET[1], BULLET[0], bullet)]:
+                pe.write(va, bytes(record))
+                ctypes.memmove(check.symbol(symbol), bytes(record), len(record))
         pe.write_f32(0x452E7C, 0 if flags & 1 else 2)
         pe.write_f32(0x452DBC, 0.05 if flags & 4 else 0)
         pe.write_f32(0x452E6C, 0.05 if flags & 8 else 0)
@@ -167,7 +206,7 @@ def check_frames(check, exe):
                 (0x4385CC, 1),
                 (0x4385DC, 30 if mode == 2 else 10),
                 (0x4384E4, 30 if mode == 2 else 10),
-                (0x438504, 0.8),
+                (0x438504, 0 if flags & 1024 else 0.8),
             ):
                 pe.write_f32(va + offset, val)
             for va, val in (
@@ -188,6 +227,9 @@ def check_frames(check, exe):
                     keys.add(key)
             if bits & 4:
                 edges.add(0x1C)
+                keys.add(0x1C)
+            name_key = 9 if bits & 4 else 8 if bits & 128 else ord("x") if bits & 256 else 0xA7
+            quads.clear()
             pe.call(0x418190)
             state = check.dll.combat_frame_step(dt, bits)
             label = name, frame
@@ -202,5 +244,21 @@ def check_frames(check, exe):
             )
             got = ctypes.c_uint.from_address(check.symbol("freeware_rng_state")).value
             assert pe.rand_state == got, (label, "rng", pe.rand_state, got)
+            count = check.dll_globals("combat_frame_quad_count").value
+            assert count == len(quads), (label, "draw count", quads, count)
+            for j, (texture_name, coords, angle, color) in enumerate(quads):
+                buf = ctypes.string_at(check.symbol("combat_frame_quads") + 52 * j, 52)
+                ours, *values = struct.unpack("<16s9f", buf)
+                ours = ours.split(b"\0", 1)[0].decode()
+                assert texture_name == ours and all(
+                    math.isclose(x, y, abs_tol=0.002) for x, y in zip(values, (*coords, angle, *color), strict=True)
+                ), (label, texture_name, ours, coords, values)
+            if name == "first kill":
+                assert (
+                    pe.read_u32(0x4387F8)
+                    == ctypes.c_float.from_address(check.symbol("combat_frame_fields") + 22 * 4).value
+                ), label
+                if frame == len(inputs) - 1:
+                    assert pe.read_u32(0x4387F8) == 1, label
             callbacks += 1
     return callbacks

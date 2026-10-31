@@ -93,14 +93,14 @@ void Game::load_scores() {
       std::fprintf(stderr, "Invalid 1.4.0 score file %s\n", files[i]);
   }
 }
-void Game::record_score() {
+void Game::record_score(float average_fps) {
   Score score{};
   score.name = name;
   score.seconds = int(run.seconds);
   score.kills = run.kills;
   score.experience = run.experience;
   score.min_fps = run.min_fps;
-  score.average_fps = run.seconds > 0 ? run.frames / run.seconds : 0;
+  score.average_fps = average_fps;
   score.max_fps = run.max_fps;
   auto &table = scores();
   table.push_back(score);

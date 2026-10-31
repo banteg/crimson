@@ -1,6 +1,6 @@
 // SDL input and presentation boundaries for the 1.4.0 player simulation.
-#include "game.h"
 #include "freeware_level.h"
+#include "game.h"
 #include <algorithm>
 #include <cmath>
 
@@ -32,8 +32,8 @@ int sfx_play_panned(int sample, float, float) {
 }
 static freeware::Game *player_game;
 void fx_queue_add_shell(const vec2f_t *p) {
-  if (player_game->shell_marks)
-    player_game->shells.push_back(*p);
+  if (player_game->shell_marks && player_game->pending_shells.size() < 31)
+    player_game->pending_shells.push_back(*p);
 }
 void player_update();
 }
@@ -71,7 +71,9 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
   config_aim_schemes[index] = aiming[index];
   config_player_count = players();
   freeware_camera = {in.x - mouse_world.x, in.y - mouse_world.y};
-  if (aiming[index] == 1) {
+  if (aiming[index] == 1 && in.relative) {
+    freeware_aim_screen = {cursor_x, cursor_y};
+  } else if (aiming[index] == 1) {
     if (index == 0 || aiming[0] != 1) {
       radial_cursor.x += mouse_dx;
       radial_cursor.y += mouse_dy;
@@ -103,6 +105,10 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
   player_game = nullptr;
   if (aiming[index] == 1)
     radial_cursor = freeware_aim_screen;
+  if (aiming[index] == 1 && in.relative) {
+    cursor_x = radial_cursor.x;
+    cursor_y = radial_cursor.y;
+  }
   if (!index)
     run.experience = p.experience;
   run.speed_scale = time_scale_factor;

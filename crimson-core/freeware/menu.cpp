@@ -33,22 +33,6 @@ int menu_hover(const Game &g) {
 }
 
 void Game::update_ui(const Input &in) {
-  if (screen == Screen::Death) {
-    death_clock = freeware_simulation_clock - state_since;
-    if (in.backspace && !name.empty())
-      name.pop_back();
-    for (char c : in.text)
-      if (c >= 32 && c < 127 && name.size() < 31)
-        name += c;
-    if (in.accept || in.escape) {
-      if (!run.cheated)
-        record_score();
-      score_offset = 0;
-      screen = Screen::Scores;
-      selected = 0;
-    }
-    return;
-  }
   if (screen == Screen::Message) {
     if (in.level_up || in.click || in.accept)
       screen = Screen::Playing;

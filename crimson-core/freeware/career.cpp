@@ -40,8 +40,7 @@ void Game::apply_bomb_damage(float dt) {
         std::hypot(c.pos_x - run.bomb_pos.x, c.pos_y - run.bomb_pos.y) >= run.bomb_age * 256)
       continue;
     c.health -= dt * 2000;
-    if (marks.size() < 128)
-      marks.push_back({c.position, 16, 0, false});
+    queue_blood(c.position);
     if (c.health <= 0)
       kill(i, 0);
   }

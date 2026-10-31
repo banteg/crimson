@@ -230,3 +230,18 @@ def check_walls(check):
                 blocked = pe.call(0x404EE0, pos, delta, 8.0, ecx=level).eax
                 assert check.dll.combat_wall(x, y, dx, dy, count) == blocked
                 assert ctypes.string_at(check.symbol("combat_wall_result"), 8) == pe.read(pos, 8)
+
+
+def check_reset(check):
+    pe = check.pe
+    check.reset(1)
+    records = bytes((i * 19 + 7) % 256 for i in range(2 * 392))
+    pe.write(0x438478, records)
+    ctypes.memmove(check.symbol("player_state_table"), records, len(records))
+    for i in range(512):
+        pe.write_u8(0x442B04 + i * 128, 1)
+        ctypes.c_ubyte.from_address(check.symbol("creature_pool") + 12 + i * 128).value = 1
+    pe.call(0x408440)
+    check.dll.player_reset_all()
+    assert ctypes.string_at(check.symbol("player_state_table"), len(records)) == pe.read(0x438478, len(records))
+    assert not any(ctypes.string_at(check.symbol("creature_pool"), 512 * 128)[12::128])

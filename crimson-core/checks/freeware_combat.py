@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "crimson-core"))
 from freeware.build import game_flags, game_sources
 from freeware_frame_cases import check_frames
-from freeware_player_cases import check_controls, check_walls
+from freeware_player_cases import check_controls, check_reset, check_walls
 
 # symbol, original VA, record format (preserves the exact x86 padding), capacity
 BULLET = ("projectile_pool", 0x439260, "<B3x7fi4f", 64)
@@ -584,6 +584,7 @@ def check_client(dll, exe, address, target):
     comparison.creatures()
     comparison.rewards()
     comparison.projectiles()
+    check_reset(comparison)
     check_walls(comparison)
     check_controls(comparison)
     dispatch_frames = check_frames(comparison, exe)
@@ -614,6 +615,7 @@ def check_web(stage, exe, sources):
         "combat_arm",
         "combat_controls",
         "combat_wall",
+        "player_reset_all",
         "combat_frame_start",
         "combat_frame_step",
         "combat_choose",
@@ -636,6 +638,8 @@ def check_web(stage, exe, sources):
         "freeware_rainbow_enabled",
         "freeware_secret_weapon_unlocked",
         "combat_frame_fields",
+        "combat_frame_quads",
+        "combat_frame_quad_count",
         "combat_frame_flags",
         "combat_wall_result",
         "combat_draw_capture",

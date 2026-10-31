@@ -1,6 +1,9 @@
 // Minimal host for stepping the same combat bodies linked into both clients.
 #include "../freeware/game.h"
 #include "freeware_level.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 namespace freeware {
 void play_sound(Sound) {}
 void play_original_sample(int) {}
@@ -8,9 +11,14 @@ void play_original_sample(int) {}
 extern "C" game_mode_id_t config_game_mode;
 static freeware::Game game;
 extern "C" void combat_reset(unsigned seed) {
+  std::memset(player_state_table, 0, sizeof(player_state_table));
+  freeware_rainbow_enabled = freeware_rainbow_armed = freeware_secret_weapon_unlocked = 0;
   game = freeware::Game{};
   game.survival = true;
   game.start();
+  auto &p = player_state_table[0].freeware;
+  p.weapon = 2;
+  p.ammo = p.clip_size = 30; // The combat fixtures start after the Survival weapon lock.
   freeware::seed_random(seed);
 }
 extern "C" void combat_projectiles(float dt, float clock, float freeze) {
@@ -170,15 +178,29 @@ extern "C" void combat_controls(int index, int count, int movement, int aim, int
 
 extern "C" {
 float combat_frame_fields[24];
+struct CapturedQuad {
+  char name[16];
+  float x, y, w, h, angle;
+  effect_color_t color;
+};
+CapturedQuad combat_frame_quads[16];
+int combat_frame_quad_count;
 unsigned char combat_frame_flags[8];
 void combat_frame_start(int mode, int count, int phase, int flags) {
+  std::memset(player_state_table, 0, sizeof(player_state_table));
+  freeware_rainbow_enabled = freeware_rainbow_armed = freeware_secret_weapon_unlocked = 0;
   game = freeware::Game{};
   game.survival = mode == 2;
   game.two_players = count == 2;
   game.start();
+  for (auto &record : player_state_table) {
+    record.freeware.weapon = mode == 2 ? 2 : 1;
+    record.freeware.ammo = record.freeware.clip_size = mode == 2 ? 30.f : 10.f;
+  }
   game.enter_state(phase);
   game.active_run = phase != 1;
-  game.state_since = 5;
+  game.state_since = flags & 512 ? 2.01f : 5;
+  game.menu_music_pending = true;
   freeware_simulation_clock = 5;
   game.run.seconds = 7;
   game.run.next_spawn = flags & 1 ? 0 : 2;
@@ -192,7 +214,7 @@ void combat_frame_start(int mode, int count, int phase, int flags) {
   game.run.perks[23] = (flags & 256) != 0;
   for (int i = 0; i < 2; ++i) {
     game.actor(i).player = {512.f + i * 80.f, 512};
-    game.actor(i).cooldown = .8f;
+    game.actor(i).cooldown = flags & 1024 ? 0.f : .8f;
     player_state_table[i].freeware.perks[6] = game.run.perks[6];
     player_state_table[i].freeware.perks[23] = game.run.perks[23];
   }
@@ -210,7 +232,26 @@ int combat_frame_step(float dt, int input) {
   in.accept = input & 4;
   in.up = input & 8;
   in.fire = input & 16;
+  in.next = input & 32;
+  in.previous = input & 64;
+  in.backspace = input & 128;
+  if (input & 256)
+    in.text = "x";
   game.update(dt, in);
+  combat_frame_quad_count = int(game.frame_sprites.size());
+  if (combat_frame_quad_count > 16)
+    std::abort();
+  for (size_t i = 0; i < game.frame_sprites.size(); ++i) {
+    auto &out = combat_frame_quads[i];
+    const auto &draw = game.frame_sprites[i];
+    std::snprintf(out.name, sizeof(out.name), "%s", draw.name);
+    out.x = draw.x;
+    out.y = draw.y;
+    out.w = draw.width;
+    out.h = draw.height;
+    out.angle = draw.angle;
+    out.color = draw.color;
+  }
   float f[] = {freeware_simulation_clock,
                frame_dt,
                game.run.seconds,
@@ -232,7 +273,9 @@ int combat_frame_step(float dt, int input) {
                float(game.run.pending),
                float(game.active_run),
                game.run.plague_time,
-               game.state_since};
+               game.state_since,
+               float(game.run.kills),
+               float(game.scores().size())};
   std::copy(std::begin(f), std::end(f), combat_frame_fields);
   std::copy(std::begin(game.random_flags), std::end(game.random_flags), combat_frame_flags);
   return game.frame_state();

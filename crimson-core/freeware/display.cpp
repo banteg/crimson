@@ -14,11 +14,11 @@ Display::~Display() {
 }
 bool Display::load(const std::string &folder) {
   for (const char *name :
-       {"font",       "grass1",         "mud1",      "ground_tile", "crimsonland",  "borg_t",
-        "eiliens",    "bullet_real_16", "blood",     "aim32",       "aim64",        "part64",
-        "reaper",     "bullet",         "arrow",     "ui_text",     "rocket",       "flame",
-        "bubble",     "glow64",         "bar",       "bonus_fire",  "bonus_freeze", "bonus_weapon",
-        "bonus_bomb", "bonus_timebend", "shockwave", "icemold"}) {
+       {"font",         "grass1",         "mud1",       "ground_tile",    "crimsonland", "borg_t",
+        "eiliens",      "bullet_real_16", "blood",      "aim32",          "aim128",      "aim_enh",
+        "aim64",        "part64",         "reaper",     "bullet",         "arrow",       "ui_text",
+        "rocket",       "flame",          "bubble",     "glow64",         "bar",         "bonus_fire",
+        "bonus_freeze", "bonus_weapon",   "bonus_bomb", "bonus_timebend", "shockwave",   "icemold"}) {
     size_t bytes;
     auto *data = static_cast<unsigned char *>(SDL_LoadFile((folder + "/" + name + ".rgba").c_str(), &bytes));
     if (!data)
@@ -72,7 +72,7 @@ void Display::text(const std::string &value, float x, float y, float scale, SDL_
       sprite("font", pen, y, 32 * scale, 32 * scale, 0, c, 16, tint);
   }
 }
-void Display::draw(const Game &g) {
+void Display::draw(Game &g) {
   if (g.generation != ground_generation) {
     SDL_SetRenderTarget(renderer, ground);
     SDL_SetRenderDrawColor(renderer, 63, 56, 25, 255);
@@ -92,8 +92,8 @@ void Display::draw(const Game &g) {
     for (const auto &m : g.marks)
       sprite(m.frozen ? "icemold" : "blood", m.pos.x - m.size / 2, m.pos.y - m.size / 2, m.size, m.size,
              m.rotation);
-    for (auto &pos : g.shells)
-      sprite("bullet_real_16", pos.x - 2, pos.y - 3, 4, 6, 0, 0, 1, {.55f, .45f, .25f, .75f});
+    for (const auto &s : g.shells)
+      sprite("bullet_real_16", s.pos.x - 2, s.pos.y - 2, 4, 4, s.rotation, 0, 1, {1, 1, 1, .8f});
     for (const auto &c : g.decals) {
       sprite("blood", c.position.x - 16, c.position.y - 16, 32, 32, c.heading);
       sprite("eiliens", c.position.x - c.size / 2, c.position.y - c.size / 2, c.size, c.size, c.heading, 63, 8,
@@ -132,10 +132,7 @@ void Display::draw(const Game &g) {
       SDL_FColor tint = i ? SDL_FColor{.6f, .8f, 1, 1} : SDL_FColor{1, 1, 1, 1};
       sprite("borg_t", x, y, 48, 48, r.body_angle, int(r.walk + .5f), 8, tint);
       sprite("borg_t", x + 1, y + 1, 48, 48, r.aim_angle, 16 + int(r.walk + .5f), 8, tint);
-      if (g.direction_arrow && (g.two_players || g.aiming[i] == 2)) {
-        sprite("arrow", x + 16 + 32 * std::sin(r.body_angle), y + 16 - 32 * std::cos(r.body_angle), 16, 16,
-               r.body_angle, 0, 1, tint);
-      }
+
       if (r.shield > 0)
         sprite("bubble", x - 8, y - 8, 64, 64, 0, 0, 1, {.4f, .8f, 1, .6f});
     }
@@ -237,39 +234,11 @@ void Display::draw(const Game &g) {
       }
       text(description, 400, 80, .65f, white);
     }
-  } else if (g.screen == Screen::Dying) {
-    const float fade = std::clamp(std::min(g.death_clock, 3.f - g.death_clock), 0.f, 1.f);
-    sprite("reaper", width / 2 - 64, height / 2 - 64, 128, 128, 0, 0, 1, {1, 1, 1, fade});
   } else if (g.screen == Screen::Death) {
-    // State 9 in 0x418190. Fade the field to black, then draw the name screen with Grim's mono font.
-    const float fade = std::clamp(g.death_clock - 3.f, 0.f, 1.f);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, static_cast<Uint8>(255 * fade));
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, static_cast<Uint8>(255 * std::clamp(g.death_clock, 0.f, 1.f)));
     SDL_RenderFillRect(renderer, nullptr);
-    sprite("reaper", 10, 10, 128, 128, 0, 0, 1, {1, 1, 1, fade});
-    for (int i = 0; i < 2; ++i)
-      text("The Reaper got you.", 100, 50, .975435f, {.75f, .35f, .22f, .9f * fade});
-    std::snprintf(line, sizeof(line), g.survival ? "Seconds survived: %d" : "Gained experience: %d",
-                  g.survival ? int(g.run.seconds) : g.run.experience);
-    text(line, 120, 90, .75435f, {.85f, .55f, .35f, .8f * fade});
-    int value = g.survival ? int(g.run.seconds) : g.run.experience;
-    auto &table = g.scores();
-    size_t rank = 0;
-    while (rank < table.size() && (g.survival ? table[rank].seconds : table[rank].experience) >= value)
-      ++rank;
-    if (rank < 100 && value > 0)
-      std::snprintf(line, sizeof(line), "(You scored %zu# in top 100 scores)", rank + 1);
-    else
-      std::snprintf(line, sizeof(line), "(You didn't make the top 100 scores)");
-    text(line, 120, 118, .62f, {.85f, .55f, .35f, .8f * fade});
-    text("Who were you:", 10, 165, .75435f, {1, 1, 1, fade});
-    text(g.name, 50, 190, 1, {1, 1, 1, fade});
-    if (std::fmod(g.menu_clock, 1.f) < .5f)
-      text("_", 50 + 16 * g.name.size(), 190, 1, {1, 1, 1, .4f});
-    std::snprintf(line, sizeof(line), "Gained level: %d\nHit accuracy: %d%%\nFrags: %d\n", g.run.level,
-                  highscore_record_shots_fired ? g.run.hits * 100 / highscore_record_shots_fired : 0, g.run.kills);
-    text(line, 60, 320, .66f, white);
-  } else {
+  } else if (g.screen != Screen::Dying) {
     const char *heading = g.screen == Screen::Scores    ? "Highscores:"
                           : g.screen == Screen::Credits ? "Project Crimsonland"
                           : g.screen == Screen::Options ? "Game options."
@@ -311,20 +280,14 @@ void Display::draw(const Game &g) {
         g.screen != Screen::Online)
       text("back to main menu", 180, 410, .75435f, muted);
   }
+  for (const auto &draw : g.frame_sprites) {
+    const char *name = std::strcmp(draw.name, "aimen") == 0 ? "aim_enh" : draw.name;
+    sprite(name, draw.x, draw.y, draw.width, draw.height, draw.angle, 0, 1,
+           {draw.color.r, draw.color.g, draw.color.b, draw.color.a});
+  }
   for (const auto &label : g.frame_labels)
-    text(label.text,label.x,label.y,label.scale,{label.color.r,label.color.g,label.color.b,label.color.a});
-  if (g.screen == Screen::Playing) {
-    for (int i = 0; i < g.players(); ++i) {
-      auto &player = g.actor(i);
-      if (player.health <= 0)
-        continue;
-      auto aim = player_state_table[i].freeware.aim;
-      float size = std::clamp(std::hypot(aim.x - player.player.x, aim.y - player.player.y) * player.spread * .25f,
-                              16.f, 64.f);
-      SDL_FColor tint = i ? SDL_FColor{.45f, .75f, 1, 1} : SDL_FColor{1, 1, 1, 1};
-      sprite("aim64", cx + aim.x - size / 2, cy + aim.y - size / 2, size, size, 0, 0, 1, tint);
-    }
-  } else if (g.screen != Screen::Dying) {
+    text(label.text, label.x, label.y, label.scale, {label.color.r, label.color.g, label.color.b, label.color.a});
+  if (g.screen != Screen::Playing && g.screen != Screen::Dying) {
     // The menu and score cursor bind part64 additively, then the 32-pixel reticle at 64% opacity.
     const float speed = g.screen == Screen::Death ? 2.f : 1.f;
     const float light = std::cos(g.menu_clock);
@@ -352,6 +315,15 @@ void Display::draw(const Game &g) {
       y += 19;
     }
     text("> " + g.command + "_", 3, 192, .65f, white);
+  }
+  if (g.screenshot_requested) {
+    char filename[48];
+    std::snprintf(filename, sizeof(filename), "screenshot_%d.bmp", g.screenshot_index);
+    SDL_Surface *shot = SDL_RenderReadPixels(renderer, nullptr);
+    if (shot && SDL_SaveBMP(shot, (g.save_dir + filename).c_str()))
+      ++g.screenshot_index;
+    SDL_DestroySurface(shot);
+    g.screenshot_requested = false;
   }
   SDL_RenderPresent(renderer);
 }

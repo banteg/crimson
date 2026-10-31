@@ -44,6 +44,8 @@ struct Input {
   bool previous{}, next{}, accept{}, escape{}, backspace{};
   bool up2{}, down2{}, left2{}, right2{}, fire2{}, reload{}, level_up{};
   bool ctrl{}, console{}, mouse_fire{};
+  bool screenshot{}, relative{};
+  float dx{}, dy{};
   int key{};
   float stick_x[2]{}, stick_y[2]{}, aim_x[2]{}, aim_y[2]{};
   bool pad_fire[2]{}, pad_perk[2]{}, fire_edge[2]{}, mouse_reload{}, perk_button{};
@@ -74,7 +76,16 @@ struct Corpse {
   float size, heading;
   effect_color_t color;
 };
-struct FrameLabel { std::string text; float x, y, scale; effect_color_t color; };
+struct FrameSprite {
+  const char *name;
+  float x, y, width, height, angle;
+  effect_color_t color;
+};
+struct FrameLabel {
+  std::string text;
+  float x, y, scale;
+  effect_color_t color;
+};
 struct Fighter {
   vec2f_t player{512, 512};
   float health = 100, body_angle{}, aim_angle{}, walk{}, cooldown = .8f;
@@ -87,7 +98,6 @@ struct Run : Fighter {
   vec2f_t bomb_pos{}, first_kill_pos{-100, 0};
   bool moved{}, cheated{};
   int first_kill_xp = 0, level = 1, pending{}, infections{};
-  int frames{};
   float min_fps = 10000, max_fps{};
   Pickup pickup;
   std::array<int, 48> perks{};
@@ -113,8 +123,12 @@ struct Game {
   vec2f_t radial_cursor{320, 140}, camera{0, -128}, camera_shake{};
   float camera_timer{}, state_since{};
   unsigned char random_flags[8]{};
-  bool active_run{}, resumed_this_frame{}, paused_perks{}, menu_music_pending=true;
-  int assembly_sequence{};
+  bool active_run{}, resumed_this_frame{}, paused_perks{}, menu_music_pending = true;
+  int assembly_sequence{}, fps_count{}, low_fps_frames{};
+  float fps_history[50]{};
+  bool smoke = true, shadows = true, screenshot_requested{};
+  int screenshot_index{};
+  std::vector<FrameSprite> frame_sprites;
   std::vector<FrameLabel> frame_labels;
   std::array<std::vector<Score>, 4> rankings;
   std::array<bool, 4> invalid_scores{};
@@ -133,7 +147,10 @@ struct Game {
   int calibration = -1;
   vec2f_t pad_center[2]{}, hat_right[2]{{1, 0}, {1, 0}};
   float pad_threshold[2]{.18f, .18f};
-  std::vector<vec2f_t> shells;
+  std::vector<vec2f_t> pending_blood, pending_shells;
+  std::vector<ImpactMark> pending_shards, shells;
+  void queue_blood(vec2f_t p);
+  void flush_marks();
 
   float mouse_dx{}, mouse_dy{}, fps{};
   std::string option(int row) const;
@@ -162,7 +179,7 @@ struct Game {
   void open_perks();
   void choose_perk(int choice);
   void load_scores();
-  void record_score();
+  void record_score(float average_fps);
   bool store_scores(const std::vector<Score> &) const;
   bool merge_scores(const std::string &filename);
   int next_level_xp() const;
@@ -172,7 +189,6 @@ struct Game {
   void enter_state(int id);
   void combat_frame(float dt, const Input &in, vec2f_t mouse_world);
   void check_level();
-
 };
 extern const char *const main_labels[8], *const online_labels[5];
 bool decode_scores(std::vector<uint8_t>, int board, std::vector<Score> &);

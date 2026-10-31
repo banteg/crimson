@@ -68,7 +68,8 @@ static void frame() {
   auto &c = client;
   auto &in = c.in;
   in.click = in.accept = in.previous = in.next = in.escape = in.backspace = false;
-  in.console = false;
+  in.console = in.screenshot = false;
+  in.dx = in.dy = 0;
   in.level_up = in.perk_button = false;
   in.fire_edge[0] = in.fire_edge[1] = false;
   in.reload = false;
@@ -93,6 +94,8 @@ static void frame() {
     if (e.type == SDL_EVENT_QUIT)
       c.game.quit = true;
     if (e.type == SDL_EVENT_MOUSE_MOTION) {
+      in.dx += e.motion.xrel;
+      in.dy += e.motion.yrel;
       in.x = e.motion.x;
       in.y = e.motion.y;
     }
@@ -119,6 +122,9 @@ static void frame() {
       if (e.key.scancode == SDL_SCANCODE_Q && (e.key.mod & SDL_KMOD_ALT))
         c.game.quit = true;
       switch (e.key.scancode) {
+      case SDL_SCANCODE_F12:
+        in.screenshot = true;
+        break;
       case SDL_SCANCODE_GRAVE:
         in.console = true;
         break;
@@ -184,6 +190,8 @@ static void frame() {
   c.previous = now;
   bool was_text = c.game.screen == Screen::Death || c.game.console_open;
   Input controls = in;
+  controls.relative =
+      c.game.screen == Screen::Playing && (c.game.aiming[0] == 1 || (c.game.two_players && c.game.aiming[1] == 1));
   controls.mouse_fire = in.fire;
   controls.fire = held(0, 4);
   controls.reload |= keys[SDL_SCANCODE_R];

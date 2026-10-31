@@ -46,45 +46,36 @@ void Game::enter_state(int id) {
     screen = Screen::Dying;
     break;
   case 9:
-    screen = run.cheated ? Screen::Scores : Screen::Death;
-    if (run.cheated)
-      active_run = false;
+    screen = Screen::Death;
     std::puts("1.4.0 name entry");
     break;
   }
 }
 void Game::update(float dt, const Input &in) {
+  frame_sprites.clear();
   frame_labels.clear();
   decals.clear();
   marks.clear();
   shells.clear();
-  if (console_open) {
+  if (in.console) {
+    console_open = !console_open;
+    if (console_open)
+      command.clear();
+  } else if (console_open)
     console_input(in);
-    return;
-  }
-  if (in.console && screen != Screen::Death) {
-    console_open = true;
-    command.clear();
-    return;
-  }
   menu_clock += dt;
   resumed_this_frame = false;
-  mouse_dx = in.x - cursor_x;
-  mouse_dy = in.y - cursor_y;
-  cursor_x = in.x;
-  cursor_y = in.y;
-  if (dt > 0) {
+  mouse_dx = in.relative ? in.dx : in.x - cursor_x;
+  mouse_dy = in.relative ? in.dy : in.y - cursor_y;
+  if (dt > 0)
     fps = 1 / dt;
-    if (screen == Screen::Playing) {
-      ++run.frames;
-      run.min_fps = std::min(run.min_fps, fps);
-      run.max_fps = std::max(run.max_fps, fps);
-    }
-  }
   config_player_count = players();
   config_game_mode = static_cast<game_mode_id_t>(survival ? 2 : 1);
   freeware_frame_game = this;
-  freeware_frame_input = &in;
+  Input quiet;
+  quiet.x = cursor_x;
+  quiet.y = cursor_y;
+  freeware_frame_input = console_open ? &quiet : &in;
   freeware_frame_delta = dt;
   if (!game_frame_update())
     quit = true;

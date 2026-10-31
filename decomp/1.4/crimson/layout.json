@@ -285,6 +285,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/player/player_reset_all.cpp",
+          "configs": [
+            "tools/match/scratches/player_reset_all"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/player/player_state_table_global_init.cpp",
           "configs": [
             "tools/match/scratches/player_state_table_global_init"

@@ -2,6 +2,7 @@
 // gameplay CRT stream between the early combat pass and the state dispatch.
 #include "crimsonland_types.h"
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 #ifndef _MSC_VER
 #define __forceinline inline
@@ -15,6 +16,7 @@ extern float freeware_frame_delta;
 #define INPUT (*freeware_frame_input)
 #define FIELD(native, client) (G.client)
 #else
+#include "crimsonland_console.h"
 #include "grim2d_cpp.h"
 extern "C" IGrim2D_cpp *grim_interface_ptr;
 #define FIELD(native, client) (native)
@@ -44,6 +46,10 @@ int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
 
 #ifndef CRIMSON_FREEWARE_CLIENT
+extern console_queue_t freeware_console;
+extern IGrim2D_cpp *freeware_console_grim;
+extern float freeware_mouse_dx, freeware_mouse_dy, frame_dt_copy, freeware_real_clock;
+extern char freeware_ui_buffer[256];
 extern int game_state_id, freeware_pending_perks, freeware_pickup_id, freeware_no_pickup, screen_width,
     screen_height, screenshot_file_index, freeware_fps_count;
 extern float freeware_xp_timer, freeware_pickup_time, freeware_next_spawn, freeware_jinx_timer,
@@ -51,9 +57,10 @@ extern float freeware_xp_timer, freeware_pickup_time, freeware_next_spawn, freew
     freeware_fps_max, freeware_fps[50];
 extern vec2f_t freeware_camera_shake, freeware_bomb_position;
 extern unsigned char freeware_random_flags[8], quit_requested;
-void player_render(), gameplay_render_hud(), terrain_render(), creature_render_type_pass(), projectile_render(),
-    effect_render_all(), sprite_effect_render(), perks_render(), game_show_message(), gameplay_reset_state(),
-    level_load_next(), level_editor_update(), sfx_update(), freeware_menu_update(), freeware_name_entry();
+void player_render(), gameplay_render_hud(), terrain_render(), fx_queue_render(), projectile_render(),
+    effect_render_all(), creature_render_all(), perk_selection_screen_update(), game_show_message(),
+    gameplay_reset_state(), level_load_next(), level_editor_update(), sfx_update(), freeware_menu_update(),
+    freeware_name_entry();
 #endif
 }
 
@@ -105,10 +112,7 @@ __forceinline void hud() {
         SECONDS += frame_dt;
     freeware_elapsed_seconds = SECONDS;
 }
-__forceinline void blood(vec2f_t *p) {
-    if (G.marks.size() < 128)
-        G.marks.push_back({*p, 16, 0, false});
-}
+__forceinline void blood(vec2f_t *p) { G.queue_blood(*p); }
 #else
 __forceinline int state() { return game_state_id; }
 __forceinline void enter(int id) { game_state_id = id; }
@@ -193,8 +197,11 @@ __forceinline void position_camera() {
 __forceinline void render_world() {
 #ifndef CRIMSON_FREEWARE_CLIENT
     terrain_render();
-    creature_render_type_pass();
-    sprite_effect_render();
+    fx_queue_render();
+    creature_render_all();
+#else
+    G.flush_marks();
+    G.resolve_corpses();
 #endif
     if (ACTIVE) {
         if (SLOW <= 0)
@@ -229,7 +236,6 @@ __forceinline void render_world() {
     effect_render_all();
 #else
     G.apply_bomb_damage(frame_dt);
-    G.resolve_corpses();
 #endif
 }
 __forceinline void spawn_edge() {
@@ -329,7 +335,9 @@ __forceinline void update_wave() {
 }
 __forceinline void target_perks() {
     for (current_player_index = 0; current_player_index < config_player_count; ++current_player_index) {
-        if (HP(current_player_index) <= 0)
+        if (HP(current_player_index) <= 0 ||
+            (P(current_player_index).perks[perk_id_spontaneously_combusteous] <= 0 &&
+             P(current_player_index).perks[perk_id_evil_eyes] <= 0))
             continue;
         int id = creature_find_in_radius(&P(current_player_index).aim, 10);
         if (id < 0)
@@ -388,22 +396,54 @@ __forceinline void timed_perks() {
     }
 }
 #include "frame_menu.inc"
+#include "frame_overlays.inc"
 } // namespace
 
 extern "C" unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
+    if (INPUT.screenshot)
+        G.screenshot_requested = true;
+    if (!G.console_open && !INPUT.ctrl) {
+        if (INPUT.relative) {
+            MOUSE_X += G.mouse_dx;
+            MOUSE_Y += G.mouse_dy;
+        } else {
+            MOUSE_X = INPUT.x;
+            MOUSE_Y = INPUT.y;
+        }
+    }
     float dt = freeware_frame_delta;
-    if (G.console_open)
-        dt = 0;
 #else
     if (grim_interface_ptr->grim_was_key_pressed(0x58)) {
-        extern void freeware_screenshot();
-        freeware_screenshot();
+        sprintf(freeware_ui_buffer, "screenshot_%i.bmp", screenshot_file_index);
+        if (grim_interface_ptr->grim_save_screenshot(freeware_ui_buffer))
+            ++screenshot_file_index;
+    }
+    if (freeware_console_grim->grim_was_key_pressed(0x29))
+        freeware_console.console_set_open(!console_open_flag);
+    if (!console_open_flag && !grim_interface_ptr->grim_is_key_down(0x1d)) {
+        freeware_mouse_dx = grim_interface_ptr->grim_get_mouse_dx();
+        freeware_mouse_dy = grim_interface_ptr->grim_get_mouse_dy();
+        MOUSE_X += freeware_mouse_dx;
+        MOUSE_Y += freeware_mouse_dy;
     }
     float dt = grim_interface_ptr->grim_get_frame_dt();
-    if (console_open_flag)
-        dt = 0;
+    frame_dt_copy = dt;
+    freeware_real_clock += dt;
 #endif
+    float margin = P(current_player_index).size * .5f;
+    if (state() == 3)
+        margin = 0;
+    if (MOUSE_X < margin)
+        MOUSE_X = margin;
+    if (MOUSE_X > screen_width - margin)
+        MOUSE_X = screen_width - margin;
+    if (MOUSE_Y < margin)
+        MOUSE_Y = margin;
+    if (MOUSE_Y > screen_height - margin)
+        MOUSE_Y = screen_height - margin;
+    if (FIELD(console_open_flag, console_open))
+        dt = 0;
     if (PERK(perk_id_reflex_boosted) > 0 && SCALE > .85f)
         SCALE = .85f;
     current_player_index = 0;
@@ -453,6 +493,7 @@ extern "C" unsigned char game_frame_update() {
             else
                 FREEZE -= frame_dt;
             update_wave();
+            aim_overlays();
             target_perks();
             timed_perks();
             spawn_wave();
@@ -464,7 +505,7 @@ extern "C" unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.update_ui(INPUT);
 #else
-        perks_render();
+        perk_selection_screen_update();
 #endif
         break;
     case 6:
@@ -476,6 +517,13 @@ extern "C" unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.death_clock = CLOCK - STATE_SINCE;
 #endif
+        if (CLOCK - STATE_SINCE < 3) {
+            float elapsed = CLOCK - STATE_SINCE;
+            sprite("reaper", screen_width / 2 - 64.f, screen_height / 2 - 64.f, 128, 128, 0, 1, 1, 1,
+                   elapsed < 1   ? elapsed
+                   : elapsed < 2 ? 1.f
+                                 : 3.f - elapsed);
+        }
         if (CLOCK - STATE_SINCE >= 3) {
             enter(9);
             STATE_SINCE = CLOCK;
@@ -499,23 +547,7 @@ extern "C" unsigned char game_frame_update() {
         }
         break;
     case 9:
-        if (config_game_mode == 3) {
-            SCALE = 1;
-            enter(1);
-            ACTIVE = 0;
-            STATE_SINCE = CLOCK;
-        } else {
-            ACTIVE = 0;
-            if (CLOCK - STATE_SINCE < .8f) {
-                creatures();
-                shots();
-            }
-#ifdef CRIMSON_FREEWARE_CLIENT
-            G.update_ui(INPUT);
-#else
-            freeware_name_entry();
-#endif
-        }
+        name_screen();
         break;
     }
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -526,6 +558,7 @@ extern "C" unsigned char game_frame_update() {
         G.selected = 0;
         enter(1);
     }
+    update_fps(G.fps);
     return !G.quit;
 #else
     sfx_update();
@@ -533,7 +566,10 @@ extern "C" unsigned char game_frame_update() {
         enter(1);
     if (grim_interface_ptr->grim_is_key_down(0x38) && grim_interface_ptr->grim_is_key_down(0x10))
         return 0;
-    return !quit_requested;
+    if (quit_requested)
+        return 0;
+    update_fps(grim_interface_ptr->grim_get_fps());
+    return 1;
 #endif
 }
 
