@@ -132,6 +132,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_find_nearest.cpp",
+          "configs": [
+            "tools/match/scratches/creature_find_nearest"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/creatures/creature_pool_global_init.cpp",
           "configs": [
             "tools/match/scratches/creature_pool_global_init"
@@ -252,6 +258,18 @@
           "path": "decomp/1.4/crimson/crimson/projectiles/secondary_projectile_pool_global_init.cpp",
           "configs": [
             "tools/match/scratches/secondary_projectile_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/weapons/weapon_assign_player.cpp",
+          "configs": [
+            "tools/match/scratches/weapon_assign_player"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/weapons/weapon_name_get.cpp",
+          "configs": [
+            "tools/match/scratches/weapon_name_get"
           ]
         }
       ]

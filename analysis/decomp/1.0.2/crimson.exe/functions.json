@@ -303,12 +303,12 @@
     "size": 1
   },
   {
-    "address": "0x00401600",
+    "address": "0x00401440",
     "canonical_address": "0x0041E8D0",
-    "end": "0x00401624",
+    "end": "0x0040146D",
     "evidence": "ordered",
     "name": "input_aim_pov_left_active",
-    "size": 36
+    "size": 45
   },
   {
     "address": "0x00401630",
@@ -335,6 +335,14 @@
     "size": 11
   },
   {
+    "address": "0x004018F0",
+    "canonical_address": "0x0041F580",
+    "end": "0x00401935",
+    "evidence": "ordered",
+    "name": "bonus_alloc_slot",
+    "size": 69
+  },
+  {
     "address": "0x00401940",
     "canonical_address": "0x0041FBB0",
     "end": "0x004019C9",
@@ -343,19 +351,35 @@
     "size": 137
   },
   {
+    "address": "0x004019D0",
+    "canonical_address": "0x004411A0",
+    "end": "0x004019D5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_54_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004019E0",
+    "canonical_address": "0x004411B0",
+    "end": "0x00401A0A",
+    "evidence": "referenced",
+    "name": "crimson_crt_empty_initializer_slot_54",
+    "size": 42
+  },
+  {
     "address": "0x00401A10",
-    "canonical_address": "0x0041F580",
+    "canonical_address": "0x0041E8F0",
     "end": "0x00401A38",
     "evidence": "ordered",
-    "name": "bonus_alloc_slot",
+    "name": "input_aim_pov_right_active",
     "size": 40
   },
   {
     "address": "0x00401A40",
-    "canonical_address": "0x0041F5B0",
+    "canonical_address": "0x0041F1A0",
     "end": "0x00401C07",
     "evidence": "ordered",
-    "name": "bonus_spawn_at",
+    "name": "config_load_presets",
     "size": 455
   },
   {
@@ -475,11 +499,35 @@
   },
   {
     "address": "0x00405950",
-    "canonical_address": "0x00428140",
+    "canonical_address": "0x00427840",
     "end": "0x004059CA",
     "evidence": "ordered",
-    "name": "creature_alloc_slot",
+    "name": "fx_queue_add_rotated",
     "size": 122
+  },
+  {
+    "address": "0x004059D0",
+    "canonical_address": "0x00427920",
+    "end": "0x00406011",
+    "evidence": "ordered",
+    "name": "fx_queue_render",
+    "size": 1601
+  },
+  {
+    "address": "0x00406020",
+    "canonical_address": "0x004188A0",
+    "end": "0x0040629D",
+    "evidence": "ordered",
+    "name": "terrain_render",
+    "size": 637
+  },
+  {
+    "address": "0x004062A0",
+    "canonical_address": "0x00428140",
+    "end": "0x004062BB",
+    "evidence": "ordered",
+    "name": "creature_alloc_slot",
+    "size": 27
   },
   {
     "address": "0x004062C0",
@@ -491,18 +539,18 @@
   },
   {
     "address": "0x004062E0",
-    "canonical_address": "0x0042ABD0",
+    "canonical_address": "0x00428210",
     "end": "0x00406795",
     "evidence": "ordered",
-    "name": "load_textures_step",
+    "name": "creatures_none_active",
     "size": 1205
   },
   {
     "address": "0x004067A0",
-    "canonical_address": "0x0042B090",
+    "canonical_address": "0x00428240",
     "end": "0x004068E5",
     "evidence": "ordered",
-    "name": "game_startup_init_prelude",
+    "name": "creature_spawn",
     "size": 325
   },
   {
@@ -514,6 +562,14 @@
     "size": 1628
   },
   {
+    "address": "0x00406F50",
+    "canonical_address": "0x00428390",
+    "end": "0x00407950",
+    "evidence": "ordered",
+    "name": "player_render",
+    "size": 2560
+  },
+  {
     "address": "0x00407950",
     "canonical_address": "0x0042D8A0",
     "end": "0x00407E7A",
@@ -523,10 +579,10 @@
   },
   {
     "address": "0x00407E80",
-    "canonical_address": "0x00428210",
+    "canonical_address": "0x0042E080",
     "end": "0x00407E99",
     "evidence": "ordered",
-    "name": "creatures_none_active",
+    "name": "effect_free",
     "size": 25
   },
   {
@@ -539,19 +595,11 @@
   },
   {
     "address": "0x00407EC0",
-    "canonical_address": "0x00428240",
+    "canonical_address": "0x00413540",
     "end": "0x0040803F",
     "evidence": "ordered",
-    "name": "creature_spawn",
+    "name": "player_heading_approach_target",
     "size": 383
-  },
-  {
-    "address": "0x00408040",
-    "canonical_address": "0x00428390",
-    "end": "0x004097C5",
-    "evidence": "ordered",
-    "name": "player_render",
-    "size": 6021
   },
   {
     "address": "0x004097D0",

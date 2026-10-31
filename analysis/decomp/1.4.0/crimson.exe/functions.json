@@ -805,19 +805,11 @@
   },
   {
     "address": "0x00406130",
-    "canonical_address": "0x0041EC60",
+    "canonical_address": "0x0043B5B0",
     "end": "0x00406205",
-    "evidence": "ordered",
-    "name": "config_sync_from_grim",
+    "evidence": "recovered",
+    "name": "highscore_build_path",
     "size": 213
-  },
-  {
-    "address": "0x00406210",
-    "canonical_address": "0x0041F130",
-    "end": "0x004062B9",
-    "evidence": "ordered",
-    "name": "config_ensure_file",
-    "size": 169
   },
   {
     "address": "0x004062C0",
@@ -836,12 +828,20 @@
     "size": 303
   },
   {
-    "address": "0x004067E0",
-    "canonical_address": "0x0041F580",
-    "end": "0x00406808",
-    "evidence": "ordered",
-    "name": "bonus_alloc_slot",
-    "size": 40
+    "address": "0x004065B0",
+    "canonical_address": "0x00452D40",
+    "end": "0x004067DB",
+    "evidence": "recovered",
+    "name": "weapon_assign_player",
+    "size": 555
+  },
+  {
+    "address": "0x00406810",
+    "canonical_address": "0x00413430",
+    "end": "0x004068F3",
+    "evidence": "recovered",
+    "name": "player_start_reload",
+    "size": 227
   },
   {
     "address": "0x00406900",
@@ -893,10 +893,10 @@
   },
   {
     "address": "0x00408E90",
-    "canonical_address": "0x0041FED0",
+    "canonical_address": "0x00412DC0",
     "end": "0x0040900B",
-    "evidence": "ordered",
-    "name": "effect_uv_tables_init",
+    "evidence": "recovered",
+    "name": "gameplay_reset_state",
     "size": 379
   },
   {
@@ -1023,6 +1023,14 @@
     "size": 2819
   },
   {
+    "address": "0x0040F340",
+    "canonical_address": "0x004188A0",
+    "end": "0x0040F5D1",
+    "evidence": "recovered",
+    "name": "terrain_render",
+    "size": 657
+  },
+  {
     "address": "0x0040F5E0",
     "canonical_address": "0x00428140",
     "end": "0x0040F60E",
@@ -1055,12 +1063,12 @@
     "size": 410
   },
   {
-    "address": "0x004110A0",
+    "address": "0x004103B0",
     "canonical_address": "0x00428390",
-    "end": "0x00412565",
+    "end": "0x004110A0",
     "evidence": "ordered",
     "name": "player_render",
-    "size": 5317
+    "size": 3312
   },
   {
     "address": "0x00412570",
@@ -1072,18 +1080,18 @@
   },
   {
     "address": "0x004126E0",
-    "canonical_address": "0x00429580",
+    "canonical_address": "0x004136B0",
     "end": "0x0041568A",
-    "evidence": "ordered",
-    "name": "bonus_label_for_entry",
+    "evidence": "recovered",
+    "name": "player_update",
     "size": 12202
   },
   {
     "address": "0x00415690",
-    "canonical_address": "0x004295F0",
+    "canonical_address": "0x00405BE0",
     "end": "0x00416559",
-    "evidence": "ordered",
-    "name": "bonus_render",
+    "evidence": "recovered",
+    "name": "perk_selection_screen_update",
     "size": 3785
   },
   {

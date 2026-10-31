@@ -30904,6 +30904,7 @@
     4199360,
     4199456,
     4199472,
+    4200912,
     4201488,
     4205200,
     4205424,
@@ -31115,7 +31116,8 @@
     4301584,
     4301590,
     4198496,
-    4198752
+    4198752,
+    4200928
   ],
   "ownership_ranges": [
     {
@@ -31126,5 +31128,5 @@
       "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
     }
   ],
-  "maps_sha256": "2f74e90c4e0d9f76b74b19ba7c0d20ef591ab5003b75e936365932948959b96d"
+  "maps_sha256": "3a6e586b340cbe29ff234b3b0bde5b68eef905caaa2e3c27b19b486079a94fc4"
 }

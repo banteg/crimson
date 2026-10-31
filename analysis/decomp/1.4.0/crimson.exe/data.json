@@ -866,8 +866,18 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452af8",
+      "name": "freeware_text_buffer",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452bf8",
       "name": "unused_effect_uv16_prefix_vec2",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452d59",
+      "name": "freeware_secret_weapon_unlocked",
       "program": "1.4.0/crimson.exe"
     },
     {

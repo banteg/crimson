@@ -333,10 +333,28 @@
       "body_sha256": "0c5bc61fc12375f8940e45e8729b06eae468ae028e9ee6d50be316953e3ff824"
     },
     {
+      "name": "highscore_build_path",
+      "address": "0x00406130",
+      "end": "0x00406205",
+      "body_sha256": "a1a6c056fa38bd66cea5b468251ac758b9b8f7e1ed8a23752d348a62aa20cdd1"
+    },
+    {
       "name": "angle_approach",
       "address": "0x00406480",
       "end": "0x004065af",
       "body_sha256": "9da66505233f7235415fee35042973a9990967f13af8b02ea88ba12454163f30"
+    },
+    {
+      "name": "weapon_assign_player",
+      "address": "0x004065b0",
+      "end": "0x004067db",
+      "body_sha256": "82e451e5514356ee03e5902cdd2abd7fa4936a6dcf2c3c3c839cab69921b98d7"
+    },
+    {
+      "name": "player_start_reload",
+      "address": "0x00406810",
+      "end": "0x004068f3",
+      "body_sha256": "932515cf32527ccdd3fb8f9f129d8060a291f4d7e95736ab57ea64ef03bad9e3"
     },
     {
       "name": "fx_spawn_sprite",
@@ -361,6 +379,12 @@
       "address": "0x00408440",
       "end": "0x004085fb",
       "body_sha256": "91b68a8b8fc0ffc254f39a4cb7b976fff31ae226ed7086a046a74aa09eb45bc8"
+    },
+    {
+      "name": "gameplay_reset_state",
+      "address": "0x00408e90",
+      "end": "0x0040900b",
+      "body_sha256": "4c7b7743230943f426cb843ae3c66d3d81ce0a69274425537512825756c752d8"
     },
     {
       "name": "fx_spawn_secondary_projectile",
@@ -405,6 +429,12 @@
       "body_sha256": "5ef704ad7007011b4041cbb59e9b01d5e0e287dfeaaf1899e787b01a7c13b0b7"
     },
     {
+      "name": "terrain_render",
+      "address": "0x0040f340",
+      "end": "0x0040f5d1",
+      "body_sha256": "83a85fc296d090921c07ad0a0f249ae238112ab4cf17b822ea494139bc190491"
+    },
+    {
       "name": "creature_alloc_slot",
       "address": "0x0040f5e0",
       "end": "0x0040f60e",
@@ -433,6 +463,18 @@
       "address": "0x00412570",
       "end": "0x004126de",
       "body_sha256": "d0d967f1233a8058cf427f4779a408dec422f8fba81ac9a09978a0a853379bcd"
+    },
+    {
+      "name": "player_update",
+      "address": "0x004126e0",
+      "end": "0x0041568a",
+      "body_sha256": "385104aad2e840432873b768cd19aa4bed282b6b85a0ff05e82edbe5d5c7f4ff"
+    },
+    {
+      "name": "perk_selection_screen_update",
+      "address": "0x00415690",
+      "end": "0x00416559",
+      "body_sha256": "9b11ee7981a63f6dc63d71852d45d5e8d5d671e176cd46a0a6b19222245045f2"
     },
     {
       "name": "game_frame_update",
@@ -918,10 +960,24 @@
       "bytes": "b9f82a4400"
     },
     {
+      "name": "freeware_text_buffer",
+      "address": "0x00452af8",
+      "reference": "0x00406bbe",
+      "bytes": "68f82a4500",
+      "build_only": true
+    },
+    {
       "name": "unused_effect_uv16_prefix_vec2",
       "address": "0x00452bf8",
       "reference": "0x00403400",
       "bytes": "c705f82b450000000000"
+    },
+    {
+      "name": "freeware_secret_weapon_unlocked",
+      "address": "0x00452d59",
+      "reference": "0x004065b0",
+      "bytes": "a0592d4500",
+      "build_only": true
     },
     {
       "name": "current_player_index",
@@ -979,6 +1035,23 @@
       "address": "0x00452e94",
       "reference": "0x00406577",
       "bytes": "d905942e4500"
+    }
+  ],
+  "absent": [
+    {
+      "name": "bonus_label_for_entry"
+    },
+    {
+      "name": "effect_uv_tables_init"
+    },
+    {
+      "name": "config_sync_from_grim"
+    },
+    {
+      "name": "bonus_alloc_slot"
+    },
+    {
+      "name": "bonus_render"
     }
   ]
 }

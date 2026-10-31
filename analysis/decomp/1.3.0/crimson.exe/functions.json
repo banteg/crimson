@@ -386,7 +386,7 @@
     "address": "0x00403340",
     "canonical_address": "0x0041E840",
     "end": "0x004033C3",
-    "evidence": "called",
+    "evidence": "ordered",
     "name": "fx_queue_add",
     "size": 131
   },
@@ -410,25 +410,17 @@
     "address": "0x00403510",
     "canonical_address": "0x0041E910",
     "end": "0x004037C6",
-    "evidence": "called",
+    "evidence": "ordered",
     "name": "creature_handle_death",
     "size": 694
   },
   {
     "address": "0x004037D0",
-    "canonical_address": "0x0041EC60",
+    "canonical_address": "0x0043B5B0",
     "end": "0x004038A5",
     "evidence": "exact",
-    "name": "config_sync_from_grim",
+    "name": "highscore_build_path",
     "size": 213
-  },
-  {
-    "address": "0x004038B0",
-    "canonical_address": "0x0041F130",
-    "end": "0x0040395A",
-    "evidence": "ordered",
-    "name": "config_ensure_file",
-    "size": 170
   },
   {
     "address": "0x00403960",
@@ -440,35 +432,35 @@
   },
   {
     "address": "0x00403AF0",
-    "canonical_address": "0x0041F790",
+    "canonical_address": "0x0041F430",
     "end": "0x00403BFB",
     "evidence": "ordered",
-    "name": "bonus_spawn_at_pos",
+    "name": "angle_approach",
     "size": 267
   },
   {
     "address": "0x00403C00",
-    "canonical_address": "0x0041F8D0",
+    "canonical_address": "0x00452D40",
     "end": "0x00403DF3",
     "evidence": "ordered",
-    "name": "bonus_try_spawn_on_kill",
+    "name": "weapon_assign_player",
     "size": 499
   },
   {
-    "address": "0x00403EE0",
-    "canonical_address": "0x0041F430",
-    "end": "0x00404012",
+    "address": "0x00403E00",
+    "canonical_address": "0x00413430",
+    "end": "0x00403EDF",
     "evidence": "ordered",
-    "name": "angle_approach",
-    "size": 306
+    "name": "player_start_reload",
+    "size": 223
   },
   {
-    "address": "0x00404020",
-    "canonical_address": "0x0041F580",
-    "end": "0x0040403E",
+    "address": "0x00403EE0",
+    "canonical_address": "0x0041F5B0",
+    "end": "0x00404012",
     "evidence": "ordered",
-    "name": "bonus_alloc_slot",
-    "size": 30
+    "name": "bonus_spawn_at",
+    "size": 306
   },
   {
     "address": "0x00404040",
@@ -482,7 +474,7 @@
     "address": "0x00404120",
     "canonical_address": "0x0041FC60",
     "end": "0x00404329",
-    "evidence": "called",
+    "evidence": "ordered",
     "name": "weapon_name_get",
     "size": 521
   },
@@ -634,6 +626,14 @@
     "size": 1872
   },
   {
+    "address": "0x0040B250",
+    "canonical_address": "0x004188A0",
+    "end": "0x0040B4DF",
+    "evidence": "ordered",
+    "name": "terrain_render",
+    "size": 655
+  },
+  {
     "address": "0x0040B4E0",
     "canonical_address": "0x00428140",
     "end": "0x0040B50E",
@@ -675,18 +675,18 @@
   },
   {
     "address": "0x0040C2A0",
-    "canonical_address": "0x0042FD90",
+    "canonical_address": "0x00428390",
     "end": "0x0040CF54",
     "evidence": "ordered",
-    "name": "perks_init_database",
+    "name": "player_render",
     "size": 3252
   },
   {
     "address": "0x0040CF60",
-    "canonical_address": "0x00428390",
+    "canonical_address": "0x00439230",
     "end": "0x0040E2BF",
     "evidence": "ordered",
-    "name": "player_render",
+    "name": "quest_database_init",
     "size": 4959
   },
   {
@@ -699,10 +699,10 @@
   },
   {
     "address": "0x0040E430",
-    "canonical_address": "0x00429580",
+    "canonical_address": "0x004136B0",
     "end": "0x00410DA4",
     "evidence": "ordered",
-    "name": "bonus_label_for_entry",
+    "name": "player_update",
     "size": 10612
   },
   {

@@ -292,6 +292,10 @@ typedef struct player_input_config_t {
 } player_input_config_t;
 
 typedef struct player_state_t {
+#if CL_BUILD == 10400
+    union {
+    struct {
+#endif
     unsigned char entity_active;
     unsigned char _pad_entity_active[3];
     int entity_phase_seed;
@@ -395,6 +399,27 @@ typedef struct player_state_t {
         vec2f_t move_target;
     };
     player_input_t input;
+#if CL_BUILD == 10400
+    };
+    struct {
+        unsigned char prefix[0x18];
+        vec2f_t position, movement;
+        float health, heading;
+        unsigned char body[0x54 - 0x30];
+        vec2f_t aim;
+        unsigned char motion[0x6c - 0x5c];
+        float ammo, reload;
+        unsigned char animation[0x80 - 0x74];
+        int experience, displayed_experience, level;
+        float cooldown, reload_duration;
+        int perks[48];
+        float spread;
+        int unused, weapon, previous_weapon;
+        float clip_size, muzzle_flash, aim_heading;
+        unsigned char controls[0x188 - 0x170];
+    } freeware;
+    };
+#endif
 } player_state_t;
 
 typedef struct creature_bonus_args_t {

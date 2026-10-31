@@ -626,6 +626,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x004474f8",
+      "name": "freeware_text_buffer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x004475f8",
       "name": "unused_effect_uv16_prefix_vec2",
       "program": "1.3.0/crimson.exe"
