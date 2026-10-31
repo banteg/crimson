@@ -65,7 +65,7 @@ void Game::update(float dt, const Input &in) {
   actor_sprites.clear();
   effect_sprites.clear();
   effect_labels.clear();
-  frame_shots.clear();
+  frame_trails.clear();
   frame_sprites.clear();
   frame_labels.clear();
   decals.clear();

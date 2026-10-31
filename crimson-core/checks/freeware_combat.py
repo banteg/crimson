@@ -480,23 +480,40 @@ class Comparison:
         calls = []
         state = {}
 
+        corners = {}
+
         def method(slot, n):
             def invoke(call):
                 values = tuple(call.arg_f32(i) for i in range(n))
                 if slot == 0x90:
                     name = pe.read(call.arg_u32(0), 12).split(b"\x00", 1)[0]
                     return {b"grass1.tga": 6, b"mud1.tga": 7, b"rocket": 5, b"glow": 4}.get(name, 0)
+                if slot == 0x1C:
+                    state[call.arg_u32(0)] = call.arg_u32(1)
+                if slot == 0xB0:
+                    state["uv"] = values
                 if slot == 0x94:
                     state["texture"] = call.arg_u32(0)
                 elif slot == 0xB8:
                     for i in range(4):
-                        state[i] = values
+                        corners[i] = values
                 elif slot == 0xBC:
-                    state[call.arg_u32(0)] = values[1:]
+                    corners[call.arg_u32(0)] = values[1:]
                 elif slot == 0xAC:
                     state["angle"] = values[0]
                 elif slot in (0xC0, 0xC4):
-                    calls.append((state["texture"], values, state[2], state.get("angle", 0)))
+                    calls.append(
+                        (
+                            state["texture"],
+                            values,
+                            tuple(corners[i] for i in range(4)),
+                            state.get("angle", 0),
+                            state[0x13],
+                            state[0x14],
+                            state[0x15],
+                            state["uv"],
+                        ),
+                    )
                 return 0
 
             va = pe.load_code(b"\xc3")
@@ -524,38 +541,112 @@ class Comparison:
         pe.write_f32(0x452DC4, 1.125)
         self.write(BULLET, 0, bytes(64 * 52))
         samples = 0
-        for t in (1, 2, 4, 7, 9, 10, 17, 18):
+        pe.write_u32(0x452DDC, 3)
+
+        def probe(case, effects, count=1, index=0):
+            nonlocal samples
+            state.update({0x13: 5, 0x14: 6, 0x15: 2, "angle": 0})
+            pe.write_u8(0x44289E, effects)
+            pe.write_u32(0x4428A0, count)
+            pe.write_u32(0x452D8C, index)
+            calls.clear()
+            pe.call(0x40B570)
+            n = self.dll.combat_draw(1.125, effects, count, index)
+            assert len(calls) == n, (case, len(calls), n)
+            fmt = "<5i29f"
+            size = struct.calcsize(fmt)
+            for i, (texture, points, colors, angle, source, dest, filt, uv) in enumerate(calls):
+                data = struct.unpack(fmt, ctypes.string_at(self.symbol("combat_draw_capture") + i * size, size))
+                assert data[:5] == (texture, len(points), source, dest, filt), (
+                    case,
+                    i,
+                    data[:5],
+                    texture,
+                    source,
+                    dest,
+                )
+                actual = data[5 : 5 + len(points)]
+                assert all(math.isclose(a, b, abs_tol=0.001) for a, b in zip(actual, points, strict=True)), (
+                    case,
+                    i,
+                    actual,
+                    points,
+                )
+                assert data[14:18] == uv and (len(points) == 8 or abs(data[13] - angle) < 1e-6), (
+                    case,
+                    i,
+                    "angle or UV",
+                    data[13:18],
+                    angle,
+                    uv,
+                )
+                assert all(abs(a - b) < 1e-6 for a, b in zip(data[18:], sum(colors, ()), strict=True)), (
+                    case,
+                    i,
+                    "vertex color",
+                    data[18:],
+                    colors,
+                )
+            assert ctypes.string_at(self.symbol(BULLET[0]), 64 * 52) == pe.read(BULLET[1], 64 * 52), (
+                case,
+                "retired shot",
+            )
+            samples += 1
+
+        for t in (0, 1, 2, 4, 7, 9, 10, 17, 18):
             for life in (0.4, 0.24):
                 for fire in (0, 2):
                     for effects in (0, 1):
                         self.write(
-                            BULLET,
-                            2,
-                            struct.pack(BULLET[2], 1, 0.8, 200, 180, 160, 155, 1.5, 2, t, life, 1, 1, 1),
+                            BULLET, 2, struct.pack(BULLET[2], 1, 0.8, 200, 180, 160, 155, 1.5, 2, t, life, 1, 1, 1),
                         )
                         pe.write_f32(0x452DB8, fire)
-                        pe.write_u8(0x44289E, effects)
                         ctypes.c_float.from_address(self.symbol("bonus_fire_bullets_timer")).value = fire
-                        calls.clear()
-                        pe.call(0x40B570)
-                        count = self.dll.combat_draw(1.125, effects)
-                        case = (t, life, fire, effects)
-                        assert len(calls) == count, (case, len(calls), count)
-                        for i, (texture, points, color, angle) in enumerate(calls):
-                            record = ctypes.string_at(self.symbol("combat_draw_capture") + i * 64, 64)
-                            tex, *floats = struct.unpack("<i14f4x", record)
-                            corners = floats[:8]
-                            size, rotate = floats[8:10]
-                            ours = corners if not size else [*corners[:2], size, size]
-                            assert tex == texture and all(
-                                math.isclose(a, b, abs_tol=0.001) for a, b in zip(ours, points, strict=True)
-                            ), (case, i, tex, texture, ours, points)
-                            assert all(
-                                math.isclose(a, b, abs_tol=1e-6) for a, b in zip(floats[10:], color, strict=True)
-                            ), (case, i, color, floats[10:])
-                            if size:
-                                assert abs(rotate - angle) < 1e-6, (case, i, rotate, angle)
-                        samples += 1
+                        probe((t, life, fire, effects), effects)
+        # Mixed pools exercise inherited rotation across the three secondary passes.
+        # The sight perk is checked on player one even when player two fires.
+        for j in range(8):
+            records = bytearray(784)
+            for k in range(2):
+                for off, val in (
+                    (0x18, 150.25 + 27 * k),
+                    (0x1C, 247.75 + 31 * k),
+                    (0x28, 0 if j % 4 == k else 74),
+                    (0x168, 0.42 + j * 0.01),
+                    (0x16C, 1.09 - 1.37 * k),
+                ):
+                    struct.pack_into("<f", records, 392 * k + off, val)
+                struct.pack_into("<i", records, 392 * k + 0x94 + 3 * 4, int(k == 0 or j % 3 == 0))
+            pe.write(0x438478, bytes(records))
+            ctypes.memmove(self.symbol("player_state_table"), bytes(records), 784)
+            for k, t in enumerate((1, 4, 7, 9, 10, 17, 18, 0)):
+                self.write(
+                    BULLET,
+                    (0, 1, 2, 22, 35, 40, 61, 63)[k],
+                    struct.pack(
+                        BULLET[2],
+                        1,
+                        0.11 * k,
+                        200 + k,
+                        180,
+                        160,
+                        155,
+                        1.5,
+                        2,
+                        t,
+                        (0.4, -0.1, 1.5)[(j + k) % 3],
+                        1,
+                        1,
+                        1,
+                    ),
+                )
+            for k, t in enumerate((1, 2, 3)):
+                self.write(
+                    ROCKET,
+                    (0, 1, 63)[k],
+                    struct.pack(ROCKET[2], 1, -0.37 + 0.51 * k, 1, 415 + 10 * k, 480, 3, 4, t, 0, 0),
+                )
+            probe(("mixed", j), j % 2, 2, j % 2)
         method(0x28, 4)
         method(0x2C, 1)
         pe.stub(0x404D70, 0, pop=8)  # Empty level-object list in both shipped modes.
@@ -566,11 +657,11 @@ class Comparison:
             count = self.dll.combat_terrain(seed)
             assert len(calls) == count == 1470
             base = self.symbol("combat_terrain_capture")
-            for i, (texture, points, color, angle) in enumerate(calls):
+            for i, (texture, points, colors, angle, *_state) in enumerate(calls):
                 x, y, rotation, grass = struct.unpack("<fff?3x", ctypes.string_at(base + 16 * i, 16))
                 assert texture == (6 if grass else 7) and points == (x, y, 128, 128)
                 assert abs(rotation - angle) < 1e-6
-                assert all(abs(a - b) < 1e-6 for a, b in zip(color, (0.7, 0.7, 0.7, 0.9), strict=True))
+                assert all(abs(a - b) < 1e-6 for a, b in zip(colors[2], (0.7, 0.7, 0.7, 0.9), strict=True))
             assert self.dll.crt_rand() == pe.call(0x422414).eax
         return samples
 
@@ -760,7 +851,7 @@ def main():
         dll.combat_health.restype = ctypes.c_float
         dll.combat_bomb.restype = ctypes.c_float
         dll.combat_bomb.argtypes = [ctypes.c_float, ctypes.c_int]
-        dll.combat_draw.argtypes = [ctypes.c_float, ctypes.c_int]
+        dll.combat_draw.argtypes = [ctypes.c_float, ctypes.c_int, ctypes.c_int, ctypes.c_int]
         check_client(dll, exe, lambda name: ctypes.addressof(ctypes.c_char.in_dll(dll, name)), "native")
         if args.web:
             check_web(stage, exe, sources)

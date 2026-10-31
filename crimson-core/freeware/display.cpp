@@ -48,6 +48,13 @@ bool Display::load(const std::string &folder) {
   SDL_SetTextureBlendMode(ground, SDL_BLENDMODE_NONE);
   return SDL_SetRenderTarget(renderer, nullptr);
 }
+static SDL_BlendMode blend_mode(unsigned source, unsigned destination) {
+  if (source != 1)
+    return destination == 2 ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND;
+  auto dst = destination == 2 ? SDL_BLENDFACTOR_ONE : SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+  return SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_ZERO, dst, SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ZERO, dst,
+                                    SDL_BLENDOPERATION_ADD);
+}
 void Display::sprite(const char *name, float x, float y, float w, float h, float angle, int frame, int columns,
                      SDL_FColor tint, UiUv uv, unsigned filter, unsigned destination_blend,
                      unsigned source_blend) {
@@ -69,12 +76,7 @@ void Display::sprite(const char *name, float x, float y, float w, float h, float
   SDL_BlendMode previous = SDL_BLENDMODE_BLEND;
   if (destination_blend) {
     SDL_GetTextureBlendMode(t, &previous);
-    SDL_SetTextureBlendMode(t, source_blend == 1        ? SDL_ComposeCustomBlendMode(
-                                                              SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
-                                                              SDL_BLENDOPERATION_ADD, SDL_BLENDFACTOR_ZERO,
-                                                              SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD)
-                               : destination_blend == 2 ? SDL_BLENDMODE_ADD
-                                                        : SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(t, blend_mode(source_blend, destination_blend));
   }
   SDL_SetTextureColorModFloat(t, tint.r, tint.g, tint.b);
   SDL_SetTextureAlphaModFloat(t, tint.a);
@@ -176,25 +178,23 @@ void Display::draw(Game &g) {
   SDL_RenderTexture(renderer, ground, nullptr, &field);
   for (const auto &draw : g.actor_sprites)
     frame_sprite(draw);
-  const char *shot_textures[] = {"", "bullet", "part64", "bullet_real_16", "glow64", "rocket"};
-  for (const auto &d : g.frame_shots) {
-    const auto *name = shot_textures[static_cast<int>(d.texture)];
-    auto *texture = textures.at(name);
+  for (const auto &d : g.frame_trails) {
+    auto *t = textures.at(!std::strcmp(d.texture, "part") ? "part64" : d.texture);
     SDL_BlendMode previous;
-    SDL_GetTextureBlendMode(texture, &previous);
-    SDL_SetTextureBlendMode(texture, d.additive ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND);
-    SDL_FColor tint{d.color.r, d.color.g, d.color.b, d.color.a};
-    if (d.size > 0)
-      sprite(name, d.points[0].x, d.points[0].y, d.size, d.size, d.angle, 0, 1, tint);
-    else {
-      SDL_Vertex v[4];
-      const SDL_FPoint uv[] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-      for (int i = 0; i < 4; ++i)
-        v[i] = {{d.points[i].x, d.points[i].y}, i < 2 ? SDL_FColor{.6f, .6f, .6f, 0} : tint, uv[i]};
-      const int indices[] = {0, 1, 2, 0, 2, 3};
-      SDL_RenderGeometry(renderer, texture, v, 4, indices, 6);
+    SDL_GetTextureBlendMode(t, &previous);
+    SDL_SetTextureBlendMode(t, blend_mode(d.source_blend, d.destination_blend));
+    SDL_SetTextureScaleMode(t, d.filter == 1 ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_LINEAR);
+    SDL_Vertex vertices[4];
+    const SDL_FPoint uv[] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+    for (int i = 0; i < 4; ++i) {
+      const auto &c = d.colors[i];
+      vertices[i] = {{d.points[i].x, d.points[i].y}, {c.r, c.g, c.b, c.a}, uv[i]};
     }
-    SDL_SetTextureBlendMode(texture, previous);
+    const int indices[] = {0, 1, 2, 0, 2, 3};
+    SDL_RenderGeometry(renderer, t, vertices, 4, indices, 6);
+    SDL_SetTextureBlendMode(t, previous);
+    if (d.filter == 1)
+      SDL_SetTextureScaleMode(t, SDL_SCALEMODE_LINEAR);
   }
   frame_art(g.effect_sprites, g.effect_labels);
   const SDL_FColor white{1, 1, 1, 1};

@@ -41,8 +41,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "survival.cpp",
                 "career.cpp",
                 "weapons.cpp",
-                "projectile_draw.cpp",
-                "perks.cpp",
+                    "perks.cpp",
                 "scores.cpp",
                 "console.cpp",
             )
@@ -70,6 +69,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "player/player_reset_all.cpp",
                 "level/move_with_collision.cpp",
                 "game/game_frame_update.cpp",
+                "render/projectile_render.cpp",
                 "render/creature_render_all.cpp",
                 "render/player_render.cpp",
                 "render/effect_render_all.cpp",

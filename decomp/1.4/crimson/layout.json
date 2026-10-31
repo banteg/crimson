@@ -351,6 +351,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/render/projectile_render.cpp",
+          "configs": [
+            "tools/match/scratches/projectile_render"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/ui/game_credits_update.cpp",
           "configs": [
             "tools/match/scratches/game_credits_update"

@@ -46,7 +46,7 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int sfx_play_panned(int, float, float);
 void freeware_blood(const vec2f_t *);
-void effect_render_all(), player_render(), gameplay_render_hud(), game_show_message(),
+void projectile_render(), effect_render_all(), player_render(), gameplay_render_hud(), game_show_message(),
     perk_selection_screen_update(), creature_render_all();
 unsigned char freeware_overlay_begin(), game_highscores_update(), game_credits_update();
 
@@ -241,12 +241,10 @@ __forceinline void render_world() {
         }
     }
     current_player_index = 0;
-#ifndef CRIMSON_FREEWARE_CLIENT
-    projectile_render();
-#else
+#ifdef CRIMSON_FREEWARE_CLIENT
     G.actor_sprites.swap(G.frame_sprites);
-    freeware::projectile_draws(G.frame_shots, CAM, SECONDS, G.effects);
 #endif
+    projectile_render();
     freeware_current_map->render_layer(1, 0);
     freeware_current_map->render_triggers(1);
     effect_render_all();

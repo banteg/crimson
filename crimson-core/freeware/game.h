@@ -53,16 +53,12 @@ struct Input {
   bool pad_any[2]{}, pad_fire[2]{}, pad_perk[2]{}, fire_edge[2]{}, mouse_reload{}, perk_button{};
   std::string text;
 };
-// A zero size selects a four-corner textured trail. Sprites use the first point as the top-left.
-enum class ShotTexture { Trail = 1, Particle, Bullet, Glow, Rocket };
-struct ShotDraw {
-  ShotTexture texture;
+struct TrailDraw {
+  const char *texture;
   vec2f_t points[4];
-  float size, angle;
-  effect_color_t color;
-  bool additive;
+  std::array<effect_color_t, 4> colors;
+  unsigned filter, source_blend, destination_blend;
 };
-void projectile_draws(std::vector<ShotDraw> &, vec2f_t camera, float seconds, bool effects);
 struct TerrainStamp {
   vec2f_t pos;
   float angle;
@@ -140,7 +136,8 @@ struct Game {
   std::vector<Corpse> decals, pending_decals;
   std::vector<FrameSprite> actor_sprites, effect_sprites;
   std::vector<FrameLabel> effect_labels;
-  std::vector<ShotDraw> frame_shots;
+  std::array<effect_color_t, 4> trail_colors;
+  std::vector<TrailDraw> frame_trails;
   std::vector<ImpactMark> marks;
   std::vector<TerrainStamp> terrain;
   void generate_terrain();

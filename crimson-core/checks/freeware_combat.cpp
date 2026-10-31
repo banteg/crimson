@@ -95,14 +95,64 @@ extern "C" float combat_health() { return game.run.health; }
 extern "C" int combat_level() { return game.run.level; }
 extern "C" int combat_pending() { return game.run.pending; }
 extern "C" {
-freeware::ShotDraw combat_draw_capture[24];
-int combat_draw(float seconds, int effects) {
-  std::vector<freeware::ShotDraw> draws;
-  freeware::projectile_draws(draws, {5, -8}, seconds, effects != 0);
-  if (draws.size() > 24)
+extern int config_player_count;
+void projectile_render();
+struct CapturedShot {
+  int texture, points_count, source, destination, filter;
+  float points[8], angle, uv[4];
+  effect_color_t colors[4];
+};
+CapturedShot combat_draw_capture[1024];
+int combat_draw(float seconds, int effects, int count, int index) {
+  game.frame_sprites.clear();
+  game.frame_trails.clear();
+  game.camera = {5, -8};
+  game.run.seconds = seconds;
+  game.effects = effects;
+  game.ui = {};
+  config_player_count = count;
+  current_player_index = index;
+  for (int i = 0; i < 2; ++i) {
+    game.actor(i).health = player_state_table[i].freeware.health;
+    game.actor(i).player = player_state_table[i].freeware.position;
+  }
+  freeware_frame_game = &game;
+  projectile_render();
+  freeware_frame_game = nullptr;
+  int n = 0;
+  auto record = [&](const char *name, int points, unsigned src, unsigned dst, unsigned filter) -> CapturedShot & {
+    const char *names[] = {"", "bullet", "part", "bullet_i", "glow", "rocket"};
+    int id = 1;
+    while (id < 6 && std::strcmp(name, names[id]))
+      ++id;
+    auto &r = combat_draw_capture[n++];
+    r = {};
+    r.texture = id;
+    r.points_count = points;
+    r.source = src;
+    r.destination = dst;
+    r.filter = filter;
+    return r;
+  };
+  if (game.frame_trails.size() + game.frame_sprites.size() > 1024)
     return -1;
-  std::copy(draws.begin(), draws.end(), combat_draw_capture);
-  return int(draws.size());
+  for (const auto &d : game.frame_trails) {
+    auto &r = record(d.texture, 8, d.source_blend, d.destination_blend, d.filter);
+    std::memcpy(r.points, d.points, sizeof(r.points));
+    std::copy(d.colors.begin(), d.colors.end(), r.colors);
+    r.uv[2] = r.uv[3] = 1;
+  }
+  for (const auto &d : game.frame_sprites) {
+    auto &r = record(d.name, 4, d.source_blend, d.destination_blend, d.filter);
+    r.points[0] = d.x;
+    r.points[1] = d.y;
+    r.points[2] = d.width;
+    r.points[3] = d.height;
+    r.angle = d.angle;
+    std::memcpy(r.uv, &d.uv, sizeof(r.uv));
+    std::fill(r.colors, r.colors + 4, d.color);
+  }
+  return n;
 }
 }
 extern "C" {
