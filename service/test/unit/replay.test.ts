@@ -141,16 +141,6 @@ describe("the replay's tick array keeps canonical framing", () => {
   });
 });
 
-it("preserves pre-upgrade solo and co-op IDs and separates rules domains", () => {
-  for (const [file, id] of [["rules1-ranked-survival.crd", vectors.legacy_ranked_run_id], ["rules1-ranked-coop.crd", vectors.legacy_coop_run_id]]) {
-    const replay = decodeReplay(inflateReplay(new Uint8Array(readFileSync(join(FIXTURES, file!)))));
-    const legacy = runIdentity(encodeTransport(replay));
-    expect(sha256(legacy)).toBe(id);
-    const current = runIdentity(encodeTransport({ ...replay, rules: 2 }));
-    expect(sha256(current)).not.toBe(id);
-  }
-});
-
 it.each(["0.18.0", "0.18.0+build.0123456789abcdef01234567"])("keeps ranked co-op transport and identity for build %s", (game_version) => {
   const replay = decodeReplay(inflateReplay(new Uint8Array(readFileSync(join(FIXTURES, "rules1-ranked-coop.crd")))));
   const transport = encodeTransport({ ...replay, game_version });

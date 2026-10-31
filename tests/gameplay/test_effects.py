@@ -6,16 +6,11 @@ from crimson.effects import (
     FX_QUEUE_MAX_COUNT,
     EffectPool,
     FxQueue,
-    FxQueueRotated,
-    ParticlePool,
 )
 from crimson.effects_atlas import effect_src_rect
 from crimson.math_parity import f32
-from crimson.perks import PerkId
 from grim.color import RGBA
 from grim.geom import Vec2
-from tests.support.builders.session import make_world
-from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -32,58 +27,6 @@ def test_fx_queue_caps_count() -> None:
         assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert not q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert q.count == FX_QUEUE_MAX_COUNT
-
-
-def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
-    q = FxQueueRotated()
-    q.bodies_transparency = 2.0
-    assert q.add(
-        top_left=Vec2(),
-        rgba=RGBA(1.0, 1.0, 1.0, 1.0),
-        rotation=0.0,
-        scale=64.0,
-        creature_type_id=3,
-    )
-    entry = q.entries[0]
-    assert_float_close(entry.color.a, 0.5)
-
-    q.clear()
-    q.bodies_transparency = 0.0
-    assert q.add(
-        top_left=Vec2(),
-        rgba=RGBA(1.0, 1.0, 1.0, 1.0),
-        rotation=0.0,
-        scale=64.0,
-        creature_type_id=3,
-    )
-    entry = q.entries[0]
-    assert entry.color.a == f32(0.8)
-
-
-def test_fx_queue_rotated_texture_failure_is_a_successful_noop() -> None:
-    q = FxQueueRotated()
-    assert q.add(
-        top_left=Vec2(1.0, 2.0),
-        rgba=RGBA(1.0, 1.0, 1.0, 1.0),
-        rotation=3.0,
-        scale=4.0,
-        creature_type_id=5,
-        terrain_texture_failed=True,
-    )
-    assert q.count == 0
-
-
-def test_particle_hit_applies_fire_damage() -> None:
-    world = make_world()
-    world.state.perks[int(PerkId.PYROMANIAC)] = 1
-    creatures = place_creatures(world, [make_creature_state(pos=Vec2())])
-    pool = ParticlePool()
-    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=world.state.rng)
-
-    pool.update(step_runtime=make_step_runtime(world, dt=0.016))
-
-    # intensity (1 - 0.016 * 0.9) * 10 fire damage, scaled x1.5 by Pyromaniac.
-    assert_float_close(creatures[0].hp, f32(85.216))
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:

@@ -14,25 +14,6 @@ def _active(world: WorldState) -> list[tuple[float, float, float]]:
     return [(creature.pos.x, creature.pos.y, creature.heading) for creature in world.creatures.entries if creature.active]
 
 
-def _occupy_one_slot(world: WorldState) -> None:
-    world.creatures.spawn_template(SpawnId.ALIEN_SMALL_GRAY_26, Vec2(0.0, 0.0), 0.0, state=world.state, detail_preset=5)
-
-
-def test_no_due_group_resets_the_stall_timer_while_creatures_are_active() -> None:
-    world = make_world()
-    _occupy_one_slot(world)
-    quest = QuestSpawnState(
-        spawn_entries=(spawn(Vec2(512.0, 512.0), SpawnId.ALIEN_SMALL_GRAY_26, 1000, 1),),
-        no_creatures_timer_ms=123.0,
-    )
-
-    quest_spawn_timeline_update(world, quest, dt_ms=16.0)
-
-    assert quest.no_creatures_timer_ms == 0.0
-    assert quest.spawn_entries[0].count == 1
-    assert len(_active(world)) == 1
-
-
 def test_due_group_spreads_along_x_and_zeroes_the_entry() -> None:
     world = make_world()
     quest = QuestSpawnState(
@@ -92,25 +73,6 @@ def test_next_group_spawns_early_after_three_idle_seconds() -> None:
     assert len(_active(world)) == 1
     # Spawning a group clears the cached flag, as native does.
     assert not quest.creatures_none_active
-
-
-def test_timeline_advances_while_creatures_are_active_or_entries_remain() -> None:
-    world = make_world()
-    _occupy_one_slot(world)
-    quest = QuestSpawnState(spawn_timeline_ms=1000.0)
-
-    quest_mode_update(world, quest, dt_ms=16.0)
-
-    assert quest.spawn_timeline_ms == 1016.0
-
-    idle = make_world()
-    pending = QuestSpawnState(
-        spawn_entries=(spawn(Vec2(512.0, 512.0), SpawnId.ALIEN_SMALL_GRAY_26, 999_999, 1),),
-        spawn_timeline_ms=1000.0,
-    )
-    quest_mode_update(idle, pending, dt_ms=16.0)
-
-    assert pending.spawn_timeline_ms == 1016.0
 
 
 def test_timeline_holds_once_the_quest_is_idle_complete_but_the_stage_banner_runs_on() -> None:

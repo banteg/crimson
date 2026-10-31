@@ -234,8 +234,8 @@ a fixed gameplay timestep in the original.
 
 - `tests/sim/test_timing_nearest_ms.py`: nearest-millisecond conversion.
 - `tests/sim/test_render_partition_parity.py`: port tick behavior across render rates.
-- `tests/modes/test_survival_spawn.py`, `tests/modes/test_rush_mode_spawn.py`,
-  and `tests/modes/test_typo_spawns.py`: mode scheduler behavior.
+- `tests/modes/test_survival_spawn.py` and `tests/modes/test_rush_mode_spawn.py` cover Survival and Rush spawns.
+- `tests/native_oracle/test_typo_spawn.py` compares Typ-o's spawn cooldown and creatures with the original.
 - `tests/modes/test_quest_spawn_timeline.py` and
   `tests/modes/test_quest_final_time.py`: quest scheduling and score conversion.
 - `tests/modes/test_tutorial_timeline_update.py`: tutorial stage timing.
