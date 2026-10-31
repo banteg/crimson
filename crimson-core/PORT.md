@@ -603,7 +603,7 @@ its workarounds are already solved.
 
 ## Freeware 1.4.0
 
-The 2002 freeware client plays Career and Survival in single-player or local two-player co-op. Both targets compile the same C++ game code, including the recovered weapon assignment, reload, nearest-target, projectile spawn and perk-selection routines. They use the original graphics, Grim font, sounds and three music tracks. The build converts the MP3s with FFmpeg for the Vorbis decoder.
+The 2002 freeware client plays Career and Survival in single-player or local two-player co-op. Both targets compile the recovered 1.4.0 frame dispatcher, player update, reset, wall collision, combat and perk-selection routines. The dispatcher runs the title menu, advances creatures and projectiles before the two player slots, then handles spawning, death, name entry and restart. They use the original graphics, Grim font, sounds and three music tracks. The build converts the MP3s with FFmpeg for the Vorbis decoder.
 
 Install the development dependencies with `uv sync --dev`. The desktop build needs clang++, pkg-config and SDL3. The browser build needs Emscripten with its SDL3 port. Both need FFmpeg. Extract the [original 1.4.0 ZIP](https://paq.crimson.banteg.xyz/freeware/crimsonland_v1.4.0.zip) and give `--game-dir` the folder containing `grim.dll`, `crimson.paq`, `sounds.paq` and `music/`. Worktrees automatically find the main checkout's `game_bins/crimsonland/1.4.0` installation.
 
@@ -624,13 +624,15 @@ Choose **Begin game.** for Career. Use **Game mode: career** to switch to Surviv
 
 Scores use the original encrypted `.top` format. Career ranks by XP, Survival by seconds, and each player count has its own file. The browser persists records and control settings in IndexedDB. The desktop client uses SDL's per-user preference directory. Set `CRIMSON_FREEWARE_SAVE_DIR` to use another directory or load original records. The `mergehighs <filename>` console command reads an additional score file from that directory for the selected mode.
 
-The 1.4.0 release disabled Level Test and shipped without map files. The port covers the two released game modes. The 2002 online update and high-score services are disconnected. Frame updates, projectile effects, rendering and parts of the control and menu code are portable reconstructions. The debug console implements the gameplay commands listed by `cmdlist`.
+The released menu exposes Career and Survival. The executable also contains Level Test and a level editor, though the 1.4.0 archive ships without maps. The recovery includes their frame branches, object layers, triggers and level-file reader and writer. The HUD, some effects and menu subpages use portable renderers. The 2002 online update and high-score services are disconnected. The debug console implements the gameplay commands listed by `cmdlist`.
 
 ### Recovery checks
 
 ```sh
 uv run python crimson-core/checks/freeware_oracle.py game_bins/crimsonland/1.4.0
 uv run --with wasmtime==49.0.0 python crimson-core/checks/freeware_combat.py game_bins/crimsonland/1.4.0 --web
+uv run crimson match scratch tools/match/scratches/player_update --build 1.4.0
+uv run crimson match scratch tools/match/scratches/game_frame_update --build 1.4.0
 uv run crimson match scratch tools/match/scratches/projectile_update --build 1.4.0
 uv run crimson match scratch tools/match/scratches/weapon_assign_player --build 1.4.0
 uv run crimson match scratch tools/match/scratches/player_start_reload --build 1.4.0
@@ -639,7 +641,9 @@ uv run crimson match scratch tools/match/scratches/perks_generate_choices --buil
 
 The oracle executes the original PE and compares menu draws and mouse boundaries, creature records, all twenty weapon IDs, perk choices and RNG consumption, and all four score formats. A seeded input run plays Career through kills, a weapon pickup and a first earned perk. Separate checks exercise co-op, reloading, death and restart.
 
-The combat check runs the pinned x86 executable alongside the native game code and, with `--web`, the same sources compiled by Emscripten. It compares projectile trajectories, impacts, hit and XP counters, random state, homing, particle capture and expiry, creature movement, player firing and perk grants. It also exercises the original frame dispatcher from the creature pass through the level check. Renderer calls are captured before rasterization, including projectile trail vertices, impact sprites and all 1,470 terrain stamps per seed.
+The combat check runs the pinned x86 executable alongside the native game code and, with `--web`, the same sources compiled by Emscripten. It compares projectile trajectories, impacts, hit and XP counters, random state, homing, particle capture and expiry, creature movement, player firing and perk grants. Player checks compare both 392-byte player records across weapon, movement, aiming and perk cases. Wall checks cover 75 approaches to edges and corners. Reset cases start with distinct bytes in each player slot so untouched fields remain observable.
+
+The frame check calls the original `0x418190` from entry to return. It compares phase changes, camera and timers, random state, reticles, menu text, name entry and the first frame on which a dying creature counts as a frag. A constructed level exercises the disabled editor and checks its saved bytes against the original writer. Draw comparisons use Grim calls before rasterization, including projectile trail vertices, impact sprites and all 1,470 terrain stamps per seed. The VC6 scratch scores measure compiler similarity separately from these behavior checks.
 
 ## Running the native client
 

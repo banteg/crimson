@@ -47,7 +47,7 @@ def cmd_match_report(
         help="only these reported versions (default: every build reported in decomp/builds.json)",
     ),
 ) -> None:
-    """Validate saved evidence and export every reported Crimsonland version to decomp.dev."""
+    """Validate match evidence and write decomp.dev-compatible JSON reports locally."""
     reported = match_builds.load_registry().reported
     if unknown := set(versions or ()) - set(reported):
         raise typer.BadParameter(f"not a reported version: {', '.join(sorted(unknown))}")

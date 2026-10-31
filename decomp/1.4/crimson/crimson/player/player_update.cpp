@@ -96,20 +96,20 @@ __forceinline void aim_along(double angle) {
     P.aim.x = P.position.x + (float)cos(angle) * 60.f;
     P.aim.y = (float)(P.position.y + sin(angle) * 60.f);
 }
-__forceinline void smoke(vec2f_t muzzle, vec2f_t dir, float speed, float scale, float alpha) {
+__forceinline void smoke(const vec2f_t &muzzle, const vec2f_t &dir, float speed, float scale, float alpha) {
     vec2f_t vel = {dir.x * speed, dir.y * speed};
     sprite_effect_t &s = sprite_effect_pool[fx_spawn_sprite(&muzzle, &vel, scale)];
     s.color.r = s.color.g = s.color.b = .5f;
     s.color.a = alpha;
 }
-__forceinline void smoke_pair(vec2f_t muzzle, vec2f_t dir, float a, float b) {
+__forceinline void smoke_pair(const vec2f_t &muzzle, const vec2f_t &dir, float a, float b) {
     smoke(muzzle, dir, 25, 1, a);
     smoke(muzzle, dir, 15, 2, b);
 }
 __forceinline float jitter(int range, float factor) {
     return (float)((crt_rand() % range - range / 2) * (double)P.spread * factor + P.aim_heading);
 }
-__forceinline void pellets(vec2f_t muzzle, int count, int type, float factor) {
+__forceinline void pellets(const vec2f_t &muzzle, int count, int type, float factor) {
     do {
         int slot =
             projectile_spawn(&muzzle, (float)((crt_rand() % 200 - 100) * (double)factor + P.aim_heading), type);
@@ -117,7 +117,7 @@ __forceinline void pellets(vec2f_t muzzle, int count, int type, float factor) {
     } while (--count);
 }
 __forceinline void shot_sound(int id) { sfx_play_panned(id, .45f, .5f); }
-__forceinline void eject(vec2f_t shell, int sound, float cooldown, float flash) {
+__forceinline void eject(const vec2f_t &shell, int sound, float cooldown, float flash) {
     shot_sound(sound);
     fx_queue_add_shell(&shell);
     P.cooldown = cooldown;
