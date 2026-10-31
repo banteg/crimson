@@ -319,6 +319,11 @@ def copy_scratch(config: match.ScratchConfig, directory: Path, ignore) -> match.
     if source.is_relative_to(config.directory.resolve()):
         return replace(config, directory=directory)
     shutil.copyfile(source, directory / source.name)
+    for header in match._scratch_include_headers(config, match.DEFAULT_MATCH_ROOT):
+        if header.is_relative_to(source.parent):
+            copied_header = directory / header.relative_to(source.parent)
+            copied_header.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(header, copied_header)
     return replace(config, directory=directory, source=source.name)
 
 

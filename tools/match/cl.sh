@@ -56,6 +56,12 @@ fi
 INCLUDE="Z:$(echo "$MSVC_ROOT/Include" | tr '/' '\\')"
 INCLUDE="$INCLUDE;Z:$(echo "$MATCH_ROOT/include" | tr '/' '\\')"
 INCLUDE="$INCLUDE;Z:$(echo "$REPO_ROOT/third_party/headers" | tr '/' '\\')"
+# Staging relocates the .cpp. Its original directory is the final fallback
+# so existing compiler, shared-header and overlay precedence stays intact.
+if [ -n "${CRIMSON_MATCH_SOURCE_INCLUDE:-}" ]; then
+    SOURCE_INCLUDE="Z:$(echo "$CRIMSON_MATCH_SOURCE_INCLUDE" | tr '/' '\\')"
+    INCLUDE="$INCLUDE;$SOURCE_INCLUDE"
+fi
 if [ -n "${CRIMSON_MATCH_INCLUDE_OVERLAY:-}" ]; then
     OVERLAY_INCLUDE="Z:$(echo "$CRIMSON_MATCH_INCLUDE_OVERLAY" | tr '/' '\\')"
     INCLUDE="$OVERLAY_INCLUDE;$INCLUDE"

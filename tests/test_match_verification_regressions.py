@@ -484,3 +484,19 @@ def test_top_level_source_includes_match_staged_compiler_search_order(tmp_path: 
     staged_header.write_text("#define VALUE 2\n")
     fp2, _ = matchlib.source_probe_tree_fingerprint(config, source.read_text(), root)
     assert fp1 != fp2
+
+    local_header = decomp / "implementation.inc"
+    local_header.write_text('#include "shared.h"\n')
+    source.write_text('#include "implementation.inc"\n')
+    headers = matchlib._scratch_include_headers(config, root, resolver=resolver)
+    assert local_header in headers
+    # Inside the local include, the quoted header beside it wins like VC6.
+    assert decomp / "shared.h" in headers
+    with pytest.raises(ValueError, match="assembly"):
+        matchlib.validate_scratch_config(config, root)
+    local_header.write_text("#define VALUE 3\n")
+    matchlib.validate_scratch_config(config, root)
+    first, _ = matchlib.source_probe_tree_fingerprint(config, source.read_text(), root)
+    local_header.write_text("#define VALUE 4\n")
+    second, _ = matchlib.source_probe_tree_fingerprint(config, source.read_text(), root)
+    assert first != second

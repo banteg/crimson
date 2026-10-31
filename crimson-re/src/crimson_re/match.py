@@ -4282,6 +4282,11 @@ class ScratchConfig:
     auto_inline_off: tuple[str, ...] = ()
     disproven_compilers: tuple[str, ...] = ()
     include_overlay: Path | None = None
+    original_source_dir: Path | None = None
+
+    @property
+    def source_include_dir(self) -> Path:
+        return self.original_source_dir or (self.directory / self.source).resolve().parent
 
     def supports_build(self, build: str) -> bool:
         return not self.builds or build in self.builds
@@ -5097,7 +5102,11 @@ def _scratch_include_headers(
     if config.archive is not None or config.import_thunk is not None:
         return ()
     resolver = resolver or _ScratchIncludeResolver(match_root)
-    search_dirs = (_compiler_executable_path(config, match_root).parent.parent / "Include", *resolver.include_dirs)
+    search_dirs = (
+        _compiler_executable_path(config, match_root).parent.parent / "Include",
+        *resolver.include_dirs,
+        config.source_include_dir,
+    )
     if config.include_overlay is not None:
         search_dirs = (config.include_overlay, *search_dirs)
     source = config.directory / config.source
@@ -5190,7 +5199,11 @@ def source_probe_tree_fingerprint(
 
     match_root = match_root.resolve()
     resolver = _ScratchIncludeResolver(match_root)
-    include_dirs = (_compiler_executable_path(config, match_root).parent.parent / "Include", *resolver.include_dirs)
+    include_dirs = (
+        _compiler_executable_path(config, match_root).parent.parent / "Include",
+        *resolver.include_dirs,
+        config.source_include_dir,
+    )
     if config.include_overlay is not None:
         include_dirs = (config.include_overlay, *include_dirs)
 
@@ -5846,6 +5859,7 @@ def compile_scratch(
         temp_source.write_bytes(staged_source_text.encode("latin1"))
         environment: dict[str, str] = dict(os.environ)
         environment["MSVC_VER"] = config.compiler
+        environment["CRIMSON_MATCH_SOURCE_INCLUDE"] = str(config.source_include_dir)
         environment.pop("CRIMSON_MATCH_INCLUDE_OVERLAY", None)
         if config.include_overlay is not None:
             environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(
@@ -6027,6 +6041,7 @@ def generate_compiler_listing(
         ]
         environment = dict(os.environ)
         environment["MSVC_VER"] = config.compiler
+        environment["CRIMSON_MATCH_SOURCE_INCLUDE"] = str(config.source_include_dir)
         environment.pop("CRIMSON_MATCH_INCLUDE_OVERLAY", None)
         if config.include_overlay is not None:
             environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(config.include_overlay.resolve())
@@ -6336,7 +6351,7 @@ def evaluate_source_overlay(
         overlay_relative_path = next(
             (
                 overlay_source_path.relative_to(root)
-                for root in (config.directory.resolve(), match_root / "include")
+                for root in (config.directory.resolve(), match_root / "include", config.source_include_dir)
                 if overlay_source_path.is_relative_to(root)
             ),
             None,
@@ -6344,7 +6359,7 @@ def evaluate_source_overlay(
         if overlay_relative_path is None:
             raise ValueError(
                 "overlay source must be the configured scratch source, a scratch-local file, "
-                "or a file under the match include directory",
+                "a sibling include, or a file under the match include directory",
             )
     with tempfile.TemporaryDirectory(prefix=f"crimson-match-probe-{config.directory.name}-") as temp_name:
         shadow_directory = Path(temp_name)
@@ -6365,6 +6380,7 @@ def evaluate_source_overlay(
             config,
             directory=shadow_directory,
             source=source_name,
+            original_source_dir=config.source_include_dir,
             include_overlay=(
                 shadow_directory
                 if overlay_source_path != configured_source_path
