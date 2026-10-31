@@ -12,7 +12,8 @@ extern "C" unsigned int portable_cl_build;
 #define portable_rules_1_9_8 (portable_cl_build == PORTABLE_CL_BUILD_1_9_8)
 #define portable_bugs_1_9_8 (portable_rules_1_9_8 && portable_preserve_bugs)
 // What the game derives from the build once, at startup: the perk range perks_init_database sets
-// (editions/04-perks.patch), which changes with the build wherever a run sets it (host.cpp portable_profile_set).
+// (editions/04-perks.patch), which changes with the build wherever a run, or the perk database, sets it (host.cpp
+// portable_profile_set).
 extern "C" void portable_perk_range(void);
 // Each weapon's shot sound, and a sound global, as its audio_asset_id_table slot (host.cpp): 1.9.8's Fire Bullets
 // reroll compares these where the original compares loaded ids (editions/02-fire-bullets-reroll.patch).

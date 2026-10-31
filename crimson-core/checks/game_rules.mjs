@@ -7,8 +7,13 @@
 // As the game starts, before any run, it knows each weapon's shot sound, which
 // 1.9.8's Fire Bullets reroll reads (host.cpp weapon_shot_slots): weapons share
 // one exactly where the Python port's give them one first fire sound, and no
-// run changes them. The tutorial started then with the box ticked plays 1.9.8's
-// perk range, the Python port's perk_id_max (src/crimson/perks/availability.py),
+// run changes them. Its perk database lists the perks of the menus' build,
+// whichever run set the table last (host/session.inc), as the Python port's
+// build_perk_availability (src/crimson/perks/availability.py) has them at the
+// save the check writes: 1.9.8's with the box ticked then, though the game set
+// the table up on 1.9.93's, and 1.9.93's with the box unticked after the
+// tutorial on 1.9.8. Every run holds its own build's. The tutorial started then
+// with the box ticked plays 1.9.8's perk range, the Python port's perk_id_max,
 // under the fixes, its players' Fire Cough and Hot Tempered intervals starting
 // afresh, no Shock Chain (original bug 32) and Lean Mean Exp Machine's tick at
 // 0, whatever the game held before. A replay on the 1.9.8 rules that keeps
@@ -57,7 +62,7 @@ const text = (at) => Buffer.from(memory().subarray(at, memory().indexOf(0, at)))
 
 // game_state_id_t
 const MAIN_MENU = 0, PLAY_GAME_MENU = 1, STATISTICS = 4, PAUSE_MENU = 5, GAME_OVER = 7, GAMEPLAY = 9, HIGHSCORES = 14,
-  TYPO = 18;
+  PERK_DATABASE = 16, TYPO = 18;
 const ESCAPE = 0x01;
 // The pad (game/host_input.h): A, and the d-pad as the hat, in hundredths of a degree.
 const PAD_SOUTH = 1, HAT_DOWN = 18000, HAT_LEFT = 27000;
@@ -66,8 +71,9 @@ const PAD_SOUTH = 1, HAT_DOWN = 18000, HAT_LEFT = 27000;
 const PLAY_GAME = [240, 338], TUTORIAL = [232, 312], TYPO_SHOOTER = [232, 424], BOX = [298, 489];
 // Survival there, and once a Survival run has played, which moves the Tutorial below Typ-o (play_game_menu_update).
 const SURVIVAL = [232, 396], SURVIVAL_PLAYED = [232, 368];
-// The main menu's Statistics, its High scores, the table's first row and the pinned card's Watch.
-const STATISTICS_ENTRY = [200, 458], HIGH_SCORES = [275, 316], FIRST_ROW = [180, 305], WATCH = [745, 421];
+// The main menu's Statistics, its High scores and Perks, the table's first row and the pinned card's Watch.
+const STATISTICS_ENTRY = [200, 458], HIGH_SCORES = [275, 316], PERKS = [275, 384], FIRST_ROW = [180, 305],
+  WATCH = [745, 421];
 // A pad player's mouse rests where it covers no widget.
 const REST = [1000, 740];
 
@@ -134,6 +140,23 @@ from crimson.perks.availability import perk_id_max
 print(json.dumps({int(b): perk_id_max(b) for b in ClBuild}))
 `;
 const perkIdMax = JSON.parse(python(PERK_ID_MAX));
+// Each build's available perks at the save the check wrote, as a run on it and the perk database hold them: the
+// Python port's build_perk_availability.
+const PERK_AVAILABILITY = `
+import json, sys
+from pathlib import Path
+from crimson.cl_build import ClBuild
+from crimson.perks.availability import build_perk_availability
+from crimson.persistence.save_status import load_status
+status = load_status(Path(sys.argv[1]) / "game.cfg")
+print(json.dumps({int(b): [i for i, a in enumerate(build_perk_availability(status=status, cl_build=b)) if a] for b in ClBuild}))
+`;
+const perkAvailability = JSON.parse(python(PERK_AVAILABILITY, directory));
+// The perks the game's table holds available, those the perk database lists (unlocked_perks_database_update).
+function available() {
+  state(game);
+  return Array.from({ length: 128 }, (_, i) => i).filter((i) => field(game, `perk_metadata[${i}].available`) & 0xff);
+}
 // The Shock Chain's projectile, of the snapshot rules() took: a fresh game's (host.cpp portable_fresh_game), with original
 // bug 32 fixed none, -1, where the original starts at 0, the first projectile slot, and carries the last run's.
 const chain = () => field(game, "globals.shock_chain_projectile_id") | 0;
@@ -143,12 +166,33 @@ function expect(what, actual, expected) {
   if (JSON.stringify(actual) !== JSON.stringify(expected))
     throw Error(`${what}: ${JSON.stringify(actual)}, not ${JSON.stringify(expected)}`);
 }
-// The run plays the player's own profile on `build`; the perk range the game played it by, by build.
+// The run plays the player's own profile on `build`, with its build's perks available; the perk range the game played
+// it by, by build.
 const perkRanges = {};
 function plays(what, build) {
   const played = rules();
   expect(what, played, own(build));
+  expect(`${what}'s available perks`, available(), perkAvailability[build]);
   perkRanges[build] = played.perks;
+}
+// The perk database, from the main menu by Statistics' Perks, lists `build`'s perks and draws their count; Escape twice
+// leaves it for the main menu. The count, by build.
+const perkDatabases = {};
+function perksDatabase(what, build) {
+  click(MAIN_MENU, STATISTICS_ENTRY);
+  click(STATISTICS, PERKS);
+  settle(PERK_DATABASE);
+  game.game_drawn_text();
+  frame();
+  const drawn = text(game.game_drawn_text()).split("\n").filter((line) => line.endsWith(" perks in database"));
+  const listed = available();
+  expect(what, listed, perkAvailability[build]);
+  expect(`${what}'s count`, drawn, [`${listed.length} perks in database`]);
+  perkDatabases[build] = listed.length;
+  frame({ taps: [ESCAPE] });
+  settle(STATISTICS);
+  frame({ taps: [ESCAPE] });
+  settle(MAIN_MENU);
 }
 // The run left for the main menu by its pause menu's second item.
 function leave(screen) {
@@ -229,13 +273,17 @@ fs.mkdirSync(watched, { recursive: true });
 streamReplay("1.9.8-quest-1.5", path.join(watched, "bugs-1.9.8.crd"));
 fs.copyFileSync(new URL("../tests/fixtures/replays/quest-1.1-rules2.crd", CORE), path.join(watched, "rules-1.9.93.crd"));
 
+// The perk database with the box ticked by mouse, before any run.
+box();
+frame({ taps: [ESCAPE] });
+settle(MAIN_MENU);
+perksDatabase("the perk database ticked as the game starts", CL_BUILD_1_9_8);
 // Lean Mean Exp Machine's tick, which every run's frames count down from a fresh game's 0, restarting at 0.25 below 0,
 // whatever its perks. The game holds one no run's countdown reaches as it starts the tutorial.
 const leanMean = () => new Float32Array(game.memory.buffer, game.game_lean_mean_timer(), 1);
 leanMean()[0] = 1000;
-// The tutorial with the box ticked by mouse, before any other run, plays 1.9.8's rules under the fixes; the box
-// unticked again after it.
-box();
+// The tutorial with the box still ticked, before any other run, plays 1.9.8's rules under the fixes; the box unticked
+// again after it, the perk database lists 1.9.93's perks.
 start(TUTORIAL, GAMEPLAY);
 plays("the tutorial ticked as the game starts", CL_BUILD_1_9_8);
 // The fixes' added player state starts afresh, as it does in every run portable_init sets up.
@@ -250,6 +298,7 @@ leave(GAMEPLAY);
 box();
 frame({ taps: [ESCAPE] });
 settle(MAIN_MENU);
+perksDatabase("the perk database unticked after a 1.9.8 run", CL_BUILD_1_9_93);
 // The tutorial after a 1.9.8 replay that keeps 1.9.8's bugs plays 1.9.93's rules with the box unticked, under the
 // fixes.
 watch("watched/bugs-1.9.8.crd", { ...own(CL_BUILD_1_9_8), bugs: 1 });
@@ -430,6 +479,7 @@ expect("the shot sounds after the runs", slots(), launched);
 console.log(
   JSON.stringify({
     perk_ranges: perkRanges,
+    perk_databases: perkDatabases,
     typo_fragments: fragmentCounts,
     typo_highscore_names: typoNames,
     fire_bullets_reroll_weapons: rerolling,

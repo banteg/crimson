@@ -816,6 +816,13 @@ void game_state_set(game_state_id_t state) {
       ui_element_slot_33.active = 1;
       mods_menu_refresh_pending = 1;
     }
+    // The perk database lists the perks of the menus' build, as the high score
+    // screens show its tables and Python's view does: no run holds the table
+    // there, and every run rebuilds it on its own build.
+    if (state == GAME_STATE_PERK_DATABASE) {
+      portable_profile_set(live_profile());
+      perks_rebuild_available();
+    }
     if (watches || coop)
       game_status_blob = status;
     if (watches)

@@ -35,7 +35,8 @@ from 1.9.93's. While the box is ticked, the High scores screen shows them, with
 - **Four perks don't exist yet**: [Man Bomb](../mechanics/perks.md#53-man-bomb),
   [Fire Cough](../mechanics/perks.md#54-fire-cough),
   [Living Fortress](../mechanics/perks.md#55-living-fortress) and
-  [Tough Reloader](../mechanics/perks.md#56-tough-reloader) are never offered.
+  [Tough Reloader](../mechanics/perks.md#56-tough-reloader) are never offered,
+  and the Statistics menu's perk database leaves them out while the box is ticked.
 - **[Angry Reloader](../mechanics/perks.md#50-angry-reloader) fires on every
   reload**, the short ones included.
 - **[Radioactive](../mechanics/perks.md#13-radioactive) kills lizards** like

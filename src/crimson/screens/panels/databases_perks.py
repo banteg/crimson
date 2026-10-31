@@ -132,7 +132,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     def _build_perk_database_ids(self) -> list[PerkId]:
         from ...perks.availability import build_perk_availability
 
-        available = build_perk_availability(status=self.state.status)
+        available = build_perk_availability(status=self.state.status, cl_build=self.state.cl_build)
         perk_ids = [PerkId(idx) for idx, available in enumerate(available) if available and idx > 0]
         perk_ids.sort()
         return perk_ids

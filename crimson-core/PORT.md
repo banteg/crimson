@@ -467,8 +467,9 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   replay on the other build or with 1.9.8's bugs: the player's own profile (the
   current rules, the fixes), the tutorial's perk range, the one its build's
   perk database numbers (the Python port's `perk_id_max`,
-  [`perks/availability.py`](../src/crimson/perks/availability.py)), and Typ-o's
-  word fragments, which must be the Python port's table for its build
+  [`perks/availability.py`](../src/crimson/perks/availability.py)), the perks
+  every run holds available (the Python port's `build_perk_availability`), and
+  Typ-o's word fragments, which must be the Python port's table for its build
   ([`typo/names.py`](../src/crimson/typo/names.py)), the box ticked by the pad.
   Typ-o's high score names must be those the Python port's `TypoSession`
   ([`typo/state.py`](../src/crimson/typo/state.py)) picks through the same
@@ -482,9 +483,11 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   known as the game starts, alike where the Python port's weapons share a
   sound. A Survival run on each build goes to that build's high score table
   alone: with the box set to a build, the table holds that one run, and its
-  first row's Watch plays it. The high score screen must draw a title that
-  names 1.9.8's table, and a score card's origin line the Python port's for the
-  build
+  first row's Watch plays it. The perk database, before any run with the box
+  ticked and after the 1.9.8 tutorial with it unticked, must list the box's
+  build's perks, whichever build set the table last. The high score screen
+  must draw a title that names 1.9.8's table, and a score card's origin line
+  the Python port's for the build
   ([`ui/highscore_card.py`](../src/crimson/ui/highscore_card.py)), a replay's
   build while it plays.
   `game_session.mjs --1.9.8` plays its run on the 1.9.8 rules, and

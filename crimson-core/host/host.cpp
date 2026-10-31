@@ -129,6 +129,7 @@ void projectile_pool_global_init();
 void weapon_table_defaults_global_init();
 void bonus_metadata_init();
 void perks_init_database();
+void perks_rebuild_available();
 void gameplay_reset_state();
 void gameplay_update_and_render();
 void quest_start_selected(int, int);

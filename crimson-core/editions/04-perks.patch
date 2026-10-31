@@ -1,8 +1,9 @@
 1.9.8 rule: Man Bomb, Fire Cough, Living Fortress and Tough Reloader do not exist, and perk offers roll
 `rand % 53 + 1`. perks_init_database keeps 1.9.93's registrations and ids, so a 1.9.8 roll of 53 lands on Man Bomb,
-which perks_rebuild_available never makes available, and rolls again, as 1.9.8's Lifeline 50-50 at 53 does. The four
-perks' code stays 1.9.93's and never runs, their counts staying zero. The range is the host's (portable_perk_range),
-which sets it wherever a run's build changes, so a run perks_init_database does not start keeps no other build's.
+which perks_rebuild_available never makes available, and rolls again, as 1.9.8's Lifeline 50-50 at 53 does. Its clearing
+loop stops at the build's range, so it sets all four by the build itself. The four perks' code stays 1.9.93's and never
+runs, their counts staying zero. The range is the host's (portable_perk_range), which sets it wherever a run's build
+changes, so a run perks_init_database does not start keeps no other build's.
 --- a/decomp/1.9/crimsonland/perks/perks_init_database.cpp
 +++ b/decomp/1.9/crimsonland/perks/perks_init_database.cpp
 @@ -433,7 +433,2 @@
@@ -17,17 +18,17 @@ which sets it wherever a run's build changes, so a run perks_init_database does 
 +    portable_perk_range();
 --- a/decomp/1.9/crimsonland/perks/perks_rebuild_available.cpp
 +++ b/decomp/1.9/crimsonland/perks/perks_rebuild_available.cpp
-@@ -15,7 +15,7 @@
+@@ -15,7 +15,6 @@
 -#if CL_BUILD != 10908
-     // 1.9.8 predates these perks.
+-    // 1.9.8 predates these perks.
 -    perk_meta_table[perk_id_man_bomb].available = 1;
 -    perk_meta_table[perk_id_living_fortress].available = 1;
 -    perk_meta_table[perk_id_fire_caugh].available = 1;
 -    perk_meta_table[perk_id_tough_reloader].available = 1;
 -#endif
-+    if (!portable_rules_1_9_8) {
-+        perk_meta_table[perk_id_man_bomb].available = 1;
-+        perk_meta_table[perk_id_living_fortress].available = 1;
-+        perk_meta_table[perk_id_fire_caugh].available = 1;
-+        perk_meta_table[perk_id_tough_reloader].available = 1;
-+    }
++    // 1.9.8 predates these perks. The table keeps 1.9.93's ids, and the clearing loop above stops at 1.9.8's range,
++    // before three of them: a 1.9.8 run clears them here, whatever an earlier run's build left.
++    perk_meta_table[perk_id_man_bomb].available = !portable_rules_1_9_8;
++    perk_meta_table[perk_id_living_fortress].available = !portable_rules_1_9_8;
++    perk_meta_table[perk_id_fire_caugh].available = !portable_rules_1_9_8;
++    perk_meta_table[perk_id_tough_reloader].available = !portable_rules_1_9_8;
