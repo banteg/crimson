@@ -603,7 +603,7 @@ its workarounds are already solved.
 
 ## Freeware 1.4.0
 
-The 2002 freeware client builds its single-player Survival loop from C++ on desktop and with Emscripten for browsers. Both use the original menu labels and hit boxes, Grim's embedded font, the freeware graphics and sound packs, and the three original music tracks. The build converts the MP3s with FFmpeg for the existing Vorbis decoder.
+The 2002 freeware client plays Career and Survival in single-player or local two-player co-op. Both targets compile the same C++ game code, including the recovered weapon assignment, reload, nearest-target, projectile spawn and perk-selection routines. They use the original graphics, Grim font, sounds and three music tracks. The build converts the MP3s with FFmpeg for the Vorbis decoder.
 
 Install the development dependencies with `uv sync --dev`. The desktop build needs clang++, pkg-config and SDL3. The browser build needs Emscripten with its SDL3 port. Both need FFmpeg. Extract the [original 1.4.0 ZIP](https://paq.crimson.banteg.xyz/freeware/crimsonland_v1.4.0.zip) and give `--game-dir` the folder containing `grim.dll`, `crimson.paq`, `sounds.paq` and `music/`. Worktrees automatically find the main checkout's `game_bins/crimsonland/1.4.0` installation.
 
@@ -615,19 +615,27 @@ uv run python crimson-core/client/build.py --edition 1.4.0 --target web
 uv run python -m http.server 8140 --bind 127.0.0.1 --directory crimson-core/build/freeware-1.4.0/web
 ```
 
-Open the local server in a browser. Click **Game mode: career** to select **Game mode: survival**, then **Begin game.** Move with WASD or the arrow keys, aim with the mouse, and fire with the left mouse button or Tab. Escape pauses. After death, the reaper appears and name entry opens. Enter submits the name to the session's score table. Escape returns to the main menu, where **Begin game.** resets the run.
+Choose **Begin game.** for Career. Use **Game mode: career** to switch to Survival, or **Players: one** to add the second player. Career starts with a pistol and progresses through weapon drops, six bonuses, level-ups, shared perk choices and five milestone bosses. Survival locks the AutoRifle and ranks by time. Both modes support death, score entry and restart.
 
-The playable route covers one-player AutoRifle Survival, with in-session scores and a music setting. Career, two-player gameplay, the remaining settings and original score-file compatibility are outside this milestone.
+- Player one moves with WASD, aims with the mouse and fires with the left mouse button or Tab. In single-player the arrow keys also move the player. R reloads.
+- Player two uses the arrow keys and right Ctrl. In static keyboard aiming, holding fire locks the firing direction. Game options configure and rebind the controls for each player and support local gamepads.
+- Press Space or +, or click the level-up badge, to choose a perk. Escape pauses and resumes. The grave key opens the gameplay console. A creature spawned from the console disqualifies that run from the high scores, as in the original.
+- Submit a name with Enter after death. Escape returns from Highscores to the main menu. **Begin game.** starts a fresh run.
+
+Scores use the original encrypted `.top` format. Career ranks by XP, Survival by seconds, and each player count has its own file. The browser persists records and control settings in IndexedDB. The desktop client uses SDL's per-user preference directory. Set `CRIMSON_FREEWARE_SAVE_DIR` to use another directory or load original records. The `mergehighs <filename>` console command reads an additional score file from that directory for the selected mode.
+
+The 1.4.0 release disabled Level Test and shipped without map files. The port covers the two released game modes. The 2002 online update and high-score services are disconnected. Frame updates, projectile effects, rendering and parts of the control and menu code are portable reconstructions. The debug console implements the gameplay commands listed by `cmdlist`.
 
 ### Recovery checks
 
 ```sh
 uv run python crimson-core/checks/freeware_oracle.py game_bins/crimsonland/1.4.0
-uv run crimson match scratch tools/match/scratches/creature_alloc_slot --build 1.4.0
-uv run crimson match scratch tools/match/scratches/creature_spawn --build 1.4.0
+uv run crimson match scratch tools/match/scratches/weapon_assign_player --build 1.4.0
+uv run crimson match scratch tools/match/scratches/player_start_reload --build 1.4.0
+uv run crimson match scratch tools/match/scratches/perks_generate_choices --build 1.4.0
 ```
 
-The first check compares the port with the original EXE's eight menu draws, 32 mouse boundary cases and every byte of a spawned creature. It also drives the shared game through movement, a kill, contact death, name entry and restart. The matching checks compile the creature allocator and spawner with VC6. The larger frame, creature update and projectile update routines have partially recovered portable paths.
+The oracle executes the original PE and compares menu draws and mouse boundaries, creature records, all twenty weapon IDs, perk choices and RNG consumption, and all four score formats. A seeded input run plays Career through kills, a weapon pickup and a first earned perk. Separate checks exercise co-op, reloading, death and restart.
 
 ## Running the native client
 

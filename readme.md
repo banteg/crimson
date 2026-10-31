@@ -29,7 +29,7 @@ Its [player guide](pypi.md) covers controls, options and commands.
 
 The [feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compares the three. The original Crimsonland Classic assets are distributed with permission from 10tons, and every client downloads them on first launch.
 
-The [1.4.0 freeware build](crimson-core/PORT.md#freeware-140) plays the 2002 single-player Survival loop on desktop and in a browser.
+The [1.4.0 freeware build](crimson-core/PORT.md#freeware-140) plays Career and Survival with one or two local players on desktop and in a browser.
 
 ## Beyond the original
 
