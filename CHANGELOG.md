@@ -2,6 +2,22 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.24.0
+
+### For players
+
+- A **1.9.8** box in the Play Game panel plays a run on Crimsonland 1.9.8's rules, in the Python port and in the browser and desktop games. Fire Bullets adds its shot beside each one fired instead of replacing it, the projectile pool holds 64 shots, Man Bomb, Fire Cough, Living Fortress and Tough Reloader are never offered, Angry Reloader rings on every reload, Radioactive kills lizards, and Typ-o names come from 1.9.8's word fragments. 1.9.8's own bugs are fixed by default, as 1.9.93's are, and come back with `--preserve-bugs`. 1.9.93 stays the default, and switching needs no restart.
+- Ranked 1.9.8 runs go to their own leaderboards on crimson.land, never mixed with 1.9.93's. Replays, practice, custom quest links and online co-op play the build a run was recorded or started with.
+- In the browser and desktop games, play paces itself to the display, so a 60 Hz screen no longer runs zero, one and two game ticks by turns and motion stays smooth. Online co-op paces the same way and catches up with the partner a whole tick at a time.
+- RTX replays keep wet blood and brass reflections when you seek, and the menu behind a finished run keeps its wet RTX blood. RTX switches on or off at launch or from the main menu and its Options panel; runs, replays and in-game options keep the renderer they started with.
+- In the Python port, RTX Blade and Splitter shots drawn after a beam keep their lighting, and loose Freeze debris is bounded under RTX as in the browser and desktop games.
+
+### Under the hood
+
+- `crimson-core/build.py` rebuilds only what changed: it hands compiling and linking to Ninja, so a build with unchanged inputs compiles nothing and an edit recompiles the objects that read it.
+- Jinxed's Freeze rule (original bug 57) is one named condition where the recovered source checks it, and every build target is checked to define it for the run.
+- The browser game keeps one HDR display query instead of asking every frame.
+
 ## 0.23.3
 
 ### For players
