@@ -183,6 +183,24 @@
       "body_sha256": "2b8c26db9837690aa7c1c28dde9dcaf35a1f05772f8c60ea688890f81264c090"
     },
     {
+      "name": "player_reset_all",
+      "address": "0x00402230",
+      "end": "0x0040234e",
+      "body_sha256": "a8765fcf0efa0b38dfdeb1100eaf1c41b82f192d9e774d4f3796b0d2ae11d5ba"
+    },
+    {
+      "name": "player_check_level",
+      "address": "0x00402350",
+      "end": "0x004028f4",
+      "body_sha256": "5730bbd102afd048c7a04be28caaf6b173574ce0e8167ed6298326db4fc49808"
+    },
+    {
+      "name": "perks_generate_choices",
+      "address": "0x00402900",
+      "end": "0x0040293c",
+      "body_sha256": "7b9f7505e0e97656324ddd5f3d30daa492a84d9e8750acc4657ea743215991b4"
+    },
+    {
       "name": "fx_spawn_particle",
       "address": "0x00402a90",
       "end": "0x00402b67",
@@ -223,6 +241,18 @@
       "address": "0x004067a0",
       "end": "0x004068e5",
       "body_sha256": "d8dd4b7670255725d69b4e5176afcc6190bf654375fb1d1bf31b6447f4845712"
+    },
+    {
+      "name": "player_update",
+      "address": "0x00408040",
+      "end": "0x004097c5",
+      "body_sha256": "1edf0ec6f729c96f46a6218572e99eecdd8c0523c19ce8ec7dc6988effa14839"
+    },
+    {
+      "name": "perk_selection_screen_update",
+      "address": "0x0040b6e0",
+      "end": "0x0040bcfa",
+      "body_sha256": "3f3292ae2008fe0377f3495aa377edd4ca0eab85f0626931a8e847e608b9928a"
     }
   ],
   "data": [
@@ -386,6 +416,12 @@
       "bytes": "a3cc204200"
     },
     {
+      "name": "perk_id_count",
+      "address": "0x004220f8",
+      "reference": "0x00402912",
+      "bytes": "a1f8204200"
+    },
+    {
       "name": "projectile_pool",
       "address": "0x00422128",
       "reference": "0x00401380",
@@ -398,6 +434,12 @@
       "reference": "0x004011e3",
       "bytes": "be3c2d4200",
       "offset": 20
+    },
+    {
+      "name": "perk_choice_flags",
+      "address": "0x00424588",
+      "reference": "0x00402909",
+      "bytes": "bf88454200"
     },
     {
       "name": "unused_fx_queue_random_prefix_vec2",
@@ -416,6 +458,12 @@
       "address": "0x004252d0",
       "reference": "0x004062a2",
       "bytes": "b9d0524200"
+    },
+    {
+      "name": "current_player_index",
+      "address": "0x004287e8",
+      "reference": "0x00408040",
+      "bytes": "8b15e8874200"
     },
     {
       "name": "freeware_elapsed_seconds",

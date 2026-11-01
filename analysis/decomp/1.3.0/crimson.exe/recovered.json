@@ -231,6 +231,12 @@
       "body_sha256": "60fcf50e75060478ebeb6005a02279971d6de4f77c5db54d06d34df870e13c26"
     },
     {
+      "name": "player_start_reload",
+      "address": "0x00403e00",
+      "end": "0x00403edf",
+      "body_sha256": "e861257a7c85c8eea2de8b4a31ad4410a4339cdaddfc2e186b6b3217ca38a0f7"
+    },
+    {
       "name": "fx_spawn_sprite",
       "address": "0x00404040",
       "end": "0x004040d0",
@@ -247,6 +253,24 @@
       "address": "0x00404a60",
       "end": "0x00404acb",
       "body_sha256": "c6bf6848ec8f37b82d2e95eba42e64f1890c0e3722edf61572ce63d7504675e6"
+    },
+    {
+      "name": "player_reset_all",
+      "address": "0x00405300",
+      "end": "0x004054b9",
+      "body_sha256": "ffe62f7d38babbcdb469194daf916f5a994248f797dd2ec3c37db7b6ca6d17cb"
+    },
+    {
+      "name": "player_check_level",
+      "address": "0x004054c0",
+      "end": "0x00405ba2",
+      "body_sha256": "07188c3c6c573294c73066e6d776a91991fc6a715910d46b60affa68aef947b0"
+    },
+    {
+      "name": "perks_generate_choices",
+      "address": "0x00405bb0",
+      "end": "0x00405c84",
+      "body_sha256": "dd028997e5e6dd0940c6116cf58dcd7b9d8f141f38ed2ab3a1a9ef3e84afd32a"
     },
     {
       "name": "creature_find_nearest",
@@ -313,6 +337,18 @@
       "address": "0x0040ba70",
       "end": "0x0040bc09",
       "body_sha256": "618725a5ec0a2eacfc138c4722b8691b9cf7f802732a0b98327169a1546d4f65"
+    },
+    {
+      "name": "player_update",
+      "address": "0x0040e430",
+      "end": "0x00410da4",
+      "body_sha256": "b926e8038957481de87218fe0037b3fe5a31de619c808b3ba6b0b056ccf499ad"
+    },
+    {
+      "name": "perk_selection_screen_update",
+      "address": "0x00410db0",
+      "end": "0x0041160f",
+      "body_sha256": "81d04ee920e5b43d2fc8402490d3a494bf143c76d93f0ae12872facb23321e74"
     }
   ],
   "data": [
@@ -532,6 +568,12 @@
       "bytes": "8b3578024300"
     },
     {
+      "name": "perk_id_count",
+      "address": "0x00430290",
+      "reference": "0x00405bff",
+      "bytes": "f73d90024300"
+    },
+    {
       "name": "fx_queue",
       "address": "0x00430298",
       "reference": "0x00401173",
@@ -564,6 +606,12 @@
       "reference": "0x00401470",
       "bytes": "b8f82e4300",
       "offset": 8
+    },
+    {
+      "name": "perk_choice_flags",
+      "address": "0x00433910",
+      "reference": "0x00405bb9",
+      "bytes": "bf10394300"
     },
     {
       "name": "unused_fx_queue_random_prefix_vec2",
@@ -647,6 +695,12 @@
       "reference": "0x0040baec",
       "bytes": "d90584774400",
       "build_only": true
+    },
+    {
+      "name": "perk_id_perk_expert",
+      "address": "0x004477ec",
+      "reference": "0x00405bcd",
+      "bytes": "a1ec774400"
     },
     {
       "name": "creature_spawned_count",

@@ -367,12 +367,12 @@
     "size": 69
   },
   {
-    "address": "0x00401940",
-    "canonical_address": "0x0041FBB0",
-    "end": "0x004019C9",
-    "evidence": "ordered",
-    "name": "fx_spawn_sprite",
-    "size": 137
+    "address": "0x00401A10",
+    "canonical_address": "0x0041F580",
+    "end": "0x00401A38",
+    "evidence": "called",
+    "name": "bonus_alloc_slot",
+    "size": 40
   },
   {
     "address": "0x00401A40",
@@ -391,20 +391,28 @@
     "size": 107
   },
   {
-    "address": "0x00401C80",
-    "build_only": true,
-    "end": "0x0040222B",
-    "evidence": "ordered",
-    "name": "player_check_level",
-    "size": 1451
+    "address": "0x00402230",
+    "canonical_address": "0x0041FC80",
+    "end": "0x0040234E",
+    "evidence": "recovered",
+    "name": "player_reset_all",
+    "size": 286
   },
   {
-    "address": "0x00402230",
+    "address": "0x00402350",
+    "build_only": true,
+    "end": "0x004028F4",
+    "evidence": "recovered",
+    "name": "player_check_level",
+    "size": 1444
+  },
+  {
+    "address": "0x00402900",
     "canonical_address": "0x004045A0",
-    "end": "0x0040234E",
-    "evidence": "ordered",
+    "end": "0x0040293C",
+    "evidence": "recovered",
     "name": "perks_generate_choices",
-    "size": 286
+    "size": 60
   },
   {
     "address": "0x00402940",
@@ -611,10 +619,10 @@
   },
   {
     "address": "0x00408040",
-    "build_only": true,
+    "canonical_address": "0x004136B0",
     "end": "0x004097C5",
-    "evidence": "ordered",
-    "name": "gameplay_render_hud",
+    "evidence": "recovered",
+    "name": "player_update",
     "size": 6021
   },
   {
@@ -627,10 +635,10 @@
   },
   {
     "address": "0x00409BE0",
-    "build_only": true,
+    "canonical_address": "0x00437060",
     "end": "0x0040A090",
     "evidence": "ordered",
-    "name": "freeware_read_name_key",
+    "name": "quest_build_survival_of_the_fastest",
     "size": 1200
   },
   {
@@ -643,58 +651,58 @@
   },
   {
     "address": "0x0040A5F0",
-    "build_only": true,
+    "canonical_address": "0x0043AFA0",
     "end": "0x0040ACBC",
     "evidence": "ordered",
-    "name": "game_highscores_update",
+    "name": "highscore_load_table",
     "size": 1740
   },
   {
     "address": "0x0040ACC0",
-    "canonical_address": "0x0043AFA0",
+    "canonical_address": "0x0043CAA0",
     "end": "0x0040B173",
     "evidence": "ordered",
-    "name": "highscore_load_table",
+    "name": "audio_init_sfx",
     "size": 1203
   },
   {
     "address": "0x0040B180",
-    "canonical_address": "0x0042A7C0",
+    "canonical_address": "0x0043CF90",
     "end": "0x0040B25C",
     "evidence": "ordered",
-    "name": "console_cmd_set_resource_paq",
+    "name": "sfx_system_init",
     "size": 220
   },
   {
     "address": "0x0040B270",
-    "canonical_address": "0x0043CAA0",
+    "canonical_address": "0x0043E830",
     "end": "0x0040B6D9",
     "evidence": "ordered",
-    "name": "audio_init_sfx",
+    "name": "ui_button_update",
     "size": 1129
   },
   {
     "address": "0x0040B6E0",
-    "canonical_address": "0x0043DEF0",
+    "canonical_address": "0x00405BE0",
     "end": "0x0040BCFA",
-    "evidence": "ordered",
-    "name": "ui_scrollbar_update",
+    "evidence": "recovered",
+    "name": "perk_selection_screen_update",
     "size": 1562
   },
   {
     "address": "0x0040BD00",
-    "canonical_address": "0x0043E830",
+    "canonical_address": "0x0043ECF0",
     "end": "0x0040C0C8",
     "evidence": "ordered",
-    "name": "ui_button_update",
+    "name": "ui_text_input_update",
     "size": 968
   },
   {
     "address": "0x0040C0D0",
-    "canonical_address": "0x0042A930",
+    "canonical_address": "0x00441220",
     "end": "0x0040C10D",
     "evidence": "ordered",
-    "name": "console_cmd_snd_freq_adjustment",
+    "name": "highscore_card_draw_vertical_divider",
     "size": 61
   },
   {
@@ -707,42 +715,42 @@
   },
   {
     "address": "0x0040EDA0",
-    "canonical_address": "0x0042B290",
+    "canonical_address": "0x004413A0",
     "end": "0x0040F877",
     "evidence": "ordered",
-    "name": "game_startup_init",
+    "name": "ui_text_input_render",
     "size": 2775
   },
   {
     "address": "0x0040F880",
-    "canonical_address": "0x00442150",
+    "build_only": true,
     "end": "0x0040FAC1",
     "evidence": "ordered",
-    "name": "ui_update_notice_update",
+    "name": "game_show_message",
     "size": 577
   },
   {
     "address": "0x0040FAD0",
-    "canonical_address": "0x00445380",
+    "build_only": true,
     "end": "0x0040FCD4",
     "evidence": "ordered",
-    "name": "typo_target_name_assign_random",
+    "name": "level_load_next",
     "size": 516
   },
   {
     "address": "0x0040FCE0",
-    "canonical_address": "0x00446900",
+    "build_only": true,
     "end": "0x0041011B",
     "evidence": "ordered",
-    "name": "ui_element_update",
+    "name": "freeware_read_name_key",
     "size": 1083
   },
   {
     "address": "0x00410120",
-    "canonical_address": "0x00446C40",
+    "build_only": true,
     "end": "0x00410913",
     "evidence": "ordered",
-    "name": "ui_element_render",
+    "name": "game_highscores_update",
     "size": 2035
   },
   {
@@ -890,10 +898,10 @@
   },
   {
     "address": "0x0041096E",
-    "canonical_address": "0x0044FC70",
+    "canonical_address": "0x0042A860",
     "end": "0x0041098C",
     "evidence": "ordered",
-    "name": "ui_menu_main_click_buy_full_version",
+    "name": "console_cmd_tell_time_survived",
     "size": 30
   },
   {

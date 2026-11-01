@@ -30906,6 +30906,9 @@
     4199472,
     4200688,
     4201488,
+    4203056,
+    4203344,
+    4204800,
     4205200,
     4205424,
     4205568,
@@ -30915,6 +30918,8 @@
     4219552,
     4219584,
     4220832,
+    4227136,
+    4241120,
     4262176,
     4262200,
     4262212,
@@ -31129,7 +31134,7 @@
       "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
     }
   ],
-  "maps_sha256": "8a95fccddb2a4c9321bd6f441ed64cd7ae9404f62c8e08741a96aabb7a84028a",
+  "maps_sha256": "01f01738c41735975694a9de554f86fbfff9cf87ed82fb66f212fa5d7969b813",
   "platform_replaced": [
     {
       "address": 4198768,

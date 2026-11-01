@@ -476,6 +476,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x004220f8",
+      "name": "perk_id_count",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00422128",
       "name": "projectile_pool",
       "program": "1.0.2/crimson.exe"
@@ -488,6 +493,11 @@
     {
       "address": "0x004244f0",
       "name": "freeware_fps",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00424588",
+      "name": "perk_choice_flags",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -508,6 +518,11 @@
     {
       "address": "0x004252d0",
       "name": "creature_pool",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004287e8",
+      "name": "current_player_index",
       "program": "1.0.2/crimson.exe"
     },
     {

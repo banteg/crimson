@@ -576,6 +576,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00430290",
+      "name": "perk_id_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00430298",
       "name": "fx_queue",
       "program": "1.3.0/crimson.exe"
@@ -598,6 +603,11 @@
     {
       "address": "0x00432ef0",
       "name": "secondary_projectile_pool",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433910",
+      "name": "perk_choice_flags",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -698,6 +708,11 @@
     {
       "address": "0x00447784",
       "name": "freeware_elapsed_seconds",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477ec",
+      "name": "perk_id_perk_expert",
       "program": "1.3.0/crimson.exe"
     },
     {

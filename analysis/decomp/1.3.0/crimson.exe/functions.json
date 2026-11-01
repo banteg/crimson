@@ -578,7 +578,7 @@
     "address": "0x00403E00",
     "canonical_address": "0x00413430",
     "end": "0x00403EDF",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "player_start_reload",
     "size": 223
   },
@@ -650,7 +650,7 @@
     "address": "0x00405300",
     "canonical_address": "0x0041FC80",
     "end": "0x004054B9",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "player_reset_all",
     "size": 441
   },
@@ -658,7 +658,7 @@
     "address": "0x004054C0",
     "build_only": true,
     "end": "0x00405BA2",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "player_check_level",
     "size": 1762
   },
@@ -666,7 +666,7 @@
     "address": "0x00405BB0",
     "canonical_address": "0x004045A0",
     "end": "0x00405C84",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "perks_generate_choices",
     "size": 212
   },
@@ -877,9 +877,17 @@
     "address": "0x0040E430",
     "canonical_address": "0x004136B0",
     "end": "0x00410DA4",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "player_update",
     "size": 10612
+  },
+  {
+    "address": "0x00410DB0",
+    "canonical_address": "0x00405BE0",
+    "end": "0x0041160F",
+    "evidence": "recovered",
+    "name": "perk_selection_screen_update",
+    "size": 2143
   },
   {
     "address": "0x00411610",
