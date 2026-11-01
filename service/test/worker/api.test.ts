@@ -1,14 +1,14 @@
 import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { concat, COOP_RUN_DOMAIN, fromHex, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
-import { confirmMerge } from "../../src/accounts";
+import { cleanDeletedRunFiles, confirmMerge, deleteAccount } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
-import { decodeReplay, inflateReplay, REPLAY_RULES } from "../../src/replay";
+import { decodeReplay, inflateReplay, REPLAY_FORMAT_VERSION, REPLAY_RULES, VERIFIED_RULES } from "../../src/replay";
 import {
   type BoardView, type Build, BUILDS, type CustomQuestDetailView, type CustomQuestsListView, type FlagsView, type GameCustomQuests, type GameScore, type GameScores,
   type LoginView, type ProfileView, type QuestMenuView, type ReplaysView, type RunDetailView, type Timeline,
 } from "../../src/api-types";
-import { postRun, runObjects, STALE, timelineFor, validateRecipeSource } from "../../src/runs";
+import { postRun, runObjects, storageIdFor, STALE, timelineFor } from "../../src/runs";
 import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
@@ -113,6 +113,8 @@ function overtaking(other: () => Promise<Response>): { REPLAYS: R2Bucket; overto
   return { REPLAYS, overtook: () => response! };
 }
 
+const recipeReceipt = (state: string) => JSON.stringify({ state, compiler: "1".repeat(40) });
+
 async function reason(response: Response): Promise<string> {
   return ((await response.json()) as { reason: string }).reason;
 }
@@ -127,12 +129,29 @@ async function login(player: Player): Promise<string> {
 }
 
 describe("runs", () => {
+  it("publishes the reader formats and verified rules used by the release gate", async () => {
+    const response = await SELF.fetch(ORIGIN + "/api/replay-capabilities");
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ formats: [30, 31, 32, 33, 34, REPLAY_FORMAT_VERSION], rules: VERIFIED_RULES });
+  });
+
+  it.each([[REPLAY_FORMAT_VERSION + 1, 503], [29, 422]])("distinguishes future format %i from retired ones", async (version, status) => {
+    const key = new TextEncoder().encode("format_version");
+    const original = decodeReplay(inflateReplay(decode64(vectors.ranked_run))).format_version;
+    const file = rewritten(vectors.ranked_run, concat(key, Uint8Array.of(original)), concat(key, Uint8Array.of(version)));
+    const response = await (await Player.create()).upload(file, "banteg");
+    expect(response.status).toBe(status);
+    const answer = await response.json() as { code?: string };
+    expect(answer.code).toBe(status === 503 ? "replay_reader_behind" : undefined);
+  });
+
   it.each([REPLAY_RULES + 1])("refuses rules %s before verifying a run", async (rules) => {
     const header = new TextEncoder().encode("rules");
     const file = rewritten(vectors.ranked_run, concat(header, Uint8Array.of(REPLAY_RULES)), concat(header, Uint8Array.of(rules)));
     const response = await (await Player.create()).upload(file, "banteg");
 
-    expect(response.status).toBe(422);
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("600");
     expect(await reason(response)).toBe(`replay was recorded under rules ${rules}; this service verifies rules 1 and ${REPLAY_RULES}`);
     expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM runs").first("n")).toBe(0);
   });
@@ -146,7 +165,7 @@ describe("runs", () => {
     expect(run).toMatchObject({ id: vectors.ranked_run_id, board: "survival", score: 749 });
     const account = await env.DB.prepare("SELECT accounts.name, keys.fingerprint FROM accounts JOIN keys ON keys.account_id = accounts.id").first();
     expect(account).toMatchObject({ name: "banteg" });
-    expect(await env.REPLAYS.head(`runs/${run.id}.crd`)).not.toBeNull();
+    expect(await env.REPLAYS.head(`runs/${await storageIdFor(env, run.id)}.crd`)).not.toBeNull();
     const stored = await env.DB.prepare("SELECT client, platform FROM runs WHERE id = ?").bind(run.id).first();
     expect(stored).toMatchObject({ client: "crimson", platform: expect.stringMatching(/^[a-z]+-[a-z0-9_]+$/) });
 
@@ -190,9 +209,9 @@ describe("runs", () => {
     expect(timeline.samples.at(-1)![5]).toBeGreaterThan(0);
 
     // A run accepted before timelines existed gets one replayed from its file, the same as verification's.
-    await env.REPLAYS.delete(`runs/${id}.timeline.json`);
+    await env.REPLAYS.delete(`runs/${await storageIdFor(env, id)}.timeline.json`);
     expect(await (await SELF.fetch(`${ORIGIN}/api/runs/${id}/timeline`)).json()).toEqual(timeline);
-    expect(await env.REPLAYS.head(`runs/${id}.timeline.json`)).not.toBeNull();
+    expect(await env.REPLAYS.head(`runs/${await storageIdFor(env, id)}.timeline.json`)).not.toBeNull();
     expect((await SELF.fetch(`${ORIGIN}/api/runs/${"0".repeat(64)}`)).status).toBe(404);
   });
 
@@ -298,6 +317,9 @@ describe("runs", () => {
     expect(response.headers.get("cache-control")).toMatch(/^public, max-age=\d+, must-revalidate$/);
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(decode64(vectors.ranked_run));
 
+    const manifest = (await (await SELF.fetch(`${ORIGIN}/api/replays`)).json()) as ReplaysView;
+    expect(manifest.payloads[id]).toBe(hex(await sha256(inflateReplay(decode64(vectors.ranked_run)))));
+
     const listed = async () => ((await (await SELF.fetch(`${ORIGIN}/api/replays`)).json()) as ReplaysView).runs;
     expect(await listed()).toEqual([id]);
 
@@ -332,6 +354,38 @@ describe("runs", () => {
     expect(profile.runs).toMatchObject([{ id, retired: reason }]);
   });
 
+  it("reads a pre-migration run from its original object prefix", async () => {
+    const { id } = (await (await (await Player.create()).upload(vectors.ranked_run, "legacy")).json()) as { id: string };
+    await env.REPLAYS.put(`runs/${id}.crd`, decode64(vectors.ranked_run));
+    await env.DB.prepare("UPDATE runs SET storage_id = NULL WHERE id = ?").bind(id).run();
+    expect(encode64(new Uint8Array(await (await SELF.fetch(`${ORIGIN}/runs/${id}.crd`)).arrayBuffer()))).toBe(vectors.ranked_run);
+    expect(await timelineFor(env, id, 1)).not.toBeNull();
+  });
+
+  it("keeps unproven recipe text private and lets its author replace a rejected source or seed", async () => {
+    const player = await Player.create(), quest = vectors.custom_quest_run;
+    const envelope = await player.envelope(quest.file, "author");
+    const submit = (source: string, seed: number) => post("/api/custom", { ...envelope, source, seed });
+    const page = async () => (await (await SELF.fetch(`${ORIGIN}/api/custom/${quest.digest.slice(0, 12)}`)).json()) as CustomQuestDetailView;
+    const revision = () => env.DB.prepare("SELECT source_revision FROM custom_quests").first<string>("source_revision");
+    const stale = quest.source.replace("500ms", "9000ms");
+    expect((await submit(stale, 0)).status).toBe(201);
+    expect(await page()).toMatchObject({ source: null, source_state: "pending" });
+    const old = await revision();
+    await env.REPLAYS.put(`recipe-checks/${old}`, recipeReceipt(env.TEST_RECIPE_MISMATCH));
+    expect(await page()).toMatchObject({ source: null, source_state: "rejected" });
+    expect((await submit(stale, 0)).status).toBe(422);
+    expect((await submit(quest.source, 7)).status).toBe(200);
+    const fresh = await revision();
+    expect(fresh).not.toBe(old);
+    await env.REPLAYS.put(`recipe-checks/${old}`, recipeReceipt("verified"));
+    expect(await page()).toMatchObject({ source: null, source_state: "pending" });
+    await env.REPLAYS.put(`recipe-checks/${fresh}`, recipeReceipt(env.TEST_RECIPE_MATCH));
+    expect(await page()).toMatchObject({ source: quest.source, seed: 7, source_state: "verified" });
+    expect(await env.DB.prepare("SELECT source_compiler FROM custom_quests").first("source_compiler")).toBe("1".repeat(40));
+    expect((await submit(quest.source, 0)).status).toBe(409);
+  });
+
   it("a run is accepted once, whoever sends it again", async () => {
     const [owner, copier] = [await Player.create(), await Player.create()];
     expect((await owner.upload(vectors.ranked_run, "owner")).status).toBe(201);
@@ -345,11 +399,57 @@ describe("runs", () => {
   it("a run uploaded again while it verifies is taken once", async () => {
     const player = await Player.create();
     const { REPLAYS, overtook } = overtaking(() => player.upload(vectors.ranked_run, "banteg"));
-    const body = JSON.stringify(await player.envelope(vectors.ranked_run, "banteg"));
+    const original = decodeReplay(inflateReplay(decode64(vectors.ranked_run)));
+    const version = new TextEncoder().encode(original.game_version);
+    const other = rewritten(vectors.ranked_run, version, version.map((_, i) => i === 0 ? 88 : version[i]!));
+    const body = JSON.stringify(await player.envelope(other, "banteg"));
     const response = await postRun(new Request(`${ORIGIN}/api/runs`, { method: "POST", body }), { ...env, REPLAYS });
 
     expect([overtook().status, response.status, await reason(response)]).toEqual([201, 409, "this run was already accepted"]);
-    expect((await env.REPLAYS.list()).objects.map((object) => object.key).sort()).toEqual(runObjects(vectors.ranked_run_id).sort());
+    expect((await env.REPLAYS.list()).objects.map((object) => object.key).sort()).toEqual(runObjects((await storageIdFor(env, vectors.ranked_run_id))!).sort());
+    expect(await storageIdFor(env, vectors.ranked_run_id)).toMatch(/^[a-f0-9]{64}$/);
+    const download = await SELF.fetch(`${ORIGIN}/runs/${vectors.ranked_run_id}.crd`);
+    const bytes = new Uint8Array(await download.arrayBuffer());
+    expect(encode64(bytes)).toBe(vectors.ranked_run);
+    expect(hex(await sha256(inflateReplay(bytes)))).toBe(await env.DB.prepare("SELECT payload_sha256 FROM runs").first("payload_sha256"));
+  });
+
+  it("rechecks a staged submission's signer before accepting it", async () => {
+    const player = await Player.create();
+    const { REPLAYS } = overtaking(async () => {
+      await env.DB.prepare("UPDATE keys SET banned = 1 WHERE public_key = ?").bind(player.publicKey).run();
+      return new Response();
+    });
+    const body = JSON.stringify(await player.envelope(vectors.ranked_run, "fixture"));
+    const response = await postRun(new Request(`${ORIGIN}/api/runs`, { method: "POST", body }), { ...env, REPLAYS });
+    expect(response.status).toBe(503);
+    expect(await env.DB.prepare("SELECT count(*) AS n FROM runs").first("n")).toBe(0);
+    expect((await env.REPLAYS.list()).objects).toHaveLength(0);
+  });
+
+  it("reclaims an interrupted upload and prevents its late R2 writes from publishing", async () => {
+    const player = await Player.create();
+    const { REPLAYS } = overtaking(async () => {
+      await env.DB.prepare("UPDATE staged_run_files SET expires_at = 0").run();
+      await cleanDeletedRunFiles(env);
+      return new Response();
+    });
+    const body = JSON.stringify(await player.envelope(vectors.ranked_run, "fixture"));
+    const response = await postRun(new Request(`${ORIGIN}/api/runs`, { method: "POST", body }), { ...env, REPLAYS });
+    expect(response.status).toBe(503);
+    expect(await env.DB.prepare("SELECT count(*) AS n FROM runs").first("n")).toBe(0);
+    expect((await env.REPLAYS.list()).objects).toHaveLength(0);
+    expect(await env.DB.prepare("SELECT count(*) AS n FROM staged_run_files").first("n")).toBe(0);
+  });
+
+  it("sweeps only expired staging leases after a process stops partway through R2 writes", async () => {
+    const old = "a".repeat(64), active = "b".repeat(64);
+    for (const [storage, expiry] of [[old, 0], [active, Date.now() + 86400000]] as const) {
+      await env.DB.prepare("INSERT INTO staged_run_files VALUES (?, ?)").bind(storage, expiry).run();
+      await env.REPLAYS.put(`runs/${storage}.crd`, "partial");
+    }
+    await cleanDeletedRunFiles(env);
+    expect((await env.REPLAYS.list()).objects.map((entry) => entry.key)).toEqual([`runs/${active}.crd`]);
   });
 
   it("a claimed result the simulation does not reach is refused", async () => {
@@ -528,7 +628,7 @@ describe("1.9.8 runs", () => {
     expect(await rows("SELECT DISTINCT run_id FROM run_players")).toEqual(seats > 1 ? [{ run_id: id }] : []);
     expect([await rows("SELECT name FROM accounts ORDER BY name"), await rows("SELECT name FROM names ORDER BY name")]).toEqual([named, named]);
     expect(await rows("SELECT first_run_id, source FROM custom_quests")).toEqual(path === "/api/custom" ? [{ first_run_id: id, source: null }] : []);
-    expect((await env.REPLAYS.list()).objects.map((object) => object.key).sort()).toEqual(runObjects(id).sort());
+    expect((await env.REPLAYS.list()).objects.map((object) => object.key).sort()).toEqual(runObjects((await storageIdFor(env, id))!).sort());
   });
 
   // A custom quest published from a 1.9.8 clear opens on 1.9.8's boards, where its clear ranks.
@@ -747,6 +847,10 @@ describe("custom quests", () => {
       url: `/custom/${questId}`,
     });
 
+    const pending = (await (await SELF.fetch(`${ORIGIN}/api/custom/${questId}`)).json()) as CustomQuestDetailView;
+    expect(pending).toMatchObject({ source: null, source_state: "pending" });
+    const revision = await env.DB.prepare("SELECT source_revision FROM custom_quests WHERE id = ?").bind(questId).first<string>("source_revision");
+    await env.REPLAYS.put(`recipe-checks/${revision}`, recipeReceipt(env.TEST_RECIPE_MATCH));
     const detail = (await (await SELF.fetch(`${ORIGIN}/api/custom/${questId}`)).json()) as CustomQuestDetailView;
     expect(detail).toMatchObject({
       id: questId,
@@ -831,26 +935,7 @@ describe("custom quests", () => {
       signature,
       source: 'quest "Wrong Title" version 1\nauthor "banteg"\nterrain (2, 3, 2)\nat 0s:\n    spawn alien.small_gray at (512, 448)\n',
     });
-    expect(badSource.status).toBe(422);
-    const baseQuest = decodeReplay(inflateReplay(decode64(file))).run.custom_quest!;
-    expect(
-      validateRecipeSource(
-        'quest "Quick (Wave #2 [beta]" version 1 # comment\nauthor "banteg [1] #1"\nweapon shotgun\nterrain (2, 3, 2)\nfixed_weapon true\nat 500ms:\n    spawn 0x26 at (512, 420)\n',
-        { ...baseQuest, title: "Quick (Wave #2 [beta]", author: "banteg [1] #1" },
-      ),
-    ).toBe(true);
-    expect(
-      validateRecipeSource(
-        vectors.custom_quest_run.source.replace("weapon shotgun", "weapon pistol"),
-        baseQuest,
-      ),
-    ).toBe(false);
-    expect(
-      validateRecipeSource(
-        vectors.custom_quest_run.source.replace("alien.small_gray", "spider.small_blue"),
-        baseQuest,
-      ),
-    ).toBe(false);
+    expect(badSource.status).toBe(409);
 
     const otherSession = asSession(await signIn(other));
     const otherMe = (await (await otherSession.get("/api/me")).json()) as { account: number };
@@ -966,9 +1051,9 @@ describe("co-op runs", () => {
 
     // A co-op timeline recorded before timelines kept each player's own.
     const { players: _, ...older } = detail.timeline!;
-    await env.REPLAYS.put(`runs/${id}.timeline.json`, JSON.stringify(older));
+    await env.REPLAYS.put(`runs/${await storageIdFor(env, id)}.timeline.json`, JSON.stringify(older));
     expect(await get<Timeline>(`/api/runs/${id}/timeline`)).toEqual(detail.timeline);
-    expect(await (await env.REPLAYS.get(`runs/${id}.timeline.json`))!.json()).toEqual(detail.timeline);
+    expect(await (await env.REPLAYS.get(`runs/${await storageIdFor(env, id)}.timeline.json`))!.json()).toEqual(detail.timeline);
   });
 
   it("an older co-op timeline whose run no longer replays is kept, and its run replayed once", async () => {
@@ -976,9 +1061,9 @@ describe("co-op runs", () => {
     expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(201);
     const id = vectors.coop_run.run_id;
     const { players: _, ...older } = (await get<RunDetailView>(`/api/runs/${id}`)).timeline!;
-    await env.REPLAYS.put(`runs/${id}.timeline.json`, JSON.stringify(older));
+    await env.REPLAYS.put(`runs/${await storageIdFor(env, id)}.timeline.json`, JSON.stringify(older));
     // A replay the verifier refuses in place of the run's.
-    await env.REPLAYS.put(`runs/${id}.crd`, decode64(vectors.illegal_command_run));
+    await env.REPLAYS.put(`runs/${await storageIdFor(env, id)}.crd`, decode64(vectors.illegal_command_run));
     let replays = 0;
     const REPLAYS = new Proxy(env.REPLAYS, {
       get(target, key) {
@@ -990,7 +1075,7 @@ describe("co-op runs", () => {
 
     for (let view = 0; view < 3; view++) expect(await timelineFor({ ...env, REPLAYS }, id, 2)).toEqual(older);
     expect(replays).toBe(1);
-    expect((await env.REPLAYS.head(`runs/${id}.timeline.json`))!.customMetadata![STALE]).toContain("perk_pick without an open perk");
+    expect((await env.REPLAYS.head(`runs/${await storageIdFor(env, id)}.timeline.json`))!.customMetadata![STALE]).toContain("perk_pick without an open perk");
     expect(await get<Timeline>(`/api/runs/${id}/timeline`)).toEqual(older);
   });
 
@@ -1000,7 +1085,7 @@ describe("co-op runs", () => {
     const id = vectors.coop_run.run_id;
     const upgraded = (await get<RunDetailView>(`/api/runs/${id}`)).timeline!;
     const { players: _, ...older } = upgraded;
-    await env.REPLAYS.put(`runs/${id}.timeline.json`, JSON.stringify(older));
+    await env.REPLAYS.put(`runs/${await storageIdFor(env, id)}.timeline.json`, JSON.stringify(older));
     let failures = 1;
     const REPLAYS = new Proxy(env.REPLAYS, {
       get(target, key) {
@@ -1012,10 +1097,10 @@ describe("co-op runs", () => {
     });
 
     await expect(timelineFor({ ...env, REPLAYS }, id, 2)).rejects.toThrow("R2 is down");
-    const kept = (await env.REPLAYS.get(`runs/${id}.timeline.json`))!;
+    const kept = (await env.REPLAYS.get(`runs/${await storageIdFor(env, id)}.timeline.json`))!;
     expect([kept.customMetadata, await kept.json()]).toEqual([{}, older]);
     expect(await timelineFor({ ...env, REPLAYS }, id, 2)).toEqual(upgraded);
-    expect(await (await env.REPLAYS.get(`runs/${id}.timeline.json`))!.json()).toEqual(upgraded);
+    expect(await (await env.REPLAYS.get(`runs/${await storageIdFor(env, id)}.timeline.json`))!.json()).toEqual(upgraded);
   });
 
   it("both partners' pages upload the same run at once: the service takes it once", async () => {
@@ -1178,7 +1263,7 @@ describe("co-op runs", () => {
     for (const table of ["keys", "names", "links", "sessions"])
       expect(await env.DB.prepare(`SELECT count(*) AS n FROM ${table} WHERE account_id = ?`).bind(aliceAccount).first()).toEqual({ n: 0 });
     expect((await SELF.fetch(`${ORIGIN}/api/players/${aliceAccount}`)).status).toBe(404);
-    expect(await env.REPLAYS.head(`runs/${id}.crd`)).not.toBeNull();
+    expect(await env.REPLAYS.head(`runs/${await storageIdFor(env, id)}.crd`)).not.toBeNull();
 
     // The last player on it takes it along, and the bare account goes with its last run.
     await remove(bob);
@@ -1236,6 +1321,7 @@ describe("co-op runs", () => {
     const { id } = (await (await uploadPair(file, [alice, "alice"], [bob, "bob"])).json()) as { id: string };
     await alt.upload(vectors.ranked_run, "bobby");
     const [from, into] = [await accountOf(bob), await accountOf(alt)];
+    await env.DB.prepare("INSERT INTO links (provider, subject, account_id, handle, linked_at) VALUES ('github', '1', ?, 'bob', ?)").bind(into, Date.now()).run();
     const [token, sessionToken] = ["t".repeat(64), "s".repeat(64)];
     await env.DB.prepare(
       `INSERT INTO merge_requests (token_hash, session_hash, from_account, into_account, provider, subject, handle, avatar_url, expires_at)
@@ -1296,4 +1382,70 @@ describe("historical rules coexist with the current default", () => {
     // Reinitialize with old rules again after current rules; it must still verify.
     expect((await player.upload(vectors.legacy_ranked_run, "historical")).status).toBe(409);
   });
+});
+
+describe("run file cleanup across account deletion", () => {
+  it("deletes an upload committed immediately before the account's D1 transaction", async () => {
+    const account = 8000, id = "7".repeat(64), storage = "8".repeat(64);
+    await env.DB.prepare("INSERT INTO accounts(id, created_at) VALUES (?, 0)").bind(account).run();
+    const db = new Proxy(env.DB, { get(target, key) {
+      if (key === "batch") return async (...args: Parameters<D1Database["batch"]>) => {
+        await Promise.all(runObjects(storage).map(object => env.REPLAYS.put(object, "staged")));
+        await target.prepare(`INSERT INTO runs (id, storage_id, payload_sha256, account_id, public_key, name,
+          board, score, game_version, ticks, result, accepted_at) VALUES (?, ?, ?, ?, '', '', 'survival', 1, '1', 1, '{}', 1)`)
+          .bind(id, storage, id, account).run();
+        return target.batch(...args);
+      };
+      const value = Reflect.get(target, key);
+      return typeof value === "function" ? value.bind(target) : value;
+    } });
+    expect(await deleteAccount({ ...env, DB: db }, account)).toBe(true);
+    expect(await storageIdFor(env, id)).toBeNull();
+    expect((await env.REPLAYS.list()).objects).toEqual([]);
+  });
+
+  it("retries a failed legacy deletion after the session is gone, preserving a reaccepted run", async () => {
+    const original = await Player.create();
+    const { id } = await (await original.upload(vectors.ranked_run, "first")).json() as { id: string };
+    const old = (await storageIdFor(env, id))!;
+    for (const [index, key] of runObjects(old).entries()) {
+      const object = await env.REPLAYS.get(key);
+      await env.REPLAYS.put(runObjects(id)[index]!, await object!.arrayBuffer());
+    }
+    await env.REPLAYS.delete(runObjects(old));
+    await env.DB.prepare("UPDATE runs SET storage_id = NULL WHERE id = ?").bind(id).run();
+    const account = (await env.DB.prepare("SELECT account_id FROM runs WHERE id = ?").bind(id).first<number>("account_id"))!;
+    const unavailable = new Proxy(env.REPLAYS, { get(target, op) {
+      if (op === "delete") return () => Promise.reject(Error("simulated bucket outage"));
+      const value = Reflect.get(target, op);
+      return typeof value === "function" ? value.bind(target) : value;
+    } });
+    expect(await deleteAccount({ ...env, REPLAYS: unavailable }, account)).toBe(true);
+    expect(await storageIdFor(env, id)).toBeNull();
+    expect(await env.DB.prepare("SELECT storage FROM deleted_run_files").first("storage")).toBe(id);
+    const replacement = await Player.create();
+    expect((await replacement.upload(vectors.ranked_run, "second")).status).toBe(201);
+    const current = (await storageIdFor(env, id))!;
+    expect(current).not.toBe(id);
+    await cleanDeletedRunFiles(env);
+    for (const object of runObjects(id)) expect(await env.REPLAYS.head(object)).toBeNull();
+    for (const object of runObjects(current)) expect(await env.REPLAYS.head(object)).not.toBeNull();
+    expect(await env.DB.prepare("SELECT storage FROM deleted_run_files").first()).toBeNull();
+  }, 30_000);
+
+  it("a timeline finishing after account deletion cannot resurrect the old prefix", async () => {
+    const player = await Player.create();
+    const { id } = await (await player.upload(vectors.ranked_run, "first")).json() as { id: string };
+    const prefix = (await storageIdFor(env, id))!;
+    await env.REPLAYS.delete(`runs/${prefix}.timeline.json`);
+    const account = (await env.DB.prepare("SELECT account_id FROM runs WHERE id = ?").bind(id).first<number>("account_id"))!;
+    const { REPLAYS } = overtaking(async () => {
+      await deleteAccount(env, account);
+      return new Response();
+    });
+    expect(await timelineFor({ ...env, REPLAYS }, id, 1)).toBeNull();
+    expect((await env.REPLAYS.list()).objects).toEqual([]);
+    await cleanDeletedRunFiles(env);
+    expect(await env.DB.prepare("SELECT storage FROM deleted_run_files").first()).toBeNull();
+  }, 30_000);
 });

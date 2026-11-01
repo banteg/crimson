@@ -141,6 +141,15 @@ def test_legacy_v33_custom_quest_replays_upgrade_on_decode():
     with pytest.raises(ReplayCodecError, match="start_weapon_id"):
         decode_replay_payload(msgspec.msgpack.encode(msgspec.structs.replace(legacy_replay, run=bad_run)))
 
+
+def test_v33_coop_quest_replays_the_two_player_spawn_table():
+    replay = load_replay((FIXTURES / "coop-quest-variants-v33-rules2.crd").read_bytes())
+    assert replay.format_version == 33 and replay.run.player_count == 2
+    assert replay.run.custom_quest is not None
+    assert [entry.count for entry in replay.run.custom_quest.entries] == [1]
+    assert PlaybackDriver(replay, version_mismatch_action=None).run() == replay.result
+
+
 def test_a_survival_replay_carrying_both_quests_is_refused():
     replay = load_replay((FIXTURES / "survival-135302.crd").read_bytes())
     run = msgspec.structs.replace(replay.run, quest_level=QuestLevel(1, 1), custom_quest=crosswind())

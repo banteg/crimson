@@ -35,6 +35,7 @@ import type { RunResult } from "./replay";
 import { accountModeration, runModeration } from "./moderation";
 import { CUSTOM_QUEST_ID } from "./paths";
 import { timelineFor } from "./runs";
+import { type RecipeState, recipeState } from "./recipe";
 import { encodePortableQuest } from "./transport";
 import questTitles from "./quests.json";
 import { formatScore } from "../web/src/format";
@@ -170,8 +171,8 @@ export const NOT_BANNED = `a.banned = 0 AND NOT ${anySeat("r", "pa.banned")}`;
 const RANKED_RUN = `r.hidden = 0 AND r.retired IS NULL AND ${NOT_BANNED}`;
 // Every ranked run's id; each one's replay downloads from /runs/<id>.crd.
 export async function replaysView(env: Env): Promise<ReplaysView> {
-  const { results } = await env.DB.prepare(`SELECT r.id FROM runs r JOIN accounts a ON a.id = r.account_id WHERE ${RANKED_RUN} ORDER BY r.id`).all<{ id: string }>();
-  return { runs: results.map(({ id }) => id) };
+  const { results } = await env.DB.prepare(`SELECT r.id, r.payload_sha256 FROM runs r JOIN accounts a ON a.id = r.account_id WHERE ${RANKED_RUN} ORDER BY r.id`).all<{ id: string; payload_sha256: string }>();
+  return { runs: results.map(({ id }) => id), payloads: Object.fromEntries(results.map(({ id, payload_sha256 }) => [id, payload_sha256])) };
 }
 
 // The ranked runs `r` of a board in a category and build, with their accounts `a`; binds the board, quest, build's
@@ -256,10 +257,10 @@ export async function runDetailView(env: Env, id: string, moderator: boolean): P
 // its page and replay.
 const VISIBLE_RUN = `r.hidden = 0 AND ${NOT_BANNED}`;
 
-// The board of a run anyone may see, null for none.
-export async function visibleRun(env: Env, id: string): Promise<Board | null> {
-  const run = await env.DB.prepare(`SELECT r.board FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`).bind(id).first<{ board: Board }>();
-  return run?.board ?? null;
+// The board and private R2 prefix of a run anyone may see.
+export async function visibleRun(env: Env, id: string): Promise<{ board: Board; storage: string } | null> {
+  return env.DB.prepare(`SELECT r.board, coalesce(r.storage_id, r.id) AS storage FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`)
+    .bind(id).first<{ board: Board; storage: string }>();
 }
 
 export async function runSummary(env: Env, id: string): Promise<RunSummary | null> {
@@ -395,7 +396,7 @@ export async function customQuestDetailView(
   env: Env, id: string, category: Category, build: Build, rules: number | null = null,
 ): Promise<CustomQuestDetailView | null> {
   const row = await env.DB.prepare(
-    "SELECT id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at FROM custom_quests WHERE id = ?",
+    "SELECT id, digest, account_id, first_run_id, title, author, source, seed, source_state, source_revision, definition, created_at FROM custom_quests WHERE id = ?",
   )
     .bind(id)
     .first<{
@@ -406,22 +407,26 @@ export async function customQuestDetailView(
       title: string;
       author: string | null;
       source: string | null;
+      source_state: RecipeState;
+      source_revision: string | null;
       seed: number;
       definition: string;
       created_at: number;
     }>();
   if (!row) return null;
   const definition = JSON.parse(row.definition) as CustomQuest;
-  const [who, board] = await Promise.all([
+  const [who, board, state] = await Promise.all([
     row.account_id !== null ? players(env, [row.account_id]) : Promise.resolve(new Map()),
     boardView(env, "quests", id, category, build, 100, row.title, rules),
+    row.source_revision ? recipeState(env, id, row.source_revision, row.source_state) : null,
   ]);
   return {
     id: row.id,
     digest: row.digest,
     title: row.title,
     author: row.author,
-    source: row.source,
+    source: state === "verified" ? row.source : null,
+    source_state: state,
     seed: row.seed,
     created_at: row.created_at,
     creator: row.account_id !== null ? (who.get(row.account_id) ?? null) : null,
@@ -442,7 +447,7 @@ export async function customQuestPortableBytes(env: Env, id: string): Promise<Ui
 // Published quests whose creator is not banned, newest first, with how many players a build's boards have.
 async function customQuestRows(env: Env, category: Category, build: Build, limit: number, offset = 0) {
   const { results } = await env.DB.prepare(
-    `SELECT q.id, q.account_id, q.title, q.author, q.source IS NOT NULL AS has_source, q.definition, q.created_at,
+    `SELECT q.id, q.account_id, q.title, q.author, (q.source IS NOT NULL AND q.source_state = 'verified') AS has_source, q.definition, q.created_at,
        (SELECT count(DISTINCT r.account_id) FROM runs r JOIN accounts a ON a.id = r.account_id
         WHERE r.board = 'quests' AND r.quest = q.id AND r.cl_build = ?1 AND ${RANKED_RUN} AND ${runCategory("r")} = ?2) AS players,
        (SELECT min(r.score) FROM runs r JOIN accounts a ON a.id = r.account_id

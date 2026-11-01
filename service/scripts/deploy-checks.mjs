@@ -111,7 +111,7 @@ export async function waitForRelease(origin, sha, request = fetch, {
   }
 }
 
-export async function smoke(origin = "https://crimson.land", sha = process.env.GITHUB_SHA, request = fetch, polling = {}) {
+export async function smoke(artifacts, origin = "https://crimson.land", sha = process.env.GITHUB_SHA, request = fetch, polling = {}) {
   await waitForRelease(origin, sha, request, polling);
   for (const path of ["/", "/api/survival", "/play/", "/play/index.js", "/play/index.wasm", "/play/game/crimson.paq", "/play/game/sfx.paq", "/play/game/music.paq"]) {
     const head = path.endsWith(".paq");
@@ -119,7 +119,11 @@ export async function smoke(origin = "https://crimson.land", sha = process.env.G
     assert.equal(response.status, 200, `${path}: HTTP ${response.status}`);
     if (path.endsWith(".js")) assert.match(response.headers.get("content-type") || "", /javascript/, "Game JS is not JavaScript");
     if (path.startsWith("/api/")) assert.ok((await response.json()).board, "Leaderboard did not return board JSON");
-    if (path.endsWith(".wasm")) assert.deepEqual(new Uint8Array(await response.arrayBuffer()).slice(0, 4), new Uint8Array([0, 97, 115, 109]), "Game WASM is not a WASM file");
+    if (path.endsWith(".wasm") || path.endsWith(".js")) {
+      const name = path.slice("/play/".length);
+      const digest = createHash("sha256").update(new Uint8Array(await response.arrayBuffer())).digest("hex");
+      assert.equal(digest, artifacts[name], `Production serves different ${name} bytes than the tested package`);
+    }
     console.log(`${head ? "HEAD" : "GET"} ${path}: ok`);
   }
 }
@@ -132,7 +136,7 @@ async function main() {
       const remote = JSON.parse(execFileSync("npx", ["--no-install", "wrangler", "d1", "execute", "crimson-land", "--remote", "--json", "--command", "SELECT name FROM d1_migrations ORDER BY id"], { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] }));
       return requireMigrations(readdirSync("migrations").filter((name) => name.endsWith(".sql")), remote);
     }
-    case "smoke": return smoke();
+    case "smoke": return smoke(JSON.parse(readFileSync("../release.json", "utf8")).builds.client.artifacts);
     default: throw Error("Expected package, verify, migrations or smoke");
   }
 }

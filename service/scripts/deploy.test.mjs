@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { downloadReplays } from "./reverify-cache.mjs";
 import { verifyRuns } from "./reverify-pool.mjs";
-import { putGrounds } from "./grounds.mjs";
+import { groundAfter404, putGrounds } from "./grounds.mjs";
 import { r2Bucket } from "./r2.mjs";
 import { findVerdicts, replayInputs, replayPlan } from "./deploy-replays.mjs";
 import { listedReplays, settle, unexpectedFailures } from "./reverify.mjs";
@@ -138,18 +138,22 @@ test("release manifest requires a complete package and detects tampering or a di
 });
 
 test("production smoke rejects another release, HTML instead of game files and missing archives", async () => {
+  const wasm = Uint8Array.of(0, 97, 115, 109, 1, 0, 0, 0);
+  const artifacts = { "index.js": createHash("sha256").update("game").digest("hex"), "index.wasm": createHash("sha256").update(wasm).digest("hex") };
   const responseFor = (url) => {
     const path = new URL(url).pathname;
     if (path === "/deployment.txt") return new Response(sha);
     if (path.startsWith("/api/")) return Response.json({ board: "survival" });
-    if (path.endsWith(".wasm")) return new Response(new Uint8Array([0, 97, 115, 109]));
+    if (path.endsWith(".wasm")) return new Response(wasm);
     if (path.endsWith(".js")) return new Response("game", { headers: { "Content-Type": "application/javascript" } });
     return new Response("ok");
   };
-  await smoke("https://example.test", sha, responseFor);
-  await assert.rejects(smoke("https://example.test", "b".repeat(40), responseFor, { timeoutMs: 0 }), /another release/);
+  await smoke(artifacts, "https://example.test", sha, responseFor);
+  await assert.rejects(smoke(artifacts, "https://example.test", "b".repeat(40), responseFor, { timeoutMs: 0 }), /another release/);
+  await assert.rejects(smoke(artifacts, "https://example.test", sha, (url) =>
+    new URL(url).pathname.endsWith(".wasm") ? new Response(wasm.slice(0, 4)) : responseFor(url)), /different index.wasm bytes/);
   for (const path of ["/play/index.js", "/play/index.wasm", "/play/game/music.paq"]) {
-    await assert.rejects(smoke("https://example.test", sha, (url) => {
+    await assert.rejects(smoke(artifacts, "https://example.test", sha, (url) => {
       if (new URL(url).pathname === path) return new Response("<html>", { status: path.endsWith(".paq") ? 404 : 200 });
       return responseFor(url);
     }));
@@ -279,6 +283,35 @@ test("puts the grounds of runs production still has, removes those deleted meanw
   });
   assert.deepEqual(calls, { put: ["a", "b"], remove: ["b"], bake: ["c", "d"] });
   assert.deepEqual(result, { put: 2, removed: 1, baked: 1, failed: ["d"] });
+});
+
+test("ground cleanup follows the actual upload if the same public id is accepted again", async () => {
+  const snapshots = [[{ id: "run", storage: "first" }], [{ id: "run", storage: "second" }]];
+  const calls = [];
+  await putGrounds({
+    baked: ["run"],
+    runs: async () => snapshots.shift(),
+    put: async (_id, storage) => calls.push(["put", storage]),
+    remove: async (_id, storage) => calls.push(["remove", storage]),
+    bake: async (id) => { calls.push(["bake", id]); return true; },
+  });
+  assert.deepEqual(calls, [["put", "first"], ["remove", "first"], ["bake", "run"]]);
+});
+
+test("a ground 404 distinguishes a deleted run, a hidden stored file and a missing visible ground", async () => {
+  const has = async (storage) => storage === "present";
+  const check = (rows, ids) => groundAfter404("run", async () => rows, async () => ids, has);
+  assert.equal(await check([], []), true);
+  assert.equal(await check([{ id: "run", storage: "present" }], []), true);
+  assert.equal(await check([{ id: "run", storage: "missing" }], []), false);
+  assert.equal(await check([{ id: "run", storage: "present" }], ["run"]), false);
+});
+
+test("accepted payload identity invalidates old verdicts, including verdicts from before payload hashes", () => {
+  const saved = { old: { ok: true }, changed: { ok: true, payload_sha256: "a" }, same: { ok: true, payload_sha256: "b" } };
+  const result = settle(Object.keys(saved), saved, {old: "a", changed: "b", same: "b"});
+  assert.deepEqual(result.unsettled, ["old", "changed"]);
+  assert.deepEqual(result.settled, [{ id: "same", ...saved.same }]);
 });
 
 // The replay identity must cover what executes, not a hand-maintained path filter.

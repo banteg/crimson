@@ -198,3 +198,5 @@ def cmd_quest_publish(
     site = api.removesuffix("/api")
     url_path = body.get("url") or f"/custom/{digest[:12]}"
     typer.echo(f"published: {site}{url_path}")
+    if body.get("source_state") == "pending":
+        typer.echo("The clear is live. Its recipe will appear after the server checks it with the construction seed.")
