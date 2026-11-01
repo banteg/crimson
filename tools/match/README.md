@@ -35,6 +35,11 @@ The freeware build scan, single scratch and probe commands apply the port scope
 by default. Use `--scope all` to consult library, platform and unclassified
 functions. 1.3.1 remains a preservation reference.
 
+VC6 embeds a per-compilation number in symbols emitted from an anonymous
+namespace. Give out-of-line helpers and types a stable namespace when producing
+source-match evidence. Report refresh checks the COFF symbol table for this
+case so repeated builds can reproduce the whole-object receipt.
+
 For the canonical 1.9.93 build, the default `port` scope is defined in `analysis/matching_scope.json`. It
 contains game-owned `crimsonland.exe` logic before `0x00452ef0` and the
 Grim2D engine implementation in `grim.dll` before `0x1000a8d0`. It excludes:

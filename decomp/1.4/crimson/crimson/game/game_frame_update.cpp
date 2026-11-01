@@ -74,7 +74,7 @@ extern float freeware_transition_alpha;
 
 #endif
 }
-namespace {
+namespace frame_update140 {
 #define P(i) player_state_table[i].freeware
 #define XP FIELD(P(0).experience, run.experience)
 #define PERK(i) FIELD(P(0).perks[i], run.perks[i])
@@ -446,7 +446,8 @@ __forceinline void sprite(const char *name, float x, float y, float w, float h, 
 #include "frame_level.inc"
 #include "frame_menu.inc"
 #include "frame_overlays.inc"
-} // namespace
+} // namespace frame_update140
+using namespace frame_update140;
 
 extern "C" unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT

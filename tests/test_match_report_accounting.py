@@ -1,3 +1,4 @@
+import struct
 from copy import deepcopy
 from typing import Any
 
@@ -5,6 +6,20 @@ import pytest
 
 from crimson_re import match_report
 from crimson_re import match_report_accounting as accounting
+
+
+def test_vc6_compile_generated_namespace_rejected_only_in_symbol_names() -> None:
+    name = b"?range@?%creature_update_all.cpp2259721399@@YAHXZ"
+    # One long COFF symbol followed by a second, unreferenced string.
+    def obj(symbol: bytes, other: bytes) -> bytes:
+        strings = symbol + b"\0" + other + b"\0"
+        header = struct.pack("<HHIIIHH", 0x14C, 0, 0, 20, 1, 0, 0)
+        record = struct.pack("<IIIhHBB", 0, 4, 0, 0, 0x20, 2, 0)
+        return header + record + struct.pack("<I", len(strings) + 4) + strings
+
+    with pytest.raises(ValueError, match="unstable anonymous namespace"):
+        accounting._check_source_object_names(obj(name, b"elsewhere"), "creature_update_all")
+    accounting._check_source_object_names(obj(b"?range@creature_update140@@YAHXZ", name), "creature_update_all")
 
 
 def function() -> dict[str, Any]:

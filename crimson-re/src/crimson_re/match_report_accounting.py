@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +56,16 @@ def identities(
     }
 
 
+def _check_source_object_names(data: bytes, function: str) -> None:
+    # VC6 gives an emitted anonymous namespace a new decimal suffix on every
+    # compile. Preserve full COFF receipts, including symbol and relocation identity.
+    if b"@?%" in data:
+        for symbol in matchlib.parse_coff_object(data).symbols:
+            if re.search(r"@\?%[^@]+\.(?:cpp|cxx|cc)\d+@", symbol.name, re.IGNORECASE):
+                raise ValueError(f"{function}: VC6 generated an unstable anonymous namespace symbol {symbol.name!r}. "
+                                 "Give the emitted helper a named namespace or file-local C++ linkage.")
+
+
 def candidate_evidence(status: matchlib.ScratchStatus | None) -> dict[str, Any]:
     if status is None:
         return {"proof": None}
@@ -66,7 +77,10 @@ def candidate_evidence(status: matchlib.ScratchStatus | None) -> dict[str, Any]:
     object_path = matchlib._scratch_object_path(status.config)
     if not object_path.is_file():
         raise ValueError(f"missing candidate object: {status.config.function}")
-    object_hash = matchlib.coff_sha256(object_path.read_bytes())
+    raw = object_path.read_bytes()
+    if status.config.archive is None and status.config.import_thunk is None:
+        _check_source_object_names(raw, status.config.function)
+    object_hash = matchlib.coff_sha256(raw)
     return {"proof": {
         "state": status.state,
         "target_size": status.target_size,

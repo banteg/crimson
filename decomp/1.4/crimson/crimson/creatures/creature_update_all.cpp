@@ -16,14 +16,15 @@ void creature_handle_death(int, int, unsigned char);
 void fx_queue_add_random(const vec2f_t *);
 void freeware_combat_sound(int, float);
 }
-namespace {
+namespace creature_update140 {
 const float pi = 3.14159274f, half_pi = 1.57079637f;
 float range(vec2f_t a, vec2f_t b) {
     float x = a.x - b.x, y = a.y - b.y;
     return (float)sqrt((double)x * x + (double)y * y);
 }
-} // namespace
+} // namespace creature_update140
 extern "C" void creature_update_all() {
+    using namespace creature_update140;
     if (bonus_freeze_timer > 0)
         return;
     for (int i = 0; i < 512; ++i) {
