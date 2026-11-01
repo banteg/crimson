@@ -60,6 +60,11 @@ bool input_move_up_active(), input_move_down_active(), input_move_left_active(),
 bool input_aim_pov_left_active(), input_aim_pov_right_active();
 }
 
+#if CL_BUILD == 10002
+static const unsigned char player_arrow_keys[] = {0xc8, 0xd0, 0xcb, 0xcd};
+static const unsigned char player_wasd_keys[] = {0x11, 0x1f, 0x1e, 0x20};
+#endif
+
 namespace {
 const float pi = 3.14159274f, quarter = .785398185f, half = 1.57079637f;
 #define P PLAYER(current_player_index)
@@ -69,9 +74,7 @@ __forceinline float distance(vec2f_t a, vec2f_t b) {
 }
 __forceinline bool direction_key(int key) {
 #if CL_BUILD == 10002
-    static const unsigned char arrows[] = {0xc8, 0xd0, 0xcb, 0xcd};
-    static const unsigned char wasd[] = {0x11, 0x1f, 0x1e, 0x20};
-    return KEY(arrows[key]) || KEY(wasd[key]);
+    return KEY(player_arrow_keys[key]) || KEY(player_wasd_keys[key]);
 #else
     return KEY(P.keys[key]) || (config_player_count == 1 && KEY(PLAYER(1).keys[key]));
 #endif
