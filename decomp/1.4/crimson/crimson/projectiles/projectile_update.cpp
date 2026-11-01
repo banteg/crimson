@@ -498,6 +498,13 @@ __forceinline void particles() {
 }
 } // namespace
 extern "C" void projectile_update() {
+#if FREEWARE_EDITION == 10002
+    // 0x402ca0 decays the muzzle flash before projectiles, including during the dying phase.
+    float &flash = player_state_table[current_player_index].freeware.muzzle_flash;
+    flash -= frame_dt * 2;
+    if (flash < 0)
+        flash = 0;
+#endif
     bullets();
     rockets();
     for (int i = 0; i < 384; ++i) {
