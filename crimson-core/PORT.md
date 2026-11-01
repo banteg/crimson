@@ -625,6 +625,8 @@ the 1.3.0 Level Test controls and the limits of the recovery.
 
 Compare the shared client against both original executables and exercise the four
 numbered maps with `uv run python crimson-core/checks/freeware_early.py game_bins/crimsonland --web`.
+The check also compares the weapons, perk drafts, grants and level-up thresholds against the two original executables.
+Supply `--browser /path/to/chromium` to run the WebAssembly checks in a headless browser.
 
 ## Freeware 1.4.0
 
