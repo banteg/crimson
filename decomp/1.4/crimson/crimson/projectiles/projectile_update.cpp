@@ -2,6 +2,7 @@
 #include "../effects/freeware_ice_mark.h"
 #include "../ui/freeware_ui.h"
 #include "crimsonland_types.h"
+#include "freeware_edition.h"
 #include <math.h>
 extern "C" {
 extern projectile_pool_t projectile_pool;
@@ -108,6 +109,20 @@ __forceinline void hit(projectile_t &shot, int id) {
     if (range < 50)
         range = 50;
     float damage = 100 / range * 30 + 10;
+#if FREEWARE_EDITION == 10002
+    // 0x402f3d..0x402f76 subtracts range-scaled damage directly.
+    if (type == 2) damage *= .6f;
+    else if (type == 4) damage *= 4.6f;
+    else if (type == 6) damage *= 9.6f;
+    c.health -= damage;
+    float angle = shot.angle - half_pi + (crt_rand() % 20 - 10) * .1f;
+    float dx = (float)cos(angle) * 20, dy = (float)sin(angle) * 20;
+    if (type != 6) {
+        blood(c.position);
+        blood(offset(c.position, dx * 1.5f, dy * 1.5f));
+        blood(offset(c.position, dx * 2.5f, dy * 2.5f));
+    }
+#else
     switch (type) {
     case 2:
         damage *= 1.2f;
@@ -143,18 +158,31 @@ __forceinline void hit(projectile_t &shot, int id) {
     }
     c.ai_mode = 1;
     impact_marks(shot, c);
-    if (freeware_hit_sound_timer > 0 || config_game_mode == 2)
+#endif
+    if (FREEWARE_EDITION == 10002) {
+        if (freeware_hit_sound_timer <= 0 && config_game_mode != 2)
+            freeware_combat_sound(31, 1);
+        else if (bonus_fire_bullets_timer == 0)
+            freeware_combat_sound(crt_rand() % 2, .45f);
+    } else if (freeware_hit_sound_timer > 0 || config_game_mode == 2)
         freeware_combat_sound(crt_rand() % 2, .45f);
     else
         freeware_combat_sound(31, 1);
     if (c.health <= 0) {
         if (c.death_timer == 16) {
-            if (bonus_freeze_timer > 0)
+            if (FREEWARE_EDITION != 10002 && bonus_freeze_timer > 0)
                 scatter_shards(c.position, 6);
             freeware_combat_sound(crt_rand() % 4 + 3, .45f);
             creature_handle_death(id, current_player_index, 1);
         }
+#if FREEWARE_EDITION == 10002
+        float angle = shot.angle - half_pi + (crt_rand() % 20 - 10) * .1f;
+        float x = (float)cos(angle) * 20, y = (float)sin(angle) * 20;
+        blood(offset(c.position, x, y));
+        blood(offset(c.position, x * 2, y * 2));
+#else
         --creature_spawned_count;
+#endif
         c.death_timer -= frame_dt * 20;
     }
 }
@@ -183,17 +211,17 @@ __forceinline void bullets() {
         case 4:
             steps = 55;
             break;
-        case 7:
+        case freeware_rules::plasma_round:
             steps = 30;
             break;
-        case 9:
+        case freeware_rules::plasma_minigun_round:
             steps = 35;
             break;
         case 10:
             steps = 215;
             break;
         case 17:
-            steps = 15;
+            steps = FREEWARE_EDITION == 10300 ? 50 : 15;
             break;
         case 18:
             steps = 10;
@@ -233,7 +261,7 @@ __forceinline void bullets() {
             int id = creature_find_in_radius(&s.position, type == 18 ? 16.f : 0.f);
             if (id >= 0) {
                 hit(s, id);
-                if (s.fields.damage_pool <= 0)
+                if (FREEWARE_EDITION == 10002 || s.fields.damage_pool <= 0)
                     break;
             }
         }

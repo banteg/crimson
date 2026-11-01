@@ -1,10 +1,16 @@
-#include "cl_build.h"
+#include "freeware_edition.h"
 #include <stdio.h>
 
 extern "C" char freeware_text_buffer[];
 
 extern "C" char *weapon_name_get(int weapon_id)
 {
+#if FREEWARE_EDITION == 10002
+    // Inlined into the HUD at 0x40e24b. The hidden shot has no display name.
+    static const char *names[] = {"Unknown", "Pistol", "AutoRifle", "Shotgun", "Flamethrower", "High RPM Rifle",
+                                  "Plasma Rifle", "Plasma Rifle (twin mode)", "Plasma Minigun"};
+    sprintf(freeware_text_buffer, "%s", names[weapon_id >= 1 && weapon_id <= 8 ? weapon_id : 0]);
+#else
     if (weapon_id == 1)
         sprintf(freeware_text_buffer, "Pistol");
     else if (weapon_id == 2)
@@ -12,7 +18,7 @@ extern "C" char *weapon_name_get(int weapon_id)
     else if (weapon_id == 3)
         sprintf(freeware_text_buffer, "Shotgun");
     else if (weapon_id == 4)
-#if CL_BUILD == 10300
+#if FREEWARE_EDITION == 10300
         sprintf(freeware_text_buffer, "Sewed-off Shotgun");
 #else
         sprintf(freeware_text_buffer, "Sawed-off Shotgun");
@@ -39,17 +45,17 @@ extern "C" char *weapon_name_get(int weapon_id)
         sprintf(freeware_text_buffer, "Mean Minigun");
     else if (weapon_id == 14)
         sprintf(freeware_text_buffer, "Plasma Shotgun");
-#if CL_BUILD == 10300
+#if FREEWARE_EDITION == 10300
     else if (weapon_id == 17)
         sprintf(freeware_text_buffer, "Plague Gun");
 #endif
     else if (weapon_id == 16)
-#if CL_BUILD == 10300
+#if FREEWARE_EDITION == 10300
         sprintf(freeware_text_buffer, "The Secret Weapon");
 #else
         sprintf(freeware_text_buffer, "Rocket Blast");
 #endif
-#if CL_BUILD == 10400
+#if FREEWARE_EDITION == 10400
     else if (weapon_id == 20)
         sprintf(freeware_text_buffer, "The Grim Weapon");
     else if (weapon_id == 18)
@@ -61,5 +67,6 @@ extern "C" char *weapon_name_get(int weapon_id)
 #endif
     else
         sprintf(freeware_text_buffer, "Unknown");
+#endif
     return freeware_text_buffer;
 }

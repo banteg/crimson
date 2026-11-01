@@ -40,9 +40,7 @@ __forceinline void collect() {
         int weapon = crt_rand() % 8 + 1;
         while (weapon == PLAYER.weapon)
             weapon = crt_rand() % 7 + 1;
-        static const float clips[] = {15, 30, 15, 30, 20, 20, 20, 30};
-        PLAYER.weapon = weapon;
-        PLAYER.ammo = PLAYER.clip_size = clips[weapon - 1];
+        weapon_assign_player(current_player_index, weapon);
 #else
         weapon_assign_player(current_player_index, PICKUP_WEAPON);
 #endif

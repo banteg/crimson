@@ -11,6 +11,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from freeware_arsenal_cases import check_hits, check_weapons
+
 from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -38,15 +40,24 @@ def check(edition, install, tmp, web):
             raise SystemExit(f"{name} is required")
         return result
 
-    sources = [*game_flags(ROOT, edition), *game_sources(ROOT, tmp), ROOT / "crimson-core/checks/freeware_early.cpp"]
+    sources = [
+        *game_flags(ROOT, edition),
+        *game_sources(ROOT, tmp),
+        ROOT / "crimson-core/checks/freeware_early.cpp",
+        ROOT / "crimson-core/checks/freeware_arsenal.cpp",
+    ]
     binary = tmp / edition
     subprocess.run([tool("clang++"), *sources, "-o", binary], check=True)
     lines = subprocess.check_output([binary, install], text=True).splitlines()
+    check_weapons(exe, edition, lines)
+    check_hits(exe, edition, lines)
     if web:
         js = tmp / f"early-{edition}.js"
         subprocess.run([tool("em++"), *sources, "-sENVIRONMENT=node", "-sNODERAWFS", "-o", js], check=True)
         wasm = subprocess.check_output([tool("node"), js, install], text=True).splitlines()
         # Compare the original-facing observations. Both runs also assert the complete menu and score cycle.
+        check_weapons(exe, edition, wasm)
+        check_hits(exe, edition, wasm)
         prefixes = ("spawn ", "wall ")
         assert [s for s in lines if s.startswith(prefixes)] == [s for s in wasm if s.startswith(prefixes)]
     early = edition == "1.0.2"

@@ -4,10 +4,8 @@
 #include <cstdio>
 #include <cstring>
 
-namespace freeware {
-void play_sound(Sound) {}
-void play_original_sample(int) {}
-}
+void check_arsenal();
+void check_weapon_hits();
 extern "C" {
 extern float freeware_elapsed_seconds;
 extern unsigned freeware_rng_state;
@@ -81,6 +79,8 @@ static void play_cycle(bool survival) {
 int main(int argc, char **argv) {
   using namespace freeware;
   assert(argc == 2);
+  check_arsenal();
+  check_weapon_hits();
   Game g;
   g.asset_dir = argv[1];
   g.load_level_brushes();

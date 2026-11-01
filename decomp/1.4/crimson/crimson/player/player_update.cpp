@@ -1,5 +1,6 @@
 // crimson.exe 1.4.0, 0x4126e0..0x41568a.
 #include "freeware_level.h"
+#include "freeware_edition.h"
 #include <math.h>
 #ifndef _MSC_VER
 #define __forceinline inline
@@ -126,7 +127,8 @@ __forceinline void eject(const vec2f_t &shell, int sound, float cooldown, float 
 __forceinline bool fire() {
     const float heading = P.aim_heading;
     const double angle = (double)heading - half - .150915f;
-    vec2f_t muzzle = {P.position.x + (float)(cos(angle) * 16), P.position.y + (float)(sin(angle) * 16)};
+    const float barrel = FREEWARE_EDITION == 10002 ? 15.f : 16.f;
+    vec2f_t muzzle = {P.position.x + (float)(cos(angle) * barrel), P.position.y + (float)(sin(angle) * barrel)};
     vec2f_t dir = {(float)cos(heading), (float)sin(heading)};
     vec2f_t shell;
     shell.x = P.position.x + (crt_rand() % 10) * dir.x * .5f;
@@ -134,10 +136,39 @@ __forceinline bool fire() {
     if (P.muzzle_flash > 1)
         P.muzzle_flash = 1;
     float ammo = 1;
+#if FREEWARE_EDITION == 10002
+    // The 1.0.2 player grows spread before sampling the shot (0x408e0d).
+    P.spread += time_scale_factor * frame_dt * 150;
+    if (P.spread > time_scale_factor * 2)
+        P.spread = time_scale_factor * 2;
+    P.spread *= time_scale_factor;
+    switch (P.weapon) {
+    case 1: projectile_spawn(&muzzle, jitter(200, .001f), 4); eject(shell, 2, .7117f, .12f); break;
+    case 2: projectile_spawn(&muzzle, jitter(200, .001f), 1); eject(shell, 7, .117f, .07f); break;
+    case 3: pellets(muzzle, 10, 2, .001f); eject(shell, 15, .688117f, .12f); break;
+    case 4:
+        fx_spawn_particle(&muzzle, heading - half, &P.movement, 1);
+        shot_sound(14);
+        ammo = .2f;
+        P.cooldown = .008113f;
+        break;
+    case 5: projectile_spawn(&muzzle, jitter(20, .003f), 2); eject(shell, 26, .088117f, .022f); break;
+    case 6: projectile_spawn(&muzzle, jitter(20, .003f), 6); eject(shell, 8, .290812f, 0); break;
+    case 7:
+        projectile_spawn(&muzzle, jitter(20, .003f) - .31415927f, 6);
+        projectile_spawn(&muzzle, jitter(20, .003f) + .31415927f, 6);
+        eject(shell, 8, .340812f, 0);
+        ammo = 2;
+        break;
+    case 8: projectile_spawn(&muzzle, jitter(20, .003f), 8); eject(shell, 8, .109081f, 0); break;
+    case 17: projectile_spawn(&muzzle, heading, 3); eject(shell, 7, .688117f, 0); break;
+    default: ammo = 0;
+    }
+#else
     if (P.weapon == 1) {
         projectile_spawn(&muzzle, jitter(200, .001f), 4);
         smoke_pair(muzzle, dir, .23f, .213f);
-        eject(shell, 2, .7117f, .22f);
+        eject(shell, 2, .7117f, FREEWARE_EDITION == 10300 ? .12f : .22f);
     } else if (P.weapon == 2) {
         smoke_pair(muzzle, dir, .23f, .213f);
         projectile_spawn(&muzzle, jitter(200, .001f), 1);
@@ -148,12 +179,12 @@ __forceinline bool fire() {
         eject(shell, 15, .688117f, .12f);
     } else if (P.weapon == 4) {
         smoke_pair(muzzle, dir, .26f, .233f);
-        pellets(muzzle, 12, 2, .0033f);
+        pellets(muzzle, FREEWARE_EDITION == 10300 ? 16 : 12, 2, .0033f);
         eject(shell, 15, .788117f, .12f);
     } else if (P.weapon == 5) {
         fx_spawn_particle(&muzzle, heading - half, &P.movement, 1);
         shot_sound(14);
-        ammo = .1f;
+        ammo = FREEWARE_EDITION == 10300 ? .15f : .1f;
         P.cooldown = .008113f;
     } else if (P.weapon == 15) {
         int slot = fx_spawn_particle(&muzzle, heading - half, &P.movement, 1);
@@ -176,7 +207,7 @@ __forceinline bool fire() {
         eject(shell, 8, .640812f, .32f);
     } else if (P.weapon == 9) {
         projectile_spawn(&muzzle, jitter(20, .003f), 9);
-        eject(shell, 12, .109081f, .097f);
+        eject(shell, FREEWARE_EDITION == 10300 ? 8 : 12, .109081f, .097f);
     } else if (P.weapon == 10) {
         smoke_pair(muzzle, dir, .33f, .263f);
         projectile_spawn(&muzzle, jitter(20, .003f), 10);
@@ -199,10 +230,12 @@ __forceinline bool fire() {
     } else if (P.weapon == 14) {
         pellets(muzzle, 14, 9, .0013f);
         eject(shell, 15, .288117f, .1f);
-    } else if (P.weapon == 17 && freeware_secret_weapon_unlocked) {
+    } else if (P.weapon == 17 && (FREEWARE_EDITION == 10300 || freeware_secret_weapon_unlocked)) {
         projectile_spawn(&muzzle, jitter(20, .012f), 17);
         eject(shell, 8, .2f, .04f);
-    } else if (P.weapon == 18 && freeware_secret_weapon_unlocked) {
+    }
+#if FREEWARE_EDITION >= 10400
+    else if (P.weapon == 18 && freeware_secret_weapon_unlocked) {
         if (!freeware_rainbow_enabled || !freeware_rainbow_armed || P.health >= 5)
             return false;
         shot_sound(8);
@@ -219,6 +252,7 @@ __forceinline bool fire() {
         ammo = .15f;
         P.cooldown = .1613f;
     }
+#endif
     if (P.perks[perk_id_sharpshooter] < 1)
         P.spread += time_scale_factor * frame_dt * 150;
     if (P.spread > time_scale_factor * 2)
@@ -226,10 +260,11 @@ __forceinline bool fire() {
     P.spread *= time_scale_factor;
     if (P.perks[perk_id_ammo_maniac] > 0)
         ammo *= .8f;
+#endif
     P.ammo -= ammo;
     if (P.perks[perk_id_fastshot] > 0)
         P.cooldown *= .88f;
-    if (P.perks[perk_id_sharpshooter] > 0)
+    if (FREEWARE_EDITION != 10002 && P.perks[perk_id_sharpshooter] > 0)
         P.cooldown *= 1.05f;
     if (P.ammo <= 0)
         player_start_reload();
@@ -242,7 +277,7 @@ extern "C" void player_update() {
         return;
     if (KEY(P.keys[0]) || KEY(P.keys[1]) || KEY(P.keys[2]) || KEY(P.keys[3]))
         freeware_player_moved = 1;
-    if (config_player_count == 1 && config_game_mode == 1) {
+    if (FREEWARE_EDITION >= 10400 && config_player_count == 1 && config_game_mode == 1) {
         if (P.health < 100 && distance(P.position, freeware_first_kill_position) >= 48)
             freeware_first_kill_xp = -10;
         if (distance(P.position, freeware_first_kill_position) < 48 && P.health < 5 &&
@@ -356,7 +391,11 @@ extern "C" void player_update() {
         }
         P.walk_phase += frame_dt * P.move_speed * 19;
     }
-    if (P.perks[perk_id_sharpshooter] < 1) {
+    if (FREEWARE_EDITION == 10002 && P.perks[perk_id_sharpshooter] > 0) {
+        P.spread -= frame_dt * 2;
+        if (P.spread < .25f)
+            P.spread = .25f;
+    } else if (P.perks[perk_id_sharpshooter] < 1) {
         P.spread -= frame_dt;
         if (P.spread < .5f)
             P.spread = .5f;

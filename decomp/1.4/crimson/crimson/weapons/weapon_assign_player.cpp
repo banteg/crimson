@@ -1,4 +1,5 @@
 #include "crimsonland_types.h"
+#include "freeware_edition.h"
 
 #if CL_BUILD == 10400
 extern "C" player_state_t player_state_table[2];
@@ -11,11 +12,16 @@ extern "C" unsigned char freeware_secret_weapon_unlocked;
 
 extern "C" void weapon_assign_player(int index, int weapon)
 {
-#if CL_BUILD == 10400
+#if FREEWARE_EDITION == 10400
     if (!freeware_secret_weapon_unlocked && (weapon == 18 || weapon == 17))
         return;
 #endif
     PLAYER(index).weapon = weapon;
+#if FREEWARE_EDITION == 10002
+    static const float clips[] = {15, 30, 15, 30, 20, 20, 20, 30};
+    if (weapon >= 1 && weapon <= 8)
+        PLAYER(index).clip_size = clips[weapon - 1];
+#else
     if (weapon == 1)
         PLAYER(index).clip_size = 15.0f;
     else if (weapon == 2)
@@ -48,7 +54,7 @@ extern "C" void weapon_assign_player(int index, int weapon)
         PLAYER(index).clip_size = 20.0f;
     else if (weapon == 15)
         PLAYER(index).clip_size = 30.0f;
-#if CL_BUILD == 10400
+#if FREEWARE_EDITION == 10400
     else if (weapon == 16)
         PLAYER(index).clip_size = 5.0f;
     else if (weapon == 18)
@@ -60,6 +66,7 @@ extern "C" void weapon_assign_player(int index, int weapon)
 #else
     else if (weapon == 16)
         PLAYER(index).clip_size = 1.0f;
+#endif
 #endif
     PLAYER(index).ammo = PLAYER(index).clip_size;
 }

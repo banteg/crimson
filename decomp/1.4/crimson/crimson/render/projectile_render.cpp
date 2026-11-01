@@ -1,5 +1,6 @@
 // crimson.exe 1.4.0, 0x40b570.
 #include "world_render.h"
+#include "freeware_edition.h"
 #include <math.h>
 extern "C" {
 extern projectile_pool_t projectile_pool;
@@ -84,7 +85,7 @@ __forceinline void trail(const projectile_t &p, float width, vec2f_t (&point)[4]
 __forceinline void trails(bool fire) {
     for (projectile_t *p = projectile_pool; p < projectile_pool + 64; ++p) {
         const projectile_type_id_t &type = p->fields.type_id;
-        if (!p->active || type == 7 || type == 9 || (!fire && (type == 18 || type == 17)))
+        if (!p->active || type == freeware_rules::plasma_round || type == freeware_rules::plasma_minigun_round || (!fire && (type == 18 || type == 17)))
             continue;
         if (type == 0)
             p->active = 0;
@@ -229,9 +230,9 @@ extern "C" void projectile_render() {
     }
     begin();
     for (projectile_t *p = projectile_pool; p < projectile_pool + 64; ++p)
-        if (p->active && (p->fields.type_id == 7 || p->fields.type_id == 9)) {
+        if (p->active && (p->fields.type_id == freeware_rules::plasma_round || p->fields.type_id == freeware_rules::plasma_minigun_round)) {
             if (p->fields.life_timer == .4f) {
-                if (p->fields.type_id == 7)
+                if (p->fields.type_id == freeware_rules::plasma_round)
                     plasma(*p, 2.5f, 8, 22, 56, .45f, 256, .3f);
                 else
                     plasma(*p, 2.1f, 3, 12, 16, .5f, 120, .15f);
@@ -272,7 +273,7 @@ extern "C" void projectile_render() {
     world_sheet(freeware_bullet_icon, "bullet_i");
     begin();
     for (projectile_t *b = projectile_pool; b < projectile_pool + 64; ++b)
-        if (b->active && b->fields.life_timer == .4f && b->fields.type_id != 7 && b->fields.type_id != 9) {
+        if (b->active && b->fields.life_timer == .4f && b->fields.type_id != freeware_rules::plasma_round && b->fields.type_id != freeware_rules::plasma_minigun_round) {
             world_angle(b->angle);
             if (b->fields.type_id == 1)
                 centered(b->position, 6);
