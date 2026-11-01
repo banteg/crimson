@@ -9,7 +9,9 @@ import struct
 import subprocess
 import sys
 import tempfile
-from html import unescape
+import time
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from freeware_acquisition_cases import check_acquisition, prepare_weapon_maps
@@ -63,6 +65,67 @@ def check_deaths(exe, edition, lines):
             rows.remove(expected)
     assert not rows
     print(f"{edition}: 10 lethal hits matched original health, weapon and game state")
+
+
+def run_browser_probe(browser, js):
+    # Report from Emscripten's postRun. Chrome's --dump-dom can fail in its teardown even after a successful run.
+    page = js.with_suffix(".html")
+    page.write_text(
+        '<meta charset="utf-8"><script>const lines=[];var Module={arguments:["/"],print:s=>lines.push(s),'
+        'postRun:[()=>fetch("/result",{method:"POST",body:lines.join("\\n")})]};</script>'
+        f'<script src="{js.name}"></script>',
+    )
+    output = []
+
+    class Handler(SimpleHTTPRequestHandler):
+        def do_GET(self):
+            if self.path not in (f"/{page.name}", f"/{js.name}"):
+                self.send_error(404)
+                return
+            super().do_GET()
+
+        def do_POST(self):
+            if self.path != "/result" or self.headers.get("Origin") != origin:
+                self.send_error(403)
+                return
+            lines = self.rfile.read(int(self.headers["Content-Length"])).decode().splitlines()
+            self.send_response(204)
+            self.end_headers()
+            output.append(lines)
+
+        def log_message(self, *_):
+            pass
+
+    with ThreadingHTTPServer(("127.0.0.1", 0), partial(Handler, directory=js.parent)) as server:
+        origin = f"http://127.0.0.1:{server.server_port}"
+        server.timeout = 0.25
+        with subprocess.Popen(
+            [
+                browser,
+                "--headless",
+                "--disable-gpu",
+                "--no-first-run",
+                "--no-default-browser-check",
+                f"--user-data-dir={js.parent / (js.stem + '-profile')}",
+                f"{origin}/{page.name}",
+            ],
+            stdout=subprocess.DEVNULL,
+        ) as process:
+            try:
+                deadline = time.monotonic() + 120
+                while not output:
+                    if process.poll() is not None:
+                        raise RuntimeError(f"{js.stem}: Chrome exited with {process.returncode} before postRun")
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError(f"{js.stem}: timed out waiting for the WebAssembly probe")
+                    server.handle_request()
+            finally:
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+    return output[0]
 
 
 def check(edition, install, tmp, web, browser):
@@ -141,28 +204,7 @@ def check(edition, install, tmp, web, browser):
             check=True,
         )
         if browser:
-            page = tmp / "probe.html"
-            page.write_text(
-                '<meta charset="utf-8"><pre id="output"></pre><script>'
-                'var Module={arguments:["/"],print:s=>document.getElementById("output").append(s+"\\n"), '
-                'postRun:[()=>Module.print("probe complete")]};</script>'
-                f'<script src="{js.name}"></script>',
-            )
-            dom = subprocess.check_output(
-                [
-                    browser,
-                    "--headless",
-                    "--disable-gpu",
-                    "--virtual-time-budget=20000",
-                    f"--user-data-dir={tmp / 'chrome'}",
-                    "--dump-dom",
-                    page.as_uri(),
-                ],
-                text=True,
-                timeout=120,
-            )
-            wasm = unescape(dom.split('<pre id="output">', 1)[1].split("</pre>", 1)[0]).splitlines()
-            assert wasm and wasm[-1] == "probe complete", f"{edition} browser probe did not finish"
+            wasm = run_browser_probe(browser, js)
         else:
             wasm = subprocess.check_output([tool("node"), js, "/"], text=True).splitlines()
         compare_combat(wasm)
