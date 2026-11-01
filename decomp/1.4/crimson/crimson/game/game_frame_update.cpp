@@ -92,13 +92,12 @@ enum { config_player_count = 1, screen_width = 640, screen_height = 480 };
 #ifndef CRIMSON_FREEWARE_CLIENT
 enum { frame_font_scale = CL_BUILD == 10002 ? 0x11 : 0x18, frame_src_blend = CL_BUILD == 10002 ? 0x0d : 0x13,
        frame_dst_blend = CL_BUILD == 10002 ? 0x0e : 0x14 };
-__forceinline void frame_bind_texture(int handle) {
+// Keep the virtual receiver and texture lookup in the same call expression.
 #if CL_BUILD < 10400
-    grim_interface_ptr->grim_bind_texture(handle);
+#define frame_bind_texture(handle) grim_interface_ptr->grim_bind_texture(handle)
 #else
-    grim_interface_ptr->grim_bind_texture(handle, 0);
+#define frame_bind_texture(handle) grim_interface_ptr->grim_bind_texture(handle, 0)
 #endif
-}
 #endif
 #define XP FIELD(P(0).experience, run.experience)
 #define PLAYER_PERK(player, perk) FIELD(P(player).perks[perk], run.perks[perk])
