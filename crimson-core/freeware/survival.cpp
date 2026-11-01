@@ -173,7 +173,8 @@ void Game::update_creatures(float dt) {
   player_state_table[0].freeware.experience = run.experience;
   creature_update_all();
   run.experience = player_state_table[0].freeware.experience;
-  for (int i = 0; i < players(); ++i)
+  // 1.3.0 also retargets and damages the second record during solo play after player one dies.
+  for (int i = 0; i < (FREEWARE_EDITION == 10300 ? 2 : players()); ++i)
     actor(i).health = player_state_table[i].freeware.health;
 }
 void Game::update_projectiles(float dt) {

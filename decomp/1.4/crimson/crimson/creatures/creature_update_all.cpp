@@ -1,21 +1,46 @@
 #include "freeware_edition.h"
 // 0x40d8c0. Corpse retirement is a separate pass inside creature rendering (0x40fd10).
-#include "crimsonland_types.h"
+#include "freeware_level.h"
 #include <math.h>
 extern "C" {
 extern creature_t creature_pool[512];
+#if CL_BUILD < 10400
+extern freeware_player_t player_state_table[2];
+#define PLAYER(i) player_state_table[i]
+#else
 extern player_state_t player_state_table[2];
+#define PLAYER(i) player_state_table[i].freeware
+#endif
 extern float frame_dt, bonus_freeze_timer, freeware_simulation_clock, freeware_berserk_timer;
 extern int plaguebearer_infection_count, current_player_index;
 extern game_mode_id_t config_game_mode;
 extern unsigned char freeware_game_active;
 int creature_spawn(const vec2f_t *, const effect_color_t *, int);
+#if CL_BUILD == 10300
+float angle_approach(float *, float);
+#else
 float angle_approach(float *, float, float);
+#endif
 int plaguebearer_spread_infection(int);
 int crt_rand();
+#if CL_BUILD == 10300
+void creature_handle_death(int, int);
+#else
 void creature_handle_death(int, int, unsigned char);
+#endif
 void fx_queue_add_random(const vec2f_t *);
+#if CL_BUILD < 10400
+int sfx_play_panned(int, float, float);
+#define attack_sound(id) sfx_play_panned(id, .45f, .5f)
+extern int perk_id_almost_invisible, perk_id_radioactive, perk_id_reserved_22;
+#define PERK_ID(name) perk_id_##name
+#define CONTACT_IMMUNITY perk_id_reserved_22
+#else
 void freeware_combat_sound(int, float);
+#define attack_sound(id) freeware_combat_sound(id, .45f)
+#define PERK_ID(name) freeware_rules::name
+#define CONTACT_IMMUNITY 22
+#endif
 }
 namespace creature_update140 {
 const float pi = 3.14159274f, half_pi = 1.57079637f;
@@ -32,11 +57,12 @@ extern "C" void creature_update_all() {
         creature_t &c = creature_pool[i];
         if (!c.active)
             continue;
+#if FREEWARE_EDITION != 10002
         if (c.health <= 0 && c.death_timer == 16)
             c.death_timer -= frame_dt;
         int target = c.freeware.player;
-        float dist = range(c.position, player_state_table[target].freeware.position);
-#if defined(FREEWARE_EDITION) && FREEWARE_EDITION < 10400
+        float dist = range(c.position, PLAYER(target).position);
+#if FREEWARE_EDITION == 10300
         if (config_game_mode == 3) {
 #else
         if (config_game_mode != 2) {
@@ -46,10 +72,10 @@ extern "C" void creature_update_all() {
             if (!c.ai_mode)
                 continue;
         }
-        if (FREEWARE_EDITION != 10002 && c.hit_flash_timer != -1) {
+        if (c.hit_flash_timer != -1) {
             c.hit_flash_timer += frame_dt;
             if (c.hit_flash_timer > 4) {
-                if (freeware_game_active) {
+                if (FREEWARE_EDITION == 10300 || freeware_game_active) {
                     effect_color_t color = {.8f, .8f, .8f, 1};
                     int child = creature_spawn(&c.position, &color, 1);
                     if (child != -1) {
@@ -60,10 +86,13 @@ extern "C" void creature_update_all() {
                 c.hit_flash_timer -= 4;
             }
         }
-        if (FREEWARE_EDITION != 10002 && c.hit_flash_timer > 2.5f)
+        if (c.hit_flash_timer > 2.5f)
             continue;
-        if (FREEWARE_EDITION != 10002 && player_state_table[target].freeware.health <= 0)
+        if (PLAYER(target).health <= 0)
             c.freeware.player = target = 1 - target;
+#else
+        int target = current_player_index;
+#endif
         if (c.death_timer != 16) {
             c.death_timer -= frame_dt * 28;
             c.vel_x = (float)(cos((double)c.freeware.heading - half_pi) * c.death_timer * frame_dt * 9);
@@ -72,39 +101,59 @@ extern "C" void creature_update_all() {
             c.pos_y -= c.vel_y;
             continue;
         }
+#if CL_BUILD == 10002
+        float &phase_timer = c.plague_timer;
+#else
+        float &phase_timer = c.anim_phase;
+#endif
         if (c.plague_infected) {
-            c.anim_phase -= frame_dt;
-            if (c.anim_phase < 0) {
+            phase_timer -= frame_dt;
+            if (phase_timer < 0) {
                 if (FREEWARE_EDITION == 10002)
-                    c.anim_phase = .5f;
+                    phase_timer = .5f;
                 else
-                    c.anim_phase += .5f;
+                    phase_timer += .5f;
                 c.health -= FREEWARE_EDITION == 10002 ? 5 : 15;
+#if FREEWARE_EDITION != 10002
                 c.ai_mode = 1;
+#endif
                 if (c.health < 0) {
 #if FREEWARE_EDITION == 10002
-                    player_state_table[current_player_index].freeware.experience += (int)c.freeware.reward;
+                    PLAYER(current_player_index).experience += (int)c.freeware.reward;
                     c.death_timer -= frame_dt;
 #else
                     ++plaguebearer_infection_count;
+#if CL_BUILD == 10300
+                    creature_handle_death(i, current_player_index);
+#else
                     creature_handle_death(i, current_player_index, 1);
-                    if (FREEWARE_EDITION >= 10400)
-                        freeware_combat_sound(28, (crt_rand() % 70) * .1f + .3f);
+#endif
+#if FREEWARE_EDITION >= 10400
+                    freeware_combat_sound(28, (crt_rand() % 70) * .1f + .3f);
+#endif
 #endif
                 }
                 fx_queue_add_random(&c.position);
             }
         }
-        freeware_player_t &p = player_state_table[target].freeware;
-        freeware_player_t &current = player_state_table[current_player_index].freeware;
+        freeware_player_t &p = PLAYER(target);
+        freeware_player_t &current = PLAYER(current_player_index);
+#if FREEWARE_EDITION < 10400
+        float angle = i * 3.7f * pi;
+#else
         double angle = i * (double)3.7f * pi;
+#endif
         float offset_scale = .85f;
         c.freeware.force_target = 0;
+#if FREEWARE_EDITION == 10002
+        float dist = range(c.position, p.position);
+#else
         if (config_game_mode == 3) {
             offset_scale = .35f;
             c.freeware.force_target = 1;
-        } else if (FREEWARE_EDITION != 10002 && player_state_table[0].freeware.perks[freeware_rules::almost_invisible])
+        } else if (PLAYER(0).perks[PERK_ID(almost_invisible)] > 0)
             angle += (1 - (sin(freeware_simulation_clock) * .35f + .5f) * .5f) * half_pi;
+#endif
         c.freeware.target.x = (float)(p.position.x + cos(angle) * dist * offset_scale);
         c.freeware.target.y = (float)(p.position.y + sin(angle) * dist * offset_scale);
         if (range(c.freeware.target, c.position) < 15)
@@ -115,12 +164,20 @@ extern "C" void creature_update_all() {
         c.freeware.heading = (float)heading;
 #else
         c.freeware.target_heading = (float)(heading + (c.plague_infected ? pi : 0));
+#if CL_BUILD == 10300
+        angle_approach(&c.freeware.heading, c.freeware.target_heading);
+#else
         angle_approach(&c.freeware.heading, c.freeware.target_heading, 0);
+#endif
 #endif
         c.vel_x = (float)(cos((double)c.freeware.heading - half_pi) * c.freeware.move_speed * frame_dt * 30);
         c.vel_y = (float)(sin((double)c.freeware.heading - half_pi) * c.freeware.move_speed * frame_dt * 30);
+#if FREEWARE_EDITION == 10300
+        freeware_current_map->move_with_collision(&c.position, &c.velocity, 8.f);
+#else
         c.pos_x += c.vel_x;
         c.pos_y += c.vel_y;
+#endif
 #if FREEWARE_EDITION == 10002
         // The early creatures also drift with their attack timer, even at zero pursuit speed.
         double phase = c.freeware.attack_cooldown * (double)12.566371f;
@@ -144,12 +201,14 @@ extern "C" void creature_update_all() {
         if (c.freeware.attack_cooldown < 0)
             c.freeware.attack_cooldown = 0;
         dist = range(c.position, p.position);
-        if (dist < 100 && current.perks[freeware_rules::radioactive] > 0) {
-            c.anim_phase -= frame_dt * 1.5f;
-            if (c.anim_phase < 0) {
-                c.anim_phase = .5f;
+        if (dist < 100 && current.perks[PERK_ID(radioactive)] > 0) {
+            phase_timer -= frame_dt * 1.5f;
+            if (phase_timer < 0) {
+                phase_timer = .5f;
                 c.health -= (100 - dist) * .3f;
+#if FREEWARE_EDITION != 10002
                 c.ai_mode = 1;
+#endif
                 if (c.health < 0) {
                     current.experience = (int)(current.experience + c.freeware.reward);
                     c.death_timer -= frame_dt;
@@ -163,15 +222,23 @@ extern "C" void creature_update_all() {
         }
         if (dist >= 30)
             continue;
-        if (p.health > 0) {
+        if (FREEWARE_EDITION < 10400 || p.health > 0) {
             if (c.freeware.attack_cooldown <= 0) {
-                freeware_combat_sound(crt_rand() % 4 + 9, .45f);
-                if (freeware_berserk_timer < 12 && current.shield <= 0) {
+                attack_sound(crt_rand() % 4 + 9);
+#if FREEWARE_EDITION == 10002
+                bool hurt = freeware_berserk_timer >= 0;
+#elif FREEWARE_EDITION == 10300
+                bool hurt = freeware_berserk_timer < 12 && !current.perks[CONTACT_IMMUNITY] && current.shield <= 0;
+#else
+                bool hurt = freeware_berserk_timer < 12 && current.shield <= 0;
+#endif
+                if (hurt)
                     p.health -= c.freeware.contact_damage;
+                if (FREEWARE_EDITION == 10002 || hurt) {
                     vec2f_t mark = p.position;
                     float dx = p.position.x - c.pos_x, dy = p.position.y - c.pos_y;
                     float length = (float)sqrt((double)dx * dx + (double)dy * dy);
-                    if (length > 0) {
+                    if (FREEWARE_EDITION < 10400 || length > 0) {
                         mark.x += dx / length * 3;
                         mark.y += dy / length * 3;
                     }
@@ -182,7 +249,7 @@ extern "C" void creature_update_all() {
             if (current.plaguebearer && (FREEWARE_EDITION == 10002 || (c.health < 150 && plaguebearer_infection_count < 50)))
                 c.plague_infected = 1;
         }
-        if (c.freeware.size <= 30) {
+        if (FREEWARE_EDITION != 10002 && c.freeware.size <= 30) {
             c.health = 0;
             c.death_timer -= frame_dt;
         }
