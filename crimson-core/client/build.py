@@ -138,23 +138,23 @@ def package(out, web):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", choices=["native", "web"], default="native")
-    parser.add_argument("--edition", choices=["classic", "1.4.0"], default="classic")
-    parser.add_argument("--game-dir", type=Path, help="original 1.4.0 install for the freeware assets")
+    parser.add_argument("--edition", choices=["classic", "1.0.2", "1.3.0", "1.4.0"], default="classic")
+    parser.add_argument("--game-dir", type=Path, help="original install of the selected freeware edition")
     parser.add_argument("--out", type=Path)
     parser.add_argument("--skip-game", action="store_true", help="Reuse the built game module")
     parser.add_argument("--package", action="store_true", help="Lay out a distributable build in build/dist")
     args = parser.parse_args()
-    if args.edition == "1.4.0":
+    if args.edition != "classic":
         if args.skip_game or args.package:
             parser.error("--skip-game and --package are available for the classic module only")
         sys.path.insert(0, str(CORE))
         from freeware.build import build
 
-        out = (args.out or CORE / "build/freeware-1.4.0" / args.target).resolve()
-        build(CORE.parent, args.target, out, args.game_dir)
+        out = (args.out or CORE / f"build/freeware-{args.edition}" / args.target).resolve()
+        build(CORE.parent, args.target, out, args.game_dir, args.edition)
         return
     if args.game_dir:
-        parser.error("--game-dir is used with --edition 1.4.0")
+        parser.error("--game-dir requires a freeware edition")
     out = (args.out or CORE / "build" / {"native": "app", "web": "web"}[args.target]).resolve()
     out.mkdir(parents=True, exist_ok=True)
     write_shader_headers(out)

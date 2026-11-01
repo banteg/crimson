@@ -114,7 +114,7 @@ void Game::reset_gameplay() {
 void Game::start() {
   reset_gameplay();
   ++generation;
-  std::printf("1.4.0 %s start %d\n", survival ? "survival" : "career", generation);
+  std::printf(FREEWARE_VERSION " %s start %d\n", survival ? "survival" : "career", generation);
 }
 
 // These callbacks are synchronous during combat, just as the original global pools are.

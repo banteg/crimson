@@ -315,7 +315,7 @@ __forceinline void die() {
     STATE_SINCE = CLOCK;
 #ifdef CRIMSON_FREEWARE_CLIENT
     G.death_clock = 0;
-    std::printf("1.4.0 death %d kills %.2f seconds\n", G.run.kills, SECONDS);
+    std::printf(FREEWARE_VERSION " death %d kills %.2f seconds\n", G.run.kills, SECONDS);
 #endif
 }
 __forceinline void deaths() {

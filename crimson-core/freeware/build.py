@@ -1,4 +1,4 @@
-"""Build the source-recovered 1.4.0 freeware client with SDL3 or Emscripten."""
+"""Build the historical freeware clients with SDL3 or Emscripten."""
 
 import shlex
 import shutil
@@ -41,7 +41,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "survival.cpp",
                 "career.cpp",
                 "weapons.cpp",
-                    "perks.cpp",
+                "perks.cpp",
                 "scores.cpp",
                 "console.cpp",
             )
@@ -100,7 +100,8 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
     ]
 
 
-def game_flags(root: Path) -> list[str]:
+def game_flags(root: Path, edition: str = "1.4.0") -> list[str]:
+    major, minor, patch = map(int, edition.split("."))
     return [
         "-std=c++17",
         "-O2",
@@ -108,7 +109,9 @@ def game_flags(root: Path) -> list[str]:
         "-Wno-ignored-attributes",
         "-fno-strict-aliasing",
         "-ffp-contract=off",
+        # Recovered shared routines use the portable client's 1.4 record representation.
         "-DCL_BUILD=10400",
+        f"-DFREEWARE_EDITION={major * 10000 + minor * 100 + patch}",
         "-DCRIMSON_FREEWARE_CLIENT",
         "-I" + str(root / "tools/match/include"),
         "-I" + str(root / "crimson-core/freeware"),
@@ -116,18 +119,18 @@ def game_flags(root: Path) -> list[str]:
     ]
 
 
-def build(root: Path, target: str, out: Path, install: Path | None) -> None:
+def build(root: Path, target: str, out: Path, install: Path | None, edition: str = "1.4.0") -> None:
     if install is None:
         git_dir = subprocess.check_output(
             [_tool("git"), "rev-parse", "--path-format=absolute", "--git-common-dir"],
             cwd=root,
             text=True,
         ).strip()
-        install = Path(git_dir).parent / "game_bins/crimsonland/1.4.0"
-    if not (install / "sounds.paq").is_file():
-        raise SystemExit("Supply an extracted Crimsonland 1.4.0 install with --game-dir.")
+        install = Path(git_dir).parent / "game_bins/crimsonland" / edition
+    if not (install / "crimson.paq").is_file():
+        raise SystemExit(f"Supply an extracted Crimsonland {edition} install with --game-dir.")
     assets = out / "assets"
-    prepare(root, install, assets)
+    prepare(root, install, assets, edition)
     core = root / "crimson-core"
     with tempfile.TemporaryDirectory() as stage:
         sources = [
@@ -136,8 +139,11 @@ def build(root: Path, target: str, out: Path, install: Path | None) -> None:
             core / "freeware/music.cpp",
             *game_sources(root, Path(stage)),
         ]
-        flags = game_flags(root)
+        flags = game_flags(root, edition)
         if target == "web":
+            shell = Path(stage) / "shell.html"
+            save_root = "/freeware" if edition == "1.4.0" else f"/freeware-{edition}"
+            shell.write_text((core / "freeware/shell.html").read_text().replace("@EDITION@", edition).replace("@SAVE_ROOT@", save_root))
             binary = out / "index.html"
             cmd = [
                 _tool("em++"),
@@ -150,7 +156,7 @@ def build(root: Path, target: str, out: Path, install: Path | None) -> None:
                 "--preload-file",
                 f"{assets}@/assets",
                 "--shell-file",
-                core / "freeware/shell.html",
+                shell,
                 "-o",
                 binary,
             ]

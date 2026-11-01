@@ -7,6 +7,19 @@
 #include <string>
 #include <vector>
 
+#ifndef FREEWARE_EDITION
+#define FREEWARE_EDITION 10400
+#endif
+#if FREEWARE_EDITION == 10300
+#define FREEWARE_VERSION "1.3.0"
+#elif FREEWARE_EDITION == 10002
+#define FREEWARE_VERSION "1.0.2"
+#elif FREEWARE_EDITION == 10400
+#define FREEWARE_VERSION "1.4.0"
+#else
+#error Unsupported freeware edition
+#endif
+
 namespace freeware {
 constexpr int width = 1024, height = 768, arena = 1024;
 enum class Screen { Menu, Playing, Dying, Death, LevelCleared, Perks, Message, Scores, Credits, Options, Online };
@@ -169,7 +182,7 @@ struct Game {
   std::array<bool, 4> invalid_scores{};
   int tips_sequence{};
   bool secret_hints{}, perk_transparent{};
-  std::string save_dir;
+  std::string save_dir, asset_dir;
   std::vector<Score> &scores() { return rankings[(survival ? 2 : 0) + int(two_players)]; }
   const std::vector<Score> &scores() const { return rankings[(survival ? 2 : 0) + int(two_players)]; }
   Fighter &actor(int i) { return i ? run.partner : static_cast<Fighter &>(run); }

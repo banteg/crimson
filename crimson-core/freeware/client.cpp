@@ -272,12 +272,16 @@ int main(int argc, char **argv) {
   SDL_InitSubSystem(SDL_INIT_AUDIO);
   SDL_InitSubSystem(SDL_INIT_GAMEPAD);
 #ifdef __EMSCRIPTEN__
+#if FREEWARE_EDITION == 10400
   client.game.save_dir = "/freeware/";
+#else
+  client.game.save_dir = "/freeware-" FREEWARE_VERSION "/";
+#endif
 #else
   if (const char *path = std::getenv("CRIMSON_FREEWARE_SAVE_DIR")) {
     client.game.save_dir = std::string(path) + "/";
     SDL_CreateDirectory(path);
-  } else if (char *path = SDL_GetPrefPath("10tons", "Crimsonland-1.4.0")) {
+  } else if (char *path = SDL_GetPrefPath("10tons", "Crimsonland-" FREEWARE_VERSION)) {
     client.game.save_dir = path;
     SDL_free(path);
   }
@@ -290,7 +294,7 @@ int main(int argc, char **argv) {
 #else
   folder = argc > 1 ? argv[1] : std::string(SDL_GetBasePath()) + "assets";
 #endif
-  if (!SDL_CreateWindowAndRenderer("Crimsonland v1.4.0", width, height, SDL_WINDOW_RESIZABLE, &client.window,
+  if (!SDL_CreateWindowAndRenderer("Crimsonland v" FREEWARE_VERSION, width, height, SDL_WINDOW_RESIZABLE, &client.window,
                                    &client.renderer)) {
     std::fprintf(stderr, "%s\n", SDL_GetError());
     return 1;
@@ -304,7 +308,7 @@ int main(int argc, char **argv) {
   }
   SDL_SetRenderLogicalPresentation(client.renderer, width, height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
   SDL_HideCursor();
-  client.assets = folder;
+  client.game.asset_dir = client.assets = folder;
   load_audio(folder);
   seed_random(static_cast<unsigned>(SDL_GetPerformanceCounter()));
   client.game.generate_terrain();

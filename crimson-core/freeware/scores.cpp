@@ -90,7 +90,7 @@ void Game::load_scores() {
       continue;
     invalid_scores[i] = !decode_scores({std::istreambuf_iterator<char>(f), {}}, i, rankings[i]);
     if (invalid_scores[i])
-      std::fprintf(stderr, "Invalid 1.4.0 score file %s\n", files[i]);
+      std::fprintf(stderr, "Invalid " FREEWARE_VERSION " score file %s\n", files[i]);
   }
 }
 void Game::discard_corrupt_score() {
@@ -114,7 +114,7 @@ void Game::record_score(float average_fps) {
   table.push_back(score);
   sort_scores(table, survival);
   if (!save_dir.empty() && !store_scores(table))
-    std::fprintf(stderr, "Could not persist 1.4.0 score file\n");
+    std::fprintf(stderr, "Could not persist " FREEWARE_VERSION " score file\n");
 }
 bool Game::merge_scores(const std::string &filename) {
   if (filename.empty() || filename.find_first_of("/\\") != std::string::npos || save_dir.empty())

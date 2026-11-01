@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 
 namespace freeware {
 constexpr float degrees = 57.2957795f;
@@ -12,13 +13,11 @@ Display::~Display() {
   SDL_DestroyTexture(ground);
 }
 bool Display::load(const std::string &folder, bool &safe_mode) {
-  for (const char *name :
-       {"font",      "grass1",         "mud1",         "ground_tile",  "crimsonland", "borg_t",
-        "eiliens",   "bullet_real_16", "blood",        "aim32",        "radius256",   "assembly-logo",
-        "aim128",    "aim_enh",        "aim64",        "part64",       "reaper",      "bullet",
-        "arrow",     "ui_text",        "rocket",       "flame",        "bubble",      "glow64",
-        "bar",       "bonus_fire",     "bonus_freeze", "bonus_weapon", "bonus_bomb",  "bonus_timebend",
-        "shockwave", "icemold",        "smoke"}) {
+  std::ifstream list(folder + "/textures.txt");
+  if (!list)
+    return SDL_SetError("Missing freeware texture manifest");
+  std::string name;
+  while (std::getline(list, name)) {
     size_t bytes;
     auto *data = static_cast<unsigned char *>(SDL_LoadFile((folder + "/" + name + ".rgba").c_str(), &bytes));
     if (!data)
@@ -30,7 +29,7 @@ bool Display::load(const std::string &folder, bool &safe_mode) {
     }
     if (w == 0 || h == 0 || w > 2048 || h > 2048 || bytes != 8 + w * h * 4) {
       SDL_free(data);
-      return SDL_SetError("Bad 1.4.0 texture %s", name);
+      return SDL_SetError("Bad freeware texture %s", name.c_str());
     }
     SDL_Surface *s = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, data + 8, w * 4);
     SDL_Texture *texture = s ? SDL_CreateTextureFromSurface(renderer, s) : nullptr;
@@ -39,7 +38,7 @@ bool Display::load(const std::string &folder, bool &safe_mode) {
     if (!texture)
       return false;
     textures.emplace(name, texture);
-    SDL_SetTextureBlendMode(texture, std::strcmp(name, "part64") == 0 ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(texture, name == "part64" ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND);
     SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_LINEAR);
   }
   if (!safe_mode) {
@@ -62,9 +61,9 @@ void Display::sprite(const char *name, float x, float y, float w, float h, float
                      SDL_FColor tint, UiUv uv, unsigned filter, unsigned destination_blend,
                      unsigned source_blend) {
   // A failed Grim texture lookup leaves the previous binding in place (grim.dll 0x10004d07).
-  auto *t = !std::strcmp(name, "tl_tolmec") ? last_texture
-            : !std::strcmp(name, "ground")  ? (ground ? ground : textures.at("ground_tile"))
-                                            : textures.at(name);
+  const auto texture = textures.find(name);
+  auto *t = !std::strcmp(name, "ground") ? (ground ? ground : textures.at("ground_tile"))
+            : texture != textures.end() ? texture->second : last_texture;
   if (!t)
     return;
   last_texture = t;

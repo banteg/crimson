@@ -59,7 +59,7 @@ void Game::enter_state(int id) {
     break;
   case 9:
     screen = Screen::Death;
-    std::puts("1.4.0 name entry");
+    std::puts(FREEWARE_VERSION " name entry");
     break;
   }
 }
