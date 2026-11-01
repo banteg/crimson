@@ -172,7 +172,8 @@ def test_flow_extent_ends_at_reachable_code_and_skips_its_switch_table() -> None
     assert match_builds._flow_extent(image, 0x1000, 0x1000 + len(code)) == (0x100D, 0x1018)
 
 
-def test_body_search_ignores_verified_padding_without_reading_the_next_function() -> None:
+@pytest.fixture
+def synthetic_mapper():
     code = bytes.fromhex("b8 78563412 b9 21436587 ba ccddffee c3")
     original = code + b"\xcc" * 16
     # Another build pads less and immediately starts an unrelated function.
@@ -191,11 +192,61 @@ def test_body_search_ignores_verified_padding_without_reading_the_next_function(
     mapper.evidence = {}
     mapper.grim_address = None
     mapper.grim_slots = {}
+    return mapper
+
+
+def test_body_search_ignores_verified_padding_without_reading_the_next_function(synthetic_mapper) -> None:
+    mapper = synthetic_mapper
     mapper.search()
     assert mapper.hits == {0x1000: [0x2000]}
     assert mapper.accept(0x1000, 0x2000, "ordered")
     assert mapper.evidence[0x1000] == "exact"
-    assert mapper.bodies[0x1000].size == len(code)
+    assert mapper.bodies[0x1000].size == 16
+
+
+@pytest.mark.parametrize("pin", [(0x2000, 0x2010), (0x2008, 0x2018)])
+def test_build_only_pin_protects_its_target_range_in_each_donor(synthetic_mapper, pin) -> None:
+    mapper = synthetic_mapper
+    mapper.pinned = {"only_in_target": pin}
+    # Keep an identical body after the reviewed span. Only that copy can seed further matches.
+    code = mapper.target.mapped * 2
+    mapper.target = matchlib.LoadedImage(code, 0x2000, len(code))
+    mapper.code = [(0x2000, code)]
+    mapper.search()
+    assert mapper.hits == {0x1000: [0x2020]}
+    assert not mapper.accept(0x1000, pin[0] + 1, "referenced")
+    assert not mapper.mapped
+    mapper.entry_points = [0x2000, pin[0] + 1, 0x2020]
+    assert mapper.boundaries() == sorted({0x2000, pin[0], 0x2020})
+    mapper.starts = [0x1000]
+    mapper.source_code, mapper.code_ranges = [(0x1000, 0x1020)], [(0x2000, 0x2040)]
+    assert mapper.fill_by_order() == [0x1000]
+    assert mapper.mapped == {0x1000: 0x2020}
+    # When the only available layout slot belongs to the pin, the donor stays unmapped.
+    mapper.mapped.clear()
+    mapper.evidence.clear()
+    mapper.hits.clear()
+    mapper.entry_points = [pin[0] + 1]
+    mapper.flows = {}
+    assert not mapper.fill_by_order()
+    assert not mapper.mapped
+
+
+def test_build_only_pin_keeps_neighbouring_layout_positions(synthetic_mapper) -> None:
+    mapper = synthetic_mapper
+    mapper.pinned = {"only_in_target": (0x2000, 0x2010)}
+    mapper.starts = [0x1000, 0x1010]
+    mapper.bodies[0x1010] = mapper.bodies[0x1000]
+    # Two changed 16-byte functions remain in order. The first target has its own local identity.
+    code = (b"\x31\xc0" + b"\x90" * 13 + b"\xc3") * 2
+    mapper.target = matchlib.LoadedImage(code, 0x2000, len(code))
+    mapper.code = [(0x2000, code)]
+    mapper.entry_points = [0x2000, 0x2010]
+    mapper.source_code, mapper.code_ranges = [(0x1000, 0x1020)], [(0x2000, 0x2020)]
+    mapper.flows = {}
+    assert not mapper.fill_by_order()  # Neither body survived relinking.
+    assert mapper.mapped == {0x1010: 0x2010}
+    assert mapper.evidence == {0x1010: "ordered"}
 
 
 def test_cross_build_catalog_keeps_cpp_method_aliases() -> None:

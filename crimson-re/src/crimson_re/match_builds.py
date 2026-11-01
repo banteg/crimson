@@ -21,7 +21,7 @@ import struct
 from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass, replace
-from functools import cache
+from functools import cache, cached_property
 from graphlib import TopologicalSorter
 from itertools import pairwise
 from pathlib import Path
@@ -684,8 +684,7 @@ class _Mapper:
         self.target = matchlib.load_image(image.path)
         self.functions = sorted(manifest.functions, key=lambda function: function.address)
         self.by_address = {function.address: function for function in self.functions}
-        by_name = {function.name: function.address for function in self.functions}
-        self.pinned = {by_name[name]: extent for name, extent in (pinned or {}).items() if name in by_name}
+        self.pinned = pinned or {}
         self.starts = [function.address for function in self.functions]
         self.bodies = {
             function.address: _body(self.source, function.address, function.size) for function in self.functions
@@ -820,12 +819,24 @@ class _Mapper:
     def body_at(self, address: int, size: int) -> _Body:
         return _body(self.target, address, size)
 
+    @cached_property
+    def reserved(self) -> list[tuple[int, int]]:
+        # A build-only pin can have no name in this donor. It still owns its target bytes.
+        return sorted(self.pinned.values())
+
+    def overlaps_pin(self, start: int, end: int) -> bool:
+        index = bisect.bisect_left(self.reserved, (end, 0))
+        return index > 0 and start < self.reserved[index - 1][1]
+
     def accept(self, address: int, target: int, evidence: str) -> bool:
         """Map a canonical function; report whether its body is exact there."""
+        if self.overlaps_pin(target, target + 1):
+            return False
         self.mapped[address] = target
         target_body = self.body_at(target, self.bodies[address].size)
-        exact = target_body.signature == self.bodies[address].signature
-        interface = not exact and self.interface_equivalent(address, target_body)
+        fits = not self.overlaps_pin(target, target + self.bodies[address].size)
+        exact = fits and target_body.signature == self.bodies[address].signature
+        interface = fits and not exact and self.interface_equivalent(address, target_body)
         self.evidence[address] = "exact" if exact else "interface" if interface else evidence
         return exact or interface
 
@@ -849,9 +860,10 @@ class _Mapper:
 
     def run(self) -> dict[str, Any]:
         self.search()
-        for address, (start, _) in self.pinned.items():
-            self.mapped[address] = start
-            self.evidence[address] = "recovered"
+        for function in self.functions:
+            if function.name in self.pinned:
+                self.mapped[function.address] = self.pinned[function.name][0]
+                self.evidence[function.address] = "recovered"
         pending = [
             address for address, positions in self.hits.items() if len(positions) == 1 and address not in self.mapped
         ]
@@ -890,7 +902,7 @@ class _Mapper:
                 while found >= 0:
                     position = section_start + found - anchor_offset
                     offset = position - self.target.image_base
-                    if all(
+                    if not self.overlaps_pin(position, position + body.size) and all(
                         self.target.mapped[offset + run_offset : offset + run_offset + len(run)] == run
                         for run_offset, run in runs
                     ) and self.body_at(position, body.size).signature == body.signature:
@@ -999,14 +1011,14 @@ class _Mapper:
     def boundaries(self) -> list[int]:
         # Byte-pattern entry candidates can land inside a verified body. Such a
         # candidate cannot delimit that body or become a second function by order.
-        verified = sorted(
-            (target, self.pinned[address][1] if address in self.pinned else target + self.bodies[address].size)
+        verified = sorted(self.reserved + [
+            (target, target + self.bodies[address].size)
             for address, target in self.mapped.items()
-            if self.evidence[address] in {"exact", "interface", "recovered"}
-        )
+            if self.evidence[address] in {"exact", "interface"}
+        ])
         result = []
         index = protected_end = 0
-        for candidate in sorted({*self.entry_points, *self.mapped.values()}):
+        for candidate in sorted({*self.entry_points, *self.mapped.values(), *(start for start, _ in self.reserved)}):
             while index < len(verified) and verified[index][0] < candidate:
                 protected_end = max(protected_end, verified[index][1])
                 index += 1
@@ -1021,6 +1033,8 @@ class _Mapper:
         functions on each side are aligned in order, pairing only similar sizes.
         """
         exact = []
+        # An unpaired local pin still occupies a position in the layout. Its name
+        # cannot be assigned by order, but removing its slot shifts its neighbours.
         taken = set(self.mapped.values())
         boundaries = self.boundaries()
         # Code section edges anchor the functions before the first and after the last mapped one.
@@ -1077,7 +1091,12 @@ class _Mapper:
             function = self.by_address[address]
             evidence = self.evidence[address]
             # A changed body runs at most to the next known function.
-            end = target + self.bodies[address].size if evidence in {"exact", "interface"} else self.changed_end(target)
+            if function.name in self.pinned:
+                end = self.pinned[function.name][1]
+            elif evidence in {"exact", "interface"}:
+                end = target + self.bodies[address].size
+            else:
+                end = self.changed_end(target)
             root_address = self.identity_address(address)
             rows[target] = {
                 "address": f"0x{target:08X}",
