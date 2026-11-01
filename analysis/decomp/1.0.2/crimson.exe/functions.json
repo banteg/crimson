@@ -482,7 +482,7 @@
     "address": "0x00404B70",
     "canonical_address": "0x00426220",
     "end": "0x0040508C",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "creature_update_all",
     "size": 1308
   },
@@ -557,7 +557,7 @@
     "address": "0x004062E0",
     "build_only": true,
     "end": "0x00406795",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "creature_spawn_random",
     "size": 1205
   },
@@ -595,25 +595,25 @@
   },
   {
     "address": "0x00407E80",
-    "canonical_address": "0x0042E080",
     "end": "0x00407E99",
-    "evidence": "ordered",
-    "name": "effect_free",
-    "size": 25
+    "size": 25,
+    "build_only": true,
+    "name": "freeware_float_max",
+    "evidence": "recovered"
   },
   {
     "address": "0x00407EA0",
-    "canonical_address": "0x00430AD0",
     "end": "0x00407EB9",
-    "evidence": "ordered",
-    "name": "creature_spawn_slot_alloc",
-    "size": 25
+    "size": 25,
+    "build_only": true,
+    "name": "freeware_float_min",
+    "evidence": "recovered"
   },
   {
     "address": "0x00407EC0",
     "canonical_address": "0x00413540",
     "end": "0x0040803F",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "player_heading_approach_target",
     "size": 383
   },
@@ -699,26 +699,27 @@
   },
   {
     "address": "0x0040C0D0",
-    "canonical_address": "0x00441220",
+    "build_only": true,
     "end": "0x0040C10D",
     "evidence": "ordered",
-    "name": "highscore_card_draw_vertical_divider",
+    "name": "freeware_hud_set_row",
     "size": 61
   },
   {
     "address": "0x0040C110",
-    "canonical_address": "0x00441270",
+    "canonical_address": "0x0040C1C0",
     "end": "0x0040ED76",
-    "evidence": "ordered",
-    "name": "highscore_format_date_label",
-    "size": 11366
+    "evidence": "recovered",
+    "name": "game_frame_update",
+    "size": 11366,
+    "identity_only": true
   },
   {
     "address": "0x0040EDA0",
-    "canonical_address": "0x004413A0",
+    "build_only": true,
     "end": "0x0040F877",
-    "evidence": "ordered",
-    "name": "ui_text_input_render",
+    "evidence": "recovered",
+    "name": "game_credits_update",
     "size": 2775
   },
   {
@@ -726,23 +727,23 @@
     "build_only": true,
     "end": "0x0040FAC1",
     "evidence": "ordered",
-    "name": "game_show_message",
+    "name": "freeware_overlay_begin",
     "size": 577
   },
   {
     "address": "0x0040FAD0",
-    "build_only": true,
+    "canonical_address": "0x00445380",
     "end": "0x0040FCD4",
     "evidence": "ordered",
-    "name": "level_load_next",
+    "name": "typo_target_name_assign_random",
     "size": 516
   },
   {
     "address": "0x0040FCE0",
-    "build_only": true,
+    "canonical_address": "0x00446900",
     "end": "0x0041011B",
     "evidence": "ordered",
-    "name": "freeware_read_name_key",
+    "name": "ui_element_update",
     "size": 1083
   },
   {

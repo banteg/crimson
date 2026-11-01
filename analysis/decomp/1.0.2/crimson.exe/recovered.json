@@ -225,6 +225,12 @@
       "body_sha256": "7645fc6c31a0fb61c93c74a960be74e9cfd259a86d74d085898375d62efe7be8"
     },
     {
+      "name": "creature_update_all",
+      "address": "0x00404b70",
+      "end": "0x0040508c",
+      "body_sha256": "9fcb3d296675df17fd71056a4c3a5d90e540a7f871da0be6a2c93c4aadad9dc0"
+    },
+    {
       "name": "creature_alloc_slot",
       "address": "0x004062a0",
       "end": "0x004062bb",
@@ -237,10 +243,37 @@
       "body_sha256": "ede8ce732fa0ed0a0bd3a03ffe2c985922a2ca323267773912c1bebeaaf2d4b2"
     },
     {
+      "name": "creature_spawn_random",
+      "address": "0x004062e0",
+      "end": "0x00406795",
+      "body_sha256": "636b0378062ec936b17113a275d8e023a57c691e4fa0342b6fa5a1c03f26ba51",
+      "build_only": true
+    },
+    {
       "name": "creature_spawn",
       "address": "0x004067a0",
       "end": "0x004068e5",
       "body_sha256": "d8dd4b7670255725d69b4e5176afcc6190bf654375fb1d1bf31b6447f4845712"
+    },
+    {
+      "name": "freeware_float_max",
+      "address": "0x00407e80",
+      "end": "0x00407e99",
+      "body_sha256": "7e4e754e0aeafc0db69ced8f48345cf15507a02171388677ade01f16e253d7b1",
+      "build_only": true
+    },
+    {
+      "name": "freeware_float_min",
+      "address": "0x00407ea0",
+      "end": "0x00407eb9",
+      "body_sha256": "f1c68d3332386c6faf99c60e8950ca562270ca3e33647d1cf02c490ee9793253",
+      "build_only": true
+    },
+    {
+      "name": "player_heading_approach_target",
+      "address": "0x00407ec0",
+      "end": "0x0040803f",
+      "body_sha256": "87beafbec4dd36f20c84cdc8c9e1f9602b51dcab92ef2acded4074be57f19c3e"
     },
     {
       "name": "player_update",
@@ -253,6 +286,20 @@
       "address": "0x0040b6e0",
       "end": "0x0040bcfa",
       "body_sha256": "3f3292ae2008fe0377f3495aa377edd4ca0eab85f0626931a8e847e608b9928a"
+    },
+    {
+      "name": "game_frame_update",
+      "address": "0x0040c110",
+      "end": "0x0040ed76",
+      "body_sha256": "c3c0a4e406567904ee4666c1618782b36c43392d21e45936ffac8901b6761d98",
+      "identity_only": true
+    },
+    {
+      "name": "game_credits_update",
+      "address": "0x0040eda0",
+      "end": "0x0040f877",
+      "body_sha256": "2dabcfffb855eb9e55b66fc557c3c90606674dd9cf59db9b5f6b1040c63d2048",
+      "build_only": true
     }
   ],
   "data": [
@@ -397,10 +444,47 @@
       "bytes": "ff1538b04100"
     },
     {
+      "name": "freeware_transition_alpha",
+      "address": "0x0041c084",
+      "reference": "0x0040ee72",
+      "bytes": "d90584c04100",
+      "build_only": true
+    },
+    {
+      "name": "game_state_id",
+      "address": "0x0041c09c",
+      "reference": "0x0040f852",
+      "bytes": "c7059cc0410001000000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_transition_pending",
+      "address": "0x0041c0a8",
+      "reference": "0x0040edcd",
+      "bytes": "a0a8c04100",
+      "build_only": true
+    },
+    {
       "name": "unused_effect_uv16_prefix_vec2",
       "address": "0x00420b88",
       "reference": "0x00401130",
       "bytes": "c705880b420000000000"
+    },
+    {
+      "name": "freeware_corpse_positions",
+      "address": "0x00420c90",
+      "reference": "0x004059a7",
+      "bytes": "8914c5880c4200",
+      "build_only": true,
+      "offset": -8
+    },
+    {
+      "name": "freeware_corpse_sizes",
+      "address": "0x00421d90",
+      "reference": "0x00405992",
+      "bytes": "d91c858c1d4200",
+      "build_only": true,
+      "offset": -4
     },
     {
       "name": "player_state_table",
@@ -436,10 +520,33 @@
       "offset": 20
     },
     {
+      "name": "freeware_bullet_texture",
+      "address": "0x00424564",
+      "reference": "0x0040eea5",
+      "bytes": "a164454200",
+      "build_only": true
+    },
+    {
       "name": "perk_choice_flags",
       "address": "0x00424588",
       "reference": "0x00402909",
       "bytes": "bf88454200"
+    },
+    {
+      "name": "freeware_blood_positions",
+      "address": "0x004245c0",
+      "reference": "0x004058df",
+      "bytes": "8914c5b8454200",
+      "build_only": true,
+      "offset": -8
+    },
+    {
+      "name": "freeware_corpse_angles",
+      "address": "0x004247c0",
+      "reference": "0x00405980",
+      "bytes": "d91c85bc474200",
+      "build_only": true,
+      "offset": -4
     },
     {
       "name": "unused_fx_queue_random_prefix_vec2",
@@ -454,16 +561,51 @@
       "bytes": "68c84b4200"
     },
     {
+      "name": "freeware_corpse_species",
+      "address": "0x00424dc8",
+      "reference": "0x00405999",
+      "bytes": "890c85c44d4200",
+      "build_only": true,
+      "offset": -4
+    },
+    {
+      "name": "freeware_corpse_colors",
+      "address": "0x00424ed0",
+      "reference": "0x00405961",
+      "bytes": "81c1d04e4200",
+      "build_only": true
+    },
+    {
       "name": "creature_pool",
       "address": "0x004252d0",
       "reference": "0x004062a2",
       "bytes": "b9d0524200"
     },
     {
+      "name": "freeware_state_since",
+      "address": "0x004287e0",
+      "reference": "0x0040ede8",
+      "bytes": "a3e0874200",
+      "build_only": true
+    },
+    {
       "name": "current_player_index",
       "address": "0x004287e8",
       "reference": "0x00408040",
       "bytes": "8b15e8874200"
+    },
+    {
+      "name": "grim_interface_ptr",
+      "address": "0x004287ec",
+      "reference": "0x0040edb1",
+      "bytes": "8b0dec874200"
+    },
+    {
+      "name": "bonus_freeze_timer",
+      "address": "0x00428808",
+      "reference": "0x00404b70",
+      "bytes": "d90508884200",
+      "build_only": true
     },
     {
       "name": "freeware_elapsed_seconds",
@@ -583,10 +725,51 @@
       "build_only": true
     },
     {
+      "name": "freeware_berserk_timer",
+      "address": "0x00428854",
+      "reference": "0x00404f38",
+      "bytes": "d90554884200",
+      "build_only": true
+    },
+    {
       "name": "creature_spawned_count",
       "address": "0x00428868",
       "reference": "0x004068c3",
       "bytes": "a168884200"
+    },
+    {
+      "name": "freeware_blood_count",
+      "address": "0x00428870",
+      "reference": "0x004058d4",
+      "bytes": "a170884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_count",
+      "address": "0x00428878",
+      "reference": "0x00405950",
+      "bytes": "a178884200",
+      "build_only": true
+    },
+    {
+      "name": "frame_dt",
+      "address": "0x00428884",
+      "reference": "0x0040edd4",
+      "bytes": "d91d84884200"
+    },
+    {
+      "name": "freeware_simulation_clock",
+      "address": "0x00428888",
+      "reference": "0x0040eddc",
+      "bytes": "a188884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_credits_open",
+      "address": "0x0042888c",
+      "reference": "0x0040f869",
+      "bytes": "c6058c88420000",
+      "build_only": true
     }
   ]
 }

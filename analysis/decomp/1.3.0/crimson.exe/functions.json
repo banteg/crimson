@@ -479,6 +479,22 @@
     "size": 131
   },
   {
+    "address": "0x004033D0",
+    "end": "0x004033E9",
+    "size": 25,
+    "build_only": true,
+    "name": "freeware_float_max",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004033F0",
+    "end": "0x00403409",
+    "size": 25,
+    "build_only": true,
+    "name": "freeware_float_min",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00403410",
     "build_only": true,
     "end": "0x00403435",
@@ -746,7 +762,7 @@
     "address": "0x00409C80",
     "canonical_address": "0x00426220",
     "end": "0x0040A3B8",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "creature_update_all",
     "size": 1848
   },
@@ -829,7 +845,7 @@
     "address": "0x0040B550",
     "build_only": true,
     "end": "0x0040BA65",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "creature_spawn_random",
     "size": 1301
   },
@@ -869,7 +885,7 @@
     "address": "0x0040E2C0",
     "canonical_address": "0x00413540",
     "end": "0x0040E42F",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "player_heading_approach_target",
     "size": 367
   },
@@ -925,9 +941,10 @@
     "address": "0x00412FD0",
     "canonical_address": "0x0040C1C0",
     "end": "0x004183A3",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "game_frame_update",
-    "size": 21459
+    "size": 21459,
+    "identity_only": true
   },
   {
     "address": "0x004183E0",
@@ -941,7 +958,7 @@
     "address": "0x004183F0",
     "build_only": true,
     "end": "0x0041920F",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "game_credits_update",
     "size": 3615
   },

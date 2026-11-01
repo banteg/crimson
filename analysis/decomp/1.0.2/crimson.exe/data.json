@@ -186,6 +186,21 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x0041c084",
+      "name": "freeware_transition_alpha",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0041c09c",
+      "name": "game_state_id",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0041c0a8",
+      "name": "freeware_transition_pending",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x0041dcc8",
       "name": "__FPmtterm",
       "program": "1.0.2/crimson.exe"
@@ -461,6 +476,16 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x00420c90",
+      "name": "freeware_corpse_positions",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00421d90",
+      "name": "freeware_corpse_sizes",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00421e90",
       "name": "player_state_table",
       "program": "1.0.2/crimson.exe"
@@ -496,6 +521,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x00424564",
+      "name": "freeware_bullet_texture",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00424588",
       "name": "perk_choice_flags",
       "program": "1.0.2/crimson.exe"
@@ -503,6 +533,16 @@
     {
       "address": "0x004245bc",
       "name": "freeware_blood_texture",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004245c0",
+      "name": "freeware_blood_positions",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004247c0",
+      "name": "freeware_corpse_angles",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -516,8 +556,23 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x00424dc8",
+      "name": "freeware_corpse_species",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00424ed0",
+      "name": "freeware_corpse_colors",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x004252d0",
       "name": "creature_pool",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004287e0",
+      "name": "freeware_state_since",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -526,8 +581,18 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x004287ec",
+      "name": "grim_interface_ptr",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x004287f4",
       "name": "freeware_shell_marks",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428808",
+      "name": "bonus_freeze_timer",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -616,6 +681,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x00428854",
+      "name": "freeware_berserk_timer",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00428868",
       "name": "creature_spawned_count",
       "program": "1.0.2/crimson.exe"
@@ -631,8 +701,28 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x00428878",
+      "name": "freeware_corpse_count",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00428880",
       "name": "d3dx_sse_math_bss",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428884",
+      "name": "frame_dt",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428888",
+      "name": "freeware_simulation_clock",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0042888c",
+      "name": "freeware_credits_open",
       "program": "1.0.2/crimson.exe"
     },
     {
