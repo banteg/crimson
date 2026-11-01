@@ -257,6 +257,8 @@ __forceinline int menu_rows(int which) {
     const int option_count = FREEWARE_EDITION == 10002 ? 9 : FREEWARE_EDITION == 10300 ? 11 : 12;
     const int count = which == main_page ? main_count : which == options_page ? option_count : 5;
 #endif
+    // 1.3.0 uses the same 26-pixel increment and hitbox at 0x415715 and 0x415751.
+    const float option_spacing = FREEWARE_EDITION == 10300 ? 26.f : 21.f;
     float x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
     float font_scale = which == main_page ? .75435f : .65f;
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -294,12 +296,12 @@ __forceinline int menu_rows(int which) {
         const float mx = freeware_aim_screen.x, my = freeware_aim_screen.y;
 #endif
 #ifdef CRIMSON_FREEWARE_CLIENT
-        float y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * 21.f;
+        float y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * option_spacing;
         if (FREEWARE_EDITION == 10002 && which == options_page)
             y = 180.f + i * 32.f;
         const int action = which == main_page ? freeware::main_action(i) : i;
 #else
-        float y = which == main_page ? 200.f + i * 32.f : 170.f + i * 21.f;
+        float y = which == main_page ? 200.f + i * 32.f : 170.f + i * option_spacing;
         if (FREEWARE_EDITION == 10002)
             y = (which == main_page ? 220.f : 180.f) + i * 32.f;
         const int action = native_menu_action(which, i);
@@ -307,7 +309,7 @@ __forceinline int menu_rows(int which) {
 #if FREEWARE_EDITION == 10002
         const float row_height = 30.f;
 #else
-        const float row_height = which == main_page ? 30.f : 21.f;
+        const float row_height = which == main_page ? 30.f : option_spacing;
 #endif
         if (mx > x && my > y && mx < x + strlen(name) * 16.f && my < y + row_height)
             hover = i;
