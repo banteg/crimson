@@ -12,6 +12,7 @@ from pathlib import Path
 import msgspec
 
 from grim import paq
+from grim.atomic_write import atomic_write_bytes
 from grim.console import ConsoleState
 
 ASSET_BASE_URL = "https://paq.crimson.banteg.xyz/v1.9.93"
@@ -26,6 +27,7 @@ class DownloadResult(msgspec.Struct, frozen=True):
     name: str
     ok: bool
     error: str | None = None
+    usable_previous: bool = False
 
 
 def _download_file(url: str, dest: Path, *, expected_sha256: str | None = None) -> None:
@@ -64,27 +66,45 @@ def download_missing_paqs(
     names: tuple[str, ...] = DEFAULT_PAQ_FILES,
 ) -> tuple[DownloadResult, ...]:
     assets_dir.mkdir(parents=True, exist_ok=True)
-    needed = [name for name in names if not (assets_dir / name).is_file()]
-    art = assets_dir / "crimson.paq"
-    if "crimson.paq" in names and art.is_file():
-        with art.open("rb") as stream:
-            if hashlib.file_digest(stream, "sha256").hexdigest() in PREVIOUS_CRIMSON_PAQ_SHA256:
-                needed.append("crimson.paq")
-                console.log.log("assets: updating earlier source-art pack")
+    pins = {"crimson.paq": CRIMSON_PAQ_SHA256, **ART_VERSION["audio"]}
+    needed = []
+    upgrades = set()
+    for name in names:
+        path = assets_dir / name
+        if not path.is_file():
+            needed.append(name)
+            continue
+        data = path.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if digest == pins[name]:
+            continue
+        if name == "crimson.paq" and digest in PREVIOUS_CRIMSON_PAQ_SHA256:
+            needed.append(name)
+            upgrades.add(name)
+            continue
+        # A valid original or custom pack belongs to the player. A damaged
+        # file from an earlier client remains recoverable after repair.
+        try:
+            for _ in paq.iter_entries_bytes(data):
+                pass
+        except ValueError:
+            backup = path.with_name(f"{name}.invalid-{digest}")
+            if not backup.exists():
+                atomic_write_bytes(backup, data)
+            console.log.log(f"assets: repairing {name}; original bytes kept in {backup.name}")
+            needed.append(name)
     if not needed:
         return ()
     console.log.log(f"assets: downloading {', '.join(needed)}")
     results: list[DownloadResult] = []
     for name in needed:
-        url = f"{base_url}/{name}"
-        expected_sha256 = CRIMSON_PAQ_SHA256 if name == "crimson.paq" else None
-        if expected_sha256 is not None:
-            url += f"?sha256={expected_sha256}"
+        expected_sha256 = pins[name]
+        url = f"{base_url}/{name}?sha256={expected_sha256}"
         dest = assets_dir / name
         try:
             _download_file(url, dest, expected_sha256=expected_sha256)
         except (OSError, RuntimeError, urllib.error.URLError) as exc:
-            results.append(DownloadResult(name=name, ok=False, error=str(exc)))
+            results.append(DownloadResult(name=name, ok=False, error=str(exc), usable_previous=name in upgrades))
             console.log.log(f"assets: failed to download {name}: {exc}")
             continue
         results.append(DownloadResult(name=name, ok=True))
@@ -106,11 +126,13 @@ def migrate_music_paq(assets_dir: Path) -> bool:
     path = assets_dir / MUSIC_PAQ
     if not path.is_file():
         return False
-    entries = paq.read_paq(path)
-    renamed = [(music_entry_name(name), data) for name, data in entries]
-    if renamed == entries:
+    data = path.read_bytes()
+    if hashlib.sha256(data).hexdigest() != ART_VERSION["legacy_music"]:
         return False
-    tmp_path = path.with_name(path.name + ".tmp")
-    paq.write_paq(tmp_path, renamed)
-    tmp_path.replace(path)
+    entries = list(paq.iter_entries_bytes(data))
+    renamed = [(music_entry_name(name), data) for name, data in entries]
+    replacement = paq.build_entries(renamed)
+    if hashlib.sha256(replacement).hexdigest() != ART_VERSION["audio"][MUSIC_PAQ]:
+        raise ValueError("Recognized music pack did not migrate to the pinned release")
+    atomic_write_bytes(path, replacement)
     return True

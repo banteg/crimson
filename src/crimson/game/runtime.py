@@ -228,12 +228,8 @@ def run_game(config: GameConfig) -> None:
         set_debug_enabled(True)
     base_dir = config.base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
-    crash_path = base_dir / "crash.log"
-    crash_file = crash_path.open("a", encoding="utf-8", buffering=1)
-    faulthandler.enable(crash_file)
-    crash_file.write(f"\n[{dt.datetime.now(tz=dt.UTC).astimezone().isoformat()}] run_game start\n")
     assets_dir = _resolve_assets_dir(config)
-    boot = boot_runtime(base_dir, assets_dir, width=config.width, height=config.height)
+    boot = boot_runtime(base_dir, assets_dir, width=config.width, height=config.height, require_packs=True)
     cfg = boot.config
     console = boot.console
     # Display options stand in for the original launcher, which saved its choices to crimson.cfg.
@@ -250,7 +246,10 @@ def run_game(config: GameConfig) -> None:
     if status.quest_unlock_index < QUEST_HARDCORE_UNLOCK_INDEX:
         cfg.gameplay.hardcore = False
     state: GameState | None = None
+    crash_file = (base_dir / "crash.log").open("a", encoding="utf-8", buffering=1)
     try:
+        faulthandler.enable(crash_file)
+        crash_file.write(f"\n[{dt.datetime.now(tz=dt.UTC).astimezone().isoformat()}] run_game start\n")
         state = GameState(
             base_dir=base_dir,
             assets_dir=assets_dir,

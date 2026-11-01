@@ -1,5 +1,10 @@
 {
   "current": "2cda5c596bbf5e6852c597911694ea42ab97b31dfea6e6c6f38e3931c04b8d5a",
+  "audio": {
+    "music.paq": "dd6ed0e5b23ffc80dacb8cc9c3d015f167165e91a2953c7c2dc47cd83206235b",
+    "sfx.paq": "268eb26c8d494719eb84ed2fd75d5c82d50dc424a17eda465daeb93627750535"
+  },
+  "legacy_music": "61f8d3b90d9687e655e2ba904b5fa711c659e498dc36f30c3ec820b3ac8778d2",
   "previous": [
     "52ae564a2cb86de9f11be261338af942377b4340595a0df2a5ae41f468042547"
   ]

@@ -22,9 +22,12 @@ tags:
 
 ```bash
 uv sync --group dev
+just setup-test-data
 just check
 just docs-build
 ```
+
+The setup command installs the same hash-verified artwork and original binaries as CI. Rerunning it reuses files that already match. For the browser end-to-end checks, `uv run python scripts/setup_test_data.py --only packs` also fetches the music and sound archives.
 
 ## Useful commands
 
@@ -42,10 +45,10 @@ and `music.paq` from the project's asset host into its data folder
 client shares that folder. Use command help as the authority for options and
 error behavior; subcommands have different validation and mismatch exit codes.
 
-Python, desktop and browser launches also upgrade recognized earlier Frankenasset
-packs by SHA-256. They verify the new pack before replacing the old file; original
-release and custom packs are preserved. Artwork versions are recorded in
-`src/crimson/assets_version.json`.
+All three clients verify every distributed pack against the SHA-256 pins in
+`src/crimson/assets_version.json`. On the next launch, a damaged archive is
+backed up and downloaded again. Valid custom packs keep their contents and names.
+Only the identified earlier music pack is migrated.
 
 ```bash
 uv run crimson

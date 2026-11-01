@@ -12,7 +12,8 @@ const between = (from, to) => {
   assert.ok(start >= 0 && end >= 0, `shell.html lost ${start < 0 ? from : to}`);
   return shell.slice(start, end);
 };
-const functions = between("  // Downloads, with", "  async function hydrate()");
+const functions = between("  function paq(bytes)", "  // The files the player picks") +
+  between("  // Downloads, with", "  async function hydrate()");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const old = new TextEncoder().encode("old art"), current = new TextEncoder().encode("current art");
 
@@ -20,15 +21,14 @@ function browser(installed, downloaded = current, unavailable = false) {
   const files = new Map(installed ? [["/game/crimson.paq", installed]] : []);
   const requests = [];
   const context = vm.createContext({
-    ART_VERSION: { current: digest(current), previous: [digest(old)] },
-    artHash: async (bytes) => digest(bytes), crypto: webcrypto, URL, Uint8Array,
+    ART_VERSION: { current: digest(current), previous: [digest(old)], audio: { "music.paq": digest(current), "sfx.paq": digest(current) } },
+    artHash: async (bytes) => digest(bytes), crypto: webcrypto, URL, Uint8Array, TextEncoder, TextDecoder,
     location: { href: "https://example.invalid/play/" }, base: "game/",
     progress: { hidden: true, firstElementChild: { style: {} } }, say() {},
     console: { warn() {} }, exists: (name) => files.has("/game/" + name),
     FS: { readFile: (name) => files.get(name) },
     missing: () => files.has("/game/crimson.paq") ? [] : ["crimson.paq"],
     store: (name, bytes) => files.set("/game/" + name, bytes),
-    storeMusic() { throw Error("Unexpected music migration"); },
     fetch: async (url) => {
       requests.push(String(url));
       if (unavailable) throw Error("offline");
@@ -45,7 +45,7 @@ function browser(installed, downloaded = current, unavailable = false) {
   return { update: context.update, files, requests };
 }
 
-for (const [label, installed] of [["old", old], ["current", current], ["custom", new TextEncoder().encode("custom")], ["missing", null]]) {
+for (const [label, installed] of [["old", old], ["current", current], ["custom", Uint8Array.of(112, 97, 113, 0)], ["missing", null]]) {
   test(`browser upgrades ${label} artwork only when needed`, async () => {
     const b = browser(installed);
     await b.update();
@@ -57,6 +57,19 @@ for (const [label, installed] of [["old", old], ["current", current], ["custom",
     assert.equal(b.requests.length, upgrade ? 1 : 0, "does not download again once current");
   });
 }
+
+test("a damaged cached sound pack is preserved and replaced only with verified audio", async () => {
+  const damaged = new TextEncoder().encode("error page");
+  const failed = browser(current, damaged);
+  failed.files.set("/game/sfx.paq", damaged);
+  await assert.rejects(failed.update(), /unexpected hash/);
+  assert.deepEqual(failed.files.get("/game/sfx.paq"), damaged);
+  const repaired = browser(current);
+  repaired.files.set("/game/sfx.paq", damaged);
+  await repaired.update();
+  assert.deepEqual(repaired.files.get("/game/sfx.paq.invalid-" + digest(damaged)), damaged);
+  assert.deepEqual(repaired.files.get("/game/sfx.paq"), current);
+});
 
 for (const [label, downloaded, unavailable] of [["stale cache", old, false], ["HTML response", new TextEncoder().encode("<html>error</html>"), false], ["offline", current, true]]) {
   test(`browser keeps installed artwork on ${label}`, async () => {
