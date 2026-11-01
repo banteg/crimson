@@ -40,7 +40,7 @@ void creature(int slot, float x, float y) {
 }
 
 enum Case { pursuit, contact, negative_berserk, full_berserk, small, corpse, frozen, overlap, shielded, retarget,
-            both_dead, dormant, wall, clone, reserved_perk };
+            both_dead, dormant, wall, breeder_hatch, reserved_perk };
 }
 
 void check_creature_motion() {
@@ -50,7 +50,7 @@ void check_creature_motion() {
     Game g;
     // The two extra slots exercise the pool boundary, its first overlapping peer, and offspring allocated in slot zero.
     const int last = early ? 127 : 511;
-    g.active_run = scenario != clone;
+    g.active_run = scenario != breeder_hatch;
     g.two_players = scenario == shielded || scenario == retarget || scenario == both_dead;
     g.run.player = {512, 512};
     g.run.partner.player = {544, 512};
@@ -89,7 +89,7 @@ void check_creature_motion() {
       freeware_current_map->add_object(1, object);
       g.run.player = {610, 512};
       c.position = {507, 512};
-    } else if (scenario == clone) {
+    } else if (scenario == breeder_hatch) {
       c.hit_flash_timer = 3.99f;
       c.position = {680, 520};
     } else if (scenario == reserved_perk) {
