@@ -44,9 +44,19 @@ The 22-entry perk table drops Timebender and adds choices including Lean Mean Ex
 
 The score writer at `0x404510` saves the name, time, XP, frame-rate statistics and game version. The writer rejects a run below 15 average FPS. The encoder at `0x4043d0` protects the record table. A single checksum follows all records in the file.
 
+### Can you get the two hidden weapons in 1.3.0?
+
+The readme counts two hidden weapons. Neither **The Secret Weapon** (16) nor the **Plague Gun** (17) has a grant in ordinary play with the shipped files. The executable does equip both when an authored level asks for them.
+
+- **Career and Survival.** The only writer of the pickup's weapon ID (`0x4477fc`) rolls `2 + rand() % 14` and retries if the player already has that weapon. Collection passes that value to the equip routine at `0x40cba6`. Apart from the equip routine, the writes to the players’ weapon fields give them a pistol on reset or level entry, or an AutoRifle in Survival. The single-player death branch at `0x4161f3` goes to the death screen even at 6, 66, 666 or 6,666 XP.
+- **Level Test.** The other call to the equip routine is at `0x402196`. A type-2 trigger gives the player the weapon stored at offset `0x20` in its record. Levels 2 and 3 each grant weapon 2, the AutoRifle. Levels 1 and 4 have no weapon trigger. After level 4, the loader at `0x411610` tries `levels/level_5.lvl` and falls back to level 1. It never selects the three named maps bundled alongside them. The menu caps the mode at Level Test (`0x41610b`). Even the unused editor writes weapon 2 into new weapon triggers (`0x413c3b`).
+- **Authored map.** To reproduce the grant, copy the shipped `level_2.lvl` to `levels/level_5.lvl`. At file offset `0x3a1`, change the little-endian weapon ID from 2 to 16 or 17. In that fifth level, move within 20 units of the trigger at approximately (837, 413). The original and both clients equip ID 16 with one round or ID 17 with twenty. Standing exactly on the radius does nothing, and the spent trigger does not refill the weapon.
+
 ## 1.3.1 and 1.4.0 — back to the arena
 
 The 1.3.1 and 1.4.0 readmes describe levels as disabled. Neither ships the 1.3.0 maps. 1.3.1 is a comparison build in this project. Its shared art and combat code help distinguish features that already existed before the final freeware release. The 1.4.0 title exposes online services alongside the local game modes.
+
+1.3.1 is the first preserved build with the Plague Gun resurrection. In single-player, a lethal hit at exactly 6, 66, 666 or 6,666 XP grants weapon 17 and restores 1 HP while the revive timer is below 1. The checks are at `0x41b7d0` in 1.3.1 and `0x41be7e` in 1.4.0. At 667 XP both enter the death screen. In 1.0.2 (`0x40de74`) and 1.3.0, all five XP values give an ordinary death.
 
 ## What the clients reproduce
 
@@ -54,4 +64,4 @@ The early clients load each edition's own artwork, font and sounds, and implemen
 
 The weapon and perk regression runs each original executable against the native and WebAssembly game code. It compares fired projectiles, ammo, reloads, hits, perk text, draft RNG, grants and level-up rewards. The historical compiler also reproduces the complete machine-code body of the perk draft in each executable (22 instructions in 1.0.2, 65 in 1.3.0), and all 51 instructions of the 1.3.0 reload routine. Some movement, HUD and effect rendering still share code recovered from 1.4.0.
 
-The 1.3.0 readme says two weapons cannot be obtained from weapon bonuses. The firing tests equip the hidden IDs directly. In the executable, the two equip call sites found in the native inventory read the rolled pickup (`0x40cba6`) or a map trigger (`0x402196`). None of the four numbered maps grants ID 16 or 17. The hidden weapons’ original acquisition routes remain unverified.
+The acquisition checks run the 1.3.0 pickup generator and collection code, then load the numbered maps through the original level reader. Native and browser runs compare weapon, ammo, trigger state and pickup RNG against that executable. The death checks compare health, weapon and game state in both early releases.
