@@ -1,4 +1,5 @@
 // crimson.exe 1.4.0, 0x416a00.
+#include "freeware_edition.h"
 #include "freeware_ui.h"
 #include <stdio.h>
 using namespace ui140;
@@ -156,7 +157,8 @@ extern "C" void gameplay_render_hud() {
         else
             text(260, 15, buffer);
     }
-    if (UI_FIELD(game_state_id, frame_state()) == 3 && UI_FIELD(freeware_game_active, active_run))
+    if ((FREEWARE_EDITION != 10002 || config_game_mode == 2) &&
+        UI_FIELD(game_state_id, frame_state()) == 3 && UI_FIELD(freeware_game_active, active_run))
         UI_FIELD(freeware_elapsed_seconds, run.seconds) += frame_dt;
 #ifdef CRIMSON_FREEWARE_CLIENT
     freeware_elapsed_seconds = UI_GAME.run.seconds;

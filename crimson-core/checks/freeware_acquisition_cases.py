@@ -54,20 +54,14 @@ def check_pickups(pe, lines):
     assert offered == set(range(2, 16))
 
 
-def check_acquisition(install, tmp, lines):
-    pe, _ = original(install / "crimson.exe", False)
-    check_pickups(pe, lines)
-    level = pe.read_u32(0x433F10)
-    pe.write_u32(0x4374A8, 1)
-    pe.write_u32(0x4374B0, 3)
-    pe.write_u32(0x44774C, 0)
+def mount_level_files(pe, level_folder):
     handle = pe.alloc(4)
     stream = io.BytesIO()
 
     def fopen(call):
         nonlocal stream
         filename = pe.read(call.arg_u32(0), 64).split(b"\0", 1)[0].decode().replace("\\", "/")
-        path = folder / filename
+        path = level_folder() / filename
         if not path.exists():
             return 0
         stream = io.BytesIO(path.read_bytes())
@@ -84,6 +78,16 @@ def check_acquisition(install, tmp, lines):
     pe.stub(0x41BE6B, fread)
     pe.stub(0x41BE15, 0)  # fclose
     pe.stub(0x41BC48, 0)  # CRT free, paired with the oracle allocator
+
+
+def check_acquisition(install, tmp, lines):
+    pe, _ = original(install / "crimson.exe", False)
+    check_pickups(pe, lines)
+    level = pe.read_u32(0x433F10)
+    pe.write_u32(0x4374A8, 1)
+    pe.write_u32(0x4374B0, 3)
+    pe.write_u32(0x44774C, 0)
+    mount_level_files(pe, lambda: folder)
     pe.stub(0x40A3C0, 0)  # terrain drawing
     baseline = pe.snapshot()
     expected = []

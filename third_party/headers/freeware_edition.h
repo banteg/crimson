@@ -6,6 +6,8 @@
 #define FREEWARE_EDITION CL_BUILD
 #endif
 namespace freeware_rules {
+enum { name_entry_state = FREEWARE_EDITION == 10002 ? 6 : FREEWARE_EDITION == 10300 ? 8 : 9,
+       level_clear_state = FREEWARE_EDITION == 10300 ? 7 : 8 };
 enum { plasma_round = FREEWARE_EDITION == 10002 ? 6 : 7, plasma_minigun_round = FREEWARE_EDITION == 10002 ? 8 : 9 };
 // The two early registration tables start at Bloody Mess. The portable backing array has
 // a spare zero slot for effects absent from an edition; it is never offered by the picker.

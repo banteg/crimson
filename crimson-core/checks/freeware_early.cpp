@@ -11,6 +11,12 @@ void check_player_perks();
 void check_creature_perks();
 void check_live_picker();
 void check_flames_and_rockets();
+void check_random_spawns();
+void check_player_motion();
+void check_creature_motion();
+void check_credits();
+void check_early_frames(const char *assets);
+void check_early_fx_writes();
 extern "C" {
 extern float freeware_elapsed_seconds;
 extern unsigned freeware_rng_state;
@@ -122,7 +128,7 @@ static void play_cycle(bool survival) {
     }
     step();
   }
-  assert(game.run.kills > 0 && game.screen == Screen::Dying);
+  assert(game.run.kills > 0 && game.screen == (FREEWARE_EDITION == 10002 ? Screen::Death : Screen::Dying));
   input.fire = false;
   for (int n = 0; n < 240 && game.screen == Screen::Dying; ++n)
     step();
@@ -133,7 +139,7 @@ static void play_cycle(bool survival) {
   input.accept = true;
   step();
   input.accept = false;
-  assert(game.screen == Screen::Scores && !game.scores().empty());
+  assert(game.screen == (FREEWARE_EDITION == 10002 ? Screen::Menu : Screen::Scores) && !game.scores().empty());
   input.escape = true;
   step();
   input.escape = false;
@@ -155,6 +161,12 @@ int main(int argc, char **argv) {
   check_live_picker();
   check_flames_and_rockets();
   check_deaths();
+  check_random_spawns();
+  check_early_fx_writes();
+  check_player_motion();
+  check_creature_motion();
+  check_credits();
+  check_early_frames(argv[1]);
   Game g;
   g.asset_dir = argv[1];
   g.load_level_brushes();

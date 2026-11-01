@@ -85,7 +85,7 @@ __forceinline void name_screen() {
     float alpha = CLOCK - STATE_SINCE;
     if (alpha >= 1)
         alpha = 1;
-    else if (alpha < .8f) {
+    else if (FREEWARE_EDITION >= 10400 && alpha < .8f) {
         creatures();
         shots();
     }
@@ -110,6 +110,7 @@ __forceinline void name_screen() {
     const char *name = freeware_name_buffer;
 #endif
     label(name, 50, 190, 1, 1, 1, 1, alpha);
+#if FREEWARE_EDITION != 10002
     float fps = average_fps();
     int &low = FIELD(freeware_low_fps_frames, low_fps_frames);
     if (fps < 50)
@@ -120,20 +121,29 @@ __forceinline void name_screen() {
         FIELD(freeware_glow, effects) = 0;
     else if (low > 500)
         FIELD(freeware_smoke, smoke) = 0;
+#endif
     label("_", 50 + (float)strlen(name) * 16, 190, 1, 1, 1, 1, sin(CLOCK * 6) > 0 ? alpha : alpha * .4f);
 #if !defined(FREEWARE_EDITION) || FREEWARE_EDITION != 10002
     if (fps < 15)
         label("(your fps is too low for highscore table)", 50, 222, .75435f, 1, 1, 1, alpha);
 #endif
 #ifdef CRIMSON_FREEWARE_CLIENT
-    if (INPUT.backspace && !G.name.empty())
-        G.name.pop_back();
-    for (size_t i = 0; i < INPUT.text.size() && G.name.size() < 31; ++i) {
+    if (INPUT.backspace) {
+        sfx_play_panned(17, .45f, .5f);
+        if (!G.name.empty())
+            G.name.pop_back();
+    }
+    for (size_t i = 0; i < INPUT.text.size(); ++i) {
         unsigned char c = INPUT.text[i];
-        if (c >= 32 && c < 127)
-            G.name += (char)c;
+        if (c >= 32 && c < 127) {
+            sfx_play_panned(17, .45f, .5f);
+            if (G.name.size() < 31)
+                G.name += (char)c;
+        }
     }
     bool accepted = INPUT.accept;
+    if (accepted)
+        sfx_play_panned(17, .45f, .5f);
 #else
     char c = (char)freeware_read_name_key();
     if (c != (char)0xa7) {
@@ -152,21 +162,33 @@ __forceinline void name_screen() {
 #endif
     if (accepted) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-        if (FREEWARE_EDITION == 10002 || fps >= 15)
+#if FREEWARE_EDITION == 10002
+        G.record_score(0);
+#else
+        if (fps >= 15)
             G.record_score(fps);
+#endif
 #else
         freeware_save_score();
 #endif
+#if FREEWARE_EDITION != 10002
         SCALE = 1;
+#endif
         enter(1);
+#if FREEWARE_EDITION == 10002
+        STATE_SINCE = CLOCK;
+#else
         show_page(scores_page);
         STATE_SINCE = CLOCK - 1;
         FIELD(freeware_transition_pending, transition_pending) = 0;
         PERK(perk_id_reflex_boosted) = 0;
+#endif
     }
+#if FREEWARE_EDITION != 10002
     int hits = highscore_record_hits, fired = highscore_record_shots_fired;
     sprintf(buf, "Gained level: %d\nHit accuracy: %d%%\nFrags: %d\n", FIELD(P(0).level, run.level),
             fired ? (int)((double)hits / fired * 100) : 0, FIELD(freeware_kills, run.kills));
     label(buf, 60, 320, .66f, 1, 1, 1, 1);
+#endif
     cursor_particles(CLOCK, CLOCK + CLOCK);
 }

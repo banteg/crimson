@@ -21,6 +21,12 @@ from freeware_arsenal_cases import (
     check_player_perks,
     check_weapons,
 )
+from freeware_creature_motion_cases import check_creature_motion
+from freeware_credits_cases import check_credits
+from freeware_early_frame_cases import check_early_frames
+from freeware_fx_cases import check_early_fx_writes
+from freeware_player_motion_cases import check_player_motion
+from freeware_spawn_random_cases import check_random_spawns
 
 from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
 
@@ -79,6 +85,12 @@ def check(edition, install, tmp, web, browser):
         ROOT / "crimson-core/checks/freeware_early.cpp",
         ROOT / "crimson-core/checks/freeware_arsenal.cpp",
         ROOT / "crimson-core/checks/freeware_perks.cpp",
+        ROOT / "crimson-core/checks/freeware_spawn_random.cpp",
+        ROOT / "crimson-core/checks/freeware_player_motion.cpp",
+        ROOT / "crimson-core/checks/freeware_creature_motion.cpp",
+        ROOT / "crimson-core/checks/freeware_credits.cpp",
+        ROOT / "crimson-core/checks/freeware_early_frame.cpp",
+        ROOT / "crimson-core/checks/freeware_early_fx.cpp",
     ]
     binary = tmp / edition
     subprocess.run([tool("clang++"), *sources, "-o", binary], check=True)
@@ -94,6 +106,12 @@ def check(edition, install, tmp, web, browser):
         check_perks(exe, edition, output)
         check_player_perks(exe, edition, output)
         check_creature_perks(exe, edition, output)
+        check_random_spawns(exe, edition, output)
+        check_player_motion(exe, edition, output)
+        check_creature_motion(exe, edition, output)
+        check_credits(exe, edition, output)
+        check_early_frames(exe, edition, output)
+        check_early_fx_writes(exe, edition, output)
         if edition == "1.3.0":
             check_acquisition(install, tmp, output)
 

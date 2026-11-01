@@ -1,4 +1,5 @@
 #include "../freeware/game.h"
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <vector>
@@ -15,6 +16,7 @@ namespace freeware {
 void play_sound(Sound s) { samples.push_back(static_cast<int>(s)); }
 void play_original_sample(int id) { samples.push_back(id); }
 }
+int early_sample_count(int sample) { return int(std::count(samples.begin(), samples.end(), sample)); }
 void check_arsenal() {
   using namespace freeware;
   constexpr bool early = FREEWARE_EDITION == 10002;

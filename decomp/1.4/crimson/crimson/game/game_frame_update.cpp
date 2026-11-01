@@ -128,7 +128,7 @@ __forceinline void player() { player_update(); }
 __forceinline bool open_perk() {
     return grim_interface_ptr->grim_is_key_down(0x4e) || grim_interface_ptr->grim_is_key_down(0x39) ||
            grim_interface_ptr->grim_was_mouse_button_pressed(1) ||
-           (config_aim_schemes[current_player_index] == 3 &&
+           (config_aim_schemes[current_player_index] == (FREEWARE_EDITION == 10300 ? 2 : 3) &&
             grim_interface_ptr->grim_is_joystick_button_down(1)) ||
            (freeware_aim_screen.x > screen_width - 240 && freeware_aim_screen.x < screen_width + 17 &&
             freeware_aim_screen.y > screen_height - 50 && freeware_aim_screen.y < screen_height + 1 &&
@@ -200,23 +200,44 @@ __forceinline void position_camera() {
     CAM.x += SHAKE.x;
     CAM.y += SHAKE.y;
 #endif
-    if (CAM.x > -1)
-        CAM.x = -1;
-    if (CAM.y > -1)
-        CAM.y = -1;
+    const int edge = FREEWARE_EDITION < 10400 ? 0 : -1;
+    if (CAM.x > edge)
+        CAM.x = (float)edge;
+    if (CAM.y > edge)
+        CAM.y = (float)edge;
     if (CAM.x < screen_width - freeware_arena_width)
         CAM.x = (float)(screen_width - freeware_arena_width);
     if (CAM.y < screen_height - freeware_arena_height)
         CAM.y = (float)(screen_height - freeware_arena_height);
 }
-__forceinline void render_world() {
+__forceinline void render_ground() {
     terrain_render();
 #ifdef CRIMSON_FREEWARE_CLIENT
     G.terrain_sprites.swap(G.frame_sprites);
     G.presented_terrain_revision = G.terrain_revision;
 #endif
+}
+__forceinline void draw_projectiles() {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    G.actor_sprites.swap(G.frame_sprites);
+#endif
+    projectile_render();
+}
+__forceinline void render_world() {
+#if FREEWARE_EDITION != 10002
+    render_ground();
+#endif
+#if FREEWARE_EDITION < 10400
+    // Retired creatures contribute marks to this frame's queue in both early releases.
+    creature_render_all();
+    fx_queue_render();
+#else
     fx_queue_render();
     creature_render_all();
+#endif
+#if FREEWARE_EDITION == 10002
+    draw_projectiles();
+#endif
     if (ACTIVE) {
         if (SLOW <= 0)
             SLOW = 0;
@@ -241,10 +262,9 @@ __forceinline void render_world() {
         }
     }
     current_player_index = 0;
-#ifdef CRIMSON_FREEWARE_CLIENT
-    G.actor_sprites.swap(G.frame_sprites);
+#if FREEWARE_EDITION != 10002
+    draw_projectiles();
 #endif
-    projectile_render();
     freeware_current_map->render_layer(1, 0);
     freeware_current_map->render_triggers(1);
     effect_render_all();
@@ -482,7 +502,7 @@ extern "C" unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
     if (INPUT.screenshot)
         G.screenshot_requested = true;
-    if (!G.console_open && !INPUT.ctrl) {
+    if (!G.console_open && (FREEWARE_EDITION == 10002 || !INPUT.ctrl)) {
         if (INPUT.relative) {
             MOUSE_X += G.mouse_dx;
             MOUSE_Y += G.mouse_dy;
@@ -511,7 +531,7 @@ extern "C" unsigned char game_frame_update() {
     freeware_real_clock += dt;
 #endif
     float margin = P(current_player_index).size * .5f;
-    if (state() == 3)
+    if (FREEWARE_EDITION != 10002 && state() == 3)
         margin = 0;
     if (MOUSE_X < margin)
         MOUSE_X = margin;
@@ -530,11 +550,14 @@ extern "C" unsigned char game_frame_update() {
     CLOCK += frame_dt;
     if (state() == 3 && config_game_mode != 4)
         simulate_players();
+#if FREEWARE_EDITION == 10002
+    render_ground(); // 0x40c243 draws the ground with the preceding frame's camera.
+#endif
     position_camera();
     if (config_game_mode == 3 && state() == 3) {
         freeware_current_map->update_triggers();
         if (level_cleared()) {
-            enter(8);
+            enter(freeware_rules::level_clear_state);
             STATE_SINCE = CLOCK;
         }
     }
@@ -611,12 +634,15 @@ extern "C" unsigned char game_frame_update() {
         hud();
         perk_selection_screen_update();
         break;
+#if FREEWARE_EDITION != 10002
     case 6:
         update_wave();
+#if FREEWARE_EDITION != 10300
         creatures();
         shots();
+#endif
         hud();
-        CLOCK += frame_dt * .5f;
+        CLOCK += frame_dt * (FREEWARE_EDITION == 10300 ? 1.f : .5f);
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.death_clock = CLOCK - STATE_SINCE;
 #endif
@@ -628,16 +654,19 @@ extern "C" unsigned char game_frame_update() {
                                  : 3.f - elapsed);
         }
         if (CLOCK - STATE_SINCE >= 3) {
-            enter(9);
+            enter(freeware_rules::name_entry_state);
             request_transition();
             STATE_SINCE = CLOCK;
         }
         break;
+#endif
+#if FREEWARE_EDITION != 10300
     case 7:
         hud();
         game_show_message();
         break;
-    case 8:
+#endif
+    case freeware_rules::level_clear_state:
         hud();
         if (CLOCK - STATE_SINCE < 3) {
             float elapsed = CLOCK - STATE_SINCE;
@@ -655,12 +684,12 @@ extern "C" unsigned char game_frame_update() {
             enter(3);
         }
         break;
-    case 9:
+    case freeware_rules::name_entry_state:
         name_screen();
         break;
     }
 #ifdef CRIMSON_FREEWARE_CLIENT
-    if (INPUT.escape && state() != 6 && state() != 1) {
+    if (INPUT.escape && (FREEWARE_EDITION == 10002 || state() != 6) && state() != 1) {
         G.paused_perks = G.screen == freeware::Screen::Perks;
         G.paused = ACTIVE;
         G.selected = 0;

@@ -26,13 +26,13 @@ int Game::frame_state() const {
   case Screen::Perks:
     return 4;
   case Screen::LevelCleared:
-    return 8;
+    return freeware_rules::level_clear_state;
   case Screen::Dying:
     return 6;
   case Screen::Message:
     return 7;
   case Screen::Death:
-    return 9;
+    return freeware_rules::name_entry_state;
   default:
     return 1;
   }
@@ -48,16 +48,20 @@ void Game::enter_state(int id) {
   case 4:
     screen = Screen::Perks;
     break;
+#if FREEWARE_EDITION != 10002
   case 6:
     screen = Screen::Dying;
     break;
+#endif
+#if FREEWARE_EDITION != 10300
   case 7:
     screen = Screen::Message;
     break;
-  case 8:
+#endif
+  case freeware_rules::level_clear_state:
     screen = Screen::LevelCleared;
     break;
-  case 9:
+  case freeware_rules::name_entry_state:
     screen = Screen::Death;
     std::puts(FREEWARE_VERSION " name entry");
     break;
