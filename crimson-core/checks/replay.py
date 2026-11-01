@@ -28,10 +28,14 @@ def custom_quest(blob: bytes) -> CustomQuest:
     return CustomQuest.from_portable_bytes(blob)
 
 
+class UnsupportedCoreReplay(ValueError):
+    """The run's mode or player count requires the Python port."""
+
+
 def encode(replay, limit):
     run = replay.run
     if run.player_count not in (1, 2) or int(run.game_mode_id) not in (1, 2, 3):
-        raise ValueError("The core supports one or two players in Rush, Survival or Quests")
+        raise UnsupportedCoreReplay("The core supports one or two players in Rush, Survival or Quests")
     level = run.quest_level
     custom = run.custom_quest
     # A custom quest starts at stage 0.0, its table after the config.

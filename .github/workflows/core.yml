@@ -212,7 +212,7 @@ jobs:
         run: |
           reports=()
           for report in crimson-core/build/shards/*/gate.json; do reports+=(--merge "$report"); done
-          uv run --no-sync python crimson-core/checks/gate.py "${reports[@]}"
+          uv run --no-sync python crimson-core/checks/gate.py "${reports[@]}" --quest-outcomes "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         with:
           name: runtime-python-report
