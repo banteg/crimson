@@ -10,14 +10,14 @@ int early_sample_count(int sample);
 
 void check_early_frames(const char *assets) {
   using namespace freeware;
-  enum Scenario { career, survival, coop, death, impact, first_map };
-  for (int scene = career; scene < first_map + 4; ++scene) {
-    if ((scene == coop || scene >= first_map) && FREEWARE_EDITION == 10002)
+  enum Scenario { career, survival, coop, death, impact, first_map, escape_during_death = first_map + 4 };
+  for (int scene = career; scene <= escape_during_death; ++scene) {
+    const bool level = scene >= first_map && scene < escape_during_death;
+    if ((scene == coop || level) && FREEWARE_EDITION == 10002)
       continue;
     Game game;
     game.survival = scene == survival || scene == coop;
     game.two_players = scene == coop;
-    const bool level = scene >= first_map;
     game.asset_dir = assets;
     if (level)
       game.level_mode = 3;
@@ -37,11 +37,11 @@ void check_early_frames(const char *assets) {
     game.camera = {0, 0};
     game.run.player = {scene == career ? 200.f : 512.f, scene == career ? 180.f : 512.f};
     game.run.partner.player = {592, 512};
-    game.run.health = scene == death ? -1 : 100;
+    game.run.health = scene == death || scene == escape_during_death ? -1 : 100;
     if (scene >= death)
       game.run.next_spawn = 100;
     freeware_spawn_enabled = scene == career || game.survival;
-    if (scene >= impact) {
+    if (scene == impact || level) {
       // One final round is already in flight when the original callback begins.
       auto &c = creature_pool[0];
       c.active = 1;
@@ -57,9 +57,11 @@ void check_early_frames(const char *assets) {
       projectile_spawn(&start, 1.57079637f, 4);
     }
     seed_random(42);
-    for (int tick = 0; tick < (scene == death ? 34 : level ? 64 : scene == impact ? 42 : 12); ++tick) {
+    const int frames = scene == escape_during_death ? 2 : scene == death ? 34 : level ? 64 : scene == impact ? 42 : 12;
+    for (int tick = 0; tick < frames; ++tick) {
       Input input{};
       input.relative = true;
+      input.escape = scene == escape_during_death && tick == 1;
       input.dx = tick == 0 ? -800.f : tick == 2 ? 1000.f : 0.f;
       input.dy = tick == 0 ? 700.f : tick == 2 ? -1000.f : 0.f;
       if (scene == death) {

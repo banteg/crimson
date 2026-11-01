@@ -9,7 +9,8 @@ from freeware_arsenal_cases import original
 
 def check_early_frames(exe, edition, lines):
     early = edition == "1.0.2"
-    pe, samples = original(exe, early, buttons=())
+    keys = set()
+    pe, samples = original(exe, early, keys=keys, buttons=())
     if early:
         frame, state, mode, active, spawn = 0x40C110, 0x41C09C, 0x41C0A0, 0x428800, 0x4287F6
         dt, clock, seconds, timer, scale = 0x428884, 0x428888, 0x428810, 0x42886C, 0x41C080
@@ -68,16 +69,18 @@ def check_early_frames(exe, edition, lines):
     rows = iter(line.split()[1:] for line in lines if line.startswith("earlyframe "))
     overlay_rows = iter(line.split()[1:] for line in lines if line.startswith("deathoverlay "))
     total = 0
-    for scene in range(9):
-        if early and (scene == 2 or scene >= 5):
+    for scene in range(10):
+        level_test = 5 <= scene <= 8
+        escape_during_death = scene == 9
+        if early and (scene == 2 or level_test):
             continue
         pe.restore(baseline)
         pe.write_u32(state, 3)
-        pe.write_u32(mode, 3 if scene >= 5 else 2 if scene in (1, 2) else 1)
+        pe.write_u32(mode, 3 if level_test else 2 if scene in (1, 2) else 1)
         pe.write_u8(active, 1)
         pe.write_u8(spawn, scene in (0, 1, 2))
         pe.write_f32(scale, 1)
-        if scene >= 5:
+        if level_test:
             pe.write_u32(0x44782C, scene - 5)
             pe.write_u32(0x4374A8, 1)
             pe.call(0x411610)
@@ -88,7 +91,7 @@ def check_early_frames(exe, edition, lines):
             pe.write(camera, bytes(8))
         pe.write(cursor, struct.pack("<2f", 320, 140))
         pe.write(pos, struct.pack("<2f", 200, 180) if scene == 0 else struct.pack("<2f", 512, 512))
-        pe.write_f32(hp, -1 if scene == 3 else 100)
+        pe.write_f32(hp, -1 if scene == 3 or escape_during_death else 100)
         if not early:
             pe.write_u32(0x4374A8, 2 if scene == 2 else 1)
             pe.write(pos + 328, struct.pack("<2f", 592, 512))
@@ -98,11 +101,10 @@ def check_early_frames(exe, edition, lines):
                     pe.write_u8(addr, 1)
         if scene >= 3:
             pe.write_f32(timer, 100)
-        if scene >= 4:
+        if scene == 4 or level_test:
             pe.write_u8(pool, 1)
             if not early:
                 pe.write_u8(pool + 1, 1)
-            if not early:
                 pe.write_f32(pool + 8, -1)  # Breeder timer. The 1.0.2 record has only the disease tick timer.
             pe.write_f32(pool + (8 if early else 20), 16)
             pe.write(pool + (12 if early else 24), struct.pack("<2f", 110, 100))
@@ -114,9 +116,13 @@ def check_early_frames(exe, edition, lines):
         pe.rand_state = 42
         delta = 0.0625 if scene >= 3 else 0.03125
         early_quality_counter = 0
-        for tick in range(34 if scene == 3 else 64 if scene >= 5 else 42 if scene == 4 else 12):
+        frames = 2 if escape_during_death else 34 if scene == 3 else 64 if level_test else 42 if scene == 4 else 12
+        for tick in range(frames):
             ground.clear()
             labels.clear()
+            keys.clear()
+            if escape_during_death and tick == 1:
+                keys.add(1)  # DIK_ESCAPE in the common frame tail.
             dx = -800 if tick == 0 else 1000 if tick == 2 else 0
             dy = 700 if tick == 0 else -1000 if tick == 2 else 0
             name_key = 0xA7

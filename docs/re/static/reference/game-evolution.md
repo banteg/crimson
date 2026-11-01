@@ -43,7 +43,7 @@ The player’s turn rate now ramps up. The three aiming options are mouse, keybo
 
 At the title screen, hold **left Ctrl** and type **LEVELS**, then cycle the game mode to **Level Test**. The key sequence is in the dispatcher at `0x4145b3`. Four numbered maps cycle in order. The ZIP also carries three other map files and a separate `tiles.paq`. Level Test can place creatures that wait for the player to approach and triggers that grant a weapon. Its spawner gives placed creatures 300 health instead of scaling health with elapsed time.
 
-After the last creature retires, the level-clear screen stays up for three game seconds. The dispatcher then loads the next numbered map. The fourth clear returns to level one. Death takes a different path. The reaper interlude advances the simulation clock twice per frame while creature and projectile updates are suspended, then opens name entry.
+After the last creature retires, the level-clear screen stays up for three game seconds. The dispatcher then loads the next numbered map. The fourth clear returns to level one. Death takes a different path. The reaper interlude advances the simulation clock twice per frame while creature and projectile updates are suspended, then opens name entry. Escape can return to the title during this interlude in 1.3.0. In 1.4.0 the interlude has to finish.
 
 Walls affect gunfire as well as movement. A normal bullet stops when it hits a wall. When `rand() % 15 == 2`, the impact also spawns a pistol projectile at a right angle. The wall query and impact branch are at `0x40642c` and `0x406d94`.
 
