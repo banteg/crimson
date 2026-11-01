@@ -505,6 +505,9 @@ def apply_recovered_map(
             **({"build_only": True} if root_address is None else {"canonical_address": f"0x{root_address:08X}"}),
             name=name, evidence="recovered",
         )
+        if recovered.get("identity_only"):
+            # The fingerprint identifies the routine even when native analysis retains interior entries.
+            row["identity_only"] = True
         rows[name] = row
     entries = {row["name"]: row for row in payload["data"]["entries"]}
     names = _reference_catalog(canonical)

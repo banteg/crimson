@@ -45,6 +45,18 @@ def test_native_partition_keeps_unmapped_functions_and_uncredited_gaps() -> None
     assert sum(row["size"] for row in rows) == len(data)
 
 
+def test_identity_only_pin_preserves_native_entries_inside_dispatcher() -> None:
+    image = matchlib.LoadedImage(bytes.fromhex("9090c3c3"), 0x1000, 4)
+    discovered = [
+        {"address": 0x1000, "name": "first", "blocks": [{"address": 0x1000, "end": 0x1004}]},
+        {"address": 0x1003, "name": "second", "blocks": [{"address": 0x1003, "end": 0x1004}]},
+    ]
+    mapped = [{"address": "0x1000", "end": "0x1004", "name": "dispatcher", "evidence": "recovered",
+               "build_only": True, "identity_only": True}]
+    rows = match_native_inventory._partition([(0x1000, 0x1004)], discovered, mapped, [], {}, image, "crimson.exe")
+    assert [(row["name"], row["size"]) for row in rows] == [("dispatcher", 3), ("second", 1)]
+
+
 def test_unresolved_executable_bytes_are_not_functions_or_source_credit() -> None:
     rows = [{"image": "crimson.exe", "address": 0x401000, "name": "gap", "size": 100,
              "native_kind": "unresolved", "ownership": "game", "candidate": None, "source": None,

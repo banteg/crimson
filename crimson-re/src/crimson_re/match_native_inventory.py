@@ -52,15 +52,16 @@ def _partition(
     image: matchlib.LoadedImage, image_name: str,
 ) -> list[dict[str, Any]]:
     by_address = {matchlib.parse_int(row["address"]): row for row in mapped}
-    verified = sorted(
-        (start, matchlib.parse_int(row["end"])) for start, row in by_address.items() if row["evidence"] in {"exact", "interface", "recovered"}
-    )
-    protected_starts = [start for start, _ in verified]
+    verified_ends = {
+        start: matchlib.parse_int(row["end"]) for start, row in by_address.items()
+        if row["evidence"] in {"exact", "interface", "recovered"} and not row.get("identity_only")
+    }
+    protected_starts = sorted(verified_ends)
     functions = {row["address"]: row for row in discovered}
     starts = []
     for start in sorted(functions):
         previous = bisect.bisect_left(protected_starts, start) - 1
-        if previous >= 0 and start < verified[previous][1]:
+        if previous >= 0 and start < verified_ends[protected_starts[previous]]:
             continue  # Interior/shared entry remains in native.json, not a duplicate byte owner.
         starts.append(start)
 
@@ -86,8 +87,7 @@ def _partition(
             end = min(max(block["end"] for block in native["blocks"]),
                       section_starts[index + 1] if index + 1 < len(section_starts) else section_end)
             identity = by_address.get(start)
-            if identity is not None and identity["evidence"] in {"exact", "interface", "recovered"}:
-                end = matchlib.parse_int(identity["end"])
+            end = verified_ends.get(start, end)
             if not cursor <= start < end <= section_end:
                 raise ValueError("overlapping or invalid native function partition")
             if cursor < start:
