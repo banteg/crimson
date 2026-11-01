@@ -182,7 +182,7 @@ __forceinline void editor() {
     sprite(G.brushes[index].name.c_str(), offset.x + MOUSE_X, offset.y + MOUSE_Y, brush.width, brush.height,
            rotation, black ? 0 : light, black ? 0 : light, black ? 0 : light, black ? 1 : alpha);
 #else
-    grim_interface_ptr->grim_bind_texture(map->texture, 0);
+    frame_bind_texture(map->texture);
     grim_interface_ptr->grim_set_rotation(rotation);
     grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
     grim_interface_ptr->grim_set_color(black ? 0 : light, black ? 0 : light, black ? 0 : light, black ? 1 : alpha);
