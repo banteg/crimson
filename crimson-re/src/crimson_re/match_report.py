@@ -398,6 +398,9 @@ def build_report(
     if any(row.get("native_kind") == "unresolved" for row in functions):
         labels["unresolved"] = "Unresolved executable bytes"
         labels["game"] = "Confirmed Game & Engine"
+    if any("platform_replaced" in row for row in functions):
+        labels["port"] = "Freeware port"
+        labels["platform"] = "Replaced platform functions"
     if data is not None and "ownership" in data:
         labels.update({"game.data": "Game & Engine + attributed data",
                        "libs.data": "Libraries + attributed data",
@@ -456,6 +459,8 @@ def build_report(
             libraries = [row["ownership"]] if row["ownership"].startswith("libs.") else []
             if row["ownership"] == "game":
                 categories.append("game")
+                if is_function and "platform_replaced" in row:
+                    categories.append("port" if match_native_inventory.in_port_scope(row) else "platform")
             elif row["ownership"] != "unknown" and not libraries:
                 raise ValueError("invalid native function ownership")
         else:

@@ -4543,6 +4543,8 @@ class TriageRow:
     scratch_count: int
     best_status: ScratchStatus | None = None
     experiments: TriageExperimentEvidence = TriageExperimentEvidence()
+    name_evidence: str | None = None
+    platform_replaced: str | None = None
 
     @property
     def fuzzy_gap_bytes(self) -> float:
@@ -8659,10 +8661,11 @@ def collect_triage_rows(
     *,
     images: tuple[str, ...] | None = None,
     scope: str | None = None,
+    native_functions: dict[str, dict[int, dict[str, Any]]] | None = None,
 ) -> list[TriageRow]:
     """Join scratch coverage to native functions by image and address."""
 
-    selected_images = images or tuple(sorted(matching_scope_images(scope)))
+    selected_images = images or tuple(sorted(native_functions if native_functions is not None else matching_scope_images(scope)))
     statuses_by_address: dict[tuple[str, int], list[ScratchStatus]] = {}
     for status in statuses:
         if status.address:
@@ -8670,17 +8673,17 @@ def collect_triage_rows(
 
     rows: list[TriageRow] = []
     for image_name in selected_images:
-        image_path, functions_path, metadata_path = _paths_for_image(image_name)
-        manifest = load_function_manifest(
-            functions_path,
-            metadata_path=metadata_path,
-            image_name=image_name,
-            scope=scope,
-        )
-        image = load_image(image_path, manifest.image_base)
-        for function in manifest.functions:
-            target_size = len(image.function_bytes(function.address, function.end))
-            function_statuses = statuses_by_address.get((image_name, function.address), [])
+        if native_functions is None:
+            image_path, functions_path, metadata_path = _paths_for_image(image_name)
+            manifest = load_function_manifest(
+                functions_path, metadata_path=metadata_path, image_name=image_name, scope=scope,
+            )
+            image = load_image(image_path, manifest.image_base)
+            targets = [(f.address, f.name, len(image.function_bytes(f.address, f.end))) for f in manifest.functions]
+        else:
+            targets = [(a, f["name"], f["size"]) for a, f in native_functions[image_name].items()]
+        for address, name, target_size in targets:
+            function_statuses = statuses_by_address.get((image_name, address), [])
             usable = [status for status in function_statuses if status.ratio is not None]
             best_status = max(function_statuses, key=status_rank) if function_statuses else None
             exact_bytes = max(
@@ -8712,12 +8715,14 @@ def collect_triage_rows(
                 state = "error"
             else:
                 state = "missing"
-            experiments = triage_experiment_evidence(best_status)
+            # Recorded probe epochs apply to the canonical target only.
+            experiments = triage_experiment_evidence(best_status) if native_functions is None else TriageExperimentEvidence()
+            native = native_functions[image_name][address] if native_functions is not None else {}
             rows.append(
                 TriageRow(
                     image=image_name,
-                    function=function.name,
-                    address=function.address,
+                    function=name,
+                    address=address,
                     target_size=target_size,
                     state=state,
                     exact_bytes=exact_bytes,
@@ -8726,6 +8731,8 @@ def collect_triage_rows(
                     scratch_count=len(function_statuses),
                     best_status=best_status,
                     experiments=experiments,
+                    name_evidence=native.get("name_evidence"),
+                    platform_replaced=native.get("platform_replaced"),
                 ),
             )
     return rows
@@ -9605,6 +9612,8 @@ def triage_row_payload(row: TriageRow) -> dict[str, Any]:
         "state": row.state,
         "image": row.image,
         "function": row.function,
+        **({"name_evidence": row.name_evidence} if row.name_evidence else {}),
+        **({"platform_replaced": row.platform_replaced} if row.platform_replaced else {}),
         "address": row.address,
         "target_bytes": row.target_size,
         "exact_bytes": row.exact_bytes,
@@ -9865,7 +9874,7 @@ def render_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> li
             (
                 row.state,
                 row.image,
-                row.function,
+                f"{row.function} [{row.name_evidence}]" if row.name_evidence in {"ordered", "called", "referenced"} else row.function,
                 f"0x{row.address:08x}",
                 str(row.target_size),
                 f"{row.exact_bytes}/{row.target_size}",

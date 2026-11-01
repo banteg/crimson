@@ -36,7 +36,7 @@ def identities(
         "inventory": _digest({
             "policy": policy,
             "ranges": sorted((r["image"], r["address"], r["size"], r.get("canonical_address", r["address"]))
-                             + ((r.get("native_kind"), r.get("ownership")),) if native else
+                             + ((r.get("native_kind"), r.get("ownership"), bool(r.get("platform_replaced"))),) if native else
                              (r["image"], r["address"], r["size"], r.get("canonical_address", r["address"]))
                              for r in functions),
             "data_sections": data["sections"] if data is not None else None,
@@ -264,7 +264,7 @@ def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: di
              "| --- | --- | --- | --- | --- | --- |"]
     scopes = [("All", report["measures"], metrics)] + [
         (category["name"], category["measures"], metrics["scopes"][category["id"]])
-        for category in report["categories"] if category["id"] in {"game", "libs", "unknown", "game.data"}
+        for category in report["categories"] if category["id"] in {"game", "port", "platform", "libs", "unknown", "game.data"}
     ]
     for label, measures, scope in scopes:
         total = int(measures["total_code"])

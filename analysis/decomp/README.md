@@ -354,6 +354,15 @@ placement never transfers canonical game/library ownership. Exact donor library
 identities can classify later functions, without awarding archive credit.
 Data and linked-executable recovery remain unmeasured for these builds.
 
+The **Freeware port** filter counts retained functions in the confirmed game
+and engine ranges after the release's reviewed platform exclusions. It includes
+unnamed functions and functions unique to that release. **Replaced platform
+functions** counts the excluded functions separately. Both filters use the
+same native addresses and extents as `match triage --build VERSION`.
+Unresolved executable gaps contribute bytes to the ownership report only.
+The port measures track compiler recovery. Client behavior is checked by
+running the original and the port with the same inputs.
+
 CI fetches the six original images from the existing public asset bucket and
 verifies their registry SHA-256 pins. Report artifacts follow the existing
 `<version>_report` naming convention, so all versions belong to the same

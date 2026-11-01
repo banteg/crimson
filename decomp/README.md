@@ -160,7 +160,9 @@ uv run crimson match probe tools/match/scratches/console_clear_log --build 1.4.0
 
 ### The 1.4 family
 
-The three freeware builds are family 1.4, with 1.4.0 as its reference: they
+The freeware port targets are 1.0.2, 1.3.0 and 1.4.0. The preserved 1.3.1
+release serves as a comparison reference. The three targets form family 1.4,
+with 1.4.0 as its reference. They
 share a compiler and keep `crimson.obj`'s function order, while 1.4.0 and 1.9.93
 share under a quarter of their game functions. Names still come from 1.9.93, so
 1.4.0's `crimson.exe` maps from 1.9.93, and 1.0.2's and 1.3.0's map from 1.4.0
@@ -202,7 +204,9 @@ uv run scripts/export_freeware_native_inventory.py --target <explicit-selector>
 uv run crimson match report --refresh -j 8
 ```
 
-The exporter preserves reviewed ownership boundaries and checks their byte pins.
+The exporter preserves reviewed ownership boundaries and the per-image
+`platform_replaced` addresses. The inventory loader checks that each exclusion
+has a reason and points to a retained game or engine function in the pinned image.
 Stage any new inventory inputs before refreshing reports.
 
 ## Scope

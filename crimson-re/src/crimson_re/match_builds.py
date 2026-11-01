@@ -129,11 +129,25 @@ class BuildImage:
             for compiler in compilers
         )
 
-    def scratch_config(self, config: matchlib.ScratchConfig) -> matchlib.ScratchConfig:
+    def scratch_config(self, config: matchlib.ScratchConfig, *, scope: str | None = None) -> matchlib.ScratchConfig:
         """Compile a canonical scratch as this build with its first applicable compiler."""
         configs = self.scratch_configs(config)
         if not configs:
             raise ValueError(f"{config.function} is configured only for {', '.join(config.builds)}")
+        if self.native_inventory is not None and scope is not None:
+            from . import match_native_inventory
+
+            manifest = matchlib.load_function_manifest(
+                self.target.functions_path, metadata_path=self.target.metadata_path, image_name=self.target.image_name,
+            )
+            function, _, _ = matchlib.resolve_function(manifest, config.function)
+            native = match_native_inventory.scoped_functions(self, "all").get(function.address)
+            if native is None:
+                raise ValueError(f"{self.target.image_name}/{config.function} is not a retained native function")
+            if scope == "port" and not match_native_inventory.in_port_scope(native):
+                reason = native.get("platform_replaced") or native["ownership"]
+                raise ValueError(f"{self.target.image_name}/{config.function} is outside port scope: {reason.rstrip('.')}. Use --scope all.")
+            return replace(configs[0], end_va=native["end"])
         return configs[0]
 
     def state(self) -> str:
@@ -1241,39 +1255,56 @@ def scan_build(
     *,
     jobs: int = matchlib.DEFAULT_MATCH_JOBS,
     native_inventory: bool = False,
+    scope: str | None = None,
+    functions: dict[str, dict[int, dict[str, Any]]] | None = None,
+    compiler: str | None = None,
+    cflags: str | None = None,
 ) -> list[BuildScanRow]:
-    """Compile every source scratch whose function the build's map places, as that build."""
+    """Compile mapped scratches. Freeware defaults to its port scope; full-image reports request all."""
+    if build not in registry.builds:
+        raise ValueError(f"unknown matching build {build!r}")
+    if scope not in {None, "port", "all"}:
+        raise ValueError(f"unknown function scope: {scope}")
+    images = registry.builds[build]
+    if scope == "port" and not all(image.native_inventory is not None for image in images.values()):
+        raise ValueError(f"{build} has no native freeware port scope")
     evidence: dict[tuple[str, str], str] = {}
     addresses: dict[tuple[str, str], int] = {}
-    for name, image in registry.builds[build].items():
+    for name, image in images.items():
         if image.target.functions_path.is_file():
             for row in json.loads(image.target.functions_path.read_text(encoding="utf-8")):
                 evidence[name, row["name"]] = row["evidence"]
                 addresses[name, row["name"]] = matchlib.parse_int(row["address"])
-    bounds = {}
-    if native_inventory:
-        from . import match_native_inventory
-        bounds = {name: match_native_inventory.function_bounds(image)
-                  for name, image in registry.builds[build].items() if image.native_inventory is not None}
+    scoped_images = dict(functions or {})
     scratches: list[str] = []
     configs: list[matchlib.ScratchConfig] = []
     owners: list[int] = []
     for conf_path in sorted(match_root.resolve().glob("scratches/*/scratch.conf")):
         config = matchlib.load_scratch_config(conf_path.parent)
-        if config.archive is not None or config.import_thunk is not None:
+        if config.archive is not None or config.import_thunk is not None or not config.supports_build(build):
             continue
         image = registry.image(build, config.image)
         if (image.name, config.function) not in evidence:
             continue
         address = addresses[image.name, config.function]
-        if image.name in bounds and address not in bounds[image.name]:
+        if functions is None and image.native_inventory is not None and image.name not in scoped_images:
+            from . import match_native_inventory
+
+            scoped_images[image.name] = match_native_inventory.scoped_functions(
+                image, scope or ("all" if native_inventory else "port"),
+            )
+        if (functions is not None or image.name in scoped_images) and address not in scoped_images.get(image.name, {}):
             continue
+        if cflags is not None:
+            config = replace(config, cflags=cflags)
         build_configs = image.scratch_configs(config)
         if not build_configs:
             continue
+        if compiler is not None:
+            build_configs = (replace(build_configs[0], compiler=compiler),)
         for build_config in build_configs:
-            if image.name in bounds:
-                build_config = replace(build_config, end_va=bounds[image.name][address])
+            if image.name in scoped_images:
+                build_config = replace(build_config, end_va=scoped_images[image.name][address]["end"])
             configs.append(build_config)
             owners.append(len(scratches))
         scratches.append(evidence[image.name, config.function])

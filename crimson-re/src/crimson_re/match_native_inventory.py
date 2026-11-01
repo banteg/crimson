@@ -180,3 +180,20 @@ def scoped_functions(image: match_builds.BuildImage, scope: str) -> dict[int, di
 
 def function_bounds(image: match_builds.BuildImage) -> dict[int, int]:
     return {address: row["end"] for address, row in scoped_functions(image, "all").items()}
+
+
+def build_functions(
+    registry: match_builds.Registry, build: str, scope: str, *, image_name: str | None = None,
+) -> dict[str, dict[int, dict[str, Any]]]:
+    if build not in registry.builds:
+        raise ValueError(f"unknown matching build {build!r}")
+    images = [registry.image(build, image_name)] if image_name else registry.builds[build].values()
+    inventory = {}
+    for image in images:
+        rows = scoped_functions(image, scope)
+        for placement in json.loads(image.target.functions_path.read_text()):
+            address = matchlib.parse_int(placement["address"])
+            if address in rows:
+                rows[address]["name_evidence"] = placement["evidence"]
+        inventory[image.name] = rows
+    return inventory
