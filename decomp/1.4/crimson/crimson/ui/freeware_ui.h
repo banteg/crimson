@@ -52,14 +52,20 @@ __forceinline void text(float x, float y, const char *s) {
 }
 #else
 typedef int Texture;
-__forceinline int viewport_width() { return screen_width; }
-__forceinline int viewport_height() { return screen_height; }
+__forceinline int viewport_width() { return CL_BUILD == 10002 ? 640 : screen_width; }
+__forceinline int viewport_height() { return CL_BUILD == 10002 ? 480 : screen_height; }
 __forceinline Texture texture(const char *name) {
     return grim_interface_ptr->grim_get_texture_handle((char *)name);
 }
-__forceinline void bind(Texture value) { grim_interface_ptr->grim_bind_texture(value, 0); }
-__forceinline void filter(unsigned value) { grim_interface_ptr->grim_set_config_var(0x15, value); }
-__forceinline void scale(float value) { grim_interface_ptr->grim_set_config_var(0x18, value); }
+__forceinline void bind(Texture value) {
+#if CL_BUILD < 10400
+    grim_interface_ptr->grim_bind_texture(value);
+#else
+    grim_interface_ptr->grim_bind_texture(value, 0);
+#endif
+}
+__forceinline void filter(unsigned value) { grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xf : 0x15, value); }
+__forceinline void scale(float value) { grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0x11 : 0x18, value); }
 __forceinline void angle(float value) { grim_interface_ptr->grim_set_rotation(value); }
 __forceinline void uv(float u, float v, float s, float t) { grim_interface_ptr->grim_set_uv(u, v, s, t); }
 __forceinline void tint(float r, float g, float b, float a) { grim_interface_ptr->grim_set_color(r, g, b, a); }

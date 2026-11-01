@@ -65,7 +65,7 @@ struct Input {
   bool previous{}, next{}, accept{}, escape{}, backspace{};
   bool up2{}, down2{}, left2{}, right2{}, fire2{}, reload{}, level_up{};
   bool ctrl{}, console{}, mouse_fire{}, bend_time{}, fast_time{}, right_mouse{};
-  bool screenshot{}, relative{}, arrow_down{}, arrow_up{}, space_pressed{}, delete_scores{};
+  bool screenshot{}, relative{}, arrow_down{}, arrow_up{}, space_pressed{}, space_down{}, delete_scores{};
   float dx{}, dy{};
   std::bitset<256> level_down, level_pressed;
   int key{};

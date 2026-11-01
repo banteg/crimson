@@ -235,7 +235,8 @@ static void frame() {
   controls.mouse_fire = in.fire;
   controls.fire = FREEWARE_EDITION == 10002 ? keys[SDL_SCANCODE_RETURN] : held(0, 4);
   controls.reload |= keys[SDL_SCANCODE_R];
-  controls.bend_time = keys[SDL_SCANCODE_SPACE] || in.right_mouse;
+  controls.space_down = keys[SDL_SCANCODE_SPACE];
+  controls.bend_time = controls.space_down || in.right_mouse;
   controls.fast_time = keys[SDL_SCANCODE_X];
   controls.level_up |= (FREEWARE_EDITION != 10002 && keys[SDL_SCANCODE_SPACE]) || keys[SDL_SCANCODE_KP_PLUS];
   c.game.update(dt, controls);

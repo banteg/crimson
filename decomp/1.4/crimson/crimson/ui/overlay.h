@@ -65,10 +65,17 @@ __forceinline void draw_backdrop() {
     tint(1, 1, 1, .68f);
     scale(.76f);
 #ifndef CRIMSON_FREEWARE_CLIENT
+#if CL_BUILD < 10400
+    grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xc : 0x12, true);
+    grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xd : 0x13, 5u);
+    grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xe : 0x14, 6u);
+#else
     grim_interface_ptr->grim_set_config_var(0x12, 1u);
     grim_interface_ptr->grim_set_config_var(0x13, 5u);
     grim_interface_ptr->grim_set_config_var(0x14, 6u);
+#endif
 #else
+    UI_GAME.ui.source_blend = 5;
     UI_GAME.ui.destination_blend = 6;
 #endif
     tint(1, 1, 1, .88f);
