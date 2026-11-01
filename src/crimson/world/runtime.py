@@ -71,6 +71,7 @@ class WorldRuntime:
         self.terrain_setup: TerrainSetup | None = None
 
         self.camera = Vec2(-1.0, -1.0)
+        self._shake_displacement = Vec2()
         self.view_cap = viewport.DEFAULT_VIEW_CAP
 
     @property
@@ -127,6 +128,7 @@ class WorldRuntime:
         self.render_resources.smoke.reset()
         self.render_resources.debris.reset()
         self.camera = Vec2(-1.0, -1.0)
+        self._shake_displacement = Vec2()
 
     @property
     def world(self) -> WorldState:
@@ -180,11 +182,15 @@ class WorldRuntime:
             view_cap=self.view_cap,
         )
         camera = self.camera if update.focus is None else screen_size * 0.5 - update.focus
-        camera = camera + update.shake
-        self.camera = viewport.clamp_camera(
-            camera=camera,
-            screen_size=screen_size,
-        )
+        self.camera = viewport.clamp_camera(camera=camera + update.shake, screen_size=screen_size)
+        calm = viewport.clamp_camera(camera=camera, screen_size=screen_size)
+        self._shake_displacement = self.camera - calm
+
+    @property
+    def draw_camera(self) -> Vec2:
+        if self.config is not None and self.config.display.reduce_camera_shake:
+            return self.camera - self._shake_displacement
+        return self.camera
 
     @property
     def rtx_debug_active(self) -> bool:
@@ -241,9 +247,9 @@ class WorldRuntime:
     def _render_ctx(self) -> WorldRenderCtx:
         return WorldRenderCtx(frame=self.build_render_frame(), view=self.view_transform())
 
-    def view_transform(self) -> viewport.ViewTransform:
+    def view_transform(self, *, for_input: bool = False) -> viewport.ViewTransform:
         return viewport.view_transform(
-            config=self.config, camera=self.camera,
+            config=self.config, camera=self.camera if for_input else self.draw_camera,
             out_size=Vec2(float(canvas.width()), float(canvas.height())),
             view_cap=self.view_cap,
         )
@@ -252,13 +258,13 @@ class WorldRuntime:
         return self.view_transform().world_to_screen(pos)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        return self.view_transform().screen_to_world(pos)
+        return self.view_transform(for_input=True).screen_to_world(pos)
 
     def build_render_frame(self) -> RenderFrame:
         smoke_enabled = self.render_resources.sync_smoke_mode()
         return RenderFrame(
             config=self.config,
-            camera=self.camera,
+            camera=self.draw_camera,
             ground=self.render_resources.ground,
             state=self.world.state,
             players=self.world.players,

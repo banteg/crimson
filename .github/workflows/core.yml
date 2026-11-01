@@ -260,7 +260,11 @@ jobs:
           node crimson-core/checks/game_boot.mjs "$(fresh)"
           node crimson-core/checks/game_input.mjs "$(fresh)"
           node crimson-core/checks/game_display_aim.mjs "$RUNNER_TEMP/game"
-          node crimson-core/checks/game_session.mjs --seed 4069574050 "$(fresh)"
+          node crimson-core/checks/game_session.mjs --seed 4069574050 "$(fresh)" > "$RUNNER_TEMP/audio-active.json"
+          node crimson-core/checks/game_session.mjs --audio-stall --seed 4069574050 "$(fresh)" > "$RUNNER_TEMP/audio-stall.json"
+          cat "$RUNNER_TEMP/audio-active.json" "$RUNNER_TEMP/audio-stall.json"
+          jq -es 'length == 2 and (.[0].recordingHash | type == "string") and .[0].recordingHash == .[1].recordingHash' \
+            "$RUNNER_TEMP/audio-active.json" "$RUNNER_TEMP/audio-stall.json"
           node crimson-core/checks/game_session.mjs --1.9.8 --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --seed 4069574050 "$(fresh)"
@@ -278,6 +282,7 @@ jobs:
           node crimson-core/checks/game_watch.mjs "$(fresh)"
           node crimson-core/checks/game_seek.mjs "$(fresh)"
           node crimson-core/checks/game_seek.mjs "$(fresh)" --rtx
+          node crimson-core/checks/game_seek.mjs "$(fresh)" tests/fixtures/replays/quest-5.7-hardcore-rules2.crd --rtx --reduce-shake --large-terrain
           node crimson-core/checks/game_practice.mjs "$(fresh)"
           node crimson-core/checks/game_online.mjs "$(fresh)"
           node crimson-core/checks/game_custom.mjs "$(fresh)"

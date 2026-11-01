@@ -48,6 +48,7 @@ class OptionsMenuView(PanelMenuView):
         # In place of Graphics detail, below the sliders; crimson.cfg keeps the preset.
         self._rtx_checkbox = UiCheckbox("RTX lighting")
         self._info_checkbox = UiCheckbox("UI Info texts")
+        self._shake_checkbox = UiCheckbox("Reduce shake")
 
     def open(self) -> None:
         super().open()
@@ -84,6 +85,13 @@ class OptionsMenuView(PanelMenuView):
         ):
             config.gameplay.show_info_texts = self._info_checkbox.checked
             self._dirty = True
+
+        self._shake_checkbox.checked = config.display.reduce_camera_shake
+        if ui_checkbox_update(
+            resources, self._shake_checkbox, label_pos.offset(dx=130.0, dy=135.0),
+            focus=focus, mouse=mouse, click=canvas.mouse_pressed(),
+        ):
+            config.set_reduce_camera_shake(self._shake_checkbox.checked)
 
         down = canvas.mouse_down()
         sfx_value = self._slider_sfx.value
@@ -194,6 +202,8 @@ class OptionsMenuView(PanelMenuView):
         ui_segmented_slider_draw(resources, focus, self._slider_music, slider_pos.offset(dy=67.0))
         ui_checkbox_draw(resources, self._rtx_checkbox, label_pos.offset(dy=110.0), focus=focus)
         ui_checkbox_draw(resources, self._info_checkbox, label_pos.offset(dy=135.0), focus=self.state.focus)
+
+        ui_checkbox_draw(resources, self._shake_checkbox, label_pos.offset(dx=130.0, dy=135.0), focus=focus)
 
         button_pos = base_pos.offset(dy=155.0)
         button_draw(

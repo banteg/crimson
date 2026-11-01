@@ -56,6 +56,13 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(asset
     runtime.update_camera()
     runtime.update_camera()
     assert_float_close(runtime.camera.y, -244.0)
+    target = runtime.screen_to_world(Vec2(600, 400))
+    assert runtime.config is not None
+    runtime.config.display.reduce_camera_shake = True
+    assert_float_close(runtime.view_transform().camera.y, -224.0)
+    assert_float_close(runtime.draw_camera.y, -224.0)
+    assert_float_close(runtime.camera.y, -244.0)
+    assert runtime.screen_to_world(Vec2(600, 400)) == target
 
 
 def test_view_transform_is_stable_and_runtime_conversion_uses_current_camera(assets_dir: Path, mocker) -> None:

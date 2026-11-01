@@ -99,6 +99,8 @@ HOST_IMPORT(frame_hold) void host_frame_hold(int op);
 // A render target and its material layers copied into another texture, made
 // like it if new: a replay keeps terrain along the run (host/keyframes.inc).
 HOST_IMPORT(texture_copy) void host_texture_copy(int destination, int source);
+// Storage required to copy this target and its current material layers.
+HOST_IMPORT(texture_bytes) unsigned host_texture_bytes(int id);
 // An opaque render-target snapshot, including dimensions, material layers and
 // their wetness epoch, for disk (host/watch_cache.inc): its byte count, written
 // into `out` when `capacity` fits; 0 for a host that cannot read it back.

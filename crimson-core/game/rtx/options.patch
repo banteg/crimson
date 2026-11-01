@@ -57,7 +57,7 @@ preset, the most detail by default. The box shows the mode drawn, so it stays cl
      ui_segmented_slider_update(
          (float *)&slider_position,
          (ui_segmented_slider_t *)&mouse_sensitivity_slider);
-@@ -220,6 +199,18 @@
+@@ -220,6 +199,27 @@
          config_blob.mouse_sensitivity = 1.0f;
      }
  
@@ -72,6 +72,15 @@ preset, the most detail by default. The box shows the mode drawn, so it stays cl
 +    if (rtx_checkbox.checked != rtx_render_mode) {
 +        rtx_choose(rtx_checkbox.checked);
 +    }
++    static options_checkbox_t shake_checkbox;
++    shake_checkbox.label = (char *)"Reduce shake";
++    shake_checkbox.checked = game_reduce_shake();
++    {
++        options_vec2_t checkbox_position(panel_position.x + 148.0f, panel_position.y + 135.0f);
++        ui_checkbox_update((float *)&checkbox_position, (ui_checkbox_t *)&shake_checkbox);
++    }
++    if (shake_checkbox.checked != game_reduce_shake())
++        game_set_reduce_shake(shake_checkbox.checked);
 +
      static options_button_t controls_button;
      controls_button.label = "Controls";

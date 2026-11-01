@@ -6,6 +6,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.render.rtx.mode import RtxRenderMode, load_rtx_choice
 from crimson.screens.actions import Route
 from crimson.screens.panels.options import OptionsMenuView
+from grim.config import load_crimson_cfg
 from grim.raylib_api import rl
 from tests.support.screens import finish_transition
 
@@ -32,6 +33,16 @@ def test_holding_the_button_on_a_volume_segment_sets_that_volume(loop, mocker) -
     mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(sfx.x + 100.0, sfx.y + 6.0))
     loop.update(0.016)
     assert options._slider_sfx.value == 0
+
+
+def test_reduced_shake_box_keeps_its_choice(loop, mocker) -> None:
+    options = open_options(loop)
+    box = options._content_layout().label_pos.offset(dx=130.0, dy=135.0)
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(box.x + 8.0, box.y + 8.0))
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
+    loop.update(0.016)
+    assert loop.state.config.display.reduce_camera_shake
+    assert load_crimson_cfg(loop.state.config.path).display.reduce_camera_shake
 
 
 def test_the_rtx_box_switches_the_mode_and_keeps_the_choice(loop, mocker) -> None:

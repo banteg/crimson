@@ -6,7 +6,7 @@
 extern "C" int rtx_render_mode; // game/rtx.cpp
 static char watch_cache_build[65]; // the host's build, or "" for none
 static constexpr int WATCH_CACHE_KEPT = 16;
-static constexpr uint32_t WATCH_CACHE_MAGIC = 0x32435743; // "CWC2": material-aware terrain snapshots
+static constexpr uint32_t WATCH_CACHE_MAGIC = 0x33435743; // "CWC3": reuse the initial terrain already captured on entry
 
 __attribute__((export_name("game_watch_cache"))) char *game_watch_cache() { return watch_cache_build; }
 
@@ -95,8 +95,10 @@ static void watch_cache_save() {
   out.put(terrain.batches);
   out.put(terrain.queue);
   out.put(terrain.rotated);
-  out.put(terrain.shots.size());
-  for (const TerrainShot &shot : terrain.shots) {
+  out.put(terrain.shots.front().bytes);
+  out.put(terrain.shots.size() - 1);
+  for (size_t i = 1; i < terrain.shots.size(); ++i) {
+    const TerrainShot &shot = terrain.shots[i];
     std::vector<uint8_t> pixels(host_texture_read(shot.id, nullptr, 0));
     host_texture_read(shot.id, pixels.data(), (int)pixels.size());
     out.put(shot.batches);
@@ -164,10 +166,16 @@ static bool watch_cache_load() {
   in.get(batches);
   in.get(queue);
   in.get(rotated);
+  unsigned anchor_bytes = 0;
+  in.get(anchor_bytes);
   in.get(count);
   // The copies go to the host as they come; a copy it refuses (a terrain of
   // another size) drops them all.
   std::vector<TerrainShot> shots;
+  uint64_t bytes = terrain.shots.front().bytes; // Keep the clean anchor already captured by watch_begin.
+  int anchor_snapshot_size = host_texture_read(terrain.shots.front().id, nullptr, 0);
+  in.ok = in.ok && anchor_bytes == bytes && anchor_snapshot_size >= (int)anchor_bytes && count < TERRAIN_SHOTS;
+  unsigned header_bytes = (unsigned)anchor_snapshot_size - anchor_bytes;
   for (size_t i = 0; in.ok && i < count; ++i) {
     TerrainShot shot = {0, 0, TERRAIN_SHOT_IDS + terrain.next_shot_id++};
     std::vector<uint8_t> packed;
@@ -175,18 +183,22 @@ static bool watch_cache_load() {
     in.get(shot.tick);
     in.get(packed);
     std::vector<uint8_t> pixels = in.ok ? zstd_unpack(packed.data(), packed.size(), 256u << 20) : packed;
+    // The native disk format stores all the GPU planes after a fixed-size header.
+    if (pixels.size() < header_bytes || (bytes += pixels.size() - header_bytes) > TERRAIN_SHOT_BYTES) {
+      in.ok = false;
+      break;
+    }
+    shot.bytes = (unsigned)pixels.size() - header_bytes;
     in.ok = in.ok && host_texture_write(shot.id, terrain_host_id(), pixels.data(), (int)pixels.size());
     shots.push_back(shot);
   }
-  in.ok = in.ok && in.at == in.end && !keys.empty() && !shots.empty();
+  in.ok = in.ok && in.at == in.end && !keys.empty();
   if (!in.ok) {
     for (const TerrainShot &shot : shots)
       host_texture_release(shot.id);
     return false;
   }
-  for (const TerrainShot &shot : terrain.shots)
-    host_texture_release(shot.id);
-  terrain.shots = std::move(shots);
+  terrain.shots.insert(terrain.shots.end(), shots.begin(), shots.end());
   terrain.batches = std::move(batches);
   terrain.queue = std::move(queue);
   terrain.rotated = std::move(rotated);

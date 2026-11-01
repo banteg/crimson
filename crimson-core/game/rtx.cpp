@@ -245,8 +245,62 @@ void rtx_lights_reset();
 extern float ui_transition_alpha;
 const float *rtx_build_occlusion(const float *lights, int count, bool shadows, float *grid, int *value_count);
 extern vec2f_t camera_offset;
+extern float camera_shake_offset_x, camera_shake_offset_y;
+extern player_state_t player_state_table[2];
 extern int terrain_texture_width, terrain_texture_height;
 extern int run_elapsed_ms;
+static const char shake_choice[] = "reduce_camera_shake.txt";
+static int reduce_shake = -1;
+
+bool game_reduce_shake() {
+  if (reduce_shake < 0) {
+    reduce_shake = 0;
+    if (FILE *fp = fopen(shake_choice, "rb")) {
+      reduce_shake = fgetc(fp) == '1';
+      fclose(fp);
+    }
+  }
+  return reduce_shake != 0;
+}
+
+void game_set_reduce_shake(bool enabled) {
+  reduce_shake = enabled;
+  if (FILE *fp = fopen(shake_choice, "wb")) {
+    fputs(enabled ? "1\n" : "0\n", fp);
+    fclose(fp);
+  }
+}
+
+// Keep the simulated camera, including its edge clamps, for recording, aiming and rollback.
+// The world and its aim indicators draw around the same unshaken focus for this draw only.
+bool game_draw_camera_begin(float saved[2]) {
+  if (grim_render_disabled || (!camera_shake_offset_x && !camera_shake_offset_y) ||
+      !platform_outputs() || !game_reduce_shake())
+    return false;
+  const auto &one = player_state_table[0], &two = player_state_table[1];
+  auto focus = one.position;
+  if (config_blob.player_count == 2) {
+    if (one.health <= 0 && two.health <= 0) return false;
+    if (one.health <= 0) focus = two.position;
+    else if (two.health > 0) {
+      focus.x -= (focus.x - two.position.x) * 0.5f;
+      focus.y -= (focus.y - two.position.y) * 0.5f;
+    }
+  }
+  saved[0] = camera_offset.x;
+  saved[1] = camera_offset.y;
+  camera_offset.x = fmaxf(config_blob.screen_width - terrain_texture_width,
+                           fminf(-1, (float)(config_blob.screen_width / 2) - focus.x));
+  camera_offset.y = fmaxf(config_blob.screen_height - terrain_texture_height,
+                           fminf(-1, (float)(config_blob.screen_height / 2) - focus.y));
+  return true;
+}
+
+void game_draw_camera_end(const float saved[2]) {
+  camera_offset.x = saved[0];
+  camera_offset.y = saved[1];
+}
+
 float rtx_ground_ms = -1;
 
 // The run's clock, which wet blood ages by: presentation time, slow motion

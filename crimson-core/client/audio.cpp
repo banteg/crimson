@@ -38,9 +38,11 @@ void audio_init() {
   int device_frames;
   if (stream && SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(stream), &device, &device_frames))
     depth = SDL_max(depth, (Sint64)device_frames * RATE / device.freq * 2);
-  if (!stream || !SDL_ResumeAudioStreamDevice(stream))
+  if (!stream || !SDL_ResumeAudioStreamDevice(stream)) {
     fprintf(stderr, "crimson: no audio output (%s)\n", SDL_GetError());
-  else if (getenv("CRIMSON_MUTE"))
+    if (stream) SDL_DestroyAudioStream(stream);
+    stream = nullptr;
+  } else if (getenv("CRIMSON_MUTE"))
     SDL_SetAudioStreamGain(stream, 0);
 }
 
