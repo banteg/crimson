@@ -41523,5 +41523,31 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "8b79d0ac65fdc865d5d552e2cb82ecd411ac33e9ac6cb010174b386eaa9992a1"
+  "maps_sha256": "8b79d0ac65fdc865d5d552e2cb82ecd411ac33e9ac6cb010174b386eaa9992a1",
+  "platform_replaced": [
+    {
+      "address": 4198400,
+      "reason": "Loads grim.dll and resolves its interface with GetProcAddress."
+    },
+    {
+      "address": 4205968,
+      "reason": "Loads a caller-selected FMOD sample and sets its loop mode."
+    },
+    {
+      "address": 4206432,
+      "reason": "Checks the FMOD version, opens the device and clears its handle arrays."
+    },
+    {
+      "address": 4206544,
+      "reason": "Releases FMOD samples and closes the sound device."
+    },
+    {
+      "address": 4300064,
+      "reason": "Resumes all FMOD channels with FSOUND_SetPaused."
+    },
+    {
+      "address": 4300096,
+      "reason": "Pauses all FMOD channels with FSOUND_SetPaused."
+    }
+  ]
 }

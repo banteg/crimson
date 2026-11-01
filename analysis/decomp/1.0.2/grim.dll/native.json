@@ -75330,5 +75330,99 @@
       "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
     }
   ],
-  "maps_sha256": "d9683052347354efdaa62b7b3dbc828a7d30773d1349f39933171840c6e7eebb"
+  "maps_sha256": "d9683052347354efdaa62b7b3dbc828a7d30773d1349f39933171840c6e7eebb",
+  "platform_replaced": [
+    {
+      "address": 268439760,
+      "reason": "Win32 launcher dialog; the port supplies its own settings UI."
+    },
+    {
+      "address": 268440256,
+      "reason": "Win32 window creation and class registration; the host engine owns the window."
+    },
+    {
+      "address": 268440704,
+      "reason": "Win32 window teardown; the host engine owns the window."
+    },
+    {
+      "address": 268440768,
+      "reason": "Direct3D 8 lost-device texture backup; the host renderer owns resource lifetime."
+    },
+    {
+      "address": 268441008,
+      "reason": "Direct3D 8 lost-device texture restore; the host renderer owns resource lifetime."
+    },
+    {
+      "address": 268441216,
+      "reason": "Win32 message dispatch and device-activation adapter; the host engine owns events."
+    },
+    {
+      "address": 268442080,
+      "reason": "Win32 message and Direct3D presentation loop; the host engine owns the frame loop."
+    },
+    {
+      "address": 268442816,
+      "reason": "Direct3D 8 device and window initialization; the host renderer owns startup."
+    },
+    {
+      "address": 268443712,
+      "reason": "Direct3D 8 device teardown; the host renderer owns resource lifetime."
+    },
+    {
+      "address": 268443920,
+      "reason": "Direct3D 8 vertex and index buffer allocation; the host renderer owns geometry buffers."
+    },
+    {
+      "address": 268444096,
+      "reason": "Direct3D 8 vertex and index buffer teardown; the host renderer owns geometry buffers."
+    },
+    {
+      "address": 268444768,
+      "reason": "Forwards the adapter format query to IDirect3D8::CheckDeviceFormat."
+    },
+    {
+      "address": 268447680,
+      "reason": "Direct3D capability probe and Win32 launcher entry; the port supplies its own settings UI."
+    },
+    {
+      "address": 268448544,
+      "reason": "Only enters the Win32 message pump and returns success."
+    },
+    {
+      "address": 268453936,
+      "reason": "Caches the Win32 module handle and loads the window icon."
+    },
+    {
+      "address": 268453984,
+      "reason": "Raw DirectInput keyboard-state accessor; the host input backend supplies state."
+    },
+    {
+      "address": 268454016,
+      "reason": "Raw DirectInput keyboard initialization; the host input backend owns devices."
+    },
+    {
+      "address": 268454208,
+      "reason": "Raw DirectInput keyboard polling; the host input backend supplies state."
+    },
+    {
+      "address": 268454304,
+      "reason": "Raw DirectInput keyboard teardown; the host input backend owns devices."
+    },
+    {
+      "address": 268454368,
+      "reason": "Raw DirectInput mouse-state accessor; the host input backend supplies state."
+    },
+    {
+      "address": 268454384,
+      "reason": "Raw DirectInput mouse initialization; the host input backend owns devices."
+    },
+    {
+      "address": 268454576,
+      "reason": "Raw DirectInput mouse polling and accumulation; the host input backend supplies state."
+    },
+    {
+      "address": 268454784,
+      "reason": "Raw DirectInput mouse teardown; the host input backend owns devices."
+    }
+  ]
 }

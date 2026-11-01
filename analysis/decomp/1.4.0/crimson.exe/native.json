@@ -47695,5 +47695,55 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "dba0d17d67e75937f4f53216200604527633990a6c13387497787be9b2a0b825"
+  "maps_sha256": "dba0d17d67e75937f4f53216200604527633990a6c13387497787be9b2a0b825",
+  "platform_replaced": [
+    {
+      "address": 4198416,
+      "reason": "Initializes COM for the DirectShow playback object."
+    },
+    {
+      "address": 4198464,
+      "reason": "Opens a file in a DirectShow filter graph and acquires its COM interfaces."
+    },
+    {
+      "address": 4198752,
+      "reason": "Starts playback through the DirectShow media control interface."
+    },
+    {
+      "address": 4198784,
+      "reason": "Pauses playback through the DirectShow media control interface."
+    },
+    {
+      "address": 4198816,
+      "reason": "Stops playback through the DirectShow media control interface."
+    },
+    {
+      "address": 4198848,
+      "reason": "Reads the DirectShow media duration."
+    },
+    {
+      "address": 4198896,
+      "reason": "Reads the DirectShow playback position."
+    },
+    {
+      "address": 4198944,
+      "reason": "Seeks with the DirectShow media seeking interface."
+    },
+    {
+      "address": 4206512,
+      "reason": "Loads grim.dll and resolves its interface with GetProcAddress."
+    },
+    {
+      "address": 4206560,
+      "reason": "Performs the WinINet HTTP request for the online menu."
+    },
+    {
+      "address": 4206832,
+      "reason": "Loads SFX.dll and resolves its exported functions."
+    },
+    {
+      "address": 4207136,
+      "reason": "Releases the SFX.dll module with FreeLibrary."
+    }
+  ]
 }

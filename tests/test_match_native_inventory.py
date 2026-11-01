@@ -70,3 +70,20 @@ def test_native_ownership_changes_measurement_identity_without_inheriting_donor_
     categories = {category["id"]: category["measures"] for category in report["categories"]}
     assert categories["game"]["total_code"] == "0"
     assert categories["unknown"]["total_code"] == "100"
+
+
+def test_port_scope_uses_native_addresses_and_retains_unnamed_engine_code() -> None:
+    rows = [
+        {"address": 1, "name": "native_function_1", "native_kind": "function", "ownership": "game"},
+        {"address": 2, "name": "misleading_donor_name", "native_kind": "function", "ownership": "game"},
+        {"address": 3, "native_kind": "unresolved", "ownership": "game"},
+        {"address": 4, "native_kind": "function", "ownership": "unknown"},
+        {"address": 5, "native_kind": "function", "ownership": "libs.other"},
+    ]
+    device = {"address": 2, "reason": "Releases the FMOD device."}
+    match_native_inventory._apply_port_scope(rows, [device])
+    assert [r["address"] for r in rows if match_native_inventory.in_port_scope(r)] == [1]
+    assert rows[1]["platform_replaced"] == device["reason"]
+    for invalid in ([device, device], [{**device, "reason": " "}], *[[{**device, "address": a}] for a in (3, 4, 5, 6)]):
+        with pytest.raises(ValueError, match="platform exclusion"):
+            match_native_inventory._apply_port_scope(rows, invalid)

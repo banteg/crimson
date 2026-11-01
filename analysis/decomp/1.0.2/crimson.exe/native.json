@@ -31127,5 +31127,19 @@
       "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
     }
   ],
-  "maps_sha256": "393c608231d75166cb7966293edb8f772b711b094e3f27670470aab451de0c36"
+  "maps_sha256": "393c608231d75166cb7966293edb8f772b711b094e3f27670470aab451de0c36",
+  "platform_replaced": [
+    {
+      "address": 4198768,
+      "reason": "Loads grim.dll and resolves its interface with GetProcAddress."
+    },
+    {
+      "address": 4199488,
+      "reason": "Loads a caller-selected FMOD sample and sets its loop mode."
+    },
+    {
+      "address": 4199936,
+      "reason": "Releases the FMOD sample handles and closes the sound device."
+    }
+  ]
 }

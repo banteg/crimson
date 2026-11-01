@@ -75,7 +75,8 @@ for build in registry["builds"]:
                    "analyzer": {"name": "Binary Ninja", "version": bn.core_version(), "mode": "controlFlow",
                                 "seeds": "Verified relinking-invariant bodies from the donor map; independent control-flow discovery retained."},
                    "functions": functions, "verified_starts": seeds,
-                   "ownership_ranges": previous["ownership_ranges"], "maps_sha256": hashlib.sha256(mapped).hexdigest()}
+                   "ownership_ranges": previous["ownership_ranges"], "maps_sha256": hashlib.sha256(mapped).hexdigest(),
+                   "platform_replaced": previous["platform_replaced"]}
         output.write_text(json.dumps(payload, indent=2) + "\\n")
         result.append({"build": build["id"], "image": spec["name"], "functions": len(functions)})
         view.file.close()

@@ -145,8 +145,38 @@ def load(image: match_builds.BuildImage) -> list[dict[str, Any]]:
             raise ValueError("native ownership boundary changed")
         previous = hi
     mapped = json.loads(image.target.functions_path.read_text())
-    return _partition(sections, payload["functions"], mapped, ownership, _library_owners(image), native, image.name)
+    rows = _partition(sections, payload["functions"], mapped, ownership, _library_owners(image), native, image.name)
+    _apply_port_scope(rows, payload["platform_replaced"])
+    return rows
+
+
+def _apply_port_scope(rows: list[dict[str, Any]], exclusions: list[dict[str, Any]]) -> None:
+    # The image and discovered extents are already pinned. Donor names, including
+    # weak ordered placements, are deliberately irrelevant to this decision.
+    owned = {r["address"]: r for r in rows if r["native_kind"] == "function" and r["ownership"] == "game"}
+    for row in owned.values():
+        row["platform_replaced"] = None
+    for entry in exclusions:
+        address, reason = entry["address"], entry["reason"]
+        if type(address) is not int or address not in owned or not isinstance(reason, str) or not reason.strip():
+            raise ValueError(f"invalid platform exclusion for native game/engine function: {entry}")
+        if owned[address]["platform_replaced"] is not None:
+            raise ValueError(f"duplicate platform exclusion at {address:#x}")
+        owned[address]["platform_replaced"] = reason
+
+
+def in_port_scope(row: dict[str, Any]) -> bool:
+    return row["native_kind"] == "function" and row["ownership"] == "game" and row["platform_replaced"] is None
+
+
+def scoped_functions(image: match_builds.BuildImage, scope: str) -> dict[int, dict[str, Any]]:
+    if scope not in {"all", "port"}:
+        raise ValueError(f"unknown native function scope: {scope}")
+    return {
+        row["address"]: row for row in load(image)
+        if row["native_kind"] == "function" and (scope == "all" or in_port_scope(row))
+    }
 
 
 def function_bounds(image: match_builds.BuildImage) -> dict[int, int]:
-    return {row["address"]: row["end"] for row in load(image) if row["native_kind"] == "function"}
+    return {address: row["end"] for address, row in scoped_functions(image, "all").items()}
