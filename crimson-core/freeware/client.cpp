@@ -18,7 +18,6 @@ struct Sample {
   Uint32 size{};
   Uint64 last{};
 };
-static bool quiet_samples;
 static Sample samples[int(Sound::Count)];
 static void load_audio(const std::string &folder) {
   static const char *names[] = {
@@ -51,7 +50,7 @@ void play_original_sample(int id) {
   if (!s.stream || (s.last && now - s.last < (id == 14 ? 580 : 80)))
     return;
   s.last = now;
-  SDL_SetAudioStreamGain(s.stream, quiet_samples ? .15f : .45f);
+  SDL_SetAudioStreamGain(s.stream, .45f);
   SDL_ClearAudioStream(s.stream);
   SDL_PutAudioStreamData(s.stream, s.data, s.size);
 }
@@ -240,7 +239,6 @@ static void frame() {
   controls.fast_time = keys[SDL_SCANCODE_X];
   controls.level_up |= (FREEWARE_EDITION != 10002 && keys[SDL_SCANCODE_SPACE]) || keys[SDL_SCANCODE_KP_PLUS];
   c.game.update(dt, controls);
-  quiet_samples = c.game.sound_quiet;
   bool wants_text = c.game.screen == Screen::Death || c.game.console_open;
   if (was_text != wants_text) {
     if (wants_text)

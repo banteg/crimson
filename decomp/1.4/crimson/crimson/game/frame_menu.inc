@@ -122,7 +122,7 @@ __forceinline bool menu_key(int key) {
 #endif
 }
 __forceinline void menu_secrets() {
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10002
+#if FREEWARE_EDITION != 10002
 #ifdef CRIMSON_FREEWARE_CLIENT
     if (!INPUT.ctrl)
         return;
@@ -157,7 +157,8 @@ __forceinline void menu_secrets() {
             }
         }
     }
-#elif defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10400
+#endif
+#if FREEWARE_EDITION >= 10400
     int &tips = FIELD(freeware_tips_sequence, tips_sequence);
     if (tips == 0 && menu_key(0x14))
         ++tips;
@@ -303,14 +304,14 @@ __forceinline int menu_rows(int which) {
             y = (which == main_page ? 220.f : 180.f) + i * 32.f;
         const int action = native_menu_action(which, i);
 #endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+#if FREEWARE_EDITION == 10002
         const float row_height = 30.f;
 #else
         const float row_height = which == main_page ? 30.f : 21.f;
 #endif
         if (mx > x && my > y && mx < x + strlen(name) * 16.f && my < y + row_height)
             hover = i;
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+#if FREEWARE_EDITION == 10002
         float light = 1, alpha = hover == i ? .9f : .6f;
 #else
         float light = 1, alpha = hover == i ? .9f : SELECTED == i ? .7f : .6f;
@@ -328,7 +329,7 @@ __forceinline int menu_rows(int which) {
         grim_interface_ptr->grim_draw_text_mono(x, y, (char *)name);
 #endif
     }
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+#if FREEWARE_EDITION == 10002
     if (which == options_page && menu_key(0x1c))
         return hover;
 #else
@@ -370,9 +371,9 @@ __forceinline void menu_options(int row) {
 #else
     switch (row) {
 #if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
-    case 12: G.sound_quiet = !G.sound_quiet; break;
+    case 12: // The sound-volume row and spacer have no action at 0x40cd74.
+    case 14: return;
     case 13: G.shadows = !G.shadows; break;
-    case 14: break;
 #endif
     case 0:
         CONFIGURING = 1 - CONFIGURING;
@@ -431,7 +432,7 @@ __forceinline void menu_options(int row) {
 #ifndef CRIMSON_FREEWARE_CLIENT
         freeware_smoke = !freeware_smoke;
         freeware_shadows = !freeware_shadows;
-#else
+#elif FREEWARE_EDITION != 10002
         G.smoke = !G.smoke;
         G.shadows = !G.shadows;
 #endif
@@ -996,7 +997,7 @@ __forceinline bool main_menu() {
         break;
 #endif
     case 7:
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+#if FREEWARE_EDITION == 10002
         return false;
 #else
         if (!ACTIVE)

@@ -38,7 +38,7 @@ static const char *menu_label(const Game &g, int row) {
     return "Players: two";
   if (row == 2 && g.survival)
     return "Game mode: survival";
-  if (row == 7 && g.paused)
+  if (row == 7 && g.paused && FREEWARE_EDITION != 10002)
     return "End current game.";
   return main_labels[row];
 }
@@ -63,7 +63,7 @@ std::string Game::option(int row) const {
     switch (row) {
     case 1: return movement[0] ? "Control method: relative" : "Control method: static";
     case 6: return effects ? "Flame Glow FX: on" : "Flame Glow FX: off";
-    case 12: return sound_quiet ? "Sound volume: low" : "Sound volume: default";
+    case 12: return "Sound volume: default";
     case 13: return shadows ? "Shadows: on" : "Shadows: off";
     case 14: return "";
     }
@@ -116,7 +116,7 @@ void Game::save_options() const {
   for (int i = 0; i < 2; ++i)
     f << pad_left_pov[i] << ' ' << pad_right_pov[i] << '\n';
   if (FREEWARE_EDITION == 10002)
-    f << sound_quiet << ' ' << shadows << '\n';
+    f << 0 << ' ' << shadows << '\n';
 }
 void Game::load_options() {
   if (save_dir.empty())
@@ -169,7 +169,9 @@ void Game::load_options() {
       pad_right_pov[i] = right;
     }
   }
-  if (FREEWARE_EDITION == 10002)
-    f >> sound_quiet >> shadows;
+  if (FREEWARE_EDITION == 10002) {
+    int old_sound_quiet;
+    f >> old_sound_quiet >> shadows;
+  }
 }
 } // namespace freeware

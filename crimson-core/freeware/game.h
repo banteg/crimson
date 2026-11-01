@@ -199,7 +199,7 @@ struct Game {
   int configuring{}, rebind = -1;
   int movement[2]{0, 0}, aiming[2]{0, FREEWARE_EDITION == 10300 ? 0 : 2};
   int keys[2][5]{{26, 22, 4, 7, 43}, {82, 81, 80, 79, 228}};
-  bool sound_quiet{}, show_fps{}, safe_mode{}, effects = true, smooth = true, shell_marks{}, direction_arrow = true;
+  bool show_fps{}, safe_mode{}, effects = true, smooth = true, shell_marks{}, direction_arrow = true;
   int calibration = -1;
   vec2f_t pad_center[2]{};
   float pad_threshold[2]{.1f, .1f};

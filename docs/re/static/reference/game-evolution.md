@@ -21,7 +21,9 @@ The same **Begin game.** button leads to noticeably different games in the survi
 
 ## 1.0.2 — the single-player arena
 
-The six title entries start at (220, 220) in a 640 × 480 window. Career starts with a pistol and 30 rounds. Survival forces the AutoRifle. Its frame loop attempts at most one spawn per frame on a 0.01-second timer. New creatures start at (1024, 512). A nearby creature can prevent a spawn, so the stream thins when enemies bunch up at the entrance. A successful Survival spawn consumes two random numbers, one for heading and one for its 120–129 XP reward. The engine has room for 128 creatures. See the frame dispatcher at `0x40c110`, the arrival branch at `0x40d813` and the spawner at `0x4067a0`.
+The six title entries start at (220, 220) in a 640 × 480 window and respond to mouse clicks. The **End.** entry quits even when a game is paused. The options menu displays a sound-volume row, but clicking it has no effect. See the two menu switches at `0x40cd74` and `0x40cf6d`.
+
+Career starts with a pistol and 30 rounds. Survival forces the AutoRifle. Its frame loop attempts at most one spawn per frame on a 0.01-second timer. New creatures start at (1024, 512). A nearby creature can prevent a spawn, so the stream thins when enemies bunch up at the entrance. A successful Survival spawn consumes two random numbers, one for heading and one for its 120–129 XP reward. The engine has room for 128 creatures. See the frame dispatcher at `0x40c110`, the arrival branch at `0x40d813` and the spawner at `0x4067a0`.
 
 In relative movement mode, left and right turn the player at two radians per second. Holding both cancels the turn. Left Ctrl snaps the crosshair 60 units in front of the player. The left mouse button, right Ctrl and Enter fire. The frame keeps the crosshair half a player-width inside the screen. It draws the ground with the previous frame’s camera before centering the creatures and player with the new camera. See `0x408040` for movement and `0x40c243` for the ground draw.
 
