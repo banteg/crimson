@@ -452,8 +452,9 @@ Two gates hold every client build to the verifier: the **simulation** gate,
 where every gate stream agrees on every snapshot field after every tick, and
 the **session** gate, where play through the menus at uneven frame rates,
 pauses, perk picks and a lost window gives the verifier's state and result.
-CI fails on any disagreement. What has no check yet (audio, graphics,
-persistence) is in the [roadmap](ROADMAP.md#client-checks).
+CI fails on any disagreement. Audio interruption, replay seeks and browser
+reloads also have regression checks. The [roadmap](ROADMAP.md#client-checks)
+lists the remaining device and visual comparisons.
 
 - [`checks/game_check.py`](checks/game_check.py) runs sessions in the game
   module and the verifier through every [gate](README.md#whole-run-gate) stream

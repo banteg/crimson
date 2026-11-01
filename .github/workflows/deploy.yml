@@ -33,7 +33,7 @@ jobs:
       # Request a lightweight same-commit artifact build only when normal CI omitted it.
       actions: write
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     outputs:
       verdicts_run_id: ${{ steps.verdicts.outputs.verdicts_run_id }}
       verdicts_artifact_id: ${{ steps.verdicts.outputs.verdicts_artifact_id }}
@@ -77,8 +77,8 @@ jobs:
         with:
           python-version: "3.13"
           enable-cache: true
-      - name: Download and verify game art
-        uses: ./.github/actions/game-art
+      - name: Download and verify the game packs used by the packaged browser check
+        run: python3 scripts/setup_test_data.py --only packs
       - run: npm ci
         working-directory: service
       - run: npm run assets
@@ -88,6 +88,16 @@ jobs:
           UV_NO_DEV: "1"
       - run: npm run check && npm test
         working-directory: service
+      - name: Play, record, reload and watch through the packaged browser game
+        run: |
+          export CRIMSON_CHROME="$(command -v google-chrome)"
+          node crimson-core/checks/coop_browser.mjs --solo artifacts/assets "$RUNNER_TEMP/browser-shots"
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: deploy-browser-shots
+          path: ${{ runner.temp }}/browser-shots/
+          if-no-files-found: ignore
       - name: Bundle the Worker without production credentials
         working-directory: service
         run: |
@@ -191,6 +201,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: node service/scripts/deploy-preflight.mjs --checks-only
       - name: Deploy the prepared Worker and assets
+        shell: bash
         working-directory: service
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -199,6 +210,9 @@ jobs:
           npx --no-install wrangler deploy release-worker/index.js --no-bundle \
             --tag "$GITHUB_SHA" --message "GitHub deployment $GITHUB_SHA" | tee ../deployment.log
           cat ../deployment.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Smoke-check production pages, API and game files
+        working-directory: service
+        run: node scripts/deploy-checks.mjs smoke
       - name: Put every run's ground, as the reverify above baked it
         if: steps.replays.outputs.reverify == 'true'
         working-directory: service
@@ -206,9 +220,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run grounds
-      - name: Smoke-check production pages, API and game files
-        working-directory: service
-        run: node scripts/deploy-checks.mjs smoke
       - uses: actions/upload-artifact@v7
         if: always()
         with:

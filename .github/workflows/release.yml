@@ -38,6 +38,9 @@ jobs:
           awk -v version="${GITHUB_REF_NAME#v}" '/^## / { section = ($2 == version); next } section' CHANGELOG.md > release-notes.md
           test -s release-notes.md || { echo "CHANGELOG.md has no section for ${GITHUB_REF_NAME#v}"; exit 1; }
 
+      - name: Require production to accept this release's replay format and rules
+        run: python3 scripts/check_release_reader.py
+
       - name: Build (wheel + sdist)
         run: uv build
 

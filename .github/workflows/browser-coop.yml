@@ -1,0 +1,73 @@
+name: Browser co-op
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "27 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  game:
+    uses: ./.github/workflows/runtime-build.yml
+    with:
+      target: game
+  verifier:
+    uses: ./.github/workflows/runtime-build.yml
+    with:
+      target: wasm
+  client:
+    needs: game
+    uses: ./.github/workflows/client.yml
+    with:
+      desktop: false
+
+  play:
+    needs: [client, verifier]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: service/package-lock.json
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - uses: actions/download-artifact@v8
+        with:
+          name: crimsonland-web
+          path: artifacts/client
+      - uses: actions/download-artifact@v8
+        with:
+          name: runtime-game
+          path: crimson-core/build/game
+      - uses: actions/download-artifact@v8
+        with:
+          name: runtime-wasm
+          path: crimson-core/build/wasm
+      - name: Stage the packaged game and its assets
+        run: |
+          mkdir -p service/public/play
+          tar -xzf artifacts/client/crimsonland-web.tar.gz -C artifacts/client
+          cp artifacts/client/web/index.{html,js,wasm} artifacts/client/web/{build.json,LICENSE.txt} service/public/play/
+          python3 scripts/setup_test_data.py --only packs
+          npm --prefix service ci
+          npm --prefix service run assets
+        env:
+          UV_FROZEN: "1"
+          UV_NO_DEV: "1"
+      - name: Play and rank a two-peer WebRTC and relay session
+        run: |
+          export CRIMSON_CHROME="$(command -v google-chrome)"
+          node crimson-core/checks/coop_browser.mjs artifacts/assets "$RUNNER_TEMP/browser-shots"
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: coop-browser-shots
+          path: ${{ runner.temp }}/browser-shots/
+          if-no-files-found: ignore

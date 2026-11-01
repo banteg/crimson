@@ -7,27 +7,27 @@ in the [README](README.md), the clients in [PORT.md](PORT.md); client releases
 
 ## Gate coverage
 
-- Report bot quest completion and failure coverage separately in
-  [`results/gate.json`](results/gate.json). Runs that exhaust their budget are
-  incomplete, not terminal coverage.
+- Use the [quest outcome table](results/quest-outcomes.md) to choose the next
+  successful late-stage traces, particularly under the original bug policy
+  and the 1.9.8 rules. It records clears, deaths and incomplete runs separately.
 - Fixes still only partly exercised by the corpus: Shock Chain or a seeker with
   no creature left (20), a bonus carrier's death handled twice (33), and an
   exact-zero Highlander hit (18). Each needs a bot scenario that reaches it
   under both policies.
-- Typ-o: the gate's Typ-o fixture is unsupported.
+- The Python port checks the historical Typ-o run and its checkpoints. Adding
+  Typ-o to the recovered verifier would allow the same cross-port comparison.
 
 ## Client checks
 
-The simulation and session checks in [PORT.md](PORT.md#evidence) have no
-counterpart yet for:
+The [session tests](PORT.md#evidence) compare recordings with continuous and
+interrupted audio. The packaged browser check records a run, reloads and
+watches it from the local score. Profile tests cover restore and failed storage
+operations.
 
-- **Audio**: identical results with real audio, a null sink, muting, an
-  autoplay lock, voice saturation and device failure.
-- **Graphics**: captures against the original of terrain persistence, corpse
-  and decal bakes, the alpha threshold, blend factors, write masks, fonts,
-  texture edges and gamma, with documented tolerances.
-- **Persistence**: saves survive relaunch and reload; a failed asset or storage
-  operation is visible and never changes a ranked run's setup.
+- Repeat the audio and persistence scenarios on physical devices and other browser engines.
+- Compare captures against the original for terrain, corpse and decal bakes,
+  alpha thresholds, blend factors, write masks, fonts, texture edges and gamma.
+  Record acceptable differences for each scene.
 
 ## Floating-point state and hash behavior
 
