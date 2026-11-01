@@ -533,7 +533,7 @@
     "address": "0x004062A0",
     "canonical_address": "0x00428140",
     "end": "0x004062BB",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "creature_alloc_slot",
     "size": 27
   },
@@ -557,7 +557,7 @@
     "address": "0x004067A0",
     "canonical_address": "0x00428240",
     "end": "0x004068E5",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "creature_spawn",
     "size": 325
   },

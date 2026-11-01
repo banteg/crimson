@@ -207,10 +207,22 @@
       "body_sha256": "7645fc6c31a0fb61c93c74a960be74e9cfd259a86d74d085898375d62efe7be8"
     },
     {
+      "name": "creature_alloc_slot",
+      "address": "0x004062a0",
+      "end": "0x004062bb",
+      "body_sha256": "fe402e58c66c9c69c3e2be346c1c884cf48961b30f4dd44669a9f87784283121"
+    },
+    {
       "name": "creature_reset_all",
       "address": "0x004062c0",
       "end": "0x004062d3",
       "body_sha256": "ede8ce732fa0ed0a0bd3a03ffe2c985922a2ca323267773912c1bebeaaf2d4b2"
+    },
+    {
+      "name": "creature_spawn",
+      "address": "0x004067a0",
+      "end": "0x004068e5",
+      "body_sha256": "d8dd4b7670255725d69b4e5176afcc6190bf654375fb1d1bf31b6447f4845712"
     }
   ],
   "data": [
@@ -398,6 +410,24 @@
       "address": "0x00424bc8",
       "reference": "0x0040109e",
       "bytes": "68c84b4200"
+    },
+    {
+      "name": "creature_pool",
+      "address": "0x004252d0",
+      "reference": "0x004062a2",
+      "bytes": "b9d0524200"
+    },
+    {
+      "name": "freeware_elapsed_seconds",
+      "address": "0x00428810",
+      "reference": "0x004067db",
+      "bytes": "d90510884200"
+    },
+    {
+      "name": "creature_spawned_count",
+      "address": "0x00428868",
+      "reference": "0x004068c3",
+      "bytes": "a168884200"
     }
   ]
 }

@@ -20,6 +20,8 @@ The same **Begin game.** button leads to noticeably different games in the survi
 
 The six title entries start at (220, 220) in a 640 × 480 window. Career starts with a pistol and 30 rounds. Survival forces the AutoRifle. Its frame loop attempts at most one spawn per frame on a 0.01-second timer. New creatures start at (1024, 512). A nearby creature can prevent a spawn, so the stream thins when enemies bunch up at the entrance. A successful Survival spawn consumes two random numbers, one for heading and one for its 120–129 XP reward. The engine has room for 128 creatures. See the frame dispatcher at `0x40c110`, the arrival branch at `0x40d813` and the spawner at `0x4067a0`.
 
+An enemy killed in Career can leave one of four pickup types. A weapon pickup chooses its weapon at collection. It draws from IDs 1–8 and rerolls from 1–7 if the first draw equals the current weapon. Taking a pistol this way gives 15 rounds. See the drop at `0x40314d` and the collection at `0x40772e`.
+
 The packaged Career scoreboard contains a record for `10tons` with 28,930 XP. A record has a 32-byte name followed by a little-endian integer. The integer is XP in Career and elapsed seconds in Survival. The writer and reader are at `0x401940` and `0x401a40`.
 
 ## 1.3.0 — co-op and authored levels
@@ -28,7 +30,9 @@ The title offers a second player. Survival's spawn interval becomes 0.25 seconds
 
 At the title screen, hold **left Ctrl** and type **LEVELS**, then cycle the game mode to **Level Test**. The key sequence is in the dispatcher at `0x4145b3`. Four numbered maps cycle in order. The ZIP also carries three other map files and a separate `tiles.paq`. Level Test can place creatures that wait for the player to approach and triggers that grant a weapon. Its spawner gives placed creatures 300 health instead of scaling health with elapsed time.
 
-The score writer at `0x404510` saves the name, time, XP, frame-rate statistics and game version. The encoder at `0x4043d0` protects the record table. A single checksum follows all records in the file.
+Walls affect gunfire as well as movement. A normal bullet stops when it hits a wall. When `rand() % 15 == 2`, the impact also spawns a pistol projectile at a right angle. The wall query and impact branch are at `0x40642c` and `0x406d94`.
+
+The score writer at `0x404510` saves the name, time, XP, frame-rate statistics and game version. The writer rejects a run below 15 average FPS. The encoder at `0x4043d0` protects the record table. A single checksum follows all records in the file.
 
 ## 1.3.1 and 1.4.0 — back to the arena
 

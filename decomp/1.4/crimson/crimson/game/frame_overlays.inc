@@ -121,8 +121,10 @@ __forceinline void name_screen() {
     else if (low > 500)
         FIELD(freeware_smoke, smoke) = 0;
     label("_", 50 + (float)strlen(name) * 16, 190, 1, 1, 1, 1, sin(CLOCK * 6) > 0 ? alpha : alpha * .4f);
+#if !defined(FREEWARE_EDITION) || FREEWARE_EDITION != 10002
     if (fps < 15)
         label("(your fps is too low for highscore table)", 50, 222, .75435f, 1, 1, 1, alpha);
+#endif
 #ifdef CRIMSON_FREEWARE_CLIENT
     if (INPUT.backspace && !G.name.empty())
         G.name.pop_back();
@@ -150,7 +152,7 @@ __forceinline void name_screen() {
 #endif
     if (accepted) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-        if (fps >= 15)
+        if (FREEWARE_EDITION == 10002 || fps >= 15)
             G.record_score(fps);
 #else
         freeware_save_score();

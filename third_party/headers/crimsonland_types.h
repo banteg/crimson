@@ -558,19 +558,22 @@ typedef struct creature_t {
         // field names are aliases, not evidence that 1.0.2 implements those mechanics.
         struct {
             float heading, size;
-            float tint_r, tint_g, tint_b, tint_a;
+            union {
+                struct { float tint_r, tint_g, tint_b, tint_a; };
+                effect_color_t color;
+            };
             unsigned char force_target, donor_padding[3];
             union {
                 struct { float target_x, target_y; };
                 vec2f_t target_position;
             };
-            float donor_contact_damage, donor_move_speed, donor_attack_cooldown;
-            float max_health;
+            float contact_damage, move_speed, attack_cooldown;
+            union { int reward_value; float max_health; };
             union { float target_heading; int link_index; };
             vec2f_t target_offset;
             int type_id;
             union {
-                float orbit_angle, dot_tick_timer;
+                float orbit_angle, dot_tick_timer, anim_phase;
                 creature_orbit_radius_t orbit_radius;
                 int flags, phase_seed;
             };

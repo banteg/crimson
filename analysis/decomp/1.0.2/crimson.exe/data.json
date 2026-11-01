@@ -506,8 +506,23 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x004252d0",
+      "name": "creature_pool",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x004287f4",
       "name": "freeware_shell_marks",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428810",
+      "name": "freeware_elapsed_seconds",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428868",
+      "name": "creature_spawned_count",
       "program": "1.0.2/crimson.exe"
     },
     {
