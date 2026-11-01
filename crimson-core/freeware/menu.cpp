@@ -55,9 +55,10 @@ int menu_hover(const Game &g) {
 
 std::string Game::option(int row) const {
   static const char *moves[] = {"Control method: kb static", "Control method: kb relative",
-                                "Control method: joystick static"};
-  static const char *aims[] = {"Aiming device: mouse static", "Aiming device: mouse relative",
-                               "Aiming device: keyboard", "Aiming device: joystickk 'hat'"};
+                                FREEWARE_EDITION == 10300 ? "Control method: joystic static" : "Control method: joystick static"};
+  static const char *aims[] = {FREEWARE_EDITION == 10300 ? "Aiming device: mouse" : "Aiming device: mouse static",
+                               "Aiming device: mouse relative", "Aiming device: keyboard",
+                               FREEWARE_EDITION == 10300 ? "Aiming device: joystick 'hat'" : "Aiming device: joystickk 'hat'"};
   if (FREEWARE_EDITION == 10002) {
     switch (row) {
     case 1: return movement[0] ? "Control method: relative" : "Control method: static";
@@ -138,7 +139,8 @@ void Game::load_options() {
   effects = opts[3];
   for (int i = 0; i < 2; ++i) {
     movement[i] = controls[i][0];
-    aiming[i] = controls[i][1];
+    // Earlier ports offered relative mouse in 1.3.0. Keep keyboard and joystick selections stable.
+    aiming[i] = FREEWARE_EDITION == 10300 && controls[i][1] == 1 ? 0 : controls[i][1];
     std::copy_n(controls[i] + 2, 5, keys[i]);
   }
   int shells_on, arrow_on;

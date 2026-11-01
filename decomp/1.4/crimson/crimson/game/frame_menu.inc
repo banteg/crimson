@@ -170,12 +170,16 @@ __forceinline void refresh_labels(int which) {
     int move = config_movement_schemes[CONFIGURING];
     set_label(freeware_option_labels + 1, move == 2   ? "Control method: kb static"
                                           : move == 1 ? "Control method: kb relative"
-                                                      : "Control method: joystick static");
+                                          : FREEWARE_EDITION == 10300 ? "Control method: joystic static" : "Control method: joystick static");
     int aim = config_aim_schemes[CONFIGURING];
+#if FREEWARE_EDITION == 10300
+    set_label(freeware_option_labels + 2, aim == 0 ? "Aiming device: mouse" : aim == 1 ? "Aiming device: keyboard" : "Aiming device: joystick 'hat'");
+#else
     set_label(freeware_option_labels + 2, aim == 0   ? "Aiming device: mouse static"
                                           : aim == 1 ? "Aiming device: mouse relative"
                                           : aim == 2 ? "Aiming device: keyboard"
                                                      : "Aiming device: joystickk 'hat'");
+#endif
     set_label(freeware_option_labels + 3, freeware_music_disabled      ? "Music: off"
                                           : freeware_music_unavailable ? "Music: on (restart to enable playback)"
                                                                        : "Music: on");
@@ -297,7 +301,14 @@ __forceinline void menu_options(int row) {
     break;
     case 2: {
         int &aim = FIELD(config_aim_schemes[CONFIGURING], aiming[CONFIGURING]);
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+        if (aim == 0) ++aim; // Slot 1 in the client settings is the later relative-mouse option.
+#endif
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+        if (++aim > 2)
+#else
         if (++aim > 3)
+#endif
             aim = 0;
     } break;
     case 3:

@@ -197,7 +197,7 @@ struct Game {
   const Fighter &actor(int i) const { return i ? run.partner : static_cast<const Fighter &>(run); }
   int players() const { return two_players ? 2 : 1; }
   int configuring{}, rebind = -1;
-  int movement[2]{0, 0}, aiming[2]{0, 2};
+  int movement[2]{0, 0}, aiming[2]{0, FREEWARE_EDITION == 10300 ? 0 : 2};
   int keys[2][5]{{26, 22, 4, 7, 43}, {82, 81, 80, 79, 228}};
   bool sound_quiet{}, show_fps{}, safe_mode{}, effects = true, smooth = true, shell_marks{}, direction_arrow = true;
   int calibration = -1;

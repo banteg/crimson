@@ -49,6 +49,11 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
     }
   }
   freeware_key_down[0x13] = in.reload;
+  if (FREEWARE_EDITION == 10002) {
+    freeware_key_down[0x1d] = in.ctrl;
+    freeware_key_down[0x9d] = in.fire2;
+    freeware_key_down[0x1c] = in.fire;
+  }
   freeware_key_down[0x39] = in.bend_time;
   freeware_key_down[0x2d] = in.fast_time;
   freeware_mouse_down[0] = in.mouse_fire || in.click;
@@ -68,13 +73,17 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
   aim_left = pov == pad_left_pov[index];
   aim_right = pov == pad_right_pov[index];
   config_movement_schemes[index] = schemes[movement[index]];
+  // 1.3.0 stores mouse, keyboard and POV as 0, 1 and 2. The client settings also cover 1.4's radial mouse.
   config_aim_schemes[index] = aiming[index];
+  if (FREEWARE_EDITION == 10300 && config_aim_schemes[index] > 0)
+    --config_aim_schemes[index];
   config_player_count = players();
   vec2f_t pointer = in.relative ? vec2f_t{cursor_x, cursor_y} : vec2f_t{in.x, in.y};
   freeware_camera = {pointer.x - mouse_world.x, pointer.y - mouse_world.y};
-  if (aiming[index] == 1 && in.relative) {
+  bool radial_mouse = FREEWARE_EDITION >= 10400 && aiming[index] == 1;
+  if (radial_mouse && in.relative) {
     freeware_aim_screen = {cursor_x, cursor_y};
-  } else if (aiming[index] == 1) {
+  } else if (radial_mouse) {
     if (index == 0 || aiming[0] != 1) {
       radial_cursor.x += mouse_dx;
       radial_cursor.y += mouse_dy;
@@ -103,11 +112,11 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
     p.experience = run.experience;
   FrameGameScope scope(*this);
   player_update();
-  if (aiming[index] == 1)
+  if (radial_mouse)
     radial_cursor = freeware_aim_screen;
-  if (aiming[index] == 1 && in.relative) {
-    cursor_x = radial_cursor.x;
-    cursor_y = radial_cursor.y;
+  if ((radial_mouse && in.relative) || (FREEWARE_EDITION == 10002 && in.ctrl)) {
+    cursor_x = freeware_aim_screen.x;
+    cursor_y = freeware_aim_screen.y;
   }
   if (!index)
     run.experience = p.experience;

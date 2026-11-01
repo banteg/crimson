@@ -199,7 +199,7 @@ static void frame() {
   in.down2 = held(1, 1);
   in.left2 = held(1, 2);
   in.right2 = held(1, 3);
-  in.fire2 = held(1, 4);
+  in.fire2 = FREEWARE_EDITION == 10002 ? keys[SDL_SCANCODE_RCTRL] : held(1, 4);
   in.up = held(0, 0);
   in.down = held(0, 1);
   in.left = held(0, 2);
@@ -233,7 +233,7 @@ static void frame() {
   controls.arrow_up = keys[SDL_SCANCODE_UP];
   controls.relative = c.game.screen == Screen::Playing;
   controls.mouse_fire = in.fire;
-  controls.fire = held(0, 4);
+  controls.fire = FREEWARE_EDITION == 10002 ? keys[SDL_SCANCODE_RETURN] : held(0, 4);
   controls.reload |= keys[SDL_SCANCODE_R];
   controls.bend_time = keys[SDL_SCANCODE_SPACE] || in.right_mouse;
   controls.fast_time = keys[SDL_SCANCODE_X];
