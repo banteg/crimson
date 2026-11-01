@@ -5,6 +5,7 @@ import struct
 
 from freeware_acquisition_cases import mount_level_files
 from freeware_arsenal_cases import original
+from freeware_early_menu_cases import check_early_menu
 
 
 def check_early_frames(exe, edition, lines):
@@ -158,7 +159,8 @@ def check_early_frames(exe, edition, lines):
                     )
                 )
                 expected_overlay = (tick, *quality, samples.count(17))
-                assert tuple(map(int, next(overlay_rows))) == expected_overlay, (edition, expected_overlay)
+                observed_overlay = tuple(map(int, next(overlay_rows)))
+                assert observed_overlay == expected_overlay, (edition, observed_overlay, expected_overlay)
             row = next(rows)
             assert list(map(int, row[:2])) == [scene, tick]
             expected = [pe.read_u32(state), pe.read_u8(active), pe.rand_state]
@@ -217,3 +219,6 @@ def check_early_frames(exe, edition, lines):
     assert next(overlay_rows, None) is None
     assert next(xp_clock_rows, None) is None
     print(f"{edition}: {total} complete original frame callbacks matched game state, ground position and RNG")
+    pe.restore(baseline)
+    delta, dx, dy = 1 / 60, 0, 0
+    check_early_menu(pe, edition, lines, labels, samples, keys, slot)

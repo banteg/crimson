@@ -90,6 +90,7 @@ def check(edition, install, tmp, web, browser):
         ROOT / "crimson-core/checks/freeware_creature_motion.cpp",
         ROOT / "crimson-core/checks/freeware_credits.cpp",
         ROOT / "crimson-core/checks/freeware_early_frame.cpp",
+        ROOT / "crimson-core/checks/freeware_early_menu.cpp",
         ROOT / "crimson-core/checks/freeware_early_fx.cpp",
     ]
     binary = tmp / edition
