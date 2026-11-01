@@ -34,6 +34,30 @@ ADDRESSES = {
 }
 
 
+def check_deaths(exe, edition, lines):
+    early = edition == "1.0.2"
+    pe = NativeOracle(exe, symbols=SymbolTable({}))
+    # Single-player health check through the death-state writes, before the music callbacks.
+    start, stop = (0x40DE74, 0x40DEC9) if early else (0x4161F3, 0x41629F)
+    state, health, xp, weapon = (
+        (0x41C09C, 0x421EAC, 0x421EF8, 0x421F8C) if early else (0x4290D4, 0x42FFB8, 0x430010, 0x4300AC)
+    )
+    rows = {tuple(map(int, row.split()[1:])) for row in lines if row.startswith("deathcheck ")}
+    for mode in (1, 2):
+        for score in (6, 66, 666, 6666, 667):
+            pe.write_u32(ADDRESSES[edition][4], mode)
+            pe.write_u32(state, 3)
+            pe.write_f32(health, -1)
+            pe.write_u32(xp, score)
+            pe.write_u32(weapon, 4 if mode == 1 else 2)
+            pe.run(start, stop)
+            expected = (mode, score, pe.read_u32(state), pe.read_f32(health), pe.read_u32(weapon))
+            assert expected in rows, (edition, expected, rows)
+            rows.remove(expected)
+    assert not rows
+    print(f"{edition}: 10 lethal hits matched original health, weapon and game state")
+
+
 def check(edition, install, tmp, web, browser):
     exe = install / "crimson.exe"
     registry = json.loads((ROOT / "decomp/builds.json").read_text())
@@ -60,6 +84,7 @@ def check(edition, install, tmp, web, browser):
     lines = subprocess.check_output([binary, install], text=True).splitlines()
 
     def compare_combat(output):
+        check_deaths(exe, edition, output)
         check_weapons(exe, edition, output)
         check_hits(exe, edition, output)
         check_flight(exe, edition, output)

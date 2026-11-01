@@ -345,7 +345,7 @@ __forceinline void die() {
 __forceinline void deaths() {
     if (config_player_count == 1) {
         if (HP(0) <= 0) {
-            if (REVIVE < 1 && (XP == 6 || XP == 66 || XP == 666 || XP == 6666)) {
+            if (FREEWARE_EDITION >= 10301 && REVIVE < 1 && (XP == 6 || XP == 66 || XP == 666 || XP == 6666)) {
                 freeware_secret_weapon_unlocked = 1;
                 HP(0) = 1;
                 REVIVE += frame_dt * 10;

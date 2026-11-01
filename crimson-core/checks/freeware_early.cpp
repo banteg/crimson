@@ -17,6 +17,23 @@ extern unsigned freeware_rng_state;
 extern game_mode_id_t config_game_mode;
 }
 
+static void check_deaths() {
+  using namespace freeware;
+  for (bool survival : {false, true}) {
+    for (int xp : {6, 66, 666, 6666, 667}) {
+      Game game;
+      game.survival = survival;
+      game.start();
+      weapon_assign_player(0, survival ? 2 : 4);
+      game.run.experience = xp;
+      game.run.health = -1;
+      game.update(1.f / 60, {});
+      std::printf("deathcheck %d %d %d %g %d\n", survival ? 2 : 1, xp, game.frame_state(),
+                  game.run.health, player_state_table[0].freeware.weapon);
+    }
+  }
+}
+
 // Use the same menu and frame entry points as SDL. Stop firing after the first kill.
 static void play_cycle(bool survival) {
   using namespace freeware;
@@ -91,6 +108,7 @@ int main(int argc, char **argv) {
   check_creature_perks();
   check_live_picker();
   check_flames_and_rockets();
+  check_deaths();
   Game g;
   g.asset_dir = argv[1];
   g.load_level_brushes();
