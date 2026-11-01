@@ -7,11 +7,15 @@ leaves the runtime directory except through an explicit export.
 from __future__ import annotations
 
 import hashlib
+import os
+import stat
+from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 
 from nacl.signing import SigningKey
 
-from grim.atomic_write import atomic_write_bytes
+from grim.atomic_write import atomic_write_bytes, locked_file
 
 IDENTITY_FILE = "identity.key"
 # Each signed message starts with its purpose, so a run signature can never pass as a login and back.
@@ -37,26 +41,47 @@ def key_fingerprint(public_key: bytes) -> str:
     return hashlib.sha256(public_key).hexdigest()[:4]
 
 
+@contextmanager
+def locked_identity(base_dir: Path) -> Generator[Path]:
+    """Serialize first launch and explicit imports with the native client's key publisher."""
+    base_dir.mkdir(parents=True, exist_ok=True)
+    with locked_file(base_dir / ".identity.lock"):
+        yield base_dir / IDENTITY_FILE
+
+
 class Identity:
     def __init__(self, key: SigningKey) -> None:
         self._key = key
 
     @classmethod
-    def load(cls, path: Path) -> Identity:
-        seed = path.read_bytes()
-        if len(seed) != 32:
-            raise IdentityError(f"{path} is not an identity key ({len(seed)} bytes, expected 32)")
+    def load(cls, path: Path, *, owner_only: bool = False) -> Identity:
+        flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NONBLOCK", 0)
+        if owner_only:
+            flags |= getattr(os, "O_NOFOLLOW", 0)
+        with os.fdopen(os.open(path, flags), "rb") as stream:
+            info = os.fstat(stream.fileno())
+            if not stat.S_ISREG(info.st_mode):
+                raise IdentityError(f"{path} is not a regular key file")
+            seed = stream.read(33)
+            if len(seed) != 32:
+                raise IdentityError(f"{path} is not an identity key ({info.st_size} bytes, expected 32)")
+            if owner_only and os.name != "nt" and stat.S_IMODE(info.st_mode) != 0o600:
+                os.fchmod(stream.fileno(), 0o600)
         return cls(SigningKey(seed))
 
     @classmethod
     def load_or_create(cls, base_dir: Path) -> Identity:
-        path = base_dir / IDENTITY_FILE
-        if path.exists():
-            return cls.load(path)
-        identity = cls(SigningKey.generate())
-        base_dir.mkdir(parents=True, exist_ok=True)
-        identity.save(path)
-        return identity
+        try:
+            return cls.load(base_dir / IDENTITY_FILE, owner_only=True)
+        except FileNotFoundError:
+            pass
+        with locked_identity(base_dir) as path:
+            try:
+                return cls.load(path, owner_only=True)
+            except FileNotFoundError:
+                identity = cls(SigningKey.generate())
+                identity.save(path)
+                return identity
 
     def save(self, path: Path) -> None:
         # atomic_write_bytes stages through mkstemp, so the key file is readable by its owner only.
@@ -82,6 +107,7 @@ __all__ = [
     "Identity",
     "IdentityError",
     "key_fingerprint",
+    "locked_identity",
     "login_message",
     "run_message",
 ]

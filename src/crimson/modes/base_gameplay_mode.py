@@ -681,8 +681,16 @@ class BaseGameplayMode:
         assert result is not None, "a non-empty recording has a result snapshot"
         replay = recorder.finish(result)
 
+        if self.leaderboard is not None and self.ranked_run and not outcome_reasons(replay.run, replay.result):
+            self.leaderboard.hold(replay)
         replay_dir = self._base_dir / "replays"
-        number = reserve_replay_number(replay_dir)
+        try:
+            number = reserve_replay_number(replay_dir)
+        except (OSError, ValueError) as exc:
+            self._reset_replay_capture_state()
+            if self._console is not None:
+                self._console.log.log(f"replay: not saved ({exc})")
+            return None
         job = ReplaySaveJob(
             path=replay_dir / replay_file_name(number, GameMode(replay.run.game_mode_id)),
             replay=replay,
@@ -695,8 +703,6 @@ class BaseGameplayMode:
             else None,
         )
         self._reset_replay_capture_state()
-        if self.leaderboard is not None and self.ranked_run and not outcome_reasons(replay.run, replay.result):
-            self.leaderboard.hold(replay)
         if self.replay_saver is not None:
             self.replay_saver.submit(job)
             return number, replay

@@ -18,8 +18,10 @@ the web and native clients' sessions (`crimson-core/host/replay.inc`), which
 play Survival, Rush and quests. Each run's replay is saved in the runtime
 directory as `replays/<n>-<mode>.crd`, with `<mode>` one of `survival`, `rush`,
 `quest`, `typo` and `tutorial`. `n` is one more than the highest number handed
-out so far. Desktop writers lock `replays/.last-number.lock` while reading and
-replacing `replays/.last-number`, so even a deleted replay keeps its number. A file appears only once it is written whole. The run's high
+out so far; `replays/.last-number` keeps it, so a deleted replay's number is
+never reused. Desktop clients hold the same exclusive `replays/.last-number.lock`
+while reading and replacing the counter. A damaged or exhausted counter
+prevents a new reservation. A file appears only once it is written whole. The run's high
 score record names its replay by `n` ([local high scores](highscores.md)). A
 leaderboard run downloaded for watching is kept as
 `replays/online/<run id>.crd`.

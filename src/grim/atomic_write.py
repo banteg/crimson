@@ -22,26 +22,29 @@ def atomic_write_bytes(path: Path, payload: bytes) -> None:
 
 
 @contextmanager
-def locked_append(path: Path) -> Generator[int]:
-    """Open an append descriptor exclusively for the duration of a writer transaction."""
-    fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_APPEND | getattr(os, "O_BINARY", 0), 0o644)
-    windows_locked = False
+def locked_file(path: Path, *, append: bool = False) -> Generator[int]:
+    """Hold the desktop clients' exclusive file lock until the descriptor closes.
+
+    Replaced files use a separate, persistent lock file so waiters always lock the same inode.
+    Scores append in place, so the append descriptor itself is locked.
+    """
+    flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_BINARY", 0)
+    fd = os.open(path, flags | (os.O_APPEND if append else 0), 0o644 if append else 0o600)
     try:
         if os.name == "nt":
             import msvcrt
 
             os.lseek(fd, 0, os.SEEK_SET)
             msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
-            windows_locked = True
+            try:
+                yield fd
+            finally:
+                os.lseek(fd, 0, os.SEEK_SET)
+                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
         else:
             import fcntl
 
             fcntl.flock(fd, fcntl.LOCK_EX)
-        yield fd
+            yield fd
     finally:
-        try:
-            if windows_locked:
-                os.lseek(fd, 0, os.SEEK_SET)
-                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
-        finally:
-            os.close(fd)
+        os.close(fd)

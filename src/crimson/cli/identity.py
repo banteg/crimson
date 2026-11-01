@@ -48,19 +48,22 @@ def cmd_identity_import(
 ) -> None:
     """Make this game sign as an exported key."""
     from ..leaderboard import Identity, IdentityError
-    from ..leaderboard.identity import IDENTITY_FILE
+    from ..leaderboard.identity import locked_identity
 
     try:
         identity = Identity.load(path)
+        with locked_identity(base_dir) as target:
+            if not replace:
+                try:
+                    current = Identity.load(target, owner_only=True)
+                except FileNotFoundError:
+                    pass
+                else:
+                    if current.public_key != identity.public_key:
+                        raise typer.BadParameter(f"{target} holds another key ({current.fingerprint}); pass --replace to overwrite it")
+            identity.save(target)
     except IdentityError as exc:
         raise typer.BadParameter(str(exc)) from exc
-    target = base_dir / IDENTITY_FILE
-    if target.exists() and not replace:
-        current = Identity.load(target)
-        if current.public_key != identity.public_key:
-            raise typer.BadParameter(f"{target} holds another key ({current.fingerprint}); pass --replace to overwrite it")
-    target.parent.mkdir(parents=True, exist_ok=True)
-    identity.save(target)
     typer.echo(f"imported key {identity.fingerprint}")
 
 

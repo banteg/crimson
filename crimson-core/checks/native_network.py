@@ -70,6 +70,8 @@ class NativeNetwork(unittest.TestCase):
                 body = self.rfile.read(int(self.headers.get("Content-Length", "0")))
                 test.calls.append((self.command, self.path, body, self.headers))
                 time.sleep(test.upload_delay if self.path == "/api/runs" else test.delay)
+                if getattr(test, "before_response", None):
+                    test.before_response()
                 self.send_response(test.status)
                 self.send_header("Content-Length", str(len(test.reply)))
                 if test.status == 302:
@@ -136,6 +138,51 @@ class NativeNetwork(unittest.TestCase):
                 self.assertEqual(source.read_bytes(), original)
                 self.assertEqual(self.lines, [f"leaderboard: service error (HTTP {status}); runs wait in {source.parent}"])
                 self.assertFalse(any(call[1] == "/api/redirected" for call in self.calls))
+
+    def test_future_replay_waits_then_uploads(self):
+        for status, answer in (
+            (503, {"code": "replay_reader_behind"}),
+            (422, {"reason": "unsupported replay format version: 35 (this build reads versions 30, 31, 34)"}),
+            (422, {"reason": "replay was recorded under rules 2; this service verifies rules 1"}),
+        ):
+            with self.subTest(answer=answer):
+                source = self.queue()
+                original = source.read_bytes()
+                self.status, self.reply = status, json.dumps(answer).encode()
+                self.request(0)
+                self.assertEqual(source.read_bytes(), original)
+                self.status, self.reply = 201, b"{}"
+                self.request(0)
+                self.assertFalse(source.exists())
+
+    def test_duplicate_does_not_remove_replaced_envelope(self):
+        source = self.queue()
+        newer = b'{"signature":"newer signed envelope"}'
+        self.before_response = lambda: source.write_bytes(newer)
+        self.status = 409
+        self.request(0)
+        self.assertEqual(source.read_bytes(), newer)
+        self.before_response = source.unlink
+        self.request(0)
+        self.assertFalse(source.exists())
+
+    def test_old_reader_refusals_retry_in_place(self):
+        source = self.root / "leaderboard/rejected" / (RUN + ".json")
+        source.parent.mkdir(parents=True)
+        envelope = {"name": 'signed "name"', "signature": "signed", "replay": "bytes"}
+        source.write_text(json.dumps({**envelope, "reason": "replay was recorded under rules 2; this service verifies rules 1"}))
+        permanent = source.with_name("b" * 64 + ".json")
+        permanent.write_text(json.dumps({**envelope, "reason": "not ranked"}))
+        old = source.read_bytes()
+        self.status = 503
+        self.request(0)
+        self.assertEqual(source.read_bytes(), old)
+        self.assertEqual(json.loads(self.calls[-1][2]), envelope)
+        self.status = 201
+        self.request(0)
+        self.assertFalse(source.exists())
+        self.assertTrue(permanent.exists())
+        self.assertEqual(len(self.calls), 2)
 
     def test_rejection_saved_before_removal(self):
         source = self.queue()

@@ -48,7 +48,7 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --group dev
       # Exercise actual Windows binary append, locking, rollback and concurrent writers.
-      - run: uv run --no-sync pytest -q tests/persistence/test_highscores.py
+      - run: uv run --no-sync pytest -q tests/persistence/test_highscores.py tests/persistence/test_profile_writers.py
 
   checks:
     name: ${{ matrix.task }}

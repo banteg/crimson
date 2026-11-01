@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <deque>
 #include <mutex>
+#include <set>
 #include <string>
 #include <thread>
 #include <vector>
@@ -42,6 +43,8 @@ private:
     std::string body;
   };
   std::string api_, origin_, directory_, agent_;
+  bool listed_rejections_ = false;
+  std::set<std::string> retry_rejected_;
   std::atomic<bool> stop_{false};
   std::mutex mutex_;
   std::condition_variable ready_;

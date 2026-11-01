@@ -6,6 +6,7 @@
 // client.py), signed by the player's key. The host uploads the outbox.
 #include "../game/host_abi.h"
 #include "../game/leaderboard.h"
+#include "../game/profile_file.h"
 #include <cctype>
 #include <cmath>
 #include <dirent.h>
@@ -88,18 +89,12 @@ static void ranked_queue(const uint8_t digest[32], const std::string &entry, con
   mkdir("leaderboard", 0755);
   mkdir("leaderboard/outbox", 0755);
   std::string path = "leaderboard/outbox/" + hex(digest, 32) + ".json";
-  std::string temp = path + ".part";
-  if (FILE *fp = platform_fopen(temp.c_str(), "wb")) {
-    bool written = fwrite(entry.data(), 1, entry.size(), fp) == entry.size();
-    if (fclose(fp)) written = false;
-    if (!written || rename(temp.c_str(), path.c_str())) {
-      unlink(temp.c_str());
-      return;
-    }
-    console_printf(&console_log_queue, (char *)"leaderboard: queued run %.12s as %s\n", hex(digest, 32).c_str(),
-                   as.c_str());
-    host_leaderboard(HOST_LEADERBOARD_UPLOAD);
-  }
+  auto lock = profile_open("leaderboard/.outbox.lock", "ab");
+  if (!lock || !profile_publish(path, entry.data(), entry.size()))
+    return;
+  console_printf(&console_log_queue, (char *)"leaderboard: queued run %.12s as %s\n", hex(digest, 32).c_str(),
+                 as.c_str());
+  host_leaderboard(HOST_LEADERBOARD_UPLOAD);
 }
 
 // The held run goes to the outbox under the name the end screen took, signed

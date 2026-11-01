@@ -3,9 +3,12 @@
 // its own (src/crimson/replay/library.py) and named by its high score record
 // (docs/formats/replay.md). A ranked run uploads the same replay.
 #include "../game/leaderboard.h"
+#include "../game/profile_file.h"
 #include <array>
-#include <cerrno>
-#include <climits>
+#include <charconv>
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
 #include <cmath>
 #include <dirent.h>
 #include <memory>
@@ -263,49 +266,66 @@ static std::vector<uint8_t> replay_payload(const char *outcome, const ReplayHead
 }
 
 
+// An old counter may end in a newline. A damaged or exhausted counter must not
+// turn back to zero and reassign a deleted replay's number.
+static bool replay_read_counter(int &last) {
+  auto file = profile_open("replays/.last-number", "rb");
+  if (!file)
+    return errno == ENOENT;
+  int c = fgetc(file.get());
+  while (isspace(c)) c = fgetc(file.get());
+  if (!isdigit(c))
+    return false;
+  do {
+    int digit = c - '0';
+    if (last > (INT_MAX - digit) / 10)
+      return false;
+    last = last * 10 + digit;
+    c = fgetc(file.get());
+  } while (isdigit(c));
+  while (isspace(c)) c = fgetc(file.get());
+  return c == EOF && !ferror(file.get());
+}
+
 // One more than the last number handed out or written. replays/.last-number
 // keeps it, so a deleted replay's number is never given to a later run, which
 // an old high score record would then name.
 static int replay_reserve_number() {
   mkdir("replays", 0755);
-  // The desktop host locks this stable file on open. The counter is replaced under the lock.
-  std::unique_ptr<FILE, decltype(&fclose)> lock(platform_fopen("replays/.last-number.lock", "ab"), fclose);
-  if (!lock)
+  auto lock = profile_open("replays/.last-number.lock", "a+b");
+  int last = 0;
+  if (!lock || !replay_read_counter(last))
     return 0;
-  long long last = 0;
-  if (FILE *fp = platform_fopen("replays/.last-number", "rb")) {
-    char extra;
-    bool valid = fscanf(fp, "%lld %c", &last, &extra) == 1 && !ferror(fp) && last >= 0;
-    fclose(fp);
-    if (!valid)
-      return 0;
-  } else if (errno != ENOENT) {
+  std::unique_ptr<DIR, decltype(&closedir)> dir(opendir("replays"), closedir);
+  if (!dir)
     return 0;
-  }
-  if (DIR *dir = opendir("replays")) {
-    while (dirent *entry = readdir(dir)) {
-      long long number;
-      int end = 0;
-      char mode[16];
-      if (sscanf(entry->d_name, "%lld-%15[a-z].crd%n", &number, mode, &end) == 2 && !entry->d_name[end] && end)
-        last = number > last ? number : last;
+  for (;;) {
+    errno = 0;
+    dirent *entry = readdir(dir.get());
+    if (!entry) {
+      if (errno)
+        return 0;
+      break;
     }
-    closedir(dir);
-  } else {
-    return 0;
+    const char *name = entry->d_name;
+    if (!isdigit((unsigned char)*name))
+      continue;
+    int number = 0;
+    auto parsed = std::from_chars(name, name + strlen(name), number);
+    if (*parsed.ptr != '-')
+      continue;
+    const char *mode = parsed.ptr + 1;
+    size_t letters = strspn(mode, "abcdefghijklmnopqrstuvwxyz");
+    if (!letters || strcmp(mode + letters, ".crd"))
+      continue;
+    if (parsed.ec != std::errc{})
+      return 0;
+    last = std::max(last, number);
   }
-  if (last >= INT_MAX)
+  if (last == INT_MAX)
     return 0;
-  int number = (int)last + 1;
-  const char *writing = "replays/.last-number.tmp";
-  FILE *fp = platform_fopen(writing, "wb");
-  bool written = fp && fprintf(fp, "%d", number) > 0 && fflush(fp) == 0 && fsync(fileno(fp)) == 0;
-  if (fp)
-    written = fclose(fp) == 0 && written;
-  written = written && rename(writing, "replays/.last-number") == 0;
-  if (!written)
-    unlink(writing);
-  return written ? number : 0;
+  std::string next = std::to_string(last + 1);
+  return profile_publish("replays/.last-number", next.data(), next.size()) ? last + 1 : 0;
 }
 
 // Saves the run's replay, whole or not at all: written aside, then renamed.
@@ -318,19 +338,16 @@ static int replay_save(const std::vector<uint8_t> &payload) {
   // Sessions play Survival (1), Rush (2) and Quests (3).
   static const char *const modes[] = {"", "survival", "rush", "quest"};
   int number = replay_reserve_number();
-  if (!number)
+  if (!number) {
+    console_printf(&console_log_queue, (char *)"Could not reserve a replay number. Replay was not saved.\n");
     return 0;
-  char name[64], writing[64];
-  snprintf(writing, sizeof writing, "replays/.%d.writing", number);
+  }
+  char name[64];
   snprintf(name, sizeof name, "replays/%d-%s.crd", number, modes[cfg.mode]);
   std::vector<uint8_t> file = zstd_pack(payload);
-  FILE *fp = file.empty() ? nullptr : platform_fopen(writing, "wb");
-  bool written = fp && fwrite(file.data(), 1, file.size(), fp) == file.size();
-  if (fp)
-    written = fclose(fp) == 0 && written;
-  if (written && rename(writing, name) == 0)
+  if (!file.empty() && profile_publish(name, file.data(), file.size()))
     return number;
-  unlink(writing);
+  console_printf(&console_log_queue, (char *)"Could not save replay %s.\n", name);
   return 0;
 }
 

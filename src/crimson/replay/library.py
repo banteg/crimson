@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from grim.atomic_write import atomic_write_bytes, locked_append
+from grim.atomic_write import atomic_write_bytes, locked_file
 
 from ..game_modes import GameMode
 
@@ -21,7 +21,7 @@ REPLAY_MODE_NAMES = {
     GameMode.TYPO: "typo",
     GameMode.TUTORIAL: "tutorial",
 }
-_NUMBERED = re.compile(r"(\d+)-([a-z]+)\.crd")
+_NUMBERED = re.compile(r"([0-9]+)-([a-z]+)\.crd")
 
 
 def replay_file_name(number: int, game_mode: GameMode) -> str:
@@ -35,15 +35,18 @@ def reserve_replay_number(replay_dir: Path) -> int:
     """The next replay number in `replay_dir`, reserved: one more than the last handed out or written."""
 
     replay_dir.mkdir(parents=True, exist_ok=True)
-    # A stable inode shared with the native writer. The counter itself is atomically replaced.
-    with locked_append(replay_dir / ".last-number.lock"):
-        last_path = replay_dir / _LAST_NUMBER
+    last_path = replay_dir / _LAST_NUMBER
+    with locked_file(replay_dir / ".last-number.lock"):
         try:
-            last = int(last_path.read_text())
+            counter = last_path.read_bytes().strip()
         except FileNotFoundError:
-            last = 0
-        taken = (int(match[1]) for path in replay_dir.glob("*.crd") if (match := _NUMBERED.fullmatch(path.name)))
-        number = max(last, max(taken, default=0)) + 1
+            counter = b"0"
+        if not counter.isdigit():
+            raise ValueError(f"Invalid replay counter in {last_path}")
+        taken = (int(match[1]) for path in replay_dir.iterdir() if (match := _NUMBERED.fullmatch(path.name)))
+        number = max(int(counter), max(taken, default=0)) + 1
+        if number > 0x7FFFFFFF:
+            raise ValueError("Replay numbers are exhausted")
         atomic_write_bytes(last_path, str(number).encode())
         return number
 

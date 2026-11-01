@@ -128,6 +128,27 @@ def test_saved_live_replay_round_trips_and_verifies(
         assert verified.exit_code == 0, verified.output
 
 
+def test_failed_replay_reservation_keeps_the_ranked_run_and_finishes_game_over(
+    mocker, make_mode_config, assets_dir, tmp_path,
+) -> None:
+    mode = _open_mode(SurvivalMode, GameMode.SURVIVAL, make_mode_config=make_mode_config, assets_dir=assets_dir)
+    mode.ranked_run = True
+    board = mocker.Mock()
+    mode.leaderboard = board
+    (tmp_path / "replays").mkdir(exist_ok=True)
+    (tmp_path / "replays" / ".last-number").write_text("torn")
+    mode.player.health = mode.player.death_timer = 0.0
+
+    _run_ticks(mode, ticks=3)
+
+    assert mode._game_over_active
+    assert mode._game_over_record is not None and mode._game_over_record.replay_number == 0
+    assert mode._replay_recorder is None
+    board.hold.assert_called_once()
+    assert board.hold.call_args.args[0].result.outcome == RunOutcome.DEATH
+    assert _saved_files(tmp_path) == []
+
+
 def test_run_left_before_first_tick_saves_no_replay(make_mode_config, assets_dir, tmp_path) -> None:
     mode = _open_mode(
         SurvivalMode,
