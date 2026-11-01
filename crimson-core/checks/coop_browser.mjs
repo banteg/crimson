@@ -58,7 +58,7 @@
 //
 //   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir] [game.wasm]
 //
-// CRIMSON_CHROME_ANGLE selects the graphics backend (e.g. metal on macOS); the default is SwiftShader.
+// CRIMSON_CHROME_ANGLE selects the graphics backend. macOS uses the browser default unless set.
 // Add --solo before <asset dir> to record a Survival run in a fresh profile,
 // reload the saved files, and watch that local score through the game UI.
 // <asset dir> holds crimson.paq, sfx.paq and music.paq (artifacts/assets).
@@ -169,7 +169,9 @@ const chrome = spawn(
     "--use-mock-keychain", "--password-store=basic", "--autoplay-policy=no-user-gesture-required",
     ...(soloOnly ? ["--disable-backgrounding-occluded-windows", "--disable-renderer-backgrounding"] : []),
     // Host candidates by address, not mDNS names, so the pages connect directly.
-    "--allow-loopback-in-peer-connection", "--disable-features=WebRtcHideLocalIpsWithMdns", `--use-angle=${process.env.CRIMSON_CHROME_ANGLE ?? "swiftshader"}`, "--enable-unsafe-swiftshader",
+    "--allow-loopback-in-peer-connection", "--disable-features=WebRtcHideLocalIpsWithMdns",
+    ...(process.env.CRIMSON_CHROME_ANGLE ? [`--use-angle=${process.env.CRIMSON_CHROME_ANGLE}`] :
+      process.platform === "darwin" ? [] : ["--use-angle=swiftshader"]), "--enable-unsafe-swiftshader",
     "about:blank",
   ],
   { stdio: "ignore", detached: true },
@@ -395,6 +397,22 @@ async function press(peer, screen, [x, y]) {
   await peer.frame();
   await peer.up();
 }
+async function chooseFromMainMenu(peer, position, next) {
+  // The startup animation and the main menu have the same state. On a slow
+  // graphics device elapsed wall time alone cannot establish that the buttons accept clicks.
+  await until("the first menu selection", async () => {
+    if (await peer.screen() === next) return true;
+    await press(peer, MAIN_MENU, position);
+    await peer.move(900, 700);
+    // Give the menu's pending transition time to finish before another click:
+    // the Play Game button overlaps Quests on the incoming panel.
+    for (let i = 0; i < 90; ++i) {
+      await peer.frame();
+      if (await peer.screen() === next) return true;
+    }
+    return false;
+  }, 120000);
+}
 // A key tap the game sees: held through one of the page's frames. The original reads a key as it is down when a
 // frame polls (its buttons' Enter too; the name entry takes Enter as a character), so a press and release within one
 // slow frame (after a screenshot, on a busy machine) is none, and one held for half a second of frames repeats.
@@ -416,20 +434,9 @@ const webrtc = (peer) =>
 const both = (what, test, ms) => until(what, async () => (await test(host)) && (await test(guest)), ms);
 // A run on both pages.
 const started = (what) => both(what, async (peer) => (await peer.status()) & STATUS.started && (await peer.screen()) === GAMEPLAY);
-// The intro shares the main menu's state id. On a slow renderer the first
-// click can skip the logo. Wait for the panel to actually open.
-async function openPlayMenu(peer) {
-  await until("the Play Game panel", async () => {
-    if (await peer.screen() === MAIN_MENU) {
-      await press(peer, MAIN_MENU, PLAY_GAME);
-      await sleep(600);
-    }
-    return (await peer.screen()) === PLAY_GAME_MENU;
-  }, 60000);
-}
 // The host starts Survival and the guest's screen follows.
 async function survival(host, guest) {
-  await openPlayMenu(host);
+  await chooseFromMainMenu(host, PLAY_GAME, PLAY_GAME_MENU);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
   await started("the run on both");
 }
@@ -533,20 +540,7 @@ async function soloRun() {
     await peer.click("#play");
     await until("the main menu", async () => await peer.screen() === MAIN_MENU);
     await sleep(STARTUP_MS);
-    // The startup animation and the main menu have the same state. On a slow
-    // graphics device elapsed wall time alone cannot establish that the buttons accept clicks.
-    await until("the first menu selection", async () => {
-      if (await peer.screen() === next) return true;
-      await press(peer, MAIN_MENU, position);
-      await peer.move(900, 700);
-      // Give the menu's pending transition time to finish before another click:
-      // the Play Game button overlaps Quests on the incoming panel.
-      for (let i = 0; i < 90; ++i) {
-        await peer.frame();
-        if (await peer.screen() === next) return true;
-      }
-      return false;
-    }, 120000);
+    await chooseFromMainMenu(peer, position, next);
   };
   // Exercise the baseline WebGL2 client on the CI runner's software graphics device.
   await peer.goto(`${peer.origin}/play/?renderer=webgl`);
@@ -649,7 +643,7 @@ async function coopRuns() {
   // The host's game, in the room without its partner, starts no run alone: Survival starts nothing, and Escape goes
   // back to the main menu.
   await sleep(STARTUP_MS);
-  await openPlayMenu(host);
+  await chooseFromMainMenu(host, PLAY_GAME, PLAY_GAME_MENU);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
   await sleep(2000);
   assert.equal(await host.screen(), PLAY_GAME_MENU, "a run alone in a room");
