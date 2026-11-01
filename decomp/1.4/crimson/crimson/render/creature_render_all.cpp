@@ -90,7 +90,7 @@ extern "C" void creature_render_all() {
                 fx_queue_add_random(&body->position);
 #ifdef CRIMSON_FREEWARE_CLIENT
                 if (++UI_GAME.run.kills == 1)
-                    std::puts("1.4.0 first kill");
+                    std::puts(FREEWARE_VERSION " first kill");
 #else
                 ++freeware_kills;
 #endif

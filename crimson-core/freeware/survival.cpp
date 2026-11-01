@@ -84,6 +84,8 @@ void Game::reset_gameplay() {
   cursor_x = 320;
   cursor_y = 140;
   config_game_mode = static_cast<game_mode_id_t>(level_mode ? level_mode : survival ? 2 : 1);
+  if (FREEWARE_EDITION == 10300 && !level_mode)
+    freeware_current_map->clear();
   player_reset_all();
   for (int i = 0; i < 2; ++i) {
     const auto &p = player_state_table[i].freeware;
@@ -114,7 +116,7 @@ void Game::reset_gameplay() {
 void Game::start() {
   reset_gameplay();
   ++generation;
-  std::printf(FREEWARE_VERSION " %s start %d\n", survival ? "survival" : "career", generation);
+  std::printf(FREEWARE_VERSION " %s start %d\n", level_mode == 3 ? "level test" : survival ? "survival" : "career", generation);
 }
 
 // These callbacks are synchronous during combat, just as the original global pools are.

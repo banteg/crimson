@@ -37,12 +37,19 @@ extern "C" void creature_handle_death(int slot, int, unsigned char leave_corpse)
         p.experience -= (int)(c.freeware.reward * -1.5);
     else
         p.experience = (int)(p.experience + c.freeware.reward);
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002
+    // The 1.0.2 projectile death branch places the pickup directly on the kill (0x40314d).
+    if (freeware_pickup_id == freeware_no_pickup && config_game_mode != 2 &&
+        (crt_rand() % 15 == 1 || (p.weapon == 1 && crt_rand() % 3 == 1)))
+        bonus_spawn_at(&c.position);
+#else
     if (freeware_pickup_id == freeware_no_pickup && config_game_mode != 2 &&
         (crt_rand() % 8 == 1 || (p.weapon == 1 && crt_rand() % 3 == 1))) {
         float x = c.pos_x - p.position.x, y = c.pos_y - p.position.y;
         if (sqrt((double)x * x + (double)y * y) > 64)
             bonus_spawn_at(&c.position);
     }
+#endif
     --creature_spawned_count;
     if (bonus_freeze_timer != 0) {
         for (int i = 0; i < 30; ++i) {

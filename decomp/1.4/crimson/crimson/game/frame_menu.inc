@@ -119,6 +119,12 @@ __forceinline void menu_secrets() {
     if (!grim_interface_ptr->grim_is_key_down(0x1d))
         return;
 #endif
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+    // Ctrl+LEVELS, six independent key-edge tests at 0x4145b3..0x414671.
+    const int levels[] = {15, 8, 25, 8, 15, 22}; // SDL scancodes L E V E L S
+    if (G.levels_sequence < 6 && INPUT.key == levels[G.levels_sequence] && ++G.levels_sequence == 6)
+        sfx_play_panned(17, .45f, .5f);
+#endif
     int &assembly = FIELD(freeware_assembly_sequence, assembly_sequence);
     const int sequence[8] = {0x1e, 0x1f, 0x1f, 0x12, 0x32, 0x30, 0x26, 0x15};
     for (int i = 0; i < 8; ++i) {
@@ -184,7 +190,11 @@ __forceinline void refresh_labels(int which) {
 }
 #endif
 __forceinline int menu_rows(int which) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    const int count = which == main_page ? freeware::main_row_count : which == options_page ? freeware::option_row_count : 5;
+#else
     const int count = which == main_page ? 8 : which == options_page ? 12 : 5;
+#endif
     float x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
     float font_scale = which == main_page ? .75435f : .65f;
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -203,7 +213,7 @@ __forceinline int menu_rows(int which) {
     for (int i = 0; i < count; ++i) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         std::string label = which == main_page      ? freeware::menu_row(G, i).label
-                            : which == options_page ? G.option(i)
+                            : which == options_page ? G.option(freeware::option_action(i))
                                                     : freeware::online_labels[i];
         const char *name = label.c_str();
         const float mx = G.cursor_x, my = G.cursor_y;
@@ -213,13 +223,21 @@ __forceinline int menu_rows(int which) {
                                                    : freeware_online_labels[i];
         const float mx = freeware_aim_screen.x, my = freeware_aim_screen.y;
 #endif
+#ifdef CRIMSON_FREEWARE_CLIENT
+        float y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * 21.f;
+        if (FREEWARE_EDITION == 10002 && which == options_page)
+            y = 180.f + i * 32.f;
+        const int action = which == main_page ? freeware::main_action(i) : i;
+#else
         float y = which == main_page ? 200.f + i * 32.f : 170.f + i * 21.f;
+        const int action = i;
+#endif
         if (mx > x && my > y && mx < x + strlen(name) * 16.f && my < y + (which == main_page ? 30.f : 21.f))
             hover = i;
         float light = 1, alpha = hover == i ? .9f : SELECTED == i ? .7f : .6f;
         if (which == online_page && i == 2)
             alpha = .2f;
-        if (which == main_page && ACTIVE && (i == 1 || i == 2)) {
+        if (which == main_page && ACTIVE && (action == 1 || action == 2)) {
             light = .6f;
             alpha = .4f;
         }
@@ -254,14 +272,23 @@ __forceinline int menu_rows(int which) {
 }
 __forceinline void menu_options(int row) {
     switch (row) {
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+    case 12: G.sound_quiet = !G.sound_quiet; break;
+    case 13: G.shadows = !G.shadows; break;
+    case 14: break;
+#endif
     case 0:
         CONFIGURING = 1 - CONFIGURING;
         break;
     case 1:
 #ifdef CRIMSON_FREEWARE_CLIENT
     {
+#if FREEWARE_EDITION == 10002
+        G.movement[0] = 1 - G.movement[0];
+#else
         static const int next[] = {2, 0, 1};
         G.movement[CONFIGURING] = next[G.movement[CONFIGURING]];
+#endif
     }
 #else
         if (++config_movement_schemes[CONFIGURING] > 3)
@@ -622,7 +649,12 @@ __forceinline void cursor_particles(float pulse, float orbit) {
 #endif
 }
 __forceinline void menu_footer() {
-    label("v1.4.0", 10, (float)screen_height - 25, .65435f, 1, 1, 1, .4f);
+#ifdef CRIMSON_FREEWARE_CLIENT
+    const char *version = FREEWARE_EDITION == 10002 ? "v " FREEWARE_VERSION : "v" FREEWARE_VERSION;
+#else
+    const char *version = "v1.4.0";
+#endif
+    label(version, 10, (float)screen_height - 25, .65435f, 1, 1, 1, .4f);
     label("2002 (c) 10tons entertainment", (float)screen_width - 330, (float)screen_height - 25, .65435f, 1, 1, 1,
           .4f);
     cursor_particles(CLOCK - STATE_SINCE, CLOCK);
@@ -670,6 +702,12 @@ __forceinline bool main_menu() {
     }
     if (row < 0)
         return true;
+#ifdef CRIMSON_FREEWARE_CLIENT
+    if (which == main_page)
+        row = freeware::main_action(row);
+    else if (which == options_page)
+        row = freeware::option_action(row);
+#endif
     if (which == options_page) {
         menu_options(row);
         return true;
@@ -745,7 +783,15 @@ __forceinline bool main_menu() {
         break;
     case 2:
         if (!ACTIVE) {
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+            int next = config_game_mode + 1;
+            if (next > (G.levels_sequence == 6 ? 3 : 2))
+                next = 1;
+            config_game_mode = (game_mode_id_t)next;
+            G.level_mode = next == 3 ? 3 : 0;
+#else
             config_game_mode = (game_mode_id_t)(config_game_mode == 1 ? 2 : 1);
+#endif
 #ifdef CRIMSON_FREEWARE_CLIENT
             G.survival = config_game_mode == 2;
 #endif

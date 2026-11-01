@@ -18,6 +18,7 @@ struct Sample {
   Uint32 size{};
   Uint64 last{};
 };
+static bool quiet_samples;
 static Sample samples[int(Sound::Count)];
 static void load_audio(const std::string &folder) {
   static const char *names[] = {
@@ -50,6 +51,7 @@ void play_original_sample(int id) {
   if (!s.stream || (s.last && now - s.last < (id == 14 ? 580 : 80)))
     return;
   s.last = now;
+  SDL_SetAudioStreamGain(s.stream, quiet_samples ? .15f : .45f);
   SDL_ClearAudioStream(s.stream);
   SDL_PutAudioStreamData(s.stream, s.data, s.size);
 }
@@ -232,6 +234,7 @@ static void frame() {
   controls.reload |= keys[SDL_SCANCODE_R];
   controls.level_up |= keys[SDL_SCANCODE_SPACE] || keys[SDL_SCANCODE_KP_PLUS];
   c.game.update(dt, controls);
+  quiet_samples = c.game.sound_quiet;
   bool wants_text = c.game.screen == Screen::Death || c.game.console_open;
   if (was_text != wants_text) {
     if (wants_text)
@@ -254,7 +257,7 @@ static void frame() {
 
 int main(int argc, char **argv) {
   std::time_t now = std::time(nullptr);
-  if (const std::tm *date = std::localtime(&now)) {
+  if (const std::tm *date = std::localtime(&now); date && FREEWARE_EDITION != 10002) {
     auto &game = freeware::client.game;
     game.birthday = date->tm_mon == 8 && date->tm_mday == 12;
     game.memorial = date->tm_mon == 8 && date->tm_mday == 11;
@@ -286,8 +289,6 @@ int main(int argc, char **argv) {
     SDL_free(path);
   }
 #endif
-  client.game.load_scores();
-  client.game.load_options();
   std::string folder;
 #ifdef __EMSCRIPTEN__
   folder = "/assets";
@@ -309,6 +310,9 @@ int main(int argc, char **argv) {
   SDL_SetRenderLogicalPresentation(client.renderer, width, height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
   SDL_HideCursor();
   client.game.asset_dir = client.assets = folder;
+  client.game.load_level_brushes();
+  client.game.load_scores();
+  client.game.load_options();
   load_audio(folder);
   seed_random(static_cast<unsigned>(SDL_GetPerformanceCounter()));
   client.game.generate_terrain();

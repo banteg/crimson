@@ -37,8 +37,12 @@ void player_reset_all() {
         p.displayed_experience = 0;
         p.spread = 1;
         p.move_speed = 0;
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002
+        p.ammo = p.clip_size = 30;
+#else
         p.ammo = 10;
         p.clip_size = 10;
+#endif
         p.reload_duration = 1;
         p.reload = 0;
         freeware_aim_screen.x = 320;

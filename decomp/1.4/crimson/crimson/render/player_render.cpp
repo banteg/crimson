@@ -34,8 +34,19 @@ __forceinline void collect() {
         return;
     if (PICKUP_ID == freeware_bonus_fire)
         bonus_fire_bullets_timer = 8;
-    else if (PICKUP_ID == freeware_bonus_weapon)
+    else if (PICKUP_ID == freeware_bonus_weapon) {
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002
+        // 0x40772e draws the weapon when collected. A pistol picked up later has 15 rounds.
+        int weapon = crt_rand() % 8 + 1;
+        while (weapon == PLAYER.weapon)
+            weapon = crt_rand() % 7 + 1;
+        static const float clips[] = {15, 30, 15, 30, 20, 20, 20, 30};
+        PLAYER.weapon = weapon;
+        PLAYER.ammo = PLAYER.clip_size = clips[weapon - 1];
+#else
         weapon_assign_player(current_player_index, PICKUP_WEAPON);
+#endif
+    }
     else if (PICKUP_ID == freeware_bonus_freeze)
         UI_FIELD(bonus_freeze_timer, run.freeze) = 5;
     else if (PICKUP_ID == freeware_bonus_nuke) {

@@ -284,6 +284,26 @@ __forceinline float saturate(float x) {
     return x;
 }
 __forceinline void spawn_wave() {
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002
+    if (config_game_mode == 2)
+        P(0).weapon = 2;
+    SPAWN_TIMER -= frame_dt;
+    if (SPAWN_TIMER < 0) {
+        if (config_game_mode == 2) {
+            // 0x40d861..0x40d967 attempts one spawn even on a long frame.
+            SPAWN_TIMER = .01f;
+            effect_color_t tint = {saturate(SECONDS / 120.f), saturate(10.f / SECONDS),
+                                   saturate((float)sin(SECONDS * .1f)), 1};
+            vec2f_t east = {(float)freeware_arena_width, freeware_arena_height * .5f};
+            creature_spawn(&east, &tint, 1);
+        } else if (freeware_spawn_enabled) {
+            SPAWN_TIMER = 1.f - XP * .00001f;
+            if (SPAWN_TIMER < .2f)
+                SPAWN_TIMER = .2f;
+            spawn_edge();
+        }
+    }
+#else
     if (config_game_mode == 2) {
         P(0).weapon = P(1).weapon = 2;
         P(0).ammo = P(1).ammo = 30;
@@ -309,6 +329,7 @@ __forceinline void spawn_wave() {
         } else
             break;
     }
+#endif
 }
 __forceinline void die() {
     enter(6);

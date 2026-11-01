@@ -15,10 +15,14 @@ from grim.paq import read_paq
 
 ARCHIVES = {
     "1.0.2": {"crimson.paq": "b12f5f362b3b1d9541fcf7c169f348d5bd739e1903cc98281e5f60699adba9f7"},
-    "1.3.0": {"crimson.paq": "9515a1e4ccee9815b38a79ee4960c224729ff82a09fd5b0c81f69c8d2c603fc3",
-              "tiles.paq": "859181f5fe885b7243f0531ea18c3922f62c8d759e7857468e98866015eb2171"},
-    "1.4.0": {"crimson.paq": "31f5ba92dbcc2460a3962a77fa266b92d41be9b1c69b84e8350a56ec7f37e84a",
-              "sounds.paq": "a82a59f40749e009dca3f9cb934a073e7a67bb11415da0e3ca1766c9059ff11b"},
+    "1.3.0": {
+        "crimson.paq": "9515a1e4ccee9815b38a79ee4960c224729ff82a09fd5b0c81f69c8d2c603fc3",
+        "tiles.paq": "859181f5fe885b7243f0531ea18c3922f62c8d759e7857468e98866015eb2171",
+    },
+    "1.4.0": {
+        "crimson.paq": "31f5ba92dbcc2460a3962a77fa266b92d41be9b1c69b84e8350a56ec7f37e84a",
+        "sounds.paq": "a82a59f40749e009dca3f9cb934a073e7a67bb11415da0e3ca1766c9059ff11b",
+    },
 }
 LOOSE_SOUNDS = {
     "1.0.2": "444810304396cab168d2153275ad02755bc45ab053ded6cb10142c1de689ae44",
@@ -52,10 +56,14 @@ def prepare(root: Path, install: Path, out: Path, edition: str = "1.4.0") -> Non
     out.mkdir(parents=True, exist_ok=True)
     textures = dict(read_paq(install / "crimson.paq"))
     if edition == "1.0.2":
+        # Reconstruct the packaged 36-byte record even if this installation has since been played.
+        (out / "career.top").write_bytes(struct.pack("<32si", b"10tons", 28930))
         del textures["crimsonland.tg_"]  # Unused alternate title, alongside crimsonland.tga.
     if edition == "1.3.0":
         textures.update(read_paq(install / "tiles.paq"))
-        levels = loose_files(install / "levels", {".lvl"}, "06f07cb7399ff8f4af29f1f4b53e98bebf251f4ad0de07d3843c0737dd30c157")
+        levels = loose_files(
+            install / "levels", {".lvl"}, "06f07cb7399ff8f4af29f1f4b53e98bebf251f4ad0de07d3843c0737dd30c157",
+        )
         (out / "levels").mkdir(exist_ok=True)
         for name, path in levels.items():
             shutil.copyfile(path, out / "levels" / name)
@@ -86,6 +94,28 @@ def prepare(root: Path, install: Path, out: Path, edition: str = "1.4.0") -> Non
         ffmpeg = shutil.which("ffmpeg")
         if not ffmpeg:
             raise SystemExit("ffmpeg is required to prepare the original MP3 tracks")
-        subprocess.run([ffmpeg, "-nostdin", "-v", "error", "-y", "-i", track, "-fflags", "+bitexact",
-                        "-flags:a", "+bitexact", "-map_metadata", "-1", "-c:a", "vorbis", "-strict",
-                        "experimental", "-b:a", "192k", out / (track.stem.lower() + ".ogg")], check=True)
+        subprocess.run(
+            [
+                ffmpeg,
+                "-nostdin",
+                "-v",
+                "error",
+                "-y",
+                "-i",
+                track,
+                "-fflags",
+                "+bitexact",
+                "-flags:a",
+                "+bitexact",
+                "-map_metadata",
+                "-1",
+                "-c:a",
+                "vorbis",
+                "-strict",
+                "experimental",
+                "-b:a",
+                "192k",
+                out / (track.stem.lower() + ".ogg"),
+            ],
+            check=True,
+        )

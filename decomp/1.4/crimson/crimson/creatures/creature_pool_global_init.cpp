@@ -8,8 +8,8 @@ extern "C" void creature_pool_global_init(void)
 
     do {
         entry->active = 0;
-        entry->entity_reserved_74 = 0;
-        entry->ai_mode = 0;
+        entry->freeware.reserved_64 = 0;
+        entry->plague_infected = 0;
         entry->hit_flash_timer = 0.0f;
         ++entry;
     } while (--remaining != 0);

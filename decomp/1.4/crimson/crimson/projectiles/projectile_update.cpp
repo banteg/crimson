@@ -214,10 +214,22 @@ __forceinline void bullets() {
             }
             continue;
         }
-        // Both shipped modes use the empty level object list in the map movement helper (0x404ee0).
+        // Career and Survival have an empty wall list. The 1.3.0 numbered maps use it.
         for (int step = 0; step < steps; ++step) {
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10300
+            vec2f_t delta = {dx * s.fields.speed_scale, dy * s.fields.speed_scale};
+            if (freeware_current_map->move_with_collision(&s.position, &delta, 0)) {
+                if (crt_rand() % 15 == 2) {
+                    vec2f_t start = {s.position.x - delta.x, s.position.y - delta.y};
+                    projectile_spawn(&start, s.angle - half_pi, 1);
+                }
+                s.fields.life_timer = .25f;
+                break;
+            }
+#else
             s.position.x += dx * s.fields.speed_scale;
             s.position.y += dy * s.fields.speed_scale;
+#endif
             int id = creature_find_in_radius(&s.position, type == 18 ? 16.f : 0.f);
             if (id >= 0) {
                 hit(s, id);
@@ -254,8 +266,18 @@ __forceinline void rockets() {
             }
             continue;
         }
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10300
+        vec2f_t delta = {v.x * frame_dt, v.y * frame_dt};
+        if (freeware_current_map->move_with_collision(&r.position, &delta, 4)) {
+            r.fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+            v.x = 0;
+            v.y = type == 1 ? 1.f : .5f;
+            type = 3;
+        }
+#else
         r.position.x += v.x * frame_dt;
         r.position.y += v.y * frame_dt;
+#endif
         if (type == 1) {
             float scale = 1 + frame_dt * 3;
             v.x *= scale;

@@ -91,6 +91,12 @@ bool freeware_level_map::save(const char *path) {
 }
 bool freeware_level_map::load(const char *path) {
   auto *f = std::fopen(level_path(path).c_str(), "rb");
+  if (!f && FREEWARE_EDITION == 10300 && !freeware_frame_game->asset_dir.empty()) {
+    std::string shipped = path;
+    std::replace(shipped.begin(), shipped.end(), '\\', '/');
+    if (shipped.rfind("levels/", 0) == 0 && shipped.find("..") == std::string::npos)
+      f = std::fopen((freeware_frame_game->asset_dir + "/" + shipped).c_str(), "rb");
+  }
   if (!f)
     return false;
   freeware_level_map next{};
@@ -145,6 +151,22 @@ void freeware_level_map::render_triggers(unsigned char playing) {
                                t.radius * 2,
                                0,
                                {1, 1, 1, .6f}});
+  }
+}
+// The 1.3.0 startup loads these after its ordinary textures (0x41a6f1..0x41afc0).
+// Level records store the original Grim handle, including the two base terrain brushes.
+void freeware::Game::load_level_brushes() {
+  if (FREEWARE_EDITION != 10300)
+    return;
+  static const char *const names[] = {
+      "grass1", "mud1", "gnd_smallrocks", "gnd_bdirt", "gnd_asphalt", "floor", "tl_metalfloor",
+      "tl_metalfloor64", "tl_blackwhite", "tl_wall_h", "tl_wall_v", "tl_wall_tl", "tl_wall_tr",
+      "tl_wall_br", "tl_wall_bl", "tl_wall_block_h", "tl_wall_block_v", "tl_box_46", "tl_tolmec", "light_128"};
+  brushes.clear();
+  for (const char *name : names) {
+    freeware_level_object obj{};
+    obj.texture = 30 + static_cast<int>(brushes.size());
+    brushes.push_back({name, obj});
   }
 }
 void freeware::Game::load_next_level() {

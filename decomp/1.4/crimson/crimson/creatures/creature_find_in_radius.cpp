@@ -18,14 +18,14 @@ extern "C" int creature_find_in_radius(
 {
     int index = 0;
 
-#if CL_BUILD < 10300
+#if CL_BUILD < 10300 || (defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002)
     while (index < 0x80) {
         if (creature_pool[index].active
             && vec2_distance(
                    &creature_pool[index].position,
                    pos)
                     - radius
-                < creature_pool[index].size * 0.14285715f
+                < creature_pool[index].freeware.size * 0.14285715f
             && creature_pool[index].death_timer > 5.0f) {
             goto found;
         }

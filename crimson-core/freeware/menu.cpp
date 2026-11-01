@@ -10,7 +10,28 @@ const char *const main_labels[] = {"Begin game.", "Players: one",  "Game mode: c
                                    "Credits.",    "Game options.", "Online options.",   "End."};
 const char *const online_labels[5] = {"Visit Crimsonland website", "Check for updates", "View online highscores",
                                       "", "back to main menu"};
+int main_action(int row) {
+  if (FREEWARE_EDITION == 10002 && row >= 1)
+    ++row;  // Single-player menu.
+  if (FREEWARE_EDITION < 10400 && row == 6)
+    ++row;  // Online menu first appears in 1.4.0.
+  return row;
+}
+int option_action(int row) {
+  if (FREEWARE_EDITION == 10002) {
+    static const int actions[] = {1, 12, 13, 4, 5, 6, 7, 14, 11};
+    return actions[row];
+  }
+  return FREEWARE_EDITION == 10300 && row >= 8 ? row + 1 : row;
+}
 static const char *menu_label(const Game &g, int row) {
+  row = main_action(row);
+  if (row == 5 && FREEWARE_EDITION < 10400)
+    return "Options.";
+  if (row == 2 && g.level_mode == 3)
+    return "Game mode: Level Test";
+  if (row == 2 && g.level_mode == 4)
+    return "Game mode: Level Edit";
   if (row == 0 && g.paused)
     return "Resume game.";
   if (row == 1 && g.two_players)
@@ -21,9 +42,9 @@ static const char *menu_label(const Game &g, int row) {
     return "End current game.";
   return main_labels[row];
 }
-MenuRow menu_row(const Game &g, int i) { return {menu_label(g, i), width / 2 - 100.f, 200.f + i * 32}; }
+MenuRow menu_row(const Game &g, int i) { return {menu_label(g, i), width / 2 - 100.f, main_row_top + i * 32.f}; }
 int menu_hover(const Game &g) {
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < main_row_count; ++i) {
     const auto row = menu_row(g, i);
     if (g.cursor_x > row.x && g.cursor_y > row.y && g.cursor_y < row.y + 30 &&
         g.cursor_x < row.x + std::strlen(row.label) * 16)
@@ -37,6 +58,15 @@ std::string Game::option(int row) const {
                                 "Control method: joystick static"};
   static const char *aims[] = {"Aiming device: mouse static", "Aiming device: mouse relative",
                                "Aiming device: keyboard", "Aiming device: joystickk 'hat'"};
+  if (FREEWARE_EDITION == 10002) {
+    switch (row) {
+    case 1: return movement[0] ? "Control method: relative" : "Control method: static";
+    case 6: return effects ? "Flame Glow FX: on" : "Flame Glow FX: off";
+    case 12: return sound_quiet ? "Sound volume: low" : "Sound volume: default";
+    case 13: return shadows ? "Shadows: on" : "Shadows: off";
+    case 14: return "";
+    }
+  }
   switch (row) {
   case 0:
     return configuring ? "Configure for: Player 2" : "Configure for: Player 1";
@@ -84,6 +114,8 @@ void Game::save_options() const {
   }
   for (int i = 0; i < 2; ++i)
     f << pad_left_pov[i] << ' ' << pad_right_pov[i] << '\n';
+  if (FREEWARE_EDITION == 10002)
+    f << sound_quiet << ' ' << shadows << '\n';
 }
 void Game::load_options() {
   if (save_dir.empty())
@@ -135,5 +167,7 @@ void Game::load_options() {
       pad_right_pov[i] = right;
     }
   }
+  if (FREEWARE_EDITION == 10002)
+    f >> sound_quiet >> shadows;
 }
 } // namespace freeware

@@ -6,6 +6,8 @@
 
 namespace freeware {
 void update_music(const Game &g, const std::string &folder) {
+  if (FREEWARE_EDITION == 10002)
+    return;
   static const char *current;
   static stb_vorbis *decoder;
   static SDL_AudioStream *output;

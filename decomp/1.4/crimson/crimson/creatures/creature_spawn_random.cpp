@@ -28,11 +28,19 @@ extern "C" unsigned char creature_spawn_random(const vec2f_t *pos) {
     c.velocity = zero;
     int xp = player_state_table[current_player_index].freeware.experience;
     c.freeware.heading = (crt_rand() % 314) * .01f;
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002
+    c.freeware.move_speed = xp * (1.f / 15000) + 1;
+    if (c.freeware.move_speed > 5)
+        c.freeware.move_speed = 5;
+    c.health = 50;
+    c.freeware.reward = crt_rand() % 10 + 120;
+#else
     c.freeware.move_speed = xp * (1.f / 21000) + .8f;
     if (c.freeware.move_speed > 3)
         c.freeware.move_speed = 3;
     c.health = xp * .00125f + 52;
     c.freeware.reward = xp * .00002f + (crt_rand() % 10 + 87);
+#endif
     c.freeware.attack_cooldown = 0;
     c.freeware.color.r = 1.f - 1.f / (xp + 1.f);
     c.freeware.color.g = (crt_rand() % 10) * .01f + .9f;

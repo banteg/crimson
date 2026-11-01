@@ -35,7 +35,11 @@ extern "C" void creature_update_all() {
             c.death_timer -= frame_dt;
         int target = c.freeware.player;
         float dist = range(c.position, player_state_table[target].freeware.position);
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION < 10400
+        if (config_game_mode == 3) {
+#else
         if (config_game_mode != 2) {
+#endif
             if (dist < c.activation_radius)
                 c.ai_mode = 1;
             if (!c.ai_mode)

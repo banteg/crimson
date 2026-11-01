@@ -21,7 +21,12 @@
 #endif
 
 namespace freeware {
-constexpr int width = 1024, height = 768, arena = 1024;
+constexpr int width = FREEWARE_EDITION < 10400 ? 640 : 1024, height = width * 3 / 4, arena = 1024;
+constexpr int main_row_count = FREEWARE_EDITION == 10002 ? 6 : FREEWARE_EDITION == 10300 ? 7 : 8;
+constexpr int option_row_count = FREEWARE_EDITION == 10002 ? 9 : FREEWARE_EDITION == 10300 ? 11 : 12;
+constexpr int main_row_top = FREEWARE_EDITION == 10002 ? 220 : 200;
+int main_action(int row);
+int option_action(int row);
 enum class Screen { Menu, Playing, Dying, Death, LevelCleared, Perks, Message, Scores, Credits, Options, Online };
 enum class Sound {
   Hit = 0,
@@ -132,7 +137,7 @@ struct Score {
   std::string name;
   int seconds{};
   int kills{}, experience{};
-  float min_fps{}, average_fps{}, max_fps{}, version = 1.4f;
+  float min_fps{}, average_fps{}, max_fps{}, version = FREEWARE_EDITION == 10002 ? 1.02f : FREEWARE_EDITION == 10300 ? 1.3f : 1.4f;
 };
 struct LevelBrush {
   std::string name;
@@ -140,10 +145,11 @@ struct LevelBrush {
 };
 struct Game {
   Screen screen = Screen::Menu, presented_screen = Screen::Menu;
-  int level_mode{}, level_number{}, editor_brush{}, editor_layer{};
+  int levels_sequence{}, level_mode{}, level_number{}, editor_brush{}, editor_layer{};
   float editor_rotation{}, editor_light = 1, editor_alpha = 1, editor_radius = 20;
   vec2f_t editor_offset{};
   std::vector<LevelBrush> brushes;
+  void load_level_brushes();
   void load_next_level();
   Run run;
   FxQueues fx;
@@ -191,7 +197,7 @@ struct Game {
   int configuring{}, rebind = -1;
   int movement[2]{0, 0}, aiming[2]{0, 2};
   int keys[2][5]{{26, 22, 4, 7, 43}, {82, 81, 80, 79, 228}};
-  bool show_fps{}, safe_mode{}, effects = true, smooth = true, shell_marks{}, direction_arrow = true;
+  bool sound_quiet{}, show_fps{}, safe_mode{}, effects = true, smooth = true, shell_marks{}, direction_arrow = true;
   int calibration = -1;
   vec2f_t pad_center[2]{};
   float pad_threshold[2]{.1f, .1f};

@@ -12,11 +12,21 @@ extern float freeware_pickup_time;
 int crt_rand();
 }
 extern "C" void bonus_spawn_at(const vec2f_t *pos) {
-    if (config_game_mode == 3 || pos->x < 32 || pos->x > freeware_arena_width - 32 || pos->y < 32 ||
+#if !defined(FREEWARE_EDITION) || FREEWARE_EDITION != 10002
+    if (config_game_mode == 3)
+        return;
+#endif
+#if !defined(FREEWARE_EDITION) || FREEWARE_EDITION >= 10400
+    if (pos->x < 32 || pos->x > freeware_arena_width - 32 || pos->y < 32 ||
         pos->y > freeware_arena_height - 32)
         return;
+#endif
     freeware_pickup_position = *pos;
+#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10300
+    int id = crt_rand() % 5;  // 0x403f0d. The Survival reroll below uses the registered count.
+#else
     int id = crt_rand() % freeware_bonus_count;
+#endif
     if (config_game_mode == 2)
         while (id == 2)
             id = crt_rand() % freeware_bonus_count;
@@ -28,9 +38,11 @@ extern "C" void bonus_spawn_at(const vec2f_t *pos) {
         freeware_pickup_id = freeware_bonus_freeze;
     else if (id == 2) {
         freeware_pickup_id = freeware_bonus_weapon;
+#if !defined(FREEWARE_EDITION) || FREEWARE_EDITION != 10002
         do {
             freeware_pickup_weapon = crt_rand() % 14 + 2;
         } while (freeware_pickup_weapon == player_state_table[current_player_index].freeware.weapon);
+#endif
     } else if (id == 3)
         freeware_pickup_id = freeware_bonus_nuke;
     else if (id == 4)

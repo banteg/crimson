@@ -7,7 +7,7 @@
 
 extern "C" {
 int freeware_arena_width = freeware::arena, freeware_arena_height = freeware::arena;
-int freeware_bonus_count = 6, freeware_pickup_id, freeware_pickup_weapon;
+int freeware_bonus_count = FREEWARE_EDITION == 10002 ? 4 : 6, freeware_pickup_id, freeware_pickup_weapon;
 int freeware_bonus_fire = 1, freeware_bonus_freeze = 2, freeware_bonus_weapon = 3;
 int freeware_bonus_nuke = 4, freeware_bonus_shield = 5, freeware_bonus_time = 6;
 vec2f_t freeware_pickup_position;

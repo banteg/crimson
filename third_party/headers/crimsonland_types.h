@@ -521,8 +521,12 @@ typedef struct effect_color_t {
 #if CL_BUILD < 10300
 typedef struct creature_t {
     unsigned char active;
-    unsigned char ai_mode;
-    unsigned char _pad0[2];
+    union {
+        unsigned char plague_infected;
+        unsigned char ai_mode; // Later donor name.
+    };
+    unsigned char state_flag;
+    signed char target_player;
     float hit_flash_timer;
     float death_timer;
     union {
@@ -540,53 +544,38 @@ typedef struct creature_t {
         vec2f_t velocity;
     };
     float health;
-    float max_health;
-    float size;
-    unsigned char plague_infected;
-    unsigned char state_flag;
-    unsigned char force_target;
-    signed char target_player;
-    float heading;
-    float target_heading;
+    // 0x4067a0 initializes these fields. The pool at 0x4252d0 uses a 0x68 stride.
     union {
         struct {
-            float tint_r;
-            float tint_g;
-            float tint_b;
-            float tint_a;
-        };
-        effect_color_t color;
-    };
-    union {
+            float heading, size;
+            effect_color_t color;
+            unsigned char force_target, padding[3];
+            vec2f_t target;
+            float contact_damage, move_speed, attack_cooldown;
+            int reward, reserved[3], type, reserved_64;
+        } freeware;
+        // Later donor sources are compiled for comparison with this build. Their extra
+        // field names are aliases, not evidence that 1.0.2 implements those mechanics.
         struct {
-            float target_x;
-            float target_y;
+            float heading, size;
+            float tint_r, tint_g, tint_b, tint_a;
+            unsigned char force_target, donor_padding[3];
+            union {
+                struct { float target_x, target_y; };
+                vec2f_t target_position;
+            };
+            float donor_contact_damage, donor_move_speed, donor_attack_cooldown;
+            float max_health;
+            union { float target_heading; int link_index; };
+            vec2f_t target_offset;
+            int type_id;
+            union {
+                float orbit_angle, dot_tick_timer;
+                creature_orbit_radius_t orbit_radius;
+                int flags, phase_seed;
+            };
         };
-        vec2f_t target_position;
     };
-    float contact_damage;
-    float move_speed;
-    float attack_cooldown;
-    float reward_value;
-    int type_id;
-    union {
-        int link_index;
-        creature_bonus_args_t bonus_args;
-        struct {
-            float target_offset_x;
-            float target_offset_y;
-        };
-        vec2f_t target_offset;
-    };
-    union {
-        float orbit_angle;
-        creature_orbit_radius_t orbit_radius;
-        int flags;
-        int phase_seed;
-        float dot_tick_timer;
-        float anim_phase;
-    };
-    int entity_reserved_74;
 } creature_t;
 #elif CL_BUILD < 10900
 #pragma pack(push, 4)

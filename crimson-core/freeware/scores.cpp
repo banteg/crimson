@@ -29,6 +29,22 @@ static void sort_scores(std::vector<Score> &table, bool survival) {
   });
 }
 bool decode_scores(std::vector<uint8_t> bytes, int board, std::vector<Score> &out) {
+  if (FREEWARE_EDITION == 10002) {
+    if (bytes.size() % 36) return false;
+    std::vector<Score> decoded;
+    for (size_t i = 0; i < bytes.size(); i += 36) {
+      const auto *p = bytes.data() + i;
+      const auto *end = std::find(p, p + 32, 0);
+      if (end == p + 32) return false;
+      Score score{};
+      score.name.assign(reinterpret_cast<const char *>(p), end - p);
+      (board >= 2 ? score.seconds : score.experience) = load<int32_t>(p + 32);
+      decoded.push_back(score);
+    }
+    sort_scores(decoded, board >= 2);
+    out.swap(decoded);
+    return true;
+  }
   if (bytes.size() < 4 || (bytes.size() - 4) % 56)
     return false;
   size_t size = bytes.size() - 4;
@@ -60,6 +76,16 @@ bool decode_scores(std::vector<uint8_t> bytes, int board, std::vector<Score> &ou
   return true;
 }
 std::vector<uint8_t> encode_scores(const std::vector<Score> &table, int board) {
+  if (FREEWARE_EDITION == 10002) {
+    std::vector<uint8_t> bytes(table.size() * 36);
+    for (size_t i = 0; i < table.size(); ++i) {
+      auto *p = bytes.data() + i * 36;
+      const auto &s = table[i];
+      std::memcpy(p, s.name.data(), std::min<size_t>(31, s.name.size()));
+      put(p + 32, int32_t(board >= 2 ? s.seconds : s.experience));
+    }
+    return bytes;
+  }
   std::vector<uint8_t> bytes(table.size() * 56 + 4);
   for (size_t i = 0; i < table.size(); ++i) {
     auto *p = &bytes[i * 56];
@@ -86,6 +112,8 @@ void Game::load_scores() {
     return;
   for (int i = 0; i < 4; i++) {
     std::ifstream f(save_dir + files[i], std::ios::binary);
+    if (!f && FREEWARE_EDITION == 10002 && i == 0 && !asset_dir.empty())
+      f.open(asset_dir + "/career.top", std::ios::binary);
     if (!f)
       continue;
     invalid_scores[i] = !decode_scores({std::istreambuf_iterator<char>(f), {}}, i, rankings[i]);

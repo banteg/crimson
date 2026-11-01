@@ -143,7 +143,15 @@ def build(root: Path, target: str, out: Path, install: Path | None, edition: str
         if target == "web":
             shell = Path(stage) / "shell.html"
             save_root = "/freeware" if edition == "1.4.0" else f"/freeware-{edition}"
-            shell.write_text((core / "freeware/shell.html").read_text().replace("@EDITION@", edition).replace("@SAVE_ROOT@", save_root))
+            width = 1024 if edition == "1.4.0" else 640
+            shell.write_text(
+                (core / "freeware/shell.html")
+                .read_text()
+                .replace("@EDITION@", edition)
+                .replace("@SAVE_ROOT@", save_root)
+                .replace("@WIDTH@", str(width))
+                .replace("@HEIGHT@", str(width * 3 // 4)),
+            )
             binary = out / "index.html"
             cmd = [
                 _tool("em++"),

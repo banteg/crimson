@@ -41,6 +41,12 @@ __forceinline void shadow(float x, float y, float alpha) {
 }
 } // namespace
 extern "C" void terrain_generate(unsigned char textured) {
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+    // 0x405090 rolls the alternate ground before checking safe mode.
+    int ground = textured;
+    if (crt_rand() % 256 == 1)
+        ground = crt_rand() % 3 + 1;
+#endif
     if (UI_FIELD(freeware_safe_mode, safe_mode))
         return;
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -57,6 +63,18 @@ extern "C" void terrain_generate(unsigned char textured) {
 #else
     grim_interface_ptr->grim_set_render_target(terrain_render_target);
 #endif
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+    clear_ground(63.f / 255, 56.f / 255, 25.f / 255);
+    if (ground >= 1 && ground <= 3) {
+        const char *alternate = ground == 2 ? "gnd_bdirt" : "gnd_smallrocks";
+        bind_ground(ground == 1 ? "grass1.tga" : alternate);
+        world_tint(.7f, .7f, .7f, .9f);
+        scatter(600);
+        bind_ground(ground == 1 ? "mud1.tga" : alternate);
+        scatter(35);
+    }
+    UI_GAME.terrain.swap(UI_GAME.frame_sprites);
+#else
     if (!textured)
         clear_ground(0, 0, 0);
     else {
@@ -89,5 +107,6 @@ extern "C" void terrain_generate(unsigned char textured) {
     UI_GAME.terrain.swap(UI_GAME.frame_sprites);
 #else
     grim_interface_ptr->grim_set_render_target(-1);
+#endif
 #endif
 }
