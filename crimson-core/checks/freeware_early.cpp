@@ -15,6 +15,52 @@ extern "C" {
 extern float freeware_elapsed_seconds;
 extern unsigned freeware_rng_state;
 extern game_mode_id_t config_game_mode;
+extern int freeware_pickup_id, freeware_pickup_weapon;
+extern float freeware_pickup_time;
+void player_render();
+}
+
+static void check_weapon_pickups() {
+  using namespace freeware;
+  Game game;
+  game.two_players = true;
+  game.start();
+  FrameGameScope scope(game);
+  auto collect = [&](unsigned seed, int who, int held) {
+    current_player_index = who;
+    weapon_assign_player(who, held);
+    seed_random(seed);
+    auto pos = game.actor(who).player;
+    bonus_spawn_at(&pos);
+    game.run.pickup = {pos, static_cast<Bonus>(freeware_pickup_id), freeware_pickup_time, freeware_pickup_weapon};
+    player_render();
+    const auto &p = player_state_table[who].freeware;
+    std::printf("weaponpickup %u %d %d %d %g %g %u\n", seed, who, held, p.weapon, p.ammo, p.clip_size,
+                freeware_rng_state);
+  };
+  for (unsigned seed = 1; seed <= 128; ++seed)
+    collect(seed, seed % 2, 1);
+  collect(12, 1, 2); // Seed 12 first rolls the held AutoRifle, then rerolls.
+}
+
+static void check_weapon_triggers(freeware::Game &game, int custom, int requested) {
+  auto &map = *freeware_current_map;
+  std::printf("mapweapons %d %d %d", custom, requested, game.level_number);
+  for (auto it = map.triggers.begin; it != map.triggers.end; ++it)
+    if ((*it)->type == 2) std::printf(" %d", (*it)->weapon);
+  std::puts("");
+  for (auto it = map.triggers.begin; it != map.triggers.end; ++it) {
+    auto &trigger = **it;
+    if (trigger.type != 2) continue;
+    auto &p = player_state_table[0].freeware;
+    for (int step = 0; step < 3; ++step) {
+      game.run.player = {trigger.position.x + trigger.radius - (step != 0), trigger.position.y};
+      if (step == 2) p.ammo -= .5f; // Staying inside a spent trigger must not refill it.
+      game.update(0.f, {});
+      std::printf("mapgrant %d %d %d %d %g %g %d\n", custom, requested, step, p.weapon, p.ammo, p.clip_size,
+                  trigger.enabled);
+    }
+  }
 }
 
 static void check_deaths() {
@@ -128,6 +174,7 @@ int main(int argc, char **argv) {
   };
   assert(!std::strcmp(menu_row(g, main_row_count - 1).label, "End."));
   if (!earliest) {
+    check_weapon_pickups();
     for (int key : {15, 8, 25, 8, 15, 22}) {
       in.ctrl = true;
       in.key = key;
@@ -148,8 +195,18 @@ int main(int argc, char **argv) {
       assert(freeware_current_map->triggers.size() == triggers[index]);
       assert(freeware_current_map->layers[1].size() == walls[index]);
       assert(g.run.player.x == freeware_current_map->start.x);
+      check_weapon_triggers(g, 0, n + 1);
       FrameGameScope scope(g);
       g.load_next_level();
+    }
+    for (int id : {16, 17}) {
+      g.save_dir = "weapon-tests/" + std::to_string(id) + "/";
+      g.level_number = 4;
+      {
+        FrameGameScope scope(g);
+        g.load_next_level();
+      }
+      check_weapon_triggers(g, id, 5);
     }
   }
 

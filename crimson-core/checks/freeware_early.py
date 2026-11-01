@@ -12,6 +12,7 @@ import tempfile
 from html import unescape
 from pathlib import Path
 
+from freeware_acquisition_cases import check_acquisition, prepare_weapon_maps
 from freeware_arsenal_cases import (
     check_creature_perks,
     check_flight,
@@ -81,7 +82,9 @@ def check(edition, install, tmp, web, browser):
     ]
     binary = tmp / edition
     subprocess.run([tool("clang++"), *sources, "-o", binary], check=True)
-    lines = subprocess.check_output([binary, install], text=True).splitlines()
+    if edition == "1.3.0":
+        prepare_weapon_maps(install, tmp)
+    lines = subprocess.check_output([binary, install], cwd=tmp, text=True).splitlines()
 
     def compare_combat(output):
         check_deaths(exe, edition, output)
@@ -91,11 +94,20 @@ def check(edition, install, tmp, web, browser):
         check_perks(exe, edition, output)
         check_player_perks(exe, edition, output)
         check_creature_perks(exe, edition, output)
+        if edition == "1.3.0":
+            check_acquisition(install, tmp, output)
 
     compare_combat(lines)
     if web or browser:
         js = tmp / f"early-{edition}.js"
-        embeds = ["--embed-file", f"{install / 'levels'}@/levels"] if edition == "1.3.0" else []
+        embeds = []
+        if edition == "1.3.0":
+            embeds = [
+                "--embed-file",
+                f"{install / 'levels'}@/levels",
+                "--embed-file",
+                f"{tmp / 'weapon-tests'}@/weapon-tests",
+            ]
         subprocess.run(
             [
                 tool("em++"),
