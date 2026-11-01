@@ -1422,3 +1422,17 @@ it("a proof that comes after its socket went is dropped; a page without a key pr
   await settle();
   assert.deepEqual([room.seeds, plain(host.events.seeds), env.world.closes.length, host.coop.state], [[], [], 1, "connected"]);
 });
+
+it("a returning host learns that its absent guest still owns the seat", async () => {
+  const env = setup();
+  const { host, guest } = await meet(env);
+  const id = host.coop.room;
+  guest.coop.close();
+  host.coop.close();
+  await settle();
+  const returning = env.page("host", { store: host.store });
+  await returning.coop.join(id);
+  await settle();
+  assert.equal(returning.coop.state, "waiting");
+  assert.equal(returning.coop.guestReserved, true);
+});

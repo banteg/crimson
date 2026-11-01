@@ -18,6 +18,12 @@
   #progress div { height: 100%; width: 0; background: var(--row-on); transition: width 0.1s linear; }
   #touch { max-width: 420px; color: var(--dim); }
   .buttons { justify-content: center; }
+  #cover { overflow: auto; justify-content: safe center; }
+  #profile-files { max-width: 38rem; }
+  #profile-files summary { cursor: pointer; }
+  #profile-files fieldset { border: 0; padding: 8px; }
+  #profile-files button, #profile-files select { margin: 3px; font: inherit; }
+  #profile-files p { margin: 6px 0; }
   .button input { display: none; }
   /* Focus shows as the game's hover fill. */
   .button:focus-visible { outline: none; color: #fff; }
@@ -72,11 +78,32 @@
     <button id="play" type="button" class="button"><span>Play</span></button>
     <button id="play-coop" type="button" class="button wide" hidden><span>Play co-op</span></button>
   </div>
-  <div id="elsewhere" class="buttons" hidden><button id="here" type="button" class="button wide"><span>Play here</span></button></div>
+  <div id="elsewhere" class="buttons" hidden>
+    <button id="here" type="button" class="button wide"><span>Play here</span></button>
+    <button id="force-here" type="button" class="button wide" hidden><span>Force takeover</span></button>
+  </div>
+  <details id="profile-files" hidden>
+    <summary>Backups and recordings</summary>
+    <fieldset id="file-actions">
+      <p>A profile backup includes progress, settings, scores, local recordings and queued runs.</p>
+      <button id="export-profile" type="button">Download backup</button>
+      <button id="import-profile" type="button">Restore backup…</button>
+      <input id="profile-file" type="file" accept=".crimson-backup" hidden>
+      <div><select id="local-replay" aria-label="Local recording"></select>
+        <button id="export-replay" type="button">Download recording</button></div>
+      <details><summary>Leaderboard identity key</summary>
+        <p>Keep this private. It signs runs and signs in as you. Profile backups exclude it.</p>
+        <button id="export-key" type="button">Download private key…</button>
+        <button id="import-key" type="button">Restore private key…</button>
+        <input id="key-file" type="file" hidden>
+      </details>
+    </fieldset>
+  </details>
   <div id="again" class="buttons" hidden>
     <button type="button" class="button wide" onclick="location.reload()"><span>Play again</span></button>
     <a class="button wide" href="/"><span>crimson.land</span></a>
   </div>
+  <div id="graphics-recovery" class="buttons" hidden><a class="button wide"><span>Play with WebGL</span></a></div>
   <div id="outside" class="buttons" hidden><a class="button wide"><span>Open on crimson.land</span></a></div>
   <p id="touch" hidden>On a phone, Crimsonland plays with a gamepad: connect one to play.</p>
 </div>
@@ -286,9 +313,10 @@
   // Writes /game back to IndexedDB, one sync at a time and only once it has been
   // read, and not once another tab has taken the game: IndexedDB takes the
   // written tree as the whole directory. Resolves whether the saves committed.
-  let hydrated = false, moved = false, syncing = null, again = false;
+  let hydrated = false, moved = false, syncing = null, again = false, storagePaused = false;
+  let fileBusy = false, gameRunning = false, gameReady = false, handoff = null;
   function persist() {
-    if (!hydrated || moved) return Promise.resolve(false);
+    if (!hydrated || moved || storagePaused) return Promise.resolve(false);
     if (syncing) {
       again = true;
       return syncing;
@@ -483,27 +511,123 @@
     upload();
   }
 
-  // One tab owns the directory: another would write its stale copy over this
-  // one's saves. The lock lasts as long as the page. Play here asks the owner to
-  // save and reload, which hands the lock over; an owner that does not answer
-  // (a frozen tab) loses it, stops saving and reloads. Web Locks exist only in
-  // secure contexts: HTTPS, or localhost.
+  /* PLAY_BACKUP */
+  const filesPanel = document.getElementById("profile-files");
+  const replaySelect = document.getElementById("local-replay");
+  function showFiles() {
+    filesPanel.hidden = framed || !hydrated || gameRunning || moved;
+    if (filesPanel.hidden || !filesPanel.open) return;
+    const names = profileNames(FS).filter(name => name.startsWith("replays/") && name.endsWith(".crd"));
+    names.sort((a, b) => parseInt(b.slice(8), 10) - parseInt(a.slice(8), 10));
+    const choices = document.createDocumentFragment();
+    for (const name of names) choices.append(new Option(name.slice(8), name));
+    replaySelect.replaceChildren(choices);
+    replaySelect.hidden = document.getElementById("export-replay").hidden = !names.length;
+    document.getElementById("export-key").disabled = !exists("identity.key");
+  }
+  filesPanel.ontoggle = showFiles;
+  function downloadFile(name, blob) {
+    const url = URL.createObjectURL(blob);
+    const link = Object.assign(document.createElement("a"), { href: url, download: name });
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+  async function withFiles(action, waitForUploads = false) {
+    if (gameRunning || moved || !hydrated || fileBusy || handoff) return;
+    const controls = document.getElementById("file-actions");
+    fileBusy = controls.disabled = true;
+    try {
+      if (waitForUploads && uploading) {
+        say("Waiting for queued uploads before restoring…");
+        await uploading;
+      }
+      await action();
+    } catch (error) {
+      say("File operation failed: " + (error.message ?? error));
+    } finally {
+      fileBusy = controls.disabled = false;
+      if (!moved) storagePaused = false;
+    }
+  }
+  document.getElementById("export-profile").onclick = () => withFiles(async () => {
+    downloadFile("crimsonland.crimson-backup", await profileBackup(FS));
+    say("Profile backup downloaded.");
+  });
+  document.getElementById("export-replay").onclick = () => withFiles(async () => {
+    const name = replaySelect.value;
+    if (name && profileName(name)) downloadFile(name.slice(8), new Blob([FS.readFile("/game/" + name)]));
+  });
+  document.getElementById("export-key").onclick = () => withFiles(async () => {
+    if (confirm("Download your private signing key as identity.key? Store it somewhere only you can access."))
+      downloadFile("identity.key", new Blob([FS.readFile("/game/identity.key")]));
+  });
+  async function restore(file, key) {
+    let files, removed;
+    if (key) {
+      if (file.size !== 32) throw Error("An identity.key must be a 32-byte signing key.");
+      if (!confirm(exists("identity.key") ? "Replace this browser’s private signing key? Export the current key first if you need it." : "Use this private signing key for this browser?")) return;
+      files = new Map([["identity.key", new Uint8Array(await file.arrayBuffer())]]);
+      removed = [];
+    } else {
+      files = await readProfile(file);
+      if (!confirm("Replace your local progress, settings, scores, queued runs and recordings with this backup? Download your current backup first if you need it.")) return;
+      removed = profileNames(FS).filter(name => !files.has(name));
+    }
+    if (!(await persist())) throw Error("Current files could not be saved.");
+    storagePaused = true;
+    await commitProfile(IDBFS, files, removed);
+    moved = true;
+    location.reload();
+  }
+  for (const [kind, inputId] of [["profile", "profile-file"], ["key", "key-file"]]) {
+    const input = document.getElementById(inputId);
+    document.getElementById("import-" + kind).onclick = () => input.click();
+    input.onchange = () => {
+      const file = input.files[0];
+      input.value = "";
+      if (file) withFiles(() => restore(file, kind === "key"), true);
+    };
+  }
+
+  // A live owner closes the game before syncing so the final score, settings
+  // and recording reach disk. Only the waiting player's explicit force action
+  // can displace a tab that never responded.
   const LOCK = "crimsonland /game";
   const channel = new BroadcastChannel(LOCK);
+  let releaseOwner;
+  function finishHandoff(saved) {
+    const request = handoff;
+    if (!request) return;
+    handoff = null;
+    frameSource();
+    if (!saved) {
+      channel.postMessage({ type: "failed", request });
+      showFiles();
+      return;
+    }
+    moved = true;
+    releaseOwner();
+    location.reload();
+  }
   function own() {
-    hydrate().then(
-      () => {
-        ready();
-      },
-      (error) => stuck("Could not load the game files: " + (error.message ?? error)),
-    );
-    channel.onmessage = async (event) => {
-      if (event.data !== "play here") return;
-      await persist();
-      moved = true;
-      location.reload();
+    const held = new Promise(resolve => { releaseOwner = resolve; });
+    hydrate().then(() => { if (!moved) ready(); },
+      error => stuck("Could not load the game files: " + (error.message ?? error)));
+    channel.onmessage = async ({ data }) => {
+      if (data?.type !== "move" || moved) return;
+      const request = data.request;
+      if (handoff === request) return channel.postMessage({ type: "saving", request });
+      if (!hydrated || fileBusy || handoff) return channel.postMessage({ type: "busy", request });
+      handoff = request;
+      channel.postMessage({ type: "saving", request });
+      if (gameRunning) {
+        frameSource();
+        if (gameReady) Module.ccall("client_close", null, [], []);
+      } else {
+        finishHandoff(await persist());
+      }
     };
-    return new Promise(() => {});
+    return held;
   }
   // The game starts on a click (or Enter) on Play: the browser lets it make
   // sound only after one, and this one never reaches the game, so it skips no
@@ -513,6 +637,7 @@
     say(watching ?? "");
     progress.hidden = true;
     buttons.hidden = false;
+    showFiles();
     const play = document.getElementById("play"), playCoop = document.getElementById("play-coop");
     if (linked) play.firstChild.textContent = "Watch";
     // Co-op needs the site's own storage and its room service: a frame offers the site instead.
@@ -521,6 +646,9 @@
     playCoop.hidden = framed || !!(linked || linkedQuest || linkedCoop);
     play.focus();
     const start = (coop) => {
+      if (fileBusy || handoff || moved) return;
+      gameRunning = true;
+      filesPanel.hidden = true;
       buttons.hidden = true;
       say("Starting…");
       removeRunDependency("game files");
@@ -549,19 +677,54 @@
     const buttons = document.getElementById("elsewhere");
     say("Crimsonland is open in another tab.");
     buttons.hidden = false;
-    document.getElementById("here").onclick = () => {
-      buttons.hidden = true;
-      say("Moving the game here…");
-      const queued = new AbortController();
-      const steal = setTimeout(() => {
-        queued.abort();
-        navigator.locks.request(LOCK, { steal: true }, own).catch(lost);
-      }, 3000);
-      navigator.locks.request(LOCK, { signal: queued.signal }, () => {
-        clearTimeout(steal);
+    const here = document.getElementById("here"), force = document.getElementById("force-here");
+    here.onclick = () => {
+      here.hidden = true;
+      force.hidden = true;
+      say("Asking the other tab to save…");
+      const request = crypto.randomUUID(), queued = new AbortController();
+      let timeout;
+      const ask = () => {
+        timeout = setTimeout(() => {
+          say("The other tab has not answered. Forcing a takeover can lose its unsaved progress.");
+          force.hidden = false;
+        }, 5000);
+        channel.postMessage({ type: "move", request });
+      };
+      channel.onmessage = ({ data }) => {
+        if (data?.request !== request) return;
+        clearTimeout(timeout);
+        force.hidden = true;
+        if (data.type === "saving") {
+          // A tab can freeze after it started saving. A slow but responsive
+          // owner continues to hold its lock without prompting a takeover.
+          timeout = setTimeout(ask, 5000);
+          return say("The other tab is saving. If it is suspended, bring it to the front.");
+        }
+        if (data.type === "busy" || data.type === "failed") {
+          queued.abort();
+          here.hidden = false;
+          say(data.type === "failed" ? "The other tab could not save. Free some space and try again." : "The other tab is busy. Try again when it finishes.");
+        }
+      };
+      const take = () => {
+        clearTimeout(timeout);
+        buttons.hidden = true;
         return own();
-      }).catch((error) => error.name === "AbortError" || lost(error));
-      channel.postMessage("play here");
+      };
+      navigator.locks.request(LOCK, { signal: queued.signal }, take)
+        .catch(error => {
+          // A canceled wait and a later owner stealing this tab's acquired
+          // lock both reject with AbortError. Only the former is ours.
+          if (error.name !== "AbortError" || !queued.signal.aborted) lost(error);
+        });
+      force.onclick = () => {
+        if (force.hidden) return;
+        queued.abort();
+        force.hidden = true;
+        navigator.locks.request(LOCK, { steal: true }, take).catch(lost);
+      };
+      ask();
     };
   }
 
@@ -774,8 +937,9 @@
     if (!coop) return;
     const { state, reason, role } = coop, waiting = role === "host" && state === "waiting" && !coopEnded;
     // A partner that left the room may come back to it.
-    const waitingLine = coopMet
-      ? `Player ${partner()} left: ${role === "host" ? "send them this link to come back" : "waiting for them to come back"}`
+    const returning = coopMet || (role === "host" && coop.guestReserved);
+    const waitingLine = returning
+      ? `Player ${partner()} left: ${role === "host" ? "ask them to reopen their original tab, or start a new room" : "waiting for them to come back"}`
       : `Waiting for player ${partner()}${role === "host" ? ": send them this link" : "…"}`;
     const transport = coopTransport(coop.stats().transport);
     const over = transport === "ws-relay" ? ", through the room" : transport.startsWith("turn") ? ", relayed" : transport === "direct" ? ", direct" : "";
@@ -801,10 +965,10 @@
       }[state];
     // The invite to the room, on this page's own site.
     const invite = coop.room && `${location.origin}${location.pathname}?coop=${coop.room}`;
-    coopInvite.hidden = coopCopy.hidden = !(waiting && invite);
+    coopInvite.hidden = coopCopy.hidden = !(waiting && !returning && invite);
     if (invite) coopInvite.value = invite;
     const done = coopEnded !== null || state === "error" || state === "closed";
-    coopNew.hidden = !done || framed;
+    coopNew.hidden = framed || !(done || (waiting && returning));
     coopClose.hidden = !done && state === "connected";
     coopClose.textContent = done ? "Close" : "Cancel";
     coopPanel.classList.toggle("trouble", state === "error" || coopEnded !== null || coopNote !== null);
@@ -848,7 +1012,9 @@
   window.cancelAnimationFrame = coopFrames.cancel;
   let frameWorker = null;
   function frameSource() {
-    if (!coop || coop.state === "error" || coop.state === "closed") {
+    const connected = coop && coop.state !== "error" && coop.state !== "closed";
+    const savingInBackground = document.hidden && handoff !== null && gameRunning;
+    if (!connected && !savingInBackground) {
       frameWorker?.terminate();
       frameWorker = null;
       return;
@@ -886,37 +1052,74 @@
   const report = (line) => Module.ccall("client_leaderboard_line", null, ["string"], [`leaderboard: ${line}`]);
   const post = (path, body, init) =>
     fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body, ...init });
-  let uploading = null;
+  function readerBehind(status, answer) {
+    if (status === 503) return answer.code === "replay_reader_behind";
+    if (status !== 422 || typeof answer.reason !== "string" || answer.reason.length > 256) return false;
+    // Older Workers listed their reader versions in ascending order in a plain 422 reason.
+    const versions = /^unsupported replay format version: ([0-9]{1,8}) \(this build reads versions (?:[0-9]{1,8}, )*([0-9]{1,8})\)$/.exec(answer.reason)
+      ?? /^replay was recorded under rules ([0-9]{1,8}); this service verifies rules (?:[0-9]{1,8} and )*([0-9]{1,8})$/.exec(answer.reason);
+    return versions !== null && Number(versions[1]) > Number(versions[2]);
+  }
+  let uploading = null, legacyRejections;
+  function entriesIn(directory) {
+    try { return FS.readdir(directory).filter((name) => name.endsWith(".json")); }
+    catch { return []; }
+  }
   function upload() {
+    if (moved || fileBusy || storagePaused) return Promise.resolve();
     uploading ??= (async () => {
-      let names = [];
-      try {
-        names = FS.readdir(OUTBOX).filter((name) => name.endsWith(".json"));
-      } catch {}
-      for (const name of names) {
-        const path = `${OUTBOX}/${name}`, entry = FS.readFile(path, { encoding: "utf8" });
+      legacyRejections ??= new Set(entriesIn(REJECTED).filter((name) => /^[0-9a-f]{64}\.json$/.test(name)));
+      const entries = [...entriesIn(OUTBOX).map((name) => [OUTBOX, name]), ...Array.from(legacyRejections, (name) => [REJECTED, name])];
+      let changed = false;
+      for (const [directory, name] of entries) {
+        const path = `${directory}/${name}`;
+        let entry, archived;
+        if (directory === REJECTED) {
+          let saved;
+          try { archived = FS.readFile(path, { encoding: "utf8" }); saved = JSON.parse(archived); } catch {}
+          if (!saved || !readerBehind(422, saved)) {
+            legacyRejections.delete(name);
+            continue;
+          }
+          delete saved.reason;
+          entry = JSON.stringify(saved);
+        } else entry = FS.readFile(path, { encoding: "utf8" });
         const run = name.slice(0, 12);
         let response;
         try {
-          response = await post("/api/runs", entry);
+          response = await post("/api/runs", entry, { signal: AbortSignal.timeout(300000) });
         } catch (error) {
           report(`can't reach ${location.origin}/api (${error.message}); runs wait in ${OUTBOX}`);
           break;
+        }
+        const answer = !response.ok && response.status !== 409 ? (await response.json().catch(() => null)) ?? {} : {};
+        if (readerBehind(response.status, answer)) {
+          report(`run ${run} waits for the service to support its replay`);
+          continue;
         }
         // The service is down or asks to slow down: the run waits.
         if (response.status >= 500 || response.status === 429) {
           report(`service error (HTTP ${response.status}); runs wait in ${OUTBOX}`);
           break;
         }
+        // A newly named envelope may have replaced this run while the request was in flight.
+        if (!FS.analyzePath(path).exists || FS.readFile(path, { encoding: "utf8" }) !== (archived ?? entry)) continue;
         if (!response.ok && response.status !== 409) {
-          const reason = (await response.json().catch(() => ({}))).reason ?? `HTTP ${response.status}`;
+          const reason = answer.reason ?? `HTTP ${response.status}`;
           FS.mkdirTree(REJECTED);
           FS.writeFile(`${REJECTED}/${name}`, JSON.stringify({ ...JSON.parse(entry), reason }));
           report(`run ${run} rejected (${reason})`);
+          if (directory === REJECTED) {
+            changed = true;
+            legacyRejections.delete(name);
+            continue;
+          }
         } else report(response.status === 409 ? `run ${run} was already uploaded` : `uploaded run ${run}`);
         FS.unlink(path);
+        changed = true;
+        if (directory === REJECTED) legacyRejections.delete(name);
       }
-      if (names.length) await persist();
+      if (changed) await persist();
     })().finally(() => (uploading = null));
     return uploading;
   }
@@ -1022,7 +1225,7 @@
   // The run's summary, which its card waits for: null when there is none.
   const summary =
     linked && /^[A-Za-z0-9_-]{1,64}$/.test(linked)
-      ? fetch(`/api/runs/${linked}`)
+      ? fetch(`/api/runs/${linked}`, { signal: AbortSignal.timeout(2000) })
           .then((response) => (response.ok ? response.json() : null))
           .catch(() => null)
       : Promise.resolve(null);
@@ -1034,7 +1237,7 @@
   });
   const questSummary =
     !linked && linkedQuest && /^[0-9a-f]{12}$/.test(linkedQuest)
-      ? fetch(`/api/custom/${linkedQuest}`)
+      ? fetch(`/api/custom/${linkedQuest}`, { signal: AbortSignal.timeout(2000) })
           .then((response) => (response.ok ? response.json() : null))
           .catch(() => null)
       : Promise.resolve(null);
@@ -1115,8 +1318,29 @@
     start();
   }
 
+  const recovery = document.getElementById("graphics-recovery");
+  const fallback = new URL(location.href);
+  fallback.searchParams.set("renderer", "webgl");
+  recovery.firstElementChild.href = fallback.href;
+  let gameStarted = false, graphicsLost = false;
+  function loseGraphics() {
+    if (!gameStarted) {
+      // The canvas has not selected its context yet.
+      Module.preinitializedWebGPUDevice = null;
+      return;
+    }
+    if (graphicsLost) return;
+    graphicsLost = true;
+    // Finish this run through the normal exit, which saves it before offering WebGL.
+    Module.ccall("client_close", null, [], []);
+  }
   var Module = {
-    analyticsReady: () => playAnalytics.ready(),
+    loseGraphics,
+    analyticsReady: () => {
+      gameReady = true;
+      playAnalytics.ready();
+      if (handoff) queueMicrotask(() => Module.ccall("client_close", null, [], []));
+    },
     playActivity: (mode, run) => playAnalytics.activity(mode, run),
     // HOST_LEADERBOARD_PROFILE, _UPLOAD, _SCORES, _REPLAY, _CUSTOM and _QUEST (game/leaderboard_requests.h).
     leaderboard: (request) => [profile, upload, scores, replay, customQuests, questTable][request - 1](),
@@ -1143,6 +1367,7 @@
             if (!device) return;
             device.onuncapturederror = (event) => console.error("WebGPU:", event.error.message);
             Module.preinitializedWebGPUDevice = device;
+            device.lost.then(() => loseGraphics());
           })
           .catch((error) => console.warn("WebGPU unavailable, drawing with WebGL2:", error))
           .finally(() => removeRunDependency("webgpu"));
@@ -1167,6 +1392,7 @@
     },
     // The host is running: the game takes the page.
     onRuntimeInitialized: () => {
+      gameStarted = true;
       cover.hidden = true;
       rtx.hidden = !Module.preinitializedWebGPUDevice;
       // An embedding page can withhold fullscreen.
@@ -1200,10 +1426,20 @@
       home.classList.add("shown");
       progress.hidden = true;
       say("Saving…");
+      gameRunning = false;
       const saved = await persist();
+      if (handoff) finishHandoff(saved);
+      if (moved) return;
+      showFiles();
       if (saved && leaving) return location.assign(home.href);
       say(saved ? "Your progress is saved." : notice.textContent);
-      document.getElementById("again").hidden = false;
+      if (graphicsLost) {
+        say("The graphics device stopped. " + (saved ? "Your progress is saved." : notice.textContent));
+        recovery.hidden = false;
+        recovery.firstElementChild.focus();
+      } else {
+        document.getElementById("again").hidden = false;
+      }
     },
   };
   // Saves and settings reach IndexedDB a few seconds after the game writes them,

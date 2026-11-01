@@ -49,7 +49,7 @@ function createCoop({
 
   let state = "idle", reason = null, role = null, roomId = null, inviteUrl = null, token = null;
   let socket = null, seated = false, wasSeated = false, attempts = 0, retry = null, pinger = null;
-  let partner = false, reported = false, iceServers = null;
+  let partner = false, reported = false, guestReserved = false, iceServers = null;
   const iceWaiting = [];
   // This page's nonce, and the partner page's from its hello: a new one is a reloaded or replaced page.
   const page = (Math.random() * 2 ** 32) >>> 0;
@@ -156,6 +156,7 @@ function createCoop({
     if (ended()) return false;
     if (response.status === 404 || status?.exists === false) return fail("no such room"), false;
     if (!status) return null;
+    if (role === "host" && status.guest) guestReserved = true;
     if (role === "guest" && !token && status.guest) return fail("room full"), false;
     return true;
   }
@@ -290,6 +291,7 @@ function createCoop({
   // goodbye. onpeer's second argument says the partner's page, and its game, is gone.
   function peer(present) {
     partner = present;
+    if (role === "host" && present) guestReserved = true;
     if (present) signal({ type: "hello", page });
     else if (reported) {
       reported = false;
@@ -707,6 +709,7 @@ function createCoop({
     get reason() { return reason; },
     get role() { return role; },
     get room() { return roomId; },
+    get guestReserved() { return guestReserved; },
     get inviteUrl() { return inviteUrl; },
     onstate: null,
     ontransport: null,
