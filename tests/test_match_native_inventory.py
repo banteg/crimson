@@ -55,6 +55,30 @@ def test_identity_only_pin_preserves_native_entries_inside_dispatcher() -> None:
                "build_only": True, "identity_only": True}]
     rows = match_native_inventory._partition([(0x1000, 0x1004)], discovered, mapped, [], {}, image, "crimson.exe")
     assert [(row["name"], row["size"]) for row in rows] == [("dispatcher", 3), ("second", 1)]
+    assert rows[0]["end"] == 0x1003 and rows[0]["comparison_end"] == 0x1004
+    assert "comparison_end" not in rows[1]
+
+
+@pytest.mark.parametrize(("version", "end"), [("1.0.2", 0x40ed76), ("1.3.0", 0x4183a3)])
+def test_scoped_scratch_and_scan_compare_the_pinned_dispatcher(
+    version: str, end: int, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    registry = match_builds.load_registry()
+    image = registry.image(version, "crimson.exe")
+    if not image.path.is_file():
+        pytest.skip("pinned freeware image unavailable")
+    directory = matchlib.DEFAULT_MATCH_ROOT / "scratches/game_frame_update"
+    config = matchlib.load_scratch_config(directory)
+    assert image.scratch_config(config, scope="port").end_va == end
+
+    (tmp_path / "scratches").mkdir()
+    (tmp_path / "scratches" / directory.name).symlink_to(directory, target_is_directory=True)
+    def evaluate(configs, *args, **kwargs):
+        return [matchlib.ScratchStatus(config, 0, 0, None, 0, 0, 0, "stub") for config in configs]
+
+    monkeypatch.setattr(matchlib, "evaluate_scratch_configs", evaluate)
+    scan = match_builds.scan_build(registry, version, tmp_path, native_inventory=True)
+    assert [row.status.config.end_va for row in scan] == [end]
 
 
 def test_unresolved_executable_bytes_are_not_functions_or_source_credit() -> None:

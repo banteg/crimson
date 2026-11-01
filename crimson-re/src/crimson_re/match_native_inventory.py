@@ -101,6 +101,9 @@ def _partition(
             row = {"image": image_name, "address": start, "end": retained_end, "size": size,
                    "name": identity["name"] if identity is not None else native["name"],
                    "native_kind": "function", "ownership": owner(start, retained_end)}
+            if identity is not None and identity.get("identity_only"):
+                # Compare the fingerprinted body, but keep this entry's independent byte ownership.
+                row["comparison_end"] = matchlib.parse_int(identity["end"])
             if row["ownership"] == "unknown" and start in library_owners:
                 row["ownership"] = library_owners[start]
             if identity is not None and not identity.get("build_only"):

@@ -110,6 +110,13 @@ def normalized_exact(row: dict[str, Any], *, ratio: float | None = None) -> bool
                 and covered == row["size"] and not proof["unexplained_target_ranges"])
 
 
+def validate_target_size(row: dict[str, Any], target_size: int) -> None:
+    if target_size < row["size"]:
+        raise ValueError(f"partial function extent in report: {row['name']}")
+    if "comparison_end" in row and row["address"] + target_size != row["comparison_end"]:
+        raise ValueError(f"comparison differs from the fingerprinted extent: {row['name']}")
+
+
 def validate_function(row: dict[str, Any]) -> None:
     key = native_id(row)
     ratio = row["ratio"]
@@ -150,7 +157,8 @@ def validate_function(row: dict[str, Any]) -> None:
         if type(start) is not int or type(end) is not int or start != cursor or end <= start:
             raise ValueError(f"invalid compared coverage partition: {key}")
         cursor = end
-    if cursor != row["address"] + proof["target_size"] or proof["target_size"] < row["size"]:
+    validate_target_size(row, proof["target_size"])
+    if cursor != row["address"] + proof["target_size"]:
         raise ValueError(f"incomplete compared coverage: {key}")
     if type(row["matched"]) is not bool or row["matched"] != normalized_exact(row):
         raise ValueError(f"inconsistent normalized credit: {key}")

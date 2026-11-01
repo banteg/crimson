@@ -47,6 +47,18 @@ def test_credit_requires_full_compared_coverage():
         accounting.validate_function(row)
 
 
+def test_split_entry_uses_full_comparison_but_credits_only_its_native_partition() -> None:
+    row = function()
+    row["comparison_end"] = 130
+    with pytest.raises(ValueError, match="fingerprinted extent"):
+        accounting.validate_function(row)
+    row["proof"]["target_size"] = 30
+    row["proof"]["compared_target_ranges"] = [[100, 130]]
+    accounting.validate_function(row)
+    measures = match_report.build_report([row])["measures"]
+    assert measures["matched_code"] == measures["total_code"] == "10"
+
+
 @pytest.mark.parametrize("change", ["overlap", "reference_debt"])
 def test_forged_proof_is_rejected(change):
     row = function()

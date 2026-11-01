@@ -227,8 +227,7 @@ def _score(inventory: list[dict[str, Any]], statuses: list[matchlib.ScratchStatu
         row.update(accounting.candidate_evidence(status))
         if status is None:
             continue
-        if status.target_size < row["size"]:
-            raise ValueError(f"partial function extent in report: {row['name']}")
+        accounting.validate_target_size(row, status.target_size)
         config = status.config
         kind = "archive" if config.archive else "import-thunk" if config.import_thunk else "source"
         source = (

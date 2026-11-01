@@ -147,7 +147,7 @@ class BuildImage:
             if scope == "port" and not match_native_inventory.in_port_scope(native):
                 reason = native.get("platform_replaced") or native["ownership"]
                 raise ValueError(f"{self.target.image_name}/{config.function} is outside port scope: {reason.rstrip('.')}. Use --scope all.")
-            return replace(configs[0], end_va=native["end"])
+            return replace(configs[0], end_va=native.get("comparison_end", native["end"]))
         return configs[0]
 
     def state(self) -> str:
@@ -1326,7 +1326,8 @@ def scan_build(
             build_configs = (replace(build_configs[0], compiler=compiler),)
         for build_config in build_configs:
             if image.name in scoped_images:
-                build_config = replace(build_config, end_va=scoped_images[image.name][address]["end"])
+                native = scoped_images[image.name][address]
+                build_config = replace(build_config, end_va=native.get("comparison_end", native["end"]))
             configs.append(build_config)
             owners.append(len(scratches))
         scratches.append(evidence[image.name, config.function])
