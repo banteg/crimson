@@ -697,6 +697,152 @@
       "build_only": true
     },
     {
+      "name": "perk_id_bloody_mess",
+      "address": "0x00447794",
+      "reference": "0x00404ade",
+      "bytes": "891d94774400",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_sharpshooter",
+      "address": "0x00447798",
+      "reference": "0x00404b8f",
+      "bytes": "c7059877440002000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_instant_winner",
+      "address": "0x0044779c",
+      "reference": "0x00404d60",
+      "bytes": "c7059c77440007000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_fastshot",
+      "address": "0x004477a0",
+      "reference": "0x00404f94",
+      "bytes": "c705a07744000d000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_almost_invisible",
+      "address": "0x004477a4",
+      "reference": "0x00404b32",
+      "bytes": "c705a477440001000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_long_distance_runner",
+      "address": "0x004477a8",
+      "reference": "0x00404bec",
+      "bytes": "c705a877440003000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_reflex_boosted",
+      "address": "0x004477ac",
+      "reference": "0x00404ff1",
+      "bytes": "c705ac7744000e000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_fastloader",
+      "address": "0x004477b0",
+      "reference": "0x00404c49",
+      "bytes": "c705b077440004000000"
+    },
+    {
+      "name": "perk_id_see_health",
+      "address": "0x004477b4",
+      "reference": "0x0040504e",
+      "bytes": "c705b47744000f000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_spontaneously_combusteous",
+      "address": "0x004477b8",
+      "reference": "0x00404d03",
+      "bytes": "c705b877440006000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_jinxed",
+      "address": "0x004477bc",
+      "reference": "0x004050ab",
+      "bytes": "c705bc77440010000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_berserk_attack",
+      "address": "0x004477c0",
+      "reference": "0x00404f37",
+      "bytes": "c705c07744000c000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_grim_deal",
+      "address": "0x004477c4",
+      "reference": "0x00404dbd",
+      "bytes": "c705c477440008000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_plaguebearer",
+      "address": "0x004477c8",
+      "reference": "0x00404e20",
+      "bytes": "c705c877440009000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_radioactive",
+      "address": "0x004477cc",
+      "reference": "0x00404eda",
+      "bytes": "c705cc7744000b000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_ammo_maniac",
+      "address": "0x004477d0",
+      "reference": "0x00404e7d",
+      "bytes": "c705d07744000a000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_lean_mean_exp_machine",
+      "address": "0x004477d4",
+      "reference": "0x00404ca6",
+      "bytes": "c705d477440005000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_evil_eyes",
+      "address": "0x004477d8",
+      "reference": "0x00405108",
+      "bytes": "c705d877440011000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_anxious_loader",
+      "address": "0x004477e0",
+      "reference": "0x00405165",
+      "bytes": "c705e077440012000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_final_revenge",
+      "address": "0x004477e4",
+      "reference": "0x004051c2",
+      "bytes": "c705e477440013000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_infernal_contract",
+      "address": "0x004477e8",
+      "reference": "0x00405225",
+      "bytes": "c705e877440014000000",
+      "build_only": true
+    },
+    {
       "name": "perk_id_perk_expert",
       "address": "0x004477ec",
       "reference": "0x00405bcd",

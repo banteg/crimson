@@ -536,6 +536,86 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x00428814",
+      "name": "perk_id_bloody_mess",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428818",
+      "name": "perk_id_sharpshooter",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0042881c",
+      "name": "perk_id_instant_winner",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428820",
+      "name": "perk_id_fastshot",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428824",
+      "name": "perk_id_timebender",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428828",
+      "name": "perk_id_almost_invisible",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0042882c",
+      "name": "perk_id_long_distance_runner",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428830",
+      "name": "perk_id_reflex_boosted",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428834",
+      "name": "perk_id_fastloader",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428838",
+      "name": "perk_id_see_health",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0042883c",
+      "name": "perk_id_spontaneously_combusteous",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428840",
+      "name": "perk_id_jinxed",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428844",
+      "name": "perk_id_berserk_attack",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428848",
+      "name": "perk_id_grim_deal",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x0042884c",
+      "name": "perk_id_plaguebearer",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428850",
+      "name": "perk_id_radioactive",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00428868",
       "name": "creature_spawned_count",
       "program": "1.0.2/crimson.exe"

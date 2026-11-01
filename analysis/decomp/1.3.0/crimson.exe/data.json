@@ -711,6 +711,111 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00447794",
+      "name": "perk_id_bloody_mess",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447798",
+      "name": "perk_id_sharpshooter",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044779c",
+      "name": "perk_id_instant_winner",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477a0",
+      "name": "perk_id_fastshot",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477a4",
+      "name": "perk_id_almost_invisible",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477a8",
+      "name": "perk_id_long_distance_runner",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477ac",
+      "name": "perk_id_reflex_boosted",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477b0",
+      "name": "perk_id_fastloader",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477b4",
+      "name": "perk_id_see_health",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477b8",
+      "name": "perk_id_spontaneously_combusteous",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477bc",
+      "name": "perk_id_jinxed",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477c0",
+      "name": "perk_id_berserk_attack",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477c4",
+      "name": "perk_id_grim_deal",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477c8",
+      "name": "perk_id_plaguebearer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477cc",
+      "name": "perk_id_radioactive",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477d0",
+      "name": "perk_id_ammo_maniac",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477d4",
+      "name": "perk_id_lean_mean_exp_machine",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477d8",
+      "name": "perk_id_evil_eyes",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477e0",
+      "name": "perk_id_anxious_loader",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477e4",
+      "name": "perk_id_final_revenge",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477e8",
+      "name": "perk_id_infernal_contract",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x004477ec",
       "name": "perk_id_perk_expert",
       "program": "1.3.0/crimson.exe"
