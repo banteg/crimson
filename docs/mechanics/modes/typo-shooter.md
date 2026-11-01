@@ -25,9 +25,10 @@ Unlocked once you clear quest 4.10, on either difficulty.
 
 - Type to fill the line at the bottom of the screen. Backspace deletes the
   last letter.
-- Enter checks the line against every living creature's name. On a match,
-  you fire one 12-pellet blast at that creature. There's no cooldown or
-  reload, so you shoot as fast as you type.
+- Enter checks the line against active creatures' names. On a match, you
+  fire one 12-pellet blast. There's no cooldown or reload, so you shoot as
+  fast as you type. In 1.9.93, a creature can still match during its death
+  animation. Typing its name again counts another hit. [Original bug 70](../../rewrite/original-bugs.md#70-typ-o-accepts-a-dying-enemys-name-a-second-time)
 - Pellets kill anything in their way.
 - The mouse doesn't aim: the trooper keeps facing the last creature it shot,
   even into the next run.

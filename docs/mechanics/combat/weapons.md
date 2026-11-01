@@ -262,10 +262,12 @@ Clip 8 · Hit 80–120 + 28 px blast · Fire 0.311 s · Reload 1.2 s · Rocket
 
 Unlocked by quest 3.4 (*Hidden Evil*).
 
-Each rocket locks onto the enemy nearest your crosshair when fired. If that
-target dies, it turns to the enemy nearest the rocket. About a fifth of the
-Rocket Launcher's hit, with a small blast (up to about 85). Seekers last
-4 s.
+Each rocket locks onto the enemy nearest your crosshair when fired. In
+1.9.93, it can keep steering toward that enemy's corpse. Once the corpse
+disappears, the rocket looks for the nearest living enemy. [Original bug 68](../../rewrite/original-bugs.md#68-seeker-rockets-keep-their-lock-on-a-corpse)
+
+Seekers last 4 s. Each deals about a fifth of the Rocket Launcher's
+direct hit, with a small blast (up to about 85).
 
 ### 14. Plasma Shotgun
 

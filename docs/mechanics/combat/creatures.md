@@ -155,8 +155,11 @@ their leader still pay their XP and can drop bonuses.
 | White grid: 1,500 HP leader | Quest 5.7 | 27 aliens, spiders or lizards, 40 HP | Die |
 | Green grid: 1,500 HP leader | Custom quests only (`formation.alien_grid_green`) | 27 aliens, 40 HP | Die |
 
-White-grid followers don't hold formation: each hunts you on its own until
-the leader falls. Kill the leader of a 5.7 grid and all 27 die with it.
+White-grid followers hunt you individually. Killing their leader normally
+kills all 27. In 1.9.93, if you shatter the leader during Freeze and the
+next wave's leader takes its place before thaw, the first group survives
+the thaw. Killing the replacement takes down both groups' surviving
+followers. [Original bug 61](../../rewrite/original-bugs.md#61-army-of-three-followers-can-adopt-the-next-waves-leader)
 
 In every group except the bronze grid, the last follower is a plain 20 HP
 alien, even in a lizard chain or a spider grid. In every group, hardcore
