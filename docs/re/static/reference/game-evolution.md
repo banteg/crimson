@@ -17,10 +17,15 @@ The same **Begin game.** button leads to noticeably different games in the survi
 | Perk draft | Five of sixteen, repeats across levels allowed | Twenty-two registered perks, shared in co-op, with Perk Expert | Adds weapon grants, Fatal Lottery and secret hints |
 | Audio | Loose WAV effects, no bundled music | Loose effects and three MP3 tracks | Effects packed into `sounds.paq`, three MP3 tracks |
 | Local scores | Name and one score, 36 bytes per entry | Encrypted 56-byte records with a checksum for the table | Retains the richer local score format |
+| After a single-player death | Name entry on the next frame, then straight back to the title | Reaper interlude, name entry, then scores | Retains the interlude and scores |
 
 ## 1.0.2 — the single-player arena
 
 The six title entries start at (220, 220) in a 640 × 480 window. Career starts with a pistol and 30 rounds. Survival forces the AutoRifle. Its frame loop attempts at most one spawn per frame on a 0.01-second timer. New creatures start at (1024, 512). A nearby creature can prevent a spawn, so the stream thins when enemies bunch up at the entrance. A successful Survival spawn consumes two random numbers, one for heading and one for its 120–129 XP reward. The engine has room for 128 creatures. See the frame dispatcher at `0x40c110`, the arrival branch at `0x40d813` and the spawner at `0x4067a0`.
+
+In relative movement mode, left and right turn the player at two radians per second. Holding both cancels the turn. Left Ctrl snaps the crosshair 60 units in front of the player. The left mouse button, right Ctrl and Enter fire. The frame keeps the crosshair half a player-width inside the screen. It draws the ground with the previous frame’s camera before centering the creatures and player with the new camera. See `0x408040` for movement and `0x40c243` for the ground draw.
+
+Creatures face their pursuit direction immediately. Even a creature with zero pursuit speed drifts as its attack timer runs. Plague deals 5 damage per tick and a lethal tick credits XP directly. In the credits, holding Space returns the scroll to the beginning. The original draws 46 text lines per frame, including fourteen named beta testers. See the credits at `0x40eda0`.
 
 An enemy killed in Career can leave one of four pickup types. A weapon pickup chooses its weapon at collection. It draws from IDs 1–8 and rerolls from 1–7 if the first draw equals the current weapon. Taking a pistol this way gives 15 rounds. See the drop at `0x40314d` and the collection at `0x40772e`.
 
@@ -34,7 +39,11 @@ The packaged Career scoreboard contains a record for `10tons` with 28,930 XP. A 
 
 The title offers a second player. Survival's spawn interval becomes 0.25 seconds divided by the player count. The two entry positions oscillate on opposite sides. The pool grows to 512 creatures, with ordinary Survival rewards of 140–169 XP. Compare the paired arrivals at `0x416fa9` and the individual spawn at `0x40ba70` with the earlier addresses above.
 
+The player’s turn rate now ramps up. The three aiming options are mouse, keyboard and joystick hat. A fire-key press snaps non-mouse aim. Creatures turn toward a target heading, can switch targets when their co-op target dies, and use an eight-unit radius for wall collisions. Plague damage rises to 15 and a lethal tick runs the usual creature-death handler. The credits at `0x4183f0` scroll faster, thank the Pelit.fi and MuroPaketti forums, and draw 57 lines per frame with twenty named beta testers.
+
 At the title screen, hold **left Ctrl** and type **LEVELS**, then cycle the game mode to **Level Test**. The key sequence is in the dispatcher at `0x4145b3`. Four numbered maps cycle in order. The ZIP also carries three other map files and a separate `tiles.paq`. Level Test can place creatures that wait for the player to approach and triggers that grant a weapon. Its spawner gives placed creatures 300 health instead of scaling health with elapsed time.
+
+After the last creature retires, the level-clear screen stays up for three game seconds. The dispatcher then loads the next numbered map. The fourth clear returns to level one. Death takes a different path. The reaper interlude advances the simulation clock twice per frame while creature and projectile updates are suspended, then opens name entry.
 
 Walls affect gunfire as well as movement. A normal bullet stops when it hits a wall. When `rand() % 15 == 2`, the impact also spawns a pistol projectile at a right angle. The wall query and impact branch are at `0x40642c` and `0x406d94`.
 
@@ -62,6 +71,8 @@ The 1.3.1 and 1.4.0 readmes describe levels as disabled. Neither ships the 1.3.0
 
 The early clients load each edition's own artwork, font and sounds, and implement its title choices, Survival arrivals and score format. The 1.3.0 client also loads the shipped numbered maps.
 
-The weapon and perk regression runs each original executable against the native and WebAssembly game code. It compares fired projectiles, ammo, reloads, hits, perk text, draft RNG, grants and level-up rewards. The historical compiler also reproduces the complete machine-code body of the perk draft in each executable (22 instructions in 1.0.2, 65 in 1.3.0), and all 51 instructions of the 1.3.0 reload routine. Some movement, HUD and effect rendering still share code recovered from 1.4.0.
+The weapon and perk regression runs each original executable against the native and WebAssembly game code. It compares fired projectiles, ammo, reloads, hits, perk text, draft RNG, grants and level-up rewards. The historical compiler reproduces the complete machine-code body of the perk draft in each executable (22 instructions in 1.0.2, 65 in 1.3.0), all 51 instructions of the 1.3.0 reload routine and the random Career creature spawner in all three playable releases.
 
 The acquisition checks run the 1.3.0 pickup generator and collection code, then load the numbered maps through the original level reader. Native and browser runs compare weapon, ammo, trigger state and pickup RNG against that executable. The death checks compare health, weapon and game state in both early releases.
+
+The frame checks call each early executable’s frame dispatcher from entry to return. They compare gameplay state, camera and ground position, cursor, health, XP, ammo, creature and projectile activity, and the final random state on each frame. The 1.3.0 level checks load each shipped map and seed its final encounter, then follow the kill, corpse retirement, level-clear screen and next load through the full four-map cycle. Separate checks compare player and creature movement, damage on contact, the credits draw calls and the contents of a saturated corpse queue. The early releases still need complete HUD and world-effect draw comparisons.

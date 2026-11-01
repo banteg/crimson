@@ -618,14 +618,15 @@ uv run python -m http.server 8140 --bind 127.0.0.1 --directory "crimson-core/bui
 
 Open `http://127.0.0.1:8140/` for the browser build. Click the game-mode row
 to select Survival, then **Begin game.** Move with WASD, aim with the mouse and
-hold the left button to fire. After death, enter a name, press Enter, then
-Escape and **Begin game.** for another run. See [how early Crimsonland
+hold the left button to fire. After death, enter a name and press Enter.
+1.0.2 returns directly to the title. In 1.3.0, press Escape at the scores.
+Choose **Begin game.** for another run. See [how early Crimsonland
 changed](../docs/re/static/reference/game-evolution.md) for version differences,
 the 1.3.0 Level Test controls and the limits of the recovery.
 
 Compare the shared client against both original executables and exercise the four
 numbered maps with `uv run python crimson-core/checks/freeware_early.py game_bins/crimsonland --web`.
-The check also compares the weapons, perk drafts, grants and level-up thresholds against the two original executables.
+The checks cover the frame loop, the last encounter and transition on each numbered map, player and creature movement, Career spawning, weapons, perk drafts and grants, credits draws and corpse queue writes.
 Supply `--browser /path/to/chromium` to run the WebAssembly checks in a headless browser.
 
 ## Freeware 1.4.0
