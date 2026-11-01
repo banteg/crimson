@@ -297,6 +297,13 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/player/freeware_float_minmax.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_float_max",
+            "tools/match/scratches/freeware_float_min"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/player/freeware_refill_clip.cpp",
           "configs": [
             "tools/match/scratches/freeware_refill_clip"

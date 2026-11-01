@@ -64,6 +64,7 @@ def game_sources(root: Path, stage: Path) -> list[Path]:
                 "creatures/creature_alloc_slot.cpp",
                 "creatures/creature_find_in_radius.cpp",
                 "creatures/creature_reset_all.cpp",
+                "player/freeware_float_minmax.cpp",
                 "player/player_heading_approach_target.cpp",
                 "player/player_update.cpp",
                 "player/player_reset_all.cpp",
