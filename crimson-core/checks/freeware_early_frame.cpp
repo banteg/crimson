@@ -38,6 +38,10 @@ void check_early_frames(const char *assets) {
     game.run.player = {scene == career ? 200.f : 512.f, scene == career ? 180.f : 512.f};
     game.run.partner.player = {592, 512};
     game.run.health = scene == death || scene == escape_during_death ? -1 : 100;
+    if (scene == escape_during_death) {
+      game.run.cooldown = 0;
+      game.run.exp_clock = .125f;
+    }
     if (scene >= death)
       game.run.next_spawn = 100;
     freeware_spawn_enabled = scene == career || game.survival;
@@ -61,7 +65,10 @@ void check_early_frames(const char *assets) {
     for (int tick = 0; tick < frames; ++tick) {
       Input input{};
       input.relative = true;
-      input.escape = scene == escape_during_death && tick == 1;
+      if (scene == escape_during_death) {
+        input.right = input.fire = tick == 0;
+        input.escape = tick == 1;
+      }
       input.dx = tick == 0 ? -800.f : tick == 2 ? 1000.f : 0.f;
       input.dy = tick == 0 ? 700.f : tick == 2 ? -1000.f : 0.f;
       if (scene == death) {
@@ -74,6 +81,8 @@ void check_early_frames(const char *assets) {
       }
       int menu_sounds = early_sample_count(17);
       game.update(scene >= death ? .0625f : .03125f, input);
+      if (scene == escape_during_death)
+        std::printf("deathxpclock %d %.9g\n", tick, game.run.exp_clock);
       if (scene == death)
         std::printf("deathoverlay %d %d %d %d %d %d\n", tick, game.low_fps_frames, game.smoke, game.effects,
                     game.shadows, early_sample_count(17) - menu_sounds);

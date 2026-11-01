@@ -168,7 +168,7 @@ __forceinline void request_transition() {
 }
 __forceinline void begin_overlay() { freeware_overlay_begin(); }
 __forceinline void simulate_players() {
-#if CL_BUILD == 10002
+#if FREEWARE_EDITION == 10002
     creatures();
     shots();
     player();

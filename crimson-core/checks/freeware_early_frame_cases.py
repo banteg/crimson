@@ -68,6 +68,7 @@ def check_early_frames(exe, edition, lines):
     baseline = pe.snapshot()
     rows = iter(line.split()[1:] for line in lines if line.startswith("earlyframe "))
     overlay_rows = iter(line.split()[1:] for line in lines if line.startswith("deathoverlay "))
+    xp_clock_rows = iter(line.split()[1:] for line in lines if line.startswith("deathxpclock "))
     total = 0
     for scene in range(10):
         level_test = 5 <= scene <= 8
@@ -99,6 +100,10 @@ def check_early_frames(exe, edition, lines):
             if scene == 3:
                 for addr in (0x4374A5, 0x4374A4, 0x4374A1):  # Smoke, glow and shadows.
                     pe.write_u8(addr, 1)
+        if escape_during_death:
+            pe.write_f32(0x421F00 if early else 0x43001C, 0)  # Ready to fire.
+            if not early:
+                pe.write_f32(0x44775C, 0.125)  # Lean Mean Exp Machine countdown.
         if scene >= 3:
             pe.write_f32(timer, 100)
         if scene == 4 or level_test:
@@ -121,8 +126,11 @@ def check_early_frames(exe, edition, lines):
             ground.clear()
             labels.clear()
             keys.clear()
-            if escape_during_death and tick == 1:
-                keys.add(1)  # DIK_ESCAPE in the common frame tail.
+            if escape_during_death:
+                if tick == 0:
+                    keys.update((0xCD, 0x1C))  # Right arrow and Enter (fire) at zero health.
+                else:
+                    keys.add(1)  # DIK_ESCAPE in the common frame tail.
             dx = -800 if tick == 0 else 1000 if tick == 2 else 0
             dy = 700 if tick == 0 else -1000 if tick == 2 else 0
             name_key = 0xA7
@@ -134,6 +142,10 @@ def check_early_frames(exe, edition, lines):
                 name_key = {29: ord("A"), 30: 8, 31: 8, 32: ord("A"), 33: 9}.get(tick, 0xA7)
             samples.clear()
             assert pe.call(frame).eax & 255 == 1
+            if escape_during_death:
+                # 1.0.2 has no passive XP timer. 1.3.0 advances it before checking health.
+                clock_tick, clock_value = next(xp_clock_rows)
+                assert (int(clock_tick), float(clock_value)) == (tick, 0.125 if early else pe.read_f32(0x44775C))
             if scene == 3:
                 quality = (
                     (early_quality_counter, 1, 1, 1)
@@ -203,4 +215,5 @@ def check_early_frames(exe, edition, lines):
             total += 1
     assert next(rows, None) is None
     assert next(overlay_rows, None) is None
+    assert next(xp_clock_rows, None) is None
     print(f"{edition}: {total} complete original frame callbacks matched game state, ground position and RNG")
