@@ -601,6 +601,28 @@ and SDL_Renderer has no alpha test or write masks. raylib would mean fitting
 Grim's device state around rlgl and raudio; keep it for the Python port, where
 its workarounds are already solved.
 
+## Freeware 1.0.2 and 1.3.0
+
+Select the edition when building. The builder finds the original install in
+`game_bins/crimsonland/<edition>` or accepts `--game-dir`. Both clients use
+edition-specific assets and save directories. 1.3.0 needs FFmpeg for its music.
+
+```sh
+edition=1.3.0  # or 1.0.2
+uv run python crimson-core/client/build.py --edition "$edition" --target native
+"./crimson-core/build/freeware-$edition/native/crimson"
+
+uv run python crimson-core/client/build.py --edition "$edition" --target web
+uv run python -m http.server 8140 --bind 127.0.0.1 --directory "crimson-core/build/freeware-$edition/web"
+```
+
+Open `http://127.0.0.1:8140/` for the browser build. Click the game-mode row
+to select Survival, then **Begin game.** Move with WASD, aim with the mouse and
+hold the left button to fire. After death, enter a name, press Enter, then
+Escape and **Begin game.** for another run. See [how early Crimsonland
+changed](../docs/re/static/reference/game-evolution.md) for version differences,
+the 1.3.0 Level Test controls and the limits of the recovery.
+
 ## Freeware 1.4.0
 
 The 2002 freeware client plays Career and Survival in single-player or local two-player co-op. Both targets compile the recovered 1.4.0 frame dispatcher, player update, reset, wall collision, combat and perk-selection routines. The dispatcher runs the title menu, advances creatures and projectiles before the two player slots, then handles spawning, death, name entry and restart. They use the original graphics, Grim font, sounds and three music tracks. The build converts the MP3s with FFmpeg for the Vorbis decoder.
