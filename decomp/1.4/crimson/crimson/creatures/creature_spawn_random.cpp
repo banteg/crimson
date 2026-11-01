@@ -2,7 +2,7 @@
 #include "freeware_edition.h"
 #include "crimsonland_types.h"
 extern "C" {
-extern creature_t creature_pool[512];
+extern creature_t creature_pool[];
 #if CL_BUILD == 10400
 extern player_state_t player_state_table[2];
 #define PLAYER_XP player_state_table[current_player_index].freeware.experience

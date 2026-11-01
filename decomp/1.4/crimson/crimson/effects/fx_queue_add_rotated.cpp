@@ -1,5 +1,6 @@
 // crimson.exe 1.4.0, 0x40e730.
 #include "freeware_fx_queues.h"
+#include "freeware_edition.h"
 extern "C" int crt_rand();
 #define COUNT FX_STORE(freeware_corpse_count, corpse_count)
 #define COLORS FX_STORE(freeware_corpse_colors, corpse_colors)
@@ -9,7 +10,7 @@ extern "C" int crt_rand();
 #define POSITIONS FX_STORE(freeware_corpse_positions, corpse_positions)
 extern "C" void fx_queue_add_rotated(const vec2f_t *pos, const effect_color_t *color, float angle, float size,
                                      int species) {
-    if (COUNT == 63) {
+    if (FREEWARE_EDITION >= 10400 && COUNT == 63) {
         int i = crt_rand() % 64;
         COLORS[i] = *color;
         ANGLES[i] = angle;
