@@ -74,4 +74,4 @@ The same source tree builds other releases, each with its own compiler profile a
 
 ## Legal
 
-This project is an independent reverse engineering and reimplementation effort for preservation, research, and compatibility. Original Crimsonland Classic assets are distributed with permission from 10tons; the game code and reimplementation remain independent.
+Independently authored project code is available under the MIT license. Recovered game code, original game materials and third-party components have separate terms. The project distributes the original Crimsonland Classic assets with permission from 10tons. See the [license and scope](LICENSE).

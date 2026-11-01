@@ -88,6 +88,7 @@ def package(out, web):
     shutil.rmtree(dist, ignore_errors=True)
     if web:
         (dist / "web").mkdir(parents=True)
+        shutil.copy2(CORE.parent / "LICENSE", dist / "web/LICENSE.txt")
         for name in ("index.html", "index.js", "index.wasm", "build.json"):
             shutil.copy2(out / name, dist / "web" / name)
         return dist / "web"
@@ -96,6 +97,8 @@ def package(out, web):
         app = dist / "Crimsonland.app/Contents"
         (app / "MacOS").mkdir(parents=True)
         (app / "Frameworks").mkdir()
+        (app / "Resources").mkdir()
+        shutil.copy2(CORE.parent / "LICENSE", app / "Resources/LICENSE.txt")
         binary = app / "MacOS/crimson"
         shutil.copy2(out / "crimson", binary)
         linked = subprocess.check_output([tool("otool"), "-L", str(binary)], text=True)
@@ -128,6 +131,7 @@ def package(out, web):
         return dist / "Crimsonland.app"
     folder = dist / "crimsonland"
     folder.mkdir(parents=True)
+    shutil.copy2(CORE.parent / "LICENSE", folder / "LICENSE.txt")
     shutil.copy2(out / "build.json", folder)
     shutil.copy2(out / "crimson", folder)
     for library in libdir.glob("libSDL3.so*"):

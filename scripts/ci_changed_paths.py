@@ -136,6 +136,7 @@ SUITES = {
     ),
     "client": Suite(
         (
+            "LICENSE",
             *GAME_BUILD,
             "crimson-core/client/",
             "src/grim/filtering.glsl",

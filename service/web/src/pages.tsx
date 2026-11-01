@@ -1367,8 +1367,9 @@ const TERMS: Screen = {
         <h2>Terms</h2>
         <ul>
           <li>
-            crimson.land is a free, unofficial fan leaderboard for an open-source port of Crimsonland. It is not affiliated with 10tons, who
-            own Crimsonland and its assets; the port distributes the assets with their permission.
+            crimson.land is an unofficial fan leaderboard. The project distributes original game assets with permission from 10tons.
+            Independently authored project code is available under the MIT license. Recovered game code, original assets and
+            third-party components have separate terms. See the <a href="https://github.com/banteg/crimson/blob/master/LICENSE">license and scope</a>.
           </li>
           <li>
             Upload runs you played yourself, or runs your own program played. A run a program played, in whole or in part, belongs on the bot

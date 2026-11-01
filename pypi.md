@@ -147,5 +147,6 @@ crimson extract <game> <dst>    # extract the game's PAQ archives, with JAZ text
 - [Source](https://github.com/banteg/crimson): the port, plus a matching decompilation of the original
 - [Telegram group](https://t.me/+pG-Ow90lt28zMWFi): chat, bug reports and runs
 
-This is an independent preservation and research project. The original Crimsonland Classic assets are distributed
-with permission from 10tons; the game code and the reimplementation are independent.
+Independently authored project code is available under the MIT license. The project distributes original
+Crimsonland Classic assets with permission from 10tons. See the [license and scope](https://github.com/banteg/crimson/blob/master/LICENSE)
+for recovered game code and third-party components.

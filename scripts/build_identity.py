@@ -59,6 +59,7 @@ GAME_BUILD = (
     "tools/native/data_definitions/grim.dll.json",
 )
 CLIENT_BUILD = (
+    "LICENSE",
     "crimson-core/client/",
     "src/grim/filtering.glsl",
     "src/grim/linear_light.glsl",
@@ -152,7 +153,7 @@ def project_version(root: Path) -> str:
 
 
 def python_identity(root: Path = ROOT) -> dict[str, Any]:
-    return identity("python", root, ("src/crimson/", "src/grim/", "scripts/build_identity.py", "build_backend.py", "pyproject.toml", "uv.lock"), {"version": project_version(root)})
+    return identity("python", root, ("src/crimson/", "src/grim/", "scripts/build_identity.py", "build_backend.py", "pyproject.toml", "uv.lock", "LICENSE"), {"version": project_version(root)})
 
 
 def output(command: str, *args: str) -> str:

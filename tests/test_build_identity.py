@@ -227,7 +227,7 @@ def test_wheel_from_sdist_retains_identity_and_source_provenance_without_git(tmp
     root = Path(__file__).resolve().parents[1]
     source = tmp_path / "source"
     source.mkdir()
-    for name in ("pyproject.toml", "uv.lock", "pypi.md", "build_backend.py"):
+    for name in ("pyproject.toml", "uv.lock", "pypi.md", "build_backend.py", "LICENSE"):
         shutil.copy2(root / name, source / name)
     for name in ("src", "crimson-re/src"):
         shutil.copytree(root / name, source / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "_build.json"))
@@ -251,6 +251,8 @@ def test_wheel_from_sdist_retains_identity_and_source_provenance_without_git(tmp
     installation = tmp_path / "installed"
     with zipfile.ZipFile(next(distributions.glob("*.whl"))) as archive:
         metadata = json.loads(archive.read("crimson/_build.json"))
+        notice = next(name for name in archive.namelist() if name.endswith(".dist-info/licenses/LICENSE"))
+        assert archive.read(notice) == (root / "LICENSE").read_bytes()
         assert archive.read("crimson/assets_version.json") == (source / "src/crimson/assets_version.json").read_bytes()
         assert archive.read("grim/filtering.glsl") == (source / "src/grim/filtering.glsl").read_bytes()
         archive.extractall(installation)

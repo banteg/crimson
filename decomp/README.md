@@ -1,6 +1,6 @@
 # Recovered Crimsonland source
 
-This directory holds recovered, project-owned source for every Crimsonland build
+This directory holds recovered source for every Crimsonland build
 we study. It is organised by **build family**: a set of builds close enough to
 share function bodies. Tooling, scratch notes and experiments stay under
 `tools/match`; each scratch's `SOURCE` points into this tree.
