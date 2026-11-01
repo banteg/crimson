@@ -291,7 +291,29 @@ typedef struct player_input_config_t {
     int reserved[3];
 } player_input_config_t;
 
-#if CL_BUILD == 10300 || CL_BUILD == 10400
+#if CL_BUILD == 10002
+// 0x421e90, stride 0x10c. The 1.0.2 reset (0x402230) clears 32 perk counters.
+typedef struct freeware_player_t {
+    unsigned char active, plaguebearer;
+    unsigned char entity_padding[0x0c - 2];
+    vec2f_t position, movement;
+    float health, heading, size;
+    unsigned char body[0x3c - 0x28];
+    vec2f_t aim;
+    unsigned char motion_prefix[4];
+    float speed_multiplier;
+    unsigned char motion[8];
+    float move_speed, ammo, reload;
+    unsigned char animation[4];
+    float walk_phase;
+    int experience, level;
+    float cooldown;
+    int perks[32];
+    float spread;
+    int unused, weapon, previous_weapon;
+    float clip_size, muzzle_flash;
+} freeware_player_t;
+#elif CL_BUILD == 10300 || CL_BUILD == 10400
 typedef struct freeware_perk_entry_t {
     unsigned int name_va, description_va;
     int texture, frame;
@@ -300,13 +322,9 @@ typedef struct freeware_perk_entry_t {
 } freeware_perk_entry_t;
 
 typedef struct freeware_player_t {
-#if CL_BUILD == 10400
     unsigned char prefix[0x0c];
     unsigned char plaguebearer;
     unsigned char entity_padding[0x0b];
-#else
-    unsigned char prefix[0x18];
-#endif
     vec2f_t position, movement;
     float health, heading;
     float target_heading, size;
@@ -329,13 +347,9 @@ typedef struct freeware_player_t {
     float spread;
     int unused, weapon, previous_weapon;
     float clip_size, muzzle_flash, aim_heading;
-#if CL_BUILD == 10400
     float turn_speed, control_reserved;
     float shield;
     unsigned char keys[5], controls[7];
-#else
-    unsigned char controls[0x18];
-#endif
 } freeware_player_t;
 #endif
 
@@ -527,7 +541,10 @@ typedef struct creature_t {
     };
     unsigned char state_flag;
     signed char target_player;
-    float hit_flash_timer;
+    union {
+        float hit_flash_timer; // Donor name retained for constructor matching.
+        float plague_timer;
+    };
     float death_timer;
     union {
         struct {
@@ -552,7 +569,8 @@ typedef struct creature_t {
             unsigned char force_target, padding[3];
             vec2f_t target;
             float contact_damage, move_speed, attack_cooldown;
-            int reward, reserved[3], type, reserved_64;
+            int reward, reserved[3], type;
+            union { int reserved_64; float animation; };
         } freeware;
         // Later donor sources are compiled for comparison with this build. Their extra
         // field names are aliases, not evidence that 1.0.2 implements those mechanics.
