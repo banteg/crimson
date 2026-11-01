@@ -128,10 +128,13 @@ static void frame() {
     if ((e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || e.type == SDL_EVENT_MOUSE_BUTTON_UP) &&
         e.button.button == SDL_BUTTON_MIDDLE)
       in.mouse_reload = e.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
-    if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && e.button.button == SDL_BUTTON_RIGHT)
-      in.perk_button = true;
+    if ((e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || e.type == SDL_EVENT_MOUSE_BUTTON_UP) &&
+        e.button.button == SDL_BUTTON_RIGHT) {
+      in.right_mouse = e.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
+      in.perk_button |= in.right_mouse && FREEWARE_EDITION != 10002;
+    }
     if (e.type == SDL_EVENT_WINDOW_FOCUS_LOST)
-      in.fire = in.mouse_reload = false;
+      in.fire = in.mouse_reload = in.right_mouse = false;
     if (e.type == SDL_EVENT_TEXT_INPUT)
       in.text += e.text.text;
     if (e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
@@ -156,7 +159,7 @@ static void frame() {
         break;
       case SDL_SCANCODE_SPACE:
         in.space_pressed = true;
-        in.level_up = true;
+        in.level_up |= FREEWARE_EDITION != 10002;
         break;
       case SDL_SCANCODE_KP_PLUS:
       case SDL_SCANCODE_EQUALS:
@@ -232,7 +235,9 @@ static void frame() {
   controls.mouse_fire = in.fire;
   controls.fire = held(0, 4);
   controls.reload |= keys[SDL_SCANCODE_R];
-  controls.level_up |= keys[SDL_SCANCODE_SPACE] || keys[SDL_SCANCODE_KP_PLUS];
+  controls.bend_time = keys[SDL_SCANCODE_SPACE] || in.right_mouse;
+  controls.fast_time = keys[SDL_SCANCODE_X];
+  controls.level_up |= (FREEWARE_EDITION != 10002 && keys[SDL_SCANCODE_SPACE]) || keys[SDL_SCANCODE_KP_PLUS];
   c.game.update(dt, controls);
   quiet_samples = c.game.sound_quiet;
   bool wants_text = c.game.screen == Screen::Death || c.game.console_open;

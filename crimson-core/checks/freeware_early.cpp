@@ -6,6 +6,11 @@
 
 void check_arsenal();
 void check_weapon_hits();
+void check_early_perks();
+void check_player_perks();
+void check_creature_perks();
+void check_live_picker();
+void check_flames_and_rockets();
 extern "C" {
 extern float freeware_elapsed_seconds;
 extern unsigned freeware_rng_state;
@@ -81,6 +86,11 @@ int main(int argc, char **argv) {
   assert(argc == 2);
   check_arsenal();
   check_weapon_hits();
+  check_early_perks();
+  check_player_perks();
+  check_creature_perks();
+  check_live_picker();
+  check_flames_and_rockets();
   Game g;
   g.asset_dir = argv[1];
   g.load_level_brushes();

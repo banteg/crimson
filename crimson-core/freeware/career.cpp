@@ -17,7 +17,7 @@ int freeware_pending_perks;
 void player_check_level();
 }
 namespace freeware {
-int Game::next_level_xp() const { return int(1000 * std::pow(run.level + 1., 1.75)); }
+int Game::next_level_xp() const { return int(1000 * std::pow(run.level + 1., FREEWARE_EDITION == 10002 ? double(1.7f) : 1.75)); }
 void Game::check_level() {
   player_state_table[0].freeware.experience = run.experience;
   player_state_table[0].freeware.level = run.level;

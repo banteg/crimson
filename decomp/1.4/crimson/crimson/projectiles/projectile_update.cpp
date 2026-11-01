@@ -96,7 +96,7 @@ __forceinline void hit(projectile_t &shot, int id) {
     int type = shot.fields.type_id;
     if (c.death_timer == 16)
         ++highscore_record_hits;
-    if (player_state_table[current_player_index].freeware.perks[1] > 0) {
+    if (player_state_table[current_player_index].freeware.perks[freeware_rules::bloody_mess] > 0) {
         for (int radius = 30; radius < 60; radius += 10) {
             int x = crt_rand() % (2 * radius) - radius;
             int y = crt_rand() % (2 * radius) - radius;
@@ -386,13 +386,23 @@ __forceinline void particles() {
         if (!p.active)
             continue;
         bool bubble = p.style_id == 8;
-        p.intensity -= frame_dt * (bubble ? .11f : .9f);
+        p.intensity -= frame_dt * (FREEWARE_EDITION == 10002 ? 1.1f : bubble ? .11f : .9f);
         p.rotation += frame_dt * (bubble ? 5.f : 1.f);
         if (!bubble || p.in_flight) {
             float scale = bubble ? (p.intensity <= .15f ? .55f : 1.f) * p.intensity
                                  : 2.5f * (p.intensity > .15f ? p.intensity : .15f);
+#if FREEWARE_EDITION == 10300
+            vec2f_t delta = {frame_dt * p.vel_x * scale, frame_dt * p.vel_y * scale};
+            if (p.intensity > .15f)
+                freeware_current_map->move_with_collision(&p.position, &delta, 3);
+            else {
+                p.pos_x += delta.x;
+                p.pos_y += delta.y;
+            }
+#else
             p.pos_x += frame_dt * p.vel_x * scale;
             p.pos_y += frame_dt * p.vel_y * scale;
+#endif
         }
         if (p.intensity <= (p.style_id == 0 ? 0.f : .8f)) {
             p.active = 0;
@@ -407,7 +417,7 @@ __forceinline void particles() {
             continue;
         }
         if (p.in_flight == 1) {
-            double a = p.angle - (crt_rand() % 100 - 50) * (double).06f * frame_dt * p.intensity *
+            double a = p.angle - (crt_rand() % 100 - 50) * (double)(FREEWARE_EDITION == 10002 ? .1f : .06f) * frame_dt * p.intensity *
                                      (p.style_id == 0 ? 1.96f : 1.1f);
             p.angle = (float)a;
             p.vel_x = (float)(cos(a) * (bubble ? 62 : 82));
@@ -442,7 +452,8 @@ __forceinline void particles() {
         float speed = (crt_rand() % 10) * .1f;
         p.vel_x = (float)(cos(p.angle) * 82) * speed;
         p.vel_y = (float)(sin(p.angle) * 82) * speed;
-        c.health -= p.intensity * 10;
+        c.health -= p.intensity * (FREEWARE_EDITION == 10002 ? 15 : 10);
+#if FREEWARE_EDITION != 10002
         c.ai_mode = 1;
         effect_color_t &color = c.freeware.color;
         if (color.r + color.g + color.b > .6f) {
@@ -459,14 +470,27 @@ __forceinline void particles() {
             int x = crt_rand() % 60 - 30, y = crt_rand() % 60 - 30;
             sprite(c.position, (float)x, (float)y, 13, .7f);
         }
+#endif
         blood(c.position);
         c.pos_x += p.vel_x * frame_dt;
         c.pos_y += p.vel_y * frame_dt;
         if (c.health <= 0) {
+#if FREEWARE_EDITION == 10002
+            // The 0x4036df flame kill awards XP directly without rolling a weapon pickup.
+            if (c.death_timer == 16) {
+                freeware_combat_sound(crt_rand() % 4 + 3, .45f);
+                freeware_player_t &owner = player_state_table[current_player_index].freeware;
+                owner.experience += (int)(c.freeware.reward * (owner.perks[freeware_rules::bloody_mess] ? 1.5 : 1));
+#ifdef CRIMSON_FREEWARE_CLIENT
+                UI_GAME.run.experience = owner.experience;
+#endif
+            }
+#else
             if (c.death_timer == 16) {
                 creature_handle_death(id, current_player_index, 1);
                 freeware_combat_sound(crt_rand() % 4 + 3, .45f);
             }
+#endif
             --creature_spawned_count;
             c.death_timer -= frame_dt * 20;
         }

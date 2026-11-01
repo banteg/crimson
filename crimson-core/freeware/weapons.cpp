@@ -13,8 +13,8 @@ extern unsigned char freeware_player_moved;
 extern vec2f_t freeware_first_kill_position;
 unsigned char console_open_flag, time_scale_active, freeware_rainbow_armed, freeware_rainbow_enabled;
 int config_movement_schemes[2], config_aim_schemes[2];
-int perk_id_fastloader = 5, perk_id_long_distance_runner = 4, perk_id_sharpshooter = 3, perk_id_fastshot = 14,
-    perk_id_ammo_maniac = 11, perk_id_anxious_loader = 22;
+int perk_id_fastloader = freeware_rules::fastloader, perk_id_long_distance_runner = freeware_rules::long_distance_runner, perk_id_sharpshooter = freeware_rules::sharpshooter, perk_id_fastshot = freeware_rules::fastshot,
+    perk_id_ammo_maniac = freeware_rules::ammo_maniac, perk_id_anxious_loader = freeware_rules::anxious_loader;
 float time_scale_factor, bonus_reflex_boost_timer, freeware_fade_time;
 vec2f_t freeware_aim_screen, freeware_camera;
 unsigned char freeware_key_down[256], freeware_key_edge[256], freeware_mouse_down[3], freeware_mouse_click,
@@ -49,6 +49,8 @@ void Game::step_player(int index, float dt, const Input &in, vec2f_t mouse_world
     }
   }
   freeware_key_down[0x13] = in.reload;
+  freeware_key_down[0x39] = in.bend_time;
+  freeware_key_down[0x2d] = in.fast_time;
   freeware_mouse_down[0] = in.mouse_fire || in.click;
   freeware_mouse_down[2] = in.mouse_reload;
   freeware_mouse_click = in.click;

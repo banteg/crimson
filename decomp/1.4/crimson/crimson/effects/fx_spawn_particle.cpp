@@ -1,4 +1,5 @@
 #include "crimsonland_gameplay.h"
+#include "freeware_edition.h"
 
 extern "C" float cos(float angle);
 extern "C" float sin(float angle);
@@ -29,7 +30,7 @@ extern "C" int fx_spawn_particle(
             goto found;
         }
     }
-    index = crt_rand() % 0x80;
+    index = FREEWARE_EDITION < 10400 ? 0x7f : crt_rand() % 0x80;
 
 found:
     ;

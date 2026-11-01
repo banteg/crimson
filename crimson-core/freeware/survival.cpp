@@ -7,8 +7,8 @@
 #include <cstring>
 
 extern "C" {
-int perk_id_radioactive = 12, perk_id_almost_invisible = 2;
-int freeware_first_kill_xp, freeware_no_pickup, perk_id_bloody_mess = 1;
+int perk_id_radioactive = freeware_rules::radioactive, perk_id_almost_invisible = freeware_rules::almost_invisible;
+int freeware_first_kill_xp, freeware_no_pickup, perk_id_bloody_mess = freeware_rules::bloody_mess;
 unsigned char freeware_player_moved;
 vec2f_t freeware_first_kill_position;
 extern int freeware_pickup_id, freeware_pickup_weapon;
@@ -135,7 +135,7 @@ void Game::kill(int id, int owner, bool corpse) {
   auto &p = player_state_table[owner].freeware;
   p.position = actor(owner).player;
   p.experience = run.experience;
-  p.perks[1] = run.perks[1];
+  p.perks[perk_id_bloody_mess] = run.perks[perk_id_bloody_mess];
   freeware_first_kill_xp = run.first_kill_xp;
   freeware_first_kill_position = run.first_kill_pos;
   freeware_player_moved = run.moved;
@@ -167,7 +167,8 @@ void Game::update_creatures(float dt) {
     p.position = actor(i).player;
     p.health = actor(i).health;
     p.shield = actor(i).shield;
-    p.plaguebearer = run.perks[10] > 0;
+    if (FREEWARE_EDITION == 10400)
+      p.plaguebearer = run.perks[freeware_rules::plaguebearer] > 0;
   }
   player_state_table[0].freeware.experience = run.experience;
   creature_update_all();

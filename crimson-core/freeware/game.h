@@ -20,6 +20,8 @@
 #error Unsupported freeware edition
 #endif
 
+#include "freeware_edition.h"
+
 namespace freeware {
 constexpr int width = FREEWARE_EDITION < 10400 ? 640 : 1024, height = width * 3 / 4, arena = 1024;
 constexpr int main_row_count = FREEWARE_EDITION == 10002 ? 6 : FREEWARE_EDITION == 10300 ? 7 : 8;
@@ -62,7 +64,7 @@ struct Input {
   bool fire{}, click{}, up{}, down{}, left{}, right{};
   bool previous{}, next{}, accept{}, escape{}, backspace{};
   bool up2{}, down2{}, left2{}, right2{}, fire2{}, reload{}, level_up{};
-  bool ctrl{}, console{}, mouse_fire{};
+  bool ctrl{}, console{}, mouse_fire{}, bend_time{}, fast_time{}, right_mouse{};
   bool screenshot{}, relative{}, arrow_down{}, arrow_up{}, space_pressed{}, delete_scores{};
   float dx{}, dy{};
   std::bitset<256> level_down, level_pressed;

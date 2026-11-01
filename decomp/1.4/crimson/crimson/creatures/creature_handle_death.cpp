@@ -1,3 +1,4 @@
+#include "freeware_edition.h"
 // crimson.exe 0x405e10. Attribution follows the current player global even for a projectile fired earlier.
 #include "crimsonland_types.h"
 #include <math.h>
@@ -29,9 +30,9 @@ extern "C" void creature_handle_death(int slot, int, unsigned char leave_corpse)
         freeware_first_kill_position = c.position;
         freeware_first_kill_xp = (int)c.freeware.reward;
     }
-    if (leave_corpse)
-        c.death_timer -= frame_dt;
-    else
+    if (leave_corpse) {
+        if (FREEWARE_EDITION != 10002) c.death_timer -= frame_dt;
+    } else
         c.active = 0;
     if (p.perks[perk_id_bloody_mess] > 0)
         p.experience -= (int)(c.freeware.reward * -1.5);
@@ -51,7 +52,7 @@ extern "C" void creature_handle_death(int slot, int, unsigned char leave_corpse)
     }
 #endif
     --creature_spawned_count;
-    if (bonus_freeze_timer != 0) {
+    if (FREEWARE_EDITION != 10002 && bonus_freeze_timer != 0) {
         for (int i = 0; i < 30; ++i) {
             float size = (float)(crt_rand() % 10 + 5);
             float heading = (crt_rand() % 628) * .01f;

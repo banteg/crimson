@@ -17,7 +17,11 @@ extern "C" int creature_spawn(const vec2f_t *position, const effect_color_t *tin
 #endif
     }
     c.plague_infected = 0;
+#ifdef CRIMSON_FREEWARE_CLIENT
+    c.anim_phase = 0;
+#else
     c.hit_flash_timer = 0;
+#endif
     c.freeware.type = type;
     c.active = 1;
     c.freeware.force_target = 0;

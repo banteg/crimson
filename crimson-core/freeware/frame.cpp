@@ -12,9 +12,9 @@ unsigned char game_frame_update();
 void freeware_playing_stage(), freeware_spawn_edge(), freeware_bomb_advance();
 extern int config_player_count;
 extern game_mode_id_t config_game_mode;
-int perk_id_see_health = 16;
-int perk_id_lean_mean_exp_machine = 6, perk_id_spontaneously_combusteous = 7, perk_id_berserk_attack = 13,
-    perk_id_reflex_boosted = 15, perk_id_jinxed = 17, perk_id_evil_eyes = 18, perk_id_final_revenge = 23;
+int perk_id_see_health = freeware_rules::doctor;
+int perk_id_lean_mean_exp_machine = freeware_rules::lean_mean_exp, perk_id_spontaneously_combusteous = freeware_rules::combustion, perk_id_berserk_attack = freeware_rules::berserk,
+    perk_id_reflex_boosted = freeware_rules::reflex_boosted, perk_id_jinxed = freeware_rules::jinxed, perk_id_evil_eyes = freeware_rules::evil_eyes, perk_id_final_revenge = freeware_rules::final_revenge;
 }
 namespace freeware {
 FrameGameScope::FrameGameScope(Game &game) : previous(freeware_frame_game) { freeware_frame_game = &game; }

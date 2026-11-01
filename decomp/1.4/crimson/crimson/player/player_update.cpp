@@ -34,7 +34,7 @@ extern int current_player_index, config_player_count, config_movement_schemes[2]
 extern int freeware_arena_width, freeware_arena_height, highscore_record_shots_fired, freeware_first_kill_xp;
 extern unsigned char console_open_flag, freeware_player_moved, freeware_secret_weapon_unlocked,
     freeware_rainbow_enabled, freeware_rainbow_armed, time_scale_active;
-extern float frame_dt, freeware_elapsed_seconds, freeware_berserk_timer, bonus_reflex_boost_timer,
+extern float frame_dt, freeware_simulation_clock, freeware_elapsed_seconds, freeware_berserk_timer, bonus_reflex_boost_timer,
     time_scale_factor, freeware_fade_time;
 extern vec2f_t freeware_first_kill_position, freeware_aim_screen, freeware_camera;
 extern int perk_id_long_distance_runner, perk_id_sharpshooter, perk_id_ammo_maniac, perk_id_fastshot,
@@ -67,10 +67,11 @@ __forceinline bool direction_key(int key) {
 __forceinline void accelerate() {
     if (P.perks[perk_id_long_distance_runner] > 0) {
         if (P.move_speed < 2)
-            P.move_speed += frame_dt * 4;
+            P.move_speed += frame_dt * (FREEWARE_EDITION == 10002 ? 5 : 4);
         P.move_speed += frame_dt;
-        if (P.move_speed > 2.8f)
-            P.move_speed = 2.8f;
+        const float limit = FREEWARE_EDITION == 10002 ? 4.f : 2.8f;
+        if (P.move_speed > limit)
+            P.move_speed = limit;
     } else {
         P.move_speed += frame_dt * 5;
         if (P.move_speed > 2)
@@ -143,26 +144,48 @@ __forceinline bool fire() {
         P.spread = time_scale_factor * 2;
     P.spread *= time_scale_factor;
     switch (P.weapon) {
-    case 1: projectile_spawn(&muzzle, jitter(200, .001f), 4); eject(shell, 2, .7117f, .12f); break;
-    case 2: projectile_spawn(&muzzle, jitter(200, .001f), 1); eject(shell, 7, .117f, .07f); break;
-    case 3: pellets(muzzle, 10, 2, .001f); eject(shell, 15, .688117f, .12f); break;
+    case 1:
+        projectile_spawn(&muzzle, jitter(200, .001f), 4);
+        eject(shell, 2, .7117f, .12f);
+        break;
+    case 2:
+        projectile_spawn(&muzzle, jitter(200, .001f), 1);
+        eject(shell, 7, .117f, .07f);
+        break;
+    case 3:
+        pellets(muzzle, 10, 2, .001f);
+        eject(shell, 15, .688117f, .12f);
+        break;
     case 4:
         fx_spawn_particle(&muzzle, heading - half, &P.movement, 1);
         shot_sound(14);
         ammo = .2f;
         P.cooldown = .008113f;
         break;
-    case 5: projectile_spawn(&muzzle, jitter(20, .003f), 2); eject(shell, 26, .088117f, .022f); break;
-    case 6: projectile_spawn(&muzzle, jitter(20, .003f), 6); eject(shell, 8, .290812f, 0); break;
+    case 5:
+        projectile_spawn(&muzzle, jitter(20, .003f), 2);
+        eject(shell, 26, .088117f, .022f);
+        break;
+    case 6:
+        projectile_spawn(&muzzle, jitter(20, .003f), 6);
+        eject(shell, 8, .290812f, 0);
+        break;
     case 7:
         projectile_spawn(&muzzle, jitter(20, .003f) - .31415927f, 6);
         projectile_spawn(&muzzle, jitter(20, .003f) + .31415927f, 6);
         eject(shell, 8, .340812f, 0);
         ammo = 2;
         break;
-    case 8: projectile_spawn(&muzzle, jitter(20, .003f), 8); eject(shell, 8, .109081f, 0); break;
-    case 17: projectile_spawn(&muzzle, heading, 3); eject(shell, 7, .688117f, 0); break;
-    default: ammo = 0;
+    case 8:
+        projectile_spawn(&muzzle, jitter(20, .003f), 8);
+        eject(shell, 8, .109081f, 0);
+        break;
+    case 17:
+        projectile_spawn(&muzzle, heading, 3);
+        eject(shell, 7, .688117f, 0);
+        break;
+    default:
+        ammo = 0;
     }
 #else
     if (P.weapon == 1) {
@@ -302,6 +325,35 @@ extern "C" void player_update() {
     if (P.cooldown < 0)
         P.cooldown = 0;
     if (freeware_berserk_timer > 10) {
+#if FREEWARE_EDITION == 10002
+        // 0x408095..0x40833a steers the player and fires along the body heading.
+        P.heading += (float)sin(freeware_simulation_clock * 2) * frame_dt * 1.25f;
+        P.move_speed += frame_dt * 5;
+        if (P.move_speed > 3) P.move_speed = 3;
+        float distance = frame_dt * P.speed_multiplier * P.move_speed * 25;
+        P.position.x += (float)cos((double)P.heading - half) * distance;
+        P.position.y += (float)sin((double)P.heading - half) * distance;
+        float radius = P.size * .5f;
+        if (P.position.x < radius) P.position.x = radius;
+        if (P.position.y < radius) P.position.y = radius;
+        if (P.position.x > freeware_arena_width - radius) P.position.x = freeware_arena_width - radius;
+        if (P.position.y > freeware_arena_height - radius) P.position.y = freeware_arena_height - radius;
+        P.aim = P.position;
+        P.aim.x += (float)cos((double)P.heading - half) * 25;
+        P.aim.y += (float)sin((double)P.heading - half) * 25;
+        P.aim_heading = P.heading;
+        if (P.cooldown == 0) {
+            P.spread += time_scale_factor * frame_dt * 150;
+            if (P.spread > time_scale_factor * 2) P.spread = time_scale_factor * 2;
+            P.spread *= time_scale_factor;
+            double angle = (double)P.heading - half - .25f;
+            vec2f_t muzzle = {P.position.x + (float)(12 * cos(angle)), P.position.y + (float)(12 * sin(angle))};
+            projectile_spawn(&muzzle, jitter(200, .001f), 1);
+            shot_sound(7);
+            P.cooldown = .1f;
+        }
+        return;
+#else
         if (P.cooldown != 0)
             return;
         for (int i = 0; i < 50; ++i) {
@@ -318,13 +370,32 @@ extern "C" void player_update() {
         shot_sound(7);
         P.cooldown = .1f;
         return;
+#endif
     }
+#if FREEWARE_EDITION == 10002
+    bool bending = KEY(0x39);
+    if ((P.perks[freeware_rules::timebender] > 0 && P.experience > 0) || config_game_mode == 2) {
+        if (bending) {
+            P.experience += (int)(frame_dt * -1000);
+            time_scale_factor -= frame_dt;
+            if (time_scale_factor < .29f) time_scale_factor = .29f;
+        } else if (KEY(0x2d)) {
+            time_scale_factor += frame_dt;
+            if (time_scale_factor > 1.4f) time_scale_factor = 1.4f;
+        }
+    }
+    if (!bending) {
+        time_scale_factor += frame_dt;
+        if (time_scale_factor > 1) time_scale_factor = 1;
+    }
+#else
     if (bonus_reflex_boost_timer > 0) {
-        time_scale_factor -= frame_dt;
-        if (time_scale_factor < .3f)
-            time_scale_factor = .3f;
+        time_scale_factor -= frame_dt * (FREEWARE_EDITION == 10300 ? 1.5f : 1.f);
+        const float minimum = FREEWARE_EDITION == 10300 ? .35f : .3f;
+        if (time_scale_factor < minimum)
+            time_scale_factor = minimum;
     } else {
-        time_scale_factor += frame_dt * .8f;
+        time_scale_factor += frame_dt * (FREEWARE_EDITION == 10300 ? 1.5f : .8f);
         if (time_scale_factor > 1)
             time_scale_factor = 1;
     }
@@ -333,6 +404,7 @@ extern "C" void player_update() {
         if (freeware_fade_time > 1.5f)
             time_scale_active = 0;
     }
+#endif
     float speed = P.speed_multiplier;
     P.movement.x = P.movement.y = 0;
     int scheme = config_movement_schemes[current_player_index];

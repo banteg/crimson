@@ -1,3 +1,4 @@
+#include "freeware_edition.h"
 // crimson.exe 1.4.0, 0x418190. The camera and the secret flags consume the
 // gameplay CRT stream between the early combat pass and the state dispatch.
 #include "freeware_level.h"
@@ -152,7 +153,7 @@ __forceinline void simulate_players() {
     }
     creatures();
     shots();
-    if (PENDING > 0 && config_game_mode != 2 && open_perk()) {
+    if (FREEWARE_EDITION != 10002 && PENDING > 0 && config_game_mode != 2 && open_perk()) {
         enter(4);
         open_choices();
         request_transition();
@@ -185,6 +186,7 @@ __forceinline void position_camera() {
         CAM.x = screen_width / 2 - target.x;
         CAM.y = screen_height / 2 - target.y;
     }
+#if FREEWARE_EDITION != 10002
     SHAKE_TIME -= frame_dt;
     if (SHAKE_TIME <= 0) {
         SHAKE_TIME = .061f;
@@ -197,6 +199,7 @@ __forceinline void position_camera() {
     }
     CAM.x += SHAKE.x;
     CAM.y += SHAKE.y;
+#endif
     if (CAM.x > -1)
         CAM.x = -1;
     if (CAM.y > -1)
@@ -409,6 +412,10 @@ __forceinline void timed_perks() {
     if (JINX >= 0)
         JINX -= frame_dt;
     if (JINX < 0 && PERK(perk_id_jinxed) > 0) {
+#if FREEWARE_EDITION == 10002
+        JINX = .6f;
+        int id = crt_rand() % 127;
+#else
         if (crt_rand() % 10 == 3) {
             HP(0) -= 5;
             fx_queue_add_random(&POS(0));
@@ -418,6 +425,7 @@ __forceinline void timed_perks() {
         int id = crt_rand() % 511;
         for (int n = 0; n < 10 && !creature_pool[id].active; ++n)
             id = crt_rand() % 511;
+#endif
         creature_t &c = creature_pool[id];
         if (c.active) {
             c.health = -1;
@@ -515,7 +523,7 @@ extern "C" unsigned char game_frame_update() {
         MOUSE_Y = screen_height - margin;
     if (FIELD(console_open_flag, console_open))
         dt = 0;
-    if (PERK(perk_id_reflex_boosted) > 0 && SCALE > .85f)
+    if (PERK(perk_id_reflex_boosted) > 0 && (FREEWARE_EDITION == 10002 || SCALE > .85f))
         SCALE = .85f;
     current_player_index = 0;
     frame_dt = SCALE * dt;
@@ -534,7 +542,7 @@ extern "C" unsigned char game_frame_update() {
         editor();
     else
         render_world();
-    if (!freeware_rainbow_armed) {
+    if (FREEWARE_EDITION >= 10400 && !freeware_rainbow_armed) {
         for (int i = 0; i < 8; ++i) {
             unsigned char bit = crt_rand() % 2 == 0;
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -584,6 +592,15 @@ extern "C" unsigned char game_frame_update() {
             timed_perks();
             spawn_wave();
             hud();
+#if FREEWARE_EDITION == 10002
+            // 0x40e420 checks for the picker after this frame's combat, spawns and HUD.
+            if (PENDING > 0 && config_game_mode != 2 && open_perk()) {
+                enter(4);
+                open_choices();
+                request_transition();
+                STATE_SINCE = CLOCK;
+            }
+#endif
             if (!FIELD(freeware_music_started, wind_started) && CLOCK > 1.1f) {
                 sfx_play_panned(13, .45f, .5f);
                 FIELD(freeware_music_started, wind_started) = 1;

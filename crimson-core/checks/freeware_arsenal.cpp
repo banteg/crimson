@@ -75,15 +75,17 @@ void check_arsenal() {
   }
 }
 
+extern "C" game_mode_id_t config_game_mode;
 void check_weapon_hits() {
   using namespace freeware;
   constexpr bool early = FREEWARE_EDITION == 10002;
   Game g;
   FrameGameScope scope(g);
+  config_game_mode = static_cast<game_mode_id_t>(2);
   for (int type : {1, 2, 4, 6, 7, 8, 9, 10, 17}) {
     if (early ? (type == 7 || type == 9 || type == 10 || type == 17) : (type == 6 || type == 8))
       continue;
-    for (int mode = 0; mode < 3; ++mode) {
+    for (int mode = 0; mode < 5; ++mode) {
       std::memset(creature_pool, 0, sizeof(creature_pool));
       std::memset(projectile_pool, 0, sizeof(projectile_pool));
       std::memset(particle_pool, 0, sizeof(particle_pool));
@@ -92,21 +94,79 @@ void check_weapon_hits() {
       auto &c = creature_pool[0];
       c.active = mode != 0;
       c.position = {110, 100};
-      c.health = 1000;
+      c.health = mode < 3 ? 1000 : 5;
+      c.freeware.reward = 121;
+      creature_spawned_count = mode != 0;
+      g.run.experience = 0;
       c.death_timer = 16;
       c.freeware.size = 42;
       current_player_index = 0;
       bonus_fire_bullets_timer = mode == 2 ? 2 : 0;
       freeware_hit_sound_timer = 1;
-      bonus_freeze_timer = 0;
+      bonus_freeze_timer = mode == 4 ? 1 : 0;
+      g.run.freeze = bonus_freeze_timer;
       seed_random(87);
       vec2f_t start = {100, 100};
       auto &b = projectile_pool[projectile_spawn(&start, 1.57079637f, type)];
       b.fields.origin.x = 13;
       frame_dt = 1.f / 60;
       projectile_update();
-      std::printf("impact %d %d %.9g %.9g %.9g %.9g %d %u\n", type, mode, b.pos_x, b.position.y,
-                  b.fields.life_timer, c.health, c.plague_infected, freeware_rng_state);
+      std::printf("impact %d %d %.9g %.9g %.9g %.9g %d %u %.9g %d %d\n", type, mode, b.pos_x, b.position.y,
+                  b.fields.life_timer, c.health, c.plague_infected, freeware_rng_state, c.death_timer, creature_spawned_count, g.run.experience);
+    }
+  }
+}
+
+extern "C" int fx_spawn_secondary_projectile(const vec2f_t *, float, secondary_projectile_type_id_t);
+void check_flames_and_rockets() {
+  using namespace freeware;
+  Game g;
+  FrameGameScope scope(g);
+  const bool early = FREEWARE_EDITION == 10002;
+  // Both early allocators reuse the last slot. 1.4.0 rolls a random slot for excess flames.
+  for (auto &b : projectile_pool) b.active = 1;
+  for (auto &f : particle_pool) f.active = 1;
+  seed_random(77);
+  vec2f_t pool_pos = {200, 250}, pool_vel = {0, 0};
+  int bullet_slot = projectile_spawn(&pool_pos, .5f, 4);
+  int flame_slot = fx_spawn_particle(&pool_pos, .5f, &pool_vel, 1);
+  std::printf("overflow %d %d %u\n", bullet_slot, flame_slot, freeware_rng_state);
+  for (int kind : {4, 15, 11, 12}) {
+    if (early && kind != 4) continue;
+    for (bool hit : {false, true}) {
+      std::memset(creature_pool, 0, sizeof(creature_pool));
+      std::memset(projectile_pool, 0, sizeof(projectile_pool));
+      std::memset(particle_pool, 0, sizeof(particle_pool));
+      std::memset(sprite_effect_pool, 0, sizeof(sprite_effect_pool));
+      std::memset(secondary_projectile_pool, 0, sizeof(secondary_projectile_pool));
+      auto &c = creature_pool[0];
+      c.active = 1;
+      c.position = {hit ? 109.f : 420.f, 100};
+      c.death_timer = 16;
+      c.health = 3000;
+      c.freeware.size = 42;
+      c.freeware.color = {1, 1, 1, 1};
+      frame_dt = 1.f / 60;
+      freeware_hit_sound_timer = 1;
+      bonus_freeze_timer = bonus_fire_bullets_timer = 0;
+      seed_random(14);
+      vec2f_t pos = {100, 100}, zero = {0, 0};
+      auto &r = secondary_projectile_pool[0];
+      auto &f = particle_pool[0];
+      bool rocket = kind == 11 || kind == 12;
+      if (rocket)
+        fx_spawn_secondary_projectile(&pos, 1.57079637f, static_cast<secondary_projectile_type_id_t>(kind - 10));
+      else {
+        fx_spawn_particle(&pos, 0, &zero, 1);
+        f.style_id = kind == 15;
+      }
+      for (int i = 0; i < 8; ++i) {
+        projectile_update();
+        std::printf("flight %d %d %d %d %.9g %.9g %.9g %.9g %.9g %.9g %u\n", kind, int(hit), i,
+                    rocket ? int(r.fields.type_id) : f.in_flight, rocket ? r.pos_x : f.pos_x,
+                    rocket ? r.position.y : f.pos_y, rocket ? r.angle : f.angle, rocket ? r.life_timer : f.intensity,
+                    c.health, c.pos_x, freeware_rng_state);
+      }
     }
   }
 }

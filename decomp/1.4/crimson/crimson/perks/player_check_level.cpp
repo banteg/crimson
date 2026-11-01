@@ -2,6 +2,7 @@
 #include "cl_build.h"
 #if CL_BUILD == 10400
 #include "crimsonland_types.h"
+#include "freeware_edition.h"
 #include <math.h>
 #include <string.h>
 extern "C" {
@@ -21,12 +22,19 @@ static void spawn_boss(int level) {
         double xp;
         effect_color_t tint;
     };
+#if FREEWARE_EDITION == 10002
+    static const Boss bosses[] = {{3, 1, 92, 2000, 10, 1.2f, 2000, {28 / 255.f, 131 / 255.f, 174 / 255.f, 1}},
+                                  {5, 2, 98, 2000, 10, 1.2f, 3000, {192 / 255.f, 0, 192 / 255.f, 1}},
+                                  {8, 1, 128, 5000, 10, 1.2f, 5000, {192 / 255.f, 0, 0, 1}},
+                                  {13, 1, 128, 15000, 30, 2.6f, 500000, {.7f, .7f, .7f, .4f}}};
+#else
     static const Boss bosses[] = {{3, 1, 92, 1200, 10, 1.2f, 2000, {28 / 255.f, 131 / 255.f, 174 / 255.f, 1}},
                                   {5, 2, 98, 1400, 10, 1.2f, 3000, {192 / 255.f, 0, 192 / 255.f, 1}},
                                   {8, 1, 128, 3000, 10, 1.2f, 5000, {192 / 255.f, 0, 0, 1}},
                                   {13, 1, 128, 10000, 30, 2.6f, 4000, {.7f, .7f, .7f, .4f}},
                                   {17, 1, 100, 10000, 30, 2.8f, 5000, {1, 1, 1, 1}}};
-    for (int i = 0; i < 5; ++i)
+#endif
+    for (int i = 0; i < int(sizeof(bosses) / sizeof(*bosses)); ++i)
         if (level == bosses[i].level) {
             const Boss &b = bosses[i];
             creature_t &c = creature_pool[creature_alloc_slot()];
@@ -57,7 +65,7 @@ extern "C" void player_check_level() {
     if (config_game_mode == 2)
         return;
     freeware_player_t &p = player_state_table[0].freeware;
-    if (p.experience > 1000 * pow(p.level + 1., 1.75)) {
+    if (p.experience > 1000 * pow(p.level + 1., FREEWARE_EDITION == 10002 ? (double)1.7f : 1.75)) {
         ++p.level;
         if (freeware_spawn_enabled)
             spawn_boss(p.level);

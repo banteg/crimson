@@ -1,4 +1,4 @@
-"""Compare early Survival spawns with their respective x86 executables and exercise the shipped 1.3.0 maps."""
+"""Compare early weapons, perks, spawns and map collision to each original game, then play through both modes."""
 
 import argparse
 import hashlib
@@ -9,9 +9,17 @@ import struct
 import subprocess
 import sys
 import tempfile
+from html import unescape
 from pathlib import Path
 
-from freeware_arsenal_cases import check_hits, check_weapons
+from freeware_arsenal_cases import (
+    check_creature_perks,
+    check_flight,
+    check_hits,
+    check_perks,
+    check_player_perks,
+    check_weapons,
+)
 
 from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
 
@@ -26,7 +34,7 @@ ADDRESSES = {
 }
 
 
-def check(edition, install, tmp, web):
+def check(edition, install, tmp, web, browser):
     exe = install / "crimson.exe"
     registry = json.loads((ROOT / "decomp/builds.json").read_text())
     build = next(b for b in registry["builds"] if b["id"] == edition)
@@ -45,19 +53,63 @@ def check(edition, install, tmp, web):
         *game_sources(ROOT, tmp),
         ROOT / "crimson-core/checks/freeware_early.cpp",
         ROOT / "crimson-core/checks/freeware_arsenal.cpp",
+        ROOT / "crimson-core/checks/freeware_perks.cpp",
     ]
     binary = tmp / edition
     subprocess.run([tool("clang++"), *sources, "-o", binary], check=True)
     lines = subprocess.check_output([binary, install], text=True).splitlines()
-    check_weapons(exe, edition, lines)
-    check_hits(exe, edition, lines)
-    if web:
+
+    def compare_combat(output):
+        check_weapons(exe, edition, output)
+        check_hits(exe, edition, output)
+        check_flight(exe, edition, output)
+        check_perks(exe, edition, output)
+        check_player_perks(exe, edition, output)
+        check_creature_perks(exe, edition, output)
+
+    compare_combat(lines)
+    if web or browser:
         js = tmp / f"early-{edition}.js"
-        subprocess.run([tool("em++"), *sources, "-sENVIRONMENT=node", "-sNODERAWFS", "-o", js], check=True)
-        wasm = subprocess.check_output([tool("node"), js, install], text=True).splitlines()
-        # Compare the original-facing observations. Both runs also assert the complete menu and score cycle.
-        check_weapons(exe, edition, wasm)
-        check_hits(exe, edition, wasm)
+        embeds = ["--embed-file", f"{install / 'levels'}@/levels"] if edition == "1.3.0" else []
+        subprocess.run(
+            [
+                tool("em++"),
+                *sources,
+                *embeds,
+                "-sENVIRONMENT=web,node",
+                "-sSINGLE_FILE",
+                "-sWASM_ASYNC_COMPILATION=0",
+                "-o",
+                js,
+            ],
+            check=True,
+        )
+        if browser:
+            page = tmp / "probe.html"
+            page.write_text(
+                '<meta charset="utf-8"><pre id="output"></pre><script>'
+                'var Module={arguments:["/"],print:s=>document.getElementById("output").append(s+"\\n"), '
+                'postRun:[()=>Module.print("probe complete")]};</script>'
+                f'<script src="{js.name}"></script>',
+            )
+            dom = subprocess.check_output(
+                [
+                    browser,
+                    "--headless",
+                    "--disable-gpu",
+                    "--virtual-time-budget=20000",
+                    f"--user-data-dir={tmp / 'chrome'}",
+                    "--dump-dom",
+                    page.as_uri(),
+                ],
+                text=True,
+                timeout=120,
+            )
+            wasm = unescape(dom.split('<pre id="output">', 1)[1].split("</pre>", 1)[0]).splitlines()
+            assert wasm and wasm[-1] == "probe complete", f"{edition} browser probe did not finish"
+        else:
+            wasm = subprocess.check_output([tool("node"), js, "/"], text=True).splitlines()
+        compare_combat(wasm)
         prefixes = ("spawn ", "wall ")
         assert [s for s in lines if s.startswith(prefixes)] == [s for s in wasm if s.startswith(prefixes)]
     early = edition == "1.0.2"
@@ -128,7 +180,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("installs", type=Path, help="parent directory containing the original release folders")
     parser.add_argument("--web", action="store_true", help="also run the Emscripten game code under Node")
+    parser.add_argument("--browser", type=Path, help="run the WebAssembly comparison in this Chromium executable")
     args = parser.parse_args()
     with tempfile.TemporaryDirectory() as tmp:
         for edition in ADDRESSES:
-            check(edition, (args.installs / edition).resolve(), Path(tmp), args.web)
+            check(edition, (args.installs / edition).resolve(), Path(tmp), args.web, args.browser)
