@@ -623,6 +623,9 @@ Escape and **Begin game.** for another run. See [how early Crimsonland
 changed](../docs/re/static/reference/game-evolution.md) for version differences,
 the 1.3.0 Level Test controls and the limits of the recovery.
 
+Compare the shared client against both original executables and exercise the four
+numbered maps with `uv run python crimson-core/checks/freeware_early.py game_bins/crimsonland --web`.
+
 ## Freeware 1.4.0
 
 The 2002 freeware client plays Career and Survival in single-player or local two-player co-op. Both targets compile the recovered 1.4.0 frame dispatcher, player update, reset, wall collision, combat and perk-selection routines. The dispatcher runs the title menu, advances creatures and projectiles before the two player slots, then handles spawning, death, name entry and restart. They use the original graphics, Grim font, sounds and three music tracks. The build converts the MP3s with FFmpeg for the Vorbis decoder.
