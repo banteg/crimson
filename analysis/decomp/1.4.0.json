@@ -15772,6 +15772,7 @@
       "name": "ui_template_slot_ctor_noop",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -15824,6 +15825,7 @@
       "name": "native_function_00401010",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Initializes COM for the DirectShow playback object.",
       "proof": null,
       "ratio": 0.0,
       "size": 33,
@@ -15854,6 +15856,7 @@
       "name": "native_function_00401040",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Opens a file in a DirectShow filter graph and acquires its COM interfaces.",
       "proof": null,
       "ratio": 0.0,
       "size": 224,
@@ -15869,6 +15872,7 @@
       "name": "native_function_00401120",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 61,
@@ -15899,6 +15903,7 @@
       "name": "native_function_00401160",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Starts playback through the DirectShow media control interface.",
       "proof": null,
       "ratio": 0.0,
       "size": 21,
@@ -15929,6 +15934,7 @@
       "name": "native_function_00401180",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Pauses playback through the DirectShow media control interface.",
       "proof": null,
       "ratio": 0.0,
       "size": 21,
@@ -15959,6 +15965,7 @@
       "name": "native_function_004011a0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Stops playback through the DirectShow media control interface.",
       "proof": null,
       "ratio": 0.0,
       "size": 21,
@@ -15989,6 +15996,7 @@
       "name": "native_function_004011c0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Reads the DirectShow media duration.",
       "proof": null,
       "ratio": 0.0,
       "size": 48,
@@ -16004,6 +16012,7 @@
       "name": "native_function_004011f0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Reads the DirectShow playback position.",
       "proof": null,
       "ratio": 0.0,
       "size": 48,
@@ -16019,6 +16028,7 @@
       "name": "native_function_00401220",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Seeks with the DirectShow media seeking interface.",
       "proof": null,
       "ratio": 0.0,
       "size": 45,
@@ -16049,6 +16059,7 @@
       "name": "native_function_00401250",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 5,
@@ -16079,6 +16090,7 @@
       "name": "native_function_00401260",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 21,
@@ -16110,6 +16122,7 @@
       "name": "console_input_clear",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -16163,6 +16176,7 @@
       "name": "console_input_buffer",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -16215,6 +16229,7 @@
       "name": "native_function_004012b0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 1542,
@@ -16246,6 +16261,7 @@
       "name": "console_cmd_arg_get",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 12,
@@ -16299,6 +16315,7 @@
       "name": "console_cmd_argc_get",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -16352,6 +16369,7 @@
       "name": "console_global_construct_and_register",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -16405,6 +16423,7 @@
       "name": "console_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -16458,6 +16477,7 @@
       "name": "console_register_global_destructor_atexit",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
@@ -16511,6 +16531,7 @@
       "name": "console_global_destroy",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -16564,6 +16585,7 @@
       "name": "console_clear_log",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 28,
@@ -16617,6 +16639,7 @@
       "name": "console_cmd_quit",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -16669,6 +16692,7 @@
       "name": "native_function_004019a0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 80,
@@ -16684,6 +16708,7 @@
       "name": "native_function_004019f0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 85,
@@ -16699,6 +16724,7 @@
       "name": "native_function_00401a45",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 26,
@@ -16714,6 +16740,7 @@
       "name": "native_function_00401a5f",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 26,
@@ -16729,6 +16756,7 @@
       "name": "native_function_00401a79",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 28,
@@ -16744,6 +16772,7 @@
       "name": "native_function_00401a95",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 28,
@@ -16774,6 +16803,7 @@
       "name": "native_function_00401ae0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 184,
@@ -16805,6 +16835,7 @@
       "name": "console_cmd_exec",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 61,
@@ -16858,6 +16889,7 @@
       "name": "console_cmd_extend",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
@@ -16911,6 +16943,7 @@
       "name": "console_cmd_minimize",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -16963,6 +16996,7 @@
       "name": "native_function_00401ca0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 36,
@@ -16994,6 +17028,7 @@
       "name": "console_cmdlist",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 24,
@@ -17047,6 +17082,7 @@
       "name": "console_vars",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 24,
@@ -17100,6 +17136,7 @@
       "name": "console_echo",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 93,
@@ -17153,6 +17190,7 @@
       "name": "console_cmd_set",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 22,
@@ -17205,6 +17243,7 @@
       "name": "native_function_00401ec0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 19,
@@ -17236,6 +17275,7 @@
       "name": "console_destroy",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 77,
@@ -17289,6 +17329,7 @@
       "name": "console_push_line",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 68,
@@ -17342,6 +17383,7 @@
       "name": "console_printf",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 21,
@@ -17395,6 +17437,7 @@
       "name": "console_set_open",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
@@ -17448,6 +17491,7 @@
       "name": "console_history_apply",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 42,
@@ -17501,6 +17545,7 @@
       "name": "console_exec_line",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 46,
@@ -17554,6 +17599,7 @@
       "name": "console_render",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 402,
@@ -17607,6 +17653,7 @@
       "name": "console_register_cvar",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 101,
@@ -17660,6 +17707,7 @@
       "name": "console_cvar_find",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 47,
@@ -17713,6 +17761,7 @@
       "name": "console_tokenize_line",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 55,
@@ -17766,6 +17815,7 @@
       "name": "console_cvar_autocomplete",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 83,
@@ -17819,6 +17869,7 @@
       "name": "console_register_command",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 38,
@@ -17872,6 +17923,7 @@
       "name": "console_command_find",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 47,
@@ -17925,6 +17977,7 @@
       "name": "console_command_autocomplete",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 83,
@@ -17978,6 +18031,7 @@
       "name": "console_flush_log",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 51,
@@ -18031,6 +18085,7 @@
       "name": "console_log_node_free",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 24,
@@ -18084,6 +18139,7 @@
       "name": "grim_load_interface",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Loads grim.dll and resolves its interface with GetProcAddress.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 14,
@@ -18136,6 +18192,7 @@
       "name": "freeware_http_get",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Performs the WinINet HTTP request for the online menu.",
       "proof": null,
       "ratio": 0.0,
       "size": 262,
@@ -18166,6 +18223,7 @@
       "name": "native_function_004030f0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Loads SFX.dll and resolves its exported functions.",
       "proof": null,
       "ratio": 0.0,
       "size": 290,
@@ -18196,6 +18254,7 @@
       "name": "native_function_00403220",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Releases the SFX.dll module with FreeLibrary.",
       "proof": null,
       "ratio": 0.0,
       "size": 13,
@@ -18227,6 +18286,7 @@
       "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -18280,6 +18340,7 @@
       "name": "unused_fx_queue_random_prefix_color_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -18333,6 +18394,7 @@
       "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -18386,6 +18448,7 @@
       "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -18439,6 +18502,7 @@
       "name": "unused_aim64_prefix_color_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -18492,6 +18556,7 @@
       "name": "unused_aim64_prefix_color_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -18545,6 +18610,7 @@
       "name": "unused_fx_rotated_scale_prefix_color_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -18598,6 +18664,7 @@
       "name": "unused_fx_rotated_scale_prefix_color_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -18651,6 +18718,7 @@
       "name": "render_tint_color_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -18704,6 +18772,7 @@
       "name": "render_tint_color_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 5,
@@ -18757,6 +18826,7 @@
       "name": "unused_global_noop_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -18810,6 +18880,7 @@
       "name": "unused_global_noop_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -18863,6 +18934,7 @@
       "name": "unused_particle_pool_suffix_color_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -18916,6 +18988,7 @@
       "name": "unused_particle_pool_suffix_color_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -18969,6 +19042,7 @@
       "name": "unused_fx_queue_random_prefix_vec2_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -19022,6 +19096,7 @@
       "name": "unused_fx_queue_random_prefix_vec2_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
@@ -19075,6 +19150,7 @@
       "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -19128,6 +19204,7 @@
       "name": "unused_effect_uv16_prefix_vec2_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
@@ -19181,6 +19258,7 @@
       "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -19234,6 +19312,7 @@
       "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
@@ -19287,6 +19366,7 @@
       "name": "fx_queue_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -19340,6 +19420,7 @@
       "name": "fx_queue_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 42,
@@ -19392,6 +19473,7 @@
       "name": "native_function_00403500",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 5,
@@ -19422,6 +19504,7 @@
       "name": "native_function_00403510",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 257,
@@ -19453,6 +19536,7 @@
       "name": "crimson_crt_empty_initializer_slot_31_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -19506,6 +19590,7 @@
       "name": "crimson_crt_empty_initializer_slot_31",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -19558,6 +19643,7 @@
       "name": "native_function_00403640",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 5,
@@ -19588,6 +19674,7 @@
       "name": "native_function_00403650",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 61,
@@ -19619,6 +19706,7 @@
       "name": "perk_meta_global_construct_and_register",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -19672,6 +19760,7 @@
       "name": "perk_meta_table_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 7,
@@ -19725,6 +19814,7 @@
       "name": "perk_meta_entry_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 7,
@@ -19778,6 +19868,7 @@
       "name": "bonus_meta_entry_release",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 16,
@@ -19831,6 +19922,7 @@
       "name": "perk_meta_register_atexit",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
@@ -19884,6 +19976,7 @@
       "name": "perk_meta_table_destroy",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 6,
@@ -19936,6 +20029,7 @@
       "name": "native_function_00403740",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 5,
@@ -19966,6 +20060,7 @@
       "name": "native_function_00403750",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 11,
@@ -19997,6 +20092,7 @@
       "name": "unused_console_prefix_vec2_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20050,6 +20146,7 @@
       "name": "unused_console_prefix_vec2_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
@@ -20102,6 +20199,7 @@
       "name": "native_function_00403790",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 5,
@@ -20132,6 +20230,7 @@
       "name": "native_function_004037a0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 11,
@@ -20163,6 +20262,7 @@
       "name": "secondary_projectile_pool_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20216,6 +20316,7 @@
       "name": "secondary_projectile_pool_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 11,
@@ -20269,6 +20370,7 @@
       "name": "sprite_effect_pool_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20322,6 +20424,7 @@
       "name": "sprite_effect_pool_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 30,
@@ -20375,6 +20478,7 @@
       "name": "particle_pool_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20428,6 +20532,7 @@
       "name": "particle_pool_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 44,
@@ -20481,6 +20586,7 @@
       "name": "creature_pool_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20534,6 +20640,7 @@
       "name": "creature_pool_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 13,
@@ -20587,6 +20694,7 @@
       "name": "crimson_crt_empty_initializer_slot_38_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20640,6 +20748,7 @@
       "name": "crimson_crt_empty_initializer_slot_38",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20693,6 +20802,7 @@
       "name": "crimson_crt_empty_initializer_slot_39_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20746,6 +20856,7 @@
       "name": "crimson_crt_empty_initializer_slot_39",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20799,6 +20910,7 @@
       "name": "crimson_crt_empty_initializer_slot_44_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20852,6 +20964,7 @@
       "name": "crimson_crt_empty_initializer_slot_44",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20905,6 +21018,7 @@
       "name": "crimson_crt_empty_initializer_slot_45_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -20958,6 +21072,7 @@
       "name": "crimson_crt_empty_initializer_slot_45",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -21011,6 +21126,7 @@
       "name": "projectile_pool_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -21064,6 +21180,7 @@
       "name": "projectile_pool_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 10,
@@ -21117,6 +21234,7 @@
       "name": "player_state_table_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -21170,6 +21288,7 @@
       "name": "player_state_table_global_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 22,
@@ -21223,6 +21342,7 @@
       "name": "crimson_crt_empty_initializer_slot_54_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -21276,6 +21396,7 @@
       "name": "crimson_crt_empty_initializer_slot_54",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -21328,6 +21449,7 @@
       "name": "native_function_00403ac0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 10,
@@ -21358,6 +21480,7 @@
       "name": "native_function_00403ad0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 29,
@@ -21388,6 +21511,7 @@
       "name": "native_function_00403b00",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 37,
@@ -21418,6 +21542,7 @@
       "name": "native_function_00403b30",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 84,
@@ -21448,6 +21573,7 @@
       "name": "native_function_00403b90",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 90,
@@ -21478,6 +21604,7 @@
       "name": "native_function_00403bf0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 20,
@@ -21508,6 +21635,7 @@
       "name": "freeware_level_clear",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 184,
@@ -21538,6 +21666,7 @@
       "name": "native_function_00403cd0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 57,
@@ -21568,6 +21697,7 @@
       "name": "freeware_level_load",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 983,
@@ -21598,6 +21728,7 @@
       "name": "freeware_level_save",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 311,
@@ -21628,6 +21759,7 @@
       "name": "freeware_level_add_trigger",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 427,
@@ -21658,6 +21790,7 @@
       "name": "native_function_004043e0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 34,
@@ -21688,6 +21821,7 @@
       "name": "freeware_level_update_triggers",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 247,
@@ -21718,6 +21852,7 @@
       "name": "freeware_level_render_triggers",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 1695,
@@ -21748,6 +21883,7 @@
       "name": "native_function_00404bb0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 10,
@@ -21778,6 +21914,7 @@
       "name": "freeware_level_add_object",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 426,
@@ -21808,6 +21945,7 @@
       "name": "freeware_level_render_layer",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 115,
@@ -21860,6 +21998,7 @@
       "name": "freeware_level_move_with_collision",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 156,
@@ -21912,6 +22051,7 @@
       "name": "native_function_004050e0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 151,
@@ -21942,6 +22082,7 @@
       "name": "native_function_00405180",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 233,
@@ -21972,6 +22113,7 @@
       "name": "native_function_00405270",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 81,
@@ -22002,6 +22144,7 @@
       "name": "native_function_004052d0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 299,
@@ -22032,6 +22175,7 @@
       "name": "native_function_00405400",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 152,
@@ -22062,6 +22206,7 @@
       "name": "native_function_004054a0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 313,
@@ -22092,6 +22237,7 @@
       "name": "native_function_004055e0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 72,
@@ -22123,6 +22269,7 @@
       "name": "sfx_play_panned",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 110,
@@ -22175,6 +22322,7 @@
       "name": "sfx_update",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 129,
@@ -22205,6 +22353,7 @@
       "name": "freeware_music_start",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 299,
@@ -22235,6 +22384,7 @@
       "name": "freeware_music_stop",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 66,
@@ -22265,6 +22415,7 @@
       "name": "native_function_004058e0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 922,
@@ -22296,6 +22447,7 @@
       "name": "fx_queue_add",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 33,
@@ -22348,6 +22500,7 @@
       "name": "input_move_up_active",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 37,
@@ -22378,6 +22531,7 @@
       "name": "input_move_down_active",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 35,
@@ -22408,6 +22562,7 @@
       "name": "input_move_left_active",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 37,
@@ -22438,6 +22593,7 @@
       "name": "input_move_right_active",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 35,
@@ -22469,6 +22625,7 @@
       "name": "input_aim_pov_left_active",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 10,
@@ -22522,6 +22679,7 @@
       "name": "input_aim_pov_right_active",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 10,
@@ -22575,6 +22733,7 @@
       "name": "creature_handle_death",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 202,
@@ -22628,6 +22787,7 @@
       "name": "highscore_build_path",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 104,
@@ -22680,6 +22840,7 @@
       "name": "freeware_save_config",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 169,
@@ -22711,6 +22872,7 @@
       "name": "config_load_presets",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 178,
@@ -22764,6 +22926,7 @@
       "name": "angle_approach",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 101,
@@ -22817,6 +22980,7 @@
       "name": "weapon_assign_player",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 122,
@@ -22869,6 +23033,7 @@
       "name": "freeware_refill_clip",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 9,
@@ -22922,6 +23087,7 @@
       "name": "player_start_reload",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 53,
@@ -22975,6 +23141,7 @@
       "name": "bonus_spawn_at",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 100,
@@ -23028,6 +23195,7 @@
       "name": "fx_spawn_sprite",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 51,
@@ -23080,6 +23248,7 @@
       "name": "freeware_point_in_rect",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 69,
@@ -23111,6 +23280,7 @@
       "name": "weapon_name_get",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 167,
@@ -23148,6 +23318,7 @@
       "name": "native_function_00406e10",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 146,
@@ -23178,6 +23349,7 @@
       "name": "native_function_00406eb0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 105,
@@ -23208,6 +23380,7 @@
       "name": "native_function_00406f20",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 105,
@@ -23238,6 +23411,7 @@
       "name": "native_function_00406f90",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 5,
@@ -23268,6 +23442,7 @@
       "name": "native_function_00406fa0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 68,
@@ -23298,6 +23473,7 @@
       "name": "freeware_save_score",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 392,
@@ -23328,6 +23504,7 @@
       "name": "native_function_00407180",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 518,
@@ -23358,6 +23535,7 @@
       "name": "native_function_00407390",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 46,
@@ -23389,6 +23567,7 @@
       "name": "highscore_load_table",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 354,
@@ -23441,6 +23620,7 @@
       "name": "freeware_score_rank",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 297,
@@ -23472,6 +23652,7 @@
       "name": "wrap_text_to_width_alloc",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 50,
@@ -23524,6 +23705,7 @@
       "name": "native_function_00407920",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 2844,
@@ -23555,6 +23737,7 @@
       "name": "player_reset_all",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 77,
@@ -23607,6 +23790,7 @@
       "name": "player_check_level",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 58,
@@ -23660,6 +23844,7 @@
       "name": "perks_generate_choices",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 66,
@@ -23712,6 +23897,7 @@
       "name": "native_function_00408dc0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 88,
@@ -23743,6 +23929,7 @@
       "name": "creature_find_nearest",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 40,
@@ -23796,6 +23983,7 @@
       "name": "gameplay_reset_state",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 307,
@@ -23849,6 +24037,7 @@
       "name": "fx_spawn_particle",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 67,
@@ -23902,6 +24091,7 @@
       "name": "fx_spawn_particle_slow",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 67,
@@ -23955,6 +24145,7 @@
       "name": "fx_spawn_secondary_projectile",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 62,
@@ -24008,6 +24199,7 @@
       "name": "projectile_spawn",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 62,
@@ -24061,6 +24253,7 @@
       "name": "projectile_reset_pools",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 11,
@@ -24114,6 +24307,7 @@
       "name": "creature_find_in_radius",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 42,
@@ -24167,6 +24361,7 @@
       "name": "projectile_update",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1818,
@@ -24220,6 +24415,7 @@
       "name": "projectile_render",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 2094,
@@ -24273,6 +24469,7 @@
       "name": "plaguebearer_spread_infection",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 64,
@@ -24326,10 +24523,11 @@
       "name": "creature_update_all",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 481,
-        "candidate_object_sha256": "f7e81bddc3926b549d1399f2e0a0ecc796964c92f3022aa3d9c2399fcfa9a697",
+        "candidate_object_sha256": "a1fbffd19b1e8bc28012c61244d53673d8d4ea9e470470b809165676e2b64dc5",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -24379,6 +24577,7 @@
       "name": "terrain_generate",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 415,
@@ -24432,6 +24631,7 @@
       "name": "fx_queue_add_random",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 12,
@@ -24484,6 +24684,7 @@
       "name": "fx_queue_add_shell",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 15,
@@ -24537,6 +24738,7 @@
       "name": "fx_queue_add_rotated",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 65,
@@ -24590,6 +24792,7 @@
       "name": "fx_queue_render",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 721,
@@ -24643,6 +24846,7 @@
       "name": "terrain_render",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 185,
@@ -24696,6 +24900,7 @@
       "name": "creature_alloc_slot",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 14,
@@ -24749,6 +24954,7 @@
       "name": "creature_reset_all",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 6,
@@ -24802,6 +25008,7 @@
       "name": "creatures_none_active",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 10,
@@ -24854,6 +25061,7 @@
       "name": "creature_spawn_random",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 273,
@@ -24892,6 +25100,7 @@
       "name": "creature_spawn",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 93,
@@ -24945,6 +25154,7 @@
       "name": "creature_render_all",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 461,
@@ -24998,6 +25208,7 @@
       "name": "player_render",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 848,
@@ -25035,6 +25246,7 @@
       "name": "effect_render_all",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1311,
@@ -25088,6 +25300,7 @@
       "name": "player_heading_approach_target",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 99,
@@ -25141,6 +25354,7 @@
       "name": "player_update",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 2514,
@@ -25194,6 +25408,7 @@
       "name": "perk_selection_screen_update",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1058,
@@ -25246,6 +25461,7 @@
       "name": "game_show_message",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 136,
@@ -25298,6 +25514,7 @@
       "name": "level_load_next",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 527,
@@ -25328,6 +25545,7 @@
       "name": "freeware_hud_set_row",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 19,
@@ -25380,6 +25598,7 @@
       "name": "gameplay_render_hud",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1150,
@@ -25432,6 +25651,7 @@
       "name": "freeware_read_name_key",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 1232,
@@ -25448,10 +25668,11 @@
       "name": "game_frame_update",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 5089,
-        "candidate_object_sha256": "792bae7258fc8c30d1bf410d213ad37f3d014ccf3f1f3b3528b3a0fd3352eedf",
+        "candidate_object_sha256": "6b588d890c358a5be478abc22d18505794ec1e4962993e048940decb3847af02",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -25500,6 +25721,7 @@
       "name": "game_credits_update",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 656,
@@ -25552,6 +25774,7 @@
       "name": "freeware_overlay_begin",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 176,
@@ -25589,6 +25812,7 @@
       "name": "native_function_0041f230",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 592,
@@ -25604,6 +25828,7 @@
       "name": "game_highscores_update",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 440,
@@ -25656,6 +25881,7 @@
       "name": "native_function_0041fba0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 90,
@@ -25687,6 +25913,7 @@
       "name": "audio_suspend_all",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 14,
@@ -25740,6 +25967,7 @@
       "name": "resource_pack_read_cstring",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 24,
@@ -25793,6 +26021,7 @@
       "name": "texture_get_or_load",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 44,
@@ -25846,6 +26075,7 @@
       "name": "console_cmd_load_texture",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 19,
@@ -25898,6 +26128,7 @@
       "name": "native_function_0041fd30",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 1015,
@@ -25929,6 +26160,7 @@
       "name": "console_cmd_set_resource_paq",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 51,
@@ -25981,6 +26213,7 @@
       "name": "native_function_004201d0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 48,
@@ -25996,6 +26229,7 @@
       "name": "native_function_00420200",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 186,
@@ -26026,6 +26260,7 @@
       "name": "native_function_004202c0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 471,
@@ -26056,6 +26291,7 @@
       "name": "native_function_004204a0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 70,
@@ -26086,6 +26322,7 @@
       "name": "native_function_004204f0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 198,
@@ -26117,6 +26354,7 @@
       "name": "console_cmd_tell_time_survived",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 8,
@@ -26169,6 +26407,7 @@
       "name": "native_function_004205e0",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 46,
@@ -26199,6 +26438,7 @@
       "name": "native_function_00420610",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 48,
@@ -26215,6 +26455,7 @@
       "name": "console_cmd_open_url",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 39,
@@ -26268,6 +26509,7 @@
       "name": "console_cmd_snd_freq_adjustment",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 16,
@@ -26321,6 +26563,7 @@
       "name": "game_startup_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1144,
@@ -26374,6 +26617,7 @@
       "name": "highscore_compare_survival_score_desc",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 13,
@@ -33016,6 +33260,7 @@
       "name": "grim_crt_empty_initializer_slot_01_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33069,6 +33314,7 @@
       "name": "grim_crt_empty_initializer_slot_01",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33122,6 +33368,7 @@
       "name": "grim_crt_empty_initializer_slot_02_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33175,6 +33422,7 @@
       "name": "grim_crt_empty_initializer_slot_02",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33228,6 +33476,7 @@
       "name": "grim_crt_empty_initializer_slot_03_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33281,6 +33530,7 @@
       "name": "grim_crt_empty_initializer_slot_03",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33334,6 +33584,7 @@
       "name": "grim_crt_empty_initializer_slot_04_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33387,6 +33638,7 @@
       "name": "grim_crt_empty_initializer_slot_04",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33440,6 +33692,7 @@
       "name": "grim_crt_empty_initializer_slot_05_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33493,6 +33746,7 @@
       "name": "grim_crt_empty_initializer_slot_05",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33546,6 +33800,7 @@
       "name": "grim_crt_empty_initializer_slot_06_thunk",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33599,6 +33854,7 @@
       "name": "grim_crt_empty_initializer_slot_06",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33652,6 +33908,7 @@
       "name": "grim_missing_frame_callback",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
@@ -33705,6 +33962,7 @@
       "name": "grim_default_device_callback",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -33758,6 +34016,7 @@
       "name": "grim_config_dialog_proc",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Win32 launcher dialog; the port supplies its own settings UI.",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 403,
@@ -33811,6 +34070,7 @@
       "name": "grim_window_create",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Win32 window creation and class registration; the host engine owns the window.",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 142,
@@ -33864,6 +34124,7 @@
       "name": "grim_window_destroy",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Win32 window teardown; the host engine owns the window.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 22,
@@ -33917,6 +34178,7 @@
       "name": "grim_noop",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
@@ -33970,6 +34232,7 @@
       "name": "grim_backup_textures",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Direct3D 8 lost-device texture backup; the host renderer owns resource lifetime.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 110,
@@ -34023,6 +34286,7 @@
       "name": "grim_restore_textures",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Direct3D 8 lost-device texture restore; the host renderer owns resource lifetime.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 91,
@@ -34076,6 +34340,7 @@
       "name": "grim_window_proc",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Win32 message dispatch and device-activation adapter; the host engine owns events.",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 472,
@@ -34129,6 +34394,7 @@
       "name": "grim_run_loop",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Win32 message and Direct3D presentation loop; the host engine owns the frame loop.",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 174,
@@ -34182,6 +34448,7 @@
       "name": "grim_d3d_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Direct3D 8 device and window initialization; the host renderer owns startup.",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 323,
@@ -34235,6 +34502,7 @@
       "name": "grim_d3d_shutdown",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Direct3D 8 device teardown; the host renderer owns resource lifetime.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 72,
@@ -34288,6 +34556,7 @@
       "name": "grim_create_geometry_buffers",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Direct3D 8 vertex and index buffer allocation; the host renderer owns geometry buffers.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 107,
@@ -34341,6 +34610,7 @@
       "name": "grim_release_geometry_buffers",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Direct3D 8 vertex and index buffer teardown; the host renderer owns geometry buffers.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 15,
@@ -34394,6 +34664,7 @@
       "name": "grim_apply_render_state",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 206,
@@ -34447,6 +34718,7 @@
       "name": "grim_is_texture_format_supported",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Forwards the adapter format query to IDirect3D8::CheckDeviceFormat.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 19,
@@ -34500,6 +34772,7 @@
       "name": "grim_select_texture_format",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 67,
@@ -34553,6 +34826,7 @@
       "name": "grim_timing_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 13,
@@ -34606,6 +34880,7 @@
       "name": "grim_timing_update",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 53,
@@ -34659,6 +34934,7 @@
       "name": "grim_texture_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 38,
@@ -34712,6 +34988,7 @@
       "name": "grim_texture_release",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 22,
@@ -34765,6 +35042,7 @@
       "name": "grim_texture_load_file",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 109,
@@ -34818,6 +35096,7 @@
       "name": "grim_texture_name_equals",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 37,
@@ -34871,6 +35150,7 @@
       "name": "grim_find_texture_by_name",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 33,
@@ -34924,6 +35204,7 @@
       "name": "grim_find_free_texture_slot",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 10,
@@ -34977,6 +35258,7 @@
       "name": "grim_load_texture_internal",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 80,
@@ -35030,6 +35312,7 @@
       "name": "grim_state_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 425,
@@ -35083,6 +35366,7 @@
       "name": "grim_lookup_blob_load",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 48,
@@ -35136,6 +35420,7 @@
       "name": "grim_lookup_blob_find",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 66,
@@ -35189,6 +35474,7 @@
       "name": "grim_lookup_blob_size_for_path",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 66,
@@ -35242,6 +35528,7 @@
       "name": "grim_release",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
@@ -35295,6 +35582,7 @@
       "name": "grim_get_version",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -35348,6 +35636,7 @@
       "name": "grim_save_screenshot",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "D3DX front-buffer export; the host renderer supplies screenshot capture.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 56,
@@ -35401,6 +35690,7 @@
       "name": "grim_apply_config",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Direct3D capability probe and Win32 launcher entry; the port supplies its own settings UI.",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 124,
@@ -35454,6 +35744,7 @@
       "name": "grim_init_system",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 93,
@@ -35507,6 +35798,7 @@
       "name": "grim_shutdown",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 8,
@@ -35560,6 +35852,7 @@
       "name": "grim_apply_settings",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Only enters the Win32 message pump and returns success.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
@@ -35613,6 +35906,7 @@
       "name": "grim_set_texture_stage_ops",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 468,
@@ -35666,6 +35960,7 @@
       "name": "grim_set_config_var",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 442,
@@ -35719,6 +36014,7 @@
       "name": "grim_get_config_var",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 32,
@@ -35772,6 +36068,7 @@
       "name": "grim_get_error_text",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -35825,6 +36122,7 @@
       "name": "grim_clear_color",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 45,
@@ -35878,6 +36176,7 @@
       "name": "grim_set_render_target",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 89,
@@ -35916,6 +36215,7 @@
       "name": "grim_get_time_ms",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -35969,6 +36269,7 @@
       "name": "grim_set_time_ms",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 9,
@@ -36022,6 +36323,7 @@
       "name": "grim_get_frame_dt",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36075,6 +36377,7 @@
       "name": "grim_get_fps",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36128,6 +36431,7 @@
       "name": "grim_is_key_down",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -36166,6 +36470,7 @@
       "name": "grim_was_key_pressed",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 31,
@@ -36219,6 +36524,7 @@
       "name": "grim_is_mouse_button_down",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 11,
@@ -36272,6 +36578,7 @@
       "name": "grim_was_mouse_button_pressed",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 44,
@@ -36325,6 +36632,7 @@
       "name": "grim_get_mouse_dx",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36378,6 +36686,7 @@
       "name": "grim_get_mouse_dy",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36431,6 +36740,7 @@
       "name": "grim_get_mouse_x",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36484,6 +36794,7 @@
       "name": "grim_get_mouse_y",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36537,6 +36848,7 @@
       "name": "grim_set_mouse_pos",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 9,
@@ -36590,6 +36902,7 @@
       "name": "grim_get_mouse_wheel_delta",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 7,
@@ -36643,6 +36956,7 @@
       "name": "grim_get_joystick_x",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36696,6 +37010,7 @@
       "name": "grim_get_joystick_y",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36749,6 +37064,7 @@
       "name": "grim_get_joystick_z",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
@@ -36802,6 +37118,7 @@
       "name": "grim_get_joystick_pov",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
@@ -36855,6 +37172,7 @@
       "name": "grim_is_joystick_button_down",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -36893,6 +37211,7 @@
       "name": "grim_create_texture",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 81,
@@ -36946,6 +37265,7 @@
       "name": "grim_load_texture",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 7,
@@ -36999,6 +37319,7 @@
       "name": "grim_destroy_texture",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 20,
@@ -37037,6 +37358,7 @@
       "name": "grim_get_texture_handle",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -37075,6 +37397,7 @@
       "name": "grim_save_texture",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "D3DX texture export; the host renderer supplies image export.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 18,
@@ -37128,6 +37451,7 @@
       "name": "grim_recreate_texture",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 57,
@@ -37181,6 +37505,7 @@
       "name": "grim_bind_texture",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 20,
@@ -37234,6 +37559,7 @@
       "name": "grim_begin_batch",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 27,
@@ -37287,6 +37613,7 @@
       "name": "grim_end_batch",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 37,
@@ -37340,6 +37667,7 @@
       "name": "grim_set_rotation",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 10,
@@ -37393,6 +37721,7 @@
       "name": "grim_set_color",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 29,
@@ -37446,6 +37775,7 @@
       "name": "grim_set_color_slot",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 27,
@@ -37499,6 +37829,7 @@
       "name": "grim_set_uv",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 35,
@@ -37537,6 +37868,7 @@
       "name": "grim_set_uv_point",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 6,
@@ -37590,6 +37922,7 @@
       "name": "grim_flush_batch",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 37,
@@ -37643,6 +37976,7 @@
       "name": "grim_draw_quad",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 197,
@@ -37696,6 +38030,7 @@
       "name": "grim_submit_vertex_raw",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 37,
@@ -37749,6 +38084,7 @@
       "name": "grim_submit_quad_raw",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 27,
@@ -37802,6 +38138,7 @@
       "name": "grim_draw_quad_points",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 132,
@@ -37855,6 +38192,7 @@
       "name": "grim_draw_text_mono",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 112,
@@ -37908,6 +38246,7 @@
       "name": "grim_draw_text_mono_fmt",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 20,
@@ -37961,6 +38300,7 @@
       "name": "GRIM__GetInterface",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 24,
@@ -38014,6 +38354,7 @@
       "name": "DllMain",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Caches the Win32 module handle and loads the window icon.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 10,
@@ -38067,6 +38408,7 @@
       "name": "grim_joystick_enum_device",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput joystick enumeration; the host input backend owns device discovery.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 16,
@@ -38120,6 +38462,7 @@
       "name": "grim_joystick_configure_axis",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput axis setup; the host input backend owns device configuration.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 26,
@@ -38173,6 +38516,7 @@
       "name": "grim_joystick_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput joystick initialization; the host input backend owns devices.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 90,
@@ -38226,6 +38570,7 @@
       "name": "grim_joystick_poll",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput joystick polling; the host input backend supplies state.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 32,
@@ -38279,6 +38624,7 @@
       "name": "grim_joystick_button_down",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput joystick-state accessor; the host input backend supplies state.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -38332,6 +38678,7 @@
       "name": "grim_joystick_shutdown",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput joystick teardown; the host input backend owns devices.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 19,
@@ -38385,6 +38732,7 @@
       "name": "grim_keyboard_key_down",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput keyboard-state accessor; the host input backend supplies state.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
@@ -38438,6 +38786,7 @@
       "name": "grim_keyboard_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput keyboard initialization; the host input backend owns devices.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 89,
@@ -38476,6 +38825,7 @@
       "name": "grim_keyboard_poll",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput keyboard polling; the host input backend supplies state.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 60,
@@ -38529,6 +38879,7 @@
       "name": "grim_keyboard_shutdown",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput keyboard teardown; the host input backend owns devices.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 19,
@@ -38582,6 +38933,7 @@
       "name": "grim_mouse_button_down",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput mouse-state accessor; the host input backend supplies state.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
@@ -38635,6 +38987,7 @@
       "name": "grim_mouse_init",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput mouse initialization; the host input backend owns devices.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 71,
@@ -38673,6 +39026,7 @@
       "name": "grim_mouse_poll",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput mouse polling and accumulation; the host input backend supplies state.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 47,
@@ -38726,6 +39080,7 @@
       "name": "grim_mouse_shutdown",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": "Raw DirectInput mouse teardown; the host input backend owns devices.",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 19,
@@ -38778,6 +39133,7 @@
       "name": "native_function_10005f30",
       "native_kind": "function",
       "ownership": "game",
+      "platform_replaced": null,
       "proof": null,
       "ratio": 0.0,
       "size": 81,
@@ -65493,9 +65849,9 @@
     }
   ],
   "identities": {
-    "inventory": "91a20cb3adf899b554831f6419bbeac20d86d353891e5fbece49aaaca8c34d21",
+    "inventory": "bc3bef9f139ed213391ab383190effaf57ebf41bd54d9df3f84bb882f7ce227f",
     "inventory_policy": "native-functions-and-full-executable-remainder-v1",
-    "scoring": "6614260566a141bb14b0b9bda8d3e92ff392b17b3306e90a38a7d54de67c6edf",
+    "scoring": "1955756eef20d7197899b378fdb95ec547bd10810f37ed833f446f52f5809d58",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
     "target": {
       "game_bins/crimsonland/1.4.0/crimson.exe": "0e4d5f62b34c7c62d5b7bb1f6a774d54e91c68a0c898d53cabead1f5f151eb8b",
@@ -65507,37 +65863,37 @@
     "analysis/decomp/1.0.2/crimson.exe/functions.json": "393c608231d75166cb7966293edb8f772b711b094e3f27670470aab451de0c36",
     "analysis/decomp/1.0.2/crimson.exe/imports.json": "ffee4e9a1e0bb945ca32ba89b4d462ac23de8e14ce077eed3ae2a9a2ec9d56d0",
     "analysis/decomp/1.0.2/crimson.exe/metadata.json": "9bc92098977bd03385d260983a6c50bae02b3d1da0f5a83250ad7d23cc476687",
-    "analysis/decomp/1.0.2/crimson.exe/native.json": "bf91e4d35ba14d18cee8c2985335dd8517e42c1b9ae471aa3efce16891de67fd",
+    "analysis/decomp/1.0.2/crimson.exe/native.json": "e1d06a999e498d623378c4343e5ac84fde820ebd53ca32427c67e8f514eff0b5",
     "analysis/decomp/1.0.2/crimson.exe/recovered.json": "3e0b3aa3b8455ecc774bc953478ba1c7afbfddecfd087b5420edf54b551debb1",
     "analysis/decomp/1.0.2/grim.dll/data.json": "01140ef5936eefbc5ce1b99f8a45cca41103ca4435efa67288e70f624d8e0a7a",
     "analysis/decomp/1.0.2/grim.dll/functions.json": "d9683052347354efdaa62b7b3dbc828a7d30773d1349f39933171840c6e7eebb",
     "analysis/decomp/1.0.2/grim.dll/imports.json": "6dd9b270911db4b877f7fa7dbab8e3b1fadff95918d246ed236a85c63f8882de",
     "analysis/decomp/1.0.2/grim.dll/metadata.json": "0d335f40f486180dcd790a21762602006ac8cf255f1adf68f62e862756667509",
-    "analysis/decomp/1.0.2/grim.dll/native.json": "598c4472e711afcc0fe0c2422548617de66eb1201f97b002e53ac173e0ab3e8a",
+    "analysis/decomp/1.0.2/grim.dll/native.json": "2369d4c5bec2f1c13459597287dbf99a43deee083a203630a24ceac97df19c63",
     "analysis/decomp/1.0.2/grim.dll/recovered.json": "77087380041c258c06e60e8f539ff28c944e2d7cb1b59f3f1eada054b3602770",
     "analysis/decomp/1.3.0/crimson.exe/data.json": "eee9bd25421991b9059c38d66e1e79508a890ccef0ecfd8de0d663d8148fa5e1",
     "analysis/decomp/1.3.0/crimson.exe/functions.json": "8b79d0ac65fdc865d5d552e2cb82ecd411ac33e9ac6cb010174b386eaa9992a1",
     "analysis/decomp/1.3.0/crimson.exe/imports.json": "2d0079653411e71d05858bcb15f02f92c20d87de316e5d8e3f5256316fb073f4",
     "analysis/decomp/1.3.0/crimson.exe/metadata.json": "bc6bf22ee8e48df47116f1bc508b0668e16d7b3d8ea052f6696a3fcdfb6e83ad",
-    "analysis/decomp/1.3.0/crimson.exe/native.json": "6499c69cea885cb6cb997d4303943cb0a7d69f2ec3a6784f3d7b38db9fb2df42",
+    "analysis/decomp/1.3.0/crimson.exe/native.json": "48b120f6ca8340d3e8dcb672a70136ad955891364ef9d1136195ab11b112d853",
     "analysis/decomp/1.3.0/crimson.exe/recovered.json": "ea9b638a0c9de442bfd6591eac4976d33f6bab418b42805c942b5f2870c1676f",
     "analysis/decomp/1.3.0/grim.dll/data.json": "53d2059c6abc0483fdaca0a95199b0410298fd249c26ca2862dd066b7f6e4236",
     "analysis/decomp/1.3.0/grim.dll/functions.json": "96914034fc23b389c37db1d0db09fa178a2898c6f7632d68e8a1eccec8b220b1",
     "analysis/decomp/1.3.0/grim.dll/imports.json": "e01a91fe3e77e81eb00531d904fa4957f6dac47a61acb55365575f4f653174aa",
     "analysis/decomp/1.3.0/grim.dll/metadata.json": "4daf06c17f58eab74d645d4443fcee8a8e0ac44084f19cb0965cd5cdd0f14f2b",
-    "analysis/decomp/1.3.0/grim.dll/native.json": "9005609c995704fcd5d4abd1dfd91918fa8fd5df87116c1cf8dd2a0353b8c4f8",
+    "analysis/decomp/1.3.0/grim.dll/native.json": "282021a7df0281485b3b4aa8055fd0b140735b540db93756cc479a0548131fd3",
     "analysis/decomp/1.3.0/grim.dll/recovered.json": "b0de0713b62230e9366dec16182259307de54e17f6f4095550f64b65d34c15f0",
     "analysis/decomp/1.4.0/crimson.exe/data.json": "325961dc5adaae16a7863f2b475fa9303885291ff8c6cf1ed98b2610d7d23a36",
     "analysis/decomp/1.4.0/crimson.exe/functions.json": "dba0d17d67e75937f4f53216200604527633990a6c13387497787be9b2a0b825",
     "analysis/decomp/1.4.0/crimson.exe/imports.json": "cf97e036d13efbadbba6bdaa98892db3aebb3804f6973abab586eff9cd6ba16b",
     "analysis/decomp/1.4.0/crimson.exe/metadata.json": "bb315687577e7fb4ebb2dd9968beab103da706f154dadf239b754fa32c15aea7",
-    "analysis/decomp/1.4.0/crimson.exe/native.json": "d9f5b8564331ef806137e367941a01357c24fceb4dd12f36388cb8df48b42434",
+    "analysis/decomp/1.4.0/crimson.exe/native.json": "60e3400fc71f80cea19e21a6497478d688f461cc6d78be3bbf32ccd0371c3c0a",
     "analysis/decomp/1.4.0/crimson.exe/recovered.json": "1142d5bbd28842bd7be2fdce1f30029a6e879039e79d908365624c43dfc33d16",
     "analysis/decomp/1.4.0/grim.dll/data.json": "f23ad86a76f9fd7beb4d3ccad33b81686431f2c264ee30a42c47e82cd1bfc94d",
     "analysis/decomp/1.4.0/grim.dll/functions.json": "a03637dabc25c4bf11e13bb4d0eb3138a9b11dc87f3bb5fc90ed1ae35b8a5cef",
     "analysis/decomp/1.4.0/grim.dll/imports.json": "1f84ff23dcb1865641b0dc1f784746da32ca8a04ed6c3649e23c3e14e06b31bf",
     "analysis/decomp/1.4.0/grim.dll/metadata.json": "b21a4c784bb8ce7b6e48bec961367974814725e5486b6b08103c06034df3413e",
-    "analysis/decomp/1.4.0/grim.dll/native.json": "23d4934ad77792cdeedab46fb174e87cf6efd172a1cb54ac7bbaade9ca1aebfe",
+    "analysis/decomp/1.4.0/grim.dll/native.json": "0fd34705142ac4bcc1e71f81e72d3317887e97ce8466cbe0020a085ee11c7c20",
     "analysis/decomp/1.4.0/grim.dll/recovered.json": "18d859565d836ad21d07ef9300069368a4c3639b4bf5850e2248e9773dc0dd35",
     "analysis/decomp/1.9.1/crimsonland.exe/data.json": "484ac0d59be8fd4c621beeef2932061b1357ff78f3c973a9d35c1c01ea954c40",
     "analysis/decomp/1.9.1/crimsonland.exe/functions.json": "e96f9fa674cfbeb51da36bb1ab77ac2817273021bb51a6995643c2467b2a1488",
@@ -65584,12 +65940,12 @@
     "analysis/ida/raw/grim.dll/metadata.json": "b68d86de85411f481fd2555c9271849646be97ec21dafd1a06b87bb314e63f25",
     "analysis/library_provenance.json": "1da323bca5b091c8973f71f5a137f6152410596c1fd28245b0361a65fe39553c",
     "analysis/matching_scope.json": "3492406d95e46324f79e1454e7800e4a0f7b4ef4dc445143810bcff8b2872086",
-    "crimson-re/src/crimson_re/cli/match.py": "c1487bccbfa471a22686448ed3101f993e113db7d069556f31645789f42812f6",
+    "crimson-re/src/crimson_re/cli/match.py": "ac6062951b51746e4dc5302464fd600b9e851ad804bce5d1848afbfa6a79dbc8",
     "crimson-re/src/crimson_re/library_match.py": "7527e3b7e813b099665ffca627948da6c93c4a1921b5d3f3900d69d21ef6180b",
     "crimson-re/src/crimson_re/library_provenance.py": "a7ddd37146178caeca17f6239f2e33a6dbcd8e41be1d65ed9078090fbbc94683",
-    "crimson-re/src/crimson_re/match.py": "8c6bf3dd7eddcbbf9da677142d3bb565ca8e62b3c5dfcccb1e1ce6422be5bb1c",
+    "crimson-re/src/crimson_re/match.py": "30e5d88305fcbe3efdc4f0480450ea1b957d403450ad816f93590ce32fb96158",
     "crimson-re/src/crimson_re/match_address_diagnostics.py": "9ced244f19063007ad5ee5c3e8965623a68e6daa65ad466f3f429389a4365949",
-    "crimson-re/src/crimson_re/match_builds.py": "5c69e7614975b72cb2bfab8ae57135b6b11189bdce7b72af1c65650da2a64860",
+    "crimson-re/src/crimson_re/match_builds.py": "9612ab116daddf43155871a59939f8d10e26a5561dc20c8869c53bf8125770d9",
     "crimson-re/src/crimson_re/match_c2.py": "34142397e7135d7a64464b35de021ca5180dda2c8fd0b163bf6046abe6ebbb89",
     "crimson-re/src/crimson_re/match_c2_replay.py": "6ccf45b01ecdf436661f099c856984e37792de09b09478d5f7813f561fea540b",
     "crimson-re/src/crimson_re/match_data_inventory.py": "323356f82d9e3684b7047834adafd305b25582e50ffb034c98d4970502671fe6",
@@ -65601,11 +65957,11 @@
     "crimson-re/src/crimson_re/match_listing_diagnostics.py": "88c23e57105cdd43389a5b4b20d0d1f9561b90f3a7c253a39fc992711c428182",
     "crimson-re/src/crimson_re/match_micro_oracle.py": "98ab582fb2cb251ab30f098dfc5710099c46b34d3a0444e7621a0d06cb984a7e",
     "crimson-re/src/crimson_re/match_mutation.py": "61f3d9a2306d9453f3e762d3328eb6b2c3af61b2da7d8a6b70fceffc0e44e03a",
-    "crimson-re/src/crimson_re/match_native_inventory.py": "ba9d770dff28f5469cfa398f7033a1a73dc5f5bb10941b4ad2643c6c504fc6f7",
+    "crimson-re/src/crimson_re/match_native_inventory.py": "2467e3398580a4d6112352c03eae10b02ab1bec369a97c2d4407acf46d4726eb",
     "crimson-re/src/crimson_re/match_process.py": "8075821f517482db5551f35ef07c74e25a625a5105ce67b0f7c901133101e630",
     "crimson-re/src/crimson_re/match_regressions.py": "a2a6f7c4bb263cbcfe8d55396ff1863066ea685d5c8b68ee3845e92d982d48c8",
-    "crimson-re/src/crimson_re/match_report.py": "814c1f9e305913ef9f169debd69ab398572ffaef4dd2cc478ecd61d0e45bac4b",
-    "crimson-re/src/crimson_re/match_report_accounting.py": "936b6a4b97737be67a4d128c671973eb93bbdaa8e43145cb8bb305dace77c8f3",
+    "crimson-re/src/crimson_re/match_report.py": "c01a6e94c9badbf41f12195dc612da496b5d4809686330d9e3174463ab6ae719",
+    "crimson-re/src/crimson_re/match_report_accounting.py": "67e701be3595ad7c2d5482780dffd49a30935e79d65bebb7a89a841ba56d0dba",
     "crimson-re/src/crimson_re/match_toolchain.py": "0bcafcf88c568a4d90f1fd34c9c8dbfdab71ec6259dd60051121dd75c036fd71",
     "crimson-re/src/crimson_re/native_link.py": "c7c6943bf9a23aac5b5ad7ec3671494fa2589c6115be003720ecf03dda111813",
     "crimson-re/src/crimson_re/native_reference_link.py": "022200fb2f74a57b75ed723e46a766e718f75ab754289c69f5f4f49db48b6e6b",
@@ -65629,7 +65985,7 @@
     "decomp/1.4/crimson/crimson/creatures/creature_reset_all.cpp": "083a6964abcd0b22e1dd24e80e41dcaaab929b6ff06b6c9027bab1f79b4eda6d",
     "decomp/1.4/crimson/crimson/creatures/creature_spawn.cpp": "da8543963e689c14879257ae6a4a2c28deea8eafa798b9fa6ca2255abab3605d",
     "decomp/1.4/crimson/crimson/creatures/creature_spawn_random.cpp": "f784e381949066c075a701935342b102864e2b38d3d6f36ab3ff9f1c059b7674",
-    "decomp/1.4/crimson/crimson/creatures/creature_update_all.cpp": "944f2c50aed0ab91363bad88333ffc93cd1d326255daf0a633ac91d4229482e5",
+    "decomp/1.4/crimson/crimson/creatures/creature_update_all.cpp": "9c399e164dc3e6ea9afeaf70d80f79da238f6c834212ed58face946093feceb5",
     "decomp/1.4/crimson/crimson/creatures/creatures_none_active.cpp": "faf60de1bb28df4b8cef73f50df637c15bd14abe6e2ed177d73338bd4e6b4d4f",
     "decomp/1.4/crimson/crimson/creatures/plaguebearer_spread_infection.cpp": "fdb7d9cc5468ba57ebe1119299b562b44962b55cfd71e5f5ff39b89ec540d97b",
     "decomp/1.4/crimson/crimson/effects/freeware_fx_queues.h": "8340183ab2cedc299798567766f44d4686d31f144259a541a3cc37a70315b1ff",
@@ -65646,7 +66002,7 @@
     "decomp/1.4/crimson/crimson/game/frame_level.inc": "72d4ca63e40cd257bf0e414e9ec029243879f0a7c2408b82d39842a60a6b4f9b",
     "decomp/1.4/crimson/crimson/game/frame_menu.inc": "4a0be863b8d1fb8d3c87cd572bf553551e26d990e7a407b7236856cc5b4111fb",
     "decomp/1.4/crimson/crimson/game/frame_overlays.inc": "452eb4015ba7afd56ecb11fb3a39bee853d1e96f3d37586367427f2c9d6d1ded",
-    "decomp/1.4/crimson/crimson/game/game_frame_update.cpp": "8ba382007cf990f9feed50ca00dad0de11ad898202082e82920bef0b9cc00688",
+    "decomp/1.4/crimson/crimson/game/game_frame_update.cpp": "ef589f157447ab2edd4deceac2605884cc376c7e36e734f50307640aa1d601aa",
     "decomp/1.4/crimson/crimson/level/move_with_collision.cpp": "1566d2cbf3206f82ffec8209a7440bd08e71cc543b4ad54d89a742ff24bd7fd2",
     "decomp/1.4/crimson/crimson/perks/perk_meta.cpp": "b7c54963ef4858ad269d277764a868b4cc4240d40dd4c03ceea95cfdbed18247",
     "decomp/1.4/crimson/crimson/perks/perk_meta_entry_init.cpp": "44edfa3aab5e9871ddac1904674af07391de712065b5d2b6976874bd013d90da",
