@@ -5643,6 +5643,18 @@ def _locked_staging_dir(path: Path) -> Generator[Path]:
             shutil.rmtree(path, ignore_errors=True)
 
 
+def _scratch_staging_directory(config: ScratchConfig, match_root: Path) -> Path:
+    build_dir = _scratch_build_directory(config)
+    # MSVC embeds the staged path. Keep it stable per profile, including in deep worktrees
+    # where the Z:-prefixed absolute filename would overflow VC6's MAX_PATH buffer.
+    stage = build_dir.parent / f".{build_dir.name}.stage"
+    windows_source = "Z:" + str((stage / Path(config.source).name).resolve())
+    if len(os.fsencode(windows_source)) >= 260:
+        key = hashlib.sha256(os.fsencode(build_dir.resolve())).hexdigest()[:16]
+        stage = match_root / ".cache" / key
+    return stage
+
+
 def _scratch_object_path(config: ScratchConfig) -> Path:
     build_dir = _scratch_build_directory(config)
     if config.import_thunk is not None:
@@ -5948,14 +5960,8 @@ def compile_scratch(
 
     build_dir.parent.mkdir(parents=True, exist_ok=True)
     command = list(_scratch_compile_argv(config, match_root))
-    # MSVC embeds the staged path. Keep it stable per profile, including in deep worktrees
-    # where the Z:-prefixed absolute filename would overflow VC6's MAX_PATH buffer.
-    stage = build_dir.parent / f".{build_dir.name}.stage"
-    windows_source = "Z:" + str((stage / Path(config.source).name).resolve())
-    if len(os.fsencode(windows_source)) >= 260:
-        key = hashlib.sha256(os.fsencode(build_dir.resolve())).hexdigest()[:16]
-        stage = match_root / ".cache" / key
-        stage.parent.mkdir(parents=True, exist_ok=True)
+    stage = _scratch_staging_directory(config, match_root)
+    stage.parent.mkdir(parents=True, exist_ok=True)
     with _locked_staging_dir(stage) as temp_dir:
         temp_source = temp_dir / Path(config.source).name
         temp_obj = temp_dir / obj_name

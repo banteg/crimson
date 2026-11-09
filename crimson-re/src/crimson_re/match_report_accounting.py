@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
+from . import match_source_receipt
 
 VERIFICATION = "source-bound local compilation; CI checks freshness and report consistency"
 SCORING_POLICY = "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1"
@@ -80,7 +81,7 @@ def candidate_evidence(status: matchlib.ScratchStatus | None) -> dict[str, Any]:
     raw = object_path.read_bytes()
     if status.config.archive is None and status.config.import_thunk is None:
         _check_source_object_names(raw, status.config.function)
-    object_hash = matchlib.coff_sha256(raw)
+    object_hash = match_source_receipt.candidate_object_sha256(raw, status.config)
     return {"proof": {
         "state": status.state,
         "target_size": status.target_size,

@@ -252,8 +252,15 @@ flags must agree with these fields. Compared extents come from the matcher's
 contiguous normalized disassembly (including undecoded `db` suffixes), with its
 recognized terminal-padding count removed. A discarded tail cannot receive code
 credit. Object hashes are local compilation receipts, not independently rebuilt
-objects in CI. Inputs must stay unchanged
-throughout the evaluation.
+objects in CI. All object receipts zero the four-byte COFF timestamp. For a source
+scratch, VC6 can also emit its own absolute staging path in a CodeView
+`S_OBJNAME_ST` record. The reporter recognizes a single version-2 `.debug$S`
+section with that exact output path followed by `S_COMPILE2_ST`. It retains
+the basename and rebases the affected lengths and file offsets. Its SHA-256
+input is the ASCII tag `crimson-report-vc6-objname-v1`, a NUL byte, and the
+resulting complete COFF. Other layouts, archive and import-thunk candidates,
+and raw native-link fingerprints use the timestamp-only hash. Inputs must stay
+unchanged throughout the evaluation.
 
 The `decomp-report` pre-push hook runs the same saved-evidence verification as
 CI when matching or report inputs change. If it reports stale evidence, run
