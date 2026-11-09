@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
@@ -81,12 +82,15 @@ def test_scoped_scratch_and_scan_compare_the_pinned_dispatcher(
     assert [row.status.config.end_va for row in scan] == [end]
 
 
-@pytest.mark.parametrize(("version", "start", "end", "next_start", "interior"), [
-    ("1.0.2", 0x40C110, 0x40ED76, 0x40EDA0, (0x40C38C, 0x40CF97, 0x40D9E8, 0x40DA6D, 0x40DAA4, 0x40E4FA)),
-    ("1.3.0", 0x412FD0, 0x4183A3, 0x4183E0, (0x41445D, 0x4161CF, 0x4171CB, 0x417237, 0x4172F3, 0x4175F9, 0x417885)),
+@pytest.mark.parametrize(("version", "start", "end", "next_start", "interior", "table_starts", "references"), [
+    ("1.0.2", 0x40C110, 0x40ED76, 0x40EDA0, (0x40C38C, 0x40CF97, 0x40D9E8, 0x40DA6D, 0x40DAA4, 0x40E4FA),
+     (0x40ED78, 0x40ED90), (0x40C385, 0x40D9E1)),
+    ("1.3.0", 0x412FD0, 0x4183A3, 0x4183E0, (0x41445D, 0x4161CF, 0x4171CB, 0x417237, 0x4172F3, 0x4175F9, 0x417885),
+     (0x4183A4, 0x4183C4), (0x414456, 0x417199)),
 ])
-def test_verified_frame_dispatcher_preserves_raw_entries_and_uncredited_tables(
+def test_verified_frame_dispatcher_preserves_raw_entries_and_classifies_trailing_tables(
     version: str, start: int, end: int, next_start: int, interior: tuple[int, ...],
+    table_starts: tuple[int, int], references: tuple[int, int],
 ) -> None:
     image = match_builds.load_registry().image(version, "crimson.exe")
     if not image.path.is_file():
@@ -96,15 +100,56 @@ def test_verified_frame_dispatcher_preserves_raw_entries_and_uncredited_tables(
     raw = {row["address"] for row in discovery["functions"] if start < row["address"] < end}
     assert raw == set(interior)
     rows = match_native_inventory.load(image)
-    retained = [row for row in rows if start <= row["address"] < next_start]
-    assert [(row["address"], row["end"], row["native_kind"]) for row in retained] == [
-        (start, end, "function"), (end, next_start, "unresolved"),
-    ]
-    dispatcher, tables = retained
+    dispatcher, *tail = [row for row in rows if start <= row["address"] < next_start]
+    assert (dispatcher["address"], dispatcher["end"], dispatcher["native_kind"]) == (start, end, "function")
     assert dispatcher["name"] == "game_frame_update" and match_native_inventory.in_port_scope(dispatcher)
     assert "comparison_end" not in dispatcher
-    assert tables["size"] == next_start - end
-    assert sum(row["size"] for row in rows) == sum(hi - lo for lo, hi in match_builds._code_ranges(image.path))
+
+    first, second = table_starts
+    expected = [(end, first, "padding"), (first, second, "embedded_data"), (second, second + 16, "embedded_data")]
+    if second + 16 < next_start:
+        expected.append((second + 16, next_start, "padding"))
+    assert [(row["address"], row["end"], row["native_kind"]) for row in tail] == expected
+    for table, reference in zip(tail[1:3], references, strict=True):
+        evidence = table["gap_evidence"]
+        assert evidence["type"] == "switch_destinations"
+        assert evidence["function"] == start
+        assert evidence["reference"] == reference
+        assert evidence["entries"] * evidence["entry_size"] == table["size"]
+
+
+@pytest.mark.parametrize(("version", "image_name", "function_count", "game_count", "code", "padding", "data"), [
+    ("1.0.2", "crimson.exe", 414, 104, 62_825, 891, 60),
+    ("1.0.2", "grim.dll", 1400, 91, 14_318, 737, 241),
+    ("1.3.0", "crimson.exe", 516, 164, 107_126, 1386, 48),
+    ("1.3.0", "grim.dll", 1422, 105, 15_704, 847, 265),
+    ("1.4.0", "crimson.exe", 593, 243, 130_670, 2070, 76),
+    ("1.4.0", "grim.dll", 1447, 111, 18_951, 933, 388),
+])
+def test_freeware_executable_partition_accounts_for_every_game_and_engine_byte(
+    version: str, image_name: str, function_count: int, game_count: int, code: int, padding: int, data: int,
+) -> None:
+    image = match_builds.load_registry().image(version, image_name)
+    if not image.path.is_file():
+        pytest.skip("pinned freeware image unavailable")
+    rows = match_native_inventory.load(image)
+    sections = match_builds._code_ranges(image.path)
+    assert sum(row["native_kind"] == "function" for row in rows) == function_count
+    assert sum(row["size"] for row in rows) == sum(end - start for start, end in sections)
+    for start, end in sections:
+        cursor = start
+        for row in (row for row in rows if start <= row["address"] < end):
+            assert row["address"] == cursor
+            assert row["end"] - cursor == row["size"] > 0
+            cursor = row["end"]
+        assert cursor == end
+
+    owned = [row for row in rows if row["ownership"] == "game"]
+    assert sum(row["native_kind"] == "function" for row in owned) == game_count
+    sizes = Counter()
+    for row in owned:
+        sizes[row["native_kind"]] += row["size"]
+    assert sizes == {"function": code, "padding": padding, "embedded_data": data}
 
 
 def test_unresolved_executable_bytes_are_not_functions_or_source_credit() -> None:

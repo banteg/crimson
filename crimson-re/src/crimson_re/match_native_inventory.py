@@ -3,7 +3,8 @@
 Donor maps supply identities, never the denominator. Verified unchanged bodies
 bound physical extents; independent control-flow discovery supplies other starts.
 Shared/interior entry points stay in the raw inventory. Every byte outside a
-retained function is an uncredited executable remainder, including alignment.
+retained function keeps physical ownership. Reviewed gaps distinguish compiler
+alignment and switch tables from unresolved executable bytes.
 """
 from __future__ import annotations
 
@@ -14,9 +15,9 @@ from itertools import pairwise
 from typing import Any
 
 from . import match as matchlib
-from . import match_builds
+from . import match_builds, match_gap_classification, match_gap_references
 
-POLICY = "native-functions-and-full-executable-remainder-v1"
+POLICY = "native-functions-and-classified-executable-remainder-v2"
 
 
 def _digest(data: bytes) -> str:
@@ -115,7 +116,7 @@ def _partition(
     return result
 
 
-def load(image: match_builds.BuildImage) -> list[dict[str, Any]]:
+def load(image: match_builds.BuildImage, *, classify_gaps: bool = True) -> list[dict[str, Any]]:
     if image.native_inventory is None:
         raise ValueError("build has no independent native inventory")
     payload = json.loads(image.native_inventory.read_text())
@@ -149,6 +150,10 @@ def load(image: match_builds.BuildImage) -> list[dict[str, Any]]:
         previous = hi
     mapped = json.loads(image.target.functions_path.read_text())
     rows = _partition(sections, payload["functions"], mapped, ownership, _library_owners(image), native, image.name)
+    if classify_gaps:
+        rows = match_gap_classification.classify(
+            native, rows, payload["functions"], entry_points=match_gap_references.pe_entry_points(image.path),
+        )
     _apply_port_scope(rows, payload["platform_replaced"])
     return rows
 
@@ -176,7 +181,7 @@ def scoped_functions(image: match_builds.BuildImage, scope: str) -> dict[int, di
     if scope not in {"all", "port"}:
         raise ValueError(f"unknown native function scope: {scope}")
     return {
-        row["address"]: row for row in load(image)
+        row["address"]: row for row in load(image, classify_gaps=False)
         if row["native_kind"] == "function" and (scope == "all" or in_port_scope(row))
     }
 
