@@ -6052,8 +6052,11 @@ def parse_compiler_listing_stack_layout(
     for index, line in enumerate(lines):
         match = _COMPILER_LISTING_PROC_RE.match(line)
         if match and match.group(1) in accepted_symbols:
-            proc_index = index
-            break
+            if match.group(1) == symbol:
+                proc_index = index
+                break
+            if proc_index is None:
+                proc_index = index
     if proc_index is None:
         return CompilerListingStackLayout(None, ())
 
@@ -6174,7 +6177,7 @@ def generate_compiler_listing(
     spans = parse_compiler_listing_spans(listing_text)
     stack_layout = parse_compiler_listing_stack_layout(
         listing_text,
-        symbol=config.symbol or config.function,
+        symbol=canonical_function.name,
     )
     _write_bytes_atomic(output, listing_data)
     payload = {

@@ -99,7 +99,8 @@ def analyze(
     listing_text: str,
     target: match.MatchTarget | None = None,
 ) -> dict:
-    declarations, rows = parse_stack_listing(listing_text, symbol=config.symbol or config.function)
+    cand = match.extract_object_function(match.parse_coff_object(object_path.read_bytes()), config.symbol)
+    declarations, rows = parse_stack_listing(listing_text, symbol=cand.name)
     names = object_names(fr, declarations)
     by_alias = {names[o.ptr]: o for o in fr.objects}
     first_line = min((ln for r in rows.values() for ln in r.source_lines), default=2)
@@ -123,7 +124,6 @@ def analyze(
     image = match.load_image(target.image_path, manifest.image_base)
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     tins = list(md.disasm(image.function_bytes(start, end), start))
-    cand = match.extract_object_function(match.parse_coff_object(object_path.read_bytes()), config.symbol)
     cins = list(md.disasm(cand.data, 0))
     ops = listing_operands(rows, declarations)
     t2c = {}
