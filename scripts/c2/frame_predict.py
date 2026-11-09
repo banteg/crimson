@@ -680,8 +680,14 @@ def source_estimate(body: str, name: str) -> dict:
 # ---------------------------------------------------------------- binary stack references
 
 
+# VC6 __EH_prolog installs the FS registration and leaves EBP at entry ESP - 4.
+# Its RET returns to the caller with 16 bytes of saved state still on the stack.
+_EH_PROLOG = bytes.fromhex("6aff 50 64a100000000 50 8b44240c 64892500000000 896c240c 8d6c240c 50 c3")
+_EH_STACK_EFFECT = -16
+
+
 def _callee_pop(image, va: int) -> int | None:
-    """Bytes a native callee pops: the immediate of its first `ret N`; None for an import thunk."""
+    """Net bytes popped by a native call, or None for an import thunk."""
     import capstone
 
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
@@ -693,41 +699,96 @@ def _callee_pop(image, va: int) -> int | None:
         if not first.op_str.startswith("0x"):
             return None
         va = int(first.op_str, 0)
+    if code.startswith(_EH_PROLOG):
+        return _EH_STACK_EFFECT
     for insn in md.disasm(code, va):
         if insn.mnemonic == "ret":
             return int(insn.op_str, 0) if insn.op_str else 0
     return None
 
 
-def _frame_reservation(insns):
-    """Find the entry's fixed ESP allocation and the instructions that release it on exit."""
-    for insn in insns[:8]:
+_ESP_MEMORY = re.compile(r"\[esp(?: \+ (0x[0-9a-f]+|[0-9]+))?\]")
+_ESP_IMMEDIATE = re.compile(r"esp, (0x[0-9a-f]+|[0-9]+)")
+
+
+def _uses_local_buffer(insns, start, size, direct_pop):
+    """Distinguish locals from a by-value argument when one ADD reclaims both locals and arguments."""
+    addresses = set()
+    pushed = 0
+    after_call = False
+    for insn in insns[start:]:
+        mn, ops = insn.mnemonic, insn.op_str
+        if mn == "push":
+            if ops in addresses:
+                return True  # A separate pointer argument refers to the reserved buffer.
+            pushed += 4
+        elif mn == "call":
+            pop = direct_pop(insn)
+            if pop is None or not 0 <= pop <= pushed:
+                break
+            pushed -= pop
+            after_call = True
+            addresses.clear()
+        elif mn in ("pop", "ret") or mn.startswith("j") or ops.startswith("esp,"):
+            break
+        else:
+            dst = ops.split(",", 1)[0]
+            addresses.discard(dst)
+            mem = _ESP_MEMORY.search(ops)
+            if mem and 0 <= int(mem[1] or "0", 0) - pushed < size:
+                if after_call:
+                    return True  # The buffer remains live across a call of known stack effect.
+                if mn == "lea":
+                    addresses.add(dst)
+    return False
+
+
+def _frame_reservation(insns, eh_prolog, direct_pop):
+    """Recognize fixed entry storage, its frame base and terminal cleanup sites."""
+    frame_base = "ebp" if eh_prolog is not None else None
+    for index, insn in enumerate(insns[:8]):
+        if insn is eh_prolog:
+            continue
         if insn.mnemonic in ("call", "ret") or insn.mnemonic.startswith("j"):
             break
-        if insn.mnemonic != "sub" or not re.fullmatch(r"esp, (?:0x[0-9a-f]+|[0-9]+)", insn.op_str):
+        if insn.mnemonic == "mov" and index:
+            saved = insns[index - 1]
+            if (
+                saved.mnemonic == "push" and saved.op_str in ("ebp", "ebx", "esi", "edi")
+                and insn.op_str == saved.op_str + ", esp"
+            ):
+                frame_base = saved.op_str
+        allocation = _ESP_IMMEDIATE.fullmatch(insn.op_str)
+        if insn.mnemonic != "sub" or not allocation:
             continue
-        # An outgoing by-value argument can also start with sub esp, N. The
-        # persistent allocation is paired with a release on a return or tail call.
+        size = int(allocation[1], 0)
         releases = set()
         lo, hi = insns[0].address, insns[-1].address + insns[-1].size
         for i, end in enumerate(insns):
             tail_call = end.mnemonic == "jmp" and end.op_str.startswith("0x") and not lo <= int(end.op_str, 0) < hi
             if end.mnemonic != "ret" and not tail_call:
                 continue
-            for j in range(i - 1, -1, -1):
+            for j in range(i - 1, index, -1):
                 prior = insns[j]
-                if prior.mnemonic == "add" and prior.op_str == insn.op_str:
+                cleanup = _ESP_IMMEDIATE.fullmatch(prior.op_str)
+                if prior.mnemonic == "add" and cleanup:
+                    released = int(cleanup[1], 0)
+                    if released == size or (released > size and _uses_local_buffer(insns, index + 1, size, direct_pop)):
+                        releases.add(prior.address)
+                    break
+                # LEAVE is also used after restoring a biased EBP (e.g.
+                # push ebp; lea ebp, [esp-0x50]; ...; add ebp, 0x50; leave).
+                if prior.mnemonic == "leave" or (
+                    prior.mnemonic == "mov" and prior.op_str == "esp, " + (frame_base or "ebp")
+                ):
                     releases.add(prior.address)
                     break
-                if prior.mnemonic == "leave" or (prior.mnemonic == "mov" and prior.op_str == "esp, ebp"):
-                    releases.add(prior.address)
-                    break
-                if prior.mnemonic not in ("pop", "mov", "xor", "lea"):
+                if prior.mnemonic not in ("pop", "mov", "xor", "lea", "femms", "emms"):
                     break
         if releases:
-            return insn, releases
+            return insn, releases, frame_base
         break
-    return None, set()
+    return None, set(), frame_base
 
 
 def stack_refs(code: bytes, base: int, direct_pop) -> dict:
@@ -741,7 +802,16 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
 
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     insns = list(md.disasm(code, base))
-    reservation, releases = _frame_reservation(insns)
+    eh_prolog = None
+    if (
+        len(insns) > 1 and insns[0].mnemonic == "mov" and insns[0].op_str.startswith("eax, 0x")
+        and insns[1].mnemonic == "call" and direct_pop(insns[1]) == _EH_STACK_EFFECT
+    ):
+        eh_prolog = insns[1]
+    reservation, releases, frame_base = _frame_reservation(insns, eh_prolog, direct_pop)
+    base_depth = None
+    reservation_depth = 0
+    fixed_depth = 0
     state_at: dict[int, tuple[int, int]] = {}
     depths: dict[int, int] = {}
     refs, conflicts = [], []
@@ -760,14 +830,22 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
             depth, window = body_depth or 0, 0
         mn, ops = insn.mnemonic, insn.op_str
         depths[insn.address] = depth
-        if body_depth is None and (mn.startswith("j") or mn in ("call", "ret")):
-            body_depth = depth - window
-        for m in re.finditer(r"\[esp(?: \+ (0x[0-9a-f]+|\d+))?\]", ops):
+        if body_depth is None and insn is not eh_prolog and (mn.startswith("j") or mn in ("call", "ret")):
+            body_depth = max(fixed_depth, depth - window)
+        for m in _ESP_MEMORY.finditer(ops):
             refs.append((insn.address, (int(m.group(1), 0) if m.group(1) else 0) - depth, f"{mn} {ops}"))
-        if mn == "push":
+        if insn is eh_prolog:
+            base_depth = depth + 4
+            depth -= _EH_STACK_EFFECT
+        elif frame_base and mn == "mov" and ops == frame_base + ", esp" and base_depth is None:
+            base_depth = depth
+        elif insn.address in releases and mn in ("mov", "leave") and base_depth is not None:
+            depth = base_depth - (4 if mn == "leave" else 0)
+            window = 0
+        elif mn == "push":
             depth += 4
             if saves_open and ops in ("ebx", "ebp", "esi", "edi") and ops not in written:
-                pass
+                fixed_depth = max(fixed_depth, depth - window)
             else:
                 window += 4
         elif mn == "pop":
@@ -775,19 +853,25 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
             window = max(0, window - 4)
         elif mn in ("sub", "add") and ops.startswith("esp, "):
             v = int(ops.split(", ")[1], 0) * (1 if mn == "sub" else -1)
-            depth += v
-            if insn is not reservation:
+            if insn is reservation:
+                reservation_depth = depth
+                fixed_depth = depth + v
+                window = 0
+            else:
                 window = max(0, window + v)
+            depth += v
         elif mn == "call":
             saves_open = False
             nxt = insns[i + 1] if i + 1 < len(insns) else None
             pop = direct_pop(insn)
             if pop is None:
-                caller_cleans = (
-                    nxt is not None and nxt.mnemonic == "add" and nxt.op_str.startswith("esp, ")
-                    and nxt.address not in releases
-                )
-                pop = 0 if caller_cleans else window
+                pop = window
+                if nxt is not None and nxt.mnemonic == "add" and nxt.op_str.startswith("esp, "):
+                    pop = 0
+                    if nxt.address in releases:
+                        # The add can release both locals and outstanding cdecl arguments.
+                        released = int(nxt.op_str.split(", ")[1], 0)
+                        pop = min(window, max(0, depth - reservation_depth - released))
             depth -= pop
             window = 0
         elif mn not in ("cmp", "test") and ops[:3] in ("ebx", "ebp", "esi", "edi"):
@@ -827,6 +911,8 @@ def binary_frames(config, object_path: Path, target: match.MatchTarget | None = 
         name = relocs.get(insn.address + 1)
         if name is None:
             return None
+        if name.lstrip("_") in ("EH_prolog", "seh_prolog"):
+            return _EH_STACK_EFFECT
         if re.fullmatch(r"_\w+@\d+", name):
             return int(name.rsplit("@", 1)[1])
         if name.startswith("?") and "@@YA" in name:

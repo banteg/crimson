@@ -195,3 +195,61 @@ def test_stack_refs_keep_stack_arguments_out_of_frame_size():
     assert frame["body_depth"] == 0
     assert frame["depths"][11] == 0
     assert frame["refs"][-1][1] == 4
+
+
+@pytest.mark.parametrize("saved,restore", [("53 8bdc", "8be3 5b"), ("55 8bec", "c9"), ("55 8bec", "8be5 5d")])
+def test_stack_refs_restore_a_saved_frame_base(saved, restore):
+    # D3DX uses EBX as the frame base for some SSE routines.
+    prefix = bytes.fromhex(saved + " 83ec18")
+    code = prefix + bytes.fromhex("8b442408 " + restore + " c3")
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 24
+    assert frame["body_depth"] == 28
+    assert frame["depths"][len(prefix)] == 28
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_account_for_eh_prolog_before_the_fixed_allocation():
+    # The VC6 helper replaces its own return slot with saved EBP and pushes
+    # three registration words. The next direct call has a cdecl argument.
+    code = bytes.fromhex("b834120000 e800000000 83ec18 53 6a01 e800000000 83c404 8b442408 5b c9 c3")
+    frame = fp.stack_refs(code, 0, lambda insn: -16 if insn.address == 5 else 0)
+    assert frame["frame_size"] == 24
+    assert frame["body_depth"] == 44
+    assert frame["refs"][-1][1] == 8 - 44
+    assert frame["depths"][len(code) - 1] == 0
+
+
+@pytest.mark.parametrize("pop", [0, None])
+def test_stack_refs_keep_cdecl_cleanup_with_a_frame_buffer(pop):
+    # Pass an address into the local buffer. The last add releases it along
+    # with the pushed cdecl argument. An unknown direct call is handled too.
+    code = bytes.fromhex("83ec10 8d0c24 51 e800000000 83c414 c3")
+    frame = fp.stack_refs(code, 0, lambda _: pop)
+    assert frame["frame_size"] == frame["body_depth"] == 16
+    assert frame["depths"][12] == 20
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_ignore_cdecl_by_value_space_with_combined_cleanup():
+    # Passing the record itself (and a separate word) needs no local frame.
+    code = bytes.fromhex("83ec10 8bc4 c70001000000 6a01 e800000000 83c414 c3")
+    frame = fp.stack_refs(code, 0, lambda _: 0)
+    assert frame["frame_size"] == 0
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_find_locals_live_across_a_cdecl_call():
+    # quest_build_fallback defers popping its arguments, then uses the stack
+    # just above them for a temporary before releasing both ranges together.
+    code = bytes.fromhex("83ec08 6a01 6a02 e800000000 89442408 83c410 c3")
+    frame = fp.stack_refs(code, 0, lambda _: 0)
+    assert frame["frame_size"] == frame["body_depth"] == 8
+    assert frame["refs"][-1][1] == -8
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_keep_frame_for_biased_ebp_and_leave():
+    # C2 uses a biased EBP to reach more locals with an 8-bit displacement.
+    code = bytes.fromhex("55 8d6c24b0 81ecb4000000 53 5b 83c550 c9 c3")
+    assert fp.stack_refs(code, 0, lambda _: None)["frame_size"] == 0xb4
