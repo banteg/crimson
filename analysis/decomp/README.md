@@ -355,9 +355,13 @@ accounts for 11,366 bytes and 858 verified references, including both switch
 tables. The raw discovery inventory retains the six internal switch and join
 labels within its verified extent.
 
-In 1.3.0 and 1.4.0, `game_frame_update` is the remaining game function. The
-1.3.0 report also retains seven internal switch labels as separate entries
-pending a compiled match for the full dispatcher.
+All 269 confirmed 1.3.0 game and engine functions match, covering 122,830
+function bytes. Its frame dispatcher accounts for 21,459 bytes and 1,747
+verified references. Seven internal entries belong to its two switch tables.
+The raw inventory retains those labels, and the 61 bytes after the dispatcher
+remain in the executable-gap accounting.
+
+In 1.4.0, `game_frame_update` is the remaining game function.
 
 Each freeware image has an independent `native.json` inventory. Its image and
 basic-block byte hashes, donor-map digest, analyzer version, verified starts,
