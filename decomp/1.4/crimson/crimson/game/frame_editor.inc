@@ -87,7 +87,7 @@ if (index >= 0)
 #ifdef CRIMSON_FREEWARE_CLIENT
     freeware_current_map->texture = editor_brush(index).texture;
 #else
-    freeware_current_map->set_texture(editor_brush(index).texture);
+    freeware_current_map->set_texture(freeware_brushes[index]->texture);
 #endif
     current_player_index = 0;
     freeware_current_map->render_layer(1, 0);

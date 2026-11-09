@@ -398,9 +398,10 @@ __forceinline void render_world() {
                     freeware_player_t &p = P(current_player_index);
                     p.move_phase -= frame_dt;
                     if (p.move_phase <= 0) {
-                        p.control_reserved += .2f;
+                        float &damage = p.control_reserved;
+                        damage += .2f;
                         p.move_phase += .5f;
-                        HP(current_player_index) -= p.control_reserved;
+                        FIELD(p.health, actor(current_player_index).health) -= damage;
                     }
                 }
 #endif
@@ -600,9 +601,6 @@ __forceinline void draw_transition(bool dying, transition_phase phase) {
     grim_interface_ptr->grim_end_batch();
 }
 __forceinline void draw_timed_transition(bool dying) {
-    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
-    if (!dying)
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
     if (CLOCK - STATE_SINCE < 1.f)
         draw_transition(dying, transition_fade_in);
     else if (CLOCK - STATE_SINCE < 2.f)
@@ -920,6 +918,7 @@ unsigned char game_frame_update() {
         G.death_clock = CLOCK - STATE_SINCE;
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
+        grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
         draw_timed_transition(true);
 #else
         if (CLOCK - STATE_SINCE < 3) {
@@ -946,6 +945,8 @@ unsigned char game_frame_update() {
     case freeware_rules::level_clear_state:
         hud();
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
+        grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
         draw_timed_transition(false);
 #else
         if (CLOCK - STATE_SINCE < 3) {
@@ -969,6 +970,8 @@ unsigned char game_frame_update() {
     case freeware_rules::name_entry_state:
 #if FREEWARE_EDITION == 10002
         name_screen(cursor_phase, cursor_orbit, cursor_alpha);
+#elif !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
+#include "frame_name_state.inc"
 #else
         name_screen();
 #endif
