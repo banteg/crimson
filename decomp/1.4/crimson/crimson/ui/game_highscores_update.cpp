@@ -19,6 +19,15 @@ __declspec(dllimport) int __stdcall DeleteFileA(const char *);
 #endif
 }
 
+#if FREEWARE_EDITION < 10400
+static inline void draw_score_heading(game_mode_id_t mode, float first_y, int &row) {
+    if (mode == 2)
+        text(50, first_y + row++ * 18, "-SURVIVAL--");
+    else
+        text(50, first_y + row++ * 18, "-CAREER----");
+}
+#endif
+
 extern "C" unsigned char game_highscores_update() {
     filter(3);
 #if FREEWARE_EDITION == 10002
@@ -85,11 +94,12 @@ extern "C" unsigned char game_highscores_update() {
     draw_backdrop();
 #if FREEWARE_EDITION == 10002
     float top = viewport_height() - time * 17;
-#define SCORE_Y(offset) (top + (offset))
+#define SCORE_TOP top
 #else
     float travel = time * 17;
-#define SCORE_Y(offset) ((viewport_height() - travel) + (offset))
+#define SCORE_TOP (viewport_height() - travel)
 #endif
+#define SCORE_Y(offset) (SCORE_TOP + (offset))
     int row = 0;
     text(50, SCORE_Y(row++ * 18), "Highscores:");
 #if FREEWARE_EDITION >= 10400
@@ -98,14 +108,15 @@ extern "C" unsigned char game_highscores_update() {
             text(50, SCORE_Y(row++ * 18), "-SURVIVAL2-");
         else
             text(50, SCORE_Y(row++ * 18), "-CAREER2---");
-    } else
-#endif
-    {
+    } else {
         if (config_game_mode == 2)
             text(50, SCORE_Y(row++ * 18), "-SURVIVAL--");
         else
             text(50, SCORE_Y(row++ * 18), "-CAREER----");
     }
+#else
+    draw_score_heading(config_game_mode, SCORE_TOP, row);
+#endif
     ++row;
     for (int i = 0; i < 100; ++i) {
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -199,6 +210,7 @@ extern "C" unsigned char game_highscores_update() {
 #undef SCORE_VERSION
     bool past_end = SCORE_Y(row * 18) < 0;
 #undef SCORE_Y
+#undef SCORE_TOP
     if (UI_ALPHA < 1) {
         UI_FIELD(freeware_scores_closing, scores_closing) = 1;
         UI_ALPHA -= frame_dt * 2.4f;

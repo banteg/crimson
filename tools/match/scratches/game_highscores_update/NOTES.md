@@ -5,14 +5,8 @@ The original screen draws the rank, name and display value of 100 entries.
 titles and skips rows outside the viewport.
 
 Counting the headings and score rows together recovers VC6's induction
-variable, including the final off-screen dismissal check. The 1.3.0 and
-1.4.0 routines match their encoded bodies.
-
-In 1.0.2 the remaining code generation difference is at 0x0040ff43.
-The executable loads the mode into EAX before the next line's x87 coordinate
-calculation, then compares EAX with 2. The candidate compares the same 32-bit
-global directly with 2. Its body is one byte shorter, shifting subsequent
-branch destinations. Local copies of the mode, inline heading helpers, and
-compiling the immediately preceding loading-progress function in the same
-translation unit retain this difference. A switch instead subtracts 2 and
-reverses the conditional branch.
+variable, including the final off-screen dismissal check. For the two early
+builds the heading helper takes the mode by value and advances the line
+counter by reference. In 1.0.2 VC6 loads the mode into EAX before calculating
+the heading's y coordinate, then compares EAX with 2 at 0x0040ff52.
+All three versions match their encoded bodies and references.
