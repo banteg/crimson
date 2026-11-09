@@ -1791,6 +1791,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452d64",
+      "name": "freeware_levels_sequence",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452d68",
       "name": "freeware_birthday",
       "program": "1.4.0/crimson.exe"

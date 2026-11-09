@@ -3788,6 +3788,14 @@
       "reference": "0x004189c0",
       "bytes": "a0ccc54300",
       "build_only": true
+    },
+    {
+      "name": "freeware_levels_sequence",
+      "address": "0x00452d64",
+      "reference": "0x0041bd3d",
+      "bytes": "8b15642d4500",
+      "build_only": true,
+      "evidence": "The mode selector compares this counter with 6 at 0x0041bd44, enabling mode 3 when the sequence is complete and otherwise wrapping after mode 2. The corresponding branch in 1.3.0 reads the verified levels sequence at 0x004160fa."
     }
   ],
   "absent": [
