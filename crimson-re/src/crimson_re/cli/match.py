@@ -4,6 +4,7 @@ import json
 import shutil
 import subprocess
 import sys
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -1075,6 +1076,8 @@ def cmd_match_probe(
         raise typer.BadParameter("experiments.jsonl records canonical probes only")
     try:
         config = matchlib.load_scratch_config(directory.resolve())
+        if cflags is not None:
+            config = replace(config, cflags=cflags)
         target = None
         if build is not None:
             image = match_builds.load_registry().image(build, config.image)
@@ -1089,7 +1092,6 @@ def cmd_match_probe(
             source_text,
             match_root=match_root,
             compiler=compiler,
-            cflags=cflags,
             label=label,
             target=target,
         )

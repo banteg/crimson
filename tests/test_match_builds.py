@@ -6,9 +6,11 @@ from itertools import pairwise
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
 from crimson_re import match as matchlib
 from crimson_re import match_builds
+from crimson_re.cli.match import match_app
 
 REGISTRY = match_builds.load_registry()
 MAPPED_IMAGES = match_builds.mapped_images(REGISTRY)
@@ -128,6 +130,24 @@ def test_other_builds_compile_game_code_with_their_own_compiler_and_cl_build() -
     assert {(build_config.cflags, build_config.end_va) for build_config in built} == {
         (f"{config.cflags} /DCL_BUILD={processor_pack.cl_build}", None),
     }
+
+
+def test_historical_probe_applies_target_flags_to_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_evaluate(
+        config: matchlib.ScratchConfig, *args: object, **kwargs: object,
+    ) -> matchlib.ScratchStatus:
+        return matchlib.ScratchStatus(config, 0x401000, 1, 1.0, 1, 1, 1, None)
+
+    monkeypatch.setattr(matchlib, "evaluate_scratch", fake_evaluate)
+    directory = matchlib.DEFAULT_MATCH_ROOT / "scratches/grim_get_fps"
+    result = CliRunner().invoke(
+        match_app, ["probe", str(directory), "--build", "1.9.8", "--cflags", "/O1 /MD", "--stdin", "--json"],
+        input="float grim_get_fps(void) { return 1.0f; }",
+    )
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    for side in ("baseline", "probe"):
+        assert payload[side]["cflags"] == "/O1 /MT /DCL_BUILD=10908"
 
 
 def test_build_reference_aliases_apply_only_to_their_build() -> None:
