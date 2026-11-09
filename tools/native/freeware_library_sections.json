@@ -1,0 +1,427 @@
+{
+  "schema": 1,
+  "sections": [
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": ".\\Release\\math.obj",
+      "section": 1,
+      "section_name": ".data",
+      "symbol": "PMOne",
+      "symbols": [],
+      "size": 344,
+      "sha256": "2f29eef15b3a774b71812ab870906ed8aa6defaa35dcc05bc15edafea653c5c8",
+      "anchor_offset": 248,
+      "anchor_hex": "db0fc9bf3baab83f1872b14250acaec2",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\cd3dxcodec.obj",
+      "section": 3,
+      "section_name": ".data",
+      "symbol": "_g_fDitherOff",
+      "symbols": [
+        [
+          0,
+          "_g_fDitherOff"
+        ],
+        [
+          128,
+          "_g_fDitherOn"
+        ]
+      ],
+      "size": 256,
+      "sha256": "bc2a0662dcc0fe1ed22293c8219dd0301fea4d41999b8b35cb69b714863ce7c2",
+      "anchor_offset": 156,
+      "anchor_hex": "0000b03e0000603e0000383f0000c03d",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\cd3dximage.obj",
+      "section": 3,
+      "section_name": ".data",
+      "symbol": "_g_pBMPFormats",
+      "symbols": [
+        [
+          24,
+          "_g_pDDSFormats"
+        ],
+        [
+          160,
+          "_g_pDDSFormatDDPF"
+        ]
+      ],
+      "size": 1384,
+      "sha256": "c80d377a262d6d346436cfd4e5b7c0990f0b2c1f5c43c124ec72bab764eefe31",
+      "anchor_offset": 120,
+      "anchor_hex": "43000000555956595955593244585431",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\crc32.obj",
+      "section": 2,
+      "section_name": ".rdata",
+      "symbol": "_crc_table",
+      "symbols": [],
+      "size": 1024,
+      "sha256": "12f3e0576d447eb37b36d82ba0c1c5481b8f0d12fdc70347ce4a076b229d4c86",
+      "anchor_offset": 3,
+      "anchor_hex": "00963007772c610eeeba51099919c46d",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\d3dx8tex.obj",
+      "section": 4,
+      "section_name": ".rdata",
+      "symbol": "_g_D3DXFormatUnknown",
+      "symbols": [
+        [
+          0,
+          "_g_D3DXFormatUnknown"
+        ],
+        [
+          40,
+          "_g_pD3DXFormatInfo"
+        ]
+      ],
+      "size": 1588,
+      "sha256": "e148b4cd5dcefe33af6a29ab51f7095d8786505f525aac11735a4aeb318e8211",
+      "anchor_offset": 1432,
+      "anchor_hex": "040000001800000001000000204c3136",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\d3dxmathx86.obj",
+      "section": 3,
+      "section_name": ".data",
+      "symbol": "_invSqrtTab",
+      "symbols": [
+        [
+          0,
+          "_invSqrtTab"
+        ]
+      ],
+      "size": 4104,
+      "sha256": "a88d8eb7cbad491377e76dcfc13993a2e7bc715a1dda044c9658a7ea9d272f2b",
+      "anchor_offset": 4087,
+      "anchor_hex": "3f004835be7ad4873fd7a3f03ef628bc",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\infblock.obj",
+      "section": 2,
+      "section_name": ".rdata",
+      "symbol": "_border",
+      "symbols": [],
+      "size": 76,
+      "sha256": "c133e473e5e653c5c4aedb8bcc1c1a3a44d384fc0b6c0fcf04672b1b325ec01b",
+      "anchor_offset": 13,
+      "anchor_hex": "00000008000000070000000900000006",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\inftrees.obj",
+      "section": 2,
+      "section_name": ".data",
+      "symbol": "_fixed_bl",
+      "symbols": [],
+      "size": 4360,
+      "sha256": "4322bf145f690419b980f836b95dfcf1130299bf6b933c3403598ca5606407ac",
+      "anchor_offset": 1306,
+      "anchor_hex": "00001500000050080000020100005307",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\inftrees.obj",
+      "section": 3,
+      "section_name": ".rdata",
+      "symbol": "_cplens",
+      "symbols": [],
+      "size": 496,
+      "sha256": "9b447242d3f310eb950d5c23309d105e0544e85fb4b20dcdfb1561ac58215e7b",
+      "anchor_offset": 98,
+      "anchor_hex": "0000a3000000c3000000e30000000201",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\infutil.obj",
+      "section": 2,
+      "section_name": ".data",
+      "symbol": "?inflate_mask@D3DX@@3PAIA",
+      "symbols": [],
+      "size": 68,
+      "sha256": "cf64d219c0ba56cece4e41e0c8bf3af538f4510fa9a2b00f38da09e548270e5c",
+      "anchor_offset": 34,
+      "anchor_hex": "0000ff010000ff030000ff070000ff0f",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\jdhuff.obj",
+      "section": 2,
+      "section_name": ".rdata",
+      "symbol": "_extend_test",
+      "symbols": [],
+      "size": 232,
+      "sha256": "de1cf937d20946d112a31ee44a35519e0a957d1c9dccd020eca2aff2a69fc7ec",
+      "anchor_offset": 113,
+      "anchor_hex": "f0ffff01e0ffff01c0ffff0180ffff00",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\jquant1.obj",
+      "section": 2,
+      "section_name": ".rdata",
+      "symbol": "_base_dither_matrix",
+      "symbols": [],
+      "size": 256,
+      "sha256": "6708d0be39d5eb064240647ad355b5881b76a037de5a2bdc250a4352ec3be242",
+      "anchor_offset": 0,
+      "anchor_hex": "00c030f00ccc3cfc03c333f30fcf3fff",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\jutils.obj",
+      "section": 2,
+      "section_name": ".rdata",
+      "symbol": "?jpeg_zigzag_order@D3DX@@3QBHB",
+      "symbols": [],
+      "size": 576,
+      "sha256": "33a5a4bd94844e1b129327c86f5de27f4a39ee7e7e6b8f41a6b19f8a41d0fd12",
+      "anchor_offset": 1,
+      "anchor_hex": "0000000100000005000000060000000e",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\miint.obj",
+      "section": 2,
+      "section_name": ".rdata",
+      "symbol": "_const_0_2986",
+      "symbols": [],
+      "size": 200,
+      "sha256": "20ebb625365b6bb75e2b8dec90589d7ad7723eaaff1ad80d0976ad21db5e140e",
+      "anchor_offset": 156,
+      "anchor_hex": "5111000000000b30000054620000b341",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\pngread.obj",
+      "section": 2,
+      "section_name": ".rdata",
+      "symbol": "_png_libpng_ver",
+      "symbols": [],
+      "size": 121,
+      "sha256": "5b3545f0e3a96c511c7a38da254b21a199f8433501005540a60fae4174c1a876",
+      "anchor_offset": 78,
+      "anchor_hex": "41540000000049454e4400000000504c",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "obj\\i386\\pngrutil.obj",
+      "section": 2,
+      "section_name": ".rdata",
+      "symbol": "_png_pass_start",
+      "symbols": [],
+      "size": 117,
+      "sha256": "71a911dba9cb4e60921bba8aa6247bdd12f79f0b20c1747aa19cf62fc50d727c",
+      "anchor_offset": 100,
+      "anchor_hex": "04000000020000000200000049444154",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "objd\\i386\\d3dxmathx3d.obj",
+      "section": 3,
+      "section_name": ".rdata",
+      "symbol": "?const3dn_0_1@@3T__m64@@B",
+      "symbols": [],
+      "size": 288,
+      "sha256": "0aa1a441a87eed3190fc4e855d942e52e731070616f0d99c988c59ea7f750e94",
+      "anchor_offset": 268,
+      "anchor_hex": "58ff7f3f9a99593e7424373f2aa9933d",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "objf\\i386\\d3dxmathsse.obj",
+      "section": 3,
+      "section_name": ".data",
+      "symbol": "mask_9688",
+      "symbols": [],
+      "size": 448,
+      "sha256": "fbc2cee2ffb6115ed0dca8e0b7516c4be2266ec73391ace5c5a492cf16094a73",
+      "anchor_offset": 80,
+      "anchor_hex": "0000803f000020c000000040000000bf",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "objf\\i386\\d3dxmathsse.obj",
+      "section": 7,
+      "section_name": ".data1",
+      "symbol": "d3dxmathsse.obj(.data1)",
+      "symbols": [],
+      "size": 224,
+      "sha256": "aeb59c97923ddf700324a8b830dfc0ee65f930ebd108255588269b8b9948bc7d",
+      "anchor_offset": 160,
+      "anchor_hex": "2aa9933d000000009a99593e7424373f",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "objf\\i386\\d3dxquatsse2.obj",
+      "section": 7,
+      "section_name": ".data1",
+      "symbol": "_eps_9668",
+      "symbols": [],
+      "size": 160,
+      "sha256": "9b57d1307fb77b4a0a3b846b94649fe525a344b1585c53909af59410ce0ab9ea",
+      "anchor_offset": 3,
+      "anchor_hex": "3ffeff7f3ffeff7f3ffeff7f3f000080",
+      "relocations": []
+    },
+    {
+      "archive": "directx-8.1-d3dx8",
+      "member": "objf\\i386\\d3dxtrigsse.obj",
+      "section": 3,
+      "section_name": ".data",
+      "symbol": "s_fP3_9670",
+      "symbols": [],
+      "size": 736,
+      "sha256": "025bde95c95b66d7025266c71b40a232f48a22f3f56383064ff669893f7c29c0",
+      "anchor_offset": 248,
+      "anchor_hex": "9d83083c1a06b6baf0a14cb9cef5cc37",
+      "relocations": []
+    },
+    {
+      "archive": "vc6-sp6-libcmt",
+      "member": "..\\build\\intel\\mt_obj\\common.obj",
+      "section": 3,
+      "section_name": ".rdata",
+      "symbol": "One",
+      "symbols": [],
+      "size": 68,
+      "sha256": "0c39ae6c69f7fa32e651d3579fe52504dd37a7e1d402629cfe3c8d69d6e831c4",
+      "anchor_offset": 5,
+      "anchor_hex": "00f03f7f0235c26821a2da0fc93e40ff",
+      "relocations": []
+    },
+    {
+      "archive": "vc6-sp6-libcmt",
+      "member": "..\\build\\intel\\mt_obj\\constpow.obj",
+      "section": 1,
+      "section_name": ".data",
+      "symbol": "__pow10pos",
+      "symbols": [
+        [
+          0,
+          "__pow10pos"
+        ],
+        [
+          352,
+          "__pow10neg"
+        ]
+      ],
+      "size": 700,
+      "sha256": "1be6b9bcfbebc370831ae298fcf28d4fbfe45d9537d311ef7b9ab09ac525e9f0",
+      "anchor_offset": 110,
+      "anchor_hex": "00a1edccce1bc2d34e4020f09eb5702b",
+      "relocations": []
+    },
+    {
+      "archive": "vc6-sp6-libcmt",
+      "member": "build\\intel\\mt_obj\\dosmap.obj",
+      "section": 1,
+      "section_name": ".data",
+      "symbol": "_errtable",
+      "symbols": [],
+      "size": 360,
+      "sha256": "dc5aaf854d47b0fa4deddacb6ff02e9a7d99cb1ac06c16e03e587d4599067fbe",
+      "anchor_offset": 338,
+      "anchor_hex": "000002000000d70000000b0000001807",
+      "relocations": []
+    },
+    {
+      "archive": "vc6-sp6-libcmt",
+      "member": "build\\intel\\mt_obj\\mbctype.obj",
+      "section": 1,
+      "section_name": ".data",
+      "symbol": "___rgctypeflag",
+      "symbols": [],
+      "size": 248,
+      "sha256": "399b92a081fbb1977a25e8862ffc89fe6bea71dd4fadcfa0f09e99b75590b0b9",
+      "anchor_offset": 0,
+      "anchor_hex": "0102040800000000a403000060827982",
+      "relocations": []
+    },
+    {
+      "archive": "vc6-sp6-libcmt",
+      "member": "build\\intel\\mt_obj\\sbheap.obj",
+      "section": 1,
+      "section_name": ".data",
+      "symbol": "___old_small_block_heap",
+      "symbols": [
+        [
+          0,
+          "___old_small_block_heap"
+        ],
+        [
+          8224,
+          "___old_sbh_p_starting_region"
+        ]
+      ],
+      "size": 8232,
+      "sha256": "a73e960ff664f897a423eb6c5ee9467dbd8eaebc4f6e595336b01254d3f874b0",
+      "anchor_offset": 16,
+      "anchor_hex": "fffffffffffffffff0000000f1000000",
+      "relocations": [
+        [
+          0,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          24
+        ],
+        [
+          12,
+          24
+        ],
+        [
+          8224,
+          0
+        ]
+      ]
+    },
+    {
+      "archive": "vc6-sp6-libcmt",
+      "member": "build\\intel\\mt_obj\\winxfltr.obj",
+      "section": 1,
+      "section_name": ".data",
+      "symbol": "__XcptActTab",
+      "symbols": [],
+      "size": 136,
+      "sha256": "71e6cde22ce4cb78a3ac5542ed903171a30df24b4c9cd30980fe63f312c62931",
+      "anchor_offset": 0,
+      "anchor_hex": "050000c00b000000000000001d0000c0",
+      "relocations": []
+    }
+  ]
+}
