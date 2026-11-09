@@ -699,6 +699,37 @@ def _callee_pop(image, va: int) -> int | None:
     return None
 
 
+def _frame_reservation(insns):
+    """Find the entry's fixed ESP allocation and the instructions that release it on exit."""
+    for insn in insns[:8]:
+        if insn.mnemonic in ("call", "ret") or insn.mnemonic.startswith("j"):
+            break
+        if insn.mnemonic != "sub" or not re.fullmatch(r"esp, (?:0x[0-9a-f]+|[0-9]+)", insn.op_str):
+            continue
+        # An outgoing by-value argument can also start with sub esp, N. The
+        # persistent allocation is paired with a release on a return or tail call.
+        releases = set()
+        lo, hi = insns[0].address, insns[-1].address + insns[-1].size
+        for i, end in enumerate(insns):
+            tail_call = end.mnemonic == "jmp" and end.op_str.startswith("0x") and not lo <= int(end.op_str, 0) < hi
+            if end.mnemonic != "ret" and not tail_call:
+                continue
+            for j in range(i - 1, -1, -1):
+                prior = insns[j]
+                if prior.mnemonic == "add" and prior.op_str == insn.op_str:
+                    releases.add(prior.address)
+                    break
+                if prior.mnemonic == "leave" or (prior.mnemonic == "mov" and prior.op_str == "esp, ebp"):
+                    releases.add(prior.address)
+                    break
+                if prior.mnemonic not in ("pop", "mov", "xor", "lea"):
+                    break
+        if releases:
+            return insn, releases
+        break
+    return None, set()
+
+
 def stack_refs(code: bytes, base: int, direct_pop) -> dict:
     """Frame offsets of every esp-relative operand, relative to the entry esp (return address at 0).
 
@@ -710,6 +741,7 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
 
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     insns = list(md.disasm(code, base))
+    reservation, releases = _frame_reservation(insns)
     state_at: dict[int, tuple[int, int]] = {}
     depths: dict[int, int] = {}
     refs, conflicts = [], []
@@ -744,15 +776,18 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
         elif mn in ("sub", "add") and ops.startswith("esp, "):
             v = int(ops.split(", ")[1], 0) * (1 if mn == "sub" else -1)
             depth += v
-            if mn == "add" or i > 0:
+            if insn is not reservation:
                 window = max(0, window + v)
         elif mn == "call":
             saves_open = False
             nxt = insns[i + 1] if i + 1 < len(insns) else None
-            follows_add = nxt is not None and nxt.mnemonic == "add" and nxt.op_str.startswith("esp, ")
-            pop = 0 if follows_add else direct_pop(insn)
+            pop = direct_pop(insn)
             if pop is None:
-                pop = window
+                caller_cleans = (
+                    nxt is not None and nxt.mnemonic == "add" and nxt.op_str.startswith("esp, ")
+                    and nxt.address not in releases
+                )
+                pop = 0 if caller_cleans else window
             depth -= pop
             window = 0
         elif mn not in ("cmp", "test") and ops[:3] in ("ebx", "ebp", "esi", "edi"):
@@ -762,9 +797,7 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
         if mn in ("jmp", "ret"):
             depth = None
             window = 0
-    frame = next(
-        (int(i.op_str.split(", ")[1], 0) for i in insns[:8] if i.mnemonic == "sub" and i.op_str.startswith("esp, ")), 0,
-    )
+    frame = int(reservation.op_str.split(", ")[1], 0) if reservation is not None else 0
     return {"refs": refs, "conflicts": conflicts, "body_depth": body_depth, "depths": depths, "frame_size": frame}
 
 

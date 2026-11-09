@@ -159,3 +159,39 @@ def test_slot_report_exposes_disagreement_about_an_aggregate_base(capsys):
     assert "_delta: 0x14: 4, 0x4: 4" in output
     assert "field +4" not in output
     assert result["split_votes"] == {"_delta": [{"base": 0x14, "votes": 4}, {"base": 0x04, "votes": 4}]}
+
+
+@pytest.mark.parametrize("prefix", ("", "8b08", "8b08 53"))
+def test_stack_refs_keep_frame_across_an_indirect_call(prefix):
+    # Optional register load/save, fixed locals, one argument; the callee pops that argument.
+    head = bytes.fromhex(prefix)
+    body = bytes.fromhex("83ec18 6a01 ff5104 8b442408 83c418")
+    saved = prefix.endswith("53")
+    code = head + body + (b"\x5b" if saved else b"") + b"\xc3"
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    body_depth = 24 + 4 * saved
+    assert frame["frame_size"] == 24
+    assert frame["body_depth"] == body_depth
+    assert frame["depths"][len(head) + 8] == body_depth
+    assert frame["refs"][0][1] == 8 - body_depth
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_distinguish_frame_release_from_argument_cleanup():
+    # The indirect callee pops its pushed argument; the following add releases locals.
+    code = bytes.fromhex("8b08 83ec10 50 ff5104 83c410 c3")
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 16
+    assert frame["depths"][9] == 16
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_keep_stack_arguments_out_of_frame_size():
+    # Reserve a 24-byte by-value argument, then push its argument index. Both
+    # belong to the virtual call. The next call uses an ordinary pushed argument.
+    code = bytes.fromhex("83ec18 892424 6a0f ff5114 50 ff5120 8b442404 c3")
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 0
+    assert frame["body_depth"] == 0
+    assert frame["depths"][11] == 0
+    assert frame["refs"][-1][1] == 4
