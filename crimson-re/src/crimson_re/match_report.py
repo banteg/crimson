@@ -218,7 +218,7 @@ def _score(inventory: list[dict[str, Any]], statuses: list[matchlib.ScratchStatu
         if key in selected:
             raise ValueError(f"duplicate report candidate: {key}")
         selected[key] = status
-    inventory_keys = {(row["image"], row["address"]) for row in inventory}
+    inventory_keys = {(row["image"], row["address"]) for row in inventory if row.get("native_kind", "function") == "function"}
     if selected.keys() - inventory_keys:
         raise ValueError("report candidates are absent from the full function inventory")
     for row in inventory:
@@ -397,9 +397,11 @@ def build_report(
                 else:
                     linked_data.append(record)
     labels, library_ranges = _category_definitions()
-    if any(row.get("native_kind") == "unresolved" for row in functions):
-        labels["unresolved"] = "Unresolved executable bytes"
+    if any("native_kind" in row for row in functions):
         labels["game"] = "Confirmed Game & Engine"
+        labels["game.functions"] = "Game & Engine function bodies"
+        kinds = {row["native_kind"] for row in functions}
+        labels.update({kind: label for kind, label in accounting.GAP_LABELS.items() if kind in kinds})
     if any("platform_replaced" in row for row in functions):
         labels["port"] = "Freeware port"
         labels["platform"] = "Replaced platform functions"
@@ -439,7 +441,8 @@ def build_report(
         # objdiff's treemap paints 100% green. An unresolved-reference 100%
         # instruction score must remain visibly partial, like our `audit` state.
         percent = (100.0 if is_matched else min(ratio * 100, 99.99)) if eligible else 0.0
-        is_function = row.get("native_kind", "function") == "function"
+        kind = accounting.executable_kind(row)
+        is_function = kind == "retained_code"
         measures = _measures(
             size,
             size if is_matched else 0,
@@ -461,8 +464,10 @@ def build_report(
             libraries = [row["ownership"]] if row["ownership"].startswith("libs.") else []
             if row["ownership"] == "game":
                 categories.append("game")
-                if is_function and "platform_replaced" in row:
-                    categories.append("port" if match_native_inventory.in_port_scope(row) else "platform")
+                if is_function:
+                    categories.append("game.functions")
+                    if "platform_replaced" in row:
+                        categories.append("port" if match_native_inventory.in_port_scope(row) else "platform")
             elif row["ownership"] != "unknown" and not libraries:
                 raise ValueError("invalid native function ownership")
         else:
@@ -470,10 +475,10 @@ def build_report(
                 libraries.append("libs.other")
             if not libraries and any(region.contains(owner_key[1]) for region in ownership.ranges[row["image"]]):
                 categories.append("game")
-        if row.get("native_kind") == "unresolved":
-            if row["candidate"] is not None or row["matched"] or row["ratio"]:
+        if not is_function:
+            if row["candidate"] is not None or row["source"] is not None or row["matched"] or row["ratio"] or row.get("proof"):
                 raise ValueError("executable remainders cannot earn source credit")
-            categories.append("unresolved")
+            categories.append(kind)
         if libraries:
             categories.extend(["libs", *libraries])
         if "game" not in categories and "libs" not in categories:

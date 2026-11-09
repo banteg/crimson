@@ -81,6 +81,57 @@ def test_executable_partition_retains_unknown_gaps_and_rejects_overlap():
         accounting.reconcile_sections(sections, [{**function(), "address": 130}])
 
 
+def test_classified_executable_bytes_retain_physical_owners_without_code_credit():
+    code = {**function(), "native_kind": "function", "ownership": "game", "platform_replaced": None}
+    def gap(address: int, size: int, kind: str, owner: str = "game") -> dict[str, Any]:
+        return {"image": code["image"], "address": address, "size": size, "name": f"{kind}_{address}",
+                "native_kind": kind, "ownership": owner, "candidate": None, "source": None, "proof": None,
+                "ratio": 0, "matched": False, "linked": False}
+
+    rows = [code, gap(110, 2, "padding"), gap(112, 8, "embedded_data"),
+            gap(120, 3, "unresolved", "libs.other"), gap(123, 5, "unresolved", "unknown")]
+    rows[2]["gap_evidence"] = {"dispatch_address": 101}
+    sections = [{"image": code["image"], "name": ".text", "address": 100, "size": 28}]
+    inventory = accounting.reconcile_sections(sections, rows)
+    assert inventory[0]["ranges"][2]["ownership"] == "game"
+    assert inventory[0]["ranges"][2]["gap_evidence"] == rows[2]["gap_evidence"]
+    assert inventory[0]["totals"] == {"retained_code": 10, "padding": 2, "embedded_data": 8, "unresolved": 8}
+    assert [span["kind"] for span in inventory[0]["ranges"]] == [
+        "retained_code", "padding", "embedded_data", "unresolved", "unresolved",
+    ]
+    report = match_report.build_report(rows)
+    scopes = {c["id"]: c["measures"] for c in report["categories"]}
+    assert report["measures"]["total_code"] == scopes["exe"]["total_code"] == "28"
+    assert scopes["game"]["total_code"] == "20"
+    assert scopes["game.functions"]["matched_code"] == scopes["game.functions"]["total_code"] == "10"
+    assert scopes["game.functions"]["matched_code_percent"] == 100.0
+    assert scopes["game.functions"] == scopes["port"]
+    assert scopes["game"]["matched_code_percent"] == 50.0
+    assert scopes["libs"]["total_code"] == "3" and scopes["unknown"]["total_code"] == "5"
+    for kind, size in (("padding", 2), ("embedded_data", 8), ("unresolved", 8)):
+        assert scopes[kind]["total_code"] == str(size)
+        assert scopes[kind]["total_functions"] == 0 and scopes[kind]["matched_code"] == "0"
+        assert "total_data" not in scopes[kind]
+
+    evidence = {"version": "example", "data": None, "functions": rows, "code_inventory": inventory,
+                "identities": {}, "verification": accounting.VERIFICATION}
+    metrics = accounting.diagnostics(evidence, report=report)
+    assert metrics["game_executable_coverage"] == {
+        code["image"]: {"total_bytes": 20, "retained_code": 10, "padding": 2, "embedded_data": 8, "unresolved": 0},
+    }
+    summary = accounting.render_summary(evidence, report, metrics)
+    assert "Game & Engine function bodies | 10 / 10 (100.00%)" in summary
+    assert f"| {code['image']} Game & Engine | 20 | 10 | 2 | 8 | 0 |" in summary
+    for kind in ("padding", "embedded_data"):
+        with pytest.raises(ValueError, match="remainders cannot earn"):
+            match_report.build_report([{**gap(110, 2, kind), "candidate": "source", "ratio": 1, "matched": True}])
+    with pytest.raises(ValueError, match="unknown native inventory kind"):
+        accounting.reconcile_sections(sections, [gap(110, 2, "unverified_claim")])
+
+    changed = {**rows[2], "gap_evidence": {"dispatch_address": 102}}
+    assert accounting.identities([rows[2]], {}, {})["inventory"] != accounting.identities([changed], {}, {})["inventory"]
+
+
 def test_readable_unit_names_preserve_native_function_identity():
     before = match_report.build_report([function()])["units"][0]
     after = match_report.build_report([{**function(), "name": "recovered"}])["units"][0]
@@ -198,7 +249,7 @@ def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(ver
     assert metrics["data_measured"] == (evidence["data"] is not None)
     coverage = metrics["executable_coverage"]
     assert coverage["total_bytes"] == sum(coverage[k] for k in ("retained_code", "embedded_data", "padding", "unresolved"))
-    if evidence["identities"]["inventory_policy"] == "native-functions-and-full-executable-remainder-v1":
+    if "game_executable_coverage" in metrics:
         assert coverage["total_bytes"] == int(report["measures"]["total_code"])
     else:
         assert coverage["retained_code"] == int(report["measures"]["total_code"])

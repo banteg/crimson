@@ -86,8 +86,20 @@ def cmd_match_report(
             typer.echo(f"decomp.dev report failed for {version}: {exc}", err=True)
             raise typer.Exit(code=2) from exc
         measures = report["measures"]
-        game = next(c["measures"] for c in report["categories"] if c["id"] == "game")
-        port = next((c["measures"] for c in report["categories"] if c["id"] == "port"), None)
+        scopes = {category["id"]: category["measures"] for category in report["categories"]}
+        game = scopes["game"]
+        code_progress = ""
+        if "game.functions" in scopes:
+            bodies = scopes["game.functions"]
+            images = diagnostics["game_executable_coverage"].values()
+            padding = sum(image["padding"] for image in images)
+            embedded = sum(image["embedded_data"] for image in images)
+            unresolved = sum(image["unresolved"] for image in images)
+            code_progress = (
+                f"{bodies['matched_code']}/{bodies['total_code']} function bytes ({bodies['matched_code_percent']:.2f}%); "
+                f"{padding} padding, {embedded} embedded data, {unresolved} unresolved bytes. Physical scope: "
+            )
+        port = scopes.get("port")
         port_progress = (
             f"Port: {port['matched_functions']}/{port['total_functions']} functions; "
             f"{port['matched_code']}/{port['total_code']} bytes. " if port is not None else ""
@@ -98,7 +110,7 @@ def cmd_match_report(
         )
         typer.echo(
             f"{version} Game & Engine: {game['matched_functions']}/{game['total_functions']} functions; "
-            f"{game['matched_code']}/{game['total_code']} bytes ({game['matched_code_percent']:.2f}%); "
+            f"{code_progress}{game['matched_code']}/{game['total_code']} bytes ({game['matched_code_percent']:.2f}%); "
             f"fuzzy={game['fuzzy_match_percent']:.2f}%. {port_progress}"
             f"All: {measures['matched_functions']}/{measures['total_functions']} functions; "
             f"{measures['matched_code']}/{measures['total_code']} bytes matched "
