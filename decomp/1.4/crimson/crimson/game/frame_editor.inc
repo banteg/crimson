@@ -115,7 +115,12 @@ if (index >= 0)
         object->texture = editor_brush(index).texture;
         object->rotation = rotation;
         const editor_point &ground = editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y);
+#if FREEWARE_EDITION == 10400
+        const double offset_y = offset.y;
+        object->position = editor_point(ground.x + offset.x, ground.y + offset_y);
+#else
         object->position = editor_point(ground.x + offset.x, ground.y + offset.y);
+#endif
         object->position.x = (float)(int)object->position.x;
         object->position.y = (float)(int)object->position.y;
         if (editor_key(0x13, false))
