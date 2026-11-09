@@ -45,7 +45,9 @@ float freeware_elapsed_seconds;
 unsigned char freeware_encounter_active;
 unsigned char freeware_game_active;
 float freeware_jinx_timer;
+unsigned char freeware_level_up_reset_byte;
 float freeware_logo_angle;
+unsigned char freeware_logo_visible;
 float freeware_name_alpha;
 int freeware_name_length;
 float freeware_next_spawn;
@@ -108,7 +110,6 @@ int freeware_ice_texture;
 effect_color_t freeware_ice_tint;
 int freeware_kills;
 int freeware_level_number;
-unsigned char freeware_level_up_reset_byte;
 int freeware_levels_sequence;
 int freeware_low_fps_frames;
 int freeware_menu_selected;
@@ -137,7 +138,6 @@ int plaguebearer_infection_count;
 
 #if CL_BUILD == 10002
 unsigned char freeware_filter_sharp;
-unsigned char freeware_logo_visible;
 unsigned char freeware_shell_marks;
 unsigned char freeware_show_fps;
 int perk_id_timebender;
