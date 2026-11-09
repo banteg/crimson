@@ -184,17 +184,22 @@ holds the initial compiler baseline.
 The donor maps remain partial, but each image also has a `native.json` inventory
 from independent Binary Ninja control-flow discovery, refined by verified
 unchanged body starts. Reports include native functions without donor identities
-and every remaining executable byte. Unknown remainders, including alignment
-and uncertain embedded data, count toward the denominator with zero credit;
-these reports use a different inventory policy from the curated 1.9 reports.
-They are marked `reported` and CI uploads all five version artifacts.
+and every remaining executable byte. CI uploads all five reported versions.
 
-`Confirmed Game & Engine` covers the reviewed initial application/engine object
-clusters, including their uncredited remainders. Uncertain template/SDK helper
-intervals remain under `Unclassified ownership`; only exact donor library
-identities outside those clusters receive library classification. Use `All` for
-the complete executable denominator. Data and executable linking remain
-unmeasured for freeware. Placement evidence never earns compiled match credit.
+The freeware **Game & Engine** ownership scope covers the reviewed application
+and engine clusters. Its **Game & Engine function bodies** filter measures
+compiler recovery within the retained functions. The 775 gaps in those
+clusters contain alignment padding and compiler-generated switch tables. The
+saved reports give every range an address, classify it against the original
+image, and verify its bytes against the preceding function's compiled object.
+See the [freeware byte accounting](../analysis/decomp/README.md#freeware).
+
+Uncertain template and SDK helper intervals stay under **Unclassified ownership**.
+Only exact donor library identities outside the reviewed clusters receive library
+classification. **All** retains the full executable virtual byte denominator,
+including unresolved remainders outside Game & Engine. The physical layout
+receipts measure bytes in the original executable sections. Data-section recovery
+and complete executable linking have separate measures.
 
 To regenerate discovery with the licensed Binary Ninja GUI running:
 
