@@ -204,6 +204,39 @@ def test_copy_scratch_freezes_relative_headers_and_hashes_the_override(tmp_path,
     assert fingerprint() != initial
 
 
+def test_copy_scratch_freezes_symlinked_includes_at_each_compiler_visible_path(tmp_path):
+    scratch, source_dir = tmp_path / "scratch", tmp_path / "tree/game"
+    scratch.mkdir()
+    source_dir.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text("FUNCTION=f\n")
+    source = source_dir / "f.cpp"
+    source.write_text('#include "../level/brush.h"\n#include "../ui/alias.h"\n')
+    level, ui = tmp_path / "donor/level", source_dir.parent / "ui"
+    level.mkdir(parents=True)
+    ui.mkdir()
+    source_dir.parent.joinpath("level").symlink_to(level, target_is_directory=True)
+    shared = level / "brush.h"
+    shared.write_text('#include "owner.h"\n')
+    (ui / "alias.h").symlink_to(shared)
+    (level / "owner.h").write_text("int level_owner;\n")
+    (ui / "owner.h").write_text("int ui_owner;\n")
+
+    config = dataclasses.replace(match.load_scratch_config(scratch), source=str(source))
+    frozen = c2.copy_scratch(config, tmp_path / "frozen", shutil.ignore_patterns("build"))
+    frozen_root = (frozen.directory / frozen.source).parent.parent
+    (level / "owner.h").unlink()
+    shared.unlink()
+    for name in ("level/brush.h", "ui/alias.h"):
+        header = frozen_root / name
+        assert not header.is_symlink()
+        assert header.read_text() == '#include "owner.h"\n'
+    dependencies = match._scratch_include_headers(frozen, match.DEFAULT_MATCH_ROOT)
+    for name in ("level", "ui"):
+        owner = frozen_root / name / "owner.h"
+        assert owner in dependencies
+        assert owner.read_text() == f"int {name}_owner;\n"
+
+
 def test_trace_cli_forwards_build_and_pass_selection(tmp_path, monkeypatch):
     from typer.testing import CliRunner
 

@@ -312,6 +312,40 @@ def scratch_target(scratch: Path, build: str | None = None) -> tuple[match.Scrat
     return image.scratch_config(config), image.target
 
 
+def _local_include_paths(config: match.ScratchConfig, source: Path, include_dir: Path) -> set[Path]:
+    """Find includes supplied by the source tree at the paths the compiler opens."""
+    match_root = match.DEFAULT_MATCH_ROOT
+    shared_dirs = (
+        *((config.include_overlay,) if config.include_overlay is not None else ()),
+        match._compiler_executable_path(config, match_root).parent.parent / "Include",
+        *match._ScratchIncludeResolver(match_root).include_dirs,
+    )
+    search = [(directory, False) for directory in shared_dirs] + [(include_dir, True)]
+    local_headers: set[Path] = set()
+    visited: set[tuple[Path, bool]] = set()
+
+    def visit(path: Path, *, local: bool, ancestors: frozenset[Path]) -> None:
+        identity = path.resolve()
+        if (path, local) in visited or identity in ancestors:
+            return
+        visited.add((path, local))
+        # cl.sh compiles a staged copy of the source. Quoted includes from a
+        # header first search beside that header, even through a directory link.
+        for directive in match.INCLUDE_RE.finditer(path.read_text(encoding="latin1")):
+            name = (directive[1] or directive[2]).replace("\\", "/")
+            dirs = [(path.parent, local), *search] if ancestors and directive[1] else search
+            for directory, is_local in dirs:
+                header = Path(os.path.abspath(directory / name))
+                if header.is_file():
+                    if is_local:
+                        local_headers.add(header)
+                    visit(header, local=is_local, ancestors=ancestors | {identity})
+                    break
+
+    visit(source, local=True, ancestors=frozenset())
+    return local_headers
+
+
 def copy_scratch(
     config: match.ScratchConfig, directory: Path, ignore, *, source_override: Path | None = None,
 ) -> match.ScratchConfig:
@@ -319,27 +353,10 @@ def copy_scratch(
     shutil.copytree(config.directory, directory, ignore=ignore)
     if config.archive is not None or config.import_thunk is not None:
         return replace(config, directory=directory)
-    source = (config.directory / config.source).resolve()
+    source = config.directory / config.source
     source_input = (source_override or source).resolve()
-    include_dir = config.source_include_dir.resolve()
-    resolver = match._ScratchIncludeResolver(match.DEFAULT_MATCH_ROOT)
-    input_config = replace(config, source=str(source_input), original_source_dir=include_dir)
-    headers = set(match._scratch_include_headers(input_config, match.DEFAULT_MATCH_ROOT, resolver=resolver))
-
-    # The compiler searches the source include directory even from shared headers. Follow
-    # relative includes from these local files, while leaving global includes in place.
-    def local_dependencies(path: Path, *, relative: bool) -> set[Path]:
-        candidates = resolver.direct_dependencies(path, source=not relative, include_dirs=(include_dir,))
-        return headers.intersection(candidates)
-
-    local_headers = set()
-    for path in (source_input, *headers):
-        local_headers.update(local_dependencies(path, relative=False))
-    pending = list(local_headers)
-    while pending:
-        new = local_dependencies(pending.pop(), relative=True) - local_headers
-        local_headers.update(new)
-        pending.extend(new)
+    include_dir = Path(os.path.abspath(config.source_include_dir))
+    local_headers = _local_include_paths(config, source_input, include_dir)
 
     scratch_dir = config.directory.resolve()
     base = scratch_dir if include_dir.is_relative_to(scratch_dir) else include_dir
