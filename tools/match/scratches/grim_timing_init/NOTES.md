@@ -8,3 +8,8 @@ Windows multimedia timer period. The `timeBeginPeriod` result is ignored.
 
 The recovered function matches all 13 native instructions and all 10
 references under MSVC 6.5 `/O2 /GB`.
+
+1.0.2 and 1.3.0 query the performance-counter frequency and fall back to 1000
+ticks per second on failure. 1.4.0 always uses the multimedia clock at 1000
+ticks per second. All three store 64-bit counters, run one timing update to
+seed the current and previous samples, then clear the measured frame delta.

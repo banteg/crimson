@@ -20,3 +20,10 @@ The recovered function matches all 174 native instructions and all 61 masked
 references across its 608-byte body under MSVC 6.5 `/O2 /GB`.
 Its C linkage preserves the native `_grim_run_loop` entry symbol used by the
 application seam.
+
+The freeware builds reset the device inside the message loop. 1.0.2 shows a
+Retry/Cancel dialog repeatedly when it cannot recreate a render target or
+restore the textures. Retry reopens the dialog without issuing another D3D
+call. 1.3.0 and 1.4.0 clear failed texture handles and continue. 1.3.0 adds
+joystick polling and the restore callback; 1.4.0 adds the keyboard repeat
+timers and allows presentation to be disabled.
