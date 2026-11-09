@@ -9,7 +9,7 @@ LOADCONST. This tool hooks those call sites (entry and return) plus the initial 
 prints, per constant value: every promoted or refused tuple, every scored use with its saving and
 block weight, and the benefit the range was queued with.
 
-    uv run python scripts/c2/const_trace.py <scratch-dir> --out <new-dir> [--il]
+    uv run python scripts/c2/const_trace.py <scratch-dir> --out <new-dir> [--build VERSION] [--il]
 
 It runs through the preserving `c2-trace` harness (whole-COFF, replay and missing-stream checks
 unchanged). `--il` also
@@ -266,7 +266,7 @@ def decode(data, _profile):
     return [{"line": line} for line in lines]
 
 
-def trace(scratch: Path, out: Path, *, il: bool = False):
+def trace(scratch: Path, out: Path, *, il: bool = False, build: str | None = None):
     from crimson_re import match_c2 as c2
 
     profile = profile_with_hooks(c2, il)
@@ -275,7 +275,7 @@ def trace(scratch: Path, out: Path, *, il: bool = False):
     c2.observer_source = lambda p: observer_source(stock[1], p)
     c2.decode_trace = decode
     try:
-        return c2.trace(scratch, out)
+        return c2.trace(scratch, out, build=build)
     finally:
         c2.load_profile, c2.observer_source, c2.decode_trace = stock
 
@@ -343,6 +343,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("scratch", type=Path, nargs="?")
     parser.add_argument("--out", type=Path)
+    parser.add_argument("--build", help="compile with the selected build and compare against its image")
     parser.add_argument(
         "--il",
         action="store_true",
@@ -355,7 +356,7 @@ def main():
     else:
         if not args.scratch or not args.out:
             parser.error("scratch and --out are required")
-        result = trace(args.scratch, args.out, il=args.il)
+        result = trace(args.scratch, args.out, il=args.il, build=args.build)
         print(json.dumps({"out": str(args.out), "metrics": result["metrics"]}))
         out = args.out
     lines = [row["line"] for row in json.loads((out / "snapshots.json").read_text())]
