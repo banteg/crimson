@@ -95,9 +95,10 @@ for (current_player_index = 0; current_player_index < config_player_count; ++cur
         }
     }
     if (P(current_player_index).perks[perk_id_evil_eyes] > 0 && FREEZE <= 0) {
-        float &x = creature_pool[id].position.x;
+        vec2f_t &position = creature_pool[id].position;
+        float &x = position.x;
         x -= creature_pool[id].velocity.x;
-        float &y = creature_pool[id].position.y;
+        float &y = position.y;
         y -= creature_pool[id].velocity.y;
     }
 }
