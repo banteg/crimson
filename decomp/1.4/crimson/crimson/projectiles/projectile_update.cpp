@@ -1,12 +1,11 @@
-#include "cl_build.h"
-#if CL_BUILD == 10002
+#include "freeware_edition.h"
+#if FREEWARE_EDITION == 10002
 #include "projectile_update_102.inc"
 #else
 // crimson.exe 1.3.0 at 0x406260 and 1.4.0 at 0x4094e0. All four passes share the CRT random stream.
 #include "../effects/freeware_ice_mark.h"
 #include "../ui/freeware_ui.h"
 #include "crimsonland_types.h"
-#include "freeware_edition.h"
 #include "freeware_level.h"
 #include <math.h>
 extern "C" {
@@ -79,157 +78,148 @@ __forceinline void impact_sound(int sample, float volume) {
     sfx_play_panned(sample, volume, .5f);
 #endif
 }
-const float half_pi = 1.57079637f, tau = 6.28318548f;
-__forceinline vec2f_t offset(const vec2f_t &p, float x, float y) {
-    vec2f_t v = {p.x + x, p.y + y};
-    return v;
-}
-__forceinline float distance(const vec2f_t &a, const vec2f_t &b) {
-    double x = a.x - b.x, y = a.y - b.y;
-    return (float)sqrt(x * x + y * y);
-}
-__forceinline void blood(vec2f_t p) { fx_queue_add_random(&p); }
-__forceinline void shard(vec2f_t p, float size) { freeware_shard(&p, size); }
-__forceinline vec2f_t scatter_shards(vec2f_t p, int count) {
-    vec2f_t mark = p;
-    for (int i = 0; i < count; ++i) {
-        float size = (float)(crt_rand() % 10 + 5);
-        float angle = (crt_rand() % 628) * .01f;
-        int radius = crt_rand() % 35;
-        mark = offset(p, (float)cos(angle) * radius, (float)sin(angle) * radius);
-        shard(mark, size);
+const float half_pi = 1.57079637f;
+
+struct SprayPoint : vec2f_t {
+    __forceinline SprayPoint(const float &px, const float &py) {
+        x = px;
+        y = py;
     }
-    return mark;
+    __forceinline float length() const { return (float)sqrt(x * x + y * y); }
+};
+__forceinline SprayPoint spray_position(const vec2f_t &offset, const vec2f_t &center) {
+    return SprayPoint(offset.x + center.x, offset.y + center.y);
 }
-__forceinline void sprite(vec2f_t pos, float vx, float vy, float scale, float alpha) {
-    vec2f_t velocity = {vx, vy};
-    sprite_effect_pool[fx_spawn_sprite(&pos, &velocity, scale)].color_a = alpha;
+__forceinline void spray_blood(const vec2f_t &position) { fx_queue_add_random(&position); }
+__forceinline void spray_ice(const vec2f_t &position, float size) { freeware_shard(&position, size); }
+__forceinline void primary_hit_sound(bool lethal) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    freeware_combat_sound(lethal ? crt_rand() % 4 + 3 : crt_rand() % 2, .45f);
+#else
+    if (lethal)
+        sfx_play_panned(crt_rand() % 4 + 3, .45f, .5f);
+    else
+        sfx_play_panned(crt_rand() % 2, .45f, .5f);
+#endif
 }
-__forceinline void sparks(vec2f_t pos) {
-    for (int i = 0; i < 10; ++i) {
-        float speed = (crt_rand() % 800) * .1f;
-        sprite(pos, (float)cos(i * .62831855f) * speed, (float)sin(i * .62831855f) * speed, 14, .37f);
-    }
-}
-__forceinline void impact_marks(projectile_t &shot, creature_t &c) {
-    float angle = shot.angle - half_pi + (crt_rand() % 20 - 10) * .1f;
-    float x = (float)cos(angle) * 20, y = (float)sin(angle) * 20;
-    int type = shot.fields.type_id;
-    if (type != 7 && type != 10) {
-        if (bonus_freeze_timer <= 0) {
-            blood(c.position);
-            for (int i = 3; i <= 5; ++i)
-                blood(offset(c.position, x * i * .5f, y * i * .5f));
+__forceinline void impact_marks(projectile_t &shot, int id) {
+    float jitter = (float)(crt_rand() % 20 - 10) * .1f;
+    float angle = (shot.angle - half_pi) + jitter;
+    float x = (float)cos(angle) * 20.f, y = (float)sin(angle) * 20.f;
+    if (shot.fields.type_id != 7 && shot.fields.type_id != 10) {
+        if (bonus_freeze_timer > 0.f) {
+            float size = (float)(crt_rand() % 10 + 5);
+            spray_ice(creature_pool[id].position, size);
+            size = (float)(crt_rand() % 10 + 5);
+            spray_ice(spray_position(SprayPoint(x * 1.5f, y * 1.5f), creature_pool[id].position), size);
+            size = (float)(crt_rand() % 10 + 5);
+            spray_ice(spray_position(SprayPoint(x * 2.f, y * 2.f), creature_pool[id].position), size);
         } else {
-            shard(c.position, (float)(crt_rand() % 10 + 5));
-            shard(offset(c.position, x * 1.5f, y * 1.5f), (float)(crt_rand() % 10 + 5));
-            shard(offset(c.position, x + x, y + y), (float)(crt_rand() % 10 + 5));
+            spray_blood(creature_pool[id].position);
+            spray_blood(spray_position(SprayPoint(x * 1.5f, y * 1.5f), creature_pool[id].position));
+            spray_blood(spray_position(SprayPoint(x * 2.f, y * 2.f), creature_pool[id].position));
+            spray_blood(spray_position(SprayPoint(x * 2.5f, y * 2.5f), creature_pool[id].position));
         }
     }
-    if (type == 10) {
-        double length = (crt_rand() % 100) * .1f;
-        if (length > 4)
-            length = (crt_rand() % 90 + 10) * .1f;
-        if (length > 7)
-            length = (crt_rand() % 80 + 20) * .1f;
-        vec2f_t mark = offset(c.position, (float)(cos(shot.angle - half_pi) * length * 20),
-                              (float)(sin(shot.angle - half_pi) * length * 20));
-        vec2f_t probe = mark;
-        vec2f_t still = {0, 0};
-        if (freeware_current_map->move_with_collision(&probe, &still, 2))
-            return;
-        float size = (float)(crt_rand() % 10 + 5);
-        if (bonus_freeze_timer > 0)
-            shard(mark, size);
-        blood(mark);
+    if (shot.fields.type_id == 10) {
+        float factor = (float)(crt_rand() % 100) * .1f;
+        if (factor > 4.f)
+            factor = (float)(crt_rand() % 90 + 10) * .1f;
+        if (factor > 7.f)
+            factor = (float)(crt_rand() % 80 + 20) * .1f;
+        float direction = shot.angle - half_pi;
+        x = (float)cos(direction) * factor * 20.f;
+        y = (float)sin(direction) * factor * 20.f;
+        SprayPoint delta(x, y);
+        SprayPoint probe = spray_position(delta, creature_pool[id].position), still(0.f, 0.f);
+        if (freeware_current_map->move_with_collision(&probe, &still, 2.f) == 0) {
+            float size = (float)(crt_rand() % 10 + 5);
+            if (bonus_freeze_timer > 0.f)
+                spray_ice(spray_position(delta, creature_pool[id].position), size);
+            spray_blood(spray_position(delta, creature_pool[id].position));
+        }
     }
 }
-__forceinline void hit(projectile_t &shot, int id) {
-    creature_t &c = creature_pool[id];
-    int type = shot.fields.type_id;
-    if (c.death_timer == 16)
+__forceinline void hit(projectile_t &shot, int id, const vec2f_t *position, float &shard_radius) {
+    if (creature_pool[id].death_timer == 16)
         ++highscore_record_hits;
     if (UI_PLAYER(current_player_index).perks[perk_id_bloody_mess] > 0) {
-        for (int radius = 30; radius < 60; radius += 10) {
-            int x = crt_rand() % (2 * radius) - radius;
-            int y = crt_rand() % (2 * radius) - radius;
-            blood(offset(c.position, (float)x, (float)y));
+        for (int upper = 30, lower = -30; lower > -60; lower -= 10, upper += 10) {
+            vec2f_t scatter;
+            scatter.x = (float)(crt_rand() % (upper - lower) + lower);
+            scatter.y = (float)(crt_rand() % (upper - lower) + lower);
+            spray_blood(spray_position(scatter, creature_pool[id].position));
         }
     }
-    if (bonus_fire_bullets_timer <= 0 && type != 10)
+    if (bonus_fire_bullets_timer <= 0 && shot.fields.type_id != 10)
         shot.fields.life_timer = .25f;
-    float range = distance(shot.fields.origin, shot.position);
+    SprayPoint span(shot.fields.origin.x - position->x, shot.fields.origin.y - position->y);
+    float range = span.length();
     if (range < 50)
         range = 50;
-    float damage = 100 / range * 30 + 10;
-#if FREEWARE_EDITION == 10002
-    // 0x402f3d..0x402f76 subtracts range-scaled damage directly.
-    if (type == 2) damage *= .6f;
-    else if (type == 4) damage *= 4.6f;
-    else if (type == 6) damage *= 9.6f;
-    c.health -= damage;
-    float angle = shot.angle - half_pi + (crt_rand() % 20 - 10) * .1f;
-    float dx = (float)cos(angle) * 20, dy = (float)sin(angle) * 20;
-    if (type != 6) {
-        blood(c.position);
-        blood(offset(c.position, dx * 1.5f, dy * 1.5f));
-        blood(offset(c.position, dx * 2.5f, dy * 2.5f));
-    }
-#else
-    if (type == 2) damage *= 1.2f;
-    else if (type == 4) damage *= 4.1f;
-    else if (type == 7) damage *= 5;
-    else if (type == 9) damage *= 2;
+    float damage = 100.f / range * 30.f + 10.f;
+    int type = shot.fields.type_id;
+    if (type == 2)
+        damage *= 1.2f;
+    else if (type == 4)
+        damage *= 4.1f;
+    else if (type == 7)
+        damage *= 5;
+    else if (type == 9)
+        damage *= 2;
     else if (type == 17) {
-        c.plague_infected = 1;
+        creature_pool[id].plague_infected = 1;
         damage = 0;
     }
     float &pool = shot.fields.damage_pool;
-    if (c.health > 0) {
-        pool -= 1;
-        if (pool > 0) {
-            c.health -= pool;
-            pool -= c.health; // Uses the health AFTER subtraction, including a negative overkill balance.
+    if (creature_pool[id].health > 0) {
+        float power = pool - 1.f;
+        pool = power;
+        if (power > 0.f) {
+            creature_pool[id].health -= power;
+            // The remaining damage uses the creature's health after the hit.
+            pool = power - creature_pool[id].health;
         } else {
-            c.health -= damage * .95f;
-            shot.fields.life_timer = .25f;
+            creature_pool[id].health -= damage * .95f;
+            if (shot.fields.life_timer != .25f)
+                shot.fields.life_timer = .25f;
         }
     }
     if (pool == 1) {
         pool = 0;
-        shot.fields.life_timer = .25f;
+        if (shot.fields.life_timer != .25f)
+            shot.fields.life_timer = .25f;
     }
-    c.ai_mode = 1;
-    impact_marks(shot, c);
-#endif
-    if (FREEWARE_EDITION == 10002) {
-        if (freeware_hit_sound_timer <= 0 && config_game_mode != 2)
-            start_combat_music();
-        else if (bonus_fire_bullets_timer == 0)
-            impact_sound(crt_rand() % 2, .45f);
-    } else if (combat_music_active() || config_game_mode == 2)
-        impact_sound(crt_rand() % 2, .45f);
+    creature_pool[id].ai_mode = 1;
+    impact_marks(shot, id);
+    if (combat_music_active() || config_game_mode == 2)
+        primary_hit_sound(false);
     else
         start_combat_music();
-    if (c.health <= 0) {
-        if (c.death_timer == 16) {
-            if (FREEWARE_EDITION != 10002 && bonus_freeze_timer > 0)
-                scatter_shards(c.position, 6);
-            impact_sound(crt_rand() % 4 + 3, .45f);
+    if (creature_pool[id].health <= 0) {
+        if (creature_pool[id].death_timer == 16) {
+            if (bonus_freeze_timer > 0) {
+                for (int remaining = 6; remaining > 0; --remaining) {
+                    float size = (float)(crt_rand() % 10 + 5);
+                    float angle = (float)(crt_rand() % 628) * .01f;
+                    shard_radius = (float)(crt_rand() % 35);
+                    SprayPoint spread((float)cos(angle) * shard_radius, (float)sin(angle) * shard_radius);
+                    spray_ice(spray_position(spread, creature_pool[id].position), size);
+                }
+            }
+            primary_hit_sound(true);
             impact_death(id, current_player_index, 1);
         }
-#if FREEWARE_EDITION == 10002
-        float angle = shot.angle - half_pi + (crt_rand() % 20 - 10) * .1f;
-        float x = (float)cos(angle) * 20, y = (float)sin(angle) * 20;
-        blood(offset(c.position, x, y));
-        blood(offset(c.position, x * 2, y * 2));
-#else
         --creature_spawned_count;
-#endif
-        c.death_timer -= frame_dt * 20;
+        creature_pool[id].death_timer -= frame_dt * 20;
     }
 }
-__forceinline void bullets() {
+__forceinline void spawn_ricochet(const vec2f_t &position, const projectile_t &shot, float dx, float dy) {
+    vec2f_t offset = {dx * shot.fields.speed_scale, dy * shot.fields.speed_scale};
+    SprayPoint start(position.x - offset.x, position.y - offset.y);
+    projectile_spawn(&start, shot.angle - half_pi, 1);
+}
+__forceinline void bullets(float &shard_radius) {
     for (int i = 0; i < 64; ++i) {
         if (!projectile_pool[i].active)
             continue;
@@ -242,341 +232,511 @@ __forceinline void bullets() {
                 projectile_pool[i].fields.life_timer -= frame_dt;
             continue;
         }
-        if (projectile_pool[i].pos_x < -10 || projectile_pool[i].position.y < -10 || projectile_pool[i].pos_x > freeware_arena_width + 10 || projectile_pool[i].position.y > freeware_arena_height + 10) {
+        vec2f_t *position = &projectile_pool[i].position;
+        if (position->x < -10 || projectile_pool[i].position.y < -10 || position->x > freeware_arena_width + 10 ||
+            projectile_pool[i].position.y > freeware_arena_height + 10) {
             projectile_pool[i].fields.life_timer -= frame_dt;
             continue;
         }
-        int type = projectile_pool[i].fields.type_id;
-        int steps = 50;
-        if (type == 2) steps = 60;
-        if (type == 4) steps = 55;
-        if (type == freeware_rules::plasma_round) steps = 30;
-        if (type == freeware_rules::plasma_minigun_round) steps = 35;
-        if (type == 10) steps = 215;
         float dx, dy;
-#if FREEWARE_EDITION == 10400
-        if (type == 17) steps = 15;
-        if (type == 18) {
-            steps = 10;
-            double angle = (double)projectile_pool[i].angle - half_pi + sin((double)freeware_simulation_clock * 4 + i);
-            dx = (float)(cos(angle) * frame_dt * 10);
-            dy = (float)(sin(angle) * frame_dt * 10);
-        } else
+#if FREEWARE_EDITION != 10400
+        dx = (float)cos(projectile_pool[i].angle - half_pi) * frame_dt * 20.f;
+        dy = (float)sin(projectile_pool[i].angle - half_pi) * frame_dt * 20.f;
 #endif
-        {
-            double angle = (double)projectile_pool[i].angle - half_pi;
-            dx = (float)(cos(angle) * frame_dt * 20);
-            dy = (float)(sin(angle) * frame_dt * 20);
+        int steps = 50;
+        if (projectile_pool[i].fields.type_id == 2)
+            steps = 60;
+        if (projectile_pool[i].fields.type_id == 4)
+            steps = 55;
+        if (projectile_pool[i].fields.type_id == freeware_rules::plasma_round)
+            steps = 30;
+        if (projectile_pool[i].fields.type_id == freeware_rules::plasma_minigun_round)
+            steps = 35;
+        if (projectile_pool[i].fields.type_id == 10)
+            steps = 215;
+#if FREEWARE_EDITION == 10400
+        if (projectile_pool[i].fields.type_id == 17)
+            steps = 15;
+        if (projectile_pool[i].fields.type_id == 18) {
+            float angle = projectile_pool[i].angle - half_pi + (float)sin(freeware_simulation_clock * 4.f + i);
+            dx = (float)cos(angle) * frame_dt * 10.f;
+            dy = (float)sin(angle) * frame_dt * 10.f;
+            steps = 10;
+        } else {
+            float angle = projectile_pool[i].angle - half_pi;
+            dx = (float)cos(angle) * frame_dt * 20.f;
+            dy = (float)sin(angle) * frame_dt * 20.f;
         }
-        if (type == 3) {
+#endif
+        if (projectile_pool[i].fields.type_id != 3) {
+            for (int step = 0; step < steps; ++step) {
+                vec2f_t delta = {dx * projectile_pool[i].fields.speed_scale,
+                                 dy * projectile_pool[i].fields.speed_scale};
+                int wall = freeware_current_map->move_with_collision(position, &delta, 0.f);
+                if (!wall) {
+                    int id;
+                    if (FREEWARE_EDITION == 10400 && projectile_pool[i].fields.type_id == 18)
+                        id = creature_find_in_radius(position, 16.f);
+                    else
+                        id = creature_find_in_radius(position, 0.f);
+                    if (id != -1) {
+                        hit(projectile_pool[i], id, position, shard_radius);
+                        if (projectile_pool[i].fields.damage_pool <= 0)
+                            break;
+                    }
+                } else {
+                    if (crt_rand() % 15 == 2) {
+                        // Both executables construct a separate spawn position for each wall side.
+                        if (wall == 1) {
+                            spawn_ricochet(*position, projectile_pool[i], dx, dy);
+                        } else if (wall == 2) {
+                            spawn_ricochet(*position, projectile_pool[i], dx, dy);
+                        } else {
+                            spawn_ricochet(*position, projectile_pool[i], dx, dy);
+                        }
+                    }
+                    projectile_pool[i].fields.life_timer = .25f;
+                    break;
+                }
+            }
+        } else {
             projectile_pool[i].pos_x += dx * 10;
             projectile_pool[i].position.y += dy * 10;
             projectile_pool[i].fields.reserved -= frame_dt;
             if (projectile_pool[i].fields.reserved < 0) {
                 projectile_pool[i].fields.type_id = (projectile_type_id_t)0;
-                vec2f_t zero = {0, 0};
-                for (int j = 0; j < 40; ++j)
+                for (int j = 0; j < 40; ++j) {
+                    vec2f_t zero = {0, 0};
                     fx_spawn_particle(&projectile_pool[i].position, (crt_rand() % 628) * .01f, &zero, .8f);
-            }
-            continue;
-        }
-        for (int step = 0; step < steps; ++step) {
-#if FREEWARE_EDITION >= 10300
-            vec2f_t delta = {dx * projectile_pool[i].fields.speed_scale, dy * projectile_pool[i].fields.speed_scale};
-            if (freeware_current_map->move_with_collision(&projectile_pool[i].position, &delta, 0)) {
-                if (crt_rand() % 15 == 2) {
-                    vec2f_t start = {projectile_pool[i].position.x - delta.x, projectile_pool[i].position.y - delta.y};
-                    projectile_spawn(&start, projectile_pool[i].angle - half_pi, 1);
                 }
-                projectile_pool[i].fields.life_timer = .25f;
-                break;
-            }
-#else
-            projectile_pool[i].position.x += dx * projectile_pool[i].fields.speed_scale;
-            projectile_pool[i].position.y += dy * projectile_pool[i].fields.speed_scale;
-#endif
-            int id = creature_find_in_radius(&projectile_pool[i].position, FREEWARE_EDITION == 10400 && projectile_pool[i].fields.type_id == 18 ? 16.f : 0.f);
-            if (id >= 0) {
-                hit(projectile_pool[i], id);
-                if (FREEWARE_EDITION == 10002 || projectile_pool[i].fields.damage_pool <= 0)
-                    break;
             }
         }
     }
 }
-__forceinline void rockets() {
+
+#ifdef CRIMSON_FREEWARE_CLIENT
+#define ROCKET_GLOW_TEXTURE ui140::texture("glow")
+#else
+#define ROCKET_GLOW_TEXTURE grim_interface_ptr->grim_get_texture_handle((char *)"glow")
+#endif
+__forceinline SprayPoint operator+(const vec2f_t &a, const vec2f_t &b) { return SprayPoint(a.x + b.x, a.y + b.y); }
+__forceinline SprayPoint operator-(const vec2f_t &a, const vec2f_t &b) { return SprayPoint(a.x - b.x, a.y - b.y); }
+__forceinline SprayPoint operator*(const vec2f_t &a, const float &scale) {
+    return SprayPoint(a.x * scale, a.y * scale);
+}
+__forceinline float rocket_length(const vec2f_t &v) {
+#if FREEWARE_EDITION == 10300
+    return (float)sqrt(v.x * v.x + v.y * v.y);
+#else
+    float squared_y = v.y * v.y;
+    float length = (float)sqrt(squared_y + v.x * v.x);
+    return length;
+#endif
+}
+__forceinline float rocket_distance(const vec2f_t &a, const vec2f_t &b) {
+    float dx = a.x - b.x, dy = a.y - b.y;
+    float squared_x = dx * dx;
+    float distance = (float)sqrt(squared_x + dy * dy);
+    return distance;
+}
+__forceinline float rocket_abs(float value) {
+#if FREEWARE_EDITION == 10300 || defined(CRIMSON_FREEWARE_CLIENT)
+    return (float)fabs(value);
+#else
+    int bits = (*(int *)&value) & 0x7fffffff;
+    return *(float *)&bits;
+#endif
+}
+__forceinline SprayPoint scaled_rocket(float amount, const SprayPoint &v) {
+    float x = amount;
+    x *= v.x;
+    return SprayPoint(x, v.y * amount);
+}
+__forceinline void rocket_sparks(const vec2f_t *position) {
+    for (int i = 0; i < 10; ++i) {
+        float speed = (crt_rand() % 800) * .1f;
+        float angle = i * .62831855f;
+        SprayPoint velocity = scaled_rocket(speed, SprayPoint((float)cos(angle), (float)sin(angle)));
+        int effect = fx_spawn_sprite(position, &velocity, 14.f);
+        sprite_effect_pool[effect].color_a = .37f;
+    }
+}
+// On a frozen impact the blast reuses the final polar offset from the three initial
+// ice marks. The original still advances the random stream twice before choosing
+// the size and rotation of each of the ten later marks.
+__forceinline void rocket_burst_marks(int hit, const float &shard_angle, const float &shard_radius, int mark_count,
+                                      int mark_radius) {
+    if (bonus_freeze_timer > 0.f) {
+        for (int k = 0; k < 10; ++k) {
+            crt_rand();
+            crt_rand();
+            float size = (float)(crt_rand() % 10 + 5);
+            SprayPoint frozen_offset((float)cos(shard_angle) * shard_radius,
+                                     (float)sin(shard_angle) * shard_radius);
+            SprayPoint p = creature_pool[hit].position + frozen_offset;
+            freeware_shard(&p, size);
+        }
+    } else {
+        for (int k = 0; k < mark_count; ++k) {
+            float shard_angle = (float)(crt_rand() % 628) * .01f;
+            float shard_radius = (float)(crt_rand() % mark_radius);
+            SprayPoint offset((float)cos(shard_angle) * shard_radius, (float)sin(shard_angle) * shard_radius);
+            SprayPoint p = offset + creature_pool[hit].position;
+            fx_queue_add_random(&p);
+        }
+    }
+}
+__forceinline void rockets(float &shard_radius) {
     for (int i = 0; i < 64; ++i) {
-        secondary_projectile_t &r = secondary_projectile_pool[i];
-        if (!r.active)
+        float &heading = secondary_projectile_pool[i].angle;
+        if (!secondary_projectile_pool[i].active)
             continue;
-        vec2f_t &v = r.fields.velocity;
-        int type = r.fields.type_id;
-        if (type == 3) {
-            v.x += frame_dt * 3;
-            if (v.x > 1) {
-                float size = v.y * 256;
+        if (secondary_projectile_pool[i].fields.type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
+            secondary_projectile_pool[i].fields.vel_x += frame_dt * 3.f;
+            if (secondary_projectile_pool[i].fields.vel_x > 1.f) {
+                float size = secondary_projectile_pool[i].fields.vel_y * 256.f;
                 effect_color_t black = {0, 0, 0, .25f};
-                fx_queue_add(ui140::texture("glow"), &r.position, size, size, 0, black);
-                r.active = 0;
+                fx_queue_add(ROCKET_GLOW_TEXTURE, &secondary_projectile_pool[i].position, size, size, 0.f, black);
+                secondary_projectile_pool[i].active = 0;
             }
+            float radius =
+                secondary_projectile_pool[i].fields.vel_y * secondary_projectile_pool[i].fields.vel_x * 80.f;
             for (int j = 0; j < 512; ++j) {
                 creature_t &c = creature_pool[j];
-                if (c.active && c.health > 0 && distance(c.position, r.position) < v.x * v.y * 80) {
-                    c.health -= frame_dt * v.y * 700;
-                    if (c.health <= 0) {
-                        blood(c.position);
-                        impact_death(j, current_player_index, 1);
+                if (c.active && c.health > 0.f) {
+                    float distance = rocket_distance(c.position, secondary_projectile_pool[i].position);
+                    if (distance < radius) {
+                        c.health -= frame_dt * secondary_projectile_pool[i].fields.vel_y * 700.f;
+                        if (c.health <= 0.f) {
+                            fx_queue_add_random(&c.position);
+                            impact_death(j, current_player_index, 1);
+                        }
                     }
                 }
             }
             continue;
         }
-#if FREEWARE_EDITION >= 10300
-        vec2f_t delta = {v.x * frame_dt, v.y * frame_dt};
-        if (freeware_current_map->move_with_collision(&r.position, &delta, 4)) {
-            r.fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
-            v.x = 0;
-            v.y = type == 1 ? 1.f : .5f;
-            type = 3;
-        }
-#else
-        r.position.x += v.x * frame_dt;
-        r.position.y += v.y * frame_dt;
-#endif
-        if (type == 1) {
-            float scale = 1 + frame_dt * 3;
-            v.x *= scale;
-            v.y *= scale;
-            r.life_timer -= frame_dt;
-        } else if (type == 2) {
-            int &id = r.fields.target_id;
-            if (!creature_pool[id].active)
-                id = creature_find_nearest(&r.position);
-            vec2f_t target = creature_pool[id].position;
-            double heading = atan2((double)r.position.y - target.y, (double)r.pos_x - target.x) - half_pi;
-            r.angle = (float)heading;
-            v.x = (float)(v.x + cos(heading - half_pi) * frame_dt * 800);
-            v.y = (float)(v.y + sin((double)r.angle - half_pi) * frame_dt * 800);
-            if (sqrt((double)v.x * v.x + (double)v.y * v.y) > 350) {
-                v.x = (float)(v.x - cos((double)r.angle - half_pi) * frame_dt * 800);
-                v.y = (float)(v.y - sin((double)r.angle - half_pi) * frame_dt * 800);
-            }
-            r.life_timer -= frame_dt * .5f;
-        }
-        r.fields.trail_distance -= (float)(fabs(v.x) + fabs(v.y)) * frame_dt * .01f;
-        if (r.fields.trail_distance < 0) {
-            float smoke = (float)cos(r.angle + half_pi) * 90;
-            sprite(offset(r.position, (float)-cos(r.angle - half_pi) * 9, (float)-sin(r.angle - half_pi) * 9),
-                   smoke, smoke, 14, .3f);
-            r.fields.trail_distance = .05f;
-        }
-        int id = creature_find_in_radius(&r.position, 8);
-        if (id >= 0) {
-            creature_t &c = creature_pool[id];
-            if (c.death_timer == 16)
-                ++highscore_record_hits;
-            vec2f_t frozen_mark = c.position;
-            if (bonus_freeze_timer <= 0) {
-                int x = crt_rand() % 20 - 10, y = crt_rand() % 20 - 10;
-                blood(offset(c.position, (float)x, (float)y));
-            } else
-                frozen_mark = scatter_shards(c.position, 3);
-            float damage = 150;
-            if (type == 1)
-                damage = r.life_timer * 50 + 500;
-            else if (type == 2)
-                damage = r.life_timer * 50 + 100;
-            if (combat_music_active())
-                impact_sound(21, .45f);
+        vec2f_t &position = secondary_projectile_pool[i].position;
+        float speed = frame_dt;
+        SprayPoint delta(secondary_projectile_pool[i].fields.velocity.x * speed,
+                         secondary_projectile_pool[i].fields.velocity.y * speed);
+        if (freeware_current_map->move_with_collision(&position, &delta, 4.f)) {
+            int type = secondary_projectile_pool[i].fields.type_id;
+            secondary_projectile_pool[i].fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+            secondary_projectile_pool[i].fields.vel_x = 0.f;
+            if (type == SECONDARY_PROJECTILE_TYPE_ROCKET)
+                secondary_projectile_pool[i].fields.vel_y = 1.f;
             else
-                start_combat_music();
-            c.health -= damage;
-            c.ai_mode = 1;
-            if (c.health <= 0) {
-                if (c.death_timer == 16)
-                    impact_death(id, current_player_index, 1);
-                c.death_timer -= frame_dt * 10;
-            }
-            if (type == 1 || type == 2) {
-                r.fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
-                v.x = 0;
-                v.y = type == 1 ? 1.f : .5f;
-                if (bonus_freeze_timer <= 0) {
-                    int count = type == 1 ? 20 : 10;
-                    for (int k = 0; k < count; ++k) {
-                        float a = (crt_rand() % 628) * .01f;
-                        int radius = crt_rand() % (type == 1 ? 90 : 64);
-                        blood(offset(c.position, (float)cos(a) * radius, (float)sin(a) * radius));
-                    }
-                } else {
-                    // The frozen blast reuses the last impact offset for all ten marks.
-                    // Size/position choices still consume four random values per mark.
-                    for (int k = 0; k < 10; ++k) {
-                        crt_rand();
-                        crt_rand();
-                        shard(frozen_mark, (float)(crt_rand() % 10 + 5));
-                    }
-                }
-            }
-            sparks(r.position);
+                secondary_projectile_pool[i].fields.vel_y = .5f;
         }
-        if (r.life_timer <= 0) {
-            sparks(r.position);
-            r.active = 0;
+        if (secondary_projectile_pool[i].fields.type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
+            float scale = frame_dt * 3.f + 1.f;
+            secondary_projectile_pool[i].fields.vel_x *= scale;
+            secondary_projectile_pool[i].fields.vel_y *= scale;
+            secondary_projectile_pool[i].life_timer -= frame_dt;
+        } else if (secondary_projectile_pool[i].fields.type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
+            if (!creature_pool[secondary_projectile_pool[i].fields.target_id].active)
+                secondary_projectile_pool[i].fields.target_id = creature_find_nearest(&position);
+            const vec2f_t &target = creature_pool[secondary_projectile_pool[i].fields.target_id].position;
+            SprayPoint dir = position - target;
+            heading = (float)atan2(dir.y, dir.x) - half_pi;
+            secondary_projectile_pool[i].fields.vel_x += (float)cos(heading - half_pi) * frame_dt * 800.f;
+            secondary_projectile_pool[i].fields.vel_y += (float)sin(heading - half_pi) * frame_dt * 800.f;
+            if (rocket_length(secondary_projectile_pool[i].fields.velocity) > 350.f) {
+                secondary_projectile_pool[i].fields.vel_x -= (float)cos(heading - half_pi) * frame_dt * 800.f;
+                secondary_projectile_pool[i].fields.vel_y -= (float)sin(heading - half_pi) * frame_dt * 800.f;
+            }
+            secondary_projectile_pool[i].life_timer -= frame_dt * .5f;
+        }
+        secondary_projectile_pool[i].fields.trail_distance -=
+            (rocket_abs(secondary_projectile_pool[i].fields.vel_x) +
+             rocket_abs(secondary_projectile_pool[i].fields.vel_y)) *
+            frame_dt * .01f;
+        if (secondary_projectile_pool[i].fields.trail_distance < 0.f) {
+            SprayPoint vel =
+                SprayPoint((float)cos(heading + 1.57079637f), (float)cos(heading + 1.57079637f)) * 90.f;
+            float angle = heading - half_pi;
+            SprayPoint pos = position - SprayPoint((float)cos(angle), (float)sin(angle)) * 9.f;
+            int id = fx_spawn_sprite(&pos, &vel, 14.f);
+            secondary_projectile_pool[i].fields.trail_distance = .05f;
+            sprite_effect_pool[id].color_a = .3f;
+        }
+        int hit = creature_find_in_radius(&secondary_projectile_pool[i].position, 8.f);
+        if (hit != -1) {
+            if (creature_pool[hit].death_timer == 16.f)
+                ++highscore_record_hits;
+            float shard_angle;
+            if (bonus_freeze_timer > 0.f) {
+                for (int j = 0; j < 3; ++j) {
+                    float size = (float)(crt_rand() % 10 + 5);
+                    shard_angle = (float)(crt_rand() % 628) * .01f;
+                    shard_radius = (float)(crt_rand() % 35);
+                    SprayPoint offset((float)cos(shard_angle) * shard_radius,
+                                      (float)sin(shard_angle) * shard_radius);
+                    SprayPoint pos = offset + creature_pool[hit].position;
+                    freeware_shard(&pos, size);
+                }
+            } else {
+                vec2f_t spread;
+                spread.x = (float)(crt_rand() % 20 - 10);
+                spread.y = (float)(crt_rand() % 20 - 10);
+                SprayPoint pos = spread + creature_pool[hit].position;
+                fx_queue_add_random(&pos);
+            }
+            float damage = 150.f;
+            if (secondary_projectile_pool[i].fields.type_id == SECONDARY_PROJECTILE_TYPE_ROCKET)
+                damage = secondary_projectile_pool[i].life_timer * 50.f + 500.f;
+            else if (secondary_projectile_pool[i].fields.type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET)
+                damage = secondary_projectile_pool[i].life_timer * 50.f + 100.f;
+            if (!combat_music_active())
+                start_combat_music();
+            else
+                impact_sound(21, .45f);
+            creature_pool[hit].health -= damage;
+            creature_pool[hit].ai_mode = 1;
+            if (creature_pool[hit].health <= 0.f) {
+                if (creature_pool[hit].death_timer == 16.f)
+                    impact_death(hit, current_player_index, 1);
+                creature_pool[hit].death_timer -= frame_dt * 10.f;
+            }
+            if (secondary_projectile_pool[i].fields.type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
+                secondary_projectile_pool[i].fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                secondary_projectile_pool[i].fields.vel_x = 0.f;
+                secondary_projectile_pool[i].fields.vel_y = 1.f;
+                rocket_burst_marks(hit, shard_angle, shard_radius, 20, 90);
+
+            } else if (secondary_projectile_pool[i].fields.type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
+                secondary_projectile_pool[i].fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                secondary_projectile_pool[i].fields.vel_x = 0.f;
+                secondary_projectile_pool[i].fields.vel_y = .5f;
+                rocket_burst_marks(hit, shard_angle, shard_radius, 10, 64);
+            }
+            rocket_sparks(&secondary_projectile_pool[i].position);
+        }
+        if (secondary_projectile_pool[i].life_timer <= 0.f) {
+            rocket_sparks(&secondary_projectile_pool[i].position);
+            secondary_projectile_pool[i].active = 0;
         }
     }
 }
-__forceinline float clamp_color(float value) { return value < 0 ? 0 : value > 1 ? 1 : value; }
-__forceinline void particles() {
-    for (int i = 0; i < 128; ++i) {
-        particle_t &p = particle_pool[i];
-        if (!p.active)
-            continue;
-        bool bubble = FREEWARE_EDITION != 10300 && p.style_id == 8;
-        p.intensity -= frame_dt * (FREEWARE_EDITION == 10002 ? 1.1f : bubble ? .11f : .9f);
-#if FREEWARE_EDITION == 10300
-        if (p.intensity <= (p.style_id == 0 ? 0.f : .8f)) {
-            p.active = 0;
-            continue;
-        }
+
+#undef ROCKET_GLOW_TEXTURE
+#ifdef CRIMSON_FREEWARE_CLIENT
+#define PARTICLE_SOUND(sample, volume) freeware_combat_sound(sample, volume)
 #else
-        p.rotation += frame_dt * (bubble ? 5.f : 1.f);
+#define PARTICLE_SOUND(sample, volume) sfx_play_panned(sample, volume, .5f)
 #endif
-        if (!bubble || p.in_flight) {
-            float scale = bubble ? (p.intensity <= .15f ? .55f : 1.f) * p.intensity
-                                 : 2.5f * (p.intensity > .15f ? p.intensity : .15f);
-#if FREEWARE_EDITION >= 10300
-            vec2f_t delta = {frame_dt * p.vel_x * scale, frame_dt * p.vel_y * scale};
-            if (p.intensity > .15f)
-                freeware_current_map->move_with_collision(&p.position, &delta, 3);
-            else {
-                p.pos_x += delta.x;
-                p.pos_y += delta.y;
+struct ParticlePoint : vec2f_t {
+    __forceinline ParticlePoint(float px, float py) {
+        x = px;
+        y = py;
+    }
+};
+__forceinline ParticlePoint scale_particle_vector(const vec2f_t &v, float amount) {
+    return ParticlePoint(amount * v.x, amount * v.y);
+}
+__forceinline void add_particle_vector(vec2f_t &dst, const vec2f_t &delta) {
+    dst.x += delta.x;
+    dst.y += delta.y;
+}
+__forceinline void clamp_color(float &value) {
+    if (value < 0.f)
+        value = 0.f;
+    else if (value > 1.f)
+        value = 1.f;
+}
+__forceinline void turn_particle(int i, float factor) {
+    int turn = crt_rand() % 100 - 50;
+    float deviation = (float)turn * .06f;
+    deviation *= frame_dt;
+    deviation *= particle_pool[i].intensity;
+    deviation *= factor;
+    particle_pool[i].angle -= deviation;
+}
+__forceinline void particle_heading_velocity(int i, float speed) {
+    particle_pool[i].vel_x = (float)cos(particle_pool[i].angle) * speed;
+    particle_pool[i].vel_y = (float)sin(particle_pool[i].angle) * speed;
+}
+__forceinline void particles() {
+    const float tau = 6.28318548f;
+    for (int i = 0; i < 128; ++i) {
+        if (!particle_pool[i].active)
+            continue;
+#if FREEWARE_EDITION != 10300
+        if (particle_pool[i].style_id == 8) {
+            particle_pool[i].intensity -= frame_dt * .11f;
+            particle_pool[i].rotation += frame_dt * 5.f;
+            if (particle_pool[i].in_flight) {
+                if (particle_pool[i].intensity > .15f) {
+                    ParticlePoint delta = scale_particle_vector(
+                        scale_particle_vector(particle_pool[i].velocity, frame_dt), particle_pool[i].intensity);
+                    freeware_current_map->move_with_collision(&particle_pool[i].position, &delta, 3.f);
+                } else {
+                    add_particle_vector(particle_pool[i].position, scale_particle_vector(
+                        scale_particle_vector(scale_particle_vector(particle_pool[i].velocity, frame_dt), .55f),
+                        particle_pool[i].intensity));
+                }
+            }
+        } else
+#endif
+        {
+            particle_pool[i].intensity -= frame_dt * .9f;
+#if FREEWARE_EDITION == 10300
+            if (particle_pool[i].style_id == 0) {
+                if (particle_pool[i].intensity <= 0.f) {
+                    particle_pool[i].active = 0;
+                    continue;
+                }
+            } else if (particle_pool[i].intensity <= .8f) {
+                particle_pool[i].active = 0;
+                continue;
             }
 #else
-            p.pos_x += frame_dt * p.vel_x * scale;
-            p.pos_y += frame_dt * p.vel_y * scale;
+            particle_pool[i].rotation += frame_dt;
 #endif
+            if (particle_pool[i].intensity > .15f) {
+                ParticlePoint delta = scale_particle_vector(
+                    scale_particle_vector(scale_particle_vector(particle_pool[i].velocity, frame_dt), 2.5f),
+                    particle_pool[i].intensity);
+                freeware_current_map->move_with_collision(&particle_pool[i].position, &delta, 3.f);
+            } else {
+                add_particle_vector(particle_pool[i].position, scale_particle_vector(
+                    scale_particle_vector(scale_particle_vector(particle_pool[i].velocity, frame_dt), 2.5f), .15f));
+            }
         }
 #if FREEWARE_EDITION != 10300
-        if (p.intensity <= (p.style_id == 0 ? 0.f : .8f)) {
-            p.active = 0;
-            if (bubble) {
-                if (p.target_id != -1) {
-                    if (creature_pool[p.target_id].active)
-                        impact_sound(crt_rand() % 4 + 3, .45f);
-                    impact_death(p.target_id, 0, 0);
+        if (particle_pool[i].style_id == 0) {
+            if (particle_pool[i].intensity <= 0.f) {
+                particle_pool[i].active = 0;
+                continue;
+            }
+        } else if (particle_pool[i].intensity <= .8f) {
+            particle_pool[i].active = 0;
+            if (particle_pool[i].style_id == 8) {
+                if (particle_pool[i].target_id != -1) {
+                    if (creature_pool[particle_pool[i].target_id].active)
+                        PARTICLE_SOUND(crt_rand() % 4 + 3, .45f);
+                    impact_death(particle_pool[i].target_id, 0, 0);
                 }
-                impact_sound(27, (crt_rand() % 70) * .1f + .3f);
+                PARTICLE_SOUND(27, (crt_rand() % 70) * .1f + .3f);
             }
             continue;
         }
 #endif
-        if (p.in_flight == 1) {
-            double a = p.angle - (crt_rand() % 100 - 50) * (double)(FREEWARE_EDITION == 10002 ? .1f : .06f) * frame_dt * p.intensity *
-                                     (p.style_id == 0 ? 1.96f : 1.1f);
-            p.angle = (float)a;
-            p.vel_x = (float)(cos(FREEWARE_EDITION == 10300 ? (double)p.angle : a) * (bubble ? 62 : 82));
-            p.vel_y = (float)(sin(p.angle) * (bubble ? 62 : 82));
+        if (particle_pool[i].in_flight == 1) {
+            if (particle_pool[i].style_id == 0) {
+                turn_particle(i, 1.96f);
+                if (FREEWARE_EDITION != 10300)
+                    particle_heading_velocity(i, 82.f);
+            } else if (FREEWARE_EDITION != 10300 && particle_pool[i].style_id == 8) {
+                turn_particle(i, 1.1f);
+                particle_heading_velocity(i, 62.f);
+            } else {
+                turn_particle(i, 1.1f);
+                if (FREEWARE_EDITION != 10300)
+                    particle_heading_velocity(i, 82.f);
+            }
+            if (FREEWARE_EDITION == 10300)
+                particle_heading_velocity(i, 82.f);
         }
-        p.color_a = p.intensity < 1 ? p.intensity : 1;
-        p.color_r = p.color_g = 1 - p.intensity * .95f;
+        particle_pool[i].color_a = particle_pool[i].intensity > 1.f ? 1.f : particle_pool[i].intensity;
+        particle_pool[i].color_g = particle_pool[i].color_r = 1.f - particle_pool[i].intensity * .95f;
 #if FREEWARE_EDITION == 10300
-        p.rotation += frame_dt;
+        particle_pool[i].rotation += frame_dt;
 #endif
-        if (!p.in_flight)
+        if (!particle_pool[i].in_flight)
             continue;
-        int id = creature_find_in_radius(&p.position, p.intensity * 8);
-        if (id < 0)
+        const vec2f_t &contact = particle_pool[i].position;
+        int id = creature_find_in_radius(&contact, particle_pool[i].intensity * 8.f);
+        if (id == -1)
             continue;
-        creature_t &c = creature_pool[id];
-        p.in_flight = 0;
-        if (bubble) {
-            p.position = c.position;
-            p.vel_x = p.vel_y = 0;
-            p.target_id = id;
-            c.ai_mode = 0;
-            c.activation_radius = 0;
+        particle_pool[i].in_flight = 0;
+
+#if FREEWARE_EDITION != 10300
+        if (particle_pool[i].style_id == 8) {
+            particle_pool[i].position = creature_pool[id].position;
+            creature_pool[id].ai_mode = 0;
+            particle_pool[i].vel_x = 0.f;
+            particle_pool[i].vel_y = 0.f;
+            creature_pool[id].activation_radius = 0.f;
+            particle_pool[i].target_id = id;
             continue;
         }
-        while (p.angle > tau)
-            p.angle -= tau;
-        while (p.angle < 0)
-            p.angle += tau;
-        double bearing =
-            atan2(p.pos_y - (double)frame_dt * p.vel_y - c.pos_y, (float)(p.pos_x - frame_dt * p.vel_x) - c.pos_x);
-        if (bearing < 0)
+#endif
+        while (particle_pool[i].angle > tau)
+            particle_pool[i].angle -= tau;
+        while (particle_pool[i].angle < 0)
+            particle_pool[i].angle += tau;
+        vec2f_t displacement = scale_particle_vector(particle_pool[i].velocity, frame_dt);
+        ParticlePoint previous(contact.x - displacement.x, particle_pool[i].position.y - displacement.y);
+        const vec2f_t &hit_position = creature_pool[id].position;
+        ParticlePoint direction(previous.x - hit_position.x, previous.y - hit_position.y);
+        float bearing = (float)atan2(direction.y, direction.x);
+        while (bearing > tau)
+            bearing -= tau;
+        while (bearing < 0)
             bearing += tau;
-        p.angle += p.angle <= bearing ? 1.2566371f : -1.2566371f;
+        if (bearing < particle_pool[i].angle)
+            particle_pool[i].angle -= 1.2566371f;
+        else
+            particle_pool[i].angle += 1.2566371f;
+        particle_heading_velocity(i, 82.f);
         float speed = (crt_rand() % 10) * .1f;
-        p.vel_x = (float)(cos(p.angle) * 82) * speed;
-        p.vel_y = (float)(sin(p.angle) * 82) * speed;
-        c.health -= p.intensity * (FREEWARE_EDITION == 10002 ? 15 : 10);
-#if FREEWARE_EDITION != 10002
-        c.ai_mode = 1;
-        effect_color_t &color = c.freeware.color;
-        if (color.r + color.g + color.b > .6f) {
-            float scale = 1 - p.intensity * .18f;
-            color.r *= scale;
-            color.g *= scale;
-            color.b *= scale;
-            color.r = clamp_color(color.r);
-            color.g = clamp_color(color.g);
-            color.b = clamp_color(color.b);
-            color.a = clamp_color(color.a);
+        particle_pool[i].vel_x *= speed;
+        particle_pool[i].vel_y *= speed;
+        creature_pool[id].health -= particle_pool[i].intensity * 10.f;
+        creature_pool[id].ai_mode = 1;
+
+        float brightness = creature_pool[id].freeware.color.b;
+        brightness += creature_pool[id].freeware.color.r;
+        brightness += creature_pool[id].freeware.color.g;
+        if (brightness > .6f) {
+            float scale = 1.f - particle_pool[i].intensity * .18f;
+            creature_pool[id].freeware.color.r *= scale;
+            creature_pool[id].freeware.color.g *= scale;
+            creature_pool[id].freeware.color.b *= scale;
+            clamp_color(creature_pool[id].freeware.color.r);
+            clamp_color(creature_pool[id].freeware.color.g);
+            clamp_color(creature_pool[id].freeware.color.b);
+            clamp_color(creature_pool[id].freeware.color.a);
         }
         if (i % 3 == 0) {
-            int x = crt_rand() % 60 - 30, y = crt_rand() % 60 - 30;
-            sprite(c.position, (float)x, (float)y, 13, .7f);
+            int x = crt_rand() % 60 - 30;
+            int y = crt_rand() % 60 - 30;
+            SprayPoint velocity((float)x, (float)y);
+            sprite_effect_pool[fx_spawn_sprite(&creature_pool[id].position, &velocity, 13.f)].color_a = .7f;
         }
-#endif
-        blood(c.position);
-        c.pos_x += p.vel_x * frame_dt;
-        c.pos_y += p.vel_y * frame_dt;
-        if (c.health <= 0) {
-#if FREEWARE_EDITION == 10002
-            // The 0x4036df flame kill awards XP directly without rolling a weapon pickup.
-            if (c.death_timer == 16) {
-                impact_sound(crt_rand() % 4 + 3, .45f);
-                freeware_player_t &owner = UI_PLAYER(current_player_index);
-                owner.experience += (int)(c.freeware.reward * (owner.perks[freeware_rules::bloody_mess] ? 1.5 : 1));
-#ifdef CRIMSON_FREEWARE_CLIENT
-                UI_GAME.run.experience = owner.experience;
-#endif
-            }
-#else
-            if (c.death_timer == 16) {
+        fx_queue_add_random(&creature_pool[id].position);
+        ParticlePoint recoil(particle_pool[i].vel_x, particle_pool[i].vel_y);
+        float delta_time = frame_dt;
+        ParticlePoint delta = scale_particle_vector(recoil, delta_time);
+        add_particle_vector(creature_pool[id].position, delta);
+        if (creature_pool[id].health <= 0.f) {
+            if (creature_pool[id].death_timer == 16.f) {
                 impact_death(id, current_player_index, 1);
-                impact_sound(crt_rand() % 4 + 3, .45f);
+                PARTICLE_SOUND(crt_rand() % 4 + 3, .45f);
             }
-#endif
             --creature_spawned_count;
-            c.death_timer -= frame_dt * 20;
+            creature_pool[id].death_timer -= frame_dt * 20.f;
         }
     }
 }
+#undef PARTICLE_SOUND
 } // namespace
 extern "C" void projectile_update() {
-#if FREEWARE_EDITION == 10002
-    // 0x402ca0 decays the muzzle flash before projectiles, including during the dying phase.
-    float &flash = player_state_table[current_player_index].freeware.muzzle_flash;
-    flash -= frame_dt * 2;
-    if (flash < 0)
-        flash = 0;
-#endif
-    bullets();
-    rockets();
+    float shard_radius;
+    bullets(shard_radius);
+    rockets(shard_radius);
     for (int i = 0; i < (FREEWARE_EDITION == 10300 ? 256 : 384); ++i) {
         sprite_effect_t &s = sprite_effect_pool[i];
         if (!s.active)
             continue;
-        s.pos_x += frame_dt * s.vel_x;
-        s.pos_y += frame_dt * s.vel_y;
-        s.rotation += frame_dt * 3;
+        add_particle_vector(s.position, scale_particle_vector(s.velocity, frame_dt));
+        s.rotation += frame_dt * 3.f;
         s.color_a -= frame_dt;
-        if (s.color_a <= 0)
+        if (s.color_a <= 0.f)
             s.active = 0;
-        s.scale += frame_dt * 60;
+        s.scale += frame_dt * 60.f;
     }
     particles();
 }

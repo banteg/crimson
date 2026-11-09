@@ -18,14 +18,13 @@ before the expiry check. The 1.3.0 projectile oracle checks 35 impacts and
 | Build | Native instructions | Candidate instructions | Normalized similarity |
 | --- | ---: | ---: | ---: |
 | 1.0.2 | 773 | 773 | 100%, byte-exact |
-| 1.3.0 | 1,954 | 1,774 | 32.67% |
-| 1.4.0 | 2,132 | 1,921 | 35.78% |
+| 1.3.0 | 1,954 | 1,954 | 94.42% |
+| 1.4.0 | 2,132 | 2,132 | 93.20% |
 
-Both later native functions allocate 0x110 bytes of locals. The compiled
-1.3.0 and 1.4.0 candidates allocate 0xd4 and 0xe0. Differences include the
-primary index loop, three native wall-return paths for ricochets, vector
-temporaries and x87 spills throughout impacts, and the layout of the rocket
-and particle passes. Both retain zero whole-function matching credit.
+The two later builds reproduce the native `0x110`-byte frame and the
+instruction sequence across all four pool walks. C2 assigns some temporary
+values to different stack slots. This changes instruction lengths and branch
+displacements. Both retain zero whole-function matching credit.
 
 ## 1.9.8 exact (2026-10-14)
 

@@ -3,11 +3,17 @@
 #include "crimsonland_types.h"
 #include "freeware_edition.h"
 
+#ifdef CRIMSON_FREEWARE_CLIENT
+#include "../ui/freeware_ui.h"
+#endif
+
 extern "C" {
+#ifndef CRIMSON_FREEWARE_CLIENT
 extern freeware_player_t player_state_table[2];
+#endif
 extern projectile_pool_t projectile_pool;
 extern particle_t particle_pool[128];
-extern creature_t creature_pool[128];
+extern creature_t creature_pool[];
 extern game_mode_id_t config_game_mode;
 extern int current_player_index, perk_id_bloody_mess, creature_spawned_count;
 extern int freeware_arena_width, freeware_arena_height, freeware_music_channel_b;
@@ -19,11 +25,21 @@ int creature_find_in_radius(const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
 int crt_rand();
 int sfx_play_panned(int, float, float);
+#ifdef CRIMSON_FREEWARE_CLIENT
+extern float freeware_hit_sound_timer;
+void freeware_combat_sound(int sample, float volume);
+#else
 void freeware_game_track_start(int);
+#endif
 void fx_queue_add_random(const vec2f_t *);
 }
 
 namespace {
+#ifdef CRIMSON_FREEWARE_CLIENT
+#define PROJECTILE_PLAYER UI_PLAYER(current_player_index)
+#else
+#define PROJECTILE_PLAYER player_state_table[current_player_index]
+#endif
 // The primary pool uses different projectile ids from the later builds.
 enum { pellet_round = 2, burst_round = 3, pistol_round = 4 };
 const float half_pi = 1.57079637f;
@@ -47,7 +63,7 @@ __forceinline void spray_direction(const float &heading, float &x, float &y) {
 }
 __forceinline void hit_creature(int slot, int id, const float &heading) {
     float dx, dy;
-    if (player_state_table[current_player_index].perks[perk_id_bloody_mess] > 0 &&
+    if (PROJECTILE_PLAYER.perks[perk_id_bloody_mess] > 0 &&
         projectile_pool[slot].fields.type_id != freeware_rules::plasma_round) {
         for (int upper = 30, lower = -30; lower > -60; lower -= 10, upper += 10) {
             vec2f_t offset;
@@ -83,29 +99,34 @@ __forceinline void hit_creature(int slot, int id, const float &heading) {
         leave_mark(offset_point(ImpactPoint(dx * 2.5f, dy * 2.5f), pos));
     }
     // A hit starts the game track whenever its channel is idle.
+#ifdef CRIMSON_FREEWARE_CLIENT
+    if (freeware_hit_sound_timer <= 0)
+        freeware_combat_sound(31, 1);
+#else
     if (freeware_music_channel_b == -1)
         freeware_game_track_start(31);
+#endif
     else if (bonus_fire_bullets_timer == 0)
         sfx_play_panned(crt_rand() % 2, .45f, .5f);
 
     if (creature_pool[id].health <= 0) {
         if (creature_pool[id].death_timer == 16) {
             sfx_play_panned(crt_rand() % 4 + 3, .45f, .5f);
-            if (player_state_table[current_player_index].perks[perk_id_bloody_mess] > 0)
-                player_state_table[current_player_index].experience +=
+            if (PROJECTILE_PLAYER.perks[perk_id_bloody_mess] > 0)
+                PROJECTILE_PLAYER.experience +=
                     (int)(creature_pool[id].freeware.reward * 1.5f);
             else
-                player_state_table[current_player_index].experience += creature_pool[id].freeware.reward;
+                PROJECTILE_PLAYER.experience += creature_pool[id].freeware.reward;
             if (freeware_pickup_id == freeware_no_pickup && config_game_mode != GAME_MODE_RUSH &&
                 (crt_rand() % 15 == 1 ||
-                 (player_state_table[current_player_index].weapon == 1 && crt_rand() % 3 == 1))) {
+                 (PROJECTILE_PLAYER.weapon == 1 && crt_rand() % 3 == 1))) {
                 freeware_pickup_position = creature_pool[id].position;
                 int kind = crt_rand() % 4;
                 if (config_game_mode == GAME_MODE_RUSH) {
                     while (kind == 2)
                         kind = crt_rand() % 4;
                 }
-                if (player_state_table[current_player_index].weapon == 1)
+                if (PROJECTILE_PLAYER.weapon == 1)
                     kind = 2;
                 if (kind == 0)
                     freeware_pickup_id = freeware_bonus_fire;
@@ -220,10 +241,10 @@ __forceinline void update_flame_particles() {
         if (creature_pool[id].health <= 0) {
             if (creature_pool[id].death_timer == 16) {
                 sfx_play_panned(crt_rand() % 4 + 3, .45f, .5f);
-                if (player_state_table[current_player_index].perks[perk_id_bloody_mess] > 0)
-                    player_state_table[current_player_index].experience += (int)(creature_pool[id].freeware.reward * 1.5f);
+                if (PROJECTILE_PLAYER.perks[perk_id_bloody_mess] > 0)
+                    PROJECTILE_PLAYER.experience += (int)(creature_pool[id].freeware.reward * 1.5f);
                 else
-                    player_state_table[current_player_index].experience += creature_pool[id].freeware.reward;
+                    PROJECTILE_PLAYER.experience += creature_pool[id].freeware.reward;
             }
             --creature_spawned_count;
             creature_pool[id].death_timer -= frame_dt * 20;
@@ -232,9 +253,14 @@ __forceinline void update_flame_particles() {
 }
 } // namespace
 extern "C" void projectile_update() {
-    player_state_table[current_player_index].muzzle_flash -= frame_dt * 2.0f;
-    if (player_state_table[current_player_index].muzzle_flash < 0)
-        player_state_table[current_player_index].muzzle_flash = 0;
+#ifdef CRIMSON_FREEWARE_CLIENT
+    auto &run = UI_GAME.run;
+    PROJECTILE_PLAYER.experience = run.experience;
+    freeware_pickup_id = static_cast<int>(run.pickup.kind);
+#endif
+    PROJECTILE_PLAYER.muzzle_flash -= frame_dt * 2.0f;
+    if (PROJECTILE_PLAYER.muzzle_flash < 0)
+        PROJECTILE_PLAYER.muzzle_flash = 0;
     for (int i = 0; i < PROJECTILE_POOL_CAPACITY; ++i) {
         if (!projectile_pool[i].active)
             continue;
@@ -282,4 +308,10 @@ extern "C" void projectile_update() {
         }
     }
     update_flame_particles();
+#ifdef CRIMSON_FREEWARE_CLIENT
+    run.experience = PROJECTILE_PLAYER.experience;
+    if (run.pickup.kind == freeware::Bonus::None && freeware_pickup_id != freeware_no_pickup)
+        run.pickup = {freeware_pickup_position, static_cast<freeware::Bonus>(freeware_pickup_id), freeware_pickup_time, 0};
+#endif
 }
+#undef PROJECTILE_PLAYER
