@@ -105,13 +105,16 @@ if (index >= 0)
         freeware_level_object *object = new freeware_level_object();
         object->width = editor_brush(index).width;
         object->height = editor_brush(index).height;
+#elif FREEWARE_EDITION == 10300
+        freeware_level_object *object =
+            new ::freeware_editor_brush("0", freeware_brushes[index]->width, freeware_brushes[index]->height);
 #else
         freeware_level_object *object =
             new ::freeware_editor_brush("0", editor_brush(index).width, editor_brush(index).height);
 #endif
         object->texture = editor_brush(index).texture;
         object->rotation = rotation;
-        vec2f_t ground = editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y);
+        const editor_point &ground = editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y);
         object->position = editor_point(ground.x + offset.x, ground.y + offset.y);
         object->position.x = (float)(int)object->position.x;
         object->position.y = (float)(int)object->position.y;
