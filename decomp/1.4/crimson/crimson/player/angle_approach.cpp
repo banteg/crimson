@@ -12,11 +12,7 @@ static __inline float abs_bits(float value)
     return *(float *)&bits;
 }
 
-#if CL_BUILD == 10300
 extern "C" float angle_approach(float *angle, float target)
-#else
-extern "C" float angle_approach(float *angle, float target, float rate)
-#endif
 {
     while (*angle < 0.0f) {
         *angle += 6.2831855f;
