@@ -51,13 +51,11 @@ if (freeware_christmas) {
     grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
     grim_interface_ptr->grim_begin_batch();
     for (int x = 0; x < screen_width; x += 17) {
-        float snow_x = (float)x;
-        grim_interface_ptr->grim_set_rotation(snow_x + (float)sin(age * .4f));
-        float &y = freeware_snow_y[x];
-        y += ((x * 34 % 5) + 1) * 5 * frame_dt;
-        while (y > 150)
-            y -= 200;
-        float snow_y = y;
+        grim_interface_ptr->grim_set_rotation((float)x + (float)sin(age * .4f));
+        freeware_snow_y[x] += ((x * 34 % 5) + 1) * 5 * frame_dt;
+        while (freeware_snow_y[x] > 150)
+            freeware_snow_y[x] -= 200;
+        float snow_y = freeware_snow_y[x];
         if (snow_y < 0)
             grim_interface_ptr->grim_set_color(1, 1, 1, 0);
         else if (snow_y < 50)
@@ -66,7 +64,7 @@ if (freeware_christmas) {
             grim_interface_ptr->grim_set_color(1, 1, 1, 1 - (snow_y - 100) * .02f);
         else
             grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-        grim_interface_ptr->grim_draw_quad(snow_x, snow_y, 32, 32);
+        grim_interface_ptr->grim_draw_quad((float)x, snow_y, 32, 32);
     }
     grim_interface_ptr->grim_end_batch();
 }

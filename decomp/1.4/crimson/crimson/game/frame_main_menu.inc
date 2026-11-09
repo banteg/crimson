@@ -23,8 +23,8 @@ pulse = CLOCK - STATE_SINCE;
 const float &age = pulse;
 orbit = CLOCK;
 const float &menu_clock = orbit;
-vec2f_t position;
 {
+    vec2f_t position;
 #include "frame_menu_title.inc"
 }
 #else

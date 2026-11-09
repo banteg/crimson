@@ -14,8 +14,8 @@
     if (FREEWARE_EDITION >= 10400 && freeware_cheated) {
         leave_name_entry();
         freeware_cheated = 0;
-        STATE_SINCE = CLOCK;
         PLAYER_PERK(current_player_index, perk_id_reflex_boosted) = 0;
+        STATE_SINCE = CLOCK;
         break;
     }
     if (ACTIVE) {
@@ -23,8 +23,10 @@
             highscore_load_table();
         freeware_name_length = 0;
         if (FREEWARE_EDITION >= 10400) {
-            int score = config_game_mode == 2 ? XP : (int)SECONDS;
-            freeware_rank = freeware_score_rank(score) + 1;
+            if (config_game_mode == 2)
+                freeware_rank = freeware_score_rank(XP) + 1;
+            else
+                freeware_rank = freeware_score_rank((int)SECONDS) + 1;
         }
     }
     ACTIVE = 0;

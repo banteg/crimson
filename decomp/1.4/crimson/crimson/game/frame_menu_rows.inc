@@ -1,4 +1,4 @@
-// Draw one menu page and update keyboard hover. The 1.4.0 callback shares its lower corner between pages.
+// Draw one menu page and update keyboard hover.
 #ifdef CRIMSON_FREEWARE_CLIENT
 const int count = which == main_page ? freeware::main_row_count : which == options_page ? freeware::option_row_count : 5;
 #else
@@ -45,9 +45,7 @@ for (index = 0; index < count; ++index) {
 #endif
     const float mx = freeware_aim_screen.x, my = freeware_aim_screen.y;
 #endif
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10400
     vec2f_t position;
-#endif
     position.x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
 #ifdef CRIMSON_FREEWARE_CLIENT
     position.y = which == main_page ? freeware::main_row_top + index * 32.f : 170.f + index * option_spacing;
