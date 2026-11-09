@@ -95,10 +95,11 @@ void check_early_frames(const char *assets) {
       int menu_sounds = early_sample_count(17);
       game.update(scene >= death ? .0625f : .03125f, input);
       if (FREEWARE_EDITION == 10300 && (scene == career || scene == coop)) {
-        int arrows = 0;
+        std::printf("directionarrows %d %d", scene, tick);
         for (const auto &sprite : game.frame_sprites)
-          arrows += sprite.name == "arrow";
-        std::printf("directionarrows %d %d %d\n", scene, tick, arrows);
+          if (sprite.name == "arrow")
+            std::printf(" %.9g %.9g %.9g %.9g", sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a);
+        std::printf("\n");
       }
       if (scene == escape_during_death)
         std::printf("deathxpclock %d %.9g\n", tick, game.run.exp_clock);

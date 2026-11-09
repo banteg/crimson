@@ -32,7 +32,8 @@ def check_early_frames(exe, edition, lines):
 
     table = pe.read_u32(pe.read_u32(grim))
     ground, labels = [], []
-    arrows = 0
+    arrows = []
+    color = (1.0, 1.0, 1.0, 1.0)
     arrow_rows = iter(row.split()[1:] for row in lines if row.startswith("directionarrows "))
 
     def slot(offset, arguments, result=0, *, fp=False):
@@ -40,10 +41,13 @@ def check_early_frames(exe, edition, lines):
         pe.stub(fn, result, pop=4 * arguments, returns="st0" if fp else "eax")
         pe.write_u32(table + offset, fn)
 
+    def tint(call):
+        nonlocal color
+        color = tuple(call.arg_f32(i) for i in range(4))
+
     def quad(call):
-        nonlocal arrows
         if not early and call.return_address == 0x4169E4:
-            arrows += 1
+            arrows.extend(color)
         if ground_start <= call.return_address < ground_end:
             ground.append((call.arg_f32(0), call.arg_f32(1)))
 
@@ -52,7 +56,7 @@ def check_early_frames(exe, edition, lines):
 
     # The released Grim interfaces differ in slot positions and use a 24-byte by-value config argument.
     for i, argc in enumerate((1, 1, 0, 0, 0, 1, 4, 3, 4, 5, 4, 8, 3)):
-        slot(texture_slot + i * 4, argc, {10: quad, 12: text}.get(i, 0))
+        slot(texture_slot + i * 4, argc, {8: tint, 10: quad, 12: text}.get(i, 0))
     slot(0x14 if early else 0x1C, 7)
     slot(0x20 if early else 0x28, 4)
     slot(0x24 if early else 0x2C, 1)
@@ -163,11 +167,13 @@ def check_early_frames(exe, edition, lines):
                         pe.write_u32(0x44784C, early_quality_counter)
                 name_key = {29: ord("A"), 30: 8, 31: 8, 32: ord("A"), 33: 9}.get(tick, 0xA7)
             samples.clear()
-            arrows = 0
+            arrows.clear()
             assert pe.call(frame).eax & 255 == 1
             if not early and scene in (0, 2):
-                drawn = tuple(map(int, next(arrow_rows)))
-                assert drawn == (scene, tick, arrows), (edition, drawn, arrows)
+                drawn = next(arrow_rows)
+                assert tuple(map(int, drawn[:2])) == (scene, tick)
+                rgba = [struct.unpack("<f", struct.pack("<f", float(v)))[0] for v in drawn[2:]]
+                assert rgba == arrows, (edition, scene, tick, rgba, arrows)
             if escape_during_death:
                 # 1.0.2 has no passive XP timer. 1.3.0 advances it before checking health.
                 clock_tick, clock_value = next(xp_clock_rows)

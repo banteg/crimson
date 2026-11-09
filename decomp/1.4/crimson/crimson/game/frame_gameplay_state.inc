@@ -52,7 +52,7 @@ for (current_player_index = 0; current_player_index < config_player_count; ++cur
         continue;
     world_angle(P(current_player_index).heading);
     world_sheet(world_arrow_marker_texture, "arrow");
-    aim_color(.6f);
+    aim_color(FREEWARE_EDITION == 10300 ? .64f : .6f);
     ui140::begin();
     float angle = P(current_player_index).heading - 1.57079637f;
     AimPoint direction((float)cos(angle), (float)sin(angle));
