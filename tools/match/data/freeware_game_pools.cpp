@@ -4,6 +4,9 @@
 
 extern "C" {
 creature_t creature_pool[CL_BUILD == 10002 ? 128 : 512];
+#if CL_BUILD == 10002
+creature_t unused_sfx_prefix_creature;
+#endif
 projectile_pool_t projectile_pool;
 freeware_player_t player_state_table[2];
 particle_t particle_pool[128];
