@@ -6,7 +6,7 @@ float &rotation = FIELD(freeware_editor_rotation, editor_rotation),
 #ifdef CRIMSON_FREEWARE_CLIENT
 vec2f_t &offset = G.editor_offset;
 #else
-static editor_offset_t offset;
+static editor_point offset(0, 0);
 #endif
 if (editor_key(0x4a, true))
     --index;

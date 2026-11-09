@@ -32,6 +32,8 @@ def check_early_frames(exe, edition, lines):
 
     table = pe.read_u32(pe.read_u32(grim))
     ground, labels = [], []
+    arrows = 0
+    arrow_rows = iter(row.split()[1:] for row in lines if row.startswith("directionarrows "))
 
     def slot(offset, arguments, result=0, *, fp=False):
         fn = pe.load_code(b"\xc3")
@@ -39,6 +41,9 @@ def check_early_frames(exe, edition, lines):
         pe.write_u32(table + offset, fn)
 
     def quad(call):
+        nonlocal arrows
+        if not early and call.return_address == 0x4169E4:
+            arrows += 1
         if ground_start <= call.return_address < ground_end:
             ground.append((call.arg_f32(0), call.arg_f32(1)))
 
@@ -158,7 +163,11 @@ def check_early_frames(exe, edition, lines):
                         pe.write_u32(0x44784C, early_quality_counter)
                 name_key = {29: ord("A"), 30: 8, 31: 8, 32: ord("A"), 33: 9}.get(tick, 0xA7)
             samples.clear()
+            arrows = 0
             assert pe.call(frame).eax & 255 == 1
+            if not early and scene in (0, 2):
+                drawn = tuple(map(int, next(arrow_rows)))
+                assert drawn == (scene, tick, arrows), (edition, drawn, arrows)
             if escape_during_death:
                 # 1.0.2 has no passive XP timer. 1.3.0 advances it before checking health.
                 clock_tick, clock_value = next(xp_clock_rows)
@@ -237,6 +246,7 @@ def check_early_frames(exe, edition, lines):
                     actual,
                 )
             total += 1
+    assert next(arrow_rows, None) is None
     assert next(perk_rows, None) is None
     assert next(rows, None) is None
     assert next(overlay_rows, None) is None

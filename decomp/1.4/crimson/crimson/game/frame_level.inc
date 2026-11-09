@@ -37,14 +37,6 @@ struct editor_point : vec2f_t {
     }
 };
 #ifndef CRIMSON_FREEWARE_CLIENT
-struct editor_offset_t : vec2f_t {
-    editor_offset_t() {
-        x = 0;
-        y = 0;
-    }
-    // VC6 registers the editor's static offset for destruction on its first use.
-    ~editor_offset_t() {}
-};
 struct editor_trigger : freeware_level_trigger {
     __forceinline editor_trigger(int kind, const vec2f_t &at, float angle, float r) {
         enabled = 0;

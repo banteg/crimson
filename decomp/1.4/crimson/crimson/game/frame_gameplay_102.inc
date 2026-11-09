@@ -1,27 +1,4 @@
-// 1.0.2 state 3, immediately preceding the HUD (0x40cf97..0x40dab9).
-__forceinline void gameplay_spawn102() {
-    if (config_game_mode == 2)
-        P(current_player_index).weapon = 2;
-    SPAWN_TIMER -= frame_dt;
-    if (SPAWN_TIMER < 0.f) {
-        if (config_game_mode == 2) {
-            SPAWN_TIMER = .01f;
-            effect_color_t tint = {SECONDS * .0083333338f, 10.f / SECONDS,
-                                   (float)sin(SECONDS * .1f), 1.f};
-            clamp_spawn_color(tint.r);
-            clamp_spawn_color(tint.g);
-            clamp_spawn_color(tint.b);
-            vec2f_t east = {(float)freeware_arena_width, freeware_arena_height * .5f};
-            creature_spawn(&east, &tint, 1);
-        } else if (freeware_spawn_enabled) {
-            SPAWN_TIMER = 1.f - FIELD(P(current_player_index).experience, run.experience) * .00001f;
-            if (SPAWN_TIMER < .2f)
-                SPAWN_TIMER = .2f;
-            spawn_edge();
-        }
-    }
-}
-
+// Draw and simulation helpers for the 1.0.2 gameplay frame.
 extern "C" {
 extern vec2f_t freeware_draw_point[2];
 extern int world_arrow_marker_texture;
@@ -38,7 +15,10 @@ __forceinline FramePoint102 aim_sub102(const vec2f_t &a, const vec2f_t &b) {
 __forceinline FramePoint102 aim_mul102(const vec2f_t &a, const float &scale) {
     return FramePoint102(a.x * scale, a.y * scale);
 }
-__forceinline float aim_length102(vec2f_t d) { return sqrtf(d.x * d.x + d.y * d.y); }
+__forceinline float aim_distance102(const vec2f_t &a, const vec2f_t &b) {
+    float dx = a.x - b.x, dy = a.y - b.y;
+    return sqrtf(dx * dx + dy * dy);
+}
 
 #ifdef CRIMSON_FREEWARE_CLIENT
 #define AIM_TINT_102 ui140::tint
@@ -70,7 +50,7 @@ __forceinline void aim_overlays_102() {
 #else
     const vec2f_t &cursor = freeware_aim_screen;
 #endif
-    const float size = aim_length102(aim_sub102(aim_sub102(cursor, P(current_player_index).position), CAM))
+    const float size = aim_distance102(aim_sub102(cursor, P(current_player_index).position), CAM)
                        * P(current_player_index).spread * .25f;
     if (size < 32)
         bind("aim32");
@@ -106,49 +86,8 @@ __forceinline void aim_overlays_102() {
 #undef AIM_ANGLE_102
 #undef AIM_QUAD_102
 
-__forceinline void combustion_particle102(const vec2f_t *pos, float intensity) {
-    vec2f_t zero = {0, 0};
-    fx_spawn_particle(pos, (crt_rand() % 628) * .01f, &zero, intensity);
-}
-
-__forceinline void target_perks102() {
-    int owner_index = current_player_index;
-    if (PLAYER_PERK(owner_index, perk_id_see_health) <= 0 &&
-        PLAYER_PERK(owner_index, perk_id_spontaneously_combusteous) <= 0)
-        return;
-
-    vec2f_t aim = {FIELD(freeware_aim_screen.x, cursor_x) - CAM.x,
-                   FIELD(freeware_aim_screen.y, cursor_y) - CAM.y};
-    int id = creature_find_in_radius(&aim, 10.f);
-    if (id == -1)
-        return;
-
-    if (PLAYER_PERK(current_player_index, perk_id_see_health) > 0) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-        char output[40];
-        sprintf(output, "health %d", (int)creature_pool[id].health);
-        label(output, G.cursor_x, G.cursor_y + 32.f, .5f, 1, 1, 1, .64f);
-#else
-        grim_interface_ptr->grim_set_color(1, 1, 1, .64f);
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, .5f);
-        sprintf(freeware_ui_buffer, "health %d", (int)creature_pool[id].health);
-        grim_interface_ptr->grim_draw_text_mono(freeware_aim_screen.x, freeware_aim_screen.y + 32.f,
-                                                freeware_ui_buffer);
-#endif
-    }
-    if (PLAYER_PERK(current_player_index, perk_id_spontaneously_combusteous) > 0) {
-        // In the 0x68-byte 1.0.2 creature, the plague and combustion ticks share +0x04.
-        creature_pool[id].hit_flash_timer -= frame_dt;
-        if (creature_pool[id].hit_flash_timer < 0) {
-            creature_pool[id].hit_flash_timer = .5f;
-            combustion_particle102(&creature_pool[id].position, .8f);
-            combustion_particle102(&creature_pool[id].position, .6f);
-            combustion_particle102(&creature_pool[id].position, .4f);
-            combustion_particle102(&creature_pool[id].position, .3f);
-            combustion_particle102(&creature_pool[id].position, .2f);
-            fx_queue_add_random(&creature_pool[id].position);
-        }
-    }
+__forceinline void combustion_particle102(const vec2f_t &pos, float intensity, const vec2f_t &velocity) {
+    fx_spawn_particle(&pos, (crt_rand() % 628) * .01f, &velocity, intensity);
 }
 
 __forceinline void timed_perks102() {
@@ -175,29 +114,4 @@ __forceinline void timed_perks102() {
             }
         }
     }
-}
-
-__forceinline void gameplay_before_hud102() {
-    if (PICKUP_TIME > 0.f)
-        PICKUP_TIME -= frame_dt;
-    else {
-        PICKUP_TIME = 0.f;
-#ifdef CRIMSON_FREEWARE_CLIENT
-        G.run.pickup.kind = freeware::Bonus::None;
-#else
-        freeware_pickup_id = freeware_no_pickup;
-#endif
-    }
-    if (bonus_fire_bullets_timer > 0.f)
-        bonus_fire_bullets_timer -= frame_dt;
-    else
-        bonus_fire_bullets_timer = 0.f;
-    if (FREEZE > 0.f)
-        FREEZE -= frame_dt;
-    else
-        FREEZE = 0.f;
-    aim_overlays_102();
-    target_perks102();
-    timed_perks102();
-    gameplay_spawn102();
 }

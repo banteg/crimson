@@ -18,6 +18,8 @@ void check_early_frames(const char *assets) {
     Game game;
     game.survival = scene == survival || scene == coop;
     game.two_players = scene == coop;
+    if (FREEWARE_EDITION == 10300 && (scene == career || scene == coop))
+      game.direction_arrow = false; // 1.3 draws it even when later client settings hide it.
     game.asset_dir = assets;
     if (level)
       game.level_mode = 3;
@@ -90,6 +92,12 @@ void check_early_frames(const char *assets) {
       }
       int menu_sounds = early_sample_count(17);
       game.update(scene >= death ? .0625f : .03125f, input);
+      if (FREEWARE_EDITION == 10300 && (scene == career || scene == coop)) {
+        int arrows = 0;
+        for (const auto &sprite : game.frame_sprites)
+          arrows += sprite.name == "arrow";
+        std::printf("directionarrows %d %d %d\n", scene, tick, arrows);
+      }
       if (scene == escape_during_death)
         std::printf("deathxpclock %d %.9g\n", tick, game.run.exp_clock);
       if (scene == death)

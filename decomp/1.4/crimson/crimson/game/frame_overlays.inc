@@ -20,10 +20,6 @@ struct AimPoint : vec2f_t {
         x = px;
         y = py;
     }
-    __forceinline float length() const {
-        float y_squared = y * y;
-        return (float)sqrt(x * x + y_squared);
-    }
 };
 __forceinline AimPoint operator+(const vec2f_t &a, const vec2f_t &b) {
     AimPoint result;
@@ -63,8 +59,9 @@ __forceinline void aim_overlays() {
         if (HP(current_player_index) <= 0)
             continue;
         const freeware_player_t &p = P(current_player_index);
-        AimPoint gap = p.aim - p.position;
-        float size = gap.length() * p.spread * .25f;
+        float dx = p.aim.x - p.position.x;
+        float dy = p.aim.y - p.position.y;
+        float size = (float)sqrt((double)(dx * dx) + dy * dy) * p.spread * .25f;
         if (size < 16) {
             size = 16;
             ui140::bind("aim32");
@@ -103,7 +100,7 @@ __forceinline void aim_overlays() {
         offset.x *= 60.f;
         offset.y *= 60.f;
         freeware_draw_point[0] = CAM + P(current_player_index).position + offset - AimPoint(16, 16);
-        if (FIELD(freeware_direction_arrow, direction_arrow))
+        if (FREEWARE_EDITION == 10300 || FIELD(freeware_direction_arrow, direction_arrow))
             world_quad(freeware_draw_point[0].x, freeware_draw_point[0].y, 32, 32);
         ui140::end();
         target_player_perks();
@@ -164,7 +161,7 @@ extern "C" freeware_score_entry freeware_last_score;
 #define name_scale(value) grim_interface_ptr->grim_set_config_var(0x11, value)
 #define name_text grim_interface_ptr->grim_draw_text_mono
 #endif
-__forceinline void name_screen() {
+__forceinline void name_screen(float &pulse, float &orbit, float &cursor_alpha) {
     using namespace ui140;
     if (ACTIVE)
         FIELD(freeware_name_length, name_cursor) = 0;
@@ -213,8 +210,8 @@ __forceinline void name_screen() {
     name_text(10, 165, "Who were you:");
     name_scale(1.f);
     name_text(50, 190, EARLY_NAME);
-    float pulse = CLOCK;
-    float orbit = CLOCK + CLOCK;
+    pulse = CLOCK;
+    orbit = CLOCK + CLOCK;
     if ((float)sin(pulse * 6.f) > 0.f)
         name_tint(1, 1, 1, alpha);
     else
@@ -255,7 +252,7 @@ __forceinline void name_screen() {
 #ifdef CRIMSON_FREEWARE_CLIENT
     cursor_particles(pulse, orbit);
 #else
-    cursor_particles_102(pulse, orbit);
+    cursor_particles_102(pulse, orbit, cursor_alpha);
 #endif
     name_scale(1.f);
 }
@@ -270,40 +267,53 @@ extern "C" freeware_score_entry freeware_last_score;
 #else
 #define SCORE_NAME_INPUT freeware_name_buffer
 #endif
+__forceinline void format_name_rank(char *buf) {
+#if FREEWARE_EDITION >= 10400
+    if (freeware_rank == -1)
+        sprintf(buf, "(You didn't made to 100 top scores list)");
+    else
+        sprintf(buf, "(You scored %d. in top 100 scores list)", freeware_rank);
+    grim_interface_ptr->grim_set_config_var(frame_font_scale, .51435f);
+#endif
+}
 __forceinline void leave_name_entry() {
     SCALE = 1;
     enter(1);
     ACTIVE = 0;
-    PLAYER_PERK(current_player_index, perk_id_reflex_boosted) = 0;
-    STATE_SINCE = CLOCK;
 }
 __forceinline void name_screen() {
     if (config_game_mode == 3) {
         leave_name_entry();
+        PLAYER_PERK(current_player_index, perk_id_reflex_boosted) = 0;
+        STATE_SINCE = CLOCK;
         return;
     }
     if (FREEWARE_EDITION >= 10400 && freeware_cheated) {
-        freeware_cheated = 0;
         leave_name_entry();
+        freeware_cheated = 0;
+        STATE_SINCE = CLOCK;
+        PLAYER_PERK(current_player_index, perk_id_reflex_boosted) = 0;
         return;
     }
     if (ACTIVE) {
         if (FREEWARE_EDITION >= 10400)
             highscore_load_table();
         freeware_name_length = 0;
-        if (FREEWARE_EDITION >= 10400)
-            freeware_rank = freeware_score_rank(config_game_mode == 2 ? XP : (int)SECONDS) + 1;
+        if (FREEWARE_EDITION >= 10400) {
+            int score = config_game_mode == 2 ? XP : (int)SECONDS;
+            freeware_rank = freeware_score_rank(score) + 1;
+        }
+        ACTIVE = 0;
     }
-    ACTIVE = 0;
     begin_overlay();
     if (CLOCK - STATE_SINCE < 1.f) {
         freeware_name_alpha = CLOCK - STATE_SINCE;
-        if (FREEWARE_EDITION >= 10400 && freeware_name_alpha < .8f) {
-            creatures();
-            shots();
-        }
     } else {
         freeware_name_alpha = 1.f;
+    }
+    if (FREEWARE_EDITION >= 10400 && freeware_name_alpha < .8f) {
+        creatures();
+        shots();
     }
     grim_interface_ptr->grim_begin_batch();
     frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("reaper"));
@@ -320,6 +330,7 @@ __forceinline void name_screen() {
         grim_interface_ptr->grim_set_color(.85f, .55f, .35f, freeware_name_alpha * .8f);
         sprintf(buf, "Seconds survived: %d", (int)SECONDS);
         grim_interface_ptr->grim_draw_text_mono(120, 90, buf);
+        format_name_rank(buf);
     } else {
         grim_interface_ptr->grim_set_config_var(frame_font_scale, .975435f);
         grim_interface_ptr->grim_set_color(.45f, .55f, .85f, freeware_name_alpha * .9f);
@@ -330,13 +341,9 @@ __forceinline void name_screen() {
         grim_interface_ptr->grim_set_color(.85f, .75f, .85f, freeware_name_alpha * .8f);
         sprintf(buf, "Gained experience: %d", P(current_player_index).experience);
         grim_interface_ptr->grim_draw_text_mono(150, 90, buf);
+        format_name_rank(buf);
     }
 #if FREEWARE_EDITION >= 10400
-    if (freeware_rank == -1)
-        sprintf(buf, "(You didn't made to 100 top scores list)");
-    else
-        sprintf(buf, "(You scored %d. in top 100 scores list)", freeware_rank);
-    grim_interface_ptr->grim_set_config_var(frame_font_scale, .51435f);
     grim_interface_ptr->grim_set_color(1, 1, 1, freeware_name_alpha);
 #endif
     grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
@@ -374,8 +381,8 @@ __forceinline void name_screen() {
             SCALE = 1;
             enter(1);
             freeware_scores_open = 1;
-            STATE_SINCE = CLOCK;
             PLAYER_PERK(current_player_index, perk_id_reflex_boosted) = 0;
+            STATE_SINCE = CLOCK;
             highscore_load_table();
             STATE_SINCE = CLOCK - 1;
             freeware_transition_pending = 0;

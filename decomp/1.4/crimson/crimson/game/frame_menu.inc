@@ -208,42 +208,71 @@ extern unsigned char freeware_music_unavailable;
 void crt_free(void *);
 char *strdup_malloc(const char *);
 }
+#if FREEWARE_EDITION == 10002
 __forceinline void set_label(char **slot, const char *text) {
     crt_free(*slot);
     *slot = strdup_malloc(text);
 }
-#if FREEWARE_EDITION != 10002
+#else
+// The original reads each setting after releasing the label it owns.
+template <typename T>
+__forceinline void set_option_label(char *&label, const T &enabled, const char *on, const char *off) {
+    crt_free(label);
+    if (enabled)
+        label = strdup_malloc(on);
+    else
+        label = strdup_malloc(off);
+}
 __forceinline void refresh_option_labels() {
-    set_label(freeware_option_labels, CONFIGURING ? "Configure for: Player 2" : "Configure for: Player 1");
-    int move = config_movement_schemes[CONFIGURING];
-    set_label(freeware_option_labels + 1, move == 2   ? "Control method: kb static"
-                                          : move == 1 ? "Control method: kb relative"
-                                          : FREEWARE_EDITION == 10300 ? "Control method: joystic static" : "Control method: joystick static");
-    int aim = config_aim_schemes[CONFIGURING];
+    set_option_label(freeware_option_labels[0], CONFIGURING, "Configure for: Player 2", "Configure for: Player 1");
+
+    crt_free(freeware_option_labels[1]);
+    const int move = config_movement_schemes[CONFIGURING];
+    if (move == 2)
+        freeware_option_labels[1] = strdup_malloc("Control method: kb static");
+    else if (move == 1)
+        freeware_option_labels[1] = strdup_malloc("Control method: kb relative");
+    else
+        freeware_option_labels[1] = strdup_malloc(FREEWARE_EDITION == 10300 ? "Control method: joystic static"
+                                                                   : "Control method: joystick static");
+
+    crt_free(freeware_option_labels[2]);
+    const int aim = config_aim_schemes[CONFIGURING];
 #if FREEWARE_EDITION == 10300
-    set_label(freeware_option_labels + 2, aim == 0 ? "Aiming device: mouse" : aim == 1 ? "Aiming device: keyboard" : "Aiming device: joystick 'hat'");
+    if (aim == 0)
+        freeware_option_labels[2] = strdup_malloc("Aiming device: mouse");
+    else if (aim == 1)
+        freeware_option_labels[2] = strdup_malloc("Aiming device: keyboard");
+    else
+        freeware_option_labels[2] = strdup_malloc("Aiming device: joystick 'hat'");
 #else
-    set_label(freeware_option_labels + 2, aim == 0   ? "Aiming device: mouse static"
-                                          : aim == 1 ? "Aiming device: mouse relative"
-                                          : aim == 2 ? "Aiming device: keyboard"
-                                                     : "Aiming device: joystickk 'hat'");
+    if (aim == 0)
+        freeware_option_labels[2] = strdup_malloc("Aiming device: mouse static");
+    else if (aim == 1)
+        freeware_option_labels[2] = strdup_malloc("Aiming device: mouse relative");
+    else if (aim == 2)
+        freeware_option_labels[2] = strdup_malloc("Aiming device: keyboard");
+    else
+        freeware_option_labels[2] = strdup_malloc("Aiming device: joystickk 'hat'");
 #endif
-#if FREEWARE_EDITION == 10300
-    set_label(freeware_option_labels + 3, freeware_music_disabled ? "Music: off" : "Music: on");
-#else
-    set_label(freeware_option_labels + 3, freeware_music_disabled      ? "Music: off"
-                                          : freeware_music_unavailable ? "Music: on (restart to enable playback)"
-                                                                       : "Music: on");
-#endif
-    set_label(freeware_option_labels + 4,
-              freeware_filter_sharp ? "Background filter: sharp" : "Background filter: smooth");
-    set_label(freeware_option_labels + 5, freeware_show_fps ? "Show FPS: on" : "Show FPS: off");
-    set_label(freeware_option_labels + 6,
-              freeware_glow ? "Glow, Smoke & Shadow FX: on" : "Glow, Smoke & Shadow FX: off");
-    set_label(freeware_option_labels + 7, freeware_shell_marks ? "Shell marks: on" : "Shell marks: off");
+
+    crt_free(freeware_option_labels[3]);
+    if (freeware_music_disabled)
+        freeware_option_labels[3] = strdup_malloc("Music: off");
 #if FREEWARE_EDITION >= 10400
-    set_label(freeware_option_labels + 8,
-              freeware_direction_arrow ? "Direction Arrow: on" : "Direction Arrow: off");
+    else if (freeware_music_unavailable)
+        freeware_option_labels[3] = strdup_malloc("Music: on (restart to enable playback)");
+#endif
+    else
+        freeware_option_labels[3] = strdup_malloc("Music: on");
+    set_option_label(freeware_option_labels[4], freeware_filter_sharp,
+                     "Background filter: sharp", "Background filter: smooth");
+    set_option_label(freeware_option_labels[5], freeware_show_fps, "Show FPS: on", "Show FPS: off");
+    set_option_label(freeware_option_labels[6], freeware_glow,
+                     "Glow, Smoke & Shadow FX: on", "Glow, Smoke & Shadow FX: off");
+    set_option_label(freeware_option_labels[7], freeware_shell_marks, "Shell marks: on", "Shell marks: off");
+#if FREEWARE_EDITION >= 10400
+    set_option_label(freeware_option_labels[8], freeware_direction_arrow, "Direction Arrow: on", "Direction Arrow: off");
 #endif
 }
 #endif
@@ -309,10 +338,10 @@ __forceinline int menu_rows(int which) {
 #endif
     // 1.3.0 uses the same 26-pixel increment and hitbox at 0x415715 and 0x415751.
     const float option_spacing = FREEWARE_EDITION == 10300 ? 26.f : 21.f;
-    float x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
     float font_scale = FREEWARE_EDITION < 10400 || which == main_page ? .75435f : .65f;
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION != 10300
-    grim_interface_ptr->grim_set_config_var(frame_font_scale, font_scale);
+    if (FREEWARE_EDITION != 10400 || which != main_page)
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, font_scale);
 #endif
 #if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10400
     if (which == online_page) {
@@ -335,24 +364,28 @@ __forceinline int menu_rows(int which) {
         const float mx = G.cursor_x, my = G.cursor_y;
 #else
 #if FREEWARE_EDITION < 10400
-        const char *name = which == main_page ? freeware_main_labels[i] : freeware_option_labels[i];
+        char *const &name = which == main_page ? freeware_main_labels[i] : freeware_option_labels[i];
 #else
-        const char *name = which == main_page      ? freeware_main_labels[i]
-                           : which == options_page ? freeware_option_labels[i]
-                                                   : freeware_online_labels[i];
+        char *const &name = which == main_page ? freeware_main_labels[i]
+                            : which == options_page ? freeware_option_labels[i]
+                                                    : freeware_online_labels[i];
 #endif
         const float mx = freeware_aim_screen.x, my = freeware_aim_screen.y;
 #endif
+        vec2f_t lo;
+        lo.x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
 #ifdef CRIMSON_FREEWARE_CLIENT
-        float y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * option_spacing;
+        lo.y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * option_spacing;
         if (FREEWARE_EDITION == 10002 && which == options_page)
-            y = 180.f + i * 32.f;
+            lo.y = 180.f + i * 32.f;
         const int action = which == main_page ? freeware::main_action(i) : i;
 #else
-        float y = which == main_page ? 200.f + i * 32.f : 170.f + i * option_spacing;
+        lo.y = which == main_page ? 200.f + i * 32.f : 170.f + i * option_spacing;
         if (FREEWARE_EDITION == 10002)
-            y = (which == main_page ? 220.f : 180.f) + i * 32.f;
+            lo.y = (which == main_page ? 220.f : 180.f) + i * 32.f;
+#if FREEWARE_EDITION == 10002
         const int action = native_menu_action(which, i);
+#endif
 #endif
 #if FREEWARE_EDITION == 10002
         const float row_height = 30.f;
@@ -360,12 +393,10 @@ __forceinline int menu_rows(int which) {
         const float row_height = which == main_page ? 30.f : option_spacing;
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-        vec2f_t lo = {x, y};
         vec2f_t hi = {lo.x + strlen(name) * 16.f, lo.y + row_height};
-        if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
+        if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi))
             hover = i;
-            grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
-        } else if (hover == i)
+        if (hover == i)
             grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
         else if (SELECTED == i)
             grim_interface_ptr->grim_set_color(1, 1, 1, .7f);
@@ -373,11 +404,13 @@ __forceinline int menu_rows(int which) {
             grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
         if (which == online_page && i == 2)
             grim_interface_ptr->grim_set_color(1, 1, 1, .2f);
-        if (which == main_page && ACTIVE && (action == 1 || action == 2))
+        if (which == main_page && ACTIVE && i == 1)
             grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
-        grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y, (char *)name);
+        if (which == main_page && ACTIVE && i == 2)
+            grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
+        grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y, name);
 #else
-        if (mx > x && my > y && mx < x + strlen(name) * 16.f && my < y + row_height)
+        if (mx > lo.x && my > lo.y && mx < lo.x + strlen(name) * 16.f && my < lo.y + row_height)
             hover = i;
 #if FREEWARE_EDITION == 10002
         float light = 1, alpha = hover == i ? .9f : .6f;
@@ -391,23 +424,23 @@ __forceinline int menu_rows(int which) {
             alpha = .4f;
         }
 #ifdef CRIMSON_FREEWARE_CLIENT
-        G.frame_labels.push_back({name, x, y, font_scale, {light, light, light, alpha}, G.frame_sprites.size()});
+        G.frame_labels.push_back({name, lo.x, lo.y, font_scale, {light, light, light, alpha}, G.frame_sprites.size()});
 #else
         grim_interface_ptr->grim_set_color(light, light, light, alpha);
-        grim_interface_ptr->grim_draw_text_mono(x, y, (char *)name);
+        grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y, (char *)name);
 #endif
 #endif
     }
 #if FREEWARE_EDITION == 10300 || (!defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400)
     if ((FREEWARE_EDITION == 10300 || !FIELD(console_open_flag, console_open)) && menu_key(0xc8)) {
         --SELECTED;
-        if (SELECTED >= count) SELECTED = count - 1;
+        if (SELECTED > count - 1) SELECTED = count - 1;
         else if (SELECTED < 0) SELECTED = 0;
         hover = SELECTED;
     }
     if ((FREEWARE_EDITION == 10300 || !FIELD(console_open_flag, console_open)) && menu_key(0xd0)) {
         ++SELECTED;
-        if (SELECTED >= count) SELECTED = count - 1;
+        if (SELECTED > count - 1) SELECTED = count - 1;
         else if (SELECTED < 0) SELECTED = 0;
         hover = SELECTED;
     }
@@ -459,31 +492,27 @@ __forceinline void menu_options(int row) {
     case 11: freeware_options_open = 0; freeware_perk_hover = 0; break;
     }
 #else
-    switch (row) {
 #if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
-    case 12: // The sound-volume row and spacer have no action at 0x40cd74.
-    case 14: return;
-    case 13: G.shadows = !G.shadows; break;
+    if (row == 12 || row == 14)
+        return;
+    if (row == 13)
+        G.shadows = !G.shadows;
 #endif
-    case 0:
+    if (row == 0) {
         CONFIGURING = 1 - CONFIGURING;
-        break;
-    case 1:
+    } else if (row == 1) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-    {
 #if FREEWARE_EDITION == 10002
         G.movement[0] = 1 - G.movement[0];
 #else
         static const int next[] = {2, 0, 1};
         G.movement[CONFIGURING] = next[G.movement[CONFIGURING]];
 #endif
-    }
 #else
         if (++config_movement_schemes[CONFIGURING] > 3)
             config_movement_schemes[CONFIGURING] = 1;
 #endif
-    break;
-    case 2: {
+    } else if (row == 2) {
         int &aim = FIELD(config_aim_schemes[CONFIGURING], aiming[CONFIGURING]);
 #if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
         if (aim == 0) ++aim; // Slot 1 in the client settings is the later relative-mouse option.
@@ -494,8 +523,7 @@ __forceinline void menu_options(int row) {
         if (++aim > 3)
 #endif
             aim = 0;
-    } break;
-    case 3:
+    } else if (row == 3) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.music_enabled = !G.music_enabled;
 #else
@@ -526,14 +554,11 @@ __forceinline void menu_options(int row) {
             freeware_title_track_start(30);
 #endif
 #endif
-        break;
-    case 4:
+    } else if (row == 4) {
         FIELD(freeware_filter_sharp, smooth) = !FIELD(freeware_filter_sharp, smooth);
-        break;
-    case 5:
+    } else if (row == 5) {
         FIELD(freeware_show_fps, show_fps) = !FIELD(freeware_show_fps, show_fps);
-        break;
-    case 6:
+    } else if (row == 6) {
         FIELD(freeware_glow, effects) = !FIELD(freeware_glow, effects);
 #ifndef CRIMSON_FREEWARE_CLIENT
         freeware_smoke = !freeware_smoke;
@@ -542,28 +567,23 @@ __forceinline void menu_options(int row) {
         G.smoke = !G.smoke;
         G.shadows = !G.shadows;
 #endif
-        break;
-    case 7:
+    } else if (row == 7) {
         FIELD(freeware_shell_marks, shell_marks) = !FIELD(freeware_shell_marks, shell_marks);
-        break;
-    case 8:
+    } else if (FREEWARE_EDITION >= 10400 && row == 8) {
         FIELD(freeware_direction_arrow, direction_arrow) = !FIELD(freeware_direction_arrow, direction_arrow);
-        break;
-    case 9:
+    } else if (row == 9) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.rebind = 0;
 #else
         freeware_rebinding = 1;
 #endif
-        break;
-    case 10:
+    } else if (row == 10) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.calibration = 0;
 #else
         freeware_calibrating = 1;
 #endif
-        break;
-    case 11:
+    } else if (row == 11) {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         freeware_options_open = 0;
         freeware_perk_hover = 0;
@@ -578,7 +598,6 @@ __forceinline void menu_options(int row) {
         SELECTED = 0;
 #endif
 #endif
-        break;
     }
 #ifdef CRIMSON_FREEWARE_CLIENT
     G.save_options();

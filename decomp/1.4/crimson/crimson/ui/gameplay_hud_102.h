@@ -33,11 +33,12 @@ __forceinline bool render() {
 #endif
         begin();
         angle(0);
-        for (int ammo = 0; ammo < (int)UI_PLAYER(current_player_index).ammo; ++ammo)
-            quad(320 + ammo * 10.f, 10, 16, 22);
+        int column;
+        for (column = 0; column < (int)UI_PLAYER(current_player_index).ammo; ++column)
+            quad(320 + column * 10.f, 10, 16, 22);
         tint(1, 1, 1, .3f);
-        for (int empty = (int)UI_PLAYER(current_player_index).ammo; empty < (int)UI_PLAYER(current_player_index).clip_size && empty < 30; ++empty)
-            quad(320 + empty * 10.f, 10, 16, 22);
+        for (column = (int)UI_PLAYER(current_player_index).ammo; column < (int)UI_PLAYER(current_player_index).clip_size && column < 30; ++column)
+            quad(320 + column * 10.f, 10, 16, 22);
         end();
     }
 

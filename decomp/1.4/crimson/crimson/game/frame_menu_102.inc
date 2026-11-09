@@ -85,37 +85,19 @@ __forceinline void menu102_option_input() {
     }
 }
 
-// Shared 1.0.2 row drawing. The caller resets freeware_perk_hover before choosing a page.
-
-static __forceinline void menu102_draw_rows(bool main_menu) {
-    const float x = main_menu ? 220.0f : 180.0f;
-    const int count = main_menu ? 6 : 9;
-    for (int i = 0; i < count; ++i) {
-        FramePoint102 lo(x, x + (float)i * 32.f);
-        FramePoint102 hi(x + strlen(main_menu ? freeware_main_labels[i] : freeware_option_labels[i]) * 16.f,
-                         lo.y + 30.f);
-        if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi))
-            freeware_perk_hover = i;
-        if (freeware_perk_hover == i)
-            grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
-        else
-            grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
-
-        if (main_menu && freeware_game_active && i == 1)
-            grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
-        grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y,
-                                                main_menu ? freeware_main_labels[i] : freeware_option_labels[i]);
-    }
+static __forceinline void menu102_draw_row(int i, bool main, const vec2f_t &row, const vec2f_t &upper) {
+    if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &row, &upper))
+        freeware_perk_hover = i;
+    if (freeware_perk_hover == i)
+        grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
+    else
+        grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
+    if (main && ACTIVE && i == 1)
+        grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
+    grim_interface_ptr->grim_draw_text_mono(row.x, row.y, main ? freeware_main_labels[i] : freeware_option_labels[i]);
 }
 
-static __forceinline void menu102_option_rows() {
-    menu102_draw_rows(false);
-}
-static __forceinline void menu102_main_rows() {
-    menu102_draw_rows(true);
-}
-
-__forceinline void cursor_particles_102(float phase, float orbit) {
+__forceinline void cursor_particles_102(float phase, float orbit, float &alpha) {
     grim_interface_ptr->grim_set_config_var(frame_src_blend, 5u);
     grim_interface_ptr->grim_set_config_var(frame_dst_blend, 2u);
     frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("part"));
@@ -124,7 +106,7 @@ __forceinline void cursor_particles_102(float phase, float orbit) {
     grim_interface_ptr->grim_begin_batch();
     grim_interface_ptr->grim_draw_quad(MOUSE_X - 32.0f, MOUSE_Y - 32.0f, 64, 64);
 
-    float alpha = (float)cos(phase);
+    alpha = (float)cos(phase);
     alpha = ((float)pow(alpha, 2.0) + 1.0f) * .5f;
     for (int step = 0; step < 6; step += 2) {
         grim_interface_ptr->grim_set_color(1, 1, 1, alpha);
@@ -144,11 +126,11 @@ __forceinline void cursor_particles_102(float phase, float orbit) {
     grim_interface_ptr->grim_end_batch();
 }
 // The 1.0.2 menu carries snapshots of the clock and menu age across its draw calls.
-__forceinline void menu_footer_102(float phase, float orbit) {
+__forceinline void menu_footer_102(float phase, float orbit, float &alpha) {
     grim_interface_ptr->grim_set_config_var(frame_font_scale, .65435f);
     grim_interface_ptr->grim_set_color(1, 1, 1, .4f);
     grim_interface_ptr->grim_draw_text_mono(10, 455, "v 1.0.2");
     grim_interface_ptr->grim_draw_text_mono(310, 455, "2002 (c) 10tons entertainment");
 
-    cursor_particles_102(phase, orbit);
+    cursor_particles_102(phase, orbit, alpha);
 }
