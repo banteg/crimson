@@ -28,7 +28,27 @@ unsigned char grim_set_texture_stage_ops(unsigned int mode);
 void IGrim2D_cpp::grim_set_config_var(
     unsigned int id, grim_config_value_t value)
 {
+#if CL_BUILD == 10002
+    enum { frame = 1, title_id = 2, windowed = 3, width = 4, height = 5, bpp = 6 };
+#elif CL_BUILD < 10900
+    enum { frame = 1, lost = 2, restore = 3, title_id = 5, windowed = 6,
+           width = 7, height = 8, bpp = 9 };
+#else
+    enum { lost = 5, restore = 6, title_id = 7, width = 41, height = 42,
+           bpp = 43, frame = 45 };
+#endif
+#if CL_BUILD == 10002
+    enum { mouse = 9, resource_paq = 11, alpha_blend = 12, src_blend = 13,
+           dest_blend = 14, texture_filter = 15 };
+#else
+    enum { mouse = 13, resource_paq = 16, alpha_blend = 18, src_blend = 19,
+           dest_blend = 20, texture_filter = 21 };
+#endif
+    enum { bool_word = CL_BUILD < 10400 ? 2 : 0,
+           callback_word = CL_BUILD < 10400 ? 5 : 3 };
+
     switch (id) {
+#if CL_BUILD >= 10400
     case 26:
         if (!grim_set_texture_stage_ops(value.words[0])) {
             return;
@@ -50,7 +70,26 @@ void IGrim2D_cpp::grim_set_config_var(
             D3DRS_TEXTUREFACTOR, *(unsigned int *)color);
         return;
     }
+#endif
 
+#if CL_BUILD < 10900
+    case windowed:
+        grim_config_values[id] = value;
+        return;
+
+#if CL_BUILD == 10002
+    case 7:
+    case 8:
+    case 10:
+#else
+    case 11:
+    case 12:
+    case 14:
+#endif
+        *(unsigned char *)&grim_config_values[id].words[bool_word] =
+            (unsigned char)value.words[bool_word];
+        return;
+#else
     case 28: {
         D3DGAMMARAMP ramp;
         float gamma = *(float *)&value.words[0];
@@ -70,23 +109,34 @@ void IGrim2D_cpp::grim_set_config_var(
         grim_config_values[id] = value;
         return;
     }
+#endif
 
-    case 41:
+    case width:
+#if CL_BUILD < 10400
+        grim_config_values[id].words[0] = value.words[0];
+        grim_backbuffer_width = value.words[0];
+#else
         grim_backbuffer_width = value.words[0];
         grim_config_values[id].words[0] = value.words[0];
+#endif
         return;
 
-    case 42:
+    case height:
+#if CL_BUILD < 10400
+        grim_config_values[id].words[0] = value.words[0];
+        grim_backbuffer_height = value.words[0];
+#else
         grim_backbuffer_height = value.words[0];
         grim_config_values[id].words[0] = value.words[0];
+#endif
         return;
 
-    case 43:
+    case bpp:
         grim_config_values[id].words[0] = value.words[0];
         grim_texture_format = value.words[0] == 32 ? 22 : 23;
         return;
 
-    case 7: {
+    case title_id: {
         if (grim_window_title != 0) {
             delete grim_window_title;
         }
@@ -98,21 +148,24 @@ void IGrim2D_cpp::grim_set_config_var(
         return;
     }
 
-    case 45:
-        grim_frame_callback = (void (*)(void))value.words[3];
+    case frame:
+        grim_frame_callback = (void (*)(void))value.words[callback_word];
         return;
 
-    case 6:
-        grim_on_device_restore = (void (*)(void))value.words[3];
+#if CL_BUILD >= 10300
+    case restore:
+        grim_on_device_restore = (void (*)(void))value.words[callback_word];
         return;
 
-    case 5:
-        grim_on_device_lost = (void (*)(void))value.words[3];
+    case lost:
+        grim_on_device_lost = (void (*)(void))value.words[callback_word];
         return;
+#endif
 
-    case 16: {
+    case resource_paq: {
         char *path = (char *)value.words[3];
         if (strcmp(path, &grim_empty_string) == 0) {
+#if CL_BUILD >= 10400
             char *stored =
                 (char *)grim_config_values[id].words[3];
             if (stored != 0) {
@@ -120,35 +173,40 @@ void IGrim2D_cpp::grim_set_config_var(
             }
             grim_config_values[16].words[3] =
                 (unsigned int)strdup(&grim_empty_string);
+#endif
             grim_lookup_blob_loaded = 0;
         }
 
         grim_lookup_blob_loaded = grim_lookup_blob_load(path);
 
+#if CL_BUILD >= 10400
         char *stored = (char *)grim_config_values[id].words[3];
         if (stored != 0) {
             delete stored;
         }
         grim_config_values[id].words[3] = (unsigned int)strdup(path);
-        *(unsigned char *)grim_config_values[id].words =
+#else
+        grim_config_values[id].words[3] = (unsigned int)path;
+#endif
+        *(unsigned char *)&grim_config_values[id].words[bool_word] =
             grim_lookup_blob_loaded;
         return;
     }
 
-    case 18: {
-        unsigned int enabled = value.words[0];
-        if (*(unsigned char *)grim_config_values[id].words ==
+    case alpha_blend: {
+        unsigned int enabled = value.words[bool_word];
+        if (*(unsigned char *)&grim_config_values[id].words[bool_word] ==
             (unsigned char)enabled) {
             return;
         }
         grim_d3d_device->SetRenderState(
             D3DRS_ALPHABLENDENABLE, enabled & 0xff);
-        *(unsigned char *)grim_config_values[id].words =
+        *(unsigned char *)&grim_config_values[id].words[bool_word] =
             (unsigned char)enabled;
         return;
     }
 
-    case 19: {
+    case src_blend: {
         unsigned int state = value.words[0];
         if (grim_config_values[id].words[0] == state) {
             return;
@@ -158,7 +216,7 @@ void IGrim2D_cpp::grim_set_config_var(
         return;
     }
 
-    case 20: {
+    case dest_blend: {
         unsigned int state = value.words[0];
         if (grim_config_values[id].words[0] == state) {
             return;
@@ -169,31 +227,33 @@ void IGrim2D_cpp::grim_set_config_var(
     }
 
     case 52:
-        *(unsigned char *)grim_config_values[id].words =
-            (unsigned char)value.words[0];
+        *(unsigned char *)&grim_config_values[id].words[bool_word] =
+            (unsigned char)value.words[bool_word];
         return;
 
     case 54:
         grim_d3d_device->Present(0, 0, 0, 0);
         return;
 
+#if CL_BUILD >= 10900
     case 11:
     case 12:
     case 14:
+#endif
     case 66:
-        *(unsigned char *)grim_config_values[id].words =
-            (unsigned char)value.words[0];
+        *(unsigned char *)&grim_config_values[id].words[bool_word] =
+            (unsigned char)value.words[bool_word];
         return;
 
-    case 13:
-        *(unsigned char *)grim_config_values[id].words =
-            (unsigned char)value.words[0];
+    case mouse:
+        *(unsigned char *)&grim_config_values[id].words[bool_word] =
+            (unsigned char)value.words[bool_word];
         if (grim_input_cached) {
             grim_mouse_enabled = true;
         }
         return;
 
-    case 21: {
+    case texture_filter: {
         int filter = value.words[0];
         if (filter <= 0) {
             return;
@@ -219,6 +279,7 @@ void IGrim2D_cpp::grim_set_config_var(
         return;
     }
 
+#if CL_BUILD >= 10400
     case 82:
         grim_config_values[id] = value;
         grim_device_window_override = *(HWND *)value.words[3];
@@ -227,6 +288,7 @@ void IGrim2D_cpp::grim_set_config_var(
     case 85:
         grim_render_disabled = (unsigned char)value.words[0];
         return;
+#endif
 
     default:
         break;

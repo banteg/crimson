@@ -28,3 +28,13 @@ The shared `grim_d3d8.h` wrapper now applies the DirectX Win32 pack(4) ABI
 explicitly. That restores the native structure size and exact frame without a
 function-local layout trick, and a full 196-scratch status pass confirms that
 the ABI correction introduces no regressions.
+
+The freeware DLLs use fullscreen flip unconditionally. 1.0.2 initializes
+adapter zero and leaves the presentation flags clear. 1.3.0 enables the
+lockable backbuffer. 1.4.0 also accepts a device-window override and shows
+a message box on CreateDevice failure. All three still load the font and
+splash from RCDATA resources 0x6f and 0x71.
+
+For 1.0.2 the final native block extends through the return at 0x1000203f,
+matching the independently recorded control-flow block. The Direct3DCreate8
+call reaches the import at 0x1003e1bc through the thunk at 0x10004bc0.

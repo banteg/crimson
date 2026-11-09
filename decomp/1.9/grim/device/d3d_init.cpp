@@ -28,7 +28,9 @@ void grim_apply_render_state(void);
 bool grim_d3d_init(void)
 {
     D3DDISPLAYMODE display_mode;
+#if CL_BUILD >= 10900
     D3DADAPTER_IDENTIFIER8 adapter_identifier;
+#endif
 
     grim_device_ready = false;
     grim_d3d8 = 0;
@@ -38,6 +40,9 @@ bool grim_d3d_init(void)
         grim_d3d_device_type = D3DDEVTYPE_REF;
     }
 
+#if CL_BUILD < 10300
+    grim_selected_adapter_index = 0;
+#endif
     grim_d3d8 = Direct3DCreate8(D3D_SDK_VERSION);
     if (grim_d3d8 == 0) {
         grim_error_text =
@@ -49,6 +54,7 @@ bool grim_d3d_init(void)
         grim_selected_adapter_index,
         grim_d3d_device_type,
         &grim_device_caps);
+#if CL_BUILD >= 10900
     bool is_voodoo3 = false;
     grim_d3d8->GetAdapterIdentifier(
         grim_selected_adapter_index,
@@ -67,6 +73,7 @@ bool grim_d3d_init(void)
         is_voodoo3 = true;
     }
 
+#endif
     if (grim_d3d8->GetAdapterDisplayMode(0, &display_mode) < 0) {
         grim_error_text = "D3D: Error getting adapter display mode.";
         if (grim_d3d8 != 0 && grim_d3d8->Release() <= 0) {
@@ -92,8 +99,12 @@ bool grim_d3d_init(void)
         grim_texture_format = display_mode.Format;
     } else {
         grim_present_parameters.Windowed = false;
+#if CL_BUILD < 10900
+        grim_present_parameters.SwapEffect = D3DSWAPEFFECT_FLIP;
+#else
         grim_present_parameters.SwapEffect =
             is_voodoo3 ? D3DSWAPEFFECT_FLIP : D3DSWAPEFFECT_DISCARD;
+#endif
         grim_present_parameters.FullScreen_RefreshRateInHz = 0;
         grim_present_parameters.FullScreen_PresentationInterval =
             D3DPRESENT_INTERVAL_IMMEDIATE;
@@ -103,17 +114,20 @@ bool grim_d3d_init(void)
     grim_present_parameters.BackBufferHeight = grim_backbuffer_height;
     grim_present_parameters.BackBufferFormat = grim_texture_format;
     grim_present_parameters.MultiSampleType = D3DMULTISAMPLE_NONE;
-    grim_present_parameters.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
+    grim_present_parameters.Flags =
+        CL_BUILD < 10300 ? 0 : D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
     grim_present_parameters.EnableAutoDepthStencil = false;
     if (grim_enable_auto_depth_stencil != 0) {
         grim_present_parameters.EnableAutoDepthStencil = true;
     }
     grim_present_parameters.AutoDepthStencilFormat = D3DFMT_D16;
+#if CL_BUILD >= 10400
     grim_present_parameters.hDeviceWindow = grim_device_window_override;
     if (grim_present_parameters.hDeviceWindow == 0) {
         grim_present_parameters.hDeviceWindow = grim_main_window_hwnd;
     }
 
+#endif
     if (grim_d3d8->CreateDevice(
             grim_selected_adapter_index,
             grim_d3d_device_type,
@@ -121,6 +135,7 @@ bool grim_d3d_init(void)
             0x20,
             &grim_present_parameters,
             &grim_d3d_device) < 0) {
+#if CL_BUILD >= 10400
         grim_error_text =
             "D3D: Could not set the requested screenmode.";
         MessageBoxA(
@@ -128,8 +143,12 @@ bool grim_d3d_init(void)
             "D3D: Could not set the requested screenmode.",
             "Grim",
             MB_OK);
+#endif
         grim_d3d_shutdown();
         grim_window_destroy();
+#if CL_BUILD < 10400
+        grim_error_text = "D3D: Could not set the requested screenmode.";
+#endif
         return false;
     }
 

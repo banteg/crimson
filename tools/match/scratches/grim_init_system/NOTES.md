@@ -21,3 +21,14 @@ argument directly on the outgoing stack.
 
 The recovered method matches all 93 native instructions and all 32 references
 under MSVC 6.5 `/O2 /GB`.
+
+The freeware DLLs initialize Direct3D and input before checking config flag
+66 to skip the splash. 1.0.2 and 1.3.0 clear the screen, fade a centered
+128-by-128 quad, and present every frame. The latter counts down at twice
+the former's rate. In 1.4.0 the texture and filter setup survive but the
+drawing loop is gone. That build also exposes the main-window handle via
+config record 82.
+
+The joystick-failure assignment uses a literal false in 1.3.0. Assigning
+the failed result instead makes C2 emit a compare against BL in place of
+the native AL test. Other builds preserve the failed result.
