@@ -331,6 +331,19 @@ feed `--build` comparisons and the reported builds' inventories; see
 
 ## Freeware
 
+All 307 retained Grim2D engine functions compile to their original instruction
+encodings, with every positional reference verified against the release's DLL.
+
+| Release | Byte-exact engine functions | Matched function bytes |
+|---|---:|---:|
+| 1.0.2 | 91 / 91 | 14,318 |
+| 1.3.0 | 105 / 105 | 15,704 |
+| 1.4.0 | 111 / 111 | 18,951 |
+
+The game executables remain in progress. The engine byte counts above cover
+function bodies. The release reports also account for executable gaps and
+linked libraries.
+
 Each freeware image has an independent `native.json` inventory. Its image and
 basic-block byte hashes, donor-map digest, analyzer version, verified starts,
 and reviewed ownership boundaries are pinned. Unmapped native functions remain
