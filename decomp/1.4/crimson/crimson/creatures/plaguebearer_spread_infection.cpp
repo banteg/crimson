@@ -33,8 +33,10 @@ extern "C" int plaguebearer_spread_infection(int creature_id)
 
 found:
 #if CL_BUILD == 10002 || (defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002)
-    if (creature_pool[other_id].plague_infected || creature_pool[creature_id].plague_infected)
-        creature_pool[other_id].plague_infected = creature_pool[creature_id].plague_infected = 1;
+    if (creature_pool[other_id].plague_infected)
+        creature_pool[creature_id].plague_infected = 1;
+    if (creature_pool[creature_id].plague_infected)
+        creature_pool[other_id].plague_infected = 1;
 #else
     if (plaguebearer_infection_count < 60) {
         if (creature_pool[other_id].plague_infected

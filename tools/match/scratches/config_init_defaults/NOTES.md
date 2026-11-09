@@ -36,3 +36,13 @@ the delta's priority above the source cursor's. `memset(direction_arrow_flags,
 colours `eax` first. The defaults also move `detail_preset`, the POV angles,
 the reserved word and the screen size to config_sync_from_grim's store order,
 and a guard stores `ui_info_texts` directly under 1.9.8.
+
+## Freeware config layout
+
+The 1.3.0 initializer at `0x4011e0` sets the 84-byte configuration record
+that `freeware_save_config` passes to `fwrite` at `0x403940`. The 1.4.0
+initializer at `0x403510` sets an 88-byte record, passed at `0x40629f`.
+These file writes locate the whole record independently of field references.
+The constructor and joystick helper scratches use that base for both the pad
+calibration and the POV angles. 1.4.0 adds persisted audio-disable, safe-mode,
+direction-arrow and sound-frequency flags and keeps both five-key bindings.

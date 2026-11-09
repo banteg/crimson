@@ -34,7 +34,7 @@ void freeware_level_map::render_layer(int layer, unsigned char preserve_color) {
                 }
 #else
             grim_interface_ptr->grim_flush_batch();
-            grim_interface_ptr->grim_bind_texture(bound, 0);
+            bind(bound);
 #endif
         }
         world_quad(CAMERA.x + o.position.x, CAMERA.y + o.position.y, o.width, o.height);

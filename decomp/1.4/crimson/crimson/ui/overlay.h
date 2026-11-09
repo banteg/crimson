@@ -87,7 +87,7 @@ __forceinline void reset_overlay_time() {
     UI_SINCE = freeware_simulation_clock;
 }
 __forceinline void aim_cursor() {
-    bind(texture("aim32"));
+    bind("aim32");
     uv(0, 0, 1, 1);
     tint(1, 1, 1, .64f);
     begin();

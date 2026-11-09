@@ -185,3 +185,19 @@ the second index LEA an EAX preference in a separate diagnostic run produces
 identity. This establishes that one allocation change is sufficient; it does
 not recover source that induces that decision. The counterfactual receives no
 match credit, and the canonical source and configuration remain unchanged.
+
+## Freeware creature death
+
+The 1.3.0 routine at `0x403510` accepts two arguments and always decreases
+the creature's death timer. At `0x405e10`, 1.4.0 adds an active-slot check,
+the first-kill position and XP, and a third argument selecting between the
+timer decrease and immediate deactivation. Both routines look up the player
+through the current-player global. The Bloody Mess path multiplies the
+double reward by 1.5 and adds the truncated result in 1.3.0. The 1.4.0
+instructions multiply by -1.5 and subtract.
+
+For a frozen kill the native code computes a shared radial distance, stores
+the cosine and sine offsets in a float vector, and adds the creature position.
+The two editions use the same temporary for the submitted mark position and
+the sprite's final zero velocity. The ice texture load follows the last random
+draw for each mark.

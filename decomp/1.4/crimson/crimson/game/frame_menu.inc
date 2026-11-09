@@ -589,7 +589,7 @@ extern "C" {
 extern int freeware_setup_step, freeware_pad_threshold, freeware_pad_center_x, freeware_pad_center_y,
     freeware_pov_left, freeware_pov_right;
 extern unsigned char freeware_saved_keys[10];
-void freeware_save_config(), config_load_presets();
+bool freeware_save_config(), config_load_presets();
 bool input_move_up_active(), input_move_down_active(), input_move_left_active(), input_move_right_active();
 }
 #endif

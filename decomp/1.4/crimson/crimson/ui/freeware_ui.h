@@ -64,6 +64,13 @@ __forceinline void bind(Texture value) {
     grim_interface_ptr->grim_bind_texture(value, 0);
 #endif
 }
+__forceinline void bind(const char *name) {
+#if CL_BUILD < 10400
+    grim_interface_ptr->grim_bind_texture(grim_interface_ptr->grim_get_texture_handle((char *)name));
+#else
+    grim_interface_ptr->grim_bind_texture(grim_interface_ptr->grim_get_texture_handle((char *)name), 0);
+#endif
+}
 __forceinline void filter(unsigned value) { grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xf : 0x15, value); }
 __forceinline void scale(float value) { grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0x11 : 0x18, value); }
 __forceinline void angle(float value) { grim_interface_ptr->grim_set_rotation(value); }

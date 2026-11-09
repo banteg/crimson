@@ -4,7 +4,7 @@ extern "C" char *freeware_message;
 using namespace ui140;
 extern "C" void game_show_message() {
     float age = freeware_simulation_clock - UI_SINCE;
-    UI_FIELD(freeware_name_alpha, death_clock) = age >= 1 ? 1 : age;
+    UI_FIELD(freeware_name_alpha, death_clock) = age < 1 ? age : 1;
     freeware_overlay_begin();
     UI_SEE_THROUGH = 0;
     scale(.65f);
