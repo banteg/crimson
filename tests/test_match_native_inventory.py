@@ -81,6 +81,31 @@ def test_scoped_scratch_and_scan_compare_the_pinned_dispatcher(
     assert [row.status.config.end_va for row in scan] == [end]
 
 
+@pytest.mark.parametrize(("version", "start", "end", "next_start", "interior"), [
+    ("1.0.2", 0x40C110, 0x40ED76, 0x40EDA0, (0x40C38C, 0x40CF97, 0x40D9E8, 0x40DA6D, 0x40DAA4, 0x40E4FA)),
+])
+def test_verified_frame_dispatcher_preserves_raw_entries_and_uncredited_tables(
+    version: str, start: int, end: int, next_start: int, interior: tuple[int, ...],
+) -> None:
+    image = match_builds.load_registry().image(version, "crimson.exe")
+    if not image.path.is_file():
+        pytest.skip("pinned freeware image unavailable")
+    assert image.native_inventory is not None
+    discovery = json.loads(image.native_inventory.read_text())
+    raw = {row["address"] for row in discovery["functions"] if start < row["address"] < end}
+    assert raw == set(interior)
+    rows = match_native_inventory.load(image)
+    retained = [row for row in rows if start <= row["address"] < next_start]
+    assert [(row["address"], row["end"], row["native_kind"]) for row in retained] == [
+        (start, end, "function"), (end, next_start, "unresolved"),
+    ]
+    dispatcher, tables = retained
+    assert dispatcher["name"] == "game_frame_update" and match_native_inventory.in_port_scope(dispatcher)
+    assert "comparison_end" not in dispatcher
+    assert tables["size"] == next_start - end
+    assert sum(row["size"] for row in rows) == sum(hi - lo for lo, hi in match_builds._code_ranges(image.path))
+
+
 def test_unresolved_executable_bytes_are_not_functions_or_source_credit() -> None:
     rows = [{"image": "crimson.exe", "address": 0x401000, "name": "gap", "size": 100,
              "native_kind": "unresolved", "ownership": "game", "candidate": None, "source": None,
@@ -158,7 +183,7 @@ def test_report_and_triage_share_the_native_function_denominator() -> None:
 
 
 @pytest.mark.parametrize(("version", "port_count", "platform_count"), [
-    ("1.0.2", 175, 26), ("1.3.0", 240, 36), ("1.4.0", 311, 43),
+    ("1.0.2", 169, 26), ("1.3.0", 240, 36), ("1.4.0", 311, 43),
 ])
 def test_shipped_port_scopes_preserve_behavior_and_reject_backend_leaves(
     version: str, port_count: int, platform_count: int,
@@ -173,9 +198,8 @@ def test_shipped_port_scopes_preserve_behavior_and_reject_backend_leaves(
     names = {r["name"] for r in port}
     assert {"creature_update_all", "grim_timing_update", "grim_was_key_pressed", "grim_draw_quad"} <= names
     assert names.isdisjoint({"grim_d3d_init", "grim_keyboard_poll", "grim_load_interface", "DllMain"})
-    # All retained 1.4.0 port functions now have mapped names. Earlier builds
-    # still include independently discovered functions without a donor name.
-    assert any(name.startswith("native_function_") for name in names) == (version != "1.4.0")
+    # The seven 1.3.0 native dispatcher labels remain independently owned.
+    assert any(name.startswith("native_function_") for name in names) == (version == "1.3.0")
     if version == "1.0.2":
         assert inventory["crimson.exe"][0x40B180]["name"] == "freeware_encounter_update"
         assert 0x40B1AE not in inventory["crimson.exe"]

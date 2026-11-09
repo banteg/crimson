@@ -554,7 +554,7 @@
       "address": "0x0040c110",
       "end": "0x0040ed76",
       "body_sha256": "c3c0a4e406567904ee4666c1618782b36c43392d21e45936ffac8901b6761d98",
-      "identity_only": true
+      "evidence": "The compiled dispatcher covers the complete pinned body. Five interior discovery starts are switch destinations and the sixth is reached by an internal jump. The adjacent jump tables are outside its code extent."
     },
     {
       "name": "game_credits_update",

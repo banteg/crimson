@@ -799,8 +799,7 @@
     "end": "0x0040ED76",
     "evidence": "recovered",
     "name": "game_frame_update",
-    "size": 11366,
-    "identity_only": true
+    "size": 11366
   },
   {
     "address": "0x0040EDA0",
