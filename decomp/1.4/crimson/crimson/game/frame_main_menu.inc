@@ -21,7 +21,10 @@ refresh_labels(which);
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 float age = CLOCK - STATE_SINCE;
 float menu_clock = CLOCK;
-menu_title(age, menu_clock);
+vec2f_t position;
+{
+#include "frame_menu_title.inc"
+}
 #else
 menu_title(which);
 #endif
@@ -37,7 +40,36 @@ if (FREEWARE_EDITION >= 10400 && !overlay && INPUT.escape && which != main_page)
 int row = -1;
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-if (!setup_controls()) {
+if (freeware_rebinding) {
+    grim_interface_ptr->grim_set_config_var(frame_font_scale, .85435f);
+    grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
+    grim_interface_ptr->grim_draw_text_mono(50, 200, "Press down key for..");
+    grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
+    binding_prompt(0, "Player 1 UP");
+    binding_prompt(1, "Player 1 DOWN");
+    binding_prompt(2, "Player 1 LEFT");
+    binding_prompt(3, "Player 1 RIGHT");
+    binding_prompt(4, "Player 1 FIRE");
+    binding_prompt(5, "Player 2 UP");
+    binding_prompt(6, "Player 2 DOWN");
+    binding_prompt(7, "Player 2 LEFT");
+    binding_prompt(8, "Player 2 RIGHT");
+    binding_prompt(9, "Player 2 FIRE");
+    for (int key = 0; key < 256; ++key) {
+        if (menu_key(key)) {
+            freeware_saved_keys[freeware_setup_step++] = (unsigned char)key;
+            break;
+        }
+    }
+    if (freeware_setup_step >= 10) {
+        freeware_setup_step = 0;
+        freeware_rebinding = 0;
+        freeware_save_config();
+        config_load_presets();
+    }
+} else if (freeware_calibrating) {
+#include "frame_joystick_calibration.inc"
+} else {
     if (freeware_options_open) {
         refresh_option_labels();
         enum { which = options_page };
@@ -52,8 +84,12 @@ if (!setup_controls()) {
 #include "frame_menu_rows.inc"
     }
 }
+grim_interface_ptr->grim_set_config_var(frame_font_scale, .65435f);
 menu_footer_text();
-cursor_particles(age, menu_clock);
+{
+    const float &pulse = age, &orbit = menu_clock;
+#include "frame_cursor.inc"
+}
 if ((FREEWARE_EDITION == 10300 || !console_open_flag) && grim_interface_ptr->grim_is_key_down(0x1c))
     freeware_perk_hover = SELECTED;
 if (!native_menu_actions())

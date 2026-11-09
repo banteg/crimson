@@ -1,6 +1,9 @@
 #include "freeware_edition.h"
 // crimson.exe 1.0.2 0x40c110, 1.3.0 0x412fd0, 1.4.0 0x418190.
 #include "freeware_level.h"
+#if !defined(CRIMSON_FREEWARE_CLIENT) && CL_BUILD >= 10300
+#include "freeware_config.h"
+#endif
 #if FREEWARE_EDITION == 10002
 #include "../ui/gameplay_hud_102.h"
 #endif
@@ -198,26 +201,6 @@ __forceinline bool perk_shortcut() {
             grim_interface_ptr->grim_is_joystick_button_down(1));
 }
 #endif
-#if FREEWARE_EDITION != 10400
-__forceinline bool click_perk() {
-#if CL_BUILD == 10002
-    vec2f_t hi = {656.f, 480.f};
-    vec2f_t lo = {400.f, 430.f};
-#else
-    const float x = screen_width - 240.f, y = screen_height - 50.f;
-    vec2f_t hi = {x + 257.f, y + 51.f};
-    vec2f_t lo = {x, y};
-#endif
-    return (unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi) && grim_interface_ptr->grim_was_mouse_button_pressed(0);
-}
-__forceinline bool open_perk() {
-#if CL_BUILD == 10002
-    return grim_interface_ptr->grim_was_key_pressed(0x4e) || click_perk();
-#else
-    return perk_shortcut() || click_perk();
-#endif
-}
-#endif
 __forceinline void level_check() { player_check_level(); }
 __forceinline void open_choices() { perks_generate_choices(); }
 __forceinline void hud() {
@@ -248,7 +231,7 @@ __forceinline void simulate_players() {
     }
     creatures();
     shots();
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     bool perk_requested = false;
     if (PENDING >= 1 && config_game_mode != 2) {
         if (perk_shortcut())
@@ -618,9 +601,6 @@ __forceinline void draw_timed_transition(bool dying) {
 extern "C"
 #endif
 unsigned char game_frame_update() {
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
-    vec2f_t lo;
-#endif
 #if FREEWARE_EDITION == 10002
     // Both overlays retain their cursor clocks and particle opacity across the draw calls.
     float cursor_phase, cursor_orbit, cursor_alpha;
@@ -1031,4 +1011,5 @@ extern "C" void freeware_spawn_edge() {
 }
 extern "C" void freeware_bomb_advance() { update_wave(); }
 #endif
+#undef CALIBRATION_JOYSTICK
 } // namespace frame_update140

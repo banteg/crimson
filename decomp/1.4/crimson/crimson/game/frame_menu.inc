@@ -387,6 +387,9 @@ __forceinline void menu_options(int row) {
     if (row == 13)
         G.shadows = !G.shadows;
 #endif
+#ifndef CRIMSON_FREEWARE_CLIENT
+    freeware_config_t &menu_config = config_blob;
+#endif
     if (row == 0) {
         CONFIGURING = 1 - CONFIGURING;
     } else if (row == 1) {
@@ -398,9 +401,9 @@ __forceinline void menu_options(int row) {
         G.movement[CONFIGURING] = next[G.movement[CONFIGURING]];
 #endif
 #else
-        ++config_movement_schemes[CONFIGURING];
-        if (config_movement_schemes[CONFIGURING] > 3)
-            config_movement_schemes[CONFIGURING] = 1;
+        ++menu_config.movement_scheme[menu_config.configuring];
+        if (menu_config.movement_scheme[menu_config.configuring] > 3)
+            menu_config.movement_scheme[menu_config.configuring] = 1;
 #endif
     } else if (row == 2) {
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -410,9 +413,9 @@ __forceinline void menu_options(int row) {
         if (++aim > 3)
             aim = 0;
 #else
-        ++config_aim_schemes[CONFIGURING];
-        if (config_aim_schemes[CONFIGURING] > (FREEWARE_EDITION == 10300 ? 2 : 3))
-            config_aim_schemes[CONFIGURING] = 0;
+        ++menu_config.aim_scheme[menu_config.configuring];
+        if (menu_config.aim_scheme[menu_config.configuring] > (FREEWARE_EDITION == 10300 ? 2 : 3))
+            menu_config.aim_scheme[menu_config.configuring] = 0;
 #endif
     } else if (row == 3) {
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -502,157 +505,17 @@ extern unsigned char freeware_logo_visible, freeware_birthday, freeware_memorial
     freeware_christmas;
 }
 #endif
-__forceinline void menu_blend(bool additive) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-    G.ui.destination_blend = additive ? 2 : 6;
+__forceinline void menu_blend(bool additive) { G.ui.destination_blend = additive ? 2 : 6; }
 #else
-    grim_interface_ptr->grim_set_config_var(frame_src_blend, 5u);
-    grim_interface_ptr->grim_set_config_var(frame_dst_blend, additive ? 2u : 6u);
+// Construct the two Grim variants at the caller, as the native frame does.
+#define menu_blend(additive) \
+    do { \
+        grim_interface_ptr->grim_set_config_var(frame_src_blend, 5u); \
+        grim_interface_ptr->grim_set_config_var(frame_dst_blend, (additive) ? 2u : 6u); \
+    } while (0)
 #endif
-}
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-__forceinline void menu_title(float age, float menu_clock) {
-    if (freeware_assembly_sequence == 8) {
-        frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("asmlogo"));
-        menu_blend(true);
-        grim_interface_ptr->grim_set_rotation(0);
-        grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
-        grim_interface_ptr->grim_begin_batch();
-
-        vec2f_t center = {screen_width / 2 + cosf(age - .2f) * 5.f,
-                          140.f + cosf(age - .2f) * 5.f};
-        vec2f_t delta = {center.x - MOUSE_X, center.y - MOUSE_Y};
-        float direction = atan2f(delta.y, delta.x);
-        float length = sqrtf(delta.x * delta.x + delta.y * delta.y) * .02f;
-        length *= 20.f;
-        for (int i = 1; i < length; i += 3) {
-            grim_interface_ptr->grim_set_color(.7f, .8f, 1, .09f - i * .09f / length);
-            grim_interface_ptr->grim_draw_quad(center.x - 89.f + cosf(direction) * i,
-                    center.y + sinf(direction) * i / 3.f, 178, 29);
-        }
-        grim_interface_ptr->grim_set_color(1, 1, 1, .7f);
-        grim_interface_ptr->grim_draw_quad(center.x - 89.f, center.y, 178, 29);
-        grim_interface_ptr->grim_end_batch();
-    }
-    if (freeware_birthday) {
-#if FREEWARE_EDITION == 10300
-        float wave = (float)(cos(age - .2f) * 5.f);
-        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-        grim_interface_ptr->grim_draw_text_mono(screen_width / 2 + wave - 100, wave + 170, "Happy birthday !");
-#else
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
-        char message[] = "Happy birthday !";
-        char glyph[] = "Happy birthday !";
-        int count = strlen(message);
-        for (int i = 0; i < count; ++i) {
-            int phase = (int)(age * 4) * (i + 1);
-            grim_interface_ptr->grim_set_color(((phase * -24) & 255) / 256.f, ((phase * 87) & 255) / 256.f,
-                                               ((phase * -58) & 255) / 256.f, 1);
-            memset(glyph, ' ', count);
-            glyph[i] = message[i];
-            grim_interface_ptr->grim_draw_text_mono(0, 0, glyph);
-        }
-#endif
-    }
-#if FREEWARE_EDITION >= 10400
-    if (freeware_christmas) {
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
-        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-        grim_interface_ptr->grim_draw_text_mono(0, 0, "Merry Christmas!");
-        frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("b_freeze"));
-        grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
-        grim_interface_ptr->grim_begin_batch();
-        for (int x = 0; x < screen_width; x += 17) {
-            vec2f_t pos;
-            pos.x = (float)x;
-            grim_interface_ptr->grim_set_rotation(pos.x + (float)sin(age * .4f));
-            float &y = freeware_snow_y[x];
-            y += ((x * 34 % 5) + 1) * 5 * frame_dt;
-            while (y > 150)
-                y -= 200;
-            pos.y = y;
-            if (pos.y < 0)
-                grim_interface_ptr->grim_set_color(1, 1, 1, 0);
-            else if (pos.y < 50)
-                grim_interface_ptr->grim_set_color(1, 1, 1, pos.y * .02f);
-            else if (pos.y > 100)
-                grim_interface_ptr->grim_set_color(1, 1, 1, 1 - (pos.y - 100) * .02f);
-            else
-                grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-            grim_interface_ptr->grim_draw_quad(pos.x, pos.y, 32, 32);
-        }
-        grim_interface_ptr->grim_end_batch();
-    }
-    if (freeware_memorial) {
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f);
-        vec2f_t point = {screen_width / 2 + cosf(age - .2f) * 5.f - 100.f, cosf(age - .2f) * 5.f + 170.f};
-        for (float d = 0; d < 16; d += .5f) {
-            grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f + (d / 16.f) * .05f);
-            grim_interface_ptr->grim_set_color(.1f, .4f, .7f, (1.f - d / 16.f) * .2f);
-            grim_interface_ptr->grim_draw_text_mono(point.x - cosf(age - .2f) * d,
-                                                    point.y + sinf(age - .2f) * d * 2.f, "The World Grieves..");
-        }
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f);
-        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-        grim_interface_ptr->grim_draw_text_mono(point.x, point.y, "The World Grieves..");
-    }
-    if (freeware_solstice) {
-        vec2f_t point = {screen_width / 2 + cosf(age - .2f) * 5.f - 100.f,
-                         cosf(age - .2f) * 5.f + 170.f};
-        grim_interface_ptr->grim_set_color(1, 1, 1, .15f);
-        frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("tl_tolmec"));
-        grim_interface_ptr->grim_begin_batch();
-        grim_interface_ptr->grim_set_rotation(age * .2f);
-        grim_interface_ptr->grim_draw_quad(100, 100, 256, 256);
-        grim_interface_ptr->grim_end_batch();
-        grim_interface_ptr->grim_set_color(1, .8f, .2f, 1);
-        grim_interface_ptr->grim_draw_text_mono(point.x, point.y, "Have a Nice End of the World !");
-    }
-#endif
-
-    if (age < 1.f)
-        grim_interface_ptr->grim_set_color(1, 1, 1, age);
-    else
-        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-    grim_interface_ptr->grim_set_config_var(0x12, true);
-    vec2f_t base = {(float)(screen_width / 2), 90.f};
-    vec2f_t center = base;
-    center.x += (float)cos(menu_clock) * 5.f;
-    center.y += (float)sin(menu_clock) * 5.f;
-    frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("crimsonland"));
-    menu_blend(false);
-    if (age < 1.f) {
-        if (!freeware_credits_open && !freeware_scores_open)
-            freeware_logo_angle = (1.f - (float)sin(age * 1.57079637f)) * 1.57079637f;
-        else
-            freeware_logo_angle = (float)sin(age * 1.57079637f) * 1.57079637f;
-    }
-    if (freeware_logo_angle < 0)
-        freeware_logo_angle = 0;
-    else if (freeware_logo_angle > 1.57079637f)
-        freeware_logo_angle = 1.57079637f;
-    if (!ACTIVE) {
-        center.x += freeware_logo_angle * 50.f;
-        center.y -= freeware_logo_angle * 30.f;
-        grim_interface_ptr->grim_set_rotation(freeware_logo_angle);
-    } else {
-        grim_interface_ptr->grim_set_rotation(0);
-    }
-    grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-    if (!freeware_logo_visible) {
-        if (age < 1.f)
-            grim_interface_ptr->grim_set_color(1, 1, 1, age);
-        else
-            freeware_logo_visible = 1;
-    }
-    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
-    grim_interface_ptr->grim_begin_batch();
-    grim_interface_ptr->grim_draw_quad(center.x - 256.f, center.y - 64.f, 512.f, 512.f - freeware_logo_angle * 30.f);
-    grim_interface_ptr->grim_end_batch();
-    grim_interface_ptr->grim_set_config_var(0x15, 2u);
-    grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
-}
-#else
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION < 10300
 __forceinline void menu_title(int which) {
     float age = CLOCK - STATE_SINCE;
 #if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10300
@@ -766,100 +629,24 @@ extern "C" char *wrap_text_to_width_alloc(char *, int);
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 __forceinline void calibration_prompt(char *message) {
-    grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
     grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
     char *wrapped = wrap_text_to_width_alloc(message, 45);
     grim_interface_ptr->grim_draw_text_mono(50, 120, wrapped);
     crt_free(wrapped);
 }
-__forceinline void calibration_pov(char *message, int &direction) {
-    calibration_prompt(message);
+__forceinline void calibrate_pov(int &direction) {
     if ((FREEWARE_EDITION == 10300 || !console_open_flag) && menu_key(0x1c)) {
         direction = grim_interface_ptr->grim_get_joystick_pov(0);
         ++freeware_setup_step;
     }
-    grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
+}
+__forceinline void draw_pov_status() {
     sprintf(freeware_ui_buffer, "POV0 ('hat') status: %d", grim_interface_ptr->grim_get_joystick_pov(0));
     grim_interface_ptr->grim_draw_text_mono(40, 250, freeware_ui_buffer);
 }
 __forceinline void binding_prompt(int step, char *message) {
     if (freeware_setup_step == step)
         grim_interface_ptr->grim_draw_text_mono(120, 250, message);
-}
-__forceinline bool setup_controls() {
-    if (freeware_rebinding) {
-        label("Press down key for..", 50, 200, .85435f, 1, 1, 1, .6f);
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
-        binding_prompt(0, "Player 1 UP");
-        binding_prompt(1, "Player 1 DOWN");
-        binding_prompt(2, "Player 1 LEFT");
-        binding_prompt(3, "Player 1 RIGHT");
-        binding_prompt(4, "Player 1 FIRE");
-        binding_prompt(5, "Player 2 UP");
-        binding_prompt(6, "Player 2 DOWN");
-        binding_prompt(7, "Player 2 LEFT");
-        binding_prompt(8, "Player 2 RIGHT");
-        binding_prompt(9, "Player 2 FIRE");
-        for (int key = 0; key < 256; ++key) {
-            if (menu_key(key)) {
-                freeware_saved_keys[freeware_setup_step++] = (unsigned char)key;
-                break;
-            }
-        }
-        if (freeware_setup_step >= 10) {
-            freeware_setup_step = 0;
-            freeware_rebinding = 0;
-            freeware_save_config();
-            config_load_presets();
-        }
-        return true;
-    }
-    if (!freeware_calibrating)
-        return false;
-
-    grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
-    if (freeware_setup_step == 0) {
-        calibration_prompt("Center the " CALIBRATION_JOYSTICK " and press enter or a " CALIBRATION_JOYSTICK " button");
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
-        sprintf(freeware_ui_buffer, "X-Axis: %d\nY-Axis: %d", grim_interface_ptr->grim_get_joystick_x(),
-                grim_interface_ptr->grim_get_joystick_y());
-        grim_interface_ptr->grim_draw_text_mono(40, 250, freeware_ui_buffer);
-        if ((FREEWARE_EDITION == 10300 || !console_open_flag) && (menu_key(0x1c) || grim_interface_ptr->grim_is_joystick_button_down(0) ||
-            grim_interface_ptr->grim_is_joystick_button_down(1) || grim_interface_ptr->grim_is_joystick_button_down(2) ||
-            grim_interface_ptr->grim_is_joystick_button_down(3) || grim_interface_ptr->grim_is_joystick_button_down(4))) {
-            freeware_pad_center_x = grim_interface_ptr->grim_get_joystick_x();
-            freeware_pad_center_y = grim_interface_ptr->grim_get_joystick_y();
-            ++freeware_setup_step;
-        }
-    } else if (freeware_setup_step == 1) {
-        calibration_prompt("Set the " CALIBRATION_JOYSTICK " X/Y-Axis threshold with arrow keys up/down, press enter when done.");
-        if (FREEWARE_EDITION == 10300 || !console_open_flag) {
-            if (menu_key(0xc8))
-                freeware_pad_threshold += 10;
-            if (menu_key(0xd0))
-                freeware_pad_threshold -= 10;
-            if (menu_key(0x1c))
-                ++freeware_setup_step;
-        }
-        if (freeware_pad_threshold < 0)
-            freeware_pad_threshold = 0;
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
-        sprintf(freeware_ui_buffer, "X/Y-Axis threshold: %d", freeware_pad_threshold);
-        grim_interface_ptr->grim_draw_text_mono(40, 250, freeware_ui_buffer);
-        sprintf(freeware_ui_buffer, "Status:\n\nUp: %d\nDown: %d\nLeft: %d\nRight: %d", input_move_up_active(),
-                input_move_down_active(), input_move_left_active(), input_move_right_active());
-        grim_interface_ptr->grim_draw_text_mono(40, 300, freeware_ui_buffer);
-    } else if (freeware_setup_step == 2)
-        calibration_pov("If your " CALIBRATION_JOYSTICK " has 'hat' press it LEFT now and press enter. (press enter to skip this)", freeware_pov_left);
-    else if (freeware_setup_step == 3)
-        calibration_pov("If your " CALIBRATION_JOYSTICK " has 'hat' press it RIGHT now and press enter. (press enter to skip this)", freeware_pov_right);
-    else if (freeware_setup_step >= 4) {
-        freeware_setup_step = 0;
-        freeware_calibrating = 0;
-        freeware_save_config();
-        config_load_presets();
-    }
-    return true;
 }
 #else
 __forceinline bool setup_controls() {
@@ -1021,7 +808,6 @@ __forceinline bool setup_controls() {
 #endif
 }
 #endif
-#undef CALIBRATION_JOYSTICK
 __forceinline void cursor_particles(float pulse, float orbit) {
 #include "frame_cursor.inc"
 }
@@ -1032,7 +818,9 @@ __forceinline void menu_footer_text() {
     const char *version = FREEWARE_EDITION == 10002 ? "v 1.0.2" : FREEWARE_EDITION == 10300 ? "v1.3.0" : "v1.4.0";
 #endif
 #ifndef CRIMSON_FREEWARE_CLIENT
+#if FREEWARE_EDITION < 10300
     grim_interface_ptr->grim_set_config_var(frame_font_scale, .65435f);
+#endif
     grim_interface_ptr->grim_set_color(1, 1, 1, .4f);
     grim_interface_ptr->grim_draw_text_mono(10, (float)screen_height - 25, (char *)version);
     grim_interface_ptr->grim_draw_text_mono(FREEWARE_EDITION >= 10300 ? (float)(screen_width - 330) : (float)screen_width - 330,

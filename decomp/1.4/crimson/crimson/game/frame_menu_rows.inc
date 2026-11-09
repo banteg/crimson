@@ -43,18 +43,18 @@ for (int i = 0; i < count; ++i) {
     const float mx = freeware_aim_screen.x, my = freeware_aim_screen.y;
 #endif
 #if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10400
-    vec2f_t lo;
+    vec2f_t position;
 #endif
-    lo.x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
+    position.x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
 #ifdef CRIMSON_FREEWARE_CLIENT
-    lo.y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * option_spacing;
+    position.y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * option_spacing;
     if (FREEWARE_EDITION == 10002 && which == options_page)
-        lo.y = 180.f + i * 32.f;
+        position.y = 180.f + i * 32.f;
     const int action = which == main_page ? freeware::main_action(i) : i;
 #else
-    lo.y = which == main_page ? 200.f + i * 32.f : 170.f + i * option_spacing;
+    position.y = which == main_page ? 200.f + i * 32.f : 170.f + i * option_spacing;
     if (FREEWARE_EDITION == 10002)
-        lo.y = (which == main_page ? 220.f : 180.f) + i * 32.f;
+        position.y = (which == main_page ? 220.f : 180.f) + i * 32.f;
 #if FREEWARE_EDITION == 10002
     const int action = native_menu_action(which, i);
 #endif
@@ -65,8 +65,8 @@ for (int i = 0; i < count; ++i) {
     const float row_height = which == main_page ? 30.f : option_spacing;
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-    if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo,
-            FramePoint(lo.x + strlen(name) * 16.f, lo.y + row_height).address()))
+    if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &position,
+            FramePoint(position.x + strlen(name) * 16.f, position.y + row_height).address()))
         hover = i;
     if (hover == i)
         grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
@@ -80,9 +80,9 @@ for (int i = 0; i < count; ++i) {
         grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
     if (which == main_page && ACTIVE && i == 2)
         grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
-    grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y, name);
+    grim_interface_ptr->grim_draw_text_mono(position.x, position.y, name);
 #else
-    if (mx > lo.x && my > lo.y && mx < lo.x + strlen(name) * 16.f && my < lo.y + row_height)
+    if (mx > position.x && my > position.y && mx < position.x + strlen(name) * 16.f && my < position.y + row_height)
         hover = i;
 #if FREEWARE_EDITION == 10002
     float light = 1, alpha = hover == i ? .9f : .6f;
@@ -96,10 +96,10 @@ for (int i = 0; i < count; ++i) {
         alpha = .4f;
     }
 #ifdef CRIMSON_FREEWARE_CLIENT
-    G.frame_labels.push_back({name, lo.x, lo.y, font_scale, {light, light, light, alpha}, G.frame_sprites.size()});
+    G.frame_labels.push_back({name, position.x, position.y, font_scale, {light, light, light, alpha}, G.frame_sprites.size()});
 #else
     grim_interface_ptr->grim_set_color(light, light, light, alpha);
-    grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y, (char *)name);
+    grim_interface_ptr->grim_draw_text_mono(position.x, position.y, (char *)name);
 #endif
 #endif
 }
