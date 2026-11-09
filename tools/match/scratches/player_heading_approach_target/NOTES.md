@@ -23,8 +23,8 @@ This helper recovery does not award a match to either 1.9.8 updater.
 The 1.0.2 and 1.3.0 functions normalize the current heading, then call
 standalone min/max helpers to compare the direct turn with the turn across the
 zero-angle boundary. Both helpers reproduce their nine-instruction bodies in
-each release. The 1.3.0 heading update at `0x40e2c0` reproduces all 97
-instructions, encoded bytes and 32 references. In 1.0.2 at `0x407ec0`,
-MSVC schedules an index addition before the independent stack store at
-`0x407f49`. All 32 references resolve and the remaining instructions agree.
-The 1.4.0 implementation selects min and max inline and remains byte-exact.
+each release. Casting the angle difference to float before calling `fabs` reproduces the
+stack-store scheduling of both early releases. The 1.0.2 heading update at
+`0x407ec0` matches all 105 instructions (383 bytes) and the 1.3.0 update at
+`0x40e2c0` matches all 97 instructions (367 bytes), with 32 audited
+references in each. The 1.4.0 implementation selects min and max inline.

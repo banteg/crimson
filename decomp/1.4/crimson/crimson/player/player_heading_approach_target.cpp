@@ -33,7 +33,7 @@ extern "C" float player_heading_approach_target(float target_heading)
 
 #if FREEWARE_EDITION < 10400
     float heading = player_state_table[player_index].heading;
-    float direct = (float)fabs(target_heading - heading);
+    float direct = (float)fabs((float)(target_heading - heading));
     float wrapped = (float)fabs((6.2831855f - freeware_float_max(target_heading, heading))
                                 + freeware_float_min(target_heading, player_state_table[current_player_index].heading));
     float amount = freeware_float_min(direct, wrapped);
