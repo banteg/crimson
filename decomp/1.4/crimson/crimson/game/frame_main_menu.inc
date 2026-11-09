@@ -20,12 +20,8 @@ refresh_labels(which);
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 float age = CLOCK - STATE_SINCE;
-#if FREEWARE_EDITION == 10300
-cursor_orbit = CLOCK;
-const float &menu_clock = cursor_orbit;
-#else
-float menu_clock = CLOCK;
-#endif
+orbit = CLOCK;
+const float &menu_clock = orbit;
 vec2f_t position;
 {
 #include "frame_menu_title.inc"

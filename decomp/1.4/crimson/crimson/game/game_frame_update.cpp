@@ -616,9 +616,9 @@ unsigned char game_frame_update() {
 #if FREEWARE_EDITION == 10002
     // Both overlays retain their cursor clocks and particle opacity across the draw calls.
     float cursor_phase, cursor_orbit, cursor_alpha;
-#elif !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+#elif !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     // The menu and name-entry cursor use the same orbit-clock local.
-    float cursor_orbit;
+    float orbit;
 #endif
 #ifdef CRIMSON_FREEWARE_CLIENT
     if (INPUT.screenshot)
