@@ -407,6 +407,11 @@ def test_family_layout_places_each_source_in_its_native_object(layout_path: Path
         row["name"]: int(row["address"], 16)
         for row in json.loads(image.target.functions_path.read_text(encoding="utf-8"))
     }
+    family_builds = [
+        build
+        for build, images in REGISTRY.builds.items()
+        if image.name in images and images[image.name].family == image.family
+    ]
     seen: set[Path] = set()
     all_ranges: list[tuple[int, int]] = []
     for module in payload["modules"]:
@@ -420,8 +425,12 @@ def test_family_layout_places_each_source_in_its_native_object(layout_path: Path
             for config_dir in row["configs"]:
                 config = matchlib.load_scratch_config(matchlib.REPO_ROOT / config_dir)
                 overrides = dict(config.family_sources)
-                override = overrides.get(payload["build"]) or overrides[payload["family"]]
-                assert (config.directory / override).resolve() == source
+                # The reference build defines object ranges. A source may be specific to another member.
+                assert any(
+                    (config.directory / overrides.get(build, overrides.get(payload["family"], config.source))).resolve()
+                    == source
+                    for build in family_builds if config.supports_build(build)
+                )
                 if config.function in mapped:
                     assert any(start <= mapped[config.function] < end for start, end in ranges)
     previous_end = 0

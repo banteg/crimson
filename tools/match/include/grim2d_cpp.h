@@ -11,6 +11,9 @@ struct grim_config_value_t {
 #endif
 
     grim_config_value_t() {}
+#if CL_BUILD < 10400
+    grim_config_value_t(unsigned char (*callback)()) { words[5] = (unsigned int)callback; }
+#endif
     grim_config_value_t(unsigned int value) { words[0] = value; }
     grim_config_value_t(float value) { *(float *)&words[CL_BUILD < 10400 ? 1 : 0] = value; }
     grim_config_value_t(bool value) { *(bool *)&words[CL_BUILD < 10400 ? 2 : 0] = value; }
