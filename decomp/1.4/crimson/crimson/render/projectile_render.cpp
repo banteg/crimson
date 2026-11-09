@@ -1,6 +1,6 @@
 #include "cl_build.h"
 
-#if CL_BUILD == 10002
+#ifndef CRIMSON_FREEWARE_CLIENT
 #include "projectile_render_early.inc"
 #else
 // crimson.exe 1.4.0, 0x40b570.
