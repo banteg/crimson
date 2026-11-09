@@ -177,6 +177,11 @@
     },
     {
       "address": "0x0041b840",
+      "name": "?insert@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAEXPAPAUfreeware_level_object@@IABQAU3@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041b840",
       "name": "?insert@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@QAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
       "program": "1.3.0/crimson.exe"
     },
@@ -836,8 +841,18 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00430220",
+      "name": "freeware_option_labels",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00430250",
       "name": "freeware_bomb_position",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430258",
+      "name": "freeware_main_labels",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -901,6 +916,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00432ee0",
+      "name": "world_arrow_marker_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00432ee4",
       "name": "freeware_bullet_texture",
       "program": "1.3.0/crimson.exe"
@@ -928,6 +948,11 @@
     {
       "address": "0x00433934",
       "name": "freeware_fps",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004339fc",
+      "name": "aim64_texture",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -1031,6 +1056,16 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x004374a4",
+      "name": "freeware_glow",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a5",
+      "name": "freeware_smoke",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x004374a8",
       "name": "config_player_count",
       "program": "1.3.0/crimson.exe"
@@ -1073,6 +1108,11 @@
     {
       "address": "0x004475f8",
       "name": "unused_effect_uv16_prefix_vec2",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447600",
+      "name": "freeware_particle_texture",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -1133,6 +1173,16 @@
     {
       "address": "0x00447730",
       "name": "freeware_encounter_active",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447734",
+      "name": "freeware_assembly_sequence",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044773c",
+      "name": "freeware_birthday",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -1423,6 +1473,11 @@
     {
       "address": "0x00447850",
       "name": "freeware_score_scroll",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447854",
+      "name": "s_empty_string",
       "program": "1.3.0/crimson.exe"
     },
     {

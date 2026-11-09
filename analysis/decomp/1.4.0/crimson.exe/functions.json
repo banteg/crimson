@@ -2288,13 +2288,13 @@
   },
   {
     "address": "0x0042240A",
-    "canonical_address": "0x00461AF7",
+    "canonical_address": "0x00461739",
     "end": "0x00422414",
-    "evidence": "ordered",
-    "name": "crt_fread",
+    "evidence": "recovered",
+    "name": "crt_srand",
     "size": 10,
     "aliases": [
-      "fread"
+      "srand"
     ]
   },
   {

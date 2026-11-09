@@ -318,6 +318,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/console/freeware_console_cmd_loadtile.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_console_cmd_loadtile"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/console/freeware_console_extension_commands.cpp",
           "configs": [
             "tools/match/scratches/freeware_console_cmd_givegun",
@@ -504,6 +510,18 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/game/crimsonland_main_130.cpp",
+          "configs": [
+            "tools/match/scratches/crimsonland_main"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/crimsonland_main_140.cpp",
+          "configs": [
+            "tools/match/scratches/crimsonland_main"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/game/encounters.cpp",
           "configs": [
             "tools/match/scratches/freeware_encounter_experience",
@@ -511,6 +529,12 @@
             "tools/match/scratches/freeware_encounter_pineapple",
             "tools/match/scratches/freeware_encounter_duct_tape",
             "tools/match/scratches/freeware_encounter_endless_army"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/freeware_editor_offset_destroy.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_editor_offset_destroy"
           ]
         },
         {
@@ -774,6 +798,12 @@
           "path": "decomp/1.4/crimson/crimson/render/effect_render_all.cpp",
           "configs": [
             "tools/match/scratches/effect_render_all"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/freeware_post_player_render_noop.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_post_player_render_noop"
           ]
         },
         {

@@ -487,6 +487,14 @@
     "size": 157
   },
   {
+    "address": "0x00402A40",
+    "end": "0x00402A41",
+    "size": 1,
+    "build_only": true,
+    "name": "freeware_post_player_render_noop",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00402A50",
     "end": "0x00402A6E",
     "size": 30,
@@ -664,6 +672,14 @@
     "evidence": "ordered",
     "name": "player_render",
     "size": 2560
+  },
+  {
+    "address": "0x00407950",
+    "build_only": true,
+    "end": "0x00407E7A",
+    "evidence": "recovered",
+    "name": "effect_render_all",
+    "size": 1322
   },
   {
     "address": "0x00407E80",

@@ -1379,6 +1379,13 @@
       "address": "0x00422a46",
       "end": "0x00422ad2",
       "body_sha256": "93c0f487b228cc9d60a968405dbc9d5f36c0ed57820ca37f1c5098c8cebc15a9"
+    },
+    {
+      "name": "crt_srand",
+      "address": "0x0042240a",
+      "end": "0x00422414",
+      "body_sha256": "111a274544b1a62609b2f1d0f9c2acd5b6de3e728adceddb9e5b6d19458182fe",
+      "evidence": "0x421496 seeds the LCG from QueryPerformanceCounter. The following crt_rand reads and updates the same DWORD with the MSVCRT multipliers."
     }
   ],
   "data": [
@@ -3738,6 +3745,27 @@
       "reference": "0x00403390",
       "bytes": "c70560bb43009a99193f",
       "evidence": "The four-channel constructor stores 0.6/0.6/0.6/0.5 immediately after the particle array; the freeware ice tint occupies the same address."
+    },
+    {
+      "name": "aim64_texture",
+      "address": "0x0043c6a8",
+      "reference": "0x0042110f",
+      "bytes": "a3a8c64300",
+      "evidence": "Store of the cache lookup for aim64, following the bullet icon."
+    },
+    {
+      "name": "world_arrow_marker_texture",
+      "address": "0x0043bb70",
+      "reference": "0x0042112b",
+      "bytes": "a370bb4300",
+      "evidence": "Store of the arrow lookup after loading arrow.tga."
+    },
+    {
+      "name": "secret_hint_magic_paint",
+      "address": "0x0042fb54",
+      "reference": "0x004214cc",
+      "bytes": "b854fb4200",
+      "evidence": "The shorter freeware text is an inline array; WinMain tests the address after seeding the snow array."
     }
   ],
   "absent": [

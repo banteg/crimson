@@ -1181,7 +1181,7 @@
     "address": "0x0040CF60",
     "build_only": true,
     "end": "0x0040E2BF",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "effect_render_all",
     "size": 4959
   },
@@ -1249,6 +1249,14 @@
     "name": "game_frame_update",
     "size": 21459,
     "identity_only": true
+  },
+  {
+    "address": "0x004183E0",
+    "end": "0x004183E1",
+    "size": 1,
+    "build_only": true,
+    "name": "freeware_editor_offset_destroy",
+    "evidence": "recovered"
   },
   {
     "address": "0x004183F0",
@@ -1570,6 +1578,17 @@
     "evidence": "exact",
     "name": "crt_array_unwind",
     "size": 94
+  },
+  {
+    "address": "0x0041BDDF",
+    "canonical_address": "0x00461739",
+    "end": "0x0041BDE9",
+    "evidence": "recovered",
+    "name": "crt_srand",
+    "size": 10,
+    "aliases": [
+      "srand"
+    ]
   },
   {
     "address": "0x0041BDE9",
@@ -3854,14 +3873,11 @@
   },
   {
     "address": "0x00426180",
-    "canonical_address": "0x0046E920",
+    "canonical_address": "0x0046E94A",
     "end": "0x00426186",
-    "evidence": "exact",
-    "name": "ov_pcm_seek",
-    "size": 6,
-    "aliases": [
-      "HlinkNavigateString"
-    ]
+    "evidence": "recovered",
+    "name": "Direct3DCreate8",
+    "size": 6
   },
   {
     "address": "0x00426186",

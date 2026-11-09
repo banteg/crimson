@@ -374,6 +374,14 @@
       "body_sha256": "39877c807f36d67027614437515739ac9d336d4068bcd994216ad483c03d640d"
     },
     {
+      "name": "freeware_post_player_render_noop",
+      "address": "0x00402a40",
+      "end": "0x00402a41",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e",
+      "build_only": true,
+      "evidence": "Called directly in the frame renderer between player_render and the pickup/particle pass. The complete body is a bare return."
+    },
+    {
       "name": "projectile_alloc_slot",
       "address": "0x00402a50",
       "end": "0x00402a6e",
@@ -512,6 +520,14 @@
       "note": "Career dispatch by encounter ID. The fifth switch target at 0x40b1ae calls the duct-tape handler and falls through to the shared cursor. The five destination addresses follow the final return."
     },
     {
+      "name": "freeware_career_menu_update",
+      "address": "0x0040b270",
+      "end": "0x0040b6d9",
+      "body_sha256": "e32e4962a3af55e5e2ca588a74ef2f221d60247bed6e6453c707e03aee60d61e",
+      "build_only": true,
+      "note": "Shows the current day and experience, handles the three town options, and enters the selected encounter."
+    },
+    {
       "name": "perk_selection_screen_update",
       "address": "0x0040b6e0",
       "end": "0x0040bcfa",
@@ -524,6 +540,14 @@
       "body_sha256": "de2b89e2f5f1239955138ad83f99c126f332370ec9ec938b5ce2950fcee57919",
       "build_only": true,
       "evidence": "0x0040e96c polls this helper when entering the high-score name. It tests the DirectInput digit, letter, space, return and backspace scancodes, then uppercases the result while Shift is held."
+    },
+    {
+      "name": "freeware_hud_set_row",
+      "address": "0x0040c0d0",
+      "end": "0x0040c10d",
+      "body_sha256": "5ea897c9fff6dbbc7397f80ee5614099cf89d116d45c9476f2758ea0992ea650",
+      "build_only": true,
+      "evidence": "The HUD renderer calls this helper to select the supplied UV row. Its entire compiled function previously matched all 61 bytes with clean positional references."
     },
     {
       "name": "game_frame_update",
@@ -634,20 +658,12 @@
       "evidence": "The score writer seeks to SEEK_END and the reader to SEEK_SET. The unlocked CRT body validates the three seek origins, adjusts SEEK_CUR via ftell, flushes the FILE, and seeks the descriptor."
     },
     {
-      "name": "freeware_career_menu_update",
-      "address": "0x0040b270",
-      "end": "0x0040b6d9",
-      "body_sha256": "e32e4962a3af55e5e2ca588a74ef2f221d60247bed6e6453c707e03aee60d61e",
-      "build_only": true,
-      "note": "Shows the current day and experience, handles the three town options, and enters the selected encounter."
-    },
-    {
-      "name": "freeware_hud_set_row",
-      "address": "0x0040c0d0",
-      "end": "0x0040c10d",
-      "body_sha256": "5ea897c9fff6dbbc7397f80ee5614099cf89d116d45c9476f2758ea0992ea650",
-      "build_only": true,
-      "evidence": "The HUD renderer calls this helper to select the supplied UV row. Its entire compiled function previously matched all 61 bytes with clean positional references."
+      "name": "effect_render_all",
+      "address": "0x00407950",
+      "end": "0x00407e7a",
+      "body_sha256": "207d6b898d81391659db37ce8a8530e20908ced0190ebec52296b9d8347a6333",
+      "note": "Called from the game frame to draw the pickup, glow and flame particles. The two particle loops traverse the complete 128-entry, 48-byte-stride pool.",
+      "build_only": true
     }
   ],
   "data": [

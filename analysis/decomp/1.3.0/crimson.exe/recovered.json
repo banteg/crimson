@@ -729,11 +729,33 @@
       "body_sha256": "81d04ee920e5b43d2fc8402490d3a494bf143c76d93f0ae12872facb23321e74"
     },
     {
+      "name": "freeware_hud_set_row",
+      "address": "0x00411820",
+      "end": "0x0041185d",
+      "body_sha256": "4624605d2f39c3971e68599123cd19263d82bd5b5d9b0c0bc99a10e196c71587",
+      "build_only": true
+    },
+    {
+      "name": "gameplay_render_hud",
+      "address": "0x00411860",
+      "end": "0x00412afc",
+      "body_sha256": "7f92ec8f3b41a66081023c5d14bf09fe7332e123d4cb2295533ab6d825857f79",
+      "build_only": true
+    },
+    {
       "name": "game_frame_update",
       "address": "0x00412fd0",
       "end": "0x004183a3",
       "body_sha256": "e5ddbc3a594cb4607e04f6bf4fc71418f9e3f162595c673a21fb9f70c0c74b38",
       "identity_only": true
+    },
+    {
+      "name": "freeware_editor_offset_destroy",
+      "address": "0x004183e0",
+      "end": "0x004183e1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e",
+      "build_only": true,
+      "evidence": "The editor registers this no-op at exit when initializing its local static two-component offset to (0,0). Arrow-key handling updates the two components."
     },
     {
       "name": "game_credits_update",
@@ -907,18 +929,26 @@
       "body_sha256": "cde59baae1cb0588bc34e79cfe45e980c8b4f38e83fea11af91bade98d348be6"
     },
     {
-      "name": "freeware_hud_set_row",
-      "address": "0x00411820",
-      "end": "0x0041185d",
-      "body_sha256": "4624605d2f39c3971e68599123cd19263d82bd5b5d9b0c0bc99a10e196c71587",
-      "build_only": true
+      "name": "effect_render_all",
+      "address": "0x0040cf60",
+      "end": "0x0040e2bf",
+      "build_only": true,
+      "body_sha256": "f5937333c5af7576a872f240a4ed0cc74a0246c81cf0fa6160fa761ec8b60696",
+      "note": "Freeware effect draw pass, including pickup labels, particle sprites, bomb creature damage, rocket shock waves and smoke."
     },
     {
-      "name": "gameplay_render_hud",
-      "address": "0x00411860",
-      "end": "0x00412afc",
-      "body_sha256": "7f92ec8f3b41a66081023c5d14bf09fe7332e123d4cb2295533ab6d825857f79",
-      "build_only": true
+      "name": "Direct3DCreate8",
+      "address": "0x00426180",
+      "end": "0x00426186",
+      "body_sha256": "420d0a1005db2dc6d0031e387c26d3895d12347831e99fa48e683874f0cba177",
+      "evidence": "WinMain supplies SDK version 220 at 0x419d67. This indirect JMP uses the Direct3DCreate8 IAT slot at 0x4270e8 in d3d8.dll."
+    },
+    {
+      "name": "crt_srand",
+      "address": "0x0041bddf",
+      "end": "0x0041bde9",
+      "body_sha256": "df461dc7f036791c2452325ad155d20a2dfcf8f90ab0de0da4e1780b29c0f19d",
+      "evidence": "The QueryPerformanceCounter seed is stored in the same DWORD that crt_rand updates with the VC6 LCG immediately following this routine."
     }
   ],
   "data": [
@@ -1783,6 +1813,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_glow",
+      "address": "0x004374a4",
+      "reference": "0x00415676",
+      "bytes": "a0a4744300",
+      "build_only": true
+    },
+    {
       "name": "config_game_mode",
       "address": "0x004374b0",
       "reference": "0x0040baaf",
@@ -1813,6 +1850,13 @@
       "address": "0x004475f8",
       "reference": "0x00401100",
       "bytes": "c705f875440000000000"
+    },
+    {
+      "name": "freeware_particle_texture",
+      "address": "0x00447600",
+      "reference": "0x0041b40f",
+      "bytes": "a300764400",
+      "build_only": true
     },
     {
       "name": "freeware_sfx_samples",
@@ -2279,6 +2323,74 @@
       "address": "0x00447758",
       "reference": "0x00410ddb",
       "bytes": "d91d58774400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_smoke",
+      "address": "0x004374a5",
+      "reference": "0x0040e194",
+      "bytes": "a0a5744300",
+      "build_only": true
+    },
+    {
+      "name": "aim64_texture",
+      "address": "0x004339fc",
+      "reference": "0x0041b4dc",
+      "bytes": "a3fc394300",
+      "evidence": "The preceding Grim cache lookup requests aim64."
+    },
+    {
+      "name": "world_arrow_marker_texture",
+      "address": "0x00432ee0",
+      "reference": "0x0041b4f1",
+      "bytes": "a3e02e4300",
+      "evidence": "The preceding Grim cache lookup requests arrow, loaded from arrow.tga."
+    },
+    {
+      "name": "s_empty_string",
+      "address": "0x00447854",
+      "reference": "0x0041b4fe",
+      "bytes": "c7400c54784400",
+      "evidence": "Sets Grim config slot 0x10 to the empty string after the PAQ-backed loads."
+    },
+    {
+      "name": "freeware_main_labels",
+      "address": "0x00430258",
+      "reference": "0x0041b51d",
+      "bytes": "bf58024300",
+      "evidence": "Seven pointers cleared before strdup-owned title menu labels are assigned.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_option_labels",
+      "address": "0x00430220",
+      "reference": "0x0041b52e",
+      "bytes": "bf20024300",
+      "evidence": "Eleven pointers cleared before strdup-owned option menu labels are assigned.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_assembly_sequence",
+      "address": "0x00447734",
+      "reference": "0x0041b6f2",
+      "bytes": "c7053477440008000000",
+      "evidence": "For August 1 through 4, initialize the assembly sequence to eight.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_birthday",
+      "address": "0x0044773c",
+      "reference": "0x0041b70c",
+      "bytes": "c6053c77440001",
+      "evidence": "The September 12 branch sets the birthday byte to one.",
+      "build_only": true
+    },
+    {
+      "name": "?insert@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAEXPAPAUfreeware_level_object@@IABQAU3@@Z",
+      "address": "0x0041b840",
+      "reference": "0x0041a756",
+      "bytes": "e8e5100000",
+      "evidence": "Pushes one pointer to a newly allocated 48-byte brush into freeware_brushes. VC6 emits this shared insert(pos, count, value) specialization.",
       "build_only": true
     }
   ],

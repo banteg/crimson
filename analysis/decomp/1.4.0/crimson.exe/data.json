@@ -571,6 +571,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0042fb54",
+      "name": "secret_hint_magic_paint",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0042fb88",
       "name": "freeware_rank",
       "program": "1.4.0/crimson.exe"
@@ -1371,6 +1376,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0043bb70",
+      "name": "world_arrow_marker_texture",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0043bb74",
       "name": "freeware_bullet_texture",
       "program": "1.4.0/crimson.exe"
@@ -1403,6 +1413,11 @@
     {
       "address": "0x0043c5e0",
       "name": "freeware_fps",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043c6a8",
+      "name": "aim64_texture",
       "program": "1.4.0/crimson.exe"
     },
     {
