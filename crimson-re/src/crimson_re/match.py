@@ -5643,16 +5643,30 @@ def _locked_staging_dir(path: Path) -> Generator[Path]:
             shutil.rmtree(path, ignore_errors=True)
 
 
+# Processor Pack can fail before MAX_PATH (253 guest bytes for p.cpp);
+# a source ending in .c also produces a longer .obj filename.
+_VC6_STAGED_PATH_LIMIT = 250
+
+
 def _scratch_staging_directory(config: ScratchConfig, match_root: Path) -> Path:
-    build_dir = _scratch_build_directory(config)
-    # MSVC embeds the staged path. Keep it stable per profile, including in deep worktrees
-    # where the Z:-prefixed absolute filename would overflow VC6's MAX_PATH buffer.
+    obj = _scratch_object_path(config)
+    longest_name = max((Path(config.source).name, obj.name), key=lambda name: len(os.fsencode(name)))
+
+    def guest_length(directory: Path) -> int:
+        return len(os.fsencode("Z:" + str((directory / longest_name).resolve())))
+
+    build_dir = obj.parent
     stage = build_dir.parent / f".{build_dir.name}.stage"
-    windows_source = "Z:" + str((stage / Path(config.source).name).resolve())
-    if len(os.fsencode(windows_source)) >= 260:
-        key = hashlib.sha256(os.fsencode(build_dir.resolve())).hexdigest()[:16]
-        stage = match_root / ".cache" / key
-    return stage
+    if guest_length(stage) <= _VC6_STAGED_PATH_LIMIT:
+        return stage
+    key = hashlib.sha256(os.fsencode(build_dir.resolve())).hexdigest()[:16]
+    short_stage = match_root / ".cache" / key
+    if guest_length(short_stage) > _VC6_STAGED_PATH_LIMIT:
+        raise ValueError(
+            f"VC6 staging path exceeds {_VC6_STAGED_PATH_LIMIT} bytes even in the short cache: "
+            f"{short_stage / longest_name}. Use a shorter checkout path or source filename.",
+        )
+    return short_stage
 
 
 def _scratch_object_path(config: ScratchConfig) -> Path:

@@ -55,6 +55,8 @@ from crimson_re.match import (
     _local_switch_partition_key,
     _region_hints,
     _scratch_build_key,
+    _scratch_object_path,
+    _scratch_staging_directory,
     _ScratchIncludeResolver,
     _vc6_sparse_switch_bounds,
     align_basic_blocks,
@@ -3963,6 +3965,37 @@ def test_scratch_build_key_tracks_transitive_headers(tmp_path: Path) -> None:
     assert after != before
 
 
+@pytest.mark.parametrize(("guest_object_length", "short"), [(250, False), (251, True), (253, True)])
+def test_vc6_stage_budget_includes_the_object_basename(guest_object_length, short):
+    # A .c filename is two bytes shorter than its .obj. Use a synthetic
+    # absolute root so this boundary is independent of pytest's temp path.
+    root = Path("/match")
+    config = ScratchConfig(Path("/stage"), "counter", "grim.dll", "msvc6.5pp", "/O2", "counter.c", None, "counter", "")
+    obj = _scratch_object_path(config)
+    normal = obj.parent.parent / f".{obj.parent.name}.stage"
+    length = len(os.fsencode("Z:" + str((normal / obj.name).resolve())))
+    scratch = config.directory.with_name("s" * (len(config.directory.name) + guest_object_length - length))
+    config = replace(config, directory=scratch)
+    obj = _scratch_object_path(config)
+    normal = obj.parent.parent / f".{obj.parent.name}.stage"
+    assert len(os.fsencode("Z:" + str((normal / "counter.c").resolve()))) == guest_object_length - 2
+    assert len(os.fsencode("Z:" + str((normal / obj.name).resolve()))) == guest_object_length
+    stage = _scratch_staging_directory(config, root)
+    if short:
+        key = hashlib.sha256(os.fsencode(obj.parent.resolve())).hexdigest()[:16]
+        assert stage == root / ".cache" / key
+        assert len(os.fsencode("Z:" + str((stage / obj.name).resolve()))) <= 250
+    else:
+        assert stage == normal
+
+
+def test_vc6_staging_refuses_an_overlong_short_cache():
+    root = Path("/" + "a" * 220) / "tools/match"
+    config = ScratchConfig(root / "scratches/test", "counter", "grim.dll", "msvc6.5pp", "/O2", "counter.c", None, "counter", "")
+    with pytest.raises(ValueError, match=r"short cache: .+[/\\]\.cache[/\\].+counter\.obj"):
+        _scratch_staging_directory(config, root)
+
+
 @pytest.mark.parametrize("scratch_name", ["scratch", "long-worktree-" + "x" * 180])
 def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     monkeypatch: pytest.MonkeyPatch,
@@ -3997,7 +4030,8 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
         commands.append(command)
         environments.append(cast(dict[str, str], kwargs["env"]))
         cwd = Path(str(kwargs["cwd"]))
-        assert len(os.fsencode("Z:" + str(cwd / command[-1]))) < 260
+        for filename in (command[-1], "scratch.obj"):
+            assert len(os.fsencode("Z:" + str(cwd / filename))) <= 250
         (cwd / "scratch.obj").write_bytes(" ".join(command).encode())
         return subprocess.CompletedProcess(command, 0, stdout="scratch.c\n", stderr=compiler_warning)
 
