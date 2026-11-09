@@ -1150,10 +1150,6 @@ __forceinline bool native_menu_actions() {
             MENU_MUSIC = 0;
         }
     }
-    if (freeware_credits_open)
-        game_credits_update();
-    if (freeware_scores_open)
-        game_highscores_update();
     return true;
 }
 #endif

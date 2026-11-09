@@ -58,6 +58,10 @@ if ((FREEWARE_EDITION == 10300 || !console_open_flag) && grim_interface_ptr->gri
     freeware_perk_hover = SELECTED;
 if (!native_menu_actions())
     return 0;
+if (freeware_credits_open)
+    game_credits_update();
+if (freeware_scores_open)
+    game_highscores_update();
 #else
 if (overlay || !setup_controls())
     row = menu_rows(overlay ? main_page : which);
