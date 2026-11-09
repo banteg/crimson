@@ -42,7 +42,7 @@ def rewrite(lines, disassembly, frame: dict) -> list[str]:
     """Replace each esp operand of a line by its bottom offset, in operand order."""
     offsets = defaultdict(list)
     for address, offset, _text in frame["refs"]:
-        offsets[address].append(offset + frame["frame_size"])
+        offsets[address].append(offset + frame["local_bottom_depth"])
     out = []
     for line, insn in zip(lines, disassembly, strict=True):
         queue = list(offsets.get(insn.address, ()))

@@ -256,16 +256,21 @@ def test_stack_refs_keep_frame_for_biased_ebp_and_leave():
 
 
 def test_stack_refs_account_for_inline_eh_record_in_combined_cleanup():
-    # The compiler installs three SEH words, reserves 24 bytes of locals
-    # and saves EBX. Only the final argument belongs to the virtual call.
+    # Entry ESP is E. The inline registration is [E-12, E), the 24-byte
+    # local area is [E-36, E-12), and saved EBX is at E-40.
     code = bytes.fromhex(
         "64a100000000 6aff 8b0d00010000 684c332211 50 64892500000000 "
-        "8b01 83ec18 53 6a01 ff5044 8b4c241c 5b 64890d00000000 83c424 c3",
+        "8b01 83ec18 53 6a01 ff5044 "
+        "8b442404 8a44241b 8b4c241c 8b1424 5b 64890d00000000 83c424 c3",
     )
     frame = fp.stack_refs(code, 0, lambda _: None)
     assert frame["frame_size"] == 24
-    assert frame["body_depth"] == 40
-    assert frame["depths"][38] == 40
+    assert frame["local_bottom_depth"] == 36
+    assert frame["body_depth"] == frame["depths"][38] == 40
+    # The first and last local bytes are retained. The saved FS link and EBX
+    # are visible in raw references but excluded from native slot votes.
+    assert [off for _, off, _ in frame["refs"]] == [-36, -13, -12, -40]
+    assert list(fp.local_refs(frame)) == [(38, 0), (42, 23)]
     assert frame["depths"][len(code) - 1] == 0
 
 
@@ -302,4 +307,5 @@ def test_stack_refs_keep_inline_eh_without_locals_across_an_indirect_call():
     assert frame["frame_size"] == 0
     assert frame["body_depth"] == 12
     assert frame["refs"][-1][1] == -12
+    assert list(fp.local_refs(frame)) == []
     assert frame["depths"][len(code) - 1] == 0

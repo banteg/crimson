@@ -21,8 +21,8 @@ into a vote "candidate object X lives at native bottom offset B". It then prints
 `--build` compiles the scratch as that game build and observes its C2 (1.9.8: 12.00.9044, msvc6.5pp),
 against that build's image.
 
-Offsets are bottom-relative (esp after the callee-saved pushes, before argument pushes). Diagnostic
-only; see tools/match/c2/compiler/native-slot-partition.md.
+Offsets are relative to the lowest byte reserved for locals, above any registers saved after the
+allocation. Diagnostic only; see tools/match/c2/compiler/native-slot-partition.md.
 """
 
 from __future__ import annotations
@@ -109,12 +109,10 @@ def analyze(
     frames = fp.binary_frames(config, object_path, target)
     tf, cf = frames["target"]["frame_size"], frames["candidate"]["frame_size"]
     tref, cref = defaultdict(list), defaultdict(list)
-    for a, off, _ in frames["target"]["refs"]:
-        if -tf <= off < 0:
-            tref[a].append(off + tf)
-    for a, off, _ in frames["candidate"]["refs"]:
-        if -cf <= off < 0:
-            cref[a].append(off + cf)
+    for a, bottom_offset in fp.local_refs(frames["target"]):
+        tref[a].append(bottom_offset)
+    for a, bottom_offset in fp.local_refs(frames["candidate"]):
+        cref[a].append(bottom_offset)
     manifest = match.load_function_manifest(
         target.functions_path,
         metadata_path=target.metadata_path,
@@ -132,7 +130,9 @@ def analyze(
         if tag == "equal" or (tag == "replace" and i2 - i1 == j2 - j1):
             for k in range(i2 - i1):
                 t2c[tins[i1 + k].address] = cins[j1 + k].address
-    bottom = {o.ptr: o.offset + cf for o in fr.objects if o.cls != 5}
+    # C2's offsets are relative to its own frame origin. Its reported size
+    # includes inline EH registration even when SUB reserves only the locals.
+    bottom = {o.ptr: o.offset + fr.frame_size for o in fr.objects if o.cls != 5}
     votes: dict[int, Counter] = defaultdict(Counter)
     unexplained = []
     for insn in tins:

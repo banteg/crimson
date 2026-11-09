@@ -920,7 +920,20 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
             depth = None
             window = 0
     frame = int(reservation.op_str.split(", ")[1], 0) if reservation is not None else 0
-    return {"refs": refs, "conflicts": conflicts, "body_depth": body_depth, "depths": depths, "frame_size": frame}
+    # Entry-relative references include anything pushed before SUB ESP, N
+    # (for example the three VC6 exception-registration words).
+    return {
+        "refs": refs, "conflicts": conflicts, "body_depth": body_depth, "depths": depths,
+        "frame_size": frame, "local_bottom_depth": reservation_depth + frame,
+    }
+
+
+def local_refs(frame: dict):
+    """Yield each access to the fixed allocation, in bytes from its lowest address."""
+    for address, offset, _text in frame["refs"]:
+        bottom = offset + frame["local_bottom_depth"]
+        if 0 <= bottom < frame["frame_size"]:
+            yield address, bottom
 
 
 def binary_frames(config, object_path: Path, target: match.MatchTarget | None = None) -> dict:
@@ -1204,12 +1217,11 @@ def print_native(config, object_path: Path, target: match.MatchTarget | None = N
     frames = binary_frames(config, object_path, target)
     counts = {}
     for side, r in frames.items():
-        pushes = r["body_depth"] - r["frame_size"]
+        pushes = r["body_depth"] - r["local_bottom_depth"]
         counts[side] = ({}, r["frame_size"], pushes)
-        for _, off, _ in r["refs"]:
-            if -r["frame_size"] <= off < 0:
-                bottom = (off + r["frame_size"]) & ~3
-                counts[side][0][bottom] = counts[side][0].get(bottom, 0) + 1
+        for _, offset in local_refs(r):
+            bottom = offset & ~3
+            counts[side][0][bottom] = counts[side][0].get(bottom, 0) + 1
     (tc, tf, tp), (cc, cf, cp) = counts["target"], counts["candidate"]
     print(f"native frame {tf:#x} (+{tp} pushed), candidate frame {cf:#x} (+{cp} pushed); bottom-relative refs:")
     for bottom in range(0, max(tf, cf), 4):
