@@ -10,7 +10,7 @@ import shlex
 import shutil
 import struct
 from collections import Counter, defaultdict
-from collections.abc import Collection, Generator
+from collections.abc import Collection, Generator, Iterable
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
@@ -1457,64 +1457,80 @@ def _coff_relocation_symbol(
     return next((symbol for symbol in obj.symbols if symbol.raw_index == relocation.symbol_index), None)
 
 
+def _coff_unwind_record(
+    obj: CoffObject,
+    symbol: CoffSymbol,
+    size: int,
+    pointers: Iterable[tuple[int, int]],
+) -> tuple[bytes, list[CoffSymbol]] | None:
+    """Read the record only if its relocations bind precisely the expected fields."""
+    if not 0 < symbol.section_number <= len(obj.sections):
+        return None
+    section = obj.sections[symbol.section_number - 1]
+    start, end = symbol.value, symbol.value + size
+    if not 0 <= start <= end <= len(section.data):
+        return None
+    relocations = sorted(
+        (
+            entry
+            for entry in section.relocations
+            if entry.virtual_address < end
+            and entry.virtual_address + IMAGE_REL_I386_WIDTHS[entry.relocation_type] > start
+        ),
+        key=lambda entry: entry.virtual_address,
+    )
+    if [(entry.virtual_address - start, entry.relocation_type) for entry in relocations] != list(pointers):
+        return None
+    symbols = {entry.raw_index: entry for entry in obj.symbols}
+    return section.data[start:end], [symbols[entry.symbol_index] for entry in relocations]
+
+
+def _vc6_delete_unwind_key(slots: list[int]) -> str:
+    # Retain the one-state key in saved evidence. State order and multiplicity
+    # distinguish maps that perform their deletes on different stack slots.
+    return VC6_SINGLE_DELETE_UNWIND_KEY + ":" + ",".join(f"ebp+0x{slot:02x}" for slot in slots)
+
+
 def _coff_vc6_single_delete_unwind_key(obj: CoffObject, symbol: CoffSymbol) -> str | None:
-    """Recognize a complete VC6 C++ frame-handler graph in a COFF object.
-
-    The pushed handler address is target-specific, but its thunk, FuncInfo,
-    unwind-map entry, and cleanup funclet are deterministic. Recognizing the
-    whole graph avoids accepting an arbitrary compiler-local ``$L`` label.
-    """
-
-    if not symbol.name.startswith("$L") or symbol.section_number <= 0:
+    """Identify VC6 unwind states that each delete one object and finish at -1."""
+    if not symbol.name.startswith("$L"):
         return None
-    handler_section = obj.sections[symbol.section_number - 1]
-    handler = handler_section.data[symbol.value : symbol.value + 10]
-    if len(handler) != 10 or handler[:1] != b"\xb8" or handler[5:6] != b"\xe9":
+    record = _coff_unwind_record(obj, symbol, 10, ((1, IMAGE_REL_I386_DIR32), (6, IMAGE_REL_I386_REL32)))
+    if record is None:
         return None
-    if handler[1:5] != b"\x00" * 4 or handler[6:10] != b"\x00" * 4:
+    handler, (info_symbol, frame_handler) = record
+    if handler != bytes.fromhex("b800000000e900000000"):
+        return None
+    if frame_handler.storage_class != IMAGE_SYM_CLASS_EXTERNAL or frame_handler.name != "___CxxFrameHandler":
         return None
 
-    func_info_symbol = _coff_relocation_symbol(obj, handler_section, symbol.value + 1)
-    frame_handler_symbol = _coff_relocation_symbol(obj, handler_section, symbol.value + 6)
-    if (
-        func_info_symbol is None
-        or func_info_symbol.section_number <= 0
-        or frame_handler_symbol is None
-        or _symbol_lookup_name(frame_handler_symbol.name) != "CxxFrameHandler"
-    ):
+    record = _coff_unwind_record(obj, info_symbol, 28, ((8, IMAGE_REL_I386_DIR32),))
+    if record is None:
+        return None
+    info, (map_symbol,) = record
+    magic, states = struct.unpack_from("<II", info)
+    if magic != 0x19930520 or not states or info[8:] != bytes(20):
         return None
 
-    func_info_section = obj.sections[func_info_symbol.section_number - 1]
-    base = func_info_symbol.value
-    # FuncInfo: magic, one state, unwind map, and no try blocks or IP map.
-    func_info = func_info_section.data[base : base + 28]
-    if len(func_info) != 28 or struct.unpack_from("<II", func_info) != (0x19930520, 1):
+    cleanup_fields = ((8 * i + 4, IMAGE_REL_I386_DIR32) for i in range(states))
+    record = _coff_unwind_record(obj, map_symbol, 8 * states, cleanup_fields)
+    if record is None:
         return None
-    if func_info[8:12] != b"\x00" * 4 or func_info[12:28] != b"\x00" * 16:
-        return None
-
-    # The compiler may emit the one-entry unwind map before or after FuncInfo.
-    unwind_map_symbol = _coff_relocation_symbol(obj, func_info_section, base + 8)
-    if unwind_map_symbol is None or unwind_map_symbol.section_number <= 0:
-        return None
-    unwind_section = obj.sections[unwind_map_symbol.section_number - 1]
-    unwind = unwind_section.data[unwind_map_symbol.value : unwind_map_symbol.value + 8]
-    if len(unwind) != 8 or struct.unpack_from("<i", unwind)[0] != -1 or unwind[4:] != b"\x00" * 4:
-        return None
-    cleanup_symbol = _coff_relocation_symbol(obj, unwind_section, unwind_map_symbol.value + 4)
-    if cleanup_symbol is None or cleanup_symbol.section_number <= 0:
-        return None
-
-    cleanup_section = obj.sections[cleanup_symbol.section_number - 1]
-    cleanup = cleanup_section.data[cleanup_symbol.value : cleanup_symbol.value + 11]
-    if cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
-        return None
-    if cleanup[5:9] != b"\x00" * 4 or cleanup[9:] != bytes.fromhex("59c3"):
-        return None
-    delete_symbol = _coff_relocation_symbol(obj, cleanup_section, cleanup_symbol.value + 5)
-    if delete_symbol is None or not delete_symbol.name.startswith("??3@"):
-        return None
-    return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
+    unwind, cleanups = record
+    slots = []
+    for (previous_state, addend), cleanup_symbol in zip(struct.iter_unpack("<iI", unwind), cleanups, strict=True):
+        if previous_state != -1 or addend != 0:
+            return None
+        record = _coff_unwind_record(obj, cleanup_symbol, 11, ((5, IMAGE_REL_I386_REL32),))
+        if record is None:
+            return None
+        cleanup, (delete,) = record
+        if cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:] != bytes.fromhex("50e80000000059c3"):
+            return None
+        if delete.storage_class != IMAGE_SYM_CLASS_EXTERNAL or delete.name != "??3@YAXPAX@Z":
+            return None
+        slots.append(cleanup[2])
+    return _vc6_delete_unwind_key(slots)
 
 
 def _vc6_frame_slot_key(displacement: int) -> str:
@@ -2263,12 +2279,14 @@ def extract_object_function(
         addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
         key, explained = _object_reference_key(symbol, addend)
         alternate_keys: tuple[str, ...] = ()
-        compiler_key = _coff_vc6_unwind_only_key(
-            obj,
-            target,
-            end,
-            symbol,
-        ) or _coff_vc6_single_delete_unwind_key(obj, symbol)
+        compiler_key = None
+        if relocation.relocation_type == IMAGE_REL_I386_DIR32 and addend == 0:
+            compiler_key = _coff_vc6_unwind_only_key(
+                obj,
+                target,
+                end,
+                symbol,
+            ) or _coff_vc6_single_delete_unwind_key(obj, symbol)
         if compiler_key:
             key = compiler_key
             explained = True
@@ -2453,24 +2471,29 @@ def _image_vc6_single_delete_unwind_key(
         return None
 
     func_info = _image_bytes(image, func_info_address, 28)
-    if func_info is None or struct.unpack_from("<II", func_info) != (0x19930520, 1):
+    if func_info is None or func_info[12:] != bytes(16):
         return None
-    if func_info[12:28] != b"\x00" * 16:
+    magic, states, map_address = struct.unpack_from("<III", func_info)
+    if magic != 0x19930520 or not states:
         return None
-    unwind = _image_bytes(image, struct.unpack_from("<I", func_info, 8)[0], 8)
-    if unwind is None or struct.unpack_from("<i", unwind)[0] != -1:
+    unwind = _image_bytes(image, map_address, 8 * states)
+    if unwind is None:
         return None
 
-    cleanup_address = struct.unpack_from("<I", unwind, 4)[0]
-    cleanup = _image_bytes(image, cleanup_address, 11)
-    if cleanup is None or cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
-        return None
-    if cleanup[9:] != bytes.fromhex("59c3"):
-        return None
-    delete_address = cleanup_address + 9 + struct.unpack_from("<i", cleanup, 5)[0]
-    if not any(name.startswith("??3@") for name in reference_catalog.names_by_address.get(delete_address, ())):
-        return None
-    return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
+    slots = []
+    for previous_state, cleanup_address in struct.iter_unpack("<iI", unwind):
+        if previous_state != -1:
+            return None
+        cleanup = _image_bytes(image, cleanup_address, 11)
+        if cleanup is None or cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
+            return None
+        if cleanup[9:] != bytes.fromhex("59c3"):
+            return None
+        delete_address = cleanup_address + 9 + struct.unpack_from("<i", cleanup, 5)[0]
+        if "??3@YAXPAX@Z" not in reference_catalog.names_by_address.get(delete_address, ()):
+            return None
+        slots.append(cleanup[2])
+    return _vc6_delete_unwind_key(slots)
 
 
 def _image_vc6_unwind_only_key(

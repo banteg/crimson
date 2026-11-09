@@ -49,6 +49,7 @@ from crimson_re.match import (
     _coff_vc6_single_delete_unwind_key,
     _coff_vc6_unwind_only_key,
     _exception_summary,
+    _image_vc6_single_delete_unwind_key,
     _image_vc6_unwind_only_key,
     _import_thunk_object_bytes,
     _local_switch_partition_key,
@@ -1617,28 +1618,32 @@ def test_extract_object_function_marks_static_rdata_references_read_only() -> No
 
 
 # 1.9.8's linker places the one-entry unwind map before its FuncInfo.
-@pytest.mark.parametrize("unwind_offset", [32, -8])
-def test_match_function_audits_complete_vc6_delete_unwind_graph(unwind_offset: int) -> None:
+@pytest.mark.parametrize(("unwind_offset", "slots"), [(32, (12,)), (-8, (12,)), (-24, (0xF0, 0xEC, 0xF0))])
+def test_match_function_audits_complete_vc6_delete_unwind_graph(unwind_offset: int, slots: tuple[int, ...]) -> None:
     image_base = 0x400000
     handler_address = 0x400100
     func_info_address = 0x400200
     cleanup_address = 0x400300
     frame_handler_address = 0x400400
     delete_address = 0x400500
-    unwind_key = f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x0c"
+    obj = _build_vc6_delete_unwind_object(slots)
+    unwind_key = _coff_vc6_single_delete_unwind_key(obj, obj.symbols[0])
+    assert unwind_key == VC6_SINGLE_DELETE_UNWIND_KEY + ":" + ",".join(f"ebp+0x{slot:02x}" for slot in slots)
     mapped = bytearray(0x1000)
 
     handler = b"\xb8" + struct.pack("<I", func_info_address)
     handler += b"\xe9" + struct.pack("<i", frame_handler_address - (handler_address + 10))
     mapped[0x100:0x10A] = handler
-    func_info = struct.pack("<II", 0x19930520, 1)
+    func_info = struct.pack("<II", 0x19930520, len(slots))
     func_info += struct.pack("<I", func_info_address + unwind_offset) + b"\x00" * 20
     mapped[0x200:0x220] = func_info
     unwind = 0x200 + unwind_offset
-    mapped[unwind : unwind + 8] = struct.pack("<iI", -1, cleanup_address)
-    cleanup = bytes.fromhex("8b450c50e8")
-    cleanup += struct.pack("<i", delete_address - (cleanup_address + 9)) + bytes.fromhex("59c3")
-    mapped[0x300:0x30B] = cleanup
+    for index, slot in enumerate(slots):
+        address = cleanup_address + 11 * index
+        mapped[unwind + 8 * index : unwind + 8 * index + 8] = struct.pack("<iI", -1, address)
+        cleanup = bytes((0x8B, 0x45, slot, 0x50, 0xE8))
+        cleanup += struct.pack("<i", delete_address - (address + 9)) + bytes.fromhex("59c3")
+        mapped[address - image_base : address - image_base + len(cleanup)] = cleanup
 
     candidate = ObjectFunction(
         name="_probe",
@@ -1670,6 +1675,12 @@ def test_match_function_audits_complete_vc6_delete_unwind_graph(unwind_offset: i
 
     assert result.exact
     assert result.masked_operand_audit.ok_count == 1
+
+    # A nested state changes the cleanup graph even if all funclets are identical.
+    struct.pack_into("<i", mapped, unwind + 8 * (len(slots) - 1), 0)
+    assert _image_vc6_single_delete_unwind_key(
+        LoadedImage(bytes(mapped), image_base, len(mapped)), catalog, handler_address,
+    ) is None
 
 
 def _build_vc6_unwind_only_object() -> CoffObject:
@@ -1791,30 +1802,30 @@ def test_recognizes_complete_vc6_unwind_only_graph_in_coff() -> None:
     ) is None
 
 
-def test_recognizes_complete_vc6_delete_unwind_graph_in_coff() -> None:
-    handler = b"\xb8\x00\x00\x00\x00\xe9\x00\x00\x00\x00"
-    cleanup = bytes.fromhex("8b450c50e80000000059c3")
-    func_info = struct.pack("<II", 0x19930520, 1) + b"\x00" * 24
-    func_info += struct.pack("<iI", -1, 0)
-    obj = CoffObject(
+def _build_vc6_delete_unwind_object(slots: tuple[int, ...]) -> CoffObject:
+    handler = bytes.fromhex("b800000000e900000000")
+    cleanups = b"".join(bytes((0x8B, 0x45, slot)) + bytes.fromhex("50e80000000059c3") for slot in slots)
+    func_info = struct.pack("<II", 0x19930520, len(slots)) + bytes(24)
+    entries = struct.pack("<iI", -1, 0) * len(slots)
+    return CoffObject(
         sections=(
             CoffSection(
                 name=".text$x",
-                data=handler + cleanup,
+                data=handler + cleanups,
                 characteristics=0x20,
                 relocations=(
                     CoffRelocation(1, 1, 6),
                     CoffRelocation(6, 3, 20),
-                    CoffRelocation(15, 5, 20),
+                    *(CoffRelocation(15 + 11 * i, 4, 20) for i in range(len(slots))),
                 ),
             ),
             CoffSection(
                 name=".xdata$x",
-                data=func_info,
+                data=func_info + entries,
                 characteristics=0,
                 relocations=(
                     CoffRelocation(8, 2, 6),
-                    CoffRelocation(36, 4, 6),
+                    *(CoffRelocation(36 + 8 * i, 5 + i, 6) for i in range(len(slots))),
                 ),
             ),
         ),
@@ -1823,12 +1834,19 @@ def test_recognizes_complete_vc6_delete_unwind_graph_in_coff() -> None:
             CoffSymbol(1, "$Tinfo", 0, 2, 0, 3),
             CoffSymbol(2, "$Tunwind", 32, 2, 0, 3),
             CoffSymbol(3, "___CxxFrameHandler", 0, 0, 0x20, 2),
-            CoffSymbol(4, "$Lcleanup", 10, 1, 0, 6),
-            CoffSymbol(5, "??3@YAXPAX@Z", 0, 0, 0x20, 2),
+            CoffSymbol(4, "??3@YAXPAX@Z", 0, 0, 0x20, 2),
+            *(CoffSymbol(5 + i, f"$Lcleanup{i}", 10 + 11 * i, 1, 0, 6) for i in range(len(slots))),
         ),
     )
 
-    assert _coff_vc6_single_delete_unwind_key(obj, obj.symbols[0]) == (f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x0c")
+
+def test_delete_unwind_graph_checks_every_cleanup_relocation() -> None:
+    obj = _build_vc6_delete_unwind_object((0xEC, 0xF0))
+    code, info = obj.sections
+    call = code.relocations[-1]
+    for invalid in (replace(call, relocation_type=6), replace(call, symbol_index=3)):
+        bad_code = replace(code, relocations=(*code.relocations[:-1], invalid))
+        assert _coff_vc6_single_delete_unwind_key(replace(obj, sections=(bad_code, info)), obj.symbols[0]) is None
 
 
 def test_recognizes_compiler_local_jump_table_in_coff() -> None:
