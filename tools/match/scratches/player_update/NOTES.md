@@ -2265,3 +2265,18 @@ scratch-member storage keeps the angle early but loses X/Y loading; delaying
 its subtract adds a store/reload. A const-reference version also misses.
 Canonical source/configuration, references 807/0/2, prefix 7 and both false
 exactness flags are unchanged. No new runtime equivalence is claimed.
+
+## Freeware 1.0.2
+
+The complete 6,021-byte body at `0x408040` has 1,496 instructions and 543
+references. This build reads a single movement setting. Its static scheme
+polls the fixed arrow and WASD keys again for diagonals. It starts reloads
+inline and applies ammo costs and muzzle flashes in each weapon case. Every
+pellet and both plasma rounds add the current player position to the barrel
+offset. The empty shell adds the position once after its two random draws.
+
+The early vector operators preserve the temporary positions passed to
+`projectile_spawn`. Returning a constructed sum keeps both x87 results live
+until they reach the destination. Naming the two subtraction components keeps
+the Y spill ahead of the Grim vtable load during aim calculation. The client
+also keeps the heading between shots for its renderer.

@@ -31,12 +31,13 @@ extern player_state_t player_state_table[2];
 extern freeware_player_t player_state_table[2];
 #define PLAYER(i) player_state_table[i]
 #endif
-extern creature_t creature_pool[512];
+extern creature_t creature_pool[CL_BUILD == 10002 ? 128 : 512];
 extern projectile_pool_t projectile_pool;
 extern particle_t particle_pool[128];
 extern sprite_effect_t sprite_effect_pool[384];
 extern game_mode_id_t config_game_mode;
-extern int current_player_index, config_player_count, config_movement_schemes[2], config_aim_schemes[2];
+extern int current_player_index, config_player_count, config_aim_schemes[2];
+extern int config_movement_schemes[CL_BUILD == 10002 ? 1 : 2];
 extern int freeware_arena_width, freeware_arena_height, highscore_record_shots_fired, freeware_first_kill_xp;
 extern unsigned char console_open_flag, freeware_player_moved, freeware_secret_weapon_unlocked,
     freeware_rainbow_enabled, freeware_rainbow_armed, time_scale_active;
@@ -45,6 +46,7 @@ extern float frame_dt, freeware_simulation_clock, freeware_elapsed_seconds, free
 extern vec2f_t freeware_first_kill_position, freeware_aim_screen, freeware_camera;
 extern int perk_id_long_distance_runner, perk_id_sharpshooter, perk_id_ammo_maniac, perk_id_fastshot,
     perk_id_anxious_loader;
+extern int perk_id_timebender, perk_id_fastloader;
 int crt_rand();
 void weapon_assign_player(int, int);
 int projectile_spawn(const vec2f_t *, float, int);
@@ -60,13 +62,8 @@ bool input_move_up_active(), input_move_down_active(), input_move_left_active(),
 bool input_aim_pov_left_active(), input_aim_pov_right_active();
 }
 
-#if CL_BUILD == 10002
-static const unsigned char player_arrow_keys[] = {0xc8, 0xd0, 0xcb, 0xcd};
-static const unsigned char player_wasd_keys[] = {0x11, 0x1f, 0x1e, 0x20};
-#endif
-
 namespace {
-const float pi = 3.14159274f, quarter = .785398185f, half = 1.57079637f;
+const float pi = 3.14159274f, quarter = .785398185f, half_pi = 1.57079637f;
 #define P PLAYER(current_player_index)
 __forceinline float distance(vec2f_t a, vec2f_t b) {
     double dx = (double)a.x - b.x, dy = (double)a.y - b.y;
@@ -74,7 +71,10 @@ __forceinline float distance(vec2f_t a, vec2f_t b) {
 }
 __forceinline bool direction_key(int key) {
 #if CL_BUILD == 10002
-    return KEY(player_arrow_keys[key]) || KEY(player_wasd_keys[key]);
+    if (key == 0) return KEY(0xc8) || KEY(0x11);
+    if (key == 1) return KEY(0xd0) || KEY(0x1f);
+    if (key == 2) return KEY(0xcb) || KEY(0x1e);
+    return KEY(0xcd) || KEY(0x20);
 #else
     return KEY(P.keys[key]) || (config_player_count == 1 && KEY(PLAYER(1).keys[key]));
 #endif
@@ -92,7 +92,7 @@ __forceinline void accelerate() {
         if (P.move_speed > 2)
             P.move_speed = 2;
     }
-    if (P.weapon == 13 && P.move_speed > .8f)
+    if (FREEWARE_EDITION != 10002 && P.weapon == 13 && P.move_speed > .8f)
         P.move_speed = .8f;
 }
 __forceinline void decelerate() {
@@ -101,18 +101,13 @@ __forceinline void decelerate() {
         P.move_speed = 0;
 }
 __forceinline void move(double speed, float dt = frame_dt) {
-    P.movement.x = (float)(cos((double)P.heading - half) * speed);
-    P.movement.y = (float)(sin((double)P.heading - half) * speed);
+    P.movement.x = (float)(cos((double)P.heading - half_pi) * speed);
+    P.movement.y = (float)(sin((double)P.heading - half_pi) * speed);
     vec2f_t delta = {dt * P.movement.x, dt * P.movement.y};
-#if FREEWARE_EDITION == 10002
-    P.position.x += delta.x;
-    P.position.y += delta.y;
-#else
     freeware_current_map->move_with_collision(&P.position, &delta, 8.f);
-#endif
 }
 __forceinline float aim_angle() {
-    return (float)(atan2((double)P.position.y - P.aim.y, (double)P.position.x - P.aim.x) - half);
+    return (float)(atan2((double)P.position.y - P.aim.y, (double)P.position.x - P.aim.x) - half_pi);
 }
 __forceinline void aim_along(double angle) {
     P.aim.x = P.position.x + (float)cos(angle) * 60.f;
@@ -142,6 +137,17 @@ __forceinline void pellets(const vec2f_t &muzzle, int count, int type, float fac
     } while (--count);
 }
 __forceinline void shot_sound(int id) { sfx_play_panned(id, .45f, .5f); }
+__forceinline void start_reload() {
+#if CL_BUILD == 10002
+    shot_sound(16);
+    if (P.perks[perk_id_fastloader] > 0)
+        P.reload = .95f;
+    else
+        P.reload = 1.5f;
+#else
+    player_start_reload();
+#endif
+}
 __forceinline void eject(const vec2f_t &shell, int sound, float cooldown, float flash) {
     shot_sound(sound);
     fx_queue_add_shell(&shell);
@@ -149,13 +155,106 @@ __forceinline void eject(const vec2f_t &shell, int sound, float cooldown, float 
     P.muzzle_flash += flash;
 }
 #if FREEWARE_EDITION == 10002
+struct player_vec2_t : vec2f_t {
+    player_vec2_t(float x_value, float y_value) {
+        x = x_value;
+        y = y_value;
+    }
+};
+__forceinline player_vec2_t operator+(const vec2f_t &a, const vec2f_t &b) {
+    return player_vec2_t(a.x + b.x, a.y + b.y);
+}
+__forceinline vec2f_t &operator+=(vec2f_t &a, const vec2f_t &b) {
+    a.x += b.x;
+    a.y += b.y;
+    return a;
+}
+__forceinline vec2f_t operator-(const vec2f_t &a, const vec2f_t &b) {
+    float x = a.x - b.x, y = a.y - b.y;
+    vec2f_t difference = {x, y};
+    return difference;
+}
+// The summed position lives through the call that consumes its address.
+__forceinline const vec2f_t *position_ptr(const vec2f_t &position) { return &position; }
+
+__forceinline void fire_early_shell(const vec2f_t &shell, int sound, float cooldown) {
+    shot_sound(sound);
+    fx_queue_add_shell(&shell);
+    P.cooldown = cooldown;
+}
 __forceinline bool fire(float heading) {
+    P.spread += time_scale_factor * frame_dt * 150;
+    float max_spread = time_scale_factor * 2;
+    if (P.spread > max_spread)
+        P.spread = max_spread;
+    P.spread *= time_scale_factor;
+    float forward = heading - half_pi;
+    float angle = forward - .150915f;
+    vec2f_t barrel = {(float)cos(angle) * 15.f, (float)sin(angle) * 15.f};
+    vec2f_t shell = {(crt_rand() % 10) * (float)cos(heading) * .5f,
+                     (crt_rand() % 10) * (float)sin(heading) * .5f};
+    shell += P.position;
+    if (P.muzzle_flash > 1)
+        P.muzzle_flash = 1;
+    if (P.weapon == 1) {
+        projectile_spawn(
+            position_ptr(barrel + P.position), ((crt_rand() % 200 - 100) * P.spread * .001f + heading), 4);
+        fire_early_shell(shell, 2, .7117f);
+        P.ammo -= 1;
+        P.muzzle_flash += .12f;
+    } else if (P.weapon == 2) {
+        projectile_spawn(
+            position_ptr(barrel + P.position), ((crt_rand() % 200 - 100) * P.spread * .001f + heading), 1);
+        fire_early_shell(shell, 7, .117f);
+        P.ammo -= 1;
+        P.muzzle_flash += .07f;
+    } else if (P.weapon == 3) {
+        int pellets_left = 10;
+        do {
+            int slot = projectile_spawn(position_ptr(barrel + P.position), (crt_rand() % 200 - 100) * .001f + heading, 2);
+            projectile_pool[slot].fields.speed_scale = (crt_rand() % 100) * .01f + 1;
+        } while (--pellets_left);
+        fire_early_shell(shell, 15, .688117f);
+        P.muzzle_flash += .12f;
+        P.ammo -= 1;
+    } else if (P.weapon == 4) {
+        fx_spawn_particle(position_ptr(barrel + P.position), forward, &P.movement, 1);
+        shot_sound(14);
+        P.cooldown = .008113f;
+        P.ammo -= .2f;
+    } else if (P.weapon == 5) {
+        projectile_spawn(
+            position_ptr(barrel + P.position), ((crt_rand() % 20 - 10) * P.spread * .003f + heading), 2);
+        fire_early_shell(shell, 26, .088117f);
+        P.ammo -= 1;
+        P.muzzle_flash += .022f;
+    } else if (P.weapon == 6) {
+        projectile_spawn(
+            position_ptr(barrel + P.position), ((crt_rand() % 20 - 10) * P.spread * .003f + heading), 6);
+        fire_early_shell(shell, 8, .2908117f);
+        P.ammo -= 1;
+    } else if (P.weapon == 7) {
+        projectile_spawn(
+            position_ptr(barrel + P.position), ((crt_rand() % 20 - 10) * P.spread * .003f + heading) - .31415927f, 6);
+        projectile_spawn(
+            position_ptr(barrel + P.position), ((crt_rand() % 20 - 10) * P.spread * .003f + heading) + .31415927f, 6);
+        fire_early_shell(shell, 8, .3408117f);
+        P.ammo -= 2;
+    } else if (P.weapon == 8) {
+        projectile_spawn(
+            position_ptr(barrel + P.position), ((crt_rand() % 20 - 10) * P.spread * .003f + heading), 8);
+        fire_early_shell(shell, 8, .10908117f);
+        P.ammo -= 1;
+    } else if (P.weapon == 17) {
+        projectile_spawn(position_ptr(barrel + P.position), heading, 3);
+        fire_early_shell(shell, 7, .688117f);
+        P.ammo -= 1;
+    }
 #else
 __forceinline bool fire() {
     const float heading = P.aim_heading;
-#endif
-    const double angle = (double)heading - half - .150915f;
-    const float barrel = FREEWARE_EDITION == 10002 ? 15.f : 16.f;
+    const double angle = (double)heading - half_pi - .150915f;
+    const float barrel = 16.f;
     vec2f_t muzzle = {P.position.x + (float)(cos(angle) * barrel), P.position.y + (float)(sin(angle) * barrel)};
     vec2f_t dir = {(float)cos(heading), (float)sin(heading)};
     vec2f_t shell;
@@ -164,57 +263,6 @@ __forceinline bool fire() {
     if (P.muzzle_flash > 1)
         P.muzzle_flash = 1;
     float ammo = 1;
-#if FREEWARE_EDITION == 10002
-    // The 1.0.2 player grows spread before sampling the shot (0x408e0d).
-    P.spread += time_scale_factor * frame_dt * 150;
-    if (P.spread > time_scale_factor * 2)
-        P.spread = time_scale_factor * 2;
-    P.spread *= time_scale_factor;
-    switch (P.weapon) {
-    case 1:
-        projectile_spawn(&muzzle, jitter(200, .001f, heading), 4);
-        eject(shell, 2, .7117f, .12f);
-        break;
-    case 2:
-        projectile_spawn(&muzzle, jitter(200, .001f, heading), 1);
-        eject(shell, 7, .117f, .07f);
-        break;
-    case 3:
-        pellets(muzzle, 10, 2, .001f, heading);
-        eject(shell, 15, .688117f, .12f);
-        break;
-    case 4:
-        fx_spawn_particle(&muzzle, heading - half, &P.movement, 1);
-        shot_sound(14);
-        ammo = .2f;
-        P.cooldown = .008113f;
-        break;
-    case 5:
-        projectile_spawn(&muzzle, jitter(20, .003f, heading), 2);
-        eject(shell, 26, .088117f, .022f);
-        break;
-    case 6:
-        projectile_spawn(&muzzle, jitter(20, .003f, heading), 6);
-        eject(shell, 8, .290812f, 0);
-        break;
-    case 7:
-        projectile_spawn(&muzzle, jitter(20, .003f, heading) - .31415927f, 6);
-        projectile_spawn(&muzzle, jitter(20, .003f, heading) + .31415927f, 6);
-        eject(shell, 8, .340812f, 0);
-        ammo = 2;
-        break;
-    case 8:
-        projectile_spawn(&muzzle, jitter(20, .003f, heading), 8);
-        eject(shell, 8, .109081f, 0);
-        break;
-    case 17:
-        projectile_spawn(&muzzle, heading, 3);
-        eject(shell, 7, .688117f, 0);
-        break;
-    default:
-        ammo = 0;
-    }
-#else
     if (P.weapon == 1) {
         projectile_spawn(&muzzle, jitter(200, .001f), 4);
         smoke_pair(muzzle, dir, .23f, .213f);
@@ -232,12 +280,12 @@ __forceinline bool fire() {
         pellets(muzzle, FREEWARE_EDITION == 10300 ? 16 : 12, 2, .0033f, P.aim_heading);
         eject(shell, 15, .788117f, .12f);
     } else if (P.weapon == 5) {
-        fx_spawn_particle(&muzzle, heading - half, &P.movement, 1);
+        fx_spawn_particle(&muzzle, heading - half_pi, &P.movement, 1);
         shot_sound(14);
         ammo = FREEWARE_EDITION == 10300 ? .15f : .1f;
         P.cooldown = .008113f;
     } else if (P.weapon == 15) {
-        int slot = fx_spawn_particle(&muzzle, heading - half, &P.movement, 1);
+        int slot = fx_spawn_particle(&muzzle, heading - half_pi, &P.movement, 1);
         if (slot != -1)
             particle_pool[slot].style_id = 1;
         shot_sound(14);
@@ -298,7 +346,7 @@ __forceinline bool fire() {
             return false;
         projectile_spawn(&muzzle, jitter(20, .012f), 18);
     } else if (P.weapon == 19) {
-        fx_spawn_particle_slow(&muzzle, heading - half, 0);
+        fx_spawn_particle_slow(&muzzle, heading - half_pi, 0);
         ammo = .15f;
         P.cooldown = .1613f;
     }
@@ -310,14 +358,14 @@ __forceinline bool fire() {
     P.spread *= time_scale_factor;
     if (P.perks[perk_id_ammo_maniac] > 0)
         ammo *= .8f;
-#endif
     P.ammo -= ammo;
+#endif
     if (P.perks[perk_id_fastshot] > 0)
         P.cooldown *= .88f;
     if (FREEWARE_EDITION != 10002 && P.perks[perk_id_sharpshooter] > 0)
         P.cooldown *= 1.05f;
     if (P.ammo <= 0)
-        player_start_reload();
+        start_reload();
     return true;
 }
 } // namespace
@@ -358,30 +406,33 @@ extern "C" void player_update() {
     if (freeware_berserk_timer > 10) {
 #if FREEWARE_EDITION == 10002
         // 0x408095..0x40833a steers the player and fires along the body heading.
+        float berserk_speed = P.speed_multiplier;
         P.heading += (float)sin(freeware_simulation_clock * 2) * frame_dt * 1.25f;
         P.move_speed += frame_dt * 5;
         if (P.move_speed > 3) P.move_speed = 3;
-        float distance = frame_dt * P.speed_multiplier * P.move_speed * 25;
-        P.position.x += (float)cos((double)P.heading - half) * distance;
-        P.position.y += (float)sin((double)P.heading - half) * distance;
+        P.position.x += (float)(cos(P.heading - half_pi) * P.move_speed) * frame_dt * berserk_speed * 25;
+        P.position.y += (float)(sin(P.heading - half_pi) * P.move_speed) * frame_dt * berserk_speed * 25;
         float radius = P.size * .5f;
         if (P.position.x < radius) P.position.x = radius;
-        if (P.position.y < radius) P.position.y = radius;
         if (P.position.x > freeware_arena_width - radius) P.position.x = freeware_arena_width - radius;
+        if (P.position.y < radius) P.position.y = radius;
         if (P.position.y > freeware_arena_height - radius) P.position.y = freeware_arena_height - radius;
         P.aim = P.position;
-        P.aim.x += (float)cos((double)P.heading - half) * 25;
-        P.aim.y += (float)sin((double)P.heading - half) * 25;
+        P.aim.x += (float)cos((double)P.heading - half_pi) * 25;
+        P.aim.y += (float)sin((double)P.heading - half_pi) * 25;
 #ifdef CRIMSON_FREEWARE_CLIENT
         P.aim_heading = P.heading;
 #endif
         if (P.cooldown == 0) {
+            float heading = P.heading;
             P.spread += time_scale_factor * frame_dt * 150;
-            if (P.spread > time_scale_factor * 2) P.spread = time_scale_factor * 2;
+            float maximum = time_scale_factor * 2;
+            if (P.spread > maximum) P.spread = maximum;
             P.spread *= time_scale_factor;
-            double angle = (double)P.heading - half - .25f;
-            vec2f_t muzzle = {P.position.x + (float)(12 * cos(angle)), P.position.y + (float)(12 * sin(angle))};
-            projectile_spawn(&muzzle, jitter(200, .001f, P.heading), 1);
+            float angle = heading - half_pi - .25f;
+            vec2f_t barrel = {(float)cos(angle) * 12.f, (float)sin(angle) * 12.f};
+            player_vec2_t muzzle = barrel + P.position;
+            projectile_spawn(&muzzle, (crt_rand() % 200 - 100) * P.spread * .001f + heading, 1);
             shot_sound(7);
             P.cooldown = .1f;
         }
@@ -397,7 +448,7 @@ extern "C" void player_update() {
             }
         }
         P.aim_heading = aim_angle();
-        double angle = (double)P.aim_heading - half - .25f;
+        double angle = (double)P.aim_heading - half_pi - .25f;
         vec2f_t muzzle = {P.position.x + (float)(12 * cos(angle)), (float)(P.position.y + 12 * sin(angle))};
         projectile_spawn(&muzzle, P.aim_heading, 1);
         shot_sound(7);
@@ -406,9 +457,13 @@ extern "C" void player_update() {
 #endif
     }
 #if FREEWARE_EDITION == 10002
-    bool bending = KEY(0x39) || MOUSE(1);
-    if ((P.perks[freeware_rules::timebender] > 0 && P.experience > 0) || config_game_mode == 2) {
-        if (bending) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    const int timebender = freeware_rules::timebender;
+#else
+    const int timebender = perk_id_timebender;
+#endif
+    if ((P.perks[timebender] > 0 && P.experience > 0) || config_game_mode == 2) {
+        if (KEY(0x39) || MOUSE(1)) {
             P.experience += (int)(frame_dt * -1000);
             time_scale_factor -= frame_dt;
             if (time_scale_factor < .29f) time_scale_factor = .29f;
@@ -417,7 +472,7 @@ extern "C" void player_update() {
             if (time_scale_factor > 1.4f) time_scale_factor = 1.4f;
         }
     }
-    if (!bending) {
+    if (!KEY(0x39) && !MOUSE(1)) {
         time_scale_factor += frame_dt;
         if (time_scale_factor > 1) time_scale_factor = 1;
     }
@@ -439,20 +494,59 @@ extern "C" void player_update() {
     }
 #endif
     float speed = P.speed_multiplier;
-    P.movement.x = P.movement.y = 0;
-    int scheme = config_movement_schemes[FREEWARE_EDITION == 10002 ? 0 : current_player_index];
-    if (scheme == 1) {
 #if FREEWARE_EDITION == 10002
-        // 0x40848d: independent steering keys, two radians per second in either direction.
-        if (direction_key(2))
-            P.heading -= frame_dt * 2;
-        if (direction_key(3))
-            P.heading += frame_dt * 2;
-        if (direction_key(0))
+    if (config_movement_schemes[0] == 1) {
+        if (direction_key(2)) P.heading -= frame_dt * 2;
+        if (direction_key(3)) P.heading += frame_dt * 2;
+        if (!direction_key(0)) decelerate();
+        else accelerate();
+        P.movement.x = (float)(cos(P.heading - half_pi) * P.move_speed) * speed * 25;
+        P.movement.y = (float)(sin(P.heading - half_pi) * P.move_speed) * speed * 25;
+        P.position.x += frame_dt * P.movement.x;
+        P.position.y += frame_dt * P.movement.y;
+        P.walk_phase += frame_dt * P.move_speed * 19;
+        if (direction_key(1)) {
+            P.walk_phase += frame_dt * 26;
+            P.movement.x = (float)cos(P.heading - half_pi) * speed * 15;
+            P.movement.y = (float)sin(P.heading - half_pi) * speed * 15;
+            P.position.x -= frame_dt * P.movement.x;
+            P.position.y -= frame_dt * P.movement.y;
+        }
+    } else {
+        float target = -1;
+        if (direction_key(2)) target = 4.712389f;
+        if (direction_key(3)) target = 1.57079637f;
+        if (direction_key(0)) {
+            if (!direction_key(2))
+                target = !direction_key(3) ? 0.f : .785398185f;
+            else
+                target = 5.4977875f;
+        }
+        if (direction_key(1)) {
+            if (!direction_key(2))
+                target = !direction_key(3) ? 3.14159274f : 2.3561945f;
+            else
+                target = 3.926991f;
+        }
+        if (target != -1) {
+            float turn = player_heading_approach_target(target);
             accelerate();
-        else
+            turn = pi - turn;
+            P.movement.x = (float)(cos(P.heading - half_pi) * P.move_speed) * turn * speed * 7.957747f;
+            P.movement.y = (float)(sin(P.heading - half_pi) * P.move_speed) * turn * speed * 7.957747f;
+        } else {
             decelerate();
+            P.movement.x = (float)(cos(P.heading - half_pi) * P.move_speed) * speed * 25;
+            P.movement.y = (float)(sin(P.heading - half_pi) * P.move_speed) * speed * 25;
+        }
+        P.position.x += frame_dt * P.movement.x;
+        P.position.y += frame_dt * P.movement.y;
+        P.walk_phase += frame_dt * P.move_speed * 19;
+    }
 #else
+    P.movement.x = P.movement.y = 0;
+    int scheme = config_movement_schemes[current_player_index];
+    if (scheme == 1) {
         bool turning = false;
         if (P.turn_speed < 1)
             P.turn_speed = 1;
@@ -474,17 +568,11 @@ extern "C" void player_update() {
                 P.turn_speed = 1;
             decelerate();
         }
-#endif
         move((double)speed * P.move_speed * 25);
         P.walk_phase += frame_dt * P.move_speed * 19;
         if (direction_key(1)) {
             P.walk_phase += frame_dt * 26;
-#if FREEWARE_EDITION == 10002
-            // The record keeps the forward-facing vector even when it is subtracted from position.
-            move(speed * 15.f, -frame_dt);
-#else
             move(speed * -15.f);
-#endif
         }
     } else if (scheme == 2 || scheme == 3) {
         float target = -1;
@@ -495,7 +583,7 @@ extern "C" void player_update() {
         if (left)
             target = 4.712389f;
         if (right)
-            target = half;
+            target = half_pi;
         if (up)
             target = left ? 5.4977875f : right ? quarter : 0.f;
         if (down)
@@ -507,19 +595,18 @@ extern "C" void player_update() {
         } else {
             decelerate();
             move((double)speed * P.move_speed * 25);
-#if FREEWARE_EDITION != 10002
             P.spread -= frame_dt;
             if (P.spread < .25f)
                 P.spread = .25f;
-#endif
         }
         P.walk_phase += frame_dt * P.move_speed * 19;
     }
+#endif
     if (FREEWARE_EDITION == 10002 && P.perks[perk_id_sharpshooter] > 0) {
         P.spread -= frame_dt * 2;
         if (P.spread < .25f)
             P.spread = .25f;
-    } else if (P.perks[perk_id_sharpshooter] < 1) {
+    } else if (FREEWARE_EDITION == 10002 || P.perks[perk_id_sharpshooter] < 1) {
         P.spread -= frame_dt;
         if (P.spread < .5f)
             P.spread = .5f;
@@ -536,21 +623,31 @@ extern "C" void player_update() {
     if (P.reload < 0)
         P.reload = 0;
     if ((KEY(0x13) || MOUSE(2)) && P.reload == 0)
-        player_start_reload();
+        start_reload();
 #if FREEWARE_EDITION == 10002
     // 0x408cc8 writes both the world reticle and the unadjusted screen cursor while left Ctrl is held.
     if (KEY(0x1d)) {
-        aim_along((double)P.heading - half);
-        freeware_aim_screen = P.aim;
+        float angle = P.heading - half_pi;
+        vec2f_t offset = {(float)cos(angle), (float)sin(angle)};
+        offset.x *= 60;
+        offset.y *= 60;
+        offset.x += P.position.x;
+        offset.y += P.position.y;
+        P.aim = offset;
+        freeware_aim_screen = offset;
     }
-    // The early shot angle is a local. Retain it for the portable sprite renderer as well.
-    float shot_heading = (float)(atan2((double)P.position.y - freeware_aim_screen.y + freeware_camera.y,
-                                  (double)P.position.x - freeware_aim_screen.x + freeware_camera.x) - half);
 #ifdef CRIMSON_FREEWARE_CLIENT
-    P.aim_heading = shot_heading;
+    // The portable renderer also needs a heading between shots.
+    P.aim_heading = (float)(atan2((double)P.position.y - freeware_aim_screen.y + freeware_camera.y,
+                                  (double)P.position.x - freeware_aim_screen.x + freeware_camera.x) - half_pi);
 #endif
-    if (P.cooldown <= 0 && P.reload == 0 && (KEY(0x1d) || KEY(0x9d) || KEY(0x1c) || MOUSE(0)))
-        fire(shot_heading);
+    if (P.cooldown <= 0 && P.reload == 0) {
+        vec2f_t offset = P.position - freeware_aim_screen;
+        offset = offset + freeware_camera;
+        float shot_heading = (float)(atan2(offset.y, offset.x) - half_pi);
+        if (KEY(0x1d) || KEY(0x9d) || KEY(0x1c) || MOUSE(0))
+            fire(shot_heading);
+    }
 #else
     int aim = config_aim_schemes[current_player_index];
     const int keyboard_aim = FREEWARE_EDITION == 10300 ? 1 : 2;
@@ -569,20 +666,20 @@ extern "C" void player_update() {
         }
     } else if (aim == keyboard_aim) {
         if (scheme == 1)
-            aim_along((double)P.heading + .5235988f - half);
+            aim_along((double)P.heading + .5235988f - half_pi);
         else
-            aim_along((double)P.aim_heading - half);
+            aim_along((double)P.aim_heading - half_pi);
     } else {
         if (input_aim_pov_left_active())
             P.aim_heading -= frame_dt * 4;
         if (input_aim_pov_right_active())
             P.aim_heading += frame_dt * 4;
-        aim_along((double)P.aim_heading - half);
+        aim_along((double)P.aim_heading - half_pi);
     }
     P.aim_heading = aim_angle();
     if (scheme == 2 && (FREEWARE_EDITION != 10300 || aim != 0) &&
         (EDGE(P.keys[4]) || (config_player_count == 1 && EDGE(PLAYER(1).keys[4])))) {
-        aim_along((double)P.heading - half);
+        aim_along((double)P.heading - half_pi);
         P.aim_heading = aim_angle();
     }
     if (P.cooldown <= 0 && P.reload == 0 &&
