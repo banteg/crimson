@@ -18,7 +18,13 @@ extern "C" IGrim2D_cpp *grim_interface_ptr;
 #define UI_FIELD(native, member) (native)
 #endif
 extern "C" {
+#if CL_BUILD < 10400
+extern freeware_player_t player_state_table[2];
+#define UI_PLAYER(i) player_state_table[i]
+#else
 extern player_state_t player_state_table[2];
+#define UI_PLAYER(i) player_state_table[i].freeware
+#endif
 extern int current_player_index, config_player_count, screen_width, screen_height, game_state_id;
 extern game_mode_id_t config_game_mode;
 extern float frame_dt, freeware_elapsed_seconds, freeware_simulation_clock, freeware_state_since,
