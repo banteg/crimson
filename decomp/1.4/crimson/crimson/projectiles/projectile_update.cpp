@@ -1,8 +1,13 @@
-// crimson.exe 1.4.0, 0x4094e0. The four passes share both the pools and the CRT random stream.
+#include "cl_build.h"
+#if CL_BUILD == 10002
+#include "projectile_update_102.inc"
+#else
+// crimson.exe 1.3.0 at 0x406260 and 1.4.0 at 0x4094e0. All four passes share the CRT random stream.
 #include "../effects/freeware_ice_mark.h"
 #include "../ui/freeware_ui.h"
 #include "crimsonland_types.h"
 #include "freeware_edition.h"
+#include "freeware_level.h"
 #include <math.h>
 extern "C" {
 extern projectile_pool_t projectile_pool;
@@ -10,7 +15,8 @@ extern secondary_projectile_pool_t secondary_projectile_pool;
 extern particle_t particle_pool[128];
 extern sprite_effect_t sprite_effect_pool[384];
 extern creature_t creature_pool[512];
-extern player_state_t player_state_table[2];
+extern int freeware_arena_width, freeware_arena_height, perk_id_bloody_mess;
+int projectile_spawn(const vec2f_t *, float, int);
 extern float frame_dt, freeware_simulation_clock, bonus_fire_bullets_timer, bonus_freeze_timer;
 extern float freeware_hit_sound_timer;
 extern int highscore_record_hits, creature_spawned_count, current_player_index;
@@ -20,7 +26,20 @@ int creature_find_in_radius(const vec2f_t *, float);
 int creature_find_nearest(const vec2f_t *);
 int fx_spawn_sprite(const vec2f_t *, const vec2f_t *, float);
 int fx_spawn_particle(const vec2f_t *, float, const vec2f_t *, float);
+#if CL_BUILD == 10300
+void creature_handle_death(int slot, int player);
+#else
 void creature_handle_death(int slot, int player, unsigned char leave_corpse);
+#endif
+#ifndef CRIMSON_FREEWARE_CLIENT
+int sfx_play_panned(int, float, float);
+#if CL_BUILD == 10300
+extern int freeware_music_channel_b;
+void freeware_game_track_start(int);
+#else
+void freeware_music_start(int);
+#endif
+#endif
 void fx_queue_add_random(const vec2f_t *);
 void freeware_combat_sound(int sample, float volume);
 }
@@ -30,6 +49,36 @@ void freeware_combat_sound(int sample, float volume);
 #define __forceinline inline
 #endif
 namespace {
+__forceinline void impact_death(int id, int owner, unsigned char leave_corpse) {
+#if CL_BUILD == 10300
+    creature_handle_death(id, owner);
+#else
+    creature_handle_death(id, owner, leave_corpse);
+#endif
+}
+__forceinline bool combat_music_active() {
+#if CL_BUILD == 10300 && !defined(CRIMSON_FREEWARE_CLIENT)
+    return freeware_music_channel_b != -1;
+#else
+    return freeware_hit_sound_timer > 0;
+#endif
+}
+__forceinline void start_combat_music() {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    freeware_combat_sound(31, 1);
+#elif CL_BUILD == 10300
+    freeware_game_track_start(31);
+#else
+    freeware_music_start(31);
+#endif
+}
+__forceinline void impact_sound(int sample, float volume) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+    freeware_combat_sound(sample, volume);
+#else
+    sfx_play_panned(sample, volume, .5f);
+#endif
+}
 const float half_pi = 1.57079637f, tau = 6.28318548f;
 __forceinline vec2f_t offset(const vec2f_t &p, float x, float y) {
     vec2f_t v = {p.x + x, p.y + y};
@@ -85,6 +134,10 @@ __forceinline void impact_marks(projectile_t &shot, creature_t &c) {
             length = (crt_rand() % 80 + 20) * .1f;
         vec2f_t mark = offset(c.position, (float)(cos(shot.angle - half_pi) * length * 20),
                               (float)(sin(shot.angle - half_pi) * length * 20));
+        vec2f_t probe = mark;
+        vec2f_t still = {0, 0};
+        if (freeware_current_map->move_with_collision(&probe, &still, 2))
+            return;
         float size = (float)(crt_rand() % 10 + 5);
         if (bonus_freeze_timer > 0)
             shard(mark, size);
@@ -96,7 +149,7 @@ __forceinline void hit(projectile_t &shot, int id) {
     int type = shot.fields.type_id;
     if (c.death_timer == 16)
         ++highscore_record_hits;
-    if (player_state_table[current_player_index].freeware.perks[freeware_rules::bloody_mess] > 0) {
+    if (UI_PLAYER(current_player_index).perks[perk_id_bloody_mess] > 0) {
         for (int radius = 30; radius < 60; radius += 10) {
             int x = crt_rand() % (2 * radius) - radius;
             int y = crt_rand() % (2 * radius) - radius;
@@ -123,23 +176,13 @@ __forceinline void hit(projectile_t &shot, int id) {
         blood(offset(c.position, dx * 2.5f, dy * 2.5f));
     }
 #else
-    switch (type) {
-    case 2:
-        damage *= 1.2f;
-        break;
-    case 4:
-        damage *= 4.1f;
-        break;
-    case 7:
-        damage *= 5;
-        break;
-    case 9:
-        damage *= 2;
-        break;
-    case 17:
+    if (type == 2) damage *= 1.2f;
+    else if (type == 4) damage *= 4.1f;
+    else if (type == 7) damage *= 5;
+    else if (type == 9) damage *= 2;
+    else if (type == 17) {
         c.plague_infected = 1;
         damage = 0;
-        break;
     }
     float &pool = shot.fields.damage_pool;
     if (c.health > 0) {
@@ -161,19 +204,19 @@ __forceinline void hit(projectile_t &shot, int id) {
 #endif
     if (FREEWARE_EDITION == 10002) {
         if (freeware_hit_sound_timer <= 0 && config_game_mode != 2)
-            freeware_combat_sound(31, 1);
+            start_combat_music();
         else if (bonus_fire_bullets_timer == 0)
-            freeware_combat_sound(crt_rand() % 2, .45f);
-    } else if (freeware_hit_sound_timer > 0 || config_game_mode == 2)
-        freeware_combat_sound(crt_rand() % 2, .45f);
+            impact_sound(crt_rand() % 2, .45f);
+    } else if (combat_music_active() || config_game_mode == 2)
+        impact_sound(crt_rand() % 2, .45f);
     else
-        freeware_combat_sound(31, 1);
+        start_combat_music();
     if (c.health <= 0) {
         if (c.death_timer == 16) {
             if (FREEWARE_EDITION != 10002 && bonus_freeze_timer > 0)
                 scatter_shards(c.position, 6);
-            freeware_combat_sound(crt_rand() % 4 + 3, .45f);
-            creature_handle_death(id, current_player_index, 1);
+            impact_sound(crt_rand() % 4 + 3, .45f);
+            impact_death(id, current_player_index, 1);
         }
 #if FREEWARE_EDITION == 10002
         float angle = shot.angle - half_pi + (crt_rand() % 20 - 10) * .1f;
@@ -188,80 +231,74 @@ __forceinline void hit(projectile_t &shot, int id) {
 }
 __forceinline void bullets() {
     for (int i = 0; i < 64; ++i) {
-        projectile_t &s = projectile_pool[i];
-        if (!s.active)
+        if (!projectile_pool[i].active)
             continue;
-        if (s.fields.life_timer <= 0)
-            s.active = 0;
-        int type = s.fields.type_id;
-        if (s.fields.life_timer < .4f) {
-            s.fields.life_timer -= frame_dt * (type == 10 ? .1f : 1.f);
-            continue;
-        }
-        if (s.pos_x < -10 || s.position.y < -10 || s.pos_x > 1034 || s.position.y > 1034) {
-            s.fields.life_timer -= frame_dt;
+        if (projectile_pool[i].fields.life_timer <= 0)
+            projectile_pool[i].active = 0;
+        if (projectile_pool[i].fields.life_timer < .4f) {
+            if (projectile_pool[i].fields.type_id == 10)
+                projectile_pool[i].fields.life_timer -= frame_dt * .1f;
+            else
+                projectile_pool[i].fields.life_timer -= frame_dt;
             continue;
         }
-        double angle = (double)s.angle - half_pi;
+        if (projectile_pool[i].pos_x < -10 || projectile_pool[i].position.y < -10 || projectile_pool[i].pos_x > freeware_arena_width + 10 || projectile_pool[i].position.y > freeware_arena_height + 10) {
+            projectile_pool[i].fields.life_timer -= frame_dt;
+            continue;
+        }
+        int type = projectile_pool[i].fields.type_id;
         int steps = 50;
-        switch (type) {
-        case 2:
-            steps = 60;
-            break;
-        case 4:
-            steps = 55;
-            break;
-        case freeware_rules::plasma_round:
-            steps = 30;
-            break;
-        case freeware_rules::plasma_minigun_round:
-            steps = 35;
-            break;
-        case 10:
-            steps = 215;
-            break;
-        case 17:
-            steps = FREEWARE_EDITION == 10300 ? 50 : 15;
-            break;
-        case 18:
+        if (type == 2) steps = 60;
+        if (type == 4) steps = 55;
+        if (type == freeware_rules::plasma_round) steps = 30;
+        if (type == freeware_rules::plasma_minigun_round) steps = 35;
+        if (type == 10) steps = 215;
+        float dx, dy;
+#if FREEWARE_EDITION == 10400
+        if (type == 17) steps = 15;
+        if (type == 18) {
             steps = 10;
-            angle += sin((double)freeware_simulation_clock * 4 + i);
-            break;
+            double angle = (double)projectile_pool[i].angle - half_pi + sin((double)freeware_simulation_clock * 4 + i);
+            dx = (float)(cos(angle) * frame_dt * 10);
+            dy = (float)(sin(angle) * frame_dt * 10);
+        } else
+#endif
+        {
+            double angle = (double)projectile_pool[i].angle - half_pi;
+            dx = (float)(cos(angle) * frame_dt * 20);
+            dy = (float)(sin(angle) * frame_dt * 20);
         }
-        float dx = (float)(cos(angle) * frame_dt * (type == 18 ? 10 : 20));
-        float dy = (float)(sin(angle) * frame_dt * (type == 18 ? 10 : 20));
         if (type == 3) {
-            s.pos_x += dx * 10;
-            s.position.y += dy * 10;
-            s.fields.reserved -= frame_dt;
-            if (s.fields.reserved < 0) {
-                s.fields.type_id = (projectile_type_id_t)0;
+            projectile_pool[i].pos_x += dx * 10;
+            projectile_pool[i].position.y += dy * 10;
+            projectile_pool[i].fields.reserved -= frame_dt;
+            if (projectile_pool[i].fields.reserved < 0) {
+                projectile_pool[i].fields.type_id = (projectile_type_id_t)0;
                 vec2f_t zero = {0, 0};
                 for (int j = 0; j < 40; ++j)
-                    fx_spawn_particle(&s.position, (crt_rand() % 628) * .01f, &zero, .8f);
+                    fx_spawn_particle(&projectile_pool[i].position, (crt_rand() % 628) * .01f, &zero, .8f);
             }
             continue;
         }
-        // Career and Survival have an empty wall list. The 1.3.0 numbered maps use it.
         for (int step = 0; step < steps; ++step) {
-#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10300
-            vec2f_t delta = {dx * s.fields.speed_scale, dy * s.fields.speed_scale};
-            if (freeware_current_map->move_with_collision(&s.position, &delta, 0)) {
+#if FREEWARE_EDITION >= 10300
+            vec2f_t delta = {dx * projectile_pool[i].fields.speed_scale, dy * projectile_pool[i].fields.speed_scale};
+            if (freeware_current_map->move_with_collision(&projectile_pool[i].position, &delta, 0)) {
                 if (crt_rand() % 15 == 2) {
-                    vec2f_t start = {s.position.x - delta.x, s.position.y - delta.y};
-                    projectile_spawn(&start, s.angle - half_pi, 1);
+                    vec2f_t start = {projectile_pool[i].position.x - delta.x, projectile_pool[i].position.y - delta.y};
+                    projectile_spawn(&start, projectile_pool[i].angle - half_pi, 1);
                 }
-                s.fields.life_timer = .25f;
+                projectile_pool[i].fields.life_timer = .25f;
                 break;
             }
 #else
-            s.position.x += dx * s.fields.speed_scale;
-            s.position.y += dy * s.fields.speed_scale;
+            projectile_pool[i].position.x += dx * projectile_pool[i].fields.speed_scale;
+            projectile_pool[i].position.y += dy * projectile_pool[i].fields.speed_scale;
 #endif
-            int id = creature_find_in_radius(&s.position, type == 18 ? 16.f : 0.f);
+            int id = creature_find_in_radius(&projectile_pool[i].position, FREEWARE_EDITION == 10400 && projectile_pool[i].fields.type_id == 18 ? 16.f : 0.f);
             if (id >= 0) {
-                hit(s, id);
-                if (FREEWARE_EDITION == 10002 || s.fields.damage_pool <= 0)
+                hit(projectile_pool[i], id);
+                if (FREEWARE_EDITION == 10002 || projectile_pool[i].fields.damage_pool <= 0)
                     break;
             }
         }
@@ -288,13 +325,13 @@ __forceinline void rockets() {
                     c.health -= frame_dt * v.y * 700;
                     if (c.health <= 0) {
                         blood(c.position);
-                        creature_handle_death(j, current_player_index, 1);
+                        impact_death(j, current_player_index, 1);
                     }
                 }
             }
             continue;
         }
-#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10300
+#if FREEWARE_EDITION >= 10300
         vec2f_t delta = {v.x * frame_dt, v.y * frame_dt};
         if (freeware_current_map->move_with_collision(&r.position, &delta, 4)) {
             r.fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
@@ -344,31 +381,41 @@ __forceinline void rockets() {
                 blood(offset(c.position, (float)x, (float)y));
             } else
                 frozen_mark = scatter_shards(c.position, 3);
-            freeware_combat_sound(freeware_hit_sound_timer > 0 ? 21 : 31, .45f);
-            c.health -= r.life_timer * 50 + (type == 1 ? 500.f : 100.f);
+            float damage = 150;
+            if (type == 1)
+                damage = r.life_timer * 50 + 500;
+            else if (type == 2)
+                damage = r.life_timer * 50 + 100;
+            if (combat_music_active())
+                impact_sound(21, .45f);
+            else
+                start_combat_music();
+            c.health -= damage;
             c.ai_mode = 1;
             if (c.health <= 0) {
                 if (c.death_timer == 16)
-                    creature_handle_death(id, current_player_index, 1);
+                    impact_death(id, current_player_index, 1);
                 c.death_timer -= frame_dt * 10;
             }
-            r.fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
-            v.x = 0;
-            v.y = type == 1 ? 1.f : .5f;
-            if (bonus_freeze_timer <= 0) {
-                int count = type == 1 ? 20 : 10;
-                for (int k = 0; k < count; ++k) {
-                    float a = (crt_rand() % 628) * .01f;
-                    int radius = crt_rand() % (type == 1 ? 90 : 64);
-                    blood(offset(c.position, (float)cos(a) * radius, (float)sin(a) * radius));
-                }
-            } else {
-                // The frozen blast reuses the last impact offset for all ten marks.
-                // Size/position choices still consume four random values per mark.
-                for (int k = 0; k < 10; ++k) {
-                    crt_rand();
-                    crt_rand();
-                    shard(frozen_mark, (float)(crt_rand() % 10 + 5));
+            if (type == 1 || type == 2) {
+                r.fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                v.x = 0;
+                v.y = type == 1 ? 1.f : .5f;
+                if (bonus_freeze_timer <= 0) {
+                    int count = type == 1 ? 20 : 10;
+                    for (int k = 0; k < count; ++k) {
+                        float a = (crt_rand() % 628) * .01f;
+                        int radius = crt_rand() % (type == 1 ? 90 : 64);
+                        blood(offset(c.position, (float)cos(a) * radius, (float)sin(a) * radius));
+                    }
+                } else {
+                    // The frozen blast reuses the last impact offset for all ten marks.
+                    // Size/position choices still consume four random values per mark.
+                    for (int k = 0; k < 10; ++k) {
+                        crt_rand();
+                        crt_rand();
+                        shard(frozen_mark, (float)(crt_rand() % 10 + 5));
+                    }
                 }
             }
             sparks(r.position);
@@ -385,13 +432,20 @@ __forceinline void particles() {
         particle_t &p = particle_pool[i];
         if (!p.active)
             continue;
-        bool bubble = p.style_id == 8;
+        bool bubble = FREEWARE_EDITION != 10300 && p.style_id == 8;
         p.intensity -= frame_dt * (FREEWARE_EDITION == 10002 ? 1.1f : bubble ? .11f : .9f);
+#if FREEWARE_EDITION == 10300
+        if (p.intensity <= (p.style_id == 0 ? 0.f : .8f)) {
+            p.active = 0;
+            continue;
+        }
+#else
         p.rotation += frame_dt * (bubble ? 5.f : 1.f);
+#endif
         if (!bubble || p.in_flight) {
             float scale = bubble ? (p.intensity <= .15f ? .55f : 1.f) * p.intensity
                                  : 2.5f * (p.intensity > .15f ? p.intensity : .15f);
-#if FREEWARE_EDITION == 10300
+#if FREEWARE_EDITION >= 10300
             vec2f_t delta = {frame_dt * p.vel_x * scale, frame_dt * p.vel_y * scale};
             if (p.intensity > .15f)
                 freeware_current_map->move_with_collision(&p.position, &delta, 3);
@@ -404,27 +458,32 @@ __forceinline void particles() {
             p.pos_y += frame_dt * p.vel_y * scale;
 #endif
         }
+#if FREEWARE_EDITION != 10300
         if (p.intensity <= (p.style_id == 0 ? 0.f : .8f)) {
             p.active = 0;
             if (bubble) {
                 if (p.target_id != -1) {
                     if (creature_pool[p.target_id].active)
-                        freeware_combat_sound(crt_rand() % 4 + 3, .45f);
-                    creature_handle_death(p.target_id, 0, 0);
+                        impact_sound(crt_rand() % 4 + 3, .45f);
+                    impact_death(p.target_id, 0, 0);
                 }
-                freeware_combat_sound(27, (crt_rand() % 70) * .1f + .3f);
+                impact_sound(27, (crt_rand() % 70) * .1f + .3f);
             }
             continue;
         }
+#endif
         if (p.in_flight == 1) {
             double a = p.angle - (crt_rand() % 100 - 50) * (double)(FREEWARE_EDITION == 10002 ? .1f : .06f) * frame_dt * p.intensity *
                                      (p.style_id == 0 ? 1.96f : 1.1f);
             p.angle = (float)a;
-            p.vel_x = (float)(cos(a) * (bubble ? 62 : 82));
+            p.vel_x = (float)(cos(FREEWARE_EDITION == 10300 ? (double)p.angle : a) * (bubble ? 62 : 82));
             p.vel_y = (float)(sin(p.angle) * (bubble ? 62 : 82));
         }
         p.color_a = p.intensity < 1 ? p.intensity : 1;
         p.color_r = p.color_g = 1 - p.intensity * .95f;
+#if FREEWARE_EDITION == 10300
+        p.rotation += frame_dt;
+#endif
         if (!p.in_flight)
             continue;
         int id = creature_find_in_radius(&p.position, p.intensity * 8);
@@ -478,8 +537,8 @@ __forceinline void particles() {
 #if FREEWARE_EDITION == 10002
             // The 0x4036df flame kill awards XP directly without rolling a weapon pickup.
             if (c.death_timer == 16) {
-                freeware_combat_sound(crt_rand() % 4 + 3, .45f);
-                freeware_player_t &owner = player_state_table[current_player_index].freeware;
+                impact_sound(crt_rand() % 4 + 3, .45f);
+                freeware_player_t &owner = UI_PLAYER(current_player_index);
                 owner.experience += (int)(c.freeware.reward * (owner.perks[freeware_rules::bloody_mess] ? 1.5 : 1));
 #ifdef CRIMSON_FREEWARE_CLIENT
                 UI_GAME.run.experience = owner.experience;
@@ -487,8 +546,8 @@ __forceinline void particles() {
             }
 #else
             if (c.death_timer == 16) {
-                creature_handle_death(id, current_player_index, 1);
-                freeware_combat_sound(crt_rand() % 4 + 3, .45f);
+                impact_death(id, current_player_index, 1);
+                impact_sound(crt_rand() % 4 + 3, .45f);
             }
 #endif
             --creature_spawned_count;
@@ -507,7 +566,7 @@ extern "C" void projectile_update() {
 #endif
     bullets();
     rockets();
-    for (int i = 0; i < 384; ++i) {
+    for (int i = 0; i < (FREEWARE_EDITION == 10300 ? 256 : 384); ++i) {
         sprite_effect_t &s = sprite_effect_pool[i];
         if (!s.active)
             continue;
@@ -521,3 +580,4 @@ extern "C" void projectile_update() {
     }
     particles();
 }
+#endif
