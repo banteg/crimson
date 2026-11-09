@@ -2404,6 +2404,225 @@
       "address": "0x004374bc",
       "reference": "0x0040f2c7",
       "bytes": "8b0495bc744300"
+    },
+    {
+      "name": "screenshot_file_index",
+      "address": "0x004290c0",
+      "reference": "0x0041302d",
+      "bytes": "ff05c0904200",
+      "evidence": "F12 formats screenshot_%i.bmp and increments the index only on successful save."
+    },
+    {
+      "name": "freeware_mouse_dx",
+      "address": "0x0042fe4c",
+      "reference": "0x00413055",
+      "bytes": "d91d4cfe4200",
+      "evidence": "The Grim horizontal mouse delta at vtable offset 0x60 is stored here and added to freeware_aim_screen.x.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_xp_timer",
+      "address": "0x0044775c",
+      "reference": "0x004131d8",
+      "bytes": "c7055c7744000000803e",
+      "evidence": "The passive XP countdown subtracts frame_dt, resets to 0.25 and awards the Lean Mean Exp Machine perk at expiration.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_name_length",
+      "address": "0x0044783c",
+      "reference": "0x004178e1",
+      "bytes": "c7053c78440000000000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_low_fps_frames",
+      "address": "0x0044784c",
+      "reference": "0x00417ca1",
+      "bytes": "a14c784400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_levels_sequence",
+      "address": "0x00447738",
+      "reference": "0x004145ac",
+      "bytes": "a138774400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_logo_angle",
+      "address": "0x00447834",
+      "reference": "0x00414c03",
+      "bytes": "d91d34784400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_logo_visible",
+      "address": "0x00447838",
+      "reference": "0x00414cf2",
+      "bytes": "c6053878440001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_menu_music_pending",
+      "address": "0x004290c8",
+      "reference": "0x004146b4",
+      "bytes": "c605c890420000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_configuring",
+      "address": "0x004374c4",
+      "reference": "0x0041552c",
+      "bytes": "a1c4744300",
+      "evidence": "The options option label chooses Player 1 vs Player 2 from this integer, which then indexes the two movement/aim schemes.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_show_fps",
+      "address": "0x004374ac",
+      "reference": "0x00415646",
+      "bytes": "a0ac744300",
+      "evidence": "The boolean selects between the Show FPS: on/off option strings.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_menu_selected",
+      "address": "0x0044776c",
+      "reference": "0x00415796",
+      "bytes": "a16c774400",
+      "evidence": "The keyboard selection controls the secondary row highlight and is incremented/decremented with the two arrow-key edge queries.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_options_open",
+      "address": "0x00447808",
+      "reference": "0x00415513",
+      "bytes": "a008784400",
+      "evidence": "Selects the options rows versus main rows when the setup prompts are inactive.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_rebinding",
+      "address": "0x0044773d",
+      "reference": "0x00414db0",
+      "bytes": "a03d774400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_calibrating",
+      "address": "0x0044773e",
+      "reference": "0x0041500c",
+      "bytes": "a03e774400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_setup_step",
+      "address": "0x00447740",
+      "reference": "0x00414e37",
+      "bytes": "a140774400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_saved_keys",
+      "address": "0x004374e9",
+      "reference": "0x00414fd4",
+      "bytes": "8898e9744300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pov_left",
+      "address": "0x004374d8",
+      "reference": "0x004153c9",
+      "bytes": "a3d8744300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pov_right",
+      "address": "0x004374d4",
+      "reference": "0x0041547f",
+      "bytes": "a3d4744300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_init_flags",
+      "address": "0x0042e618",
+      "reference": "0x00413784",
+      "bytes": "a018e64200",
+      "build_only": true,
+      "evidence": "The lazy local-static initialization tests bit 0 and registers its existing no-op exit routine."
+    },
+    {
+      "name": "freeware_editor_offset",
+      "address": "0x00432ee8",
+      "reference": "0x00413797",
+      "bytes": "c705e82e430000000000",
+      "build_only": true,
+      "evidence": "Lazy initialization zeros two floats; cursor arrow adjustments address x and y."
+    },
+    {
+      "name": "freeware_editor_brush",
+      "address": "0x00447840",
+      "reference": "0x004137ca",
+      "bytes": "ff0d40784400",
+      "build_only": true,
+      "evidence": "Minus and plus decrement/increment the selected brush index."
+    },
+    {
+      "name": "freeware_editor_rotation",
+      "address": "0x00447848",
+      "reference": "0x004137fb",
+      "bytes": "d90548784400",
+      "build_only": true,
+      "evidence": "Page Up subtracts the current frame interval from the editor rotation."
+    },
+    {
+      "name": "freeware_editor_layer",
+      "address": "0x00447844",
+      "reference": "0x00413a9f",
+      "bytes": "893544784400",
+      "build_only": true,
+      "evidence": "The three number keys select layer 0, 1, or 2; the result is later passed to add_object."
+    },
+    {
+      "name": "freeware_editor_light",
+      "address": "0x0042911c",
+      "reference": "0x004138ab",
+      "bytes": "d9051c914200",
+      "build_only": true,
+      "evidence": "Insert/Delete without left Shift adjust grayscale lightness."
+    },
+    {
+      "name": "freeware_editor_alpha",
+      "address": "0x00429120",
+      "reference": "0x004138ec",
+      "bytes": "d90520914200",
+      "build_only": true,
+      "evidence": "Insert/Delete while holding left Shift adjust alpha."
+    },
+    {
+      "name": "freeware_editor_radius",
+      "address": "0x00429124",
+      "reference": "0x00413ee5",
+      "bytes": "d80524914200",
+      "build_only": true,
+      "evidence": "A increases the trigger radius by ten times the frame duration; new type-0 triggers receive that radius."
+    },
+    {
+      "name": "freeware_camera_timer",
+      "address": "0x00447748",
+      "reference": "0x0041357a",
+      "bytes": "c7054877440023db793d",
+      "evidence": "The frame callback subtracts frame_dt from this float, then resets it to the fixed shake period before the camera RNG draws.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_fps_count",
+      "address": "0x0044778c",
+      "reference": "0x004182b3",
+      "bytes": "890d8c774400",
+      "evidence": "FPS statistics increment this index and use its remainder modulo 50 to write freeware_fps immediately afterward.",
+      "build_only": true
     }
   ],
   "absent": [
