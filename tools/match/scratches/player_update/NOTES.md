@@ -2280,3 +2280,15 @@ The early vector operators preserve the temporary positions passed to
 until they reach the destination. Naming the two subtraction components keeps
 the Y spill ahead of the Grim vtable load during aim calculation. The client
 also keeps the heading between shots for its renderer.
+
+## Freeware 1.3.0
+
+The original VC6 profile reproduces all 2,522 instructions and 936 references.
+It polls the configured keys again for diagonal movement, saves the aim heading
+before polling the fire button, and adds the current position to the muzzle
+for every projectile and smoke puff. The turning branches retain the updated
+turn speed between the field write and the heading calculation.
+
+The shared 1.4.0 implementation reproduces all weapon cases, including the
+secret weapons. Its remaining differences are the second pistol puff's
+instruction schedule and the register used to read the Fastshot perk.

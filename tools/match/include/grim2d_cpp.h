@@ -3,6 +3,12 @@
 
 #include "cl_build.h"
 
+#if CL_BUILD >= 10300 && CL_BUILD <= 10400
+typedef unsigned char grim_edge_key_t;
+#else
+typedef unsigned int grim_edge_key_t;
+#endif
+
 struct grim_config_value_t {
 #if CL_BUILD < 10400
     unsigned int words[6];
@@ -65,7 +71,7 @@ public:
     virtual float grim_get_frame_dt(void) = 0;
     virtual float grim_get_fps(void) = 0;
     virtual unsigned char grim_is_key_down(unsigned char key) = 0;
-    virtual bool grim_was_key_pressed(unsigned int key) = 0;
+    virtual bool grim_was_key_pressed(grim_edge_key_t key) = 0;
 #if CL_BUILD >= 10900
     virtual void grim_flush_input(void) = 0;
     virtual int grim_get_key_char(void) = 0;
