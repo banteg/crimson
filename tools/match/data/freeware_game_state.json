@@ -1,0 +1,11 @@
+[
+  {"name": "freeware_sfx_samples", "extent_function": "sfx_system_init", "size": 256},
+  {"name": "freeware_sfx_state", "extent_function": "sfx_system_init", "size": 64},
+  {"name": "sfx_cooldown_table", "extent_function": "sfx_system_init", "size": 256},
+  {"name": "config_blob", "extent_function": "freeware_save_config", "sizes": {"1.3.0": 84, "1.4.0": 88}},
+  {"name": "console_input_buf", "extent_function": "console_input_poll", "sizes": {"1.4.0": 1024}},
+  {"name": "console_exec_line_buf", "extent_function": "console_cmd_exec", "sizes": {"1.4.0": 512}},
+  {"name": "console_input_cursor", "extent_function": "console_input_poll", "sizes": {"1.4.0": 4}},
+  {"name": "console_input_ready", "extent_function": "console_input_poll", "sizes": {"1.4.0": 1}},
+  {"name": "console_cmd_argc", "extent_function": "console_cmd_exec", "sizes": {"1.4.0": 4}}
+]
