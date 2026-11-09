@@ -87,3 +87,12 @@ The retained ordinary source closes the function exactly: **100%**, 400/400
 normalized instructions, full prefix, and `61/0/0` references. No volatile
 state, artificial dependency, forced register, inline assembly, or profile
 override is used.
+
+## 1.4.0
+
+The 1,810-byte method at `0x00402390` combines command input, history,
+animation and drawing. It slides linearly at 500 pixels per second and draws
+the tiled `conback` texture and a monospace prompt. In 1.9 the update path is
+a separate method. VC6's /GX option reproduces the stack-address stores for
+all three by-value Grim configuration arguments in 1.4.0. The same flags
+reproduce the 1.9.8 and 1.9.93 bodies.
