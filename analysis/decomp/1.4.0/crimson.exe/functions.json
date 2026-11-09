@@ -15,6 +15,78 @@
     ]
   },
   {
+    "address": "0x00401010",
+    "end": "0x00401031",
+    "size": 33,
+    "build_only": true,
+    "name": "freeware_music_stream_init",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401040",
+    "end": "0x00401120",
+    "size": 224,
+    "build_only": true,
+    "name": "freeware_music_stream_open",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401120",
+    "end": "0x0040115D",
+    "size": 61,
+    "build_only": true,
+    "name": "freeware_music_stream_set_volume",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401160",
+    "end": "0x00401175",
+    "size": 21,
+    "build_only": true,
+    "name": "freeware_music_stream_run",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401180",
+    "end": "0x00401195",
+    "size": 21,
+    "build_only": true,
+    "name": "freeware_music_stream_pause",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004011A0",
+    "end": "0x004011B5",
+    "size": 21,
+    "build_only": true,
+    "name": "freeware_music_stream_stop",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004011C0",
+    "end": "0x004011F0",
+    "size": 48,
+    "build_only": true,
+    "name": "freeware_music_stream_duration",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004011F0",
+    "end": "0x00401220",
+    "size": 48,
+    "build_only": true,
+    "name": "freeware_music_stream_position",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401220",
+    "end": "0x0040124D",
+    "size": 45,
+    "build_only": true,
+    "name": "freeware_music_stream_seek",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00401280",
     "canonical_address": "0x00401030",
     "end": "0x00401292",
@@ -29,6 +101,14 @@
     "evidence": "exact",
     "name": "console_input_buffer",
     "size": 6
+  },
+  {
+    "address": "0x004012B0",
+    "canonical_address": "0x00401060",
+    "end": "0x004018B6",
+    "evidence": "recovered",
+    "name": "console_input_poll",
+    "size": 1542
   },
   {
     "address": "0x004018C0",
@@ -95,6 +175,30 @@
     "size": 8
   },
   {
+    "address": "0x004019A0",
+    "end": "0x004019F0",
+    "size": 80,
+    "build_only": true,
+    "name": "freeware_console_cmd_show",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004019F0",
+    "end": "0x00401AC6",
+    "size": 214,
+    "build_only": true,
+    "name": "freeware_console_cmd_count",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401AE0",
+    "end": "0x00401B98",
+    "size": 184,
+    "build_only": true,
+    "name": "freeware_console_cmd_printfile",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00401BA0",
     "canonical_address": "0x00401250",
     "end": "0x00401C6E",
@@ -117,6 +221,14 @@
     "evidence": "exact",
     "name": "console_cmd_minimize",
     "size": 11
+  },
+  {
+    "address": "0x00401CA0",
+    "end": "0x00401CC4",
+    "size": 36,
+    "build_only": true,
+    "name": "freeware_console_cmd_showfps",
+    "evidence": "recovered"
   },
   {
     "address": "0x00401CD0",
@@ -151,10 +263,18 @@
     "size": 77
   },
   {
+    "address": "0x00401EC0",
+    "end": "0x00401ED3",
+    "size": 19,
+    "build_only": true,
+    "name": "freeware_console_cmd_state_unavailable",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00401EE0",
     "canonical_address": "0x00401560",
     "end": "0x004020A5",
-    "evidence": "referenced",
+    "evidence": "recovered",
     "name": "console_init",
     "size": 453,
     "aliases": [
@@ -222,7 +342,7 @@
     "address": "0x00402390",
     "canonical_address": "0x00401DD0",
     "end": "0x00402AA2",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "console_render",
     "size": 1810,
     "aliases": [
@@ -330,6 +450,22 @@
     "evidence": "recovered"
   },
   {
+    "address": "0x004030F0",
+    "end": "0x00403212",
+    "size": 290,
+    "build_only": true,
+    "name": "freeware_sfx_load_library",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00403220",
+    "end": "0x0040322D",
+    "size": 13,
+    "build_only": true,
+    "name": "freeware_sfx_unload_library",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00403230",
     "canonical_address": "0x0041DF70",
     "end": "0x00403235",
@@ -395,19 +531,19 @@
   },
   {
     "address": "0x00403330",
-    "canonical_address": "0x0041E070",
     "end": "0x00403335",
-    "evidence": "exact",
-    "name": "render_tint_color_global_init_thunk",
-    "size": 5
+    "size": 5,
+    "build_only": true,
+    "name": "freeware_aim_screen_global_init_thunk",
+    "evidence": "recovered"
   },
   {
     "address": "0x00403340",
-    "canonical_address": "0x0041E080",
     "end": "0x00403355",
-    "evidence": "referenced",
-    "name": "render_tint_color_global_init",
-    "size": 21
+    "size": 21,
+    "build_only": true,
+    "name": "freeware_aim_screen_global_init",
+    "evidence": "recovered"
   },
   {
     "address": "0x00403360",
@@ -506,6 +642,22 @@
     "size": 151
   },
   {
+    "address": "0x00403500",
+    "canonical_address": "0x004028E0",
+    "end": "0x00403505",
+    "evidence": "recovered",
+    "name": "config_init_defaults_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403510",
+    "canonical_address": "0x004028F0",
+    "end": "0x00403611",
+    "evidence": "recovered",
+    "name": "config_init_defaults",
+    "size": 257
+  },
+  {
     "address": "0x00403620",
     "canonical_address": "0x0041E250",
     "end": "0x00403625",
@@ -577,6 +729,22 @@
     "size": 20
   },
   {
+    "address": "0x00403740",
+    "end": "0x00403745",
+    "size": 5,
+    "build_only": true,
+    "name": "freeware_bonus_count_global_init_thunk",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00403750",
+    "end": "0x0040375B",
+    "size": 11,
+    "build_only": true,
+    "name": "freeware_bonus_count_global_init",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00403760",
     "canonical_address": "0x00401000",
     "end": "0x00403765",
@@ -591,6 +759,22 @@
     "evidence": "recovered",
     "name": "unused_console_prefix_vec2_global_init",
     "size": 21
+  },
+  {
+    "address": "0x00403790",
+    "end": "0x00403795",
+    "size": 5,
+    "build_only": true,
+    "name": "freeware_pickup_id_global_init_thunk",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004037A0",
+    "end": "0x004037AB",
+    "size": 11,
+    "build_only": true,
+    "name": "freeware_pickup_id_global_init",
+    "evidence": "recovered"
   },
   {
     "address": "0x004037B0",
@@ -841,6 +1025,62 @@
     "evidence": "recovered"
   },
   {
+    "address": "0x004050E0",
+    "canonical_address": "0x0043C740",
+    "end": "0x00405177",
+    "evidence": "recovered",
+    "name": "sfx_load_sample",
+    "size": 151
+  },
+  {
+    "address": "0x00405180",
+    "end": "0x00405269",
+    "size": 233,
+    "build_only": true,
+    "name": "freeware_music_create_streams",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00405270",
+    "end": "0x004052C1",
+    "size": 81,
+    "build_only": true,
+    "name": "freeware_music_load_intro",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004052D0",
+    "canonical_address": "0x0043CAA0",
+    "end": "0x004053FB",
+    "evidence": "recovered",
+    "name": "audio_init_sfx",
+    "size": 299
+  },
+  {
+    "address": "0x00405400",
+    "end": "0x00405498",
+    "size": 152,
+    "build_only": true,
+    "name": "freeware_audio_load_additional_assets",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004054A0",
+    "canonical_address": "0x0043CF90",
+    "end": "0x004055D9",
+    "evidence": "recovered",
+    "name": "sfx_system_init",
+    "size": 313
+  },
+  {
+    "address": "0x004055E0",
+    "canonical_address": "0x0043D110",
+    "end": "0x00405628",
+    "evidence": "recovered",
+    "name": "audio_shutdown_all",
+    "size": 72
+  },
+  {
     "address": "0x00405630",
     "canonical_address": "0x0043D260",
     "end": "0x004056CC",
@@ -871,6 +1111,14 @@
     "build_only": true,
     "name": "freeware_music_stop",
     "evidence": "recovered"
+  },
+  {
+    "address": "0x004058E0",
+    "canonical_address": "0x0043D5B0",
+    "end": "0x00405C7A",
+    "evidence": "recovered",
+    "name": "music_update_fades",
+    "size": 922
   },
   {
     "address": "0x00405C80",
@@ -1025,11 +1273,59 @@
     "size": 608
   },
   {
+    "address": "0x00406E10",
+    "end": "0x00406EA2",
+    "size": 146,
+    "build_only": true,
+    "name": "freeware_score_key_init",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00406EB0",
+    "end": "0x00406F19",
+    "size": 105,
+    "build_only": true,
+    "name": "freeware_score_encode",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00406F20",
+    "end": "0x00406F89",
+    "size": 105,
+    "build_only": true,
+    "name": "freeware_score_decode",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00406F90",
+    "end": "0x00406F95",
+    "size": 5,
+    "build_only": true,
+    "name": "freeware_score_table_global_init_thunk",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00406FA0",
+    "end": "0x00406FE4",
+    "size": 68,
+    "build_only": true,
+    "name": "freeware_score_table_global_init",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00406FF0",
     "end": "0x00407178",
     "size": 392,
     "build_only": true,
     "name": "freeware_save_score",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00407390",
+    "end": "0x004073BE",
+    "size": 46,
+    "build_only": true,
+    "name": "freeware_score_table_reset",
     "evidence": "recovered"
   },
   {
@@ -1079,6 +1375,14 @@
     "evidence": "recovered",
     "name": "perks_generate_choices",
     "size": 200
+  },
+  {
+    "address": "0x00408DC0",
+    "canonical_address": "0x0041FED0",
+    "end": "0x00408E18",
+    "evidence": "recovered",
+    "name": "effect_uv_tables_init",
+    "size": 88
   },
   {
     "address": "0x00408E20",
@@ -1385,10 +1689,18 @@
     "evidence": "recovered"
   },
   {
+    "address": "0x0041FBA0",
+    "canonical_address": "0x0042A5F0",
+    "end": "0x0041FBFA",
+    "evidence": "recovered",
+    "name": "audio_resume_all",
+    "size": 90
+  },
+  {
     "address": "0x0041FC00",
     "canonical_address": "0x0042A630",
     "end": "0x0041FC3F",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "audio_suspend_all",
     "size": 63
   },
@@ -1482,51 +1794,57 @@
   },
   {
     "address": "0x00421910",
-    "canonical_address": "0x00447420",
+    "canonical_address": "0x00454303",
     "end": "0x0042193E",
     "evidence": "ordered",
-    "name": "ui_menu_click_back_contextual",
-    "size": 46
+    "name": "d3dx_init_matrix_scaling",
+    "size": 46,
+    "aliases": [
+      "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x00421940",
-    "canonical_address": "0x0044FC70",
+    "canonical_address": "0x00455028",
     "end": "0x00421965",
     "evidence": "ordered",
-    "name": "ui_menu_main_click_buy_full_version",
-    "size": 37
+    "name": "d3dx_init_quaternion_slerp",
+    "size": 37,
+    "aliases": [
+      "?init_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
   },
   {
     "address": "0x00421970",
-    "canonical_address": "0x004534EA",
+    "canonical_address": "0x004551B6",
     "end": "0x00421981",
     "evidence": "ordered",
-    "name": "d3dx_init_vec3_project",
+    "name": "d3dx_init_quaternion_squad_setup",
     "size": 17,
     "aliases": [
-      "?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+      "?init_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
     ]
   },
   {
     "address": "0x00421990",
-    "canonical_address": "0x00454417",
-    "end": "0x004219A8",
-    "evidence": "ordered",
-    "name": "d3dx_init_matrix_rotation_x",
-    "size": 24,
+    "canonical_address": "0x00460CB8",
+    "end": "0x004219A7",
+    "evidence": "exact",
+    "name": "crt_fpmath",
+    "size": 23,
     "aliases": [
-      "?init_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+      "__fpmath"
     ]
   },
   {
     "address": "0x004219A8",
-    "canonical_address": "0x004553F4",
+    "canonical_address": "0x00460CD0",
     "end": "0x004219E0",
-    "evidence": "ordered",
-    "name": "d3dx_c_plane_from_point_normal",
+    "evidence": "referenced",
+    "name": "crt_cfltcvt_init",
     "size": 56,
     "aliases": [
-      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+      "__cfltcvt_init"
     ]
   },
   {
@@ -1542,14 +1860,11 @@
   },
   {
     "address": "0x00421A07",
-    "canonical_address": "0x00456EEC",
+    "canonical_address": "0x00462104",
     "end": "0x00421AD3",
-    "evidence": "ordered",
-    "name": "d3dx_x86_vec3_normalize",
-    "size": 204,
-    "aliases": [
-      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
-    ]
+    "evidence": "recovered",
+    "name": "crt_toupper",
+    "size": 204
   },
   {
     "address": "0x00421AD3",
@@ -1798,7 +2113,7 @@
     "address": "0x00422432",
     "canonical_address": "0x00461B26",
     "end": "0x0042251A",
-    "evidence": "exact",
+    "evidence": "recovered",
     "name": "crt_fread_nolock",
     "size": 232
   },
@@ -1971,6 +2286,22 @@
     "aliases": [
       "__NLG_Notify"
     ]
+  },
+  {
+    "address": "0x004228EE",
+    "canonical_address": "0x00461C30",
+    "end": "0x00422A46",
+    "evidence": "recovered",
+    "name": "crt_ftell_nolock",
+    "size": 344
+  },
+  {
+    "address": "0x00422A46",
+    "canonical_address": "0x00461DBD",
+    "end": "0x00422AD2",
+    "evidence": "recovered",
+    "name": "crt_fseek_nolock",
+    "size": 140
   },
   {
     "address": "0x00422AD2",
@@ -2590,7 +2921,7 @@
     "address": "0x004254E4",
     "canonical_address": "0x00465FFF",
     "end": "0x004256DA",
-    "evidence": "referenced",
+    "evidence": "called",
     "name": "crt_read",
     "size": 502
   },

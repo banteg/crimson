@@ -9,18 +9,18 @@
   },
   {
     "address": "0x00401030",
-    "canonical_address": "0x0041DF70",
+    "build_only": true,
     "end": "0x00401035",
-    "evidence": "exact",
-    "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
+    "evidence": "recovered",
+    "name": "freeware_aim_screen_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401040",
-    "canonical_address": "0x0041E080",
+    "build_only": true,
     "end": "0x00401055",
-    "evidence": "exact",
-    "name": "render_tint_color_global_init",
+    "evidence": "recovered",
+    "name": "freeware_aim_screen_global_init",
     "size": 21
   },
   {
@@ -104,6 +104,22 @@
     "size": 151
   },
   {
+    "address": "0x004011D0",
+    "canonical_address": "0x004028E0",
+    "end": "0x004011D5",
+    "evidence": "recovered",
+    "name": "config_init_defaults_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004011E0",
+    "canonical_address": "0x004028F0",
+    "end": "0x004012CB",
+    "evidence": "recovered",
+    "name": "config_init_defaults",
+    "size": 235
+  },
+  {
     "address": "0x004012D0",
     "canonical_address": "0x0041E250",
     "end": "0x004012D5",
@@ -176,18 +192,18 @@
   },
   {
     "address": "0x004013F0",
-    "canonical_address": "0x00401000",
+    "build_only": true,
     "end": "0x004013F5",
-    "evidence": "exact",
-    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "evidence": "recovered",
+    "name": "freeware_bonus_count_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401400",
-    "canonical_address": "0x00401010",
+    "build_only": true,
     "end": "0x0040140B",
-    "evidence": "referenced",
-    "name": "unused_console_prefix_vec2_global_init",
+    "evidence": "recovered",
+    "name": "freeware_bonus_count_global_init",
     "size": 11
   },
   {
@@ -205,6 +221,22 @@
     "evidence": "recovered",
     "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
     "size": 21
+  },
+  {
+    "address": "0x00401440",
+    "build_only": true,
+    "end": "0x00401445",
+    "evidence": "recovered",
+    "name": "freeware_pickup_id_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00401450",
+    "build_only": true,
+    "end": "0x0040145B",
+    "evidence": "recovered",
+    "name": "freeware_pickup_id_global_init",
+    "size": 11
   },
   {
     "address": "0x00401460",
@@ -455,10 +487,58 @@
     "size": 509
   },
   {
+    "address": "0x00402D90",
+    "canonical_address": "0x0043C740",
+    "end": "0x00402DC6",
+    "evidence": "recovered",
+    "name": "sfx_load_sample",
+    "size": 54
+  },
+  {
+    "address": "0x00402DD0",
+    "build_only": true,
+    "end": "0x00402DF6",
+    "evidence": "recovered",
+    "name": "freeware_music_load_intro",
+    "size": 38
+  },
+  {
+    "address": "0x00402E00",
+    "canonical_address": "0x0043CAA0",
+    "end": "0x00402F20",
+    "evidence": "recovered",
+    "name": "audio_init_sfx",
+    "size": 288
+  },
+  {
+    "address": "0x00402F20",
+    "build_only": true,
+    "end": "0x00402F5E",
+    "evidence": "recovered",
+    "name": "freeware_audio_load_additional_assets",
+    "size": 62
+  },
+  {
+    "address": "0x00402F60",
+    "canonical_address": "0x0043CF90",
+    "end": "0x00402FCD",
+    "evidence": "recovered",
+    "name": "sfx_system_init",
+    "size": 109
+  },
+  {
+    "address": "0x00402FD0",
+    "canonical_address": "0x0043D110",
+    "end": "0x00402FFD",
+    "evidence": "recovered",
+    "name": "audio_shutdown_all",
+    "size": 45
+  },
+  {
     "address": "0x00403000",
     "canonical_address": "0x0043D260",
     "end": "0x00403082",
-    "evidence": "called",
+    "evidence": "recovered",
     "name": "sfx_play_panned",
     "size": 130
   },
@@ -466,9 +546,41 @@
     "address": "0x00403090",
     "build_only": true,
     "end": "0x00403227",
-    "evidence": "ordered",
-    "name": "freeware_music_start",
+    "evidence": "recovered",
+    "name": "sfx_update",
     "size": 407
+  },
+  {
+    "address": "0x00403230",
+    "end": "0x004032A6",
+    "size": 118,
+    "build_only": true,
+    "name": "freeware_title_track_start",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x004032B0",
+    "end": "0x0040331C",
+    "size": 108,
+    "build_only": true,
+    "name": "freeware_game_track_start",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00403320",
+    "end": "0x0040332B",
+    "size": 11,
+    "build_only": true,
+    "name": "freeware_title_track_fade",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00403330",
+    "end": "0x0040333B",
+    "size": 11,
+    "build_only": true,
+    "name": "freeware_game_track_fade",
+    "evidence": "recovered"
   },
   {
     "address": "0x00403340",
@@ -562,7 +674,7 @@
     "address": "0x004038B0",
     "build_only": true,
     "end": "0x0040395A",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "freeware_save_config",
     "size": 170
   },
@@ -570,7 +682,7 @@
     "address": "0x00403960",
     "canonical_address": "0x0041F1A0",
     "end": "0x00403AE4",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "config_load_presets",
     "size": 388
   },
@@ -602,17 +714,17 @@
     "address": "0x00403EE0",
     "canonical_address": "0x0041F5B0",
     "end": "0x00404012",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "bonus_spawn_at",
     "size": 306
   },
   {
     "address": "0x00404020",
-    "canonical_address": "0x0041F8D0",
     "end": "0x0040403E",
-    "evidence": "ordered",
-    "name": "bonus_try_spawn_on_kill",
-    "size": 30
+    "size": 30,
+    "build_only": true,
+    "name": "sprite_effect_alloc_slot",
+    "evidence": "recovered"
   },
   {
     "address": "0x00404040",
@@ -639,12 +751,60 @@
     "size": 521
   },
   {
+    "address": "0x00404330",
+    "build_only": true,
+    "end": "0x004043C2",
+    "evidence": "recovered",
+    "name": "freeware_score_key_init",
+    "size": 146
+  },
+  {
+    "address": "0x004043D0",
+    "build_only": true,
+    "end": "0x00404439",
+    "evidence": "recovered",
+    "name": "freeware_score_encode",
+    "size": 105
+  },
+  {
+    "address": "0x00404440",
+    "build_only": true,
+    "end": "0x004044A9",
+    "evidence": "recovered",
+    "name": "freeware_score_decode",
+    "size": 105
+  },
+  {
+    "address": "0x004044B0",
+    "build_only": true,
+    "end": "0x004044B5",
+    "evidence": "recovered",
+    "name": "freeware_score_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004044C0",
+    "build_only": true,
+    "end": "0x00404501",
+    "evidence": "recovered",
+    "name": "freeware_score_table_global_init",
+    "size": 65
+  },
+  {
     "address": "0x00404510",
     "build_only": true,
     "end": "0x00404687",
     "evidence": "ordered",
     "name": "freeware_save_score",
     "size": 375
+  },
+  {
+    "address": "0x00404690",
+    "build_only": true,
+    "end": "0x004046B8",
+    "evidence": "recovered",
+    "name": "freeware_score_table_reset",
+    "size": 40
   },
   {
     "address": "0x004046C0",
@@ -687,12 +847,44 @@
     "size": 212
   },
   {
+    "address": "0x00405C90",
+    "canonical_address": "0x0041FED0",
+    "end": "0x00405CE8",
+    "evidence": "recovered",
+    "name": "effect_uv_tables_init",
+    "size": 88
+  },
+  {
     "address": "0x00405CF0",
     "canonical_address": "0x00420040",
-    "end": "0x00405DC2",
+    "end": "0x00405D54",
     "evidence": "recovered",
     "name": "creature_find_nearest",
-    "size": 210
+    "size": 100
+  },
+  {
+    "address": "0x00405D60",
+    "canonical_address": "0x00412DC0",
+    "end": "0x00405E9E",
+    "evidence": "recovered",
+    "name": "gameplay_reset_state",
+    "size": 318
+  },
+  {
+    "address": "0x00405EA0",
+    "end": "0x00405EBE",
+    "size": 30,
+    "build_only": true,
+    "name": "projectile_alloc_slot",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00405EC0",
+    "end": "0x00405EDE",
+    "size": 30,
+    "build_only": true,
+    "name": "particle_alloc_slot",
+    "evidence": "recovered"
   },
   {
     "address": "0x00405EE0",
@@ -701,6 +893,14 @@
     "evidence": "recovered",
     "name": "fx_spawn_particle",
     "size": 225
+  },
+  {
+    "address": "0x00405FD0",
+    "end": "0x00405FEE",
+    "size": 30,
+    "build_only": true,
+    "name": "secondary_projectile_alloc_slot",
+    "evidence": "recovered"
   },
   {
     "address": "0x00405FF0",
@@ -770,7 +970,7 @@
     "address": "0x0040A3C0",
     "canonical_address": "0x00417B80",
     "end": "0x0040A9FE",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "terrain_generate",
     "size": 1598
   },
@@ -922,14 +1122,6 @@
     "size": 61
   },
   {
-    "address": "0x00411860",
-    "canonical_address": "0x0043DEF0",
-    "end": "0x00411ED0",
-    "evidence": "ordered",
-    "name": "ui_scrollbar_update",
-    "size": 1648
-  },
-  {
     "address": "0x00412B00",
     "build_only": true,
     "end": "0x00412FD0",
@@ -945,14 +1137,6 @@
     "name": "game_frame_update",
     "size": 21459,
     "identity_only": true
-  },
-  {
-    "address": "0x004183E0",
-    "canonical_address": "0x00440090",
-    "end": "0x004183E1",
-    "evidence": "exact",
-    "name": "statistics_back_button_destroy",
-    "size": 1
   },
   {
     "address": "0x004183F0",
@@ -980,26 +1164,26 @@
   },
   {
     "address": "0x00419D20",
-    "canonical_address": "0x00447350",
+    "canonical_address": "0x0042A5F0",
     "end": "0x00419D35",
-    "evidence": "ordered",
-    "name": "ui_menu_main_click_mods",
+    "evidence": "recovered",
+    "name": "audio_resume_all",
     "size": 21
   },
   {
     "address": "0x00419D40",
-    "canonical_address": "0x0042A860",
+    "canonical_address": "0x0042A630",
     "end": "0x00419D55",
-    "evidence": "ordered",
-    "name": "console_cmd_tell_time_survived",
+    "evidence": "recovered",
+    "name": "audio_suspend_all",
     "size": 21
   },
   {
     "address": "0x00419D60",
-    "canonical_address": "0x0044FCB0",
+    "canonical_address": "0x00439230",
     "end": "0x0041B7D8",
     "evidence": "ordered",
-    "name": "ui_menu_layout_init",
+    "name": "quest_database_init",
     "size": 6776
   },
   {
@@ -1028,46 +1212,57 @@
   },
   {
     "address": "0x0041BA50",
-    "canonical_address": "0x00447420",
+    "canonical_address": "0x00454303",
     "end": "0x0041BA7E",
     "evidence": "exact",
-    "name": "ui_menu_click_back_contextual",
-    "size": 46
+    "name": "d3dx_init_matrix_scaling",
+    "size": 46,
+    "aliases": [
+      "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x0041BA80",
-    "canonical_address": "0x0044FC70",
+    "canonical_address": "0x00455028",
     "end": "0x0041BAA5",
     "evidence": "exact",
-    "name": "ui_menu_main_click_buy_full_version",
-    "size": 37
+    "name": "d3dx_init_quaternion_slerp",
+    "size": 37,
+    "aliases": [
+      "?init_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
   },
   {
     "address": "0x0041BAB0",
-    "canonical_address": "0x004534EA",
+    "canonical_address": "0x004551B6",
     "end": "0x0041BAC1",
     "evidence": "exact",
-    "name": "d3dx_init_vec3_project",
+    "name": "d3dx_init_quaternion_squad_setup",
     "size": 17,
     "aliases": [
-      "?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+      "?init_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
     ]
   },
   {
     "address": "0x0041BAD0",
-    "canonical_address": "0x00453167",
     "end": "0x0041BAD6",
-    "evidence": "ordered",
-    "name": "D3DXVec3Normalize",
     "size": 6,
-    "aliases": [
-      "_D3DXVec3Normalize@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_Sample_SetLoopMode",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041BAD6",
-    "canonical_address": "0x00453471",
     "end": "0x0041BADC",
+    "size": 6,
+    "build_only": true,
+    "name": "FSOUND_Sample_Load",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x0041BADC",
+    "canonical_address": "0x00453471",
+    "end": "0x0041BAE2",
     "evidence": "ordered",
     "name": "D3DXVec3TransformCoord",
     "size": 6,
@@ -1076,9 +1271,9 @@
     ]
   },
   {
-    "address": "0x0041BADC",
+    "address": "0x0041BAE2",
     "canonical_address": "0x00453A64",
-    "end": "0x0041BAE2",
+    "end": "0x0041BAE8",
     "evidence": "ordered",
     "name": "D3DXMatrixMultiply",
     "size": 6,
@@ -1087,9 +1282,9 @@
     ]
   },
   {
-    "address": "0x0041BAE2",
+    "address": "0x0041BAE8",
     "canonical_address": "0x00453CAD",
-    "end": "0x0041BAE8",
+    "end": "0x0041BAEE",
     "evidence": "exact",
     "name": "D3DXMatrixTranspose",
     "size": 6,
@@ -1098,9 +1293,9 @@
     ]
   },
   {
-    "address": "0x0041BAE8",
+    "address": "0x0041BAEE",
     "canonical_address": "0x00453F70",
-    "end": "0x0041BAEE",
+    "end": "0x0041BAF4",
     "evidence": "ordered",
     "name": "D3DXMatrixInverse",
     "size": 6,
@@ -1109,9 +1304,9 @@
     ]
   },
   {
-    "address": "0x0041BAEE",
+    "address": "0x0041BAF4",
     "canonical_address": "0x0045470B",
-    "end": "0x0041BAF4",
+    "end": "0x0041BAFA",
     "evidence": "exact",
     "name": "D3DXMatrixRotationQuaternion",
     "size": 6,
@@ -1120,9 +1315,9 @@
     ]
   },
   {
-    "address": "0x0041BAF4",
+    "address": "0x0041BAFA",
     "canonical_address": "0x00454BEE",
-    "end": "0x0041BAFA",
+    "end": "0x0041BB00",
     "evidence": "exact",
     "name": "D3DXQuaternionRotationYawPitchRoll",
     "size": 6,
@@ -1131,88 +1326,62 @@
     ]
   },
   {
-    "address": "0x0041BAFA",
-    "canonical_address": "0x00454CDA",
-    "end": "0x0041BB00",
-    "evidence": "exact",
-    "name": "D3DXQuaternionMultiply",
-    "size": 6,
-    "aliases": [
-      "_D3DXQuaternionMultiply@12"
-    ]
-  },
-  {
     "address": "0x0041BB00",
-    "canonical_address": "0x00401870",
     "end": "0x0041BB06",
-    "evidence": "called",
-    "name": "console_printf",
-    "size": 6
+    "size": 6,
+    "build_only": true,
+    "name": "FSOUND_SetPaused",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041BB06",
-    "canonical_address": "0x00454F03",
     "end": "0x0041BB0C",
-    "evidence": "exact",
-    "name": "D3DXQuaternionLn",
     "size": 6,
-    "aliases": [
-      "_D3DXQuaternionLn@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_SetPan",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041BB0C",
-    "canonical_address": "0x00454F87",
     "end": "0x0041BB12",
-    "evidence": "exact",
-    "name": "D3DXQuaternionExp",
     "size": 6,
-    "aliases": [
-      "_D3DXQuaternionExp@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_SetVolume",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041BB12",
-    "canonical_address": "0x0045504C",
     "end": "0x0041BB18",
-    "evidence": "ordered",
-    "name": "D3DXQuaternionSlerp",
     "size": 6,
-    "aliases": [
-      "_D3DXQuaternionSlerp@16"
-    ]
+    "build_only": true,
+    "name": "FSOUND_PlaySoundEx",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041BB18",
-    "canonical_address": "0x0045528E",
     "end": "0x0041BB1E",
-    "evidence": "exact",
-    "name": "D3DXPlaneNormalize",
     "size": 6,
-    "aliases": [
-      "_D3DXPlaneNormalize@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_SetFrequency",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041BB1E",
-    "canonical_address": "0x00454417",
-    "end": "0x0041BB3C",
-    "evidence": "ordered",
-    "name": "d3dx_init_matrix_rotation_x",
-    "size": 30,
-    "aliases": [
-      "?init_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
-    ]
+    "end": "0x0041BB24",
+    "size": 6,
+    "build_only": true,
+    "name": "FSOUND_StopSound",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041BB3C",
-    "canonical_address": "0x004553F4",
+    "canonical_address": "0x00460CD0",
     "end": "0x0041BB74",
-    "evidence": "called",
-    "name": "d3dx_c_plane_from_point_normal",
+    "evidence": "ordered",
+    "name": "crt_cfltcvt_init",
     "size": 56,
     "aliases": [
-      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+      "__cfltcvt_init"
     ]
   },
   {
@@ -1317,7 +1486,7 @@
     "address": "0x0041BE6B",
     "canonical_address": "0x00461B26",
     "end": "0x0041BF53",
-    "evidence": "exact",
+    "evidence": "recovered",
     "name": "crt_fread_nolock",
     "size": 232
   },
@@ -1393,28 +1562,25 @@
     "address": "0x0041C2DD",
     "canonical_address": "0x00461C30",
     "end": "0x0041C435",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "crt_ftell_nolock",
     "size": 344
   },
   {
     "address": "0x0041C435",
-    "canonical_address": "0x0046135D",
+    "canonical_address": "0x00461DBD",
     "end": "0x0041C4C1",
-    "evidence": "ordered",
-    "name": "crt_strtok",
+    "evidence": "recovered",
+    "name": "crt_fseek_nolock",
     "size": 140
   },
   {
     "address": "0x0041C4C1",
-    "canonical_address": "0x00456EEC",
+    "canonical_address": "0x00462104",
     "end": "0x0041C58D",
     "evidence": "referenced",
-    "name": "d3dx_x86_vec3_normalize",
-    "size": 204,
-    "aliases": [
-      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
-    ]
+    "name": "crt_toupper",
+    "size": 204
   },
   {
     "address": "0x0041C58D",

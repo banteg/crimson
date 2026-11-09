@@ -157,10 +157,10 @@
   {
     "address": "0x10001680",
     "canonical_address": "0x100033B0",
-    "end": "0x100019DA",
+    "end": "0x10001961",
     "evidence": "recovered",
     "name": "grim_window_proc",
-    "size": 858
+    "size": 737
   },
   {
     "address": "0x100019E0",
@@ -173,10 +173,10 @@
   {
     "address": "0x10001CC0",
     "canonical_address": "0x10003E60",
-    "end": "0x10002036",
+    "end": "0x10002040",
     "evidence": "recovered",
     "name": "grim_d3d_init",
-    "size": 886
+    "size": 896
   },
   {
     "address": "0x10002040",
@@ -382,10 +382,10 @@
   {
     "address": "0x10003330",
     "canonical_address": "0x10006580",
-    "end": "0x100036A9",
+    "end": "0x10003626",
     "evidence": "recovered",
     "name": "grim_set_config_var",
-    "size": 889
+    "size": 758
   },
   {
     "address": "0x100036B0",
@@ -677,11 +677,11 @@
   },
   {
     "address": "0x10004860",
-    "end": "0x10004873",
-    "size": 19,
     "canonical_address": "0x1000A370",
+    "end": "0x10004873",
+    "evidence": "recovered",
     "name": "grim_keyboard_key_down",
-    "evidence": "recovered"
+    "size": 19
   },
   {
     "address": "0x10004880",
@@ -741,10 +741,10 @@
   },
   {
     "address": "0x10004BC0",
-    "canonical_address": "0x1000A8EE",
+    "canonical_address": "0x1000AAA0",
     "end": "0x10004BC6",
-    "evidence": "exact",
-    "name": "__CxxLongjmpUnwind",
+    "evidence": "recovered",
+    "name": "Direct3DCreate8",
     "size": 6
   },
   {

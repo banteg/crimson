@@ -5,7 +5,7 @@
   "sha256": "5a98d52ad7c814986c06978e8ed8bc25ad263cb0b4a6d3487af503373a46b6fb",
   "analyzer": {
     "name": "Binary Ninja",
-    "version": "6.1.10626-dev Personal",
+    "version": "6.1.11003-dev Personal",
     "mode": "controlFlow",
     "seeds": "Verified relinking-invariant bodies from the donor map; independent control-flow discovery retained."
   },
@@ -78548,13 +78548,13 @@
   "ownership_ranges": [
     {
       "start": 268439552,
-      "end": 268459905,
+      "end": 268459824,
       "owner": "game",
-      "boundary_sha256": "c25ab36348b3268395e36401276f84f9e1d236bbbe63ffb5c12b8c0aa1057964",
-      "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
+      "boundary_sha256": "273609fba7c8d60917c441705e324c9886fd870577aefb37ba66b41921a4abc3",
+      "note": "The initial Grim engine object cluster ends at CRT vsprintf. The body at 0x10005f30..0x10005f81 matches libcmt.lib's vsprintf.obj with only the _output and _flsbuf call relocations."
     }
   ],
-  "maps_sha256": "a03637dabc25c4bf11e13bb4d0eb3138a9b11dc87f3bb5fc90ed1ae35b8a5cef",
+  "maps_sha256": "3b09bb2d0c5752ec3362a554155a1f903cd9cf43f1118f16fe823db9b975455b",
   "platform_replaced": [
     {
       "address": 268439776,

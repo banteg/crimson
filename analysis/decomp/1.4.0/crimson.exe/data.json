@@ -1,6 +1,56 @@
 {
   "entries": [
     {
+      "address": "0x00401000",
+      "name": "??0freeware_music_stream@@QAE@XZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00401010",
+      "name": "?init@freeware_music_stream@@QAEXXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00401040",
+      "name": "?open@freeware_music_stream@@QAE_NPBD@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00401120",
+      "name": "?set_volume@freeware_music_stream@@QAEXM@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00401160",
+      "name": "?run@freeware_music_stream@@QAEXXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00401180",
+      "name": "?pause@freeware_music_stream@@QAEXXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004011a0",
+      "name": "?stop@freeware_music_stream@@QAEXXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004011c0",
+      "name": "?duration@freeware_music_stream@@QAE_JXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004011f0",
+      "name": "?position@freeware_music_stream@@QAE_JXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00401220",
+      "name": "?seek@freeware_music_stream@@QAE_J_J@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x004018c0",
       "name": "console_cmd_arg_get",
       "program": "1.4.0/crimson.exe"
@@ -191,6 +241,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00421c17",
+      "name": "freeware_atoi",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00421c22",
       "name": "crt_fclose",
       "program": "1.4.0/crimson.exe"
@@ -268,6 +323,36 @@
     {
       "address": "0x0042d008",
       "name": "LoadLibraryA",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d4d0",
+      "name": "IID_IGraphBuilder",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d4e0",
+      "name": "IID_IMediaSeeking",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d4f0",
+      "name": "IID_IBasicAudio",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d500",
+      "name": "IID_IMediaControl",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d510",
+      "name": "TIME_FORMAT_MEDIA_TIME",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d520",
+      "name": "CLSID_FilterGraph",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -371,6 +456,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0042f0c0",
+      "name": "screen_width_f",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0042f0c4",
       "name": "screen_height_f",
       "program": "1.4.0/crimson.exe"
@@ -416,8 +506,23 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0042fba4",
+      "name": "freeware_encounter_id",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fba8",
+      "name": "freeware_encounter_page",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0042fbac",
       "name": "game_state_id",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fbb0",
+      "name": "freeware_encounter_day",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -473,6 +578,11 @@
     {
       "address": "0x0042fbe0",
       "name": "freeware_music_started",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fbe1",
+      "name": "freeware_music_fading",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -791,6 +901,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00436128",
+      "name": "s_empty_string",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00436130",
       "name": "console_cmd_name",
       "program": "1.4.0/crimson.exe"
@@ -851,6 +966,81 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x004369a4",
+      "name": "freeware_sfx_module",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369a8",
+      "name": "freeware_sfx_init",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369ac",
+      "name": "freeware_sfx_shutdown",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369b0",
+      "name": "freeware_sfx_set_paq",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369b4",
+      "name": "freeware_sfx_load",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369b8",
+      "name": "freeware_sfx_free",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369bc",
+      "name": "freeware_sfx_get",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369c0",
+      "name": "freeware_sfx_play",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369c4",
+      "name": "freeware_sfx_stop_channel",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369c8",
+      "name": "freeware_sfx_is_playing",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369cc",
+      "name": "freeware_sfx_set_paused",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369d0",
+      "name": "freeware_sfx_set_volume",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369d4",
+      "name": "freeware_sfx_set_pan",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369d8",
+      "name": "freeware_sfx_set_position",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369dc",
+      "name": "freeware_sfx_set_frequency",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x004369e0",
       "name": "unused_fx_queue_random_prefix_color",
       "program": "1.4.0/crimson.exe"
@@ -863,6 +1053,11 @@
     {
       "address": "0x004369f0",
       "name": "unused_console_prefix_vec2",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369f8",
+      "name": "sfx_cooldown_table",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -898,6 +1093,11 @@
     {
       "address": "0x00438334",
       "name": "freeware_mouse_dx",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00438338",
+      "name": "freeware_sfx_state",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1146,6 +1346,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00441ec8",
+      "name": "freeware_score_key",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00441fc0",
       "name": "perk_meta_table",
       "program": "1.4.0/crimson.exe"
@@ -1171,7 +1376,7 @@
       "program": "1.4.0/crimson.exe"
     },
     {
-      "address": "0x0044271c",
+      "address": "0x00442898",
       "name": "config_blob",
       "program": "1.4.0/crimson.exe"
     },
@@ -1321,6 +1526,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452c18",
+      "name": "freeware_sfx_samples",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452d1c",
       "name": "freeware_brush_begin",
       "program": "1.4.0/crimson.exe"
@@ -1401,6 +1611,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452d50",
+      "name": "freeware_audio_disabled",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452d51",
       "name": "freeware_safe_mode",
       "program": "1.4.0/crimson.exe"
@@ -1408,6 +1623,11 @@
     {
       "address": "0x00452d54",
       "name": "freeware_state_since",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452d58",
+      "name": "freeware_encounter_active",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1581,6 +1801,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452dd8",
+      "name": "perk_id_bloody_mess",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452ddc",
       "name": "perk_id_sharpshooter",
       "program": "1.4.0/crimson.exe"
@@ -1711,6 +1936,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452e60",
+      "name": "freeware_no_pickup",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452e64",
       "name": "freeware_pickup_time",
       "program": "1.4.0/crimson.exe"
@@ -1776,8 +2006,23 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452e98",
+      "name": "freeware_music_tracks",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452ea4",
+      "name": "freeware_music_volume",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452eac",
       "name": "freeware_hit_sound_timer",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452eb8",
+      "name": "audio_resource_pack_available",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1843,6 +2088,16 @@
     {
       "address": "0x00452ef0",
       "name": "freeware_score_scroll",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452ef8",
+      "name": "__adjust_fdiv",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452ef8",
+      "name": "crt_adjust_fdiv",
       "program": "1.4.0/crimson.exe"
     },
     {

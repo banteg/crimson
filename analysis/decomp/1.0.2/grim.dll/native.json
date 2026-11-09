@@ -5,7 +5,7 @@
   "sha256": "e068f330ea4e9f1a060d99a9c8f53d77f4b89e7dd187d6858cdc6c6d1fbb4e10",
   "analyzer": {
     "name": "Binary Ninja",
-    "version": "6.1.10626-dev Personal",
+    "version": "6.1.11003-dev Personal",
     "mode": "controlFlow",
     "seeds": "Verified relinking-invariant bodies from the donor map; independent control-flow discovery retained."
   },
@@ -75330,7 +75330,7 @@
       "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
     }
   ],
-  "maps_sha256": "d9683052347354efdaa62b7b3dbc828a7d30773d1349f39933171840c6e7eebb",
+  "maps_sha256": "efdd6199f5807fd3122ef5419e9b0398cdea59698b4e9bb90728754772cd48da",
   "platform_replaced": [
     {
       "address": 268439760,

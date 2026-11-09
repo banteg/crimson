@@ -3,6 +3,22 @@
   "sha256": "7f7ccf19ef028570c73c4478562a23d57c54c91e7335e88c373d092e9faa07fe",
   "functions": [
     {
+      "name": "freeware_aim_screen_global_init_thunk",
+      "address": "0x00401000",
+      "end": "0x00401005",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Startup table entry directly jumps to the screen-aim initializer."
+    },
+    {
+      "name": "freeware_aim_screen_global_init",
+      "address": "0x00401010",
+      "end": "0x00401025",
+      "body_sha256": "7ee42fc6f12571a8b8dd1bd65a3f149947ecfbc5ffcc4de73a57e864c52a8683",
+      "build_only": true,
+      "evidence": "Stores 320.0 and 240.0 in the two members of the verified freeware_aim_screen global."
+    },
+    {
       "name": "unused_global_noop_init_thunk",
       "address": "0x00401030",
       "end": "0x00401035",
@@ -55,6 +71,20 @@
       "address": "0x00401130",
       "end": "0x00401145",
       "body_sha256": "a1a587f591649bf45b565c4fea4da4de874d24869d7ae39276b5e12177d101b4"
+    },
+    {
+      "name": "freeware_pickup_id_global_init_thunk",
+      "address": "0x00401150",
+      "end": "0x00401155",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_id_global_init",
+      "address": "0x00401160",
+      "end": "0x0040116b",
+      "body_sha256": "97db63c63c190f97b75b5441e88581744cba7847c4d09785db8269be94ab24fd",
+      "build_only": true
     },
     {
       "name": "grim_load_interface",
@@ -177,6 +207,98 @@
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
     },
     {
+      "name": "sfx_load_sample",
+      "address": "0x00401440",
+      "end": "0x0040146d",
+      "body_sha256": "7b351efa7e9c4e29918260b8e294fb82d744acd5b05b6b58386d53d65afd7f49"
+    },
+    {
+      "name": "sfx_system_init",
+      "address": "0x00401470",
+      "end": "0x004015ff",
+      "body_sha256": "678a05313c3c1688fbb818c5c63a2b8e935af4973933eaa840283a7896eaf47a"
+    },
+    {
+      "name": "audio_shutdown_all",
+      "address": "0x00401600",
+      "end": "0x00401624",
+      "body_sha256": "3facbd4a75a01d8f9e7d4b86d7bccfd0ab5c29e73e858e4ee6ea6883f96db522"
+    },
+    {
+      "name": "sfx_play_panned",
+      "address": "0x00401630",
+      "end": "0x004016a5",
+      "body_sha256": "807980237bfbed0dc67142af268b6e23f2bb4d6a3362129cfbeeaa1ac6eb8667"
+    },
+    {
+      "name": "sfx_update",
+      "address": "0x004016b0",
+      "end": "0x004017f2",
+      "body_sha256": "67ac41969fd66e106fc7146099641df0b44a16f3835ad26b878bcf13402f091b",
+      "build_only": true
+    },
+    {
+      "name": "freeware_title_track_start",
+      "address": "0x00401800",
+      "end": "0x00401878",
+      "body_sha256": "b9bcbaa8a0633e210b31e64f301d4481ffaa831135e7947d50cabc69b2025851",
+      "build_only": true
+    },
+    {
+      "name": "freeware_game_track_start",
+      "address": "0x00401880",
+      "end": "0x004018d1",
+      "body_sha256": "de29807f664063d32853e1f0764052276fa2e1de75538fb5a2d6989cb0be9689",
+      "build_only": true
+    },
+    {
+      "name": "freeware_title_track_fade",
+      "address": "0x004018e0",
+      "end": "0x004018eb",
+      "body_sha256": "0fbbb92610fa9b8ed09b241ffe96e4c39481dd131c58b18060a4d2aa1515589a",
+      "build_only": true
+    },
+    {
+      "name": "freeware_save_score",
+      "address": "0x00401940",
+      "end": "0x004019c9",
+      "body_sha256": "2c283c4dfc17fdbb4d3b3763b01112b9f836bdda84cda919f663ed3263fd7134",
+      "build_only": true,
+      "evidence": "Appends the 36-byte name/score pair to rush.top or career.top, selecting elapsed seconds or player experience."
+    },
+    {
+      "name": "freeware_score_table_global_init_thunk",
+      "address": "0x004019d0",
+      "end": "0x004019d5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Jumps directly to the static score table initializer."
+    },
+    {
+      "name": "freeware_score_table_global_init",
+      "address": "0x004019e0",
+      "end": "0x00401a0a",
+      "body_sha256": "08f25ae756dbb7b90f3cf86f4906ced0196b8a92790ef80e08f9e1dc988e4ada",
+      "build_only": true,
+      "evidence": "Constructs the 100 score records with default name 10tons, using the same table as the loader."
+    },
+    {
+      "name": "freeware_score_table_reset",
+      "address": "0x00401a10",
+      "end": "0x00401a38",
+      "body_sha256": "eb926869f59df61c9cd3a7e1bbd64b5fd7a19a1354711157830549fcc5802331",
+      "build_only": true,
+      "evidence": "Called by the score loader before fopen. Visits all 100 score records, assigns the default name and clears scores."
+    },
+    {
+      "name": "highscore_load_table",
+      "address": "0x00401a40",
+      "end": "0x00401c07",
+      "body_sha256": "251880d037f2c688cbef8ce5fcad40e193f6bba5b18a2f0184634d0e9c712858",
+      "build_only": true,
+      "evidence": "Clears the score table, opens rush.top or career.top, reads the 36-byte entries and sorts the table in place."
+    },
+    {
       "name": "wrap_text_to_width_alloc",
       "address": "0x00401c10",
       "end": "0x00401c7b",
@@ -199,6 +321,32 @@
       "address": "0x00402900",
       "end": "0x0040293c",
       "body_sha256": "7b9f7505e0e97656324ddd5f3d30daa492a84d9e8750acc4657ea743215991b4"
+    },
+    {
+      "name": "effect_uv_tables_init",
+      "address": "0x00402940",
+      "end": "0x00402998",
+      "body_sha256": "72100de5fba12c721cdfee2e5aa2a8a65047c38edcf000cf042c056511b0c509"
+    },
+    {
+      "name": "gameplay_reset_state",
+      "address": "0x004029a0",
+      "end": "0x00402a3d",
+      "body_sha256": "39877c807f36d67027614437515739ac9d336d4068bcd994216ad483c03d640d"
+    },
+    {
+      "name": "projectile_alloc_slot",
+      "address": "0x00402a50",
+      "end": "0x00402a6e",
+      "body_sha256": "46ecf9c86e9c3be7e6d8147def13cac6572588ee77acd26a26068f8cabb311e6",
+      "build_only": true
+    },
+    {
+      "name": "particle_alloc_slot",
+      "address": "0x00402a70",
+      "end": "0x00402a8e",
+      "body_sha256": "63d18c7966477a365aea172ebcd9dddb4c663582d95e4d22ce6d6474b343e9a5",
+      "build_only": true
     },
     {
       "name": "fx_spawn_particle",
@@ -300,6 +448,70 @@
       "end": "0x0040f877",
       "body_sha256": "2dabcfffb855eb9e55b66fc557c3c90606674dd9cf59db9b5f6b1040c63d2048",
       "build_only": true
+    },
+    {
+      "name": "FSOUND_Sample_SetLoopMode",
+      "address": "0x00410920",
+      "end": "0x00410926",
+      "body_sha256": "5dbbfe332ab40e8a9765fd27b88a5918e0f64ea99cabfcb982350634d8d41806",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_Sample_Load",
+      "address": "0x00410926",
+      "end": "0x0041092c",
+      "body_sha256": "69d0fdb12969f4d1ea910de03014f56642db78a060df4a692f3272181e97404b",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetPaused",
+      "address": "0x00410950",
+      "end": "0x00410956",
+      "body_sha256": "93ce41cc6ddb7473cb351a155f51841fe12c10b2f30e74274b39df94e453e316",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetPan",
+      "address": "0x00410956",
+      "end": "0x0041095c",
+      "body_sha256": "aed06df54835d6ae389405fe312ff87072876bbb5bbb11f71015714817b6c40a",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetVolume",
+      "address": "0x0041095c",
+      "end": "0x00410962",
+      "body_sha256": "3ef824fbf81e5a0dd67c1721c44afc9a6a0a795166d1ea86fb099892efa4f62f",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_PlaySoundEx",
+      "address": "0x00410962",
+      "end": "0x00410968",
+      "body_sha256": "cba39632a50bdf5b9edbad31a012257c28e6b0ea4b6e03e69bde77ed5510a144",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetFrequency",
+      "address": "0x00410968",
+      "end": "0x0041096e",
+      "body_sha256": "8a96dd86e218cdb5a030b3eaa3a0d2f7cecfa657a2b15cd415a2146179b6395a",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_StopSound",
+      "address": "0x0041096e",
+      "end": "0x00410974",
+      "body_sha256": "0af27bfe48d14ec213a9563e498b161e7732644b1556b830e536424e8badd104",
+      "build_only": true
+    },
+    {
+      "name": "crt_fseek_nolock",
+      "address": "0x00410df7",
+      "end": "0x00410e83",
+      "body_sha256": "6862c7111e19511b38352f13c3eec347ee949b7505b2bdc3adc91c2f3e7c2326",
+      "build_only": true,
+      "evidence": "The score writer seeks to SEEK_END and the reader to SEEK_SET. The unlocked CRT body validates the three seek origins, adjusts SEEK_CUR via ftell, flushes the FILE, and seeks the descriptor."
     }
   ],
   "data": [
@@ -402,6 +614,55 @@
       "build_only": true
     },
     {
+      "name": "FSOUND_Sample_SetLoopMode",
+      "address": "0x00410920",
+      "reference": "0x004015d9",
+      "bytes": "e842f30000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_Init",
+      "address": "0x0041092c",
+      "reference": "0x0040149c",
+      "bytes": "e88bf40000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetDriver",
+      "address": "0x00410932",
+      "reference": "0x0040148e",
+      "bytes": "e89ff40000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetOutput",
+      "address": "0x00410938",
+      "reference": "0x00401487",
+      "bytes": "e8acf40000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_GetVersion",
+      "address": "0x0041093e",
+      "reference": "0x00401470",
+      "bytes": "e8c9f40000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_Close",
+      "address": "0x00410944",
+      "reference": "0x0040161d",
+      "bytes": "e822f30000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_Sample_Free",
+      "address": "0x0041094a",
+      "reference": "0x0040160d",
+      "bytes": "e838f30000",
+      "build_only": true
+    },
+    {
       "name": "?_L",
       "address": "0x00410a16",
       "reference": "0x004010a3",
@@ -426,6 +687,13 @@
       "bytes": "e83efa0000"
     },
     {
+      "name": "crt_fseek",
+      "address": "0x00410df7",
+      "reference": "0x00401973",
+      "bytes": "e87ff40000",
+      "build_only": true
+    },
+    {
       "name": "?2",
       "address": "0x00410f9e",
       "reference": "0x00401c29",
@@ -444,11 +712,34 @@
       "bytes": "ff1538b04100"
     },
     {
+      "name": "time_scale_factor",
+      "address": "0x0041c080",
+      "reference": "0x0040179c",
+      "bytes": "d90580c04100",
+      "build_only": true
+    },
+    {
       "name": "freeware_transition_alpha",
       "address": "0x0041c084",
       "reference": "0x0040ee72",
       "bytes": "d90584c04100",
       "build_only": true
+    },
+    {
+      "name": "freeware_encounter_id",
+      "address": "0x0041c08c",
+      "reference": "0x0040b640",
+      "bytes": "89158cc04100",
+      "build_only": true,
+      "evidence": "1.0.2 stores 1 + rand() % 5, then 0x40b180 dispatches one of five daily encounters using this index."
+    },
+    {
+      "name": "freeware_encounter_page",
+      "address": "0x0041c090",
+      "reference": "0x00409bae",
+      "bytes": "c70590c0410002000000",
+      "build_only": true,
+      "evidence": "The daily encounter dialog branches on this page and sets it to 2 when advancing its choice at 0x409ba4."
     },
     {
       "name": "game_state_id",
@@ -458,10 +749,68 @@
       "build_only": true
     },
     {
+      "name": "config_game_mode",
+      "address": "0x0041c0a0",
+      "reference": "0x00401940",
+      "bytes": "a1a0c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_day",
+      "address": "0x0041c0a4",
+      "reference": "0x0040b306",
+      "bytes": "8b0da4c04100",
+      "build_only": true,
+      "evidence": "The value supplies the first format argument to \"Day %d\\nExperience %d\" at 0x40b315."
+    },
+    {
       "name": "freeware_transition_pending",
       "address": "0x0041c0a8",
       "reference": "0x0040edcd",
       "bytes": "a0a8c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_arena_width",
+      "address": "0x0041c0bc",
+      "reference": "0x004051ba",
+      "bytes": "0faf05bcc04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_arena_height",
+      "address": "0x0041c0c0",
+      "reference": "0x004051b3",
+      "bytes": "a1c0c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_started",
+      "address": "0x0041c0c4",
+      "reference": "0x0040e4e4",
+      "bytes": "c605c4c0410001",
+      "build_only": true,
+      "evidence": "Set immediately after a call to sfx_play_panned(13, .45f, .5f) in the guarded wind-start path."
+    },
+    {
+      "name": "freeware_music_channel_a",
+      "address": "0x0041c0c8",
+      "reference": "0x00401717",
+      "bytes": "a1c8c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_channel_b",
+      "address": "0x0041c0cc",
+      "reference": "0x00401731",
+      "bytes": "a1ccc04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_volume_a",
+      "address": "0x0041c0d0",
+      "reference": "0x004016d9",
+      "bytes": "d905d0c04100",
       "build_only": true
     },
     {
@@ -471,12 +820,33 @@
       "bytes": "c705880b420000000000"
     },
     {
+      "name": "sfx_cooldown_table",
+      "address": "0x00420b90",
+      "reference": "0x00401634",
+      "bytes": "d9048d900b4200",
+      "build_only": true
+    },
+    {
       "name": "freeware_corpse_positions",
       "address": "0x00420c90",
       "reference": "0x004059a7",
       "bytes": "8914c5880c4200",
       "build_only": true,
       "offset": -8
+    },
+    {
+      "name": "freeware_score_table",
+      "address": "0x00420e90",
+      "reference": "0x00401a11",
+      "bytes": "be900e4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_state",
+      "address": "0x00421d50",
+      "reference": "0x004014ba",
+      "bytes": "bf501d4200",
+      "build_only": true
     },
     {
       "name": "freeware_corpse_sizes",
@@ -500,10 +870,31 @@
       "bytes": "a3cc204200"
     },
     {
+      "name": "freeware_pickup_id",
+      "address": "0x004220e8",
+      "reference": "0x00401165",
+      "bytes": "a3e8204200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_aim_screen",
+      "address": "0x004220f0",
+      "reference": "0x00401010",
+      "bytes": "c705f02042000000a043",
+      "build_only": true
+    },
+    {
       "name": "perk_id_count",
       "address": "0x004220f8",
       "reference": "0x00402912",
       "bytes": "a1f8204200"
+    },
+    {
+      "name": "freeware_last_score",
+      "address": "0x00422100",
+      "reference": "0x004019ad",
+      "bytes": "6800214200",
+      "build_only": true
     },
     {
       "name": "projectile_pool",
@@ -524,6 +915,13 @@
       "address": "0x00424564",
       "reference": "0x0040eea5",
       "bytes": "a164454200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_draw_point",
+      "address": "0x00424568",
+      "reference": "0x00405b0f",
+      "bytes": "a368454200",
       "build_only": true
     },
     {
@@ -549,10 +947,32 @@
       "offset": -4
     },
     {
+      "name": "freeware_atlas_uv",
+      "address": "0x004248c0",
+      "offset": 4,
+      "reference": "0x00402948",
+      "bytes": "bac4484200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_camera",
+      "address": "0x00424ac0",
+      "reference": "0x0040614b",
+      "bytes": "d805c04a4200",
+      "build_only": true
+    },
+    {
       "name": "unused_fx_queue_random_prefix_vec2",
       "address": "0x00424ac0",
       "reference": "0x00401260",
       "bytes": "c705c04a420000000000"
+    },
+    {
+      "name": "freeware_shell_positions",
+      "address": "0x00424ac8",
+      "reference": "0x00405bc1",
+      "bytes": "bec84a4200",
+      "build_only": true
     },
     {
       "name": "perk_meta_table",
@@ -569,6 +989,13 @@
       "offset": -4
     },
     {
+      "name": "freeware_bullet_icon",
+      "address": "0x00424ec8",
+      "reference": "0x0041068d",
+      "bytes": "a3c84e4200",
+      "build_only": true
+    },
+    {
       "name": "freeware_corpse_colors",
       "address": "0x00424ed0",
       "reference": "0x00405961",
@@ -582,11 +1009,46 @@
       "bytes": "b9d0524200"
     },
     {
+      "name": "freeware_sfx_samples",
+      "address": "0x004286d4",
+      "reference": "0x0040164c",
+      "bytes": "8b048dd4864200",
+      "build_only": true
+    },
+    {
+      "name": "terrain_render_target",
+      "address": "0x004287d4",
+      "reference": "0x00405139",
+      "bytes": "a1d4874200"
+    },
+    {
+      "name": "freeware_creature_texture",
+      "address": "0x004287d8",
+      "reference": "0x00410641",
+      "bytes": "a3d8874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_safe_mode",
+      "address": "0x004287dc",
+      "reference": "0x004050c4",
+      "bytes": "a0dc874200",
+      "build_only": true
+    },
+    {
       "name": "freeware_state_since",
       "address": "0x004287e0",
       "reference": "0x0040ede8",
       "bytes": "a3e0874200",
       "build_only": true
+    },
+    {
+      "name": "freeware_encounter_active",
+      "address": "0x004287e4",
+      "reference": "0x0040b344",
+      "bytes": "a0e4874200",
+      "build_only": true,
+      "evidence": "Guards the call to the five-way daily encounter dispatcher at 0x40b34d."
     },
     {
       "name": "current_player_index",
@@ -599,6 +1061,28 @@
       "address": "0x004287ec",
       "reference": "0x0040edb1",
       "bytes": "8b0dec874200"
+    },
+    {
+      "name": "freeware_filter_sharp",
+      "address": "0x004287f5",
+      "reference": "0x00406020",
+      "bytes": "a0f5874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_spawn_enabled",
+      "address": "0x004287f6",
+      "reference": "0x0040b09a",
+      "bytes": "c605f687420001",
+      "build_only": true,
+      "evidence": "The career encounter enables creature spawning here. The frame reads this flag when scheduling spawns at 0x40d974."
+    },
+    {
+      "name": "bonus_fire_bullets_timer",
+      "address": "0x00428804",
+      "reference": "0x00407713",
+      "bytes": "c7050488420000000041",
+      "evidence": "Eight-second fire bullets pickup; controls the same projectile impact paths as the 1.3.0 timer."
     },
     {
       "name": "bonus_freeze_timer",
@@ -732,10 +1216,33 @@
       "build_only": true
     },
     {
+      "name": "freeware_no_pickup",
+      "address": "0x00428858",
+      "reference": "0x00401160",
+      "bytes": "a158884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pending_perks",
+      "address": "0x00428860",
+      "reference": "0x0040bcef",
+      "bytes": "a360884200",
+      "build_only": true,
+      "evidence": "The perk picker consumes one pending choice at 0x40bcdf."
+    },
+    {
       "name": "creature_spawned_count",
       "address": "0x00428868",
       "reference": "0x004068c3",
       "bytes": "a168884200"
+    },
+    {
+      "name": "freeware_next_spawn",
+      "address": "0x0042886c",
+      "reference": "0x0040d9b1",
+      "bytes": "c7056c884200cdcc4c3e",
+      "build_only": true,
+      "evidence": "The survival spawn countdown resets to 0.2 seconds in the frame."
     },
     {
       "name": "freeware_blood_count",
@@ -770,6 +1277,28 @@
       "reference": "0x0040f869",
       "bytes": "c6058c88420000",
       "build_only": true
+    }
+  ],
+  "absent": [
+    {
+      "name": "creature_find_nearest",
+      "reason": "The ordered placement at 0x00402940 initializes the 8 by 8 sprite UV table. The seeker rocket and its homing target search first appear in 1.3.0."
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init",
+      "note": "The startup entries placed here initialize a bonus ID or count. The early builds have no console."
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init_thunk",
+      "note": "The startup entries placed here initialize a bonus ID or count. The early builds have no console."
+    },
+    {
+      "name": "console_cmd_tell_time_survived",
+      "note": "The early build has no console. The heuristic address is an FMOD import thunk."
+    },
+    {
+      "name": "audio_init_sfx",
+      "note": "The 1.0.2 FMOD initializer at 0x401470 registers the samples itself. The ordered placement at 0x40acc0 calls Grim drawing methods."
     }
   ]
 }

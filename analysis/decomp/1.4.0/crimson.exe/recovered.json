@@ -9,16 +9,126 @@
       "body_sha256": "58367ffa2a0179375018fa0f5c26da24391e42ebe0ed8fdda35a21fc7bdc396f"
     },
     {
+      "name": "freeware_music_stream_init",
+      "address": "0x00401010",
+      "end": "0x00401031",
+      "body_sha256": "0c8b36f6c91e9be5398b7b7d7408a22a9b254a1e88e491bc2de3ddcf1a1cc015",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_open",
+      "address": "0x00401040",
+      "end": "0x00401120",
+      "body_sha256": "81f2c581b1398a30a1749c0008000b090f6f803dec3b938bfec7769b81ee3874",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_set_volume",
+      "address": "0x00401120",
+      "end": "0x0040115d",
+      "body_sha256": "72affc3ba319f765438f1e85c395c2b0db1fc457e88ce986de2fb004624d044a",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_run",
+      "address": "0x00401160",
+      "end": "0x00401175",
+      "body_sha256": "6f4e36b3f6f17d5cb3957c1da4d938ff677bf7b8daaaa5f1009b558f86e1e390",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_pause",
+      "address": "0x00401180",
+      "end": "0x00401195",
+      "body_sha256": "a139a09bdf391b4fa55eab6a7e42bfe67b4fb35846d7852910126e9059838e1d",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_stop",
+      "address": "0x004011a0",
+      "end": "0x004011b5",
+      "body_sha256": "8eabb041319d91cf519aef8690d2f487b07d18545abf12f65d8d166d1968a8ec",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_duration",
+      "address": "0x004011c0",
+      "end": "0x004011f0",
+      "body_sha256": "f32f2ed1d35968897133043129dcd4d10d8cb8863f2abde1a626db62eb77f6fe",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_position",
+      "address": "0x004011f0",
+      "end": "0x00401220",
+      "body_sha256": "1fa61410a10d69cf4b9d3908b4aef6601f6fb5ba2703ce9d2d72d2f759badc52",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_seek",
+      "address": "0x00401220",
+      "end": "0x0040124d",
+      "body_sha256": "3e1c2ea8135ccf07c9fdd70ebbc37049a8b6a62e1dd86459006e194dd53a1796",
+      "build_only": true
+    },
+    {
+      "name": "console_input_poll",
+      "address": "0x004012b0",
+      "end": "0x004018b6",
+      "body_sha256": "d8f659a00b7e1764d09139e588c591b76bce1272f1b2bb9541313958ebe1184c"
+    },
+    {
+      "name": "freeware_console_cmd_show",
+      "address": "0x004019a0",
+      "end": "0x004019f0",
+      "body_sha256": "79a32d132b2653466e053243b8cc66db9dc3311fda68ef984d1e3be70537fc81",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_count",
+      "address": "0x004019f0",
+      "end": "0x00401ac6",
+      "body_sha256": "ce29df38338a42db37d738aac7de73a339257c23b5cf71a7a00e39a4022d0bb5",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_printfile",
+      "address": "0x00401ae0",
+      "end": "0x00401b98",
+      "body_sha256": "5f4de6e5f6ee1677e4d0ace90630d97ba403fdb9369db31632d8c338c656b671",
+      "build_only": true
+    },
+    {
       "name": "console_cmd_exec",
       "address": "0x00401ba0",
       "end": "0x00401c6e",
       "body_sha256": "9a10508a1314a2ffc835cb4c3bcf8747bb82814ba3d1ea09e2d8186aeada669e"
     },
     {
+      "name": "freeware_console_cmd_showfps",
+      "address": "0x00401ca0",
+      "end": "0x00401cc4",
+      "body_sha256": "a4e0deb3900864aa8bcc36c34fde83d5d9334dcb874ca75e1e4c7cd8adfc8329",
+      "build_only": true
+    },
+    {
       "name": "console_cmd_set",
       "address": "0x00401e70",
       "end": "0x00401ebd",
       "body_sha256": "2bdcb481ac57158a0be7d77de518cd3b19ae27d63cf8923c47c15ecb17fe1360"
+    },
+    {
+      "name": "freeware_console_cmd_state_unavailable",
+      "address": "0x00401ec0",
+      "end": "0x00401ed3",
+      "body_sha256": "5061ce28daf73c2213db760575e0a09cf7baa8075c68c951c5641715489a9309",
+      "build_only": true
+    },
+    {
+      "name": "console_init",
+      "address": "0x00401ee0",
+      "end": "0x004020a5",
+      "body_sha256": "227645a0e9d5076e834f438db68cde6d0427a495ea13ecb423d78ec54ee30261"
     },
     {
       "name": "console_printf",
@@ -37,6 +147,12 @@
       "address": "0x00402310",
       "end": "0x00402389",
       "body_sha256": "b0b34c9493ee5bd243c07287897d213c4a510ff311732708703e31e9f28bf15b"
+    },
+    {
+      "name": "console_render",
+      "address": "0x00402390",
+      "end": "0x00402aa2",
+      "body_sha256": "445679c7835e957efdb9f65a5786e7a1e73ec7858825538992242ec497e1e5c2"
     },
     {
       "name": "console_register_cvar",
@@ -61,6 +177,20 @@
       "address": "0x00402fe0",
       "end": "0x004030e6",
       "body_sha256": "716bffe0c75279a1026b1c0d0b852a694d01c4cf3ba1f12636e72f03b45ad9dd",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_load_library",
+      "address": "0x004030f0",
+      "end": "0x00403212",
+      "body_sha256": "6e4cf963dab2eb8c18c403cbda9c1918166d61c1edce209eb0aaf057a2860a39",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_unload_library",
+      "address": "0x00403220",
+      "end": "0x0040322d",
+      "body_sha256": "2f520b429fedac03d56d02eb2d364048d483d0b165a88033465112b421bd1638",
       "build_only": true
     },
     {
@@ -110,6 +240,22 @@
       "address": "0x00403300",
       "end": "0x00403329",
       "body_sha256": "31f04f007838d430732aea31ba453aaf1256e033adf493169d87b84acd1c0221"
+    },
+    {
+      "name": "freeware_aim_screen_global_init_thunk",
+      "address": "0x00403330",
+      "end": "0x00403335",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Startup table entry directly jumps to the screen-aim initializer."
+    },
+    {
+      "name": "freeware_aim_screen_global_init",
+      "address": "0x00403340",
+      "end": "0x00403355",
+      "body_sha256": "2468eb2b0320aef5a0eccb167bd83e9cfb9991137230702f569ee25a09ba9486",
+      "build_only": true,
+      "evidence": "Stores 320.0 and 240.0 in the two members of the verified freeware_aim_screen global."
     },
     {
       "name": "unused_global_noop_init_thunk",
@@ -184,6 +330,20 @@
       "body_sha256": "678d2fd6e750ea4486fdc76de7b23ef525fb5c4a536752f42d0f92aea46dcf7a"
     },
     {
+      "name": "config_init_defaults_thunk",
+      "address": "0x00403500",
+      "end": "0x00403505",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "evidence": "Startup entry that jumps to the game config initializer."
+    },
+    {
+      "name": "config_init_defaults",
+      "address": "0x00403510",
+      "end": "0x00403611",
+      "body_sha256": "845a912537953a4e5a8b3938983c982b8c2fc0cd1f84c78658e82da3828b0529",
+      "evidence": "Initializes the persisted config record used by freeware_save_config, including its display settings and both players\u2019 bindings."
+    },
+    {
       "name": "crimson_crt_empty_initializer_slot_31_thunk",
       "address": "0x00403620",
       "end": "0x00403625",
@@ -226,6 +386,20 @@
       "body_sha256": "e8ff1ad9aeaf9c94bb8de421a0f213a21c8972343bb691bdaac9dfeb9168f39e"
     },
     {
+      "name": "freeware_bonus_count_global_init_thunk",
+      "address": "0x00403740",
+      "end": "0x00403745",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_count_global_init",
+      "address": "0x00403750",
+      "end": "0x0040375b",
+      "body_sha256": "7a308cdaaa34655d25d8a240c57bda61d52d6f26c1a9140a51fb04ad3b1fa24a",
+      "build_only": true
+    },
+    {
       "name": "unused_console_prefix_vec2_global_init_thunk",
       "address": "0x00403760",
       "end": "0x00403765",
@@ -236,6 +410,20 @@
       "address": "0x00403770",
       "end": "0x00403785",
       "body_sha256": "71a3b823e4ed9a3b755dc3abe0982a215c36ec96a60399a2b619b819301202f3"
+    },
+    {
+      "name": "freeware_pickup_id_global_init_thunk",
+      "address": "0x00403790",
+      "end": "0x00403795",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_id_global_init",
+      "address": "0x004037a0",
+      "end": "0x004037ab",
+      "body_sha256": "809319c207dc493da9b01e5b06f94969047fdc681e4069d5e0504f2ccac68132",
+      "build_only": true
     },
     {
       "name": "secondary_projectile_pool_global_init_thunk",
@@ -385,6 +573,51 @@
       "build_only": true
     },
     {
+      "name": "sfx_load_sample",
+      "address": "0x004050e0",
+      "end": "0x00405177",
+      "body_sha256": "90cfbd367e5cc92362880cb707abc99fa4d699caddfce87efef630ea576b2464"
+    },
+    {
+      "name": "freeware_music_create_streams",
+      "address": "0x00405180",
+      "end": "0x00405269",
+      "body_sha256": "985bf3d0824e64faa222f55c855a71f0fc198858939a82eb94690393f23d3291",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_load_intro",
+      "address": "0x00405270",
+      "end": "0x004052c1",
+      "body_sha256": "370b5d9965f20f13363866eb09b686c1f30469ceec62e7efecc292d9f6410f2a",
+      "build_only": true
+    },
+    {
+      "name": "audio_init_sfx",
+      "address": "0x004052d0",
+      "end": "0x004053fb",
+      "body_sha256": "5e6f3d42732885784ae37202e493377e731a7cae8f873ce4c79a92f1e5ae3910"
+    },
+    {
+      "name": "freeware_audio_load_additional_assets",
+      "address": "0x00405400",
+      "end": "0x00405498",
+      "body_sha256": "68a7136da95c37979d9b726ff7d41499b5fb0618bd6aefa2821cd9079194febb",
+      "build_only": true
+    },
+    {
+      "name": "sfx_system_init",
+      "address": "0x004054a0",
+      "end": "0x004055d9",
+      "body_sha256": "179ec6eaa6ccbd8842eccc972aab3a089abeabc335036efc145a1f4099aba9c2"
+    },
+    {
+      "name": "audio_shutdown_all",
+      "address": "0x004055e0",
+      "end": "0x00405628",
+      "body_sha256": "1284b7c4451a76e9affac9877fa00fff80b1116102c62b67f51dce5d756f2760"
+    },
+    {
       "name": "sfx_play_panned",
       "address": "0x00405630",
       "end": "0x004056cc",
@@ -410,6 +643,12 @@
       "end": "0x004058d2",
       "body_sha256": "d0a3225be9525847007e8dddabbdfa7568f31c0e5c726b996dd98bdf5406f081",
       "build_only": true
+    },
+    {
+      "name": "music_update_fades",
+      "address": "0x004058e0",
+      "end": "0x00405c7a",
+      "body_sha256": "a317802d615ae2763f46a8c3038d9f19ac01d13e221d4815c855fcde63a453b0"
     },
     {
       "name": "fx_queue_add",
@@ -521,11 +760,59 @@
       "body_sha256": "3d31eadfc1fefc6ce0ad15e81ea35fb01782c7a9bd2c8a08a556fbda462b2b62"
     },
     {
+      "name": "freeware_score_key_init",
+      "address": "0x00406e10",
+      "end": "0x00406ea2",
+      "body_sha256": "35a939f9324d899a371083af906ddb9dc825bd0481d251d3bd9850d45a6b1547",
+      "build_only": true,
+      "evidence": "Fills the 243-byte key table from game mode, player count and byte index."
+    },
+    {
+      "name": "freeware_score_encode",
+      "address": "0x00406eb0",
+      "end": "0x00406f19",
+      "body_sha256": "895c083e40bc9018747c7313b4124c7d2be4f7aa77b85abb084436e3071365c2",
+      "build_only": true,
+      "evidence": "Adds the repeating 243-byte key to the payload and appends its weighted checksum."
+    },
+    {
+      "name": "freeware_score_decode",
+      "address": "0x00406f20",
+      "end": "0x00406f89",
+      "body_sha256": "32a98d2f3ed26163b17e68287c5d84d9f6f087273a34fe8f1ca0d4ae21000e9d",
+      "build_only": true,
+      "evidence": "Subtracts the same repeating key and tests the weighted checksum stored after the payload."
+    },
+    {
+      "name": "freeware_score_table_global_init_thunk",
+      "address": "0x00406f90",
+      "end": "0x00406f95",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Jumps directly to the static score table initializer."
+    },
+    {
+      "name": "freeware_score_table_global_init",
+      "address": "0x00406fa0",
+      "end": "0x00406fe4",
+      "body_sha256": "b0039ebd99905c0f1a21dcff3a2b371e281672682f95aab85150efcabf801064",
+      "build_only": true,
+      "evidence": "Constructs the 100 score records with default name 10tons, using the same table as the loader."
+    },
+    {
       "name": "freeware_save_score",
       "address": "0x00406ff0",
       "end": "0x00407178",
       "body_sha256": "fd82f19133e9defe11c0d75a4f4724723a3ae26f11d87fe925a5693165effeb8",
       "build_only": true
+    },
+    {
+      "name": "freeware_score_table_reset",
+      "address": "0x00407390",
+      "end": "0x004073be",
+      "body_sha256": "1eac94824804ff9a348958cf47adf41d9c28fb6d31492cfd4268ee1a23104385",
+      "build_only": true,
+      "evidence": "Called by the score loader before fopen. Visits all 100 score records, assigns the default name and clears scores."
     },
     {
       "name": "highscore_load_table",
@@ -565,6 +852,12 @@
       "address": "0x00408cf0",
       "end": "0x00408db8",
       "body_sha256": "12be0bff89908af64b1375a08d9203d543320c20430c31377a151779b02a4d10"
+    },
+    {
+      "name": "effect_uv_tables_init",
+      "address": "0x00408dc0",
+      "end": "0x00408e18",
+      "body_sha256": "c06b5d8a1a0ea050e47b713c09f22272e59089900f35b4f5e2437fd5880ed166"
     },
     {
       "name": "gameplay_reset_state",
@@ -783,6 +1076,18 @@
       "build_only": true
     },
     {
+      "name": "audio_resume_all",
+      "address": "0x0041fba0",
+      "end": "0x0041fbfa",
+      "body_sha256": "f7034be45ba153439fdb9bfe1c93266d6f0f04618232cd1cd71fb9b1cfc1b040"
+    },
+    {
+      "name": "audio_suspend_all",
+      "address": "0x0041fc00",
+      "end": "0x0041fc3f",
+      "body_sha256": "20af6b0ed308fad41e694e37ab6625c8bf5fb7a420d4ca6cdaf3a5243f4eedf5"
+    },
+    {
       "name": "console_cmd_load_texture",
       "address": "0x0041fcf0",
       "end": "0x0041fd2c",
@@ -811,9 +1116,103 @@
       "address": "0x004206d0",
       "end": "0x0042070a",
       "body_sha256": "af572d284a4710cc8b4278da92ec149dd496406efde73a78d4b69067614d18ab"
+    },
+    {
+      "name": "crt_toupper",
+      "address": "0x00421a07",
+      "end": "0x00421ad3",
+      "body_sha256": "354d19ccbb36939e642659b8dfc118871572d399fa49045e2f9325cf0dba652e"
+    },
+    {
+      "name": "crt_fread_nolock",
+      "address": "0x00422432",
+      "end": "0x0042251a",
+      "body_sha256": "618c6701c22edb140a8fa84c579b24b6061cc61ebab8c74bd88c5e9a5cedd892"
+    },
+    {
+      "name": "crt_ftell_nolock",
+      "address": "0x004228ee",
+      "end": "0x00422a46",
+      "body_sha256": "178f2994c8df02e9cc08c7da71e5687a93101db187044faa385d99dd415f5289"
+    },
+    {
+      "name": "crt_fseek_nolock",
+      "address": "0x00422a46",
+      "end": "0x00422ad2",
+      "body_sha256": "93c0f487b228cc9d60a968405dbc9d5f36c0ed57820ca37f1c5098c8cebc15a9"
     }
   ],
   "data": [
+    {
+      "name": "??0freeware_music_stream@@QAE@XZ",
+      "address": "0x00401000",
+      "reference": "0x004051bf",
+      "bytes": "e83cbeffff",
+      "build_only": true
+    },
+    {
+      "name": "?init@freeware_music_stream@@QAEXXZ",
+      "address": "0x00401010",
+      "reference": "0x0040523f",
+      "bytes": "e8ccbdffff",
+      "build_only": true
+    },
+    {
+      "name": "?open@freeware_music_stream@@QAE_NPBD@Z",
+      "address": "0x00401040",
+      "reference": "0x0040543c",
+      "bytes": "e8ffbbffff",
+      "build_only": true
+    },
+    {
+      "name": "?set_volume@freeware_music_stream@@QAEXM@Z",
+      "address": "0x00401120",
+      "reference": "0x00405874",
+      "bytes": "e8a7b8ffff",
+      "build_only": true
+    },
+    {
+      "name": "?run@freeware_music_stream@@QAEXXZ",
+      "address": "0x00401160",
+      "reference": "0x0041fbca",
+      "bytes": "e89115feff",
+      "build_only": true
+    },
+    {
+      "name": "?pause@freeware_music_stream@@QAEXXZ",
+      "address": "0x00401180",
+      "reference": "0x0041fc21",
+      "bytes": "e85a15feff",
+      "build_only": true
+    },
+    {
+      "name": "?stop@freeware_music_stream@@QAEXXZ",
+      "address": "0x004011a0",
+      "reference": "0x00405923",
+      "bytes": "e878b8ffff",
+      "build_only": true
+    },
+    {
+      "name": "?duration@freeware_music_stream@@QAE_JXZ",
+      "address": "0x004011c0",
+      "reference": "0x004059ed",
+      "bytes": "e8ceb7ffff",
+      "build_only": true
+    },
+    {
+      "name": "?position@freeware_music_stream@@QAE_JXZ",
+      "address": "0x004011f0",
+      "reference": "0x004059de",
+      "bytes": "e80db8ffff",
+      "build_only": true
+    },
+    {
+      "name": "?seek@freeware_music_stream@@QAE_J_J@Z",
+      "address": "0x00401220",
+      "reference": "0x00405864",
+      "bytes": "e8b7b9ffff",
+      "build_only": true
+    },
     {
       "name": "console_cmd_arg_get",
       "address": "0x004018c0",
@@ -1044,6 +1443,13 @@
       "bytes": "e8acf00100"
     },
     {
+      "name": "freeware_atoi",
+      "address": "0x00421c17",
+      "reference": "0x00401a15",
+      "bytes": "e8fd010200",
+      "build_only": true
+    },
+    {
       "name": "crt_fclose",
       "address": "0x00421c22",
       "reference": "0x00401c64",
@@ -1141,6 +1547,54 @@
       "bytes": "ff1508d04200"
     },
     {
+      "name": "IID_IGraphBuilder",
+      "address": "0x0042d4d0",
+      "reference": "0x0040106d",
+      "bytes": "68d0d44200",
+      "build_only": true
+    },
+    {
+      "name": "IID_IMediaSeeking",
+      "address": "0x0042d4e0",
+      "reference": "0x0040109f",
+      "bytes": "68e0d44200",
+      "build_only": true
+    },
+    {
+      "name": "IID_IBasicAudio",
+      "address": "0x0042d4f0",
+      "reference": "0x004010af",
+      "bytes": "68f0d44200",
+      "build_only": true
+    },
+    {
+      "name": "IID_IMediaControl",
+      "address": "0x0042d500",
+      "reference": "0x0040108f",
+      "bytes": "6800d54200",
+      "build_only": true
+    },
+    {
+      "name": "TIME_FORMAT_MEDIA_TIME",
+      "address": "0x0042d510",
+      "reference": "0x004010e8",
+      "bytes": "6810d54200",
+      "build_only": true
+    },
+    {
+      "name": "CLSID_FilterGraph",
+      "address": "0x0042d520",
+      "reference": "0x00401076",
+      "bytes": "6820d54200",
+      "build_only": true
+    },
+    {
+      "name": "screen_width_f",
+      "address": "0x0042f0c0",
+      "reference": "0x004027ac",
+      "bytes": "d905c0f04200"
+    },
+    {
       "name": "console_empty_arg",
       "address": "0x0042f0c8",
       "reference": "0x004018de",
@@ -1196,10 +1650,31 @@
       "build_only": true
     },
     {
+      "name": "freeware_encounter_id",
+      "address": "0x0042fba4",
+      "reference": "0x00408f29",
+      "bytes": "a3a4fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_page",
+      "address": "0x0042fba8",
+      "reference": "0x00408f2e",
+      "bytes": "a3a8fb4200",
+      "build_only": true
+    },
+    {
       "name": "game_state_id",
       "address": "0x0042fbac",
       "reference": "0x0041828e",
       "bytes": "a1acfb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_day",
+      "address": "0x0042fbb0",
+      "reference": "0x00408f33",
+      "bytes": "a3b0fb4200",
       "build_only": true
     },
     {
@@ -1280,6 +1755,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_music_fading",
+      "address": "0x0042fbe1",
+      "reference": "0x004058ca",
+      "bytes": "c605e1fb420001",
+      "build_only": true
+    },
+    {
       "name": "freeware_editor_light",
       "address": "0x0042fbe4",
       "reference": "0x00418ae7",
@@ -1335,6 +1817,12 @@
       "build_only": true
     },
     {
+      "name": "s_empty_string",
+      "address": "0x00436128",
+      "reference": "0x00402087",
+      "bytes": "6828614300"
+    },
+    {
       "name": "freeware_console",
       "address": "0x00436570",
       "reference": "0x00418212",
@@ -1355,6 +1843,111 @@
       "bytes": "a3a0694300"
     },
     {
+      "name": "freeware_sfx_module",
+      "address": "0x004369a4",
+      "reference": "0x004030fd",
+      "bytes": "a3a4694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_init",
+      "address": "0x004369a8",
+      "reference": "0x00403122",
+      "bytes": "a3a8694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_shutdown",
+      "address": "0x004369ac",
+      "reference": "0x00403135",
+      "bytes": "a3ac694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_paq",
+      "address": "0x004369b0",
+      "reference": "0x0040313c",
+      "bytes": "a3b0694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_load",
+      "address": "0x004369b4",
+      "reference": "0x0040315a",
+      "bytes": "a3b4694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_free",
+      "address": "0x004369b8",
+      "reference": "0x0040316d",
+      "bytes": "a3b8694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_get",
+      "address": "0x004369bc",
+      "reference": "0x00403174",
+      "bytes": "a3bc694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_play",
+      "address": "0x004369c0",
+      "reference": "0x004056a0",
+      "bytes": "ff15c0694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_stop_channel",
+      "address": "0x004369c4",
+      "reference": "0x004031a5",
+      "bytes": "a3c4694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_is_playing",
+      "address": "0x004369c8",
+      "reference": "0x0040571d",
+      "bytes": "ff15c8694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_paused",
+      "address": "0x004369cc",
+      "reference": "0x004031ca",
+      "bytes": "a3cc694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_volume",
+      "address": "0x004369d0",
+      "reference": "0x004056bf",
+      "bytes": "ff15d0694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_pan",
+      "address": "0x004369d4",
+      "reference": "0x004031e4",
+      "bytes": "a3d4694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_position",
+      "address": "0x004369d8",
+      "reference": "0x00403202",
+      "bytes": "a3d8694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_frequency",
+      "address": "0x004369dc",
+      "reference": "0x0040573d",
+      "bytes": "ff15dc694300",
+      "build_only": true
+    },
+    {
       "name": "unused_fx_queue_random_prefix_color",
       "address": "0x004369e0",
       "reference": "0x00403240",
@@ -1372,6 +1965,12 @@
       "reference": "0x00406976",
       "bytes": "a3f0694300",
       "build_only": true
+    },
+    {
+      "name": "sfx_cooldown_table",
+      "address": "0x004369f8",
+      "reference": "0x00405666",
+      "bytes": "d90495f8694300"
     },
     {
       "name": "freeware_corpse_positions",
@@ -1420,6 +2019,13 @@
       "address": "0x00438334",
       "reference": "0x00418247",
       "bytes": "d91d34834300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_state",
+      "address": "0x00438338",
+      "reference": "0x004055b0",
+      "bytes": "bf38834300",
       "build_only": true
     },
     {
@@ -1670,6 +2276,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_score_key",
+      "address": "0x00441ec8",
+      "reference": "0x00406e8c",
+      "bytes": "8881c81e4400",
+      "build_only": true
+    },
+    {
       "name": "perk_meta_table",
       "address": "0x00441fc0",
       "reference": "0x004036ae",
@@ -1705,10 +2318,9 @@
     },
     {
       "name": "config_blob",
-      "address": "0x0044271c",
-      "reference": "0x00405ddd",
-      "bytes": "8b15d0284400",
-      "offset": 436
+      "address": "0x00442898",
+      "reference": "0x0040629f",
+      "bytes": "6898284400"
     },
     {
       "name": "freeware_music_disabled",
@@ -1903,6 +2515,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_sfx_samples",
+      "address": "0x00452c18",
+      "reference": "0x00405648",
+      "bytes": "8b0c95182c4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_brush_begin",
       "address": "0x00452d1c",
       "reference": "0x00418c9b",
@@ -2014,6 +2633,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_audio_disabled",
+      "address": "0x00452d50",
+      "reference": "0x0041fba9",
+      "bytes": "a0502d4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_safe_mode",
       "address": "0x00452d51",
       "reference": "0x0041e250",
@@ -2025,6 +2651,13 @@
       "address": "0x00452d54",
       "reference": "0x0041852d",
       "bytes": "a3542d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_active",
+      "address": "0x00452d58",
+      "reference": "0x00408f23",
+      "bytes": "881d582d4500",
       "build_only": true
     },
     {
@@ -2262,6 +2895,13 @@
       "build_only": true
     },
     {
+      "name": "perk_id_bloody_mess",
+      "address": "0x00452dd8",
+      "reference": "0x00407989",
+      "bytes": "891dd82d4500",
+      "build_only": true
+    },
+    {
       "name": "perk_id_sharpshooter",
       "address": "0x00452ddc",
       "reference": "0x004130ab",
@@ -2442,6 +3082,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_no_pickup",
+      "address": "0x00452e60",
+      "reference": "0x004037a0",
+      "bytes": "a1602e4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_pickup_time",
       "address": "0x00452e64",
       "reference": "0x004069d0",
@@ -2531,11 +3178,31 @@
       "bytes": "d905942e4500"
     },
     {
+      "name": "freeware_music_tracks",
+      "address": "0x00452e98",
+      "reference": "0x0041fbec",
+      "bytes": "8b0d982e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_volume",
+      "address": "0x00452ea4",
+      "reference": "0x0040583c",
+      "bytes": "d905a42e4500",
+      "build_only": true
+    },
+    {
       "name": "freeware_hit_sound_timer",
       "address": "0x00452eac",
       "reference": "0x00409e7a",
       "bytes": "d905ac2e4500",
       "build_only": true
+    },
+    {
+      "name": "audio_resource_pack_available",
+      "address": "0x00452eb8",
+      "reference": "0x0040557a",
+      "bytes": "a2b82e4500"
     },
     {
       "name": "freeware_credits_open",
@@ -2627,9 +3294,6 @@
       "name": "bonus_label_for_entry"
     },
     {
-      "name": "effect_uv_tables_init"
-    },
-    {
       "name": "config_sync_from_grim"
     },
     {
@@ -2637,9 +3301,6 @@
     },
     {
       "name": "bonus_render"
-    },
-    {
-      "name": "audio_resume_all"
     },
     {
       "name": "fx_queue_random_color_destroy",
