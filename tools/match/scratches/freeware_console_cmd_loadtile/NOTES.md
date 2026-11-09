@@ -11,19 +11,12 @@ rotation and flags to zero and all four color channels to one.
 
 ## VC6 inlining
 
-The ordinary 1.4.0 scratch compiles with the stock VC6 SP5 headers and /GX.
-The 1.3.0 startup and 1.4.0 console use the same brush constructor and white
-color setter. The 1.3.0 entry point compiles byte-exact with this source.
-The 1.4.0 command scores 81.91% (332 candidate instructions versus 337 native).
-All 70 aligned references agree, including the calls to the vector's range
-helpers. After deallocation, the stock compiler calls `size()` while the
-native code computes the pointer difference inline at `0x0042001b`. The
-different register allocation and branch displacements extend into the
-surrounding code.
+The stock 1.4.0 compiler and headers with `/GX` reproduce all 1,015 bytes,
+337 instructions and 73 positional references. The brush initializer passes
+its color member by reference and sets alpha, blue, green and red separately.
+The same constructor reproduces the 1.3.0 startup code.
 
-The native vector insertion consistently calls its range helpers:
-`_Ucopy` at `0x00421910`, `_Ufill` at `0x00421940` and `_Destroy` at
-`0x004216f0`. A separate compiler experiment exposed those three members as
-out-of-line callees and force-inlined the original `size()` body. With the
-same command source it reproduced all 1,015 bytes and all 73 references.
-The published scratch uses the stock headers to keep its WIP score reproducible.
+Treating the setter as a brush member with a chained assignment left 41
+units in VC6's inline budget where `vector::size()` requires 42. The original
+inlines that pointer difference after deallocation at `0x0042001b`. It calls
+`_Ucopy`, `_Ufill` and `_Destroy` out of line.

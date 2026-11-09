@@ -9,12 +9,15 @@ extern IGrim2D_cpp *grim_interface_ptr;
 extern std::vector<freeware_level_object *> freeware_brushes;
 }
 
-struct freeware_editor_brush : freeware_level_object {
-    void set_color(float value)
-    {
-        color.r = color.g = color.b = color.a = value;
-    }
+inline void set_brush_color(effect_color_t &color, float value)
+{
+    color.a = value;
+    color.b = value;
+    color.g = value;
+    color.r = value;
+}
 
+struct freeware_editor_brush : freeware_level_object {
     freeware_editor_brush(char *name, float width_px, float height_px)
     {
         flags = 0;
@@ -22,7 +25,7 @@ struct freeware_editor_brush : freeware_level_object {
         width = width_px;
         height = height_px;
         texture = grim_interface_ptr->grim_get_texture_handle(name);
-        set_color(1.0f);
+        set_brush_color(color, 1.0f);
     }
 };
 
