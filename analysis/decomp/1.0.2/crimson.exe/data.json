@@ -596,11 +596,6 @@
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x004208c8",
-      "name": "sprite_effect_pool",
-      "program": "1.0.2/crimson.exe"
-    },
-    {
       "address": "0x00420a28",
       "name": "__pow10neg",
       "program": "1.0.2/crimson.exe"

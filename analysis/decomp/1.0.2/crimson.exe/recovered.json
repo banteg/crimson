@@ -1711,5 +1711,14 @@
       "name": "audio_init_sfx",
       "note": "The 1.0.2 FMOD initializer at 0x401470 registers the samples itself. The ordered placement at 0x40acc0 calls Grim drawing methods."
     }
+  ],
+  "rejected_data_placements": [
+    {
+      "name": "sprite_effect_pool",
+      "address": "0x004208c8",
+      "size": 700,
+      "sha256": "1be6b9bcfbebc370831ae298fcf28d4fbfe45d9537d311ef7b9ab09ac525e9f0",
+      "reason": "This is the entire relocation-free .data section of VC6 libcmt.lib(constpow.obj). The power-of-ten tables __pow10pos and __pow10neg begin here and at +0x160. An operand projected from the later game does not establish a sprite pool here."
+    }
   ]
 }

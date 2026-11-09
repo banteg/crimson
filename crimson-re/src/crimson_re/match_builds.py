@@ -550,6 +550,19 @@ def apply_recovered_map(
                 row["aliases"] = [alias for alias in row["aliases"] if alias != name]
                 if not row["aliases"]:
                     del row["aliases"]
+    # A donor-relative operand can project a label into an unrelated native
+    # object. Reject only the disproved placement: a recovered location
+    # elsewhere, and other valid names at the same address, remain usable.
+    for rejected in recovery.get("rejected_data_placements", ()):
+        name = rejected["name"]
+        address = matchlib.parse_int(rejected["address"])
+        size = rejected["size"]
+        if (type(size) is not int or size <= 0 or not any(catalog.knows_name(name) for catalog in catalogs)
+                or address < native.image_base or address + size > native.image_base + len(native.mapped)
+                or hashlib.sha256(native.function_bytes(address, address + size)).hexdigest() != rejected["sha256"]):
+            raise ValueError(f"invalid rejected data placement evidence: {name}")
+        if name in entries and matchlib.parse_int(entries[name]["address"]) == address:
+            del entries[name]
     ordered = sorted(rows.values(), key=lambda row: matchlib.parse_int(row["address"]))
     if any(matchlib.parse_int(left["end"]) > matchlib.parse_int(right["address"]) for left, right in pairwise(ordered)):
         raise ValueError("recovered function extents overlap mapped functions")

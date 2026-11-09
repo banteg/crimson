@@ -4,6 +4,7 @@ import json
 from copy import deepcopy
 from itertools import pairwise
 from pathlib import Path
+from typing import Any
 
 import pytest
 from typer.testing import CliRunner
@@ -62,6 +63,35 @@ def test_reviewed_historical_map_rejects_unbound_evidence(recovered_198_map, inv
         payload["functions"].append({"name": "interior_false_positive", "address": "0x0041FC21", "end": "0x0041FC22"})
     with pytest.raises(ValueError):
         match_builds.apply_recovered_map(image, canonical, payload, recovery)
+
+
+def test_reviewed_data_rejection_preserves_crt_tables_and_alternate_placements() -> None:
+    image = REGISTRY.image("1.0.2", "crimson.exe")
+    if not image.path.is_file():
+        pytest.skip("pinned freeware executable unavailable")
+    donor = REGISTRY.canonical(image)
+    pins = json.loads((image.map_dir / "recovered.json").read_text())["rejected_data_placements"]
+    pin = next(row for row in pins if row["name"] == "sprite_effect_pool")
+    receipt = {"schema": 1, "sha256": image.sha256, "rejected_data_placements": [pin]}
+    data = json.loads(image.target.data_map_path.read_text())
+    assert all(row["name"] != pin["name"] for row in data["entries"])
+    assert {row["name"] for row in data["entries"] if row["address"] == pin["address"]} == {
+        "__pow10pos", "crt_pow10_positive",
+    }
+
+    candidate = {"name": pin["name"], "address": pin["address"], "program": image.target.image_name}
+    payload: dict[str, Any] = {"data": {"entries": [*data["entries"], candidate], "notes": ""}, "functions": [], "summary": {}}
+    with pytest.raises(ValueError, match="invalid rejected data placement evidence"):
+        match_builds.apply_recovered_map(image, donor, deepcopy(payload), {
+            **receipt, "rejected_data_placements": [{**pin, "sha256": "0" * 64}],
+        })
+    corrected = deepcopy(payload)
+    match_builds.apply_recovered_map(image, donor, corrected, receipt)
+    assert corrected["data"]["entries"] == data["entries"]
+
+    candidate["address"] = "0x00422000"
+    match_builds.apply_recovered_map(image, donor, payload, receipt)
+    assert candidate in payload["data"]["entries"]
 
 
 def test_chained_recovery_checks_root_identities_missing_from_donor() -> None:
