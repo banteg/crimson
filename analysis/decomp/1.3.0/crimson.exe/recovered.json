@@ -747,7 +747,7 @@
       "address": "0x00412fd0",
       "end": "0x004183a3",
       "body_sha256": "e5ddbc3a594cb4607e04f6bf4fc71418f9e3f162595c673a21fb9f70c0c74b38",
-      "identity_only": true
+      "evidence": "The compiled dispatcher covers the complete pinned body. All seven interior discovery starts are switch destinations. The adjacent jump tables are outside its code extent."
     },
     {
       "name": "freeware_editor_offset_destroy",

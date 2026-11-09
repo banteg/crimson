@@ -1247,8 +1247,7 @@
     "end": "0x004183A3",
     "evidence": "recovered",
     "name": "game_frame_update",
-    "size": 21459,
-    "identity_only": true
+    "size": 21459
   },
   {
     "address": "0x004183E0",

@@ -83,6 +83,7 @@ def test_scoped_scratch_and_scan_compare_the_pinned_dispatcher(
 
 @pytest.mark.parametrize(("version", "start", "end", "next_start", "interior"), [
     ("1.0.2", 0x40C110, 0x40ED76, 0x40EDA0, (0x40C38C, 0x40CF97, 0x40D9E8, 0x40DA6D, 0x40DAA4, 0x40E4FA)),
+    ("1.3.0", 0x412FD0, 0x4183A3, 0x4183E0, (0x41445D, 0x4161CF, 0x4171CB, 0x417237, 0x4172F3, 0x4175F9, 0x417885)),
 ])
 def test_verified_frame_dispatcher_preserves_raw_entries_and_uncredited_tables(
     version: str, start: int, end: int, next_start: int, interior: tuple[int, ...],
@@ -183,7 +184,7 @@ def test_report_and_triage_share_the_native_function_denominator() -> None:
 
 
 @pytest.mark.parametrize(("version", "port_count", "platform_count"), [
-    ("1.0.2", 169, 26), ("1.3.0", 240, 36), ("1.4.0", 311, 43),
+    ("1.0.2", 169, 26), ("1.3.0", 233, 36), ("1.4.0", 311, 43),
 ])
 def test_shipped_port_scopes_preserve_behavior_and_reject_backend_leaves(
     version: str, port_count: int, platform_count: int,
@@ -198,8 +199,7 @@ def test_shipped_port_scopes_preserve_behavior_and_reject_backend_leaves(
     names = {r["name"] for r in port}
     assert {"creature_update_all", "grim_timing_update", "grim_was_key_pressed", "grim_draw_quad"} <= names
     assert names.isdisjoint({"grim_d3d_init", "grim_keyboard_poll", "grim_load_interface", "DllMain"})
-    # The seven 1.3.0 native dispatcher labels remain independently owned.
-    assert any(name.startswith("native_function_") for name in names) == (version == "1.3.0")
+    assert not any(name.startswith("native_function_") for name in names)
     if version == "1.0.2":
         assert inventory["crimson.exe"][0x40B180]["name"] == "freeware_encounter_update"
         assert 0x40B1AE not in inventory["crimson.exe"]
