@@ -21,7 +21,7 @@ extern "C" void creature_pool_global_init(void)
         entry->active = 0;
         entry->ai_mode = 0;
         entry->entity_reserved_74 = 0;
-        entry->state_flag = 0;
+        entry->plague_infected = 0;
         entry->anim_phase = 0.0f;
         entry->hit_flash_timer = -1.0f;
         ++entry;
