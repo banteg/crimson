@@ -13,6 +13,6 @@ perk_meta_cpp_t::perk_meta_cpp_t(void)
     name = 0;
     description = 0;
     available = 1;
-    available_default = 0;
+    secret = 0;
 #endif
 }

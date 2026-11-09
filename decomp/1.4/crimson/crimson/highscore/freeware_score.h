@@ -2,6 +2,7 @@
 #define CRIMSON_FREEWARE_SCORE_H
 
 #include "cl_build.h"
+#include <stdio.h>
 #include <string.h>
 
 struct freeware_score_entry {
@@ -15,6 +16,24 @@ struct freeware_score_entry {
 };
 
 extern "C" freeware_score_entry freeware_score_table[100];
+
+static __forceinline void freeware_initialize_score_entry(freeware_score_entry &entry)
+{
+#if CL_BUILD == 10400
+    entry.seconds = 0;
+#endif
+#if CL_BUILD > 10002
+    entry.average_fps = 1;
+    entry.min_fps = 1;
+#if CL_BUILD == 10400
+    entry.version = 1.4f;
+#else
+    entry.version = 1.3f;
+#endif
+#endif
+    entry.value = 0;
+    sprintf(entry.name, "10tons");
+}
 
 static __forceinline void freeware_sort_score_table()
 {

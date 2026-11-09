@@ -86,6 +86,7 @@ extern "C" char freeware_read_name_key()
         key = 'z';
     } else if (grim_interface_ptr->grim_was_key_pressed(DIK_SPACE)) {
         key = ' ';
+#if CL_BUILD >= 10300
     } else if (grim_interface_ptr->grim_was_key_pressed(DIK_SLASH)) {
         key = '\'';
     } else if (grim_interface_ptr->grim_was_key_pressed(DIK_SUBTRACT)) {
@@ -96,16 +97,22 @@ extern "C" char freeware_read_name_key()
         key = ',';
     } else if (grim_interface_ptr->grim_was_key_pressed(DIK_PERIOD)) {
         key = '.';
+#endif
     } else if (grim_interface_ptr->grim_was_key_pressed(DIK_RETURN)) {
         key = '\t';
+#if CL_BUILD >= 10300
     } else if (grim_interface_ptr->grim_was_key_pressed(DIK_NUMPADENTER)) {
         key = '\t';
+#endif
     } else if (grim_interface_ptr->grim_was_key_pressed(DIK_BACK)) {
         key = 8;
     }
 
     if (key != no_key && (grim_interface_ptr->grim_is_key_down(DIK_RSHIFT) ||
                 grim_interface_ptr->grim_is_key_down(DIK_LSHIFT))) {
+#if CL_BUILD == 10002
+        key = (char)crt_toupper(key);
+#else
         if (key == '1') {
             key = '!';
         } else if (key == '2') {
@@ -129,6 +136,7 @@ extern "C" char freeware_read_name_key()
         } else {
             key = (char)crt_toupper(key);
         }
+#endif
     }
     return key;
 }
