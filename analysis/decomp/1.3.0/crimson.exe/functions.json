@@ -136,6 +136,22 @@
     "size": 1
   },
   {
+    "address": "0x004012F0",
+    "build_only": true,
+    "end": "0x004012F5",
+    "evidence": "recovered",
+    "name": "freeware_last_score_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00401300",
+    "build_only": true,
+    "end": "0x0040133B",
+    "evidence": "recovered",
+    "name": "freeware_last_score_global_init",
+    "size": 59
+  },
+  {
     "address": "0x00401340",
     "canonical_address": "0x0042FA90",
     "end": "0x0040134A",
@@ -208,18 +224,18 @@
   },
   {
     "address": "0x00401410",
-    "canonical_address": "0x0041E170",
+    "build_only": true,
     "end": "0x00401415",
     "evidence": "recovered",
-    "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
+    "name": "freeware_pickup_position_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401420",
-    "canonical_address": "0x0041E180",
+    "build_only": true,
     "end": "0x00401435",
     "evidence": "recovered",
-    "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+    "name": "freeware_pickup_position_global_init",
     "size": 21
   },
   {
@@ -415,12 +431,76 @@
     "size": 1
   },
   {
+    "address": "0x00401770",
+    "build_only": true,
+    "end": "0x0040177A",
+    "evidence": "recovered",
+    "name": "freeware_brush_global_construct_and_register",
+    "size": 10
+  },
+  {
+    "address": "0x00401780",
+    "build_only": true,
+    "end": "0x0040179D",
+    "evidence": "recovered",
+    "name": "freeware_brush_global_init",
+    "size": 29
+  },
+  {
+    "address": "0x004017A0",
+    "build_only": true,
+    "end": "0x004017AC",
+    "evidence": "recovered",
+    "name": "freeware_brush_register_atexit",
+    "size": 12
+  },
+  {
+    "address": "0x004017B0",
+    "build_only": true,
+    "end": "0x004017D5",
+    "evidence": "recovered",
+    "name": "freeware_brush_global_destroy",
+    "size": 37
+  },
+  {
+    "address": "0x004017E0",
+    "build_only": true,
+    "end": "0x00401834",
+    "evidence": "recovered",
+    "name": "freeware_brush_clear",
+    "size": 84
+  },
+  {
+    "address": "0x00401840",
+    "build_only": true,
+    "end": "0x0040189A",
+    "evidence": "recovered",
+    "name": "freeware_level_map_ctor",
+    "size": 90
+  },
+  {
+    "address": "0x004018A0",
+    "build_only": true,
+    "end": "0x004018B4",
+    "evidence": "recovered",
+    "name": "freeware_level_list_ctor",
+    "size": 20
+  },
+  {
     "address": "0x004018C0",
     "build_only": true,
     "end": "0x00401978",
     "evidence": "exact",
     "name": "freeware_level_clear",
     "size": 184
+  },
+  {
+    "address": "0x00401980",
+    "build_only": true,
+    "end": "0x004019B9",
+    "evidence": "recovered",
+    "name": "freeware_level_map_dtor",
+    "size": 57
   },
   {
     "address": "0x004019C0",
@@ -447,10 +527,18 @@
     "size": 427
   },
   {
+    "address": "0x00402090",
+    "build_only": true,
+    "end": "0x004020B2",
+    "evidence": "recovered",
+    "name": "freeware_level_arm_triggers",
+    "size": 34
+  },
+  {
     "address": "0x004020C0",
     "build_only": true,
     "end": "0x004021B5",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "freeware_level_update_triggers",
     "size": 245
   },
@@ -461,6 +549,14 @@
     "evidence": "ordered",
     "name": "freeware_level_render_triggers",
     "size": 1689
+  },
+  {
+    "address": "0x00402860",
+    "build_only": true,
+    "end": "0x0040286A",
+    "evidence": "recovered",
+    "name": "freeware_level_set_texture",
+    "size": 10
   },
   {
     "address": "0x00402870",
@@ -823,6 +919,14 @@
     "size": 107
   },
   {
+    "address": "0x00404AD0",
+    "canonical_address": "0x0042FD90",
+    "end": "0x004052F5",
+    "evidence": "recovered",
+    "name": "perks_init_database",
+    "size": 2085
+  },
+  {
     "address": "0x00405300",
     "canonical_address": "0x0041FC80",
     "end": "0x004054B9",
@@ -1117,9 +1221,17 @@
     "address": "0x00411820",
     "build_only": true,
     "end": "0x0041185D",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "freeware_hud_set_row",
     "size": 61
+  },
+  {
+    "address": "0x00411860",
+    "build_only": true,
+    "end": "0x00412AFC",
+    "evidence": "recovered",
+    "name": "gameplay_render_hud",
+    "size": 4764
   },
   {
     "address": "0x00412B00",
@@ -1155,10 +1267,18 @@
     "size": 656
   },
   {
+    "address": "0x004194A0",
+    "build_only": true,
+    "end": "0x004196EE",
+    "evidence": "recovered",
+    "name": "freeware_draw_loading_progress",
+    "size": 590
+  },
+  {
     "address": "0x004196F0",
     "build_only": true,
     "end": "0x00419D12",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "game_highscores_update",
     "size": 1570
   },
@@ -1180,68 +1300,67 @@
   },
   {
     "address": "0x00419D60",
-    "canonical_address": "0x00439230",
+    "canonical_address": "0x0042C450",
     "end": "0x0041B7D8",
-    "evidence": "ordered",
-    "name": "quest_database_init",
+    "evidence": "recovered",
+    "name": "crimsonland_main",
     "size": 6776
   },
   {
     "address": "0x0041B7E0",
-    "canonical_address": "0x0043AEB0",
+    "build_only": true,
     "end": "0x0041B802",
-    "evidence": "exact",
-    "name": "highscore_compare_survival_score_desc",
+    "evidence": "recovered",
+    "name": "freeware_level_list_dtor",
     "size": 34
   },
   {
     "address": "0x0041B810",
-    "canonical_address": "0x0043B8C0",
+    "build_only": true,
     "end": "0x0041B823",
-    "evidence": "exact",
-    "name": "buffer_reader_skip",
+    "evidence": "recovered",
+    "name": "msvc6_vector_pointer_size",
     "size": 19
   },
   {
+    "address": "0x0041B830",
+    "build_only": true,
+    "end": "0x0041B833",
+    "evidence": "recovered",
+    "name": "msvc6_vector_pointer_destroy_range",
+    "size": 3
+  },
+  {
     "address": "0x0041B840",
-    "canonical_address": "0x00445380",
+    "build_only": true,
     "end": "0x0041BA49",
-    "evidence": "exact",
-    "name": "typo_target_name_assign_random",
+    "evidence": "recovered",
+    "name": "msvc6_vector_pointer_insert_count",
     "size": 521
   },
   {
     "address": "0x0041BA50",
-    "canonical_address": "0x00454303",
+    "build_only": true,
     "end": "0x0041BA7E",
-    "evidence": "exact",
-    "name": "d3dx_init_matrix_scaling",
-    "size": 46,
-    "aliases": [
-      "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
-    ]
+    "evidence": "recovered",
+    "name": "msvc6_vector_pointer_uninitialized_copy",
+    "size": 46
   },
   {
     "address": "0x0041BA80",
-    "canonical_address": "0x00455028",
+    "build_only": true,
     "end": "0x0041BAA5",
-    "evidence": "exact",
-    "name": "d3dx_init_quaternion_slerp",
-    "size": 37,
-    "aliases": [
-      "?init_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
-    ]
+    "evidence": "recovered",
+    "name": "msvc6_vector_pointer_uninitialized_fill",
+    "size": 37
   },
   {
     "address": "0x0041BAB0",
-    "canonical_address": "0x004551B6",
+    "build_only": true,
     "end": "0x0041BAC1",
-    "evidence": "exact",
-    "name": "d3dx_init_quaternion_squad_setup",
-    "size": 17,
-    "aliases": [
-      "?init_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
-    ]
+    "evidence": "recovered",
+    "name": "msvc6_vector_pointer_construct",
+    "size": 17
   },
   {
     "address": "0x0041BAD0",

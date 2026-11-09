@@ -5,8 +5,9 @@
     {
       "name": "grim_config_dialog_proc",
       "address": "0x100010d0",
-      "end": "0x100012bf",
-      "body_sha256": "49934fe26c26ee9f0f70c2f967d1ff900867f1714dde6c1b8a6e6adce1e6ed51"
+      "end": "0x100012c0",
+      "body_sha256": "b0321fd4b8b23cfff937bfd1c051fbc6c808982a16db3d98c4cf1d4b3a7c7ab8",
+      "note": "Includes the complete final ret 0x10; the next function begins immediately at 0x100012c0."
     },
     {
       "name": "grim_window_create",

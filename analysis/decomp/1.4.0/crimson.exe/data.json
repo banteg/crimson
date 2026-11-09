@@ -151,6 +151,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00403650",
+      "name": "freeware_last_score_global_init",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x004036c0",
       "name": "?0perk_meta_cpp_t",
       "program": "1.4.0/crimson.exe"
@@ -158,11 +163,6 @@
     {
       "address": "0x004036e0",
       "name": "?1perk_meta_cpp_t",
-      "program": "1.4.0/crimson.exe"
-    },
-    {
-      "address": "0x00403770",
-      "name": "unused_console_prefix_vec2_global_init",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -216,6 +216,41 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00403b90",
+      "name": "??0freeware_level_map@@QAE@XZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00403bf0",
+      "name": "??_F?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAEXXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00403c10",
+      "name": "?clear@freeware_level_map@@QAEXXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00403cd0",
+      "name": "??1freeware_level_map@@QAE@XZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004043e0",
+      "name": "?arm_triggers@freeware_level_map@@QAEXXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00404410",
+      "name": "?update_triggers@freeware_level_map@@QAEXXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00404bb0",
+      "name": "?set_texture@freeware_level_map@@QAEXH@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00408e20",
       "name": "creature_find_nearest",
       "program": "1.4.0/crimson.exe"
@@ -228,6 +263,61 @@
     {
       "address": "0x0041fc80",
       "name": "texture_get_or_load",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004216a0",
+      "name": "??1?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAE@XZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004216d0",
+      "name": "?size@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QBEIXZ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004216f0",
+      "name": "?_Destroy@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEXPAPAUfreeware_level_object@@0@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004216f0",
+      "name": "?_Destroy@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEXPAPAUfreeware_level_trigger@@0@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00421700",
+      "name": "?insert@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@QAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00421910",
+      "name": "?_Ucopy@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEPAPAUfreeware_level_object@@PBQAU3@0PAPAU3@@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00421910",
+      "name": "?_Ucopy@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEPAPAUfreeware_level_trigger@@PBQAU3@0PAPAU3@@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00421940",
+      "name": "?_Ufill@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEXPAPAUfreeware_level_object@@IABQAU3@@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00421940",
+      "name": "?_Ufill@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00421970",
+      "name": "?_Construct@std@@YAXPAPAUfreeware_level_object@@ABQAU2@@Z",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00421970",
+      "name": "?_Construct@std@@YAXPAPAUfreeware_level_trigger@@ABQAU2@@Z",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -298,6 +388,11 @@
     {
       "address": "0x00422ad2",
       "name": "fgetc",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00422aec",
+      "name": "crt_atof_l",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -471,6 +566,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0042f460",
+      "name": "freeware_console_creature_health",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0042fb88",
       "name": "freeware_rank",
       "program": "1.4.0/crimson.exe"
@@ -598,6 +698,11 @@
     {
       "address": "0x0042fbec",
       "name": "freeware_editor_radius",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fbf0",
+      "name": "freeware_console_creature_size",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -861,6 +966,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00435b08",
+      "name": "unused_console_prefix_vec2",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00435b10",
       "name": "console_input_buf",
       "program": "1.4.0/crimson.exe"
@@ -1051,11 +1161,6 @@
       "program": "1.4.0/crimson.exe"
     },
     {
-      "address": "0x004369f0",
-      "name": "unused_console_prefix_vec2",
-      "program": "1.4.0/crimson.exe"
-    },
-    {
       "address": "0x004369f8",
       "name": "sfx_cooldown_table",
       "program": "1.4.0/crimson.exe"
@@ -1078,6 +1183,11 @@
     {
       "address": "0x0043831c",
       "name": "freeware_player_texture",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00438320",
+      "name": "freeware_creature_spawn_tint",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1163,6 +1273,11 @@
     {
       "address": "0x00438808",
       "name": "freeware_editor_offset",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00438810",
+      "name": "freeware_tile_header",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -1531,6 +1646,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452d18",
+      "name": "freeware_brushes",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452d1c",
       "name": "freeware_brush_begin",
       "program": "1.4.0/crimson.exe"
@@ -1801,6 +1921,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452dd4",
+      "name": "perk_id_test",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452dd8",
       "name": "perk_id_bloody_mess",
       "program": "1.4.0/crimson.exe"
@@ -1888,6 +2013,11 @@
     {
       "address": "0x00452e1c",
       "name": "perk_id_evil_eyes",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452e20",
+      "name": "perk_id_reserved_33",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -2001,6 +2131,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00452e90",
+      "name": "freeware_level_up_reset_byte",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00452e94",
       "name": "frame_dt",
       "program": "1.4.0/crimson.exe"
@@ -2023,6 +2158,11 @@
     {
       "address": "0x00452eb8",
       "name": "audio_resource_pack_available",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452ec8",
+      "name": "freeware_level_number",
       "program": "1.4.0/crimson.exe"
     },
     {

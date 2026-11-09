@@ -646,6 +646,11 @@
       "program": "1.4.0/grim.dll"
     },
     {
+      "address": "0x10048090",
+      "name": "grim_caps_can_render_windowed",
+      "program": "1.4.0/grim.dll"
+    },
+    {
       "address": "0x10048098",
       "name": "grim_missing_frame_error_text",
       "program": "1.4.0/grim.dll"
@@ -1121,6 +1126,16 @@
       "program": "1.4.0/grim.dll"
     },
     {
+      "address": "0x1004ece8",
+      "name": "grim_adapter_identifier",
+      "program": "1.4.0/grim.dll"
+    },
+    {
+      "address": "0x1004eee8",
+      "name": "grim_adapter_description",
+      "program": "1.4.0/grim.dll"
+    },
+    {
       "address": "0x1004f114",
       "name": "grim_index_buffer",
       "program": "1.4.0/grim.dll"
@@ -1368,6 +1383,11 @@
     {
       "address": "0x10050528",
       "name": "grim_backbuffer_width",
+      "program": "1.4.0/grim.dll"
+    },
+    {
+      "address": "0x10050530",
+      "name": "grim_config_dialog_system_time",
       "program": "1.4.0/grim.dll"
     },
     {

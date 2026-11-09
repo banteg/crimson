@@ -158,7 +158,7 @@ def test_report_and_triage_share_the_native_function_denominator() -> None:
 
 
 @pytest.mark.parametrize(("version", "port_count", "platform_count"), [
-    ("1.0.2", 176, 26), ("1.3.0", 239, 36), ("1.4.0", 309, 43),
+    ("1.0.2", 175, 26), ("1.3.0", 240, 36), ("1.4.0", 310, 43),
 ])
 def test_shipped_port_scopes_preserve_behavior_and_reject_backend_leaves(
     version: str, port_count: int, platform_count: int,
@@ -173,17 +173,23 @@ def test_shipped_port_scopes_preserve_behavior_and_reject_backend_leaves(
     names = {r["name"] for r in port}
     assert {"creature_update_all", "grim_timing_update", "grim_was_key_pressed", "grim_draw_quad"} <= names
     assert names.isdisjoint({"grim_d3d_init", "grim_keyboard_poll", "grim_load_interface", "DllMain"})
-    assert any(name.startswith("native_function_") for name in names)
+    # All retained 1.4.0 port functions now have mapped names. Earlier builds
+    # still include independently discovered functions without a donor name.
+    assert any(name.startswith("native_function_") for name in names) == (version != "1.4.0")
     if version == "1.0.2":
+        assert inventory["crimson.exe"][0x40B180]["name"] == "freeware_encounter_update"
+        assert 0x40B1AE not in inventory["crimson.exe"]
         # Ordered donor names misidentify both FMOD functions. Only the device leaf is excluded.
         assert inventory["crimson.exe"][0x401600]["platform_replaced"]
         assert match_native_inventory.in_port_scope(inventory["crimson.exe"][0x401470])
     if version == "1.3.0":
+        assert inventory["crimson.exe"][0x4017A0]["name"] == "freeware_brush_register_atexit"
         assert inventory["crimson.exe"][0x405D60]["name"] == "gameplay_reset_state"
     if version == "1.4.0":
+        assert inventory["crimson.exe"][0x403AF0]["name"] == "freeware_brush_register_atexit"
         # Four former interior entries belong to the arithmetic command's switch.
         assert inventory["crimson.exe"][0x4019F0]["end"] == 0x401AC6
         assert 0x401A45 not in inventory["crimson.exe"]
         assert inventory["crimson.exe"][0x401EE0]["name"] == "console_init"
         assert inventory["grim.dll"][0x10005F30]["ownership"] != "game"
-        assert {"fx_queue_add_shell", "freeware_level_render_layer", "sfx_play_panned", "game_startup_init"} <= names
+        assert {"fx_queue_add_shell", "freeware_level_render_layer", "sfx_play_panned", "crimsonland_main"} <= names

@@ -33,18 +33,18 @@
   },
   {
     "address": "0x00401050",
-    "canonical_address": "0x0041E0D0",
+    "build_only": true,
     "end": "0x00401055",
-    "evidence": "exact",
-    "name": "unused_particle_pool_suffix_color_global_init_thunk",
+    "evidence": "recovered",
+    "name": "freeware_last_score_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401060",
-    "canonical_address": "0x0041E0E0",
+    "build_only": true,
     "end": "0x0040107D",
-    "evidence": "referenced",
-    "name": "unused_particle_pool_suffix_color_global_init",
+    "evidence": "recovered",
+    "name": "freeware_last_score_global_init",
     "size": 29
   },
   {
@@ -104,18 +104,18 @@
   },
   {
     "address": "0x00401120",
-    "canonical_address": "0x0041E140",
+    "build_only": true,
     "end": "0x00401125",
     "evidence": "recovered",
-    "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+    "name": "freeware_pickup_position_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401130",
-    "canonical_address": "0x0041E150",
+    "build_only": true,
     "end": "0x00401145",
     "evidence": "recovered",
-    "name": "unused_effect_uv16_prefix_vec2_global_init",
+    "name": "freeware_pickup_position_global_init",
     "size": 21
   },
   {
@@ -173,6 +173,22 @@
     "evidence": "recovered",
     "name": "unused_fx_queue_random_prefix_vec2_global_init",
     "size": 21
+  },
+  {
+    "address": "0x00401280",
+    "end": "0x00401285",
+    "size": 5,
+    "build_only": true,
+    "name": "unused_sfx_prefix_creature_global_init_thunk",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401290",
+    "end": "0x004012B1",
+    "size": 33,
+    "build_only": true,
+    "name": "unused_sfx_prefix_creature_global_init",
+    "evidence": "recovered"
   },
   {
     "address": "0x004012C0",
@@ -423,6 +439,14 @@
     "size": 107
   },
   {
+    "address": "0x00401C80",
+    "canonical_address": "0x0042FD90",
+    "end": "0x0040222B",
+    "evidence": "recovered",
+    "name": "perks_init_database",
+    "size": 1451
+  },
+  {
     "address": "0x00402230",
     "canonical_address": "0x0041FC80",
     "end": "0x0040234E",
@@ -642,14 +666,6 @@
     "size": 2560
   },
   {
-    "address": "0x00407950",
-    "canonical_address": "0x0042D8A0",
-    "end": "0x00407E7A",
-    "evidence": "ordered",
-    "name": "statistics_update_check_worker",
-    "size": 1322
-  },
-  {
     "address": "0x00407E80",
     "end": "0x00407E99",
     "size": 25,
@@ -683,59 +699,59 @@
   },
   {
     "address": "0x004097D0",
-    "canonical_address": "0x00434480",
     "end": "0x00409BD8",
-    "evidence": "ordered",
-    "name": "quest_build_nagolipoli",
-    "size": 1032
+    "size": 1032,
+    "build_only": true,
+    "name": "freeware_encounter_experience",
+    "evidence": "recovered"
   },
   {
     "address": "0x00409BE0",
-    "canonical_address": "0x0043D7C0",
     "end": "0x0040A090",
-    "evidence": "called",
-    "name": "music_track_is_playing",
-    "size": 1200
+    "size": 1200,
+    "build_only": true,
+    "name": "freeware_encounter_nine_lizards",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040A090",
-    "canonical_address": "0x0043BE60",
     "end": "0x0040A5E4",
-    "evidence": "called",
-    "name": "sfx_entry_start_playback",
-    "size": 1364
+    "size": 1364,
+    "build_only": true,
+    "name": "freeware_encounter_pineapple",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040A5F0",
-    "canonical_address": "0x0043BFA0",
     "end": "0x0040ACBC",
-    "evidence": "called",
-    "name": "sfx_entry_set_volume",
-    "size": 1740
+    "size": 1740,
+    "build_only": true,
+    "name": "freeware_encounter_duct_tape",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040ACC0",
-    "canonical_address": "0x0043D550",
     "end": "0x0040B173",
-    "evidence": "called",
-    "name": "music_fade_out_all",
-    "size": 1203
+    "size": 1203,
+    "build_only": true,
+    "name": "freeware_encounter_endless_army",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040B180",
-    "canonical_address": "0x0043D460",
     "end": "0x0040B25C",
-    "evidence": "ordered",
-    "name": "music_play_exclusive",
-    "size": 220
+    "size": 220,
+    "build_only": true,
+    "name": "freeware_encounter_update",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040B270",
-    "canonical_address": "0x0043E830",
     "end": "0x0040B6D9",
-    "evidence": "ordered",
-    "name": "ui_button_update",
-    "size": 1129
+    "size": 1129,
+    "build_only": true,
+    "name": "freeware_career_menu_update",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040B6E0",
@@ -747,17 +763,17 @@
   },
   {
     "address": "0x0040BD00",
-    "canonical_address": "0x0043ECF0",
+    "build_only": true,
     "end": "0x0040C0C8",
-    "evidence": "ordered",
-    "name": "ui_text_input_update",
+    "evidence": "recovered",
+    "name": "freeware_read_name_key",
     "size": 968
   },
   {
     "address": "0x0040C0D0",
     "build_only": true,
     "end": "0x0040C10D",
-    "evidence": "ordered",
+    "evidence": "recovered",
     "name": "freeware_hud_set_row",
     "size": 61
   },
@@ -788,26 +804,26 @@
   },
   {
     "address": "0x0040FAD0",
-    "canonical_address": "0x00445380",
+    "build_only": true,
     "end": "0x0040FCD4",
-    "evidence": "ordered",
-    "name": "typo_target_name_assign_random",
+    "evidence": "recovered",
+    "name": "freeware_draw_loading_progress",
     "size": 516
   },
   {
     "address": "0x0040FCE0",
-    "canonical_address": "0x00446900",
+    "build_only": true,
     "end": "0x0041011B",
-    "evidence": "ordered",
-    "name": "ui_element_update",
+    "evidence": "recovered",
+    "name": "game_highscores_update",
     "size": 1083
   },
   {
     "address": "0x00410120",
-    "build_only": true,
+    "canonical_address": "0x0042C450",
     "end": "0x00410913",
-    "evidence": "ordered",
-    "name": "game_highscores_update",
+    "evidence": "recovered",
+    "name": "crimsonland_main",
     "size": 2035
   },
   {
@@ -1033,13 +1049,13 @@
   },
   {
     "address": "0x00410C45",
-    "canonical_address": "0x00460DD2",
+    "canonical_address": "0x00461739",
     "end": "0x00410C4F",
-    "evidence": "ordered",
-    "name": "crt_atol",
+    "evidence": "recovered",
+    "name": "crt_srand",
     "size": 10,
     "aliases": [
-      "_atol"
+      "srand"
     ]
   },
   {

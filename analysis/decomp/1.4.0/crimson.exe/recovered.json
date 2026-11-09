@@ -72,6 +72,18 @@
       "build_only": true
     },
     {
+      "name": "unused_console_prefix_vec2_global_init_thunk",
+      "address": "0x00401250",
+      "end": "0x00401255",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init",
+      "address": "0x00401260",
+      "end": "0x00401275",
+      "body_sha256": "1f660faa0f13d63ba5b2597900591c3881d4442d88cd5842abb7089d2df0c83a"
+    },
+    {
       "name": "console_input_poll",
       "address": "0x004012b0",
       "end": "0x004018b6",
@@ -356,6 +368,20 @@
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
     },
     {
+      "name": "freeware_last_score_global_init_thunk",
+      "address": "0x00403640",
+      "end": "0x00403645",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_last_score_global_init",
+      "address": "0x00403650",
+      "end": "0x0040368d",
+      "body_sha256": "7cf9acbb1886befb255f8d91360abde02bb8f075cdaffe179d7eb4e7723247d1",
+      "build_only": true
+    },
+    {
       "name": "perk_meta_global_construct_and_register",
       "address": "0x00403690",
       "end": "0x0040369a",
@@ -400,16 +426,18 @@
       "build_only": true
     },
     {
-      "name": "unused_console_prefix_vec2_global_init_thunk",
+      "name": "freeware_pickup_position_global_init_thunk",
       "address": "0x00403760",
       "end": "0x00403765",
-      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
     },
     {
-      "name": "unused_console_prefix_vec2_global_init",
+      "name": "freeware_pickup_position_global_init",
       "address": "0x00403770",
       "end": "0x00403785",
-      "body_sha256": "71a3b823e4ed9a3b755dc3abe0982a215c36ec96a60399a2b619b819301202f3"
+      "body_sha256": "71a3b823e4ed9a3b755dc3abe0982a215c36ec96a60399a2b619b819301202f3",
+      "build_only": true
     },
     {
       "name": "freeware_pickup_id_global_init_thunk",
@@ -510,10 +538,66 @@
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
     },
     {
+      "name": "freeware_brush_global_construct_and_register",
+      "address": "0x00403ac0",
+      "end": "0x00403aca",
+      "body_sha256": "32f9544bc551c1f0af9faffd5c427df12a5b7ba39814dfd881bceff7d002e270",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_global_init",
+      "address": "0x00403ad0",
+      "end": "0x00403aed",
+      "body_sha256": "740d1ebfedf3464bb210a7070b42985f70a5feff420109f7bdc5a6ce939aaae0",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_register_atexit",
+      "address": "0x00403af0",
+      "end": "0x00403afc",
+      "body_sha256": "47510e7b918b53633cb5f5e7303c95485a8520e40d4dd8bffa28c3746d6a424a",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_global_destroy",
+      "address": "0x00403b00",
+      "end": "0x00403b25",
+      "body_sha256": "2a0fc9fc269660340c96c0baaccd2f88bd1f31ef0f3a376af449ff71e630ddfd",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_clear",
+      "address": "0x00403b30",
+      "end": "0x00403b84",
+      "body_sha256": "313d2cd4185ac0561de5791cbf729278a1acb2605bd4ddca46b5bb74025f507c",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_map_ctor",
+      "address": "0x00403b90",
+      "end": "0x00403bea",
+      "body_sha256": "38f617f48cc5ebad94a42e99bc02e1e69de89561fcea758410cb36092b43ec15",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_list_ctor",
+      "address": "0x00403bf0",
+      "end": "0x00403c04",
+      "body_sha256": "e5bf9d2583d6bbde28325a7e00f5f7d3e88b81d84b66f7337756d7b1854dba3e",
+      "build_only": true
+    },
+    {
       "name": "freeware_level_clear",
       "address": "0x00403c10",
       "end": "0x00403cc8",
       "body_sha256": "37fe5169bf2dac432a70191d427bfc4510faadbecfeea7723d46cc5bf074ba14",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_map_dtor",
+      "address": "0x00403cd0",
+      "end": "0x00403d09",
+      "body_sha256": "f1cc883df62cc079e94e9bfed0325c586d9f97dd5028927e117657a8ca3b0439",
       "build_only": true
     },
     {
@@ -538,6 +622,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_level_arm_triggers",
+      "address": "0x004043e0",
+      "end": "0x00404402",
+      "body_sha256": "f4c8f5265a95427d7aac9f78fa227280fb93b01e593d7bd541902881ba338c60",
+      "build_only": true
+    },
+    {
       "name": "freeware_level_update_triggers",
       "address": "0x00404410",
       "end": "0x00404507",
@@ -549,6 +640,13 @@
       "address": "0x00404510",
       "end": "0x00404baf",
       "body_sha256": "46987d7ef2c70f2e98e37ed9da8bd244f8845192a3aac1e93ca0b87a3f89d23e",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_set_texture",
+      "address": "0x00404bb0",
+      "end": "0x00404bba",
+      "body_sha256": "b994e2bd1bc262c5b463fca225534224134549b75fddcc1f700f38a59510b90e",
       "build_only": true
     },
     {
@@ -807,6 +905,14 @@
       "build_only": true
     },
     {
+      "name": "freeware_score_merge",
+      "address": "0x00407180",
+      "end": "0x00407386",
+      "body_sha256": "a9bc53e5d17879218f34320031b382fcefc05eeb0e82eaef3808c6763626e644",
+      "build_only": true,
+      "evidence": "Opens the current score file and its argument, verifies both payload checksums, concatenates the records, then encodes and writes the merged payload. Success and failure are printed to the console."
+    },
+    {
       "name": "freeware_score_table_reset",
       "address": "0x00407390",
       "end": "0x004073be",
@@ -833,6 +939,13 @@
       "address": "0x004078b0",
       "end": "0x0040791b",
       "body_sha256": "7084ac19a5da5e2e3af7104cbb8f6f82e788645fe39c92d16204a2f727a2ca83"
+    },
+    {
+      "name": "perks_init_database",
+      "address": "0x00407920",
+      "end": "0x0040843c",
+      "body_sha256": "9633a63fa083bd71f77df088c93413f44c2af2a97a03d8426b34eba2e96e6a70",
+      "evidence": "Registers every named perk ID, the perks01 atlas, frame number, title and wrapped description."
     },
     {
       "name": "player_reset_all",
@@ -1069,6 +1182,14 @@
       "build_only": true
     },
     {
+      "name": "freeware_draw_loading_progress",
+      "address": "0x0041f230",
+      "end": "0x0041f480",
+      "body_sha256": "76d9521aa16e0fe24a345e32eb7a81fc5aa8eb00fbfd979bf9dae9c9a6cd2719",
+      "build_only": true,
+      "evidence": "WinMain calls this with successive progress fractions between asset loads. It draws the Crimsonland logo and a bullet-textured progress bar before presenting the frame."
+    },
+    {
       "name": "game_highscores_update",
       "address": "0x0041f480",
       "end": "0x0041fb93",
@@ -1094,16 +1215,72 @@
       "body_sha256": "6549206901fee942d1a83bc6bacf3fe0d36b5a22a9a213f181da97829a8daa58"
     },
     {
+      "name": "freeware_console_cmd_loadtile",
+      "address": "0x0041fd30",
+      "end": "0x00420127",
+      "body_sha256": "c3a86d61be19808f0dc2f5c02661e6b57f60e3998244358d0b93c8dea3e14bcb",
+      "build_only": true
+    },
+    {
       "name": "console_cmd_set_resource_paq",
       "address": "0x00420130",
       "end": "0x004201ce",
       "body_sha256": "35dd189033b83e4cd43c5cf113b81d13e6cb291a8b0c630405eb571d17f64935"
     },
     {
+      "name": "freeware_console_cmd_givegun",
+      "address": "0x004201d0",
+      "end": "0x00420200",
+      "body_sha256": "4b62ba8d777462d9c37b1cc8fca496611be92282b4411b2a1fceb770a2576901",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_playsample",
+      "address": "0x00420200",
+      "end": "0x004202ba",
+      "body_sha256": "cb29356ec97cb1adecd4e18660b133273f4a4832241bbf552b0c0a1f2a5d163e",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_setcreaturecolor",
+      "address": "0x004202c0",
+      "end": "0x00420497",
+      "body_sha256": "ef30e5b7c6514758a547ee47ca34cc09ff8d76bc138cdf8e8eadf559c7a0d2fb",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_setcreaturehealth",
+      "address": "0x004204a0",
+      "end": "0x004204e6",
+      "body_sha256": "33cf0c04bd9fea61d77b0dec717de9d01216f342747ecfc85a13871efcdc83ef",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_spawncreature",
+      "address": "0x004204f0",
+      "end": "0x004205b6",
+      "body_sha256": "9b278f8baab10d96c85569d6dd5680981969b5c0337164e4671f49d0c532ad9c",
+      "build_only": true
+    },
+    {
       "name": "console_cmd_tell_time_survived",
       "address": "0x004205c0",
       "end": "0x004205df",
       "body_sha256": "b16fb3ca9a2d18254fc592b437bfa7be71c7091e376ba145dd7350ee073af049"
+    },
+    {
+      "name": "freeware_console_cmd_mergehighs",
+      "address": "0x004205e0",
+      "end": "0x0042060e",
+      "body_sha256": "412e95356b09dc50f912ab345e3ed1da5db65a459b23bc630d5c2c1c341809f4",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_giveperk",
+      "address": "0x00420610",
+      "end": "0x00420640",
+      "body_sha256": "49f8b51a83b3e5e25276cc123f8c26e89233bd44e2beafe47798784d0f6218e0",
+      "build_only": true
     },
     {
       "name": "console_cmd_open_url",
@@ -1116,6 +1293,68 @@
       "address": "0x004206d0",
       "end": "0x0042070a",
       "body_sha256": "af572d284a4710cc8b4278da92ec149dd496406efde73a78d4b69067614d18ab"
+    },
+    {
+      "name": "crimsonland_main",
+      "address": "0x00420710",
+      "end": "0x0042169a",
+      "body_sha256": "5dfffcb287020fd7c69cf5e672c9088980fd10346de2549adcf23195caabbe96",
+      "evidence": "The CRT entry calls this four-argument WinMain at 0x00422c02 with GetModuleHandleA(NULL) and the startup command line. It opens Grim, loads resources and tears down the game; ret 0x10 releases its four arguments."
+    },
+    {
+      "name": "freeware_level_list_dtor",
+      "address": "0x004216a0",
+      "end": "0x004216c2",
+      "body_sha256": "d5332de3e865e1fc7ca435d7997dc2889f34329fc6b8f9b719956530518235d5",
+      "build_only": true
+    },
+    {
+      "name": "msvc6_vector_pointer_size",
+      "address": "0x004216d0",
+      "end": "0x004216e3",
+      "body_sha256": "ae43e511423ed41f29d85edaf2f02b5a752e32ebbe45dd99456242b3c196c50d",
+      "build_only": true,
+      "evidence": "VC6's compiled std::vector pointer specialization matches the entire native callee, including the complete extent and every instruction outside relocation operands. Level file loading calls it with its native vector."
+    },
+    {
+      "name": "msvc6_vector_pointer_destroy_range",
+      "address": "0x004216f0",
+      "end": "0x004216f3",
+      "body_sha256": "1d10894625976bca9d8906f3ecf1e766b94e9219ec3bf1c30e02feea5e18e45a",
+      "build_only": true,
+      "evidence": "VC6 /O2 <vector> object and trigger pointer specializations match this entire folded helper at both native push_back call sites."
+    },
+    {
+      "name": "msvc6_vector_pointer_insert_count",
+      "address": "0x00421700",
+      "end": "0x00421909",
+      "body_sha256": "f39eb5eee1f902c061919e4f73747c79218b17a0009ae8d983da86220366cd4e",
+      "build_only": true,
+      "evidence": "VC6's compiled std::vector pointer specialization matches the entire native callee, including the complete extent and every instruction outside relocation operands. Level file loading calls it with its native vector."
+    },
+    {
+      "name": "msvc6_vector_pointer_uninitialized_copy",
+      "address": "0x00421910",
+      "end": "0x0042193e",
+      "body_sha256": "cd4a9868c5f09d3aab7114d82e53c9fada114bf1d9c0afdb610bb7cfac0898b8",
+      "build_only": true,
+      "evidence": "VC6 /O2 <vector> object and trigger pointer specializations match this entire folded helper at both native push_back call sites."
+    },
+    {
+      "name": "msvc6_vector_pointer_uninitialized_fill",
+      "address": "0x00421940",
+      "end": "0x00421965",
+      "body_sha256": "68b9cf63d7e82dffd1c37a27f85a1a8ae9cf324148c81af1ec69ac2916c3cadb",
+      "build_only": true,
+      "evidence": "VC6 /O2 <vector> object and trigger pointer specializations match this entire folded helper at both native push_back call sites."
+    },
+    {
+      "name": "msvc6_vector_pointer_construct",
+      "address": "0x00421970",
+      "end": "0x00421981",
+      "body_sha256": "b81506b867e4a18d41e0e2e4ec0582d8ba5495b2baa1263ba034086158f5a707",
+      "build_only": true,
+      "evidence": "VC6 /O2 <vector> object and trigger pointer specializations match this entire folded helper at both native push_back call sites."
     },
     {
       "name": "crt_toupper",
@@ -1334,6 +1573,13 @@
       "bytes": "e90b000000"
     },
     {
+      "name": "freeware_last_score_global_init",
+      "address": "0x00403650",
+      "reference": "0x00403640",
+      "bytes": "e90b000000",
+      "build_only": true
+    },
+    {
       "name": "?0perk_meta_cpp_t",
       "address": "0x004036c0",
       "reference": "0x004036a5",
@@ -1344,12 +1590,6 @@
       "address": "0x004036e0",
       "reference": "0x004036a0",
       "bytes": "68e0364000"
-    },
-    {
-      "name": "unused_console_prefix_vec2_global_init",
-      "address": "0x00403770",
-      "reference": "0x00403760",
-      "bytes": "e90b000000"
     },
     {
       "name": "secondary_projectile_pool_global_init",
@@ -1412,6 +1652,55 @@
       "bytes": "e90b000000"
     },
     {
+      "name": "??0freeware_level_map@@QAE@XZ",
+      "address": "0x00403b90",
+      "reference": "0x00421319",
+      "bytes": "e87228feff",
+      "build_only": true
+    },
+    {
+      "name": "??_F?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAEXXZ",
+      "address": "0x00403bf0",
+      "reference": "0x00403b9b",
+      "bytes": "68f03b4000",
+      "build_only": true
+    },
+    {
+      "name": "?clear@freeware_level_map@@QAEXXZ",
+      "address": "0x00403c10",
+      "reference": "0x00403cd4",
+      "bytes": "e837ffffff",
+      "build_only": true
+    },
+    {
+      "name": "??1freeware_level_map@@QAE@XZ",
+      "address": "0x00403cd0",
+      "reference": "0x0042150a",
+      "bytes": "e8c127feff",
+      "build_only": true
+    },
+    {
+      "name": "?arm_triggers@freeware_level_map@@QAEXXZ",
+      "address": "0x004043e0",
+      "reference": "0x004169af",
+      "bytes": "e82cdafeff",
+      "build_only": true
+    },
+    {
+      "name": "?update_triggers@freeware_level_map@@QAEXXZ",
+      "address": "0x00404410",
+      "reference": "0x0041896b",
+      "bytes": "e8a0bafeff",
+      "build_only": true
+    },
+    {
+      "name": "?set_texture@freeware_level_map@@QAEXH@Z",
+      "address": "0x00404bb0",
+      "reference": "0x00418e9d",
+      "bytes": "e80ebdfeff",
+      "build_only": true
+    },
+    {
       "name": "creature_find_nearest",
       "address": "0x00408e20",
       "reference": "0x00409300",
@@ -1429,6 +1718,83 @@
       "address": "0x0041fc80",
       "reference": "0x0041fd23",
       "bytes": "e858ffffff"
+    },
+    {
+      "name": "??1?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAE@XZ",
+      "address": "0x004216a0",
+      "reference": "0x00403b96",
+      "bytes": "68a0164200",
+      "build_only": true
+    },
+    {
+      "name": "?size@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QBEIXZ",
+      "address": "0x004216d0",
+      "reference": "0x00403f72",
+      "bytes": "e859d70100",
+      "build_only": true
+    },
+    {
+      "name": "?_Destroy@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEXPAPAUfreeware_level_object@@0@Z",
+      "address": "0x004216f0",
+      "reference": "0x00404c72",
+      "bytes": "e879ca0100",
+      "build_only": true
+    },
+    {
+      "name": "?_Destroy@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEXPAPAUfreeware_level_trigger@@0@Z",
+      "address": "0x004216f0",
+      "reference": "0x004042db",
+      "bytes": "e810d40100",
+      "build_only": true
+    },
+    {
+      "name": "?insert@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@QAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
+      "address": "0x00421700",
+      "reference": "0x00403e95",
+      "bytes": "e866d80100",
+      "build_only": true
+    },
+    {
+      "name": "?_Ucopy@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEPAPAUfreeware_level_object@@PBQAU3@0PAPAU3@@Z",
+      "address": "0x00421910",
+      "reference": "0x00404c63",
+      "bytes": "e8a8cc0100",
+      "build_only": true
+    },
+    {
+      "name": "?_Ucopy@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEPAPAUfreeware_level_trigger@@PBQAU3@0PAPAU3@@Z",
+      "address": "0x00421910",
+      "reference": "0x004042cc",
+      "bytes": "e83fd60100",
+      "build_only": true
+    },
+    {
+      "name": "?_Ufill@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEXPAPAUfreeware_level_object@@IABQAU3@@Z",
+      "address": "0x00421940",
+      "reference": "0x00404c53",
+      "bytes": "e8e8cc0100",
+      "build_only": true
+    },
+    {
+      "name": "?_Ufill@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
+      "address": "0x00421940",
+      "reference": "0x004042bc",
+      "bytes": "e87fd60100",
+      "build_only": true
+    },
+    {
+      "name": "?_Construct@std@@YAXPAPAUfreeware_level_object@@ABQAU2@@Z",
+      "address": "0x00421970",
+      "reference": "0x00404c37",
+      "bytes": "e834cd0100",
+      "build_only": true
+    },
+    {
+      "name": "?_Construct@std@@YAXPAPAUfreeware_level_trigger@@ABQAU2@@Z",
+      "address": "0x00421970",
+      "reference": "0x004042a0",
+      "bytes": "e8cbd60100",
+      "build_only": true
     },
     {
       "name": "atexit",
@@ -1517,6 +1883,12 @@
       "build_only": true
     },
     {
+      "name": "crt_atof_l",
+      "address": "0x00422aec",
+      "reference": "0x004202eb",
+      "bytes": "e8fc270000"
+    },
+    {
       "name": "HlinkNavigateString",
       "address": "0x0042c2e0",
       "reference": "0x00420691",
@@ -1599,6 +1971,13 @@
       "address": "0x0042f0c8",
       "reference": "0x004018de",
       "bytes": "a1c8f04200"
+    },
+    {
+      "name": "freeware_console_creature_health",
+      "address": "0x0042f460",
+      "reference": "0x004204cd",
+      "bytes": "a360f44200",
+      "build_only": true
     },
     {
       "name": "freeware_rank",
@@ -1783,6 +2162,19 @@
       "build_only": true
     },
     {
+      "name": "freeware_console_creature_size",
+      "address": "0x0042fbf0",
+      "reference": "0x0042056e",
+      "bytes": "db05f0fb4200",
+      "build_only": true
+    },
+    {
+      "name": "unused_console_prefix_vec2",
+      "address": "0x00435b08",
+      "reference": "0x00401260",
+      "bytes": "c705085b430000000000"
+    },
+    {
       "name": "console_exec_line_buf",
       "address": "0x00435f10",
       "reference": "0x00401c0f",
@@ -1954,12 +2346,6 @@
       "bytes": "c705e06943000000803f"
     },
     {
-      "name": "unused_console_prefix_vec2",
-      "address": "0x004369f0",
-      "reference": "0x00403770",
-      "bytes": "c705f069430000000000"
-    },
-    {
       "name": "freeware_pickup_position",
       "address": "0x004369f0",
       "reference": "0x00406976",
@@ -1999,6 +2385,13 @@
       "address": "0x0043831c",
       "reference": "0x00410543",
       "bytes": "a11c834300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_creature_spawn_tint",
+      "address": "0x00438320",
+      "reference": "0x00420444",
+      "bytes": "a320834300",
       "build_only": true
     },
     {
@@ -2057,17 +2450,17 @@
       "build_only": true
     },
     {
-      "name": "unused_effect_uv_strip16_prefix_vec2",
-      "address": "0x004387c0",
-      "reference": "0x00403430",
-      "bytes": "c705c087430000000000"
-    },
-    {
       "name": "freeware_first_kill_position",
       "address": "0x004387c0",
       "reference": "0x004127d4",
       "bytes": "d825c0874300",
       "build_only": true
+    },
+    {
+      "name": "unused_effect_uv_strip16_prefix_vec2",
+      "address": "0x004387c0",
+      "reference": "0x00403430",
+      "bytes": "c705c087430000000000"
     },
     {
       "name": "freeware_main_labels",
@@ -2118,6 +2511,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_tile_header",
+      "address": "0x00438810",
+      "reference": "0x0041fe12",
+      "bytes": "6810884300",
+      "build_only": true
+    },
+    {
       "name": "perk_id_count",
       "address": "0x00438824",
       "reference": "0x00408d3d",
@@ -2131,17 +2531,17 @@
       "offset": 8
     },
     {
-      "name": "freeware_name_buffer",
-      "address": "0x00439228",
-      "reference": "0x0041dd77",
-      "bytes": "889828924300",
-      "build_only": true
-    },
-    {
       "name": "freeware_last_score",
       "address": "0x00439228",
       "reference": "0x0041f8d6",
       "bytes": "b828924300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_name_buffer",
+      "address": "0x00439228",
+      "reference": "0x0041dd77",
+      "bytes": "889828924300",
       "build_only": true
     },
     {
@@ -2249,17 +2649,17 @@
       "build_only": true
     },
     {
-      "name": "unused_fx_queue_random_prefix_vec2",
-      "address": "0x0043cbc0",
-      "reference": "0x004033d0",
-      "bytes": "c705c0cb430000000000"
-    },
-    {
       "name": "freeware_camera",
       "address": "0x0043cbc0",
       "reference": "0x0041382c",
       "bytes": "d825c0cb4300",
       "build_only": true
+    },
+    {
+      "name": "unused_fx_queue_random_prefix_vec2",
+      "address": "0x0043cbc0",
+      "reference": "0x004033d0",
+      "bytes": "c705c0cb430000000000"
     },
     {
       "name": "freeware_shell_positions",
@@ -2488,17 +2888,17 @@
       "build_only": true
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2",
-      "address": "0x00452bf8",
-      "reference": "0x00403400",
-      "bytes": "c705f82b450000000000"
-    },
-    {
       "name": "freeware_camera_shake",
       "address": "0x00452bf8",
       "reference": "0x004187b9",
       "bytes": "d905f82b4500",
       "build_only": true
+    },
+    {
+      "name": "unused_effect_uv16_prefix_vec2",
+      "address": "0x00452bf8",
+      "reference": "0x00403400",
+      "bytes": "c705f82b450000000000"
     },
     {
       "name": "freeware_online_labels",
@@ -2519,6 +2919,13 @@
       "address": "0x00452c18",
       "reference": "0x00405648",
       "bytes": "8b0c95182c4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brushes",
+      "address": "0x00452d18",
+      "reference": "0x00403ad5",
+      "bytes": "a2182d4500",
       "build_only": true
     },
     {
@@ -2861,17 +3268,17 @@
       "build_only": true
     },
     {
-      "name": "run_elapsed_ms",
-      "address": "0x00452dc4",
-      "reference": "0x004205c0",
-      "bytes": "d905c42d4500"
-    },
-    {
       "name": "freeware_elapsed_seconds",
       "address": "0x00452dc4",
       "reference": "0x0040fbed",
       "bytes": "d905c42d4500",
       "build_only": true
+    },
+    {
+      "name": "run_elapsed_ms",
+      "address": "0x00452dc4",
+      "reference": "0x004205c0",
+      "bytes": "d905c42d4500"
     },
     {
       "name": "freeware_bomb_age",
@@ -2893,6 +3300,14 @@
       "reference": "0x0041e1a1",
       "bytes": "d905d02d4500",
       "build_only": true
+    },
+    {
+      "name": "perk_id_test",
+      "address": "0x00452dd4",
+      "reference": "0x00407926",
+      "bytes": "c705d42d450000000000",
+      "build_only": true,
+      "evidence": "Receives slot zero before wrapping the strings \"Test perk\" and \"You shouldn't be seeing this..\"."
     },
     {
       "name": "perk_id_bloody_mess",
@@ -3018,6 +3433,14 @@
       "reference": "0x0041c723",
       "bytes": "8b151c2e4500",
       "build_only": true
+    },
+    {
+      "name": "perk_id_reserved_33",
+      "address": "0x00452e20",
+      "reference": "0x00408430",
+      "bytes": "c705202e450021000000",
+      "build_only": true,
+      "evidence": "Receives 33 after the registry sets perk_id_count to the final visible slot 32."
     },
     {
       "name": "perk_id_anxious_loader",
@@ -3172,6 +3595,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_level_up_reset_byte",
+      "address": "0x00452e90",
+      "reference": "0x00408c8a",
+      "bytes": "881d902e4500",
+      "build_only": true
+    },
+    {
       "name": "frame_dt",
       "address": "0x00452e94",
       "reference": "0x00406577",
@@ -3203,6 +3633,13 @@
       "address": "0x00452eb8",
       "reference": "0x0040557a",
       "bytes": "a2b82e4500"
+    },
+    {
+      "name": "freeware_level_number",
+      "address": "0x00452ec8",
+      "reference": "0x004167b9",
+      "bytes": "a1c82e4500",
+      "build_only": true
     },
     {
       "name": "freeware_credits_open",
@@ -3287,6 +3724,20 @@
       "reference": "0x0041f5bd",
       "bytes": "d805f02e4500",
       "build_only": true
+    },
+    {
+      "name": "particle_pool",
+      "address": "0x00439f60",
+      "reference": "0x00409123",
+      "bytes": "b8609f4300",
+      "evidence": "The slow particle spawner walks 128 entries of 0x38 bytes from this address, then writes the selected entry and its particle attributes."
+    },
+    {
+      "name": "unused_particle_pool_suffix_color",
+      "address": "0x0043bb60",
+      "reference": "0x00403390",
+      "bytes": "c70560bb43009a99193f",
+      "evidence": "The four-channel constructor stores 0.6/0.6/0.6/0.5 immediately after the particle array; the freeware ice tint occupies the same address."
     }
   ],
   "absent": [
@@ -3309,6 +3760,10 @@
     {
       "name": "vorbis_mem_open",
       "reason": "The 1.4.0 binary uses MP3 music. The heuristic address 0x402fe0 performs an HTTP GET and is called with the remote version filename."
+    },
+    {
+      "name": "highscore_compare_survival_score_desc",
+      "reason": "The original score loader sorts display names and scores in-place with nested loops. The guessed callback following WinMain instead frees the buffer at this+4 and clears three pointer members."
     }
   ]
 }

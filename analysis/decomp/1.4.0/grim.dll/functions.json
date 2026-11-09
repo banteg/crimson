@@ -114,10 +114,10 @@
   {
     "address": "0x100010E0",
     "canonical_address": "0x10002120",
-    "end": "0x100016F2",
+    "end": "0x100016CA",
     "evidence": "recovered",
     "name": "grim_config_dialog_proc",
-    "size": 1554
+    "size": 1514
   },
   {
     "address": "0x10001700",

@@ -5,8 +5,9 @@
     {
       "name": "grim_config_dialog_proc",
       "address": "0x100010e0",
-      "end": "0x100016f2",
-      "body_sha256": "c125ad8c4edf87ff54ed2a4f058ec36167339142656d589215c83c0c8becc84a"
+      "end": "0x100016ca",
+      "body_sha256": "6c424b76a4cea7bab3c132853bff6b09f9dea07f526cb84d91bdd9f03449e2d9",
+      "note": "The final RET at 0x100016c7 ends the callback. After two alignment bytes, the 13-entry WM_COMMAND table fills the gap to the next function."
     },
     {
       "name": "grim_window_create",
@@ -362,6 +363,12 @@
       "bytes": "68bc680410"
     },
     {
+      "name": "grim_caps_can_render_windowed",
+      "address": "0x10048090",
+      "reference": "0x10001475",
+      "bytes": "c6059080041000"
+    },
+    {
       "name": "grim_missing_frame_error_text",
       "address": "0x10048098",
       "reference": "0x100010c0",
@@ -405,6 +412,18 @@
       "address": "0x1004ece0",
       "reference": "0x10001700",
       "bytes": "a1e0ec0410"
+    },
+    {
+      "name": "grim_adapter_identifier",
+      "address": "0x1004ece8",
+      "reference": "0x10001513",
+      "bytes": "68e8ec0410"
+    },
+    {
+      "name": "grim_adapter_description",
+      "address": "0x1004eee8",
+      "reference": "0x10001523",
+      "bytes": "68e8ee0410"
     },
     {
       "name": "grim_backbuffer_height",
@@ -534,6 +553,12 @@
       "address": "0x10050528",
       "reference": "0x100017dc",
       "bytes": "8b0d28050510"
+    },
+    {
+      "name": "grim_config_dialog_system_time",
+      "address": "0x10050530",
+      "reference": "0x10001450",
+      "bytes": "6830050510"
     },
     {
       "name": "grim_time_ticks",

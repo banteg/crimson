@@ -31,6 +31,20 @@
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
     },
     {
+      "name": "freeware_last_score_global_init_thunk",
+      "address": "0x00401050",
+      "end": "0x00401055",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_last_score_global_init",
+      "address": "0x00401060",
+      "end": "0x0040107d",
+      "body_sha256": "9995a96740299de3bfdd7690e17f3d28fea547f38260920906664ffc63dc056e",
+      "build_only": true
+    },
+    {
       "name": "perk_meta_global_construct_and_register",
       "address": "0x00401080",
       "end": "0x0040108a",
@@ -61,16 +75,18 @@
       "body_sha256": "7b05c77a5ca20ee7142021a26c86855e7302878f6c7c39e8258c3b713a2401ea"
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+      "name": "freeware_pickup_position_global_init_thunk",
       "address": "0x00401120",
       "end": "0x00401125",
-      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "name": "freeware_pickup_position_global_init",
       "address": "0x00401130",
       "end": "0x00401145",
-      "body_sha256": "a1a587f591649bf45b565c4fea4da4de874d24869d7ae39276b5e12177d101b4"
+      "body_sha256": "a1a587f591649bf45b565c4fea4da4de874d24869d7ae39276b5e12177d101b4",
+      "build_only": true
     },
     {
       "name": "freeware_pickup_id_global_init_thunk",
@@ -115,6 +131,22 @@
       "address": "0x00401260",
       "end": "0x00401275",
       "body_sha256": "f8a1a595c13b1f1a51fe63746ab8da728c014272a74a9506416370c2a5a98360"
+    },
+    {
+      "name": "unused_sfx_prefix_creature_global_init_thunk",
+      "address": "0x00401280",
+      "end": "0x00401285",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Startup thunk jumps directly to the standalone creature constructor."
+    },
+    {
+      "name": "unused_sfx_prefix_creature_global_init",
+      "address": "0x00401290",
+      "end": "0x004012b1",
+      "body_sha256": "9608e9b60b97774e58ee191e673e0ede4d0447a00eecb6d82380f1a565c17168",
+      "build_only": true,
+      "evidence": "Initializes the same four fields as the 0x68-byte creature records; this unused single record ends at freeware_sfx_state."
     },
     {
       "name": "creature_pool_global_init_thunk",
@@ -305,6 +337,13 @@
       "body_sha256": "2b8c26db9837690aa7c1c28dde9dcaf35a1f05772f8c60ea688890f81264c090"
     },
     {
+      "name": "perks_init_database",
+      "address": "0x00401c80",
+      "end": "0x0040222b",
+      "body_sha256": "53501a3f322ec1673bfcf003cb35cb2d80aa891bca3012028586f9c6a233d53c",
+      "evidence": "The startup caller at 0x0041084e invokes the full registration sequence. It sets sixteen perk ID globals, resolves the perks01 atlas and wraps each name and description into the metadata table."
+    },
+    {
       "name": "player_reset_all",
       "address": "0x00402230",
       "end": "0x0040234e",
@@ -430,10 +469,61 @@
       "body_sha256": "1edf0ec6f729c96f46a6218572e99eecdd8c0523c19ce8ec7dc6988effa14839"
     },
     {
+      "name": "freeware_encounter_experience",
+      "address": "0x4097d0",
+      "end": "0x409bd8",
+      "body_sha256": "7938f2ba17a5a2701dc361dfde3f5d96e010e41d81410c511fb8414b56d3ff70",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_nine_lizards",
+      "address": "0x409be0",
+      "end": "0x40a090",
+      "body_sha256": "1c3245eb7498fc91fb337080e0cd2122f04950aa112bd274feaf156081703199",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_pineapple",
+      "address": "0x40a090",
+      "end": "0x40a5e4",
+      "body_sha256": "144017beab2522b4b71ebeddfb4c4df95fcaf52e704f8e21d5dd9a07a3c3a005",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_duct_tape",
+      "address": "0x40a5f0",
+      "end": "0x40acbc",
+      "body_sha256": "4e93e45af7adee749a3e2a5ea13b18728e7d3a47405bc88f60028cf4fc46a6be",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_endless_army",
+      "address": "0x40acc0",
+      "end": "0x40b173",
+      "body_sha256": "6829bebdf5aa9f6cea716f8a6388c04a6cdde5d43573ada448696ee33297ebef",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_update",
+      "address": "0x0040b180",
+      "end": "0x0040b25c",
+      "body_sha256": "23ed74dbe2790e803d97ac61cadbc099168ea0fa0692f5154c5c7ad087c7f62c",
+      "build_only": true,
+      "note": "Career dispatch by encounter ID. The fifth switch target at 0x40b1ae calls the duct-tape handler and falls through to the shared cursor. The five destination addresses follow the final return."
+    },
+    {
       "name": "perk_selection_screen_update",
       "address": "0x0040b6e0",
       "end": "0x0040bcfa",
       "body_sha256": "3f3292ae2008fe0377f3495aa377edd4ca0eab85f0626931a8e847e608b9928a"
+    },
+    {
+      "name": "freeware_read_name_key",
+      "address": "0x0040bd00",
+      "end": "0x0040c0c8",
+      "body_sha256": "de2b89e2f5f1239955138ad83f99c126f332370ec9ec938b5ce2950fcee57919",
+      "build_only": true,
+      "evidence": "0x0040e96c polls this helper when entering the high-score name. It tests the DirectInput digit, letter, space, return and backspace scancodes, then uppercases the result while Shift is held."
     },
     {
       "name": "game_frame_update",
@@ -448,6 +538,29 @@
       "end": "0x0040f877",
       "body_sha256": "2dabcfffb855eb9e55b66fc557c3c90606674dd9cf59db9b5f6b1040c63d2048",
       "build_only": true
+    },
+    {
+      "name": "freeware_draw_loading_progress",
+      "address": "0x0040fad0",
+      "end": "0x0040fcd4",
+      "body_sha256": "3f1def95d917d5d49a6a2cd6c9cefacfcc3ba16762fc8d0db0d7e376a2138bca",
+      "build_only": true,
+      "evidence": "WinMain calls this with successive progress fractions between asset loads. It draws the Crimsonland logo and a bullet-textured progress bar before presenting the frame."
+    },
+    {
+      "name": "game_highscores_update",
+      "address": "0x0040fce0",
+      "end": "0x0041011b",
+      "body_sha256": "dcecc6ae268ca29d6cae7942f8a339ac145fae94634848a7ad665eae2fc5ced4",
+      "evidence": "Draws the Highscores: heading, mode labels -SURVIVAL-- and -CAREER----, and rows of the original score table through Grim.",
+      "build_only": true
+    },
+    {
+      "name": "crimsonland_main",
+      "address": "0x00410120",
+      "end": "0x00410913",
+      "body_sha256": "29115adc0e916e3483543a36a832273332b7c91f5ba9a6fc56f48c7125a0ce08",
+      "evidence": "The CRT entry calls this four-argument WinMain at 0x00411362 with GetModuleHandleA(NULL) and the startup command line. It opens Grim, loads resources and tears down the game; ret 0x10 releases its four arguments."
     },
     {
       "name": "FSOUND_Sample_SetLoopMode",
@@ -506,12 +619,35 @@
       "build_only": true
     },
     {
+      "name": "crt_srand",
+      "address": "0x00410c45",
+      "end": "0x00410c4f",
+      "body_sha256": "6f4133c49abff18e20a326c99c627b0d5704806921426b3a4ff057d2592c60aa",
+      "evidence": "Stores the QueryPerformanceCounter seed. The following crt_rand updates that same DWORD as seed*0x343fd+0x269ec3."
+    },
+    {
       "name": "crt_fseek_nolock",
       "address": "0x00410df7",
       "end": "0x00410e83",
       "body_sha256": "6862c7111e19511b38352f13c3eec347ee949b7505b2bdc3adc91c2f3e7c2326",
       "build_only": true,
       "evidence": "The score writer seeks to SEEK_END and the reader to SEEK_SET. The unlocked CRT body validates the three seek origins, adjusts SEEK_CUR via ftell, flushes the FILE, and seeks the descriptor."
+    },
+    {
+      "name": "freeware_career_menu_update",
+      "address": "0x0040b270",
+      "end": "0x0040b6d9",
+      "body_sha256": "e32e4962a3af55e5e2ca588a74ef2f221d60247bed6e6453c707e03aee60d61e",
+      "build_only": true,
+      "note": "Shows the current day and experience, handles the three town options, and enters the selected encounter."
+    },
+    {
+      "name": "freeware_hud_set_row",
+      "address": "0x0040c0d0",
+      "end": "0x0040c10d",
+      "body_sha256": "5ea897c9fff6dbbc7397f80ee5614099cf89d116d45c9476f2758ea0992ea650",
+      "build_only": true,
+      "evidence": "The HUD renderer calls this helper to select the supplied UV row. Its entire compiled function previously matched all 61 bytes with clean positional references."
     }
   ],
   "data": [
@@ -520,6 +656,13 @@
       "address": "0x00401040",
       "reference": "0x00401030",
       "bytes": "e90b000000"
+    },
+    {
+      "name": "freeware_last_score_global_init",
+      "address": "0x00401060",
+      "reference": "0x00401050",
+      "bytes": "e90b000000",
+      "build_only": true
     },
     {
       "name": "?0perk_meta_cpp_t",
@@ -534,12 +677,6 @@
       "bytes": "68c0104000"
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2_global_init",
-      "address": "0x00401130",
-      "reference": "0x00401120",
-      "bytes": "e90b000000"
-    },
-    {
       "name": "particle_pool_global_init",
       "address": "0x004011b0",
       "reference": "0x004011a0",
@@ -550,6 +687,14 @@
       "address": "0x00401260",
       "reference": "0x00401250",
       "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_sfx_prefix_creature_global_init",
+      "address": "0x00401290",
+      "reference": "0x00401280",
+      "bytes": "e90b000000",
+      "build_only": true,
+      "evidence": "Direct initialization-table thunk destination."
     },
     {
       "name": "creature_pool_global_init",
@@ -742,6 +887,21 @@
       "evidence": "The daily encounter dialog branches on this page and sets it to 2 when advancing its choice at 0x409ba4."
     },
     {
+      "name": "freeware_shadows",
+      "address": "0x0041c098",
+      "reference": "0x00406925",
+      "bytes": "a098c04100",
+      "build_only": true,
+      "evidence": "The shadow pass tests this same byte that the options menu reads to select the Shadows label and toggles at 0x40cd9c."
+    },
+    {
+      "name": "freeware_glow",
+      "address": "0x0041c099",
+      "reference": "0x0040c7d3",
+      "bytes": "a099c04100",
+      "build_only": true
+    },
+    {
       "name": "game_state_id",
       "address": "0x0041c09c",
       "reference": "0x0040f852",
@@ -768,6 +928,34 @@
       "address": "0x0041c0a8",
       "reference": "0x0040edcd",
       "bytes": "a0a8c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_fire",
+      "address": "0x0041c0ac",
+      "reference": "0x0040770b",
+      "bytes": "3b0dacc04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_freeze",
+      "address": "0x0041c0b0",
+      "reference": "0x00407835",
+      "bytes": "3b0db0c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_weapon",
+      "address": "0x0041c0b4",
+      "reference": "0x00407722",
+      "bytes": "3b0db4c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_nuke",
+      "address": "0x0041c0b8",
+      "reference": "0x0040784c",
+      "bytes": "3b0db8c04100",
       "build_only": true
     },
     {
@@ -814,10 +1002,11 @@
       "build_only": true
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2",
+      "name": "freeware_pickup_position",
       "address": "0x00420b88",
-      "reference": "0x00401130",
-      "bytes": "c705880b420000000000"
+      "reference": "0x004076d8",
+      "bytes": "d825880b4200",
+      "build_only": true
     },
     {
       "name": "sfx_cooldown_table",
@@ -840,6 +1029,21 @@
       "reference": "0x00401a11",
       "bytes": "be900e4200",
       "build_only": true
+    },
+    {
+      "name": "freeware_player_texture",
+      "address": "0x00421ce4",
+      "reference": "0x00406f56",
+      "bytes": "8b15e41c4200",
+      "build_only": true
+    },
+    {
+      "name": "unused_sfx_prefix_creature",
+      "address": "0x00421ce8",
+      "reference": "0x0040129c",
+      "bytes": "a2e81c4200",
+      "build_only": true,
+      "evidence": "The constructor zeros the active byte and the fields at offsets +1, +4, and +0x64. The end at +0x68 is the verified SFX state start."
     },
     {
       "name": "freeware_sfx_state",
@@ -909,6 +1113,13 @@
       "reference": "0x004011e3",
       "bytes": "be3c2d4200",
       "offset": 20
+    },
+    {
+      "name": "freeware_encounter_choices",
+      "address": "0x424528",
+      "reference": "0x4098bc",
+      "bytes": "a328454200",
+      "build_only": true
     },
     {
       "name": "freeware_bullet_texture",
@@ -1009,6 +1220,13 @@
       "bytes": "b9d0524200"
     },
     {
+      "name": "freeware_particle_texture",
+      "address": "0x004286d0",
+      "reference": "0x00410602",
+      "bytes": "a3d0864200",
+      "build_only": true
+    },
+    {
       "name": "freeware_sfx_samples",
       "address": "0x004286d4",
       "reference": "0x0040164c",
@@ -1076,6 +1294,20 @@
       "bytes": "c605f687420001",
       "build_only": true,
       "evidence": "The career encounter enables creature spawning here. The frame reads this flag when scheduling spawns at 0x40d974."
+    },
+    {
+      "name": "freeware_perk_hover",
+      "address": "0x004287f8",
+      "reference": "0x00402895",
+      "bytes": "891df8874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_hover",
+      "address": "0x4287f8",
+      "reference": "0x4098d0",
+      "bytes": "c705f8874200ffffffff",
+      "build_only": true
     },
     {
       "name": "bonus_fire_bullets_timer",
@@ -1223,6 +1455,14 @@
       "build_only": true
     },
     {
+      "name": "freeware_pickup_time",
+      "address": "0x0042885c",
+      "reference": "0x0040323b",
+      "bytes": "c7055c88420000002041",
+      "build_only": true,
+      "evidence": "The projectile death-drop path sets the pickup lifetime to 10 seconds. The frame decrements it at 0x0040cfb6 and clears the pickup ID when it expires."
+    },
+    {
       "name": "freeware_pending_perks",
       "address": "0x00428860",
       "reference": "0x0040bcef",
@@ -1259,6 +1499,13 @@
       "build_only": true
     },
     {
+      "name": "freeware_level_up_reset_byte",
+      "address": "0x00428880",
+      "reference": "0x0040289d",
+      "bytes": "881d80884200",
+      "build_only": true
+    },
+    {
       "name": "frame_dt",
       "address": "0x00428884",
       "reference": "0x0040edd4",
@@ -1276,6 +1523,93 @@
       "address": "0x0042888c",
       "reference": "0x0040f869",
       "bytes": "c6058c88420000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_scores_open",
+      "address": "0x0042888d",
+      "reference": "0x00410103",
+      "bytes": "c6058d88420000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_scores_closing",
+      "address": "0x00428895",
+      "reference": "0x00410077",
+      "bytes": "c6059588420001",
+      "build_only": true
+    },
+    {
+      "name": "aim64_texture",
+      "address": "0x004245b8",
+      "reference": "0x004106a2",
+      "bytes": "a3b8454200",
+      "evidence": "Store of the Grim texture lookup for aim64."
+    },
+    {
+      "name": "world_arrow_marker_texture",
+      "address": "0x00424560",
+      "reference": "0x004106b4",
+      "bytes": "a360454200",
+      "evidence": "Store of the arrow handle; 0x40d2f3 binds it with the current player heading for the 32x32 world arrow."
+    },
+    {
+      "name": "s_empty_string",
+      "address": "0x0042889c",
+      "reference": "0x004107b1",
+      "bytes": "689c884200",
+      "evidence": "Empty C string passed to strdup_malloc for the penultimate option row and assigned to the Grim PAQ config at 0x4106bd."
+    },
+    {
+      "name": "freeware_main_labels",
+      "address": "0x004220d0",
+      "reference": "0x004106e0",
+      "bytes": "bfd0204200",
+      "evidence": "Six strdup-owned pointers from Begin. through End.; 0x4106e0 clears 6 DWORDs and the teardown frees all six.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_option_labels",
+      "address": "0x004220a8",
+      "reference": "0x004106f1",
+      "bytes": "bfa8204200",
+      "evidence": "Nine option labels from Control method: static through Done; cleared and freed as nine pointers.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_town_choices",
+      "address": "0x004245a8",
+      "reference": "0x004107e6",
+      "bytes": "a3a8454200",
+      "evidence": "Walk around, Go pick a fight, Leave for good; each is duplicated and freed on shutdown.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_ui_buffer",
+      "address": "0x421ca0",
+      "reference": "0x40b31a",
+      "bytes": "68a01c4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_name_alpha",
+      "address": "0x4287f0",
+      "reference": "0x40b293",
+      "bytes": "d91df0874200",
+      "build_only": true
+    },
+    {
+      "name": "config_movement_schemes",
+      "address": "0x0041c094",
+      "reference": "0x00408474",
+      "bytes": "a194c04100",
+      "evidence": "The early player updater reads the verified native movement control setting before its control branches."
+    },
+    {
+      "name": "freeware_perk_choice_timer",
+      "address": "0x0042887c",
+      "reference": "0x0040bc51",
+      "bytes": "c7057c88420000000000",
       "build_only": true
     }
   ],

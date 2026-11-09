@@ -467,6 +467,18 @@
       "bytes": "a1a0cb0410"
     },
     {
+      "name": "grim_adapter_identifier",
+      "address": "0x1004cba8",
+      "reference": "0x1000135f",
+      "bytes": "68a8cb0410"
+    },
+    {
+      "name": "grim_adapter_description",
+      "address": "0x1004cda8",
+      "reference": "0x1000136f",
+      "bytes": "68a8cd0410"
+    },
+    {
       "name": "grim_backbuffer_height",
       "address": "0x1004cfdc",
       "reference": "0x100015eb",
