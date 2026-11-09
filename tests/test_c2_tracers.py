@@ -253,3 +253,53 @@ def test_stack_refs_keep_frame_for_biased_ebp_and_leave():
     # C2 uses a biased EBP to reach more locals with an 8-bit displacement.
     code = bytes.fromhex("55 8d6c24b0 81ecb4000000 53 5b 83c550 c9 c3")
     assert fp.stack_refs(code, 0, lambda _: None)["frame_size"] == 0xb4
+
+
+def test_stack_refs_account_for_inline_eh_record_in_combined_cleanup():
+    # The compiler installs three SEH words, reserves 24 bytes of locals
+    # and saves EBX. Only the final argument belongs to the virtual call.
+    code = bytes.fromhex(
+        "64a100000000 6aff 8b0d00010000 684c332211 50 64892500000000 "
+        "8b01 83ec18 53 6a01 ff5044 8b4c241c 5b 64890d00000000 83c424 c3",
+    )
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 24
+    assert frame["body_depth"] == 40
+    assert frame["depths"][38] == 40
+    assert frame["depths"][len(code) - 1] == 0
+
+
+@pytest.mark.parametrize("setup", ["33f6", "8bc8 33f6"])
+def test_stack_refs_allow_register_initialization_before_an_indirect_cdecl_cleanup(setup):
+    # Two arguments, an indirect cdecl call, then XOR ESI,ESI before its ADD.
+    code = bytes.fromhex("6a01 6a02 ff51cc " + setup + " 83c408 8b442404 c3")
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["depths"][7] == 8
+    assert frame["refs"][-1][1] == 4
+    assert frame["depths"][len(code) - 1] == 0
+
+
+@pytest.mark.parametrize("extra_arg", [False, True])
+def test_stack_refs_keep_by_value_cdecl_arg_after_inline_eh_out_of_locals(extra_arg):
+    # The original record and the 24-byte cdecl argument share the final ADD.
+    # There is no intervening save or local buffer that lives across a call.
+    call = "53 89442404 e800000000 83c404" if extra_arg else "892424 e800000000"
+    code = bytes.fromhex(
+        "64a100000000 6aff 684c332211 50 64892500000000 "
+        "83ec18 " + call + " 8b4c2418 64890d00000000 83c424 c3",
+    )
+    frame = fp.stack_refs(code, 0, lambda _: 0)
+    assert frame["frame_size"] == 0
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_keep_inline_eh_without_locals_across_an_indirect_call():
+    code = bytes.fromhex(
+        "64a100000000 6aff 684c332211 50 64892500000000 "
+        "6a01 ff5104 8b0c24 64890d00000000 83c40c c3",
+    )
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 0
+    assert frame["body_depth"] == 12
+    assert frame["refs"][-1][1] == -12
+    assert frame["depths"][len(code) - 1] == 0

@@ -709,6 +709,7 @@ def _callee_pop(image, va: int) -> int | None:
 
 _ESP_MEMORY = re.compile(r"\[esp(?: \+ (0x[0-9a-f]+|[0-9]+))?\]")
 _ESP_IMMEDIATE = re.compile(r"esp, (0x[0-9a-f]+|[0-9]+)")
+_GENERAL_REGISTERS = {"eax", "ebx", "ecx", "edx", "ebp", "esi", "edi"}
 
 
 def _uses_local_buffer(insns, start, size, direct_pop):
@@ -743,14 +744,27 @@ def _uses_local_buffer(insns, start, size, direct_pop):
     return False
 
 
+def _pops_register_before(insns, cleanup, register):
+    for i in range(cleanup - 1, -1, -1):
+        prior = insns[i]
+        if prior.mnemonic == "pop" and prior.op_str == register:
+            return True
+        if prior.mnemonic not in ("mov", "lea", "pop"):
+            break
+    return False
+
+
 def _frame_reservation(insns, eh_prolog, direct_pop):
     """Recognize fixed entry storage, its frame base and terminal cleanup sites."""
     frame_base = "ebp" if eh_prolog is not None else None
+    inline_eh = False
     for index, insn in enumerate(insns[:8]):
         if insn is eh_prolog:
             continue
         if insn.mnemonic in ("call", "ret") or insn.mnemonic.startswith("j"):
             break
+        if insn.mnemonic == "mov" and insn.op_str == "dword ptr fs:[0], esp":
+            inline_eh = True
         if insn.mnemonic == "mov" and index:
             saved = insns[index - 1]
             if (
@@ -762,6 +776,13 @@ def _frame_reservation(insns, eh_prolog, direct_pop):
         if insn.mnemonic != "sub" or not allocation:
             continue
         size = int(allocation[1], 0)
+        # The inline VC6 EH record is the saved FS link, handler and unwind
+        # state. Nonvolatile registers saved below the locals separate those
+        # locals from call arguments. The epilogue may release the locals
+        # and the 12-byte registration in one ADD.
+        next_insn = insns[index + 1] if index + 1 < len(insns) else None
+        saved_register = next_insn.op_str if next_insn is not None and next_insn.mnemonic == "push" else None
+        inline_eh_save = inline_eh and saved_register in {"ebp", "ebx", "edi", "esi"}
         releases = set()
         lo, hi = insns[0].address, insns[-1].address + insns[-1].size
         for i, end in enumerate(insns):
@@ -773,7 +794,12 @@ def _frame_reservation(insns, eh_prolog, direct_pop):
                 cleanup = _ESP_IMMEDIATE.fullmatch(prior.op_str)
                 if prior.mnemonic == "add" and cleanup:
                     released = int(cleanup[1], 0)
-                    if released == size or (released > size and _uses_local_buffer(insns, index + 1, size, direct_pop)):
+                    released_record = (
+                        inline_eh_save and released == size + 12 and _pops_register_before(insns, j, saved_register)
+                    )
+                    if released == size or released_record or (
+                        released > size and _uses_local_buffer(insns, index + 1, size, direct_pop)
+                    ):
                         releases.add(prior.address)
                     break
                 # LEAVE is also used after restoring a biased EBP (e.g.
@@ -842,6 +868,10 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
         elif insn.address in releases and mn in ("mov", "leave") and base_depth is not None:
             depth = base_depth - (4 if mn == "leave" else 0)
             window = 0
+        elif mn == "mov" and ops == "dword ptr fs:[0], esp":
+            # The installed registration stays live through ordinary calls.
+            fixed_depth = max(fixed_depth, depth)
+            window = 0
         elif mn == "push":
             depth += 4
             if saves_open and ops in ("ebx", "ebp", "esi", "edi") and ops not in written:
@@ -862,10 +892,18 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
             depth += v
         elif mn == "call":
             saves_open = False
-            nxt = insns[i + 1] if i + 1 < len(insns) else None
             pop = direct_pop(insn)
             if pop is None:
                 pop = window
+                # The scheduler can initialize a register between a cdecl
+                # virtual call and its caller's stack cleanup.
+                j = i + 1
+                while j < len(insns):
+                    nxt = insns[j]
+                    if nxt.mnemonic not in ("mov", "xor") or not _GENERAL_REGISTERS.issuperset(nxt.op_str.split(", ")):
+                        break
+                    j += 1
+                nxt = insns[j] if j < len(insns) else None
                 if nxt is not None and nxt.mnemonic == "add" and nxt.op_str.startswith("esp, "):
                     pop = 0
                     if nxt.address in releases:
