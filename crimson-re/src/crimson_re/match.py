@@ -7067,6 +7067,7 @@ def evaluate_scratch_configs(
     jobs: int = DEFAULT_MATCH_JOBS,
     scope: str | None = None,
     force: bool = False,
+    raise_on_timeout: bool = False,
 ) -> list[ScratchStatus]:
     """Match each config through the status cache; one status per config, in order.
 
@@ -7195,7 +7196,9 @@ def evaluate_scratch_configs(
                 input_hashes=input_hashes,
             )
             return status
-        except Exception as exc:  # noqa: BLE001 - one scratch failure must not cancel the worker batch
+        except Exception as exc:
+            if raise_on_timeout and isinstance(exc, TimeoutError):
+                raise TimeoutError(f"{config.image}/{config.function} ({config.compiler}): {exc}") from exc
             try:
                 address = resolve_function(manifest, config.function, end_override=config.end_va)[0].address
             except ValueError:

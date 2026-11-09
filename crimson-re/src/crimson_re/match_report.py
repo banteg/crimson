@@ -259,10 +259,13 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
         if errors := [s for s in statuses if s.error]:
             raise ValueError("matching failed: " + "; ".join(f"{s.config.function}: {s.error}" for s in errors))
     else:
-        # A canonical source that another build's compiler rejects leaves that function without a candidate.
+        # A compiler may reject a donor source. A timeout leaves a profile unmeasured,
+        # even when another profile for the same scratch completed.
         statuses = [
             row.status
-            for row in match_builds.scan_build(match_builds.load_registry(), version, jobs=jobs, native_inventory=True)
+            for row in match_builds.scan_build(
+                match_builds.load_registry(), version, jobs=jobs, native_inventory=True, raise_on_timeout=True,
+            )
             if row.status.error is None
         ]
     configs = [status.config for status in statuses]

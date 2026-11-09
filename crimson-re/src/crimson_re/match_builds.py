@@ -1284,6 +1284,7 @@ def scan_build(
     *,
     jobs: int = matchlib.DEFAULT_MATCH_JOBS,
     native_inventory: bool = False,
+    raise_on_timeout: bool = False,
     scope: str | None = None,
     functions: dict[str, dict[int, dict[str, Any]]] | None = None,
     compiler: str | None = None,
@@ -1343,6 +1344,7 @@ def scan_build(
         match_root,
         targets={name: image.target for name, image in registry.builds[build].items()},
         jobs=jobs,
+        raise_on_timeout=raise_on_timeout,
         scope="all",
     )
     # Keep each scratch's best compiler.

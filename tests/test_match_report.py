@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,40 @@ from crimson_re import match_report as report
 
 def test_reviewed_historical_map_is_a_pinned_report_input() -> None:
     assert report._input_path("analysis/decomp/1.9.8/crimsonland.exe/recovered.json")
+
+
+def test_historical_refresh_requires_every_compiler_to_finish(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The incremental Grim DLL has two compiler profiles for the same function.
+    version = "1.9.8"
+    scratch = tmp_path / "scratches" / "grim_get_time_ms"
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text("IMAGE=grim.dll\nFUNCTION=grim_get_time_ms\n")
+    registry = report.match_builds.load_registry()
+    scan = partial(report.match_builds.scan_build, match_root=tmp_path)
+    monkeypatch.setattr(report.match_builds, "scan_build", scan)
+    monkeypatch.setattr(report, "untracked_inputs", list)
+    monkeypatch.setattr(report, "repository_inputs", dict)
+    monkeypatch.setattr(report, "_inventory", lambda _: [])
+    monkeypatch.setattr(report.matchlib, "load_image", lambda _, base: report.matchlib.LoadedImage(b"", base, 0))
+
+    def cached(config, *, address, **kwargs):
+        if config.compiler == "msvc6.5":
+            return report.matchlib.ScratchStatus(config, address, 6, 1.0, 2, 2, 2, None)
+        return None
+
+    compiler_error: Exception = RuntimeError("cl rejected donor source")
+
+    def compile_scratch(config, *args, **kwargs):
+        assert config.compiler == "msvc6.5pp"
+        raise compiler_error
+
+    monkeypatch.setattr(report.matchlib, "_load_cached_status", cached)
+    monkeypatch.setattr(report.matchlib, "compile_scratch", compile_scratch)
+    assert scan(registry, version, raise_on_timeout=True)[0].status.state == "match"
+    compiler_error = TimeoutError("compiler timed out")
+    assert scan(registry, version)[0].status.state == "match"
+    with pytest.raises(TimeoutError, match=r"grim_get_time_ms \(msvc6\.5pp\): compiler timed out"):
+        report.refresh_evidence(version)
 
 
 def _function(address: int, size: int, **changes: Any) -> dict[str, Any]:
