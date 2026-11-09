@@ -1,4 +1,6 @@
 // Crimsonland 1.0.2, 0x404b70..0x40508c. Creatures pursue the current player.
+#include "cl_build.h"
+
 #if CL_BUILD == 10002
 #define PLAGUE_TIMER(slot) creature_pool[slot].plague_timer
 #else
