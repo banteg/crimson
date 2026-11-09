@@ -1,15 +1,22 @@
 #include "freeware_edition.h"
-// crimson.exe 1.4.0, 0x415690.
+// crimson.exe: 1.0.2 0x40b6e0, 1.3.0 0x410db0, 1.4.0 0x415690.
 #include "overlay.h"
 #include <string.h>
 #ifdef CRIMSON_FREEWARE_CLIENT
 #include <cstdlib>
 #endif
+#ifndef CRIMSON_FREEWARE_CLIENT
+#include "crimsonland_metadata.h"
+#endif
 using namespace ui140;
 extern "C" {
+#ifdef CRIMSON_FREEWARE_CLIENT
 extern freeware_perk_entry_t perk_meta_table[48];
+#else
+extern perk_meta_cpp_t perk_meta_table[CL_BUILD < 10400 ? 32 : 48];
+#endif
 extern int perk_id_count, perk_id_perk_expert, freeware_perk_hover;
-extern unsigned char perk_choice_flags[48], freeware_pause_perks;
+extern unsigned char perk_choice_flags[CL_BUILD < 10400 ? 32 : 48], freeware_pause_perks;
 extern float freeware_perk_choice_timer;
 extern char *freeware_message;
 int crt_rand();
@@ -18,6 +25,7 @@ char *wrap_text_to_width_alloc(char *, int);
 #ifndef CRIMSON_FREEWARE_CLIENT
 void crt_free(void *);
 char *strdup_malloc(const char *);
+extern int perk_id_reserved_22;
 extern int perk_id_instant_winner, perk_id_grim_deal, perk_id_plaguebearer, perk_id_fatal_lottery,
     perk_id_weapon_assault_rifle, perk_id_weapon_shotgun, perk_id_infernal_contract, freeware_hint_ids[7];
 unsigned char freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec2f_t *);
@@ -25,9 +33,9 @@ unsigned char freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec
 }
 namespace {
 #define HOVER UI_FIELD(freeware_perk_hover, perk_hover)
-#define PERKS(i) UI_FIELD(player_state_table[current_player_index].freeware.perks[i], run.perks[i])
-#define XP UI_FIELD(player_state_table[current_player_index].freeware.experience, run.experience)
-#define HP UI_FIELD(player_state_table[current_player_index].freeware.health, actor(current_player_index).health)
+#define PERKS(i) UI_FIELD(UI_PLAYER(current_player_index).perks[i], run.perks[i])
+#define XP UI_FIELD(UI_PLAYER(current_player_index).experience, run.experience)
+#define HP UI_FIELD(UI_PLAYER(current_player_index).health, actor(current_player_index).health)
 #define PENDING UI_FIELD(freeware_pending_perks, run.pending)
 #ifdef CRIMSON_FREEWARE_CLIENT
 #define PERK_ID(symbol, id) id
@@ -38,7 +46,7 @@ __forceinline bool inside(float x, float y, float right, float bottom) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     return UI_MOUSE_X > x && UI_MOUSE_X < right && UI_MOUSE_Y > y && UI_MOUSE_Y < bottom;
 #else
-    vec2f_t lo = {x, y}, hi = {right, bottom};
+    vec2f_t hi = {right, bottom}, lo = {x, y};
     return freeware_point_in_rect(&freeware_aim_screen, &lo, &hi) != 0;
 #endif
 }
@@ -46,14 +54,14 @@ __forceinline const char *name(int id) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     return freeware::perk_name(id);
 #else
-    return (const char *)perk_meta_table[id].name_va;
+    return perk_meta_table[id].name;
 #endif
 }
 __forceinline const char *description(int id) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     return freeware::perk_description(id);
 #else
-    return (const char *)perk_meta_table[id].description_va;
+    return perk_meta_table[id].description;
 #endif
 }
 __forceinline void secret_hint(const char *odd, const char *even, int chance) {
@@ -68,7 +76,7 @@ __forceinline void secret_hint(const char *odd, const char *even, int chance) {
         message[i] = even[i];
     if (chance) {
         for (unsigned j = 0; j < strlen(message); ++j)
-            if (message[j] != ' ' && (chance == 2 ? crt_rand() % 2 == 0 : crt_rand() % 5 < 2))
+            if (message[j] != ' ' && (chance == 2 ? crt_rand() % 2 == 0 : crt_rand() % 5 <= 1))
                 message[j] = (char)('a' + crt_rand() % 26);
     }
     char *wrapped = wrap_text_to_width_alloc(message, 25);
@@ -82,15 +90,17 @@ __forceinline void secret_hint(const char *odd, const char *even, int chance) {
 #endif
     set_state(7);
 }
-__forceinline void grant(int id) {
+__forceinline void grant(const int &id) {
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10002
     UI_FIELD(freeware_pause_perks, paused_perks) = 0;
+#endif
 #ifndef CRIMSON_FREEWARE_CLIENT
     freeware_perk_choice_timer = 0;
 #endif
     ++PERKS(id);
     if (id == PERK_ID(perk_id_instant_winner, freeware_rules::instant_winner))
         XP += 2500;
-#if !defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION == 10400
+#if FREEWARE_EDITION == 10400
     if (id == PERK_ID(perk_id_fatal_lottery, 19)) {
         if (crt_rand() % 2 == 0)
             XP += 10000;
@@ -99,28 +109,38 @@ __forceinline void grant(int id) {
     }
     if (id == PERK_ID(perk_id_weapon_shotgun, 21)) {
         weapon_assign_player(current_player_index, 3);
-        player_state_table[current_player_index].freeware.clip_size += 5;
+        UI_PLAYER(current_player_index).clip_size += 5;
     }
     if (id == PERK_ID(perk_id_weapon_assault_rifle, 20)) {
         weapon_assign_player(current_player_index, 2);
-        player_state_table[current_player_index].freeware.clip_size += 10;
+        UI_PLAYER(current_player_index).clip_size += 10;
     }
 #endif
+#if FREEWARE_EDITION != 10002
     if (id == PERK_ID(perk_id_infernal_contract, freeware_rules::infernal_contract)) {
-        UI_FIELD(player_state_table[current_player_index].freeware.level, run.level) += 3;
+        UI_FIELD(UI_PLAYER(current_player_index).level, run.level) += 3;
         PENDING += 3;
         HP = .1f;
     }
+#endif
     if (id == PERK_ID(perk_id_grim_deal, freeware_rules::grim_deal)) {
         XP += 6666;
         HP = -1;
     }
     if (id == PERK_ID(perk_id_plaguebearer, freeware_rules::plaguebearer))
-        player_state_table[current_player_index].freeware.plaguebearer = 1;
+        UI_PLAYER(current_player_index).plaguebearer = 1;
+#if CL_BUILD == 10300
+    // The 1.3.0 table reserves this ID even though the picker does not offer it.
+    if (id == perk_id_reserved_22) {
+        UI_PLAYER(current_player_index).control_reserved = 5.0f;
+        HP = 101.0f;
+        UI_PLAYER(current_player_index).move_phase = 0.0f;
+    }
+#endif
     --PENDING;
     set_state(3);
     // Secret hints are assembled from interleaved strings before the CRT chooses letters to replace.
-#if !defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION == 10400
+#if FREEWARE_EDITION == 10400
     if (id == PERK_ID(freeware_hint_ids[0], 26))
         secret_hint(" s n w y b r   t y s i l w i i g f r a m n t r t   o e   l y i   i h a s n l   h t a d g   t "
                     "n i g o   h   e d b d   f t e m n t r w i i g f r i s f i n s t   o e t a   o   p r . W e   "
@@ -158,50 +178,71 @@ __forceinline void grant(int id) {
 #endif
 #ifdef CRIMSON_FREEWARE_CLIENT
     for (int i = 0; i < 48; ++i)
-        player_state_table[0].freeware.perks[i] = UI_GAME.run.perks[i];
+        UI_PLAYER(0).perks[i] = UI_GAME.run.perks[i];
     UI_GAME.run.choices.clear();
 #endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10002
-    for (int slot = 0; slot < 48; ++slot)
-        player_state_table[1].freeware.perks[slot] = player_state_table[0].freeware.perks[slot];
+#if FREEWARE_EDITION != 10002
+    for (int slot = 0; slot < (FREEWARE_EDITION == 10300 ? 32 : 48); ++slot)
+        UI_PLAYER(1).perks[slot] = UI_PLAYER(0).perks[slot];
 #endif
 }
 } // namespace
 extern "C" void perk_selection_screen_update() {
-    float age = freeware_simulation_clock - UI_SINCE;
-    UI_FIELD(freeware_name_alpha, death_clock) = age >= 1 ? 1 : age;
-    UI_FIELD(freeware_pause_perks, paused_perks) = 1;
-#ifdef CRIMSON_FREEWARE_CLIENT
-    bool held = freeware_frame_input->mouse_fire || freeware_frame_input->click;
-#else
-    bool held = grim_interface_ptr->grim_is_mouse_button_down(0) != 0;
+#if FREEWARE_EDITION >= 10300
+    int count = 0;
 #endif
-    if (FREEWARE_EDITION != 10002 && inside(390, 5, 590, 37) && held)
+    float age = freeware_simulation_clock - UI_SINCE;
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10002
+    UI_FIELD(freeware_pause_perks, paused_perks) = 1;
+#endif
+    if (age < 1)
+        UI_FIELD(freeware_name_alpha, death_clock) = age;
+    else
+        UI_FIELD(freeware_name_alpha, death_clock) = 1;
+#if FREEWARE_EDITION != 10002
+#ifdef CRIMSON_FREEWARE_CLIENT
+    if (inside(390, 5, 590, 37) && (freeware_frame_input->mouse_fire || freeware_frame_input->click))
+#else
+    if (inside(390, 5, 590, 37) && grim_interface_ptr->grim_is_mouse_button_down(0))
+#endif
         UI_SEE_THROUGH = 1;
+#endif
     freeware_overlay_begin();
+#if FREEWARE_EDITION != 10002
     UI_SEE_THROUGH = 0;
+#endif
     scale(.65f);
     tint(1, 1, 1, 1);
     text(150, 40, "Pick a perk:");
     tint(.68f, .68f, .89f, 1);
     scale(.55f);
-    if (PERKS(perk_id_perk_expert) <= 0)
-        text(285, 43, "(of random 5)");
-    else {
+#if FREEWARE_EDITION != 10002
+    if (PERKS(perk_id_perk_expert) > 0) {
         text(285, 43, "(of random 5+2)");
         scale(.5f);
         tint(1, 1, 1, 1);
         text(130, 57, "Extra perks sponsored by the Perk Expert");
-    }
-    tint(.78f, .78f, .49f, inside(390, 5, 590, 37) ? 1.f : .5f);
+    } else
+#endif
+        text(285, 43, "(of random 5)");
+#if FREEWARE_EDITION != 10002
+    if (inside(390, 5, 590, 37))
+        tint(.78f, .78f, .49f, 1);
+    else
+        tint(.78f, .78f, .49f, .5f);
     scale(.65f);
-    if (FREEWARE_EDITION != 10002)
-        text(390, 5, "(click to see through)");
+    text(390, 5, "(click to see through)");
+#endif
+#if FREEWARE_EDITION == 10002
+    int count = 0;
+#endif
+    for (int i = 0; i <= HOVER; ++i)
+        if (perk_choice_flags[i])
+            ++count;
+    vec2f_t lo;
+    lo.x = 45;
+    lo.y = (count - 1) * 20.f + 85;
     if (HOVER >= 0) {
-        int count = 0;
-        for (int i = 0; i <= HOVER; ++i)
-            if (perk_choice_flags[i])
-                ++count;
         tint(.8f, .8f, .8f, .3f);
 #ifdef CRIMSON_FREEWARE_CLIENT
         bind("bullet");
@@ -210,18 +251,27 @@ extern "C" void perk_selection_screen_update() {
 #endif
         uv(0, 0, 1, 1);
         begin();
-        quad(45, 82.f + (count - 1) * 20, 350, 15);
+#ifdef CRIMSON_FREEWARE_CLIENT
+        quad(lo.x, lo.y - 3, 350, 15);
+#else
+        grim_interface_ptr->grim_draw_quad(lo.x, lo.y - 3, 350, 15);
+#endif
         end();
     }
     scale(.65f);
     tint(.6f, 1, .6f, 1);
     int row = 0;
     HOVER = -1;
-    for (int id = 0; id <= perk_id_count; ++id)
+    for (int id = 0; id < perk_id_count + 1; ++id)
         if (perk_choice_flags[id]) {
-            float y = 85.f + row * 20;
+            lo.y = row * 20.f + 85;
             tint(.9f, 1, .7f, .7f);
-            if (inside(45, y, 295, y + 15)) {
+            vec2f_t hi = {(lo.x + 250), (lo.y + 15)};
+#ifdef CRIMSON_FREEWARE_CLIENT
+            if (inside(lo.x, lo.y, hi.x, hi.y)) {
+#else
+            if (freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
+#endif
                 tint(.9f, 1, .7f, 1);
                 HOVER = id;
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -230,15 +280,18 @@ extern "C" void perk_selection_screen_update() {
             }
             if (PERKS(id) > 0)
                 tint(.9f, 1, .9f, 1);
+#if FREEWARE_EDITION != 10002
             if (config_player_count == 2 && !perk_meta_table[id].available)
                 tint(.9f, 1, .9f, .3f);
-            text(50, y - 5, name(id));
+#endif
+            text(50, lo.y - 5, name(id));
             ++row;
         }
     tint(.85f, .85f, .85f, 1);
     scale(.65f);
-    if (HOVER >= 0) {
+    if (HOVER >= 0)
         text(100, 250, description(HOVER));
+    if (HOVER >= 0) {
         filter(1);
 #ifndef CRIMSON_FREEWARE_CLIENT
         bind(perk_meta_table[HOVER].texture);
