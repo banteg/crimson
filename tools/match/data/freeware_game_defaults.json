@@ -1,0 +1,296 @@
+[
+  {
+    "name": "time_scale_factor",
+    "extent_function": "game_frame_update",
+    "size": 4,
+    "initializer_hex": "0000803f"
+  },
+  {
+    "name": "freeware_transition_alpha",
+    "extent_function": "freeware_overlay_begin",
+    "size": 4,
+    "initializer_hex": "0000803f"
+  },
+  {
+    "name": "freeware_menu_music_pending",
+    "extent_function": "game_frame_update",
+    "size": 1,
+    "initializer_hex": "01"
+  },
+  {
+    "name": "freeware_encounter_id",
+    "extent_function": "gameplay_reset_state",
+    "size": 4,
+    "initializer_hex": "01000000"
+  },
+  {
+    "name": "freeware_encounter_page",
+    "extent_function": "gameplay_reset_state",
+    "size": 4,
+    "initializer_hex": "01000000"
+  },
+  {
+    "name": "freeware_encounter_day",
+    "extent_function": "gameplay_reset_state",
+    "size": 4,
+    "initializer_hex": "01000000"
+  },
+  {
+    "name": "game_state_id",
+    "extent_function": "game_frame_update",
+    "size": 4,
+    "initializer_hex": "01000000"
+  },
+  {
+    "name": "freeware_transition_pending",
+    "extent_function": "freeware_overlay_begin",
+    "size": 1,
+    "initializer_hex": "01"
+  },
+  {
+    "name": "freeware_bonus_fire",
+    "extent_function": "player_render",
+    "size": 4,
+    "initializer_hex": "01000000"
+  },
+  {
+    "name": "freeware_bonus_freeze",
+    "extent_function": "player_render",
+    "size": 4,
+    "initializer_hex": "02000000"
+  },
+  {
+    "name": "freeware_bonus_weapon",
+    "extent_function": "player_render",
+    "size": 4,
+    "initializer_hex": "03000000"
+  },
+  {
+    "name": "freeware_bonus_nuke",
+    "extent_function": "player_render",
+    "size": 4,
+    "initializer_hex": "04000000"
+  },
+  {
+    "name": "freeware_arena_width",
+    "extent_function": "player_reset_all",
+    "size": 4,
+    "initializer_hex": "00040000"
+  },
+  {
+    "name": "freeware_arena_height",
+    "extent_function": "player_reset_all",
+    "size": 4,
+    "initializer_hex": "00040000"
+  },
+  {
+    "name": "freeware_music_started",
+    "extent_function": "gameplay_reset_state",
+    "size": 1,
+    "initializer_hex": "01"
+  },
+  {
+    "name": "config_game_mode",
+    "extent_function": "game_frame_update",
+    "sizes": {
+      "1.0.2": 4
+    },
+    "initializer_hex": "01000000"
+  },
+  {
+    "name": "config_movement_schemes",
+    "extent_function": "player_update",
+    "sizes": {
+      "1.0.2": 4
+    },
+    "initializer_hex": "02000000"
+  },
+  {
+    "name": "freeware_shadows",
+    "extent_function": "game_frame_update",
+    "sizes": {
+      "1.0.2": 1
+    },
+    "initializer_hex": "01"
+  },
+  {
+    "name": "freeware_glow",
+    "extent_function": "effect_render_all",
+    "sizes": {
+      "1.0.2": 1
+    },
+    "initializer_hex": "01"
+  },
+  {
+    "name": "freeware_music_channel_a",
+    "extent_function": "sfx_update",
+    "sizes": {
+      "1.0.2": 4,
+      "1.3.0": 4
+    },
+    "initializer_hex": "ffffffff"
+  },
+  {
+    "name": "freeware_music_channel_b",
+    "extent_function": "sfx_update",
+    "sizes": {
+      "1.0.2": 4,
+      "1.3.0": 4
+    },
+    "initializer_hex": "ffffffff"
+  },
+  {
+    "name": "freeware_music_volume_a",
+    "extent_function": "sfx_update",
+    "sizes": {
+      "1.0.2": 4,
+      "1.3.0": 4
+    },
+    "initializer_hex": "0000803f"
+  },
+  {
+    "name": "freeware_music_volume_b",
+    "extent_function": "sfx_update",
+    "sizes": {
+      "1.3.0": 4
+    },
+    "initializer_hex": "0000803f"
+  },
+  {
+    "name": "screen_width",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "80020000"
+  },
+  {
+    "name": "screen_height",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "e0010000"
+  },
+  {
+    "name": "screenshot_file_index",
+    "extent_function": "game_frame_update",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "01000000"
+  },
+  {
+    "name": "freeware_fps_min",
+    "extent_function": "gameplay_reset_state",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "00007a44"
+  },
+  {
+    "name": "freeware_bonus_shield",
+    "extent_function": "bonus_spawn_at",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "05000000"
+  },
+  {
+    "name": "freeware_bonus_time",
+    "extent_function": "bonus_spawn_at",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "06000000"
+  },
+  {
+    "name": "freeware_editor_light",
+    "extent_function": "game_frame_update",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "0000803f"
+  },
+  {
+    "name": "freeware_editor_alpha",
+    "extent_function": "game_frame_update",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "0000803f"
+  },
+  {
+    "name": "freeware_editor_radius",
+    "extent_function": "game_frame_update",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    },
+    "initializer_hex": "00000043"
+  },
+  {
+    "name": "screen_width_f",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.4.0": 4
+    },
+    "initializer_hex": "00002044"
+  },
+  {
+    "name": "screen_height_f",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.4.0": 4
+    },
+    "initializer_hex": "0000f043"
+  },
+  {
+    "name": "freeware_console_creature_health",
+    "extent_function": "freeware_console_cmd_setcreaturehealth",
+    "sizes": {
+      "1.4.0": 4
+    },
+    "initializer_hex": "64000000"
+  },
+  {
+    "name": "freeware_console_creature_size",
+    "extent_function": "freeware_console_cmd_spawncreature",
+    "sizes": {
+      "1.4.0": 4
+    },
+    "initializer_hex": "28000000"
+  },
+  {
+    "name": "freeware_rank",
+    "extent_function": "game_frame_update",
+    "sizes": {
+      "1.4.0": 4
+    },
+    "initializer_hex": "ffffffff"
+  },
+  {
+    "name": "freeware_music_fading",
+    "extent_function": "freeware_music_stop",
+    "sizes": {
+      "1.4.0": 3
+    },
+    "initializer_hex": "010101"
+  },
+  {
+    "name": "secret_hint_magic_paint",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.4.0": 49
+    },
+    "initializer_hex": "57697468206d61676963207061696e7420796f752063616e2066697820636974792077616c6c732e2059656c6c6f772e00"
+  }
+]
