@@ -215,8 +215,7 @@ __forceinline void set_label(char **slot, const char *text) {
 }
 #else
 // The original reads each setting after releasing the label it owns.
-template <typename T>
-__forceinline void set_option_label(char *&label, const T &enabled, const char *on, const char *off) {
+__forceinline void set_option_label(char *&label, const unsigned char &enabled, const char *on, const char *off) {
     crt_free(label);
     if (enabled)
         label = strdup_malloc(on);
@@ -224,7 +223,11 @@ __forceinline void set_option_label(char *&label, const T &enabled, const char *
         label = strdup_malloc(off);
 }
 __forceinline void refresh_option_labels() {
-    set_option_label(freeware_option_labels[0], CONFIGURING, "Configure for: Player 2", "Configure for: Player 1");
+    crt_free(freeware_option_labels[0]);
+    if (!CONFIGURING)
+        freeware_option_labels[0] = strdup_malloc("Configure for: Player 1");
+    else
+        freeware_option_labels[0] = strdup_malloc("Configure for: Player 2");
 
     crt_free(freeware_option_labels[1]);
     const int move = config_movement_schemes[CONFIGURING];
@@ -257,14 +260,14 @@ __forceinline void refresh_option_labels() {
 #endif
 
     crt_free(freeware_option_labels[3]);
-    if (freeware_music_disabled)
-        freeware_option_labels[3] = strdup_malloc("Music: off");
+    if ((FREEWARE_EDITION == 10300 || !freeware_music_unavailable) && !freeware_music_disabled)
+        freeware_option_labels[3] = strdup_malloc("Music: on");
 #if FREEWARE_EDITION >= 10400
-    else if (freeware_music_unavailable)
+    else if (!freeware_music_disabled)
         freeware_option_labels[3] = strdup_malloc("Music: on (restart to enable playback)");
 #endif
     else
-        freeware_option_labels[3] = strdup_malloc("Music: on");
+        freeware_option_labels[3] = strdup_malloc("Music: off");
     set_option_label(freeware_option_labels[4], freeware_filter_sharp,
                      "Background filter: sharp", "Background filter: smooth");
     set_option_label(freeware_option_labels[5], freeware_show_fps, "Show FPS: on", "Show FPS: off");
