@@ -38,3 +38,17 @@ pointer-from-float conversions.
 
 This is a presentation-only correction; the source remains an exact 408/408
 instruction match with `88/0/0` references.
+
+## Freeware ground generation
+
+1.0.2 takes an integer ground ID and rolls the alternate terrain before the
+safe-mode check. The three texture pairs use the same two scatter passes, with
+densities of 600 and 35. Its Grim interface takes only a texture handle on the
+bind call. The original looks up the registered texture names `grass` and
+`mud`; the portable client selects the corresponding texture files.
+
+In 1.3.0 and 1.4.0, the byte argument selects textured or black ground. Both
+builds clear the target before the optional scatter phase. Separating those
+two decisions lets VC6 put the black clear after the epilogue. Reusing one
+counter for both shadow loops reproduces their original stack slots. 1.3.0
+still uses the earlier Grim bind signature and registered texture names.

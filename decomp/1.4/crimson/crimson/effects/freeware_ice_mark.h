@@ -16,7 +16,7 @@ __forceinline void freeware_shard(const vec2f_t *pos, float size) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     const char *texture = "icemold";
 #else
-    int texture = freeware_ice_texture;
+    const int &texture = freeware_ice_texture;
 #endif
     fx_queue_add(texture, pos, size, size, (crt_rand() % 612) * .01f, freeware_ice_tint);
 }

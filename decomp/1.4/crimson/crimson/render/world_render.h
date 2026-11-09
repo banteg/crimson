@@ -33,7 +33,11 @@ extern float freeware_pickup_time, freeware_bomb_age;
 #define world_tint grim_interface_ptr->grim_set_color
 #define world_uv grim_interface_ptr->grim_set_uv
 #define world_quad grim_interface_ptr->grim_draw_quad
+#if CL_BUILD < 10400
+#define world_sheet(handle, name) grim_interface_ptr->grim_bind_texture(handle)
+#else
 #define world_sheet(handle, name) grim_interface_ptr->grim_bind_texture((handle), 0)
+#endif
 #endif
 namespace world140 {
 using namespace ui140;
@@ -42,14 +46,14 @@ __forceinline void source(unsigned factor) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     UI_GAME.ui.source_blend = factor;
 #else
-    grim_interface_ptr->grim_set_config_var(0x13, factor);
+    grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xd : 0x13, factor);
 #endif
 }
 __forceinline void destination(unsigned factor) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     UI_GAME.ui.destination_blend = factor;
 #else
-    grim_interface_ptr->grim_set_config_var(0x14, factor);
+    grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xe : 0x14, factor);
 #endif
 }
 __forceinline void atlas_origin(int cell) {
