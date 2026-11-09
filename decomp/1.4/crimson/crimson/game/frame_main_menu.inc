@@ -41,6 +41,7 @@ if (FREEWARE_EDITION >= 10400 && !overlay && INPUT.escape && which != main_page)
 int row = -1;
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
+int index;
 if (freeware_rebinding) {
     grim_interface_ptr->grim_set_config_var(frame_font_scale, .85435f);
     grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
@@ -71,9 +72,6 @@ if (freeware_rebinding) {
 } else if (freeware_calibrating) {
 #include "frame_joystick_calibration.inc"
 } else {
-#if FREEWARE_EDITION == 10400
-    int row_index;
-#endif
     if (freeware_options_open) {
         refresh_option_labels();
         enum { which = options_page };
@@ -92,6 +90,9 @@ grim_interface_ptr->grim_set_config_var(frame_font_scale, .65435f);
 menu_footer_text();
 {
     const float &pulse = age, &orbit = menu_clock;
+#if FREEWARE_EDITION != 10300
+    int index;
+#endif
 #include "frame_cursor.inc"
 }
 if ((FREEWARE_EDITION == 10300 || !console_open_flag) && grim_interface_ptr->grim_is_key_down(0x1c))

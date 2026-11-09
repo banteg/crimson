@@ -25,14 +25,14 @@
 #else
     float alpha = (float)((pow(cos(pulse), 2) + 1) * .5);
 #endif
-    for (int step = 0; step < 6; step += 2) {
+    for (index = 0; index < 6; index += 2) {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         grim_interface_ptr->grim_set_color(1, 1, 1, alpha);
-        float angle = orbit + step * 1.0471976f;
+        float angle = orbit + index * 1.0471976f;
         grim_interface_ptr->grim_draw_quad(MOUSE_X - 32.f + (float)cos(angle) * 16.f,
                                            MOUSE_Y - 32.f + (float)sin(angle) * 16.f, 64, 64);
 #else
-        double angle = orbit + (double)step * 1.0471976f;
+        double angle = orbit + (double)index * 1.0471976f;
         float px = (float)(x + cos(angle) * 16), py = (float)(y + sin(angle) * 16);
 #ifdef CRIMSON_FREEWARE_CLIENT
         sprite("part", px, py, 64, 64, rotation, 1, 1, 1, alpha);

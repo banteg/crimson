@@ -133,6 +133,7 @@
     sprintf(buf, "Gained level: %d\nHit accuracy: %d%%\nFrags: %d\n", P(current_player_index).level,
             (int)((float)highscore_record_hits / highscore_record_shots_fired * 100.f), freeware_kills);
     grim_interface_ptr->grim_draw_text_mono(60, 320, buf);
+    int index;
 #include "frame_cursor.inc"
     grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
 }

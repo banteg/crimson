@@ -809,6 +809,7 @@ __forceinline bool setup_controls() {
 }
 #endif
 __forceinline void cursor_particles(float pulse, float orbit) {
+    int index;
 #include "frame_cursor.inc"
 }
 __forceinline void menu_footer_text() {
