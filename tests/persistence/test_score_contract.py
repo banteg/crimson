@@ -32,10 +32,13 @@ def score_decoder(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return binary
 
 
-def test_shared_decoding_corpus(score_decoder: Path) -> None:
+def test_shared_decoding_corpus(score_decoder: Path, tmp_path: Path) -> None:
     cases = json.loads(Path(__file__).with_name("score_contract.json").read_text())
     lines = [case["line"].encode("utf-8") for case in cases]
-    native = subprocess.check_output([score_decoder], input=b"\n".join(lines) + b"\n").decode().splitlines()
+    corpus = tmp_path / "scores.jsonl"
+    corpus.write_bytes(b"\n".join(lines) + b"\n")
+    with corpus.open("rb") as source:
+        native = subprocess.check_output([score_decoder], stdin=source).decode().splitlines()
     assert len(native) == len(cases)
     for case, line, actual in zip(cases, lines, native, strict=True):
         if not case["valid"]:
