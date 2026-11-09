@@ -25,20 +25,23 @@ if (which == online_page) {
 #endif
 int &hover = FIELD(freeware_perk_hover, perk_hover);
 hover = -1;
-for (int i = 0; i < count; ++i) {
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10400
+int row_index;
+#endif
+for (row_index = 0; row_index < count; ++row_index) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-    std::string label = which == main_page      ? freeware::menu_row(G, i).label
-                        : which == options_page ? G.option(freeware::option_action(i))
-                                                : freeware::online_labels[i];
+    std::string label = which == main_page      ? freeware::menu_row(G, row_index).label
+                        : which == options_page ? G.option(freeware::option_action(row_index))
+                                                : freeware::online_labels[row_index];
     const char *name = label.c_str();
     const float mx = G.cursor_x, my = G.cursor_y;
 #else
 #if FREEWARE_EDITION < 10400
-    char *const &name = which == main_page ? freeware_main_labels[i] : freeware_option_labels[i];
+    char *const &name = which == main_page ? freeware_main_labels[row_index] : freeware_option_labels[row_index];
 #else
-    char *const &name = which == main_page ? freeware_main_labels[i]
-                        : which == options_page ? freeware_option_labels[i]
-                                                : freeware_online_labels[i];
+    char *const &name = which == main_page ? freeware_main_labels[row_index]
+                        : which == options_page ? freeware_option_labels[row_index]
+                                                : freeware_online_labels[row_index];
 #endif
     const float mx = freeware_aim_screen.x, my = freeware_aim_screen.y;
 #endif
@@ -47,16 +50,16 @@ for (int i = 0; i < count; ++i) {
 #endif
     position.x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
 #ifdef CRIMSON_FREEWARE_CLIENT
-    position.y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * option_spacing;
+    position.y = which == main_page ? freeware::main_row_top + row_index * 32.f : 170.f + row_index * option_spacing;
     if (FREEWARE_EDITION == 10002 && which == options_page)
-        position.y = 180.f + i * 32.f;
-    const int action = which == main_page ? freeware::main_action(i) : i;
+        position.y = 180.f + row_index * 32.f;
+    const int action = which == main_page ? freeware::main_action(row_index) : row_index;
 #else
-    position.y = which == main_page ? 200.f + i * 32.f : 170.f + i * option_spacing;
+    position.y = which == main_page ? 200.f + row_index * 32.f : 170.f + row_index * option_spacing;
     if (FREEWARE_EDITION == 10002)
-        position.y = (which == main_page ? 220.f : 180.f) + i * 32.f;
+        position.y = (which == main_page ? 220.f : 180.f) + row_index * 32.f;
 #if FREEWARE_EDITION == 10002
-    const int action = native_menu_action(which, i);
+    const int action = native_menu_action(which, row_index);
 #endif
 #endif
 #if FREEWARE_EDITION == 10002
@@ -67,29 +70,29 @@ for (int i = 0; i < count; ++i) {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &position,
             FramePoint(position.x + strlen(name) * 16.f, position.y + row_height).address()))
-        hover = i;
-    if (hover == i)
+        hover = row_index;
+    if (hover == row_index)
         grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
-    else if (SELECTED == i)
+    else if (SELECTED == row_index)
         grim_interface_ptr->grim_set_color(1, 1, 1, .7f);
     else
         grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
-    if (which == online_page && i == 2)
+    if (which == online_page && row_index == 2)
         grim_interface_ptr->grim_set_color(1, 1, 1, .2f);
-    if (which == main_page && ACTIVE && i == 1)
+    if (which == main_page && ACTIVE && row_index == 1)
         grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
-    if (which == main_page && ACTIVE && i == 2)
+    if (which == main_page && ACTIVE && row_index == 2)
         grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
     grim_interface_ptr->grim_draw_text_mono(position.x, position.y, name);
 #else
     if (mx > position.x && my > position.y && mx < position.x + strlen(name) * 16.f && my < position.y + row_height)
-        hover = i;
+        hover = row_index;
 #if FREEWARE_EDITION == 10002
-    float light = 1, alpha = hover == i ? .9f : .6f;
+    float light = 1, alpha = hover == row_index ? .9f : .6f;
 #else
-    float light = 1, alpha = hover == i ? .9f : SELECTED == i ? .7f : .6f;
+    float light = 1, alpha = hover == row_index ? .9f : SELECTED == row_index ? .7f : .6f;
 #endif
-    if (which == online_page && i == 2)
+    if (which == online_page && row_index == 2)
         alpha = .2f;
     if (which == main_page && ACTIVE && (action == 1 || action == 2)) {
         light = .6f;

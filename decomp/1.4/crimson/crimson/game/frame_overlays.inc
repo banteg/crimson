@@ -31,6 +31,9 @@ __forceinline AimPoint operator-(const vec2f_t &a, const vec2f_t &b) {
     return AimPoint(a.x - b.x, a.y - b.y);
 }
 
+__forceinline float aim_angle(AimPoint delta) { return atan2f(delta.y, delta.x); }
+__forceinline float aim_length(AimPoint delta) { return sqrtf(delta.x * delta.x + delta.y * delta.y); }
+
 __forceinline void aim_color(float alpha) {
     if (config_player_count == 2) {
         if (current_player_index == 0)

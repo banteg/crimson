@@ -217,6 +217,13 @@ __forceinline void request_transition() {
     FIELD(freeware_transition_alpha, transition_alpha) = 1;
 }
 __forceinline void begin_overlay() { freeware_overlay_begin(); }
+#if FREEWARE_EDITION >= 10300 && !defined(CRIMSON_FREEWARE_CLIENT)
+__forceinline FramePoint perk_button_origin() {
+    const float x = screen_width - 240.f;
+    const float y = screen_height - 50.f;
+    return FramePoint(x, y);
+}
+#endif
 __forceinline void simulate_players() {
 #if FREEWARE_EDITION == 10002
     creatures();
@@ -237,10 +244,8 @@ __forceinline void simulate_players() {
         if (perk_shortcut())
             perk_requested = true;
         else {
-            const float x = screen_width - 240.f, y = screen_height - 50.f;
-            const FramePoint origin(x, y);
-            FramePoint hi = origin + FramePoint(257.f, 51.f);
-            FramePoint lo = origin;
+            const FramePoint hi = perk_button_origin() + FramePoint(257.f, 51.f);
+            const FramePoint lo = perk_button_origin();
             perk_requested = (unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi) &&
                              grim_interface_ptr->grim_was_mouse_button_pressed(0);
         }
@@ -293,8 +298,13 @@ __forceinline void position_camera() {
         SHAKE_TIME = .061f;
         shake(SHAKE.x);
         shake(SHAKE.y);
+#if FREEWARE_EDITION == 10300
+        const float magnitude = sqrtf((float)(SHAKE.x * SHAKE.x + (double)SHAKE.y * SHAKE.y));
+#else
         const double squared_y = (double)SHAKE.y * SHAKE.y;
-        if ((float)sqrt(SHAKE.x * SHAKE.x + squared_y) < 5.f) {
+        const float magnitude = (float)sqrt(SHAKE.x * SHAKE.x + squared_y);
+#endif
+        if (magnitude < 5.f) {
             shake(SHAKE.x);
             shake(SHAKE.y);
         }
@@ -578,9 +588,11 @@ __forceinline void draw_transition(bool dying, transition_phase phase) {
         grim_interface_ptr->grim_set_color(1, 1, 1, 1);
     if (dying)
         grim_interface_ptr->grim_draw_quad(screen_width / 2 - 64, screen_height / 2 - 64, 128, 128);
-    else
-        grim_interface_ptr->grim_draw_text_mono(screen_width / 2 - strlen("Level cleared!") * 8,
+    else {
+        const int center_x = screen_width / 2;
+        grim_interface_ptr->grim_draw_text_mono(center_x - strlen("Level cleared!") * 8,
                                                screen_height / 2 - 32, "Level Cleared!");
+    }
     grim_interface_ptr->grim_end_batch();
 }
 __forceinline void draw_timed_transition(bool dying) {
@@ -604,6 +616,9 @@ unsigned char game_frame_update() {
 #if FREEWARE_EDITION == 10002
     // Both overlays retain their cursor clocks and particle opacity across the draw calls.
     float cursor_phase, cursor_orbit, cursor_alpha;
+#elif !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+    // The menu and name-entry cursor use the same orbit-clock local.
+    float cursor_orbit;
 #endif
 #ifdef CRIMSON_FREEWARE_CLIENT
     if (INPUT.screenshot)
@@ -669,7 +684,8 @@ unsigned char game_frame_update() {
         current_player_index = 0;
     frame_dt = SCALE * dt;
     CLOCK += frame_dt;
-    if (state() == 3 && (CL_BUILD == 10002 || config_game_mode != 4))
+    const bool simulate = state() == 3 && (CL_BUILD == 10002 || config_game_mode != 4);
+    if (simulate)
         simulate_players();
 #if FREEWARE_EDITION == 10002
     render_ground(); // 0x40c243 draws the ground with the preceding frame's camera.

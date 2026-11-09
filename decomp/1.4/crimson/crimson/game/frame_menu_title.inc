@@ -1,17 +1,15 @@
 // Title decorations and logo for the later freeware menus.
 if (freeware_assembly_sequence == 8) {
     frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("asmlogo"));
-    grim_interface_ptr->grim_set_config_var(frame_src_blend, 5u);
-    grim_interface_ptr->grim_set_config_var(frame_dst_blend, 2u);
+    menu_blend(true);
     grim_interface_ptr->grim_set_rotation(0);
     grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
     grim_interface_ptr->grim_begin_batch();
 
     position.x = screen_width / 2 + cosf(age - .2f) * 5.f;
     position.y = 140.f + cosf(age - .2f) * 5.f;
-    vec2f_t delta = {position.x - MOUSE_X, position.y - MOUSE_Y};
-    float direction = atan2f(delta.y, delta.x);
-    float length = sqrtf(delta.x * delta.x + delta.y * delta.y) * .02f;
+    float direction = aim_angle(position - freeware_aim_screen);
+    float length = aim_length(position - freeware_aim_screen) * .02f;
     length *= 20.f;
     for (int i = 1; i < length; i += 3) {
         grim_interface_ptr->grim_set_color(.7f, .8f, 1, .09f - i * .09f / length);
@@ -24,9 +22,10 @@ if (freeware_assembly_sequence == 8) {
 }
 if (freeware_birthday) {
 #if FREEWARE_EDITION == 10300
-    float wave = (float)(cos(age - .2f) * 5.f);
+    position.x = screen_width / 2 + cosf(age - .2f) * 5.f - 100.f;
+    position.y = cosf(age - .2f) * 5.f + 170.f;
     grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-    grim_interface_ptr->grim_draw_text_mono(screen_width / 2 + wave - 100, wave + 170, "Happy birthday !");
+    grim_interface_ptr->grim_draw_text_mono(position.x, position.y, "Happy birthday !");
 #else
     grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
     char message[] = "Happy birthday !";
@@ -51,7 +50,6 @@ if (freeware_christmas) {
     grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
     grim_interface_ptr->grim_begin_batch();
     for (int x = 0; x < screen_width; x += 17) {
-
         float snow_x = (float)x;
         grim_interface_ptr->grim_set_rotation(snow_x + (float)sin(age * .4f));
         float &y = freeware_snow_y[x];
@@ -109,8 +107,7 @@ position = base;
 position.x += (float)cos(menu_clock) * 5.f;
 position.y += (float)sin(menu_clock) * 5.f;
 frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("crimsonland"));
-grim_interface_ptr->grim_set_config_var(frame_src_blend, 5u);
-grim_interface_ptr->grim_set_config_var(frame_dst_blend, 6u);
+menu_blend(false);
 if (age < 1.f) {
     if (!freeware_credits_open && !freeware_scores_open)
         freeware_logo_angle = (1.f - (float)sin(age * 1.57079637f)) * 1.57079637f;

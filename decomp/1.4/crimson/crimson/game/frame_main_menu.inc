@@ -20,7 +20,12 @@ refresh_labels(which);
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 float age = CLOCK - STATE_SINCE;
+#if FREEWARE_EDITION == 10300
+cursor_orbit = CLOCK;
+const float &menu_clock = cursor_orbit;
+#else
 float menu_clock = CLOCK;
+#endif
 vec2f_t position;
 {
 #include "frame_menu_title.inc"
@@ -70,6 +75,9 @@ if (freeware_rebinding) {
 } else if (freeware_calibrating) {
 #include "frame_joystick_calibration.inc"
 } else {
+#if FREEWARE_EDITION == 10400
+    int row_index;
+#endif
     if (freeware_options_open) {
         refresh_option_labels();
         enum { which = options_page };

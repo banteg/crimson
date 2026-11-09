@@ -54,14 +54,8 @@ for (current_player_index = 0; current_player_index < config_player_count; ++cur
     aim_color(.6f);
     ui140::begin();
     float angle = P(current_player_index).heading - 1.57079637f;
-#if FREEWARE_EDITION == 10300
     AimPoint direction((float)cos(angle), (float)sin(angle));
     AimPoint offset(direction.x * 60.f, direction.y * 60.f);
-#else
-    AimPoint offset((float)cos(angle), (float)sin(angle));
-    offset.x *= 60.f;
-    offset.y *= 60.f;
-#endif
     freeware_draw_point[0] = CAM + P(current_player_index).position + offset - AimPoint(16, 16);
     if (FREEWARE_EDITION == 10300 || FIELD(freeware_direction_arrow, direction_arrow))
         world_quad(freeware_draw_point[0].x, freeware_draw_point[0].y, 32, 32);
