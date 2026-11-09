@@ -75,7 +75,7 @@ if (editor_key(0x2e, true)) {
     freeware_current_map->start_heading = 0;
 }
 if (editor_key(0x11, true)) {
-    freeware_level_trigger *trigger = editor_make_trigger(2, editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y), 0, 20);
+    freeware_level_trigger *trigger = editor_make_trigger(2, 0, 20);
     trigger->weapon = 2;
     freeware_current_map->add_trigger(trigger);
 }
@@ -118,12 +118,10 @@ if (index >= 0)
         if (editor_key(0x13, false))
             object->flags |= 2;
         if (editor_key(0x2f, false)) {
-            effect_color_t tint = {.9f, .1f, .1f, 1};
-            object->color = tint;
+            object->color = editor_tint(.9f, .1f, .1f, 1);
             object->flags |= 1;
         } else {
-            effect_color_t tint = {light, light, light, alpha};
-            object->color = tint;
+            object->color = editor_tint(light, light, light, alpha);
         }
         freeware_current_map->add_object(layer, object);
         rebuild_terrain();
@@ -148,7 +146,7 @@ if (index >= 0)
 #endif
     }
     if (editor_click(1)) {
-        freeware_current_map->add_trigger(editor_make_trigger(0, editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y), rotation, radius));
+        freeware_current_map->add_trigger(editor_make_trigger(0, rotation, radius));
     }
 #ifdef CRIMSON_FREEWARE_CLIENT
     bool black = editor_key(0x30, false);

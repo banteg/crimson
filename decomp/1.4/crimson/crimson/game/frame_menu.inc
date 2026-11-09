@@ -122,14 +122,14 @@ __forceinline bool menu_key(int key) {
     return grim_interface_ptr->grim_was_key_pressed(key);
 #endif
 }
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 __forceinline void advance_secret(int &step, int required, int key) {
     if (step == required && menu_key(key))
         ++step;
 }
 #endif
 __forceinline void menu_secrets() {
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     if (grim_interface_ptr->grim_is_key_down(0x1d)) {
         advance_secret(freeware_assembly_sequence, 0, 0x1e);
         advance_secret(freeware_assembly_sequence, 1, 0x1f);
@@ -144,6 +144,17 @@ __forceinline void menu_secrets() {
         }
     }
     if (grim_interface_ptr->grim_is_key_down(0x1d)) {
+#if FREEWARE_EDITION == 10300
+        advance_secret(freeware_levels_sequence, 0, 0x26);
+        advance_secret(freeware_levels_sequence, 1, 0x12);
+        advance_secret(freeware_levels_sequence, 2, 0x2f);
+        advance_secret(freeware_levels_sequence, 3, 0x12);
+        advance_secret(freeware_levels_sequence, 4, 0x26);
+        if (freeware_levels_sequence == 5 && menu_key(0x1f)) {
+            sfx_play_panned(17, .45f, .5f);
+            ++freeware_levels_sequence;
+        }
+#else
         advance_secret(freeware_tips_sequence, 0, 0x14);
         advance_secret(freeware_tips_sequence, 1, 0x17);
         advance_secret(freeware_tips_sequence, 2, 0x19);
@@ -151,6 +162,7 @@ __forceinline void menu_secrets() {
             sfx_play_panned(17, .45f, .5f);
             freeware_show_secret_hints = 1;
         }
+#endif
     }
 #elif FREEWARE_EDITION != 10002
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -175,19 +187,6 @@ __forceinline void menu_secrets() {
                 sfx_play_panned(17, .45f, .5f);
         }
     }
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
-    // 0x4145a6 checks Ctrl a second time. Each queried edge advances the live counter.
-    if (grim_interface_ptr->grim_is_key_down(0x1d)) {
-        const int levels[] = {0x26, 0x12, 0x2f, 0x12, 0x26, 0x1f};
-        for (int i = 0; i < 6; ++i) {
-            if (freeware_levels_sequence == i && menu_key(levels[i])) {
-                if (i == 5)
-                    sfx_play_panned(17, .45f, .5f);
-                ++freeware_levels_sequence;
-            }
-        }
-    }
-#endif
 #if FREEWARE_EDITION >= 10400
     int &tips = FIELD(freeware_tips_sequence, tips_sequence);
     if (tips == 0 && menu_key(0x14))
@@ -249,7 +248,7 @@ __forceinline void refresh_option_labels() {
 }
 #endif
 __forceinline void refresh_labels(int which) {
-#if FREEWARE_EDITION == 10400
+#if FREEWARE_EDITION >= 10300
     crt_free(freeware_main_labels[0]);
     if (ACTIVE)
         freeware_main_labels[0] = strdup_malloc("Resume game.");
@@ -269,14 +268,14 @@ __forceinline void refresh_labels(int which) {
         freeware_main_labels[2] = strdup_malloc("Game mode: Level Test");
     else
         freeware_main_labels[2] = strdup_malloc("Game mode: Level Edit");
-    crt_free(freeware_main_labels[7]);
+    const int last = FREEWARE_EDITION == 10300 ? 6 : 7;
+    crt_free(freeware_main_labels[last]);
     if (ACTIVE)
-        freeware_main_labels[7] = strdup_malloc("End current game.");
+        freeware_main_labels[last] = strdup_malloc("End current game.");
     else
-        freeware_main_labels[7] = strdup_malloc("End.");
+        freeware_main_labels[last] = strdup_malloc("End.");
 #else
     set_label(freeware_main_labels, ACTIVE ? "Resume game." : "Begin game.");
-#if FREEWARE_EDITION == 10002
     if (which != options_page)
         return;
     set_label(freeware_option_labels, config_movement_schemes[0] == 2 ? "Control method: static" : "Control method: relative");
@@ -285,17 +284,6 @@ __forceinline void refresh_labels(int which) {
     set_label(freeware_option_labels + 4, freeware_show_fps ? "Show FPS: on" : "Show FPS: off");
     set_label(freeware_option_labels + 5, freeware_glow ? "Flame Glow FX: on" : "Flame Glow FX: off");
     set_label(freeware_option_labels + 6, freeware_shell_marks ? "Shell marks: on" : "Shell marks: off");
-#else
-    set_label(freeware_main_labels + 1, config_player_count == 1 ? "Players: one" : "Players: two");
-    set_label(freeware_main_labels + 2, config_game_mode == 1   ? "Game mode: career"
-                                        : config_game_mode == 2 ? "Game mode: survival"
-                                        : config_game_mode == 3 ? "Game mode: Level Test"
-                                                                : "Game mode: Level Edit");
-    set_label(freeware_main_labels + (FREEWARE_EDITION == 10300 ? 6 : 7), ACTIVE ? "End current game." : "End.");
-    if (which != options_page)
-        return;
-    refresh_option_labels();
-#endif
 #endif
 }
 __forceinline int native_menu_action(int which, int row) {
@@ -322,10 +310,8 @@ __forceinline int menu_rows(int which) {
     // 1.3.0 uses the same 26-pixel increment and hitbox at 0x415715 and 0x415751.
     const float option_spacing = FREEWARE_EDITION == 10300 ? 26.f : 21.f;
     float x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
-    float font_scale = FREEWARE_EDITION == 10002 || which == main_page ? .75435f : .65f;
-#ifndef CRIMSON_FREEWARE_CLIENT
-    if (FREEWARE_EDITION < 10400)
-        font_scale = .75435f;
+    float font_scale = FREEWARE_EDITION < 10400 || which == main_page ? .75435f : .65f;
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION != 10300
     grim_interface_ptr->grim_set_config_var(frame_font_scale, font_scale);
 #endif
 #if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10400
@@ -373,7 +359,7 @@ __forceinline int menu_rows(int which) {
 #else
         const float row_height = which == main_page ? 30.f : option_spacing;
 #endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         vec2f_t lo = {x, y};
         vec2f_t hi = {lo.x + strlen(name) * 16.f, lo.y + row_height};
         if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
@@ -412,20 +398,27 @@ __forceinline int menu_rows(int which) {
 #endif
 #endif
     }
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
-    if (!console_open_flag && menu_key(0xc8)) {
+#if FREEWARE_EDITION == 10300 || (!defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400)
+    if ((FREEWARE_EDITION == 10300 || !FIELD(console_open_flag, console_open)) && menu_key(0xc8)) {
         --SELECTED;
         if (SELECTED >= count) SELECTED = count - 1;
         else if (SELECTED < 0) SELECTED = 0;
         hover = SELECTED;
     }
-    if (!console_open_flag && menu_key(0xd0)) {
+    if ((FREEWARE_EDITION == 10300 || !FIELD(console_open_flag, console_open)) && menu_key(0xd0)) {
         ++SELECTED;
         if (SELECTED >= count) SELECTED = count - 1;
         else if (SELECTED < 0) SELECTED = 0;
         hover = SELECTED;
     }
+#ifdef CRIMSON_FREEWARE_CLIENT
+    if (INPUT.accept || INPUT.accept_down)
+        hover = SELECTED;
+    if (INPUT.accept)
+        return hover;
+#else
     return hover;
+#endif
 #elif FREEWARE_EDITION == 10002
     if (which == options_page && menu_key(0x1c))
         return hover;
@@ -574,6 +567,9 @@ __forceinline void menu_options(int row) {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         freeware_options_open = 0;
         freeware_perk_hover = 0;
+#elif FREEWARE_EDITION == 10300
+        show_page(main_page);
+        G.perk_hover = 0;
 #else
         show_page(main_page);
 #if FREEWARE_EDITION == 10002
@@ -604,7 +600,7 @@ __forceinline void menu_blend(bool additive) {
     grim_interface_ptr->grim_set_config_var(frame_dst_blend, additive ? 2u : 6u);
 #endif
 }
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 __forceinline void menu_title(float age, float menu_clock) {
     if (freeware_assembly_sequence == 8) {
         frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("asmlogo"));
@@ -613,22 +609,27 @@ __forceinline void menu_title(float age, float menu_clock) {
         grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
         grim_interface_ptr->grim_begin_batch();
 
-        vec2f_t center = {screen_width / 2 + (float)cos(age - .2f) * 5.f,
-                          140.f + (float)cos(age - .2f) * 5.f};
+        vec2f_t center = {screen_width / 2 + cosf(age - .2f) * 5.f,
+                          140.f + cosf(age - .2f) * 5.f};
         vec2f_t delta = {center.x - MOUSE_X, center.y - MOUSE_Y};
-        float direction = (float)atan2(delta.y, delta.x);
-        float length = (float)sqrt(delta.x * delta.x + delta.y * delta.y) * .02f;
+        float direction = atan2f(delta.y, delta.x);
+        float length = sqrtf(delta.x * delta.x + delta.y * delta.y) * .02f;
         length *= 20.f;
         for (int i = 1; i < length; i += 3) {
             grim_interface_ptr->grim_set_color(.7f, .8f, 1, .09f - i * .09f / length);
-            grim_interface_ptr->grim_draw_quad(center.x - 89.f + (float)cos(direction) * i,
-                    center.y + (float)sin(direction) * i / 3.f, 178, 29);
+            grim_interface_ptr->grim_draw_quad(center.x - 89.f + cosf(direction) * i,
+                    center.y + sinf(direction) * i / 3.f, 178, 29);
         }
         grim_interface_ptr->grim_set_color(1, 1, 1, .7f);
         grim_interface_ptr->grim_draw_quad(center.x - 89.f, center.y, 178, 29);
         grim_interface_ptr->grim_end_batch();
     }
     if (freeware_birthday) {
+#if FREEWARE_EDITION == 10300
+        float wave = (float)(cos(age - .2f) * 5.f);
+        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+        grim_interface_ptr->grim_draw_text_mono(screen_width / 2 + wave - 100, wave + 170, "Happy birthday !");
+#else
         grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
         char message[] = "Happy birthday !";
         char glyph[] = "Happy birthday !";
@@ -641,7 +642,9 @@ __forceinline void menu_title(float age, float menu_clock) {
             glyph[i] = message[i];
             grim_interface_ptr->grim_draw_text_mono(0, 0, glyph);
         }
+#endif
     }
+#if FREEWARE_EDITION >= 10400
     if (freeware_christmas) {
         grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
         grim_interface_ptr->grim_set_color(1, 1, 1, 1);
@@ -672,22 +675,20 @@ __forceinline void menu_title(float age, float menu_clock) {
     }
     if (freeware_memorial) {
         grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f);
-        float cs = (float)cos(age - .2f);
-        vec2f_t point = {screen_width / 2 + cs * 5.f - 100.f, cs * 5.f + 170.f};
-        float sn = (float)sin(age - .2f);
+        vec2f_t point = {screen_width / 2 + cosf(age - .2f) * 5.f - 100.f, cosf(age - .2f) * 5.f + 170.f};
         for (float d = 0; d < 16; d += .5f) {
-            float fade = d / 16.f;
-            grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f + fade * .05f);
-            grim_interface_ptr->grim_set_color(.1f, .4f, .7f, (1.f - fade) * .2f);
-            grim_interface_ptr->grim_draw_text_mono(point.x - cs * d, point.y + sn * d * 2.f, "The World Grieves..");
+            grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f + (d / 16.f) * .05f);
+            grim_interface_ptr->grim_set_color(.1f, .4f, .7f, (1.f - d / 16.f) * .2f);
+            grim_interface_ptr->grim_draw_text_mono(point.x - cosf(age - .2f) * d,
+                                                    point.y + sinf(age - .2f) * d * 2.f, "The World Grieves..");
         }
         grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f);
         grim_interface_ptr->grim_set_color(1, 1, 1, 1);
         grim_interface_ptr->grim_draw_text_mono(point.x, point.y, "The World Grieves..");
     }
     if (freeware_solstice) {
-        vec2f_t point = {screen_width / 2 + (float)cos(age - .2f) * 5.f - 100.f,
-                         (float)cos(age - .2f) * 5.f + 170.f};
+        vec2f_t point = {screen_width / 2 + cosf(age - .2f) * 5.f - 100.f,
+                         cosf(age - .2f) * 5.f + 170.f};
         grim_interface_ptr->grim_set_color(1, 1, 1, .15f);
         frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("tl_tolmec"));
         grim_interface_ptr->grim_begin_batch();
@@ -697,6 +698,7 @@ __forceinline void menu_title(float age, float menu_clock) {
         grim_interface_ptr->grim_set_color(1, .8f, .2f, 1);
         grim_interface_ptr->grim_draw_text_mono(point.x, point.y, "Have a Nice End of the World !");
     }
+#endif
 
     if (age < 1.f)
         grim_interface_ptr->grim_set_color(1, 1, 1, age);
@@ -847,7 +849,12 @@ bool input_move_up_active(), input_move_down_active(), input_move_left_active(),
 }
 #endif
 extern "C" char *wrap_text_to_width_alloc(char *, int);
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if FREEWARE_EDITION == 10300
+#define CALIBRATION_JOYSTICK "joystic"
+#else
+#define CALIBRATION_JOYSTICK "joystick"
+#endif
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 __forceinline void calibration_prompt(char *message) {
     grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
     grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
@@ -857,7 +864,7 @@ __forceinline void calibration_prompt(char *message) {
 }
 __forceinline void calibration_pov(char *message, int &direction) {
     calibration_prompt(message);
-    if (!console_open_flag && menu_key(0x1c)) {
+    if ((FREEWARE_EDITION == 10300 || !console_open_flag) && menu_key(0x1c)) {
         direction = grim_interface_ptr->grim_get_joystick_pov(0);
         ++freeware_setup_step;
     }
@@ -902,12 +909,12 @@ __forceinline bool setup_controls() {
 
     grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
     if (freeware_setup_step == 0) {
-        calibration_prompt("Center the joystick and press enter or a joystick button");
+        calibration_prompt("Center the " CALIBRATION_JOYSTICK " and press enter or a " CALIBRATION_JOYSTICK " button");
         grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
         sprintf(freeware_ui_buffer, "X-Axis: %d\nY-Axis: %d", grim_interface_ptr->grim_get_joystick_x(),
                 grim_interface_ptr->grim_get_joystick_y());
         grim_interface_ptr->grim_draw_text_mono(40, 250, freeware_ui_buffer);
-        if (!console_open_flag && (menu_key(0x1c) || grim_interface_ptr->grim_is_joystick_button_down(0) ||
+        if ((FREEWARE_EDITION == 10300 || !console_open_flag) && (menu_key(0x1c) || grim_interface_ptr->grim_is_joystick_button_down(0) ||
             grim_interface_ptr->grim_is_joystick_button_down(1) || grim_interface_ptr->grim_is_joystick_button_down(2) ||
             grim_interface_ptr->grim_is_joystick_button_down(3) || grim_interface_ptr->grim_is_joystick_button_down(4))) {
             freeware_pad_center_x = grim_interface_ptr->grim_get_joystick_x();
@@ -915,8 +922,8 @@ __forceinline bool setup_controls() {
             ++freeware_setup_step;
         }
     } else if (freeware_setup_step == 1) {
-        calibration_prompt("Set the joystick X/Y-Axis threshold with arrow keys up/down, press enter when done.");
-        if (!console_open_flag) {
+        calibration_prompt("Set the " CALIBRATION_JOYSTICK " X/Y-Axis threshold with arrow keys up/down, press enter when done.");
+        if (FREEWARE_EDITION == 10300 || !console_open_flag) {
             if (menu_key(0xc8))
                 freeware_pad_threshold += 10;
             if (menu_key(0xd0))
@@ -933,9 +940,9 @@ __forceinline bool setup_controls() {
                 input_move_down_active(), input_move_left_active(), input_move_right_active());
         grim_interface_ptr->grim_draw_text_mono(40, 300, freeware_ui_buffer);
     } else if (freeware_setup_step == 2)
-        calibration_pov("If your joystick has 'hat' press it LEFT now and press enter. (press enter to skip this)", freeware_pov_left);
+        calibration_pov("If your " CALIBRATION_JOYSTICK " has 'hat' press it LEFT now and press enter. (press enter to skip this)", freeware_pov_left);
     else if (freeware_setup_step == 3)
-        calibration_pov("If your joystick has 'hat' press it RIGHT now and press enter. (press enter to skip this)", freeware_pov_right);
+        calibration_pov("If your " CALIBRATION_JOYSTICK " has 'hat' press it RIGHT now and press enter. (press enter to skip this)", freeware_pov_right);
     else if (freeware_setup_step >= 4) {
         freeware_setup_step = 0;
         freeware_calibrating = 0;
@@ -984,9 +991,11 @@ __forceinline bool setup_controls() {
             return true;
     } else {
 #ifdef CRIMSON_FREEWARE_CLIENT
-        int x = (int)(1000 * INPUT.stick_x[CONFIGURING]), y = (int)(1000 * INPUT.stick_y[CONFIGURING]);
-        int threshold = (int)(G.pad_threshold[CONFIGURING] * 1000 + .5f);
-        float ax = INPUT.aim_x[CONFIGURING], ay = INPUT.aim_y[CONFIGURING];
+        // The 1.3.0 wizard always polls Grim's one joystick, including while editing player two.
+        const int pad = FREEWARE_EDITION == 10300 ? 0 : CONFIGURING;
+        int x = (int)(1000 * INPUT.stick_x[pad]), y = (int)(1000 * INPUT.stick_y[pad]);
+        int threshold = (int)(G.pad_threshold[pad] * 1000 + .5f);
+        float ax = INPUT.aim_x[pad], ay = INPUT.aim_y[pad];
         int pov = ax == 0 && ay == 0 ? -1 : (int)(atan2(ax, -ay) * 5729.5779513 + 36000.5) % 36000;
 #else
         int x = grim_interface_ptr->grim_get_joystick_x(), y = grim_interface_ptr->grim_get_joystick_y();
@@ -994,10 +1003,10 @@ __forceinline bool setup_controls() {
         int pov = grim_interface_ptr->grim_get_joystick_pov(0);
 #endif
         const char *prompts[] = {
-            "Center the joystick and press enter or a joystick button",
-            "Set the joystick X/Y-Axis threshold with arrow keys up/down, press enter when done.",
-            "If your joystick has 'hat' press it LEFT now and press enter. (press enter to skip this)",
-            "If your joystick has 'hat' press it RIGHT now and press enter. (press enter to skip this)"};
+            "Center the " CALIBRATION_JOYSTICK " and press enter or a " CALIBRATION_JOYSTICK " button",
+            "Set the " CALIBRATION_JOYSTICK " X/Y-Axis threshold with arrow keys up/down, press enter when done.",
+            "If your " CALIBRATION_JOYSTICK " has 'hat' press it LEFT now and press enter. (press enter to skip this)",
+            "If your " CALIBRATION_JOYSTICK " has 'hat' press it RIGHT now and press enter. (press enter to skip this)"};
         char status[128];
         if (step > 3) {
             step = end;
@@ -1021,7 +1030,7 @@ __forceinline bool setup_controls() {
         if (step == 0) {
             sprintf(status, "X-Axis: %d\nY-Axis: %d", x, y);
 #ifdef CRIMSON_FREEWARE_CLIENT
-            bool trigger = INPUT.pad_any[CONFIGURING];
+            bool trigger = INPUT.pad_any[pad];
 #else
             bool trigger = false;
             for (int j = 0; j < 5; ++j)
@@ -1030,8 +1039,8 @@ __forceinline bool setup_controls() {
 #endif
             if (menu_key(0x1c) || trigger) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-                G.pad_center[CONFIGURING].x = x * .001f;
-                G.pad_center[CONFIGURING].y = y * .001f;
+                G.pad_center[pad].x = x * .001f;
+                G.pad_center[pad].y = y * .001f;
 #else
                 freeware_pad_center_x = x;
                 freeware_pad_center_y = y;
@@ -1046,7 +1055,7 @@ __forceinline bool setup_controls() {
             if (threshold < 0)
                 threshold = 0;
 #ifdef CRIMSON_FREEWARE_CLIENT
-            G.pad_threshold[CONFIGURING] = threshold * .001f;
+            G.pad_threshold[pad] = threshold * .001f;
 #endif
             sprintf(status, "X/Y-Axis threshold: %d", threshold);
             if (menu_key(0x1c))
@@ -1056,9 +1065,9 @@ __forceinline bool setup_controls() {
             if (menu_key(0x1c)) {
 #ifdef CRIMSON_FREEWARE_CLIENT
                 if (step == 2)
-                    G.pad_left_pov[CONFIGURING] = pov;
+                    G.pad_left_pov[pad] = pov;
                 else
-                    G.pad_right_pov[CONFIGURING] = pov;
+                    G.pad_right_pov[pad] = pov;
 #else
                 if (step == 2)
                     freeware_pov_left = pov;
@@ -1068,11 +1077,18 @@ __forceinline bool setup_controls() {
                 ++step;
             }
         }
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+        // Both players read the same four calibrated values in the original.
+        G.pad_center[1] = G.pad_center[0];
+        G.pad_threshold[1] = G.pad_threshold[0];
+        G.pad_left_pov[1] = G.pad_left_pov[0];
+        G.pad_right_pov[1] = G.pad_right_pov[0];
+#endif
         label(status, 40, 250, .70435f, 1, 1, 1, .6f);
         if (display_step == 1) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-            int dx = x - (int)(G.pad_center[CONFIGURING].x * 1000),
-                dy = y - (int)(G.pad_center[CONFIGURING].y * 1000);
+            int dx = x - (int)(G.pad_center[pad].x * 1000),
+                dy = y - (int)(G.pad_center[pad].y * 1000);
             sprintf(status, "Status:\n\nUp: %d\nDown: %d\nLeft: %d\nRight: %d", dy<-threshold, dy> threshold,
                     dx<-threshold, dx> threshold);
 #else
@@ -1095,8 +1111,9 @@ __forceinline bool setup_controls() {
 #endif
 }
 #endif
+#undef CALIBRATION_JOYSTICK
 __forceinline void cursor_particles(float pulse, float orbit) {
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10400
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION < 10300
     float x = MOUSE_X - 32, y = MOUSE_Y - 32;
 #endif
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -1106,7 +1123,7 @@ __forceinline void cursor_particles(float pulse, float orbit) {
     grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
     grim_interface_ptr->grim_set_color(1, 1, 1, 1);
     grim_interface_ptr->grim_begin_batch();
-#if FREEWARE_EDITION == 10400
+#if FREEWARE_EDITION >= 10300
     grim_interface_ptr->grim_draw_quad(MOUSE_X - 32.f, MOUSE_Y - 32.f, 64, 64);
 #else
     grim_interface_ptr->grim_draw_quad(x, y, 64, 64);
@@ -1116,13 +1133,13 @@ __forceinline void cursor_particles(float pulse, float orbit) {
     const float rotation = G.frame_sprites.empty() ? 0 : G.frame_sprites.back().angle;
     sprite("part", x, y, 64, 64, rotation, 1, 1, 1, 1);
 #endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     float alpha = ((float)pow((float)cos(pulse), 2) + 1.f) * .5f;
 #else
     float alpha = (float)((pow(cos(pulse), 2) + 1) * .5);
 #endif
     for (int step = 0; step < 6; step += 2) {
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         grim_interface_ptr->grim_set_color(1, 1, 1, alpha);
         float angle = orbit + step * 1.0471976f;
         grim_interface_ptr->grim_draw_quad(MOUSE_X - 32.f + (float)cos(angle) * 16.f,
@@ -1163,8 +1180,8 @@ __forceinline void menu_footer_text() {
     grim_interface_ptr->grim_set_config_var(frame_font_scale, .65435f);
     grim_interface_ptr->grim_set_color(1, 1, 1, .4f);
     grim_interface_ptr->grim_draw_text_mono(10, (float)screen_height - 25, (char *)version);
-    float copyright_x = FREEWARE_EDITION == 10400 ? (float)(screen_width - 330) : (float)screen_width - 330;
-    grim_interface_ptr->grim_draw_text_mono(copyright_x, (float)screen_height - 25, "2002 (c) 10tons entertainment");
+    grim_interface_ptr->grim_draw_text_mono(FREEWARE_EDITION >= 10300 ? (float)(screen_width - 330) : (float)screen_width - 330,
+                                            (float)screen_height - 25, "2002 (c) 10tons entertainment");
 #else
     label(version, 10, (float)screen_height - 25, .65435f, 1, 1, 1, .4f);
     label("2002 (c) 10tons entertainment", (float)screen_width - 330, (float)screen_height - 25, .65435f, 1, 1, 1,
@@ -1193,15 +1210,15 @@ __forceinline void menu_tracks(bool play_title) {
 #endif
 #endif
 }
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 __forceinline bool menu_clicked() {
-    return !console_open_flag &&
+    return (FREEWARE_EDITION == 10300 || !console_open_flag) &&
            (grim_interface_ptr->grim_was_key_pressed(0x1c) || grim_interface_ptr->grim_was_mouse_button_pressed(0));
 }
 __forceinline bool native_menu_actions() {
     if (freeware_options_open && menu_clicked())
-        menu_options(freeware_perk_hover);
-    if (freeware_online_open && menu_clicked()) {
+        menu_options(native_menu_action(options_page, freeware_perk_hover));
+    if (FREEWARE_EDITION >= 10400 && freeware_online_open && menu_clicked()) {
         if (freeware_perk_hover == 0) {
             freeware_open_site = 1;
             quit_requested = 1;
@@ -1216,7 +1233,8 @@ __forceinline bool native_menu_actions() {
             freeware_perk_hover = 0;
         }
     }
-    if (!freeware_credits_open && !freeware_scores_open && !freeware_options_open && !console_open_flag &&
+    if (!freeware_credits_open && !freeware_scores_open && !freeware_options_open &&
+        (FREEWARE_EDITION == 10300 || !console_open_flag) &&
         (grim_interface_ptr->grim_was_mouse_button_pressed(0) || grim_interface_ptr->grim_was_key_pressed(0x1c))) {
         if (freeware_perk_hover == 0) {
             if (ACTIVE)
@@ -1254,16 +1272,18 @@ __forceinline bool native_menu_actions() {
             }
         } else if (freeware_perk_hover == 3) {
             highscore_load_table();
-            request_transition();
+            freeware_transition_pending = 1;
             freeware_scores_open = 1;
+            freeware_transition_alpha = 1;
         } else if (freeware_perk_hover == 4) {
-            request_transition();
+            freeware_transition_pending = 1;
             freeware_credits_open = 1;
+            freeware_transition_alpha = 1;
         } else if (freeware_perk_hover == 5)
             freeware_options_open = 1;
-        else if (freeware_perk_hover == 6)
+        else if (FREEWARE_EDITION >= 10400 && freeware_perk_hover == 6)
             freeware_online_open = 1;
-        else if (freeware_perk_hover == 7) {
+        else if (freeware_perk_hover == (FREEWARE_EDITION == 10300 ? 6 : 7)) {
             if (!ACTIVE)
                 return false;
             menu_tracks(true);
@@ -1281,7 +1301,7 @@ __forceinline bool native_menu_actions() {
 #endif
 __forceinline bool main_menu() {
     menu_secrets();
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     if (!freeware_scores_open && MENU_MUSIC && !ACTIVE) {
 #else
     int which = page();
@@ -1293,13 +1313,13 @@ __forceinline bool main_menu() {
         FIELD(freeware_logo_angle, logo_angle) = 0;
     }
 #ifndef CRIMSON_FREEWARE_CLIENT
-#if FREEWARE_EDITION == 10400
+#if FREEWARE_EDITION >= 10300
     refresh_labels(main_page);
 #else
     refresh_labels(which);
 #endif
 #endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     float age = CLOCK - STATE_SINCE;
     float menu_clock = CLOCK;
     menu_title(age, menu_clock);
@@ -1309,26 +1329,26 @@ __forceinline bool main_menu() {
 #endif
     bool overlay = which == scores_page || which == credits_page;
 #ifdef CRIMSON_FREEWARE_CLIENT
-    if (FREEWARE_EDITION != 10002 && !overlay && INPUT.escape && which != main_page) {
+    if (FREEWARE_EDITION >= 10400 && !overlay && INPUT.escape && which != main_page) {
         show_page(main_page);
         SELECTED = 0;
         return true;
     }
 #endif
     int row = -1;
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     if (!setup_controls()) {
         if (freeware_options_open) {
             refresh_option_labels();
             menu_rows(options_page);
-        } else if (freeware_online_open)
+        } else if (FREEWARE_EDITION >= 10400 && freeware_online_open)
             menu_rows(online_page);
         else
             menu_rows(main_page);
     }
     menu_footer_text();
     cursor_particles(age, menu_clock);
-    if (!console_open_flag && grim_interface_ptr->grim_is_key_down(0x1c))
+    if ((FREEWARE_EDITION == 10300 || !console_open_flag) && grim_interface_ptr->grim_is_key_down(0x1c))
         freeware_perk_hover = SELECTED;
     return native_menu_actions();
 #else
@@ -1356,7 +1376,7 @@ __forceinline bool main_menu() {
 #endif
     if (which == options_page) {
         menu_options(row);
-#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION < 10400
         // Enter activates Done before the main menu reads the independent mouse edge.
         if (row == 11 && INPUT.accept && INPUT.click)
             row = 0;

@@ -62,8 +62,8 @@ struct Pickup {
 struct Input {
   float x = width / 2, y = height / 2;
   bool fire{}, click{}, up{}, down{}, left{}, right{};
-  bool previous{}, next{}, accept{}, escape{}, backspace{};
-  bool up2{}, down2{}, left2{}, right2{}, fire2{}, reload{}, level_up{};
+  bool previous{}, next{}, accept{}, accept_down{}, escape{}, backspace{};
+  bool up2{}, down2{}, left2{}, right2{}, fire2{}, reload{}, level_up{}, keypad_plus_down{};
   bool ctrl{}, console{}, mouse_fire{}, bend_time{}, fast_time{}, right_mouse{};
   bool screenshot{}, filter_override{}, relative{}, arrow_down{}, arrow_up{}, space_pressed{}, space_down{}, delete_scores{};
   float dx{}, dy{};
@@ -170,6 +170,7 @@ struct Game {
   vec2f_t radial_cursor{320, 140}, camera{0, -128}, camera_shake{};
   float camera_timer{}, state_since{};
   unsigned char random_flags[8]{};
+  bool perk_key_released{}; // Grim 1.0.2 arms the keypad edge when the perk prompt polls a released key.
   bool transition_pending = true;
   float transition_alpha = 1;
   bool wind_started{}, active_run{}, paused_perks{}, menu_music_pending = true;

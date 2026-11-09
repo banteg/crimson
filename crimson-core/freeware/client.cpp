@@ -161,8 +161,6 @@ static void frame() {
         in.level_up |= FREEWARE_EDITION != 10002;
         break;
       case SDL_SCANCODE_KP_PLUS:
-        in.level_up = true;
-        break;
       case SDL_SCANCODE_EQUALS:
         in.level_up |= FREEWARE_EDITION != 10002;
         break;
@@ -230,6 +228,7 @@ static void frame() {
   c.previous = now;
   bool was_text = c.game.screen == Screen::Death || c.game.console_open;
   Input controls = in;
+  controls.accept_down = keys[SDL_SCANCODE_RETURN];
   controls.arrow_down = keys[SDL_SCANCODE_DOWN];
   controls.arrow_up = keys[SDL_SCANCODE_UP];
   controls.relative = c.game.screen == Screen::Playing;
@@ -240,7 +239,9 @@ static void frame() {
   controls.bend_time = controls.space_down || in.right_mouse;
   controls.filter_override = keys[SDL_SCANCODE_O];
   controls.fast_time = keys[SDL_SCANCODE_X];
-  if (FREEWARE_EDITION != 10002)
+  if (FREEWARE_EDITION == 10002)
+    controls.keypad_plus_down = keys[SDL_SCANCODE_KP_PLUS];
+  else
     controls.level_up |= keys[SDL_SCANCODE_SPACE] || keys[SDL_SCANCODE_KP_PLUS];
   c.game.update(dt, controls);
   bool wants_text = c.game.screen == Screen::Death || c.game.console_open;

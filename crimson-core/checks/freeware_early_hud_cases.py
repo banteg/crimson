@@ -151,7 +151,7 @@ def check_name_edit_130(exe, lines):
         return pe.read(address, 32).split(b"\0", 1)[0].decode("ascii")
 
     # The score writer has its own oracle. Capture the name at its real call site.
-    pe.stub(0x404510, lambda c: saved.append(name()) or 1)
+    pe.stub(0x404510, lambda _c: saved.append(name()) or 1)
     pe.stub(0x4046C0, 1)
     pe.write(address, b"Prior\0")
     for round_id, keys in enumerate(((9,), (0xA7, ord("A"), 8, ord("Z"), 9))):

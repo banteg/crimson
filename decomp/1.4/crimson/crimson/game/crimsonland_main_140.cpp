@@ -10,6 +10,8 @@
 
 void freeware_console_cmd_loadtile();
 
+namespace frame_update140 { unsigned char game_frame_update(); }
+
 extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr, *freeware_console_grim;
 extern bool freeware_safe_mode, freeware_audio_disabled;
@@ -28,7 +30,7 @@ extern char *freeware_update_info;
 
 IGrim2D_cpp *grim_load_interface(char *);
 bool config_load_presets();
-unsigned char game_frame_update(), audio_suspend_all(), audio_resume_all(), sfx_system_init();
+unsigned char audio_suspend_all(), audio_resume_all(), sfx_system_init();
 void freeware_console_cmd_givegun(), freeware_console_cmd_giveperk(), freeware_console_cmd_playsample();
 void freeware_console_cmd_setcreaturecolor(), freeware_console_cmd_setcreaturehealth();
 void freeware_console_cmd_spawncreature(), freeware_console_cmd_mergehighs();
@@ -99,7 +101,7 @@ extern "C" int WINAPI crimsonland_main(HINSTANCE, HINSTANCE, LPSTR, int)
     else
         console_printf(&console_log_queue, "...using PRIMARY backend\n");
 
-    grim_interface_ptr->grim_set_config_var(1, game_frame_update);
+    grim_interface_ptr->grim_set_config_var(1, frame_update140::game_frame_update);
     grim_interface_ptr->grim_set_config_var(2, audio_suspend_all);
     grim_interface_ptr->grim_set_config_var(3, audio_resume_all);
     grim_interface_ptr->grim_set_config_var(0x42, true);

@@ -29,17 +29,14 @@ extern int world_arrow_marker_texture;
 
 // The single-precision point arithmetic mirrors the expressions in the early
 // rendering passes. In particular the unit vector is rounded before scaling.
-struct AimPoint102 : vec2f_t {
-    __forceinline AimPoint102(const float &px, const float &py) { x = px; y = py; }
-};
-__forceinline AimPoint102 aim_add102(const vec2f_t &a, const vec2f_t &b) {
-    return AimPoint102(a.x + b.x, a.y + b.y);
+__forceinline FramePoint102 aim_add102(const vec2f_t &a, const vec2f_t &b) {
+    return FramePoint102(a.x + b.x, a.y + b.y);
 }
-__forceinline AimPoint102 aim_sub102(const vec2f_t &a, const vec2f_t &b) {
-    return AimPoint102(a.x - b.x, a.y - b.y);
+__forceinline FramePoint102 aim_sub102(const vec2f_t &a, const vec2f_t &b) {
+    return FramePoint102(a.x - b.x, a.y - b.y);
 }
-__forceinline AimPoint102 aim_mul102(const vec2f_t &a, const float &scale) {
-    return AimPoint102(a.x * scale, a.y * scale);
+__forceinline FramePoint102 aim_mul102(const vec2f_t &a, const float &scale) {
+    return FramePoint102(a.x * scale, a.y * scale);
 }
 __forceinline float aim_length102(vec2f_t d) { return sqrtf(d.x * d.x + d.y * d.y); }
 
@@ -69,7 +66,7 @@ __forceinline void aim_overlays_102() {
     }
     menu_blend(false);
 #ifdef CRIMSON_FREEWARE_CLIENT
-    const AimPoint102 cursor(MOUSE_X, MOUSE_Y);
+    const FramePoint102 cursor(MOUSE_X, MOUSE_Y);
 #else
     const vec2f_t &cursor = freeware_aim_screen;
 #endif
@@ -85,7 +82,7 @@ __forceinline void aim_overlays_102() {
     uv(0, 0, 1, 1);
     AIM_TINT_102(1, 1, 1, .64f);
     begin();
-    freeware_draw_point[0] = aim_sub102(cursor, AimPoint102(size * .5f, size * .5f));
+    freeware_draw_point[0] = aim_sub102(cursor, FramePoint102(size * .5f, size * .5f));
     AIM_QUAD_102(freeware_draw_point[0].x, freeware_draw_point[0].y, size, size);
     end();
 
@@ -98,10 +95,10 @@ __forceinline void aim_overlays_102() {
     AIM_TINT_102(1, 1, 1, .64f);
     begin();
     const float heading = P(current_player_index).heading - 1.57079637f;
-    AimPoint102 dir(cosf(heading), sinf(heading));
+    FramePoint102 dir(cosf(heading), sinf(heading));
     freeware_draw_point[0] = aim_sub102(
         aim_add102(aim_add102(CAM, P(current_player_index).position), aim_mul102(dir, 60.f)),
-        AimPoint102(16.f, 16.f));
+        FramePoint102(16.f, 16.f));
     AIM_QUAD_102(freeware_draw_point[0].x, freeware_draw_point[0].y, 32, 32);
     end();
 }
@@ -115,8 +112,9 @@ __forceinline void combustion_particle102(const vec2f_t *pos, float intensity) {
 }
 
 __forceinline void target_perks102() {
-    if (PLAYER_PERK(current_player_index, perk_id_see_health) <= 0 &&
-        PLAYER_PERK(current_player_index, perk_id_spontaneously_combusteous) <= 0)
+    int owner_index = current_player_index;
+    if (PLAYER_PERK(owner_index, perk_id_see_health) <= 0 &&
+        PLAYER_PERK(owner_index, perk_id_spontaneously_combusteous) <= 0)
         return;
 
     vec2f_t aim = {FIELD(freeware_aim_screen.x, cursor_x) - CAM.x,

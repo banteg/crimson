@@ -110,6 +110,14 @@ extern "C" int world_arrow_marker_texture;
 #define BOMB_POS FIELD(freeware_bomb_position, run.bomb_pos)
 #endif
 namespace frame_update140 {
+#if FREEWARE_EDITION == 10002
+struct FramePoint102 : vec2f_t {
+    FramePoint102(float px, float py) {
+        x = px;
+        y = py;
+    }
+};
+#endif
 #if CL_BUILD == 10002
 enum { config_player_count = 1, screen_width = 640, screen_height = 480 };
 #endif
@@ -158,7 +166,9 @@ __forceinline void player() {
 }
 __forceinline bool open_perk() {
 #if FREEWARE_EDITION == 10002
-    return INPUT.level_up || (INPUT.click && G.cursor_x > 400.f && G.cursor_x < 656.f &&
+    bool pressed = INPUT.keypad_plus_down && G.perk_key_released;
+    G.perk_key_released = !INPUT.keypad_plus_down;
+    return INPUT.level_up || pressed || (INPUT.click && G.cursor_x > 400.f && G.cursor_x < 656.f &&
                               G.cursor_y > 430.f && G.cursor_y < 480.f);
 #else
     return INPUT.level_up || (FREEWARE_EDITION != 10300 && INPUT.perk_button) ||
@@ -288,10 +298,17 @@ __forceinline void position_camera() {
         CAM.x = (float)edge;
     if (CAM.y > edge)
         CAM.y = (float)edge;
+#if FREEWARE_EDITION == 10002
+    if (CAM.x < screen_width - freeware_arena_width)
+        CAM.x = -(freeware_arena_width - (float)screen_width);
+    if (CAM.y < screen_height - freeware_arena_height)
+        CAM.y = -(freeware_arena_height - (float)screen_height);
+#else
     if (CAM.x < screen_width - freeware_arena_width)
         CAM.x = (float)(screen_width - freeware_arena_width);
     if (CAM.y < screen_height - freeware_arena_height)
         CAM.y = (float)(screen_height - freeware_arena_height);
+#endif
 }
 __forceinline void render_ground() {
     terrain_render();
@@ -326,25 +343,24 @@ __forceinline void render_world() {
 #endif
 #else
     if (ACTIVE) {
-        if (SLOW <= 0)
-            SLOW = 0;
-        else {
+        if (SLOW > 0) {
             SLOW -= frame_dt;
             if (FREEWARE_EDITION != 10300 && SLOW <= 0) {
                 time_scale_active = 1;
                 freeware_fade_time = 0;
                 SLOW = -.01f;
             }
-        }
+        } else
+            SLOW = 0;
         for (current_player_index = 0; current_player_index < config_player_count; ++current_player_index) {
             if (HP(current_player_index) <= 0)
                 continue;
 #if CL_BUILD != 10002
             if (state() == 3) {
-                if (SHIELD(current_player_index) <= 0)
-                    SHIELD(current_player_index) = 0;
-                else
+                if (SHIELD(current_player_index) > 0)
                     SHIELD(current_player_index) -= frame_dt;
+                else
+                    SHIELD(current_player_index) = 0;
 #if FREEWARE_EDITION == 10300
                 // The reserved perk trades contact immunity for increasing damage every half second.
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -367,14 +383,7 @@ __forceinline void render_world() {
             player_render();
         }
     }
-#if CL_BUILD != 10300
-    current_player_index = 0;
-#endif
-#endif
-#if FREEWARE_EDITION != 10002
     draw_projectiles();
-#endif
-#if CL_BUILD == 10300
     current_player_index = 0;
 #endif
 #if CL_BUILD != 10002
@@ -382,12 +391,8 @@ __forceinline void render_world() {
     freeware_current_map->render_triggers(1);
 #endif
     effect_render_all();
-#if FREEWARE_EDITION == 10300
-#ifdef CRIMSON_FREEWARE_CLIENT
-    G.ui.color = {1, 1, 1, 1};
-#else
-    grim_interface_ptr->grim_set_color(1, 1, 1, 1);
-#endif
+#if FREEWARE_EDITION != 10002
+    world_tint(1, 1, 1, 1);
 #endif
 #if CL_BUILD != 10002
     freeware_current_map->render_layer(2, 0);
@@ -400,26 +405,34 @@ __forceinline void render_world() {
 __forceinline float spawn_random_coord(int extent) {
     return (float)(crt_rand() % extent);
 }
-__forceinline unsigned char spawn_at_edge(float x, float y) {
-    vec2f_t p = {x, y};
-    return creature_spawn_random(&p);
-}
 __forceinline void spawn_edge() {
     unsigned char spawned = 0;
-    for (int attempt = 0; attempt < 100 && !spawned; ++attempt) {
+    for (int attempt = 0; attempt < 100; ++attempt) {
+        if (spawned)
+            break;
         switch (crt_rand() % 4) {
-        case 0:
-            spawned = spawn_at_edge(spawn_random_coord(freeware_arena_width), -40.f);
+        case 0: {
+            vec2f_t north = {spawn_random_coord(freeware_arena_width), -40.f};
+            spawned = creature_spawn_random(&north);
             break;
-        case 1:
-            spawned = spawn_at_edge(spawn_random_coord(freeware_arena_width), freeware_arena_height + 40.f);
+        }
+        case 1: {
+            vec2f_t south = {spawn_random_coord(freeware_arena_width), freeware_arena_height + 40.f};
+            spawned = creature_spawn_random(&south);
             break;
-        case 2:
-            spawned = spawn_at_edge(-40.f, spawn_random_coord(freeware_arena_height));
+        }
+        case 2: {
+            float y = spawn_random_coord(freeware_arena_height);
+            vec2f_t west = {-40.f, y};
+            spawned = creature_spawn_random(&west);
             break;
-        case 3:
-            spawned = spawn_at_edge(freeware_arena_width + 40.f, spawn_random_coord(freeware_arena_height));
+        }
+        case 3: {
+            float y = spawn_random_coord(freeware_arena_height);
+            vec2f_t east = {freeware_arena_width + 40.f, y};
+            spawned = creature_spawn_random(&east);
             break;
+        }
         }
     }
 }
@@ -650,7 +663,7 @@ __forceinline void sprite(const char *name, float x, float y, float w, float h, 
 #endif
 #include "frame_overlays.inc"
 
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
 enum transition_phase { transition_fade_in, transition_solid, transition_fade_out };
 __forceinline void draw_transition(bool dying, transition_phase phase) {
     grim_interface_ptr->grim_begin_batch();
@@ -685,7 +698,11 @@ __forceinline void draw_timed_transition(bool dying) {
 #include "frame_gameplay_102.inc"
 #endif
 
-extern "C" unsigned char game_frame_update() {
+// VC6 emits the editor allocation's exception cleanup for the two later callbacks.
+#if defined(CRIMSON_FREEWARE_CLIENT) || CL_BUILD == 10002
+extern "C"
+#endif
+unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
     if (INPUT.screenshot)
         G.screenshot_requested = true;
@@ -873,7 +890,7 @@ extern "C" unsigned char game_frame_update() {
         }
         break;
 #else
-        if (FREEWARE_EDITION != 10002 && !ACTIVE) {
+        if (FREEWARE_EDITION >= 10400 && !ACTIVE) {
             creatures();
             shots();
         }
@@ -956,7 +973,7 @@ extern "C" unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.death_clock = CLOCK - STATE_SINCE;
 #endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         draw_timed_transition(true);
 #else
         if (CLOCK - STATE_SINCE < 3) {
@@ -968,7 +985,9 @@ extern "C" unsigned char game_frame_update() {
         }
 #endif
         if (CLOCK - STATE_SINCE >= 3) {
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+            freeware_game_track_start(29);
+#elif !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
             freeware_music_start(29);
 #endif
             enter(freeware_rules::name_entry_state);
@@ -980,7 +999,7 @@ extern "C" unsigned char game_frame_update() {
 #if CL_BUILD != 10002
     case freeware_rules::level_clear_state:
         hud();
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         draw_timed_transition(false);
 #else
         if (CLOCK - STATE_SINCE < 3) {
@@ -1039,13 +1058,9 @@ extern "C" unsigned char game_frame_update() {
         grim_interface_ptr->grim_draw_text_mono(5, screen_height - 25.f, freeware_ui_buffer);
     }
     if (freeware_safe_mode) {
-#if CL_BUILD == 10002
         grim_interface_ptr->grim_set_color(1, 1, 1, 1);
         grim_interface_ptr->grim_set_config_var(frame_font_scale, .695f);
         grim_interface_ptr->grim_draw_text_mono(150, screen_height - 25.f, "(Safemode)");
-#else
-        label("(Safemode)", 150, screen_height - 25.f, .695f, 1, 1, 1, 1);
-#endif
     }
     if (CL_BUILD >= 10400)
         freeware_console.render();

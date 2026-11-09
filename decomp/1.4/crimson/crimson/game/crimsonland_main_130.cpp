@@ -5,6 +5,8 @@
 
 #include "../level/freeware_editor_brush.h"
 
+namespace frame_update140 { unsigned char game_frame_update(); }
+
 extern "C" {
 extern int screen_width, screen_height, freeware_arena_width, freeware_arena_height;
 extern unsigned char freeware_audio_disabled, freeware_safe_mode, freeware_birthday;
@@ -19,7 +21,7 @@ extern float freeware_simulation_clock;
 IUnknown *WINAPI Direct3DCreate8(unsigned int sdk_version);
 IGrim2D_cpp *grim_load_interface(char *);
 bool config_load_presets();
-unsigned char game_frame_update(), audio_suspend_all(), audio_resume_all(), sfx_system_init();
+unsigned char audio_suspend_all(), audio_resume_all(), sfx_system_init();
 void freeware_draw_loading_progress(float);
 void freeware_music_load_intro(), freeware_game_track_start(int);
 void audio_init_sfx(), freeware_audio_load_additional_assets(), audio_shutdown_all();
@@ -80,7 +82,7 @@ extern "C" int WINAPI crimsonland_main(HINSTANCE, HINSTANCE, LPSTR command_line,
         return 0;
     }
 
-    grim_interface_ptr->grim_set_config_var(1, game_frame_update);
+    grim_interface_ptr->grim_set_config_var(1, frame_update140::game_frame_update);
     grim_interface_ptr->grim_set_config_var(2, audio_suspend_all);
     grim_interface_ptr->grim_set_config_var(3, audio_resume_all);
     grim_interface_ptr->grim_set_config_var(0x42, true);

@@ -22,6 +22,14 @@ __forceinline void rebuild_terrain() {
     terrain_generate(!freeware_current_map->flag);
 #endif
 }
+struct editor_tint : effect_color_t {
+    editor_tint(float red, float green, float blue, float opacity) {
+        r = red;
+        g = green;
+        b = blue;
+        a = opacity;
+    }
+};
 struct editor_point : vec2f_t {
     editor_point(float px, float py) {
         x = px;
@@ -63,23 +71,23 @@ __forceinline const freeware_level_object &editor_brush(int index) {
     return *freeware_brushes[index];
 #endif
 }
-__forceinline bool editor_click(int button) {
+__forceinline unsigned char editor_click(int button) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     return button == 0 ? INPUT.click : INPUT.perk_button;
 #else
-    return grim_interface_ptr->grim_was_mouse_button_pressed(button) != 0;
+    return grim_interface_ptr->grim_was_mouse_button_pressed(button);
 #endif
 }
-__forceinline freeware_level_trigger *editor_make_trigger(int kind, const vec2f_t &at, float angle, float radius) {
+__forceinline freeware_level_trigger *editor_make_trigger(int kind, const float &angle, const float &radius) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     freeware_level_trigger *trigger = new freeware_level_trigger();
     trigger->type = kind;
-    trigger->position = at;
+    trigger->position = editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y);
     trigger->heading = angle;
     trigger->radius = radius;
     return trigger;
 #else
-    return new editor_trigger(kind, at, angle, radius);
+    return new editor_trigger(kind, editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y), angle, radius);
 #endif
 }
 __forceinline bool level_cleared() {

@@ -15,13 +15,21 @@ void freeware_music_start(int);
 #endif
 #if FREEWARE_EDITION >= 10300
 struct AimPoint : vec2f_t {
+    __forceinline AimPoint() {}
     __forceinline AimPoint(const float &px, const float &py) {
         x = px;
         y = py;
     }
+    __forceinline float length() const {
+        float y_squared = y * y;
+        return (float)sqrt(x * x + y_squared);
+    }
 };
 __forceinline AimPoint operator+(const vec2f_t &a, const vec2f_t &b) {
-    return AimPoint(a.x + b.x, a.y + b.y);
+    AimPoint result;
+    result.x = a.x + b.x;
+    result.y = a.y + b.y;
+    return result;
 }
 __forceinline AimPoint operator-(const vec2f_t &a, const vec2f_t &b) {
     return AimPoint(a.x - b.x, a.y - b.y);
@@ -42,7 +50,10 @@ __forceinline void aim_overlays() {
         menu_blend(true);
         ui140::bind("part");
         ui140::uv(0, 0, 1, 1);
-        world_tint(1, 1, 1, bonus_fire_bullets_timer < 1 ? bonus_fire_bullets_timer : 1);
+        if (bonus_fire_bullets_timer < 1)
+            world_tint(1, 1, 1, bonus_fire_bullets_timer);
+        else
+            world_tint(1, 1, 1, 1);
         ui140::begin();
         world_quad(MOUSE_X - 32, MOUSE_Y - 32, 64, 64);
         ui140::end();
@@ -52,8 +63,8 @@ __forceinline void aim_overlays() {
         if (HP(current_player_index) <= 0)
             continue;
         const freeware_player_t &p = P(current_player_index);
-        vec2f_t gap = p.aim - p.position;
-        float size = (float)sqrt(gap.x * gap.x + gap.y * gap.y) * p.spread * .25f;
+        AimPoint gap = p.aim - p.position;
+        float size = gap.length() * p.spread * .25f;
         if (size < 16) {
             size = 16;
             ui140::bind("aim32");
@@ -101,9 +112,9 @@ __forceinline void aim_overlays() {
 }
 #endif
 __forceinline void update_fps(float value) {
-    if (value < FIELD(freeware_fps_min, run.min_fps))
+    if (FIELD(freeware_fps_min, run.min_fps) > value)
         FIELD(freeware_fps_min, run.min_fps) = value;
-    if (value > FIELD(freeware_fps_max, run.max_fps))
+    if (FIELD(freeware_fps_max, run.max_fps) < value)
         FIELD(freeware_fps_max, run.max_fps) = value;
     int &count = FIELD(freeware_fps_count, fps_count);
     if (count < 2)

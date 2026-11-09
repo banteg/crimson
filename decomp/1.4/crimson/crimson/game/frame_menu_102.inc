@@ -1,17 +1,10 @@
-struct MenuPoint102 : vec2f_t {
-    MenuPoint102(float px, float py) {
-        x = px;
-        y = py;
-    }
-};
-
 static __forceinline void menu102_title(float clock, float age) {
     if (age < 1)
         grim_interface_ptr->grim_set_color(1, 1, 1, age);
     else
         grim_interface_ptr->grim_set_color(1, 1, 1, 1);
     grim_interface_ptr->grim_set_config_var(0xc, true);
-    vec2f_t center = MenuPoint102(320.f, 90.f);
+    vec2f_t center = FramePoint102(320.f, 90.f);
     center.x += (float)cos(clock) * 5.f;
     center.y += (float)sin(clock) * 5.f;
     frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("crimsonland"));
@@ -98,9 +91,9 @@ static __forceinline void menu102_draw_rows(bool main_menu) {
     const float x = main_menu ? 220.0f : 180.0f;
     const int count = main_menu ? 6 : 9;
     for (int i = 0; i < count; ++i) {
-        vec2f_t lo = {x, x + (float)i * 32.0f};
-        vec2f_t hi = {x + strlen(main_menu ? freeware_main_labels[i] : freeware_option_labels[i]) * 16.0f,
-                      lo.y + 30.0f};
+        FramePoint102 lo(x, x + (float)i * 32.f);
+        FramePoint102 hi(x + strlen(main_menu ? freeware_main_labels[i] : freeware_option_labels[i]) * 16.f,
+                         lo.y + 30.f);
         if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi))
             freeware_perk_hover = i;
         if (freeware_perk_hover == i)

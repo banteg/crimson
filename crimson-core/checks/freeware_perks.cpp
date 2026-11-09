@@ -1,4 +1,5 @@
 #include "../freeware/game.h"
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 
@@ -171,8 +172,36 @@ void check_creature_perks() {
   }
 }
 
+// Outcomes of successive frames through 1.0.2 crimson.exe's perk prompt and grim.dll's key latch.
+static void check_keypad_perk() {
+  using namespace freeware;
+  Game game;
+  game.start();
+  game.run.next_spawn = 100;
+  auto frame = [&](bool pending, bool down) {
+    game.screen = Screen::Playing;
+    game.run.pending = pending;
+    Input input;
+    input.keypad_plus_down = down;
+    game.update(.016f, input);
+    return game.screen == Screen::Perks;
+  };
+  assert(!frame(false, true));
+  assert(!frame(true, true));  // A first query with the key already held finds the native latch unarmed.
+  assert(!frame(true, false));
+  assert(!frame(false, true));
+  assert(frame(true, true));  // The eligible frame observes the press, even after SDL_KEYDOWN.
+  assert(!frame(true, true));
+  assert(!frame(false, false));
+  assert(!frame(true, true));  // An unobserved release and repress cannot rearm the latch.
+  assert(!frame(true, false));
+  assert(frame(true, true));
+}
+
 void check_live_picker() {
   using namespace freeware;
+  if (FREEWARE_EDITION == 10002)
+    check_keypad_perk();
   for (unsigned seed : {42u, 1043u, 87611u}) {
     Game g;
     g.safe_mode = true;
