@@ -340,9 +340,17 @@ encodings, with every positional reference verified against the release's DLL.
 | 1.3.0 | 105 / 105 | 15,704 |
 | 1.4.0 | 111 / 111 | 18,951 |
 
-The game executables remain in progress. The engine byte counts above cover
-function bodies. The release reports also account for executable gaps and
-linked libraries.
+All 104 confirmed game functions in the 1.0.2 executable also match their
+original encodings. Together with Grim2D, that covers all 195 confirmed
+functions and 77,143 function bytes. The Game & Engine denominator includes
+another 1,929 bytes of executable gaps. The final function, `game_frame_update`,
+accounts for 11,366 bytes and 858 verified references, including both switch
+tables. The raw discovery inventory retains the six internal switch and join
+labels within its verified extent.
+
+In 1.3.0 and 1.4.0, `game_frame_update` is the remaining game function. The
+1.3.0 report also retains seven internal switch labels as separate entries
+pending a compiled match for the full dispatcher.
 
 Each freeware image has an independent `native.json` inventory. Its image and
 basic-block byte hashes, donor-map digest, analyzer version, verified starts,
