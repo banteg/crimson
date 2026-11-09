@@ -148,12 +148,20 @@ def check_hits(exe, edition, lines):
     for line in lines:
         if not line.startswith("impact "):
             continue
-        _, typ, mode, x, y, life, hp, infected, rng, death, creatures, xp = line.split()
+        _, typ, mode, x, y, life, hp, infected, rng, death, creatures, xp, drop, drop_x, drop_y, drop_time = line.split()
         mode, typ = int(mode), int(typ)
         pe.restore(baseline)
-        pe.rand_state = 87
+        survival = mode >= 5
+        pe.rand_state = 3 if survival else 87
         pe.write_f32(0x428884 if early else 0x447828, 1 / 60)
-        pe.write_u32(0x41C0A0 if early else 0x4374B0, 2)
+        pe.write_u32(0x41C0A0 if early else 0x4374B0, 1 if survival else 2)
+        if survival:
+            pe.write_u32(0x421EF8, 31)
+            pe.write_u32(0x421F8C, 1)
+            if mode == 6:
+                pe.write_u32(0x4220E8, 1)
+                pe.write(0x420B88, struct.pack("<ff", 79, 81))
+                pe.write_f32(0x42885C, 3.5)
         pe.write_f32(0x428804 if early else 0x447778, 2 if mode == 2 else 0)
         if early:
             pe.write_u32(0x41C0CC, 0)
@@ -185,8 +193,15 @@ def check_hits(exe, edition, lines):
         assert pe.read_u32(0x428868 if early else 0x44780C) == int(creatures) & 0xFFFFFFFF, (case, creatures)
         assert pe.read_u32(0x421EF8 if early else 0x430010) == int(xp), (case, xp)
         assert pe.rand_state == int(rng), (case, "impact RNG", pe.rand_state, rng)
+        if survival:
+            assert pe.read_u32(0x4220E8) == int(drop), (case, "pickup kind")
+            floats(
+                [pe.read_f32(addr) for addr in (0x420B88, 0x420B8C, 0x42885C)],
+                list(map(float, (drop_x, drop_y, drop_time))),
+                (case, "pickup position and time"),
+            )
         cases += 1
-    assert cases == (25 if early else 35)
+    assert cases == (27 if early else 35)
 
 
 def check_perks(exe, edition, lines):

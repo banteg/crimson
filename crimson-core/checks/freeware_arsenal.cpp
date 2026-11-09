@@ -83,11 +83,13 @@ void check_weapon_hits() {
   constexpr bool early = FREEWARE_EDITION == 10002;
   Game g;
   FrameGameScope scope(g);
-  config_game_mode = static_cast<game_mode_id_t>(2);
   for (int type : {1, 2, 4, 6, 7, 8, 9, 10, 17}) {
     if (early ? (type == 7 || type == 9 || type == 10 || type == 17) : (type == 6 || type == 8))
       continue;
-    for (int mode = 0; mode < 5; ++mode) {
+    const int modes = early && type == 4 ? 7 : 5;
+    for (int mode = 0; mode < modes; ++mode) {
+      const bool survival = mode >= 5;
+      config_game_mode = static_cast<game_mode_id_t>(survival ? 1 : 2);
       std::memset(creature_pool, 0, sizeof(creature_pool));
       std::memset(projectile_pool, 0, sizeof(projectile_pool));
       std::memset(particle_pool, 0, sizeof(particle_pool));
@@ -99,7 +101,13 @@ void check_weapon_hits() {
       c.health = mode < 3 ? 1000 : 5;
       c.freeware.reward = 121;
       creature_spawned_count = mode != 0;
-      g.run.experience = 0;
+      g.run.experience = survival ? 31 : 0;
+      g.run.pickup = {};
+      if (survival) {
+        player_state_table[0].freeware.weapon = 1;
+        if (mode == 6)
+          g.run.pickup = {{79, 81}, Bonus::Fire, 3.5f, 0};
+      }
       c.death_timer = 16;
       c.freeware.size = 42;
       current_player_index = 0;
@@ -107,14 +115,16 @@ void check_weapon_hits() {
       freeware_hit_sound_timer = 1;
       bonus_freeze_timer = mode == 4 ? 1 : 0;
       g.run.freeze = bonus_freeze_timer;
-      seed_random(87);
+      seed_random(survival ? 3 : 87);
       vec2f_t start = {100, 100};
       auto &b = projectile_pool[projectile_spawn(&start, 1.57079637f, type)];
       b.fields.origin.x = 13;
       frame_dt = 1.f / 60;
       projectile_update();
-      std::printf("impact %d %d %.9g %.9g %.9g %.9g %d %u %.9g %d %d\n", type, mode, b.pos_x, b.position.y,
-                  b.fields.life_timer, c.health, c.plague_infected, freeware_rng_state, c.death_timer, creature_spawned_count, g.run.experience);
+      const auto &pickup = g.run.pickup;
+      std::printf("impact %d %d %.9g %.9g %.9g %.9g %d %u %.9g %d %d %d %.9g %.9g %.9g\n", type, mode, b.pos_x,
+                  b.position.y, b.fields.life_timer, c.health, c.plague_infected, freeware_rng_state, c.death_timer,
+                  creature_spawned_count, g.run.experience, int(pickup.kind), pickup.pos.x, pickup.pos.y, pickup.time);
     }
   }
 }
