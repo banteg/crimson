@@ -5,8 +5,8 @@ interference, offsets) and through a `/FAsc` listing (which candidate object eve
 operand names), aligns candidate and native instructions, and turns each aligned frame reference
 into a vote "candidate object X lives at native bottom offset B". It then prints:
 
-- the native slot partition: every native object base, the candidate objects mapped to it, their
-  candidate offsets and weights, and the candidate interference edges that forbid the grouping;
+- the inferred native slot partition, including candidate offsets and weights, interference edges
+  and competing base addresses when references to the same candidate object disagree;
 - native frame references that no candidate object explains (objects the candidate lacks);
 - the packer replay in the compiler's list order, flagging each placement whose slot mates live
   in different native slots (the first flagged line is usually the one to fix);
@@ -183,24 +183,38 @@ def report(fr: fp.Frame, res: dict) -> dict:
     for p, b in native.items():
         groups[b].append(p)
     print(f"native frame {res['tf']:#x}, candidate frame {res['cf']:#x}")
-    print("native base  size  members (candidate bottom, weight, native votes)  [conflicts inside the group]")
+    print(
+        "native base  size  members (candidate bottom, weight, votes for this base/total)  [conflicts inside the group]",
+    )
     same = 0
     rows = []
-    extent = {}
-    for b in sorted(groups):
-        extent[b] = b + max(objs[p].size for p in groups[b])
+    votes = res["votes"]
+    split_votes = {}
+    # A candidate aggregate can match two independent native scalars. Only draw its field
+    # boundaries when all of its aligned references agree on a native base.
+    extent = {b: b + max((objs[p].size for p in mem if len(votes[p]) == 1), default=0) for b, mem in groups.items()}
     for b in sorted(groups):
         mem = sorted(groups[b], key=lambda p: -objs[p].weight)
         size = max(objs[p].size for p in mem)
         bad = [(names[a], names[c]) for i, a in enumerate(mem) for c in mem[i + 1 :] if conflict(a, c)]
         same += sum(bottom[p] == b for p in mem)
-        desc = ", ".join(f"{names[p]}({bottom[p]:#x},w{objs[p].weight},n{sum(res['votes'][p].values())})" for p in mem)
+        members = []
+        for p in mem:
+            counts = votes[p]
+            members.append(f"{names[p]}({bottom[p]:#x},w{objs[p].weight},n{counts[b]}/{counts.total()})")
+            if len(counts) > 1:
+                split_votes[names[p]] = [{"base": base, "votes": count} for base, count in counts.most_common()]
+        desc = ", ".join(members)
         conf = f"  [{'; '.join(f'{a} x {c}' for a, c in bad)}]" if bad else ""
         outer = next((a for a in sorted(groups) if a < b < extent[a]), None)
         inside = f"  (field +{b - outer} of the native object at {outer:#x})" if outer is not None else ""
         print(f"  {b:#06x}  {size:>4}  {desc}{conf}{inside}")
         rows.append({"native": b, "size": size, "members": [names[p] for p in mem], "conflicts": bad})
-    print(f"objects at their native offset: {same}/{len(native)}")
+    print(f"objects at their inferred native offset: {same}/{len(native)}")
+    if split_votes:
+        print("candidate objects with votes for multiple native bases (base: votes):")
+        for name, counts in split_votes.items():
+            print(f"  {name}: " + ", ".join(f"{item['base']:#x}: {item['votes']}" for item in counts))
     if res["unexplained"]:
         print("native frame references with no candidate object:")
         for a, tb, text in res["unexplained"]:
@@ -236,7 +250,13 @@ def report(fr: fp.Frame, res: dict) -> dict:
                 f"  << {names[k]} w{o['weight']} {act} slot {hit} (native {nb:#x}) with "
                 + ", ".join(f"{names[m]}@{native[m]:#x}" for m in mates[:4]),
             )
-    return {"groups": rows, "at_native_offset": same, "mapped": len(native), "slots": slot_order(fr, res)}
+    return {
+        "groups": rows,
+        "at_native_offset": same,
+        "mapped": len(native),
+        "split_votes": split_votes,
+        "slots": slot_order(fr, res),
+    }
 
 
 def density(slot: dict) -> int:

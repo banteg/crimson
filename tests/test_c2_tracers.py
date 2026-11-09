@@ -4,6 +4,7 @@ import importlib.util
 import re
 import struct
 import sys
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -129,3 +130,32 @@ def test_slot_order_reports_frame_order_and_packing_positions(capsys):
     ]
     assert [row["density"] for row in rows[1:]] == [1250, 750, 250]
     assert "_b$ (0xc)" in capsys.readouterr().out
+
+
+def test_slot_report_exposes_disagreement_about_an_aggregate_base(capsys):
+    (frame,) = fp.decode(
+        words(0xF0, 0x10)
+        + name("_f")
+        + words(0xF3, 0x10, 0, 0, 2)
+        + obj(1, 4, 8, 8, 0, "_delta")
+        + obj(2, 4, 4, 2, 1, "_angle")
+        + words(0xF9),
+    )
+    result = ns.report(
+        frame,
+        {
+            "names": {1: "_delta", 2: "_angle"},
+            "native": {1: 0x14, 2: 0x18},
+            "bottom": {1: 0x28, 2: 0x30},
+            "votes": {1: Counter({0x14: 4, 0x04: 4}), 2: Counter({0x18: 2})},
+            "tf": 0x110,
+            "cf": 0x110,
+            "unexplained": [],
+        },
+    )
+    output = capsys.readouterr().out
+    assert "_delta(0x28,w8,n4/8)" in output
+    assert "_angle(0x30,w2,n2/2)" in output
+    assert "_delta: 0x14: 4, 0x4: 4" in output
+    assert "field +4" not in output
+    assert result["split_votes"] == {"_delta": [{"base": 0x14, "votes": 4}, {"base": 0x04, "votes": 4}]}
