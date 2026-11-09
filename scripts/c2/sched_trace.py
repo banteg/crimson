@@ -8,7 +8,7 @@ each node's height, priority, creation order and emitted position. See
 tools/match/c2/compiler/x87-scheduling.md.
 
     uv run python scripts/c2/sched_trace.py tools/match/scratches/ui_element_render \
-        --out /private/tmp/sched-ui [--function-ordinal N] [--lines 40-60] [--json]
+        --out /private/tmp/sched-ui [--build VERSION] [--function-ordinal N] [--lines 40-60] [--json]
 """
 
 from __future__ import annotations
@@ -255,14 +255,14 @@ def observer(profile, stock_source):
     return source.replace(anchors[3], "    CloseHandle(sched_file);\n" + anchors[3])
 
 
-def run(scratch: Path, out: Path):
+def run(scratch: Path, out: Path, *, build: str | None = None):
     stock_source = c2.observer_source
     profile = dict(c2.load_profile(), name="msvc6.5-c2-sched", hooks=HOOKS)
     with (
         patch.object(c2, "load_profile", return_value=profile),
         patch.object(c2, "observer_source", side_effect=lambda p: observer(p, stock_source)),
     ):
-        manifest = c2.trace(scratch, out)
+        manifest = c2.trace(scratch, out, build=build)
     return manifest, (out / "observed/sched.bin").read_bytes()
 
 
@@ -518,11 +518,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("scratch", type=Path)
     parser.add_argument("--out", type=Path, required=True, help="new directory for the preserving trace")
+    parser.add_argument("--build", help="compile and trace the selected release")
     parser.add_argument("--function-ordinal", type=int, help="default: the function with the most windows")
     parser.add_argument("--lines", help="only windows touching C2 line labels A-B")
     parser.add_argument("--json", action="store_true", help="write sched.json next to the trace")
     args = parser.parse_args()
-    manifest, data = run(args.scratch, args.out)
+    manifest, data = run(args.scratch, args.out, build=args.build)
     functions = decode(data)
     ordinal = args.function_ordinal
     if ordinal is None:
