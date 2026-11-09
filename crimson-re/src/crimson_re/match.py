@@ -82,6 +82,7 @@ IMAGE_FILE_MACHINE_I386 = 0x14C
 IMAGE_SYM_CLASS_EXTERNAL = 2
 IMAGE_SYM_CLASS_STATIC = 3
 IMAGE_SYM_CLASS_LABEL = 6
+IMAGE_SYM_CLASS_FILE = 103
 IMAGE_SCN_CNT_CODE = 0x00000020
 IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080
 IMAGE_SCN_LNK_COMDAT = 0x00001000
@@ -1338,6 +1339,18 @@ def parse_coff_object(data: bytes) -> CoffObject:
         else:
             key_index = symbol.raw_index + 1 + len(symbol.aux_records)
             key_symbol = symbols_by_raw_index.get(key_index)
+            # VC6 /Z7 can switch source files between the section definition and
+            # its key. Only file markers and their filename records intervene.
+            while (
+                key_symbol is not None
+                and key_symbol.storage_class == IMAGE_SYM_CLASS_FILE
+                and key_symbol.name == ".file"
+                and key_symbol.section_number == -2
+                and key_symbol.symbol_type == 0
+                and key_symbol.aux_records
+            ):
+                key_index += 1 + len(key_symbol.aux_records)
+                key_symbol = symbols_by_raw_index.get(key_index)
             if (
                 key_symbol is None
                 or key_symbol.storage_class
