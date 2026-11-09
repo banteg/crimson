@@ -10,7 +10,7 @@ void freeware_level_map::render_layer(int layer, unsigned char preserve_color) {
     begin();
     for (unsigned i = 0; i < (unsigned)layers[layer].size(); ++i) {
         int previous = bound;
-        const freeware_level_object &o = *layers[layer].begin[i];
+        const freeware_level_object &o = *layers[layer][i];
         bound = o.texture;
         if (!preserve_color) {
 
