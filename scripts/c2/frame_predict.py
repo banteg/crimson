@@ -831,9 +831,9 @@ def capture_and_observe(
     out = out.resolve()
     out.mkdir(parents=True)
     src = out / "source"
-    frozen = c2.copy_scratch(config, src, shutil.ignore_patterns("build", "__pycache__", "*.json", "*.jsonl"))
-    if source is not None:
-        shutil.copyfile(source, src / frozen.source)
+    frozen = c2.copy_scratch(
+        config, src, shutil.ignore_patterns("build", "__pycache__", "*.json", "*.jsonl"), source_override=source,
+    )
     folders = {n: out / n for n in ("helper", "capture", "observed")}
     for d in folders.values():
         d.mkdir()
