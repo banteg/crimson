@@ -1,6 +1,8 @@
 // Inlined menu branches of game_frame_update (0x419663..0x41bd74).
 enum menu_page { main_page, options_page, online_page, scores_page, credits_page };
 #ifndef CRIMSON_FREEWARE_CLIENT
+#include "../../http/freeware_http.h"
+
 extern "C" {
 extern int freeware_menu_selected, freeware_perk_hover, freeware_configuring, config_movement_schemes[2];
 extern int freeware_tips_sequence, freeware_assembly_sequence, freeware_levels_sequence;
@@ -10,7 +12,6 @@ extern unsigned char freeware_show_secret_hints, freeware_options_open, freeware
     freeware_direction_arrow, freeware_rebinding, freeware_calibrating, freeware_pause_perks;
 extern char *freeware_main_labels[], *freeware_option_labels[], *freeware_online_labels[5];
 void highscore_load_table();
-void *freeware_http_get(const char *server, const char *path, const char *filename);
 extern unsigned char freeware_open_site, freeware_music_started;
 extern int freeware_level_number;
 void freeware_music_start(int), freeware_music_stop(int);
@@ -887,10 +888,10 @@ __forceinline bool main_menu() {
             freeware_open_site = 1;
             quit_requested = 1;
         } else if (row == 1) {
-            void **response = (void **)freeware_http_get("www.mbnet.fi", "~temper/crimsonland", "versioninfo.txt");
+            freeware_http_response *response = freeware_http_get("www.mbnet.fi", "~temper/crimsonland", "versioninfo.txt");
             if (response) {
                 crt_free(freeware_update_info);
-                freeware_update_info = *response;
+                freeware_update_info = response->data;
             }
         }
 #endif
