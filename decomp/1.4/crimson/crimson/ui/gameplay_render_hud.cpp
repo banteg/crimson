@@ -1,5 +1,9 @@
 // Crimsonland 1.3.0 (0x411860) and 1.4.0 (0x416a00).
 #include "freeware_edition.h"
+#if FREEWARE_EDITION == 10002
+#include "gameplay_hud_102.h"
+extern "C" void gameplay_render_hud() { hud102::render(); }
+#else
 #include "freeware_ui.h"
 #include <stdio.h>
 using namespace ui140;
@@ -225,3 +229,4 @@ extern "C" void gameplay_render_hud() {
         filter(2);
     }
 }
+#endif

@@ -127,7 +127,11 @@ __forceinline void editor() {
     bool place = grim_interface_ptr->grim_was_mouse_button_pressed(0);
     bool place_trigger = grim_interface_ptr->grim_was_mouse_button_pressed(1);
 #endif
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    map->set_texture(brush.texture);
+#else
     map->texture = brush.texture;
+#endif
     current_player_index = 0;
     map->render_layer(1, 0);
     map->render_triggers(0);

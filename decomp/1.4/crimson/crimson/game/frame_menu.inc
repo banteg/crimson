@@ -184,26 +184,8 @@ __forceinline void set_label(char **slot, const char *text) {
     crt_free(*slot);
     *slot = strdup_malloc(text);
 }
-__forceinline void refresh_labels(int which) {
-    set_label(freeware_main_labels, ACTIVE ? "Resume game." : "Begin game.");
-#if FREEWARE_EDITION == 10002
-    if (which != options_page)
-        return;
-    set_label(freeware_option_labels, config_movement_schemes[0] == 2 ? "Control method: static" : "Control method: relative");
-    set_label(freeware_option_labels + 2, freeware_shadows ? "Shadows: on" : "Shadows: off");
-    set_label(freeware_option_labels + 3, freeware_filter_sharp ? "Background filter: sharp" : "Background filter: smooth");
-    set_label(freeware_option_labels + 4, freeware_show_fps ? "Show FPS: on" : "Show FPS: off");
-    set_label(freeware_option_labels + 5, freeware_glow ? "Flame Glow FX: on" : "Flame Glow FX: off");
-    set_label(freeware_option_labels + 6, freeware_shell_marks ? "Shell marks: on" : "Shell marks: off");
-#else
-    set_label(freeware_main_labels + 1, config_player_count == 1 ? "Players: one" : "Players: two");
-    set_label(freeware_main_labels + 2, config_game_mode == 1   ? "Game mode: career"
-                                        : config_game_mode == 2 ? "Game mode: survival"
-                                        : config_game_mode == 3 ? "Game mode: Level Test"
-                                                                : "Game mode: Level Edit");
-    set_label(freeware_main_labels + (FREEWARE_EDITION == 10300 ? 6 : 7), ACTIVE ? "End current game." : "End.");
-    if (which != options_page)
-        return;
+#if FREEWARE_EDITION != 10002
+__forceinline void refresh_option_labels() {
     set_label(freeware_option_labels, CONFIGURING ? "Configure for: Player 2" : "Configure for: Player 1");
     int move = config_movement_schemes[CONFIGURING];
     set_label(freeware_option_labels + 1, move == 2   ? "Control method: kb static"
@@ -235,6 +217,29 @@ __forceinline void refresh_labels(int which) {
     set_label(freeware_option_labels + 8,
               freeware_direction_arrow ? "Direction Arrow: on" : "Direction Arrow: off");
 #endif
+}
+#endif
+__forceinline void refresh_labels(int which) {
+    set_label(freeware_main_labels, ACTIVE ? "Resume game." : "Begin game.");
+#if FREEWARE_EDITION == 10002
+    if (which != options_page)
+        return;
+    set_label(freeware_option_labels, config_movement_schemes[0] == 2 ? "Control method: static" : "Control method: relative");
+    set_label(freeware_option_labels + 2, freeware_shadows ? "Shadows: on" : "Shadows: off");
+    set_label(freeware_option_labels + 3, freeware_filter_sharp ? "Background filter: sharp" : "Background filter: smooth");
+    set_label(freeware_option_labels + 4, freeware_show_fps ? "Show FPS: on" : "Show FPS: off");
+    set_label(freeware_option_labels + 5, freeware_glow ? "Flame Glow FX: on" : "Flame Glow FX: off");
+    set_label(freeware_option_labels + 6, freeware_shell_marks ? "Shell marks: on" : "Shell marks: off");
+#else
+    set_label(freeware_main_labels + 1, config_player_count == 1 ? "Players: one" : "Players: two");
+    set_label(freeware_main_labels + 2, config_game_mode == 1   ? "Game mode: career"
+                                        : config_game_mode == 2 ? "Game mode: survival"
+                                        : config_game_mode == 3 ? "Game mode: Level Test"
+                                                                : "Game mode: Level Edit");
+    set_label(freeware_main_labels + (FREEWARE_EDITION == 10300 ? 6 : 7), ACTIVE ? "End current game." : "End.");
+    if (which != options_page)
+        return;
+    refresh_option_labels();
 #endif
 }
 __forceinline int native_menu_action(int which, int row) {
@@ -312,6 +317,24 @@ __forceinline int menu_rows(int which) {
 #else
         const float row_height = which == main_page ? 30.f : option_spacing;
 #endif
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+        vec2f_t lo = {x, y};
+        vec2f_t hi = {lo.x + strlen(name) * 16.f, lo.y + row_height};
+        if (freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
+            hover = i;
+            grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
+        } else if (hover == i)
+            grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
+        else if (SELECTED == i)
+            grim_interface_ptr->grim_set_color(1, 1, 1, .7f);
+        else
+            grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
+        if (which == online_page && i == 2)
+            grim_interface_ptr->grim_set_color(1, 1, 1, .2f);
+        if (which == main_page && ACTIVE && (action == 1 || action == 2))
+            grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
+        grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y, (char *)name);
+#else
         if (mx > x && my > y && mx < x + strlen(name) * 16.f && my < y + row_height)
             hover = i;
 #if FREEWARE_EDITION == 10002
@@ -331,8 +354,23 @@ __forceinline int menu_rows(int which) {
         grim_interface_ptr->grim_set_color(light, light, light, alpha);
         grim_interface_ptr->grim_draw_text_mono(x, y, (char *)name);
 #endif
+#endif
     }
-#if FREEWARE_EDITION == 10002
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    if (!console_open_flag && menu_key(0xc8)) {
+        --SELECTED;
+        if (SELECTED >= count) SELECTED = count - 1;
+        else if (SELECTED < 0) SELECTED = 0;
+        hover = SELECTED;
+    }
+    if (!console_open_flag && menu_key(0xd0)) {
+        ++SELECTED;
+        if (SELECTED >= count) SELECTED = count - 1;
+        else if (SELECTED < 0) SELECTED = 0;
+        hover = SELECTED;
+    }
+    return hover;
+#elif FREEWARE_EDITION == 10002
     if (which == options_page && menu_key(0x1c))
         return hover;
 #else
@@ -413,7 +451,23 @@ __forceinline void menu_options(int row) {
         G.music_enabled = !G.music_enabled;
 #else
         freeware_music_disabled = !freeware_music_disabled;
-#if FREEWARE_EDITION == 10300
+#if FREEWARE_EDITION == 10400
+        if (!freeware_music_unavailable) {
+            if (freeware_music_disabled) {
+                freeware_music_stop(30);
+                freeware_music_stop(29);
+                freeware_music_stop(31);
+            } else if (ACTIVE) {
+                freeware_music_stop(30);
+                freeware_music_stop(29);
+                freeware_music_start(31);
+            } else {
+                freeware_music_stop(31);
+                freeware_music_stop(29);
+                freeware_music_start(30);
+            }
+        }
+#elif FREEWARE_EDITION == 10300
         if (freeware_music_disabled) {
             freeware_title_track_fade();
             freeware_game_track_fade();
@@ -595,6 +649,104 @@ bool input_move_up_active(), input_move_down_active(), input_move_left_active(),
 }
 #endif
 extern "C" char *wrap_text_to_width_alloc(char *, int);
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+__forceinline void calibration_prompt(char *message) {
+    grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
+    grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
+    char *wrapped = wrap_text_to_width_alloc(message, 45);
+    grim_interface_ptr->grim_draw_text_mono(50, 120, wrapped);
+    crt_free(wrapped);
+}
+__forceinline void calibration_pov(char *message, int &direction) {
+    calibration_prompt(message);
+    if (!console_open_flag && menu_key(0x1c)) {
+        direction = grim_interface_ptr->grim_get_joystick_pov(0);
+        ++freeware_setup_step;
+    }
+    grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
+    sprintf(freeware_ui_buffer, "POV0 ('hat') status: %d", grim_interface_ptr->grim_get_joystick_pov(0));
+    grim_interface_ptr->grim_draw_text_mono(40, 250, freeware_ui_buffer);
+}
+__forceinline void binding_prompt(int step, char *message) {
+    if (freeware_setup_step == step)
+        grim_interface_ptr->grim_draw_text_mono(120, 250, message);
+}
+__forceinline bool setup_controls() {
+    if (freeware_rebinding) {
+        label("Press down key for..", 50, 200, .85435f, 1, 1, 1, .6f);
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
+        binding_prompt(0, "Player 1 UP");
+        binding_prompt(1, "Player 1 DOWN");
+        binding_prompt(2, "Player 1 LEFT");
+        binding_prompt(3, "Player 1 RIGHT");
+        binding_prompt(4, "Player 1 FIRE");
+        binding_prompt(5, "Player 2 UP");
+        binding_prompt(6, "Player 2 DOWN");
+        binding_prompt(7, "Player 2 LEFT");
+        binding_prompt(8, "Player 2 RIGHT");
+        binding_prompt(9, "Player 2 FIRE");
+        for (int key = 0; key < 256; ++key) {
+            if (menu_key(key)) {
+                freeware_saved_keys[freeware_setup_step++] = (unsigned char)key;
+                break;
+            }
+        }
+        if (freeware_setup_step >= 10) {
+            freeware_setup_step = 0;
+            freeware_rebinding = 0;
+            freeware_save_config();
+            config_load_presets();
+        }
+        return true;
+    }
+    if (!freeware_calibrating)
+        return false;
+
+    grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
+    if (freeware_setup_step == 0) {
+        calibration_prompt("Center the joystick and press enter or a joystick button");
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
+        sprintf(freeware_ui_buffer, "X-Axis: %d\nY-Axis: %d", grim_interface_ptr->grim_get_joystick_x(),
+                grim_interface_ptr->grim_get_joystick_y());
+        grim_interface_ptr->grim_draw_text_mono(40, 250, freeware_ui_buffer);
+        if (!console_open_flag && (menu_key(0x1c) || grim_interface_ptr->grim_is_joystick_button_down(0) ||
+            grim_interface_ptr->grim_is_joystick_button_down(1) || grim_interface_ptr->grim_is_joystick_button_down(2) ||
+            grim_interface_ptr->grim_is_joystick_button_down(3) || grim_interface_ptr->grim_is_joystick_button_down(4))) {
+            freeware_pad_center_x = grim_interface_ptr->grim_get_joystick_x();
+            freeware_pad_center_y = grim_interface_ptr->grim_get_joystick_y();
+            ++freeware_setup_step;
+        }
+    } else if (freeware_setup_step == 1) {
+        calibration_prompt("Set the joystick X/Y-Axis threshold with arrow keys up/down, press enter when done.");
+        if (!console_open_flag) {
+            if (menu_key(0xc8))
+                freeware_pad_threshold += 10;
+            if (menu_key(0xd0))
+                freeware_pad_threshold -= 10;
+            if (menu_key(0x1c))
+                ++freeware_setup_step;
+        }
+        if (freeware_pad_threshold < 0)
+            freeware_pad_threshold = 0;
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, .70435f);
+        sprintf(freeware_ui_buffer, "X/Y-Axis threshold: %d", freeware_pad_threshold);
+        grim_interface_ptr->grim_draw_text_mono(40, 250, freeware_ui_buffer);
+        sprintf(freeware_ui_buffer, "Status:\n\nUp: %d\nDown: %d\nLeft: %d\nRight: %d", input_move_up_active(),
+                input_move_down_active(), input_move_left_active(), input_move_right_active());
+        grim_interface_ptr->grim_draw_text_mono(40, 300, freeware_ui_buffer);
+    } else if (freeware_setup_step == 2)
+        calibration_pov("If your joystick has 'hat' press it LEFT now and press enter. (press enter to skip this)", freeware_pov_left);
+    else if (freeware_setup_step == 3)
+        calibration_pov("If your joystick has 'hat' press it RIGHT now and press enter. (press enter to skip this)", freeware_pov_right);
+    else if (freeware_setup_step >= 4) {
+        freeware_setup_step = 0;
+        freeware_calibrating = 0;
+        freeware_save_config();
+        config_load_presets();
+    }
+    return true;
+}
+#else
 __forceinline bool setup_controls() {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
     return false;
@@ -744,6 +896,7 @@ __forceinline bool setup_controls() {
     return true;
 #endif
 }
+#endif
 __forceinline void cursor_particles(float pulse, float orbit) {
     float x = MOUSE_X - 32, y = MOUSE_Y - 32;
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -836,7 +989,11 @@ __forceinline bool main_menu() {
         FIELD(freeware_logo_angle, logo_angle) = 0;
     }
 #ifndef CRIMSON_FREEWARE_CLIENT
+#if FREEWARE_EDITION == 10400
+    refresh_labels(main_page);
+#else
     refresh_labels(which);
+#endif
 #endif
     menu_title(which);
     bool overlay = which == scores_page || which == credits_page;
@@ -848,9 +1005,26 @@ __forceinline bool main_menu() {
     }
 #endif
     int row = -1;
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    if (!setup_controls()) {
+        if (freeware_options_open) {
+            refresh_option_labels();
+            menu_rows(options_page);
+        } else if (freeware_online_open)
+            menu_rows(online_page);
+        else
+            menu_rows(main_page);
+    }
+    menu_footer();
+    if (!console_open_flag && grim_interface_ptr->grim_is_key_down(0x1c))
+        freeware_perk_hover = SELECTED;
+    if (!console_open_flag && (menu_key(0x1c) || grim_interface_ptr->grim_was_mouse_button_pressed(0)))
+        row = freeware_perk_hover;
+#else
     if (overlay || !setup_controls())
         row = menu_rows(overlay ? main_page : which);
     menu_footer();
+#endif
     if (overlay) {
         if (which == scores_page)
             game_highscores_update();

@@ -16,6 +16,7 @@ void check_player_motion();
 void check_creature_motion();
 void check_credits();
 void check_early_frames(const char *assets);
+void check_early_hud();
 void check_early_menu();
 void check_early_fx_writes();
 extern "C" {
@@ -168,6 +169,8 @@ int main(int argc, char **argv) {
   check_creature_motion();
   check_credits();
   check_early_frames(argv[1]);
+  if (FREEWARE_EDITION == 10002)
+    check_early_hud();
   check_early_menu();
   Game g;
   g.asset_dir = argv[1];
