@@ -6,6 +6,7 @@ import struct
 import sys
 from collections import Counter
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -21,6 +22,25 @@ def load(name: str):
     sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
+
+
+@pytest.mark.parametrize("tracer", ["alias_class_census", "field_records"])
+def test_alias_tracer_validates_the_selected_build_compiler(tmp_path, monkeypatch, tracer):
+    compilers = tmp_path / "compilers"
+    dll = compilers / "unrecognized" / "Bin" / "C2.DLL"
+    dll.parent.mkdir(parents=True)
+    dll.write_bytes(b"different compiler")
+    monkeypatch.setattr(c2.replay, "COMPILERS", compilers)
+
+    def select_compiler(scratch, build):
+        assert build == "1.4.0"
+        return SimpleNamespace(compiler="unrecognized"), None
+
+    monkeypatch.setattr(c2, "scratch_target", select_compiler)
+    out = tmp_path / "trace"
+    with pytest.raises(ValueError, match="C2 binary does not match the pinned observer profile"):
+        load(tracer).run(tmp_path / "scratch", out, build="1.4.0")
+    assert not out.exists()
 
 
 fp = load("frame_predict")
