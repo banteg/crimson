@@ -241,6 +241,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x0041c088",
+      "name": "freeware_menu_music_pending",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x0041c08c",
       "name": "freeware_encounter_id",
       "program": "1.0.2/crimson.exe"
@@ -861,6 +866,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x004287f7",
+      "name": "freeware_show_fps",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x004287f8",
       "name": "freeware_encounter_hover",
       "program": "1.0.2/crimson.exe"
@@ -868,6 +878,16 @@
     {
       "address": "0x004287f8",
       "name": "freeware_perk_hover",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x004287fc",
+      "name": "freeware_jinx_timer",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428800",
+      "name": "freeware_game_active",
       "program": "1.0.2/crimson.exe"
     },
     {
@@ -986,6 +1006,11 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x00428864",
+      "name": "freeware_options_open",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00428868",
       "name": "creature_spawned_count",
       "program": "1.0.2/crimson.exe"
@@ -1046,8 +1071,23 @@
       "program": "1.0.2/crimson.exe"
     },
     {
+      "address": "0x00428890",
+      "name": "freeware_logo_angle",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428894",
+      "name": "freeware_logo_visible",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
       "address": "0x00428895",
       "name": "freeware_scores_closing",
+      "program": "1.0.2/crimson.exe"
+    },
+    {
+      "address": "0x00428898",
+      "name": "freeware_name_length",
       "program": "1.0.2/crimson.exe"
     },
     {

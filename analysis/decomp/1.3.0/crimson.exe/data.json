@@ -1076,6 +1076,16 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x004374b4",
+      "name": "config_movement_schemes",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374bc",
+      "name": "config_aim_schemes",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x004374c8",
       "name": "freeware_pad_threshold",
       "program": "1.3.0/crimson.exe"

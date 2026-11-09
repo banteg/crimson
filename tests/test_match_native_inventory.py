@@ -158,7 +158,7 @@ def test_report_and_triage_share_the_native_function_denominator() -> None:
 
 
 @pytest.mark.parametrize(("version", "port_count", "platform_count"), [
-    ("1.0.2", 175, 26), ("1.3.0", 240, 36), ("1.4.0", 310, 43),
+    ("1.0.2", 175, 26), ("1.3.0", 240, 36), ("1.4.0", 311, 43),
 ])
 def test_shipped_port_scopes_preserve_behavior_and_reject_backend_leaves(
     version: str, port_count: int, platform_count: int,
@@ -187,6 +187,7 @@ def test_shipped_port_scopes_preserve_behavior_and_reject_backend_leaves(
         assert inventory["crimson.exe"][0x405D60]["name"] == "gameplay_reset_state"
     if version == "1.4.0":
         assert inventory["crimson.exe"][0x403AF0]["name"] == "freeware_brush_register_atexit"
+        assert inventory["crimson.exe"][0x41E320]["name"] == "freeware_editor_offset_destroy"
         # Four former interior entries belong to the arithmetic command's switch.
         assert inventory["crimson.exe"][0x4019F0]["end"] == 0x401AC6
         assert 0x401A45 not in inventory["crimson.exe"]

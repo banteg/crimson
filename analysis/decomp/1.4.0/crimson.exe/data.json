@@ -261,6 +261,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x0041e320",
+      "name": "freeware_editor_offset_destroy",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x0041fc80",
       "name": "texture_get_or_load",
       "program": "1.4.0/crimson.exe"
@@ -1403,6 +1408,11 @@
     {
       "address": "0x0043c5c8",
       "name": "freeware_bonus_count",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043c5cc",
+      "name": "freeware_editor_offset_initialized",
       "program": "1.4.0/crimson.exe"
     },
     {

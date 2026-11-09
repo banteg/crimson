@@ -1627,6 +1627,67 @@
       "reference": "0x0040bc51",
       "bytes": "c7057c88420000000000",
       "build_only": true
+    },
+    {
+      "name": "freeware_menu_music_pending",
+      "address": "0x0041c088",
+      "reference": "0x0040c3ae",
+      "bytes": "c60588c0410000",
+      "build_only": true,
+      "evidence": "Cleared when the title track starts. A new run sets this byte at 0x40ce78."
+    },
+    {
+      "name": "freeware_show_fps",
+      "address": "0x004287f7",
+      "reference": "0x0040c7a2",
+      "bytes": "a0f7874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_game_active",
+      "address": "0x00428800",
+      "reference": "0x0040ce59",
+      "bytes": "a000884200",
+      "build_only": true,
+      "evidence": "Changes Begin game. to Resume game. At row zero an active run resumes without resetting gameplay."
+    },
+    {
+      "name": "freeware_options_open",
+      "address": "0x00428864",
+      "reference": "0x0040cd3a",
+      "bytes": "a064884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_logo_angle",
+      "address": "0x00428890",
+      "reference": "0x0040c54f",
+      "bytes": "d91d90884200",
+      "build_only": true,
+      "evidence": "The menu clamps this computed logo tilt to [0, pi/2] before rotating the Crimsonland title texture."
+    },
+    {
+      "name": "freeware_logo_visible",
+      "address": "0x00428894",
+      "reference": "0x0040c63e",
+      "bytes": "c6059488420001",
+      "build_only": true,
+      "evidence": "Set after the logo has faded in. Cleared when beginning a new run at 0x40ce71."
+    },
+    {
+      "name": "freeware_name_length",
+      "address": "0x00428898",
+      "reference": "0x0040e503",
+      "bytes": "c7059888420000000000",
+      "build_only": true,
+      "evidence": "The name-entry state resets this edit cursor on entry and updates it when appending and erasing characters in freeware_last_score.name."
+    },
+    {
+      "name": "freeware_jinx_timer",
+      "address": "0x004287fc",
+      "reference": "0x0040d6c9",
+      "bytes": "d905fc874200",
+      "build_only": true
     }
   ],
   "absent": [

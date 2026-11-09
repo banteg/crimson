@@ -1386,6 +1386,14 @@
       "end": "0x00422414",
       "body_sha256": "111a274544b1a62609b2f1d0f9c2acd5b6de3e728adceddb9e5b6d19458182fe",
       "evidence": "0x421496 seeds the LCG from QueryPerformanceCounter. The following crt_rand reads and updates the same DWORD with the MSVCRT multipliers."
+    },
+    {
+      "name": "freeware_editor_offset_destroy",
+      "address": "0x0041e320",
+      "end": "0x0041e321",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e",
+      "build_only": true,
+      "evidence": "The editor pushes 0x0041e320 at 0x004189cb and calls atexit at 0x004189ed while initializing its two-component static offset at 0x00438808. The callback is a single RET, as in 1.3.0."
     }
   ],
   "data": [
@@ -3766,6 +3774,20 @@
       "reference": "0x004214cc",
       "bytes": "b854fb4200",
       "evidence": "The shorter freeware text is an inline array; WinMain tests the address after seeding the snow array."
+    },
+    {
+      "name": "freeware_editor_offset_destroy",
+      "address": "0x0041e320",
+      "reference": "0x004189cb",
+      "bytes": "6820e34100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_offset_initialized",
+      "address": "0x0043c5cc",
+      "reference": "0x004189c0",
+      "bytes": "a0ccc54300",
+      "build_only": true
     }
   ],
   "absent": [

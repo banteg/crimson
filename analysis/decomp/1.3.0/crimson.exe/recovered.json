@@ -2392,6 +2392,18 @@
       "bytes": "e8e5100000",
       "evidence": "Pushes one pointer to a newly allocated 48-byte brush into freeware_brushes. VC6 emits this shared insert(pos, count, value) specialization.",
       "build_only": true
+    },
+    {
+      "name": "config_movement_schemes",
+      "address": "0x004374b4",
+      "reference": "0x0040e69c",
+      "bytes": "8b048db4744300"
+    },
+    {
+      "name": "config_aim_schemes",
+      "address": "0x004374bc",
+      "reference": "0x0040f2c7",
+      "bytes": "8b0495bc744300"
     }
   ],
   "absent": [

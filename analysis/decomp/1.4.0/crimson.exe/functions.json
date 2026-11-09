@@ -1793,6 +1793,14 @@
     "size": 24916
   },
   {
+    "address": "0x0041E320",
+    "end": "0x0041E321",
+    "size": 1,
+    "build_only": true,
+    "name": "freeware_editor_offset_destroy",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x0041E330",
     "end": "0x0041EF9D",
     "size": 3181,

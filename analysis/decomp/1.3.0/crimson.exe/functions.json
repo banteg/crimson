@@ -1252,11 +1252,11 @@
   },
   {
     "address": "0x004183E0",
-    "end": "0x004183E1",
-    "size": 1,
     "build_only": true,
+    "end": "0x004183E1",
+    "evidence": "recovered",
     "name": "freeware_editor_offset_destroy",
-    "evidence": "recovered"
+    "size": 1
   },
   {
     "address": "0x004183F0",
