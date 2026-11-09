@@ -12,7 +12,7 @@ extern effect_color_t freeware_ice_tint;
 #define __forceinline inline
 #endif
 #endif
-__forceinline void freeware_shard(const vec2f_t *pos, float size) {
+__forceinline void freeware_shard(const vec2f_t *pos, const float &size) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     const char *texture = "icemold";
 #else

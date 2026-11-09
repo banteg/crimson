@@ -18,13 +18,14 @@ before the expiry check. The 1.3.0 projectile oracle checks 35 impacts and
 | Build | Native instructions | Candidate instructions | Normalized similarity |
 | --- | ---: | ---: | ---: |
 | 1.0.2 | 773 | 773 | 100%, byte-exact |
-| 1.3.0 | 1,954 | 1,954 | 94.42% |
-| 1.4.0 | 2,132 | 2,132 | 93.20% |
+| 1.3.0 | 1,954 | 1,954 | 100%, byte-exact |
+| 1.4.0 | 2,132 | 2,132 | 100%, byte-exact |
 
-The two later builds reproduce the native `0x110`-byte frame and the
-instruction sequence across all four pool walks. C2 assigns some temporary
-values to different stack slots. This changes instruction lengths and branch
-displacements. Both retain zero whole-function matching credit.
+All four pool walks in each later build compile to the original bytes, with
+the native `0x110`-byte frame. The reference audit resolves all 493 operands
+in 1.3.0 and all 531 in 1.4.0. The primary and rocket impacts share the angle,
+radius and size of their ice marks. Passing the size by reference reproduces
+the native spill and texture-load order at the first two marks.
 
 ## 1.9.8 exact (2026-10-14)
 

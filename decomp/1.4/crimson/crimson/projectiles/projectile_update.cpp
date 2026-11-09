@@ -91,7 +91,7 @@ __forceinline SprayPoint spray_position(const vec2f_t &offset, const vec2f_t &ce
     return SprayPoint(offset.x + center.x, offset.y + center.y);
 }
 __forceinline void spray_blood(const vec2f_t &position) { fx_queue_add_random(&position); }
-__forceinline void spray_ice(const vec2f_t &position, float size) { freeware_shard(&position, size); }
+__forceinline void spray_ice(const vec2f_t &position, const float &size) { freeware_shard(&position, size); }
 __forceinline void primary_hit_sound(bool lethal) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     freeware_combat_sound(lethal ? crt_rand() % 4 + 3 : crt_rand() % 2, .45f);
@@ -102,18 +102,18 @@ __forceinline void primary_hit_sound(bool lethal) {
         sfx_play_panned(crt_rand() % 2, .45f, .5f);
 #endif
 }
-__forceinline void impact_marks(projectile_t &shot, int id) {
+__forceinline void impact_marks(projectile_t &shot, int id, float &shard_size) {
     float jitter = (float)(crt_rand() % 20 - 10) * .1f;
     float angle = (shot.angle - half_pi) + jitter;
     float x = (float)cos(angle) * 20.f, y = (float)sin(angle) * 20.f;
     if (shot.fields.type_id != 7 && shot.fields.type_id != 10) {
         if (bonus_freeze_timer > 0.f) {
-            float size = (float)(crt_rand() % 10 + 5);
-            spray_ice(creature_pool[id].position, size);
-            size = (float)(crt_rand() % 10 + 5);
-            spray_ice(spray_position(SprayPoint(x * 1.5f, y * 1.5f), creature_pool[id].position), size);
-            size = (float)(crt_rand() % 10 + 5);
-            spray_ice(spray_position(SprayPoint(x * 2.f, y * 2.f), creature_pool[id].position), size);
+            shard_size = (float)(crt_rand() % 10 + 5);
+            spray_ice(creature_pool[id].position, shard_size);
+            shard_size = (float)(crt_rand() % 10 + 5);
+            spray_ice(spray_position(SprayPoint(x * 1.5f, y * 1.5f), creature_pool[id].position), shard_size);
+            shard_size = (float)(crt_rand() % 10 + 5);
+            spray_ice(spray_position(SprayPoint(x * 2.f, y * 2.f), creature_pool[id].position), shard_size);
         } else {
             spray_blood(creature_pool[id].position);
             spray_blood(spray_position(SprayPoint(x * 1.5f, y * 1.5f), creature_pool[id].position));
@@ -130,17 +130,17 @@ __forceinline void impact_marks(projectile_t &shot, int id) {
         float direction = shot.angle - half_pi;
         x = (float)cos(direction) * factor * 20.f;
         y = (float)sin(direction) * factor * 20.f;
-        SprayPoint delta(x, y);
-        SprayPoint probe = spray_position(delta, creature_pool[id].position), still(0.f, 0.f);
+        SprayPoint probe = spray_position(SprayPoint(x, y), creature_pool[id].position), still(0.f, 0.f);
         if (freeware_current_map->move_with_collision(&probe, &still, 2.f) == 0) {
-            float size = (float)(crt_rand() % 10 + 5);
+            shard_size = (float)(crt_rand() % 10 + 5);
             if (bonus_freeze_timer > 0.f)
-                spray_ice(spray_position(delta, creature_pool[id].position), size);
-            spray_blood(spray_position(delta, creature_pool[id].position));
+                spray_ice(spray_position(SprayPoint(x, y), creature_pool[id].position), shard_size);
+            spray_blood(spray_position(SprayPoint(x, y), creature_pool[id].position));
         }
     }
 }
-__forceinline void hit(projectile_t &shot, int id, const vec2f_t *position, float &shard_radius) {
+__forceinline void hit(projectile_t &shot, int id, const vec2f_t *position, float &shard_angle,
+                       float &shard_radius, float &shard_size) {
     if (creature_pool[id].death_timer == 16)
         ++highscore_record_hits;
     if (UI_PLAYER(current_player_index).perks[perk_id_bloody_mess] > 0) {
@@ -191,7 +191,7 @@ __forceinline void hit(projectile_t &shot, int id, const vec2f_t *position, floa
             shot.fields.life_timer = .25f;
     }
     creature_pool[id].ai_mode = 1;
-    impact_marks(shot, id);
+    impact_marks(shot, id, shard_size);
     if (combat_music_active() || config_game_mode == 2)
         primary_hit_sound(false);
     else
@@ -200,11 +200,11 @@ __forceinline void hit(projectile_t &shot, int id, const vec2f_t *position, floa
         if (creature_pool[id].death_timer == 16) {
             if (bonus_freeze_timer > 0) {
                 for (int remaining = 6; remaining > 0; --remaining) {
-                    float size = (float)(crt_rand() % 10 + 5);
-                    float angle = (float)(crt_rand() % 628) * .01f;
+                    shard_size = (float)(crt_rand() % 10 + 5);
+                    shard_angle = (float)(crt_rand() % 628) * .01f;
                     shard_radius = (float)(crt_rand() % 35);
-                    SprayPoint spread((float)cos(angle) * shard_radius, (float)sin(angle) * shard_radius);
-                    spray_ice(spray_position(spread, creature_pool[id].position), size);
+                    SprayPoint spread((float)cos(shard_angle) * shard_radius, (float)sin(shard_angle) * shard_radius);
+                    spray_ice(spray_position(spread, creature_pool[id].position), shard_size);
                 }
             }
             primary_hit_sound(true);
@@ -219,8 +219,8 @@ __forceinline void spawn_ricochet(const vec2f_t &position, const projectile_t &s
     SprayPoint start(position.x - offset.x, position.y - offset.y);
     projectile_spawn(&start, shot.angle - half_pi, 1);
 }
-__forceinline void bullets(float &shard_radius) {
-    for (int i = 0; i < 64; ++i) {
+__forceinline void bullets(float &shard_angle, float &shard_radius, float &shard_size, int &i) {
+    for (i = 0; i < 64; ++i) {
         if (!projectile_pool[i].active)
             continue;
         if (projectile_pool[i].fields.life_timer <= 0)
@@ -280,7 +280,7 @@ __forceinline void bullets(float &shard_radius) {
                     else
                         id = creature_find_in_radius(position, 0.f);
                     if (id != -1) {
-                        hit(projectile_pool[i], id, position, shard_radius);
+                        hit(projectile_pool[i], id, position, shard_angle, shard_radius, shard_size);
                         if (projectile_pool[i].fields.damage_pool <= 0)
                             break;
                     }
@@ -326,7 +326,8 @@ __forceinline SprayPoint operator*(const vec2f_t &a, const float &scale) {
 }
 __forceinline float rocket_length(const vec2f_t &v) {
 #if FREEWARE_EDITION == 10300
-    return (float)sqrt(v.x * v.x + v.y * v.y);
+    float squared_x = v.x * v.x;
+    return (float)sqrt(squared_x + v.y * v.y);
 #else
     float squared_y = v.y * v.y;
     float length = (float)sqrt(squared_y + v.x * v.x);
@@ -364,29 +365,30 @@ __forceinline void rocket_sparks(const vec2f_t *position) {
 // On a frozen impact the blast reuses the final polar offset from the three initial
 // ice marks. The original still advances the random stream twice before choosing
 // the size and rotation of each of the ten later marks.
-__forceinline void rocket_burst_marks(int hit, const float &shard_angle, const float &shard_radius, int mark_count,
-                                      int mark_radius) {
+__forceinline void rocket_burst_marks(int hit, const float &shard_angle, const float &shard_radius, float &shard_size,
+                                      float &blast_angle, int mark_count, int mark_radius) {
     if (bonus_freeze_timer > 0.f) {
         for (int k = 0; k < 10; ++k) {
             crt_rand();
             crt_rand();
-            float size = (float)(crt_rand() % 10 + 5);
+            shard_size = (float)(crt_rand() % 10 + 5);
             SprayPoint frozen_offset((float)cos(shard_angle) * shard_radius,
                                      (float)sin(shard_angle) * shard_radius);
             SprayPoint p = creature_pool[hit].position + frozen_offset;
-            freeware_shard(&p, size);
+            freeware_shard(&p, shard_size);
         }
     } else {
         for (int k = 0; k < mark_count; ++k) {
-            float shard_angle = (float)(crt_rand() % 628) * .01f;
-            float shard_radius = (float)(crt_rand() % mark_radius);
-            SprayPoint offset((float)cos(shard_angle) * shard_radius, (float)sin(shard_angle) * shard_radius);
+            blast_angle = (float)(crt_rand() % 628) * .01f;
+            float radius = (float)(crt_rand() % mark_radius);
+            SprayPoint offset((float)cos(blast_angle) * radius, (float)sin(blast_angle) * radius);
             SprayPoint p = offset + creature_pool[hit].position;
             fx_queue_add_random(&p);
         }
     }
 }
-__forceinline void rockets(float &shard_radius) {
+__forceinline void rockets(float &shard_angle, float &shard_radius, float &shard_size) {
+    float blast_angle;
     for (int i = 0; i < 64; ++i) {
         float &heading = secondary_projectile_pool[i].angle;
         if (!secondary_projectile_pool[i].active)
@@ -465,16 +467,15 @@ __forceinline void rockets(float &shard_radius) {
         if (hit != -1) {
             if (creature_pool[hit].death_timer == 16.f)
                 ++highscore_record_hits;
-            float shard_angle;
             if (bonus_freeze_timer > 0.f) {
                 for (int j = 0; j < 3; ++j) {
-                    float size = (float)(crt_rand() % 10 + 5);
+                    shard_size = (float)(crt_rand() % 10 + 5);
                     shard_angle = (float)(crt_rand() % 628) * .01f;
                     shard_radius = (float)(crt_rand() % 35);
                     SprayPoint offset((float)cos(shard_angle) * shard_radius,
                                       (float)sin(shard_angle) * shard_radius);
                     SprayPoint pos = offset + creature_pool[hit].position;
-                    freeware_shard(&pos, size);
+                    freeware_shard(&pos, shard_size);
                 }
             } else {
                 vec2f_t spread;
@@ -503,13 +504,13 @@ __forceinline void rockets(float &shard_radius) {
                 secondary_projectile_pool[i].fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
                 secondary_projectile_pool[i].fields.vel_x = 0.f;
                 secondary_projectile_pool[i].fields.vel_y = 1.f;
-                rocket_burst_marks(hit, shard_angle, shard_radius, 20, 90);
+                rocket_burst_marks(hit, shard_angle, shard_radius, shard_size, blast_angle, 20, 90);
 
             } else if (secondary_projectile_pool[i].fields.type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
                 secondary_projectile_pool[i].fields.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
                 secondary_projectile_pool[i].fields.vel_x = 0.f;
                 secondary_projectile_pool[i].fields.vel_y = .5f;
-                rocket_burst_marks(hit, shard_angle, shard_radius, 10, 64);
+                rocket_burst_marks(hit, shard_angle, shard_radius, shard_size, blast_angle, 10, 64);
             }
             rocket_sparks(&secondary_projectile_pool[i].position);
         }
@@ -557,9 +558,9 @@ __forceinline void particle_heading_velocity(int i, float speed) {
     particle_pool[i].vel_x = (float)cos(particle_pool[i].angle) * speed;
     particle_pool[i].vel_y = (float)sin(particle_pool[i].angle) * speed;
 }
-__forceinline void particles() {
+__forceinline void particles(int &i) {
     const float tau = 6.28318548f;
-    for (int i = 0; i < 128; ++i) {
+    for (i = 0; i < 128; ++i) {
         if (!particle_pool[i].active)
             continue;
 #if FREEWARE_EDITION != 10300
@@ -724,9 +725,10 @@ __forceinline void particles() {
 #undef PARTICLE_SOUND
 } // namespace
 extern "C" void projectile_update() {
-    float shard_radius;
-    bullets(shard_radius);
-    rockets(shard_radius);
+    int index;
+    float shard_radius, shard_size, shard_angle;
+    bullets(shard_angle, shard_radius, shard_size, index);
+    rockets(shard_angle, shard_radius, shard_size);
     for (int i = 0; i < (FREEWARE_EDITION == 10300 ? 256 : 384); ++i) {
         sprite_effect_t &s = sprite_effect_pool[i];
         if (!s.active)
@@ -738,6 +740,6 @@ extern "C" void projectile_update() {
             s.active = 0;
         s.scale += frame_dt * 60.f;
     }
-    particles();
+    particles(index);
 }
 #endif
