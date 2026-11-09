@@ -5,10 +5,14 @@ extern "C" float freeware_elapsed_seconds;
 #if CL_BUILD == 10002 || (defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002)
 // 0x4067a0. Native callers inspect AL. The shared client needs the allocated slot.
 extern "C" int plaguebearer_spread_infection(int);
-extern "C" int creature_spawn(const vec2f_t *position, const effect_color_t *tint, int type) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+typedef int spawn_result_t;
+#else
+typedef bool spawn_result_t;
+#endif
+extern "C" spawn_result_t creature_spawn(const vec2f_t *position, const effect_color_t *tint, int type) {
     int index = creature_alloc_slot();
-    creature_t &c = creature_pool[index];
-    c.position = *position;
+    creature_pool[index].position = *position;
     if (plaguebearer_spread_infection(index)) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         return -1;
@@ -16,26 +20,26 @@ extern "C" int creature_spawn(const vec2f_t *position, const effect_color_t *tin
         return 0;
 #endif
     }
-    c.plague_infected = 0;
+    creature_pool[index].plague_infected = 0;
 #ifdef CRIMSON_FREEWARE_CLIENT
-    c.anim_phase = 0;
+    creature_pool[index].anim_phase = 0;
 #else
-    c.hit_flash_timer = 0;
+    creature_pool[index].hit_flash_timer = 0;
 #endif
-    c.freeware.type = type;
-    c.active = 1;
-    c.freeware.force_target = 0;
-    c.death_timer = 16;
-    c.health = freeware_elapsed_seconds * .1f + 10;
+    creature_pool[index].freeware.type = type;
+    creature_pool[index].active = 1;
+    creature_pool[index].freeware.force_target = 0;
+    creature_pool[index].death_timer = 16;
+    creature_pool[index].health = freeware_elapsed_seconds * .1f + 10;
     vec2f_t zero = {0, 0};
-    c.velocity = zero;
-    c.freeware.heading = (crt_rand() % 314) * .01f;
-    c.freeware.move_speed = freeware_elapsed_seconds * .01f + 2.5f;
-    c.freeware.reward = crt_rand() % 10 + 120;
-    c.freeware.attack_cooldown = 0;
-    c.freeware.color = *tint;
-    c.freeware.size = freeware_elapsed_seconds * .01f + 47;
-    c.freeware.contact_damage = 4;
+    creature_pool[index].velocity = zero;
+    creature_pool[index].freeware.heading = (crt_rand() % 314) * .01f;
+    creature_pool[index].freeware.move_speed = freeware_elapsed_seconds * .01f + 2.5f;
+    creature_pool[index].freeware.reward = crt_rand() % 10 + 120;
+    creature_pool[index].freeware.attack_cooldown = 0;
+    creature_pool[index].freeware.color = *tint;
+    creature_pool[index].freeware.size = freeware_elapsed_seconds * .01f + 47;
+    creature_pool[index].freeware.contact_damage = 4;
     ++creature_spawned_count;
 #ifdef CRIMSON_FREEWARE_CLIENT
     return index;
