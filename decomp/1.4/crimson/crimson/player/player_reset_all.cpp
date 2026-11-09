@@ -1,58 +1,113 @@
-// 0x408440. The run reset initializes both records and preserves aim, walk
-// phase and the binding bytes from the preceding run.
+// 1.0.2 resets the current player. The later freeware builds reset both and restore the index.
 #include "freeware_level.h"
-#include <string.h>
+#if CL_BUILD == 10002
+namespace {
+struct reset_point {
+    vec2f_t value;
+    reset_point(float x, float y) {
+        value.x = x;
+        value.y = y;
+    }
+};
+}
+#endif
+
 extern "C" {
+#if CL_BUILD == 10400
 extern player_state_t player_state_table[2];
-extern creature_t creature_pool[512];
+#define PLAYER(i) player_state_table[i].freeware
+#else
+extern freeware_player_t player_state_table[2];
+#define PLAYER(i) player_state_table[i]
+#endif
+extern creature_t creature_pool[];
 extern game_mode_id_t config_game_mode;
 extern int freeware_arena_width, freeware_arena_height, freeware_pickup_id, freeware_no_pickup;
 extern float freeware_elapsed_seconds, freeware_pickup_time, freeware_berserk_timer;
 extern vec2f_t freeware_aim_screen;
+extern int current_player_index;
+#define P PLAYER(current_player_index)
 void player_reset_all() {
-    freeware_level_map *map = freeware_current_map;
+#if CL_BUILD == 10002
+    P.plaguebearer = 0;
+    freeware_elapsed_seconds = 0;
+    freeware_pickup_id = freeware_no_pickup;
+    P.clip_size = 30;
+    P.health = 100;
+    reset_point start(freeware_arena_width * .5f, freeware_arena_height * .5f);
+    P.position = start.value;
+    P.size = 48;
+    P.speed_multiplier = 2;
+    P.level = 1;
+    P.heading = 0;
+    P.experience = 0;
+    P.spread = 1;
+    P.move_speed = 0;
+    P.ammo = 30;
+    P.reload = 0;
+    P.weapon = 1;
+    P.previous_weapon = 0;
+    reset_point aim(320, 140);
+    freeware_aim_screen = aim.value;
+    freeware_pickup_time = 0;
+    for (int i = 0; i < 32; ++i)
+        P.perks[i] = 0;
+    for (int j = 0; j < 128; ++j)
+        creature_pool[j].plague_infected = 0;
+#else
     freeware_elapsed_seconds = 0;
     freeware_pickup_time = 0;
     freeware_pickup_id = freeware_no_pickup;
-    freeware_berserk_timer = 0;
-    for (int i = 0; i < 2; ++i) {
-        freeware_player_t &p = player_state_table[i].freeware;
-        p.shield = 0;
-        p.control_reserved = 0;
-        p.plaguebearer = 0;
-        if (config_game_mode == 3)
-            p.position = map->start;
-        else {
-            p.position.x = freeware_arena_width * .5f;
-            p.position.y = freeware_arena_height * .5f;
+    int saved_index = current_player_index;
+
+    current_player_index = 0;
+    do {
+        freeware_berserk_timer = 0;
+        P.shield = 0;
+        P.control_reserved = 0;
+        P.plaguebearer = 0;
+        if (config_game_mode != 3) {
+            vec2f_t center = {freeware_arena_width * .5f, freeware_arena_height * .5f};
+            P.position = center;
+        } else
+            P.position = freeware_current_map->start;
+        P.health = 100;
+        if (current_player_index == 1) {
+            vec2f_t &position = PLAYER(1).position;
+            vec2f_t delta = {80.f, 0.f};
+            position.x += delta.x;
+            position.y += delta.y;
         }
-        p.health = 100;
-        if (i == 1)
-            player_state_table[1].freeware.position.x += 80;
-        p.size = 48;
-        p.speed_multiplier = 2;
-        p.level = 1;
-        p.heading = map->start_heading;
-        p.experience = 0;
-        p.displayed_experience = 0;
-        p.spread = 1;
-        p.move_speed = 0;
+        P.size = 48;
+        P.speed_multiplier = 2;
+        P.level = 1;
+        P.heading = freeware_current_map->start_heading;
+        P.experience = 0;
+        P.displayed_experience = 0;
+        P.spread = 1;
+        P.move_speed = 0;
 #if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002
-        p.ammo = p.clip_size = 30;
+        P.ammo = P.clip_size = 30;
 #else
-        p.ammo = 10;
-        p.clip_size = 10;
+        P.ammo = 10;
+        P.clip_size = 10;
 #endif
-        p.reload_duration = 1;
-        p.reload = 0;
-        freeware_aim_screen.x = 320;
-        p.cooldown = .8f;
-        p.weapon = 1;
-        p.previous_weapon = 0;
-        freeware_aim_screen.y = 140;
-        memset(p.perks, 0, sizeof(p.perks));
+        P.reload_duration = 1;
+        P.reload = 0;
+        P.cooldown = .8f;
+        P.weapon = 1;
+        P.previous_weapon = 0;
+        vec2f_t aim = {320.f, 140.f};
+        freeware_aim_screen = aim;
+        for (int k = 0; k < sizeof(P.perks) / sizeof(P.perks[0]); ++k)
+            P.perks[k] = 0;
         for (int j = 0; j < 512; ++j)
             creature_pool[j].plague_infected = 0;
-    }
+        ++current_player_index;
+    } while (current_player_index < 2);
+    current_player_index = saved_index;
+#endif
 }
+#undef P
+#undef PLAYER
 }
