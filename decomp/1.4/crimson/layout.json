@@ -532,12 +532,6 @@
           ]
         },
         {
-          "path": "decomp/1.4/crimson/crimson/game/freeware_editor_offset_destroy.cpp",
-          "configs": [
-            "tools/match/scratches/freeware_editor_offset_destroy"
-          ]
-        },
-        {
           "path": "decomp/1.4/crimson/crimson/game/freeware_save_config.cpp",
           "configs": [
             "tools/match/scratches/freeware_save_config"
@@ -546,6 +540,7 @@
         {
           "path": "decomp/1.4/crimson/crimson/game/game_frame_update.cpp",
           "configs": [
+            "tools/match/scratches/freeware_editor_offset_destroy",
             "tools/match/scratches/game_frame_update"
           ]
         },
