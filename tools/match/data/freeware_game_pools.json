@@ -1,0 +1,184 @@
+[
+  {
+    "name": "creature_pool",
+    "extent_function": "creature_pool_global_init",
+    "sizes": {
+      "1.0.2": 13312,
+      "1.3.0": 65536,
+      "1.4.0": 65536
+    }
+  },
+  {
+    "name": "projectile_pool",
+    "extent_function": "projectile_pool_global_init",
+    "sizes": {
+      "1.0.2": 3072,
+      "1.3.0": 3328,
+      "1.4.0": 3328
+    }
+  },
+  {
+    "name": "player_state_table",
+    "extent_function": "player_state_table_global_init",
+    "sizes": {
+      "1.0.2": 536,
+      "1.3.0": 656,
+      "1.4.0": 784
+    }
+  },
+  {
+    "name": "particle_pool",
+    "extent_function": "particle_pool_global_init",
+    "sizes": {
+      "1.0.2": 6144,
+      "1.3.0": 6656,
+      "1.4.0": 7168
+    }
+  },
+  {
+    "name": "freeware_atlas_uv",
+    "extent_function": "effect_uv_tables_init",
+    "size": 512
+  },
+  {
+    "name": "secondary_projectile_pool",
+    "extent_function": "secondary_projectile_pool_global_init",
+    "sizes": {
+      "1.3.0": 2560,
+      "1.4.0": 2560
+    }
+  },
+  {
+    "name": "sprite_effect_pool",
+    "extent_function": "sprite_effect_pool_global_init",
+    "sizes": {
+      "1.3.0": 11264,
+      "1.4.0": 16896
+    }
+  },
+  {
+    "name": "fx_queue",
+    "extent_function": "fx_queue_global_init",
+    "sizes": {
+      "1.3.0": 1280,
+      "1.4.0": 2560
+    }
+  },
+  {
+    "name": "freeware_blood_positions",
+    "extent_function": "fx_queue_add_random",
+    "size": 512
+  },
+  {
+    "name": "freeware_shell_positions",
+    "extent_function": "fx_queue_add_shell",
+    "size": 256
+  },
+  {
+    "name": "freeware_corpse_positions",
+    "extent_function": "fx_queue_add_rotated",
+    "size": 512
+  },
+  {
+    "name": "freeware_corpse_colors",
+    "extent_function": "fx_queue_add_rotated",
+    "size": 1024
+  },
+  {
+    "name": "freeware_corpse_angles",
+    "extent_function": "fx_queue_add_rotated",
+    "size": 256
+  },
+  {
+    "name": "freeware_corpse_sizes",
+    "extent_function": "fx_queue_add_rotated",
+    "size": 256
+  },
+  {
+    "name": "freeware_corpse_species",
+    "extent_function": "fx_queue_add_rotated",
+    "size": 256
+  },
+  {
+    "name": "freeware_score_table",
+    "extent_function": "freeware_score_table_global_init",
+    "sizes": {
+      "1.0.2": 3600,
+      "1.3.0": 5600,
+      "1.4.0": 5600
+    }
+  },
+  {
+    "name": "freeware_last_score",
+    "extent_function": "freeware_save_score",
+    "sizes": {
+      "1.0.2": 36,
+      "1.3.0": 56,
+      "1.4.0": 56
+    }
+  },
+  {
+    "name": "perk_choice_flags",
+    "extent_function": "perks_generate_choices",
+    "sizes": {
+      "1.0.2": 32,
+      "1.3.0": 32,
+      "1.4.0": 48
+    }
+  },
+  {
+    "name": "freeware_score_key",
+    "extent_function": "freeware_score_key_init",
+    "sizes": {
+      "1.3.0": 243,
+      "1.4.0": 243
+    }
+  },
+  {
+    "name": "freeware_fps",
+    "extent_function": "freeware_save_score",
+    "sizes": {
+      "1.3.0": 200,
+      "1.4.0": 200
+    }
+  },
+  {
+    "name": "freeware_main_labels",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.0.2": 24,
+      "1.3.0": 28,
+      "1.4.0": 32
+    }
+  },
+  {
+    "name": "freeware_option_labels",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.0.2": 36,
+      "1.3.0": 44,
+      "1.4.0": 48
+    }
+  },
+  {
+    "name": "freeware_town_choices",
+    "extent_function": "freeware_encounter_update",
+    "sizes": {
+      "1.0.2": 12
+    }
+  },
+  {
+    "name": "freeware_online_labels",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.4.0": 20
+    }
+  },
+  {
+    "name": "freeware_snow_y",
+    "extent_function": "crimsonland_main",
+    "sizes": {
+      "1.4.0": 4096
+    }
+  }
+]
