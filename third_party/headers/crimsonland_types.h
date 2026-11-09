@@ -324,7 +324,9 @@ typedef struct freeware_perk_entry_t {
 typedef struct freeware_player_t {
     unsigned char prefix[0x0c];
     unsigned char plaguebearer;
-    unsigned char entity_padding[0x0b];
+    unsigned char entity_padding[3];
+    float move_phase;
+    unsigned char entity_padding_14[4];
     vec2f_t position, movement;
     float health, heading;
     float target_heading, size;

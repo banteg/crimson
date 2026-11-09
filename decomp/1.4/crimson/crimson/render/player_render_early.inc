@@ -2,18 +2,6 @@
 #include "crimsonland_types.h"
 #include "grim2d_cpp.h"
 
-struct RenderPoint {
-    float x, y;
-    RenderPoint() {}
-    RenderPoint(float x, float y) : x(x), y(y) {}
-    RenderPoint operator+(const RenderPoint &p) const {
-        return RenderPoint(x + p.x, y + p.y);
-    }
-    RenderPoint operator-(const RenderPoint &p) const {
-        return RenderPoint(x - p.x, y - p.y);
-    }
-};
-
 extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr;
 extern int perk_id_almost_invisible, perk_id_radioactive;
@@ -72,9 +60,7 @@ static __forceinline void collect_pickup() {
         bonus_freeze_timer = 5.0f;
     } else if (freeware_pickup_id == freeware_bonus_nuke) {
         // The first nuke applies damage immediately to every active creature.
-
         for (int i = 0; i < 128; ++i) {
-
             if (!creature_pool[i].active)
                 continue;
             vec2f_t zero = {0, 0};
