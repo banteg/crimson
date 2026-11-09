@@ -168,6 +168,11 @@ __forceinline void muzzle_smoke(const vec2f_t &muzzle, float velocity_x, float v
     sprite_effect_pool[slot].color.b = .5f;
     sprite_effect_pool[slot].color.a = alpha;
 }
+__forceinline void muzzle_smoke_pair(const vec2f_t &muzzle, player_vec2_t direction, float first_alpha,
+                                     float second_alpha) {
+    muzzle_smoke(muzzle, direction.x * 25.f, (float)(direction.y * 25.f), 1.f, first_alpha);
+    muzzle_smoke(muzzle, direction.x * 15.f, (float)(direction.y * 15.f), 2.f, second_alpha);
+}
 __forceinline float aim_angle() {
     vec2f_t delta = P.position - P.aim;
     return (float)(atan2(delta.y, delta.x) - half_pi);

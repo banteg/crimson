@@ -24,15 +24,13 @@ if (P.weapon == 1) {
         sprite_effect_pool[slot].color.b = .5f;
         sprite_effect_pool[slot].color.a = .23f;
     }
-    muzzle_smoke(muzzle, dir_x * 15.0f, (float)(dir_y * 15.0f), 2.0f, .213f);
+    muzzle_smoke(muzzle, dir_x * 15.0f, dir_y * 15.0f, 2.0f, .213f);
     shot_sound(2);
     fx_queue_add_shell(&shell);
     P.cooldown = .7117f;
     P.muzzle_flash += FREEWARE_EDITION == 10300 ? .12f : .22f;
 } else if (P.weapon == 2) {
-
-    muzzle_smoke(muzzle, dir_x * 25.0f, (float)(dir_y * 25.0f), 1.0f, .23f);
-    muzzle_smoke(muzzle, dir_x * 15.0f, (float)(dir_y * 15.0f), 2.0f, .213f);
+    muzzle_smoke_pair(muzzle, player_vec2_t(dir_x, dir_y), .23f, .213f);
     projectile_spawn(position_ptr(muzzle + P.position), (crt_rand() % 200 - 100) * P.spread * .001f + heading,
                      1);
     shot_sound(7);
@@ -40,9 +38,7 @@ if (P.weapon == 1) {
     P.cooldown = .117f;
     P.muzzle_flash += .07f;
 } else if (P.weapon == 3) {
-
-    muzzle_smoke(muzzle, dir_x * 25.0f, (float)(dir_y * 25.0f), 1.0f, .25f);
-    muzzle_smoke(muzzle, dir_x * 15.0f, (float)(dir_y * 15.0f), 2.0f, .223f);
+    muzzle_smoke_pair(muzzle, player_vec2_t(dir_x, dir_y), .25f, .223f);
     int pellets_left = 12;
     do {
         int slot = projectile_spawn(position_ptr(muzzle + P.position),
@@ -54,9 +50,7 @@ if (P.weapon == 1) {
     P.cooldown = .688117f;
     P.muzzle_flash += .12f;
 } else if (P.weapon == 4) {
-
-    muzzle_smoke(muzzle, dir_x * 25.0f, (float)(dir_y * 25.0f), 1.0f, .26f);
-    muzzle_smoke(muzzle, dir_x * 15.0f, (float)(dir_y * 15.0f), 2.0f, .233f);
+    muzzle_smoke_pair(muzzle, player_vec2_t(dir_x, dir_y), .26f, .233f);
     int pellets_left = FREEWARE_EDITION == 10300 ? 16 : 12;
     do {
         int slot = projectile_spawn(position_ptr(muzzle + P.position),
@@ -79,9 +73,7 @@ if (P.weapon == 1) {
     ammo = .05f;
     P.cooldown = .006113f;
 } else if (P.weapon == 6) {
-
-    muzzle_smoke(muzzle, dir_x * 25.0f, (float)(dir_y * 25.0f), 1.0f, .23f);
-    muzzle_smoke(muzzle, dir_x * 15.0f, (float)(dir_y * 15.0f), 2.0f, .213f);
+    muzzle_smoke_pair(muzzle, player_vec2_t(dir_x, dir_y), .23f, .213f);
     projectile_spawn(position_ptr(muzzle + P.position), (crt_rand() % 20 - 10) * P.spread * .003f + heading,
                      2);
     shot_sound(26);
@@ -115,27 +107,21 @@ if (P.weapon == 1) {
     P.muzzle_flash += .097f;
 } else {
     if (P.weapon == 10) {
-
-        muzzle_smoke(muzzle, dir_x * 25.0f, (float)(dir_y * 25.0f), 1.0f, .33f);
-        muzzle_smoke(muzzle, dir_x * 15.0f, (float)(dir_y * 15.0f), 2.0f, .263f);
+        muzzle_smoke_pair(muzzle, player_vec2_t(dir_x, dir_y), .33f, .263f);
         projectile_spawn(position_ptr(muzzle + P.position),
                          (crt_rand() % 20 - 10) * P.spread * .003f + heading, 10);
         shot_sound(8);
         fx_queue_add_shell(&shell);
         P.cooldown = .9508117f;
     } else if (P.weapon == 11) {
-
-        muzzle_smoke(muzzle, dir_x * 25.0f, (float)(dir_y * 25.0f), 1.0f, .34f);
-        muzzle_smoke(muzzle, dir_x * 15.0f, (float)(dir_y * 15.0f), 2.0f, .283f);
+        muzzle_smoke_pair(muzzle, player_vec2_t(dir_x, dir_y), .34f, .283f);
         fx_spawn_secondary_projectile(position_ptr(muzzle + P.position),
                                       (crt_rand() % 20 - 10) * P.spread * .003f + heading,
                                       (secondary_projectile_type_id_t)1);
         shot_sound(20);
         P.cooldown = .7408117f;
     } else if (P.weapon == 12) {
-
-        muzzle_smoke(muzzle, dir_x * 25.0f, (float)(dir_y * 25.0f), 1.0f, .31f);
-        muzzle_smoke(muzzle, dir_x * 15.0f, (float)(dir_y * 15.0f), 2.0f, .243f);
+        muzzle_smoke_pair(muzzle, player_vec2_t(dir_x, dir_y), .31f, .243f);
         fx_spawn_secondary_projectile(position_ptr(muzzle + P.position),
                                       (crt_rand() % 20 - 10) * P.spread * .003f + heading,
                                       (secondary_projectile_type_id_t)2);

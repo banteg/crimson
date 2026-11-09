@@ -2289,6 +2289,10 @@ before polling the fire button, and adds the current position to the muzzle
 for every projectile and smoke puff. The turning branches retain the updated
 turn speed between the field write and the heading calculation.
 
-The shared 1.4.0 implementation reproduces all weapon cases, including the
-secret weapons. Its remaining differences are the second pistol puff's
-instruction schedule and the register used to read the Fastshot perk.
+## Freeware 1.4.0
+
+All 2,991 instructions and 1,054 references match the original VC6 build.
+Seven weapons emit paired muzzle puffs from the same firing direction. Taking
+that vector by value keeps both velocities attached to a single shot. It also
+reproduces the compiler's operand order for the final Fastshot perk lookup.
+The pistol emits its first puff separately after spawning its projectile.
