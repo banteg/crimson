@@ -162,7 +162,7 @@
   },
   {
     "name": "freeware_town_choices",
-    "extent_function": "freeware_encounter_update",
+    "extent_function": "crimsonland_main",
     "sizes": {
       "1.0.2": 12
     }
