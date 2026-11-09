@@ -40,9 +40,10 @@ for (current_player_index = 0; current_player_index < config_player_count; ++cur
 
     world_tint(1, 1, .1f, .7f);
     ui140::bind("aimen");
-    world_angle(CLOCK + CLOCK);
+    const float rotation = CLOCK + CLOCK;
+    world_angle(rotation);
     ui140::begin();
-    freeware_draw_point[0] = CAM + P(current_player_index).aim - AimPoint(10, 10);
+    freeware_draw_point[0] = CAM + P(current_player_index).aim - 10.f;
     world_quad(freeware_draw_point[0].x, freeware_draw_point[0].y, 20, 20);
     ui140::end();
 }
@@ -56,7 +57,7 @@ for (current_player_index = 0; current_player_index < config_player_count; ++cur
     float angle = P(current_player_index).heading - 1.57079637f;
     AimPoint direction((float)cos(angle), (float)sin(angle));
     AimPoint offset(direction.x * 60.f, direction.y * 60.f);
-    freeware_draw_point[0] = CAM + P(current_player_index).position + offset - AimPoint(16, 16);
+    freeware_draw_point[0] = CAM + P(current_player_index).position + offset - 16.f;
     if (FREEWARE_EDITION == 10300 || FIELD(freeware_direction_arrow, direction_arrow))
         world_quad(freeware_draw_point[0].x, freeware_draw_point[0].y, 32, 32);
     ui140::end();
@@ -81,10 +82,10 @@ for (current_player_index = 0; current_player_index < config_player_count; ++cur
 #endif
     }
     if (P(current_player_index).perks[perk_id_spontaneously_combusteous] > 0) {
-        float &timer = creature_pool[id].anim_phase;
-        timer -= frame_dt;
-        if (timer < 0) {
-            timer = .5f;
+        const float remaining = creature_pool[id].anim_phase - frame_dt;
+        creature_pool[id].anim_phase = remaining;
+        if (remaining < 0.f) {
+            creature_pool[id].anim_phase = .5f;
             fx_spawn_particle(&creature_pool[id].position, (crt_rand() % 628) * .01f, FramePoint(0.f, 0.f).address(), .8f);
             fx_spawn_particle(&creature_pool[id].position, (crt_rand() % 628) * .01f, FramePoint(0.f, 0.f).address(), .6f);
             fx_spawn_particle(&creature_pool[id].position, (crt_rand() % 628) * .01f, FramePoint(0.f, 0.f).address(), .4f);

@@ -31,6 +31,12 @@ __forceinline AimPoint operator-(const vec2f_t &a, const vec2f_t &b) {
     return AimPoint(a.x - b.x, a.y - b.y);
 }
 
+__forceinline AimPoint operator-(const AimPoint &point, float amount) {
+    const float x = point.x;
+    const float y = point.y;
+    return AimPoint(x - amount, y - amount);
+}
+
 __forceinline float aim_angle(AimPoint delta) { return atan2f(delta.y, delta.x); }
 __forceinline float aim_length(AimPoint delta) {
     const float squared_x = delta.x * delta.x;

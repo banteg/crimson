@@ -872,6 +872,8 @@ __forceinline bool native_menu_actions() {
                 crt_free(freeware_update_info);
                 freeware_update_info = response->data;
             }
+        } else if (freeware_perk_hover == 2) {
+            // This release shows the online highscore entry disabled.
         } else if (freeware_perk_hover == 4) {
             freeware_online_open = 0;
             freeware_perk_hover = 0;
