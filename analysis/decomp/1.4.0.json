@@ -26004,16 +26004,16 @@
       "end": 4240748,
       "image": "crimson.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "projectile_update",
       "native_kind": "function",
       "ownership": "game",
       "platform_replaced": null,
       "proof": {
-        "body_byte_exact": false,
-        "candidate_instructions": 1921,
-        "candidate_object_sha256": "98319f2de4a317020d126692280fa66816ca2b53742ec16e16df6d0d21ddd594",
-        "candidate_padding_bytes": 2,
+        "body_byte_exact": true,
+        "candidate_instructions": 2132,
+        "candidate_object_sha256": "1b7b5dc4be344f566f3210ce507f694b5b82d7c36c44b8ae591ad3b35a6b6777",
+        "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
             4232416,
@@ -26022,17 +26022,17 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 26,
-          "ok": 228,
-          "positional": false,
+          "mismatched": 0,
+          "ok": 531,
+          "positional": true,
           "unresolved": 0
         },
-        "state": "wip",
+        "state": "match",
         "target_instructions": 2132,
         "target_size": 8332,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.35775968418455467,
+      "ratio": 1.0,
       "size": 8332,
       "source": "decomp/1.4/crimson/crimson/projectiles/projectile_update.cpp"
     },
@@ -26997,15 +26997,15 @@
       "end": 4281994,
       "image": "crimson.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "player_update",
       "native_kind": "function",
       "ownership": "game",
       "platform_replaced": null,
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 2991,
-        "candidate_object_sha256": "31fef902a481863581d3528039d74103b1a8efe398a918919731bbcf3b8e34dc",
+        "candidate_object_sha256": "5235fcaa88b0084f10a31f32378c5c2ea3f0c030bbd4216a57257d17788072c6",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -27016,16 +27016,16 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 1053,
-          "positional": false,
+          "ok": 1054,
+          "positional": true,
           "unresolved": 0
         },
-        "state": "wip",
+        "state": "match",
         "target_instructions": 2991,
         "target_size": 12202,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.9983283182881979,
+      "ratio": 1.0,
       "size": 12202,
       "source": "decomp/1.4/crimson/crimson/player/player_update.cpp"
     },
@@ -27362,9 +27362,9 @@
       "platform_replaced": null,
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 6109,
-        "candidate_object_sha256": "8175c04aab1af6ded2a0499cf9c183fe2a81a66b452eab5f5b2d7057729329bc",
-        "candidate_padding_bytes": 1,
+        "candidate_instructions": 6160,
+        "candidate_object_sha256": "f74495601dab552a33c462bcf44e06216bcd49a80309dbe6a7d9d3ad55d2db45",
+        "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
             4293008,
@@ -27373,17 +27373,17 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 58,
-          "ok": 1636,
+          "mismatched": 22,
+          "ok": 1896,
           "positional": false,
-          "unresolved": 16
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 6233,
         "target_size": 24916,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.7250040512072597,
+      "ratio": 0.8214314532397321,
       "size": 24916,
       "source": "decomp/1.4/crimson/crimson/game/game_frame_update.cpp"
     },
@@ -27913,16 +27913,16 @@
       "end": 4325671,
       "image": "crimson.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "freeware_console_cmd_loadtile",
       "native_kind": "function",
       "ownership": "game",
       "platform_replaced": null,
       "proof": {
-        "body_byte_exact": false,
-        "candidate_instructions": 332,
-        "candidate_object_sha256": "1f2efc090cdd9a95a2aaab0b253310b71edd64833707840cb34dd8b7678bc3fd",
-        "candidate_padding_bytes": 6,
+        "body_byte_exact": true,
+        "candidate_instructions": 337,
+        "candidate_object_sha256": "6225de77788031c81eb4f5d69f4698b053aa5a302df884a400590d26287376fb",
+        "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
             4324656,
@@ -27932,16 +27932,16 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 70,
-          "positional": false,
+          "ok": 73,
+          "positional": true,
           "unresolved": 0
         },
-        "state": "wip",
+        "state": "match",
         "target_instructions": 337,
         "target_size": 1015,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.8191330343796711,
+      "ratio": 1.0,
       "size": 1015,
       "source": "decomp/1.4/crimson/crimson/console/freeware_console_cmd_loadtile.cpp"
     },
@@ -28532,7 +28532,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 981,
-        "candidate_object_sha256": "faf20473f6e69345772d0467cbb44db82768e36c39e8a32fcdeb08152f243a71",
+        "candidate_object_sha256": "ade17985150d784458bf6fb72a1355697342f081af0a744edcb6786a4f796c91",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -54457,7 +54457,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "db7dbb0293fcba4c9e10f32661a012e525d3b24aa660a278c139870c744db9b7",
+        "candidate_object_sha256": "842960bd19fbacd82ffbadaf1a4c5f188dd7bef0fa4987405df71939621129dc",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55025,7 +55025,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 123,
-        "candidate_object_sha256": "fee22cca4f4855a9c841903e78f2912418c13ce88a0599a5d65cdc984f6fce73",
+        "candidate_object_sha256": "83e3b010ac6001dad3418f26e0112849c70819cd19ebc9b70f32b50ec175d6d0",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55063,7 +55063,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 53,
-        "candidate_object_sha256": "0b553a430be5f5bb2719036886e1b6fd38d9ca7f9ef0a7b4559fddb2d0bec3b0",
+        "candidate_object_sha256": "dea53487c0161c6a15c45cc97809aba7b5c30c8ffab8ec30c196e63b0f243de8",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55101,7 +55101,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 24,
-        "candidate_object_sha256": "cea9d44b5c3b432878956e5b892b68969b843f75d3e1ab8a90ee6b5605f443fb",
+        "candidate_object_sha256": "cf822927893e9e18cd53eda69af2288e1b4d74d08c9f809e87fd22d81783a83f",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55139,7 +55139,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 61,
-        "candidate_object_sha256": "88c8ddb5bb6d2ab783a14e17d7c1587895e9bbdb5939bb1d19307a77ef95b2f9",
+        "candidate_object_sha256": "ba6cb6da3f249552281718053a609a06b008a1b1b8232ebed39317542b96f66b",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55215,7 +55215,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "dbc4a9e163002525bc75c38b3524d3d3f6cc0620ad3009769ad3e8f12eac1192",
+        "candidate_object_sha256": "a74d16f6d8a70a3bb15207057b5dae24ef5ab4b908573cd52d05ed1f8d473a24",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55307,7 +55307,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 101,
-        "candidate_object_sha256": "6d15b03da914ce22ca8df82c88d03089430f363473a6545bfd18be1a770b7124",
+        "candidate_object_sha256": "2e73f4c0fb8fcb8e018752d651dac81d3ec648f22e61a528e3345ce94696948c",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55345,7 +55345,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 62,
-        "candidate_object_sha256": "0913b769ec704e1d553d230844c6156c96d8478ca28dae1ef7be30280d765327",
+        "candidate_object_sha256": "644829d555d37161f0c6b660fdfab6a34d734c82989de4f435fb4ab1ec30021f",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55383,7 +55383,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 64,
-        "candidate_object_sha256": "04f950b631042ea6fddf552bd5dff54cbc85eaf208107aae20f563c0b557f36d",
+        "candidate_object_sha256": "c4c8e11bb03eebe0e7f11f288eb3c87a73db1c1fb4aeda08eb7eac5ef5980955",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55421,7 +55421,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 69,
-        "candidate_object_sha256": "1d5db98079a644be4ce630a8b5886539b62bdf78b96c4ea05a2c9a94e357139e",
+        "candidate_object_sha256": "96f043bda5c9d6c7f251ca8488a37f05002602c3efc98c1223d31ea145d39add",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55459,7 +55459,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 41,
-        "candidate_object_sha256": "abf4b8e3a39fb62c13517b5c91aa1396bc66a29a4bdb32e5ff1e2e0e2326a0fe",
+        "candidate_object_sha256": "823061b71551635b9de320010accf881cef76462b249d08b7205b6a53f51d96a",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55497,7 +55497,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 41,
-        "candidate_object_sha256": "cd7193e97271838ad15e69a0d9ca1f31752c45abb1c6bc51e114a23f5e30227f",
+        "candidate_object_sha256": "2205e6c4a69324588316dc99b899ae6d0ec374fca33471d6ca64282e1f5e5522",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55535,7 +55535,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 144,
-        "candidate_object_sha256": "e5d295079cb8995a2ed36d1a787e35081ed94407e1cc0856bc4259bde4e6d74c",
+        "candidate_object_sha256": "1d2d593d1c9df8fc4ab16ddaab5cd553044908a1837ba5a7c8a5a80344d8831e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55573,7 +55573,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 62,
-        "candidate_object_sha256": "87b24e181f3a74b5e9e1ee6873922fc63cf75319942448419bf4beaad9b7c3a3",
+        "candidate_object_sha256": "84a35fe4517a4a6863803930be5fecbf3752e181d81eb7ad7296f5e82a3d610e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55611,7 +55611,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 63,
-        "candidate_object_sha256": "5e776f17b710e11d168179271c42b7a5afaf3dde64a45b0c95e1da545a1acfd5",
+        "candidate_object_sha256": "698a7ab51679eca1eef0fe046fddc1a2881bd99d81e0e36c5129b2fdd0eec5da",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55681,7 +55681,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 93,
-        "candidate_object_sha256": "484053bc92a0c5fafe933adad582d8232952830fde73ab272eab9e10cb1888a6",
+        "candidate_object_sha256": "91b6bfc3be320716e51cc028cf3e7e9fbc7c8e03c8b0a86ac00f6b30cf5317de",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55815,7 +55815,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 36,
-        "candidate_object_sha256": "e63f85aa0c7563c193cc27ed9b5bf28f812854592e8d7c00505f564d5d475052",
+        "candidate_object_sha256": "ab1322b7bdc6810ab6145b9b51b385842126c78f0a2d5b9c32a776db4d5d44d3",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55853,7 +55853,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 169,
-        "candidate_object_sha256": "fb41aa70110b138a8f1d8993aa5329a595b9db0db6e803f13f75d628599c8d24",
+        "candidate_object_sha256": "f53bf8a4a6297ec3150e7e934d291744a4cf26778fb0a1b0e5cc8e7ce14cfe9d",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55891,7 +55891,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 40,
-        "candidate_object_sha256": "ff953d8aec49cdb0f3ff41181385b8ca75208c1c463fe2ce4b58870dd1868103",
+        "candidate_object_sha256": "243ed0fe82591d21e160d737c9e9812bd44740a4af11b7c84e1393ef2fdedc6c",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55929,7 +55929,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 160,
-        "candidate_object_sha256": "cf5b69d939aa3df6a350218a15a7cb5b97767e6832b680c5f8760a65c8ead7ac",
+        "candidate_object_sha256": "c1f1810633eec1e5a7b69c39414ce65dfdea59fb1afc46a8b1624703e9623dea",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -55967,7 +55967,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 116,
-        "candidate_object_sha256": "1cb75e96449b2d891332b21567a2ce863e581ad8228b91647e1d3c3c01fa74b4",
+        "candidate_object_sha256": "cd3df589bc8b9a484d67c4218cacc67881831b298fbe97ca348d20fa974e6967",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56005,7 +56005,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 12,
-        "candidate_object_sha256": "4e14655324f42b1c2d04cd424c21bf2fa05786ca918dcadcd5ed1cbce7c16f80",
+        "candidate_object_sha256": "94f26637746fafbca28e50806c1fad4ef990c620c5634202557d847de4299b97",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56309,7 +56309,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 28,
-        "candidate_object_sha256": "5af909fd707185878d03cb342d86a8fc3ec461c0287a8fe9ad5cf256575c5e91",
+        "candidate_object_sha256": "5b6492b6b9b8afa39fbb03d90e3530c3f57c8e517a5bcb866d3585cecfffe918",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56347,7 +56347,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 30,
-        "candidate_object_sha256": "6597608bc833582f9fd9d94f5c988149350f3851380153ac3950a43b3ca4fee1",
+        "candidate_object_sha256": "1f7edc4561f7cbd2672a74c1611d1481b6eec557f0f212879d582bfd6629b287",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56385,7 +56385,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 88,
-        "candidate_object_sha256": "d8cec339c30b0852c881a954c39bb8f2bb59462644435ec0149365fc6c248f97",
+        "candidate_object_sha256": "c289094b8ad33a571d107ec4b8d25880d03b3e60fb1054e837d90f130a0ae9d9",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56423,7 +56423,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 7,
-        "candidate_object_sha256": "9bddb6614cf2563adddca82072709666d41c1a766e74c93deb254089466762a4",
+        "candidate_object_sha256": "1aabf525aab2cb697c8ed3ebee825d833340dfcc96488a789b99c8056902be51",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56461,7 +56461,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 274,
-        "candidate_object_sha256": "2b79363a5d20a4df8e21587849bbbea222719770b74e4b54cda357e7b3cef389",
+        "candidate_object_sha256": "977f3520c58086557a689c12f4862df15e6d83b51de851409fe168c8ed5ffc4e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56530,7 +56530,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "68f9c299fc50821c046cc94502f4b9281266938df2911dbd1a92416566de7e44",
+        "candidate_object_sha256": "4e0e152e71ebca632d01797f3e7d755fb1fd8434e3a3d7373cb1280a44e88266",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56632,7 +56632,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 12,
-        "candidate_object_sha256": "c5dcf136a925d671f6760e2468cc5ed2b5867ca51a0d35f6300cf0340dc7dd2d",
+        "candidate_object_sha256": "6d166967b7cf3c98da8bde35cd96d7bed0761c6a7b01203a111e52ccf70563a3",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56670,7 +56670,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 9,
-        "candidate_object_sha256": "6c9e1664a8afa68a3a4cad033b560c2b4730cebb770c91903d7d0d1066c30db7",
+        "candidate_object_sha256": "f56d8626a2bdeb49a1fceaa4f01f00c340b268646ec8441481eb0dfc3018f5e7",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56708,7 +56708,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 40,
-        "candidate_object_sha256": "5a841dcf01823619ec84501f404e395c08bc0c0368d8d967a16a7bba80a200be",
+        "candidate_object_sha256": "b92424f9aa360ec892c6a5f1ce1d3672de2744228dc44fab0a72de22013baf27",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56746,7 +56746,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 44,
-        "candidate_object_sha256": "c80faee4aae5eef56cc5dba720e8cf5657a299d40feca0b858cb72b468b55179",
+        "candidate_object_sha256": "4d8f356a457e688847d5ec0db8d2cd49121e80a704e4a1f8ad3a1ad74640c7e4",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56848,7 +56848,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 53,
-        "candidate_object_sha256": "7328c4eb3fd3774967c90a2533899dc476b1dd2513ca78c10a971fff8706d6c3",
+        "candidate_object_sha256": "a891b95a111d6bb9248639d4a66de7688f46b2f156973c58b9becbd921b5508b",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -56918,7 +56918,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 29,
-        "candidate_object_sha256": "e2035007948d444aa5c6cc613995644f0588ac93923db89a7ecebf5de4cf55d0",
+        "candidate_object_sha256": "589fcd6ea0666b06f41fc0e771f975ae92cf9251b79389ce86db76bbcf6e3009",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57004,7 +57004,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 31,
-        "candidate_object_sha256": "cdf5cac90ca1066bc6d4273ad8d58ac39e26177bede457c559972e6b18a07004",
+        "candidate_object_sha256": "cb579f269ce2c9f0a759373f386b0135c0408630c84910de75e2c2a252de7006",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57042,7 +57042,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 171,
-        "candidate_object_sha256": "545682b09b5e50925ab0a29becff7fb6fb8e2efef3515709876b746ef708b781",
+        "candidate_object_sha256": "23fece7d7208e036ae00c1d8cef778ba130faf9ac7448b0ec787811af55006de",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57096,7 +57096,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "2c0b826ae83a996d34d8e4606d1e60a550c3850ceb977877cf0d88a82f12c35c",
+        "candidate_object_sha256": "6f1129e5b52d389e6a0f9b0b954197b0a9ab89e01f95c4f4ffdb874c906634f0",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57204,7 +57204,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 62,
-        "candidate_object_sha256": "f20e2bc995938dd89136144abb0848f7978f9bab717bace52920c7c81c304df0",
+        "candidate_object_sha256": "cb6f4accda88917549e3d4de5569cd9c669ac6b7ee8b8c9a8bffc95aa5c06a8f",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57242,7 +57242,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 108,
-        "candidate_object_sha256": "33abba0151980a389ce29cb8f1ce64f30ec1dbc3eea0159b093838cd85608d86",
+        "candidate_object_sha256": "03f0840ce203c47afdd9b5673125864b44ae5f212ef582ee2e98b0be8a5b7c7f",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57280,7 +57280,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 73,
-        "candidate_object_sha256": "86ed9972d176c745ebe3f975acb6d9efe330ad2ff185b92155b1ed2a8e97b9a9",
+        "candidate_object_sha256": "eec784c4dd6208ed625d61f04bbca232666ec0e8d609c556c42066fa362b7362",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57318,7 +57318,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 58,
-        "candidate_object_sha256": "b57ef946be0b9bd0e4d3ada90abfeb42d435b9453190ad73b52da6f05a9a1ad8",
+        "candidate_object_sha256": "d653c7e3f6d4d5dca6d60b987264380c8cbc9b157fbb78ce69dbd1ca31d9db95",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57388,7 +57388,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 13,
-        "candidate_object_sha256": "32ed5e346ad1490ea7cda4db258168d0d6ad91e4e972f5384a929bea6741fccb",
+        "candidate_object_sha256": "952aa353544ac5d4f6964660802bff8b792d00a0224673baff71c9b8d11c0d81",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57426,7 +57426,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 37,
-        "candidate_object_sha256": "48301ec3e85fa634fd3799fa8b6a4be7ae6562d268042017e4f3066c909f608d",
+        "candidate_object_sha256": "780375839d254f5cd7247049532a1b5a7f6f1988395b7f032eec64133b6d30ff",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57464,7 +57464,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 78,
-        "candidate_object_sha256": "86186515318e90e96ef9c91a0e3f11ce8dc35f9fd44336a46df7954fd431b3bb",
+        "candidate_object_sha256": "7067c33372a191898a9718b563c3d2fc1a5b919633af56f1a03b5396b0b310a3",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57534,7 +57534,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 154,
-        "candidate_object_sha256": "a2502938c828777e3f678ebc5650c447c278fef75cf9def7066e2c190d3eab8b",
+        "candidate_object_sha256": "469738ce756f5473c0a73682badebce97d47e7f19d04894834ae8c655d9bde40",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57572,7 +57572,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
-        "candidate_object_sha256": "b8b7528dfbeff73a7f7808fa9df721679c275c2a530531038de370da83013f95",
+        "candidate_object_sha256": "703e6bd9bb59efdc422cc6d23c63d54fa4dabf8c6242ef0cf52c6b98c0f2a280",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57610,7 +57610,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 136,
-        "candidate_object_sha256": "f6fb3d0fd178bd8c40225a9dbfffce0e9be26530ef4fcb6dcdd26f4239f15de7",
+        "candidate_object_sha256": "e3492717e418bebcb7d56574216cc8e7727cb62b4e367f846f654974255ea26e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57648,7 +57648,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 122,
-        "candidate_object_sha256": "3b008f6d289625391d264ac0fb62067c734ac5efff4039397c6f60d01aa31485",
+        "candidate_object_sha256": "011b096c32644be1c9350949512c33c687f70873957ebe74c1094bd5263915ba",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -57734,7 +57734,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 89,
-        "candidate_object_sha256": "c8e4b93fe9a2fbe630b19021f9a3d5ff4cffda1db809c1d8cb4b69daad07928d",
+        "candidate_object_sha256": "7d7655051369cd089c84ad6d2f2da385e0e3557ae2bb0b9644e440c5513d67f0",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58012,7 +58012,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 47,
-        "candidate_object_sha256": "4db71044dc00b49b0546b8d2f57fb0d72e020914189f65109151d3f8a04b71d7",
+        "candidate_object_sha256": "2cf3fb77c27a8cf209beb21abd8695f6307c03843da9cb2fd8535b0f3c35075f",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58050,7 +58050,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 42,
-        "candidate_object_sha256": "09c5d4539461b9f1ae78bab247f3eaa6c29b0cd1915218c322b3e8a99c6470ff",
+        "candidate_object_sha256": "2c57a0c8e9b753c310ff6f1a6b307d11b876b667f9900f6ecabf5d856478052f",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58088,7 +58088,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 59,
-        "candidate_object_sha256": "21acf0811cbcde9685c9c262bcaaa1fe3d52579f4185fc604f90dbc80322414e",
+        "candidate_object_sha256": "904915478c3b589559e6736e40b47accb10403dcc7d5767f7209c6c21cdccd8b",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58126,7 +58126,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 58,
-        "candidate_object_sha256": "80f742b3cdc7f98cba51745631807035b4b656b5573b8655c01e13d8ac0a5c7f",
+        "candidate_object_sha256": "1a636c6da4aa1b47061298885b5fdb180755e7cb21be6fcd11cabc809c4a3249",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58164,7 +58164,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 63,
-        "candidate_object_sha256": "c6ff4899e287c3cd8546acd0bebdd9d69bbb3dc1ab63b19a9058304eabda8b3d",
+        "candidate_object_sha256": "b8f14a6b87d673fa5b6672fc1327b31df296db3554b8eb8dc3b2d7ef6dfcb6cf",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58202,7 +58202,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 56,
-        "candidate_object_sha256": "193569537bb620a37ec2c568f5ff23be74c2e5c810d7c9ea0f082fa3fbfa4d1a",
+        "candidate_object_sha256": "e99ffa64f39541d68c63b3e51bfd2c18ffb62aa9349da95a2e1d4cbe26b7f1d2",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58240,7 +58240,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 7,
-        "candidate_object_sha256": "16231a2d96413b4658ac872393eb4d7e34ac059a82e0cb6f1b3c22a4d75eea86",
+        "candidate_object_sha256": "9da3f56515a11770e54461d1ef3aa51d89066caef577b0568979f562729694e6",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58278,7 +58278,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 74,
-        "candidate_object_sha256": "5add862a0bc7d1ab9e09f667b937bc74ada4cfb58ef3c1c95e4393cafbaed9cf",
+        "candidate_object_sha256": "c78f52f4eb9047ff6e51cca491cd9632004e30ae38c195b8c58ed788d21d9ee5",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58316,7 +58316,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "18b4046f0ed188ab0948ac3f301c625a7fd61dc63fb424a689e9b2374d36481d",
+        "candidate_object_sha256": "4f96dba8355a9010767a8d6fc8cc5fc00ff0d32de4019c2a5fb59bf37b371eac",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58354,7 +58354,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
-        "candidate_object_sha256": "4cb8a65ba937ae52ac33319fa3ced97e6d6850871bc200d15bf27dba9349b948",
+        "candidate_object_sha256": "ee91fe7d312526a12fcc1a255a01a52f8624a106b921be6a6513be5bddc0675d",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58392,7 +58392,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 82,
-        "candidate_object_sha256": "f03b7d4bde5c1199dbc82e2036d13a162524cb181a4464b0846dbcde0c500d7c",
+        "candidate_object_sha256": "a3f355046020c3bc63b42085110532f3e058186b07c23e5492f8bf661ab2c383",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58430,7 +58430,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 39,
-        "candidate_object_sha256": "bc740ca67bc9bc3217700abf4156fa0ba06f9fe59b3ea59129e4f37df4fa1b87",
+        "candidate_object_sha256": "ae8b7158be5d48acdb5a3d55f53eecf6090661dddbd8e7232131692d62e6ec9d",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58468,7 +58468,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 50,
-        "candidate_object_sha256": "ae6cad25ef399b3b5a23e83339ce5bbca3e08d95a3e2c596292c7f931fbcb7fb",
+        "candidate_object_sha256": "ff787f0a7c08eb6bb6345e92e7fc6726538c0564649e9c267d404dbaea50f062",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58506,7 +58506,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 65,
-        "candidate_object_sha256": "d0b48637b1fc260ec86ef608abbbc5d6bd0461cac5ba8759e5763b2f20a6aad4",
+        "candidate_object_sha256": "890a3f72d603d1c63548625abff3540fe1b4a2dadebb620e83b91658475b6a8a",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58544,7 +58544,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 96,
-        "candidate_object_sha256": "80485b809cd998df2b0c3fadfc346b58e2f0e0576286c43900b9c1e6fb35ff4e",
+        "candidate_object_sha256": "ace4bbd875f9482dc617bb7f279cdc74226b666721ad34acbbf25c8b8507fcf4",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58582,7 +58582,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 146,
-        "candidate_object_sha256": "d2673a6e02fb5cc10dab3d1fafe1c9b5f26d142ddb360d7760770827329ad97d",
+        "candidate_object_sha256": "f7d15e7f6d177f2a085e25ed133430768f019bb43bc9b62351b6cfcc78efc93e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58620,7 +58620,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 64,
-        "candidate_object_sha256": "5ed082ff65bc90b25d2e89459d4e20168a71eef6161f5b9dfcf3d157d87a239b",
+        "candidate_object_sha256": "baefc1a706f24232477d11a741db6062726e2a24f13b7bf71de4e65cf61fd615",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58658,7 +58658,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 50,
-        "candidate_object_sha256": "6e334945d9ae7b998e833073b2a4e2c413ff83f259d611cbdd0a6af31aac4910",
+        "candidate_object_sha256": "b9430fdc7176fe02e0447687617a808ef4db8ce8bc8cb3e5fe10ab451f795956",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58696,7 +58696,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 14,
-        "candidate_object_sha256": "a9556ce8ae58d15374e69fe739c9c6af91a79e68c4ed4cb31107bc8fecc89ff5",
+        "candidate_object_sha256": "48f15dc13e93bcad2a5603704fe9db8044f09a13b1f95f2488099bd3fcad5afe",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -58734,7 +58734,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 105,
-        "candidate_object_sha256": "3464fdf8db077d4a56fcc5dfaff64ea5f063df105464c14452ed788ba037b44e",
+        "candidate_object_sha256": "62f1815deec0fb8cc27a9529facac11d8d2f5728161c81c7829753eba5036db2",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -62197,7 +62197,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 48,
-        "candidate_object_sha256": "3f65266c11f0fc7aeb5c3ddcabc821a12594e02abdaf252cf1679958ea9a8e02",
+        "candidate_object_sha256": "78bf2da2549bc96443be80ce4dbc6eb8a1ee396a973f4d1492022bae3fc6e958",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -62235,7 +62235,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 60,
-        "candidate_object_sha256": "45b0d0bd5008d7e52bdc1551bd8e183cf99e2b57272919406895db928aa2af9a",
+        "candidate_object_sha256": "0dacbac82ffbc0f8018e4a2e9b5e05e1e4aef44edb3c78c8c6a0f07550280a8e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -62273,7 +62273,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 630,
-        "candidate_object_sha256": "53a74207e01b6760fa67f03947867b3b9bae1757689f707d9d90a70b325e0823",
+        "candidate_object_sha256": "3c1edbcc5d73231372fa43563a55205eab9b9f4aa736d2549b3b5ff0a1b959b8",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -62326,7 +62326,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 22,
-        "candidate_object_sha256": "d08635a90a206ea6ffa7f142c7c9310ffefde4f0841eb8de94b842f9bb44b81b",
+        "candidate_object_sha256": "d3dfa6be6d92875ac9fffc8d0d547c5d1a8834f3deea130af27d18ca15ed1bdf",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -62364,7 +62364,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 109,
-        "candidate_object_sha256": "70c96f145b145105857d75e6cefcc23d4d16409ee30fab69f1fef865311c7067",
+        "candidate_object_sha256": "b0c45b2d0d8859c74da91584ce61b4a01a0ea93b2f698359d75d1bf419e3c292",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -62440,7 +62440,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "3dcf5d60497a07f1b2f9a9d8fab84f25da448817d9ce15ac6a77f1950eaa67fe",
+        "candidate_object_sha256": "f751e69ed03f6c9cfea6761b4ed8a55b0e6af628d3a268c090c33548ca76e34c",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -63227,7 +63227,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 21,
-        "candidate_object_sha256": "dd515b79ad20c339eb692a4a9b2642fad1c5f8038c2cd17cc62ff8e1d0908551",
+        "candidate_object_sha256": "ce3c339ffc91b497844b2c2e9ed039e6cdcd3043d493e3e641946b9b346c4dcc",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -63265,7 +63265,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 456,
-        "candidate_object_sha256": "7bed3a31fbffecb0ea9c0dd1b6bd659ba2a7b297fc66ca53b18b946f5e9e6cd4",
+        "candidate_object_sha256": "1a6f0b352bc0fadbce3fcc49a83ab744e532a760d8bbd1ce1a94bfdb24fe4988",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -63356,7 +63356,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 341,
-        "candidate_object_sha256": "62e27806aad3c0b82f2cb7d43ad0146ce5f6d0f068945900d294bdcc4b3f98c4",
+        "candidate_object_sha256": "57470772125d14f1d3b46c6590d2a119a2aadd778c8dcb91edc9fc923f817431",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -63394,7 +63394,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 54,
-        "candidate_object_sha256": "aa8d08bbe342b15a41e41185313ffaa658d5884126ba8300b126b17b85b75cf8",
+        "candidate_object_sha256": "de44daf89c78992f1c6c4033b36f8d5b98481d1938cacdb6eb40eedfd7aa2a0a",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -63432,7 +63432,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 96,
-        "candidate_object_sha256": "f718ff92cb252983dbf5ac21467c68f59e6bbabe65a618f24ba8f53c60977e2b",
+        "candidate_object_sha256": "08a9f8c5c4865869ddf9a378e53eb4650273fc2cae26031efe8afa604af74ebe",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -63470,7 +63470,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 12,
-        "candidate_object_sha256": "24e48bc96012a646223cfc72a9966fd54f058f0411497fbcde2fdfc35049f0b1",
+        "candidate_object_sha256": "e4523df8c350dfb14cdb666e8555d1f8ed5632f5c7d37913519867f61366bb0e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -63508,7 +63508,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 114,
-        "candidate_object_sha256": "1b79a15b51dc352ae4bba943199489e288ed8e1f88a5be75479b2cdd1134e95d",
+        "candidate_object_sha256": "c360661f7c99c78beeb15f9875cb4646b0a1f6766fe356c874877fadca2ced8e",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -63610,7 +63610,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 250,
-        "candidate_object_sha256": "23cfcd18f2ee12c24b606d0d1d3e9f7f0cc9b7a649932ff77ae6ccb5fe1bd590",
+        "candidate_object_sha256": "ff4580d2b1b42ae9ff8648082a14f12db451f7f855e91d673e8f408dbc4b3c5a",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -66177,7 +66177,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
-        "candidate_object_sha256": "f2c85da0ac7a776239fbc38c8b5da4ec4a3bf93c673dfb3a9190a34c404624a1",
+        "candidate_object_sha256": "c589992ca77ea1b8ca6c27fc411fceba23ae1a2083f0b2fcb74042d6152f5d3c",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -67723,7 +67723,7 @@
   "identities": {
     "inventory": "f21ede0bb8fd377824a40938bd5219097d57d491b142b7dd94087213f008f553",
     "inventory_policy": "native-functions-and-full-executable-remainder-v1",
-    "scoring": "1f5fe29a727bf7b6b432b7ac5e941c7876428c643de4e22da41f5986a3705327",
+    "scoring": "7ec87d75f6a183b55f12d758c14a30ac464014ed9cc0353769ec52485ee922e4",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
     "target": {
       "game_bins/crimsonland/1.4.0/crimson.exe": "0e4d5f62b34c7c62d5b7bb1f6a774d54e91c68a0c898d53cabead1f5f151eb8b",
@@ -67732,23 +67732,23 @@
   },
   "inputs": {
     "analysis/decomp/1.0.2/crimson.exe/data.json": "d7b4985b20138dbd327579ae63f777c5b2edd3a6bcb0b009e78a599b9887ba3b",
-    "analysis/decomp/1.0.2/crimson.exe/functions.json": "a6fea4616d827a3bd637a6bd424062920402c13486f912a6baed083b54fce9b8",
+    "analysis/decomp/1.0.2/crimson.exe/functions.json": "3321aa6215b2ef99637a06a562ac92193abac14ddee5a4cb6e3b11dcaa9e53ee",
     "analysis/decomp/1.0.2/crimson.exe/imports.json": "ffee4e9a1e0bb945ca32ba89b4d462ac23de8e14ce077eed3ae2a9a2ec9d56d0",
     "analysis/decomp/1.0.2/crimson.exe/metadata.json": "9bc92098977bd03385d260983a6c50bae02b3d1da0f5a83250ad7d23cc476687",
-    "analysis/decomp/1.0.2/crimson.exe/native.json": "b0a3434dc67ccb82df552a2ac5d73c0b69a97539d2b9b9535308eedeaee4afd1",
-    "analysis/decomp/1.0.2/crimson.exe/recovered.json": "0e964966cd764b78ba0c3cfc103ed7a67961460c4f7b878d61ab877058a4a4fe",
+    "analysis/decomp/1.0.2/crimson.exe/native.json": "3ce6a19f6aab6c2d5a153758040a1036ccba561a4de80fbeb7d6a56ef85fdd03",
+    "analysis/decomp/1.0.2/crimson.exe/recovered.json": "83c7c7ed9114c3465d6c13e07e733aae6399c6c5293f18961c82f26750367691",
     "analysis/decomp/1.0.2/grim.dll/data.json": "95bd351790eae950a12f48ae18ff2975a92b41de839a5d70bb1370f0a753c97e",
     "analysis/decomp/1.0.2/grim.dll/functions.json": "77e1e7ad9cb291cb64b96f84f6ef7775d1923a32d4130759582b3d3193b7fecf",
     "analysis/decomp/1.0.2/grim.dll/imports.json": "6dd9b270911db4b877f7fa7dbab8e3b1fadff95918d246ed236a85c63f8882de",
     "analysis/decomp/1.0.2/grim.dll/metadata.json": "0d335f40f486180dcd790a21762602006ac8cf255f1adf68f62e862756667509",
     "analysis/decomp/1.0.2/grim.dll/native.json": "4c20016fd9d3cccc07df0e0d8754e762c191bed5cf3112b42448be1bfcddf839",
     "analysis/decomp/1.0.2/grim.dll/recovered.json": "f26c344a529634091976d5d1a4e1d59c4c86b51975106c9424ca20ee384d06bf",
-    "analysis/decomp/1.3.0/crimson.exe/data.json": "dc0cab91d08f88815dc4c056b56d627c04ebf7358ead01f3de0baca3db66716a",
+    "analysis/decomp/1.3.0/crimson.exe/data.json": "f8b16a1841e11519dc12fc0823e47fc610f6fcb48d3f8590cf3e7661ba345b8e",
     "analysis/decomp/1.3.0/crimson.exe/functions.json": "c43c45ad6cd46e5e9cd143e4d58167f99c79ee48f6eda9283dab4f5e776792e3",
     "analysis/decomp/1.3.0/crimson.exe/imports.json": "2d0079653411e71d05858bcb15f02f92c20d87de316e5d8e3f5256316fb073f4",
     "analysis/decomp/1.3.0/crimson.exe/metadata.json": "bc6bf22ee8e48df47116f1bc508b0668e16d7b3d8ea052f6696a3fcdfb6e83ad",
     "analysis/decomp/1.3.0/crimson.exe/native.json": "56d1d31f551ceba1852887e6d3b81c79be6b34a8ba7d698e326361ddf458afa0",
-    "analysis/decomp/1.3.0/crimson.exe/recovered.json": "6c2ebaa58f72ea94a7e1fa32c372f19673f174d669cb93a0b10c655a08e20041",
+    "analysis/decomp/1.3.0/crimson.exe/recovered.json": "3bd88caeb7356ba16b91f772a469b277bfe5dd04c3f114e1d3b1115fda91da2f",
     "analysis/decomp/1.3.0/grim.dll/data.json": "e44aea72d68e0bbde3bfa108c992eb99afd48bd1add43c737a437829df5c14fb",
     "analysis/decomp/1.3.0/grim.dll/functions.json": "b15102a7c208bbf424ba15e288544df44788bd1ad117159d2ab6dd49b2fc4672",
     "analysis/decomp/1.3.0/grim.dll/imports.json": "e01a91fe3e77e81eb00531d904fa4957f6dac47a61acb55365575f4f653174aa",
@@ -67812,13 +67812,13 @@
     "analysis/ida/raw/grim.dll/metadata.json": "b68d86de85411f481fd2555c9271849646be97ec21dafd1a06b87bb314e63f25",
     "analysis/library_provenance.json": "1da323bca5b091c8973f71f5a137f6152410596c1fd28245b0361a65fe39553c",
     "analysis/matching_scope.json": "3492406d95e46324f79e1454e7800e4a0f7b4ef4dc445143810bcff8b2872086",
-    "crimson-re/src/crimson_re/cli/match.py": "c842fb72024e57c0f00a6d150422c44db9aec779a9aa81c5f04cea7034ce43a6",
+    "crimson-re/src/crimson_re/cli/match.py": "4be0bc03702a04ea76b3eaf437aae289deae0cc23928d3048a19f21eb8dea084",
     "crimson-re/src/crimson_re/library_match.py": "7527e3b7e813b099665ffca627948da6c93c4a1921b5d3f3900d69d21ef6180b",
     "crimson-re/src/crimson_re/library_provenance.py": "a7ddd37146178caeca17f6239f2e33a6dbcd8e41be1d65ed9078090fbbc94683",
-    "crimson-re/src/crimson_re/match.py": "5700916a4a02631535f6bcb97da694677b311de82b8d1d5720a5bffa404fe2bb",
+    "crimson-re/src/crimson_re/match.py": "593aad2429394650c1db426800724dfa15b7f827a64b91a6d6bd3bcc3874146e",
     "crimson-re/src/crimson_re/match_address_diagnostics.py": "9ced244f19063007ad5ee5c3e8965623a68e6daa65ad466f3f429389a4365949",
     "crimson-re/src/crimson_re/match_builds.py": "371d413484e8d1651ddecc8e0fa3b857165681c24826942354f0b1a9f2cd85df",
-    "crimson-re/src/crimson_re/match_c2.py": "34142397e7135d7a64464b35de021ca5180dda2c8fd0b163bf6046abe6ebbb89",
+    "crimson-re/src/crimson_re/match_c2.py": "b6ecad4c6251a21e54d48c1334876a12f522e5ddcfaee87d8c128d2fb5625d60",
     "crimson-re/src/crimson_re/match_c2_replay.py": "6ccf45b01ecdf436661f099c856984e37792de09b09478d5f7813f561fea540b",
     "crimson-re/src/crimson_re/match_data_inventory.py": "323356f82d9e3684b7047834adafd305b25582e50ffb034c98d4970502671fe6",
     "crimson-re/src/crimson_re/match_data_report.py": "cdecf8c358acb6b246dc246383f87a55b4d054724c6b71ee57a3a0a5afc275e3",
@@ -67826,7 +67826,7 @@
     "crimson-re/src/crimson_re/match_experiments.py": "28c1a98145fa22df73c7cddd8cd7d151c173f331deb54db225fc0c590def4347",
     "crimson-re/src/crimson_re/match_explain.py": "6ac28459f1bdb4cbbc9e2547857ad2cc8365802ee4bdf299e78f9b70d68a6742",
     "crimson-re/src/crimson_re/match_flow_graph.py": "5ab78b9f2da3199bad64fe6afff7adb1308e6b12d84a7c881f88d7c72d1fe9d1",
-    "crimson-re/src/crimson_re/match_listing_diagnostics.py": "88c23e57105cdd43389a5b4b20d0d1f9561b90f3a7c253a39fc992711c428182",
+    "crimson-re/src/crimson_re/match_listing_diagnostics.py": "5a214bef8ae9545aef14402f5a7f89c249c6cc138ced110eae96a16972c7e833",
     "crimson-re/src/crimson_re/match_micro_oracle.py": "98ab582fb2cb251ab30f098dfc5710099c46b34d3a0444e7621a0d06cb984a7e",
     "crimson-re/src/crimson_re/match_mutation.py": "61f3d9a2306d9453f3e762d3328eb6b2c3af61b2da7d8a6b70fceffc0e44e03a",
     "crimson-re/src/crimson_re/match_native_inventory.py": "b7bf4cf725519619b1c4334946698683931257fad60ec194d02438213a7f1334",
@@ -67880,14 +67880,14 @@
     "decomp/1.4/crimson/crimson/creatures/creature_spawn.cpp": "892b00680453fa5ab63c9fd422555d7c711af2b24cecc375f65ad92be74bb234",
     "decomp/1.4/crimson/crimson/creatures/creature_spawn_random.cpp": "ff559d93ef0c494367f6cefd0d51bebcc3f81c939caa7d46e05bc2d91c712d5c",
     "decomp/1.4/crimson/crimson/creatures/creature_update_all.cpp": "84954069036efd90126976af90d9afd427f6adf213f65155ac5fcae03eaf4f2e",
-    "decomp/1.4/crimson/crimson/creatures/creature_update_early.inc": "98276f4740c83907cda8b5a5f30c5daf17c328bcdfda6e9f7894bee77593b896",
+    "decomp/1.4/crimson/crimson/creatures/creature_update_early.inc": "4f03d4a84dc510c9bedeb277d1a2efcc30e712ac321429b5ce81f1957a3b6ba6",
     "decomp/1.4/crimson/crimson/creatures/creatures_none_active.cpp": "faf60de1bb28df4b8cef73f50df637c15bd14abe6e2ed177d73338bd4e6b4d4f",
     "decomp/1.4/crimson/crimson/creatures/plaguebearer_spread_infection.cpp": "998402c3b10a4d741e922b4a7806b6dd143dffee3adaf9ba5c7fc3e55c5de54c",
     "decomp/1.4/crimson/crimson/creatures/unused_sfx_prefix_creature_global_init.cpp": "14d196a0f25c8b52fd6d65072a7ddfe9c9023d17c7e3fc0796d568233293dc38",
     "decomp/1.4/crimson/crimson/creatures/unused_sfx_prefix_creature_global_init_thunk.cpp": "3e9c80f1c5c1618bb1cc521289a6e670bad782438db73bebae8c1e2d3ff805e3",
     "decomp/1.4/crimson/crimson/effects/effect_uv_tables_init.cpp": "752372381393a1a178be75a2cfc6654a2584af97f68f7fbef4ee3303605d52c0",
     "decomp/1.4/crimson/crimson/effects/freeware_fx_queues.h": "8340183ab2cedc299798567766f44d4686d31f144259a541a3cc37a70315b1ff",
-    "decomp/1.4/crimson/crimson/effects/freeware_ice_mark.h": "dd667691b54c1cb4226b9cfff532cc7946025db79b463940f4980ddd18571c89",
+    "decomp/1.4/crimson/crimson/effects/freeware_ice_mark.h": "5595c114b30e26dfced77efde96d11f4dadda931a1acb2e12a736209c5f18d05",
     "decomp/1.4/crimson/crimson/effects/fx_queue_add.cpp": "1ab5caf7a254b4b489fd47b41f6eb12f6339e8e1a533677ccbef0a74ddbdd457",
     "decomp/1.4/crimson/crimson/effects/fx_queue_add_random.cpp": "f0e152083eefc6a3a45308706e47b1fa39d6274a98c2acce17709784e868b1bc",
     "decomp/1.4/crimson/crimson/effects/fx_queue_add_rotated.cpp": "d1454f918919b3a5ff770f64c8774a7d9711589be9da1265ed1a1a5272a38f3a",
@@ -67903,20 +67903,22 @@
     "decomp/1.4/crimson/crimson/game/config_init_defaults.cpp": "97f1ab01e03340c67491c0cfbf6ffd414d9383fdce783bfe88d61fd684e46bf2",
     "decomp/1.4/crimson/crimson/game/config_load_presets.cpp": "7923ead220bf9722e7ccc8a999ea99a0170c784a9819c14a9223e2790d63ee1e",
     "decomp/1.4/crimson/crimson/game/crimsonland_main.cpp": "b8ef8c36c208872c50863962bab3cbed1beb4d051cad37886bdac014fdba7801",
-    "decomp/1.4/crimson/crimson/game/crimsonland_main_130.cpp": "2f53aba8d4053570110bca61b15f440347badf87f351cd06e81b297875a0bcce",
-    "decomp/1.4/crimson/crimson/game/crimsonland_main_140.cpp": "0e092234bd587858feeee75f5c14b7e0f31a012a267a226dfc6932323c4b2552",
+    "decomp/1.4/crimson/crimson/game/crimsonland_main_130.cpp": "93efb716d46c3a53729b8636c33341ba50122ba1e57595875681effa5e4a1075",
+    "decomp/1.4/crimson/crimson/game/crimsonland_main_140.cpp": "ec723d836398e710171e56f8090494229fdaf50ea8774027966465142da46022",
     "decomp/1.4/crimson/crimson/game/encounter_choices.h": "3edf52532f1b2ec43c81be80c68b8d1eb7a9f45279539cf2eda21d829ed37cab",
     "decomp/1.4/crimson/crimson/game/encounters.cpp": "ebd77978d42e219ee6ec67dd3d16a345f82daf0df35a84c02e93110115ee1237",
-    "decomp/1.4/crimson/crimson/game/frame_editor.inc": "3094b05d8123d317d68c26f7a25dddd99ff9490e3af33fe1e869fc4e76cf9bbf",
-    "decomp/1.4/crimson/crimson/game/frame_gameplay_102.inc": "283baa6c3fca8bd0961a68133f5878cc8a892c500e08ca1832120d632a00c56d",
-    "decomp/1.4/crimson/crimson/game/frame_level.inc": "15ef9f82599548ec5b32ec5fd9aa04969cffc49cd0bd38050a113d6850309b15",
-    "decomp/1.4/crimson/crimson/game/frame_menu.inc": "409f32db16484dedb22c88f901df0e271dfd8953801863f9f9dbaa49af8a44e3",
-    "decomp/1.4/crimson/crimson/game/frame_menu_102.inc": "30d971c287231a1548de6fa1a889d95410fcb2b48962ff8953b171bcaf95d08f",
-    "decomp/1.4/crimson/crimson/game/frame_overlays.inc": "7dfd1ea9d2964a045240ef2e1f684f3e8f63c611612faee5ec8ea0dd69a8fa71",
+    "decomp/1.4/crimson/crimson/game/frame_editor.inc": "e92701770f799f80154047a4ea8931125a63534b72a858f2732776fd1e22cf8c",
+    "decomp/1.4/crimson/crimson/game/frame_gameplay_102.inc": "7ca84b1157054e54c35922019f27a6b552a0236b4da9df6bb001bf142f723f66",
+    "decomp/1.4/crimson/crimson/game/frame_gameplay_state_102.inc": "c80dd4b42a56fdb8aad2e5e3e604f1daeed1ea193eedbb0ea1844cb73145a48e",
+    "decomp/1.4/crimson/crimson/game/frame_level.inc": "c409c4fe4c05134b1aa464a0d682ee75b9734342da3dfd568ea8ac948b196124",
+    "decomp/1.4/crimson/crimson/game/frame_menu.inc": "5b0dcb62d2f482e03186f7f738846f5d8674f76f041ca9ee3df4ef4174a2bc84",
+    "decomp/1.4/crimson/crimson/game/frame_menu_102.inc": "f3b6b7f449540c2a770bafa79013d95216b6232d4353b305b235a23ac02ea2c6",
+    "decomp/1.4/crimson/crimson/game/frame_overlays.inc": "ff02c7e6a9e4a6450af456d2c9188f5da849e0f4d25147b0077ba5ff57e9d144",
+    "decomp/1.4/crimson/crimson/game/frame_spawn_edge.inc": "a4e03ebb27229b637c1b2b58b6b5dcd9715d5abed407f795505e37bfc6cdd146",
     "decomp/1.4/crimson/crimson/game/freeware_config.h": "7210a3b789af6fe659bd06ce71fa62ffee202c58e5df11e12a518df9b7ce1e2d",
     "decomp/1.4/crimson/crimson/game/freeware_editor_offset_destroy.cpp": "c2dd19a3e0b3125f0e6c85fa7907d3eecef8c3e046e3858c4f8aa6b41378e46f",
     "decomp/1.4/crimson/crimson/game/freeware_save_config.cpp": "ac03738dbd0aec669009700764a362a011835120ec21d44059ad7de56542ff1f",
-    "decomp/1.4/crimson/crimson/game/game_frame_update.cpp": "1060e6b6344ff5688d031be0754c5987994452f9f9a6989ecb1b1283ce0a137e",
+    "decomp/1.4/crimson/crimson/game/game_frame_update.cpp": "b728ab648b5750fd8d040e7adc2cdd690e680c5bad03c6a2ab09db3e08a23a2b",
     "decomp/1.4/crimson/crimson/game/gameplay_reset_state.cpp": "003b8e4b0b2d78d8b445f06021224a140f358f3635a53a9f83ce7ff91a3347b6",
     "decomp/1.4/crimson/crimson/game/input_joystick.cpp": "22f521e3589cbc5efe253b6188b4530b9953df38222acbdd14f545443b80c440",
     "decomp/1.4/crimson/crimson/highscore/freeware_last_score_global_init.cpp": "27fad5ea27ccb7395209350285a79f1359283e565e8e5358357863d2adcd4fbb",
@@ -67932,7 +67934,7 @@
     "decomp/1.4/crimson/crimson/highscore/freeware_score_table_reset.cpp": "e666a4b1b686b524fa1292fc58bbbadf6299c945eca13e97baf6ebb04565fe29",
     "decomp/1.4/crimson/crimson/highscore/highscore_build_path.cpp": "408eb6be8cb2dcc3aa1f8f3fa160a923e888f6a85f454257cf395064b0efd4b8",
     "decomp/1.4/crimson/crimson/highscore/highscore_load_table.cpp": "8eeec208239492a99ef635b2ab6103f137a2dc66c1662a25f6cd081901acfba5",
-    "decomp/1.4/crimson/crimson/level/freeware_editor_brush.h": "1c7b258f79205ef42a393005e692a22fbb40d8d0ed381ccb2485759bb6cae821",
+    "decomp/1.4/crimson/crimson/level/freeware_editor_brush.h": "032837523fce1cb7f6e7a4cb795ccab1e016460234c76709a5a16a346814b8ac",
     "decomp/1.4/crimson/crimson/level/level_load_next.cpp": "b7c24e3d266c938105d3bb32efc48ec2ff20684d46340ed79293adbcb089e209",
     "decomp/1.4/crimson/crimson/level/move_with_collision.cpp": "a380ab5d2ccc378f2d5f790f29463b3bde7ae9a42c3d846e80b2230a88d89f5f",
     "decomp/1.4/crimson/crimson/level/vector_objects.cpp": "630da80eba27d133a84d75b887540777a5dc891c5bd6a7b1a428cc92d6259376",
@@ -67946,17 +67948,17 @@
     "decomp/1.4/crimson/crimson/player/freeware_aim_screen_global_init.cpp": "332bbf03f408408708365b5fbb15c491f455a545c49e088502298a776e0c8f09",
     "decomp/1.4/crimson/crimson/player/freeware_aim_screen_global_init_thunk.cpp": "e4f684e0f4fbb4a44f12bd0736a66bd5bb0bd467abeda0e942b8310a8b08a0a1",
     "decomp/1.4/crimson/crimson/player/freeware_float_minmax.cpp": "94f5a2218bb040830dd649d5b3ea6bc8746c34c637ed5f56a946416f8107a279",
-    "decomp/1.4/crimson/crimson/player/freeware_player_fire.inc": "48421c5748e7d0d39eecc5c14c773a83502bae6ef7d46aded2c023bf8d2eebe2",
+    "decomp/1.4/crimson/crimson/player/freeware_player_fire.inc": "1e3aa08bfab8044295381e243a68c587506ff2b222b5a83f782b24a7b44433cb",
     "decomp/1.4/crimson/crimson/player/freeware_refill_clip.cpp": "621e72b775661933b32faba4f62a49f614a69114d0c49335842bb2e8de551f7f",
     "decomp/1.4/crimson/crimson/player/player_heading_approach_target.cpp": "084599359e9a849a276a6bd4fb041f44e0f6609256cd22f3cb4b41baca1ed18b",
     "decomp/1.4/crimson/crimson/player/player_reset_all.cpp": "165114372e9d457192f508b712bb929d1a32175a66369c7909959d25d28cd61b",
     "decomp/1.4/crimson/crimson/player/player_state_table_global_init.cpp": "ee17d92c531e9011152baa6c08d505203f245635a1630090c4a37099c8424734",
-    "decomp/1.4/crimson/crimson/player/player_update.cpp": "71ffb2ba18f3ff70f16811d831b8b368142a1bc86c46558152cf5d706b917c4a",
+    "decomp/1.4/crimson/crimson/player/player_update.cpp": "684a0a7e1deeefae4e3e3d475506b68f304f9f22075fbda76b2dd25b47ecb976",
     "decomp/1.4/crimson/crimson/projectiles/projectile_alloc_slot.cpp": "5009a552aa8a783b5d788868a1400b679ae93ec9898817c65cfa2efdeeb0451e",
     "decomp/1.4/crimson/crimson/projectiles/projectile_pool_global_init.cpp": "c1100194ac6920efb6d3fafcf3c0676b99bef44fbf107e1596ecbe77590073f5",
     "decomp/1.4/crimson/crimson/projectiles/projectile_spawn.cpp": "2472fb99983a6d50c67e562198b947935b82936a26abcc913df6f52162166760",
-    "decomp/1.4/crimson/crimson/projectiles/projectile_update.cpp": "a2393328938387bfe5cb49fc613fb7c20a127b13cb0a3019273a0be3312902c6",
-    "decomp/1.4/crimson/crimson/projectiles/projectile_update_102.inc": "e3412aee112382bb161dc8738c2bb665ec52b245c96ce3ffd579b4d75c37d985",
+    "decomp/1.4/crimson/crimson/projectiles/projectile_update.cpp": "b5016317b5e7dfe66222214436a1704fb4ed7639157c67b7558d0acf76c4fb59",
+    "decomp/1.4/crimson/crimson/projectiles/projectile_update_102.inc": "0cdcafdaf85673b1915338010326dd8ea1b4fd408d81dc4c1ae29ccba0916337",
     "decomp/1.4/crimson/crimson/projectiles/secondary_projectile_alloc_slot.cpp": "12d74d7419a07c10c0ad94dac6d04f46ba5e570f74f5a93402578e568e6f2ca5",
     "decomp/1.4/crimson/crimson/projectiles/secondary_projectile_pool_global_init.cpp": "29247e99c6229f625506bff0509790e768e02ae3cdbafa3a6b3b634b50d151fd",
     "decomp/1.4/crimson/crimson/render/creature_render_all.cpp": "7d4e035407be217c7eeea1851017fb466c55332e7367a99d3c31733ce7ceee5b",
@@ -67978,7 +67980,7 @@
     "decomp/1.4/crimson/crimson/ui/game_credits_update.cpp": "82861fdf09b2fea7179bc6be0f6bc71ca7788004a483a34da97ba646ff2062c2",
     "decomp/1.4/crimson/crimson/ui/game_highscores_update.cpp": "455a31a0ab4b01b2550ebed9512df168cd712f6a2a063e144be6f8953dc93ef1",
     "decomp/1.4/crimson/crimson/ui/game_show_message.cpp": "dad9cff840b9df446d6a3d0a88beb511690694683b7c0dd501a18823ff80031f",
-    "decomp/1.4/crimson/crimson/ui/gameplay_hud_102.h": "58629527078c2376701c91b41641167de116101c530c5e899bb27984bbef681d",
+    "decomp/1.4/crimson/crimson/ui/gameplay_hud_102.h": "ac72ee5e230d2f9e6e661223e470b68543cdb67a0432f33cca3d1291126f5337",
     "decomp/1.4/crimson/crimson/ui/gameplay_render_hud.cpp": "c6d2c57a3da8b211e0930a62ba3e98688921a90675a83fd68ecbce749abc51e0",
     "decomp/1.4/crimson/crimson/ui/hud_set_row.cpp": "13f58080dbf6f17b5362bf2585b82a0db29a204c68ca38363727b809c2d456c7",
     "decomp/1.4/crimson/crimson/ui/overlay.h": "f2c7ecc8b699c0a60d32fe9147a72bdcc352b18155d8cf20cc73db6099da5a58",
@@ -70221,7 +70223,7 @@
     "tools/match/scratches/game_completed_typo_button_destroy/scratch.conf": "7001d0977b1d0a67bd544e336fc00330b19e325a1110ea9f3bb94a940f6cf9b0",
     "tools/match/scratches/game_core_init/scratch.conf": "fca9dc57a8983ebe093c17d1eb2850209eb0803eb4800dcd43adf1a353595a4e",
     "tools/match/scratches/game_credits_update/scratch.conf": "fc5b46b6ae45c24f58e26d9ab7b596d43b3514524da646f5a04767c03d2ee047",
-    "tools/match/scratches/game_frame_update/scratch.conf": "26500fd98397c941d3a6c5e8a4304e877aa284ed8dbd81a4b544cc2f65b8548b",
+    "tools/match/scratches/game_frame_update/scratch.conf": "b5d9c7af35693ca3d7491cafedb50d078f9e89feec384bba14f6803ecbcf7e3d",
     "tools/match/scratches/game_highscores_update/scratch.conf": "90d8ee848787ee6260735064ae6e3c71863f6477d4d9a5dbdd300a360d98ca92",
     "tools/match/scratches/game_is_full_version/scratch.conf": "e82e1c72a01d87db56f6914326aed2ca10497939e62ca0fb2b1e3943394a3ad4",
     "tools/match/scratches/game_load_status/scratch.conf": "5e6fc26715a56e2b3f0cb3faebcc3c51261131fe43afe653ae76abf346e19fb9",
