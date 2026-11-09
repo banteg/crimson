@@ -110,14 +110,16 @@ extern "C" int world_arrow_marker_texture;
 #define BOMB_POS FIELD(freeware_bomb_position, run.bomb_pos)
 #endif
 namespace frame_update140 {
-#if FREEWARE_EDITION == 10002
-struct FramePoint102 : vec2f_t {
-    FramePoint102(float px, float py) {
+struct FramePoint : vec2f_t {
+    FramePoint(float px, float py) {
         x = px;
         y = py;
     }
+    FramePoint operator+(const FramePoint &other) const { return FramePoint(x + other.x, y + other.y); }
     const vec2f_t *address() const { return this; }
 };
+#if FREEWARE_EDITION == 10002
+typedef FramePoint FramePoint102;
 #endif
 #if CL_BUILD == 10002
 enum { config_player_count = 1, screen_width = 640, screen_height = 480 };
@@ -188,6 +190,15 @@ __forceinline void creatures() { creature_update_all(); }
 __forceinline void shots() { projectile_update(); }
 __forceinline void player() { player_update(); }
 extern "C" int freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec2f_t *);
+#if CL_BUILD != 10002
+__forceinline bool perk_shortcut() {
+    return grim_interface_ptr->grim_is_key_down(0x4e) || grim_interface_ptr->grim_is_key_down(0x39) ||
+           (FREEWARE_EDITION != 10300 && grim_interface_ptr->grim_was_mouse_button_pressed(1)) ||
+           (config_aim_schemes[current_player_index] == (FREEWARE_EDITION == 10300 ? 2 : 3) &&
+            grim_interface_ptr->grim_is_joystick_button_down(1));
+}
+#endif
+#if FREEWARE_EDITION != 10400
 __forceinline bool click_perk() {
 #if CL_BUILD == 10002
     vec2f_t hi = {656.f, 480.f};
@@ -203,13 +214,10 @@ __forceinline bool open_perk() {
 #if CL_BUILD == 10002
     return grim_interface_ptr->grim_was_key_pressed(0x4e) || click_perk();
 #else
-    return grim_interface_ptr->grim_is_key_down(0x4e) || grim_interface_ptr->grim_is_key_down(0x39) ||
-           (FREEWARE_EDITION != 10300 && grim_interface_ptr->grim_was_mouse_button_pressed(1)) ||
-           (config_aim_schemes[current_player_index] == (FREEWARE_EDITION == 10300 ? 2 : 3) &&
-            grim_interface_ptr->grim_is_joystick_button_down(1)) ||
-           click_perk();
+    return perk_shortcut() || click_perk();
 #endif
 }
+#endif
 __forceinline void level_check() { player_check_level(); }
 __forceinline void open_choices() { perks_generate_choices(); }
 __forceinline void hud() {
@@ -240,7 +248,24 @@ __forceinline void simulate_players() {
     }
     creatures();
     shots();
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    bool perk_requested = false;
+    if (PENDING >= 1 && config_game_mode != 2) {
+        if (perk_shortcut())
+            perk_requested = true;
+        else {
+            const float x = screen_width - 240.f, y = screen_height - 50.f;
+            const FramePoint origin(x, y);
+            FramePoint hi = origin + FramePoint(257.f, 51.f);
+            FramePoint lo = origin;
+            perk_requested = (unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi) &&
+                             grim_interface_ptr->grim_was_mouse_button_pressed(0);
+        }
+    }
+    if (perk_requested) {
+#else
     if (FREEWARE_EDITION != 10002 && PENDING >= 1 && config_game_mode != 2 && open_perk()) {
+#endif
         enter(4);
         open_choices();
         request_transition();
@@ -406,9 +431,6 @@ __forceinline void render_world() {
 __forceinline float spawn_random_coord(int extent) {
     return (float)(crt_rand() % extent);
 }
-__forceinline void spawn_edge() {
-#include "frame_spawn_edge.inc"
-}
 __forceinline void clamp_spawn_color(float &value) {
     if (value < 0)
         value = 0;
@@ -422,43 +444,6 @@ __forceinline float saturate(float x) {
         return 1;
     return x;
 }
-#if FREEWARE_EDITION != 10002
-__forceinline void spawn_wave() {
-    if (config_game_mode == 2) {
-        P(0).weapon = 2;
-        P(0).ammo = 30;
-        P(1).weapon = 2;
-        P(1).ammo = 30;
-    }
-    SPAWN_TIMER -= frame_dt * config_player_count;
-    if (config_game_mode == 3)
-        return;
-    while (SPAWN_TIMER < 0) {
-        if (config_game_mode == 2) {
-            SPAWN_TIMER += .25;
-            effect_color_t tint = {SECONDS * .0083333338f + .3f, 10.f / SECONDS + .3f,
-                                   (float)sin(SECONDS * .1f) + .3f, 1};
-            clamp_spawn_color(tint.r);
-            clamp_spawn_color(tint.g);
-            clamp_spawn_color(tint.b);
-            vec2f_t right = {freeware_arena_width + 64.f, (float)cos(SECONDS) * 256.f + freeware_arena_height * .5f};
-            creature_spawn(&right, &tint, 1);
-            vec2f_t left = {-64.f, (float)sin(SECONDS) * 256.f + freeware_arena_height * .5f};
-            creature_spawn(&left, &tint, 1);
-        } else if (freeware_spawn_enabled) {
-            SPAWN_TIMER += 1.f - FIELD(P(current_player_index).experience, run.experience) * .000016666667f;
-            if (SPAWN_TIMER < .01f)
-                SPAWN_TIMER = .01f;
-            spawn_edge();
-        }
-#ifdef CRIMSON_FREEWARE_CLIENT
-        // A disabled spawner cannot advance a negative timer.
-        else
-            break;
-#endif
-    }
-}
-#endif
 #ifndef CRIMSON_FREEWARE_CLIENT
 extern "C" void freeware_music_stop(int);
 #if FREEWARE_EDITION == 10300
@@ -528,52 +513,6 @@ __forceinline void update_wave() {
 }
 __forceinline void label(const char *, float, float, float, float, float, float, float);
 #if FREEWARE_EDITION != 10002
-__forceinline void combust_particle(const vec2f_t *pos, float scale) {
-    vec2f_t velocity = {0, 0};
-    fx_spawn_particle(pos, (crt_rand() % 628) * .01f, &velocity, scale);
-}
-// Runs in the live player's arrow pass. Each of the three perks observes the same target.
-__forceinline void target_player_perks() {
-    if (P(current_player_index).perks[perk_id_see_health] <= 0 &&
-        P(current_player_index).perks[perk_id_spontaneously_combusteous] <= 0 &&
-        P(current_player_index).perks[perk_id_evil_eyes] <= 0)
-        return;
-    int id = creature_find_in_radius(&P(current_player_index).aim, 10);
-    if (id == -1)
-        return;
-    if (P(current_player_index).perks[perk_id_see_health] > 0) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-        char buf[40];
-        sprintf(buf, "health %d", (int)creature_pool[id].health);
-        label(buf, G.cursor_x, G.cursor_y + 32, .5f, 1, 1, 1, .64f);
-#else
-        grim_interface_ptr->grim_set_color(1, 1, 1, .64f);
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, .5f);
-        sprintf(freeware_ui_buffer, "health %d", (int)creature_pool[id].health);
-        grim_interface_ptr->grim_draw_text_mono(freeware_aim_screen.x, freeware_aim_screen.y + 32, freeware_ui_buffer);
-#endif
-    }
-    if (P(current_player_index).perks[perk_id_spontaneously_combusteous] > 0) {
-        float &timer = creature_pool[id].anim_phase;
-        const vec2f_t &position = creature_pool[id].position;
-        timer -= frame_dt;
-        if (timer < 0) {
-            timer = .5f;
-            combust_particle(&position, .8f);
-            combust_particle(&position, .6f);
-            combust_particle(&position, .4f);
-            combust_particle(&position, .3f);
-            combust_particle(&position, .2f);
-            fx_queue_add_random(&position);
-        }
-    }
-    if (P(current_player_index).perks[perk_id_evil_eyes] > 0 && FREEZE <= 0) {
-        float &x = creature_pool[id].position.x;
-        x -= creature_pool[id].velocity.x;
-        float &y = creature_pool[id].position.y;
-        y -= creature_pool[id].velocity.y;
-    }
-}
 __forceinline void timed_perks() {
     if (JINX >= 0)
         JINX -= frame_dt;
@@ -681,6 +620,9 @@ __forceinline void draw_timed_transition(bool dying) {
 extern "C"
 #endif
 unsigned char game_frame_update() {
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    vec2f_t lo;
+#endif
 #if FREEWARE_EDITION == 10002
     // Both overlays retain their cursor clocks and particle opacity across the draw calls.
     float cursor_phase, cursor_orbit, cursor_alpha;
@@ -886,8 +828,14 @@ unsigned char game_frame_update() {
             creatures();
             shots();
         }
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
+        {
+#include "frame_main_menu.inc"
+        }
+#else
         if (!main_menu())
             return 0;
+#endif
         break;
 #endif
 #if CL_BUILD == 10002
@@ -921,9 +869,7 @@ unsigned char game_frame_update() {
             else
                 FREEZE = 0;
             update_wave();
-            aim_overlays();
-            timed_perks();
-            spawn_wave();
+#include "frame_gameplay_state.inc"
 #endif
 #if FREEWARE_EDITION == 10002
             // The prompt's draw and its input check share the same pending-perk gate.
@@ -1075,7 +1021,9 @@ unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
 // These narrow probes also exercise the inlined stages used by the real callback.
 extern "C" void freeware_playing_stage() { simulate_players(); }
-extern "C" void freeware_spawn_edge() { spawn_edge(); }
+extern "C" void freeware_spawn_edge() {
+#include "frame_spawn_edge.inc"
+}
 extern "C" void freeware_bomb_advance() { update_wave(); }
 #endif
 } // namespace frame_update140

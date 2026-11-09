@@ -328,130 +328,14 @@ __forceinline int native_menu_action(int which, int row) {
 #endif
 }
 #endif
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION < 10300
 __forceinline int menu_rows(int which) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-    const int count = which == main_page ? freeware::main_row_count : which == options_page ? freeware::option_row_count : 5;
-#else
-    const int main_count = FREEWARE_EDITION == 10002 ? 6 : FREEWARE_EDITION == 10300 ? 7 : 8;
-    const int option_count = FREEWARE_EDITION == 10002 ? 9 : FREEWARE_EDITION == 10300 ? 11 : 12;
-    const int count = which == main_page ? main_count : which == options_page ? option_count : 5;
-#endif
-    // 1.3.0 uses the same 26-pixel increment and hitbox at 0x415715 and 0x415751.
-    const float option_spacing = FREEWARE_EDITION == 10300 ? 26.f : 21.f;
-    float font_scale = FREEWARE_EDITION < 10400 || which == main_page ? .75435f : .65f;
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION != 10300
-    if (FREEWARE_EDITION != 10400 || which != main_page)
-        grim_interface_ptr->grim_set_config_var(frame_font_scale, font_scale);
-#endif
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10400
-    if (which == online_page) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-        label(G.update_info.c_str(), 10, 10, font_scale, .2f, 1, .7f, .9f);
-#else
-        grim_interface_ptr->grim_set_color(.2f, 1, .7f, .9f);
-        grim_interface_ptr->grim_draw_text_mono_fmt(10, 10, "%s", freeware_update_info);
-#endif
-    }
-#endif
-    int &hover = FIELD(freeware_perk_hover, perk_hover);
-    hover = -1;
-    for (int i = 0; i < count; ++i) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-        std::string label = which == main_page      ? freeware::menu_row(G, i).label
-                            : which == options_page ? G.option(freeware::option_action(i))
-                                                    : freeware::online_labels[i];
-        const char *name = label.c_str();
-        const float mx = G.cursor_x, my = G.cursor_y;
-#else
-#if FREEWARE_EDITION < 10400
-        char *const &name = which == main_page ? freeware_main_labels[i] : freeware_option_labels[i];
-#else
-        char *const &name = which == main_page ? freeware_main_labels[i]
-                            : which == options_page ? freeware_option_labels[i]
-                                                    : freeware_online_labels[i];
-#endif
-        const float mx = freeware_aim_screen.x, my = freeware_aim_screen.y;
-#endif
-        vec2f_t lo;
-        lo.x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
-#ifdef CRIMSON_FREEWARE_CLIENT
-        lo.y = which == main_page ? freeware::main_row_top + i * 32.f : 170.f + i * option_spacing;
-        if (FREEWARE_EDITION == 10002 && which == options_page)
-            lo.y = 180.f + i * 32.f;
-        const int action = which == main_page ? freeware::main_action(i) : i;
-#else
-        lo.y = which == main_page ? 200.f + i * 32.f : 170.f + i * option_spacing;
-        if (FREEWARE_EDITION == 10002)
-            lo.y = (which == main_page ? 220.f : 180.f) + i * 32.f;
-#if FREEWARE_EDITION == 10002
-        const int action = native_menu_action(which, i);
-#endif
-#endif
-#if FREEWARE_EDITION == 10002
-        const float row_height = 30.f;
-#else
-        const float row_height = which == main_page ? 30.f : option_spacing;
-#endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-        vec2f_t hi = {lo.x + strlen(name) * 16.f, lo.y + row_height};
-        if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi))
-            hover = i;
-        if (hover == i)
-            grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
-        else if (SELECTED == i)
-            grim_interface_ptr->grim_set_color(1, 1, 1, .7f);
-        else
-            grim_interface_ptr->grim_set_color(1, 1, 1, .6f);
-        if (which == online_page && i == 2)
-            grim_interface_ptr->grim_set_color(1, 1, 1, .2f);
-        if (which == main_page && ACTIVE && i == 1)
-            grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
-        if (which == main_page && ACTIVE && i == 2)
-            grim_interface_ptr->grim_set_color(.6f, .6f, .6f, .4f);
-        grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y, name);
-#else
-        if (mx > lo.x && my > lo.y && mx < lo.x + strlen(name) * 16.f && my < lo.y + row_height)
-            hover = i;
-#if FREEWARE_EDITION == 10002
-        float light = 1, alpha = hover == i ? .9f : .6f;
-#else
-        float light = 1, alpha = hover == i ? .9f : SELECTED == i ? .7f : .6f;
-#endif
-        if (which == online_page && i == 2)
-            alpha = .2f;
-        if (which == main_page && ACTIVE && (action == 1 || action == 2)) {
-            light = .6f;
-            alpha = .4f;
-        }
-#ifdef CRIMSON_FREEWARE_CLIENT
-        G.frame_labels.push_back({name, lo.x, lo.y, font_scale, {light, light, light, alpha}, G.frame_sprites.size()});
-#else
-        grim_interface_ptr->grim_set_color(light, light, light, alpha);
-        grim_interface_ptr->grim_draw_text_mono(lo.x, lo.y, (char *)name);
-#endif
-#endif
-    }
-#if FREEWARE_EDITION == 10300 || (!defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400)
-    if ((FREEWARE_EDITION == 10300 || !FIELD(console_open_flag, console_open)) && menu_key(0xc8)) {
-        --SELECTED;
-        if (SELECTED > count - 1) SELECTED = count - 1;
-        else if (SELECTED < 0) SELECTED = 0;
-        hover = SELECTED;
-    }
-    if ((FREEWARE_EDITION == 10300 || !FIELD(console_open_flag, console_open)) && menu_key(0xd0)) {
-        ++SELECTED;
-        if (SELECTED > count - 1) SELECTED = count - 1;
-        else if (SELECTED < 0) SELECTED = 0;
-        hover = SELECTED;
-    }
-#ifdef CRIMSON_FREEWARE_CLIENT
+#include "frame_menu_rows.inc"
+#if FREEWARE_EDITION == 10300
     if (INPUT.accept || INPUT.accept_down)
         hover = SELECTED;
     if (INPUT.accept)
         return hover;
-#else
-    return hover;
-#endif
 #elif FREEWARE_EDITION == 10002
     if (which == options_page && menu_key(0x1c))
         return hover;
@@ -479,6 +363,8 @@ __forceinline int menu_rows(int which) {
     return grim_interface_ptr->grim_was_mouse_button_pressed(0) ? hover : -1;
 #endif
 }
+#endif
+enum { rebind_option = FREEWARE_EDITION == 10300 ? 8 : 9, calibrate_option, done_option };
 __forceinline void menu_options(int row) {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
     // 0x40cd74. Sound volume and the spacer have no case in this switch.
@@ -509,20 +395,22 @@ __forceinline void menu_options(int row) {
         G.movement[CONFIGURING] = next[G.movement[CONFIGURING]];
 #endif
 #else
-        if (++config_movement_schemes[CONFIGURING] > 3)
+        ++config_movement_schemes[CONFIGURING];
+        if (config_movement_schemes[CONFIGURING] > 3)
             config_movement_schemes[CONFIGURING] = 1;
 #endif
     } else if (row == 2) {
-        int &aim = FIELD(config_aim_schemes[CONFIGURING], aiming[CONFIGURING]);
-#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
-        if (aim == 0) ++aim; // Slot 1 in the client settings is the later relative-mouse option.
-#endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
-        if (++aim > 2)
-#else
+#ifdef CRIMSON_FREEWARE_CLIENT
+        int &aim = G.aiming[CONFIGURING];
+        if (FREEWARE_EDITION == 10300 && aim == 0)
+            ++aim; // Slot 1 is the later relative-mouse option.
         if (++aim > 3)
-#endif
             aim = 0;
+#else
+        ++config_aim_schemes[CONFIGURING];
+        if (config_aim_schemes[CONFIGURING] > (FREEWARE_EDITION == 10300 ? 2 : 3))
+            config_aim_schemes[CONFIGURING] = 0;
+#endif
     } else if (row == 3) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.music_enabled = !G.music_enabled;
@@ -571,19 +459,19 @@ __forceinline void menu_options(int row) {
         FIELD(freeware_shell_marks, shell_marks) = !FIELD(freeware_shell_marks, shell_marks);
     } else if (FREEWARE_EDITION >= 10400 && row == 8) {
         FIELD(freeware_direction_arrow, direction_arrow) = !FIELD(freeware_direction_arrow, direction_arrow);
-    } else if (row == 9) {
+    } else if (row == rebind_option) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.rebind = 0;
 #else
         freeware_rebinding = 1;
 #endif
-    } else if (row == 10) {
+    } else if (row == calibrate_option) {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.calibration = 0;
 #else
         freeware_calibrating = 1;
 #endif
-    } else if (row == 11) {
+    } else if (row == done_option) {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         freeware_options_open = 0;
         freeware_perk_hover = 0;
@@ -1236,7 +1124,7 @@ __forceinline bool menu_clicked() {
 }
 __forceinline bool native_menu_actions() {
     if (freeware_options_open && menu_clicked())
-        menu_options(native_menu_action(options_page, freeware_perk_hover));
+        menu_options(freeware_perk_hover);
     if (FREEWARE_EDITION >= 10400 && freeware_online_open && menu_clicked()) {
         if (freeware_perk_hover == 0) {
             freeware_open_site = 1;
@@ -1286,7 +1174,10 @@ __forceinline bool native_menu_actions() {
         } else if (freeware_perk_hover == 2) {
             if (!ACTIVE) {
                 config_game_mode = (game_mode_id_t)(config_game_mode + 1);
-                if (config_game_mode > (freeware_levels_sequence == 6 ? 3 : 2))
+                if (freeware_levels_sequence == 6) {
+                    if (config_game_mode > 3)
+                        config_game_mode = (game_mode_id_t)1;
+                } else if (config_game_mode > 2)
                     config_game_mode = (game_mode_id_t)1;
             }
         } else if (freeware_perk_hover == 3) {
@@ -1318,251 +1209,8 @@ __forceinline bool native_menu_actions() {
     return true;
 }
 #endif
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION < 10300
 __forceinline bool main_menu() {
-    menu_secrets();
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-    if (!freeware_scores_open && MENU_MUSIC && !ACTIVE) {
-#else
-    int which = page();
-    if ((FREEWARE_EDITION == 10002 || which != scores_page) && MENU_MUSIC && !ACTIVE) {
-#endif
-        menu_tracks(true);
-        MENU_MUSIC = 0;
-        STATE_SINCE = CLOCK;
-        FIELD(freeware_logo_angle, logo_angle) = 0;
-    }
-#ifndef CRIMSON_FREEWARE_CLIENT
-#if FREEWARE_EDITION >= 10300
-    refresh_labels(main_page);
-#else
-    refresh_labels(which);
-#endif
-#endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-    float age = CLOCK - STATE_SINCE;
-    float menu_clock = CLOCK;
-    menu_title(age, menu_clock);
-    int which = page();
-#else
-    menu_title(which);
-#endif
-    bool overlay = which == scores_page || which == credits_page;
-#ifdef CRIMSON_FREEWARE_CLIENT
-    if (FREEWARE_EDITION >= 10400 && !overlay && INPUT.escape && which != main_page) {
-        show_page(main_page);
-        SELECTED = 0;
-        return true;
-    }
-#endif
-    int row = -1;
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-    if (!setup_controls()) {
-        if (freeware_options_open) {
-            refresh_option_labels();
-            menu_rows(options_page);
-        } else if (FREEWARE_EDITION >= 10400 && freeware_online_open)
-            menu_rows(online_page);
-        else
-            menu_rows(main_page);
-    }
-    menu_footer_text();
-    cursor_particles(age, menu_clock);
-    if ((FREEWARE_EDITION == 10300 || !console_open_flag) && grim_interface_ptr->grim_is_key_down(0x1c))
-        freeware_perk_hover = SELECTED;
-    return native_menu_actions();
-#else
-    if (overlay || !setup_controls())
-        row = menu_rows(overlay ? main_page : which);
-    menu_footer_text();
-    cursor_particles(CLOCK - STATE_SINCE, CLOCK);
-#endif
-    if (overlay) {
-        if (which == scores_page)
-            game_highscores_update();
-        else
-            game_credits_update();
-        return true;
-    }
-    if (row < 0)
-        return true;
-#ifdef CRIMSON_FREEWARE_CLIENT
-    if (which == main_page)
-        row = freeware::main_action(row);
-    else if (which == options_page)
-        row = freeware::option_action(row);
-#else
-    row = native_menu_action(which, row);
-#endif
-    if (which == options_page) {
-        menu_options(row);
-#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION < 10400
-        // Enter activates Done before the main menu reads the independent mouse edge.
-        if (row == 11 && INPUT.accept && INPUT.click)
-            row = 0;
-        else
-#endif
-            return true;
-    }
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10400
-    if (which == online_page) {
-        if (row == 4) {
-            show_page(main_page);
-            SELECTED = 0;
-        }
-#ifdef CRIMSON_FREEWARE_CLIENT
-        else if (row == 0)
-            G.visit_website = true;
-        else if (row == 1)
-            G.update_info = "Installed version: 1.4.0. The 2002 update service is unavailable.";
-#else
-        else if (row == 0) {
-            freeware_open_site = 1;
-            quit_requested = 1;
-        } else if (row == 1) {
-            freeware_http_response *response = freeware_http_get("www.mbnet.fi", "~temper/crimsonland", "versioninfo.txt");
-            if (response) {
-                crt_free(freeware_update_info);
-                freeware_update_info = response->data;
-            }
-        }
-#endif
-        return true;
-    }
-#endif
-    switch (row) {
-    case 0:
-        if (!ACTIVE) {
-            FIELD(freeware_logo_visible, logo_visible) = 0;
-            MENU_MUSIC = 1;
-            enter(3);
-            FIELD(freeware_music_started, wind_started) = 1;
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10002
-            menu_tracks(false);
-            freeware_current_map->clear();
-#endif
-#ifdef CRIMSON_FREEWARE_CLIENT
-            G.start();
-#else
-            gameplay_reset_state();
-#if FREEWARE_EDITION == 10002
-            menu_tracks(false);
-#endif
-#endif
-            if (config_game_mode == 1 || config_game_mode == 2) {
-                freeware_spawn_enabled = 1;
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10002
-            } else if (config_game_mode == 3) {
-                creature_reset_all();
-                freeware_spawn_enabled = 0;
-                FIELD(freeware_level_number, level_number) = 0;
-#ifdef CRIMSON_FREEWARE_CLIENT
-                G.reset_gameplay();
-                G.load_next_level();
-#else
-                gameplay_reset_state();
-                level_load_next();
-#endif
-                freeware_current_map->arm_triggers();
-#endif
-            }
-            ACTIVE = 1;
-        } else {
-#if FREEWARE_EDITION == 10002
-            enter(3);
-#else
-            enter(FIELD(freeware_pause_perks, paused_perks) ? 4 : 3);
-#endif
-#ifdef CRIMSON_FREEWARE_CLIENT
-            G.paused = false;
-#endif
-        }
-        break;
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10002
-    case 1:
-        if (!ACTIVE) {
-#ifdef CRIMSON_FREEWARE_CLIENT
-            G.two_players = !G.two_players;
-#endif
-            config_player_count = 3 - config_player_count;
-        }
-        break;
-#endif
-    case 2:
-        if (!ACTIVE) {
-#if FREEWARE_EDITION == 10300
-            int next = config_game_mode + 1;
-            if (next > (FIELD(freeware_levels_sequence, levels_sequence) == 6 ? 3 : 2))
-                next = 1;
-            config_game_mode = (game_mode_id_t)next;
-#ifdef CRIMSON_FREEWARE_CLIENT
-            G.level_mode = next == 3 ? 3 : 0;
-#endif
-#else
-            config_game_mode = (game_mode_id_t)(config_game_mode == 1 ? 2 : 1);
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
-            set_label(freeware_main_labels + 1, config_game_mode == 1 ? "Game mode: career" : "Game mode: survival");
-#endif
-#endif
-#ifdef CRIMSON_FREEWARE_CLIENT
-            G.survival = config_game_mode == 2;
-#endif
-        }
-        break;
-#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
-    case 3:
-    case 4: {
-        request_transition();
-        show_page(row == 3 ? scores_page : credits_page);
-        // The menu has consumed the click. Other edges still reach the overlay on its first frame.
-        const freeware::Input *pressed = freeware_frame_input;
-        freeware::Input remaining = *pressed;
-        remaining.click = false;
-        freeware_frame_input = &remaining;
-        if (row == 3)
-            game_highscores_update();
-        else
-            game_credits_update();
-        freeware_frame_input = pressed;
-    } break;
-#else
-    case 3:
-        request_transition();
-        show_page(scores_page);
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION < 10400
-        game_highscores_update();
-#endif
-        break;
-    case 4:
-        request_transition();
-        show_page(credits_page);
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION < 10400
-        game_credits_update();
-#endif
-        break;
-#endif
-    case 5:
-        show_page(options_page);
-        break;
-#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10400
-    case 6:
-        show_page(online_page);
-        break;
-#endif
-    case 7:
-#if FREEWARE_EDITION == 10002
-        return false;
-#else
-        if (!ACTIVE)
-            return false;
-        menu_tracks(true);
-        ACTIVE = 0;
-        FIELD(freeware_logo_angle, logo_angle) = 0;
-        MENU_MUSIC = 0;
-#ifdef CRIMSON_FREEWARE_CLIENT
-        G.paused = false;
-#endif
-        break;
-#endif
-    }
-    return true;
+#include "frame_main_menu.inc"
 }
+#endif

@@ -38,7 +38,7 @@ struct editor_point : vec2f_t {
 };
 #ifndef CRIMSON_FREEWARE_CLIENT
 struct editor_trigger : freeware_level_trigger {
-    __forceinline editor_trigger(int kind, const vec2f_t &at, float angle, float r) {
+    __forceinline editor_trigger(int kind, float r, float angle, const vec2f_t &at) {
         enabled = 0;
         type = kind;
         position = at;
@@ -79,7 +79,7 @@ __forceinline freeware_level_trigger *editor_make_trigger(int kind, const float 
     trigger->radius = radius;
     return trigger;
 #else
-    return new editor_trigger(kind, editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y), angle, radius);
+    return new editor_trigger(kind, radius, angle, editor_point(MOUSE_X - CAM.x, MOUSE_Y - CAM.y));
 #endif
 }
 __forceinline bool level_cleared() {
