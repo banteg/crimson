@@ -11,9 +11,10 @@ if (freeware_assembly_sequence == 8) {
     float direction = aim_angle(position - freeware_aim_screen);
     float length = aim_length(position - freeware_aim_screen) * .02f;
     length *= 20.f;
+    const float center_x = position.x;
     for (int i = 1; i < length; i += 3) {
         grim_interface_ptr->grim_set_color(.7f, .8f, 1, .09f - i * .09f / length);
-        grim_interface_ptr->grim_draw_quad(position.x - 89.f + cosf(direction) * i,
+        grim_interface_ptr->grim_draw_quad(center_x - 89.f + cosf(direction) * i,
                 position.y + sinf(direction) * i / 3.f, 178, 29);
     }
     grim_interface_ptr->grim_set_color(1, 1, 1, .7f);
