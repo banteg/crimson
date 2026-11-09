@@ -13,3 +13,8 @@ second call. No source dependency or dummy operation is needed.
 
 Verified exact with MSVC 6.5 `/O2 /GB /W3 /GR- /TP`: 104/104 instructions and
 all 54 masked references audited.
+
+The 1.3.0 and 1.4.0 images write a fixed filename into the shared
+`freeware_text_buffer`. Player count and mode select Career, Rush or Levels
+and their two-player variants, with `general.top` for an unknown mode. Both
+builds reproduce all 213 encoded bytes and all 30 references.
