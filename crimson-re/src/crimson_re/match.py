@@ -10,7 +10,7 @@ import shlex
 import shutil
 import struct
 from collections import Counter, defaultdict
-from collections.abc import Collection, Generator, Iterable
+from collections.abc import Collection, Generator, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
@@ -5159,7 +5159,41 @@ class _ScratchIncludeResolver:
             match_root / "include",
             repo_root / "third_party" / "headers",
         )
-        self._direct_dependencies: dict[tuple[Path, bool, tuple[Path, ...], str | None], tuple[Path, ...]] = {}
+        self._parsed: dict[str, tuple[tuple[Path, bool], ...]] = {}
+
+    @staticmethod
+    def _includes(text: str) -> tuple[tuple[Path, bool], ...]:
+        return tuple(
+            (Path((directive[1] or directive[2]).replace("\\", "/")), directive[1] is not None)
+            for directive in INCLUDE_RE.finditer(text)
+        )
+
+    def _dependencies(
+        self,
+        path: Path,
+        search: tuple[tuple[Path, bool], ...],
+        *,
+        parent_local: bool | None,
+        source_text: str | None = None,
+    ) -> Iterator[tuple[Path, bool]]:
+        if source_text is None:
+            digest = match_toolchain.file_sha256(path)
+            if digest is None:
+                return
+            if digest not in self._parsed:
+                self._parsed[digest] = self._includes(path.read_text(encoding="latin1"))
+            includes = self._parsed[digest]
+        else:
+            includes = self._includes(source_text)
+        quoted = ((path.parent, parent_local), *search) if parent_local is not None else search
+        for name, is_quoted in includes:
+            for directory, local in quoted if is_quoted else search:
+                # VC6 searches beside the spelling it opened. Resolving a link
+                # here would redirect that header's own quoted includes.
+                header = Path(os.path.abspath(directory / name))
+                if header.is_file():
+                    yield header, local
+                    break
 
     def direct_dependencies(
         self,
@@ -5168,32 +5202,10 @@ class _ScratchIncludeResolver:
         source: bool,
         include_dirs: tuple[Path, ...] | None = None,
     ) -> tuple[Path, ...]:
-        search_dirs = include_dirs if include_dirs is not None else self.include_dirs
-        cache_key = (including_path, source, search_dirs, match_toolchain.file_sha256(including_path))
-        if cache_key in self._direct_dependencies:
-            return self._direct_dependencies[cache_key]
-        try:
-            text = including_path.read_text(encoding="latin1")
-        except OSError:
-            self._direct_dependencies[cache_key] = ()
-            return ()
-        dependencies: list[Path] = []
-        seen: set[Path] = set()
-        for match in INCLUDE_RE.finditer(text):
-            include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
-            candidates = [include_dir / include_name for include_dir in search_dirs]
-            if not source and match.group(1) is not None:
-                candidates.insert(0, including_path.parent / include_name)
-            dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
-            if dependency is None:
-                continue
-            dependency = dependency.resolve()
-            if dependency not in seen:
-                seen.add(dependency)
-                dependencies.append(dependency)
-        resolved = tuple(dependencies)
-        self._direct_dependencies[cache_key] = resolved
-        return resolved
+        dirs = self.include_dirs if include_dirs is None else include_dirs
+        search = tuple((directory, False) for directory in dirs)
+        entries = self._dependencies(including_path, search, parent_local=None if source else False)
+        return tuple(dict.fromkeys(header for header, _ in entries))
 
 
 def _scratch_include_headers(
@@ -5201,31 +5213,39 @@ def _scratch_include_headers(
     match_root: Path,
     *,
     resolver: _ScratchIncludeResolver | None = None,
+    source_text: str | None = None,
+    local_only: bool = False,
 ) -> tuple[Path, ...]:
     if config.archive is not None or config.import_thunk is not None:
         return ()
     resolver = resolver or _ScratchIncludeResolver(match_root)
-    search_dirs = (
+    shared_dirs = (
+        *((config.include_overlay,) if config.include_overlay is not None else ()),
         _compiler_executable_path(config, match_root).parent.parent / "Include",
         *resolver.include_dirs,
-        config.source_include_dir,
     )
-    if config.include_overlay is not None:
-        search_dirs = (config.include_overlay, *search_dirs)
-    source = config.directory / config.source
-    pending = [source]
-    visited = {source}
+    search = (*((directory, False) for directory in shared_dirs), (config.source_include_dir, True))
+    visited: set[tuple[Path, bool | None]] = set()
     headers: set[Path] = set()
-    while pending:
-        including_path = pending.pop()
-        for dependency in resolver.direct_dependencies(
-            including_path, source=including_path == source, include_dirs=search_dirs,
+
+    def visit(path: Path, *, parent_local: bool | None, ancestors: frozenset[Path]) -> None:
+        if (path, parent_local) in visited:
+            return
+        identity = path.resolve()
+        if identity in ancestors:
+            return
+        visited.add((path, parent_local))
+        ancestors = ancestors | {identity}
+        for header, local in resolver._dependencies(
+            path, search, parent_local=parent_local, source_text=source_text if parent_local is None else None,
         ):
-            if dependency in visited:
-                continue
-            visited.add(dependency)
-            headers.add(dependency)
-            pending.append(dependency)
+            if not local_only or local:
+                headers.add(header)
+            visit(header, parent_local=local, ancestors=ancestors)
+
+    # The compiler stages the source; only an included header contributes a
+    # parent directory to quoted include lookup.
+    visit(config.directory / config.source, parent_local=None, ancestors=frozenset())
     return tuple(sorted(headers))
 
 
@@ -5279,12 +5299,12 @@ def _scratch_build_dependencies(
 
 
 def _experiment_epoch_path_label(path: Path, match_root: Path) -> str:
-    resolved = path.resolve()
-    if resolved.is_relative_to(match_root):
-        return f"match/{resolved.relative_to(match_root).as_posix()}"
-    if resolved.is_relative_to(REPO_ROOT):
-        return f"repo/{resolved.relative_to(REPO_ROOT).as_posix()}"
-    return f"external/{resolved.name}"
+    path = Path(os.path.abspath(path))
+    if path.is_relative_to(match_root):
+        return f"match/{path.relative_to(match_root).as_posix()}"
+    if path.is_relative_to(REPO_ROOT):
+        return f"repo/{path.relative_to(REPO_ROOT).as_posix()}"
+    return f"external/{path.name}"
 
 
 def source_probe_tree_fingerprint(
@@ -5301,61 +5321,7 @@ def source_probe_tree_fingerprint(
     """
 
     match_root = match_root.resolve()
-    resolver = _ScratchIncludeResolver(match_root)
-    include_dirs = (
-        _compiler_executable_path(config, match_root).parent.parent / "Include",
-        *resolver.include_dirs,
-        config.source_include_dir,
-    )
-    if config.include_overlay is not None:
-        include_dirs = (config.include_overlay, *include_dirs)
-
-    def direct_dependencies(
-        text: str,
-        *,
-        including_parent: Path | None,
-        source: bool,
-    ) -> tuple[Path, ...]:
-        dependencies: list[Path] = []
-        seen: set[Path] = set()
-        for match in INCLUDE_RE.finditer(text):
-            include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
-            candidates = [include_dir / include_name for include_dir in include_dirs]
-            if not source and including_parent is not None and match.group(1) is not None:
-                candidates.insert(0, including_parent / include_name)
-            dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
-            if dependency is None:
-                continue
-            resolved = dependency.resolve()
-            if resolved not in seen:
-                seen.add(resolved)
-                dependencies.append(resolved)
-        return tuple(dependencies)
-
-    pending = list(
-        direct_dependencies(
-            source_text,
-            including_parent=None,
-            source=True,
-        ),
-    )
-    dependencies: set[Path] = set()
-    while pending:
-        dependency = pending.pop()
-        if dependency in dependencies:
-            continue
-        dependencies.add(dependency)
-        try:
-            dependency_text = dependency.read_text(encoding="latin1")
-        except OSError:
-            continue
-        pending.extend(
-            direct_dependencies(
-                dependency_text,
-                including_parent=dependency.parent,
-                source=False,
-            ),
-        )
+    dependencies = _scratch_include_headers(config, match_root, source_text=source_text)
 
     digest = hashlib.sha256(b"crimson-source-probe-tree-v1\0")
     digest.update(Path(config.source).name.encode())
@@ -5364,7 +5330,7 @@ def source_probe_tree_fingerprint(
     labels: list[str] = []
     for dependency in sorted(
         dependencies,
-        key=lambda value: _experiment_epoch_path_label(value, match_root),
+        key=lambda value: (_experiment_epoch_path_label(value, match_root), value),
     ):
         label = _experiment_epoch_path_label(dependency, match_root)
         labels.append(label)
@@ -5431,7 +5397,7 @@ def scratch_experiment_epoch(
     compiler_path = _compiler_executable_path(config, match_root).resolve()
     config_path = (config.directory / "scratch.conf").resolve()
     dependencies = {
-        path.resolve()
+        Path(os.path.abspath(path))
         for path in _scratch_build_dependencies(config, match_root)
         if path.resolve() not in {compiler_path, config_path}
     }
@@ -5451,7 +5417,7 @@ def scratch_experiment_epoch(
     )
     labels = {path: _experiment_epoch_path_label(path, match_root) for path in dependencies}
     projected_maps = {DEFAULT_NAME_MAP_PATH.resolve(), DEFAULT_DATA_MAP_PATH.resolve()}
-    for path in sorted(dependencies, key=labels.__getitem__):
+    for path in sorted(dependencies, key=lambda item: (labels[item], item)):
         digest.update(b"\0path\0")
         digest.update(labels[path].encode())
         sha256 = (

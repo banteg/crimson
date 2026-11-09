@@ -355,6 +355,41 @@ def test_angle_includes_use_search_paths_instead_of_the_including_directory(tmp_
     assert resolver.direct_dependencies(header, source=False, include_dirs=(search,)) == (selected,)
 
 
+def test_symlinked_headers_use_their_own_siblings_in_the_cache_and_probe(tmp_path: Path) -> None:
+    shared = tmp_path / "shared.h"
+    shared.write_text('#include "owner.h"\n')
+    for name, value in (("left", 1), ("right", 2)):
+        folder = tmp_path / name
+        folder.mkdir()
+        (folder / "alias.h").symlink_to(shared)
+        (folder / "owner.h").write_text(f"#define {name} {value}\n")
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    source = '#include "../left/alias.h"\n#include "../right/alias.h"\nextern "C" int f() { return left + right; }\n'
+    (scratch / "f.cpp").write_text(source)
+    (scratch / "scratch.conf").write_text("FUNCTION=f SOURCE=f.cpp\n")
+    config = matchlib.load_scratch_config(scratch)
+    resolver = matchlib._ScratchIncludeResolver(matchlib.DEFAULT_MATCH_ROOT)
+    headers = matchlib._scratch_include_headers(config, matchlib.DEFAULT_MATCH_ROOT, resolver=resolver)
+    assert set(headers) == {tmp_path / folder / name for folder in ("left", "right") for name in ("owner.h", "alias.h")}
+    before = matchlib.source_probe_tree_fingerprint(config, source)
+    epoch = matchlib.scratch_experiment_epoch(config)
+    right = tmp_path / "right/owner.h"
+    right.write_text("#define right 12\n")
+    assert matchlib.source_probe_tree_fingerprint(config, source) != before
+    assert matchlib.scratch_experiment_epoch(config) != epoch
+
+    compiler = matchlib._compiler_executable_path(config, matchlib.DEFAULT_MATCH_ROOT)
+    if not compiler.is_file() or match_toolchain.resolve_wibo_path(matchlib.DEFAULT_MATCH_ROOT, required=False) is None:
+        pytest.skip("pinned compiler and Wibo are unavailable")
+    first = matchlib.compile_scratch(config, include_resolver=resolver).read_bytes()
+    right.write_text("#define right 2\n")
+    second = matchlib.compile_scratch(config, include_resolver=resolver).read_bytes()
+    for obj, expected in ((first, "mov eax, 0xd"), (second, "mov eax, 0x3")):
+        code = extract_object_function(matchlib.parse_coff_object(obj), "f").data
+        assert matchlib.normalize_function(code) == (expected, "ret")
+
+
 def test_copy_proof_expires_on_unproven_rep_movsd_and_subregister_clobbers() -> None:
     source, destination, other = 0x402000, 0x402100, 0x402200
     setup = bytes.fromhex("b902000000be") + struct.pack("<I", source) + b"\xbf" + struct.pack("<I", destination)
