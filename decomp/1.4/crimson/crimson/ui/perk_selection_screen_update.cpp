@@ -28,7 +28,7 @@ char *strdup_malloc(const char *);
 extern int perk_id_reserved_22;
 extern int perk_id_instant_winner, perk_id_grim_deal, perk_id_plaguebearer, perk_id_fatal_lottery,
     perk_id_weapon_assault_rifle, perk_id_weapon_shotgun, perk_id_infernal_contract, freeware_hint_ids[7];
-unsigned char freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec2f_t *);
+int freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec2f_t *);
 #endif
 }
 namespace {
@@ -47,7 +47,7 @@ __forceinline bool inside(float x, float y, float right, float bottom) {
     return UI_MOUSE_X > x && UI_MOUSE_X < right && UI_MOUSE_Y > y && UI_MOUSE_Y < bottom;
 #else
     vec2f_t hi = {right, bottom}, lo = {x, y};
-    return freeware_point_in_rect(&freeware_aim_screen, &lo, &hi) != 0;
+    return (unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi) != 0;
 #endif
 }
 __forceinline const char *name(int id) {
@@ -270,7 +270,7 @@ extern "C" void perk_selection_screen_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
             if (inside(lo.x, lo.y, hi.x, hi.y)) {
 #else
-            if (freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
+            if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
 #endif
                 tint(.9f, 1, .7f, 1);
                 HOVER = id;

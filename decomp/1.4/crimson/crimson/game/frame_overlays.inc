@@ -7,7 +7,9 @@ extern int freeware_name_length, freeware_low_fps_frames, highscore_record_hits,
 extern int freeware_kills, freeware_rank;
 extern float freeware_name_alpha;
 extern unsigned char freeware_cheated, freeware_music_started;
-int freeware_read_name_key(), freeware_score_rank(int), freeware_save_score();
+char freeware_read_name_key();
+int freeware_score_rank(int);
+unsigned char freeware_save_score();
 void freeware_music_start(int);
 }
 #endif
@@ -145,7 +147,7 @@ __forceinline void name_screen() {
     if (accepted)
         sfx_play_panned(17, .45f, .5f);
 #else
-    char c = (char)freeware_read_name_key();
+    char c = freeware_read_name_key();
     if (c != (char)0xa7) {
         sfx_play_panned(17, .45f, .5f);
         if (c == '\b') {

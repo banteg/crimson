@@ -8,7 +8,7 @@ extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr;
 extern int freeware_encounter_hover;
 extern vec2f_t freeware_aim_screen;
-unsigned char freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec2f_t *);
+int freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec2f_t *);
 }
 
 namespace {
@@ -22,7 +22,7 @@ __forceinline void draw_choice_labels(vec2f_t &lo, char **labels, int count) {
         float bottom = lo.y + 15.0f;
         hi.x = right;
         hi.y = bottom;
-        if (freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
+        if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
             grim_interface_ptr->grim_set_color(.9f, 1, .7f, 1);
             freeware_encounter_hover = i;
         }
