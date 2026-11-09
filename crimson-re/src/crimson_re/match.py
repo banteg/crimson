@@ -2420,14 +2420,39 @@ _OPERAND_SIZE_NAMES = {1: "byte", 2: "word", 4: "dword", 8: "qword", 10: "tword"
 _MAX_AUDITED_STRING_BYTES = 0x1000
 
 
-def _printable_string_key(data: bytes) -> str | None:
+def _printable_string_key(
+    data: bytes, *, object_keys: frozenset[str] | None = None, terminator: bool = False,
+) -> str | None:
     end = data.find(b"\x00", 0, _MAX_AUDITED_STRING_BYTES + 1)
     if end <= 0:
         return None
     raw = data[:end]
-    if any((byte < 0x20 and byte not in b"\t\n\r") or byte > 0x7E for byte in raw):
+    if any((byte < 0x20 and byte not in b"\t\n\r") or 0x7F <= byte < 0xA0 for byte in raw):
         return None
-    return f"string:{json.dumps(raw.decode('ascii'), ensure_ascii=True)}"
+    # Latin-1 preserves every byte of the narrow VC6 string, including accented names.
+    key = f"string:{json.dumps(raw.decode('latin1'), ensure_ascii=True)}"
+    if terminator:
+        key += ":end"
+    if object_keys is not None and not raw.isascii() and key not in object_keys:
+        return None
+    return key
+
+
+def _wide_string_literal(data: bytes) -> tuple[str, int] | None:
+    # A pair of zero bytes spanning adjacent UTF-16 code units is not a terminator.
+    limit = _MAX_AUDITED_STRING_BYTES + 2
+    end = data.find(b"\0\0", 0, limit)
+    while end >= 0 and end % 2:
+        end = data.find(b"\0\0", end + 1, limit)
+    if end <= 0:
+        return None
+    try:
+        value = data[:end].decode("utf-16-le")
+    except UnicodeDecodeError:
+        return None
+    if any(not char.isprintable() and char not in "\t\n\r" for char in value):
+        return None
+    return f"wstring:{json.dumps(value, ensure_ascii=True)}", end + 2
 
 
 def _image_bytes(image: LoadedImage | None, address: int, byte_count: int) -> bytes | None:
@@ -2576,6 +2601,7 @@ def disassemble_normalized_function(
     base_address: int = 0,
     reference_catalog: ReferenceCatalog | None = None,
     image: LoadedImage | None = None,
+    object_string_keys: frozenset[str] = frozenset(),
 ) -> tuple[DisassemblyLine, ...]:
     try:
         import capstone
@@ -2587,6 +2613,7 @@ def disassemble_normalized_function(
     relocation_offsets = relocation_offsets or frozenset()
     relocation_by_offset = {reference.offset: reference for reference in relocation_references}
     size = len(data)
+    has_wide_literals = any(key.startswith("wstring:") for key in object_string_keys)
     instructions = tuple(md.disasm(data, base_address))
     switch_counts: dict[int, set[int | None]] = defaultdict(set)
     guarded_uses: set[tuple[int, int]] = set()
@@ -2677,20 +2704,28 @@ def disassemble_normalized_function(
         # Content evidence must describe the relocated address, including a
         # compiler constant's byte addend, rather than the symbol's beginning.
         referenced_data = symbol_data[data_offset:] if 0 <= data_offset < len(symbol_data) else b""
+        narrow_string = reference.symbol_name.startswith("??_C@_0")
         if reference.local_target_offset is not None:
             keys = (f"local:{reference.local_target_offset:+#x}",)
             explained = True
-        elif reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(referenced_data)):
+        elif (
+            reference.symbol_name.startswith("??_C@_1")
+            and data_offset % 2 == 0
+            and (wide_literal := _wide_string_literal(referenced_data))
+        ):
+            keys = (wide_literal[0],)
+            explained = True
+        elif narrow_string and (string_key := _printable_string_key(referenced_data)):
             keys = (string_key,)
             explained = True
         elif (
-            reference.symbol_name.startswith("??_C@")
+            narrow_string
             and referenced_data[:1] == b"\0"
-            and (string_key := _printable_string_key(symbol_data))
+            and (string_key := _printable_string_key(symbol_data, terminator=True))
             and data_offset == symbol_data.index(b"\0")
         ):
             # An inlined copy can read a literal's terminator directly.
-            keys = (f"{string_key}:end",)
+            keys = (string_key,)
             explained = True
         elif (
             reference.symbol_name.startswith("__real@")
@@ -2745,8 +2780,14 @@ def disassemble_normalized_function(
             # or arbitrary loads from a mutable native object.
             if image.image_base <= value:
                 offset = value - image.image_base
-                available = image.mapped[offset : offset + _MAX_AUDITED_STRING_BYTES + 1]
-                if string_key := _printable_string_key(available):
+                available = image.mapped[offset : offset + _MAX_AUDITED_STRING_BYTES + 2]
+                if has_wide_literals and (wide_literal := _wide_string_literal(available)):
+                    wide_key, wide_size = wide_literal
+                    if wide_key in object_string_keys and not any(
+                        start < value + wide_size and value < end for start, end in image.content_exclusions
+                    ):
+                        keys.append(wide_key)
+                if string_key := _printable_string_key(available, object_keys=object_string_keys):
                     string_end = value + available.index(b"\0") + 1
                     if not any(start < string_end and value < end for start, end in image.content_exclusions):
                         keys.append(string_key)
@@ -2756,11 +2797,11 @@ def disassemble_normalized_function(
                     while start > max(0, offset - _MAX_AUDITED_STRING_BYTES) and image.mapped[start - 1] not in b"\0":
                         start -= 1
                     literal = image.mapped[start : offset + 1]
-                    if (string_key := _printable_string_key(literal)) and not any(
+                    if (string_key := _printable_string_key(literal, object_keys=object_string_keys, terminator=True)) and not any(
                         excluded_start < value + 1 and image.image_base + start < excluded_end
                         for excluded_start, excluded_end in image.content_exclusions
                     ):
-                        keys.append(f"{string_key}:end")
+                        keys.append(string_key)
             if byte_count is not None:
                 raw = _image_read_only_data(image, value, byte_count)
                 if len(raw) == byte_count:
@@ -3754,13 +3795,6 @@ def match_function(
             if target_data[reference.offset : reference.offset + 4] == linked_value:
                 candidate_data[reference.offset : reference.offset + 4] = linked_value
                 materialized_local_offsets.add(reference.offset)
-    target_disassembly = disassemble_normalized_function(
-        target_data,
-        address_range=address_range,
-        base_address=target_va,
-        reference_catalog=reference_catalog,
-        image=image,
-    )
     candidate_disassembly = disassemble_normalized_function(
         bytes(candidate_data),
         relocation_offsets=candidate.relocation_offsets - materialized_local_offsets,
@@ -3768,6 +3802,22 @@ def match_function(
         address_range=address_range,
         reference_catalog=reference_catalog,
         image=image,
+    )
+    # A native address alone cannot establish a UTF-16 or extended narrow
+    # literal. In particular, x86 callee bytes can decode as printable UTF-16.
+    # Only a typed COFF relocation can supply these extra content identities.
+    object_string_keys = frozenset(
+        key for line in candidate_disassembly for ref in line.masked_references
+        if ref.source == "reloc" and ref.text.startswith("??_C@")
+        for key in ref.keys if key.startswith(("string:", "wstring:"))
+    )
+    target_disassembly = disassemble_normalized_function(
+        target_data,
+        address_range=address_range,
+        base_address=target_va,
+        reference_catalog=reference_catalog,
+        image=image,
+        object_string_keys=object_string_keys,
     )
     target_disassembly = _annotate_vc6_proven_copy_loads(target_disassembly)
     candidate_disassembly = _annotate_vc6_proven_copy_loads(candidate_disassembly)

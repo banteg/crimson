@@ -21,7 +21,7 @@ from crimson_re.match_flow_graph import flow_graph_payload
 def literal_candidate(kind: str) -> tuple[bytes, ObjectFunction]:
     literal = b"timer\0" if kind == "string" else bytes.fromhex("0000803f")
     opcode = b"\x68" if kind == "string" else bytes.fromhex("d905")
-    symbol = {"string": "??_C@literal", "float": "__real@constant", "data": "_constant"}[kind]
+    symbol = {"string": "??_C@_05@timer@", "float": "__real@constant", "data": "_constant"}[kind]
     return literal, ObjectFunction(
         name="_foo", data=opcode + b"\0" * 4 + b"\xc3",
         relocation_offsets=frozenset({len(opcode)}),

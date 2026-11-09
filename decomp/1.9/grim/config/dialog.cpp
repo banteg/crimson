@@ -6,6 +6,9 @@
 
 #include "cl_build.h"
 #include "grim_texture.h"
+#if CL_BUILD < 10900
+#include "grim2d_cpp.h"
+#endif
 
 extern "C" HRESULT WINAPI HlinkNavigateString(
     IUnknown *unknown,
@@ -29,9 +32,18 @@ extern unsigned int grim_config_selected_height;
 extern unsigned int grim_config_mode_width;
 extern unsigned int grim_config_mode_height;
 extern unsigned int grim_config_mode_bpp;
-#if CL_BUILD == 10908
+#if CL_BUILD < 10900
+extern D3DCAPS8 grim_device_caps;
+extern bool grim_config_dialog_pure_software_selected;
+extern grim_config_value_t grim_config_values[128];
+#endif
+#if CL_BUILD == 10400 || CL_BUILD == 10908
 extern unsigned char grim_caps_can_render_windowed;
+#endif
+#if CL_BUILD == 10908
 extern bool grim_windowed_mode_enabled;
+#endif
+#if CL_BUILD >= 10300 && CL_BUILD <= 10908
 extern int grim_config_resolution_index;
 #endif
 
@@ -54,15 +66,45 @@ BOOL CALLBACK grim_config_dialog_proc(
         break;
 
     case WM_INITDIALOG: {
+#if CL_BUILD >= 10900
         grim_config_dialog_hwnd = hwnd;
         ShowWindow(GetDlgItem(hwnd, 0x3f2), SW_SHOW);
         ShowWindow(GetDlgItem(hwnd, 0x40b), SW_HIDE);
+#endif
         SendMessageA(hwnd, WM_SETICON, 1, (LPARAM)grim_window_icon_handle);
         SendMessageA(hwnd, WM_SETICON, 0, (LPARAM)grim_window_icon_handle);
+#if CL_BUILD >= 10400
         GetLocalTime(&grim_config_dialog_system_time);
+#endif
+#if CL_BUILD < 10900
+        if (!(grim_device_caps.Caps2 & D3DCAPS2_CANRENDERWINDOWED)) {
+#if CL_BUILD == 10400
+            grim_caps_can_render_windowed = false;
+#endif
+            EnableWindow(GetDlgItem(hwnd, 0x3ec), FALSE);
+        }
+#if CL_BUILD >= 10300
+        else {
+#if CL_BUILD == 10400
+            grim_caps_can_render_windowed = true;
+#endif
+            SendMessageA(GetDlgItem(hwnd, 0x3ec), BM_SETCHECK,
+                grim_config_values[6].words[CL_BUILD < 10400 ? 2 : 0] & 0xff, 0);
+            if (grim_config_values[6]) {
+                EnableWindow(GetDlgItem(hwnd, 0x3ea), FALSE);
+                EnableWindow(GetDlgItem(hwnd, 0x3eb), FALSE);
+            }
+        }
+        SendMessageA(GetDlgItem(hwnd, 0x3ed), BM_SETCHECK,
+            grim_config_values[52].words[CL_BUILD < 10400 ? 2 : 0] & 0xff, 0);
+#endif
+#endif
 
+#if CL_BUILD >= 10300
         int adapter_count = grim_d3d8_probe->GetAdapterCount();
+#if CL_BUILD >= 10900
         grim_config_dialog_has_supported_adapter = false;
+#endif
         for (int adapter = 0; adapter < adapter_count; ++adapter) {
             grim_d3d8_probe->GetAdapterIdentifier(
                 adapter,
@@ -77,6 +119,9 @@ BOOL CALLBACK grim_config_dialog_proc(
                 sprintf(adapter_label, "%s", grim_adapter_description);
             }
 
+#if CL_BUILD < 10900
+            SendMessageA(GetDlgItem(hwnd, 0x3f1), LB_ADDSTRING, 0, (LPARAM)adapter_label);
+#else
             if (grim_d3d8_probe->CheckDeviceType(
                     adapter,
                     D3DDEVTYPE_HAL,
@@ -96,8 +141,44 @@ BOOL CALLBACK grim_config_dialog_proc(
                     (LPARAM)adapter_label);
                 grim_config_dialog_has_supported_adapter = true;
             }
+#endif
         }
 
+#if CL_BUILD < 10900
+        SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_ADDSTRING, 0, (LPARAM)"640x480");
+        SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_ADDSTRING, 0, (LPARAM)"800x600");
+        SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_ADDSTRING, 0, (LPARAM)"1024x768");
+        unsigned int width = grim_config_values[7].words[0];
+        if (width == 640) {
+            SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_SETCURSEL, 0, 0);
+        } else if (width == 800) {
+            SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_SETCURSEL, 1, 0);
+        } else if (width == 1024) {
+            SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_SETCURSEL, 2, 0);
+        } else if (width == 1280) {
+            SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_ADDSTRING, 0, (LPARAM)"1280x1024");
+            SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_SETCURSEL, 3, 0);
+        } else {
+            SendMessageA(GetDlgItem(hwnd, 0x3f0), LB_SETCURSEL, 0, 0);
+        }
+#if CL_BUILD == 10400
+        if ((unsigned char)grim_config_values[84].words[0] == 1) {
+            SendMessageA(GetDlgItem(hwnd, 0x3ef), BM_SETCHECK, 1, 0);
+        } else {
+            SendMessageA(GetDlgItem(hwnd, 0x3ef), BM_SETCHECK, 0, 0);
+        }
+        if ((unsigned char)grim_config_values[83].words[0] == 1) {
+            SendMessageA(GetDlgItem(hwnd, 0x3ee), BM_SETCHECK, 1, 0);
+        } else {
+            SendMessageA(GetDlgItem(hwnd, 0x3ee), BM_SETCHECK, 0, 0);
+        }
+#endif
+        if (grim_config_values[9].words[0] == 32) {
+            SendMessageA(GetDlgItem(hwnd, 0x3eb), BM_SETCHECK, BST_CHECKED, 0);
+        } else {
+            SendMessageA(GetDlgItem(hwnd, 0x3ea), BM_SETCHECK, BST_CHECKED, 0);
+        }
+#else
         SendMessageA(
             GetDlgItem(hwnd, 0x3f1),
             CB_SETCURSEL,
@@ -124,12 +205,91 @@ BOOL CALLBACK grim_config_dialog_proc(
                 EndDialog(hwnd, LOWORD(wparam));
             }
         }
+#endif
+#else
+        SendMessageA(GetDlgItem(hwnd, 0x3eb), BM_SETCHECK, BST_CHECKED, 0);
+#endif
         return TRUE;
     }
 
     case WM_COMMAND: {
         unsigned int command = LOWORD(wparam);
         switch (command) {
+#if CL_BUILD < 10900
+        case 0x3ec:
+            if (SendMessageA(GetDlgItem(hwnd, 0x3ec), BM_GETCHECK, 0, 0)) {
+                EnableWindow(GetDlgItem(hwnd, 0x3ea), FALSE);
+                EnableWindow(GetDlgItem(hwnd, 0x3eb), FALSE);
+            } else {
+                EnableWindow(GetDlgItem(hwnd, 0x3ea), TRUE);
+                EnableWindow(GetDlgItem(hwnd, 0x3eb), TRUE);
+            }
+            break;
+#if CL_BUILD == 10400
+        case 0x3ed:
+            if (SendMessageA(GetDlgItem(hwnd, 0x3ed), BM_GETCHECK, 0, 0)) {
+                EnableWindow(GetDlgItem(hwnd, 0x3ec), TRUE);
+            } else {
+                EnableWindow(GetDlgItem(hwnd, 0x3ec),
+                             *(unsigned int *)&grim_caps_can_render_windowed & 0xff);
+            }
+            break;
+        case 0x3f3:
+            if (!HIWORD(wparam)) {
+                if (HlinkNavigateString(0, L"http://www.10tons.org/") < 0) {
+                    int response =
+                        MessageBoxA(0, "Failed to open browser at http://www.10tons.org/",
+                                    "Crimsonland", MB_RETRYCANCEL | MB_ICONWARNING);
+                    while (response == IDRETRY) {
+                        if (HlinkNavigateString(0, L"http://www.10tons.org/") >= 0)
+                            break;
+                        response = MessageBoxA(
+                            0, "Failed to open browser at http://www.10tons.org/",
+                            "Crimsonland", MB_RETRYCANCEL | MB_ICONWARNING);
+                    }
+                }
+            }
+            break;
+        case 0x3f4:
+            if (HIWORD(wparam))
+                break;
+        case 0x3f2:
+            if (grim_config_dialog_system_time.wYear <= 2002 &&
+                grim_config_dialog_system_time.wMonth < 10) {
+                if (HlinkNavigateString(0, L"http://crimsonland.10tons.org/") < 0)
+                    MessageBoxA(0,
+                                "Failed to open browser at http://crimsonland.10tons.org/",
+                                "Crimsonland", MB_ICONWARNING);
+            } else {
+                if (HlinkNavigateString(0, L"http://www.crimsonland.com/") < 0)
+                    MessageBoxA(0, "Failed to open browser at http://www.crimsonland.com/",
+                                "Crimsonland", MB_ICONWARNING);
+            }
+            break;
+#endif
+        case 0x3e8:
+#if CL_BUILD == 10400
+            *(bool *)grim_config_values[83].words = SendMessageA(
+                GetDlgItem(hwnd, 0x3ee), BM_GETCHECK, 0, 0) != 0;
+            *(bool *)grim_config_values[84].words = SendMessageA(
+                GetDlgItem(hwnd, 0x3ef), BM_GETCHECK, 0, 0) != 0;
+#endif
+            grim_config_dialog_bpp16_selected = SendMessageA(
+                GetDlgItem(hwnd, 0x3ea), BM_GETCHECK, 0, 0) != 0;
+            grim_config_dialog_windowed_selected = SendMessageA(
+                GetDlgItem(hwnd, 0x3ec), BM_GETCHECK, 0, 0) != 0;
+            grim_config_dialog_pure_software_selected = SendMessageA(
+                GetDlgItem(hwnd, 0x3ed), BM_GETCHECK, 0, 0) != 0;
+            grim_config_dialog_canceled = false;
+#if CL_BUILD >= 10300
+            grim_config_resolution_index = SendMessageA(
+                GetDlgItem(hwnd, 0x3f0), LB_GETTOPINDEX, 0, 0);
+            grim_selected_adapter_index = SendMessageA(
+                GetDlgItem(hwnd, 0x3f1), LB_GETTOPINDEX, 0, 0);
+#endif
+            EndDialog(hwnd, command);
+            break;
+#else
         case 0x3f1:
             grim_selected_adapter_index = SendMessageA(
                 GetDlgItem(hwnd, 0x3f1), CB_GETCURSEL, 0, 0);
@@ -166,8 +326,11 @@ BOOL CALLBACK grim_config_dialog_proc(
             return FALSE;
 
         case 0x3f2:
-            if (HlinkNavigateString(
-                    0, L"http://www.crimsonland.com") < 0) {
+#if CL_BUILD < 10909
+            if (HlinkNavigateString(0, L"http://crimsonland.reflexive.com/crimsonland") < 0) {
+#else
+            if (HlinkNavigateString(0, L"http://www.crimsonland.com") < 0) {
+#endif
                 MessageBoxA(
                     0,
                     "Failed to open browser at http://www.crimsonland.com/",
@@ -289,6 +452,7 @@ BOOL CALLBACK grim_config_dialog_proc(
 
 #endif
 
+#endif
         case 0x3e9:
             grim_config_dialog_canceled = true;
             EndDialog(hwnd, command);

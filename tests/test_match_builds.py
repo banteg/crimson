@@ -23,6 +23,21 @@ def test_build_map_generates_freeware_donor_before_consumers() -> None:
         assert order.index((build, "grim.dll")) < order.index((build, "crimson.exe"))
 
 
+def test_native_map_does_not_identify_code_as_extended_string_literals() -> None:
+    def caller(callee: bytes):
+        # The direct call at 0x401000 references relinked x86 bytes. Both byte
+        # sequences also happen to be valid, differing UTF-16/Latin-1 strings.
+        code = bytes.fromhex("e8fb0f0000c3")
+        mapped = b"\0" * 0x1000 + code + b"\0" * (0x1000 - len(code)) + callee
+        image = matchlib.LoadedImage(mapped, 0x400000, len(mapped))
+        return match_builds._body(image, 0x401000, len(code))
+
+    first = caller(bytes.fromhex("55c3 6100 0000"))
+    second = caller(bytes.fromhex("55c3 6200 0000"))
+    assert first.signature == second.signature
+    assert first.signature[0][1] == ((),)
+
+
 @pytest.fixture
 def recovered_198_map():
     image = REGISTRY.image("1.9.8", "crimsonland.exe")
@@ -74,14 +89,15 @@ def test_chained_recovery_checks_root_identities_missing_from_donor() -> None:
 
 
 def test_build_only_scratch_stays_out_of_other_compiler_and_report_runs(tmp_path: Path) -> None:
-    config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/player_check_level")
+    # Restrict a known function in this fixture; production scratches can gain
+    # matching source for more builds as recovery advances.
+    scratch = tmp_path / "scratches" / "player_check_level"
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text("FUNCTION=player_check_level\nBUILDS=1.4.0\n")
+    config = matchlib.load_scratch_config(scratch)
     assert not matchlib._filter_scoped_scratch_configs([config], scope="all")
     assert REGISTRY.image("1.4.0", "crimson.exe").scratch_configs(config)
     assert not REGISTRY.image("1.3.0", "crimson.exe").scratch_configs(config)
-    # An older map can identify the function even though its recovered source targets 1.4.0 only.
-    scratch = tmp_path / "scratches" / config.function
-    scratch.mkdir(parents=True)
-    (scratch / "scratch.conf").write_text((config.directory / "scratch.conf").read_text())
     assert match_builds.scan_build(REGISTRY, "1.0.2", tmp_path) == []
     with pytest.raises(ValueError, match="configured only for"):
         REGISTRY.image("1.9.93", "crimsonland.exe").scratch_config(config)

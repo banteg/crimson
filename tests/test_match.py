@@ -1415,6 +1415,39 @@ def test_match_function_audits_compiler_string_by_content(literal: bytes) -> Non
     assert result.masked_operand_audit.ok_count == 1
 
 
+@pytest.mark.parametrize(
+    ("native_name", "candidate_name", "width", "exact"),
+    [
+        (b"pihlajam\xe4ki\0", b"pihlajam\xe4ki\0", "0", True),
+        (b"pihlajam\xe4ki\0", b"pihlajamaki\0", "0", False),
+        (b"pihlajam\xe4ki\0", b"pihlajam\xe4ki", "0", False),
+        ("DxDiag\0".encode("utf-16-le"), "DxDiag\0".encode("utf-16-le"), "1", True),
+        ("DxDiag\0".encode("utf-16-le"), "DxMajor\0".encode("utf-16-le"), "1", False),
+        (b"\xe4\0", b"\xe4\0x\0\0\0", "1", False),  # Truncated UTF-16 target.
+        (b"\x00\xd8\0\0", b"\x00\xd8\0\0", "1", False),  # Unpaired surrogate.
+        (b"pihlajam\x81ki\0", b"pihlajam\x81ki\0", "0", False),
+    ],
+)
+def test_match_function_audits_vc6_string_bytes(
+    native_name: bytes, candidate_name: bytes, width: str, exact: bool,
+) -> None:
+    # VC6's 1.0.2 credits literal at 0x41d6e8 holds the single byte 0xe4.
+    literal = ObjectRelocationReference(
+        offset=1, symbol_name=f"??_C@_{width}CN@NFKO@vulder?5?9?5valtteri?5pihlajam?dki?5?9?5@",
+        key=None, explained=False, symbol_data=candidate_name, read_only_data=True,
+    )
+    candidate = ObjectFunction(
+        name="_credit", data=bytes.fromhex("6800000000c3"),
+        relocation_offsets=frozenset({1}), relocation_references=(literal,),
+    )
+    result = match_function(
+        bytes.fromhex("6800204000c3"), candidate,
+        image=LoadedImage(b"\0" * 0x2000 + native_name, 0x400000, 0x2000 + len(native_name)),
+        target_va=0x401000, reference_catalog=ReferenceCatalog({}),
+    )
+    assert result.exact is exact
+
+
 def test_match_function_audits_compiler_string_terminator_by_content() -> None:
     # An inlined strcpy can load a literal's terminating NUL by itself.
     literal = b"\\ddraw.dll\x00"
@@ -1482,7 +1515,7 @@ def test_match_function_audits_compiler_float_by_content() -> None:
     ("symbol", "opcode", "literal"),
     [
         ("__real@constant", bytes.fromhex("d905"), bytes.fromhex("0000803f00000040")),
-        ("??_C@string", b"\x68", b"abcdwxyz\x00"),
+        ("??_C@_08@abcdwxyz@", b"\x68", b"abcdwxyz\x00"),
     ],
 )
 @pytest.mark.parametrize(

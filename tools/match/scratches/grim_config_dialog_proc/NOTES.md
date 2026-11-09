@@ -11,3 +11,16 @@ The diagnostic `sprintf` promotes the one-byte BPP flag through the native
 /GR- /MD` reconstruction matches all 404 instructions, all 86 references, and
 all 1,318 bytes. This callback remains `platform-replaced` for port ownership,
 but its exact object is included in the recovered Grim platform provider.
+
+## Freeware builds
+
+The 1.0.2 launcher has two color depths and a hardware capability check
+for windowed mode. Later freeware releases enumerate adapters and populate a
+fixed-size resolution list. Both read the top visible list index when the Run
+button is pressed. The 1.4.0 launcher also exposes safe mode and sound
+controls and chooses its website link from the system date.
+
+The final return in 1.0.2 ends at 0x100012c0, directly against the next
+function. The 1.4.0 callback ends at 0x100016ca. Two bytes of alignment and
+thirteen WM_COMMAND jump-table addresses fill the remaining space before
+the next function. Every destination is inside the callback's code.

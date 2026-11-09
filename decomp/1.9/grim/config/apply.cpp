@@ -16,7 +16,7 @@ extern unsigned int grim_config_selected_height;
 #if CL_BUILD < 10900
 extern bool grim_config_dialog_pure_software_selected;
 #endif
-#if CL_BUILD <= 10908
+#if (CL_BUILD >= 10300 && CL_BUILD < 10900) || CL_BUILD == 10908
 extern int grim_config_resolution_index;
 #endif
 
@@ -60,7 +60,7 @@ bool IGrim2D_cpp::grim_apply_config(void)
 #endif
 
     if (!grim_config_dialog_canceled) {
-#if CL_BUILD > 10908
+#if CL_BUILD >= 10900 && CL_BUILD != 10908
         grim_set_config_var(0x54, grim_config_option_54_value);
 #endif
 
@@ -85,7 +85,7 @@ bool IGrim2D_cpp::grim_apply_config(void)
         grim_set_config_var(windowed, grim_config_dialog_windowed_selected);
         grim_set_config_var(0x34, false);
 #endif
-#if CL_BUILD >= 10300 && CL_BUILD <= 10908
+#if (CL_BUILD >= 10300 && CL_BUILD < 10900) || CL_BUILD == 10908
         // The earlier configuration dialog offers four fixed resolutions instead of the adapter's modes.
         switch (grim_config_resolution_index) {
         case 0:
@@ -105,7 +105,7 @@ bool IGrim2D_cpp::grim_apply_config(void)
             grim_set_config_var(height, (unsigned int)1024);
             break;
         }
-#elif CL_BUILD > 10908
+#elif CL_BUILD >= 10900
         grim_set_config_var(windowed, grim_config_dialog_windowed_selected);
         grim_set_config_var(width, grim_config_selected_width);
         grim_set_config_var(height, grim_config_selected_height);
