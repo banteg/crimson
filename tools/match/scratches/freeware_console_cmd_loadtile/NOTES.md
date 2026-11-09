@@ -12,12 +12,14 @@ rotation and flags to zero and all four color channels to one.
 ## VC6 inlining
 
 The ordinary 1.4.0 scratch compiles with the stock VC6 SP5 headers and /GX.
-It scores 81.14% (331 candidate instructions versus 337 native). Of the 68
-aligned references, 67 agree. At `0x0041ffdd`, native code calls the vector's
-`_Ufill` helper (`0x00421940`). VC6 expands the first fill inline in this
-scratch and calls `std::_Construct` (`0x00421970`) directly. VC6 also calls
-`size()` after deallocation where the native code computes the pointer
-difference inline. These changes affect register allocation and branch offsets.
+The 1.3.0 startup and 1.4.0 console use the same brush constructor and white
+color setter. The 1.3.0 entry point compiles byte-exact with this source.
+The 1.4.0 command scores 81.91% (332 candidate instructions versus 337 native).
+All 70 aligned references agree, including the calls to the vector's range
+helpers. After deallocation, the stock compiler calls `size()` while the
+native code computes the pointer difference inline at `0x0042001b`. The
+different register allocation and branch displacements extend into the
+surrounding code.
 
 The native vector insertion consistently calls its range helpers:
 `_Ucopy` at `0x00421910`, `_Ufill` at `0x00421940` and `_Destroy` at

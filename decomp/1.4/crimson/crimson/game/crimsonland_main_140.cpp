@@ -8,6 +8,8 @@
 #include "freeware_level.h"
 #include "grim2d_cpp.h"
 
+void freeware_console_cmd_loadtile();
+
 extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr, *freeware_console_grim;
 extern bool freeware_safe_mode, freeware_audio_disabled;
@@ -29,7 +31,7 @@ bool config_load_presets();
 unsigned char game_frame_update(), audio_suspend_all(), audio_resume_all(), sfx_system_init();
 void freeware_console_cmd_givegun(), freeware_console_cmd_giveperk(), freeware_console_cmd_playsample();
 void freeware_console_cmd_setcreaturecolor(), freeware_console_cmd_setcreaturehealth();
-void freeware_console_cmd_spawncreature(), freeware_console_cmd_loadtile(), freeware_console_cmd_mergehighs();
+void freeware_console_cmd_spawncreature(), freeware_console_cmd_mergehighs();
 void console_cmd_tell_time_survived(), console_cmd_set_resource_paq(), console_cmd_load_texture();
 void console_cmd_open_url(), console_cmd_snd_freq_adjustment();
 bool texture_get_or_load(char *name, char *path);

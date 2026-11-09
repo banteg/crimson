@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include <string.h>
-#include <vector>
 
 #include "crimsonland_console.h"
 #include "crimsonland_resource.h"
-#include "freeware_level.h"
-#include "grim2d_cpp.h"
+#include "../level/freeware_editor_brush.h"
 
 #pragma pack(push, 1)
 struct freeware_tile_header_t {
@@ -18,8 +16,6 @@ struct freeware_tile_header_t {
 #pragma pack(pop)
 
 extern "C" {
-extern IGrim2D_cpp *grim_interface_ptr;
-extern std::vector<freeware_level_object *> freeware_brushes;
 extern freeware_tile_header_t freeware_tile_header;
 int console_cmd_argc_get(void);
 bool texture_get_or_load(char *name, char *path);
@@ -27,18 +23,6 @@ bool texture_get_or_load(char *name, char *path);
 
 namespace {
 const int resource_pack_path = 0x10;
-
-struct console_tile : freeware_level_object {
-    console_tile(char *name, float width_px, float height_px)
-    {
-        flags = 0;
-        rotation = 0.0f;
-        width = width_px;
-        height = height_px;
-        texture = grim_interface_ptr->grim_get_texture_handle(name);
-        color.r = color.g = color.b = color.a = 1.0f;
-    }
-};
 }
 
 void freeware_console_cmd_loadtile(void)
@@ -62,7 +46,7 @@ void freeware_console_cmd_loadtile(void)
         fread(&freeware_tile_header, sizeof(freeware_tile_header), 1, file);
         if (strcmp(resource_pack_entry_name_buf, console_cmd_arg_get(1)) == 0) {
             texture_get_or_load(resource_pack_entry_name_buf, resource_pack_entry_name_buf);
-            freeware_brushes.push_back(new console_tile(
+            freeware_brushes.push_back(new freeware_editor_brush(
                 resource_pack_entry_name_buf, freeware_tile_header.width, freeware_tile_header.height));
             fclose(file);
             console_printf(&console_log_queue, "...tile '%s' added to tile library\n", resource_pack_entry_name_buf);
