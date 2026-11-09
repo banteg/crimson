@@ -49,6 +49,30 @@ def test_reviewed_historical_map_rejects_unbound_evidence(recovered_198_map, inv
         match_builds.apply_recovered_map(image, canonical, payload, recovery)
 
 
+def test_chained_recovery_checks_root_identities_missing_from_donor() -> None:
+    image = REGISTRY.image("1.3.0", "crimson.exe")
+    if not image.path.is_file():
+        pytest.skip("pinned historical executable unavailable")
+    donor = REGISTRY.canonical(image)
+    root = REGISTRY.identity(image)
+    donor_names = {row["name"] for row in json.loads(donor.target.functions_path.read_text())}
+    root_manifest = matchlib.load_function_manifest(
+        root.target.functions_path, metadata_path=root.target.metadata_path, image_name=root.target.image_name, scope="all",
+    )
+    missing = [function for function in root_manifest.functions if function.name not in donor_names]
+    # A changed intermediate map must not invalidate a reviewed absence or
+    # strip a pinned root identity from a function independently found here.
+    receipt = json.loads((image.map_dir / "recovered.json").read_text())
+    pin = {**receipt["functions"][0], "name": missing[0].name}
+    payload = {"functions": [{"name": missing[1].name}], "data": {"entries": [], "notes": ""}, "summary": {}}
+    match_builds.apply_recovered_map(image, donor, payload, {
+        "schema": 1, "sha256": image.sha256, "functions": [pin], "absent": [{"name": missing[1].name}],
+    })
+    row, = payload["functions"]
+    assert row["name"] == missing[0].name
+    assert matchlib.parse_int(row["canonical_address"]) == missing[0].address
+
+
 def test_build_only_scratch_stays_out_of_other_compiler_and_report_runs(tmp_path: Path) -> None:
     config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/player_check_level")
     assert not matchlib._filter_scoped_scratch_configs([config], scope="all")

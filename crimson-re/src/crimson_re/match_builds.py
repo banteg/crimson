@@ -478,11 +478,18 @@ def apply_recovered_map(
     if recovery["sha256"] != image.sha256 or image.state() != "ok":
         raise ValueError("recovered map image hash mismatch")
     native = matchlib.load_image(image.path)
-    manifest = matchlib.load_function_manifest(
-        canonical.target.functions_path, metadata_path=canonical.target.metadata_path,
-        image_name=canonical.target.image_name, scope="all",
-    )
-    functions = {function.name: function for function in manifest.functions}
+    # A chained map includes the identity root's placements as well as the
+    # intermediate donor's. Validate receipts against the same set of sources.
+    root = load_registry().identity(canonical)
+    sources = (canonical,) if root == canonical else (root, canonical)
+    functions: dict[str, int | None] = {}
+    for source in sources:
+        manifest = matchlib.load_function_manifest(
+            source.target.functions_path, metadata_path=source.target.metadata_path,
+            image_name=source.target.image_name, scope="all",
+        )
+        identity = _identity_addresses(source)
+        functions.update({function.name: identity(function.address) for function in manifest.functions})
     rows = {row["name"]: row for row in payload["functions"]}
     # A reviewed absence: the build has no body for this canonical function
     # (inlined, or reached another way), so no heuristic placement may stand.
@@ -492,14 +499,13 @@ def apply_recovered_map(
         rows.pop(absent["name"], None)
     for recovered in recovery.get("functions", ()):
         name = recovered["name"]
-        function = functions.get(name)
-        if function is None and not recovered.get("build_only"):
+        if name not in functions and not recovered.get("build_only"):
             raise ValueError(f"unknown recovered function: {name}")
         start, end = (matchlib.parse_int(recovered[key]) for key in ("address", "end"))
         if end <= start or hashlib.sha256(native.function_bytes(start, end)).hexdigest() != recovered["body_sha256"]:
             raise ValueError(f"recovered function body hash mismatch: {name}")
         row = dict(rows.get(name, {}))
-        root_address = _identity_addresses(canonical)(function.address) if function else None
+        root_address = functions.get(name)
         row.update(
             address=f"0x{start:08X}", end=f"0x{end:08X}", size=end - start,
             **({"build_only": True} if root_address is None else {"canonical_address": f"0x{root_address:08X}"}),
@@ -510,18 +516,19 @@ def apply_recovered_map(
             row["identity_only"] = True
         rows[name] = row
     entries = {row["name"]: row for row in payload["data"]["entries"]}
-    names = _reference_catalog(canonical)
+    catalogs = [_reference_catalog(source) for source in sources]
     # A runtime function linked statically keeps the name the canonical image imports it by.
     imported = {
         matchlib._symbol_lookup_name(entry["name"])
-        for module in json.loads(canonical.target.functions_path.with_name("imports.json").read_text(encoding="utf-8"))
+        for source in sources
+        for module in json.loads(source.target.functions_path.with_name("imports.json").read_text(encoding="utf-8"))
         for entry in module["entries"]
     }
     for recovered in recovery.get("data", ()):
         name = recovered["name"]
         # A build-only identity (code or data the canonical build no longer has)
         # is admitted explicitly, never by a typo slipping past the catalog.
-        if not recovered.get("build_only") and not names.knows_name(name) and name not in imported:
+        if not recovered.get("build_only") and name not in imported and not any(catalog.knows_name(name) for catalog in catalogs):
             raise ValueError(f"unknown recovered data identity: {name}")
         address = matchlib.parse_int(recovered["address"])
         reference = matchlib.parse_int(recovered["reference"])
