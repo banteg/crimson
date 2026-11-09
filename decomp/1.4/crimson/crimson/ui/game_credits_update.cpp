@@ -6,23 +6,21 @@ using namespace ui140;
 namespace {
 __forceinline bool draw_early_credits(float time) {
 #if FREEWARE_EDITION == 10002
-    float top = 480.f - time * 17;
+    float top = (480.f - time * 17);
 #define CREDIT_TOP top
 #else
     float travel = time * 17;
-#define CREDIT_TOP (viewport_height() - travel)
+#define CREDIT_TOP viewport_height() - travel
 #endif
     int row = 0;
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
-    // The original reads the Grim receiver before evaluating the current viewport height.
-#define LINE(s) do {                                                    \
-        IGrim2D_cpp *grim = grim_interface_ptr;                         \
-        grim->grim_draw_text_mono(50, CREDIT_TOP + row++ * 18, (char *)s); \
-    } while (0)
-#else
-#define LINE(s) text(50, CREDIT_TOP + (row++ * 18), s)
-#endif
+#if FREEWARE_EDITION == 10002
+#define LINE(str) do { float y = CREDIT_TOP + row++ * 18; text(50, y, str); } while (0)
     LINE("Project Crimsonland");
+#else
+#define CREDIT_ROW(y, str) do { text(50, y, str); } while (0)
+#define LINE(str) CREDIT_ROW(CREDIT_TOP + row++ * 18, str)
+    CREDIT_ROW((CREDIT_TOP) + row++ * 18, "Project Crimsonland");
+#endif
     LINE("----credits--------");
     row += 2;
     LINE("Coded & designed by");
@@ -109,6 +107,7 @@ __forceinline bool draw_early_credits(float time) {
     LINE("pHx - pasi heinonen - 2d gfx");
     return CREDIT_TOP + row * 18 < 0;
 #undef LINE
+#undef CREDIT_ROW
 #undef CREDIT_TOP
 }
 }
@@ -116,9 +115,10 @@ __forceinline bool draw_early_credits(float time) {
 
 extern "C" unsigned char game_credits_update() {
     filter(3);
-    frame_dt = raw_delta();
 #if FREEWARE_EDITION == 10002
-    frame_dt *= .8f;
+    frame_dt = raw_delta(.8f);
+#else
+    frame_dt = raw_delta();
 #endif
     if (UI_PENDING)
         reset_overlay_time();
@@ -138,61 +138,82 @@ extern "C" unsigned char game_credits_update() {
 #if FREEWARE_EDITION < 10400
     bool past_end = draw_early_credits(time);
 #else
-    float top = viewport_height() - time * 17;
-    int lines = 30;
-    if (top + 540 > -30) {
-        text(50, top + 0, "Project Crimsonland");
-        text(50, top + 18, "----credits--------");
-        text(50, top + 72, "Game coded & designed by");
-        text(50, top + 90, "Tero Alatalo");
-        text(50, top + 144, "3D Art modelled by");
-        text(50, top + 162, "Timo Palonen");
-        text(50, top + 216, "Music performed by");
-        text(50, top + 234, "Valtteri Pihlajamaki");
-        text(50, top + 288, "2D Art drawn by");
-        text(50, top + 306, "Tero Alatalo");
-        text(50, top + 360, "Using Grim API & SFX API by");
-        text(50, top + 378, "Tero Alatalo");
-        text(50, top + 432, "Additional Perk coordinators");
-        text(50, top + 450, "Jarkko Forsbacka");
-        text(50, top + 468, "Wille Mantyla");
+    float travel = time * 17;
+    int lines;
+    bool draw_testers = true;
+#ifdef CRIMSON_FREEWARE_CLIENT
+#define CREDIT_HEIGHT viewport_height()
+#define LINE(s) text(50, CREDIT_HEIGHT - travel + lines++ * 18, s)
+#else
+#define CREDIT_HEIGHT screen_height
+#define LINE(s) grim_interface_ptr->grim_draw_text_mono(50, CREDIT_HEIGHT - travel + lines++ * 18, (char *)s)
+#endif
+    if (CREDIT_HEIGHT - travel + 540 > -30) {
+        lines = 0;
+        LINE("Project Crimsonland");
+        LINE("----credits--------");
+        lines += 2;
+        LINE("Game coded & designed by");
+        LINE("Tero Alatalo");
+        lines += 2;
+        LINE("3D Art modelled by");
+        LINE("Timo Palonen");
+        lines += 2;
+        LINE("Music performed by");
+        LINE("Valtteri Pihlajamaki");
+        lines += 2;
+        LINE("2D Art drawn by");
+        LINE("Tero Alatalo");
+        lines += 2;
+        LINE("Using Grim API & SFX API by");
+        LINE("Tero Alatalo");
+        lines += 2;
+        LINE("Additional Perk coordinators");
+        LINE("Jarkko Forsbacka");
+        LINE("Wille Mantyla");
+        lines += 3;
+        draw_testers = CREDIT_HEIGHT - travel + lines * 18 - 32 < CREDIT_HEIGHT;
     }
-    if (top + 540 <= -30 || top + 540 - 32 < viewport_height()) {
-        lines = 66;
-        text(50, top + 540, "Beta testers / thanks / greets");
-        text(50, top + 558, "                (alphabetical)");
-        text(50, top + 576, "Armas");
-        text(50, top + 594, "crud");
-        text(50, top + 612, "epaz");
-        text(50, top + 630, "exi");
-        text(50, top + 648, "Jayzon");
-        text(50, top + 666, "KySSe");
-        text(50, top + 684, "lore");
-        text(50, top + 702, "matricks");
-        text(50, top + 720, "milzer");
-        text(50, top + 738, "monotonic");
-        text(50, top + 756, "muzzy");
-        text(50, top + 774, "PornReindeer");
-        text(50, top + 792, "Outolintu");
-        text(50, top + 810, "Quarot");
-        text(50, top + 828, "Skele");
-        text(50, top + 846, "Sniperwolf / Wolf_");
-        text(50, top + 864, "Strombo");
-        text(50, top + 882, "TeLa");
-        text(50, top + 900, "Tieom");
-        text(50, top + 918, "Ukuli");
-        text(50, top + 936, "Vulderi");
-        text(50, top + 954, "Wiltsu");
-        text(50, top + 972, "Womba!");
-        text(50, top + 990, "+ you guys at Pelit.fi and MuroPaketti.com");
-        text(50, top + 1008, "+ the ones I forgot :)");
-        text(50, top + 1062, "     Visit the website");
-        text(50, top + 1080, "http://crimsonland.10tons.org");
-        text(50, top + 1134, "2002 (c) 10tons entertainment");
-        text(50, top + 1152, "    http://www.10tons.org");
-        text(50, top + 1170, "     (10tons logo by pHx)");
+    if (draw_testers) {
+        lines = 30;
+        LINE("Beta testers / thanks / greets");
+        LINE("                (alphabetical)");
+        LINE("Armas");
+        LINE("crud");
+        LINE("epaz");
+        LINE("exi");
+        LINE("Jayzon");
+        LINE("KySSe");
+        LINE("lore");
+        LINE("matricks");
+        LINE("milzer");
+        LINE("monotonic");
+        LINE("muzzy");
+        LINE("PornReindeer");
+        LINE("Outolintu");
+        LINE("Quarot");
+        LINE("Skele");
+        LINE("Sniperwolf / Wolf_");
+        LINE("Strombo");
+        LINE("TeLa");
+        LINE("Tieom");
+        LINE("Ukuli");
+        LINE("Vulderi");
+        LINE("Wiltsu");
+        LINE("Womba!");
+        LINE("+ you guys at Pelit.fi and MuroPaketti.com");
+        LINE("+ the ones I forgot :)");
+        lines += 2;
+        LINE("     Visit the website");
+        LINE("http://crimsonland.10tons.org");
+        lines += 2;
+        LINE("2002 (c) 10tons entertainment");
+        LINE("    http://www.10tons.org");
+        LINE("     (10tons logo by pHx)");
     }
-    bool past_end = top + lines * 18 < 0;
+    bool past_end = CREDIT_HEIGHT - travel + lines * 18 < 0;
+#undef CREDIT_HEIGHT
+#undef LINE
 #endif
     if (dismiss_scroll(past_end)) {
 #ifndef CRIMSON_FREEWARE_CLIENT

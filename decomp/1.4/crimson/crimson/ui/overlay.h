@@ -15,11 +15,11 @@ namespace ui140 {
 #define UI_SEE_THROUGH UI_FIELD(freeware_see_through, perk_transparent)
 #define UI_MOUSE_X UI_FIELD(freeware_aim_screen.x, cursor_x)
 #define UI_MOUSE_Y UI_FIELD(freeware_aim_screen.y, cursor_y)
-__forceinline float raw_delta() {
+__forceinline float raw_delta(float scale = 1.0f) {
 #ifdef CRIMSON_FREEWARE_CLIENT
-    return freeware_frame_delta;
+    return freeware_frame_delta * scale;
 #else
-    return grim_interface_ptr->grim_get_frame_dt();
+    return grim_interface_ptr->grim_get_frame_dt() * scale;
 #endif
 }
 __forceinline bool key_pressed(int key) {
@@ -44,14 +44,22 @@ __forceinline void set_state(int id) {
     game_state_id = id;
 #endif
 }
-__forceinline void backdrop(float age, bool see_through) {
+__forceinline void backdrop(float age, bool allow_see_through) {
     angle(0);
     uv(0, 0, 1, 1);
-    tint(0, 0, 0, age >= 1 ? 1 : age);
-    if (see_through)
+    if (age < 1)
+        tint(0, 0, 0, age);
+    else
+        tint(0, 0, 0, 1);
+    if (allow_see_through && UI_SEE_THROUGH)
         tint(0, 0, 0, .3f);
-    if (UI_ALPHA < 1)
+    if (UI_ALPHA < 1) {
+#ifdef CRIMSON_FREEWARE_CLIENT
         tint(0, 0, 0, UI_ALPHA);
+#else
+        grim_interface_ptr->grim_set_color(0, 0, 0, UI_ALPHA);
+#endif
+    }
 }
 __forceinline void draw_backdrop() {
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -65,15 +73,9 @@ __forceinline void draw_backdrop() {
     tint(1, 1, 1, .68f);
     scale(.76f);
 #ifndef CRIMSON_FREEWARE_CLIENT
-#if CL_BUILD < 10400
     grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xc : 0x12, true);
     grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xd : 0x13, 5u);
     grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0xe : 0x14, 6u);
-#else
-    grim_interface_ptr->grim_set_config_var(0x12, 1u);
-    grim_interface_ptr->grim_set_config_var(0x13, 5u);
-    grim_interface_ptr->grim_set_config_var(0x14, 6u);
-#endif
 #else
     UI_GAME.ui.source_blend = 5;
     UI_GAME.ui.destination_blend = 6;
