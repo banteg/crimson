@@ -26,8 +26,8 @@
             int score = config_game_mode == 2 ? XP : (int)SECONDS;
             freeware_rank = freeware_score_rank(score) + 1;
         }
-        ACTIVE = 0;
     }
+    ACTIVE = 0;
     begin_overlay();
     if (CLOCK - STATE_SINCE < 1.f) {
         freeware_name_alpha = CLOCK - STATE_SINCE;
