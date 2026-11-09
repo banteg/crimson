@@ -1,4 +1,4 @@
-// Native projectile renderer in Crimsonland 1.0.2 (0x4037b0) and 1.4.0 (0x40b570).
+// Native projectile renderer in 1.0.2 (0x4037b0), 1.3.0 (0x408050) and 1.4.0 (0x40b570).
 #include <math.h>
 #include "crimsonland_types.h"
 #include "grim2d_cpp.h"
@@ -34,7 +34,7 @@ extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr;
 extern int freeware_bullet_texture, freeware_bullet_icon, freeware_particle_texture, current_player_index;
 extern projectile_pool_t projectile_pool;
-#if CL_BUILD == 10400
+#if CL_BUILD >= 10300
 extern int config_player_count, perk_id_sharpshooter;
 extern secondary_projectile_pool_t secondary_projectile_pool;
 #endif
@@ -64,10 +64,13 @@ extern freeware_player_t player_state_table[2];
 enum { trail_source_blend = CL_BUILD == 10002 ? 13 : 19, trail_destination_blend = trail_source_blend + 1 };
 
 extern "C" void projectile_render() {
-#if CL_BUILD == 10400
+#if CL_BUILD >= 10300
     float fade;
 #endif
     int i, segment;
+#if CL_BUILD == 10300
+    float bead_index = 0.0f;
+#endif
     float step_x, step_y;
     TrailPoint corner0, corner1, corner2, corner3;
 #if CL_BUILD == 10002
@@ -169,7 +172,7 @@ extern "C" void projectile_render() {
                 TRAIL_CORNERS(TRAIL_POINT(projectile->fields.velocity));
             } else if (projectile->fields.type_id == 4) {
                 TRAIL_CORNERS((TRAIL_POINT(projectile->fields.velocity) * (CL_BUILD == 10002 ? 1.5f : 1.3f)));
-#if CL_BUILD == 10400
+#if CL_BUILD >= 10300
             } else if (projectile->fields.type_id == 10) {
                 grim_interface_ptr->grim_set_color_slot(2, .2f, .5f, 1, color.a);
                 grim_interface_ptr->grim_set_color_slot(3, .2f, .5f, 1, color.a);
@@ -236,6 +239,10 @@ extern "C" void projectile_render() {
 #if CL_BUILD == 10002
                     grim_interface_ptr->grim_draw_quad(segment * step_x + pos->x + freeware_camera.x - 11,
                                                        segment * step_y + pos->y + freeware_camera.y - 11, 22, 22);
+#elif CL_BUILD == 10300
+                    bead_index = (float)segment;
+                    grim_interface_ptr->grim_draw_quad(bead_index * step_x + pos->x + freeware_camera.x - 11,
+                                                       bead_index * step_y + pos->y + freeware_camera.y - 11, 22, 22);
 #else
                     float index = (float)segment;
                     grim_interface_ptr->grim_draw_quad(index * step_x + pos->x + freeware_camera.x - 11,
@@ -272,6 +279,10 @@ extern "C" void projectile_render() {
 #if CL_BUILD == 10002
                     grim_interface_ptr->grim_draw_quad(segment * step_x + pos->x + freeware_camera.x - 6,
                                                        segment * step_y + pos->y + freeware_camera.y - 6, 12, 12);
+#elif CL_BUILD == 10300
+                    bead_index = (float)segment;
+                    grim_interface_ptr->grim_draw_quad(bead_index * step_x + pos->x + freeware_camera.x - 6,
+                                                       bead_index * step_y + pos->y + freeware_camera.y - 6, 12, 12);
 #else
                     float index = (float)segment;
                     grim_interface_ptr->grim_draw_quad(index * step_x + pos->x + freeware_camera.x - 6,
@@ -287,7 +298,7 @@ extern "C" void projectile_render() {
                                                        120, 120);
             }
         } else {
-#if CL_BUILD == 10400
+#if CL_BUILD >= 10300
             fade = projectile_pool[i].fields.life_timer * 2.5f;
             if (fade > 1.f)
                 fade = 1.f;
@@ -434,7 +445,7 @@ extern "C" void projectile_render() {
         }
     }
     grim_interface_ptr->grim_end_batch();
-#if CL_BUILD == 10400
+#if CL_BUILD >= 10300
     int secondary_index;
     if (freeware_glow) {
         grim_interface_ptr->grim_set_config_var(trail_source_blend, 5u);
