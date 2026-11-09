@@ -65,7 +65,7 @@ struct Input {
   bool previous{}, next{}, accept{}, escape{}, backspace{};
   bool up2{}, down2{}, left2{}, right2{}, fire2{}, reload{}, level_up{};
   bool ctrl{}, console{}, mouse_fire{}, bend_time{}, fast_time{}, right_mouse{};
-  bool screenshot{}, relative{}, arrow_down{}, arrow_up{}, space_pressed{}, space_down{}, delete_scores{};
+  bool screenshot{}, filter_override{}, relative{}, arrow_down{}, arrow_up{}, space_pressed{}, space_down{}, delete_scores{};
   float dx{}, dy{};
   std::bitset<256> level_down, level_pressed;
   int key{};
@@ -211,7 +211,9 @@ struct Game {
   void save_options() const;
   bool survival{}, paused{}, quit{}, two_players{}, music_enabled = true;
   const char *notice = nullptr;
-  std::string name, message, command, update_info;
+  std::string name = FREEWARE_EDITION < 10400 ? "10tons" : "";
+  int name_cursor{};
+  std::string message, command, update_info;
   std::vector<std::string> console_lines, history;
   int history_index{}, spawn_health = 100;
   bool console_open{}, visit_website{};

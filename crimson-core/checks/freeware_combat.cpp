@@ -216,7 +216,7 @@ extern "C" void combat_controls(int index, int count, int movement, int aim, int
 }
 
 extern "C" {
-float combat_frame_fields[31];
+float combat_frame_fields[32];
 struct CapturedQuad {
   char name[16];
   float x, y, w, h, angle;
@@ -316,6 +316,7 @@ int combat_frame_step(float dt, int input) {
     in.dy = -17;
   }
   in.ctrl = input & 8192;
+  in.filter_override = input & 16384;
   in.escape = input & 1;
   in.level_up = input & 2;
   in.accept = input & 4;
@@ -332,6 +333,8 @@ int combat_frame_step(float dt, int input) {
     in.level_down.set(0x2a);
     in.level_down.set(0xc9);
     in.level_down.set(0xd2);
+    in.level_down.set(0x1f);
+    in.level_down.set(0x30);
     in.level_pressed.set(0x2e);
   }
   if (input & 1024) {
@@ -424,7 +427,8 @@ int combat_frame_step(float dt, int input) {
                float(game.name.size()),
                game.run.pickup.time,
                float(game.run.pickup.kind),
-               float(game.effect_labels.size())};
+               float(game.effect_labels.size()),
+               float(game.terrain_sprites.empty() ? 0 : game.terrain_sprites.front().filter)};
   std::copy(std::begin(f), std::end(f), combat_frame_fields);
   std::copy(std::begin(game.random_flags), std::end(game.random_flags), combat_frame_flags);
   return game.frame_state();

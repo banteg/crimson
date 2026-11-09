@@ -122,8 +122,37 @@ __forceinline bool menu_key(int key) {
     return grim_interface_ptr->grim_was_key_pressed(key);
 #endif
 }
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+__forceinline void advance_secret(int &step, int required, int key) {
+    if (step == required && menu_key(key))
+        ++step;
+}
+#endif
 __forceinline void menu_secrets() {
-#if FREEWARE_EDITION != 10002
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    if (grim_interface_ptr->grim_is_key_down(0x1d)) {
+        advance_secret(freeware_assembly_sequence, 0, 0x1e);
+        advance_secret(freeware_assembly_sequence, 1, 0x1f);
+        advance_secret(freeware_assembly_sequence, 2, 0x1f);
+        advance_secret(freeware_assembly_sequence, 3, 0x12);
+        advance_secret(freeware_assembly_sequence, 4, 0x32);
+        advance_secret(freeware_assembly_sequence, 5, 0x30);
+        advance_secret(freeware_assembly_sequence, 6, 0x26);
+        if (freeware_assembly_sequence == 7 && menu_key(0x15)) {
+            sfx_play_panned(17, .45f, .5f);
+            ++freeware_assembly_sequence;
+        }
+    }
+    if (grim_interface_ptr->grim_is_key_down(0x1d)) {
+        advance_secret(freeware_tips_sequence, 0, 0x14);
+        advance_secret(freeware_tips_sequence, 1, 0x17);
+        advance_secret(freeware_tips_sequence, 2, 0x19);
+        if (freeware_tips_sequence == 3 && menu_key(0x1f)) {
+            sfx_play_panned(17, .45f, .5f);
+            freeware_show_secret_hints = 1;
+        }
+    }
+#elif FREEWARE_EDITION != 10002
 #ifdef CRIMSON_FREEWARE_CLIENT
     if (!INPUT.ctrl)
         return;
@@ -220,6 +249,32 @@ __forceinline void refresh_option_labels() {
 }
 #endif
 __forceinline void refresh_labels(int which) {
+#if FREEWARE_EDITION == 10400
+    crt_free(freeware_main_labels[0]);
+    if (ACTIVE)
+        freeware_main_labels[0] = strdup_malloc("Resume game.");
+    else
+        freeware_main_labels[0] = strdup_malloc("Begin game.");
+    crt_free(freeware_main_labels[1]);
+    if (config_player_count == 1)
+        freeware_main_labels[1] = strdup_malloc("Players: one");
+    else
+        freeware_main_labels[1] = strdup_malloc("Players: two");
+    crt_free(freeware_main_labels[2]);
+    if (config_game_mode == 1)
+        freeware_main_labels[2] = strdup_malloc("Game mode: career");
+    else if (config_game_mode == 2)
+        freeware_main_labels[2] = strdup_malloc("Game mode: survival");
+    else if (config_game_mode == 3)
+        freeware_main_labels[2] = strdup_malloc("Game mode: Level Test");
+    else
+        freeware_main_labels[2] = strdup_malloc("Game mode: Level Edit");
+    crt_free(freeware_main_labels[7]);
+    if (ACTIVE)
+        freeware_main_labels[7] = strdup_malloc("End current game.");
+    else
+        freeware_main_labels[7] = strdup_malloc("End.");
+#else
     set_label(freeware_main_labels, ACTIVE ? "Resume game." : "Begin game.");
 #if FREEWARE_EDITION == 10002
     if (which != options_page)
@@ -240,6 +295,7 @@ __forceinline void refresh_labels(int which) {
     if (which != options_page)
         return;
     refresh_option_labels();
+#endif
 #endif
 }
 __forceinline int native_menu_action(int which, int row) {
@@ -266,7 +322,7 @@ __forceinline int menu_rows(int which) {
     // 1.3.0 uses the same 26-pixel increment and hitbox at 0x415715 and 0x415751.
     const float option_spacing = FREEWARE_EDITION == 10300 ? 26.f : 21.f;
     float x = (float)(screen_width / 2 - (which == main_page ? 100 : 140));
-    float font_scale = which == main_page ? .75435f : .65f;
+    float font_scale = FREEWARE_EDITION == 10002 || which == main_page ? .75435f : .65f;
 #ifndef CRIMSON_FREEWARE_CLIENT
     if (FREEWARE_EDITION < 10400)
         font_scale = .75435f;
@@ -320,7 +376,7 @@ __forceinline int menu_rows(int which) {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
         vec2f_t lo = {x, y};
         vec2f_t hi = {lo.x + strlen(name) * 16.f, lo.y + row_height};
-        if (freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
+        if ((unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi)) {
             hover = i;
             grim_interface_ptr->grim_set_color(1, 1, 1, .9f);
         } else if (hover == i)
@@ -515,12 +571,16 @@ __forceinline void menu_options(int row) {
 #endif
         break;
     case 11:
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
         freeware_options_open = 0;
         freeware_perk_hover = 0;
 #else
         show_page(main_page);
+#if FREEWARE_EDITION == 10002
+        G.perk_hover = 0;
+#else
         SELECTED = 0;
+#endif
 #endif
         break;
     }
@@ -544,6 +604,143 @@ __forceinline void menu_blend(bool additive) {
     grim_interface_ptr->grim_set_config_var(frame_dst_blend, additive ? 2u : 6u);
 #endif
 }
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+__forceinline void menu_title(float age, float menu_clock) {
+    if (freeware_assembly_sequence == 8) {
+        frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("asmlogo"));
+        menu_blend(true);
+        grim_interface_ptr->grim_set_rotation(0);
+        grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+        grim_interface_ptr->grim_begin_batch();
+
+        vec2f_t center = {screen_width / 2 + (float)cos(age - .2f) * 5.f,
+                          140.f + (float)cos(age - .2f) * 5.f};
+        vec2f_t delta = {center.x - MOUSE_X, center.y - MOUSE_Y};
+        float direction = (float)atan2(delta.y, delta.x);
+        float length = (float)sqrt(delta.x * delta.x + delta.y * delta.y) * .02f;
+        length *= 20.f;
+        for (int i = 1; i < length; i += 3) {
+            grim_interface_ptr->grim_set_color(.7f, .8f, 1, .09f - i * .09f / length);
+            grim_interface_ptr->grim_draw_quad(center.x - 89.f + (float)cos(direction) * i,
+                    center.y + (float)sin(direction) * i / 3.f, 178, 29);
+        }
+        grim_interface_ptr->grim_set_color(1, 1, 1, .7f);
+        grim_interface_ptr->grim_draw_quad(center.x - 89.f, center.y, 178, 29);
+        grim_interface_ptr->grim_end_batch();
+    }
+    if (freeware_birthday) {
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
+        char message[] = "Happy birthday !";
+        char glyph[] = "Happy birthday !";
+        int count = strlen(message);
+        for (int i = 0; i < count; ++i) {
+            int phase = (int)(age * 4) * (i + 1);
+            grim_interface_ptr->grim_set_color(((phase * -24) & 255) / 256.f, ((phase * 87) & 255) / 256.f,
+                                               ((phase * -58) & 255) / 256.f, 1);
+            memset(glyph, ' ', count);
+            glyph[i] = message[i];
+            grim_interface_ptr->grim_draw_text_mono(0, 0, glyph);
+        }
+    }
+    if (freeware_christmas) {
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
+        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+        grim_interface_ptr->grim_draw_text_mono(0, 0, "Merry Christmas!");
+        frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("b_freeze"));
+        grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+        grim_interface_ptr->grim_begin_batch();
+        for (int x = 0; x < screen_width; x += 17) {
+            vec2f_t pos;
+            pos.x = (float)x;
+            grim_interface_ptr->grim_set_rotation(pos.x + (float)sin(age * .4f));
+            float &y = freeware_snow_y[x];
+            y += ((x * 34 % 5) + 1) * 5 * frame_dt;
+            while (y > 150)
+                y -= 200;
+            pos.y = y;
+            if (pos.y < 0)
+                grim_interface_ptr->grim_set_color(1, 1, 1, 0);
+            else if (pos.y < 50)
+                grim_interface_ptr->grim_set_color(1, 1, 1, pos.y * .02f);
+            else if (pos.y > 100)
+                grim_interface_ptr->grim_set_color(1, 1, 1, 1 - (pos.y - 100) * .02f);
+            else
+                grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+            grim_interface_ptr->grim_draw_quad(pos.x, pos.y, 32, 32);
+        }
+        grim_interface_ptr->grim_end_batch();
+    }
+    if (freeware_memorial) {
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f);
+        float cs = (float)cos(age - .2f);
+        vec2f_t point = {screen_width / 2 + cs * 5.f - 100.f, cs * 5.f + 170.f};
+        float sn = (float)sin(age - .2f);
+        for (float d = 0; d < 16; d += .5f) {
+            float fade = d / 16.f;
+            grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f + fade * .05f);
+            grim_interface_ptr->grim_set_color(.1f, .4f, .7f, (1.f - fade) * .2f);
+            grim_interface_ptr->grim_draw_text_mono(point.x - cs * d, point.y + sn * d * 2.f, "The World Grieves..");
+        }
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, .6f);
+        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+        grim_interface_ptr->grim_draw_text_mono(point.x, point.y, "The World Grieves..");
+    }
+    if (freeware_solstice) {
+        vec2f_t point = {screen_width / 2 + (float)cos(age - .2f) * 5.f - 100.f,
+                         (float)cos(age - .2f) * 5.f + 170.f};
+        grim_interface_ptr->grim_set_color(1, 1, 1, .15f);
+        frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("tl_tolmec"));
+        grim_interface_ptr->grim_begin_batch();
+        grim_interface_ptr->grim_set_rotation(age * .2f);
+        grim_interface_ptr->grim_draw_quad(100, 100, 256, 256);
+        grim_interface_ptr->grim_end_batch();
+        grim_interface_ptr->grim_set_color(1, .8f, .2f, 1);
+        grim_interface_ptr->grim_draw_text_mono(point.x, point.y, "Have a Nice End of the World !");
+    }
+
+    if (age < 1.f)
+        grim_interface_ptr->grim_set_color(1, 1, 1, age);
+    else
+        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+    grim_interface_ptr->grim_set_config_var(0x12, true);
+    vec2f_t base = {(float)(screen_width / 2), 90.f};
+    vec2f_t center = base;
+    center.x += (float)cos(menu_clock) * 5.f;
+    center.y += (float)sin(menu_clock) * 5.f;
+    frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("crimsonland"));
+    menu_blend(false);
+    if (age < 1.f) {
+        if (!freeware_credits_open && !freeware_scores_open)
+            freeware_logo_angle = (1.f - (float)sin(age * 1.57079637f)) * 1.57079637f;
+        else
+            freeware_logo_angle = (float)sin(age * 1.57079637f) * 1.57079637f;
+    }
+    if (freeware_logo_angle < 0)
+        freeware_logo_angle = 0;
+    else if (freeware_logo_angle > 1.57079637f)
+        freeware_logo_angle = 1.57079637f;
+    if (!ACTIVE) {
+        center.x += freeware_logo_angle * 50.f;
+        center.y -= freeware_logo_angle * 30.f;
+        grim_interface_ptr->grim_set_rotation(freeware_logo_angle);
+    } else {
+        grim_interface_ptr->grim_set_rotation(0);
+    }
+    grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+    if (!freeware_logo_visible) {
+        if (age < 1.f)
+            grim_interface_ptr->grim_set_color(1, 1, 1, age);
+        else
+            freeware_logo_visible = 1;
+    }
+    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+    grim_interface_ptr->grim_begin_batch();
+    grim_interface_ptr->grim_draw_quad(center.x - 256.f, center.y - 64.f, 512.f, 512.f - freeware_logo_angle * 30.f);
+    grim_interface_ptr->grim_end_batch();
+    grim_interface_ptr->grim_set_config_var(0x15, 2u);
+    grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
+}
+#else
 __forceinline void menu_title(int which) {
     float age = CLOCK - STATE_SINCE;
 #if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10300
@@ -638,6 +835,7 @@ __forceinline void menu_title(int which) {
     menu_blend(false);
     sprite("crimsonland", x, y, 512, 512 - angle * 30, ACTIVE ? 0 : angle, 1, 1, 1, alpha);
 }
+#endif
 
 #ifndef CRIMSON_FREEWARE_CLIENT
 extern "C" {
@@ -898,7 +1096,9 @@ __forceinline bool setup_controls() {
 }
 #endif
 __forceinline void cursor_particles(float pulse, float orbit) {
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION != 10400
     float x = MOUSE_X - 32, y = MOUSE_Y - 32;
+#endif
 #ifndef CRIMSON_FREEWARE_CLIENT
     grim_interface_ptr->grim_set_config_var(frame_src_blend, 5u);
     grim_interface_ptr->grim_set_config_var(frame_dst_blend, 2u);
@@ -906,14 +1106,28 @@ __forceinline void cursor_particles(float pulse, float orbit) {
     grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
     grim_interface_ptr->grim_set_color(1, 1, 1, 1);
     grim_interface_ptr->grim_begin_batch();
+#if FREEWARE_EDITION == 10400
+    grim_interface_ptr->grim_draw_quad(MOUSE_X - 32.f, MOUSE_Y - 32.f, 64, 64);
+#else
     grim_interface_ptr->grim_draw_quad(x, y, 64, 64);
+#endif
 #else
     G.ui.destination_blend = 2;
     const float rotation = G.frame_sprites.empty() ? 0 : G.frame_sprites.back().angle;
     sprite("part", x, y, 64, 64, rotation, 1, 1, 1, 1);
 #endif
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    float alpha = ((float)pow((float)cos(pulse), 2) + 1.f) * .5f;
+#else
     float alpha = (float)((pow(cos(pulse), 2) + 1) * .5);
+#endif
     for (int step = 0; step < 6; step += 2) {
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+        grim_interface_ptr->grim_set_color(1, 1, 1, alpha);
+        float angle = orbit + step * 1.0471976f;
+        grim_interface_ptr->grim_draw_quad(MOUSE_X - 32.f + (float)cos(angle) * 16.f,
+                                           MOUSE_Y - 32.f + (float)sin(angle) * 16.f, 64, 64);
+#else
         double angle = orbit + (double)step * 1.0471976f;
         float px = (float)(x + cos(angle) * 16), py = (float)(y + sin(angle) * 16);
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -921,6 +1135,7 @@ __forceinline void cursor_particles(float pulse, float orbit) {
 #else
         grim_interface_ptr->grim_set_color(1, 1, 1, alpha);
         grim_interface_ptr->grim_draw_quad(px, py, 64, 64);
+#endif
 #endif
     }
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -938,24 +1153,23 @@ __forceinline void cursor_particles(float pulse, float orbit) {
     sprite("aim32", MOUSE_X - 16, MOUSE_Y - 16, 32, 32, rotation, 1, 1, 1, .64f);
 #endif
 }
-__forceinline void menu_footer() {
+__forceinline void menu_footer_text() {
 #ifdef CRIMSON_FREEWARE_CLIENT
     const char *version = FREEWARE_EDITION == 10002 ? "v " FREEWARE_VERSION : "v" FREEWARE_VERSION;
 #else
     const char *version = FREEWARE_EDITION == 10002 ? "v 1.0.2" : FREEWARE_EDITION == 10300 ? "v1.3.0" : "v1.4.0";
 #endif
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION < 10400
+#ifndef CRIMSON_FREEWARE_CLIENT
     grim_interface_ptr->grim_set_config_var(frame_font_scale, .65435f);
     grim_interface_ptr->grim_set_color(1, 1, 1, .4f);
     grim_interface_ptr->grim_draw_text_mono(10, (float)screen_height - 25, (char *)version);
-    grim_interface_ptr->grim_draw_text_mono((float)screen_width - 330, (float)screen_height - 25,
-                                            "2002 (c) 10tons entertainment");
+    float copyright_x = FREEWARE_EDITION == 10400 ? (float)(screen_width - 330) : (float)screen_width - 330;
+    grim_interface_ptr->grim_draw_text_mono(copyright_x, (float)screen_height - 25, "2002 (c) 10tons entertainment");
 #else
     label(version, 10, (float)screen_height - 25, .65435f, 1, 1, 1, .4f);
     label("2002 (c) 10tons entertainment", (float)screen_width - 330, (float)screen_height - 25, .65435f, 1, 1, 1,
           .4f);
 #endif
-    cursor_particles(CLOCK - STATE_SINCE, CLOCK);
 }
 __forceinline void menu_tracks(bool play_title) {
 #ifndef CRIMSON_FREEWARE_CLIENT
@@ -979,10 +1193,100 @@ __forceinline void menu_tracks(bool play_title) {
 #endif
 #endif
 }
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+__forceinline bool menu_clicked() {
+    return !console_open_flag &&
+           (grim_interface_ptr->grim_was_key_pressed(0x1c) || grim_interface_ptr->grim_was_mouse_button_pressed(0));
+}
+__forceinline bool native_menu_actions() {
+    if (freeware_options_open && menu_clicked())
+        menu_options(freeware_perk_hover);
+    if (freeware_online_open && menu_clicked()) {
+        if (freeware_perk_hover == 0) {
+            freeware_open_site = 1;
+            quit_requested = 1;
+        } else if (freeware_perk_hover == 1) {
+            freeware_http_response *response = freeware_http_get("www.mbnet.fi", "~temper/crimsonland", "versioninfo.txt");
+            if (response) {
+                crt_free(freeware_update_info);
+                freeware_update_info = response->data;
+            }
+        } else if (freeware_perk_hover == 4) {
+            freeware_online_open = 0;
+            freeware_perk_hover = 0;
+        }
+    }
+    if (!freeware_credits_open && !freeware_scores_open && !freeware_options_open && !console_open_flag &&
+        (grim_interface_ptr->grim_was_mouse_button_pressed(0) || grim_interface_ptr->grim_was_key_pressed(0x1c))) {
+        if (freeware_perk_hover == 0) {
+            if (ACTIVE)
+                enter(freeware_pause_perks ? 4 : 3);
+            else {
+                freeware_logo_visible = 0;
+                MENU_MUSIC = 1;
+                enter(3);
+                freeware_music_started = 1;
+                menu_tracks(false);
+                freeware_current_map->clear();
+                gameplay_reset_state();
+                if (config_game_mode == 1)
+                    freeware_spawn_enabled = 1;
+                else if (config_game_mode == 2)
+                    freeware_spawn_enabled = 1;
+                else if (config_game_mode == 3) {
+                    creature_reset_all();
+                    freeware_spawn_enabled = 0;
+                    freeware_level_number = 0;
+                    gameplay_reset_state();
+                    level_load_next();
+                    freeware_current_map->arm_triggers();
+                }
+                ACTIVE = 1;
+            }
+        } else if (freeware_perk_hover == 1) {
+            if (!ACTIVE)
+                config_player_count = 3 - config_player_count;
+        } else if (freeware_perk_hover == 2) {
+            if (!ACTIVE) {
+                config_game_mode = (game_mode_id_t)(config_game_mode + 1);
+                if (config_game_mode > (freeware_levels_sequence == 6 ? 3 : 2))
+                    config_game_mode = (game_mode_id_t)1;
+            }
+        } else if (freeware_perk_hover == 3) {
+            highscore_load_table();
+            request_transition();
+            freeware_scores_open = 1;
+        } else if (freeware_perk_hover == 4) {
+            request_transition();
+            freeware_credits_open = 1;
+        } else if (freeware_perk_hover == 5)
+            freeware_options_open = 1;
+        else if (freeware_perk_hover == 6)
+            freeware_online_open = 1;
+        else if (freeware_perk_hover == 7) {
+            if (!ACTIVE)
+                return false;
+            menu_tracks(true);
+            ACTIVE = 0;
+            freeware_logo_angle = 0;
+            MENU_MUSIC = 0;
+        }
+    }
+    if (freeware_credits_open)
+        game_credits_update();
+    if (freeware_scores_open)
+        game_highscores_update();
+    return true;
+}
+#endif
 __forceinline bool main_menu() {
     menu_secrets();
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    if (!freeware_scores_open && MENU_MUSIC && !ACTIVE) {
+#else
     int which = page();
-    if (which != scores_page && MENU_MUSIC && !ACTIVE) {
+    if ((FREEWARE_EDITION == 10002 || which != scores_page) && MENU_MUSIC && !ACTIVE) {
+#endif
         menu_tracks(true);
         MENU_MUSIC = 0;
         STATE_SINCE = CLOCK;
@@ -995,10 +1299,17 @@ __forceinline bool main_menu() {
     refresh_labels(which);
 #endif
 #endif
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+    float age = CLOCK - STATE_SINCE;
+    float menu_clock = CLOCK;
+    menu_title(age, menu_clock);
+    int which = page();
+#else
     menu_title(which);
+#endif
     bool overlay = which == scores_page || which == credits_page;
 #ifdef CRIMSON_FREEWARE_CLIENT
-    if (!overlay && INPUT.escape && which != main_page) {
+    if (FREEWARE_EDITION != 10002 && !overlay && INPUT.escape && which != main_page) {
         show_page(main_page);
         SELECTED = 0;
         return true;
@@ -1015,15 +1326,16 @@ __forceinline bool main_menu() {
         else
             menu_rows(main_page);
     }
-    menu_footer();
+    menu_footer_text();
+    cursor_particles(age, menu_clock);
     if (!console_open_flag && grim_interface_ptr->grim_is_key_down(0x1c))
         freeware_perk_hover = SELECTED;
-    if (!console_open_flag && (menu_key(0x1c) || grim_interface_ptr->grim_was_mouse_button_pressed(0)))
-        row = freeware_perk_hover;
+    return native_menu_actions();
 #else
     if (overlay || !setup_controls())
         row = menu_rows(overlay ? main_page : which);
-    menu_footer();
+    menu_footer_text();
+    cursor_particles(CLOCK - STATE_SINCE, CLOCK);
 #endif
     if (overlay) {
         if (which == scores_page)
@@ -1044,7 +1356,13 @@ __forceinline bool main_menu() {
 #endif
     if (which == options_page) {
         menu_options(row);
-        return true;
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+        // Enter activates Done before the main menu reads the independent mouse edge.
+        if (row == 11 && INPUT.accept && INPUT.click)
+            row = 0;
+        else
+#endif
+            return true;
     }
 #if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION >= 10400
     if (which == online_page) {
@@ -1110,7 +1428,7 @@ __forceinline bool main_menu() {
             }
             ACTIVE = 1;
         } else {
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+#if FREEWARE_EDITION == 10002
             enter(3);
 #else
             enter(FIELD(freeware_pause_perks, paused_perks) ? 4 : 3);
@@ -1151,6 +1469,23 @@ __forceinline bool main_menu() {
 #endif
         }
         break;
+#if defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10002
+    case 3:
+    case 4: {
+        request_transition();
+        show_page(row == 3 ? scores_page : credits_page);
+        // The menu has consumed the click. Other edges still reach the overlay on its first frame.
+        const freeware::Input *pressed = freeware_frame_input;
+        freeware::Input remaining = *pressed;
+        remaining.click = false;
+        freeware_frame_input = &remaining;
+        if (row == 3)
+            game_highscores_update();
+        else
+            game_credits_update();
+        freeware_frame_input = pressed;
+    } break;
+#else
     case 3:
         request_transition();
         show_page(scores_page);
@@ -1165,6 +1500,7 @@ __forceinline bool main_menu() {
         game_credits_update();
 #endif
         break;
+#endif
     case 5:
         show_page(options_page);
         break;

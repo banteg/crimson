@@ -24,6 +24,7 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
     pe.write_u32(0x442490, 400)
     draw = {"texture": 0, "angle": 0, "color": (1, 1, 1, 1)}
     quads, labels, blends, label_positions = [], [], [], []
+    terrain_filters = []
 
     world_labels = []
 
@@ -44,6 +45,8 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             labels.append((value, call.arg_f32(0), call.arg_f32(1), draw.get("scale", 1), *draw["color"]))
 
     def config(call):
+        if call.arg_u32(0) == 0x15:
+            draw["filter"] = call.arg_u32(1)
         if call.arg_u32(0) == 0x14:
             draw["blend"] = call.arg_u32(1)
         if call.arg_u32(0) == 0x18:
@@ -54,9 +57,12 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         return textures.setdefault(value, len(textures) + 1)
 
     def quad(call):
+        if 0x40F340 <= call.return_address < 0x40F5D1:
+            terrain_filters.append(draw.get("filter", 2))
         # Capture the quads issued by the dispatcher, including both of its animated cursors.
         if (
-            0x415690 < call.return_address < 0x416559
+            0x419182 < call.return_address < 0x419462  # Editor radius, brush preview and cursor.
+            or 0x415690 < call.return_address < 0x416559
             or 0x416560 < call.return_address < 0x4167A6
             or 0x41EFA0 < call.return_address < 0x41F230
             or 0x41E330 < call.return_address < 0x41EF9D
@@ -225,6 +231,7 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         ("surviving partner", 2, 2, 3, 32, [0, 0]),
         ("revive", 1, 1, 3, 32 | 128, [0, 0]),
         ("menu", 2, 1, 1, 0, [0, 0, 0]),
+        ("O filter override", 2, 1, 3, 0, [0, 16384, 16384, 0]),
         ("mouse motion", 2, 1, 3, 0, [4096, 4096 | 8192, 4096, 0]),
         ("name", 2, 1, 9, 0, [0, 256, 128, 256, 4]),
         ("handoff", 1, 2, 6, 512 | 32 | 64, [0, 0, 0]),
@@ -345,6 +352,8 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
         for frame, bits in enumerate(inputs):
             dx, dy = (43, -17) if bits & 4096 else (0, 0)
             keys.clear()
+            if bits & 16384:
+                keys.add(0x18)
             if bits & 8192:
                 keys.add(0x1D)
             edges.clear()
@@ -354,7 +363,7 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             clicks.clear()
             if bits & 512:
                 edges.update((3, 0xCD, 0x2E))
-                keys.update((0x2A, 0xC9, 0xD2))
+                keys.update((0x2A, 0xC9, 0xD2, 0x1F, 0x30))
             if bits & 1024:
                 edges.update((0x39, 0x14))
                 keys.add(0x2F)
@@ -371,6 +380,7 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
                 edges.add(0x1C)
                 keys.add(0x1C)
             name_key = 9 if bits & 4 else 8 if bits & 128 else ord("x") if bits & 256 else 0xA7
+            terrain_filters.clear()
             quads.clear()
             labels.clear()
             world_labels.clear()
@@ -379,6 +389,11 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             pe.call(0x418190)
             state = check.dll.combat_frame_step(dt, bits)
             label = name, frame
+            if name == "O filter override":
+                expected_filter = 3 if bits & 16384 else 2
+                assert terrain_filters == [expected_filter], label
+                got = ctypes.c_float.from_address(check.symbol("combat_frame_fields") + 31 * 4).value
+                assert got == expected_filter, (label, got, expected_filter)
             if name == "pickup expiry":
                 state_fields = (ctypes.c_float * 31).from_address(check.symbol("combat_frame_fields"))
                 assert list(state_fields[28:31]) == [pe.read_f32(0x452E64), pe.read_i32(0x4387E8), len(world_labels)], (
@@ -398,14 +413,22 @@ def check_frames(check, exe, bullet_pool, creature_record, *, files=False):
             )
             got = ctypes.c_uint.from_address(check.symbol("freeware_rng_state")).value
             assert pe.rand_state == got, (label, "rng", pe.rand_state, got)
-            if name not in ("editor", "level clear"):
+            if name != "level clear":
                 count = check.dll_globals("combat_frame_quad_count").value
-                assert count == len(quads), (label, "draw count", quads, count)
+                first = 0
+                if name == "editor":
+                    # Layer and trigger passes precede the editor's own preview draws.
+                    expected = ["radius", "arrow", "aim32"] if bits & 512 else ["arrow", "aim32"]
+                    assert [q[0] for q in quads] == expected, (label, quads)
+                    first = count - len(quads)
+                    assert first >= 0, (label, count, quads)
+                else:
+                    assert count == len(quads), (label, "draw count", quads, count)
                 for j, (texture_name, coords, angle, color) in enumerate(quads):
-                    buf = ctypes.string_at(check.symbol("combat_frame_quads") + 52 * j, 52)
+                    buf = ctypes.string_at(check.symbol("combat_frame_quads") + 52 * (first + j), 52)
                     ours, *values = struct.unpack("<16s9f", buf)
-                    if name in title_cases or name in ("menu", "options"):
-                        blend = ctypes.c_int.from_address(check.symbol("combat_frame_blends") + j * 4).value
+                    if name in title_cases or name in ("menu", "options", "editor"):
+                        blend = ctypes.c_int.from_address(check.symbol("combat_frame_blends") + (first + j) * 4).value
                         assert blend == blends[j], (label, texture_name, "destination blend", blend, blends[j])
                     ours = ours.split(b"\0", 1)[0].decode()
                     assert texture_name == ours and all(

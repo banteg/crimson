@@ -39,7 +39,6 @@ void creature_reset_all();
 void player_reset_all();
 int creature_find_in_radius(const vec2f_t *, float);
 int projectile_spawn(const vec2f_t *, float, int);
-float angle_approach(float *, float, float);
 }
 
 extern freeware::Game *freeware_frame_game;
@@ -108,7 +107,8 @@ void Game::reset_gameplay() {
   creature_spawned_count = 0;
   freeware_elapsed_seconds = 0;
   bonus_fire_bullets_timer = 0;
-  name.clear();
+  if (FREEWARE_EDITION >= 10400)
+    name.clear();
   paused = false;
   screen = Screen::Playing;
   generate_terrain(config_game_mode < 3 || !freeware_current_map->flag);

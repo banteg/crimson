@@ -26,7 +26,7 @@ from freeware_arsenal_cases import (
 from freeware_creature_motion_cases import check_creature_motion
 from freeware_credits_cases import check_credits
 from freeware_early_frame_cases import check_early_frames
-from freeware_early_hud_cases import check_early_hud
+from freeware_early_hud_cases import check_early_hud, check_early_name, check_name_edit_130
 from freeware_fx_cases import check_early_fx_writes
 from freeware_player_motion_cases import check_player_motion
 from freeware_spawn_random_cases import check_random_spawns
@@ -179,6 +179,9 @@ def check(edition, install, tmp, web, browser):
         check_early_frames(exe, edition, output)
         if edition == "1.0.2":
             check_early_hud(exe, output)
+            check_early_name(exe, output)
+        else:
+            check_name_edit_130(exe, output)
         check_early_fx_writes(exe, edition, output)
         if edition == "1.3.0":
             check_acquisition(install, tmp, output)

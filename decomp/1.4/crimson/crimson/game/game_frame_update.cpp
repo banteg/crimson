@@ -1,9 +1,17 @@
 #include "freeware_edition.h"
 // crimson.exe 1.0.2 0x40c110, 1.3.0 0x412fd0, 1.4.0 0x418190.
 #include "freeware_level.h"
-#if CL_BUILD == 10002
+#if FREEWARE_EDITION == 10002
 #include "../ui/gameplay_hud_102.h"
+#endif
+#if FREEWARE_EDITION < 10400
+#ifndef CRIMSON_FREEWARE_CLIENT
+#include "../highscore/freeware_score.h"
+#endif
+#endif
+#if CL_BUILD == 10002
 extern "C" void freeware_post_player_render_noop();
+extern "C" void freeware_career_menu_update();
 #endif
 #include <math.h>
 #include <stdio.h>
@@ -22,6 +30,7 @@ extern float freeware_frame_delta;
 #else
 #include "crimsonland_console.h"
 #include "grim2d_cpp.h"
+#include "../level/freeware_editor_brush.h"
 extern "C" IGrim2D_cpp *grim_interface_ptr;
 #define FIELD(native, client) (native)
 #endif
@@ -42,6 +51,9 @@ extern int current_player_index, config_aim_schemes[2], freeware_arena_width, fr
 extern int perk_id_reflex_boosted, perk_id_lean_mean_exp_machine, perk_id_final_revenge, perk_id_jinxed,
     perk_id_spontaneously_combusteous, perk_id_evil_eyes, perk_id_berserk_attack;
 extern int perk_id_see_health;
+#if CL_BUILD == 10300
+extern int perk_id_reserved_22;
+#endif
 extern game_mode_id_t config_game_mode;
 extern unsigned char console_open_flag, time_scale_active, freeware_spawn_enabled, freeware_game_active,
     freeware_rainbow_armed, freeware_rainbow_enabled, freeware_secret_weapon_unlocked;
@@ -90,6 +102,13 @@ extern float freeware_transition_alpha;
 
 #endif
 }
+#if FREEWARE_EDITION >= 10300
+#include "../render/world_render.h"
+extern "C" int world_arrow_marker_texture;
+#else
+#define PICKUP_TIME FIELD(freeware_pickup_time, run.pickup.time)
+#define BOMB_POS FIELD(freeware_bomb_position, run.bomb_pos)
+#endif
 namespace frame_update140 {
 #if CL_BUILD == 10002
 enum { config_player_count = 1, screen_width = 640, screen_height = 480 };
@@ -116,13 +135,11 @@ enum { frame_font_scale = CL_BUILD == 10002 ? 0x11 : 0x18, frame_src_blend = CL_
 #define SLOW FIELD(bonus_reflex_boost_timer, run.slow)
 #define FREEZE FIELD(bonus_freeze_timer, run.freeze)
 #define BERSERK FIELD(freeware_berserk_timer, run.berserk)
-#define PICKUP_TIME FIELD(freeware_pickup_time, run.pickup.time)
 #define SECONDS FIELD(freeware_elapsed_seconds, run.seconds)
 #define SPAWN_TIMER FIELD(freeware_next_spawn, run.next_spawn)
 #define JINX FIELD(freeware_jinx_timer, run.jinx)
 #define REVIVE FIELD(freeware_revive_timer, run.plague_time)
 #define BOMB FIELD(freeware_bomb_age, run.bomb_age)
-#define BOMB_POS FIELD(freeware_bomb_position, run.bomb_pos)
 #define CAM FIELD(freeware_camera, camera)
 #define SHAKE FIELD(freeware_camera_shake, camera_shake)
 #define SHAKE_TIME FIELD(freeware_camera_timer, camera_timer)
@@ -140,9 +157,15 @@ __forceinline void player() {
     G.step_player(current_player_index, frame_dt, INPUT, world);
 }
 __forceinline bool open_perk() {
-    return INPUT.level_up || INPUT.perk_button || (G.aiming[0] == 3 && INPUT.pad_perk[0]) ||
+#if FREEWARE_EDITION == 10002
+    return INPUT.level_up || (INPUT.click && G.cursor_x > 400.f && G.cursor_x < 656.f &&
+                              G.cursor_y > 430.f && G.cursor_y < 480.f);
+#else
+    return INPUT.level_up || (FREEWARE_EDITION != 10300 && INPUT.perk_button) ||
+           (G.aiming[0] == 3 && INPUT.pad_perk[0]) ||
            (INPUT.click && G.cursor_x > screen_width - 240 && G.cursor_x < screen_width + 17 &&
             G.cursor_y > screen_height - 50 && G.cursor_y < screen_height + 1);
+#endif
 }
 __forceinline void level_check() { G.check_level(); }
 __forceinline void open_choices() { G.open_perks(); }
@@ -153,23 +176,27 @@ __forceinline void enter(int id) { game_state_id = id; }
 __forceinline void creatures() { creature_update_all(); }
 __forceinline void shots() { projectile_update(); }
 __forceinline void player() { player_update(); }
-extern "C" unsigned char freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec2f_t *);
+extern "C" int freeware_point_in_rect(const vec2f_t *, const vec2f_t *, const vec2f_t *);
 __forceinline bool click_perk() {
-    vec2f_t lo = {screen_width - 240.f, screen_height - 50.f};
-    vec2f_t hi = {lo.x + 257.f, lo.y + 51.f};
-    return freeware_point_in_rect(&freeware_aim_screen, &lo, &hi) && grim_interface_ptr->grim_was_mouse_button_pressed(0);
+#if CL_BUILD == 10002
+    vec2f_t hi = {656.f, 480.f};
+    vec2f_t lo = {400.f, 430.f};
+#else
+    const float x = screen_width - 240.f, y = screen_height - 50.f;
+    vec2f_t hi = {x + 257.f, y + 51.f};
+    vec2f_t lo = {x, y};
+#endif
+    return (unsigned char)freeware_point_in_rect(&freeware_aim_screen, &lo, &hi) && grim_interface_ptr->grim_was_mouse_button_pressed(0);
 }
 __forceinline bool open_perk() {
+#if CL_BUILD == 10002
+    return grim_interface_ptr->grim_was_key_pressed(0x4e) || click_perk();
+#else
     return grim_interface_ptr->grim_is_key_down(0x4e) || grim_interface_ptr->grim_is_key_down(0x39) ||
-           grim_interface_ptr->grim_was_mouse_button_pressed(1) ||
+           (FREEWARE_EDITION != 10300 && grim_interface_ptr->grim_was_mouse_button_pressed(1)) ||
            (config_aim_schemes[current_player_index] == (FREEWARE_EDITION == 10300 ? 2 : 3) &&
             grim_interface_ptr->grim_is_joystick_button_down(1)) ||
-#if FREEWARE_EDITION == 10400
            click_perk();
-#else
-           (freeware_aim_screen.x > screen_width - 240 && freeware_aim_screen.x < screen_width + 17 &&
-            freeware_aim_screen.y > screen_height - 50 && freeware_aim_screen.y < screen_height + 1 &&
-            grim_interface_ptr->grim_was_mouse_button_pressed(0));
 #endif
 }
 __forceinline void level_check() { player_check_level(); }
@@ -202,7 +229,7 @@ __forceinline void simulate_players() {
     }
     creatures();
     shots();
-    if (FREEWARE_EDITION != 10002 && PENDING > 0 && config_game_mode != 2 && open_perk()) {
+    if (FREEWARE_EDITION != 10002 && PENDING >= 1 && config_game_mode != 2 && open_perk()) {
         enter(4);
         open_choices();
         request_transition();
@@ -216,38 +243,41 @@ __forceinline void simulate_players() {
 #endif
     level_check();
 }
-__forceinline float shake(float value) { return (float)(value * .125 * (crt_rand() % 200 - 100) * .15f); }
+__forceinline void shake(float &value) {
+    const int random = crt_rand() % 200 - 100;
+    value *= .125f;
+    value = value * random * .15f;
+}
+__forceinline void center_camera_on(int i) {
+    CAM.x = screen_width / 2 - POS(i).x;
+    CAM.y = screen_height / 2 - POS(i).y;
+}
 __forceinline void position_camera() {
     if (CL_BUILD != 10002 && config_game_mode == 4 && state() == 3) {
         CAM.x = screen_width / 2 -
                 FIELD(freeware_aim_screen.x, cursor_x) / (screen_width * .8f) * freeware_arena_width;
         CAM.y = screen_height / 2 -
                 FIELD(freeware_aim_screen.y, cursor_y) / (screen_height * .8f) * freeware_arena_height;
-    } else if (FREEWARE_EDITION == 10002) {
-        CAM.x = screen_width / 2.f - POS(current_player_index).x;
-        CAM.y = screen_height / 2.f - POS(current_player_index).y;
-    } else {
-        vec2f_t target = POS(0);
-        if (config_player_count != 1) {
-            if (HP(0) <= 0)
-                target = POS(1);
-            else if (HP(1) > 0) {
-                target.x -= (target.x - POS(1).x) * .5f;
-                target.y -= (target.y - POS(1).y) * .5f;
-            }
-        }
-        CAM.x = screen_width / 2 - target.x;
-        CAM.y = screen_height / 2 - target.y;
+    } else if ((FREEWARE_EDITION == 10002 ? 1 : config_player_count) == 1)
+        center_camera_on(current_player_index);
+    else if (HP(0) <= 0)
+        center_camera_on(1);
+    else if (HP(1) <= 0)
+        center_camera_on(0);
+    else {
+        CAM.x = screen_width / 2 - (POS(0).x - (POS(0).x - POS(1).x) * .5f);
+        CAM.y = screen_height / 2 - (POS(0).y - (POS(0).y - POS(1).y) * .5f);
     }
 #if FREEWARE_EDITION != 10002
     SHAKE_TIME -= frame_dt;
     if (SHAKE_TIME <= 0) {
         SHAKE_TIME = .061f;
-        SHAKE.x = shake(SHAKE.x);
-        SHAKE.y = shake(SHAKE.y);
-        if (sqrt((double)SHAKE.x * SHAKE.x + (double)SHAKE.y * SHAKE.y) < 5) {
-            SHAKE.x = shake(SHAKE.x);
-            SHAKE.y = shake(SHAKE.y);
+        shake(SHAKE.x);
+        shake(SHAKE.y);
+        const double squared_y = (double)SHAKE.y * SHAKE.y;
+        if ((float)sqrt(SHAKE.x * SHAKE.x + squared_y) < 5.f) {
+            shake(SHAKE.x);
+            shake(SHAKE.y);
         }
     }
     CAM.x += SHAKE.x;
@@ -277,9 +307,6 @@ __forceinline void draw_projectiles() {
     projectile_render();
 }
 __forceinline void render_world() {
-#if FREEWARE_EDITION == 10300
-    render_ground();
-#endif
 #if FREEWARE_EDITION < 10400
     // Retired creatures contribute marks to this frame's queue in both early releases.
     creature_render_all();
@@ -303,7 +330,7 @@ __forceinline void render_world() {
             SLOW = 0;
         else {
             SLOW -= frame_dt;
-            if (SLOW <= 0) {
+            if (FREEWARE_EDITION != 10300 && SLOW <= 0) {
                 time_scale_active = 1;
                 freeware_fade_time = 0;
                 SLOW = -.01f;
@@ -318,21 +345,50 @@ __forceinline void render_world() {
                     SHIELD(current_player_index) = 0;
                 else
                     SHIELD(current_player_index) -= frame_dt;
+#if FREEWARE_EDITION == 10300
+                // The reserved perk trades contact immunity for increasing damage every half second.
+#ifdef CRIMSON_FREEWARE_CLIENT
+                const int reserved = 22;
+#else
+                const int reserved = perk_id_reserved_22;
+#endif
+                if (PLAYER_PERK(current_player_index, reserved)) {
+                    freeware_player_t &p = P(current_player_index);
+                    p.move_phase -= frame_dt;
+                    if (p.move_phase <= 0) {
+                        p.control_reserved += .2f;
+                        p.move_phase += .5f;
+                        HP(current_player_index) -= p.control_reserved;
+                    }
+                }
+#endif
             }
 #endif
             player_render();
         }
     }
+#if CL_BUILD != 10300
     current_player_index = 0;
+#endif
 #endif
 #if FREEWARE_EDITION != 10002
     draw_projectiles();
+#endif
+#if CL_BUILD == 10300
+    current_player_index = 0;
 #endif
 #if CL_BUILD != 10002
     freeware_current_map->render_layer(1, 0);
     freeware_current_map->render_triggers(1);
 #endif
     effect_render_all();
+#if FREEWARE_EDITION == 10300
+#ifdef CRIMSON_FREEWARE_CLIENT
+    G.ui.color = {1, 1, 1, 1};
+#else
+    grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+#endif
+#endif
 #if CL_BUILD != 10002
     freeware_current_map->render_layer(2, 0);
 #endif
@@ -341,30 +397,37 @@ __forceinline void render_world() {
     G.effect_labels.swap(G.frame_labels);
 #endif
 }
+__forceinline float spawn_random_coord(int extent) {
+    return (float)(crt_rand() % extent);
+}
+__forceinline unsigned char spawn_at_edge(float x, float y) {
+    vec2f_t p = {x, y};
+    return creature_spawn_random(&p);
+}
 __forceinline void spawn_edge() {
-    for (int attempt = 0; attempt < 100; ++attempt) {
-        vec2f_t p;
+    unsigned char spawned = 0;
+    for (int attempt = 0; attempt < 100 && !spawned; ++attempt) {
         switch (crt_rand() % 4) {
         case 0:
-            p.x = (float)(crt_rand() % freeware_arena_width);
-            p.y = -40;
+            spawned = spawn_at_edge(spawn_random_coord(freeware_arena_width), -40.f);
             break;
         case 1:
-            p.x = (float)(crt_rand() % freeware_arena_width);
-            p.y = (float)(freeware_arena_height + 40);
+            spawned = spawn_at_edge(spawn_random_coord(freeware_arena_width), freeware_arena_height + 40.f);
             break;
         case 2:
-            p.x = -40;
-            p.y = (float)(crt_rand() % freeware_arena_height);
+            spawned = spawn_at_edge(-40.f, spawn_random_coord(freeware_arena_height));
             break;
-        default:
-            p.x = (float)(freeware_arena_width + 40);
-            p.y = (float)(crt_rand() % freeware_arena_height);
+        case 3:
+            spawned = spawn_at_edge(freeware_arena_width + 40.f, spawn_random_coord(freeware_arena_height));
             break;
         }
-        if (creature_spawn_random(&p))
-            break;
     }
+}
+__forceinline void clamp_spawn_color(float &value) {
+    if (value < 0)
+        value = 0;
+    else if (value > 1)
+        value = 1;
 }
 __forceinline float saturate(float x) {
     if (x < 0)
@@ -373,56 +436,48 @@ __forceinline float saturate(float x) {
         return 1;
     return x;
 }
+#if FREEWARE_EDITION != 10002
 __forceinline void spawn_wave() {
-#if defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002
-    if (config_game_mode == 2)
-        P(0).weapon = 2;
-    SPAWN_TIMER -= frame_dt;
-    if (SPAWN_TIMER < 0) {
-        if (config_game_mode == 2) {
-            // 0x40d861..0x40d967 attempts one spawn even on a long frame.
-            SPAWN_TIMER = .01f;
-            effect_color_t tint = {saturate(SECONDS / 120.f), saturate(10.f / SECONDS),
-                                   saturate((float)sin(SECONDS * .1f)), 1};
-            vec2f_t east = {(float)freeware_arena_width, freeware_arena_height * .5f};
-            creature_spawn(&east, &tint, 1);
-        } else if (freeware_spawn_enabled) {
-            SPAWN_TIMER = 1.f - XP * .00001f;
-            if (SPAWN_TIMER < .2f)
-                SPAWN_TIMER = .2f;
-            spawn_edge();
-        }
-    }
-#else
     if (config_game_mode == 2) {
-        P(0).weapon = P(1).weapon = 2;
-        P(0).ammo = P(1).ammo = 30;
+        P(0).weapon = 2;
+        P(0).ammo = 30;
+        P(1).weapon = 2;
+        P(1).ammo = 30;
     }
     SPAWN_TIMER -= frame_dt * config_player_count;
     if (config_game_mode == 3)
         return;
     while (SPAWN_TIMER < 0) {
         if (config_game_mode == 2) {
-            SPAWN_TIMER += .25f;
-            effect_color_t tint = {saturate(SECONDS * .0083333338f + .3f), saturate(10.f / SECONDS + .3f),
-                                   saturate((float)sin(SECONDS * .1f) + .3f), 1};
-            vec2f_t right = {(float)(freeware_arena_width + 64),
-                             (float)(freeware_arena_height * .5 + cos(SECONDS) * 256)};
-            vec2f_t left = {-64, (float)(freeware_arena_height * .5 + sin(SECONDS) * 256)};
+            SPAWN_TIMER += .25;
+            effect_color_t tint = {SECONDS * .0083333338f + .3f, 10.f / SECONDS + .3f,
+                                   (float)sin(SECONDS * .1f) + .3f, 1};
+            clamp_spawn_color(tint.r);
+            clamp_spawn_color(tint.g);
+            clamp_spawn_color(tint.b);
+            vec2f_t right = {freeware_arena_width + 64.f, (float)cos(SECONDS) * 256.f + freeware_arena_height * .5f};
             creature_spawn(&right, &tint, 1);
+            vec2f_t left = {-64.f, (float)sin(SECONDS) * 256.f + freeware_arena_height * .5f};
             creature_spawn(&left, &tint, 1);
         } else if (freeware_spawn_enabled) {
-            SPAWN_TIMER += 1.f - XP * .000016666667f;
+            SPAWN_TIMER += 1.f - FIELD(P(current_player_index).experience, run.experience) * .000016666667f;
             if (SPAWN_TIMER < .01f)
                 SPAWN_TIMER = .01f;
             spawn_edge();
-        } else
+        }
+#ifdef CRIMSON_FREEWARE_CLIENT
+        // A disabled spawner cannot advance a negative timer.
+        else
             break;
-    }
 #endif
+    }
 }
+#endif
 #ifndef CRIMSON_FREEWARE_CLIENT
 extern "C" void freeware_music_stop(int);
+#if FREEWARE_EDITION == 10300
+extern "C" void freeware_title_track_fade(), freeware_game_track_fade();
+#endif
 #endif
 
 __forceinline void die() {
@@ -435,7 +490,7 @@ __forceinline void die() {
 }
 __forceinline void deaths() {
     if (config_player_count == 1) {
-        if (HP(0) <= 0) {
+        if (HP(current_player_index) <= 0) {
             if (FREEWARE_EDITION >= 10301 && REVIVE < 1 && (XP == 6 || XP == 66 || XP == 666 || XP == 6666)) {
                 freeware_secret_weapon_unlocked = 1;
                 HP(0) = 1;
@@ -443,19 +498,26 @@ __forceinline void deaths() {
                 weapon_assign_player(0, 17);
             } else {
                 if (CL_BUILD != 10002 && PERK(perk_id_final_revenge) > 0) {
-                    BOMB_POS = POS(0);
+                    BOMB_POS = POS(current_player_index);
                     BOMB = 0;
-                    SHAKE.x = SHAKE.y = 10;
+                    vec2f_t shake = {10, 10};
+                    SHAKE = shake;
                     sfx_play_panned(21, .45f, .5f);
                 }
-                HP(0) = 0;
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
                 enter(6);
+                HP(current_player_index) = 0;
+#if FREEWARE_EDITION == 10300
+                freeware_title_track_fade();
+                freeware_game_track_fade();
+#else
                 freeware_music_stop(31);
                 freeware_music_stop(30);
                 freeware_music_stop(29);
+#endif
                 STATE_SINCE = CLOCK;
 #else
+                HP(current_player_index) = 0;
                 die();
 #endif
             }
@@ -463,7 +525,10 @@ __forceinline void deaths() {
     } else if (HP(0) <= 0 && HP(1) <= 0) {
         HP(0) = HP(1) = 0;
         die();
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10300
+        freeware_title_track_fade();
+        freeware_game_track_fade();
+#elif !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
         freeware_music_stop(30);
         freeware_music_stop(29);
         freeware_music_stop(31);
@@ -475,70 +540,71 @@ __forceinline void update_wave() {
         BOMB += (BOMB + 1) * frame_dt * 1.8f;
 }
 __forceinline void label(const char *, float, float, float, float, float, float, float);
-__forceinline void target_perks() {
-    for (current_player_index = 0; current_player_index < config_player_count; ++current_player_index) {
-        if (HP(current_player_index) <= 0 ||
-            (P(current_player_index).perks[perk_id_spontaneously_combusteous] <= 0 &&
-             P(current_player_index).perks[perk_id_evil_eyes] <= 0 &&
-             P(current_player_index).perks[perk_id_see_health] <= 0))
-            continue;
-        int id = creature_find_in_radius(&P(current_player_index).aim, 10);
-        if (id < 0)
-            continue;
-        creature_t &c = creature_pool[id];
-        if (P(current_player_index).perks[perk_id_see_health] > 0) {
-            char buf[40];
-            sprintf(buf, "health %d", (int)c.health);
-            label(buf, FIELD(freeware_aim_screen.x, cursor_x), FIELD(freeware_aim_screen.y, cursor_y) + 32, .5f, 1,
-                  1, 1, .64f);
-        }
-        if (P(current_player_index).perks[perk_id_spontaneously_combusteous] > 0) {
-            c.anim_phase -= frame_dt;
-            if (c.anim_phase < 0) {
-                c.anim_phase = .5f;
-                vec2f_t zero = {0, 0};
-                fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, .8f);
-                fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, .6f);
-                fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, .4f);
-                fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, .3f);
-                fx_spawn_particle(&c.position, (crt_rand() % 628) * .01f, &zero, .2f);
-                fx_queue_add_random(&c.position);
-            }
-        }
-        if (P(current_player_index).perks[perk_id_evil_eyes] > 0 && FREEZE <= 0) {
-            c.pos_x -= c.vel_x;
-            c.pos_y -= c.vel_y;
+#if FREEWARE_EDITION != 10002
+__forceinline void combust_particle(const vec2f_t *pos, float scale) {
+    vec2f_t velocity = {0, 0};
+    fx_spawn_particle(pos, (crt_rand() % 628) * .01f, &velocity, scale);
+}
+// Runs in the live player's arrow pass. Each of the three perks observes the same target.
+__forceinline void target_player_perks() {
+    if (P(current_player_index).perks[perk_id_see_health] <= 0 &&
+        P(current_player_index).perks[perk_id_spontaneously_combusteous] <= 0 &&
+        P(current_player_index).perks[perk_id_evil_eyes] <= 0)
+        return;
+    int id = creature_find_in_radius(&P(current_player_index).aim, 10);
+    if (id == -1)
+        return;
+    if (P(current_player_index).perks[perk_id_see_health] > 0) {
+#ifdef CRIMSON_FREEWARE_CLIENT
+        char buf[40];
+        sprintf(buf, "health %d", (int)creature_pool[id].health);
+        label(buf, G.cursor_x, G.cursor_y + 32, .5f, 1, 1, 1, .64f);
+#else
+        grim_interface_ptr->grim_set_color(1, 1, 1, .64f);
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, .5f);
+        sprintf(freeware_ui_buffer, "health %d", (int)creature_pool[id].health);
+        grim_interface_ptr->grim_draw_text_mono(freeware_aim_screen.x, freeware_aim_screen.y + 32, freeware_ui_buffer);
+#endif
+    }
+    if (P(current_player_index).perks[perk_id_spontaneously_combusteous] > 0) {
+        creature_pool[id].anim_phase -= frame_dt;
+        if (creature_pool[id].anim_phase < 0) {
+            creature_pool[id].anim_phase = .5f;
+            combust_particle(&creature_pool[id].position, .8f);
+            combust_particle(&creature_pool[id].position, .6f);
+            combust_particle(&creature_pool[id].position, .4f);
+            combust_particle(&creature_pool[id].position, .3f);
+            combust_particle(&creature_pool[id].position, .2f);
+            fx_queue_add_random(&creature_pool[id].position);
         }
     }
-    current_player_index = 0;
+    if (P(current_player_index).perks[perk_id_evil_eyes] > 0 && FREEZE <= 0) {
+        creature_pool[id].pos_x -= creature_pool[id].vel_x;
+        creature_pool[id].pos_y -= creature_pool[id].vel_y;
+    }
 }
 __forceinline void timed_perks() {
     if (JINX >= 0)
         JINX -= frame_dt;
     if (JINX < 0 && PERK(perk_id_jinxed) > 0) {
-#if FREEWARE_EDITION == 10002
-        JINX = .6f;
-        int id = crt_rand() % 127;
-#else
         if (crt_rand() % 10 == 3) {
-            HP(0) -= 5;
-            fx_queue_add_random(&POS(0));
-            fx_queue_add_random(&POS(0));
+            HP(current_player_index) -= 5;
+            fx_queue_add_random(&POS(current_player_index));
+            fx_queue_add_random(&POS(current_player_index));
         }
-        JINX += (crt_rand() % 20) * .1f + 2;
+        JINX = (crt_rand() % 20) * .1f + JINX + 2;
         int id = crt_rand() % 511;
-        for (int n = 0; n < 10 && !creature_pool[id].active; ++n)
+        for (current_player_index = 0; current_player_index < 10 && !creature_pool[id].active; ++current_player_index)
             id = crt_rand() % 511;
-#endif
-        creature_t &c = creature_pool[id];
-        if (c.active) {
-            c.health = -1;
-            c.death_timer -= frame_dt * 20;
-            XP = (int)(XP + c.freeware.reward);
+        current_player_index = 0;
+        if (creature_pool[id].active) {
+            creature_pool[id].health = -1;
+            creature_pool[id].death_timer -= frame_dt * 20;
+            XP = (int)(XP + creature_pool[id].freeware.reward);
             sfx_play_panned(3, .45f, .5f);
         }
     }
-    if (PERK(perk_id_berserk_attack) > 0) {
+    if (PLAYER_PERK(current_player_index, perk_id_berserk_attack) > 0) {
         BERSERK -= frame_dt;
         if (BERSERK < 0) {
             if (crt_rand() % 15 == 2) {
@@ -549,6 +615,7 @@ __forceinline void timed_perks() {
         }
     }
 }
+#endif
 __forceinline void label(const char *text, float x, float y, float scale, float r, float g, float b, float alpha) {
 #ifdef CRIMSON_FREEWARE_CLIENT
     G.ui.scale = scale;
@@ -578,7 +645,45 @@ __forceinline void sprite(const char *name, float x, float y, float w, float h, 
 
 #include "frame_level.inc"
 #include "frame_menu.inc"
+#if CL_BUILD == 10002 && !defined(CRIMSON_FREEWARE_CLIENT)
+#include "frame_menu_102.inc"
+#endif
 #include "frame_overlays.inc"
+
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+enum transition_phase { transition_fade_in, transition_solid, transition_fade_out };
+__forceinline void draw_transition(bool dying, transition_phase phase) {
+    grim_interface_ptr->grim_begin_batch();
+    if (dying)
+        frame_bind_texture(grim_interface_ptr->grim_get_texture_handle("reaper"));
+    if (phase == transition_fade_in)
+        grim_interface_ptr->grim_set_color(1, 1, 1, CLOCK - STATE_SINCE);
+    else if (phase == transition_fade_out)
+        grim_interface_ptr->grim_set_color(1, 1, 1, 3.f - (CLOCK - STATE_SINCE));
+    else
+        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+    if (dying)
+        grim_interface_ptr->grim_draw_quad(screen_width / 2 - 64, screen_height / 2 - 64, 128, 128);
+    else
+        grim_interface_ptr->grim_draw_text_mono(screen_width / 2 - strlen("Level cleared!") * 8,
+                                               screen_height / 2 - 32, "Level Cleared!");
+    grim_interface_ptr->grim_end_batch();
+}
+__forceinline void draw_timed_transition(bool dying) {
+    grim_interface_ptr->grim_set_uv(0, 0, 1, 1);
+    if (!dying)
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, 1.f);
+    if (CLOCK - STATE_SINCE < 1.f)
+        draw_transition(dying, transition_fade_in);
+    else if (CLOCK - STATE_SINCE < 2.f)
+        draw_transition(dying, transition_solid);
+    else if (CLOCK - STATE_SINCE < 3.f)
+        draw_transition(dying, transition_fade_out);
+}
+#endif
+#if FREEWARE_EDITION == 10002
+#include "frame_gameplay_102.inc"
+#endif
 
 extern "C" unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
@@ -638,10 +743,10 @@ extern "C" unsigned char game_frame_update() {
     if (FIELD(console_open_flag, console_open))
         dt = 0;
 #endif
-    if (PLAYER_PERK(FREEWARE_EDITION <= 10400 ? current_player_index : 0, perk_id_reflex_boosted) > 0 &&
+    if (PLAYER_PERK(current_player_index, perk_id_reflex_boosted) > 0 &&
         (FREEWARE_EDITION == 10002 || SCALE > .85f))
         SCALE = .85f;
-    if (CL_BUILD != 10002)
+    if (FREEWARE_EDITION != 10002)
         current_player_index = 0;
     frame_dt = SCALE * dt;
     CLOCK += frame_dt;
@@ -650,8 +755,15 @@ extern "C" unsigned char game_frame_update() {
 #if FREEWARE_EDITION == 10002
     render_ground(); // 0x40c243 draws the ground with the preceding frame's camera.
 #endif
+#ifdef CRIMSON_FREEWARE_CLIENT
+    if (INPUT.filter_override)
+        G.ui.filter = 3;
+#else
+    if (grim_interface_ptr->grim_is_key_down(0x18))
+        grim_interface_ptr->grim_set_config_var(CL_BUILD == 10002 ? 0x0f : 0x15, 3U);
+#endif
     position_camera();
-#if FREEWARE_EDITION == 10400
+#if FREEWARE_EDITION >= 10300
     render_ground();
 #endif
 #if CL_BUILD != 10002
@@ -659,15 +771,15 @@ extern "C" unsigned char game_frame_update() {
         freeware_current_map->update_triggers();
         if (level_cleared()) {
             enter(freeware_rules::level_clear_state);
-#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
             menu_tracks(false);
 #endif
             STATE_SINCE = CLOCK;
         }
     }
-    if (config_game_mode == 4 && state() == 3)
-        editor();
-    else
+    if (config_game_mode == 4 && state() == 3) {
+#include "frame_editor.inc"
+    } else
 #endif
         render_world();
     if (FREEWARE_EDITION >= 10400 && !freeware_rainbow_armed) {
@@ -687,6 +799,80 @@ extern "C" unsigned char game_frame_update() {
 #endif
     switch (state()) {
     case 1:
+#if CL_BUILD == 10002 && !defined(CRIMSON_FREEWARE_CLIENT)
+        {
+            if (MENU_MUSIC && !ACTIVE) {
+                freeware_title_track_start(30);
+                MENU_MUSIC = 0;
+                STATE_SINCE = CLOCK;
+                freeware_logo_angle = 0;
+            }
+            crt_free(freeware_main_labels[0]);
+            if (ACTIVE)
+                freeware_main_labels[0] = strdup_malloc("Resume game.");
+            else
+                freeware_main_labels[0] = strdup_malloc("Begin game.");
+            float age = CLOCK - STATE_SINCE;
+            float clock = CLOCK;
+            menu102_title(clock, age);
+            grim_interface_ptr->grim_set_config_var(frame_font_scale, .75435f);
+            freeware_perk_hover = -1;
+            if (freeware_options_open) {
+                menu102_option_labels();
+                menu102_option_rows();
+            } else
+                menu102_main_rows();
+            menu_footer_102(age, clock);
+            menu102_option_input();
+            if (!freeware_credits_open && !freeware_scores_open && !freeware_options_open) {
+                if (grim_interface_ptr->grim_was_mouse_button_pressed(0)) {
+                    int row = freeware_perk_hover;
+                    if (row == 0) {
+                        if (ACTIVE)
+                            enter(3);
+                        else {
+                            freeware_logo_visible = 0;
+                            MENU_MUSIC = 1;
+                            enter(3);
+                            freeware_music_started = 1;
+                            gameplay_reset_state();
+                            freeware_title_track_fade();
+                            freeware_spawn_enabled = 1;
+                            ACTIVE = 1;
+                        }
+                    } else if (row == 1) {
+                        if (!ACTIVE) {
+                            config_game_mode = (game_mode_id_t)(config_game_mode + 1);
+                            if (config_game_mode > 2)
+                                config_game_mode = (game_mode_id_t)1;
+                            crt_free(freeware_main_labels[1]);
+                            if (config_game_mode == 1)
+                                freeware_main_labels[1] = strdup_malloc("Game mode: career");
+                            else
+                                freeware_main_labels[1] = strdup_malloc("Game mode: survival");
+                        }
+                    } else if (row == 2) {
+                        highscore_load_table();
+                        freeware_transition_pending = 1;
+                        freeware_scores_open = 1;
+                        freeware_transition_alpha = 1.f;
+                    } else if (row == 3) {
+                        freeware_transition_pending = 1;
+                        freeware_credits_open = 1;
+                        freeware_transition_alpha = 1.f;
+                    } else if (row == 4)
+                        freeware_options_open = 1;
+                    else if (row == 5)
+                        return 0;
+                }
+            }
+            if (freeware_credits_open)
+                game_credits_update();
+            if (freeware_scores_open)
+                game_highscores_update();
+        }
+        break;
+#else
         if (FREEWARE_EDITION != 10002 && !ACTIVE) {
             creatures();
             shots();
@@ -694,41 +880,52 @@ extern "C" unsigned char game_frame_update() {
         if (!main_menu())
             return 0;
         break;
+#endif
+#if CL_BUILD == 10002
+    case 2:
+        freeware_career_menu_update();
+        break;
+#endif
     case 3:
         if (CL_BUILD == 10002 || config_game_mode != 4) {
             if (FREEWARE_EDITION != 10002)
                 deaths();
-            if (PICKUP_TIME <= 0) {
+#if FREEWARE_EDITION == 10002
+            gameplay_before_hud102();
+#else
+            if (PICKUP_TIME > 0)
+                PICKUP_TIME -= frame_dt;
+            else {
                 PICKUP_TIME = 0;
 #ifdef CRIMSON_FREEWARE_CLIENT
                 G.run.pickup.kind = freeware::Bonus::None;
 #else
                 freeware_pickup_id = freeware_no_pickup;
 #endif
-            } else
-                PICKUP_TIME -= frame_dt;
-            if (bonus_fire_bullets_timer <= 0)
-                bonus_fire_bullets_timer = 0;
-            else
+            }
+            if (bonus_fire_bullets_timer > 0)
                 bonus_fire_bullets_timer -= frame_dt;
-            if (FREEZE <= 0)
-                FREEZE = 0;
             else
+                bonus_fire_bullets_timer = 0;
+            if (FREEZE > 0)
                 FREEZE -= frame_dt;
+            else
+                FREEZE = 0;
             update_wave();
             aim_overlays();
-            target_perks();
             timed_perks();
             spawn_wave();
-            hud();
+#endif
 #if FREEWARE_EDITION == 10002
-            // 0x40e420 checks for the picker after this frame's combat, spawns and HUD.
-            if (PENDING > 0 && config_game_mode != 2 && open_perk()) {
+            // The prompt's draw and its input check share the same pending-perk gate.
+            if (hud102::render() && open_perk()) {
                 enter(4);
                 open_choices();
                 request_transition();
                 STATE_SINCE = CLOCK;
             }
+#else
+            hud();
 #endif
             if (!FIELD(freeware_music_started, wind_started) && CLOCK > 1.1f) {
                 sfx_play_panned(13, .45f, .5f);
@@ -741,6 +938,12 @@ extern "C" unsigned char game_frame_update() {
             hud();
         perk_selection_screen_update();
         break;
+#if CL_BUILD != 10002 && FREEWARE_EDITION != 10300
+    case 7:
+        hud();
+        game_show_message();
+        break;
+#endif
 #if FREEWARE_EDITION != 10002
     case 6:
         update_wave();
@@ -753,6 +956,9 @@ extern "C" unsigned char game_frame_update() {
 #ifdef CRIMSON_FREEWARE_CLIENT
         G.death_clock = CLOCK - STATE_SINCE;
 #endif
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+        draw_timed_transition(true);
+#else
         if (CLOCK - STATE_SINCE < 3) {
             float elapsed = CLOCK - STATE_SINCE;
             sprite("reaper", screen_width / 2 - 64.f, screen_height / 2 - 64.f, 128, 128, 0, 1, 1, 1,
@@ -760,6 +966,7 @@ extern "C" unsigned char game_frame_update() {
                    : elapsed < 2 ? 1.f
                                  : 3.f - elapsed);
         }
+#endif
         if (CLOCK - STATE_SINCE >= 3) {
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
             freeware_music_start(29);
@@ -770,15 +977,12 @@ extern "C" unsigned char game_frame_update() {
         }
         break;
 #endif
-#if CL_BUILD != 10002 && FREEWARE_EDITION != 10300
-    case 7:
-        hud();
-        game_show_message();
-        break;
-#endif
 #if CL_BUILD != 10002
     case freeware_rules::level_clear_state:
         hud();
+#if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION == 10400
+        draw_timed_transition(false);
+#else
         if (CLOCK - STATE_SINCE < 3) {
             float elapsed = CLOCK - STATE_SINCE;
             label("Level Cleared!", screen_width / 2.f - 112, screen_height / 2.f - 32, 1, 1, 1, 1,
@@ -786,6 +990,7 @@ extern "C" unsigned char game_frame_update() {
                   : elapsed < 2 ? 1.f
                                 : 3.f - elapsed);
         }
+#endif
         if (CLOCK - STATE_SINCE >= 3) {
 #ifndef CRIMSON_FREEWARE_CLIENT
             level_load_next();
@@ -814,7 +1019,8 @@ extern "C" unsigned char game_frame_update() {
     }
     if (G.safe_mode)
         label("(Safemode)", 150, screen_height - 25.f, .695f, 1, 1, 1, 1);
-    update_fps(G.fps);
+    if (FREEWARE_EDITION != 10002)
+        update_fps(G.fps);
     return !G.quit;
 #else
     sfx_update();
@@ -832,8 +1038,15 @@ extern "C" unsigned char game_frame_update() {
         sprintf(freeware_ui_buffer, "fps: %.2f", (double)grim_interface_ptr->grim_get_fps());
         grim_interface_ptr->grim_draw_text_mono(5, screen_height - 25.f, freeware_ui_buffer);
     }
-    if (freeware_safe_mode)
+    if (freeware_safe_mode) {
+#if CL_BUILD == 10002
+        grim_interface_ptr->grim_set_color(1, 1, 1, 1);
+        grim_interface_ptr->grim_set_config_var(frame_font_scale, .695f);
+        grim_interface_ptr->grim_draw_text_mono(150, screen_height - 25.f, "(Safemode)");
+#else
         label("(Safemode)", 150, screen_height - 25.f, .695f, 1, 1, 1, 1);
+#endif
+    }
     if (CL_BUILD >= 10400)
         freeware_console.render();
     return 1;

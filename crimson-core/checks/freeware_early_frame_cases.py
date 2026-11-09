@@ -11,7 +11,8 @@ from freeware_early_menu_cases import check_early_menu
 def check_early_frames(exe, edition, lines):
     early = edition == "1.0.2"
     keys = set()
-    pe, samples = original(exe, early, keys=keys, buttons=())
+    buttons = set()
+    pe, samples = original(exe, early, keys=keys, buttons=buttons)
     if early:
         frame, state, mode, active, spawn = 0x40C110, 0x41C09C, 0x41C0A0, 0x428800, 0x4287F6
         dt, clock, seconds, timer, scale = 0x428884, 0x428888, 0x428810, 0x42886C, 0x41C080
@@ -71,7 +72,10 @@ def check_early_frames(exe, edition, lines):
     overlay_rows = iter(line.split()[1:] for line in lines if line.startswith("deathoverlay "))
     xp_clock_rows = iter(line.split()[1:] for line in lines if line.startswith("deathxpclock "))
     total = 0
-    for scene in range(10):
+    perk_rows = iter(row.split()[1:] for row in lines if row.startswith("reservedperk "))
+    for scene in range(10 if early else 11):
+        buttons.clear()
+        reserved_perk = scene == 10
         level_test = 5 <= scene <= 8
         escape_during_death = scene == 9
         if early and (scene == 2 or level_test):
@@ -105,6 +109,14 @@ def check_early_frames(exe, edition, lines):
             pe.write_f32(0x421F00 if early else 0x43001C, 0)  # Ready to fire.
             if not early:
                 pe.write_f32(0x44775C, 0.125)  # Lean Mean Exp Machine countdown.
+        if reserved_perk:
+            # Reproduce the reserved perk initializer, a pending selection and a slowdown expiring on tick zero.
+            pe.write_u32(0x4477DC, 22)
+            pe.write_u32(0x430024 + 4 * 22, 1)
+            pe.write_u32(0x447804, 1)
+            pe.write_f32(0x447800, 0.015625)
+            pe.write_f32(0x42FFA0, 0.125)
+            pe.write_f32(0x4300C4, 5.0)
         if scene >= 3:
             pe.write_f32(timer, 100)
         if scene == 4 or level_test:
@@ -127,6 +139,10 @@ def check_early_frames(exe, edition, lines):
             ground.clear()
             labels.clear()
             keys.clear()
+            if reserved_perk:
+                buttons.clear()
+                if tick == 0:
+                    buttons.add(1)
             if escape_during_death:
                 if tick == 0:
                     keys.update((0xCD, 0x1C))  # Right arrow and Enter (fire) at zero health.
@@ -161,6 +177,12 @@ def check_early_frames(exe, edition, lines):
                 expected_overlay = (tick, *quality, samples.count(17))
                 observed_overlay = tuple(map(int, next(overlay_rows)))
                 assert observed_overlay == expected_overlay, (edition, observed_overlay, expected_overlay)
+            if reserved_perk:
+                seq, slow, move_phase, control = next(perk_rows)
+                assert int(seq) == tick
+                for actual, address in ((slow, 0x447800), (move_phase, 0x42FFA0), (control, 0x4300C4)):
+                    expected = pe.read_f32(address)
+                    assert math.isclose(float(actual), expected, abs_tol=1e-5), (edition, tick, hex(address), actual, expected)
             row = next(rows)
             assert list(map(int, row[:2])) == [scene, tick]
             expected = [pe.read_u32(state), pe.read_u8(active), pe.rand_state]
@@ -215,6 +237,7 @@ def check_early_frames(exe, edition, lines):
                     actual,
                 )
             total += 1
+    assert next(perk_rows, None) is None
     assert next(rows, None) is None
     assert next(overlay_rows, None) is None
     assert next(xp_clock_rows, None) is None

@@ -32,7 +32,7 @@ static const char *menu_label(const Game &g, int row) {
     return "Game mode: Level Test";
   if (row == 2 && g.level_mode == 4)
     return "Game mode: Level Edit";
-  if (row == 0 && g.paused)
+  if (row == 0 && (FREEWARE_EDITION == 10002 ? g.active_run : g.paused))
     return "Resume game.";
   if (row == 1 && g.two_players)
     return "Players: two";

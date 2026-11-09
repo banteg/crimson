@@ -10,10 +10,10 @@ int early_sample_count(int sample);
 
 void check_early_frames(const char *assets) {
   using namespace freeware;
-  enum Scenario { career, survival, coop, death, impact, first_map, escape_during_death = first_map + 4 };
-  for (int scene = career; scene <= escape_during_death; ++scene) {
+  enum Scenario { career, survival, coop, death, impact, first_map, escape_during_death = first_map + 4, reserved_perk };
+  for (int scene = career; scene <= reserved_perk; ++scene) {
     const bool level = scene >= first_map && scene < escape_during_death;
-    if ((scene == coop || level) && FREEWARE_EDITION == 10002)
+    if ((scene == coop || level || scene == reserved_perk) && FREEWARE_EDITION == 10002)
       continue;
     Game game;
     game.survival = scene == survival || scene == coop;
@@ -42,6 +42,13 @@ void check_early_frames(const char *assets) {
       game.run.cooldown = 0;
       game.run.exp_clock = .125f;
     }
+    if (scene == reserved_perk) {
+      game.run.perks[22] = 1;
+      game.run.pending = 1;
+      game.run.slow = .015625f;
+      player_state_table[0].freeware.move_phase = .125f;
+      player_state_table[0].freeware.control_reserved = 5.f;
+    }
     if (scene >= death)
       game.run.next_spawn = 100;
     freeware_spawn_enabled = scene == career || game.survival;
@@ -65,6 +72,8 @@ void check_early_frames(const char *assets) {
     for (int tick = 0; tick < frames; ++tick) {
       Input input{};
       input.relative = true;
+      if (scene == reserved_perk)
+        input.perk_button = tick == 0;
       if (scene == escape_during_death) {
         input.right = input.fire = tick == 0;
         input.escape = tick == 1;
@@ -86,6 +95,9 @@ void check_early_frames(const char *assets) {
       if (scene == death)
         std::printf("deathoverlay %d %d %d %d %d %d\n", tick, game.low_fps_frames, game.smoke, game.effects,
                     game.shadows, early_sample_count(17) - menu_sounds);
+      if (scene == reserved_perk)
+        std::printf("reservedperk %d %.9g %.9g %.9g\n", tick, game.run.slow,
+                    player_state_table[0].freeware.move_phase, player_state_table[0].freeware.control_reserved);
       bool name_prompt = false, frag_stats = false;
       for (const auto &label : game.frame_labels) {
         name_prompt |= label.text == "Who were you:";

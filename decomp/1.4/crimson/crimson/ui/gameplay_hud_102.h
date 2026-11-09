@@ -7,7 +7,7 @@
 extern "C" void freeware_hud_set_row(int);
 
 namespace hud102 {
-__forceinline void render() {
+__forceinline bool render() {
     using namespace ui140;
 #ifdef CRIMSON_FREEWARE_CLIENT
     char output[80];
@@ -49,16 +49,15 @@ __forceinline void render() {
     begin();
     quad(10, 35, 140, 15);
     tint(.38f, .04f, .04f, .9f);
-    float &health = UI_FIELD(UI_PLAYER(current_player_index).health, actor(current_player_index).health);
-    float hp = health * .01f;
+    float hp = UI_FIELD(UI_PLAYER(current_player_index).health, actor(current_player_index).health) * .01f;
     if (hp > 1)
         hp = 1;
     if (hp > 0)
         quad(12, 37, 12 + hp * 124, 11);
     end();
     tint(1, 1, 1, 1);
-    if (health <= 0) {
-        health = 0;
+    if (UI_FIELD(UI_PLAYER(current_player_index).health, actor(current_player_index).health) <= 0) {
+        UI_FIELD(UI_PLAYER(current_player_index).health, actor(current_player_index).health) = 0;
 #ifdef CRIMSON_FREEWARE_CLIENT
         UI_GAME.enter_state(6);
         UI_GAME.death_clock = 0;
@@ -142,7 +141,9 @@ __forceinline void render() {
         quad(400, 430, 256, 50);
         end();
         filter(2);
+        return true;
     }
+    return false;
 }
 } // namespace hud102
 #endif
