@@ -329,3 +329,43 @@ def test_stack_refs_keep_inline_eh_without_locals_across_an_indirect_call():
     assert frame["refs"][-1][1] == -12
     assert list(fp.local_refs(frame)) == []
     assert frame["depths"][len(code) - 1] == 0
+
+
+def test_indexed_local_bases_are_separate_from_fixed_accesses():
+    # ESP is four bytes below locals after the save. Exclude the out-of-frame, FS and heap references.
+    code = bytes.fromhex(
+        "83ec20 56 8b44b40c 884c0c04 8b445430 648b44b40c 8b445304 8b442414 5e 83c420 c3",
+    )
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    md = ns.capstone.Cs(ns.capstone.CS_ARCH_X86, ns.capstone.CS_MODE_32)
+    md.detail = True
+    rows = {
+        4: SimpleNamespace(assembly="mov eax, DWORD PTR _table$[esp+esi*4+36]", source_lines=(7,)),
+        8: SimpleNamespace(assembly="mov BYTE PTR _text$[esp+ecx+36], cl", source_lines=(8,)),
+    }
+    listing = ns.listing_operands(rows, {"_table$": -24, "_text$": -32}, ns.INDEXED_STACK_OPERAND)
+    assert ns.indexed_local_bases(md.disasm(code, 0), frame, listing) == [
+        {"address": 4, "base": 8, "index": "esi", "scale": 4, "object": "_table$"},
+        {"address": 8, "base": 0, "index": "ecx", "scale": 1, "object": "_text$"},
+    ]
+    assert list(fp.local_refs(frame)) == [(25, 16)]
+    assert not ns.listing_operands(rows, {"_table$": -24, "_text$": -32})[4][0]
+
+
+def test_indexed_local_bases_skip_ambiguous_or_missing_depth():
+    # The taken branch skips a push, so the two paths disagree on the base at the load.
+    code = bytes.fromhex("83ec10 7401 50 8a441c08 83c410 c3")
+    md = ns.capstone.Cs(ns.capstone.CS_ARCH_X86, ns.capstone.CS_MODE_32)
+    md.detail = True
+    frame = fp.stack_refs(code, 0x1000, lambda _: None)
+    assert frame["conflicts"] == [(0x1006, 20, 16)]
+    assert not ns.indexed_local_bases(md.disasm(code, 0x1000), frame)
+    assert list(fp.local_refs(frame)) == []
+
+    code = bytes.fromhex("83ec10 8a441c08 83c410 c3")
+    frame = fp.stack_refs(code, 0x1000, lambda _: None)
+    assert not frame["conflicts"]
+    assert ns.indexed_local_bases(md.disasm(code, 0x1000), frame)[0]["base"] == 8
+    del frame["depths"][0x1003]
+    assert not ns.indexed_local_bases(md.disasm(code, 0x1000), frame)
+    assert list(fp.local_refs(frame)) == []

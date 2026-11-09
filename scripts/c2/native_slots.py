@@ -8,6 +8,7 @@ into a vote "candidate object X lives at native bottom offset B". It then prints
 - the inferred native slot partition, including candidate offsets and weights, interference edges
   and competing base addresses when references to the same candidate object disagree;
 - native frame references that no candidate object explains (objects the candidate lacks);
+- indexed ESP operands whose constant base falls inside the locals, separately from fixed-slot votes;
 - the packer replay in the compiler's list order, flagging each placement whose slot mates live
   in different native slots (the first flagged line is usually the one to fix);
 - the compiler's slots in frame order with their weight and density, and, when the local slots
@@ -38,11 +39,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import capstone
 import frame_predict as fp
+from capstone.x86_const import X86_OP_MEM, X86_REG_ESP, X86_REG_SS
 
 from crimson_re import match
 from crimson_re.match_listing_diagnostics import parse_stack_listing
 
 STACK_OPERAND = re.compile(r"([^\s,\[\]]*)\[esp(?:\+(\d+))?\]", re.IGNORECASE)
+
+INDEXED_STACK_OPERAND = re.compile(
+    r"([^\s,\[\]]*)\[esp\+e(?:ax|bx|cx|dx|bp|si|di)(?:\*[1248])?(?:[+-]\d+)?\]",
+    re.IGNORECASE,
+)
 
 
 def norm(insn) -> str:
@@ -73,12 +80,12 @@ def object_names(fr: fp.Frame, declarations: dict[str, int]) -> dict[int, str]:
     return names
 
 
-def listing_operands(rows, declarations):
+def listing_operands(rows, declarations, pattern=STACK_OPERAND):
     """Candidate code offset -> list of (alias or None, anon offset or None) per esp operand."""
     result = {}
     for off, row in rows.items():
         ops = []
-        for m in STACK_OPERAND.finditer(row.assembly):
+        for m in pattern.finditer(row.assembly):
             prefix = m.group(1).removesuffix("+").removeprefix("DWORD").removeprefix("QWORD")
             prefix = prefix.split("PTR")[-1].strip()
             if not prefix:
@@ -90,6 +97,37 @@ def listing_operands(rows, declarations):
                 ops.append((alias, None))
         result[off] = (ops, row.source_lines)
     return result
+
+
+def indexed_local_bases(insns, frame, listing=None):
+    """Report the constant term of an indexed stack address. The register selects the actual element."""
+    # A conflicting join makes the subsequently propagated stack depth ambiguous.
+    if frame["conflicts"]:
+        return []
+    bases = []
+    for insn in insns:
+        depth = frame["depths"].get(insn.address)
+        if depth is None:
+            continue
+        for operand in insn.operands:
+            if operand.type != X86_OP_MEM:
+                continue
+            mem = operand.mem
+            if mem.base != X86_REG_ESP or not mem.index or mem.segment not in (0, X86_REG_SS):
+                continue
+            base = mem.disp - depth + frame["local_bottom_depth"]
+            if 0 <= base < frame["frame_size"]:
+                aliases = listing.get(insn.address, ([], ()))[0] if listing else []
+                bases.append(
+                    {
+                        "address": insn.address,
+                        "base": base,
+                        "index": insn.reg_name(mem.index),
+                        "scale": mem.scale,
+                        "object": aliases[0][0] if len(aliases) == 1 else None,
+                    },
+                )
+    return bases
 
 
 def analyze(
@@ -121,6 +159,7 @@ def analyze(
     _, start, end = match.resolve_function(manifest, config.function, end_override=config.end_va)
     image = match.load_image(target.image_path, manifest.image_base)
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    md.detail = True
     tins = list(md.disasm(image.function_bytes(start, end), start))
     cins = list(md.disasm(cand.data, 0))
     ops = listing_operands(rows, declarations)
@@ -159,6 +198,12 @@ def analyze(
             votes[o.ptr][tb - (cb - bottom[o.ptr])] += 1
     native = {p: v.most_common(1)[0][0] for p, v in votes.items()}
     return {
+        "indexed_bases": {
+            "native": indexed_local_bases(tins, frames["target"]),
+            "candidate": indexed_local_bases(
+                cins, frames["candidate"], listing_operands(rows, declarations, INDEXED_STACK_OPERAND),
+            ),
+        },
         "names": names,
         "native": native,
         "votes": votes,
@@ -215,6 +260,16 @@ def report(fr: fp.Frame, res: dict) -> dict:
         print("candidate objects with votes for multiple native bases (base: votes):")
         for name, counts in split_votes.items():
             print(f"  {name}: " + ", ".join(f"{item['base']:#x}: {item['votes']}" for item in counts))
+    indexed = res.get("indexed_bases", {})
+    if any(indexed.values()):
+        print("indexed operands with bases inside the local reservation (reported separately from slot votes):")
+        for side, entries in indexed.items():
+            for entry in entries:
+                label = f"  {entry['object']}" if entry["object"] else ""
+                print(
+                    f"  {side} {entry['address']:#x}  bottom {entry['base']:#06x} + "
+                    f"{entry['index']}*{entry['scale']}{label}",
+                )
     if res["unexplained"]:
         print("native frame references with no candidate object:")
         for a, tb, text in res["unexplained"]:
@@ -252,6 +307,7 @@ def report(fr: fp.Frame, res: dict) -> dict:
             )
     return {
         "groups": rows,
+        "indexed_bases": indexed,
         "at_native_offset": same,
         "mapped": len(native),
         "split_votes": split_votes,
