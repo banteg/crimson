@@ -1,3 +1,8 @@
+#include "cl_build.h"
+
+#if CL_BUILD == 10002
+#include "player_render_early.inc"
+#else
 // crimson.exe 1.4.0, 0x4103b0.
 #include "world_render.h"
 #include <math.h>
@@ -161,3 +166,4 @@ extern "C" void player_render() {
         destination(6);
     }
 }
+#endif

@@ -1,3 +1,8 @@
+#include "cl_build.h"
+
+#if CL_BUILD == 10002
+#include "projectile_render_early.inc"
+#else
 // crimson.exe 1.4.0, 0x40b570.
 #include "world_render.h"
 #include "freeware_edition.h"
@@ -299,3 +304,4 @@ extern "C" void projectile_render() {
     if (GLOW)
         rocket_glow(9, 60, .68f);
 }
+#endif

@@ -1,3 +1,8 @@
+#include "cl_build.h"
+
+#if CL_BUILD == 10002
+#include "creature_update_early.inc"
+#else
 #include "freeware_edition.h"
 // 0x40d8c0. Corpse retirement is a separate pass inside creature rendering (0x40fd10).
 #include "freeware_level.h"
@@ -262,3 +267,4 @@ extern "C" void creature_update_all() {
         }
     }
 }
+#endif
