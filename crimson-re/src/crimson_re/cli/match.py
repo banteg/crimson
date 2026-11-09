@@ -115,6 +115,15 @@ def cmd_match_report(
             f"{measures.get('matched_data', 0)}/{measures.get('total_data', 0)} bytes"
             if evidence["data"] is not None else "not measured"
         )
+        if "data_coverage" in diagnostics:
+            counted = diagnostics["data_coverage"]["total"]
+            data_progress += (
+                f" matched, {counted['named_global_addresses']} named globals across "
+                f"{counted['mapped_addresses']} mapped locations, "
+                f"{counted['unmatched_bytes']} unmatched "
+                f"({counted['mapped_unmatched_bytes']} mapped, {counted['pe_metadata_bytes']} PE metadata, "
+                f"{counted['unattributed_bytes']} unattributed)"
+            )
         typer.echo(
             f"{version} Game & Engine: {game['matched_functions']}/{game['total_functions']} functions; "
             f"{code_progress}{game['matched_code']}/{game['total_code']} bytes ({game['matched_code_percent']:.2f}%); "

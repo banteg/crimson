@@ -175,7 +175,7 @@ def test_evidence_is_bound_to_inputs_and_full_inventory(monkeypatch: pytest.Monk
         report.validate_evidence(evidence)
 
 
-def test_native_evidence_requires_tail_verification_from_originals(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_native_evidence_requires_tail_and_data_verification_from_originals(monkeypatch: pytest.MonkeyPatch) -> None:
     inventory = [{"image": "crimson.exe", "address": 100, "size": 5, "name": "foo",
                   "native_kind": "function", "ownership": "game"}]
     scored = [{**inventory[0], "candidate": None, "source": None, "ratio": 0.0, "matched": False, "proof": None}]
@@ -193,8 +193,19 @@ def test_native_evidence_requires_tail_verification_from_originals(monkeypatch: 
     verify = Mock()
     monkeypatch.setattr(report.match_gap_objects, "validate_tails", verify)
     evidence["gap_objects"] = []
+    with pytest.raises(ValueError, match="missing freeware data evidence"):
+        report.validate_evidence(evidence)
+    data = {"sections": []}
+    evidence.update(data=data, identities=report.accounting.identities(inventory, {}, {}, data=data))
+    verify.reset_mock()
+    validate_data = Mock()
+    monkeypatch.setattr(report.match_freeware_data, "validate_evidence", validate_data)
     report.validate_evidence(evidence)
     verify.assert_called_once_with(scored, [], image_paths)
+    validate_data.assert_called_once_with("1.0.2", data, scored, image_paths)
+    evidence["linking"] = {}
+    with pytest.raises(ValueError, match="unsupported data or linking evidence"):
+        report.validate_evidence(evidence)
 
 
 def test_missing_reference_images_fail_even_when_ci_lacks_compilers(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -208,6 +219,37 @@ def test_missing_reference_images_fail_even_when_ci_lacks_compilers(monkeypatch:
         report.validate_evidence(evidence)
 
 
+def test_freeware_objdiff_partitions_original_data_without_credit_for_locations(monkeypatch: pytest.MonkeyPatch) -> None:
+    rows = [
+        ("crimson.exe", "title", 4, "game", "source-matched"),
+        ("crimson.exe", "ticks", 12, "game", "mapped-unmatched"),
+        ("crimson.exe", "import names", 6, "pe", "pe-metadata"),
+        ("grim.dll", "unidentified", 10, "unknown", "unattributed"),
+    ]
+    spans = []
+    for index, (image, name, size, owner, status) in enumerate(rows):
+        matched = status == "source-matched"
+        spans.append({"image": image, "section": ".data", "name": name, "address": 0x4000 + 32 * index,
+                      "size": size, "owner": owner, "status": status, "matched": matched,
+                      "source": "game.cpp" if matched else None})
+    data = {"policy": report.match_freeware_data.POLICY, "ownership": [], "spans": spans}
+    monkeypatch.setattr(report.match_freeware_data, "report_spans", lambda data: data["spans"])
+    result = report.build_report([], data=data)
+    totals = {cat["id"]: cat["measures"] for cat in result["categories"]}
+    assert result["measures"]["total_data"] == "32"
+    assert result["measures"]["matched_data"] == "4"
+    assert result["measures"]["complete_data"] == "0"
+    assert totals["exe"]["total_data"] == "22"
+    assert totals["dll"]["total_data"] == "10"
+    assert totals["game.data"]["total_data"] == "16"
+    assert totals["game.data"]["matched_data"] == "4"
+    assert totals["data_unknown"]["total_data"] == "10"
+    assert totals["data.unmatched"]["total_data"] == "28"
+    assert totals["data.pe"]["total_data"] == "6"
+    assert totals["data.mapped"]["total_data"] == "12"
+    assert all(not unit["functions"] for unit in result["units"])
+
+
 def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
     assert report._input_path("tools/match/scratches/new_function/scratch.conf")
     assert report._input_path("tools/match/include/shared.h")
@@ -216,6 +258,8 @@ def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
     assert report._input_path("analysis/ida/raw/grim.dll/functions.json")
     assert report._input_path("analysis/matching_scope.json")
     assert report._input_path("tools/native/data_candidates.json")
+    assert report._input_path("tools/match/data/freeware_globals.json")
+    assert not report._input_path("tools/match/scratches/example/freeware_notes.json")
     assert report._input_path("crimson-re/src/crimson_re/native_link.py")
     assert report._input_path("analysis/decomp/1.9.8/crimsonland.exe/data.json")
     assert not report._input_path("analysis/decomp/1.9.93.json")

@@ -24,6 +24,7 @@ from . import match as matchlib
 from . import (
     match_builds,
     match_data_report,
+    match_freeware_data,
     match_gap_objects,
     match_native_inventory,
     match_toolchain,
@@ -33,6 +34,7 @@ from . import match_report_accounting as accounting
 
 # The canonical build: curated inventory, data evidence and the ownership ranges every build reuses.
 VERSION = matchlib.CANONICAL_BUILD
+IMAGE_CATEGORIES = {"crimsonland.exe": "exe", "crimson.exe": "exe", "grim.dll": "dll"}
 DEFAULT_REPORTS = matchlib.REPO_ROOT / "artifacts" / "decomp"
 BUILD_MAP_RE = re.compile(r"analysis/decomp/[^/]+/[^/]+/(?:functions|data|imports|metadata|recovered|native)\.json")
 
@@ -51,6 +53,8 @@ def _input_path(path: str) -> bool:
     if path.startswith("tools/match/evidence/"):
         # Dated investigation records: nothing evaluated for the report reads them.
         return False
+    if p.parent.as_posix() == "tools/match/data" and p.match("freeware_*.json"):
+        return True
     if path.startswith(("tools/match/", "tools/native/", "third_party/", "decomp/")):
         return p.suffix in {".c", ".cpp", ".cc", ".h", ".hpp", ".inc", ".conf", ".sh", ".py"} or (
             path.startswith(("tools/native/", "decomp/")) and p.suffix == ".json"
@@ -278,12 +282,14 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
     configs = [status.config for status in statuses]
     external, toolchains = _external_inputs(configs, before, version)
     _score(inventory, statuses)
-    data = match_data_report.refresh_evidence(configs) if version == VERSION else None
-    linking = native_reference_link.refresh(inventory, data) if data is not None else None
     image_paths = _image_paths(version)
-    gap_objects = None
-    if any("native_kind" in row for row in inventory):
+    data = linking = gap_objects = None
+    if version == VERSION:
+        data = match_data_report.refresh_evidence(configs)
+        linking = native_reference_link.refresh(inventory, data)
+    elif any("native_kind" in row for row in inventory):
         gap_objects = match_gap_objects.verify_tails(inventory, statuses, image_paths)
+        data = match_freeware_data.refresh_evidence(version, inventory, statuses, image_paths)
     if repository_inputs() != before or _external_inputs(configs, before, version) != (external, toolchains):
         raise ValueError("report inputs changed during evaluation; refresh again")
     return {
@@ -352,17 +358,21 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
     image_paths = _image_paths(version)
     if evidence["code_inventory"] != accounting.code_inventory(inventory, image_paths):
         raise ValueError("executable inventory reconciliation differs")
-    if any("native_kind" in row for row in inventory):
+    native = any("native_kind" in row for row in inventory)
+    if native:
         if "gap_objects" not in evidence:
             raise ValueError("missing native object-tail receipts")
         match_gap_objects.validate_tails(evidence["functions"], evidence["gap_objects"], image_paths)
+        if evidence["data"] is None:
+            raise ValueError("missing freeware data evidence")
+        match_freeware_data.validate_evidence(version, evidence["data"], evidence["functions"], image_paths)
     elif "gap_objects" in evidence:
         raise ValueError("object-tail receipts require a native executable inventory")
     if version == VERSION:
         match_data_report.validate_evidence(evidence["data"])
         native_reference_link.validate(evidence["linking"], evidence["functions"], evidence["data"])
-    elif evidence["data"] is not None or evidence.get("linking") is not None:
-        raise ValueError("data evidence covers the canonical build only")
+    elif evidence.get("linking") is not None or (not native and evidence["data"] is not None):
+        raise ValueError(f"unsupported data or linking evidence for {version}")
 
 
 def _category_definitions() -> tuple[dict[str, str], list[tuple[str, int, int, str]]]:
@@ -428,6 +438,10 @@ def build_report(
         labels.update({"game.data": "Game & Engine + attributed data",
                        "libs.data": "Libraries + attributed data",
                        "data_unknown": "Unattributed data"})
+    freeware_data = data is not None and data.get("policy") == match_freeware_data.POLICY
+    if freeware_data:
+        labels.update({"data.pe": "PE metadata", "data.unmatched": "Unmatched data",
+                       "data.mapped": "Mapped data awaiting source matches"})
     ownership = matchlib._load_matching_scope_definition("port")
     third_party = {
         (image, disposition.address)
@@ -474,7 +488,7 @@ def build_report(
         )
         name = row["name"] if names[row["name"]] == 1 else f"{row['name']}@{accounting.native_id(row)}"
         metadata: dict[str, Any] = {"complete": is_complete}
-        categories = [{"crimsonland.exe": "exe", "crimson.exe": "exe", "grim.dll": "dll"}[row["image"]]]
+        categories = [IMAGE_CATEGORIES[row["image"]]]
         libraries = sorted({
             category for image, start, end, category in library_ranges
             if image == row["image"] and start <= owner_key[1] < end
@@ -534,7 +548,10 @@ def build_report(
         complete_units += int(is_complete)
         fuzzy += size * percent
     data_total = data_matched = data_complete = 0
-    for span in match_data_report.report_spans(data) if data is not None else []:
+    data_spans = []
+    if data is not None:
+        data_spans = match_freeware_data.report_spans(data) if freeware_data else match_data_report.report_spans(data)
+    for span in data_spans:
         size = span["size"]
         matched_size = size if span["matched"] else 0
         is_complete = span["matched"] and any(
@@ -544,11 +561,15 @@ def build_report(
         )
         metadata = {
             "complete": is_complete,
-            "progress_categories": [{"crimsonland.exe": "exe", "grim.dll": "dll"}[span["image"]]],
+            "progress_categories": [IMAGE_CATEGORIES[span["image"]]],
         }
         if data is not None and "ownership" in data:
             metadata["progress_categories"].append(
-                {"game": "game.data", "libraries": "libs.data", "unknown": "data_unknown"}[span["owner"]])
+                {"game": "game.data", "libraries": "libs.data", "unknown": "data_unknown", "pe": "data.pe"}[span["owner"]])
+        if freeware_data and not span["matched"]:
+            metadata["progress_categories"].append("data.unmatched")
+            if span["status"] == "mapped-unmatched":
+                metadata["progress_categories"].append("data.mapped")
         if span["source"]:
             metadata["source_path"] = span["source"]
         units.append({

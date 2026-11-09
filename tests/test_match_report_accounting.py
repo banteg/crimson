@@ -285,3 +285,98 @@ def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(ver
     assert f"## Crimsonland {version}" in summary
     assert "Game & Engine" in summary and "Unresolved executable bytes" in summary
     assert "not measured" in summary if evidence["data"] is None else "outside scope" in summary
+
+
+@pytest.fixture
+def freeware_data() -> dict[str, Any]:
+    from crimson_re import match_freeware_data
+
+    exe, dll = "crimson.exe", "grim.dll"
+    sections = [
+        {"image": exe, "name": ".data", "address": 0x1000, "size": 16, "file_size": 8, "sha256": "a" * 64},
+        {"image": dll, "name": ".rdata", "address": 0x1000, "size": 8, "file_size": 8, "sha256": "b" * 64},
+    ]
+    globals_ = [
+        {"image": exe, "address": 0x1000, "names": ["count", "count_alias"], "references": []},
+        {"image": exe, "address": 0x1004, "names": ["seed"], "references": []},
+        {"image": dll, "address": 0x1000, "names": ["engine_label"], "references": []},
+    ]
+    spans = [
+        {"image": exe, "section": ".data", "address": 0x1000, "size": 4, "name": "count", "source": "state.cpp",
+         "matched": True, "owner": "game", "storage": "file-backed", "status": "source-matched"},
+        {"image": exe, "section": ".data", "address": 0x1004, "size": 4, "name": "seed", "source": None,
+         "matched": False, "owner": "game", "storage": "file-backed", "status": "mapped-unmatched"},
+        {"image": exe, "section": ".data", "address": 0x1008, "size": 8, "name": "unmatched", "source": None,
+         "matched": False, "owner": "unknown", "storage": "zero-fill", "status": "unattributed"},
+        {"image": dll, "section": ".rdata", "address": 0x1000, "size": 4, "name": "unmatched", "source": None,
+         "matched": False, "owner": "unknown", "storage": "file-backed", "status": "unattributed"},
+        {"image": dll, "section": ".rdata", "address": 0x1004, "size": 4, "name": "IAT", "source": None,
+         "matched": False, "owner": "pe", "storage": "file-backed", "status": "pe-metadata"},
+    ]
+    ownership = [{"image": exe, "address": 0x1000, "size": 8, "owner": "game"}]
+    return {"policy": match_freeware_data.POLICY, "sections": sections, "excluded_sections": [],
+            "globals": globals_, "spans": spans, "ownership": ownership,
+            "candidates": [{"image": exe, "address": 0x1000, "size": 4, "name": "count", "source": "state.cpp"}]}
+
+
+def test_freeware_data_coverage_counts_distinct_locations_and_all_virtual_bytes(freeware_data):
+    row = {**function(), "image": "crimson.exe", "ownership": "game", "native_kind": "function"}
+    evidence = {"version": "1.4.0", "verification": accounting.VERIFICATION, "identities": {}, "functions": [row],
+                "code_inventory": [], "data": freeware_data}
+    report = match_report.build_report([row], data=freeware_data)
+    metrics = accounting.diagnostics(evidence, report=report)
+    coverage = metrics["data_coverage"]
+    expected = {"virtual_bytes": 24, "file_backed_bytes": 16, "zero_fill_bytes": 8, "source_matched_bytes": 4,
+                "mapped_unmatched_bytes": 4, "pe_metadata_bytes": 4, "unattributed_bytes": 12, "unmatched_bytes": 20,
+                "mapped_addresses": 3}
+    for key, count in expected.items():
+        assert coverage["total"][key] == sum(image[key] for image in coverage["by_image"].values()) == count
+    assert coverage["by_image"]["crimson.exe"]["mapped_addresses"] == 2
+    assert coverage["by_image"]["grim.dll"]["mapped_addresses"] == 1
+    assert coverage["by_image"]["crimson.exe"]["source_matched_bytes"] == 4
+    assert coverage["by_image"]["grim.dll"]["source_matched_bytes"] == 0
+    assert [(r["image"], r["section"], r["virtual_bytes"]) for r in coverage["by_section"]] == [
+        ("crimson.exe", ".data", 16), ("grim.dll", ".rdata", 8),
+    ]
+    backlog = [(r["image"], r["address"], r["size"], r["status"]) for r in coverage["unmatched_ranges"]]
+    assert sorted(backlog) == [
+        ("crimson.exe", 0x1004, 4, "mapped-unmatched"), ("crimson.exe", 0x1008, 8, "unattributed"),
+        ("grim.dll", 0x1000, 4, "unattributed"), ("grim.dll", 0x1004, 4, "pe-metadata"),
+    ]
+    assert int(report["measures"]["total_data"]) == 24
+    assert int(report["measures"]["matched_data"]) == 4
+    summary = accounting.render_summary(evidence, report, metrics)
+    assert "crimson.exe" in summary and "grim.dll" in summary
+    assert "report.metrics.json" in summary
+
+
+def test_freeware_data_baseline_separates_mapping_from_source_progress(freeware_data):
+    original = accounting.identities([], {}, {}, data=freeware_data)
+    matched = deepcopy(freeware_data)
+    # Reproducing the first half of seed splits an existing ownership range.
+    seed = matched["spans"][1]
+    matched["spans"][1:2] = [
+        {**seed, "size": 2, "status": "source-matched", "matched": True, "source": "seed.cpp"},
+        {**seed, "address": 0x1006, "size": 2},
+    ]
+    owner = matched["ownership"][0]
+    matched["ownership"] = [{**owner, "size": 6}, {**owner, "address": 0x1006, "size": 2}]
+    matched["candidates"].append({"image": "crimson.exe", "address": 0x1004, "size": 2, "name": "seed",
+                                  "source": "seed.cpp"})
+    assert original == accounting.identities([], {}, {}, data=matched)
+
+    # An unbounded label changes the address map without awarding any bytes.
+    mapped = deepcopy(freeware_data)
+    mapped["globals"].append({"image": "crimson.exe", "address": 0x100a, "names": ["label"], "references": []})
+    assert original["inventory"] != accounting.identities([], {}, {}, data=mapped)["inventory"]
+
+    transferred = deepcopy(freeware_data)
+    transferred["ownership"][0]["owner"] = "libraries"
+    for span in transferred["spans"][:2]:
+        span["owner"] = "libraries"
+    assert original["inventory"] != accounting.identities([], {}, {}, data=transferred)["inventory"]
+
+    larger = deepcopy(freeware_data)
+    larger["sections"][0]["size"] += 4
+    larger["spans"][2]["size"] += 4
+    assert original["inventory"] != accounting.identities([], {}, {}, data=larger)["inventory"]
