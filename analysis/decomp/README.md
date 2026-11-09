@@ -338,30 +338,29 @@ feed `--build` comparisons and the reported builds' inventories; see
 
 ## Freeware
 
-All 307 retained Grim2D engine functions compile to their original instruction
-encodings, with every positional reference verified against the release's DLL.
+All 818 confirmed Game & Engine functions compile to their original instruction
+encodings. The matcher verifies each reference against that release's executable
+or Grim2D DLL. Together the functions cover 349,594 bytes. The Game & Engine
+denominator also retains 7,942 bytes of executable gaps.
 
-| Release | Byte-exact engine functions | Matched function bytes |
-|---|---:|---:|
-| 1.0.2 | 91 / 91 | 14,318 |
-| 1.3.0 | 105 / 105 | 15,704 |
-| 1.4.0 | 111 / 111 | 18,951 |
+| Release | Game functions matched | Grim2D functions matched | Matched function bytes | Executable gap bytes |
+|---|---:|---:|---:|---:|
+| 1.0.2 | 104 / 104 | 91 / 91 | 77,143 | 1,929 |
+| 1.3.0 | 164 / 164 | 105 / 105 | 122,830 | 2,546 |
+| 1.4.0 | 243 / 243 | 111 / 111 | 149,621 | 3,467 |
 
-All 104 confirmed game functions in the 1.0.2 executable also match their
-original encodings. Together with Grim2D, that covers all 195 confirmed
-functions and 77,143 function bytes. The Game & Engine denominator includes
-another 1,929 bytes of executable gaps. The final function, `game_frame_update`,
-accounts for 11,366 bytes and 858 verified references, including both switch
-tables. The raw discovery inventory retains the six internal switch and join
-labels within its verified extent.
+The frame dispatcher was the last function to match in each release.
 
-All 269 confirmed 1.3.0 game and engine functions match, covering 122,830
-function bytes. Its frame dispatcher accounts for 21,459 bytes and 1,747
-verified references. Seven internal entries belong to its two switch tables.
-The raw inventory retains those labels, and the 61 bytes after the dispatcher
-remain in the executable-gap accounting.
+| Release | `game_frame_update` address | Body bytes | Instructions | Verified references |
+|---|---:|---:|---:|---:|
+| 1.0.2 | `0x40c110` | 11,366 | 2,799 | 858 |
+| 1.3.0 | `0x412fd0` | 21,459 | 5,351 | 1,747 |
+| 1.4.0 | `0x418190` | 24,916 | 6,233 | 1,969 |
 
-In 1.4.0, `game_frame_update` is the remaining game function.
+The raw 1.0.2 and 1.3.0 inventories retain six and seven internal switch or
+join labels respectively. Their complete compiled bodies establish the enclosing
+function boundaries. The 42 and 61 bytes of switch tables and alignment after
+those dispatchers remain in the gap totals.
 
 Each freeware image has an independent `native.json` inventory. Its image and
 basic-block byte hashes, donor-map digest, analyzer version, verified starts,
