@@ -981,6 +981,8 @@ unsigned char game_frame_update() {
         G.selected = 0;
         enter(1);
     }
+    if ((FREEWARE_EDITION != 10002 && INPUT.quit_chord) || (FREEWARE_EDITION >= 10400 && G.quit))
+        return 0;
     if (G.show_fps) {
         char buf[64];
         sprintf(buf, "fps: %.2f", G.fps);

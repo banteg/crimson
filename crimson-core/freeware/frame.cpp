@@ -84,8 +84,13 @@ void Game::update(float dt, const Input &in) {
     console_input(in);
   mouse_dx = in.relative ? in.dx : in.x - cursor_x;
   mouse_dy = in.relative ? in.dy : in.y - cursor_y;
-  if (dt > 0)
-    fps = 1 / dt;
+  ++fps_sample_frames;
+  fps_sample_seconds += dt;
+  if (fps_sample_seconds > .5f) {
+    fps = float(fps_sample_frames) / fps_sample_seconds;
+    fps_sample_seconds = 0;
+    fps_sample_frames = 0;
+  }
   config_player_count = players();
   config_game_mode = static_cast<game_mode_id_t>(level_mode ? level_mode : survival ? 2 : 1);
   freeware_frame_game = this;
@@ -94,6 +99,8 @@ void Game::update(float dt, const Input &in) {
   quiet.y = cursor_y;
   freeware_frame_input = &in;
   if (console_open) {
+    quiet.quit_chord = in.quit_chord;
+    quiet.screenshot = FREEWARE_EDITION >= 10300 && in.screenshot;
     freeware_frame_input = &quiet;
   } else if (screen == Screen::Perks && !run.choices.empty() && (in.previous || in.next || in.accept)) {
     // Keyboard navigation positions the same cursor used by the original mouse hit test.

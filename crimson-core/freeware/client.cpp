@@ -1,5 +1,5 @@
 #include "display.h"
-#include <algorithm>
+#include "screenshot_key.h"
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -62,6 +62,7 @@ struct Client {
   Game game;
   std::string assets;
   Input in;
+  ScreenshotKey screenshot_key;
   SDL_Gamepad *pads[2]{};
   Uint64 previous{};
 };
@@ -144,11 +145,9 @@ static void frame() {
             in.level_pressed.set(k.code);
       for (int i = 0; i < 2; ++i)
         in.fire_edge[i] |= int(e.key.scancode) == c.game.keys[i][4];
-      if (e.key.scancode == SDL_SCANCODE_Q && (e.key.mod & SDL_KMOD_ALT))
-        c.game.quit = true;
       switch (e.key.scancode) {
       case SDL_SCANCODE_F12:
-        in.screenshot = true;
+        in.screenshot = FREEWARE_EDITION == 10002;
         break;
       case SDL_SCANCODE_GRAVE:
         in.console = true;
@@ -224,10 +223,13 @@ static void frame() {
                                    axis(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > .3f);
   }
   const Uint64 now = SDL_GetTicksNS();
-  float dt = std::min(.1f, float(now - c.previous) / 1e9f);
+  float dt = float(now - c.previous) / 1e9f;
+  if constexpr (FREEWARE_EDITION >= 10300)
+    in.screenshot = c.screenshot_key.poll(keys[SDL_SCANCODE_F12], dt);
   c.previous = now;
   bool was_text = c.game.screen == Screen::Death || c.game.console_open;
   Input controls = in;
+  controls.quit_chord = keys[SDL_SCANCODE_LALT] && keys[SDL_SCANCODE_Q];
   controls.accept_down = keys[SDL_SCANCODE_RETURN];
   controls.arrow_down = keys[SDL_SCANCODE_DOWN];
   controls.arrow_up = keys[SDL_SCANCODE_UP];
@@ -256,7 +258,10 @@ static void frame() {
     c.game.visit_website = false;
   }
   update_music(c.game, c.assets);
-  c.display->draw(c.game);
+  if (!c.game.quit)
+    c.display->draw(c.game);
+  else if constexpr (FREEWARE_EDITION >= 10300)
+    c.display->consume_front_screenshot(c.game);
 #ifdef __EMSCRIPTEN__
   if (c.game.quit)
     emscripten_cancel_main_loop();

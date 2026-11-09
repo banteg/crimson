@@ -1,4 +1,5 @@
 #include "../freeware/game.h"
+#include "freeware_timing.h"
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -95,7 +96,13 @@ static void play_cycle(bool survival) {
   using namespace freeware;
   Game game;
   Input input;
-  // The 1.3.0 score writer averages 50 distinct consecutive FPS readings.
+  // The 1.3.0 score writer averages the last 50 changes to Grim's sampled FPS.
+  // Accumulate enough varied half-second samples in the menu to admit a score.
+  if (FREEWARE_EDITION == 10300) {
+    for (int rate = 50; rate <= 74; ++rate)
+      for (int frame = 0; frame <= rate / 2; ++frame)
+        game.update(1.f / rate, input);
+  }
   unsigned tick = 0;
   auto step = [&] { game.update(1.f / (59 + (++tick & 1)), input); };
   auto click = [&](int row) {
@@ -283,4 +290,5 @@ int main(int argc, char **argv) {
       }
     }
   }
+  check_freeware_timing();
 }

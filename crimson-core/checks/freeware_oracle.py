@@ -10,6 +10,9 @@ import sys
 import tempfile
 from pathlib import Path
 
+from freeware_frame_input_cases import check_quit_chord, check_screenshot_key, check_screenshot_pixels
+from freeware_timing_cases import check_freeware_timing
+
 from crimson_re.dbg.native_oracle import NativeOracle, StubCall, SymbolTable
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -137,6 +140,7 @@ def main() -> None:
     if not compiler:
         raise SystemExit("clang++ is required")
     with tempfile.TemporaryDirectory() as tmp:
+        check_screenshot_pixels([compiler, *game_flags(ROOT)], Path(tmp))
         test = Path(tmp) / "freeware-cycle"
         subprocess.run(
             [
@@ -150,6 +154,9 @@ def main() -> None:
             check=True,
         )
         lines = subprocess.check_output([test], text=True).splitlines()
+    check_quit_chord(exe, "1.4.0", lines)
+    check_screenshot_key(args.install, "1.4.0", lines)
+    check_freeware_timing(args.install, "1.4.0", lines)
     oracle = NativeOracle(exe, symbols=SymbolTable({}), rand_state_address=0x432C40)
     check_choices(oracle, lines)
     check_volleys(NativeOracle(exe, symbols=SymbolTable({}), rand_state_address=0x432C40), lines)

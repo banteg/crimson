@@ -1,4 +1,6 @@
 #include "../freeware/game.h"
+#include "freeware_frame_input.h"
+#include <cassert>
 #include <cstdio>
 
 extern "C" {
@@ -120,5 +122,15 @@ void check_early_frames(const char *assets) {
                   creature_pool[0].active, projectile_pool[0].active, game.terrain_sprites.at(0).x, game.terrain_sprites.at(0).y,
                   name_prompt, frag_stats, game.level_number);
     }
+  }
+  check_screenshot_input();
+  for (bool console : {false, true}) {
+    Game game;
+    game.console_open = console;
+    Input held;
+    held.quit_chord = true;
+    game.update(1.f / 60, held);
+    assert(game.quit == (FREEWARE_EDITION != 10002));
+    std::printf("quit-chord %d %d\n", console, game.quit);
   }
 }

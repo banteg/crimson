@@ -1,6 +1,8 @@
 // Drive the production 1.4.0 state machine exclusively through its normal inputs.
 // The companion original-executable check consumes the row, hover and spawn output.
 #include "../freeware/game.h"
+#include "freeware_frame_input.h"
+#include "freeware_timing.h"
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -313,4 +315,18 @@ int main() {
     }
   }
   assert(picked && leveled);
+  check_screenshot_input();
+  for (bool console : {false, true}) {
+    Game exit_game;
+    exit_game.console_open = console;
+    Input held;
+    held.quit_chord = true;
+    exit_game.update(1.f / 60, held);
+    assert(exit_game.quit);
+    std::printf("quit-chord %d %d\n", console, exit_game.quit);
+    assert(exit_game.fps_count == 0);
+  }
+
+
+  check_freeware_timing();
 }

@@ -11,6 +11,7 @@ Display::~Display() {
   for (auto &entry : textures)
     SDL_DestroyTexture(entry.second);
   SDL_DestroyTexture(ground);
+  SDL_DestroyTexture(front);
 }
 bool Display::load(const std::string &folder, bool &safe_mode) {
   std::ifstream list(folder + "/textures.txt");
@@ -149,16 +150,65 @@ void Display::frame_art(const std::vector<FrameSprite> &sprites, const std::vect
     frame_sprite(sprites[i++]);
 }
 void Display::rebuild_ground(const Game &g) {
+  SDL_Texture *previous = SDL_GetRenderTarget(renderer);
   SDL_SetRenderTarget(renderer, ground);
   SDL_SetRenderDrawColorFloat(renderer, g.terrain_clear.r, g.terrain_clear.g, g.terrain_clear.b,
                               g.terrain_clear.a);
   SDL_RenderClear(renderer);
   for (const auto &draw : g.terrain)
     frame_sprite(draw);
-  SDL_SetRenderTarget(renderer, nullptr);
+  SDL_SetRenderTarget(renderer, previous);
   ground_revision = g.terrain_revision;
 }
+void Display::save_screenshot(Game &g) {
+  char filename[48];
+  std::snprintf(filename, sizeof(filename), "screenshot_%d.bmp", g.screenshot_index);
+  SDL_Surface *shot = SDL_RenderReadPixels(renderer, nullptr);
+  if (shot && SDL_SaveBMP(shot, (g.save_dir + filename).c_str()))
+    ++g.screenshot_index;
+  SDL_DestroySurface(shot);
+}
+
+// Retain the presented pixels on the renderer so F12 only needs a readback on request.
+SDL_Texture *Display::begin_front() {
+  int w, h;
+  if (!SDL_GetRenderOutputSize(renderer, &w, &h) || w <= 0 || h <= 0)
+    return nullptr;
+  if (w == front_width && h == front_height)
+    return front && SDL_SetRenderTarget(renderer, front) ? front : nullptr;
+
+  front_width = w;
+  front_height = h;
+  SDL_DestroyTexture(front);
+  front = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+  if (!front)
+    return nullptr;
+  if (SDL_SetTextureBlendMode(front, SDL_BLENDMODE_NONE) && SDL_SetTextureScaleMode(front, SDL_SCALEMODE_NEAREST) &&
+      SDL_SetRenderTarget(renderer, front) &&
+      SDL_SetRenderLogicalPresentation(renderer, width, height, SDL_LOGICAL_PRESENTATION_LETTERBOX))
+    return front;
+  SDL_SetRenderTarget(renderer, nullptr);
+  SDL_DestroyTexture(front);
+  front = nullptr;
+  return nullptr;
+}
+
+void Display::consume_front_screenshot(Game &g) {
+  if (!g.screenshot_requested)
+    return;
+  if (front_ready && SDL_SetRenderTarget(renderer, front)) {
+    save_screenshot(g);
+    SDL_SetRenderTarget(renderer, nullptr);
+  }
+  g.screenshot_requested = false;
+}
+
 void Display::draw(Game &g) {
+  SDL_Texture *frame = nullptr;
+  if (FREEWARE_EDITION >= 10300) {
+    consume_front_screenshot(g);
+    frame = begin_front();
+  }
   if (!g.safe_mode && ground_revision != g.terrain_revision && g.presented_terrain_revision == g.terrain_revision)
     rebuild_ground(g);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -170,7 +220,7 @@ void Display::draw(Game &g) {
     SDL_SetRenderTarget(renderer, ground);
     for (const auto &draw : g.terrain_marks)
       frame_sprite(draw);
-    SDL_SetRenderTarget(renderer, nullptr);
+    SDL_SetRenderTarget(renderer, frame);
   }
   if (!g.safe_mode && ground_revision != g.terrain_revision)
     rebuild_ground(g);
@@ -211,15 +261,25 @@ void Display::draw(Game &g) {
     }
     text("> " + g.command + "_", 3, 192, .65f, white);
   }
-  if (g.screenshot_requested) {
-    char filename[48];
-    std::snprintf(filename, sizeof(filename), "screenshot_%d.bmp", g.screenshot_index);
-    SDL_Surface *shot = SDL_RenderReadPixels(renderer, nullptr);
-    if (shot && SDL_SaveBMP(shot, (g.save_dir + filename).c_str()))
-      ++g.screenshot_index;
-    SDL_DestroySurface(shot);
+  if (FREEWARE_EDITION == 10002 && g.screenshot_requested) {
+    save_screenshot(g);
     g.screenshot_requested = false;
   }
-  SDL_RenderPresent(renderer);
+  if (frame) {
+    const bool on_window = SDL_SetRenderTarget(renderer, nullptr);
+    const bool copied = on_window &&
+        SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED) &&
+        SDL_RenderTexture(renderer, frame, nullptr, nullptr);
+    const bool restored = on_window &&
+        SDL_SetRenderLogicalPresentation(renderer, width, height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    if (!copied || !restored) {
+      // Keep the last visible image. Following frames draw directly until a resize retries the cache.
+      SDL_DestroyTexture(front);
+      front = nullptr;
+      front_ready = false;
+      return;
+    }
+  }
+  front_ready = SDL_RenderPresent(renderer) && frame;
 }
 } // namespace freeware

@@ -64,7 +64,7 @@ struct Input {
   bool fire{}, click{}, up{}, down{}, left{}, right{};
   bool previous{}, next{}, accept{}, accept_down{}, escape{}, backspace{};
   bool up2{}, down2{}, left2{}, right2{}, fire2{}, reload{}, level_up{}, keypad_plus_down{};
-  bool ctrl{}, console{}, mouse_fire{}, bend_time{}, fast_time{}, right_mouse{};
+  bool ctrl{}, console{}, quit_chord{}, mouse_fire{}, bend_time{}, fast_time{}, right_mouse{};
   bool screenshot{}, filter_override{}, relative{}, arrow_down{}, arrow_up{}, space_pressed{}, space_down{}, delete_scores{};
   float dx{}, dy{};
   std::bitset<256> level_down, level_pressed;
@@ -206,7 +206,8 @@ struct Game {
   float pad_threshold[2]{.1f, .1f};
   int pad_left_pov[2]{27000, 27000}, pad_right_pov[2]{9000, 9000};
 
-  float mouse_dx{}, mouse_dy{}, fps{};
+  float mouse_dx{}, mouse_dy{}, fps{}, fps_sample_seconds{};
+  unsigned fps_sample_frames{};
   std::string option(int row) const;
   void load_options();
   void save_options() const;

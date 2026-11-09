@@ -27,9 +27,11 @@ from freeware_creature_motion_cases import check_creature_motion
 from freeware_credits_cases import check_credits
 from freeware_early_frame_cases import check_early_frames
 from freeware_early_hud_cases import check_early_hud, check_early_name, check_name_edit_130
+from freeware_frame_input_cases import check_quit_chord, check_screenshot_key, check_screenshot_pixels
 from freeware_fx_cases import check_early_fx_writes
 from freeware_player_motion_cases import check_player_motion
 from freeware_spawn_random_cases import check_random_spawns
+from freeware_timing_cases import check_freeware_timing
 
 from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
 
@@ -158,6 +160,7 @@ def check(edition, install, tmp, web, browser):
         ROOT / "crimson-core/checks/freeware_early_menu.cpp",
         ROOT / "crimson-core/checks/freeware_early_fx.cpp",
     ]
+    check_screenshot_pixels([tool("clang++"), *game_flags(ROOT, edition)], tmp)
     binary = tmp / edition
     subprocess.run([tool("clang++"), *sources, "-o", binary], check=True)
     if edition == "1.3.0":
@@ -165,6 +168,9 @@ def check(edition, install, tmp, web, browser):
     lines = subprocess.check_output([binary, install], cwd=tmp, text=True).splitlines()
 
     def compare_combat(output):
+        check_quit_chord(exe, edition, output)
+        check_screenshot_key(install, edition, output)
+        check_freeware_timing(install, edition, output)
         check_deaths(exe, edition, output)
         check_weapons(exe, edition, output)
         check_hits(exe, edition, output)

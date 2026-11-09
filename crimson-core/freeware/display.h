@@ -9,12 +9,18 @@ struct Display {
   SDL_Renderer *renderer;
   std::unordered_map<std::string, SDL_Texture *> textures;
   SDL_Texture *ground{}, *last_texture{};
+  SDL_Texture *front{};
+  int front_width{}, front_height{};
+  bool front_ready{};
   int ground_revision = -1;
+  SDL_Texture *begin_front();
+  void save_screenshot(Game &g);
   void rebuild_ground(const Game &g);
   explicit Display(SDL_Renderer *r) : renderer(r) {}
   ~Display();
   bool load(const std::string &folder, bool &safe_mode);
   void draw(Game &game);
+  void consume_front_screenshot(Game &g);
   void frame_sprite(const FrameSprite &draw);
   void frame_art(const std::vector<FrameSprite> &sprites, const std::vector<FrameLabel> &labels);
   void sprite(const char *name, float x, float y, float w, float h, float angle = 0, int frame = 0,
