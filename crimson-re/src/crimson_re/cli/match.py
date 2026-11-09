@@ -96,8 +96,15 @@ def cmd_match_report(
             embedded = sum(image["embedded_data"] for image in images)
             unresolved = sum(image["unresolved"] for image in images)
             code_progress = (
-                f"{bodies['matched_code']}/{bodies['total_code']} function bytes ({bodies['matched_code_percent']:.2f}%); "
-                f"{padding} padding, {embedded} embedded data, {unresolved} unresolved bytes. Physical scope: "
+                f"{bodies['matched_code']}/{bodies['total_code']} function bytes ({bodies['matched_code_percent']:.2f}%). "
+                f"{padding} padding, {embedded} embedded data, {unresolved} unresolved bytes. "
+            )
+            tails = diagnostics["gap_object_coverage"]["total"]
+            code_progress += (
+                f"VC6 objects reproduced {tails['reproduced_bytes']} gap bytes with "
+                f"{tails['local_dir32_relocations']} local DIR32 relocations, covering "
+                f"{tails['reproduced_layout_bytes']}/{tails['total_layout_bytes']} bytes with function bodies. "
+                "Objdiff counts "
             )
         port = scopes.get("port")
         port_progress = (

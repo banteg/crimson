@@ -273,6 +273,27 @@ def diagnostics(
         result["game_executable_coverage"] = {
             image: {"total_bytes": sum(counts.values()), **counts} for image, counts in by_image.items()
         }
+    if "gap_objects" in evidence:
+        image_counts = {
+            image: {"ranges": 0, "reproduced_bytes": 0, "local_dir32_relocations": 0}
+            for image in result["game_executable_coverage"]
+        }
+        for receipt in evidence["gap_objects"]:
+            counts = image_counts[receipt["image"]]
+            counts["ranges"] += 1
+            counts["reproduced_bytes"] += receipt["end"] - receipt["start"]
+            counts["local_dir32_relocations"] += len(receipt["relocations"])
+        for image, counts in image_counts.items():
+            body_bytes = sum(row["size"] for row in encoded if row["image"] == image and row["ownership"] == "game")
+            counts["reproduced_layout_bytes"] = body_bytes + counts["reproduced_bytes"]
+            counts["total_layout_bytes"] = result["game_executable_coverage"][image]["total_bytes"]
+        result["gap_object_coverage"] = {
+            "by_image": image_counts,
+            "total": {key: sum(counts[key] for counts in image_counts.values())
+                      for key in ("ranges", "reproduced_bytes", "local_dir32_relocations",
+                                  "reproduced_layout_bytes", "total_layout_bytes")},
+            "receipts": evidence["gap_objects"],
+        }
     if report is not None:
         by_id = {native_id(r): r for r in rows}
         result["scopes"] = {}
@@ -351,6 +372,18 @@ def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: di
                        "remain in each owning category's denominator." if native else
                        "Unresolved executable bytes may contain code, padding or embedded data. "
                        "The curated code percentages cover the retained function bodies."), ""])
+    if "gap_object_coverage" in metrics:
+        coverage = metrics["gap_object_coverage"]
+        lines.extend(["### Game & Engine object tails", "",
+                      ("The matched VC6 objects reproduce these bytes after applying their local DIR32 relocations. "
+                      "The function and linked-image measures are separate."), "",
+                      "| Image | Gap ranges reproduced | Gap bytes reproduced | Local DIR32 relocations | Exact function and gap bytes / physical bytes |",
+                      "| --- | ---: | ---: | ---: | ---: |"])
+        for image, counts in [*coverage["by_image"].items(), ("Total", coverage["total"])]:
+            lines.append(f"| {image} | {counts['ranges']:,} | {counts['reproduced_bytes']:,} | "
+                         f"{counts['local_dir32_relocations']:,} | "
+                         f"{counts['reproduced_layout_bytes']:,} / {counts['total_layout_bytes']:,} |")
+        lines.append("")
     if "delta" in metrics:
         delta = metrics["delta"]
         lines.append("Baseline: " + (f"{delta['newly_matched_code']:,} newly matched bytes; "

@@ -82,7 +82,7 @@ def test_executable_partition_retains_unknown_gaps_and_rejects_overlap():
 
 
 def test_classified_executable_bytes_retain_physical_owners_without_code_credit():
-    code = {**function(), "native_kind": "function", "ownership": "game", "platform_replaced": None}
+    code: dict[str, Any] = {**function(), "native_kind": "function", "ownership": "game", "platform_replaced": None}
     def gap(address: int, size: int, kind: str, owner: str = "game") -> dict[str, Any]:
         return {"image": code["image"], "address": address, "size": size, "name": f"{kind}_{address}",
                 "native_kind": kind, "ownership": owner, "candidate": None, "source": None, "proof": None,
@@ -113,15 +113,25 @@ def test_classified_executable_bytes_retain_physical_owners_without_code_credit(
         assert scopes[kind]["total_functions"] == 0 and scopes[kind]["matched_code"] == "0"
         assert "total_data" not in scopes[kind]
 
+    tail = {"image": code["image"], "function": 100, "start": 110, "end": 120, "sha256": "b" * 64,
+            "candidate_object_sha256": code["proof"]["candidate_object_sha256"], "relocations": [112, 116]}
     evidence = {"version": "example", "data": None, "functions": rows, "code_inventory": inventory,
-                "identities": {}, "verification": accounting.VERIFICATION}
+                "identities": {}, "verification": accounting.VERIFICATION, "gap_objects": [tail]}
     metrics = accounting.diagnostics(evidence, report=report)
     assert metrics["game_executable_coverage"] == {
         code["image"]: {"total_bytes": 20, "retained_code": 10, "padding": 2, "embedded_data": 8, "unresolved": 0},
     }
+    totals = {"ranges": 1, "reproduced_bytes": 10, "local_dir32_relocations": 2,
+              "reproduced_layout_bytes": 20, "total_layout_bytes": 20}
+    assert metrics["gap_object_coverage"] == {"by_image": {code["image"]: totals}, "total": totals, "receipts": [tail]}
     summary = accounting.render_summary(evidence, report, metrics)
+    assert f"| {code['image']} | 1 | 10 | 2 |" in summary
+    assert "| Total | 1 | 10 | 2 | 20 / 20 |" in summary
     assert "Game & Engine function bodies | 10 / 10 (100.00%)" in summary
     assert f"| {code['image']} Game & Engine | 20 | 10 | 2 | 8 | 0 |" in summary
+    normalized_only = {**code, "proof": {**code["proof"], "body_byte_exact": False}}
+    unproven = {**evidence, "functions": [normalized_only, *rows[1:]], "gap_objects": []}
+    assert accounting.diagnostics(unproven)["gap_object_coverage"]["total"]["reproduced_layout_bytes"] == 0
     for kind in ("padding", "embedded_data"):
         with pytest.raises(ValueError, match="remainders cannot earn"):
             match_report.build_report([{**gap(110, 2, kind), "candidate": "source", "ratio": 1, "matched": True}])

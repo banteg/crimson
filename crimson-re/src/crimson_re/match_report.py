@@ -21,7 +21,14 @@ from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
-from . import match_builds, match_data_report, match_native_inventory, match_toolchain, native_reference_link
+from . import (
+    match_builds,
+    match_data_report,
+    match_gap_objects,
+    match_native_inventory,
+    match_toolchain,
+    native_reference_link,
+)
 from . import match_report_accounting as accounting
 
 # The canonical build: curated inventory, data evidence and the ownership ranges every build reuses.
@@ -273,13 +280,18 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
     _score(inventory, statuses)
     data = match_data_report.refresh_evidence(configs) if version == VERSION else None
     linking = native_reference_link.refresh(inventory, data) if data is not None else None
+    image_paths = _image_paths(version)
+    gap_objects = None
+    if any("native_kind" in row for row in inventory):
+        gap_objects = match_gap_objects.verify_tails(inventory, statuses, image_paths)
     if repository_inputs() != before or _external_inputs(configs, before, version) != (external, toolchains):
         raise ValueError("report inputs changed during evaluation; refresh again")
     return {
         "schema": 3,
         "verification": accounting.VERIFICATION,
         "identities": accounting.identities(inventory, before, external, toolchains, data=data),
-        "code_inventory": accounting.code_inventory(inventory, _image_paths(version)),
+        "code_inventory": accounting.code_inventory(inventory, image_paths),
+        **({"gap_objects": gap_objects} if gap_objects is not None else {}),
         "version": version,
         "scope": "all",
         "inputs": before,
@@ -337,8 +349,15 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         inventory, recorded, evidence["external_inputs"], evidence["toolchains"], data=evidence["data"],
     ):
         raise ValueError("report measurement identities differ")
-    if evidence["code_inventory"] != accounting.code_inventory(inventory, _image_paths(version)):
+    image_paths = _image_paths(version)
+    if evidence["code_inventory"] != accounting.code_inventory(inventory, image_paths):
         raise ValueError("executable inventory reconciliation differs")
+    if any("native_kind" in row for row in inventory):
+        if "gap_objects" not in evidence:
+            raise ValueError("missing native object-tail receipts")
+        match_gap_objects.validate_tails(evidence["functions"], evidence["gap_objects"], image_paths)
+    elif "gap_objects" in evidence:
+        raise ValueError("object-tail receipts require a native executable inventory")
     if version == VERSION:
         match_data_report.validate_evidence(evidence["data"])
         native_reference_link.validate(evidence["linking"], evidence["functions"], evidence["data"])

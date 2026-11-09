@@ -4,6 +4,7 @@ from copy import deepcopy
 from functools import partial
 from pathlib import Path
 from typing import Any
+from unittest.mock import Mock
 
 import pytest
 
@@ -172,6 +173,28 @@ def test_evidence_is_bound_to_inputs_and_full_inventory(monkeypatch: pytest.Monk
     monkeypatch.setattr(report, "repository_inputs", lambda: {"scratch.c": "changed"})
     with pytest.raises(ValueError, match="stale"):
         report.validate_evidence(evidence)
+
+
+def test_native_evidence_requires_tail_verification_from_originals(monkeypatch: pytest.MonkeyPatch) -> None:
+    inventory = [{"image": "crimson.exe", "address": 100, "size": 5, "name": "foo",
+                  "native_kind": "function", "ownership": "game"}]
+    scored = [{**inventory[0], "candidate": None, "source": None, "ratio": 0.0, "matched": False, "proof": None}]
+    image_paths = {"crimson.exe": Path("pinned/original.exe")}
+    evidence = {"schema": 3, "version": "1.0.2", "scope": "all", "inputs": {}, "external_inputs": {}, "toolchains": {},
+                "verification": report.accounting.VERIFICATION, "identities": report.accounting.identities(inventory, {}, {}),
+                "code_inventory": [], "data": None, "linking": None, "functions": scored}
+    monkeypatch.setattr(report, "repository_inputs", dict)
+    monkeypatch.setattr(report, "_inventory", lambda version: inventory)
+    monkeypatch.setattr(report, "_image_paths", lambda version: image_paths)
+    monkeypatch.setattr(report.accounting, "code_inventory", lambda *_: [])
+    with pytest.raises(ValueError, match="missing native object-tail receipts"):
+        report.validate_evidence(evidence)
+
+    verify = Mock()
+    monkeypatch.setattr(report.match_gap_objects, "validate_tails", verify)
+    evidence["gap_objects"] = []
+    report.validate_evidence(evidence)
+    verify.assert_called_once_with(scored, [], image_paths)
 
 
 def test_missing_reference_images_fail_even_when_ci_lacks_compilers(monkeypatch: pytest.MonkeyPatch) -> None:
