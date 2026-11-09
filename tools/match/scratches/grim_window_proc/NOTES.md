@@ -105,3 +105,14 @@ The historical Grim2D SDK callback in
 `c195149c6381b3ce14f7738fd87adda7a95f1d294eea84f429759de16c0d11fe`)
 confirms the same activation/device-loss lineage. Its SDK header also defines
 native-mouse state as configuration slot 13.
+
+## Freeware window dispatch
+
+The 1.0.2 callback shares one 21-byte DefWindowProcA tail. Compiled alone,
+VC6 estimates that block using an EBP-relative load, counts 20 bytes and
+duplicates it at the case exits. Compiling the actual preceding function,
+grim_restore_textures, first supplies its frame-pointer-omission state. The
+standalone scratch enables that context for 1.0.2. The native and compiled
+callbacks then agree through the final ret, with both sparse switch tables
+checked by their operand audits. Changing to /Os or retaining a frame pointer
+did not reproduce the native code.
