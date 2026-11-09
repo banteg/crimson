@@ -808,6 +808,10 @@ class NativeOracle:
         stop = _TRAMPOLINE_BASE + len(code) if until is None else until
         self.write(_TRAMPOLINE_BASE, code + b"\xf4")
         self._uc.ctl_remove_cache(_TRAMPOLINE_BASE, _TRAMPOLINE_BASE + len(code) + 1)
+        if until is not None:
+            # A previous full call can cache a translation spanning the new
+            # fragment boundary. Recompile that block with this stop in effect.
+            self._uc.ctl_remove_cache(until, until + 1)
         self.write_u32(_TRAMPOLINE_TARGET, entry)
         self.write(_TRAMPOLINE_CONTROL_WORD, struct.pack("<H", self.control_word if control_word is None else control_word))
         for name, uc_reg in _REGISTERS.items():

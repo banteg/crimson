@@ -66,6 +66,20 @@ def test_grim_dll_uses_a_separate_stack_for_calls_and_fragments() -> None:
     assert oracle.run(fragment, fragment + 3, frame=struct.pack("<I", 456)).eax == 456
 
 
+def test_fragment_stops_before_a_store_in_a_previously_called_block(oracle) -> None:
+    marker = oracle.alloc(4)
+    # mov eax, 73; mov [marker], eax; ret
+    probe = oracle.load_code(b"\xb8" + struct.pack("<I", 73) + b"\xa3" + struct.pack("<I", marker) + b"\xc3")
+    stop = probe + 5
+    oracle.call(probe)
+    assert oracle.read_u32(marker) == 73
+
+    oracle.write_u32(marker, 0)
+    # Even reaching the right final EIP via ret would be too late for this store.
+    assert oracle.run(probe, stop, frame=struct.pack("<I", stop)).eax == 73
+    assert oracle.read_u32(marker) == 0
+
+
 def test_pc24_control_word_rounds_every_op(oracle) -> None:
     # fld1; fdiv st(0), st(1); ret  with ST1 = 3.0 preloaded -> 1/3 at 24 bits
     probe = oracle.load_code(bytes.fromhex("d9e8d8f1c3"))
