@@ -1499,9 +1499,14 @@ def _coff_unwind_record(
 
 
 def _vc6_delete_unwind_key(slots: list[int]) -> str:
-    # Retain the one-state key in saved evidence. State order and multiplicity
-    # distinguish maps that perform their deletes on different stack slots.
-    return VC6_SINGLE_DELETE_UNWIND_KEY + ":" + ",".join(f"ebp+0x{slot:02x}" for slot in slots)
+    # Preserve historical raw disp8 keys. For slots outside its signed range,
+    # the full signed displacement keeps e.g. +0xec distinct from disp8 0xec.
+    keys = (f"ebp+0x{slot & 0xff:02x}" if -128 <= slot <= 127 else f"ebp{slot:+#011x}" for slot in slots)
+    return VC6_SINGLE_DELETE_UNWIND_KEY + ":" + ",".join(keys)
+
+
+# mov eax, [ebp+disp8/disp32], followed by push eax and call rel32.
+_VC6_DELETE_SLOT_WIDTH = {bytes.fromhex("8b45"): 1, bytes.fromhex("8b85"): 4}
 
 
 def _coff_vc6_single_delete_unwind_key(obj: CoffObject, symbol: CoffSymbol) -> str | None:
@@ -1534,15 +1539,19 @@ def _coff_vc6_single_delete_unwind_key(obj: CoffObject, symbol: CoffSymbol) -> s
     for (previous_state, addend), cleanup_symbol in zip(struct.iter_unpack("<iI", unwind), cleanups, strict=True):
         if previous_state != -1 or addend != 0:
             return None
-        record = _coff_unwind_record(obj, cleanup_symbol, 11, ((5, IMAGE_REL_I386_REL32),))
+        prefix = _coff_unwind_record(obj, cleanup_symbol, 2, ())
+        if prefix is None or (width := _VC6_DELETE_SLOT_WIDTH.get(prefix[0])) is None:
+            return None
+        call = 4 + width
+        record = _coff_unwind_record(obj, cleanup_symbol, call + 6, ((call, IMAGE_REL_I386_REL32),))
         if record is None:
             return None
         cleanup, (delete,) = record
-        if cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:] != bytes.fromhex("50e80000000059c3"):
+        if cleanup[2 + width :] != bytes.fromhex("50e80000000059c3"):
             return None
         if delete.storage_class != IMAGE_SYM_CLASS_EXTERNAL or delete.name != "??3@YAXPAX@Z":
             return None
-        slots.append(cleanup[2])
+        slots.append(int.from_bytes(cleanup[2 : 2 + width], "little", signed=True))
     return _vc6_delete_unwind_key(slots)
 
 
@@ -2522,15 +2531,21 @@ def _image_vc6_single_delete_unwind_key(
     for previous_state, cleanup_address in struct.iter_unpack("<iI", unwind):
         if previous_state != -1:
             return None
-        cleanup = _image_bytes(image, cleanup_address, 11)
-        if cleanup is None or cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
+        prefix = _image_bytes(image, cleanup_address, 2)
+        if prefix is None or (width := _VC6_DELETE_SLOT_WIDTH.get(prefix)) is None:
             return None
-        if cleanup[9:] != bytes.fromhex("59c3"):
+        call = 4 + width
+        cleanup = _image_bytes(image, cleanup_address, call + 6)
+        if (
+            cleanup is None
+            or cleanup[call - 2 : call] != bytes.fromhex("50e8")
+            or cleanup[call + 4 :] != bytes.fromhex("59c3")
+        ):
             return None
-        delete_address = cleanup_address + 9 + struct.unpack_from("<i", cleanup, 5)[0]
+        delete_address = cleanup_address + call + 4 + struct.unpack_from("<i", cleanup, call)[0]
         if "??3@YAXPAX@Z" not in reference_catalog.names_by_address.get(delete_address, ()):
             return None
-        slots.append(cleanup[2])
+        slots.append(int.from_bytes(cleanup[2 : 2 + width], "little", signed=True))
     return _vc6_delete_unwind_key(slots)
 
 
