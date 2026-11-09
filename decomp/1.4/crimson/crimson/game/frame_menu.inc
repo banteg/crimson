@@ -808,10 +808,12 @@ __forceinline bool setup_controls() {
 #endif
 }
 #endif
+#if defined(CRIMSON_FREEWARE_CLIENT) || FREEWARE_EDITION < 10300
 __forceinline void cursor_particles(float pulse, float orbit) {
     int index;
 #include "frame_cursor.inc"
 }
+#endif
 __forceinline void menu_footer_text() {
 #ifdef CRIMSON_FREEWARE_CLIENT
     const char *version = FREEWARE_EDITION == 10002 ? "v " FREEWARE_VERSION : "v" FREEWARE_VERSION;

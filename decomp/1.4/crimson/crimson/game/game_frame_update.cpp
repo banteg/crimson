@@ -618,7 +618,7 @@ unsigned char game_frame_update() {
     float cursor_phase, cursor_orbit, cursor_alpha;
 #elif !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
     // The menu and name-entry cursor use the same orbit-clock local.
-    float orbit;
+    float alpha, pulse, orbit;
 #endif
 #ifdef CRIMSON_FREEWARE_CLIENT
     if (INPUT.screenshot)

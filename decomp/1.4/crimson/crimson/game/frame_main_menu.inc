@@ -19,7 +19,8 @@ refresh_labels(which);
 #endif
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-float age = CLOCK - STATE_SINCE;
+pulse = CLOCK - STATE_SINCE;
+const float &age = pulse;
 orbit = CLOCK;
 const float &menu_clock = orbit;
 vec2f_t position;
@@ -89,7 +90,6 @@ if (freeware_rebinding) {
 grim_interface_ptr->grim_set_config_var(frame_font_scale, .65435f);
 menu_footer_text();
 {
-    const float &pulse = age, &orbit = menu_clock;
 #if FREEWARE_EDITION != 10300
     int index;
 #endif

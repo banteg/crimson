@@ -90,7 +90,7 @@
         freeware_glow = 0;
     else if (freeware_low_fps_frames > 500)
         freeware_smoke = 0;
-    float pulse = CLOCK;
+    pulse = CLOCK;
     orbit = CLOCK + CLOCK;
     if ((float)sin(pulse * 6.f) > 0.f)
         grim_interface_ptr->grim_set_color(1, 1, 1, freeware_name_alpha);

@@ -21,7 +21,7 @@
     sprite("part", x, y, 64, 64, rotation, 1, 1, 1, 1);
 #endif
 #if !defined(CRIMSON_FREEWARE_CLIENT) && FREEWARE_EDITION >= 10300
-    float alpha = ((float)pow((float)cos(pulse), 2) + 1.f) * .5f;
+    alpha = ((float)pow((float)cos(pulse), 2) + 1.f) * .5f;
 #else
     float alpha = (float)((pow(cos(pulse), 2) + 1) * .5);
 #endif
