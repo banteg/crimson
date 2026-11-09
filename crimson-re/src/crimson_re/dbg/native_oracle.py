@@ -370,7 +370,6 @@ class NativeOracle:
         self._map_image(pe)
         self._imports = self._map_imports(pe)
         self._imports_by_name = {entry.name: entry for entry in self._imports.values()}
-        self._uc.mem_map(_STACK_BASE, _STACK_SIZE, UC_PROT_READ | UC_PROT_WRITE)
         self._uc.mem_map(_HEAP_BASE, _HEAP_SIZE, UC_PROT_READ | UC_PROT_WRITE)
         self._heap_top = _HEAP_BASE
         self._uc.mem_map(_STUB_DATA_BASE, _STUB_DATA_SIZE, UC_PROT_READ | UC_PROT_WRITE)
@@ -379,12 +378,27 @@ class NativeOracle:
         self._code_top = _CODE_BASE
         self._install_hooks()
         self._install_thread_segment()
+        self._stack_base = self._map_stack()
         self._install_crt_thread_data()
         self._rand_state_address = rand_state_address
         if rand_state_address is None and "TlsGetValue" in self._imports_by_name:
             self._rand_state_address = self.tiddata + _TIDDATA_HOLDRAND
 
     # -- loading -----------------------------------------------------------------
+
+    def _map_stack(self) -> int:
+        # Grim DLLs load at the EXE oracle's preferred stack address. Find the
+        # first free span after that address among the PE and harness mappings.
+        base = _STACK_BASE
+        for start, end, _ in sorted(self._uc.mem_regions()):
+            if base + _STACK_SIZE <= start:
+                break
+            # Unicorn returns inclusive region ends.
+            base = max(base, _align_up(end + 1, _PAGE))
+        if base + _STACK_SIZE > 1 << 32:
+            raise NativeOracleError("no room for the oracle stack in the 32-bit address space")
+        self._uc.mem_map(base, _STACK_SIZE, UC_PROT_READ | UC_PROT_WRITE)
+        return base
 
     def _map_image(self, pe: Any) -> None:
         self._uc.mem_map(self.image_base, self.image_size, UC_PROT_READ)
@@ -497,7 +511,7 @@ class NativeOracle:
         if _IMPORT_THUNK_BASE <= address < _IMPORT_THUNK_BASE + len(self._imports) * _IMPORT_THUNK_STRIDE:
             entry = self._imports[address - (address - _IMPORT_THUNK_BASE) % _IMPORT_THUNK_STRIDE]
             return f"import thunk {entry.dll}!{entry.name} (0x{address:08x})"
-        if _STACK_BASE <= address < _STACK_BASE + _STACK_SIZE:
+        if self._stack_base <= address < self._stack_base + _STACK_SIZE:
             return f"oracle stack (0x{address:08x})"
         if _HEAP_BASE <= address < _HEAP_BASE + _HEAP_SIZE:
             return f"oracle heap (0x{address:08x})"
@@ -710,7 +724,7 @@ class NativeOracle:
 
         entry = self.resolve(target)
         payload = b"".join(_pack_arg(arg) for arg in args)
-        esp = _STACK_BASE + _STACK_SIZE - _STACK_HEADROOM - _align_up(len(payload), 4)
+        esp = self.frame_pointer(len(payload))
         self.write(esp, payload)
         registers = dict(regs or {})
         if ecx is not None:
@@ -747,7 +761,7 @@ class NativeOracle:
     def frame_pointer(self, frame_size: int = 0x400) -> int:
         """ESP that `run()` uses for a stack frame of `frame_size` bytes."""
 
-        return _STACK_BASE + _STACK_SIZE - _STACK_HEADROOM - _align_up(frame_size, 4)
+        return self._stack_base + _STACK_SIZE - _STACK_HEADROOM - _align_up(frame_size, 4)
 
     @contextmanager
     def trace_memory(self) -> Generator[MemoryTrace]:

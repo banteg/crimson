@@ -38,11 +38,32 @@ def test_freeware_crt_uses_global_rng_without_tls_imports() -> None:
 
 
 def test_float_argument_float_return_and_callee_cleanup(oracle) -> None:
+    assert oracle.describe(0x1000_0000) == "oracle stack (0x10000000)"
     # fld dword [esp+4]; fadd dword [esp+8]; ret 8   (stdcall float(float, float))
     probe = oracle.load_code(bytes.fromhex("d9442404d8442408c20800"))
     result = oracle.call(probe, 0.1, 0.2)
     assert result.stack_popped == 8
     assert f32_bits(result.st0) == f32_bits(struct.unpack("<f", struct.pack("<f", 0.1))[0] + 0.2)
+
+
+def test_grim_dll_uses_a_separate_stack_for_calls_and_fragments() -> None:
+    from crimson_re.dbg.native_oracle import DEFAULT_EXE_PATH, NativeOracle, SymbolTable
+
+    dll = DEFAULT_EXE_PATH.with_name("grim.dll")
+    if not dll.is_file():
+        pytest.skip("original grim.dll unavailable")
+    oracle = NativeOracle(dll, symbols=SymbolTable({}))
+    assert oracle.image_base == 0x1000_0000
+    assert oracle.read(oracle.image_base, 2) == b"MZ"
+    assert oracle.describe(oracle.frame_pointer()).startswith("oracle stack")
+    assert oracle.describe(oracle.image_base) == "0x10000000"
+
+    # mov eax, [esp+4]; ret
+    probe = oracle.load_code(bytes.fromhex("8b442404c3"))
+    assert oracle.call(probe, 123).eax == 123
+    # mov eax, [esp]
+    fragment = oracle.load_code(bytes.fromhex("8b0424"))
+    assert oracle.run(fragment, fragment + 3, frame=struct.pack("<I", 456)).eax == 456
 
 
 def test_pc24_control_word_rounds_every_op(oracle) -> None:
