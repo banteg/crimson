@@ -1733,6 +1733,16 @@
         "freeware_logo_angle"
       ],
       "reason": "player_check_level stores a byte here. The following game globals include the frame delta, advancing simulation clock and menu state, each with an independent write. The 32-byte footprint cannot be the static SIMD zero vector. DirectX 8.1 d3dx8.lib(d3dxmathsse.obj) supplies a 32-byte .bss section with 32-byte alignment containing _zero__9701."
+    },
+    {
+      "name": "freeware_score_scroll",
+      "address": "0x0042889c",
+      "size": 4,
+      "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+      "conflicting_globals": [
+        "s_empty_string"
+      ],
+      "reason": "The EXE passes this address as an empty C string in crimsonland_main (0x4106bd and 0x4107b1). The 1.0.2 scoreboard has a fixed vertical position; a score-scroll accumulator and floating-point writes appear in 1.3.0."
     }
   ]
 }

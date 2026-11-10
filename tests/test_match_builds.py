@@ -118,6 +118,22 @@ def test_disproved_sse_bss_placement_requires_pinned_game_writes(version: str, f
         match_builds.apply_recovered_map(image, donor, payload, receipt)
 
 
+@pytest.mark.parametrize(("version", "image_name", "native", "rejected"), [
+    ("1.0.2", "crimson.exe", "s_empty_string", "freeware_score_scroll"),
+    *((v, "grim.dll", "grim_uv_u0", "grim_dc_mode_active") for v in ("1.0.2", "1.3.0", "1.4.0")),
+])
+def test_freeware_native_storage_has_no_later_behavior_alias(
+    version: str, image_name: str, native: str, rejected: str,
+) -> None:
+    image = REGISTRY.image(version, image_name)
+    recovery = json.loads((image.map_dir / "recovered.json").read_text())
+    pin = next(r for r in recovery["rejected_data_placements"] if r["name"] == rejected)
+    locations = {r["name"]: r["address"] for r in json.loads(image.target.data_map_path.read_text())["entries"]}
+    assert locations[native] == pin["address"] and rejected not in locations
+    assert pin["conflicting_globals"] == [native]
+    assert any(r["name"] == native and r["address"] == pin["address"] for r in recovery["data"])
+
+
 def test_chained_recovery_checks_root_identities_missing_from_donor() -> None:
     image = REGISTRY.image("1.3.0", "crimson.exe")
     if not image.path.is_file():

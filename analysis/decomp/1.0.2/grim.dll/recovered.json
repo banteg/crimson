@@ -612,6 +612,13 @@
       "bytes": "a1b8ac0410"
     },
     {
+      "name": "grim_uv_u0",
+      "address": "0x1004aec0",
+      "reference": "0x10003ee8",
+      "bytes": "d91cc5c0ae0410",
+      "evidence": "grim_set_uv_point writes the U component at [index * 8 + this address] in the native four-vertex UV array."
+    },
+    {
       "name": "grim_config_dialog_bpp16_selected",
       "address": "0x1004aee8",
       "reference": "0x10003036",
@@ -863,6 +870,18 @@
     {
       "name": "__CxxLongjmpUnwind",
       "note": "This DLL has no import for __CxxLongjmpUnwind. The thunk at 0x10004bc0 jumps through the Direct3DCreate8 IAT entry."
+    }
+  ],
+  "rejected_data_placements": [
+    {
+      "name": "grim_dc_mode_active",
+      "address": "0x1004aec0",
+      "size": 32,
+      "sha256": "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925",
+      "conflicting_globals": [
+        "grim_uv_u0"
+      ],
+      "reason": "This is the four-vertex UV array. grim_set_uv_point writes arbitrary U floats here, and the adjacent texture registry ends at the same address. The later DC-mode branches are absent from the native freeware run loop and window procedure."
     }
   ]
 }

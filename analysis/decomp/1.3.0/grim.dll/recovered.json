@@ -570,6 +570,13 @@
       "bytes": "a188d10410"
     },
     {
+      "name": "grim_uv_u0",
+      "address": "0x1004d590",
+      "reference": "0x10004348",
+      "bytes": "d91cc590d50410",
+      "evidence": "grim_set_uv_point writes the U component at [index * 8 + this address] in the native four-vertex UV array."
+    },
+    {
       "name": "grim_config_dialog_bpp16_selected",
       "address": "0x1004d5b4",
       "reference": "0x10003348",
@@ -839,6 +846,18 @@
       "address": "0x1004edac",
       "reference": "0x1000514d",
       "bytes": "d905aced0410"
+    }
+  ],
+  "rejected_data_placements": [
+    {
+      "name": "grim_dc_mode_active",
+      "address": "0x1004d590",
+      "size": 32,
+      "sha256": "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925",
+      "conflicting_globals": [
+        "grim_uv_u0"
+      ],
+      "reason": "This is the four-vertex UV array. grim_set_uv_point writes arbitrary U floats here, and the adjacent texture registry ends at the same address. The later DC-mode branches are absent from the native freeware run loop and window procedure."
     }
   ]
 }

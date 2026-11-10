@@ -1082,11 +1082,6 @@
     },
     {
       "address": "0x0042889c",
-      "name": "freeware_score_scroll",
-      "program": "1.0.2/crimson.exe"
-    },
-    {
-      "address": "0x0042889c",
       "name": "s_empty_string",
       "program": "1.0.2/crimson.exe"
     },

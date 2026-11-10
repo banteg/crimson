@@ -1247,11 +1247,6 @@
     },
     {
       "address": "0x1004aec0",
-      "name": "grim_dc_mode_active",
-      "program": "1.0.2/grim.dll"
-    },
-    {
-      "address": "0x1004aec0",
       "name": "grim_uv_u0",
       "program": "1.0.2/grim.dll"
     },
