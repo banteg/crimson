@@ -568,5 +568,18 @@
     "sizes": {
       "1.4.0": 1
     }
+  },
+  {
+    "name": "grim_lookup_blob_magic",
+    "extent_function": "grim_lookup_blob_find",
+    "size": 4,
+    "points_to": "grim_paq_signature"
+  },
+  {
+    "name": "grim_paq_signature",
+    "extent_function": "grim_lookup_blob_find",
+    "size": 4,
+    "initializer_hex": "70617100",
+    "located_through": "grim_lookup_blob_magic"
   }
 ]

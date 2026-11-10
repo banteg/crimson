@@ -15,7 +15,7 @@ from typing import Any
 import pefile
 
 from . import match as matchlib
-from . import match_builds, match_data_report
+from . import match_builds, match_data_report, match_freeware_storage
 
 PROVIDERS = {
     "freeware_game_pools": "crimson.exe",
@@ -54,7 +54,10 @@ def _plan(version: str, path: Path) -> list[dict[str, Any]]:
             expected = bytes(size)
         if len(expected) != size:
             raise ValueError(f"{name}: initializer length differs from its reviewed extent")
-        plan.append({"name": name, "size": size, "extent_function": function, "expected": expected})
+        links = {key: spec[key] for key in ("points_to", "located_through") if key in spec}
+        if len(links) > 1 or any(not re.fullmatch(r"[A-Za-z_]\w*", target) for target in links.values()):
+            raise ValueError(f"{name}: invalid symbolic data link")
+        plan.append({"name": name, "size": size, "extent_function": function, "expected": expected, **links})
     return plan
 
 
@@ -85,7 +88,7 @@ def _external_name(symbol: str) -> str | None:
     return None
 
 
-def _originals(image_paths: dict[str, Path]) -> dict[str, tuple[list[tuple[int, bytes]], set[int]]]:
+def _originals(image_paths: dict[str, Path]) -> dict[str, tuple[list[tuple[int, bytes]], dict[int, int]]]:
     originals = {}
     for image, path in image_paths.items():
         with pefile.PE(str(path), fast_load=True) as pe:
@@ -97,25 +100,40 @@ def _originals(image_paths: dict[str, Path]) -> dict[str, tuple[list[tuple[int, 
                 if section.Name.rstrip(b"\0").decode("ascii") in match_data_report.DATA_SECTIONS and size:
                     raw = section.get_data()[:size]
                     sections.append((base + int(section.VirtualAddress), raw.ljust(size, b"\0")))
-            relocation_bytes = {
-                base + entry.rva + i for block in getattr(pe, "DIRECTORY_ENTRY_BASERELOC", ())
-                for entry in block.entries if entry.type for i in range(4)
+            relocations = {
+                base + entry.rva: entry.type for block in getattr(pe, "DIRECTORY_ENTRY_BASERELOC", ())
+                for entry in block.entries if entry.type
             }
-            originals[image] = sections, relocation_bytes
+            originals[image] = sections, relocations
     return originals
 
 
 def _verify_original(
-    name: str, address: int, expected: bytes, sections: list[tuple[int, bytes]], relocation_bytes: set[int],
+    name: str, address: int, expected: bytes, sections: list[tuple[int, bytes]], relocations: dict[int, int],
+    *, pointer: bool = False,
 ) -> None:
     end = address + len(expected)
     for base, data in sections:
         if base <= address and end <= base + len(data):
-            if (any(address <= byte < end for byte in relocation_bytes)
+            if (not match_freeware_storage._pe_relocations_agree(relocations, address, len(expected), [0] if pointer else [])
                     or data[address - base:end - base] != expected):
                 raise ValueError(f"{name}: native initializer or pointer relocations differ at {address:#x}")
             return
     raise ValueError(f"{name}: native extent is outside a data section at {address:#x}")
+
+
+def _unique_signature(sections: list[tuple[int, bytes]], signature: bytes) -> int:
+    """Locate the complete reviewed format signature independently of the pointer."""
+    locations = []
+    for base, data in sections:
+        offset = data.find(signature)
+        if offset >= 0:
+            if data.find(signature, offset + 1) >= 0:
+                raise ValueError("ambiguous native format signature")
+            locations.append(base + offset)
+    if len(locations) != 1:
+        raise ValueError("missing or ambiguous native format signature")
+    return locations[0]
 
 
 def candidates(
@@ -147,6 +165,7 @@ def candidates(
         object_hash = None
         if saved is None:
             obj, object_hash = _compile(source, registry.image(version, image).cl_build, plan)
+        by_name = {row["name"]: row for row in plan}
         for spec in plan:
             name = spec["name"]
             key = image, name
@@ -154,16 +173,38 @@ def candidates(
                 raise ValueError(f"duplicate freeware definition for {key}")
             seen.add(key)
             witness = functions_by_name.get((image, spec["extent_function"]))
-            placements = references[key]
+            pointer_name = spec.get("located_through", name)
+            placements = references[image, pointer_name]
             addresses = {addr for addr, _ in placements}
             sites = [ref["site"] for _, ref in placements if witness and ref["function"] == witness["address"]]
             if len(addresses) != 1 or not sites or witness is None:
                 raise ValueError(f"{version}/{image}/{name}: missing unique exact {spec['extent_function']} placement")
             address = addresses.pop()
             expected = spec["expected"]
-            _verify_original(name, address, expected, *originals[image])
+            fixups = []
+            placement = {}
+            if "points_to" in spec or "located_through" in spec:
+                pointer = by_name[pointer_name]
+                literal = by_name[pointer["points_to"]]
+                signature = literal["expected"]
+                if (literal.get("located_through") != pointer_name or pointer["size"] != 4
+                        or pointer["extent_function"] != literal["extent_function"]
+                        or len(signature) < 3 or not signature.endswith(b"\0") or b"\0" in signature[:-1]):
+                    raise ValueError(f"{name}: invalid format signature or pointer definition")
+                target = _unique_signature(originals[image][0], signature)
+                pointer_bytes = target.to_bytes(4, "little")
+                _verify_original(pointer_name, address, pointer_bytes, *originals[image], pointer=True)
+                if name == pointer_name:
+                    expected = pointer_bytes
+                    fixups = [{"offset": 0, "symbol": "_" + literal["name"], "address": target}]
+                    placement = {"relocations": fixups}
+                else:
+                    placement = {"pointer_witness": address}
+                    address = target
+            if not fixups:
+                _verify_original(name, address, expected, *originals[image])
             if obj is not None:
-                storage = match_data_report._check_storage(obj, name, spec["size"], expected=expected)
+                storage = match_data_report._check_storage(obj, name, spec["size"], expected=expected, relocations=fixups)
             else:
                 previous = saved_by_name.get(key, {})
                 storage = previous.get("storage")
@@ -178,6 +219,7 @@ def candidates(
                 "source": source.relative_to(matchlib.REPO_ROOT).as_posix(), "compiler": COMPILER, "storage": storage,
                 "object_sha256": object_hash, "initializer_sha256": hashlib.sha256(expected).hexdigest(),
                 "proof_kind": "reviewed-definition", "extent_function": witness["address"], "reference_site": min(sites),
+                **placement,
             })
     results.sort(key=lambda item: (item["image"], item["address"], item["name"]))
     if saved is not None and results != sorted(saved, key=lambda item: (item["image"], item["address"], item["name"])):

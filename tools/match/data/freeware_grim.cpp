@@ -21,6 +21,11 @@ unsigned int grim_color_slot0, grim_color_slot1, grim_color_slot2, grim_color_sl
 unsigned int grim_mouse_button_latch[2];
 char *grim_error_text;
 char grim_empty_string;
+// The PAQ header and the lookup routines use this NUL-terminated signature.
+extern "C" {
+    char grim_paq_signature[] = "paq";
+}
+char *grim_lookup_blob_magic = grim_paq_signature;
 void *grim_lookup_blob;
 int grim_lookup_blob_size;
 unsigned char grim_lookup_blob_loaded, grim_reserved_d3ac;
