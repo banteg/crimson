@@ -7,5 +7,15 @@
   {"name": "console_exec_line_buf", "extent_function": "console_cmd_exec", "sizes": {"1.4.0": 512}},
   {"name": "console_input_cursor", "extent_function": "console_input_poll", "sizes": {"1.4.0": 4}},
   {"name": "console_input_ready", "extent_function": "console_input_poll", "sizes": {"1.4.0": 1}},
-  {"name": "console_cmd_argc", "extent_function": "console_cmd_exec", "sizes": {"1.4.0": 4}}
+  {"name": "console_cmd_argc", "extent_function": "console_cmd_exec", "sizes": {"1.4.0": 4}},
+  {
+    "name": "freeware_music_tracks",
+    "extent_function": "freeware_music_create_streams",
+    "sizes": {"1.4.0": 12}
+  },
+  {
+    "name": "freeware_music_volume",
+    "extent_function": "music_update_fades",
+    "sizes": {"1.4.0": 12}
+  }
 ]
