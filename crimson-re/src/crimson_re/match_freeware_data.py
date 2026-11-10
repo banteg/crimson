@@ -135,17 +135,26 @@ def _partition(
 def build_evidence(
     images: Iterable[match_builds.BuildImage], globals_: list[Row], candidates: list[Row],
     library_objects: list[Row] | None = None, startup_tables: list[Row] | None = None,
+    *, functions: list[Row] | None = None,
 ) -> Row:
+    from . import match_freeware_accesses
+
+    images = list(images)
     sections, excluded, metadata = _layout(images)
     libraries = library_objects or []
     startup = startup_tables or []
-    spans = _partition(sections, globals_, candidates, libraries + startup, metadata)
+    bounded = candidates + libraries + startup + metadata
+    accesses = match_freeware_accesses.fixed_accesses(
+        globals_, functions, bounded, {im.name: im.path for im in images}, sections,
+    ) if functions is not None else []
+    spans = _partition(sections, globals_, candidates, libraries + startup + accesses, metadata)
     ownership = [
         {"image": row["image"], "address": row["address"], "size": row["size"], "owner": row["owner"]}
         for row in spans if row["owner"] in {"game", "libraries"}
     ]
     return {"policy": POLICY, "sections": sections, "excluded_sections": excluded, "globals": globals_,
-            "library_objects": libraries, "startup_tables": startup, "candidates": candidates, "ownership": ownership, "spans": spans}
+            "library_objects": libraries, "startup_tables": startup, "accessed_ranges": accesses,
+            "candidates": candidates, "ownership": ownership, "spans": spans}
 
 
 def _images(version: str, paths: dict[str, Path]) -> list[match_builds.BuildImage]:
@@ -164,7 +173,7 @@ def refresh_evidence(
     globals_, candidates = match_freeware_globals.refresh(version, functions, statuses)
     libraries = match_freeware_library_data.attributions(version, image_paths, functions)
     startup = match_freeware_startup_data.attributions(image_paths, functions)
-    return build_evidence(images, globals_, candidates, libraries, startup)
+    return build_evidence(images, globals_, candidates, libraries, startup, functions=functions)
 
 
 def validate_evidence(version: str, data: Row, functions: list[Row], image_paths: dict[str, Path]) -> None:
@@ -174,7 +183,7 @@ def validate_evidence(version: str, data: Row, functions: list[Row], image_paths
     match_freeware_globals.validate(version, functions, data["globals"], data["candidates"])
     libraries = match_freeware_library_data.attributions(version, image_paths, functions)
     startup = match_freeware_startup_data.attributions(image_paths, functions)
-    expected = build_evidence(images, data["globals"], data["candidates"], libraries, startup)
+    expected = build_evidence(images, data["globals"], data["candidates"], libraries, startup, functions=functions)
     if data != expected:
         raise ValueError("freeware data inventory differs from its original PE sections, attributions or byte partition")
 

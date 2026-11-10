@@ -293,6 +293,7 @@ def _data_coverage(data: dict[str, Any]) -> dict[str, Any]:
         "source_objects": [{key: row[key] for key in ("image", "address", "name", "symbol", "size", "source", "storage",
                                                       "owner", "proof_kind") if key in row}
                            for row in data["candidates"]],
+        "accessed_ranges": data.get("accessed_ranges", []),
         "excluded_sections": data["excluded_sections"],
     }
 
@@ -471,7 +472,7 @@ def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: di
         for image, counts in data_rows:
             lines.append(f"| {image} | {counts['source_matched_bytes']:,} | {counts['mapped_unmatched_bytes']:,} | "
                          f"{counts['pe_metadata_bytes']:,} | {counts['unattributed_bytes']:,} | {counts['unmatched_bytes']:,} |")
-        lines.extend(["", ("Mapped, unmatched bytes have a verified extent. Address-only labels receive zero bytes "
+        lines.extend(["", ("Mapped, unmatched bytes have a verified object extent or an observed memory access. Address-only labels receive zero bytes "
                       "of source credit. In `data_coverage`, `globals` lists names and addresses, "
                       "`source_objects` lists verified definitions, and `unmatched_ranges` lists every remaining "
                       "range by image, section and storage. "
