@@ -198,8 +198,10 @@ Uncertain template and SDK helper intervals stay under **Unclassified ownership*
 Only exact donor library identities outside the reviewed clusters receive library
 classification. **All** retains the full executable virtual byte denominator,
 including unresolved remainders outside Game & Engine. The physical layout
-receipts measure bytes in the original executable sections. Data-section recovery
-and complete executable linking have separate measures.
+receipts measure bytes in the original executable sections. Data sections are
+measured against each release's original EXE and DLL. The maps distinguish
+verified source storage, known unmatched ranges, PE metadata and unattributed
+bytes. See the [freeware global maps and byte totals](../analysis/decomp/README.md#freeware-data-sections).
 
 To regenerate discovery with the licensed Binary Ninja GUI running:
 
