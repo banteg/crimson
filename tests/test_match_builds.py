@@ -94,6 +94,30 @@ def test_reviewed_data_rejection_preserves_crt_tables_and_alternate_placements()
     assert candidate in payload["data"]["entries"]
 
 
+@pytest.mark.parametrize(("version", "flag"), [
+    ("1.0.2", "freeware_level_up_reset_byte"), ("1.3.0", "freeware_logo_visible"), ("1.4.0", "freeware_logo_visible"),
+])
+def test_disproved_sse_bss_placement_requires_pinned_game_writes(version: str, flag: str) -> None:
+    image = REGISTRY.image(version, "crimson.exe")
+    if not image.path.is_file():
+        pytest.skip("pinned freeware executable unavailable")
+    donor = REGISTRY.canonical(image)
+    recovery = json.loads((image.map_dir / "recovered.json").read_text())
+    pin = next(row for row in recovery["rejected_data_placements"] if row["name"] == "d3dx_sse_math_bss")
+    data = json.loads(image.target.data_map_path.read_text())
+    locations = {r["name"]: r["address"] for r in data["entries"]}
+    assert locations[flag] == pin["address"] and pin["name"] not in locations
+
+    candidate = {"name": pin["name"], "address": pin["address"], "program": image.target.image_name}
+    payload = {"data": {"entries": [candidate], "notes": ""}, "functions": [], "summary": {}}
+    # The original bytes are all zero at these locations. Removing the
+    # separately anchored game flag must prevent the map correction.
+    native = [r for r in recovery["data"] if r["name"] in pin["conflicting_globals"] and r["name"] != flag]
+    receipt = {"schema": 1, "sha256": image.sha256, "data": native, "rejected_data_placements": [pin]}
+    with pytest.raises(ValueError, match="missing conflicting native global"):
+        match_builds.apply_recovered_map(image, donor, payload, receipt)
+
+
 def test_chained_recovery_checks_root_identities_missing_from_donor() -> None:
     image = REGISTRY.image("1.3.0", "crimson.exe")
     if not image.path.is_file():

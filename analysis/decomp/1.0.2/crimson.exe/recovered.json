@@ -1719,6 +1719,20 @@
       "size": 700,
       "sha256": "1be6b9bcfbebc370831ae298fcf28d4fbfe45d9537d311ef7b9ab09ac525e9f0",
       "reason": "This is the entire relocation-free .data section of VC6 libcmt.lib(constpow.obj). The power-of-ten tables __pow10pos and __pow10neg begin here and at +0x160. An operand projected from the later game does not establish a sprite pool here."
+    },
+    {
+      "name": "d3dx_sse_math_bss",
+      "address": "0x00428880",
+      "size": 32,
+      "sha256": "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925",
+      "conflicting_globals": [
+        "freeware_level_up_reset_byte",
+        "frame_dt",
+        "freeware_simulation_clock",
+        "freeware_credits_open",
+        "freeware_logo_angle"
+      ],
+      "reason": "player_check_level stores a byte here. The following game globals include the frame delta, advancing simulation clock and menu state, each with an independent write. The 32-byte footprint cannot be the static SIMD zero vector. DirectX 8.1 d3dx8.lib(d3dxmathsse.obj) supplies a 32-byte .bss section with 32-byte alignment containing _zero__9701."
     }
   ]
 }

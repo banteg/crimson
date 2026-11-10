@@ -2212,11 +2212,6 @@
     },
     {
       "address": "0x00452ed4",
-      "name": "d3dx_sse_math_bss",
-      "program": "1.4.0/crimson.exe"
-    },
-    {
-      "address": "0x00452ed4",
       "name": "freeware_logo_visible",
       "program": "1.4.0/crimson.exe"
     },

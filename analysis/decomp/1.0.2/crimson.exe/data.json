@@ -1037,11 +1037,6 @@
     },
     {
       "address": "0x00428880",
-      "name": "d3dx_sse_math_bss",
-      "program": "1.0.2/crimson.exe"
-    },
-    {
-      "address": "0x00428880",
       "name": "freeware_level_up_reset_byte",
       "program": "1.0.2/crimson.exe"
     },

@@ -561,6 +561,12 @@ def apply_recovered_map(
                 or address < native.image_base or address + size > native.image_base + len(native.mapped)
                 or hashlib.sha256(native.function_bytes(address, address + size)).hexdigest() != rejected["sha256"]):
             raise ValueError(f"invalid rejected data placement evidence: {name}")
+        # A zero-filled footprint alone cannot identify BSS. Bind each
+        # conflicting native global to the instruction receipt verified above.
+        for witness in rejected.get("conflicting_globals", ()):
+            if not any(row["name"] == witness and address <= matchlib.parse_int(row["address"]) < address + size
+                       for row in recovery.get("data", ())):
+                raise ValueError(f"missing conflicting native global for rejected data placement: {witness}")
         if name in entries and matchlib.parse_int(entries[name]["address"]) == address:
             del entries[name]
     ordered = sorted(rows.values(), key=lambda row: matchlib.parse_int(row["address"]))

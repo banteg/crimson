@@ -2658,5 +2658,20 @@
       "name": "highscore_compare_survival_score_desc",
       "reason": "The original score loader sorts display names and scores in-place with nested loops. The guessed callback following WinMain instead frees the buffer at this+4 and clears three pointer members."
     }
+  ],
+  "rejected_data_placements": [
+    {
+      "name": "d3dx_sse_math_bss",
+      "address": "0x00447838",
+      "size": 32,
+      "sha256": "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925",
+      "conflicting_globals": [
+        "freeware_logo_visible",
+        "freeware_scores_closing",
+        "freeware_name_length",
+        "freeware_editor_brush"
+      ],
+      "reason": "The address is only 8-byte aligned. The game writes the logo and score flags and the editor brush state in this range. DirectX 8.1 d3dx8.lib(d3dxmathsse.obj) supplies a 32-byte .bss section with 32-byte alignment containing _zero__9701."
+    }
   ]
 }
