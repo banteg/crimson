@@ -88,7 +88,7 @@ def _external_name(symbol: str) -> str | None:
     return None
 
 
-def _originals(image_paths: dict[str, Path]) -> dict[str, tuple[list[tuple[int, bytes]], dict[int, int]]]:
+def _originals(image_paths: dict[str, Path]) -> dict[str, tuple[list[tuple[int, bytes]], dict[int, int] | None]]:
     originals = {}
     for image, path in image_paths.items():
         with pefile.PE(str(path), fast_load=True) as pe:
@@ -104,12 +104,12 @@ def _originals(image_paths: dict[str, Path]) -> dict[str, tuple[list[tuple[int, 
                 base + entry.rva: entry.type for block in getattr(pe, "DIRECTORY_ENTRY_BASERELOC", ())
                 for entry in block.entries if entry.type
             }
-            originals[image] = sections, relocations
+            originals[image] = sections, None if pe.FILE_HEADER.Characteristics & 1 else relocations
     return originals
 
 
 def _verify_original(
-    name: str, address: int, expected: bytes, sections: list[tuple[int, bytes]], relocations: dict[int, int],
+    name: str, address: int, expected: bytes, sections: list[tuple[int, bytes]], relocations: dict[int, int] | None,
     *, pointer: bool = False,
 ) -> None:
     end = address + len(expected)
@@ -187,11 +187,20 @@ def candidates(
                 pointer = by_name[pointer_name]
                 literal = by_name[pointer["points_to"]]
                 signature = literal["expected"]
-                if (literal.get("located_through") != pointer_name or pointer["size"] != 4
-                        or pointer["extent_function"] != literal["extent_function"]
-                        or len(signature) < 3 or not signature.endswith(b"\0") or b"\0" in signature[:-1]):
-                    raise ValueError(f"{name}: invalid format signature or pointer definition")
-                target = _unique_signature(originals[image][0], signature)
+                if pointer["size"] != 4:
+                    raise ValueError(f"{name}: invalid pointer width")
+                if "located_through" in literal:
+                    if (literal["located_through"] != pointer_name or originals[image][1] is None
+                            or pointer["extent_function"] != literal["extent_function"] or len(signature) < 3
+                            or not signature.endswith(b"\0") or b"\0" in signature[:-1]):
+                        raise ValueError(f"{name}: invalid format signature or pointer definition")
+                    target = _unique_signature(originals[image][0], signature)
+                else:
+                    # A stripped EXE still has independent reference operands to both named globals.
+                    targets = {addr for addr, _ in references[image, literal["name"]]}
+                    if len(targets) != 1:
+                        raise ValueError(f"{name}: missing unique symbolic initializer target")
+                    target = targets.pop()
                 pointer_bytes = target.to_bytes(4, "little")
                 _verify_original(pointer_name, address, pointer_bytes, *originals[image], pointer=True)
                 if name == pointer_name:

@@ -292,5 +292,21 @@
       "1.4.0": 49
     },
     "initializer_hex": "57697468206d61676963207061696e7420796f752063616e2066697820636974792077616c6c732e2059656c6c6f772e00"
+  },
+  {
+    "name": "s_empty_string",
+    "extent_function": "console_init",
+    "sizes": {
+      "1.4.0": 1
+    },
+    "initializer_hex": "00"
+  },
+  {
+    "name": "console_empty_arg",
+    "extent_function": "console_cmd_arg_get",
+    "sizes": {
+      "1.4.0": 4
+    },
+    "points_to": "s_empty_string"
   }
 ]

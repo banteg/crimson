@@ -56,6 +56,8 @@ int freeware_console_creature_health = 100;
 int freeware_console_creature_size = 40;
 int freeware_rank = -1;
 unsigned char freeware_music_fading[3] = {1, 1, 1};
+char s_empty_string[] = "";
+char *console_empty_arg = s_empty_string;
 char secret_hint_magic_paint[] = "With magic paint you can fix city walls. Yellow.";
 #endif
 
