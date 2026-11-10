@@ -187,5 +187,47 @@
     "sizes": {
       "1.4.0": 4096
     }
+  },
+  {
+    "name": "unused_console_prefix_vec2",
+    "extent_function": "unused_console_prefix_vec2_global_init",
+    "sizes": {
+      "1.4.0": 8
+    }
+  },
+  {
+    "name": "unused_fx_queue_random_prefix_color",
+    "extent_function": "unused_fx_queue_random_prefix_color_global_init",
+    "sizes": {
+      "1.4.0": 16
+    }
+  },
+  {
+    "name": "unused_aim64_prefix_color",
+    "extent_function": "unused_aim64_prefix_color_global_init",
+    "sizes": {
+      "1.4.0": 16
+    }
+  },
+  {
+    "name": "unused_fx_rotated_creature_type_id_prefix_color",
+    "extent_function": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
+    "sizes": {
+      "1.4.0": 16
+    }
+  },
+  {
+    "name": "freeware_hint_ids",
+    "extent_function": "perks_init_database",
+    "sizes": {
+      "1.4.0": 28
+    }
+  },
+  {
+    "name": "freeware_message",
+    "extent_function": "perk_selection_screen_update",
+    "sizes": {
+      "1.4.0": 4
+    }
   }
 ]

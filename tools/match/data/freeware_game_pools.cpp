@@ -42,5 +42,11 @@ char *freeware_main_labels[7], *freeware_option_labels[11];
 #else
 char *freeware_main_labels[8], *freeware_option_labels[12], *freeware_online_labels[5];
 float freeware_snow_y[1024];
+vec2f_t unused_console_prefix_vec2;
+effect_color_t unused_fx_queue_random_prefix_color;
+effect_color_t unused_aim64_prefix_color;
+effect_color_t unused_fx_rotated_creature_type_id_prefix_color;
+int freeware_hint_ids[7];
+char *freeware_message;
 #endif
 }
