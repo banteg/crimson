@@ -166,7 +166,6 @@ version = "0.24.0"
 source = { editable = "." }
 dependencies = [
     { name = "msgspec" },
-    { name = "numpy" },
     { name = "pillow" },
     { name = "platformdirs" },
     { name = "pynacl" },
@@ -206,7 +205,6 @@ match-explain = [
 requires-dist = [
     { name = "lark", marker = "extra == 'quests'", specifier = ">=1.3.1" },
     { name = "msgspec", specifier = ">=0.20.0" },
-    { name = "numpy", specifier = ">=2.2" },
     { name = "pillow", specifier = ">=13.0.0" },
     { name = "platformdirs", specifier = ">=4.5.1" },
     { name = "pynacl", specifier = ">=1.6.2" },
