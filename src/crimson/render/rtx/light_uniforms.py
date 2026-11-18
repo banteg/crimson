@@ -5,9 +5,10 @@ from collections.abc import Sequence
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from .continuous_beam import beam_uniform
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 
-LIGHT_UNIFORMS = ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response")
+LIGHT_UNIFORMS = ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response", "u_beam_shape")
 
 
 def upload_material_lights(
@@ -37,6 +38,8 @@ def upload_material_lights(
         "u_dir": [v for light in lights for v in (light.direction.x, light.direction.y, light.reflection_tail, light.length)],
         "u_response": [v for light in lights for v in light.response],
     }
+    if locations["u_beam_shape"] >= 0:
+        values["u_beam_shape"] = [v for light in lights for v in beam_uniform(light)]
     for name, value in values.items():
         buf = rl.ffi.new("float[]", value)
         rl.set_shader_value_v(
