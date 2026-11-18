@@ -104,6 +104,7 @@ def test_dense_arc_selection_follows_view_center():
         snapshot.creatures.entries[i] = msgspec.structs.replace(template, pos=Vec2(100 + (60 if i <= 4 else -60), 100 + i))
     right = ion_arc_sources(snapshot, shot, view_center=Vec2(180, 100))
     left = ion_arc_sources(snapshot, shot, view_center=Vec2(20, 100))
+    assert len(right) == len(left) == 4
     assert all(source.pos.x > 100 for source in right)
     assert all(source.pos.x < 100 for source in left)
 

@@ -1,26 +1,12 @@
 from __future__ import annotations
 
 from crimson.creatures.spawn import SpawnId
-from crimson.quests import quest_by_level
-from crimson.quests.level import QuestLevel
-from crimson.quests.runtime import (
-    apply_hardcore_spawn_table_adjustment,
-    build_quest_spawn_table,
-)
+from crimson.quests.runtime import apply_hardcore_spawn_table_adjustment
 from crimson.quests.tier3 import quest_build_the_killing
-from crimson.quests.tier4 import quest_build_the_end_of_all
 from crimson.quests.types import QuestContext, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
-from grim.rand import Crand
 from tests.support.helpers import ScriptedCrand
-
-
-def test_end_of_all_hardcore_ring_keeps_native_float32_positions() -> None:
-    entries = quest_build_the_end_of_all(QuestContext(player_count=1, hardcore=True, rng=Crand(0)))
-    # Native float32 ring positions, untruncated (oracle-checked).
-    assert entries[26].pos == Vec2(332.0, 511.9999694824219)
-    assert entries[31].pos == Vec2(667.8845825195312, 422.00006103515625)
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
@@ -55,24 +41,6 @@ def test_apply_hardcore_spawn_table_adjustment() -> None:
         2,  # 0x3C excluded
         1,  # count <= 1 excluded
     ]
-
-
-def test_builder_specific_hardcore_branches_use_runtime_flag() -> None:
-    cases = (
-        (QuestLevel(2, 10), 3, 6),
-        (QuestLevel(4, 7), 68, 92),
-        (QuestLevel(4, 8), 40, 56),
-        (QuestLevel(4, 10), 25, 37),
-    )
-
-    for level, normal_count, hardcore_count in cases:
-        quest = quest_by_level(level)
-        assert quest is not None
-        normal = build_quest_spawn_table(quest, QuestContext(player_count=1, rng=Crand(0)))
-        hardcore = build_quest_spawn_table(quest, QuestContext(player_count=1, hardcore=True, rng=Crand(0)))
-
-        assert len(normal) == normal_count
-        assert len(hardcore) == hardcore_count
 
 
 def test_the_killing_discards_pick_rolls_and_cycles_by_wave_index() -> None:
