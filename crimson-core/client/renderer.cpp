@@ -292,7 +292,8 @@ const char *pressure_fragment_source = SHADER_HEADER SHADER_PRESSURE_LIT_FRAG;
 enum { MAX_LIGHTS = 32 };
 int material;
 float scene_camera[2];
-GroundVisibility ground_visibility;
+GroundVisibility ground_visibility, coarse_ground_visibility;
+uint32_t coarse_visibility_mask;
 bool visibility_dirty = true;
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
@@ -917,18 +918,23 @@ void prepare_ground_visibility(int view_width, int view_height) {
                             light_count, dynamic_shadows && occlusion_grid[2] > 0 &&
                             ground_size[0] > 0 && ground_size[1] > 0);
   const GroundVisibility &v = ground_visibility;
+  coarse_visibility_mask = beam_visibility_mask(v, beam_shape, light_rgb, beam_lights);
+  coarse_ground_visibility.prepare(scene_camera[0], scene_camera[1], (float)view_width, (float)view_height,
+                                   v.count, v.count != 0, GroundVisibility::beam_texel);
+  const GroundVisibility &coarse = coarse_ground_visibility;
   profile_stat("ground_visibility_sources", v.count);
   profile_stat("ground_visibility_groups", (v.count + 3) / 4);
   if (!v.count)
     return;
   gpu_aside("ground-vis");
-  if (!beam_vis_framebuffer || v.width != beam_vis_width || v.height != beam_vis_height) {
+  int width = 4 * v.width, height = BEAM_VISIBILITY_ROWS * (v.height + coarse.height);
+  if (!beam_vis_framebuffer || width != beam_vis_width || height != beam_vis_height) {
     if (!beam_vis_framebuffer) {
       glGenFramebuffers(1, &beam_vis_framebuffer);
       glGenTextures(1, &beam_vis_texture);
     }
     glBindTexture(GL_TEXTURE_2D, beam_vis_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4 * v.width, BEAM_VISIBILITY_ROWS * v.height,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height,
                  0, GL_RGBA, GL_HALF_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -936,21 +942,20 @@ void prepare_ground_visibility(int view_width, int view_height) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, beam_vis_texture, 0);
-    beam_vis_width = v.width;
-    beam_vis_height = v.height;
+    beam_vis_width = width;
+    beam_vis_height = height;
   }
   glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  glViewport(0, 0, 4 * v.width, BEAM_VISIBILITY_ROWS * v.height);
+  glViewport(0, 0, width, height);
   glDisable(GL_SCISSOR_TEST);
   glClearColor(1, 1, 1, 1);
   glClear(GL_COLOR_BUFFER_BIT);
   GLuint p = ground_beam_vis_program;
   use_program(p);
   auto at = [p](const char *name) { return uniform_location(p, name); };
-  glUniform4fv(at("u_visibility_world"), 1, v.rect);
   glUniform2fv(at("u_ground_size"), 1, ground_size);
   glUniform1i(at("u_spec_light_count"), light_count);
   glUniform1i(at("u_has_beam_lights"), beam_lights);
@@ -967,14 +972,24 @@ void prepare_ground_visibility(int view_width, int view_height) {
   glBindSampler(0, 0);
   glBindVertexArray(vertex_array);
   glEnable(GL_SCISSOR_TEST);
-  for (int group = 0; group * 4 < v.count; ++group) {
-    auto bounds = v.bounds(group, light_pos, ground_dir, light_rgb, light_response, beam_shape, beam_lights);
-    if (!bounds[2] || !bounds[3]) continue;
-    glScissor(group % 4 * v.width + bounds[0], group / 4 * v.height + bounds[1], bounds[2], bounds[3]);
-    glViewport(group % 4 * v.width, group / 4 * v.height, v.width, v.height);
-    glUniform1f(at("u_visibility_group"), (float)group);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  }
+  auto draw_atlas = [&](const GroundVisibility &grid, uint32_t mask, int first_row) {
+    glUniform4fv(at("u_visibility_world"), 1, grid.rect);
+    for (int group = 0; group * 4 < grid.count; ++group) {
+      unsigned lanes = (mask >> (group * 4)) & 15u;
+      if (!lanes) continue;
+      auto bounds = grid.bounds(group, light_pos, ground_dir, light_rgb, light_response, beam_shape, beam_lights, lanes);
+      if (!bounds[2] || !bounds[3]) continue;
+      int x = group % 4 * grid.width, y = first_row + group / 4 * grid.height;
+      glScissor(x + bounds[0], y + bounds[1], bounds[2], bounds[3]);
+      glViewport(x, y, grid.width, grid.height);
+      glUniform1f(at("u_visibility_group"), (float)group);
+      glUniform1i(at("u_visibility_lane_mask"), (int)lanes);
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+  };
+  draw_atlas(v, ~coarse_visibility_mask, 0);
+  if (coarse_visibility_mask)
+    draw_atlas(coarse, coarse_visibility_mask, BEAM_VISIBILITY_ROWS * v.height);
   glDisable(GL_SCISSOR_TEST);
   bind_target();
   gpu_resume();
@@ -1005,7 +1020,10 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   glUniform1i(at("u_has_beam_lights"), beam_lights);
   glUniform2fv(at("u_beam_gain"), 1, beam_gain);
   glUniform4fv(at("u_visibility_world"), 1, ground_visibility.rect);
-  glUniform2f(at("u_visibility_size"), (float)std::max(1, beam_vis_width), (float)std::max(1, beam_vis_height));
+  glUniform2f(at("u_visibility_size"), (float)std::max(1, ground_visibility.width), (float)std::max(1, ground_visibility.height));
+  glUniform4fv(at("u_coarse_visibility_world"), 1, coarse_ground_visibility.rect);
+  glUniform2f(at("u_coarse_visibility_size"), (float)coarse_ground_visibility.width, (float)coarse_ground_visibility.height);
+  glUniform1i(at("u_coarse_visibility_mask"), (int)coarse_visibility_mask);
   if (light_count) {
     glUniform4fv(at("u_spec_pos"), light_count, light_pos);
     glUniform4fv(at("u_spec_color"), light_count, light_rgb);
@@ -1370,7 +1388,8 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   rtx = enabled;
   world = false;
   visibility_dirty = true;
-  ground_visibility = {};
+  ground_visibility = coarse_ground_visibility = {};
+  coarse_visibility_mask = 0;
   release(hdr);
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())

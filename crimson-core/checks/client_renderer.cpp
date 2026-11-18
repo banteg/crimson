@@ -976,11 +976,12 @@ void check_ground_visibility() {
     w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
   };
   auto end = [] { w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END); };
-  auto mask = [](int index, float x, float y) {
-    const GroundVisibility &v = ground_visibility;
+  auto mask = [](int index, float x, float y, bool coarse = false) {
+    const GroundVisibility &v = coarse ? coarse_ground_visibility : ground_visibility;
+    int first_row = coarse ? BEAM_VISIBILITY_ROWS * ground_visibility.height : 0;
     int group = index / 4;
-    int px = group % 4 * v.width + (int)floorf((x - v.rect[0]) / GroundVisibility::texel);
-    int py = group / 4 * v.height + (int)floorf((y - v.rect[1]) / GroundVisibility::texel);
+    int px = group % 4 * v.width + (int)floorf((x - v.rect[0]) / v.texel);
+    int py = first_row + group / 4 * v.height + (int)floorf((y - v.rect[1]) / v.texel);
     float rgba[4];
     glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
     glReadPixels(px, py, 1, 1, GL_RGBA, GL_FLOAT, rgba);
@@ -1008,7 +1009,19 @@ void check_ground_visibility() {
     assert(fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
     end();
   }
+  // A beam in the last lane leaves its fine mask clear and reads its
+  // occlusion from the coarse atlas. Point sources keep their fine samples.
+  float *beam = lights + 31 * RTX_LIGHT_FLOATS;
+  beam[8] = 1; beam[11] = 24; beam[12] = 1;
+  beam[20] = .25f; beam[21] = 2; beam[22] = 1; beam[23] = 15;
+  begin(32, 0, 1);
+  assert(coarse_visibility_mask == (uint32_t(1) << 31));
+  assert(beam_vis_texture == texture && beam_vis_width == width && beam_vis_height == height);
+  assert(fabsf(mask(0, 31, 49) - blocked) < 1e-3f);
+  assert(mask(31, 31, 49) == 1 && mask(31, 31, 49, true) < .9f);
+  end();
   begin(1, 0, 1);
+  assert(!coarse_visibility_mask);
   assert(mask(31, 31, 49) == 1); // unused groups must be cleared, not kept from the previous frame
   end();
   for (int state = 0; state < 3; ++state) {

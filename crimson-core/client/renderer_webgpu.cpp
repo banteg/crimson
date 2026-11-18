@@ -211,7 +211,8 @@ float heat_seconds = -1;
 enum { MAX_LIGHTS = 32 };
 int material;
 float scene_camera[2];
-GroundVisibility ground_visibility;
+GroundVisibility ground_visibility, coarse_ground_visibility;
+uint32_t coarse_visibility_mask;
 bool visibility_dirty = true;
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
@@ -1040,15 +1041,20 @@ void prepare_ground_visibility(int view_width, int view_height) {
   ground_visibility.prepare(scene_camera[0], scene_camera[1], (float)view_width, (float)view_height, light_count,
                             dynamic_shadows && occlusion_grid[2] > 0 && ground_size[0] > 0 && ground_size[1] > 0);
   const GroundVisibility &v = ground_visibility;
+  coarse_visibility_mask = beam_visibility_mask(v, beam_shape, light_rgb, beam_lights);
+  coarse_ground_visibility.prepare(scene_camera[0], scene_camera[1], (float)view_width, (float)view_height,
+                                   v.count, v.count != 0, GroundVisibility::beam_texel);
+  const GroundVisibility &coarse = coarse_ground_visibility;
   if (!v.count)
     return;
   int groups = (v.count + 3) / 4;
-  if (!fits(uniform_stream, visibility_uniforms(groups)))
+  if (!fits(uniform_stream, visibility_uniforms(groups * (coarse_visibility_mask ? 2 : 1))))
     submit();
-  if (beam_vis.width != 4 * v.width || beam_vis.height != BEAM_VISIBILITY_ROWS * v.height) {
+  int width = 4 * v.width, height = BEAM_VISIBILITY_ROWS * (v.height + coarse.height);
+  if (beam_vis.width != width || beam_vis.height != height) {
     release(beam_vis);
-    beam_vis.width = beam_vis.logical_width = 4 * v.width;
-    beam_vis.height = beam_vis.logical_height = BEAM_VISIBILITY_ROWS * v.height;
+    beam_vis.width = beam_vis.logical_width = width;
+    beam_vis.height = beam_vis.logical_height = height;
     beam_vis.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
     allocate(beam_vis);
   }
@@ -1058,24 +1064,31 @@ void prepare_ground_visibility(int view_width, int view_height) {
   o.format = format_of(beam_vis);
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_beam_vis, o));
   Uniforms vertex(*ground_beam_vis.vert), fragment(*ground_beam_vis.frag);
-  vertex.set("u_visibility_world", v.rect, 16).set("u_ground_size", ground_size, 8);
+  vertex.set("u_ground_size", ground_size, 8);
   fragment.set("u_ground_size", ground_size, 8).i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights);
   fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
   fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
   fragment.set("u_beam_shape", beam_shape, light_count * 16);
   fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
   WGPUBindGroup group_inputs = fragment_group(ground_beam_vis, {{"u_occlusion_tex", occlusion_view, nearest_clamp()}});
-  for (int group = 0; group < groups; ++group) {
-    auto bounds = v.bounds(group, light_pos, ground_dir, light_rgb, light_response, beam_shape, beam_lights);
-    if (!bounds[2] || !bounds[3]) continue;
-    wgpuRenderPassEncoderSetScissorRect(pass, group % 4 * v.width + bounds[0], group / 4 * v.height + bounds[1],
-                                      bounds[2], bounds[3]);
-    fragment.f("u_visibility_group", (float)group);
-    wgpuRenderPassEncoderSetViewport(pass, (float)(group % 4 * v.width), (float)(group / 4 * v.height), (float)v.width,
-                                     (float)v.height, 0, 1);
-    bind(ground_beam_vis, group_inputs, &vertex, &fragment);
-    wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
-  }
+  auto draw_atlas = [&](const GroundVisibility &grid, uint32_t mask, int first_row) {
+    vertex.set("u_visibility_world", grid.rect, 16);
+    for (int group = 0; group < groups; ++group) {
+      unsigned lanes = (mask >> (group * 4)) & 15u;
+      if (!lanes) continue;
+      auto bounds = grid.bounds(group, light_pos, ground_dir, light_rgb, light_response, beam_shape, beam_lights, lanes);
+      if (!bounds[2] || !bounds[3]) continue;
+      int x = group % 4 * grid.width, y = first_row + group / 4 * grid.height;
+      wgpuRenderPassEncoderSetScissorRect(pass, x + bounds[0], y + bounds[1], bounds[2], bounds[3]);
+      fragment.f("u_visibility_group", (float)group).i("u_visibility_lane_mask", (int)lanes);
+      wgpuRenderPassEncoderSetViewport(pass, (float)x, (float)y, (float)grid.width, (float)grid.height, 0, 1);
+      bind(ground_beam_vis, group_inputs, &vertex, &fragment);
+      wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+    }
+  };
+  draw_atlas(v, ~coarse_visibility_mask, 0);
+  if (coarse_visibility_mask)
+    draw_atlas(coarse, coarse_visibility_mask, BEAM_VISIBILITY_ROWS * v.height);
   end_pass();
 }
 
@@ -1097,6 +1110,9 @@ bool ground_draw(const Geometry &geometry) {
   fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
   fragment.set("u_visibility_world", ground_visibility.rect, 16);
   fragment.v2("u_visibility_size", (float)std::max(1, ground_visibility.width), (float)std::max(1, ground_visibility.height));
+  fragment.set("u_coarse_visibility_world", coarse_ground_visibility.rect, 16);
+  fragment.v2("u_coarse_visibility_size", (float)coarse_ground_visibility.width, (float)coarse_ground_visibility.height);
+  fragment.i("u_coarse_visibility_mask", (int)coarse_visibility_mask);
   fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
   fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
   fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_beam_shape", beam_shape, light_count * 16);
@@ -1160,7 +1176,8 @@ bool wgpu_renderer_set_rtx(bool enabled) {
   rtx = enabled;
   world = false;
   visibility_dirty = true;
-  ground_visibility = {};
+  ground_visibility = coarse_ground_visibility = {};
+  coarse_visibility_mask = 0;
   release(hdr);
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())

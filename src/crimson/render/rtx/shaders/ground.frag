@@ -59,6 +59,7 @@ vec3 debug_radiance(vec3 value) {
 // Coarse world-anchored visibility. Beams integrate their emitting length;
 // other sources retain nearest-emitter rays. Both include reflection support.
 uniform float u_visibility_group;
+uniform int u_visibility_lane_mask;
 void main() {
     vec2 world = vec2(fragTexCoord.x, V_UP > 0. ? 1. - fragTexCoord.y : fragTexCoord.y) * u_ground_size;
     int first = int(u_visibility_group + .5) * 4;
@@ -66,6 +67,7 @@ void main() {
     for (int lane = 0; lane < 4; ++lane) {
         int i = first + lane;
         if (i >= u_spec_light_count) break;
+        if (u_visibility_lane_mask != 0 && (u_visibility_lane_mask & (1 << lane)) == 0) continue;
         vec4 pos = u_spec_pos[i], dir = u_spec_dir[i], response = u_spec_response[i];
         if (response.x <= 0. && response.y <= 0.) continue;
         vec2 axis = dot(dir.xy, dir.xy) > .0001 ? normalize(dir.xy) : vec2(1., 0.);

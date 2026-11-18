@@ -2,15 +2,19 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdint>
 
 // A color-independent field; its resolution is in world units, not display
 // pixels. One texel of margin keeps visible receivers inside the sampling grid.
 struct GroundVisibility {
-  static constexpr float texel = 4.f;
+  static constexpr float fine_texel = 4.f, beam_texel = 8.f;
+  float texel = fine_texel;
   float rect[4] = {};
   int width = 0, height = 0, count = 0;
-  void prepare(float camera_x, float camera_y, float view_width, float view_height, int sources, bool enabled) {
+  void prepare(float camera_x, float camera_y, float view_width, float view_height, int sources, bool enabled,
+               float spacing = fine_texel) {
     *this = {};
+    texel = spacing;
     if (!enabled || sources <= 0 || view_width <= 0 || view_height <= 0)
       return;
     count = std::min(sources, 32);
@@ -27,10 +31,11 @@ struct GroundVisibility {
   // for interpolation. Outside it the mask is white, so no draw is needed.
   std::array<int, 4> bounds(int group, const float *positions, const float *directions,
                            const float *colors, const float *responses, const float *shapes,
-                           bool beams) const {
+                           bool beams, unsigned lanes = 15) const {
     float lo_x = INFINITY, lo_y = INFINITY, hi_x = -INFINITY, hi_y = -INFINITY;
     bool any = false;
     for (int i = group * 4; i < std::min(count, group * 4 + 4); ++i) {
+      if (!(lanes & (1u << (i % 4)))) continue;
       const float *p = positions + i * 4, *d = directions + i * 4, *r = responses + i * 4;
       if (r[0] <= 0 && r[1] <= 0)
         continue;
@@ -55,3 +60,13 @@ struct GroundVisibility {
     return {x0, y0, std::max(0, x1 - x0), std::max(0, y1 - y0)};
   }
 };
+
+inline uint32_t beam_visibility_mask(const GroundVisibility &fine, const float *shapes,
+                                     const float *colors, bool beams) {
+  uint32_t mask = 0;
+  if (beams)
+    for (int i = 0; i < fine.count; ++i)
+      if (shapes[i * 4 + 3] > 0 && colors[i * 4 + 3] <= 0)
+        mask |= uint32_t(1) << i;
+  return mask;
+}
