@@ -16,6 +16,8 @@
 extern game_status_t game_status_blob;
 extern unsigned char grim_timing_frozen;
 extern "C" {
+bool dinput_mouse_down(int button);
+bool game_input_pressed(int code);
 void game_state_set_recovered(game_state_id_t state);
 void gameplay_update_and_render_recovered();
 extern float grim_frame_dt;
@@ -356,7 +358,11 @@ static int game_live_key(int code) {
          : code == 102 ? config.key_pick_perk
                        : code;
 }
-static bool live_down(int code) { return session_grim.IGrim2D_cpp::grim_is_key_active(code); }
+static bool live_down(int code) {
+  if (code >= 0x100 && code <= 0x104)
+    return dinput_mouse_down(code - 0x100);
+  return session_grim.IGrim2D_cpp::grim_is_key_active(code);
+}
 static bool live_down_or_arrow(int code, int arrow) { return live_down(code) || live_down(arrow); }
 static float live_axis(int code) { return session_grim.IGrim2D_cpp::grim_get_config_float(code); }
 
@@ -375,11 +381,13 @@ static void live_poll() {
       live.pausing = true;
     }
   }
-  live.fire_pressed |= fire && !live.fire_down;
-  live.reload_pressed |= reload && !live.reload_down;
+  live.fire_pressed |= (fire && !live.fire_down) || game_input_pressed(keys.fire_key);
+  live.reload_pressed |= (reload && !live.reload_down) || game_input_pressed(config_blob.key_reload);
   // gameplay_update_and_render opens the perk menu on the pick key, Space or
   // keypad plus; a run takes the request as a command.
-  live.open_requested |= (pick && !live.pick_down) || session_grim.IGrim2D_cpp::grim_was_key_pressed(57) ||
+  live.open_requested |= (pick && !live.pick_down) || game_input_pressed(config_blob.key_pick_perk) ||
+                         game_input_pressed(57) || game_input_pressed(78) ||
+                         session_grim.IGrim2D_cpp::grim_was_key_pressed(57) ||
                          session_grim.IGrim2D_cpp::grim_was_key_pressed(78);
   live.fire_down = fire;
   live.reload_down = reload;
@@ -465,8 +473,9 @@ static PortableInput live_input(int seat = 0) {
         facing_y = aim_scheme == 4 ? input.aim_y : input.aim_y - player.position.y;
   if (facing_x * facing_x + facing_y * facing_y > 1e-9f)
     live.aim_heading = atan2f(facing_y, facing_x) + (float)M_PI_2;
-  input.flags = (live.fire_down ? 1u : 0) | (live.fire_pressed ? 2u : 0) | (live.reload_pressed ? 4u : 0) |
-                8u | (forward ? 16u : 0) | (backward ? 32u : 0) | (left ? 64u : 0) | (right ? 128u : 0) |
+  input.flags = (live.fire_down || live.fire_pressed ? 1u : 0) | (live.fire_pressed ? 2u : 0) |
+                (live.reload_pressed ? 4u : 0) | 8u | (forward ? 16u : 0) | (backward ? 32u : 0) |
+                (left ? 64u : 0) | (right ? 128u : 0) |
                 0x100u | (unsigned)(move_mode & 7) << 9 | 0x1000u | (unsigned)(aim_scheme & 7) << 13 |
                 (live.reload_down ? 1u << 16 : 0) | (live_down(0x22) ? 1u << 17 : 0) |
                 (turn_left ? 1u << 18 : 0) | (turn_right ? 1u << 19 : 0);
@@ -497,8 +506,13 @@ static void live_timeline() {
 // up the last perk or kill the player (Grim Deal), so the next command waits
 // for the next tick, and one the verifier would refuse is dropped, as the
 // original ignores it.
-static bool live_tick() {
+static bool live_tick(bool latest) {
   in[0] = live_input();
+  // A newly held trigger was first sampled now. Do not backdate that hold
+  // through the whole batch of catch-up ticks. A completed tap fires once.
+  bool defer_fire = live.fire_pressed && live.fire_down && !latest;
+  if (defer_fire)
+    in[0].flags &= ~3u;
   if (live.open_requested)
     live_queue({2, 0});
   uint32_t count = 0;
@@ -512,7 +526,8 @@ static bool live_tick() {
     live_append(&count, sizeof count);
     live_append(commands, count * sizeof(PortableCommand));
   }
-  live.fire_pressed = live.reload_pressed = live.open_requested = false;
+  live.fire_pressed = defer_fire;
+  live.reload_pressed = live.open_requested = false;
   live.requested = GAME_STATE_PENDING_IDLE_SENTINEL;
   if (!live_step(count)) {
     if (live.practicing) {
@@ -589,7 +604,7 @@ template <class Tick> static void live_run_due(Tick run_tick) {
   terrain.baking = true;
   for (int ran = 0; ran < due; ++ran) {
     grim_render_disabled = disabled || ran + 1 < due;
-    if (!run_tick())
+    if (!run_tick(ran + 1 == due))
       break;
   }
   grim_render_disabled = disabled;
@@ -684,7 +699,7 @@ void gameplay_update_and_render() {
   if (console_open_flag)
     return gameplay_render_world();
   live_poll_prompt();
-  live_run_due([] { return live_tick(); });
+  live_run_due(live_tick);
 }
 // The perk screen's choice (perk_selection_screen_update) reaches the run as a
 // command with its next tick.

@@ -5,6 +5,19 @@
 // (checks/game_host.mjs).
 #include <stddef.h>
 
+// Down transitions delivered since the last frame, including controls already
+// released when the game polls. Pad buttons use the original Joys1..12 codes.
+struct HostPresses {
+  unsigned char bits[0x220 / 8];
+  void add(unsigned code) {
+    if (code < sizeof(bits) * 8)
+      bits[code / 8] |= 1u << (code % 8);
+  }
+  bool has(unsigned code) const {
+    return code < sizeof(bits) * 8 && (bits[code / 8] & (1u << (code % 8)));
+  }
+};
+
 struct HostInput {
   unsigned char keys[256]; // 0x80 while held
   int mouse_dx, mouse_dy, mouse_dz;
@@ -20,10 +33,12 @@ struct HostInput {
   unsigned pad_hat;
   unsigned char pad_buttons[32];
   unsigned char pad_connected; // a pad is there, even at rest (game/pad.cpp)
+  unsigned char mouse_clicks; // short clicks held for the original UI; mouse_buttons stays physical
+  HostPresses presses;
 };
 static_assert(offsetof(HostInput, mouse_dx) == 256 && offsetof(HostInput, mouse_dy) == 260 &&
                   offsetof(HostInput, mouse_buttons) == 268 && offsetof(HostInput, key_event_count) == 276 &&
                   offsetof(HostInput, key_events) == 280 && offsetof(HostInput, pad_axes) == 344 &&
                   offsetof(HostInput, pad_hat) == 360 && offsetof(HostInput, pad_buttons) == 364 &&
-                  offsetof(HostInput, pad_connected) == 396,
+                  offsetof(HostInput, pad_connected) == 396 && offsetof(HostInput, presses) == 398,
               "checks/game_host.mjs writes HostInput by these offsets");

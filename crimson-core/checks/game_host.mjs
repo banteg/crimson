@@ -23,6 +23,8 @@ export const INPUT = {
   pad_hat: 360,
   pad_buttons: 364,
   pad_connected: 396,
+  mouse_clicks: 397,
+  presses: 398,
 };
 
 // `leaderboard` enables the leaderboard (true, or "framed" as inside another
