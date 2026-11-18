@@ -63,10 +63,13 @@ the most-used weapon is player 1's.
 - **Tutorial**: never.
 
 !!! bug "Original bug"
-    In the original executable, *Score too low* never shows: every run gets
-    a name prompt and is saved. A table lists at most 99 runs, and each new
-    run pushes out the weakest one shown, even when it scores lower itself,
-    so the newest run is always listed. The rewrite keeps a true top 100.
+    The original accepts a score even when it ranks below the top 100.
+    Once the table is full, the loader replaces its weakest entry even
+    when the new score is worse. In 1.9.93 the rank counter stops at 99,
+    but the screen can show 100 positive results in Survival, Rush and Typ-o.
+    With 100 positive quest times it shows 99. A saved zero-XP Survival
+    run or zero-kill Typ-o run can disappear from even a nearly empty table.
+    The rewrite keeps a true top 100. [Original bug 74](../../rewrite/original-bugs.md#74-a-saved-zero-score-run-can-disappear-from-high-scores)
 
 ## Hardcore and Survival
 

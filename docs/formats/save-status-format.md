@@ -76,7 +76,7 @@ Offsets are relative to the decoded payload (`game_status_blob`).
 | `0xD8` | u32[91] | `quest_play_counts` | Quest play/attempt counters (`major * 10 + minor`); `unsigned int quest_play_counts[91]` in `game_status_t` (`third_party/headers/crimsonland_types.h`). |
 | `0x244` | u32 | `mode_play_survival` | Incremented when starting Survival (mode 1). |
 | `0x248` | u32 | `mode_play_rush` | Incremented when starting Rush (mode 2). |
-| `0x24C` | u32 | `mode_play_typo` | Incremented when starting Typ‑o‑Shooter (mode 4). |
+| `0x24C` | u32 | `mode_play_typo` | Typ-o play count shown in the Play Game menu. In 1.9.93, starting Typ-o skips the increment. [Original bug 71](../rewrite/original-bugs.md#71-starting-typ-o-leaves-its-play-count-unchanged) |
 | `0x250` | u32 | `mode_play_other` | Incremented for other modes (e.g. tutorial). |
 | `0x254` | u32 | `play_time_ms` | Native `playTime` counter in milliseconds; used by statistics/demo limits and synchronized with the registry value named `sequence`. |
 | `0x258` | u32[4] | `reserved_seed_words` | Four constructor seeds (`rand() % 345354345`), named `reserved1..reserved4` in the recovered source header. |

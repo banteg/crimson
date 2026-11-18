@@ -7,11 +7,9 @@ tags:
 
 # Classic quirks
 
-The original game's bugs, as a player meets them. The rewrite fixes most of
-them by default; run it with `--preserve-bugs` to bring every fixed one
-back. A few stay in both modes. Where a table has them, the # column links
-each one's full write-up in [Original bugs](../../rewrite/original-bugs.md),
-and the Page column the page that covers it.
+These tables cover a selection of bugs players can encounter in the original
+game. The full catalog describes each bug, the evidence for it and, where
+applicable, how `--preserve-bugs` affects the rewrite. [Original bugs](../../rewrite/original-bugs.md)
 
 ## Gameplay
 
@@ -105,8 +103,5 @@ on the [1.9.8 rules](../../rewrite/rules-1.9.8.md). The rewrite plays them as
 
 | Quirk | In the original | Rewrite | Page |
 | --- | --- | --- | --- |
-| Every run makes the table | Every run is saved. Past 99 runs, each new one replaces the weakest listed score, even when it scores lower. | A true top 100 | [High scores](scores.md#when-a-run-is-saved) |
+| Scores below the cutoff | Even a run below the top 100 is accepted for saving. | A true top 100 | [High scores](scores.md#when-a-run-is-saved) |
 | Formation tails | The last member of most rings, chains and grids is a 20 HP alien, and only it gets hardcore and retry scaling. | Kept | [Quests](../modes/quests.md#formations) |
-
-Two entries in the bug list, 10 and 26, are left out because no player can
-see them.

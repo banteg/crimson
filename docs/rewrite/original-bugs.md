@@ -13,8 +13,9 @@ and future differential testing, you can re-enable those original behaviors with
 `--preserve-bugs`. Original text quirks, the late-game Survival spawn rate, piercing damage-pool growth, the Shrinkifier's repeated death rewards and the Bubblegun's stale target are documented only and always preserved.
 
 The historical [rules-2 candidate assessment](https://github.com/banteg/crimson/blob/1c710a97e997f924cc7d6a89aa1c7269fd9df516/docs/rewrite/original-bugs-triage.md)
-remains in git history. This ledger records adopted behavior; entry 50 is an
-explicit consistency/balance choice, not a proven original defect.
+remains in git history. This ledger records native behavior and, where a
+rewrite change has been adopted, its treatment. Entry 50 records an explicit
+consistency and balance choice.
 
 The ledger covers both builds a run can play: 1.9.93, the default, and 1.9.8
 under the [1.9.8 rules](rules-1.9.8.md). Entries 1-55 describe 1.9.93; most
@@ -24,6 +25,14 @@ default plays as 1.9.93 does, and `--preserve-bugs` keeps 1.9.8's native
 behavior. The 1.9.8 rules themselves (the additive Fire Bullets model, the
 missing perks and the other changes listed on their page) are not bugs and
 apply under both policies.
+
+Entries 61–79 describe behaviors reproduced in the GOG 1.9.93 executable.
+Their regression tests run that build with the
+[native execution oracle](../verification/differential-testing/native-oracle.md).
+
+```sh
+CRIMSON_NATIVE_ORACLE=1 uv run pytest tests/native_oracle/test_original_bugs_*.py
+```
 
 ## 1) Bonus drop suppression: `amount == current weapon id`
 
@@ -1677,3 +1686,201 @@ Evidence: `decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp` (the
 `CL_BUILD != 10908` term in the forced drop's reject), and
 `bonus_try_spawn_on_kill` in the 1.9.9 (`0x0041fa70`) and 1.9.92 (`0x0041fbc0`)
 executables. Tests: `tests/bonuses/test_bonus_pistol_rules.py`.
+
+## 61) Army of Three followers can adopt the next wave's leader
+
+In quest 5.7, shatter the first grid's leader with Freeze just before the
+second grid arrives at 5.5 seconds. Freeze frees the leader's creature slot
+immediately but delays the followers' check until thaw. They then read the
+health of the new leader in that slot. All 27 original followers survive, and
+killing the replacement kills all 54 followers. When Freeze ends before the
+second wave, all 27 original followers die on thaw.
+[Follower check](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp#L358-L386)
+
+## 62) A fading den can release a live den's spawn slot
+
+A den releases its spawn slot when it dies and again when its corpse fades.
+If a new den takes the slot in between, the second release removes the live
+den from player collision. In the regression case a step toward a plasma-spider
+den was blocked until the old corpse disappeared. The same step then took
+the player six units into its collision radius.
+
+Adding a lizard den at another location made both live dens use the same spawn
+timer and child type. The plasma-spider den spawned a lizard beside itself.
+This was a controlled three-den setup. In a stock quest, 2.7 schedules its
+first six weak spider dens only 0.9 seconds apart.
+[Release on death](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/creature_handle_death.cpp#L45-L51) ·
+[Release on fade](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/ui_render/creature_render_type.cpp#L303-L307)
+
+## 63) A poisoned creature can pay XP without counting as a kill
+
+At 60 FPS, deal 10 damage to a 1-HP creature worth 100 XP. With or without
+poison it dies and pays 100 XP. The unpoisoned kill increments the kill
+counter and leaves a corpse decal. The poisoned kill does neither. The same
+difference occurs at 30 FPS. At 50 FPS both kills count.
+
+Poison continues to tick on the dying body. It can take the death timer past
+zero before the ordinary corpse update reaches the branch that records the
+kill and queues the decal.
+[Poison tick](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp#L138-L159) ·
+[Corpse update](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp#L754-L790)
+
+## 64) Anxious Loader consumes level-up clicks and player 2's reload taps
+
+With Anxious Loader, a left click on the level-up prompt lights it up but
+leaves the perk picker closed, even with a full clip. Space still opens it.
+The perk consumes the shared fire press before checking whether the player
+is reloading. The prompt checks the same input later in the frame.
+
+In co-op, start both players at 1.000 second left on a reload and press only
+player 2's fire key. At 60 FPS, player 1 ends the frame at 0.933 seconds and
+player 2 at 0.983. If player 1 is dead, player 2 gets the extra 0.05-second
+reduction instead.
+[Reload check](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp#L925-L931) ·
+[Perk prompt](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp#L266-L287)
+
+## 65) Hidden Evil forces Monster Vision into the next Survival run
+
+Leave quest 3.4, Hidden Evil, and start Survival in the same session.
+Until Monster Vision is taken, the first perk slot is reserved for it.
+The Survival reset retains the prior quest number, and the perk picker
+checks that number without checking the game mode. With the same progression
+and RNG seed, the first offer after quest 3.3 was Grim Deal.
+[First-slot rule](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/game/perks_generate_choices.cpp#L38-L48)
+
+## 66) Ammo Maniac skips the holstered weapon
+
+With Alternate Weapon, holster a 25-round Assault Rifle and take Ammo Maniac
+while holding the Pistol. The Pistol's clip grows from 12 to 15. Swap back
+and the rifle still holds 25. Acquiring an Assault Rifle afresh with the same
+perk gives it a 31-round clip. Taking the perk reassigns only the held weapon.
+[Perk application](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/game/perk_apply.cpp#L116-L121) ·
+[Clip calculation](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/weapons/weapon_assign_player.cpp#L12-L21)
+
+## 67) Telekinetic can charge on one pickup and collect another
+
+Hold the crosshair on a Points pickup for 640 ms, then move directly to a
+Medikit 300 units away. One 16-ms frame on the Medikit collects it and heals
+the player from 50 to 60 HP. The Points pickup remains. One intervening frame
+over empty ground resets the charge and leaves both pickups untouched.
+Each player has a hover timer that keeps running when the hovered item changes.
+[Hover timer](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/bonus_render.cpp#L95-L123) ·
+[Collection](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/bonus_render.cpp#L275-L282)
+
+## 68) Seeker Rockets keep their lock on a corpse
+
+Kill a Seeker's target while the rocket is in flight and another enemy is
+available. The rocket keeps steering toward the dying body. Its stored lock
+checks only whether the creature slot is active. Clearing the corpse's active
+flag sends the rocket toward the living enemy on its next update.
+[Seeker retargeting](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp#L732-L743)
+
+## 69) A rocket that hits on its expiry frame uses the wrong blast size
+
+A normal hit sets the explosion scale to 1.0 for a Rocket Launcher shot,
+0.35 for a Seeker, and 0.25 for a Rocket Minigun shot. Put the same impacts
+on a 16-ms frame with 5 ms of flight left. All three record the direct hit,
+then the expiry check overwrites the scale with 0.5. The launcher's blast
+shrinks while the other two grow. The scale controls both blast radius and
+damage per second.
+[Blast damage](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp#L679-L699) ·
+[Expiry check](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp#L961-L965)
+
+## 70) Typ-o accepts a dying enemy's name a second time
+
+Type `blue` to kill a creature with that name. Enter it again during its death
+animation and Typ-o records another successful submission and fires another
+shotgun volley. In the regression run the second submission took the active
+pellets from 12 to 24. The same word missed after the body disappeared.
+The final counters were two hits in three submissions and one kill.
+The name lookup scans every active body, including dying ones.
+[Name lookup](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/typo/typo_target_find_by_name.cpp#L7-L15)
+
+## 71) Starting Typ-o leaves its play count unchanged
+
+The Play Game menu's F1 panel displays the number of Typ-o starts, but
+starting Typ-o twice leaves the count at zero on a fresh profile. Two Rush
+starts advance its count to two. The counter increment lives in the generic
+gameplay state. Typ-o's menu button and Play Again use its own state instead.
+[Mode entry](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/ui_elements/game_state_set.cpp#L179-L210) ·
+[F1 panel](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/menus/play_game_menu_update.cpp#L283-L294)
+
+## 72) Binding Level Up to a joystick axis also rebinds Reload
+
+Select Level Up in Controls and tilt the joystick's Z axis to 75%. Both
+Level Up and Reload receive the same binding (`0x141`). Binding the E key
+changes only Level Up. The menu accepts the tilt once as a digital press,
+clears the selected row, then processes it again as an analog axis. The
+second pass writes to Reload.
+[Binding loop](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/menus/controls_menu_update.cpp#L678-L701)
+
+## 73) Straight mouse movements cannot reclaim the menu cursor from a stick
+
+Move the menu cursor with a joystick and release the stick. A horizontal
+mouse movement followed by a vertical one leaves the cursor stationary.
+The original requires nonzero mouse deltas on both axes in the same frame
+to switch control back. After one diagonal movement, horizontal movement
+works again.
+[Mouse takeover check](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/game/game_frame_update.cpp#L317-L322)
+
+## 74) A saved zero-score run can disappear from High scores
+
+On an empty Survival table, save a nine-second run with zero XP. The loader
+reads one valid record but the screen shows zero rows. Adding a 100-XP score
+makes only that score visible. An empty Typ-o table exhibits the same
+failure with a zero-kill run.
+
+All 100 slots are sorted, including unused records worth zero XP. A tied
+placeholder can sort ahead of the real run. The display stops when it reaches
+the placeholder's zero elapsed time.
+[Table sort](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/highscore/highscore_load_table.cpp#L191-L197) ·
+[Display cutoff](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp#L347-L359)
+
+## 75) Best of this week can show a year-old score and hide yesterday's
+
+On December 31, 2025, the weekly filter showed scores from both that day and
+January 1, 2025, 364 days earlier. On January 1, 2026, it showed only the new
+day and hid the previous day's score. The writer stored week 1 for all three
+dates. The filter compares that week number together with the calendar year.
+All three records were visible under All-time.
+[Weekly filter](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/highscore/highscore_load_table.cpp#L114-L122)
+
+## 76) Statistics opens chapter 4 scores for a chapter 5 quest
+
+With quest 5.7 selected, choose High scores from Statistics. The handler
+changes the selected quest to 4.7 before loading its table. The normal score
+loader can open 5.7 and the same Statistics button preserves a 4.7
+selection. This route still clamps the chapter to four.
+[Statistics button](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/ui_screens/statistics_menu_update.cpp#L230-L243)
+
+## 77) Returning quickly from Statistics can silence the main menu
+
+At full music volume, enter Statistics and press Back after 0.5 seconds.
+The main theme is still fading at 75% volume. The restart check requires
+its volume to have reached zero, so its fade continues. The Statistics track
+also fades out, leaving both tracks stopped. Waiting 2.5 seconds before
+pressing Back lets the main theme restart.
+[Back handler](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/ui_screens/statistics_menu_update.cpp#L273-L287) ·
+[Playback guard](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/audio/music_play_exclusive.cpp#L27-L39)
+
+## 78) Random blood stains land up and left of the hit
+
+A frozen shatter or an ordinary bullet hit can request a random blood stamp
+at the creature's position. When queuing the stamp, the game subtracts half
+its width on both axes. The renderer treats that point as the center and
+subtracts half the width again. A 39×39 stamp requested at (500, 500) drew
+centered on (480.5, 480.5). The offset ranges from 9 to 20.5 world units per
+axis across the possible stamp sizes.
+[Queue insertion](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/fx_queue_add_random.cpp#L46-L62) ·
+[Draw coordinates](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp#L147-L155)
+
+## 79) Rocket explosions suppress a Nuke's camera shake
+
+A rocket explosion repeatedly sets the shake counter to four pulses but never
+starts the timer. On a still camera the rocket therefore produces zero shake
+offset. A Nuke normally starts a 20-pulse shake. With a rocket already
+exploding, the next projectile update cuts the Nuke's counter to four.
+After 625 ms, the Nuke alone still has shake time left, while the combined
+shake has ended.
+[Rocket update](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp#L641-L646) ·
+[Nuke setup](https://github.com/banteg/crimson/blob/de7d70ad24ca9e8b8b4c2bd2aade11d12aba913d/decomp/1.9/crimsonland/game/bonus_apply.cpp#L254-L256)
