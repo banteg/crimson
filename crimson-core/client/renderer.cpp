@@ -8,7 +8,7 @@
 #include "client.h"
 #include "client_shaders.h"
 #include "device_states.h"
-#include "ground_visibility.h"
+#include "ground_tiles.h"
 #include "ice_surface.h"
 #include <algorithm>
 #include <chrono>
@@ -293,6 +293,9 @@ enum { MAX_LIGHTS = 32 };
 int material, creature_type;
 float scene_camera[2];
 GroundVisibility ground_visibility;
+GroundTiles ground_tiles;
+GLuint ground_tile_texture;
+int ground_tile_width, ground_tile_height;
 bool visibility_dirty = true;
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
@@ -1018,10 +1021,27 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
     glUniform4fv(at("u_beam_shape"), light_count, beam_shape);
   }
+  ground_tiles.prepare(ground_size[0], ground_size[1], light_count, light_pos, ground_dir, light_rgb,
+                         light_response, beam_shape, beam_lights);
+  if (ground_tiles.width) {
+    glActiveTexture(GL_TEXTURE4);
+    if (!ground_tile_texture) glGenTextures(1, &ground_tile_texture);
+    glBindTexture(GL_TEXTURE_2D, ground_tile_texture);
+    if (ground_tile_width != ground_tiles.width || ground_tile_height != ground_tiles.height) {
+      ground_tile_width = ground_tiles.width, ground_tile_height = ground_tiles.height;
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ground_tile_width, ground_tile_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ground_tiles.width, ground_tiles.height, GL_RGBA, GL_UNSIGNED_BYTE,
+                    ground_tiles.masks.data());
+  }
+  glUniform2i(at("u_light_tile_size"), ground_tiles.width, ground_tiles.height);
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
-                           ground_visibility.count ? beam_vis_texture : blank_texture};
-  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_visibility_tex"};
-  for (int i = 0; i < 4; ++i) {
+                           ground_visibility.count ? beam_vis_texture : blank_texture,
+                           ground_tiles.width ? ground_tile_texture : blank_texture};
+  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_visibility_tex", "u_light_tiles"};
+  for (int i = 0; i < 5; ++i) {
     glUniform1i(at(names[i]), i);
     glActiveTexture(GL_TEXTURE0 + i);
     glBindTexture(GL_TEXTURE_2D, inputs[i]);
@@ -1384,6 +1404,9 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   release(smoke_composite);
   release(heat_trail);
   glDeleteFramebuffers(1, &beam_vis_framebuffer);
+  glDeleteTextures(1, &ground_tile_texture);
+  ground_tile_texture = 0;
+  ground_tile_width = ground_tile_height = 0;
   glDeleteTextures(1, &beam_vis_texture);
   beam_vis_framebuffer = beam_vis_texture = 0;
   heat_seconds = -1;
