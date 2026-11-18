@@ -211,9 +211,9 @@ API, game page, JS/WASM and availability of all three game archives.
 
 Each rehearsal and production preparation boots the packaged game in a fresh
 Chrome profile, plays and records a run, reloads its saves, and watches the
-replay. The Browser co-op workflow runs two-peer WebRTC and relay sessions
-every Monday and on manual dispatch. Production checks the served revision and
-the JS and WASM hashes against the tested package before writing replay previews.
+replay. Changes to this check also run against the packaged client on pull
+requests. Production checks the served revision and the JS and WASM hashes
+against the tested package before writing replay previews.
 
 A smoke-check failure marks the workflow failed after deployment; it does not
 automatically revert production. Review the failure, then use

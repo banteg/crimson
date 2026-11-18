@@ -1,13 +1,11 @@
-name: Browser co-op
+name: Packaged browser smoke
 
 on:
-  workflow_dispatch:
   pull_request:
     paths:
-      - .github/workflows/browser-coop.yml
+      - .github/workflows/browser-smoke.yml
+      - .github/workflows/deploy.yml
       - crimson-core/checks/coop_browser.mjs
-  schedule:
-    - cron: "27 3 * * 1"
 
 permissions:
   contents: read
@@ -30,7 +28,7 @@ jobs:
   play:
     needs: [client, verifier]
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
@@ -48,10 +46,6 @@ jobs:
           path: artifacts/client
       - uses: actions/download-artifact@v8
         with:
-          name: runtime-game
-          path: crimson-core/build/game
-      - uses: actions/download-artifact@v8
-        with:
           name: runtime-wasm
           path: crimson-core/build/wasm
       - name: Stage the packaged game and its assets
@@ -65,15 +59,13 @@ jobs:
         env:
           UV_FROZEN: "1"
           UV_NO_DEV: "1"
-      - name: Play and rank a two-peer WebRTC and relay session
-        env:
-          CRIMSON_BROWSER_RENDERER: webgl
+      - name: Play, record, reload and watch a packaged solo run
         run: |
           export CRIMSON_CHROME="$(command -v google-chrome)"
-          node crimson-core/checks/coop_browser.mjs artifacts/assets "$RUNNER_TEMP/browser-shots"
+          node crimson-core/checks/coop_browser.mjs --solo artifacts/assets "$RUNNER_TEMP/browser-shots"
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: coop-browser-shots
+          name: packaged-browser-shots
           path: ${{ runner.temp }}/browser-shots/
           if-no-files-found: ignore

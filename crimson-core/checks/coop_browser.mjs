@@ -59,7 +59,6 @@
 //   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir] [game.wasm]
 //
 // CRIMSON_CHROME_ANGLE selects the graphics backend. macOS uses the browser default unless set.
-// CRIMSON_BROWSER_RENDERER=webgl uses the WebGL2 client on software graphics runners.
 // Add --solo before <asset dir> to record a Survival run in a fresh profile,
 // reload the saved files, and watch that local score through the game UI.
 // <asset dir> holds crimson.paq, sfx.paq and music.paq (artifacts/assets).
@@ -299,11 +298,7 @@ async function open(name, origin, { webrtc = true } = {}) {
   };
   const peer = {
     name, origin, targetId, browserContextId, send, evaluate, uploads,
-    goto(url) {
-      const target = new URL(url);
-      if (process.env.CRIMSON_BROWSER_RENDERER === "webgl") target.searchParams.set("renderer", "webgl");
-      return navigate("Page.navigate", { url: target.href });
-    },
+    goto: (url) => navigate("Page.navigate", { url }),
     reload: () => navigate("Page.reload"),
     status: async () => (await call("client_coop_status")) >>> 0,
     confirmed: () => call("client_coop_confirmed"),
@@ -558,9 +553,14 @@ async function soloRun() {
   console.log("solo Survival started");
   await peer.move(780, 384);
   await peer.keyDown("KeyD");
-  await peer.down();
-  await sleep(1000);
-  await peer.up();
+  // Try through the opening transition and weapon cooldown. Each press and
+  // release has its own frame, even when software graphics are slow.
+  for (let shot = 0; shot < 12 && (await peer.screen()) === GAMEPLAY; ++shot) {
+    await peer.down();
+    await peer.frame();
+    await peer.up();
+    await peer.frame();
+  }
   await peer.keyUp("KeyD");
   await until("Survival game over", async () => await peer.screen() === GAME_OVER, 180000);
   await peer.move(900, 700);
