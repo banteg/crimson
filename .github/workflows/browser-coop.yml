@@ -66,6 +66,8 @@ jobs:
           UV_FROZEN: "1"
           UV_NO_DEV: "1"
       - name: Play and rank a two-peer WebRTC and relay session
+        env:
+          CRIMSON_BROWSER_RENDERER: webgl
         run: |
           export CRIMSON_CHROME="$(command -v google-chrome)"
           node crimson-core/checks/coop_browser.mjs artifacts/assets "$RUNNER_TEMP/browser-shots"

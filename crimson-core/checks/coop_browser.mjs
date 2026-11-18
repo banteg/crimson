@@ -59,6 +59,7 @@
 //   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir] [game.wasm]
 //
 // CRIMSON_CHROME_ANGLE selects the graphics backend. macOS uses the browser default unless set.
+// CRIMSON_BROWSER_RENDERER=webgl uses the WebGL2 client on software graphics runners.
 // Add --solo before <asset dir> to record a Survival run in a fresh profile,
 // reload the saved files, and watch that local score through the game UI.
 // <asset dir> holds crimson.paq, sfx.paq and music.paq (artifacts/assets).
@@ -298,7 +299,11 @@ async function open(name, origin, { webrtc = true } = {}) {
   };
   const peer = {
     name, origin, targetId, browserContextId, send, evaluate, uploads,
-    goto: (url) => navigate("Page.navigate", { url }),
+    goto(url) {
+      const target = new URL(url);
+      if (process.env.CRIMSON_BROWSER_RENDERER === "webgl") target.searchParams.set("renderer", "webgl");
+      return navigate("Page.navigate", { url: target.href });
+    },
     reload: () => navigate("Page.reload"),
     status: async () => (await call("client_coop_status")) >>> 0,
     confirmed: () => call("client_coop_confirmed"),
