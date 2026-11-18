@@ -1583,6 +1583,20 @@
       "unmatched_bytes": 64
     },
     {
+      "address": 5077476,
+      "blocker": "uncompiled-zero-definition",
+      "extent_evidence": "controls_menu_update at 0x0044d9db sets ECX to 16 before REP STOSD at 0x0044d9ee. The capture loop reads consecutive floats from the same base.",
+      "image": "crimsonland.exe",
+      "name": "controls_rebind_axis_peaks",
+      "owners": [
+        "unknown"
+      ],
+      "reason": null,
+      "size": 64,
+      "type": "float[16]",
+      "unmatched_bytes": 64
+    },
+    {
       "address": 5087488,
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "tools/match/include/input_key_name_impl.h: input_key_name_buf[64]",
@@ -14684,20 +14698,6 @@
       "reason": null,
       "size": 4,
       "type": "int",
-      "unmatched_bytes": 4
-    },
-    {
-      "address": 5077476,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "image": "crimsonland.exe",
-      "name": "controls_rebind_axis_peak_abs_13f",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 4,
-      "type": "float",
       "unmatched_bytes": 4
     },
     {
@@ -58268,7 +58268,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "controls_rebind_axis_peak_abs_13f"
+        "controls_rebind_axis_peaks"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -58281,7 +58281,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "controls_rebind_axis_peak_abs_140"
+        "controls_rebind_axis_peak_abs_140",
+        "controls_rebind_axis_peaks"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -58294,7 +58295,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "controls_rebind_axis_peak_abs_141"
+        "controls_rebind_axis_peak_abs_141",
+        "controls_rebind_axis_peaks"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -58307,7 +58309,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "controls_rebind_axis_peak_abs_153"
+        "controls_rebind_axis_peak_abs_153",
+        "controls_rebind_axis_peaks"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -58320,7 +58323,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "controls_rebind_axis_peak_abs_154"
+        "controls_rebind_axis_peak_abs_154",
+        "controls_rebind_axis_peaks"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -58333,7 +58337,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "controls_rebind_axis_peak_abs_155"
+        "controls_rebind_axis_peak_abs_155",
+        "controls_rebind_axis_peaks"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -58345,7 +58350,9 @@
       "image": "crimsonland.exe",
       "matched": false,
       "name": "unmatched",
-      "objects": [],
+      "objects": [
+        "controls_rebind_axis_peaks"
+      ],
       "owner": "unknown",
       "section": ".data",
       "size": 40,
@@ -66653,7 +66660,7 @@
     "matched_bytes": 361076,
     "total_bytes": 517738,
     "unmatched_bytes": 156662,
-    "unnamed_bytes": 99890
+    "unnamed_bytes": 99850
   },
   "unbounded_objects": [
     {

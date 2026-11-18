@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ee67fe4cb28ed8b5be543151cc3b3464c35177b7a4804ca1c121b60fe84f1617",
+  "audit_digest": "a49a115ecdc80019273c176feecd62a591fac4b9d74d0bf3e68fff21c6c1f2ca",
   "entries": [
     {
       "address": 4211888,
@@ -35294,22 +35294,22 @@
       "address": 5077476,
       "aliases": [],
       "alignment": 4,
-      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_float_alignment_is_four",
-      "comment": "Controls rebind analog capture peak (abs value) for Grim axis id 0x13f.",
-      "definition_group": "zero-float32",
+      "alignment_source": "VC6 float alignment and the original dword-aligned base address",
+      "comment": "Controls rebind analog capture peaks. Clears 16 floats and scans the first seven. Grim axis 0x13f uses index 0.",
+      "definition_group": "controls-rebind-axis-peaks",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "initializer_source": "Original .data bytes at 0x004d79e4..0x004d7a24",
       "initializer_target": null,
       "linker_reference_count": 0,
-      "name": "controls_rebind_axis_peak_abs_13f",
+      "name": "controls_rebind_axis_peaks",
       "section": ".data",
       "section_offset": 420324,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": 4,
-      "size_source": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": "float"
+      "size": 64,
+      "size_source": "controls_menu_update at 0x0044d9db sets ECX to 16 before REP STOSD at 0x0044d9ee. The capture loop reads consecutive floats from the same base.",
+      "type": "float[16]"
     },
     {
       "address": 5077480,
@@ -37801,9 +37801,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "acda0d18632b5f7831e4b84643acce602f6c31e3d4c4d49071e7ec41f4b07e5f",
+    "data_map_sha256": "56ce83f5a44d715a0d83af86ff43a322248f2a55c5d79aa04d747a0b8f0fc83e",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "61e6907fa5b8e5b473e06e5217411ef459048c6fbf3ee5a8041fc8e472072b63",
+    "definitions_sha256": "87f60e631256a608a4b604668210fd4958496bceb96373aa6ac71b7eb8126089",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -37816,12 +37816,12 @@
     "alias_rows": 252,
     "code_label_entries": 54,
     "definition_group_entries": 1680,
-    "definition_groups": 175,
+    "definition_groups": 176,
     "entry_count": 1789,
     "explicit_alignment_entries": 1789,
     "explicit_initializer_entries": 1789,
     "explicit_size_entries": 1789,
-    "fixed_array_types": 370,
+    "fixed_array_types": 371,
     "fully_specified_entries": 1789,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,

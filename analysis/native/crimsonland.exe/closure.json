@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ee67fe4cb28ed8b5be543151cc3b3464c35177b7a4804ca1c121b60fe84f1617",
+  "audit_digest": "a49a115ecdc80019273c176feecd62a591fac4b9d74d0bf3e68fff21c6c1f2ca",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -92588,139 +92588,19 @@
           "comdat_selection": null,
           "data_address": 5077476,
           "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_13f",
+          "data_name": "controls_rebind_axis_peaks",
           "data_storage_address": 5077476,
-          "data_storage_name": "controls_rebind_axis_peak_abs_13f",
+          "data_storage_name": "controls_rebind_axis_peaks",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 64,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": 4,
+          "size": 64,
           "weak": false
         }
       ],
-      "name": "_controls_rebind_axis_peak_abs_13f"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077480,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_140",
-          "data_storage_address": 5077480,
-          "data_storage_name": "controls_rebind_axis_peak_abs_140",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_140"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077484,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_141",
-          "data_storage_address": 5077484,
-          "data_storage_name": "controls_rebind_axis_peak_abs_141",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_141"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077488,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_153",
-          "data_storage_address": 5077488,
-          "data_storage_name": "controls_rebind_axis_peak_abs_153",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_153"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077492,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_154",
-          "data_storage_address": 5077492,
-          "data_storage_name": "controls_rebind_axis_peak_abs_154",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_154"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077496,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_155",
-          "data_storage_address": 5077496,
-          "data_storage_name": "controls_rebind_axis_peak_abs_155",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_155"
+      "name": "_controls_rebind_axis_peaks"
     },
     {
       "definitions": [
@@ -131514,174 +131394,19 @@
           "comdat_selection": null,
           "data_address": 5077476,
           "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_13f",
+          "data_name": "controls_rebind_axis_peaks",
           "data_storage_address": 5077476,
-          "data_storage_name": "controls_rebind_axis_peak_abs_13f",
+          "data_storage_name": "controls_rebind_axis_peaks",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 64,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": 4,
+          "size": 64,
           "weak": false
         }
       ],
-      "name": "_controls_rebind_axis_peak_abs_13f",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/98462cc8f9f5c938/controls_menu_update.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077480,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_140",
-          "data_storage_address": 5077480,
-          "data_storage_name": "controls_rebind_axis_peak_abs_140",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_140",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/98462cc8f9f5c938/controls_menu_update.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077484,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_141",
-          "data_storage_address": 5077484,
-          "data_storage_name": "controls_rebind_axis_peak_abs_141",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_141",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/98462cc8f9f5c938/controls_menu_update.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077488,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_153",
-          "data_storage_address": 5077488,
-          "data_storage_name": "controls_rebind_axis_peak_abs_153",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_153",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/98462cc8f9f5c938/controls_menu_update.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077492,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_154",
-          "data_storage_address": 5077492,
-          "data_storage_name": "controls_rebind_axis_peak_abs_154",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_154",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/98462cc8f9f5c938/controls_menu_update.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 5077496,
-          "data_binding_kind": "definition",
-          "data_name": "controls_rebind_axis_peak_abs_155",
-          "data_storage_address": 5077496,
-          "data_storage_name": "controls_rebind_axis_peak_abs_155",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_controls_rebind_axis_peak_abs_155",
+      "name": "_controls_rebind_axis_peaks",
       "referenced_by": [
         {
           "function": "controls_menu_update",
@@ -172535,7 +172260,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "acda0d18632b5f7831e4b84643acce602f6c31e3d4c4d49071e7ec41f4b07e5f"
+        "sha256": "56ce83f5a44d715a0d83af86ff43a322248f2a55c5d79aa04d747a0b8f0fc83e"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -172544,7 +172269,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "bdd9446258a7278da07cf23d85d033d48cf6ce1dd65ba396a956588d46f77cd4"
+        "sha256": "d272c61847508d66bf725471d5d6fc7fe866c60f526008162299d1a9b1daf98a"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -172556,7 +172281,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 2968,
+    "defined_symbols": 2963,
     "function_closure": true,
     "function_count": 673,
     "game_function_debt": {},
@@ -172565,7 +172290,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 572,
     "reference_exports_closed": true,
-    "resolved_symbols": 1266,
+    "resolved_symbols": 1261,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,

@@ -96,3 +96,12 @@ is the sole winner. It raises the function from 92.6966% to **100%**, extends
 the prefix from 67 to all 178 instructions, and improves references from
 `51/0/2` to **`53/0/0`**. The other axis-relative spellings are byte-neutral or
 regressive. The scratch is now classified exact.
+
+## Sequential binding copy
+
+The persisted config also exposes the bindings as `player_keys[160]`.
+Starting at `player_index * 16` and reading the thirteen used slots in order
+produces the native induction address without stepping backwards from a
+scalar member. Both axis pairs are stored Y before X. The loader, startup,
+and controls menu now use the same inline copy. All three retain their full
+encoded bodies and clean references on 1.9.8 and 1.9.93.

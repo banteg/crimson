@@ -5707,7 +5707,7 @@
     },
     {
       "address": "0x004d4c28",
-      "name": "controls_rebind_axis_peak_abs_13f",
+      "name": "controls_rebind_axis_peaks",
       "program": "1.9.8/crimsonland.exe"
     },
     {

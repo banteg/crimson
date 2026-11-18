@@ -159,13 +159,12 @@ The redundant call-site casts are removed. The non-padded hit test uses the
 same Boolean caller declaration as the neighboring button, menu-item, slider,
 and text-input sources.
 
-This is a recovered caller contract: the native callers consume AL and the
-helpers return 0 or 1 in EAX. Their independently matched `int` definitions
-remain unchanged. Changing those definitions to a byte return would change
-native instructions. `bool`, `char`, and `unsigned char` declarations all
-reproduce this caller, so the bytes establish the return width, not the exact
-original C++ type spelling. `bool` follows the existing widget sources. No
-build guard, compiler modification, volatile access, or forced spill is needed.
+The hit tests and widget now share the Boolean declarations in
+`crimsonland_ui.h`. Returning the conjunction directly from each helper
+produces the original full-width 0 or 1 in EAX, while the widget tests AL.
+An earlier probe changed only the helper's type and kept separate constant
+returns. That spelling changes the instructions, even though the Boolean
+expression reproduces both helpers and the caller.
 
 Controls:
 
@@ -174,8 +173,8 @@ Controls:
   closes it; declaring both tests as Boolean and removing the casts stays exact.
 - Loop/index spellings, vector operator forms, focus-result types, and tested
   preceding-function contexts did not close the residual.
-- Changing the helper definitions themselves to a byte return loses their
-  instruction identity, so those changes were rejected.
+- Keeping separate `return 1` and `return 0` branches in a Boolean helper
+  writes AL instead of EAX.
 
 Final source validation:
 

@@ -388,10 +388,6 @@ def x87(src, txt):
     """The original's x87 evaluation at PC24: where a wide intermediate rounds, as the executable does."""
 
     txt = sub(src, r"\bfloat (VEC2_Angle|creature_vec2_angle|projectile_vec2_angle)\s*\(", r"double \1(", txt, None)
-    if 'extern "C" float cos(float angle);' in txt:
-        for fn in ("cos", "sin"):
-            txt = replace(src, txt, f"float {fn}(float angle)", f"float {fn}f(float angle)", None)
-            txt = replace(src, txt, f"{fn}(angle)", f"{fn}f(angle)", None)
     if src.stem.startswith("quest_build_"):
         # VC6 leaves transcendental results wide until their first arithmetic operation. Each following add still
         # rounds at PC24. These hold across the builders that use them; checks/builder_oracle.py runs every builder.

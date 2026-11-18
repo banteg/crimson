@@ -232,9 +232,7 @@
       "05b693431590": "input",
       "11fd9fecedd4": "codegen",
       "1667fdba83fc": "input",
-      "5c740dfaaf03": "codegen",
       "67110f304b30": "codegen",
-      "c355bbac7b37": "codegen",
       "f975e5d75976": "codegen"
     },
     "decomp/1.9/crimsonland/menus/play_game_menu_update.cpp": {
@@ -493,7 +491,7 @@
     },
     "decomp/1.9/grim/render/submit_vertices_transform.cpp": {
       "1d2435cfad84": "codegen",
-      "406b40494d2f": "codegen",
+      "3c98ae701b61": "codegen",
       "55f1eb533e01": "codegen"
     },
     "decomp/1.9/grim/render/submit_vertices_transform_color.cpp": {

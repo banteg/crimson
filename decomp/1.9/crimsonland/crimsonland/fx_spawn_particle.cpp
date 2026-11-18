@@ -1,7 +1,6 @@
-#include "crimsonland_gameplay.h"
+#include <math.h>
 
-extern "C" float cos(float angle);
-extern "C" float sin(float angle);
+#include "crimsonland_gameplay.h"
 
 typedef struct particle_color_t {
     float color_r;
@@ -34,8 +33,8 @@ found:
 
     particle_pool[index].active = 1;
     particle_pool[index].position = *pos;
-    particle_pool[index].velocity.x = (float)cos(angle) * 90.0f;
-    particle_pool[index].velocity.y = (float)sin(angle) * 90.0f;
+    particle_pool[index].velocity.x = cosf(angle) * 90.0f;
+    particle_pool[index].velocity.y = sinf(angle) * 90.0f;
     particle_pool[index].intensity = intensity;
     *(particle_color_t *)&particle_pool[index].color_r = color;
     particle_pool[index].angle = angle;

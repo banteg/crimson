@@ -44,3 +44,16 @@ aliased through a local, or reordered stores; `i` declared before the loop
 or outside the guard; a named vertex local, a byte-count local or a
 `count16` pointer; and one helper doing both rotation and translation, in
 all six parameter orders. Any extra used local moves other operand pairs.
+
+The rotation and translation helpers have internal linkage. In 1.9.8 the
+color submitter takes the point first. Giving both rotation helpers external
+linkage would give different definitions to the same C++ signature,
+`grim_rotate_point(float *, float *)`.
+
+Recompiling the two color submitters before this method in native order did
+not eliminate the build guard. With one shared point-first rotation and
+translation through locals, 1.9.93 is exact and five instruction bytes differ
+on 1.9.8. The shared matrix-first form with direct translation gives the
+reverse result. Point and matrix methods, a row dot product, and intermediate
+rotated coordinates also failed to reproduce both. Keep the private build
+forms until a shared expression reproduces both encoded bodies.

@@ -404,14 +404,14 @@
     "program": "crimsonland.exe",
     "address": "0x00403430",
     "name": "ui_mouse_inside_rect_with_padding",
-    "signature": "int ui_mouse_inside_rect_with_padding(float *xy, int h, int w)",
+    "signature": "bool ui_mouse_inside_rect_with_padding(float *xy, int h, int w)",
     "comment": "returns 1 when the mouse is inside an expanded rect (x-10,y-2..x+w,y+h) and capture is clear"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004034a0",
     "name": "ui_mouse_inside_rect",
-    "signature": "int ui_mouse_inside_rect(float *xy, int h, int w)",
+    "signature": "bool ui_mouse_inside_rect(float *xy, int h, int w)",
     "comment": "returns 1 when the mouse is inside the rect and mouse capture is clear"
   },
   {

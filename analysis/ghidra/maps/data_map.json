@@ -12538,10 +12538,10 @@
     },
     {
       "address": "0x004d79e4",
-      "comment": "Controls rebind analog capture peak (abs value) for Grim axis id 0x13f.",
-      "name": "controls_rebind_axis_peak_abs_13f",
+      "comment": "Controls rebind analog capture peaks. Clears 16 floats and scans the first seven. Grim axis 0x13f uses index 0.",
+      "name": "controls_rebind_axis_peaks",
       "program": "crimsonland.exe",
-      "type": "float"
+      "type": "float[16]"
     },
     {
       "address": "0x004d79e8",

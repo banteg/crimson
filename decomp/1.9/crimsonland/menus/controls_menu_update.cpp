@@ -2,6 +2,7 @@
 #include "input_key_name_impl.h"
 
 #include "crimsonland_gameplay.h"
+#include "crimsonland_input_bindings.h"
 #include "grim2d_cpp.h"
 
 struct controls_vec2_t {
@@ -63,12 +64,7 @@ extern unsigned char controls_menu_selection_refresh_latch;
 extern int controls_rebind_slot_index;
 extern int controls_rebind_player_index;
 extern unsigned char controls_rebind_capture_armed;
-extern float controls_rebind_axis_peak_abs_13f;
-extern float controls_rebind_axis_peak_abs_140;
-extern float controls_rebind_axis_peak_abs_141;
-extern float controls_rebind_axis_peak_abs_153;
-extern float controls_rebind_axis_peak_abs_154;
-extern float controls_rebind_axis_peak_abs_155;
+extern float controls_rebind_axis_peaks[16];
 extern unsigned char ui_focus_input_locked;
 
 extern int config_aim_schemes[10];
@@ -411,37 +407,7 @@ extern "C" void controls_menu_update(void)
     draw_position.y += 32.0f;
     draw_position.x += 64.0f;
 
-    for (int player_index = 0; player_index < 2; ++player_index) {
-        player_input_config_t *bindings =
-            &config_blob.input_config[player_index];
-        int *binding_cursor = &bindings->axis_move_x;
-        player_state_table[player_index].input.move_key_forward =
-            binding_cursor[-12];
-        player_state_table[player_index].input.move_key_backward =
-            bindings->move_key_backward;
-        player_state_table[player_index].input.turn_key_left =
-            bindings->turn_key_left;
-        player_state_table[player_index].input.turn_key_right =
-            bindings->turn_key_right;
-        player_state_table[player_index].input.fire_key =
-            bindings->fire_key;
-        player_state_table[player_index].input.key_reserved_0 =
-            bindings->key_reserved_0;
-        player_state_table[player_index].input.key_reserved_1 =
-            bindings->key_reserved_1;
-        player_state_table[player_index].input.aim_key_left =
-            bindings->aim_key_left;
-        player_state_table[player_index].input.aim_key_right =
-            bindings->aim_key_right;
-        player_state_table[player_index].input.axis_aim_y =
-            bindings->axis_aim_y;
-        player_state_table[player_index].input.axis_aim_x =
-            bindings->axis_aim_x;
-        player_state_table[player_index].input.axis_move_y =
-            bindings->axis_move_y;
-        player_state_table[player_index].input.axis_move_x =
-            binding_cursor[0];
-    }
+    config_apply_player_bindings();
 
     grim_interface_ptr->grim_set_color(
         1.0f,
@@ -705,9 +671,8 @@ extern "C" void controls_menu_update(void)
             if (!controls_rebind_capture_armed
                 && !input_any_key_pressed()) {
                 controls_rebind_capture_armed = 1;
-                float *peak = &controls_rebind_axis_peak_abs_13f;
                 for (int i = 0; i < 16; ++i) {
-                    peak[i] = 0.0f;
+                    controls_rebind_axis_peaks[i] = 0.0f;
                 }
             }
             if (grim_interface_ptr->grim_was_key_pressed(1)) {
@@ -715,25 +680,14 @@ extern "C" void controls_menu_update(void)
                 controls_rebind_slot_index = -1;
                 controls_rebind_capture_armed = 0;
             } else if (controls_rebind_capture_armed) {
-                update_axis_peak(controls_rebind_axis_peak_abs_13f, 0x13f);
-                update_axis_peak(controls_rebind_axis_peak_abs_140, 0x140);
-                update_axis_peak(controls_rebind_axis_peak_abs_141, 0x141);
-                update_axis_peak(controls_rebind_axis_peak_abs_153, 0x153);
-                update_axis_peak(controls_rebind_axis_peak_abs_154, 0x154);
-                update_axis_peak(controls_rebind_axis_peak_abs_155, 0x155);
-#if CL_BUILD == 10908
-                // Code generation only (see NOTES.md): 1.9.8 walks the
-                // peaks by index; 1.9.93 keeps the pointer cursor.
-                float *peaks = &controls_rebind_axis_peak_abs_13f;
+                update_axis_peak(controls_rebind_axis_peaks[0], 0x13f);
+                update_axis_peak(controls_rebind_axis_peaks[1], 0x140);
+                update_axis_peak(controls_rebind_axis_peaks[2], 0x141);
+                update_axis_peak(controls_rebind_axis_peaks[3], 0x153);
+                update_axis_peak(controls_rebind_axis_peaks[4], 0x154);
+                update_axis_peak(controls_rebind_axis_peaks[5], 0x155);
                 for (int axis_index = 0; axis_index < 7; ++axis_index) {
-                    if (peaks[axis_index] > 0.5f) {
-#else
-                int axis_index = 0;
-                float *peaks = &controls_rebind_axis_peak_abs_13f;
-                while (
-                    (int)peaks < (int)(&controls_rebind_axis_peak_abs_13f + 7)) {
-                    if (*peaks > 0.5f) {
-#endif
+                    if (controls_rebind_axis_peaks[axis_index] > 0.5f) {
                         int binding =
                             controls_rebind_player_index * 16
                             + controls_rebind_slot_index;
@@ -763,10 +717,6 @@ extern "C" void controls_menu_update(void)
                         controls_rebind_capture_armed = 0;
                         break;
                     }
-#if CL_BUILD != 10908
-                    ++peaks;
-                    ++axis_index;
-#endif
                 }
             }
         }

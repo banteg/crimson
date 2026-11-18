@@ -6152,7 +6152,7 @@
     },
     {
       "address": "0x004d77a4",
-      "name": "controls_rebind_axis_peak_abs_13f",
+      "name": "controls_rebind_axis_peaks",
       "program": "1.9.9/crimsonland.exe"
     },
     {
