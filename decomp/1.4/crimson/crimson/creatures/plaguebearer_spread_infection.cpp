@@ -13,7 +13,12 @@ extern "C" int plaguebearer_infection_count;
 extern "C" int plaguebearer_spread_infection(int creature_id)
 {
     int other_id;
-    for (other_id = 0; other_id < 0x200; other_id++) {
+#if CL_BUILD == 10002 || (defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002)
+    const int count = 128;
+#else
+    const int count = 512;
+#endif
+    for (other_id = 0; other_id < count; other_id++) {
         if (creature_pool[other_id].active && other_id != creature_id) {
             if (vec2_distance(
                     &creature_pool[other_id].position,
@@ -27,6 +32,12 @@ extern "C" int plaguebearer_spread_infection(int creature_id)
     return 0;
 
 found:
+#if CL_BUILD == 10002 || (defined(FREEWARE_EDITION) && FREEWARE_EDITION == 10002)
+    if (creature_pool[other_id].plague_infected)
+        creature_pool[creature_id].plague_infected = 1;
+    if (creature_pool[creature_id].plague_infected)
+        creature_pool[other_id].plague_infected = 1;
+#else
     if (plaguebearer_infection_count < 60) {
         if (creature_pool[other_id].plague_infected
             && creature_pool[creature_id].health < 150.0f) {
@@ -37,5 +48,6 @@ found:
             creature_pool[other_id].plague_infected = 1;
         }
     }
+#endif
     return other_id;
 }

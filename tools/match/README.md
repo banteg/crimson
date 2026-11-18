@@ -14,7 +14,33 @@ behaviors the scratch notes have already established.
 
 ## Matching Scope
 
-The default `port` scope is defined in `analysis/matching_scope.json`. It
+For freeware, select `--build 1.0.2`, `1.3.0`, or `1.4.0`. Each release
+uses the retained native functions of its own `crimson.exe` and `grim.dll`.
+Triage includes functions without scratches or donor identities. Reviewed
+platform exclusions use local addresses, so an uncertain donor name cannot
+remove a gameplay function. Triage marks provisional donor labels with
+`ordered`, `called`, or `referenced` and exposes the evidence in JSON.
+For example, raw DirectInput polling is excluded
+while Grim's key-press edges stay in scope. The sound device loaders are
+excluded while the game's sound choices, timing and pan stay in scope.
+
+```sh
+uv run crimson match triage --build 1.0.2 --summary-only
+uv run crimson match triage --build 1.3.0 --image crimson.exe --state missing --limit 20
+uv run crimson match build-scan 1.4.0
+uv run crimson match scratch tools/match/scratches/grim_keyboard_poll --build 1.4.0 --scope all
+```
+
+The freeware build scan, single scratch and probe commands apply the port scope
+by default. Use `--scope all` to consult library, platform and unclassified
+functions. 1.3.1 remains a preservation reference.
+
+VC6 embeds a per-compilation number in symbols emitted from an anonymous
+namespace. Give out-of-line helpers and types a stable namespace when producing
+source-match evidence. Report refresh checks the COFF symbol table for this
+case so repeated builds can reproduce the whole-object receipt.
+
+For the canonical 1.9.93 build, the default `port` scope is defined in `analysis/matching_scope.json`. It
 contains game-owned `crimsonland.exe` logic before `0x00452ef0` and the
 Grim2D engine implementation in `grim.dll` before `0x1000a8d0`. It excludes:
 

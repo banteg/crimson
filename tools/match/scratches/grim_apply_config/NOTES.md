@@ -14,3 +14,12 @@ The `grim_config_value_t` boolean constructor writes only its first byte,
 whereas integer values write the first dword. Those overloads reproduce the
 native 16-byte by-value calls without an ABI shim. The recovered method matches
 all 124 native instructions and all 25 references under MSVC 6.5 `/O2 /GB`.
+
+## Freeware builds
+
+The 1.0.2 dialog probes the device with a local Direct3D interface and
+releases it before opening the dialog. Starting with 1.3.0 the interface
+stays available while the dialog enumerates display adapters. The freeware
+dialog sends the state of its “Pure software” checkbox (resource control
+0x3ed) to config ID 0x34. Both 1.3.0 and 1.4.0 have four fixed screen sizes.
+Their four-entry jump tables follow the last reachable return.

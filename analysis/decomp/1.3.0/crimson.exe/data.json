@@ -31,6 +31,11 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00401300",
+      "name": "freeware_last_score_global_init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00401370",
       "name": "?0perk_meta_cpp_t",
       "program": "1.3.0/crimson.exe"
@@ -38,11 +43,6 @@
     {
       "address": "0x00401390",
       "name": "?1perk_meta_cpp_t",
-      "program": "1.3.0/crimson.exe"
-    },
-    {
-      "address": "0x00401420",
-      "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -96,6 +96,41 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00401840",
+      "name": "??0freeware_level_map@@QAE@XZ",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004018a0",
+      "name": "??_F?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAEXXZ",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004018c0",
+      "name": "?clear@freeware_level_map@@QAEXXZ",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00401980",
+      "name": "??1freeware_level_map@@QAE@XZ",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00402090",
+      "name": "?arm_triggers@freeware_level_map@@QAEXXZ",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004020c0",
+      "name": "?update_triggers@freeware_level_map@@QAEXXZ",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00402860",
+      "name": "?set_texture@freeware_level_map@@QAEXH@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00404020",
       "name": "sprite_effect_alloc_slot",
       "program": "1.3.0/crimson.exe"
@@ -118,6 +153,96 @@
     {
       "address": "0x00405fd0",
       "name": "secondary_projectile_alloc_slot",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041b7e0",
+      "name": "??1?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAE@XZ",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041b810",
+      "name": "?size@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QBEIXZ",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041b830",
+      "name": "?_Destroy@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEXPAPAUfreeware_level_object@@0@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041b830",
+      "name": "?_Destroy@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEXPAPAUfreeware_level_trigger@@0@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041b840",
+      "name": "?insert@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAEXPAPAUfreeware_level_object@@IABQAU3@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041b840",
+      "name": "?insert@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@QAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041ba50",
+      "name": "?_Ucopy@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEPAPAUfreeware_level_object@@PBQAU3@0PAPAU3@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041ba50",
+      "name": "?_Ucopy@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEPAPAUfreeware_level_trigger@@PBQAU3@0PAPAU3@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041ba80",
+      "name": "?_Ufill@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEXPAPAUfreeware_level_object@@IABQAU3@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041ba80",
+      "name": "?_Ufill@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bab0",
+      "name": "?_Construct@std@@YAXPAPAUfreeware_level_object@@ABQAU2@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bab0",
+      "name": "?_Construct@std@@YAXPAPAUfreeware_level_trigger@@ABQAU2@@Z",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041badc",
+      "name": "FSOUND_Init",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bae2",
+      "name": "FSOUND_SetDriver",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bae8",
+      "name": "FSOUND_SetOutput",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041baee",
+      "name": "FSOUND_GetVersion",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041baf4",
+      "name": "FSOUND_Close",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0041bafa",
+      "name": "FSOUND_Sample_Free",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -256,8 +381,148 @@
       "program": "1.3.0/crimson.exe"
     },
     {
-      "address": "0x00427ad0",
-      "name": "console_empty_arg",
+      "address": "0x004285f8",
+      "name": "freeware_console_creature_size",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290b4",
+      "name": "time_scale_factor",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290b8",
+      "name": "screen_width",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290bc",
+      "name": "screen_height",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290c0",
+      "name": "screenshot_file_index",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290c4",
+      "name": "freeware_transition_alpha",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290c8",
+      "name": "freeware_menu_music_pending",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290cc",
+      "name": "freeware_encounter_id",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290d0",
+      "name": "freeware_encounter_page",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290d4",
+      "name": "game_state_id",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290d8",
+      "name": "freeware_encounter_day",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290dc",
+      "name": "freeware_transition_pending",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290e0",
+      "name": "freeware_fps_min",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290e4",
+      "name": "freeware_bonus_fire",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290e8",
+      "name": "freeware_bonus_freeze",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290ec",
+      "name": "freeware_bonus_weapon",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290f0",
+      "name": "freeware_bonus_nuke",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290f4",
+      "name": "freeware_bonus_shield",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004290f8",
+      "name": "freeware_bonus_time",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00429100",
+      "name": "freeware_arena_width",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00429104",
+      "name": "freeware_arena_height",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00429108",
+      "name": "freeware_music_started",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042910c",
+      "name": "freeware_music_channel_a",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00429110",
+      "name": "freeware_music_channel_b",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00429114",
+      "name": "freeware_music_volume_a",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00429118",
+      "name": "freeware_music_volume_b",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042911c",
+      "name": "freeware_editor_light",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00429120",
+      "name": "freeware_editor_alpha",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00429124",
+      "name": "freeware_editor_radius",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -552,7 +817,57 @@
     },
     {
       "address": "0x0042e510",
-      "name": "unused_effect_uv_strip16_prefix_vec2",
+      "name": "freeware_pickup_position",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042e518",
+      "name": "sfx_cooldown_table",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042e618",
+      "name": "freeware_editor_init_flags",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042e620",
+      "name": "freeware_corpse_positions",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042e820",
+      "name": "freeware_score_table",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fe00",
+      "name": "freeware_ui_buffer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fe44",
+      "name": "freeware_player_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fe48",
+      "name": "freeware_mouse_dy",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fe4c",
+      "name": "freeware_mouse_dx",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fe50",
+      "name": "freeware_sfx_state",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0042fe90",
+      "name": "freeware_corpse_sizes",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -561,13 +876,58 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00430220",
+      "name": "freeware_option_labels",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430250",
+      "name": "freeware_bomb_position",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430258",
+      "name": "freeware_main_labels",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430274",
+      "name": "freeware_pickup_id",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00430278",
       "name": "highscore_record_shots_fired",
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x0043027c",
+      "name": "highscore_record_hits",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430280",
+      "name": "freeware_kills",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430288",
+      "name": "freeware_aim_screen",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430290",
+      "name": "perk_id_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00430298",
       "name": "fx_queue",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00430798",
+      "name": "freeware_last_score",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -582,7 +942,27 @@
     },
     {
       "address": "0x00432ed0",
+      "name": "freeware_ice_tint",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00432ed0",
       "name": "unused_particle_pool_suffix_color",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00432ee0",
+      "name": "world_arrow_marker_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00432ee4",
+      "name": "freeware_bullet_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00432ee8",
+      "name": "freeware_editor_offset",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -591,8 +971,63 @@
       "program": "1.3.0/crimson.exe"
     },
     {
-      "address": "0x00433928",
-      "name": "unused_aim64_prefix_color",
+      "address": "0x004338f0",
+      "name": "freeware_draw_point",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433910",
+      "name": "perk_choice_flags",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433930",
+      "name": "freeware_bonus_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433934",
+      "name": "freeware_fps",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004339fc",
+      "name": "aim64_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433a00",
+      "name": "freeware_blood_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433a08",
+      "name": "freeware_blood_positions",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433c08",
+      "name": "freeware_ice_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433c0c",
+      "name": "freeware_corpse_angles",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433d10",
+      "name": "freeware_atlas_uv",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433f10",
+      "name": "freeware_current_map",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00433f18",
+      "name": "freeware_camera",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -606,13 +1041,128 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x00436b20",
+      "name": "freeware_shell_positions",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00436c20",
+      "name": "freeware_score_key",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00436d18",
       "name": "perk_meta_table",
       "program": "1.3.0/crimson.exe"
     },
     {
-      "address": "0x00437324",
+      "address": "0x00436f98",
+      "name": "freeware_corpse_species",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00437098",
+      "name": "freeware_bullet_icon",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004370a0",
+      "name": "freeware_corpse_colors",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a0",
       "name": "config_blob",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a0",
+      "name": "freeware_music_disabled",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a1",
+      "name": "freeware_shadows",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a2",
+      "name": "freeware_shell_marks",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a3",
+      "name": "freeware_filter_sharp",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a4",
+      "name": "freeware_glow",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a5",
+      "name": "freeware_smoke",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374a8",
+      "name": "config_player_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374ac",
+      "name": "freeware_show_fps",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374b0",
+      "name": "config_game_mode",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374b4",
+      "name": "config_movement_schemes",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374bc",
+      "name": "config_aim_schemes",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374c4",
+      "name": "freeware_configuring",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374c8",
+      "name": "freeware_pad_threshold",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374cc",
+      "name": "freeware_pad_center_x",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374d0",
+      "name": "freeware_pad_center_y",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374d4",
+      "name": "freeware_pov_right",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374d8",
+      "name": "freeware_pov_left",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004374e9",
+      "name": "freeware_saved_keys",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -621,8 +1171,123 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x004474f8",
+      "name": "freeware_text_buffer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004475f8",
+      "name": "freeware_camera_shake",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x004475f8",
       "name": "unused_effect_uv16_prefix_vec2",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447600",
+      "name": "freeware_particle_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447604",
+      "name": "freeware_sfx_samples",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447708",
+      "name": "freeware_brushes",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447718",
+      "name": "terrain_render_target",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044771c",
+      "name": "freeware_creature_texture",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447720",
+      "name": "freeware_simulation_clock",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447724",
+      "name": "freeware_pause_perks",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447725",
+      "name": "freeware_score_corrupt",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447726",
+      "name": "freeware_see_through",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447727",
+      "name": "freeware_audio_disabled",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447728",
+      "name": "freeware_safe_mode",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044772c",
+      "name": "freeware_state_since",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447730",
+      "name": "freeware_encounter_active",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447734",
+      "name": "freeware_assembly_sequence",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447738",
+      "name": "freeware_levels_sequence",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044773c",
+      "name": "freeware_birthday",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044773d",
+      "name": "freeware_rebinding",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044773e",
+      "name": "freeware_calibrating",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447740",
+      "name": "freeware_setup_step",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447744",
+      "name": "freeware_hud_xp_timer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447748",
+      "name": "freeware_camera_timer",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -642,7 +1307,42 @@
     },
     {
       "address": "0x00447758",
-      "name": "run_elapsed_ms",
+      "name": "freeware_name_alpha",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044775c",
+      "name": "freeware_xp_timer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447760",
+      "name": "fx_queue_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447764",
+      "name": "freeware_spawn_enabled",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447768",
+      "name": "freeware_perk_hover",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044776c",
+      "name": "freeware_menu_selected",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447770",
+      "name": "freeware_jinx_timer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447774",
+      "name": "freeware_game_active",
       "program": "1.3.0/crimson.exe"
     },
     {
@@ -651,8 +1351,283 @@
       "program": "1.3.0/crimson.exe"
     },
     {
+      "address": "0x0044777c",
+      "name": "bonus_freeze_timer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447784",
+      "name": "freeware_elapsed_seconds",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447788",
+      "name": "freeware_bomb_age",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044778c",
+      "name": "freeware_fps_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447790",
+      "name": "freeware_fps_max",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447794",
+      "name": "perk_id_bloody_mess",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447798",
+      "name": "perk_id_sharpshooter",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044779c",
+      "name": "perk_id_instant_winner",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477a0",
+      "name": "perk_id_fastshot",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477a4",
+      "name": "perk_id_almost_invisible",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477a8",
+      "name": "perk_id_long_distance_runner",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477ac",
+      "name": "perk_id_reflex_boosted",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477b0",
+      "name": "perk_id_fastloader",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477b4",
+      "name": "perk_id_see_health",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477b8",
+      "name": "perk_id_spontaneously_combusteous",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477bc",
+      "name": "perk_id_jinxed",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477c0",
+      "name": "perk_id_berserk_attack",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477c4",
+      "name": "perk_id_grim_deal",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477c8",
+      "name": "perk_id_plaguebearer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477cc",
+      "name": "perk_id_radioactive",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477d0",
+      "name": "perk_id_ammo_maniac",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477d4",
+      "name": "perk_id_lean_mean_exp_machine",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477d8",
+      "name": "perk_id_evil_eyes",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477dc",
+      "name": "perk_id_reserved_22",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477e0",
+      "name": "perk_id_anxious_loader",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477e4",
+      "name": "perk_id_final_revenge",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477e8",
+      "name": "perk_id_infernal_contract",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477ec",
+      "name": "perk_id_perk_expert",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477f0",
+      "name": "freeware_berserk_timer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477f4",
+      "name": "freeware_no_pickup",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477f8",
+      "name": "freeware_pickup_time",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x004477fc",
+      "name": "freeware_pickup_weapon",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447800",
+      "name": "bonus_reflex_boost_timer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447804",
+      "name": "freeware_pending_perks",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447808",
+      "name": "freeware_options_open",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044780c",
+      "name": "creature_spawned_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447810",
+      "name": "freeware_next_spawn",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447814",
+      "name": "freeware_blood_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447818",
+      "name": "freeware_shell_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044781c",
+      "name": "freeware_corpse_count",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447820",
+      "name": "freeware_perk_choice_timer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447824",
+      "name": "freeware_level_up_reset_byte",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447828",
+      "name": "frame_dt",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044782c",
+      "name": "freeware_level_number",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447830",
+      "name": "freeware_credits_open",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447831",
+      "name": "freeware_scores_open",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447834",
+      "name": "freeware_logo_angle",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
       "address": "0x00447838",
-      "name": "d3dx_sse_math_bss",
+      "name": "freeware_logo_visible",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447839",
+      "name": "freeware_scores_closing",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044783c",
+      "name": "freeware_name_length",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447840",
+      "name": "freeware_editor_brush",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447844",
+      "name": "freeware_editor_layer",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447848",
+      "name": "freeware_editor_rotation",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x0044784c",
+      "name": "freeware_low_fps_frames",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447850",
+      "name": "freeware_score_scroll",
+      "program": "1.3.0/crimson.exe"
+    },
+    {
+      "address": "0x00447854",
+      "name": "s_empty_string",
       "program": "1.3.0/crimson.exe"
     },
     {

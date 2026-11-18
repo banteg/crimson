@@ -23,7 +23,10 @@ public:
     virtual long __stdcall Unacquire(void) = 0;
 };
 
+#if CL_BUILD > 10400
 extern bool grim_dc_mode_active;
+#endif
+extern bool grim_input_cached;
 extern unsigned char grim_window_proc_dc_flag;
 extern unsigned char grim_window_proc_paint_flag;
 extern HWND grim_main_window_hwnd;
@@ -52,6 +55,17 @@ bool grim_backup_textures(void);
 bool grim_restore_textures(void);
 void grim_apply_render_state(void);
 
+enum {
+    windowed_config = CL_BUILD < 10300 ? 3 : CL_BUILD <= 10400 ? 6 : 8,
+    mouse_cache_config = CL_BUILD < 10300 ? 9 : 13,
+};
+
+#if CL_BUILD == 10002 && defined(GRIM_WINDOW_PROC_SCRATCH)
+// VC6 uses the preceding function's frame layout when sizing the shared
+// DefWindowProcA tail. Texture restore immediately precedes this procedure.
+#include "../texture/restore.cpp"
+#endif
+
 LRESULT CALLBACK grim_window_proc(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
@@ -66,6 +80,7 @@ LRESULT CALLBACK grim_window_proc(
         }
     }
 #endif
+#if CL_BUILD > 10400
     if (grim_dc_mode_active) {
         grim_noop("WM_MESSAGE (dc)", message);
     } else {
@@ -152,11 +167,14 @@ LRESULT CALLBACK grim_window_proc(
         return DefWindowProcA(
             hwnd, message, wparam, lparam);
     }
+#endif
 
     switch (message) {
+#if CL_BUILD > 10400
         case WM_CLOSE:
             PostQuitMessage(0);
             return 0;
+#endif
 
         case WM_ENTERSIZEMOVE:
             grim_timing_frozen = 1;
@@ -178,11 +196,16 @@ LRESULT CALLBACK grim_window_proc(
                 WM_SETICON,
                 ICON_SMALL,
                 (LPARAM)grim_window_icon_handle);
+#if CL_BUILD > 10400
             grim_main_window_hwnd = hwnd;
             SetFocus(hwnd);
+#endif
             break;
 
         case WM_SIZE:
+#if CL_BUILD < 10400
+            return 0;
+#else
             if (wparam == SIZE_MAXHIDE || wparam == SIZE_MINIMIZED) {
                 grim_timing_frozen = 1;
                 grim_device_ready = 0;
@@ -190,7 +213,9 @@ LRESULT CALLBACK grim_window_proc(
                 grim_timing_frozen = 0;
             }
             break;
+#endif
 
+#if CL_BUILD > 10400
         case WM_ACTIVATEAPP:
             if (wparam == 0) {
                 grim_noop("WM_ACTIVATEAPP inactive", 0);
@@ -253,13 +278,60 @@ LRESULT CALLBACK grim_window_proc(
             }
             return 0;
 
+#else
+        case WM_ACTIVATE:
+            if (LOWORD(wparam) != WA_INACTIVE && HIWORD(wparam) == 0) {
+#if CL_BUILD >= 10300
+                if (grim_device_ready) {
+                    grim_restore_textures();
+                    grim_apply_render_state();
+                    grim_on_device_restore();
+                    grim_device_restore_callback_pending = 0;
+                } else {
+                    grim_device_restore_callback_pending = 1;
+                }
+#endif
+                grim_timing_frozen = 0;
+            } else {
+                grim_timing_frozen = 1;
+#if CL_BUILD >= 10300
+                if (grim_device_ready) {
+                    grim_on_device_lost();
+                    grim_backup_textures();
+                }
+                grim_device_ready = 0;
+#else
+                grim_device_ready = 0;
+                if (!grim_backup_textures()) {
+                    while (MessageBoxA(0, grim_error_text, "Grim", MB_RETRYCANCEL) == IDRETRY) {
+                        grim_backup_textures();
+                    }
+                }
+#endif
+            }
+            break;
+
+        case WM_CLOSE:
+            PostQuitMessage(0);
+            return 0;
+
+        case WM_SETCURSOR:
+            if (!grim_config_values[windowed_config] && !grim_input_cached) {
+                SetCursor(0);
+            } else {
+                SetCursor(LoadCursorA(0, IDC_ARROW));
+            }
+            return 1;
+#endif
+
         case WM_MOUSEMOVE:
-            if (grim_config_values[13]) {
+            if (grim_config_values[mouse_cache_config]) {
                 grim_mouse_x_cached = (float)(short)LOWORD(lparam);
                 grim_mouse_y_cached = (float)(short)HIWORD(lparam);
             }
             break;
 
+#if CL_BUILD > 10400
         case WM_CHAR:
             if ((unsigned char)wparam != 0xa7 &&
                 (unsigned char)wparam != 9) {
@@ -290,6 +362,7 @@ LRESULT CALLBACK grim_window_proc(
             grim_noop("WM_CANCELMODE", 0);
             grim_backup_textures();
             break;
+#endif
 
         case WM_SYSCOMMAND:
             switch (wparam) {
@@ -298,55 +371,57 @@ LRESULT CALLBACK grim_window_proc(
             case SC_MAXIMIZE:
             case SC_SCREENSAVE:
             case SC_MONITORPOWER:
-                if (!grim_config_values[8]) {
+                if (!grim_config_values[windowed_config]) {
                     return 1;
                 }
                 break;
             }
             break;
 
+#if CL_BUILD > 10400
         case WM_SYSKEYDOWN:
         case WM_SYSKEYUP:
             return 1;
+#endif
 
         case WM_LBUTTONDOWN:
-            if (grim_config_values[13]) {
+            if (grim_config_values[mouse_cache_config]) {
                 grim_mouse_button_cache[0] = 1;
             }
             break;
 
         case WM_MBUTTONDOWN:
-            if (grim_config_values[13]) {
+            if (grim_config_values[mouse_cache_config]) {
                 grim_mouse_button_cache[2] = 1;
             }
             break;
 
         case WM_RBUTTONDOWN:
-            if (grim_config_values[13]) {
+            if (grim_config_values[mouse_cache_config]) {
                 grim_mouse_button_cache[1] = 1;
             }
             break;
 
         case WM_LBUTTONUP:
-            if (grim_config_values[13]) {
+            if (grim_config_values[mouse_cache_config]) {
                 grim_mouse_button_cache[0] = 0;
             }
             break;
 
         case WM_MBUTTONUP:
-            if (grim_config_values[13]) {
+            if (grim_config_values[mouse_cache_config]) {
                 grim_mouse_button_cache[2] = 0;
             }
             break;
 
         case WM_RBUTTONUP:
-            if (grim_config_values[13]) {
+            if (grim_config_values[mouse_cache_config]) {
                 grim_mouse_button_cache[1] = 0;
             }
             break;
 
         case WM_MOUSEWHEEL:
-            if (grim_config_values[13]) {
+            if (grim_config_values[mouse_cache_config]) {
                 grim_mouse_wheel_delta_cached =
                     (float)(short)HIWORD(wparam);
             }

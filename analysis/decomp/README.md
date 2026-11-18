@@ -91,6 +91,9 @@ This gives a useful function treemap without implying recovered file boundaries.
 
 ## Data accounting
 
+This section describes 1.9.93. The freeware releases have their own
+[global maps and data-section measurements](#freeware-data-sections).
+
 The full-image denominator uses the PE virtual extents of `.rdata`, `.data`,
 `.data1`, and `.bss` (where present). This includes zero-filled storage and
 unattributed gaps, but excludes file-alignment padding, executable sections,
@@ -252,8 +255,15 @@ flags must agree with these fields. Compared extents come from the matcher's
 contiguous normalized disassembly (including undecoded `db` suffixes), with its
 recognized terminal-padding count removed. A discarded tail cannot receive code
 credit. Object hashes are local compilation receipts, not independently rebuilt
-objects in CI. Inputs must stay unchanged
-throughout the evaluation.
+objects in CI. All object receipts zero the four-byte COFF timestamp. For a source
+scratch, VC6 can also emit its own absolute staging path in a CodeView
+`S_OBJNAME_ST` record. The reporter recognizes a single version-2 `.debug$S`
+section with that exact output path followed by `S_COMPILE2_ST`. It retains
+the basename and rebases the affected lengths and file offsets. Its SHA-256
+input is the ASCII tag `crimson-report-vc6-objname-v1`, a NUL byte, and the
+resulting complete COFF. Other layouts, archive and import-thunk candidates,
+and raw native-link fingerprints use the timestamp-only hash. Inputs must stay
+unchanged throughout the evaluation.
 
 The `decomp-report` pre-push hook runs the same saved-evidence verification as
 CI when matching or report inputs change. If it reports stale evidence, run
@@ -266,7 +276,8 @@ stay unchanged. The hook verifies evidence; it does not regenerate it.
 It includes encoded-body credit, unmatched bytes, the largest uncredited functions,
 and executable reconciliation. `version` and `data_measured` identify the build
 and distinguish absent data evidence from a zero matched-byte count.
-`executable_coverage` totals retained code and unresolved executable bytes.
+`executable_coverage` totals function bodies, padding, embedded data and unresolved executable bytes.
+The freeware reports also break down the Game & Engine ranges by image and record how many gap bytes the compiled objects reproduce.
 Each scope includes the exact objdiff measures beside its encoded-body totals.
 `report.md` summarizes the five chart series, encoded-body credit and executable
 coverage in the measurement artifact and GitHub Actions job summary.
@@ -331,31 +342,138 @@ feed `--build` comparisons and the reported builds' inventories; see
 
 ## Freeware
 
-Each freeware image has an independent `native.json` inventory. Its image and
-basic-block byte hashes, donor-map digest, analyzer version, verified starts,
-and reviewed ownership boundaries are pinned. Unmapped native functions remain
-in the reports; names from donor maps are identities, not the denominator.
+All 818 confirmed Game & Engine functions compile to their original instruction
+encodings. The three EXEs and three Grim2D DLLs contain another 7,942 bytes in
+775 gaps between those functions and the following entries. Every gap was
+reproduced from the VC6 object for the preceding function.
 
-The executable sections are partitioned without overlapping byte owners.
-Verified unchanged bodies define physical extents; independent native starts
-bound other function prefixes. Shared/interior entry points remain in the raw
-discovery inventory. Every byte outside a retained function is an explicitly
-uncredited executable remainder. These include uncertain alignment/embedded
-data and stay in both All and the applicable native ownership scope. Gap units
-are not counted as functions. Compilation uses these retained extents and
-rejects partial coverage before awarding source credit.
+| Release | Exact game / Grim2D functions | Function bytes | Alignment padding | Switch data | Unresolved gap bytes |
+|---|---:|---:|---:|---:|---:|
+| 1.0.2 | 104 / 91 | 77,143 | 1,628 | 301 | 0 |
+| 1.3.0 | 164 / 105 | 122,830 | 2,233 | 313 | 0 |
+| 1.4.0 | 243 / 111 | 149,621 | 3,003 | 464 | 0 |
+| **Total** | **511 / 307** | **349,594** | **6,864** | **1,078** | **0** |
 
-The inventory policy is `native-functions-and-full-executable-remainder-v1`;
-it is deliberately conservative and differs from 1.9's curated-functions
-policy. The All code denominator equals the full executable virtual byte count.
-`Confirmed Game & Engine` covers the reviewed initial application and engine
-clusters, while uncertain template/SDK helpers stay unclassified. A weak donor
-placement never transfers canonical game/library ownership. Exact donor library
-identities can classify later functions, without awarding archive credit.
-Data and linked-executable recovery remain unmeasured for these builds.
+**Game & Engine function bodies** covers the 349,594 bytes of matched code.
+**Game & Engine** keeps the full 357,536-byte executable footprint. The report
+lists the 7,942 reproduced layout bytes separately from the function matches.
+The saved evidence includes each range, its owner and the object comparison.
+[1.0.2](1.0.2.json) · [1.3.0](1.3.0.json) · [1.4.0](1.4.0.json)
+
+The compiler placed 30 tables after 15 functions. Their guarded dispatches use
+168 four-byte destinations (672 bytes) and nine byte-selector arrays (406 bytes).
+Each destination lands on an instruction boundary in its enclosing function.
+The range evidence records the address of the unsigned bounds check and the
+instruction that reads each table. The object comparison applied all 168 local
+`IMAGE_REL_I386_DIR32` relocations and compared every byte with the original
+image. The alignment bytes are NOP runs up to the next 16-byte function
+boundary or short no-op instructions aligning a table to four bytes.
+
+The audit checked every gap against discovered basic blocks, PE entry points and
+exports, direct branches and calls, possible fallthrough, and unaligned pointer
+values throughout the mapped image. Every gap follows a return or unconditional
+jump. The 30 table references account for all instruction operands pointing into
+the gaps. Four other byte sequences had the value of a gap address. Two cross
+records in VC6's powers-of-ten table, one crosses coefficients in the DirectX
+inverse-square-root table, and one crosses the adjacent floats 2.4 and 1170.
+The affected ranges record the storage address and evidence for each coincidence.
+These checks found no additional code in the 775 gaps.
+
+The frame dispatcher was the last function to match in each release.
+
+| Release | `game_frame_update` address | Body bytes | Instructions | Verified references |
+|---|---:|---:|---:|---:|
+| 1.0.2 | `0x40c110` | 11,366 | 2,799 | 858 |
+| 1.3.0 | `0x412fd0` | 21,459 | 5,351 | 1,747 |
+| 1.4.0 | `0x418190` | 24,916 | 6,233 | 1,969 |
+
+The raw 1.0.2 and 1.3.0 inventories retain six and seven internal switch or
+join labels respectively. Their complete compiled bodies establish the enclosing
+function boundaries. The 1.0.2 tail contains 40 bytes of jump tables
+and two alignment bytes. The 1.3.0 tail contains 48 bytes of jump tables and
+13 alignment bytes.
+
+Each freeware image has an independent `native.json` inventory. It pins the
+image and basic-block hashes, donor-map digest, analyzer version, verified
+starts and reviewed ownership boundaries. Native functions without a donor
+identity remain in the reports. Verified bodies and independent native starts
+bound the function extents. The raw discovery inventory retains shared and
+interior entry points.
+
+Under `native-functions-and-classified-executable-remainder-v2`, each executable
+virtual byte belongs to exactly one range. Gap units contribute zero functions.
+The **All** and ownership filters retain unresolved bytes outside the audited
+ranges. Unknown template and SDK helpers remain under **Unclassified ownership**.
+The freeware reports also measure data sections. Source-component linking is
+measured on the canonical 1.9.93 release.
+
+The **Freeware port** filter counts retained functions in the confirmed game
+and engine ranges after the release's reviewed platform exclusions. It includes
+unnamed functions and functions unique to that release. **Replaced platform
+functions** counts the excluded functions separately. Both filters use the
+same native addresses and extents as `match triage --build VERSION`.
+Padding and switch tables appear in the physical ownership totals.
+The port measures track compiler recovery. Client behavior is checked by
+running the original and the port with the same inputs.
 
 CI fetches the six original images from the existing public asset bucket and
 verifies their registry SHA-256 pins. Report artifacts follow the existing
 `<version>_report` naming convention, so all versions belong to the same
 decomp.dev project. The content-pin URL parameter avoids stale CDN responses
 when a previously absent version is first published.
+
+### Freeware data sections
+
+The three releases contain **554,477** virtual bytes in 15 data sections.
+The originals store 248,193 bytes in the PE files, and the loader supplies
+306,284 zero bytes. The denominator includes `.rdata`, `.data` and Grim's
+`.data1`. Executable sections, resources, the relocation directory's own
+section and file-alignment bytes outside a section's virtual extent have
+separate purposes and stay outside this measure.
+
+| Release | Named Game & Engine locations | Source-matched bytes | Mapped, unmatched | PE metadata | Unattributed | All data bytes |
+|---|---:|---:|---:|---:|---:|---:|
+| [1.0.2](1.0.2.json) | 216 | 47,157 | 34,791 | 4,915 | 38,888 | 125,751 |
+| [1.3.0](1.3.0.json) | 301 | 122,610 | 34,819 | 5,133 | 40,190 | 202,752 |
+| [1.4.0](1.4.0.json) | 385 | 142,424 | 34,251 | 5,002 | 44,297 | 225,974 |
+| **Total** | 902 | 312,191 | 103,861 | 15,050 | 123,375 | 554,477 |
+
+Across the six images, source objects reproduce **312,191 / 554,477**
+data bytes (56.30%). The known Game & Engine subset accounts for
+276,788 matched bytes out of 276,807 attributed bytes. Buffers with
+an unknown full extent remain visible in the address map. Shared compiler
+literals can match at an original address while ownership remains uncertain.
+
+The saved maps tie all 22,506 absolute data operands in byte-exact Game &
+Engine code to positional VC6 object relocations. The maps keep the original
+instruction address, the symbol and its addend. A named address can have
+several aliases. An instruction that takes an address proves a location. A
+direct, fixed-width load or store can also prove the bytes it touches while
+leaving the full object's extent open.
+
+Source matches require an independently bounded object and an exact comparison
+with the target's load-time bytes. The evidence includes emitted string and
+floating-point constants, typed VC6 definitions, and symbolic pointer
+initializers. The creature pools use 128 records in 1.0.2 and 512 in the
+later releases. The three Grim interface tables have 40, 47 and 52 entries.
+Each entry resolves to its original method and has a corresponding PE base
+relocation. For zero-initialized arrays, the original allocation or iteration
+bounds and a compiled storage definition establish the extent. Aliases and
+overlapping views count once. In 1.4.0 the projectile code's
+`freeware_hit_sound_timer` at `0x00452eac` reads the same float that the
+audio code updates as the third slot of `freeware_music_volume`.
+
+The four report columns partition each byte by evidence. **Source-matched**
+means the VC6 data reproduced the original. **Mapped, unmatched** includes
+archive data, CRT constructor registrations and accessed storage with a known
+span but no source match. **PE metadata** covers verified import and export
+structures. **Unattributed** retains the remaining storage. The 1.0.2 address
+formerly labelled `sprite_effect_pool` belongs to the CRT powers-of-ten table.
+The original archive contribution identifies all 700 bytes there. The corrected
+maps also distinguish small game flags from an incompatible D3DX BSS label.
+
+The per-release `data` evidence lists global addresses, source objects and the
+range-by-range partition. The generated `report.metrics.json` also lists every
+unmatched range with its image, section, start address, byte count and reason.
+To validate the saved evidence and render a release's reports locally, run
+`uv run crimson match report --version 1.4.0`.

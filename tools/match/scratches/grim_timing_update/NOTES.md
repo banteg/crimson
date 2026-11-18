@@ -13,3 +13,8 @@ Keeping the FPS expression directly in terms of the globals reproduces the
 native lifetime of the `timeGetTime` import register and the two unsigned
 integer-to-float conversions. The recovered function matches all 53 native
 instructions and all 23 references under MSVC 6.5 `/O2 /GB`.
+
+The freeware builds take one clock sample per frame. They accumulate signed
+64-bit ticks and elapsed seconds independently. Their FPS window resets the
+elapsed seconds to zero once it exceeds half a second. Freezing shifts the
+epoch by the elapsed ticks and leaves the game clock and sample window alone.

@@ -7,12 +7,44 @@
   "root": "decomp/1.4/crimson",
   "modules": [
     {
-      "name": "console",
-      "object": "console.obj",
-      "evidence": "1.4.0's second C++ object; its two $E1 initializers open the range.",
+      "name": "music_stream",
+      "object": "music_stream.obj",
+      "evidence": "The contiguous DirectShow methods share a 32-byte stream object, initialized for each of the three MP3 tracks. Calls use the same graph, control, seeking and audio interfaces throughout this range.",
       "ranges": [
         [
-          "0x4018c0",
+          "0x401010",
+          "0x40124d"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.4/crimson/music_stream/open.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_music_stream_open"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/music_stream/playback.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_music_stream_init",
+            "tools/match/scratches/freeware_music_stream_set_volume",
+            "tools/match/scratches/freeware_music_stream_run",
+            "tools/match/scratches/freeware_music_stream_pause",
+            "tools/match/scratches/freeware_music_stream_stop",
+            "tools/match/scratches/freeware_music_stream_duration",
+            "tools/match/scratches/freeware_music_stream_position",
+            "tools/match/scratches/freeware_music_stream_seek"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "console",
+      "object": "console.obj",
+      "evidence": "1.4.0's second C++ object. The initializer at 0x401250 precedes the input buffer accessors and poller. The command and queue methods follow in the same range.",
+      "ranges": [
+        [
+          "0x401250",
           "0x402fa4"
         ]
       ],
@@ -48,6 +80,12 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/console/console_input_poll.cpp",
+          "configs": [
+            "tools/match/scratches/console_input_poll"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/console/console_printf.cpp",
           "configs": [
             "tools/match/scratches/console_printf"
@@ -60,9 +98,25 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/console/console_render.cpp",
+          "configs": [
+            "tools/match/scratches/console_render"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/console/console_set_open.cpp",
           "configs": [
             "tools/match/scratches/console_set_open"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/console/freeware_console_commands.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_console_cmd_count",
+            "tools/match/scratches/freeware_console_cmd_printfile",
+            "tools/match/scratches/freeware_console_cmd_show",
+            "tools/match/scratches/freeware_console_cmd_showfps",
+            "tools/match/scratches/freeware_console_cmd_state_unavailable"
           ]
         }
       ]
@@ -74,7 +128,7 @@
       "ranges": [
         [
           "0x402fb0",
-          "0x402ffb"
+          "0x402fd9"
         ]
       ],
       "sources": [
@@ -87,20 +141,164 @@
       ]
     },
     {
+      "name": "http",
+      "object": "http.obj",
+      "evidence": "The WinINet helper is bounded by the Grim DLL loader and the SFX DLL loader. The online menu calls it to fetch versioninfo.txt.",
+      "ranges": [
+        [
+          "0x402fe0",
+          "0x4030e6"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.4/crimson/http/freeware_http_get.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_http_get"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sfx_loader",
+      "object": "sfx_loader.obj",
+      "evidence": "The adjacent load and unload routines share the SFX.dll module handle and precede the main game's static initializers.",
+      "ranges": [
+        [
+          "0x4030f0",
+          "0x40322d"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.4/crimson/sfx_loader/sfx_loader.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_sfx_load_library",
+            "tools/match/scratches/freeware_sfx_unload_library"
+          ]
+        }
+      ]
+    },
+    {
       "name": "crimson",
       "object": "crimson.obj",
       "evidence": "The main game object: its $E1/$E2 initializers, then the game code after level.obj; one object in every freeware build, so its sources are grouped by subsystem only.",
       "ranges": [
         [
           "0x403230",
-          "0x403fc0"
+          "0x403ac0"
         ],
         [
-          "0x404ec0",
+          "0x404ee0",
           "0x4216c2"
         ]
       ],
       "sources": [
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/audio_init_sfx.cpp",
+          "configs": [
+            "tools/match/scratches/audio_init_sfx"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/audio_shutdown_all.cpp",
+          "configs": [
+            "tools/match/scratches/audio_shutdown_all"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/early_music_tracks.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_game_track_fade",
+            "tools/match/scratches/freeware_game_track_start",
+            "tools/match/scratches/freeware_title_track_fade",
+            "tools/match/scratches/freeware_title_track_start"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/focus_callbacks.cpp",
+          "configs": [
+            "tools/match/scratches/audio_resume_all",
+            "tools/match/scratches/audio_suspend_all"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/load_additional_assets.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_audio_load_additional_assets"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/music_create_streams.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_music_create_streams"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/music_load_intro.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_music_load_intro"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/music_start_stop.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_music_start",
+            "tools/match/scratches/freeware_music_stop"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/music_update_fades.cpp",
+          "configs": [
+            "tools/match/scratches/music_update_fades"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/sfx_load_sample.cpp",
+          "configs": [
+            "tools/match/scratches/sfx_load_sample"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/sfx_play_panned.cpp",
+          "configs": [
+            "tools/match/scratches/sfx_play_panned"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/sfx_system_init.cpp",
+          "configs": [
+            "tools/match/scratches/sfx_system_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/audio/sfx_update.cpp",
+          "configs": [
+            "tools/match/scratches/sfx_update"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/bonuses/bonus_globals_init.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_bonus_count_global_init",
+            "tools/match/scratches/freeware_pickup_id_global_init",
+            "tools/match/scratches/freeware_pickup_position_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/bonuses/bonus_globals_init_thunk.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_bonus_count_global_init_thunk",
+            "tools/match/scratches/freeware_pickup_id_global_init_thunk",
+            "tools/match/scratches/freeware_pickup_position_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/bonuses/bonus_spawn_at.cpp",
+          "configs": [
+            "tools/match/scratches/bonus_spawn_at"
+          ]
+        },
         {
           "path": "decomp/1.4/crimson/crimson/console/console_cmd_open_url.cpp",
           "configs": [
@@ -120,9 +318,45 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/console/freeware_console_cmd_loadtile.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_console_cmd_loadtile"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/console/freeware_console_extension_commands.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_console_cmd_givegun",
+            "tools/match/scratches/freeware_console_cmd_giveperk",
+            "tools/match/scratches/freeware_console_cmd_mergehighs",
+            "tools/match/scratches/freeware_console_cmd_playsample",
+            "tools/match/scratches/freeware_console_cmd_setcreaturecolor",
+            "tools/match/scratches/freeware_console_cmd_setcreaturehealth",
+            "tools/match/scratches/freeware_console_cmd_spawncreature"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_alloc_slot.cpp",
+          "configs": [
+            "tools/match/scratches/creature_alloc_slot"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/creatures/creature_find_in_radius.cpp",
           "configs": [
             "tools/match/scratches/creature_find_in_radius"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_find_nearest.cpp",
+          "configs": [
+            "tools/match/scratches/creature_find_nearest"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_handle_death.cpp",
+          "configs": [
+            "tools/match/scratches/creature_handle_death"
           ]
         },
         {
@@ -138,6 +372,24 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_spawn.cpp",
+          "configs": [
+            "tools/match/scratches/creature_spawn"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_spawn_random.cpp",
+          "configs": [
+            "tools/match/scratches/creature_spawn_random"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/creature_update_all.cpp",
+          "configs": [
+            "tools/match/scratches/creature_update_all"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/creatures/creatures_none_active.cpp",
           "configs": [
             "tools/match/scratches/creatures_none_active"
@@ -150,9 +402,45 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/creatures/unused_sfx_prefix_creature_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/unused_sfx_prefix_creature_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/creatures/unused_sfx_prefix_creature_global_init_thunk.cpp",
+          "configs": [
+            "tools/match/scratches/unused_sfx_prefix_creature_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/effect_uv_tables_init.cpp",
+          "configs": [
+            "tools/match/scratches/effect_uv_tables_init"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/effects/fx_queue_add.cpp",
           "configs": [
             "tools/match/scratches/fx_queue_add"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_queue_add_random.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_add_random"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_queue_add_rotated.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_add_rotated"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/fx_queue_add_shell.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_add_shell"
           ]
         },
         {
@@ -180,9 +468,189 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/effects/particle_alloc_slot.cpp",
+          "configs": [
+            "tools/match/scratches/particle_alloc_slot"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/effects/particle_pool_global_init.cpp",
           "configs": [
             "tools/match/scratches/particle_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/sprite_effect_alloc_slot.cpp",
+          "configs": [
+            "tools/match/scratches/sprite_effect_alloc_slot"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/effects/sprite_effect_pool_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/sprite_effect_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/config_init_defaults.cpp",
+          "configs": [
+            "tools/match/scratches/config_init_defaults"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/config_load_presets.cpp",
+          "configs": [
+            "tools/match/scratches/config_load_presets"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/crimsonland_main.cpp",
+          "configs": [
+            "tools/match/scratches/crimsonland_main"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/crimsonland_main_130.cpp",
+          "configs": [
+            "tools/match/scratches/crimsonland_main"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/crimsonland_main_140.cpp",
+          "configs": [
+            "tools/match/scratches/crimsonland_main"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/encounters.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_encounter_experience",
+            "tools/match/scratches/freeware_encounter_nine_lizards",
+            "tools/match/scratches/freeware_encounter_pineapple",
+            "tools/match/scratches/freeware_encounter_duct_tape",
+            "tools/match/scratches/freeware_encounter_endless_army"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/freeware_save_config.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_save_config"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/game_frame_update.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_editor_offset_destroy",
+            "tools/match/scratches/game_frame_update"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/gameplay_reset_state.cpp",
+          "configs": [
+            "tools/match/scratches/gameplay_reset_state"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/game/input_joystick.cpp",
+          "configs": [
+            "tools/match/scratches/input_aim_pov_left_active",
+            "tools/match/scratches/input_aim_pov_right_active",
+            "tools/match/scratches/input_move_down_active",
+            "tools/match/scratches/input_move_left_active",
+            "tools/match/scratches/input_move_right_active",
+            "tools/match/scratches/input_move_up_active"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_last_score_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_last_score_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_last_score_global_init_thunk.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_last_score_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_read_name_key.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_read_name_key"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_save_score.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_save_score"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_score_codec.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_score_decode",
+            "tools/match/scratches/freeware_score_encode",
+            "tools/match/scratches/freeware_score_key_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_score_merge.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_score_merge"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_score_rank.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_score_rank"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_score_table_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_score_table_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_score_table_global_init_thunk.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_score_table_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/freeware_score_table_reset.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_score_table_reset"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/highscore_build_path.cpp",
+          "configs": [
+            "tools/match/scratches/highscore_build_path"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/highscore/highscore_load_table.cpp",
+          "configs": [
+            "tools/match/scratches/highscore_load_table"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/level/level_load_next.cpp",
+          "configs": [
+            "tools/match/scratches/level_load_next"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/level/move_with_collision.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_move_with_collision"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/level/vector_objects.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_list_dtor"
           ]
         },
         {
@@ -201,6 +669,24 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/perks/perks_generate_choices.cpp",
+          "configs": [
+            "tools/match/scratches/perks_generate_choices"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/perks/perks_init_database.cpp",
+          "configs": [
+            "tools/match/scratches/perks_init_database"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/perks/player_check_level.cpp",
+          "configs": [
+            "tools/match/scratches/player_check_level"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/perks/wrap_text_to_width_alloc.cpp",
           "configs": [
             "tools/match/scratches/wrap_text_to_width_alloc"
@@ -213,15 +699,58 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/player/freeware_aim_screen_global_init.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_aim_screen_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/player/freeware_aim_screen_global_init_thunk.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_aim_screen_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/player/freeware_float_minmax.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_float_max",
+            "tools/match/scratches/freeware_float_min"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/player/freeware_refill_clip.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_refill_clip"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/player/player_heading_approach_target.cpp",
           "configs": [
             "tools/match/scratches/player_heading_approach_target"
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/player/player_reset_all.cpp",
+          "configs": [
+            "tools/match/scratches/player_reset_all"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/player/player_state_table_global_init.cpp",
           "configs": [
             "tools/match/scratches/player_state_table_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/player/player_update.cpp",
+          "configs": [
+            "tools/match/scratches/player_update"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/projectiles/projectile_alloc_slot.cpp",
+          "configs": [
+            "tools/match/scratches/projectile_alloc_slot"
           ]
         },
         {
@@ -237,9 +766,235 @@
           ]
         },
         {
+          "path": "decomp/1.4/crimson/crimson/projectiles/projectile_update.cpp",
+          "configs": [
+            "tools/match/scratches/projectile_update"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/projectiles/secondary_projectile_alloc_slot.cpp",
+          "configs": [
+            "tools/match/scratches/secondary_projectile_alloc_slot"
+          ]
+        },
+        {
           "path": "decomp/1.4/crimson/crimson/projectiles/secondary_projectile_pool_global_init.cpp",
           "configs": [
             "tools/match/scratches/secondary_projectile_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/creature_render_all.cpp",
+          "configs": [
+            "tools/match/scratches/creature_render_all"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/effect_render_all.cpp",
+          "configs": [
+            "tools/match/scratches/effect_render_all"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/freeware_post_player_render_noop.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_post_player_render_noop"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/fx_queue_render.cpp",
+          "configs": [
+            "tools/match/scratches/fx_queue_render"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/player_render.cpp",
+          "configs": [
+            "tools/match/scratches/player_render"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/projectile_render.cpp",
+          "configs": [
+            "tools/match/scratches/projectile_render"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/terrain_generate.cpp",
+          "configs": [
+            "tools/match/scratches/terrain_generate"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/render/terrain_render.cpp",
+          "configs": [
+            "tools/match/scratches/terrain_render"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/texture/texture_get_or_load.cpp",
+          "configs": [
+            "tools/match/scratches/texture_get_or_load"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/encounter_update.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_encounter_update",
+            "tools/match/scratches/freeware_career_menu_update"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/freeware_draw_loading_progress.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_draw_loading_progress"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/freeware_point_in_rect.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_point_in_rect"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/game_credits_update.cpp",
+          "configs": [
+            "tools/match/scratches/game_credits_update"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/game_highscores_update.cpp",
+          "configs": [
+            "tools/match/scratches/game_highscores_update"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/game_show_message.cpp",
+          "configs": [
+            "tools/match/scratches/game_show_message"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/gameplay_render_hud.cpp",
+          "configs": [
+            "tools/match/scratches/gameplay_render_hud"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/hud_set_row.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_hud_set_row"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/overlay_begin.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_overlay_begin"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/ui/perk_selection_screen_update.cpp",
+          "configs": [
+            "tools/match/scratches/perk_selection_screen_update"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/weapons/player_start_reload.cpp",
+          "configs": [
+            "tools/match/scratches/player_start_reload"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/weapons/weapon_assign_player.cpp",
+          "configs": [
+            "tools/match/scratches/weapon_assign_player"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/crimson/weapons/weapon_name_get.cpp",
+          "configs": [
+            "tools/match/scratches/weapon_name_get"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "level",
+      "object": "level.obj",
+      "evidence": "The brush-list initializer at 0x403ac0 precedes the level methods. The last renderer returns at 0x404ed5 with an eight-byte stack pop.",
+      "ranges": [
+        [
+          "0x403ac0",
+          "0x404ed8"
+        ]
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.4/crimson/level/add_object.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_add_object"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/add_trigger.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_add_trigger"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/brushes.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_brush_clear",
+            "tools/match/scratches/freeware_brush_global_construct_and_register",
+            "tools/match/scratches/freeware_brush_global_destroy",
+            "tools/match/scratches/freeware_brush_global_init",
+            "tools/match/scratches/freeware_brush_register_atexit"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/clear.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_clear"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/lifetime.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_list_ctor",
+            "tools/match/scratches/freeware_level_map_ctor",
+            "tools/match/scratches/freeware_level_map_dtor"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/load.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_load"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/render_layer.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_render_layer"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/render_triggers.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_render_triggers"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/save.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_save"
+          ]
+        },
+        {
+          "path": "decomp/1.4/crimson/level/triggers.cpp",
+          "configs": [
+            "tools/match/scratches/freeware_level_arm_triggers",
+            "tools/match/scratches/freeware_level_set_texture",
+            "tools/match/scratches/freeware_level_update_triggers"
           ]
         }
       ]

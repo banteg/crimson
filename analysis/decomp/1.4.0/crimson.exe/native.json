@@ -5,7 +5,7 @@
   "sha256": "0e4d5f62b34c7c62d5b7bb1f6a774d54e91c68a0c898d53cabead1f5f151eb8b",
   "analyzer": {
     "name": "Binary Ninja",
-    "version": "6.1.10626-dev Personal",
+    "version": "6.1.11003-dev Personal",
     "mode": "controlFlow",
     "seeds": "Verified relinking-invariant bodies from the donor map; independent control-flow discovery retained."
   },
@@ -1681,6 +1681,47 @@
           "address": 4202176,
           "end": 4202195,
           "sha256": "5061ce28daf73c2213db760575e0a09cf7baa8075c68c951c5641715489a9309"
+        }
+      ]
+    },
+    {
+      "address": 4202208,
+      "name": "native_function_00401ee0",
+      "blocks": [
+        {
+          "address": 4202208,
+          "end": 4202255,
+          "sha256": "bc8b916e0389ada723366cd3615f260356e893b94d96279af04809323013eaf5"
+        },
+        {
+          "address": 4202255,
+          "end": 4202287,
+          "sha256": "ee31dc61b4aeef590e20306fd587a24a32c087daa2a186b456faaf706162ecab"
+        },
+        {
+          "address": 4202287,
+          "end": 4202289,
+          "sha256": "1770ae2694dfffb5381d1db167ea14ea806e849f7c886fc876528fc8e197f9ce"
+        },
+        {
+          "address": 4202289,
+          "end": 4202622,
+          "sha256": "cdb57ce15ba42d79cf22cfa32ee2aef6830dbff8456372917330d3d572af3b03"
+        },
+        {
+          "address": 4202622,
+          "end": 4202629,
+          "sha256": "93ddcd1f7951c08b246bc542f6247054c0d829065152f86a7f7da7b4ff0640c2"
+        },
+        {
+          "address": 4202629,
+          "end": 4202631,
+          "sha256": "72fb562c9d90dfcc008e5b0a391395fd2a244bb6bc231e2621a8ec6860d21fa3"
+        },
+        {
+          "address": 4202631,
+          "end": 4202661,
+          "sha256": "3306e47715ceedd036886f5da77e5e507a97ea43cde93318141ba6257aa27dd7"
         }
       ]
     },
@@ -4075,6 +4116,17 @@
           "address": 4209360,
           "end": 4209389,
           "sha256": "740d1ebfedf3464bb210a7070b42985f70a5feff420109f7bdc5a6ce939aaae0"
+        }
+      ]
+    },
+    {
+      "address": 4209392,
+      "name": "native_function_00403af0",
+      "blocks": [
+        {
+          "address": 4209392,
+          "end": 4209404,
+          "sha256": "47510e7b918b53633cb5f5e7303c95485a8520e40d4dd8bffa28c3746d6a424a"
         }
       ]
     },
@@ -21775,6 +21827,17 @@
           "address": 4317899,
           "end": 4317924,
           "sha256": "0c84a57e5d69ec994f04a3d90be0c9bee57029db70e32e5e990959826d083061"
+        }
+      ]
+    },
+    {
+      "address": 4317984,
+      "name": "native_function_0041e320",
+      "blocks": [
+        {
+          "address": 4317984,
+          "end": 4317985,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
         }
       ]
     },
@@ -47332,8 +47395,20 @@
   ],
   "verified_starts": [
     4198400,
+    4198416,
+    4198464,
+    4198688,
+    4198752,
+    4198784,
+    4198816,
+    4198848,
+    4198896,
+    4198944,
+    4198992,
+    4199008,
     4199040,
     4199072,
+    4199088,
     4200688,
     4200704,
     4200720,
@@ -47341,19 +47416,26 @@
     4200752,
     4200768,
     4200848,
+    4200864,
+    4200944,
+    4201184,
     4201376,
     4201584,
     4201616,
+    4201632,
     4201680,
     4201760,
     4201840,
     4202096,
+    4202176,
+    4202208,
     4202672,
     4202864,
     4203072,
     4203152,
     4203168,
     4203280,
+    4203408,
     4205232,
     4205488,
     4205584,
@@ -47364,6 +47446,9 @@
     4206320,
     4206432,
     4206512,
+    4206560,
+    4206832,
+    4207136,
     4207152,
     4207168,
     4207216,
@@ -47373,6 +47458,7 @@
     4207344,
     4207360,
     4207408,
+    4207424,
     4207456,
     4207472,
     4207488,
@@ -47385,16 +47471,24 @@
     4207664,
     4207696,
     4207712,
+    4207872,
+    4207888,
     4208160,
     4208176,
+    4208192,
+    4208208,
     4208272,
     4208288,
     4208320,
     4208352,
     4208400,
     4208416,
+    4208448,
+    4208464,
     4208480,
     4208496,
+    4208528,
+    4208544,
     4208560,
     4208576,
     4208624,
@@ -47417,29 +47511,135 @@
     4209200,
     4209312,
     4209328,
+    4209344,
+    4209360,
+    4209392,
+    4209408,
+    4209456,
+    4209552,
+    4209648,
+    4209680,
+    4209872,
+    4209936,
+    4210928,
+    4211248,
+    4211680,
+    4211728,
+    4211984,
+    4213680,
+    4213696,
+    4214128,
+    4214496,
+    4215008,
+    4215168,
+    4215408,
+    4215504,
+    4215808,
+    4215968,
+    4216288,
+    4216368,
+    4216528,
+    4216672,
+    4216976,
+    4217056,
     4217984,
+    4218128,
+    4218176,
+    4218224,
+    4218272,
     4218320,
     4218352,
+    4219184,
+    4219408,
+    4219584,
     4220032,
+    4220336,
+    4220896,
+    4220944,
     4221600,
+    4221792,
+    4221872,
+    4222480,
+    4222640,
+    4222752,
+    4222864,
+    4222880,
+    4222960,
+    4223360,
+    4223888,
+    4223936,
+    4224896,
     4225200,
+    4225312,
+    4228160,
+    4228608,
+    4230384,
+    4230592,
+    4230800,
     4231184,
     4231456,
     4231744,
     4232000,
     4232240,
     4232288,
+    4240752,
     4249600,
+    4249792,
+    4251744,
+    4253360,
+    4253424,
+    4253488,
+    4253744,
+    4256576,
+    4257248,
     4257296,
     4257328,
+    4257360,
+    4258672,
+    4259088,
+    4260784,
+    4264096,
     4269424,
+    4269792,
+    4282000,
+    4285792,
+    4286384,
+    4286912,
+    4286976,
+    4291776,
+    4293008,
+    4317984,
+    4318000,
+    4321184,
+    4321840,
+    4322432,
+    4324256,
+    4324352,
     4324416,
     4324592,
+    4324656,
     4325680,
+    4325840,
+    4325888,
+    4326080,
+    4326560,
+    4326640,
     4326848,
+    4326880,
+    4326928,
     4326976,
     4327120,
+    4327184,
+    4331168,
+    4331216,
+    4331248,
+    4331264,
+    4331792,
+    4331840,
+    4331888,
+    4331920,
     4332000,
+    4332039,
     4332352,
     4332417,
     4332688,
@@ -47456,6 +47656,7 @@
     4334358,
     4334486,
     4334580,
+    4334602,
     4334642,
     4334874,
     4334926,
@@ -47472,6 +47673,8 @@
     4335786,
     4335821,
     4335830,
+    4335854,
+    4336198,
     4336338,
     4336687,
     4336760,
@@ -47625,8 +47828,7 @@
     4375020,
     4375264,
     4375270,
-    4375276,
-    4207424
+    4375276
   ],
   "ownership_ranges": [
     {
@@ -47637,5 +47839,55 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "c2fcd20a8ba249272daf52f8b59deff0e94722d73eed4661395ad78c61f4e2f8"
+  "maps_sha256": "7f79f94cf8726d36dae2df6fe3be1eb1dff9e81943bc96c4d693f7b146b74bc3",
+  "platform_replaced": [
+    {
+      "address": 4198416,
+      "reason": "Initializes COM for the DirectShow playback object."
+    },
+    {
+      "address": 4198464,
+      "reason": "Opens a file in a DirectShow filter graph and acquires its COM interfaces."
+    },
+    {
+      "address": 4198752,
+      "reason": "Starts playback through the DirectShow media control interface."
+    },
+    {
+      "address": 4198784,
+      "reason": "Pauses playback through the DirectShow media control interface."
+    },
+    {
+      "address": 4198816,
+      "reason": "Stops playback through the DirectShow media control interface."
+    },
+    {
+      "address": 4198848,
+      "reason": "Reads the DirectShow media duration."
+    },
+    {
+      "address": 4198896,
+      "reason": "Reads the DirectShow playback position."
+    },
+    {
+      "address": 4198944,
+      "reason": "Seeks with the DirectShow media seeking interface."
+    },
+    {
+      "address": 4206512,
+      "reason": "Loads grim.dll and resolves its interface with GetProcAddress."
+    },
+    {
+      "address": 4206560,
+      "reason": "Performs the WinINet HTTP request for the online menu."
+    },
+    {
+      "address": 4206832,
+      "reason": "Loads SFX.dll and resolves its exported functions."
+    },
+    {
+      "address": 4207136,
+      "reason": "Releases the SFX.dll module with FreeLibrary."
+    }
+  ]
 }

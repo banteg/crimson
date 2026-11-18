@@ -117,7 +117,7 @@
       }
     }
   ],
-  "audit_digest": "7455e2f4c5d6b7abcce14d0f8621bb8fac69a45045e29a964e52797a22563cb0",
+  "audit_digest": "c472ef0180739ef248cb6b3bec76585e1e58d4b41f2431bff506acdfafcbdc55",
   "entry": {
     "symbol": "DllMain"
   },
@@ -382,7 +382,7 @@
           "note": "The legacy launcher callback is an exact 404-instruction match, including adapter filtering, mode parsing, and child-dialog routing.",
           "path": "tools/match/scratches/grim_config_dialog_proc/NOTES.md",
           "repository_relative": true,
-          "sha256": "05ea90586830c51756caeda43f2ba82e7c9feb8c688ae46b7551ca2270757c5a"
+          "sha256": "5b8e81afe9f09c6ec2c33d59c9f59db13739873463e764ac3a754f9cf633845a"
         }
       ],
       "kind": "platform-replaced",
@@ -415,7 +415,7 @@
           "note": "The exact recovered launcher callback is retained transitively by grim_apply_config.",
           "path": "tools/match/scratches/grim_config_dialog_proc/NOTES.md",
           "repository_relative": true,
-          "sha256": "05ea90586830c51756caeda43f2ba82e7c9feb8c688ae46b7551ca2270757c5a"
+          "sha256": "5b8e81afe9f09c6ec2c33d59c9f59db13739873463e764ac3a754f9cf633845a"
         },
         {
           "note": "The deterministic recovered platform archive includes the exact callback and both exact child dialog members.",
@@ -452,7 +452,7 @@
           "note": "The recovered callback matches all 472 normalized instructions with all 148 references resolved; its sole raw difference is a documented scale-one SIB base/index equivalence.",
           "path": "tools/match/scratches/grim_window_proc/NOTES.md",
           "repository_relative": true,
-          "sha256": "d205083bf62b2fb275ddd8df36cd64183adff614e988dac5b39ae7c249c920b5"
+          "sha256": "4cdece3c9dc2da772304e7df82faae253d001ee990ad58f1ddbc8aa4cd423949"
         },
         {
           "note": "The deterministic recovered-platform recipe preserves the verified callback object and records its bounded normalized-equivalence allowance.",
@@ -935,7 +935,7 @@
           "note": "The exact recovered launcher callback retains the decorated hyperlink import.",
           "path": "tools/match/scratches/grim_config_dialog_proc/NOTES.md",
           "repository_relative": true,
-          "sha256": "05ea90586830c51756caeda43f2ba82e7c9feb8c688ae46b7551ca2270757c5a"
+          "sha256": "5b8e81afe9f09c6ec2c33d59c9f59db13739873463e764ac3a754f9cf633845a"
         }
       ],
       "import_library": {
@@ -1348,7 +1348,7 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "d39cec83b7751c9c89dcbce3ffbfd6098a77c10ad34d6fc77e4f16c09a68941a"
+          "sha256": "e804ada0f021e999e538e1f5e5feb57c079c46d71650968fe601c8fbd49618b2"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",

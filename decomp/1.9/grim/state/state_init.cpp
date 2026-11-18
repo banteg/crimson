@@ -55,6 +55,15 @@ extern GrimUV grim_subrect_table_1[16];
 extern GrimUV grim_subrect_table_2[64];
 extern GrimUV grim_subrect_table[256];
 
+#if CL_BUILD == 10300
+static inline grim_config_value_t callback_config(bool (*callback)(void))
+{
+    grim_config_value_t value;
+    value.words[5] = (unsigned int)callback;
+    return value;
+}
+#endif
+
 void grim_state_init(void)
 {
     int x;
@@ -66,6 +75,31 @@ void grim_state_init(void)
         grim_config_values[x] = grim_config_default;
     }
 
+#if CL_BUILD < 10900
+#if CL_BUILD == 10300
+    grim_config_values[1] = callback_config(grim_missing_frame_callback);
+    grim_config_values[3] = callback_config(grim_default_device_callback);
+    grim_config_values[2] = callback_config(grim_default_device_callback);
+#elif CL_BUILD == 10400
+    grim_config_values[1] = (char *)grim_missing_frame_callback;
+    grim_config_values[3] = (char *)grim_default_device_callback;
+    grim_config_values[2] = (char *)grim_default_device_callback;
+#endif
+    grim_config_values[CL_BUILD < 10300 ? 3 : 6] = false;
+    grim_config_values[CL_BUILD < 10300 ? 5 : 8] = (unsigned int)480;
+    grim_config_values[CL_BUILD < 10300 ? 4 : 7] = (unsigned int)16;
+    grim_config_values[CL_BUILD < 10300 ? 2 : 5] = "Grim";
+    grim_config_values[CL_BUILD < 10300 ? 7 : 11] = false;
+    grim_config_values[CL_BUILD < 10300 ? 8 : 12] = false;
+    grim_config_values[CL_BUILD < 10300 ? 10 : 14] = false;
+    grim_config_values[CL_BUILD < 10300 ? 16 : 23] = false;
+    grim_config_values[CL_BUILD < 10300 ? 17 : 24] = 1.0f;
+    grim_config_values[51] = (unsigned int)1;
+    grim_config_values[CL_BUILD < 10300 ? 9 : 13] = false;
+    grim_config_values[CL_BUILD < 10300 ? 12 : 18] = true;
+    grim_config_values[CL_BUILD < 10300 ? 13 : 19] = (unsigned int)5;
+    grim_config_values[CL_BUILD < 10300 ? 14 : 20] = (unsigned int)6;
+#else
     grim_config_values[0x2d] = (char *)grim_missing_frame_callback;
     grim_config_values[6] = (char *)grim_default_device_callback;
     grim_config_values[5] = (char *)grim_default_device_callback;
@@ -91,6 +125,7 @@ void grim_state_init(void)
     grim_joystick_deadzone = 100.0f;
     grim_joystick_center_x = 0.0f;
     grim_joystick_center_y = 0.0f;
+#endif
     grim_error_text = &grim_empty_string;
     grim_reserved_d3ac = 0;
     grim_lookup_blob_loaded = 0;
@@ -101,32 +136,60 @@ void grim_state_init(void)
     grim_texture_format = 23;
     grim_preferred_texture_format = 0;
     grim_main_window_hwnd = 0;
+#if CL_BUILD >= 10900
     grim_color_slot0 = 0xffffffff;
     grim_color_slot3 = 0xffffffff;
     grim_color_slot2 = 0xffffffff;
     grim_color_slot1 = 0xffffffff;
+#endif
     grim_vertex_z = GrimDepth(0.5f, 1.0f);
 
     grim_uv_u0[0] = GrimUV(0.0f, 0.0f);
     grim_uv_u0[1] = GrimUV(1.0f, 0.0f);
     grim_uv_u0[2] = GrimUV(1.0f, 1.0f);
     grim_uv_u0[3] = GrimUV(0.0f, 1.0f);
+#if CL_BUILD < 10900
+    grim_color_slot0 = 0xffffffff;
+    grim_color_slot3 = 0xffffffff;
+    grim_color_slot2 = 0xffffffff;
+    grim_color_slot1 = 0xffffffff;
+#endif
     memset(
         grim_mouse_button_latch,
         0,
         sizeof(grim_mouse_button_latch));
 
+#if CL_BUILD == 10400
+    memset(grim_key_repeat_timers, 0, sizeof(grim_key_repeat_timers));
+#endif
     char *default_title = "Grim - No Title";
     grim_window_title = new char[strlen(default_title) + 1];
     strcpy(grim_window_title, default_title);
 
+#if CL_BUILD >= 10900
     memset(grim_key_repeat_timers, 0, sizeof(grim_key_repeat_timers));
+#endif
     grim_frame_callback = (void (*)(void))grim_missing_frame_callback;
+#if CL_BUILD >= 10300
     grim_on_device_restore = (void (*)(void))grim_default_device_callback;
     grim_on_device_lost = (void (*)(void))grim_default_device_callback;
+#endif
+#if CL_BUILD >= 10400
     grim_config_values[0x10].words[3] =
         (unsigned int)strdup(&grim_empty_string);
 
+#endif
+#if CL_BUILD < 10900
+    index = 0;
+    for (y = 0; y < 512; y += 32) {
+        float v = (float)y / 512.0f;
+        for (int column = 0; column < 512; column += 32) {
+            grim_font2_uv_u[index].u = (float)column / 512.0f;
+            grim_font2_uv_u[index].v = v;
+            ++index;
+        }
+    }
+#else
     memset(grim_font2_glyph_widths, 0, sizeof(grim_font2_glyph_widths));
     index = 0;
     for (y = 0; y < 16; ++y) {
@@ -185,4 +248,5 @@ void grim_state_init(void)
             ++index;
         }
     }
+#endif
 }

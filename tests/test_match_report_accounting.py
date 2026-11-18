@@ -1,3 +1,4 @@
+import struct
 from copy import deepcopy
 from typing import Any
 
@@ -5,6 +6,20 @@ import pytest
 
 from crimson_re import match_report
 from crimson_re import match_report_accounting as accounting
+
+
+def test_vc6_compile_generated_namespace_rejected_only_in_symbol_names() -> None:
+    name = b"?range@?%creature_update_all.cpp2259721399@@YAHXZ"
+    # One long COFF symbol followed by a second, unreferenced string.
+    def obj(symbol: bytes, other: bytes) -> bytes:
+        strings = symbol + b"\0" + other + b"\0"
+        header = struct.pack("<HHIIIHH", 0x14C, 0, 0, 20, 1, 0, 0)
+        record = struct.pack("<IIIhHBB", 0, 4, 0, 0, 0x20, 2, 0)
+        return header + record + struct.pack("<I", len(strings) + 4) + strings
+
+    with pytest.raises(ValueError, match="unstable anonymous namespace"):
+        accounting._check_source_object_names(obj(name, b"elsewhere"), "creature_update_all")
+    accounting._check_source_object_names(obj(b"?range@creature_update140@@YAHXZ", name), "creature_update_all")
 
 
 def function() -> dict[str, Any]:
@@ -32,6 +47,18 @@ def test_credit_requires_full_compared_coverage():
         accounting.validate_function(row)
 
 
+def test_split_entry_uses_full_comparison_but_credits_only_its_native_partition() -> None:
+    row = function()
+    row["comparison_end"] = 130
+    with pytest.raises(ValueError, match="fingerprinted extent"):
+        accounting.validate_function(row)
+    row["proof"]["target_size"] = 30
+    row["proof"]["compared_target_ranges"] = [[100, 130]]
+    accounting.validate_function(row)
+    measures = match_report.build_report([row])["measures"]
+    assert measures["matched_code"] == measures["total_code"] == "10"
+
+
 @pytest.mark.parametrize("change", ["overlap", "reference_debt"])
 def test_forged_proof_is_rejected(change):
     row = function()
@@ -52,6 +79,67 @@ def test_executable_partition_retains_unknown_gaps_and_rejects_overlap():
         accounting.reconcile_sections(sections, [function(), {**function(), "address": 105}])
     with pytest.raises(ValueError, match="outside"):
         accounting.reconcile_sections(sections, [{**function(), "address": 130}])
+
+
+def test_classified_executable_bytes_retain_physical_owners_without_code_credit():
+    code: dict[str, Any] = {**function(), "native_kind": "function", "ownership": "game", "platform_replaced": None}
+    def gap(address: int, size: int, kind: str, owner: str = "game") -> dict[str, Any]:
+        return {"image": code["image"], "address": address, "size": size, "name": f"{kind}_{address}",
+                "native_kind": kind, "ownership": owner, "candidate": None, "source": None, "proof": None,
+                "ratio": 0, "matched": False, "linked": False}
+
+    rows = [code, gap(110, 2, "padding"), gap(112, 8, "embedded_data"),
+            gap(120, 3, "unresolved", "libs.other"), gap(123, 5, "unresolved", "unknown")]
+    rows[2]["gap_evidence"] = {"dispatch_address": 101}
+    sections = [{"image": code["image"], "name": ".text", "address": 100, "size": 28}]
+    inventory = accounting.reconcile_sections(sections, rows)
+    assert inventory[0]["ranges"][2]["ownership"] == "game"
+    assert inventory[0]["ranges"][2]["gap_evidence"] == rows[2]["gap_evidence"]
+    assert inventory[0]["totals"] == {"retained_code": 10, "padding": 2, "embedded_data": 8, "unresolved": 8}
+    assert [span["kind"] for span in inventory[0]["ranges"]] == [
+        "retained_code", "padding", "embedded_data", "unresolved", "unresolved",
+    ]
+    report = match_report.build_report(rows)
+    scopes = {c["id"]: c["measures"] for c in report["categories"]}
+    assert report["measures"]["total_code"] == scopes["exe"]["total_code"] == "28"
+    assert scopes["game"]["total_code"] == "20"
+    assert scopes["game.functions"]["matched_code"] == scopes["game.functions"]["total_code"] == "10"
+    assert scopes["game.functions"]["matched_code_percent"] == 100.0
+    assert scopes["game.functions"] == scopes["port"]
+    assert scopes["game"]["matched_code_percent"] == 50.0
+    assert scopes["libs"]["total_code"] == "3" and scopes["unknown"]["total_code"] == "5"
+    for kind, size in (("padding", 2), ("embedded_data", 8), ("unresolved", 8)):
+        assert scopes[kind]["total_code"] == str(size)
+        assert scopes[kind]["total_functions"] == 0 and scopes[kind]["matched_code"] == "0"
+        assert "total_data" not in scopes[kind]
+
+    tail = {"image": code["image"], "function": 100, "start": 110, "end": 120, "sha256": "b" * 64,
+            "candidate_object_sha256": code["proof"]["candidate_object_sha256"], "relocations": [112, 116]}
+    evidence = {"version": "example", "data": None, "functions": rows, "code_inventory": inventory,
+                "identities": {}, "verification": accounting.VERIFICATION, "gap_objects": [tail]}
+    metrics = accounting.diagnostics(evidence, report=report)
+    assert metrics["game_executable_coverage"] == {
+        code["image"]: {"total_bytes": 20, "retained_code": 10, "padding": 2, "embedded_data": 8, "unresolved": 0},
+    }
+    totals = {"ranges": 1, "reproduced_bytes": 10, "local_dir32_relocations": 2,
+              "reproduced_layout_bytes": 20, "total_layout_bytes": 20}
+    assert metrics["gap_object_coverage"] == {"by_image": {code["image"]: totals}, "total": totals, "receipts": [tail]}
+    summary = accounting.render_summary(evidence, report, metrics)
+    assert f"| {code['image']} | 1 | 10 | 2 |" in summary
+    assert "| Total | 1 | 10 | 2 | 20 / 20 |" in summary
+    assert "Game & Engine function bodies | 10 / 10 (100.00%)" in summary
+    assert f"| {code['image']} Game & Engine | 20 | 10 | 2 | 8 | 0 |" in summary
+    normalized_only = {**code, "proof": {**code["proof"], "body_byte_exact": False}}
+    unproven = {**evidence, "functions": [normalized_only, *rows[1:]], "gap_objects": []}
+    assert accounting.diagnostics(unproven)["gap_object_coverage"]["total"]["reproduced_layout_bytes"] == 0
+    for kind in ("padding", "embedded_data"):
+        with pytest.raises(ValueError, match="remainders cannot earn"):
+            match_report.build_report([{**gap(110, 2, kind), "candidate": "source", "ratio": 1, "matched": True}])
+    with pytest.raises(ValueError, match="unknown native inventory kind"):
+        accounting.reconcile_sections(sections, [gap(110, 2, "unverified_claim")])
+
+    changed = {**rows[2], "gap_evidence": {"dispatch_address": 102}}
+    assert accounting.identities([rows[2]], {}, {})["inventory"] != accounting.identities([changed], {}, {})["inventory"]
 
 
 def test_readable_unit_names_preserve_native_function_identity():
@@ -171,7 +259,7 @@ def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(ver
     assert metrics["data_measured"] == (evidence["data"] is not None)
     coverage = metrics["executable_coverage"]
     assert coverage["total_bytes"] == sum(coverage[k] for k in ("retained_code", "embedded_data", "padding", "unresolved"))
-    if evidence["identities"]["inventory_policy"] == "native-functions-and-full-executable-remainder-v1":
+    if "game_executable_coverage" in metrics:
         assert coverage["total_bytes"] == int(report["measures"]["total_code"])
     else:
         assert coverage["retained_code"] == int(report["measures"]["total_code"])
@@ -197,3 +285,98 @@ def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(ver
     assert f"## Crimsonland {version}" in summary
     assert "Game & Engine" in summary and "Unresolved executable bytes" in summary
     assert "not measured" in summary if evidence["data"] is None else "outside scope" in summary
+
+
+@pytest.fixture
+def freeware_data() -> dict[str, Any]:
+    from crimson_re import match_freeware_data
+
+    exe, dll = "crimson.exe", "grim.dll"
+    sections = [
+        {"image": exe, "name": ".data", "address": 0x1000, "size": 16, "file_size": 8, "sha256": "a" * 64},
+        {"image": dll, "name": ".rdata", "address": 0x1000, "size": 8, "file_size": 8, "sha256": "b" * 64},
+    ]
+    globals_ = [
+        {"image": exe, "address": 0x1000, "names": ["count", "count_alias"], "references": []},
+        {"image": exe, "address": 0x1004, "names": ["seed"], "references": []},
+        {"image": dll, "address": 0x1000, "names": ["engine_label"], "references": []},
+    ]
+    spans = [
+        {"image": exe, "section": ".data", "address": 0x1000, "size": 4, "name": "count", "source": "state.cpp",
+         "matched": True, "owner": "game", "storage": "file-backed", "status": "source-matched"},
+        {"image": exe, "section": ".data", "address": 0x1004, "size": 4, "name": "seed", "source": None,
+         "matched": False, "owner": "game", "storage": "file-backed", "status": "mapped-unmatched"},
+        {"image": exe, "section": ".data", "address": 0x1008, "size": 8, "name": "unmatched", "source": None,
+         "matched": False, "owner": "unknown", "storage": "zero-fill", "status": "unattributed"},
+        {"image": dll, "section": ".rdata", "address": 0x1000, "size": 4, "name": "unmatched", "source": None,
+         "matched": False, "owner": "unknown", "storage": "file-backed", "status": "unattributed"},
+        {"image": dll, "section": ".rdata", "address": 0x1004, "size": 4, "name": "IAT", "source": None,
+         "matched": False, "owner": "pe", "storage": "file-backed", "status": "pe-metadata"},
+    ]
+    ownership = [{"image": exe, "address": 0x1000, "size": 8, "owner": "game"}]
+    return {"policy": match_freeware_data.POLICY, "sections": sections, "excluded_sections": [],
+            "globals": globals_, "spans": spans, "ownership": ownership,
+            "candidates": [{"image": exe, "address": 0x1000, "size": 4, "name": "count", "source": "state.cpp"}]}
+
+
+def test_freeware_data_coverage_counts_distinct_locations_and_all_virtual_bytes(freeware_data):
+    row = {**function(), "image": "crimson.exe", "ownership": "game", "native_kind": "function"}
+    evidence = {"version": "1.4.0", "verification": accounting.VERIFICATION, "identities": {}, "functions": [row],
+                "code_inventory": [], "data": freeware_data}
+    report = match_report.build_report([row], data=freeware_data)
+    metrics = accounting.diagnostics(evidence, report=report)
+    coverage = metrics["data_coverage"]
+    expected = {"virtual_bytes": 24, "file_backed_bytes": 16, "zero_fill_bytes": 8, "source_matched_bytes": 4,
+                "mapped_unmatched_bytes": 4, "pe_metadata_bytes": 4, "unattributed_bytes": 12, "unmatched_bytes": 20,
+                "mapped_addresses": 3}
+    for key, count in expected.items():
+        assert coverage["total"][key] == sum(image[key] for image in coverage["by_image"].values()) == count
+    assert coverage["by_image"]["crimson.exe"]["mapped_addresses"] == 2
+    assert coverage["by_image"]["grim.dll"]["mapped_addresses"] == 1
+    assert coverage["by_image"]["crimson.exe"]["source_matched_bytes"] == 4
+    assert coverage["by_image"]["grim.dll"]["source_matched_bytes"] == 0
+    assert [(r["image"], r["section"], r["virtual_bytes"]) for r in coverage["by_section"]] == [
+        ("crimson.exe", ".data", 16), ("grim.dll", ".rdata", 8),
+    ]
+    backlog = [(r["image"], r["address"], r["size"], r["status"]) for r in coverage["unmatched_ranges"]]
+    assert sorted(backlog) == [
+        ("crimson.exe", 0x1004, 4, "mapped-unmatched"), ("crimson.exe", 0x1008, 8, "unattributed"),
+        ("grim.dll", 0x1000, 4, "unattributed"), ("grim.dll", 0x1004, 4, "pe-metadata"),
+    ]
+    assert int(report["measures"]["total_data"]) == 24
+    assert int(report["measures"]["matched_data"]) == 4
+    summary = accounting.render_summary(evidence, report, metrics)
+    assert "crimson.exe" in summary and "grim.dll" in summary
+    assert "report.metrics.json" in summary
+
+
+def test_freeware_data_baseline_separates_mapping_from_source_progress(freeware_data):
+    original = accounting.identities([], {}, {}, data=freeware_data)
+    matched = deepcopy(freeware_data)
+    # Reproducing the first half of seed splits an existing ownership range.
+    seed = matched["spans"][1]
+    matched["spans"][1:2] = [
+        {**seed, "size": 2, "status": "source-matched", "matched": True, "source": "seed.cpp"},
+        {**seed, "address": 0x1006, "size": 2},
+    ]
+    owner = matched["ownership"][0]
+    matched["ownership"] = [{**owner, "size": 6}, {**owner, "address": 0x1006, "size": 2}]
+    matched["candidates"].append({"image": "crimson.exe", "address": 0x1004, "size": 2, "name": "seed",
+                                  "source": "seed.cpp"})
+    assert original == accounting.identities([], {}, {}, data=matched)
+
+    # An unbounded label changes the address map without awarding any bytes.
+    mapped = deepcopy(freeware_data)
+    mapped["globals"].append({"image": "crimson.exe", "address": 0x100a, "names": ["label"], "references": []})
+    assert original["inventory"] != accounting.identities([], {}, {}, data=mapped)["inventory"]
+
+    transferred = deepcopy(freeware_data)
+    transferred["ownership"][0]["owner"] = "libraries"
+    for span in transferred["spans"][:2]:
+        span["owner"] = "libraries"
+    assert original["inventory"] != accounting.identities([], {}, {}, data=transferred)["inventory"]
+
+    larger = deepcopy(freeware_data)
+    larger["sections"][0]["size"] += 4
+    larger["spans"][2]["size"] += 4
+    assert original["inventory"] != accounting.identities([], {}, {}, data=larger)["inventory"]

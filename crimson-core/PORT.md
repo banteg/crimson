@@ -612,6 +612,87 @@ and SDL_Renderer has no alpha test or write masks. raylib would mean fitting
 Grim's device state around rlgl and raudio; keep it for the Python port, where
 its workarounds are already solved.
 
+## Freeware 1.0.2 and 1.3.0
+
+Select the edition when building. The builder finds the original install in
+`game_bins/crimsonland/<edition>` or accepts `--game-dir`. Both clients use
+edition-specific assets and save directories. 1.3.0 needs FFmpeg for its music.
+
+```sh
+edition=1.3.0  # or 1.0.2
+uv run python crimson-core/client/build.py --edition "$edition" --target native
+"./crimson-core/build/freeware-$edition/native/crimson"
+
+uv run python crimson-core/client/build.py --edition "$edition" --target web
+uv run python -m http.server 8140 --bind 127.0.0.1 --directory "crimson-core/build/freeware-$edition/web"
+```
+
+Open `http://127.0.0.1:8140/` for the browser build. Click the game-mode row
+to select Survival, then **Begin game.** Move with WASD, aim with the mouse and
+hold the left button to fire. After death, enter a name and press Enter.
+1.0.2 returns directly to the title. In 1.3.0, press Escape at the scores.
+Choose **Begin game.** for another run. See [how early Crimsonland
+changed](../docs/re/static/reference/game-evolution.md) for version differences,
+the 1.3.0 Level Test controls and the limits of the recovery.
+
+Compare the shared client against both original executables and exercise the four
+numbered maps with `uv run python crimson-core/checks/freeware_early.py game_bins/crimsonland --web`.
+The checks cover the frame loop, the last encounter and transition on each numbered map, player and creature movement, Career spawning, weapons, perk drafts and grants, credits draws and corpse queue writes.
+Supply `--browser /path/to/chromium` to run the WebAssembly checks in a headless browser.
+
+## Freeware 1.4.0
+
+The 2002 freeware client plays Career and Survival in single-player or local two-player co-op. Both targets compile the recovered 1.4.0 frame dispatcher, player update, reset, wall collision, combat and perk-selection routines. The dispatcher runs the title menu, advances creatures and projectiles before the two player slots, then handles spawning, death, name entry and restart. They use the original graphics, Grim font, sounds and three music tracks. The build converts the MP3s with FFmpeg for the Vorbis decoder.
+
+Install the development dependencies with `uv sync --dev`. The desktop build needs clang++, pkg-config and SDL3. The browser build needs Emscripten with its SDL3 port. Both need FFmpeg. Extract the [original 1.4.0 ZIP](https://paq.crimson.banteg.xyz/freeware/crimsonland_v1.4.0.zip) and give `--game-dir` the folder containing `grim.dll`, `crimson.paq`, `sounds.paq` and `music/`. Worktrees automatically find the main checkout's `game_bins/crimsonland/1.4.0` installation.
+
+```sh
+uv run python crimson-core/client/build.py --edition 1.4.0 --target native
+./crimson-core/build/freeware-1.4.0/native/crimson
+
+uv run python crimson-core/client/build.py --edition 1.4.0 --target web
+uv run python -m http.server 8140 --bind 127.0.0.1 --directory crimson-core/build/freeware-1.4.0/web
+```
+
+Choose **Begin game.** for Career. Use **Game mode: career** to switch to Survival, or **Players: one** to add the second player. Career starts with a pistol and progresses through weapon drops, six bonuses, level-ups, shared perk choices and five milestone bosses. Survival locks the AutoRifle and ranks by time. Both modes support death, score entry and restart.
+
+- Player one moves with WASD, aims with the mouse and fires with the left mouse button or Tab. In single-player the arrow keys also move the player. R reloads.
+- Player two uses the arrow keys and right Ctrl. In static keyboard aiming, holding fire locks the firing direction. Game options configure and rebind the controls for each player and support local gamepads.
+- Press Space or +, or click the level-up badge, to choose a perk. Escape pauses and resumes. The grave key opens the gameplay console. A creature spawned from the console disqualifies that run from the high scores, as in the original.
+- Submit a name with Enter after death. Escape returns from Highscores to the main menu. **Begin game.** starts a fresh run.
+
+Scores use the original encrypted `.top` format. Career ranks by XP, Survival by seconds, and each player count has its own file. The browser persists records and control settings in IndexedDB. The desktop client uses SDL's per-user preference directory. Set `CRIMSON_FREEWARE_SAVE_DIR` to use another directory or load original records. The `mergehighs <filename>` console command reads an additional score file from that directory for the selected mode.
+
+The released menu exposes Career and Survival. The executable also contains Level Test and a level editor, though the 1.4.0 archive ships without maps. The recovery includes their frame branches, object layers, triggers and level-file reader and writer. The native and browser clients share the recovered HUD, perk picker, high scores, credits, secret messages and title-menu draw order. SDL renders their submissions using the original artwork and font. Both clients use the recovered 1.4.0 projectile, creature, player, effect, terrain and FX queue renderers. The frame snapshots their draws before advancing the simulation, including pickups collected during player rendering and bomb damage applied during effect rendering. The 2002 online update and high-score services are disconnected. The debug console implements the gameplay commands listed by `cmdlist`.
+
+### Recovery checks
+
+```sh
+uv run python crimson-core/checks/freeware_oracle.py game_bins/crimsonland/1.4.0
+uv run --with wasmtime==49.0.0 python crimson-core/checks/freeware_combat.py game_bins/crimsonland/1.4.0 --web
+uv run crimson match scratch tools/match/scratches/projectile_render --build 1.4.0
+uv run crimson match scratch tools/match/scratches/terrain_generate --build 1.4.0
+uv run crimson match scratch tools/match/scratches/terrain_render --build 1.4.0
+uv run crimson match scratch tools/match/scratches/fx_queue_render --build 1.4.0
+uv run crimson match scratch tools/match/scratches/creature_render_all --build 1.4.0
+uv run crimson match scratch tools/match/scratches/player_render --build 1.4.0
+uv run crimson match scratch tools/match/scratches/effect_render_all --build 1.4.0
+uv run crimson match scratch tools/match/scratches/gameplay_render_hud --build 1.4.0
+uv run crimson match scratch tools/match/scratches/perk_selection_screen_update --build 1.4.0
+uv run crimson match scratch tools/match/scratches/player_update --build 1.4.0
+uv run crimson match scratch tools/match/scratches/game_frame_update --build 1.4.0
+uv run crimson match scratch tools/match/scratches/projectile_update --build 1.4.0
+uv run crimson match scratch tools/match/scratches/weapon_assign_player --build 1.4.0
+uv run crimson match scratch tools/match/scratches/player_start_reload --build 1.4.0
+uv run crimson match scratch tools/match/scratches/perks_generate_choices --build 1.4.0
+```
+
+The oracle executes the original PE and compares menu draws and mouse boundaries, creature records, all twenty weapon IDs, perk choices and RNG consumption, and all four score formats. A seeded input run plays Career through kills, a weapon pickup and a first earned perk. Separate checks exercise co-op, reloading, death and restart.
+
+The combat check runs the pinned x86 executable alongside the native game code and, with `--web`, the same sources compiled by Emscripten. It compares projectile trajectories, impacts, hit and XP counters, random state, homing, particle capture and expiry, creature movement, player firing and perk grants. Player checks compare both 392-byte player records across weapon, movement, aiming and perk cases. Wall checks cover 75 approaches to edges and corners. Reset cases start with distinct bytes in each player slot so untouched fields remain observable.
+
+The frame check calls the original `0x418190` from entry to return. It compares phase changes, camera and timers, random state, reticles, menu text, name entry and the first frame on which a dying creature counts as a frag. A constructed level exercises the disabled editor and checks its saved bytes against the original writer. Draw comparisons use Grim calls before rasterization, including projectile trail vertices, impact sprites and all 1,470 terrain stamps per seed. The UI oracle captures ordered text and textured quads for both HUD layouts, every perk, secret messages, all four score boards and both parts of the scrolling credits. It compares text, position, size, rotation, atlas UVs, filter, blending and tint before rasterization. The full frame cases also cover the seasonal titles, Online menu, key rebinding and joystick calibration. The world oracle exercises both monster sprite banks and corpse retirement, both players and all six pickups, particle and smoke passes, rocket explosions, bomb damage and the four queued terrain scorch marks. It compares ordered Grim draws, both blend factors and the affected game state against the released executable. The projectile checks also cover two-player Sharpshooter sights, all four trail colors and rocket glow rotation. Terrain checks cover sharp and smooth filtering, single-quad and tiled drawing, and the generated target. The generator oracle uses seeded grass and mud, a black base, rectangular arenas and populated level layers to compare every draw, all twenty shadow passes, the clear color, camera and final CRT state. The FX queue cases compare all four writers, including disabled shells, the overflow slots, corpse replacement, and which marks survive a restart. They check the queue storage and CRT state after writes, then compare the ordered screen and terrain draws in both render modes. The VC6 scratch scores measure compiler similarity separately from these behavior checks.
+
 ## Running the native client
 
 ```sh

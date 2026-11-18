@@ -7,4 +7,9 @@
 #define CL_BUILD 10993
 #endif
 
+// The portable freeware client selects an edition independently of its shared ABI.
+#if CL_BUILD <= 10400 && !defined(FREEWARE_EDITION)
+#define FREEWARE_EDITION CL_BUILD
+#endif
+
 #endif

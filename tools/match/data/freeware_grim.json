@@ -1,0 +1,585 @@
+[
+  {
+    "name": "grim_config_default",
+    "extent_function": "grim_state_init",
+    "sizes": {
+      "1.0.2": 24,
+      "1.3.0": 24,
+      "1.4.0": 16
+    }
+  },
+  {
+    "name": "grim_config_values",
+    "extent_function": "grim_state_init",
+    "sizes": {
+      "1.0.2": 3072,
+      "1.3.0": 3072,
+      "1.4.0": 2048
+    }
+  },
+  {
+    "name": "grim_font2_uv_u",
+    "extent_function": "grim_state_init",
+    "size": 2048
+  },
+  {
+    "name": "grim_uv_u0",
+    "extent_function": "grim_state_init",
+    "size": 32
+  },
+  {
+    "name": "grim_vertex_z",
+    "extent_function": "grim_state_init",
+    "size": 8
+  },
+  {
+    "name": "grim_mouse_button_latch",
+    "extent_function": "grim_state_init",
+    "size": 8
+  },
+  {
+    "name": "grim_color_slot0",
+    "extent_function": "grim_state_init",
+    "size": 4
+  },
+  {
+    "name": "grim_color_slot1",
+    "extent_function": "grim_state_init",
+    "size": 4
+  },
+  {
+    "name": "grim_color_slot2",
+    "extent_function": "grim_state_init",
+    "size": 4
+  },
+  {
+    "name": "grim_color_slot3",
+    "extent_function": "grim_state_init",
+    "size": 4
+  },
+  {
+    "name": "grim_error_text",
+    "extent_function": "grim_state_init",
+    "size": 4
+  },
+  {
+    "name": "grim_lookup_blob",
+    "extent_function": "grim_state_init",
+    "size": 4
+  },
+  {
+    "name": "grim_lookup_blob_size",
+    "extent_function": "grim_state_init",
+    "size": 4
+  },
+  {
+    "name": "grim_frame_callback",
+    "extent_function": "grim_state_init",
+    "size": 4
+  },
+  {
+    "name": "grim_lookup_blob_loaded",
+    "extent_function": "grim_state_init",
+    "size": 1
+  },
+  {
+    "name": "grim_reserved_d3ac",
+    "extent_function": "grim_state_init",
+    "size": 1
+  },
+  {
+    "name": "grim_empty_string",
+    "extent_function": "grim_state_init",
+    "size": 1
+  },
+  {
+    "name": "grim_texture_slots",
+    "extent_function": "grim_find_free_texture_slot",
+    "sizes": {
+      "1.0.2": 512,
+      "1.3.0": 1024,
+      "1.4.0": 1024
+    }
+  },
+  {
+    "name": "grim_texture_slot_max_index",
+    "extent_function": "grim_find_texture_by_name",
+    "size": 4,
+    "initializer_hex": "ffffffff"
+  },
+  {
+    "name": "grim_bound_texture_handle",
+    "extent_function": "grim_bind_texture",
+    "size": 4,
+    "initializer_hex": "ffffffff"
+  },
+  {
+    "name": "grim_texture_format",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_preferred_texture_format",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_font_texture",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_splash_texture",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_texture_backup_pending",
+    "extent_function": "grim_backup_textures",
+    "size": 1
+  },
+  {
+    "name": "grim_missing_frame_error_text",
+    "extent_function": "grim_missing_frame_callback",
+    "size": 35,
+    "initializer_hex": "53797374656d3a204e6f204672616d652046756e6374696f6e20646566696e65642e00"
+  },
+  {
+    "name": "grim_window_class",
+    "extent_function": "grim_window_create",
+    "size": 48
+  },
+  {
+    "name": "grim_window_title",
+    "extent_function": "grim_window_create",
+    "size": 4
+  },
+  {
+    "name": "grim_process_hinstance",
+    "extent_function": "grim_window_create",
+    "size": 4
+  },
+  {
+    "name": "grim_main_window_hwnd",
+    "extent_function": "grim_window_create",
+    "size": 4
+  },
+  {
+    "name": "grim_window_icon_handle",
+    "extent_function": "grim_window_create",
+    "size": 4
+  },
+  {
+    "name": "grim_module_handle",
+    "extent_function": "DllMain",
+    "size": 4
+  },
+  {
+    "name": "grim_config_dialog_pure_software_selected",
+    "extent_function": "grim_apply_config",
+    "size": 1
+  },
+  {
+    "name": "grim_config_dialog_windowed_selected",
+    "extent_function": "grim_apply_config",
+    "size": 1
+  },
+  {
+    "name": "grim_config_dialog_bpp16_selected",
+    "extent_function": "grim_apply_config",
+    "size": 1
+  },
+  {
+    "name": "grim_config_dialog_canceled",
+    "extent_function": "grim_apply_config",
+    "size": 1
+  },
+  {
+    "name": "grim_device_caps",
+    "extent_function": "grim_d3d_init",
+    "size": 212
+  },
+  {
+    "name": "grim_present_parameters",
+    "extent_function": "grim_d3d_init",
+    "size": 52
+  },
+  {
+    "name": "grim_d3d_device_type",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_d3d8",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_d3d_device",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_backbuffer_surface",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_render_target_surface",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_selected_adapter_index",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_backbuffer_width",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_backbuffer_height",
+    "extent_function": "grim_d3d_init",
+    "size": 4
+  },
+  {
+    "name": "grim_device_ready",
+    "extent_function": "grim_d3d_init",
+    "size": 1
+  },
+  {
+    "name": "grim_vertex_buffer",
+    "extent_function": "grim_create_geometry_buffers",
+    "size": 4
+  },
+  {
+    "name": "grim_index_buffer",
+    "extent_function": "grim_create_geometry_buffers",
+    "size": 4
+  },
+  {
+    "name": "grim_vertex_capacity",
+    "extent_function": "grim_create_geometry_buffers",
+    "size": 4
+  },
+  {
+    "name": "grim_vertex_write_ptr",
+    "extent_function": "grim_begin_batch",
+    "size": 4
+  },
+  {
+    "name": "grim_index_write_ptr",
+    "extent_functions": {
+      "1.0.2": "grim_begin_batch",
+      "1.3.0": "grim_begin_batch",
+      "1.4.0": "grim_create_geometry_buffers"
+    },
+    "size": 4
+  },
+  {
+    "name": "grim_vertex_count",
+    "extent_function": "grim_flush_batch",
+    "size": 2
+  },
+  {
+    "name": "grim_batch_active",
+    "extent_function": "grim_begin_batch",
+    "size": 1
+  },
+  {
+    "name": "grim_rotation_radians",
+    "extent_function": "grim_set_rotation",
+    "size": 4
+  },
+  {
+    "name": "grim_rotation_sin",
+    "extent_function": "grim_set_rotation",
+    "size": 4
+  },
+  {
+    "name": "grim_rotation_cos",
+    "extent_function": "grim_set_rotation",
+    "size": 4
+  },
+  {
+    "name": "grim_tick_now",
+    "extent_function": "grim_timing_update",
+    "size": 8
+  },
+  {
+    "name": "grim_tick_prev",
+    "extent_function": "grim_timing_update",
+    "size": 8
+  },
+  {
+    "name": "grim_time_ticks",
+    "extent_function": "grim_timing_update",
+    "size": 8
+  },
+  {
+    "name": "grim_timing_epoch_ticks",
+    "extent_function": "grim_timing_init",
+    "size": 8
+  },
+  {
+    "name": "grim_time_ms",
+    "extent_function": "grim_timing_update",
+    "size": 4
+  },
+  {
+    "name": "grim_frame_dt",
+    "extent_function": "grim_timing_update",
+    "size": 4
+  },
+  {
+    "name": "grim_fps",
+    "extent_function": "grim_timing_update",
+    "size": 4
+  },
+  {
+    "name": "grim_ms_to_seconds_scale",
+    "extent_function": "grim_timing_update",
+    "size": 4
+  },
+  {
+    "name": "grim_fps_sample_seconds",
+    "extent_function": "grim_timing_update",
+    "size": 4
+  },
+  {
+    "name": "grim_fps_sample_frames",
+    "extent_function": "grim_timing_update",
+    "size": 4
+  },
+  {
+    "name": "grim_timing_frozen",
+    "extent_function": "grim_timing_update",
+    "size": 1
+  },
+  {
+    "name": "grim_dinput_keyboard",
+    "extent_function": "grim_keyboard_init",
+    "size": 4
+  },
+  {
+    "name": "grim_keyboard_device",
+    "extent_function": "grim_keyboard_init",
+    "size": 4
+  },
+  {
+    "name": "grim_dinput_mouse",
+    "extent_function": "grim_mouse_init",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_device",
+    "extent_function": "grim_mouse_init",
+    "size": 4
+  },
+  {
+    "name": "grim_keyboard_state",
+    "extent_function": "grim_keyboard_poll",
+    "size": 256
+  },
+  {
+    "name": "grim_key_repeat_first_press",
+    "extent_function": "grim_was_key_pressed",
+    "size": 256
+  },
+  {
+    "name": "grim_mouse_state",
+    "extent_function": "grim_mouse_poll",
+    "size": 20
+  },
+  {
+    "name": "grim_mouse_x",
+    "extent_function": "grim_mouse_poll",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_y",
+    "extent_function": "grim_mouse_poll",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_wheel",
+    "extent_function": "grim_mouse_poll",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_dx",
+    "extent_function": "grim_mouse_poll",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_dy",
+    "extent_function": "grim_mouse_poll",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_wheel_delta",
+    "extent_function": "grim_mouse_poll",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_x_cached",
+    "extent_function": "grim_window_proc",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_y_cached",
+    "extent_function": "grim_window_proc",
+    "size": 4
+  },
+  {
+    "name": "grim_mouse_wheel_delta_cached",
+    "extent_function": "grim_window_proc",
+    "size": 4
+  },
+  {
+    "name": "grim_adapter_identifier",
+    "extent_function": "grim_config_dialog_proc",
+    "sizes": {
+      "1.3.0": 1068,
+      "1.4.0": 1068
+    }
+  },
+  {
+    "name": "grim_d3d8_probe",
+    "extent_function": "grim_apply_config",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    }
+  },
+  {
+    "name": "grim_config_resolution_index",
+    "extent_function": "grim_apply_config",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    }
+  },
+  {
+    "name": "grim_on_device_restore",
+    "extent_function": "grim_state_init",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    }
+  },
+  {
+    "name": "grim_on_device_lost",
+    "extent_function": "grim_state_init",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    }
+  },
+  {
+    "name": "grim_device_restore_callback_pending",
+    "extent_function": "grim_window_proc",
+    "sizes": {
+      "1.3.0": 1,
+      "1.4.0": 1
+    }
+  },
+  {
+    "name": "grim_dinput_joystick",
+    "extent_function": "grim_joystick_poll",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    }
+  },
+  {
+    "name": "grim_joystick_device",
+    "extent_function": "grim_joystick_poll",
+    "sizes": {
+      "1.3.0": 4,
+      "1.4.0": 4
+    }
+  },
+  {
+    "name": "grim_joystick_state",
+    "extent_function": "grim_joystick_poll",
+    "sizes": {
+      "1.3.0": 272,
+      "1.4.0": 272
+    }
+  },
+  {
+    "name": "grim_joystick_found",
+    "extent_function": "grim_joystick_init",
+    "sizes": {
+      "1.3.0": 1,
+      "1.4.0": 1
+    }
+  },
+  {
+    "name": "grim_keyboard_event_buffer",
+    "extent_function": "grim_keyboard_poll",
+    "sizes": {
+      "1.4.0": 200
+    }
+  },
+  {
+    "name": "grim_key_repeat_timers",
+    "extent_function": "grim_state_init",
+    "sizes": {
+      "1.4.0": 1024
+    }
+  },
+  {
+    "name": "grim_key_repeat_delay",
+    "extent_function": "grim_was_key_pressed",
+    "sizes": {
+      "1.4.0": 4
+    },
+    "initializer_hex": "0000003f"
+  },
+  {
+    "name": "grim_caps_can_render_windowed",
+    "extent_function": "grim_config_dialog_proc",
+    "sizes": {
+      "1.4.0": 1
+    },
+    "initializer_hex": "01"
+  },
+  {
+    "name": "grim_config_dialog_system_time",
+    "extent_function": "grim_config_dialog_proc",
+    "sizes": {
+      "1.4.0": 16
+    }
+  },
+  {
+    "name": "grim_device_window_override",
+    "extent_function": "grim_window_create",
+    "sizes": {
+      "1.4.0": 4
+    }
+  },
+  {
+    "name": "grim_render_disabled",
+    "extent_function": "grim_begin_batch",
+    "sizes": {
+      "1.4.0": 1
+    }
+  },
+  {
+    "name": "grim_lookup_blob_magic",
+    "extent_function": "grim_lookup_blob_find",
+    "size": 4,
+    "points_to": "grim_paq_signature"
+  },
+  {
+    "name": "grim_paq_signature",
+    "extent_function": "grim_lookup_blob_find",
+    "size": 4,
+    "initializer_hex": "70617100",
+    "located_through": "grim_lookup_blob_magic"
+  }
+]

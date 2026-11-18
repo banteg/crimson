@@ -12,7 +12,7 @@ Hooks (preserving observer from `crimson match c2-trace`):
 - 0x10718eed -> count_tuples_and_scan_calls (entry, ecx = first tuple): tuples, real tuples, markers;
 - 0x10718f1f -> assign_symbol_alias_classes (return): every symbol that received a class.
 
-    uv run python scripts/c2/alias_class_census.py <scratch-dir> --out <new-dir> [--function NAME] [--list]
+    uv run python scripts/c2/alias_class_census.py <scratch-dir> --out <new-dir> [--build VERSION] [--function NAME] [--list]
 
 Prints, per compiled function: scope markers, the first symbol class, symbol classes by category
 (named locals, unnamed inline/compiler temporaries, globals) and the first pointer-root class
@@ -126,16 +126,20 @@ def observer(profile, stock_source):
     return source.replace(anchors[2], "    CloseHandle(census_file);\n" + anchors[2])
 
 
-def run(scratch: Path, out: Path):
+def run(scratch: Path, out: Path, *, build: str | None = None):
     from crimson_re import match_c2 as c2
 
     stock_source = c2.observer_source
-    profile = dict(c2.load_profile(), name="msvc6.5-c2-alias-class-census", hooks=HOOKS)
+    stock_load_profile = c2.load_profile
+
+    def load_profile():
+        return dict(stock_load_profile(), name="msvc6.5-c2-alias-class-census", hooks=HOOKS)
+
     with (
-        patch.object(c2, "load_profile", return_value=profile),
+        patch.object(c2, "load_profile", load_profile),
         patch.object(c2, "observer_source", side_effect=lambda p: observer(p, stock_source)),
     ):
-        manifest = c2.trace(scratch, out)
+        manifest = c2.trace(scratch, out, build=build)
     return manifest, (out / "observed/census.bin").read_bytes()
 
 
@@ -169,11 +173,12 @@ def category(symbol):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("scratch", type=Path)
+    parser.add_argument("--build", help="compile with the selected build and compare against its image")
     parser.add_argument("--out", type=Path, required=True, help="new directory for the preserving trace")
     parser.add_argument("--function", help="substring of the compiled function (default: all)")
     parser.add_argument("--list", action="store_true", help="list every classed symbol")
     args = parser.parse_args()
-    manifest, data = run(args.scratch, args.out)
+    manifest, data = run(args.scratch, args.out, build=args.build)
     print(f"ratio {manifest['metrics']['ratio']:.4%}")
     for f in decode(data):
         if args.function and args.function not in f["name"]:

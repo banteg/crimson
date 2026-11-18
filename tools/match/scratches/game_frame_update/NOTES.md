@@ -179,3 +179,17 @@ Three C2 9044 codegen details close the frame and instruction schedule:
   that shifts C2 9044's 81-node scheduler window by one instruction so
   `push 0x40a00000` schedules inside the first window as in native.
 
+
+## Freeware exception handling
+
+The native 1.3.0 and 1.4.0 callbacks begin by linking an SEH frame through
+`fs:[0]`. Their handlers (`0x4261ce` and `0x42c35e`) load VC6 FuncInfo
+records at `0x427ae0` and `0x42db98`. Each has one unwind state. Its cleanup
+at `0x4261c0` or `0x42c350` passes the saved allocation to operator delete.
+The editor creates a brush whose constructor calls Grim to look up its texture.
+
+VC6 emits that cleanup for the C++ callback with `/GX`. The portable caller
+uses C linkage. The 1.0.2 frame has no SEH prologue. Comparing the same
+scratch with and without `/GX` preserves the 1.0.2 body and all five 1.9.x
+bodies. The matcher selects the uniquely named C++ callback with the existing
+`SYMBOL=game_frame_update` setting.

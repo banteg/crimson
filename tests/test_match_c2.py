@@ -160,3 +160,95 @@ def test_copy_scratch_brings_a_recovered_source_beside_the_conf(tmp_path):
     assert copied.directory == tmp_path / "out"
     local = c2.copy_scratch(dataclasses.replace(config, source="local.cpp"), tmp_path / "out2", ignore)
     assert local.source == "local.cpp"
+
+
+@pytest.mark.parametrize("local", [False, True])
+def test_copy_scratch_freezes_relative_headers_and_hashes_the_override(tmp_path, local):
+    source_dir = tmp_path / "game" / "projectiles"
+    source_dir.mkdir(parents=True)
+    scratch = source_dir if local else tmp_path / "scratch"
+    scratch.mkdir(exist_ok=True)
+    (scratch / "scratch.conf").write_text("FUNCTION=f\n")
+    original = source_dir / "f.cpp"
+    original.write_text("int f() { return 1; }\n")
+    effects = source_dir.parent / "effects"
+    effects.mkdir()
+    (effects / "effect.h").write_text('#include "color.h"\n#include "../ui/color.h"\n')
+    (effects / "color.h").write_text("int red;\n")
+    ui = effects.parent / "ui"
+    ui.mkdir()
+    (ui / "color.h").write_text("int blue;\n")
+    override = tmp_path / "trial.cpp"
+    override.write_text('#include "../effects/effect.h"\n#include "cl_build.h"\n')
+    config = dataclasses.replace(match.load_scratch_config(scratch), source=str(original))
+
+    copy = c2.copy_scratch(config, tmp_path / "frozen", shutil.ignore_patterns("build"), source_override=override)
+    source = copy.directory / copy.source
+    assert source.name == "f.cpp" and source.read_bytes() == override.read_bytes()
+    first = (source.parent / "../effects/color.h").resolve()
+    second = (source.parent / "../ui/color.h").resolve()
+    assert first.read_text() == "int red;\n"
+    assert second.read_text() == "int blue;\n"
+    dependencies = match._scratch_include_headers(copy, match.DEFAULT_MATCH_ROOT)
+    assert first in dependencies and second in dependencies
+    assert (match.DEFAULT_MATCH_ROOT / "include/cl_build.h").resolve() in dependencies
+    assert not any(copy.directory.rglob("cl_build.h"))
+
+    def fingerprint():
+        return match.source_probe_tree_fingerprint(copy, source.read_text())[0]
+
+    initial = fingerprint()
+    (ui / "color.h").write_text("int yellow;\n")
+    assert fingerprint() == initial
+    second.write_text("int green;\n")
+    assert fingerprint() != initial
+
+
+def test_copy_scratch_freezes_symlinked_includes_at_each_compiler_visible_path(tmp_path):
+    scratch, source_dir = tmp_path / "scratch", tmp_path / "tree/game"
+    scratch.mkdir()
+    source_dir.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text("FUNCTION=f\n")
+    source = source_dir / "f.cpp"
+    source.write_text('#include "../level/brush.h"\n#include "../ui/alias.h"\n')
+    level, ui = tmp_path / "donor/level", source_dir.parent / "ui"
+    level.mkdir(parents=True)
+    ui.mkdir()
+    source_dir.parent.joinpath("level").symlink_to(level, target_is_directory=True)
+    shared = level / "brush.h"
+    shared.write_text('#include "owner.h"\n')
+    (ui / "alias.h").symlink_to(shared)
+    (level / "owner.h").write_text("int level_owner;\n")
+    (ui / "owner.h").write_text("int ui_owner;\n")
+
+    config = dataclasses.replace(match.load_scratch_config(scratch), source=str(source))
+    frozen = c2.copy_scratch(config, tmp_path / "frozen", shutil.ignore_patterns("build"))
+    frozen_root = (frozen.directory / frozen.source).parent.parent
+    (level / "owner.h").unlink()
+    shared.unlink()
+    for name in ("level/brush.h", "ui/alias.h"):
+        header = frozen_root / name
+        assert not header.is_symlink()
+        assert header.read_text() == '#include "owner.h"\n'
+    dependencies = match._scratch_include_headers(frozen, match.DEFAULT_MATCH_ROOT)
+    for name in ("level", "ui"):
+        owner = frozen_root / name / "owner.h"
+        assert owner in dependencies
+        assert owner.read_text() == f"int {name}_owner;\n"
+
+
+def test_trace_cli_forwards_build_and_pass_selection(tmp_path, monkeypatch):
+    from typer.testing import CliRunner
+
+    from crimson_re.cli.match import match_app
+
+    def trace(scratch, out, *, passes_only, build):
+        assert scratch == tmp_path and out == tmp_path / "trace"
+        assert build == "1.3.0" and passes_only
+        return {"events": 12}
+
+    monkeypatch.setattr(c2, "trace", trace)
+    result = CliRunner().invoke(
+        match_app, ["c2-trace", str(tmp_path), "--out", str(tmp_path / "trace"), "--build", "1.3.0", "--passes-only"],
+    )
+    assert result.exit_code == 0, result.output

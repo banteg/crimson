@@ -21,3 +21,15 @@ The recovered source is an exact `msvc6.5 /O2 /GB` match: 543/543 instructions,
 2076/2076 bytes, and 162/0/0 audited references. The validator accepts the
 source without volatile accesses, artificial references, dead expressions, or
 register/order constraints.
+
+## Freeware
+
+In 1.0.2 and 1.3.0, safe mode returns before drawing. In the terrain pass,
+shells are drawn before the two corpse passes, which write 0.5 and 0.99 back
+to the queue's alpha field. The generic impact pass first appears in 1.3.0.
+1.4.0 adds screen-space corpses in safe mode, draws terrain corpses before
+shells, and preserves the queued alpha for the color pass.
+
+The blood decal subtracts a two-component half-size from its position.
+Constructing the two atlas corner coordinates as a vector value also
+reproduces VC6's stores to the shared drawing scratch.

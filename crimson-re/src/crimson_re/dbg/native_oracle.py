@@ -344,6 +344,7 @@ class NativeOracle:
         exe_path: Path = DEFAULT_EXE_PATH,
         *,
         symbols: SymbolTable | None = None,
+        rand_state_address: int | None = None,
         control_word: int = GAMEPLAY_CONTROL_WORD,
         timeout_us: int = _DEFAULT_TIMEOUT_US,
     ) -> None:
@@ -369,7 +370,6 @@ class NativeOracle:
         self._map_image(pe)
         self._imports = self._map_imports(pe)
         self._imports_by_name = {entry.name: entry for entry in self._imports.values()}
-        self._uc.mem_map(_STACK_BASE, _STACK_SIZE, UC_PROT_READ | UC_PROT_WRITE)
         self._uc.mem_map(_HEAP_BASE, _HEAP_SIZE, UC_PROT_READ | UC_PROT_WRITE)
         self._heap_top = _HEAP_BASE
         self._uc.mem_map(_STUB_DATA_BASE, _STUB_DATA_SIZE, UC_PROT_READ | UC_PROT_WRITE)
@@ -378,9 +378,27 @@ class NativeOracle:
         self._code_top = _CODE_BASE
         self._install_hooks()
         self._install_thread_segment()
+        self._stack_base = self._map_stack()
         self._install_crt_thread_data()
+        self._rand_state_address = rand_state_address
+        if rand_state_address is None and "TlsGetValue" in self._imports_by_name:
+            self._rand_state_address = self.tiddata + _TIDDATA_HOLDRAND
 
     # -- loading -----------------------------------------------------------------
+
+    def _map_stack(self) -> int:
+        # Grim DLLs load at the EXE oracle's preferred stack address. Find the
+        # first free span after that address among the PE and harness mappings.
+        base = _STACK_BASE
+        for start, end, _ in sorted(self._uc.mem_regions()):
+            if base + _STACK_SIZE <= start:
+                break
+            # Unicorn returns inclusive region ends.
+            base = max(base, _align_up(end + 1, _PAGE))
+        if base + _STACK_SIZE > 1 << 32:
+            raise NativeOracleError("no room for the oracle stack in the 32-bit address space")
+        self._uc.mem_map(base, _STACK_SIZE, UC_PROT_READ | UC_PROT_WRITE)
+        return base
 
     def _map_image(self, pe: Any) -> None:
         self._uc.mem_map(self.image_base, self.image_size, UC_PROT_READ)
@@ -455,18 +473,24 @@ class NativeOracle:
         # answering with a heap block lets crt_rand/crt_srand run natively.
         self.tiddata = self.alloc(_TIDDATA_SIZE)
         self.write_u32(self.tiddata + _TIDDATA_HOLDRAND, 1)
-        self.stub_import("GetLastError", 0)
-        self.stub_import("SetLastError", None, pop=4)
-        self.stub_import("TlsGetValue", self.tiddata, pop=4)
+        # The single-threaded freeware CRT has no TLS imports. Install defaults only for
+        # entry points present in this PE; explicit stub_import calls still reject typos.
+        def install(name: str, fn: StubFn | int | None, *, pop: int = 0) -> None:
+            if name in self._imports_by_name:
+                self.stub_import(name, fn, pop=pop)
+
+        install("GetLastError", 0)
+        install("SetLastError", None, pop=4)
+        install("TlsGetValue", self.tiddata, pop=4)
         # The CRT heap falls through to the Win32 heap; serve it from the scratch heap.
         self._win32_blocks: dict[int, int] = {}
-        self.stub_import("HeapAlloc", lambda call: self._heap_alloc(call.arg_u32(2)), pop=12)
-        self.stub_import("HeapReAlloc", lambda call: self._heap_realloc(call.arg_u32(2), call.arg_u32(3)), pop=16)
-        self.stub_import("HeapSize", lambda call: self._win32_blocks.get(call.arg_u32(2), 0xFFFF_FFFF), pop=12)
-        self.stub_import("HeapFree", 1, pop=12)
+        install("HeapAlloc", lambda call: self._heap_alloc(call.arg_u32(2)), pop=12)
+        install("HeapReAlloc", lambda call: self._heap_realloc(call.arg_u32(2), call.arg_u32(3)), pop=16)
+        install("HeapSize", lambda call: self._win32_blocks.get(call.arg_u32(2), 0xFFFF_FFFF), pop=12)
+        install("HeapFree", 1, pop=12)
         # Single-threaded emulation: CRT locks are no-ops.
         for name in ("InitializeCriticalSection", "EnterCriticalSection", "LeaveCriticalSection"):
-            self.stub_import(name, None, pop=4)
+            install(name, None, pop=4)
 
     def _heap_alloc(self, size: int) -> int:
         address = self.alloc(max(size, 1))
@@ -487,7 +511,7 @@ class NativeOracle:
         if _IMPORT_THUNK_BASE <= address < _IMPORT_THUNK_BASE + len(self._imports) * _IMPORT_THUNK_STRIDE:
             entry = self._imports[address - (address - _IMPORT_THUNK_BASE) % _IMPORT_THUNK_STRIDE]
             return f"import thunk {entry.dll}!{entry.name} (0x{address:08x})"
-        if _STACK_BASE <= address < _STACK_BASE + _STACK_SIZE:
+        if self._stack_base <= address < self._stack_base + _STACK_SIZE:
             return f"oracle stack (0x{address:08x})"
         if _HEAP_BASE <= address < _HEAP_BASE + _HEAP_SIZE:
             return f"oracle heap (0x{address:08x})"
@@ -571,15 +595,19 @@ class NativeOracle:
         self.write(address, code)
         return address
 
+    def _holdrand_address(self) -> int:
+        if self._rand_state_address is None:
+            raise NativeOracleError("supply the original CRT's global rand_state_address for this single-threaded image")
+        return self._rand_state_address
+
     @property
     def rand_state(self) -> int:
-        """CRT `rand()` seed (`_tiddata._holdrand`)."""
-
-        return self.read_u32(self.tiddata + _TIDDATA_HOLDRAND)
+        """CRT rand seed, in thread data on Classic and a process global in freeware."""
+        return self.read_u32(self._holdrand_address())
 
     @rand_state.setter
     def rand_state(self, value: int) -> None:
-        self.write_u32(self.tiddata + _TIDDATA_HOLDRAND, value)
+        self.write_u32(self._holdrand_address(), value)
 
     def snapshot(self) -> tuple[bytes, ...]:
         """Capture the writable image sections and the scratch heap."""
@@ -696,7 +724,7 @@ class NativeOracle:
 
         entry = self.resolve(target)
         payload = b"".join(_pack_arg(arg) for arg in args)
-        esp = _STACK_BASE + _STACK_SIZE - _STACK_HEADROOM - _align_up(len(payload), 4)
+        esp = self.frame_pointer(len(payload))
         self.write(esp, payload)
         registers = dict(regs or {})
         if ecx is not None:
@@ -733,7 +761,7 @@ class NativeOracle:
     def frame_pointer(self, frame_size: int = 0x400) -> int:
         """ESP that `run()` uses for a stack frame of `frame_size` bytes."""
 
-        return _STACK_BASE + _STACK_SIZE - _STACK_HEADROOM - _align_up(frame_size, 4)
+        return self._stack_base + _STACK_SIZE - _STACK_HEADROOM - _align_up(frame_size, 4)
 
     @contextmanager
     def trace_memory(self) -> Generator[MemoryTrace]:
@@ -780,6 +808,10 @@ class NativeOracle:
         stop = _TRAMPOLINE_BASE + len(code) if until is None else until
         self.write(_TRAMPOLINE_BASE, code + b"\xf4")
         self._uc.ctl_remove_cache(_TRAMPOLINE_BASE, _TRAMPOLINE_BASE + len(code) + 1)
+        if until is not None:
+            # A previous full call can cache a translation spanning the new
+            # fragment boundary. Recompile that block with this stop in effect.
+            self._uc.ctl_remove_cache(until, until + 1)
         self.write_u32(_TRAMPOLINE_TARGET, entry)
         self.write(_TRAMPOLINE_CONTROL_WORD, struct.pack("<H", self.control_word if control_word is None else control_word))
         for name, uc_reg in _REGISTERS.items():

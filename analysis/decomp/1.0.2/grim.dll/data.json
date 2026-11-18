@@ -1086,8 +1086,23 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004aae8",
+      "name": "grim_config_dialog_pure_software_selected",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004aaec",
       "name": "grim_window_icon_handle",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004aaf0",
+      "name": "grim_frame_callback",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004aaf4",
+      "name": "grim_process_hinstance",
       "program": "1.0.2/grim.dll"
     },
     {
@@ -1101,6 +1116,21 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004ab00",
+      "name": "grim_backbuffer_height",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004ab08",
+      "name": "grim_tick_prev",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004ab10",
+      "name": "grim_window_class",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004ab24",
       "name": "grim_window_class_hinstance",
       "program": "1.0.2/grim.dll"
@@ -1108,6 +1138,11 @@
     {
       "address": "0x1004ab38",
       "name": "grim_window_class_name",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004ab40",
+      "name": "grim_present_parameters",
       "program": "1.0.2/grim.dll"
     },
     {
@@ -1146,6 +1181,11 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004ab98",
+      "name": "grim_timing_frozen",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004aba0",
       "name": "grim_config_default",
       "program": "1.0.2/grim.dll"
@@ -1163,6 +1203,11 @@
     {
       "address": "0x1004abc0",
       "name": "grim_main_window_hwnd",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004abc8",
+      "name": "grim_device_caps",
       "program": "1.0.2/grim.dll"
     },
     {
@@ -1186,6 +1231,11 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004acb0",
+      "name": "grim_config_dialog_windowed_selected",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004acb8",
       "name": "grim_vertex_z",
       "program": "1.0.2/grim.dll"
@@ -1193,11 +1243,6 @@
     {
       "address": "0x1004acc0",
       "name": "grim_texture_slots",
-      "program": "1.0.2/grim.dll"
-    },
-    {
-      "address": "0x1004aec0",
-      "name": "grim_dc_mode_active",
       "program": "1.0.2/grim.dll"
     },
     {
@@ -1221,6 +1266,11 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004aee8",
+      "name": "grim_config_dialog_bpp16_selected",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004aeec",
       "name": "grim_fps",
       "program": "1.0.2/grim.dll"
@@ -1236,8 +1286,23 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004b6f8",
+      "name": "grim_window_title",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004b6fc",
       "name": "grim_module_handle",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004b700",
+      "name": "grim_tick_now",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004b708",
+      "name": "grim_timing_epoch_ticks",
       "program": "1.0.2/grim.dll"
     },
     {
@@ -1268,6 +1333,11 @@
     {
       "address": "0x1004b728",
       "name": "grim_key_repeat_first_press",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004b828",
+      "name": "grim_backbuffer_width",
       "program": "1.0.2/grim.dll"
     },
     {
@@ -1316,6 +1386,21 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004b8a0",
+      "name": "grim_windowed_mode_enabled",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004b900",
+      "name": "grim_keyboard_enabled",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004b918",
+      "name": "grim_mouse_enabled",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004b930",
       "name": "grim_input_cached",
       "program": "1.0.2/grim.dll"
@@ -1331,6 +1416,36 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004bd18",
+      "name": "grim_config_backbuffer_count",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004bd38",
+      "name": "grim_use_ref_device",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004bd50",
+      "name": "grim_enable_auto_depth_stencil",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004bfe0",
+      "name": "grim_active_d3d8",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004bff8",
+      "name": "grim_active_d3d_device",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004c450",
+      "name": "grim_reserved_d3ac",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004c454",
       "name": "grim_ms_to_seconds_scale",
       "program": "1.0.2/grim.dll"
@@ -1338,6 +1453,11 @@
     {
       "address": "0x1004c458",
       "name": "grim_mouse_wheel_delta_cached",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004c45c",
+      "name": "grim_config_dialog_canceled",
       "program": "1.0.2/grim.dll"
     },
     {
@@ -1361,6 +1481,16 @@
       "program": "1.0.2/grim.dll"
     },
     {
+      "address": "0x1004c46c",
+      "name": "grim_fps_sample_frames",
+      "program": "1.0.2/grim.dll"
+    },
+    {
+      "address": "0x1004c470",
+      "name": "grim_fps_sample_seconds",
+      "program": "1.0.2/grim.dll"
+    },
+    {
       "address": "0x1004c474",
       "name": "grim_empty_string",
       "program": "1.0.2/grim.dll"
@@ -1373,11 +1503,6 @@
     {
       "address": "0x1004c47c",
       "name": "grim_keyboard_device",
-      "program": "1.0.2/grim.dll"
-    },
-    {
-      "address": "0x1004c480",
-      "name": "grim_joystick_buttons",
       "program": "1.0.2/grim.dll"
     },
     {

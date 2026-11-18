@@ -4,6 +4,7 @@ import json
 import shutil
 import subprocess
 import sys
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -19,6 +20,7 @@ from .. import (
     match_flow_graph,
     match_listing_diagnostics,
     match_mutation,
+    match_native_inventory,
     match_regressions,
     match_report,
     match_report_accounting,
@@ -47,7 +49,7 @@ def cmd_match_report(
         help="only these reported versions (default: every build reported in decomp/builds.json)",
     ),
 ) -> None:
-    """Validate saved evidence and export every reported Crimsonland version to decomp.dev."""
+    """Validate match evidence and write decomp.dev-compatible JSON reports locally."""
     reported = match_builds.load_registry().reported
     if unknown := set(versions or ()) - set(reported):
         raise typer.BadParameter(f"not a reported version: {', '.join(sorted(unknown))}")
@@ -84,15 +86,48 @@ def cmd_match_report(
             typer.echo(f"decomp.dev report failed for {version}: {exc}", err=True)
             raise typer.Exit(code=2) from exc
         measures = report["measures"]
-        game = next(c["measures"] for c in report["categories"] if c["id"] == "game")
+        scopes = {category["id"]: category["measures"] for category in report["categories"]}
+        game = scopes["game"]
+        code_progress = ""
+        if "game.functions" in scopes:
+            bodies = scopes["game.functions"]
+            images = diagnostics["game_executable_coverage"].values()
+            padding = sum(image["padding"] for image in images)
+            embedded = sum(image["embedded_data"] for image in images)
+            unresolved = sum(image["unresolved"] for image in images)
+            code_progress = (
+                f"{bodies['matched_code']}/{bodies['total_code']} function bytes ({bodies['matched_code_percent']:.2f}%). "
+                f"{padding} padding, {embedded} embedded data, {unresolved} unresolved bytes. "
+            )
+            tails = diagnostics["gap_object_coverage"]["total"]
+            code_progress += (
+                f"VC6 objects reproduced {tails['reproduced_bytes']} gap bytes with "
+                f"{tails['local_dir32_relocations']} local DIR32 relocations, covering "
+                f"{tails['reproduced_layout_bytes']}/{tails['total_layout_bytes']} bytes with function bodies. "
+                "Objdiff counts "
+            )
+        port = scopes.get("port")
+        port_progress = (
+            f"Port: {port['matched_functions']}/{port['total_functions']} functions; "
+            f"{port['matched_code']}/{port['total_code']} bytes. " if port is not None else ""
+        )
         data_progress = (
             f"{measures.get('matched_data', 0)}/{measures.get('total_data', 0)} bytes"
             if evidence["data"] is not None else "not measured"
         )
+        if "data_coverage" in diagnostics:
+            counted = diagnostics["data_coverage"]["total"]
+            data_progress += (
+                f" matched, {counted['named_global_addresses']} named globals across "
+                f"{counted['mapped_addresses']} mapped locations, "
+                f"{counted['unmatched_bytes']} unmatched "
+                f"({counted['mapped_unmatched_bytes']} mapped, {counted['pe_metadata_bytes']} PE metadata, "
+                f"{counted['unattributed_bytes']} unattributed)"
+            )
         typer.echo(
             f"{version} Game & Engine: {game['matched_functions']}/{game['total_functions']} functions; "
-            f"{game['matched_code']}/{game['total_code']} bytes ({game['matched_code_percent']:.2f}%); "
-            f"fuzzy={game['fuzzy_match_percent']:.2f}%. "
+            f"{code_progress}{game['matched_code']}/{game['total_code']} bytes ({game['matched_code_percent']:.2f}%); "
+            f"fuzzy={game['fuzzy_match_percent']:.2f}%. {port_progress}"
             f"All: {measures['matched_functions']}/{measures['total_functions']} functions; "
             f"{measures['matched_code']}/{measures['total_code']} bytes matched "
             f"({measures['matched_code_percent']:.2f}%); fuzzy={measures['fuzzy_match_percent']:.2f}%; "
@@ -466,7 +501,7 @@ def cmd_match_scratch(
         target = matchlib.default_match_target(config.image)
         if build is not None:
             image = match_builds.load_registry().image(build, config.image)
-            config, target = image.scratch_config(config), image.target
+            config, target = image.scratch_config(config, scope=scope), image.target
         obj_path = matchlib.compile_scratch(config, match_root)
         result = matchlib.run_match(
             obj_path=obj_path,
@@ -480,7 +515,7 @@ def cmd_match_scratch(
             object_size=config.archive_size,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
-            # Ownership scopes describe the canonical images only.
+            # The build's native scope was checked before compilation.
             scope=scope if build is None else "all",
             image_name=target.image_name,
             data_map_path=target.data_map_path,
@@ -1008,9 +1043,14 @@ def cmd_match_build_scan(
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel matching jobs"),
     as_json: bool = typer.Option(False, "--json", help="emit one row per scratch as JSON"),
+    scope: Literal["port", "all"] | None = typer.Option(None, "--scope", help="freeware defaults to port"),
 ) -> None:
     """Compile every scratch whose function the build's map places, and compare it there."""
-    rows = match_builds.scan_build(match_builds.load_registry(), build, match_root, jobs=jobs)
+    registry = match_builds.load_registry()
+    try:
+        rows = match_builds.scan_build(registry, build, match_root, jobs=jobs, scope=scope)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
     if as_json:
         typer.echo(
             json.dumps(
@@ -1047,6 +1087,7 @@ def cmd_match_probe(
     cflags: str | None = typer.Option(None, "--cflags", help="flags used for baseline and probe"),
     label: str | None = typer.Option(None, "--label", help="short experiment label"),
     record: bool = typer.Option(False, "--record", help="append the result to experiments.jsonl"),
+    scope: Literal["port", "all"] = typer.Option("port", "--scope", help="function scope for a freeware build"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
     build: str | None = typer.Option(
         None,
@@ -1063,10 +1104,12 @@ def cmd_match_probe(
         raise typer.BadParameter("experiments.jsonl records canonical probes only")
     try:
         config = matchlib.load_scratch_config(directory.resolve())
+        if cflags is not None:
+            config = replace(config, cflags=cflags)
         target = None
         if build is not None:
             image = match_builds.load_registry().image(build, config.image)
-            config, target = image.scratch_config(config), image.target
+            config, target = image.scratch_config(config, scope=scope), image.target
         if use_stdin:
             source_text = sys.stdin.read()
         else:
@@ -1077,7 +1120,6 @@ def cmd_match_probe(
             source_text,
             match_root=match_root,
             compiler=compiler,
-            cflags=cflags,
             label=label,
             target=target,
         )
@@ -1959,6 +2001,7 @@ def cmd_match_triage(
     cflags: str | None = typer.Option(None, "--cflags", help="override scratch compiler flags"),
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
     image: str | None = typer.Option(None, "--image", help="restrict to one tracked image"),
+    build: str | None = typer.Option(None, "--build", help="use a freeware build's native function inventory"),
     state: str | None = typer.Option(None, "--state", help="comma-separated manifest states"),
     min_bytes: int = typer.Option(0, "--min-bytes", min=0, help="minimum native function bytes"),
     sort_by: Literal["address", "fuzzy-gap", "size", "fuzzy", "unexplored"] = typer.Option(
@@ -1977,18 +2020,21 @@ def cmd_match_triage(
     ),
 ) -> None:
     """Rank every native function by address-keyed recovery opportunity."""
-    statuses = matchlib.collect_scratch_statuses(
-        match_root,
-        compiler=compiler,
-        cflags=cflags,
-        jobs=jobs,
-        scope=scope,
-    )
-    rows = matchlib.collect_triage_rows(
-        statuses,
-        images=(image,) if image is not None else None,
-        scope=scope,
-    )
+    if build is None:
+        statuses = matchlib.collect_scratch_statuses(match_root, compiler=compiler, cflags=cflags, jobs=jobs, scope=scope)
+        rows = matchlib.collect_triage_rows(statuses, images=(image,) if image else None, scope=scope)
+    else:
+        registry = match_builds.load_registry()
+        try:
+            functions = match_native_inventory.build_functions(registry, build, scope, image_name=image)
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        statuses = [
+            row.status for row in match_builds.scan_build(
+                registry, build, match_root, jobs=jobs, functions=functions, compiler=compiler, cflags=cflags,
+            )
+        ]
+        rows = matchlib.collect_triage_rows(statuses, native_functions=functions)
     states = _parse_csv(state)
     if states is not None:
         unknown_states = states - {"match", "audit", "wip", "error", "missing"}
@@ -2005,6 +2051,7 @@ def cmd_match_triage(
             json.dumps(
                 {
                     "scope": scope,
+                    **({"build": build} if build is not None else {}),
                     "summary": matchlib.triage_summary_payload(rows),
                     "rows": [] if summary_only else [matchlib.triage_row_payload(row) for row in rows],
                 },
@@ -2928,15 +2975,16 @@ def cmd_match_audit(
 
 @match_app.command("c2-trace")
 def cmd_c2_trace(
-    scratch: Path = typer.Argument(..., help="Scratch directory using the pinned msvc6.5 compiler"),
+    scratch: Path = typer.Argument(..., help="Scratch directory"),
     out: Path = typer.Option(..., "--out", help="New short ASCII output directory"),
+    build: str | None = typer.Option(None, "--build", help="Build whose source, compiler and native image to trace"),
     passes_only: bool = typer.Option(False, "--passes-only", help="Omit repeated allocation callsites for large functions"),
 ) -> None:
     """Capture, replay and observe C2 with whole-object preservation controls."""
     from .. import match_c2
 
     try:
-        result = match_c2.trace(scratch, out, passes_only=passes_only)
+        result = match_c2.trace(scratch, out, passes_only=passes_only, build=build)
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
         typer.echo(f"C2 trace failed: {exc}", err=True)
         raise typer.Exit(code=2) from exc

@@ -4,7 +4,9 @@ import importlib.util
 import re
 import struct
 import sys
+from collections import Counter
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -20,6 +22,25 @@ def load(name: str):
     sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
+
+
+@pytest.mark.parametrize("tracer", ["alias_class_census", "field_records"])
+def test_alias_tracer_validates_the_selected_build_compiler(tmp_path, monkeypatch, tracer):
+    compilers = tmp_path / "compilers"
+    dll = compilers / "unrecognized" / "Bin" / "C2.DLL"
+    dll.parent.mkdir(parents=True)
+    dll.write_bytes(b"different compiler")
+    monkeypatch.setattr(c2.replay, "COMPILERS", compilers)
+
+    def select_compiler(scratch, build):
+        assert build == "1.4.0"
+        return SimpleNamespace(compiler="unrecognized"), None
+
+    monkeypatch.setattr(c2, "scratch_target", select_compiler)
+    out = tmp_path / "trace"
+    with pytest.raises(ValueError, match="C2 binary does not match the pinned observer profile"):
+        load(tracer).run(tmp_path / "scratch", out, build="1.4.0")
+    assert not out.exists()
 
 
 fp = load("frame_predict")
@@ -129,3 +150,222 @@ def test_slot_order_reports_frame_order_and_packing_positions(capsys):
     ]
     assert [row["density"] for row in rows[1:]] == [1250, 750, 250]
     assert "_b$ (0xc)" in capsys.readouterr().out
+
+
+def test_slot_report_exposes_disagreement_about_an_aggregate_base(capsys):
+    (frame,) = fp.decode(
+        words(0xF0, 0x10)
+        + name("_f")
+        + words(0xF3, 0x10, 0, 0, 2)
+        + obj(1, 4, 8, 8, 0, "_delta")
+        + obj(2, 4, 4, 2, 1, "_angle")
+        + words(0xF9),
+    )
+    result = ns.report(
+        frame,
+        {
+            "names": {1: "_delta", 2: "_angle"},
+            "native": {1: 0x14, 2: 0x18},
+            "bottom": {1: 0x28, 2: 0x30},
+            "votes": {1: Counter({0x14: 4, 0x04: 4}), 2: Counter({0x18: 2})},
+            "tf": 0x110,
+            "cf": 0x110,
+            "unexplained": [],
+        },
+    )
+    output = capsys.readouterr().out
+    assert "_delta(0x28,w8,n4/8)" in output
+    assert "_angle(0x30,w2,n2/2)" in output
+    assert "_delta: 0x14: 4, 0x4: 4" in output
+    assert "field +4" not in output
+    assert result["split_votes"] == {"_delta": [{"base": 0x14, "votes": 4}, {"base": 0x04, "votes": 4}]}
+
+
+@pytest.mark.parametrize("prefix", ("", "8b08", "8b08 53"))
+def test_stack_refs_keep_frame_across_an_indirect_call(prefix):
+    # Optional register load/save, fixed locals, one argument; the callee pops that argument.
+    head = bytes.fromhex(prefix)
+    body = bytes.fromhex("83ec18 6a01 ff5104 8b442408 83c418")
+    saved = prefix.endswith("53")
+    code = head + body + (b"\x5b" if saved else b"") + b"\xc3"
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    body_depth = 24 + 4 * saved
+    assert frame["frame_size"] == 24
+    assert frame["body_depth"] == body_depth
+    assert frame["depths"][len(head) + 8] == body_depth
+    assert frame["refs"][0][1] == 8 - body_depth
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_distinguish_frame_release_from_argument_cleanup():
+    # The indirect callee pops its pushed argument; the following add releases locals.
+    code = bytes.fromhex("8b08 83ec10 50 ff5104 83c410 c3")
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 16
+    assert frame["depths"][9] == 16
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_keep_stack_arguments_out_of_frame_size():
+    # Reserve a 24-byte by-value argument, then push its argument index. Both
+    # belong to the virtual call. The next call uses an ordinary pushed argument.
+    code = bytes.fromhex("83ec18 892424 6a0f ff5114 50 ff5120 8b442404 c3")
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 0
+    assert frame["body_depth"] == 0
+    assert frame["depths"][11] == 0
+    assert frame["refs"][-1][1] == 4
+
+
+@pytest.mark.parametrize("saved,restore", [("53 8bdc", "8be3 5b"), ("55 8bec", "c9"), ("55 8bec", "8be5 5d")])
+def test_stack_refs_restore_a_saved_frame_base(saved, restore):
+    # D3DX uses EBX as the frame base for some SSE routines.
+    prefix = bytes.fromhex(saved + " 83ec18")
+    code = prefix + bytes.fromhex("8b442408 " + restore + " c3")
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 24
+    assert frame["body_depth"] == 28
+    assert frame["depths"][len(prefix)] == 28
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_account_for_eh_prolog_before_the_fixed_allocation():
+    # The VC6 helper replaces its own return slot with saved EBP and pushes
+    # three registration words. The next direct call has a cdecl argument.
+    code = bytes.fromhex("b834120000 e800000000 83ec18 53 6a01 e800000000 83c404 8b442408 5b c9 c3")
+    frame = fp.stack_refs(code, 0, lambda insn: -16 if insn.address == 5 else 0)
+    assert frame["frame_size"] == 24
+    assert frame["body_depth"] == 44
+    assert frame["refs"][-1][1] == 8 - 44
+    assert frame["depths"][len(code) - 1] == 0
+
+
+@pytest.mark.parametrize("pop", [0, None])
+def test_stack_refs_keep_cdecl_cleanup_with_a_frame_buffer(pop):
+    # Pass an address into the local buffer. The last add releases it along
+    # with the pushed cdecl argument. An unknown direct call is handled too.
+    code = bytes.fromhex("83ec10 8d0c24 51 e800000000 83c414 c3")
+    frame = fp.stack_refs(code, 0, lambda _: pop)
+    assert frame["frame_size"] == frame["body_depth"] == 16
+    assert frame["depths"][12] == 20
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_ignore_cdecl_by_value_space_with_combined_cleanup():
+    # Passing the record itself (and a separate word) needs no local frame.
+    code = bytes.fromhex("83ec10 8bc4 c70001000000 6a01 e800000000 83c414 c3")
+    frame = fp.stack_refs(code, 0, lambda _: 0)
+    assert frame["frame_size"] == 0
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_find_locals_live_across_a_cdecl_call():
+    # quest_build_fallback defers popping its arguments, then uses the stack
+    # just above them for a temporary before releasing both ranges together.
+    code = bytes.fromhex("83ec08 6a01 6a02 e800000000 89442408 83c410 c3")
+    frame = fp.stack_refs(code, 0, lambda _: 0)
+    assert frame["frame_size"] == frame["body_depth"] == 8
+    assert frame["refs"][-1][1] == -8
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_keep_frame_for_biased_ebp_and_leave():
+    # C2 uses a biased EBP to reach more locals with an 8-bit displacement.
+    code = bytes.fromhex("55 8d6c24b0 81ecb4000000 53 5b 83c550 c9 c3")
+    assert fp.stack_refs(code, 0, lambda _: None)["frame_size"] == 0xb4
+
+
+def test_stack_refs_account_for_inline_eh_record_in_combined_cleanup():
+    # Entry ESP is E. The inline registration is [E-12, E), the 24-byte
+    # local area is [E-36, E-12), and saved EBX is at E-40.
+    code = bytes.fromhex(
+        "64a100000000 6aff 8b0d00010000 684c332211 50 64892500000000 "
+        "8b01 83ec18 53 6a01 ff5044 "
+        "8b442404 8a44241b 8b4c241c 8b1424 5b 64890d00000000 83c424 c3",
+    )
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 24
+    assert frame["local_bottom_depth"] == 36
+    assert frame["body_depth"] == frame["depths"][38] == 40
+    # The first and last local bytes are retained. The saved FS link and EBX
+    # are visible in raw references but excluded from native slot votes.
+    assert [off for _, off, _ in frame["refs"]] == [-36, -13, -12, -40]
+    assert list(fp.local_refs(frame)) == [(38, 0), (42, 23)]
+    assert frame["depths"][len(code) - 1] == 0
+
+
+@pytest.mark.parametrize("setup", ["33f6", "8bc8 33f6"])
+def test_stack_refs_allow_register_initialization_before_an_indirect_cdecl_cleanup(setup):
+    # Two arguments, an indirect cdecl call, then XOR ESI,ESI before its ADD.
+    code = bytes.fromhex("6a01 6a02 ff51cc " + setup + " 83c408 8b442404 c3")
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["depths"][7] == 8
+    assert frame["refs"][-1][1] == 4
+    assert frame["depths"][len(code) - 1] == 0
+
+
+@pytest.mark.parametrize("extra_arg", [False, True])
+def test_stack_refs_keep_by_value_cdecl_arg_after_inline_eh_out_of_locals(extra_arg):
+    # The original record and the 24-byte cdecl argument share the final ADD.
+    # There is no intervening save or local buffer that lives across a call.
+    call = "53 89442404 e800000000 83c404" if extra_arg else "892424 e800000000"
+    code = bytes.fromhex(
+        "64a100000000 6aff 684c332211 50 64892500000000 "
+        "83ec18 " + call + " 8b4c2418 64890d00000000 83c424 c3",
+    )
+    frame = fp.stack_refs(code, 0, lambda _: 0)
+    assert frame["frame_size"] == 0
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_stack_refs_keep_inline_eh_without_locals_across_an_indirect_call():
+    code = bytes.fromhex(
+        "64a100000000 6aff 684c332211 50 64892500000000 "
+        "6a01 ff5104 8b0c24 64890d00000000 83c40c c3",
+    )
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    assert frame["frame_size"] == 0
+    assert frame["body_depth"] == 12
+    assert frame["refs"][-1][1] == -12
+    assert list(fp.local_refs(frame)) == []
+    assert frame["depths"][len(code) - 1] == 0
+
+
+def test_indexed_local_bases_are_separate_from_fixed_accesses():
+    # ESP is four bytes below locals after the save. Exclude the out-of-frame, FS and heap references.
+    code = bytes.fromhex(
+        "83ec20 56 8b44b40c 884c0c04 8b445430 648b44b40c 8b445304 8b442414 5e 83c420 c3",
+    )
+    frame = fp.stack_refs(code, 0, lambda _: None)
+    md = ns.capstone.Cs(ns.capstone.CS_ARCH_X86, ns.capstone.CS_MODE_32)
+    md.detail = True
+    rows = {
+        4: SimpleNamespace(assembly="mov eax, DWORD PTR _table$[esp+esi*4+36]", source_lines=(7,)),
+        8: SimpleNamespace(assembly="mov BYTE PTR _text$[esp+ecx+36], cl", source_lines=(8,)),
+    }
+    listing = ns.listing_operands(rows, {"_table$": -24, "_text$": -32}, ns.INDEXED_STACK_OPERAND)
+    assert ns.indexed_local_bases(md.disasm(code, 0), frame, listing) == [
+        {"address": 4, "base": 8, "index": "esi", "scale": 4, "object": "_table$"},
+        {"address": 8, "base": 0, "index": "ecx", "scale": 1, "object": "_text$"},
+    ]
+    assert list(fp.local_refs(frame)) == [(25, 16)]
+    assert not ns.listing_operands(rows, {"_table$": -24, "_text$": -32})[4][0]
+
+
+def test_indexed_local_bases_skip_ambiguous_or_missing_depth():
+    # The taken branch skips a push, so the two paths disagree on the base at the load.
+    code = bytes.fromhex("83ec10 7401 50 8a441c08 83c410 c3")
+    md = ns.capstone.Cs(ns.capstone.CS_ARCH_X86, ns.capstone.CS_MODE_32)
+    md.detail = True
+    frame = fp.stack_refs(code, 0x1000, lambda _: None)
+    assert frame["conflicts"] == [(0x1006, 20, 16)]
+    assert not ns.indexed_local_bases(md.disasm(code, 0x1000), frame)
+    assert list(fp.local_refs(frame)) == []
+
+    code = bytes.fromhex("83ec10 8a441c08 83c410 c3")
+    frame = fp.stack_refs(code, 0x1000, lambda _: None)
+    assert not frame["conflicts"]
+    assert ns.indexed_local_bases(md.disasm(code, 0x1000), frame)[0]["base"] == 8
+    del frame["depths"][0x1003]
+    assert not ns.indexed_local_bases(md.disasm(code, 0x1000), frame)
+    assert list(fp.local_refs(frame)) == []

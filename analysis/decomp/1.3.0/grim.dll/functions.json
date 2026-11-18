@@ -165,10 +165,10 @@
   {
     "address": "0x100018C0",
     "canonical_address": "0x100033B0",
-    "end": "0x10001C0A",
+    "end": "0x10001B92",
     "evidence": "recovered",
     "name": "grim_window_proc",
-    "size": 842
+    "size": 722
   },
   {
     "address": "0x10001C10",
@@ -374,10 +374,10 @@
   {
     "address": "0x100032B0",
     "canonical_address": "0x10005D40",
-    "end": "0x10003469",
+    "end": "0x10003458",
     "evidence": "recovered",
     "name": "grim_apply_config",
-    "size": 441
+    "size": 424
   },
   {
     "address": "0x10003470",
@@ -406,10 +406,10 @@
   {
     "address": "0x10003720",
     "canonical_address": "0x10006580",
-    "end": "0x10003AB9",
+    "end": "0x10003A36",
     "evidence": "recovered",
     "name": "grim_set_config_var",
-    "size": 921
+    "size": 790
   },
   {
     "address": "0x10003AC0",

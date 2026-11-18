@@ -28,7 +28,7 @@ tools/match/scratches/console_set_open/build/msvc6.5/e92b2a49be0ec72c/console_se
 tools/match/scratches/console_history_apply/build/msvc6.5/c0c39df474c081f4/console_history_apply.obj
 tools/match/scratches/console_exec_line/build/msvc6.5/cc28fb3bdcbe3d0c/console_exec_line.obj
 tools/match/scratches/console_update/build/msvc6.5/ea16dda83bc734bc/console_update.obj
-tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj
+tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj
 tools/match/scratches/console_register_cvar/build/msvc6.5/008719b1cfc8ec1c/console_register_cvar.obj
 tools/match/scratches/console_cvar_find/build/msvc6.5/36816ec7859cda30/console_cvar_find.obj
 tools/match/scratches/console_cvar_unregister/build/msvc6.5/eb54f153d9f4a84e/console_cvar_unregister.obj
@@ -81,7 +81,7 @@ tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/
 tools/match/scratches/plugin_runtime_clear_pools/build/msvc6.5/6b212a4206f76d3e/plugin_runtime_clear_pools.obj
 tools/match/scratches/plugin_runtime_update_and_render/build/msvc6.5/689cebce0b7701b5/plugin_runtime_update_and_render.obj
 tools/match/scratches/demo_purchase_screen_update/build/msvc6.5/76d27875f5932574/demo_purchase_screen_update.obj
-tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj
+tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj
 tools/match/scratches/credits_line_table_global_init_thunk/build/msvc6.5/8c8e9424448a27b2/credits_line_table_global_init_thunk.obj
 tools/match/scratches/credits_line_table_global_init/build/msvc6.5/66c1bfac9ebe0153/credits_line_table_global_init.obj
 tools/match/scratches/credits_line_set/build/msvc6.5/7972f095bdaca8f6/credits_line_set.obj
@@ -325,7 +325,7 @@ tools/match/scratches/startup_audio_load_thread/build/msvc6.5/6e6d59500e9af0d0/s
 tools/match/scratches/game_startup_init/build/msvc6.5/41641280c295d1d9/game_startup_init.obj
 tools/match/scratches/console_cmd_snd_add_game_tune/build/msvc6.5/b49acec6583a3c60/console_cmd_snd_add_game_tune.obj
 tools/match/scratches/console_cmd_set_gamma_ramp/build/msvc6.5/15194639443302c5/console_cmd_set_gamma_ramp.obj
-tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj
+tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj
 tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj
 tools/match/scratches/statistics_update_check_worker/build/msvc6.5/fd2a03bec5c1a9a3/statistics_update_check_worker.obj
 tools/match/scratches/effect_pool_vertices_global_init_thunk/build/msvc6.5/dce901cbb8fe4a33/effect_pool_vertices_global_init_thunk.obj

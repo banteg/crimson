@@ -3,6 +3,22 @@
   "sha256": "7f7ccf19ef028570c73c4478562a23d57c54c91e7335e88c373d092e9faa07fe",
   "functions": [
     {
+      "name": "freeware_aim_screen_global_init_thunk",
+      "address": "0x00401000",
+      "end": "0x00401005",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Startup table entry directly jumps to the screen-aim initializer."
+    },
+    {
+      "name": "freeware_aim_screen_global_init",
+      "address": "0x00401010",
+      "end": "0x00401025",
+      "body_sha256": "7ee42fc6f12571a8b8dd1bd65a3f149947ecfbc5ffcc4de73a57e864c52a8683",
+      "build_only": true,
+      "evidence": "Stores 320.0 and 240.0 in the two members of the verified freeware_aim_screen global."
+    },
+    {
       "name": "unused_global_noop_init_thunk",
       "address": "0x00401030",
       "end": "0x00401035",
@@ -13,6 +29,20 @@
       "address": "0x00401040",
       "end": "0x00401041",
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "freeware_last_score_global_init_thunk",
+      "address": "0x00401050",
+      "end": "0x00401055",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_last_score_global_init",
+      "address": "0x00401060",
+      "end": "0x0040107d",
+      "body_sha256": "9995a96740299de3bfdd7690e17f3d28fea547f38260920906664ffc63dc056e",
+      "build_only": true
     },
     {
       "name": "perk_meta_global_construct_and_register",
@@ -45,16 +75,32 @@
       "body_sha256": "7b05c77a5ca20ee7142021a26c86855e7302878f6c7c39e8258c3b713a2401ea"
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+      "name": "freeware_pickup_position_global_init_thunk",
       "address": "0x00401120",
       "end": "0x00401125",
-      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "name": "freeware_pickup_position_global_init",
       "address": "0x00401130",
       "end": "0x00401145",
-      "body_sha256": "a1a587f591649bf45b565c4fea4da4de874d24869d7ae39276b5e12177d101b4"
+      "body_sha256": "a1a587f591649bf45b565c4fea4da4de874d24869d7ae39276b5e12177d101b4",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_id_global_init_thunk",
+      "address": "0x00401150",
+      "end": "0x00401155",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_id_global_init",
+      "address": "0x00401160",
+      "end": "0x0040116b",
+      "body_sha256": "97db63c63c190f97b75b5441e88581744cba7847c4d09785db8269be94ab24fd",
+      "build_only": true
     },
     {
       "name": "grim_load_interface",
@@ -85,6 +131,22 @@
       "address": "0x00401260",
       "end": "0x00401275",
       "body_sha256": "f8a1a595c13b1f1a51fe63746ab8da728c014272a74a9506416370c2a5a98360"
+    },
+    {
+      "name": "unused_sfx_prefix_creature_global_init_thunk",
+      "address": "0x00401280",
+      "end": "0x00401285",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Startup thunk jumps directly to the standalone creature constructor."
+    },
+    {
+      "name": "unused_sfx_prefix_creature_global_init",
+      "address": "0x00401290",
+      "end": "0x004012b1",
+      "body_sha256": "9608e9b60b97774e58ee191e673e0ede4d0447a00eecb6d82380f1a565c17168",
+      "build_only": true,
+      "evidence": "Initializes the same four fields as the 0x68-byte creature records; this unused single record ends at freeware_sfx_state."
     },
     {
       "name": "creature_pool_global_init_thunk",
@@ -177,10 +239,161 @@
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
     },
     {
+      "name": "sfx_load_sample",
+      "address": "0x00401440",
+      "end": "0x0040146d",
+      "body_sha256": "7b351efa7e9c4e29918260b8e294fb82d744acd5b05b6b58386d53d65afd7f49"
+    },
+    {
+      "name": "sfx_system_init",
+      "address": "0x00401470",
+      "end": "0x004015ff",
+      "body_sha256": "678a05313c3c1688fbb818c5c63a2b8e935af4973933eaa840283a7896eaf47a"
+    },
+    {
+      "name": "audio_shutdown_all",
+      "address": "0x00401600",
+      "end": "0x00401624",
+      "body_sha256": "3facbd4a75a01d8f9e7d4b86d7bccfd0ab5c29e73e858e4ee6ea6883f96db522"
+    },
+    {
+      "name": "sfx_play_panned",
+      "address": "0x00401630",
+      "end": "0x004016a5",
+      "body_sha256": "807980237bfbed0dc67142af268b6e23f2bb4d6a3362129cfbeeaa1ac6eb8667"
+    },
+    {
+      "name": "sfx_update",
+      "address": "0x004016b0",
+      "end": "0x004017f2",
+      "body_sha256": "67ac41969fd66e106fc7146099641df0b44a16f3835ad26b878bcf13402f091b",
+      "build_only": true
+    },
+    {
+      "name": "freeware_title_track_start",
+      "address": "0x00401800",
+      "end": "0x00401878",
+      "body_sha256": "b9bcbaa8a0633e210b31e64f301d4481ffaa831135e7947d50cabc69b2025851",
+      "build_only": true
+    },
+    {
+      "name": "freeware_game_track_start",
+      "address": "0x00401880",
+      "end": "0x004018d1",
+      "body_sha256": "de29807f664063d32853e1f0764052276fa2e1de75538fb5a2d6989cb0be9689",
+      "build_only": true
+    },
+    {
+      "name": "freeware_title_track_fade",
+      "address": "0x004018e0",
+      "end": "0x004018eb",
+      "body_sha256": "0fbbb92610fa9b8ed09b241ffe96e4c39481dd131c58b18060a4d2aa1515589a",
+      "build_only": true
+    },
+    {
+      "name": "freeware_save_score",
+      "address": "0x00401940",
+      "end": "0x004019c9",
+      "body_sha256": "2c283c4dfc17fdbb4d3b3763b01112b9f836bdda84cda919f663ed3263fd7134",
+      "build_only": true,
+      "evidence": "Appends the 36-byte name/score pair to rush.top or career.top, selecting elapsed seconds or player experience."
+    },
+    {
+      "name": "freeware_score_table_global_init_thunk",
+      "address": "0x004019d0",
+      "end": "0x004019d5",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Jumps directly to the static score table initializer."
+    },
+    {
+      "name": "freeware_score_table_global_init",
+      "address": "0x004019e0",
+      "end": "0x00401a0a",
+      "body_sha256": "08f25ae756dbb7b90f3cf86f4906ced0196b8a92790ef80e08f9e1dc988e4ada",
+      "build_only": true,
+      "evidence": "Constructs the 100 score records with default name 10tons, using the same table as the loader."
+    },
+    {
+      "name": "freeware_score_table_reset",
+      "address": "0x00401a10",
+      "end": "0x00401a38",
+      "body_sha256": "eb926869f59df61c9cd3a7e1bbd64b5fd7a19a1354711157830549fcc5802331",
+      "build_only": true,
+      "evidence": "Called by the score loader before fopen. Visits all 100 score records, assigns the default name and clears scores."
+    },
+    {
+      "name": "highscore_load_table",
+      "address": "0x00401a40",
+      "end": "0x00401c07",
+      "body_sha256": "251880d037f2c688cbef8ce5fcad40e193f6bba5b18a2f0184634d0e9c712858",
+      "build_only": true,
+      "evidence": "Clears the score table, opens rush.top or career.top, reads the 36-byte entries and sorts the table in place."
+    },
+    {
       "name": "wrap_text_to_width_alloc",
       "address": "0x00401c10",
       "end": "0x00401c7b",
       "body_sha256": "2b8c26db9837690aa7c1c28dde9dcaf35a1f05772f8c60ea688890f81264c090"
+    },
+    {
+      "name": "perks_init_database",
+      "address": "0x00401c80",
+      "end": "0x0040222b",
+      "body_sha256": "53501a3f322ec1673bfcf003cb35cb2d80aa891bca3012028586f9c6a233d53c",
+      "evidence": "The startup caller at 0x0041084e invokes the full registration sequence. It sets sixteen perk ID globals, resolves the perks01 atlas and wraps each name and description into the metadata table."
+    },
+    {
+      "name": "player_reset_all",
+      "address": "0x00402230",
+      "end": "0x0040234e",
+      "body_sha256": "a8765fcf0efa0b38dfdeb1100eaf1c41b82f192d9e774d4f3796b0d2ae11d5ba"
+    },
+    {
+      "name": "player_check_level",
+      "address": "0x00402350",
+      "end": "0x004028f4",
+      "body_sha256": "5730bbd102afd048c7a04be28caaf6b173574ce0e8167ed6298326db4fc49808"
+    },
+    {
+      "name": "perks_generate_choices",
+      "address": "0x00402900",
+      "end": "0x0040293c",
+      "body_sha256": "7b9f7505e0e97656324ddd5f3d30daa492a84d9e8750acc4657ea743215991b4"
+    },
+    {
+      "name": "effect_uv_tables_init",
+      "address": "0x00402940",
+      "end": "0x00402998",
+      "body_sha256": "72100de5fba12c721cdfee2e5aa2a8a65047c38edcf000cf042c056511b0c509"
+    },
+    {
+      "name": "gameplay_reset_state",
+      "address": "0x004029a0",
+      "end": "0x00402a3d",
+      "body_sha256": "39877c807f36d67027614437515739ac9d336d4068bcd994216ad483c03d640d"
+    },
+    {
+      "name": "freeware_post_player_render_noop",
+      "address": "0x00402a40",
+      "end": "0x00402a41",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e",
+      "build_only": true,
+      "evidence": "Called directly in the frame renderer between player_render and the pickup/particle pass. The complete body is a bare return."
+    },
+    {
+      "name": "projectile_alloc_slot",
+      "address": "0x00402a50",
+      "end": "0x00402a6e",
+      "body_sha256": "46ecf9c86e9c3be7e6d8147def13cac6572588ee77acd26a26068f8cabb311e6",
+      "build_only": true
+    },
+    {
+      "name": "particle_alloc_slot",
+      "address": "0x00402a70",
+      "end": "0x00402a8e",
+      "body_sha256": "63d18c7966477a365aea172ebcd9dddb4c663582d95e4d22ce6d6474b343e9a5",
+      "build_only": true
     },
     {
       "name": "fx_spawn_particle",
@@ -207,10 +420,250 @@
       "body_sha256": "7645fc6c31a0fb61c93c74a960be74e9cfd259a86d74d085898375d62efe7be8"
     },
     {
+      "name": "creature_update_all",
+      "address": "0x00404b70",
+      "end": "0x0040508c",
+      "body_sha256": "9fcb3d296675df17fd71056a4c3a5d90e540a7f871da0be6a2c93c4aadad9dc0"
+    },
+    {
+      "name": "creature_alloc_slot",
+      "address": "0x004062a0",
+      "end": "0x004062bb",
+      "body_sha256": "fe402e58c66c9c69c3e2be346c1c884cf48961b30f4dd44669a9f87784283121"
+    },
+    {
       "name": "creature_reset_all",
       "address": "0x004062c0",
       "end": "0x004062d3",
       "body_sha256": "ede8ce732fa0ed0a0bd3a03ffe2c985922a2ca323267773912c1bebeaaf2d4b2"
+    },
+    {
+      "name": "creature_spawn_random",
+      "address": "0x004062e0",
+      "end": "0x00406795",
+      "body_sha256": "636b0378062ec936b17113a275d8e023a57c691e4fa0342b6fa5a1c03f26ba51",
+      "build_only": true
+    },
+    {
+      "name": "creature_spawn",
+      "address": "0x004067a0",
+      "end": "0x004068e5",
+      "body_sha256": "d8dd4b7670255725d69b4e5176afcc6190bf654375fb1d1bf31b6447f4845712"
+    },
+    {
+      "name": "freeware_float_max",
+      "address": "0x00407e80",
+      "end": "0x00407e99",
+      "body_sha256": "7e4e754e0aeafc0db69ced8f48345cf15507a02171388677ade01f16e253d7b1",
+      "build_only": true
+    },
+    {
+      "name": "freeware_float_min",
+      "address": "0x00407ea0",
+      "end": "0x00407eb9",
+      "body_sha256": "f1c68d3332386c6faf99c60e8950ca562270ca3e33647d1cf02c490ee9793253",
+      "build_only": true
+    },
+    {
+      "name": "player_heading_approach_target",
+      "address": "0x00407ec0",
+      "end": "0x0040803f",
+      "body_sha256": "87beafbec4dd36f20c84cdc8c9e1f9602b51dcab92ef2acded4074be57f19c3e"
+    },
+    {
+      "name": "player_update",
+      "address": "0x00408040",
+      "end": "0x004097c5",
+      "body_sha256": "1edf0ec6f729c96f46a6218572e99eecdd8c0523c19ce8ec7dc6988effa14839"
+    },
+    {
+      "name": "freeware_encounter_experience",
+      "address": "0x4097d0",
+      "end": "0x409bd8",
+      "body_sha256": "7938f2ba17a5a2701dc361dfde3f5d96e010e41d81410c511fb8414b56d3ff70",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_nine_lizards",
+      "address": "0x409be0",
+      "end": "0x40a090",
+      "body_sha256": "1c3245eb7498fc91fb337080e0cd2122f04950aa112bd274feaf156081703199",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_pineapple",
+      "address": "0x40a090",
+      "end": "0x40a5e4",
+      "body_sha256": "144017beab2522b4b71ebeddfb4c4df95fcaf52e704f8e21d5dd9a07a3c3a005",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_duct_tape",
+      "address": "0x40a5f0",
+      "end": "0x40acbc",
+      "body_sha256": "4e93e45af7adee749a3e2a5ea13b18728e7d3a47405bc88f60028cf4fc46a6be",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_endless_army",
+      "address": "0x40acc0",
+      "end": "0x40b173",
+      "body_sha256": "6829bebdf5aa9f6cea716f8a6388c04a6cdde5d43573ada448696ee33297ebef",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_update",
+      "address": "0x0040b180",
+      "end": "0x0040b25c",
+      "body_sha256": "23ed74dbe2790e803d97ac61cadbc099168ea0fa0692f5154c5c7ad087c7f62c",
+      "build_only": true,
+      "note": "Career dispatch by encounter ID. The fifth switch target at 0x40b1ae calls the duct-tape handler and falls through to the shared cursor. The five destination addresses follow the final return."
+    },
+    {
+      "name": "freeware_career_menu_update",
+      "address": "0x0040b270",
+      "end": "0x0040b6d9",
+      "body_sha256": "e32e4962a3af55e5e2ca588a74ef2f221d60247bed6e6453c707e03aee60d61e",
+      "build_only": true,
+      "note": "Shows the current day and experience, handles the three town options, and enters the selected encounter."
+    },
+    {
+      "name": "perk_selection_screen_update",
+      "address": "0x0040b6e0",
+      "end": "0x0040bcfa",
+      "body_sha256": "3f3292ae2008fe0377f3495aa377edd4ca0eab85f0626931a8e847e608b9928a"
+    },
+    {
+      "name": "freeware_read_name_key",
+      "address": "0x0040bd00",
+      "end": "0x0040c0c8",
+      "body_sha256": "de2b89e2f5f1239955138ad83f99c126f332370ec9ec938b5ce2950fcee57919",
+      "build_only": true,
+      "evidence": "0x0040e96c polls this helper when entering the high-score name. It tests the DirectInput digit, letter, space, return and backspace scancodes, then uppercases the result while Shift is held."
+    },
+    {
+      "name": "freeware_hud_set_row",
+      "address": "0x0040c0d0",
+      "end": "0x0040c10d",
+      "body_sha256": "5ea897c9fff6dbbc7397f80ee5614099cf89d116d45c9476f2758ea0992ea650",
+      "build_only": true,
+      "evidence": "The HUD renderer calls this helper to select the supplied UV row. Its entire compiled function previously matched all 61 bytes with clean positional references."
+    },
+    {
+      "name": "game_frame_update",
+      "address": "0x0040c110",
+      "end": "0x0040ed76",
+      "body_sha256": "c3c0a4e406567904ee4666c1618782b36c43392d21e45936ffac8901b6761d98",
+      "evidence": "The compiled dispatcher covers the complete pinned body. Five interior discovery starts are switch destinations and the sixth is reached by an internal jump. The adjacent jump tables are outside its code extent."
+    },
+    {
+      "name": "game_credits_update",
+      "address": "0x0040eda0",
+      "end": "0x0040f877",
+      "body_sha256": "2dabcfffb855eb9e55b66fc557c3c90606674dd9cf59db9b5f6b1040c63d2048",
+      "build_only": true
+    },
+    {
+      "name": "freeware_draw_loading_progress",
+      "address": "0x0040fad0",
+      "end": "0x0040fcd4",
+      "body_sha256": "3f1def95d917d5d49a6a2cd6c9cefacfcc3ba16762fc8d0db0d7e376a2138bca",
+      "build_only": true,
+      "evidence": "WinMain calls this with successive progress fractions between asset loads. It draws the Crimsonland logo and a bullet-textured progress bar before presenting the frame."
+    },
+    {
+      "name": "game_highscores_update",
+      "address": "0x0040fce0",
+      "end": "0x0041011b",
+      "body_sha256": "dcecc6ae268ca29d6cae7942f8a339ac145fae94634848a7ad665eae2fc5ced4",
+      "evidence": "Draws the Highscores: heading, mode labels -SURVIVAL-- and -CAREER----, and rows of the original score table through Grim.",
+      "build_only": true
+    },
+    {
+      "name": "crimsonland_main",
+      "address": "0x00410120",
+      "end": "0x00410913",
+      "body_sha256": "29115adc0e916e3483543a36a832273332b7c91f5ba9a6fc56f48c7125a0ce08",
+      "evidence": "The CRT entry calls this four-argument WinMain at 0x00411362 with GetModuleHandleA(NULL) and the startup command line. It opens Grim, loads resources and tears down the game; ret 0x10 releases its four arguments."
+    },
+    {
+      "name": "FSOUND_Sample_SetLoopMode",
+      "address": "0x00410920",
+      "end": "0x00410926",
+      "body_sha256": "5dbbfe332ab40e8a9765fd27b88a5918e0f64ea99cabfcb982350634d8d41806",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_Sample_Load",
+      "address": "0x00410926",
+      "end": "0x0041092c",
+      "body_sha256": "69d0fdb12969f4d1ea910de03014f56642db78a060df4a692f3272181e97404b",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetPaused",
+      "address": "0x00410950",
+      "end": "0x00410956",
+      "body_sha256": "93ce41cc6ddb7473cb351a155f51841fe12c10b2f30e74274b39df94e453e316",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetPan",
+      "address": "0x00410956",
+      "end": "0x0041095c",
+      "body_sha256": "aed06df54835d6ae389405fe312ff87072876bbb5bbb11f71015714817b6c40a",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetVolume",
+      "address": "0x0041095c",
+      "end": "0x00410962",
+      "body_sha256": "3ef824fbf81e5a0dd67c1721c44afc9a6a0a795166d1ea86fb099892efa4f62f",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_PlaySoundEx",
+      "address": "0x00410962",
+      "end": "0x00410968",
+      "body_sha256": "cba39632a50bdf5b9edbad31a012257c28e6b0ea4b6e03e69bde77ed5510a144",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetFrequency",
+      "address": "0x00410968",
+      "end": "0x0041096e",
+      "body_sha256": "8a96dd86e218cdb5a030b3eaa3a0d2f7cecfa657a2b15cd415a2146179b6395a",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_StopSound",
+      "address": "0x0041096e",
+      "end": "0x00410974",
+      "body_sha256": "0af27bfe48d14ec213a9563e498b161e7732644b1556b830e536424e8badd104",
+      "build_only": true
+    },
+    {
+      "name": "crt_srand",
+      "address": "0x00410c45",
+      "end": "0x00410c4f",
+      "body_sha256": "6f4133c49abff18e20a326c99c627b0d5704806921426b3a4ff057d2592c60aa",
+      "evidence": "Stores the QueryPerformanceCounter seed. The following crt_rand updates that same DWORD as seed*0x343fd+0x269ec3."
+    },
+    {
+      "name": "crt_fseek_nolock",
+      "address": "0x00410df7",
+      "end": "0x00410e83",
+      "body_sha256": "6862c7111e19511b38352f13c3eec347ee949b7505b2bdc3adc91c2f3e7c2326",
+      "build_only": true,
+      "evidence": "The score writer seeks to SEEK_END and the reader to SEEK_SET. The unlocked CRT body validates the three seek origins, adjusts SEEK_CUR via ftell, flushes the FILE, and seeks the descriptor."
+    },
+    {
+      "name": "effect_render_all",
+      "address": "0x00407950",
+      "end": "0x00407e7a",
+      "body_sha256": "207d6b898d81391659db37ce8a8530e20908ced0190ebec52296b9d8347a6333",
+      "note": "Called from the game frame to draw the pickup, glow and flame particles. The two particle loops traverse the complete 128-entry, 48-byte-stride pool.",
+      "build_only": true
     }
   ],
   "data": [
@@ -219,6 +672,13 @@
       "address": "0x00401040",
       "reference": "0x00401030",
       "bytes": "e90b000000"
+    },
+    {
+      "name": "freeware_last_score_global_init",
+      "address": "0x00401060",
+      "reference": "0x00401050",
+      "bytes": "e90b000000",
+      "build_only": true
     },
     {
       "name": "?0perk_meta_cpp_t",
@@ -233,12 +693,6 @@
       "bytes": "68c0104000"
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2_global_init",
-      "address": "0x00401130",
-      "reference": "0x00401120",
-      "bytes": "e90b000000"
-    },
-    {
       "name": "particle_pool_global_init",
       "address": "0x004011b0",
       "reference": "0x004011a0",
@@ -249,6 +703,14 @@
       "address": "0x00401260",
       "reference": "0x00401250",
       "bytes": "e90b000000"
+    },
+    {
+      "name": "unused_sfx_prefix_creature_global_init",
+      "address": "0x00401290",
+      "reference": "0x00401280",
+      "bytes": "e90b000000",
+      "build_only": true,
+      "evidence": "Direct initialization-table thunk destination."
     },
     {
       "name": "creature_pool_global_init",
@@ -313,6 +775,55 @@
       "build_only": true
     },
     {
+      "name": "FSOUND_Sample_SetLoopMode",
+      "address": "0x00410920",
+      "reference": "0x004015d9",
+      "bytes": "e842f30000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_Init",
+      "address": "0x0041092c",
+      "reference": "0x0040149c",
+      "bytes": "e88bf40000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetDriver",
+      "address": "0x00410932",
+      "reference": "0x0040148e",
+      "bytes": "e89ff40000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_SetOutput",
+      "address": "0x00410938",
+      "reference": "0x00401487",
+      "bytes": "e8acf40000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_GetVersion",
+      "address": "0x0041093e",
+      "reference": "0x00401470",
+      "bytes": "e8c9f40000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_Close",
+      "address": "0x00410944",
+      "reference": "0x0040161d",
+      "bytes": "e822f30000",
+      "build_only": true
+    },
+    {
+      "name": "FSOUND_Sample_Free",
+      "address": "0x0041094a",
+      "reference": "0x0040160d",
+      "bytes": "e838f30000",
+      "build_only": true
+    },
+    {
       "name": "?_L",
       "address": "0x00410a16",
       "reference": "0x004010a3",
@@ -337,6 +848,13 @@
       "bytes": "e83efa0000"
     },
     {
+      "name": "crt_fseek",
+      "address": "0x00410df7",
+      "reference": "0x00401973",
+      "bytes": "e87ff40000",
+      "build_only": true
+    },
+    {
       "name": "?2",
       "address": "0x00410f9e",
       "reference": "0x00401c29",
@@ -355,10 +873,208 @@
       "bytes": "ff1538b04100"
     },
     {
-      "name": "unused_effect_uv16_prefix_vec2",
+      "name": "time_scale_factor",
+      "address": "0x0041c080",
+      "reference": "0x0040179c",
+      "bytes": "d90580c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_transition_alpha",
+      "address": "0x0041c084",
+      "reference": "0x0040ee72",
+      "bytes": "d90584c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_id",
+      "address": "0x0041c08c",
+      "reference": "0x0040b640",
+      "bytes": "89158cc04100",
+      "build_only": true,
+      "evidence": "1.0.2 stores 1 + rand() % 5, then 0x40b180 dispatches one of five daily encounters using this index."
+    },
+    {
+      "name": "freeware_encounter_page",
+      "address": "0x0041c090",
+      "reference": "0x00409bae",
+      "bytes": "c70590c0410002000000",
+      "build_only": true,
+      "evidence": "The daily encounter dialog branches on this page and sets it to 2 when advancing its choice at 0x409ba4."
+    },
+    {
+      "name": "freeware_shadows",
+      "address": "0x0041c098",
+      "reference": "0x00406925",
+      "bytes": "a098c04100",
+      "build_only": true,
+      "evidence": "The shadow pass tests this same byte that the options menu reads to select the Shadows label and toggles at 0x40cd9c."
+    },
+    {
+      "name": "freeware_glow",
+      "address": "0x0041c099",
+      "reference": "0x0040c7d3",
+      "bytes": "a099c04100",
+      "build_only": true
+    },
+    {
+      "name": "game_state_id",
+      "address": "0x0041c09c",
+      "reference": "0x0040f852",
+      "bytes": "c7059cc0410001000000",
+      "build_only": true
+    },
+    {
+      "name": "config_game_mode",
+      "address": "0x0041c0a0",
+      "reference": "0x00401940",
+      "bytes": "a1a0c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_day",
+      "address": "0x0041c0a4",
+      "reference": "0x0040b306",
+      "bytes": "8b0da4c04100",
+      "build_only": true,
+      "evidence": "The value supplies the first format argument to \"Day %d\\nExperience %d\" at 0x40b315."
+    },
+    {
+      "name": "freeware_transition_pending",
+      "address": "0x0041c0a8",
+      "reference": "0x0040edcd",
+      "bytes": "a0a8c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_fire",
+      "address": "0x0041c0ac",
+      "reference": "0x0040770b",
+      "bytes": "3b0dacc04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_freeze",
+      "address": "0x0041c0b0",
+      "reference": "0x00407835",
+      "bytes": "3b0db0c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_weapon",
+      "address": "0x0041c0b4",
+      "reference": "0x00407722",
+      "bytes": "3b0db4c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_nuke",
+      "address": "0x0041c0b8",
+      "reference": "0x0040784c",
+      "bytes": "3b0db8c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_arena_width",
+      "address": "0x0041c0bc",
+      "reference": "0x004051ba",
+      "bytes": "0faf05bcc04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_arena_height",
+      "address": "0x0041c0c0",
+      "reference": "0x004051b3",
+      "bytes": "a1c0c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_started",
+      "address": "0x0041c0c4",
+      "reference": "0x0040e4e4",
+      "bytes": "c605c4c0410001",
+      "build_only": true,
+      "evidence": "Set immediately after a call to sfx_play_panned(13, .45f, .5f) in the guarded wind-start path."
+    },
+    {
+      "name": "freeware_music_channel_a",
+      "address": "0x0041c0c8",
+      "reference": "0x00401717",
+      "bytes": "a1c8c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_channel_b",
+      "address": "0x0041c0cc",
+      "reference": "0x00401731",
+      "bytes": "a1ccc04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_volume_a",
+      "address": "0x0041c0d0",
+      "reference": "0x004016d9",
+      "bytes": "d905d0c04100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_position",
       "address": "0x00420b88",
-      "reference": "0x00401130",
-      "bytes": "c705880b420000000000"
+      "reference": "0x004076d8",
+      "bytes": "d825880b4200",
+      "build_only": true
+    },
+    {
+      "name": "sfx_cooldown_table",
+      "address": "0x00420b90",
+      "reference": "0x00401634",
+      "bytes": "d9048d900b4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_positions",
+      "address": "0x00420c90",
+      "reference": "0x004059a7",
+      "bytes": "8914c5880c4200",
+      "build_only": true,
+      "offset": -8
+    },
+    {
+      "name": "freeware_score_table",
+      "address": "0x00420e90",
+      "reference": "0x00401a11",
+      "bytes": "be900e4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_player_texture",
+      "address": "0x00421ce4",
+      "reference": "0x00406f56",
+      "bytes": "8b15e41c4200",
+      "build_only": true
+    },
+    {
+      "name": "unused_sfx_prefix_creature",
+      "address": "0x00421ce8",
+      "reference": "0x0040129c",
+      "bytes": "a2e81c4200",
+      "build_only": true,
+      "evidence": "The constructor zeros the active byte and the fields at offsets +1, +4, and +0x64. The end at +0x68 is the verified SFX state start."
+    },
+    {
+      "name": "freeware_sfx_state",
+      "address": "0x00421d50",
+      "reference": "0x004014ba",
+      "bytes": "bf501d4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_sizes",
+      "address": "0x00421d90",
+      "reference": "0x00405992",
+      "bytes": "d91c858c1d4200",
+      "build_only": true,
+      "offset": -4
     },
     {
       "name": "player_state_table",
@@ -372,6 +1088,33 @@
       "address": "0x004220cc",
       "reference": "0x0040117d",
       "bytes": "a3cc204200"
+    },
+    {
+      "name": "freeware_pickup_id",
+      "address": "0x004220e8",
+      "reference": "0x00401165",
+      "bytes": "a3e8204200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_aim_screen",
+      "address": "0x004220f0",
+      "reference": "0x00401010",
+      "bytes": "c705f02042000000a043",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_count",
+      "address": "0x004220f8",
+      "reference": "0x00402912",
+      "bytes": "a1f8204200"
+    },
+    {
+      "name": "freeware_last_score",
+      "address": "0x00422100",
+      "reference": "0x004019ad",
+      "bytes": "6800214200",
+      "build_only": true
     },
     {
       "name": "projectile_pool",
@@ -388,16 +1131,618 @@
       "offset": 20
     },
     {
+      "name": "freeware_encounter_choices",
+      "address": "0x424528",
+      "reference": "0x4098bc",
+      "bytes": "a328454200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bullet_texture",
+      "address": "0x00424564",
+      "reference": "0x0040eea5",
+      "bytes": "a164454200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_draw_point",
+      "address": "0x00424568",
+      "reference": "0x00405b0f",
+      "bytes": "a368454200",
+      "build_only": true
+    },
+    {
+      "name": "perk_choice_flags",
+      "address": "0x00424588",
+      "reference": "0x00402909",
+      "bytes": "bf88454200"
+    },
+    {
+      "name": "freeware_blood_positions",
+      "address": "0x004245c0",
+      "reference": "0x004058df",
+      "bytes": "8914c5b8454200",
+      "build_only": true,
+      "offset": -8
+    },
+    {
+      "name": "freeware_corpse_angles",
+      "address": "0x004247c0",
+      "reference": "0x00405980",
+      "bytes": "d91c85bc474200",
+      "build_only": true,
+      "offset": -4
+    },
+    {
+      "name": "freeware_atlas_uv",
+      "address": "0x004248c0",
+      "offset": 4,
+      "reference": "0x00402948",
+      "bytes": "bac4484200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_camera",
+      "address": "0x00424ac0",
+      "reference": "0x0040614b",
+      "bytes": "d805c04a4200",
+      "build_only": true
+    },
+    {
       "name": "unused_fx_queue_random_prefix_vec2",
       "address": "0x00424ac0",
       "reference": "0x00401260",
       "bytes": "c705c04a420000000000"
     },
     {
+      "name": "freeware_shell_positions",
+      "address": "0x00424ac8",
+      "reference": "0x00405bc1",
+      "bytes": "bec84a4200",
+      "build_only": true
+    },
+    {
       "name": "perk_meta_table",
       "address": "0x00424bc8",
       "reference": "0x0040109e",
       "bytes": "68c84b4200"
+    },
+    {
+      "name": "freeware_corpse_species",
+      "address": "0x00424dc8",
+      "reference": "0x00405999",
+      "bytes": "890c85c44d4200",
+      "build_only": true,
+      "offset": -4
+    },
+    {
+      "name": "freeware_bullet_icon",
+      "address": "0x00424ec8",
+      "reference": "0x0041068d",
+      "bytes": "a3c84e4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_colors",
+      "address": "0x00424ed0",
+      "reference": "0x00405961",
+      "bytes": "81c1d04e4200",
+      "build_only": true
+    },
+    {
+      "name": "creature_pool",
+      "address": "0x004252d0",
+      "reference": "0x004062a2",
+      "bytes": "b9d0524200"
+    },
+    {
+      "name": "freeware_particle_texture",
+      "address": "0x004286d0",
+      "reference": "0x00410602",
+      "bytes": "a3d0864200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_samples",
+      "address": "0x004286d4",
+      "reference": "0x0040164c",
+      "bytes": "8b048dd4864200",
+      "build_only": true
+    },
+    {
+      "name": "terrain_render_target",
+      "address": "0x004287d4",
+      "reference": "0x00405139",
+      "bytes": "a1d4874200"
+    },
+    {
+      "name": "freeware_creature_texture",
+      "address": "0x004287d8",
+      "reference": "0x00410641",
+      "bytes": "a3d8874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_safe_mode",
+      "address": "0x004287dc",
+      "reference": "0x004050c4",
+      "bytes": "a0dc874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_state_since",
+      "address": "0x004287e0",
+      "reference": "0x0040ede8",
+      "bytes": "a3e0874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_active",
+      "address": "0x004287e4",
+      "reference": "0x0040b344",
+      "bytes": "a0e4874200",
+      "build_only": true,
+      "evidence": "Guards the call to the five-way daily encounter dispatcher at 0x40b34d."
+    },
+    {
+      "name": "current_player_index",
+      "address": "0x004287e8",
+      "reference": "0x00408040",
+      "bytes": "8b15e8874200"
+    },
+    {
+      "name": "grim_interface_ptr",
+      "address": "0x004287ec",
+      "reference": "0x0040edb1",
+      "bytes": "8b0dec874200"
+    },
+    {
+      "name": "freeware_filter_sharp",
+      "address": "0x004287f5",
+      "reference": "0x00406020",
+      "bytes": "a0f5874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_spawn_enabled",
+      "address": "0x004287f6",
+      "reference": "0x0040b09a",
+      "bytes": "c605f687420001",
+      "build_only": true,
+      "evidence": "The career encounter enables creature spawning here. The frame reads this flag when scheduling spawns at 0x40d974."
+    },
+    {
+      "name": "freeware_perk_hover",
+      "address": "0x004287f8",
+      "reference": "0x00402895",
+      "bytes": "891df8874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_hover",
+      "address": "0x4287f8",
+      "reference": "0x4098d0",
+      "bytes": "c705f8874200ffffffff",
+      "build_only": true
+    },
+    {
+      "name": "bonus_fire_bullets_timer",
+      "address": "0x00428804",
+      "reference": "0x00407713",
+      "bytes": "c7050488420000000041",
+      "evidence": "Eight-second fire bullets pickup; controls the same projectile impact paths as the 1.3.0 timer."
+    },
+    {
+      "name": "bonus_freeze_timer",
+      "address": "0x00428808",
+      "reference": "0x00404b70",
+      "bytes": "d90508884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_elapsed_seconds",
+      "address": "0x00428810",
+      "reference": "0x004067db",
+      "bytes": "d90510884200"
+    },
+    {
+      "name": "perk_id_bloody_mess",
+      "address": "0x00428814",
+      "reference": "0x00401c86",
+      "bytes": "c7051488420000000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_sharpshooter",
+      "address": "0x00428818",
+      "reference": "0x00401d3a",
+      "bytes": "c7051888420002000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_instant_winner",
+      "address": "0x0042881c",
+      "reference": "0x00401ea2",
+      "bytes": "c7051c88420006000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_fastshot",
+      "address": "0x00428820",
+      "reference": "0x004020be",
+      "bytes": "c705208842000c000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_timebender",
+      "address": "0x00428824",
+      "reference": "0x00402064",
+      "bytes": "c705248842000b000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_almost_invisible",
+      "address": "0x00428828",
+      "reference": "0x00401ce0",
+      "bytes": "c7052888420001000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_long_distance_runner",
+      "address": "0x0042882c",
+      "reference": "0x00401d94",
+      "bytes": "c7052c88420003000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_reflex_boosted",
+      "address": "0x00428830",
+      "reference": "0x00402118",
+      "bytes": "c705308842000d000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_fastloader",
+      "address": "0x00428834",
+      "reference": "0x00401dee",
+      "bytes": "c7053488420004000000"
+    },
+    {
+      "name": "perk_id_see_health",
+      "address": "0x00428838",
+      "reference": "0x00402172",
+      "bytes": "c705388842000e000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_spontaneously_combusteous",
+      "address": "0x0042883c",
+      "reference": "0x00401e48",
+      "bytes": "c7053c88420005000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_jinxed",
+      "address": "0x00428840",
+      "reference": "0x004021cc",
+      "bytes": "c705408842000f000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_berserk_attack",
+      "address": "0x00428844",
+      "reference": "0x0040200a",
+      "bytes": "c705448842000a000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_grim_deal",
+      "address": "0x00428848",
+      "reference": "0x00401efc",
+      "bytes": "c7054888420007000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_plaguebearer",
+      "address": "0x0042884c",
+      "reference": "0x00401f56",
+      "bytes": "c7054c88420008000000",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_radioactive",
+      "address": "0x00428850",
+      "reference": "0x00401fb0",
+      "bytes": "c7055088420009000000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_berserk_timer",
+      "address": "0x00428854",
+      "reference": "0x00404f38",
+      "bytes": "d90554884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_no_pickup",
+      "address": "0x00428858",
+      "reference": "0x00401160",
+      "bytes": "a158884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_time",
+      "address": "0x0042885c",
+      "reference": "0x0040323b",
+      "bytes": "c7055c88420000002041",
+      "build_only": true,
+      "evidence": "The projectile death-drop path sets the pickup lifetime to 10 seconds. The frame decrements it at 0x0040cfb6 and clears the pickup ID when it expires."
+    },
+    {
+      "name": "freeware_pending_perks",
+      "address": "0x00428860",
+      "reference": "0x0040bcef",
+      "bytes": "a360884200",
+      "build_only": true,
+      "evidence": "The perk picker consumes one pending choice at 0x40bcdf."
+    },
+    {
+      "name": "creature_spawned_count",
+      "address": "0x00428868",
+      "reference": "0x004068c3",
+      "bytes": "a168884200"
+    },
+    {
+      "name": "freeware_next_spawn",
+      "address": "0x0042886c",
+      "reference": "0x0040d9b1",
+      "bytes": "c7056c884200cdcc4c3e",
+      "build_only": true,
+      "evidence": "The survival spawn countdown resets to 0.2 seconds in the frame."
+    },
+    {
+      "name": "freeware_blood_count",
+      "address": "0x00428870",
+      "reference": "0x004058d4",
+      "bytes": "a170884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_count",
+      "address": "0x00428878",
+      "reference": "0x00405950",
+      "bytes": "a178884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_up_reset_byte",
+      "address": "0x00428880",
+      "reference": "0x0040289d",
+      "bytes": "881d80884200",
+      "build_only": true
+    },
+    {
+      "name": "frame_dt",
+      "address": "0x00428884",
+      "reference": "0x0040edd4",
+      "bytes": "d91d84884200"
+    },
+    {
+      "name": "freeware_simulation_clock",
+      "address": "0x00428888",
+      "reference": "0x0040eddc",
+      "bytes": "a188884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_credits_open",
+      "address": "0x0042888c",
+      "reference": "0x0040f869",
+      "bytes": "c6058c88420000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_scores_open",
+      "address": "0x0042888d",
+      "reference": "0x00410103",
+      "bytes": "c6058d88420000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_scores_closing",
+      "address": "0x00428895",
+      "reference": "0x00410077",
+      "bytes": "c6059588420001",
+      "build_only": true
+    },
+    {
+      "name": "aim64_texture",
+      "address": "0x004245b8",
+      "reference": "0x004106a2",
+      "bytes": "a3b8454200",
+      "evidence": "Store of the Grim texture lookup for aim64."
+    },
+    {
+      "name": "world_arrow_marker_texture",
+      "address": "0x00424560",
+      "reference": "0x004106b4",
+      "bytes": "a360454200",
+      "evidence": "Store of the arrow handle; 0x40d2f3 binds it with the current player heading for the 32x32 world arrow."
+    },
+    {
+      "name": "s_empty_string",
+      "address": "0x0042889c",
+      "reference": "0x004107b1",
+      "bytes": "689c884200",
+      "evidence": "Empty C string passed to strdup_malloc for the penultimate option row and assigned to the Grim PAQ config at 0x4106bd."
+    },
+    {
+      "name": "freeware_main_labels",
+      "address": "0x004220d0",
+      "reference": "0x004106e0",
+      "bytes": "bfd0204200",
+      "evidence": "Six strdup-owned pointers from Begin. through End.; 0x4106e0 clears 6 DWORDs and the teardown frees all six.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_option_labels",
+      "address": "0x004220a8",
+      "reference": "0x004106f1",
+      "bytes": "bfa8204200",
+      "evidence": "Nine option labels from Control method: static through Done; cleared and freed as nine pointers.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_town_choices",
+      "address": "0x004245a8",
+      "reference": "0x004107e6",
+      "bytes": "a3a8454200",
+      "evidence": "Walk around, Go pick a fight, Leave for good; each is duplicated and freed on shutdown.",
+      "build_only": true
+    },
+    {
+      "name": "freeware_ui_buffer",
+      "address": "0x421ca0",
+      "reference": "0x40b31a",
+      "bytes": "68a01c4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_name_alpha",
+      "address": "0x4287f0",
+      "reference": "0x40b293",
+      "bytes": "d91df0874200",
+      "build_only": true
+    },
+    {
+      "name": "config_movement_schemes",
+      "address": "0x0041c094",
+      "reference": "0x00408474",
+      "bytes": "a194c04100",
+      "evidence": "The early player updater reads the verified native movement control setting before its control branches."
+    },
+    {
+      "name": "freeware_perk_choice_timer",
+      "address": "0x0042887c",
+      "reference": "0x0040bc51",
+      "bytes": "c7057c88420000000000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_menu_music_pending",
+      "address": "0x0041c088",
+      "reference": "0x0040c3ae",
+      "bytes": "c60588c0410000",
+      "build_only": true,
+      "evidence": "Cleared when the title track starts. A new run sets this byte at 0x40ce78."
+    },
+    {
+      "name": "freeware_show_fps",
+      "address": "0x004287f7",
+      "reference": "0x0040c7a2",
+      "bytes": "a0f7874200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_game_active",
+      "address": "0x00428800",
+      "reference": "0x0040ce59",
+      "bytes": "a000884200",
+      "build_only": true,
+      "evidence": "Changes Begin game. to Resume game. At row zero an active run resumes without resetting gameplay."
+    },
+    {
+      "name": "freeware_options_open",
+      "address": "0x00428864",
+      "reference": "0x0040cd3a",
+      "bytes": "a064884200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_logo_angle",
+      "address": "0x00428890",
+      "reference": "0x0040c54f",
+      "bytes": "d91d90884200",
+      "build_only": true,
+      "evidence": "The menu clamps this computed logo tilt to [0, pi/2] before rotating the Crimsonland title texture."
+    },
+    {
+      "name": "freeware_logo_visible",
+      "address": "0x00428894",
+      "reference": "0x0040c63e",
+      "bytes": "c6059488420001",
+      "build_only": true,
+      "evidence": "Set after the logo has faded in. Cleared when beginning a new run at 0x40ce71."
+    },
+    {
+      "name": "freeware_name_length",
+      "address": "0x00428898",
+      "reference": "0x0040e503",
+      "bytes": "c7059888420000000000",
+      "build_only": true,
+      "evidence": "The name-entry state resets this edit cursor on entry and updates it when appending and erasing characters in freeware_last_score.name."
+    },
+    {
+      "name": "freeware_jinx_timer",
+      "address": "0x004287fc",
+      "reference": "0x0040d6c9",
+      "bytes": "d905fc874200",
+      "build_only": true
+    }
+  ],
+  "absent": [
+    {
+      "name": "creature_find_nearest",
+      "reason": "The ordered placement at 0x00402940 initializes the 8 by 8 sprite UV table. The seeker rocket and its homing target search first appear in 1.3.0."
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init",
+      "note": "The startup entries placed here initialize a bonus ID or count. The early builds have no console."
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init_thunk",
+      "note": "The startup entries placed here initialize a bonus ID or count. The early builds have no console."
+    },
+    {
+      "name": "console_cmd_tell_time_survived",
+      "note": "The early build has no console. The heuristic address is an FMOD import thunk."
+    },
+    {
+      "name": "audio_init_sfx",
+      "note": "The 1.0.2 FMOD initializer at 0x401470 registers the samples itself. The ordered placement at 0x40acc0 calls Grim drawing methods."
+    }
+  ],
+  "rejected_data_placements": [
+    {
+      "name": "sprite_effect_pool",
+      "address": "0x004208c8",
+      "size": 700,
+      "sha256": "1be6b9bcfbebc370831ae298fcf28d4fbfe45d9537d311ef7b9ab09ac525e9f0",
+      "reason": "This is the entire relocation-free .data section of VC6 libcmt.lib(constpow.obj). The power-of-ten tables __pow10pos and __pow10neg begin here and at +0x160. An operand projected from the later game does not establish a sprite pool here."
+    },
+    {
+      "name": "d3dx_sse_math_bss",
+      "address": "0x00428880",
+      "size": 32,
+      "sha256": "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925",
+      "conflicting_globals": [
+        "freeware_level_up_reset_byte",
+        "frame_dt",
+        "freeware_simulation_clock",
+        "freeware_credits_open",
+        "freeware_logo_angle"
+      ],
+      "reason": "player_check_level stores a byte here. The following game globals include the frame delta, advancing simulation clock and menu state, each with an independent write. The 32-byte footprint cannot be the static SIMD zero vector. DirectX 8.1 d3dx8.lib(d3dxmathsse.obj) supplies a 32-byte .bss section with 32-byte alignment containing _zero__9701."
+    },
+    {
+      "name": "freeware_score_scroll",
+      "address": "0x0042889c",
+      "size": 4,
+      "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+      "conflicting_globals": [
+        "s_empty_string"
+      ],
+      "reason": "The EXE passes this address as an empty C string in crimsonland_main (0x4106bd and 0x4107b1). The 1.0.2 scoreboard has a fixed vertical position; a score-scroll accumulator and floating-point writes appear in 1.3.0."
     }
   ]
 }

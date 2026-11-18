@@ -1,5 +1,32 @@
 # `projectile_update`
 
+## Freeware primary, secondary, sprite and particle passes
+
+The 1.3.0 and 1.4.0 candidates share the freeware source. Both pass primary
+motion through the current map (radius 0), probe type-10 impact marks against
+walls (radius 2), and collide rockets and airborne particles with walls
+(radii 4 and 3). The two native primary collision calls are at 0x40642c and
+0x409710. A blocked type-10 mark skips its size roll and both effects.
+
+1.3.0 walks 256 sprite slots, checks particle expiry before moving, and uses
+the early audio and two-argument death calls. 1.4.0 walks 384 sprite slots,
+implements the wavy type-18 shot and bubble particles, and rotates particles
+before the expiry check. The 1.3.0 projectile oracle checks 35 impacts and
+64 flame/rocket frames against the original. The 1.4.0 combat oracle checks
+359 projectile frames including RNG and effect queues.
+
+| Build | Native instructions | Candidate instructions | Normalized similarity |
+| --- | ---: | ---: | ---: |
+| 1.0.2 | 773 | 773 | 100%, byte-exact |
+| 1.3.0 | 1,954 | 1,954 | 100%, byte-exact |
+| 1.4.0 | 2,132 | 2,132 | 100%, byte-exact |
+
+All four pool walks in each later build compile to the original bytes, with
+the native `0x110`-byte frame. The reference audit resolves all 493 operands
+in 1.3.0 and all 531 in 1.4.0. The primary and rocket impacts share the angle,
+radius and size of their ice marks. Passing the size by reference reproduces
+the native spill and texture-load order at the first two marks.
+
 ## 1.9.8 exact (2026-10-14)
 
 `--build 1.9.8` (C2 9044) is byte-exact: 2,223 instructions, 576 references and

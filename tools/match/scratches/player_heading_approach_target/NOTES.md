@@ -17,3 +17,14 @@ Both normalized instructions and relocation-aware encoded bytes match, with
 24/0/0 references. Canonical retains its complete 95-instruction match and
 27/0/0 references. Canonical `player_update` remains instruction and byte exact.
 This helper recovery does not award a match to either 1.9.8 updater.
+
+## Early freeware
+
+The 1.0.2 and 1.3.0 functions normalize the current heading, then call
+standalone min/max helpers to compare the direct turn with the turn across the
+zero-angle boundary. Both helpers reproduce their nine-instruction bodies in
+each release. Casting the angle difference to float before calling `fabs` reproduces the
+stack-store scheduling of both early releases. The 1.0.2 heading update at
+`0x407ec0` matches all 105 instructions (383 bytes) and the 1.3.0 update at
+`0x40e2c0` matches all 97 instructions (367 bytes), with 32 audited
+references in each. The 1.4.0 implementation selects min and max inline.

@@ -16,20 +16,25 @@ BN_EXPORT = '''
 import binaryninja as bn
 import hashlib
 import json
+import tempfile
 from pathlib import Path
 registry = json.loads((root / "decomp/builds.json").read_text())
 result = []
 for build in registry["builds"]:
+    if build_id and build["id"] != build_id:
+        continue
     for spec in build["images"]:
-        if not spec.get("native_inventory"):
+        if not spec.get("native_inventory") or (image_name and image_name != spec["name"]):
             continue
         path = root / build["tree"] / spec["name"]
         if hashlib.sha256(path.read_bytes()).hexdigest() != spec["sha256"]:
             raise ValueError("native inventory image pin differs")
         directory = root / "analysis/decomp" / build["id"] / spec["name"]
         output = directory / spec["native_inventory"]
-        previous = json.loads(output.read_text())
-        mapped = (directory / "functions.json").read_bytes()
+        original = output.read_bytes()
+        previous = json.loads(original)
+        map_path = directory / "functions.json"
+        mapped = map_path.read_bytes()
         seeds = [int(row["address"], 16) for row in json.loads(mapped) if row["evidence"] in ("exact", "interface", "recovered")]
         view = bn.load(str(path), options={"analysis.mode": "controlFlow"})
         for start in list(seeds):
@@ -75,10 +80,18 @@ for build in registry["builds"]:
                    "analyzer": {"name": "Binary Ninja", "version": bn.core_version(), "mode": "controlFlow",
                                 "seeds": "Verified relinking-invariant bodies from the donor map; independent control-flow discovery retained."},
                    "functions": functions, "verified_starts": seeds,
-                   "ownership_ranges": previous["ownership_ranges"], "maps_sha256": hashlib.sha256(mapped).hexdigest()}
-        output.write_text(json.dumps(payload, indent=2) + "\\n")
-        result.append({"build": build["id"], "image": spec["name"], "functions": len(functions)})
+                   "ownership_ranges": previous["ownership_ranges"], "maps_sha256": hashlib.sha256(mapped).hexdigest(),
+                   "platform_replaced": previous["platform_replaced"]}
         view.file.close()
+        # Re-exports may race a map rebuild or a reviewed ownership correction.
+        # Keep the original visible until all output and input checks finish.
+        with tempfile.TemporaryDirectory(dir=directory) as temporary:
+            staged = Path(temporary) / output.name
+            staged.write_text(json.dumps(payload, indent=2) + "\\n")
+            if map_path.read_bytes() != mapped or output.read_bytes() != original:
+                raise RuntimeError(f"native inventory inputs changed during export: {directory}")
+            staged.replace(output)
+        result.append({"build": build["id"], "image": spec["name"], "functions": len(functions)})
 '''
 
 
@@ -86,6 +99,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", required=True, help="explicit bn target selector from `bn target list`")
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--build", choices=["1.0.2", "1.3.0", "1.4.0"], help="only refresh this freeware build")
+    parser.add_argument("--image", choices=["crimson.exe", "grim.dll"], help="only refresh this image in each freeware build")
     args = parser.parse_args()
     executable = shutil.which("bn")
     if executable is None:
@@ -94,7 +109,13 @@ def main() -> None:
     # as a Python literal, never through shell interpolation.
     with tempfile.TemporaryDirectory(prefix="crimson-native-export-") as temporary:
         script = Path(temporary) / "export_bn.py"
-        script.write_text(f"from pathlib import Path\nroot = Path({str(args.root.resolve())!r})\n" + BN_EXPORT)
+        script.write_text(
+            "from pathlib import Path\n"
+            f"root = Path({str(args.root.resolve())!r})\n"
+            f"image_name = {args.image!r}\n"
+            f"build_id = {args.build!r}\n"
+            + BN_EXPORT,
+        )
         subprocess.run([executable, "--target", args.target, "py", "--script", str(script)], check=True)
 
 

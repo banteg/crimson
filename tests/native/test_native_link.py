@@ -2202,7 +2202,9 @@ def test_data_definition_groups_expand_member_initializers(
     ]
 
 
-def _build_auxiliary_coff(*, relocation_symbol_index: int | None = None) -> bytes:
+def _build_auxiliary_coff(
+    *, relocation_symbol_index: int | None = None, debug_file: bool = False,
+) -> bytes:
     code = b"\xc3\x00\x00\x00"
     header_size = 20
     section_header_size = 40
@@ -2227,9 +2229,14 @@ def _build_auxiliary_coff(*, relocation_symbol_index: int | None = None) -> byte
         IMAGE_SYM_CLASS_WEAK_EXTERNAL,
         1,
     )
-    weak_aux = struct.pack("<II10x", 2, 3)
-    symbols = section_symbol + section_aux + function_symbol + weak_symbol + weak_aux
-    symbol_count = 5
+    file_record = b""
+    if debug_file:
+        file_record = struct.pack("<8sIhHBB", b".file", 0, -2, 0, matchlib.IMAGE_SYM_CLASS_FILE, 2)
+        file_record += b"compiler/include/vector".ljust(36, b"\0")
+    function_index = 2 + len(file_record) // 18
+    weak_aux = struct.pack("<II10x", function_index, 3)
+    symbols = section_symbol + section_aux + file_record + function_symbol + weak_symbol + weak_aux
+    symbol_count = len(symbols) // 18
     header = struct.pack(
         "<HHIIIHH",
         matchlib.IMAGE_FILE_MACHINE_I386,
@@ -2267,6 +2274,24 @@ def test_coff_parser_preserves_comdat_and_weak_auxiliary_records() -> None:
     assert weak.weak_default_symbol_index == 2
     assert weak.weak_search == 3
     assert len(weak.aux_records) == 1
+
+
+def test_coff_parser_accepts_vc6_debug_file_marker_before_comdat_key() -> None:
+    obj = matchlib.parse_coff_object(_build_auxiliary_coff(debug_file=True))
+
+    assert obj.sections[0].comdat_key == "_foo"
+    assert [symbol.raw_index for symbol in obj.symbols] == [0, 2, 5, 6]
+    assert obj.symbols[-1].weak_default_symbol_index == 5
+
+
+@pytest.mark.parametrize("marker_section,key_section", [(1, 1), (-2, 0)])
+def test_coff_parser_requires_next_comdat_key_in_its_section(marker_section: int, key_section: int) -> None:
+    data = bytearray(_build_auxiliary_coff(debug_file=True))
+    symtab = struct.unpack_from("<I", data, 8)[0]
+    struct.pack_into("<h", data, symtab + 2 * 18 + 12, marker_section)
+    struct.pack_into("<h", data, symtab + 5 * 18 + 12, key_section)
+    with pytest.raises(ValueError, match="invalid key symbol"):
+        matchlib.parse_coff_object(bytes(data))
 
 
 def test_coff_parser_rejects_relocation_past_section_end() -> None:

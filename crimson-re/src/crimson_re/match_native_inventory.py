@@ -3,7 +3,8 @@
 Donor maps supply identities, never the denominator. Verified unchanged bodies
 bound physical extents; independent control-flow discovery supplies other starts.
 Shared/interior entry points stay in the raw inventory. Every byte outside a
-retained function is an uncredited executable remainder, including alignment.
+retained function keeps physical ownership. Reviewed gaps distinguish compiler
+alignment and switch tables from unresolved executable bytes.
 """
 from __future__ import annotations
 
@@ -14,9 +15,9 @@ from itertools import pairwise
 from typing import Any
 
 from . import match as matchlib
-from . import match_builds
+from . import match_builds, match_gap_classification, match_gap_references
 
-POLICY = "native-functions-and-full-executable-remainder-v1"
+POLICY = "native-functions-and-classified-executable-remainder-v2"
 
 
 def _digest(data: bytes) -> str:
@@ -35,7 +36,7 @@ def _library_owners(image: match_builds.BuildImage) -> dict[int, str]:
     excluded = {row.address for row in scope.function_dispositions[source.name] if row.disposition == "third-party"}
     result = {}
     for row in json.loads(image.target.functions_path.read_text()):
-        if row["evidence"] not in {"exact", "interface", "recovered"}:
+        if row.get("build_only") or row["evidence"] not in {"exact", "interface", "recovered"}:
             continue
         canonical = matchlib.parse_int(row["canonical_address"])
         owners = {owner for lo, hi, owner in regions if lo <= canonical < hi}
@@ -52,15 +53,16 @@ def _partition(
     image: matchlib.LoadedImage, image_name: str,
 ) -> list[dict[str, Any]]:
     by_address = {matchlib.parse_int(row["address"]): row for row in mapped}
-    verified = sorted(
-        (start, matchlib.parse_int(row["end"])) for start, row in by_address.items() if row["evidence"] in {"exact", "interface", "recovered"}
-    )
-    protected_starts = [start for start, _ in verified]
+    verified_ends = {
+        start: matchlib.parse_int(row["end"]) for start, row in by_address.items()
+        if row["evidence"] in {"exact", "interface", "recovered"} and not row.get("identity_only")
+    }
+    protected_starts = sorted(verified_ends)
     functions = {row["address"]: row for row in discovered}
     starts = []
     for start in sorted(functions):
         previous = bisect.bisect_left(protected_starts, start) - 1
-        if previous >= 0 and start < verified[previous][1]:
+        if previous >= 0 and start < verified_ends[protected_starts[previous]]:
             continue  # Interior/shared entry remains in native.json, not a duplicate byte owner.
         starts.append(start)
 
@@ -86,8 +88,7 @@ def _partition(
             end = min(max(block["end"] for block in native["blocks"]),
                       section_starts[index + 1] if index + 1 < len(section_starts) else section_end)
             identity = by_address.get(start)
-            if identity is not None and identity["evidence"] in {"exact", "interface", "recovered"}:
-                end = matchlib.parse_int(identity["end"])
+            end = verified_ends.get(start, end)
             if not cursor <= start < end <= section_end:
                 raise ValueError("overlapping or invalid native function partition")
             if cursor < start:
@@ -101,9 +102,12 @@ def _partition(
             row = {"image": image_name, "address": start, "end": retained_end, "size": size,
                    "name": identity["name"] if identity is not None else native["name"],
                    "native_kind": "function", "ownership": owner(start, retained_end)}
+            if identity is not None and identity.get("identity_only"):
+                # Compare the fingerprinted body, but keep this entry's independent byte ownership.
+                row["comparison_end"] = matchlib.parse_int(identity["end"])
             if row["ownership"] == "unknown" and start in library_owners:
                 row["ownership"] = library_owners[start]
-            if identity is not None:
+            if identity is not None and not identity.get("build_only"):
                 row["canonical_address"] = matchlib.parse_int(identity["canonical_address"])
             result.append(row)
             cursor = retained_end
@@ -112,7 +116,7 @@ def _partition(
     return result
 
 
-def load(image: match_builds.BuildImage) -> list[dict[str, Any]]:
+def load(image: match_builds.BuildImage, *, classify_gaps: bool = True) -> list[dict[str, Any]]:
     if image.native_inventory is None:
         raise ValueError("build has no independent native inventory")
     payload = json.loads(image.native_inventory.read_text())
@@ -145,8 +149,59 @@ def load(image: match_builds.BuildImage) -> list[dict[str, Any]]:
             raise ValueError("native ownership boundary changed")
         previous = hi
     mapped = json.loads(image.target.functions_path.read_text())
-    return _partition(sections, payload["functions"], mapped, ownership, _library_owners(image), native, image.name)
+    rows = _partition(sections, payload["functions"], mapped, ownership, _library_owners(image), native, image.name)
+    if classify_gaps:
+        rows = match_gap_classification.classify(
+            native, rows, payload["functions"], entry_points=match_gap_references.pe_entry_points(image.path),
+        )
+    _apply_port_scope(rows, payload["platform_replaced"])
+    return rows
+
+
+def _apply_port_scope(rows: list[dict[str, Any]], exclusions: list[dict[str, Any]]) -> None:
+    # The image and discovered extents are already pinned. Donor names, including
+    # weak ordered placements, are deliberately irrelevant to this decision.
+    owned = {r["address"]: r for r in rows if r["native_kind"] == "function" and r["ownership"] == "game"}
+    for row in owned.values():
+        row["platform_replaced"] = None
+    for entry in exclusions:
+        address, reason = entry["address"], entry["reason"]
+        if type(address) is not int or address not in owned or not isinstance(reason, str) or not reason.strip():
+            raise ValueError(f"invalid platform exclusion for native game/engine function: {entry}")
+        if owned[address]["platform_replaced"] is not None:
+            raise ValueError(f"duplicate platform exclusion at {address:#x}")
+        owned[address]["platform_replaced"] = reason
+
+
+def in_port_scope(row: dict[str, Any]) -> bool:
+    return row["native_kind"] == "function" and row["ownership"] == "game" and row["platform_replaced"] is None
+
+
+def scoped_functions(image: match_builds.BuildImage, scope: str) -> dict[int, dict[str, Any]]:
+    if scope not in {"all", "port"}:
+        raise ValueError(f"unknown native function scope: {scope}")
+    return {
+        row["address"]: row for row in load(image, classify_gaps=False)
+        if row["native_kind"] == "function" and (scope == "all" or in_port_scope(row))
+    }
 
 
 def function_bounds(image: match_builds.BuildImage) -> dict[int, int]:
-    return {row["address"]: row["end"] for row in load(image) if row["native_kind"] == "function"}
+    return {address: row["end"] for address, row in scoped_functions(image, "all").items()}
+
+
+def build_functions(
+    registry: match_builds.Registry, build: str, scope: str, *, image_name: str | None = None,
+) -> dict[str, dict[int, dict[str, Any]]]:
+    if build not in registry.builds:
+        raise ValueError(f"unknown matching build {build!r}")
+    images = [registry.image(build, image_name)] if image_name else registry.builds[build].values()
+    inventory = {}
+    for image in images:
+        rows = scoped_functions(image, scope)
+        for placement in json.loads(image.target.functions_path.read_text()):
+            address = matchlib.parse_int(placement["address"])
+            if address in rows:
+                rows[address]["name_evidence"] = placement["evidence"]
+        inventory[image.name] = rows
+    return inventory

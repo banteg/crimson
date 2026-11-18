@@ -5,8 +5,9 @@
     {
       "name": "grim_config_dialog_proc",
       "address": "0x100010d0",
-      "end": "0x100012bf",
-      "body_sha256": "49934fe26c26ee9f0f70c2f967d1ff900867f1714dde6c1b8a6e6adce1e6ed51"
+      "end": "0x100012c0",
+      "body_sha256": "b0321fd4b8b23cfff937bfd1c051fbc6c808982a16db3d98c4cf1d4b3a7c7ab8",
+      "note": "Includes the complete final ret 0x10; the next function begins immediately at 0x100012c0."
     },
     {
       "name": "grim_window_create",
@@ -41,8 +42,9 @@
     {
       "name": "grim_window_proc",
       "address": "0x10001680",
-      "end": "0x100019da",
-      "body_sha256": "512848ca6fca74d7dbef8e7d5572da61a1a8d84139c78f8df2b8e961af968fac"
+      "end": "0x10001961",
+      "body_sha256": "28a30bf82512e0bc37feabeebcc5637eba5dfa7bec14b979943563e821978a84",
+      "note": "Through the final DefWindowProcA return. Two sparse message switch tables and their byte index tables follow the code."
     },
     {
       "name": "grim_run_loop",
@@ -53,8 +55,8 @@
     {
       "name": "grim_d3d_init",
       "address": "0x10001cc0",
-      "end": "0x10002036",
-      "body_sha256": "17f0fcfe944171d55c9549e69c6f1a63f8c84cf8c1dae68043ad1de936392135"
+      "end": "0x10002040",
+      "body_sha256": "fb95f3d82fc506a6480238663ae0af126c5b0ae39a35d13e6560f2e0d13ef951"
     },
     {
       "name": "grim_create_geometry_buffers",
@@ -137,8 +139,9 @@
     {
       "name": "grim_set_config_var",
       "address": "0x10003330",
-      "end": "0x100036a9",
-      "body_sha256": "09c054552236db3483f64771853c8e5052ddeefca2230be91198d35cb1d63d95"
+      "end": "0x10003626",
+      "body_sha256": "09bba20da3439e6c7d8d2d25b37fc77ecbdb3e7bfe53e8f15344c6da3d41cb28",
+      "note": "Sparse config dispatch tables follow the final return: an aligned address table and a 66-entry byte index."
     },
     {
       "name": "grim_get_config_var",
@@ -283,6 +286,12 @@
       "address": "0x10004ab0",
       "end": "0x10004b72",
       "body_sha256": "1d639bf52217550e5edaf014826404497145735fba5e2a3f558d0f3a7d160cc2"
+    },
+    {
+      "name": "Direct3DCreate8",
+      "address": "0x10004bc0",
+      "end": "0x10004bc6",
+      "body_sha256": "dd37d6d7be8f3e4c21b7ede11aa0ff4f2e0e80b8aaddb09ec4d1a5e35dc7944d"
     },
     {
       "name": "DirectInput8Create",
@@ -486,6 +495,45 @@
       "bytes": "c705e4aa041000010000"
     },
     {
+      "name": "grim_config_dialog_pure_software_selected",
+      "address": "0x1004aae8",
+      "reference": "0x10003080",
+      "bytes": "8a0de8aa0410",
+      "build_only": true,
+      "note": "Dialog control 0x3ed (Pure software), passed to config ID 0x34."
+    },
+    {
+      "name": "grim_frame_callback",
+      "address": "0x1004aaf0",
+      "reference": "0x10001c3b",
+      "bytes": "ff15f0aa0410"
+    },
+    {
+      "name": "grim_process_hinstance",
+      "address": "0x1004aaf4",
+      "reference": "0x100012c0",
+      "bytes": "a1f4aa0410"
+    },
+    {
+      "name": "grim_backbuffer_height",
+      "address": "0x1004ab00",
+      "reference": "0x100013cb",
+      "bytes": "8b0d00ab0410"
+    },
+    {
+      "name": "grim_tick_prev",
+      "address": "0x1004ab08",
+      "reference": "0x1000260b",
+      "bytes": "891d08ab0410",
+      "build_only": true
+    },
+    {
+      "name": "grim_window_class",
+      "address": "0x1004ab10",
+      "reference": "0x100012e8",
+      "bytes": "c70510ab041030000000"
+    },
+    {
       "name": "grim_window_class_hinstance",
       "address": "0x1004ab24",
       "reference": "0x10001498",
@@ -496,6 +544,12 @@
       "address": "0x1004ab38",
       "reference": "0x1000149d",
       "bytes": "8b0d38ab0410"
+    },
+    {
+      "name": "grim_present_parameters",
+      "address": "0x1004ab40",
+      "reference": "0x10001da1",
+      "bytes": "bf40ab0410"
     },
     {
       "name": "grim_rotation_radians",
@@ -522,6 +576,12 @@
       "bytes": "d90590ab0410"
     },
     {
+      "name": "grim_timing_frozen",
+      "address": "0x1004ab98",
+      "reference": "0x10002623",
+      "bytes": "881d98ab0410"
+    },
+    {
       "name": "grim_config_default",
       "address": "0x1004aba0",
       "reference": "0x100036e6",
@@ -534,10 +594,35 @@
       "bytes": "a1c0ab0410"
     },
     {
+      "name": "grim_device_caps",
+      "address": "0x1004abc8",
+      "reference": "0x10003003",
+      "bytes": "68c8ab0410"
+    },
+    {
+      "name": "grim_config_dialog_windowed_selected",
+      "address": "0x1004acb0",
+      "reference": "0x10003069",
+      "bytes": "8a0db0ac0410"
+    },
+    {
       "name": "grim_vertex_z",
       "address": "0x1004acb8",
       "reference": "0x100040ba",
       "bytes": "a1b8ac0410"
+    },
+    {
+      "name": "grim_uv_u0",
+      "address": "0x1004aec0",
+      "reference": "0x10003ee8",
+      "bytes": "d91cc5c0ae0410",
+      "evidence": "grim_set_uv_point writes the U component at [index * 8 + this address] in the native four-vertex UV array."
+    },
+    {
+      "name": "grim_config_dialog_bpp16_selected",
+      "address": "0x1004aee8",
+      "reference": "0x10003036",
+      "bytes": "a0e8ae0410"
     },
     {
       "name": "grim_index_write_ptr",
@@ -550,6 +635,26 @@
       "address": "0x1004aef8",
       "reference": "0x1000474f",
       "bytes": "8b0cd5f8ae0410"
+    },
+    {
+      "name": "grim_window_title",
+      "address": "0x1004b6f8",
+      "reference": "0x1000137c",
+      "bytes": "a1f8b60410"
+    },
+    {
+      "name": "grim_tick_now",
+      "address": "0x1004b700",
+      "reference": "0x10002617",
+      "bytes": "891d00b70410",
+      "build_only": true
+    },
+    {
+      "name": "grim_timing_epoch_ticks",
+      "address": "0x1004b708",
+      "reference": "0x100025b5",
+      "bytes": "6808b70410",
+      "build_only": true
     },
     {
       "name": "grim_color_slot1",
@@ -580,6 +685,12 @@
       "address": "0x1004b728",
       "reference": "0x1000391a",
       "bytes": "8a8828b70410"
+    },
+    {
+      "name": "grim_backbuffer_width",
+      "address": "0x1004b828",
+      "reference": "0x100013b1",
+      "bytes": "8b0d28b80410"
     },
     {
       "name": "grim_device_ready",
@@ -620,6 +731,24 @@
       "offset": 296
     },
     {
+      "name": "grim_windowed_mode_enabled",
+      "address": "0x1004b8a0",
+      "reference": "0x1000134f",
+      "bytes": "381da0b80410"
+    },
+    {
+      "name": "grim_keyboard_enabled",
+      "address": "0x1004b900",
+      "reference": "0x1000310c",
+      "bytes": "803d00b9041001"
+    },
+    {
+      "name": "grim_mouse_enabled",
+      "address": "0x1004b918",
+      "reference": "0x100030c6",
+      "bytes": "a018b90410"
+    },
+    {
       "name": "grim_font_texture_bound",
       "address": "0x1004b9d8",
       "reference": "0x100046c3",
@@ -632,10 +761,52 @@
       "bytes": "a1ecb90410"
     },
     {
+      "name": "grim_config_backbuffer_count",
+      "address": "0x1004bd18",
+      "reference": "0x10001d94",
+      "bytes": "8b1518bd0410"
+    },
+    {
+      "name": "grim_use_ref_device",
+      "address": "0x1004bd38",
+      "reference": "0x10001cc0",
+      "bytes": "a038bd0410"
+    },
+    {
+      "name": "grim_enable_auto_depth_stencil",
+      "address": "0x1004bd50",
+      "reference": "0x10001e00",
+      "bytes": "a050bd0410"
+    },
+    {
+      "name": "grim_active_d3d8",
+      "address": "0x1004bfe0",
+      "reference": "0x10002026",
+      "bytes": "a3e0bf0410"
+    },
+    {
+      "name": "grim_active_d3d_device",
+      "address": "0x1004bff8",
+      "reference": "0x1000202c",
+      "bytes": "890df8bf0410"
+    },
+    {
+      "name": "grim_reserved_d3ac",
+      "address": "0x1004c450",
+      "reference": "0x10002cdb",
+      "bytes": "881d50c40410"
+    },
+    {
       "name": "grim_ms_to_seconds_scale",
       "address": "0x1004c454",
       "reference": "0x100038a6",
       "bytes": "d83554c40410"
+    },
+    {
+      "name": "grim_config_dialog_canceled",
+      "address": "0x1004c45c",
+      "reference": "0x10002fe5",
+      "bytes": "c6055cc4041000"
     },
     {
       "name": "grim_batch_active",
@@ -648,6 +819,19 @@
       "address": "0x1004c469",
       "reference": "0x100014c1",
       "bytes": "a069c40410"
+    },
+    {
+      "name": "grim_fps_sample_frames",
+      "address": "0x1004c46c",
+      "reference": "0x10002724",
+      "bytes": "a16cc40410"
+    },
+    {
+      "name": "grim_fps_sample_seconds",
+      "address": "0x1004c470",
+      "reference": "0x10002755",
+      "bytes": "d90570c40410",
+      "build_only": true
     },
     {
       "name": "grim_empty_string",
@@ -682,6 +866,22 @@
     {
       "name": "HlinkNavigateString",
       "note": "Not present in 1.0.2 grim.dll; 0x10032730 is DirectInput8Create."
+    },
+    {
+      "name": "__CxxLongjmpUnwind",
+      "note": "This DLL has no import for __CxxLongjmpUnwind. The thunk at 0x10004bc0 jumps through the Direct3DCreate8 IAT entry."
+    }
+  ],
+  "rejected_data_placements": [
+    {
+      "name": "grim_dc_mode_active",
+      "address": "0x1004aec0",
+      "size": 32,
+      "sha256": "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925",
+      "conflicting_globals": [
+        "grim_uv_u0"
+      ],
+      "reason": "This is the four-vertex UV array. grim_set_uv_point writes arbitrary U floats here, and the adjacent texture registry ends at the same address. The later DC-mode branches are absent from the native freeware run loop and window procedure."
     }
   ]
 }

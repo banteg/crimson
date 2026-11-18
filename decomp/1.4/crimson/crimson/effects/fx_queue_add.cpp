@@ -1,23 +1,17 @@
-#include "cl_build.h"
-#define fx_queue_add fx_queue_add_19
-#include "crimsonland_gameplay.h"
-#undef fx_queue_add
-extern "C" void fx_queue_add(
-    int effect_id,
-    vec2f_t *pos,
-    float width,
-    float height,
-    float rotation,
-    effect_color_t color)
-{
-    fx_queue[fx_queue_count].position = *pos;
-    fx_queue[fx_queue_count].color = color;
-    fx_queue[fx_queue_count].width = width;
-    fx_queue[fx_queue_count].height = height;
-    fx_queue[fx_queue_count].rotation = rotation;
-    fx_queue[fx_queue_count++].effect_id = effect_id;
-
-    if (fx_queue_count >= 0x40) {
-        fx_queue_count = 0x3f;
-    }
+// crimson.exe 1.4.0, 0x405c80.
+#include "freeware_fx_queues.h"
+#include "freeware_edition.h"
+extern "C" void fx_queue_add(FreewareFxTexture texture, const vec2f_t *pos, float width, float height,
+                             float rotation, effect_color_t color) {
+#define QUEUE FX_STORE(fx_queue, impacts)
+#define COUNT FX_STORE(fx_queue_count, impact_count)
+    QUEUE[COUNT].position = *pos;
+    QUEUE[COUNT].color = color;
+    QUEUE[COUNT].width = width;
+    QUEUE[COUNT].height = height;
+    QUEUE[COUNT].rotation = rotation;
+    QUEUE[COUNT++].effect_id = texture;
+    const int capacity = FREEWARE_EDITION == 10300 ? 32 : 64;
+    if (COUNT >= capacity)
+        COUNT = capacity - 1;
 }

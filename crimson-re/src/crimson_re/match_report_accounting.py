@@ -4,14 +4,21 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
+from . import match_freeware_data, match_native_inventory, match_source_receipt
 
 VERIFICATION = "source-bound local compilation; CI checks freshness and report consistency"
 SCORING_POLICY = "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1"
 INVENTORY_POLICY = "curated-functions-v2; canonical-ownership-v1; data-extents-v1; executable-gaps-unresolved-v1"
+GAP_LABELS = {
+    "padding": "Executable padding",
+    "embedded_data": "Embedded executable-section data",
+    "unresolved": "Unresolved executable bytes",
+}
 # Synthetic report input: locked versions of the libraries the scoring code imports.
 SCORING_DEPENDENCIES_INPUT = "uv.lock#scoring-dependencies"
 
@@ -24,22 +31,42 @@ def _digest(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+def _data_ownership_ranges(ownership: list[dict[str, Any]]) -> list[tuple[str, int, int, str]]:
+    """Adjacent pieces of one owner keep their identity as source candidates split the partition."""
+    ranges: list[tuple[str, int, int, str]] = []
+    for row in sorted(ownership, key=lambda r: (r["image"], r["address"])):
+        image, start, owner = row["image"], row["address"], row["owner"]
+        end = start + row["size"]
+        if ranges and ranges[-1][0] == image and ranges[-1][2:] == (start, owner):
+            start = ranges.pop()[1]
+        ranges.append((image, start, end, owner))
+    return ranges
+
+
 def identities(
     functions: list[dict[str, Any]], inputs: dict[str, str], external: dict[str, str],
     toolchains: dict[str, Any] | None = None,
     *, data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     native = any("native_kind" in row for row in functions)
-    policy = "native-functions-and-full-executable-remainder-v1" if native else INVENTORY_POLICY
+    policy = match_native_inventory.POLICY if native else INVENTORY_POLICY
     return {
         "target": {path: digest for path, digest in external.items() if path.startswith("game_bins/")},
         "inventory": _digest({
             "policy": policy,
             "ranges": sorted((r["image"], r["address"], r["size"], r.get("canonical_address", r["address"]))
-                             + ((r.get("native_kind"), r.get("ownership")),) if native else
+                             + ((r.get("native_kind"), r.get("ownership"), bool(r.get("platform_replaced"))),) if native else
                              (r["image"], r["address"], r["size"], r.get("canonical_address", r["address"]))
                              for r in functions),
+            **({"gap_evidence": sorted((native_id(r), r["gap_evidence"]) for r in functions if "gap_evidence" in r)}
+               if native else {}),
             "data_sections": data["sections"] if data is not None else None,
+            **({
+                "data_policy": data["policy"],
+                "mapped_globals": sorted((g["image"], g["address"], g.get("size"), g.get("owner"))
+                                         for g in data["globals"]),
+                "attributed_data": _data_ownership_ranges(data["ownership"]),
+            } if data and data.get("policy") == match_freeware_data.POLICY else {}),
             "ownership": {p: h for p, h in inputs.items() if p in {
                 "analysis/matching_scope.json", "analysis/library_provenance.json", "tools/native/data_ownership.json"}},
         }),
@@ -55,6 +82,16 @@ def identities(
     }
 
 
+def _check_source_object_names(data: bytes, function: str) -> None:
+    # VC6 gives an emitted anonymous namespace a new decimal suffix on every
+    # compile. Preserve full COFF receipts, including symbol and relocation identity.
+    if b"@?%" in data:
+        for symbol in matchlib.parse_coff_object(data).symbols:
+            if re.search(r"@\?%[^@]+\.(?:cpp|cxx|cc)\d+@", symbol.name, re.IGNORECASE):
+                raise ValueError(f"{function}: VC6 generated an unstable anonymous namespace symbol {symbol.name!r}. "
+                                 "Give the emitted helper a named namespace or file-local C++ linkage.")
+
+
 def candidate_evidence(status: matchlib.ScratchStatus | None) -> dict[str, Any]:
     if status is None:
         return {"proof": None}
@@ -66,7 +103,10 @@ def candidate_evidence(status: matchlib.ScratchStatus | None) -> dict[str, Any]:
     object_path = matchlib._scratch_object_path(status.config)
     if not object_path.is_file():
         raise ValueError(f"missing candidate object: {status.config.function}")
-    object_hash = matchlib.coff_sha256(object_path.read_bytes())
+    raw = object_path.read_bytes()
+    if status.config.archive is None and status.config.import_thunk is None:
+        _check_source_object_names(raw, status.config.function)
+    object_hash = match_source_receipt.candidate_object_sha256(raw, status.config)
     return {"proof": {
         "state": status.state,
         "target_size": status.target_size,
@@ -94,6 +134,13 @@ def normalized_exact(row: dict[str, Any], *, ratio: float | None = None) -> bool
     return bool((row["ratio"] if ratio is None else ratio) == 1 and refs["positional"]
                 and not refs["unresolved"] and not refs["mismatched"]
                 and covered == row["size"] and not proof["unexplained_target_ranges"])
+
+
+def validate_target_size(row: dict[str, Any], target_size: int) -> None:
+    if target_size < row["size"]:
+        raise ValueError(f"partial function extent in report: {row['name']}")
+    if "comparison_end" in row and row["address"] + target_size != row["comparison_end"]:
+        raise ValueError(f"comparison differs from the fingerprinted extent: {row['name']}")
 
 
 def validate_function(row: dict[str, Any]) -> None:
@@ -136,12 +183,22 @@ def validate_function(row: dict[str, Any]) -> None:
         if type(start) is not int or type(end) is not int or start != cursor or end <= start:
             raise ValueError(f"invalid compared coverage partition: {key}")
         cursor = end
-    if cursor != row["address"] + proof["target_size"] or proof["target_size"] < row["size"]:
+    validate_target_size(row, proof["target_size"])
+    if cursor != row["address"] + proof["target_size"]:
         raise ValueError(f"incomplete compared coverage: {key}")
     if type(row["matched"]) is not bool or row["matched"] != normalized_exact(row):
         raise ValueError(f"inconsistent normalized credit: {key}")
     if proof["body_byte_exact"] and (ratio != 1 or expected_state != "match" or not refs["positional"]):
         raise ValueError(f"inconsistent encoded-body proof: {key}")
+
+
+def executable_kind(row: dict[str, Any]) -> str:
+    kind = row.get("native_kind", "function")
+    if kind == "function":
+        return "retained_code"
+    if kind not in GAP_LABELS:
+        raise ValueError(f"unknown native inventory kind at {native_id(row)}: {kind!r}")
+    return kind
 
 
 def reconcile_sections(sections: list[dict[str, Any]], functions: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -164,14 +221,16 @@ def reconcile_sections(sections: list[dict[str, Any]], functions: list[dict[str,
                 raise ValueError(f"overlapping or invalid retained code: {native_id(row)}")
             if lo > cursor:
                 spans.append({"start": cursor, "end": lo, "kind": "unresolved"})
-            kind = "unresolved" if row.get("native_kind") == "unresolved" else "retained_code"
-            spans.append({"start": lo, "end": hi, "kind": kind, "owner": native_id(row)})
+            span = {"start": lo, "end": hi, "kind": executable_kind(row), "owner": native_id(row)}
+            if "gap_evidence" in row:
+                span.update(ownership=row["ownership"], gap_evidence=row["gap_evidence"])
+            spans.append(span)
             assigned.add(native_id(row))
             cursor = hi
         if cursor < end:
             spans.append({"start": cursor, "end": end, "kind": "unresolved"})
         totals = {kind: sum(s["end"] - s["start"] for s in spans if s["kind"] == kind)
-                  for kind in ("retained_code", "embedded_data", "padding", "unresolved")}
+                  for kind in ("retained_code", *GAP_LABELS)}
         result.append({**section, "totals": totals, "ranges": spans})
     if len(assigned) != len(functions):
         raise ValueError("report functions are duplicated or outside executable sections")
@@ -190,6 +249,53 @@ def code_inventory(functions: list[dict[str, Any]], image_paths: dict[str, Path]
                                      "address": int(pe.OPTIONAL_HEADER.ImageBase + section.VirtualAddress),
                                      "size": int(section.Misc_VirtualSize)})
     return reconcile_sections(sections, functions)
+
+
+def _data_coverage(data: dict[str, Any]) -> dict[str, Any]:
+    """Count each original byte once. A symbol's location can be known before its extent."""
+    storage_keys = {"file-backed": "file_backed_bytes", "zero-fill": "zero_fill_bytes"}
+    status_keys = {"source-matched": "source_matched_bytes", "mapped-unmatched": "mapped_unmatched_bytes",
+                   "pe-metadata": "pe_metadata_bytes", "unattributed": "unattributed_bytes"}
+    keys = ("virtual_bytes", "mapped_addresses", "named_global_addresses", "unmatched_bytes",
+            "matched_file_backed_bytes", "matched_zero_fill_bytes", *storage_keys.values(), *status_keys.values())
+    globals_ = [{key: row[key] for key in ("image", "address", "names", "size", "owner") if key in row}
+                for row in data["globals"]]
+    by_section = []
+    by_image: dict[str, dict[str, int]] = {}
+    sections = {(row["image"], row["name"]): row for row in data["sections"]}
+    counts = {section: dict.fromkeys(keys, 0) for section in sections}
+    unmatched = []
+    for span in data["spans"]:
+        section_counts = counts[span["image"], span["section"]]
+        size = span["size"]
+        section_counts["virtual_bytes"] += size
+        section_counts[storage_keys[span["storage"]]] += size
+        section_counts[status_keys[span["status"]]] += size
+        if span["matched"]:
+            section_counts["matched_" + storage_keys[span["storage"]]] += size
+        else:
+            section_counts["unmatched_bytes"] += size
+            unmatched.append({key: value for key, value in span.items() if key not in {"source", "matched"}})
+    for (image, name), section in sections.items():
+        section_counts = counts[image, name]
+        start, end = section["address"], section["address"] + section["size"]
+        locations = [g for g in globals_ if g["image"] == image and start <= g["address"] < end]
+        section_counts["mapped_addresses"] = len({g["address"] for g in locations})
+        section_counts["named_global_addresses"] = len({g["address"] for g in locations if g["names"]})
+        by_section.append({"image": image, "section": name, "address": start, **section_counts})
+        image_counts = by_image.setdefault(image, dict.fromkeys(keys, 0))
+        for key, value in section_counts.items():
+            image_counts[key] += value
+    return {
+        "policy": data["policy"],
+        "total": {key: sum(image[key] for image in by_image.values()) for key in keys},
+        "by_image": by_image, "by_section": by_section, "globals": globals_, "unmatched_ranges": unmatched,
+        "source_objects": [{key: row[key] for key in ("image", "address", "name", "symbol", "size", "source", "storage",
+                                                      "owner", "proof_kind") if key in row}
+                           for row in data["candidates"]],
+        "accessed_ranges": data.get("accessed_ranges", []),
+        "excluded_sections": data["excluded_sections"],
+    }
 
 
 def diagnostics(
@@ -213,14 +319,49 @@ def diagnostics(
                               for r in sorted(unmatched, key=lambda r: (-r["size"], native_id(r)))[:20]],
         "code_inventory": evidence["code_inventory"],
     }
+    data = evidence.get("data")
+    if data and data.get("policy") == match_freeware_data.POLICY:
+        result["data_coverage"] = _data_coverage(data)
     # Show executable coverage alongside progress for both curated inventories
     # and native inventories that include unresolved bytes in the denominator.
     inventory = evidence["code_inventory"]
     result["executable_coverage"] = {
         "total_bytes": sum(s["size"] for s in inventory),
         **{kind: sum(s["totals"][kind] for s in inventory)
-           for kind in ("retained_code", "embedded_data", "padding", "unresolved")},
+           for kind in ("retained_code", *GAP_LABELS)},
     }
+    if any("native_kind" in row for row in rows):
+        by_image: dict[str, dict[str, int]] = {}
+        for row in rows:
+            if row["ownership"] == "game":
+                image = row["image"]
+                if image not in by_image:
+                    by_image[image] = dict.fromkeys(("retained_code", *GAP_LABELS), 0)
+                by_image[image][executable_kind(row)] += row["size"]
+        result["game_executable_coverage"] = {
+            image: {"total_bytes": sum(counts.values()), **counts} for image, counts in by_image.items()
+        }
+    if "gap_objects" in evidence:
+        image_counts = {
+            image: {"ranges": 0, "reproduced_bytes": 0, "local_dir32_relocations": 0}
+            for image in result["game_executable_coverage"]
+        }
+        for receipt in evidence["gap_objects"]:
+            counts = image_counts[receipt["image"]]
+            counts["ranges"] += 1
+            counts["reproduced_bytes"] += receipt["end"] - receipt["start"]
+            counts["local_dir32_relocations"] += len(receipt["relocations"])
+        for image, counts in image_counts.items():
+            body_bytes = sum(row["size"] for row in encoded if row["image"] == image and row["ownership"] == "game")
+            counts["reproduced_layout_bytes"] = body_bytes + counts["reproduced_bytes"]
+            counts["total_layout_bytes"] = result["game_executable_coverage"][image]["total_bytes"]
+        result["gap_object_coverage"] = {
+            "by_image": image_counts,
+            "total": {key: sum(counts[key] for counts in image_counts.values())
+                      for key in ("ranges", "reproduced_bytes", "local_dir32_relocations",
+                                  "reproduced_layout_bytes", "total_layout_bytes")},
+            "receipts": evidence["gap_objects"],
+        }
     if report is not None:
         by_id = {native_id(r): r for r in rows}
         result["scopes"] = {}
@@ -256,15 +397,16 @@ def diagnostics(
 
 def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: dict[str, Any]) -> str:
     """A per-version receipt for the five history series and their denominators."""
+    native = "game_executable_coverage" in metrics
     lines = [f"## Crimsonland {evidence['version']}", "",
-             ("Percentages include every executable byte; unknown remainders earn zero credit."
-              if evidence["identities"].get("inventory_policy") == "native-functions-and-full-executable-remainder-v1"
+             ("Ownership and image scopes count every executable byte. The function scopes count only retained function bodies."
+              if native
               else "Percentages apply to the curated function inventory and the selected category."), "",
              "| Scope | Matched code | Fuzzy code | Encoded body | Matched data | Linked code / data |",
              "| --- | --- | --- | --- | --- | --- |"]
     scopes = [("All", report["measures"], metrics)] + [
         (category["name"], category["measures"], metrics["scopes"][category["id"]])
-        for category in report["categories"] if category["id"] in {"game", "libs", "unknown", "game.data"}
+        for category in report["categories"] if category["id"] in {"game", "game.functions", "port", "platform", "libs", "unknown", "game.data"}
     ]
     for label, measures, scope in scopes:
         total = int(measures["total_code"])
@@ -279,21 +421,62 @@ def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: di
         linked = f"{measures['complete_code_percent']:.2f}%" if total else "n/a"
         linked += " / " + (f"{measures['complete_data_percent']:.2f}%" if data_total else "n/a")
         lines.append(f"| {label} | {code} | {fuzzy} | {encoded} | {data} | {linked} |")
-    native = evidence["identities"].get("inventory_policy") == "native-functions-and-full-executable-remainder-v1"
     lines.extend(["", ("Fuzzy = sum(original code bytes × source candidate score) / total original code bytes. "
                       "Prebuilt code gets no public credit; unresolved references or incomplete coverage stay below 100%."),
                   "Linked credit covers checked source components at native virtual addresses, including final bytes and relocations. Structural linker receipts earn none.", "",
-                  ("| Image | Executable virtual bytes | Native function bytes | Unresolved executable bytes |" if native
-                   else "| Image | Executable virtual bytes | Curated code bytes | Unresolved executable bytes |"),
-                  "| --- | --- | --- | --- |"])
+                  f"| Image and scope | Executable virtual bytes | {'Native function' if native else 'Curated code'} bytes | Padding | Embedded data | Unresolved executable bytes |",
+                  "| --- | ---: | ---: | ---: | ---: | ---: |"])
+
+    def coverage_row(label: str, size: int, counts: dict[str, int]) -> str:
+        return (f"| {label} | {size:,} | {counts['retained_code']:,} | {counts['padding']:,} | "
+                f"{counts['embedded_data']:,} | {counts['unresolved']:,} |")
+
     for section in evidence["code_inventory"]:
-        lines.append(f"| {section['image']} {section['name']} | {section['size']:,} | "
-                     f"{section['totals']['retained_code']:,} | {section['totals']['unresolved']:,} |")
-    lines.extend(["", ("Unresolved executable bytes may contain code, padding or embedded data. "
-                      "They remain in each owning category's denominator with zero credit." if native else
-                      "Unresolved executable bytes may contain code, padding or embedded data. "
-                      "They are not silently classified or included in a Game & Engine completion claim. "
-                      "100% of curated code does not prove whole-image recovery."), ""])
+        lines.append(coverage_row(f"{section['image']} {section['name']}", section["size"], section["totals"]))
+    for image, counts in metrics.get("game_executable_coverage", {}).items():
+        lines.append(coverage_row(f"{image} Game & Engine", counts["total_bytes"], counts))
+    lines.extend(["", ("Verified padding and embedded data retain their physical byte ownership. "
+                       "Only matched function bodies earn source code credit. Unresolved executable bytes "
+                       "remain in each owning category's denominator." if native else
+                       "Unresolved executable bytes may contain code, padding or embedded data. "
+                       "The curated code percentages cover the retained function bodies."), ""])
+    if "gap_object_coverage" in metrics:
+        coverage = metrics["gap_object_coverage"]
+        lines.extend(["### Game & Engine object tails", "",
+                      ("The matched VC6 objects reproduce these bytes after applying their local DIR32 relocations. "
+                      "The function and linked-image measures are separate."), "",
+                      "| Image | Gap ranges reproduced | Gap bytes reproduced | Local DIR32 relocations | Exact function and gap bytes / physical bytes |",
+                      "| --- | ---: | ---: | ---: | ---: |"])
+        for image, counts in [*coverage["by_image"].items(), ("Total", coverage["total"])]:
+            lines.append(f"| {image} | {counts['ranges']:,} | {counts['reproduced_bytes']:,} | "
+                         f"{counts['local_dir32_relocations']:,} | "
+                         f"{counts['reproduced_layout_bytes']:,} / {counts['total_layout_bytes']:,} |")
+        lines.append("")
+    if "data_coverage" in metrics:
+        data_coverage = metrics["data_coverage"]
+        lines.extend(["### Data sections", "",
+                      ("Each byte belongs to one original section. File-backed bytes and loader zero-fill sum to "
+                      "the virtual size. Mapped addresses count distinct native locations referenced by game or "
+                      "engine code, including compiler literals. Named globals count each address once even when "
+                      "several names share it."), "",
+                      "| Image | Named globals | Mapped addresses | Matched / file-backed bytes | Matched / zero-fill bytes | Virtual bytes |",
+                      "| --- | ---: | ---: | ---: | ---: | ---: |"])
+        data_rows = [*data_coverage["by_image"].items(), ("Total", data_coverage["total"])]
+        for image, counts in data_rows:
+            lines.append(f"| {image} | {counts['named_global_addresses']:,} | {counts['mapped_addresses']:,} | "
+                         f"{counts['matched_file_backed_bytes']:,} / {counts['file_backed_bytes']:,} | "
+                         f"{counts['matched_zero_fill_bytes']:,} / {counts['zero_fill_bytes']:,} | "
+                         f"{counts['virtual_bytes']:,} |")
+        lines.extend(["", "| Image | Source-matched bytes | Mapped, unmatched | PE metadata | Unattributed | Total unmatched |",
+                      "| --- | ---: | ---: | ---: | ---: | ---: |"])
+        for image, counts in data_rows:
+            lines.append(f"| {image} | {counts['source_matched_bytes']:,} | {counts['mapped_unmatched_bytes']:,} | "
+                         f"{counts['pe_metadata_bytes']:,} | {counts['unattributed_bytes']:,} | {counts['unmatched_bytes']:,} |")
+        lines.extend(["", ("Mapped, unmatched bytes have a verified object extent or an observed memory access. Address-only labels receive zero bytes "
+                      "of source credit. In `data_coverage`, `globals` lists names and addresses, "
+                      "`source_objects` lists verified definitions, and `unmatched_ranges` lists every remaining "
+                      "range by image, section and storage. "
+                      "[Address map and byte counts](report.metrics.json)"), ""])
     if "delta" in metrics:
         delta = metrics["delta"]
         lines.append("Baseline: " + (f"{delta['newly_matched_code']:,} newly matched bytes; "

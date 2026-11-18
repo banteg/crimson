@@ -396,10 +396,9 @@ def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker
 
 
 def test_generation_failure_unbinds_target_and_retains_pending_stamps(headless_window, mocker) -> None:
-    mocker.patch.object(rl, "get_window_scale_dpi", return_value=rl.Vector2(1.0, 1.0))
     mocker.patch.object(rl, "load_shader_from_memory", side_effect=RuntimeError("compile failed"))
     ground = _ground()
-    ground.render_target = _render_texture(1024, 1024)
+    ground.render_target = _render_texture(*ground._render_target_size_for(1.0))
     ground._render_target_ready = True
     layers = TerrainLayers(base=(), overlay=(), detail=())
     ground.schedule_stamps(layers, texture_scale=1.0)

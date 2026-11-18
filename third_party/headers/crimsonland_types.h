@@ -291,7 +291,75 @@ typedef struct player_input_config_t {
     int reserved[3];
 } player_input_config_t;
 
+#if CL_BUILD == 10002
+// 0x421e90, stride 0x10c. The 1.0.2 reset (0x402230) clears 32 perk counters.
+typedef struct freeware_player_t {
+    unsigned char active, plaguebearer;
+    unsigned char entity_padding[0x0c - 2];
+    vec2f_t position, movement;
+    float health, heading, size;
+    unsigned char body[0x3c - 0x28];
+    vec2f_t aim;
+    unsigned char motion_prefix[4];
+    float speed_multiplier;
+    unsigned char motion[8];
+    float move_speed, ammo, reload;
+    unsigned char animation[4];
+    float walk_phase;
+    int experience, level;
+    float cooldown;
+    int perks[32];
+    float spread;
+    int unused, weapon, previous_weapon;
+    float clip_size, muzzle_flash;
+} freeware_player_t;
+#elif CL_BUILD == 10300 || CL_BUILD == 10400
+typedef struct freeware_perk_entry_t {
+    unsigned int name_va, description_va;
+    int texture, frame;
+    unsigned char available, secret;
+    unsigned char padding[2];
+} freeware_perk_entry_t;
+
+typedef struct freeware_player_t {
+    unsigned char prefix[0x0c];
+    unsigned char plaguebearer;
+    unsigned char entity_padding[3];
+    float move_phase;
+    unsigned char entity_padding_14[4];
+    vec2f_t position, movement;
+    float health, heading;
+    float target_heading, size;
+    unsigned char body[0x4c - 0x38];
+    vec2f_t aim;
+    unsigned char motion_prefix[4];
+    float speed_multiplier;
+    unsigned char motion[0x68 - 0x5c];
+    float move_speed;
+    float ammo, reload;
+    unsigned char animation[8];
+    float walk_phase;
+    int experience, displayed_experience, level;
+    float cooldown, reload_duration;
+#if CL_BUILD == 10300
+    int perks[32];
+#else
+    int perks[48];
+#endif
+    float spread;
+    int unused, weapon, previous_weapon;
+    float clip_size, muzzle_flash, aim_heading;
+    float turn_speed, control_reserved;
+    float shield;
+    unsigned char keys[5], controls[7];
+} freeware_player_t;
+#endif
+
 typedef struct player_state_t {
+#if CL_BUILD == 10400
+    union {
+    struct {
+#endif
     unsigned char entity_active;
     unsigned char _pad_entity_active[3];
     int entity_phase_seed;
@@ -395,6 +463,11 @@ typedef struct player_state_t {
         vec2f_t move_target;
     };
     player_input_t input;
+#if CL_BUILD == 10400
+    };
+    freeware_player_t freeware;
+    };
+#endif
 } player_state_t;
 
 typedef struct creature_bonus_args_t {
@@ -464,9 +537,16 @@ typedef struct effect_color_t {
 #if CL_BUILD < 10300
 typedef struct creature_t {
     unsigned char active;
-    unsigned char ai_mode;
-    unsigned char _pad0[2];
-    float hit_flash_timer;
+    union {
+        unsigned char plague_infected;
+        unsigned char ai_mode; // Later donor name.
+    };
+    unsigned char state_flag;
+    signed char target_player;
+    union {
+        float hit_flash_timer; // Donor name retained for constructor matching.
+        float plague_timer;
+    };
     float death_timer;
     union {
         struct {
@@ -483,61 +563,53 @@ typedef struct creature_t {
         vec2f_t velocity;
     };
     float health;
-    float max_health;
-    float size;
-    unsigned char plague_infected;
-    unsigned char state_flag;
-    unsigned char force_target;
-    signed char target_player;
-    float heading;
-    float target_heading;
+    // 0x4067a0 initializes these fields. The pool at 0x4252d0 uses a 0x68 stride.
     union {
         struct {
-            float tint_r;
-            float tint_g;
-            float tint_b;
-            float tint_a;
-        };
-        effect_color_t color;
-    };
-    union {
+            float heading, size;
+            effect_color_t color;
+            unsigned char force_target, padding[3];
+            vec2f_t target;
+            float contact_damage, move_speed, attack_cooldown;
+            int reward, reserved[3], type;
+            union { int reserved_64; float animation; };
+        } freeware;
+        // Later donor sources are compiled for comparison with this build. Their extra
+        // field names are aliases, not evidence that 1.0.2 implements those mechanics.
         struct {
-            float target_x;
-            float target_y;
+            float heading, size;
+            union {
+                struct { float tint_r, tint_g, tint_b, tint_a; };
+                effect_color_t color;
+            };
+            unsigned char force_target, donor_padding[3];
+            union {
+                struct { float target_x, target_y; };
+                vec2f_t target_position;
+            };
+            float contact_damage, move_speed, attack_cooldown;
+            union { int reward_value; float max_health; };
+            union { float target_heading; int link_index; };
+            vec2f_t target_offset;
+            int type_id;
+            union {
+                float orbit_angle, dot_tick_timer, anim_phase;
+                creature_orbit_radius_t orbit_radius;
+                int flags, phase_seed;
+            };
         };
-        vec2f_t target_position;
     };
-    float contact_damage;
-    float move_speed;
-    float attack_cooldown;
-    float reward_value;
-    int type_id;
-    union {
-        int link_index;
-        creature_bonus_args_t bonus_args;
-        struct {
-            float target_offset_x;
-            float target_offset_y;
-        };
-        vec2f_t target_offset;
-    };
-    union {
-        float orbit_angle;
-        creature_orbit_radius_t orbit_radius;
-        int flags;
-        int phase_seed;
-        float dot_tick_timer;
-        float anim_phase;
-    };
-    int entity_reserved_74;
 } creature_t;
 #elif CL_BUILD < 10900
+#pragma pack(push, 4)
 typedef struct creature_t {
     unsigned char active;
     unsigned char ai_mode;
     unsigned char _pad0[2];
-    unsigned char state_flag;
-    unsigned char _pad1[3];
+    union {
+        unsigned char state_flag;
+        float activation_radius;
+    };
     float hit_flash_timer;
     unsigned char plague_infected;
     unsigned char _pad2[3];
@@ -558,54 +630,78 @@ typedef struct creature_t {
         vec2f_t velocity;
     };
     float health;
-    float max_health;
-    float heading;
-    float size;
-    float target_heading;
+    // 0x40fb70 constructs this record; the Survival step at 0x40d8c0 consumes it.
+    // The anonymous view below retains the donor names used by the matcher.
     union {
         struct {
-            float tint_r;
-            float tint_g;
-            float tint_b;
-            float tint_a;
-        };
-        effect_color_t color;
-    };
-    unsigned char force_target;
-    signed char target_player;
-    unsigned char _pad_force_target[2];
-    union {
+            float heading;
+            float target_heading;
+            float size;
+            effect_color_t color;
+            unsigned char force_target;
+            unsigned char pad[3];
+            vec2f_t target;
+            float contact_damage;
+            float move_speed;
+            float attack_cooldown;
+            double reward;
+            unsigned char unknown_68[12];
+            int type;
+            int player;
+            float animation;
+        } freeware;
         struct {
-            float target_x;
-            float target_y;
+            float max_health;
+            float heading;
+            float size;
+            float target_heading;
+            union {
+                struct {
+                    float tint_r;
+                    float tint_g;
+                    float tint_b;
+                    float tint_a;
+                };
+                effect_color_t color;
+            };
+            unsigned char force_target;
+            signed char target_player;
+            unsigned char _pad_force_target[2];
+            union {
+                struct {
+                    float target_x;
+                    float target_y;
+                };
+                vec2f_t target_position;
+            };
+            float contact_damage;
+            float move_speed;
+            float attack_cooldown;
+            float reward_value;
+            int type_id;
+            union {
+                int link_index;
+                creature_bonus_args_t bonus_args;
+            };
+            union {
+                struct {
+                    float target_offset_x;
+                    float target_offset_y;
+                };
+                vec2f_t target_offset;
+            };
+            union {
+                float orbit_angle;
+                creature_orbit_radius_t orbit_radius;
+                int flags;
+                int phase_seed;
+                float dot_tick_timer;
+            };
+            int entity_reserved_74;
         };
-        vec2f_t target_position;
     };
-    float contact_damage;
-    float move_speed;
-    float attack_cooldown;
-    float reward_value;
-    int type_id;
-    union {
-        int link_index;
-        creature_bonus_args_t bonus_args;
-    };
-    union {
-        struct {
-            float target_offset_x;
-            float target_offset_y;
-        };
-        vec2f_t target_offset;
-    };
-    union {
-        float orbit_angle;
-        creature_orbit_radius_t orbit_radius;
-        int flags;
-        int phase_seed;
-        float dot_tick_timer;
-    };
-    int entity_reserved_74;
 } creature_t;
+#pragma pack(pop)
 #else
 typedef struct creature_t {
     unsigned char active;
