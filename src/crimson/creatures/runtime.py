@@ -18,10 +18,7 @@ from grim.sfx_types import SfxRequest
 
 from ..bonuses import BonusId
 from ..bonuses.pool import BONUS_SPAWN_MARGIN
-from ..gameplay import (
-    experience_plus_reward,
-    survival_record_first_kill,
-)
+from ..gameplay import experience_plus_reward
 from ..math_parity import (
     NATIVE_HALF_PI,
     NATIVE_TAU,
@@ -1040,7 +1037,7 @@ class CreaturePool:
             if not state.preserve_bugs:
                 creature.bonus_id = None
                 creature.bonus_amount_override = None
-        survival_record_first_kill(state, pos=creature.pos)
+        state.survival_weapons.record_kill(creature.pos)
         # Re-entrant calls (the secondary detonation follow-up) land on an already deactivated creature.
         if not creature.active:
             step_runtime.deaths.append(

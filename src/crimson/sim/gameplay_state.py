@@ -18,8 +18,9 @@ from ..projectiles.runtime import ProjectilePool, SecondaryProjectilePool
 from ..quests.level import QuestLevel
 from ..tutorial.state import TutorialOverlayState, TutorialState
 from ..typo.state import TypoState
-from ..weapons import WEAPON_TABLE, WeaponId
+from ..weapons import WEAPON_TABLE
 from .state_types import PERK_COUNT_SIZE, PerkCounts, PlayerState
+from .survival_weapons import SurvivalWeaponChallenge
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
@@ -97,12 +98,7 @@ class GameplayState(msgspec.Struct):
     bonus_pool: BonusPool = msgspec.field(default_factory=BonusPool)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
-    survival_reward_weapon_guard_id: WeaponId = WeaponId.PISTOL
-    survival_shrinkifier_handout_enabled: bool = True
-    survival_reward_fire_seen: bool = False
-    survival_reward_damage_seen: bool = False
-    survival_first_kill_pos: list[Vec2] = msgspec.field(default_factory=lambda: [Vec2(), Vec2(), Vec2()])
-    survival_first_kill_count: int = 0
+    survival_weapons: SurvivalWeaponChallenge = msgspec.field(default_factory=SurvivalWeaponChallenge)
     camera_shake_offset: Vec2 = Vec2()
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0

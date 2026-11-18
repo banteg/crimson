@@ -57,7 +57,7 @@ def test_survival_batch_matches_searching_from_zero(
     spawns = [SurvivalSpawnState(stage=10) for _ in worlds]
     for world, rng in zip(worlds, rngs, strict=True):
         world.state.rng = rng
-        world.state.survival_shrinkifier_handout_enabled = False
+        world.state.survival_weapons.shrinkifier_enabled = False
         world.players[0].experience = experience
         for index, creature in enumerate(world.creatures.entries):
             creature.active = index not in free_slots
@@ -108,7 +108,7 @@ class _CountedEntries(list[CreatureState]):
 
 def test_saturated_survival_wave_scans_pool_once() -> None:
     world = make_world(seed=97)
-    world.state.survival_shrinkifier_handout_enabled = False
+    world.state.survival_weapons.shrinkifier_enabled = False
     world.players[0].experience = 143_802_723
     for creature in world.creatures.entries:
         creature.active = True
@@ -175,7 +175,7 @@ def test_wave_always_writes_the_last_overflow(
     worlds = [make_world(seed=97) for _ in range(2)]
     spawns = [SurvivalSpawnState(stage=10, spawn_cooldown_ms=cooldown) for _ in worlds]
     for world in worlds:
-        world.state.survival_shrinkifier_handout_enabled = False
+        world.state.survival_weapons.shrinkifier_enabled = False
         for creature in world.creatures.entries:
             creature.active = True
 

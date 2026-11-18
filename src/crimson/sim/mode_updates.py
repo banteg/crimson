@@ -24,10 +24,8 @@ from ..math_parity import (
     f32_from_bits,
     x87_pc24_add,
     x87_pc24_cos_mul,
-    x87_pc24_hypot,
     x87_pc24_mul,
     x87_pc24_sin_mul,
-    x87_pc24_sub,
 )
 from ..quests.results import advance_quest_unlocks
 from ..quests.status import tracked_quest_completed_counter_index
@@ -77,30 +75,9 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
     player = world.players[0]
 
     if len(world.players) == 1:
-        if (
-            not state.survival_reward_damage_seen
-            and not state.survival_reward_fire_seen
-            and int(elapsed_ms) > 64000
-            and state.survival_shrinkifier_handout_enabled
-        ):
-            if player.weapon.weapon_id == WeaponId.PISTOL:
-                weapon_assign_player(player, WeaponId.SHRINKIFIER_5K, state=state)
-                state.survival_reward_weapon_guard_id = WeaponId.SHRINKIFIER_5K
-            state.survival_shrinkifier_handout_enabled = False
-            state.survival_reward_damage_seen = True
-            state.survival_reward_fire_seen = True
-
-        if state.survival_first_kill_count == 3 and not state.survival_reward_fire_seen:
-            pos0, pos1, pos2 = state.survival_first_kill_pos
-            centroid_x = x87_pc24_mul(x87_pc24_add(x87_pc24_add(pos0.x, pos1.x), pos2.x), f32(0.33333334))
-            centroid_y = x87_pc24_mul(x87_pc24_add(x87_pc24_add(pos0.y, pos1.y), pos2.y), f32(0.33333334))
-            dx = x87_pc24_sub(player.pos.x, centroid_x)
-            dy = x87_pc24_sub(player.pos.y, centroid_y)
-            if x87_pc24_hypot(dx, dy) < 16.0 and player.health < 15.0:
-                weapon_assign_player(player, WeaponId.BLADE_GUN, state=state)
-                state.survival_reward_weapon_guard_id = WeaponId.BLADE_GUN
-                state.survival_reward_fire_seen = True
-                state.survival_shrinkifier_handout_enabled = False
+        reward = state.survival_weapons.advance(player, elapsed_ms)
+        if reward is not None:
+            weapon_assign_player(player, reward, state=state)
 
     def spawn_template(template_id: SpawnId, pos: Vec2) -> None:
         world.creatures.spawn_template(template_id, pos, math.pi, state=state, detail_preset=state.detail_preset)

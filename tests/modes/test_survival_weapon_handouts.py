@@ -30,10 +30,10 @@ def test_survival_handout_time_gate_assigns_shrinkifier() -> None:
     _survival_frame(world, elapsed_ms=64001.0)
 
     assert player.weapon.weapon_id == WeaponId.SHRINKIFIER_5K
-    assert state.survival_reward_weapon_guard_id == WeaponId.SHRINKIFIER_5K
-    assert state.survival_shrinkifier_handout_enabled is False
-    assert state.survival_reward_damage_seen is True
-    assert state.survival_reward_fire_seen is True
+    assert state.survival_weapons.guard_weapon_id == WeaponId.SHRINKIFIER_5K
+    assert state.survival_weapons.shrinkifier_enabled is False
+    assert state.survival_weapons.damage_seen is True
+    assert state.survival_weapons.fire_seen is True
 
 
 def test_survival_handout_time_gate_consumes_gate_even_without_pistol() -> None:
@@ -45,10 +45,10 @@ def test_survival_handout_time_gate_consumes_gate_even_without_pistol() -> None:
     _survival_frame(world, elapsed_ms=64001.0)
 
     assert player.weapon.weapon_id == WeaponId.ASSAULT_RIFLE
-    assert state.survival_reward_weapon_guard_id == WeaponId.PISTOL
-    assert state.survival_shrinkifier_handout_enabled is False
-    assert state.survival_reward_damage_seen is True
-    assert state.survival_reward_fire_seen is True
+    assert state.survival_weapons.guard_weapon_id == WeaponId.PISTOL
+    assert state.survival_weapons.shrinkifier_enabled is False
+    assert state.survival_weapons.damage_seen is True
+    assert state.survival_weapons.fire_seen is True
 
 
 def test_survival_handouts_are_single_player_only() -> None:
@@ -60,34 +60,30 @@ def test_survival_handouts_are_single_player_only() -> None:
     _survival_frame(world, elapsed_ms=64001.0)
 
     assert [player.weapon.weapon_id for player in world.players] == [WeaponId.PISTOL, WeaponId.PISTOL]
-    assert state.survival_shrinkifier_handout_enabled is True
-    assert state.survival_reward_damage_seen is False
-    assert state.survival_reward_fire_seen is False
+    assert state.survival_weapons.shrinkifier_enabled is True
+    assert state.survival_weapons.damage_seen is False
+    assert state.survival_weapons.fire_seen is False
 
 
-def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
+def test_third_kill_opens_blade_gun_handout_after_the_shrinkifier() -> None:
     world = make_world()
     state = world.state
     player = world.players[0]
     player.pos = Vec2(100.0, 100.0)
-    player.health = 14.0
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
-    state.survival_shrinkifier_handout_enabled = False
-    state.survival_reward_damage_seen = True
-    state.survival_reward_fire_seen = False
-    state.survival_first_kill_count = 3
-    state.survival_first_kill_pos = [
-        Vec2(90.0, 100.0),
-        Vec2(100.0, 90.0),
-        Vec2(110.0, 110.0),
-    ]
+    _survival_frame(world, elapsed_ms=64001.0)
+    assert player.weapon.weapon_id == WeaponId.SHRINKIFIER_5K
 
-    _survival_frame(world, elapsed_ms=0.0)
+    for pos in (Vec2(90.0, 100.0), Vec2(100.0, 90.0), Vec2(110.0, 110.0)):
+        state.survival_weapons.record_kill(pos)
+    player.health = 14.0
+
+    _survival_frame(world, elapsed_ms=64002.0)
 
     assert player.weapon.weapon_id == WeaponId.BLADE_GUN
-    assert state.survival_reward_weapon_guard_id == WeaponId.BLADE_GUN
-    assert state.survival_reward_fire_seen is True
-    assert state.survival_shrinkifier_handout_enabled is False
+    assert state.survival_weapons.guard_weapon_id == WeaponId.BLADE_GUN
+    assert state.survival_weapons.fire_seen is True
+    assert state.survival_weapons.shrinkifier_enabled is False
 
 
 def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
@@ -97,36 +93,32 @@ def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
     player.pos = Vec2(-97.64498138427734, 544.9747924804688)
     player.health = 14.0
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
-    state.survival_shrinkifier_handout_enabled = False
-    state.survival_reward_damage_seen = True
-    state.survival_reward_fire_seen = False
-    state.survival_first_kill_count = 3
-    state.survival_first_kill_pos = [
+    for pos in (
         Vec2(315.8760681152344, 836.8428344726562),
         Vec2(1131.1593017578125, 1372.648681640625),
         Vec2(-1691.9703369140625, -574.5670776367188),
-    ]
+    ):
+        state.survival_weapons.record_kill(pos)
 
     _survival_frame(world, elapsed_ms=0.0)
 
     assert player.weapon.weapon_id == WeaponId.PISTOL
-    assert state.survival_reward_fire_seen is False
+    assert state.survival_weapons.fire_seen is False
 
 
 def test_creature_handle_death_tracks_survival_first_kill_samples() -> None:
     world = world_with_creature(CreatureState(), players=[PlayerState(index=0, pos=Vec2(512.0, 512.0))])
     state = world.state
-    state.survival_reward_fire_seen = True
-    state.survival_shrinkifier_handout_enabled = True
+    state.survival_weapons.record_shot()
 
     for idx, pos in enumerate((Vec2(10.0, 20.0), Vec2(30.0, 40.0), Vec2(50.0, 60.0))):
         world.creatures.entries[idx] = CreatureState(active=True, hp=0.0, reward_value=0.0, pos=pos)
         kill_creature(world, idx)
 
-    assert int(state.survival_first_kill_count) == 3
-    assert state.survival_first_kill_pos == [Vec2(10.0, 20.0), Vec2(30.0, 40.0), Vec2(50.0, 60.0)]
-    assert state.survival_reward_fire_seen is False
-    assert state.survival_shrinkifier_handout_enabled is False
+    assert int(state.survival_weapons.first_kill_count) == 3
+    assert state.survival_weapons.first_kill_positions == [Vec2(10.0, 20.0), Vec2(30.0, 40.0), Vec2(50.0, 60.0)]
+    assert state.survival_weapons.fire_seen is False
+    assert state.survival_weapons.shrinkifier_enabled is False
 
 
 def test_survival_weapon_guard_reverts_mismatched_temporary_weapons() -> None:
@@ -135,7 +127,7 @@ def test_survival_weapon_guard_reverts_mismatched_temporary_weapons() -> None:
     player1 = PlayerState(index=1, pos=Vec2())
     weapon_assign_player(player0, WeaponId.SHRINKIFIER_5K, state=state)
     weapon_assign_player(player1, WeaponId.BLADE_GUN, state=state)
-    state.survival_reward_weapon_guard_id = WeaponId.SHRINKIFIER_5K
+    state.survival_weapons.guard_weapon_id = WeaponId.SHRINKIFIER_5K
 
     survival_enforce_reward_weapon_guard(state, [player0, player1])
 
