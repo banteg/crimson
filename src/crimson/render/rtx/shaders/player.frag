@@ -2,6 +2,8 @@
 // Opaque player cloth lighting: painted relief and a directional inner rim.
 #include "filtering.glsl"
 #include "source_geometry.glsl"
+#define MAX_SPEC_LIGHTS 32
+#include "beam_energy.glsl"
 #include "linear_light.glsl"
 in vec2 fragTexCoord;
 in vec4 fragColor;
@@ -71,12 +73,21 @@ void main() {
     for (int i = 0; i < u_count; i++) {
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
         bool ring = u_rgb[i].w > 0.;
-        vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) :
-                             illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
-        vec2 delta = source - wp;
-        float distance_to_light = length(delta);
-        if (u_response[i].x <= 0. || distance_to_light >= u_pos[i].z) continue;
-        float a = 1.0 - smoothstep(0.0, u_pos[i].z, distance_to_light);
+        if (u_response[i].x <= 0.) continue;
+        vec2 delta;
+        float attenuation;
+        if (u_beam_shape[i].w > 0.) {
+            if (!beamAtReceiver(i, u_dir[i], wp, u_pos[i], delta, attenuation)) continue;
+            attenuation *= u_response[i].x;
+        } else {
+            vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) :
+                                 illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
+            delta = source - wp;
+            float distance_to_light = length(delta);
+            if (distance_to_light >= u_pos[i].z) continue;
+            float falloff = 1.0 - smoothstep(0.0, u_pos[i].z, distance_to_light);
+            attenuation = u_response[i].x * falloff * falloff;
+        }
         vec3 L = normalize(vec3(delta, max(8.0, u_pos[i].w - 8.0)));
         float facing = max(dot(N, L), 0.0);
         // An inner silhouette rim, only on the edge facing this emitter.
@@ -93,7 +104,7 @@ void main() {
         // Both terms obey illumination gain; reflection-only tracers stay unlit.
         // The cell-center dome normal cannot describe individual limbs.
         vec3 diffuse = u_rgb[i].rgb * (
-            u_response[i].x * a * a *
+            attenuation *
                 ((baseLin + sqrt(baseLin) * .12) * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * (.22 + .78 * facing) +
                  edge * (2.6 * RIM_STRENGTH) * elevation * (vec3(.06) + sqrt(baseLin) * .8)));
         added += diffuse;

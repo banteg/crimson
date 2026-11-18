@@ -2,6 +2,8 @@
 // Art-directed dome and silhouette lighting for the original 8x8 creature atlases, and the freeze's ice lit as ice.
 #include "filtering.glsl"
 #include "source_geometry.glsl"
+#define MAX_SPEC_LIGHTS 32
+#include "beam_energy.glsl"
 #include "linear_light.glsl"
 in vec2 fragTexCoord;
 in vec4 fragColor;
@@ -190,7 +192,8 @@ void main() {
         float along = clamp(dot(dp, axis), -u_dir[i].w * .5, u_dir[i].w * .5);
         vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) : u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
-        if (spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
+        bool continuous = u_beam_shape[i].w > 0.;
+        if (!continuous && spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
             float s = 1.0 - smoothstep(0.0, u_response[i].z, spec_distance);
@@ -203,12 +206,21 @@ void main() {
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
             added += u_rgb[i].rgb * spec_amount * spec_gain * breakup * lightVisibility(i);
         }
-        if (u_response[i].x <= 0. || spec_distance >= u_pos[i].z) continue;
-        vec2 light_source = ring ? source : illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
-        vec2 delta = light_source - wp;
-        float distance_to_light = length(delta);
-        if (distance_to_light >= u_pos[i].z) continue;
-        float a = 1.0 - smoothstep(0.0, u_pos[i].z, distance_to_light);
+        if (u_response[i].x <= 0.) continue;
+        vec2 delta;
+        float attenuation;
+        if (continuous) {
+            if (!beamAtReceiver(i, u_dir[i], wp, u_pos[i], delta, attenuation)) continue;
+            attenuation *= u_response[i].x;
+        } else {
+            if (spec_distance >= u_pos[i].z) continue;
+            vec2 light_source = ring ? source : illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
+            delta = light_source - wp;
+            float distance_to_light = length(delta);
+            if (distance_to_light >= u_pos[i].z) continue;
+            float falloff = 1.0 - smoothstep(0.0, u_pos[i].z, distance_to_light);
+            attenuation = u_response[i].x * falloff * falloff;
+        }
         vec3 L = normalize(vec3(delta, max(8.0, u_pos[i].w - 8.0)));
         float facing = max(dot(N, L), 0.0);
         // An inner silhouette rim, only on the edge facing this emitter.
@@ -226,7 +238,7 @@ void main() {
         // bypassing a restrained tracer's gain. Specular catches stay independent.
         // The cell-center dome normal cannot describe individual limbs.
         vec3 diffuse = mix(u_rgb[i].rgb, vec3(dot(u_rgb[i].rgb, vec3(.2126, .7152, .0722))), light_desat) * (
-            u_response[i].x * a * a *
+            attenuation *
                 (albedo * (1.4 * DOME_STRENGTH + .12 * RIM_STRENGTH) * facing +
                  edge * (2.6 * RIM_STRENGTH) * rim_gain * elevation * (.65 + .35 * lum) +
                  transmission_tint * transmission * elevation * TRANSMISSION_STRENGTH));

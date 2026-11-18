@@ -307,7 +307,7 @@ float bonus_grid[2], bonus_center[2];
 struct LitProgram {
   GLuint id = 0;
   GLint target_size, camera, count, ambient, pos, rgb, dir, response, occlusion_grid, occlusion_cell, shadows;
-  GLint pass, grid, shell_center, ice, ice_frozen, creature_type;
+  GLint pass, grid, shell_center, ice, ice_frozen, creature_type, beam_shape;
 };
 // The creature body grid (host_occlusion): origin, columns (0 for none) and rows,
 // cell size, the shadows setting, and its texels in an RGBA32F texture 256 wide.
@@ -601,6 +601,7 @@ void create_lit(LitProgram &p, const char *vertex, const char *fragment) {
   p.ice = uniform_location(p.id, "u_ice");
   p.ice_frozen = uniform_location(p.id, "u_ice_frozen");
   p.creature_type = uniform_location(p.id, "u_creature_type");
+  p.beam_shape = uniform_location(p.id, "u_beam_shape");
 }
 
 // A creature atlas's transmission part sizes or Monster Vision silhouette
@@ -741,6 +742,7 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
     glUniform4fv(p.rgb, light_count, light_rgb);
     glUniform4fv(p.dir, light_count, light_dir);
     glUniform4fv(p.response, light_count, light_response);
+    glUniform4fv(p.beam_shape, light_count, beam_shape);
   }
   auto it = textures.find(bound[0]);
   bool present = bound[0] && it != textures.end() && it->second.texture;
