@@ -208,7 +208,11 @@ class DeterministicSession(msgspec.Struct):
         dt: float,
         inputs: Sequence[PlayerInput],
         commands: Sequence[GameCommand] | None = None,
+        capture_smoke: bool = False,
     ) -> DeterministicSessionTick:
+        if not capture_smoke:
+            return self._step_tick(dt=dt, inputs=inputs, commands=commands)
+
         # Command effects belong to this tick too. Always detach the sink on
         # failure, and leave no presentation history in simulation keyframes.
         impulses: list[AtmosphereImpulse] = []
@@ -216,8 +220,9 @@ class DeterministicSession(msgspec.Struct):
             self.world.state.sprite_effects.capture_emissions(impulses=impulses) as emissions,
             self.world.state.effects.capture_emissions(emissions, impulses=impulses),
         ):
-            return self._step_tick(dt=dt, inputs=inputs, commands=commands,
-                                   smoke_emissions=emissions, atmosphere_impulses=impulses)
+            return self._step_tick(
+                dt=dt, inputs=inputs, commands=commands, smoke_emissions=emissions, atmosphere_impulses=impulses,
+            )
 
     def _step_tick(
         self,
@@ -225,8 +230,8 @@ class DeterministicSession(msgspec.Struct):
         dt: float,
         inputs: Sequence[PlayerInput],
         commands: Sequence[GameCommand] | None,
-        smoke_emissions: list[SmokeEmission],
-        atmosphere_impulses: list[AtmosphereImpulse],
+        smoke_emissions: list[SmokeEmission] | None = None,
+        atmosphere_impulses: list[AtmosphereImpulse] | None = None,
     ) -> DeterministicSessionTick:
         post_apply_sfx: list[SfxId] = []
         perk_picks: list[PerkPick] = []
@@ -266,7 +271,7 @@ class DeterministicSession(msgspec.Struct):
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
-        bodies = body_positions(self.world)
+        bodies = body_positions(self.world) if atmosphere_impulses is not None else None
         if state.game_mode == GameMode.TYPO:
             events = typo_gameplay_update(
                 self.world,
@@ -289,7 +294,8 @@ class DeterministicSession(msgspec.Struct):
             )
             self.perk_menu_open = events.perk_menu_opened
 
-        atmosphere_impulses.extend(body_wakes(bodies, body_positions(self.world), timing.dt_sim))
+        if bodies is not None and atmosphere_impulses is not None:
+            atmosphere_impulses.extend(body_wakes(bodies, body_positions(self.world), timing.dt_sim))
         quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:
             post_apply_sfx.append(SfxId.QUESTHIT)
@@ -304,8 +310,8 @@ class DeterministicSession(msgspec.Struct):
             sfx_dt=timing.dt_audio,
             dt_sim=timing.dt_sim,
             camera=camera_update_for_players(self.world.players, state.camera_shake_offset),
-            smoke_emissions=tuple(smoke_emissions),
-            atmosphere_impulses=tuple(atmosphere_impulses),
+            smoke_emissions=tuple(smoke_emissions or ()),
+            atmosphere_impulses=tuple(atmosphere_impulses or ()),
         )
         # `quest_mode_update` saves the status on each frame of its `timer > 2500` branch.
         step = DeterministicSessionTick(

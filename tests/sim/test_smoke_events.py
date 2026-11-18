@@ -152,8 +152,8 @@ def test_actual_nuke_pickup_captures_nuke_smoke_without_gameplay_changes() -> No
     for sim in (world, plain_world):
         sim.state.bonus_pool.spawn_at(sim.players[0].pos, BonusId.NUKE, state=sim.state)
         sim.state.rng = RecordingCrand(sim.state.rng)
-    tick = captured.step_tick(dt=1 / 60, inputs=[player_input()])
-    plain._step_tick(dt=1 / 60, inputs=[player_input()], commands=None, smoke_emissions=[], atmosphere_impulses=[])
+    tick = captured.step_tick(capture_smoke=True, dt=1 / 60, inputs=[player_input()])
+    plain.step_tick(dt=1 / 60, inputs=[player_input()])
     events = [event for event in tick.presentation.smoke_emissions if event.source == "effect"]
     assert len(events) == 2
     assert all(event.expansion == 160.0 for event in events)
@@ -183,11 +183,11 @@ def test_session_capture_includes_command_prelude_and_detaches_after_failure(moc
 
     mocker.patch.object(DeterministicSession, "apply_command", emit_during_command)
     command = PerkPickCommand(player_index=0, choice_index=0)
-    tick = session.step_tick(dt=1 / 60, inputs=[player_input()], commands=[command])
+    tick = session.step_tick(capture_smoke=True, dt=1 / 60, inputs=[player_input()], commands=[command])
     assert [event.source for event in tick.presentation.smoke_emissions[:3]] == ["sprite", "effect", "effect"]
     session.perk_menu_open = True
     with pytest.raises(IllegalCommandError):
-        session.step_tick(dt=1 / 60, inputs=[player_input()], commands=[command])
+        session.step_tick(capture_smoke=True, dt=1 / 60, inputs=[player_input()], commands=[command])
     for pool in (world.state.sprite_effects, world.state.effects):
         with pool.capture_emissions() as fresh:
             assert fresh == []
@@ -201,8 +201,8 @@ def test_native_rocket_ticks_preserve_rng_and_complete_session_state() -> None:
     events = []
     for tick in range(90):
         inputs = [player_input(aim=Vec2(1000, 512), fire_down=tick == 0)]
-        output = captured.step_tick(dt=1 / 60, inputs=inputs)
-        plain._step_tick(dt=1 / 60, inputs=inputs, commands=None, smoke_emissions=[], atmosphere_impulses=[])
+        output = captured.step_tick(capture_smoke=True, dt=1 / 60, inputs=inputs)
+        plain.step_tick(dt=1 / 60, inputs=inputs)
         events.extend(output.presentation.smoke_emissions)
         assert session_digest(captured) == session_digest(plain)
     assert len(events) > 10
@@ -217,8 +217,8 @@ def test_flames_burning_out_leave_soot_where_they_die_without_gameplay_changes()
     for tick in range(150):
         inputs = [player_input(aim=Vec2(1000, 512), fire_down=tick < 30)]
         live = {i: p.pos for i, p in enumerate(captured_world.state.particles.entries) if p.active}
-        output = captured.step_tick(dt=1 / 60, inputs=inputs)
-        plain._step_tick(dt=1 / 60, inputs=inputs, commands=None, smoke_emissions=[], atmosphere_impulses=[])
+        output = captured.step_tick(capture_smoke=True, dt=1 / 60, inputs=inputs)
+        plain.step_tick(dt=1 / 60, inputs=inputs)
         for event in output.presentation.smoke_emissions:
             if event.profile == "soot":
                 assert event.slot in live and not captured_world.state.particles.entries[event.slot].active
@@ -235,8 +235,8 @@ def test_flames_burning_a_creature_leave_flame_soot_not_explosion_smoke() -> Non
     place_creatures(world, [make_creature_state(pos=world.players[0].pos + Vec2(60, 0), hp=100000.)])
     burning = []
     for _ in range(60):
-        output = session.step_tick(dt=1 / 60, inputs=[player_input(aim=world.players[0].pos + Vec2(300, 0),
-                                                                    fire_down=True)])
+        inputs = [player_input(aim=world.players[0].pos + Vec2(300, 0), fire_down=True)]
+        output = session.step_tick(dt=1 / 60, inputs=inputs, capture_smoke=True)
         burning += [event for event in output.presentation.smoke_emissions if event.source == "sprite"]
     assert burning and all(event.profile == "soot" for event in burning)
 

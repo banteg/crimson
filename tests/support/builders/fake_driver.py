@@ -34,7 +34,7 @@ class FakePlaybackDriver:
     def session(self) -> object:
         return SimpleNamespace(game_tune_started=bool(self.game_tune_started))
 
-    def step_tick(self, tick_index: int) -> TickResult:
+    def step_tick(self, tick_index: int, *, capture_smoke: bool = False) -> TickResult:
         if self.on_step is not None:
             self.on_step()
         return make_tick_result(

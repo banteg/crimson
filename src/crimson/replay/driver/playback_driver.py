@@ -186,7 +186,7 @@ class PlaybackDriver:
             events=tick_result.payload.events,
         )
 
-    def step_tick(self, tick_index: int) -> TickResult:
+    def step_tick(self, tick_index: int, *, capture_smoke: bool = False) -> TickResult:
         tick_index = int(tick_index)
         if tick_index < 0 or tick_index >= int(self.tick_limit):
             raise ReplayRunnerError(f"tick_index out of range: {tick_index} (tick_limit={self.tick_limit})")
@@ -199,7 +199,7 @@ class PlaybackDriver:
                 enabled=bool(self.trace_rng),
                 strict=bool(self.strict_rng_trace),
             ) as tick_rng_rows:
-                session_tick = step_replay_tick(self.session, self.replay.ticks[tick_index])
+                session_tick = step_replay_tick(self.session, self.replay.ticks[tick_index], capture_smoke=capture_smoke)
         except IllegalCommandError as exc:
             raise ReplayRunnerError(f"tick {tick_index}: {exc}") from exc
         outcome = session_tick.outcome
@@ -308,7 +308,7 @@ def advance_playback_frame(
     refused_tick: int | None = None
     try:
         while len(tick_results) < ticks_requested and next_tick_index < int(tick_limit):
-            tick_results.append(driver.step_tick(next_tick_index))
+            tick_results.append(driver.step_tick(next_tick_index, capture_smoke=runtime.render_resources.smoke_enabled))
             next_tick_index += 1
     except ReplayRunnerError:
         refused_tick = next_tick_index

@@ -1043,7 +1043,7 @@ class BaseGameplayMode:
                 if tick_index is not None and self._replay_checkpoints_enabled
                 else nullcontext()
             ):
-                step = step_replay_tick(session, tick)
+                step = step_replay_tick(session, tick, capture_smoke=self.render_resources.smoke_enabled)
             self._world_runtime.presentation.advance(step.dt_sim)
             plans.append(step.presentation)
             if tick_index is not None:

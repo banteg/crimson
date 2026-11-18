@@ -147,10 +147,14 @@ class RenderResources(msgspec.Struct):
         self.simulated_smoke_enabled = enabled
         self.sync_smoke_mode()
 
-    def sync_smoke_mode(self) -> bool:
-        enabled = self.simulated_smoke_enabled and self.rtx_mode is RtxRenderMode.RTX and (
+    @property
+    def smoke_enabled(self) -> bool:
+        return self.smoke.available and self.simulated_smoke_enabled and self.rtx_mode is RtxRenderMode.RTX and (
             self.config is None or self.config.display.smoke_enabled
         )
+
+    def sync_smoke_mode(self) -> bool:
+        enabled = self.smoke_enabled
         if not enabled:
             self.smoke.reset()
         return enabled
