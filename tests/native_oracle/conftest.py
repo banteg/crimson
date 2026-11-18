@@ -22,9 +22,9 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     if not os.environ.get("CRIMSON_NATIVE_ORACLE"):
         reason = "set CRIMSON_NATIVE_ORACLE=1 to run native-oracle differential tests"
     elif importlib.util.find_spec("unicorn") is None:
-        reason = "unicorn is not installed (uv sync --dev)"
+        raise pytest.UsageError("Original-executable checks requested. Install Unicorn with uv sync --group dev.")
     elif not _EXE.is_file():
-        reason = f"original executable missing: {_EXE}"
+        raise pytest.UsageError(f"Original executable missing: {_EXE}. Run just setup-test-data.")
     if reason is None:
         return
     here = Path(__file__).resolve().parent

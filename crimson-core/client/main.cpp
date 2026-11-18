@@ -1175,6 +1175,10 @@ void migrate_music_paq() {
   u8 *data;
   if (!client_resolve("music.paq", path) || !(data = (u8 *)SDL_LoadFile(path.c_str(), &size)))
     return;
+  if (!legacy_music_bytes(data, size)) {
+    SDL_free(data);
+    return;
+  }
   std::string renamed(data, data + 4);
   bool changed = false, whole = true;
   for (size_t at = 4; at < size;) {
@@ -1194,22 +1198,33 @@ void migrate_music_paq() {
     at = start + length;
   }
   SDL_free(data);
-  std::string partial = path + ".part";
-  if (whole && changed && SDL_SaveFile(partial.c_str(), renamed.data(), renamed.size()))
-    rename(partial.c_str(), path.c_str());
+  if (whole && changed) {
+    std::string partial = path + ".XXXXXX";
+    int fd = mkstemp(partial.data());
+    if (fd >= 0) {
+      close(fd);
+      if (SDL_SaveFile(partial.c_str(), renamed.data(), renamed.size()) && pack_is_current("music.paq", partial))
+        rename(partial.c_str(), path.c_str());
+      remove(partial.c_str());
+    }
+  }
 }
 // The PAQs the folder lacks come from the project's asset host, as the Python
 // game fetches them (src/crimson/assets_fetch.py), through a partial file.
 constexpr const char *ASSET_BASE_URL = "https://paq.crimson.banteg.xyz/v1.9.93/";
-void download(const std::string &name) {
-  std::string path = game_directory + "/" + name, partial = path + ".part";
-  FILE *file = fopen(partial.c_str(), "wb");
-  if (!file)
-    return;
+bool download(const std::string &name, bool preserve_damaged) {
+  std::string path = game_directory + "/" + name, partial = path + ".XXXXXX";
+  int fd = mkstemp(partial.data());
+  if (fd < 0)
+    return false;
+  FILE *file = fdopen(fd, "wb");
+  if (!file) {
+    close(fd);
+    remove(partial.c_str());
+    return false;
+  }
   CURL *curl = curl_easy_init();
-  std::string url = ASSET_BASE_URL + name;
-  if (name == "crimson.paq")
-    url += std::string("?sha256=") + artwork_sha256();
+  std::string url = ASSET_BASE_URL + name + "?sha256=" + pack_sha256(name);
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
   // The host refuses requests without a user agent.
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "crimsonland/" CRIMSON_CLIENT_VERSION);
@@ -1224,25 +1239,43 @@ void download(const std::string &name) {
   bool written = fclose(file) == 0 && result == CURLE_OK;
   if (!written)
     fprintf(stderr, "crimson: %s did not download: %s\n", name.c_str(), curl_easy_strerror(result));
-  if (written && name == "crimson.paq" && !artwork_is_current(partial)) {
-    fprintf(stderr, "crimson: downloaded game art has an unexpected hash\n");
+  if (written && !pack_is_current(name, partial)) {
+    fprintf(stderr, "crimson: %s has an unexpected download hash\n", name.c_str());
     written = false;
   }
-  if (!written || rename(partial.c_str(), path.c_str()) != 0)
+  if (written && preserve_damaged) {
+    std::string backup = partial + ".invalid";
+    written = link(path.c_str(), backup.c_str()) == 0;
+    if (written)
+      fprintf(stderr, "crimson: kept the damaged %s at %s\n", name.c_str(), backup.c_str());
+  }
+  if (!written || rename(partial.c_str(), path.c_str()) != 0) {
     remove(partial.c_str());
+    return false;
+  }
+  return true;
 }
 // Before the game starts: a folder lacking the game's files gets the PAQs it
 // lacks.
 void fetch_assets() {
-  std::string art_path;
-  bool upgrade = client_resolve("crimson.paq", art_path) && artwork_needs_update(art_path);
-  if (!missing_files().empty() || upgrade) {
+  std::map<std::string, PackState> downloads;
+  for (const auto &name : missing_files())
+    downloads[name.compare(0, 6, "music/") == 0 ? "music.paq" : name] = PackState::usable;
+  for (const char *name : {"crimson.paq", "sfx.paq", "music.paq"}) {
+    std::string path;
+    if (present(name) && client_resolve(name, path)) {
+      PackState state = pack_state(name, path);
+      if (state != PackState::usable)
+        downloads[name] = state;
+    }
+  }
+  if (!downloads.empty()) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
-    for (const char *name : {"crimson.paq", "music.paq", "sfx.paq"})
-      if (!present(name) || (upgrade && !strcmp(name, "crimson.paq"))) {
-        fprintf(stderr, "crimson: downloading %s into %s\n", name, game_directory.c_str());
-        download(name);
-      }
+    for (const auto &[name, state] : downloads) {
+      fprintf(stderr, "crimson: downloading %s into %s\n", name.c_str(), game_directory.c_str());
+      if (!download(name, state == PackState::damaged) && state == PackState::damaged)
+        client_fatal(("Could not repair " + name + ". Check the connection and restart to retry.").c_str());
+    }
   }
   migrate_music_paq();
   std::vector<std::string> missing = missing_files();

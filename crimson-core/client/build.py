@@ -34,6 +34,9 @@ def write_asset_version(out):
     (out / "assets_version.h").write_text(
         "// Generated from src/crimson/assets_version.json.\n"
         f'constexpr const char *CRIMSON_PAQ_SHA256 = {json.dumps(version["current"])};\n'
+        f'constexpr const char *MUSIC_PAQ_SHA256 = {json.dumps(version["audio"]["music.paq"])};\n'
+        f'constexpr const char *SFX_PAQ_SHA256 = {json.dumps(version["audio"]["sfx.paq"])};\n'
+        f'constexpr const char *LEGACY_MUSIC_SHA256 = {json.dumps(version["legacy_music"])};\n'
         f"constexpr const char *PREVIOUS_CRIMSON_PAQ_SHA256[] = {{{previous}}};\n",
     )
     shell = (HERE / "web/shell.html").read_text().replace("/* ASSET_VERSION */ null", json.dumps(version))

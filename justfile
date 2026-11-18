@@ -13,6 +13,10 @@ build *args:
 run *args: build
     ./crimson-core/build/app/crimson "$@"
 
+# Download the pinned artwork and original binaries used by CI.
+setup-test-data:
+    uv run --no-sync python scripts/setup_test_data.py
+
 # Tests
 test *args:
     uv run pytest {{ args }}

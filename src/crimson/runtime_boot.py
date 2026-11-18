@@ -24,6 +24,7 @@ def boot_runtime(
     *,
     width: int | None = None,
     height: int | None = None,
+    require_packs: bool = False,
 ) -> RuntimeBoot:
     """Load crimson.cfg, build the console with its core cvars, fetch any missing .paq archives and import old files.
 
@@ -35,7 +36,11 @@ def boot_runtime(
     height = config.display.height if height is None else height
     console = create_console(base_dir, assets_dir=assets_dir)
     register_core_cvars(console, width, height)
-    download_missing_paqs(assets_dir, console)
+    results = download_missing_paqs(assets_dir, console)
+    if require_packs:
+        for result in results:
+            if not result.ok and not result.usable_previous:
+                raise OSError(f"Could not install {result.name}: {result.error}. Check the connection and restart to retry.")
     if migrate_music_paq(assets_dir):
         console.log.log("assets: renamed music.paq's entries to the original's music\\ names")
     for path in import_original_scores(base_dir):

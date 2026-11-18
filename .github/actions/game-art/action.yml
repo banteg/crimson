@@ -4,9 +4,4 @@ runs:
   using: composite
   steps:
     - shell: bash
-      run: |
-        mkdir -p artifacts/assets
-        art_sha=$(python3 -c 'import json; print(json.load(open("src/crimson/assets_version.json"))["current"])')
-        curl --fail --location --retry 3 --retry-all-errors \
-          --output artifacts/assets/crimson.paq "https://paq.crimson.banteg.xyz/v1.9.93/crimson.paq?sha256=$art_sha"
-        printf '%s  artifacts/assets/crimson.paq\n' "$art_sha" | sha256sum --check
+      run: python3 scripts/setup_test_data.py --only art

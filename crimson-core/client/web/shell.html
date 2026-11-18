@@ -343,7 +343,12 @@
   // names, music\intro.ogg and the rest; an earlier repack stored intro.ogg and
   // music/game_tunes.txt, renamed here as the Python game does
   // (src/crimson/assets_fetch.py).
-  const storeMusic = (bytes) => {
+  const storeMusic = async (bytes) => {
+    if (await artHash(bytes) !== ART_VERSION.legacy_music) {
+      paq(bytes);
+      store("music.paq", bytes);
+      return;
+    }
     const entries = paq(bytes).map(([name, data]) => [new TextEncoder().encode("music\\" + name.split(/[\\/]/).pop()), data]);
     const out = new Uint8Array(entries.reduce((sum, [name, data]) => sum + name.length + 5 + data.length, 4));
     const view = new DataView(out.buffer);
@@ -354,6 +359,7 @@
       out.set(data, at + name.length + 5);
       return at + name.length + 5 + data.length;
     }, 4);
+    if (await artHash(out) !== ART_VERSION.audio["music.paq"]) throw Error("Unrecognized music pack migration");
     store("music.paq", out);
   };
 
@@ -378,7 +384,7 @@
         try {
           for (const [name, file] of files)
             if (FILES.includes(name) || name === "grim.dll" || name.startsWith("music/")) store(name, new Uint8Array(await file.arrayBuffer()));
-          if (files.has("music.paq")) storeMusic(new Uint8Array(await files.get("music.paq").arrayBuffer()));
+          if (files.has("music.paq")) await storeMusic(new Uint8Array(await files.get("music.paq").arrayBuffer()));
         } catch (error) {
           return say("Could not read that folder: " + (error.message ?? error));
         }
@@ -393,10 +399,11 @@
   }
 
   // Downloads, with their progress across every file still to come.
+  const packHash = (name) => name === "crimson.paq" ? ART_VERSION.current : ART_VERSION.audio[name];
   async function download(names) {
     const responses = await Promise.all(names.map((name) => {
       const url = new URL(name, new URL(base, location.href));
-      if (name === "crimson.paq") url.searchParams.set("sha256", ART_VERSION.current);
+      url.searchParams.set("sha256", packHash(name));
       return fetch(url);
     }));
     const failed = responses.find((response) => !response.ok);
@@ -417,16 +424,28 @@
       }
       const bytes = new Uint8Array(chunks.reduce((sum, chunk) => sum + chunk.length, 0));
       chunks.reduce((at, chunk) => (bytes.set(chunk, at), at + chunk.length), 0);
-      if (names[i] === "crimson.paq" && await artHash(bytes) !== ART_VERSION.current)
-        throw Error("Downloaded game art has an unexpected hash");
+      if (await artHash(bytes) !== packHash(names[i])) throw Error("Downloaded " + names[i] + " has an unexpected hash");
       return bytes;
     }));
   }
 
   async function fetchMissing() {
     const needed = missing();
-    if (exists("crimson.paq") && ART_VERSION.previous.includes(await artHash(FS.readFile("/game/crimson.paq"))))
-      needed.push("crimson.paq");
+    const damaged = new Map();
+    for (const name of ["crimson.paq", "music.paq", "sfx.paq"]) {
+      if (!exists(name)) continue;
+      const data = FS.readFile("/game/" + name), hash = await artHash(data);
+      if (hash === packHash(name)) continue;
+      if (name === "crimson.paq" && ART_VERSION.previous.includes(hash)) needed.push(name);
+      else if (name === "music.paq" && hash === ART_VERSION.legacy_music) await storeMusic(data);
+      else {
+        try { paq(data); }
+        catch {
+          damaged.set(name, { hash, data });
+          needed.push(name);
+        }
+      }
+    }
     if (!needed.length) return;
     const names = [...new Set(needed.map((name) => (name.startsWith("music/") ? "music.paq" : name)))];
     let bytes;
@@ -434,10 +453,11 @@
       bytes = await download(names);
     } catch (error) {
       // An offline update keeps the usable old pack and retries next launch.
-      if (!missing().length) { console.warn("game art update:", error); return; }
+      if (!damaged.size && !missing().length) { console.warn("game art update:", error); return; }
       throw error;
     }
-    names.forEach((name, i) => (name === "music.paq" ? storeMusic(bytes[i]) : store(name, bytes[i])));
+    for (const [name, { hash, data }] of damaged) store(name + ".invalid-" + hash, data);
+    names.forEach((name, i) => store(name, bytes[i]));
     if (missing().length) throw Error("incomplete download");
   }
 
