@@ -438,7 +438,7 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
              grim_interface_ptr->grim_is_key_active(player->input.fire_key)
                  || auto_fire)) {
          int owner_id;
-+        RtxSmokeMuzzle rtx_smoke_source(fire_heading);
++        RtxSmokeMuzzle rtx_smoke_source(fire_heading, current_player_index);
          survival_reward_fire_seen = 1;
  
          if (!normal_fire_ready) {

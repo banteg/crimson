@@ -7,6 +7,7 @@
 #include "crimsonland_gameplay.h"
 #include "crimsonland_config_owner.h"
 #include "host_abi.h"
+#include "rtx_barrel.h"
 #include <algorithm>
 #include <deque>
 #include <math.h>
@@ -71,6 +72,9 @@ struct Source {
   float flow_x = 0, flow_y = 0;
   enum { SPAWNED, GIVEN, ALONG_FLOW } velocity = SPAWNED;
   float vx = 0, vy = 0;
+  bool barrel = false, first_puff = true;
+  vec2f_t mount{};
+  float powder_gain = 1;
 };
 // The tick being captured. A sprite's caller colors it after fx_spawn_sprite
 // returns, so the last spawn waits for the next, the pool's update or the
@@ -364,6 +368,8 @@ void rtx_smoke_spawned(int index) {
     return;
   capture.pending = index;
   capture.pending_source = capture.source;
+  if (capture.source.barrel)
+    capture.source.first_puff = false;
 }
 
 // The waiting spawn as its caller left it. A muzzle puff pushes a short jet of
@@ -381,12 +387,17 @@ void rtx_smoke_flush() {
     float speed = sqrtf(vx * vx + vy * vy);
     vx = source.flow_x * speed, vy = source.flow_y * speed;
   }
-  capture.emissions.push_back({sprite.pos_x, sprite.pos_y, vx, vy, sprite.scale, sprite.color_r, sprite.color_g,
-                               sprite.color_b, sprite.color_a, sprite.rotation, false, 0, source.retention,
+  float density = sprite.color_a * source.powder_gain;
+  if (source.barrel && density <= 0)
+    return;
+  float x = source.barrel ? source.mount.x : sprite.pos_x;
+  float y = source.barrel ? source.mount.y : sprite.pos_y;
+  capture.emissions.push_back({x, y, vx, vy, sprite.scale, sprite.color_r, sprite.color_g,
+                               sprite.color_b, density, sprite.rotation, false, 0, source.retention,
                                source.profile, source.flow_x, source.flow_y});
-  if (source.profile == MUZZLE)
-    rtx_smoke_impulse(sprite.pos_x, sprite.pos_y, sprite.pos_x + source.flow_x * 40, sprite.pos_y + source.flow_y * 40,
-                      10, 80 * sprite.color_a, 20 * sprite.color_a, MUZZLE_JET, 0.15f, 0);
+  if (source.profile == MUZZLE && source.first_puff)
+    rtx_smoke_impulse(x, y, x + source.flow_x * 40, y + source.flow_y * 40,
+                      10, 80 * density, 20 * density, MUZZLE_JET, 0.15f, 0);
 }
 
 // A general explosion puff (effect_spawn): its growth the expansion of a scaling
@@ -415,11 +426,20 @@ void rtx_smoke_soot(int index) {
 }
 
 // The player's gun firing toward its aim `heading`: its puffs leave along it.
-void rtx_smoke_muzzle(float heading) {
+void rtx_smoke_muzzle(float heading, int slot) {
   capture.source = Source{};
   capture.source.profile = MUZZLE;
   capture.source.flow_x = cosf(heading - 1.5707964f), capture.source.flow_y = sinf(heading - 1.5707964f);
   capture.source.velocity = Source::ALONG_FLOW;
+  if (slot >= 0 && rtx_smoke_active()) {
+    const player_state_t &player = player_state_table[slot];
+    vec2f_t offset = rtx_barrel_offset(player);
+    capture.source.barrel = true;
+    capture.source.mount = {player.pos_x + offset.x, player.pos_y + offset.y};
+    bool powderless = player.weapon_id == WEAPON_ID_GAUSS_GUN || player.weapon_id == WEAPON_ID_GAUSS_SHOTGUN ||
+                      player.weapon_id == WEAPON_ID_SHRINKIFIER_5K;
+    capture.source.powder_gain = player.fire_bullets_timer > 0 ? .45f : powderless ? 0.f : .64f;
+  }
 }
 // A rocket's exhaust or detonation sprites: their flow and velocity given.
 void rtx_smoke_rocket(float flow_x, float flow_y, float vx, float vy) {

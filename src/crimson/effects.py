@@ -14,6 +14,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import CallerStatic, CrandLike
 
+from .barrel import barrel_position
 from .creatures.damage import creature_apply_damage
 from .creatures.damage_types import CreatureDamageType
 from .effects_atlas import EffectId
@@ -33,8 +34,10 @@ from .math_parity import (
 )
 from .rng_caller_static import RngCallerStatic
 from .sim.smoke_events import AtmosphereImpulse, SmokeEmission
+from .weapons import WeaponId
 
 if TYPE_CHECKING:
+    from .sim.state_types import PlayerState
     from .sim.world_state import WorldStepRuntime
 
 __all__ = [
@@ -392,6 +395,8 @@ class _SmokeCapture(msgspec.Struct):
     profile: Literal["ordinary", "nuke", "muzzle", "rocket", "soot"] = "ordinary"
     flow_dir: Vec2 = Vec2()
     velocity_override: Vec2 | None = None
+    muzzle_position: Vec2 | None = None
+    powder_gain: float = 1.0
     impulses: list[AtmosphereImpulse] | None = None
     impulse_counts: dict[str, int] = msgspec.field(default_factory=dict)
 
@@ -414,14 +419,38 @@ class _SmokeCapturePool:
             capture.profile, capture.flow_dir, capture.velocity_override = previous
 
     @contextmanager
-    def muzzle_smoke(self, *, pos: Vec2, heading: float, speed: float, alpha: float) -> Generator[None]:
+    def muzzle_smoke(
+        self, *, pos: Vec2, heading: float, speed: float, alpha: float, player: PlayerState | None = None,
+        first_puff: bool = True,
+    ) -> Generator[None]:
         """A gun's puff at `pos`: its smoke leaves along the aim `heading` at `speed` (native spawns the sprite
         sideways, along the raw heading) and pushes a short jet of air ahead."""
-        direction = Vec2.from_heading(heading)
-        self.atmosphere_impulse(start=pos, end=pos+direction*40., radius=10., strength=80.*alpha, curl=20.*alpha,
-                                kind="muzzle")
-        with self.smoke_source(profile="muzzle", flow_dir=direction, velocity=direction*speed):
+        capture = self._smoke_capture()
+        if capture.sink is None and capture.impulses is None:
             yield
+            return
+        powder_gain = 1.0
+        if player is not None:
+            pos = barrel_position(player)
+            if player.fire_bullets_timer > 0.0:
+                powder_gain = 0.45
+            elif player.weapon.weapon_id in (WeaponId.GAUSS_GUN, WeaponId.GAUSS_SHOTGUN, WeaponId.SHRINKIFIER_5K):
+                powder_gain = 0.0
+            else:
+                powder_gain = 0.64
+        direction = Vec2.from_heading(heading)
+        if first_puff and powder_gain > 0.0:
+            density = alpha * powder_gain
+            self.atmosphere_impulse(start=pos, end=pos + direction * 40.0, radius=10.0,
+                                    strength=80.0 * density, curl=20.0 * density, kind="muzzle")
+        previous = capture.muzzle_position, capture.powder_gain
+        capture.muzzle_position = pos if player is not None else None
+        capture.powder_gain = powder_gain
+        try:
+            with self.smoke_source(profile="muzzle", flow_dir=direction, velocity=direction * speed):
+                yield
+        finally:
+            capture.muzzle_position, capture.powder_gain = previous
 
     def atmosphere_impulse(self, *, start: Vec2, end: Vec2, radius: float, strength: float,
                            curl: float = 0., kind: Literal["wake", "muzzle", "blast"] = "wake",
@@ -529,15 +558,15 @@ class SpriteEffectPool(_SmokeCapturePool):
         entry.scale = f32(scale)
         capture = self._smoke_capture()
         capture.generations[idx] = capture.generations.get(idx, 0) + 1
-        if capture.sink is not None:
+        if capture.sink is not None and capture.powder_gain > 0.0:
             capture.sink.append(SmokeEmission(
                 slot=idx,
                 generation=capture.generations[idx],
-                pos=Vec2(entry.pos.x, entry.pos.y),
+                pos=capture.muzzle_position if capture.muzzle_position is not None else Vec2(entry.pos.x, entry.pos.y),
                 vel=(capture.velocity_override if capture.velocity_override is not None
                      else Vec2(entry.vel.x, entry.vel.y)),
                 scale=entry.scale,
-                color=RGBA(entry.color.r, entry.color.g, entry.color.b, entry.color.a),
+                color=RGBA(entry.color.r, entry.color.g, entry.color.b, entry.color.a * capture.powder_gain),
                 rotation=entry.rotation,
                 retention_seconds=capture.retention_seconds,
                 profile=capture.profile,

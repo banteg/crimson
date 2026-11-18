@@ -51,6 +51,32 @@ def test_capture_copies_native_values_and_reused_slots_get_new_identity() -> Non
         event.scale = 100  # ty: ignore[invalid-assignment] -- verify runtime immutability too.
 
 
+def test_the_barrel_moves_only_captured_puffs_and_a_pair_pushes_once() -> None:
+    pool = SpriteEffectPool()
+    rng = Crand(7)
+    _, world = make_session()
+    player = world.players[0]
+    player.pos = Vec2(100, 120)
+    player.aim_heading = 0
+    player.size = 64
+    player.move_phase = 2
+    player.muzzle_flash_alpha = 0.5
+    weapon_assign_player(player, WeaponId.SHOTGUN, state=world.state)
+    impulses = []
+    with pool.capture_emissions(impulses=impulses) as events:
+        for i in range(2):
+            with pool.muzzle_smoke(
+                pos=Vec2(11, 22), heading=0, speed=25, alpha=0.6, player=player, first_puff=i == 0,
+            ):
+                spawn_sprite(pool, rng)
+    assert len(events) == 2 and len(impulses) == 1
+    assert (events[0].pos.x, events[0].pos.y) == pytest.approx((96.3, 105.5))
+    assert events[0].pos == events[1].pos == impulses[0].start
+    assert events[0].color.a == pytest.approx(0.6 * 0.64)
+    assert pool.entries[0].pos == Vec2(f32(11.1), f32(22.2))
+    assert pool.entries[0].color.a == f32(0.6)
+
+
 def test_capture_preserves_full_pool_allocation_rng_and_native_residue() -> None:
     captured, plain = SpriteEffectPool(), SpriteEffectPool()
     rng_captured, rng_plain = RecordingCrand(Crand(17)), RecordingCrand(Crand(17))

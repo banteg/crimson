@@ -99,7 +99,7 @@ def prepare_weapon_fire(
     return gate
 
 
-class _ShotSpawner(msgspec.Struct, frozen=True):
+class _ShotSpawner(msgspec.Struct):
     """The muzzle, owner and pools every `player_update` fire branch spawns into."""
 
     state: GameplayState
@@ -111,6 +111,7 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
     # Native encodes friendly fire in the owner id (-1 - player_index): with the
     # cvar enabled, primary player shots can hit other players for 10 damage.
     owner_id: int
+    muzzle_puffs: int = 0
 
     def projectile(self, type_id: ProjectileTemplateId, angle: float) -> int:
         return projectile_spawn(
@@ -137,7 +138,10 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
         # Native uses raw (cos h, sin h) of the aim heading - the aim direction
         # rotated 90 degrees - matching the Fire Cough and shell-casing ports.
         pool = self.state.sprite_effects
-        with pool.muzzle_smoke(pos=self.muzzle, heading=self.aim_heading, speed=speed, alpha=alpha):
+        with pool.muzzle_smoke(
+            pos=self.muzzle, heading=self.aim_heading, speed=speed, alpha=alpha, player=self.players[self.player_index],
+            first_puff=self.muzzle_puffs == 0,
+        ):
             pool.spawn(
                 pos=self.muzzle,
                 vel=Vec2.from_angle(self.aim_heading) * speed,
@@ -145,6 +149,7 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
                 color=RGBA(0.5, 0.5, 0.5, alpha),
                 rng=self.state.rng,
             )
+        self.muzzle_puffs += 1
 
 
 def _native_shot_angle_with_jitter(
