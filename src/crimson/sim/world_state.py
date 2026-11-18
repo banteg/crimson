@@ -259,7 +259,7 @@ class WorldState(msgspec.Struct):
         # `gameplay_render_world`: `creature_render_all` culls finished corpses, then `bonus_render`
         # makes the Telekinetic pickups.
         creature_count_before_render = len(self.creatures.iter_active())
-        self.creatures.finalize_post_render_lifecycle()
+        self.creatures.release_faded_corpses_after_render()
         pickups = bonus_telekinetic_update(step_runtime, dt)
         if self.state.game_mode == GameMode.TUTORIAL:
             tutorial_timeline_update(self, dt_ms=frame_dt_ms)

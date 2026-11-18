@@ -185,7 +185,7 @@ def typo_gameplay_update(
     # then `bonus_render` makes the Telekinetic pickups.
     gameplay_enforce_weapon_guards(state, players)
     creature_count_before_render = len(world.creatures.iter_active())
-    world.creatures.finalize_post_render_lifecycle()
+    world.creatures.release_faded_corpses_after_render()
     pickups = bonus_telekinetic_update(step_runtime, dt)
     for entry in state.bonus_pool.entries:
         entry.bonus_id = BonusId.UNUSED

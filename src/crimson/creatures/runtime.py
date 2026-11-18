@@ -18,7 +18,6 @@ from grim.sfx_types import SfxRequest
 
 from ..bonuses import BonusId
 from ..bonuses.pool import BONUS_SPAWN_MARGIN
-from ..effects import EffectPool, FxQueueRotated
 from ..gameplay import (
     experience_plus_reward,
     survival_record_first_kill,
@@ -107,6 +106,7 @@ CREATURE_TURN_RATE_SCALE = NATIVE_TURN_RATE_SCALE
 CREATURE_DEATH_TIMER_DECAY = 28.0
 CREATURE_CORPSE_FADE_DECAY = 20.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
+_CORPSE_BAKE_RETRY_TIMER = f32(0.001)
 # Native re-picks the target on every tick except multiples of 70.
 _TARGET_REEVAL_SKIP_MODULUS = 0x46
 _FLAG_POISONED = int(CreatureFlags.POISONED)
@@ -598,8 +598,6 @@ class CreaturePool:
     ) -> None:
         state, players = step_runtime.world.state, step_runtime.world.players
         rng = state.rng
-        detail_preset, violence_disabled = int(step_runtime.world.state.detail_preset), int(step_runtime.world.state.violence_disabled)
-        fx_queue_rotated = step_runtime.fx_queue_rotated
         # Native performs this first death-stage tick before calling
         # creature_apply_damage for periodic poison flags.  Keeping it
         # ahead of that call matters when a corpse enters the sweep at
@@ -623,15 +621,7 @@ class CreaturePool:
             creature=creature,
         )
         if dt > 0.0:
-            self._tick_dead(
-                creature,
-                dt=dt,
-                fx_queue_rotated=fx_queue_rotated,
-                rng=rng,
-                effects=state.effects,
-                detail_preset=int(detail_preset),
-                violence_disabled=int(violence_disabled),
-            )
+            self._advance_death_timer(creature, step_runtime)
 
     def update(self, step_runtime: WorldStepRuntime) -> None:
         """Port of `creature_update_all` for one frame of the step runtime.
@@ -644,9 +634,7 @@ class CreaturePool:
         players = world.players
         rng = state.rng
         detail_preset = int(step_runtime.world.state.detail_preset)
-        violence_disabled = int(step_runtime.world.state.violence_disabled)
         fx_queue = step_runtime.fx_queue
-        fx_queue_rotated = step_runtime.fx_queue_rotated
         sfx = step_runtime.sfx
         self._update_tick = int(self._update_tick) + 1
         # Native's player table always has two slots; a one-player run leaves the second dormant.
@@ -733,15 +721,7 @@ class CreaturePool:
 
             if poison_killed:
                 if creature.active:
-                    self._tick_dead(
-                        creature,
-                        dt=dt,
-                        fx_queue_rotated=fx_queue_rotated,
-                        rng=rng,
-                        effects=state.effects,
-                        detail_preset=int(detail_preset),
-                        violence_disabled=int(violence_disabled),
-                    )
+                    self._advance_death_timer(creature, step_runtime)
                 continue
 
             if creature.plague_infected:
@@ -770,7 +750,7 @@ class CreaturePool:
                     if plague_killed:
                         # Native keeps executing the current live-branch body after
                         # `creature_handle_death` in this timer-wrap kill path.
-                        # Do not run `_tick_dead` immediately here.
+                        # Corpse staging starts on a later tick.
                         pass
 
             frozen_by_evil_eyes = idx in evil_targets
@@ -1169,28 +1149,10 @@ class CreaturePool:
         if int(creature.flags) & _FLAG_SPAWNER:
             self.spawn_slots[creature.link_index].owner_creature = -1
 
-    def _tick_dead(
-        self,
-        creature: CreatureState,
-        *,
-        dt: float,
-        fx_queue_rotated: FxQueueRotated,
-        rng: CrandLike,
-        effects: EffectPool,
-        detail_preset: int,
-        violence_disabled: int,
-    ) -> None:
-        """Advance the post-death death_timer ramp and queue corpse decals.
+    def _advance_death_timer(self, creature: CreatureState, step_runtime: WorldStepRuntime) -> None:
+        """Slide until the timer crosses zero, then bake the corpse. Later ticks only fade it."""
 
-        This matches the `death_timer` death staging inside `creature_update_all`:
-        - while death_timer > 0: decrement quickly and slide backwards
-        - once death_timer <= 0: queue a corpse decal and fade out until < -10, then deactivate.
-        """
-
-        if dt <= 0.0:
-            return
-
-        dt_f32 = f32(dt)
+        dt_f32 = f32(step_runtime.dt)
         death_timer = f32(creature.death_timer)
         if death_timer <= 0.0:
             creature.death_timer = f32(
@@ -1236,13 +1198,19 @@ class CreaturePool:
                 creature.vel = Vec2()
             return
 
-        # death_timer just crossed <= 0: bake a persistent corpse decal into the ground.
-        if int(violence_disabled) == 0:
+        self._bake_corpse_or_retry(creature, step_runtime, mobile=mobile)
+
+    def _bake_corpse_or_retry(self, creature: CreatureState, step_runtime: WorldStepRuntime, *, mobile: bool) -> None:
+        """A full decal queue returns the corpse to the slide for another bake attempt."""
+
+        state = step_runtime.world.state
+        violence_disabled = int(state.violence_disabled)
+        if violence_disabled == 0:
             corpse_size = f32(creature.size)
             corpse_half_size = x87_pc24_mul(corpse_size, 0.5)
             # Native gives pinned spawners the fallback corpse id 7.
             corpse_type_id = int(creature.type_id) if mobile else 7
-            ok = fx_queue_rotated.add(
+            queued = step_runtime.fx_queue_rotated.add(
                 top_left=Vec2(
                     x87_pc24_sub(f32(creature.pos.x), corpse_half_size),
                     x87_pc24_sub(f32(creature.pos.y), corpse_half_size),
@@ -1252,35 +1220,32 @@ class CreaturePool:
                 scale=corpse_size,
                 creature_type_id=corpse_type_id,
             )
-            if not ok:
-                creature.death_timer = f32(0.001)
+            if not queued:
+                creature.death_timer = _CORPSE_BAKE_RETRY_TIMER
                 return
 
         self.kill_count += 1
 
         # Native `creature_update_all` emits a 19-splatter blood burst when a
         # spawner corpse first reaches this staged kill point.
-        if (
-            int(violence_disabled) == 0
-            and (int(creature.flags) & _FLAG_SPAWNER) != 0
-        ):
+        if violence_disabled == 0 and (int(creature.flags) & _FLAG_SPAWNER) != 0:
             for count, age, angle_caller in (
                 (8, 0.0, RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_8_ANGLE),
                 (6, -0.07, RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_6_ANGLE),
                 (5, -0.12, RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_5_ANGLE),
             ):
                 for _ in range(int(count)):
-                    angle = x87_pc24_mul(float(int(rng.rand_tagged(angle_caller)) % 612), f32(0.01))
-                    effects.spawn_blood_splatter(
+                    angle = x87_pc24_mul(float(int(state.rng.rand_tagged(angle_caller)) % 612), f32(0.01))
+                    state.effects.spawn_blood_splatter(
                         pos=creature.pos,
                         angle=float(angle),
                         age=float(age),
-                        rng=rng,
-                        detail_preset=int(detail_preset),
-                        violence_disabled=int(violence_disabled),
+                        rng=state.rng,
+                        detail_preset=int(state.detail_preset),
+                        violence_disabled=violence_disabled,
                     )
 
-    def finalize_post_render_lifecycle(self) -> None:
+    def release_faded_corpses_after_render(self) -> None:
         """Mirror render-time corpse culling from native `creature_render_type`.
 
         Native deactivates entries only after draw once `death_timer < -10.0`. Keeping
