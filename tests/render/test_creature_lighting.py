@@ -71,9 +71,6 @@ def test_only_rtx_bodies_use_lighting(mocker, headless_resources, mode):
 
 def test_lazy_lifecycle_and_exception_restore(mocker, tmp_path):
     lighting = CreatureLighting()
-    load = mocker.patch.object(rl, "load_shader_from_memory")
-    lighting.prepare([], camera=Vec2(), view_scale=Vec2(1, 1))
-    load.assert_not_called()
     begin = mocker.patch.object(rl, "begin_shader_mode")
     unload = mocker.patch.object(rl, "unload_shader")
     shader = rl.ffi.new("Shader *")[0]
@@ -85,7 +82,6 @@ def test_lazy_lifecycle_and_exception_restore(mocker, tmp_path):
     thickness = rl.ffi.new("Texture *")[0]
     thickness.id = 11
     lighting.shader = shader
-    lighting.active = True
     lighting.locations["u_thickness"] = 12
     lighting.locations["u_ice"] = 13
     lighting.locations["u_ice_frozen"] = 14
@@ -104,7 +100,7 @@ def test_lazy_lifecycle_and_exception_restore(mocker, tmp_path):
     unload.assert_called_once_with(shader)
     unload_texture.assert_called_once_with(thickness)
     assert not lighting.thickness_textures
-    assert lighting.shader is None and not lighting.active
+    assert lighting.shader is None
 
 
 @pytest.fixture
@@ -120,7 +116,7 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), target_override=None, pigment: tuple[int, int, int] = (70, 55, 40)):
+               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), target_override=None, type_id=None, pigment: tuple[int, int, int] = (70, 55, 40)):
         other = rl.gen_image_color(256, 256, rl.BLANK)
         rl.image_draw_circle(other, 16, 16, 10, rl.Color(*pigment, 255))
         rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(*pigment, 255))
@@ -153,7 +149,7 @@ def lit_sprite(raylib_context):
                                             rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
                                             rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
                 if use_shader:
-                    with lighting.scope(texture=texture, restore_shader=alpha.shader):
+                    with lighting.scope(texture=texture, restore_shader=alpha.shader, type_id=type_id):
                         draw()
                 else:
                     draw()
@@ -177,11 +173,21 @@ def test_zero_and_out_of_range_lights_preserve_base_pixels(lit_sprite):
     render, lighting = lit_sprite
     base = render([], use_shader=False)
     assert render([]) == base
-    assert lighting.shader is None
     assert not lighting.thickness_textures
     assert render([MaterialLight(Vec2(1000, 1000), 10, (1, 1, 1))]) == base
     assert render([MaterialLight(Vec2(64, 64), 100, (0, 0, 0))]) == base
     assert render([]) == base  # A previous lit frame cannot leak into the next one.
+
+
+@pytest.mark.parametrize("type_id", [CreatureTypeId.LIZARD, CreatureTypeId.ALIEN, CreatureTypeId.SPIDER_SP1, CreatureTypeId.SPIDER_SP2])
+@pytest.mark.parametrize("ambient", [.6, 1.])
+def test_ambient_species_material_survives_an_unreachable_light(lit_sprite, type_id, ambient):
+    render, _ = lit_sprite
+    options = {"ambient": ambient, "type_id": type_id, "textured": True}
+    unlit = render([], **options)
+    assert unlit != render([], ambient=ambient, textured=True)
+    assert render([MaterialLight(Vec2(320, 64), 8, (1., 1., 1.))], **options) == unlit
+    assert render([], **options) == unlit
 
 
 def test_degenerate_uv_basis_keeps_lighting_finite(lit_sprite, monkeypatch):
