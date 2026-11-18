@@ -1,0 +1,48 @@
+{
+  "input_sha256": {
+    "artifacts/uncompressed_assets/crimsonland-2003-source-art-tga.zip": "5e3f885df248a26e375b597e0b4741ec93b13ccaa31989d1cdcdd384184950fe",
+    "artifacts/uncompressed_assets/crimsonland-arcade-cabinet-game-assets-2004-10-14.zip": "62b1e64ea84d0ee732e4e058b7d55e434bf9324e633bfeaba03587faf68b0faf",
+    "game_bins/crimsonland/1.9.93-gog/crimson.paq": "900068cbb0e6fc6d43a2558cdcb183d967a7966f3517123a76880ad60229a679",
+    "artifacts/assets/crimson.paq": "52ae564a2cb86de9f11be261338af942377b4340595a0df2a5ae41f468042547"
+  },
+  "audio": {
+    "sfx": {
+      "reference_entries": 73,
+      "covered": 73,
+      "byte_identical": 73,
+      "different": [],
+      "missing": []
+    },
+    "music": {
+      "reference_entries": 6,
+      "covered": 6,
+      "byte_identical": 6,
+      "different": [],
+      "missing": []
+    }
+  },
+  "common_changed": [
+    "game/bodyset.tga",
+    "game/bonuses.tga",
+    "game/projs.tga",
+    "ui/ui_wicons.tga"
+  ],
+  "missing_new": [
+    "balloon.tga",
+    "load/default_font_courier.tga"
+  ],
+  "weapon_icons": {
+    "cells": 32,
+    "current_sources": {
+      "O+R": 23,
+      "R+R": 9
+    },
+    "populated_cells": 32,
+    "recommended_sources": {
+      "N=O": 23,
+      "N@25": 1,
+      "N": 5,
+      "R": 3
+    }
+  }
+}
