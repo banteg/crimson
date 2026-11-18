@@ -2,6 +2,10 @@ name: Browser co-op
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/browser-coop.yml
+      - crimson-core/checks/coop_browser.mjs
   schedule:
     - cron: "27 3 * * 1"
 
@@ -54,7 +58,7 @@ jobs:
         run: |
           mkdir -p service/public/play
           tar -xzf artifacts/client/crimsonland-web.tar.gz -C artifacts/client
-          cp artifacts/client/web/index.{html,js,wasm} artifacts/client/web/{build.json,LICENSE.txt} service/public/play/
+          cp artifacts/client/web/index.{html,js,wasm} artifacts/client/web/build.json service/public/play/
           python3 scripts/setup_test_data.py --only packs
           npm --prefix service ci
           npm --prefix service run assets
