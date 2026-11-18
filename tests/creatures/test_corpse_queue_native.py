@@ -6,7 +6,7 @@ import struct
 from pathlib import Path
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
-from crimson.effects import FxQueueRotated, FxQueueRotatedEntry
+from crimson.effects import FX_QUEUE_ROTATED_MAX_COUNT, FxQueueRotated, FxQueueRotatedEntry
 from crimson.math_parity import f32
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -85,3 +85,43 @@ def test_staged_death_matches_native_corpse_tint_size_and_retry() -> None:
         assert queue.count == initial_count + int(expected["entry"] is not None), case
         if expected["entry"] is not None:
             assert entry_bits(queue.entries[initial_count]) == expected["entry"], case
+
+
+def test_corpse_bake_retries_then_releases_the_faded_slot_after_render() -> None:
+    world = make_world()
+    pool = world.creatures
+    corpse = pool.entries[0]
+    corpse.active = True
+    corpse.flags = CreatureFlags.SPAWNER
+    corpse.link_index = 0
+    pool.spawn_slots[0].owner_creature = 0
+    corpse.death_timer = 1.0
+    step = make_step_runtime(world, dt=0.5)
+    queue = fill_queue(step.fx_queue_rotated, FX_QUEUE_ROTATED_MAX_COUNT)
+
+    pool.update(step)
+    assert corpse.death_timer == f32(0.001)
+    assert pool.kill_count == 0
+
+    queue.clear()
+    # End the retry exactly at zero so the next half-second fade lands on −10.
+    step.dt = f32(corpse.death_timer / 28.0)
+    pool.update(step)
+    assert corpse.death_timer == 0.0
+    assert queue.count == 1
+    assert pool.kill_count == 1
+
+    step.dt = 0.5
+    pool.update(step)
+    assert corpse.death_timer == -10.0
+    pool.release_faded_corpses_after_render()
+    assert corpse.active
+    assert pool.spawn_slots[0].owner_creature == 0
+
+    pool.update(step)
+    assert corpse.active
+    assert queue.count == 1
+    assert pool.kill_count == 1
+    pool.release_faded_corpses_after_render()
+    assert not corpse.active
+    assert pool.spawn_slots[0].owner_creature == -1
