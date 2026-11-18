@@ -109,16 +109,17 @@ back(PLAY_GAME, MAIN_MENU);
 open(MAIN_MENU, down(1), OPTIONS);
 checkMode(true);
 back(OPTIONS, MAIN_MENU);
-// Controls, the last of the options' widgets.
+// Move from Reduce shake to UI Info texts, then down to Controls.
+const controlsRoute = [...down(3), HAT_LEFT, HAT_DOWN];
 open(MAIN_MENU, down(1), OPTIONS);
-open(OPTIONS, down(5), CONTROLS);
+open(OPTIONS, controlsRoute, CONTROLS);
 back(CONTROLS, OPTIONS);
 // The controls screen starts on its player list, which A opens.
-open(OPTIONS, down(5), CONTROLS);
+open(OPTIONS, controlsRoute, CONTROLS);
 tap({ press: [PAD_SOUTH] });
 back(CONTROLS, OPTIONS, "the player list open");
 // The first rebind row, right of the lists, binds an axis.
-open(OPTIONS, down(5), CONTROLS);
+open(OPTIONS, controlsRoute, CONTROLS);
 tap({ hat: HAT_RIGHT });
 tap({ press: [PAD_SOUTH] });
 back(CONTROLS, OPTIONS, "an axis rebind waiting");
