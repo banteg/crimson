@@ -109,10 +109,9 @@ networking work on proving:
 
    - **Base input delay**: **2 ticks (33.3 ms)**, and longer once the window
      late in a long Survival run (4 ticks) would no longer cover a one-way trip
-     with it: the Host sets each run's delay from the round trip the session
+     with it: the Host sets each run's initial delay from the round trip the session
      measured, 2 up to about 83 ms one way, a tick more for each 16.7 ms past
-     that, at most 8 (Section 3.3, rule 4; adaptive 1–8 ticks in `M1`
-     lockstep, changed only at negotiated epoch boundaries). Mouse aim
+     that, at most 8. During play the peers can schedule a delay change when the route changes (Section 3.3, rule 4). Mouse aim
      (`aim_scheme == 0`) converts the local screen cursor to world coordinates
      at input-sampling time and records the world point into `PortableInput`.
 
@@ -587,8 +586,8 @@ monotonically non-decreasing tick frontiers**:
 
 1. **Clock-drift micro-adjustment**:
    From incoming packets, estimate remote lead
-   $\Delta T = (\text{remote\_head\_tick} - D) - \text{next\_sim\_tick} + \frac{\text{RTT}}{2 \times 16.667\text{ ms}}$.
-   The remote head is the newest `head_tick` the partner's ticks packets carried
+   $\Delta T = \text{remote\_next\_sim\_tick} - \text{next\_sim\_tick} + \frac{\text{RTT}}{2 \times 16.667\text{ ms}}$.
+   The remote simulation frontier comes from the newest packet's head and signed input lead
    (`coop_ahead`, `host/coop_wire.inc`). `coop_banked_s` takes the pass's play
    time paced to the display as a run alone takes it (`live.paced`,
    `host/live_pace.h`), and the lead's adjustment apart from it (`CatchUp`): the
@@ -606,15 +605,13 @@ monotonically non-decreasing tick frontiers**:
    that has drained: two runs a stall left 8 ticks apart come back together
    within a few seconds, a tick at a time.
 
-2. **Monotonic, gap-free input production (`++input_produced_tick`)**:
-   While `input_produced_tick < next_sim_tick + D` **and**
-   `input_produced_tick - peer_ack_tick < MAX_UNACKED_INPUTS (120)`, sample local
-   hardware once via `live_input()` and assign it to the next contiguous tick
-   `local_inputs[++input_produced_tick]` (never to `next_sim_tick + D` directly).
-   **Once written, `local_inputs[t]` is immutable** and is never overwritten if
-   simulation stalls. During a lockstep stall (`next_sim_tick` blocked), the
-   network pump continues retransmitting unacknowledged `local_inputs` at 60 Hz
-   without advancing `input_produced_tick` past `next_sim_tick + D`.
+2. **Input sampling.** A display pass samples the controls once and fills
+   consecutive records through `next_sim_tick + due + D - 1` before stepping.
+   At 60 Hz a press sampled on the pass that executes tick $t$ reaches tick
+   $t+D$. A 15 Hz pass can issue four records. Held controls repeat, while
+   fire and reload presses occur once. Published records are immutable, and
+   the sender keeps at most 120 unacknowledged records. Perk and pause barriers
+   still stop production.
 
 3. **Unconsumed accumulator preservation**:
    Unlike a 1P live run (`game_live_frame`, `host/session.inc`, which subtracts
@@ -623,21 +620,17 @@ monotonically non-decreasing tick frontiers**:
    whenever `next_sim_tick` is blocked by a network stall or menu barrier so
    resuming never triggers a burst of catch-up ticks.
 
-4. **Per-run constant input delay $D$**:
-   In the `M1`/`M2` prototype, **hold $D$ constant for the duration of each run**
-   (negotiated from measured handshake RTT in `MSG_START_RUN`; fixed
-   $D \in [1, 8]$ per run in `M1` lockstep). In `M2` rollback
-   $D = \text{clamp}(\lceil \text{RTT} / (2 \times 16.667\text{ ms}) \rceil - 4 + 1, 2, 8)$
-   (`coop_run_delay`, `host/coop_live.inc`). A partner's record for tick $t$
-   leaves as its run reaches $t - D$ and takes the one-way trip, $L$ ticks
-   ($\lceil \text{RTT} / (2 \times 16.667\text{ ms}) \rceil$), so it arrives as
-   the runs, in step, reach $t - D + L$: $L - D$ ticks past $t$, which this
-   run may have run on a prediction only within its window $W$. With a tick to
-   spare, $L - D \le W - 1$, so the narrowed window of 4 needs
-   $D \ge L - 3$, as the formula has it: $D = 2$ covers trips of up to 5
-   ticks (about 83 ms one way), and each tick longer adds one. Short of that,
-   records land past the window, and both runs would wait at their windows for
-   each other's records, the whole game slowing.
+4. **Route changes.** The Host starts with an input delay of two to eight
+   ticks based on the smoothed round trip. Each peer compares incoming input
+   lateness, network wait time and the most expensive simulation pass over
+   one-second intervals. With at least 50 ms of network waits and frame work
+   under half a tick, the peer can widen late Survival's four-tick window up to
+   the negotiated eight. If the available window cannot cover the trip, either
+   seat can vote for a longer input delay. The Host sends the larger vote and
+   an effective simulation tick on reliable control. Subsequent samples fill
+   the new lead without changing existing records. Five quiet seconds allow a
+   shorter delay and a gradual return to the smaller window.
+
 
 ---
 
@@ -1414,6 +1407,16 @@ retakes its seat. The old peer connection keeps delivering until the reply
 comes or a moment passes. Relayed frames are binary room frames
 `[u8 channel][payload]` (telemetry `ws-relay`).
 
+**Browser frame source.** A co-op page uses native animation frames while they arrive.
+If a visible window goes 100 ms without one, a worker services pending callbacks at
+20 Hz until the display resumes. In a hidden tab it does so at 60 Hz. Each callback
+runs once and can still be canceled through its browser handle.
+
+**Tick backpressure.** On either path the browser allows two tick packets’
+worth of queued bytes, capped at 432 bytes. While the queue drains, the newest
+unsent tick replaces the previous one and expires after 50 ms. Reliable
+control and input repair retain priority.
+
 **Room budget.** Every send on the room socket (signalling, keepalives,
 relayed control and ticks) takes from one client-side budget smaller than
 the room's. Ticks go only while a reserve is left and drop otherwise, or
@@ -1570,23 +1573,24 @@ so the Host's next run is new to both whichever side began anew.
 - `confirmed`: the highest tick run on both peers' real records, as every tick
   before it was.
 
-A peer produces a record while `produced < next + delay`,
+A live peer produces a record while `produced < next + due + delay - 1`,
 `produced - peer_ack < 120`, and nothing holds it: a pause, a leave, its own
 perk request waiting for confirmation, or a desync or error.
 
-#### Channel 0: the ticks packet (at most 216 bytes)
+#### Channel 0: the ticks packet (at most 328 bytes)
 
 | Offset | Type | Field | Description |
 | --- | --- | --- | --- |
 | `0` | `uint8` | `magic_ver` | `0xC3` |
 | `1` | `uint8` | `window_count` | Records carried, `0..8`; `0` is a keepalive |
 | `2` | `uint8` | `flags` | Bit `1`: focused |
-| `3` | `uint8` | `hash_count` | Hashes carried, `0..4` |
+| `3` | `uint8` | `hash_count` | Hashes carried, `0..32` |
 | `4` | `uint32` | `run_epoch` | The sender's epoch |
 | `8` | `uint32` | `ping_seq` | The sender's packet sequence, from `1` |
 | `12` | `uint32` | `echo_ping_seq` | The highest `ping_seq` the sender received (`0` none) |
 | `16` | `uint16` | `echo_hold_ms` | Milliseconds since it arrived |
-| `18` | `uint16` | | `0` |
+| `18` | `int8` | `input_lead` | Sender’s produced tick minus its next simulation tick |
+| `19` | `uint8` | `delay_vote` | Requested input delay during a run |
 | `20` | `uint32` | `head_tick` | The sender's last record produced (`0xFFFFFFFF` outside a run) |
 | `24` | `uint32` | `ack_tick` | The sender's `remote` (`0xFFFFFFFF` outside a run) |
 | `28` | `uint32` | `hash_first` | The first tick whose hash it carries |
@@ -1599,14 +1603,14 @@ perk request waiting for confirmation, or a desync or error.
   partner has not acknowledged.
 - **Pacing**: at most one packet a frame and 60 a second. A packet with a new
   record goes as soon as it is produced; a keepalive waits for a second
-  packet's credit. Outside a run, and once the run is over, keepalives still
-  carry pings and hashes.
+  packet's credit. With no records, hashes or new acknowledgements owed, the
+  peers probe the round trip every 250 ms.
 - **Round trip**: on a packet echoing `s`,
   $\text{RTT} = \max(0, t_{\text{recv}} - t_{\text{sent}}[s] - \text{echo\_hold\_ms})$,
   smoothed by 1/8. The gaps in the partner's `ping_seq` count its losses, and
   their spacing gives its packet interval. Packets of another epoch still feed
   both.
-- **Hashes**: each packet reports the hashes of up to 4 consecutive confirmed
+- **Hashes**: each packet reports the hashes of up to 32 consecutive confirmed
   ticks the partner can confirm too (no later than its last `ack_tick`) and has
   not acknowledged in `hash_ack`, from the oldest that never left or stayed
   unacknowledged a round trip plus two of the partner's packet intervals after
@@ -1637,7 +1641,7 @@ later epoch than the receiver's. Every other message of another epoch is ignored
 
 | Type | Message | Payload | Rule |
 | --- | --- | --- | --- |
-| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len], u8 answer, u32 session` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error. Its epoch is the sender's newest. A hello with `answer` 0 naming another session than the one this peer heard means the partner began anew (its game connected again after a timeout of its own while this peer's session went on): this peer's session ends as a lost partner's does, its run at the last confirmed tick, and a new one begins with the partner's |
+| `1` | `HELLO` | `u16 protocol (2), u8 len, build[len], u8 answer, u32 session` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error. Its epoch is the sender's newest. A hello with `answer` 0 naming another session than the one this peer heard means the partner began anew (its game connected again after a timeout of its own while this peer's session went on): this peer's session ends as a lost partner's does, its run at the last confirmed tick, and a new one begins with the partner's |
 | `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Host compared the Guest's hashes up to its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat; one that left ignores it. `header` is the run's replay header: `u8 key_count` (`0`, or one a seat), `key_count × 32` bytes of seat keys, then the Host's recorder, `u8 len, version[len], u8 len, platform[len]`. Keys for some seats only, one key in both seats, or a recorder version other than the Guest's own build (HELLO named the same; the platform may differ) are a bad message. Whether the room issued those keys and seed waits for the end screen, where each peer signs only a run the room told it of (Section 5.3) |
 | `3` | `START_ACK` | | The Guest started. Until then the Host's run neither produces nor runs, and it gives up after 10 s |
 | `4` | `START_CANCEL` | | Host to Guest, when it gives up: a Guest that started the run stops it |
@@ -1649,10 +1653,14 @@ later epoch than the receiver's. Every other message of another epoch is ignored
 | `10` | `DESYNC` | `u32 tick, u32 local_hash, u32 remote_hash` | Sent once; both peers stop |
 | `11` | `ERROR` | `u8 code` | A protocol error; both peers stop |
 | `12` | `CLOSE` | | Once each, after `LEAVE` both ways: the sender holds the receiver's records and hashes through the run's end (Section 5.2). A peer closes once it sent its own and the partner's arrived |
+| `13` | `FINAL_HASHES` | `u32 first, u8 count, count × u32 hash` | Reliably drains confirmed hashes at the end of a run, in batches of up to 32 with at most 256 outstanding. Each receiver checks them against the same history used for channel 0. |
+| `14` | `DELAY_CHANGE` | `u32 effective_tick, u8 delay` | The Host schedules both seats’ input delay for this epoch. A late message applies on the next gameplay pass. |
 
 Ticks packets of the new epoch are taken only once the run started on the
 receiving peer: on the Guest from `START_RUN`, on the Host from `START_ACK`. Each
-peer seeds ticks `0 .. delay - 1` with neutral records.
+peer seeds ticks `0 .. delay - 1` with neutral records. A guest still starting the game skips the
+intro and holds the offer until the menu's frame callback can transition to
+gameplay. The loading screen and main menu share a screen ID.
 
 #### Timeouts
 
@@ -1700,12 +1708,14 @@ and messages, repairs and the records they carried, and the round trip.
 
 #### Telemetry
 
-When a session whose hello came ends (the game closes it, the page ends it, the
-page goes, or the partner's new hello replaces it), the page reports one summary
-to the site's
-[gameplay analytics](leaderboard-identity.md#browser-gameplay-counts), with the
-same opt-outs: the transport it last ran over, from both ends of the selected
-candidate pair: `direct` when neither end is a relay, `turn-udp` or `turn-tcp`
+Each page sends counter increments when its transport changes and when its
+session ends. Only the final report counts the seat, its round trip and any
+desync. Active gameplay milliseconds, milliseconds spent waiting for network
+input and confirmed ticks give the dashboard elapsed-time rates per transport.
+Partial waits count in proportion to the due ticks the frame could not run.
+Pauses and perk waits do not contribute active play time. Reports follow the
+site's [gameplay analytics preferences](leaderboard-identity.md#browser-gameplay-counts).
+The transport comes from the selected candidate pair. It is `direct` when neither end is a relay, `turn-udp` or `turn-tcp`
 (TCP or TLS) when this page's own TURN relay carries it and says over what,
 `turn` when a relay carries it over a leg this page cannot see (only the
 partner relays, or this page's relay names no protocol), `ws-relay` for the
@@ -2016,9 +2026,7 @@ the rates a minute over, so the combined rows count in neither.
 3. **Status**: the game side plays it. The Host starts every run with
    $R_{\max} = 8$ in `START_RUN` and $D$ from the round trip (2 up to about
    83 ms one way; Section 3.3, rule 4), and each peer narrows its own window to 4
-   past 15 minutes of a Survival run (`coop_window`). Records stay $D$ ticks
-   ahead of the run, topped up after the frame's ticks so the frame's ticks
-   packet carries them, and the frame time a peer banks follows the clock-drift
+   past 15 minutes of a Survival run (`coop_window`). The live client samples records $D$ ticks ahead for every tick due before the frame steps, and the frame time a peer banks follows the clock-drift
    rule (Section 3.3). `game_coop_stats()` adds the rollbacks by depth (1 to
    12), the frames that ran ticks or ran them again by the time that took on
    `host_clock_ms` (under 1, 2, 4, 8 and 16 ms, and longer) and the longest, the

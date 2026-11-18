@@ -142,12 +142,17 @@ export function CoopAnalytics(props: { rows: PlayAnalyticsView["coop"] }) {
   const count = (transport: string, metric: string, bucket = 0) =>
     props.rows.find((row) => row.transport === transport && row.metric === metric && row.bucket === bucket)?.count ?? 0;
   const series = (transport: string, metric: string, length: number) => Array.from({ length }, (_, i) => count(transport, metric, i));
-  const used = transports.filter((transport) => count(transport, "sessions"));
+  const used = transports.filter((transport) => count(transport, "sessions") || count(transport, "play_ms"));
   // Stalled frames a minute of the sessions that told them apart (split_seconds): pages from before the split sent
   // them together (`stalled`), which neither rate takes.
   const rate = (n: number, seconds: number) => (seconds ? n / (seconds / 60) : null);
   const stalls = (transport: string, metric: string) => {
     const value = rate(count(transport, metric), count(transport, "split_seconds"));
+    return { label: transport, value, text: value === null ? "–" : value.toFixed(1) };
+  };
+  const timing = (transport: string, metric: string, scale: number) => {
+    const ms = count(transport, "play_ms");
+    const value = ms ? count(transport, metric) * scale / ms : null;
     return { label: transport, value, text: value === null ? "–" : value.toFixed(1) };
   };
   return (
@@ -158,6 +163,8 @@ export function CoopAnalytics(props: { rows: PlayAnalyticsView["coop"] }) {
           <Bars title="Sessions" color={BLUE} rows={used.map((t) => ({ label: t, value: count(t, "sessions"), text: grouped(count(t, "sessions")) }))} />
           <Bars title="Minutes in runs" color={BLUE}
             rows={used.map((t) => ({ label: t, value: count(t, "seconds") / 60, text: (count(t, "seconds") / 60).toFixed(1) }))} />
+          <Bars title="Confirmed ticks per second of active play" color={BLUE} rows={used.map((t) => timing(t, "confirmed", 1000))} />
+          <Bars title="Active play waiting for input (%)" color={RED} rows={used.map((t) => timing(t, "network_ms", 100))} />
           <Bars title="Network stalls a minute" color={RED} rows={used.map((t) => stalls(t, "stalled_network"))} />
           <Bars title="Perk waits a minute" color={GOLD} rows={used.map((t) => stalls(t, "stalled_perk"))} />
           <Shares title="Round trips (ms), by session" names={ranges(rttMs)} unit="ms"
@@ -186,7 +193,7 @@ export function CoopAnalytics(props: { rows: PlayAnalyticsView["coop"] }) {
           }}</For>
         </div>
       </Show>
-      <p class="muted">Each page reports its own session as it ends, so a session between two players counts twice. Transport is the one a session last ran over, from both ends of its WebRTC pair: direct when neither relays, turn-udp or turn-tcp when the page's own TURN relay carries it, turn when only the partner's relay does (or a relay names no protocol), ws-relay through the room, unknown before the pair was read. Round trips count sessions. Network stalls are frames whose due ticks all waited for the partner's records or the prediction window; perk waits are frames that waited on a perk pick: the player's own request on its way to the partner, or the partner choosing on its perk screen. Neither counts a pause, and both are per minute of the sessions that reported them apart: pages from before the split reported them together, and count in neither.</p>
+      <p class="muted">Each page reports its own session as it ends, so a session between two players counts twice. Current clients split play and waits when the route changes. Sessions and round trips count once on the final route. Older clients put the whole run on that route. The route comes from both ends of the WebRTC pair: direct when neither relays, turn-udp or turn-tcp when the page's own TURN relay carries it, turn when only the partner's relay does (or a relay names no protocol), ws-relay through the room, unknown before the pair was read. Round trips count sessions. Network stalls are frames whose due ticks all waited for the partner's records or the prediction window; perk waits are frames that waited on a perk pick: the player's own request on its way to the partner, or the partner choosing on its perk screen. Neither counts a pause, and both are per minute of the sessions that reported them apart: pages from before the split reported them together, and count in neither.</p>
     </>
   );
 }

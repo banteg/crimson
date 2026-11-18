@@ -991,25 +991,28 @@ function pipeCases(stream, truth, short, shortTruth) {
   };
   leaving("leave picking", 5, leaveOn(STATUS.picker, (sim, p) => p));
   leaving("leave requested", 6, leaveOn(STATUS.waiting, (sim, p) => sim.peers[1 - p.seat]));
-  // The Host leaves and the Guest's hashes stop for a while, so the Guest holds the Host's through the run's end
-  // before the Host holds the Guest's; then the Host's ticks packets, which would acknowledge them, are lost for longer
-  // than a peer used to wait before it closed: the Guest closes for the Host's leave all the same.
+  // The Host leaves while both tick paths lose evidence: the Guest's ticks
+  // omit hashes and the Host's acknowledgements go missing. All confirmed
+  // hashes must still arrive, including the reliable batches at run end.
   const LOST_MS = 1200;
   leaving(
     "leave unacknowledged",
     17,
     (sim) => {
       const [h, g] = sim.peers;
-      let left = Infinity,
-        lost = 0;
+      let left = Infinity, lost = 0, finalHashes = 0;
+      sim.tap = (_, channel, bytes) => { if (channel === 1 && bytes[0] === 13) finalHashes++; };
       const within = (from, ms) => sim.now >= from && sim.now < from + ms;
       sim.alter = (p, channel, bytes) => (p === g && channel === 0 && within(left, STALL_MS) ? bare(bytes) : bytes);
-      sim.drop = (p, channel) => p === h && channel === 0 && within(left + STALL_MS, LOST_MS) && ++lost > 0;
+      sim.drop = (p, channel) => p === h && channel === 0 && within(left, LOST_MS) && ++lost > 0;
       sim.after(third, "the leave", () => {
         sim.leave(h);
         left = sim.now;
       });
-      return () => assert.ok(lost > 0, "no acknowledgement lost");
+      return () => {
+        assert.ok(lost > 0, "no acknowledgement lost");
+        assert.ok(finalHashes > 0, "no reliable final hashes sent");
+      };
     },
     STALL_MS,
   );

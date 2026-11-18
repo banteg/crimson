@@ -58,6 +58,7 @@
 //
 //   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir] [game.wasm]
 //
+// CRIMSON_CHROME_ANGLE selects the graphics backend (e.g. metal on macOS); the default is SwiftShader.
 // <asset dir> holds crimson.paq, sfx.paq and music.paq (artifacts/assets).
 // CRIMSON_CHROME is a Chrome or Chromium binary with the new headless mode (not
 // the headless shell, whose tabs are never hidden). The check drives it over the
@@ -164,7 +165,7 @@ const chrome = spawn(
     `--user-data-dir=${profile}`, "--headless=new", "--remote-debugging-port=0", "--no-first-run", "--no-default-browser-check",
     "--use-mock-keychain", "--password-store=basic", "--autoplay-policy=no-user-gesture-required",
     // Host candidates by address, not mDNS names, so the pages connect directly.
-    "--disable-features=WebRtcHideLocalIpsWithMdns", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
+    "--allow-loopback-in-peer-connection", "--disable-features=WebRtcHideLocalIpsWithMdns", `--use-angle=${process.env.CRIMSON_CHROME_ANGLE ?? "swiftshader"}`, "--enable-unsafe-swiftshader",
     "about:blank",
   ],
   { stdio: "ignore", detached: true },
@@ -244,6 +245,18 @@ async function open(name, origin, { webrtc = true } = {}) {
   await send("Emulation.setDeviceMetricsOverride", { width: 1024, height: 768, deviceScaleFactor: 1, mobile: false });
   await send("Emulation.setFocusEmulationEnabled", { enabled: true });
   if (!webrtc) await send("Page.addScriptToEvaluateOnNewDocument", { source: "delete window.RTCPeerConnection;" });
+  else await send("Page.addScriptToEvaluateOnNewDocument", { source: `
+    const displayFrame = requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = cb => displayFrame(t => { if (!window.testHoldDisplay) cb(t); });
+    window.RTCPeerConnection = class extends RTCPeerConnection {
+      constructor(config) {
+        // Both peers run on loopback. An external STUN or TURN server would
+        // make this local direct-path test depend on the machine's network.
+        super({ ...config, iceServers: [] });
+        window.testPeerConnection = this;
+      }
+    };
+  ` });
   async function evaluate(fn, ...args) {
     const { result, exceptionDetails } = await send("Runtime.evaluate", {
       expression: `(${fn})(...${JSON.stringify(args)})`,
@@ -363,8 +376,9 @@ async function press(peer, screen, [x, y]) {
   if (screen !== null) await until(`screen ${screen}`, async () => (await peer.screen()) === screen, 30000);
   await peer.move(x, y);
   await sleep(1000);
+  if (screen !== null && await peer.screen() !== screen) return;
   await peer.down();
-  await sleep(120);
+  await peer.frame();
   await peer.up();
 }
 // A key tap the game sees: held through one of the page's frames. The original reads a key as it is down when a
@@ -388,9 +402,20 @@ const webrtc = (peer) =>
 const both = (what, test, ms) => until(what, async () => (await test(host)) && (await test(guest)), ms);
 // A run on both pages.
 const started = (what) => both(what, async (peer) => (await peer.status()) & STATUS.started && (await peer.screen()) === GAMEPLAY);
-// The host's menus start Survival once the startup sequence is over; the guest's screen follows.
+// The intro shares the main menu's state id. On a slow renderer the first
+// click can skip the logo. Wait for the panel to actually open.
+async function openPlayMenu(peer) {
+  await until("the Play Game panel", async () => {
+    if (await peer.screen() === MAIN_MENU) {
+      await press(peer, MAIN_MENU, PLAY_GAME);
+      await sleep(600);
+    }
+    return (await peer.screen()) === PLAY_GAME_MENU;
+  }, 60000);
+}
+// The host starts Survival and the guest's screen follows.
 async function survival(host, guest) {
-  await press(host, MAIN_MENU, PLAY_GAME);
+  await openPlayMenu(host);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
   await started("the run on both");
 }
@@ -517,7 +542,7 @@ try {
   // The host's game, in the room without its partner, starts no run alone: Survival starts nothing, and Escape goes
   // back to the main menu.
   await sleep(STARTUP_MS);
-  await press(host, MAIN_MENU, PLAY_GAME);
+  await openPlayMenu(host);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
   await sleep(2000);
   assert.equal(await host.screen(), PLAY_GAME_MENU, "a run alone in a room");
@@ -550,6 +575,14 @@ try {
   await Promise.all([host.shot("lobby"), guest.shot("lobby")]);
   await survival(host, guest);
 
+  const beforeDisplayStall = await Promise.all([host, guest].map(p => p.confirmed()));
+  for (const p of [host, guest]) await p.evaluate(() => { window.testHoldDisplay = true; });
+  try {
+    await both("both visible pages play through a display stall", async p =>
+      (await p.confirmed()) >= beforeDisplayStall[p === host ? 0 : 1] + 60, 8000);
+  } finally {
+    for (const p of [host, guest]) await p.evaluate(() => { window.testHoldDisplay = false; });
+  }
   await fight();
   await Promise.all([host.shot("run"), guest.shot("run")]);
 
@@ -662,6 +695,18 @@ try {
   // neither address names the room any more.
   await tap(host, "Enter");
   await started("the next run on both");
+  // Change the real transport mid-session. The old route gets its play time
+  // now, without counting another seat. The final route gets the close.
+  await fight();
+  await host.evaluate(() => window.testPeerConnection.close());
+  await both("the relay after WebRTC closed", async (p) => (await p.transport()) === "ws-relay", 10000);
+  const switched = await until("the direct timing segment", () => {
+    const totals = coopTotals();
+    return totals["direct play_ms"] > direct["direct play_ms"] && totals;
+  }, 10000);
+  assert.equal(switched["direct sessions"], direct["direct sessions"]);
+  assert.ok(switched["direct confirmed"] > direct["direct confirmed"]);
+  await fight();
   await tap(host, "Escape");
   await until("the pause", async () => (await host.status()) & STATUS.paused && (await guest.status()) & STATUS.paused);
   await host.shot("paused");

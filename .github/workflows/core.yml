@@ -350,6 +350,7 @@ jobs:
             node crimson-core/checks/game_coop.mjs --live "$RUNNER_TEMP/game"
           uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name game-coop-sessions -- \
             node crimson-core/checks/game_coop_live.mjs "$RUNNER_TEMP/game"
+          node crimson-core/checks/game_coop_live.mjs --pacing "$RUNNER_TEMP/game"
       - uses: actions/upload-artifact@v7
         if: always()
         with:

@@ -26,8 +26,10 @@ function createCoop({
   const JOIN_ATTEMPTS = 5;
   // Idle proxies close quiet sockets; the room answers this itself, without waking or spending the seat's budget.
   const PING_MS = 30000;
-  // Ticks queued past this many bytes are stale before they leave; the next packet repeats their window.
-  const TICKS_BUFFERED_LIMIT = 16 * 1024;
+  // Budget two typical 60 Hz packets in the browser. Under congestion the
+  // application keeps only the newest window, for at most three tick periods.
+  const TICK_MS = 1000 / 60, TICKS_BUFFERED_LIMIT = 432;
+  let pendingTick = null, tickTimer = null;
   // The room closes a seat's socket past 200 messages a second (a second's burst) or a message over 16 KiB. Every
   // send on the socket takes from a smaller budget of the same shape; ticks only while a reserve is left over. The
   // game paces its ticks packets (host/coop_wire.inc) well under that, so in play the ticks never reach the reserve.
@@ -93,6 +95,7 @@ function createCoop({
     unseat();
   }
   function unseat() {
+    if (link?.relay) clearTick();
     socket = null;
     seated = false;
     clearTimeout(pinger);
@@ -344,8 +347,9 @@ function createCoop({
     return current;
   }
   function teardown() {
+    clearTick();
     if (!link) return;
-    for (const timer of [link.timer, link.stall, link.drain]) clearTimeout(timer);
+    for (const timer of [link.timer, link.stall, link.drain, link.pairTimer]) clearTimeout(timer);
     link.pc?.close();
     link = null;
     stats.transport = null;
@@ -378,7 +382,7 @@ function createCoop({
   }
   function watch(current, id, channel) {
     channel.binaryType = "arraybuffer";
-    channel.onopen = () => { if (link === current && current.channels.every((each) => each.readyState === "open")) connected(current); };
+    channel.onopen = () => { if (link === current && !current.connected && current.channels.every((each) => each.readyState === "open")) connected(current); };
     channel.onclose = () => failed(current, `${channel.label} closed`);
     channel.onmessage = (event) => { if (link === current) arrive(id, new Uint8Array(event.data)); };
     return channel;
@@ -443,19 +447,35 @@ function createCoop({
     else link.remote.push(message.candidate);
   }
 
+  function setTransport(name) {
+    if (stats.transport === name) return;
+    stats.transport = name;
+    api.ontransport?.();
+  }
   function connected(current) {
     current.connected = true;
     clearTimeout(current.timer);
-    stats.transport = current.relay ? "ws-relay" : "webrtc";
+    setTransport(current.relay ? "ws-relay" : "webrtc");
     refresh();
     replay();
     if (current.relay) return log("transport", stats.transport);
     // Telemetry: which candidate pair carries the session.
-    current.pc.getStats().then((report) => {
-      if (link !== current || current.relay) return;
-      stats.transport = candidatePair(report);
-      log("transport", stats.transport);
-    }, () => {});
+    const ice = current.pc.sctp?.transport?.iceTransport;
+    const event = ice && "onselectedcandidatepairchange" in ice;
+    let generation = 0;
+    const readPair = async () => {
+      const sample = ++generation;
+      try {
+        const report = await current.pc.getStats();
+        if (link !== current || current.relay || sample !== generation) return;
+        setTransport(candidatePair(report));
+        log("transport", stats.transport);
+      } catch {}
+      if (!event && link === current && !current.relay)
+        current.pairTimer = setTimeout(readPair, 5000);
+    };
+    if (event) ice.onselectedcandidatepairchange = readPair;
+    readPair();
   }
   // The selected pair's two ends by candidate type, "<local>/<remote>", the local one relay-<protocol> when it is
   // this page's TURN allocation and says over what (the partner's never does); "webrtc" while no pair is known.
@@ -490,7 +510,9 @@ function createCoop({
   function relay(current, epoch) {
     current.epoch = epoch;
     if (current.relay) return;
+    clearTick();
     current.relay = true;
+    clearTimeout(current.pairTimer);
     clearTimeout(current.stall);
     current.drain = setTimeout(() => release(current), DRAIN_MS);
     stats.switches++;
@@ -612,9 +634,43 @@ function createCoop({
     }
     inbox.push([channel, bytes]);
   }
-  // Ticks (channel 0) go now or never: false when they drop, because their transport is backed up, short of its
-  // budget or missing. Control messages (channel 1) always go, waiting for a transport if they must: false only once
-  // the session has ended.
+  function clearTick() {
+    if (pendingTick) stats.dropped++;
+    pendingTick = null;
+    clearTimeout(tickTimer);
+    tickTimer = null;
+  }
+  function retryTick() {
+    tickTimer = null;
+    const tick = pendingTick;
+    pendingTick = null;
+    if (!tick) return;
+    if (now() >= tick.until || !link?.connected) { stats.dropped++; return; }
+    sendTick(tick.bytes, tick.until);
+  }
+  function sendTick(bytes, until) {
+    if (!link?.connected || (link.relay && !relaying())) return false;
+    if (bytes.length + 1 > ROOM_MAX_BYTES) return false;
+    const out = link.relay ? socket : link.channels[0];
+    if (out.bufferedAmount > Math.min(TICKS_BUFFERED_LIMIT, bytes.length * 2)) {
+      pendingTick = { bytes: bytes.slice(), until };
+      tickTimer = setTimeout(retryTick, TICK_MS);
+      return false;
+    }
+    if (link.relay) {
+      if (!take(ROOM_RESERVE)) { stats.dropped++; return false; }
+      socket.send(framed(0, bytes));
+    } else {
+      try { transmit(link, 0, bytes); } catch (error) {
+        failed(link, error);
+        return false;
+      }
+    }
+    stats.sent[0]++;
+    return true;
+  }
+  // A new tick supersedes any pending packet. Control stays ordered and
+  // reliable across congestion and transport changes.
   function send(channel, bytes) {
     if (ended()) return false;
     if (channel === 1) {
@@ -625,32 +681,8 @@ function createCoop({
       pump();
       return true;
     }
-    if (!link?.connected) return false;
-    if (link.relay) {
-      if (!seated || !partner) return false;
-      if (bytes.length + 1 > ROOM_MAX_BYTES) {
-        log("tick packet too large for the relay", bytes.length);
-        return false;
-      }
-      if (socket.bufferedAmount > TICKS_BUFFERED_LIMIT || !take(ROOM_RESERVE)) {
-        stats.dropped++;
-        return false;
-      }
-      socket.send(framed(0, bytes));
-    } else {
-      const channelOut = link.channels[0];
-      if (channelOut.bufferedAmount > TICKS_BUFFERED_LIMIT) {
-        stats.dropped++;
-        return false;
-      }
-      // A channel closing under us is a failing connection, not the game's error.
-      try { transmit(link, 0, bytes); } catch (error) {
-        failed(link, error);
-        return false;
-      }
-    }
-    stats.sent[0]++;
-    return true;
+    clearTick();
+    return sendTick(bytes, now() + 3 * TICK_MS);
   }
   // The partner hears this page go, if the room can carry its goodbye.
   function close() {
@@ -677,6 +709,7 @@ function createCoop({
     get room() { return roomId; },
     get inviteUrl() { return inviteUrl; },
     onstate: null,
+    ontransport: null,
     onpeer: null,
     delay: null,
     // The room's word on the pair: a seat's key it recorded (role, hex), a seed it issued.
@@ -690,4 +723,38 @@ function createCoop({
     },
   };
   return api;
+}
+
+// A native callback and a worker tick may race. Whichever runs it first
+// removes the handle; callbacks requested during dispatch belong to the next
+// frame. The browser's native handle remains usable by cancelAnimationFrame.
+function coopFrameClock(request, cancel, now) {
+  const pending = new Map();
+  let lastNative = now(), lastPump = -Infinity;
+  return {
+    request(callback) {
+      const id = request(time => {
+        if (!pending.delete(id)) return;
+        lastNative = now();
+        callback(time);
+      });
+      pending.set(id, callback);
+      return id;
+    },
+    cancel(id) {
+      pending.delete(id);
+      cancel(id);
+    },
+    pump(hidden) {
+      const time = now();
+      // Timer messages queued behind a blocked main thread share one pass.
+      if (!pending.size || (!hidden && time - lastNative < 100) || time - lastPump < (hidden ? 8 : 25)) return;
+      lastPump = time;
+      for (const [id, callback] of [...pending]) {
+        if (!pending.delete(id)) continue;
+        cancel(id);
+        callback(time);
+      }
+    },
+  };
 }

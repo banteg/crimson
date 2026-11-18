@@ -47,6 +47,34 @@ async function settle() {
 }
 const other = (role) => (role === "host" ? "guest" : "host");
 
+it("rescues a visible co-op frame when display callbacks stop, and delivers each handle once", () => {
+  const create = vm.runInNewContext(source + "\ncoopFrameClock");
+  let time = 0, id = 0;
+  const native = new Map(), calls = [];
+  const frames = create(fn => (native.set(++id, fn), id), key => native.delete(key), () => time);
+  const first = frames.request(t => { calls.push(t); frames.request(t => calls.push(t)); });
+  const late = native.get(first);
+  time = 99;
+  frames.pump(false);
+  assert.deepEqual(calls, []);
+  time = 100;
+  frames.pump(false);
+  late(time);
+  frames.pump(false);
+  assert.deepEqual(calls, [100]);
+  time = 116;
+  native.get(2)(time);
+  assert.deepEqual(calls, [100, 116]);
+  const hidden = frames.request(t => calls.push(t)), stale = native.get(hidden);
+  time = 121;
+  frames.pump(false);
+  frames.pump(true);
+  stale(time);
+  frames.cancel(frames.request(t => calls.push(t)));
+  frames.pump(true);
+  assert.deepEqual(calls, [100, 116, 121]);
+});
+
 // Timers run only when a test advances the clock; sockets and peer connections deliver on the event loop. Each
 // timer belongs to the page that set it.
 function clock() {
@@ -1086,16 +1114,29 @@ it("a flood close reconnects; the room's other refusals end the session", async 
   assert.equal(host.coop.reason, "the room refused this page: message over 16 KiB");
 });
 
-it("a backed-up ticks channel drops ticks, never control messages", async () => {
-  const env = setup();
-  const { host, guest } = await meet(env);
-  const hostPc = pcOf(env, "host");
-  hostPc.channels[0].bufferedAmount = hostPc.channels[1].bufferedAmount = 1 << 20;
-  assert.equal(host.coop.send(0, bytes(1)), false);
-  assert.ok(host.coop.send(1, bytes(2)));
-  await settle();
-  assert.deepEqual(guest.events.messages, [[1, [2]]]);
-  assert.equal(host.coop.stats().dropped, 1);
+it("congested WebRTC and room relay keep the newest tick briefly and send control immediately", async () => {
+  for (const outcome of ["connect", "fail"]) {
+    const env = setup({ outcome });
+    const { host, guest } = await meet(env);
+    const out = outcome === "connect" ? pcOf(env, "host").channels[0] : host.sockets().at(-1);
+    out.bufferedAmount = 500;
+    const ticks = (n) => new Uint8Array(216).fill(n);
+    assert.equal(host.coop.send(0, ticks(1)), false);
+    assert.equal(host.coop.send(0, ticks(2)), false);
+    assert.ok(host.coop.send(1, bytes(42)));
+    await settle();
+    assert.deepEqual(guest.events.messages, [[1, [42]]]);
+    out.bufferedAmount = 0;
+    await env.time.advance(17);
+    assert.deepEqual(guest.events.messages[1], [0, [...ticks(2)]]);
+    out.bufferedAmount = 500;
+    host.coop.send(0, ticks(3));
+    await env.time.advance(100);
+    out.bufferedAmount = 0;
+    await env.time.advance(100);
+    assert.equal(guest.events.messages.length, 2);
+    assert.equal(host.coop.stats().dropped, 2);
+  }
 });
 
 it("the selected candidate pair's two ends name the transport, in Chrome and Firefox", async () => {
@@ -1108,6 +1149,21 @@ it("the selected candidate pair's two ends name the transport, in Chrome and Fir
   assert.equal((await meet(partner)).host.coop.stats().transport, "srflx/relay");
   const unnamed = setup({ candidateType: "relay" });
   assert.equal((await meet(unnamed)).host.coop.stats().transport, "relay/srflx");
+});
+
+it("detects a new ICE route even when the browser has no candidate-pair event", async () => {
+  const env = setup();
+  const { host } = await meet(env);
+  const pc = pcOf(env, "host"), original = pc.getStats.bind(pc);
+  pc.getStats = async () => {
+    const report = await original();
+    Object.assign(report.get("L"), { candidateType: "relay", relayProtocol: "udp" });
+    return report;
+  };
+  const changes = [];
+  host.coop.ontransport = () => changes.push(host.coop.stats().transport);
+  await env.time.advance(10000);
+  assert.deepEqual(changes, ["relay-udp/srflx"]);
 });
 
 it("messages before the game listens wait in order for its handler", async () => {

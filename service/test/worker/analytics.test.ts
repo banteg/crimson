@@ -72,6 +72,23 @@ describe("private gameplay counts", () => {
     expect(await env.DB.prepare("SELECT SUM(count) AS n FROM coop_totals WHERE metric = 'sessions'").first()).toEqual({ n: 1 });
   });
 
+  it("attributes play time to each route and counts the seat once on its final route", async () => {
+    const pace = { play_ms: 10000, network_ms: 750, confirmed: 550, final: false };
+    const send = (transport: string, timing: typeof pace) => post({ ...coop(), transport, pace: timing }, "/api/analytics/coop");
+    expect((await send("direct", pace)).status).toBe(204);
+    expect((await send("ws-relay", { ...pace, final: true })).status).toBe(204);
+    const count = (transport: string, metric: string) =>
+      env.DB.prepare("SELECT SUM(count) AS n FROM coop_totals WHERE transport = ? AND metric = ?").bind(transport, metric).first("n");
+    expect(await count("direct", "sessions")).toBeNull();
+    expect(await count("ws-relay", "sessions")).toBe(1);
+    for (const route of ["direct", "ws-relay"]) {
+      expect(await count(route, "play_ms")).toBe(10000);
+      expect(await count(route, "confirmed")).toBe(550);
+      expect(await count(route, "network_ms")).toBe(750);
+    }
+    expect((await send("direct", { ...pace, network_ms: 10001 })).status).toBe(400);
+  });
+
   it("keeps taking an old page's combined stalled frames under their old metric, apart from the split ones", async () => {
     const { stalled_network: _network, stalled_perk: _perk, ...old } = coop();
     expect((await post({ ...old, stalled: 9 }, "/api/analytics/coop")).status).toBe(204);
