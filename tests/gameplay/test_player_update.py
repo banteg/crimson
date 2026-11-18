@@ -108,6 +108,22 @@ def test_pulse_gun_full_reload_at_50fps_refills_on_exact_zero(rules: int, preser
     assert player.weapon.ammo == 2.0
 
 
+def test_weapon_pickup_mid_reload_keeps_latch_until_next_fire_gate() -> None:
+    world = make_world()
+    player = world.players[0]
+    player_start_reload(player, world.state)
+    reload_max = player.weapon.reload_timer_max
+
+    weapon_assign_player(player, WeaponId.SHOTGUN, state=world.state)
+    assert player.weapon.reload_active
+    assert player.weapon.reload_timer == 0.0
+    assert player.weapon.reload_timer_max == reload_max
+
+    step_player(world, player, player_input(), 0.01)
+    assert not player.weapon.reload_active
+    assert player.weapon.ammo == player.weapon.clip_size
+
+
 @pytest.mark.parametrize("preserve_bugs", [False, True])
 def test_stationary_reload_exact_scaled_boundary(preserve_bugs: bool) -> None:
     world = make_world(preserve_bugs=preserve_bugs)

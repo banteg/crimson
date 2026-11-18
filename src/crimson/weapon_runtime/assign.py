@@ -3,16 +3,24 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from grim.math import i32
+from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..math_parity import f32, x87_pc24_mul
+from ..math_parity import NATIVE_TAU, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
+from ..movement_controls import MovementControlType
+from ..owner_id import player_projectile_owner_id
 from ..perks import PerkId
+from ..projectiles.runtime import projectile_spawn
+from ..projectiles.types import ProjectileTemplateId
 from ..sim.state_types import PlayerState, WeaponSlot
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
+
+    from ..sim.input import PlayerInput
+    from ..sim.world_state import WorldStepRuntime
 
 
 def weapon_entry(weapon_id: WeaponId) -> Weapon:
@@ -125,3 +133,70 @@ def player_start_reload(
         player.weapon.reload_timer = x87_pc24_mul(player.weapon.reload_timer, f32(0.6))
 
     player.weapon.reload_timer_max = player.weapon.reload_timer
+
+
+def _fire_angry_reloader_ring(player: PlayerState, step_runtime: WorldStepRuntime) -> None:
+    state = step_runtime.world.state
+    count = 7 + int(player.weapon.reload_timer_max * 4.0)
+    owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
+    # Native `(float)i * (6.2831855f / (float)count) + 0.1f` at PC24.
+    ring_step = x87_pc24_div(NATIVE_TAU, float(count))
+    state.scripted_burst_active = True
+    for idx in range(count):
+        projectile_spawn(
+            state,
+            players=step_runtime.world.players,
+            pos=player.pos,
+            angle=x87_pc24_add(x87_pc24_mul(float(idx), ring_step), f32(0.1)),
+            type_id=ProjectileTemplateId.PLASMA_MINIGUN,
+            owner_id=owner_id,
+            owner_player_index=player.index,
+        )
+    state.scripted_burst_active = False
+    state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
+
+
+def advance_weapon_reload(
+    player: PlayerState, input_state: PlayerInput, dt: float, *, stationary: bool, step_runtime: WorldStepRuntime,
+) -> None:
+    """Advance the equipped slot's reload, then honor a held manual reload key."""
+    state = step_runtime.world.state
+    slot = player.weapon
+    if input_state.fire_pressed and slot.reload_timer > 0.0 and PerkId.ANXIOUS_LOADER in state.perks:
+        slot.reload_timer = x87_pc24_sub(slot.reload_timer, f32(0.05))
+        if slot.reload_timer <= 0.0:
+            # Anxious Loader restarts the last fraction of the reload when it overshoots.
+            slot.reload_timer = x87_pc24_mul(dt, f32(0.8))
+
+    if slot.reload_timer > 0.0:
+        before = slot.reload_timer
+        scale = 3.0 if stationary and PerkId.STATIONARY_RELOADER in state.perks else 1.0
+        reload_step = x87_pc24_mul(scale, f32(dt))
+        # Native tests an unscaled delta for preload. Stationary Reloader can cross
+        # zero without refilling. Rules 2 also refill when the timer lands exactly on zero.
+        preload_step = f32(dt) if state.preserve_bugs else reload_step
+        preload_timer = f32(before)
+        preload_remaining = x87_pc24_sub(preload_timer, preload_step)
+        refill = preload_remaining <= 0.0 if state.rules2_fixes else preload_remaining < 0.0
+        if preload_timer > 0.0 and refill:
+            slot.ammo = float(slot.clip_size)
+
+        slot.reload_timer = x87_pc24_sub(before, reload_step)
+        if PerkId.ANGRY_RELOADER in state.perks and (state.rules_1_9_8 or slot.reload_timer_max > 0.5):
+            midpoint = x87_pc24_mul(slot.reload_timer_max, f32(0.5))
+            if slot.reload_timer <= midpoint < before:
+                _fire_angry_reloader_ring(player, step_runtime)
+
+    if slot.reload_timer < 0.0:
+        slot.reload_timer = 0.0
+
+    # A held key chains reloads at completion. Alternate Weapon and point-click
+    # claim that key for swapping and movement. Native only accepts manual reload solo.
+    if (
+        (input_state.reload_down or input_state.reload_pressed)
+        and slot.reload_timer == 0.0
+        and PerkId.ALTERNATE_WEAPON not in state.perks
+        and input_state.move_mode != MovementControlType.MOUSE_POINT_CLICK
+        and (len(step_runtime.world.players) == 1 or (not state.preserve_bugs and not state.legacy_coop_reload))
+    ):
+        player_start_reload(player, state)
