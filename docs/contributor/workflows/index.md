@@ -16,10 +16,10 @@ production credentials, replay checks and rollback.
 Open a `chore(release): release X.Y.Z` PR that bumps the version in
 `pyproject.toml` and `uv.lock` and adds a `## X.Y.Z` section to `CHANGELOG.md`.
 After it merges, push an annotated `vX.Y.Z` tag on the merge commit. The Release
-workflow checks the tag against the package version, takes the release notes
-from that changelog section, publishes to PyPI and creates the GitHub release.
+workflow checks the tagged version and the live service’s replay capabilities,
+publishes to PyPI and creates the GitHub release from that changelog section.
 Deploy crimson.land afterwards so the site and browser game carry the release,
-or before pushing the tag when the release bumps the replay format
+or before pushing the tag when the release changes the replay format or simulation rules
 ([replay format bumps](deploy.md#replay-format-bumps)).
 
 ## Documentation maintenance

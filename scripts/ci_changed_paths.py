@@ -172,12 +172,16 @@ SUITES = {
             *CORE_BUILD,
             "service/",
             ".github/actions/game-art/",
+            "scripts/setup_test_data.py",
+            "src/crimson/assets_version.json",
+            "src/crimson/quests/dsl/",
             "tests/fixtures/replays/",
+            ".github/workflows/quest-recipes.yml",
             ".github/workflows/service.yml",
             ".github/workflows/deploy.yml",
             ".github/workflows/core.yml",
         ),
-        ("service/scripts/assets.py",),
+        ("service/scripts/assets.py", "service/scripts/check_recipe.py"),
     ),
     # Every diff hunk against the sources it edits, and the guard ledger against the sources each target compiles,
     # checked without compilers before any build runs.
@@ -200,11 +204,13 @@ SUITES = {
         ("tests/test_core_patches.py",),
     ),
     "decomp": Suite((*RE_TOOLS.paths, ".github/workflows/decomp.yml"), RE_TOOLS.python),
-    "re-audits": Suite((*RE_TOOLS.paths, ".github/workflows/ci.yml"), RE_TOOLS.python),
+    "re-audits": Suite((*RE_TOOLS.paths, ".github/workflows/ci.yml", "scripts/setup_test_data.py"), RE_TOOLS.python),
     # Unicorn runs the original executable; the support module reads Grim's interface layout.
     "native-oracle": Suite(
         (
             "tests/native_oracle/",
+            "scripts/setup_test_data.py",
+            "analysis/library_provenance.json",
             "analysis/ghidra/maps/",
             "tools/match/include/grim2d_cpp.h",
             ".github/workflows/ci.yml",

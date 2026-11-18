@@ -131,16 +131,20 @@ to decide whether to fix the verifier or retire affected runs.
 
 ### Replay format bumps
 
-A release's Python and native clients write its newest replay format, and a
-service that does not read that format yet refuses their runs with a 422. Both
-clients move a run refused with any 4xx other than 409 or 429 into
-`leaderboard/rejected/` with the service's reason and never send it again, so a
-run recorded before the service reads its format never ranks. The browser game
-ships with the Worker, so it never runs ahead of the service. When a release
-bumps the [replay format](../../formats/replay.md), deploy first: apply the
-release's migrations (the 1.9.8 rules' format 35 needs `service/migrations/0011_cl_build.sql`),
-deploy crimson.land from the release's merge commit, and only then push the
-release tag that publishes to PyPI and hand out native client packages.
+The Worker publishes the replay formats it reads and the rules it verifies at
+`GET /api/replay-capabilities`. Publishing to PyPI checks both values against the
+tagged writer. Deploy the Worker before tagging a release that changes either
+value, including its reviewed migrations (format 35 needs
+`service/migrations/0011_cl_build.sql`).
+
+A newer writer receives HTTP 503 with `code: "replay_reader_behind"`. Clients
+keep that recording in the outbox for the next pass, and continue with other
+compatible recordings. Updated clients also recognize earlier Workers' specific
+HTTP 422 reasons for a newer format or rules version. On startup they also
+retry signed envelopes that an older client had already moved into `rejected/`
+for one of those reasons. Those bytes stay in place until the service settles
+the run. Invalid runs and obsolete
+formats still move to `leaderboard/rejected/` with the reason.
 
 ### CI replay verdicts
 
@@ -205,12 +209,23 @@ rejects a different revision before checking assets. Production smoke checks
 cover the site, leaderboard
 API, game page, JS/WASM and availability of all three game archives.
 
+Each rehearsal and production preparation boots the packaged game in a fresh
+Chrome profile, plays and records a run, reloads its saves, and watches the
+replay. Changes to this check also run against the packaged client on pull
+requests. Production checks the served revision and the JS and WASM hashes
+against the tested package before writing replay previews.
+
 A smoke-check failure marks the workflow failed after deployment; it does not
 automatically revert production. Review the failure, then use
 `npx wrangler rollback <version-id>` from `service/` or the Cloudflare
 Deployments page to restore the chosen version. Worker rollback does not undo
 D1 migrations or R2 changes. Keep schema changes compatible with the previous
 Worker where a code rollback is intended.
+
+Once a Worker using migration 0013 has accepted a run, roll back only to a
+version that resolves `runs.storage_id`. Earlier Workers hard-code public
+run IDs as R2 object names and cannot read or delete those recordings. A
+forward fix can retain the current storage reader and deletion maintenance.
 
 Local deployment remains available through `npm --prefix service run deploy`. It
 rebuilds the site assets and the browser game, so it needs the game art and the
@@ -226,3 +241,16 @@ The game archives are not part of a deploy. `/play/game/<name>.paq` serves
 publishes for the Python game and the desktop client. Replace them separately,
 after deploying any client change they depend on; the smoke check only confirms
 they are reachable.
+
+Public CI replay verdicts carry the SHA-256 of the accepted decompressed payload. Private checks reuse a
+verdict only if D1 still records that digest. Reaccepting a deleted public run id with different bytes
+therefore requires a fresh verification. An older verdict without a digest is also rechecked.
+
+## Published quest recipes
+
+`.github/workflows/quest-recipes.yml` runs hourly and supports manual dispatch on master. The production environment’s branch and approval rules apply to these checks. It selects the deployed
+commit from master’s history and compiles at most 16 pending recipes with the locked authoring dependencies.
+A private R2 receipt names the candidate’s database-generated revision. When the Worker reads the receipt,
+it conditionally records the decision and compiler commit for that revision in D1. The workflow has the same D1 read and replay-bucket write access
+as reverification. Before this workflow can process recipes, migrations 0012–0014 must be applied and the
+matching Worker must be deployed. Existing published sources enter the same queue.

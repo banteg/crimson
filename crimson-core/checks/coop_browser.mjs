@@ -58,7 +58,9 @@
 //
 //   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir] [game.wasm]
 //
-// CRIMSON_CHROME_ANGLE selects the graphics backend (e.g. metal on macOS); the default is SwiftShader.
+// CRIMSON_CHROME_ANGLE selects the graphics backend. macOS uses the browser default unless set.
+// Add --solo before <asset dir> to record a Survival run in a fresh profile,
+// reload the saved files, and watch that local score through the game UI.
 // <asset dir> holds crimson.paq, sfx.paq and music.paq (artifacts/assets).
 // CRIMSON_CHROME is a Chrome or Chromium binary with the new headless mode (not
 // the headless shell, whose tabs are never hidden). The check drives it over the
@@ -76,9 +78,10 @@ import os from "node:os";
 import path from "node:path";
 import { costSetup, measure } from "./coop_cost.mjs";
 
+const soloOnly = process.argv[2] === "--solo";
 const [given, shots = path.join(os.tmpdir(), "coop-browser-shots"), gameWasm = new URL("../build/game/game.wasm", import.meta.url).pathname] =
-  process.argv.slice(2);
-if (!given || !process.env.CRIMSON_CHROME) throw Error("usage: CRIMSON_CHROME=<chrome> coop_browser.mjs <asset dir> [shots dir] [game.wasm]");
+  process.argv.slice(soloOnly ? 3 : 2);
+if (!given || !process.env.CRIMSON_CHROME) throw Error("usage: CRIMSON_CHROME=<chrome> coop_browser.mjs [--solo] <asset dir> [shots dir] [game.wasm]");
 const assets = path.resolve(given);
 const SERVICE = new URL("../../service/", import.meta.url).pathname;
 if (!fs.existsSync(path.join(SERVICE, "public/play/index.wasm"))) throw Error("stage the web client first: cd service && npm run play");
@@ -87,7 +90,7 @@ fs.mkdirSync(shots, { recursive: true });
 // The game files' version in the bucket the page loads them from (service/src/index.ts GAME_VERSION).
 const GAME_VERSION = /const GAME_VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(SERVICE, "src/index.ts"), "utf8"))[1];
 // game_state_id_t; game_coop_status's flags and reasons (host/coop_wire.inc).
-const MAIN_MENU = 0, PLAY_GAME_MENU = 1, GAME_OVER = 7, GAMEPLAY = 9;
+const MAIN_MENU = 0, PLAY_GAME_MENU = 1, STATISTICS_MENU = 4, GAME_OVER = 7, GAMEPLAY = 9, HIGHSCORES = 14;
 const STATUS = { connected: 1, started: 2, paused: 4, desynced: 128, failed: 256, signed: 0x800, closed: 0x1000, stopped: 0x2000 };
 const PARTNER_GONE = 10, DIVERGED = 11;
 const reasonOf = (status) => (status >> 16) & 255;
@@ -164,8 +167,11 @@ const chrome = spawn(
   [
     `--user-data-dir=${profile}`, "--headless=new", "--remote-debugging-port=0", "--no-first-run", "--no-default-browser-check",
     "--use-mock-keychain", "--password-store=basic", "--autoplay-policy=no-user-gesture-required",
+    ...(soloOnly ? ["--disable-backgrounding-occluded-windows", "--disable-renderer-backgrounding"] : []),
     // Host candidates by address, not mDNS names, so the pages connect directly.
-    "--allow-loopback-in-peer-connection", "--disable-features=WebRtcHideLocalIpsWithMdns", `--use-angle=${process.env.CRIMSON_CHROME_ANGLE ?? "swiftshader"}`, "--enable-unsafe-swiftshader",
+    "--allow-loopback-in-peer-connection", "--disable-features=WebRtcHideLocalIpsWithMdns",
+    ...(process.env.CRIMSON_CHROME_ANGLE ? [`--use-angle=${process.env.CRIMSON_CHROME_ANGLE}`] :
+      process.platform === "darwin" ? [] : ["--use-angle=swiftshader"]), "--enable-unsafe-swiftshader",
     "about:blank",
   ],
   { stdio: "ignore", detached: true },
@@ -213,6 +219,7 @@ const KEYS = {
   AltLeft: ["Alt", 18],
   Enter: ["Enter", 13],
   Backspace: ["Backspace", 8],
+  BracketRight: ["]", 221],
   ...Object.fromEntries([..."WASDQ"].map((ch) => [`Key${ch}`, [ch.toLowerCase(), ch.charCodeAt(0)]])),
 };
 // The names the players type at the end screen.
@@ -220,8 +227,16 @@ const NAMES = ["Ranger", "Scout"];
 // A page of its own browser context: a window with one tab, the page focused (as Playwright emulates it) so
 // every page plays with input.
 async function open(name, origin, { webrtc = true } = {}) {
-  const { browserContextId } = await cdp("Target.createBrowserContext");
-  const { targetId } = await cdp("Target.createTarget", { url: "about:blank", browserContextId });
+  // Solo uses the foreground tab of the new, empty Chrome profile. Co-op gives
+  // each player a separate context so saves and origin locks stay independent.
+  let targetId, browserContextId;
+  if (soloOnly) {
+    const { targetInfos } = await cdp("Target.getTargets");
+    targetId = targetInfos.find((target) => target.type === "page" && target.url === "about:blank").targetId;
+  } else {
+    ({ browserContextId } = await cdp("Target.createBrowserContext"));
+    ({ targetId } = await cdp("Target.createTarget", { url: "about:blank", browserContextId }));
+  }
   const { sessionId } = await cdp("Target.attachToTarget", { targetId, flatten: true });
   const send = (method, params) => cdp(method, params, sessionId);
   // A navigation is done once its page loaded: nothing asks the page it leaves.
@@ -378,8 +393,25 @@ async function press(peer, screen, [x, y]) {
   await sleep(1000);
   if (screen !== null && await peer.screen() !== screen) return;
   await peer.down();
+  await sleep(120);
   await peer.frame();
   await peer.up();
+}
+async function chooseFromMainMenu(peer, position, next) {
+  // The startup animation and the main menu have the same state. On a slow
+  // graphics device elapsed wall time alone cannot establish that the buttons accept clicks.
+  await until("the first menu selection", async () => {
+    if (await peer.screen() === next) return true;
+    await press(peer, MAIN_MENU, position);
+    await peer.move(900, 700);
+    // Give the menu's pending transition time to finish before another click:
+    // the Play Game button overlaps Quests on the incoming panel.
+    for (let i = 0; i < 90; ++i) {
+      await peer.frame();
+      if (await peer.screen() === next) return true;
+    }
+    return false;
+  }, 120000);
 }
 // A key tap the game sees: held through one of the page's frames. The original reads a key as it is down when a
 // frame polls (its buttons' Enter too; the name entry takes Enter as a character), so a press and release within one
@@ -402,20 +434,9 @@ const webrtc = (peer) =>
 const both = (what, test, ms) => until(what, async () => (await test(host)) && (await test(guest)), ms);
 // A run on both pages.
 const started = (what) => both(what, async (peer) => (await peer.status()) & STATUS.started && (await peer.screen()) === GAMEPLAY);
-// The intro shares the main menu's state id. On a slow renderer the first
-// click can skip the logo. Wait for the panel to actually open.
-async function openPlayMenu(peer) {
-  await until("the Play Game panel", async () => {
-    if (await peer.screen() === MAIN_MENU) {
-      await press(peer, MAIN_MENU, PLAY_GAME);
-      await sleep(600);
-    }
-    return (await peer.screen()) === PLAY_GAME_MENU;
-  }, 60000);
-}
 // The host starts Survival and the guest's screen follows.
 async function survival(host, guest) {
-  await openPlayMenu(host);
+  await chooseFromMainMenu(host, PLAY_GAME, PLAY_GAME_MENU);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
   await started("the run on both");
 }
@@ -511,9 +532,94 @@ async function chromeCosts(origin) {
   return result.value;
 }
 
+async function soloRun() {
+  const peer = await open("solo", `http://127.0.0.1:${port}`);
+  await cdp("Target.activateTarget", { targetId: peer.targetId });
+  const read = (name) => peer.evaluate((name) => Array.from(FS.readFile("/game/" + name)), name);
+  const openMenu = async (position, next) => {
+    await peer.click("#play");
+    await until("the main menu", async () => await peer.screen() === MAIN_MENU);
+    await sleep(STARTUP_MS);
+    await chooseFromMainMenu(peer, position, next);
+  };
+  // Exercise the baseline WebGL2 client on the CI runner's software graphics device.
+  await peer.goto(`${peer.origin}/play/?renderer=webgl`);
+  await peer.waitFor("#play", 120000);
+  assert.equal(await peer.evaluate(() => FS.analyzePath("/game/scores.jsonl").exists), false, "fresh score table");
+  await openMenu(PLAY_GAME, PLAY_GAME_MENU);
+  const initialProgress = await read("game.cfg");
+  await press(peer, PLAY_GAME_MENU, [232, 414]); // fresh, unranked solo Survival
+  await until("solo gameplay", async () => await peer.screen() === GAMEPLAY);
+  console.log("solo Survival started");
+  await peer.move(780, 384);
+  await peer.keyDown("KeyD");
+  // Try through the opening transition and weapon cooldown. Each press and
+  // release has its own frame, even when software graphics are slow.
+  for (let shot = 0; shot < 12 && (await peer.screen()) === GAMEPLAY; ++shot) {
+    await peer.down();
+    await peer.frame();
+    await peer.up();
+    await peer.frame();
+  }
+  await peer.keyUp("KeyD");
+  await until("Survival game over", async () => await peer.screen() === GAME_OVER, 180000);
+  await peer.move(900, 700);
+  await sleep(1000);
+  for (let i = 0; i < 32; ++i) await tap(peer, "Backspace");
+  await peer.type("Ranger");
+  await tap(peer, "Enter");
+  await until("the saved score", () => peer.evaluate(() => FS.analyzePath("/game/scores.jsonl").exists));
+  const scores = await read("scores.jsonl");
+  const score = JSON.parse(Buffer.from(scores).toString());
+  assert.equal(score.name, "Ranger");
+  assert.equal(score.game_mode_id, 1);
+  assert.ok(score.shots_fired > 0, "the mouse fired in the run");
+  assert.equal(score.replay_number, 1);
+  const replayPath = `replays/${score.replay_number}-survival.crd`;
+  const replay = await read(replayPath);
+  // The Python port independently reads the input the packaged client recorded.
+  const inspect = [
+    "import sys",
+    "from crimson.replay.codec import load_replay",
+    "from crimson.replay.types import FIRE_DOWN_FLAG",
+    "run = load_replay(sys.stdin.buffer.read())",
+    "assert any(t.inputs[0][0] > 0 and t.inputs[0][4] & FIRE_DOWN_FLAG for t in run.ticks), 'missing move and fire input'",
+    "print(len(run.ticks))",
+  ].join("\n");
+  const ticks = Number(execFileSync("uv", ["run", "--no-sync", "python", "-c", inspect], {
+    cwd: path.resolve(SERVICE, ".."), input: Buffer.from(replay), encoding: "utf8",
+  }).trim());
+  assert.ok(ticks > 0, "the saved replay contains ticks");
+  console.log(`recorded ${ticks} ticks in ${replayPath}`);
+
+  // Quit through the game, which flushes the profile before offering to play again.
+  await peer.keyDown("AltLeft");
+  await tap(peer, "KeyQ");
+  await peer.keyUp("AltLeft");
+  await peer.waitFor("#again");
+  const progress = await read("game.cfg");
+  assert.notDeepEqual(progress, initialProgress, "playing Survival updates the profile");
+  await peer.reload();
+  await peer.waitFor("#play", 120000);
+  assert.deepEqual(await read("game.cfg"), progress, "progress survived IndexedDB reload");
+  assert.deepEqual(await read("scores.jsonl"), scores, "score survived IndexedDB reload");
+  assert.deepEqual(await read(replayPath), replay, "recording survived IndexedDB reload");
+  console.log("reloaded campaign, score and replay from IndexedDB");
+  await openMenu([200, 458], STATISTICS_MENU);
+  await press(peer, STATISTICS_MENU, [275, 316]); // High scores
+  await press(peer, HIGHSCORES, [180, 305]); // the first local row
+  await press(peer, HIGHSCORES, [745, 421]); // Watch
+  const watchTick = () => peer.evaluate(() => Module.ccall("client_watch_tick", "number", [], []));
+  await until("local score playback", async () => await watchTick() > 1);
+  await peer.shot("watch");
+  for (let i = 0; i < 5; ++i) await tap(peer, "BracketRight");
+  await until("the final tick of the saved replay", async () => await watchTick() === ticks, 120000);
+  assert.deepEqual(logs.filter((line) => line.startsWith("solo error:")), [], "uncaught browser errors");
+  console.log(`packaged solo Survival: saved, reloaded, and played all ${ticks} ticks; shots fired: ${score.shots_fired}`);
+}
+
 let host, guest;
-try {
-  await until("the service", () => serviceLog.includes("Ready on"), 120000);
+async function coopRuns() {
   host = await open("host", `http://localhost:${port}`);
   guest = await open("guest", `http://127.0.0.1:${port}`);
 
@@ -542,7 +648,7 @@ try {
   // The host's game, in the room without its partner, starts no run alone: Survival starts nothing, and Escape goes
   // back to the main menu.
   await sleep(STARTUP_MS);
-  await openPlayMenu(host);
+  await chooseFromMainMenu(host, PLAY_GAME, PLAY_GAME_MENU);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
   await sleep(2000);
   assert.equal(await host.screen(), PLAY_GAME_MENU, "a run alone in a room");
@@ -776,6 +882,11 @@ try {
   const costs = await chromeCosts(`http://localhost:${port}`);
   console.log("late-game costs in Chrome:", JSON.stringify(costs));
   console.log(`co-op in the browser: ok (screenshots in ${shots})`);
+}
+try {
+  await until("the service", () => serviceLog.includes("Ready on"), 120000);
+  if (soloOnly) await soloRun();
+  else await coopRuns();
 } catch (error) {
   // Failed, whatever the diagnostics below do.
   process.exitCode = 1;

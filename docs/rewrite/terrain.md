@@ -250,8 +250,10 @@ channel; neither directly preserves the four floating-point material channels.
 See the [BPTC format specification](https://registry.khronos.org/OpenGL/extensions/ARB/ARB_texture_compression_bptc.txt).
 The measured surface's wetness channel reached 9.17, beyond normalized color.
 
-An RGBA16F surface would lower the eight-checkpoint budget from 800 to 576 MiB.
+In the earlier eight-checkpoint experiment, an RGBA16F surface would have
+lowered the texture cost from 800 to 576 MiB.
 A CPU quantization probe changed 61.7% of the surface floats, with maximum absolute
 channel errors of 0.000122, 0.003906, 0.000244 and 0.000244. This is a possible
-separate visual-quality experiment, not a lossless replacement. The current fix
-keeps exact full-resolution material planes and the original eight-copy spacing.
+separate visual-quality experiment. The renderer keeps full-resolution material
+planes, spaces checkpoints according to their byte cost and uses the bake log
+to restore the terrain between them.
