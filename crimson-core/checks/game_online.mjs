@@ -21,7 +21,9 @@
 //   node crimson-core/checks/game_online.mjs <game directory> [game.wasm]
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { WASI } from "node:wasi";
 import { CORE } from "./engine.mjs";
 import { bootGame, INPUT } from "./game_host.mjs";
 
@@ -283,4 +285,26 @@ click(ROWS[0]);
 for (let i = 0; i < 10; ++i) frame();
 if (requests.shift() !== REPLAY || text(game.game_replay_download()) !== "pair198") throw Error("1.9.8's run is not on its table");
 drawsCard("1.9.8's run");
+
+// A first lookup creates one durable key. A broken existing key must remain
+// available for recovery, including a valid seed followed by extra bytes.
+const profile = fs.mkdtempSync(path.join(os.tmpdir(), "crimson-identity-"));
+try {
+  const wasi = new WASI({ version: "preview1", preopens: { ".": profile } });
+  const module = new WebAssembly.Module(fs.readFileSync(gameWasm));
+  const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host: new Proxy({}, { get: () => () => 0 }) });
+  wasi.initialize(instance);
+  const lookup = () => {
+    const at = instance.exports.game_identity_public_key(), bytes = Buffer.from(instance.exports.memory.buffer);
+    return bytes.toString("ascii", at, bytes.indexOf(0, at));
+  };
+  const filename = path.join(profile, "identity.key"), key = lookup(), seed = fs.readFileSync(filename);
+  if (!/^[a-f0-9]{64}$/.test(key) || seed.length !== 32 || lookup() !== key) throw Error("first-use key did not survive reload");
+  for (const broken of [Buffer.alloc(0), seed.subarray(0, 31), Buffer.concat([seed, Buffer.from([0])])]) {
+    fs.writeFileSync(filename, broken);
+    if (lookup() || !fs.readFileSync(filename).equals(broken)) throw Error("damaged identity replaced or accepted");
+  }
+} finally {
+  fs.rmSync(profile, { recursive: true, force: true });
+}
 console.log(JSON.stringify({ watched: 2, boards_1_9_8: 1, other_builds_ignored: ignored.length }));

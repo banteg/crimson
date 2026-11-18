@@ -1,7 +1,7 @@
 """Signed ranked-run uploads and the site login (docs/rewrite/leaderboard-identity.md).
 
 A finished ranked run is held from its end until its results screen closes, so it uploads under the name typed
-there. Then one worker thread signs it into the outbox and uploads every queued run; a run the service cannot be
+there. Releasing the run signs it into the outbox before a worker uploads queued runs; a run the service cannot be
 reached for stays in the outbox and goes with a later pass. The console is not thread-safe, so the worker's lines
 come back through `drain` on the main thread, as the replay saver's do.
 
@@ -27,7 +27,7 @@ from urllib.parse import urlparse
 
 import msgspec
 
-from grim.atomic_write import atomic_write_bytes
+from grim.atomic_write import atomic_write_bytes, locked_file
 
 from .. import __version__
 from ..cl_build import ClBuild
@@ -43,6 +43,21 @@ _TIMEOUT_S = 10.0
 type Transport = Callable[[str, dict[str, Any]], tuple[int, dict[str, Any]]]
 type Download = Callable[[str], bytes | None]
 _RUN_ID = re.compile(r"[0-9a-f]{64}")
+
+
+# Workers before /api/replay-capabilities gave these exact 422 reasons, listing supported versions in ascending order.
+_LEGACY_FORMAT = re.compile(r"unsupported replay format version: ([0-9]{1,8}) \(this build reads versions (?:[0-9]{1,8}, )*([0-9]{1,8})\)")
+_LEGACY_RULES = re.compile(r"replay was recorded under rules ([0-9]{1,8}); this service verifies rules (?:[0-9]{1,8} and )*([0-9]{1,8})")
+
+
+def _reader_behind(status: int, answer: dict[str, Any]) -> bool:
+    if status == 503:
+        return answer.get("code") == "replay_reader_behind"
+    reason = answer.get("reason")
+    if status != 422 or not isinstance(reason, str) or len(reason) > 256:
+        return False
+    match = _LEGACY_FORMAT.fullmatch(reason) or _LEGACY_RULES.fullmatch(reason)
+    return match is not None and int(match[1]) > int(match[2])
 
 
 class LeaderboardError(OSError):
@@ -142,7 +157,19 @@ class Leaderboard:
         self.identity = Identity.load_or_create(base_dir)
         self._outbox = base_dir / "leaderboard" / "outbox"
         self._rejected = base_dir / "leaderboard" / "rejected"
+        self._outbox_lock = base_dir / "leaderboard" / ".outbox.lock"
         self._url = leaderboard_url() if url is None else url
+        self._retry_rejected: set[Path] = set()
+        if self._url:
+            for path in self._rejected.glob("*.json"):
+                if not _RUN_ID.fullmatch(path.stem):
+                    continue
+                try:
+                    entry = _json_object(path.read_bytes())
+                except OSError:
+                    continue
+                if _reader_behind(422, entry):
+                    self._retry_rejected.add(path)
         self._transport = transport
         self._download = download
         self._executor: ThreadPoolExecutor | None = None
@@ -151,6 +178,7 @@ class Leaderboard:
         self._closed = False
         self._pending: list[Future[_Report]] = []
         self._held: Replay | None = None
+        self._queued_lines: list[str] = []
         self._next_pass_s = 0.0
         self.waiting = self._waiting_count()
         # Written by the worker, read by the high score screen.
@@ -173,9 +201,9 @@ class Leaderboard:
 
     def release(self, name: str) -> None:
         """Queue the held run, if any, under `name`, then upload."""
-        replay, self._held = self._held, None
-        if replay is not None:
-            self._submit(self._queue, replay, name, upload=True)
+        self._require_open()
+        if self._queue_held(name) and self._url:
+            self._submit(self._upload_pass)
 
     def tick(self, now_s: float) -> None:
         """Start an upload pass at launch and every `RETRY_INTERVAL_S` while runs wait and none is running."""
@@ -200,7 +228,7 @@ class Leaderboard:
         return self._login_executor.submit(self._login)
     def drain(self) -> list[str]:
         """The console lines of the finished jobs, in order; a job's error is raised here."""
-        lines: list[str] = []
+        lines, self._queued_lines = self._queued_lines, []
         while self._pending and self._pending[0].done():
             report = self._pending.pop(0).result()
             lines += report.lines
@@ -209,6 +237,7 @@ class Leaderboard:
 
     def close(self, name: str) -> list[str]:
         """Queue a run still held under `name` and finish the started jobs; passes not yet started are dropped."""
+        self._queue_held(name)
         self._closed = True
         for executor in (self._login_executor, self._download_executor):
             if executor is not None:
@@ -216,13 +245,9 @@ class Leaderboard:
         if self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
         self._pending = [future for future in self._pending if not future.cancelled()]
-        held_lines: list[str] = []
-        replay, self._held = self._held, None
-        if replay is not None:
-            report = self._queue(replay, name)
-            held_lines = report.lines
-            self.waiting = report.waiting
-        return [*self.drain(), *held_lines]
+        lines = self.drain()
+        self.waiting = self._waiting_count()
+        return lines
 
     def fetch_replay(self, run: str, replay_dir: Path) -> Future[Path | None]:
         """Download a board run's replay into `replay_dir/<run>.crd`, once; None when the board no longer has it."""
@@ -249,10 +274,12 @@ class Leaderboard:
         return path
 
     def _waiting_count(self) -> int:
-        return sum(1 for _ in self._outbox.glob("*.json")) if self._outbox.is_dir() else 0
+        return sum(1 for _ in self._outbox.glob("*.json")) + len(self._retry_rejected)
 
-    def _queue(self, replay: Replay, name: str, *, upload: bool = False) -> _Report:
-        payload = encode_replay_payload(replay)
+    def _queue_held(self, name: str) -> bool:
+        if self._held is None:
+            return False
+        payload = encode_replay_payload(self._held)
         run = run_id(payload)
         envelope = {
             "replay": base64.b64encode(zstd_pack(payload)).decode("ascii"),
@@ -261,45 +288,69 @@ class Leaderboard:
             "signature": self.identity.sign_run(payload, name).hex(),
         }
         self._outbox.mkdir(parents=True, exist_ok=True)
-        atomic_write_bytes(self._outbox / f"{run}.json", json.dumps(envelope).encode())
-        queued_line = f"leaderboard: queued run {run[:12]} as {name!r}"
-        if not upload or not self._url:
-            return _Report([queued_line], self._waiting_count())
-        sent = self._upload_pass()
-        return _Report([queued_line, *sent.lines], sent.waiting)
+        with locked_file(self._outbox_lock):
+            atomic_write_bytes(self._outbox / f"{run}.json", json.dumps(envelope).encode())
+        self._held = None
+        self._queued_lines.append(f"leaderboard: queued run {run[:12]} as {name!r}")
+        self.waiting = self._waiting_count()
+        return True
 
     def _upload_pass(self) -> _Report:
         lines: list[str] = []
-        for path in sorted(self._outbox.glob("*.json")) if self._outbox.is_dir() else ():
+        # An older client already wrote these signed envelopes into rejected/. Retry them in place.
+        for path in [*sorted(self._outbox.glob("*.json")), *sorted(self._retry_rejected)]:
+            if self._closed:
+                break
             run = path.stem[:12]
             try:
-                status, answer = self._transport(f"{self._url}/runs", json.loads(path.read_bytes()))
+                original = path.read_bytes()
+                envelope = _json_object(original) if path in self._retry_rejected else json.loads(original)
+            except FileNotFoundError:
+                self._retry_rejected.discard(path)
+                continue
+            if path in self._retry_rejected:
+                if not _reader_behind(422, envelope):
+                    self._retry_rejected.discard(path)
+                    continue
+                del envelope["reason"]
+            try:
+                status, answer = self._transport(f"{self._url}/runs", envelope)
             except OSError as exc:
                 lines.append(f"leaderboard: can't reach {self._url} ({exc}); runs wait in {self._outbox}")
                 break
-            if status in (200, 201):
-                path.unlink()
-                lines.append(f"leaderboard: uploaded run {run}")
-            elif status == 409:
-                path.unlink()
-                lines.append(f"leaderboard: run {run} was already uploaded")
-            elif 400 <= status < 500 and status != 429:
-                # The service will never take this run; keep it, with the reason, out of the outbox.
-                reason = str(answer.get("reason", f"HTTP {status}"))
-                self._rejected.mkdir(parents=True, exist_ok=True)
-                atomic_write_bytes(self._rejected / path.name, json.dumps({**json.loads(path.read_bytes()), "reason": reason}).encode())
-                path.unlink()
-                lines.append(f"leaderboard: run {run} rejected ({reason})")
-            else:
-                # A service error, or the service asking to slow down (429): the runs wait.
+            if _reader_behind(status, answer):
+                lines.append(f"leaderboard: run {run} waits for the service to support its replay")
+                continue
+            if status not in (200, 201) and (not 400 <= status < 500 or status == 429):
                 lines.append(f"leaderboard: service error (HTTP {status}); runs wait in {self._outbox}")
                 break
+            # A second client may have already settled or replaced this signed envelope during HTTP.
+            with locked_file(self._outbox_lock):
+                try:
+                    current = path.read_bytes()
+                except FileNotFoundError:
+                    self._retry_rejected.discard(path)
+                    continue
+                if current != original:
+                    continue
+                if status in (200, 201, 409):
+                    path.unlink(missing_ok=True)
+                    lines.append(f"leaderboard: run {run} was already uploaded" if status == 409 else f"leaderboard: uploaded run {run}")
+                else:
+                    reason = str(answer.get("reason", f"HTTP {status}"))
+                    self._rejected.mkdir(parents=True, exist_ok=True)
+                    rejected = self._rejected / path.name
+                    atomic_write_bytes(rejected, json.dumps({**envelope, "reason": reason}).encode())
+                    if path != rejected:
+                        path.unlink(missing_ok=True)
+                    lines.append(f"leaderboard: run {run} rejected ({reason})")
+                self._retry_rejected.discard(path)
         return _Report(lines, self._waiting_count())
 
     def _sync(self, board: Board | None) -> _Report:
         self.sync_status = SyncStatus.SENDING
         sent = self._upload_pass()
-        if board is None:
+        if board is None or self._closed:
             self.sync_status = SyncStatus.DONE
             return sent
         self.sync_status = SyncStatus.RECEIVING

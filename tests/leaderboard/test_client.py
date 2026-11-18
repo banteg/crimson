@@ -194,6 +194,73 @@ def test_the_service_settles_duplicate_and_refused_runs(tmp_path, replay, status
         assert json.loads(kept[0].read_bytes())["reason"] == "aim out of view"
 
 
+@pytest.mark.parametrize(("status", "answer"), [
+    (503, {"code": "replay_reader_behind"}),
+    (422, {"reason": "unsupported replay format version: 35 (this build reads versions 30, 31, 34)"}),
+    (422, {"reason": "replay was recorded under rules 2; this service verifies rules 1"}),
+])
+def test_future_replay_uploads_after_reader_catches_up(tmp_path, replay, status, answer):
+    replies = iter([(status, answer), (201, {})])
+    board = Leaderboard(tmp_path, url=_URL, transport=lambda url, body: next(replies))
+    board.hold(replay)
+    board.release("banteg")
+    _finish(board)
+    assert board.waiting == 1
+    board.tick(600)
+    _finish(board)
+    assert board.waiting == 0
+    assert not (tmp_path / "leaderboard" / "rejected").exists()
+
+
+@pytest.mark.parametrize("replace", [False, True])
+def test_two_clients_settling_the_same_queued_file(tmp_path, replay, replace):
+    queue = tmp_path / "leaderboard/outbox"
+    newer = b'{"signature":"newer signed envelope"}'
+
+    def delayed_duplicate(url, body):
+        if replace:
+            next(queue.glob("*.json")).write_bytes(newer)
+        else:
+            second = Leaderboard(tmp_path, url=_URL, transport=_Service(201))
+            second.tick(0)
+            _finish(second)
+        return 409, {}
+
+    first = Leaderboard(tmp_path, url=_URL, transport=delayed_duplicate)
+    first.hold(replay)
+    first.release("first name")
+    _finish(first)
+    assert [path.read_bytes() for path in queue.glob("*.json")] == ([newer] if replace else [])
+    assert first.waiting == int(replace)
+
+
+def test_retries_only_legacy_reader_refusals_from_disk(tmp_path, replay):
+    board = Leaderboard(tmp_path, url=_URL, transport=_Service(422))
+    board.hold(replay)
+    board.release("signed name")
+    _finish(board)
+    kept, = (tmp_path / "leaderboard/rejected").glob("*.json")
+    envelope = json.loads(kept.read_bytes())
+    original = {key: value for key, value in envelope.items() if key != "reason"}
+    permanent = kept.with_name("b" * 64 + ".json")
+    permanent.write_bytes(kept.read_bytes())
+    kept.write_text(json.dumps({**original, "reason": "replay was recorded under rules 2; this service verifies rules 1"}))
+    old = kept.read_bytes()
+
+    service = _Service(503, 201)
+    recovered = Leaderboard(tmp_path, url=_URL, transport=service)
+    assert recovered.waiting == 1
+    recovered.tick(0)
+    _finish(recovered)
+    assert kept.read_bytes() == old
+    recovered.tick(600)
+    _finish(recovered)
+    assert recovered.waiting == 0
+    assert not kept.exists()
+    assert permanent.is_file()
+    assert [body for _, body in service.calls] == [original, original]
+
+
 def test_quitting_on_the_results_queues_the_held_run(tmp_path, replay) -> None:
     service = _Service()
     leaderboard = Leaderboard(tmp_path, url=_URL, transport=service)
@@ -204,6 +271,39 @@ def test_quitting_on_the_results_queues_the_held_run(tmp_path, replay) -> None:
     assert service.calls == []
     [queued] = (tmp_path / "leaderboard" / "outbox").glob("*.json")
     assert json.loads(queued.read_bytes())["name"] == "banteg"
+
+
+def test_released_run_survives_quit_while_a_board_request_is_running(tmp_path, replay) -> None:
+    from threading import Event
+
+    started, finish = Event(), Event()
+
+    def slow_board(url, body):
+        assert url.endswith("/scores")
+        started.set()
+        assert finish.wait(timeout=5)
+        return 200, {"build": body["build"], "scores": []}
+
+    leaderboard = Leaderboard(tmp_path, url=_URL, transport=slow_board)
+    leaderboard.sync(("survival", "", ClBuild.V1_9_93))
+    assert started.wait(timeout=2)
+    try:
+        leaderboard.hold(replay)
+        leaderboard.release("player")
+        upload = leaderboard._pending[-1]
+        upload.add_done_callback(lambda _: finish.set())
+        leaderboard.close("different name")
+        assert upload.cancelled()
+    finally:
+        finish.set()
+
+    service = _Service(201)
+    next_launch = Leaderboard(tmp_path, url=_URL, transport=service)
+    assert next_launch.waiting == 1
+    next_launch.tick(0.0)
+    _finish(next_launch)
+    assert service.calls[0][1]["name"] == "player"
+    assert next_launch.waiting == 0
 
 
 def test_login_signs_the_challenge_and_stays_on_the_service(tmp_path) -> None:
@@ -274,11 +374,17 @@ def test_a_board_runs_replay_downloads_once_from_the_site_and_a_gone_one_is_none
 
 
 def test_close_saves_held_run_even_when_a_background_job_failed(tmp_path, replay) -> None:
+    from threading import Event
+
+    started = Event()
+
     def broken_transport(url: str, body: dict[str, object]) -> tuple[int, dict[str, object]]:
+        started.set()
         raise RuntimeError("boom")
 
     leaderboard = Leaderboard(tmp_path, url=_URL, transport=broken_transport)
     leaderboard.sync(("survival", "", ClBuild.V1_9_93))
+    assert started.wait(timeout=2)
     leaderboard.hold(replay)
     with pytest.raises(RuntimeError, match="boom"):
         leaderboard.close("banteg")

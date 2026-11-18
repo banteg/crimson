@@ -21,6 +21,8 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 - The key lives in `identity.key` (the 32-byte seed, readable by its owner only). `crimson identity show` prints
   the public key and its fingerprint; `crimson identity export` and `crimson identity import` move it to another
   machine, and import refuses to overwrite a different key without `--replace`.
+- Desktop clients serialize first use and imports with `.identity.lock` and publish a complete seed atomically.
+  An invalid existing key stays in place so the player can restore a backup.
 - Linking a GitHub, Discord, X or Twitch login to an account is optional, and happens on the site (see
   [Signing in on the site](#signing-in-on-the-site)). It lets a player add a new machine's key to their account by
   signing in with the linked login, and gives their entries a linked badge.
@@ -36,8 +38,9 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 - A finished ranked run waits in the game until its results screen closes, which settles its name; quitting on
   that screen queues it too. It is then signed into `leaderboard/outbox/<run id>.json` in the runtime directory.
 - The game uploads the outbox after each queued run, at launch and every ten minutes while runs wait. A run the
-  service cannot be reached for stays for a later pass, so a run played offline uploads later; quitting never waits
-  on the network.
+  service cannot be reached for stays for a later pass. On quit, the Python client saves the named run before
+  canceling queued network work. An upload or board request already in progress can finish. Any remaining
+  outbox entries resume on the next launch.
 - The console says what became of each run, in every client: queued as its name, uploaded, already uploaded,
   rejected with the service's reason (the run moves to `leaderboard/rejected/` with it), or waiting because the
   service could not be reached or answered with an error.
@@ -48,12 +51,13 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 ## Protocol
 
 The API root is `https://crimson.land/api`. `CRIMSON_LEADERBOARD_URL` points the game at another one, such as a
-local Worker, and an empty value keeps every run on the machine. Every request is a JSON `POST`; byte strings are
-hex, except the replay, which is base64.
+local Worker, and an empty value keeps every run on the machine. The game posts
+JSON with hex byte strings and a base64 replay. `GET /api/replay-capabilities`
+lists the replay `formats` the Worker reads and the `rules` it verifies.
 
 | Endpoint | Body | Answer |
 | --- | --- | --- |
-| `runs` | `replay` (the `.crd` file), `name`, `public_key`, `signature`; or for a [co-op run](#co-op-runs), `replay` and `signers` | 200 or 201 accepted, 409 already accepted, other 4xx refused with a `reason`, 5xx retried later |
+| `runs` | `replay` (the `.crd` file), `name`, `public_key`, `signature`; or for a [co-op run](#co-op-runs), `replay` and `signers` | 200 or 201 accepted, 409 already accepted, 429 or 5xx retried later, other 4xx refused with a `reason` |
 | `auth/challenge` | `public_key` | 200 with `challenge` (ASCII) |
 | `auth/login` | `public_key`, `challenge`, `signature` | 200 with `url`, a login link on the service's own host |
 | `scores` | `board`, `quest` (`"major.minor"`, empty for Survival), `build` (`"1.9.8"` for the [1.9.8 rules](rules-1.9.8.md)' boards, 1.9.93's when left out) | 200 with `build`, the build whose board it is (`"1.9.8"` or `"1.9.93"`), and `scores`: each account's (or co-op pair's) best human run, up to 100, as the run's id (`run`), its name, its players' `names` and a high score record's fields |
@@ -65,7 +69,10 @@ The signatures cover byte strings that start with their purpose, so a run signat
   player's seat as one byte (0 for player one), then their name in Latin-1;
 - a login: `crimson-login-v1\n`, then the challenge.
 
-A refused run moves to `leaderboard/rejected/` with its reason, so it stops retrying but stays on disk. The game
+A permanent refusal stays on disk in `leaderboard/rejected/` with its reason.
+A recorded format or rules version newer than the server waits for an updated
+reader. Clients retry earlier signed refusals that specifically identify this
+condition, keeping the original bytes until the server settles the run. The game
 opens a login link only when it leads to the service's own host. It reads a board whose answer names no build as
 1.9.93's, the only board a service from before builds has, which it answers whatever build is asked for, and drops a
 board whose answer names another build than it asked for.
@@ -187,7 +194,7 @@ provider's token reads the profile once and is discarded; the link keeps the acc
 Signing in with a login another account has linked, matched by the provider's account ID and never the handle,
 shows that account and asks before moving this key, its runs and its names into it, which is how a second computer
 joins. The question names both accounts and warns that the key moved in signs in to the joined account from then
-on, so a player signed in to someone else's account by mistake can tell. The move happens in one transaction once confirmed, from the session that asked. The profile unlinks a provider and deletes the account with its runs,
+on, so a player signed in to someone else's account by mistake can tell. The confirmation checks provider ownership and moves the accounts in a single transaction. Unlinking or replacing that identity revokes existing confirmations, even if the owner links it again. The profile unlinks a provider and deletes the account with its runs,
 replays, names, links, keys and sessions, keeping the [co-op runs](#co-op-runs) a partner shares with a bare account
 in its seat.
 `/privacy` and `/terms` say the same in plain words.
@@ -227,9 +234,13 @@ its ground (`/runs/<run id>.ground.jpg`) and the replay refuse a hidden run and 
 is cached only briefly (`REPLAY_MAX_AGE_S` in `service/src/index.ts`), so hiding, bans and deletions take effect
 within that.
 
+Each upload stages its replay, timeline and ground under a fresh private R2 prefix. The D1 insert publishes the
+accepted prefix, so racing uploads of the same public run id cannot replace its files. Runs accepted before
+migration 0013 still use their public id as their storage prefix. Hourly maintenance reclaims abandoned staging prefixes after 24 hours.
+
 While the service replays a run to verify it, crimson-core's `portable_probe` reads player one (in co-op too) after
 every tick,
-and the service keeps a timeline next to the replay (`runs/<id>.timeline.json` in R2, `service/src/timeline.ts`):
+and the service keeps a timeline next to the replay (`runs/<storage_id>.timeline.json` in R2, `service/src/timeline.ts`):
 
 - once a second, experience, level, health, kills and the damage creatures took (overkill excluded);
 - ten times a second, the position;

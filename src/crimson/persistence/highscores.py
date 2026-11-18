@@ -15,7 +15,7 @@ import msgspec
 
 from crimson.msgspec_types import I32, U32, PlayerCount
 from crimson.quests.level import QuestLevel
-from grim.atomic_write import locked_append
+from grim.atomic_write import locked_file
 from grim.config import CrimsonConfig, HighScoreDateMode
 
 from ..cl_build import ClBuild
@@ -235,7 +235,7 @@ def append_highscore_records(base_dir: Path, records: list[HighScoreRecord]) -> 
     payload = b"".join(_ENCODER.encode(record) + b"\n" for record in records)
     for line in payload.splitlines():
         decode_highscore_record(line)
-    with locked_append(path) as fd:
+    with locked_file(path, append=True) as fd:
         size = os.fstat(fd).st_size
         # A torn last line would swallow this record's start.
         if size:

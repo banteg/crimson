@@ -192,6 +192,9 @@ u32 w2c_wasi__snapshot__preview1_path_open(struct w2c_wasi__snapshot__preview1 *
   opened.path = relative;
   struct stat st;
   bool exists = stat(host.c_str(), &st) == 0;
+  bool private_key = !strcasecmp(relative.c_str(), "identity.key") || !strcasecmp(relative.c_str(), "identity.key.writing");
+  if (private_key && exists && !S_ISREG(st.st_mode))
+    return EINVAL_;
   if ((oflags & 2) || (exists && S_ISDIR(st.st_mode))) { // O_DIRECTORY
     if (!(opened.dir = opendir(host.c_str())))
       return errno_code();
@@ -199,14 +202,21 @@ u32 w2c_wasi__snapshot__preview1_path_open(struct w2c_wasi__snapshot__preview1 *
     bool reads = rights & 1u << 1, writes = rights & 1u << 6; // fd_read, fd_write
     int flags = (oflags & 1 ? O_CREAT : 0) | (oflags & 4 ? O_EXCL : 0) | (oflags & 8 ? O_TRUNC : 0) |
                 (fdflags & 1 ? O_APPEND : 0) | (reads && writes ? O_RDWR : writes ? O_WRONLY : O_RDONLY) | O_NOFOLLOW;
-    if ((opened.fd = open(host.c_str(), flags, 0644)) < 0)
+    if (private_key)
+      flags |= O_NONBLOCK;
+    if ((opened.fd = open(host.c_str(), flags, private_key ? 0600 : 0644)) < 0)
       return errno_code();
 #ifndef __EMSCRIPTEN__
-    // Score appends and replay number reservations coordinate with Python
-    // through flock for the entire descriptor lifetime. Browser storage
-    // is already owned by a single tab's Web Lock (web/shell.html).
-    if (writes && (!strcasecmp(relative.c_str(), "scores.jsonl") ||
-                   !strcasecmp(relative.c_str(), "replays/.last-number.lock"))) {
+    // Older desktop versions created keys with regular data-file permissions.
+    if (private_key && (fstat(opened.fd, &st) || ((st.st_mode & 0777) != 0600 && fchmod(opened.fd, 0600)))) {
+      u32 error = errno_code();
+      close(opened.fd);
+      return error;
+    }
+    // Serialize profile transactions with Python. The browser already owns its
+    // profile with a Web Lock.
+    if (writes && (!strcasecmp(relative.c_str(), "scores.jsonl") || !strcasecmp(relative.c_str(), ".identity.lock") ||
+                   !strcasecmp(relative.c_str(), "leaderboard/.outbox.lock") || !strcasecmp(relative.c_str(), "replays/.last-number.lock"))) {
       int locked;
       do {
         locked = flock(opened.fd, LOCK_EX);
@@ -236,10 +246,9 @@ u32 w2c_wasi__snapshot__preview1_fd_close(struct w2c_wasi__snapshot__preview1 *,
     return EBADF_;
   if (f->dir)
     closedir(f->dir);
-  if (f->fd >= 0)
-    close(f->fd);
+  u32 error = f->fd >= 0 && close(f->fd) ? errno_code() : ESUCCESS;
   *f = File{};
-  return ESUCCESS;
+  return error;
 }
 u32 w2c_wasi__snapshot__preview1_fd_sync(struct w2c_wasi__snapshot__preview1 *, u32 fd) {
   File *f = file(fd);

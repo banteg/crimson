@@ -14,7 +14,10 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <memory>
+#include <regex>
 #include <stdexcept>
+#include <sys/file.h>
 #include <unistd.h>
 #include <utility>
 #include <vector>
@@ -68,6 +71,37 @@ bool object(const std::string &text, Json &value) {
          json_parse(text.data(), text.size(), value) &&
          value.kind == Json::OBJECT;
 }
+// Before the structured response, a 422 named the writer and the reader's supported versions in ascending order.
+bool reader_behind(int status, const Json &response) {
+  if (status == 503) {
+    const Json *code = response.field("code", Json::STRING);
+    return code && code->text == "replay_reader_behind";
+  }
+  const Json *reason = response.field("reason", Json::STRING);
+  if (status != 422 || !reason || reason->text.size() > 256)
+    return false;
+  static const std::regex format(R"(unsupported replay format version: ([0-9]{1,8}) \(this build reads versions (?:[0-9]{1,8}, )*([0-9]{1,8})\))");
+  static const std::regex rules(R"(replay was recorded under rules ([0-9]{1,8}); this service verifies rules (?:[0-9]{1,8} and )*([0-9]{1,8}))");
+  std::smatch versions;
+  return (std::regex_match(reason->text, versions, format) || std::regex_match(reason->text, versions, rules)) &&
+         std::stoi(versions[1].str()) > std::stoi(versions[2].str());
+}
+
+// All three clients appended the refusal reason last. Keep the exact original JSON fields,
+// including escape spelling and all signatures, and refuse to truncate a record with more fields.
+bool old_reader_refusal(std::string &entry, const Json &envelope) {
+  if (envelope.fields.empty() || envelope.fields.back().first != "reason" || !reader_behind(422, envelope))
+    return false;
+  const size_t key = entry.rfind("\"reason\"");
+  const size_t comma = entry.rfind(',', key);
+  if (key == std::string::npos || comma == std::string::npos)
+    return false;
+  entry.resize(comma);
+  entry += '}';
+  Json original;
+  return object(entry, original) && original.fields.size() + 1 == envelope.fields.size();
+}
+
 bool read_file(const std::string &path, std::string &bytes) {
   std::ifstream in(path, std::ios::binary);
   if (!in)
@@ -376,28 +410,53 @@ std::string LeaderboardNetwork::path(const std::string &relative,
 bool LeaderboardNetwork::upload(Event &event) {
   std::string &error = event.error;
   std::string outbox = path("leaderboard/outbox");
-  if (!fs::exists(outbox))
-    return true;
   std::vector<fs::path> files;
-  for (const auto &entry : fs::directory_iterator(outbox))
-    if (entry.path().extension() == ".json" &&
-        run_id(entry.path().stem().string()))
-      files.push_back(entry.path());
+  if (fs::is_directory(outbox)) {
+    for (const auto &entry : fs::directory_iterator(outbox))
+      if (entry.path().extension() == ".json" && run_id(entry.path().stem().string()))
+        files.push_back(entry.path());
+  }
+  if (!listed_rejections_) {
+    const fs::path rejected = path("leaderboard/rejected");
+    if (fs::is_directory(rejected)) {
+      for (const auto &record : fs::directory_iterator(rejected)) {
+        const fs::path name = record.path().filename();
+        if (name.extension() == ".json" && run_id(name.stem().string()))
+          retry_rejected_.insert(name.string());
+      }
+    }
+    listed_rejections_ = true;
+  }
+  for (const std::string &name : retry_rejected_)
+    files.push_back(path("leaderboard/rejected/" + name));
   std::sort(files.begin(), files.end());
   for (const auto &file : files) {
     if (stop_)
       return false;
     try {
-      std::string source =
-                      path("leaderboard/outbox/" + file.filename().string()),
-                  entry;
-      if (fs::file_size(source) > ENVELOPE_LIMIT || !read_file(source, entry)) {
-        error = "Could not read queued run; skipping it";
+      const auto name = file.filename().string();
+      const bool rejected_before = file.parent_path() != fs::path(outbox);
+      std::string source = path(std::string(rejected_before ? "leaderboard/rejected/" : "leaderboard/outbox/") + name), entry;
+      std::error_code file_error;
+      const auto size = fs::file_size(source, file_error);
+      if (file_error == std::errc::no_such_file_or_directory) {
+        if (rejected_before) retry_rejected_.erase(name);
+        continue;
+      }
+      if (file_error || size > ENVELOPE_LIMIT || !read_file(source, entry)) {
+        if (rejected_before) retry_rejected_.erase(name);
+        else error = "Could not read queued run; skipping it";
         continue;
       }
       Json envelope;
       if (!object(entry, envelope)) {
-        error = "Invalid queued run JSON; skipping it";
+        if (rejected_before) retry_rejected_.erase(name);
+        else error = "Invalid queued run JSON; skipping it";
+        continue;
+      }
+      const std::string archived = rejected_before ? entry : std::string();
+      if (rejected_before && !old_reader_refusal(entry, envelope)) {
+        retry_rejected_.erase(name);
         continue;
       }
       std::string run = file.stem().string().substr(0, 12);
@@ -406,6 +465,12 @@ bool LeaderboardNetwork::upload(Event &event) {
         event.lines.push_back("leaderboard: can't reach " + api_ + " (" + answer.error + "); runs wait in " + outbox);
         return false;
       }
+      Json response;
+      const bool has_reply = answer.status >= 400 && object(answer.body, response);
+      if (has_reply && reader_behind(answer.status, response)) {
+        event.lines.push_back("leaderboard: run " + run + " waits for the service to support its replay");
+        continue;
+      }
       // A service error, or the service asking to slow down (429): the runs wait.
       if (answer.status >= 500 || answer.status == 429 || answer.status < 200 ||
           (answer.status >= 300 && answer.status < 400)) {
@@ -413,11 +478,17 @@ bool LeaderboardNetwork::upload(Event &event) {
                               "); runs wait in " + outbox);
         return false;
       }
+      // Lock only while settling. A second client can finish or replace the entry while HTTP is in flight.
+      std::unique_ptr<FILE, decltype(&fclose)> lock(fopen(path("leaderboard/.outbox.lock").c_str(), "ab"), fclose);
+      if (!lock || flock(fileno(lock.get()), LOCK_EX) != 0) {
+        error = "Could not lock the leaderboard outbox; keeping the run queued";
+        return false;
+      }
+      std::string current;
+      if (!read_file(source, current) || current != (rejected_before ? archived : entry))
+        continue;
       if (answer.status >= 400 && answer.status != 409) {
-        Json response;
-        const Json *reason = object(answer.body, response)
-                                 ? response.field("reason", Json::STRING)
-                                 : nullptr;
+        const Json *reason = has_reply ? response.field("reason", Json::STRING) : nullptr;
         std::string rejected =
             path("leaderboard/rejected/" + file.filename().string(), true);
         size_t end = entry.find_last_not_of(" \r\n\t");
@@ -433,10 +504,15 @@ bool LeaderboardNetwork::upload(Event &event) {
         }
         event.lines.push_back("leaderboard: run " + run + " rejected (" +
                               (reason ? reason->text : "HTTP " + std::to_string(answer.status)) + ")");
+        if (rejected_before) {
+          retry_rejected_.erase(name);
+          continue;
+        }
       } else
         event.lines.push_back(answer.status == 409 ? "leaderboard: run " + run + " was already uploaded"
                                                    : "leaderboard: uploaded run " + run);
       fs::remove(source);
+      if (rejected_before) retry_rejected_.erase(name);
     } catch (const std::exception &) {
       error = "Could not process queued run; skipping it";
     }

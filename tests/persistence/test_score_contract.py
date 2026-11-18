@@ -72,8 +72,11 @@ def test_invalid_utf8_is_rejected_by_both_readers(score_decoder: Path) -> None:
         assert subprocess.check_output([score_decoder], input=line + b"\n") == b"invalid\n"
 
 
-@pytest.mark.skipif(os.name == "nt", reason="The desktop WASI adapter currently targets macOS/Linux")
-def test_native_and_python_partial_appends_share_the_lock(tmp_path: Path, monkeypatch) -> None:
+@pytest.fixture(scope="module")
+def wasi_writer(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    if os.name == "nt":
+        pytest.skip("The desktop WASI adapter currently targets macOS/Linux")
+    tmp_path = tmp_path_factory.mktemp("wasi-writer")
     root = Path(__file__).resolve().parents[2]
     # Only these generated wasm2c declarations are needed by the actual WASI adapter.
     (tmp_path / "game.h").write_text(
@@ -86,12 +89,40 @@ def test_native_and_python_partial_appends_share_the_lock(tmp_path: Path, monkey
         f"-I{root / 'crimson-core/client'}", str(Path(__file__).with_name("wasi_score_writer.cpp")),
         "-o", str(binary),
     ], check=True)
+    return binary
+
+
+def test_native_and_python_partial_appends_share_the_lock(tmp_path: Path, wasi_writer: Path, monkeypatch) -> None:
     write = os.write
     monkeypatch.setattr(os, "write", lambda fd, data: write(fd, data[:3]))
-    child = subprocess.Popen([binary, tmp_path])
+    child = subprocess.Popen([wasi_writer, tmp_path])
     for i in range(10):
         append_highscore_records(tmp_path, [HighScoreRecord(name=f"python-{i}")])
     assert child.wait(timeout=30) == 0
     assert {r.name for r in read_highscore_records(tmp_path)} == {
         f"{client}-{i}" for client in ("native", "python") for i in range(10)
     }
+
+
+def test_native_profile_permissions_and_locks(tmp_path: Path, wasi_writer: Path) -> None:
+    import fcntl
+
+    (tmp_path / "replays").mkdir()
+    key = tmp_path / "identity.key"
+    key.write_bytes(bytes(range(32)))
+    key.chmod(0o644)  # A key created by an older desktop build.
+    for name in (".identity.lock", "replays/.last-number.lock", "identity.key.writing", "identity.key"):
+        with subprocess.Popen([wasi_writer, tmp_path, name], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as native:
+            assert native.stdout is not None
+            assert native.stdout.readline() == b"open\n"
+            try:
+                path = tmp_path / name
+                if name.endswith(".lock"):
+                    with path.open("rb") as parallel, pytest.raises(BlockingIOError):
+                        fcntl.flock(parallel, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                else:
+                    assert path.stat().st_mode & 0o777 == 0o600
+            finally:
+                native.communicate(b"\n", timeout=5)
+            assert native.returncode == 0
+    assert key.read_bytes() == bytes(range(32))

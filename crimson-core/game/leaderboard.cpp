@@ -1,6 +1,8 @@
 // The leaderboard's digest, envelope and key (leaderboard.h). zstd 1.5.7 and
 // Monocypher 4.0.2 are vendored in vendor/.
 #include "leaderboard.h"
+#include "profile_file.h"
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -31,20 +33,32 @@ std::vector<uint8_t> zstd_unpack(const uint8_t *data, size_t size, size_t max_si
   return out;
 }
 
+enum class SeedStatus { ready, missing, invalid };
+
+static SeedStatus read_seed(uint8_t (&seed)[32]) {
+  auto file = profile_open("identity.key", "rb");
+  if (!file)
+    return errno == ENOENT ? SeedStatus::missing : SeedStatus::invalid;
+  bool exact = fread(seed, 1, sizeof seed, file.get()) == sizeof seed && fgetc(file.get()) == EOF && !ferror(file.get());
+  return exact ? SeedStatus::ready : SeedStatus::invalid;
+}
+
 bool identity_load(Identity &identity) {
   uint8_t seed[32];
-  FILE *fp = fopen("identity.key", "rb");
-  bool read = fp && fread(seed, 1, sizeof seed, fp) == sizeof seed;
-  if (fp)
-    fclose(fp);
-  if (!read) {
-    if (getentropy(seed, sizeof seed) != 0 || !(fp = fopen("identity.key", "wb")))
+  SeedStatus status = read_seed(seed);
+  if (status == SeedStatus::missing) {
+    auto lock = profile_open(".identity.lock", "a+b");
+    if (!lock)
       return false;
-    bool written = fwrite(seed, 1, sizeof seed, fp) == sizeof seed;
-    fclose(fp);
-    if (!written)
-      return false;
+    status = read_seed(seed); // Another client may have published its key while we waited.
+    if (status == SeedStatus::missing) {
+      if (getentropy(seed, sizeof seed) || !profile_publish("identity.key", seed, sizeof seed))
+        return false;
+      status = SeedStatus::ready;
+    }
   }
+  if (status != SeedStatus::ready)
+    return false;
   crypto_ed25519_key_pair(identity.secret, identity.public_key, seed);
   return true;
 }

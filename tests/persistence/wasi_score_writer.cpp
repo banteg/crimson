@@ -16,10 +16,21 @@ const std::string &client_game_directory() { return directory; }
 [[noreturn]] void client_fatal(const char *) { abort(); }
 
 int main(int argc, char **argv) {
-  if (argc != 2)
+  if (argc != 2 && argc != 3)
     return 1;
   directory = argv[1];
   client_wasi_init();
+  // Hold an adapter-opened file until Python finishes inspecting its mode/lock.
+  if (argc == 3) {
+    size_t length = strlen(argv[2]);
+    memcpy(bytes, argv[2], length);
+    if (w2c_wasi__snapshot__preview1_path_open(nullptr, 3, 0, 0, length, 1, (1 << 1) | (1 << 6), 0, 1, 100))
+      return 2;
+    puts("open");
+    fflush(stdout);
+    getchar();
+    return w2c_wasi__snapshot__preview1_fd_close(nullptr, load32(100));
+  }
   for (int i = 0; i < 10; ++i) {
     memcpy(bytes, "scores.jsonl", 12);
     if (w2c_wasi__snapshot__preview1_path_open(nullptr, 3, 0, 0, 12, 1, (1 << 1) | (1 << 6), 0, 1, 100))
