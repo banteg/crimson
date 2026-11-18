@@ -17,16 +17,7 @@ from tests.support.helpers import assert_float_close
 
 
 def _pick_up_weapon(world: WorldState, player: PlayerState, weapon_id: WeaponId) -> None:
-    bonus_apply(
-        world.state,
-        player,
-        BonusId.WEAPON,
-        step_runtime=make_step_runtime(world),
-        amount=int(weapon_id),
-        origin=player.pos,
-        creatures=world.creatures.entries,
-        players=world.players,
-    )
+    bonus_apply(make_step_runtime(world), player, BonusId.WEAPON, amount=int(weapon_id), origin=player.pos)
 
 
 @pytest.mark.parametrize("regression,ammunition,expected_xp,expected_health", [

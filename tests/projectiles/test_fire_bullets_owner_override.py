@@ -52,17 +52,7 @@ def _nuke_type_ids(*, preserve_bugs: bool, fire_bullets_timers: tuple[float, flo
     world = _two_player_world(preserve_bugs=preserve_bugs, fire_bullets_timers=fire_bullets_timers)
     player1 = world.players[1]
 
-    bonus_apply(
-        world.state,
-        player1,
-        BonusId.NUKE,
-        amount=1,
-        step_runtime=make_step_runtime(world),
-        origin=player1.pos,
-        creatures=world.creatures.entries,
-        players=world.players,
-        detail_preset=5,
-    )
+    bonus_apply(make_step_runtime(world), player1, BonusId.NUKE, amount=1, origin=player1.pos)
     return _active_type_ids(world.state)
 
 

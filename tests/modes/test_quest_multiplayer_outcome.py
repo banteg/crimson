@@ -58,7 +58,7 @@ def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, assets_dir: Pa
     assert sfx_ids(mode.state.sfx_queue) == [reload_sfx] * len(mode.world.players)
 
 
-def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: Path, assets_dir: Path, mocker) -> None:
+def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: Path, assets_dir: Path) -> None:
     cfg = ensure_crimson_cfg(tmp_path)
     ctx = ViewContext(assets_dir=assets_dir)
 
@@ -68,12 +68,8 @@ def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: P
     mode.state.rng.srand(seed_before_run)
 
     cfg.gameplay.quest_level = QuestLevel(1, 1)
-    reset_spy = mocker.spy(mode.world_runtime, "reset")
     mode.bind_status(GameStatus.detached(GameStatusData()))
     mode.open()
 
-    assert reset_spy.call_args is not None
-    assert int(reset_spy.call_args.kwargs["seed"]) == int(seed_before_run)
-    assert int(reset_spy.call_args.kwargs["seed"]) != 101
     assert mode._replay_recorder is not None
     assert int(mode._replay_recorder.run.seed) == int(seed_before_run)

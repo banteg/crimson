@@ -186,14 +186,7 @@ def typo_gameplay_update(
     gameplay_enforce_weapon_guards(state, players)
     creature_count_before_render = len(world.creatures.iter_active())
     world.creatures.finalize_post_render_lifecycle()
-    pickups = bonus_telekinetic_update(
-        state,
-        players,
-        dt,
-        creatures=world.creatures.entries,
-        detail_preset=state.detail_preset,
-        step_runtime=step_runtime,
-    )
+    pickups = bonus_telekinetic_update(step_runtime, dt)
     for entry in state.bonus_pool.entries:
         entry.bonus_id = BonusId.UNUSED
     # `hud_update_and_render`, after the frame dt is restored.

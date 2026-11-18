@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from ..math_parity import f32, x87_pc24_sub
-from ..sim.state_types import BonusPickupEvent, PlayerState
+from ..sim.state_types import BonusPickupEvent
 from ..sim.timing import ftol_ms_i32
 from .apply import bonus_apply
 from .hud import bonus_hud_update
@@ -14,25 +13,18 @@ from .pool import BONUS_PICKUP_LINGER, BONUS_TELEKINETIC_PICKUP_MS, bonus_find_a
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
-    from ..creatures.runtime import CreatureState
     from ..sim.world_state import WorldStepRuntime
 
 
-def bonus_telekinetic_update(
-    state: GameplayState,
-    players: list[PlayerState],
-    dt: float,
-    *,
-    creatures: Sequence[CreatureState],
-    detail_preset: int = 5,
-    step_runtime: WorldStepRuntime,
-) -> list[BonusPickupEvent]:
+def bonus_telekinetic_update(step_runtime: WorldStepRuntime, dt: float) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
     from ..perks import PerkId
 
     if dt <= 0.0:
         return []
 
+    state = step_runtime.world.state
+    players = step_runtime.world.players
     pickups: list[BonusPickupEvent] = []
     # bonus_render (0x004295f0) accumulates the int `frame_dt_ms`.
     dt_ms = ftol_ms_i32(dt)
@@ -58,17 +50,7 @@ def bonus_telekinetic_update(
         if entry.picked or entry.bonus_id == BonusId.UNUSED:
             continue
 
-        bonus_apply(
-            state,
-            player,
-            entry.bonus_id,
-            amount=int(entry.amount),
-            origin=entry.pos,
-            creatures=creatures,
-            players=players,
-            detail_preset=int(detail_preset),
-            step_runtime=step_runtime,
-        )
+        bonus_apply(step_runtime, player, entry.bonus_id, amount=int(entry.amount), origin=entry.pos)
         entry.picked = True
         entry.time_left = BONUS_PICKUP_LINGER
         pickups.append(
@@ -88,25 +70,12 @@ def bonus_telekinetic_update(
     return pickups
 
 
-def bonus_update(
-    state: GameplayState,
-    players: list[PlayerState],
-    dt: float,
-    *,
-    creatures: Sequence[CreatureState],
-    detail_preset: int = 5,
-    step_runtime: WorldStepRuntime,
-) -> list[BonusPickupEvent]:
+def bonus_update(step_runtime: WorldStepRuntime, dt: float) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (`bonus_update`)."""
 
-    pickups = state.bonus_pool.update(
-        dt,
-        state=state,
-        players=players,
-        creatures=creatures,
-        detail_preset=int(detail_preset),
-        step_runtime=step_runtime,
-    )
+    state = step_runtime.world.state
+    players = step_runtime.world.players
+    pickups = state.bonus_pool.update(step_runtime, dt)
 
     if dt > 0.0:
         # Native `bonus_update` decrements Freeze + Double XP here; other global

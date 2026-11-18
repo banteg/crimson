@@ -51,13 +51,7 @@ def test_reflex_boost_and_freeze_pickups_spawn_ring_and_burst() -> None:
 
 
 def _update_bonus_pool(world: WorldState, dt: float) -> list[BonusPickupEvent]:
-    return world.state.bonus_pool.update(
-        dt,
-        step_runtime=make_step_runtime(world, dt=dt),
-        state=world.state,
-        players=world.players,
-        creatures=world.creatures.entries,
-    )
+    return world.state.bonus_pool.update(make_step_runtime(world, dt=dt), dt)
 
 
 def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:

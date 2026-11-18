@@ -17,7 +17,6 @@ from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
-from ..replay import ReplayRecorder
 from ..sim.mode_updates import SurvivalSpawnState
 from ..sim.sessions import DeterministicSessionTick
 from .base_gameplay_mode import (
@@ -49,26 +48,16 @@ class SurvivalMode(BaseGameplayMode):
             audio_rng=audio_rng,
         )
         self._cursor_time = 0.0
-        self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = SurvivalSpawnState()
-
-    def _replay_checkpoint_elapsed_ms(self) -> float:
-        return self._session_elapsed_ms()
-
 
     def open(self) -> None:
         super().open()
 
         self._cursor_time = 0.0
-        self._reset_gameplay_frame_clock()
         prepared = self._initialize_run(GameMode.SURVIVAL)
         spawn_state = prepared.session.mode_state
         assert isinstance(spawn_state, SurvivalSpawnState)
         self._spawn_state = spawn_state
-
-    def close(self) -> None:
-        self._world_runtime.end_session()
-        super().close()
 
     def _handle_input(self) -> None:
         if self._game_over_active:

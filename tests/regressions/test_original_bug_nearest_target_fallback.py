@@ -33,18 +33,9 @@ def test_shock_chain_initial_target_miss_handling(
     state, pool = world.state, world.state.projectiles
     player = world.players[0]
     player.pos = Vec2()
-    creatures = place_creatures(world, [make_creature_state(pos=Vec2(50.0, 0.0), active=False)])
+    place_creatures(world, [make_creature_state(pos=Vec2(50.0, 0.0), active=False)])
 
-    bonus_apply(
-        state,
-        player,
-        BonusId.SHOCK_CHAIN,
-        amount=1,
-        step_runtime=make_step_runtime(world),
-        origin=player.pos,
-        creatures=creatures,
-        players=world.players,
-    )
+    bonus_apply(make_step_runtime(world), player, BonusId.SHOCK_CHAIN, amount=1, origin=player.pos)
 
     assert state.shock_chain_links_left == expected_links_left
     assert sfx_ids(state.sfx_queue) == expected_sfx

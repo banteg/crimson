@@ -11,13 +11,7 @@ from tests.support.factories import make_step_runtime
 
 
 def _telekinetic_update(world: WorldState, *, dt: float) -> list[BonusPickupEvent]:
-    return bonus_telekinetic_update(
-        world.state,
-        world.players,
-        dt=dt,
-        step_runtime=make_step_runtime(world, dt=dt),
-        creatures=world.creatures.entries,
-    )
+    return bonus_telekinetic_update(make_step_runtime(world, dt=dt), dt)
 
 
 def test_telekinetic_picks_only_one_bonus_per_frame_across_players() -> None:

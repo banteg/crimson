@@ -23,7 +23,6 @@ from ..quests import quest_by_level
 from ..quests.custom import CustomQuest
 from ..quests.level import QuestLevel
 from ..quests.types import QuestDefinition
-from ..replay import ReplayRecorder
 from ..screens.actions import ShowQuestOutcome
 from ..sim.mode_updates import QuestSpawnState
 from ..sim.run_result import RunOutcome
@@ -62,8 +61,6 @@ class QuestMode(BaseGameplayMode):
         audio: AudioState | None = None,
         audio_rng: Crand,
     ) -> None:
-        # The base class asks whether runs rank while it sets up.
-        self._custom_quest: CustomQuest | None = None
         super().__init__(
             ctx,
             default_game_mode_id=GameMode.QUESTS,
@@ -72,36 +69,26 @@ class QuestMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
+        self._custom_quest: CustomQuest | None = None
         self._quest_def: QuestDefinition | None = None
         self._quest_level: QuestLevel | None = self.config.gameplay.quest_level or QuestLevel(1, 1)
         self._quest_highscore_random_tag: int = 0
         self._quest_spawn_state = QuestSpawnState()
-        self._replay_recorder: ReplayRecorder | None = None
 
     def open(self) -> None:
         super().open()
         self._prepare_selected_quest()
 
-    def close(self) -> None:
-        self._world_runtime.end_session()
-        super().close()
-
-    def _replay_checkpoint_elapsed_ms(self) -> float:
-        return float(self._quest_spawn_state.spawn_timeline_ms)
-
-
     def _finish_run(self, outcome: RunOutcome) -> None:
         self._close_run("completed" if outcome == RunOutcome.QUEST_COMPLETED else "failed")
 
     def select_custom_quest(self, quest: CustomQuest | None) -> None:
-        """The custom quest the next run plays, or None for a stock level: known before the screen opens, whose
-        world reset already takes its seed and player count from whether the run ranks."""
+        """Select the custom quest for the next run, or None to play a stock quest."""
         self._custom_quest = quest
 
     def _prepare_selected_quest(self) -> None:
         self._quest_def = None
         self._quest_highscore_random_tag = 0
-        self._reset_gameplay_frame_clock()
         if self._custom_quest is not None:
             self._quest_level = None
             self._prepare_run(custom_quest=self._custom_quest)
@@ -110,7 +97,8 @@ class QuestMode(BaseGameplayMode):
         self._quest_level = level
         quest = quest_by_level(level)
         if quest is None:
-            self._world_runtime.end_session()
+            self._world_runtime.reset(seed=self._run_reset_seed, player_count=self._runtime_player_count())
+            self._reset_live_ticks()
             return
         self._prepare_run(quest_level=quest.level)
 
@@ -126,7 +114,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_spawn_state = spawn_state
         self._quest_highscore_random_tag = prepared.quest_highscore_random_tag & UNI_NUM_MASK
         self._quest_def = prepared.quest
-        self._reset_gameplay_frame_clock()
 
     def _handle_input(self) -> None:
         if debug_enabled() and (not self._perk_menu.open):

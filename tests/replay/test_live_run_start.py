@@ -13,6 +13,7 @@ from crimson.quests.level import QuestLevel
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import TypoCharCommand
+from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
@@ -31,6 +32,7 @@ from tests.support.state_digest import session_state_bytes
 def test_live_start_and_first_ticks_match_complete_replay_state(
     mocker, make_mode_config, assets_dir, tmp_path, game_mode, mode_type, player_count, preserve_bugs,
 ) -> None:
+    builds = mocker.spy(WorldState, "build")
     mode = mode_type(
         ViewContext(assets_dir=assets_dir, preserve_bugs=preserve_bugs),
         config=make_mode_config(game_mode=game_mode, updates={"player_count": player_count, "detail_preset": 3, "violence_disabled": 1}),
@@ -41,6 +43,7 @@ def test_live_start_and_first_ticks_match_complete_replay_state(
     if isinstance(mode, QuestMode):
         mode.config.gameplay.quest_level = QuestLevel(1, 1)
     mode.open()
+    builds.assert_called_once()
     session = mode._sim_session
     recorder = mode._replay_recorder
     assert session is not None and recorder is not None

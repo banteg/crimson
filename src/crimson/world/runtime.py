@@ -34,7 +34,6 @@ class WorldRuntime:
     gameplay modes, the replay viewer) reads the world and session from here.
     """
 
-    world: WorldState
     session: DeterministicSession | None
     presentation: PresentationClock
 
@@ -51,10 +50,11 @@ class WorldRuntime:
         self.assets_dir = Path(assets_dir)
         self.preserve_bugs = bool(preserve_bugs)
         self.config = config
-        self.rtx_mode = rtx_mode
         self.rtx_debug = RtxDebugView.SHADED
 
-        self._reset_world(seed=0xBEEF, player_count=1)
+        self._world: WorldState | None = None
+        self.session = None
+        self.presentation = PresentationClock()
 
         render_resources = RenderResources(
             assets_dir=self.assets_dir,
@@ -75,13 +75,12 @@ class WorldRuntime:
 
     @property
     def rtx_mode(self) -> RtxRenderMode:
-        return self._rtx_mode
+        return self.render_resources.rtx_mode
 
     @rtx_mode.setter
     def rtx_mode(self, mode: RtxRenderMode) -> None:
-        self._rtx_mode = mode
-        resources = getattr(self, "render_resources", None)
-        if resources is not None and resources.rtx_mode is not mode:
+        resources = self.render_resources
+        if resources.rtx_mode is not mode:
             resources.rtx_mode = mode
             resources.smoke.reset()
             resources.debris.reset()
@@ -121,25 +120,30 @@ class WorldRuntime:
         seed: int = 0xBEEF,
         player_count: int = 1,
     ) -> None:
-        self._reset_world(seed=int(seed), player_count=int(player_count))
+        self._world = build_reset_world(seed=seed, player_count=player_count, preserve_bugs=self.preserve_bugs)
+        self.session = None
+        self.presentation = PresentationClock()
         self.render_resources.clear_pending_terrain_fx()
         self.render_resources.smoke.reset()
         self.render_resources.debris.reset()
         self.camera = Vec2(-1.0, -1.0)
 
-    def _reset_world(self, *, seed: int, player_count: int) -> None:
-        self.session = None
-        self.world = build_reset_world(
-            seed=seed,
-            player_count=player_count,
-            preserve_bugs=self.preserve_bugs,
-        )
-        self.presentation = PresentationClock()
+    @property
+    def world(self) -> WorldState:
+        """A standalone runtime may request an idle world before starting a session."""
+        if self._world is None:
+            count = self.config.gameplay.player_count if self.config is not None else 1
+            self._world = build_reset_world(seed=self.run_seed, player_count=count, preserve_bugs=self.preserve_bugs)
+        return self._world
+
+    @property
+    def run_seed(self) -> int:
+        return 0xBEEF if self._world is None else int(self._world.state.rng.state) & 0xFFFFFFFF
 
     def start_session(self, session: DeterministicSession) -> None:
         """Install a run: its world is the one stepped, drawn and read until the next reset."""
         self.session = session
-        self.world = session.world
+        self._world = session.world
         # A keyframe's restored pool numbers its spawns afresh (EffectPool.generation_for_slot).
         self.render_resources.smoke.reset()
         self.render_resources.debris.reset()
@@ -151,6 +155,8 @@ class WorldRuntime:
     def open_runtime(self) -> None:
         self.render_resources.config = self.config
         self.render_resources.open()
+        self.presentation = PresentationClock()
+        self.camera = Vec2(-1.0, -1.0)
         self.terrain_setup = None
 
     def apply_terrain_setup(self, setup: TerrainSetup) -> None:
