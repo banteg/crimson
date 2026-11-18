@@ -167,6 +167,7 @@ nav = [
   ]},
   { "Verification" = [
     { "Overview" = "verification/index.md" },
+    { "Gameplay performance" = "verification/gameplay-performance.md" },
     { "Differential testing" = [
       { "Overview" = "verification/differential-testing/index.md" },
       { "Native execution oracle" = "verification/differential-testing/native-oracle.md" },
