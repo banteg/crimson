@@ -223,9 +223,7 @@ def test_real_font_matches_isolated_glyph_atlas(raylib_context, assets_dir: Path
         # z and ~ sit above accented capitals with ink in their first row.
         # Erasing those neighbors must not change the drawn glyph at all.
         for image in (atlas, isolated):
-            encoded = io.BytesIO()
-            image.save(encoded, format="PNG")
-            texture = assets._load_texture_from_bytes(encoded.getvalue(), ".png")
+            texture = assets.upload_texture(image)
             font = SmallFontData(widths=list(entries["load/smallFnt.dat"]), texture=texture)
             try:
                 with texture_mode(target, scale_x=scale, scale_y=scale):
