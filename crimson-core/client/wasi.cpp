@@ -202,10 +202,11 @@ u32 w2c_wasi__snapshot__preview1_path_open(struct w2c_wasi__snapshot__preview1 *
     if ((opened.fd = open(host.c_str(), flags, 0644)) < 0)
       return errno_code();
 #ifndef __EMSCRIPTEN__
-    // Score appends include tail repair and short-write retries. Coordinate
-    // with Python's flock for the entire descriptor lifetime. Browser storage
+    // Score appends and replay number reservations coordinate with Python
+    // through flock for the entire descriptor lifetime. Browser storage
     // is already owned by a single tab's Web Lock (web/shell.html).
-    if (writes && !strcasecmp(relative.c_str(), "scores.jsonl")) {
+    if (writes && (!strcasecmp(relative.c_str(), "scores.jsonl") ||
+                   !strcasecmp(relative.c_str(), "replays/.last-number.lock"))) {
       int locked;
       do {
         locked = flock(opened.fd, LOCK_EX);

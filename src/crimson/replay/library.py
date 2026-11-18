@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from grim.atomic_write import atomic_write_bytes
+from grim.atomic_write import atomic_write_bytes, locked_append
 
 from ..game_modes import GameMode
 
@@ -35,12 +35,17 @@ def reserve_replay_number(replay_dir: Path) -> int:
     """The next replay number in `replay_dir`, reserved: one more than the last handed out or written."""
 
     replay_dir.mkdir(parents=True, exist_ok=True)
-    last_path = replay_dir / _LAST_NUMBER
-    last = int(last_path.read_text()) if last_path.exists() else 0
-    taken = [int(match[1]) for path in replay_dir.glob("*.crd") if (match := _NUMBERED.fullmatch(path.name))]
-    number = max([last, *taken]) + 1
-    atomic_write_bytes(last_path, str(number).encode())
-    return number
+    # A stable inode shared with the native writer. The counter itself is atomically replaced.
+    with locked_append(replay_dir / ".last-number.lock"):
+        last_path = replay_dir / _LAST_NUMBER
+        try:
+            last = int(last_path.read_text())
+        except FileNotFoundError:
+            last = 0
+        taken = (int(match[1]) for path in replay_dir.glob("*.crd") if (match := _NUMBERED.fullmatch(path.name)))
+        number = max(last, max(taken, default=0)) + 1
+        atomic_write_bytes(last_path, str(number).encode())
+        return number
 
 
 def numbered_replay(replay_dir: Path, number: int) -> Path | None:

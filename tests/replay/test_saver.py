@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+
 import msgspec
 
 from crimson.game_modes import GameMode
@@ -36,3 +39,18 @@ def test_a_deleted_replays_number_is_not_handed_out_again(tmp_path) -> None:
 
     assert reserve_replay_number(tmp_path) == number + 1
     assert numbered_replay(tmp_path, number) is None
+
+
+def test_concurrent_writers_reserve_distinct_replay_numbers(tmp_path) -> None:
+    (tmp_path / "7-rush.crd").touch()
+    writers = 8
+    start = Barrier(writers)
+
+    def reserve() -> int:
+        start.wait(timeout=10)
+        return reserve_replay_number(tmp_path)
+
+    with ThreadPoolExecutor(max_workers=writers) as pool:
+        reservations = [pool.submit(reserve) for _ in range(writers)]
+    assert sorted(reservation.result() for reservation in reservations) == list(range(8, 8 + writers))
+    assert reserve_replay_number(tmp_path) == 8 + writers
