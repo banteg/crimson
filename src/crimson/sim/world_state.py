@@ -260,14 +260,7 @@ class WorldState(msgspec.Struct):
         # makes the Telekinetic pickups.
         creature_count_before_render = len(self.creatures.iter_active())
         self.creatures.finalize_post_render_lifecycle()
-        pickups = bonus_telekinetic_update(
-            self.state,
-            self.players,
-            dt,
-            creatures=self.creatures.entries,
-            detail_preset=self.state.detail_preset,
-            step_runtime=step_runtime,
-        )
+        pickups = bonus_telekinetic_update(step_runtime, dt)
         if self.state.game_mode == GameMode.TUTORIAL:
             tutorial_timeline_update(self, dt_ms=frame_dt_ms)
         # The death check, then the level-up check. XP awarded by `bonus_update` kills
@@ -291,14 +284,7 @@ class WorldState(msgspec.Struct):
         if perk_menu_opened:
             perk_selection_open_choices(self.state, self.players, game_mode=self.state.game_mode)
         if self.state.run_active:
-            pickups += bonus_update(
-                self.state,
-                self.players,
-                dt,
-                creatures=self.creatures.entries,
-                detail_preset=self.state.detail_preset,
-                step_runtime=step_runtime,
-            )
+            pickups += bonus_update(step_runtime, dt)
         return step_runtime.build_events(
             hits=hits,
             secondary_hit_count=int(secondary_hit_count),

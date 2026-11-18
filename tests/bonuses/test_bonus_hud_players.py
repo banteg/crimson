@@ -12,8 +12,7 @@ from tests.support.factories import make_step_runtime
 
 
 def _apply(world: WorldState, player_index: int, bonus_id: BonusId) -> None:
-    bonus_apply(world.state, world.players[player_index], bonus_id, amount=10, origin=Vec2(),
-                creatures=world.creatures.entries, players=world.players, step_runtime=make_step_runtime(world))
+    bonus_apply(make_step_runtime(world), world.players[player_index], bonus_id, amount=10, origin=Vec2())
 
 
 @pytest.mark.parametrize("player_count", [1, 4])

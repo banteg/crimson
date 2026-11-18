@@ -157,9 +157,6 @@ class BaseGameplayMode:
         self.render_resources = self._world_runtime.render_resources
         self.audio_bridge = self._world_runtime.audio_bridge
 
-        self.camera = Vec2(-1.0, -1.0)
-        player_count = self._runtime_player_count()
-        self._world_runtime.reset(player_count=max(1, min(4, int(player_count))))
         preserve_bugs = self._world_runtime.preserve_bugs
         self._local_input.set_preserve_bugs(preserve_bugs)
         self._hud_state.preserve_bugs = preserve_bugs
@@ -346,7 +343,8 @@ class BaseGameplayMode:
 
     def bind_status(self, status: GameStatus) -> None:
         self._status_base = status
-        self.state.status = status
+        if self._sim_session is not None:
+            self.state.status = status
 
     def bind_screen_fade(self, fade: GameState | None) -> None:
         self._screen_fade = fade
@@ -637,9 +635,6 @@ class BaseGameplayMode:
         assert session is not None, "session elapsed requested without an active deterministic session"
         return float(session.elapsed_ms)
 
-    def _replay_checkpoint_elapsed_ms(self) -> float:
-        return float(self._world_runtime.presentation.elapsed_ms)
-
     def _record_replay_checkpoint(
         self,
         tick_index: int,
@@ -657,11 +652,13 @@ class BaseGameplayMode:
             return
         if self._replay_checkpoints_last_tick == int(tick_index):
             return
+        session = self._sim_session
+        assert session is not None
         self._replay_checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
                 world=self.world,
-                elapsed_ms=float(self._replay_checkpoint_elapsed_ms()),
+                elapsed_ms=session.run_elapsed_ms,
                 rng_callers_crc32=self._replay_rng_call_order.crc32(),
                 deaths=deaths,
                 events=events,
@@ -676,7 +673,7 @@ class BaseGameplayMode:
             return None
         if recorder.tick_index <= 0:
             # Nothing was simulated (e.g. a run left before its first tick).
-            self._reset_replay_capture_state(clear_recorder=True)
+            self._reset_replay_capture_state()
             return None
 
         self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
@@ -697,7 +694,7 @@ class BaseGameplayMode:
             if self._replay_checkpoints_enabled
             else None,
         )
-        self._reset_replay_capture_state(clear_recorder=True)
+        self._reset_replay_capture_state()
         if self.leaderboard is not None and self.ranked_run and not outcome_reasons(replay.run, replay.result):
             self.leaderboard.hold(replay)
         if self.replay_saver is not None:
@@ -729,7 +726,7 @@ class BaseGameplayMode:
     def _next_run_seed(self) -> int:
         """Native carries the session RNG into the next run; a ranked attempt draws a fresh seed."""
 
-        return ranked_run_seed() if self._ranked_attempt() else int(self.state.rng.state) & 0xFFFFFFFF
+        return ranked_run_seed() if self._ranked_attempt() else self._world_runtime.run_seed
 
     def update(self, dt: float) -> None:
         raise NotImplementedError(f"{self.__class__.__name__}.update() must be implemented by gameplay mode")
@@ -758,15 +755,9 @@ class BaseGameplayMode:
         if self.audio is not None:
             stop_music(self.audio.music)
 
-        player_count = self._runtime_player_count()
-        seed = self._next_run_seed()
-        self._run_reset_seed = seed
-
-        self._world_runtime.reset(seed=seed, player_count=max(1, min(4, int(player_count))))
+        self._run_reset_seed = self._next_run_seed()
         self._world_runtime.open_runtime()
-        self._local_input.reset(players=self.world.players)
-        self._reset_live_ticks()
-        self._reset_replay_capture_state(clear_recorder=False)
+        self._reset_replay_capture_state()
 
         self._ui_mouse = Vec2(float(canvas.width()) * 0.5, float(canvas.height()) * 0.5)
         # A new run: world entities fade in with the timeline until the HUD is fully in.
@@ -802,7 +793,7 @@ class BaseGameplayMode:
             custom_quest=custom_quest,
             player_count=self._runtime_player_count(),
             hardcore=hardcore,
-            preserve_bugs=self.state.preserve_bugs,
+            preserve_bugs=self.preserve_bugs,
             quest_fail_retry_count=self.quest_fail_retry_count,
             detail_preset=self.config.display.detail_preset,
             violence_disabled=self.config.display.violence_disabled,
@@ -822,9 +813,6 @@ class BaseGameplayMode:
         self.apply_terrain_setup(prepared.terrain)
         self._reset_live_ticks()
         self._replay_recorder = ReplayRecorder(spec)
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
-        self._replay_result = None
         return prepared
 
     def resume(self) -> None:
@@ -833,9 +821,10 @@ class BaseGameplayMode:
         self._enter_gameplay_timeline()
 
     def close(self) -> None:
+        self._world_runtime.end_session()
         self._game_over_ui.close()
         self._reset_live_ticks()
-        self._reset_replay_capture_state(clear_recorder=True)
+        self._reset_replay_capture_state()
         self._world_runtime.close_runtime()
 
     def take_action(self) -> ScreenAction | None:
@@ -980,9 +969,8 @@ class BaseGameplayMode:
         self._live_ticks = LiveTickSource()
         self._tick_clock.reset()
 
-    def _reset_replay_capture_state(self, *, clear_recorder: bool) -> None:
-        if clear_recorder:
-            self._replay_recorder = None
+    def _reset_replay_capture_state(self) -> None:
+        self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
         self._replay_result = None
@@ -1043,7 +1031,7 @@ class BaseGameplayMode:
                 if tick_index is not None and self._replay_checkpoints_enabled
                 else nullcontext()
             ):
-                step = step_replay_tick(session, tick)
+                step = step_replay_tick(session, tick, capture_smoke=self.render_resources.smoke_enabled)
             self._world_runtime.presentation.advance(step.dt_sim)
             plans.append(step.presentation)
             if tick_index is not None:

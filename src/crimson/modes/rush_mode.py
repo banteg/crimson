@@ -12,7 +12,6 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
-from ..replay import ReplayRecorder
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
@@ -40,16 +39,10 @@ class RushMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._replay_recorder: ReplayRecorder | None = None
 
     def open(self) -> None:
         super().open()
-        self._reset_gameplay_frame_clock()
         self._initialize_run(GameMode.RUSH)
-
-    def close(self) -> None:
-        self._world_runtime.end_session()
-        super().close()
 
     def _handle_input(self) -> None:
         if self._game_over_active:
@@ -60,10 +53,6 @@ class RushMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._request_pause()
             return
-
-    def _replay_checkpoint_elapsed_ms(self) -> float:
-        return self._session_elapsed_ms()
-
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))

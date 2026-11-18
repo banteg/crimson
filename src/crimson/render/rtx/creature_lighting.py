@@ -12,7 +12,8 @@ from grim.raylib_api import rl
 
 from .creature_shaders import CREATURE_FRAGMENT, CREATURE_VERTEX
 from .creature_translucency import load_ice_texture, load_thickness_texture
-from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
+from .light_uniforms import LIGHT_UNIFORMS, upload_material_lights
+from .material_lights import MaterialLight
 from .reflection_occlusion import ReflectionOcclusion
 
 
@@ -30,10 +31,10 @@ class CreatureLighting(msgspec.Struct):
         occlusion: ReflectionOcclusion | None = None, shadows: bool = True, ambient: float = 1.0,
     ) -> None:
         """Upload bounded emitters once per creature pass, before any body batches."""
-        self.light_count = min(len(lights), MAX_MATERIAL_LIGHTS)
         self.occlusion = occlusion
         self.active = bool(lights) or ambient != 1.0
         if not self.active:
+            self.light_count = 0
             return
         if self.shader is None:
             shader = rl.load_shader_from_memory(CREATURE_VERTEX, CREATURE_FRAGMENT)
@@ -42,19 +43,13 @@ class CreatureLighting(msgspec.Struct):
             self.shader = shader
             self.locations = {
                 name: int(rl.get_shader_location(shader, name))
-                for name in ("u_camera", "u_view_scale", "u_count", "u_pos", "u_rgb", "u_dir", "u_response", "u_thickness",
+                for name in (*LIGHT_UNIFORMS, "u_thickness",
                              "u_occlusion_tex", "u_occlusion_grid", "u_occlusion_cell_size", "u_dynamic_shadows", "u_ambient",
                              "u_ice", "u_ice_frozen")
             }
         shader = self.shader
         # Flush preceding draws before changing values on a possibly reused shader.
-        rl.rl_draw_render_batch_active()
-        for name, value in (("u_camera", camera), ("u_view_scale", view_scale)):
-            buffer = rl.ffi.new("float[2]", [value.x, value.y])
-            rl.set_shader_value(
-                shader, self.locations[name], rl.ffi.cast("void *", buffer),
-                rl.ShaderUniformDataType.SHADER_UNIFORM_VEC2,
-            )
+        self.light_count = upload_material_lights(shader, self.locations, lights, camera=camera, view_scale=view_scale)
         grid = occlusion.grid if occlusion is not None else None
         grid_values = [grid.origin.x, grid.origin.y, float(grid.columns), float(grid.rows)] if grid is not None and grid.occludes else [0.] * 4
         buffer = rl.ffi.new("float[4]", grid_values)
@@ -65,25 +60,6 @@ class CreatureLighting(msgspec.Struct):
                                 rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT)
         rl.set_shader_value(shader, self.locations["u_dynamic_shadows"], rl.ffi.new("int *", int(shadows)),
                             rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
-        lights = lights[:MAX_MATERIAL_LIGHTS]
-        rl.set_shader_value(
-            shader, self.locations["u_count"], rl.ffi.new("int *", len(lights)),
-            rl.ShaderUniformDataType.SHADER_UNIFORM_INT,
-        )
-        if not lights:
-            return
-        values = {
-            "u_pos": [v for light in lights for v in (light.pos.x, light.pos.y, light.radius, light.height)],
-            "u_rgb": [v for light in lights for v in (*light.rgb, light.ring_radius)],
-            "u_dir": [v for light in lights for v in (light.direction.x, light.direction.y, light.reflection_tail, light.length)],
-            "u_response": [v for light in lights for v in light.response],
-        }
-        for name, value in values.items():
-            buffer = rl.ffi.new("float[]", value)
-            rl.set_shader_value_v(
-                shader, self.locations[name], rl.ffi.cast("void *", buffer),
-                rl.ShaderUniformDataType.SHADER_UNIFORM_VEC4, len(lights),
-            )
 
     @contextmanager
     def scope(

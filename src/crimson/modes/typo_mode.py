@@ -65,10 +65,6 @@ class TypoShooterMode(BaseGameplayMode):
             typo_carry=session.carry,
         )
 
-    def close(self) -> None:
-        self._world_runtime.end_session()
-        super().close()
-
     def _runtime_player_count(self) -> int:
         return 1
 
@@ -113,10 +109,6 @@ class TypoShooterMode(BaseGameplayMode):
                     ch = ""
                 if ch:
                     self.enqueue_input_command(TypoCharCommand(player_index=0, ch=ch[0]))
-
-    def _replay_checkpoint_elapsed_ms(self) -> float:
-        return self._session_elapsed_ms()
-
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)

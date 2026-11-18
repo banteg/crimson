@@ -18,8 +18,12 @@ from .input_codec import pack_tick, unpack_tick_inputs
 from .types import REPLAY_TICK_DT, ReplayTick
 
 
-def step_replay_tick(session: DeterministicSession, tick: ReplayTick) -> DeterministicSessionTick:
-    return session.step_tick(dt=REPLAY_TICK_DT, inputs=unpack_tick_inputs(tick.inputs), commands=tick.commands)
+def step_replay_tick(
+    session: DeterministicSession, tick: ReplayTick, *, capture_smoke: bool = False,
+) -> DeterministicSessionTick:
+    return session.step_tick(
+        dt=REPLAY_TICK_DT, inputs=unpack_tick_inputs(tick.inputs), commands=tick.commands, capture_smoke=capture_smoke,
+    )
 
 
 class LiveTickSource:

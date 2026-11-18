@@ -22,7 +22,6 @@ from .selection import bonus_pick_random_type
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
-    from ..creatures.runtime import CreatureState
     from ..sim.world_state import WorldStepRuntime
 
 BONUS_POOL_SIZE = 16
@@ -411,19 +410,13 @@ class BonusPool:
             return None
         _spawn_bonus_burst(state, entry.pos, detail_preset, _TRY_SPAWN_ON_KILL_BURST_CALLERS)
         return entry
-    def update(
-        self,
-        dt: float,
-        *,
-        state: GameplayState,
-        players: list[PlayerState],
-        creatures: Sequence[CreatureState],
-        detail_preset: int = 5,
-        step_runtime: WorldStepRuntime,
-    ) -> list[BonusPickupEvent]:
+
+    def update(self, step_runtime: WorldStepRuntime, dt: float) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
 
+        state = step_runtime.world.state
+        players = step_runtime.world.players
         pickups: list[BonusPickupEvent] = []
         for entry in self._entries:
             if _bonus_entry_is_empty(entry):
@@ -452,17 +445,7 @@ class BonusPool:
             picked_now = False
             for player in players:
                 if _within_native_radius(entry.pos, player.pos, BONUS_PICKUP_RADIUS):
-                    bonus_apply(
-                        state,
-                        player,
-                        entry.bonus_id,
-                        amount=entry.amount,
-                        origin=entry.pos,
-                        creatures=creatures,
-                        players=players,
-                        detail_preset=int(detail_preset),
-                        step_runtime=step_runtime,
-                    )
+                    bonus_apply(step_runtime, player, entry.bonus_id, amount=entry.amount, origin=entry.pos)
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER
                     pickups.append(

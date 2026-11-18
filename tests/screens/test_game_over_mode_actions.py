@@ -127,7 +127,7 @@ def test_high_scores_over_a_game_over_draw_only_the_terrain(mocker, make_mode_co
     terrain_draw.assert_called_once_with()
 
 
-def test_rush_elapsed_helpers_use_authoritative_session_timer(make_mode_config, assets_dir) -> None:
+def test_rush_game_over_uses_session_timer(make_mode_config, assets_dir) -> None:
     mode = RushMode(ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.RUSH), audio_rng=Crand(0xBEEF))
     mode.open()
     session = mode._sim_session
@@ -139,4 +139,3 @@ def test_rush_elapsed_helpers_use_authoritative_session_timer(make_mode_config, 
     record = mode._game_over_record
     assert record is not None
     assert record.run_elapsed_ms == 9876
-    assert mode._replay_checkpoint_elapsed_ms() == 9876.0

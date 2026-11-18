@@ -15,6 +15,7 @@ import msgspec
 
 from crimson.msgspec_types import I32, U32, PlayerCount
 from crimson.quests.level import QuestLevel
+from grim.atomic_write import locked_append
 from grim.config import CrimsonConfig, HighScoreDateMode
 
 from ..cl_build import ClBuild
@@ -234,19 +235,7 @@ def append_highscore_records(base_dir: Path, records: list[HighScoreRecord]) -> 
     payload = b"".join(_ENCODER.encode(record) + b"\n" for record in records)
     for line in payload.splitlines():
         decode_highscore_record(line)
-    fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_APPEND | getattr(os, "O_BINARY", 0), 0o644)
-    windows_locked = False
-    try:
-        if os.name == "nt":
-            import msvcrt
-
-            os.lseek(fd, 0, os.SEEK_SET)
-            msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
-            windows_locked = True
-        else:
-            import fcntl
-
-            fcntl.flock(fd, fcntl.LOCK_EX)
+    with locked_append(path) as fd:
         size = os.fstat(fd).st_size
         # A torn last line would swallow this record's start.
         if size:
@@ -265,13 +254,6 @@ def append_highscore_records(base_dir: Path, records: list[HighScoreRecord]) -> 
             # The lock makes rollback safe; a retry must not duplicate a completed prefix.
             os.ftruncate(fd, size)
             raise
-    finally:
-        try:
-            if windows_locked:
-                os.lseek(fd, 0, os.SEEK_SET)
-                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
-        finally:
-            os.close(fd)
 
 
 def _passes_date_filter(entry: HighScoreRecord, date_mode: HighScoreDateMode, now: dt.date) -> bool:

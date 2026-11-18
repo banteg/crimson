@@ -513,16 +513,7 @@ def test_shock_chain_bonus_matches_native(oracle) -> None:
         oracle.call("bonus_apply", 0, entry_arg)
 
         state = world.state
-        bonus_apply(
-            state,
-            world.players[0],
-            BonusId.SHOCK_CHAIN,
-            amount=1,
-            step_runtime=_step_runtime(world, 0.0),
-            origin=origin,
-            creatures=world.creatures.entries,
-            players=world.players,
-        )
+        bonus_apply(_step_runtime(world, 0.0), world.players[0], BonusId.SHOCK_CHAIN, amount=1, origin=origin)
 
         case = f"shock chain seed=0x{seed:08x} origin=({origin.x!r}, {origin.y!r})"
         mismatches += compare_pool(
