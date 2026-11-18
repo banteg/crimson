@@ -52,7 +52,7 @@ def test_alternate_weapon_swap_preserves_perk_firing_and_charges_incoming_weapon
     # weapon despite its zero reload timer and the swap's added cooldown.
     assert player.weapon.weapon_id == WeaponId.PISTOL
     assert_float_close(player.weapon.ammo, 11.0 if preserve_bugs else 12.0)
-    assert state.survival_reward_fire_seen == preserve_bugs
+    assert state.survival_weapons.fire_seen == preserve_bugs
     assert player.experience == (expected_xp if preserve_bugs else 1000)
     assert_float_close(player.health, expected_health if preserve_bugs else 100.0)
 

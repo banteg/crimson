@@ -93,7 +93,7 @@ def player_take_damage(
         damage_scaled = x87_pc24_mul(damage_scaled, f32(0.5))
     spread_heat_damage = float(damage_scaled)
 
-    state.survival_reward_damage_seen = True
+    state.survival_weapons.record_damage()
 
     if float(player.shield_timer) > 0.0:
         return 0.0

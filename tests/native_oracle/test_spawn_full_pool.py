@@ -188,7 +188,7 @@ def test_survival_wave_batch_matches_native(oracle, elapsed_ms: int, free_slots:
     pool = _nearly_full_pool(oracle, free_slots)
     crand = CrtRand(97)
     world = WorldState(state=GameplayState(rng=crand), players=[PlayerState(index=0, pos=Vec2())], creatures=pool)
-    world.state.survival_shrinkifier_handout_enabled = False
+    world.state.survival_weapons.shrinkifier_enabled = False
     world.players[0].experience = 143_802_723
     spawn = SurvivalSpawnState(stage=10)
     oracle.call("survival_update")

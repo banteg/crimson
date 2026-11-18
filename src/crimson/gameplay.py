@@ -127,35 +127,11 @@ def survival_check_level_up(state: GameplayState, player: PlayerState) -> None:
         player.level += 1
 
 
-def survival_record_first_kill(state: GameplayState, *, pos: Vec2) -> None:
-    """Track Survival recent-death samples used by one-off weapon handout gating."""
-
-    recent_count = int(state.survival_first_kill_count)
-    if recent_count >= 6:
-        return
-
-    if recent_count < 3:
-        state.survival_first_kill_pos[recent_count] = Vec2(
-            f32(pos.x),
-            f32(pos.y),
-        )
-
-    recent_count += 1
-    state.survival_first_kill_count = int(recent_count)
-    if recent_count == 3:
-        state.survival_reward_fire_seen = False
-        state.survival_shrinkifier_handout_enabled = False
-
-
 def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence[PlayerState]) -> None:
     """Revoke temporary Survival handout weapons when guard id mismatches."""
 
-    guard_id = state.survival_reward_weapon_guard_id
     for player in players:
-        weapon_id = player.weapon.weapon_id
-        if weapon_id == WeaponId.BLADE_GUN and guard_id != WeaponId.BLADE_GUN:
-            _weapon_assign_player(player, WeaponId.PISTOL, state=state)
-        if weapon_id == WeaponId.SHRINKIFIER_5K and guard_id != WeaponId.SHRINKIFIER_5K:
+        if not state.survival_weapons.allows(player.weapon.weapon_id):
             _weapon_assign_player(player, WeaponId.PISTOL, state=state)
 
 

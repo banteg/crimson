@@ -24,7 +24,7 @@ def main():
         samples = []
         for repeat in range(4):
             world = make_world(seed=97)
-            world.state.survival_shrinkifier_handout_enabled = False
+            world.state.survival_weapons.shrinkifier_enabled = False
             world.players[0].experience = 143_802_723
             for creature in world.creatures.entries:
                 creature.active = True

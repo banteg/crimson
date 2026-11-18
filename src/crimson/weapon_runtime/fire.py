@@ -207,7 +207,7 @@ def fire_weapon(
 
     # Native writes this after the ready/input gates, but before charging the
     # reload-bypass perk and dispatching the shot.
-    state.survival_reward_fire_seen = True
+    state.survival_weapons.record_shot()
 
     if perk_fire_ready:
         if use_regression_bullets:
