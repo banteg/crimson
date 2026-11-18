@@ -67,3 +67,21 @@ def test_typo_runner_ignores_input_fire_flags() -> None:
     assert result.shots_fired == 0
     assert result.kills == baseline.result.kills
     assert result.players[0].experience == baseline.result.players[0].experience
+
+
+def test_historical_typo_recording_keeps_its_result_and_checkpoints() -> None:
+    from pathlib import Path
+
+    from crimson.replay.checkpoint_diff import compare_checkpoints
+    from crimson.replay.checkpoints import load_checkpoints_file
+    from crimson.replay.codec import load_replay_file
+    from crimson.replay.driver.playback_driver import PlaybackDriver
+
+    path = Path(__file__).resolve().parents[1] / "fixtures/replays/typo-144.crd"
+    replay = load_replay_file(path)
+    driver = PlaybackDriver(replay, warn_on_version_mismatch=False)
+    expected = load_checkpoints_file(path.with_suffix(".crd.chk")).checkpoints
+    actual = [driver.build_checkpoint(tick_result=driver.step_tick(tick)) for tick in range(len(replay.ticks))]
+    assert driver.build_result() == replay.result
+    comparison = compare_checkpoints(expected, actual)
+    assert comparison.ok, comparison.failure

@@ -17,11 +17,17 @@ counts no stock quest (it has no stage number), as Python's custom run leaves th
  
 --- a/decomp/1.9/crimsonland/game/quest_mode_update.cpp
 +++ b/decomp/1.9/crimsonland/game/quest_mode_update.cpp
-@@ -47,2 +47,3 @@
+@@ -47,6 +47,9 @@
          quest_transition_timer_ms = 0;
+-        int quest_index = quest_stage_major * 10 + quest_stage_minor;
+-        int play_count = game_status_blob.quest_play_counts[40 + quest_index];
+-        ++play_count;
+-        game_status_blob.quest_play_counts[40 + quest_index] = play_count;
 +        if (!portable_custom_quest) {
-         int quest_index = quest_stage_major * 10 + quest_stage_minor;
-@@ -51,2 +52,3 @@
-         game_status_blob.quest_play_counts[40 + quest_index] = play_count;
++            const int completed_index = 40 + quest_stage_major * 10 + quest_stage_minor;
++            auto &counts = game_status_blob.quest_play_counts;
++            // The legacy save has no completion counters for the last tier.
++            if (completed_index >= 0 && completed_index < (int)(sizeof counts / sizeof counts[0]))
++                ++counts[completed_index];
 +        }
      } else if (timer > 800 && timer <= 850) {

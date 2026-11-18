@@ -209,7 +209,8 @@ A single stream can be replayed with
 ### Whole-run gate
 
 ```sh
-uv run python crimson-core/checks/gate.py --out crimson-core/results/gate.json
+uv run python crimson-core/checks/gate.py --out crimson-core/results/gate.json \
+  --quest-outcomes crimson-core/results/quest-outcomes.md
 ```
 
 The gate feeds each bot stream and each supported recorded fixture to Python
@@ -231,7 +232,11 @@ checkpoint in the same pass. The [baseline](results/gate.json) records each
 stream's agreement, including the supported recorded fixtures (quests, Survival
 and Rush, with pad, keyboard-and-mouse and tank controls, one of them a
 Survival run whose dead player gets back up from a MediKit), and lists the
-unsupported Typ-o fixture. CI fails on any disagreement. A new divergence is reduced to its first differing state and
+Typ-o recording that requires the Python port. The [fixture manifest](../tests/fixtures/replays/manifest.json)
+declares which recordings must have one checkpoint per tick and which carry only a result. Missing files, missing ticks,
+unexpected exclusions and disagreement fail CI. The [quest outcome table](results/quest-outcomes.md) counts wins, deaths
+and incomplete runs for each stock level, build and bug policy. CI regenerates it when it merges the shards.
+A new divergence is reduced to its first differing state and
 decided against the original through Unicorn or its disassembly.
 
 ### Co-op rollback

@@ -1687,6 +1687,75 @@
       "claim_mismatches": null,
       "agree": true
     },
+    "coop-quest-variants-v33-rules2.crd": {
+      "preserve_bugs": false,
+      "ticks": 304,
+      "core_ticks": 304,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 304,
+      "python_error": null,
+      "result_tick": 304,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 273,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 273,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 1920,
+        "kills": 1,
+        "shots_fired": 144,
+        "shots_hit": 2,
+        "rng_state": 554300379,
+        "pending_perks": 0,
+        "quest_final_ms": -8080,
+        "players": [
+          {
+            "experience": 125,
+            "health": 100.0,
+            "most_used_weapon_id": 3
+          },
+          {
+            "experience": 0,
+            "health": 100.0,
+            "most_used_weapon_id": 3
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 1920,
+        "kills": 1,
+        "shots_fired": 144,
+        "shots_hit": 2,
+        "rng_state": 554300379,
+        "pending_perks": 0,
+        "quest_final_ms": -8080,
+        "players": [
+          {
+            "experience": 125,
+            "health": 100.0,
+            "most_used_weapon_id": 3
+          },
+          {
+            "experience": 0,
+            "health": 100.0,
+            "most_used_weapon_id": 3
+          }
+        ]
+      },
+      "checkpoints": null,
+      "claim_mismatches": [],
+      "agree": true
+    },
     "coop-rush-ranked.rsi": {
       "preserve_bugs": false,
       "ticks": 1247,
@@ -6502,6 +6571,69 @@
       "claim_mismatches": null,
       "agree": true
     },
+    "quest-3.10-hardcore-clear-rules2.crd": {
+      "preserve_bugs": false,
+      "ticks": 2485,
+      "core_ticks": 2485,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 2485,
+      "python_error": null,
+      "result_tick": 2485,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 2485,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 2485,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 37312,
+        "kills": 79,
+        "shots_fired": 220,
+        "shots_hit": 220,
+        "rng_state": 660156186,
+        "pending_perks": 0,
+        "quest_final_ms": 32912,
+        "players": [
+          {
+            "experience": 39906,
+            "health": 88.08586883544922,
+            "most_used_weapon_id": 11
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 37312,
+        "kills": 79,
+        "shots_fired": 220,
+        "shots_hit": 220,
+        "rng_state": 660156186,
+        "pending_perks": 0,
+        "quest_final_ms": 32912,
+        "players": [
+          {
+            "experience": 39906,
+            "health": 88.08586883544922,
+            "most_used_weapon_id": 11
+          }
+        ]
+      },
+      "checkpoints": {
+        "checked": 2485,
+        "ok": true,
+        "failure": null
+      },
+      "claim_mismatches": [],
+      "agree": true
+    },
     "quest-3.10-ranked.rsi": {
       "preserve_bugs": false,
       "ticks": 676,
@@ -7745,6 +7877,69 @@
       "claim_mismatches": [],
       "agree": true
     },
+    "quest-4.10-hardcore-clear-rules2.crd": {
+      "preserve_bugs": false,
+      "ticks": 5022,
+      "core_ticks": 5022,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 5022,
+      "python_error": null,
+      "result_tick": 5022,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 5020,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 5020,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 77872,
+        "kills": 127,
+        "shots_fired": 729,
+        "shots_hit": 402,
+        "rng_state": 3285760278,
+        "pending_perks": 0,
+        "quest_final_ms": 74622,
+        "players": [
+          {
+            "experience": 100154,
+            "health": 65.85540008544922,
+            "most_used_weapon_id": 20
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 77872,
+        "kills": 127,
+        "shots_fired": 729,
+        "shots_hit": 402,
+        "rng_state": 3285760278,
+        "pending_perks": 0,
+        "quest_final_ms": 74622,
+        "players": [
+          {
+            "experience": 100154,
+            "health": 65.85540008544922,
+            "most_used_weapon_id": 20
+          }
+        ]
+      },
+      "checkpoints": {
+        "checked": 5022,
+        "ok": true,
+        "failure": null
+      },
+      "claim_mismatches": [],
+      "agree": true
+    },
     "quest-4.10-ranked.rsi": {
       "preserve_bugs": false,
       "ticks": 1911,
@@ -8923,6 +9118,69 @@
       },
       "checkpoints": null,
       "claim_mismatches": null,
+      "agree": true
+    },
+    "quest-5.10-hardcore-clear-rules2.crd": {
+      "preserve_bugs": false,
+      "ticks": 7764,
+      "core_ticks": 7764,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 7764,
+      "python_error": null,
+      "result_tick": 7764,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 7764,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 7764,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 121776,
+        "kills": 3564,
+        "shots_fired": 4902,
+        "shots_hit": 4300,
+        "rng_state": 1003861603,
+        "pending_perks": 11,
+        "quest_final_ms": 105776,
+        "players": [
+          {
+            "experience": 2090033,
+            "health": 100.0,
+            "most_used_weapon_id": 14
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 121776,
+        "kills": 3564,
+        "shots_fired": 4902,
+        "shots_hit": 4300,
+        "rng_state": 1003861603,
+        "pending_perks": 11,
+        "quest_final_ms": 105776,
+        "players": [
+          {
+            "experience": 2090033,
+            "health": 100.0,
+            "most_used_weapon_id": 14
+          }
+        ]
+      },
+      "checkpoints": {
+        "checked": 7764,
+        "ok": true,
+        "failure": null
+      },
+      "claim_mismatches": [],
       "agree": true
     },
     "quest-5.10-hardcore-energizer-rules2.crd": {
@@ -13259,6 +13517,6 @@
   "unsupported": {
     "typo-144.crd": "The core supports one or two players in Rush, Survival or Quests"
   },
-  "agree": 219,
-  "total": 219
+  "agree": 223,
+  "total": 223
 }

@@ -52,7 +52,7 @@ The [1.4.0 freeware build](crimson-core/PORT.md#freeware-140) plays Career and S
 | [`crimson-re/`](crimson-re) | the matching, native link and debugging tools |
 | [`docs/`](docs/index.md) | game mechanics, file formats and the reverse engineering, published at [crimson.banteg.xyz](https://crimson.banteg.xyz/) |
 
-The two rebuilds keep each other honest. The Python port settles open questions against the original code running under an emulator, and CI requires the recovered source to play every recorded run exactly as the port does, under both the original rules and the fixed ones.
+For 1.9.93, tests run selected functions from the original executable under an emulator and compare their results with Python. The 1.9.8 mode restores documented rules differences from that binary and retains 1.9.93 arithmetic. CI plays a bot corpus under both bug policies and every verifier-supported recording under its recorded policy. It checks the results against Python, including tick checkpoints where available. See [the parity evidence](docs/rewrite/status.md) and [outcomes by quest](crimson-core/results/quest-outcomes.md).
 
 ## Decompilation
 

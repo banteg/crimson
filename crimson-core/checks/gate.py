@@ -13,7 +13,7 @@ and RNG caller order at each recorded tick) in the same pass.
 Each stream's config carries its bug policy (`preserve_bugs`), and Python runs
 under the same one: the bot corpus covers both, and recorded fixtures replay
 only when their rules version matches this build, so their claimed results apply.
-Historical recordings remain codec fixtures and are reported as unsupported here.
+The fixture manifest declares each run's checkpoint coverage and any explicit exclusion.
 """
 
 import argparse
@@ -23,18 +23,19 @@ import struct
 import subprocess
 import sys
 import tempfile
+from collections import Counter
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
 
 import msgspec
-from replay import QUEST_BYTES, custom_quest, encode
+from replay import QUEST_BYTES, UnsupportedCoreReplay, custom_quest, encode
 
 from crimson.cl_build import ClBuild
 from crimson.game_modes import GameMode
 from crimson.game_version import REPLAY_FORMAT_VERSION
-from crimson.quests.level import QuestLevel
+from crimson.quests.level import QUEST_COUNT, QuestLevel
 from crimson.quests.results import compute_quest_final_time
 from crimson.replay.checkpoint_diff import compare_checkpoints
 from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
@@ -252,19 +253,46 @@ class Stream:
         )
 
 
+def _require_fixture_files(directory: Path, pattern: str, expected: set[str]) -> None:
+    actual = {path.name for path in directory.glob(pattern)}
+    if actual != expected:
+        raise ValueError(f"{directory}: missing {sorted(expected - actual)}; unexpected {sorted(actual - expected)}")
+
+
 def load_streams(rsi_dir: Path, fixtures_dir: Path) -> tuple[list[Stream], dict[str, str]]:
+    manifest = json.loads((fixtures_dir / "manifest.json").read_text())
+    if not manifest or set(manifest.values()) - {"every_tick", "result_only", "python_only"}:
+        raise ValueError(f"{fixtures_dir}: invalid replay fixture manifest")
+    _require_fixture_files(fixtures_dir, "*.crd", set(manifest))
+    sidecars = {name + ".chk" for name, kind in manifest.items() if kind != "result_only"}
+    _require_fixture_files(fixtures_dir, "*.crd.chk", sidecars)
+
     streams = [Stream(path.name, path.read_bytes()) for path in sorted(rsi_dir.glob("*.rsi"))]
     unsupported = {}
-    for path in sorted(fixtures_dir.glob("*.crd")):
+    for name, kind in sorted(manifest.items()):
+        path = fixtures_dir / name
         try:
             replay = load_replay_file(path)
             require_playable_rules(replay)
+            checkpoints = ()
+            if kind != "result_only":
+                sidecar = load_checkpoints_file(fixtures_dir / (name + ".chk"))
+                checkpoints = tuple(sidecar.checkpoints)
+                if sidecar.sample_rate != 1 or len(checkpoints) != len(replay.ticks) or any(
+                    point.tick_index != i for i, point in enumerate(checkpoints)
+                ):
+                    raise ValueError("expected a checkpoint for every replay tick")
             payload = encode(replay, None)
-            sidecar = path.with_name(path.name + ".chk")
-            checkpoints = tuple(load_checkpoints_file(sidecar).checkpoints) if sidecar.exists() else ()
-            streams.append(Stream(path.name, payload, replay, checkpoints))
+        except UnsupportedCoreReplay as exc:
+            if kind != "python_only":
+                raise ValueError(f"{name}: lost core support: {exc}") from exc
+            unsupported[name] = str(exc)
+            continue
         except ValueError as exc:
-            unsupported[path.name] = str(exc)
+            raise ValueError(f"{name}: {exc}") from exc
+        if kind == "python_only":
+            raise ValueError(f"{name}: the core now supports this fixture; update the manifest")
+        streams.append(Stream(name, payload, replay, checkpoints))
     return streams, unsupported
 
 
@@ -496,12 +524,46 @@ def merge_reports(paths: list[Path], names: set[str], unsupported: dict[str, str
     }
 
 
+def quest_outcomes(streams: list[Stream], results: dict) -> str:
+    """Count agreeing stock quest streams by build, level, bug policy and actual outcome."""
+    counts: Counter[tuple[ClBuild, str, bool, str]] = Counter()
+    for stream in streams:
+        result = results.get(stream.name)
+        if result is None or not result["agree"]:
+            continue
+        spec = stream.run_spec()
+        if spec.quest_level is not None:
+            counts[spec.cl_build, spec.quest_level.text, spec.preserve_bugs, result["python_result"]["outcome"]] += 1
+
+    lines = [
+        "# Stock quest outcome coverage", "",
+        "Counts include agreeing recordings and bot streams, across normal and hardcore difficulty.",
+        "An incomplete run stopped before a terminal outcome. Zero means no stream covered that outcome.",
+    ]
+    for build in reversed(ClBuild):
+        lines.extend([
+            "", f"## {build.label}", "",
+            "| Quest | Fixed wins | Fixed deaths | Fixed incomplete | Original wins | Original deaths | Original incomplete |",
+            "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ])
+        for index in range(QUEST_COUNT):
+            level = QuestLevel.from_global_index(index).text
+            values = [
+                counts[build, level, bugs, outcome]
+                for bugs in (False, True)
+                for outcome in (RunOutcome.QUEST_COMPLETED, RunOutcome.DEATH, RunOutcome.INCOMPLETE)
+            ]
+            lines.append(f"| {level} | " + " | ".join(map(str, values)) + " |")
+    return "\n".join(lines) + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--native", type=Path, default=CORE / "build/native/core")
     parser.add_argument("--corpus", type=Path, default=CORE / "build/fixtures", help="Bot corpus from matrix.mjs")
     parser.add_argument("--fixtures", type=Path, default=ROOT / "tests/fixtures/replays")
     parser.add_argument("--out", type=Path, default=CORE / "build/gate.json")
+    parser.add_argument("--quest-outcomes", type=Path, help="Write a per-build, per-quest outcome table in Markdown")
     parser.add_argument("--only", action="append", default=[], help="Stream name to compare; repeat for several")
     parser.add_argument("--jobs", type=int, default=os.cpu_count())
     parser.add_argument("--shard", help="One of COUNT balanced shards, INDEX/COUNT (1-based)")
@@ -546,6 +608,8 @@ def main() -> None:
         }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2) + "\n")
+    if args.quest_outcomes:
+        args.quest_outcomes.write_text(quest_outcomes(streams, report["streams"]))
     for name, result in report["streams"].items():
         where = result["first_divergence"]["snapshot"] if result["first_divergence"] else "-"
         status = "agree" if result["agree"] else "DIFFER"

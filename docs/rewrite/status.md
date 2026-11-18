@@ -25,6 +25,12 @@ supported scope, not a claim that every native branch has been verified.
 | `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one or two players in Rush, Survival and Quests with every control scheme, on 1.9.93's rules and on the [1.9.8 rules](rules-1.9.8.md). Typ-o, Tutorial and three or four players are outside the verifier's scope; the service verifies one- and two-player runs. |
 | `tests/native_oracle/` | Ported functions agree bit for bit with the original code run under the [native execution oracle](../verification/differential-testing/native-oracle.md) on the tested cases. |
 
+For 1.9.93 the Unicorn probes execute the pinned original binary. The whole-run gate compares the Python port
+to the recovered core. For the 1.9.8 rules, address-keyed differences in the earlier binary establish the edition
+rules, while the gate checks that the implementations play those rules consistently using 1.9.93 arithmetic.
+The [quest outcome table](https://github.com/banteg/crimson/blob/master/crimson-core/results/quest-outcomes.md)
+shows where each bug policy reaches a win, a death or an unfinished run.
+
 `just check` runs the repository gates. Skipped display-dependent tests do not
 prove rendering parity, and startup smoke tests do not replace a full product
 walkthrough. A checkpoint samples only part of the state; use complete session
