@@ -33,7 +33,8 @@ vec4 groundVisibility(int group, vec2 world) {
         return visibilityAt(group, world, u_visibility_world, u_visibility_size, 0.);
     vec4 coarse = visibilityAt(group, world, u_coarse_visibility_world, u_coarse_visibility_size,
                                u_visibility_size.y * float(VISIBILITY_ROWS));
-    if (lanes == 15u) return coarse;
+    uint active_lanes = (1u << uint(min(4, u_spec_light_count - group * 4))) - 1u;
+    if (lanes == active_lanes) return coarse;
     vec4 fine = visibilityAt(group, world, u_visibility_world, u_visibility_size, 0.);
     return vec4((lanes & 1u) != 0u ? coarse.x : fine.x,
                 (lanes & 2u) != 0u ? coarse.y : fine.y,

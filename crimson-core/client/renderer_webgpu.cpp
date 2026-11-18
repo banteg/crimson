@@ -1026,12 +1026,14 @@ struct HostVertex {
 enum { BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
 Target beam_vis;
 
-// The stream space `groups` atlas draws take: each block at the stream's alignment.
-uint64_t visibility_uniforms(int groups) {
+// A mixed group can draw into both grids. Reserve both aligned uniform blocks per draw.
+uint64_t visibility_uniforms() {
   auto aligned = [](uint64_t size) {
     return (size + uniform_stream.alignment - 1) / uniform_stream.alignment * uniform_stream.alignment;
   };
-  return groups * (aligned(ground_beam_vis.frag->uniform_size) + aligned(ground_beam_vis.vert->uniform_size));
+  int groups = (light_count + 3) / 4;
+  int draws = groups * (beam_lights ? 2 : 1);
+  return draws * (aligned(ground_beam_vis.frag->uniform_size) + aligned(ground_beam_vis.vert->uniform_size));
 }
 
 // Prepare the color-independent masks before the world's HDR pass opens. A
@@ -1048,7 +1050,7 @@ void prepare_ground_visibility(int view_width, int view_height) {
   if (!v.count)
     return;
   int groups = (v.count + 3) / 4;
-  if (!fits(uniform_stream, visibility_uniforms(groups * (coarse_visibility_mask ? 2 : 1))))
+  if (!fits(uniform_stream, visibility_uniforms()))
     submit();
   int width = 4 * v.width, height = BEAM_VISIBILITY_ROWS * (v.height + coarse.height);
   if (beam_vis.width != width || beam_vis.height != height) {
@@ -1403,7 +1405,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   uint64_t uniforms = 8 * (ground_lit.frag->uniform_size + ground_lit.vert->uniform_size + 512);
   // A late scene or body grid rebuilds the atlas in the ground's draw, after its geometry is in the streams.
   if (rtx && world && material == HOST_PASS_GROUND && visibility_dirty)
-    uniforms += visibility_uniforms(MAX_LIGHTS / 4);
+    uniforms += visibility_uniforms();
   if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 8) || !fits(index_stream, geometry.index_bytes + 3) ||
       !fits(uniform_stream, uniforms))
     submit();
