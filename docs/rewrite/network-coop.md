@@ -1503,7 +1503,10 @@ the session.
 
 **The page.** The cover's Play co-op starts the game and opens a room as its
 host (player 1); the panel at the top of the page says how co-op stands and,
-while the host waits, shows the invite link with Copy link. The page's address
+while the host waits for the first guest, shows the invite link with Copy link.
+If the guest closes their tab, that seat remains reserved. Reopening the
+original tab with its session storage takes the seat back. The waiting host
+can choose New room for a fresh invite. The page's address
 then names the room, so a reload goes back to the seat. Opening the invite
 (`/play/?coop=<room>`) offers Join, which starts the game and takes the guest
 seat (player 2). The panel shows opening, waiting for the other player (and
@@ -1949,8 +1952,8 @@ the rates a minute over, so the combined rows count in neither.
 
    The transport's tests, `checks/coop.test.mjs` (CI's client job), run two
    pages against a fake room with the service's limits and fake peer
-   connections. `checks/coop_browser.mjs` plays the whole path locally (not in
-   CI): headless Chrome pages on two origins against `wrangler dev`, a room from
+   connections. The weekly Browser co-op workflow runs `checks/coop_browser.mjs`
+   with headless Chrome pages on two origins against a local `wrangler dev`. It tests a room from
    the host's Play co-op, the guest's Join from the invite, a guest reload and a
    host reload that the other page's game sees as `COOP_PARTNER_GONE`, a
    Survival run from the host's menus that both play with input (every

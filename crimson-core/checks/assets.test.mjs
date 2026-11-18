@@ -12,6 +12,48 @@ const between = (from, to) => {
   assert.ok(start >= 0 && end >= 0, `shell.html lost ${start < 0 ? from : to}`);
   return shell.slice(start, end);
 };
+test("the outbox retries newer formats or rules and permanently refuses retired ones", () => {
+  const code = between("  function readerBehind(", "  let uploading");
+  const behind = vm.runInNewContext(code + "\nreaderBehind");
+  assert.ok(behind(503, { code: "replay_reader_behind" }));
+  for (const reason of [
+    "unsupported replay format version: 35 (this build reads versions 30, 31, 34)",
+    "replay was recorded under rules 3; this service verifies rules 1 and 2",
+  ]) assert.ok(behind(422, { reason }));
+  for (const reason of [
+    "unsupported replay format version: 29 (this build reads versions 30, 31, 35)",
+    "replay was recorded under rules 2; this service verifies rules 1 and 3",
+    "not a ranked run",
+  ]) assert.equal(behind(422, { reason }), false);
+});
+
+test("a legacy refusal keeps its signed recording offline, then retries without its old reason", async () => {
+  const rejected = "/game/leaderboard/rejected";
+  const filename = "a".repeat(64) + ".json", permanent = "b".repeat(64) + ".json";
+  const signed = { name: "Ranger", signature: "original signature", replay: "original bytes" };
+  const old = JSON.stringify({ ...signed, reason: "replay was recorded under rules 2; this service verifies rules 1" });
+  const files = new Map([[`${rejected}/${filename}`, old], [`${rejected}/${permanent}`, '{"reason":"not ranked"}']]);
+  const calls = [], statuses = [503, 201];
+  const context = vm.createContext({
+    moved: false, fileBusy: false, storagePaused: false, Module: { ccall() {} }, AbortSignal, persist() {},
+    FS: {
+      readdir: (dir) => [...files.keys()].filter((file) => file.startsWith(dir + "/")).map((file) => file.split("/").pop()),
+      analyzePath: (file) => ({ exists: files.has(file) }), readFile: (file) => files.get(file), unlink: (file) => files.delete(file),
+    },
+    fetch: async (_, init) => {
+      calls.push(JSON.parse(init.body));
+      return Response.json({}, { status: statuses.shift() });
+    },
+  });
+  const upload = vm.runInContext(between("  const OUTBOX =", "  // A short note over") + "\nupload", context);
+  await upload();
+  assert.equal(files.get(`${rejected}/${filename}`), old);
+  await upload();
+  await upload();
+  assert.deepEqual(calls, [signed, signed]);
+  assert.deepEqual([...files.keys()], [`${rejected}/${permanent}`]);
+});
+
 const functions = between("  function paq(bytes)", "  // The files the player picks") +
   between("  // Downloads, with", "  async function hydrate()");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -88,7 +130,7 @@ const watchFunctions = [
   between("  const query =", "  // Inside another page"),
   between("  let watchTicks", "  const showFullscreen"),
   between("  shareFull.onclick =", "  fullscreen.onclick ="),
-  between("  const REPLAY_LIMIT =", "  var Module ="),
+  between("  const REPLAY_LIMIT =", "  const recovery ="),
 ].join("\n");
 
 // Module.ccall's arguments as the game gets them: one the call declares a "string" as text, any other as a number.
@@ -96,7 +138,7 @@ const ccallArgs = (types, args) => Array.from(args, (arg, i) => (types[i] === "s
 
 // The game takes a moment within `ticks` past `tick` (host/watch.inc, which
 // checks/game_watch.mjs holds to its bounds), or refuses it with `momentWhy`.
-function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]), watchWhy = "", momentWhy = "", runId = "run_1", tick = 240, ticks = 1000 } = {}) {
+function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]), watchWhy = "", momentWhy = "", stalledSummary = false, runId = "run_1", tick = 240, ticks = 1000 } = {}) {
   const notices = [];
   const calls = [];
   const shareStop = { value: "", addEventListener() {} };
@@ -108,6 +150,7 @@ function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]),
     location: { search, href: `https://example.invalid/play/${search}` },
     URL,
     URLSearchParams,
+    AbortSignal: stalledSummary ? { timeout: ms => (assert.ok(ms > 0 && ms <= 2000), AbortSignal.abort()) } : AbortSignal,
     Uint8Array,
     Date,
     setTimeout,
@@ -136,9 +179,11 @@ function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]),
         return "";
       },
     },
-    fetch: async (url) => {
-      if (String(url).startsWith("/api/runs/"))
+    fetch: async (url, options) => {
+      if (String(url).startsWith("/api/runs/")) {
+        if (stalledSummary && options?.signal.aborted) throw Error("summary timed out");
         return { ok: true, json: async () => ({ name: "Runner", title: "Survival", board: "survival", score: 100, rank: 1, accepted_at: 0 }) };
+      }
       return { ok: status === 200, status, arrayBuffer: async () => bytes.buffer };
     },
   });
@@ -184,6 +229,13 @@ test("watchLink opens a moment link, shares from current tick, and returns to fu
   assert.equal(b.replaced.at(-1), "?watch=run_1");
 });
 
+test("a missing summary by its deadline leaves the downloaded replay playable", async () => {
+  const b = watchBrowser("?watch=run_1", { stalledSummary: true });
+  await b.run();
+  assert.deepEqual(b.notices, []);
+  assert.deepEqual(b.calls, [["client_watch", ["replays/online/run_1.crd", "run_1", "", 0, 0, 0, 2000]]]);
+});
+
 for (const [label, search, expected] of [
   ["malformed run id", "?watch=../bad", "This replay link is malformed."],
   ["malformed tick", "?watch=run_1&tick=abc", "This link's moment is malformed."],
@@ -224,6 +276,7 @@ function questBrowser(search) {
     location: { search, href: `https://example.invalid/play/${search}` },
     URL,
     URLSearchParams,
+    AbortSignal,
     Uint8Array,
     setTimeout,
     tell: (text) => notices.push(text),

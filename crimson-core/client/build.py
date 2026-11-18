@@ -42,6 +42,7 @@ def write_asset_version(out):
     shell = (HERE / "web/shell.html").read_text().replace("/* ASSET_VERSION */ null", json.dumps(version))
     analytics = f"const PLAY_ANALYTICS = {(HERE / 'web/analytics.json').read_text().strip()};\n"
     shell = shell.replace("/* PLAY_ANALYTICS */", analytics + (HERE / "web/analytics.js").read_text())
+    shell = shell.replace("/* PLAY_BACKUP */", (HERE / "web/backup.js").read_text())
     shell = shell.replace("/* PLAY_COOP */", (HERE / "web/coop.js").read_text())
     (out / "shell.html").write_text(shell)
 
@@ -231,6 +232,9 @@ def main():
             str(out / "crimson"),
         ]
     subprocess.run(link, check=True)
+    # HTML decoding replaces literal NULs, including ones a JS minifier emits in regexes.
+    if web and b"\x00" in (out / "index.html").read_bytes():
+        raise ValueError("Minified client HTML contains a NUL byte")
     artifacts = [out / name for name in (("index.html", "index.js", "index.wasm") if web else ("crimson",))]
     write_manifest(out / "build.json", build_identity, artifacts)
     print(package(out, web) if args.package else out / ("index.html" if web else "crimson"))

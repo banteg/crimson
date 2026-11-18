@@ -41,6 +41,7 @@ what a modern release needs. All three fix the
 | [1.9.8 rules](rules-1.9.8.md) | The Play Game menu's 1.9.8 box, per run; `--build 1.9.8` on `crimson` and `crimson quest play`; 1.9.8's own bugs with `--preserve-bugs` | The Play Game menu's 1.9.8 box, per run, the Host's for an online co-op pair; links to custom quests from the site's 1.9.8 boards | The Play Game menu's 1.9.8 box, per run |
 | RTX lighting | Yes; HDR on macOS and Linux Wayland | With WebGPU; HDR where the browser shows WebGPU in HDR | Yes; HDR on macOS |
 | Resolution | Any, with borderless fullscreen | 1024x768, scaled to the page; fullscreen button | 1024x768, scaled to the window; Alt+Enter fullscreen |
+| Reduce camera shake | Options | Options | Options |
 | Keyboard and mouse | Yes | Yes | Yes |
 | Gamepads | PlayStation, Xbox and Switch Pro, twin-stick, every menu by pad | PlayStation, Xbox and Switch Pro, twin-stick, menus by pad; one pad at a time | PlayStation, Xbox and Switch Pro, twin-stick, menus by pad; one pad at a time |
 | Music, sound, addon tunes | Yes | Yes | Yes |
@@ -53,7 +54,7 @@ what a modern release needs. All three fix the
 
 | | Python port | Web | Native |
 | --- | --- | --- | --- |
-| Every run recorded | Yes, as `.crd` | Yes, in site storage, with no way to take it out | Yes, in the shared data directory |
+| Every run recorded | Yes, as `.crd` | Yes, download individual recordings or a profile backup from the start or quit screen | Yes, in the shared data directory |
 | Watch a replay | From the high scores and `crimson replay play`, seeking anywhere | From the high scores and a run's link, seeking anywhere | From the high scores and `--watch` links, seeking anywhere |
 | Verify or render a replay | `crimson replay verify`, `render` | No | No |
 | Runs checked against the verifier | By the gate and the server | Every client build, in CI | Every client build, in CI |
@@ -66,10 +67,8 @@ what a modern release needs. All three fix the
 | Uploads, offline queue | Yes | Yes | Yes |
 | Profile, signed in | Yes | Yes | Yes, in your browser |
 | Update scores on the high score screen | Yes | Yes | Yes |
-| Your key | `identity.key`; export and import with `crimson identity` | Site storage, no export; link an account to keep your runs | `identity.key` in the shared data directory |
+| Your key | `identity.key`; export and import with `crimson identity` | Stored in the browser. Export or restore the private key separately under Backups and recordings | `identity.key` in the shared data directory |
 
 ## Next
 
 - **Native releases**: a Windows host, signed builds and a release channel.
-- **Web replays**: a way to download your recordings and your key, which today
-  stay in the browser.
