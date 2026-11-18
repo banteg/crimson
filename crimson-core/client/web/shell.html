@@ -395,26 +395,40 @@
   // GOG release's (music as loose files) or the project's (music.paq), over
   // whatever a failed download left. The directory must then be complete.
   // Resolves "retry", or "picked" once a folder completes the directory.
-  function offer() {
+  function offer(damaged) {
     const buttons = document.getElementById("offer");
     buttons.hidden = false;
     progress.hidden = true;
     say("The game files did not download. Try again, or play from your own Crimsonland folder.");
     return new Promise((resolve) => {
-      document.getElementById("retry").onclick = () => {
+      const retry = document.getElementById("retry"), folder = document.getElementById("folder");
+      retry.onclick = () => {
         buttons.hidden = true;
         resolve("retry");
       };
-      document.getElementById("folder").onchange = async (event) => {
+      folder.onchange = async (event) => {
         const files = new Map(
           [...event.target.files].map((f) => [f.webkitRelativePath.split("/").slice(1).join("/").toLowerCase(), f]),
         );
+        retry.disabled = folder.disabled = true;
         try {
-          for (const [name, file] of files)
-            if (FILES.includes(name) || name === "grim.dll" || name.startsWith("music/")) store(name, new Uint8Array(await file.arrayBuffer()));
+          // A damaged music.paq would mask an otherwise complete loose GOG soundtrack.
+          for (const [name, { hash }] of damaged) {
+            FS.rename("/game/" + name, "/game/" + name + ".invalid-" + hash);
+            damaged.delete(name);
+          }
+          for (const [name, file] of files) {
+            if (!FILES.includes(name) && name !== "grim.dll" && !name.startsWith("music/")) continue;
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            if (FILES.includes(name)) paq(bytes);
+            store(name, bytes);
+          }
           if (files.has("music.paq")) await storeMusic(new Uint8Array(await files.get("music.paq").arrayBuffer()));
         } catch (error) {
           return say("Could not read that folder: " + (error.message ?? error));
+        } finally {
+          retry.disabled = folder.disabled = false;
+          folder.value = "";
         }
         // Nothing reaches IndexedDB until the directory is complete.
         const lacking = missing(), named = lacking.filter((name) => !name.startsWith("music/"));
@@ -457,9 +471,8 @@
     }));
   }
 
-  async function fetchMissing() {
+  async function fetchMissing(damaged) {
     const needed = missing();
-    const damaged = new Map();
     for (const name of ["crimson.paq", "music.paq", "sfx.paq"]) {
       if (!exists(name)) continue;
       const data = FS.readFile("/game/" + name), hash = await artHash(data);
@@ -498,12 +511,13 @@
       localStorage.removeItem("crimson.rtx");
     } catch {}
     for (;;) {
+      const damaged = new Map();
       try {
-        await fetchMissing();
+        await fetchMissing(damaged);
         break;
       } catch (error) {
         console.warn("game files:", error);
-        if ((await offer()) === "picked") break;
+        if ((await offer(damaged)) === "picked") break;
       }
     }
     hydrated = true;

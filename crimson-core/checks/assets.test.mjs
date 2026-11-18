@@ -54,22 +54,26 @@ test("a legacy refusal keeps its signed recording offline, then retries without 
   assert.deepEqual([...files.keys()], [`${rejected}/${permanent}`]);
 });
 
-const functions = between("  function paq(bytes)", "  // The files the player picks") +
-  between("  // Downloads, with", "  async function hydrate()");
+const functions = between("  function missing()", "  async function hydrate()");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const old = new TextEncoder().encode("old art"), current = new TextEncoder().encode("current art");
 
 function browser(installed, downloaded = current, unavailable = false) {
-  const files = new Map(installed ? [["/game/crimson.paq", installed]] : []);
+  const files = new Map([["/game/music.paq", current], ["/game/sfx.paq", current]]);
+  if (installed) files.set("/game/crimson.paq", installed);
+  const controls = { offer: {}, retry: {}, folder: {} }, messages = [];
   const requests = [];
   const context = vm.createContext({
     ART_VERSION: { current: digest(current), previous: [digest(old)], audio: { "music.paq": digest(current), "sfx.paq": digest(current) } },
     artHash: async (bytes) => digest(bytes), crypto: webcrypto, URL, Uint8Array, TextEncoder, TextDecoder,
     location: { href: "https://example.invalid/play/" }, base: "game/",
-    progress: { hidden: true, firstElementChild: { style: {} } }, say() {},
+    progress: { hidden: true, firstElementChild: { style: {} } }, say: (message) => messages.push(message),
+    document: { getElementById: (id) => controls[id] },
     console: { warn() {} }, exists: (name) => files.has("/game/" + name),
-    FS: { readFile: (name) => files.get(name) },
-    missing: () => files.has("/game/crimson.paq") ? [] : ["crimson.paq"],
+    FS: {
+      readFile: (name, options) => options?.encoding ? new TextDecoder().decode(files.get(name)) : files.get(name),
+      rename: (from, to) => { assert.ok(files.has(from)); files.set(to, files.get(from)); files.delete(from); },
+    },
     store: (name, bytes) => files.set("/game/" + name, bytes),
     fetch: async (url) => {
       requests.push(String(url));
@@ -83,9 +87,35 @@ function browser(installed, downloaded = current, unavailable = false) {
         } }) } };
     },
   });
-  vm.runInContext(functions + "\nglobalThis.update = fetchMissing;", context);
-  return { update: context.update, files, requests };
+  vm.runInContext(between("  const FILES =", "  const ART_VERSION") + between("  const MUSIC =", "  const base =") +
+    functions + "\nglobalThis.update = (damaged = new Map()) => fetchMissing(damaged); globalThis.offer = offer;", context);
+  return { update: context.update, offer: context.offer, files, requests, controls, messages };
 }
+
+test("offline folder recovery backs up broken packs and accepts a complete loose soundtrack", async () => {
+  const corrupt = Uint8Array.of(0), replacement = Uint8Array.of(112, 97, 113, 0);
+  const b = browser(current, current, true);
+  for (const name of ["music.paq", "sfx.paq"]) b.files.set("/game/" + name, corrupt);
+  const damaged = new Map();
+  await assert.rejects(b.update(damaged), /offline/);
+  const offered = b.offer(damaged);
+  const pick = (...entries) => b.controls.folder.onchange({ target: { files: entries.map(([name, bytes]) => ({
+    webkitRelativePath: "GOG/" + name, arrayBuffer: async () => bytes.buffer,
+  })) } });
+  await pick(["SFX.PAQ", corrupt]);
+  assert.match(b.messages.at(-1), /not a PAQ/);
+  await pick(["SFX.PAQ", replacement], ["music/game_tunes.txt", new TextEncoder().encode("snd_addGameTune track.ogg")],
+    ...["intro", "crimson_theme", "crimsonquest", "shortie_monk"].map(name => ["music/" + name + ".ogg", current]));
+  assert.match(b.messages.at(-1), /lacks 1 music files/);
+  await pick(["music/track.ogg", current]);
+  assert.equal(await offered, "picked");
+  for (const name of ["music.paq", "sfx.paq"]) assert.deepEqual(b.files.get("/game/" + name + ".invalid-" + digest(corrupt)), corrupt);
+  assert.equal(b.files.has("/game/music.paq"), false);
+  assert.deepEqual(b.files.get("/game/sfx.paq"), replacement);
+  const requests = b.requests.length;
+  await b.update();
+  assert.equal(b.requests.length, requests);
+});
 
 for (const [label, installed] of [["old", old], ["current", current], ["custom", Uint8Array.of(112, 97, 113, 0)], ["missing", null]]) {
   test(`browser upgrades ${label} artwork only when needed`, async () => {

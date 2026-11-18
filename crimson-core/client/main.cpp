@@ -1213,7 +1213,10 @@ void migrate_music_paq() {
 // game fetches them (src/crimson/assets_fetch.py), through a partial file.
 constexpr const char *ASSET_BASE_URL = "https://paq.crimson.banteg.xyz/v1.9.93/";
 bool download(const std::string &name, bool preserve_damaged) {
-  std::string path = game_directory + "/" + name, partial = path + ".XXXXXX";
+  std::string path;
+  if (!client_resolve(name, path))
+    return false;
+  std::string partial = path + ".XXXXXX";
   int fd = mkstemp(partial.data());
   if (fd < 0)
     return false;
