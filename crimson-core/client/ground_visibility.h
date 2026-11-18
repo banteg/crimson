@@ -3,6 +3,24 @@
 #include <array>
 #include <cmath>
 
+// Conservative world-space bounds for illumination and reflection. A beam's
+// support includes its emitting head and a ring reaches on either side.
+inline std::array<float, 4> ground_light_bounds(int i, const float *positions, const float *directions,
+                                                const float *colors, const float *responses, const float *shapes,
+                                                bool beams) {
+  const float *p = positions + i * 4, *d = directions + i * 4, *r = responses + i * 4;
+  float radius = std::max(std::max(1.f, p[2]), r[2]);
+  float half = std::max(0.f, d[3] * .5f);
+  if (beams) half = std::max(half, shapes[i * 4 + 3]);
+  float square = d[0] * d[0] + d[1] * d[1];
+  float ax = square > .0001f ? d[0] / std::sqrt(square) : 1.f;
+  float ay = square > .0001f ? d[1] / std::sqrt(square) : 0.f;
+  float ring = colors[i * 4 + 3];
+  float ex = radius + (ring > 0 ? ring : std::abs(ax) * half);
+  float ey = radius + (ring > 0 ? ring : std::abs(ay) * half);
+  return {p[0] - ex, p[1] - ey, p[0] + ex, p[1] + ey};
+}
+
 // A color-independent field; its resolution is in world units, not display
 // pixels. One texel of margin keeps visible receivers inside the sampling grid.
 struct GroundVisibility {
@@ -31,20 +49,12 @@ struct GroundVisibility {
     float lo_x = INFINITY, lo_y = INFINITY, hi_x = -INFINITY, hi_y = -INFINITY;
     bool any = false;
     for (int i = group * 4; i < std::min(count, group * 4 + 4); ++i) {
-      const float *p = positions + i * 4, *d = directions + i * 4, *r = responses + i * 4;
-      if (r[0] <= 0 && r[1] <= 0)
+      const float *response = responses + i * 4;
+      if (response[0] <= 0 && response[1] <= 0)
         continue;
-      float radius = std::max(std::max(1.f, p[2]), r[2]);
-      float half = std::max(0.f, d[3] * .5f);
-      if (beams) half = std::max(half, shapes[i * 4 + 3]);
-      float square = d[0] * d[0] + d[1] * d[1];
-      float ax = square > .0001f ? d[0] / std::sqrt(square) : 1.f;
-      float ay = square > .0001f ? d[1] / std::sqrt(square) : 0.f;
-      float ring = colors[i * 4 + 3];
-      float ex = radius + (ring > 0 ? ring : std::abs(ax) * half);
-      float ey = radius + (ring > 0 ? ring : std::abs(ay) * half);
-      lo_x = std::min(lo_x, p[0] - ex); lo_y = std::min(lo_y, p[1] - ey);
-      hi_x = std::max(hi_x, p[0] + ex); hi_y = std::max(hi_y, p[1] + ey);
+      auto source = ground_light_bounds(i, positions, directions, colors, responses, shapes, beams);
+      lo_x = std::min(lo_x, source[0]); lo_y = std::min(lo_y, source[1]);
+      hi_x = std::max(hi_x, source[2]); hi_y = std::max(hi_y, source[3]);
       any = true;
     }
     if (!any) return {0, 0, 0, 0};

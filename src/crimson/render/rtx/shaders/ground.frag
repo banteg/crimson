@@ -18,6 +18,8 @@ out vec4 finalColor;
 #ifndef BEAM_VISIBILITY_PASS
 uniform sampler2D u_surface_tex;  // R=specularity, G=wet amount at epoch, B=volume, A=substrate height
 uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a second blood tint
+uniform sampler2D u_light_tiles;
+uniform ivec2 u_light_tile_size; // tile grid dimensions, zero when no host supplied a mask
 uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass, ice
 #endif
 
@@ -197,12 +199,21 @@ void main() {
     vec3 direct_unshadowed = vec3(0.);
     vec3 direct_shadowed = vec3(0.);
 
+    uint light_mask = 0xffffffffu;
+    ivec2 tile = ivec2(floor(world / 32.));
+    if (all(greaterThanEqual(tile, ivec2(0))) && all(lessThan(tile, u_light_tile_size))) {
+        uvec4 bits = uvec4(round(texelFetch(u_light_tiles, tile, 0) * 255.));
+        light_mask = bits.x | (bits.y << 8u) | (bits.z << 16u) | (bits.w << 24u);
+    }
     for (int group = 0; group < MAX_SPEC_LIGHTS / 4; ++group) {
         if (group * 4 >= u_spec_light_count) break;
+        uint group_mask = (light_mask >> uint(group * 4)) & 15u;
+        if (group_mask == 0u) continue;
         vec4 visibility = groundVisibility(group, world);
         for (int lane = 0; lane < 4; ++lane) {
             int i = group * 4 + lane;
             if (i >= u_spec_light_count) break;
+            if ((group_mask & (1u << uint(lane))) == 0u) continue;
             vec4 sp_pos = u_spec_pos[i];
             vec4 sp_col = u_spec_color[i];
             vec4 sp_dir = u_spec_dir[i];

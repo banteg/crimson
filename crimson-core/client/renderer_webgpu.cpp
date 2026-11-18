@@ -8,7 +8,7 @@
 #include "../game/effect_vertices.h"
 #include "client.h"
 #include "device_states.h"
-#include "ground_visibility.h"
+#include "ground_tiles.h"
 #include "ice_surface.h"
 #include "wgsl_shaders.h"
 #include <emscripten.h>
@@ -108,7 +108,10 @@ WGPUCommandEncoder commands() {
   return encoder;
 }
 
+bool ground_tiles_sampled;
+
 void submit() {
+  ground_tiles_sampled = false;
   end_pass();
   if (encoder) {
     WGPUCommandBuffer buffer = wgpuCommandEncoderFinish(encoder, nullptr);
@@ -212,6 +215,8 @@ enum { MAX_LIGHTS = 32 };
 int material, creature_type;
 float scene_camera[2];
 GroundVisibility ground_visibility;
+GroundTiles ground_tiles;
+Target ground_tile_texture;
 bool visibility_dirty = true;
 float light_pos[MAX_LIGHTS * 4], light_rgb[MAX_LIGHTS * 4], light_dir[MAX_LIGHTS * 4], light_response[MAX_LIGHTS * 4];
 int light_count;
@@ -1079,6 +1084,27 @@ void prepare_ground_visibility(int view_width, int view_height) {
   end_pass();
 }
 
+void upload_ground_tiles() {
+  ground_tiles.prepare(ground_size[0], ground_size[1], light_count, light_pos, ground_dir, light_rgb,
+                       light_response, beam_shape, beam_lights);
+  if (!ground_tiles.width)
+    return;
+  if (ground_tiles_sampled)
+    submit(); // Earlier encoded draws must read the previous masks.
+  Target &t = ground_tile_texture;
+  if (t.width != ground_tiles.width || t.height != ground_tiles.height) {
+    release(t);
+    t.width = ground_tiles.width;
+    t.height = ground_tiles.height;
+    allocate(t);
+  }
+  WGPUTexelCopyTextureInfo dst = WGPU_TEXEL_COPY_TEXTURE_INFO_INIT;
+  dst.texture = t.texture;
+  WGPUTexelCopyBufferLayout layout = {0, (uint32_t)t.width * 4, (uint32_t)t.height};
+  WGPUExtent3D extent = {(uint32_t)t.width, (uint32_t)t.height, 1};
+  wgpuQueueWriteTexture(queue, &dst, ground_tiles.masks.data(), ground_tiles.masks.size(), &layout, &extent);
+}
+
 // Full-resolution material shading samples one coarse RGBA group per four
 // lights. No body-grid texture or shadow walk is bound to this program.
 bool ground_draw(const Geometry &geometry) {
@@ -1089,11 +1115,14 @@ bool ground_draw(const Geometry &geometry) {
   Target &t = drawing_target(current_target);
   if (visibility_dirty)
     prepare_ground_visibility(t.logical_width, t.logical_height);
+  upload_ground_tiles();
   pass_into(t);
   Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
   fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", scene_debug < DEBUG_SMOKE ? scene_debug : 0);
   fragment.i("u_debug_display", 1);
+  const int tile_size[] = {ground_tiles.width, ground_tiles.height};
+  fragment.i2("u_light_tile_size", tile_size);
   fragment.i("u_spec_light_count", light_count).i("u_has_beam_lights", beam_lights).set("u_beam_gain", beam_gain, 8);
   fragment.set("u_visibility_world", ground_visibility.rect, 16);
   fragment.v2("u_visibility_size", (float)std::max(1, ground_visibility.width), (float)std::max(1, ground_visibility.height));
@@ -1104,7 +1133,10 @@ bool ground_draw(const Geometry &geometry) {
                                                     {"u_surface_tex", g.surface.view, linear_clamp()},
                                                     {"u_material_tex", g.coverage.view, linear_clamp()},
                                                     {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
-                                                     linear_clamp()}});
+                                                     linear_clamp()},
+                                                    {"u_light_tiles", ground_tiles.width ? ground_tile_texture.view : blank_view,
+                                                     nearest_clamp()}});
+  ground_tiles_sampled |= ground_tiles.width > 0;
   Output o = device_output(t, geometry.topology);
   o.blend = false; // the ground is opaque
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_lit, o));
@@ -1168,6 +1200,7 @@ bool wgpu_renderer_set_rtx(bool enabled) {
   release_smoke();
   release(heat_trail);
   release(beam_vis);
+  release(ground_tile_texture);
   heat_seconds = -1;
   release(pressured);
   release(discarded);
