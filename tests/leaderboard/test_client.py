@@ -273,6 +273,34 @@ def test_quitting_on_the_results_queues_the_held_run(tmp_path, replay) -> None:
     assert json.loads(queued.read_bytes())["name"] == "banteg"
 
 
+def test_release_returns_while_the_local_save_is_in_progress(tmp_path, replay, monkeypatch) -> None:
+    from threading import Event
+
+    from crimson.leaderboard import client
+
+    started, resume = Event(), Event()
+    encode = client.encode_replay_payload
+
+    def slow_encode(run):
+        started.set()
+        assert resume.wait(timeout=5)
+        return encode(run)
+
+    monkeypatch.setattr(client, "encode_replay_payload", slow_encode)
+    leaderboard = Leaderboard(tmp_path, url="")
+    leaderboard.hold(replay)
+    try:
+        leaderboard.release("first name")
+        assert started.wait(timeout=2)
+        second_run = msgspec.structs.replace(replay.run, seed=replay.run.seed ^ 1)
+        leaderboard.hold(msgspec.structs.replace(replay, run=second_run))
+    finally:
+        resume.set()
+        leaderboard.close("second name")
+    queued = (tmp_path / "leaderboard" / "outbox").glob("*.json")
+    assert sorted(json.loads(path.read_bytes())["name"] for path in queued) == ["first name", "second name"]
+
+
 def test_released_run_survives_quit_while_a_board_request_is_running(tmp_path, replay) -> None:
     from threading import Event
 
