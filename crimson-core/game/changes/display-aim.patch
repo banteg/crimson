@@ -1,0 +1,29 @@
+Draw the local mouse reticle into its own texture, centered so even a reticle at a screen edge is complete.
+The direction arrows and other players still draw into the scene.
+--- a/decomp/1.9/crimsonland/game/ui_render_aim_indicators.cpp
++++ b/decomp/1.9/crimsonland/game/ui_render_aim_indicators.cpp
+@@ -87,1 +87,2 @@
++        int center = game_mouse_aim_begin(current_player_index, radius);
+         grim_interface_ptr->grim_set_uv(0.5f, 0.5f, 0.5f, 0.5f);
+@@ -93,2 +94,3 @@
++        if (center) aim_screen = aim_vec2_t(center, center);
+         grim_interface_ptr->grim_draw_circle_filled(
+             aim_screen.x, aim_screen.y, radius);
+@@ -102,6 +104,2 @@
+         grim_interface_ptr->grim_set_color(1.0f, 0.7f, 0.1f, 0.8f);
+-        aim_screen =
+-            camera_offset
+-            + *(aim_vec2_t *)&player_state_table[current_player_index]
+-                   .aim_x;
+         ui_draw_clock_gauge_at(
+@@ -110,4 +108,5 @@
+             player_state_table[current_player_index].reload_timer
+                 / player_state_table[current_player_index]
+                       .reload_timer_max);
++        if (center) game_mouse_aim_end();
+         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
+@@ -182,1 +181,4 @@
++        int center = game_mouse_aim_begin(current_player_index, 0.0f);
++        if (center) enhancement_position = aim_vec2_t(center, center);
+         ui_render_aim_enhancement((float *)&enhancement_position);
++        if (center) game_mouse_aim_end();

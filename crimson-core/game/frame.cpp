@@ -10,6 +10,8 @@
 #include "grim_joystick_state.h"
 #include "grim_timing.h"
 #include "host_input.h"
+#include "host_abi.h"
+#include <algorithm>
 
 class GrimInputProvider {
 public:
@@ -70,6 +72,10 @@ static void game_suspend();
 
 #define GAME_EXPORT(name) extern "C" __attribute__((export_name(#name)))
 
+extern "C" int game_mouse_aim_extent();
+static float display_mouse_x, display_mouse_y;
+static void place_mouse_aim() { host_mouse_aim(display_mouse_x, display_mouse_y, game_mouse_aim_extent()); }
+
 static bool cursor_hidden;
 // A scripted run keeps the cursor out of its frames until its script moves it
 // (game/changes/scripted-cursor.patch).
@@ -124,8 +130,10 @@ GAME_EXPORT(game_frame) int game_frame() {
   // last frame again for one that does not (host/session.inc).
   int due = game_live_frame();
   game_input()->presses = {};
-  if (due == 0)
+  if (due == 0) {
+    place_mouse_aim();
     return 1;
+  }
   if (!grim_frame_callback()) {
     quit_posted = true;
     game_live_quit();
@@ -133,8 +141,10 @@ GAME_EXPORT(game_frame) int game_frame() {
   }
   if (grim_input_provider)
     grim_input_provider->update();
-  if (!grim_render_disabled)
+  if (!grim_render_disabled) {
+    place_mouse_aim();
     grim_d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
+  }
   return 1;
 }
 
@@ -210,6 +220,13 @@ GAME_EXPORT(game_cursor_y) float game_cursor_y() { return ui_mouse_y; }
 
 // WM_MOUSEMOVE: the window cursor, used while Grim reads the system cursor.
 GAME_EXPORT(game_mouse_move) void game_mouse_move(float x, float y) {
+  // Preview exactly where this pass's motion would take the game cursor. A
+  // zero-tick pass never enters game_frame_update to apply that motion.
+  if (!away) {
+    float scale = config_blob.mouse_sensitivity * 2.0f;
+    display_mouse_x = std::clamp(ui_mouse_x + game_input()->mouse_dx * scale, 0.0f, (float)config_blob.screen_width - 1);
+    display_mouse_y = std::clamp(ui_mouse_y + game_input()->mouse_dy * scale, 0.0f, (float)config_blob.screen_height - 1);
+  }
   if (grim_config_values[13]) {
     grim_mouse_x_cached = x;
     grim_mouse_y_cached = y;

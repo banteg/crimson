@@ -36,6 +36,7 @@
 struct w2c_host {};
 struct w2c_wasi__snapshot__preview1 {};
 float render_size = 2;
+MouseAim mouse_aim;
 
 namespace {
 
@@ -474,6 +475,7 @@ static void show_frame(int width, int height) {
   renderer_frame_end();
   renderer_resume();
 }
+void w2c_host_mouse_aim(struct w2c_host *, f32 x, f32 y, u32 half_size) { mouse_aim = {x, y, (float)half_size}; }
 void w2c_host_present(struct w2c_host *) {
   int width, height;
   SDL_GetWindowSizeInPixels(window, &width, &height);
@@ -980,6 +982,8 @@ bool start_game() {
   bool running = w2c_game_game_start(&game);
   // A scripted run's cursor shows once its script moves it.
   w2c_game_game_hide_cursor(&game, scripted);
+  const char *display_aim = getenv("CRIMSON_DISPLAY_AIM");
+  w2c_game_game_display_aim(&game, !scripted && (!display_aim || strcmp(display_aim, "0") != 0));
   // A link to a run, fetched meanwhile, skips the intro (game_watch_awaited).
 #ifdef __EMSCRIPTEN__
   if (running && EM_ASM_INT({ return Module.watchAwaited?.() ? 1 : 0; }))

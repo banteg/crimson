@@ -10,6 +10,7 @@
 alignas(16) u8 memory[1024 * 1024];
 u8 *client_memory() { return memory; }
 float render_size = 2;
+MouseAim mouse_aim;
 [[noreturn]] void client_fatal(const char *message) {
   fprintf(stderr, "%s\n", message);
   abort();
@@ -1020,6 +1021,51 @@ void check_ground_visibility() {
 }
 #endif
 
+// A ring drawn once follows two different display samples over the same scene.
+// Its half-transparent red covers the blue scene; the additive green glow does not.
+void check_display_aim(int width, int height) {
+  Viewport v = renderer_viewport(width, height);
+  auto pixel = [&](int x, int y) {
+    u8 rgb[4];
+    glReadPixels(v.x + x * v.width / v.back_width, height - 1 - v.y - y * v.height / v.back_height,
+                 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgb);
+    return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+  };
+  w2c_host_clear(nullptr, 0xff0000ff);
+  w2c_host_texture_create(nullptr, HOST_MOUSE_AIM_TEXTURE, 96, 96, TARGET_RENDER);
+  w2c_host_set_render_target(nullptr, HOST_MOUSE_AIM_TEXTURE);
+  w2c_host_clear(nullptr, 0);
+  w2c_host_set_texture(nullptr, 0, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLOROP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_COLORARG2, 0);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAOP, 3);
+  w2c_host_texture_stage_state(nullptr, 0, TSS_ALPHAARG2, 0);
+  w2c_host_render_state(nullptr, RS_ALPHABLENDENABLE, 1);
+  w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+  const float ring[] = {48, 48, 8, 16, 0, 0, 0};
+  memcpy(memory, ring, sizeof ring);
+  w2c_host_circle(nullptr, 0, 0x80ff0000);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 2);
+  rectangle(45, 45, 52, 52, 0x8000ff00);
+  w2c_host_set_render_target(nullptr, 0);
+
+  for (int x : {300, 650}) {
+    mouse_aim = {(float)x, 180, 48};
+    renderer_present(width, height);
+    assert(pixel(x, 180) == 0x0080ff);
+    assert(pixel(x + 12, 180) == 0x80007f);
+    assert(pixel(x == 300 ? 650 : 300, 180) == 0x0000ff);
+    renderer_resume();
+  }
+  mouse_aim = {};
+  renderer_present(width, height);
+  assert(pixel(650, 180) == 0x0000ff);
+  renderer_resume();
+  w2c_host_texture_release(nullptr, HOST_MOUSE_AIM_TEXTURE);
+  w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
+}
+
 int main() {
   assert(SDL_Init(SDL_INIT_VIDEO));
 #ifdef __EMSCRIPTEN__
@@ -1229,6 +1275,7 @@ int main() {
     assert(screen[i + 2] == (inside && !red ? 255 : 0));
   }
   renderer_resume();
+  check_display_aim(present_w, present_h);
   // Presentation still applies the gamma ramp, while captures stay pre-gamma.
   w2c_host_clear(nullptr, 0xff204080);
   for (int i = 0; i < 256; ++i) {

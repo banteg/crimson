@@ -113,6 +113,7 @@ if (silent) {
 const requests = []; // the host's leaderboard requests (game/leaderboard_requests.h)
 const run = bootGame(gameWasm, directory, seedOverride, { leaderboard: ranked, requests });
 const { game } = run;
+game.game_display_aim(1);
 game.game_render_mode(0);
 const clientVersion = "0.14.2+build.000000000000000000000000";
 Buffer.from(game.memory.buffer).write(`${clientVersion}\0`, game.game_recorder_version(), "ascii");
@@ -153,6 +154,7 @@ function frame(dt, { cursor, buttons = 0, keys = [], taps = [], chars = "", pad 
     input.setUint8(INPUT.keys + key, keys.includes(key) || held.has(key) ? 0x80 : 0);
   input.setInt32(INPUT.motion_x, Math.round(game.game_motion_x(cursor[0])), true);
   input.setInt32(INPUT.motion_y, Math.round(game.game_motion_y(cursor[1])), true);
+  game.game_mouse_move(...cursor);
   input.setUint8(INPUT.buttons, buttons & 1 ? 0x80 : 0);
   const { connected = padded, left = [0, 0], right = [0, 0], press = [], hat = 0xffffffff } = pad;
   input.setUint8(INPUT.pad_connected, connected ? 1 : 0);

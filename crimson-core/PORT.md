@@ -197,8 +197,16 @@ recorder builds it ([`local_input.py`](../src/crimson/local_input.py)) and is
 recorded before the tick runs. A fire press delivered between frames survives
 until a tick records it, even if the button has already been released. Such a
 tap fires for one tick. The menus keep their two-frame touchpad click.
-A pass that covers no tick draws nothing, and
-the host shows the last frame again. Runs are single-player Survival, Rush and
+On a pass with no tick the host presents the previous scene.
+
+In live absolute-mouse play the native and web clients draw the local spread
+ring, reload clock and crosshair into a separate texture on each visible tick.
+Every display frame places that texture at the latest mouse sample. Shot
+direction, replays and the partner's aim still come from recorded ticks.
+To compare at the same refresh rate, use `?displayAim=0` in the browser or set
+`CRIMSON_DISPLAY_AIM=0` in the native client.
+
+Runs are single-player Survival, Rush and
 Quests at 1024x768, the resolution the verifier simulates; the rest play as the
 original. Every run the menus start plays the build the Play Game panel's
 **1.9.8** box picks, left of Ranked ([`host/ranked.inc`](host/ranked.inc)):

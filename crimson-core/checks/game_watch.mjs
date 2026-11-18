@@ -30,6 +30,7 @@ let passes = [], sceneLights = -1, sceneTime = 0, lastWorldLights = -1;
 const run = bootGame(gameWasm, directory, 1, {
   rtx: true,
   onHost(name, args) {
+    if (name === "mouse_aim" && args[2]) throw Error("replay drew a live mouse reticle");
     if (name === "render_pass") passes.push(args[0]);
     if (name === "scene") {
       sceneLights = args[2];
@@ -39,6 +40,7 @@ const run = bootGame(gameWasm, directory, 1, {
   },
 });
 const { game } = run;
+game.game_display_aim(1);
 game.game_render_mode(1);
 const HIGHSCORES = 14;
 // DirectInput scancodes: Escape, 1, [, ], period, Space, Page Down.
