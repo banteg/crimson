@@ -81,7 +81,8 @@ void rtx_smoke_spawned(int index);
 void rtx_smoke_flush();
 void rtx_smoke_puff(const struct effect_entry_t *entry);
 void rtx_smoke_soot(int index);
-void rtx_smoke_muzzle(float heading);
+void rtx_smoke_muzzle(float heading, int player);
+void rtx_muzzle_flash_offset(int player, float *x, float *y);
 void rtx_smoke_rocket(float flow_x, float flow_y, float vx, float vy);
 void rtx_smoke_nuke();
 void rtx_smoke_flame();
@@ -129,7 +130,7 @@ void rtx_beam_body(float origin_x, float origin_y, float head_x, float head_y, f
 void rtx_beam_head(float center_x, float center_y, float rotation, float effect_scale, bool fire);
 // A smoke source for the scope it opens in (a gun's fire, a rocket's sprite).
 struct RtxSmokeMuzzle {
-  explicit RtxSmokeMuzzle(float heading) { rtx_smoke_muzzle(heading); }
+  explicit RtxSmokeMuzzle(float heading, int player = -1) { rtx_smoke_muzzle(heading, player); }
   ~RtxSmokeMuzzle() { rtx_smoke_source_end(); }
 };
 struct RtxSmokeRocket {

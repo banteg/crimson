@@ -12,6 +12,7 @@
 #include "crimsonland_gameplay.h"
 #include "crimsonland_config_owner.h"
 #include "render_passes.h"
+#include "rtx_barrel.h"
 #include "grim2d_cpp.h"
 #include "host_abi.h"
 #include <algorithm>
@@ -311,11 +312,10 @@ void player_sources(const player_state_t &player, int number) {
   int weapon = player.weapon_id;
   bool energetic = weapon == 9 || weapon == 10 || weapon == 11 || weapon == 14 || weapon == 23 || weapon == 28 ||
                    player.fire_bullets_timer > 0; // the plasma guns and the Ion Cannon
-  // The shared fire muzzle (math_parity.native_fire_muzzle_pos); its flash is
-  // warm artwork, even when the gun's projectile is blue.
-  float heading = player.aim_heading - HALF_PI - 0.150915f;
-  Light &muzzle = add(source_ident(IDENT_PLAYER, number * 4 + 2), player.pos_x + cosf(heading) * 16,
-                      player.pos_y + sinf(heading) * 16, energetic ? 130.0f : 65.0f, 1.6f * gain, 1.0f * gain,
+  // The flash remains warm even when the projectile is blue.
+  vec2f_t offset = rtx_barrel_offset(player);
+  Light &muzzle = add(source_ident(IDENT_PLAYER, number * 4 + 2), player.pos_x + offset.x,
+                      player.pos_y + offset.y, energetic ? 130.0f : 65.0f, 1.6f * gain, 1.0f * gain,
                       0.4f * gain);
   muzzle.height = 28, muzzle.width = 4;
   muzzle.illumination = energetic ? 0.8f : 0.12f, muzzle.reflection = 0.6f, muzzle.reach = 140;
@@ -1335,4 +1335,10 @@ extern "C" void rtx_lights_reset() {
   bursting = nullptr;
   rocket_burst_slot = -1;
   selection.reset();
+}
+
+extern "C" void rtx_muzzle_flash_offset(int slot, float *x, float *y) {
+  vec2f_t offset = rtx_barrel_offset(player_state_table[slot]);
+  *x = offset.x;
+  *y = offset.y;
 }

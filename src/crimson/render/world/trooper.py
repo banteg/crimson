@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
+from ...barrel import barrel_position
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
 from ...weapons import WEAPON_BY_ID
@@ -207,7 +208,10 @@ def draw_player_trooper_sprite(
                     size = base_size * (0.5 if (flags & 0x4) else 1.0)
                     heading = float(player.aim_heading) + math.pi / 2.0
                     offset = (float(player.muzzle_flash_alpha) * 12.0 - 21.0) * scale
-                    flash_pos = screen_pos + Vec2.from_angle(heading) * offset
+                    if render_frame.rtx_mode is RtxRenderMode.RTX:
+                        flash_pos = viewport.world_to_screen_with(barrel_position(player), camera=camera, view_scale=view_scale)
+                    else:
+                        flash_pos = screen_pos + Vec2.from_angle(heading) * offset
                     src = rl_rectangle(
                         0.0,
                         0.0,

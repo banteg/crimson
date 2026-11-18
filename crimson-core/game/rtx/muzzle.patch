@@ -1,0 +1,10 @@
+Align only the RTX muzzle flash with the measured torso frame.
+
+--- a/decomp/1.9/crimsonland/crimsonland/player_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/player_render.cpp
+@@ -492,3 +492,5 @@
+                           .muzzle_flash_alpha
+                     * 12.0f
+                 - (float)sin(effect_heading) * 21.0f;
++        if (rtx_render_mode)
++            rtx_muzzle_flash_offset(current_player_index, &render_delta.x, &render_delta.y);

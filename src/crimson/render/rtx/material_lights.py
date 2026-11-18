@@ -15,8 +15,8 @@ import msgspec
 
 from grim.geom import Vec2
 
+from ...barrel import barrel_position
 from ...effects import Particle, ParticleStyleId
-from ...math_parity import native_fire_muzzle_pos
 from ...perks import PerkId
 from ...projectiles.types import Projectile
 from ...projectiles.types import ProjectileTemplateId as PT
@@ -566,7 +566,7 @@ def collect_material_lights(
         # muzzleFlash is warm artwork, even when the gun's projectile is blue.
         sources.append(
             MaterialLight(
-                native_fire_muzzle_pos(player.pos, player.aim_heading),
+                barrel_position(player),
                 130.0 if energetic else 65.0,
                 (1.6 * gain, 1.0 * gain, 0.4 * gain),
                 height=28.0,
