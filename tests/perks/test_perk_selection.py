@@ -58,7 +58,10 @@ def test_perk_selection_pick_thick_skinned_scales_every_player_health() -> None:
     p1 = PlayerState(index=0, pos=Vec2(), health=90.0)
     p2 = PlayerState(index=1, pos=Vec2(), health=60.0)
 
-    picked = perk_selection_pick(state, [p1, p2], 0, game_mode=GameMode.QUESTS, dt=0.0, creatures=[])
+    perk_selection_open_choices(state, [p1, p2], game_mode=GameMode.QUESTS)
+    # A debug level-up can invalidate the next roll while the clicked pick awaits its tick.
+    state.perk_selection.choices_dirty = True
+    picked = perk_selection_pick(state, [p1, p2], 0, dt=0.0, creatures=[])
 
     assert picked is not None and picked.perk_id == PerkId.THICK_SKINNED
     assert state.perks[int(PerkId.THICK_SKINNED)] == 1

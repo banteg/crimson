@@ -19,7 +19,19 @@ class PerkEffectIntervals(msgspec.Struct):
     hot_tempered: float = 1.399999976158142
 
 
+class PerkOffer(msgspec.Struct, frozen=True):
+    """The visible choices the next simulation tick may pick from."""
+
+    choices: tuple[PerkId, ...]
+
+
 class PerkSelectionState(msgspec.Struct):
     pending_count: int = 0
     choices: list[PerkId] = msgspec.field(default_factory=list)
     choices_dirty: bool = True
+    open_offer: PerkOffer | None = None
+
+    def close_offer(self) -> PerkOffer | None:
+        """Take the one-tick offer. Canceling leaves the cached roll intact."""
+        offer, self.open_offer = self.open_offer, None
+        return offer

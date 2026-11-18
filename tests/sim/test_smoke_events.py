@@ -9,6 +9,7 @@ from crimson.bonuses.ids import BonusId
 from crimson.effects import EFFECT_POOL_SIZE, SPRITE_EFFECT_POOL_SIZE, EffectPool, SpriteEffectPool
 from crimson.effects_atlas import EffectId
 from crimson.math_parity import f32
+from crimson.perks.selection import perk_selection_open_choices
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.commands import PerkPickCommand
 from crimson.sim.presentation_step import DeterministicPresentationPlan
@@ -169,9 +170,9 @@ def test_actual_nuke_pickup_captures_nuke_smoke_without_gameplay_changes() -> No
 
 def test_session_capture_includes_command_prelude_and_detaches_after_failure(mocker) -> None:
     session, world = make_session()
-    session.perk_menu_open = True
     world.state.perk_selection.pending_count = 1
-    original = DeterministicSession.apply_command
+    perk_selection_open_choices(world.state, world.players, game_mode=world.state.game_mode)
+    original = DeterministicSession._pick_perk
 
     def emit_during_command(self, command, *, dt):
         picked = original(self, command, dt=dt)
@@ -181,11 +182,11 @@ def test_session_capture_includes_command_prelude_and_detaches_after_failure(moc
         )
         return picked
 
-    mocker.patch.object(DeterministicSession, "apply_command", emit_during_command)
+    mocker.patch.object(DeterministicSession, "_pick_perk", emit_during_command)
     command = PerkPickCommand(player_index=0, choice_index=0)
     tick = session.step_tick(capture_smoke=True, dt=1 / 60, inputs=[player_input()], commands=[command])
     assert [event.source for event in tick.presentation.smoke_emissions[:3]] == ["sprite", "effect", "effect"]
-    session.perk_menu_open = True
+    perk_selection_open_choices(world.state, world.players, game_mode=world.state.game_mode)
     with pytest.raises(IllegalCommandError):
         session.step_tick(capture_smoke=True, dt=1 / 60, inputs=[player_input()], commands=[command])
     for pool in (world.state.sprite_effects, world.state.effects):

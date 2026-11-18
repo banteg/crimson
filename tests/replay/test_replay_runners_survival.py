@@ -94,6 +94,24 @@ def test_survival_runner_picks_on_the_tick_after_the_menu_opens() -> None:
     assert sum(driver.world.state.perks.counts) == 2
 
 
+def test_cancel_keeps_the_offer_and_a_keyframe_preserves_the_reopened_pick() -> None:
+    driver = _perk_menu_replay([OPEN], [], [OPEN], [PICK])
+    driver.step_tick(0)
+    choices = tuple(driver.world.state.perk_selection.choices)
+    driver.step_tick(1)  # Cancel without spending either pending pick.
+    driver.step_tick(2)
+    assert tuple(driver.world.state.perk_selection.choices) == choices
+    assert driver.world.state.perk_selection.pending_count == 2
+
+    keyframe = driver.keyframe_state()
+    picked, = driver.step_tick(3).payload.perk_picks
+    pending_after_pick = driver.world.state.perk_selection.pending_count
+    driver.restore(keyframe)
+    assert driver.step_tick(3).payload.perk_picks == (picked,)
+    assert picked.perk_id == choices[0]
+    assert driver.world.state.perk_selection.pending_count == pending_after_pick
+
+
 @pytest.mark.parametrize(
     "ticks",
     [

@@ -89,6 +89,7 @@ class PerkMenuController:
         self._choice_items = tuple(UiMenuItem() for _ in range(10))
         self._open = False
         self._closing = False
+        self._resume_run_down_ms: int | None = None
         self._panel_clicked = False
         self._selected_index = 0
 
@@ -99,11 +100,12 @@ class PerkMenuController:
         self._closing = True
         self.timeline.begin()
 
-    def open_menu(self) -> None:
+    def open_menu(self, *, resume_run_down_ms: int | None = None) -> None:
         """`game_state_set(GAME_STATE_PERK_SELECTION)`."""
         if self._open:
             return
         self._open = True
+        self._resume_run_down_ms = resume_run_down_ms
         self._panel_clicked = False
         self._selected_index = 0
         # The choices register first, so this focuses the first one (native keeps whatever index was focused).
@@ -119,6 +121,10 @@ class PerkMenuController:
         if self._closing and self.timeline.ready:
             self._closing = False
             self.timeline.enter(ui_elements_max_timeline(GameStateId.GAMEPLAY))
+            if self._resume_run_down_ms is not None:
+                self.timeline.timeline_ms = self._resume_run_down_ms
+                self.timeline.begin()
+                self._resume_run_down_ms = None
 
     def handle_input(
         self,

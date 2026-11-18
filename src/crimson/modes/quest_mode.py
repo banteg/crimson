@@ -171,7 +171,7 @@ class QuestMode(BaseGameplayMode):
                 record=record,
             ),
         )
-    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
+    def _on_tick_applied(self, tick: DeterministicSessionTick) -> None:
         if tick.save_status:
             # Native `quest_mode_update` calls `game_save_status` itself, so the completion and the unlock
             # reach game.cfg even when a death then turns the pending results into Quest Failed.
@@ -180,7 +180,7 @@ class QuestMode(BaseGameplayMode):
             except OSError as exc:
                 if self._console is not None:
                     self._console.log.log(f"quest: status not saved ({exc})")
-        return super()._on_tick_applied(tick)
+        super()._on_tick_applied(tick)
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
