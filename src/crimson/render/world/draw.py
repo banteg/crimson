@@ -352,7 +352,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         # Native batches every shadow before drawing any body of this species.
         for shadow in (True, False) if shadow_pass else (False,):
             body_scope = (
-                lighting.scope(texture=texture, restore_shader=resources.alpha_test.shader)
+                lighting.scope(texture=texture, restore_shader=resources.alpha_test.shader, type_id=type_id)
                 if lighting is not None and not shadow else nullcontext()
             )
             with body_scope:

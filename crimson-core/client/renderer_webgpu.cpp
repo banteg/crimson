@@ -209,7 +209,7 @@ float heat_seconds = -1;
 // being drawn, a bonus draw's own material, and each artwork's texels in the
 // module for creature thickness.
 enum { MAX_LIGHTS = 32 };
-int material;
+int material, creature_type;
 float scene_camera[2];
 GroundVisibility ground_visibility;
 bool visibility_dirty = true;
@@ -1433,6 +1433,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     fragment.i("u_pass", bonus_emblem).set("u_grid", bonus_grid, 8).set("u_shell_center", bonus_center, 8);
     int ice = material == HOST_PASS_ICE_CUBES || material == HOST_PASS_ICE_FROZEN ? 4 : material == HOST_PASS_ICE_SHARDS ? 8 : 0;
     fragment.i("u_ice", ice).i("u_ice_frozen", material == HOST_PASS_ICE_FROZEN);
+    fragment.i("u_creature_type", material == HOST_PASS_CREATURES ? creature_type : 0);
     fragment.set("u_pos", light_pos, light_count * 16).set("u_rgb", light_rgb, light_count * 16);
     fragment.set("u_dir", light_dir, light_count * 16).set("u_response", light_response, light_count * 16);
     auto it = textures.find(bound[0]);
@@ -1859,6 +1860,8 @@ void wgpu_w2c_host_bonus(struct w2c_host *, u32 emblem, f32 grid_x, f32 grid_y, 
   bonus_center[0] = center_x, bonus_center[1] = center_y;
 }
 void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
+  creature_type = creature_type_for_pass(pass_kind);
+  if (creature_type) pass_kind = HOST_PASS_CREATURES;
   if (pass_kind >= HOST_PASS_CREATURES) {
     material = pass_kind == HOST_PASS_SPRITES ? 0 : (int)pass_kind;
     return;

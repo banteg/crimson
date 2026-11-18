@@ -10,6 +10,7 @@ import msgspec
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ...creatures.spawn_ids import CreatureTypeId
 from .creature_shaders import CREATURE_FRAGMENT, CREATURE_VERTEX
 from .creature_translucency import load_ice_texture, load_thickness_texture
 from .light_uniforms import LIGHT_UNIFORMS, upload_material_lights
@@ -45,7 +46,7 @@ class CreatureLighting(msgspec.Struct):
                 name: int(rl.get_shader_location(shader, name))
                 for name in (*LIGHT_UNIFORMS, "u_thickness",
                              "u_occlusion_tex", "u_occlusion_grid", "u_occlusion_cell_size", "u_dynamic_shadows", "u_ambient",
-                             "u_ice", "u_ice_frozen")
+                             "u_ice", "u_ice_frozen", "u_creature_type")
             }
         shader = self.shader
         # Flush preceding draws before changing values on a possibly reused shader.
@@ -64,6 +65,7 @@ class CreatureLighting(msgspec.Struct):
     @contextmanager
     def scope(
         self, *, texture: rl.Texture, restore_shader: rl.Shader | None, ice: int = 0, frozen: bool = False,
+        type_id: CreatureTypeId | None = None,
     ) -> Generator[None]:
         """Creature bodies drawn from `texture`, or with `ice` the freeze's ice: the grid of its particles cells;
         `frozen` for its cubes over frozen bodies, whose dark faces let the body show."""
@@ -85,7 +87,11 @@ class CreatureLighting(msgspec.Struct):
         rl.rl_draw_render_batch_active()
         try:
             rl.begin_shader_mode(self.shader)
-            for name, value in (("u_ice", ice), ("u_ice_frozen", int(frozen))):
+            for name, value in (
+                ("u_ice", ice),
+                ("u_ice_frozen", int(frozen)),
+                ("u_creature_type", 0 if type_id is None else int(type_id) + 1),
+            ):
                 rl.set_shader_value(self.shader, self.locations[name], rl.ffi.new("int *", value),
                                     rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
             if thickness is not None:

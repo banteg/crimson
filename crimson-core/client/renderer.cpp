@@ -290,7 +290,7 @@ const char *pressure_fragment_source = SHADER_HEADER SHADER_PRESSURE_LIT_FRAG;
 // device's vertices in the world. A bonus draw's own material (host_bonus): the
 // shell or an emblem, its atlas's cell grid and the shell's center.
 enum { MAX_LIGHTS = 32 };
-int material;
+int material, creature_type;
 float scene_camera[2];
 GroundVisibility ground_visibility;
 bool visibility_dirty = true;
@@ -307,7 +307,7 @@ float bonus_grid[2], bonus_center[2];
 struct LitProgram {
   GLuint id = 0;
   GLint target_size, camera, count, ambient, pos, rgb, dir, response, occlusion_grid, occlusion_cell, shadows;
-  GLint pass, grid, shell_center, ice, ice_frozen;
+  GLint pass, grid, shell_center, ice, ice_frozen, creature_type;
 };
 // The creature body grid (host_occlusion): origin, columns (0 for none) and rows,
 // cell size, the shadows setting, and its texels in an RGBA32F texture 256 wide.
@@ -600,6 +600,7 @@ void create_lit(LitProgram &p, const char *vertex, const char *fragment) {
   p.shell_center = uniform_location(p.id, "u_shell_center");
   p.ice = uniform_location(p.id, "u_ice");
   p.ice_frozen = uniform_location(p.id, "u_ice_frozen");
+  p.creature_type = uniform_location(p.id, "u_creature_type");
 }
 
 // A creature atlas's transmission part sizes or Monster Vision silhouette
@@ -725,6 +726,7 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   int ice = material == HOST_PASS_ICE_CUBES || material == HOST_PASS_ICE_FROZEN ? 4 : material == HOST_PASS_ICE_SHARDS ? 8 : 0;
   glUniform1i(p.ice, ice);
   glUniform1i(p.ice_frozen, material == HOST_PASS_ICE_FROZEN);
+  glUniform1i(p.creature_type, material == HOST_PASS_CREATURES ? creature_type : 0);
   glUniform2fv(p.grid, 1, bonus_grid);
   glUniform2fv(p.shell_center, 1, bonus_center);
   glUniform2f(p.target_size, (float)t.logical_width, (float)t.logical_height);
@@ -2323,6 +2325,8 @@ void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
   static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "heat",
                                      "glow", "ice-cubes", "ice-shards", "ice-frozen", "glint"};
   // Classic marks only the world's bounds: what follows is its HUD.
+  creature_type = creature_type_for_pass(pass);
+  if (creature_type) pass = HOST_PASS_CREATURES;
   gpu_mark(!rtx && pass == HOST_PASS_WORLD_END ? "hud" : pass < sizeof labels / sizeof *labels ? labels[pass] : "sprites");
   if (pass >= HOST_PASS_CREATURES) {
     material = pass == HOST_PASS_SPRITES ? 0 : (int)pass;

@@ -194,7 +194,7 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
          grim_interface_ptr->grim_end_batch();
      }
  
-+    rtx_material(HOST_PASS_CREATURES);
++    rtx_material(HOST_PASS_CREATURE_TYPE + type_id);
      grim_interface_ptr->grim_set_config_var(0x13, 5u);
      grim_interface_ptr->grim_set_config_var(0x14, 6u);
      grim_interface_ptr->grim_begin_batch();

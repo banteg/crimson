@@ -31,6 +31,8 @@ uniform vec4 u_response[32]; // illumination, reflection, reflection reach, sour
 uniform int u_ice;
 // The cubes over frozen bodies: their darkest faces lose ICE_CLEAR of the ice's opacity, so the body shows through.
 uniform int u_ice_frozen;
+// Recovered creature type plus one. Zero selects the neutral material.
+uniform int u_creature_type;
 const float ICE_CLEAR = 0.32;
 out vec4 finalColor;
 const float DOME_STRENGTH = 0.65;
@@ -111,6 +113,52 @@ void main() {
     vec3 albedo = baseLin;
     float spec_gain = 1., spec_sharp = 1., rim_gain = 1., light_desat = 0.;
     vec3 glow = vec3(0);
+    float breakup = 1.;
+    if (u_ice == 0 && u_creature_type != 0) {
+        // Highlight gain, sharpness, thin-part transmission and rim, followed
+        // by joint tone, relief-based sheen breakup and sky sheen.
+        vec4 material = vec4(1.);
+        vec3 detail = vec3(1., 0., 0.);
+        if (u_creature_type == 1) { // Zombie
+            material = vec4(.2, .4, .1, .6);
+        } else if (u_creature_type == 2) { // Lizard
+            material = vec4(1.1, 1.4, .4, .85);
+            detail = vec3(1., 1., .35);
+        } else if (u_creature_type == 3) { // Alien
+            material = vec4(.6, .5, 2.4, 1.2);
+            detail = vec3(1.2, 0., .15);
+        } else if (u_creature_type == 4 || u_creature_type == 5) { // Spiders
+            material = vec4(2.2, 2.8, .15, 1.);
+            detail = vec3(.45, 0., .55);
+        }
+        if (u_creature_type == 4) {
+            // SP1's two skins share poses. The abdomen
+            // sits farther left in the folded frames.
+            vec2 cell_uv = fract(fragTexCoord * 8.) * 64.;
+            vec2 cell_id = floor(fragTexCoord * 8.);
+            float pose = mod(cell_id.y * 8. + cell_id.x, 32.);
+            float folded = smoothstep(15., 22., pose) * (1. - smoothstep(26., 31., pose));
+            vec2 center = mix(vec2(18., 31.6), vec2(14.3, 31.8), folded);
+            vec2 ellipse = (cell_uv - center) / vec2(10.5, 6.3);
+            float shell = 1. - smoothstep(.77, 1.12, length(ellipse));
+            vec3 shell_normal = normalize(vec3(rot * ellipse, sqrt(max(.12, 1. - dot(ellipse, ellipse)))));
+            N = normalize(mix(normalize(vec3(-rot * relief * .18, 1.)), shell_normal, shell));
+            material = mix(vec4(.10, .8, .23, .24), vec4(4.3, 2.4, .07, .64), shell);
+            detail.z *= shell;
+        }
+        spec_gain = material.x;
+        spec_sharp = material.y;
+        transmission *= material.z;
+        rim_gain = material.w;
+        float thin = 1. - smoothstep(1.5, 5.5, thickness);
+        baseLin *= mix(1., detail.x, thin);
+        albedo = baseLin;
+        breakup = mix(1., smoothstep(.04, .16, abs(relief.x) + abs(relief.y)) * 1.6, detail.y);
+        if (detail.z > 0.) {
+            float sky = max(dot(reflect(-V, N), normalize(vec3(-.30, -.40, .86))), 0.);
+            glow += vec3(.42, .46, .52) * pow(sky, 6. * spec_sharp) * detail.z * breakup * (.25 + .75 * lum);
+        }
+    }
     if (u_ice != 0) {
         // The sprite's own model: a rounded, lumpy cube or a chunk of it, and its mottling.
         vec3 ice = textureLod(u_thickness, fragTexCoord, 0.).rgb;
@@ -153,7 +201,7 @@ void main() {
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            added += u_rgb[i].rgb * spec_amount * spec_gain * lightVisibility(i);
+            added += u_rgb[i].rgb * spec_amount * spec_gain * breakup * lightVisibility(i);
         }
         if (u_response[i].x <= 0. || spec_distance >= u_pos[i].z) continue;
         vec2 light_source = ring ? source : illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
