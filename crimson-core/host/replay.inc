@@ -512,9 +512,11 @@ static bool replay_read_spawn_entries(MsgpackReader &r, PortableQuest &q) {
   return r.ok;
 }
 
-static bool replay_read_custom_quest(MsgpackReader &r, PortableQuest &q, LoadedReplay &out) {
+static bool replay_read_custom_quest(MsgpackReader &r, PortableQuest &q, LoadedReplay &out, uint32_t players) {
   q = {};
   bool has_title = false, has_weapon = false, has_terrain = false, has_entries = false;
+  std::array<MsgpackReader, 8> legacy_tables{};
+  uint32_t table_count = 0;
   for (uint32_t n = r.map(); r.ok && n; --n) {
     std::string key = r.str();
     if (key == "title") {
@@ -538,18 +540,29 @@ static bool replay_read_custom_quest(MsgpackReader &r, PortableQuest &q, LoadedR
     } else if (key == "entries") {
       has_entries = replay_read_spawn_entries(r, q);
     } else if (key == "tables") {
-      uint32_t tables = r.array();
-      if (!r.ok || tables < 1 || tables > 8)
+      table_count = r.array();
+      if (!r.ok || table_count < 1 || table_count > legacy_tables.size())
         return r.ok = false;
-      has_entries = replay_read_spawn_entries(r, q);
-      for (uint32_t t = 1; r.ok && t < tables; ++t)
+      // The variant map follows the tables in v33. Keep a view of each until the run selects one.
+      for (uint32_t t = 0; r.ok && t < table_count; ++t) {
+        legacy_tables[t] = r;
         r.skip();
+        legacy_tables[t].end = r.at;
+      }
     } else if (key == "variants") {
-      if (r.array() != 8)
-        r.ok = false;
-      for (int i = 0; r.ok && i < 8; ++i)
-        if (r.integer() != 0 && i == 0)
-          r.ok = false;
+      if (r.array() != 8 || players < 1 || players > 4)
+        return r.ok = false;
+      uint32_t used = 0;
+      for (uint32_t i = 0; r.ok && i < 8; ++i) {
+        int64_t table = r.integer();
+        if (table < 0 || table >= table_count)
+          return r.ok = false;
+        used |= 1u << table;
+        if (i == (players - 1) * 2)
+          has_entries = replay_read_spawn_entries(legacy_tables[table], q);
+      }
+      if (used != (1u << table_count) - 1)
+        return r.ok = false;
     } else if (key == "no_bonuses") {
       int64_t prev = 1;
       for (uint32_t count = r.array(); r.ok && count; --count) {
@@ -605,7 +618,7 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
     } else if (key == "custom_quest") {
       if (!r.nil()) {
         has_custom = true;
-        if (!replay_read_custom_quest(r, custom, out))
+        if (!replay_read_custom_quest(r, custom, out, config.players))
           r.ok = false;
       }
     } else if (key == "player_count") {

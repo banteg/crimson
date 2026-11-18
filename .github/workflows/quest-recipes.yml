@@ -1,0 +1,59 @@
+name: Check submitted quest recipes
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.repository == 'banteg/crimson' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment:
+      name: production
+      deployment: false
+    concurrency:
+      group: crimson-quest-recipe-checks
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use the deployed compiler from this branch's history
+        id: compiler
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha=$(curl -fsS --max-time 15 -H 'Cache-Control: no-cache' https://crimson.land/deployment.txt)
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+          git merge-base --is-ancestor "$sha" HEAD
+          if git cat-file -e "$sha:service/scripts/check-recipes.mjs"; then
+            git checkout --detach "$sha"
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: astral-sh/setup-uv@v7
+        if: steps.compiler.outputs.available == 'true'
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v6
+        if: steps.compiler.outputs.available == 'true'
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: service/package-lock.json
+      - name: Install locked compiler and service dependencies
+        if: steps.compiler.outputs.available == 'true'
+        run: |
+          uv sync --frozen --no-dev --extra quests
+          npm ci --prefix service
+      - name: Check pending recipes against verified clears
+        if: steps.compiler.outputs.available == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node service/scripts/check-recipes.mjs

@@ -1,18 +1,19 @@
 // POST /api/runs: a signed ranked run (docs/rewrite/leaderboard-identity.md, "Protocol").
 
-import { concat, COOP_RUN_DOMAIN, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
+import { concat, COOP_RUN_DOMAIN, fromHex, hex, latin1, randomToken, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
-import { buildOf, FIXED_WEAPON_BONUSES, FIXED_WEAPON_PERKS, type Signals, type Timeline } from "./api-types";
-import { type CustomQuest, decodeReplay, inflateReplay, type Replay, ReplayError, SEED_BITS, VERIFIED_RULES } from "./replay";
+import { buildOf, type Signals, type Timeline } from "./api-types";
+import { type CustomQuest, decodeReplay, inflateReplay, type Replay, NewerReplayFormat, ReplayError, SEED_BITS, VERIFIED_RULES } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
 import { withBuild } from "./paths";
 import { encodePortableQuest, encodeTransport, runIdentity, TransportError, twinIds } from "./transport";
-import questDsl from "./quest-dsl.json";
+import { type RecipeState } from "./recipe";
 import { runGround, SIZE } from "../web/src/terrain/rules";
 import { type Verdict, verifyRun } from "./verify";
 
+const STAGING_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 16 * 1024 * 1024;
 const NAME_MAX_CHARS = 31;
 // The replay format's most players.
@@ -49,7 +50,7 @@ function parseUpload(body: unknown): Upload | null {
   if (typeof body !== "object" || body === null) return null;
   const { replay, name, public_key, signature, signers, source, seed } = body as Record<string, unknown>;
   if (!isString(replay)) return null;
-  if (source !== undefined && source !== null && (typeof source !== "string" || source.length === 0 || source.length > 65536))
+  if (source !== undefined && source !== null && (typeof source !== "string" || source.length === 0 || source.length > 65536 || new TextEncoder().encode(source).length > 65536))
     return null;
   if (seed !== undefined && (typeof seed !== "number" || !Number.isInteger(seed) || seed < 0 || seed > 0xffffffff))
     return null;
@@ -109,6 +110,11 @@ function base64(text: string): Uint8Array | null {
 
 // A replay file's run and its payload's digest. The payload, many times the file's size, goes with this call rather
 // than staying through verification.
+// Older clients already retain 503s. Updated clients continue uploading other compatible runs.
+function readerBehind(reason: string): Response {
+  return json({ code: "replay_reader_behind", reason }, 503, { "Retry-After": "600", "Cache-Control": "no-store" });
+}
+
 async function readReplay(file: Uint8Array): Promise<{ replay: Replay; payloadSha: Uint8Array }> {
   const payload = inflateReplay(file);
   return { replay: decodeReplay(payload), payloadSha: await sha256(payload) };
@@ -118,159 +124,18 @@ export async function customQuestDigest(quest: CustomQuest): Promise<string> {
   return hex(await sha256(encodePortableQuest(quest)));
 }
 
-const RECIPE_WEAPONS: Record<string, number> = questDsl.weapons;
-const RECIPE_BONUSES: Record<string, number> = questDsl.bonuses;
-const RECIPE_PERKS: Record<string, number> = questDsl.perks;
-const RECIPE_TEMPLATES: Record<string, number> = questDsl.templates;
-
-function stripRecipeComment(line: string): string {
-  let inQuote = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === "\\" && inQuote) i++;
-    else if (ch === '"') inQuote = !inQuote;
-    else if (ch === "#" && !inQuote) return line.slice(0, i).trim();
-  }
-  return line.trim();
-}
-
-function unclosedDelimiterDepth(line: string): number {
-  let inQuote = false;
-  let depth = 0;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === "\\" && inQuote) i++;
-    else if (ch === '"') inQuote = !inQuote;
-    else if (!inQuote && (ch === "[" || ch === "(")) depth++;
-    else if (!inQuote && (ch === "]" || ch === ")")) depth--;
-  }
-  return depth;
-}
-
-function parseIdList(raw: string, table: Record<string, number>, maxId?: number): number[] | null {
-  const items = raw.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
-  const seen = new Set<string>();
-  const out: number[] = [];
-  for (const item of items) {
-    if (seen.has(item)) return null;
-    const id = table[item];
-    if (id === undefined || (maxId !== undefined && (id < 2 || id > maxId))) return null;
-    seen.add(item);
-    out.push(id);
-  }
-  return out;
-}
-
-function sameIds(a: readonly number[], b: readonly number[]): boolean {
-  return a.length === b.length && a.every((v, i) => v === b[i]);
-}
-
-export function validateRecipeSource(source: string, quest: CustomQuest): boolean {
-  const rawLines = source.split(/\r?\n/).map(stripRecipeComment).filter(Boolean);
-  const lines: string[] = [];
-  for (let i = 0; i < rawLines.length; i++) {
-    let line = rawLines[i]!;
-    while (unclosedDelimiterDepth(line) > 0 && i + 1 < rawLines.length) {
-      line += " " + rawLines[++i]!;
-    }
-    lines.push(line);
-  }
-  if (lines.length < 2) return false;
-  const header = /^quest\s+("(?:[^"\\]|\\.)*")\s+version\s+1$/.exec(lines[0]!);
-  if (!header) return false;
-  try {
-    if (JSON.parse(header[1]!) !== quest.title) return false;
-  } catch {
-    return false;
-  }
-  let author: string | null = null;
-  let weapon = 1;
-  let terrain: [number, number, number] = [0, 1, 0];
-  let fixedWeapon = false;
-  const noBonuses = new Set<number>();
-  const noPerks = new Set<number>();
-  const noWeapons = new Set<number>();
-  const seenSettings = new Set<string>();
-  let idx = 1;
-  for (; idx < lines.length; idx++) {
-    const line = lines[idx]!;
-    let m: RegExpExecArray | null;
-    if ((m = /^author\s+("(?:[^"\\]|\\.)*")$/.exec(line))) {
-      if (seenSettings.has("author")) return false;
-      seenSettings.add("author");
-      try {
-        author = JSON.parse(m[1]!) as string;
-      } catch {
-        return false;
-      }
-    } else if ((m = /^order\s+(?:chronological|as-written)$/.exec(line))) {
-      if (seenSettings.has("order")) return false;
-      seenSettings.add("order");
-    } else if ((m = /^weapon\s+([A-Za-z_]\w*)$/.exec(line))) {
-      if (seenSettings.has("weapon")) return false;
-      seenSettings.add("weapon");
-      const id = RECIPE_WEAPONS[m[1]!.toLowerCase()];
-      if (!id) return false;
-      weapon = id;
-    } else if ((m = /^terrain\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/.exec(line))) {
-      if (seenSettings.has("terrain")) return false;
-      seenSettings.add("terrain");
-      terrain = [Number(m[1]), Number(m[2]), Number(m[3])];
-    } else if ((m = /^fixed_weapon\s+(true|false)$/.exec(line))) {
-      if (seenSettings.has("fixed_weapon")) return false;
-      seenSettings.add("fixed_weapon");
-      fixedWeapon = m[1] === "true";
-    } else if ((m = /^(no_bonuses|no_perks|no_weapons)\s*\[([^\]]*)\]$/.exec(line))) {
-      const kind = m[1]!;
-      if (seenSettings.has(kind)) return false;
-      seenSettings.add(kind);
-      const ids =
-        kind === "no_bonuses"
-          ? parseIdList(m[2]!, RECIPE_BONUSES)
-          : kind === "no_perks"
-            ? parseIdList(m[2]!, RECIPE_PERKS)
-            : parseIdList(m[2]!, RECIPE_WEAPONS, 33);
-      if (!ids) return false;
-      const target = kind === "no_bonuses" ? noBonuses : kind === "no_perks" ? noPerks : noWeapons;
-      ids.forEach((id) => target.add(id));
-    } else {
-      break;
-    }
-  }
-  if (fixedWeapon) {
-    FIXED_WEAPON_BONUSES.forEach((id) => noBonuses.add(id));
-    FIXED_WEAPON_PERKS.forEach((id) => noPerks.add(id));
-    for (let id = 2; id <= 33; id++) noWeapons.add(id);
-  }
-  if (author !== quest.author || weapon !== quest.start_weapon_id) return false;
-  if (terrain.some((slot, i) => slot !== quest.terrain_slots[i])) return false;
-  if (!sameIds([...noBonuses].sort((a, b) => a - b), quest.no_bonuses)) return false;
-  if (!sameIds([...noPerks].sort((a, b) => a - b), quest.no_perks)) return false;
-  if (!sameIds([...noWeapons].sort((a, b) => a - b), quest.no_weapons)) return false;
-
-  let hasSpawn = false;
-  const templates = new Set<number>();
-  for (; idx < lines.length; idx++) {
-    const line = lines[idx]!;
-    const withoutStrings = line.replace(/"(?:[^"\\]|\\.)*"/g, '""');
-    const directSpawn = /^(?:spawn|burst|place)\s+(0[xX][0-9a-fA-F]+|\d+)\s+(?:at|on)\b/.exec(withoutStrings);
-    if (directSpawn) {
-      const id = Number(directSpawn[1]!);
-      if (!Number.isInteger(id) || id < 0 || id > 67 || id === 2) return false;
-      templates.add(id);
-    }
-    if (/^(?:spawn|burst|place)\b/.test(withoutStrings)) hasSpawn = true;
-    for (const match of withoutStrings.matchAll(/\b(?:alien|spider|lizard|zombie|nest|formation|template)\.[A-Za-z_]\w*\b/g)) {
-      const id = RECIPE_TEMPLATES[match[0].toLowerCase()];
-      if (id === undefined) return false;
-      templates.add(id);
-    }
-    for (const match of withoutStrings.matchAll(/\b(?:0[xX][0-9a-fA-F]+|\d+)(?!(?:\.\d|[eE]|ms\b|s\b|deg\b))\b/g)) {
-      const id = Number(match[0]);
-      if (Number.isInteger(id) && id >= 0 && id <= 67 && id !== 2) templates.add(id);
-    }
-  }
-  return hasSpawn && templates.size > 0 && quest.entries.every((entry) => templates.has(entry.spawn_id));
+async function submitSource(env: Env, id: string, accountId: number, source: string, seed: number): Promise<RecipeState | Response> {
+  // A verified recipe is immutable. The creator can replace a rejected one (including its seed).
+  await env.DB.prepare(
+    `UPDATE custom_quests SET source = ?, seed = ? WHERE id = ? AND account_id = ?
+     AND (source IS NULL OR (source_state = 'rejected' AND (source != ? OR seed != ?)))`,
+  ).bind(source, seed, id, accountId, source, seed).run();
+  const row = await env.DB.prepare("SELECT account_id, source, seed, source_state FROM custom_quests WHERE id = ?").bind(id)
+    .first<{ account_id: number | null; source: string | null; seed: number; source_state: RecipeState }>();
+  if (!row || row.account_id !== accountId) return refuse(403, "only the quest's creator can attach its recipe");
+  if (row.source !== source || row.seed !== seed) return refuse(409, "this quest already has a recipe or a check in progress");
+  if (row.source_state === "rejected") return refuse(422, "the recipe did not compile to the cleared quest with this seed");
+  return row.source_state;
 }
 
 export async function postRun(request: Request, env: Env, options: { requireCustomQuest?: boolean } = {}): Promise<Response> {
@@ -289,15 +154,18 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   try {
     ({ replay, payloadSha } = await readReplay(file));
   } catch (error) {
+    if (error instanceof NewerReplayFormat) return readerBehind(error.message);
     if (error instanceof ReplayError) return refuse(422, error.message);
     throw error;
   }
   if (options.requireCustomQuest && replay.run.custom_quest === null)
     return refuse(422, "expected a custom quest replay");
-  if (upload.source !== null && (!options.requireCustomQuest || !replay.run.custom_quest || !validateRecipeSource(upload.source, replay.run.custom_quest)))
+  if (upload.source !== null && (!options.requireCustomQuest || !replay.run.custom_quest))
     return refuse(422, "recipe source does not match the replay's custom quest");
-  if (!VERIFIED_RULES.includes(replay.rules))
-    return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${VERIFIED_RULES.join(" and ")}`);
+  if (!VERIFIED_RULES.includes(replay.rules)) {
+    const reason = `replay was recorded under rules ${replay.rules}; this service verifies rules ${VERIFIED_RULES.join(" and ")}`;
+    return replay.rules > Math.max(...VERIFIED_RULES) ? readerBehind(reason) : refuse(422, reason);
+  }
   const signersRefusal = signersReason(upload.signers, replay.run.player_count, replay.seat_keys);
   if (signersRefusal) return refuse(422, signersRefusal);
   for (const [i, signer] of upload.signers.entries()) {
@@ -327,9 +195,9 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   const digest = custom ? await customQuestDigest(custom) : null;
   const quest = digest ? digest.slice(0, 12) : questOf(replay);
   const existingQuest = custom
-    ? await env.DB.prepare("SELECT digest, account_id, source FROM custom_quests WHERE id = ?")
+    ? await env.DB.prepare("SELECT digest, account_id FROM custom_quests WHERE id = ?")
         .bind(quest)
-        .first<{ digest: string; account_id: number | null; source: string | null }>()
+        .first<{ digest: string; account_id: number | null }>()
     : null;
   if (existingQuest && existingQuest.digest !== digest) return refuse(409, "quest id collision");
 
@@ -340,19 +208,9 @@ export async function postRun(request: Request, env: Env, options: { requireCust
       const accountId = await accountForKey(env, owner.public_key, owner.key, now);
       if (existing.account_id !== accountId || (existingQuest && existingQuest.account_id !== accountId))
         return refuse(403, "only the quest's creator can attach its recipe");
-      if (existingQuest && existingQuest.source !== null && existingQuest.source !== upload.source)
-        return refuse(409, "this quest already has a recipe");
-      await env.DB.prepare(
-        `INSERT INTO custom_quests (id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT (id) DO UPDATE SET
-           source = coalesce(custom_quests.source, excluded.source),
-           seed = CASE WHEN custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END
-         WHERE custom_quests.account_id = excluded.account_id AND custom_quests.digest = excluded.digest`,
-      )
-        .bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source, upload.seed ?? 0, JSON.stringify(custom), now)
-        .run();
-      return json({ id: runId, board: "quests", quest, digest, url: withBuild(`/custom/${quest}`, buildOf(replay.run.cl_build)) }, 200);
+      const sourceState = await submitSource(env, quest, accountId, upload.source, upload.seed);
+      if (sourceState instanceof Response) return sourceState;
+      return json({ id: runId, board: "quests", quest, digest, source_state: sourceState, url: withBuild(`/custom/${quest}`, buildOf(replay.run.cl_build)) }, 200);
     }
     return refuse(409, "this run was already accepted");
   }
@@ -377,36 +235,38 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   const accountId = accounts[0]!;
   if (upload.source !== null && existingQuest) {
     if (existingQuest.account_id !== accountId) return refuse(403, "only the quest's creator can attach its recipe");
-    if (existingQuest.source !== null && existingQuest.source !== upload.source) return refuse(409, "this quest already has a recipe");
   }
-  await env.REPLAYS.put(`runs/${runId}.crd`, file, { httpMetadata: { contentType: "application/octet-stream" } });
-  await putTimeline(env, runId, verdict.timeline);
-  await putGround(env, runId, ground!);
+  // Same simulation id can cover different signed payloads. Stage under a private, per-attempt prefix.
+  // A refused upload can then discard only its own objects, even if it finishes after the winner.
+  const storageId = randomToken();
   // The run lands only while no twin of it is in, and the rest of its rows only with it.
-  const landed = "EXISTS (SELECT 1 FROM runs WHERE id = ?)";
+  const landed = "EXISTS (SELECT 1 FROM runs WHERE id = ? AND storage_id = ?)";
+  const liveSigner = seated.map(() => `EXISTS (SELECT 1 FROM keys k JOIN accounts a ON a.id = k.account_id
+    WHERE k.public_key = ? AND k.account_id = ? AND k.banned = 0 AND a.deleted_at IS NULL)`).join(" AND ");
   const statements = [
     env.DB.prepare(
       `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
-         client_version, platform, pilot, ticks, result, signals, accepted_at, rules, cl_build)
-       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM runs WHERE id IN (${twinMarks}))`,
+         client_version, platform, pilot, ticks, result, signals, accepted_at, rules, cl_build, storage_id)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM runs WHERE id IN (${twinMarks})) AND ${liveSigner}
+         AND EXISTS (SELECT 1 FROM staged_run_files WHERE storage = ?)`,
     ).bind(
       runId, hex(payloadSha), accountId, owner.public_key, owner.name, board, quest, score, replay.game_version,
       replay.recorder.client, replay.recorder.version, replay.recorder.platform, replay.pilot ? JSON.stringify(replay.pilot) : "",
-      replay.ticks.length, JSON.stringify(replay.result), JSON.stringify(verdict.signals), now, replay.rules, replay.run.cl_build, ...twins,
+      replay.ticks.length, JSON.stringify(replay.result), JSON.stringify(verdict.signals), now, replay.rules, replay.run.cl_build, storageId, ...twins, ...seated.flatMap((signer, seat) => [signer.public_key, accounts[seat]!]), storageId,
     ),
     // A co-op run's seats; a one-player run has only its own columns.
     ...(seated.length > 1
       ? seated.map((signer, seat) =>
           env.DB.prepare(`INSERT INTO run_players (run_id, seat, account_id, public_key, name) SELECT ?, ?, ?, ?, ? WHERE ${landed}`)
-            .bind(runId, seat, accounts[seat], signer.public_key, signer.name, runId),
+            .bind(runId, seat, accounts[seat], signer.public_key, signer.name, runId, storageId),
         )
       : []),
     ...seated.flatMap((signer, seat) => [
-      env.DB.prepare(`UPDATE accounts SET name = ? WHERE id = ? AND ${landed}`).bind(signer.name, accounts[seat], runId),
+      env.DB.prepare(`UPDATE accounts SET name = ? WHERE id = ? AND ${landed}`).bind(signer.name, accounts[seat], runId, storageId),
       env.DB.prepare(
         `INSERT INTO names (account_id, name, first_at, last_at) SELECT ?, ?, ?, ? WHERE ${landed}
          ON CONFLICT (account_id, name) DO UPDATE SET last_at = excluded.last_at`,
-      ).bind(accounts[seat], signer.name, now, now, runId),
+      ).bind(accounts[seat], signer.name, now, now, runId, storageId),
     ]),
   ];
   if (custom && digest) {
@@ -414,34 +274,67 @@ export async function postRun(request: Request, env: Env, options: { requireCust
       env.DB.prepare(
         `INSERT INTO custom_quests (id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at)
          SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${landed}
-         ON CONFLICT (id) DO UPDATE SET
-           source = CASE WHEN custom_quests.account_id = excluded.account_id AND custom_quests.source IS NULL THEN excluded.source ELSE custom_quests.source END,
-           seed = CASE WHEN custom_quests.account_id = excluded.account_id AND custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END
-         WHERE custom_quests.digest = excluded.digest`,
-      ).bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source ?? null, upload.seed ?? 0, JSON.stringify(custom), now, runId),
+         ON CONFLICT (id) DO NOTHING`,
+      ).bind(quest, digest, accountId, runId, custom.title, custom.author, null, 0, JSON.stringify(custom), now, runId, storageId),
     );
   }
-  let results: D1Result[];
+  // Publication releases the lease in the same transaction. If no row landed the trigger
+  // queues the unowned prefix, including if this request dies before inspecting the result.
+  statements.push(env.DB.prepare("DELETE FROM staged_run_files WHERE storage = ?").bind(storageId));
+  await env.DB.prepare("INSERT INTO staged_run_files (storage, expires_at) VALUES (?, ?)").bind(storageId, now + STAGING_TTL_MS).run();
+  let accepted: boolean;
   try {
-    results = await env.DB.batch(statements);
+    await env.REPLAYS.put(`runs/${storageId}.crd`, file, { httpMetadata: { contentType: "application/octet-stream" } });
+    await putTimeline(env, storageId, verdict.timeline);
+    await putGround(env, storageId, ground!);
+    const [insert] = await env.DB.batch(statements);
+    accepted = Boolean(insert!.meta.changes);
   } catch (error) {
-    // Another upload of the run got there while this one verified: a co-op pair's pages each upload it at its end.
-    if (await env.DB.prepare("SELECT 1 FROM runs WHERE id = ?").bind(runId).first()) return refuse(409, "this run was already accepted");
-    throw error;
+    // A lost database response can follow a successful commit. Keep that row's files. If
+    // ownership cannot be checked, the staging lease covers recovery after D1 returns.
+    const saved = await env.DB.prepare("SELECT storage_id FROM runs WHERE id = ?").bind(runId).first<{ storage_id: string | null }>();
+    if (saved?.storage_id !== storageId) {
+      await discardAttempt(env, storageId);
+      if (saved) return refuse(409, "this run was already accepted");
+      throw error;
+    }
+    accepted = true;
   }
-  // A twin got there while this one verified: nothing of the run landed, and its files go.
-  if (!results[0]!.meta.changes) {
-    await env.REPLAYS.delete(runObjects(runId));
-    return takenUnder((await twinOf())!);
+  if (!accepted) {
+    await discardAttempt(env, storageId);
+    const twin = await twinOf();
+    return twin ? takenUnder(twin) : refuse(503, "the upload expired or its account changed; retry the run");
   }
   // A 1.9.8 run ranks on 1.9.8's boards, which its quest's page shows with ?build=1.9.8.
   const build = buildOf(replay.run.cl_build);
-  return json(custom ? { id: runId, board, quest, score, build, digest, url: withBuild(`/custom/${quest}`, build) } : { id: runId, board, quest, score, build }, 201);
+  const sourceState = upload.source === null ? null : await submitSource(env, quest, accountId, upload.source, upload.seed);
+  if (sourceState instanceof Response) return sourceState;
+  return json(custom ? { id: runId, board, quest, score, build, digest, source_state: sourceState, url: withBuild(`/custom/${quest}`, build) } : { id: runId, board, quest, score, build }, 201);
 }
+
+// The public run id was also the R2 prefix before migration 0013.
+export const storageIdFor = (env: Env, id: string) =>
+  env.DB.prepare("SELECT coalesce(storage_id, id) AS storage FROM runs WHERE id = ?").bind(id).first<string>("storage");
 
 export const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
 // A run's stored files: its replay, timeline and ground.
 export const runObjects = (runId: string) => [`runs/${runId}.crd`, timelineKey(runId), groundKey(runId)];
+
+async function discardAttempt(env: Env, storage: string): Promise<void> {
+  let removed = true;
+  try {
+    await env.REPLAYS.delete(runObjects(storage));
+  } catch {
+    removed = false;
+  }
+  // All writes by this attempt have settled. A late write after an expired lease needs a
+  // fresh removal receipt if its synchronous cleanup failed.
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM staged_run_files WHERE storage = ?").bind(storage),
+    env.DB.prepare(removed ? "DELETE FROM deleted_run_files WHERE storage = ?" :
+      "INSERT OR REPLACE INTO deleted_run_files (storage) VALUES (?)").bind(storage),
+  ]);
+}
 
 const questOf = (replay: Replay) => (replay.run.quest_level ? `${replay.run.quest_level.major}.${replay.run.quest_level.minor}` : "");
 
@@ -481,15 +374,34 @@ function putTimeline(env: Env, runId: string, timeline: Timeline, customMetadata
 // A run's input signals (src/signals.ts). Runs accepted before signals were measured get theirs the first time a
 // moderator asks, by replaying their stored file; a run the verifier now refuses has those of the ticks before.
 export async function signalsFor(env: Env, runId: string): Promise<Signals | null> {
-  const run = await env.DB.prepare("SELECT signals FROM runs WHERE id = ?").bind(runId).first<{ signals: string | null }>();
+  const run = await env.DB.prepare("SELECT signals, coalesce(storage_id, id) AS storage FROM runs WHERE id = ?").bind(runId).first<{ signals: string | null; storage: string }>();
   if (!run) return null;
   if (run.signals) return JSON.parse(run.signals) as Signals;
-  const file = await env.REPLAYS.get(`runs/${runId}.crd`);
+  const file = await env.REPLAYS.get(`runs/${run.storage}.crd`);
   if (!file) return null;
   const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
   const { signals } = await verifyRun(env, replay, encodeTransport(replay));
-  await env.DB.prepare("UPDATE runs SET signals = ? WHERE id = ?").bind(JSON.stringify(signals), runId).run();
-  return signals;
+  const update = await env.DB.prepare("UPDATE runs SET signals = ? WHERE id = ? AND coalesce(storage_id, id) = ?")
+    .bind(JSON.stringify(signals), runId, run.storage).run();
+  return update.meta.changes ? signals : null;
+}
+
+// A long lazy bake may finish after the account and its files were deleted.
+// Recheck after the put, so either it observes deletion or deletion removes
+// the completed write. A failed delete can be retried by hourly maintenance.
+async function publishDerived(env: Env, runId: string, storage: string, key: string, write: Promise<unknown>): Promise<boolean> {
+  let owned: boolean;
+  try {
+    await write;
+  } finally {
+    // R2 may have completed a put even when its acknowledgement was lost.
+    owned = await storageIdFor(env, runId) === storage;
+    if (!owned) {
+      await env.DB.prepare("INSERT OR REPLACE INTO deleted_run_files(storage) VALUES (?)").bind(storage).run();
+      await env.REPLAYS.delete(key);
+    }
+  }
+  return owned;
 }
 
 // The timeline of a run of `players` players. Runs accepted before timelines were recorded, and co-op runs recorded
@@ -498,23 +410,22 @@ export async function signalsFor(env: Env, runId: string): Promise<Signals | nul
 // views that arrive while the first replays each replay too, until one of them stores its result. Null when there is
 // neither a timeline nor a replay.
 export async function timelineFor(env: Env, runId: string, players: number): Promise<Timeline | null> {
-  const object = await env.REPLAYS.get(timelineKey(runId));
+  const storageId = await storageIdFor(env, runId);
+  if (!storageId) return null;
+  const object = await env.REPLAYS.get(timelineKey(storageId));
   const stored = await object?.json<Timeline>();
   if (stored && ((stored.players?.length ?? 1) === players || object!.customMetadata?.[STALE] !== undefined)) return stored;
-  const file = await env.REPLAYS.get(`runs/${runId}.crd`);
+  const file = await env.REPLAYS.get(`runs/${storageId}.crd`);
   if (!file) return stored ?? null;
   const replayed = await replayTimeline(env, file).catch((error: unknown) => {
     if (!stored) throw error;
     return String(error);
   });
   // Only a replay that fails marks the stored timeline; failing to store a new one leaves it for the next view.
-  if (typeof replayed !== "string") {
-    await putTimeline(env, runId, replayed);
-    return replayed;
-  }
-  if (!stored) throw new Error(`run ${runId} no longer verifies: ${replayed}`);
-  await putTimeline(env, runId, stored, { [STALE]: replayed });
-  return stored;
+  const timeline = typeof replayed === "string" ? stored : replayed;
+  if (!timeline) throw new Error(`run ${runId} no longer verifies: ${replayed}`);
+  const write = putTimeline(env, storageId, timeline, typeof replayed === "string" ? { [STALE]: replayed } : undefined);
+  return await publishDerived(env, runId, storageId, timelineKey(storageId), write) ? timeline : null;
 }
 
 // A stored replay's timeline, or why the verifier refuses it.
@@ -527,12 +438,14 @@ async function replayTimeline(env: Env, file: R2ObjectBody): Promise<Timeline | 
 // A run's ground as it ended (src/ground.ts), as a JPEG. Runs accepted before grounds were baked get theirs the first
 // time it is asked for, by replaying their stored file again; null when there is no such replay.
 export async function groundFor(env: Env, origin: string, runId: string): Promise<Uint8Array | null> {
-  const stored = await env.REPLAYS.get(groundKey(runId));
+  const storageId = await storageIdFor(env, runId);
+  if (!storageId) return null;
+  const stored = await env.REPLAYS.get(groundKey(storageId));
   if (stored) return new Uint8Array(await stored.arrayBuffer());
-  const file = await env.REPLAYS.get(`runs/${runId}.crd`);
+  const file = await env.REPLAYS.get(`runs/${storageId}.crd`);
   if (!file) return null;
   const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
   const { verdict, ground } = await verifyWithGround(env, origin, replay, encodeTransport(replay));
   if (!verdict.ok) throw new Error(`run ${runId} no longer verifies: ${verdict.reason}`);
-  return putGround(env, runId, ground!);
+  return await publishDerived(env, runId, storageId, groundKey(storageId), putGround(env, storageId, ground!)) ? ground : null;
 }

@@ -525,8 +525,6 @@ def rules_1_9_8_run() -> dict[str, object]:
 
 
 def main() -> None:
-    from quests import quest_dsl_tables
-
     base, corrupted = corrupted_vectors()
     ranked, inflated, piloted, illegal, ranked_id = ranked_run()
     vectors = {
@@ -541,7 +539,6 @@ def main() -> None:
         "coop_run": coop_runs(),
         "terrain": terrain_vectors(),
         "run_terrain": run_terrain_vectors(),
-        "quest_dsl": quest_dsl_tables(),
     }
     OUT.write_text(json.dumps(vectors, indent=1) + "\n")
     print(f"wrote {OUT.relative_to(ROOT)}")

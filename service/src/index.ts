@@ -1,4 +1,5 @@
-import { confirmMerge, deleteAccount, linkIdentity, pendingJoin, unlink } from "./accounts";
+import { READABLE_FORMATS, VERIFIED_RULES } from "./replay";
+import { cleanDeletedRunFiles, confirmMerge, deleteAccount, linkIdentity, pendingJoin, unlink } from "./accounts";
 import { analyticsView, postAnalytics, pruneAnalytics } from "./analytics";
 import { loginLink, postChallenge, postLogin, postLoginLink, SESSION_COOKIE, secure, sessionAccount, sessionToken, tokenHash } from "./auth";
 import { CARD_HEIGHT, CARD_WIDTH, runCard } from "./card";
@@ -59,7 +60,7 @@ function redirect(location: string, headers: HeadersInit = {}): Response {
 
 export default {
   async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
-    await pruneAnalytics(env);
+    await Promise.all([pruneAnalytics(env), cleanDeletedRunFiles(env)]);
   },
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -92,6 +93,8 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
 
   // The game's API.
   switch (route) {
+    case "GET /api/replay-capabilities":
+      return json({ formats: READABLE_FORMATS, rules: VERIFIED_RULES }, 200, { "Cache-Control": "no-store" });
     case "POST /api/runs":
       return postRun(request, env);
     case "POST /api/custom":
@@ -171,8 +174,8 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     return run ? json(run) : refuse(404, "no such run");
   }
   if ((match = /^GET \/api\/runs\/([0-9a-f]{64})\/timeline$/.exec(route))) {
-    const board = await visibleRun(env, match[1]!);
-    const timeline = board && (await timelineFor(env, match[1]!, BOARDS[board].players));
+    const run = await visibleRun(env, match[1]!);
+    const timeline = run && (await timelineFor(env, match[1]!, BOARDS[run.board].players));
     return timeline ? json(timeline) : refuse(404, "no such run");
   }
   if (route === "GET /api/me") return json({ account: viewer, role });
@@ -237,7 +240,8 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
 
   // Pages the server answers itself: replay files.
   if ((match = /^GET \/runs\/([0-9a-f]{64})\.crd$/.exec(route))) {
-    const file = (await visibleRun(env, match[1]!)) && (await env.REPLAYS.get(`runs/${match[1]}.crd`));
+    const run = await visibleRun(env, match[1]!);
+    const file = run && (await env.REPLAYS.get(`runs/${run.storage}.crd`));
     if (!file) return new Response("No such replay.", { status: 404 });
     // A run's replay never changes; the short life lets hiding, bans and deletions take effect.
     return new Response(file.body, {

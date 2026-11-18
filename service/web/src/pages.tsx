@@ -737,6 +737,8 @@ async function customQuestPage(id: string, build: Build): Promise<Screen> {
         </>
       ),
       ...boardPanels(detail.board, bots.board),
+      ...(detail.source_state === "pending" ? [() => <p class="muted">The recipe is waiting for the compiler to check it against this clear.</p>] : []),
+      ...(detail.source_state === "rejected" ? [() => <p class="muted">The submitted recipe did not reproduce this quest. Its creator can resubmit the source and seed.</p>] : []),
       ...(detail.source
         ? [
             () => (

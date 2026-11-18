@@ -310,7 +310,10 @@ resolved `entries`, and drop/offer restrictions (`no_bonuses`, `no_perks`, `no_w
 `crimson quest play` builds one (construction seed 0 unless `--seed`) and starts it in ranked mode
 straight after boot, on 1.9.93's rules unless `--build 1.9.8` (`RunSpec.cl_build`);
 `crimson quest publish` uploads the recipe alongside a completed replay of either build
-to establish its leaderboard on `crimson.land/custom/<id>`.
+to establish its leaderboard on `crimson.land/custom/<id>`. The verified clear is playable immediately.
+The recipe stays private until the deployed Python compiler reproduces the same portable bytes, title and author
+from the submitted source and seed. The hourly check processes up to 16 candidates. If the page reports that a
+recipe failed verification, its creator can publish corrected source and seed against the same clear.
 
 ## Bounds and runtime semantics
 

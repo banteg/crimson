@@ -30,31 +30,54 @@ async function pool(items, work, concurrency) {
 // accepted since the bake (not retired), baked by the deployed service. `runs` lists production's runs as {id, retired};
 // `bake` answers whether the service baked a run's ground.
 export async function putGrounds({ baked, runs, put, remove, bake, concurrency = 16 }) {
-  const before = new Set((await runs()).map(({ id }) => id));
+  const byId = (rows) => new Map(rows.map(({ id, storage }) => [id, storage ?? id]));
+  const before = byId(await runs());
   const kept = baked.filter((id) => before.has(id));
-  await pool(kept, put, concurrency);
+  await pool(kept, (id) => put(id, before.get(id)), concurrency);
   const after = await runs();
-  const present = new Set(after.map(({ id }) => id));
-  const removed = kept.filter((id) => !present.has(id));
-  await pool(removed, remove, concurrency);
-  const known = new Set(baked);
+  const present = byId(after);
+  const removed = kept.filter((id) => present.get(id) !== before.get(id));
+  await pool(removed, (id) => remove(id, before.get(id)), concurrency);
+  const known = new Set(kept.filter((id) => present.get(id) === before.get(id)));
   const newer = after.filter(({ id, retired }) => !retired && !known.has(id)).map(({ id }) => id);
   const failed = [];
   for (const id of newer) if (!(await bake(id))) failed.push(id);
   return { put: kept.length, removed: removed.length, baked: newer.length - failed.length, failed };
 }
 
+// A run hidden or deleted while previews are published has no public ground URL. An active
+// private run still needs the ground already stored with its accepted replay.
+export async function groundAfter404(id, current, visible, hasGround) {
+  const row = (await current()).find((run) => run.id === id);
+  if (!row || row.retired) return true;
+  if ((await visible()).includes(id)) return false;
+  return hasGround(row.storage);
+}
+
 async function main() {
   const wrangler = (...args) => execFileAsync("npx", ["--no-install", "wrangler", ...args, "--remote", "--config", join(SERVICE, "wrangler.jsonc")], { cwd: SERVICE });
   const bucket = r2Bucket();
-  const key = (id) => `runs/${id}.ground.jpg`;
+  const key = (storage) => `runs/${storage}.ground.jpg`;
+  const current = async () => JSON.parse((await wrangler("d1", "execute", "crimson-land", "--json", "--command",
+    "SELECT id, retired, coalesce(storage_id, id) AS storage FROM runs")).stdout)[0].results;
+  const visible = async () => {
+    const response = await fetch(`${ORIGIN}/api/replays`, { cache: "no-store", signal: AbortSignal.timeout(30000) });
+    if (!response.ok) throw Error(`GET /api/replays: HTTP ${response.status}`);
+    return (await response.json()).runs;
+  };
   const started = performance.now();
   const result = await putGrounds({
     baked: readdirSync(GROUNDS).filter((name) => name.endsWith(".jpg")).map((name) => name.slice(0, -4)),
-    runs: async () => JSON.parse((await wrangler("d1", "execute", "crimson-land", "--json", "--command", "SELECT id, retired FROM runs")).stdout)[0].results,
-    put: (id) => bucket.put(key(id), readFileSync(join(GROUNDS, `${id}.jpg`)), "image/jpeg"),
-    remove: (id) => bucket.remove(key(id)),
-    bake: async (id) => (await fetch(`${ORIGIN}/runs/${id}.ground.jpg`, { signal: AbortSignal.timeout(120000) })).ok,
+    runs: current,
+    put: (id, storage) => bucket.put(key(storage), readFileSync(join(GROUNDS, `${id}.jpg`)), "image/jpeg"),
+    remove: (_id, storage) => bucket.remove(key(storage)),
+    bake: async (id) => {
+      const response = await fetch(`${ORIGIN}/runs/${id}.ground.jpg`, { cache: "no-store", signal: AbortSignal.timeout(120000) });
+      await response.body?.cancel();
+      return response.status === 404
+        ? groundAfter404(id, current, visible, async (storage) => (await bucket.get(key(storage))).length > 0)
+        : response.ok;
+    },
   });
   console.log(`${result.put} grounds put, ${result.removed} removed for deleted runs, ${result.baked} baked by the service for newer runs, in ${((performance.now() - started) / 1000).toFixed(2)}s.`);
   if (result.failed.length) {

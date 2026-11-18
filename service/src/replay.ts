@@ -20,6 +20,7 @@ const REPLAY_KEYS: Record<number, readonly ReplayKey[]> = {
   34: ["format_version", "game_version", "rules", "recorder", "pilot", "seat_keys", "run", "result", "ticks"],
   35: ["format_version", "game_version", "rules", "recorder", "pilot", "seat_keys", "run", "result", "ticks"],
 };
+export const READABLE_FORMATS = Object.keys(REPLAY_KEYS).map(Number);
 const RUN_KEYS = [
   "game_mode_id", "seed", "quest_level", "player_count", "hardcore", "preserve_bugs", "quest_fail_retry_count",
   "detail_preset", "violence_disabled", "friendly_fire", "status", "typo_dictionary_words",
@@ -210,6 +211,7 @@ export interface Replay {
 }
 
 export class ReplayError extends Error {}
+export class NewerReplayFormat extends ReplayError {}
 
 function require(condition: boolean, message: string): asserts condition {
   if (!condition) throw new ReplayError(message);
@@ -280,10 +282,12 @@ class Schema {
     require(head instanceof Head && head.kind === "map", "replay must be a map");
     const version = head.length && reader.key() === "format_version" ? reader.value() : undefined;
     const names = typeof version === "number" ? REPLAY_KEYS[version] : undefined;
-    require(
-      names !== undefined,
-      `unsupported replay format version: ${String(version)} (this build reads versions ${Object.keys(REPLAY_KEYS).join(", ")})`,
-    );
+    if (names === undefined) {
+      const reason = `unsupported replay format version: ${String(version)} (this build reads versions ${READABLE_FORMATS.join(", ")})`;
+      if (typeof version === "number" && Number.isSafeInteger(version) && version > REPLAY_FORMAT_VERSION)
+        throw new NewerReplayFormat(reason);
+      throw new ReplayError(reason);
+    }
     const order = `replay must have exactly the keys ${names!.join(", ")} in that order`;
     require(head.length === names!.length, order);
     // Every format has the run before the ticks, which take its player count.
@@ -393,7 +397,7 @@ class Schema {
     });
   }
 
-  private customQuest(value: Value): CustomQuest {
+  private customQuest(value: Value, players: number): CustomQuest {
     require(value instanceof MapValue, "run.custom_quest must be a map");
     const keys = value.entries.map(([key]) => key);
     const legacy = keys.includes("tables");
@@ -423,7 +427,7 @@ class Schema {
           this.int(terrain[1]!, "run.custom_quest.terrain_slots[1]"),
           this.int(terrain[2]!, "run.custom_quest.terrain_slots[2]"),
         ],
-        entries: tables[variants[0]!]!,
+        entries: tables[variants[(players - 1) * 2]!]!,
         no_bonuses: [],
         no_perks: [],
         no_weapons: [],
@@ -472,7 +476,8 @@ class Schema {
         minor: this.range(this.int(level.minor, "run.quest_level.minor"), 1, 10, "run.quest_level.minor"),
       };
     }
-    const custom_quest = format < 33 || f.custom_quest === null ? null : this.customQuest(f.custom_quest!);
+    const player_count = this.range(this.int(f.player_count, "run.player_count"), 1, 4, "run.player_count");
+    const custom_quest = format < 33 || f.custom_quest === null ? null : this.customQuest(f.custom_quest!, player_count);
     require(
       Number(quest_level !== null) + Number(custom_quest !== null) === (game_mode_id === GameMode.QUESTS ? 1 : 0),
       "quests need exactly one of run.quest_level and run.custom_quest; other modes need neither",
@@ -495,7 +500,7 @@ class Schema {
       seed: this.int(f.seed, "run.seed"),
       quest_level,
       custom_quest,
-      player_count: this.range(this.int(f.player_count, "run.player_count"), 1, 4, "run.player_count"),
+      player_count,
       hardcore: this.bool(f.hardcore, "run.hardcore"),
       preserve_bugs: this.bool(f.preserve_bugs, "run.preserve_bugs"),
       quest_fail_retry_count: this.range(this.int(f.quest_fail_retry_count, "run.quest_fail_retry_count"), 0, Infinity, "run.quest_fail_retry_count"),

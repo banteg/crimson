@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parentPort, workerData } from "node:worker_threads";
@@ -28,14 +29,17 @@ const { verifyWithGround } = await vite.ssrLoadModule("/src/runs.ts");
 // The worker's site files, as its ASSETS binding serves them.
 const env = { ASSETS: { fetch: async (url) => new Response(readFileSync(join(ART, new URL(url).pathname))) } };
 
-parentPort.on("message", async ({ id, file }) => {
+parentPort.on("message", async ({ id, file, expectedSha }) => {
   try {
     const start = performance.now();
-    const replay = decodeReplay(inflateReplay(new Uint8Array(readFileSync(file))));
+    const payload = inflateReplay(new Uint8Array(readFileSync(file)));
+    const payload_sha256 = createHash("sha256").update(payload).digest("hex");
+    if (expectedSha && expectedSha !== payload_sha256) throw Error("Stored replay differs from the accepted payload");
+    const replay = decodeReplay(payload);
     const { verdict, ground } = await verifyWithGround(env, "https://crimson.land", replay, encodeTransport(replay));
     if (verdict.ok) writeFileSync(join(GROUNDS, `${id}.jpg`), ground);
     // Keep large timelines, signals, and image buffers inside the worker.
-    parentPort.postMessage({ id, ok: verdict.ok, reason: verdict.ok ? null : verdict.reason,
+    parentPort.postMessage({ id, payload_sha256, ok: verdict.ok, reason: verdict.ok ? null : verdict.reason,
       ticks: replay.ticks.length, seconds: (performance.now() - start) / 1000 });
   } catch (cause) {
     // Unexpected errors abort the deploy rather than being reported as retirement candidates.

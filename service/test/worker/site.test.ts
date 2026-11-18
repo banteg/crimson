@@ -290,6 +290,28 @@ describe("linking", () => {
     expect(await env.DB.prepare("SELECT 1 FROM accounts WHERE id = ?").bind(laptop.accountId).first()).toBeNull();
   });
 
+  it.each(["unlink", "replace"])("revokes outstanding joins when the owner uses %s, even after relinking", async (action) => {
+    const [home, laptop] = [await signIn(), await signIn()];
+    const remote = provider({ id: 42, login: "test" });
+    await (await link(home.cookie, "github")).callback();
+    const joined = await (await link(laptop.cookie, "github")).callback();
+    const token = joined.headers.get("location")!.split("/").pop();
+    if (action === "unlink") {
+      await call("/api/account/unlink/github", { method: "POST", headers: { cookie: home.cookie, origin: ORIGIN }, body: JSON.stringify({ account: home.accountId }) });
+    } else {
+      remote.mockRestore();
+      provider({ id: 43, login: "replacement" });
+      await (await link(home.cookie, "github")).callback();
+    }
+    vi.restoreAllMocks();
+    provider({ id: 42, login: "test" });
+    await (await link(home.cookie, "github")).callback();
+    expect((await call(`/api/join/${token}`, { headers: { cookie: laptop.cookie } })).status).toBe(410);
+    const denied = await call("/api/join", { method: "POST", headers: { cookie: laptop.cookie, origin: ORIGIN }, body: JSON.stringify({ token, account: laptop.accountId }) });
+    expect(denied.status).toBe(410);
+    expect(await api("/api/me", laptop.cookie)).toMatchObject({ account: laptop.accountId });
+  });
+
   it("a join keeps a moderator's bot mark and the stronger role", async () => {
     const [home, laptop] = [await signIn(), await signIn()];
     await env.DB.prepare("UPDATE accounts SET bot = 1, role = 'admin' WHERE id = ?").bind(laptop.accountId).run();

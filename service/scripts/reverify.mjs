@@ -19,6 +19,8 @@
 // since, and hidden or banned ones.
 // Runs verify on one worker thread per CPU (reverify-worker.mjs).
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { zstdDecompressSync } from "node:zlib";
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -48,10 +50,11 @@ const wrangler = (...args) =>
   });
 
 // The runs `verdicts` already settles, with their verdicts, and the rest of `ids`, still to verify.
-export function settle(ids, verdicts) {
+export function settle(ids, verdicts, payloads = null) {
+  const matches = (id) => Object.hasOwn(verdicts, id) && (!payloads || (payloads[id] && verdicts[id].payload_sha256 === payloads[id]));
   return {
-    settled: ids.filter((id) => Object.hasOwn(verdicts, id)).map((id) => ({ id, ...verdicts[id] })),
-    unsettled: ids.filter((id) => !Object.hasOwn(verdicts, id)),
+    settled: ids.filter(matches).map((id) => ({ id, ...verdicts[id] })),
+    unsettled: ids.filter((id) => !matches(id)),
   };
 }
 
@@ -89,21 +92,25 @@ export function unexpectedFailures(results, migrations) {
 
 // Production's runs not yet retired.
 function activeRuns() {
-  const [{ results }] = JSON.parse(wrangler("d1", "execute", "crimson-land", "--json", "--command", "SELECT id FROM runs WHERE retired IS NULL"));
-  return results.map(({ id }) => id);
+  const [{ results }] = JSON.parse(wrangler("d1", "execute", "crimson-land", "--json", "--command", "SELECT id, payload_sha256, coalesce(storage_id, id) AS storage FROM runs WHERE retired IS NULL"));
+  return new Map(results.map((run) => [run.id, run]));
 }
 
 // Each run's replay as {id, file}, fetched once into `directory` by `get`.
-async function fetchReplays(ids, directory, get) {
+async function fetchReplays(ids, directory, get, cacheKey = (id) => id) {
   const start = performance.now();
-  const { runs, downloaded } = await downloadReplays(ids, directory, async (id, file) => writeFileSync(file, await get(id)), 16);
+  const owners = new Map(ids.map((id) => [cacheKey(id), id]));
+  const { runs, downloaded } = await downloadReplays([...owners.keys()], directory, async (key, file) => writeFileSync(file, await get(owners.get(key))), 16);
   console.log(`Replays: ${downloaded} downloaded, ${runs.length - downloaded} cached in ${elapsed(start)}`);
-  return runs;
+  return runs.map(({ id: key, file }) => ({ id: owners.get(key), file }));
 }
 
-function fromR2(ids) {
+async function fromR2(storage, ids = [...storage.keys()]) {
+  // A deleted public id can be accepted again with a different stored payload. A private
+  // cache hit must belong to the selected upload; verifier verdicts still name the public id.
   const bucket = r2Bucket();
-  return fetchReplays(ids, CACHE, (id) => bucket.get(`runs/${id}.crd`));
+  const files = await fetchReplays(ids, CACHE, (id) => bucket.get(`runs/${storage.get(id).storage}.crd`), (id) => storage.get(id).storage);
+  return files.map((run) => ({ ...run, expectedSha: storage.get(run.id).payload_sha256 }));
 }
 
 async function fromSite(path) {
@@ -112,9 +119,12 @@ async function fromSite(path) {
   return response;
 }
 
-async function publicReplay(id) {
+async function publicReplay(id, expectedSha) {
   try {
-    return new Uint8Array(await (await fromSite(`/runs/${id}.crd`)).arrayBuffer());
+    const file = new Uint8Array(await (await fromSite(`/runs/${id}.crd${expectedSha ? `?payload=${expectedSha}` : ""}`)).arrayBuffer());
+    if (expectedSha && createHash("sha256").update(zstdDecompressSync(file, { maxOutputLength: 64 << 20 })).digest("hex") !== expectedSha)
+      throw Object.assign(Error("Public replay differs from the listed payload"), { gone: id, expectedSha });
+    return file;
   } catch (error) {
     throw error.status === 404 ? Object.assign(error, { gone: id }) : error;
   }
@@ -123,15 +133,15 @@ async function publicReplay(id) {
 // The listed runs, and the replays of those `known` has no verdict for, fetched into `directory` by `get`. A run the
 // site stops serving after `list` named it (hidden, banned or deleted meanwhile) drops out once a fresh list no longer
 // names it either; one still listed is a real failure.
-export async function listedReplays(list, known, directory, get) {
+export async function listedReplays(list, known, directory, get, cacheKey) {
   let listed = await list();
   for (;;) {
     try {
-      return { listed, runs: await fetchReplays(settle(listed, known).unsettled, directory, get) };
+      return { listed, runs: await fetchReplays(settle(listed, known).unsettled, directory, get, cacheKey) };
     } catch (error) {
       if (!error.gone) throw error;
       const fresh = await list();
-      if (fresh.includes(error.gone)) throw error;
+      if (fresh.includes(error.gone) && (!error.expectedSha || cacheKey?.(error.gone) === error.expectedSha)) throw error;
       listed = fresh;
     }
   }
@@ -154,7 +164,7 @@ async function verify(runs, grounds) {
     onResult: ({ id, ok, reason, seconds, ticks }) => console.log(`${id}  ${ok ? "ok" : reason}  ${seconds.toFixed(2)}s (${ticks} ticks)`),
   });
   console.log(`${runs.length} runs replayed in ${elapsed(start)}.`);
-  return results.map(({ id, ok, reason }) => ({ id, ok, reason }));
+  return results.map(({ id, ok, reason, payload_sha256 }) => ({ id, ok, reason, payload_sha256 }));
 }
 
 function report(results, blocking) {
@@ -173,14 +183,28 @@ async function reverifyPublic(out) {
   const grounds = join(out, "grounds");
   const previous = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : null;
   const known = previous?.inputs === inputs ? previous.runs : {};
-  const list = async () => (await (await fromSite("/api/replays")).json()).runs;
-  const { listed, runs } = await listedReplays(list, known, PUBLIC, publicReplay);
+  let payloads;
+  const list = async () => {
+    const manifest = await (await fromSite("/api/replays")).json();
+    payloads = manifest.payloads ?? {};
+    for (const id of manifest.runs) {
+      assert.match(id, /^[a-f0-9]{64}$/);
+      if (payloads[id]) assert.match(payloads[id], /^[a-f0-9]{64}$/);
+      // A pre-0013 Worker cannot identify the accepted payload. Download it afresh during rollout.
+      else rmSync(join(PUBLIC, `${id}.crd`), { force: true });
+      if (!payloads[id] || known[id]?.payload_sha256 !== payloads[id]) delete known[id];
+    }
+    return manifest.runs;
+  };
+  const cacheKey = (id) => payloads[id] ?? id;
+  const { listed, runs } = await listedReplays(list, known, PUBLIC, (id) => publicReplay(id, payloads[id]), cacheKey);
+  for (const run of runs) run.expectedSha = payloads[run.id];
   const { settled } = settle(listed, known);
   // Only what the site still serves stays: a run hidden, banned, retired or deleted since leaves the caches.
-  prune(PUBLIC, listed, ".crd");
+  prune(PUBLIC, listed.map(cacheKey), ".crd");
   prune(grounds, settled.map(({ id }) => id), ".jpg");
   const results = [...settled, ...(await verify(runs, grounds))];
-  writeFileSync(file, `${JSON.stringify({ inputs, runs: Object.fromEntries(results.map(({ id, ok, reason }) => [id, { ok, reason }])) })}\n`);
+  writeFileSync(file, `${JSON.stringify({ inputs, runs: Object.fromEntries(results.map(({ id, ok, reason, payload_sha256 }) => [id, { ok, reason, payload_sha256 }])) })}\n`);
   console.log(`${settled.length} verdicts kept for these replay inputs, ${runs.length} runs replayed.`);
   const migrations = readdirSync(MIGRATIONS).map((name) => readFileSync(join(MIGRATIONS, name), "utf8")).join("\n");
   report(results, unexpectedFailures(results, migrations));
@@ -189,9 +213,11 @@ async function reverifyPublic(out) {
 async function reverifyDelta(dir) {
   const { inputs, runs: verdicts } = JSON.parse(readFileSync(join(dir, "verdicts.json"), "utf8"));
   assert.equal(inputs, await replayInputs(), "CI's verdicts are for other replay inputs");
-  const { settled, unsettled } = settle(activeRuns(), verdicts);
+  const storage = activeRuns();
+  const payloads = Object.fromEntries([...storage.values()].map(({ id, payload_sha256 }) => [id, payload_sha256]));
+  const { settled, unsettled } = settle([...storage.keys()], verdicts, payloads);
   for (const { id, ok } of settled) if (ok) copyFileSync(join(dir, "grounds", `${id}.jpg`), join(GROUNDS, `${id}.jpg`));
-  const results = [...settled, ...(await verify(await fromR2(unsettled), GROUNDS))];
+  const results = [...settled, ...(await verify(await fromR2(storage, unsettled), GROUNDS))];
   console.log(`${settled.length} runs settled by CI's verdicts, ${unsettled.length} verified here.`);
   report(results, results.filter(({ ok }) => !ok));
 }
