@@ -19,7 +19,14 @@ enum {
   // The cubes over frozen bodies (creature_render_all): their dark faces partly clear, so the body shows through.
   HOST_PASS_ICE_FROZEN = 11,
   HOST_PASS_GLINT = 12, // textured bonus sparks: alpha contains painted intensity, not coverage
+  HOST_PASS_CREATURE_TYPE = 0x100, // followed by the recovered creature type (0 through 5)
 };
+
+inline int creature_type_for_pass(unsigned pass) {
+  return pass >= HOST_PASS_CREATURE_TYPE && pass < HOST_PASS_CREATURE_TYPE + 6
+             ? (int)(pass - HOST_PASS_CREATURE_TYPE) + 1
+             : 0;
+}
 // The host texture for the local mouse reticle. Game textures and terrain snapshots have positive IDs.
 enum { HOST_MOUSE_AIM_TEXTURE = -1 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).
