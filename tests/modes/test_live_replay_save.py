@@ -15,6 +15,7 @@ from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.perks import PerkId
+from crimson.perks.selection import perk_selection_open_choices
 from crimson.replay import load_replay
 from crimson.replay.checkpoints import load_checkpoints_file
 from crimson.replay.driver.playback_driver import PlaybackDriver
@@ -199,7 +200,7 @@ def test_perk_prompt_stays_closed_while_a_pick_is_queued(make_mode_config, asset
     session = mode._sim_session
     assert session is not None
     # The menu opened on the tick before.
-    session.perk_menu_open = True
+    perk_selection_open_choices(mode.state, mode.world.players, game_mode=GameMode.SURVIVAL)
     mode.record_perk_pick_command(0)
     assert mode._ui_pending_perk_count() == 0
 

@@ -27,6 +27,7 @@ def test_survival_level_up_preserves_waiting_perk_offer(reopen_menu: bool) -> No
         choices=offered.copy(),
         choices_dirty=False,
     )
+    perk_selection_open_choices(state, world.players, game_mode=GameMode.SURVIVAL)
     rng_before = state.rng.state
 
     survival_check_level_up(state, player)
@@ -37,7 +38,7 @@ def test_survival_level_up_preserves_waiting_perk_offer(reopen_menu: bool) -> No
     if reopen_menu:
         assert perk_selection_open_choices(state, world.players, game_mode=GameMode.SURVIVAL) == offered
 
-    picked = perk_selection_pick(state, world.players, 2, game_mode=GameMode.SURVIVAL, dt=0.0, creatures=[])
+    picked = perk_selection_pick(state, world.players, 2, dt=0.0, creatures=[])
 
     # The pick comes from the offer that waited through the level-ups.
     assert picked == PerkPick(offered=tuple(offered), chosen=2)

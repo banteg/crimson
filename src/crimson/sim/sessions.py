@@ -105,8 +105,6 @@ class DeterministicSession(msgspec.Struct):
     terrain_fx: TerrainFxScratch = msgspec.field(default_factory=TerrainFxScratch)
 
     mode_state: ModeState = None
-    # The perk menu opened in the last tick: the next tick may start with one pick, and closes it either way.
-    perk_menu_open: bool = False
 
     @classmethod
     def start(cls, world: WorldState, *, perk_progression_enabled: bool, mode_state: ModeState = None) -> DeterministicSession:
@@ -182,25 +180,21 @@ class DeterministicSession(msgspec.Struct):
         if all_players_dead(self.world.players):
             raise IllegalCommandError(f"{name} while every player is dead")
 
-    def apply_command(self, command: GameCommand, *, dt: float) -> PerkPick:
-        match command:
-            case PerkPickCommand(choice_index=choice_index):
-                self._require_perk_command_allowed("perk_pick")
-                # Each pick sees any timing changes made by earlier picks.
-                timing = self.timing_for_dt(dt)
-                picked = perk_selection_pick(
-                    self.world.state,
-                    self.world.players,
-                    choice_index,
-                    game_mode=self.world.state.game_mode,
-                    dt=timing.dt_sim,
-                    creatures=self.world.creatures.entries,
-                )
-                if picked is None:
-                    raise IllegalCommandError("perk_pick of a choice that is not offered")
-                return picked
-            case _:
-                raise RuntimeError(f"unhandled command type: {type(command).__name__}")
+    def _pick_perk(self, command: PerkPickCommand, *, dt: float) -> PerkPick:
+        state = self.world.state
+        if state.perk_selection.open_offer is None:
+            raise IllegalCommandError("perk_pick without an open perk menu")
+        self._require_perk_command_allowed("perk_pick")
+        picked = perk_selection_pick(
+            state,
+            self.world.players,
+            command.choice_index,
+            dt=self.timing_for_dt(dt).dt_sim,
+            creatures=self.world.creatures.entries,
+        )
+        if picked is None:
+            raise IllegalCommandError("perk_pick of a choice that is not offered")
+        return picked
 
     def step_tick(
         self,
@@ -237,35 +231,33 @@ class DeterministicSession(msgspec.Struct):
         perk_picks: list[PerkPick] = []
         typo_commands: list[TypoCommand] = []
         open_perk_menu = False
-        # The perk screen pauses the game: a pick comes right after the menu opened, and a tick without one is Cancel.
-        menu_open, self.perk_menu_open = self.perk_menu_open, False
-        for command in commands or ():
-            if self.world.state.game_mode == GameMode.RUSH and isinstance(command, (PerkPickCommand, PerkMenuOpenCommand)):
-                raise IllegalCommandError("perk command in Rush")
-            match command:
-                case PerkPickCommand():
-                    if not menu_open:
-                        raise IllegalCommandError("perk_pick without an open perk menu")
-                    menu_open = False
-                    perk_picks.append(self.apply_command(command, dt=dt))
-                    post_apply_sfx.append(SfxId.UI_BONUS)
-                case PerkMenuOpenCommand():
-                    # Live play requests the menu only while it may open.
-                    self._require_perk_command_allowed("perk_menu_open")
-                    open_perk_menu = True
-                case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
-                    if self.world.state.game_mode != GameMode.TYPO:
-                        raise IllegalCommandError(f"Typ-o command in non-Typo session: {type(command).__name__}")
-                    typo_commands.append(command)
-                case _:
-                    raise RuntimeError(f"unhandled command type: {type(command).__name__}")
+        state = self.world.state
+        try:
+            for command in commands or ():
+                if state.game_mode == GameMode.RUSH and isinstance(command, (PerkPickCommand, PerkMenuOpenCommand)):
+                    raise IllegalCommandError("perk command in Rush")
+                match command:
+                    case PerkPickCommand():
+                        perk_picks.append(self._pick_perk(command, dt=dt))
+                        post_apply_sfx.append(SfxId.UI_BONUS)
+                    case PerkMenuOpenCommand():
+                        self._require_perk_command_allowed("perk_menu_open")
+                        open_perk_menu = True
+                    case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
+                        if state.game_mode != GameMode.TYPO:
+                            raise IllegalCommandError(f"Typ-o command in non-Typo session: {type(command).__name__}")
+                        typo_commands.append(command)
+                    case _:
+                        raise RuntimeError(f"unhandled command type: {type(command).__name__}")
+        finally:
+            # An open offer lasts for this command prelude only. A tick without a pick is Cancel.
+            state.perk_selection.close_offer()
 
         # Picks belong to the between-tick prelude (the perk screen pauses the
         # game). A menu request opens mid-tick at the native point, see
         # `WorldState.step`. Typ-o input belongs inside the tick, at the start of
         # `typo_gameplay_update_and_render`.
         timing = self.timing_for_dt(dt)
-        state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)
         elapsed_before_ms = self.elapsed_ms
 
@@ -292,7 +284,6 @@ class DeterministicSession(msgspec.Struct):
                 elapsed_ms=elapsed_before_ms,
                 open_perk_menu=open_perk_menu,
             )
-            self.perk_menu_open = events.perk_menu_opened
 
         if bodies is not None and atmosphere_impulses is not None:
             atmosphere_impulses.extend(body_wakes(bodies, body_positions(self.world), timing.dt_sim))

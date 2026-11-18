@@ -18,7 +18,6 @@ from ..gameplay import survival_check_level_up
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..sim.mode_updates import SurvivalSpawnState
-from ..sim.sessions import DeterministicSessionTick
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
@@ -92,11 +91,6 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         self._perk_menu.close()
         super()._enter_game_over()
-
-    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
-        if self._perk_menu.active:
-            return False
-        return super()._on_tick_applied(tick)
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from contextlib import nullcontext
+from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -98,9 +99,12 @@ class _ModeFrameState(msgspec.Struct, frozen=True):
     dt_ui_ms: float
 
 
+class _GameplayExit(Enum):
+    PAUSE = auto()
+    FINISH_RUN = auto()
+
+
 class BaseGameplayMode:
-    # Whether the tick that ends the run starts the run-down; Typ-o starts it after its death animation.
-    _RUN_DOWN_ON_OUTCOME = True
     # `gameplay_update_and_render` pauses on F1 and shows the key info; Typ-o's update has no pause.
     _KEY_INFO_PAUSE = True
 
@@ -165,7 +169,6 @@ class BaseGameplayMode:
         self._game_over_record: HighScoreRecord | None = None
         # The level-up prompt and perk menu `gameplay_update_and_render` runs outside Rush and Typ-o.
         self._perk_prompt = PerkPromptState()
-        self._perk_menu_requested = False
         self._counted_level = 1
         self._game_over_banner = "reaper"
 
@@ -180,8 +183,7 @@ class BaseGameplayMode:
         )
         self._gameplay_transition_latch = False
         # Native `game_state_pending` while gameplay runs the timeline down: the pause menu, or the run's end.
-        self._pause_pending = False
-        self._run_ending = False
+        self._pending_exit: _GameplayExit | None = None
         self._screen_fade: GameState | None = None
         self._terrain_regen_counter = 0
         self._run_reset_seed = 0
@@ -412,9 +414,10 @@ class BaseGameplayMode:
     def _request_perk_menu(self) -> None:
         """Ask the next tick to open the perk menu; it opens mid-tick, as in native."""
 
-        if self._perk_menu.active or self._perk_menu_requested:
+        if self._perk_menu.active or any(
+            isinstance(command, PerkMenuOpenCommand) for command in self._live_ticks.queued_commands
+        ):
             return
-        self._perk_menu_requested = True
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
     def _update_perk_ui(self, *, dt_ui_ms: float) -> None:
@@ -474,13 +477,13 @@ class BaseGameplayMode:
         dt_ui_ms = float(min(dt, 0.1) * 1000.0)
         self._last_dt_ms = dt_ui_ms
         self._update_ui_mouse()
-        if not (self._game_over_active or self._pause_pending or self._run_ending):
+        if not self._game_over_active and (self._pending_exit is None or self._perk_menu.active):
             # The game-over panel advances the timeline itself while it is up, and a gameplay
             # run-down advances it with the simulated ticks.
             self._ui_timeline.advance(int(dt_ui_ms))
             if self._hud_alpha() >= 1.0:
                 self._gameplay_transition_latch = False
-        if self._KEY_INFO_PAUSE and not self._game_over_active:
+        if self._KEY_INFO_PAUSE and not self._game_over_active and not self._perk_menu.active:
             self._update_key_info_pause(int(dt_ui_ms))
         return dt, dt_ui_ms
 
@@ -492,7 +495,7 @@ class BaseGameplayMode:
         self._keybind_help_alpha_ms = min(1000, max(0, self._keybind_help_alpha_ms + step))
         # The world is frozen, but native keeps moving the timeline by the frame, so a pending exit still happens.
         session = self._sim_session
-        if self._paused and (self._pause_pending or self._run_ending) and session is not None:
+        if self._paused and session is not None:
             self._run_down_gameplay(dt_ms, session)
 
     def _draw_keybind_help(self) -> None:
@@ -524,16 +527,20 @@ class BaseGameplayMode:
     def _enter_gameplay_timeline(self) -> None:
         """`game_state_set(GAME_STATE_GAMEPLAY)`."""
         self._paused = False
-        self._pause_pending = False
-        self._run_ending = False
+        self._pending_exit = None
         self._ui_timeline.enter(ui_elements_max_timeline(GameStateId.GAMEPLAY))
 
     def _request_pause(self) -> None:
         """`game_frame_update`: Esc makes the pause menu pending; gameplay runs on while the HUD fades out."""
         # Only gameplay takes Esc: not while the perk panel is still sliding out.
-        if self._pause_pending or self._run_ending or self._ui_timeline.closing:
+        if not self._ui_timeline.closing:
+            self._begin_gameplay_exit(_GameplayExit.PAUSE)
+
+    def _begin_gameplay_exit(self, intent: _GameplayExit) -> None:
+        # A terminal outcome supersedes a pending pause without restarting the fade.
+        if self._pending_exit is intent or self._pending_exit is _GameplayExit.FINISH_RUN:
             return
-        self._pause_pending = True
+        self._pending_exit = intent
         self._ui_timeline.begin()
 
     def _run_down_gameplay(self, dt_ms: int, session: DeterministicSession) -> bool:
@@ -542,15 +549,17 @@ class BaseGameplayMode:
         Native moves the timeline by each simulated frame's `frame_dt_ms`, restored without the Reflex Boost scale,
         so the run-down lasts at most 500ms of frames after the run ends (the verifiers bound recordings by this).
         """
+        intent = self._pending_exit
+        if intent is None:
+            return False
         self._ui_timeline.advance(dt_ms)
         if not self._ui_timeline.ready:
             return False
-        if self._run_ending:
-            self._run_ending = False
+        self._pending_exit = None
+        if intent is _GameplayExit.FINISH_RUN:
             # The pending state is set again every frame, so the outcome is the one standing now.
             self._finish_run(session.end_outcome())
         else:
-            self._pause_pending = False
             self._action = Route.PAUSE
         return True
 
@@ -753,7 +762,6 @@ class BaseGameplayMode:
         self._game_over_ui.close()
         self._perk_prompt.reset()
         self._perk_menu.reset()
-        self._perk_menu_requested = False
         self._counted_level = 1
 
         # Native game_over/victory transitions call `music_fade_out_all` on menu + extra
@@ -861,7 +869,7 @@ class BaseGameplayMode:
     def _finish_run_if_over(self) -> bool:
         """Between ticks: finish the run if the session's rules say it is over."""
 
-        if self._run_ending:
+        if self._pending_exit is _GameplayExit.FINISH_RUN:
             return False
         session = self._sim_session
         outcome = session.terminal_outcome() if session is not None else None
@@ -905,7 +913,9 @@ class BaseGameplayMode:
             return self._game_over_ui.world_entity_alpha()
         # Native `game_state_pending` while the timeline runs down: the pause menu, or the run's end (which only a
         # Typ'o'Shooter run, outside the gameplay states, reads; its end is the game over).
-        pending = GameStateId.PAUSE_MENU if self._pause_pending else GameStateId.GAME_OVER if self._run_ending else None
+        pending = None
+        if self._pending_exit is not None:
+            pending = GameStateId.PAUSE_MENU if self._pending_exit is _GameplayExit.PAUSE else GameStateId.GAME_OVER
         return ui_transition_alpha(
             self._ui_timeline.timeline_ms, state=self.game_state_id, pending=pending, latch=self._gameplay_transition_latch,
         )
@@ -992,23 +1002,13 @@ class BaseGameplayMode:
                 gameplay.show_info_texts = False
         self._counted_level = level
 
-    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
-        """Return False to stop running ticks this frame."""
-
+    def _on_tick_applied(self, tick: DeterministicSessionTick) -> None:
         self._count_level_ups()
-        # The request rode in this tick; the tick opened the menu only if native would have.
-        requested = self._perk_menu_requested
-        self._perk_menu_requested = False
-        if tick.outcome is not None and self._RUN_DOWN_ON_OUTCOME and not self._run_ending:
-            # `gameplay_update_and_render`: the end of the run replaces any pending pause and runs the timeline
-            # down while the world keeps simulating.
-            self._run_ending = True
-            self._pause_pending = False
-            self._ui_timeline.begin()
-        if requested and tick.events.perk_menu_opened:
-            self._perk_menu.open_menu()
-            return False
-        return True
+        if tick.outcome is not None:
+            self._begin_gameplay_exit(_GameplayExit.FINISH_RUN)
+        elif tick.events.perk_menu_opened and self._pending_exit is _GameplayExit.PAUSE:
+            # Native enters the perk screen inside gameplay, before the frame dispatches Escape.
+            self._pending_exit = None
 
     def _run_deterministic_session_ticks(
         self,
@@ -1052,9 +1052,14 @@ class BaseGameplayMode:
                 # UI work between ticks (perk menu previews, the high-score tag
                 # draw at game over) must not leak into it.
                 self._replay_result = build_run_result(session, outcome=step.outcome or session.end_outcome())
-            # Mode callbacks can save the finished replay, so record the tick first.
-            if not self._on_tick_applied(step) or (step.outcome is not None and not self._RUN_DOWN_ON_OUTCOME):
+            # Finishing the run saves its replay, including this tick.
+            self._on_tick_applied(step)
+            if self._run_down_gameplay(step.timing.frame_dt_ms_i32, session):
                 break
-            if (self._pause_pending or self._run_ending) and self._run_down_gameplay(step.timing.frame_dt_ms_i32, session):
+            if step.events.perk_menu_opened:
+                # The opening tick spent its share of a terminal fade. Only the panel advances until
+                # gameplay resumes, and a pick/cancel uses the next recorded tick.
+                remaining = self._ui_timeline.timeline_ms if self._pending_exit is _GameplayExit.FINISH_RUN else None
+                self._perk_menu.open_menu(resume_run_down_ms=remaining)
                 break
         apply_presentation_plans(plans=plans, runtime=self._world_runtime)

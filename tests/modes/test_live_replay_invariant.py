@@ -93,7 +93,7 @@ def test_live_run_replays_to_identical_session_state(mocker, make_mode_config, a
         if live_ticks[0] % _DIGEST_EVERY == 0:
             live_digests.append(session_digest(session))
         live_ticks[0] += 1
-        return on_tick_applied(tick)
+        on_tick_applied(tick)
 
     mocker.patch.object(mode, "_on_tick_applied", side_effect=record_digest)
 

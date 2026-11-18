@@ -13,6 +13,7 @@ from ..weapons import WeaponId
 from .apply import perk_apply
 from .availability import perk_can_offer, perk_id_max
 from .ids import PERK_BY_ID, PerkFlags, PerkId
+from .state import PerkOffer
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -195,23 +196,12 @@ def perk_generate_choices(
     return choices
 
 
-def _perk_selection_prepare_if_needed(
-    state: GameplayState,
-    players: list[PlayerState],
-    *,
-    game_mode: GameMode,
-) -> list[PerkId]:
-    perk_state = state.perk_selection
-    if perk_state.choices_dirty or not perk_state.choices:
-        perk_state.choices = perk_generate_choices(state, players, game_mode=game_mode)
-        perk_state.choices_dirty = False
-    return perk_state.choices
-
-
 def perk_selection_prepared_choices(state: GameplayState) -> list[PerkId]:
     """Return already-prepared visible choices without mutating state."""
 
     perk_state = state.perk_selection
+    if perk_state.open_offer is not None:
+        return list(perk_state.open_offer.choices)
     if perk_state.choices_dirty or not perk_state.choices:
         return []
     visible_count = max(1, int(perk_choice_count(state.perks)))
@@ -230,8 +220,15 @@ def perk_selection_open_choices(
     perk selection screen (state 6).
     """
 
-    _perk_selection_prepare_if_needed(state, players, game_mode=game_mode)
-    return perk_selection_prepared_choices(state)
+    perk_state = state.perk_selection
+    if perk_state.open_offer is None:
+        if perk_state.choices_dirty or not perk_state.choices:
+            perk_state.choices = perk_generate_choices(state, players, game_mode=game_mode)
+            perk_state.choices_dirty = False
+        visible = perk_selection_prepared_choices(state)
+        perk_state.open_offer = PerkOffer(tuple(visible))
+        return visible
+    return list(perk_state.open_offer.choices)
 
 
 class PerkPick(msgspec.Struct, frozen=True):
@@ -250,7 +247,6 @@ def perk_selection_pick(
     players: list[PlayerState],
     choice_index: int,
     *,
-    game_mode: GameMode,
     dt: float,
     creatures: Sequence[CreatureState],
 ) -> PerkPick | None:
@@ -261,16 +257,13 @@ def perk_selection_pick(
     """
 
     perk_state = state.perk_selection
-    if perk_state.pending_count <= 0:
-        return None
-    _perk_selection_prepare_if_needed(state, players, game_mode=game_mode)
-    choices = perk_selection_prepared_choices(state)
-    if not choices:
+    offer = perk_state.close_offer()
+    if offer is None or perk_state.pending_count <= 0:
         return None
     idx = int(choice_index)
-    if idx < 0 or idx >= len(choices):
+    if idx < 0 or idx >= len(offer.choices):
         return None
-    pick = PerkPick(offered=tuple(choices), chosen=idx)
+    pick = PerkPick(offered=offer.choices, chosen=idx)
     perk_apply(state, players, pick.perk_id, dt=dt, creatures=creatures)
     assert int(perk_state.pending_count) > 0, "picked perk must leave a pending perk to resolve"
     perk_state.pending_count -= 1

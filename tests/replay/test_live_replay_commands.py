@@ -4,6 +4,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.perks import PerkId
+from crimson.perks.selection import perk_selection_open_choices
 from crimson.replay import ReplayRecorder
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
@@ -27,11 +28,11 @@ def test_live_perk_commands_match_recorded_prelude(perk: PerkId, reopen: bool) -
     live = PlaybackDriver(replay)
     playback = PlaybackDriver(replay)
     for driver in (live, playback):
-        driver.session.perk_menu_open = True
         selection = driver.world.state.perk_selection
         selection.pending_count = 2
         selection.choices_dirty = False
         selection.choices = [perk] * 7
+        perk_selection_open_choices(driver.world.state, driver.world.players, game_mode=GameMode.SURVIVAL)
 
     live_tick = live.session.step_tick(dt=1 / 60, inputs=inputs, commands=commands)
     replay_tick = playback.step_tick(0).payload

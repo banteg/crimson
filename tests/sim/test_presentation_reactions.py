@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.perks.selection import perk_selection_open_choices
 from crimson.quests.level import QuestLevel
 from crimson.sim.commands import PerkPickCommand
 from crimson.sim.mode_updates import QuestSpawnState
@@ -24,8 +25,8 @@ from tests.support.factories import player_input
 
 def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() -> None:
     session, world = make_session()
-    session.perk_menu_open = True
     world.state.perk_selection.pending_count = 1
+    perk_selection_open_choices(world.state, world.players, game_mode=world.state.game_mode)
 
     tick = session.step_tick(
         dt=1.0 / 60.0,
@@ -39,8 +40,8 @@ def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() 
 
 
 def test_session_step_tick_rejects_stale_perk_pick() -> None:
-    session, _world = make_session()
-    session.perk_menu_open = True
+    session, world = make_session()
+    perk_selection_open_choices(world.state, world.players, game_mode=world.state.game_mode)
 
     with pytest.raises(IllegalCommandError, match="perk_pick without a pending perk"):
         session.step_tick(

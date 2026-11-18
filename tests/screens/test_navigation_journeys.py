@@ -10,6 +10,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.leaderboard import Leaderboard, OnlineScore
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
+from crimson.perks import PerkId
 from crimson.persistence.highscores import HighScoreRecord, ScoreTable, upsert_highscore_record
 from crimson.quests.level import QuestLevel
 from crimson.replay import ReplayRecorder, dump_replay, dump_replay_file
@@ -110,6 +111,58 @@ def test_pause_options_controls_return_resumes_exact_run_once(loop, mocker) -> N
     spies.resume.assert_called_once_with()
     state.screens.close()
     spies.close.assert_called_once_with()
+
+
+@pytest.mark.parametrize("request_before_pause", [False, True], ids=["same-frame", "queued-before-tick"])
+def test_confirmed_perk_open_supersedes_pause(loop, mocker, request_before_pause) -> None:
+    run, _ = _start_run(loop, mocker, StartRun(GameMode.SURVIVAL))
+    run.state.perk_selection.pending_count = 1
+    pressed = {rl.KeyboardKey.KEY_SPACE}
+    mocker.patch.object(rl, "is_key_pressed", side_effect=pressed.__contains__)
+    if request_before_pause:
+        loop.update(1 / 240)
+        assert run._live_ticks.queued_commands
+        pressed.clear()
+    pressed.add(rl.KeyboardKey.KEY_ESCAPE)
+    loop.update(1 / 60)
+    pressed.clear()
+
+    assert run._perk_menu.open
+    pressed.add(rl.KeyboardKey.KEY_ESCAPE)
+    loop.update(1 / 60)
+    pressed.clear()
+    finish_transition(loop)
+    assert loop.state.screens.active is run
+    assert not run._perk_menu.active
+    assert run.state.perk_selection.pending_count == 1
+
+    pressed.add(rl.KeyboardKey.KEY_ESCAPE)
+    loop.update(1 / 60)
+    pressed.clear()
+    _update_until(loop, PauseMenuView)
+
+
+def test_perk_picked_before_pause_is_applied_on_the_next_tick(loop, mocker) -> None:
+    run, _ = _start_run(loop, mocker, StartRun(GameMode.SURVIVAL))
+    selection = run.state.perk_selection
+    selection.pending_count = 1
+    selection.choices = [PerkId.SHARPSHOOTER] * 7
+    selection.choices_dirty = False
+    pressed = {rl.KeyboardKey.KEY_SPACE}
+    mocker.patch.object(rl, "is_key_pressed", side_effect=pressed.__contains__)
+    loop.update(1 / 60)   # Open.
+    loop.update(1 / 240)  # Pick and start closing.
+    pressed.clear()
+    loop.update(1 / 120)  # Back in gameplay, with less than a tick banked.
+    assert not run._perk_menu.active
+    assert selection.pending_count == 1
+    pressed.add(rl.KeyboardKey.KEY_ESCAPE)
+    loop.update(1 / 60)
+    pressed.clear()
+
+    _update_until(loop, PauseMenuView)
+    assert selection.pending_count == 0
+    assert PerkId.SHARPSHOOTER in run.state.perks
 
 
 def test_scores_back_restores_original_run_context_through_loop(loop, headless_resources, mocker) -> None:
