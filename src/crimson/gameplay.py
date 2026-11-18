@@ -39,25 +39,10 @@ from .projectiles.runtime import projectile_spawn as _projectile_spawn
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import TERRAIN_SIZE
-from .sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
-from .weapon_runtime import (
-    capture_fire_gate as _capture_fire_gate,
-)
-from .weapon_runtime import (
-    fire_weapon as _fire_weapon,
-)
-from .weapon_runtime import (
-    player_start_reload as _player_start_reload,
-)
-from .weapon_runtime import (
-    player_swap_alt_weapon as _player_swap_alt_weapon,
-)
-from .weapon_runtime import (
-    weapon_assign_player as _weapon_assign_player,
-)
-from .weapon_runtime import (
-    weapon_entry as _weapon_entry,
-)
+from .sim.timing import reflex_boost_time_scale_factor
+from .weapon_runtime.assign import advance_weapon_reload
+from .weapon_runtime.assign import weapon_assign_player as _weapon_assign_player
+from .weapon_runtime.fire import fire_weapon, prepare_weapon_fire
 from .weapons import WeaponId
 
 if TYPE_CHECKING:
@@ -816,109 +801,6 @@ def _player_move(
     player.move_phase = f32(float(player.move_phase) + float(phase_sign) * float(phase_step))
 
 
-
-def _player_tick_reload(
-    player: PlayerState, input_state: PlayerInput,
-    state: GameplayState, dt: float, prev_pos: Vec2, move_mode: MovementControlType,
-    players: list[PlayerState],
-) -> bool:
-    move_delta = player.pos - prev_pos
-    reload_stationary = move_delta.x == 0.0 and move_delta.y == 0.0
-    if not reload_stationary:
-        # Native clears these post-perk-tick timers after movement when position changed.
-        player.man_bomb_timer = 0.0
-        player.living_fortress_timer = 0.0
-    reload_scale = 1.0
-    if reload_stationary and PerkId.STATIONARY_RELOADER in state.perks:
-        reload_scale = 3.0
-
-    # Reload + reload perks.
-    if (
-        PerkId.ANXIOUS_LOADER in state.perks
-        and input_state.fire_pressed
-        and player.weapon.reload_timer > 0.0
-    ):
-        anxious_next = x87_pc24_sub(
-            float(player.weapon.reload_timer),
-            f32(0.05),
-        )
-        player.weapon.reload_timer = float(anxious_next)
-        if float(anxious_next) <= 0.0:
-            # Native restarts the tail of the reload at `frame_dt * 0.8` when
-            # Anxious Loader overcuts the timer.
-            player.weapon.reload_timer = x87_pc24_mul(float(dt), f32(0.8))
-
-    reload_timer_now = f32(player.weapon.reload_timer)
-    dt_f32 = f32(dt)
-    reload_step = x87_pc24_mul(f32(reload_scale), dt_f32)
-    # Native preloads ammo one frame before reload timer underflows using the
-    # unscaled `frame_dt` (before Stationary Reloader scale is applied). That
-    # can miss reload completion when Stationary Reloader is active, leaving the
-    # clip empty and causing a one-shot reload loop (fixed by default).
-    preload_dt = dt_f32
-    if not state.preserve_bugs:
-        preload_dt = reload_step
-
-    reload_preload_underflow = x87_pc24_sub(reload_timer_now, preload_dt)
-    reload_completes = reload_preload_underflow < 0.0 if not state.rules2_fixes else reload_preload_underflow <= 0.0
-    if reload_timer_now > 0.0 and reload_completes:
-        player.weapon.ammo = float(player.weapon.clip_size)
-
-    if player.weapon.reload_timer > 0.0:
-        if (
-            PerkId.ANGRY_RELOADER in state.perks
-            # 1.9.8 has no `reload_timer_max > 0.5` gate: a short reload rings too.
-            and (state.rules_1_9_8 or player.weapon.reload_timer_max > 0.5)
-            and x87_pc24_mul(player.weapon.reload_timer_max, f32(0.5)) < player.weapon.reload_timer
-        ):
-            half = x87_pc24_mul(player.weapon.reload_timer_max, f32(0.5))
-            next_timer = x87_pc24_sub(float(player.weapon.reload_timer), reload_step)
-            player.weapon.reload_timer = next_timer
-            if next_timer <= half:
-                count = 7 + int(player.weapon.reload_timer_max * 4.0)
-                state.scripted_burst_active = True
-                owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
-                # Native `(float)i * (6.2831855f / (float)count) + 0.1f` at PC24.
-                ring_step = x87_pc24_div(NATIVE_TAU, float(count))
-                for idx in range(count):
-                    _projectile_spawn(
-                        state,
-                        players=players,
-                        pos=player.pos,
-                        angle=x87_pc24_add(x87_pc24_mul(float(idx), ring_step), f32(0.1)),
-                        type_id=ProjectileTemplateId.PLASMA_MINIGUN,
-                        owner_id=owner_id,
-                        owner_player_index=player.index,
-                    )
-                state.scripted_burst_active = False
-                state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
-        else:
-            player.weapon.reload_timer = x87_pc24_sub(
-                float(player.weapon.reload_timer),
-                reload_step,
-            )
-
-    if player.weapon.reload_timer < 0.0:
-        player.weapon.reload_timer = 0.0
-
-    has_alt_weapon_perk = PerkId.ALTERNATE_WEAPON in state.perks
-    # Original bug 40: native takes the reload key only with one player.
-    reload_key_enabled = len(players) == 1 or (not state.preserve_bugs and not state.legacy_coop_reload)
-    # Native gates on `grim_is_key_active` (key held), so holding reload chains
-    # reloads back-to-back as each one completes.
-    manual_reload_allowed = (
-        bool(input_state.reload_down or input_state.reload_pressed)
-        and (not has_alt_weapon_perk)
-        and move_mode != MovementControlType.MOUSE_POINT_CLICK
-        and float(player.weapon.reload_timer) == 0.0
-        and reload_key_enabled
-    )
-    if manual_reload_allowed:
-        _player_start_reload(player, state)
-
-    return has_alt_weapon_perk
-
-
 def player_weapon_popup_timer_update(player: PlayerState, dt: float) -> None:
     """`ui_render_hud`: the weapon popup fades slower through its last second and may stop below zero."""
 
@@ -1013,9 +895,13 @@ def player_update(
     frame_dt = dt
     if state.time_scale_active:
         frame_dt = _player_reflex_restored_dt(movement_dt, time_scale_factor)
-    has_alt_weapon_perk = _player_tick_reload(
-        player, input_state, state, frame_dt, prev_pos, move_mode, players,
-    )
+    move_delta = player.pos - prev_pos
+    stationary = move_delta.x == 0.0 and move_delta.y == 0.0
+    if not stationary:
+        # Movement clears these charges after the perk update.
+        player.man_bomb_timer = 0.0
+        player.living_fortress_timer = 0.0
+    advance_weapon_reload(player, input_state, frame_dt, stationary=stationary, step_runtime=step_runtime)
 
     auto_fire = _player_update_aim_by_scheme(
         player=player,
@@ -1037,50 +923,16 @@ def player_update(
             x87_pc24_sub(player.spread_heat, x87_pc24_mul(frame_dt, f32(0.4))),
         )
 
-    # Preserve the original pre-swap gate for original rules. Default rules
-    # capture it again below after the exchange and its 0.1-second delay.
-    fire_gate = _capture_fire_gate(player, state.perks)
-
-    # Native clears `reload_active` whenever the cooldown/timer gates are open,
-    # even if ammo is empty and perk firing paths can still proceed.
-    if fire_gate.normal_ready:
-        player.weapon.reload_active = False
-
-    reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
-    reload_key_released = not (reload_key_down_any if not state.rules2_fixes else reload_key_active)
-    if has_alt_weapon_perk:
-        cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms if not state.rules2_fixes else player.alt_weapon_swap_cooldown_ms)
-        dt_ms = ftol_ms_i32(float(dt)) if float(dt) > 0.0 else 0
-        if cooldown_ms < 1:
-            cooldown_ms = 0
-        else:
-            cooldown_ms -= dt_ms
-
-        if cooldown_ms < 1 and reload_key_active:
-            if _player_swap_alt_weapon(player):
-                weapon = _weapon_entry(player.weapon.weapon_id)
-                state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
-                player.weapon.shot_cooldown = x87_pc24_add(player.weapon.shot_cooldown, f32(0.1))
-                cooldown_ms = 200
-            else:
-                cooldown_ms = 0
-        else:
-            cooldown_ms = max(0, int(cooldown_ms))
-            if reload_key_released:
-                cooldown_ms = 0
-
-        if not state.rules2_fixes:
-            state.player_alt_weapon_swap_cooldown_ms = cooldown_ms
-        else:
-            player.alt_weapon_swap_cooldown_ms = cooldown_ms
-            fire_gate = _capture_fire_gate(player, state.perks)
-            if fire_gate.normal_ready:
-                player.weapon.reload_active = False
+    fire_gate = prepare_weapon_fire(
+        player, state, dt,
+        reload_key_active=input_state.reload_down or input_state.reload_pressed,
+        reload_key_down_any=reload_key_down_any,
+    )
 
     if auto_fire:
         # Computer aim fires on its own when the target is in reach (0x00415729).
         input_state = msgspec.structs.replace(input_state, fire_down=True)
-    _fire_weapon(
+    fire_weapon(
         player=player,
         input_state=input_state,
         dt=frame_dt,

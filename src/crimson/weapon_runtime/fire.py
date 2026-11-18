@@ -32,8 +32,9 @@ from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.state_types import PerkCounts, PlayerState
+from ..sim.timing import ftol_ms_i32
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
-from .assign import player_start_reload, weapon_entry
+from .assign import player_start_reload, player_swap_alt_weapon, weapon_entry
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -59,6 +60,43 @@ def capture_fire_gate(player: PlayerState, perks: PerkCounts) -> WeaponFireGate:
             or PerkId.AMMUNITION_WITHIN in perks
         ),
     )
+
+
+def _settle_reload_and_capture_fire_gate(player: PlayerState, perks: PerkCounts) -> WeaponFireGate:
+    gate = capture_fire_gate(player, perks)
+    # The reload latch outlives its timer until normal firing is ready, even if
+    # the clip is empty. Tough Reloader reads the latch for damage reduction.
+    if gate.normal_ready:
+        player.weapon.reload_active = False
+    return gate
+
+
+def prepare_weapon_fire(
+    player: PlayerState, state: GameplayState, dt: float, *, reload_key_active: bool, reload_key_down_any: bool,
+) -> WeaponFireGate:
+    """Settle the equipped reload, handle Alternate Weapon, and select this tick's fire gate."""
+    gate = _settle_reload_and_capture_fire_gate(player, state.perks)
+    if PerkId.ALTERNATE_WEAPON not in state.perks:
+        return gate
+
+    fixed_swap = state.rules2_fixes
+    cooldown_ms = player.alt_weapon_swap_cooldown_ms if fixed_swap else state.player_alt_weapon_swap_cooldown_ms
+    cooldown_ms = max(0, cooldown_ms - ftol_ms_i32(dt))
+    key_held = reload_key_active if fixed_swap else reload_key_down_any
+    if cooldown_ms == 0 and reload_key_active:
+        if player_swap_alt_weapon(player):
+            state.sfx_queue.append(SfxRequest(weapon_entry(player.weapon.weapon_id).reload_sound, player.pos))
+            player.weapon.shot_cooldown = x87_pc24_add(player.weapon.shot_cooldown, f32(0.1))
+            cooldown_ms = 200
+    elif not key_held:
+        cooldown_ms = 0
+
+    if fixed_swap:
+        player.alt_weapon_swap_cooldown_ms = cooldown_ms
+        return _settle_reload_and_capture_fire_gate(player, state.perks)
+    # Native shares the cooldown and fires the incoming slot using the outgoing slot's gate.
+    state.player_alt_weapon_swap_cooldown_ms = cooldown_ms
+    return gate
 
 
 class _ShotSpawner(msgspec.Struct, frozen=True):

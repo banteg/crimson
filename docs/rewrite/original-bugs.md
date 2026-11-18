@@ -1163,7 +1163,7 @@ Rewrite behavior:
   ([replay format](../formats/replay.md)).
 
 Evidence: `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp` (the
-manual reload condition), `src/crimson/gameplay.py` (`_player_tick_reload`)
+manual reload condition), `src/crimson/weapon_runtime/assign.py` (`advance_weapon_reload`)
 and [`crimson-core/patches/40-coop-manual-reload.patch`](../../crimson-core/patches/40-coop-manual-reload.patch).
 
 
