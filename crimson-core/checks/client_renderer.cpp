@@ -878,12 +878,14 @@ void check_terrain_snapshots() {
   w2c_host_render_state(nullptr, RS_SRCBLEND, 5);
   w2c_host_render_state(nullptr, RS_DESTBLEND, 6);
   w2c_host_texture_copy(nullptr, 602, 600); // the clean, initial terrain
+  assert(w2c_host_texture_bytes(nullptr, 602) == 128 * 64 * 4);
   w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 200);
   rectangle(4, 4, 24, 24, 0xc8ffffff);
   // Copy while stamps are pending: the snapshot must include them too.
   w2c_host_texture_copy(nullptr, 601, 600);
   w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
   assert(grounds.at(601).epoch == 200);
+  assert(w2c_host_texture_bytes(nullptr, 601) == 128 * 64 * 28);
   u32 size = w2c_host_texture_read(nullptr, 601, 4096, 0);
   assert(size == sizeof(TextureSnapshot) + 128 * 64 * 28);
   assert(w2c_host_texture_read(nullptr, 601, 4096, size) == size);

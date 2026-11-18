@@ -70,9 +70,11 @@ way it:
 - logs every **bake into the terrain**: `fx_queue_render`'s decals and corpses,
   batch by batch, zstd-packed 65,536 entries at a time (a long run bakes
   millions), and copies the terrain render target as the run starts and
-  every 30 seconds, with spacing doubling at eight copies in either mode. At the
-  default 2048×2048 physical size, classic costs at most 128 MiB; RTX's clean
-  initial terrain plus seven complete material copies costs at most 800 MiB.
+  every 30 seconds. Spacing doubles at eight copies or when their texture planes
+  would exceed 256 MiB. At default density, eight classic checkpoints cost
+  128 MiB. The clean initial RTX terrain and two 32-bit material checkpoints
+  cost 240 MiB. For larger textures, the viewer can rebuild every later bake
+  from the initial terrain alone.
   RTX restores all material planes and their wetness epoch;
 - collects the **marks** the scrub bar shows: Survival's milestone waves (the
   spawn stage `survival_update` advances: alien rings, the red alien boss,

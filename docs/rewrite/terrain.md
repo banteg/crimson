@@ -172,10 +172,10 @@ bonus and corpse visual parity still needs corresponding runtime evidence.
 
 ## Replay memory
 
-Both interactive clients retain at most eight checkpoints in either mode, preserving
-the original seek spacing. Classic color checkpoints cost 128 MiB; RTX's clean
-initial color target (16 MiB) and seven material snapshots (112 MiB each) cost
-800 MiB at the default 2048×2048 size. Each RTX
+The recovered clients keep at most eight terrain checkpoints under a 256 MiB texture
+budget. Eight classic color checkpoints cost 128 MiB. At default 2048×2048 density,
+the clean RTX terrain costs 16 MiB and each full 32-bit material snapshot costs
+112 MiB, so two material snapshots fit beside the anchor. Each RTX
 snapshot preserves color, substrate and coverage as RGBA8, surface as RGBA32F
 (or the WebGPU device's half-float surface format), and the wetness epoch.
 These figures exclude other render targets; nondefault terrain sizes change the

@@ -45,7 +45,8 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests,
       get: (_, name) =>
         (...args) => {
           calls[name] = (calls[name] ?? 0) + 1;
-          onHost?.(name, args);
+          const answer = onHost?.(name, args);
+          if (answer !== undefined) return answer;
           if (name === "fatal") throw Error(`game module: ${text(args[0])}`);
           if (name === "message") throw Error(`${text(args[1])}: ${text(args[0])}`);
           if (name === "time_ms") return clock++;

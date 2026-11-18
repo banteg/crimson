@@ -191,13 +191,14 @@ struct DecalBatch {
 struct TerrainShot {
   size_t batches;
   int tick, id;
+  unsigned bytes;
 };
 // Copies of the terrain start this far apart and spread out, every other one
 // dropped, past the cap: each holds a whole render target and its materials.
 static constexpr int TERRAIN_SHOT_TICKS = 1800;
-// Keep the original eight-checkpoint spacing in both modes. At default 2x
-// density classic color copies cost 128 MiB; RTX's clean initial terrain
-// (16 MiB) plus seven complete material copies (112 MiB each) costs 800 MiB.
+// The clean initial copy is needed to reconstruct every later bake. Current
+// supported terrain sizes need at most 64 MiB for this color-only anchor.
+static constexpr uint64_t TERRAIN_SHOT_BYTES = 256u << 20;
 static constexpr size_t TERRAIN_SHOTS = 8;
 static constexpr int TERRAIN_SHOT_IDS = 1 << 30; // host texture ids the copies take
 
@@ -272,7 +273,13 @@ static int terrain_host_id() { return platform_texture_host_id(terrain_render_ta
 static void terrain_shoot(int at_tick) {
   if (!terrain.shots.empty() && at_tick - terrain.shots.back().tick < terrain.shot_ticks)
     return;
-  if (terrain.shots.size() >= TERRAIN_SHOTS) {
+  unsigned bytes = host_texture_bytes(terrain_host_id());
+  uint64_t total = bytes;
+  for (const TerrainShot &shot : terrain.shots)
+    total += shot.bytes;
+  if (total > TERRAIN_SHOT_BYTES && terrain.shots.size() == 1)
+    return; // The anchor and bake log can still reconstruct any tick.
+  if (terrain.shots.size() >= TERRAIN_SHOTS || (terrain.shots.size() > 1 && total > TERRAIN_SHOT_BYTES)) {
     // Release before allocating the next copy, so the peak also fits the cap.
     std::vector<TerrainShot> kept;
     for (size_t i = 0; i < terrain.shots.size(); ++i)
@@ -280,12 +287,14 @@ static void terrain_shoot(int at_tick) {
         kept.push_back(terrain.shots[i]);
       else
         host_texture_release(terrain.shots[i].id);
-    terrain.shots = kept;
+    terrain.shots = std::move(kept);
     terrain.shot_ticks *= 2;
+    // An odd number of copies can hit the byte budget between the new intervals.
+    return terrain_shoot(at_tick);
   }
   int id = TERRAIN_SHOT_IDS + terrain.next_shot_id++;
   host_texture_copy(id, terrain_host_id());
-  terrain.shots.push_back({terrain.batches.size(), at_tick, id});
+  terrain.shots.push_back({terrain.batches.size(), at_tick, id, bytes});
 }
 
 // One logged bake through the original's fx_queue_render: `queued` decals (the

@@ -57,7 +57,7 @@
 // the verifier say so, and its score goes to 1.9.8's table, which the Python
 // port reads apart from 1.9.93's.
 //
-//   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] [--1.9.8] <game directory> [core.wasm] [game.wasm]
+//   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--audio-stall] [--tunes] [--1.9.8] <game directory> [core.wasm] [game.wasm]
 import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -89,7 +89,9 @@ const seedOverride = seedAt < 0 ? undefined : Number(args[seedAt + 1]);
 if (seedAt >= 0) args = args.toSpliced(seedAt, 2);
 const ranked = args.includes("--ranked"), quest = args.includes("--quest"), padded = args.includes("--pad"),
   silent = args.includes("--silent"), tunes = args.includes("--tunes"), rules198 = args.includes("--1.9.8");
-args = args.filter((arg) => !["--ranked", "--quest", "--pad", "--silent", "--tunes", "--1.9.8"].includes(arg));
+const audioStall = args.includes("--audio-stall");
+let audioFrames = 0, audible = false;
+args = args.filter((arg) => !["--audio-stall", "--ranked", "--quest", "--pad", "--silent", "--tunes", "--1.9.8"].includes(arg));
 // The build the run plays.
 const CL_BUILD = rules198 ? CL_BUILD_1_9_8 : CL_BUILD_1_9_93;
 const [
@@ -97,7 +99,7 @@ const [
   coreWasm = new URL("build/wasm/core.wasm", CORE).pathname,
   gameWasm = new URL("build/game/game.wasm", CORE).pathname,
 ] = args;
-if (!given) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] [--1.9.8] <game directory> [core.wasm] [game.wasm]");
+if (!given) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--audio-stall] [--tunes] [--1.9.8] <game directory> [core.wasm] [game.wasm]");
 if (rules198 && padded) throw Error("--1.9.8 ticks its box by mouse");
 const directory = tunes ? sevenTunes(given) : given;
 
@@ -163,7 +165,13 @@ function frame(dt, { cursor, buttons = 0, keys = [], taps = [], chars = "", pad 
   for (let button = 0; button < 32; ++button) input.setUint8(INPUT.pad_buttons + button, press.includes(button) ? 0x80 : 0);
   for (const char of chars) game.game_key_char(char.charCodeAt(0));
   run.frame(dt);
-  game.game_audio(735);
+  // A stopped output device advances voices unheard, and resumes at the current mix.
+  if (audioStall && ++audioFrames % 240 < 120) {
+    game.game_audio_skip(735);
+  } else {
+    const at = game.game_audio(735);
+    if (!audible) audible = new Int16Array(game.memory.buffer, at, 735 * 2).some(sample => sample !== 0);
+  }
 }
 
 // Waits on a screen until it settles, false if it closes first.
@@ -581,10 +589,12 @@ memory().write(`replays/${saved[0]}\0`, game.game_replay_path(), "latin1");
 if (!game.game_replay_open()) throw Error("the module cannot play its own replay");
 const reread = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
 if (!reread.equals(replay())) throw Error("the saved replay reads back differently from the recording");
+const recordingHash = crypto.createHash("sha256").update(reread).update(JSON.stringify(savedCrd.result)).digest("hex");
 if (ranked) checkRanked();
 if (padded) leaveByPad(quest ? QUEST_RESULTS : GAME_OVER);
 if (!ranked && !padded && !quest) nameEntry();
-console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, consoles, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}), ...(tunes ? { tunes: true } : {}), ...(rules198 ? { cl_build: CL_BUILD } : {}) }));
+if (!silent && !audible) throw Error("no game sound reached the audio sink");
+console.log(JSON.stringify({ seed, ticks, frames, recordingHash, picks: commands[1], pauses, consoles, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}), ...(tunes ? { tunes: true } : {}), ...(rules198 ? { cl_build: CL_BUILD } : {}) }));
 
 // The quests the player's save unlocks (game.cfg, src/crimson/persistence/save_status.py).
 function savedUnlocks() {

@@ -11,10 +11,11 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
      projectile->life_timer = 2.0f;
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
-@@ -89,6 +89,7 @@
+@@ -89,6 +89,8 @@
      if (!game_live_between_ticks()) {
          fx_queue_render();
      }
++    DrawCamera draw_camera;
 +    rtx_world(1);
      terrain_render();
  
@@ -581,3 +582,16 @@ decals by material, the batches the host lights, Monster Vision's heat, and the 
          terrain_render();
 +        rtx_menu_world(0);
      }
+
+--- a/decomp/1.9/crimsonland/game/ui_render_aim_indicators.cpp
++++ b/decomp/1.9/crimsonland/game/ui_render_aim_indicators.cpp
+@@ -55,2 +55,3 @@
+ extern "C" void ui_render_aim_indicators(void)
+ {
++    DrawCamera draw_camera;
+--- a/decomp/1.9/crimsonland/ui_render/hud_update_and_render.cpp
++++ b/decomp/1.9/crimsonland/ui_render/hud_update_and_render.cpp
+@@ -41,2 +41,3 @@
+ extern "C" void hud_update_and_render(void)
+ {
++    DrawCamera draw_camera;

@@ -1471,6 +1471,17 @@ static void copy_target(Target &to, const Target &from) {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.framebuffer);
   glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, from.width, from.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
+u32 GL_ENTRY(w2c_host_texture_bytes)(struct w2c_host *, u32 id) {
+  flush_ground_stamps();
+  auto texture = textures.find((int)id);
+  if (texture == textures.end()) return 0;
+  double bytes = target_bytes(texture->second);
+  if (auto it = grounds.find((int)id); it != grounds.end()) {
+    const Ground &g = it->second;
+    bytes += target_bytes(g.substrate) + target_bytes(g.coverage) + target_bytes(g.surface);
+  }
+  return (u32)std::min(bytes, (double)UINT32_MAX);
+}
 void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
   if (destination == source)
     return;

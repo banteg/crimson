@@ -199,6 +199,7 @@ class CrimsonDisplayConfig(msgspec.Struct):
     flame_glow_enabled: bool
     smoke_enabled: bool
     violence_disabled: int
+    reduce_camera_shake: bool = False  # Presentation preference stored beside the original configuration.
 
 
 class CrimsonAudioConfig(msgspec.Struct):
@@ -356,6 +357,10 @@ class CrimsonConfig(msgspec.Struct):
     controls: CrimsonControlsConfig
     # The file's bytes; saving overlays the fields above, so the rest (unparsed flags, ids, bind slots 4-9) survives.
     wire: bytes = msgspec.field(default_factory=lambda: _DEFAULT_WIRE)
+
+    def set_reduce_camera_shake(self, enabled: bool) -> None:
+        atomic_write_bytes(self.path.with_name("reduce_camera_shake.txt"), b"1\n" if enabled else b"0\n")
+        self.display.reduce_camera_shake = enabled
 
     def save(self) -> None:
         atomic_write_bytes(self.path, encode_crimson_cfg(self))
@@ -657,7 +662,11 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
 
 
 def load_crimson_cfg(path: Path) -> CrimsonConfig:
-    return decode_crimson_cfg(path, path.read_bytes())
+    config = decode_crimson_cfg(path, path.read_bytes())
+    choice = path.with_name("reduce_camera_shake.txt")
+    if choice.is_file():
+        config.display.reduce_camera_shake = choice.read_bytes().startswith(b"1")
+    return config
 
 
 def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
@@ -665,7 +674,6 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
     if not path.exists():
         config = default_crimson_cfg(path)
         config.save()
-        return config
     return load_crimson_cfg(path)
 
 

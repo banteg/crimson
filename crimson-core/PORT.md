@@ -103,6 +103,8 @@ code polls to stream music and pick voices; the host only plays what it pulls,
 or pulls it at wall-clock pace into nothing when there is no output. So no
 output device, a muted or autoplay-locked one, or a failing one can reach the
 game: the original's own no-sound path only follows a disabled sound setting.
+CI runs the same Survival session with continuous mixing and with alternating
+output stalls. It compares the recorded inputs and final outcome.
 Voice stealing draws the C library's `rand`, which never touches the gameplay
 `crt_rand` stream.
 
@@ -141,9 +143,10 @@ Ground targets render at a fixed 2× the configured texture density, independent
 of window DPI: the default 1024×1024 logical terrain uses 2048×2048 physical
 pixels for terrain, blood and corpses. Source artwork keeps its own dimensions,
 and ground projection/stamping coordinates stay logical. Replay snapshots copy
-the physical ground and its RTX materials: eight classic copies cost 128 MiB;
-the clean initial terrain and seven complete RTX snapshots cost 800 MiB at most
-(default size, 32-bit float surfaces). Both modes retain eight checkpoints.
+the physical ground and its RTX materials. The renderer reports the cost of the
+layers it actually keeps. At most eight copies fit within a 256 MiB budget.
+Eight classic copies cost 128 MiB at default density. In RTX, the clean initial
+copy and two full 32-bit material snapshots cost 240 MiB together.
 Compaction releases old copies before allocating the next one. The existing
 adaptive spacing preserves the first snapshot and reconstructs every
 intervening bake.
@@ -168,6 +171,11 @@ restored world/HUD pixels at the display's actual density.
 `node crimson-core/checks/game_seek.mjs <game directory>` checks shuffled
 forward/backward seeks against straight simulation and terrain bake history,
 including the peak terrain-copy count through compaction.
+
+The Options panel’s **Reduce shake** checkbox keeps the battlefield and its
+aim indicators on an unshaken camera. Input, replay and gameplay still use the
+original camera and random sequence. Native and Python share the preference in
+`reduce_camera_shake.txt`. The browser saves it with the profile.
 
 ### The tick seam
 
@@ -769,9 +777,16 @@ high scores sync back a few seconds after the game writes them, when the tab is
 hidden, and when the game quits ([`client/web/shell.html`](client/web/shell.html)).
 One tab at a time owns the directory (a Web Lock), since IndexedDB takes each
 sync as the whole tree and a stale tab would write over newer saves; another
-tab's Play here asks the owner to save and reload, and takes the lock from one
-that does not answer, which then stops saving. As in the
-original, settings changed in the options reach the disk when the game quits.
+tab's Play here asks the owner to quit, finalize its recording and sync before
+handing over the lock. A failed sync keeps the original tab open. A waiting
+player can force a takeover if the owner never answers.
+
+On the start and quit screens, **Backups and recordings** exports and restores
+the local progress, settings, score tables, recordings and queued or rejected
+ranked uploads. Restoring replaces those files together. Download an individual
+recording as a standard `.crd` for desktop playback. The separate private key
+signs leaderboard runs and authorizes account access. A profile restore keeps
+the current key. Settings changed in Options reach disk when the game quits.
 It needs a secure context (HTTPS or localhost) for the lock, and no threads, so
 no cross-origin isolation. A fullscreen icon shows when the pointer reaches its
 corner, holding Escape for the game where the browser allows it. The page wears

@@ -53,6 +53,15 @@ char *game_version_label();
 extern int rtx_render_mode;
 void console_cmd_render_mode(void);
 void console_cmd_toggle_rtx(void);
+bool game_reduce_shake();
+void game_set_reduce_shake(bool enabled);
+bool game_draw_camera_begin(float saved[2]);
+void game_draw_camera_end(const float saved[2]);
+struct DrawCamera {
+  float saved[2];
+  bool changed = game_draw_camera_begin(saved);
+  ~DrawCamera() { if (changed) game_draw_camera_end(saved); }
+};
 void rtx_world(int begin);
 void rtx_menu_world(int begin);
 void rtx_material(int pass); // a HOST_PASS_* of game/render_passes.h

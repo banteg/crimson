@@ -14,15 +14,18 @@ import { loadGame, PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT } from "./game_host.mjs";
 
 const ROOT = new URL("..", CORE).pathname;
-const rtx = process.argv.includes("--rtx");
-const maxShots = 8;
+const rtx = process.argv.includes("--rtx"), reducedShake = process.argv.includes("--reduce-shake");
+const largeTerrain = process.argv.includes("--large-terrain"); // 4096-square render target (texture scale 0.5).
+const maxShots = rtx ? (largeTerrain ? 1 : 3) : (largeTerrain ? 4 : 8);
+const mib = 1 << 20;
 const [
   directory,
   fixture,
   coreWasm = new URL("build/wasm/core.wasm", CORE).pathname,
   gameWasm = new URL("build/game/game.wasm", CORE).pathname,
-] = process.argv.slice(2).filter((arg) => arg !== "--rtx");
+] = process.argv.slice(2).filter((arg) => !["--rtx", "--reduce-shake", "--large-terrain"].includes(arg));
 if (!directory) throw Error("usage: game_seek.mjs <game directory> [fixture.crd] [core.wasm] [game.wasm]");
+if (reducedShake) fs.writeFileSync(path.join(directory, "reduce_camera_shake.txt"), "1\n");
 const vectors = JSON.parse(fs.readFileSync(path.join(ROOT, "service/test/vectors.json"))).coop_run;
 const replays = fixture
   ? { [path.basename(fixture)]: fs.readFileSync(fixture) }
@@ -35,12 +38,16 @@ const replays = fixture
     };
 
 let groundId = 0, renderTarget = 0, boundTexture = 0, srcBlend = 0, dstBlend = 0;
+let drawnCameraY;
 let peakTerrainShots = 0, terrainCopies = 0, terrainReleases = 0;
 const textures = new Map(), terrainAt = new Map();
 const shotTicks = new Map();
 const run = bootGame(gameWasm, directory, 1, {
   rtx,
   onHost(name, args) {
+    if (name === "scene") drawnCameraY = new DataView(game.memory.buffer).getFloat32(args[0] + 4, true);
+    if (name === "texture_bytes")
+      return (rtx && shotTicks.size ? 112 : 16) * (largeTerrain ? 4 : 1) * mib;
     if (name === "texture_create" && (args[3] & 1)) {
       groundId = args[0];
       textures.set(groundId, Buffer.alloc(32));
@@ -61,7 +68,8 @@ const run = bootGame(gameWasm, directory, 1, {
       }
       const shots = [...textures.keys()].filter((id) => id >= (1 << 30)).length;
       peakTerrainShots = Math.max(peakTerrainShots, shots);
-      if (shots > maxShots) throw Error(`terrain copies exceeded the ${maxShots}-target budget`);
+      const bytes = (16 + (shots - 1) * (rtx ? 112 : 16)) * (largeTerrain ? 4 : 1) * mib;
+      if (shots > 8 || bytes > 256 * mib) throw Error(`terrain cache exceeded its budget at ${bytes / mib} MiB`);
     } else if (name === "texture_release") {
       if (shotTicks.has(args[0])) ++terrainReleases;
       textures.delete(args[0]);
@@ -134,10 +142,14 @@ function seeks(name, file) {
 
   // The verifier's world at every target, from one straight replay.
   const ticks = game.game_watch_ticks();
-  if (ticks >= maxShots * 1800 && (peakTerrainShots !== maxShots || !terrainReleases))
+  if (maxShots === 1 && terrainCopies !== 1) throw Error(`${name}: an oversized material checkpoint was copied`);
+  if (maxShots > 1 && ticks >= maxShots * 1800 && (peakTerrainShots !== maxShots || !terrainReleases))
     throw Error(`${name}: the long replay did not exercise terrain-cache compaction`);
   const targets = [1, 2, 59, 60, 61, 119, 120, 121, ticks - 1, ticks];
   for (let i = 0; targets.length < 40; ++i) targets.push(1 + ((i * 7919 + 13) % ticks));
+  // A nuke pulse pushes the canonical camera off the arena clamp at this tick in quest 5.7.
+  const shakeTick = reducedShake && name === "quest-5.7-hardcore-rules2.crd" ? 2436 : 0;
+  if (shakeTick) targets.push(shakeTick);
   const sorted = [...new Set(targets)].sort((a, b) => a - b);
   const core = loadCore(coreWasm);
   const straight = loadGame(gameWasm);
@@ -170,6 +182,11 @@ function seeks(name, file) {
     times.push(performance.now() - t0);
     if (game.game_watch_tick() !== target) throw Error(`${name}: a seek to ${target} landed on ${game.game_watch_tick()}`);
     const a = expected.get(target), b = state(game);
+    if (shakeTick && target === shakeTick) {
+      const canonical = b.readFloatLE(4 * names.indexOf("globals.camera_offset_y"));
+      if (drawnCameraY !== -256 || Math.abs(canonical - drawnCameraY) < 2)
+        throw Error(`reduced shake: rendered camera ${drawnCameraY}, canonical ${canonical}`);
+    }
     const off = compared.filter(([, i]) => a.readUInt32LE(i * 4) !== b.readUInt32LE(i * 4)).map(([field]) => field);
     if (off.length) throw Error(`${name}: after a seek to ${target}, ${off.slice(0, 4).join(", ")} differ from the verifier`);
     if (game.game_effects_active() !== overflow.get(target))

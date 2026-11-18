@@ -808,6 +808,16 @@ void wgpu_renderer_present(int window_width, int window_height) {
   end_pass();
   WGPUSurfaceTexture frame = WGPU_SURFACE_TEXTURE_INIT;
   wgpuSurfaceGetCurrentTexture(surface, &frame);
+  if (!frame.texture || (frame.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal &&
+                         frame.status != WGPUSurfaceGetCurrentTextureStatus_SuccessSuboptimal)) {
+    if (frame.texture) wgpuTextureRelease(frame.texture);
+    if (frame.status == WGPUSurfaceGetCurrentTextureStatus_Outdated)
+      canvas_width = 0; // Reconfigure at the current dimensions next frame.
+    else if (frame.status != WGPUSurfaceGetCurrentTextureStatus_Timeout)
+      EM_ASM({ queueMicrotask(() => Module.loseGraphics()); });
+    submit();
+    return;
+  }
   Target window;
   window.texture = frame.texture;
   window.view = wgpuTextureCreateView(frame.texture, nullptr);
@@ -1221,6 +1231,21 @@ static void copy_target(Target &to, Target &from) {
     allocate(to);
   }
   copy(from, to);
+}
+u32 wgpu_w2c_host_texture_bytes(struct w2c_host *, u32 id) {
+  auto texture = textures.find((int)id);
+  if (texture == textures.end()) return 0;
+  auto bytes = [](const Target &t) {
+    auto format = format_of(t);
+    return (uint64_t)t.width * t.height * (format == WGPUTextureFormat_RGBA32Float ? 16 :
+                                           format == WGPUTextureFormat_RGBA16Float ? 8 : 4);
+  };
+  uint64_t size = bytes(texture->second);
+  if (auto it = grounds.find((int)id); it != grounds.end()) {
+    const Ground &g = it->second;
+    size += bytes(g.substrate) + bytes(g.coverage) + bytes(g.surface);
+  }
+  return (u32)std::min<uint64_t>(size, UINT32_MAX);
 }
 void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
   if (destination == source)

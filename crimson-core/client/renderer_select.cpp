@@ -51,6 +51,8 @@ RENDERER_ENTRIES(DECLARE)
 extern "C" {
 #define DECLARE_HOST(name, params, args) void gl_w2c_host_##name params; void wgpu_w2c_host_##name params;
 HOST_ENTRIES(DECLARE_HOST)
+u32 gl_w2c_host_texture_bytes(struct w2c_host *, u32);
+u32 wgpu_w2c_host_texture_bytes(struct w2c_host *, u32);
 u32 gl_w2c_host_texture_read(struct w2c_host *, u32, u32, u32);
 u32 wgpu_w2c_host_texture_read(struct w2c_host *, u32, u32, u32);
 u32 gl_w2c_host_texture_write(struct w2c_host *, u32, u32, u32, u32);
@@ -70,6 +72,9 @@ extern "C" {
 #define FORWARD_HOST(name, params, args)                                                                              \
   void w2c_host_##name params { webgpu() ? wgpu_w2c_host_##name args : gl_w2c_host_##name args; }
 HOST_ENTRIES(FORWARD_HOST)
+u32 w2c_host_texture_bytes(struct w2c_host *h, u32 id) {
+  return webgpu() ? wgpu_w2c_host_texture_bytes(h, id) : gl_w2c_host_texture_bytes(h, id);
+}
 u32 w2c_host_texture_read(struct w2c_host *h, u32 id, u32 out, u32 capacity) {
   return webgpu() ? wgpu_w2c_host_texture_read(h, id, out, capacity) : gl_w2c_host_texture_read(h, id, out, capacity);
 }
