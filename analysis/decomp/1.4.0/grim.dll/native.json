@@ -5,7 +5,7 @@
   "sha256": "5a98d52ad7c814986c06978e8ed8bc25ad263cb0b4a6d3487af503373a46b6fb",
   "analyzer": {
     "name": "Binary Ninja",
-    "version": "6.1.10626-dev Personal",
+    "version": "6.1.11003-dev Personal",
     "mode": "controlFlow",
     "seeds": "Verified relinking-invariant bodies from the donor map; independent control-flow discovery retained."
   },
@@ -78548,11 +78548,137 @@
   "ownership_ranges": [
     {
       "start": 268439552,
-      "end": 268459905,
+      "end": 268459824,
       "owner": "game",
-      "boundary_sha256": "c25ab36348b3268395e36401276f84f9e1d236bbbe63ffb5c12b8c0aa1057964",
-      "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
+      "boundary_sha256": "273609fba7c8d60917c441705e324c9886fd870577aefb37ba66b41921a4abc3",
+      "note": "The initial Grim engine object cluster ends at CRT vsprintf. The body at 0x10005f30..0x10005f81 matches libcmt.lib's vsprintf.obj with only the _output and _flsbuf call relocations."
     }
   ],
-  "maps_sha256": "a03637dabc25c4bf11e13bb4d0eb3138a9b11dc87f3bb5fc90ed1ae35b8a5cef"
+  "maps_sha256": "cccf32ca2fc40d74c41523d47ece8ae5d6f2db7b0686b2aa4a9f69ca9d1d503c",
+  "platform_replaced": [
+    {
+      "address": 268439776,
+      "reason": "Win32 launcher dialog; the port supplies its own settings UI."
+    },
+    {
+      "address": 268441344,
+      "reason": "Win32 window creation and class registration; the host engine owns the window."
+    },
+    {
+      "address": 268441856,
+      "reason": "Win32 window teardown; the host engine owns the window."
+    },
+    {
+      "address": 268441952,
+      "reason": "Direct3D 8 lost-device texture backup; the host renderer owns resource lifetime."
+    },
+    {
+      "address": 268442224,
+      "reason": "Direct3D 8 lost-device texture restore; the host renderer owns resource lifetime."
+    },
+    {
+      "address": 268442432,
+      "reason": "Win32 message dispatch and device-activation adapter; the host engine owns events."
+    },
+    {
+      "address": 268443312,
+      "reason": "Win32 message and Direct3D presentation loop; the host engine owns the frame loop."
+    },
+    {
+      "address": 268444016,
+      "reason": "Direct3D 8 device and window initialization; the host renderer owns startup."
+    },
+    {
+      "address": 268444960,
+      "reason": "Direct3D 8 device teardown; the host renderer owns resource lifetime."
+    },
+    {
+      "address": 268445168,
+      "reason": "Direct3D 8 vertex and index buffer allocation; the host renderer owns geometry buffers."
+    },
+    {
+      "address": 268445568,
+      "reason": "Direct3D 8 vertex and index buffer teardown; the host renderer owns geometry buffers."
+    },
+    {
+      "address": 268446272,
+      "reason": "Forwards the adapter format query to IDirect3D8::CheckDeviceFormat."
+    },
+    {
+      "address": 268449680,
+      "reason": "D3DX front-buffer export; the host renderer supplies screenshot capture."
+    },
+    {
+      "address": 268449824,
+      "reason": "Direct3D capability probe and Win32 launcher entry; the port supplies its own settings UI."
+    },
+    {
+      "address": 268450624,
+      "reason": "Only enters the Win32 message pump and returns success."
+    },
+    {
+      "address": 268454944,
+      "reason": "D3DX texture export; the host renderer supplies image export."
+    },
+    {
+      "address": 268458144,
+      "reason": "Caches the Win32 module handle and loads the window icon."
+    },
+    {
+      "address": 268458192,
+      "reason": "Raw DirectInput joystick enumeration; the host input backend owns device discovery."
+    },
+    {
+      "address": 268458256,
+      "reason": "Raw DirectInput axis setup; the host input backend owns device configuration."
+    },
+    {
+      "address": 268458368,
+      "reason": "Raw DirectInput joystick initialization; the host input backend owns devices."
+    },
+    {
+      "address": 268458608,
+      "reason": "Raw DirectInput joystick polling; the host input backend supplies state."
+    },
+    {
+      "address": 268458704,
+      "reason": "Raw DirectInput joystick-state accessor; the host input backend supplies state."
+    },
+    {
+      "address": 268458736,
+      "reason": "Raw DirectInput joystick teardown; the host input backend owns devices."
+    },
+    {
+      "address": 268458800,
+      "reason": "Raw DirectInput keyboard-state accessor; the host input backend supplies state."
+    },
+    {
+      "address": 268458832,
+      "reason": "Raw DirectInput keyboard initialization; the host input backend owns devices."
+    },
+    {
+      "address": 268459104,
+      "reason": "Raw DirectInput keyboard polling; the host input backend supplies state."
+    },
+    {
+      "address": 268459280,
+      "reason": "Raw DirectInput keyboard teardown; the host input backend owns devices."
+    },
+    {
+      "address": 268459344,
+      "reason": "Raw DirectInput mouse-state accessor; the host input backend supplies state."
+    },
+    {
+      "address": 268459360,
+      "reason": "Raw DirectInput mouse initialization; the host input backend owns devices."
+    },
+    {
+      "address": 268459552,
+      "reason": "Raw DirectInput mouse polling and accumulation; the host input backend supplies state."
+    },
+    {
+      "address": 268459760,
+      "reason": "Raw DirectInput mouse teardown; the host input backend owns devices."
+    }
+  ]
 }

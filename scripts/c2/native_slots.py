@@ -5,9 +5,10 @@ interference, offsets) and through a `/FAsc` listing (which candidate object eve
 operand names), aligns candidate and native instructions, and turns each aligned frame reference
 into a vote "candidate object X lives at native bottom offset B". It then prints:
 
-- the native slot partition: every native object base, the candidate objects mapped to it, their
-  candidate offsets and weights, and the candidate interference edges that forbid the grouping;
+- the inferred native slot partition, including candidate offsets and weights, interference edges
+  and competing base addresses when references to the same candidate object disagree;
 - native frame references that no candidate object explains (objects the candidate lacks);
+- indexed ESP operands whose constant base falls inside the locals, separately from fixed-slot votes;
 - the packer replay in the compiler's list order, flagging each placement whose slot mates live
   in different native slots (the first flagged line is usually the one to fix);
 - the compiler's slots in frame order with their weight and density, and, when the local slots
@@ -21,8 +22,8 @@ into a vote "candidate object X lives at native bottom offset B". It then prints
 `--build` compiles the scratch as that game build and observes its C2 (1.9.8: 12.00.9044, msvc6.5pp),
 against that build's image.
 
-Offsets are bottom-relative (esp after the callee-saved pushes, before argument pushes). Diagnostic
-only; see tools/match/c2/compiler/native-slot-partition.md.
+Offsets are relative to the lowest byte reserved for locals, above any registers saved after the
+allocation. Diagnostic only; see tools/match/c2/compiler/native-slot-partition.md.
 """
 
 from __future__ import annotations
@@ -38,11 +39,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import capstone
 import frame_predict as fp
+from capstone.x86_const import X86_OP_MEM, X86_REG_ESP, X86_REG_SS
 
 from crimson_re import match
 from crimson_re.match_listing_diagnostics import parse_stack_listing
 
 STACK_OPERAND = re.compile(r"([^\s,\[\]]*)\[esp(?:\+(\d+))?\]", re.IGNORECASE)
+
+INDEXED_STACK_OPERAND = re.compile(
+    r"([^\s,\[\]]*)\[esp\+e(?:ax|bx|cx|dx|bp|si|di)(?:\*[1248])?(?:[+-]\d+)?\]",
+    re.IGNORECASE,
+)
 
 
 def norm(insn) -> str:
@@ -73,12 +80,12 @@ def object_names(fr: fp.Frame, declarations: dict[str, int]) -> dict[int, str]:
     return names
 
 
-def listing_operands(rows, declarations):
+def listing_operands(rows, declarations, pattern=STACK_OPERAND):
     """Candidate code offset -> list of (alias or None, anon offset or None) per esp operand."""
     result = {}
     for off, row in rows.items():
         ops = []
-        for m in STACK_OPERAND.finditer(row.assembly):
+        for m in pattern.finditer(row.assembly):
             prefix = m.group(1).removesuffix("+").removeprefix("DWORD").removeprefix("QWORD")
             prefix = prefix.split("PTR")[-1].strip()
             if not prefix:
@@ -92,6 +99,37 @@ def listing_operands(rows, declarations):
     return result
 
 
+def indexed_local_bases(insns, frame, listing=None):
+    """Report the constant term of an indexed stack address. The register selects the actual element."""
+    # A conflicting join makes the subsequently propagated stack depth ambiguous.
+    if frame["conflicts"]:
+        return []
+    bases = []
+    for insn in insns:
+        depth = frame["depths"].get(insn.address)
+        if depth is None:
+            continue
+        for operand in insn.operands:
+            if operand.type != X86_OP_MEM:
+                continue
+            mem = operand.mem
+            if mem.base != X86_REG_ESP or not mem.index or mem.segment not in (0, X86_REG_SS):
+                continue
+            base = mem.disp - depth + frame["local_bottom_depth"]
+            if 0 <= base < frame["frame_size"]:
+                aliases = listing.get(insn.address, ([], ()))[0] if listing else []
+                bases.append(
+                    {
+                        "address": insn.address,
+                        "base": base,
+                        "index": insn.reg_name(mem.index),
+                        "scale": mem.scale,
+                        "object": aliases[0][0] if len(aliases) == 1 else None,
+                    },
+                )
+    return bases
+
+
 def analyze(
     fr: fp.Frame,
     config,
@@ -99,7 +137,8 @@ def analyze(
     listing_text: str,
     target: match.MatchTarget | None = None,
 ) -> dict:
-    declarations, rows = parse_stack_listing(listing_text, symbol=config.symbol or config.function)
+    cand = match.extract_object_function(match.parse_coff_object(object_path.read_bytes()), config.symbol)
+    declarations, rows = parse_stack_listing(listing_text, symbol=cand.name)
     names = object_names(fr, declarations)
     by_alias = {names[o.ptr]: o for o in fr.objects}
     first_line = min((ln for r in rows.values() for ln in r.source_lines), default=2)
@@ -108,12 +147,10 @@ def analyze(
     frames = fp.binary_frames(config, object_path, target)
     tf, cf = frames["target"]["frame_size"], frames["candidate"]["frame_size"]
     tref, cref = defaultdict(list), defaultdict(list)
-    for a, off, _ in frames["target"]["refs"]:
-        if -tf <= off < 0:
-            tref[a].append(off + tf)
-    for a, off, _ in frames["candidate"]["refs"]:
-        if -cf <= off < 0:
-            cref[a].append(off + cf)
+    for a, bottom_offset in fp.local_refs(frames["target"]):
+        tref[a].append(bottom_offset)
+    for a, bottom_offset in fp.local_refs(frames["candidate"]):
+        cref[a].append(bottom_offset)
     manifest = match.load_function_manifest(
         target.functions_path,
         metadata_path=target.metadata_path,
@@ -122,8 +159,8 @@ def analyze(
     _, start, end = match.resolve_function(manifest, config.function, end_override=config.end_va)
     image = match.load_image(target.image_path, manifest.image_base)
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    md.detail = True
     tins = list(md.disasm(image.function_bytes(start, end), start))
-    cand = match.extract_object_function(match.parse_coff_object(object_path.read_bytes()), config.symbol)
     cins = list(md.disasm(cand.data, 0))
     ops = listing_operands(rows, declarations)
     t2c = {}
@@ -132,7 +169,9 @@ def analyze(
         if tag == "equal" or (tag == "replace" and i2 - i1 == j2 - j1):
             for k in range(i2 - i1):
                 t2c[tins[i1 + k].address] = cins[j1 + k].address
-    bottom = {o.ptr: o.offset + cf for o in fr.objects if o.cls != 5}
+    # C2's offsets are relative to its own frame origin. Its reported size
+    # includes inline EH registration even when SUB reserves only the locals.
+    bottom = {o.ptr: o.offset + fr.frame_size for o in fr.objects if o.cls != 5}
     votes: dict[int, Counter] = defaultdict(Counter)
     unexplained = []
     for insn in tins:
@@ -159,6 +198,12 @@ def analyze(
             votes[o.ptr][tb - (cb - bottom[o.ptr])] += 1
     native = {p: v.most_common(1)[0][0] for p, v in votes.items()}
     return {
+        "indexed_bases": {
+            "native": indexed_local_bases(tins, frames["target"]),
+            "candidate": indexed_local_bases(
+                cins, frames["candidate"], listing_operands(rows, declarations, INDEXED_STACK_OPERAND),
+            ),
+        },
         "names": names,
         "native": native,
         "votes": votes,
@@ -183,24 +228,48 @@ def report(fr: fp.Frame, res: dict) -> dict:
     for p, b in native.items():
         groups[b].append(p)
     print(f"native frame {res['tf']:#x}, candidate frame {res['cf']:#x}")
-    print("native base  size  members (candidate bottom, weight, native votes)  [conflicts inside the group]")
+    print(
+        "native base  size  members (candidate bottom, weight, votes for this base/total)  [conflicts inside the group]",
+    )
     same = 0
     rows = []
-    extent = {}
-    for b in sorted(groups):
-        extent[b] = b + max(objs[p].size for p in groups[b])
+    votes = res["votes"]
+    split_votes = {}
+    # A candidate aggregate can match two independent native scalars. Only draw its field
+    # boundaries when all of its aligned references agree on a native base.
+    extent = {b: b + max((objs[p].size for p in mem if len(votes[p]) == 1), default=0) for b, mem in groups.items()}
     for b in sorted(groups):
         mem = sorted(groups[b], key=lambda p: -objs[p].weight)
         size = max(objs[p].size for p in mem)
         bad = [(names[a], names[c]) for i, a in enumerate(mem) for c in mem[i + 1 :] if conflict(a, c)]
         same += sum(bottom[p] == b for p in mem)
-        desc = ", ".join(f"{names[p]}({bottom[p]:#x},w{objs[p].weight},n{sum(res['votes'][p].values())})" for p in mem)
+        members = []
+        for p in mem:
+            counts = votes[p]
+            members.append(f"{names[p]}({bottom[p]:#x},w{objs[p].weight},n{counts[b]}/{counts.total()})")
+            if len(counts) > 1:
+                split_votes[names[p]] = [{"base": base, "votes": count} for base, count in counts.most_common()]
+        desc = ", ".join(members)
         conf = f"  [{'; '.join(f'{a} x {c}' for a, c in bad)}]" if bad else ""
         outer = next((a for a in sorted(groups) if a < b < extent[a]), None)
         inside = f"  (field +{b - outer} of the native object at {outer:#x})" if outer is not None else ""
         print(f"  {b:#06x}  {size:>4}  {desc}{conf}{inside}")
         rows.append({"native": b, "size": size, "members": [names[p] for p in mem], "conflicts": bad})
-    print(f"objects at their native offset: {same}/{len(native)}")
+    print(f"objects at their inferred native offset: {same}/{len(native)}")
+    if split_votes:
+        print("candidate objects with votes for multiple native bases (base: votes):")
+        for name, counts in split_votes.items():
+            print(f"  {name}: " + ", ".join(f"{item['base']:#x}: {item['votes']}" for item in counts))
+    indexed = res.get("indexed_bases", {})
+    if any(indexed.values()):
+        print("indexed operands with bases inside the local reservation (reported separately from slot votes):")
+        for side, entries in indexed.items():
+            for entry in entries:
+                label = f"  {entry['object']}" if entry["object"] else ""
+                print(
+                    f"  {side} {entry['address']:#x}  bottom {entry['base']:#06x} + "
+                    f"{entry['index']}*{entry['scale']}{label}",
+                )
     if res["unexplained"]:
         print("native frame references with no candidate object:")
         for a, tb, text in res["unexplained"]:
@@ -236,7 +305,14 @@ def report(fr: fp.Frame, res: dict) -> dict:
                 f"  << {names[k]} w{o['weight']} {act} slot {hit} (native {nb:#x}) with "
                 + ", ".join(f"{names[m]}@{native[m]:#x}" for m in mates[:4]),
             )
-    return {"groups": rows, "at_native_offset": same, "mapped": len(native), "slots": slot_order(fr, res)}
+    return {
+        "groups": rows,
+        "indexed_bases": indexed,
+        "at_native_offset": same,
+        "mapped": len(native),
+        "split_votes": split_votes,
+        "slots": slot_order(fr, res),
+    }
 
 
 def density(slot: dict) -> int:

@@ -1,0 +1,176 @@
+// Original 56-byte .top entries and the mode/player dependent codec (0x406e10..0x406f89).
+#include "game.h"
+#include <algorithm>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <fstream>
+#include <iterator>
+
+namespace freeware {
+static const char *files[] = {"career.top", "career2.top", "rush.top", "rush2.top"};
+static uint32_t score_key(size_t i, int board) {
+  uint32_t n = uint32_t(i % 243);
+  return (((n + 1) * n + uint32_t(1 + board % 2) + 6) * n + uint32_t(1 + board / 2) * 124) & 255;
+}
+static uint32_t weight(size_t i) {
+  // The game runs the x87 unit at single precision. Round the product before truncating.
+  return static_cast<uint32_t>(float(i) * .7f);
+}
+template <typename T> static T load(const uint8_t *p) {
+  T value;
+  std::memcpy(&value, p, 4);
+  return value;
+}
+template <typename T> static void put(uint8_t *p, T value) { std::memcpy(p, &value, 4); }
+static void sort_scores(std::vector<Score> &table, bool survival) {
+  std::stable_sort(table.begin(), table.end(), [=](const Score &a, const Score &b) {
+    return survival ? a.seconds > b.seconds : a.experience > b.experience;
+  });
+}
+bool decode_scores(std::vector<uint8_t> bytes, int board, std::vector<Score> &out) {
+  if (FREEWARE_EDITION == 10002) {
+    if (bytes.size() % 36) return false;
+    std::vector<Score> decoded;
+    for (size_t i = 0; i < bytes.size(); i += 36) {
+      const auto *p = bytes.data() + i;
+      const auto *end = std::find(p, p + 32, 0);
+      if (end == p + 32) return false;
+      Score score{};
+      score.name.assign(reinterpret_cast<const char *>(p), end - p);
+      (board >= 2 ? score.seconds : score.experience) = load<int32_t>(p + 32);
+      decoded.push_back(score);
+    }
+    sort_scores(decoded, board >= 2);
+    out.swap(decoded);
+    return true;
+  }
+  if (bytes.size() < 4 || (bytes.size() - 4) % 56)
+    return false;
+  size_t size = bytes.size() - 4;
+  uint32_t sum = 0;
+  for (size_t i = 0; i < size; ++i) {
+    bytes[i] = uint8_t(bytes[i] - score_key(i, board));
+    sum += weight(i) * int8_t(bytes[i]);
+  }
+  if (sum != load<uint32_t>(&bytes[size]))
+    return false;
+  std::vector<Score> decoded;
+  for (size_t i = 0; i < size; i += 56) {
+    auto *p = &bytes[i];
+    auto len = std::find(p, p + 32, 0) - p;
+    if (len == 32)
+      return false;
+    Score s{};
+    s.name.assign(reinterpret_cast<const char *>(p), len);
+    s.seconds = load<int32_t>(p + 32);
+    s.experience = load<int32_t>(p + 36);
+    s.min_fps = load<float>(p + 40);
+    s.average_fps = load<float>(p + 44);
+    s.max_fps = load<float>(p + 48);
+    s.version = load<float>(p + 52);
+    decoded.push_back(s);
+  }
+  sort_scores(decoded, board >= 2);
+  out.swap(decoded);
+  return true;
+}
+std::vector<uint8_t> encode_scores(const std::vector<Score> &table, int board) {
+  if (FREEWARE_EDITION == 10002) {
+    std::vector<uint8_t> bytes(table.size() * 36);
+    for (size_t i = 0; i < table.size(); ++i) {
+      auto *p = bytes.data() + i * 36;
+      const auto &s = table[i];
+      std::memcpy(p, s.name.data(), std::min<size_t>(31, s.name.size()));
+      put(p + 32, int32_t(board >= 2 ? s.seconds : s.experience));
+    }
+    return bytes;
+  }
+  std::vector<uint8_t> bytes(table.size() * 56 + 4);
+  for (size_t i = 0; i < table.size(); ++i) {
+    auto *p = &bytes[i * 56];
+    const auto &s = table[i];
+    std::memcpy(p, s.name.data(), std::min<size_t>(31, s.name.size()));
+    put(p + 32, int32_t(s.seconds));
+    put(p + 36, int32_t(s.experience));
+    put(p + 40, s.min_fps);
+    put(p + 44, s.average_fps);
+    put(p + 48, s.max_fps);
+    put(p + 52, s.version);
+  }
+  uint32_t sum = 0;
+  size_t size = bytes.size() - 4;
+  for (size_t i = 0; i < size; ++i) {
+    sum += weight(i) * int8_t(bytes[i]);
+    bytes[i] = uint8_t(bytes[i] + score_key(i, board));
+  }
+  put(bytes.data() + size, sum);
+  return bytes;
+}
+void Game::load_scores() {
+  if (save_dir.empty())
+    return;
+  for (int i = 0; i < 4; i++) {
+    std::ifstream f(save_dir + files[i], std::ios::binary);
+    if (!f && FREEWARE_EDITION == 10002 && i == 0 && !asset_dir.empty())
+      f.open(asset_dir + "/career.top", std::ios::binary);
+    if (!f)
+      continue;
+    invalid_scores[i] = !decode_scores({std::istreambuf_iterator<char>(f), {}}, i, rankings[i]);
+    if (invalid_scores[i])
+      std::fprintf(stderr, "Invalid " FREEWARE_VERSION " score file %s\n", files[i]);
+  }
+}
+void Game::discard_corrupt_score() {
+  const int board = (survival ? 2 : 0) + int(two_players);
+  if (invalid_scores[board] && !save_dir.empty() && std::remove((save_dir + files[board]).c_str()) == 0) {
+    invalid_scores[board] = false;
+    scores().clear();
+  }
+}
+void Game::record_score(float average_fps) {
+  Score score{};
+  score.name = name;
+  score.seconds = int(run.seconds);
+  score.kills = run.kills;
+  score.experience = run.experience;
+  score.min_fps = run.min_fps;
+  score.average_fps = average_fps;
+  score.max_fps = run.max_fps;
+  last_score = score;
+  auto &table = scores();
+  table.push_back(score);
+  sort_scores(table, survival);
+  if (!save_dir.empty() && !store_scores(table))
+    std::fprintf(stderr, "Could not persist " FREEWARE_VERSION " score file\n");
+}
+bool Game::merge_scores(const std::string &filename) {
+  if (filename.empty() || filename.find_first_of("/\\") != std::string::npos || save_dir.empty())
+    return false;
+  int board = (survival ? 2 : 0) + int(two_players);
+  if (filename == files[board])
+    return false;
+  std::ifstream f(save_dir + filename, std::ios::binary);
+  std::vector<Score> imported;
+  if (!f || !decode_scores({std::istreambuf_iterator<char>(f), {}}, board, imported))
+    return false;
+  auto merged = scores();
+  merged.insert(merged.end(), imported.begin(), imported.end());
+  sort_scores(merged, survival);
+  if (!store_scores(merged))
+    return false;
+  scores().swap(merged);
+  return true;
+}
+bool Game::store_scores(const std::vector<Score> &table) const {
+  const int board = (survival ? 2 : 0) + int(two_players);
+  if (invalid_scores[board])
+    return false;
+  std::string path = save_dir + files[board], tmp = path + ".tmp";
+  auto bytes = encode_scores(table, board);
+  std::ofstream f(tmp, std::ios::binary | std::ios::trunc);
+  f.write(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+  f.close();
+  return f && std::rename(tmp.c_str(), path.c_str()) == 0;
+}
+} // namespace freeware

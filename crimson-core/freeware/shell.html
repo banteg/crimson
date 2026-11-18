@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Crimsonland v@EDITION@</title>
+<style>
+html,body{height:100%;margin:0;background:#080808;color:#ddd;font:16px monospace}
+body{display:grid;place-items:center}canvas{width:min(100vw,calc(100vh * 4 / 3));height:min(75vw,100vh);outline:none}
+#status{position:absolute}
+</style>
+<canvas id="canvas" width="@WIDTH@" height="@HEIGHT@" tabindex="0" aria-label="Crimsonland v@EDITION@"></canvas>
+<div id="status">Loading Crimsonland v@EDITION@…</div>
+<script>
+const canvas=document.querySelector("canvas");canvas.focus();
+canvas.addEventListener("pointerdown",()=>canvas.focus());
+canvas.addEventListener("contextmenu",event=>event.preventDefault());
+var Module={canvas, preRun:[function() {
+  Module.FS.mkdir("@SAVE_ROOT@");
+  Module.FS.mount(Module.IDBFS,{autoPersist:true},"@SAVE_ROOT@");
+  Module.addRunDependency("load-scores");
+  Module.FS.syncfs(true,error=>{if(error) console.warn("Score storage unavailable",error);Module.removeRunDependency("load-scores");});
+}], onRuntimeInitialized(){document.querySelector("#status").hidden=true;}};
+</script>
+{{{ SCRIPT }}}
+</html>

@@ -15,6 +15,7 @@ from . import match as matchlib
 from .match_diagnostics import _checked_disassembly, _line_payload, _location, _residual_alignment, _slots
 
 _PROC = re.compile(r"^(\S+)\s+PROC\b")
+_SEGMENT = re.compile(r"^([^;\s]+)\s+(SEGMENT|ENDS)\b")
 _DECLARATION = re.compile(r"^(\S+)\s*=\s*([+-]?\d+)\s*(?:;.*)?$")
 _SOURCE = re.compile(r"^;\s*(\d+)\s+:")
 _ROW = re.compile(r"^\s*([0-9a-fA-F]{5,8})\t(.*)$")
@@ -50,7 +51,11 @@ def parse_stack_listing(
     )
     if end is None:
         raise ValueError("selected listing PROC has no ENDP")
-    segment = max((i for i in range(start) if re.search(r"\bSEGMENT\b", lines[i])), default=-1)
+    segment = next(
+        (i for i in range(start - 1, -1, -1) if (m := _SEGMENT.match(lines[i])) and m[2] == "SEGMENT"),
+        -1,
+    )
+    primary_segment = lines[segment].split()[0] if segment >= 0 else None
     declarations: dict[str, int] = {}
     for line in lines[segment + 1 : start]:
         if m := _DECLARATION.fullmatch(line):
@@ -62,14 +67,25 @@ def parse_stack_listing(
     offset: int | None = None
     pending_source: list[int] = []
     source_lines: tuple[int, ...] = ()
+    in_primary_segment = True
     for index in range(start + 1, end):
         line = lines[index]
+        # VC can put an EH funclet in a separate section before the main PROC's ENDP.
+        # Its offsets start over at zero and do not index the selected COFF function.
+        if m := _SEGMENT.match(line):
+            in_primary_segment = m[1] == primary_segment and m[2] == "SEGMENT"
+            offset = None
+            pending_source.clear()
+            source_lines = ()
+            continue
+        if not in_primary_segment:
+            continue
         if m := _SOURCE.match(line):
             pending_source.append(int(m[1]))
             continue
         if m := _ROW.match(line):
             next_offset = int(m[1], 16)
-            if offset is None and next_offset != 0:
+            if not rows and offset is None and next_offset != 0:
                 raise ValueError("stack diagnostics do not support a nonzero listing PROC origin")
             offset = next_offset
             line = m[2]
@@ -338,7 +354,7 @@ def compiler_stack_residual_payload(
     return stack_local_observations_payload(
         result,
         listing_data.decode("latin1"),
-        symbol=config.symbol or config.function,
+        symbol=function.name,
         limit=limit,
     )
 

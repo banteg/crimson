@@ -21,11 +21,20 @@ from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
-from . import match_builds, match_data_report, match_native_inventory, match_toolchain, native_reference_link
+from . import (
+    match_builds,
+    match_data_report,
+    match_freeware_data,
+    match_gap_objects,
+    match_native_inventory,
+    match_toolchain,
+    native_reference_link,
+)
 from . import match_report_accounting as accounting
 
 # The canonical build: curated inventory, data evidence and the ownership ranges every build reuses.
-VERSION = "1.9.93"
+VERSION = matchlib.CANONICAL_BUILD
+IMAGE_CATEGORIES = {"crimsonland.exe": "exe", "crimson.exe": "exe", "grim.dll": "dll"}
 DEFAULT_REPORTS = matchlib.REPO_ROOT / "artifacts" / "decomp"
 BUILD_MAP_RE = re.compile(r"analysis/decomp/[^/]+/[^/]+/(?:functions|data|imports|metadata|recovered|native)\.json")
 
@@ -44,6 +53,8 @@ def _input_path(path: str) -> bool:
     if path.startswith("tools/match/evidence/"):
         # Dated investigation records: nothing evaluated for the report reads them.
         return False
+    if p.parent.as_posix() == "tools/match/data" and p.match("freeware_*.json"):
+        return True
     if path.startswith(("tools/match/", "tools/native/", "third_party/", "decomp/")):
         return p.suffix in {".c", ".cpp", ".cc", ".h", ".hpp", ".inc", ".conf", ".sh", ".py"} or (
             path.startswith(("tools/native/", "decomp/")) and p.suffix == ".json"
@@ -153,7 +164,7 @@ def _inventory(version: str = VERSION) -> list[dict[str, Any]]:
         image = matchlib.load_image(target.image_path, manifest.image_base)
         canonical = {} if build_image.is_canonical else {
             matchlib.parse_int(row["address"]): matchlib.parse_int(row["canonical_address"])
-            for row in json.loads(target.functions_path.read_text(encoding="utf-8"))
+            for row in json.loads(target.functions_path.read_text(encoding="utf-8")) if not row.get("build_only")
         }
         for function in manifest.functions:
             data = image.function_bytes(function.address, function.end)
@@ -166,7 +177,7 @@ def _inventory(version: str = VERSION) -> list[dict[str, Any]]:
                 # but instruction operands and undecodable body bytes remain.
                 "size": max((line.offset + line.size for line in lines), default=0),
             }
-            if canonical:
+            if function.address in canonical:
                 row["canonical_address"] = canonical[function.address]
             rows.append(row)
     return rows
@@ -218,7 +229,7 @@ def _score(inventory: list[dict[str, Any]], statuses: list[matchlib.ScratchStatu
         if key in selected:
             raise ValueError(f"duplicate report candidate: {key}")
         selected[key] = status
-    inventory_keys = {(row["image"], row["address"]) for row in inventory}
+    inventory_keys = {(row["image"], row["address"]) for row in inventory if row.get("native_kind", "function") == "function"}
     if selected.keys() - inventory_keys:
         raise ValueError("report candidates are absent from the full function inventory")
     for row in inventory:
@@ -227,8 +238,7 @@ def _score(inventory: list[dict[str, Any]], statuses: list[matchlib.ScratchStatu
         row.update(accounting.candidate_evidence(status))
         if status is None:
             continue
-        if status.target_size < row["size"]:
-            raise ValueError(f"partial function extent in report: {row['name']}")
+        accounting.validate_target_size(row, status.target_size)
         config = status.config
         kind = "archive" if config.archive else "import-thunk" if config.import_thunk else "source"
         source = (
@@ -256,32 +266,38 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
     before = repository_inputs()
     inventory = _inventory(version)
     if version == VERSION:
-        configs = [
-            matchlib.load_scratch_config(p.parent)
-            for p in sorted(matchlib.DEFAULT_MATCH_ROOT.glob("scratches/*/scratch.conf"))
-        ]
         statuses = matchlib.collect_scratch_statuses(scope="all", jobs=jobs)
         if errors := [s for s in statuses if s.error]:
             raise ValueError("matching failed: " + "; ".join(f"{s.config.function}: {s.error}" for s in errors))
     else:
-        # A canonical source that another build's compiler rejects leaves that function without a candidate.
+        # A compiler may reject a donor source. A timeout leaves a profile unmeasured,
+        # even when another profile for the same scratch completed.
         statuses = [
             row.status
-            for row in match_builds.scan_build(match_builds.load_registry(), version, jobs=jobs, native_inventory=True)
+            for row in match_builds.scan_build(
+                match_builds.load_registry(), version, jobs=jobs, native_inventory=True, raise_on_timeout=True,
+            )
             if row.status.error is None
         ]
-        configs = [status.config for status in statuses]
+    configs = [status.config for status in statuses]
     external, toolchains = _external_inputs(configs, before, version)
     _score(inventory, statuses)
-    data = match_data_report.refresh_evidence(configs) if version == VERSION else None
-    linking = native_reference_link.refresh(inventory, data) if data is not None else None
+    image_paths = _image_paths(version)
+    data = linking = gap_objects = None
+    if version == VERSION:
+        data = match_data_report.refresh_evidence(configs)
+        linking = native_reference_link.refresh(inventory, data)
+    elif any("native_kind" in row for row in inventory):
+        gap_objects = match_gap_objects.verify_tails(inventory, statuses, image_paths)
+        data = match_freeware_data.refresh_evidence(version, inventory, statuses, image_paths)
     if repository_inputs() != before or _external_inputs(configs, before, version) != (external, toolchains):
         raise ValueError("report inputs changed during evaluation; refresh again")
     return {
         "schema": 3,
         "verification": accounting.VERIFICATION,
         "identities": accounting.identities(inventory, before, external, toolchains, data=data),
-        "code_inventory": accounting.code_inventory(inventory, _image_paths(version)),
+        "code_inventory": accounting.code_inventory(inventory, image_paths),
+        **({"gap_objects": gap_objects} if gap_objects is not None else {}),
         "version": version,
         "scope": "all",
         "inputs": before,
@@ -339,13 +355,24 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         inventory, recorded, evidence["external_inputs"], evidence["toolchains"], data=evidence["data"],
     ):
         raise ValueError("report measurement identities differ")
-    if evidence["code_inventory"] != accounting.code_inventory(inventory, _image_paths(version)):
+    image_paths = _image_paths(version)
+    if evidence["code_inventory"] != accounting.code_inventory(inventory, image_paths):
         raise ValueError("executable inventory reconciliation differs")
+    native = any("native_kind" in row for row in inventory)
+    if native:
+        if "gap_objects" not in evidence:
+            raise ValueError("missing native object-tail receipts")
+        match_gap_objects.validate_tails(evidence["functions"], evidence["gap_objects"], image_paths)
+        if evidence["data"] is None:
+            raise ValueError("missing freeware data evidence")
+        match_freeware_data.validate_evidence(version, evidence["data"], evidence["functions"], image_paths)
+    elif "gap_objects" in evidence:
+        raise ValueError("object-tail receipts require a native executable inventory")
     if version == VERSION:
         match_data_report.validate_evidence(evidence["data"])
         native_reference_link.validate(evidence["linking"], evidence["functions"], evidence["data"])
-    elif evidence["data"] is not None or evidence.get("linking") is not None:
-        raise ValueError("data evidence covers the canonical build only")
+    elif evidence.get("linking") is not None or (not native and evidence["data"] is not None):
+        raise ValueError(f"unsupported data or linking evidence for {version}")
 
 
 def _category_definitions() -> tuple[dict[str, str], list[tuple[str, int, int, str]]]:
@@ -399,13 +426,22 @@ def build_report(
                 else:
                     linked_data.append(record)
     labels, library_ranges = _category_definitions()
-    if any(row.get("native_kind") == "unresolved" for row in functions):
-        labels["unresolved"] = "Unresolved executable bytes"
+    if any("native_kind" in row for row in functions):
         labels["game"] = "Confirmed Game & Engine"
+        labels["game.functions"] = "Game & Engine function bodies"
+        kinds = {row["native_kind"] for row in functions}
+        labels.update({kind: label for kind, label in accounting.GAP_LABELS.items() if kind in kinds})
+    if any("platform_replaced" in row for row in functions):
+        labels["port"] = "Freeware port"
+        labels["platform"] = "Replaced platform functions"
     if data is not None and "ownership" in data:
         labels.update({"game.data": "Game & Engine + attributed data",
                        "libs.data": "Libraries + attributed data",
                        "data_unknown": "Unattributed data"})
+    freeware_data = data is not None and data.get("policy") == match_freeware_data.POLICY
+    if freeware_data:
+        labels.update({"data.pe": "PE metadata", "data.unmatched": "Unmatched data",
+                       "data.mapped": "Mapped data awaiting source matches"})
     ownership = matchlib._load_matching_scope_definition("port")
     third_party = {
         (image, disposition.address)
@@ -438,7 +474,8 @@ def build_report(
         # objdiff's treemap paints 100% green. An unresolved-reference 100%
         # instruction score must remain visibly partial, like our `audit` state.
         percent = (100.0 if is_matched else min(ratio * 100, 99.99)) if eligible else 0.0
-        is_function = row.get("native_kind", "function") == "function"
+        kind = accounting.executable_kind(row)
+        is_function = kind == "retained_code"
         measures = _measures(
             size,
             size if is_matched else 0,
@@ -451,7 +488,7 @@ def build_report(
         )
         name = row["name"] if names[row["name"]] == 1 else f"{row['name']}@{accounting.native_id(row)}"
         metadata: dict[str, Any] = {"complete": is_complete}
-        categories = [{"crimsonland.exe": "exe", "crimson.exe": "exe", "grim.dll": "dll"}[row["image"]]]
+        categories = [IMAGE_CATEGORIES[row["image"]]]
         libraries = sorted({
             category for image, start, end, category in library_ranges
             if image == row["image"] and start <= owner_key[1] < end
@@ -460,6 +497,10 @@ def build_report(
             libraries = [row["ownership"]] if row["ownership"].startswith("libs.") else []
             if row["ownership"] == "game":
                 categories.append("game")
+                if is_function:
+                    categories.append("game.functions")
+                    if "platform_replaced" in row:
+                        categories.append("port" if match_native_inventory.in_port_scope(row) else "platform")
             elif row["ownership"] != "unknown" and not libraries:
                 raise ValueError("invalid native function ownership")
         else:
@@ -467,10 +508,10 @@ def build_report(
                 libraries.append("libs.other")
             if not libraries and any(region.contains(owner_key[1]) for region in ownership.ranges[row["image"]]):
                 categories.append("game")
-        if row.get("native_kind") == "unresolved":
-            if row["candidate"] is not None or row["matched"] or row["ratio"]:
+        if not is_function:
+            if row["candidate"] is not None or row["source"] is not None or row["matched"] or row["ratio"] or row.get("proof"):
                 raise ValueError("executable remainders cannot earn source credit")
-            categories.append("unresolved")
+            categories.append(kind)
         if libraries:
             categories.extend(["libs", *libraries])
         if "game" not in categories and "libs" not in categories:
@@ -507,7 +548,10 @@ def build_report(
         complete_units += int(is_complete)
         fuzzy += size * percent
     data_total = data_matched = data_complete = 0
-    for span in match_data_report.report_spans(data) if data is not None else []:
+    data_spans = []
+    if data is not None:
+        data_spans = match_freeware_data.report_spans(data) if freeware_data else match_data_report.report_spans(data)
+    for span in data_spans:
         size = span["size"]
         matched_size = size if span["matched"] else 0
         is_complete = span["matched"] and any(
@@ -517,11 +561,15 @@ def build_report(
         )
         metadata = {
             "complete": is_complete,
-            "progress_categories": [{"crimsonland.exe": "exe", "grim.dll": "dll"}[span["image"]]],
+            "progress_categories": [IMAGE_CATEGORIES[span["image"]]],
         }
         if data is not None and "ownership" in data:
             metadata["progress_categories"].append(
-                {"game": "game.data", "libraries": "libs.data", "unknown": "data_unknown"}[span["owner"]])
+                {"game": "game.data", "libraries": "libs.data", "unknown": "data_unknown", "pe": "data.pe"}[span["owner"]])
+        if freeware_data and not span["matched"]:
+            metadata["progress_categories"].append("data.unmatched")
+            if span["status"] == "mapped-unmatched":
+                metadata["progress_categories"].append("data.mapped")
         if span["source"]:
             metadata["source_path"] = span["source"]
         units.append({

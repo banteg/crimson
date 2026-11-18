@@ -1,5 +1,5 @@
 {
-  "audit_digest": "a49a115ecdc80019273c176feecd62a591fac4b9d74d0bf3e68fff21c6c1f2ca",
+  "audit_digest": "3af6c0d585f3eb2dd883ed44c4f676bd5fa6d4c9cdc6bfc765be65d686be758f",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -114,7 +114,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 2,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -1536,7 +1536,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -1626,7 +1626,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -2482,7 +2482,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 5,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -5088,7 +5088,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 7,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -5899,7 +5899,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -6393,7 +6393,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -8533,7 +8533,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 10,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -8863,7 +8863,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 24,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -9192,7 +9192,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 42,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -9347,7 +9347,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 11,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -9734,7 +9734,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 11,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -10280,7 +10280,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 12,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -10514,7 +10514,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 12,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -10923,7 +10923,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -11130,7 +11130,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -13694,7 +13694,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -13746,7 +13746,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -13976,7 +13976,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -14552,7 +14552,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -14630,7 +14630,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -16176,7 +16176,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -16379,7 +16379,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -16489,7 +16489,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -16567,7 +16567,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -18046,7 +18046,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -18072,7 +18072,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -18598,7 +18598,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -18975,7 +18975,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -19065,7 +19065,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -19110,7 +19110,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -20953,7 +20953,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -22184,7 +22184,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -22896,7 +22896,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -23266,7 +23266,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -24111,7 +24111,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -26800,7 +26800,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -29356,7 +29356,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -30394,7 +30394,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -30825,7 +30825,7 @@
         "tools/match/scratches/console_register_command/build/msvc6.5/3247045926f83e69/console_register_command.obj",
         "tools/match/scratches/console_register_cvar/build/msvc6.5/008719b1cfc8ec1c/console_register_cvar.obj",
         "tools/match/scratches/console_register_global_destructor_atexit/build/msvc6.5/571921616ebea1f4/console_register_global_destructor_atexit.obj",
-        "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+        "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
         "tools/match/scratches/console_set_open/build/msvc6.5/e92b2a49be0ec72c/console_set_open.obj",
         "tools/match/scratches/console_tokenize_line/build/msvc6.5/8af664a47f5561c0/console_tokenize_line.obj",
         "tools/match/scratches/console_update/build/msvc6.5/ea16dda83bc734bc/console_update.obj",
@@ -30893,7 +30893,7 @@
         "tools/match/scratches/crimson_crt_empty_initializer_slot_49_thunk/build/msvc6.5/fb073299635d92a3/crimson_crt_empty_initializer_slot_49_thunk.obj",
         "tools/match/scratches/crimson_crt_empty_initializer_slot_54/build/msvc6.5/8e6c4f144163447b/crimson_crt_empty_initializer_slot_54.obj",
         "tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk/build/msvc6.5/3488e492e0994cfe/crimson_crt_empty_initializer_slot_54_thunk.obj",
-        "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+        "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
         "tools/match/scratches/demo_mode_start/build/msvc6.5/6ac40b8e4f174076/demo_mode_start.obj",
         "tools/match/scratches/demo_purchase_interstitial_begin/build/msvc6.5/75c354bc23343f7f/demo_purchase_interstitial_begin.obj",
         "tools/match/scratches/demo_purchase_screen_update/build/msvc6.5/76d27875f5932574/demo_purchase_screen_update.obj",
@@ -30940,7 +30940,7 @@
         "tools/match/scratches/fx_spawn_sprite/build/msvc6.5/2baedc6a42015235/fx_spawn_sprite.obj",
         "tools/match/scratches/game_build_path/build/msvc6.5/d7f7e25941dc101e/game_build_path.obj",
         "tools/match/scratches/game_core_init/build/msvc6.5/d7b00674777b4cd4/game_core_init.obj",
-        "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+        "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
         "tools/match/scratches/game_is_full_version/build/msvc6.5/ef2d58bb3686667f/game_is_full_version.obj",
         "tools/match/scratches/game_load_status/build/msvc6.5/b8903990a9682fdc/game_load_status.obj",
         "tools/match/scratches/game_mode_label/build/msvc6.5/2c7e05170614aaff/game_mode_label.obj",
@@ -31401,7 +31401,7 @@
         "tools/match/scratches/console_register_command/build/msvc6.5/3247045926f83e69/console_register_command.obj",
         "tools/match/scratches/console_register_cvar/build/msvc6.5/008719b1cfc8ec1c/console_register_cvar.obj",
         "tools/match/scratches/console_register_global_destructor_atexit/build/msvc6.5/571921616ebea1f4/console_register_global_destructor_atexit.obj",
-        "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+        "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
         "tools/match/scratches/console_set_open/build/msvc6.5/e92b2a49be0ec72c/console_set_open.obj",
         "tools/match/scratches/console_tokenize_line/build/msvc6.5/8af664a47f5561c0/console_tokenize_line.obj",
         "tools/match/scratches/console_update/build/msvc6.5/ea16dda83bc734bc/console_update.obj",
@@ -31469,7 +31469,7 @@
         "tools/match/scratches/crimson_crt_empty_initializer_slot_49_thunk/build/msvc6.5/fb073299635d92a3/crimson_crt_empty_initializer_slot_49_thunk.obj",
         "tools/match/scratches/crimson_crt_empty_initializer_slot_54/build/msvc6.5/8e6c4f144163447b/crimson_crt_empty_initializer_slot_54.obj",
         "tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk/build/msvc6.5/3488e492e0994cfe/crimson_crt_empty_initializer_slot_54_thunk.obj",
-        "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+        "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
         "tools/match/scratches/demo_mode_start/build/msvc6.5/6ac40b8e4f174076/demo_mode_start.obj",
         "tools/match/scratches/demo_purchase_interstitial_begin/build/msvc6.5/75c354bc23343f7f/demo_purchase_interstitial_begin.obj",
         "tools/match/scratches/demo_purchase_screen_update/build/msvc6.5/76d27875f5932574/demo_purchase_screen_update.obj",
@@ -31516,7 +31516,7 @@
         "tools/match/scratches/fx_spawn_sprite/build/msvc6.5/2baedc6a42015235/fx_spawn_sprite.obj",
         "tools/match/scratches/game_build_path/build/msvc6.5/d7f7e25941dc101e/game_build_path.obj",
         "tools/match/scratches/game_core_init/build/msvc6.5/d7b00674777b4cd4/game_core_init.obj",
-        "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+        "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
         "tools/match/scratches/game_is_full_version/build/msvc6.5/ef2d58bb3686667f/game_is_full_version.obj",
         "tools/match/scratches/game_load_status/build/msvc6.5/b8903990a9682fdc/game_load_status.obj",
         "tools/match/scratches/game_mode_label/build/msvc6.5/2c7e05170614aaff/game_mode_label.obj",
@@ -31903,13 +31903,13 @@
         "tools/match/scratches/console_cmd_snd_add_game_tune/build/msvc6.5/b49acec6583a3c60/console_cmd_snd_add_game_tune.obj",
         "tools/match/scratches/console_cmd_snd_freq_adjustment/build/msvc6.5/e49b3746d7b4b67a/console_cmd_snd_freq_adjustment.obj",
         "tools/match/scratches/controls_menu_update/build/msvc6.5/98462cc8f9f5c938/controls_menu_update.obj",
-        "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+        "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
         "tools/match/scratches/demo_purchase_screen_update/build/msvc6.5/76d27875f5932574/demo_purchase_screen_update.obj",
         "tools/match/scratches/demo_trial_overlay_render/build/msvc6.5/eb64e7181c646335/demo_trial_overlay_render.obj",
         "tools/match/scratches/dsound_init/build/msvc6.5/20e38fb619248dc2/dsound_init.obj",
         "tools/match/scratches/dsound_restore_buffer/build/msvc6.5/b386a00d4aa248ea/dsound_restore_buffer.obj",
         "tools/match/scratches/dsound_shutdown/build/msvc6.5/bdb0c9af3d6b4a72/dsound_shutdown.obj",
-        "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+        "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
         "tools/match/scratches/game_save_status/build/msvc6.5/03f34ef3f95d4de4/game_save_status.obj",
         "tools/match/scratches/game_startup_init/build/msvc6.5/41641280c295d1d9/game_startup_init.obj",
         "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/e831882bf3608d32/game_startup_init_prelude.obj",
@@ -32315,7 +32315,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 2,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -33832,7 +33832,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -33922,7 +33922,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -34987,7 +34987,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -35126,7 +35126,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -35778,7 +35778,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 5,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -36092,7 +36092,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 5,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -40045,7 +40045,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 7,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -41024,7 +41024,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -41254,7 +41254,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -41729,7 +41729,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -41779,7 +41779,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -41932,7 +41932,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 9,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -43018,7 +43018,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 9,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -45225,7 +45225,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 10,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -45485,7 +45485,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 16,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -45611,7 +45611,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 16,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -45683,7 +45683,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 16,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -45737,7 +45737,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 16,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -46036,7 +46036,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 17,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -46154,7 +46154,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 17,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -46244,7 +46244,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 17,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -46379,7 +46379,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 17,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -46812,7 +46812,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 18,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -47415,7 +47415,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 18,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -47679,7 +47679,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 19,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -47949,7 +47949,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 19,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -48023,7 +48023,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 19,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -48929,7 +48929,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 20,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -49525,7 +49525,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 21,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -49980,7 +49980,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 22,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -50047,7 +50047,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 22,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -50288,7 +50288,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 23,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -50342,7 +50342,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 23,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -50642,7 +50642,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 23,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -50696,7 +50696,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 24,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -50864,7 +50864,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 24,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -51349,7 +51349,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 25,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -51440,7 +51440,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 26,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -51587,7 +51587,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 26,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -51605,7 +51605,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 26,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -51867,7 +51867,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 27,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -51921,7 +51921,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 28,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -52084,7 +52084,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 28,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -52590,7 +52590,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 30,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -52781,7 +52781,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 31,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -53064,7 +53064,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 33,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -53177,7 +53177,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 34,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -53384,7 +53384,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 35,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -53402,7 +53402,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 36,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -53420,7 +53420,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 36,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -53783,7 +53783,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 37,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -54301,7 +54301,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 42,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -54716,7 +54716,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 45,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -54776,7 +54776,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 46,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -55248,7 +55248,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 54,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -56506,7 +56506,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 126,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -56704,7 +56704,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 148,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -56758,7 +56758,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 156,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -56982,7 +56982,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 11,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -57778,7 +57778,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 11,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -58890,7 +58890,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 12,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -59066,7 +59066,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 12,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -59363,7 +59363,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 12,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -59412,7 +59412,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 12,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -59456,7 +59456,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 12,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -59744,7 +59744,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 13,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -59798,7 +59798,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 13,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -60415,7 +60415,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 13,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -60567,7 +60567,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 13,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -60585,7 +60585,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 13,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -61209,7 +61209,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 14,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -62449,7 +62449,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 15,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -63088,7 +63088,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 250,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -65202,7 +65202,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 1408,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -66058,7 +66058,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -66265,7 +66265,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -69506,7 +69506,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -69558,7 +69558,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -69842,7 +69842,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -70477,7 +70477,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -70555,7 +70555,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -72209,7 +72209,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -72412,7 +72412,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -72522,7 +72522,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -72600,7 +72600,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -74264,7 +74264,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -74290,7 +74290,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -74911,7 +74911,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -75378,7 +75378,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -75468,7 +75468,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -75513,7 +75513,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -77397,7 +77397,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -78652,7 +78652,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -79382,7 +79382,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -79770,7 +79770,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -80638,7 +80638,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -83511,7 +83511,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -86804,7 +86804,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -88227,7 +88227,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -88312,7 +88312,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -88947,7 +88947,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -89078,7 +89078,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -94346,7 +94346,7 @@
           "function": "crimsonland_main",
           "kind": "section",
           "logical_section_size": 3216,
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -97173,7 +97173,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 3600,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -115363,7 +115363,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj"
+      "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj"
     },
     {
       "directives": [
@@ -115843,7 +115843,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj"
+      "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj"
     },
     {
       "directives": [
@@ -116184,7 +116184,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj"
+      "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj"
     },
     {
       "directives": [
@@ -120725,7 +120725,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -120735,7 +120735,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -121031,7 +121031,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -121071,7 +121071,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -121106,7 +121106,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -121277,7 +121277,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -121307,7 +121307,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -121496,7 +121496,7 @@
         },
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
@@ -121543,7 +121543,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -121586,7 +121586,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -123672,7 +123672,7 @@
           "function": "console_render",
           "kind": "section",
           "logical_section_size": 1408,
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -123682,7 +123682,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -124581,7 +124581,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -125094,12 +125094,12 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -125149,7 +125149,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -125174,12 +125174,12 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -125245,7 +125245,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -125275,7 +125275,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -127597,7 +127597,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -127660,7 +127660,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -128048,7 +128048,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -128506,7 +128506,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -129099,12 +129099,12 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -129258,7 +129258,7 @@
       "referenced_by": [
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
@@ -129529,7 +129529,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -129554,7 +129554,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -129655,7 +129655,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -129730,7 +129730,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -129755,7 +129755,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -129780,7 +129780,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -129805,7 +129805,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -129830,7 +129830,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -130166,7 +130166,7 @@
       "referenced_by": [
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
@@ -130242,7 +130242,7 @@
         },
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
@@ -130663,7 +130663,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -130854,7 +130854,7 @@
       "referenced_by": [
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
@@ -130895,7 +130895,7 @@
       "referenced_by": [
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         }
       ]
@@ -131012,7 +131012,7 @@
       "referenced_by": [
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         }
       ]
@@ -134095,7 +134095,7 @@
         },
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         }
       ]
@@ -134249,7 +134249,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -134715,7 +134715,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -134832,7 +134832,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -134924,7 +134924,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -134955,7 +134955,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -135170,7 +135170,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -135218,7 +135218,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -135323,7 +135323,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -135422,7 +135422,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -135453,7 +135453,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -135484,7 +135484,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -135515,7 +135515,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -135546,7 +135546,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -135577,7 +135577,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -135608,7 +135608,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -135639,7 +135639,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -135670,7 +135670,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -137663,7 +137663,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -137750,7 +137750,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -137876,7 +137876,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -137944,7 +137944,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -138080,7 +138080,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -138116,7 +138116,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -138147,7 +138147,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -138776,7 +138776,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -138871,7 +138871,7 @@
           "function": "game_frame_update",
           "kind": "section",
           "logical_section_size": 3600,
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -138929,7 +138929,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -139068,7 +139068,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -139256,7 +139256,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -139348,7 +139348,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -139388,7 +139388,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -139471,7 +139471,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -139653,7 +139653,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -139962,7 +139962,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -140171,7 +140171,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -140207,12 +140207,12 @@
       "referenced_by": [
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -140272,7 +140272,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -140305,7 +140305,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -140601,7 +140601,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -140637,7 +140637,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -140738,7 +140738,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -142962,7 +142962,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -143199,7 +143199,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -143515,7 +143515,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -143546,7 +143546,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -143577,7 +143577,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -143633,7 +143633,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -143679,7 +143679,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -144561,7 +144561,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -144659,7 +144659,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -144977,7 +144977,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -145466,7 +145466,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -145771,7 +145771,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -146004,7 +146004,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -146144,7 +146144,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -146400,12 +146400,12 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -146857,7 +146857,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -149132,7 +149132,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -150381,7 +150381,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -150809,7 +150809,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -150839,7 +150839,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -150892,7 +150892,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -151820,7 +151820,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -151845,7 +151845,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -152230,7 +152230,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -152344,7 +152344,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -152460,7 +152460,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -154483,7 +154483,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -154621,7 +154621,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -155380,7 +155380,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -156109,7 +156109,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -156295,7 +156295,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -156535,7 +156535,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -156765,7 +156765,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -156805,7 +156805,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -156836,7 +156836,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -157281,7 +157281,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -157540,7 +157540,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -157683,7 +157683,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -157729,7 +157729,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -157858,7 +157858,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -157894,12 +157894,12 @@
       "referenced_by": [
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -157935,7 +157935,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -157966,7 +157966,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -159142,7 +159142,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -161294,7 +161294,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -161706,7 +161706,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -162128,7 +162128,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -162619,7 +162619,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -162659,7 +162659,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -162861,7 +162861,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -163466,7 +163466,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -163613,12 +163613,12 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -164161,7 +164161,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -164840,7 +164840,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -166200,7 +166200,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -166231,7 +166231,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -167379,7 +167379,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -167440,7 +167440,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -168321,7 +168321,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -168562,7 +168562,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -168733,7 +168733,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -168846,7 +168846,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -169177,7 +169177,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         }
       ]
@@ -170206,7 +170206,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -171305,7 +171305,7 @@
       "referenced_by": [
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -171364,12 +171364,12 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -171435,12 +171435,12 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -172701,7 +172701,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -172746,7 +172746,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -172771,7 +172771,7 @@
         },
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
@@ -172968,7 +172968,7 @@
         },
         {
           "function": "console_render",
-          "object": "tools/match/scratches/console_render/build/msvc6.5/6785dfb5f10b628c/console_render.obj",
+          "object": "tools/match/scratches/console_render/build/msvc6.5/f23f3aa36a9fef2e/console_render.obj",
           "weak": false
         },
         {
@@ -173080,7 +173080,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -173253,7 +173253,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -174433,7 +174433,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -174766,7 +174766,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -175126,7 +175126,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -175151,7 +175151,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -175226,7 +175226,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -175261,7 +175261,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -175339,7 +175339,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -175349,7 +175349,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -176018,7 +176018,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -176204,7 +176204,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -176305,7 +176305,7 @@
         },
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -176438,7 +176438,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -176644,7 +176644,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -176881,7 +176881,7 @@
         },
         {
           "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/17308b9201a5b132/game_frame_update.obj",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/46332a6c71493e3a/game_frame_update.obj",
           "weak": false
         },
         {
@@ -177006,7 +177006,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {
@@ -177051,7 +177051,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -177106,7 +177106,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         }
       ]
@@ -177541,7 +177541,7 @@
       "referenced_by": [
         {
           "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/feaee0f72f79522e/crimsonland_main.obj",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6ae82f2cd8011dfc/crimsonland_main.obj",
           "weak": false
         },
         {

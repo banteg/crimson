@@ -11,6 +11,7 @@ extern bool grim_windowed_mode_enabled;
 extern unsigned int grim_backbuffer_width;
 extern unsigned int grim_backbuffer_height;
 extern HWND grim_main_window_hwnd;
+extern HWND grim_device_window_override;
 
 LRESULT CALLBACK grim_window_proc(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
@@ -29,14 +30,25 @@ bool grim_window_create(void)
     grim_window_class.cbWndExtra = 0;
     grim_window_class.hInstance = grim_process_hinstance;
     grim_window_class.hIcon = grim_window_icon_handle;
+#if CL_BUILD <= 10400
+    grim_window_class.hCursor = 0;
+#else
     grim_window_class.hCursor = LoadCursorA(0, IDC_ARROW);
+#endif
     grim_window_class.hbrBackground =
         (HBRUSH)GetStockObject(BLACK_BRUSH);
     grim_window_class.lpszMenuName = 0;
+#if CL_BUILD <= 10400
+    grim_window_class.lpszClassName = "Grim Window Class";
+#else
     grim_window_class.lpszClassName = "Crimson";
+#endif
     grim_window_class.hIconSm = grim_window_icon_handle;
     RegisterClassExA(&grim_window_class);
 
+#if CL_BUILD == 10400
+    if (grim_device_window_override == 0) {
+#endif
     if (!grim_windowed_mode_enabled) {
         grim_main_window_hwnd = CreateWindowExA(
             WS_EX_TOPMOST,
@@ -60,13 +72,18 @@ bool grim_window_create(void)
         rect.top = screen_y - grim_backbuffer_height / 2;
         rect.bottom = screen_y + grim_backbuffer_height / 2;
 
+#if CL_BUILD <= 10400
+        const DWORD style = WS_OVERLAPPEDWINDOW;
+#else
+        const DWORD style = 0x00cb0000;
+#endif
         AdjustWindowRectEx(
-            &rect, 0x00cb0000, FALSE, WS_EX_APPWINDOW);
+            &rect, style, FALSE, WS_EX_APPWINDOW);
         grim_main_window_hwnd = CreateWindowExA(
             WS_EX_APPWINDOW,
             grim_window_class_name,
             grim_window_title,
-            0x00cb0000,
+            style,
             rect.left,
             rect.top,
             rect.right - rect.left,
@@ -77,16 +94,32 @@ bool grim_window_create(void)
             0);
     }
 
+#if CL_BUILD == 10400
+    } else {
+        grim_main_window_hwnd = CreateWindowExA(
+            WS_EX_TOPMOST, grim_window_class_name, grim_window_title, WS_POPUP,
+            0, 0, 100, 100, GetDesktopWindow(), 0, grim_process_hinstance, 0);
+    }
+#endif
+
     if (grim_main_window_hwnd == 0) {
         grim_error_text = "WIN: Could not create the main window.";
         grim_window_destroy();
         return false;
     }
 
+#if CL_BUILD == 10400
+    if (grim_device_window_override != 0) {
+        ShowWindow(grim_main_window_hwnd, SW_HIDE);
+        return true;
+    }
+#endif
     ShowWindow(grim_main_window_hwnd, SW_SHOWNORMAL);
     UpdateWindow(grim_main_window_hwnd);
+#if CL_BUILD > 10400
     SetFocus(grim_main_window_hwnd);
     ShowWindow(grim_main_window_hwnd, SW_SHOWNORMAL);
     UpdateWindow(grim_main_window_hwnd);
+#endif
     return true;
 }

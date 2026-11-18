@@ -10,7 +10,7 @@ import shlex
 import shutil
 import struct
 from collections import Counter, defaultdict
-from collections.abc import Collection, Generator
+from collections.abc import Collection, Generator, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
@@ -22,7 +22,8 @@ from . import match_experiments, match_process, match_toolchain
 from .match_process import run_compiler
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_VERSION = "1.9.93-gog"
+CANONICAL_BUILD = "1.9.93"
+DEFAULT_VERSION = f"{CANONICAL_BUILD}-gog"
 DEFAULT_GAME_DIR = REPO_ROOT / "game_bins" / "crimsonland" / DEFAULT_VERSION
 DEFAULT_IMAGE_NAME = "crimsonland.exe"
 TRACKED_IMAGE_NAMES = ("crimsonland.exe", "grim.dll")
@@ -81,6 +82,7 @@ IMAGE_FILE_MACHINE_I386 = 0x14C
 IMAGE_SYM_CLASS_EXTERNAL = 2
 IMAGE_SYM_CLASS_STATIC = 3
 IMAGE_SYM_CLASS_LABEL = 6
+IMAGE_SYM_CLASS_FILE = 103
 IMAGE_SCN_CNT_CODE = 0x00000020
 IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080
 IMAGE_SCN_LNK_COMDAT = 0x00001000
@@ -1337,6 +1339,18 @@ def parse_coff_object(data: bytes) -> CoffObject:
         else:
             key_index = symbol.raw_index + 1 + len(symbol.aux_records)
             key_symbol = symbols_by_raw_index.get(key_index)
+            # VC6 /Z7 can switch source files between the section definition and
+            # its key. Only file markers and their filename records intervene.
+            while (
+                key_symbol is not None
+                and key_symbol.storage_class == IMAGE_SYM_CLASS_FILE
+                and key_symbol.name == ".file"
+                and key_symbol.section_number == -2
+                and key_symbol.symbol_type == 0
+                and key_symbol.aux_records
+            ):
+                key_index += 1 + len(key_symbol.aux_records)
+                key_symbol = symbols_by_raw_index.get(key_index)
             if (
                 key_symbol is None
                 or key_symbol.storage_class
@@ -1456,64 +1470,89 @@ def _coff_relocation_symbol(
     return next((symbol for symbol in obj.symbols if symbol.raw_index == relocation.symbol_index), None)
 
 
+def _coff_unwind_record(
+    obj: CoffObject,
+    symbol: CoffSymbol,
+    size: int,
+    pointers: Iterable[tuple[int, int]],
+) -> tuple[bytes, list[CoffSymbol]] | None:
+    """Read the record only if its relocations bind precisely the expected fields."""
+    if not 0 < symbol.section_number <= len(obj.sections):
+        return None
+    section = obj.sections[symbol.section_number - 1]
+    start, end = symbol.value, symbol.value + size
+    if not 0 <= start <= end <= len(section.data):
+        return None
+    relocations = sorted(
+        (
+            entry
+            for entry in section.relocations
+            if entry.virtual_address < end
+            and entry.virtual_address + IMAGE_REL_I386_WIDTHS[entry.relocation_type] > start
+        ),
+        key=lambda entry: entry.virtual_address,
+    )
+    if [(entry.virtual_address - start, entry.relocation_type) for entry in relocations] != list(pointers):
+        return None
+    symbols = {entry.raw_index: entry for entry in obj.symbols}
+    return section.data[start:end], [symbols[entry.symbol_index] for entry in relocations]
+
+
+def _vc6_delete_unwind_key(slots: list[int]) -> str:
+    # Preserve historical raw disp8 keys. For slots outside its signed range,
+    # the full signed displacement keeps e.g. +0xec distinct from disp8 0xec.
+    keys = (f"ebp+0x{slot & 0xff:02x}" if -128 <= slot <= 127 else f"ebp{slot:+#011x}" for slot in slots)
+    return VC6_SINGLE_DELETE_UNWIND_KEY + ":" + ",".join(keys)
+
+
+# mov eax, [ebp+disp8/disp32], followed by push eax and call rel32.
+_VC6_DELETE_SLOT_WIDTH = {bytes.fromhex("8b45"): 1, bytes.fromhex("8b85"): 4}
+
+
 def _coff_vc6_single_delete_unwind_key(obj: CoffObject, symbol: CoffSymbol) -> str | None:
-    """Recognize a complete VC6 C++ frame-handler graph in a COFF object.
-
-    The pushed handler address is target-specific, but its thunk, FuncInfo,
-    unwind-map entry, and cleanup funclet are deterministic. Recognizing the
-    whole graph avoids accepting an arbitrary compiler-local ``$L`` label.
-    """
-
-    if not symbol.name.startswith("$L") or symbol.section_number <= 0:
+    """Identify VC6 unwind states that each delete one object and finish at -1."""
+    if not symbol.name.startswith("$L"):
         return None
-    handler_section = obj.sections[symbol.section_number - 1]
-    handler = handler_section.data[symbol.value : symbol.value + 10]
-    if len(handler) != 10 or handler[:1] != b"\xb8" or handler[5:6] != b"\xe9":
+    record = _coff_unwind_record(obj, symbol, 10, ((1, IMAGE_REL_I386_DIR32), (6, IMAGE_REL_I386_REL32)))
+    if record is None:
         return None
-    if handler[1:5] != b"\x00" * 4 or handler[6:10] != b"\x00" * 4:
+    handler, (info_symbol, frame_handler) = record
+    if handler != bytes.fromhex("b800000000e900000000"):
+        return None
+    if frame_handler.storage_class != IMAGE_SYM_CLASS_EXTERNAL or frame_handler.name != "___CxxFrameHandler":
         return None
 
-    func_info_symbol = _coff_relocation_symbol(obj, handler_section, symbol.value + 1)
-    frame_handler_symbol = _coff_relocation_symbol(obj, handler_section, symbol.value + 6)
-    if (
-        func_info_symbol is None
-        or func_info_symbol.section_number <= 0
-        or frame_handler_symbol is None
-        or _symbol_lookup_name(frame_handler_symbol.name) != "CxxFrameHandler"
-    ):
+    record = _coff_unwind_record(obj, info_symbol, 28, ((8, IMAGE_REL_I386_DIR32),))
+    if record is None:
+        return None
+    info, (map_symbol,) = record
+    magic, states = struct.unpack_from("<II", info)
+    if magic != 0x19930520 or not states or info[8:] != bytes(20):
         return None
 
-    func_info_section = obj.sections[func_info_symbol.section_number - 1]
-    base = func_info_symbol.value
-    # FuncInfo: magic, one state, unwind map, and no try blocks or IP map.
-    func_info = func_info_section.data[base : base + 28]
-    if len(func_info) != 28 or struct.unpack_from("<II", func_info) != (0x19930520, 1):
+    cleanup_fields = ((8 * i + 4, IMAGE_REL_I386_DIR32) for i in range(states))
+    record = _coff_unwind_record(obj, map_symbol, 8 * states, cleanup_fields)
+    if record is None:
         return None
-    if func_info[8:12] != b"\x00" * 4 or func_info[12:28] != b"\x00" * 16:
-        return None
-
-    # The compiler may emit the one-entry unwind map before or after FuncInfo.
-    unwind_map_symbol = _coff_relocation_symbol(obj, func_info_section, base + 8)
-    if unwind_map_symbol is None or unwind_map_symbol.section_number <= 0:
-        return None
-    unwind_section = obj.sections[unwind_map_symbol.section_number - 1]
-    unwind = unwind_section.data[unwind_map_symbol.value : unwind_map_symbol.value + 8]
-    if len(unwind) != 8 or struct.unpack_from("<i", unwind)[0] != -1 or unwind[4:] != b"\x00" * 4:
-        return None
-    cleanup_symbol = _coff_relocation_symbol(obj, unwind_section, unwind_map_symbol.value + 4)
-    if cleanup_symbol is None or cleanup_symbol.section_number <= 0:
-        return None
-
-    cleanup_section = obj.sections[cleanup_symbol.section_number - 1]
-    cleanup = cleanup_section.data[cleanup_symbol.value : cleanup_symbol.value + 11]
-    if cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
-        return None
-    if cleanup[5:9] != b"\x00" * 4 or cleanup[9:] != bytes.fromhex("59c3"):
-        return None
-    delete_symbol = _coff_relocation_symbol(obj, cleanup_section, cleanup_symbol.value + 5)
-    if delete_symbol is None or not delete_symbol.name.startswith("??3@"):
-        return None
-    return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
+    unwind, cleanups = record
+    slots = []
+    for (previous_state, addend), cleanup_symbol in zip(struct.iter_unpack("<iI", unwind), cleanups, strict=True):
+        if previous_state != -1 or addend != 0:
+            return None
+        prefix = _coff_unwind_record(obj, cleanup_symbol, 2, ())
+        if prefix is None or (width := _VC6_DELETE_SLOT_WIDTH.get(prefix[0])) is None:
+            return None
+        call = 4 + width
+        record = _coff_unwind_record(obj, cleanup_symbol, call + 6, ((call, IMAGE_REL_I386_REL32),))
+        if record is None:
+            return None
+        cleanup, (delete,) = record
+        if cleanup[2 + width :] != bytes.fromhex("50e80000000059c3"):
+            return None
+        if delete.storage_class != IMAGE_SYM_CLASS_EXTERNAL or delete.name != "??3@YAXPAX@Z":
+            return None
+        slots.append(int.from_bytes(cleanup[2 : 2 + width], "little", signed=True))
+    return _vc6_delete_unwind_key(slots)
 
 
 def _vc6_frame_slot_key(displacement: int) -> str:
@@ -2262,12 +2301,14 @@ def extract_object_function(
         addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
         key, explained = _object_reference_key(symbol, addend)
         alternate_keys: tuple[str, ...] = ()
-        compiler_key = _coff_vc6_unwind_only_key(
-            obj,
-            target,
-            end,
-            symbol,
-        ) or _coff_vc6_single_delete_unwind_key(obj, symbol)
+        compiler_key = None
+        if relocation.relocation_type == IMAGE_REL_I386_DIR32 and addend == 0:
+            compiler_key = _coff_vc6_unwind_only_key(
+                obj,
+                target,
+                end,
+                symbol,
+            ) or _coff_vc6_single_delete_unwind_key(obj, symbol)
         if compiler_key:
             key = compiler_key
             explained = True
@@ -2401,14 +2442,39 @@ _OPERAND_SIZE_NAMES = {1: "byte", 2: "word", 4: "dword", 8: "qword", 10: "tword"
 _MAX_AUDITED_STRING_BYTES = 0x1000
 
 
-def _printable_string_key(data: bytes) -> str | None:
+def _printable_string_key(
+    data: bytes, *, object_keys: frozenset[str] | None = None, terminator: bool = False,
+) -> str | None:
     end = data.find(b"\x00", 0, _MAX_AUDITED_STRING_BYTES + 1)
     if end <= 0:
         return None
     raw = data[:end]
-    if any((byte < 0x20 and byte not in b"\t\n\r") or byte > 0x7E for byte in raw):
+    if any((byte < 0x20 and byte not in b"\t\n\r") or 0x7F <= byte < 0xA0 for byte in raw):
         return None
-    return f"string:{json.dumps(raw.decode('ascii'), ensure_ascii=True)}"
+    # Latin-1 preserves every byte of the narrow VC6 string, including accented names.
+    key = f"string:{json.dumps(raw.decode('latin1'), ensure_ascii=True)}"
+    if terminator:
+        key += ":end"
+    if object_keys is not None and not raw.isascii() and key not in object_keys:
+        return None
+    return key
+
+
+def _wide_string_literal(data: bytes) -> tuple[str, int] | None:
+    # A pair of zero bytes spanning adjacent UTF-16 code units is not a terminator.
+    limit = _MAX_AUDITED_STRING_BYTES + 2
+    end = data.find(b"\0\0", 0, limit)
+    while end >= 0 and end % 2:
+        end = data.find(b"\0\0", end + 1, limit)
+    if end <= 0:
+        return None
+    try:
+        value = data[:end].decode("utf-16-le")
+    except UnicodeDecodeError:
+        return None
+    if any(not char.isprintable() and char not in "\t\n\r" for char in value):
+        return None
+    return f"wstring:{json.dumps(value, ensure_ascii=True)}", end + 2
 
 
 def _image_bytes(image: LoadedImage | None, address: int, byte_count: int) -> bytes | None:
@@ -2452,24 +2518,35 @@ def _image_vc6_single_delete_unwind_key(
         return None
 
     func_info = _image_bytes(image, func_info_address, 28)
-    if func_info is None or struct.unpack_from("<II", func_info) != (0x19930520, 1):
+    if func_info is None or func_info[12:] != bytes(16):
         return None
-    if func_info[12:28] != b"\x00" * 16:
+    magic, states, map_address = struct.unpack_from("<III", func_info)
+    if magic != 0x19930520 or not states:
         return None
-    unwind = _image_bytes(image, struct.unpack_from("<I", func_info, 8)[0], 8)
-    if unwind is None or struct.unpack_from("<i", unwind)[0] != -1:
+    unwind = _image_bytes(image, map_address, 8 * states)
+    if unwind is None:
         return None
 
-    cleanup_address = struct.unpack_from("<I", unwind, 4)[0]
-    cleanup = _image_bytes(image, cleanup_address, 11)
-    if cleanup is None or cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
-        return None
-    if cleanup[9:] != bytes.fromhex("59c3"):
-        return None
-    delete_address = cleanup_address + 9 + struct.unpack_from("<i", cleanup, 5)[0]
-    if not any(name.startswith("??3@") for name in reference_catalog.names_by_address.get(delete_address, ())):
-        return None
-    return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
+    slots = []
+    for previous_state, cleanup_address in struct.iter_unpack("<iI", unwind):
+        if previous_state != -1:
+            return None
+        prefix = _image_bytes(image, cleanup_address, 2)
+        if prefix is None or (width := _VC6_DELETE_SLOT_WIDTH.get(prefix)) is None:
+            return None
+        call = 4 + width
+        cleanup = _image_bytes(image, cleanup_address, call + 6)
+        if (
+            cleanup is None
+            or cleanup[call - 2 : call] != bytes.fromhex("50e8")
+            or cleanup[call + 4 :] != bytes.fromhex("59c3")
+        ):
+            return None
+        delete_address = cleanup_address + call + 4 + struct.unpack_from("<i", cleanup, call)[0]
+        if "??3@YAXPAX@Z" not in reference_catalog.names_by_address.get(delete_address, ()):
+            return None
+        slots.append(int.from_bytes(cleanup[2 : 2 + width], "little", signed=True))
+    return _vc6_delete_unwind_key(slots)
 
 
 def _image_vc6_unwind_only_key(
@@ -2552,6 +2629,7 @@ def disassemble_normalized_function(
     base_address: int = 0,
     reference_catalog: ReferenceCatalog | None = None,
     image: LoadedImage | None = None,
+    object_string_keys: frozenset[str] = frozenset(),
 ) -> tuple[DisassemblyLine, ...]:
     try:
         import capstone
@@ -2563,6 +2641,7 @@ def disassemble_normalized_function(
     relocation_offsets = relocation_offsets or frozenset()
     relocation_by_offset = {reference.offset: reference for reference in relocation_references}
     size = len(data)
+    has_wide_literals = any(key.startswith("wstring:") for key in object_string_keys)
     instructions = tuple(md.disasm(data, base_address))
     switch_counts: dict[int, set[int | None]] = defaultdict(set)
     guarded_uses: set[tuple[int, int]] = set()
@@ -2653,20 +2732,28 @@ def disassemble_normalized_function(
         # Content evidence must describe the relocated address, including a
         # compiler constant's byte addend, rather than the symbol's beginning.
         referenced_data = symbol_data[data_offset:] if 0 <= data_offset < len(symbol_data) else b""
+        narrow_string = reference.symbol_name.startswith("??_C@_0")
         if reference.local_target_offset is not None:
             keys = (f"local:{reference.local_target_offset:+#x}",)
             explained = True
-        elif reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(referenced_data)):
+        elif (
+            reference.symbol_name.startswith("??_C@_1")
+            and data_offset % 2 == 0
+            and (wide_literal := _wide_string_literal(referenced_data))
+        ):
+            keys = (wide_literal[0],)
+            explained = True
+        elif narrow_string and (string_key := _printable_string_key(referenced_data)):
             keys = (string_key,)
             explained = True
         elif (
-            reference.symbol_name.startswith("??_C@")
+            narrow_string
             and referenced_data[:1] == b"\0"
-            and (string_key := _printable_string_key(symbol_data))
+            and (string_key := _printable_string_key(symbol_data, terminator=True))
             and data_offset == symbol_data.index(b"\0")
         ):
             # An inlined copy can read a literal's terminator directly.
-            keys = (f"{string_key}:end",)
+            keys = (string_key,)
             explained = True
         elif (
             reference.symbol_name.startswith("__real@")
@@ -2721,8 +2808,14 @@ def disassemble_normalized_function(
             # or arbitrary loads from a mutable native object.
             if image.image_base <= value:
                 offset = value - image.image_base
-                available = image.mapped[offset : offset + _MAX_AUDITED_STRING_BYTES + 1]
-                if string_key := _printable_string_key(available):
+                available = image.mapped[offset : offset + _MAX_AUDITED_STRING_BYTES + 2]
+                if has_wide_literals and (wide_literal := _wide_string_literal(available)):
+                    wide_key, wide_size = wide_literal
+                    if wide_key in object_string_keys and not any(
+                        start < value + wide_size and value < end for start, end in image.content_exclusions
+                    ):
+                        keys.append(wide_key)
+                if string_key := _printable_string_key(available, object_keys=object_string_keys):
                     string_end = value + available.index(b"\0") + 1
                     if not any(start < string_end and value < end for start, end in image.content_exclusions):
                         keys.append(string_key)
@@ -2732,11 +2825,11 @@ def disassemble_normalized_function(
                     while start > max(0, offset - _MAX_AUDITED_STRING_BYTES) and image.mapped[start - 1] not in b"\0":
                         start -= 1
                     literal = image.mapped[start : offset + 1]
-                    if (string_key := _printable_string_key(literal)) and not any(
+                    if (string_key := _printable_string_key(literal, object_keys=object_string_keys, terminator=True)) and not any(
                         excluded_start < value + 1 and image.image_base + start < excluded_end
                         for excluded_start, excluded_end in image.content_exclusions
                     ):
-                        keys.append(f"{string_key}:end")
+                        keys.append(string_key)
             if byte_count is not None:
                 raw = _image_read_only_data(image, value, byte_count)
                 if len(raw) == byte_count:
@@ -3730,13 +3823,6 @@ def match_function(
             if target_data[reference.offset : reference.offset + 4] == linked_value:
                 candidate_data[reference.offset : reference.offset + 4] = linked_value
                 materialized_local_offsets.add(reference.offset)
-    target_disassembly = disassemble_normalized_function(
-        target_data,
-        address_range=address_range,
-        base_address=target_va,
-        reference_catalog=reference_catalog,
-        image=image,
-    )
     candidate_disassembly = disassemble_normalized_function(
         bytes(candidate_data),
         relocation_offsets=candidate.relocation_offsets - materialized_local_offsets,
@@ -3744,6 +3830,22 @@ def match_function(
         address_range=address_range,
         reference_catalog=reference_catalog,
         image=image,
+    )
+    # A native address alone cannot establish a UTF-16 or extended narrow
+    # literal. In particular, x86 callee bytes can decode as printable UTF-16.
+    # Only a typed COFF relocation can supply these extra content identities.
+    object_string_keys = frozenset(
+        key for line in candidate_disassembly for ref in line.masked_references
+        if ref.source == "reloc" and ref.text.startswith("??_C@")
+        for key in ref.keys if key.startswith(("string:", "wstring:"))
+    )
+    target_disassembly = disassemble_normalized_function(
+        target_data,
+        address_range=address_range,
+        base_address=target_va,
+        reference_catalog=reference_catalog,
+        image=image,
+        object_string_keys=object_string_keys,
     )
     target_disassembly = _annotate_vc6_proven_copy_loads(target_disassembly)
     candidate_disassembly = _annotate_vc6_proven_copy_loads(candidate_disassembly)
@@ -4231,6 +4333,7 @@ SCRATCH_CONFIG_KEYS = frozenset(
         "ARCHIVE_SHA256",
         "ARCHIVE_SIZE",
         "AUTO_INLINE_OFF",
+        "BUILDS",
         "CFLAGS",
         "COMPILER",
         "DISPROVEN_COMPILERS",
@@ -4267,6 +4370,7 @@ class ScratchConfig:
     reference_aliases: tuple[tuple[str, str], ...] = ()
     build_reference_aliases: tuple[tuple[int, tuple[tuple[str, str], ...]], ...] = ()
     family_sources: tuple[tuple[str, str], ...] = ()
+    builds: tuple[str, ...] = ()
     recovery: str | None = None
     residuals: tuple[str, ...] = ()
     archive: str | None = None
@@ -4279,6 +4383,14 @@ class ScratchConfig:
     auto_inline_off: tuple[str, ...] = ()
     disproven_compilers: tuple[str, ...] = ()
     include_overlay: Path | None = None
+    original_source_dir: Path | None = None
+
+    @property
+    def source_include_dir(self) -> Path:
+        return self.original_source_dir or (self.directory / self.source).resolve().parent
+
+    def supports_build(self, build: str) -> bool:
+        return not self.builds or build in self.builds
 
 
 @dataclass(frozen=True, slots=True)
@@ -4532,6 +4644,8 @@ class TriageRow:
     scratch_count: int
     best_status: ScratchStatus | None = None
     experiments: TriageExperimentEvidence = TriageExperimentEvidence()
+    name_evidence: str | None = None
+    platform_replaced: str | None = None
 
     @property
     def fuzzy_gap_bytes(self) -> float:
@@ -4673,6 +4787,12 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
                 raise ValueError(f"{directory}/scratch.conf has invalid {key} entry {mapping!r}")
             aliases.append((object_symbol, target_symbol))
         return tuple(aliases)
+
+    builds = tuple(values["BUILDS"].split(",")) if "BUILDS" in values else ()
+    if builds:
+        from .match_builds import load_registry
+        if unknown := set(builds).difference(load_registry().builds):
+            raise ValueError(f"{directory}/scratch.conf has unknown builds: {sorted(unknown)}")
 
     reference_aliases = parse_aliases("REFERENCE_ALIASES")
     # Compiler-local names that only one build's code has, aliased to that build's identities.
@@ -4844,6 +4964,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         reference_aliases=reference_aliases,
         build_reference_aliases=build_reference_aliases,
         family_sources=family_sources,
+        builds=builds,
         recovery=recovery,
         residuals=residuals,
         archive=archive,
@@ -5038,7 +5159,41 @@ class _ScratchIncludeResolver:
             match_root / "include",
             repo_root / "third_party" / "headers",
         )
-        self._direct_dependencies: dict[tuple[Path, bool, tuple[Path, ...], str | None], tuple[Path, ...]] = {}
+        self._parsed: dict[str, tuple[tuple[Path, bool], ...]] = {}
+
+    @staticmethod
+    def _includes(text: str) -> tuple[tuple[Path, bool], ...]:
+        return tuple(
+            (Path((directive[1] or directive[2]).replace("\\", "/")), directive[1] is not None)
+            for directive in INCLUDE_RE.finditer(text)
+        )
+
+    def _dependencies(
+        self,
+        path: Path,
+        search: tuple[tuple[Path, bool], ...],
+        *,
+        parent_local: bool | None,
+        source_text: str | None = None,
+    ) -> Iterator[tuple[Path, bool]]:
+        if source_text is None:
+            digest = match_toolchain.file_sha256(path)
+            if digest is None:
+                return
+            if digest not in self._parsed:
+                self._parsed[digest] = self._includes(path.read_text(encoding="latin1"))
+            includes = self._parsed[digest]
+        else:
+            includes = self._includes(source_text)
+        quoted = ((path.parent, parent_local), *search) if parent_local is not None else search
+        for name, is_quoted in includes:
+            for directory, local in quoted if is_quoted else search:
+                # VC6 searches beside the spelling it opened. Resolving a link
+                # here would redirect that header's own quoted includes.
+                header = Path(os.path.abspath(directory / name))
+                if header.is_file():
+                    yield header, local
+                    break
 
     def direct_dependencies(
         self,
@@ -5047,32 +5202,10 @@ class _ScratchIncludeResolver:
         source: bool,
         include_dirs: tuple[Path, ...] | None = None,
     ) -> tuple[Path, ...]:
-        search_dirs = include_dirs if include_dirs is not None else self.include_dirs
-        cache_key = (including_path, source, search_dirs, match_toolchain.file_sha256(including_path))
-        if cache_key in self._direct_dependencies:
-            return self._direct_dependencies[cache_key]
-        try:
-            text = including_path.read_text(encoding="latin1")
-        except OSError:
-            self._direct_dependencies[cache_key] = ()
-            return ()
-        dependencies: list[Path] = []
-        seen: set[Path] = set()
-        for match in INCLUDE_RE.finditer(text):
-            include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
-            candidates = [include_dir / include_name for include_dir in search_dirs]
-            if not source and match.group(1) is not None:
-                candidates.insert(0, including_path.parent / include_name)
-            dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
-            if dependency is None:
-                continue
-            dependency = dependency.resolve()
-            if dependency not in seen:
-                seen.add(dependency)
-                dependencies.append(dependency)
-        resolved = tuple(dependencies)
-        self._direct_dependencies[cache_key] = resolved
-        return resolved
+        dirs = self.include_dirs if include_dirs is None else include_dirs
+        search = tuple((directory, False) for directory in dirs)
+        entries = self._dependencies(including_path, search, parent_local=None if source else False)
+        return tuple(dict.fromkeys(header for header, _ in entries))
 
 
 def _scratch_include_headers(
@@ -5080,27 +5213,39 @@ def _scratch_include_headers(
     match_root: Path,
     *,
     resolver: _ScratchIncludeResolver | None = None,
+    source_text: str | None = None,
+    local_only: bool = False,
 ) -> tuple[Path, ...]:
     if config.archive is not None or config.import_thunk is not None:
         return ()
     resolver = resolver or _ScratchIncludeResolver(match_root)
-    search_dirs = (_compiler_executable_path(config, match_root).parent.parent / "Include", *resolver.include_dirs)
-    if config.include_overlay is not None:
-        search_dirs = (config.include_overlay, *search_dirs)
-    source = config.directory / config.source
-    pending = [source]
-    visited = {source}
+    shared_dirs = (
+        *((config.include_overlay,) if config.include_overlay is not None else ()),
+        _compiler_executable_path(config, match_root).parent.parent / "Include",
+        *resolver.include_dirs,
+    )
+    search = (*((directory, False) for directory in shared_dirs), (config.source_include_dir, True))
+    visited: set[tuple[Path, bool | None]] = set()
     headers: set[Path] = set()
-    while pending:
-        including_path = pending.pop()
-        for dependency in resolver.direct_dependencies(
-            including_path, source=including_path == source, include_dirs=search_dirs,
+
+    def visit(path: Path, *, parent_local: bool | None, ancestors: frozenset[Path]) -> None:
+        if (path, parent_local) in visited:
+            return
+        identity = path.resolve()
+        if identity in ancestors:
+            return
+        visited.add((path, parent_local))
+        ancestors = ancestors | {identity}
+        for header, local in resolver._dependencies(
+            path, search, parent_local=parent_local, source_text=source_text if parent_local is None else None,
         ):
-            if dependency in visited:
-                continue
-            visited.add(dependency)
-            headers.add(dependency)
-            pending.append(dependency)
+            if not local_only or local:
+                headers.add(header)
+            visit(header, parent_local=local, ancestors=ancestors)
+
+    # The compiler stages the source; only an included header contributes a
+    # parent directory to quoted include lookup.
+    visit(config.directory / config.source, parent_local=None, ancestors=frozenset())
     return tuple(sorted(headers))
 
 
@@ -5154,12 +5299,12 @@ def _scratch_build_dependencies(
 
 
 def _experiment_epoch_path_label(path: Path, match_root: Path) -> str:
-    resolved = path.resolve()
-    if resolved.is_relative_to(match_root):
-        return f"match/{resolved.relative_to(match_root).as_posix()}"
-    if resolved.is_relative_to(REPO_ROOT):
-        return f"repo/{resolved.relative_to(REPO_ROOT).as_posix()}"
-    return f"external/{resolved.name}"
+    path = Path(os.path.abspath(path))
+    if path.is_relative_to(match_root):
+        return f"match/{path.relative_to(match_root).as_posix()}"
+    if path.is_relative_to(REPO_ROOT):
+        return f"repo/{path.relative_to(REPO_ROOT).as_posix()}"
+    return f"external/{path.name}"
 
 
 def source_probe_tree_fingerprint(
@@ -5176,57 +5321,7 @@ def source_probe_tree_fingerprint(
     """
 
     match_root = match_root.resolve()
-    resolver = _ScratchIncludeResolver(match_root)
-    include_dirs = (_compiler_executable_path(config, match_root).parent.parent / "Include", *resolver.include_dirs)
-    if config.include_overlay is not None:
-        include_dirs = (config.include_overlay, *include_dirs)
-
-    def direct_dependencies(
-        text: str,
-        *,
-        including_parent: Path | None,
-        source: bool,
-    ) -> tuple[Path, ...]:
-        dependencies: list[Path] = []
-        seen: set[Path] = set()
-        for match in INCLUDE_RE.finditer(text):
-            include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
-            candidates = [include_dir / include_name for include_dir in include_dirs]
-            if not source and including_parent is not None and match.group(1) is not None:
-                candidates.insert(0, including_parent / include_name)
-            dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
-            if dependency is None:
-                continue
-            resolved = dependency.resolve()
-            if resolved not in seen:
-                seen.add(resolved)
-                dependencies.append(resolved)
-        return tuple(dependencies)
-
-    pending = list(
-        direct_dependencies(
-            source_text,
-            including_parent=None,
-            source=True,
-        ),
-    )
-    dependencies: set[Path] = set()
-    while pending:
-        dependency = pending.pop()
-        if dependency in dependencies:
-            continue
-        dependencies.add(dependency)
-        try:
-            dependency_text = dependency.read_text(encoding="latin1")
-        except OSError:
-            continue
-        pending.extend(
-            direct_dependencies(
-                dependency_text,
-                including_parent=dependency.parent,
-                source=False,
-            ),
-        )
+    dependencies = _scratch_include_headers(config, match_root, source_text=source_text)
 
     digest = hashlib.sha256(b"crimson-source-probe-tree-v1\0")
     digest.update(Path(config.source).name.encode())
@@ -5235,7 +5330,7 @@ def source_probe_tree_fingerprint(
     labels: list[str] = []
     for dependency in sorted(
         dependencies,
-        key=lambda value: _experiment_epoch_path_label(value, match_root),
+        key=lambda value: (_experiment_epoch_path_label(value, match_root), value),
     ):
         label = _experiment_epoch_path_label(dependency, match_root)
         labels.append(label)
@@ -5302,7 +5397,7 @@ def scratch_experiment_epoch(
     compiler_path = _compiler_executable_path(config, match_root).resolve()
     config_path = (config.directory / "scratch.conf").resolve()
     dependencies = {
-        path.resolve()
+        Path(os.path.abspath(path))
         for path in _scratch_build_dependencies(config, match_root)
         if path.resolve() not in {compiler_path, config_path}
     }
@@ -5322,7 +5417,7 @@ def scratch_experiment_epoch(
     )
     labels = {path: _experiment_epoch_path_label(path, match_root) for path in dependencies}
     projected_maps = {DEFAULT_NAME_MAP_PATH.resolve(), DEFAULT_DATA_MAP_PATH.resolve()}
-    for path in sorted(dependencies, key=labels.__getitem__):
+    for path in sorted(dependencies, key=lambda item: (labels[item], item)):
         digest.update(b"\0path\0")
         digest.update(labels[path].encode())
         sha256 = (
@@ -5512,6 +5607,32 @@ def _locked_staging_dir(path: Path) -> Generator[Path]:
             yield path
         finally:
             shutil.rmtree(path, ignore_errors=True)
+
+
+# Processor Pack can fail before MAX_PATH (253 guest bytes for p.cpp);
+# a source ending in .c also produces a longer .obj filename.
+_VC6_STAGED_PATH_LIMIT = 250
+
+
+def _scratch_staging_directory(config: ScratchConfig, match_root: Path) -> Path:
+    obj = _scratch_object_path(config)
+    longest_name = max((Path(config.source).name, obj.name), key=lambda name: len(os.fsencode(name)))
+
+    def guest_length(directory: Path) -> int:
+        return len(os.fsencode("Z:" + str((directory / longest_name).resolve())))
+
+    build_dir = obj.parent
+    stage = build_dir.parent / f".{build_dir.name}.stage"
+    if guest_length(stage) <= _VC6_STAGED_PATH_LIMIT:
+        return stage
+    key = hashlib.sha256(os.fsencode(build_dir.resolve())).hexdigest()[:16]
+    short_stage = match_root / ".cache" / key
+    if guest_length(short_stage) > _VC6_STAGED_PATH_LIMIT:
+        raise ValueError(
+            f"VC6 staging path exceeds {_VC6_STAGED_PATH_LIMIT} bytes even in the short cache: "
+            f"{short_stage / longest_name}. Use a shorter checkout path or source filename.",
+        )
+    return short_stage
 
 
 def _scratch_object_path(config: ScratchConfig) -> Path:
@@ -5819,14 +5940,15 @@ def compile_scratch(
 
     build_dir.parent.mkdir(parents=True, exist_ok=True)
     command = list(_scratch_compile_argv(config, match_root))
-    # MSVC 7 objects embed the compiled source's path, so the staging directory is fixed per
-    # build key (a random temp name would change every rebuild's bytes); the lock serializes it.
-    with _locked_staging_dir(build_dir.parent / f".{build_dir.name}.stage") as temp_dir:
+    stage = _scratch_staging_directory(config, match_root)
+    stage.parent.mkdir(parents=True, exist_ok=True)
+    with _locked_staging_dir(stage) as temp_dir:
         temp_source = temp_dir / Path(config.source).name
         temp_obj = temp_dir / obj_name
         temp_source.write_bytes(staged_source_text.encode("latin1"))
         environment: dict[str, str] = dict(os.environ)
         environment["MSVC_VER"] = config.compiler
+        environment["CRIMSON_MATCH_SOURCE_INCLUDE"] = str(config.source_include_dir)
         environment.pop("CRIMSON_MATCH_INCLUDE_OVERLAY", None)
         if config.include_overlay is not None:
             environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(
@@ -5841,8 +5963,9 @@ def compile_scratch(
         if completed.returncode != 0 or not temp_obj.exists():
             raise RuntimeError(f"cl failed:\n{completed.stdout}{completed.stderr}")
         build_dir.mkdir(parents=True, exist_ok=True)
-        os.replace(temp_source, build_dir / Path(config.source).name)
-        os.replace(temp_obj, obj_path)
+        # A short compiler stage can live on another volume from the scratch.
+        _write_bytes_atomic(build_dir / temp_source.name, temp_source.read_bytes())
+        _write_bytes_atomic(obj_path, temp_obj.read_bytes())
     _write_text_atomic(
         build_dir / "scratch-build.json",
         json.dumps(
@@ -5915,8 +6038,11 @@ def parse_compiler_listing_stack_layout(
     for index, line in enumerate(lines):
         match = _COMPILER_LISTING_PROC_RE.match(line)
         if match and match.group(1) in accepted_symbols:
-            proc_index = index
-            break
+            if match.group(1) == symbol:
+                proc_index = index
+                break
+            if proc_index is None:
+                proc_index = index
     if proc_index is None:
         return CompilerListingStackLayout(None, ())
 
@@ -6007,6 +6133,7 @@ def generate_compiler_listing(
         ]
         environment = dict(os.environ)
         environment["MSVC_VER"] = config.compiler
+        environment["CRIMSON_MATCH_SOURCE_INCLUDE"] = str(config.source_include_dir)
         environment.pop("CRIMSON_MATCH_INCLUDE_OVERLAY", None)
         if config.include_overlay is not None:
             environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(config.include_overlay.resolve())
@@ -6036,7 +6163,7 @@ def generate_compiler_listing(
     spans = parse_compiler_listing_spans(listing_text)
     stack_layout = parse_compiler_listing_stack_layout(
         listing_text,
-        symbol=config.symbol or config.function,
+        symbol=canonical_function.name,
     )
     _write_bytes_atomic(output, listing_data)
     payload = {
@@ -6316,7 +6443,7 @@ def evaluate_source_overlay(
         overlay_relative_path = next(
             (
                 overlay_source_path.relative_to(root)
-                for root in (config.directory.resolve(), match_root / "include")
+                for root in (config.directory.resolve(), match_root / "include", config.source_include_dir)
                 if overlay_source_path.is_relative_to(root)
             ),
             None,
@@ -6324,7 +6451,7 @@ def evaluate_source_overlay(
         if overlay_relative_path is None:
             raise ValueError(
                 "overlay source must be the configured scratch source, a scratch-local file, "
-                "or a file under the match include directory",
+                "a sibling include, or a file under the match include directory",
             )
     with tempfile.TemporaryDirectory(prefix=f"crimson-match-probe-{config.directory.name}-") as temp_name:
         shadow_directory = Path(temp_name)
@@ -6345,6 +6472,7 @@ def evaluate_source_overlay(
             config,
             directory=shadow_directory,
             source=source_name,
+            original_source_dir=config.source_include_dir,
             include_overlay=(
                 shadow_directory
                 if overlay_source_path != configured_source_path
@@ -6434,7 +6562,8 @@ def _filter_scoped_scratch_configs(
     *,
     scope: str | None,
 ) -> list[ScratchConfig]:
-    """Keep every out-of-scope scratch out of the active scoped corpus."""
+    """Keep every out-of-scope scratch out of the active canonical corpus."""
+    configs = [config for config in configs if config.supports_build(CANONICAL_BUILD)]
     if scope is None or scope == "all":
         return list(configs)
     ranges = load_matching_scope(scope)
@@ -6955,6 +7084,7 @@ def evaluate_scratch_configs(
     jobs: int = DEFAULT_MATCH_JOBS,
     scope: str | None = None,
     force: bool = False,
+    raise_on_timeout: bool = False,
 ) -> list[ScratchStatus]:
     """Match each config through the status cache; one status per config, in order.
 
@@ -7083,7 +7213,9 @@ def evaluate_scratch_configs(
                 input_hashes=input_hashes,
             )
             return status
-        except Exception as exc:  # noqa: BLE001 - one scratch failure must not cancel the worker batch
+        except Exception as exc:
+            if raise_on_timeout and isinstance(exc, TimeoutError):
+                raise TimeoutError(f"{config.image}/{config.function} ({config.compiler}): {exc}") from exc
             try:
                 address = resolve_function(manifest, config.function, end_override=config.end_va)[0].address
             except ValueError:
@@ -8622,10 +8754,11 @@ def collect_triage_rows(
     *,
     images: tuple[str, ...] | None = None,
     scope: str | None = None,
+    native_functions: dict[str, dict[int, dict[str, Any]]] | None = None,
 ) -> list[TriageRow]:
     """Join scratch coverage to native functions by image and address."""
 
-    selected_images = images or tuple(sorted(matching_scope_images(scope)))
+    selected_images = images or tuple(sorted(native_functions if native_functions is not None else matching_scope_images(scope)))
     statuses_by_address: dict[tuple[str, int], list[ScratchStatus]] = {}
     for status in statuses:
         if status.address:
@@ -8633,17 +8766,17 @@ def collect_triage_rows(
 
     rows: list[TriageRow] = []
     for image_name in selected_images:
-        image_path, functions_path, metadata_path = _paths_for_image(image_name)
-        manifest = load_function_manifest(
-            functions_path,
-            metadata_path=metadata_path,
-            image_name=image_name,
-            scope=scope,
-        )
-        image = load_image(image_path, manifest.image_base)
-        for function in manifest.functions:
-            target_size = len(image.function_bytes(function.address, function.end))
-            function_statuses = statuses_by_address.get((image_name, function.address), [])
+        if native_functions is None:
+            image_path, functions_path, metadata_path = _paths_for_image(image_name)
+            manifest = load_function_manifest(
+                functions_path, metadata_path=metadata_path, image_name=image_name, scope=scope,
+            )
+            image = load_image(image_path, manifest.image_base)
+            targets = [(f.address, f.name, len(image.function_bytes(f.address, f.end))) for f in manifest.functions]
+        else:
+            targets = [(a, f["name"], f["size"]) for a, f in native_functions[image_name].items()]
+        for address, name, target_size in targets:
+            function_statuses = statuses_by_address.get((image_name, address), [])
             usable = [status for status in function_statuses if status.ratio is not None]
             best_status = max(function_statuses, key=status_rank) if function_statuses else None
             exact_bytes = max(
@@ -8675,12 +8808,14 @@ def collect_triage_rows(
                 state = "error"
             else:
                 state = "missing"
-            experiments = triage_experiment_evidence(best_status)
+            # Recorded probe epochs apply to the canonical target only.
+            experiments = triage_experiment_evidence(best_status) if native_functions is None else TriageExperimentEvidence()
+            native = native_functions[image_name][address] if native_functions is not None else {}
             rows.append(
                 TriageRow(
                     image=image_name,
-                    function=function.name,
-                    address=function.address,
+                    function=name,
+                    address=address,
                     target_size=target_size,
                     state=state,
                     exact_bytes=exact_bytes,
@@ -8689,6 +8824,8 @@ def collect_triage_rows(
                     scratch_count=len(function_statuses),
                     best_status=best_status,
                     experiments=experiments,
+                    name_evidence=native.get("name_evidence"),
+                    platform_replaced=native.get("platform_replaced"),
                 ),
             )
     return rows
@@ -9568,6 +9705,8 @@ def triage_row_payload(row: TriageRow) -> dict[str, Any]:
         "state": row.state,
         "image": row.image,
         "function": row.function,
+        **({"name_evidence": row.name_evidence} if row.name_evidence else {}),
+        **({"platform_replaced": row.platform_replaced} if row.platform_replaced else {}),
         "address": row.address,
         "target_bytes": row.target_size,
         "exact_bytes": row.exact_bytes,
@@ -9828,7 +9967,7 @@ def render_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> li
             (
                 row.state,
                 row.image,
-                row.function,
+                f"{row.function} [{row.name_evidence}]" if row.name_evidence in {"ordered", "called", "referenced"} else row.function,
                 f"0x{row.address:08x}",
                 str(row.target_size),
                 f"{row.exact_bytes}/{row.target_size}",

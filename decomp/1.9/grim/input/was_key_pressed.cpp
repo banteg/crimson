@@ -5,7 +5,7 @@ extern float grim_key_repeat_timers[256];
 extern unsigned char grim_key_repeat_first_press[256];
 extern float grim_key_repeat_delay;
 
-bool IGrim2D_cpp::grim_was_key_pressed(unsigned int key)
+bool IGrim2D_cpp::grim_was_key_pressed(grim_edge_key_t key)
 {
 #if CL_BUILD < 10400
     bool pressed = grim_keyboard_key_down(key) &&

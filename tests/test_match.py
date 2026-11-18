@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import struct
 import subprocess
 from dataclasses import replace
@@ -48,11 +49,14 @@ from crimson_re.match import (
     _coff_vc6_single_delete_unwind_key,
     _coff_vc6_unwind_only_key,
     _exception_summary,
+    _image_vc6_single_delete_unwind_key,
     _image_vc6_unwind_only_key,
     _import_thunk_object_bytes,
     _local_switch_partition_key,
     _region_hints,
     _scratch_build_key,
+    _scratch_object_path,
+    _scratch_staging_directory,
     _ScratchIncludeResolver,
     _vc6_sparse_switch_bounds,
     align_basic_blocks,
@@ -1413,6 +1417,39 @@ def test_match_function_audits_compiler_string_by_content(literal: bytes) -> Non
     assert result.masked_operand_audit.ok_count == 1
 
 
+@pytest.mark.parametrize(
+    ("native_name", "candidate_name", "width", "exact"),
+    [
+        (b"pihlajam\xe4ki\0", b"pihlajam\xe4ki\0", "0", True),
+        (b"pihlajam\xe4ki\0", b"pihlajamaki\0", "0", False),
+        (b"pihlajam\xe4ki\0", b"pihlajam\xe4ki", "0", False),
+        ("DxDiag\0".encode("utf-16-le"), "DxDiag\0".encode("utf-16-le"), "1", True),
+        ("DxDiag\0".encode("utf-16-le"), "DxMajor\0".encode("utf-16-le"), "1", False),
+        (b"\xe4\0", b"\xe4\0x\0\0\0", "1", False),  # Truncated UTF-16 target.
+        (b"\x00\xd8\0\0", b"\x00\xd8\0\0", "1", False),  # Unpaired surrogate.
+        (b"pihlajam\x81ki\0", b"pihlajam\x81ki\0", "0", False),
+    ],
+)
+def test_match_function_audits_vc6_string_bytes(
+    native_name: bytes, candidate_name: bytes, width: str, exact: bool,
+) -> None:
+    # VC6's 1.0.2 credits literal at 0x41d6e8 holds the single byte 0xe4.
+    literal = ObjectRelocationReference(
+        offset=1, symbol_name=f"??_C@_{width}CN@NFKO@vulder?5?9?5valtteri?5pihlajam?dki?5?9?5@",
+        key=None, explained=False, symbol_data=candidate_name, read_only_data=True,
+    )
+    candidate = ObjectFunction(
+        name="_credit", data=bytes.fromhex("6800000000c3"),
+        relocation_offsets=frozenset({1}), relocation_references=(literal,),
+    )
+    result = match_function(
+        bytes.fromhex("6800204000c3"), candidate,
+        image=LoadedImage(b"\0" * 0x2000 + native_name, 0x400000, 0x2000 + len(native_name)),
+        target_va=0x401000, reference_catalog=ReferenceCatalog({}),
+    )
+    assert result.exact is exact
+
+
 def test_match_function_audits_compiler_string_terminator_by_content() -> None:
     # An inlined strcpy can load a literal's terminating NUL by itself.
     literal = b"\\ddraw.dll\x00"
@@ -1480,7 +1517,7 @@ def test_match_function_audits_compiler_float_by_content() -> None:
     ("symbol", "opcode", "literal"),
     [
         ("__real@constant", bytes.fromhex("d905"), bytes.fromhex("0000803f00000040")),
-        ("??_C@string", b"\x68", b"abcdwxyz\x00"),
+        ("??_C@_08@abcdwxyz@", b"\x68", b"abcdwxyz\x00"),
     ],
 )
 @pytest.mark.parametrize(
@@ -1615,29 +1652,48 @@ def test_extract_object_function_marks_static_rdata_references_read_only() -> No
     assert function.relocation_references[0].symbol_data == bytes.fromhex("5a825a82")
 
 
+def _vc6_delete_slot_load(slot: int) -> bytes:
+    if -128 <= slot <= 127:
+        return bytes.fromhex("8b45") + struct.pack("<b", slot)
+    return bytes.fromhex("8b85") + struct.pack("<i", slot)
+
+
 # 1.9.8's linker places the one-entry unwind map before its FuncInfo.
-@pytest.mark.parametrize("unwind_offset", [32, -8])
-def test_match_function_audits_complete_vc6_delete_unwind_graph(unwind_offset: int) -> None:
+@pytest.mark.parametrize(("unwind_offset", "slots", "key"), [
+    (32, (12,), "ebp+0x0c"),
+    (-8, (12,), "ebp+0x0c"),
+    (-24, (-16, -20, -16), "ebp+0xf0,ebp+0xec,ebp+0xf0"),
+    (-16, (-0xbc, -0xe0), "ebp-0x000000bc,ebp-0x000000e0"),
+    (32, (-20, 0xec), "ebp+0xec,ebp+0x000000ec"),
+])
+def test_match_function_audits_complete_vc6_delete_unwind_graph(
+    unwind_offset: int, slots: tuple[int, ...], key: str,
+) -> None:
     image_base = 0x400000
     handler_address = 0x400100
     func_info_address = 0x400200
     cleanup_address = 0x400300
     frame_handler_address = 0x400400
     delete_address = 0x400500
-    unwind_key = f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x0c"
+    obj = _build_vc6_delete_unwind_object(slots)
+    unwind_key = _coff_vc6_single_delete_unwind_key(obj, obj.symbols[0])
+    assert unwind_key == VC6_SINGLE_DELETE_UNWIND_KEY + ":" + key
     mapped = bytearray(0x1000)
 
     handler = b"\xb8" + struct.pack("<I", func_info_address)
     handler += b"\xe9" + struct.pack("<i", frame_handler_address - (handler_address + 10))
     mapped[0x100:0x10A] = handler
-    func_info = struct.pack("<II", 0x19930520, 1)
+    func_info = struct.pack("<II", 0x19930520, len(slots))
     func_info += struct.pack("<I", func_info_address + unwind_offset) + b"\x00" * 20
     mapped[0x200:0x220] = func_info
     unwind = 0x200 + unwind_offset
-    mapped[unwind : unwind + 8] = struct.pack("<iI", -1, cleanup_address)
-    cleanup = bytes.fromhex("8b450c50e8")
-    cleanup += struct.pack("<i", delete_address - (cleanup_address + 9)) + bytes.fromhex("59c3")
-    mapped[0x300:0x30B] = cleanup
+    address = cleanup_address
+    for index, slot in enumerate(slots):
+        mapped[unwind + 8 * index : unwind + 8 * index + 8] = struct.pack("<iI", -1, address)
+        cleanup = _vc6_delete_slot_load(slot) + bytes.fromhex("50e8")
+        cleanup += struct.pack("<i", delete_address - (address + len(cleanup) + 4)) + bytes.fromhex("59c3")
+        mapped[address - image_base : address - image_base + len(cleanup)] = cleanup
+        address += len(cleanup)
 
     candidate = ObjectFunction(
         name="_probe",
@@ -1659,16 +1715,32 @@ def test_match_function_audits_complete_vc6_delete_unwind_graph(unwind_offset: i
         },
     )
 
-    result = match_function(
-        b"\x68" + struct.pack("<I", handler_address) + b"\xc3",
-        candidate,
-        image=LoadedImage(bytes(mapped), image_base, len(mapped)),
-        target_va=0x400000,
-        reference_catalog=catalog,
-    )
-
+    target = b"\x68" + struct.pack("<I", handler_address) + b"\xc3"
+    image = LoadedImage(bytes(mapped), image_base, len(mapped))
+    result = match_function(target, candidate, image=image, target_va=image_base, reference_catalog=catalog)
     assert result.exact
     assert result.masked_operand_audit.ok_count == 1
+
+    # The wrong slot has the same low byte. Accept neither truncation nor a
+    # coincidental match between a positive disp32 and a negative disp8.
+    wrong_obj = _build_vc6_delete_unwind_object((slots[0] + 0x100, *slots[1:]))
+    wrong_key = _coff_vc6_single_delete_unwind_key(wrong_obj, wrong_obj.symbols[0])
+    assert wrong_key is not None
+    wrong_candidate = replace(
+        candidate, relocation_references=(replace(candidate.relocation_references[0], key=wrong_key),),
+    )
+    wrong = match_function(target, wrong_candidate, image=image, target_va=image_base, reference_catalog=catalog)
+    assert not wrong.exact
+    assert wrong.masked_operand_audit.mismatch_count == 1
+
+    wrong_delete = ReferenceCatalog({frame_handler_address: ("__CxxFrameHandler",), delete_address: ("free",)})
+    assert _image_vc6_single_delete_unwind_key(image, wrong_delete, handler_address) is None
+
+    # A nested state changes the cleanup graph even if all funclets are identical.
+    struct.pack_into("<i", mapped, unwind + 8 * (len(slots) - 1), 0)
+    assert _image_vc6_single_delete_unwind_key(
+        LoadedImage(bytes(mapped), image_base, len(mapped)), catalog, handler_address,
+    ) is None
 
 
 def _build_vc6_unwind_only_object() -> CoffObject:
@@ -1790,30 +1862,37 @@ def test_recognizes_complete_vc6_unwind_only_graph_in_coff() -> None:
     ) is None
 
 
-def test_recognizes_complete_vc6_delete_unwind_graph_in_coff() -> None:
-    handler = b"\xb8\x00\x00\x00\x00\xe9\x00\x00\x00\x00"
-    cleanup = bytes.fromhex("8b450c50e80000000059c3")
-    func_info = struct.pack("<II", 0x19930520, 1) + b"\x00" * 24
-    func_info += struct.pack("<iI", -1, 0)
-    obj = CoffObject(
+def _build_vc6_delete_unwind_object(slots: tuple[int, ...]) -> CoffObject:
+    handler = bytes.fromhex("b800000000e900000000")
+    code = bytearray(handler)
+    starts = []
+    calls = []
+    for slot in slots:
+        starts.append(len(code))
+        code.extend(_vc6_delete_slot_load(slot) + bytes.fromhex("50e8"))
+        calls.append(len(code))
+        code.extend(bytes.fromhex("0000000059c3"))
+    func_info = struct.pack("<II", 0x19930520, len(slots)) + bytes(24)
+    entries = struct.pack("<iI", -1, 0) * len(slots)
+    return CoffObject(
         sections=(
             CoffSection(
                 name=".text$x",
-                data=handler + cleanup,
+                data=bytes(code),
                 characteristics=0x20,
                 relocations=(
                     CoffRelocation(1, 1, 6),
                     CoffRelocation(6, 3, 20),
-                    CoffRelocation(15, 5, 20),
+                    *(CoffRelocation(call, 4, 20) for call in calls),
                 ),
             ),
             CoffSection(
                 name=".xdata$x",
-                data=func_info,
+                data=func_info + entries,
                 characteristics=0,
                 relocations=(
                     CoffRelocation(8, 2, 6),
-                    CoffRelocation(36, 4, 6),
+                    *(CoffRelocation(36 + 8 * i, 5 + i, 6) for i in range(len(slots))),
                 ),
             ),
         ),
@@ -1822,12 +1901,28 @@ def test_recognizes_complete_vc6_delete_unwind_graph_in_coff() -> None:
             CoffSymbol(1, "$Tinfo", 0, 2, 0, 3),
             CoffSymbol(2, "$Tunwind", 32, 2, 0, 3),
             CoffSymbol(3, "___CxxFrameHandler", 0, 0, 0x20, 2),
-            CoffSymbol(4, "$Lcleanup", 10, 1, 0, 6),
-            CoffSymbol(5, "??3@YAXPAX@Z", 0, 0, 0x20, 2),
+            CoffSymbol(4, "??3@YAXPAX@Z", 0, 0, 0x20, 2),
+            *(CoffSymbol(5 + i, f"$Lcleanup{i}", start, 1, 0, 6) for i, start in enumerate(starts)),
         ),
     )
 
-    assert _coff_vc6_single_delete_unwind_key(obj, obj.symbols[0]) == (f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x0c")
+
+@pytest.mark.parametrize("slot", [-16, -0xe0])
+def test_delete_unwind_graph_checks_every_cleanup_relocation(slot: int) -> None:
+    obj = _build_vc6_delete_unwind_object((-20, slot))
+    code, info = obj.sections
+    call = code.relocations[-1]
+    for invalid in (
+        replace(call, relocation_type=6),
+        replace(call, symbol_index=3),
+        replace(call, virtual_address=call.virtual_address - 1),
+    ):
+        bad_code = replace(code, relocations=(*code.relocations[:-1], invalid))
+        assert _coff_vc6_single_delete_unwind_key(replace(obj, sections=(bad_code, info)), obj.symbols[0]) is None
+    # A relocation in the load's displacement would invalidate the literal slot.
+    extra = CoffRelocation(obj.symbols[-1].value + 2, 1, 6)
+    bad_code = replace(code, relocations=(*code.relocations, extra))
+    assert _coff_vc6_single_delete_unwind_key(replace(obj, sections=(bad_code, info)), obj.symbols[0]) is None
 
 
 def test_recognizes_compiler_local_jump_table_in_coff() -> None:
@@ -3870,12 +3965,45 @@ def test_scratch_build_key_tracks_transitive_headers(tmp_path: Path) -> None:
     assert after != before
 
 
+@pytest.mark.parametrize(("guest_object_length", "short"), [(250, False), (251, True), (253, True)])
+def test_vc6_stage_budget_includes_the_object_basename(guest_object_length, short):
+    # A .c filename is two bytes shorter than its .obj. Use a synthetic
+    # absolute root so this boundary is independent of pytest's temp path.
+    root = Path("/match")
+    config = ScratchConfig(Path("/stage"), "counter", "grim.dll", "msvc6.5pp", "/O2", "counter.c", None, "counter", "")
+    obj = _scratch_object_path(config)
+    normal = obj.parent.parent / f".{obj.parent.name}.stage"
+    length = len(os.fsencode("Z:" + str((normal / obj.name).resolve())))
+    scratch = config.directory.with_name("s" * (len(config.directory.name) + guest_object_length - length))
+    config = replace(config, directory=scratch)
+    obj = _scratch_object_path(config)
+    normal = obj.parent.parent / f".{obj.parent.name}.stage"
+    assert len(os.fsencode("Z:" + str((normal / "counter.c").resolve()))) == guest_object_length - 2
+    assert len(os.fsencode("Z:" + str((normal / obj.name).resolve()))) == guest_object_length
+    stage = _scratch_staging_directory(config, root)
+    if short:
+        key = hashlib.sha256(os.fsencode(obj.parent.resolve())).hexdigest()[:16]
+        assert stage == root / ".cache" / key
+        assert len(os.fsencode("Z:" + str((stage / obj.name).resolve()))) <= 250
+    else:
+        assert stage == normal
+
+
+def test_vc6_staging_refuses_an_overlong_short_cache():
+    root = Path("/" + "a" * 220) / "tools/match"
+    config = ScratchConfig(root / "scratches/test", "counter", "grim.dll", "msvc6.5pp", "/O2", "counter.c", None, "counter", "")
+    with pytest.raises(ValueError, match=r"short cache: .+[/\\]\.cache[/\\].+counter\.obj"):
+        _scratch_staging_directory(config, root)
+
+
+@pytest.mark.parametrize("scratch_name", ["scratch", "long-worktree-" + "x" * 180])
 def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    scratch_name: str,
 ) -> None:
     match_root = tmp_path / "match"
-    scratch = tmp_path / "scratch"
+    scratch = tmp_path / scratch_name
     compiler = match_root / "compilers" / "msvc6.5" / "Bin"
     scratch.mkdir()
     compiler.mkdir(parents=True)
@@ -3902,6 +4030,8 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
         commands.append(command)
         environments.append(cast(dict[str, str], kwargs["env"]))
         cwd = Path(str(kwargs["cwd"]))
+        for filename in (command[-1], "scratch.obj"):
+            assert len(os.fsencode("Z:" + str(cwd / filename))) <= 250
         (cwd / "scratch.obj").write_bytes(" ".join(command).encode())
         return subprocess.CompletedProcess(command, 0, stdout="scratch.c\n", stderr=compiler_warning)
 

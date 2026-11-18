@@ -1,0 +1,921 @@
+{
+  "schema": 1,
+  "builds": [
+    "1.0.2",
+    "1.3.0",
+    "1.4.0"
+  ],
+  "policy": "Reviewed symbol identities for freeware data. Game names identify state or content that the cited native game/engine code maintains. Library names identify provider data. An exact compiled operand must place the name in the release, with a consistent historical map. These assignments supply no initializer, storage extent or compiled byte credit. Shared pooled literals and unreviewed globals remain unassigned.",
+  "groups": [
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/console/console_render.cpp",
+      "names": [
+        "console_cmd_name",
+        "console_input_cursor",
+        "console_input_ready"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/audio/music_update_fades.cpp",
+      "names": [
+        "freeware_music_fading",
+        "freeware_music_tracks",
+        "freeware_music_volume"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/audio/sfx_system_init.cpp",
+      "names": [
+        "freeware_sfx_state"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/audio/sfx_update.cpp",
+      "names": [
+        "config_sound_freq_adjustment",
+        "freeware_music_channel_a",
+        "freeware_music_channel_b",
+        "freeware_music_volume_a",
+        "freeware_music_volume_b"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/bonuses/bonus_spawn_at.cpp",
+      "names": [
+        "freeware_bonus_count",
+        "freeware_bonus_fire",
+        "freeware_bonus_freeze",
+        "freeware_bonus_nuke",
+        "freeware_bonus_shield",
+        "freeware_bonus_time",
+        "freeware_bonus_weapon",
+        "freeware_pickup_position",
+        "freeware_pickup_weapon"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/console/freeware_console_cmd_loadtile.cpp",
+      "names": [
+        "freeware_tile_header",
+        "resource_pack_entry_name_buf"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/console/freeware_console_extension_commands.cpp",
+      "names": [
+        "freeware_console_creature_health",
+        "freeware_console_creature_size",
+        "freeware_creature_spawn_tint",
+        "freeware_sfx_samples"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/creatures/unused_sfx_prefix_creature_global_init.cpp",
+      "names": [
+        "unused_sfx_prefix_creature"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/effects/freeware_ice_mark.h",
+      "names": [
+        "freeware_ice_tint"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/crimsonland_main_140.cpp",
+      "names": [
+        "aim64_texture",
+        "console_log_queue",
+        "freeware_audio_disabled",
+        "freeware_bullet_texture",
+        "freeware_ice_texture",
+        "freeware_particle_texture",
+        "freeware_player_texture",
+        "screen_height_f",
+        "screen_width_f"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/encounters.cpp",
+      "names": [
+        "freeware_encounter_choices"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/frame_editor.inc",
+      "basis": "The native editor owns a function-local static editor_point named offset. Its VC6 symbol and lazy-initializer guard are mapped by REFERENCE_ALIASES_10300 and REFERENCE_ALIASES_10400 in tools/match/scratches/game_frame_update/scratch.conf.",
+      "names": [
+        "freeware_editor_init_flags",
+        "freeware_editor_offset",
+        "freeware_editor_offset_initialized"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/frame_level.inc",
+      "names": [
+        "freeware_brushes",
+        "freeware_editor_alpha",
+        "freeware_editor_layer",
+        "freeware_editor_light",
+        "freeware_editor_radius",
+        "freeware_editor_rotation"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/frame_level.inc",
+      "basis": "Begin and end are members of the editor's native freeware_brushes vector. The editor uses its size and indexes its elements; these labels have no separate whole-object extent.",
+      "names": [
+        "freeware_brush_begin",
+        "freeware_brush_end"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/frame_menu.inc",
+      "names": [
+        "config_movement_schemes",
+        "freeware_assembly_sequence",
+        "freeware_birthday",
+        "freeware_calibrating",
+        "freeware_christmas",
+        "freeware_configuring",
+        "freeware_direction_arrow",
+        "freeware_filter_sharp",
+        "freeware_glow",
+        "freeware_level_number",
+        "freeware_levels_sequence",
+        "freeware_memorial",
+        "freeware_menu_music_pending",
+        "freeware_menu_selected",
+        "freeware_music_disabled",
+        "freeware_music_unavailable",
+        "freeware_online_labels",
+        "freeware_online_open",
+        "freeware_open_site",
+        "freeware_pad_center_x",
+        "freeware_pad_center_y",
+        "freeware_pad_threshold",
+        "freeware_pause_perks",
+        "freeware_pov_left",
+        "freeware_pov_right",
+        "freeware_rebinding",
+        "freeware_saved_keys",
+        "freeware_setup_step",
+        "freeware_shadows",
+        "freeware_shell_marks",
+        "freeware_show_secret_hints",
+        "freeware_smoke",
+        "freeware_snow_y",
+        "freeware_solstice",
+        "freeware_tips_sequence",
+        "freeware_update_info"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/frame_overlays.inc",
+      "names": [
+        "freeware_cheated",
+        "freeware_last_score",
+        "freeware_low_fps_frames",
+        "freeware_name_alpha",
+        "freeware_name_buffer",
+        "freeware_name_length",
+        "freeware_rank"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/game_frame_update.cpp",
+      "names": [
+        "bonus_fire_bullets_timer",
+        "bonus_freeze_timer",
+        "bonus_reflex_boost_timer",
+        "config_aim_schemes",
+        "config_game_mode",
+        "config_player_count",
+        "console_open_flag",
+        "current_player_index",
+        "frame_dt",
+        "freeware_aim_screen",
+        "freeware_arena_height",
+        "freeware_arena_width",
+        "freeware_berserk_timer",
+        "freeware_bomb_age",
+        "freeware_bomb_position",
+        "freeware_camera",
+        "freeware_camera_shake",
+        "freeware_camera_timer",
+        "freeware_console",
+        "freeware_console_grim",
+        "freeware_credits_open",
+        "freeware_current_map",
+        "freeware_editor_brush",
+        "freeware_elapsed_seconds",
+        "freeware_fade_time",
+        "freeware_fps",
+        "freeware_fps_count",
+        "freeware_fps_max",
+        "freeware_fps_min",
+        "freeware_game_active",
+        "freeware_jinx_timer",
+        "freeware_logo_angle",
+        "freeware_logo_visible",
+        "freeware_main_labels",
+        "freeware_mouse_dx",
+        "freeware_mouse_dy",
+        "freeware_music_started",
+        "freeware_next_spawn",
+        "freeware_no_pickup",
+        "freeware_option_labels",
+        "freeware_options_open",
+        "freeware_pending_perks",
+        "freeware_perk_hover",
+        "freeware_pickup_id",
+        "freeware_pickup_time",
+        "freeware_rainbow_armed",
+        "freeware_rainbow_enabled",
+        "freeware_random_flags",
+        "freeware_real_clock",
+        "freeware_revive_timer",
+        "freeware_safe_mode",
+        "freeware_scores_open",
+        "freeware_secret_weapon_unlocked",
+        "freeware_show_fps",
+        "freeware_simulation_clock",
+        "freeware_spawn_enabled",
+        "freeware_state_since",
+        "freeware_transition_alpha",
+        "freeware_transition_pending",
+        "freeware_ui_buffer",
+        "freeware_xp_timer",
+        "game_state_id",
+        "grim_interface_ptr",
+        "perk_id_berserk_attack",
+        "perk_id_evil_eyes",
+        "perk_id_jinxed",
+        "perk_id_lean_mean_exp_machine",
+        "perk_id_reflex_boosted",
+        "perk_id_reserved_22",
+        "perk_id_see_health",
+        "perk_id_spontaneously_combusteous",
+        "quit_requested",
+        "screen_height",
+        "screen_width",
+        "screenshot_file_index",
+        "time_scale_active",
+        "time_scale_factor",
+        "world_arrow_marker_texture"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/game/gameplay_reset_state.cpp",
+      "names": [
+        "freeware_encounter_active",
+        "freeware_encounter_day",
+        "freeware_encounter_id",
+        "freeware_encounter_page",
+        "freeware_first_kill_position",
+        "freeware_first_kill_xp",
+        "freeware_kills",
+        "freeware_player_moved",
+        "highscore_record_hits",
+        "plaguebearer_infection_count"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/highscore/freeware_score_codec.cpp",
+      "names": [
+        "freeware_score_key"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/perks/perks_init_database.cpp",
+      "names": [
+        "freeware_hint_ids",
+        "perk_id_almost_invisible",
+        "perk_id_anxious_loader",
+        "perk_id_bloody_mess",
+        "perk_id_count",
+        "perk_id_fastshot",
+        "perk_id_fatal_lottery",
+        "perk_id_grim_deal",
+        "perk_id_infernal_contract",
+        "perk_id_long_distance_runner",
+        "perk_id_perk_expert",
+        "perk_id_radioactive",
+        "perk_id_reserved_33",
+        "perk_id_sharpshooter",
+        "perk_id_test",
+        "perk_id_timebender",
+        "perk_id_weapon_assault_rifle",
+        "perk_id_weapon_shotgun"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/perks/player_check_level.cpp",
+      "names": [
+        "freeware_level_up_reset_byte"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/projectiles/projectile_update.cpp",
+      "names": [
+        "freeware_hit_sound_timer"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/render/fx_queue_render.cpp",
+      "names": [
+        "freeware_atlas_uv",
+        "freeware_blood_count",
+        "freeware_blood_positions",
+        "freeware_blood_texture",
+        "freeware_bullet_icon",
+        "freeware_corpse_angles",
+        "freeware_corpse_colors",
+        "freeware_corpse_count",
+        "freeware_corpse_positions",
+        "freeware_corpse_sizes",
+        "freeware_corpse_species",
+        "freeware_creature_texture",
+        "freeware_draw_point",
+        "freeware_shell_count",
+        "freeware_shell_positions"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/ui/encounter_update.cpp",
+      "names": [
+        "freeware_encounter_hover",
+        "freeware_town_choices"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/ui/game_highscores_update.cpp",
+      "names": [
+        "freeware_score_corrupt",
+        "freeware_score_highlighted",
+        "freeware_score_scroll",
+        "freeware_score_table",
+        "freeware_scores_closing"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/ui/gameplay_render_hud.cpp",
+      "names": [
+        "freeware_hud_xp_timer"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/ui/overlay.h",
+      "names": [
+        "freeware_see_through"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/ui/perk_selection_screen_update.cpp",
+      "names": [
+        "freeware_message",
+        "freeware_perk_choice_timer",
+        "perk_choice_flags"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/crimson/weapons/weapon_name_get.cpp",
+      "names": [
+        "freeware_text_buffer"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/grim_loader/grim_load_interface.cpp",
+      "names": [
+        "grim_dll_module_handle"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.4/crimson/sfx_loader/sfx_loader.cpp",
+      "names": [
+        "freeware_sfx_free",
+        "freeware_sfx_get",
+        "freeware_sfx_init",
+        "freeware_sfx_is_playing",
+        "freeware_sfx_load",
+        "freeware_sfx_module",
+        "freeware_sfx_play",
+        "freeware_sfx_set_frequency",
+        "freeware_sfx_set_pan",
+        "freeware_sfx_set_paq",
+        "freeware_sfx_set_paused",
+        "freeware_sfx_set_position",
+        "freeware_sfx_set_volume",
+        "freeware_sfx_shutdown",
+        "freeware_sfx_stop_channel"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/console/console_cmd_minimize.cpp",
+      "names": [
+        "console_height_px"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/console/unused_console_prefix_vec2_global_init.cpp",
+      "names": [
+        "unused_console_prefix_vec2"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_aim64_prefix_color_global_init.cpp",
+      "names": [
+        "unused_aim64_prefix_color"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv16_prefix_vec2_global_init.cpp",
+      "names": [
+        "unused_effect_uv16_prefix_vec2"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv_strip16_prefix_vec2_global_init.cpp",
+      "names": [
+        "unused_effect_uv_strip16_prefix_vec2"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_color_global_init.cpp",
+      "names": [
+        "unused_fx_queue_random_prefix_color"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_vec2_global_init.cpp",
+      "names": [
+        "unused_fx_queue_random_prefix_vec2"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_creature_type_id_prefix_color_global_init.cpp",
+      "names": [
+        "unused_fx_rotated_creature_type_id_prefix_color"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_scale_prefix_color_global_init.cpp",
+      "names": [
+        "unused_fx_rotated_scale_prefix_color"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_particle_pool_suffix_color_global_init.cpp",
+      "names": [
+        "unused_particle_pool_suffix_color"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "game",
+      "source": "tools/match/include/crimsonland_console.h",
+      "basis": "The native console token table and console_queue_t hold the argument pointer, command-list head, log head and echo flag. analysis/ghidra/maps/data_map.json corroborates these member identities; they receive no inferred extent.",
+      "names": [
+        "console_cmd_arg1",
+        "console_command_list_head",
+        "console_echo_enabled",
+        "console_log_head"
+      ]
+    },
+    {
+      "image": "crimson.exe",
+      "owner": "libraries",
+      "source": "tools/match/compilers.json",
+      "basis": "The msvc6.5 compiler bundle (SHA-256 16f639b7961ca74b938532d912d2bb655d5ea08b01dc2f50e4a180774d138169) ships SDK headers Include/STRMIF.H (IGraphBuilder and IMediaSeeking), CONTROL.H (IBasicAudio and IMediaControl), and UUIDS.H (CLSID_FilterGraph and TIME_FORMAT_MEDIA_TIME). All six 16-byte Windows GUIDs agree with the original 1.4.0 EXE.",
+      "names": [
+        "CLSID_FilterGraph",
+        "IID_IBasicAudio",
+        "IID_IGraphBuilder",
+        "IID_IMediaControl",
+        "IID_IMediaSeeking",
+        "TIME_FORMAT_MEDIA_TIME"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/api/get_interface.cpp",
+      "names": [
+        "grim_interface_vtable"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/app/init_system.cpp",
+      "names": [
+        "grim_joystick_enabled",
+        "grim_keyboard_enabled",
+        "grim_main_window_hwnd_ref",
+        "grim_mouse_enabled"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/app/missing_frame_callback.cpp",
+      "names": [
+        "grim_missing_frame_error_text"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/app/run_loop.cpp",
+      "names": [
+        "grim_joystick_state_ptr"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/codec/lookup_blob_size_for_path.cpp",
+      "names": [
+        "grim_lookup_blob_magic"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/config/dialog.cpp",
+      "names": [
+        "grim_adapter_description",
+        "grim_caps_can_render_windowed",
+        "grim_config_dialog_bpp16_selected",
+        "grim_config_dialog_canceled",
+        "grim_config_dialog_pure_software_selected",
+        "grim_config_dialog_system_time",
+        "grim_config_dialog_windowed_selected",
+        "grim_config_resolution_index",
+        "grim_d3d8_probe"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/device/d3d_init.cpp",
+      "names": [
+        "grim_active_d3d8",
+        "grim_active_d3d_device",
+        "grim_backbuffer_height",
+        "grim_backbuffer_surface",
+        "grim_backbuffer_width",
+        "grim_config_backbuffer_count",
+        "grim_d3d8",
+        "grim_d3d_device",
+        "grim_d3d_device_type",
+        "grim_device_caps",
+        "grim_device_ready",
+        "grim_device_window_override",
+        "grim_enable_auto_depth_stencil",
+        "grim_error_text",
+        "grim_font_texture",
+        "grim_main_window_hwnd",
+        "grim_module_handle",
+        "grim_preferred_texture_format",
+        "grim_render_target_surface",
+        "grim_selected_adapter_index",
+        "grim_splash_texture",
+        "grim_texture_format",
+        "grim_use_ref_device",
+        "grim_windowed_mode_enabled"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/input/joystick_shutdown.cpp",
+      "names": [
+        "grim_dinput_joystick",
+        "grim_joystick_device"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/input/keyboard_poll.cpp",
+      "names": [
+        "grim_keyboard_event_buffer",
+        "grim_keyboard_state"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/input/keyboard_shutdown.cpp",
+      "names": [
+        "grim_dinput_keyboard"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/input/mouse_button_down.cpp",
+      "names": [
+        "grim_mouse_buttons"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/input/mouse_poll.cpp",
+      "names": [
+        "grim_mouse_dx",
+        "grim_mouse_dy",
+        "grim_mouse_state",
+        "grim_mouse_wheel",
+        "grim_mouse_wheel_delta",
+        "grim_mouse_x",
+        "grim_mouse_y"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/input/mouse_shutdown.cpp",
+      "names": [
+        "grim_dinput_mouse"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/input/was_key_pressed.cpp",
+      "names": [
+        "grim_key_repeat_delay",
+        "grim_key_repeat_first_press"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/render/bind_texture.cpp",
+      "names": [
+        "grim_bound_texture_handle"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/render/draw_circle_outline.cpp",
+      "names": [
+        "grim_uv_v0"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/render/draw_quad.cpp",
+      "names": [
+        "grim_batch_active",
+        "grim_color_slot0",
+        "grim_color_slot1",
+        "grim_color_slot2",
+        "grim_color_slot3",
+        "grim_index_buffer",
+        "grim_index_write_ptr",
+        "grim_render_disabled",
+        "grim_rotation_cos",
+        "grim_rotation_radians",
+        "grim_rotation_sin",
+        "grim_uv_u0",
+        "grim_vertex_buffer",
+        "grim_vertex_capacity",
+        "grim_vertex_count",
+        "grim_vertex_write_ptr",
+        "grim_vertex_z"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/render/mono_text.cpp",
+      "names": [
+        "grim_font_scale",
+        "grim_font_texture_bound"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/state/state_init.cpp",
+      "names": [
+        "grim_config_default",
+        "grim_frame_callback",
+        "grim_lookup_blob",
+        "grim_lookup_blob_loaded",
+        "grim_lookup_blob_size",
+        "grim_mouse_button_latch",
+        "grim_window_title"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/state/state_init.cpp",
+      "basis": "Grim explicitly zeroes this reserved state byte during engine initialization in all three releases; its purpose remains unknown.",
+      "names": [
+        "grim_reserved_d3ac"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/texture/restore.cpp",
+      "names": [
+        "grim_texture_backup_pending"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/timing/update.cpp",
+      "names": [
+        "grim_fps_sample_frames",
+        "grim_fps_sample_seconds",
+        "grim_ms_to_seconds_scale",
+        "grim_tick_now",
+        "grim_tick_prev",
+        "grim_time_ms",
+        "grim_time_ticks",
+        "grim_timing_epoch_ticks"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/window/create.cpp",
+      "names": [
+        "grim_process_hinstance",
+        "grim_window_class",
+        "grim_window_class_name"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/window/destroy.cpp",
+      "names": [
+        "grim_window_class_hinstance"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "decomp/1.9/grim/window/window_proc.cpp",
+      "names": [
+        "grim_dc_mode_active",
+        "grim_device_restore_callback_pending",
+        "grim_input_cached",
+        "grim_keyboard_device",
+        "grim_mouse_button_cache",
+        "grim_mouse_device",
+        "grim_mouse_wheel_delta_cached",
+        "grim_mouse_x_cached",
+        "grim_mouse_y_cached",
+        "grim_on_device_lost",
+        "grim_on_device_restore",
+        "grim_window_icon_handle"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "tools/match/include/grim_joystick_state.h",
+      "basis": "The three field labels in analysis/ghidra/maps/data_map.json identify lY, lZ and rgbButtons in the Grim-owned grim_joystick_state input snapshot. The Win32 structure layout does not transfer storage ownership to DirectInput.",
+      "names": [
+        "grim_joystick_axis_y",
+        "grim_joystick_axis_z",
+        "grim_joystick_buttons"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "game",
+      "source": "tools/match/include/grim_texture.h",
+      "names": [
+        "grim_present_height",
+        "grim_present_width",
+        "grim_texture_slot_max_index"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "libraries",
+      "source": "third_party/headers/png.h",
+      "basis": "libpng declares png_IDAT as a five-byte chunk type. All three original DLLs contain the ASCII IDAT marker and its terminator.",
+      "names": [
+        "png_IDAT"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "libraries",
+      "source": "tools/match/shared/grim_zlib_trees_source.c",
+      "basis": "Fixed literal-tree depth in the matched zlib inflate tree implementation.",
+      "names": [
+        "grim_zlib_fixed_literal_bits"
+      ]
+    },
+    {
+      "image": "grim.dll",
+      "owner": "libraries",
+      "source": "tools/native/providers/grim.dll.json",
+      "basis": "DirectX 8.1 dxguid.lib, dxguid.obj for all three GUIDs, and dinput8.lib, dilib2.obj and dilib5.obj for the keyboard and mouse formats.",
+      "names": [
+        "GUID_SysKeyboard",
+        "GUID_SysMouse",
+        "IID_IDirectInput8A",
+        "c_dfDIKeyboard",
+        "c_dfDIMouse2"
+      ]
+    }
+  ]
+}

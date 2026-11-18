@@ -312,14 +312,30 @@ def scratch_target(scratch: Path, build: str | None = None) -> tuple[match.Scrat
     return image.scratch_config(config), image.target
 
 
-def copy_scratch(config: match.ScratchConfig, directory: Path, ignore) -> match.ScratchConfig:
-    """Copy the scratch to `directory`, with a SOURCE kept outside it (decomp/) beside its conf; compile the copy."""
+def copy_scratch(
+    config: match.ScratchConfig, directory: Path, ignore, *, source_override: Path | None = None,
+) -> match.ScratchConfig:
+    """Freeze the source and its relative includes together, retaining shared include search paths."""
     shutil.copytree(config.directory, directory, ignore=ignore)
-    source = (config.directory / config.source).resolve()
-    if source.is_relative_to(config.directory.resolve()):
+    if config.archive is not None or config.import_thunk is not None:
         return replace(config, directory=directory)
-    shutil.copyfile(source, directory / source.name)
-    return replace(config, directory=directory, source=source.name)
+    source = config.directory / config.source
+    source_input = (source_override or source).resolve()
+    include_dir = Path(os.path.abspath(config.source_include_dir))
+    input_config = replace(config, source=str(source_input), original_source_dir=include_dir)
+    local_headers = match._scratch_include_headers(input_config, match.DEFAULT_MATCH_ROOT, local_only=True)
+
+    scratch_dir = config.directory.resolve()
+    base = scratch_dir if include_dir.is_relative_to(scratch_dir) else include_dir
+    root = Path(os.path.commonpath((base, *local_headers)))
+    frozen_source = (include_dir / source.name).relative_to(root)
+    files = {header.relative_to(root): header for header in local_headers}
+    files[frozen_source] = source_input
+    for relative, original in files.items():
+        target = directory / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(original, target)
+    return replace(config, directory=directory, source=str(frozen_source), original_source_dir=None)
 
 
 def trace(scratch: Path, out: Path, *, passes_only: bool = False, build: str | None = None) -> dict[str, Any]:

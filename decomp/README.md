@@ -160,7 +160,9 @@ uv run crimson match probe tools/match/scratches/console_clear_log --build 1.4.0
 
 ### The 1.4 family
 
-The three freeware builds are family 1.4, with 1.4.0 as its reference: they
+The freeware port targets are 1.0.2, 1.3.0 and 1.4.0. The preserved 1.3.1
+release serves as a comparison reference. The three targets form family 1.4,
+with 1.4.0 as its reference. They
 share a compiler and keep `crimson.obj`'s function order, while 1.4.0 and 1.9.93
 share under a quarter of their game functions. Names still come from 1.9.93, so
 1.4.0's `crimson.exe` maps from 1.9.93, and 1.0.2's and 1.3.0's map from 1.4.0
@@ -170,10 +172,10 @@ with `CL_BUILD` guards: its game functions are a strict subset of 1.9.93's.
 
 A function whose freeware body differs from 1.9's has its own file under
 `decomp/1.4/crimson/<object>/`, named by the scratch's `SOURCE_1.4`; the 1.9
-file keeps only the 1.9 builds' code. `CL_BUILD` guards there separate 1.0.2,
+file keeps only the 1.9 builds' code. A version override such as `SOURCE_1.4.0` takes precedence over the family source. Set `BUILDS=1.4.0` on a scratch that can only be compiled for that release. A function with no known canonical counterpart can be registered in the historical image’s `recovered.json` with `build_only: true`, its extent and its body hash. `CL_BUILD` guards there separate 1.0.2,
 1.3.0 and 1.4.0. [crimson/layout.json](1.4/crimson/layout.json) places each
 file in the 1.4.0 object whose address range holds its function: `console`,
-`grim_loader`, and `crimson` (the main game object, grouped by subsystem).
+`grim_loader`, `level`, and `crimson` (the main game object, grouped by subsystem).
 Shared headers still carry the freeware structure layouts behind guards.
 
 The [freeware setup record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/FREEWARE-SETUP-2026-09-30.md)
@@ -182,17 +184,24 @@ holds the initial compiler baseline.
 The donor maps remain partial, but each image also has a `native.json` inventory
 from independent Binary Ninja control-flow discovery, refined by verified
 unchanged body starts. Reports include native functions without donor identities
-and every remaining executable byte. Unknown remainders, including alignment
-and uncertain embedded data, count toward the denominator with zero credit;
-these reports use a different inventory policy from the curated 1.9 reports.
-They are marked `reported` and CI uploads all five version artifacts.
+and every remaining executable byte. CI uploads all five reported versions.
 
-`Confirmed Game & Engine` covers the reviewed initial application/engine object
-clusters, including their uncredited remainders. Uncertain template/SDK helper
-intervals remain under `Unclassified ownership`; only exact donor library
-identities outside those clusters receive library classification. Use `All` for
-the complete executable denominator. Data and executable linking remain
-unmeasured for freeware. Placement evidence never earns compiled match credit.
+The freeware **Game & Engine** ownership scope covers the reviewed application
+and engine clusters. Its **Game & Engine function bodies** filter measures
+compiler recovery within the retained functions. The 775 gaps in those
+clusters contain alignment padding and compiler-generated switch tables. The
+saved reports give every range an address, classify it against the original
+image, and verify its bytes against the preceding function's compiled object.
+See the [freeware byte accounting](../analysis/decomp/README.md#freeware).
+
+Uncertain template and SDK helper intervals stay under **Unclassified ownership**.
+Only exact donor library identities outside the reviewed clusters receive library
+classification. **All** retains the full executable virtual byte denominator,
+including unresolved remainders outside Game & Engine. The physical layout
+receipts measure bytes in the original executable sections. Data sections are
+measured against each release's original EXE and DLL. The maps distinguish
+verified source storage, known unmatched ranges, PE metadata and unattributed
+bytes. See the [freeware global maps and byte totals](../analysis/decomp/README.md#freeware-data-sections).
 
 To regenerate discovery with the licensed Binary Ninja GUI running:
 
@@ -202,7 +211,9 @@ uv run scripts/export_freeware_native_inventory.py --target <explicit-selector>
 uv run crimson match report --refresh -j 8
 ```
 
-The exporter preserves reviewed ownership boundaries and checks their byte pins.
+The exporter preserves reviewed ownership boundaries and the per-image
+`platform_replaced` addresses. The inventory loader checks that each exclusion
+has a reason and points to a retained game or engine function in the pinned image.
 Stage any new inventory inputs before refreshing reports.
 
 ## Scope

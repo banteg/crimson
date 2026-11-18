@@ -18,7 +18,7 @@ from typing import Any
 import pefile
 
 from . import match as matchlib
-from . import match_data_report, match_toolchain, native_link
+from . import match_data_report, match_source_receipt, match_toolchain, native_link
 
 PLAN = matchlib.REPO_ROOT / "tools/native/reference_layout.json"
 OUTPUT = matchlib.REPO_ROOT / "artifacts/native-reference-link"
@@ -225,7 +225,10 @@ def refresh(functions: list[dict[str, Any]], data: dict[str, Any]) -> dict[str, 
         for row in component["code"]:
             member_config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches" / row["name"])
             member_raw = matchlib.compile_scratch(member_config, matchlib.DEFAULT_MATCH_ROOT).read_bytes()
-            if not matchlib.coff_sha256(member_raw) == row["object_sha256"] == canonical_hash:
+            if (
+                matchlib.coff_sha256(member_raw) != canonical_hash
+                or match_source_receipt.candidate_object_sha256(member_raw, member_config) != row["object_sha256"]
+            ):
                 raise ValueError("linked code object differs from matched-source compilation")
         adapted, relocations, code_size = _adapt_code(raw, component["code"])
         (directory / "code.obj").write_bytes(adapted)
@@ -322,7 +325,10 @@ def validate(receipt: dict[str, Any], functions: list[dict[str, Any]], data: dic
             obj_path = matchlib._scratch_object_path(config)
             if obj_path.is_file():
                 raw = obj_path.read_bytes()
-                if matchlib.coff_sha256(raw) != row["object_sha256"] or row["object_sha256"] != saved["code_object_sha256"]:
+                if (
+                    matchlib.coff_sha256(raw) != saved["code_object_sha256"]
+                    or match_source_receipt.candidate_object_sha256(raw, config) != row["object_sha256"]
+                ):
                     raise ValueError("reference-layout source object changed")
                 adapted, relocations, _ = _adapt_code(raw, component["code"])
                 if matchlib.coff_sha256(adapted) != saved["adapted_object_sha256"] or [(r["address"], r["symbol"], r["type"]) for r in relocations] != [

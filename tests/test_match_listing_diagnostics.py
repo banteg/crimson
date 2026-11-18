@@ -52,6 +52,34 @@ def test_stack_listing_scopes_aliases_and_wrapped_rows_to_selected_proc() -> Non
     assert text.splitlines()[rows[0].listing_line - 1].startswith("\t00 00 00")
 
 
+def test_stack_listing_uses_only_the_main_segment_of_a_proc_with_eh_funclets() -> None:
+    text = (
+        "_TEXT SEGMENT\n_local$ = -16\n?foo@game@@YAXXZ PROC NEAR\n"
+        "; 10 : function\n  00000\t90\t nop\n_TEXT ENDS\n"
+        "text$x SEGMENT\n; 20 : handler\n  00000\t50\t push eax\n"
+        "  00001\tc3\t ret 0\ntext$x ENDS\n"
+        "_TEXT SEGMENT\n  00001\tc3\t ret 0\n_TEXT ENDS\n?foo@game@@YAXXZ ENDP\n"
+    )
+
+    declarations, rows = parse_stack_listing(text, symbol="?foo@game@@YAXXZ")
+
+    assert declarations == {"_local$": -16}
+    assert [(offset, row.assembly, row.source_lines) for offset, row in rows.items()] == [
+        (0, "nop", (10,)),
+        (1, "ret 0", ()),
+    ]
+
+
+def test_listing_layout_prefers_exact_coff_name_to_another_c_decoration() -> None:
+    text = _listing(("sub esp, 4",), "_other$ = -4").replace("_foo", "__foo")
+    text += _listing(("sub esp, 16",))
+
+    layout = matchlib.parse_compiler_listing_stack_layout(text, symbol="_foo")
+
+    assert layout.prologue_allocation_bytes == 16
+    assert [symbol.name for symbol in layout.symbols] == ["_local$"]
+
+
 def test_stack_locals_keep_aliases_fields_and_unnamed_accesses_separate() -> None:
     result = _result(
         (
@@ -184,6 +212,9 @@ def test_stack_locals_preserve_repeated_uses_with_changing_esp_and_reused_aliase
     [
         "_foo PROC\n_foo ENDP\n_foo PROC\n_foo ENDP",
         "_local$ = -16\n_local$ = -8\n_foo PROC\n_foo ENDP",
+        "_TEXT SEGMENT\n_foo PROC\n  00000\t90\t nop\n  00000\t90\t nop\n_foo ENDP",
+        "_TEXT SEGMENT\n_foo PROC\n  00001\t90\t nop\n_foo ENDP",
+        "_TEXT SEGMENT\n_foo PROC\n_TEXT ENDS\ntext$x SEGMENT\ntext$x ENDS",
     ],
 )
 def test_stack_listing_rejects_ambiguous_or_incomplete_scope(text: str) -> None:
@@ -191,9 +222,12 @@ def test_stack_listing_rejects_ambiguous_or_incomplete_scope(text: str) -> None:
         parse_stack_listing(text, symbol="foo")
 
 
-def _verified_listing(tmp_path: Path) -> tuple[matchlib.ScratchConfig, matchlib.CompilerListingResult]:
+def _verified_listing(
+    tmp_path: Path,
+    proc: str = "_foo",
+) -> tuple[matchlib.ScratchConfig, matchlib.CompilerListingResult]:
     cod = tmp_path / "foo.cod"
-    cod.write_text(_listing(("mov eax, _local$[esp+32]",)))
+    cod.write_text(_listing(("mov eax, _local$[esp+32]",)).replace("_foo", proc))
     obj = tmp_path / "foo.obj"
     obj.write_bytes(b"verified object")
     sha = hashlib.sha256(obj.read_bytes()).hexdigest()
@@ -235,6 +269,22 @@ def _verified_listing(tmp_path: Path) -> tuple[matchlib.ScratchConfig, matchlib.
         stack_layout=matchlib.CompilerListingStackLayout(None, ()),
     )
     return config, listing
+
+
+def test_compiler_stack_report_uses_the_verified_coff_function_name(tmp_path: Path, monkeypatch) -> None:
+    proc = "?foo@game@@YAXXZ"
+    config, listing = _verified_listing(tmp_path, proc)
+    obj = matchlib.CoffObject(
+        sections=(matchlib.CoffSection(".text", b"function", 0x20, ()),),
+        symbols=(matchlib.CoffSymbol(0, proc, 0, 1, 0x20, 2),),
+    )
+    result = _result(("mov eax, dword [esp+0x14]",), ("mov eax, dword [esp+0x10]",))
+    monkeypatch.setattr(matchlib, "parse_coff_object", lambda _data: obj)
+    monkeypatch.setattr(matchlib, "run_match", lambda **_kwargs: result)
+
+    payload = compiler_stack_residual_payload(config, listing)
+
+    assert [row["name"] for row in payload["locals"]] == ["_local$"]
 
 
 @pytest.mark.parametrize("change", ["listing", "object"])

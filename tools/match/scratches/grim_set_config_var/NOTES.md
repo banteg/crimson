@@ -34,3 +34,12 @@ offsets. The result is exact: **443/443** normalized instructions, prefix
 The source retains ordinary C++ control flow and recovered data ownership. It
 uses no inline assembly, volatile shaping, fake references, forced addresses,
 register forcing, or dummy operations.
+
+## Freeware builds
+
+1.0.2 and 1.3.0 use six-word config records. The boolean is in word two
+and callback pointers are in word five. The PAQ setting retains its caller's
+string. By 1.4.0 the records have four words and Grim duplicates the path.
+The three native dispatchers have 255, 267, and 398 instructions respectively.
+Their trailing address tables and byte indexes are separate from the code
+extent. The matcher checks the table destinations against the COFF relocations.

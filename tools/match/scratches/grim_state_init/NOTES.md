@@ -379,3 +379,11 @@ stores and the `grim_uv_u0[3]`/window-title registers, so 1.9.8 is exact
 (406/406) with no guard. Placing the depth store before the configuration
 slots, after the error text, or as two field stores, or reordering the last
 five slot assignments, does not match on 1.9.8.
+
+The freeware font atlas uses pixel coordinates in a 512x512 texture with
+32-pixel cells. All three versions retain the converted row coordinate
+across the inner loop, allowing VC6 to reuse one conversion spill. They
+also set the four white vertex colors after initializing the current UVs.
+1.0.2 and 1.3.0 copy six-word config records, and 1.4.0 copies four words.
+In 1.3.0 callback pointers occupy the final word of the record. 1.0.2 only
+sets the standalone frame callback.

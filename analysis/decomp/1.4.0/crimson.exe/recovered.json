@@ -9,16 +9,138 @@
       "body_sha256": "58367ffa2a0179375018fa0f5c26da24391e42ebe0ed8fdda35a21fc7bdc396f"
     },
     {
+      "name": "freeware_music_stream_init",
+      "address": "0x00401010",
+      "end": "0x00401031",
+      "body_sha256": "0c8b36f6c91e9be5398b7b7d7408a22a9b254a1e88e491bc2de3ddcf1a1cc015",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_open",
+      "address": "0x00401040",
+      "end": "0x00401120",
+      "body_sha256": "81f2c581b1398a30a1749c0008000b090f6f803dec3b938bfec7769b81ee3874",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_set_volume",
+      "address": "0x00401120",
+      "end": "0x0040115d",
+      "body_sha256": "72affc3ba319f765438f1e85c395c2b0db1fc457e88ce986de2fb004624d044a",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_run",
+      "address": "0x00401160",
+      "end": "0x00401175",
+      "body_sha256": "6f4e36b3f6f17d5cb3957c1da4d938ff677bf7b8daaaa5f1009b558f86e1e390",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_pause",
+      "address": "0x00401180",
+      "end": "0x00401195",
+      "body_sha256": "a139a09bdf391b4fa55eab6a7e42bfe67b4fb35846d7852910126e9059838e1d",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_stop",
+      "address": "0x004011a0",
+      "end": "0x004011b5",
+      "body_sha256": "8eabb041319d91cf519aef8690d2f487b07d18545abf12f65d8d166d1968a8ec",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_duration",
+      "address": "0x004011c0",
+      "end": "0x004011f0",
+      "body_sha256": "f32f2ed1d35968897133043129dcd4d10d8cb8863f2abde1a626db62eb77f6fe",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_position",
+      "address": "0x004011f0",
+      "end": "0x00401220",
+      "body_sha256": "1fa61410a10d69cf4b9d3908b4aef6601f6fb5ba2703ce9d2d72d2f759badc52",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stream_seek",
+      "address": "0x00401220",
+      "end": "0x0040124d",
+      "body_sha256": "3e1c2ea8135ccf07c9fdd70ebbc37049a8b6a62e1dd86459006e194dd53a1796",
+      "build_only": true
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init_thunk",
+      "address": "0x00401250",
+      "end": "0x00401255",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+    },
+    {
+      "name": "unused_console_prefix_vec2_global_init",
+      "address": "0x00401260",
+      "end": "0x00401275",
+      "body_sha256": "1f660faa0f13d63ba5b2597900591c3881d4442d88cd5842abb7089d2df0c83a"
+    },
+    {
+      "name": "console_input_poll",
+      "address": "0x004012b0",
+      "end": "0x004018b6",
+      "body_sha256": "d8f659a00b7e1764d09139e588c591b76bce1272f1b2bb9541313958ebe1184c"
+    },
+    {
+      "name": "freeware_console_cmd_show",
+      "address": "0x004019a0",
+      "end": "0x004019f0",
+      "body_sha256": "79a32d132b2653466e053243b8cc66db9dc3311fda68ef984d1e3be70537fc81",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_count",
+      "address": "0x004019f0",
+      "end": "0x00401ac6",
+      "body_sha256": "ce29df38338a42db37d738aac7de73a339257c23b5cf71a7a00e39a4022d0bb5",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_printfile",
+      "address": "0x00401ae0",
+      "end": "0x00401b98",
+      "body_sha256": "5f4de6e5f6ee1677e4d0ace90630d97ba403fdb9369db31632d8c338c656b671",
+      "build_only": true
+    },
+    {
       "name": "console_cmd_exec",
       "address": "0x00401ba0",
       "end": "0x00401c6e",
       "body_sha256": "9a10508a1314a2ffc835cb4c3bcf8747bb82814ba3d1ea09e2d8186aeada669e"
     },
     {
+      "name": "freeware_console_cmd_showfps",
+      "address": "0x00401ca0",
+      "end": "0x00401cc4",
+      "body_sha256": "a4e0deb3900864aa8bcc36c34fde83d5d9334dcb874ca75e1e4c7cd8adfc8329",
+      "build_only": true
+    },
+    {
       "name": "console_cmd_set",
       "address": "0x00401e70",
       "end": "0x00401ebd",
       "body_sha256": "2bdcb481ac57158a0be7d77de518cd3b19ae27d63cf8923c47c15ecb17fe1360"
+    },
+    {
+      "name": "freeware_console_cmd_state_unavailable",
+      "address": "0x00401ec0",
+      "end": "0x00401ed3",
+      "body_sha256": "5061ce28daf73c2213db760575e0a09cf7baa8075c68c951c5641715489a9309",
+      "build_only": true
+    },
+    {
+      "name": "console_init",
+      "address": "0x00401ee0",
+      "end": "0x004020a5",
+      "body_sha256": "227645a0e9d5076e834f438db68cde6d0427a495ea13ecb423d78ec54ee30261"
     },
     {
       "name": "console_printf",
@@ -39,6 +161,12 @@
       "body_sha256": "b0b34c9493ee5bd243c07287897d213c4a510ff311732708703e31e9f28bf15b"
     },
     {
+      "name": "console_render",
+      "address": "0x00402390",
+      "end": "0x00402aa2",
+      "body_sha256": "445679c7835e957efdb9f65a5786e7a1e73ec7858825538992242ec497e1e5c2"
+    },
+    {
       "name": "console_register_cvar",
       "address": "0x00402ab0",
       "end": "0x00402ba5",
@@ -55,6 +183,27 @@
       "address": "0x00402fb0",
       "end": "0x00402fd9",
       "body_sha256": "8ab97753c12fc6b002536a25703c0341d5e3dc8d189e3f1dd20c3c7af7674e3f"
+    },
+    {
+      "name": "freeware_http_get",
+      "address": "0x00402fe0",
+      "end": "0x004030e6",
+      "body_sha256": "716bffe0c75279a1026b1c0d0b852a694d01c4cf3ba1f12636e72f03b45ad9dd",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_load_library",
+      "address": "0x004030f0",
+      "end": "0x00403212",
+      "body_sha256": "6e4cf963dab2eb8c18c403cbda9c1918166d61c1edce209eb0aaf057a2860a39",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_unload_library",
+      "address": "0x00403220",
+      "end": "0x0040322d",
+      "body_sha256": "2f520b429fedac03d56d02eb2d364048d483d0b165a88033465112b421bd1638",
+      "build_only": true
     },
     {
       "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
@@ -103,6 +252,22 @@
       "address": "0x00403300",
       "end": "0x00403329",
       "body_sha256": "31f04f007838d430732aea31ba453aaf1256e033adf493169d87b84acd1c0221"
+    },
+    {
+      "name": "freeware_aim_screen_global_init_thunk",
+      "address": "0x00403330",
+      "end": "0x00403335",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Startup table entry directly jumps to the screen-aim initializer."
+    },
+    {
+      "name": "freeware_aim_screen_global_init",
+      "address": "0x00403340",
+      "end": "0x00403355",
+      "body_sha256": "2468eb2b0320aef5a0eccb167bd83e9cfb9991137230702f569ee25a09ba9486",
+      "build_only": true,
+      "evidence": "Stores 320.0 and 240.0 in the two members of the verified freeware_aim_screen global."
     },
     {
       "name": "unused_global_noop_init_thunk",
@@ -177,6 +342,20 @@
       "body_sha256": "678d2fd6e750ea4486fdc76de7b23ef525fb5c4a536752f42d0f92aea46dcf7a"
     },
     {
+      "name": "config_init_defaults_thunk",
+      "address": "0x00403500",
+      "end": "0x00403505",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "evidence": "Startup entry that jumps to the game config initializer."
+    },
+    {
+      "name": "config_init_defaults",
+      "address": "0x00403510",
+      "end": "0x00403611",
+      "body_sha256": "845a912537953a4e5a8b3938983c982b8c2fc0cd1f84c78658e82da3828b0529",
+      "evidence": "Initializes the persisted config record used by freeware_save_config, including its display settings and both players\u2019 bindings."
+    },
+    {
       "name": "crimson_crt_empty_initializer_slot_31_thunk",
       "address": "0x00403620",
       "end": "0x00403625",
@@ -187,6 +366,20 @@
       "address": "0x00403630",
       "end": "0x00403631",
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+    },
+    {
+      "name": "freeware_last_score_global_init_thunk",
+      "address": "0x00403640",
+      "end": "0x00403645",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_last_score_global_init",
+      "address": "0x00403650",
+      "end": "0x0040368d",
+      "body_sha256": "7cf9acbb1886befb255f8d91360abde02bb8f075cdaffe179d7eb4e7723247d1",
+      "build_only": true
     },
     {
       "name": "perk_meta_global_construct_and_register",
@@ -219,16 +412,46 @@
       "body_sha256": "e8ff1ad9aeaf9c94bb8de421a0f213a21c8972343bb691bdaac9dfeb9168f39e"
     },
     {
-      "name": "unused_console_prefix_vec2_global_init_thunk",
-      "address": "0x00403760",
-      "end": "0x00403765",
-      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+      "name": "freeware_bonus_count_global_init_thunk",
+      "address": "0x00403740",
+      "end": "0x00403745",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
     },
     {
-      "name": "unused_console_prefix_vec2_global_init",
+      "name": "freeware_bonus_count_global_init",
+      "address": "0x00403750",
+      "end": "0x0040375b",
+      "body_sha256": "7a308cdaaa34655d25d8a240c57bda61d52d6f26c1a9140a51fb04ad3b1fa24a",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_position_global_init_thunk",
+      "address": "0x00403760",
+      "end": "0x00403765",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_position_global_init",
       "address": "0x00403770",
       "end": "0x00403785",
-      "body_sha256": "71a3b823e4ed9a3b755dc3abe0982a215c36ec96a60399a2b619b819301202f3"
+      "body_sha256": "71a3b823e4ed9a3b755dc3abe0982a215c36ec96a60399a2b619b819301202f3",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_id_global_init_thunk",
+      "address": "0x00403790",
+      "end": "0x00403795",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_id_global_init",
+      "address": "0x004037a0",
+      "end": "0x004037ab",
+      "body_sha256": "809319c207dc493da9b01e5b06f94969047fdc681e4069d5e0504f2ccac68132",
+      "build_only": true
     },
     {
       "name": "secondary_projectile_pool_global_init_thunk",
@@ -315,10 +538,249 @@
       "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
     },
     {
+      "name": "freeware_brush_global_construct_and_register",
+      "address": "0x00403ac0",
+      "end": "0x00403aca",
+      "body_sha256": "32f9544bc551c1f0af9faffd5c427df12a5b7ba39814dfd881bceff7d002e270",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_global_init",
+      "address": "0x00403ad0",
+      "end": "0x00403aed",
+      "body_sha256": "740d1ebfedf3464bb210a7070b42985f70a5feff420109f7bdc5a6ce939aaae0",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_register_atexit",
+      "address": "0x00403af0",
+      "end": "0x00403afc",
+      "body_sha256": "47510e7b918b53633cb5f5e7303c95485a8520e40d4dd8bffa28c3746d6a424a",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_global_destroy",
+      "address": "0x00403b00",
+      "end": "0x00403b25",
+      "body_sha256": "2a0fc9fc269660340c96c0baaccd2f88bd1f31ef0f3a376af449ff71e630ddfd",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_clear",
+      "address": "0x00403b30",
+      "end": "0x00403b84",
+      "body_sha256": "313d2cd4185ac0561de5791cbf729278a1acb2605bd4ddca46b5bb74025f507c",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_map_ctor",
+      "address": "0x00403b90",
+      "end": "0x00403bea",
+      "body_sha256": "38f617f48cc5ebad94a42e99bc02e1e69de89561fcea758410cb36092b43ec15",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_list_ctor",
+      "address": "0x00403bf0",
+      "end": "0x00403c04",
+      "body_sha256": "e5bf9d2583d6bbde28325a7e00f5f7d3e88b81d84b66f7337756d7b1854dba3e",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_clear",
+      "address": "0x00403c10",
+      "end": "0x00403cc8",
+      "body_sha256": "37fe5169bf2dac432a70191d427bfc4510faadbecfeea7723d46cc5bf074ba14",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_map_dtor",
+      "address": "0x00403cd0",
+      "end": "0x00403d09",
+      "body_sha256": "f1cc883df62cc079e94e9bfed0325c586d9f97dd5028927e117657a8ca3b0439",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_load",
+      "address": "0x00403d10",
+      "end": "0x004040e7",
+      "body_sha256": "a803a6449644b444774eab647fe7146cde74aa72bdf2d07a24a5879381ce15d8",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_save",
+      "address": "0x004040f0",
+      "end": "0x00404227",
+      "body_sha256": "8382767c812e4a29e28b2df9d3d8e74cb2e47e934e94840aa6f788a51a9ba64b",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_add_trigger",
+      "address": "0x00404230",
+      "end": "0x004043db",
+      "body_sha256": "b90495a1d3c3ad19f511d9ea610cc7882005e0a9bd21f970dab3cf2bacabaa9e",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_arm_triggers",
+      "address": "0x004043e0",
+      "end": "0x00404402",
+      "body_sha256": "f4c8f5265a95427d7aac9f78fa227280fb93b01e593d7bd541902881ba338c60",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_update_triggers",
+      "address": "0x00404410",
+      "end": "0x00404507",
+      "body_sha256": "1b1d33c1ee8e3fa73527fdb9a9983383a8962f5f004fd4491e4eae6f1f02f0ba",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_render_triggers",
+      "address": "0x00404510",
+      "end": "0x00404baf",
+      "body_sha256": "46987d7ef2c70f2e98e37ed9da8bd244f8845192a3aac1e93ca0b87a3f89d23e",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_set_texture",
+      "address": "0x00404bb0",
+      "end": "0x00404bba",
+      "body_sha256": "b994e2bd1bc262c5b463fca225534224134549b75fddcc1f700f38a59510b90e",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_add_object",
+      "address": "0x00404bc0",
+      "end": "0x00404d6a",
+      "body_sha256": "95e08a06e760924730dc26b3d44c5f03902e20e29c065c0ac350e666e13b3481",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_render_layer",
+      "address": "0x00404d70",
+      "end": "0x00404ed8",
+      "body_sha256": "a253e81b330ead5f1134c9392533287f5ac47bc76fee5e9d71ed07b33677da10",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_move_with_collision",
+      "address": "0x00404ee0",
+      "end": "0x004050dd",
+      "body_sha256": "c5ffbb62767cea278eaec311e77e2399c4d3072c65091069b85b3ec54907b66b",
+      "build_only": true
+    },
+    {
+      "name": "sfx_load_sample",
+      "address": "0x004050e0",
+      "end": "0x00405177",
+      "body_sha256": "90cfbd367e5cc92362880cb707abc99fa4d699caddfce87efef630ea576b2464"
+    },
+    {
+      "name": "freeware_music_create_streams",
+      "address": "0x00405180",
+      "end": "0x00405269",
+      "body_sha256": "985bf3d0824e64faa222f55c855a71f0fc198858939a82eb94690393f23d3291",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_load_intro",
+      "address": "0x00405270",
+      "end": "0x004052c1",
+      "body_sha256": "370b5d9965f20f13363866eb09b686c1f30469ceec62e7efecc292d9f6410f2a",
+      "build_only": true
+    },
+    {
+      "name": "audio_init_sfx",
+      "address": "0x004052d0",
+      "end": "0x004053fb",
+      "body_sha256": "5e6f3d42732885784ae37202e493377e731a7cae8f873ce4c79a92f1e5ae3910"
+    },
+    {
+      "name": "freeware_audio_load_additional_assets",
+      "address": "0x00405400",
+      "end": "0x00405498",
+      "body_sha256": "68a7136da95c37979d9b726ff7d41499b5fb0618bd6aefa2821cd9079194febb",
+      "build_only": true
+    },
+    {
+      "name": "sfx_system_init",
+      "address": "0x004054a0",
+      "end": "0x004055d9",
+      "body_sha256": "179ec6eaa6ccbd8842eccc972aab3a089abeabc335036efc145a1f4099aba9c2"
+    },
+    {
+      "name": "audio_shutdown_all",
+      "address": "0x004055e0",
+      "end": "0x00405628",
+      "body_sha256": "1284b7c4451a76e9affac9877fa00fff80b1116102c62b67f51dce5d756f2760"
+    },
+    {
+      "name": "sfx_play_panned",
+      "address": "0x00405630",
+      "end": "0x004056cc",
+      "body_sha256": "e69645371ce13580bfbabb0889cbbd4ace7b227995f12ed03278be1afa86b1cc"
+    },
+    {
+      "name": "sfx_update",
+      "address": "0x004056d0",
+      "end": "0x00405751",
+      "body_sha256": "f600110ef191b325ece082232855a995143247bab3970d1f3075350f11867779",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_start",
+      "address": "0x00405760",
+      "end": "0x0040588b",
+      "body_sha256": "bd171593cec49bad3ffbe04d1014201dbc200c18f99441539c4d8d54d5896b6a",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_stop",
+      "address": "0x00405890",
+      "end": "0x004058d2",
+      "body_sha256": "d0a3225be9525847007e8dddabbdfa7568f31c0e5c726b996dd98bdf5406f081",
+      "build_only": true
+    },
+    {
+      "name": "music_update_fades",
+      "address": "0x004058e0",
+      "end": "0x00405c7a",
+      "body_sha256": "a317802d615ae2763f46a8c3038d9f19ac01d13e221d4815c855fcde63a453b0"
+    },
+    {
       "name": "fx_queue_add",
       "address": "0x00405c80",
       "end": "0x00405d03",
       "body_sha256": "0caec9c429a71abf043dee7fb2044d3b587b95c236b3e01d7b9cfa66afef96ee"
+    },
+    {
+      "name": "input_move_up_active",
+      "address": "0x00405d10",
+      "end": "0x00405d35",
+      "body_sha256": "e524593892e582e68a6c7fa334b975bbc556f9089415046360a21c53d0be06b0",
+      "build_only": true
+    },
+    {
+      "name": "input_move_down_active",
+      "address": "0x00405d40",
+      "end": "0x00405d63",
+      "body_sha256": "2765180ef08dd9888ddc6315aefbc420ca6f9332f0965516fb1cecd6b4c6ba13",
+      "build_only": true
+    },
+    {
+      "name": "input_move_left_active",
+      "address": "0x00405d70",
+      "end": "0x00405d95",
+      "body_sha256": "a7d4dbd633065eb469ebf18f664c053c020667decc3f73f48ae4f6029ff71513",
+      "build_only": true
+    },
+    {
+      "name": "input_move_right_active",
+      "address": "0x00405da0",
+      "end": "0x00405dc3",
+      "body_sha256": "21fc2fed2b22daca946dfbec83c594cce2e813e06d7d9de540f78a98fab600dc",
+      "build_only": true
     },
     {
       "name": "input_aim_pov_left_active",
@@ -333,10 +795,48 @@
       "body_sha256": "0c5bc61fc12375f8940e45e8729b06eae468ae028e9ee6d50be316953e3ff824"
     },
     {
+      "name": "highscore_build_path",
+      "address": "0x00406130",
+      "end": "0x00406205",
+      "body_sha256": "a1a6c056fa38bd66cea5b468251ac758b9b8f7e1ed8a23752d348a62aa20cdd1"
+    },
+    {
+      "name": "freeware_save_config",
+      "address": "0x00406210",
+      "end": "0x004062b9",
+      "body_sha256": "f47a528d3f192673f18ad0a047babd43df316ac9e41eec3f19d902df03ec65ee",
+      "build_only": true
+    },
+    {
+      "name": "config_load_presets",
+      "address": "0x004062c0",
+      "end": "0x00406477",
+      "body_sha256": "f3d6dd8a003981649e6f9a4b616f904e4c9c1867659e15a1dd512e67e5e97f40"
+    },
+    {
       "name": "angle_approach",
       "address": "0x00406480",
       "end": "0x004065af",
       "body_sha256": "9da66505233f7235415fee35042973a9990967f13af8b02ea88ba12454163f30"
+    },
+    {
+      "name": "weapon_assign_player",
+      "address": "0x004065b0",
+      "end": "0x004067db",
+      "body_sha256": "82e451e5514356ee03e5902cdd2abd7fa4936a6dcf2c3c3c839cab69921b98d7"
+    },
+    {
+      "name": "freeware_refill_clip",
+      "address": "0x004067e0",
+      "end": "0x00406808",
+      "body_sha256": "37cc3285a0a0c9ba41598f629f0b76665422902aae925bcc62b18c8999b24241",
+      "build_only": true
+    },
+    {
+      "name": "player_start_reload",
+      "address": "0x00406810",
+      "end": "0x004068f3",
+      "body_sha256": "932515cf32527ccdd3fb8f9f129d8060a291f4d7e95736ab57ea64ef03bad9e3"
     },
     {
       "name": "fx_spawn_sprite",
@@ -345,10 +845,138 @@
       "body_sha256": "1d521d9274f269ea2a46a34799884df95ffc7705704d262831ce5a203dd84c41"
     },
     {
+      "name": "freeware_point_in_rect",
+      "address": "0x00406b60",
+      "end": "0x00406ba5",
+      "body_sha256": "e82d13f68c6f0b78a4eecf8b6d7b5836509c3de82640d8828e020f3579f167f7",
+      "build_only": true
+    },
+    {
+      "name": "weapon_name_get",
+      "address": "0x00406bb0",
+      "end": "0x00406e10",
+      "body_sha256": "3d31eadfc1fefc6ce0ad15e81ea35fb01782c7a9bd2c8a08a556fbda462b2b62"
+    },
+    {
+      "name": "freeware_score_key_init",
+      "address": "0x00406e10",
+      "end": "0x00406ea2",
+      "body_sha256": "35a939f9324d899a371083af906ddb9dc825bd0481d251d3bd9850d45a6b1547",
+      "build_only": true,
+      "evidence": "Fills the 243-byte key table from game mode, player count and byte index."
+    },
+    {
+      "name": "freeware_score_encode",
+      "address": "0x00406eb0",
+      "end": "0x00406f19",
+      "body_sha256": "895c083e40bc9018747c7313b4124c7d2be4f7aa77b85abb084436e3071365c2",
+      "build_only": true,
+      "evidence": "Adds the repeating 243-byte key to the payload and appends its weighted checksum."
+    },
+    {
+      "name": "freeware_score_decode",
+      "address": "0x00406f20",
+      "end": "0x00406f89",
+      "body_sha256": "32a98d2f3ed26163b17e68287c5d84d9f6f087273a34fe8f1ca0d4ae21000e9d",
+      "build_only": true,
+      "evidence": "Subtracts the same repeating key and tests the weighted checksum stored after the payload."
+    },
+    {
+      "name": "freeware_score_table_global_init_thunk",
+      "address": "0x00406f90",
+      "end": "0x00406f95",
+      "body_sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859",
+      "build_only": true,
+      "evidence": "Jumps directly to the static score table initializer."
+    },
+    {
+      "name": "freeware_score_table_global_init",
+      "address": "0x00406fa0",
+      "end": "0x00406fe4",
+      "body_sha256": "b0039ebd99905c0f1a21dcff3a2b371e281672682f95aab85150efcabf801064",
+      "build_only": true,
+      "evidence": "Constructs the 100 score records with default name 10tons, using the same table as the loader."
+    },
+    {
+      "name": "freeware_save_score",
+      "address": "0x00406ff0",
+      "end": "0x00407178",
+      "body_sha256": "fd82f19133e9defe11c0d75a4f4724723a3ae26f11d87fe925a5693165effeb8",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_merge",
+      "address": "0x00407180",
+      "end": "0x00407386",
+      "body_sha256": "a9bc53e5d17879218f34320031b382fcefc05eeb0e82eaef3808c6763626e644",
+      "build_only": true,
+      "evidence": "Opens the current score file and its argument, verifies both payload checksums, concatenates the records, then encodes and writes the merged payload. Success and failure are printed to the console."
+    },
+    {
+      "name": "freeware_score_table_reset",
+      "address": "0x00407390",
+      "end": "0x004073be",
+      "body_sha256": "1eac94824804ff9a348958cf47adf41d9c28fb6d31492cfd4268ee1a23104385",
+      "build_only": true,
+      "evidence": "Called by the score loader before fopen. Visits all 100 score records, assigns the default name and clears scores."
+    },
+    {
+      "name": "highscore_load_table",
+      "address": "0x004073c0",
+      "end": "0x00407771",
+      "body_sha256": "9a870b6cfaa9fb33e5fc8d8abc92284c3178ec7fb5b721a11474fb82b1e4a002",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_rank",
+      "address": "0x00407780",
+      "end": "0x004078a9",
+      "body_sha256": "df19a567fd1bc36ed7781cddc583b087394d8f7b36d11006485b5f1612ce7127",
+      "build_only": true
+    },
+    {
       "name": "wrap_text_to_width_alloc",
       "address": "0x004078b0",
       "end": "0x0040791b",
       "body_sha256": "7084ac19a5da5e2e3af7104cbb8f6f82e788645fe39c92d16204a2f727a2ca83"
+    },
+    {
+      "name": "perks_init_database",
+      "address": "0x00407920",
+      "end": "0x0040843c",
+      "body_sha256": "9633a63fa083bd71f77df088c93413f44c2af2a97a03d8426b34eba2e96e6a70",
+      "evidence": "Registers every named perk ID, the perks01 atlas, frame number, title and wrapped description."
+    },
+    {
+      "name": "player_reset_all",
+      "address": "0x00408440",
+      "end": "0x004085fb",
+      "body_sha256": "91b68a8b8fc0ffc254f39a4cb7b976fff31ae226ed7086a046a74aa09eb45bc8"
+    },
+    {
+      "name": "player_check_level",
+      "address": "0x00408600",
+      "end": "0x00408cea",
+      "body_sha256": "110c076b74596fffb34f1bbe8e649a48aa72d06684299096fea022c4c6c697a0",
+      "build_only": true
+    },
+    {
+      "name": "perks_generate_choices",
+      "address": "0x00408cf0",
+      "end": "0x00408db8",
+      "body_sha256": "12be0bff89908af64b1375a08d9203d543320c20430c31377a151779b02a4d10"
+    },
+    {
+      "name": "effect_uv_tables_init",
+      "address": "0x00408dc0",
+      "end": "0x00408e18",
+      "body_sha256": "c06b5d8a1a0ea050e47b713c09f22272e59089900f35b4f5e2437fd5880ed166"
+    },
+    {
+      "name": "gameplay_reset_state",
+      "address": "0x00408e90",
+      "end": "0x0040900b",
+      "body_sha256": "4c7b7743230943f426cb843ae3c66d3d81ce0a69274425537512825756c752d8"
     },
     {
       "name": "fx_spawn_secondary_projectile",
@@ -375,10 +1003,65 @@
       "body_sha256": "b2dbdf5adee985d07255e9b45da41c327a407fc8e290504a6a65545230c3a594"
     },
     {
+      "name": "projectile_render",
+      "address": "0x0040b570",
+      "end": "0x0040d7f1",
+      "body_sha256": "aa66209a27c31a49f2e29fe838d90df734caad7f3831f8f8e402bb73ba5d3b1c"
+    },
+    {
       "name": "plaguebearer_spread_infection",
       "address": "0x0040d800",
       "end": "0x0040d8be",
       "body_sha256": "10a642600bf113f8091e1d0517cae418c927773dd08063fda61c9761b63c6c97"
+    },
+    {
+      "name": "creature_update_all",
+      "address": "0x0040d8c0",
+      "end": "0x0040e05c",
+      "body_sha256": "26cbc72b1338389cd9ffd58f40565b0f8584b9adbfbf055b0c46a97ce21bc967"
+    },
+    {
+      "name": "terrain_generate",
+      "address": "0x0040e060",
+      "end": "0x0040e6a1",
+      "body_sha256": "5ef704ad7007011b4041cbb59e9b01d5e0e287dfeaaf1899e787b01a7c13b0b7"
+    },
+    {
+      "name": "fx_queue_add_random",
+      "address": "0x0040e6b0",
+      "end": "0x0040e6e2",
+      "body_sha256": "84d159cb5ea784ecdddf2937c5e7b7518d41712a14f1188f1c66eba2679ee760"
+    },
+    {
+      "name": "fx_queue_add_shell",
+      "address": "0x0040e6f0",
+      "end": "0x0040e72b",
+      "body_sha256": "76f126dcb9505dbd8c86e59c4d7bb197f0340d7bd3386c38eea9d0dc55f13297",
+      "build_only": true
+    },
+    {
+      "name": "fx_queue_add_rotated",
+      "address": "0x0040e730",
+      "end": "0x0040e824",
+      "body_sha256": "e385c77180be41c47c9bfb22b7aba4ee0cd809528467f274812257b3719fbb5b"
+    },
+    {
+      "name": "fx_queue_render",
+      "address": "0x0040e830",
+      "end": "0x0040f333",
+      "body_sha256": "46374e739b83f3dc0245aa52f69b6a3749962fd93cc304e8720831182f4dc5bc"
+    },
+    {
+      "name": "terrain_render",
+      "address": "0x0040f340",
+      "end": "0x0040f5d1",
+      "body_sha256": "83a85fc296d090921c07ad0a0f249ae238112ab4cf17b822ea494139bc190491"
+    },
+    {
+      "name": "creature_alloc_slot",
+      "address": "0x0040f5e0",
+      "end": "0x0040f60e",
+      "body_sha256": "153a854bcd076d31e6757e9a9ea23a459465a719b3e712210c021fe573913f92"
     },
     {
       "name": "creature_reset_all",
@@ -393,10 +1076,137 @@
       "body_sha256": "77f4a1d092e4b893bbd26666db850c7f85deedf1eeea560c12be582a739d3aa1"
     },
     {
+      "name": "creature_spawn_random",
+      "address": "0x0040f650",
+      "end": "0x0040fb70",
+      "body_sha256": "e488d5db61703c03ef5342bbdf47300713bf1d998366101a8b9c90403c68b969",
+      "build_only": true
+    },
+    {
+      "name": "creature_spawn",
+      "address": "0x0040fb70",
+      "end": "0x0040fd0a",
+      "body_sha256": "f59cb7721136e95da7e72f23f6d77b12f582a72676ba10e9a974e4618bf74824"
+    },
+    {
+      "name": "creature_render_all",
+      "address": "0x0040fd10",
+      "end": "0x004103a4",
+      "body_sha256": "739518e970a646dc94c1cca844105a295fa7a2d484b023f01a2dc7b6767dfdef",
+      "build_only": true
+    },
+    {
+      "name": "player_render",
+      "address": "0x004103b0",
+      "end": "0x004110a0",
+      "body_sha256": "46deb88d6d2c61a341288eb990730014342707db811c4bad7842b21eb71b9ac1"
+    },
+    {
+      "name": "effect_render_all",
+      "address": "0x004110a0",
+      "end": "0x00412565",
+      "body_sha256": "8542131579efb00715c9cb58f6968dceea35a514aa3015c77ce803babbef8204",
+      "build_only": true
+    },
+    {
       "name": "player_heading_approach_target",
       "address": "0x00412570",
       "end": "0x004126de",
       "body_sha256": "d0d967f1233a8058cf427f4779a408dec422f8fba81ac9a09978a0a853379bcd"
+    },
+    {
+      "name": "player_update",
+      "address": "0x004126e0",
+      "end": "0x0041568a",
+      "body_sha256": "385104aad2e840432873b768cd19aa4bed282b6b85a0ff05e82edbe5d5c7f4ff"
+    },
+    {
+      "name": "perk_selection_screen_update",
+      "address": "0x00415690",
+      "end": "0x00416559",
+      "body_sha256": "9b11ee7981a63f6dc63d71852d45d5e8d5d671e176cd46a0a6b19222245045f2"
+    },
+    {
+      "name": "game_show_message",
+      "address": "0x00416560",
+      "end": "0x004167a6",
+      "body_sha256": "208d332c788bb21cf55991d7783dc08bdc076fe6bf96d0a8fa12e7794b1b2ce1",
+      "build_only": true
+    },
+    {
+      "name": "level_load_next",
+      "address": "0x004167b0",
+      "end": "0x004169bf",
+      "body_sha256": "18db3e6358a7e1d9868629c23aae579df94e8fe8230ffa94adedceb7da57ce5e",
+      "build_only": true
+    },
+    {
+      "name": "freeware_hud_set_row",
+      "address": "0x004169c0",
+      "end": "0x004169fd",
+      "body_sha256": "8548ec808e5882fa39347dcbf6f7ede888b0d8ade03348ff62e93d7e6d3e364d",
+      "build_only": true
+    },
+    {
+      "name": "gameplay_render_hud",
+      "address": "0x00416a00",
+      "end": "0x00417cb8",
+      "body_sha256": "f47c4f2a5f3f4b9971e21662242ba328b18a71e8961730c7440facbdab424f61",
+      "build_only": true
+    },
+    {
+      "name": "freeware_read_name_key",
+      "address": "0x00417cc0",
+      "end": "0x00418190",
+      "body_sha256": "549c1720a841ae1bb7a9b98def057e6b7c62ec06038067c1dab05b05a296fa92",
+      "build_only": true
+    },
+    {
+      "name": "game_frame_update",
+      "address": "0x00418190",
+      "end": "0x0041e2e4",
+      "body_sha256": "3decabce76335112fa8905f485ef70272b8ae10b959212e50489fe4b3c64887d"
+    },
+    {
+      "name": "game_credits_update",
+      "address": "0x0041e330",
+      "end": "0x0041ef9d",
+      "body_sha256": "e543d23707756039fcf10ddadfc638bebcc3ecd398d87192e9d03f63d63552ab",
+      "build_only": true
+    },
+    {
+      "name": "freeware_overlay_begin",
+      "address": "0x0041efa0",
+      "end": "0x0041f230",
+      "body_sha256": "d3a2b8ce8832aaa9459a56df8db194fd8ef4b918550c36322b594a27929faeb8",
+      "build_only": true
+    },
+    {
+      "name": "freeware_draw_loading_progress",
+      "address": "0x0041f230",
+      "end": "0x0041f480",
+      "body_sha256": "76d9521aa16e0fe24a345e32eb7a81fc5aa8eb00fbfd979bf9dae9c9a6cd2719",
+      "build_only": true,
+      "evidence": "WinMain calls this with successive progress fractions between asset loads. It draws the Crimsonland logo and a bullet-textured progress bar before presenting the frame."
+    },
+    {
+      "name": "game_highscores_update",
+      "address": "0x0041f480",
+      "end": "0x0041fb93",
+      "body_sha256": "d7af541e04cb053f4252809122b37f74311b5bf9599dfa46d3d998ab0e063a75",
+      "build_only": true
+    },
+    {
+      "name": "audio_resume_all",
+      "address": "0x0041fba0",
+      "end": "0x0041fbfa",
+      "body_sha256": "f7034be45ba153439fdb9bfe1c93266d6f0f04618232cd1cd71fb9b1cfc1b040"
+    },
+    {
+      "name": "audio_suspend_all",
+      "address": "0x0041fc00",
+      "end": "0x0041fc3f",
+      "body_sha256": "20af6b0ed308fad41e694e37ab6625c8bf5fb7a420d4ca6cdaf3a5243f4eedf5"
     },
     {
       "name": "console_cmd_load_texture",
@@ -405,16 +1215,72 @@
       "body_sha256": "6549206901fee942d1a83bc6bacf3fe0d36b5a22a9a213f181da97829a8daa58"
     },
     {
+      "name": "freeware_console_cmd_loadtile",
+      "address": "0x0041fd30",
+      "end": "0x00420127",
+      "body_sha256": "c3a86d61be19808f0dc2f5c02661e6b57f60e3998244358d0b93c8dea3e14bcb",
+      "build_only": true
+    },
+    {
       "name": "console_cmd_set_resource_paq",
       "address": "0x00420130",
       "end": "0x004201ce",
       "body_sha256": "35dd189033b83e4cd43c5cf113b81d13e6cb291a8b0c630405eb571d17f64935"
     },
     {
+      "name": "freeware_console_cmd_givegun",
+      "address": "0x004201d0",
+      "end": "0x00420200",
+      "body_sha256": "4b62ba8d777462d9c37b1cc8fca496611be92282b4411b2a1fceb770a2576901",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_playsample",
+      "address": "0x00420200",
+      "end": "0x004202ba",
+      "body_sha256": "cb29356ec97cb1adecd4e18660b133273f4a4832241bbf552b0c0a1f2a5d163e",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_setcreaturecolor",
+      "address": "0x004202c0",
+      "end": "0x00420497",
+      "body_sha256": "ef30e5b7c6514758a547ee47ca34cc09ff8d76bc138cdf8e8eadf559c7a0d2fb",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_setcreaturehealth",
+      "address": "0x004204a0",
+      "end": "0x004204e6",
+      "body_sha256": "33cf0c04bd9fea61d77b0dec717de9d01216f342747ecfc85a13871efcdc83ef",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_spawncreature",
+      "address": "0x004204f0",
+      "end": "0x004205b6",
+      "body_sha256": "9b278f8baab10d96c85569d6dd5680981969b5c0337164e4671f49d0c532ad9c",
+      "build_only": true
+    },
+    {
       "name": "console_cmd_tell_time_survived",
       "address": "0x004205c0",
       "end": "0x004205df",
       "body_sha256": "b16fb3ca9a2d18254fc592b437bfa7be71c7091e376ba145dd7350ee073af049"
+    },
+    {
+      "name": "freeware_console_cmd_mergehighs",
+      "address": "0x004205e0",
+      "end": "0x0042060e",
+      "body_sha256": "412e95356b09dc50f912ab345e3ed1da5db65a459b23bc630d5c2c1c341809f4",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_cmd_giveperk",
+      "address": "0x00420610",
+      "end": "0x00420640",
+      "body_sha256": "49f8b51a83b3e5e25276cc123f8c26e89233bd44e2beafe47798784d0f6218e0",
+      "build_only": true
     },
     {
       "name": "console_cmd_open_url",
@@ -427,9 +1293,180 @@
       "address": "0x004206d0",
       "end": "0x0042070a",
       "body_sha256": "af572d284a4710cc8b4278da92ec149dd496406efde73a78d4b69067614d18ab"
+    },
+    {
+      "name": "crimsonland_main",
+      "address": "0x00420710",
+      "end": "0x0042169a",
+      "body_sha256": "5dfffcb287020fd7c69cf5e672c9088980fd10346de2549adcf23195caabbe96",
+      "evidence": "The CRT entry calls this four-argument WinMain at 0x00422c02 with GetModuleHandleA(NULL) and the startup command line. It opens Grim, loads resources and tears down the game; ret 0x10 releases its four arguments."
+    },
+    {
+      "name": "freeware_level_list_dtor",
+      "address": "0x004216a0",
+      "end": "0x004216c2",
+      "body_sha256": "d5332de3e865e1fc7ca435d7997dc2889f34329fc6b8f9b719956530518235d5",
+      "build_only": true
+    },
+    {
+      "name": "msvc6_vector_pointer_size",
+      "address": "0x004216d0",
+      "end": "0x004216e3",
+      "body_sha256": "ae43e511423ed41f29d85edaf2f02b5a752e32ebbe45dd99456242b3c196c50d",
+      "build_only": true,
+      "evidence": "VC6's compiled std::vector pointer specialization matches the entire native callee, including the complete extent and every instruction outside relocation operands. Level file loading calls it with its native vector."
+    },
+    {
+      "name": "msvc6_vector_pointer_destroy_range",
+      "address": "0x004216f0",
+      "end": "0x004216f3",
+      "body_sha256": "1d10894625976bca9d8906f3ecf1e766b94e9219ec3bf1c30e02feea5e18e45a",
+      "build_only": true,
+      "evidence": "VC6 /O2 <vector> object and trigger pointer specializations match this entire folded helper at both native push_back call sites."
+    },
+    {
+      "name": "msvc6_vector_pointer_insert_count",
+      "address": "0x00421700",
+      "end": "0x00421909",
+      "body_sha256": "f39eb5eee1f902c061919e4f73747c79218b17a0009ae8d983da86220366cd4e",
+      "build_only": true,
+      "evidence": "VC6's compiled std::vector pointer specialization matches the entire native callee, including the complete extent and every instruction outside relocation operands. Level file loading calls it with its native vector."
+    },
+    {
+      "name": "msvc6_vector_pointer_uninitialized_copy",
+      "address": "0x00421910",
+      "end": "0x0042193e",
+      "body_sha256": "cd4a9868c5f09d3aab7114d82e53c9fada114bf1d9c0afdb610bb7cfac0898b8",
+      "build_only": true,
+      "evidence": "VC6 /O2 <vector> object and trigger pointer specializations match this entire folded helper at both native push_back call sites."
+    },
+    {
+      "name": "msvc6_vector_pointer_uninitialized_fill",
+      "address": "0x00421940",
+      "end": "0x00421965",
+      "body_sha256": "68b9cf63d7e82dffd1c37a27f85a1a8ae9cf324148c81af1ec69ac2916c3cadb",
+      "build_only": true,
+      "evidence": "VC6 /O2 <vector> object and trigger pointer specializations match this entire folded helper at both native push_back call sites."
+    },
+    {
+      "name": "msvc6_vector_pointer_construct",
+      "address": "0x00421970",
+      "end": "0x00421981",
+      "body_sha256": "b81506b867e4a18d41e0e2e4ec0582d8ba5495b2baa1263ba034086158f5a707",
+      "build_only": true,
+      "evidence": "VC6 /O2 <vector> object and trigger pointer specializations match this entire folded helper at both native push_back call sites."
+    },
+    {
+      "name": "crt_toupper",
+      "address": "0x00421a07",
+      "end": "0x00421ad3",
+      "body_sha256": "354d19ccbb36939e642659b8dfc118871572d399fa49045e2f9325cf0dba652e"
+    },
+    {
+      "name": "crt_fread_nolock",
+      "address": "0x00422432",
+      "end": "0x0042251a",
+      "body_sha256": "618c6701c22edb140a8fa84c579b24b6061cc61ebab8c74bd88c5e9a5cedd892"
+    },
+    {
+      "name": "crt_ftell_nolock",
+      "address": "0x004228ee",
+      "end": "0x00422a46",
+      "body_sha256": "178f2994c8df02e9cc08c7da71e5687a93101db187044faa385d99dd415f5289"
+    },
+    {
+      "name": "crt_fseek_nolock",
+      "address": "0x00422a46",
+      "end": "0x00422ad2",
+      "body_sha256": "93c0f487b228cc9d60a968405dbc9d5f36c0ed57820ca37f1c5098c8cebc15a9"
+    },
+    {
+      "name": "crt_srand",
+      "address": "0x0042240a",
+      "end": "0x00422414",
+      "body_sha256": "111a274544b1a62609b2f1d0f9c2acd5b6de3e728adceddb9e5b6d19458182fe",
+      "evidence": "0x421496 seeds the LCG from QueryPerformanceCounter. The following crt_rand reads and updates the same DWORD with the MSVCRT multipliers."
+    },
+    {
+      "name": "freeware_editor_offset_destroy",
+      "address": "0x0041e320",
+      "end": "0x0041e321",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e",
+      "build_only": true,
+      "evidence": "The editor pushes 0x0041e320 at 0x004189cb and calls atexit at 0x004189ed while initializing its two-component static offset at 0x00438808. The callback is a single RET, as in 1.3.0."
     }
   ],
   "data": [
+    {
+      "name": "??0freeware_music_stream@@QAE@XZ",
+      "address": "0x00401000",
+      "reference": "0x004051bf",
+      "bytes": "e83cbeffff",
+      "build_only": true
+    },
+    {
+      "name": "?init@freeware_music_stream@@QAEXXZ",
+      "address": "0x00401010",
+      "reference": "0x0040523f",
+      "bytes": "e8ccbdffff",
+      "build_only": true
+    },
+    {
+      "name": "?open@freeware_music_stream@@QAE_NPBD@Z",
+      "address": "0x00401040",
+      "reference": "0x0040543c",
+      "bytes": "e8ffbbffff",
+      "build_only": true
+    },
+    {
+      "name": "?set_volume@freeware_music_stream@@QAEXM@Z",
+      "address": "0x00401120",
+      "reference": "0x00405874",
+      "bytes": "e8a7b8ffff",
+      "build_only": true
+    },
+    {
+      "name": "?run@freeware_music_stream@@QAEXXZ",
+      "address": "0x00401160",
+      "reference": "0x0041fbca",
+      "bytes": "e89115feff",
+      "build_only": true
+    },
+    {
+      "name": "?pause@freeware_music_stream@@QAEXXZ",
+      "address": "0x00401180",
+      "reference": "0x0041fc21",
+      "bytes": "e85a15feff",
+      "build_only": true
+    },
+    {
+      "name": "?stop@freeware_music_stream@@QAEXXZ",
+      "address": "0x004011a0",
+      "reference": "0x00405923",
+      "bytes": "e878b8ffff",
+      "build_only": true
+    },
+    {
+      "name": "?duration@freeware_music_stream@@QAE_JXZ",
+      "address": "0x004011c0",
+      "reference": "0x004059ed",
+      "bytes": "e8ceb7ffff",
+      "build_only": true
+    },
+    {
+      "name": "?position@freeware_music_stream@@QAE_JXZ",
+      "address": "0x004011f0",
+      "reference": "0x004059de",
+      "bytes": "e80db8ffff",
+      "build_only": true
+    },
+    {
+      "name": "?seek@freeware_music_stream@@QAE_J_J@Z",
+      "address": "0x00401220",
+      "reference": "0x00405864",
+      "bytes": "e8b7b9ffff",
+      "build_only": true
+    },
     {
       "name": "console_cmd_arg_get",
       "address": "0x004018c0",
@@ -551,6 +1588,13 @@
       "bytes": "e90b000000"
     },
     {
+      "name": "freeware_last_score_global_init",
+      "address": "0x00403650",
+      "reference": "0x00403640",
+      "bytes": "e90b000000",
+      "build_only": true
+    },
+    {
       "name": "?0perk_meta_cpp_t",
       "address": "0x004036c0",
       "reference": "0x004036a5",
@@ -561,12 +1605,6 @@
       "address": "0x004036e0",
       "reference": "0x004036a0",
       "bytes": "68e0364000"
-    },
-    {
-      "name": "unused_console_prefix_vec2_global_init",
-      "address": "0x00403770",
-      "reference": "0x00403760",
-      "bytes": "e90b000000"
     },
     {
       "name": "secondary_projectile_pool_global_init",
@@ -629,16 +1667,149 @@
       "bytes": "e90b000000"
     },
     {
+      "name": "??0freeware_level_map@@QAE@XZ",
+      "address": "0x00403b90",
+      "reference": "0x00421319",
+      "bytes": "e87228feff",
+      "build_only": true
+    },
+    {
+      "name": "??_F?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAEXXZ",
+      "address": "0x00403bf0",
+      "reference": "0x00403b9b",
+      "bytes": "68f03b4000",
+      "build_only": true
+    },
+    {
+      "name": "?clear@freeware_level_map@@QAEXXZ",
+      "address": "0x00403c10",
+      "reference": "0x00403cd4",
+      "bytes": "e837ffffff",
+      "build_only": true
+    },
+    {
+      "name": "??1freeware_level_map@@QAE@XZ",
+      "address": "0x00403cd0",
+      "reference": "0x0042150a",
+      "bytes": "e8c127feff",
+      "build_only": true
+    },
+    {
+      "name": "?arm_triggers@freeware_level_map@@QAEXXZ",
+      "address": "0x004043e0",
+      "reference": "0x004169af",
+      "bytes": "e82cdafeff",
+      "build_only": true
+    },
+    {
+      "name": "?update_triggers@freeware_level_map@@QAEXXZ",
+      "address": "0x00404410",
+      "reference": "0x0041896b",
+      "bytes": "e8a0bafeff",
+      "build_only": true
+    },
+    {
+      "name": "?set_texture@freeware_level_map@@QAEXH@Z",
+      "address": "0x00404bb0",
+      "reference": "0x00418e9d",
+      "bytes": "e80ebdfeff",
+      "build_only": true
+    },
+    {
       "name": "creature_find_nearest",
       "address": "0x00408e20",
       "reference": "0x00409300",
       "bytes": "e81bfbffff"
     },
     {
+      "name": "freeware_blood",
+      "address": "0x0040e6b0",
+      "reference": "0x0041c9d7",
+      "bytes": "e8d41cffff",
+      "build_only": true
+    },
+    {
       "name": "texture_get_or_load",
       "address": "0x0041fc80",
       "reference": "0x0041fd23",
       "bytes": "e858ffffff"
+    },
+    {
+      "name": "??1?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QAE@XZ",
+      "address": "0x004216a0",
+      "reference": "0x00403b96",
+      "bytes": "68a0164200",
+      "build_only": true
+    },
+    {
+      "name": "?size@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@QBEIXZ",
+      "address": "0x004216d0",
+      "reference": "0x00403f72",
+      "bytes": "e859d70100",
+      "build_only": true
+    },
+    {
+      "name": "?_Destroy@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEXPAPAUfreeware_level_object@@0@Z",
+      "address": "0x004216f0",
+      "reference": "0x00404c72",
+      "bytes": "e879ca0100",
+      "build_only": true
+    },
+    {
+      "name": "?_Destroy@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEXPAPAUfreeware_level_trigger@@0@Z",
+      "address": "0x004216f0",
+      "reference": "0x004042db",
+      "bytes": "e810d40100",
+      "build_only": true
+    },
+    {
+      "name": "?insert@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@QAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
+      "address": "0x00421700",
+      "reference": "0x00403e95",
+      "bytes": "e866d80100",
+      "build_only": true
+    },
+    {
+      "name": "?_Ucopy@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEPAPAUfreeware_level_object@@PBQAU3@0PAPAU3@@Z",
+      "address": "0x00421910",
+      "reference": "0x00404c63",
+      "bytes": "e8a8cc0100",
+      "build_only": true
+    },
+    {
+      "name": "?_Ucopy@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEPAPAUfreeware_level_trigger@@PBQAU3@0PAPAU3@@Z",
+      "address": "0x00421910",
+      "reference": "0x004042cc",
+      "bytes": "e83fd60100",
+      "build_only": true
+    },
+    {
+      "name": "?_Ufill@?$vector@PAUfreeware_level_object@@V?$allocator@PAUfreeware_level_object@@@std@@@std@@IAEXPAPAUfreeware_level_object@@IABQAU3@@Z",
+      "address": "0x00421940",
+      "reference": "0x00404c53",
+      "bytes": "e8e8cc0100",
+      "build_only": true
+    },
+    {
+      "name": "?_Ufill@?$vector@PAUfreeware_level_trigger@@V?$allocator@PAUfreeware_level_trigger@@@std@@@std@@IAEXPAPAUfreeware_level_trigger@@IABQAU3@@Z",
+      "address": "0x00421940",
+      "reference": "0x004042bc",
+      "bytes": "e87fd60100",
+      "build_only": true
+    },
+    {
+      "name": "?_Construct@std@@YAXPAPAUfreeware_level_object@@ABQAU2@@Z",
+      "address": "0x00421970",
+      "reference": "0x00404c37",
+      "bytes": "e834cd0100",
+      "build_only": true
+    },
+    {
+      "name": "?_Construct@std@@YAXPAPAUfreeware_level_trigger@@ABQAU2@@Z",
+      "address": "0x00421970",
+      "reference": "0x004042a0",
+      "bytes": "e8cbd60100",
+      "build_only": true
     },
     {
       "name": "atexit",
@@ -651,6 +1822,13 @@
       "address": "0x00421b81",
       "reference": "0x00402ad0",
       "bytes": "e8acf00100"
+    },
+    {
+      "name": "freeware_atoi",
+      "address": "0x00421c17",
+      "reference": "0x00401a15",
+      "bytes": "e8fd010200",
+      "build_only": true
     },
     {
       "name": "crt_fclose",
@@ -720,6 +1898,12 @@
       "build_only": true
     },
     {
+      "name": "crt_atof_l",
+      "address": "0x00422aec",
+      "reference": "0x004202eb",
+      "bytes": "e8fc270000"
+    },
+    {
       "name": "HlinkNavigateString",
       "address": "0x0042c2e0",
       "reference": "0x00420691",
@@ -750,10 +1934,260 @@
       "bytes": "ff1508d04200"
     },
     {
+      "name": "IID_IGraphBuilder",
+      "address": "0x0042d4d0",
+      "reference": "0x0040106d",
+      "bytes": "68d0d44200",
+      "build_only": true
+    },
+    {
+      "name": "IID_IMediaSeeking",
+      "address": "0x0042d4e0",
+      "reference": "0x0040109f",
+      "bytes": "68e0d44200",
+      "build_only": true
+    },
+    {
+      "name": "IID_IBasicAudio",
+      "address": "0x0042d4f0",
+      "reference": "0x004010af",
+      "bytes": "68f0d44200",
+      "build_only": true
+    },
+    {
+      "name": "IID_IMediaControl",
+      "address": "0x0042d500",
+      "reference": "0x0040108f",
+      "bytes": "6800d54200",
+      "build_only": true
+    },
+    {
+      "name": "TIME_FORMAT_MEDIA_TIME",
+      "address": "0x0042d510",
+      "reference": "0x004010e8",
+      "bytes": "6810d54200",
+      "build_only": true
+    },
+    {
+      "name": "CLSID_FilterGraph",
+      "address": "0x0042d520",
+      "reference": "0x00401076",
+      "bytes": "6820d54200",
+      "build_only": true
+    },
+    {
+      "name": "screen_width_f",
+      "address": "0x0042f0c0",
+      "reference": "0x004027ac",
+      "bytes": "d905c0f04200"
+    },
+    {
       "name": "console_empty_arg",
       "address": "0x0042f0c8",
       "reference": "0x004018de",
       "bytes": "a1c8f04200"
+    },
+    {
+      "name": "freeware_console_creature_health",
+      "address": "0x0042f460",
+      "reference": "0x004204cd",
+      "bytes": "a360f44200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_rank",
+      "address": "0x0042fb88",
+      "reference": "0x0041d6af",
+      "bytes": "a388fb4200",
+      "build_only": true
+    },
+    {
+      "name": "time_scale_factor",
+      "address": "0x0042fb8c",
+      "reference": "0x00412b0d",
+      "bytes": "d9058cfb4200",
+      "build_only": true
+    },
+    {
+      "name": "screen_width",
+      "address": "0x0042fb90",
+      "reference": "0x004182c1",
+      "bytes": "db0590fb4200",
+      "build_only": true
+    },
+    {
+      "name": "screen_height",
+      "address": "0x0042fb94",
+      "reference": "0x004182f7",
+      "bytes": "da2d94fb4200",
+      "build_only": true
+    },
+    {
+      "name": "screenshot_file_index",
+      "address": "0x0042fb98",
+      "reference": "0x004181c0",
+      "bytes": "8b0d98fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_transition_alpha",
+      "address": "0x0042fb9c",
+      "reference": "0x00418523",
+      "bytes": "c7059cfb42000000803f",
+      "build_only": true
+    },
+    {
+      "name": "freeware_menu_music_pending",
+      "address": "0x0042fba0",
+      "reference": "0x00419860",
+      "bytes": "a0a0fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_id",
+      "address": "0x0042fba4",
+      "reference": "0x00408f29",
+      "bytes": "a3a4fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_page",
+      "address": "0x0042fba8",
+      "reference": "0x00408f2e",
+      "bytes": "a3a8fb4200",
+      "build_only": true
+    },
+    {
+      "name": "game_state_id",
+      "address": "0x0042fbac",
+      "reference": "0x0041828e",
+      "bytes": "a1acfb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_day",
+      "address": "0x0042fbb0",
+      "reference": "0x00408f33",
+      "bytes": "a3b0fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_transition_pending",
+      "address": "0x0042fbb4",
+      "reference": "0x0041851c",
+      "bytes": "c605b4fb420001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_fps_min",
+      "address": "0x0042fbb8",
+      "reference": "0x0041e18c",
+      "bytes": "d905b8fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_fire",
+      "address": "0x0042fbbc",
+      "reference": "0x004069ca",
+      "bytes": "8b15bcfb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_freeze",
+      "address": "0x0042fbc0",
+      "reference": "0x004069e6",
+      "bytes": "a1c0fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_weapon",
+      "address": "0x0042fbc4",
+      "reference": "0x00406a00",
+      "bytes": "8b0dc4fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_nuke",
+      "address": "0x0042fbc8",
+      "reference": "0x00406a4a",
+      "bytes": "8b15c8fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_shield",
+      "address": "0x0042fbcc",
+      "reference": "0x00406a66",
+      "bytes": "a1ccfb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_time",
+      "address": "0x0042fbd0",
+      "reference": "0x00406a80",
+      "bytes": "8b0dd0fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_arena_width",
+      "address": "0x0042fbd8",
+      "reference": "0x00406924",
+      "bytes": "a1d8fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_arena_height",
+      "address": "0x0042fbdc",
+      "reference": "0x00406955",
+      "bytes": "8b15dcfb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_started",
+      "address": "0x0042fbe0",
+      "reference": "0x0041bc71",
+      "bytes": "c605e0fb420001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_fading",
+      "address": "0x0042fbe1",
+      "reference": "0x004058ca",
+      "bytes": "c605e1fb420001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_light",
+      "address": "0x0042fbe4",
+      "reference": "0x00418ae7",
+      "bytes": "d905e4fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_alpha",
+      "address": "0x0042fbe8",
+      "reference": "0x00418b28",
+      "bytes": "d905e8fb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_radius",
+      "address": "0x0042fbec",
+      "reference": "0x0041911d",
+      "bytes": "d805ecfb4200",
+      "build_only": true
+    },
+    {
+      "name": "freeware_console_creature_size",
+      "address": "0x0042fbf0",
+      "reference": "0x0042056e",
+      "bytes": "db05f0fb4200",
+      "build_only": true
+    },
+    {
+      "name": "unused_console_prefix_vec2",
+      "address": "0x00435b08",
+      "reference": "0x00401260",
+      "bytes": "c705085b430000000000"
     },
     {
       "name": "console_exec_line_buf",
@@ -762,10 +2196,163 @@
       "bytes": "68105f4300"
     },
     {
+      "name": "freeware_console_grim",
+      "address": "0x00436110",
+      "reference": "0x004181f3",
+      "bytes": "8b0d10614300",
+      "build_only": true
+    },
+    {
+      "name": "frame_dt_copy",
+      "address": "0x00436114",
+      "reference": "0x00418321",
+      "bytes": "d91514614300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_real_clock",
+      "address": "0x00436118",
+      "reference": "0x00418327",
+      "bytes": "d90518614300",
+      "build_only": true
+    },
+    {
+      "name": "quit_requested",
+      "address": "0x0043611c",
+      "reference": "0x0041bb73",
+      "bytes": "c6051c61430001",
+      "build_only": true
+    },
+    {
+      "name": "s_empty_string",
+      "address": "0x00436128",
+      "reference": "0x00402087",
+      "bytes": "6828614300"
+    },
+    {
+      "name": "freeware_console",
+      "address": "0x00436570",
+      "reference": "0x00418212",
+      "bytes": "b970654300",
+      "build_only": true
+    },
+    {
+      "name": "console_open_flag",
+      "address": "0x00436598",
+      "reference": "0x004126e0",
+      "bytes": "a098654300",
+      "build_only": true
+    },
+    {
       "name": "grim_dll_module_handle",
       "address": "0x004369a0",
       "reference": "0x00402fbd",
       "bytes": "a3a0694300"
+    },
+    {
+      "name": "freeware_sfx_module",
+      "address": "0x004369a4",
+      "reference": "0x004030fd",
+      "bytes": "a3a4694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_init",
+      "address": "0x004369a8",
+      "reference": "0x00403122",
+      "bytes": "a3a8694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_shutdown",
+      "address": "0x004369ac",
+      "reference": "0x00403135",
+      "bytes": "a3ac694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_paq",
+      "address": "0x004369b0",
+      "reference": "0x0040313c",
+      "bytes": "a3b0694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_load",
+      "address": "0x004369b4",
+      "reference": "0x0040315a",
+      "bytes": "a3b4694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_free",
+      "address": "0x004369b8",
+      "reference": "0x0040316d",
+      "bytes": "a3b8694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_get",
+      "address": "0x004369bc",
+      "reference": "0x00403174",
+      "bytes": "a3bc694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_play",
+      "address": "0x004369c0",
+      "reference": "0x004056a0",
+      "bytes": "ff15c0694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_stop_channel",
+      "address": "0x004369c4",
+      "reference": "0x004031a5",
+      "bytes": "a3c4694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_is_playing",
+      "address": "0x004369c8",
+      "reference": "0x0040571d",
+      "bytes": "ff15c8694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_paused",
+      "address": "0x004369cc",
+      "reference": "0x004031ca",
+      "bytes": "a3cc694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_volume",
+      "address": "0x004369d0",
+      "reference": "0x004056bf",
+      "bytes": "ff15d0694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_pan",
+      "address": "0x004369d4",
+      "reference": "0x004031e4",
+      "bytes": "a3d4694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_position",
+      "address": "0x004369d8",
+      "reference": "0x00403202",
+      "bytes": "a3d8694300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_set_frequency",
+      "address": "0x004369dc",
+      "reference": "0x0040573d",
+      "bytes": "ff15dc694300",
+      "build_only": true
     },
     {
       "name": "unused_fx_queue_random_prefix_color",
@@ -774,16 +2361,87 @@
       "bytes": "c705e06943000000803f"
     },
     {
-      "name": "unused_console_prefix_vec2",
+      "name": "freeware_pickup_position",
       "address": "0x004369f0",
-      "reference": "0x00403770",
-      "bytes": "c705f069430000000000"
+      "reference": "0x00406976",
+      "bytes": "a3f0694300",
+      "build_only": true
+    },
+    {
+      "name": "sfx_cooldown_table",
+      "address": "0x004369f8",
+      "reference": "0x00405666",
+      "bytes": "d90495f8694300"
+    },
+    {
+      "name": "freeware_corpse_positions",
+      "address": "0x00436af8",
+      "reference": "0x0040e8b5",
+      "bytes": "bdf86a4300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_table",
+      "address": "0x00436cf8",
+      "reference": "0x0041f863",
+      "bytes": "bf1c6d4300",
+      "offset": 36,
+      "build_only": true
+    },
+    {
+      "name": "freeware_ui_buffer",
+      "address": "0x004382d8",
+      "reference": "0x004181cc",
+      "bytes": "68d8824300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_player_texture",
+      "address": "0x0043831c",
+      "reference": "0x00410543",
+      "bytes": "a11c834300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_creature_spawn_tint",
+      "address": "0x00438320",
+      "reference": "0x00420444",
+      "bytes": "a320834300",
+      "build_only": true
     },
     {
       "name": "unused_fx_rotated_scale_prefix_color",
       "address": "0x00438320",
       "reference": "0x00403300",
       "bytes": "c705208343000000003f"
+    },
+    {
+      "name": "freeware_mouse_dy",
+      "address": "0x00438330",
+      "reference": "0x00418252",
+      "bytes": "d91d30834300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_mouse_dx",
+      "address": "0x00438334",
+      "reference": "0x00418247",
+      "bytes": "d91d34834300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_state",
+      "address": "0x00438338",
+      "reference": "0x004055b0",
+      "bytes": "bf38834300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_sizes",
+      "address": "0x00438378",
+      "reference": "0x0040e9e7",
+      "bytes": "d904b578834300",
+      "build_only": true
     },
     {
       "name": "player_state_table",
@@ -793,16 +2451,92 @@
       "offset": 124
     },
     {
+      "name": "freeware_option_labels",
+      "address": "0x00438788",
+      "reference": "0x0041ad34",
+      "bytes": "8b0d88874300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bomb_position",
+      "address": "0x004387b8",
+      "reference": "0x0041bf01",
+      "bytes": "890db8874300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_first_kill_position",
+      "address": "0x004387c0",
+      "reference": "0x004127d4",
+      "bytes": "d825c0874300",
+      "build_only": true
+    },
+    {
       "name": "unused_effect_uv_strip16_prefix_vec2",
       "address": "0x004387c0",
       "reference": "0x00403430",
       "bytes": "c705c087430000000000"
     },
     {
+      "name": "freeware_main_labels",
+      "address": "0x004387c8",
+      "reference": "0x004198ae",
+      "bytes": "8b15c8874300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_id",
+      "address": "0x004387e8",
+      "reference": "0x004069da",
+      "bytes": "8915e8874300",
+      "build_only": true
+    },
+    {
       "name": "highscore_record_shots_fired",
       "address": "0x004387f0",
       "reference": "0x00409269",
       "bytes": "8b35f0874300"
+    },
+    {
+      "name": "highscore_record_hits",
+      "address": "0x004387f4",
+      "reference": "0x0040975a",
+      "bytes": "ff05f4874300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_kills",
+      "address": "0x004387f8",
+      "reference": "0x0041dddd",
+      "bytes": "8b0df8874300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_aim_screen",
+      "address": "0x00438800",
+      "reference": "0x00413826",
+      "bytes": "d90500884300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_offset",
+      "address": "0x00438808",
+      "reference": "0x004189d3",
+      "bytes": "c7050888430000000000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_tile_header",
+      "address": "0x00438810",
+      "reference": "0x0041fe12",
+      "bytes": "6810884300",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_count",
+      "address": "0x00438824",
+      "reference": "0x00408d3d",
+      "bytes": "f73d24884300"
     },
     {
       "name": "fx_queue",
@@ -812,11 +2546,39 @@
       "offset": 8
     },
     {
+      "name": "freeware_last_score",
+      "address": "0x00439228",
+      "reference": "0x0041f8d6",
+      "bytes": "b828924300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_name_buffer",
+      "address": "0x00439228",
+      "reference": "0x0041dd77",
+      "bytes": "889828924300",
+      "build_only": true
+    },
+    {
       "name": "projectile_pool",
       "address": "0x00439260",
       "reference": "0x004039f0",
       "bytes": "b88c924300",
       "offset": 44
+    },
+    {
+      "name": "freeware_ice_tint",
+      "address": "0x0043bb60",
+      "reference": "0x00406013",
+      "bytes": "a160bb4300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bullet_texture",
+      "address": "0x0043bb74",
+      "reference": "0x00415987",
+      "bytes": "8b1574bb4300",
+      "build_only": true
     },
     {
       "name": "secondary_projectile_pool",
@@ -826,16 +2588,114 @@
       "offset": 8
     },
     {
+      "name": "freeware_draw_point",
+      "address": "0x0043c578",
+      "reference": "0x0040fe19",
+      "bytes": "a378c54300",
+      "build_only": true
+    },
+    {
+      "name": "perk_choice_flags",
+      "address": "0x0043c598",
+      "reference": "0x00408cf8",
+      "bytes": "bf98c54300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bonus_count",
+      "address": "0x0043c5c8",
+      "reference": "0x0040698a",
+      "bytes": "f73dc8c54300",
+      "build_only": true
+    },
+    {
       "name": "unused_aim64_prefix_color",
       "address": "0x0043c5d0",
       "reference": "0x004032c0",
       "bytes": "c705d0c5430000000000"
     },
     {
+      "name": "freeware_fps",
+      "address": "0x0043c5e0",
+      "reference": "0x0041e1d7",
+      "bytes": "d81495e0c54300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_blood_texture",
+      "address": "0x0043c6ac",
+      "reference": "0x0040ed2f",
+      "bytes": "8b15acc64300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_blood_positions",
+      "address": "0x0043c6b0",
+      "reference": "0x0040ed98",
+      "bytes": "beb0c64300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_ice_texture",
+      "address": "0x0043c8b0",
+      "reference": "0x00406098",
+      "bytes": "a1b0c84300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_angles",
+      "address": "0x0043c8b4",
+      "reference": "0x0040e9ad",
+      "bytes": "8b04b5b4c84300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_atlas_uv",
+      "address": "0x0043c9b8",
+      "reference": "0x0040fe62",
+      "bytes": "8b04fdb8c94300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_current_map",
+      "address": "0x0043cbb8",
+      "reference": "0x00412f8f",
+      "bytes": "8b0db8cb4300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_camera",
+      "address": "0x0043cbc0",
+      "reference": "0x0041382c",
+      "bytes": "d825c0cb4300",
+      "build_only": true
+    },
+    {
       "name": "unused_fx_queue_random_prefix_vec2",
       "address": "0x0043cbc0",
       "reference": "0x004033d0",
       "bytes": "c705c0cb430000000000"
+    },
+    {
+      "name": "freeware_shell_positions",
+      "address": "0x00440dc8",
+      "reference": "0x0040f269",
+      "bytes": "bec80d4400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_snow_y",
+      "address": "0x00440ec8",
+      "reference": "0x00419e63",
+      "bytes": "bec80e4400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_key",
+      "address": "0x00441ec8",
+      "reference": "0x00406e8c",
+      "bytes": "8881c81e4400",
+      "build_only": true
     },
     {
       "name": "perk_meta_table",
@@ -850,11 +2710,156 @@
       "bytes": "c705802344000000003f"
     },
     {
+      "name": "freeware_corpse_species",
+      "address": "0x00442390",
+      "reference": "0x0040e8bf",
+      "bytes": "8b04b590234400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_bullet_icon",
+      "address": "0x00442490",
+      "reference": "0x00416b05",
+      "bytes": "8b1590244400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_colors",
+      "address": "0x00442498",
+      "reference": "0x0040e8ba",
+      "bytes": "bf9c244400",
+      "offset": 4,
+      "build_only": true
+    },
+    {
       "name": "config_blob",
-      "address": "0x0044271c",
-      "reference": "0x00405ddd",
-      "bytes": "8b15d0284400",
-      "offset": 436
+      "address": "0x00442898",
+      "reference": "0x0040629f",
+      "bytes": "6898284400"
+    },
+    {
+      "name": "freeware_music_disabled",
+      "address": "0x0044289a",
+      "reference": "0x0041ae10",
+      "bytes": "a09a284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_shadows",
+      "address": "0x0044289b",
+      "reference": "0x0041ba9f",
+      "bytes": "a09b284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_shell_marks",
+      "address": "0x0044289c",
+      "reference": "0x0041aedd",
+      "bytes": "a09c284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_filter_sharp",
+      "address": "0x0044289d",
+      "reference": "0x0041ae4b",
+      "bytes": "a09d284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_glow",
+      "address": "0x0044289e",
+      "reference": "0x0041aeac",
+      "bytes": "a09e284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_smoke",
+      "address": "0x0044289f",
+      "reference": "0x0041baaf",
+      "bytes": "8a0d9f284400",
+      "build_only": true
+    },
+    {
+      "name": "config_player_count",
+      "address": "0x004428a0",
+      "reference": "0x00408d29",
+      "bytes": "a1a0284400"
+    },
+    {
+      "name": "freeware_show_fps",
+      "address": "0x004428a4",
+      "reference": "0x0041ae7c",
+      "bytes": "a0a4284400",
+      "build_only": true
+    },
+    {
+      "name": "config_game_mode",
+      "address": "0x004428a8",
+      "reference": "0x0040fbc3",
+      "bytes": "a1a8284400"
+    },
+    {
+      "name": "config_movement_schemes",
+      "address": "0x004428ac",
+      "reference": "0x00412bcf",
+      "bytes": "8b048dac284400",
+      "build_only": true
+    },
+    {
+      "name": "config_aim_schemes",
+      "address": "0x004428b4",
+      "reference": "0x0041381b",
+      "bytes": "8b048db4284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_configuring",
+      "address": "0x004428bc",
+      "reference": "0x0041ad40",
+      "bytes": "a1bc284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pad_threshold",
+      "address": "0x004428c0",
+      "reference": "0x0041aa42",
+      "bytes": "013dc0284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pad_center_x",
+      "address": "0x004428c4",
+      "reference": "0x0041a98c",
+      "bytes": "a3c4284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pad_center_y",
+      "address": "0x004428c8",
+      "reference": "0x0041a996",
+      "bytes": "a3c8284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pov_right",
+      "address": "0x004428cc",
+      "reference": "0x0041ac95",
+      "bytes": "a3cc284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pov_left",
+      "address": "0x004428d0",
+      "reference": "0x0041abd9",
+      "bytes": "a3d0284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_direction_arrow",
+      "address": "0x004428d4",
+      "reference": "0x0041af0e",
+      "bytes": "a0d4284400",
+      "build_only": true
     },
     {
       "name": "config_sound_freq_adjustment",
@@ -864,16 +2869,330 @@
       "build_only": true
     },
     {
+      "name": "freeware_saved_keys",
+      "address": "0x004428e6",
+      "reference": "0x0041a7ca",
+      "bytes": "8898e6284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_random_flags",
+      "address": "0x004428f0",
+      "reference": "0x0041963e",
+      "bytes": "8886f0284400",
+      "build_only": true
+    },
+    {
+      "name": "freeware_rainbow_enabled",
+      "address": "0x004428f4",
+      "reference": "0x0041287b",
+      "bytes": "c605f428440001",
+      "build_only": true
+    },
+    {
       "name": "creature_pool",
       "address": "0x00442af8",
       "reference": "0x00409467",
       "bytes": "b9f82a4400"
     },
     {
+      "name": "freeware_text_buffer",
+      "address": "0x00452af8",
+      "reference": "0x00406bbe",
+      "bytes": "68f82a4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_camera_shake",
+      "address": "0x00452bf8",
+      "reference": "0x004187b9",
+      "bytes": "d905f82b4500",
+      "build_only": true
+    },
+    {
       "name": "unused_effect_uv16_prefix_vec2",
       "address": "0x00452bf8",
       "reference": "0x00403400",
       "bytes": "c705f82b450000000000"
+    },
+    {
+      "name": "freeware_online_labels",
+      "address": "0x00452c00",
+      "reference": "0x0041b1a5",
+      "bytes": "8b3cb5002c4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_particle_texture",
+      "address": "0x00452c14",
+      "reference": "0x0041152d",
+      "bytes": "8b15142c4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_sfx_samples",
+      "address": "0x00452c18",
+      "reference": "0x00405648",
+      "bytes": "8b0c95182c4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brushes",
+      "address": "0x00452d18",
+      "reference": "0x00403ad5",
+      "bytes": "a2182d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_begin",
+      "address": "0x00452d1c",
+      "reference": "0x00418c9b",
+      "bytes": "8b0d1c2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_brush_end",
+      "address": "0x00452d20",
+      "reference": "0x00418ca9",
+      "bytes": "a1202d4500",
+      "build_only": true
+    },
+    {
+      "name": "terrain_render_target",
+      "address": "0x00452d28",
+      "reference": "0x0040f374",
+      "bytes": "a1282d4500"
+    },
+    {
+      "name": "freeware_creature_texture",
+      "address": "0x00452d2c",
+      "reference": "0x0040fd16",
+      "bytes": "8b152c2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_unavailable",
+      "address": "0x00452d30",
+      "reference": "0x0041ae06",
+      "bytes": "a0302d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_open_site",
+      "address": "0x00452d31",
+      "reference": "0x0041bb6c",
+      "bytes": "c605312d450001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_update_info",
+      "address": "0x00452d34",
+      "reference": "0x0041b167",
+      "bytes": "8b15342d4500",
+      "build_only": true
+    },
+    {
+      "name": "time_scale_active",
+      "address": "0x00452d38",
+      "reference": "0x00412b67",
+      "bytes": "a0382d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_fade_time",
+      "address": "0x00452d3c",
+      "reference": "0x00412b7c",
+      "bytes": "d8053c2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_simulation_clock",
+      "address": "0x00452d40",
+      "reference": "0x004183a9",
+      "bytes": "d905402d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_cheated",
+      "address": "0x00452d44",
+      "reference": "0x0041d61d",
+      "bytes": "a0442d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_message",
+      "address": "0x00452d48",
+      "reference": "0x00415faa",
+      "bytes": "a1482d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pause_perks",
+      "address": "0x00452d4c",
+      "reference": "0x0041bc3c",
+      "bytes": "8a154c2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_rainbow_armed",
+      "address": "0x00452d4d",
+      "reference": "0x00412874",
+      "bytes": "c6054d2d450001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_corrupt",
+      "address": "0x00452d4e",
+      "reference": "0x0041f4d6",
+      "bytes": "a04e2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_see_through",
+      "address": "0x00452d4f",
+      "reference": "0x0041571a",
+      "bytes": "c6054f2d450001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_audio_disabled",
+      "address": "0x00452d50",
+      "reference": "0x0041fba9",
+      "bytes": "a0502d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_safe_mode",
+      "address": "0x00452d51",
+      "reference": "0x0041e250",
+      "bytes": "a0512d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_state_since",
+      "address": "0x00452d54",
+      "reference": "0x0041852d",
+      "bytes": "a3542d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_encounter_active",
+      "address": "0x00452d58",
+      "reference": "0x00408f23",
+      "bytes": "881d582d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_secret_weapon_unlocked",
+      "address": "0x00452d59",
+      "reference": "0x004065b0",
+      "bytes": "a0592d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_revive_timer",
+      "address": "0x00452d5c",
+      "reference": "0x0041be7e",
+      "bytes": "d9055c2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_assembly_sequence",
+      "address": "0x00452d60",
+      "reference": "0x0041968b",
+      "bytes": "392d602d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_birthday",
+      "address": "0x00452d68",
+      "reference": "0x00419bf1",
+      "bytes": "a0682d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_memorial",
+      "address": "0x00452d69",
+      "reference": "0x00419fd5",
+      "bytes": "a0692d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_solstice",
+      "address": "0x00452d6a",
+      "reference": "0x0041a16e",
+      "bytes": "a06a2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_christmas",
+      "address": "0x00452d6b",
+      "reference": "0x00419d9b",
+      "bytes": "a06b2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_rebinding",
+      "address": "0x00452d6c",
+      "reference": "0x0041a5a4",
+      "bytes": "a06c2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_calibrating",
+      "address": "0x00452d6d",
+      "reference": "0x0041a7fe",
+      "bytes": "a06d2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_setup_step",
+      "address": "0x00452d70",
+      "reference": "0x0041a62d",
+      "bytes": "392d702d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_hud_xp_timer",
+      "address": "0x00452d74",
+      "reference": "0x004176d3",
+      "bytes": "d905742d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_camera_timer",
+      "address": "0x00452d78",
+      "reference": "0x00418786",
+      "bytes": "d905782d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_player_moved",
+      "address": "0x00452d7c",
+      "reference": "0x0041278b",
+      "bytes": "c6057c2d450001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_first_kill_xp",
+      "address": "0x00452d80",
+      "reference": "0x00412803",
+      "bytes": "c705802d4500f6ffffff",
+      "build_only": true
+    },
+    {
+      "name": "freeware_show_secret_hints",
+      "address": "0x00452d84",
+      "reference": "0x00408d78",
+      "bytes": "a0842d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_tips_sequence",
+      "address": "0x00452d88",
+      "reference": "0x004197c4",
+      "bytes": "392d882d4500",
+      "build_only": true
     },
     {
       "name": "current_player_index",
@@ -895,10 +3214,59 @@
       "bytes": "8b0d942d4500"
     },
     {
+      "name": "freeware_name_alpha",
+      "address": "0x00452d98",
+      "reference": "0x0041d6dd",
+      "bytes": "d915982d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_xp_timer",
+      "address": "0x00452d9c",
+      "reference": "0x004183cd",
+      "bytes": "d9059c2d4500",
+      "build_only": true
+    },
+    {
       "name": "fx_queue_count",
       "address": "0x00452da0",
       "reference": "0x00405c80",
       "bytes": "8b0da02d4500"
+    },
+    {
+      "name": "freeware_spawn_enabled",
+      "address": "0x00452da4",
+      "reference": "0x00408660",
+      "bytes": "a0a42d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_perk_hover",
+      "address": "0x00452da8",
+      "reference": "0x0041591a",
+      "bytes": "8b0da82d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_menu_selected",
+      "address": "0x00452dac",
+      "reference": "0x0041b019",
+      "bytes": "a1ac2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_jinx_timer",
+      "address": "0x00452db0",
+      "reference": "0x0041ca54",
+      "bytes": "d905b02d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_game_active",
+      "address": "0x00452db4",
+      "reference": "0x0040d9a8",
+      "bytes": "a0b42d4500",
+      "build_only": true
     },
     {
       "name": "bonus_fire_bullets_timer",
@@ -908,16 +3276,567 @@
       "build_only": true
     },
     {
+      "name": "bonus_freeze_timer",
+      "address": "0x00452dbc",
+      "reference": "0x004099b5",
+      "bytes": "d905bc2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_elapsed_seconds",
+      "address": "0x00452dc4",
+      "reference": "0x0040fbed",
+      "bytes": "d905c42d4500",
+      "build_only": true
+    },
+    {
       "name": "run_elapsed_ms",
       "address": "0x00452dc4",
       "reference": "0x004205c0",
       "bytes": "d905c42d4500"
     },
     {
+      "name": "freeware_bomb_age",
+      "address": "0x00452dc8",
+      "reference": "0x0041bf31",
+      "bytes": "c705c82d450000000000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_fps_count",
+      "address": "0x00452dcc",
+      "reference": "0x0041e1b6",
+      "bytes": "8b0dcc2d4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_fps_max",
+      "address": "0x00452dd0",
+      "reference": "0x0041e1a1",
+      "bytes": "d905d02d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_test",
+      "address": "0x00452dd4",
+      "reference": "0x00407926",
+      "bytes": "c705d42d450000000000",
+      "build_only": true,
+      "evidence": "Receives slot zero before wrapping the strings \"Test perk\" and \"You shouldn't be seeing this..\"."
+    },
+    {
+      "name": "perk_id_bloody_mess",
+      "address": "0x00452dd8",
+      "reference": "0x00407989",
+      "bytes": "891dd82d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_sharpshooter",
+      "address": "0x00452ddc",
+      "reference": "0x004130ab",
+      "bytes": "a1dc2d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_instant_winner",
+      "address": "0x00452de0",
+      "reference": "0x00415e0d",
+      "bytes": "8b0de02d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_fastshot",
+      "address": "0x00452de4",
+      "reference": "0x00415555",
+      "bytes": "a1e42d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_almost_invisible",
+      "address": "0x00452de8",
+      "reference": "0x004105b1",
+      "bytes": "8b15e82d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_long_distance_runner",
+      "address": "0x00452dec",
+      "reference": "0x00412e40",
+      "bytes": "8b15ec2d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_reflex_boosted",
+      "address": "0x00452df0",
+      "reference": "0x0041834b",
+      "bytes": "8b15f02d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_fastloader",
+      "address": "0x00452df4",
+      "reference": "0x004068b3",
+      "bytes": "8b15f42d4500"
+    },
+    {
+      "name": "perk_id_see_health",
+      "address": "0x00452df8",
+      "reference": "0x0041c6f7",
+      "bytes": "8b15f82d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_spontaneously_combusteous",
+      "address": "0x00452dfc",
+      "reference": "0x0041c712",
+      "bytes": "8b15fc2d4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_jinxed",
+      "address": "0x00452e00",
+      "reference": "0x0041ca90",
+      "bytes": "a1002e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_berserk_attack",
+      "address": "0x00452e04",
+      "reference": "0x0041cbda",
+      "bytes": "a1042e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_grim_deal",
+      "address": "0x00452e08",
+      "reference": "0x00415f47",
+      "bytes": "3b15082e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_plaguebearer",
+      "address": "0x00452e0c",
+      "reference": "0x00415f72",
+      "bytes": "3b150c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_radioactive",
+      "address": "0x00452e10",
+      "reference": "0x004103dd",
+      "bytes": "a1102e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_ammo_maniac",
+      "address": "0x00452e14",
+      "reference": "0x00415525",
+      "bytes": "a1142e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_lean_mean_exp_machine",
+      "address": "0x00452e18",
+      "reference": "0x004183ec",
+      "bytes": "8b0d182e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_evil_eyes",
+      "address": "0x00452e1c",
+      "reference": "0x0041c723",
+      "bytes": "8b151c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_reserved_33",
+      "address": "0x00452e20",
+      "reference": "0x00408430",
+      "bytes": "c705202e450021000000",
+      "build_only": true,
+      "evidence": "Receives 33 after the registry sets perk_id_count to the final visible slot 32."
+    },
+    {
+      "name": "perk_id_anxious_loader",
+      "address": "0x00452e24",
+      "reference": "0x004136ef",
+      "bytes": "a1242e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_final_revenge",
+      "address": "0x00452e28",
+      "reference": "0x0041bee7",
+      "bytes": "a1282e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_infernal_contract",
+      "address": "0x00452e2c",
+      "reference": "0x00415f0e",
+      "bytes": "3b152c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_perk_expert",
+      "address": "0x00452e30",
+      "reference": "0x00408cff",
+      "bytes": "8b0d302e4500"
+    },
+    {
+      "name": "perk_id_weapon_shotgun",
+      "address": "0x00452e34",
+      "reference": "0x00415e91",
+      "bytes": "8b0d342e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_weapon_assault_rifle",
+      "address": "0x00452e38",
+      "reference": "0x00415ed3",
+      "bytes": "3b15382e4500",
+      "build_only": true
+    },
+    {
+      "name": "perk_id_fatal_lottery",
+      "address": "0x00452e3c",
+      "reference": "0x00415e35",
+      "bytes": "8b0d3c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_hint_ids",
+      "address": "0x00452e40",
+      "reference": "0x00415f90",
+      "bytes": "a1402e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_berserk_timer",
+      "address": "0x00452e5c",
+      "reference": "0x0040dead",
+      "bytes": "d9055c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_no_pickup",
+      "address": "0x00452e60",
+      "reference": "0x004037a0",
+      "bytes": "a1602e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_time",
+      "address": "0x00452e64",
+      "reference": "0x004069d0",
+      "bytes": "c705642e450000002041",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pickup_weapon",
+      "address": "0x00452e68",
+      "reference": "0x00406a32",
+      "bytes": "8915682e4500",
+      "build_only": true
+    },
+    {
+      "name": "bonus_reflex_boost_timer",
+      "address": "0x00452e6c",
+      "reference": "0x00412afa",
+      "bytes": "d9056c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_pending_perks",
+      "address": "0x00452e70",
+      "reference": "0x00408cb8",
+      "bytes": "8b3d702e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_options_open",
+      "address": "0x00452e74",
+      "reference": "0x0041ad27",
+      "bytes": "a0742e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_online_open",
+      "address": "0x00452e75",
+      "reference": "0x0041b11c",
+      "bytes": "a0752e4500",
+      "build_only": true
+    },
+    {
+      "name": "creature_spawned_count",
+      "address": "0x00452e78",
+      "reference": "0x0040fcec",
+      "bytes": "a1782e4500"
+    },
+    {
+      "name": "freeware_next_spawn",
+      "address": "0x00452e7c",
+      "reference": "0x0041cc7e",
+      "bytes": "d82d7c2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_blood_count",
+      "address": "0x00452e80",
+      "reference": "0x0040ec06",
+      "bytes": "a1802e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_shell_count",
+      "address": "0x00452e84",
+      "reference": "0x0040ec19",
+      "bytes": "391d842e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_corpse_count",
+      "address": "0x00452e88",
+      "reference": "0x0040e844",
+      "bytes": "a1882e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_perk_choice_timer",
+      "address": "0x00452e8c",
+      "reference": "0x00415de9",
+      "bytes": "c7058c2e450000000000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_level_up_reset_byte",
+      "address": "0x00452e90",
+      "reference": "0x00408c8a",
+      "bytes": "881d902e4500",
+      "build_only": true
+    },
+    {
       "name": "frame_dt",
       "address": "0x00452e94",
       "reference": "0x00406577",
       "bytes": "d905942e4500"
+    },
+    {
+      "name": "freeware_music_tracks",
+      "address": "0x00452e98",
+      "reference": "0x0041fbec",
+      "bytes": "8b0d982e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_music_volume",
+      "address": "0x00452ea4",
+      "reference": "0x0040583c",
+      "bytes": "d905a42e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_hit_sound_timer",
+      "address": "0x00452eac",
+      "reference": "0x00409e7a",
+      "bytes": "d905ac2e4500",
+      "build_only": true
+    },
+    {
+      "name": "audio_resource_pack_available",
+      "address": "0x00452eb8",
+      "reference": "0x0040557a",
+      "bytes": "a2b82e4500"
+    },
+    {
+      "name": "freeware_level_number",
+      "address": "0x00452ec8",
+      "reference": "0x004167b9",
+      "bytes": "a1c82e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_credits_open",
+      "address": "0x00452ecc",
+      "reference": "0x0041a3c3",
+      "bytes": "a0cc2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_scores_open",
+      "address": "0x00452ecd",
+      "reference": "0x00419857",
+      "bytes": "a0cd2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_logo_angle",
+      "address": "0x00452ed0",
+      "reference": "0x004198a4",
+      "bytes": "c705d02e450000000000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_logo_visible",
+      "address": "0x00452ed4",
+      "reference": "0x0041a4b0",
+      "bytes": "a0d42e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_scores_closing",
+      "address": "0x00452ed5",
+      "reference": "0x0041fae5",
+      "bytes": "c605d52e450001",
+      "build_only": true
+    },
+    {
+      "name": "freeware_name_length",
+      "address": "0x00452ed8",
+      "reference": "0x0041d688",
+      "bytes": "892dd82e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_brush",
+      "address": "0x00452edc",
+      "reference": "0x00418a06",
+      "bytes": "ff0ddc2e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_layer",
+      "address": "0x00452ee0",
+      "reference": "0x00418cd9",
+      "bytes": "892de02e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_rotation",
+      "address": "0x00452ee4",
+      "reference": "0x00418a37",
+      "bytes": "d905e42e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_low_fps_frames",
+      "address": "0x00452ee8",
+      "reference": "0x0041db58",
+      "bytes": "a1e82e4500",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_highlighted",
+      "address": "0x00452eec",
+      "reference": "0x0041f4cf",
+      "bytes": "c605ec2e450000",
+      "build_only": true
+    },
+    {
+      "name": "freeware_score_scroll",
+      "address": "0x00452ef0",
+      "reference": "0x0041f5bd",
+      "bytes": "d805f02e4500",
+      "build_only": true
+    },
+    {
+      "name": "particle_pool",
+      "address": "0x00439f60",
+      "reference": "0x00409123",
+      "bytes": "b8609f4300",
+      "evidence": "The slow particle spawner walks 128 entries of 0x38 bytes from this address, then writes the selected entry and its particle attributes."
+    },
+    {
+      "name": "unused_particle_pool_suffix_color",
+      "address": "0x0043bb60",
+      "reference": "0x00403390",
+      "bytes": "c70560bb43009a99193f",
+      "evidence": "The four-channel constructor stores 0.6/0.6/0.6/0.5 immediately after the particle array; the freeware ice tint occupies the same address."
+    },
+    {
+      "name": "aim64_texture",
+      "address": "0x0043c6a8",
+      "reference": "0x0042110f",
+      "bytes": "a3a8c64300",
+      "evidence": "Store of the cache lookup for aim64, following the bullet icon."
+    },
+    {
+      "name": "world_arrow_marker_texture",
+      "address": "0x0043bb70",
+      "reference": "0x0042112b",
+      "bytes": "a370bb4300",
+      "evidence": "Store of the arrow lookup after loading arrow.tga."
+    },
+    {
+      "name": "secret_hint_magic_paint",
+      "address": "0x0042fb54",
+      "reference": "0x004214cc",
+      "bytes": "b854fb4200",
+      "evidence": "The shorter freeware text is an inline array; WinMain tests the address after seeding the snow array."
+    },
+    {
+      "name": "freeware_editor_offset_destroy",
+      "address": "0x0041e320",
+      "reference": "0x004189cb",
+      "bytes": "6820e34100",
+      "build_only": true
+    },
+    {
+      "name": "freeware_editor_offset_initialized",
+      "address": "0x0043c5cc",
+      "reference": "0x004189c0",
+      "bytes": "a0ccc54300",
+      "build_only": true
+    },
+    {
+      "name": "freeware_levels_sequence",
+      "address": "0x00452d64",
+      "reference": "0x0041bd3d",
+      "bytes": "8b15642d4500",
+      "build_only": true,
+      "evidence": "The mode selector compares this counter with 6 at 0x0041bd44, enabling mode 3 when the sequence is complete and otherwise wrapping after mode 2. The corresponding branch in 1.3.0 reads the verified levels sequence at 0x004160fa."
+    }
+  ],
+  "absent": [
+    {
+      "name": "bonus_label_for_entry"
+    },
+    {
+      "name": "config_sync_from_grim"
+    },
+    {
+      "name": "bonus_alloc_slot"
+    },
+    {
+      "name": "bonus_render"
+    },
+    {
+      "name": "fx_queue_random_color_destroy",
+      "reason": "0x40e6f0 queues an ejected shell conditional on shell marks; it is not a destructor."
+    },
+    {
+      "name": "vorbis_mem_open",
+      "reason": "The 1.4.0 binary uses MP3 music. The heuristic address 0x402fe0 performs an HTTP GET and is called with the remote version filename."
+    },
+    {
+      "name": "highscore_compare_survival_score_desc",
+      "reason": "The original score loader sorts display names and scores in-place with nested loops. The guessed callback following WinMain instead frees the buffer at this+4 and clears three pointer members."
+    }
+  ],
+  "rejected_data_placements": [
+    {
+      "name": "d3dx_sse_math_bss",
+      "address": "0x00452ed4",
+      "size": 32,
+      "sha256": "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925",
+      "conflicting_globals": [
+        "freeware_logo_visible",
+        "freeware_scores_closing",
+        "freeware_name_length",
+        "freeware_editor_brush"
+      ],
+      "reason": "The address is only 4-byte aligned. The game writes the logo and score flags and the editor brush state in this range. DirectX 8.1 d3dx8.lib(d3dxmathsse.obj) supplies a 32-byte .bss section with 32-byte alignment containing _zero__9701."
     }
   ]
 }

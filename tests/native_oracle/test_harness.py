@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import struct
+from pathlib import Path
 
 import pytest
 
@@ -19,12 +20,64 @@ def test_crt_rand_runs_natively_and_matches_port(oracle) -> None:
         assert result.stack_popped == 0
 
 
+def test_freeware_crt_uses_global_rng_without_tls_imports() -> None:
+    from crimson_re.dbg.native_oracle import NativeOracle, SymbolTable
+
+    exe = Path(__file__).resolve().parents[2] / "game_bins/crimsonland/1.4.0/crimson.exe"
+    if not exe.is_file():
+        pytest.skip("1.4.0 original executable unavailable")
+    # 0x422414 reads and writes 0x432c40 directly. Classic uses _tiddata._holdrand.
+    oracle = NativeOracle(exe, symbols=SymbolTable({}), rand_state_address=0x432C40)
+    oracle.rand_state = 0x1234_5678
+    port = CrtRand(oracle.rand_state)
+    for _ in range(8):
+        assert oracle.call(0x422414).eax == port.rand()
+        assert oracle.rand_state == port.state
+    with pytest.raises(KeyError, match="SetLastError"):
+        oracle.stub_import("SetLastError")
+
+
 def test_float_argument_float_return_and_callee_cleanup(oracle) -> None:
+    assert oracle.describe(0x1000_0000) == "oracle stack (0x10000000)"
     # fld dword [esp+4]; fadd dword [esp+8]; ret 8   (stdcall float(float, float))
     probe = oracle.load_code(bytes.fromhex("d9442404d8442408c20800"))
     result = oracle.call(probe, 0.1, 0.2)
     assert result.stack_popped == 8
     assert f32_bits(result.st0) == f32_bits(struct.unpack("<f", struct.pack("<f", 0.1))[0] + 0.2)
+
+
+def test_grim_dll_uses_a_separate_stack_for_calls_and_fragments() -> None:
+    from crimson_re.dbg.native_oracle import DEFAULT_EXE_PATH, NativeOracle, SymbolTable
+
+    dll = DEFAULT_EXE_PATH.with_name("grim.dll")
+    if not dll.is_file():
+        pytest.skip("original grim.dll unavailable")
+    oracle = NativeOracle(dll, symbols=SymbolTable({}))
+    assert oracle.image_base == 0x1000_0000
+    assert oracle.read(oracle.image_base, 2) == b"MZ"
+    assert oracle.describe(oracle.frame_pointer()).startswith("oracle stack")
+    assert oracle.describe(oracle.image_base) == "0x10000000"
+
+    # mov eax, [esp+4]; ret
+    probe = oracle.load_code(bytes.fromhex("8b442404c3"))
+    assert oracle.call(probe, 123).eax == 123
+    # mov eax, [esp]
+    fragment = oracle.load_code(bytes.fromhex("8b0424"))
+    assert oracle.run(fragment, fragment + 3, frame=struct.pack("<I", 456)).eax == 456
+
+
+def test_fragment_stops_before_a_store_in_a_previously_called_block(oracle) -> None:
+    marker = oracle.alloc(4)
+    # mov eax, 73; mov [marker], eax; ret
+    probe = oracle.load_code(b"\xb8" + struct.pack("<I", 73) + b"\xa3" + struct.pack("<I", marker) + b"\xc3")
+    stop = probe + 5
+    oracle.call(probe)
+    assert oracle.read_u32(marker) == 73
+
+    oracle.write_u32(marker, 0)
+    # Even reaching the right final EIP via ret would be too late for this store.
+    assert oracle.run(probe, stop, frame=struct.pack("<I", stop)).eax == 73
+    assert oracle.read_u32(marker) == 0
 
 
 def test_pc24_control_word_rounds_every_op(oracle) -> None:

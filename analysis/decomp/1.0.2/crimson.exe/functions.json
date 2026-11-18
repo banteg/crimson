@@ -1,18 +1,18 @@
 [
   {
     "address": "0x00401000",
-    "canonical_address": "0x0041DF70",
+    "build_only": true,
     "end": "0x00401005",
-    "evidence": "exact",
-    "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
+    "evidence": "recovered",
+    "name": "freeware_aim_screen_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401010",
-    "canonical_address": "0x0041E080",
+    "build_only": true,
     "end": "0x00401025",
-    "evidence": "exact",
-    "name": "render_tint_color_global_init",
+    "evidence": "recovered",
+    "name": "freeware_aim_screen_global_init",
     "size": 21
   },
   {
@@ -33,18 +33,18 @@
   },
   {
     "address": "0x00401050",
-    "canonical_address": "0x0041E0D0",
+    "build_only": true,
     "end": "0x00401055",
-    "evidence": "exact",
-    "name": "unused_particle_pool_suffix_color_global_init_thunk",
+    "evidence": "recovered",
+    "name": "freeware_last_score_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401060",
-    "canonical_address": "0x0041E0E0",
+    "build_only": true,
     "end": "0x0040107D",
-    "evidence": "referenced",
-    "name": "unused_particle_pool_suffix_color_global_init",
+    "evidence": "recovered",
+    "name": "freeware_last_score_global_init",
     "size": 29
   },
   {
@@ -104,34 +104,34 @@
   },
   {
     "address": "0x00401120",
-    "canonical_address": "0x0041E140",
+    "build_only": true,
     "end": "0x00401125",
     "evidence": "recovered",
-    "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+    "name": "freeware_pickup_position_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401130",
-    "canonical_address": "0x0041E150",
+    "build_only": true,
     "end": "0x00401145",
     "evidence": "recovered",
-    "name": "unused_effect_uv16_prefix_vec2_global_init",
+    "name": "freeware_pickup_position_global_init",
     "size": 21
   },
   {
     "address": "0x00401150",
-    "canonical_address": "0x00401000",
+    "build_only": true,
     "end": "0x00401155",
-    "evidence": "exact",
-    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "evidence": "recovered",
+    "name": "freeware_pickup_id_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401160",
-    "canonical_address": "0x00401010",
+    "build_only": true,
     "end": "0x0040116B",
-    "evidence": "referenced",
-    "name": "unused_console_prefix_vec2_global_init",
+    "evidence": "recovered",
+    "name": "freeware_pickup_id_global_init",
     "size": 11
   },
   {
@@ -173,6 +173,22 @@
     "evidence": "recovered",
     "name": "unused_fx_queue_random_prefix_vec2_global_init",
     "size": 21
+  },
+  {
+    "address": "0x00401280",
+    "end": "0x00401285",
+    "size": 5,
+    "build_only": true,
+    "name": "unused_sfx_prefix_creature_global_init_thunk",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401290",
+    "end": "0x004012B1",
+    "size": 33,
+    "build_only": true,
+    "name": "unused_sfx_prefix_creature_global_init",
+    "evidence": "recovered"
   },
   {
     "address": "0x004012C0",
@@ -304,74 +320,114 @@
   },
   {
     "address": "0x00401440",
-    "canonical_address": "0x0041E8D0",
+    "canonical_address": "0x0043C740",
     "end": "0x0040146D",
-    "evidence": "ordered",
-    "name": "input_aim_pov_left_active",
+    "evidence": "recovered",
+    "name": "sfx_load_sample",
     "size": 45
   },
   {
     "address": "0x00401470",
-    "canonical_address": "0x0041F1A0",
+    "canonical_address": "0x0043CF90",
     "end": "0x004015FF",
-    "evidence": "ordered",
-    "name": "config_load_presets",
+    "evidence": "recovered",
+    "name": "sfx_system_init",
     "size": 399
   },
   {
     "address": "0x00401600",
-    "canonical_address": "0x0041F580",
+    "canonical_address": "0x0043D110",
     "end": "0x00401624",
-    "evidence": "ordered",
-    "name": "bonus_alloc_slot",
+    "evidence": "recovered",
+    "name": "audio_shutdown_all",
     "size": 36
   },
   {
     "address": "0x00401630",
-    "canonical_address": "0x0041F130",
+    "canonical_address": "0x0043D260",
     "end": "0x004016A5",
-    "evidence": "ordered",
-    "name": "config_ensure_file",
+    "evidence": "recovered",
+    "name": "sfx_play_panned",
     "size": 117
   },
   {
     "address": "0x004016B0",
-    "canonical_address": "0x0041F5B0",
+    "build_only": true,
     "end": "0x004017F2",
-    "evidence": "ordered",
-    "name": "bonus_spawn_at",
+    "evidence": "recovered",
+    "name": "sfx_update",
     "size": 322
   },
   {
+    "address": "0x00401800",
+    "end": "0x00401878",
+    "size": 120,
+    "build_only": true,
+    "name": "freeware_title_track_start",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00401880",
+    "end": "0x004018D1",
+    "size": 81,
+    "build_only": true,
+    "name": "freeware_game_track_start",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x004018E0",
-    "canonical_address": "0x0041F570",
     "end": "0x004018EB",
-    "evidence": "ordered",
-    "name": "bonus_pool_sentinel_global_init",
-    "size": 11
+    "size": 11,
+    "build_only": true,
+    "name": "freeware_title_track_fade",
+    "evidence": "recovered"
   },
   {
     "address": "0x004018F0",
-    "canonical_address": "0x0041FC60",
+    "build_only": true,
     "end": "0x00401935",
     "evidence": "exact",
-    "name": "weapon_name_get",
+    "name": "freeware_point_in_rect",
     "size": 69
   },
   {
     "address": "0x00401940",
-    "canonical_address": "0x0041FBB0",
+    "build_only": true,
     "end": "0x004019C9",
-    "evidence": "ordered",
-    "name": "fx_spawn_sprite",
+    "evidence": "recovered",
+    "name": "freeware_save_score",
     "size": 137
   },
   {
+    "address": "0x004019D0",
+    "build_only": true,
+    "end": "0x004019D5",
+    "evidence": "recovered",
+    "name": "freeware_score_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004019E0",
+    "build_only": true,
+    "end": "0x00401A0A",
+    "evidence": "recovered",
+    "name": "freeware_score_table_global_init",
+    "size": 42
+  },
+  {
+    "address": "0x00401A10",
+    "build_only": true,
+    "end": "0x00401A38",
+    "evidence": "recovered",
+    "name": "freeware_score_table_reset",
+    "size": 40
+  },
+  {
     "address": "0x00401A40",
-    "canonical_address": "0x0041FED0",
+    "canonical_address": "0x0043AFA0",
     "end": "0x00401C07",
-    "evidence": "ordered",
-    "name": "effect_uv_tables_init",
+    "evidence": "recovered",
+    "name": "highscore_load_table",
     "size": 455
   },
   {
@@ -383,12 +439,76 @@
     "size": 107
   },
   {
+    "address": "0x00401C80",
+    "canonical_address": "0x0042FD90",
+    "end": "0x0040222B",
+    "evidence": "recovered",
+    "name": "perks_init_database",
+    "size": 1451
+  },
+  {
+    "address": "0x00402230",
+    "canonical_address": "0x0041FC80",
+    "end": "0x0040234E",
+    "evidence": "recovered",
+    "name": "player_reset_all",
+    "size": 286
+  },
+  {
+    "address": "0x00402350",
+    "build_only": true,
+    "end": "0x004028F4",
+    "evidence": "recovered",
+    "name": "player_check_level",
+    "size": 1444
+  },
+  {
+    "address": "0x00402900",
+    "canonical_address": "0x004045A0",
+    "end": "0x0040293C",
+    "evidence": "recovered",
+    "name": "perks_generate_choices",
+    "size": 60
+  },
+  {
     "address": "0x00402940",
-    "canonical_address": "0x00420040",
+    "canonical_address": "0x0041FED0",
     "end": "0x00402998",
-    "evidence": "ordered",
-    "name": "creature_find_nearest",
+    "evidence": "recovered",
+    "name": "effect_uv_tables_init",
     "size": 88
+  },
+  {
+    "address": "0x004029A0",
+    "canonical_address": "0x00412DC0",
+    "end": "0x00402A3D",
+    "evidence": "recovered",
+    "name": "gameplay_reset_state",
+    "size": 157
+  },
+  {
+    "address": "0x00402A40",
+    "end": "0x00402A41",
+    "size": 1,
+    "build_only": true,
+    "name": "freeware_post_player_render_noop",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00402A50",
+    "end": "0x00402A6E",
+    "size": 30,
+    "build_only": true,
+    "name": "projectile_alloc_slot",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x00402A70",
+    "end": "0x00402A8E",
+    "size": 30,
+    "build_only": true,
+    "name": "particle_alloc_slot",
+    "evidence": "recovered"
   },
   {
     "address": "0x00402A90",
@@ -442,24 +562,24 @@
     "address": "0x00404AC0",
     "canonical_address": "0x00425D80",
     "end": "0x00404B63",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "plaguebearer_spread_infection",
     "size": 163
   },
   {
     "address": "0x00404B70",
-    "canonical_address": "0x00425E50",
+    "canonical_address": "0x00426220",
     "end": "0x0040508C",
-    "evidence": "ordered",
-    "name": "player_take_damage",
+    "evidence": "recovered",
+    "name": "creature_update_all",
     "size": 1308
   },
   {
     "address": "0x00405090",
-    "canonical_address": "0x00426220",
+    "canonical_address": "0x00417B80",
     "end": "0x004058C7",
     "evidence": "ordered",
-    "name": "creature_update_all",
+    "name": "terrain_generate",
     "size": 2103
   },
   {
@@ -468,26 +588,50 @@
     "end": "0x00405902",
     "evidence": "exact",
     "name": "fx_queue_add_random",
-    "size": 50
-  },
-  {
-    "address": "0x00405910",
-    "canonical_address": "0x00427830",
-    "end": "0x0040594B",
-    "evidence": "exact",
-    "name": "fx_queue_random_color_destroy",
-    "size": 59,
+    "size": 50,
     "aliases": [
-      "$E2"
+      "freeware_blood"
     ]
   },
   {
+    "address": "0x00405910",
+    "build_only": true,
+    "end": "0x0040594B",
+    "evidence": "exact",
+    "name": "fx_queue_add_shell",
+    "size": 59
+  },
+  {
     "address": "0x00405950",
-    "canonical_address": "0x00428140",
+    "canonical_address": "0x00427840",
     "end": "0x004059CA",
-    "evidence": "ordered",
-    "name": "creature_alloc_slot",
+    "evidence": "called",
+    "name": "fx_queue_add_rotated",
     "size": 122
+  },
+  {
+    "address": "0x004059D0",
+    "canonical_address": "0x00427920",
+    "end": "0x00406011",
+    "evidence": "ordered",
+    "name": "fx_queue_render",
+    "size": 1601
+  },
+  {
+    "address": "0x00406020",
+    "canonical_address": "0x004188A0",
+    "end": "0x0040629D",
+    "evidence": "ordered",
+    "name": "terrain_render",
+    "size": 637
+  },
+  {
+    "address": "0x004062A0",
+    "canonical_address": "0x00428140",
+    "end": "0x004062BB",
+    "evidence": "recovered",
+    "name": "creature_alloc_slot",
+    "size": 27
   },
   {
     "address": "0x004062C0",
@@ -499,209 +643,219 @@
   },
   {
     "address": "0x004062E0",
-    "canonical_address": "0x0042ABD0",
+    "build_only": true,
     "end": "0x00406795",
-    "evidence": "ordered",
-    "name": "load_textures_step",
+    "evidence": "recovered",
+    "name": "creature_spawn_random",
     "size": 1205
   },
   {
     "address": "0x004067A0",
-    "canonical_address": "0x0042B090",
+    "canonical_address": "0x00428240",
     "end": "0x004068E5",
-    "evidence": "ordered",
-    "name": "game_startup_init_prelude",
+    "evidence": "recovered",
+    "name": "creature_spawn",
     "size": 325
   },
   {
     "address": "0x004068F0",
-    "canonical_address": "0x0042D0E0",
+    "canonical_address": "0x00419680",
     "end": "0x00406F4C",
     "evidence": "ordered",
-    "name": "highscore_sync_worker",
+    "name": "creature_render_all",
     "size": 1628
   },
   {
-    "address": "0x00407950",
-    "canonical_address": "0x0042D8A0",
-    "end": "0x00407E7A",
+    "address": "0x00406F50",
+    "canonical_address": "0x00428390",
+    "end": "0x00407950",
     "evidence": "ordered",
-    "name": "statistics_update_check_worker",
+    "name": "player_render",
+    "size": 2560
+  },
+  {
+    "address": "0x00407950",
+    "build_only": true,
+    "end": "0x00407E7A",
+    "evidence": "recovered",
+    "name": "effect_render_all",
     "size": 1322
   },
   {
     "address": "0x00407E80",
-    "canonical_address": "0x00428210",
     "end": "0x00407E99",
-    "evidence": "ordered",
-    "name": "creatures_none_active",
-    "size": 25
+    "size": 25,
+    "build_only": true,
+    "name": "freeware_float_max",
+    "evidence": "recovered"
   },
   {
     "address": "0x00407EA0",
-    "canonical_address": "0x00430AD0",
     "end": "0x00407EB9",
-    "evidence": "ordered",
-    "name": "creature_spawn_slot_alloc",
-    "size": 25
+    "size": 25,
+    "build_only": true,
+    "name": "freeware_float_min",
+    "evidence": "recovered"
   },
   {
     "address": "0x00407EC0",
-    "canonical_address": "0x00428240",
+    "canonical_address": "0x00413540",
     "end": "0x0040803F",
-    "evidence": "ordered",
-    "name": "creature_spawn",
+    "evidence": "recovered",
+    "name": "player_heading_approach_target",
     "size": 383
   },
   {
     "address": "0x00408040",
-    "canonical_address": "0x00428390",
+    "canonical_address": "0x004136B0",
     "end": "0x004097C5",
-    "evidence": "ordered",
-    "name": "player_render",
+    "evidence": "recovered",
+    "name": "player_update",
     "size": 6021
   },
   {
     "address": "0x004097D0",
-    "canonical_address": "0x00434480",
     "end": "0x00409BD8",
-    "evidence": "ordered",
-    "name": "quest_build_nagolipoli",
-    "size": 1032
+    "size": 1032,
+    "build_only": true,
+    "name": "freeware_encounter_experience",
+    "evidence": "recovered"
   },
   {
     "address": "0x00409BE0",
-    "canonical_address": "0x00437060",
     "end": "0x0040A090",
-    "evidence": "ordered",
-    "name": "quest_build_survival_of_the_fastest",
-    "size": 1200
+    "size": 1200,
+    "build_only": true,
+    "name": "freeware_encounter_nine_lizards",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040A090",
-    "canonical_address": "0x00438A40",
     "end": "0x0040A5E4",
-    "evidence": "ordered",
-    "name": "quest_build_the_unblitzkrieg",
-    "size": 1364
+    "size": 1364,
+    "build_only": true,
+    "name": "freeware_encounter_pineapple",
+    "evidence": "recovered"
+  },
+  {
+    "address": "0x0040A5F0",
+    "end": "0x0040ACBC",
+    "size": 1740,
+    "build_only": true,
+    "name": "freeware_encounter_duct_tape",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040ACC0",
-    "canonical_address": "0x0043AFA0",
     "end": "0x0040B173",
-    "evidence": "ordered",
-    "name": "highscore_load_table",
-    "size": 1203
+    "size": 1203,
+    "build_only": true,
+    "name": "freeware_encounter_endless_army",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040B180",
-    "canonical_address": "0x0042A7C0",
     "end": "0x0040B25C",
-    "evidence": "ordered",
-    "name": "console_cmd_set_resource_paq",
-    "size": 220
+    "size": 220,
+    "build_only": true,
+    "name": "freeware_encounter_update",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040B270",
-    "canonical_address": "0x0043CAA0",
     "end": "0x0040B6D9",
-    "evidence": "ordered",
-    "name": "audio_init_sfx",
-    "size": 1129
+    "size": 1129,
+    "build_only": true,
+    "name": "freeware_career_menu_update",
+    "evidence": "recovered"
   },
   {
     "address": "0x0040B6E0",
-    "canonical_address": "0x0043DEF0",
+    "canonical_address": "0x00405BE0",
     "end": "0x0040BCFA",
-    "evidence": "ordered",
-    "name": "ui_scrollbar_update",
+    "evidence": "recovered",
+    "name": "perk_selection_screen_update",
     "size": 1562
   },
   {
     "address": "0x0040BD00",
-    "canonical_address": "0x0043E830",
+    "build_only": true,
     "end": "0x0040C0C8",
-    "evidence": "ordered",
-    "name": "ui_button_update",
+    "evidence": "recovered",
+    "name": "freeware_read_name_key",
     "size": 968
   },
   {
     "address": "0x0040C0D0",
-    "canonical_address": "0x0042A930",
+    "build_only": true,
     "end": "0x0040C10D",
-    "evidence": "ordered",
-    "name": "console_cmd_snd_freq_adjustment",
+    "evidence": "recovered",
+    "name": "freeware_hud_set_row",
     "size": 61
   },
   {
     "address": "0x0040C110",
-    "canonical_address": "0x00441270",
+    "canonical_address": "0x0040C1C0",
     "end": "0x0040ED76",
-    "evidence": "ordered",
-    "name": "highscore_format_date_label",
+    "evidence": "recovered",
+    "name": "game_frame_update",
     "size": 11366
   },
   {
     "address": "0x0040EDA0",
-    "canonical_address": "0x0042B290",
+    "build_only": true,
     "end": "0x0040F877",
-    "evidence": "ordered",
-    "name": "game_startup_init",
+    "evidence": "recovered",
+    "name": "game_credits_update",
     "size": 2775
   },
   {
     "address": "0x0040F880",
-    "canonical_address": "0x00442150",
+    "build_only": true,
     "end": "0x0040FAC1",
     "evidence": "ordered",
-    "name": "ui_update_notice_update",
+    "name": "freeware_overlay_begin",
     "size": 577
   },
   {
     "address": "0x0040FAD0",
-    "canonical_address": "0x00445380",
+    "build_only": true,
     "end": "0x0040FCD4",
-    "evidence": "ordered",
-    "name": "typo_target_name_assign_random",
+    "evidence": "recovered",
+    "name": "freeware_draw_loading_progress",
     "size": 516
   },
   {
     "address": "0x0040FCE0",
-    "canonical_address": "0x00446900",
+    "build_only": true,
     "end": "0x0041011B",
-    "evidence": "ordered",
-    "name": "ui_element_update",
+    "evidence": "recovered",
+    "name": "game_highscores_update",
     "size": 1083
   },
   {
     "address": "0x00410120",
-    "canonical_address": "0x00446C40",
+    "canonical_address": "0x0042C450",
     "end": "0x00410913",
-    "evidence": "ordered",
-    "name": "ui_element_render",
+    "evidence": "recovered",
+    "name": "crimsonland_main",
     "size": 2035
   },
   {
     "address": "0x00410920",
-    "canonical_address": "0x00452F2A",
     "end": "0x00410926",
-    "evidence": "exact",
-    "name": "D3DXVec2Normalize",
     "size": 6,
-    "aliases": [
-      "_D3DXVec2Normalize@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_Sample_SetLoopMode",
+    "evidence": "recovered"
   },
   {
     "address": "0x00410926",
-    "canonical_address": "0x00453167",
     "end": "0x0041092C",
-    "evidence": "ordered",
-    "name": "D3DXVec3Normalize",
     "size": 6,
-    "aliases": [
-      "_D3DXVec3Normalize@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_Sample_Load",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041092C",
@@ -771,76 +925,61 @@
   },
   {
     "address": "0x00410950",
-    "canonical_address": "0x00454CDA",
     "end": "0x00410956",
-    "evidence": "exact",
-    "name": "D3DXQuaternionMultiply",
     "size": 6,
-    "aliases": [
-      "_D3DXQuaternionMultiply@12"
-    ]
+    "build_only": true,
+    "name": "FSOUND_SetPaused",
+    "evidence": "recovered"
   },
   {
     "address": "0x00410956",
-    "canonical_address": "0x00454E49",
     "end": "0x0041095C",
-    "evidence": "ordered",
-    "name": "D3DXQuaternionInverse",
     "size": 6,
-    "aliases": [
-      "_D3DXQuaternionInverse@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_SetPan",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041095C",
-    "canonical_address": "0x00454F03",
     "end": "0x00410962",
-    "evidence": "exact",
-    "name": "D3DXQuaternionLn",
     "size": 6,
-    "aliases": [
-      "_D3DXQuaternionLn@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_SetVolume",
+    "evidence": "recovered"
   },
   {
     "address": "0x00410962",
-    "canonical_address": "0x00454F87",
     "end": "0x00410968",
-    "evidence": "exact",
-    "name": "D3DXQuaternionExp",
     "size": 6,
-    "aliases": [
-      "_D3DXQuaternionExp@8"
-    ]
+    "build_only": true,
+    "name": "FSOUND_PlaySoundEx",
+    "evidence": "recovered"
   },
   {
     "address": "0x00410968",
-    "canonical_address": "0x0045504C",
     "end": "0x0041096E",
-    "evidence": "ordered",
-    "name": "D3DXQuaternionSlerp",
     "size": 6,
-    "aliases": [
-      "_D3DXQuaternionSlerp@16"
-    ]
+    "build_only": true,
+    "name": "FSOUND_SetFrequency",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041096E",
-    "canonical_address": "0x0044FC70",
-    "end": "0x0041098C",
-    "evidence": "ordered",
-    "name": "ui_menu_main_click_buy_full_version",
-    "size": 30
+    "end": "0x00410974",
+    "size": 6,
+    "build_only": true,
+    "name": "FSOUND_StopSound",
+    "evidence": "recovered"
   },
   {
     "address": "0x0041098C",
-    "canonical_address": "0x004553F4",
+    "canonical_address": "0x00460CD0",
     "end": "0x004109C4",
     "evidence": "ordered",
-    "name": "d3dx_c_plane_from_point_normal",
+    "name": "crt_cfltcvt_init",
     "size": 56,
     "aliases": [
-      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+      "__cfltcvt_init"
     ]
   },
   {
@@ -925,13 +1064,13 @@
   },
   {
     "address": "0x00410C45",
-    "canonical_address": "0x00460DD2",
+    "canonical_address": "0x00461739",
     "end": "0x00410C4F",
-    "evidence": "ordered",
-    "name": "crt_atol",
+    "evidence": "recovered",
+    "name": "crt_srand",
     "size": 10,
     "aliases": [
-      "_atol"
+      "srand"
     ]
   },
   {
@@ -980,10 +1119,10 @@
   },
   {
     "address": "0x00410DF7",
-    "canonical_address": "0x00460FAC",
+    "canonical_address": "0x00461DBD",
     "end": "0x00410E83",
-    "evidence": "ordered",
-    "name": "crt_fgets",
+    "evidence": "recovered",
+    "name": "crt_fseek_nolock",
     "size": 140
   },
   {
@@ -1050,14 +1189,11 @@
   },
   {
     "address": "0x004111CD",
-    "canonical_address": "0x00456EEC",
+    "canonical_address": "0x00462104",
     "end": "0x00411299",
     "evidence": "called",
-    "name": "d3dx_x86_vec3_normalize",
-    "size": 204,
-    "aliases": [
-      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
-    ]
+    "name": "crt_toupper",
+    "size": 204
   },
   {
     "address": "0x00411299",
@@ -1529,6 +1665,14 @@
     "evidence": "exact",
     "name": "crt_lseek",
     "size": 154
+  },
+  {
+    "address": "0x0041305F",
+    "canonical_address": "0x00461C30",
+    "end": "0x004131B7",
+    "evidence": "exact",
+    "name": "crt_ftell_nolock",
+    "size": 344
   },
   {
     "address": "0x004131B7",
