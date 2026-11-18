@@ -27,6 +27,9 @@ inline int creature_type_for_pass(unsigned pass) {
              ? (int)(pass - HOST_PASS_CREATURE_TYPE) + 1
              : 0;
 }
+// Lizards, aliens and spiders use their shape map in ambient light alone (creature.frag).
+inline bool creature_has_ambient_material(int type) { return type >= 2 && type <= 5; }
+
 // The host texture for the local mouse reticle. Game textures and terrain snapshots have positive IDs.
 enum { HOST_MOUSE_AIM_TEXTURE = -1 };
 // Floats per light in host_scene (game/rtx_lights.cpp lays them out).

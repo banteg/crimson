@@ -616,7 +616,7 @@ GLuint shape_map(int id, bool heat = false) {
     return made->second;
   auto t = textures.find(id);
   auto texels = texel_addresses.find(id);
-  if ((!light_count && !heat) || t == textures.end() || texels == texel_addresses.end())
+  if ((!light_count && !heat && !creature_has_ambient_material(creature_type)) || t == textures.end() || texels == texel_addresses.end())
     return blank_texture;
   int width = t->second.logical_width, height = t->second.logical_height;
   const auto *pixels = client_memory() + texels->second;

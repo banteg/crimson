@@ -74,7 +74,9 @@ void main() {
         base.a = min(.95, base.a * 1.15);
     if (floor(base.a * 255.0 + 0.5) < 4.0)
         discard;
-    if (u_count == 0 && u_ice == 0) {
+    // Lizards, aliens and spiders also shade their surfaces under the ambient sky.
+    bool ambientMaterial = u_creature_type >= 2 && u_creature_type <= 5;
+    if (u_count == 0 && u_ice == 0 && !ambientMaterial) {
         finalColor = vec4(base.rgb * u_ambient, base.a);
         return;
     }

@@ -21,7 +21,6 @@ from .reflection_occlusion import ReflectionOcclusion
 class CreatureLighting(msgspec.Struct):
     shader: rl.Shader | None = None
     locations: dict[str, int] = msgspec.field(default_factory=dict)
-    active: bool = False
     light_count: int = 0
     thickness_textures: dict[int, rl.Texture] = msgspec.field(default_factory=dict)
     ice_texture: rl.Texture | None = None
@@ -33,10 +32,6 @@ class CreatureLighting(msgspec.Struct):
     ) -> None:
         """Upload bounded emitters once per creature pass, before any body batches."""
         self.occlusion = occlusion
-        self.active = bool(lights) or ambient != 1.0
-        if not self.active:
-            self.light_count = 0
-            return
         if self.shader is None:
             shader = rl.load_shader_from_memory(CREATURE_VERTEX, CREATURE_FRAGMENT)
             if shader.id <= 0 or shader.id == rl.rl_get_shader_id_default():
@@ -69,7 +64,7 @@ class CreatureLighting(msgspec.Struct):
     ) -> Generator[None]:
         """Creature bodies drawn from `texture`, or with `ice` the freeze's ice: the grid of its particles cells;
         `frozen` for its cubes over frozen bodies, whose dark faces let the body show."""
-        if not self.active or self.shader is None:
+        if self.shader is None:
             yield
             return
         if ice:
@@ -80,7 +75,8 @@ class CreatureLighting(msgspec.Struct):
         else:
             # Texture IDs remain stable for the owning render resources' lifetime.
             thickness = self.thickness_textures.get(int(texture.id))
-            if thickness is None and self.light_count:
+            ambient_material = type_id is not None and CreatureTypeId.LIZARD <= type_id <= CreatureTypeId.SPIDER_SP2
+            if thickness is None and (self.light_count or ambient_material):
                 rl.rl_draw_render_batch_active()
                 thickness = load_thickness_texture(texture)
                 self.thickness_textures[int(texture.id)] = thickness
@@ -117,6 +113,5 @@ class CreatureLighting(msgspec.Struct):
             rl.unload_shader(self.shader)
         self.shader = None
         self.locations.clear()
-        self.active = False
         self.light_count = 0
         self.occlusion = None
