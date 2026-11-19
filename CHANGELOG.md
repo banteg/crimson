@@ -27,7 +27,7 @@ Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/
 - The clients verify their game packs and repair damaged copies. If a browser download fails, you can pick a local Crimsonland folder to recover the files.
 - The Python port saves ranked submission replays in the background, keeping the results screen responsive. Perk choices and end-of-run transitions follow the ticks that triggered them, including when a pause is pending.
 - Ranked upload retries preserve the recording and its score. Older co-op custom quest recordings play the quest variant they were recorded with.
-- Custom quest recipe downloads are published after the compiler reproduces the quest that passed verification.
+- The browser and desktop main menus show **Custom Quests** directly below **Play Game** when the leaderboard is available. Recipe downloads appear after the compiler reproduces the quest that passed verification.
 
 ### Under the hood
 
