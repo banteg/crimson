@@ -1,4 +1,4 @@
-// The main menu's Mods entry as the custom quest browser (host/custom_quests.inc),
+// The main menu's Custom Quests entry (host/custom_quests.inc),
 // as the browser host serves it: inside another site's page, which ranks no
 // runs, the entry is gone; otherwise it opens the browser, which asks for the
 // first page each time it opens and says so when the leaderboard can't be
@@ -38,11 +38,11 @@ const [CUSTOM, QUEST] = [5, 6];
 const [ESCAPE, DOWN] = [0x01, 0xd0];
 // The pad as the host lays it out (game/host_input.h): A by index, the d-pad's down as the hat, in hundredths of a degree.
 const [PAD_SOUTH, HAT_DOWN] = [1, 18000];
-// Where a fresh 1024x768 profile lays these out: the main menu's Mods, the
+// Where a fresh 1024x768 profile lays these out: the main menu's Custom Quests, the
 // browser's first two rows and Play, and a spot clear of the panels.
-const MODS = [230, 270], ROWS = [296, 316].map((y) => [150, y]), PLAY = [191, 522], CLEAR = [600, 700];
+const CUSTOM_QUESTS = [240, 338], ROWS = [296, 316].map((y) => [150, y]), PLAY = [191, 522], CLEAR = [600, 700];
 // The main menu's Play Game, and its panel's 1.9.8 box, left of Ranked.
-const PLAY_GAME = [240, 338], RULES_1_9_8 = [210, 489];
+const PLAY_GAME = [240, 270], RULES_1_9_8 = [210, 489];
 
 let run, game;
 const requests = [];
@@ -107,7 +107,7 @@ function boot(leaderboard) {
   while (run.clock < 15000) frame();
 }
 function open() {
-  click(MODS);
+  click(CUSTOM_QUESTS);
   waitFor("the browser", () => game.game_state() === MODS_MENU && requests.length);
 }
 
@@ -147,14 +147,19 @@ const quest = (id, title, start_weapon_id = 3) => ({
 });
 const page = (from, count) => Array.from({ length: count }, (_, i) => quest((from + i).toString(16).padStart(12, "0"), `Quest ${from + i}`));
 
-// Inside another site's page there is no Mods entry: the spot it takes opens nothing.
+// An embedded game keeps its original Play Game slot and has no button above it.
 boot("framed");
-click(MODS);
+click(PLAY_GAME);
 frames(60);
-if (game.game_state() !== MAIN_MENU || requests.length) throw Error("the Mods entry shows inside another site's page");
+if (game.game_state() !== MAIN_MENU || requests.length) throw Error("an entry shows above Play Game inside another site's page");
+click(CUSTOM_QUESTS);
+waitFor("Play Game in the embedded layout", () => game.game_state() === PLAY_GAME_MENU);
 
 boot(true);
-open();
+// The pad starts on Play Game. One step down takes it to Custom Quests.
+padTap({ hat: HAT_DOWN });
+padTap({ press: [PAD_SOUTH] });
+waitFor("the browser from the second pad slot", () => game.game_state() === MODS_MENU && requests.length);
 asked(0);
 game.game_custom_received(-1);
 frames(10);

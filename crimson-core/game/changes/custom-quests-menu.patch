@@ -1,0 +1,61 @@
+Show Play Game before Custom Quests when the leaderboard is offered. Use the
+generated label for the quest browser on the original menu plate.
+--- a/decomp/1.9/crimsonland/menus/ui_menu_layout_init.cpp
++++ b/decomp/1.9/crimsonland/menus/ui_menu_layout_init.cpp
+@@ -152,3 +152,4 @@
+ int texture_get_or_load_alt(char *path);
++bool mods_any_available(void);
+ void ui_element_init_defaults(ui_element_t *element);
+ void ui_element_layout_calc(ui_element_t *element);
+@@ -377,4 +378,7 @@
+     copy_layer(ui_element_slot_02_main_menu_primary, ui_menu_item_element);
+     ui_element_slot_02_main_menu_primary.pos = ui_layout_vec2_t(-60.0f, 210.0f);
+-    set_rect(ui_element_slot_02_main_menu_primary, 124.0f, 30.0f, 270.0f, -38.0f);
++    const bool custom_quests = game_is_full_version() && mods_any_available();
++    // Keep the stock 122:128 draw-to-texture ratio on the 144-pixel label.
++    const float label_width = custom_quests ? 144.0f * 122.0f / 128.0f : 122.0f;
++    set_rect(ui_element_slot_02_main_menu_primary, label_width + 2.0f, 30.0f, 270.0f, -38.0f);
+     ui_element_slot_02_main_menu_primary.label_id = 48;
+@@ -463,2 +467,11 @@
++    if (custom_quests) {
++        // Order the entries before assigning their stagger and animation times.
++        auto primary_pos = table[2]->pos;
++        table[2]->pos = table[3]->pos;
++        table[3]->pos = primary_pos;
++        table[2] = &ui_element_slot_03_main_menu_play_game;
++        table[3] = &ui_element_slot_02_main_menu_primary;
++    }
++
+     if (config_screen_width <= 640) {
+         transform_narrow_main_menu();
+--- a/decomp/1.9/crimsonland/ui_elements/game_state_set.cpp
++++ b/decomp/1.9/crimsonland/ui_elements/game_state_set.cpp
+@@ -64,4 +64,5 @@
+ int console_input_poll(void);
+ bool mods_any_available(void);
++int texture_get_or_load_alt(char *path);
+ void gameplay_reset_state(void);
+ void quest_start_selected(int major, int minor);
+@@ -101,3 +102,4 @@
+-        if (game_is_full_version() && mods_any_available()) {
++        const bool custom_quests = game_is_full_version() && mods_any_available();
++        if (custom_quests) {
+             ui_element_slot_02_main_menu_primary.active = 1;
+         }
+@@ -112,4 +114,4 @@
+         for (int i = 2; i <= 7; ++i) {
+             if (i == 2 && game_is_full_version()) {
+-                atlas_row = GAME_STATE_STATISTICS_MENU;
++                atlas_row = custom_quests ? GAME_STATE_PLAY_GAME_MENU : GAME_STATE_STATISTICS_MENU;
+             }
+@@ -165,4 +167,8 @@
+-        if (!game_is_full_version()) {
+-            ui_element_slot_02_main_menu_primary.active = 1;
++        if (custom_quests) {
++            auto &entry = ui_element_slot_02_main_menu_primary;
++            entry.overlay_texture_handle = texture_get_or_load_alt("ui\\custom-quests.tga");
++            for (int vertex = 0; vertex < 4; ++vertex) {
++                entry.overlay_vertices[vertex].v = vertex < 2 ? 0.0f : 1.0f;
++            }
+         }
+         ui_element_slot_03_main_menu_play_game.active = 1;

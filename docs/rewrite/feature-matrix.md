@@ -47,7 +47,7 @@ what a modern release needs. All three fix the
 | Music, sound, addon tunes | Yes | Yes | Yes |
 | Uncompressed source art | Yes | Yes | With the distributed files |
 | Mods | No | No | No |
-| Custom quests | `crimson quest play` | Browse and play from the Mods entry, or open by link | Browse and play from the Mods entry |
+| Custom quests | `crimson quest play` | Browse and play from Custom Quests, or open by link | Browse and play from Custom Quests |
 | Console | Yes | Yes; it pauses the run, and ranked and co-op runs keep it closed | Yes; it pauses the run, and ranked and co-op runs keep it closed |
 
 ## Replays

@@ -868,7 +868,7 @@ void game_state_set(game_state_id_t state) {
       custom_quest_restore();
     }
     game_state_set_recovered(state);
-    // The Mods entry's custom quests show a quest on the databases' second
+    // Custom Quests shows a quest on the databases' second
     // panel, and ask for their first page each time they open (host/custom_quests.inc).
     if (state == GAME_STATE_MODS_MENU) {
       ui_element_slot_33.active = 1;

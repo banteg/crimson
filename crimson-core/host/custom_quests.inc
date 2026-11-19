@@ -1,4 +1,4 @@
-// The main menu's Mods entry, which no version runs, browses the custom quests
+// The main menu's Custom Quests entry browses the quests
 // published on the leaderboard (docs/formats/quest-dsl.md), newest first: the
 // databases' two panels, the quests in the quest list's rows on the left, which
 // scroll and load more as they near the end, and the selected one on the right

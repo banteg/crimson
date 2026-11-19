@@ -255,6 +255,17 @@ int __stdcall D3DXCreateTextureFromFileExA(IDirect3DDevice8 *device, char *path,
                                            D3DFORMAT format, D3DPOOL pool, unsigned long filter,
                                            unsigned long mip_filter, D3DCOLOR key, GrimD3dxImageInfo *info,
                                            PALETTEENTRY *palette, IDirect3DTexture8 **texture) {
+  // Menu lettering ships with the module, independently of the player's PAQs.
+  if (strcmp(path, "ui\\custom-quests.tga") == 0) {
+    static constexpr unsigned char label[] = {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc23-extensions"
+#embed "assets/custom-quests.tga"
+#pragma clang diagnostic pop
+    };
+    return D3DXCreateTextureFromFileInMemoryEx(device, label, sizeof label, width, height, levels, usage,
+                                               format, pool, filter, mip_filter, key, info, palette, texture);
+  }
   FILE *fp = platform_fopen(path, "rb");
   if (!fp)
     return D3DERR_INVALIDCALL;

@@ -350,11 +350,10 @@ tell a dropped run from a failed download, which the next pin tries again.
 
 ### Custom quests
 
-The main menu's Mods entry, which no version runs, browses the
-[custom quests](../docs/formats/quest-dsl.md) published on the leaderboard
-([`host/custom_quests.inc`](host/custom_quests.inc)). It shows where the host
-takes runs to the leaderboard, not inside another site's page, since a custom
-quest plays ranked. The screen is the databases' two panels. The left lists the
+Custom Quests follows Play Game on the main menu when the leaderboard is
+available. It browses the [custom quests](../docs/formats/quest-dsl.md) published
+on the leaderboard ([`host/custom_quests.inc`](host/custom_quests.inc)).
+The screen is the databases' two panels. The left lists the
 quests newest first in the quest list's rows, each title with its author in the
 list's grey, ten at a time: the list scrolls (the wheel, the arrow keys, the
 pad) and loads the next page as it nears the end. A click or the arrow keys
@@ -363,6 +362,25 @@ right panel shows the selected quest as the weapon database shows a weapon:
 how many players cleared it in the corner, its title and author, its start
 weapon's icon and name (with no other weapons when none drops), and the
 weapons, bonuses and perks it turns off.
+
+The browser and desktop builds embed the [label texture](game/assets/custom-quests.tga)
+in the game module. The 144-pixel row gives the full-size lettering room to fit
+inside the plate at the stock texture scale. Generate it from the repository
+root, then copy the RLE TGA row into the game assets directory. The idle and
+hover PNGs preview the label on the menu plate.
+
+```sh
+uv run python scripts/generate_menu_buttons.py --font /path/to/ap.ttf --row-width 144 "CUSTOM QUESTS"
+cp artifacts/menu-buttons/00-custom-quests.tga crimson-core/game/assets/custom-quests.tga
+```
+
+To compare the generated lettering with the stock atlas, render the eight labels
+in their original row order at the default 128-pixel width.
+
+```sh
+uv run python scripts/generate_menu_buttons.py --font /path/to/ap.ttf --out artifacts/menu-buttons-stock \
+  "BUY NOW" "PLAY GAME" "OPTIONS" "STATISTICS" "MODS" "OTHER GAMES" "QUIT" "BACK"
+```
 
 The host fetches a page from `POST /api/custom/browse`
 (`HOST_LEADERBOARD_CUSTOM`, `game_custom_request`), whose clears are the 1.9.8

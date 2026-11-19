@@ -241,7 +241,7 @@ const PERK_CHOICE = [150, 216], PAD_CURSOR = [1000, 740];
 // The main menu's Play Game; the Play Game panel lays out Quests, Rush and Survival first, as the Host played
 // before, 28 pixels apart with every quest unlocked (the session's) and 32 with the Host's own three; a fresh save's
 // Quests; the high scores' Play a game.
-const PLAY_GAME = [240, 338], RANKED = [285, 489], SURVIVAL = [232, 372], OWN_QUESTS = [232, 322], FRESH_QUESTS = [232, 350];
+const PLAY_GAME = [240, 270], RANKED = [285, 489], SURVIVAL = [232, 372], OWN_QUESTS = [232, 322], FRESH_QUESTS = [232, 350];
 const PLAY_A_GAME = [190, 500];
 // The Statistics menu's Perks.
 const PERKS = [275, 384];
@@ -1066,7 +1066,7 @@ restart("config.gameplay.player_count = 1", "framed");
 // window losing the focus pauses it as alone. Completing it unlocks the next quest in the save at once; the Guest's
 // pad saves its name and clicks Play Next, which starts nothing, then Main Menu, the fourth button. Its game closes
 // and starts again, its save keeping the unlock.
-click(guest, MAIN_MENU, PLAY_GAME);
+click(guest, MAIN_MENU, [240, 338]); // Play Game keeps its original slot in the framed layout.
 click(guest, PLAY_GAME_MENU, OWN_QUESTS);
 settle(guest, QUEST_SELECT);
 tap(guest, key(TWO));
