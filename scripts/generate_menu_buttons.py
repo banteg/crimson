@@ -85,18 +85,17 @@ def render_label(text: str, font: ImageFont.FreeTypeFont) -> Image.Image:
     left, top = bounds[0] // SCALE, bounds[1] // SCALE
     right, bottom = math.ceil(bounds[2] / SCALE), math.ceil(bounds[3] / SCALE)
     box = (left * SCALE, top * SCALE, right * SCALE, bottom * SCALE)
-    # Keep the native cap height until a label would hit the edge of the sampled quad.
+    # Condense long labels horizontally to preserve the menu's cap height.
     width, height = right - left, bottom - top
-    fit = min(1.0, (SAMPLE_WIDTH - left - 1) / width, (ROW_SIZE[1] - 2) / height)
-    size = (max(1, round(width * fit)), max(1, round(height * fit)))
+    size = (max(1, min(width, SAMPLE_WIDTH - left - 1)), min(height, ROW_SIZE[1] - 2))
     ink = Image.new("RGBA", size)
     ink.putalpha(stroke.crop(box).resize(size, Image.Resampling.HAMMING))
     blue = Image.new("RGBA", size, (26, 112, 162))
     blue.putalpha(face.crop(box).resize(size, Image.Resampling.HAMMING))
     ink.alpha_composite(blue)
-    y = round((top - pad - ROW_SIZE[1] / 2) * fit + ROW_SIZE[1] / 2)
+    y = round((top - pad - ROW_SIZE[1] / 2) * (size[1] / height) + ROW_SIZE[1] / 2)
     row = Image.new("RGBA", ROW_SIZE)
-    row.paste(ink, (left, max(1, min(y, ROW_SIZE[1] - 1 - ink.height))))
+    row.paste(ink, (left, max(1, min(y, ROW_SIZE[1] - ink.height))))
     return row
 
 
