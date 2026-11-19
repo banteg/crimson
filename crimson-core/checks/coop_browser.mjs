@@ -559,14 +559,12 @@ async function soloRun() {
   console.log("solo Survival started");
   await peer.move(780, 384);
   await peer.keyDown("KeyD");
-  // Try through the opening transition and weapon cooldown. Each press and
-  // release has its own frame, even when software graphics are slow.
-  for (let shot = 0; shot < 12 && (await peer.screen()) === GAMEPLAY; ++shot) {
-    await peer.down();
+  // Hold move and fire through the opening transition. The renderer may
+  // finish a dozen frames before the player's weapon can fire.
+  await peer.down();
+  for (let frame = 0; frame < 90 && (await peer.screen()) === GAMEPLAY; ++frame)
     await peer.frame();
-    await peer.up();
-    await peer.frame();
-  }
+  await peer.up();
   await peer.keyUp("KeyD");
   await until("Survival game over", async () => await peer.screen() === GAME_OVER, 180000);
   await peer.move(900, 700);
