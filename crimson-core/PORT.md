@@ -364,13 +364,22 @@ weapon's icon and name (with no other weapons when none drops), and the
 weapons, bonuses and perks it turns off.
 
 The browser and desktop builds embed the [label texture](game/assets/custom-quests.tga)
-in the game module. Generate it from the repository root, then copy the RLE TGA
-row into the game assets directory. The idle and hover PNGs preview the label
-on the menu plate.
+in the game module. The 144-pixel row gives the full-size lettering room to fit
+inside the plate at the stock texture scale. Generate it from the repository
+root, then copy the RLE TGA row into the game assets directory. The idle and
+hover PNGs preview the label on the menu plate.
 
 ```sh
-uv run python scripts/generate_menu_buttons.py --font /path/to/ap.ttf "CUSTOM QUESTS"
+uv run python scripts/generate_menu_buttons.py --font /path/to/ap.ttf --row-width 144 "CUSTOM QUESTS"
 cp artifacts/menu-buttons/00-custom-quests.tga crimson-core/game/assets/custom-quests.tga
+```
+
+To compare the generated lettering with the stock atlas, render the eight labels
+in their original row order at the default 128-pixel width.
+
+```sh
+uv run python scripts/generate_menu_buttons.py --font /path/to/ap.ttf --out artifacts/menu-buttons-stock \
+  "BUY NOW" "PLAY GAME" "OPTIONS" "STATISTICS" "MODS" "OTHER GAMES" "QUIT" "BACK"
 ```
 
 The host fetches a page from `POST /api/custom/browse`

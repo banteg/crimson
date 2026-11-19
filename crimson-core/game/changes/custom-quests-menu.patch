@@ -7,8 +7,17 @@ generated label for the quest browser on the original menu plate.
 +bool mods_any_available(void);
  void ui_element_init_defaults(ui_element_t *element);
  void ui_element_layout_calc(ui_element_t *element);
-@@ -463,2 +464,11 @@
-+    if (game_is_full_version() && mods_any_available()) {
+@@ -377,4 +378,7 @@
+     copy_layer(ui_element_slot_02_main_menu_primary, ui_menu_item_element);
+     ui_element_slot_02_main_menu_primary.pos = ui_layout_vec2_t(-60.0f, 210.0f);
+-    set_rect(ui_element_slot_02_main_menu_primary, 124.0f, 30.0f, 270.0f, -38.0f);
++    const bool custom_quests = game_is_full_version() && mods_any_available();
++    // Keep the stock 122:128 draw-to-texture ratio on the 144-pixel label.
++    const float label_width = custom_quests ? 144.0f * 122.0f / 128.0f : 122.0f;
++    set_rect(ui_element_slot_02_main_menu_primary, label_width + 2.0f, 30.0f, 270.0f, -38.0f);
+     ui_element_slot_02_main_menu_primary.label_id = 48;
+@@ -463,2 +467,11 @@
++    if (custom_quests) {
 +        // Order the entries before assigning their stagger and animation times.
 +        auto primary_pos = table[2]->pos;
 +        table[2]->pos = table[3]->pos;
