@@ -257,7 +257,9 @@ async function open(name, origin, { webrtc = true } = {}) {
   await send("Runtime.enable");
   await send("Page.enable");
   await send("Network.enable");
-  await send("Emulation.setDeviceMetricsOverride", { width: 1024, height: 768, deviceScaleFactor: 1, mobile: false });
+  // Keep the solo test's menu coordinates in CSS pixels while reducing the
+  // work SwiftShader does for each frame on the deployment runner.
+  await send("Emulation.setDeviceMetricsOverride", { width: 1024, height: 768, deviceScaleFactor: soloOnly ? 0.5 : 1, mobile: false });
   await send("Emulation.setFocusEmulationEnabled", { enabled: true });
   if (!webrtc) await send("Page.addScriptToEvaluateOnNewDocument", { source: "delete window.RTCPeerConnection;" });
   else await send("Page.addScriptToEvaluateOnNewDocument", { source: `
@@ -391,11 +393,14 @@ async function press(peer, screen, [x, y]) {
   if (screen !== null) await until(`screen ${screen}`, async () => (await peer.screen()) === screen, 30000);
   await peer.move(x, y);
   await sleep(1000);
+  await peer.frame();
   if (screen !== null && await peer.screen() !== screen) return;
   await peer.down();
   await sleep(120);
   await peer.frame();
+  await peer.frame();
   await peer.up();
+  await peer.frame();
 }
 async function chooseFromMainMenu(peer, position, next) {
   // The startup animation and the main menu have the same state. On a slow
@@ -406,10 +411,11 @@ async function chooseFromMainMenu(peer, position, next) {
     await peer.move(900, 700);
     // Give the menu's pending transition time to finish before another click:
     // the Play Game button overlaps Quests on the incoming panel.
-    for (let i = 0; i < 90; ++i) {
+    const transitionEnd = Date.now() + 2000;
+    do {
       await peer.frame();
       if (await peer.screen() === next) return true;
-    }
+    } while (Date.now() < transitionEnd);
     return false;
   }, 120000);
 }
