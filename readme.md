@@ -29,7 +29,7 @@ Its [player guide](pypi.md) covers controls, options and commands.
 
 The [feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compares the three. The original Crimsonland Classic assets are distributed with permission from 10tons, and every client downloads them on first launch.
 
-The [1.4.0 freeware build](crimson-core/PORT.md#freeware-140) plays Career and Survival with one or two local players on desktop and in a browser.
+The freeware builds ([1.4.0](crimson-core/PORT.md#freeware-140), [1.3.0 and 1.0.2](crimson-core/PORT.md#freeware-102-and-130)) also play Career and Survival with one or two local players on desktop and in a browser.
 
 ## Beyond the original
 
@@ -56,7 +56,7 @@ For 1.9.93, tests run selected functions from the original executable under an e
 
 ## Decompilation
 
-The [matching decompilation](decomp/README.md) of 1.9.93 is complete: every game and engine function comes from recovered source, with every reference checked. Bundled third-party libraries (D3DX8, the MSVC runtime, the image and audio codecs) keep their upstream provenance and are not counted.
+The [matching decompilation](decomp/README.md) of 1.9.93 and all three 2002 freeware releases (1.0.2, 1.3.0, 1.4.0) is complete: every game and engine function compiles to its original machine code, with every reference checked. 1.9.8's mapped game and engine inventory also reaches 100% normalized matching. Bundled third-party libraries (D3DX8, the MSVC runtime, the image and audio codecs) keep their upstream provenance and are not counted.
 
 The same source tree builds other releases, each with its own compiler profile and `CL_BUILD` define, and [decomp.dev](https://decomp.dev/banteg/crimson) tracks each from its own evidence:
 
