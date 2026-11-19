@@ -61,6 +61,7 @@
 // CRIMSON_CHROME_ANGLE selects the graphics backend. macOS uses the browser default unless set.
 // Add --solo before <asset dir> to record a Survival run in a fresh profile,
 // reload the saved files, and watch that local score through the game UI.
+// On Linux, the solo check uses a browser window when DISPLAY is set.
 // <asset dir> holds crimson.paq, sfx.paq and music.paq (artifacts/assets).
 // CRIMSON_CHROME is a Chrome or Chromium binary with the new headless mode (not
 // the headless shell, whose tabs are never hidden). The check drives it over the
@@ -79,6 +80,7 @@ import path from "node:path";
 import { costSetup, measure } from "./coop_cost.mjs";
 
 const soloOnly = process.argv[2] === "--solo";
+const windowedSolo = soloOnly && process.platform === "linux" && !!process.env.DISPLAY;
 const [given, shots = path.join(os.tmpdir(), "coop-browser-shots"), gameWasm = new URL("../build/game/game.wasm", import.meta.url).pathname] =
   process.argv.slice(soloOnly ? 3 : 2);
 if (!given || !process.env.CRIMSON_CHROME) throw Error("usage: CRIMSON_CHROME=<chrome> coop_browser.mjs [--solo] <asset dir> [shots dir] [game.wasm]");
@@ -165,7 +167,8 @@ const profile = fs.mkdtempSync(path.join(os.tmpdir(), "coop-chrome-"));
 const chrome = spawn(
   process.env.CRIMSON_CHROME,
   [
-    `--user-data-dir=${profile}`, "--headless=new", "--remote-debugging-port=0", "--no-first-run", "--no-default-browser-check",
+    `--user-data-dir=${profile}`, ...(windowedSolo ? ["--window-size=1040,820"] : ["--headless=new"]),
+    "--remote-debugging-port=0", "--no-first-run", "--no-default-browser-check",
     "--use-mock-keychain", "--password-store=basic", "--autoplay-policy=no-user-gesture-required",
     ...(soloOnly ? ["--disable-backgrounding-occluded-windows", "--disable-renderer-backgrounding"] : []),
     // Host candidates by address, not mDNS names, so the pages connect directly.
@@ -550,7 +553,7 @@ async function soloRun() {
       window.smokeMouseEvents = [];
       for (const type of ["mousedown", "mouseup"]) {
         document.addEventListener(type, (event) => {
-          window.smokeMouseEvents.push([type, event.clientX, event.clientY, event.buttons, event.target.id || event.target.tagName]);
+          window.smokeMouseEvents.push([type, event.clientX, event.clientY, event.buttons, event.target.id || event.target.tagName, Math.round(performance.now())]);
           if (window.smokeMouseEvents.length > 8) window.smokeMouseEvents.shift();
         }, true);
       }
