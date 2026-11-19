@@ -404,7 +404,8 @@ async function chooseFromMainMenu(peer, position, next) {
     if (await peer.screen() === next) return true;
     await press(peer, MAIN_MENU, position);
     await peer.move(900, 700);
-    // Give the menu's pending transition time to finish before another click.
+    // Give the menu's pending transition time to finish before another click:
+    // the Play Game button overlaps Quests on the incoming panel.
     for (let i = 0; i < 90; ++i) {
       await peer.frame();
       if (await peer.screen() === next) return true;
