@@ -97,7 +97,7 @@ const reasonOf = (status) => (status >> 16) & 255;
 // The 1024x768 frame's Play Game on the main menu, and Survival on the Play Game panel, whose fresh profile lists
 // Tutorial, Quests, Rush and Survival 28 pixels apart with every quest unlocked (as the session shows them); the
 // pause banner's Leave, the second of its two buttons (host/coop_live.inc coop_banner).
-const PLAY_GAME = [240, 338], SURVIVAL = [232, 396], LEAVE = [592, 406];
+const PLAY_GAME = [240, 270], SURVIVAL = [232, 396], LEAVE = [592, 406];
 // A fresh profile's main menu shares its screen with the startup sequence, which ends after about 14 s.
 const STARTUP_MS = 15000;
 const TICKS = 300;
@@ -404,8 +404,7 @@ async function chooseFromMainMenu(peer, position, next) {
     if (await peer.screen() === next) return true;
     await press(peer, MAIN_MENU, position);
     await peer.move(900, 700);
-    // Give the menu's pending transition time to finish before another click:
-    // the Play Game button overlaps Quests on the incoming panel.
+    // Give the menu's pending transition time to finish before another click.
     for (let i = 0; i < 90; ++i) {
       await peer.frame();
       if (await peer.screen() === next) return true;

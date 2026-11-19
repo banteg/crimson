@@ -47,9 +47,8 @@ address-keyed source evidence, a native-oracle test, or the core gate. See [evid
   extension must preserve those outcomes; see [local multiplayer](local-multiplayer.md).
 - Rendering has explicit options and sampling differences; see [terrain](terrain.md)
   and [RTX rendering](rtx-rendering.md).
-- The original's mods are DLL plugins, out of scope in every version. The web and native clients' Mods entry
-  browses the [custom quests](../formats/quest-dsl.md) published on the leaderboard instead; the Python port
-  plays them with `crimson quest play`.
+- The web and native clients browse published [custom quests](../formats/quest-dsl.md) from Custom Quests
+  on the main menu. The Python port plays them with `crimson quest play`.
 - The original's Other Games advertisement flows and its
   [online scores](../crimsonland-exe/online-scores.md) client for
   `scores.crimsonland.com` are out of scope. Ranked runs go to the crimson.land

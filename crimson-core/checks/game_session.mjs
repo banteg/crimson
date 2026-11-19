@@ -324,7 +324,7 @@ if (padded) {
   const moved = [PAD_CURSOR[0], PAD_CURSOR[1] - 1];
   for (let i = 0; i < 2; ++i) frame(16, { cursor: moved });
   if (Math.hypot(game.game_cursor_x() - moved[0], game.game_cursor_y() - moved[1]) > 1) throw Error("the mouse did not take the cursor back from the pad");
-} else click(MAIN_MENU, [240, 338]);
+} else click(MAIN_MENU, [240, ranked ? 270 : 338]);
 const unlocksBefore = savedUnlocks();
 // A fresh profile's Play Game panel lists Tutorial, Quests, Rush and Survival;
 // ticking Ranked, under the player-count list, leaves Quests and Survival.

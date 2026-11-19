@@ -50,7 +50,7 @@ const [ESCAPE, PAGE_DOWN] = [0x01, 0xd1];
 // spot clear of the panels, and the pinned card's Watch.
 const STATISTICS = [200, 458], HIGH_SCORES = [275, 316], INTERNET = [682, 261];
 // The main menu's Play Game, and its panel's 1.9.8 box, left of Ranked.
-const PLAY_GAME = [240, 338], RULES_1_9_8 = [210, 489];
+const PLAY_GAME = [240, 270], RULES_1_9_8 = [210, 489];
 const ROWS = [305, 321, 337, 353].map((y) => [180, y]), UPDATE = [209, 480], CLEAR = [700, 650], WATCH = [745, 421];
 
 function frame({ cursor = CLEAR, buttons = 0, taps = [] } = {}) {

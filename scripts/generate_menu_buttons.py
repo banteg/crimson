@@ -3,7 +3,7 @@
     uv run python scripts/generate_menu_buttons.py --font /path/to/ap.ttf "REPLAYS" "DAILY RUN"
 
 Writes the clean plate, a transparent 128×256 label atlas (arguments in row order),
-and a settled idle and hover PNG for each label. Unused atlas rows are transparent.
+and an RLE TGA row plus settled idle and hover PNGs for each label. Unused atlas rows are transparent.
 """
 
 from __future__ import annotations
@@ -141,6 +141,7 @@ def main() -> None:
     for i, (text, row) in enumerate(zip(args.labels, rows, strict=True)):
         atlas.paste(row, (0, i * ROW_SIZE[1]))
         slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "label"
+        row.save(args.out / f"{i:02d}-{slug}.tga", compression="tga_rle")
         for state, hover in (("idle", 0), ("hover", 1000)):
             render_button(plate, row, hover).save(args.out / f"{i:02d}-{slug}-{state}.png")
     atlas.save(args.out / "ui_itemTexts.png")
