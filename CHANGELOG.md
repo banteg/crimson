@@ -2,6 +2,38 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.25.0
+
+### For players
+
+#### Three playable freeware releases
+
+- Crimsonland 1.0.2, 1.3.0 and 1.4.0 can now be built for desktop and browser from the recovered source. Each plays its own Career and Survival, solo or with two players locally, using that release's original artwork, sounds and score format. See the build instructions for [1.0.2 and 1.3.0](https://github.com/banteg/crimson/blob/master/crimson-core/PORT.md#freeware-102-and-130) and [1.4.0](https://github.com/banteg/crimson/blob/master/crimson-core/PORT.md#freeware-140).
+
+#### Browser saves and co-op
+
+- **Backups and recordings** lets you download or restore your progress, settings, high scores, recordings and queued ranked runs. You can download individual recordings and export your private leaderboard key separately.
+- When you open the game in another tab, you can take over without both tabs writing to the same profile. Replay and custom quest links can wait until your co-op run ends.
+- Online co-op handles display stalls and route changes more reliably. The statistics menu after co-op and the next run after a custom quest use your own game build and settings again.
+
+#### RTX lighting
+
+- Creature species have distinct materials. Light glints off spider shells and catches on lizard scales, and beams light players and creatures along their length.
+- In the browser and desktop games, muzzle flashes and powder smoke follow the barrel. Ground lighting skips tiles a light cannot reach, saving rendering work in busy fights.
+
+#### Other changes
+
+- In the browser and desktop games, quick taps are carried into the next game tick, while the local mouse reticle follows the display refresh rate. A reduced camera shake option is available, and the browser can recover from WebGPU device loss.
+- The clients verify their game packs and repair damaged copies. If a browser download fails, you can pick a local Crimsonland folder to recover the files.
+- The Python port saves ranked submission replays in the background, keeping the results screen responsive. Perk choices and end-of-run transitions follow the ticks that triggered them, including when a pause is pending.
+- Ranked upload retries preserve the recording and its score. Older co-op custom quest recordings play the quest variant they were recorded with.
+- Custom quest recipe downloads are published after the compiler reproduces the quest that passed verification.
+
+### Under the hood
+
+- All 818 inventoried game and engine functions across the three freeware releases match the original machine code. The recovery reports track executable gaps and data separately.
+- The base Python install no longer needs NumPy. CI plays, records, reloads and watches a run in the packaged browser game, and publishing checks that the live service accepts the client's replay format and rules.
+
 ## 0.24.0
 
 ### For players
