@@ -36,6 +36,22 @@ ROWS = 8
 SAMPLE_WIDTH = int(MENU_LABEL_WIDTH)
 FONT_SIZE = 29
 SCALE = 4
+# Offsets in supersampled pixels from aligning the font's outlines to the stock atlas.
+GLYPH_OFFSETS = {
+    "A": (-4, 0),
+    "B": (-4, -1),
+    "D": (1, -2),
+    "H": (2, 0),
+    "K": (1, -1),
+    "M": (-2, 0),
+    "N": (1, 0),
+    "Q": (1, -1),
+    "R": (-4, -2),
+    "S": (-2, -1),
+    "T": (-1, -2),
+    "W": (-2, -1),
+    "Y": (1, -1),
+}
 
 
 def load_plate(assets: Path) -> Image.Image:
@@ -71,7 +87,8 @@ def render_label(text: str, font: ImageFont.FreeTypeFont, *, row_width: int = ST
     draw = ImageDraw.Draw(mask)
     x = 5.25
     for char, advance in zip(text, advances, strict=True):
-        draw.text((x * SCALE, (34.75 + pad) * SCALE), char, font=hi_font, fill=255, anchor="ls")
+        dx, dy = GLYPH_OFFSETS.get(char, (0, 0))
+        draw.text((x * SCALE + dx, (34.75 + pad) * SCALE + dy), char, font=hi_font, fill=255, anchor="ls")
         x += advance
 
     # The stock atlas has a dark blue outline and a narrower blue face.
@@ -91,7 +108,7 @@ def render_label(text: str, font: ImageFont.FreeTypeFont, *, row_width: int = ST
     # Match the firmer edge of the stock blue face while keeping the outline's softer edge.
     blue = Image.new("RGBA", size, (26, 112, 162))
     fill = face.crop(box).resize(size, Image.Resampling.HAMMING)
-    blue.putalpha(fill.point(lambda coverage: max(0, min(255, round((coverage - 82) * 255 / (199 - 82))))))
+    blue.putalpha(fill.point(lambda coverage: max(0, min(255, round((coverage - 102) * 255 / (189 - 102))))))
     ink.alpha_composite(blue)
     ink.paste((0, 0, 0, 0), mask=ink.getchannel("A").point(lambda opacity: 255 if opacity == 0 else 0))
     return ink
@@ -100,8 +117,9 @@ def render_label(text: str, font: ImageFont.FreeTypeFont, *, row_width: int = ST
 def render_button(plate: Image.Image, row: Image.Image, hover: int) -> Image.Image:
     # The settled menu draws the same tinted row twice, first source-over, then
     # additively. The panel under this entire rectangle is opaque.
-    x = int(MENU_LABEL_OFFSET_X - MENU_ITEM_OFFSET_X)
-    y = int(MENU_LABEL_OFFSET_Y - MENU_ITEM_OFFSET_Y)
+    # The plate quad starts at source texel 1. The preview includes texel 0.
+    x = int(MENU_LABEL_OFFSET_X - MENU_ITEM_OFFSET_X) + 1
+    y = int(MENU_LABEL_OFFSET_Y - MENU_ITEM_OFFSET_Y) + 1
     height = int(MENU_LABEL_HEIGHT)
     width = row.width * SAMPLE_WIDTH / STOCK_ROW_WIDTH
     # Sample the straight RGBA texture as the GPU does, at destination pixel centers.
