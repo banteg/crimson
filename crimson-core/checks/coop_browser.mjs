@@ -257,7 +257,9 @@ async function open(name, origin, { webrtc = true } = {}) {
   await send("Runtime.enable");
   await send("Page.enable");
   await send("Network.enable");
-  await send("Emulation.setDeviceMetricsOverride", { width: 1024, height: 768, deviceScaleFactor: 1, mobile: false });
+  // Use a smaller 4:3 viewport for the solo check on software graphics.
+  const viewport = soloOnly ? { width: 800, height: 600 } : { width: 1024, height: 768 };
+  await send("Emulation.setDeviceMetricsOverride", { ...viewport, deviceScaleFactor: 1, mobile: false });
   await send("Emulation.setFocusEmulationEnabled", { enabled: true });
   if (!webrtc) await send("Page.addScriptToEvaluateOnNewDocument", { source: "delete window.RTCPeerConnection;" });
   else await send("Page.addScriptToEvaluateOnNewDocument", { source: `
@@ -330,11 +332,14 @@ async function open(name, origin, { webrtc = true } = {}) {
         return [box.x + box.width / 2, box.y + box.height / 2];
       }, selector);
       at = [x, y];
-      await mouse("mouseMoved");
+      await mouse("mouseMoved", { button: "none" });
       await mouse("mousePressed", { buttons: 1 });
       await mouse("mouseReleased");
     },
-    move: (x, y) => ((at = [x, y]), mouse("mouseMoved")),
+    move(x, y) {
+      at = [x * viewport.width / 1024, y * viewport.height / 768];
+      return mouse("mouseMoved", { button: "none" });
+    },
     down: () => mouse("mousePressed", { buttons: 1 }),
     up: () => mouse("mouseReleased"),
     keyDown: (code) => key("keyDown", code),
@@ -391,11 +396,14 @@ async function press(peer, screen, [x, y]) {
   if (screen !== null) await until(`screen ${screen}`, async () => (await peer.screen()) === screen, 30000);
   await peer.move(x, y);
   await sleep(1000);
+  await peer.frame();
   if (screen !== null && await peer.screen() !== screen) return;
   await peer.down();
   await sleep(120);
   await peer.frame();
+  await peer.frame();
   await peer.up();
+  await peer.frame();
 }
 async function chooseFromMainMenu(peer, position, next) {
   // The startup animation and the main menu have the same state. On a slow
@@ -406,10 +414,11 @@ async function chooseFromMainMenu(peer, position, next) {
     await peer.move(900, 700);
     // Give the menu's pending transition time to finish before another click:
     // the Play Game button overlaps Quests on the incoming panel.
-    for (let i = 0; i < 90; ++i) {
+    const transitionEnd = Date.now() + 2000;
+    do {
       await peer.frame();
       if (await peer.screen() === next) return true;
-    }
+    } while (Date.now() < transitionEnd);
     return false;
   }, 120000);
 }
@@ -537,9 +546,20 @@ async function soloRun() {
   await cdp("Target.activateTarget", { targetId: peer.targetId });
   const read = (name) => peer.evaluate((name) => Array.from(FS.readFile("/game/" + name)), name);
   const openMenu = async (position, next) => {
+    await peer.evaluate(() => {
+      window.smokeMouseEvents = [];
+      for (const type of ["mousedown", "mouseup"]) {
+        document.addEventListener(type, (event) => {
+          window.smokeMouseEvents.push([type, event.clientX, event.clientY, event.buttons, event.target.id || event.target.tagName, Math.round(performance.now())]);
+          if (window.smokeMouseEvents.length > 8) window.smokeMouseEvents.shift();
+        }, true);
+      }
+    });
     await peer.click("#play");
     await until("the main menu", async () => await peer.screen() === MAIN_MENU);
-    await sleep(STARTUP_MS);
+    // Enter skips the intro. The first click should go to the menu even when
+    // SwiftShader takes longer than the nominal intro duration to draw it.
+    await tap(peer, "Enter");
     await chooseFromMainMenu(peer, position, next);
   };
   // Exercise the baseline WebGL2 client on the CI runner's software graphics device.
@@ -553,14 +573,12 @@ async function soloRun() {
   console.log("solo Survival started");
   await peer.move(780, 384);
   await peer.keyDown("KeyD");
-  // Try through the opening transition and weapon cooldown. Each press and
-  // release has its own frame, even when software graphics are slow.
-  for (let shot = 0; shot < 12 && (await peer.screen()) === GAMEPLAY; ++shot) {
-    await peer.down();
+  // Hold move and fire through the opening transition. The renderer may
+  // finish a dozen frames before the player's weapon can fire.
+  await peer.down();
+  for (let frame = 0; frame < 90 && (await peer.screen()) === GAMEPLAY; ++frame)
     await peer.frame();
-    await peer.up();
-    await peer.frame();
-  }
+  await peer.up();
   await peer.keyUp("KeyD");
   await until("Survival game over", async () => await peer.screen() === GAME_OVER, 180000);
   await peer.move(900, 700);
@@ -897,6 +915,7 @@ try {
     try {
       console.error(`${peer.name}: screen ${await peer.screen()}, status ${(await peer.status()).toString(16)}, "${await peer.line()}"`);
       console.error(`${peer.name}: uploads ${JSON.stringify(peer.uploads)}, transport ${JSON.stringify(await peer.evaluate(() => coop?.stats()))}`);
+      if (soloOnly) console.error(`${peer.name}: pointer events ${JSON.stringify(await peer.evaluate(() => window.smokeMouseEvents))}`);
       await peer.shot("failed");
     } catch (diagnostic) {
       console.error(`${peer.name}: no diagnostics (${diagnostic.message})`);

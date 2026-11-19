@@ -32,7 +32,7 @@ jobs:
       checks: read
       # Request a lightweight same-commit artifact build only when normal CI omitted it.
       actions: write
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 30
     outputs:
       verdicts_run_id: ${{ steps.verdicts.outputs.verdicts_run_id }}
@@ -89,9 +89,10 @@ jobs:
       - run: npm run check && npm test
         working-directory: service
       - name: Play, record, reload and watch through the packaged browser game
-        run: |
-          export CRIMSON_CHROME="$(command -v google-chrome)"
-          node crimson-core/checks/coop_browser.mjs --solo artifacts/assets "$RUNNER_TEMP/browser-shots"
+        env:
+          CRIMSON_CHROME: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          CRIMSON_CHROME_ANGLE: swiftshader
+        run: node crimson-core/checks/coop_browser.mjs --solo artifacts/assets "$RUNNER_TEMP/browser-shots"
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

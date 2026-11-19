@@ -27,7 +27,7 @@ jobs:
 
   play:
     needs: [client, verifier]
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
@@ -60,9 +60,10 @@ jobs:
           UV_FROZEN: "1"
           UV_NO_DEV: "1"
       - name: Play, record, reload and watch a packaged solo run
-        run: |
-          export CRIMSON_CHROME="$(command -v google-chrome)"
-          node crimson-core/checks/coop_browser.mjs --solo artifacts/assets "$RUNNER_TEMP/browser-shots"
+        env:
+          CRIMSON_CHROME: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          CRIMSON_CHROME_ANGLE: swiftshader
+        run: node crimson-core/checks/coop_browser.mjs --solo artifacts/assets "$RUNNER_TEMP/browser-shots"
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
