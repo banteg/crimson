@@ -946,8 +946,10 @@ void check_ground_visibility() {
   d[3] = 400;
   assert(bounds()[2] > 0); // segment reaches the view though its center does not
   d[3] = 0; shape[3] = 200;
-  assert(bounds()[2] > 0); // extended analytic beam support
-  shape[3] = 0; c[3] = 180;
+  assert(bounds()[2] == 0); // reflection-only beam does not extend ground bounds by halo support
+  r[0] = 1;
+  assert(bounds()[2] > 0); // extended analytic beam support when illuminating
+  r[0] = 0; shape[3] = 0; c[3] = 180;
   assert(bounds()[2] > 0); // ring's near edge
   r[1] = 0;
   assert(bounds()[2] == 0); // no eligible response

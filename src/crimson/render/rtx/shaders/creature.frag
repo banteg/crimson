@@ -1,7 +1,7 @@
 #version 330
 // Art-directed dome and silhouette lighting for the original 8x8 creature atlases, and the freeze's ice lit as ice.
 #include "filtering.glsl"
-#include "source_geometry.glsl"
+#include "light_visibility.glsl"
 #define MAX_SPEC_LIGHTS 32
 #include "beam_energy.glsl"
 #include "linear_light.glsl"
@@ -22,6 +22,7 @@ in vec4 specVisibility0;
 in vec4 specVisibility1;
 in vec4 specVisibility2;
 in vec4 specVisibility3;
+in vec2 quadOwner;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -221,7 +222,9 @@ void main() {
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            float spec_vis = my_spec_slot >= 0 && my_spec_slot < 16 ? specVisibility(my_spec_slot) : lightVisibility(i);
+            float spec_vis = my_spec_slot < 0 ? lightVisibility(i)
+                : my_spec_slot < 16 ? specVisibility(my_spec_slot)
+                : illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), source_width, quadOwner);
             added += u_rgb[i].rgb * spec_amount * spec_gain * breakup * spec_vis;
         }
         if (u_response[i].x <= 0.) continue;

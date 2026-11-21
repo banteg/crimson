@@ -708,6 +708,19 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             dropped_img = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
             for a, b in zip(fading_img, dropped_img, strict=True):
                 assert a == pytest.approx(b, abs=.002)
+
+        # Overflow past 16 qualifying beams: the 17th beam must still trace specular visibility toward
+        # the nearest segment point (not the diffuse centroid), even when 16 distant beams occupy the fast slots.
+        distant = [
+            msgspec.structs.replace(beam, pos=Vec2(900, 900 - i * 4), radius=20, reflection_radius=20)
+            for i in range(16)
+        ]
+        occlusion.upload(build_occlusion_grid([shaft_blocker], [*distant, beam], width=1024, height=1024))
+        overflow_shaft = render([*distant, beam], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[2] for p in overflow_shaft) == pytest.approx(sum(p[2] for p in shaft_full), abs=.02)
+        occlusion.upload(build_occlusion_grid([head_blocker], [*distant, fading], width=1024, height=1024))
+        overflow_head = render([*distant, fading], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[2] for p in overflow_head) < sum(p[2] for p in clear_ref) - .05
     finally:
         occlusion.close()
 
