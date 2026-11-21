@@ -116,7 +116,7 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), target_override=None, type_id=None, pigment: tuple[int, int, int] = (70, 55, 40)):
+               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), target_override=None, type_id=None, pigment: tuple[int, int, int] = (70, 55, 40), inset: float = 0.0, ice: int = 0):
         other = rl.gen_image_color(256, 256, rl.BLANK)
         rl.image_draw_circle(other, 16, 16, 10, rl.Color(*pigment, 255))
         rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(*pigment, 255))
@@ -140,7 +140,11 @@ def lit_sprite(raylib_context):
             with alpha.scope():
                 def draw():
                     pos = (center + camera) * scale
-                    source = rl_rectangle(20, 16, 0, 0) if degenerate_uv else rl_rectangle(0, 0, 32, 32)
+                    source = (
+                        rl_rectangle(20, 16, 0, 0)
+                        if degenerate_uv
+                        else rl_rectangle(inset, inset, 32 - 2 * inset, 32 - 2 * inset)
+                    )
                     if use_shader:
                         # As the world draws lit bodies: the quad carries its center for the shadows.
                         draw_centered_quad(texture, source, pos, 32 * scale, 32 * scale, math.radians(rotation), rl_color(255, 255, 255, 255))
@@ -149,7 +153,7 @@ def lit_sprite(raylib_context):
                                             rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
                                             rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
                 if use_shader:
-                    with lighting.scope(texture=texture, restore_shader=alpha.shader, type_id=type_id):
+                    with lighting.scope(texture=texture, restore_shader=alpha.shader, type_id=type_id, ice=ice):
                         draw()
                 else:
                     draw()
@@ -754,6 +758,15 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         overflow_seam = render([*distant, seam_fading], occlusion=occlusion, center=seam_owner, camera=seam_cam)
         for a, b in zip(overflow_seam, seam_blocked, strict=True):
             assert a == pytest.approx(b, abs=.002)
+
+        # Inset ice sprite (as effects.py draws freeze cubes/shards with effect_cell_src_inset): cached vs overflow
+        # visibility under a partial blocker must match identically without depending on atlas UV span.
+        occlusion.upload(build_occlusion_grid([side_blocker], [fading], width=1024, height=1024))
+        inset_cached = render([fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
+        occlusion.upload(build_occlusion_grid([side_blocker], [*distant, fading], width=1024, height=1024))
+        inset_overflow = render([*distant, fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
+        for a, b in zip(inset_cached, inset_overflow, strict=True):
+            assert a == pytest.approx(b, abs=.0005)
     finally:
         occlusion.close()
 

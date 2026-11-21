@@ -25,14 +25,16 @@ LOC(11) out vec4 specVisibility0;
 LOC(12) out vec4 specVisibility1;
 LOC(13) out vec4 specVisibility2;
 LOC(14) out vec4 specVisibility3;
-LOC(15) out vec2 quadOwner;
+LOC(15) out vec4 quadGeom;
 void main() {
     gl_Position = target_position(position.xy, target_size);
     fragTexCoord = uv;
     fragColor = diffuse.zyxw;
     world = position.xy - camera;
     vec2 owner = center - camera;
-    quadOwner = owner;
+    int vid = gl_VertexID & 3;
+    vec2 quad_u = vec2(float(vid == 1 || vid == 2), float(vid >= 2));
+    quadGeom = vec4(owner, quad_u);
     lightVisibility0 = cornerVisibilities(0, world, owner);
     lightVisibility1 = cornerVisibilities(1, world, owner);
     lightVisibility2 = cornerVisibilities(2, world, owner);

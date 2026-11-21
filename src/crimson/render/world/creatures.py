@@ -83,9 +83,13 @@ def draw_centered_quad(
     rl.rl_set_texture(texture.id)
     rl.rl_begin(rd.RL_QUADS)
     rl.rl_color4ub(tint.r, tint.g, tint.b, tint.a)
-    rl.rl_normal3f(center.x, center.y, 0.0)
-    for dx, dy, u, v in ((-half_w, -half_h, u0, v0), (-half_w, half_h, u0, v1), (half_w, half_h, u1, v1),
-                         (half_w, -half_h, u1, v0)):
+    for corner, (dx, dy, u, v) in enumerate((
+        (-half_w, -half_h, u0, v0),
+        (-half_w, half_h, u0, v1),
+        (half_w, half_h, u1, v1),
+        (half_w, -half_h, u1, v0),
+    )):
+        rl.rl_normal3f(center.x, center.y, float(corner))
         rl.rl_tex_coord2f(u, v)
         rl.rl_vertex2f(center.x + dx * c - dy * s, center.y + dx * s + dy * c)
     rl.rl_end()
