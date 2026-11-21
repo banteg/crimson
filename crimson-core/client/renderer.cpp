@@ -347,13 +347,16 @@ Target pressured;
 // ice); the float surface holds specularity, wetness, blood volume and height.
 // Wetness is stored against an epoch, rebased as the clock runs on. Decal draws
 // marked with a material (host_ground) reach them as they reach the terrain.
+struct DirtyRect {
+  float x0, y0, x1, y1;
+};
 struct Ground {
   Target substrate, coverage, surface, normals;
   float epoch = 0;
   float normals_size[2] = {};
   bool normals_dirty = true;
   bool normals_full = true;
-  int dirty_x0 = 0, dirty_y0 = 0, dirty_x1 = 0, dirty_y1 = 0;
+  std::vector<DirtyRect> dirty_rects;
 };
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
@@ -828,34 +831,52 @@ void drop_ground(int id) {
 void mark_normals_full(Ground &g) {
   g.normals_dirty = true;
   g.normals_full = true;
+  g.dirty_rects.clear();
 }
 
-void mark_normals_rect(Ground &g, int x0, int y0, int x1, int y1) {
-  x0 = std::clamp(x0, 0, g.surface.width);
-  y0 = std::clamp(y0, 0, g.surface.height);
-  x1 = std::clamp(x1, 0, g.surface.width);
-  y1 = std::clamp(y1, 0, g.surface.height);
-  if (x1 <= x0 || y1 <= y0)
+void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
+  if (!(x1 > x0 && y1 > y0))
     return;
-  if (!g.normals_dirty) {
-    g.dirty_x0 = x0, g.dirty_y0 = y0, g.dirty_x1 = x1, g.dirty_y1 = y1;
-    g.normals_dirty = true;
-    g.normals_full = false;
-  } else if (!g.normals_full) {
-    g.dirty_x0 = std::min(g.dirty_x0, x0);
-    g.dirty_y0 = std::min(g.dirty_y0, y0);
-    g.dirty_x1 = std::max(g.dirty_x1, x1);
-    g.dirty_y1 = std::max(g.dirty_y1, y1);
+  if (g.normals_dirty && g.normals_full)
+    return;
+  DirtyRect next{x0, y0, x1, y1};
+  // Merge overlapping or nearby logical stamp rects so clusters stay one draw
+  // while distant stamps stay separate scissored regions.
+  constexpr float merge_gap = 8.f;
+  bool merged = true;
+  while (merged) {
+    merged = false;
+    for (size_t i = 0; i < g.dirty_rects.size(); ++i) {
+      const DirtyRect &r = g.dirty_rects[i];
+      if (next.x0 <= r.x1 + merge_gap && next.x1 >= r.x0 - merge_gap &&
+          next.y0 <= r.y1 + merge_gap && next.y1 >= r.y0 - merge_gap) {
+        next.x0 = std::min(next.x0, r.x0);
+        next.y0 = std::min(next.y0, r.y0);
+        next.x1 = std::max(next.x1, r.x1);
+        next.y1 = std::max(next.y1, r.y1);
+        g.dirty_rects[i] = g.dirty_rects.back();
+        g.dirty_rects.pop_back();
+        merged = true;
+        break;
+      }
+    }
   }
+  g.dirty_rects.push_back(next);
+  g.normals_dirty = true;
+  g.normals_full = false;
+  if (g.dirty_rects.size() > 16)
+    mark_normals_full(g);
 }
 
 void update_ground_normals(Ground &g) {
   float size[2] = {ground_size[0] > 0 ? ground_size[0] : (float)std::max(1, g.surface.logical_width),
                    ground_size[1] > 0 ? ground_size[1] : (float)std::max(1, g.surface.logical_height)};
-  if (!g.normals.framebuffer || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
+  int norm_w = std::max(g.surface.width, std::min(4096, (int)ceilf(size[0] * 2.f)));
+  int norm_h = std::max(g.surface.height, std::min(4096, (int)ceilf(size[1] * 2.f)));
+  if (!g.normals.framebuffer || g.normals.width != norm_w || g.normals.height != norm_h) {
     release(g.normals);
-    g.normals.width = g.surface.width;
-    g.normals.height = g.surface.height;
+    g.normals.width = norm_w;
+    g.normals.height = norm_h;
     g.normals.logical_width = g.surface.logical_width;
     g.normals.logical_height = g.surface.logical_height;
     g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
@@ -866,17 +887,40 @@ void update_ground_normals(Ground &g) {
     mark_normals_full(g);
   if (!g.normals_dirty)
     return;
+  struct PixelRect {
+    int x0, y0, x1, y1;
+  };
+  std::vector<PixelRect> pixels;
+  bool full = g.normals_full || g.dirty_rects.empty();
+  if (!full) {
+    float sx = (float)g.normals.width / std::max(1, g.surface.logical_width);
+    float sy = (float)g.normals.height / std::max(1, g.surface.logical_height);
+    int pad_x = (int)ceilf(3.2f * g.normals.width / size[0] + sx) + 3;
+    int pad_y = (int)ceilf(3.2f * g.normals.height / size[1] + sy) + 3;
+    uint64_t area = 0;
+    for (const DirtyRect &r : g.dirty_rects) {
+      int x0 = std::clamp((int)floorf(r.x0 * sx) - pad_x, 0, g.normals.width);
+      int y0 = std::clamp((int)floorf(r.y0 * sy) - pad_y, 0, g.normals.height);
+      int x1 = std::clamp((int)ceilf(r.x1 * sx) + pad_x, 0, g.normals.width);
+      int y1 = std::clamp((int)ceilf(r.y1 * sy) + pad_y, 0, g.normals.height);
+      if (x1 > x0 && y1 > y0) {
+        pixels.push_back({x0, y0, x1, y1});
+        area += (uint64_t)(x1 - x0) * (uint64_t)(y1 - y0);
+      }
+    }
+    if (pixels.empty()) {
+      g.normals_dirty = g.normals_full = false;
+      g.dirty_rects.clear();
+      return;
+    }
+    if (area * 2 >= (uint64_t)g.normals.width * (uint64_t)g.normals.height)
+      full = true;
+  }
   gpu_aside("ground-normals");
   bind_framebuffer(g.normals);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  if (!g.normals_full) {
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(g.dirty_x0, g.dirty_y0, g.dirty_x1 - g.dirty_x0, g.dirty_y1 - g.dirty_y0);
-  } else {
-    glDisable(GL_SCISSOR_TEST);
-  }
   use_program(ground_normals_program);
   glUniform2fv(u_normals_ground_size, 1, size);
   glActiveTexture(GL_TEXTURE1);
@@ -886,9 +930,19 @@ void update_ground_normals(Ground &g) {
   glBindTexture(GL_TEXTURE_2D, g.surface.texture);
   glBindSampler(0, 0);
   glBindVertexArray(vertex_array);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glDisable(GL_SCISSOR_TEST);
+  if (full) {
+    glDisable(GL_SCISSOR_TEST);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  } else {
+    glEnable(GL_SCISSOR_TEST);
+    for (const PixelRect &r : pixels) {
+      glScissor(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+    glDisable(GL_SCISSOR_TEST);
+  }
   g.normals_dirty = g.normals_full = false;
+  g.dirty_rects.clear();
   g.normals_size[0] = size[0];
   g.normals_size[1] = size[1];
   bind_target();
@@ -1600,7 +1654,8 @@ u32 GL_ENTRY(w2c_host_texture_bytes)(struct w2c_host *, u32 id) {
   double bytes = target_bytes(texture->second);
   if (auto it = grounds.find((int)id); it != grounds.end()) {
     const Ground &g = it->second;
-    bytes += target_bytes(g.substrate) + target_bytes(g.coverage) + target_bytes(g.surface) + target_bytes(g.normals);
+    // Cached normals are not copied by w2c_host_texture_copy, so exclude them from copy-size budgeting.
+    bytes += target_bytes(g.substrate) + target_bytes(g.coverage) + target_bytes(g.surface);
   }
   return (u32)std::min(bytes, (double)UINT32_MAX);
 }
@@ -2005,14 +2060,8 @@ void flush_ground_stamps() {
       submit_geometry(s.primitive, vertices(s), s.vertex_count, indices(s), s.primitive_count);
     }
   }
-  // Track the physical pixel bounds of stamps that touched coverage or surface,
-  // expanded by the 3.2-unit normal stencil plus bilinear margin.
-  float sx = (float)g.surface.width / std::max(1, g.surface.logical_width);
-  float sy = (float)g.surface.height / std::max(1, g.surface.logical_height);
-  float gw = ground_size[0] > 0 ? ground_size[0] : (float)std::max(1, g.surface.logical_width);
-  float gh = ground_size[1] > 0 ? ground_size[1] : (float)std::max(1, g.surface.logical_height);
-  int pad_x = (int)ceilf(3.2f * g.surface.width / gw + sx) + 3;
-  int pad_y = (int)ceilf(3.2f * g.surface.height / gh + sy) + 3;
+  // Track logical bounds of stamps that touched coverage or surface; update_ground_normals
+  // expands each region by the 3.2-unit normal stencil plus bilinear margin.
   for (const GroundStamp &s : ground_stamps) {
     if (s.kind == HOST_GROUND_DECAL || !s.vertex_count)
       continue;
@@ -2028,8 +2077,7 @@ void flush_ground_stamps() {
       max_y = std::max(max_y, vy);
     }
     if (std::isfinite(min_x) && std::isfinite(min_y) && std::isfinite(max_x) && std::isfinite(max_y))
-      mark_normals_rect(g, (int)floorf(min_x * sx) - pad_x, (int)floorf(min_y * sy) - pad_y,
-                        (int)ceilf(max_x * sx) + pad_x, (int)ceilf(max_y * sy) + pad_y);
+      mark_normals_rect(g, min_x, min_y, max_x, max_y);
   }
   ground_stamps.clear();
   ground_stamp_bytes.clear();
