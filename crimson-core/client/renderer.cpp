@@ -851,6 +851,68 @@ void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
   g.normals_full = false;
 }
 
+void mark_normals_geometry(Ground &g, u32 primitive, const unsigned char *vb, u32 vertex_count,
+                           const unsigned short *ib, u32 primitive_count) {
+  if (!vertex_count || (g.normals_dirty && g.normals_full))
+    return;
+  auto vertex_xy = [vb](u32 idx, float &x, float &y) {
+    memcpy(&x, vb + (size_t)idx * 28, sizeof x);
+    memcpy(&y, vb + (size_t)idx * 28 + 4, sizeof y);
+  };
+  auto mark_tri = [&](u32 i0, u32 i1, u32 i2) {
+    if (i0 >= vertex_count || i1 >= vertex_count || i2 >= vertex_count)
+      return;
+    float x0, y0, x1, y1, x2, y2;
+    vertex_xy(i0, x0, y0);
+    vertex_xy(i1, x1, y1);
+    vertex_xy(i2, x2, y2);
+    float min_x = std::min({x0, x1, x2}), min_y = std::min({y0, y1, y2});
+    float max_x = std::max({x0, x1, x2}), max_y = std::max({y0, y1, y2});
+    if (std::isfinite(min_x) && std::isfinite(min_y) && std::isfinite(max_x) && std::isfinite(max_y))
+      mark_normals_rect(g, min_x, min_y, max_x, max_y);
+  };
+  if (primitive == 4) { // D3DPT_TRIANGLELIST
+    for (u32 t = 0; t < primitive_count; ++t) {
+      u32 i0 = ib ? ib[t * 3] : t * 3;
+      u32 i1 = ib ? ib[t * 3 + 1] : t * 3 + 1;
+      u32 i2 = ib ? ib[t * 3 + 2] : t * 3 + 2;
+      mark_tri(i0, i1, i2);
+    }
+    return;
+  }
+  if (primitive == 5) { // D3DPT_TRIANGLESTRIP
+    for (u32 t = 0; t < primitive_count; ++t) {
+      u32 i0 = ib ? ib[t] : t;
+      u32 i1 = ib ? ib[t + 1] : t + 1;
+      u32 i2 = ib ? ib[t + 2] : t + 2;
+      mark_tri(i0, i1, i2);
+    }
+    return;
+  }
+  if (primitive == 6) { // D3DPT_TRIANGLEFAN
+    if (!primitive_count)
+      return;
+    u32 i0 = ib ? ib[0] : 0;
+    for (u32 t = 0; t < primitive_count; ++t) {
+      u32 i1 = ib ? ib[t + 1] : t + 1;
+      u32 i2 = ib ? ib[t + 2] : t + 2;
+      mark_tri(i0, i1, i2);
+    }
+    return;
+  }
+  float min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
+  for (u32 vi = 0; vi < vertex_count; ++vi) {
+    float vx, vy;
+    vertex_xy(vi, vx, vy);
+    min_x = std::min(min_x, vx);
+    min_y = std::min(min_y, vy);
+    max_x = std::max(max_x, vx);
+    max_y = std::max(max_y, vy);
+  }
+  if (std::isfinite(min_x) && std::isfinite(min_y) && std::isfinite(max_x) && std::isfinite(max_y))
+    mark_normals_rect(g, min_x, min_y, max_x, max_y);
+}
+
 void update_ground_normals(Ground &g) {
   if (!g.normals.framebuffer || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
     release(g.normals);
@@ -1645,7 +1707,8 @@ void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 sou
     copy_target(to.substrate, g.substrate);
     copy_target(to.coverage, g.coverage);
     copy_target(to.surface, g.surface);
-    release(to.normals);
+    // Keep any existing relief allocation on the destination (e.g., live terrain
+    // restored on a replay seek) and mark it dirty for lazy rebake.
     mark_normals_full(to);
     to.epoch = g.epoch;
   }
@@ -2029,24 +2092,12 @@ void flush_ground_stamps() {
       submit_geometry(s.primitive, vertices(s), s.vertex_count, indices(s), s.primitive_count);
     }
   }
-  // Track logical bounds of stamps that touched coverage or surface; update_ground_normals
-  // expands each region by the 3.2-unit normal stencil plus bilinear margin.
+  // Track per-primitive logical bounds of stamps that touched coverage or surface so
+  // batched indexed draws (e.g. fx_queue_render) only dirty each decal's tiles.
   for (const GroundStamp &s : ground_stamps) {
     if (s.kind == HOST_GROUND_DECAL || !s.vertex_count)
       continue;
-    const unsigned char *vb = vertices(s);
-    float min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
-    for (u32 vi = 0; vi < s.vertex_count; ++vi) {
-      float vx, vy;
-      memcpy(&vx, vb + (size_t)vi * 28, sizeof vx);
-      memcpy(&vy, vb + (size_t)vi * 28 + 4, sizeof vy);
-      min_x = std::min(min_x, vx);
-      min_y = std::min(min_y, vy);
-      max_x = std::max(max_x, vx);
-      max_y = std::max(max_y, vy);
-    }
-    if (std::isfinite(min_x) && std::isfinite(min_y) && std::isfinite(max_x) && std::isfinite(max_y))
-      mark_normals_rect(g, min_x, min_y, max_x, max_y);
+    mark_normals_geometry(g, s.primitive, vertices(s), s.vertex_count, indices(s), s.primitive_count);
   }
   ground_stamps.clear();
   ground_stamp_bytes.clear();

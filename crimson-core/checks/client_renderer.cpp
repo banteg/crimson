@@ -1010,21 +1010,49 @@ void check_terrain_snapshots() {
   assert(w2c_host_texture_read(nullptr, 600, 4096, size) == size);
   identical(603);
   // Scissored dirty-tile relief rebakes stay area-based even for many separated
-  // stamps, exclude cached relief from copy-size budgeting, and match a full rebake.
+  // decals submitted in one indexed batch draw, exclude cached relief from
+  // copy-size budgeting, reuse relief storage across replay seeks, and match a full rebake.
   {
     Ground &g = grounds.at(600);
     ground_size[0] = 64;
     ground_size[1] = 32;
     update_ground_normals(g);
-    assert(!g.normals_dirty && !g.normals_full && g.normals.framebuffer);
+    assert(!g.normals_dirty && !g.normals_full && g.normals.framebuffer && g.normals.texture);
     assert(w2c_host_texture_bytes(nullptr, 600) == 128 * 64 * 28);
+    // Snapshot copy leaves snapshot relief unallocated; restoring onto live terrain reuses its texture.
+    GLuint saved_normals_tex = g.normals.texture;
+    w2c_host_texture_copy(nullptr, 601, 600);
+    assert(grounds.at(601).normals.texture == 0);
+    assert(w2c_host_texture_bytes(nullptr, 601) == 128 * 64 * 28);
+    w2c_host_texture_copy(nullptr, 600, 601);
+    assert(grounds.at(600).normals.texture == saved_normals_tex);
+    assert(grounds.at(600).normals_dirty && grounds.at(600).normals_full);
+    update_ground_normals(g);
+    assert(g.normals.texture == saved_normals_tex && !g.normals_dirty && !g.normals_full);
     w2c_host_set_render_target(nullptr, 600);
     w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 260);
-    // 18 small separated stamps stay well below the 50% full-rebake area threshold.
+    // Submit all 18 small separated decals in ONE indexed D3DPT_TRIANGLELIST draw
+    // (like fx_queue_render). Their union bbox exceeds 50% of the map, so per-triangle
+    // dirty marking is required to stay below the 50% full-rebake area threshold.
+    Vertex batch_verts[18 * 4];
+    unsigned short batch_idx[18 * 6];
     for (int i = 0; i < 18; ++i) {
       float x = 2.f + (i % 6) * 10.f, y = 2.f + (i / 6) * 10.f;
-      rectangle(x, y, x + 2.f, y + 2.f, 0xe0ffffff);
+      batch_verts[i * 4 + 0] = {x - .5f, y - .5f, 0, 1, 0xe0ffffff, 0, 0};
+      batch_verts[i * 4 + 1] = {x + 1.5f, y - .5f, 0, 1, 0xe0ffffff, 1, 0};
+      batch_verts[i * 4 + 2] = {x + 1.5f, y + 1.5f, 0, 1, 0xe0ffffff, 1, 1};
+      batch_verts[i * 4 + 3] = {x - .5f, y + 1.5f, 0, 1, 0xe0ffffff, 0, 1};
+      unsigned short b = (unsigned short)(i * 4);
+      batch_idx[i * 6 + 0] = b;
+      batch_idx[i * 6 + 1] = (unsigned short)(b + 1);
+      batch_idx[i * 6 + 2] = (unsigned short)(b + 2);
+      batch_idx[i * 6 + 3] = (unsigned short)(b + 2);
+      batch_idx[i * 6 + 4] = (unsigned short)(b + 3);
+      batch_idx[i * 6 + 5] = b;
     }
+    memcpy(memory, batch_verts, sizeof batch_verts);
+    memcpy(memory + 4096, batch_idx, sizeof batch_idx);
+    w2c_host_draw(nullptr, 4, 0, 18 * 4, 4096, 18 * 2);
     w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
     int dirty_tiles = 0;
     for (uint32_t row : g.dirty_tiles)
