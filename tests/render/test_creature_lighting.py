@@ -747,6 +747,13 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             assert a == pytest.approx(b, abs=.0005)
         for a, b in zip(overflow_partial, partial_ref, strict=True):
             assert a == pytest.approx(b, abs=.002)
+
+        # Crowd-cell boundary straddling under overflow must also match the vertex-interpolated path seamlessly.
+        seam_fading = msgspec.structs.replace(seam_beam, illumination_gain=1e-4)
+        occlusion.upload(build_occlusion_grid(seam_crowd, [*distant, seam_fading], width=1024, height=1024))
+        overflow_seam = render([*distant, seam_fading], occlusion=occlusion, center=seam_owner, camera=seam_cam)
+        for a, b in zip(overflow_seam, seam_blocked, strict=True):
+            assert a == pytest.approx(b, abs=.002)
     finally:
         occlusion.close()
 

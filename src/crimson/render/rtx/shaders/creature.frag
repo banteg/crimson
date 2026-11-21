@@ -17,7 +17,12 @@ in vec4 lightVisibility4;
 in vec4 lightVisibility5;
 in vec4 lightVisibility6;
 in vec4 lightVisibility7;
-// Creature center in world coordinates, spared by continuous-beam per-pixel specular shadow rays.
+// Corner-interpolated specular visibility for the first 16 illuminating continuous beams, four slots per vec4.
+in vec4 specVisibility0;
+in vec4 specVisibility1;
+in vec4 specVisibility2;
+in vec4 specVisibility3;
+// Creature center in world coordinates, used to replay identical corner interpolation if more than 16 beams qualify.
 in vec2 quadOwner;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
@@ -48,7 +53,41 @@ float lightVisibility(int i) {
     int lane = i - i / 4 * 4;
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
 }
+float specVisibility(int slot) {
+    vec4 group = slot < 8 ? (slot < 4 ? specVisibility0 : specVisibility1)
+                          : (slot < 12 ? specVisibility2 : specVisibility3);
+    int lane = slot - slot / 4 * 4;
+    return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
+}
 float cellGrid() { return u_ice != 0 ? float(u_ice) : 8.0; }
+float cornerSpecVis(int i, vec2 p, vec2 owner, vec2 axis, float half_length, float source_width) {
+    float along_owner = clamp(dot(owner - u_pos[i].xy, axis), -half_length, half_length);
+    vec2 near_owner = u_pos[i].xy + axis * along_owner;
+    if (length(near_owner - owner) - length(p - owner) >= u_response[i].z) return 1.;
+    float along_p = clamp(dot(p - u_pos[i].xy, axis), -half_length, half_length);
+    vec2 near_p = u_pos[i].xy + axis * along_p;
+    return illuminationVisibility(vec3(p, 8.), vec3(near_p, u_pos[i].w), source_width, owner);
+}
+float overflowSpecVisibility(int i, vec2 wp, vec2 owner, vec2 q, vec2 dxq, vec2 dyq, vec2 dxw, vec2 dyw,
+                             vec2 axis, float half_length, float source_width) {
+    float det = dxq.x * dyq.y - dxq.y * dyq.x;
+    if (abs(det) <= 1e-12)
+        return cornerSpecVis(i, wp, owner, axis, half_length, source_width);
+    mat2 dwdq = mat2(dxw * dyq.y - dyw * dxq.y, dyw * dxq.x - dxw * dyq.x) * (8.0 / (det * cellGrid()));
+    vec2 u = q * .5 + .5;
+    vec2 c00 = owner - dwdq[0] - dwdq[1];
+    vec2 c11 = owner + dwdq[0] + dwdq[1];
+    float v00 = cornerSpecVis(i, c00, owner, axis, half_length, source_width);
+    float v11 = cornerSpecVis(i, c11, owner, axis, half_length, source_width);
+    if (u.y >= u.x) {
+        vec2 c01 = owner - dwdq[0] + dwdq[1];
+        float v01 = cornerSpecVis(i, c01, owner, axis, half_length, source_width);
+        return v00 * (1. - u.y) + v01 * (u.y - u.x) + v11 * u.x;
+    }
+    vec2 c10 = owner + dwdq[0] - dwdq[1];
+    float v10 = cornerSpecVis(i, c10, owner, axis, half_length, source_width);
+    return v00 * (1. - u.x) + v10 * (u.x - u.y) + v11 * u.y;
+}
 vec4 spriteSample(vec2 uv) {
     vec2 cell = floor(fragTexCoord * cellGrid()) / cellGrid();
     vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
@@ -188,6 +227,7 @@ void main() {
                vec3(.6, .8, .95) * pow(max(sky, 0.), 80.) * .5;
     }
     vec3 added = vec3(0);
+    int spec_slot = 0;
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
@@ -197,6 +237,9 @@ void main() {
         vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) : u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
         bool continuous = !ring && u_beam_shape[i].w > 0.;
+        int my_spec_slot = -1;
+        if (continuous && u_response[i].x > 0. && u_response[i].y > 0. && u_response[i].z > 0.)
+            my_spec_slot = spec_slot++;
         if (!continuous && spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
@@ -209,12 +252,12 @@ void main() {
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
             vec3 spec = u_rgb[i].rgb * (spec_amount * spec_gain * breakup);
-            if (max(spec.r, max(spec.g, spec.b)) > 1e-5) {
-                float spec_vis = continuous
-                    ? illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), source_width, quadOwner)
-                    : lightVisibility(i);
-                added += spec * spec_vis;
-            }
+            float spec_vis = my_spec_slot < 0 ? lightVisibility(i)
+                : my_spec_slot < 16 ? specVisibility(my_spec_slot)
+                : max(spec.r, max(spec.g, spec.b)) > 1e-5
+                    ? overflowSpecVisibility(i, wp, quadOwner, q, dxq, dyq, dxw, dyw, axis, u_dir[i].w * .5, source_width)
+                    : 1.;
+            added += spec * spec_vis;
         }
         if (u_response[i].x <= 0.) continue;
         vec2 delta;

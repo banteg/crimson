@@ -19,14 +19,31 @@ vec2 nearestOn(int i, vec2 axis, bool ring, float lo_span, float hi_span, vec2 p
     return ring ? nearestRingPoint(u_pos[i].xy, p, u_rgb[i].w) : u_pos[i].xy + axis * along;
 }
 
+// Continuous-beam specular visibility at a quad corner toward that corner's nearest point on the bare segment
+// (matching creature.frag's spec_L), so quad corners interpolate partial shadows and cell-boundary crossings.
+float cornerSpecVisibility(int i, vec2 wp, vec2 owner) {
+    if (i >= u_count || u_dynamic_shadows == 0 || u_response[i].y <= 0. || u_response[i].z <= 0.) return 1.;
+    vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
+    float half_length = u_dir[i].w * .5;
+    if (length(nearestOn(i, axis, false, -half_length, half_length, owner) - owner) - length(wp - owner) >= u_response[i].z)
+        return 1.;
+    vec2 nearest = nearestOn(i, axis, false, -half_length, half_length, wp);
+    return illuminationVisibility(vec3(wp, 8.), vec3(nearest, u_pos[i].w), max(.1, u_response[i].w), owner);
+}
+
+bool needsSeparateSpecVis(int i) {
+    return i < u_count && u_rgb[i].w <= 0. && u_beam_shape[i].w > 0. &&
+           u_response[i].x > 0. && u_response[i].y > 0. && u_response[i].z > 0.;
+}
+
 float cornerVisibility(int i, vec2 wp, vec2 owner) {
     if (i >= u_count || u_dynamic_shadows == 0) return 1.;
     if (u_response[i].x <= 0. && u_response[i].y <= 0.) return 1.;
     bool ring = u_rgb[i].w > 0.;
     bool continuous = !ring && u_beam_shape[i].w > 0.;
-    // Continuous beams evaluate specular visibility per pixel toward the nearest segment point in creature.frag,
-    // so lightVisibility(i) only carries their diffuse visibility.
-    if (continuous && u_response[i].x <= 0.) return 1.;
+    // Reflection-only continuous beams skip diffuse in creature.frag, so lightVisibility(i) carries their
+    // corner-interpolated specular visibility directly (matching cornerSpecVisibility with zero pop on budget drop).
+    if (continuous && u_response[i].x <= 0.) return cornerSpecVisibility(i, wp, owner);
     // Match beamFrame's +X fallback when a continuous beam has a zero or near-zero direction.
     vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : (continuous ? vec2(1., 0.) : vec2(0.));
     float half_length = u_dir[i].w * .5;
@@ -49,6 +66,35 @@ float cornerVisibility(int i, vec2 wp, vec2 owner) {
             source = mix(nearest, wp + delta, smoothstep(1e-6, 1e-3, irradiance));
     }
     return illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), max(.1, u_response[i].w), owner);
+}
+
+// Pack corner-interpolated specular visibilities for the first 16 illuminating continuous beams; any overflow
+// beam replays the exact same triangle-corner interpolation in creature.frag.
+void fillSpecVisibilities(vec2 wp, vec2 owner,
+                          out vec4 s0, out vec4 s1, out vec4 s2, out vec4 s3) {
+    s0 = vec4(1.);
+    s1 = vec4(1.);
+    s2 = vec4(1.);
+    s3 = vec4(1.);
+    if (u_dynamic_shadows == 0) return;
+    int slot = 0;
+    for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
+        if (i >= u_count || slot >= 16) break;
+        if (!needsSeparateSpecVis(i)) continue;
+        float vis = cornerSpecVisibility(i, wp, owner);
+        int group = slot / 4;
+        int lane = slot - group * 4;
+        if (group == 0) {
+            if (lane == 0) s0.x = vis; else if (lane == 1) s0.y = vis; else if (lane == 2) s0.z = vis; else s0.w = vis;
+        } else if (group == 1) {
+            if (lane == 0) s1.x = vis; else if (lane == 1) s1.y = vis; else if (lane == 2) s1.z = vis; else s1.w = vis;
+        } else if (group == 2) {
+            if (lane == 0) s2.x = vis; else if (lane == 1) s2.y = vis; else if (lane == 2) s2.z = vis; else s2.w = vis;
+        } else {
+            if (lane == 0) s3.x = vis; else if (lane == 1) s3.y = vis; else if (lane == 2) s3.z = vis; else s3.w = vis;
+        }
+        slot++;
+    }
 }
 
 vec4 cornerVisibilities(int group, vec2 wp, vec2 owner) {

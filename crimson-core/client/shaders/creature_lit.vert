@@ -21,7 +21,11 @@ LOC(7) out vec4 lightVisibility4;
 LOC(8) out vec4 lightVisibility5;
 LOC(9) out vec4 lightVisibility6;
 LOC(10) out vec4 lightVisibility7;
-LOC(11) out vec2 quadOwner;
+LOC(11) out vec4 specVisibility0;
+LOC(12) out vec4 specVisibility1;
+LOC(13) out vec4 specVisibility2;
+LOC(14) out vec4 specVisibility3;
+LOC(15) out vec2 quadOwner;
 void main() {
     gl_Position = target_position(position.xy, target_size);
     fragTexCoord = uv;
@@ -37,4 +41,5 @@ void main() {
     lightVisibility5 = cornerVisibilities(5, world, owner);
     lightVisibility6 = cornerVisibilities(6, world, owner);
     lightVisibility7 = cornerVisibilities(7, world, owner);
+    fillSpecVisibilities(world, owner, specVisibility0, specVisibility1, specVisibility2, specVisibility3);
 }
