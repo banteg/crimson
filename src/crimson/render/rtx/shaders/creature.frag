@@ -1,7 +1,7 @@
 #version 330
 // Art-directed dome and silhouette lighting for the original 8x8 creature atlases, and the freeze's ice lit as ice.
 #include "filtering.glsl"
-#include "light_visibility.glsl"
+#include "source_geometry.glsl"
 #define MAX_SPEC_LIGHTS 32
 #include "beam_energy.glsl"
 #include "linear_light.glsl"
@@ -17,14 +17,14 @@ in vec4 lightVisibility4;
 in vec4 lightVisibility5;
 in vec4 lightVisibility6;
 in vec4 lightVisibility7;
-// Corner-interpolated specular visibility for the first 12 illuminating continuous beams, four slots per vec4.
+// Corner-interpolated specular visibility for illuminating continuous beams reaching this quad: slots 0..5 use
+// hardware interpolation (specVisibility0 and specVis45Quad.xy), specVis45Quad.zw carries quad coordinates for
+// triangle-interpolating vertex-packed overflow corners in specOverflow0..2 (specOverflow0.x is the 32-bit slot mask).
 in vec4 specVisibility0;
-in vec4 specVisibility1;
-in vec4 specVisibility2;
-// Creature center (xy), exact c00 - owner (zw), and exact c01 - owner (quadD01), identical across all four vertices,
-// so overflow (>12 beams) replays the exact vertex corner rays for both square and rectangular quads.
-flat in vec4 quadCenterD00;
-flat in vec2 quadD01;
+in vec4 specVis45Quad;
+flat in uvec4 specOverflow0;
+flat in uvec4 specOverflow1;
+flat in uvec4 specOverflow2;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -54,43 +54,50 @@ float lightVisibility(int i) {
     int lane = i - i / 4 * 4;
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
 }
+uint readSpec12(uvec3 w, int idx) {
+    uint bit = uint(idx) * 12u;
+    uint word = bit >> 5u;
+    uint shift = bit & 31u;
+    uint bits;
+    if (word == 0u) {
+        bits = w.x >> shift;
+        if (shift > 20u) bits |= w.y << (32u - shift);
+    } else if (word == 1u) {
+        bits = w.y >> shift;
+        if (shift > 20u) bits |= w.z << (32u - shift);
+    } else {
+        bits = w.z >> shift;
+    }
+    return bits & 0xFFFu;
+}
+float interpQuad(vec4 v, vec2 u) {
+    // v = (v00, v01, v11, v10), shared diagonal c00(0,0)--c11(1,1).
+    return u.y >= u.x
+        ? v.x * (1. - u.y) + v.y * (u.y - u.x) + v.z * u.x
+        : v.x * (1. - u.x) + v.w * (u.x - u.y) + v.z * u.y;
+}
 float specVisibility(int slot) {
-    vec4 group = slot < 4 ? specVisibility0 : slot < 8 ? specVisibility1 : specVisibility2;
-    int lane = slot - slot / 4 * 4;
-    return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
+    if (slot < 4)
+        return slot == 0 ? specVisibility0.x : slot == 1 ? specVisibility0.y : slot == 2 ? specVisibility0.z : specVisibility0.w;
+    if (slot < 6)
+        return slot == 4 ? specVis45Quad.x : specVis45Quad.y;
+    vec2 u = clamp(specVis45Quad.zw, 0., 1.);
+    if (slot < 16) {
+        int k = slot - 6;
+        int word = k >> 1;
+        uint packed = word == 0 ? specOverflow0.y : word == 1 ? specOverflow0.z : word == 2 ? specOverflow0.w
+                    : word == 3 ? specOverflow1.x : specOverflow1.y;
+        uint bits = (packed >> ((k & 1) == 0 ? 0u : 16u)) & 0xFFFFu;
+        vec4 v = vec4(bits & 15u, (bits >> 4u) & 15u, (bits >> 8u) & 15u, (bits >> 12u) & 15u) * (1. / 15.);
+        return interpQuad(v, u);
+    }
+    uint bits = slot < 24
+        ? readSpec12(uvec3(specOverflow1.z, specOverflow1.w, specOverflow2.x), slot - 16)
+        : readSpec12(specOverflow2.yzw, slot - 24);
+    vec4 v = vec4(bits & 7u, (bits >> 3u) & 7u, (bits >> 6u) & 7u, (bits >> 9u) & 7u) * (1. / 7.);
+    return interpQuad(v, u);
 }
 float cellGrid() { return u_ice != 0 ? float(u_ice) : 8.0; }
-float cornerSpecVis(int i, vec2 p, vec2 owner, vec2 axis, float half_length, float source_width) {
-    float along_owner = clamp(dot(owner - u_pos[i].xy, axis), -half_length, half_length);
-    vec2 near_owner = u_pos[i].xy + axis * along_owner;
-    if (length(near_owner - owner) - length(p - owner) >= u_response[i].z) return 1.;
-    float along_p = clamp(dot(p - u_pos[i].xy, axis), -half_length, half_length);
-    vec2 near_p = u_pos[i].xy + axis * along_p;
-    return illuminationVisibility(vec3(p, 8.), vec3(near_p, u_pos[i].w), source_width, owner);
-}
-float overflowSpecVisibility(int i, vec2 wp, vec4 center_d00, vec2 d01, vec2 axis, float half_length, float source_width) {
-    vec2 owner = center_d00.xy;
-    vec2 d00 = center_d00.zw;
-    vec2 c00 = owner + d00;
-    vec2 c01 = owner + d01;
-    vec2 c11 = owner - d00;
-    vec2 c10 = owner - d01;
-    vec2 ex = c10 - c00;
-    vec2 ey = c01 - c00;
-    float det = ex.x * ey.y - ex.y * ey.x;
-    if (abs(det) <= 1e-12)
-        return cornerSpecVis(i, wp, owner, axis, half_length, source_width);
-    vec2 rel = wp - c00;
-    vec2 u = clamp(vec2(rel.x * ey.y - rel.y * ey.x, ex.x * rel.y - ex.y * rel.x) / det, 0., 1.);
-    float v00 = cornerSpecVis(i, c00, owner, axis, half_length, source_width);
-    float v11 = cornerSpecVis(i, c11, owner, axis, half_length, source_width);
-    if (u.y >= u.x) {
-        float v01 = cornerSpecVis(i, c01, owner, axis, half_length, source_width);
-        return v00 * (1. - u.y) + v01 * (u.y - u.x) + v11 * u.x;
-    }
-    float v10 = cornerSpecVis(i, c10, owner, axis, half_length, source_width);
-    return v00 * (1. - u.x) + v10 * (u.x - u.y) + v11 * u.y;
-}
 vec4 spriteSample(vec2 uv) {
     vec2 cell = floor(fragTexCoord * cellGrid()) / cellGrid();
     vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
@@ -231,10 +238,7 @@ void main() {
     }
     vec3 added = vec3(0);
     int spec_slot = 0;
-    vec2 q_owner = quadCenterD00.xy;
-    vec2 q_d00 = quadCenterD00.zw;
-    vec2 q_d01 = quadD01;
-    float q_radius = (dot(q_d00, q_d00) > 1e-12 && dot(q_d01, q_d01) > 1e-12) ? max(length(q_d00), length(q_d01)) : 1e20;
+    uint spec_mask = specOverflow0.x;
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
@@ -244,13 +248,7 @@ void main() {
         vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) : u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
         bool continuous = !ring && u_beam_shape[i].w > 0.;
-        int my_spec_slot = -1;
-        if (continuous && u_response[i].x > 0. && u_response[i].y > 0. && u_response[i].z > 0.) {
-            float half_length = u_dir[i].w * .5;
-            vec2 owner_near = u_pos[i].xy + axis * clamp(dot(q_owner - u_pos[i].xy, axis), -half_length, half_length);
-            if (length(owner_near - q_owner) - q_radius < u_response[i].z)
-                my_spec_slot = spec_slot++;
-        }
+        int my_spec_slot = (spec_mask & (1u << uint(i))) != 0u ? spec_slot++ : -1;
         if (!continuous && spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
@@ -262,13 +260,8 @@ void main() {
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            vec3 spec = u_rgb[i].rgb * (spec_amount * spec_gain * breakup);
-            float spec_vis = my_spec_slot < 0 ? lightVisibility(i)
-                : my_spec_slot < 12 ? specVisibility(my_spec_slot)
-                : max(spec.r, max(spec.g, spec.b)) > 1e-5
-                    ? overflowSpecVisibility(i, wp, quadCenterD00, quadD01, axis, u_dir[i].w * .5, source_width)
-                    : 1.;
-            added += spec * spec_vis;
+            float spec_vis = my_spec_slot < 0 ? lightVisibility(i) : specVisibility(my_spec_slot);
+            added += u_rgb[i].rgb * (spec_amount * spec_gain * breakup * spec_vis);
         }
         if (u_response[i].x <= 0.) continue;
         vec2 delta;

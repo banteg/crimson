@@ -31,10 +31,6 @@ float cornerSpecVisibility(int i, vec2 wp, vec2 owner) {
     return illuminationVisibility(vec3(wp, 8.), vec3(nearest, u_pos[i].w), max(.1, u_response[i].w), owner);
 }
 
-float quadRadius(vec2 d00, vec2 d01) {
-    return (dot(d00, d00) > 1e-12 && dot(d01, d01) > 1e-12) ? max(length(d00), length(d01)) : 1e20;
-}
-
 bool needsSeparateSpecVis(int i, vec2 owner, float quad_radius) {
     if (i >= u_count || u_rgb[i].w > 0. || u_beam_shape[i].w <= 0.) return false;
     if (u_response[i].x <= 0. || u_response[i].y <= 0. || u_response[i].z <= 0.) return false;
@@ -76,34 +72,120 @@ float cornerVisibility(int i, vec2 wp, vec2 spec_wp, vec2 owner) {
     return illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), max(.1, u_response[i].w), owner);
 }
 
-// Pack corner-interpolated specular visibilities for the first 12 illuminating continuous beams that actually
-// reach this quad (so distant beams across the arena never displace nearby beams); any overflow replays the
-// exact same triangle-corner interpolation in creature.frag using quadCenterD00 and quadD01.
-void fillSpecVisibilities(vec2 wp, vec2 owner, float quad_radius, out vec4 s0, out vec4 s1, out vec4 s2) {
-    s0 = vec4(1.);
-    s1 = vec4(1.);
-    s2 = vec4(1.);
-    if (u_dynamic_shadows == 0) return;
-    int slot = 0;
-    for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
-        if (i >= u_count || slot >= 12) break;
-        if (!needsSeparateSpecVis(i, owner, quad_radius)) continue;
-        float vis = cornerSpecVisibility(i, wp, owner);
-        int group = slot / 4;
-        int lane = slot - group * 4;
-        if (group == 0) {
-            if (lane == 0) s0.x = vis; else if (lane == 1) s0.y = vis; else if (lane == 2) s0.z = vis; else s0.w = vis;
-        } else if (group == 1) {
-            if (lane == 0) s1.x = vis; else if (lane == 1) s1.y = vis; else if (lane == 2) s1.z = vis; else s1.w = vis;
-        } else {
-            if (lane == 0) s2.x = vis; else if (lane == 1) s2.y = vis; else if (lane == 2) s2.z = vis; else s2.w = vis;
-        }
-        slot++;
+uint packQuad4(vec4 v) {
+    uvec4 q = uvec4(clamp(v, 0., 1.) * 15. + .5);
+    return q.x | (q.y << 4u) | (q.z << 8u) | (q.w << 12u);
+}
+
+uint packQuad3(vec4 v) {
+    uvec4 q = uvec4(clamp(v, 0., 1.) * 7. + .5);
+    return q.x | (q.y << 3u) | (q.z << 6u) | (q.w << 9u);
+}
+
+void writeSpec12(inout uvec3 w, int idx, uint bits) {
+    uint bit = uint(idx) * 12u;
+    uint word = bit >> 5u;
+    uint shift = bit & 31u;
+    if (word == 0u) {
+        w.x |= bits << shift;
+        if (shift > 20u) w.y |= bits >> (32u - shift);
+    } else if (word == 1u) {
+        w.y |= bits << shift;
+        if (shift > 20u) w.z |= bits >> (32u - shift);
+    } else {
+        w.z |= bits << shift;
     }
 }
 
-vec4 cornerVisibilities(int group, vec2 wp, vec2 spec_wp, vec2 owner) {
-    int first = group * 4;
-    return vec4(cornerVisibility(first, wp, spec_wp, owner), cornerVisibility(first + 1, wp, spec_wp, owner),
-                cornerVisibility(first + 2, wp, spec_wp, owner), cornerVisibility(first + 3, wp, spec_wp, owner));
+// Compute corner-interpolated specular visibility for every illuminating continuous beam reaching this quad strictly
+// in the vertex stage (no fragment occlusion grid walks). The 6 brightest in-reach beams use full-precision hardware
+// interpolation (s0, s45); overflow slots 6..15 pack all four quad corners at 4 bits/corner and slots 16..31 pack at
+// 3 bits/corner in o0..o2, with o0.x carrying the 32-bit mask of lights assigned a specular slot.
+void fillSpecVisibilities(
+    vec2 corner_wp, vec2 owner, vec2 d00, vec2 d01, bool has_quad,
+    out vec4 s0, out vec2 s45, out uvec4 o0, out uvec4 o1, out uvec4 o2
+) {
+    s0 = vec4(1.);
+    s45 = vec2(1.);
+    o0 = uvec4(0u);
+    o1 = uvec4(0u);
+    o2 = uvec4(0u);
+    if (u_dynamic_shadows == 0) return;
+    float quad_radius = has_quad ? max(length(d00), length(d01)) : 1e20;
+    uint spec_mask = 0u;
+    uvec3 hi0 = uvec3(0u);
+    uvec3 hi1 = uvec3(0u);
+    int slot = 0;
+    int limit = min(u_count, MAX_SPEC_LIGHTS);
+    for (int i = 0; i < limit; i++) {
+        if (!needsSeparateSpecVis(i, owner, quad_radius)) continue;
+        spec_mask |= 1u << uint(i);
+        bool single = slot < 6 || !has_quad;
+        vec4 v = vec4(1.);
+        int corners = single ? 1 : 4;
+        for (int c = 0; c < corners; c++) {
+            vec2 p = single ? corner_wp : owner + (c == 0 ? d00 : c == 1 ? d01 : c == 2 ? -d00 : -d01);
+            float vis = cornerSpecVisibility(i, p, owner);
+            if (single) {
+                v = vec4(vis);
+            } else if (c == 0) {
+                v.x = vis;
+            } else if (c == 1) {
+                v.y = vis;
+            } else if (c == 2) {
+                v.z = vis;
+            } else {
+                v.w = vis;
+            }
+        }
+        if (slot < 6) {
+            if (slot == 0) s0.x = v.x;
+            else if (slot == 1) s0.y = v.x;
+            else if (slot == 2) s0.z = v.x;
+            else if (slot == 3) s0.w = v.x;
+            else if (slot == 4) s45.x = v.x;
+            else s45.y = v.x;
+        } else if (slot < 16) {
+            int k = slot - 6;
+            uint packed = packQuad4(v) << ((k & 1) == 0 ? 0u : 16u);
+            int word = k >> 1;
+            if (word == 0) o0.y |= packed;
+            else if (word == 1) o0.z |= packed;
+            else if (word == 2) o0.w |= packed;
+            else if (word == 3) o1.x |= packed;
+            else o1.y |= packed;
+        } else if (slot < 24) {
+            writeSpec12(hi0, slot - 16, packQuad3(v));
+        } else {
+            writeSpec12(hi1, slot - 24, packQuad3(v));
+        }
+        slot++;
+    }
+    o0.x = spec_mask;
+    o1.zw = hi0.xy;
+    o2.x = hi0.z;
+    o2.yzw = hi1;
+}
+
+void fillLightVisibilities(
+    vec2 wp, vec2 spec_wp, vec2 owner,
+    out vec4 v0, out vec4 v1, out vec4 v2, out vec4 v3,
+    out vec4 v4, out vec4 v5, out vec4 v6, out vec4 v7
+) {
+    vec4 groups[8];
+    for (int g = 0; g < 8; g++) groups[g] = vec4(1.);
+    if (u_dynamic_shadows != 0) {
+        int limit = min(u_count, MAX_SPEC_LIGHTS);
+        for (int i = 0; i < limit; i++) {
+            float vis = cornerVisibility(i, wp, spec_wp, owner);
+            int g = i >> 2;
+            int lane = i & 3;
+            if (lane == 0) groups[g].x = vis;
+            else if (lane == 1) groups[g].y = vis;
+            else if (lane == 2) groups[g].z = vis;
+            else groups[g].w = vis;
+        }
+    }
+    v0 = groups[0]; v1 = groups[1]; v2 = groups[2]; v3 = groups[3];
+    v4 = groups[4]; v5 = groups[5]; v6 = groups[6]; v7 = groups[7];
 }

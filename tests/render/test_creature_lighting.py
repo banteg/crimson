@@ -756,19 +756,24 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         for a, b in zip(cutoff_lit_img, cutoff_ref_img, strict=True):
             assert a == pytest.approx(b, abs=.002)
 
-        # Distant out-of-reach beams must not displace a nearby beam from the 12 vertex-cached specular slots;
-        # 12 in-reach beams genuinely push the 13th beam into the overflow path, which must still match identically.
+        # Distant out-of-reach beams must not displace a nearby beam from the 6 full-precision specular slots;
+        # in-reach prefixes exercise both vertex-packed overflow tiers: 4-bit (slots 6..15) and 3-bit (slots 16..31),
+        # including a word-straddling 12-bit slot (18) and the final slot (31).
         distant = [
             msgspec.structs.replace(beam, pos=Vec2(900, 900 - i * 4), radius=20, reflection_radius=20)
             for i in range(16)
         ]
-        in_reach = [
-            msgspec.structs.replace(
-                beam, pos=Vec2(240, 110 + i * 2), rgb=(0., 0., 0.), radius=260, reflection_radius=260,
-            )
-            for i in range(12)
-        ]
-        for prefix in (distant, in_reach):
+
+        def in_reach_prefix(count: int) -> list[MaterialLight]:
+            return [
+                msgspec.structs.replace(
+                    beam, pos=Vec2(240, 110 + (i % 12) * 2), rgb=(0., 0., 0.), radius=260, reflection_radius=260,
+                )
+                for i in range(count)
+            ]
+
+        in_reach = in_reach_prefix(12)
+        for prefix, tol in ((distant, .0005), (in_reach_prefix(6), .002), (in_reach_prefix(18), .005), (in_reach_prefix(31), .005)):
             occlusion.upload(build_occlusion_grid([shaft_blocker], [*prefix, beam], width=1024, height=1024))
             overflow_shaft = render([*prefix, beam], occlusion=occlusion, center=owner, camera=cam)
             assert overflow_shaft == shaft_full
@@ -778,9 +783,9 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             occlusion.upload(build_occlusion_grid([side_blocker], [*prefix, fading], width=1024, height=1024))
             overflow_partial = render([*prefix, fading], occlusion=occlusion, center=owner, camera=cam)
             for a, b in zip(overflow_partial, partial_fading, strict=True):
-                assert a == pytest.approx(b, abs=.0005)
+                assert a == pytest.approx(b, abs=tol)
             for a, b in zip(overflow_partial, partial_ref, strict=True):
-                assert a == pytest.approx(b, abs=.002)
+                assert a == pytest.approx(b, abs=max(tol, .002))
 
         # Crowd-cell boundary straddling under true overflow (12 in-reach beams) must match vertex interpolation.
         seam_fading = msgspec.structs.replace(seam_beam, illumination_gain=1e-4)
@@ -790,13 +795,13 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             assert a == pytest.approx(b, abs=.002)
 
         # Inset ice sprite (as effects.py draws freeze cubes/shards with effect_cell_src_inset): cached vs overflow
-        # visibility under a partial blocker must match identically without depending on atlas UV span.
+        # visibility under a partial blocker must match without depending on atlas UV span.
         occlusion.upload(build_occlusion_grid([side_blocker], [fading], width=1024, height=1024))
         inset_cached = render([fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
         occlusion.upload(build_occlusion_grid([side_blocker], [*in_reach, fading], width=1024, height=1024))
         inset_overflow = render([*in_reach, fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
         for a, b in zip(inset_cached, inset_overflow, strict=True):
-            assert a == pytest.approx(b, abs=.0005)
+            assert a == pytest.approx(b, abs=.002)
 
         # Scaled and rotated sprites whose corner sits directly on a crowd-cell boundary (x=128): cached and
         # overflow paths must trace from the exact same corner coordinates so light reordering cannot pop.
@@ -810,7 +815,7 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             occlusion.upload(build_occlusion_grid(seam_crowd, [*in_reach, seam_fading], width=1024, height=1024))
             edge_overflow = render([*in_reach, seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
             for a, b in zip(edge_cached, edge_overflow, strict=True):
-                assert a == pytest.approx(b, abs=.0005)
+                assert a == pytest.approx(b, abs=.002)
 
         # Rectangular replacement creature atlas (512x256 -> 64x32 cells): both ordinary and overflow beam
         # shadows must trace from the actual rectangular corners rather than a reconstructed square.
@@ -839,14 +844,14 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
                     rl.unload_image(img)
 
             # Blocker sits right on the ray from the actual rectangular corner (318, 112) to the head (320, 64),
-            # while missing a wrong square's corner. Cached and overflow paths must match identically.
+            # while missing a wrong square's corner. Cached and vertex-packed overflow paths must agree closely.
             rect_blocker = BodyVolume(Vec2(319, 88), Vec2(6, 6), 32, 0., owner=Vec2(319, 88))
             occlusion.upload(build_occlusion_grid([rect_blocker], [fading], width=1024, height=1024))
             rect_clear_img = render_rect([fading], rot_deg=25.0)
             occlusion.upload(build_occlusion_grid([rect_blocker], [*in_reach, fading], width=1024, height=1024))
             rect_over_img = render_rect([*in_reach, fading], rot_deg=25.0)
             for a, b in zip(rect_clear_img, rect_over_img, strict=True):
-                assert a == pytest.approx(b, abs=.0005)
+                assert a == pytest.approx(b, abs=.002)
             # And an ordinary light with a blocker that only intercepts the real rectangular corner (318, 112),
             # NOT a 90-degree rotated square corner (334, 96): verify it actually shadows the sprite.
             rect_light = MaterialLight(Vec2(318, 64), 120, (1.4, .68, .2), height=24)

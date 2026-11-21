@@ -27,10 +27,10 @@ out vec4 lightVisibility5;
 out vec4 lightVisibility6;
 out vec4 lightVisibility7;
 out vec4 specVisibility0;
-out vec4 specVisibility1;
-out vec4 specVisibility2;
-flat out vec4 quadCenterD00;
-flat out vec2 quadD01;
+out vec4 specVis45Quad;
+flat out uvec4 specOverflow0;
+flat out uvec4 specOverflow1;
+flat out uvec4 specOverflow2;
 """ + glsl("creature_visibility.glsl") + r"""
 void main() {
     fragTexCoord = vertexTexCoord;
@@ -43,29 +43,32 @@ void main() {
     vec2 hy_screen = r * vec2(-hx_screen.y, hx_screen.x);
     vec2 d00 = d00_screen / u_view_scale;
     vec2 d01 = (-hx_screen + hy_screen) / u_view_scale;
-    quadCenterD00 = vec4(owner, d00);
-    quadD01 = d01;
     vec2 corner_wp = world;
-    if (dot(d00, d00) > 1e-12 && dot(d01, d01) > 1e-12) {
+    vec2 quad_coord = vec2(0., 0.);
+    bool has_quad = dot(d00, d00) > 1e-12 && dot(d01, d01) > 1e-12;
+    if (has_quad) {
         vec2 c00 = owner + d00, c01 = owner + d01, c11 = owner - d00, c10 = owner - d01;
         corner_wp = c00;
+        quad_coord = vec2(0., 0.);
         float best = dot(world - c00, world - c00);
         float dist = dot(world - c01, world - c01);
-        if (dist < best) { best = dist; corner_wp = c01; }
+        if (dist < best) { best = dist; corner_wp = c01; quad_coord = vec2(0., 1.); }
         dist = dot(world - c11, world - c11);
-        if (dist < best) { best = dist; corner_wp = c11; }
+        if (dist < best) { best = dist; corner_wp = c11; quad_coord = vec2(1., 1.); }
         dist = dot(world - c10, world - c10);
-        if (dist < best) { corner_wp = c10; }
+        if (dist < best) { corner_wp = c10; quad_coord = vec2(1., 0.); }
     }
-    lightVisibility0 = cornerVisibilities(0, world, corner_wp, owner);
-    lightVisibility1 = cornerVisibilities(1, world, corner_wp, owner);
-    lightVisibility2 = cornerVisibilities(2, world, corner_wp, owner);
-    lightVisibility3 = cornerVisibilities(3, world, corner_wp, owner);
-    lightVisibility4 = cornerVisibilities(4, world, corner_wp, owner);
-    lightVisibility5 = cornerVisibilities(5, world, corner_wp, owner);
-    lightVisibility6 = cornerVisibilities(6, world, corner_wp, owner);
-    lightVisibility7 = cornerVisibilities(7, world, corner_wp, owner);
-    fillSpecVisibilities(corner_wp, owner, quadRadius(d00, d01), specVisibility0, specVisibility1, specVisibility2);
+    fillLightVisibilities(
+        world, corner_wp, owner,
+        lightVisibility0, lightVisibility1, lightVisibility2, lightVisibility3,
+        lightVisibility4, lightVisibility5, lightVisibility6, lightVisibility7
+    );
+    vec2 spec45;
+    fillSpecVisibilities(
+        corner_wp, owner, d00, d01, has_quad,
+        specVisibility0, spec45, specOverflow0, specOverflow1, specOverflow2
+    );
+    specVis45Quad = vec4(spec45, quad_coord);
     gl_Position = mvp * vec4(vertexPosition.xy, 0.0, 1.0);
 }
 """
