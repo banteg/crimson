@@ -1036,6 +1036,54 @@ void check_ground_visibility() {
   assert(bounds()[2] > 0); // ring's near edge
   r[1] = 0;
   assert(bounds()[2] == 0); // no eligible response
+  // Exact 32x32 ground tiles cull disc corners, diagonal capsule corners,
+  // ring interiors/exteriors, and inactive diffuse/specular reaches.
+  {
+    GroundTiles tiles;
+    auto tile_has = [&](int x, int y, int light) {
+      return (tiles.masks[((size_t)y * tiles.width + x) * 4 + light / 8] & (1u << (light % 8))) != 0;
+    };
+    float tp[16] = {
+      // 0: disc centered at (160, 160), radius 120 -> AABB corner tile (1, 1) [32..64] is >135 away
+      160, 160, 120, 24,
+      // 1: 45-deg diagonal beam centered at (256, 256), half_len 140, radius 24 -> off-diagonal corners empty
+      256, 256, 24, 24,
+      // 2: ring centered at (256, 256), ring 160, radius 20 -> center tile (8, 8) inside hole is culled
+      256, 256, 20, 24,
+      // 3: reflection-only point at (160, 160), unused diffuse radius 200, reflection reach 20
+      160, 160, 200, 24,
+    };
+    float td[16] = {
+      0, 0, 0, 0,
+      1, 1, 0, 280,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+    };
+    float tc[16] = {
+      1, 1, 1, 0,
+      1, 1, 1, 0,
+      1, 1, 1, 160,
+      1, 1, 1, 0,
+    };
+    float tr[16] = {
+      1, 0, 0, 1,
+      1, 1, 24, 1,
+      1, 1, 20, 1,
+      0, 1, 20, 1,
+    };
+    float ts[16] = {};
+    tiles.prepare(512, 512, 4, tp, td, tc, tr, ts, false);
+    assert(tiles.width == 16 && tiles.height == 16);
+    // Light 0 (disc): center lit, cardinal edge tile (1, 5) [32..64, 160..192] dist=96<120 lit, corner (1, 1) culled
+    assert(tile_has(5, 5, 0) && tile_has(1, 5, 0) && !tile_has(1, 1, 0));
+    // Light 1 (45-deg diagonal): endpoints (5,5) and (11,11) lit, off-diagonal AABB corners (5,11) & (11,5) culled
+    assert(tile_has(8, 8, 1) && tile_has(5, 5, 1) && tile_has(11, 11, 1));
+    assert(!tile_has(5, 11, 1) && !tile_has(11, 5, 1));
+    // Light 2 (ring): ring edge (13, 8) [416..448, 256..288] lit, center hole (8, 8) and outer corner (3, 3) culled
+    assert(tile_has(13, 8, 2) && !tile_has(8, 8, 2) && !tile_has(3, 3, 2));
+    // Light 3 (reflection-only reach 20, unused diffuse radius 200): center (5, 5) lit, (2, 5) culled
+    assert(tile_has(5, 5, 3) && !tile_has(2, 5, 3));
+  }
   renderer_resize(128, 128);
   w2c_host_back_buffer(nullptr, 64, 64);
   w2c_host_set_render_target(nullptr, 0);

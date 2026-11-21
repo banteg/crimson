@@ -25,6 +25,7 @@ from ...sim.terrain_fx import TerrainFxBatch
 from ..terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..world.atlas import effect_cell_src
 from .continuous_beam import FIRE_DIRECT_GAIN, ION_DIRECT_GAIN, prepare_beam_lights
+from .ground_tiles import GroundLightTiles, build_ground_tiles
 from .hdr import _HDR_TONEMAP_VS_330
 from .heat_vision import HeatVision
 from .material_history import MaterialHistory
@@ -49,6 +50,9 @@ if TYPE_CHECKING:
 VISIBILITY_TEXEL = 4.0
 BEAM_VISIBILITY_ROWS = MAX_MATERIAL_LIGHTS // 16
 BEAM_VISIBILITY_UNIT = 5
+LIGHT_TILES_UNIT = 6
+# Debug views where ground.frag returns before reading u_light_tiles.
+_UNLIT_DEBUG_VIEWS = frozenset((1, 2, 3, 4, 9, 10, 11, 12))
 
 _FLOAT_UNIFORM_KINDS = {
     1: rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
@@ -95,15 +99,17 @@ def _apply_uniforms(shader: rl.Shader, locations: dict[str, int], uniforms: list
                               len(values) // components)
 
 
-def _bind_unit(shader: rl.Shader | None, location: int, texture: rl.Texture | None) -> None:
-    """Binds `texture` to BEAM_VISIBILITY_UNIT for `shader`'s sampler at `location`, or unbinds it."""
-    rl.rl_active_texture_slot(BEAM_VISIBILITY_UNIT)
+def _bind_unit(
+    shader: rl.Shader | None, location: int, texture: rl.Texture | None, *, unit: int = BEAM_VISIBILITY_UNIT,
+) -> None:
+    """Binds `texture` to `unit` for `shader`'s sampler at `location`, or unbinds it."""
+    rl.rl_active_texture_slot(unit)
     if texture is None:
         rl.rl_disable_texture()
     else:
         rl.rl_enable_texture(texture.id)
         if shader is not None and location >= 0:
-            rl.set_shader_value(shader, location, rl.ffi.new("int *", BEAM_VISIBILITY_UNIT),
+            rl.set_shader_value(shader, location, rl.ffi.new("int *", unit),
                                 rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
     rl.rl_active_texture_slot(0)
 
@@ -161,6 +167,7 @@ class MaterialGroundRenderer(GroundRenderer):
     beam_shader: rl.Shader | None = None
     beam_locations: dict[str, int] = msgspec.field(default_factory=dict)
     beam_atlas: rl.RenderTexture | None = None
+    light_tiles: GroundLightTiles = msgspec.field(default_factory=GroundLightTiles)
     reflection_occlusion: ReflectionOcclusion = msgspec.field(default_factory=ReflectionOcclusion)
     heat_vision: HeatVision = msgspec.field(default_factory=HeatVision)
 
@@ -189,6 +196,7 @@ class MaterialGroundRenderer(GroundRenderer):
         if self.beam_atlas is not None:
             rl.unload_render_texture(self.beam_atlas)
             self.beam_atlas = None
+        self.light_tiles.close()
         self.material_layers = None
         super().close()
 
@@ -549,7 +557,21 @@ class MaterialGroundRenderer(GroundRenderer):
         else:
             put("u_visibility_world", [0.0, 0.0, 0.0, 0.0])
             put("u_visibility_size", [0.0, 0.0])
+        if lights and debug not in _UNLIT_DEBUG_VIEWS:
+            tile_w, tile_h, tile_masks = build_ground_tiles(
+                float(self.width), float(self.height), lights, shapes, beams=has_beam_lights,
+            )
+        else:
+            tile_w, tile_h, tile_masks = 0, 0, b""
+        tile_texture = self.light_tiles.upload(tile_w, tile_h, tile_masks) if tile_w > 0 and tile_h > 0 else None
         _apply_uniforms(sh, self.material_locations, uniforms)
+        tile_size_buf = rl.ffi.new("int[2]", [tile_w, tile_h])
+        rl.set_shader_value(
+            sh,
+            self._material_location("u_light_tile_size"),
+            rl.ffi.cast("void *", tile_size_buf),
+            rl.ShaderUniformDataType.SHADER_UNIFORM_IVEC2,
+        )
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,
         # since rlgl flushes (and clears sampler bindings) when changing blend modes.
         with opaque_blend():
@@ -565,9 +587,15 @@ class MaterialGroundRenderer(GroundRenderer):
                 )
                 if atlas is not None:
                     _bind_unit(sh, self._material_location("u_visibility_tex"), atlas.texture)
+                if tile_texture is not None:
+                    _bind_unit(
+                        sh, self._material_location("u_light_tiles"), tile_texture, unit=LIGHT_TILES_UNIT,
+                    )
                 yield
             finally:
                 rl.end_shader_mode()
+                if tile_texture is not None:
+                    _bind_unit(None, -1, None, unit=LIGHT_TILES_UNIT)
                 if atlas is not None:
                     _bind_unit(None, -1, None)
 
@@ -606,14 +634,35 @@ class MaterialGroundRenderer(GroundRenderer):
                 support = []
                 for i in range(group * 4, min(len(lights), group * 4 + 4)):
                     light = lights[i]
-                    if light.illumination_gain <= 0 and light.reflection_gain <= 0:
+                    has_diff = light.illumination_gain > 0.0
+                    has_spec = light.reflection_gain > 0.0 and light.reflection_reach > 0.0
+                    if not has_diff and not has_spec:
                         continue
-                    reach = max(1.0, light.radius, light.reflection_reach)
-                    half = max(0.0, light.length * 0.5, shapes[i * 4 + 3])
+                    diff_rad = max(1.0, light.radius) if has_diff else 0.0
+                    spec_rad = max(0.01, light.reflection_reach) if has_spec else 0.0
                     square = light.direction.x ** 2 + light.direction.y ** 2
-                    axis = light.direction / math.sqrt(square) if square > 0.0001 else Vec2(1, 0)
-                    ex = reach + (light.ring_radius if light.ring_radius > 0 else abs(axis.x) * half)
-                    ey = reach + (light.ring_radius if light.ring_radius > 0 else abs(axis.y) * half)
+                    if light.ring_radius > 0:
+                        ex = ey = max(diff_rad, spec_rad) + light.ring_radius
+                    elif 0.00009 <= square <= 0.00011:
+                        spec_half = max(0.0, light.length * 0.5)
+                        diff_half = max(spec_half, shapes[i * 4 + 3]) if has_diff else 0.0
+                        ex = ey = max(
+                            diff_rad + diff_half if has_diff else 0.0,
+                            spec_rad + spec_half if has_spec else 0.0,
+                        )
+                    else:
+                        has_dir = square > 0.0001
+                        axis = light.direction / math.sqrt(square) if has_dir else Vec2(1, 0)
+                        spec_half = max(0.0, light.length * 0.5) if has_dir else 0.0
+                        diff_half = max(spec_half, shapes[i * 4 + 3]) if has_diff else 0.0
+                        ex = max(
+                            diff_rad + abs(axis.x) * diff_half if has_diff else 0.0,
+                            spec_rad + abs(axis.x) * spec_half if has_spec else 0.0,
+                        )
+                        ey = max(
+                            diff_rad + abs(axis.y) * diff_half if has_diff else 0.0,
+                            spec_rad + abs(axis.y) * spec_half if has_spec else 0.0,
+                        )
                     support.append((light.pos.x - ex, light.pos.y - ey, light.pos.x + ex, light.pos.y + ey))
                 if not support:
                     continue

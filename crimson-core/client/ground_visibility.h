@@ -9,15 +9,38 @@ inline std::array<float, 4> ground_light_bounds(int i, const float *positions, c
                                                 const float *colors, const float *responses, const float *shapes,
                                                 bool beams) {
   const float *p = positions + i * 4, *d = directions + i * 4, *r = responses + i * 4;
-  float radius = std::max(std::max(1.f, p[2]), r[2]);
-  float half = std::max(0.f, d[3] * .5f);
-  if (beams && r[0] > 0) half = std::max(half, shapes[i * 4 + 3]);
+  bool has_diff = r[0] > 0.f;
+  bool has_spec = r[1] > 0.f && r[2] > 0.f;
+  float diff_rad = has_diff ? std::max(1.f, p[2]) : 0.f;
+  float spec_rad = has_spec ? std::max(.01f, r[2]) : 0.f;
   float square = d[0] * d[0] + d[1] * d[1];
-  float ax = square > .0001f ? d[0] / std::sqrt(square) : 1.f;
-  float ay = square > .0001f ? d[1] / std::sqrt(square) : 0.f;
   float ring = colors[i * 4 + 3];
-  float ex = radius + (ring > 0 ? ring : std::abs(ax) * half);
-  float ey = radius + (ring > 0 ? ring : std::abs(ay) * half);
+  if (ring > 0.f) {
+    float extent = std::max(diff_rad, spec_rad) + ring;
+    return {p[0] - extent, p[1] - extent, p[0] + extent, p[1] + extent};
+  }
+  // Near ground.frag's `dot(dir.xy, dir.xy) > 0.0001` cutoff, FMA or precision
+  // differences could flip between `normalize(dir)` and the fallback axis.
+  if (square >= .00009f && square <= .00011f) {
+    float spec_half = std::max(0.f, d[3] * .5f);
+    float diff_half = spec_half;
+    if (beams && has_diff && shapes)
+      diff_half = std::max(diff_half, shapes[i * 4 + 3]);
+    float extent = std::max(has_diff ? diff_rad + diff_half : 0.f,
+                            has_spec ? spec_rad + spec_half : 0.f);
+    return {p[0] - extent, p[1] - extent, p[0] + extent, p[1] + extent};
+  }
+  bool has_dir = square > .0001f;
+  float ax = has_dir ? d[0] / std::sqrt(square) : 1.f;
+  float ay = has_dir ? d[1] / std::sqrt(square) : 0.f;
+  float spec_half = has_dir ? std::max(0.f, d[3] * .5f) : 0.f;
+  float diff_half = spec_half;
+  if (beams && has_diff && shapes)
+    diff_half = std::max(diff_half, shapes[i * 4 + 3]);
+  float ex = std::max(has_diff ? diff_rad + std::abs(ax) * diff_half : 0.f,
+                      has_spec ? spec_rad + std::abs(ax) * spec_half : 0.f);
+  float ey = std::max(has_diff ? diff_rad + std::abs(ay) * diff_half : 0.f,
+                      has_spec ? spec_rad + std::abs(ay) * spec_half : 0.f);
   return {p[0] - ex, p[1] - ey, p[0] + ex, p[1] + ey};
 }
 
@@ -50,7 +73,7 @@ struct GroundVisibility {
     bool any = false;
     for (int i = group * 4; i < std::min(count, group * 4 + 4); ++i) {
       const float *response = responses + i * 4;
-      if (response[0] <= 0 && response[1] <= 0)
+      if (response[0] <= 0 && (response[1] <= 0 || response[2] <= 0))
         continue;
       auto source = ground_light_bounds(i, positions, directions, colors, responses, shapes, beams);
       lo_x = std::min(lo_x, source[0]); lo_y = std::min(lo_y, source[1]);
