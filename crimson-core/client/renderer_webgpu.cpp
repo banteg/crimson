@@ -819,8 +819,10 @@ void wgpu_renderer_resize(int window_width, int window_height) {
   reallocate(back, v.width, v.height, back.flags);
 }
 
+namespace {
 void flush_ground_stamps();
 void flush_beams();
+} // namespace
 
 void wgpu_renderer_present(int window_width, int window_height) {
   flush_beams();
@@ -950,6 +952,7 @@ struct Ground {
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
+namespace {
 bool ground_batch;
 
 struct GroundStamp {
@@ -972,6 +975,7 @@ void discard_ground_stamps(int id) {
     ground_stamp_bytes.clear();
   }
 }
+} // namespace
 
 void drop_ground(int id) {
   discard_ground_stamps(id);
@@ -1023,6 +1027,7 @@ void rebase_wetness(Ground &g, float epoch) {
   g.epoch = epoch;
 }
 
+namespace {
 void queue_ground_stamp(Ground &g, WGPUPrimitiveTopology topology, const void *vertices, u32 vertex_count,
                         const unsigned short *indices, int index_count) {
   if (ground_stamp_target != current_target || ground_stamps.size() >= 256)
@@ -1065,7 +1070,7 @@ void flush_ground_stamps() {
     return;
   }
   Ground &g = found->second;
-  auto upload = [](const GroundStamp &s, uint64_t uniform_need) {
+  auto upload_one = [](const GroundStamp &s, uint64_t uniform_need) {
     if (!fits(vertex_stream, s.vertex_bytes) || !fits(index_stream, s.index_bytes + 3) ||
         !fits(uniform_stream, uniform_need))
       submit();
@@ -1079,6 +1084,37 @@ void flush_ground_stamps() {
       geometry.index_at = put(index_stream, ground_stamp_bytes.data() + s.index_at, s.index_bytes);
     return geometry;
   };
+  // Upload the batch's geometry once and reuse it across substrate, coverage, and surface passes
+  // whenever the whole batch fits in the current stream capacity.
+  uint64_t classic_uniforms = classic.frag->uniform_size + classic.vert->uniform_size + 512;
+  uint64_t stamp_uniforms = ground_stamp.frag->uniform_size + ground_stamp.vert->uniform_size + 512;
+  uint64_t total_v = 0, total_i = 0, total_u = 0;
+  for (const GroundStamp &s : ground_stamps) {
+    total_v += s.vertex_bytes + 4;
+    total_i += s.index_bytes + 4;
+    if (s.kind != HOST_GROUND_BLOOD)
+      total_u += classic_uniforms;
+    if (s.kind != HOST_GROUND_DECAL)
+      total_u += (s.kind == HOST_GROUND_BLOOD ? 2u : 3u) * stamp_uniforms;
+  }
+  bool preloaded = total_v <= vertex_stream.size && total_i <= index_stream.size && total_u <= uniform_stream.size;
+  std::vector<Geometry> cached;
+  if (preloaded) {
+    if (!fits(vertex_stream, total_v) || !fits(index_stream, total_i) || !fits(uniform_stream, total_u))
+      submit();
+    cached.reserve(ground_stamps.size());
+    for (const GroundStamp &s : ground_stamps) {
+      Geometry geometry;
+      geometry.topology = s.topology;
+      geometry.vertex_bytes = s.vertex_bytes;
+      geometry.index_bytes = s.index_bytes;
+      geometry.index_count = s.index_count;
+      geometry.vertex_at = put(vertex_stream, ground_stamp_bytes.data() + s.vertex_at, s.vertex_bytes);
+      if (s.index_at != SIZE_MAX)
+        geometry.index_at = put(index_stream, ground_stamp_bytes.data() + s.index_at, s.index_bytes);
+      cached.push_back(geometry);
+    }
+  }
   // Pass-major: all substrate draws in one render pass, then all coverage stamps in one pass,
   // then both surface passes together in one surface render pass.
   unsigned saved_states[256], saved_stages[STAGES][32];
@@ -1086,11 +1122,11 @@ void flush_ground_stamps() {
   memcpy(saved_states, render_states, sizeof render_states);
   memcpy(saved_stages, stage_states, sizeof stage_states);
   memcpy(saved_bound, bound, sizeof bound);
-  uint64_t classic_uniforms = classic.frag->uniform_size + classic.vert->uniform_size + 512;
-  for (const GroundStamp &s : ground_stamps) {
+  for (size_t idx = 0; idx < ground_stamps.size(); ++idx) {
+    const GroundStamp &s = ground_stamps[idx];
     if (s.kind == HOST_GROUND_BLOOD)
       continue;
-    Geometry geometry = upload(s, classic_uniforms);
+    Geometry geometry = preloaded ? cached[idx] : upload_one(s, classic_uniforms);
     memcpy(render_states, s.render_states, sizeof render_states);
     memcpy(stage_states, s.stage_states, sizeof stage_states);
     memcpy(bound, s.bound, sizeof bound);
@@ -1102,13 +1138,13 @@ void flush_ground_stamps() {
   memcpy(stage_states, saved_stages, sizeof stage_states);
   memcpy(bound, saved_bound, sizeof bound);
 
-  uint64_t stamp_uniforms = ground_stamp.frag->uniform_size + ground_stamp.vert->uniform_size + 512;
   for (int pass_id = 0; pass_id < 3; ++pass_id) {
     Target &into = pass_id ? g.surface : g.coverage;
-    for (const GroundStamp &s : ground_stamps) {
+    for (size_t idx = 0; idx < ground_stamps.size(); ++idx) {
+      const GroundStamp &s = ground_stamps[idx];
       if (s.kind == HOST_GROUND_DECAL || (pass_id == 2 && s.kind == HOST_GROUND_BLOOD))
         continue;
-      Geometry geometry = upload(s, stamp_uniforms);
+      Geometry geometry = preloaded ? cached[idx] : upload_one(s, stamp_uniforms);
       auto it = textures.find(s.bound[0]);
       bool present = s.bound[0] && it != textures.end() && it->second.texture;
       Input atlas = {"texture0", present ? it->second.view : blank_view,
@@ -1170,6 +1206,7 @@ void flush_beams() {
   beam_vertices.clear();
   beam_batch_count = 0;
 }
+} // namespace
 
 // Vertices the host makes, in the device's layout (x, y, z, rhw, D3DCOLOR, u, v).
 struct HostVertex {
@@ -1304,7 +1341,7 @@ bool ground_draw(const Geometry &geometry) {
 // --- RTX fluid smoke (game/rtx_smoke.cpp), as in renderer.cpp ---------------------
 enum { SMOKE_TARGETS = 5, SMOKE_DISPLAY_MAX_AXIS = 640 };
 Target smoke_targets[SMOKE_TARGETS], smoke_composite;
-int smoke_current, smoke_pressure = 3, smoke_iterations;
+static int smoke_current, smoke_pressure = 3, smoke_iterations;
 float smoke_resolution, smoke_world[2], smoke_dt, smoke_decay = 0.2f, smoke_fade = 1;
 
 void release_smoke() {
@@ -1888,7 +1925,7 @@ void wgpu_w2c_host_ground(struct w2c_host *, u32 kind, f32 seconds) {
     flush_ground_stamps();
     return;
   }
-  if ((int)kind == HOST_GROUND_END)
+  if ((int)kind == HOST_GROUND_END && !ground_batch)
     flush_ground_stamps();
   ground_kind = (int)kind;
   ground_seconds = seconds;
