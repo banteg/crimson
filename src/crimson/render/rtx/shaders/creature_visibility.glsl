@@ -68,18 +68,16 @@ float cornerVisibility(int i, vec2 wp, vec2 owner) {
     return illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), max(.1, u_response[i].w), owner);
 }
 
-// Pack corner-interpolated specular visibilities for the first 16 illuminating continuous beams; any overflow
-// beam replays the exact same triangle-corner interpolation in creature.frag.
-void fillSpecVisibilities(vec2 wp, vec2 owner,
-                          out vec4 s0, out vec4 s1, out vec4 s2, out vec4 s3) {
+// Pack corner-interpolated specular visibilities for the first 12 illuminating continuous beams; any overflow
+// beam replays the exact same triangle-corner interpolation in creature.frag using quadCenterD00 and quadD01.
+void fillSpecVisibilities(vec2 wp, vec2 owner, out vec4 s0, out vec4 s1, out vec4 s2) {
     s0 = vec4(1.);
     s1 = vec4(1.);
     s2 = vec4(1.);
-    s3 = vec4(1.);
     if (u_dynamic_shadows == 0) return;
     int slot = 0;
     for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
-        if (i >= u_count || slot >= 16) break;
+        if (i >= u_count || slot >= 12) break;
         if (!needsSeparateSpecVis(i)) continue;
         float vis = cornerSpecVisibility(i, wp, owner);
         int group = slot / 4;
@@ -88,10 +86,8 @@ void fillSpecVisibilities(vec2 wp, vec2 owner,
             if (lane == 0) s0.x = vis; else if (lane == 1) s0.y = vis; else if (lane == 2) s0.z = vis; else s0.w = vis;
         } else if (group == 1) {
             if (lane == 0) s1.x = vis; else if (lane == 1) s1.y = vis; else if (lane == 2) s1.z = vis; else s1.w = vis;
-        } else if (group == 2) {
-            if (lane == 0) s2.x = vis; else if (lane == 1) s2.y = vis; else if (lane == 2) s2.z = vis; else s2.w = vis;
         } else {
-            if (lane == 0) s3.x = vis; else if (lane == 1) s3.y = vis; else if (lane == 2) s3.z = vis; else s3.w = vis;
+            if (lane == 0) s2.x = vis; else if (lane == 1) s2.y = vis; else if (lane == 2) s2.z = vis; else s2.w = vis;
         }
         slot++;
     }

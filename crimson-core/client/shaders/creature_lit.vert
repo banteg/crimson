@@ -7,7 +7,8 @@
 layout(location = 0) in vec4 position; // x, y, z, rhw in pixels
 layout(location = 1) in vec4 diffuse;  // D3DCOLOR bytes: b, g, r, a
 layout(location = 2) in vec2 uv;
-layout(location = 3) in vec4 center;   // xy quad center, zw first-corner offset in pixels
+layout(location = 3) in vec4 center;   // xy quad center, zw v0 - center in pixels
+layout(location = 4) in vec2 corner1;  // v3 - center in pixels
 uniform vec2 target_size;
 uniform vec2 camera;
 LOC(0) out vec2 fragTexCoord;
@@ -24,8 +25,8 @@ LOC(10) out vec4 lightVisibility7;
 LOC(11) out vec4 specVisibility0;
 LOC(12) out vec4 specVisibility1;
 LOC(13) out vec4 specVisibility2;
-LOC(14) out vec4 specVisibility3;
-LOC(15) flat out vec4 quadFlat;
+LOC(14) flat out vec4 quadCenterD00;
+LOC(15) flat out vec2 quadD01;
 void main() {
     gl_Position = target_position(position.xy, target_size);
     fragTexCoord = uv;
@@ -33,10 +34,12 @@ void main() {
     world = position.xy - camera;
     vec2 owner = center.xy - camera;
     vec2 d00 = center.zw;
-    quadFlat = vec4(owner, d00);
+    vec2 d01 = corner1;
+    quadCenterD00 = vec4(owner, d00);
+    quadD01 = d01;
     int vid = gl_VertexID & 3;
-    vec2 corner_wp = dot(d00, d00) > 1e-12
-        ? owner + (vid == 0 ? d00 : vid == 1 ? vec2(-d00.y, d00.x) : vid == 2 ? -d00 : vec2(d00.y, -d00.x))
+    vec2 corner_wp = (dot(d00, d00) > 1e-12 && dot(d01, d01) > 1e-12)
+        ? owner + (vid == 0 ? d00 : vid == 1 ? -d01 : vid == 2 ? -d00 : d01)
         : world;
     lightVisibility0 = cornerVisibilities(0, corner_wp, owner);
     lightVisibility1 = cornerVisibilities(1, corner_wp, owner);
@@ -46,5 +49,5 @@ void main() {
     lightVisibility5 = cornerVisibilities(5, corner_wp, owner);
     lightVisibility6 = cornerVisibilities(6, corner_wp, owner);
     lightVisibility7 = cornerVisibilities(7, corner_wp, owner);
-    fillSpecVisibilities(corner_wp, owner, specVisibility0, specVisibility1, specVisibility2, specVisibility3);
+    fillSpecVisibilities(corner_wp, owner, specVisibility0, specVisibility1, specVisibility2);
 }

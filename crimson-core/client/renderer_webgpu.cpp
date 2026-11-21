@@ -391,7 +391,7 @@ WGPURenderPipeline pipeline(Program &p, const Output &o) {
   if (it != p.pipelines.end())
     return it->second;
   WGPUVertexAttribute attributes[3] = {WGPU_VERTEX_ATTRIBUTE_INIT, WGPU_VERTEX_ATTRIBUTE_INIT, WGPU_VERTEX_ATTRIBUTE_INIT};
-  WGPUVertexAttribute center = WGPU_VERTEX_ATTRIBUTE_INIT;
+  WGPUVertexAttribute center[2] = {WGPU_VERTEX_ATTRIBUTE_INIT, WGPU_VERTEX_ATTRIBUTE_INIT};
   WGPUVertexBufferLayout buffers[2] = {WGPU_VERTEX_BUFFER_LAYOUT_INIT, WGPU_VERTEX_BUFFER_LAYOUT_INIT};
   WGPUVertexBufferLayout &buffer = buffers[0];
   buffer.stepMode = WGPUVertexStepMode_Vertex;
@@ -410,12 +410,16 @@ WGPURenderPipeline pipeline(Program &p, const Output &o) {
     buffer.arrayStride = 28;
     buffer.attributeCount = 3;
     if (p.input == CENTERED_VERTICES) {
-      center.format = WGPUVertexFormat_Float32x4;
-      center.shaderLocation = 3;
+      center[0].format = WGPUVertexFormat_Float32x4;
+      center[0].offset = 0;
+      center[0].shaderLocation = 3;
+      center[1].format = WGPUVertexFormat_Float32x2;
+      center[1].offset = 16;
+      center[1].shaderLocation = 4;
       buffers[1].stepMode = WGPUVertexStepMode_Vertex;
-      buffers[1].arrayStride = 16;
-      buffers[1].attributeCount = 1;
-      buffers[1].attributes = &center;
+      buffers[1].arrayStride = 24;
+      buffers[1].attributeCount = 2;
+      buffers[1].attributes = center;
     }
   } else if (p.input == BEAM_CORNERS) {
     attributes[0].format = WGPUVertexFormat_Float32x4;
@@ -1420,7 +1424,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   // A late scene or body grid rebuilds the atlas in the ground's draw, after its geometry is in the streams.
   if (rtx && world && material == HOST_PASS_GROUND && visibility_dirty)
     uniforms += visibility_uniforms(MAX_LIGHTS / 4);
-  if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 8) || !fits(index_stream, geometry.index_bytes + 3) ||
+  if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 24) || !fits(index_stream, geometry.index_bytes + 3) ||
       !fits(uniform_stream, uniforms))
     submit();
 
@@ -1445,7 +1449,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
                                                      : creature_lit;
   WGPUBindGroup vertex_textures = nullptr;
   if (lit && &program == &creature_lit) {
-    std::vector<float> centers((size_t)vertex_count * 4);
+    std::vector<float> centers((size_t)vertex_count * 6);
     quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data());
     geometry.center_bytes = centers.size() * sizeof(float);
     geometry.center_at = put(vertex_stream, centers.data(), geometry.center_bytes);

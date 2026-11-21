@@ -781,6 +781,54 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             edge_overflow = render([*distant, seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
             for a, b in zip(edge_cached, edge_overflow, strict=True):
                 assert a == pytest.approx(b, abs=.0005)
+
+        # Rectangular replacement creature atlas (512x256 -> 64x32 cells): both ordinary and overflow beam
+        # shadows must trace from the actual rectangular corners rather than a reconstructed square.
+        rect_img = rl.gen_image_color(512, 256, rl.BLANK)
+        rl.image_draw_rectangle(rect_img, 4, 4, 56, 24, rl.Color(70, 55, 40, 255))
+        rect_tex = rl.load_texture_from_image(rect_img)
+        rl.unload_image(rect_img)
+        rect_target = load_float_render_texture(128, 128)
+        alpha = AlphaTestShader()
+        lighting = lit_sprite[1]
+        try:
+            def render_rect(lights, *, rot_deg=0.0):
+                lighting.prepare(lights, camera=cam, view_scale=Vec2(1, 1), occlusion=occlusion, shadows=True, ambient=1.)
+                with texture_mode(rect_target, linear=True):
+                    rl.clear_background(rl.BLANK)
+                    with alpha.scope(), lighting.scope(texture=rect_tex, restore_shader=alpha.shader):
+                        draw_centered_quad(
+                            rect_tex, rl_rectangle(0, 0, 64, 32), owner + cam, 64, 32,
+                            math.radians(rot_deg), rl_color(255, 255, 255, 255),
+                        )
+                img = rl.load_image_from_texture(rect_target.texture)
+                try:
+                    rl.image_format(img, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
+                    return list(struct.iter_unpack("ffff", bytes(rl.ffi.buffer(img.data, 128 * 128 * 16))))
+                finally:
+                    rl.unload_image(img)
+
+            # Blocker sits right on the ray from the actual rectangular corner (318, 112) to the head (320, 64),
+            # while missing a wrong square's corner. Cached and overflow paths must match identically.
+            rect_blocker = BodyVolume(Vec2(319, 88), Vec2(6, 6), 32, 0., owner=Vec2(319, 88))
+            occlusion.upload(build_occlusion_grid([rect_blocker], [fading], width=1024, height=1024))
+            rect_clear_img = render_rect([fading], rot_deg=25.0)
+            occlusion.upload(build_occlusion_grid([rect_blocker], [*distant, fading], width=1024, height=1024))
+            rect_over_img = render_rect([*distant, fading], rot_deg=25.0)
+            for a, b in zip(rect_clear_img, rect_over_img, strict=True):
+                assert a == pytest.approx(b, abs=.0005)
+            # And an ordinary light with a blocker that only intercepts the real rectangular corner (318, 112),
+            # NOT a 90-degree rotated square corner (334, 96): verify it actually shadows the sprite.
+            rect_light = MaterialLight(Vec2(318, 64), 120, (1.4, .68, .2), height=24)
+            occlusion.upload(build_occlusion_grid([], [rect_light], width=1024, height=1024))
+            ord_clear = render_rect([rect_light], rot_deg=0.0)
+            occlusion.upload(build_occlusion_grid([rect_blocker], [rect_light], width=1024, height=1024))
+            ord_blocked = render_rect([rect_light], rot_deg=0.0)
+            assert sum(p[0] for p in ord_blocked) < sum(p[0] for p in ord_clear) * .9
+        finally:
+            alpha.close()
+            rl.unload_render_texture(rect_target)
+            rl.unload_texture(rect_tex)
     finally:
         occlusion.close()
 

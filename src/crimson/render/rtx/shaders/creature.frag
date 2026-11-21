@@ -17,14 +17,14 @@ in vec4 lightVisibility4;
 in vec4 lightVisibility5;
 in vec4 lightVisibility6;
 in vec4 lightVisibility7;
-// Corner-interpolated specular visibility for the first 16 illuminating continuous beams, four slots per vec4.
+// Corner-interpolated specular visibility for the first 12 illuminating continuous beams, four slots per vec4.
 in vec4 specVisibility0;
 in vec4 specVisibility1;
 in vec4 specVisibility2;
-in vec4 specVisibility3;
-// Creature center (xy) and exact top-left corner offset c00 - owner (zw), identical across all four vertices,
-// so overflow (>16 beams) replays the exact vertex corner rays without fragment derivative jitter or UV assumptions.
-flat in vec4 quadFlat;
+// Creature center (xy), exact c00 - owner (zw), and exact c01 - owner (quadD01), identical across all four vertices,
+// so overflow (>12 beams) replays the exact vertex corner rays for both square and rectangular quads.
+flat in vec4 quadCenterD00;
+flat in vec2 quadD01;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -55,8 +55,7 @@ float lightVisibility(int i) {
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
 }
 float specVisibility(int slot) {
-    vec4 group = slot < 8 ? (slot < 4 ? specVisibility0 : specVisibility1)
-                          : (slot < 12 ? specVisibility2 : specVisibility3);
+    vec4 group = slot < 4 ? specVisibility0 : slot < 8 ? specVisibility1 : specVisibility2;
     int lane = slot - slot / 4 * 4;
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
 }
@@ -69,19 +68,20 @@ float cornerSpecVis(int i, vec2 p, vec2 owner, vec2 axis, float half_length, flo
     vec2 near_p = u_pos[i].xy + axis * along_p;
     return illuminationVisibility(vec3(p, 8.), vec3(near_p, u_pos[i].w), source_width, owner);
 }
-float overflowSpecVisibility(int i, vec2 wp, vec4 qf, vec2 axis, float half_length, float source_width) {
-    vec2 owner = qf.xy;
-    vec2 d00 = qf.zw;
-    if (dot(d00, d00) <= 1e-12)
-        return cornerSpecVis(i, wp, owner, axis, half_length, source_width);
+float overflowSpecVisibility(int i, vec2 wp, vec4 center_d00, vec2 d01, vec2 axis, float half_length, float source_width) {
+    vec2 owner = center_d00.xy;
+    vec2 d00 = center_d00.zw;
     vec2 c00 = owner + d00;
+    vec2 c01 = owner + d01;
     vec2 c11 = owner - d00;
-    vec2 c10 = owner + vec2(-d00.y, d00.x);
-    vec2 c01 = owner + vec2(d00.y, -d00.x);
+    vec2 c10 = owner - d01;
     vec2 ex = c10 - c00;
     vec2 ey = c01 - c00;
+    float det = ex.x * ey.y - ex.y * ey.x;
+    if (abs(det) <= 1e-12)
+        return cornerSpecVis(i, wp, owner, axis, half_length, source_width);
     vec2 rel = wp - c00;
-    vec2 u = clamp(vec2(dot(rel, ex), dot(rel, ey)) / dot(ex, ex), 0., 1.);
+    vec2 u = clamp(vec2(rel.x * ey.y - rel.y * ey.x, ex.x * rel.y - ex.y * rel.x) / det, 0., 1.);
     float v00 = cornerSpecVis(i, c00, owner, axis, half_length, source_width);
     float v11 = cornerSpecVis(i, c11, owner, axis, half_length, source_width);
     if (u.y >= u.x) {
@@ -256,9 +256,9 @@ void main() {
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
             vec3 spec = u_rgb[i].rgb * (spec_amount * spec_gain * breakup);
             float spec_vis = my_spec_slot < 0 ? lightVisibility(i)
-                : my_spec_slot < 16 ? specVisibility(my_spec_slot)
+                : my_spec_slot < 12 ? specVisibility(my_spec_slot)
                 : max(spec.r, max(spec.g, spec.b)) > 1e-5
-                    ? overflowSpecVisibility(i, wp, quadFlat, axis, u_dir[i].w * .5, source_width)
+                    ? overflowSpecVisibility(i, wp, quadCenterD00, quadD01, axis, u_dir[i].w * .5, source_width)
                     : 1.;
             added += spec * spec_vis;
         }
