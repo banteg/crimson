@@ -123,6 +123,7 @@ class GpuSmokeSimulation:
             self.fields.clear()
             self.batches.clear()
             self.waiting_impulses.clear()
+            self.moving_bodies = ()
             self.blasts.clear()
             self.accumulator = 0.
             self.dirty_reset = True

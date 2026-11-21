@@ -268,3 +268,19 @@ def test_plasma_components_survive_below_the_art_cutoff_in_linear_light(effect_s
     assert faint[..., :3].max() > 0
     np.testing.assert_allclose(faint[..., :3] * 34, bright[..., :3], atol=2e-6)
     assert zero[..., :3].max() == 0
+
+
+def test_close_effect_shader_unloads_and_resets_cache(mocker, tmp_path):
+    from crimson.render.rtx import beam
+    from crimson.world.render_resources import RenderResources
+
+    shader = rl.ffi.new("Shader *")[0]
+    shader.id = 88
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER", None)
+    mocker.patch.object(effects, "_shader", effects._EffectShader(shader, 1, 2, 3))
+    unload = mocker.patch.object(rl, "unload_shader")
+    resources = RenderResources(tmp_path)
+    resources.close()
+    resources.close()
+    unload.assert_called_once_with(shader)
+    assert effects._shader is None

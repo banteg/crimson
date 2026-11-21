@@ -11,10 +11,12 @@ from grim.terrain_render import GroundRenderer
 from grim.terrain_stamps import TerrainLayers
 
 from ..creatures.anim import creature_corpse_frame_for_type
+from ..render.rtx.beam import close_beam_shader
 from ..render.rtx.bonus_lighting import BonusLighting
 from ..render.rtx.contact_glow import ContactGlows
 from ..render.rtx.creature_lighting import CreatureLighting
 from ..render.rtx.debris import DebrisBudget
+from ..render.rtx.effects import close_effect_shader
 from ..render.rtx.hdr import HdrRenderer
 from ..render.rtx.material_lights import LightSelection
 from ..render.rtx.materials import MaterialGroundRenderer
@@ -133,6 +135,8 @@ class RenderResources(msgspec.Struct):
         self.player_lighting.close()
         self.bonus_lighting.close()
         self.contact_glows.close()
+        close_beam_shader()
+        close_effect_shader()
         self.light_selection.reset()
         self.debris.reset()
 

@@ -148,6 +148,13 @@ def sprite_batch() -> Generator[SpriteBatch]:
         batch.end()
 
 
+def close_effect_shader() -> None:
+    global _shader
+    if _shader is not None:
+        rl.unload_shader(_shader.shader)
+    _shader = None
+
+
 def _draw(
     shape: EffectShape,
     center: Vec2,
