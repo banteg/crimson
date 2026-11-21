@@ -213,7 +213,7 @@ class GroundLightTiles(msgspec.Struct):
             rl.unload_texture(self.texture)
             self.texture = None
 
-    def upload(self, width: int, height: int, masks: bytes) -> rl.Texture:
+    def upload(self, width: int, height: int, masks: bytes) -> rl.Texture | None:
         if self.texture is not None and (int(self.texture.width) != width or int(self.texture.height) != height):
             self.close()
         buf = rl.ffi.from_buffer("unsigned char[]", masks)
@@ -228,7 +228,7 @@ class GroundLightTiles(msgspec.Struct):
             self.texture = load_texture_with_reclaim(image)
             if self.texture.id <= 0:
                 self.texture = None
-                raise RuntimeError("Could not upload ground light tiles")
+                return None
             rl.set_texture_filter(self.texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
             rl.set_texture_wrap(self.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         else:

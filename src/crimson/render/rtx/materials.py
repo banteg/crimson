@@ -407,7 +407,7 @@ class MaterialGroundRenderer(GroundRenderer):
 
     def _mark_normals_commands(self, commands: list[_MaterialStamp]) -> None:
         assert self.surface is not None
-        if self.normals_dirty and self.normals_full:
+        if self.normals is None or (self.normals_dirty and self.normals_full):
             return
         tex_w = max(1.0, float(self.surface.texture.width))
         tex_h = max(1.0, float(self.surface.texture.height))
@@ -777,6 +777,8 @@ class MaterialGroundRenderer(GroundRenderer):
         else:
             tile_w, tile_h, tile_masks = 0, 0, b""
         tile_texture = self.light_tiles.upload(tile_w, tile_h, tile_masks) if tile_w > 0 and tile_h > 0 else None
+        if tile_texture is None:
+            tile_w = tile_h = 0
         # Select ground shader after _beam_visibility so atlas allocation can evict optional relief first.
         normals = self._ensure_normals()
         if normals is not None:

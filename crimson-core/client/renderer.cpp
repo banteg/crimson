@@ -368,6 +368,7 @@ enum { BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
 GLuint ground_beam_vis_program;
 Target beam_vis;
 int beam_vis_width, beam_vis_height;
+int beam_vis_failed_w, beam_vis_failed_h;
 GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
 // RTX fluid smoke (game/rtx_smoke.cpp, render/rtx/gpu_smoke.py): the field's
 // RGBA16F targets (its state twice, divergence, pressure twice), the solver's
@@ -971,7 +972,7 @@ void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
 
 void mark_normals_geometry(Ground &g, u32 primitive, const unsigned char *vb, u32 vertex_count,
                            const unsigned short *ib, u32 primitive_count) {
-  if (!vertex_count || (g.normals_dirty && g.normals_full))
+  if (!vertex_count || !g.normals.framebuffer || (g.normals_dirty && g.normals_full))
     return;
   auto vertex_xy = [vb](u32 idx, float &x, float &y) {
     memcpy(&x, vb + (size_t)idx * 28, sizeof x);
@@ -1227,6 +1228,10 @@ void prepare_ground_visibility(int view_width, int view_height) {
   profile_stat("ground_visibility_groups", (v.count + 3) / 4);
   if (!v.count)
     return;
+  if (!beam_vis.framebuffer && beam_vis_failed_w == v.width && beam_vis_failed_h == v.height) {
+    ground_visibility = {};
+    return;
+  }
   gpu_aside("ground-vis");
   if (!beam_vis.framebuffer || beam_vis_width != v.width || beam_vis_height != v.height) {
     release(beam_vis);
@@ -1239,11 +1244,14 @@ void prepare_ground_visibility(int view_width, int view_height) {
     };
     if (!alloc_vis() && (!evict_ground_normals() || !alloc_vis())) {
       beam_vis = {};
+      beam_vis_failed_w = v.width;
+      beam_vis_failed_h = v.height;
       ground_visibility = {};
       bind_target();
       gpu_resume();
       return;
     }
+    beam_vis_failed_w = beam_vis_failed_h = 0;
     beam_vis_width = v.width;
     beam_vis_height = v.height;
   }
@@ -1734,6 +1742,7 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
   release(heat_trail);
   release(beam_vis);
   beam_vis_width = beam_vis_height = 0;
+  beam_vis_failed_w = beam_vis_failed_h = 0;
   glDeleteTextures(1, &ground_tile_texture);
   ground_tile_texture = 0;
   ground_tile_width = ground_tile_height = 0;
@@ -2002,6 +2011,7 @@ void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
   release(it->second);
   textures.erase(it);
   texel_addresses.erase((int)id);
+  beam_vis_failed_w = beam_vis_failed_h = 0;
   for (auto *maps : {&thickness_maps, &heat_density_maps}) {
     for (auto entry = maps->begin(); entry != maps->end();) {
       if (entry->first == (int)id) {
