@@ -31,9 +31,17 @@ float cornerSpecVisibility(int i, vec2 wp, vec2 owner) {
     return illuminationVisibility(vec3(wp, 8.), vec3(nearest, u_pos[i].w), max(.1, u_response[i].w), owner);
 }
 
-bool needsSeparateSpecVis(int i) {
-    return i < u_count && u_rgb[i].w <= 0. && u_beam_shape[i].w > 0. &&
-           u_response[i].x > 0. && u_response[i].y > 0. && u_response[i].z > 0.;
+float quadRadius(vec2 d00, vec2 d01) {
+    return (dot(d00, d00) > 1e-12 && dot(d01, d01) > 1e-12) ? max(length(d00), length(d01)) : 1e20;
+}
+
+bool needsSeparateSpecVis(int i, vec2 owner, float quad_radius) {
+    if (i >= u_count || u_rgb[i].w > 0. || u_beam_shape[i].w <= 0.) return false;
+    if (u_response[i].x <= 0. || u_response[i].y <= 0. || u_response[i].z <= 0.) return false;
+    vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
+    float half_length = u_dir[i].w * .5;
+    vec2 nearest = nearestOn(i, axis, false, -half_length, half_length, owner);
+    return length(nearest - owner) - quad_radius < u_response[i].z;
 }
 
 float cornerVisibility(int i, vec2 wp, vec2 owner) {
@@ -68,9 +76,10 @@ float cornerVisibility(int i, vec2 wp, vec2 owner) {
     return illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), max(.1, u_response[i].w), owner);
 }
 
-// Pack corner-interpolated specular visibilities for the first 12 illuminating continuous beams; any overflow
-// beam replays the exact same triangle-corner interpolation in creature.frag using quadCenterD00 and quadD01.
-void fillSpecVisibilities(vec2 wp, vec2 owner, out vec4 s0, out vec4 s1, out vec4 s2) {
+// Pack corner-interpolated specular visibilities for the first 12 illuminating continuous beams that actually
+// reach this quad (so distant beams across the arena never displace nearby beams); any overflow replays the
+// exact same triangle-corner interpolation in creature.frag using quadCenterD00 and quadD01.
+void fillSpecVisibilities(vec2 wp, vec2 owner, float quad_radius, out vec4 s0, out vec4 s1, out vec4 s2) {
     s0 = vec4(1.);
     s1 = vec4(1.);
     s2 = vec4(1.);
@@ -78,7 +87,7 @@ void fillSpecVisibilities(vec2 wp, vec2 owner, out vec4 s0, out vec4 s1, out vec
     int slot = 0;
     for (int i = 0; i < MAX_SPEC_LIGHTS; i++) {
         if (i >= u_count || slot >= 12) break;
-        if (!needsSeparateSpecVis(i)) continue;
+        if (!needsSeparateSpecVis(i, owner, quad_radius)) continue;
         float vis = cornerSpecVisibility(i, wp, owner);
         int group = slot / 4;
         int lane = slot - group * 4;

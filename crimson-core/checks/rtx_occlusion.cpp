@@ -41,10 +41,13 @@ int main() {
   assert(references > 0 && size == headers * 4 + 12 + references * 4);
   assert(!rtx_build_occlusion(nullptr, 1, false, grid, &size) && size == 0 && grid[2] == 0);
 
-  // Keep the beam head's source support, even without padded fan-ray lists.
+  // Keep the beam head's source support, even without padded fan-ray lists or illumination budget.
   c.pos_x = 448;
   light[0] = 260; light[1] = 100; light[2] = light[14] = 5;
   assert(rtx_build_occlusion(light, 1, true, grid, &size));
+  light[12] = 0;
+  assert(rtx_build_occlusion(light, 1, true, grid, &size));
+  light[12] = 1;
   light[23] = 0;
   assert(!rtx_build_occlusion(light, 1, true, grid, &size));
 

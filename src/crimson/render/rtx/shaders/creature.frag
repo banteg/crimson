@@ -231,6 +231,10 @@ void main() {
     }
     vec3 added = vec3(0);
     int spec_slot = 0;
+    vec2 q_owner = quadCenterD00.xy;
+    vec2 q_d00 = quadCenterD00.zw;
+    vec2 q_d01 = quadD01;
+    float q_radius = (dot(q_d00, q_d00) > 1e-12 && dot(q_d01, q_d01) > 1e-12) ? max(length(q_d00), length(q_d01)) : 1e20;
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
@@ -241,8 +245,12 @@ void main() {
         float spec_distance = length(source - wp);
         bool continuous = !ring && u_beam_shape[i].w > 0.;
         int my_spec_slot = -1;
-        if (continuous && u_response[i].x > 0. && u_response[i].y > 0. && u_response[i].z > 0.)
-            my_spec_slot = spec_slot++;
+        if (continuous && u_response[i].x > 0. && u_response[i].y > 0. && u_response[i].z > 0.) {
+            float half_length = u_dir[i].w * .5;
+            vec2 owner_near = u_pos[i].xy + axis * clamp(dot(q_owner - u_pos[i].xy, axis), -half_length, half_length);
+            if (length(owner_near - q_owner) - q_radius < u_response[i].z)
+                my_spec_slot = spec_slot++;
+        }
         if (!continuous && spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {

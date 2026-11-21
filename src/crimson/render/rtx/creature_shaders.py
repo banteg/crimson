@@ -65,7 +65,7 @@ void main() {
     lightVisibility5 = cornerVisibilities(5, corner_wp, owner);
     lightVisibility6 = cornerVisibilities(6, corner_wp, owner);
     lightVisibility7 = cornerVisibilities(7, corner_wp, owner);
-    fillSpecVisibilities(corner_wp, owner, specVisibility0, specVisibility1, specVisibility2);
+    fillSpecVisibilities(corner_wp, owner, quadRadius(d00, d01), specVisibility0, specVisibility1, specVisibility2);
     gl_Position = mvp * vec4(vertexPosition.xy, 0.0, 1.0);
 }
 """

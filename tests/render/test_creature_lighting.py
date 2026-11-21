@@ -724,38 +724,68 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         zero_blocked = render([zero_dir_beam], occlusion=occlusion, center=zero_owner, camera=zero_cam)
         assert sum(p[0] for p in zero_blocked) < sum(p[0] for p in zero_clear) - .01
 
-        # Dropping illumination budget from 1e-4 to 0 must not pop specular shadows for either blocker.
+        # Dropping illumination budget from 1e-4 to 0 must not pop specular shadows for either blocker,
+        # including when a quad straddles the reflection cutoff and a blocker sits on a corner ray outside it.
         for blocker in (shaft_blocker, head_blocker):
-            occlusion.upload(build_occlusion_grid([blocker], [fading], width=1024, height=1024))
+            _, fading_grid = prepare_beam_lights([fading], require_illumination=False)
+            occlusion.upload(build_occlusion_grid([blocker], fading_grid, width=1024, height=1024))
             fading_img = render([fading], occlusion=occlusion, center=owner, camera=cam)
-            occlusion.upload(build_occlusion_grid([blocker], [reflection_only], width=1024, height=1024))
+            _, dropped_grid = prepare_beam_lights([reflection_only], require_illumination=False)
+            occlusion.upload(build_occlusion_grid([blocker], dropped_grid, width=1024, height=1024))
             dropped_img = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
             for a, b in zip(fading_img, dropped_img, strict=True):
                 assert a == pytest.approx(b, abs=.002)
 
-        # Overflow past 16 beams: specular visibility must stay identical regardless of beam slot position
-        # or illumination gain, including under a partial blocker.
+        cutoff_beam = MaterialLight(
+            Vec2(192, 64), 100, (1.4, .68, .2), height=24, direction=Vec2(1, 0), length=256,
+            source_width=3, illumination_gain=1e-4, reflection_gain=2, reflection_radius=100,
+            reflection_tail=0., beam_profile=(64., 6., 1.35),
+        )
+        cutoff_ref = msgspec.structs.replace(cutoff_beam, illumination_gain=0.)
+        cutoff_owner = Vec2(422, 64)  # straddles x=420 cutoff: left pixels lit, right corner at x=438
+        cutoff_cam = Vec2(64, 64) - cutoff_owner
+        # Blocker sits past bare segment reach (320+100=420) but on the right-corner ray (438->320).
+        cutoff_blocker = BodyVolume(Vec2(432, 64), Vec2(6, 6), 36, 0., owner=Vec2(432, 64))
+        _, lit_cutoff_grid = prepare_beam_lights([cutoff_beam], require_illumination=False)
+        _, ref_cutoff_grid = prepare_beam_lights([cutoff_ref], require_illumination=False)
+        assert lit_cutoff_grid[0].length == ref_cutoff_grid[0].length and ref_cutoff_grid[0].length > cutoff_beam.length
+        occlusion.upload(build_occlusion_grid([cutoff_blocker], lit_cutoff_grid, width=1024, height=1024))
+        cutoff_lit_img = render([cutoff_beam], occlusion=occlusion, center=cutoff_owner, camera=cutoff_cam)
+        occlusion.upload(build_occlusion_grid([cutoff_blocker], ref_cutoff_grid, width=1024, height=1024))
+        cutoff_ref_img = render([cutoff_ref], occlusion=occlusion, center=cutoff_owner, camera=cutoff_cam)
+        for a, b in zip(cutoff_lit_img, cutoff_ref_img, strict=True):
+            assert a == pytest.approx(b, abs=.002)
+
+        # Distant out-of-reach beams must not displace a nearby beam from the 12 vertex-cached specular slots;
+        # 12 in-reach beams genuinely push the 13th beam into the overflow path, which must still match identically.
         distant = [
             msgspec.structs.replace(beam, pos=Vec2(900, 900 - i * 4), radius=20, reflection_radius=20)
             for i in range(16)
         ]
-        occlusion.upload(build_occlusion_grid([shaft_blocker], [*distant, beam], width=1024, height=1024))
-        overflow_shaft = render([*distant, beam], occlusion=occlusion, center=owner, camera=cam)
-        assert overflow_shaft == shaft_full
-        occlusion.upload(build_occlusion_grid([head_blocker], [*distant, fading], width=1024, height=1024))
-        overflow_head = render([*distant, fading], occlusion=occlusion, center=owner, camera=cam)
-        assert sum(p[2] for p in overflow_head) < sum(p[2] for p in clear_ref) - .05
-        occlusion.upload(build_occlusion_grid([side_blocker], [*distant, fading], width=1024, height=1024))
-        overflow_partial = render([*distant, fading], occlusion=occlusion, center=owner, camera=cam)
-        for a, b in zip(overflow_partial, partial_fading, strict=True):
-            assert a == pytest.approx(b, abs=.0005)
-        for a, b in zip(overflow_partial, partial_ref, strict=True):
-            assert a == pytest.approx(b, abs=.002)
+        in_reach = [
+            msgspec.structs.replace(
+                beam, pos=Vec2(240, 110 + i * 2), rgb=(0., 0., 0.), radius=260, reflection_radius=260,
+            )
+            for i in range(12)
+        ]
+        for prefix in (distant, in_reach):
+            occlusion.upload(build_occlusion_grid([shaft_blocker], [*prefix, beam], width=1024, height=1024))
+            overflow_shaft = render([*prefix, beam], occlusion=occlusion, center=owner, camera=cam)
+            assert overflow_shaft == shaft_full
+            occlusion.upload(build_occlusion_grid([head_blocker], [*prefix, fading], width=1024, height=1024))
+            overflow_head = render([*prefix, fading], occlusion=occlusion, center=owner, camera=cam)
+            assert sum(p[2] for p in overflow_head) < sum(p[2] for p in clear_ref) - .05
+            occlusion.upload(build_occlusion_grid([side_blocker], [*prefix, fading], width=1024, height=1024))
+            overflow_partial = render([*prefix, fading], occlusion=occlusion, center=owner, camera=cam)
+            for a, b in zip(overflow_partial, partial_fading, strict=True):
+                assert a == pytest.approx(b, abs=.0005)
+            for a, b in zip(overflow_partial, partial_ref, strict=True):
+                assert a == pytest.approx(b, abs=.002)
 
-        # Crowd-cell boundary straddling under overflow must also match the vertex-interpolated path seamlessly.
+        # Crowd-cell boundary straddling under true overflow (12 in-reach beams) must match vertex interpolation.
         seam_fading = msgspec.structs.replace(seam_beam, illumination_gain=1e-4)
-        occlusion.upload(build_occlusion_grid(seam_crowd, [*distant, seam_fading], width=1024, height=1024))
-        overflow_seam = render([*distant, seam_fading], occlusion=occlusion, center=seam_owner, camera=seam_cam)
+        occlusion.upload(build_occlusion_grid(seam_crowd, [*in_reach, seam_fading], width=1024, height=1024))
+        overflow_seam = render([*in_reach, seam_fading], occlusion=occlusion, center=seam_owner, camera=seam_cam)
         for a, b in zip(overflow_seam, seam_blocked, strict=True):
             assert a == pytest.approx(b, abs=.002)
 
@@ -763,8 +793,8 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         # visibility under a partial blocker must match identically without depending on atlas UV span.
         occlusion.upload(build_occlusion_grid([side_blocker], [fading], width=1024, height=1024))
         inset_cached = render([fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
-        occlusion.upload(build_occlusion_grid([side_blocker], [*distant, fading], width=1024, height=1024))
-        inset_overflow = render([*distant, fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
+        occlusion.upload(build_occlusion_grid([side_blocker], [*in_reach, fading], width=1024, height=1024))
+        inset_overflow = render([*in_reach, fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
         for a, b in zip(inset_cached, inset_overflow, strict=True):
             assert a == pytest.approx(b, abs=.0005)
 
@@ -777,8 +807,8 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             edge_cam = Vec2(64 / 1.5, 64 / 1.5) - edge_owner
             occlusion.upload(build_occlusion_grid(seam_crowd, [seam_fading], width=1024, height=1024))
             edge_cached = render([seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
-            occlusion.upload(build_occlusion_grid(seam_crowd, [*distant, seam_fading], width=1024, height=1024))
-            edge_overflow = render([*distant, seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
+            occlusion.upload(build_occlusion_grid(seam_crowd, [*in_reach, seam_fading], width=1024, height=1024))
+            edge_overflow = render([*in_reach, seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
             for a, b in zip(edge_cached, edge_overflow, strict=True):
                 assert a == pytest.approx(b, abs=.0005)
 
@@ -813,8 +843,8 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             rect_blocker = BodyVolume(Vec2(319, 88), Vec2(6, 6), 32, 0., owner=Vec2(319, 88))
             occlusion.upload(build_occlusion_grid([rect_blocker], [fading], width=1024, height=1024))
             rect_clear_img = render_rect([fading], rot_deg=25.0)
-            occlusion.upload(build_occlusion_grid([rect_blocker], [*distant, fading], width=1024, height=1024))
-            rect_over_img = render_rect([*distant, fading], rot_deg=25.0)
+            occlusion.upload(build_occlusion_grid([rect_blocker], [*in_reach, fading], width=1024, height=1024))
+            rect_over_img = render_rect([*in_reach, fading], rot_deg=25.0)
             for a, b in zip(rect_clear_img, rect_over_img, strict=True):
                 assert a == pytest.approx(b, abs=.0005)
             # And an ordinary light with a blocker that only intercepts the real rectangular corner (318, 112),
