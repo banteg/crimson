@@ -681,6 +681,26 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         close_blocked = render([close_light], occlusion=occlusion, center=close_owner, camera=close_cam)
         assert sum(p[0] for p in close_blocked) < sum(p[0] for p in close_clear) * .9
 
+        # A beam highlight spanning a crowd-cell boundary (x=128) must not show a hard seam between adjacent pixels.
+        seam_beam = MaterialLight(
+            Vec2(176, 64), 195, (.55, .82, 1.45), height=24, direction=Vec2(0, 1), length=128,
+            source_width=3, illumination_gain=0, reflection_gain=2, reflection_radius=195,
+            reflection_tail=0., beam_profile=(35.2, 6.82, 1.05), beam_ion=True,
+        )
+        seam_crowd = [BodyVolume(Vec2(151, 96), Vec2(8, 12), 28, 0., owner=Vec2(151, 96))] * (CROWD_BODIES + 1)
+        seam_owner = Vec2(128, 96)
+        seam_cam = Vec2(64, 64) - seam_owner
+        seam_clear = render([seam_beam], center=seam_owner, camera=seam_cam)
+        occlusion.upload(build_occlusion_grid(seam_crowd, [seam_beam], width=1024, height=1024))
+        seam_blocked = render([seam_beam], occlusion=occlusion, center=seam_owner, camera=seam_cam)
+        # Pixel x=63 sits at world x=127.5 (outside crowd cell [128, 192)), x=64 at world x=128.5 (inside it).
+        seam_diffs = [
+            abs((seam_blocked[y * 128 + 64][2] - seam_blocked[y * 128 + 63][2])
+                - (seam_clear[y * 128 + 64][2] - seam_clear[y * 128 + 63][2]))
+            for y in range(56, 72)
+        ]
+        assert max(seam_diffs) < .01
+
         # Zero-direction, zero-length continuous beam: head halo extends along +X (beamFrame fallback) and shadows.
         from crimson.render.rtx.continuous_beam import prepare_beam_lights
 

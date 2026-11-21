@@ -70,7 +70,6 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
     vec3 ray = source - receiver;
     float visibility = 1.;
     float inverse_xy_length = 1. / max(dot(ray.xy, ray.xy), 1e-8);
-    ivec2 first_cell = cell;
     float t_enter = 0.;
     float cells_crossed = length(delta);
     // Each step crosses one grid boundary. No nearest-body budget drops blockers.
@@ -79,13 +78,15 @@ float sourceVisibility(vec3 receiver, vec3 source, float source_width, vec2 owne
         bool crowd = header.y < 0.;
         if (crowd) {
             // A crowd: absorb along the length crossed below the bodies' top height. A body's own cell does not
-            // shade the body.
+            // shade the body; ramp crowd absorption in over a quarter cell from the receiver so straddling a
+            // crowd-cell boundary stays seamless while nearby separate crowds still cast shadows.
             float t_exit = min(min(t_edge.x, t_edge.y), 1.);
             float t_top = abs(ray.z) > 1e-6 ? (header.x - receiver.z) / ray.z : (receiver.z < header.x ? 1e20 : -1e20);
             vec2 below = ray.z >= 0. ? vec2(-1e20, t_top) : vec2(t_top, 1e20);
             float crossed = max(0., min(t_exit, below.y) - max(t_enter, below.x));
-            if (crossed > 0. && !(cell == first_cell && owner.x < 1e18)) {
-                float transmitted = exp(CROWD_EXTINCTION * header.y * crossed * cells_crossed);
+            float crowd_weight = owner.x < 1e18 ? smoothstep(0., .25, t_enter * cells_crossed) : 1.;
+            if (crossed > 0. && crowd_weight > 0.) {
+                float transmitted = exp(CROWD_EXTINCTION * header.y * crossed * cells_crossed * crowd_weight);
                 visibility *= transmitted;
                 if (visibility < .001) return visibility;
             }
