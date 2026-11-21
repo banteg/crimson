@@ -218,75 +218,77 @@ void main() {
             vec4 sp_col = u_spec_color[i];
             vec4 sp_dir = u_spec_dir[i];
             vec4 response = u_spec_response[i];
-            // Everything a source gives this pixel comes from within the larger of its light and
-            // reflection radii of its segment (a beam's support, if longer) or ring: past that, skip it.
-            vec2 reach_delta = world - sp_pos.xy;
-            vec2 reach_axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(1., 0.);
-            float reach_half = max(sp_dir.w * .5, u_has_beam_lights != 0 && response.x > 0. ? u_beam_shape[i].w : 0.);
-            float reach_distance = sp_col.w > 0. ? abs(length(reach_delta) - sp_col.w)
-                : length(reach_delta - reach_axis * clamp(dot(reach_delta, reach_axis), -reach_half, reach_half));
-            if (reach_distance >= max(max(1., sp_pos.z), response.z)) continue;
-
-            vec2 axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(0.);
-            float tail = u_spec_tail[i / 4][i % 4];
-            vec2 light_xy = illuminationSource(sp_pos.xy, axis, sp_dir.w, tail);
-            vec2 reflection_xy = sp_pos.xy + axis * clamp(dot(world - sp_pos.xy, axis), -sp_dir.w*.5, sp_dir.w*.5);
             bool ring = sp_col.w > 0.0;
-            if (ring) {
-                light_xy = nearestRingPoint(sp_pos.xy, world, sp_col.w);
-                reflection_xy = light_xy;
-            }
-            vec2 to_l = light_xy - world;
-            float d2d = length(to_l);
-            float reflection_distance = length(reflection_xy - world);
+            bool has_dir = dot(sp_dir.xy, sp_dir.xy) > 0.0001;
+            vec2 dir_axis = has_dir ? normalize(sp_dir.xy) : vec2(0.0);
+            vec2 reach_delta = world - sp_pos.xy;
             float rad = max(1.0, sp_pos.z);
-            bool continuous=u_has_beam_lights!=0 && u_beam_shape[i].w > 0. && response.x>0.;
-            if (!continuous && reflection_distance >= max(rad, response.z)) continue;
+            bool continuous = !ring && u_has_beam_lights != 0 && u_beam_shape[i].w > 0.0 && response.x > 0.0;
+            float half_len = sp_dir.w * 0.5;
+            vec2 reflection_xy = ring ? nearestRingPoint(sp_pos.xy, world, sp_col.w)
+                                      : sp_pos.xy + dir_axis * clamp(dot(reach_delta, dir_axis), -half_len, half_len);
+            float reflection_distance = length(reflection_xy - world);
+            float support_distance = reflection_distance;
             if (continuous) {
-                vec2 source_axis=dot(sp_dir.xy, sp_dir.xy) > .0001?normalize(sp_dir.xy):vec2(1.,0.);
-                vec2 delta=world-sp_pos.xy;
-                float half_span=u_beam_shape[i].w;
-                float support_distance=length(delta-source_axis*clamp(dot(delta,source_axis),-half_span,half_span));
-                if(support_distance<rad) {
+                vec2 beam_axis = has_dir ? dir_axis : vec2(1.0, 0.0);
+                float half_span = u_beam_shape[i].w;
+                support_distance = length(reach_delta - beam_axis * clamp(dot(reach_delta, beam_axis), -half_span, half_span));
+            }
+            float tail = u_spec_tail[group][lane];
+            vec2 to_l = vec2(0.0);
+            float d2d = rad;
+            bool do_diffuse = false;
+            if (continuous) {
+                do_diffuse = support_distance < rad;
+            } else if (response.x > 0.0 && reflection_distance < rad) {
+                vec2 light_xy = ring ? reflection_xy : illuminationSource(sp_pos.xy, dir_axis, sp_dir.w, tail);
+                to_l = light_xy - world;
+                d2d = length(to_l);
+                do_diffuse = d2d < rad;
+            }
+            float spec_support = response.y > 0.0 && response.z > 0.0 && R.z > 0.02 && material_gate > 0.0
+                ? 1.0 - smoothstep(response.z * .8, max(.01, response.z), reflection_distance)
+                : 0.0;
+            if (!do_diffuse && spec_support <= 0.0) continue;
+            if (do_diffuse) {
+                if (continuous) {
                     vec3 unshadowed;
-                    vec3 direct=continuousLight(i,sp_dir,world,N_sub,absorption,wetted_substrate,blood_body_color,albedo_tex.rgb,is_ice,sp_pos,sp_col,response,sp_dir.z,visibility[lane],unshadowed);
-                    direct_unshadowed+=unshadowed;
-                    direct_shadowed+=direct;
-                    diffuse_lit+=direct;
+                    vec3 direct = continuousLight(i, sp_dir, world, N_sub, absorption, wetted_substrate,
+                                                  blood_body_color, albedo_tex.rgb, is_ice, sp_pos, sp_col,
+                                                  response, sp_dir.z, visibility[lane], unshadowed);
+                    direct_unshadowed += unshadowed;
+                    direct_shadowed += direct;
+                    diffuse_lit += direct;
+                } else {
+                    float atten = pow(max(0., 1. - d2d / rad), 2.);
+                    vec3 L = normalize(vec3(to_l, max(.001, sp_pos.w)));
+                    float ndl_sub = max(dot(N_sub, L), 0.);
+                    vec3 transmittance = exp(-absorption * (.90 + .35 / clamp(L.z, .22, 1.)));
+                    vec3 direct_albedo = mix(wetted_substrate * transmittance + blood_body_color, albedo_tex.rgb, is_ice);
+                    // Weak sources retain their original angular response. Broad grazing
+                    // fill is an explicit energetic-source policy, not inferred from gain.
+                    float relief = sp_dir.z > .5 ? clamp((ndl_sub + .10) / (L.z + .10), .35, 2.5)
+                                                 : clamp((ndl_sub + .18) / (L.z + .18), .64, 1.55);
+                    float angular_response = sp_dir.z > .5 ? .22 + .78 * ndl_sub : .22 * ndl_sub;
+                    vec3 direct = direct_albedo * sp_col.rgb * (response.x * atten * angular_response * relief);
+                    direct_unshadowed += direct;
+                    direct *= visibility[lane];
+                    diffuse_lit += direct;
+                    direct_shadowed += direct;
                 }
-            } else if (response.x > 0.0 && d2d < rad) {
-                float atten = pow(max(0., 1. - d2d / rad), 2.);
-                vec3 L = normalize(vec3(to_l, max(.001, sp_pos.w)));
-                float ndl_sub = max(dot(N_sub, L), 0.);
-                vec3 transmittance = exp(-absorption * (.90 + .35 / clamp(L.z, .22, 1.)));
-                vec3 direct_albedo = mix(wetted_substrate * transmittance + blood_body_color, albedo_tex.rgb, is_ice);
-                // Weak sources retain their original angular response. Broad grazing
-                // fill is an explicit energetic-source policy, not inferred from gain.
-                float relief = sp_dir.z > .5 ? clamp((ndl_sub + .10) / (L.z + .10), .35, 2.5)
-                                             : clamp((ndl_sub + .18) / (L.z + .18), .64, 1.55);
-                float angular_response = sp_dir.z > .5 ? .22 + .78 * ndl_sub : .22 * ndl_sub;
-                vec3 direct = direct_albedo * sp_col.rgb * (response.x * atten * angular_response * relief);
-                direct_unshadowed += direct;
-                direct *= visibility[lane];
-                diffuse_lit += direct;
-                direct_shadowed += direct;
             }
 
             // Reflect the virtual eye ray into a finite source at the emitter's height.
             // This is an artistic rough-reflection approximation, not a calibrated BRDF.
-            if (response.y > 0.0 && response.z > 0.0 && R.z > 0.02 && material_gate > 0.) {
-                // Reject zero support before constructing the displaced footprint or tracing bodies.
-                float support = 1.0 - smoothstep(response.z * .8, max(.01, response.z), reflection_distance);
-                if (support <= 0.) continue;
+            if (spec_support > 0.0) {
                 float height = max(12., sp_pos.w);
                 vec2 reflected_hit = world + R.xy * height / R.z;
-                bool beam = !ring && sp_dir.w > 0.0 && dot(sp_dir.xy, sp_dir.xy) > 0.0001;
+                bool beam = !ring && sp_dir.w > 0.0 && has_dir;
                 float source_gain = 1.0;
                 vec2 on_source = ring ? nearestRingPoint(sp_pos.xy, reflected_hit, sp_col.w) : sp_pos.xy;
                 if (beam) {
-                    vec2 axis = normalize(sp_dir.xy);
-                    float along = clamp(dot(reflected_hit - sp_pos.xy, axis), -sp_dir.w * .5, sp_dir.w * .5);
-                    on_source += axis * along;
+                    float along = clamp(dot(reflected_hit - sp_pos.xy, dir_axis), -half_len, half_len);
+                    on_source += dir_axis * along;
                     float source_t = clamp(along / sp_dir.w + .5, 0.0, 1.0);
                     source_gain = segmentRadiance(source_t, tail);
                 }
@@ -297,7 +299,7 @@ void main() {
                 // A point source spreads across two dimensions; a beam spreads mostly across its width.
                 float footprint = exp(-.5 * pow(source_distance / blur_width, 2.0)) *
                     ((beam || ring) ? blur_gain : blur_gain * blur_gain);
-                vec3 reflected = sp_col.rgb * tint * (response.y * F * 24. * footprint * source_gain * material_gate * support);
+                vec3 reflected = sp_col.rgb * tint * (response.y * F * 24. * footprint * source_gain * material_gate * spec_support);
                 reflected *= visibility[lane];
                 spec_accum += reflected;
             }

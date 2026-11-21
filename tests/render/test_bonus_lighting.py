@@ -258,8 +258,8 @@ def test_weapon_overhang_has_foil_light_but_no_shell_coating(lit_bonus, monkeypa
     render, lighting = lit_bonus
     lights = [MaterialLight(Vec2(88, 64), 110, (.5, .8, 1.5), height=40)]
     actual = render(lights, size=60., grid=(4., 8.))
-    fragment = module.BONUS_FRAGMENT.replace('    vec3 R = reflect(-V, N);',
-        '    rim_and_caustic = vec3(0); return vec3(0);\n    vec3 R = reflect(-V, N);')
+    fragment = module.BONUS_FRAGMENT.replace('    float weight = s * s * axial * u_response[i].y;',
+        '    return;\n    float weight = s * s * axial * u_response[i].y;')
     monkeypatch.setattr(module, 'BONUS_FRAGMENT', fragment)
     lighting.close()
     foil = render(lights, size=60., grid=(4., 8.))

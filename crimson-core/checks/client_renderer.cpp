@@ -401,6 +401,38 @@ void check_rtx() {
   assert(fabsf(ambient - powf(0.6f, 1 / 2.2f)) < 2e-3f);
   assert(lit(HOST_PASS_CREATURES, 1) > ambient + 0.05f);
   assert(lit(HOST_PASS_PLAYERS, 0) == device && lit(HOST_PASS_PLAYERS, 1) > device);
+  // Lit sprite rim taps stay bilinear even when the stage sampler requests point filtering.
+  {
+    w2c_host_texture_create(nullptr, 301, 64, 64, 0);
+    memset(memory + 4096, 0, 64 * 64 * 4);
+    for (int y = 2; y < 6; ++y)
+      for (int x = 2; x < 6; ++x)
+        memset(memory + 4096 + (y * 64 + x) * 4, 255, 4);
+    w2c_host_texture_upload(nullptr, 301, 4096);
+    w2c_host_set_texture(nullptr, 0, 301);
+    auto rim = [&](unsigned filter) {
+      w2c_host_clear(nullptr, 0xff000000);
+      w2c_host_texture_stage_state(nullptr, 0, TSS_MINFILTER, filter);
+      w2c_host_texture_stage_state(nullptr, 0, TSS_MAGFILTER, filter);
+      scene({540, 384, 200, 18, 2, 2, 2, 0, 0, 0, 0, 0, 2, 0, 200, 3}, 1);
+      w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+      w2c_host_render_pass(nullptr, HOST_PASS_CREATURES);
+      Vertex quad[4] = {{480, 352, 0, 1, 0xffffffff, 0, 0},
+                        {544, 352, 0, 1, 0xffffffff, 0.125f, 0},
+                        {480, 416, 0, 1, 0xffffffff, 0, 0.125f},
+                        {544, 416, 0, 1, 0xffffffff, 0.125f, 0.125f}};
+      memcpy(memory, quad, sizeof quad);
+      w2c_host_draw(nullptr, 5, 0, 4, 0, 2);
+      w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+      w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+      int w, h;
+      return renderer_capture(w, h);
+    };
+    assert(rim(1) == rim(2));
+    w2c_host_texture_stage_state(nullptr, 0, TSS_MINFILTER, 1);
+    w2c_host_texture_stage_state(nullptr, 0, TSS_MAGFILTER, 1);
+    w2c_host_set_texture(nullptr, 0, 300);
+  }
   // Bonuses: a shell is black glass, dim but for a fixed key highlight, whose
   // clear coat mirrors a light above it; an emblem without lights keeps the
   // device's colors. The quad spans the

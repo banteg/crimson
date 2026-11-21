@@ -1482,8 +1482,11 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     fragment.set("u_beam_shape", beam_shape, light_count * 16);
     auto it = textures.find(bound[0]);
     bool present = bound[0] && it != textures.end() && it->second.texture;
+    // Lit sprite shaders always reconstruct bilinear coverage (alphaBilinear + single-tap spriteAlpha/cellAlpha).
+    bool force_linear = &program == &creature_lit || &program == &player_lit || &program == &bonus_lit;
     WGPUSampler atlas_sampler = sampler(stage_states[0][TSS_ADDRESSU], stage_states[0][TSS_ADDRESSV],
-                                        stage_states[0][TSS_MAGFILTER] >= 2, stage_states[0][TSS_MINFILTER] >= 2);
+                                        force_linear || stage_states[0][TSS_MAGFILTER] >= 2,
+                                        force_linear || stage_states[0][TSS_MINFILTER] >= 2);
     WGPUTextureView shape = ice                               ? ice_view
                            : !present                        ? blank_view
                            : material == HOST_PASS_CREATURES ? shape_map(bound[0])
