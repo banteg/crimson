@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 
 import msgspec
@@ -266,3 +266,18 @@ class PixelCoverageShader(msgspec.Struct):
             self.shader = None
         self._alpha_cutoff_loc = -1
         self._cell_size_loc = -1
+
+
+_GL_SHUTDOWN_HOOKS: list[Callable[[], None]] = []
+
+
+def register_gl_shutdown_hook(hook: Callable[[], None]) -> None:
+    """Register a callback to unload shared process-level shaders before GL context teardown."""
+    if hook not in _GL_SHUTDOWN_HOOKS:
+        _GL_SHUTDOWN_HOOKS.append(hook)
+
+
+def close_shared_shaders() -> None:
+    """Unload registered shared shaders before closing the raylib window/GL context."""
+    for hook in tuple(_GL_SHUTDOWN_HOOKS):
+        hook()

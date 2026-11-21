@@ -17,6 +17,7 @@ from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.edr import activate_edr_window, float_backbuffer, reset_edr_window
 from grim.raylib_api import rl
+from grim.shaders import close_shared_shaders
 from grim.view import ViewContext
 
 from ...modes.replay_playback_mode import ReplayPlaybackMode, open_replay_audio
@@ -187,6 +188,7 @@ def run_replay_render_benchmark(
             shutdown_audio(audio)
         unload_runtime_resources(resources)
         if window_open:
+            close_shared_shaders()
             reset_edr_window()
             rl.close_window()
 

@@ -8,11 +8,10 @@ from enum import IntEnum
 
 import msgspec
 
-from grim.assets import register_unload_hook
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl
-from grim.shaders import _shader_scope, set_world_light
+from grim.shaders import _shader_scope, register_gl_shutdown_hook, set_world_light
 
 from ...effects_atlas import EffectId
 from .shaders import glsl
@@ -156,7 +155,7 @@ def close_effect_shader() -> None:
     _shader = None
 
 
-register_unload_hook(close_effect_shader)
+register_gl_shutdown_hook(close_effect_shader)
 
 
 def _draw(

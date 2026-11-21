@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-from collections.abc import Callable
 from contextlib import ExitStack
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
@@ -115,8 +114,6 @@ class RuntimeResources(msgspec.Struct):
     def unload(self) -> None:
         self.alpha_test.close()
         self.small_font.pixel_coverage.close()
-        for hook in tuple(_UNLOAD_HOOKS):
-            hook()
         seen: set[int] = set()
         for texture in self.textures.values():
             texture_id = int(texture.id)
@@ -128,12 +125,6 @@ class RuntimeResources(msgspec.Struct):
 
 
 _REGISTERED_RESOURCES: dict[Path, RuntimeResources] = {}
-_UNLOAD_HOOKS: list[Callable[[], None]] = []
-
-
-def register_unload_hook(hook: Callable[[], None]) -> None:
-    if hook not in _UNLOAD_HOOKS:
-        _UNLOAD_HOOKS.append(hook)
 
 
 def _normalize_assets_dir(assets_dir: Path) -> Path:

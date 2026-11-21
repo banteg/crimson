@@ -7,6 +7,7 @@ from collections.abc import Iterator
 import pytest
 
 from grim.raylib_api import rl
+from grim.shaders import close_shared_shaders
 
 
 def _can_init_raylib() -> bool:
@@ -56,4 +57,5 @@ def raylib_context(raylib_display) -> Iterator[None]:
     try:
         yield
     finally:
+        close_shared_shaders()
         rl.close_window()

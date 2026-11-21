@@ -222,6 +222,7 @@ def setup_headless_window(mocker: MockerFixture) -> Mock:
             draws.attach_mock(mocker.patch.object(rl, name), name)
     mocker.patch.object(rl, "get_shader_location", return_value=0)
     mocker.patch.object(rl, "set_shader_value")
+    mocker.patch.object(rl, "unload_shader")
     return draws
 
 

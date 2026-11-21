@@ -13,6 +13,7 @@ from grim.raylib_api import rd, rl, rl_rectangle
 from .canvas import Canvas, frame_rect
 from .edr import activate_edr_window, float_backbuffer, reset_edr_window
 from .render_pipeline import RaylibDrawScope, RenderPipeline, WindowSink
+from .shaders import close_shared_shaders
 from .view import View
 
 # F12 shots land in the working directory, as the original writes them next to the game.
@@ -205,6 +206,7 @@ def run_view(
         finally:
             canvas.close()
             render_pipeline.close()
+            close_shared_shaders()
             reset_edr_window()
             rl.close_window()
 

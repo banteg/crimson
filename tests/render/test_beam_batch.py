@@ -200,6 +200,7 @@ def test_close_beam_shader_tracks_window_lifetime(mocker, tmp_path, headless_res
     from crimson.render.rtx import effects
     from crimson.world.render_resources import RenderResources
     from grim.assets import unload_runtime_resources
+    from grim.shaders import close_shared_shaders
 
     shader = rl.ffi.new("Shader *")[0]
     shader.id = 77
@@ -209,11 +210,12 @@ def test_close_beam_shader_tracks_window_lifetime(mocker, tmp_path, headless_res
     unload = mocker.patch.object(rl, "unload_shader")
     world = RenderResources(tmp_path)
     world.close()
+    unload_runtime_resources(headless_resources)
     unload.assert_not_called()
     assert beam._BEAM_FAST_STAMPED_SHADER is not None
 
-    unload_runtime_resources(headless_resources)
-    unload_runtime_resources(headless_resources)
+    close_shared_shaders()
+    close_shared_shaders()
     unload.assert_called_once_with(shader)
     assert beam._BEAM_FAST_STAMPED_SHADER is None
     assert beam._BEAM_FAST_STAMPED_SHADER_TRIED is False
