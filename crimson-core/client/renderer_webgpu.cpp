@@ -564,7 +564,7 @@ void forget_groups() {
 
 // --- Targets ----------------------------------------------------------------------
 
-void evict_ground_normals();
+void evict_ground_normals(int preserve_spare_id = 0);
 
 bool try_allocate(Target &t) {
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
@@ -592,12 +592,11 @@ bool try_allocate(Target &t) {
   return true;
 }
 
-void allocate(Target &t) {
-  // WebGPU reports OOM asynchronously, so release optional relief caches before
-  // allocating any required render target (resize, snapshot, or ground rebuild);
-  // the next shaded frame re-probes relief allocation inside an OOM error scope.
+void allocate(Target &t, int preserve_spare_id = 0) {
+  // WebGPU reports OOM asynchronously, so submit and destroy optional relief caches
+  // before allocating a required render target; clean-anchor rebuilds keep their own spare.
   if (t.flags & TARGET_RENDER)
-    evict_ground_normals();
+    evict_ground_normals(preserve_spare_id);
   try_allocate(t);
 }
 
@@ -1005,10 +1004,23 @@ void release_spare_normals(int id = 0) {
   }
 }
 
-void evict_ground_normals() {
-  release_spare_normals();
+void evict_ground_normals(int preserve_spare_id) {
+  bool evict_spare =
+      spare_ground_normals.texture && (!preserve_spare_id || spare_ground_normals_id != preserve_spare_id);
+  bool any = evict_spare;
+  for (const auto &[id, g] : grounds)
+    any |= g.normals.texture != nullptr;
+  if (!any)
+    return;
+  // Submit earlier draws first so explicitly destroying evicted textures cannot invalidate them.
+  submit();
+  if (evict_spare) {
+    wgpuTextureDestroy(spare_ground_normals.texture);
+    release_spare_normals();
+  }
   for (auto &[id, g] : grounds) {
     if (g.normals.texture) {
+      wgpuTextureDestroy(g.normals.texture);
       release(g.normals);
       g.normals_state = NORMALS_NONE;
       g.normals_token = 0;
@@ -1020,10 +1032,14 @@ void drop_ground(int id) {
   auto it = grounds.find(id);
   if (it == grounds.end())
     return;
-  release(it->second.substrate);
-  release(it->second.coverage);
-  release(it->second.surface);
-  release(it->second.normals);
+  if (it->second.substrate.texture || it->second.coverage.texture || it->second.surface.texture ||
+      it->second.normals.texture)
+    submit();
+  for (Target *t : {&it->second.substrate, &it->second.coverage, &it->second.surface, &it->second.normals}) {
+    if (t->texture)
+      wgpuTextureDestroy(t->texture);
+    release(*t);
+  }
   grounds.erase(it);
 }
 
@@ -1138,6 +1154,8 @@ void on_normals_error_scope(WGPUPopErrorScopeStatus status, WGPUErrorType type, 
       return;
     }
   }
+  if (g.normals.texture)
+    wgpuTextureDestroy(g.normals.texture);
   release(g.normals);
   g.normals_state = NORMALS_FAILED;
   g.normals_token = 0;
@@ -1254,7 +1272,7 @@ Ground &ground_of(int id) {
     t->width = albedo.width, t->height = albedo.height;
     t->logical_width = albedo.logical_width, t->logical_height = albedo.logical_height;
     t->flags = t == &g.substrate ? albedo.flags : TARGET_RENDER | (t == &g.surface ? TARGET_FLOAT : 0);
-    allocate(*t);
+    allocate(*t, id);
   }
   copy(albedo, g.substrate);
   WGPUColor none = {0, 0, 0, 0}, terrain = {10 / 255.0, 0, 0, 115 / 255.0};

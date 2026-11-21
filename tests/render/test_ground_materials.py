@@ -1680,3 +1680,34 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
         assert fallback_ground.normals_failed_size is not None
         assert max(abs(a - b) for p, q in zip(fallback_sub, ref_sub, strict=True) for a, b in zip(p, q, strict=True)) < 0.005
         assert max(abs(a - b) for p, q in zip(fallback_fluid, ref_fluid, strict=True) for a, b in zip(p, q, strict=True)) < 0.005
+
+        # Visibility atlas allocation takes VRAM priority over optional relief and evicts it on failure.
+        fallback_ground.normals_failed_size = None
+        fallback_ground.normals_dirty = True
+        fallback_ground.normals_full = True
+        assert fallback_ground._ensure_normals() is not None
+        pool = CreaturePool()
+        pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 32), size=36)
+        light = MaterialLight(Vec2(16, 16), 80, (1.4, 0.8, 0.4), height=24)
+        atlas_evict_calls = 0
+
+        def fail_atlas_until_relief_evicted(
+            width: int,
+            height: int,
+            *,
+            pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+        ):
+            nonlocal atlas_evict_calls
+            if fallback_ground.normals is not None and width != height:
+                atlas_evict_calls += 1
+                raise RuntimeError("simulated VRAM pressure allocating visibility atlas")
+            return real_loader(width, height, pixel_format=pixel_format)
+
+        with (
+            patch.object(ground_materials, "collect_material_lights", return_value=[light]),
+            patch.object(ground_materials, "load_float_render_texture", side_effect=fail_atlas_until_relief_evicted),
+        ):
+            shaded = debug_pixels(fallback_ground, fallback_texture, mode=0, creatures=pool, shadows=True)
+        assert atlas_evict_calls == 1
+        assert fallback_ground.normals is None and fallback_ground.beam_atlas is not None
+        assert any(p[0] > 0.01 for p in shaded)

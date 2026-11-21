@@ -246,20 +246,25 @@ class MaterialGroundRenderer(GroundRenderer):
         self.material_layers = layers
         super()._generate_texture(layers, texture_scale)
 
+    def _evict_normals(self) -> bool:
+        if self.normals is None:
+            return False
+        rl.unload_render_texture(self.normals)
+        self.normals = None
+        if self.render_target is not None:
+            self.normals_failed_size = (
+                int(self.render_target.texture.width),
+                int(self.render_target.texture.height),
+            )
+        return True
+
     def _initialize_materials(self) -> None:
         try:
             self._allocate_materials()
         except RuntimeError:
-            if self.normals is None:
+            if not self._evict_normals():
                 raise
             # Evict retained optional relief storage and retry required terrain targets once.
-            rl.unload_render_texture(self.normals)
-            self.normals = None
-            if self.render_target is not None:
-                self.normals_failed_size = (
-                    int(self.render_target.texture.width),
-                    int(self.render_target.texture.height),
-                )
             self._allocate_materials()
 
     def _allocate_materials(self) -> None:
@@ -679,17 +684,7 @@ class MaterialGroundRenderer(GroundRenderer):
             yield
             return
         self.bake_materials(resources.texture(TextureId.PARTICLES), resources.texture(TextureId.BODYSET))
-        normals = self._ensure_normals()
         assert self.material_shader is not None and self.surface is not None and self.coverage is not None
-        if normals is not None:
-            sh = self.material_shader
-            locations = self.material_locations
-        else:
-            if self.fallback_material_shader is None:
-                direct_src = GROUND_FRAGMENT.replace("#version 330\n", "#version 330\n#define GROUND_DIRECT_RELIEF 1\n", 1)
-                self.fallback_material_shader = _shader(direct_src)
-            sh = self.fallback_material_shader
-            locations = self.fallback_material_locations
         uniforms: list[tuple[str, list[float], int]] = []
 
         def put(name: str, values: list[float], components: int = 0) -> None:
@@ -768,6 +763,17 @@ class MaterialGroundRenderer(GroundRenderer):
         else:
             tile_w, tile_h, tile_masks = 0, 0, b""
         tile_texture = self.light_tiles.upload(tile_w, tile_h, tile_masks) if tile_w > 0 and tile_h > 0 else None
+        # Select ground shader after _beam_visibility so atlas allocation can evict optional relief first.
+        normals = self._ensure_normals()
+        if normals is not None:
+            sh = self.material_shader
+            locations = self.material_locations
+        else:
+            if self.fallback_material_shader is None:
+                direct_src = GROUND_FRAGMENT.replace("#version 330\n", "#version 330\n#define GROUND_DIRECT_RELIEF 1\n", 1)
+                self.fallback_material_shader = _shader(direct_src)
+            sh = self.fallback_material_shader
+            locations = self.fallback_material_locations
         _apply_uniforms(sh, locations, uniforms)
         tile_size_buf = rl.ffi.new("int[2]", [tile_w, tile_h])
         rl.set_shader_value(
@@ -827,7 +833,14 @@ class MaterialGroundRenderer(GroundRenderer):
         if atlas is None or int(atlas.texture.width) != 4 * width or int(atlas.texture.height) != rows * height:
             if atlas is not None:
                 rl.unload_render_texture(atlas)
-            atlas = self.beam_atlas = load_float_render_texture(4 * width, rows * height)
+                self.beam_atlas = None
+            try:
+                atlas = self.beam_atlas = load_float_render_texture(4 * width, rows * height)
+            except RuntimeError:
+                if not self._evict_normals():
+                    restore_current_target()
+                    raise
+                atlas = self.beam_atlas = load_float_render_texture(4 * width, rows * height)
             rl.set_texture_filter(atlas.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         shader = self.beam_shader
         _apply_uniforms(shader, self.beam_locations, uniforms)
