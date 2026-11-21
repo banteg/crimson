@@ -365,7 +365,8 @@ GLuint ground_program, ground_direct_program, ground_normals_program, stamp_prog
 // World-space, color-independent source visibility: four source masks per
 // RGBA group, four groups a row. Final shading never walks the body grid.
 enum { BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
-GLuint ground_beam_vis_program, beam_vis_framebuffer, beam_vis_texture;
+GLuint ground_beam_vis_program;
+Target beam_vis;
 int beam_vis_width, beam_vis_height;
 GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
 // RTX fluid smoke (game/rtx_smoke.cpp, render/rtx/gpu_smoke.py): the field's
@@ -1189,24 +1190,17 @@ void prepare_ground_visibility(int view_width, int view_height) {
   if (!v.count)
     return;
   gpu_aside("ground-vis");
-  if (!beam_vis_framebuffer || v.width != beam_vis_width || v.height != beam_vis_height) {
-    if (!beam_vis_framebuffer) {
-      glGenFramebuffers(1, &beam_vis_framebuffer);
-      glGenTextures(1, &beam_vis_texture);
-    }
-    glBindTexture(GL_TEXTURE_2D, beam_vis_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4 * v.width, BEAM_VISIBILITY_ROWS * v.height,
-                 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, beam_vis_texture, 0);
+  if (!beam_vis.framebuffer || beam_vis_width != v.width || beam_vis_height != v.height) {
+    release(beam_vis);
+    beam_vis_width = beam_vis_height = 0;
+    beam_vis.width = beam_vis.logical_width = 4 * v.width;
+    beam_vis.height = beam_vis.logical_height = BEAM_VISIBILITY_ROWS * v.height;
+    beam_vis.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(beam_vis);
     beam_vis_width = v.width;
     beam_vis_height = v.height;
   }
-  glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, beam_vis.framebuffer);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -1301,7 +1295,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   }
   glUniform2i(at("u_light_tile_size"), ground_tiles.width, ground_tiles.height);
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
-                           ground_visibility.count ? beam_vis_texture : blank_texture,
+                           ground_visibility.count ? beam_vis.texture : blank_texture,
                            ground_tiles.width ? ground_tile_texture : blank_texture,
                            has_normals ? g.normals.texture : blank_texture};
   const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_visibility_tex", "u_light_tiles",
@@ -1677,12 +1671,11 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     release(t);
   release(smoke_composite);
   release(heat_trail);
-  glDeleteFramebuffers(1, &beam_vis_framebuffer);
+  release(beam_vis);
+  beam_vis_width = beam_vis_height = 0;
   glDeleteTextures(1, &ground_tile_texture);
   ground_tile_texture = 0;
   ground_tile_width = ground_tile_height = 0;
-  glDeleteTextures(1, &beam_vis_texture);
-  beam_vis_framebuffer = beam_vis_texture = 0;
   heat_seconds = -1;
   release(pressured);
   release(discarded);

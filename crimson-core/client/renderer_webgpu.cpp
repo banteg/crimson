@@ -1428,10 +1428,7 @@ bool ground_draw(const Geometry &geometry) {
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
-  if (visibility_dirty)
-    prepare_ground_visibility(t.logical_width, t.logical_height);
   bool has_normals = update_ground_normals(bound[0], g);
-  upload_ground_tiles();
   pass_into(t);
   Program &prog = has_normals ? ground_lit : ground_lit_direct;
   Uniforms vertex(*prog.vert), fragment(*prog.frag);
@@ -1751,24 +1748,33 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   geometry.vertex_bytes = (uint64_t)vertex_count * 28;
   geometry.index_bytes = index_data ? (uint64_t)index_count * 2 : 0;
   geometry.index_count = index_count;
-  // Room for the draw and what a marked decal adds: its substrate, stamps, and the companions' first passes.
-  uint64_t uniforms = 8 * (ground_lit.frag->uniform_size + ground_lit.vert->uniform_size + 512);
-  // A late scene or body grid rebuilds the atlas in the ground's draw, after its geometry is in the streams.
-  if (rtx && world && material == HOST_PASS_GROUND && visibility_dirty)
-    uniforms += visibility_uniforms(MAX_LIGHTS / 4);
-  if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 24) || !fits(index_stream, geometry.index_bytes + 3) ||
-      !fits(uniform_stream, uniforms))
-    submit();
-
   Target &t = drawing_target(current_target);
+  // Run ground setup (companions, late visibility atlas, light tiles) before checking stream
+  // space or staging geometry so relief eviction or tile submits cannot reset staged offsets.
+  bool ground_pass = rtx && world && material == HOST_PASS_GROUND;
+  if (ground_pass) {
+    auto ground_it = textures.find(bound[0]);
+    if (bound[0] && ground_it != textures.end() && (ground_it->second.flags & TARGET_RENDER)) {
+      ground_of(bound[0]);
+      if (visibility_dirty)
+        prepare_ground_visibility(t.logical_width, t.logical_height);
+      upload_ground_tiles();
+    }
+  }
   // A marked decal reaches the ground's companions too: the substrate unless it
   // is blood, the materials if it has one. They start from the terrain before it.
   bool marked = rtx && ground_kind != HOST_GROUND_END && current_target && (t.flags & TARGET_RENDER);
   Ground *g = marked ? &ground_of(current_target) : nullptr;
+  // Room for the draw and what a marked decal adds: its substrate, stamps, and the companions' first passes.
+  uint64_t uniforms = 8 * (ground_lit.frag->uniform_size + ground_lit.vert->uniform_size + 512);
+  if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 24) || !fits(index_stream, geometry.index_bytes + 3) ||
+      !fits(uniform_stream, uniforms))
+    submit();
+
   geometry.vertex_at = put(vertex_stream, client_memory() + vertices, geometry.vertex_bytes);
   if (index_data)
     geometry.index_at = put(index_stream, index_data, geometry.index_bytes);
-  if (rtx && world && material == HOST_PASS_GROUND && ground_draw(geometry))
+  if (ground_pass && ground_draw(geometry))
     return;
 
   pass_into(t);

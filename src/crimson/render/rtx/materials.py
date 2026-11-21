@@ -246,7 +246,8 @@ class MaterialGroundRenderer(GroundRenderer):
         self.material_layers = layers
         super()._generate_texture(layers, texture_scale)
 
-    def _evict_normals(self) -> bool:
+    def evict_relief_cache(self) -> bool:
+        """Release optional cached relief storage so required RTX targets can retry allocation."""
         if self.normals is None:
             return False
         rl.unload_render_texture(self.normals)
@@ -262,7 +263,7 @@ class MaterialGroundRenderer(GroundRenderer):
         try:
             self._allocate_materials()
         except RuntimeError:
-            if not self._evict_normals():
+            if not self.evict_relief_cache():
                 raise
             # Evict retained optional relief storage and retry required terrain targets once.
             self._allocate_materials()
@@ -837,7 +838,7 @@ class MaterialGroundRenderer(GroundRenderer):
             try:
                 atlas = self.beam_atlas = load_float_render_texture(4 * width, rows * height)
             except RuntimeError:
-                if not self._evict_normals():
+                if not self.evict_relief_cache():
                     restore_current_target()
                     raise
                 atlas = self.beam_atlas = load_float_render_texture(4 * width, rows * height)

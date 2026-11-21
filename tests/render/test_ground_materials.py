@@ -1711,3 +1711,46 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
         assert atlas_evict_calls == 1
         assert fallback_ground.normals is None and fallback_ground.beam_atlas is not None
         assert any(p[0] > 0.01 for p in shaded)
+
+        # GPU smoke preparation takes VRAM priority over optional relief and retries after evicting it.
+        from crimson.render.rtx import gpu_smoke as gpu_smoke_mod
+        from crimson.render.rtx.smoke import SmokeRenderer
+
+        fallback_ground.normals_failed_size = None
+        fallback_ground.normals_dirty = True
+        fallback_ground.normals_full = True
+        assert fallback_ground._ensure_normals() is not None
+        smoke = SmokeRenderer()
+        smoke_evict_calls = 0
+
+        def fail_smoke_until_relief_evicted(
+            width: int,
+            height: int,
+            *,
+            pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+        ):
+            nonlocal smoke_evict_calls
+            if fallback_ground.normals is not None:
+                smoke_evict_calls += 1
+                raise RuntimeError("simulated VRAM pressure allocating smoke targets")
+            return real_loader(width, height, pixel_format=pixel_format)
+
+        try:
+            frame = RenderFrame(
+                config=None,
+                camera=Vec2(),
+                ground=fallback_ground,
+                state=GameplayState(),
+                players=[],
+                creatures=CreaturePool(),
+                resources=cast(Any, None),
+                elapsed_ms=0.0,
+                bonus_anim_phase=0.0,
+                rtx_mode=RtxRenderMode.RTX,
+            )
+            with patch.object(gpu_smoke_mod, "load_float_render_texture", side_effect=fail_smoke_until_relief_evicted):
+                smoke.prepare(frame, ())
+            assert smoke_evict_calls == 1
+            assert smoke.available and fallback_ground.normals is None
+        finally:
+            smoke.close()

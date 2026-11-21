@@ -14,6 +14,7 @@ from ..laser_sight import laser_sight_geometry
 from .debug import RtxDebugView
 from .gpu_smoke import GpuSmokeSimulation
 from .material_lights import MaterialLight
+from .materials import MaterialGroundRenderer
 from .smoke_composite import SmokeComposite
 from .smoke_shaders import SMOKE_FRAGMENT, SMOKE_VERTEX
 
@@ -110,14 +111,24 @@ class SmokeRenderer:
                 "u_sight_count", "u_sights", "u_state_flip", "u_debug", "u_light_tail",
             )}
         if isinstance(self.simulation, GpuSmokeSimulation):
+            ground = frame.ground
+            world_size = Vec2(ground.width, ground.height) if ground is not None else None
             try:
-                ground = frame.ground
-                self.simulation.prepare(world_size=Vec2(ground.width, ground.height) if ground is not None else None)
+                self.simulation.prepare(world_size=world_size)
             except RuntimeError:
-                logging.getLogger(__name__).warning("GPU smoke unavailable; using native smoke", exc_info=True)
-                self.simulation.close()
-                self.available = False
-                return
+                if isinstance(ground, MaterialGroundRenderer) and ground.evict_relief_cache():
+                    try:
+                        self.simulation.prepare(world_size=world_size)
+                    except RuntimeError:
+                        logging.getLogger(__name__).warning("GPU smoke unavailable; using native smoke", exc_info=True)
+                        self.simulation.close()
+                        self.available = False
+                        return
+                else:
+                    logging.getLogger(__name__).warning("GPU smoke unavailable; using native smoke", exc_info=True)
+                    self.simulation.close()
+                    self.available = False
+                    return
         else:
             self._upload_reference()
         if not self.simulation.fields:
@@ -185,6 +196,13 @@ class SmokeRenderer:
             try:
                 self.compositor.draw(ctx.view, lambda: self._draw_fields(ctx.view, alpha=alpha, debug=debug))
             except RuntimeError:
+                ground = ctx.frame.ground
+                if isinstance(ground, MaterialGroundRenderer) and ground.evict_relief_cache():
+                    try:
+                        self.compositor.draw(ctx.view, lambda: self._draw_fields(ctx.view, alpha=alpha, debug=debug))
+                        return
+                    except RuntimeError:
+                        pass
                 logging.getLogger(__name__).warning("GPU smoke composite unavailable; using native smoke", exc_info=True)
                 self.available = False
                 self.simulation.close()

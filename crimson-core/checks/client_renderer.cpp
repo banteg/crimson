@@ -1224,7 +1224,7 @@ void check_ground_visibility() {
     int px = group % 4 * v.width + (int)floorf((x - v.rect[0]) / GroundVisibility::texel);
     int py = group / 4 * v.height + (int)floorf((y - v.rect[1]) / GroundVisibility::texel);
     float rgba[4];
-    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis.framebuffer);
     glReadPixels(px, py, 1, 1, GL_RGBA, GL_FLOAT, rgba);
     bind_target();
     return rgba[index % 4];
@@ -1235,7 +1235,7 @@ void check_ground_visibility() {
   assert(ground_visibility.count == 32 && !beam_lights);
   float blocked = mask(0, 31, 49);
   assert(blocked < .3f && fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
-  GLuint texture = beam_vis_texture;
+  GLuint texture = beam_vis.texture;
   int width = beam_vis_width, height = beam_vis_height;
   end();
   // Visibility is scalar data: HDR color/gain changes never encode, clip or
@@ -1246,7 +1246,7 @@ void check_ground_visibility() {
   }
   for (float camera : {-.25f, 2.25f, -5.75f, 0.f}) {
     begin(32, camera, 1);
-    assert(beam_vis_texture == texture && beam_vis_width == width && beam_vis_height == height);
+    assert(beam_vis.texture == texture && beam_vis_width == width && beam_vis_height == height);
     assert(fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
     end();
   }
@@ -1259,7 +1259,7 @@ void check_ground_visibility() {
     end();
   }
   assert(!renderer_set_rtx(false));
-  assert(!beam_vis_texture && !ground_visibility.count);
+  assert(!beam_vis.texture && !ground_visibility.count);
   assert(glGetError() == GL_NO_ERROR);
   puts("renderer: world-anchored scalar visibility, reflection-only sources, all 32 lanes and mask invalidation passed");
 }
