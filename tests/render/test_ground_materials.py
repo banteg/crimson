@@ -1239,3 +1239,94 @@ def test_menu_keeps_the_runs_blood_material_at_the_same_age(ground_material, mak
         runtime.render_resources.hdr.close()
         state.menu_hdr.close()
         rl.unload_render_texture(target)
+
+
+def test_build_ground_tiles_culls_disc_corners_diagonal_capsules_rings_and_inactive_reaches() -> None:
+    from crimson.render.rtx.ground_tiles import build_ground_tiles
+
+    lights = [
+        # 0: disc centered at (160, 160), radius 120
+        MaterialLight(Vec2(160, 160), 120, (1, 1, 1), reflection_gain=0.0),
+        # 1: 45-degree diagonal capsule centered at (256, 256), length 280, radius 24
+        MaterialLight(Vec2(256, 256), 24, (1, 1, 1), direction=Vec2(1, 1), length=280, reflection_radius=24),
+        # 2: ring centered at (256, 256), ring radius 160, reach 20
+        MaterialLight(Vec2(256, 256), 20, (1, 1, 1), ring_radius=160, reflection_radius=20),
+        # 3: reflection-only point with large unused diffuse radius 200 and small reflection_radius 20
+        MaterialLight(Vec2(160, 160), 200, (1, 1, 1), illumination_gain=0.0, reflection_gain=1.0, reflection_radius=20),
+    ]
+    w, h, masks = build_ground_tiles(512, 512, lights)
+    assert (w, h) == (16, 16)
+
+    def has(tx: int, ty: int, idx: int) -> bool:
+        return bool(masks[(ty * w + tx) * 4 + idx // 8] & (1 << (idx % 8)))
+
+    assert has(5, 5, 0) and has(1, 5, 0) and not has(1, 1, 0)
+    assert has(8, 8, 1) and has(5, 5, 1) and has(11, 11, 1)
+    assert not has(5, 11, 1) and not has(11, 5, 1)
+    assert has(13, 8, 2) and not has(8, 8, 2) and not has(3, 3, 2)
+    assert has(5, 5, 3) and not has(2, 5, 3)
+
+
+def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> None:
+    image = rl.gen_image_color(256, 256, rl.WHITE)
+    texture = rl.load_texture_from_image(image)
+    rl.unload_image(image)
+    ground = MaterialGroundRenderer(texture, texture, texture, width=256, height=256)
+    ground.schedule_stamps(TerrainLayers(base=(), overlay=(), detail=()), texture_scale=1)
+    ground.process_pending()
+    target = load_float_render_texture(256, 256)
+    try:
+        ground.bake_materials(texture, texture)
+        assert ground.surface is not None and ground.coverage is not None
+        with texture_mode(ground.surface):
+            rl.clear_background(rl.Color(10, 180, 180, 115))
+        with texture_mode(ground.coverage):
+            rl.clear_background(rl.Color(200, 0, 0, 0))
+        lights = [
+            # Point light near tile boundary
+            MaterialLight(Vec2(48, 48), 55, (2.0, 0.8, 0.4), height=24, reflection_radius=55),
+            # Diagonal continuous beam
+            MaterialLight(
+                Vec2(140, 120), 40, (0.6, 1.4, 2.2), height=24, direction=Vec2(1, 1), length=120,
+                broad_illumination=True, beam_profile=(18.0, 3.5, 1.2), beam_ion=True, reflection_radius=30,
+            ),
+            # Ring with empty interior hole
+            MaterialLight(Vec2(160, 160), 22, (1.8, 1.2, 0.5), height=24, ring_radius=64, reflection_radius=22),
+            # Reflection-only beam
+            MaterialLight(
+                Vec2(96, 200), 180, (1.0, 2.0, 1.0), height=24, direction=Vec2(1, -0.5), length=90,
+                illumination_gain=0.0, reflection_gain=1.0, reflection_radius=28,
+            ),
+            # Diffuse-only point in upper lane (slot 31)
+            *[MaterialLight(Vec2(-1000, -1000), 1, (0, 0, 0), illumination_gain=0.0, reflection_gain=0.0)] * 27,
+            MaterialLight(Vec2(208, 64), 48, (1.5, 0.3, 1.2), height=20, reflection_gain=0.0),
+        ]
+
+        class Textures:
+            def texture(self, _texture_id):
+                return texture
+
+        def render(*, tiled: bool) -> list[tuple[float, float, float, float]]:
+            if tiled:
+                with (
+                    texture_mode(target),
+                    ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, lights=lights),
+                ):
+                    ground.draw_view(Vec2(), screen_w=256, screen_h=256, out_w=256, out_h=256)
+                return pixels(target)
+            with (
+                patch.object(ground_materials, "build_ground_tiles", return_value=(0, 0, bytearray())),
+                texture_mode(target),
+                ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, lights=lights),
+            ):
+                ground.draw_view(Vec2(), screen_w=256, screen_h=256, out_w=256, out_h=256)
+            return pixels(target)
+
+        tiled_pixels = render(tiled=True)
+        unculled_pixels = render(tiled=False)
+        assert ground.light_tiles.texture is not None
+        assert tiled_pixels == unculled_pixels
+    finally:
+        rl.unload_render_texture(target)
+        ground.close()
+        rl.unload_texture(texture)
