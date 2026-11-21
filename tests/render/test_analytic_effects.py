@@ -289,3 +289,34 @@ def test_close_effect_shader_tracks_window_lifetime(mocker, tmp_path, headless_r
     unload_runtime_resources(headless_resources)
     unload.assert_called_once_with(shader)
     assert effects._shader is None
+
+
+def test_headless_window_isolates_mocked_shader_caches(request, mocker, headless_resources):
+    from crimson.render.rtx import beam
+    from grim.assets import unload_runtime_resources
+
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER_TRIED", False)
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER", None)
+    mocker.patch.object(effects, "_shader", None)
+
+    # Simulate a headless_window test caching mocked shaders, then tearing down its fixture.
+    from pytest_mock import MockerFixture
+
+    from tests.conftest import setup_headless_window
+
+    child = MockerFixture(request.config)
+    try:
+        setup_headless_window(child)
+        effects.draw_sprite(effects.EffectShape.GLOW, center=Vec2(32, 32), width=16, height=16, color=RGBA())
+        beam.draw_beam_fast_stamped_head(
+            center_screen=Vec2(32, 32), rotation_rad=0, effect_scale=1, scale=1, base_alpha=1,
+            head_rgb=(1, 1, 1), is_fire=False,
+        )
+        assert effects._shader is not None and beam._BEAM_FAST_STAMPED_SHADER is not None
+    finally:
+        child.stopall()
+
+    assert effects._shader is None and beam._BEAM_FAST_STAMPED_SHADER is None
+    unload = mocker.patch.object(rl, "unload_shader")
+    unload_runtime_resources(headless_resources)
+    unload.assert_not_called()
