@@ -658,12 +658,26 @@ GLuint shape_map(int id, bool heat = false) {
   const auto *pixels = client_memory() + texels->second;
   std::vector<unsigned char> sizes =
       heat ? renderer_heat_density(pixels, width, height) : renderer_thickness(pixels, width, height);
-  GLuint texture;
+  GLuint texture = 0;
   glGenTextures(1, &texture);
+  if (!texture)
+    return blank_texture;
   glBindTexture(GL_TEXTURE_2D, texture);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  while (glGetError() != GL_NO_ERROR) {}
   glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, sizes.data());
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR && evict_ground_normals()) {
+    while (glGetError() != GL_NO_ERROR) {}
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, sizes.data());
+    err = glGetError();
+  }
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+  if (err != GL_NO_ERROR) {
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteTextures(1, &texture);
+    return blank_texture;
+  }
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

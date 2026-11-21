@@ -167,8 +167,14 @@ def load_render_texture_with_reclaim(width: int, height: int) -> rl.RenderTextur
 def _texture_has_storage(texture: rl.Texture, width: int, height: int) -> bool:
     if int(texture.id) <= 0:
         return False
-    bind = _gl("glBindTexture", C.c_uint, C.c_uint)
-    query = _gl("glGetTexLevelParameteriv", C.c_uint, C.c_int, C.c_uint, C.POINTER(C.c_int))
+    if not rl.is_window_ready():
+        return True
+    bind_addr = int(ffi.cast("uintptr_t", rl.glfw_get_proc_address("glBindTexture")))
+    query_addr = int(ffi.cast("uintptr_t", rl.glfw_get_proc_address("glGetTexLevelParameteriv")))
+    if not bind_addr or not query_addr:
+        return True
+    bind = _GL_FUNCTYPE(None, C.c_uint, C.c_uint)(bind_addr)
+    query = _GL_FUNCTYPE(None, C.c_uint, C.c_int, C.c_uint, C.POINTER(C.c_int))(query_addr)
     stored_w, stored_h = C.c_int(), C.c_int()
     bind(_GL_TEXTURE_2D, int(texture.id))
     query(_GL_TEXTURE_2D, 0, 0x1000, C.byref(stored_w))  # GL_TEXTURE_WIDTH

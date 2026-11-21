@@ -123,11 +123,20 @@ class TerrainHistory:
         # A ground not drawn yet is drawn from its setup first.
         self._resources.process_ground_pending()
         ground = self._resources.ground
-        shot = next((shot for shot in reversed(self.shots) if shot.bakes <= bakes), None)
-        if ground is None or ground.render_target is None or shot is None:
+        if ground is None or ground.render_target is None:
             return
-        if isinstance(ground, MaterialGroundRenderer):
-            ground.reset_materials()
-            ground.material_batches.extend(preparation.bakes.read(0, shot.bakes))
-        _copy(ground.render_target, shot.target)
-        self._bake(ground, preparation, shot.bakes, bakes)
+        shot = next((shot for shot in reversed(self.shots) if shot.bakes <= bakes), None)
+        if shot is not None:
+            if isinstance(ground, MaterialGroundRenderer):
+                ground.reset_materials()
+                ground.material_batches.extend(preparation.bakes.read(0, shot.bakes))
+            _copy(ground.render_target, shot.target)
+            self._bake(ground, preparation, shot.bakes, bakes)
+            return
+        if self._setup is None:
+            return
+        ground.schedule_stamps(self._setup.layers, texture_scale=self._resources.texture_scale)
+        ground.process_pending()
+        if not ground.render_target_ready():
+            return
+        self._bake(ground, preparation, 0, bakes)
