@@ -5,7 +5,12 @@ from PIL import Image
 
 from crimson.render.rtx import creature_lighting
 from crimson.render.rtx.creature_lighting import CreatureLighting
-from crimson.render.rtx.creature_translucency import blur_cells, build_heat_density, build_thickness_proxy
+from crimson.render.rtx.creature_translucency import (
+    blur_cells,
+    build_creature_surface_map,
+    build_heat_density,
+    build_thickness_proxy,
+)
 from crimson.render.rtx.material_lights import MaterialLight
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
@@ -178,3 +183,51 @@ def test_one_silhouette_texel_cannot_reheat_the_whole_body() -> None:
     changes = [abs(a - b) for a, b in zip(before.tobytes(), after.tobytes(), strict=True)]
     assert 0 < max(changes) <= 11
     assert before.crop((0, 0, 21, 64)).tobytes() == after.crop((0, 0, 21, 64)).tobytes()
+
+
+def test_creature_surface_map_packs_exact_relief_and_interior_mask() -> None:
+    def px(img: Image.Image, xy: tuple[int, int]) -> tuple[int, ...]:
+        value = img.getpixel(xy)
+        assert isinstance(value, tuple)
+        return tuple(int(c) for c in value)
+
+    rgba = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    # Fill cell (0, 0) [0..7]x[0..7] with a flat opaque patch, and adjacent cell (1, 0) with bright red.
+    for y in range(8):
+        for x in range(8):
+            rgba.putpixel((x, y), (100, 100, 100, 255))
+            rgba.putpixel((x + 8, y), (255, 0, 0, 255))
+    surface = build_creature_surface_map(rgba)
+    assert surface.mode == "RGBA" and surface.size == (64, 64)
+    # Flat interior has zero relief (exact 128) and does not bleed from adjacent cell (1, 0).
+    assert px(surface, (4, 4))[1:3] == (128, 128)
+    assert px(surface, (7, 4))[1:3] == (128, 128)
+    # 5x5 interior-opaque mask is 255 strictly at [2..5]x[2..5] inside the 8x8 cell.
+    assert px(surface, (2, 2))[3] == 255
+    assert px(surface, (5, 5))[3] == 255
+    assert px(surface, (1, 4))[3] == 0
+    assert px(surface, (6, 4))[3] == 0
+    # A translucent pixel in the 5x5 neighborhood clears the interior mask.
+    rgba.putpixel((4, 4), (100, 100, 100, 254))
+    cleared = build_creature_surface_map(rgba)
+    assert px(cleared, (4, 4))[3] == 0
+    assert px(cleared, (2, 2))[3] == 0
+    # A rising luminance ramp in cell (2, 0) produces positive G and neutral B.
+    for y in range(8):
+        for x in range(8):
+            v = 20 + x * 30
+            rgba.putpixel((16 + x, y), (v, v, v, 255))
+    ramped = build_creature_surface_map(rgba)
+    assert px(ramped, (20, 4))[1] > 128
+    assert px(ramped, (20, 4))[2] == 128
+    # Transparent background next to an opaque silhouette edge must not create a false black cliff.
+    edge_rgba = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    for y in range(2, 6):
+        for x in range(2, 5):
+            v = 120 + (x - 2) * 4
+            edge_rgba.putpixel((x, y), (v, v, v, 255))
+    edge_surface = build_creature_surface_map(edge_rgba)
+    # Right edge (x=4) has rising ramp on left and transparent x=5 on right -> stays positive, not negative.
+    assert px(edge_surface, (4, 3))[1] > 128
+    # Adjacent transparent texel (x=5) inherits the in-cell opaque gradient so bilinear edge taps stay consistent.
+    assert px(edge_surface, (5, 3))[1] > 128
