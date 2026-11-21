@@ -1019,16 +1019,34 @@ void check_terrain_snapshots() {
     update_ground_normals(g);
     assert(!g.normals_dirty && !g.normals_full && g.normals.framebuffer && g.normals.texture);
     assert(w2c_host_texture_bytes(nullptr, 600) == 128 * 64 * 28);
-    // Snapshot copy leaves snapshot relief unallocated; restoring onto live terrain reuses its texture.
+    // Snapshot copy leaves snapshot relief unallocated; restoring onto live terrain reuses its texture,
+    // including across a clean tick-zero anchor restore.
     GLuint saved_normals_tex = g.normals.texture;
     w2c_host_texture_copy(nullptr, 601, 600);
     assert(grounds.at(601).normals.texture == 0);
     assert(w2c_host_texture_bytes(nullptr, 601) == 128 * 64 * 28);
+    w2c_host_texture_copy(nullptr, 600, 602); // clean tick-zero anchor
+    assert(!grounds.count(600));
+    assert(w2c_host_texture_bytes(nullptr, 600) == 128 * 64 * 4);
+    Ground &rebuilt = ground_of(600);
+    assert(rebuilt.normals.texture == saved_normals_tex);
+    assert(rebuilt.normals_dirty && rebuilt.normals_full);
+    update_ground_normals(rebuilt);
+    assert(rebuilt.normals.texture == saved_normals_tex && !rebuilt.normals_dirty && !rebuilt.normals_full);
     w2c_host_texture_copy(nullptr, 600, 601);
     assert(grounds.at(600).normals.texture == saved_normals_tex);
     assert(grounds.at(600).normals_dirty && grounds.at(600).normals_full);
-    update_ground_normals(g);
-    assert(g.normals.texture == saved_normals_tex && !g.normals_dirty && !g.normals_full);
+    update_ground_normals(grounds.at(600));
+    assert(grounds.at(600).normals.texture == saved_normals_tex && !grounds.at(600).normals_dirty && !grounds.at(600).normals_full);
+    // Decals wholly outside the terrain must not dirty any relief tiles.
+    w2c_host_set_render_target(nullptr, 600);
+    w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 255);
+    rectangle(-20, -20, -10, -10, 0xe0ffffff);
+    rectangle(70, 40, 80, 50, 0xe0ffffff);
+    w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+    assert(!grounds.at(600).normals_dirty);
+    for (uint32_t row : grounds.at(600).dirty_tiles)
+      assert(row == 0);
     w2c_host_set_render_target(nullptr, 600);
     w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 260);
     // Submit all 18 small separated decals in ONE indexed D3DPT_TRIANGLELIST draw
@@ -1054,19 +1072,20 @@ void check_terrain_snapshots() {
     memcpy(memory + 4096, batch_idx, sizeof batch_idx);
     w2c_host_draw(nullptr, 4, 0, 18 * 4, 4096, 18 * 2);
     w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+    Ground &g2 = grounds.at(600);
     int dirty_tiles = 0;
-    for (uint32_t row : g.dirty_tiles)
+    for (uint32_t row : g2.dirty_tiles)
       dirty_tiles += __builtin_popcount(row);
-    assert(g.normals_dirty && !g.normals_full && dirty_tiles > 0 && dirty_tiles < GROUND_DIRTY_GRID * GROUND_DIRTY_GRID / 2);
-    update_ground_normals(g);
-    std::vector<float> scissored((size_t)g.normals.width * g.normals.height * 4);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, g.normals.framebuffer);
-    glReadPixels(0, 0, g.normals.width, g.normals.height, GL_RGBA, GL_FLOAT, scissored.data());
-    mark_normals_full(g);
-    update_ground_normals(g);
+    assert(g2.normals_dirty && !g2.normals_full && dirty_tiles > 0 && dirty_tiles < GROUND_DIRTY_GRID * GROUND_DIRTY_GRID / 2);
+    update_ground_normals(g2);
+    std::vector<float> scissored((size_t)g2.normals.width * g2.normals.height * 4);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, g2.normals.framebuffer);
+    glReadPixels(0, 0, g2.normals.width, g2.normals.height, GL_RGBA, GL_FLOAT, scissored.data());
+    mark_normals_full(g2);
+    update_ground_normals(g2);
     std::vector<float> full(scissored.size());
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, g.normals.framebuffer);
-    glReadPixels(0, 0, g.normals.width, g.normals.height, GL_RGBA, GL_FLOAT, full.data());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, g2.normals.framebuffer);
+    glReadPixels(0, 0, g2.normals.width, g2.normals.height, GL_RGBA, GL_FLOAT, full.data());
     assert(scissored == full);
   }
   w2c_host_set_render_target(nullptr, 0);

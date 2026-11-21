@@ -369,10 +369,14 @@ class MaterialGroundRenderer(GroundRenderer):
             cy = float(cmd.dst.y)
             xs = [cx + lx * c - ly * s for lx, ly in ((-ox, -oy), (w - ox, -oy), (w - ox, h - oy), (-ox, h - oy))]
             ys = [cy + lx * s + ly * c for lx, ly in ((-ox, -oy), (w - ox, -oy), (w - ox, h - oy), (-ox, h - oy))]
-            tx0 = max(0, min(grid - 1, math.floor((min(xs) - pad) * grid / tex_w)))
-            ty0 = max(0, min(grid - 1, math.floor((min(ys) - pad) * grid / tex_h)))
-            tx1 = max(0, min(grid - 1, math.floor((max(xs) + pad) * grid / tex_w)))
-            ty1 = max(0, min(grid - 1, math.floor((max(ys) + pad) * grid / tex_h)))
+            min_x, max_x = min(xs), max(xs)
+            min_y, max_y = min(ys), max(ys)
+            if max_x <= 0.0 or max_y <= 0.0 or min_x >= tex_w or min_y >= tex_h:
+                continue
+            tx0 = max(0, min(grid - 1, math.floor((min_x - pad) * grid / tex_w)))
+            ty0 = max(0, min(grid - 1, math.floor((min_y - pad) * grid / tex_h)))
+            tx1 = max(0, min(grid - 1, math.floor((max_x + pad) * grid / tex_w)))
+            ty1 = max(0, min(grid - 1, math.floor((max_y + pad) * grid / tex_h)))
             if tx1 < tx0 or ty1 < ty0:
                 continue
             row_mask = ((1 << (tx1 - tx0 + 1)) - 1) << tx0

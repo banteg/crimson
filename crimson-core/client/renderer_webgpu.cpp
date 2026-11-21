@@ -935,8 +935,37 @@ struct Ground {
   uint32_t dirty_tiles[GROUND_DIRTY_GRID] = {};
 };
 std::unordered_map<int, Ground> grounds;
+Target spare_ground_normals;
+int spare_ground_normals_id = 0;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
+
+void stash_spare_normals(int id, int width, int height) {
+  auto it = grounds.find(id);
+  if (it == grounds.end() || !it->second.normals.texture ||
+      it->second.normals.width != width || it->second.normals.height != height)
+    return;
+  release(spare_ground_normals);
+  spare_ground_normals = it->second.normals;
+  spare_ground_normals_id = id;
+  it->second.normals = {};
+}
+
+void adopt_spare_normals(int id, Ground &g) {
+  if (!g.normals.texture && spare_ground_normals.texture && spare_ground_normals_id == id &&
+      spare_ground_normals.width == g.surface.width && spare_ground_normals.height == g.surface.height) {
+    g.normals = spare_ground_normals;
+    spare_ground_normals = {};
+    spare_ground_normals_id = 0;
+  }
+}
+
+void release_spare_normals(int id = 0) {
+  if (!id || spare_ground_normals_id == id) {
+    release(spare_ground_normals);
+    spare_ground_normals_id = 0;
+  }
+}
 
 void drop_ground(int id) {
   auto it = grounds.find(id);
@@ -962,6 +991,9 @@ void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
     return;
   float lw = (float)std::max(1, g.surface.logical_width);
   float lh = (float)std::max(1, g.surface.logical_height);
+  // Reject decals clipped completely off the terrain (D3D vertices shift by +0.5 logical px).
+  if (x1 <= -0.5f || y1 <= -0.5f || x0 >= lw - 0.5f || y0 >= lh - 0.5f)
+    return;
   int tx0 = std::clamp((int)floorf((x0 - 2.f) * GROUND_DIRTY_GRID / lw), 0, GROUND_DIRTY_GRID - 1);
   int ty0 = std::clamp((int)floorf((y0 - 2.f) * GROUND_DIRTY_GRID / lh), 0, GROUND_DIRTY_GRID - 1);
   int tx1 = std::clamp((int)floorf((x1 + 2.f) * GROUND_DIRTY_GRID / lw), 0, GROUND_DIRTY_GRID - 1);
@@ -1126,6 +1158,8 @@ Ground &ground_of(int id) {
   begin_pass(g.coverage, &none);
   begin_pass(g.surface, &terrain);
   fill_ground(g.surface, g.substrate.view, 0, 0, 0, Output{});
+  adopt_spare_normals(id, g);
+  mark_normals_full(g);
   return g;
 }
 
@@ -1359,6 +1393,7 @@ bool wgpu_renderer_set_rtx(bool enabled) {
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())
     drop_ground(grounds.begin()->first);
+  release_spare_normals();
   release_smoke();
   release(heat_trail);
   release(beam_vis);
@@ -1452,6 +1487,7 @@ void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) 
   copy_target(textures[(int)destination], from);
   auto material = grounds.find((int)source);
   if (material == grounds.end()) {
+    stash_spare_normals((int)destination, from.width, from.height);
     drop_ground((int)destination);
   } else {
     Ground &g = material->second;
@@ -1461,6 +1497,7 @@ void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) 
     copy_target(to.surface, g.surface);
     // Keep any existing relief allocation on the destination (e.g., live terrain
     // restored on a replay seek) and mark it dirty for lazy rebake.
+    adopt_spare_normals((int)destination, to);
     mark_normals_full(to);
     to.epoch = g.epoch;
   }
@@ -1478,6 +1515,7 @@ void wgpu_w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
   current_target = 0;
 }
 void wgpu_w2c_host_texture_create(struct w2c_host *, u32 id, u32 width, u32 height, u32 flags) {
+  release_spare_normals((int)id);
   Target &t = textures[(int)id];
   release(t);
   t.logical_width = t.width = (int)width;
@@ -1524,6 +1562,7 @@ void wgpu_w2c_host_texture_release(struct w2c_host *, u32 id) {
     return;
   if (current_target == (int)id)
     current_target = 0;
+  release_spare_normals((int)id);
   drop_ground((int)id);
   release(it->second);
   textures.erase(it);

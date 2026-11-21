@@ -1536,3 +1536,36 @@ def test_cached_relief_matches_live_normals_at_fractional_uvs(raylib_context, te
         rl.unload_render_texture(target)
         ground.close()
         rl.unload_texture(texture)
+
+
+def test_off_terrain_stamp_does_not_dirty_ground_relief(ground_material) -> None:
+    from crimson.effects_atlas import EffectId
+
+    ground, texture = ground_material
+    ground.bake_materials(texture, texture)
+    assert not ground.normals_dirty
+    batch = TerrainFxBatch(
+        decals=(
+            FxQueueEntry(
+                effect_id=int(EffectId.FREEZE_SHARD_0),
+                rotation=0.0,
+                pos=Vec2(-40.0, -40.0),
+                width=16.0,
+                height=16.0,
+                color=RGBA(1.0, 1.0, 1.0, 0.5),
+            ),
+            FxQueueEntry(
+                effect_id=int(EffectId.FREEZE_SHARD_0),
+                rotation=0.0,
+                pos=Vec2(120.0, 120.0),
+                width=16.0,
+                height=16.0,
+                color=RGBA(1.0, 1.0, 1.0, 0.5),
+            ),
+        ),
+        corpses=(),
+        elapsed_s=1.0,
+    )
+    ground._stamp_commands(list(ground._commands(batch, texture, texture)))
+    assert not ground.normals_dirty
+    assert all(row == 0 for row in ground.normals_dirty_tiles)
