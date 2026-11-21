@@ -17,14 +17,13 @@ in vec4 lightVisibility4;
 in vec4 lightVisibility5;
 in vec4 lightVisibility6;
 in vec4 lightVisibility7;
-// Corner-interpolated specular visibility for illuminating continuous beams reaching this quad: slots 0..5 use
-// hardware interpolation (specVisibility0 and specVis45Quad.xy), specVis45Quad.zw carries quad coordinates for
-// triangle-interpolating vertex-packed overflow corners in specOverflow0..2 (specOverflow0.x is the 32-bit slot mask).
-in vec4 specVisibility0;
-in vec4 specVis45Quad;
-flat in uvec4 specOverflow0;
-flat in uvec4 specOverflow1;
-flat in uvec4 specOverflow2;
+// Direct-indexed corner specular visibility for reflective continuous beams (two lights per uint, 4 bits/corner:
+// c00, c01, c11, c10) triangle-interpolated via quadCoord, so precision never shifts across slot changes or fades.
+in vec2 quadCoord;
+flat in uvec4 specVis0;
+flat in uvec4 specVis1;
+flat in uvec4 specVis2;
+flat in uvec4 specVis3;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -54,48 +53,17 @@ float lightVisibility(int i) {
     int lane = i - i / 4 * 4;
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
 }
-uint readSpec12(uvec3 w, int idx) {
-    uint bit = uint(idx) * 12u;
-    uint word = bit >> 5u;
-    uint shift = bit & 31u;
-    uint bits;
-    if (word == 0u) {
-        bits = w.x >> shift;
-        if (shift > 20u) bits |= w.y << (32u - shift);
-    } else if (word == 1u) {
-        bits = w.y >> shift;
-        if (shift > 20u) bits |= w.z << (32u - shift);
-    } else {
-        bits = w.z >> shift;
-    }
-    return bits & 0xFFFu;
-}
-float interpQuad(vec4 v, vec2 u) {
-    // v = (v00, v01, v11, v10), shared diagonal c00(0,0)--c11(1,1).
+float specVisibility(int i) {
+    int word = i >> 1;
+    uvec4 group = word < 8 ? (word < 4 ? specVis0 : specVis1) : (word < 12 ? specVis2 : specVis3);
+    int lane = word & 3;
+    uint packed = lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
+    uint bits = (packed >> ((i & 1) == 0 ? 0u : 16u)) & 0xFFFFu;
+    vec4 v = vec4(bits & 15u, (bits >> 4u) & 15u, (bits >> 8u) & 15u, (bits >> 12u) & 15u) * (1. / 15.);
+    vec2 u = clamp(quadCoord, 0., 1.);
     return u.y >= u.x
         ? v.x * (1. - u.y) + v.y * (u.y - u.x) + v.z * u.x
         : v.x * (1. - u.x) + v.w * (u.x - u.y) + v.z * u.y;
-}
-float specVisibility(int slot) {
-    if (slot < 4)
-        return slot == 0 ? specVisibility0.x : slot == 1 ? specVisibility0.y : slot == 2 ? specVisibility0.z : specVisibility0.w;
-    if (slot < 6)
-        return slot == 4 ? specVis45Quad.x : specVis45Quad.y;
-    vec2 u = clamp(specVis45Quad.zw, 0., 1.);
-    if (slot < 16) {
-        int k = slot - 6;
-        int word = k >> 1;
-        uint packed = word == 0 ? specOverflow0.y : word == 1 ? specOverflow0.z : word == 2 ? specOverflow0.w
-                    : word == 3 ? specOverflow1.x : specOverflow1.y;
-        uint bits = (packed >> ((k & 1) == 0 ? 0u : 16u)) & 0xFFFFu;
-        vec4 v = vec4(bits & 15u, (bits >> 4u) & 15u, (bits >> 8u) & 15u, (bits >> 12u) & 15u) * (1. / 15.);
-        return interpQuad(v, u);
-    }
-    uint bits = slot < 24
-        ? readSpec12(uvec3(specOverflow1.z, specOverflow1.w, specOverflow2.x), slot - 16)
-        : readSpec12(specOverflow2.yzw, slot - 24);
-    vec4 v = vec4(bits & 7u, (bits >> 3u) & 7u, (bits >> 6u) & 7u, (bits >> 9u) & 7u) * (1. / 7.);
-    return interpQuad(v, u);
 }
 float cellGrid() { return u_ice != 0 ? float(u_ice) : 8.0; }
 vec4 spriteSample(vec2 uv) {
@@ -237,8 +205,6 @@ void main() {
                vec3(.6, .8, .95) * pow(max(sky, 0.), 80.) * .5;
     }
     vec3 added = vec3(0);
-    int spec_slot = 0;
-    uint spec_mask = specOverflow0.x;
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
@@ -248,7 +214,6 @@ void main() {
         vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) : u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
         bool continuous = !ring && u_beam_shape[i].w > 0.;
-        int my_spec_slot = (spec_mask & (1u << uint(i))) != 0u ? spec_slot++ : -1;
         if (!continuous && spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
@@ -260,7 +225,7 @@ void main() {
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            float spec_vis = my_spec_slot < 0 ? lightVisibility(i) : specVisibility(my_spec_slot);
+            float spec_vis = continuous ? specVisibility(i) : lightVisibility(i);
             added += u_rgb[i].rgb * (spec_amount * spec_gain * breakup * spec_vis);
         }
         if (u_response[i].x <= 0.) continue;

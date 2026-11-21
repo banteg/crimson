@@ -31,23 +31,18 @@ float cornerSpecVisibility(int i, vec2 wp, vec2 owner) {
     return illuminationVisibility(vec3(wp, 8.), vec3(nearest, u_pos[i].w), max(.1, u_response[i].w), owner);
 }
 
-bool needsSeparateSpecVis(int i, vec2 owner, float quad_radius) {
-    if (i >= u_count || u_rgb[i].w > 0. || u_beam_shape[i].w <= 0.) return false;
-    if (u_response[i].x <= 0. || u_response[i].y <= 0. || u_response[i].z <= 0.) return false;
-    vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
-    float half_length = u_dir[i].w * .5;
-    vec2 nearest = nearestOn(i, axis, false, -half_length, half_length, owner);
-    return length(nearest - owner) - quad_radius < u_response[i].z;
+bool needsContinuousSpecVis(int i) {
+    return i < u_count && u_rgb[i].w <= 0. && u_beam_shape[i].w > 0.
+        && u_response[i].y > 0. && u_response[i].z > 0.;
 }
 
-float cornerVisibility(int i, vec2 wp, vec2 spec_wp, vec2 owner) {
+float cornerVisibility(int i, vec2 wp, vec2 owner) {
     if (i >= u_count || u_dynamic_shadows == 0) return 1.;
     if (u_response[i].x <= 0. && u_response[i].y <= 0.) return 1.;
     bool ring = u_rgb[i].w > 0.;
     bool continuous = !ring && u_beam_shape[i].w > 0.;
-    // Reflection-only continuous beams skip diffuse in creature.frag, so lightVisibility(i) carries their
-    // corner-interpolated specular visibility using spec_wp (matching fillSpecVisibilities and overflowSpecVisibility).
-    if (continuous && u_response[i].x <= 0.) return cornerSpecVisibility(i, spec_wp, owner);
+    // Reflection-only continuous beams skip diffuse in creature.frag and read specular visibility from specVis0..3.
+    if (continuous && u_response[i].x <= 0.) return 1.;
     // Match beamFrame's +X fallback when a continuous beam has a zero or near-zero direction.
     vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : (continuous ? vec2(1., 0.) : vec2(0.));
     float half_length = u_dir[i].w * .5;
@@ -77,98 +72,88 @@ uint packQuad4(vec4 v) {
     return q.x | (q.y << 4u) | (q.z << 8u) | (q.w << 12u);
 }
 
-uint packQuad3(vec4 v) {
-    uvec4 q = uvec4(clamp(v, 0., 1.) * 7. + .5);
-    return q.x | (q.y << 3u) | (q.z << 6u) | (q.w << 9u);
-}
-
-void writeSpec12(inout uvec3 w, int idx, uint bits) {
-    uint bit = uint(idx) * 12u;
-    uint word = bit >> 5u;
-    uint shift = bit & 31u;
-    if (word == 0u) {
-        w.x |= bits << shift;
-        if (shift > 20u) w.y |= bits >> (32u - shift);
-    } else if (word == 1u) {
-        w.y |= bits << shift;
-        if (shift > 20u) w.z |= bits >> (32u - shift);
-    } else {
-        w.z |= bits << shift;
-    }
-}
-
-// Compute corner-interpolated specular visibility for every illuminating continuous beam reaching this quad strictly
-// in the vertex stage (no fragment occlusion grid walks). The 6 brightest in-reach beams use full-precision hardware
-// interpolation (s0, s45); overflow slots 6..15 pack all four quad corners at 4 bits/corner and slots 16..31 pack at
-// 3 bits/corner in o0..o2, with o0.x carrying the 32-bit mask of lights assigned a specular slot.
+// Compute corner-interpolated specular visibility for every reflective continuous beam strictly in the vertex stage
+// (no fragment occlusion grid walks). Every light index 0..31 has its own fixed 16-bit halfword in specVis0..3
+// (4 bits per corner: c00, c01, c11, c10), so precision never shifts when lights reorder or illumination fades to 0.
+// Only provoking vertices trace the corners their triangle consumes (OpenGL last-vertex: c11 traces T0, c10 traces T1;
+// WebGPU first-vertex: c00 traces quad-list T0+T1 / strip T1, c01 traces strip T0).
 void fillSpecVisibilities(
-    vec2 corner_wp, vec2 owner, vec2 d00, vec2 d01, bool has_quad,
-    out vec4 s0, out vec2 s45, out uvec4 o0, out uvec4 o1, out uvec4 o2
+    vec2 corner_wp, vec2 owner, vec2 d00, vec2 d01, bool has_quad, int corner_id,
+    out uvec4 o0, out uvec4 o1, out uvec4 o2, out uvec4 o3
 ) {
-    s0 = vec4(1.);
-    s45 = vec2(1.);
+    o0 = uvec4(0xFFFFFFFFu);
+    o1 = uvec4(0xFFFFFFFFu);
+    o2 = uvec4(0xFFFFFFFFu);
+    o3 = uvec4(0xFFFFFFFFu);
+    if (u_dynamic_shadows == 0) return;
+#ifdef VULKAN
+    bool provoking = !has_quad || corner_id == 0 || corner_id == 1;
+#else
+    bool provoking = !has_quad || corner_id == 2 || corner_id == 3;
+#endif
+    if (!provoking) return;
     o0 = uvec4(0u);
     o1 = uvec4(0u);
     o2 = uvec4(0u);
-    if (u_dynamic_shadows == 0) return;
+    o3 = uvec4(0u);
     float quad_radius = has_quad ? max(length(d00), length(d01)) : 1e20;
-    uint spec_mask = 0u;
-    uvec3 hi0 = uvec3(0u);
-    uvec3 hi1 = uvec3(0u);
-    int slot = 0;
     int limit = min(u_count, MAX_SPEC_LIGHTS);
     for (int i = 0; i < limit; i++) {
-        if (!needsSeparateSpecVis(i, owner, quad_radius)) continue;
-        spec_mask |= 1u << uint(i);
-        bool single = slot < 6 || !has_quad;
-        vec4 v = vec4(1.);
-        int corners = single ? 1 : 4;
-        for (int c = 0; c < corners; c++) {
-            vec2 p = single ? corner_wp : owner + (c == 0 ? d00 : c == 1 ? d01 : c == 2 ? -d00 : -d01);
-            float vis = cornerSpecVisibility(i, p, owner);
-            if (single) {
-                v = vec4(vis);
-            } else if (c == 0) {
-                v.x = vis;
-            } else if (c == 1) {
-                v.y = vis;
-            } else if (c == 2) {
-                v.z = vis;
+        if (!needsContinuousSpecVis(i)) continue;
+        vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
+        float half_length = u_dir[i].w * .5;
+        vec2 near_owner = nearestOn(i, axis, false, -half_length, half_length, owner);
+        uint packed = 0xFFFFu;
+        if (length(near_owner - owner) - quad_radius < u_response[i].z) {
+            vec4 v = vec4(1.);
+            if (!has_quad) {
+                v = vec4(cornerSpecVisibility(i, corner_wp, owner));
             } else {
-                v.w = vis;
+#ifdef VULKAN
+                bool need_c01 = true;
+                bool need_c10 = corner_id == 0;
+#else
+                bool need_c01 = corner_id == 2;
+                bool need_c10 = corner_id == 3;
+#endif
+                for (int c = 0; c < 4; c++) {
+                    if (c == 1 && !need_c01) continue;
+                    if (c == 3 && !need_c10) continue;
+                    vec2 p = owner + (c == 0 ? d00 : c == 1 ? d01 : c == 2 ? -d00 : -d01);
+                    float vis = cornerSpecVisibility(i, p, owner);
+                    if (c == 0) v.x = vis;
+                    else if (c == 1) v.y = vis;
+                    else if (c == 2) v.z = vis;
+                    else v.w = vis;
+                }
+                if (!need_c01) v.y = v.x;
+                if (!need_c10) v.w = v.x;
             }
+            packed = packQuad4(v);
         }
-        if (slot < 6) {
-            if (slot == 0) s0.x = v.x;
-            else if (slot == 1) s0.y = v.x;
-            else if (slot == 2) s0.z = v.x;
-            else if (slot == 3) s0.w = v.x;
-            else if (slot == 4) s45.x = v.x;
-            else s45.y = v.x;
-        } else if (slot < 16) {
-            int k = slot - 6;
-            uint packed = packQuad4(v) << ((k & 1) == 0 ? 0u : 16u);
-            int word = k >> 1;
-            if (word == 0) o0.y |= packed;
-            else if (word == 1) o0.z |= packed;
-            else if (word == 2) o0.w |= packed;
-            else if (word == 3) o1.x |= packed;
-            else o1.y |= packed;
-        } else if (slot < 24) {
-            writeSpec12(hi0, slot - 16, packQuad3(v));
-        } else {
-            writeSpec12(hi1, slot - 24, packQuad3(v));
-        }
-        slot++;
+        uint shifted = packed << ((i & 1) == 0 ? 0u : 16u);
+        int word = i >> 1;
+        if (word == 0) o0.x |= shifted;
+        else if (word == 1) o0.y |= shifted;
+        else if (word == 2) o0.z |= shifted;
+        else if (word == 3) o0.w |= shifted;
+        else if (word == 4) o1.x |= shifted;
+        else if (word == 5) o1.y |= shifted;
+        else if (word == 6) o1.z |= shifted;
+        else if (word == 7) o1.w |= shifted;
+        else if (word == 8) o2.x |= shifted;
+        else if (word == 9) o2.y |= shifted;
+        else if (word == 10) o2.z |= shifted;
+        else if (word == 11) o2.w |= shifted;
+        else if (word == 12) o3.x |= shifted;
+        else if (word == 13) o3.y |= shifted;
+        else if (word == 14) o3.z |= shifted;
+        else o3.w |= shifted;
     }
-    o0.x = spec_mask;
-    o1.zw = hi0.xy;
-    o2.x = hi0.z;
-    o2.yzw = hi1;
 }
 
 void fillLightVisibilities(
-    vec2 wp, vec2 spec_wp, vec2 owner,
+    vec2 wp, vec2 owner,
     out vec4 v0, out vec4 v1, out vec4 v2, out vec4 v3,
     out vec4 v4, out vec4 v5, out vec4 v6, out vec4 v7
 ) {
@@ -177,7 +162,7 @@ void fillLightVisibilities(
     if (u_dynamic_shadows != 0) {
         int limit = min(u_count, MAX_SPEC_LIGHTS);
         for (int i = 0; i < limit; i++) {
-            float vis = cornerVisibility(i, wp, spec_wp, owner);
+            float vis = cornerVisibility(i, wp, owner);
             int g = i >> 2;
             int lane = i & 3;
             if (lane == 0) groups[g].x = vis;

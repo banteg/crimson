@@ -54,9 +54,10 @@ inline void quad_centers(const float *vertices, unsigned count, float *centers, 
       x += vertices[v * 7], y += vertices[v * 7 + 1];
     float cx = x / corners, cy = y / corners;
     // Align d00 with the shared diagonal (v0-v2 for quad lists, v1-v2 for 4-vertex strips)
-    // and d01 with an off-diagonal corner (v3 for quad lists, v0 for strips).
+    // and d01 with triangle 0's off-diagonal corner (v1 for quad lists, v0 for strips), so
+    // triangle 0 is always (c00, c01, c11) and triangle 1 is always (c00, c11, c10).
     unsigned i0 = strip && corners >= 4 ? first + 1 : first;
-    unsigned i1 = strip && corners >= 4 ? first : first + 3;
+    unsigned i1 = strip && corners >= 4 ? first : first + 1;
     float d0x = vertices[i0 * 7] - cx, d0y = vertices[i0 * 7 + 1] - cy;
     float d1x = corners >= 4 ? vertices[i1 * 7] - cx : d0y;
     float d1y = corners >= 4 ? vertices[i1 * 7 + 1] - cy : -d0x;
