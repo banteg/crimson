@@ -18,7 +18,7 @@
 #include <vector>
 #include <webgpu/webgpu.h>
 
-void evict_ground_normals(int preserve_spare_id = 0);
+void evict_ground_normals();
 
 namespace {
 
@@ -592,11 +592,12 @@ bool try_allocate(Target &t) {
   return true;
 }
 
-void allocate(Target &t, int preserve_spare_id = 0) {
+void allocate(Target &t) {
   // WebGPU reports OOM asynchronously, so submit and destroy optional relief caches
-  // before allocating a required render target; clean-anchor rebuilds keep their own spare.
+  // before allocating any required render target; after eviction, stay on direct shading
+  // briefly so continuous window resizes do not thrash terrain-sized relief allocations.
   if (t.flags & TARGET_RENDER)
-    ::evict_ground_normals(preserve_spare_id);
+    ::evict_ground_normals();
   try_allocate(t);
 }
 
@@ -966,58 +967,22 @@ struct Ground {
   uint32_t dirty_tiles[GROUND_DIRTY_GRID] = {};
 };
 std::unordered_map<int, Ground> grounds;
-Target spare_ground_normals;
-int spare_ground_normals_id = 0;
 uint64_t next_normals_token = 1;
+int normals_evict_cooldown = 0;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
 
-void stash_spare_normals(int id, int width, int height) {
-  auto it = grounds.find(id);
-  if (it == grounds.end() || it->second.normals_state != NORMALS_READY || !it->second.normals.texture ||
-      !it->second.normals.view || it->second.normals.width != width || it->second.normals.height != height)
-    return;
-  release(spare_ground_normals);
-  spare_ground_normals = it->second.normals;
-  spare_ground_normals_id = id;
-  it->second.normals = {};
-  it->second.normals_state = NORMALS_NONE;
-  it->second.normals_token = 0;
-}
-
-void adopt_spare_normals(int id, Ground &g) {
-  if (!g.normals.texture && spare_ground_normals.texture && spare_ground_normals.view &&
-      spare_ground_normals_id == id && spare_ground_normals.width == g.surface.width &&
-      spare_ground_normals.height == g.surface.height) {
-    g.normals = spare_ground_normals;
-    g.normals_state = NORMALS_READY;
-    g.normals_token = next_normals_token++;
-    spare_ground_normals = {};
-    spare_ground_normals_id = 0;
-  }
-}
-
-void release_spare_normals(int id = 0) {
-  if (!id || spare_ground_normals_id == id) {
-    release(spare_ground_normals);
-    spare_ground_normals_id = 0;
-  }
-}
-
-void evict_ground_normals(int preserve_spare_id) {
-  bool evict_spare =
-      spare_ground_normals.texture && (!preserve_spare_id || spare_ground_normals_id != preserve_spare_id);
-  bool any = evict_spare;
+void evict_ground_normals() {
+  bool any = false;
   for (const auto &[id, g] : grounds)
     any |= g.normals.texture != nullptr;
+  // Defer re-probing optional relief while required render targets keep resizing.
+  if (any || normals_evict_cooldown > 0)
+    normals_evict_cooldown = 12;
   if (!any)
     return;
   // Submit earlier draws first so explicitly destroying evicted textures cannot invalidate them.
   submit();
-  if (evict_spare) {
-    wgpuTextureDestroy(spare_ground_normals.texture);
-    release_spare_normals();
-  }
   for (auto &[id, g] : grounds) {
     if (g.normals.texture) {
       wgpuTextureDestroy(g.normals.texture);
@@ -1177,6 +1142,10 @@ bool update_ground_normals(int id, Ground &g) {
     g.normals_token = 0;
     if (g.normals_failed_w == g.surface.width && g.normals_failed_h == g.surface.height)
       return false;
+    if (normals_evict_cooldown > 0) {
+      --normals_evict_cooldown;
+      return false;
+    }
     g.normals.width = g.surface.width;
     g.normals.height = g.surface.height;
     g.normals.logical_width = g.surface.logical_width;
@@ -1272,14 +1241,13 @@ Ground &ground_of(int id) {
     t->width = albedo.width, t->height = albedo.height;
     t->logical_width = albedo.logical_width, t->logical_height = albedo.logical_height;
     t->flags = t == &g.substrate ? albedo.flags : TARGET_RENDER | (t == &g.surface ? TARGET_FLOAT : 0);
-    allocate(*t, id);
+    allocate(*t);
   }
   copy(albedo, g.substrate);
   WGPUColor none = {0, 0, 0, 0}, terrain = {10 / 255.0, 0, 0, 115 / 255.0};
   begin_pass(g.coverage, &none);
   begin_pass(g.surface, &terrain);
   fill_ground(g.surface, g.substrate.view, 0, 0, 0, Output{});
-  adopt_spare_normals(id, g);
   mark_normals_full(g);
   return g;
 }
@@ -1521,7 +1489,7 @@ bool wgpu_renderer_set_rtx(bool enabled) {
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())
     drop_ground(grounds.begin()->first);
-  release_spare_normals();
+  normals_evict_cooldown = 0;
   release_smoke();
   release(heat_trail);
   release(beam_vis);
@@ -1615,7 +1583,6 @@ void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) 
   copy_target(textures[(int)destination], from);
   auto material = grounds.find((int)source);
   if (material == grounds.end()) {
-    stash_spare_normals((int)destination, from.width, from.height);
     drop_ground((int)destination);
   } else {
     Ground &g = material->second;
@@ -1625,7 +1592,6 @@ void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) 
     copy_target(to.surface, g.surface);
     // Keep any existing relief allocation on the destination (e.g., live terrain
     // restored on a replay seek) and mark it dirty for lazy rebake.
-    adopt_spare_normals((int)destination, to);
     mark_normals_full(to);
     to.epoch = g.epoch;
   }
@@ -1643,7 +1609,6 @@ void wgpu_w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
   current_target = 0;
 }
 void wgpu_w2c_host_texture_create(struct w2c_host *, u32 id, u32 width, u32 height, u32 flags) {
-  release_spare_normals((int)id);
   Target &t = textures[(int)id];
   release(t);
   t.logical_width = t.width = (int)width;
@@ -1690,7 +1655,6 @@ void wgpu_w2c_host_texture_release(struct w2c_host *, u32 id) {
     return;
   if (current_target == (int)id)
     current_target = 0;
-  release_spare_normals((int)id);
   drop_ground((int)id);
   release(it->second);
   textures.erase(it);
