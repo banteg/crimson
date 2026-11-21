@@ -18,6 +18,7 @@ from grim.raylib_api import rl
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 
 TILE_SIZE = 32
+MAX_TILES = 16384  # caps vectorized working set (up to 4096x4096 world units)
 _HALF_TILE = TILE_SIZE * 0.5
 _TILE_DIAG_RADIUS = _HALF_TILE * math.sqrt(2.0)
 _MARGIN = 0.01
@@ -87,6 +88,8 @@ def build_ground_tiles(
         return 0, 0, b""
     width = math.ceil(world_width / TILE_SIZE)
     height = math.ceil(world_height / TILE_SIZE)
+    if width * height > MAX_TILES:
+        return 0, 0, b""
     has_shapes = beams and len(shapes) >= count * 4
 
     # Collect active lights into small contiguous float32 arrays (N <= 32).
