@@ -57,8 +57,8 @@ float specVisibility(int i) {
     int word = i >> 1;
     uvec4 group = word < 8 ? (word < 4 ? specVis0 : specVis1) : (word < 12 ? specVis2 : specVis3);
     int lane = word & 3;
-    uint packed = lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
-    uint bits = (packed >> ((i & 1) == 0 ? 0u : 16u)) & 0xFFFFu;
+    uint spec_word = lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
+    uint bits = (spec_word >> ((i & 1) == 0 ? 0u : 16u)) & 0xFFFFu;
     vec4 v = vec4(bits & 15u, (bits >> 4u) & 15u, (bits >> 8u) & 15u, (bits >> 12u) & 15u) * (1. / 15.);
     vec2 u = clamp(quadCoord, 0., 1.);
     return u.y >= u.x

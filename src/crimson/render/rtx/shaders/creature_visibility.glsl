@@ -99,7 +99,7 @@ void fillSpecVisibilities(
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
         float half_length = u_dir[i].w * .5;
         vec2 near_owner = nearestOn(i, axis, false, -half_length, half_length, owner);
-        uint packed = 0xFFFFu;
+        uint spec_bits = 0xFFFFu;
         if (length(near_owner - owner) - quad_radius < u_response[i].z) {
             vec4 v = vec4(1.);
             if (!has_quad) {
@@ -118,9 +118,9 @@ void fillSpecVisibilities(
                 if (!need_c01) v.y = v.x;
                 if (!need_c10) v.w = v.x;
             }
-            packed = packQuad4(v);
+            spec_bits = packQuad4(v);
         }
-        uint shifted = packed << ((i & 1) == 0 ? 0u : 16u);
+        uint shifted = spec_bits << ((i & 1) == 0 ? 0u : 16u);
         int word = i >> 1;
         if (word == 0) o0.x |= shifted;
         else if (word == 1) o0.y |= shifted;
