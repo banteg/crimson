@@ -11,9 +11,10 @@ from __future__ import annotations
 import msgspec
 
 from grim.blend import opaque_blend
+from grim.edr import load_render_texture_with_reclaim
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.terrain_render import GroundRenderer
-from grim.texture_mode import texture_mode
+from grim.texture_mode import restore_current_target, texture_mode
 
 from ..render.rtx.materials import MaterialGroundRenderer
 from ..replay.driver.prepare import ReplayPreparation
@@ -54,6 +55,7 @@ class TerrainHistory:
         self._builder: GroundRenderer | None = None
         self._baked = 0
         self._last_key = -1
+        self._last_shot_tick: int | None = None
         self._spacing = SHOT_TICKS
         self.shots: list[TerrainShot] = []
 
@@ -61,6 +63,7 @@ class TerrainHistory:
         for shot in self.shots:
             rl.unload_render_texture(shot.target)
         self.shots.clear()
+        self._last_shot_tick = None
         if self._builder is not None:
             self._builder.close()
             self._builder = None
@@ -93,7 +96,7 @@ class TerrainHistory:
             self._bake(builder, preparation, self._baked, key.bakes)
             self._baked = key.bakes
             self._last_key = key.tick
-            if not self.shots or key.tick - self.shots[-1].tick >= self._spacing:
+            if self._last_shot_tick is None or key.tick - self._last_shot_tick >= self._spacing:
                 self._shoot(builder, key.bakes, key.tick)
 
     def _bake(self, ground: GroundRenderer, preparation: ReplayPreparation, start: int, stop: int) -> None:
@@ -102,6 +105,7 @@ class TerrainHistory:
 
     def _shoot(self, builder: GroundRenderer, bakes: int, tick: int) -> None:
         assert builder.render_target is not None
+        self._last_shot_tick = tick
         texture = builder.render_target.texture
         # Compact before allocating so even the transient peak respects the cap.
         if len(self.shots) >= SHOTS:
@@ -109,7 +113,10 @@ class TerrainHistory:
                 rl.unload_render_texture(shot.target)
             self.shots = self.shots[::2]
             self._spacing *= 2
-        target = rl.load_render_texture(texture.width, texture.height)
+        target = load_render_texture_with_reclaim(texture.width, texture.height)
+        if target is None:
+            restore_current_target()
+            return
         _copy(target, builder.render_target)
         self.shots.append(TerrainShot(bakes, tick, target))
 
@@ -119,11 +126,20 @@ class TerrainHistory:
         # A ground not drawn yet is drawn from its setup first.
         self._resources.process_ground_pending()
         ground = self._resources.ground
-        shot = next((shot for shot in reversed(self.shots) if shot.bakes <= bakes), None)
-        if ground is None or ground.render_target is None or shot is None:
+        if ground is None or ground.render_target is None:
             return
-        if isinstance(ground, MaterialGroundRenderer):
-            ground.reset_materials()
-            ground.material_batches.extend(preparation.bakes.read(0, shot.bakes))
-        _copy(ground.render_target, shot.target)
-        self._bake(ground, preparation, shot.bakes, bakes)
+        shot = next((shot for shot in reversed(self.shots) if shot.bakes <= bakes), None)
+        if shot is not None:
+            if isinstance(ground, MaterialGroundRenderer):
+                ground.reset_materials()
+                ground.material_batches.extend(preparation.bakes.read(0, shot.bakes))
+            _copy(ground.render_target, shot.target)
+            self._bake(ground, preparation, shot.bakes, bakes)
+            return
+        if self._setup is None:
+            return
+        ground.schedule_stamps(self._setup.layers, texture_scale=self._resources.texture_scale)
+        ground.process_pending()
+        if not ground.render_target_ready():
+            return
+        self._bake(ground, preparation, 0, bakes)

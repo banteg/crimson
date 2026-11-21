@@ -109,3 +109,44 @@ def test_copies_of_the_terrain_spread_out_past_the_cap_and_a_rebuild_bakes_the_l
     history.rebuild(prep, earlier.bakes)
     assert list(ground.material_batches) == list(prep.bakes.read(0, earlier.bakes))
     assert max(batch.elapsed_s for batch in ground.material_batches) <= earlier.clock.elapsed_ms * .001
+
+
+def test_rebuild_regenerates_from_setup_when_initial_snapshot_is_missing(
+    resources: RenderResources, mocker,
+) -> None:
+    replay = record_replay(
+        RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF),
+        600,
+        inputs=player_input(aim=Vec2(700.0, 512.0), fire_down=True),
+    )
+    prep = ReplayPreparation(replay, background=False)
+    prep.poll()
+    setup = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False).terrain_setup
+    mocker.patch.object(terrain_history, "SHOT_TICKS", 60)
+    history = TerrainHistory(resources, setup)
+    history.open()
+
+    # Simulate snapshot allocation failing on every attempt: retries stay throttled to
+    # SHOT_TICKS spacing rather than firing on every keyframe, and no broken shot is stored.
+    attempt = mocker.patch.object(terrain_history, "load_render_texture_with_reclaim", return_value=None)
+    history.feed(prep)
+    assert history.shots == []
+    assert attempt.call_count < len(prep.keys)
+    assert attempt.call_count == sum(
+        1 for i, key in enumerate(prep.keys) if i == 0 or key.tick % 60 == 0
+    )
+
+    ground = resources.ground
+    assert isinstance(ground, MaterialGroundRenderer)
+    bake = mocker.spy(RenderResources, "bake_terrain_fx_batch")
+    later = prep.keys[-1]
+    earlier = prep.keys[len(prep.keys) // 2]
+
+    history.rebuild(prep, later.bakes)
+    assert [call.args[1] for call in bake.call_args_list] == list(prep.bakes.read(0, later.bakes))
+    assert list(ground.material_batches) == list(prep.bakes.read(0, later.bakes))
+
+    bake.reset_mock()
+    history.rebuild(prep, earlier.bakes)
+    assert [call.args[1] for call in bake.call_args_list] == list(prep.bakes.read(0, earlier.bakes))
+    assert list(ground.material_batches) == list(prep.bakes.read(0, earlier.bakes))

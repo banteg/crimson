@@ -7,7 +7,7 @@ from grim import canvas
 from grim.assets import load_runtime_resources, unload_runtime_resources
 from grim.audio import init_audio_state, resume_audio, shutdown_audio, suspend_audio
 from grim.blend import opaque_blend
-from grim.edr import HDR_PIXEL_FORMAT, edr_active, load_float_render_texture
+from grim.edr import HDR_PIXEL_FORMAT, edr_active, load_float_render_texture, load_render_texture_with_reclaim
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import current_target_size, texture_mode
 
@@ -272,9 +272,8 @@ class GameLoopView:
         if use_float:
             candidate = load_float_render_texture(width, height)
         else:
-            candidate = rl.load_render_texture(width, height)
-            if candidate.id <= 0 or not rl.rl_framebuffer_complete(candidate.id):
-                rl.unload_render_texture(candidate)
+            candidate = load_render_texture_with_reclaim(width, height)
+            if candidate is None:
                 raise RuntimeError("gamma render target is incomplete")
         if target is not None:
             rl.unload_render_texture(target)

@@ -1009,6 +1009,115 @@ void check_terrain_snapshots() {
   bakes(603, true);
   assert(w2c_host_texture_read(nullptr, 600, 4096, size) == size);
   identical(603);
+  // Scissored dirty-tile relief rebakes stay area-based even for many separated
+  // decals submitted in one indexed batch draw, exclude cached relief from
+  // copy-size budgeting, reuse relief storage across replay seeks, and match a full rebake.
+  {
+    Ground &g = grounds.at(600);
+    ground_size[0] = 64;
+    ground_size[1] = 32;
+    update_ground_normals(g);
+    assert(!g.normals_dirty && !g.normals_full && g.normals.framebuffer && g.normals.texture);
+    assert(w2c_host_texture_bytes(nullptr, 600) == 128 * 64 * 28);
+    // Snapshot copy leaves snapshot relief unallocated; restoring onto live terrain reuses its texture,
+    // including across a clean tick-zero anchor restore.
+    GLuint saved_normals_tex = g.normals.texture;
+    w2c_host_texture_copy(nullptr, 601, 600);
+    assert(grounds.at(601).normals.texture == 0);
+    assert(w2c_host_texture_bytes(nullptr, 601) == 128 * 64 * 28);
+    w2c_host_texture_copy(nullptr, 600, 602); // clean tick-zero anchor
+    assert(!grounds.count(600));
+    assert(w2c_host_texture_bytes(nullptr, 600) == 128 * 64 * 4);
+    Ground &rebuilt = ground_of(600);
+    assert(rebuilt.normals.texture == saved_normals_tex);
+    assert(rebuilt.normals_dirty && rebuilt.normals_full);
+    update_ground_normals(rebuilt);
+    assert(rebuilt.normals.texture == saved_normals_tex && !rebuilt.normals_dirty && !rebuilt.normals_full);
+    w2c_host_texture_copy(nullptr, 600, 601);
+    assert(grounds.at(600).normals.texture == saved_normals_tex);
+    assert(grounds.at(600).normals_dirty && grounds.at(600).normals_full);
+    update_ground_normals(grounds.at(600));
+    assert(grounds.at(600).normals.texture == saved_normals_tex && !grounds.at(600).normals_dirty && !grounds.at(600).normals_full);
+    // Decals wholly outside the terrain must not dirty any relief tiles.
+    w2c_host_set_render_target(nullptr, 600);
+    w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 255);
+    rectangle(-20, -20, -10, -10, 0xe0ffffff);
+    rectangle(70, 40, 80, 50, 0xe0ffffff);
+    w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+    assert(!grounds.at(600).normals_dirty);
+    for (uint32_t row : grounds.at(600).dirty_tiles)
+      assert(row == 0);
+    w2c_host_set_render_target(nullptr, 600);
+    w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 260);
+    // Submit all 18 small separated decals in ONE indexed D3DPT_TRIANGLELIST draw
+    // (like fx_queue_render). Their union bbox exceeds 50% of the map, so per-triangle
+    // dirty marking is required to stay below the 50% full-rebake area threshold.
+    Vertex batch_verts[18 * 4];
+    unsigned short batch_idx[18 * 6];
+    for (int i = 0; i < 18; ++i) {
+      float x = 2.f + (i % 6) * 10.f, y = 2.f + (i / 6) * 10.f;
+      batch_verts[i * 4 + 0] = {x - .5f, y - .5f, 0, 1, 0xe0ffffff, 0, 0};
+      batch_verts[i * 4 + 1] = {x + 1.5f, y - .5f, 0, 1, 0xe0ffffff, 1, 0};
+      batch_verts[i * 4 + 2] = {x + 1.5f, y + 1.5f, 0, 1, 0xe0ffffff, 1, 1};
+      batch_verts[i * 4 + 3] = {x - .5f, y + 1.5f, 0, 1, 0xe0ffffff, 0, 1};
+      unsigned short b = (unsigned short)(i * 4);
+      batch_idx[i * 6 + 0] = b;
+      batch_idx[i * 6 + 1] = (unsigned short)(b + 1);
+      batch_idx[i * 6 + 2] = (unsigned short)(b + 2);
+      batch_idx[i * 6 + 3] = (unsigned short)(b + 2);
+      batch_idx[i * 6 + 4] = (unsigned short)(b + 3);
+      batch_idx[i * 6 + 5] = b;
+    }
+    memcpy(memory, batch_verts, sizeof batch_verts);
+    memcpy(memory + 4096, batch_idx, sizeof batch_idx);
+    w2c_host_draw(nullptr, 4, 0, 18 * 4, 4096, 18 * 2);
+    w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+    Ground &g2 = grounds.at(600);
+    int dirty_tiles = 0;
+    for (uint32_t row : g2.dirty_tiles)
+      dirty_tiles += __builtin_popcount(row);
+    assert(g2.normals_dirty && !g2.normals_full && dirty_tiles > 0 && dirty_tiles < GROUND_DIRTY_GRID * GROUND_DIRTY_GRID / 2);
+    update_ground_normals(g2);
+    std::vector<float> scissored((size_t)g2.normals.width * g2.normals.height * 4);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, g2.normals.framebuffer);
+    glReadPixels(0, 0, g2.normals.width, g2.normals.height, GL_RGBA, GL_FLOAT, scissored.data());
+    mark_normals_full(g2);
+    update_ground_normals(g2);
+    std::vector<float> full(scissored.size());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, g2.normals.framebuffer);
+    glReadPixels(0, 0, g2.normals.width, g2.normals.height, GL_RGBA, GL_FLOAT, full.data());
+    assert(scissored == full);
+    // Optional relief allocation failure falls back cleanly to direct sampling without exiting,
+    // and evict_ground_normals() reclaims resident relief storage before retrying required allocations.
+    assert(evict_ground_normals());
+    assert(!evict_ground_normals());
+    assert(!update_ground_normals(g2) && !g2.normals.framebuffer);
+    w2c_host_set_render_target(nullptr, 0);
+    renderer_resize(128, 64);
+    w2c_host_back_buffer(nullptr, 64, 32);
+    w2c_host_set_texture(nullptr, 0, 600);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, HOST_PASS_GROUND);
+    scene_debug = 2; // fluid normals debug view
+    rectangle(0, 0, 64, 32, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    int cap_w = 0, cap_h = 0;
+    auto direct_img = renderer_capture(cap_w, cap_h);
+    assert(ground_direct_program != 0);
+    g2.normals_failed_w = g2.normals_failed_h = 0;
+    assert(update_ground_normals(g2) && g2.normals.framebuffer);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, HOST_PASS_GROUND);
+    rectangle(0, 0, 64, 32, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    auto cached_img = renderer_capture(cap_w, cap_h);
+    scene_debug = 0;
+    assert(direct_img.size() == cached_img.size() && !direct_img.empty());
+    int max_diff = 0;
+    for (size_t i = 0; i < direct_img.size(); ++i)
+      max_diff = std::max(max_diff, abs((int)direct_img[i] - (int)cached_img[i]));
+    assert(max_diff <= 2);
+  }
   w2c_host_set_render_target(nullptr, 0);
   for (int id : {600, 601, 602, 603})
     w2c_host_texture_release(nullptr, id);
@@ -1115,7 +1224,7 @@ void check_ground_visibility() {
     int px = group % 4 * v.width + (int)floorf((x - v.rect[0]) / GroundVisibility::texel);
     int py = group / 4 * v.height + (int)floorf((y - v.rect[1]) / GroundVisibility::texel);
     float rgba[4];
-    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis_framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, beam_vis.framebuffer);
     glReadPixels(px, py, 1, 1, GL_RGBA, GL_FLOAT, rgba);
     bind_target();
     return rgba[index % 4];
@@ -1126,7 +1235,7 @@ void check_ground_visibility() {
   assert(ground_visibility.count == 32 && !beam_lights);
   float blocked = mask(0, 31, 49);
   assert(blocked < .3f && fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
-  GLuint texture = beam_vis_texture;
+  GLuint texture = beam_vis.texture;
   int width = beam_vis_width, height = beam_vis_height;
   end();
   // Visibility is scalar data: HDR color/gain changes never encode, clip or
@@ -1137,7 +1246,7 @@ void check_ground_visibility() {
   }
   for (float camera : {-.25f, 2.25f, -5.75f, 0.f}) {
     begin(32, camera, 1);
-    assert(beam_vis_texture == texture && beam_vis_width == width && beam_vis_height == height);
+    assert(beam_vis.texture == texture && beam_vis_width == width && beam_vis_height == height);
     assert(fabsf(mask(31, 31, 49) - blocked) < 1e-3f);
     end();
   }
@@ -1150,7 +1259,7 @@ void check_ground_visibility() {
     end();
   }
   assert(!renderer_set_rtx(false));
-  assert(!beam_vis_texture && !ground_visibility.count);
+  assert(!beam_vis.texture && !ground_visibility.count);
   assert(glGetError() == GL_NO_ERROR);
   puts("renderer: world-anchored scalar visibility, reflection-only sources, all 32 lanes and mask invalidation passed");
 }

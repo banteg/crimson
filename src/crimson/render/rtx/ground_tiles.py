@@ -8,6 +8,7 @@ from typing import Any
 
 import msgspec
 
+from grim.edr import load_texture_with_reclaim
 from grim.raylib_api import rl
 
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
@@ -212,7 +213,7 @@ class GroundLightTiles(msgspec.Struct):
             rl.unload_texture(self.texture)
             self.texture = None
 
-    def upload(self, width: int, height: int, masks: bytes) -> rl.Texture:
+    def upload(self, width: int, height: int, masks: bytes) -> rl.Texture | None:
         if self.texture is not None and (int(self.texture.width) != width or int(self.texture.height) != height):
             self.close()
         buf = rl.ffi.from_buffer("unsigned char[]", masks)
@@ -224,10 +225,10 @@ class GroundLightTiles(msgspec.Struct):
                 1,
                 rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
             )
-            self.texture = rl.load_texture_from_image(image)
+            self.texture = load_texture_with_reclaim(image)
             if self.texture.id <= 0:
                 self.texture = None
-                raise RuntimeError("Could not upload ground light tiles")
+                return None
             rl.set_texture_filter(self.texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
             rl.set_texture_wrap(self.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         else:

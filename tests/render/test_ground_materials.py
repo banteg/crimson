@@ -144,6 +144,7 @@ def test_fresh_blood_reflects_hdr_then_dries(ground_material) -> None:
     ground, texture = ground_material
     ground.material_batches.extend([blood(1200)] * 6)
     ground.bake_materials(texture, texture)
+    ground._ensure_normals()
     sh = ground.material_shader
     assert sh is not None and ground.surface is not None and ground.coverage is not None
     target = load_float_render_texture(64, 64)
@@ -170,9 +171,17 @@ def test_fresh_blood_reflects_hdr_then_dries(ground_material) -> None:
                     rl.set_shader_value_texture(
                         sh, rl.get_shader_location(sh, "u_substrate_tex"), ground.substrate.render_target.texture,
                     )
+                    assert ground.normals is not None
+                    ground_materials._bind_unit(
+                        sh,
+                        rl.get_shader_location(sh, "u_normal_tex"),
+                        ground.normals.texture,
+                        unit=ground_materials.NORMAL_TEX_UNIT,
+                    )
                     ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
                 finally:
                     rl.end_shader_mode()
+                    ground_materials._bind_unit(None, -1, None, unit=ground_materials.NORMAL_TEX_UNIT)
             values.append(pixels(target)[32 * 64 + 32])
         assert max(values[0][:3]) > 1.0  # no intermediate SDR clipping
         assert max(values[1][:3]) < max(values[0][:3]) * 0.8
@@ -439,6 +448,7 @@ def uniform_fresh_film(ground, texture) -> None:
         rl.clear_background(rl.Color(10, 102, 102, 115))
     with texture_mode(ground.coverage):
         rl.clear_background(rl.Color(128, 0, 0, 0))
+    ground.normals_dirty = True
 
 
 def test_weak_light_cannot_darken_ambient_blood_or_create_a_boundary_ring(ground_material, mocker) -> None:
@@ -500,6 +510,7 @@ def test_single_expired_freeze_shard_has_ice_coverage_and_reflection(ground_mate
             rl.clear_background(rl.BLANK)
         finally:
             rl.rl_color_mask(True, True, True, True)
+    ground.normals_dirty = True
     dry = debug_pixels(ground, texture, mode=5)
     assert max(max(a[:3]) - max(b[:3]) for a, b in zip(icy, dry, strict=True)) > .01
 
@@ -533,6 +544,7 @@ def test_translucent_ice_occludes_blood_without_cutting_a_liquid_meniscus(ground
         rl.clear_background(rl.Color(10, 204, 204, 115))
     with texture_mode(ground.coverage):
         rl.clear_background(rl.Color(255, 0, 0, 0))
+    ground.normals_dirty = True
     before = debug_pixels(ground, texture, mode=4)
     ice = msgspec.structs.replace(blood(0).decals[0], effect_id=8, color=RGBA(1, 1, 1, .35))
     ground.material_batches.append(TerrainFxBatch(decals=(ice,)))
@@ -547,6 +559,7 @@ def test_translucent_ice_occludes_blood_without_cutting_a_liquid_meniscus(ground
             rl.clear_background(rl.Color(0, 0, 0, 115))
         finally:
             rl.rl_color_mask(True, True, True, True)
+    ground.normals_dirty = True
     normals = debug_pixels(ground, texture, mode=2)
     assert all(p[:3] == pytest.approx((.5, .5, 1.), abs=.001) for p in normals)
 
@@ -586,6 +599,7 @@ def uniform_deep_film(ground, texture) -> None:
         rl.clear_background(rl.Color(10, 230, 230, 115))
     with texture_mode(ground.coverage):
         rl.clear_background(rl.Color(255, 0, 0, 0))
+    ground.normals_dirty = True
 
 
 @pytest.mark.parametrize("length", [0., 28.])
@@ -1289,6 +1303,7 @@ def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> No
             rl.clear_background(rl.Color(10, 180, 180, 115))
         with texture_mode(ground.coverage):
             rl.clear_background(rl.Color(200, 0, 0, 0))
+        ground.normals_dirty = True
         lights = [
             # Point light near tile boundary
             MaterialLight(Vec2(48, 48), 55, (2.0, 0.8, 0.4), height=24, reflection_radius=55),
@@ -1358,3 +1373,520 @@ def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> No
         rl.unload_render_texture(target)
         ground.close()
         rl.unload_texture(texture)
+
+
+def test_baked_ground_normals_reuse_across_frames_and_update_on_decals(ground_material) -> None:
+    ground, texture = ground_material
+    ground.material_batches.extend([blood(0)] * 8)
+    first = debug_pixels(ground, texture, mode=2)
+    assert ground.normals is not None and not ground.normals_dirty
+    assert any(abs(p[0] - 0.5) > 0.01 or abs(p[1] - 0.5) > 0.01 for p in first)
+    normals_id = ground.normals.id
+    # Repeated draws with no new decals reuse the baked normal map without rebaking.
+    second = debug_pixels(ground, texture, mode=2, time=30.0)
+    assert second == first
+    assert ground.normals.id == normals_id and not ground.normals_dirty
+    # A new corpse updates the baked normals via dirty-rect scissor and matches a full rebake pixel-for-pixel.
+    before_sub = debug_pixels(ground, texture, mode=1)
+    for pos in (Vec2(12, 8), Vec2(36, 44)):
+        ground.material_batches.append(TerrainFxBatch(
+            decals=(FxQueueEntry(
+                effect_id=7, pos=pos, width=16, height=12, rotation=0.7, color=RGBA(1, 0, 0, 1),
+            ),),
+            corpses=(FxQueueRotatedEntry(
+                top_left=pos - Vec2(8, 8), scale=16, rotation=0.5, color=RGBA(1, 1, 1, 1),
+            ),),
+        ))
+        scissored_sub = debug_pixels(ground, texture, mode=1)
+        scissored_fluid = debug_pixels(ground, texture, mode=2)
+        assert not ground.normals_dirty and not any(ground.normals_dirty_tiles)
+        ground.normals_dirty = True
+        ground.normals_full = True
+        full_sub = debug_pixels(ground, texture, mode=1)
+        full_fluid = debug_pixels(ground, texture, mode=2)
+        assert scissored_sub == full_sub
+        assert scissored_fluid == full_fluid
+    assert full_sub != before_sub
+    # Many small separated decals stay area-scissored instead of falling back to a full rebake.
+    sparse = tuple(
+        FxQueueEntry(
+            effect_id=7, pos=Vec2(2.0 + (i % 6) * 10.0, 2.0 + (i // 6) * 10.0), width=2, height=2, color=RGBA(1, 0, 0, 1),
+        )
+        for i in range(18)
+    )
+    ground._stamp_commands(list(ground._commands(TerrainFxBatch(decals=sparse), texture, texture)))
+    dirty_tiles = sum(row.bit_count() for row in ground.normals_dirty_tiles)
+    assert ground.normals_dirty and not ground.normals_full and 0 < dirty_tiles < 32 * 32 // 2
+    ground._ensure_normals()
+    assert not ground.normals_dirty and not any(ground.normals_dirty_tiles)
+    ground.reset_materials()
+    assert ground.normals is not None and ground.normals.id == normals_id
+    assert ground.normals_dirty and ground.normals_full
+
+
+@pytest.mark.parametrize("texture_scale", [1.0, 4.0])
+def test_cached_relief_matches_live_normals_at_fractional_uvs(raylib_context, texture_scale: float) -> None:
+    # Both default (texture_scale=1.0) and coarse (texture_scale=4.0) terrain must preserve
+    # sharp one-texel ridge normals at fractional UVs without bilinear peak rounding.
+    image = rl.gen_image_color(64, 64, rl.Color(128, 128, 128, 255))
+    texture = rl.load_texture_from_image(image)
+    rl.unload_image(image)
+    ground = MaterialGroundRenderer(texture, texture, texture, width=64, height=64)
+    ground.schedule_stamps(TerrainLayers(base=(), overlay=(), detail=()), texture_scale=texture_scale)
+    ground.process_pending()
+    target = load_float_render_texture(131, 131, pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
+    try:
+        ground.bake_materials(texture, texture)
+        assert ground.surface is not None and ground.coverage is not None
+        surf_w = int(ground.surface.texture.width)
+        # Write a sharp one-texel height ridge and a sharp blood-pool step (with ice strip)
+        # directly into surface + coverage to verify both substrate (mode=1) and fluid (mode=2) normals.
+        surf_img = rl.gen_image_color(surf_w, surf_w, rl.Color(10, 0, 0, 115))
+        cov_img = rl.gen_image_color(surf_w, surf_w, rl.Color(0, 0, 0, 0))
+        half_w = surf_w // 2
+        for y in range(surf_w):
+            for x in range(surf_w):
+                h_byte = 191 if x == half_w else 115
+                if x >= half_w:
+                    ice_byte = 254 if x == half_w + 1 else 0
+                    atten = 1.0 - ice_byte / 255.0
+                    b_byte = round(230 * atten)
+                    r_byte = round(255 * atten)
+                    rl.image_draw_pixel(surf_img, x, y, rl.Color(10, b_byte, b_byte, h_byte))
+                    rl.image_draw_pixel(cov_img, x, y, rl.Color(r_byte, 0, 0, ice_byte))
+                elif h_byte != 115:
+                    rl.image_draw_pixel(surf_img, x, y, rl.Color(10, 0, 0, h_byte))
+        rl.image_format(surf_img, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
+        rl.update_texture(ground.surface.texture, surf_img.data)
+        rl.unload_image(surf_img)
+        rl.update_texture(ground.coverage.texture, cov_img.data)
+        rl.unload_image(cov_img)
+        ground.normals_dirty = True
+        ground.normals_full = True
+
+        class Textures:
+            def texture(self, _texture_id):
+                return texture
+
+        def render_mode(mode: int) -> list[tuple[float, float, float, float]]:
+            with (
+                texture_mode(target),
+                ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, debug=mode),
+            ):
+                ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=131, out_h=131)
+            return pixels(target)
+
+        sub_pixels = render_mode(1)
+        fluid_pixels = render_mode(2)
+
+        def sample_1d(vals: list[float], wx: float) -> float:
+            t = max(0.0, min(surf_w - 1.0, wx * surf_w / 64.0 - 0.5))
+            i0 = int(math.floor(t))
+            i1 = min(surf_w - 1, i0 + 1)
+            f = t - i0
+            return vals[i0] * (1.0 - f) + vals[i1] * f
+
+        def smoothstep(e0: float, e1: float, x: float) -> float:
+            t = max(0.0, min(1.0, (x - e0) / (e1 - e0)))
+            return t * t * (3.0 - 2.0 * t)
+
+        h_vals = [(191 if x == half_w else 115) / 255.0 for x in range(surf_w)]
+        b_vals = [
+            round(230 * (1.0 - (254 if x == half_w + 1 else 0) / 255.0)) / 255.0 if x >= half_w else 0.0
+            for x in range(surf_w)
+        ]
+        r_vals = [
+            round(255 * (1.0 - (254 if x == half_w + 1 else 0) / 255.0)) / 255.0 if x >= half_w else 0.0
+            for x in range(surf_w)
+        ]
+        i_vals = [(254 / 255.0 if x == half_w + 1 else 0.0) for x in range(surf_w)]
+
+        def blood_at(wx: float) -> float:
+            exposed = max(1.0 - sample_1d(i_vals, wx), 0.001)
+            return max(0.0, min(0.999, sample_1d(b_vals, wx) * sample_1d(r_vals, wx) / (exposed * exposed)))
+
+        max_sub_deg = 0.0
+        max_fluid_deg = 0.0
+        for x_i in range(131):
+            wx = (x_i + 0.5) * 64.0 / 131.0
+            dh_fine = (sample_1d(h_vals, wx - 1.2) - sample_1d(h_vals, wx + 1.2)) * 1.35
+            dh_macro = (sample_1d(h_vals, wx - 3.2) - sample_1d(h_vals, wx + 3.2)) * 1.15
+            slope_sub = dh_fine + dh_macro * 0.85
+            deep_pool = smoothstep(0.12, 0.95, blood_at(wx))
+            pool_l = smoothstep(0.12, 0.95, 0.45 * blood_at(wx - 1.2) + 0.55 * blood_at(wx - 3.2))
+            pool_r = smoothstep(0.12, 0.95, 0.45 * blood_at(wx + 1.2) + 0.55 * blood_at(wx + 3.2))
+            dpool = (pool_l - pool_r) * (1.0 - 0.65 * deep_pool)
+            slope_fluid = (
+                dh_macro * (1.35 + (0.24 - 1.35) * deep_pool)
+                + dh_fine * (0.45 + (0.04 - 0.45) * deep_pool)
+                + dpool * 0.18
+            )
+            for slope, buf, kind in ((slope_sub, sub_pixels, "sub"), (slope_fluid, fluid_pixels, "fluid")):
+                norm_a = math.sqrt(slope * slope + 1.0)
+                ax, az = slope / norm_a, 1.0 / norm_a
+                p = buf[65 * 131 + x_i]
+                bx, by, bz = p[0] * 2.0 - 1.0, p[1] * 2.0 - 1.0, p[2] * 2.0 - 1.0
+                norm_b = math.sqrt(bx * bx + by * by + bz * bz)
+                cos_angle = max(-1.0, min(1.0, (ax * bx + az * bz) / norm_b))
+                deg = math.degrees(math.acos(cos_angle))
+                if kind == "sub":
+                    max_sub_deg = max(max_sub_deg, deg)
+                else:
+                    max_fluid_deg = max(max_fluid_deg, deg)
+        assert max_sub_deg < 0.25 and max_fluid_deg < 0.25
+    finally:
+        rl.unload_render_texture(target)
+        ground.close()
+        rl.unload_texture(texture)
+
+
+def test_off_terrain_stamp_does_not_dirty_ground_relief(ground_material) -> None:
+    from crimson.effects_atlas import EffectId
+
+    ground, texture = ground_material
+    ground.bake_materials(texture, texture)
+    assert ground._ensure_normals() is not None
+    assert not ground.normals_dirty
+    batch = TerrainFxBatch(
+        decals=(
+            FxQueueEntry(
+                effect_id=int(EffectId.FREEZE_SHARD_0),
+                rotation=0.0,
+                pos=Vec2(-40.0, -40.0),
+                width=16.0,
+                height=16.0,
+                color=RGBA(1.0, 1.0, 1.0, 0.5),
+            ),
+            FxQueueEntry(
+                effect_id=int(EffectId.FREEZE_SHARD_0),
+                rotation=0.0,
+                pos=Vec2(120.0, 120.0),
+                width=16.0,
+                height=16.0,
+                color=RGBA(1.0, 1.0, 1.0, 0.5),
+            ),
+        ),
+        corpses=(),
+        elapsed_s=1.0,
+    )
+    ground._stamp_commands(list(ground._commands(batch, texture, texture)))
+    assert not ground.normals_dirty
+    assert all(row == 0 for row in ground.normals_dirty_tiles)
+
+
+def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_material) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    cached_sub = debug_pixels(ground, texture, mode=1)
+    assert ground.normals is not None
+    normals_id = int(ground.normals.id)
+
+    # Resetting materials (as replay seeks do) retains the relief target and marks it dirty.
+    ground.reset_materials()
+    assert ground.normals is not None and int(ground.normals.id) == normals_id
+    assert ground.normals_dirty and ground.normals_full
+    uniform_deep_film(ground, texture)
+    assert debug_pixels(ground, texture, mode=1) == cached_sub
+    assert ground.normals is not None and int(ground.normals.id) == normals_id
+
+    # Resizing terrain releases obsolete relief storage BEFORE allocating replacement targets.
+    from grim.terrain_render import GroundRenderer
+
+    layers = TerrainLayers(base=(), overlay=(), detail=())
+    seen_normals_on_resize: list[rl.RenderTexture | None] = []
+    real_ensure = GroundRenderer._ensure_render_target
+
+    def spy_ensure(self: GroundRenderer, scale: float) -> None:
+        if self is ground:
+            seen_normals_on_resize.append(ground.normals)
+        real_ensure(self, scale)
+
+    with patch.object(GroundRenderer, "_ensure_render_target", spy_ensure):
+        ground.schedule_stamps(layers, texture_scale=2.0)
+        ground.process_pending()
+    assert seen_normals_on_resize == [None]
+    assert ground.normals is None
+
+    # If a replay seek hits VRAM pressure while rebuilding required material targets,
+    # retained optional relief is evicted and _initialize_materials() retries cleanly.
+    ground.reset_materials()
+    ground.schedule_stamps(layers, texture_scale=1.0)
+    ground.process_pending()
+    assert ground.normals is None
+    uniform_deep_film(ground, texture)
+    assert debug_pixels(ground, texture, mode=1, shadows=False) == cached_sub
+    assert ground.normals is not None
+    ground.reset_materials()
+    assert ground.normals is not None
+    real_loader = load_float_render_texture
+    evict_attempts = 0
+
+    def fail_until_evicted(
+        width: int,
+        height: int,
+        *,
+        pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+    ):
+        nonlocal evict_attempts
+        if pixel_format == rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 and ground.normals is not None:
+            evict_attempts += 1
+            raise RuntimeError("simulated VRAM pressure while optional relief is retained")
+        return real_loader(width, height, pixel_format=pixel_format)
+
+    with patch.object(ground_materials, "load_float_render_texture", side_effect=fail_until_evicted):
+        ground.bake_materials(texture, texture)
+    assert evict_attempts == 1
+    assert ground.normals is None and ground.normals_failed_size is not None
+    assert ground.surface is not None and ground.coverage is not None
+
+    # If the optional relief target cannot be allocated inside a draw target scope,
+    # _ensure_normals() restores the enclosing framebuffer and falls back cleanly.
+    with _ground_material() as (fallback_ground, fallback_texture):
+        fallback_ground.material_batches.append(
+            TerrainFxBatch(
+                decals=(FxQueueEntry(effect_id=7, pos=Vec2(24, 24), width=16, height=16, rotation=0.4, color=RGBA(1, 0, 0, 1)),),
+                corpses=(FxQueueRotatedEntry(top_left=Vec2(20, 20), scale=18, rotation=0.3, color=RGBA(1, 1, 1, 1)),),
+            ),
+        )
+        ref_sub = debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False)
+        ref_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2, shadows=False)
+        assert any(abs(p[0] - 0.5) > 0.01 or abs(p[1] - 0.5) > 0.01 for p in ref_sub)
+        assert fallback_ground.normals is not None
+        rl.unload_render_texture(fallback_ground.normals)
+        fallback_ground.normals = None
+        fallback_ground.normals_dirty = True
+        fallback_ground.normals_full = True
+        fallback_ground.normals_failed_size = None
+        oom_calls = 0
+
+        def fail_half_float(
+            width: int,
+            height: int,
+            *,
+            pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+        ):
+            nonlocal oom_calls
+            if pixel_format == rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16:
+                oom_calls += 1
+                # Simulate load_float_render_texture failing at rl_framebuffer_complete()
+                # after changing the active framebuffer binding inside texture_mode(target).
+                rl.rl_disable_framebuffer()
+                raise RuntimeError("simulated VRAM exhaustion")
+            return real_loader(width, height, pixel_format=pixel_format)
+
+        with patch.object(ground_materials, "load_optional_float_render_texture", side_effect=fail_half_float):
+            fallback_sub = debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False)
+            fallback_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2, shadows=False)
+        assert oom_calls == 1
+        assert fallback_ground.normals is None
+        assert fallback_ground.normals_failed_size is not None
+        # Same-size replay seeks keep the failed-size backoff instead of retrying OOM every seek.
+        failed_size = fallback_ground.normals_failed_size
+        fallback_ground.reset_materials()
+        assert fallback_ground.normals_failed_size == failed_size
+        fallback_ground.material_batches.append(
+            TerrainFxBatch(
+                decals=(FxQueueEntry(effect_id=7, pos=Vec2(24, 24), width=16, height=16, rotation=0.4, color=RGBA(1, 0, 0, 1)),),
+                corpses=(FxQueueRotatedEntry(top_left=Vec2(20, 20), scale=18, rotation=0.3, color=RGBA(1, 1, 1, 1)),),
+            ),
+        )
+        with patch.object(ground_materials, "load_optional_float_render_texture", side_effect=fail_half_float):
+            assert max(
+                abs(a - b)
+                for p, q in zip(debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False), ref_sub, strict=True)
+                for a, b in zip(p, q, strict=True)
+            ) < 0.005
+        assert oom_calls == 1
+        assert max(abs(a - b) for p, q in zip(fallback_sub, ref_sub, strict=True) for a, b in zip(p, q, strict=True)) < 0.005
+        assert max(abs(a - b) for p, q in zip(fallback_fluid, ref_fluid, strict=True) for a, b in zip(p, q, strict=True)) < 0.005
+
+        # Visibility atlas allocation takes VRAM priority over optional relief and evicts it on failure.
+        fallback_ground.normals_failed_size = None
+        fallback_ground.normals_dirty = True
+        fallback_ground.normals_full = True
+        assert fallback_ground._ensure_normals() is not None
+        pool = CreaturePool()
+        pool.entries[0] = CreatureState(active=True, hp=100, pos=Vec2(32, 32), size=36)
+        light = MaterialLight(Vec2(16, 16), 80, (1.4, 0.8, 0.4), height=24)
+        atlas_evict_calls = 0
+
+        def fail_atlas_until_relief_evicted(
+            width: int,
+            height: int,
+            *,
+            pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+        ):
+            nonlocal atlas_evict_calls
+            if fallback_ground.normals is not None and width != height:
+                atlas_evict_calls += 1
+                raise RuntimeError("simulated VRAM pressure allocating visibility atlas")
+            return real_loader(width, height, pixel_format=pixel_format)
+
+        with (
+            patch.object(ground_materials, "collect_material_lights", return_value=[light]),
+            patch.object(ground_materials, "load_float_render_texture", side_effect=fail_atlas_until_relief_evicted),
+        ):
+            shaded = debug_pixels(fallback_ground, fallback_texture, mode=0, creatures=pool, shadows=True)
+        assert atlas_evict_calls == 1
+        assert fallback_ground.normals is None and fallback_ground.beam_atlas is not None
+        assert any(p[0] > 0.01 for p in shaded)
+
+        # Any required float render target (HDR, pressure fronts, GPU smoke) reclaims optional
+        # relief inside load_float_render_texture and preserves queued smoke emissions across retry.
+        from crimson.render.rtx.smoke import SmokeRenderer
+        from grim import edr as edr_mod
+        from tests.render.test_smoke_simulation import emission
+
+        fallback_ground.normals_failed_size = None
+        fallback_ground.normals_dirty = True
+        fallback_ground.normals_full = True
+        assert fallback_ground._ensure_normals() is not None
+        smoke = SmokeRenderer()
+        smoke.consume((emission(pos=Vec2(32, 32), vel=Vec2(0, 0), scale=24.0),), dt_sim=1 / 60)
+        reclaim_alloc_calls = 0
+        real_alloc = edr_mod._allocate_float_render_texture
+
+        def fail_raw_alloc_until_relief_evicted(width: int, height: int, pixel_format: int):
+            nonlocal reclaim_alloc_calls
+            if fallback_ground.normals is not None:
+                reclaim_alloc_calls += 1
+                raise RuntimeError("simulated VRAM pressure on required float target")
+            return real_alloc(width, height, pixel_format)
+
+        try:
+            frame = RenderFrame(
+                config=None,
+                camera=Vec2(),
+                ground=fallback_ground,
+                state=GameplayState(),
+                players=[],
+                creatures=CreaturePool(),
+                resources=cast(Any, None),
+                elapsed_ms=0.0,
+                bonus_anim_phase=0.0,
+                rtx_mode=RtxRenderMode.RTX,
+            )
+            with patch.object(edr_mod, "_allocate_float_render_texture", side_effect=fail_raw_alloc_until_relief_evicted):
+                smoke.prepare(frame, ())
+            assert reclaim_alloc_calls == 1
+            assert smoke.available and smoke.prepared and bool(smoke.simulation.fields)
+            assert fallback_ground.normals is None
+
+            # Verify HDR/pressure-front style float target allocation also reclaims relief automatically.
+            fallback_ground.normals_failed_size = None
+            fallback_ground.normals_dirty = True
+            fallback_ground.normals_full = True
+            assert fallback_ground._ensure_normals() is not None
+            reclaim_alloc_calls = 0
+            with patch.object(edr_mod, "_allocate_float_render_texture", side_effect=fail_raw_alloc_until_relief_evicted):
+                hdr_target = load_float_render_texture(64, 64)
+            try:
+                assert reclaim_alloc_calls == 1
+                assert fallback_ground.normals is None
+            finally:
+                rl.unload_render_texture(hdr_target)
+
+            # Starting a new terrain allocation reclaims another renderer's optional relief cache before failing.
+            fallback_ground.normals_failed_size = None
+            fallback_ground.normals_dirty = True
+            fallback_ground.normals_full = True
+            assert fallback_ground._ensure_normals() is not None
+            run_ground = MaterialGroundRenderer(fallback_texture, fallback_texture, fallback_texture, width=64, height=64)
+            real_load_rt = rl.load_render_texture
+            terrain_retry_calls = 0
+
+            def fail_rt_until_menu_relief_evicted(w: int, h: int):
+                nonlocal terrain_retry_calls
+                if fallback_ground.normals is not None:
+                    terrain_retry_calls += 1
+                    return rl.RenderTexture(0, rl.Texture(0, 0, 0, 0, 0), rl.Texture(0, 0, 0, 0, 0))
+                return real_load_rt(w, h)
+
+            try:
+                with patch.object(rl, "load_render_texture", side_effect=fail_rt_until_menu_relief_evicted):
+                    run_ground.schedule_stamps(layers, texture_scale=1.0)
+                    run_ground.process_pending()
+                assert terrain_retry_calls == 1
+                assert not run_ground.texture_failed and run_ground.render_target_ready()
+                assert fallback_ground.normals is None
+            finally:
+                run_ground.close()
+
+            # Evicting relief during GroundLightTiles.upload() inside texture_mode() must preserve
+            # the enclosing framebuffer binding so the lit ground still renders into the active target.
+            fallback_ground.normals_failed_size = None
+            fallback_ground.normals_dirty = True
+            fallback_ground.normals_full = True
+            assert fallback_ground._ensure_normals() is not None
+            fallback_ground.light_tiles.close()
+            real_has_storage = edr_mod._texture_has_storage
+            real_unload_rt = rl.unload_render_texture
+            tile_evict_calls = 0
+
+            def fail_tile_storage_once(tex: rl.Texture, w: int, h: int) -> bool:
+                nonlocal tile_evict_calls
+                if fallback_ground.normals is not None:
+                    tile_evict_calls += 1
+                    return False
+                return real_has_storage(tex, w, h)
+
+            def unload_and_unbind(rt: rl.RenderTexture) -> None:
+                real_unload_rt(rt)
+                if fallback_ground.normals is not None and int(rt.id) == int(fallback_ground.normals.id):
+                    rl.rl_disable_framebuffer()
+
+            with (
+                patch.object(ground_materials, "collect_material_lights", return_value=[light]),
+                patch.object(edr_mod, "_texture_has_storage", side_effect=fail_tile_storage_once),
+                patch.object(rl, "unload_render_texture", side_effect=unload_and_unbind),
+            ):
+                shaded_after_tile_evict = debug_pixels(fallback_ground, fallback_texture, mode=0, shadows=False)
+            assert tile_evict_calls == 1
+            assert fallback_ground.normals is None
+            assert any(p[0] > 0.01 for p in shaded_after_tile_evict)
+
+            # Replay terrain history snapshots reclaim optional relief before failing and skip
+            # recording an invalid snapshot if allocation still fails after reclaim.
+            from pathlib import Path
+
+            from crimson.render.terrain_fx import FxQueueTextures
+            from crimson.world.render_resources import RenderResources
+            from crimson.world.terrain_history import TerrainHistory
+
+            fallback_ground.normals_failed_size = None
+            fallback_ground.normals_dirty = True
+            fallback_ground.normals_full = True
+            assert fallback_ground._ensure_normals() is not None
+            history_resources = RenderResources(
+                assets_dir=Path(),
+                ground=fallback_ground,
+                fx_textures=FxQueueTextures(particles=fallback_texture, bodyset=fallback_texture),
+            )
+            history = TerrainHistory(history_resources, None)
+            shot_retry_calls = 0
+
+            def fail_shot_until_relief_evicted(w: int, h: int):
+                nonlocal shot_retry_calls
+                if fallback_ground.normals is not None:
+                    shot_retry_calls += 1
+                    return rl.RenderTexture(0, rl.Texture(0, 0, 0, 0, 0), rl.Texture(0, 0, 0, 0, 0))
+                return real_load_rt(w, h)
+
+            try:
+                with patch.object(rl, "load_render_texture", side_effect=fail_shot_until_relief_evicted):
+                    history._shoot(fallback_ground, bakes=1, tick=10)
+                assert shot_retry_calls == 1
+                assert fallback_ground.normals is None
+                assert len(history.shots) == 1
+
+                with patch.object(
+                    rl,
+                    "load_render_texture",
+                    return_value=rl.RenderTexture(0, rl.Texture(0, 0, 0, 0, 0), rl.Texture(0, 0, 0, 0, 0)),
+                ):
+                    history._shoot(fallback_ground, bakes=2, tick=20)
+                assert len(history.shots) == 1
+            finally:
+                history.close()
+        finally:
+            smoke.close()

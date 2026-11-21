@@ -21,6 +21,9 @@ uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a se
 uniform sampler2D u_light_tiles;
 uniform ivec2 u_light_tile_size; // tile grid dimensions, zero when no host supplied a mask
 uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass, ice
+#ifndef GROUND_DIRECT_RELIEF
+uniform sampler2D u_normal_tex;   // Compact per-texel (height, blood volume, blood coverage, exposed fraction)
+#endif
 #endif
 
 uniform vec2 u_ground_size;
@@ -50,6 +53,23 @@ float blood_below_ice(vec4 surface, vec4 coverage) {
     float exposed = max(1.0 - coverage.a, 0.001);
     return clamp(surface.b * coverage.r / (exposed * exposed), 0.0, 0.999);
 }
+
+float packed_blood_below_ice(vec4 relief) {
+    float exposed = max(relief.a, 0.001);
+    return clamp(relief.g * relief.b / (exposed * exposed), 0.0, 0.999);
+}
+
+#ifndef BEAM_VISIBILITY_PASS
+vec4 sample_relief(vec2 uv) {
+#ifdef GROUND_DIRECT_RELIEF
+    vec4 s = texture(u_surface_tex, uv);
+    vec4 w = texture(u_material_tex, uv);
+    return vec4(s.a, s.b, w.r, 1.0 - w.a);
+#else
+    return texture(u_normal_tex, uv);
+#endif
+}
+#endif
 
 vec3 debug_radiance(vec3 value) {
     if (u_debug_display == 0) return value;
@@ -91,33 +111,9 @@ void main() {
     // The terrain is artwork: shade its decoded albedo, into the world's linear light.
     vec4 albedo_tex = alphaBilinear(u_substrate_tex, ground_uv, true);
     vec4 surf = texture(u_surface_tex, ground_uv);
-
-    // Samples named up (U) lie toward the world's top in either orientation.
-    vec2 step_fine = vec2(1.2, 1.2 * V_UP) / u_ground_size;
-    vec2 step_med  = vec2(3.2, 3.2 * V_UP) / u_ground_size;
-    vec4 sL1 = texture(u_surface_tex, ground_uv + vec2(-step_fine.x, 0.0));
-    vec4 sR1 = texture(u_surface_tex, ground_uv + vec2( step_fine.x, 0.0));
-    vec4 sD1 = texture(u_surface_tex, ground_uv + vec2(0.0, -step_fine.y));
-    vec4 sU1 = texture(u_surface_tex, ground_uv + vec2(0.0,  step_fine.y));
-    vec4 sL2 = texture(u_surface_tex, ground_uv + vec2(-step_med.x, 0.0));
-    vec4 sR2 = texture(u_surface_tex, ground_uv + vec2( step_med.x, 0.0));
-    vec4 sD2 = texture(u_surface_tex, ground_uv + vec2(0.0, -step_med.y));
-    vec4 sU2 = texture(u_surface_tex, ground_uv + vec2(0.0,  step_med.y));
-
-    vec2 dH_fine  = vec2(sL1.a - sR1.a, sU1.a - sD1.a) * 1.35;
-    vec2 dH_macro = vec2(sL2.a - sR2.a, sU2.a - sD2.a) * 1.15;
-
     // Explicit ordered material coverage, independent of the painted albedo hue.
     vec4 weights = texture(u_material_tex, ground_uv);
     float is_ice = weights.a;
-    float amount_l1 = blood_below_ice(sL1, texture(u_material_tex, ground_uv + vec2(-step_fine.x, 0)));
-    float amount_r1 = blood_below_ice(sR1, texture(u_material_tex, ground_uv + vec2( step_fine.x, 0)));
-    float amount_d1 = blood_below_ice(sD1, texture(u_material_tex, ground_uv + vec2(0, -step_fine.y)));
-    float amount_u1 = blood_below_ice(sU1, texture(u_material_tex, ground_uv + vec2(0,  step_fine.y)));
-    float amount_l2 = blood_below_ice(sL2, texture(u_material_tex, ground_uv + vec2(-step_med.x, 0)));
-    float amount_r2 = blood_below_ice(sR2, texture(u_material_tex, ground_uv + vec2( step_med.x, 0)));
-    float amount_d2 = blood_below_ice(sD2, texture(u_material_tex, ground_uv + vec2(0, -step_med.y)));
-    float amount_u2 = blood_below_ice(sU2, texture(u_material_tex, ground_uv + vec2(0,  step_med.y)));
 
     float blood_amount = blood_below_ice(surf, weights);
     float optical_depth = -log(1.0 - blood_amount) * 0.65;
@@ -127,16 +123,27 @@ void main() {
     float wet_film  = smoothstep(0.04, 0.36, clamp(blood_amount * 1.65, 0.0, 1.0));
     float deep_pool = smoothstep(0.12, 0.95, blood_amount);
 
-    // DUAL-NORMAL LAYERED FLUID MODEL:
-    // (A) Substrate Normal N_sub (drives DIFFUSE lighting ONLY):
+    // DUAL-NORMAL LAYERED FLUID MODEL (8-tap stencil on compact RGBA16F relief inputs):
+    vec2 step_fine = vec2(1.2, 1.2 * V_UP) / u_ground_size;
+    vec2 step_med  = vec2(3.2, 3.2 * V_UP) / u_ground_size;
+    vec4 rL1 = sample_relief(ground_uv + vec2(-step_fine.x, 0.0));
+    vec4 rR1 = sample_relief(ground_uv + vec2( step_fine.x, 0.0));
+    vec4 rD1 = sample_relief(ground_uv + vec2(0.0, -step_fine.y));
+    vec4 rU1 = sample_relief(ground_uv + vec2(0.0,  step_fine.y));
+    vec4 rL2 = sample_relief(ground_uv + vec2(-step_med.x, 0.0));
+    vec4 rR2 = sample_relief(ground_uv + vec2( step_med.x, 0.0));
+    vec4 rD2 = sample_relief(ground_uv + vec2(0.0, -step_med.y));
+    vec4 rU2 = sample_relief(ground_uv + vec2(0.0,  step_med.y));
+
+    vec2 dH_fine  = vec2(rL1.r - rR1.r, rU1.r - rD1.r) * 1.35;
+    vec2 dH_macro = vec2(rL2.r - rR2.r, rU2.r - rD2.r) * 1.15;
     vec2 slope_sub = dH_fine + dH_macro * 0.85;
     vec3 N_sub = normalize(vec3(slope_sub.x, slope_sub.y, 1.0));
 
-    // (B) Top-Surface Fluid Normal N_fluid (drives DIELECTRIC SPECULAR ONLY):
-    float poolL = smoothstep(0.12, 0.95, 0.45 * amount_l1 + 0.55 * amount_l2);
-    float poolR = smoothstep(0.12, 0.95, 0.45 * amount_r1 + 0.55 * amount_r2);
-    float poolD = smoothstep(0.12, 0.95, 0.45 * amount_d1 + 0.55 * amount_d2);
-    float poolU = smoothstep(0.12, 0.95, 0.45 * amount_u1 + 0.55 * amount_u2);
+    float poolL = smoothstep(0.12, 0.95, 0.45 * packed_blood_below_ice(rL1) + 0.55 * packed_blood_below_ice(rL2));
+    float poolR = smoothstep(0.12, 0.95, 0.45 * packed_blood_below_ice(rR1) + 0.55 * packed_blood_below_ice(rR2));
+    float poolD = smoothstep(0.12, 0.95, 0.45 * packed_blood_below_ice(rD1) + 0.55 * packed_blood_below_ice(rD2));
+    float poolU = smoothstep(0.12, 0.95, 0.45 * packed_blood_below_ice(rU1) + 0.55 * packed_blood_below_ice(rU2));
     vec2 dPool_smooth = vec2(poolL - poolR, poolU - poolD) * (1.0 - 0.65 * deep_pool);
 
     vec2 slope_fluid = dH_macro * mix(1.35, 0.24, deep_pool) + dH_fine * mix(0.45, 0.04, deep_pool) + dPool_smooth * 0.18;

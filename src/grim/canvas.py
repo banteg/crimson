@@ -5,7 +5,14 @@ from collections.abc import Callable
 import msgspec
 
 from .blend import opaque_blend
-from .edr import HDR_PIXEL_FORMAT, edr_active, edr_available, edr_output_gain, load_float_render_texture
+from .edr import (
+    HDR_PIXEL_FORMAT,
+    edr_active,
+    edr_available,
+    edr_output_gain,
+    load_float_render_texture,
+    load_render_texture_with_reclaim,
+)
 from .raylib_api import rl, rl_rectangle, rl_vector2
 from .texture_mode import texture_mode
 
@@ -229,7 +236,10 @@ class Canvas:
         if use_float:
             target = load_float_render_texture(target_w, target_h)
         else:
-            target = rl.load_render_texture(target_w, target_h)
+            candidate = load_render_texture_with_reclaim(target_w, target_h)
+            if candidate is None:
+                raise RuntimeError("letterbox render target is incomplete")
+            target = candidate
             rl.set_texture_filter(target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         if previous is not None:
             rl.unload_render_texture(previous)

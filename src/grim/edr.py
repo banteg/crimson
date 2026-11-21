@@ -4,8 +4,8 @@ import ctypes as C
 import logging
 import math
 import sys
-from collections.abc import Generator
-from contextlib import AbstractContextManager, contextmanager
+from collections.abc import Callable, Generator
+from contextlib import AbstractContextManager, contextmanager, suppress
 from typing import Any, Protocol
 
 from .raylib_api import ffi, rl
@@ -49,6 +49,26 @@ class _Bridge(Protocol):
 _bridge: _Bridge | None = None
 _edr_active = False
 _headroom = 1.0
+_optional_reclaimers: list[Callable[[], bool]] = []
+
+
+def register_optional_reclaimer(reclaimer: Callable[[], bool]) -> None:
+    """Register an optional GPU cache reclaimer invoked before a float target allocation fails."""
+    if reclaimer not in _optional_reclaimers:
+        _optional_reclaimers.append(reclaimer)
+
+
+def unregister_optional_reclaimer(reclaimer: Callable[[], bool]) -> None:
+    with suppress(ValueError):
+        _optional_reclaimers.remove(reclaimer)
+
+
+def reclaim_optional_targets() -> bool:
+    """Release registered optional GPU caches; return True if any cache freed storage."""
+    reclaimed = False
+    for reclaimer in tuple(_optional_reclaimers):
+        reclaimed |= bool(reclaimer())
+    return reclaimed
 
 
 def _gl(name: str, *argtypes: Any) -> Any:
@@ -76,9 +96,7 @@ def _store_as_float(texture_id: int, width: int, height: int, pixel_format: int)
     return stored
 
 
-def load_float_render_texture(
-    width: int, height: int, *, pixel_format: int = HDR_PIXEL_FORMAT,
-) -> rl.RenderTexture:
+def _allocate_float_render_texture(width: int, height: int, pixel_format: int) -> rl.RenderTexture:
     texture_id = int(rl.rl_load_texture(ffi.NULL, int(width), int(height), pixel_format, 1))
     if texture_id <= 0:
         raise RuntimeError("float render target texture allocation failed")
@@ -105,6 +123,81 @@ def load_float_render_texture(
     rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
     return rl.RenderTexture(framebuffer, texture, rl.Texture(0, 0, 0, 0, 0))
+
+
+def load_float_render_texture(
+    width: int, height: int, *, pixel_format: int = HDR_PIXEL_FORMAT,
+) -> rl.RenderTexture:
+    try:
+        return _allocate_float_render_texture(width, height, pixel_format)
+    except RuntimeError:
+        if not reclaim_optional_targets():
+            raise
+        return _allocate_float_render_texture(width, height, pixel_format)
+
+
+def load_optional_float_render_texture(
+    width: int, height: int, *, pixel_format: int = HDR_PIXEL_FORMAT,
+) -> rl.RenderTexture:
+    """Allocate an optional float render target without reclaiming other optional caches."""
+    return _allocate_float_render_texture(width, height, pixel_format)
+
+
+def load_render_texture_with_reclaim(width: int, height: int) -> rl.RenderTexture | None:
+    """Allocate a checked RGBA8 render texture, retrying once after reclaiming optional caches."""
+
+    def try_load() -> rl.RenderTexture | None:
+        cand = rl.load_render_texture(width, height)
+        if cand.id <= 0 or cand.texture.width <= 0 or cand.texture.height <= 0:
+            rl.unload_render_texture(cand)
+            return None
+        # raylib's IsRenderTextureValid() only checks ids and dimensions; use the
+        # rlgl completeness check so incomplete FBO attachments fail immediately.
+        if not rl.rl_framebuffer_complete(cand.id):
+            rl.unload_render_texture(cand)
+            return None
+        return cand
+
+    candidate = try_load()
+    if candidate is None and reclaim_optional_targets():
+        candidate = try_load()
+    return candidate
+
+
+def _texture_has_storage(texture: rl.Texture, width: int, height: int) -> bool:
+    if int(texture.id) <= 0:
+        return False
+    if not rl.is_window_ready():
+        return True
+    bind_addr = int(ffi.cast("uintptr_t", rl.glfw_get_proc_address("glBindTexture")))
+    query_addr = int(ffi.cast("uintptr_t", rl.glfw_get_proc_address("glGetTexLevelParameteriv")))
+    if not bind_addr or not query_addr:
+        return True
+    bind = _GL_FUNCTYPE(None, C.c_uint, C.c_uint)(bind_addr)
+    query = _GL_FUNCTYPE(None, C.c_uint, C.c_int, C.c_uint, C.POINTER(C.c_int))(query_addr)
+    stored_w, stored_h = C.c_int(), C.c_int()
+    bind(_GL_TEXTURE_2D, int(texture.id))
+    query(_GL_TEXTURE_2D, 0, 0x1000, C.byref(stored_w))  # GL_TEXTURE_WIDTH
+    query(_GL_TEXTURE_2D, 0, 0x1001, C.byref(stored_h))  # GL_TEXTURE_HEIGHT
+    bind(_GL_TEXTURE_2D, 0)
+    return stored_w.value == width and stored_h.value == height
+
+
+def load_texture_with_reclaim(image: rl.Image) -> rl.Texture:
+    """Upload a texture, verifying GPU storage and retrying once after reclaiming optional caches."""
+    width, height = int(image.width), int(image.height)
+    texture = rl.load_texture_from_image(image)
+    if _texture_has_storage(texture, width, height):
+        return texture
+    if int(texture.id) > 0:
+        rl.unload_texture(texture)
+    if reclaim_optional_targets():
+        texture = rl.load_texture_from_image(image)
+        if _texture_has_storage(texture, width, height):
+            return texture
+        if int(texture.id) > 0:
+            rl.unload_texture(texture)
+    return rl.Texture(0, 0, 0, 0, 0)
 
 
 class _MacosEdr:

@@ -189,7 +189,9 @@ def upload_texture(image: Image.Image, *, clamp: bool = False) -> rl.Texture:
         image = image.convert("RGBA")
     pixels = rl.ffi.from_buffer(image.tobytes())
     upload = rl.Image(rl.ffi.cast("void *", pixels), image.width, image.height, 1, _PIXEL_FORMATS[image.mode])
-    texture = rl.load_texture_from_image(upload)
+    from .edr import load_texture_with_reclaim
+
+    texture = load_texture_with_reclaim(upload)
     if texture.id <= 0:
         raise RuntimeError("Could not upload runtime texture")
     try:

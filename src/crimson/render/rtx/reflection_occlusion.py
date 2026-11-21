@@ -7,6 +7,7 @@ from collections.abc import Sequence
 
 import msgspec
 
+from grim.edr import load_texture_with_reclaim
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -261,7 +262,7 @@ class ReflectionOcclusion(msgspec.Struct):
         if self.texture is None:
             image = rl.Image(rl.ffi.cast("void *", data), TEXTURE_WIDTH, height, 1,
                              rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
-            self.texture = rl.load_texture_from_image(image)
+            self.texture = load_texture_with_reclaim(image)
             if self.texture.id <= 0:
                 self.texture = None
                 raise RuntimeError("Could not upload reflection occlusion grid")
