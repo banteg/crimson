@@ -15,6 +15,7 @@ from grim.blend import blend_custom, opaque_blend
 from grim.edr import (
     load_float_render_texture,
     load_optional_float_render_texture,
+    reclaim_optional_targets,
     register_optional_reclaimer,
     unregister_optional_reclaimer,
 )
@@ -271,9 +272,9 @@ class MaterialGroundRenderer(GroundRenderer):
         try:
             self._allocate_materials()
         except RuntimeError:
-            if not self.evict_relief_cache():
+            if not (self.evict_relief_cache() or reclaim_optional_targets()):
                 raise
-            # Evict retained optional relief storage and retry required terrain targets once.
+            # Evict optional relief caches (including menu terrain) and retry required terrain targets once.
             self._allocate_materials()
 
     def _allocate_materials(self) -> None:

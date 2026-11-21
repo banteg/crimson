@@ -18,8 +18,6 @@
 #include <vector>
 #include <webgpu/webgpu.h>
 
-void evict_ground_normals();
-
 namespace {
 
 struct Target {
@@ -75,7 +73,6 @@ WGPUTextureFormat float_format() {
                            wgpuDeviceHasFeature(device, WGPUFeatureName_Float32Blendable);
   return full ? WGPUTextureFormat_RGBA32Float : WGPUTextureFormat_RGBA16Float;
 }
-enum { GROUND_DIRTY_GRID = 32 };
 WGPUTextureFormat format_of(const Target &t) {
   return t.flags & TARGET_FLOAT        ? float_format()
          : t.flags & TARGET_HALF_FLOAT ? WGPUTextureFormat_RGBA16Float
@@ -190,9 +187,8 @@ Program effect{&WGSL_EFFECT_VERT, &WGSL_EFFECT_FRAG, DEVICE_VERTICES};
 Program creature_lit{&WGSL_CREATURE_LIT_VERT, &WGSL_CREATURE_FRAG, CENTERED_VERTICES};
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
 Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
-Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_FRAG, DEVICE_VERTICES};
-Program ground_lit_direct{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_DIRECT_FRAG, DEVICE_VERTICES};
-Program ground_normals{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_NORMALS_FRAG, NO_VERTICES};
+// Browser WebGPU samples relief directly (no extra 32 MiB cache whose OOM is async).
+Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_DIRECT_FRAG, DEVICE_VERTICES};
 Program ground_beam_vis{&WGSL_GROUND_VISIBILITY_VERT, &WGSL_GROUND_BEAM_VIS_FRAG, NO_VERTICES};
 Program ground_stamp{&WGSL_CREATURE_VERT, &WGSL_GROUND_STAMP_FRAG, DEVICE_VERTICES};
 Program ground_fill{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_STAMP_FRAG, NO_VERTICES};
@@ -553,7 +549,7 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_lit_direct, &ground_normals, &ground_beam_vis, &ground_stamp, &ground_fill,
+                     &ground_lit, &ground_beam_vis, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program}) {
     for (auto *cache : {&p->groups, &p->vertex_groups}) {
@@ -566,39 +562,20 @@ void forget_groups() {
 
 // --- Targets ----------------------------------------------------------------------
 
-bool try_allocate(Target &t) {
+void allocate(Target &t) {
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
   descriptor.size = {(uint32_t)t.width, (uint32_t)t.height, 1};
   descriptor.format = format_of(t);
   descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst | WGPUTextureUsage_CopySrc |
                      WGPUTextureUsage_RenderAttachment;
   t.texture = wgpuDeviceCreateTexture(device, &descriptor);
-  if (!t.texture) {
-    t = Target{};
-    return false;
-  }
   t.view = wgpuTextureCreateView(t.texture, nullptr);
-  if (!t.view) {
-    wgpuTextureRelease(t.texture);
-    t = Target{};
-    return false;
-  }
   if (t.flags & TARGET_RENDER) {
     // Direct3D's surfaces start black and opaque.
     WGPUColor black = {0, 0, 0, 1};
     begin_pass(t, &black);
     end_pass();
   }
-  return true;
-}
-
-void allocate(Target &t) {
-  // WebGPU reports OOM asynchronously, so submit and destroy optional relief caches
-  // before allocating any required render target; after eviction, stay on direct shading
-  // briefly so continuous window resizes do not thrash terrain-sized relief allocations.
-  if (t.flags & TARGET_RENDER)
-    ::evict_ground_normals();
-  try_allocate(t);
 }
 
 void release(Target &t) {
@@ -607,8 +584,7 @@ void release(Target &t) {
       end_pass();
     // Commands already recorded may still read it: they hold their own reference,
     // so the texture goes once they ran.
-    if (t.view)
-      wgpuTextureViewRelease(t.view);
+    wgpuTextureViewRelease(t.view);
     wgpuTextureRelease(t.texture);
     forget_groups();
   }
@@ -778,7 +754,7 @@ void wgpu_renderer_init() {
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_lit_direct, &ground_normals, &ground_beam_vis, &ground_stamp, &ground_fill,
+                     &ground_lit, &ground_beam_vis, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program})
     create(*p);
@@ -950,273 +926,22 @@ void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
 }
 
 // --- The RTX ground (render/rtx/materials.py), as in renderer.cpp -----------------
-enum NormalsState { NORMALS_NONE, NORMALS_PENDING, NORMALS_READY, NORMALS_FAILED };
-struct NormalsProbe {
-  int ground_id;
-  uint64_t token;
-  int width, height;
-};
 struct Ground {
-  Target substrate, coverage, surface, normals;
+  Target substrate, coverage, surface;
   float epoch = 0;
-  bool normals_dirty = true;
-  bool normals_full = true;
-  NormalsState normals_state = NORMALS_NONE;
-  uint64_t normals_token = 0;
-  int normals_failed_w = 0, normals_failed_h = 0;
-  uint32_t dirty_tiles[GROUND_DIRTY_GRID] = {};
 };
 std::unordered_map<int, Ground> grounds;
-uint64_t next_normals_token = 1;
-int normals_evict_cooldown = 0;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
-
-void evict_ground_normals() {
-  bool any = false;
-  for (const auto &[id, g] : grounds)
-    any |= g.normals.texture != nullptr;
-  // Defer re-probing optional relief while required render targets keep resizing.
-  if (any || normals_evict_cooldown > 0)
-    normals_evict_cooldown = 12;
-  if (!any)
-    return;
-  // Submit earlier draws first so explicitly destroying evicted textures cannot invalidate them.
-  submit();
-  for (auto &[id, g] : grounds) {
-    if (g.normals.texture) {
-      wgpuTextureDestroy(g.normals.texture);
-      release(g.normals);
-      g.normals_state = NORMALS_NONE;
-      g.normals_token = 0;
-    }
-  }
-}
 
 void drop_ground(int id) {
   auto it = grounds.find(id);
   if (it == grounds.end())
     return;
-  if (it->second.substrate.texture || it->second.coverage.texture || it->second.surface.texture ||
-      it->second.normals.texture)
-    submit();
-  for (Target *t : {&it->second.substrate, &it->second.coverage, &it->second.surface, &it->second.normals}) {
-    if (t->texture)
-      wgpuTextureDestroy(t->texture);
-    release(*t);
-  }
+  release(it->second.substrate);
+  release(it->second.coverage);
+  release(it->second.surface);
   grounds.erase(it);
-}
-
-void mark_normals_full(Ground &g) {
-  g.normals_dirty = true;
-  g.normals_full = true;
-  memset(g.dirty_tiles, 0, sizeof g.dirty_tiles);
-}
-
-void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
-  if (!(x1 > x0 && y1 > y0))
-    return;
-  if (g.normals_dirty && g.normals_full)
-    return;
-  float lw = (float)std::max(1, g.surface.logical_width);
-  float lh = (float)std::max(1, g.surface.logical_height);
-  // Reject decals clipped completely off the terrain (D3D vertices shift by +0.5 logical px).
-  if (x1 <= -0.5f || y1 <= -0.5f || x0 >= lw - 0.5f || y0 >= lh - 0.5f)
-    return;
-  int tx0 = std::clamp((int)floorf((x0 - 2.f) * GROUND_DIRTY_GRID / lw), 0, GROUND_DIRTY_GRID - 1);
-  int ty0 = std::clamp((int)floorf((y0 - 2.f) * GROUND_DIRTY_GRID / lh), 0, GROUND_DIRTY_GRID - 1);
-  int tx1 = std::clamp((int)floorf((x1 + 2.f) * GROUND_DIRTY_GRID / lw), 0, GROUND_DIRTY_GRID - 1);
-  int ty1 = std::clamp((int)floorf((y1 + 2.f) * GROUND_DIRTY_GRID / lh), 0, GROUND_DIRTY_GRID - 1);
-  if (tx1 < tx0 || ty1 < ty0)
-    return;
-  uint32_t row_mask = (tx1 - tx0 == GROUND_DIRTY_GRID - 1) ? ~0u : (((1u << (tx1 - tx0 + 1)) - 1u) << tx0);
-  for (int ty = ty0; ty <= ty1; ++ty)
-    g.dirty_tiles[ty] |= row_mask;
-  g.normals_dirty = true;
-  g.normals_full = false;
-}
-
-void mark_normals_geometry(Ground &g, u32 primitive, const unsigned char *vb, u32 vertex_count,
-                           const unsigned short *ib, u32 primitive_count) {
-  if (!vertex_count || (g.normals_dirty && g.normals_full))
-    return;
-  auto vertex_xy = [vb](u32 idx, float &x, float &y) {
-    memcpy(&x, vb + (size_t)idx * 28, sizeof x);
-    memcpy(&y, vb + (size_t)idx * 28 + 4, sizeof y);
-  };
-  auto mark_tri = [&](u32 i0, u32 i1, u32 i2) {
-    if (i0 >= vertex_count || i1 >= vertex_count || i2 >= vertex_count)
-      return;
-    float x0, y0, x1, y1, x2, y2;
-    vertex_xy(i0, x0, y0);
-    vertex_xy(i1, x1, y1);
-    vertex_xy(i2, x2, y2);
-    float min_x = std::min({x0, x1, x2}), min_y = std::min({y0, y1, y2});
-    float max_x = std::max({x0, x1, x2}), max_y = std::max({y0, y1, y2});
-    if (std::isfinite(min_x) && std::isfinite(min_y) && std::isfinite(max_x) && std::isfinite(max_y))
-      mark_normals_rect(g, min_x, min_y, max_x, max_y);
-  };
-  if (primitive == 4) { // D3DPT_TRIANGLELIST
-    for (u32 t = 0; t < primitive_count; ++t) {
-      u32 i0 = ib ? ib[t * 3] : t * 3;
-      u32 i1 = ib ? ib[t * 3 + 1] : t * 3 + 1;
-      u32 i2 = ib ? ib[t * 3 + 2] : t * 3 + 2;
-      mark_tri(i0, i1, i2);
-    }
-    return;
-  }
-  if (primitive == 5) { // D3DPT_TRIANGLESTRIP
-    for (u32 t = 0; t < primitive_count; ++t) {
-      u32 i0 = ib ? ib[t] : t;
-      u32 i1 = ib ? ib[t + 1] : t + 1;
-      u32 i2 = ib ? ib[t + 2] : t + 2;
-      mark_tri(i0, i1, i2);
-    }
-    return;
-  }
-  if (primitive == 6) { // D3DPT_TRIANGLEFAN
-    if (!primitive_count)
-      return;
-    u32 i0 = ib ? ib[0] : 0;
-    for (u32 t = 0; t < primitive_count; ++t) {
-      u32 i1 = ib ? ib[t + 1] : t + 1;
-      u32 i2 = ib ? ib[t + 2] : t + 2;
-      mark_tri(i0, i1, i2);
-    }
-    return;
-  }
-  float min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
-  for (u32 vi = 0; vi < vertex_count; ++vi) {
-    float vx, vy;
-    vertex_xy(vi, vx, vy);
-    min_x = std::min(min_x, vx);
-    min_y = std::min(min_y, vy);
-    max_x = std::max(max_x, vx);
-    max_y = std::max(max_y, vy);
-  }
-  if (std::isfinite(min_x) && std::isfinite(min_y) && std::isfinite(max_x) && std::isfinite(max_y))
-    mark_normals_rect(g, min_x, min_y, max_x, max_y);
-}
-
-void on_normals_error_scope(WGPUPopErrorScopeStatus status, WGPUErrorType type, WGPUStringView,
-                            void *userdata1, void *) {
-  NormalsProbe *probe = (NormalsProbe *)userdata1;
-  int id = probe->ground_id;
-  uint64_t token = probe->token;
-  int w = probe->width, h = probe->height;
-  delete probe;
-  auto it = grounds.find(id);
-  if (it == grounds.end() || it->second.normals_token != token || it->second.normals_state != NORMALS_PENDING)
-    return;
-  Ground &g = it->second;
-  if (status == WGPUPopErrorScopeStatus_Success && type == WGPUErrorType_NoError && g.normals.texture) {
-    g.normals.view = wgpuTextureCreateView(g.normals.texture, nullptr);
-    if (g.normals.view) {
-      g.normals_state = NORMALS_READY;
-      g.normals_failed_w = g.normals_failed_h = 0;
-      mark_normals_full(g);
-      return;
-    }
-  }
-  if (g.normals.texture)
-    wgpuTextureDestroy(g.normals.texture);
-  release(g.normals);
-  g.normals_state = NORMALS_FAILED;
-  g.normals_token = 0;
-  g.normals_failed_w = w;
-  g.normals_failed_h = h;
-}
-
-bool update_ground_normals(int id, Ground &g) {
-  if (g.normals.texture && (g.normals.width != g.surface.width || g.normals.height != g.surface.height)) {
-    release(g.normals);
-    g.normals_state = NORMALS_NONE;
-    g.normals_token = 0;
-  }
-  if (g.normals_state == NORMALS_PENDING)
-    return false;
-  if (g.normals_state != NORMALS_READY || !g.normals.texture || !g.normals.view) {
-    release(g.normals);
-    g.normals_state = NORMALS_NONE;
-    g.normals_token = 0;
-    if (g.normals_failed_w == g.surface.width && g.normals_failed_h == g.surface.height)
-      return false;
-    if (normals_evict_cooldown > 0) {
-      --normals_evict_cooldown;
-      return false;
-    }
-    g.normals.width = g.surface.width;
-    g.normals.height = g.surface.height;
-    g.normals.logical_width = g.surface.logical_width;
-    g.normals.logical_height = g.surface.logical_height;
-    g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
-    WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
-    descriptor.size = {(uint32_t)g.normals.width, (uint32_t)g.normals.height, 1};
-    descriptor.format = format_of(g.normals);
-    descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst | WGPUTextureUsage_CopySrc |
-                       WGPUTextureUsage_RenderAttachment;
-    // Capture OOM via a WebGPU error scope and stay on ground_lit_direct until confirmed valid.
-    wgpuDevicePushErrorScope(device, WGPUErrorFilter_OutOfMemory);
-    g.normals.texture = wgpuDeviceCreateTexture(device, &descriptor);
-    uint64_t token = next_normals_token++;
-    g.normals_token = token;
-    g.normals_state = NORMALS_PENDING;
-    WGPUPopErrorScopeCallbackInfo pop = WGPU_POP_ERROR_SCOPE_CALLBACK_INFO_INIT;
-    pop.mode = WGPUCallbackMode_AllowSpontaneous;
-    pop.callback = on_normals_error_scope;
-    pop.userdata1 = new NormalsProbe{id, token, g.surface.width, g.surface.height};
-    wgpuDevicePopErrorScope(device, pop);
-    return false;
-  }
-  if (!g.normals_dirty)
-    return true;
-  int dirty_count = 0;
-  for (uint32_t row : g.dirty_tiles)
-    dirty_count += __builtin_popcount(row);
-  bool full = g.normals_full || dirty_count * 2 >= GROUND_DIRTY_GRID * GROUND_DIRTY_GRID;
-  if (!full && dirty_count == 0) {
-    g.normals_dirty = false;
-    return true;
-  }
-  pass_into(g.normals);
-  Output o;
-  o.format = format_of(g.normals);
-  wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_normals, o));
-  bind(ground_normals,
-       fragment_group(ground_normals, {{"u_surface_tex", g.surface.view, linear_clamp()},
-                                       {"u_material_tex", g.coverage.view, linear_clamp()}}),
-       nullptr, nullptr);
-  if (full) {
-    wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
-  } else {
-    int w = g.normals.width, h = g.normals.height;
-    for (int ty = 0; ty < GROUND_DIRTY_GRID; ++ty) {
-      uint32_t row = g.dirty_tiles[ty];
-      if (!row)
-        continue;
-      int py0 = ty * h / GROUND_DIRTY_GRID;
-      int py1 = ((ty + 1) * h + GROUND_DIRTY_GRID - 1) / GROUND_DIRTY_GRID;
-      for (int tx = 0; tx < GROUND_DIRTY_GRID; ) {
-        if (!(row & (1u << tx))) {
-          ++tx;
-          continue;
-        }
-        int tx0 = tx;
-        while (tx < GROUND_DIRTY_GRID && (row & (1u << tx)))
-          ++tx;
-        int px0 = tx0 * w / GROUND_DIRTY_GRID;
-        int px1 = (tx * w + GROUND_DIRTY_GRID - 1) / GROUND_DIRTY_GRID;
-        wgpuRenderPassEncoderSetScissorRect(pass, (uint32_t)px0, (uint32_t)py0,
-                                            (uint32_t)(px1 - px0), (uint32_t)(py1 - py0));
-        wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
-      }
-    }
-  }
-  end_pass();
-  g.normals_dirty = g.normals_full = false;
-  memset(g.dirty_tiles, 0, sizeof g.dirty_tiles);
-  return true;
 }
 
 // A ground pass over a whole companion: the stamp shader's `kind` and `pass`
@@ -1248,7 +973,6 @@ Ground &ground_of(int id) {
   begin_pass(g.coverage, &none);
   begin_pass(g.surface, &terrain);
   fill_ground(g.surface, g.substrate.view, 0, 0, 0, Output{});
-  mark_normals_full(g);
   return g;
 }
 
@@ -1259,8 +983,7 @@ void rebase_wetness(Ground &g, float epoch) {
   g.epoch = epoch;
 }
 
-void stamp_ground(Ground &g, int kind, const Geometry &geometry, u32 primitive, const unsigned char *vb,
-                  u32 vertex_count, const unsigned short *ib, u32 primitive_count) {
+void stamp_ground(Ground &g, int kind, const Geometry &geometry) {
   if (ground_seconds - g.epoch > 180)
     rebase_wetness(g, ground_seconds);
   auto it = textures.find(bound[0]);
@@ -1296,7 +1019,6 @@ void stamp_ground(Ground &g, int kind, const Geometry &geometry, u32 primitive, 
     bind(ground_stamp, fragment_group(ground_stamp, {atlas}), &vertex, &fragment);
     draw_geometry(geometry);
   }
-  mark_normals_geometry(g, primitive, vb, vertex_count, ib, primitive_count);
 }
 
 // Vertices the host makes, in the device's layout (x, y, z, rhw, D3DCOLOR, u, v).
@@ -1396,10 +1118,11 @@ bool ground_draw(const Geometry &geometry) {
     return false;
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
-  bool has_normals = update_ground_normals(bound[0], g);
+  if (visibility_dirty)
+    prepare_ground_visibility(t.logical_width, t.logical_height);
+  upload_ground_tiles();
   pass_into(t);
-  Program &prog = has_normals ? ground_lit : ground_lit_direct;
-  Uniforms vertex(*prog.vert), fragment(*prog.frag);
+  Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
   fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", scene_debug < DEBUG_SMOKE ? scene_debug : 0);
   fragment.i("u_debug_display", 1);
@@ -1411,28 +1134,18 @@ bool ground_draw(const Geometry &geometry) {
   fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
   fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
   fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_beam_shape", beam_shape, light_count * 16);
-  WGPUBindGroup group =
-      has_normals
-          ? fragment_group(prog, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
-                                  {"u_surface_tex", g.surface.view, linear_clamp()},
-                                  {"u_material_tex", g.coverage.view, linear_clamp()},
-                                  {"u_normal_tex", g.normals.view, linear_clamp()},
-                                  {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
-                                   linear_clamp()},
-                                  {"u_light_tiles", ground_tiles.width ? ground_tile_texture.view : blank_view,
-                                   nearest_clamp()}})
-          : fragment_group(prog, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
-                                  {"u_surface_tex", g.surface.view, linear_clamp()},
-                                  {"u_material_tex", g.coverage.view, linear_clamp()},
-                                  {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
-                                   linear_clamp()},
-                                  {"u_light_tiles", ground_tiles.width ? ground_tile_texture.view : blank_view,
-                                   nearest_clamp()}});
+  WGPUBindGroup group = fragment_group(ground_lit, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
+                                                    {"u_surface_tex", g.surface.view, linear_clamp()},
+                                                    {"u_material_tex", g.coverage.view, linear_clamp()},
+                                                    {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
+                                                     linear_clamp()},
+                                                    {"u_light_tiles", ground_tiles.width ? ground_tile_texture.view : blank_view,
+                                                     nearest_clamp()}});
   ground_tiles_sampled |= ground_tiles.width > 0;
   Output o = device_output(t, geometry.topology);
   o.blend = false; // the ground is opaque
-  wgpuRenderPassEncoderSetPipeline(pass, pipeline(prog, o));
-  bind(prog, group, &vertex, &fragment);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_lit, o));
+  bind(ground_lit, group, &vertex, &fragment);
   draw_geometry(geometry);
   return true;
 }
@@ -1489,7 +1202,6 @@ bool wgpu_renderer_set_rtx(bool enabled) {
   // Classic bakes leave the ground's companions behind: RTX makes them afresh.
   while (!grounds.empty())
     drop_ground(grounds.begin()->first);
-  normals_evict_cooldown = 0;
   release_smoke();
   release(heat_trail);
   release(beam_vis);
@@ -1569,7 +1281,6 @@ u32 wgpu_w2c_host_texture_bytes(struct w2c_host *, u32 id) {
   uint64_t size = bytes(texture->second);
   if (auto it = grounds.find((int)id); it != grounds.end()) {
     const Ground &g = it->second;
-    // Cached normals are not copied by wgpu_w2c_host_texture_copy, so exclude them from copy-size budgeting.
     size += bytes(g.substrate) + bytes(g.coverage) + bytes(g.surface);
   }
   return (u32)std::min<uint64_t>(size, UINT32_MAX);
@@ -1590,9 +1301,6 @@ void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) 
     copy_target(to.substrate, g.substrate);
     copy_target(to.coverage, g.coverage);
     copy_target(to.surface, g.surface);
-    // Keep any existing relief allocation on the destination (e.g., live terrain
-    // restored on a replay seek) and mark it dirty for lazy rebake.
-    mark_normals_full(to);
     to.epoch = g.epoch;
   }
 }
@@ -1712,33 +1420,24 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   geometry.vertex_bytes = (uint64_t)vertex_count * 28;
   geometry.index_bytes = index_data ? (uint64_t)index_count * 2 : 0;
   geometry.index_count = index_count;
-  Target &t = drawing_target(current_target);
-  // Run ground setup (companions, late visibility atlas, light tiles) before checking stream
-  // space or staging geometry so relief eviction or tile submits cannot reset staged offsets.
-  bool ground_pass = rtx && world && material == HOST_PASS_GROUND;
-  if (ground_pass) {
-    auto ground_it = textures.find(bound[0]);
-    if (bound[0] && ground_it != textures.end() && (ground_it->second.flags & TARGET_RENDER)) {
-      ground_of(bound[0]);
-      if (visibility_dirty)
-        prepare_ground_visibility(t.logical_width, t.logical_height);
-      upload_ground_tiles();
-    }
-  }
-  // A marked decal reaches the ground's companions too: the substrate unless it
-  // is blood, the materials if it has one. They start from the terrain before it.
-  bool marked = rtx && ground_kind != HOST_GROUND_END && current_target && (t.flags & TARGET_RENDER);
-  Ground *g = marked ? &ground_of(current_target) : nullptr;
   // Room for the draw and what a marked decal adds: its substrate, stamps, and the companions' first passes.
   uint64_t uniforms = 8 * (ground_lit.frag->uniform_size + ground_lit.vert->uniform_size + 512);
+  // A late scene or body grid rebuilds the atlas in the ground's draw, after its geometry is in the streams.
+  if (rtx && world && material == HOST_PASS_GROUND && visibility_dirty)
+    uniforms += visibility_uniforms(MAX_LIGHTS / 4);
   if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 24) || !fits(index_stream, geometry.index_bytes + 3) ||
       !fits(uniform_stream, uniforms))
     submit();
 
+  Target &t = drawing_target(current_target);
+  // A marked decal reaches the ground's companions too: the substrate unless it
+  // is blood, the materials if it has one. They start from the terrain before it.
+  bool marked = rtx && ground_kind != HOST_GROUND_END && current_target && (t.flags & TARGET_RENDER);
+  Ground *g = marked ? &ground_of(current_target) : nullptr;
   geometry.vertex_at = put(vertex_stream, client_memory() + vertices, geometry.vertex_bytes);
   if (index_data)
     geometry.index_at = put(index_stream, index_data, geometry.index_bytes);
-  if (ground_pass && ground_draw(geometry))
+  if (rtx && world && material == HOST_PASS_GROUND && ground_draw(geometry))
     return;
 
   pass_into(t);
@@ -1811,11 +1510,8 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     bind_classic(g->substrate, geometry.topology);
     draw_geometry(geometry);
   }
-  if (ground_kind != HOST_GROUND_DECAL) {
-    const unsigned short *orig_indices = indices ? (const unsigned short *)(client_memory() + indices) : nullptr;
-    stamp_ground(*g, ground_kind, geometry, primitive, client_memory() + vertices, vertex_count, orig_indices,
-                 primitive_count);
-  }
+  if (ground_kind != HOST_GROUND_DECAL)
+    stamp_ground(*g, ground_kind, geometry);
 }
 void wgpu_w2c_host_circle(struct w2c_host *, u32 shape, u32 color) {
   EffectVertex vertices[4];

@@ -1766,5 +1766,31 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
                 assert fallback_ground.normals is None
             finally:
                 rl.unload_render_texture(hdr_target)
+
+            # Starting a new terrain allocation reclaims another renderer's optional relief cache before failing.
+            fallback_ground.normals_failed_size = None
+            fallback_ground.normals_dirty = True
+            fallback_ground.normals_full = True
+            assert fallback_ground._ensure_normals() is not None
+            run_ground = MaterialGroundRenderer(fallback_texture, fallback_texture, fallback_texture, width=64, height=64)
+            real_load_rt = rl.load_render_texture
+            terrain_retry_calls = 0
+
+            def fail_rt_until_menu_relief_evicted(w: int, h: int):
+                nonlocal terrain_retry_calls
+                if fallback_ground.normals is not None:
+                    terrain_retry_calls += 1
+                    return rl.RenderTexture(0, rl.Texture(0, 0, 0, 0, 0), rl.Texture(0, 0, 0, 0, 0))
+                return real_load_rt(w, h)
+
+            try:
+                with patch.object(rl, "load_render_texture", side_effect=fail_rt_until_menu_relief_evicted):
+                    run_ground.schedule_stamps(layers, texture_scale=1.0)
+                    run_ground.process_pending()
+                assert terrain_retry_calls == 1
+                assert not run_ground.texture_failed and run_ground.render_target_ready()
+                assert fallback_ground.normals is None
+            finally:
+                run_ground.close()
         finally:
             smoke.close()
