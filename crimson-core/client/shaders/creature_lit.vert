@@ -49,13 +49,13 @@ void main() {
         dist = dot(world - c10, world - c10);
         if (dist < best) { corner_wp = c10; }
     }
-    lightVisibility0 = cornerVisibilities(0, corner_wp, owner);
-    lightVisibility1 = cornerVisibilities(1, corner_wp, owner);
-    lightVisibility2 = cornerVisibilities(2, corner_wp, owner);
-    lightVisibility3 = cornerVisibilities(3, corner_wp, owner);
-    lightVisibility4 = cornerVisibilities(4, corner_wp, owner);
-    lightVisibility5 = cornerVisibilities(5, corner_wp, owner);
-    lightVisibility6 = cornerVisibilities(6, corner_wp, owner);
-    lightVisibility7 = cornerVisibilities(7, corner_wp, owner);
+    lightVisibility0 = cornerVisibilities(0, world, corner_wp, owner);
+    lightVisibility1 = cornerVisibilities(1, world, corner_wp, owner);
+    lightVisibility2 = cornerVisibilities(2, world, corner_wp, owner);
+    lightVisibility3 = cornerVisibilities(3, world, corner_wp, owner);
+    lightVisibility4 = cornerVisibilities(4, world, corner_wp, owner);
+    lightVisibility5 = cornerVisibilities(5, world, corner_wp, owner);
+    lightVisibility6 = cornerVisibilities(6, world, corner_wp, owner);
+    lightVisibility7 = cornerVisibilities(7, world, corner_wp, owner);
     fillSpecVisibilities(corner_wp, owner, quadRadius(d00, d01), specVisibility0, specVisibility1, specVisibility2);
 }

@@ -44,14 +44,14 @@ bool needsSeparateSpecVis(int i, vec2 owner, float quad_radius) {
     return length(nearest - owner) - quad_radius < u_response[i].z;
 }
 
-float cornerVisibility(int i, vec2 wp, vec2 owner) {
+float cornerVisibility(int i, vec2 wp, vec2 spec_wp, vec2 owner) {
     if (i >= u_count || u_dynamic_shadows == 0) return 1.;
     if (u_response[i].x <= 0. && u_response[i].y <= 0.) return 1.;
     bool ring = u_rgb[i].w > 0.;
     bool continuous = !ring && u_beam_shape[i].w > 0.;
     // Reflection-only continuous beams skip diffuse in creature.frag, so lightVisibility(i) carries their
-    // corner-interpolated specular visibility directly (matching cornerSpecVisibility with zero pop on budget drop).
-    if (continuous && u_response[i].x <= 0.) return cornerSpecVisibility(i, wp, owner);
+    // corner-interpolated specular visibility using spec_wp (matching fillSpecVisibilities and overflowSpecVisibility).
+    if (continuous && u_response[i].x <= 0.) return cornerSpecVisibility(i, spec_wp, owner);
     // Match beamFrame's +X fallback when a continuous beam has a zero or near-zero direction.
     vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : (continuous ? vec2(1., 0.) : vec2(0.));
     float half_length = u_dir[i].w * .5;
@@ -102,8 +102,8 @@ void fillSpecVisibilities(vec2 wp, vec2 owner, float quad_radius, out vec4 s0, o
     }
 }
 
-vec4 cornerVisibilities(int group, vec2 wp, vec2 owner) {
+vec4 cornerVisibilities(int group, vec2 wp, vec2 spec_wp, vec2 owner) {
     int first = group * 4;
-    return vec4(cornerVisibility(first, wp, owner), cornerVisibility(first + 1, wp, owner),
-                cornerVisibility(first + 2, wp, owner), cornerVisibility(first + 3, wp, owner));
+    return vec4(cornerVisibility(first, wp, spec_wp, owner), cornerVisibility(first + 1, wp, spec_wp, owner),
+                cornerVisibility(first + 2, wp, spec_wp, owner), cornerVisibility(first + 3, wp, spec_wp, owner));
 }
