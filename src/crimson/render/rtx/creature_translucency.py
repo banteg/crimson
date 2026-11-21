@@ -1,11 +1,26 @@
 """Atlas-local body proxies for artistic transmission and Monster Vision heat, and the freeze ice's surface."""
 
 from importlib.resources import files
+from typing import Any
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 from grim.assets import upload_texture
 from grim.raylib_api import rl
+
+_NP: Any = ...
+
+
+def _numpy() -> Any:
+    global _NP
+    if _NP is ...:
+        try:
+            import numpy as np
+        except ImportError:
+            _NP = None
+        else:
+            _NP = np
+    return _NP
 
 
 def _cell_size(alpha: Image.Image) -> tuple[int, int]:
@@ -117,22 +132,94 @@ def _build_opaque_interior_mask(alpha: Image.Image, cell_width: int, cell_height
     return ImageChops.darker(hv, interior)
 
 
-def build_creature_surface_map(rgba: Image.Image) -> Image.Image:
-    """Pack per-cell thickness (R), alpha-aware luminance gradient (GB), and 5x5 opaque interior mask (A)."""
-    if rgba.mode != "RGBA":
-        rgba = rgba.convert("RGBA")
+def _build_creature_surface_map_numpy(rgba: Image.Image, thickness_img: Image.Image, np: Any) -> Image.Image:
     width, height = rgba.size
-    if width <= 0 or height <= 0 or width % 8 or height % 8:
-        raise ValueError("Creature surface map requires an RGBA image with an 8x8 cell grid")
+    cell_width, cell_height = width // 8, height // 8
+    thickness = np.frombuffer(thickness_img.tobytes(), dtype=np.uint8).reshape(height, width)
+    arr = np.frombuffer(rgba.tobytes(), dtype=np.uint8).reshape(height, width, 4)
+    a = arr[:, :, 3]
+    luma = np.where(
+        a > 0,
+        299 * arr[:, :, 0].astype(np.int32) + 587 * arr[:, :, 1].astype(np.int32) + 114 * arr[:, :, 2].astype(np.int32),
+        0,
+    )
+
+    def encode_grad(diff: Any) -> Any:
+        scaled = diff * 254
+        q = np.where(scaled >= 0, (scaled + 255000) // 510000, -((-scaled + 255000) // 510000))
+        return np.clip(128 + q, 1, 255).astype(np.uint8)
+
+    cells_a = (a > 0).reshape(8, cell_height, 8, cell_width)
+    cells_l = luma.reshape(8, cell_height, 8, cell_width)
+    left_a = np.concatenate((cells_a[:, :, :, :1], cells_a[:, :, :, :-1]), axis=3)
+    right_a = np.concatenate((cells_a[:, :, :, 1:], cells_a[:, :, :, -1:]), axis=3)
+    up_a = np.concatenate((cells_a[:, :1, :, :], cells_a[:, :-1, :, :]), axis=1)
+    down_a = np.concatenate((cells_a[:, 1:, :, :], cells_a[:, -1:, :, :]), axis=1)
+    left_l = np.where(left_a, np.concatenate((cells_l[:, :, :, :1], cells_l[:, :, :, :-1]), axis=3), cells_l)
+    right_l = np.where(right_a, np.concatenate((cells_l[:, :, :, 1:], cells_l[:, :, :, -1:]), axis=3), cells_l)
+    up_l = np.where(up_a, np.concatenate((cells_l[:, :1, :, :], cells_l[:, :-1, :, :]), axis=1), cells_l)
+    down_l = np.where(down_a, np.concatenate((cells_l[:, 1:, :, :], cells_l[:, -1:, :, :]), axis=1), cells_l)
+    gx_cells = np.where(cells_a, encode_grad(right_l - left_l), np.uint8(128))
+    gy_cells = np.where(cells_a, encode_grad(down_l - up_l), np.uint8(128))
+
+    # 1-ring in-cell 3x3 average of opaque gradients into adjacent transparent texels.
+    padded_a = np.pad(cells_a, ((0, 0), (1, 1), (0, 0), (1, 1)), constant_values=False)
+    padded_gx = np.pad(gx_cells.astype(np.int32) * cells_a, ((0, 0), (1, 1), (0, 0), (1, 1)), constant_values=0)
+    padded_gy = np.pad(gy_cells.astype(np.int32) * cells_a, ((0, 0), (1, 1), (0, 0), (1, 1)), constant_values=0)
+    sum_n = np.zeros((8, cell_height, 8, cell_width), dtype=np.int32)
+    sum_gx = np.zeros((8, cell_height, 8, cell_width), dtype=np.int32)
+    sum_gy = np.zeros((8, cell_height, 8, cell_width), dtype=np.int32)
+    for dy in range(3):
+        ys = slice(dy, dy + cell_height)
+        for dx in range(3):
+            xs = slice(dx, dx + cell_width)
+            sum_n += padded_a[:, ys, :, xs]
+            sum_gx += padded_gx[:, ys, :, xs]
+            sum_gy += padded_gy[:, ys, :, xs]
+    has_neighbor = (~cells_a) & (sum_n > 0)
+    safe_n = np.where(sum_n > 0, sum_n, 1)
+    gx_out = np.where(has_neighbor, (sum_gx + safe_n // 2) // safe_n, gx_cells).astype(np.uint8)
+    gy_out = np.where(has_neighbor, (sum_gy + safe_n // 2) // safe_n, gy_cells).astype(np.uint8)
+
+    opaque_interior = np.zeros((8, cell_height, 8, cell_width), dtype=np.uint8)
+    if cell_width >= 5 and cell_height >= 5:
+        cells_full = (a == 255).reshape(8, cell_height, 8, cell_width)
+        h_ok = (
+            cells_full[:, :, :, 0 : cell_width - 4]
+            & cells_full[:, :, :, 1 : cell_width - 3]
+            & cells_full[:, :, :, 2 : cell_width - 2]
+            & cells_full[:, :, :, 3 : cell_width - 1]
+            & cells_full[:, :, :, 4:cell_width]
+        )
+        hv_ok = (
+            h_ok[:, 0 : cell_height - 4, :, :]
+            & h_ok[:, 1 : cell_height - 3, :, :]
+            & h_ok[:, 2 : cell_height - 2, :, :]
+            & h_ok[:, 3 : cell_height - 1, :, :]
+            & h_ok[:, 4:cell_height, :, :]
+        )
+        opaque_interior[:, 2 : cell_height - 2, :, 2 : cell_width - 2] = np.where(hv_ok, 255, 0).astype(np.uint8)
+
+    packed = np.stack(
+        (thickness, gx_out.reshape(height, width), gy_out.reshape(height, width), opaque_interior.reshape(height, width)),
+        axis=-1,
+    )
+    return Image.frombytes("RGBA", (width, height), packed.tobytes())
+
+
+def _build_creature_surface_map_python(rgba: Image.Image, thickness_img: Image.Image) -> Image.Image:
+    width, height = rgba.size
     cell_width, cell_height = width // 8, height // 8
     r_ch, g_ch, b_ch, a_ch = rgba.split()
-    thickness_img = build_thickness_proxy(a_ch)
     opaque_img = _build_opaque_interior_mask(a_ch, cell_width, cell_height)
     ab = a_ch.tobytes()
-    luma = [
-        299 * r + 587 * g + 114 * b if a else 0
-        for r, g, b, a in zip(r_ch.tobytes(), g_ch.tobytes(), b_ch.tobytes(), ab, strict=True)
-    ]
+    # Skip transparent interior pixels (~80%+ of creature atlases) via PIL's C 3x3 max filter.
+    near_opaque = a_ch.filter(ImageFilter.MaxFilter(3)).tobytes()
+    rb, gb, bb = r_ch.tobytes(), g_ch.tobytes(), b_ch.tobytes()
+    luma = [0] * (width * height)
+    for idx, a in enumerate(ab):
+        if a:
+            luma[idx] = 299 * rb[idx] + 587 * gb[idx] + 114 * bb[idx]
     gx = bytearray([128]) * (width * height)
     gy = bytearray([128]) * (width * height)
     for cy in range(8):
@@ -174,7 +261,7 @@ def build_creature_surface_map(rgba: Image.Image) -> Image.Image:
                 x1 = x0 + cell_width - 1
                 for x in range(x0, x1 + 1):
                     idx = row_off + x
-                    if ab[idx]:
+                    if ab[idx] or not near_opaque[idx]:
                         continue
                     nx0 = x - 1 if x > x0 else x0
                     nx1 = x + 1 if x < x1 else x1
@@ -193,6 +280,20 @@ def build_creature_surface_map(rgba: Image.Image) -> Image.Image:
     gx_img = Image.frombytes("L", (width, height), bytes(gx_out))
     gy_img = Image.frombytes("L", (width, height), bytes(gy_out))
     return Image.merge("RGBA", (thickness_img, gx_img, gy_img, opaque_img))
+
+
+def build_creature_surface_map(rgba: Image.Image) -> Image.Image:
+    """Pack per-cell thickness (R), alpha-aware luminance gradient (GB), and 5x5 opaque interior mask (A)."""
+    if rgba.mode != "RGBA":
+        rgba = rgba.convert("RGBA")
+    width, height = rgba.size
+    if width <= 0 or height <= 0 or width % 8 or height % 8:
+        raise ValueError("Creature surface map requires an RGBA image with an 8x8 cell grid")
+    thickness_img = build_thickness_proxy(rgba.getchannel("A"))
+    np = _numpy()
+    if np is not None:
+        return _build_creature_surface_map_numpy(rgba, thickness_img, np)
+    return _build_creature_surface_map_python(rgba, thickness_img)
 
 
 def _source_rgba(source: rl.Texture) -> Image.Image:

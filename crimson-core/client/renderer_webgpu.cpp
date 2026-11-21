@@ -718,6 +718,8 @@ WGPUTextureView shape_map(int id, bool heat = false) {
   if ((!light_count && !heat && !creature_has_ambient_material(creature_type)) || t == textures.end() || texels == texel_addresses.end())
     return fallback;
   int width = t->second.logical_width, height = t->second.logical_height;
+  if (width <= 0 || height <= 0 || width % 8 != 0 || height % 8 != 0)
+    return fallback;
   const auto *pixels = client_memory() + texels->second;
   std::vector<unsigned char> data =
       heat ? renderer_heat_density(pixels, width, height) : renderer_creature_surface(pixels, width, height);

@@ -29,6 +29,8 @@ unsigned char high(unsigned char a, unsigned char b) { return std::max(a, b); }
 } // namespace
 
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height) {
+  if (width <= 0 || height <= 0 || width % 8 != 0 || height % 8 != 0)
+    return {};
   int cell_width = width / 8, cell_height = height / 8;
   Plane interior((size_t)width * height, 255), mask((size_t)width * height);
   for (int y = 0; y < height; ++y)
@@ -86,6 +88,8 @@ Plane blur_cells(const Plane &plane, int width, int height, int radius) {
 // opaque gradients so bilinear filtering at silhouettes never bleeds black background cliffs),
 // A = 255 iff every texel in the 5x5 neighborhood is opaque (alpha == 255) strictly inside its 8x8 cell.
 std::vector<unsigned char> renderer_creature_surface(const unsigned char *bgra, int width, int height) {
+  if (width <= 0 || height <= 0 || width % 8 != 0 || height % 8 != 0)
+    return {};
   int cell_width = width / 8, cell_height = height / 8;
   Plane thickness = renderer_thickness(bgra, width, height);
   size_t count = (size_t)width * height;
@@ -171,6 +175,8 @@ std::vector<unsigned char> renderer_creature_surface(const unsigned char *bgra, 
 // cell-local 5x5 alpha blurs, preserving fractional coverage. A pose's part
 // sizes can jump by an entire square-opening level; density changes smoothly.
 std::vector<unsigned char> renderer_heat_density(const unsigned char *bgra, int width, int height) {
+  if (width <= 0 || height <= 0 || width % 8 != 0 || height % 8 != 0)
+    return {};
   Plane alpha((size_t)width * height);
   for (size_t i = 0; i < alpha.size(); ++i)
     alpha[i] = bgra[i * 4 + 3];

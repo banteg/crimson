@@ -52,7 +52,11 @@ def test_native_heat_density_matches_python_byte_for_byte(native_density, size: 
 
 
 @pytest.mark.parametrize("size", [(16, 24), (64, 64), (512, 512)])
-def test_native_creature_surface_matches_python_byte_for_byte(native_density, size: tuple[int, int]) -> None:
+def test_native_creature_surface_matches_python_byte_for_byte(
+    native_density, monkeypatch, size: tuple[int, int],
+) -> None:
+    from crimson.render.rtx import creature_translucency
+
     _, surface = native_density
     w, h = size
     rng = np.random.default_rng(814)
@@ -63,4 +67,8 @@ def test_native_creature_surface_matches_python_byte_for_byte(native_density, si
     bgra = np.ascontiguousarray(rgba[:, :, [2, 1, 0, 3]])
     output = ctypes.create_string_buffer(w * h * 4)
     surface(bgra.tobytes(), w, h, output)
-    assert output.raw == build_creature_surface_map(Image.fromarray(rgba, mode="RGBA")).tobytes()
+    img = Image.fromarray(rgba, mode="RGBA")
+    assert output.raw == build_creature_surface_map(img).tobytes()
+    if w <= 64:
+        monkeypatch.setattr(creature_translucency, "_NP", None)
+        assert output.raw == build_creature_surface_map(img).tobytes()
