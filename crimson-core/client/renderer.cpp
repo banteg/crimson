@@ -859,24 +859,41 @@ void bind_framebuffer(const Target &t) {
 
 Target spare_ground_normals;
 int spare_ground_normals_id = 0;
+int spare_normals_failed_w = 0, spare_normals_failed_h = 0;
 
 void stash_spare_normals(int id, int width, int height) {
   auto it = grounds.find(id);
-  if (it == grounds.end() || !it->second.normals.texture ||
-      it->second.normals.width != width || it->second.normals.height != height)
+  if (it == grounds.end())
     return;
-  release(spare_ground_normals);
-  spare_ground_normals = it->second.normals;
-  spare_ground_normals_id = id;
-  it->second.normals = {};
+  if (it->second.normals.texture &&
+      it->second.normals.width == width && it->second.normals.height == height) {
+    release(spare_ground_normals);
+    spare_ground_normals = it->second.normals;
+    spare_ground_normals_id = id;
+    spare_normals_failed_w = spare_normals_failed_h = 0;
+    it->second.normals = {};
+  } else if (it->second.normals_failed_w == width && it->second.normals_failed_h == height) {
+    release(spare_ground_normals);
+    spare_ground_normals_id = id;
+    spare_normals_failed_w = width;
+    spare_normals_failed_h = height;
+  }
 }
 
 void adopt_spare_normals(int id, Ground &g) {
-  if (!g.normals.texture && spare_ground_normals.texture && spare_ground_normals_id == id &&
+  if (spare_ground_normals_id != id)
+    return;
+  if (!g.normals.texture && spare_ground_normals.texture &&
       spare_ground_normals.width == g.surface.width && spare_ground_normals.height == g.surface.height) {
     g.normals = spare_ground_normals;
     spare_ground_normals = {};
     spare_ground_normals_id = 0;
+    spare_normals_failed_w = spare_normals_failed_h = 0;
+  } else if (spare_normals_failed_w == g.surface.width && spare_normals_failed_h == g.surface.height) {
+    g.normals_failed_w = spare_normals_failed_w;
+    g.normals_failed_h = spare_normals_failed_h;
+    spare_ground_normals_id = 0;
+    spare_normals_failed_w = spare_normals_failed_h = 0;
   }
 }
 
@@ -884,13 +901,19 @@ void release_spare_normals(int id = 0) {
   if (!id || spare_ground_normals_id == id) {
     release(spare_ground_normals);
     spare_ground_normals_id = 0;
+    spare_normals_failed_w = spare_normals_failed_h = 0;
   }
 }
 
 bool evict_ground_normals() {
   bool freed = false;
   if (spare_ground_normals.texture || spare_ground_normals.framebuffer) {
-    release_spare_normals();
+    int failed_w = spare_ground_normals.width, failed_h = spare_ground_normals.height;
+    int id = spare_ground_normals_id;
+    release(spare_ground_normals);
+    spare_ground_normals_id = id;
+    spare_normals_failed_w = failed_w;
+    spare_normals_failed_h = failed_h;
     freed = true;
   }
   for (auto &[id, g] : grounds) {
@@ -1208,10 +1231,13 @@ void prepare_ground_visibility(int view_width, int view_height) {
   if (!beam_vis.framebuffer || beam_vis_width != v.width || beam_vis_height != v.height) {
     release(beam_vis);
     beam_vis_width = beam_vis_height = 0;
-    beam_vis.width = beam_vis.logical_width = 4 * v.width;
-    beam_vis.height = beam_vis.logical_height = BEAM_VISIBILITY_ROWS * v.height;
-    beam_vis.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
-    if (!try_allocate(beam_vis) && (!evict_ground_normals() || !try_allocate(beam_vis))) {
+    auto alloc_vis = [&]() {
+      beam_vis.width = beam_vis.logical_width = 4 * v.width;
+      beam_vis.height = beam_vis.logical_height = BEAM_VISIBILITY_ROWS * v.height;
+      beam_vis.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+      return try_allocate(beam_vis);
+    };
+    if (!alloc_vis() && (!evict_ground_normals() || !alloc_vis())) {
       beam_vis = {};
       ground_visibility = {};
       bind_target();
