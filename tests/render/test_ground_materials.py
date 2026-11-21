@@ -1419,7 +1419,8 @@ def test_baked_ground_normals_reuse_across_frames_and_update_on_decals(ground_ma
     ground._ensure_normals()
     assert not ground.normals_dirty and not any(ground.normals_dirty_tiles)
     ground.reset_materials()
-    assert ground.normals is None and ground.normals_dirty and ground.normals_full
+    assert ground.normals is not None and ground.normals.id == normals_id
+    assert ground.normals_dirty and ground.normals_full
 
 
 @pytest.mark.parametrize("texture_scale", [1.0, 4.0])
@@ -1569,3 +1570,46 @@ def test_off_terrain_stamp_does_not_dirty_ground_relief(ground_material) -> None
     ground._stamp_commands(list(ground._commands(batch, texture, texture)))
     assert not ground.normals_dirty
     assert all(row == 0 for row in ground.normals_dirty_tiles)
+
+
+def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_material) -> None:
+    ground, texture = ground_material
+    uniform_deep_film(ground, texture)
+    cached_sub = debug_pixels(ground, texture, mode=1)
+    cached_fluid = debug_pixels(ground, texture, mode=2)
+    assert ground.normals is not None
+    normals_id = int(ground.normals.id)
+
+    # Resetting materials (as replay seeks do) retains the relief target and marks it dirty.
+    ground.reset_materials()
+    assert ground.normals is not None and int(ground.normals.id) == normals_id
+    assert ground.normals_dirty and ground.normals_full
+    uniform_deep_film(ground, texture)
+    assert debug_pixels(ground, texture, mode=1) == cached_sub
+    assert ground.normals is not None and int(ground.normals.id) == normals_id
+
+    # If the optional relief target cannot be allocated, ground.frag falls back cleanly.
+    with (
+        _ground_material() as (fallback_ground, fallback_texture),
+        patch.object(ground_materials, "load_float_render_texture") as loader,
+    ):
+        real_loader = load_float_render_texture
+
+        def fail_half_float(
+            width: int,
+            height: int,
+            *,
+            pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+        ):
+            if pixel_format == rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16:
+                raise RuntimeError("simulated VRAM exhaustion")
+            return real_loader(width, height, pixel_format=pixel_format)
+
+        loader.side_effect = fail_half_float
+        uniform_deep_film(fallback_ground, fallback_texture)
+        fallback_sub = debug_pixels(fallback_ground, fallback_texture, mode=1)
+        fallback_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2)
+        assert fallback_ground.normals is None
+        assert fallback_ground.normals_failed_size is not None
+    assert fallback_sub == pytest.approx(cached_sub, abs=0.005)
+    assert fallback_fluid == pytest.approx(cached_fluid, abs=0.005)

@@ -165,18 +165,21 @@ class MaterialGroundRenderer(GroundRenderer):
     surface: rl.RenderTexture | None = None
     coverage: rl.RenderTexture | None = None
     normals: rl.RenderTexture | None = None
+    normals_failed_size: tuple[int, int] | None = None
     normals_dirty: bool = True
     normals_full: bool = True
     normals_dirty_tiles: list[int] = msgspec.field(default_factory=lambda: [0] * _NORMAL_DIRTY_GRID)
     substrate: GroundRenderer | None = None
     stamp_shader: rl.Shader | None = None
     material_shader: rl.Shader | None = None
+    fallback_material_shader: rl.Shader | None = None
     normals_shader: rl.Shader | None = None
     normals_locations: dict[str, int] = msgspec.field(default_factory=dict)
     wetness_epoch: float = 0.0
     stamp_locations: dict[str, int] = msgspec.field(default_factory=dict)
 
     material_locations: dict[str, int] = msgspec.field(default_factory=dict)
+    fallback_material_locations: dict[str, int] = msgspec.field(default_factory=dict)
     beam_shader: rl.Shader | None = None
     beam_locations: dict[str, int] = msgspec.field(default_factory=dict)
     beam_atlas: rl.RenderTexture | None = None
@@ -190,24 +193,39 @@ class MaterialGroundRenderer(GroundRenderer):
         if self.substrate is not None:
             self.substrate.close()
             self.substrate = None
-        for target in (self.surface, self.coverage, self.normals):
+        for target in (self.surface, self.coverage):
             if target is not None:
                 rl.unload_render_texture(target)
-        self.surface = self.coverage = self.normals = None
+        self.surface = self.coverage = None
+        # Retain any existing normals target across replay seeks; invalidate contents for full rebake.
         self.normals_dirty = True
         self.normals_full = True
         self.normals_dirty_tiles = [0] * _NORMAL_DIRTY_GRID
+        self.normals_failed_size = None
         self.wetness_epoch = 0.0
         self.material_batches.clear()
 
     def close(self) -> None:
         self.reset_materials()
+        if self.normals is not None:
+            rl.unload_render_texture(self.normals)
+            self.normals = None
+        self.normals_failed_size = None
         self.heat_vision.close()
-        for shader in (self.stamp_shader, self.material_shader, self.normals_shader, self.beam_shader):
+        for shader in (
+            self.stamp_shader,
+            self.material_shader,
+            self.fallback_material_shader,
+            self.normals_shader,
+            self.beam_shader,
+        ):
             if shader is not None:
                 rl.unload_shader(shader)
-        self.stamp_shader = self.material_shader = self.normals_shader = self.beam_shader = None
+        self.stamp_shader = self.material_shader = self.fallback_material_shader = self.normals_shader = (
+            self.beam_shader
+        ) = None
         self.material_locations.clear()
+        self.fallback_material_locations.clear()
         self.normals_locations.clear()
         self.beam_locations.clear()
         if self.beam_atlas is not None:
@@ -387,7 +405,7 @@ class MaterialGroundRenderer(GroundRenderer):
             self.normals_dirty = True
             self.normals_full = False
 
-    def _ensure_normals(self) -> rl.RenderTexture:
+    def _ensure_normals(self) -> rl.RenderTexture | None:
         assert self.surface is not None and self.coverage is not None
         size = self.surface.texture
         norm_w = int(size.width)
@@ -399,11 +417,19 @@ class MaterialGroundRenderer(GroundRenderer):
         ):
             if self.normals is not None:
                 rl.unload_render_texture(self.normals)
-            self.normals = load_float_render_texture(
-                norm_w,
-                norm_h,
-                pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
-            )
+                self.normals = None
+            if self.normals_failed_size == (norm_w, norm_h):
+                return None
+            try:
+                self.normals = load_float_render_texture(
+                    norm_w,
+                    norm_h,
+                    pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+                )
+            except RuntimeError:
+                self.normals_failed_size = (norm_w, norm_h)
+                return None
+            self.normals_failed_size = None
             rl.set_texture_filter(self.normals.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
             rl.set_texture_wrap(self.normals.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
             self.normals_dirty = True
@@ -632,7 +658,15 @@ class MaterialGroundRenderer(GroundRenderer):
         self.bake_materials(resources.texture(TextureId.PARTICLES), resources.texture(TextureId.BODYSET))
         normals = self._ensure_normals()
         assert self.material_shader is not None and self.surface is not None and self.coverage is not None
-        sh = self.material_shader
+        if normals is not None:
+            sh = self.material_shader
+            locations = self.material_locations
+        else:
+            if self.fallback_material_shader is None:
+                direct_src = GROUND_FRAGMENT.replace("#version 330\n", "#version 330\n#define GROUND_DIRECT_RELIEF 1\n", 1)
+                self.fallback_material_shader = _shader(direct_src)
+            sh = self.fallback_material_shader
+            locations = self.fallback_material_locations
         uniforms: list[tuple[str, list[float], int]] = []
 
         def put(name: str, values: list[float], components: int = 0) -> None:
@@ -711,11 +745,11 @@ class MaterialGroundRenderer(GroundRenderer):
         else:
             tile_w, tile_h, tile_masks = 0, 0, b""
         tile_texture = self.light_tiles.upload(tile_w, tile_h, tile_masks) if tile_w > 0 and tile_h > 0 else None
-        _apply_uniforms(sh, self.material_locations, uniforms)
+        _apply_uniforms(sh, locations, uniforms)
         tile_size_buf = rl.ffi.new("int[2]", [tile_w, tile_h])
         rl.set_shader_value(
             sh,
-            self._material_location("u_light_tile_size"),
+            _location(sh, locations, "u_light_tile_size"),
             rl.ffi.cast("void *", tile_size_buf),
             rl.ShaderUniformDataType.SHADER_UNIFORM_IVEC2,
         )
@@ -724,25 +758,27 @@ class MaterialGroundRenderer(GroundRenderer):
         with opaque_blend():
             rl.begin_shader_mode(sh)
             try:
-                rl.set_shader_value_texture(sh, self._material_location("u_surface_tex"), self.surface.texture)
-                rl.set_shader_value_texture(sh, self._material_location("u_material_tex"), self.coverage.texture)
+                rl.set_shader_value_texture(sh, _location(sh, locations, "u_surface_tex"), self.surface.texture)
+                rl.set_shader_value_texture(sh, _location(sh, locations, "u_material_tex"), self.coverage.texture)
                 assert self.substrate is not None and self.substrate.render_target is not None
                 rl.set_shader_value_texture(
                     sh,
-                    self._material_location("u_substrate_tex"),
+                    _location(sh, locations, "u_substrate_tex"),
                     self.substrate.render_target.texture,
                 )
                 if atlas is not None:
-                    _bind_unit(sh, self._material_location("u_visibility_tex"), atlas.texture)
+                    _bind_unit(sh, _location(sh, locations, "u_visibility_tex"), atlas.texture)
                 if tile_texture is not None:
                     _bind_unit(
-                        sh, self._material_location("u_light_tiles"), tile_texture, unit=LIGHT_TILES_UNIT,
+                        sh, _location(sh, locations, "u_light_tiles"), tile_texture, unit=LIGHT_TILES_UNIT,
                     )
-                _bind_unit(sh, self._material_location("u_normal_tex"), normals.texture, unit=NORMAL_TEX_UNIT)
+                if normals is not None:
+                    _bind_unit(sh, _location(sh, locations, "u_normal_tex"), normals.texture, unit=NORMAL_TEX_UNIT)
                 yield
             finally:
                 rl.end_shader_mode()
-                _bind_unit(None, -1, None, unit=NORMAL_TEX_UNIT)
+                if normals is not None:
+                    _bind_unit(None, -1, None, unit=NORMAL_TEX_UNIT)
                 if tile_texture is not None:
                     _bind_unit(None, -1, None, unit=LIGHT_TILES_UNIT)
                 if atlas is not None:

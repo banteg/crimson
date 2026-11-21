@@ -21,7 +21,9 @@ uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a se
 uniform sampler2D u_light_tiles;
 uniform ivec2 u_light_tile_size; // tile grid dimensions, zero when no host supplied a mask
 uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass, ice
+#ifndef GROUND_DIRECT_RELIEF
 uniform sampler2D u_normal_tex;   // Compact per-texel (height, blood volume, blood coverage, exposed fraction)
+#endif
 #endif
 
 uniform vec2 u_ground_size;
@@ -56,6 +58,18 @@ float packed_blood_below_ice(vec4 packed) {
     float exposed = max(packed.a, 0.001);
     return clamp(packed.g * packed.b / (exposed * exposed), 0.0, 0.999);
 }
+
+#ifndef BEAM_VISIBILITY_PASS
+vec4 sample_relief(vec2 uv) {
+#ifdef GROUND_DIRECT_RELIEF
+    vec4 s = texture(u_surface_tex, uv);
+    vec4 w = texture(u_material_tex, uv);
+    return vec4(s.a, s.b, w.r, 1.0 - w.a);
+#else
+    return texture(u_normal_tex, uv);
+#endif
+}
+#endif
 
 vec3 debug_radiance(vec3 value) {
     if (u_debug_display == 0) return value;
@@ -112,14 +126,14 @@ void main() {
     // DUAL-NORMAL LAYERED FLUID MODEL (8-tap stencil on compact RGBA16F relief inputs):
     vec2 step_fine = vec2(1.2, 1.2 * V_UP) / u_ground_size;
     vec2 step_med  = vec2(3.2, 3.2 * V_UP) / u_ground_size;
-    vec4 rL1 = texture(u_normal_tex, ground_uv + vec2(-step_fine.x, 0.0));
-    vec4 rR1 = texture(u_normal_tex, ground_uv + vec2( step_fine.x, 0.0));
-    vec4 rD1 = texture(u_normal_tex, ground_uv + vec2(0.0, -step_fine.y));
-    vec4 rU1 = texture(u_normal_tex, ground_uv + vec2(0.0,  step_fine.y));
-    vec4 rL2 = texture(u_normal_tex, ground_uv + vec2(-step_med.x, 0.0));
-    vec4 rR2 = texture(u_normal_tex, ground_uv + vec2( step_med.x, 0.0));
-    vec4 rD2 = texture(u_normal_tex, ground_uv + vec2(0.0, -step_med.y));
-    vec4 rU2 = texture(u_normal_tex, ground_uv + vec2(0.0,  step_med.y));
+    vec4 rL1 = sample_relief(ground_uv + vec2(-step_fine.x, 0.0));
+    vec4 rR1 = sample_relief(ground_uv + vec2( step_fine.x, 0.0));
+    vec4 rD1 = sample_relief(ground_uv + vec2(0.0, -step_fine.y));
+    vec4 rU1 = sample_relief(ground_uv + vec2(0.0,  step_fine.y));
+    vec4 rL2 = sample_relief(ground_uv + vec2(-step_med.x, 0.0));
+    vec4 rR2 = sample_relief(ground_uv + vec2( step_med.x, 0.0));
+    vec4 rD2 = sample_relief(ground_uv + vec2(0.0, -step_med.y));
+    vec4 rU2 = sample_relief(ground_uv + vec2(0.0,  step_med.y));
 
     vec2 dH_fine  = vec2(rL1.r - rR1.r, rU1.r - rD1.r) * 1.35;
     vec2 dH_macro = vec2(rL2.r - rR2.r, rU2.r - rD2.r) * 1.15;
