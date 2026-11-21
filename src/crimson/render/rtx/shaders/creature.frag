@@ -194,7 +194,7 @@ void main() {
         float along = clamp(dot(dp, axis), -u_dir[i].w * .5, u_dir[i].w * .5);
         vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) : u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
-        bool continuous = u_beam_shape[i].w > 0.;
+        bool continuous = !ring && u_beam_shape[i].w > 0.;
         if (!continuous && spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {

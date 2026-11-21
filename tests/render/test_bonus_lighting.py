@@ -322,3 +322,38 @@ def test_annular_source_lights_the_front_and_leaves_distant_center_unlit(lit_bon
     assert all(math.isfinite(c) for p in lit for c in p)
     centered = msgspec.structs.replace(ring, pos=Vec2(64, 64))
     assert render([centered]) == base
+
+
+@pytest.mark.parametrize("pass_id", [0, 1])
+@pytest.mark.parametrize("reach", [0., -1.])
+def test_bonus_nonpositive_reaches_stay_finite_and_disabled(lit_bonus, pass_id, reach):
+    render, _ = lit_bonus
+    no_spec = MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=24, reflection_gain=0)
+    expected_no_spec = render([no_spec], pass_id=pass_id)
+    actual_no_spec = render(
+        [msgspec.structs.replace(no_spec, reflection_gain=1, reflection_radius=reach)], pass_id=pass_id,
+    )
+    assert all(math.isfinite(c) for p in actual_no_spec for c in p)
+    assert actual_no_spec == expected_no_spec
+
+    no_diff = MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=24, illumination_gain=0, reflection_radius=110)
+    expected_no_diff = render([no_diff], pass_id=pass_id)
+    actual_no_diff = render(
+        [msgspec.structs.replace(no_diff, illumination_gain=1, radius=reach)], pass_id=pass_id,
+    )
+    assert all(math.isfinite(c) for p in actual_no_diff for c in p)
+    assert actual_no_diff == expected_no_diff
+
+
+@pytest.mark.parametrize("pass_id", [0, 1])
+def test_bonus_source_axis_matches_point_fallback_and_normalized_beam(lit_bonus, pass_id):
+    render, _ = lit_bonus
+    source = MaterialLight(Vec2(90, 64), 110, (1.4, .68, .2), height=24)
+    point = render([source], pass_id=pass_id)
+    for axis in (Vec2(), Vec2(.001, 0)):
+        assert render([msgspec.structs.replace(source, direction=axis, length=128)], pass_id=pass_id) == point
+    unit = msgspec.structs.replace(source, direction=Vec2(.6, .8), length=40)
+    expected = render([unit], pass_id=pass_id)
+    scaled = render([msgspec.structs.replace(unit, direction=Vec2(6, 8))], pass_id=pass_id)
+    for a, b in zip(scaled, expected, strict=True):
+        assert a == pytest.approx(b, abs=.001)

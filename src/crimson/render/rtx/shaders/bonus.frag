@@ -47,15 +47,18 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
 
     for (int i = 0; i < u_count; i++) {
         vec2 dp = world - u_pos[i].xy;
-        float along = clamp(dot(dp, u_dir[i].xy), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
-        vec2 source = u_rgb[i].w > 0. ? nearestRingPoint(u_pos[i].xy, world, u_rgb[i].w) : u_pos[i].xy + u_dir[i].xy * along;
+        vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > 0.0001 ? normalize(u_dir[i].xy) : vec2(0.0);
+        bool ring = u_rgb[i].w > 0.0;
+        bool beam = !ring && u_dir[i].w > 0.0 && dot(axis, axis) > 0.0;
+        float along = clamp(dot(dp, axis), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
+        vec2 source = ring ? nearestRingPoint(u_pos[i].xy, world, u_rgb[i].w) : u_pos[i].xy + axis * along;
         vec2 delta = source - world;
         float dist = length(delta);
         if (dist >= max(u_pos[i].z, u_response[i].z))
             continue;
-        float a = 1.0 - smoothstep(0.0, u_pos[i].z, dist);
-        float s = 1.0 - smoothstep(0.0, u_response[i].z, dist);
-        float axial = u_rgb[i].w <= 0. && u_dir[i].w > 0.0
+        float a = u_response[i].x > 0.0 && dist < u_pos[i].z ? 1.0 - smoothstep(0.0, u_pos[i].z, dist) : 0.0;
+        float s = u_response[i].y > 0.0 && dist < u_response[i].z ? 1.0 - smoothstep(0.0, u_response[i].z, dist) : 0.0;
+        float axial = beam
             ? segmentRadiance(along / max(u_dir[i].w, 1.0) + 0.5, u_dir[i].z)
             : 1.0;
         float weight = s * s * axial * u_response[i].y;
@@ -72,8 +75,8 @@ vec3 sphereCoatLight(vec3 N, float r_norm, vec3 V, out vec3 rim_and_caustic) {
                           min(1.0, source_width / 3.0);
         if (R.z > 0.05) {
             vec2 hit = world + R.xy * max(16.0, u_pos[i].w) / R.z;
-            float hit_along = clamp(dot(hit - u_pos[i].xy, u_dir[i].xy), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
-            vec2 on_beam = u_rgb[i].w > 0. ? nearestRingPoint(u_pos[i].xy, hit, u_rgb[i].w) : u_pos[i].xy + u_dir[i].xy * hit_along;
+            float hit_along = clamp(dot(hit - u_pos[i].xy, axis), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
+            vec2 on_beam = ring ? nearestRingPoint(u_pos[i].xy, hit, u_rgb[i].w) : u_pos[i].xy + axis * hit_along;
             float d_beam = length(hit - on_beam);
             float reflected_width = source_width * (8.0 / 3.0);
             coat_spec += exp(-0.5 * pow(d_beam / reflected_width, 2.0)) * 2.2 * ndl;
@@ -174,15 +177,18 @@ void main() {
 
     for (int i = 0; i < u_count; i++) {
         vec2 dp = world - u_pos[i].xy;
-        float along = clamp(dot(dp, u_dir[i].xy), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
-        vec2 source = u_rgb[i].w > 0. ? nearestRingPoint(u_pos[i].xy, world, u_rgb[i].w) : u_pos[i].xy + u_dir[i].xy * along;
+        vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > 0.0001 ? normalize(u_dir[i].xy) : vec2(0.0);
+        bool ring = u_rgb[i].w > 0.0;
+        bool beam = !ring && u_dir[i].w > 0.0 && dot(axis, axis) > 0.0;
+        float along = clamp(dot(dp, axis), -u_dir[i].w * 0.5, u_dir[i].w * 0.5);
+        vec2 source = ring ? nearestRingPoint(u_pos[i].xy, world, u_rgb[i].w) : u_pos[i].xy + axis * along;
         vec2 delta = source - world;
         float dist = length(delta);
         if (dist >= max(u_pos[i].z, u_response[i].z))
             continue;
-        float a = 1.0 - smoothstep(0.0, u_pos[i].z, dist);
-        float s = 1.0 - smoothstep(0.0, u_response[i].z, dist);
-        float axial = u_rgb[i].w <= 0. && u_dir[i].w > 0.0
+        float a = u_response[i].x > 0.0 && dist < u_pos[i].z ? 1.0 - smoothstep(0.0, u_pos[i].z, dist) : 0.0;
+        float s = u_response[i].y > 0.0 && dist < u_response[i].z ? 1.0 - smoothstep(0.0, u_response[i].z, dist) : 0.0;
+        float axial = beam
             ? segmentRadiance(along / max(u_dir[i].w, 1.0) + 0.5, u_dir[i].z)
             : 1.0;
 

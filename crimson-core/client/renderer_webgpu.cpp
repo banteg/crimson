@@ -1459,7 +1459,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     vertex.i("u_count", light_count).set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
     vertex.i("u_dynamic_shadows", dynamic_shadows).set("u_pos", light_pos, light_count * 16);
     vertex.set("u_rgb", light_rgb, light_count * 16).set("u_dir", light_dir, light_count * 16);
-    vertex.set("u_response", light_response, light_count * 16);
+    vertex.set("u_response", light_response, light_count * 16).set("u_beam_shape", beam_shape, light_count * 16);
     fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_count", light_count).f("u_ambient", 0.6f);
     fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
     fragment.i("u_dynamic_shadows", dynamic_shadows);

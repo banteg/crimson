@@ -564,3 +564,51 @@ def test_annular_source_lights_the_front_and_leaves_distant_center_unlit(lit_spr
     assert all(math.isfinite(c) for p in lit for c in p)
     centered = msgspec.structs.replace(ring, pos=Vec2(64, 64))
     assert render([centered]) == base
+
+
+def test_continuous_beam_shadows_follow_beam_centroid_and_head_halo(lit_sprite):
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    # Long beam along +x from tail x=64 to head x=320 (center x=192, static centroid x~235).
+    beam = MaterialLight(
+        Vec2(192, 20), 155, (1.4, .68, .2), height=24, direction=Vec2(1, 0), length=256,
+        source_width=3, illumination_gain=4, reflection_gain=1, reflection_radius=155,
+        reflection_tail=0., beam_profile=(16., 3.1, 1.35),
+    )
+    occlusion = ReflectionOcclusion()
+    try:
+        # Creature beside the tail (64, 64): beamAtReceiver's lit centroid sits near x~145, not the static x~235.
+        clear = render([beam], center=Vec2(64, 64))
+        # Blocker on the ray toward the actual lit centroid shadows the creature.
+        lit_blocker = BodyVolume(Vec2(105, 42), Vec2(10, 10), 32, 0., owner=Vec2(105, 42))
+        occlusion.upload(build_occlusion_grid([lit_blocker], [beam], width=1024, height=1024))
+        blocked = render([beam], occlusion=occlusion, center=Vec2(64, 64))
+        assert sum(p[0] for p in blocked) < sum(p[0] for p in clear) * .85
+
+        # Blocker far along the ray to the static centroid (235, 20), past the lit stretch, must not shadow it.
+        far_blocker = BodyVolume(Vec2(190, 31), Vec2(8, 8), 32, 0., owner=Vec2(190, 31))
+        occlusion.upload(build_occlusion_grid([far_blocker], [beam], width=1024, height=1024))
+        unblocked = render([beam], occlusion=occlusion, center=Vec2(64, 64))
+        assert sum(p[0] for p in unblocked) == pytest.approx(sum(p[0] for p in clear), rel=.01)
+
+        # Creature past half_length + radius + corner_radius without the head halo, yet lit by the head halo.
+        from crimson.render.rtx.continuous_beam import prepare_beam_lights
+
+        halo_beam = msgspec.structs.replace(beam, pos=Vec2(192, 64), radius=100, reflection_radius=100,
+                                            beam_profile=(64., 6., 1.35))
+        # Segment head ends at x=320; head_width ~32 extends emitting head to ~352.
+        # At x=445, owner-to-320 minus quad corner radius (22.6) is 102.4 >= 100, so without the head halo
+        # creature_visibility.glsl culled the quad to unshadowed even though its disk (x=435..445) is lit.
+        owner = Vec2(445, 64)
+        cam = Vec2(64, 64) - owner
+        base_halo = render([], center=owner, camera=cam)
+        clear_halo = render([halo_beam], center=owner, camera=cam)
+        assert sum(p[0] for p in clear_halo) > sum(p[0] for p in base_halo) + .05
+        halo_blocker = BodyVolume(Vec2(390, 64), Vec2(16, 16), 36, 0., owner=Vec2(390, 64))
+        _, grid_lights = prepare_beam_lights([halo_beam])
+        occlusion.upload(build_occlusion_grid([halo_blocker], grid_lights, width=1024, height=1024))
+        blocked_halo = render([halo_beam], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[0] for p in blocked_halo) < sum(p[0] for p in clear_halo) - .02
+    finally:
+        occlusion.close()

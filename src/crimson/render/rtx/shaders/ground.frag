@@ -274,7 +274,7 @@ void main() {
 
             // Reflect the virtual eye ray into a finite source at the emitter's height.
             // This is an artistic rough-reflection approximation, not a calibrated BRDF.
-            if (response.y > 0.0 && R.z > 0.02 && material_gate > 0.) {
+            if (response.y > 0.0 && response.z > 0.0 && R.z > 0.02 && material_gate > 0.) {
                 // Reject zero support before constructing the displaced footprint or tracing bodies.
                 float support = 1.0 - smoothstep(response.z * .8, max(.01, response.z), reflection_distance);
                 if (support <= 0.) continue;
