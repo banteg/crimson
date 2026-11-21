@@ -272,9 +272,11 @@ class MaterialGroundRenderer(GroundRenderer):
         try:
             self._allocate_materials()
         except RuntimeError:
-            if not (self.evict_relief_cache() or reclaim_optional_targets()):
+            freed = self.evict_relief_cache()
+            freed |= reclaim_optional_targets()
+            if not freed:
                 raise
-            # Evict optional relief caches (including menu terrain) and retry required terrain targets once.
+            # Evict all optional relief caches (including menu terrain) and retry required targets once.
             self._allocate_materials()
 
     def _allocate_materials(self) -> None:
@@ -582,8 +584,8 @@ class MaterialGroundRenderer(GroundRenderer):
                 commands.extend(self._commands(batch, particles, bodyset))
             self._stamp_commands(commands)
         # The persistent GPU targets now own this history; keep only future, unbaked deposits.
+        # Relief packing runs lazily in surface_scope() after required shadow/visibility allocations.
         self.material_batches.clear()
-        self._ensure_normals()
 
     def _commands(self, batch: TerrainFxBatch, particles: rl.Texture, bodyset: rl.Texture) -> Iterator[_MaterialStamp]:
         assert self.render_target is not None

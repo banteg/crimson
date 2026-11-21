@@ -144,6 +144,7 @@ def test_fresh_blood_reflects_hdr_then_dries(ground_material) -> None:
     ground, texture = ground_material
     ground.material_batches.extend([blood(1200)] * 6)
     ground.bake_materials(texture, texture)
+    ground._ensure_normals()
     sh = ground.material_shader
     assert sh is not None and ground.surface is not None and ground.coverage is not None
     target = load_float_render_texture(64, 64)
@@ -1436,7 +1437,7 @@ def test_cached_relief_matches_live_normals_at_fractional_uvs(raylib_context, te
     target = load_float_render_texture(131, 131, pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
     try:
         ground.bake_materials(texture, texture)
-        assert ground.surface is not None and ground.coverage is not None and ground.normals is not None
+        assert ground.surface is not None and ground.coverage is not None
         surf_w = int(ground.surface.texture.width)
         # Write a sharp one-texel height ridge and a sharp blood-pool step (with ice strip)
         # directly into surface + coverage to verify both substrate (mode=1) and fluid (mode=2) normals.
@@ -1544,6 +1545,7 @@ def test_off_terrain_stamp_does_not_dirty_ground_relief(ground_material) -> None
 
     ground, texture = ground_material
     ground.bake_materials(texture, texture)
+    assert ground._ensure_normals() is not None
     assert not ground.normals_dirty
     batch = TerrainFxBatch(
         decals=(

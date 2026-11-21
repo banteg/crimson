@@ -1285,13 +1285,25 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     if (!ground_tile_texture) glGenTextures(1, &ground_tile_texture);
     glBindTexture(GL_TEXTURE_2D, ground_tile_texture);
     if (ground_tile_width != ground_tiles.width || ground_tile_height != ground_tiles.height) {
-      ground_tile_width = ground_tiles.width, ground_tile_height = ground_tiles.height;
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ground_tile_width, ground_tile_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      while (glGetError() != GL_NO_ERROR) {}
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ground_tiles.width, ground_tiles.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      GLenum err = glGetError();
+      if (err != GL_NO_ERROR && evict_ground_normals()) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ground_tiles.width, ground_tiles.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        err = glGetError();
+      }
+      if (err != GL_NO_ERROR) {
+        ground_tile_width = ground_tile_height = 0;
+        ground_tiles.width = ground_tiles.height = 0;
+      } else {
+        ground_tile_width = ground_tiles.width, ground_tile_height = ground_tiles.height;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      }
     }
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ground_tiles.width, ground_tiles.height, GL_RGBA, GL_UNSIGNED_BYTE,
-                    ground_tiles.masks.data());
+    if (ground_tiles.width)
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ground_tiles.width, ground_tiles.height, GL_RGBA, GL_UNSIGNED_BYTE,
+                      ground_tiles.masks.data());
   }
   glUniform2i(at("u_light_tile_size"), ground_tiles.width, ground_tiles.height);
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
@@ -2606,11 +2618,21 @@ void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 c
     int grown = 1;
     while (grown < rows)
       grown *= 2;
-    occlusion_texture_rows[slot] = grown;
     if (!occlusion_textures[slot])
       glGenTextures(1, &occlusion_textures[slot]);
     glBindTexture(GL_TEXTURE_2D, occlusion_textures[slot]);
+    while (glGetError() != GL_NO_ERROR) {}
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, OCCLUSION_WIDTH, grown, 0, GL_RGBA, GL_FLOAT, nullptr);
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR && evict_ground_normals()) {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, OCCLUSION_WIDTH, grown, 0, GL_RGBA, GL_FLOAT, nullptr);
+      err = glGetError();
+    }
+    if (err != GL_NO_ERROR) {
+      occlusion_grid[2] = 0;
+      return;
+    }
+    occlusion_texture_rows[slot] = grown;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   }

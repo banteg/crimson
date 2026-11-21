@@ -8,6 +8,7 @@ from typing import Any
 
 import msgspec
 
+from grim.edr import reclaim_optional_targets
 from grim.raylib_api import rl
 
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
@@ -225,6 +226,8 @@ class GroundLightTiles(msgspec.Struct):
                 rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
             )
             self.texture = rl.load_texture_from_image(image)
+            if self.texture.id <= 0 and reclaim_optional_targets():
+                self.texture = rl.load_texture_from_image(image)
             if self.texture.id <= 0:
                 self.texture = None
                 raise RuntimeError("Could not upload ground light tiles")
