@@ -615,6 +615,7 @@ def test_continuous_beam_shadows_follow_beam_centroid_and_head_halo(lit_sprite):
 
 
 def test_beam_specular_shadow_stays_stable_when_illumination_budget_drops(lit_sprite):
+    from crimson.render.rtx.continuous_beam import prepare_beam_lights
     from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
 
     render, _ = lit_sprite
@@ -632,11 +633,26 @@ def test_beam_specular_shadow_stays_stable_when_illumination_budget_drops(lit_sp
     occlusion = ReflectionOcclusion()
     try:
         for blocker in (far_blocker, near_blocker):
-            occlusion.upload(build_occlusion_grid([blocker], [beam], width=1024, height=1024))
+            _, fading_grid = prepare_beam_lights([beam], require_illumination=False)
+            occlusion.upload(build_occlusion_grid([blocker], fading_grid, width=1024, height=1024))
             fading = render([beam], occlusion=occlusion, center=Vec2(64, 64))
+            _, dropped_grid = prepare_beam_lights([reflection_only], require_illumination=False)
+            occlusion.upload(build_occlusion_grid([blocker], dropped_grid, width=1024, height=1024))
             dropped = render([reflection_only], occlusion=occlusion, center=Vec2(64, 64))
             for a, b in zip(fading, dropped, strict=True):
                 assert a == pytest.approx(b, abs=.002)
+
+        # Halo-only cell blocker: rebuilding the shared grid when illumination drops must retain it.
+        halo_beam = MaterialLight(
+            Vec2(192, 64), 100, (1.4, .68, .2), height=24, direction=Vec2(1, 0), length=256,
+            source_width=3, illumination_gain=1e-4, reflection_gain=1, reflection_radius=100,
+            reflection_tail=0., beam_profile=(64., 6., 1.35),
+        )
+        halo_ref_only = msgspec.structs.replace(halo_beam, illumination_gain=0.)
+        # Bare segment reaches x=320+100=420 (cell 6: 384..448); extended halo reaches x=394+100=494 (cell 7: 448..512).
+        _, grid_lit = prepare_beam_lights([halo_beam], require_illumination=False)
+        _, grid_ref = prepare_beam_lights([halo_ref_only], require_illumination=False)
+        assert grid_lit[0].length == grid_ref[0].length and grid_ref[0].length > halo_beam.length
     finally:
         occlusion.close()
 
@@ -661,11 +677,20 @@ def test_beam_shadow_stays_bounded_near_illumination_cutoff(lit_sprite):
     occlusion = ReflectionOcclusion()
     try:
         clear = render([beam], center=owner, camera=cam)
-        _, grid_lights = prepare_beam_lights([beam])
-        # Ensure the blocker sits in the occlusion grid by giving it a dummy light reach if needed.
+        _, grid_lights = prepare_beam_lights([beam], require_illumination=False)
         wide = msgspec.structs.replace(grid_lights[0], radius=500, reflection_radius=500)
         occlusion.upload(build_occlusion_grid([bogus_blocker], [wide], width=1024, height=1024))
         actual = render([beam], occlusion=occlusion, center=owner, camera=cam)
         assert actual == clear
+
+        # Smooth transition across low irradiance: moving a reflection-only beam corner by 0.001 units near the
+        # cutoff must not snap specular visibility across an intervening blocker.
+        ref_beam = msgspec.structs.replace(beam, illumination_gain=0., reflection_radius=240)
+        blocker = BodyVolume(Vec2(276, 196), Vec2(8, 8), 36, 0., owner=Vec2(276, 196))
+        _, ref_grid = prepare_beam_lights([ref_beam], require_illumination=False)
+        occlusion.upload(build_occlusion_grid([blocker], ref_grid, width=1024, height=1024))
+        step_a = render([ref_beam], occlusion=occlusion, center=Vec2(328, 270.000), camera=Vec2(64 - 328, 64 - 270))
+        step_b = render([ref_beam], occlusion=occlusion, center=Vec2(328, 270.001), camera=Vec2(64 - 328, 64 - 270))
+        assert max(abs(a[2] - b[2]) for a, b in zip(step_a, step_b, strict=True)) < .005
     finally:
         occlusion.close()

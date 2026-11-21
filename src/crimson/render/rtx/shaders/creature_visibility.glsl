@@ -38,10 +38,11 @@ float cornerVisibility(int i, vec2 wp, vec2 owner) {
     if (continuous) {
         vec2 delta;
         float irradiance;
-        // Trace toward the beam energy centroid lighting this corner; outside illumination reach or where cancellation
-        // makes the integrated energy negligible, fall back continuously to the nearest emitting point.
-        source = beamAtReceiver(i, u_dir[i], wp, u_pos[i], delta, irradiance) && irradiance > 1e-5
-            ? wp + delta : nearest;
+        // Blend smoothly from the nearest emitting point to the integrated energy centroid across low
+        // irradiance so float32 noise near the reach boundary cannot snap specular shadow rays.
+        source = nearest;
+        if (beamAtReceiver(i, u_dir[i], wp, u_pos[i], delta, irradiance))
+            source = mix(nearest, wp + delta, smoothstep(1e-6, 1e-3, irradiance));
     }
     return illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), max(.1, u_response[i].w), owner);
 }
