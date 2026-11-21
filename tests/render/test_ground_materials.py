@@ -1265,6 +1265,11 @@ def test_build_ground_tiles_culls_disc_corners_diagonal_capsules_rings_and_inact
     assert not has(5, 11, 1) and not has(11, 5, 1)
     assert has(13, 8, 2) and not has(8, 8, 2) and not has(3, 3, 2)
     assert has(5, 5, 3) and not has(2, 5, 3)
+    # Without optional NumPy, fall back cleanly to unculled shading.
+    from crimson.render.rtx import ground_tiles as gt
+
+    with patch.object(gt, "np", None):
+        assert build_ground_tiles(512, 512, lights) == (0, 0, b"")
 
 
 def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> None:

@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from typing import Any
 
 import msgspec
-import numpy as np
+
+try:
+    import numpy as np
+except ImportError:  # pragma: no cover - optional acceleration outside dev installs
+    np = None  # type: ignore[assignment]
 
 from grim.raylib_api import rl
 
@@ -17,10 +22,11 @@ _HALF_TILE = TILE_SIZE * 0.5
 _TILE_DIAG_RADIUS = _HALF_TILE * math.sqrt(2.0)
 _MARGIN = 0.01
 
-_TILE_CENTERS_CACHE: dict[tuple[int, int], tuple[np.ndarray, np.ndarray]] = {}
+_TILE_CENTERS_CACHE: dict[tuple[int, int], tuple[Any, Any]] = {}
 
 
-def _tile_centers(width: int, height: int) -> tuple[np.ndarray, np.ndarray]:
+def _tile_centers(width: int, height: int) -> tuple[Any, Any]:
+    assert np is not None
     cached = _TILE_CENTERS_CACHE.get((width, height))
     if cached is not None:
         return cached
@@ -33,16 +39,17 @@ def _tile_centers(width: int, height: int) -> tuple[np.ndarray, np.ndarray]:
 
 
 def _capsule_hits(
-    mx: np.ndarray,
-    my: np.ndarray,
-    cx: np.ndarray,
-    cy: np.ndarray,
-    ux: np.ndarray,
-    uy: np.ndarray,
-    half: np.ndarray,
-    rad: np.ndarray,
-) -> np.ndarray:
+    mx: Any,
+    my: Any,
+    cx: Any,
+    cy: Any,
+    ux: Any,
+    uy: Any,
+    half: Any,
+    rad: Any,
+) -> Any:
     """Exact disc hits (`half == 0`) and tight conservative capsule hits (`half > 0`)."""
+    assert np is not None
     dx = mx - cx
     dy = my - cy
     abs_dx = np.abs(dx)
@@ -76,7 +83,7 @@ def build_ground_tiles(
 ) -> tuple[int, int, bytes]:
     """Return `(width, height, rgba8_masks)` with bit `i` set on tiles light `i` can reach."""
     count = min(len(lights), MAX_MATERIAL_LIGHTS)
-    if not count or not (0.0 < world_width <= 65536.0 and 0.0 < world_height <= 65536.0):
+    if np is None or not count or not (0.0 < world_width <= 65536.0 and 0.0 < world_height <= 65536.0):
         return 0, 0, b""
     width = math.ceil(world_width / TILE_SIZE)
     height = math.ceil(world_height / TILE_SIZE)
