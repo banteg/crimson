@@ -600,7 +600,8 @@ void release(Target &t) {
       end_pass();
     // Commands already recorded may still read it: they hold their own reference,
     // so the texture goes once they ran.
-    wgpuTextureViewRelease(t.view);
+    if (t.view)
+      wgpuTextureViewRelease(t.view);
     wgpuTextureRelease(t.texture);
     forget_groups();
   }
@@ -942,35 +943,49 @@ void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
 }
 
 // --- The RTX ground (render/rtx/materials.py), as in renderer.cpp -----------------
+enum NormalsState { NORMALS_NONE, NORMALS_PENDING, NORMALS_READY, NORMALS_FAILED };
+struct NormalsProbe {
+  int ground_id;
+  uint64_t token;
+  int width, height;
+};
 struct Ground {
   Target substrate, coverage, surface, normals;
   float epoch = 0;
   bool normals_dirty = true;
   bool normals_full = true;
+  NormalsState normals_state = NORMALS_NONE;
+  uint64_t normals_token = 0;
   int normals_failed_w = 0, normals_failed_h = 0;
   uint32_t dirty_tiles[GROUND_DIRTY_GRID] = {};
 };
 std::unordered_map<int, Ground> grounds;
 Target spare_ground_normals;
 int spare_ground_normals_id = 0;
+uint64_t next_normals_token = 1;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
 
 void stash_spare_normals(int id, int width, int height) {
   auto it = grounds.find(id);
-  if (it == grounds.end() || !it->second.normals.texture ||
-      it->second.normals.width != width || it->second.normals.height != height)
+  if (it == grounds.end() || it->second.normals_state != NORMALS_READY || !it->second.normals.texture ||
+      !it->second.normals.view || it->second.normals.width != width || it->second.normals.height != height)
     return;
   release(spare_ground_normals);
   spare_ground_normals = it->second.normals;
   spare_ground_normals_id = id;
   it->second.normals = {};
+  it->second.normals_state = NORMALS_NONE;
+  it->second.normals_token = 0;
 }
 
 void adopt_spare_normals(int id, Ground &g) {
-  if (!g.normals.texture && spare_ground_normals.texture && spare_ground_normals_id == id &&
-      spare_ground_normals.width == g.surface.width && spare_ground_normals.height == g.surface.height) {
+  if (!g.normals.texture && spare_ground_normals.texture && spare_ground_normals.view &&
+      spare_ground_normals_id == id && spare_ground_normals.width == g.surface.width &&
+      spare_ground_normals.height == g.surface.height) {
     g.normals = spare_ground_normals;
+    g.normals_state = NORMALS_READY;
+    g.normals_token = next_normals_token++;
     spare_ground_normals = {};
     spare_ground_normals_id = 0;
   }
@@ -1085,9 +1100,45 @@ void mark_normals_geometry(Ground &g, u32 primitive, const unsigned char *vb, u3
     mark_normals_rect(g, min_x, min_y, max_x, max_y);
 }
 
-bool update_ground_normals(Ground &g) {
-  if (!g.normals.texture || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
+void on_normals_error_scope(WGPUPopErrorScopeStatus status, WGPUErrorType type, WGPUStringView,
+                            void *userdata1, void *) {
+  NormalsProbe *probe = (NormalsProbe *)userdata1;
+  int id = probe->ground_id;
+  uint64_t token = probe->token;
+  int w = probe->width, h = probe->height;
+  delete probe;
+  auto it = grounds.find(id);
+  if (it == grounds.end() || it->second.normals_token != token || it->second.normals_state != NORMALS_PENDING)
+    return;
+  Ground &g = it->second;
+  if (status == WGPUPopErrorScopeStatus_Success && type == WGPUErrorType_NoError && g.normals.texture) {
+    g.normals.view = wgpuTextureCreateView(g.normals.texture, nullptr);
+    if (g.normals.view) {
+      g.normals_state = NORMALS_READY;
+      g.normals_failed_w = g.normals_failed_h = 0;
+      mark_normals_full(g);
+      return;
+    }
+  }
+  release(g.normals);
+  g.normals_state = NORMALS_FAILED;
+  g.normals_token = 0;
+  g.normals_failed_w = w;
+  g.normals_failed_h = h;
+}
+
+bool update_ground_normals(int id, Ground &g) {
+  if (g.normals.texture && (g.normals.width != g.surface.width || g.normals.height != g.surface.height)) {
     release(g.normals);
+    g.normals_state = NORMALS_NONE;
+    g.normals_token = 0;
+  }
+  if (g.normals_state == NORMALS_PENDING)
+    return false;
+  if (g.normals_state != NORMALS_READY || !g.normals.texture || !g.normals.view) {
+    release(g.normals);
+    g.normals_state = NORMALS_NONE;
+    g.normals_token = 0;
     if (g.normals_failed_w == g.surface.width && g.normals_failed_h == g.surface.height)
       return false;
     g.normals.width = g.surface.width;
@@ -1095,13 +1146,23 @@ bool update_ground_normals(Ground &g) {
     g.normals.logical_width = g.surface.logical_width;
     g.normals.logical_height = g.surface.logical_height;
     g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
-    if (!try_allocate(g.normals)) {
-      g.normals_failed_w = g.surface.width;
-      g.normals_failed_h = g.surface.height;
-      return false;
-    }
-    g.normals_failed_w = g.normals_failed_h = 0;
-    mark_normals_full(g);
+    WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
+    descriptor.size = {(uint32_t)g.normals.width, (uint32_t)g.normals.height, 1};
+    descriptor.format = format_of(g.normals);
+    descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst | WGPUTextureUsage_CopySrc |
+                       WGPUTextureUsage_RenderAttachment;
+    // Capture OOM via a WebGPU error scope and stay on ground_lit_direct until confirmed valid.
+    wgpuDevicePushErrorScope(device, WGPUErrorFilter_OutOfMemory);
+    g.normals.texture = wgpuDeviceCreateTexture(device, &descriptor);
+    uint64_t token = next_normals_token++;
+    g.normals_token = token;
+    g.normals_state = NORMALS_PENDING;
+    WGPUPopErrorScopeCallbackInfo pop = WGPU_POP_ERROR_SCOPE_CALLBACK_INFO_INIT;
+    pop.mode = WGPUCallbackMode_AllowSpontaneous;
+    pop.callback = on_normals_error_scope;
+    pop.userdata1 = new NormalsProbe{id, token, g.surface.width, g.surface.height};
+    wgpuDevicePopErrorScope(device, pop);
+    return false;
   }
   if (!g.normals_dirty)
     return true;
@@ -1333,7 +1394,7 @@ bool ground_draw(const Geometry &geometry) {
   Target &t = drawing_target(current_target);
   if (visibility_dirty)
     prepare_ground_visibility(t.logical_width, t.logical_height);
-  bool has_normals = update_ground_normals(g);
+  bool has_normals = update_ground_normals(bound[0], g);
   upload_ground_tiles();
   pass_into(t);
   Program &prog = has_normals ? ground_lit : ground_lit_direct;

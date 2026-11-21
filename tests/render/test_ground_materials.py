@@ -1588,6 +1588,24 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
     assert debug_pixels(ground, texture, mode=1) == cached_sub
     assert ground.normals is not None and int(ground.normals.id) == normals_id
 
+    # Resizing terrain releases obsolete relief storage BEFORE allocating replacement targets.
+    from grim.terrain_render import GroundRenderer
+
+    layers = TerrainLayers(base=(), overlay=(), detail=())
+    seen_normals_on_resize: list[rl.RenderTexture | None] = []
+    real_ensure = GroundRenderer._ensure_render_target
+
+    def spy_ensure(self: GroundRenderer, scale: float) -> None:
+        if self is ground:
+            seen_normals_on_resize.append(ground.normals)
+        real_ensure(self, scale)
+
+    with patch.object(GroundRenderer, "_ensure_render_target", spy_ensure):
+        ground.schedule_stamps(layers, texture_scale=2.0)
+        ground.process_pending()
+    assert seen_normals_on_resize == [None]
+    assert ground.normals is None
+
     # If the optional relief target cannot be allocated, ground.frag falls back cleanly.
     with (
         _ground_material() as (fallback_ground, fallback_texture),

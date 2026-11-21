@@ -236,6 +236,12 @@ class MaterialGroundRenderer(GroundRenderer):
         super().close()
 
     def _generate_texture(self, layers: TerrainLayers, texture_scale: float) -> None:
+        if self.normals is not None:
+            scale = min(max(texture_scale, 0.5), 4.0)
+            target_w, target_h = self._render_target_size_for(scale)
+            if int(self.normals.texture.width) != target_w or int(self.normals.texture.height) != target_h:
+                rl.unload_render_texture(self.normals)
+                self.normals = None
         self.reset_materials()
         self.material_layers = layers
         super()._generate_texture(layers, texture_scale)
