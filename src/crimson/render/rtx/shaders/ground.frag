@@ -21,7 +21,7 @@ uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a se
 uniform sampler2D u_light_tiles;
 uniform ivec2 u_light_tile_size; // tile grid dimensions, zero when no host supplied a mask
 uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass, ice
-uniform sampler2D u_normal_tex;   // Compact per-texel (height, blood volume, blood coverage, ice coverage)
+uniform sampler2D u_normal_tex;   // Compact per-texel (height, blood volume, blood coverage, exposed fraction)
 #endif
 
 uniform vec2 u_ground_size;
@@ -53,7 +53,7 @@ float blood_below_ice(vec4 surface, vec4 coverage) {
 }
 
 float packed_blood_below_ice(vec4 packed) {
-    float exposed = max(1.0 - packed.a, 0.001);
+    float exposed = max(packed.a, 0.001);
     return clamp(packed.g * packed.b / (exposed * exposed), 0.0, 0.999);
 }
 

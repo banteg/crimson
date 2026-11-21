@@ -1446,7 +1446,7 @@ def test_cached_relief_matches_live_normals_at_fractional_uvs(raylib_context, te
             for x in range(surf_w):
                 h_byte = 191 if x == half_w else 115
                 if x >= half_w:
-                    ice_byte = 64 if x == half_w + 1 else 0
+                    ice_byte = 254 if x == half_w + 1 else 0
                     atten = 1.0 - ice_byte / 255.0
                     b_byte = round(230 * atten)
                     r_byte = round(255 * atten)
@@ -1490,14 +1490,14 @@ def test_cached_relief_matches_live_normals_at_fractional_uvs(raylib_context, te
 
         h_vals = [(191 if x == half_w else 115) / 255.0 for x in range(surf_w)]
         b_vals = [
-            round(230 * (1.0 - (64 if x == half_w + 1 else 0) / 255.0)) / 255.0 if x >= half_w else 0.0
+            round(230 * (1.0 - (254 if x == half_w + 1 else 0) / 255.0)) / 255.0 if x >= half_w else 0.0
             for x in range(surf_w)
         ]
         r_vals = [
-            round(255 * (1.0 - (64 if x == half_w + 1 else 0) / 255.0)) / 255.0 if x >= half_w else 0.0
+            round(255 * (1.0 - (254 if x == half_w + 1 else 0) / 255.0)) / 255.0 if x >= half_w else 0.0
             for x in range(surf_w)
         ]
-        i_vals = [(64 / 255.0 if x == half_w + 1 else 0.0) for x in range(surf_w)]
+        i_vals = [(254 / 255.0 if x == half_w + 1 else 0.0) for x in range(surf_w)]
 
         def blood_at(wx: float) -> float:
             exposed = max(1.0 - sample_1d(i_vals, wx), 0.001)

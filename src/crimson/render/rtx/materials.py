@@ -422,14 +422,17 @@ class MaterialGroundRenderer(GroundRenderer):
                 rl.set_shader_value_texture(
                     sh, _location(sh, self.normals_locations, "u_material_tex"), self.coverage.texture,
                 )
-                src_rect = rl_rectangle(0, 0, float(norm_w), -float(norm_h))
-                dst_rect = rl_rectangle(0, 0, float(norm_w), float(norm_h))
                 origin = rl_vector2(0, 0)
                 if full:
-                    rl.draw_texture_pro(self.surface.texture, src_rect, dst_rect, origin, 0, rl.WHITE)
-                    rl.rl_draw_render_batch_active()
+                    rl.draw_texture_pro(
+                        self.surface.texture,
+                        rl_rectangle(0, 0, float(norm_w), -float(norm_h)),
+                        rl_rectangle(0, 0, float(norm_w), float(norm_h)),
+                        origin,
+                        0,
+                        rl.WHITE,
+                    )
                 else:
-                    rl.rl_enable_scissor_test()
                     for ty, row in enumerate(self.normals_dirty_tiles):
                         if not row:
                             continue
@@ -445,14 +448,20 @@ class MaterialGroundRenderer(GroundRenderer):
                                 tx += 1
                             px0 = tx0 * norm_w // grid
                             px1 = (tx * norm_w + grid - 1) // grid
-                            # Raylib's top-left texture space maps to OpenGL's bottom-left scissor space.
-                            rl.rl_scissor(px0, norm_h - py1, px1 - px0, py1 - py0)
-                            rl.draw_texture_pro(self.surface.texture, src_rect, dst_rect, origin, 0, rl.WHITE)
-                            rl.rl_draw_render_batch_active()
+                            w_span = float(px1 - px0)
+                            h_span = float(py1 - py0)
+                            # Draw each dirty span directly with matching render-texture UVs (negative src height).
+                            rl.draw_texture_pro(
+                                self.surface.texture,
+                                rl_rectangle(float(px0), float(norm_h - py1), w_span, -h_span),
+                                rl_rectangle(float(px0), float(py0), w_span, h_span),
+                                origin,
+                                0,
+                                rl.WHITE,
+                            )
+                rl.rl_draw_render_batch_active()
             finally:
                 rl.end_shader_mode()
-                if not full:
-                    rl.rl_disable_scissor_test()
         self.normals_dirty = False
         self.normals_full = False
         self.normals_dirty_tiles = [0] * grid
