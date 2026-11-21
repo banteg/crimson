@@ -1385,13 +1385,26 @@ def test_baked_ground_normals_reuse_across_frames_and_update_on_decals(ground_ma
     second = debug_pixels(ground, texture, mode=2, time=30.0)
     assert second == first
     assert ground.normals.id == normals_id and not ground.normals_dirty
-    # A new corpse updates the baked normals and changes substrate normals (mode=1).
+    # A new corpse updates the baked normals via dirty-rect scissor and matches a full rebake pixel-for-pixel.
     before_sub = debug_pixels(ground, texture, mode=1)
-    ground.material_batches.append(TerrainFxBatch(corpses=(
-        FxQueueRotatedEntry(top_left=Vec2(20, 20), scale=20, color=RGBA(1, 1, 1, 1)),
-    )))
-    after_sub = debug_pixels(ground, texture, mode=1)
-    assert after_sub != before_sub
-    assert not ground.normals_dirty
+    for pos in (Vec2(12, 8), Vec2(36, 44)):
+        ground.material_batches.append(TerrainFxBatch(
+            decals=(FxQueueEntry(
+                effect_id=7, pos=pos, width=16, height=12, rotation=0.7, color=RGBA(1, 0, 0, 1),
+            ),),
+            corpses=(FxQueueRotatedEntry(
+                top_left=pos - Vec2(8, 8), scale=16, rotation=0.5, color=RGBA(1, 1, 1, 1),
+            ),),
+        ))
+        scissored_sub = debug_pixels(ground, texture, mode=1)
+        scissored_fluid = debug_pixels(ground, texture, mode=2)
+        assert not ground.normals_dirty and ground.normals_dirty_rect is None
+        ground.normals_dirty = True
+        ground.normals_dirty_rect = None
+        full_sub = debug_pixels(ground, texture, mode=1)
+        full_fluid = debug_pixels(ground, texture, mode=2)
+        assert scissored_sub == full_sub
+        assert scissored_fluid == full_fluid
+    assert full_sub != before_sub
     ground.reset_materials()
-    assert ground.normals is None and ground.normals_dirty
+    assert ground.normals is None and ground.normals_dirty and ground.normals_dirty_rect is None

@@ -165,6 +165,7 @@ class MaterialGroundRenderer(GroundRenderer):
     coverage: rl.RenderTexture | None = None
     normals: rl.RenderTexture | None = None
     normals_dirty: bool = True
+    normals_dirty_rect: tuple[int, int, int, int] | None = None
     substrate: GroundRenderer | None = None
     stamp_shader: rl.Shader | None = None
     material_shader: rl.Shader | None = None
@@ -192,6 +193,7 @@ class MaterialGroundRenderer(GroundRenderer):
                 rl.unload_render_texture(target)
         self.surface = self.coverage = self.normals = None
         self.normals_dirty = True
+        self.normals_dirty_rect = None
         self.wetness_epoch = 0.0
         self.material_batches.clear()
 
@@ -266,6 +268,7 @@ class MaterialGroundRenderer(GroundRenderer):
                         rl.end_shader_mode()
             self.surface, self.coverage = surface, coverage
             self.normals_dirty = True
+            self.normals_dirty_rect = None
             self.substrate = pristine
         except BaseException:
             rl.unload_render_texture(surface)
@@ -339,26 +342,79 @@ class MaterialGroundRenderer(GroundRenderer):
                     rl.rl_color_mask(True, True, True, True)
                     rl.end_shader_mode()
         if commands:
+            self._mark_normals_commands(commands)
+
+    def _mark_normals_commands(self, commands: list[_MaterialStamp]) -> None:
+        assert self.surface is not None
+        tex_w = int(self.surface.texture.width)
+        tex_h = int(self.surface.texture.height)
+        scale_x = tex_w / max(1.0, float(self.width))
+        scale_y = tex_h / max(1.0, float(self.height))
+        pad_x = math.ceil(3.2 * scale_x + scale_x) + 3
+        pad_y = math.ceil(3.2 * scale_y + scale_y) + 3
+        min_x = tex_w
+        min_y = tex_h
+        max_x = 0
+        max_y = 0
+        for cmd in commands:
+            rad = math.radians(cmd.rotation)
+            c = math.cos(rad)
+            s = math.sin(rad)
+            ox = float(cmd.origin.x)
+            oy = float(cmd.origin.y)
+            w = float(cmd.dst.width)
+            h = float(cmd.dst.height)
+            cx = float(cmd.dst.x)
+            cy = float(cmd.dst.y)
+            for lx, ly in ((-ox, -oy), (w - ox, -oy), (w - ox, h - oy), (-ox, h - oy)):
+                px = cx + lx * c - ly * s
+                py = cy + lx * s + ly * c
+                x0 = math.floor(px) - pad_x
+                y0 = math.floor(py) - pad_y
+                x1 = math.ceil(px) + pad_x
+                y1 = math.ceil(py) + pad_y
+                if x0 < min_x:
+                    min_x = x0
+                if y0 < min_y:
+                    min_y = y0
+                if x1 > max_x:
+                    max_x = x1
+                if y1 > max_y:
+                    max_y = y1
+        x0 = max(0, min(tex_w, min_x))
+        y0 = max(0, min(tex_h, min_y))
+        x1 = max(0, min(tex_w, max_x))
+        y1 = max(0, min(tex_h, max_y))
+        if x1 <= x0 or y1 <= y0:
+            return
+        if not self.normals_dirty:
             self.normals_dirty = True
+            self.normals_dirty_rect = (x0, y0, x1, y1)
+        elif self.normals_dirty_rect is not None:
+            ox0, oy0, ox1, oy1 = self.normals_dirty_rect
+            self.normals_dirty_rect = (min(ox0, x0), min(oy0, y0), max(ox1, x1), max(oy1, y1))
 
     def _ensure_normals(self) -> rl.RenderTexture:
         assert self.surface is not None and self.coverage is not None
         size = self.surface.texture
+        tex_w = int(size.width)
+        tex_h = int(size.height)
         if (
             self.normals is None
-            or int(self.normals.texture.width) != int(size.width)
-            or int(self.normals.texture.height) != int(size.height)
+            or int(self.normals.texture.width) != tex_w
+            or int(self.normals.texture.height) != tex_h
         ):
             if self.normals is not None:
                 rl.unload_render_texture(self.normals)
             self.normals = load_float_render_texture(
-                size.width,
-                size.height,
+                tex_w,
+                tex_h,
                 pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
             )
             rl.set_texture_filter(self.normals.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
             rl.set_texture_wrap(self.normals.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
             self.normals_dirty = True
+            self.normals_dirty_rect = None
         if not self.normals_dirty:
             return self.normals
         if self.normals_shader is None:
@@ -369,7 +425,13 @@ class MaterialGroundRenderer(GroundRenderer):
             self.normals_locations,
             [("u_ground_size", [max(1.0, float(self.width)), max(1.0, float(self.height))], 2)],
         )
+        dirty_rect = self.normals_dirty_rect
         with texture_mode(self.normals), opaque_blend():
+            if dirty_rect is not None:
+                x0, y0, x1, y1 = dirty_rect
+                rl.rl_enable_scissor_test()
+                # Raylib's top-left texture space maps to OpenGL's bottom-left scissor space.
+                rl.rl_scissor(x0, tex_h - y1, x1 - x0, y1 - y0)
             rl.begin_shader_mode(sh)
             try:
                 rl.set_shader_value_texture(
@@ -380,15 +442,19 @@ class MaterialGroundRenderer(GroundRenderer):
                 )
                 rl.draw_texture_pro(
                     self.surface.texture,
-                    rl_rectangle(0, 0, size.width, -size.height),
-                    rl_rectangle(0, 0, size.width, size.height),
+                    rl_rectangle(0, 0, tex_w, -tex_h),
+                    rl_rectangle(0, 0, tex_w, tex_h),
                     rl_vector2(0, 0),
                     0,
                     rl.WHITE,
                 )
+                rl.rl_draw_render_batch_active()
             finally:
                 rl.end_shader_mode()
+                if dirty_rect is not None:
+                    rl.rl_disable_scissor_test()
         self.normals_dirty = False
+        self.normals_dirty_rect = None
         return self.normals
 
     def _rebase_wetness(self, epoch: float) -> None:
