@@ -94,6 +94,7 @@ struct SamplerState {
 // drawn, or dropped with the companions of terrain `id`.
 extern "C" {
 void flush_ground_stamps();
+void flush_beams();
 void discard_ground_stamps(int id);
 }
 
@@ -252,7 +253,12 @@ Target hdr;
 GLuint tonemap_program, beam_program, beam_array, beam_buffer;
 GLuint effect_program;
 GLint u_effect_target_size, u_effect_kind, u_effect_params, u_effect_in_world;
-GLint u_tonemap_headroom, u_beam_target_size, u_beam_length, u_beam_step, u_beam_color, u_beam_in_world;
+GLint u_tonemap_headroom, u_beam_target_size, u_beam_in_world;
+struct BeamVertex {
+  float x, y, u, v, r, g, b, a, length, step;
+};
+std::vector<BeamVertex> beam_vertices;
+int beam_batch_count = 0;
 float edr_headroom = 1;
 
 // The shaders WebGPU runs too (crimson-core/client/shaders, client/shaders.py).
@@ -313,9 +319,11 @@ int bonus_emblem;
 float bonus_grid[2], bonus_center[2];
 struct LitProgram {
   GLuint id = 0;
+  uint64_t uploaded_scene_gen = 0;
   GLint target_size, camera, count, ambient, pos, rgb, dir, response, occlusion_grid, occlusion_cell, shadows;
   GLint pass, grid, shell_center, ice, ice_frozen, creature_type, beam_shape, spec_topology;
 };
+uint64_t scene_gen = 1;
 // The creature body grid (host_occlusion): origin, columns (0 for none) and rows,
 // cell size, the shadows setting, and its texels in an RGBA32F texture 256 wide.
 enum { OCCLUSION_WIDTH = 256 };
@@ -377,7 +385,7 @@ GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_k
 // settings and passes, and the display's composite at reduced resolution.
 enum { SMOKE_TARGETS = 5, SMOKE_DISPLAY_MAX_AXIS = 640 };
 Target smoke_targets[SMOKE_TARGETS], smoke_composite;
-int smoke_current, smoke_iterations;
+int smoke_current, smoke_pressure = 3, smoke_iterations;
 float smoke_resolution, smoke_world[2], smoke_dt, smoke_decay = 0.2f, smoke_fade = 1;
 GLuint smoke_solver_program, smoke_splat_program, smoke_impulse_program, smoke_program, blit_program;
 // Each uploaded artwork's texels in the module (it keeps them), for the creature
@@ -797,18 +805,21 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   glUniform2fv(p.grid, 1, bonus_grid);
   glUniform2fv(p.shell_center, 1, bonus_center);
   glUniform2f(p.target_size, (float)t.logical_width, (float)t.logical_height);
-  glUniform2f(p.camera, scene_camera[0], scene_camera[1]);
-  glUniform1i(p.count, light_count);
-  glUniform1f(p.ambient, 0.6f);
-  glUniform4fv(p.occlusion_grid, 1, occlusion_grid);
-  glUniform1f(p.occlusion_cell, occlusion_cell);
-  glUniform1i(p.shadows, dynamic_shadows);
-  if (light_count) {
-    glUniform4fv(p.pos, light_count, light_pos);
-    glUniform4fv(p.rgb, light_count, light_rgb);
-    glUniform4fv(p.dir, light_count, light_dir);
-    glUniform4fv(p.response, light_count, light_response);
-    glUniform4fv(p.beam_shape, light_count, beam_shape);
+  if (p.uploaded_scene_gen != scene_gen) {
+    glUniform2f(p.camera, scene_camera[0], scene_camera[1]);
+    glUniform1i(p.count, light_count);
+    glUniform1f(p.ambient, 0.6f);
+    glUniform4fv(p.occlusion_grid, 1, occlusion_grid);
+    glUniform1f(p.occlusion_cell, occlusion_cell);
+    glUniform1i(p.shadows, dynamic_shadows);
+    if (light_count) {
+      glUniform4fv(p.pos, light_count, light_pos);
+      glUniform4fv(p.rgb, light_count, light_rgb);
+      glUniform4fv(p.dir, light_count, light_dir);
+      glUniform4fv(p.response, light_count, light_response);
+      glUniform4fv(p.beam_shape, light_count, beam_shape);
+    }
+    p.uploaded_scene_gen = scene_gen;
   }
   auto it = textures.find(bound[0]);
   bool present = bound[0] && it != textures.end() && it->second.texture;
@@ -1536,6 +1547,7 @@ void GL_ENTRY(renderer_resize)(int window_width, int window_height) {
 }
 
 void GL_ENTRY(renderer_present)(int window_width, int window_height) {
+  flush_beams();
   flush_ground_stamps();
   gpu_mark("present");
   Target &back = textures[0];
@@ -1690,9 +1702,6 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     use_program(beam_program);
     glUniform4f(uniform_location(beam_program, "colDiffuse"), 1, 1, 1, 1);
     u_beam_target_size = uniform_location(beam_program, "target_size");
-    u_beam_length = uniform_location(beam_program, "beam_length");
-    u_beam_step = uniform_location(beam_program, "beam_step");
-    u_beam_color = uniform_location(beam_program, "beam_color");
     u_beam_in_world = uniform_location(beam_program, "u_in_world");
     effect_program = link(SHADER_HEADER SHADER_EFFECT_VERT, SHADER_HEADER RTX_SHADER_EFFECT_FRAG);
     use_program(effect_program);
@@ -1745,8 +1754,15 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     glGenBuffers(1, &beam_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, beam_buffer);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 16, (void *)0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(BeamVertex), (void *)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(BeamVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(BeamVertex), (void *)(8 * sizeof(float)));
   }
+  beam_vertices.clear();
+  beam_batch_count = 0;
+  ++scene_gen;
   rtx = enabled;
   world = false;
   visibility_dirty = true;
@@ -1787,6 +1803,7 @@ Target held, anchor;
 
 // The back buffer as top-down RGBA rows.
 std::vector<unsigned char> GL_ENTRY(renderer_capture)(int &width, int &height) {
+  flush_beams();
   Target &back = textures[0];
   width = back.width;
   height = back.height;
@@ -1801,6 +1818,7 @@ std::vector<unsigned char> GL_ENTRY(renderer_capture)(int &width, int &height) {
 
 extern "C" {
 void GL_ENTRY(w2c_host_frame_hold)(struct w2c_host *, u32 op) {
+  flush_beams();
   if (op == 5) { // HOST_FRAME_ANCHOR_DROP
     release(anchor);
     anchor = {};
@@ -1870,6 +1888,7 @@ u32 GL_ENTRY(w2c_host_texture_bytes)(struct w2c_host *, u32 id) {
 void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 source) {
   if (destination == source)
     return;
+  flush_beams();
   flush_ground_stamps();
   Target &from = target_or_back((int)source);
   if (!from.framebuffer)
@@ -1901,6 +1920,7 @@ struct TextureSnapshot {
 };
 static constexpr u32 TEXTURE_SNAPSHOT_MAGIC = 0x31535443; // "CTS1"
 u32 GL_ENTRY(w2c_host_texture_read)(struct w2c_host *, u32 id, u32 out, u32 capacity) {
+  flush_beams();
   flush_ground_stamps();
   const Target &t = textures[(int)id];
   if (!t.framebuffer)
@@ -2030,6 +2050,7 @@ void GL_ENTRY(w2c_host_texture_upload)(struct w2c_host *, u32 id, u32 texels) {
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, t.width, t.height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
 }
 void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
+  flush_beams();
   auto it = textures.find((int)id);
   if (it == textures.end() || !id)
     return;
@@ -2057,8 +2078,10 @@ void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
   bind_target();
 }
 void GL_ENTRY(w2c_host_render_state)(struct w2c_host *, u32 state, u32 value) {
-  if (state < 256)
+  if (state < 256 && render_states[state] != value) {
+    flush_beams();
     render_states[state] = value;
+  }
 }
 void GL_ENTRY(w2c_host_texture_stage_state)(struct w2c_host *, u32 stage, u32 state, u32 value) {
   if (stage < STAGES && state < 32)
@@ -2069,6 +2092,8 @@ void GL_ENTRY(w2c_host_set_texture)(struct w2c_host *, u32 stage, u32 id) {
     bound[stage] = (int)id;
 }
 void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
+  if (current_target != (int)id)
+    flush_beams();
   if (!ground_batch)
     flush_ground_stamps();
   current_target = (int)id;
@@ -2079,6 +2104,7 @@ void GL_ENTRY(w2c_host_set_render_target)(struct w2c_host *, u32 id) {
   bind_target();
 }
 void GL_ENTRY(w2c_host_clear)(struct w2c_host *, u32 color) {
+  flush_beams();
   drop_ground(current_target);
   bind_target();
   Target &t = drawing_target(current_target);
@@ -2303,6 +2329,7 @@ void flush_ground_stamps() {
 
 void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
                    u32 primitive_count) {
+  flush_beams();
   if (profiling) {
     auto texture = textures.find(bound[0]);
     count_draw(bound[0] && texture != textures.end()
@@ -2328,6 +2355,7 @@ void GL_ENTRY(w2c_host_draw)(struct w2c_host *, u32 primitive, u32 vertices, u32
     queue_ground_stamp(*g, primitive, data, vertex_count, index_data, primitive_count);
 }
 void GL_ENTRY(w2c_host_circle)(struct w2c_host *, u32 shape, u32 color) {
+  flush_beams();
   EffectVertex vertices[4];
   circle_quad((const float *)(client_memory() + shape), color, vertices, circle);
   device_draw(drawing_target(current_target), 6, vertices, 4, nullptr, 2);
@@ -2341,29 +2369,46 @@ static void upload_analytic_vertices(GLuint array, GLuint buffer,
   glBufferData(GL_ARRAY_BUFFER, bytes, data, GL_STREAM_DRAW);
   glDrawArrays(primitive, 0, count);
 }
+void flush_beams() {
+  if (beam_vertices.empty())
+    return;
+  Target &t = drawing_target(current_target);
+  back_drawn(t);
+  use_program(beam_program);
+  glUniform2f(u_beam_target_size, (float)t.logical_width, (float)t.logical_height);
+  glUniform1i(u_beam_in_world, in_world(t));
+  apply_output_state(t);
+  // Flat quads, whichever way their corners turn.
+  glDisable(GL_CULL_FACE);
+  count_draw("beam", (const float *)beam_vertices.data(), 10, nullptr, 4, (int)beam_vertices.size() / 3);
+  upload_analytic_vertices(beam_array, beam_buffer, beam_vertices.data(),
+                           beam_vertices.size() * sizeof(BeamVertex), GL_TRIANGLES, (int)beam_vertices.size());
+  beam_vertices.clear();
+  beam_batch_count = 0;
+}
 void GL_ENTRY(w2c_host_beam)(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
   profile_stat("beams", 1);
   if (!rtx)
     return;
-  Target &t = drawing_target(current_target);
-  use_program(beam_program);
-  glUniform2f(u_beam_target_size, (float)t.logical_width, (float)t.logical_height);
-  glUniform1f(u_beam_length, length);
-  glUniform1f(u_beam_step, step);
-  glUniform4f(u_beam_color, (color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f,
-              (color >> 24) / 255.0f);
-  glUniform1i(u_beam_in_world, in_world(t));
-  apply_output_state(t);
-  // A flat quad, whichever way its corners turn.
-  glDisable(GL_CULL_FACE);
-  count_draw("beam", (const float *)(client_memory() + corners), 4, nullptr, 6, 2);
-  upload_analytic_vertices(beam_array, beam_buffer, client_memory() + corners,
-                           16 * sizeof(float), GL_TRIANGLE_FAN, 4);
+  if (beam_batch_count >= 1024)
+    flush_beams();
+  const float *c = (const float *)(client_memory() + corners);
+  float r = (color >> 16 & 255) / 255.0f;
+  float g = (color >> 8 & 255) / 255.0f;
+  float b = (color & 255) / 255.0f;
+  float a = (color >> 24) / 255.0f;
+  static const int order[6] = {0, 1, 2, 0, 2, 3};
+  for (int corner : order) {
+    const float *p = c + corner * 4;
+    beam_vertices.push_back(BeamVertex{p[0], p[1], p[2], p[3], r, g, b, a, length, step});
+  }
+  ++beam_batch_count;
 }
 // Radial sprite batches and parameterized single effects share the device
 // vertex layout.
 static void draw_effect_vertices(const EffectVertex *vertices, int count,
                                  int kind, const float *params) {
+  flush_beams();
   count_draw("effect" + std::to_string(kind), (const float *)vertices, 7, nullptr, 4, count / 3);
   Target &t = drawing_target(current_target);
   use_program(effect_program);
@@ -2397,6 +2442,7 @@ void GL_ENTRY(w2c_host_effect_sprites)(struct w2c_host *, u32 vertices,
 }
 void GL_ENTRY(w2c_host_scene)(struct w2c_host *, u32 view, u32 lights, u32 count) {
   visibility_dirty = true;
+  ++scene_gen;
   profile_stat("lights", count);
   const float *v = (const float *)(client_memory() + view);
   scene_camera[0] = v[0], scene_camera[1] = v[1], scene_seconds = v[2];
@@ -2548,6 +2594,7 @@ void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
         clear_smoke_target(i);
       }
       smoke_current = 0;
+      smoke_pressure = 3;
       c += 6;
       break;
     case SMOKE_FADE:
@@ -2578,16 +2625,17 @@ void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
       break;
     }
     case SMOKE_PROJECT: {
-      // Advect velocity, take its divergence, relax pressure, then subtract its gradient.
+      // Advect velocity, take its divergence, warm-start Jacobi pressure from the
+      // previous step (cleared on SMOKE_RESET), then subtract its gradient.
       int other = 1 - smoke_current;
       smoke_pass(other, smoke_current, 0);
       smoke_pass(2, other, 1);
-      clear_smoke_target(3);
-      int pressure = 3;
+      int pressure = smoke_pressure;
       for (int i = 0; i < smoke_iterations; ++i) {
         smoke_pass(7 - pressure, pressure, 2, 2);
         pressure = 7 - pressure;
       }
+      smoke_pressure = pressure;
       smoke_pass(smoke_current, other, 3, pressure);
       c += 1;
       break;
@@ -2623,6 +2671,7 @@ void GL_ENTRY(w2c_host_smoke)(struct w2c_host *, u32 commands, u32 count) {
 }
 void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 light_count, u32 sights,
                                    u32 sight_count) {
+  flush_beams();
   profile_stat("smoke_lights", light_count);
   if (!rtx || !world || !smoke_targets[0].texture)
     return;
@@ -2696,6 +2745,7 @@ void GL_ENTRY(w2c_host_smoke_draw)(struct w2c_host *, u32 view, u32 lights, u32 
 }
 void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 count) {
   visibility_dirty = true;
+  ++scene_gen;
   const float *g = (const float *)(client_memory() + grid);
   occlusion_grid[0] = g[0], occlusion_grid[1] = g[1], occlusion_grid[2] = count ? g[2] : 0, occlusion_grid[3] = g[3];
   occlusion_cell = g[4];
@@ -2738,6 +2788,7 @@ void GL_ENTRY(w2c_host_occlusion)(struct w2c_host *, u32 grid, u32 values, u32 c
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, OCCLUSION_WIDTH, rows, GL_RGBA, GL_FLOAT, occlusion_texels.data());
 }
 void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 grid_y, f32 center_x, f32 center_y) {
+  flush_beams();
   gpu_mark("bonuses");
   material = MATERIAL_BONUS;
   bonus_emblem = (int)emblem;
@@ -2745,6 +2796,7 @@ void GL_ENTRY(w2c_host_bonus)(struct w2c_host *, u32 emblem, f32 grid_x, f32 gri
   bonus_center[0] = center_x, bonus_center[1] = center_y;
 }
 void GL_ENTRY(w2c_host_render_pass)(struct w2c_host *, u32 pass) {
+  flush_beams();
   static const char *const labels[] = {"", "world", "post", "creatures", "players", "sprites", "ground", "heat",
                                      "glow", "ice-cubes", "ice-shards", "ice-frozen", "glint"};
   // Classic marks only the world's bounds: what follows is its HUD.

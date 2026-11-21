@@ -26,7 +26,7 @@ int rtx_collect_sights(float *out, int capacity);
 namespace {
 
 const float STEP_SECONDS = 1.0f / 60.0f, FADE_SECONDS = 2.0f, GUARD_BAND = 128;
-enum { GRID_SIZE = 320, PRESSURE_ITERATIONS = 12, MAX_IMPULSES = 64, MAX_BLASTS = 16 };
+enum { GRID_SIZE = 320, PRESSURE_ITERATIONS = 8, MAX_IMPULSES = 64, MAX_BLASTS = 16 };
 // Moving bodies' drag, on a budget of its own (gpu_smoke.py's MAX_BODY_IMPULSES_PER_TICK).
 enum { MAX_BODY_IMPULSES = 64 };
 // A minute of ticks, should frames stop draining them.
