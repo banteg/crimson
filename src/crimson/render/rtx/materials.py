@@ -12,7 +12,12 @@ import msgspec
 
 from grim.assets import RuntimeResources, TextureId
 from grim.blend import blend_custom, opaque_blend
-from grim.edr import load_float_render_texture
+from grim.edr import (
+    load_float_render_texture,
+    load_optional_float_render_texture,
+    register_optional_reclaimer,
+    unregister_optional_reclaimer,
+)
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 from grim.terrain_render import GroundRenderer
@@ -207,6 +212,7 @@ class MaterialGroundRenderer(GroundRenderer):
 
     def close(self) -> None:
         self.reset_materials()
+        unregister_optional_reclaimer(self.evict_relief_cache)
         if self.normals is not None:
             rl.unload_render_texture(self.normals)
             self.normals = None
@@ -240,6 +246,7 @@ class MaterialGroundRenderer(GroundRenderer):
             scale = min(max(texture_scale, 0.5), 4.0)
             target_w, target_h = self._render_target_size_for(scale)
             if int(self.normals.texture.width) != target_w or int(self.normals.texture.height) != target_h:
+                unregister_optional_reclaimer(self.evict_relief_cache)
                 rl.unload_render_texture(self.normals)
                 self.normals = None
         self.reset_materials()
@@ -248,6 +255,7 @@ class MaterialGroundRenderer(GroundRenderer):
 
     def evict_relief_cache(self) -> bool:
         """Release optional cached relief storage so required RTX targets can retry allocation."""
+        unregister_optional_reclaimer(self.evict_relief_cache)
         if self.normals is None:
             return False
         rl.unload_render_texture(self.normals)
@@ -444,12 +452,13 @@ class MaterialGroundRenderer(GroundRenderer):
             or int(self.normals.texture.height) != norm_h
         ):
             if self.normals is not None:
+                unregister_optional_reclaimer(self.evict_relief_cache)
                 rl.unload_render_texture(self.normals)
                 self.normals = None
             if self.normals_failed_size == (norm_w, norm_h):
                 return None
             try:
-                self.normals = load_float_render_texture(
+                self.normals = load_optional_float_render_texture(
                     norm_w,
                     norm_h,
                     pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
@@ -458,6 +467,7 @@ class MaterialGroundRenderer(GroundRenderer):
                 restore_current_target()
                 self.normals_failed_size = (norm_w, norm_h)
                 return None
+            register_optional_reclaimer(self.evict_relief_cache)
             self.normals_failed_size = None
             rl.set_texture_filter(self.normals.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
             rl.set_texture_wrap(self.normals.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)

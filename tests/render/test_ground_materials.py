@@ -1672,7 +1672,7 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
                 raise RuntimeError("simulated VRAM exhaustion")
             return real_loader(width, height, pixel_format=pixel_format)
 
-        with patch.object(ground_materials, "load_float_render_texture", side_effect=fail_half_float):
+        with patch.object(ground_materials, "load_optional_float_render_texture", side_effect=fail_half_float):
             fallback_sub = debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False)
             fallback_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2, shadows=False)
         assert oom_calls == 1
@@ -1712,28 +1712,27 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
         assert fallback_ground.normals is None and fallback_ground.beam_atlas is not None
         assert any(p[0] > 0.01 for p in shaded)
 
-        # GPU smoke preparation takes VRAM priority over optional relief and retries after evicting it.
-        from crimson.render.rtx import gpu_smoke as gpu_smoke_mod
+        # Any required float render target (HDR, pressure fronts, GPU smoke) reclaims optional
+        # relief inside load_float_render_texture and preserves queued smoke emissions across retry.
         from crimson.render.rtx.smoke import SmokeRenderer
+        from grim import edr as edr_mod
+        from tests.render.test_smoke_simulation import emission
 
         fallback_ground.normals_failed_size = None
         fallback_ground.normals_dirty = True
         fallback_ground.normals_full = True
         assert fallback_ground._ensure_normals() is not None
         smoke = SmokeRenderer()
-        smoke_evict_calls = 0
+        smoke.consume((emission(pos=Vec2(32, 32), vel=Vec2(0, 0), scale=24.0),), dt_sim=1 / 60)
+        reclaim_alloc_calls = 0
+        real_alloc = edr_mod._allocate_float_render_texture
 
-        def fail_smoke_until_relief_evicted(
-            width: int,
-            height: int,
-            *,
-            pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
-        ):
-            nonlocal smoke_evict_calls
+        def fail_raw_alloc_until_relief_evicted(width: int, height: int, pixel_format: int):
+            nonlocal reclaim_alloc_calls
             if fallback_ground.normals is not None:
-                smoke_evict_calls += 1
-                raise RuntimeError("simulated VRAM pressure allocating smoke targets")
-            return real_loader(width, height, pixel_format=pixel_format)
+                reclaim_alloc_calls += 1
+                raise RuntimeError("simulated VRAM pressure on required float target")
+            return real_alloc(width, height, pixel_format)
 
         try:
             frame = RenderFrame(
@@ -1748,9 +1747,24 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
                 bonus_anim_phase=0.0,
                 rtx_mode=RtxRenderMode.RTX,
             )
-            with patch.object(gpu_smoke_mod, "load_float_render_texture", side_effect=fail_smoke_until_relief_evicted):
+            with patch.object(edr_mod, "_allocate_float_render_texture", side_effect=fail_raw_alloc_until_relief_evicted):
                 smoke.prepare(frame, ())
-            assert smoke_evict_calls == 1
-            assert smoke.available and fallback_ground.normals is None
+            assert reclaim_alloc_calls == 1
+            assert smoke.available and smoke.prepared and bool(smoke.simulation.fields)
+            assert fallback_ground.normals is None
+
+            # Verify HDR/pressure-front style float target allocation also reclaims relief automatically.
+            fallback_ground.normals_failed_size = None
+            fallback_ground.normals_dirty = True
+            fallback_ground.normals_full = True
+            assert fallback_ground._ensure_normals() is not None
+            reclaim_alloc_calls = 0
+            with patch.object(edr_mod, "_allocate_float_render_texture", side_effect=fail_raw_alloc_until_relief_evicted):
+                hdr_target = load_float_render_texture(64, 64)
+            try:
+                assert reclaim_alloc_calls == 1
+                assert fallback_ground.normals is None
+            finally:
+                rl.unload_render_texture(hdr_target)
         finally:
             smoke.close()

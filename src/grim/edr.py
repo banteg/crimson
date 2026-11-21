@@ -4,8 +4,8 @@ import ctypes as C
 import logging
 import math
 import sys
-from collections.abc import Generator
-from contextlib import AbstractContextManager, contextmanager
+from collections.abc import Callable, Generator
+from contextlib import AbstractContextManager, contextmanager, suppress
 from typing import Any, Protocol
 
 from .raylib_api import ffi, rl
@@ -49,6 +49,26 @@ class _Bridge(Protocol):
 _bridge: _Bridge | None = None
 _edr_active = False
 _headroom = 1.0
+_optional_reclaimers: list[Callable[[], bool]] = []
+
+
+def register_optional_reclaimer(reclaimer: Callable[[], bool]) -> None:
+    """Register an optional GPU cache reclaimer invoked before a float target allocation fails."""
+    if reclaimer not in _optional_reclaimers:
+        _optional_reclaimers.append(reclaimer)
+
+
+def unregister_optional_reclaimer(reclaimer: Callable[[], bool]) -> None:
+    with suppress(ValueError):
+        _optional_reclaimers.remove(reclaimer)
+
+
+def reclaim_optional_targets() -> bool:
+    """Release registered optional GPU caches; return True if any cache freed storage."""
+    reclaimed = False
+    for reclaimer in tuple(_optional_reclaimers):
+        reclaimed |= bool(reclaimer())
+    return reclaimed
 
 
 def _gl(name: str, *argtypes: Any) -> Any:
@@ -76,9 +96,7 @@ def _store_as_float(texture_id: int, width: int, height: int, pixel_format: int)
     return stored
 
 
-def load_float_render_texture(
-    width: int, height: int, *, pixel_format: int = HDR_PIXEL_FORMAT,
-) -> rl.RenderTexture:
+def _allocate_float_render_texture(width: int, height: int, pixel_format: int) -> rl.RenderTexture:
     texture_id = int(rl.rl_load_texture(ffi.NULL, int(width), int(height), pixel_format, 1))
     if texture_id <= 0:
         raise RuntimeError("float render target texture allocation failed")
@@ -105,6 +123,24 @@ def load_float_render_texture(
     rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     rl.set_texture_wrap(texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
     return rl.RenderTexture(framebuffer, texture, rl.Texture(0, 0, 0, 0, 0))
+
+
+def load_float_render_texture(
+    width: int, height: int, *, pixel_format: int = HDR_PIXEL_FORMAT,
+) -> rl.RenderTexture:
+    try:
+        return _allocate_float_render_texture(width, height, pixel_format)
+    except RuntimeError:
+        if not reclaim_optional_targets():
+            raise
+        return _allocate_float_render_texture(width, height, pixel_format)
+
+
+def load_optional_float_render_texture(
+    width: int, height: int, *, pixel_format: int = HDR_PIXEL_FORMAT,
+) -> rl.RenderTexture:
+    """Allocate an optional float render target without reclaiming other optional caches."""
+    return _allocate_float_render_texture(width, height, pixel_format)
 
 
 class _MacosEdr:

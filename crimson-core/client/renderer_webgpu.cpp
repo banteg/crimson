@@ -18,6 +18,8 @@
 #include <vector>
 #include <webgpu/webgpu.h>
 
+void evict_ground_normals(int preserve_spare_id = 0);
+
 namespace {
 
 struct Target {
@@ -564,8 +566,6 @@ void forget_groups() {
 
 // --- Targets ----------------------------------------------------------------------
 
-void evict_ground_normals(int preserve_spare_id = 0);
-
 bool try_allocate(Target &t) {
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
   descriptor.size = {(uint32_t)t.width, (uint32_t)t.height, 1};
@@ -596,7 +596,7 @@ void allocate(Target &t, int preserve_spare_id = 0) {
   // WebGPU reports OOM asynchronously, so submit and destroy optional relief caches
   // before allocating a required render target; clean-anchor rebuilds keep their own spare.
   if (t.flags & TARGET_RENDER)
-    evict_ground_normals(preserve_spare_id);
+    ::evict_ground_normals(preserve_spare_id);
   try_allocate(t);
 }
 
