@@ -100,6 +100,7 @@ struct GroundTiles {
       float ring = c[3];
       bool is_ring = ring > 0.f;
       float square = d[0] * d[0] + d[1] * d[1];
+      bool near_cutoff = !is_ring && square >= .00009f && square <= .00011f;
       bool has_dir = square > .0001f;
       float inv_len = has_dir ? 1.f / std::sqrt(square) : 1.f;
       float ux = has_dir ? d[0] * inv_len : 1.f;
@@ -109,6 +110,14 @@ struct GroundTiles {
       float diff_half = continuous ? shapes[4 * i + 3] : spec_half;
       float diff_rad = has_diff ? std::max(1.f, p[2]) + margin : 0.f;
       float spec_rad = has_spec ? std::max(.01f, r[2]) + margin : 0.f;
+      if (near_cutoff) {
+        float full_spec_half = std::max(0.f, d[3] * .5f);
+        float full_diff_half = continuous ? std::max(full_spec_half, shapes[4 * i + 3]) : full_spec_half;
+        float rad = std::max(has_diff ? diff_rad + full_diff_half : 0.f,
+                             has_spec ? spec_rad + full_spec_half : 0.f);
+        diff_rad = spec_rad = rad;
+        diff_half = spec_half = 0.f;
+      }
       float ex, ey;
       if (is_ring) {
         ex = ey = std::max(diff_rad, spec_rad) + ring;

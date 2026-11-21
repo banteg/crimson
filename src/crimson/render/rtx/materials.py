@@ -641,11 +641,18 @@ class MaterialGroundRenderer(GroundRenderer):
                     diff_rad = max(1.0, light.radius) if has_diff else 0.0
                     spec_rad = max(0.01, light.reflection_reach) if has_spec else 0.0
                     square = light.direction.x ** 2 + light.direction.y ** 2
-                    has_dir = square > 0.0001
-                    axis = light.direction / math.sqrt(square) if has_dir else Vec2(1, 0)
                     if light.ring_radius > 0:
                         ex = ey = max(diff_rad, spec_rad) + light.ring_radius
+                    elif 0.00009 <= square <= 0.00011:
+                        spec_half = max(0.0, light.length * 0.5)
+                        diff_half = max(spec_half, shapes[i * 4 + 3]) if has_diff else 0.0
+                        ex = ey = max(
+                            diff_rad + diff_half if has_diff else 0.0,
+                            spec_rad + spec_half if has_spec else 0.0,
+                        )
                     else:
+                        has_dir = square > 0.0001
+                        axis = light.direction / math.sqrt(square) if has_dir else Vec2(1, 0)
                         spec_half = max(0.0, light.length * 0.5) if has_dir else 0.0
                         diff_half = max(spec_half, shapes[i * 4 + 3]) if has_diff else 0.0
                         ex = max(
