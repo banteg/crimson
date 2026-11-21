@@ -1211,7 +1211,13 @@ void prepare_ground_visibility(int view_width, int view_height) {
     beam_vis.width = beam_vis.logical_width = 4 * v.width;
     beam_vis.height = beam_vis.logical_height = BEAM_VISIBILITY_ROWS * v.height;
     beam_vis.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
-    allocate(beam_vis);
+    if (!try_allocate(beam_vis) && (!evict_ground_normals() || !try_allocate(beam_vis))) {
+      beam_vis = {};
+      ground_visibility = {};
+      bind_target();
+      gpu_resume();
+      return;
+    }
     beam_vis_width = v.width;
     beam_vis_height = v.height;
   }

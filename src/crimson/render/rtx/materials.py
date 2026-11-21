@@ -207,7 +207,6 @@ class MaterialGroundRenderer(GroundRenderer):
         self.normals_dirty = True
         self.normals_full = True
         self.normals_dirty_tiles = [0] * _NORMAL_DIRTY_GRID
-        self.normals_failed_size = None
         self.wetness_epoch = 0.0
         self.material_batches.clear()
 

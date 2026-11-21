@@ -1680,6 +1680,23 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
         assert oom_calls == 1
         assert fallback_ground.normals is None
         assert fallback_ground.normals_failed_size is not None
+        # Same-size replay seeks keep the failed-size backoff instead of retrying OOM every seek.
+        failed_size = fallback_ground.normals_failed_size
+        fallback_ground.reset_materials()
+        assert fallback_ground.normals_failed_size == failed_size
+        fallback_ground.material_batches.append(
+            TerrainFxBatch(
+                decals=(FxQueueEntry(effect_id=7, pos=Vec2(24, 24), width=16, height=16, rotation=0.4, color=RGBA(1, 0, 0, 1)),),
+                corpses=(FxQueueRotatedEntry(top_left=Vec2(20, 20), scale=18, rotation=0.3, color=RGBA(1, 1, 1, 1)),),
+            ),
+        )
+        with patch.object(ground_materials, "load_optional_float_render_texture", side_effect=fail_half_float):
+            assert max(
+                abs(a - b)
+                for p, q in zip(debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False), ref_sub, strict=True)
+                for a, b in zip(p, q, strict=True)
+            ) < 0.005
+        assert oom_calls == 1
         assert max(abs(a - b) for p, q in zip(fallback_sub, ref_sub, strict=True) for a, b in zip(p, q, strict=True)) < 0.005
         assert max(abs(a - b) for p, q in zip(fallback_fluid, ref_fluid, strict=True) for a, b in zip(p, q, strict=True)) < 0.005
 
