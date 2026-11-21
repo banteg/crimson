@@ -44,6 +44,7 @@ PROGRAMS = {
     "player": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "player.frag"),
     "bonus": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "bonus.frag"),
     "ground": (CLIENT_SHADERS / "creature.vert", CLIENT_SHADERS / "ground_lit.frag"),
+    "ground_normals": (CLIENT_SHADERS / "fullscreen.vert", CLIENT_SHADERS / "ground_normals_lit.frag"),
     "ground_beam_vis": (CLIENT_SHADERS / "ground_visibility.vert", CLIENT_SHADERS / "ground_beam_vis.frag"),
     "ground_stamp": (CLIENT_SHADERS / "creature.vert", RTX_SHADERS / "ground_stamp.frag"),
     "ground_fill": (CLIENT_SHADERS / "fullscreen.vert", RTX_SHADERS / "ground_stamp.frag"),

@@ -170,9 +170,17 @@ def test_fresh_blood_reflects_hdr_then_dries(ground_material) -> None:
                     rl.set_shader_value_texture(
                         sh, rl.get_shader_location(sh, "u_substrate_tex"), ground.substrate.render_target.texture,
                     )
+                    assert ground.normals is not None
+                    ground_materials._bind_unit(
+                        sh,
+                        rl.get_shader_location(sh, "u_normal_tex"),
+                        ground.normals.texture,
+                        unit=ground_materials.NORMAL_TEX_UNIT,
+                    )
                     ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
                 finally:
                     rl.end_shader_mode()
+                    ground_materials._bind_unit(None, -1, None, unit=ground_materials.NORMAL_TEX_UNIT)
             values.append(pixels(target)[32 * 64 + 32])
         assert max(values[0][:3]) > 1.0  # no intermediate SDR clipping
         assert max(values[1][:3]) < max(values[0][:3]) * 0.8
@@ -439,6 +447,7 @@ def uniform_fresh_film(ground, texture) -> None:
         rl.clear_background(rl.Color(10, 102, 102, 115))
     with texture_mode(ground.coverage):
         rl.clear_background(rl.Color(128, 0, 0, 0))
+    ground.normals_dirty = True
 
 
 def test_weak_light_cannot_darken_ambient_blood_or_create_a_boundary_ring(ground_material, mocker) -> None:
@@ -500,6 +509,7 @@ def test_single_expired_freeze_shard_has_ice_coverage_and_reflection(ground_mate
             rl.clear_background(rl.BLANK)
         finally:
             rl.rl_color_mask(True, True, True, True)
+    ground.normals_dirty = True
     dry = debug_pixels(ground, texture, mode=5)
     assert max(max(a[:3]) - max(b[:3]) for a, b in zip(icy, dry, strict=True)) > .01
 
@@ -533,6 +543,7 @@ def test_translucent_ice_occludes_blood_without_cutting_a_liquid_meniscus(ground
         rl.clear_background(rl.Color(10, 204, 204, 115))
     with texture_mode(ground.coverage):
         rl.clear_background(rl.Color(255, 0, 0, 0))
+    ground.normals_dirty = True
     before = debug_pixels(ground, texture, mode=4)
     ice = msgspec.structs.replace(blood(0).decals[0], effect_id=8, color=RGBA(1, 1, 1, .35))
     ground.material_batches.append(TerrainFxBatch(decals=(ice,)))
@@ -547,6 +558,7 @@ def test_translucent_ice_occludes_blood_without_cutting_a_liquid_meniscus(ground
             rl.clear_background(rl.Color(0, 0, 0, 115))
         finally:
             rl.rl_color_mask(True, True, True, True)
+    ground.normals_dirty = True
     normals = debug_pixels(ground, texture, mode=2)
     assert all(p[:3] == pytest.approx((.5, .5, 1.), abs=.001) for p in normals)
 
@@ -586,6 +598,7 @@ def uniform_deep_film(ground, texture) -> None:
         rl.clear_background(rl.Color(10, 230, 230, 115))
     with texture_mode(ground.coverage):
         rl.clear_background(rl.Color(255, 0, 0, 0))
+    ground.normals_dirty = True
 
 
 @pytest.mark.parametrize("length", [0., 28.])
@@ -1289,6 +1302,7 @@ def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> No
             rl.clear_background(rl.Color(10, 180, 180, 115))
         with texture_mode(ground.coverage):
             rl.clear_background(rl.Color(200, 0, 0, 0))
+        ground.normals_dirty = True
         lights = [
             # Point light near tile boundary
             MaterialLight(Vec2(48, 48), 55, (2.0, 0.8, 0.4), height=24, reflection_radius=55),
@@ -1358,3 +1372,26 @@ def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> No
         rl.unload_render_texture(target)
         ground.close()
         rl.unload_texture(texture)
+
+
+def test_baked_ground_normals_reuse_across_frames_and_update_on_decals(ground_material) -> None:
+    ground, texture = ground_material
+    ground.material_batches.extend([blood(0)] * 8)
+    first = debug_pixels(ground, texture, mode=2)
+    assert ground.normals is not None and not ground.normals_dirty
+    assert any(abs(p[0] - 0.5) > 0.01 or abs(p[1] - 0.5) > 0.01 for p in first)
+    normals_id = ground.normals.id
+    # Repeated draws with no new decals reuse the baked normal map without rebaking.
+    second = debug_pixels(ground, texture, mode=2, time=30.0)
+    assert second == first
+    assert ground.normals.id == normals_id and not ground.normals_dirty
+    # A new corpse updates the baked normals and changes substrate normals (mode=1).
+    before_sub = debug_pixels(ground, texture, mode=1)
+    ground.material_batches.append(TerrainFxBatch(corpses=(
+        FxQueueRotatedEntry(top_left=Vec2(20, 20), scale=20, color=RGBA(1, 1, 1, 1)),
+    )))
+    after_sub = debug_pixels(ground, texture, mode=1)
+    assert after_sub != before_sub
+    assert not ground.normals_dirty
+    ground.reset_materials()
+    assert ground.normals is None and ground.normals_dirty

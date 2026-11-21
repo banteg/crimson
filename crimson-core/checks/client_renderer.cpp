@@ -1009,6 +1009,29 @@ void check_terrain_snapshots() {
   bakes(603, true);
   assert(w2c_host_texture_read(nullptr, 600, 4096, size) == size);
   identical(603);
+  // Scissored dirty-rect normal rebakes must match a full rebake pixel-for-pixel.
+  {
+    Ground &g = grounds.at(600);
+    ground_size[0] = 64;
+    ground_size[1] = 32;
+    update_ground_normals(g);
+    assert(!g.normals_dirty && !g.normals_full && g.normals.framebuffer);
+    w2c_host_set_render_target(nullptr, 600);
+    w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 260);
+    rectangle(36, 10, 50, 22, 0xe0ffffff);
+    w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
+    assert(g.normals_dirty && !g.normals_full);
+    update_ground_normals(g);
+    std::vector<float> scissored((size_t)g.normals.width * g.normals.height * 4);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, g.normals.framebuffer);
+    glReadPixels(0, 0, g.normals.width, g.normals.height, GL_RGBA, GL_FLOAT, scissored.data());
+    mark_normals_full(g);
+    update_ground_normals(g);
+    std::vector<float> full(scissored.size());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, g.normals.framebuffer);
+    glReadPixels(0, 0, g.normals.width, g.normals.height, GL_RGBA, GL_FLOAT, full.data());
+    assert(scissored == full);
+  }
   w2c_host_set_render_target(nullptr, 0);
   for (int id : {600, 601, 602, 603})
     w2c_host_texture_release(nullptr, id);

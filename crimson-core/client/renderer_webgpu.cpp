@@ -188,6 +188,7 @@ Program creature_lit{&WGSL_CREATURE_LIT_VERT, &WGSL_CREATURE_FRAG, CENTERED_VERT
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
 Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
 Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_FRAG, DEVICE_VERTICES};
+Program ground_normals{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_NORMALS_LIT_FRAG, NO_VERTICES};
 Program ground_beam_vis{&WGSL_GROUND_VISIBILITY_VERT, &WGSL_GROUND_BEAM_VIS_FRAG, NO_VERTICES};
 Program ground_stamp{&WGSL_CREATURE_VERT, &WGSL_GROUND_STAMP_FRAG, DEVICE_VERTICES};
 Program ground_fill{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_STAMP_FRAG, NO_VERTICES};
@@ -548,7 +549,7 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_beam_vis, &ground_stamp, &ground_fill,
+                     &ground_lit, &ground_normals, &ground_beam_vis, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program}) {
     for (auto *cache : {&p->groups, &p->vertex_groups}) {
@@ -753,7 +754,7 @@ void wgpu_renderer_init() {
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_beam_vis, &ground_stamp, &ground_fill,
+                     &ground_lit, &ground_normals, &ground_beam_vis, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program})
     create(*p);
@@ -926,8 +927,10 @@ void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
 
 // --- The RTX ground (render/rtx/materials.py), as in renderer.cpp -----------------
 struct Ground {
-  Target substrate, coverage, surface;
+  Target substrate, coverage, surface, normals;
   float epoch = 0;
+  float normals_size[2] = {};
+  bool normals_dirty = true;
 };
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
@@ -940,7 +943,44 @@ void drop_ground(int id) {
   release(it->second.substrate);
   release(it->second.coverage);
   release(it->second.surface);
+  release(it->second.normals);
   grounds.erase(it);
+}
+
+void update_ground_normals(Ground &g) {
+  float size[2] = {ground_size[0] > 0 ? ground_size[0] : (float)std::max(1, g.surface.logical_width),
+                   ground_size[1] > 0 ? ground_size[1] : (float)std::max(1, g.surface.logical_height)};
+  if (!g.normals.texture || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
+    release(g.normals);
+    g.normals.width = g.surface.width;
+    g.normals.height = g.surface.height;
+    g.normals.logical_width = g.surface.logical_width;
+    g.normals.logical_height = g.surface.logical_height;
+    g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(g.normals);
+    g.normals_dirty = true;
+  }
+  if (g.normals_size[0] != size[0] || g.normals_size[1] != size[1])
+    g.normals_dirty = true;
+  if (!g.normals_dirty)
+    return;
+  if (!fits(uniform_stream, ground_normals.frag->uniform_size + uniform_stream.alignment))
+    submit();
+  pass_into(g.normals);
+  Output o;
+  o.format = format_of(g.normals);
+  Uniforms fragment(*ground_normals.frag);
+  fragment.set("u_ground_size", size, 8);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_normals, o));
+  bind(ground_normals,
+       fragment_group(ground_normals, {{"u_surface_tex", g.surface.view, linear_clamp()},
+                                       {"u_material_tex", g.coverage.view, linear_clamp()}}),
+       nullptr, &fragment);
+  wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+  end_pass();
+  g.normals_dirty = false;
+  g.normals_size[0] = size[0];
+  g.normals_size[1] = size[1];
 }
 
 // A ground pass over a whole companion: the stamp shader's `kind` and `pass`
@@ -1018,6 +1058,7 @@ void stamp_ground(Ground &g, int kind, const Geometry &geometry) {
     bind(ground_stamp, fragment_group(ground_stamp, {atlas}), &vertex, &fragment);
     draw_geometry(geometry);
   }
+  g.normals_dirty = true;
 }
 
 // Vertices the host makes, in the device's layout (x, y, z, rhw, D3DCOLOR, u, v).
@@ -1119,6 +1160,7 @@ bool ground_draw(const Geometry &geometry) {
   Target &t = drawing_target(current_target);
   if (visibility_dirty)
     prepare_ground_visibility(t.logical_width, t.logical_height);
+  update_ground_normals(g);
   upload_ground_tiles();
   pass_into(t);
   Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
@@ -1136,6 +1178,7 @@ bool ground_draw(const Geometry &geometry) {
   WGPUBindGroup group = fragment_group(ground_lit, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
                                                     {"u_surface_tex", g.surface.view, linear_clamp()},
                                                     {"u_material_tex", g.coverage.view, linear_clamp()},
+                                                    {"u_normal_tex", g.normals.view, linear_clamp()},
                                                     {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
                                                      linear_clamp()},
                                                     {"u_light_tiles", ground_tiles.width ? ground_tile_texture.view : blank_view,
@@ -1280,7 +1323,7 @@ u32 wgpu_w2c_host_texture_bytes(struct w2c_host *, u32 id) {
   uint64_t size = bytes(texture->second);
   if (auto it = grounds.find((int)id); it != grounds.end()) {
     const Ground &g = it->second;
-    size += bytes(g.substrate) + bytes(g.coverage) + bytes(g.surface);
+    size += bytes(g.substrate) + bytes(g.coverage) + bytes(g.surface) + bytes(g.normals);
   }
   return (u32)std::min<uint64_t>(size, UINT32_MAX);
 }
@@ -1300,6 +1343,8 @@ void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) 
     copy_target(to.substrate, g.substrate);
     copy_target(to.coverage, g.coverage);
     copy_target(to.surface, g.surface);
+    release(to.normals);
+    to.normals_dirty = true;
     to.epoch = g.epoch;
   }
 }

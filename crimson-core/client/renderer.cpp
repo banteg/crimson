@@ -269,6 +269,7 @@ const char *creature_fragment_source = SHADER_HEADER RTX_SHADER_CREATURE_FRAG;
 const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
 const char *bonus_fragment_source = SHADER_HEADER RTX_SHADER_BONUS_FRAG;
 const char *ground_fragment_source = SHADER_HEADER SHADER_GROUND_LIT_FRAG;
+const char *ground_normals_fragment_source = SHADER_HEADER SHADER_GROUND_NORMALS_LIT_FRAG;
 const char *ground_beam_vis_source = SHADER_HEADER SHADER_GROUND_BEAM_VIS_FRAG;
 const char *stamp_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_STAMP_FRAG;
 const char *smoke_rect_source = SHADER_HEADER SHADER_SMOKE_RECT_VERT;
@@ -347,20 +348,25 @@ Target pressured;
 // Wetness is stored against an epoch, rebased as the clock runs on. Decal draws
 // marked with a material (host_ground) reach them as they reach the terrain.
 struct Ground {
-  Target substrate, coverage, surface;
+  Target substrate, coverage, surface, normals;
   float epoch = 0;
+  float normals_size[2] = {};
+  bool normals_dirty = true;
+  bool normals_full = true;
+  int dirty_x0 = 0, dirty_y0 = 0, dirty_x1 = 0, dirty_y1 = 0;
 };
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
 bool ground_batch;
 float ground_seconds;
-GLuint ground_program, stamp_program, fill_program;
+GLuint ground_program, ground_normals_program, stamp_program, fill_program;
 // World-space, color-independent source visibility: four source masks per
 // RGBA group, four groups a row. Final shading never walks the body grid.
 enum { BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
 GLuint ground_beam_vis_program, beam_vis_framebuffer, beam_vis_texture;
 int beam_vis_width, beam_vis_height;
-GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
+GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness,
+    u_normals_ground_size;
 // RTX fluid smoke (game/rtx_smoke.cpp, render/rtx/gpu_smoke.py): the field's
 // RGBA16F targets (its state twice, divergence, pressure twice), the solver's
 // settings and passes, and the display's composite at reduced resolution.
@@ -815,7 +821,78 @@ void drop_ground(int id) {
   release(it->second.substrate);
   release(it->second.coverage);
   release(it->second.surface);
+  release(it->second.normals);
   grounds.erase(it);
+}
+
+void mark_normals_full(Ground &g) {
+  g.normals_dirty = true;
+  g.normals_full = true;
+}
+
+void mark_normals_rect(Ground &g, int x0, int y0, int x1, int y1) {
+  x0 = std::clamp(x0, 0, g.surface.width);
+  y0 = std::clamp(y0, 0, g.surface.height);
+  x1 = std::clamp(x1, 0, g.surface.width);
+  y1 = std::clamp(y1, 0, g.surface.height);
+  if (x1 <= x0 || y1 <= y0)
+    return;
+  if (!g.normals_dirty) {
+    g.dirty_x0 = x0, g.dirty_y0 = y0, g.dirty_x1 = x1, g.dirty_y1 = y1;
+    g.normals_dirty = true;
+    g.normals_full = false;
+  } else if (!g.normals_full) {
+    g.dirty_x0 = std::min(g.dirty_x0, x0);
+    g.dirty_y0 = std::min(g.dirty_y0, y0);
+    g.dirty_x1 = std::max(g.dirty_x1, x1);
+    g.dirty_y1 = std::max(g.dirty_y1, y1);
+  }
+}
+
+void update_ground_normals(Ground &g) {
+  float size[2] = {ground_size[0] > 0 ? ground_size[0] : (float)std::max(1, g.surface.logical_width),
+                   ground_size[1] > 0 ? ground_size[1] : (float)std::max(1, g.surface.logical_height)};
+  if (!g.normals.framebuffer || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
+    release(g.normals);
+    g.normals.width = g.surface.width;
+    g.normals.height = g.surface.height;
+    g.normals.logical_width = g.surface.logical_width;
+    g.normals.logical_height = g.surface.logical_height;
+    g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    allocate(g.normals);
+    mark_normals_full(g);
+  }
+  if (g.normals_size[0] != size[0] || g.normals_size[1] != size[1])
+    mark_normals_full(g);
+  if (!g.normals_dirty)
+    return;
+  gpu_aside("ground-normals");
+  bind_framebuffer(g.normals);
+  glDisable(GL_BLEND);
+  glDisable(GL_CULL_FACE);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  if (!g.normals_full) {
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(g.dirty_x0, g.dirty_y0, g.dirty_x1 - g.dirty_x0, g.dirty_y1 - g.dirty_y0);
+  } else {
+    glDisable(GL_SCISSOR_TEST);
+  }
+  use_program(ground_normals_program);
+  glUniform2fv(u_normals_ground_size, 1, size);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, g.coverage.texture);
+  glBindSampler(1, 0);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, g.surface.texture);
+  glBindSampler(0, 0);
+  glBindVertexArray(vertex_array);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glDisable(GL_SCISSOR_TEST);
+  g.normals_dirty = g.normals_full = false;
+  g.normals_size[0] = size[0];
+  g.normals_size[1] = size[1];
+  bind_target();
+  gpu_resume();
 }
 
 // The companions of the terrain target `id`, made from it as it stands: the
@@ -1006,6 +1083,7 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   Target &t = drawing_target(current_target);
   if (visibility_dirty)
     prepare_ground_visibility(t.logical_width, t.logical_height);
+  update_ground_normals(g);
   gpu_mark("ground-shade");
   GLuint p = ground_program;
   use_program(p);
@@ -1047,9 +1125,11 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   glUniform2i(at("u_light_tile_size"), ground_tiles.width, ground_tiles.height);
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
                            ground_visibility.count ? beam_vis_texture : blank_texture,
-                           ground_tiles.width ? ground_tile_texture : blank_texture};
-  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_visibility_tex", "u_light_tiles"};
-  for (int i = 0; i < 5; ++i) {
+                           ground_tiles.width ? ground_tile_texture : blank_texture,
+                           g.normals.texture};
+  const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_visibility_tex", "u_light_tiles",
+                         "u_normal_tex"};
+  for (int i = 0; i < 6; ++i) {
     glUniform1i(at(names[i]), i);
     glActiveTexture(GL_TEXTURE0 + i);
     glBindTexture(GL_TEXTURE_2D, inputs[i]);
@@ -1267,7 +1347,8 @@ void GL_ENTRY(renderer_frame_end)() {
     snapshots += id >= (1 << 30) ? target_bytes(t) : 0;
   }
   for (const auto &[id, g] : grounds) {
-    double material_bytes = target_bytes(g.substrate) + target_bytes(g.coverage) + target_bytes(g.surface);
+    double material_bytes = target_bytes(g.substrate) + target_bytes(g.coverage) + target_bytes(g.surface) +
+                            target_bytes(g.normals);
     bytes += material_bytes;
     snapshots += id >= (1 << 30) ? material_bytes : 0;
   }
@@ -1372,6 +1453,11 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     glUniform1i(uniform_location(heat_trail_program, "u_heat"), 0);
     pressure_program = link(tonemap_vertex_source, pressure_fragment_source);
     ground_program = link(lit_vertex_source, ground_fragment_source);
+    ground_normals_program = link(tonemap_vertex_source, ground_normals_fragment_source);
+    use_program(ground_normals_program);
+    glUniform1i(uniform_location(ground_normals_program, "u_surface_tex"), 0);
+    glUniform1i(uniform_location(ground_normals_program, "u_material_tex"), 1);
+    u_normals_ground_size = uniform_location(ground_normals_program, "u_ground_size");
     ground_beam_vis_program = link(SHADER_HEADER SHADER_GROUND_VISIBILITY_VERT, ground_beam_vis_source);
     stamp_program = link(lit_vertex_source, stamp_fragment_source);
     use_program(stamp_program);
@@ -1514,7 +1600,7 @@ u32 GL_ENTRY(w2c_host_texture_bytes)(struct w2c_host *, u32 id) {
   double bytes = target_bytes(texture->second);
   if (auto it = grounds.find((int)id); it != grounds.end()) {
     const Ground &g = it->second;
-    bytes += target_bytes(g.substrate) + target_bytes(g.coverage) + target_bytes(g.surface);
+    bytes += target_bytes(g.substrate) + target_bytes(g.coverage) + target_bytes(g.surface) + target_bytes(g.normals);
   }
   return (u32)std::min(bytes, (double)UINT32_MAX);
 }
@@ -1535,6 +1621,8 @@ void GL_ENTRY(w2c_host_texture_copy)(struct w2c_host *, u32 destination, u32 sou
     copy_target(to.substrate, g.substrate);
     copy_target(to.coverage, g.coverage);
     copy_target(to.surface, g.surface);
+    release(to.normals);
+    mark_normals_full(to);
     to.epoch = g.epoch;
   }
   bind_target();
@@ -1916,6 +2004,32 @@ void flush_ground_stamps() {
       }
       submit_geometry(s.primitive, vertices(s), s.vertex_count, indices(s), s.primitive_count);
     }
+  }
+  // Track the physical pixel bounds of stamps that touched coverage or surface,
+  // expanded by the 3.2-unit normal stencil plus bilinear margin.
+  float sx = (float)g.surface.width / std::max(1, g.surface.logical_width);
+  float sy = (float)g.surface.height / std::max(1, g.surface.logical_height);
+  float gw = ground_size[0] > 0 ? ground_size[0] : (float)std::max(1, g.surface.logical_width);
+  float gh = ground_size[1] > 0 ? ground_size[1] : (float)std::max(1, g.surface.logical_height);
+  int pad_x = (int)ceilf(3.2f * g.surface.width / gw + sx) + 3;
+  int pad_y = (int)ceilf(3.2f * g.surface.height / gh + sy) + 3;
+  for (const GroundStamp &s : ground_stamps) {
+    if (s.kind == HOST_GROUND_DECAL || !s.vertex_count)
+      continue;
+    const unsigned char *vb = vertices(s);
+    float min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
+    for (u32 vi = 0; vi < s.vertex_count; ++vi) {
+      float vx, vy;
+      memcpy(&vx, vb + (size_t)vi * 28, sizeof vx);
+      memcpy(&vy, vb + (size_t)vi * 28 + 4, sizeof vy);
+      min_x = std::min(min_x, vx);
+      min_y = std::min(min_y, vy);
+      max_x = std::max(max_x, vx);
+      max_y = std::max(max_y, vy);
+    }
+    if (std::isfinite(min_x) && std::isfinite(min_y) && std::isfinite(max_x) && std::isfinite(max_y))
+      mark_normals_rect(g, (int)floorf(min_x * sx) - pad_x, (int)floorf(min_y * sy) - pad_y,
+                        (int)ceilf(max_x * sx) + pad_x, (int)ceilf(max_y * sy) + pad_y);
   }
   ground_stamps.clear();
   ground_stamp_bytes.clear();
