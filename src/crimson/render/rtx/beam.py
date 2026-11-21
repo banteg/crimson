@@ -7,7 +7,7 @@ import msgspec
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
-from grim.shaders import _shader_scope, set_world_light
+from grim.shaders import _shader_scope, register_gl_shutdown_hook, set_world_light
 
 from .shaders import glsl
 
@@ -272,4 +272,15 @@ def draw_beam_fast_stamped_head(
     return True
 
 
-__all__ = ["BeamBatch", "draw_beam_fast_stamped_body", "draw_beam_fast_stamped_head"]
+def close_beam_shader() -> None:
+    global _BEAM_FAST_STAMPED_SHADER_TRIED, _BEAM_FAST_STAMPED_SHADER
+    if _BEAM_FAST_STAMPED_SHADER is not None:
+        rl.unload_shader(_BEAM_FAST_STAMPED_SHADER.shader)
+    _BEAM_FAST_STAMPED_SHADER = None
+    _BEAM_FAST_STAMPED_SHADER_TRIED = False
+
+
+register_gl_shutdown_hook(close_beam_shader)
+
+
+__all__ = ["BeamBatch", "close_beam_shader", "draw_beam_fast_stamped_body", "draw_beam_fast_stamped_head"]

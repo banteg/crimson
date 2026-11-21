@@ -303,6 +303,9 @@ def run_replay_render_video(
                 video_writer.close()
             unload_runtime_resources(resources)
             if window_open:
+                from grim.shaders import close_shared_shaders
+
+                close_shared_shaders()
                 rl.close_window()
 
     return ReplayRenderResult(

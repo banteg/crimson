@@ -142,8 +142,10 @@ def test_mixed_projectile_batch_preserves_hdr_pixels_and_order(raylib_context, m
         assert actual.max() > 1.0  # Exercise unclamped additive HDR output.
         np.testing.assert_array_equal(actual, reference)
     finally:
-        if beam._BEAM_FAST_STAMPED_SHADER is not None:
-            rl.unload_shader(beam._BEAM_FAST_STAMPED_SHADER.shader)
+        beam.close_beam_shader()
+        from crimson.render.rtx import effects
+
+        effects.close_effect_shader()
         rl.unload_render_texture(target)
         rl.unload_texture(texture)
 
@@ -192,3 +194,28 @@ def test_non_drawing_projectiles_do_not_interrupt_beam_batch(mocker):
     mocker.patch.object(rl, "end_blend_mode")
     projectiles._projectile_sprite_pass(ctx, alpha=1.)
     assert [c[0] for c in calls.mock_calls] == ["beam", "beam", "end", "pulse", "end"]
+
+
+def test_close_beam_shader_tracks_window_lifetime(mocker, tmp_path, headless_resources):
+    from crimson.render.rtx import effects
+    from crimson.world.render_resources import RenderResources
+    from grim.assets import unload_runtime_resources
+    from grim.shaders import close_shared_shaders
+
+    shader = rl.ffi.new("Shader *")[0]
+    shader.id = 77
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER_TRIED", True)
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER", beam._BeamFastStampedShader(shader, 1, 2))
+    mocker.patch.object(effects, "_shader", None)
+    unload = mocker.patch.object(rl, "unload_shader")
+    world = RenderResources(tmp_path)
+    world.close()
+    unload_runtime_resources(headless_resources)
+    unload.assert_not_called()
+    assert beam._BEAM_FAST_STAMPED_SHADER is not None
+
+    close_shared_shaders()
+    close_shared_shaders()
+    unload.assert_called_once_with(shader)
+    assert beam._BEAM_FAST_STAMPED_SHADER is None
+    assert beam._BEAM_FAST_STAMPED_SHADER_TRIED is False

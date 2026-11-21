@@ -21,7 +21,7 @@ from grim.raylib_api import rd, rl, rl_rectangle
 from grim.texture_mode import texture_mode
 
 from ..world.constants import monster_vision_fade_alpha
-from .creature_shaders import CREATURE_VERTEX
+from .bonus_shaders import BONUS_VERTEX
 from .creature_translucency import load_heat_density_texture
 from .hdr import _HDR_TONEMAP_VS_330
 from .shaders import glsl
@@ -153,7 +153,7 @@ class HeatVision(msgspec.Struct):
         if self.trail is None:
             return
         if self.trail_shader is None:
-            self.trail_shader = _load(CREATURE_VERTEX, glsl("heat_trail.frag"))
+            self.trail_shader = _load(BONUS_VERTEX, glsl("heat_trail.frag"))
         shader = self.trail_shader
         rl.rl_draw_render_batch_active()
         rl.begin_shader_mode(shader)
@@ -175,7 +175,7 @@ class HeatVision(msgspec.Struct):
     @contextmanager
     def body_scope(self, *, texture: rl.Texture, restore_shader: rl.Shader | None) -> Generator[None]:
         if self.body_shader is None:
-            self.body_shader = _load(CREATURE_VERTEX, glsl("heat_body.frag"))
+            self.body_shader = _load(BONUS_VERTEX, glsl("heat_body.frag"))
         shader = self.body_shader
         rl.rl_draw_render_batch_active()
         density = self.densities.get(int(texture.id))

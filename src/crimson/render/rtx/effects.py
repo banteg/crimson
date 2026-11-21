@@ -11,7 +11,7 @@ import msgspec
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl
-from grim.shaders import _shader_scope, set_world_light
+from grim.shaders import _shader_scope, register_gl_shutdown_hook, set_world_light
 
 from ...effects_atlas import EffectId
 from .shaders import glsl
@@ -146,6 +146,16 @@ def sprite_batch() -> Generator[SpriteBatch]:
         yield batch
     finally:
         batch.end()
+
+
+def close_effect_shader() -> None:
+    global _shader
+    if _shader is not None:
+        rl.unload_shader(_shader.shader)
+    _shader = None
+
+
+register_gl_shutdown_hook(close_effect_shader)
 
 
 def _draw(

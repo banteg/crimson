@@ -204,17 +204,13 @@ def headless_resources(_headless_resource_template: RuntimeResources) -> Iterato
         unregister_runtime_resources(resources.assets_dir)
 
 
-@pytest.fixture
-def headless_window(mocker: MockerFixture) -> Mock:
-    """A 640x480 window without a GPU: raylib draw calls are recorded instead of issued.
-
-    Returns the parent mock; each patched draw function is attached by name
-    (`headless_window.draw_texture_pro.call_args_list`). Shaders "compile" to a
-    placeholder id. Input polling stays real and reports nothing, as raylib does
-    without a window.
-    """
+def setup_headless_window(mocker: MockerFixture) -> Mock:
+    from crimson.render.rtx import beam, effects
     from grim.raylib_api import rl
 
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER_TRIED", False)
+    mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER", None)
+    mocker.patch.object(effects, "_shader", None)
     mocker.patch.object(rl, "get_screen_width", return_value=640)
     mocker.patch.object(rl, "get_screen_height", return_value=480)
     shader = rl.Shader()
@@ -226,7 +222,20 @@ def headless_window(mocker: MockerFixture) -> Mock:
             draws.attach_mock(mocker.patch.object(rl, name), name)
     mocker.patch.object(rl, "get_shader_location", return_value=0)
     mocker.patch.object(rl, "set_shader_value")
+    mocker.patch.object(rl, "unload_shader")
     return draws
+
+
+@pytest.fixture
+def headless_window(mocker: MockerFixture) -> Mock:
+    """A 640x480 window without a GPU: raylib draw calls are recorded instead of issued.
+
+    Returns the parent mock; each patched draw function is attached by name
+    (`headless_window.draw_texture_pro.call_args_list`). Shaders "compile" to a
+    placeholder id. Input polling stays real and reports nothing, as raylib does
+    without a window.
+    """
+    return setup_headless_window(mocker)
 
 
 @pytest.fixture
