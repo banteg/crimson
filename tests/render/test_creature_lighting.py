@@ -116,7 +116,7 @@ def lit_sprite(raylib_context):
     alpha = AlphaTestShader()
 
     def render(lights, *, use_shader=True, rotation=0.0, scale=1.0, camera=Vec2(), neighbor=False,
-               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), target_override=None, type_id=None, pigment: tuple[int, int, int] = (70, 55, 40)):
+               degenerate_uv=False, textured=False, relief_ramp=None, occlusion=None, shadows=True, ambient=1., center=Vec2(64, 64), target_override=None, type_id=None, pigment: tuple[int, int, int] = (70, 55, 40), inset: float = 0.0, ice: int = 0):
         other = rl.gen_image_color(256, 256, rl.BLANK)
         rl.image_draw_circle(other, 16, 16, 10, rl.Color(*pigment, 255))
         rl.image_draw_rectangle(other, 24, 15, 8, 3, rl.Color(*pigment, 255))
@@ -140,7 +140,11 @@ def lit_sprite(raylib_context):
             with alpha.scope():
                 def draw():
                     pos = (center + camera) * scale
-                    source = rl_rectangle(20, 16, 0, 0) if degenerate_uv else rl_rectangle(0, 0, 32, 32)
+                    source = (
+                        rl_rectangle(20, 16, 0, 0)
+                        if degenerate_uv
+                        else rl_rectangle(inset, inset, 32 - 2 * inset, 32 - 2 * inset)
+                    )
                     if use_shader:
                         # As the world draws lit bodies: the quad carries its center for the shadows.
                         draw_centered_quad(texture, source, pos, 32 * scale, 32 * scale, math.radians(rotation), rl_color(255, 255, 255, 255))
@@ -149,7 +153,7 @@ def lit_sprite(raylib_context):
                                             rl_rectangle(pos.x, pos.y, 32*scale, 32*scale),
                                             rl_vector2(16*scale, 16*scale), rotation, rl.WHITE)
                 if use_shader:
-                    with lighting.scope(texture=texture, restore_shader=alpha.shader, type_id=type_id):
+                    with lighting.scope(texture=texture, restore_shader=alpha.shader, type_id=type_id, ice=ice):
                         draw()
                 else:
                     draw()
@@ -564,3 +568,335 @@ def test_annular_source_lights_the_front_and_leaves_distant_center_unlit(lit_spr
     assert all(math.isfinite(c) for p in lit for c in p)
     centered = msgspec.structs.replace(ring, pos=Vec2(64, 64))
     assert render([centered]) == base
+
+
+def test_continuous_beam_shadows_follow_beam_centroid_and_head_halo(lit_sprite):
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    # Long beam along +x from tail x=64 to head x=320 (center x=192, static centroid x~235).
+    beam = MaterialLight(
+        Vec2(192, 20), 155, (1.4, .68, .2), height=24, direction=Vec2(1, 0), length=256,
+        source_width=3, illumination_gain=4, reflection_gain=1, reflection_radius=155,
+        reflection_tail=0., beam_profile=(16., 3.1, 1.35),
+    )
+    occlusion = ReflectionOcclusion()
+    try:
+        # Creature beside the tail (64, 64): beamAtReceiver's lit centroid sits near x~145, not the static x~235.
+        clear = render([beam], center=Vec2(64, 64))
+        # Blocker on the ray toward the actual lit centroid shadows the creature.
+        lit_blocker = BodyVolume(Vec2(105, 42), Vec2(10, 10), 32, 0., owner=Vec2(105, 42))
+        occlusion.upload(build_occlusion_grid([lit_blocker], [beam], width=1024, height=1024))
+        blocked = render([beam], occlusion=occlusion, center=Vec2(64, 64))
+        assert sum(p[0] for p in blocked) < sum(p[0] for p in clear) * .85
+
+        # Blocker far along the ray to the static centroid (235, 20), past the lit stretch, must not shadow it.
+        far_blocker = BodyVolume(Vec2(190, 31), Vec2(8, 8), 32, 0., owner=Vec2(190, 31))
+        occlusion.upload(build_occlusion_grid([far_blocker], [beam], width=1024, height=1024))
+        unblocked = render([beam], occlusion=occlusion, center=Vec2(64, 64))
+        assert sum(p[0] for p in unblocked) == pytest.approx(sum(p[0] for p in clear), rel=.01)
+
+        # Creature past half_length + radius + corner_radius without the head halo, yet lit by the head halo.
+        from crimson.render.rtx.continuous_beam import prepare_beam_lights
+
+        halo_beam = msgspec.structs.replace(beam, pos=Vec2(192, 64), radius=100, reflection_radius=100,
+                                            beam_profile=(64., 6., 1.35))
+        # Segment head ends at x=320; head_width ~32 extends emitting head to ~352.
+        # At x=445, owner-to-320 minus quad corner radius (22.6) is 102.4 >= 100, so without the head halo
+        # creature_visibility.glsl culled the quad to unshadowed even though its disk (x=435..445) is lit.
+        owner = Vec2(445, 64)
+        cam = Vec2(64, 64) - owner
+        base_halo = render([], center=owner, camera=cam)
+        clear_halo = render([halo_beam], center=owner, camera=cam)
+        assert sum(p[0] for p in clear_halo) > sum(p[0] for p in base_halo) + .05
+        halo_blocker = BodyVolume(Vec2(390, 64), Vec2(16, 16), 36, 0., owner=Vec2(390, 64))
+        _, grid_lights = prepare_beam_lights([halo_beam])
+        occlusion.upload(build_occlusion_grid([halo_blocker], grid_lights, width=1024, height=1024))
+        blocked_halo = render([halo_beam], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[0] for p in blocked_halo) < sum(p[0] for p in clear_halo) - .02
+    finally:
+        occlusion.close()
+
+
+def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illumination_drops(lit_sprite):
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    # Long Ion beam along +x from tail x=64 to head x=320 (center x=192).
+    # Creature at (350, 128) sits beyond the head: nearest segment point is the head (320, 64),
+    # while diffuse beamAtReceiver centroid lies back along the shaft near x~288.
+    beam = MaterialLight(
+        Vec2(192, 64), 195, (.55, .82, 1.45), height=24, direction=Vec2(1, 0), length=256,
+        source_width=3, illumination_gain=4, reflection_gain=2, reflection_radius=195,
+        reflection_tail=0., beam_profile=(35.2, 6.82, 1.05), beam_ion=True,
+    )
+    reflection_only = msgspec.structs.replace(beam, illumination_gain=0.)
+    fading = msgspec.structs.replace(beam, illumination_gain=1e-4)
+    owner = Vec2(350, 128)
+    cam = Vec2(64, 64) - owner
+    # Blocker beside the shaft blocks the ray to the diffuse centroid (~288, 64) but leaves the head (320, 64) clear.
+    shaft_blocker = BodyVolume(Vec2(297, 73), Vec2(13, 7), 32, 0., owner=Vec2(297, 73))
+    # Blocker directly between the creature and the beam head blocks specular highlights.
+    head_blocker = BodyVolume(Vec2(335, 96), Vec2(10, 10), 32, 0., owner=Vec2(335, 96))
+    occlusion = ReflectionOcclusion()
+    try:
+        base = render([], center=owner, camera=cam)
+        clear_ref = render([reflection_only], center=owner, camera=cam)
+        assert max(a[2] - b[2] for a, b in zip(clear_ref, base, strict=True)) > .02
+
+        # Shaft blocker must not suppress the reflection-only highlight from the unblocked beam head.
+        occlusion.upload(build_occlusion_grid([shaft_blocker], [reflection_only], width=1024, height=1024))
+        shaft_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
+        assert shaft_ref == clear_ref
+
+        # With diffuse active too, the shaft blocker shadows diffuse while keeping the full specular highlight.
+        clear_full = render([beam], center=owner, camera=cam)
+        occlusion.upload(build_occlusion_grid([shaft_blocker], [beam], width=1024, height=1024))
+        shaft_full = render([beam], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[2] for p in shaft_full) < sum(p[2] for p in clear_full) * .7
+        assert sum(p[2] for p in shaft_full) >= sum(p[2] for p in clear_ref) - .005
+
+        # Blocker on the creature-to-head ray shadows the specular highlight.
+        occlusion.upload(build_occlusion_grid([head_blocker], [reflection_only], width=1024, height=1024))
+        head_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[2] for p in head_ref) < sum(p[2] for p in clear_ref) - .05
+
+        # Partial specular occlusion: a narrow blocker covering one side of the sprite's rays to the beam head
+        # while missing the center ray must still partially shadow the highlight, identically across both
+        # illuminating (illumination > 0) and reflection-only beams.
+        side_blocker = BodyVolume(Vec2(330, 102), Vec2(6, 6), 32, 0., owner=Vec2(330, 102))
+        occlusion.upload(build_occlusion_grid([side_blocker], [reflection_only], width=1024, height=1024))
+        partial_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[2] for p in head_ref) < sum(p[2] for p in partial_ref) < sum(p[2] for p in clear_ref) - .005
+        occlusion.upload(build_occlusion_grid([side_blocker], [fading], width=1024, height=1024))
+        partial_fading = render([fading], occlusion=occlusion, center=owner, camera=cam)
+        for a, b in zip(partial_fading, partial_ref, strict=True):
+            assert a == pytest.approx(b, abs=.002)
+
+        # Nearby crowd in the next cell (< 64 units away) must still shadow a creature standing in an empty cell.
+        from crimson.render.rtx.reflection_occlusion import CROWD_BODIES
+
+        close_light = MaterialLight(Vec2(154, 96), 110, (1.4, .68, .2), height=24)
+        close_crowd = [BodyVolume(Vec2(139, 96), Vec2(8, 12), 28, 0., owner=Vec2(139, 96))] * (CROWD_BODIES + 1)
+        close_owner = Vec2(110, 96)
+        close_cam = Vec2(64, 64) - close_owner
+        close_clear = render([close_light], center=close_owner, camera=close_cam)
+        occlusion.upload(build_occlusion_grid(close_crowd, [close_light], width=1024, height=1024))
+        close_blocked = render([close_light], occlusion=occlusion, center=close_owner, camera=close_cam)
+        assert sum(p[0] for p in close_blocked) < sum(p[0] for p in close_clear) * .9
+
+        # A beam highlight spanning a crowd-cell boundary (x=128) must not show a hard seam between adjacent pixels.
+        seam_beam = MaterialLight(
+            Vec2(176, 64), 195, (.55, .82, 1.45), height=24, direction=Vec2(0, 1), length=128,
+            source_width=3, illumination_gain=0, reflection_gain=2, reflection_radius=195,
+            reflection_tail=0., beam_profile=(35.2, 6.82, 1.05), beam_ion=True,
+        )
+        seam_crowd = [BodyVolume(Vec2(151, 96), Vec2(8, 12), 28, 0., owner=Vec2(151, 96))] * (CROWD_BODIES + 1)
+        seam_owner = Vec2(128, 96)
+        seam_cam = Vec2(64, 64) - seam_owner
+        seam_clear = render([seam_beam], center=seam_owner, camera=seam_cam)
+        occlusion.upload(build_occlusion_grid(seam_crowd, [seam_beam], width=1024, height=1024))
+        seam_blocked = render([seam_beam], occlusion=occlusion, center=seam_owner, camera=seam_cam)
+        # Pixel x=63 sits at world x=127.5 (outside crowd cell [128, 192)), x=64 at world x=128.5 (inside it).
+        seam_diffs = [
+            abs((seam_blocked[y * 128 + 64][2] - seam_blocked[y * 128 + 63][2])
+                - (seam_clear[y * 128 + 64][2] - seam_clear[y * 128 + 63][2]))
+            for y in range(56, 72)
+        ]
+        assert max(seam_diffs) < .01
+
+        # Zero-direction, zero-length continuous beam: head halo extends along +X (beamFrame fallback) and shadows.
+        from crimson.render.rtx.continuous_beam import prepare_beam_lights
+
+        zero_dir_beam = MaterialLight(
+            Vec2(192, 64), 100, (1.4, .68, .2), height=24, direction=Vec2(0, 0), length=0,
+            source_width=3, illumination_gain=4, reflection_gain=0, reflection_radius=100,
+            reflection_tail=0., beam_profile=(64., 6., 1.35),
+        )
+        zero_owner = Vec2(317, 64)  # 125 units right of center; past 100 + 22.6 without +X halo span
+        zero_cam = Vec2(64, 64) - zero_owner
+        zero_base = render([], center=zero_owner, camera=zero_cam)
+        zero_clear = render([zero_dir_beam], center=zero_owner, camera=zero_cam)
+        assert sum(p[0] for p in zero_clear) > sum(p[0] for p in zero_base) + .02
+        zero_blocker = BodyVolume(Vec2(260, 64), Vec2(16, 16), 36, 0., owner=Vec2(260, 64))
+        _, zero_grid = prepare_beam_lights([zero_dir_beam])
+        occlusion.upload(build_occlusion_grid([zero_blocker], zero_grid, width=1024, height=1024))
+        zero_blocked = render([zero_dir_beam], occlusion=occlusion, center=zero_owner, camera=zero_cam)
+        assert sum(p[0] for p in zero_blocked) < sum(p[0] for p in zero_clear) - .01
+
+        # Dropping illumination budget from 1e-4 to 0 must not pop specular shadows for either blocker,
+        # including when a quad straddles the reflection cutoff and a blocker sits on a corner ray outside it.
+        for blocker in (shaft_blocker, head_blocker):
+            _, fading_grid = prepare_beam_lights([fading], require_illumination=False)
+            occlusion.upload(build_occlusion_grid([blocker], fading_grid, width=1024, height=1024))
+            fading_img = render([fading], occlusion=occlusion, center=owner, camera=cam)
+            _, dropped_grid = prepare_beam_lights([reflection_only], require_illumination=False)
+            occlusion.upload(build_occlusion_grid([blocker], dropped_grid, width=1024, height=1024))
+            dropped_img = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
+            for a, b in zip(fading_img, dropped_img, strict=True):
+                assert a == pytest.approx(b, abs=.002)
+
+        cutoff_beam = MaterialLight(
+            Vec2(192, 64), 100, (1.4, .68, .2), height=24, direction=Vec2(1, 0), length=256,
+            source_width=3, illumination_gain=1e-4, reflection_gain=2, reflection_radius=100,
+            reflection_tail=0., beam_profile=(64., 6., 1.35),
+        )
+        cutoff_ref = msgspec.structs.replace(cutoff_beam, illumination_gain=0.)
+        cutoff_owner = Vec2(422, 64)  # straddles x=420 cutoff: left pixels lit, right corner at x=438
+        cutoff_cam = Vec2(64, 64) - cutoff_owner
+        # Blocker sits past bare segment reach (320+100=420) but on the right-corner ray (438->320).
+        cutoff_blocker = BodyVolume(Vec2(432, 64), Vec2(6, 6), 36, 0., owner=Vec2(432, 64))
+        _, lit_cutoff_grid = prepare_beam_lights([cutoff_beam], require_illumination=False)
+        _, ref_cutoff_grid = prepare_beam_lights([cutoff_ref], require_illumination=False)
+        assert lit_cutoff_grid[0].length == ref_cutoff_grid[0].length and ref_cutoff_grid[0].length > cutoff_beam.length
+        occlusion.upload(build_occlusion_grid([cutoff_blocker], lit_cutoff_grid, width=1024, height=1024))
+        cutoff_lit_img = render([cutoff_beam], occlusion=occlusion, center=cutoff_owner, camera=cutoff_cam)
+        occlusion.upload(build_occlusion_grid([cutoff_blocker], ref_cutoff_grid, width=1024, height=1024))
+        cutoff_ref_img = render([cutoff_ref], occlusion=occlusion, center=cutoff_owner, camera=cutoff_cam)
+        for a, b in zip(cutoff_lit_img, cutoff_ref_img, strict=True):
+            assert a == pytest.approx(b, abs=.002)
+
+        # Every light index 0..31 has its own fixed 4-bit/corner slot in specVis0..3, so distant or in-reach
+        # prefixes (all the way to slot 31) and illumination fadeout must produce bit-identical specular shadows.
+        distant = [
+            msgspec.structs.replace(beam, pos=Vec2(900, 900 - i * 4), radius=20, reflection_radius=20)
+            for i in range(16)
+        ]
+
+        def in_reach_prefix(count: int) -> list[MaterialLight]:
+            return [
+                msgspec.structs.replace(
+                    beam, pos=Vec2(240, 110 + (i % 12) * 2), rgb=(0., 0., 0.), radius=260, reflection_radius=260,
+                )
+                for i in range(count)
+            ]
+
+        in_reach = in_reach_prefix(12)
+        for prefix in (distant, in_reach_prefix(6), in_reach_prefix(18), in_reach_prefix(31)):
+            occlusion.upload(build_occlusion_grid([shaft_blocker], [*prefix, beam], width=1024, height=1024))
+            overflow_shaft = render([*prefix, beam], occlusion=occlusion, center=owner, camera=cam)
+            assert overflow_shaft == shaft_full
+            occlusion.upload(build_occlusion_grid([head_blocker], [*prefix, fading], width=1024, height=1024))
+            overflow_head = render([*prefix, fading], occlusion=occlusion, center=owner, camera=cam)
+            assert sum(p[2] for p in overflow_head) < sum(p[2] for p in clear_ref) - .05
+            occlusion.upload(build_occlusion_grid([side_blocker], [*prefix, fading], width=1024, height=1024))
+            overflow_partial = render([*prefix, fading], occlusion=occlusion, center=owner, camera=cam)
+            assert overflow_partial == partial_fading
+            for a, b in zip(overflow_partial, partial_ref, strict=True):
+                assert a == pytest.approx(b, abs=.002)
+
+        # Crowd-cell boundary straddling under dense beams must stay bit-identical across light indices.
+        seam_fading = msgspec.structs.replace(seam_beam, illumination_gain=1e-4)
+        occlusion.upload(build_occlusion_grid(seam_crowd, [*in_reach, seam_fading], width=1024, height=1024))
+        overflow_seam = render([*in_reach, seam_fading], occlusion=occlusion, center=seam_owner, camera=seam_cam)
+        for a, b in zip(overflow_seam, seam_blocked, strict=True):
+            assert a == pytest.approx(b, abs=.002)
+
+        # Inset ice sprite (as effects.py draws freeze cubes/shards with effect_cell_src_inset): slot 0 vs slot 12
+        # visibility under a partial blocker must match bit-identically without depending on atlas UV span.
+        occlusion.upload(build_occlusion_grid([side_blocker], [fading], width=1024, height=1024))
+        inset_cached = render([fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
+        occlusion.upload(build_occlusion_grid([side_blocker], [*in_reach, fading], width=1024, height=1024))
+        inset_overflow = render([*in_reach, fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
+        assert inset_overflow == inset_cached
+
+        # Scaled and rotated sprites whose corner sits directly on a crowd-cell boundary (x=128): light reordering
+        # must stay bit-identical across all indices.
+        for rot_deg in (0.0, 35.0, 45.0):
+            rad = math.radians(rot_deg)
+            extent = 16.0 * (abs(math.cos(rad)) + abs(math.sin(rad)))
+            edge_owner = Vec2(128.0 + extent, 96.0)
+            edge_cam = Vec2(64 / 1.5, 64 / 1.5) - edge_owner
+            occlusion.upload(build_occlusion_grid(seam_crowd, [seam_fading], width=1024, height=1024))
+            edge_cached = render([seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
+            occlusion.upload(build_occlusion_grid(seam_crowd, [*in_reach, seam_fading], width=1024, height=1024))
+            edge_overflow = render([*in_reach, seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
+            assert edge_overflow == edge_cached
+
+        # Rectangular replacement creature atlas (512x256 -> 64x32 cells): both ordinary and beam specular
+        # shadows must trace from the actual rectangular corners rather than a reconstructed square.
+        rect_img = rl.gen_image_color(512, 256, rl.BLANK)
+        rl.image_draw_rectangle(rect_img, 4, 4, 56, 24, rl.Color(70, 55, 40, 255))
+        rect_tex = rl.load_texture_from_image(rect_img)
+        rl.unload_image(rect_img)
+        rect_target = load_float_render_texture(128, 128)
+        alpha = AlphaTestShader()
+        lighting = lit_sprite[1]
+        try:
+            def render_rect(lights, *, rot_deg=0.0):
+                lighting.prepare(lights, camera=cam, view_scale=Vec2(1, 1), occlusion=occlusion, shadows=True, ambient=1.)
+                with texture_mode(rect_target, linear=True):
+                    rl.clear_background(rl.BLANK)
+                    with alpha.scope(), lighting.scope(texture=rect_tex, restore_shader=alpha.shader):
+                        draw_centered_quad(
+                            rect_tex, rl_rectangle(0, 0, 64, 32), owner + cam, 64, 32,
+                            math.radians(rot_deg), rl_color(255, 255, 255, 255),
+                        )
+                img = rl.load_image_from_texture(rect_target.texture)
+                try:
+                    rl.image_format(img, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
+                    return list(struct.iter_unpack("ffff", bytes(rl.ffi.buffer(img.data, 128 * 128 * 16))))
+                finally:
+                    rl.unload_image(img)
+
+            # Blocker sits right on the ray from the actual rectangular corner (318, 112) to the head (320, 64),
+            # while missing a wrong square's corner. Slot 0 and slot 12 must match bit-identically.
+            rect_blocker = BodyVolume(Vec2(319, 88), Vec2(6, 6), 32, 0., owner=Vec2(319, 88))
+            occlusion.upload(build_occlusion_grid([rect_blocker], [fading], width=1024, height=1024))
+            rect_clear_img = render_rect([fading], rot_deg=25.0)
+            occlusion.upload(build_occlusion_grid([rect_blocker], [*in_reach, fading], width=1024, height=1024))
+            rect_over_img = render_rect([*in_reach, fading], rot_deg=25.0)
+            assert rect_over_img == rect_clear_img
+            # And an ordinary light with a blocker that only intercepts the real rectangular corner (318, 112),
+            # NOT a 90-degree rotated square corner (334, 96): verify it actually shadows the sprite.
+            rect_light = MaterialLight(Vec2(318, 64), 120, (1.4, .68, .2), height=24)
+            occlusion.upload(build_occlusion_grid([], [rect_light], width=1024, height=1024))
+            ord_clear = render_rect([rect_light], rot_deg=0.0)
+            occlusion.upload(build_occlusion_grid([rect_blocker], [rect_light], width=1024, height=1024))
+            ord_blocked = render_rect([rect_light], rot_deg=0.0)
+            assert sum(p[0] for p in ord_blocked) < sum(p[0] for p in ord_clear) * .9
+        finally:
+            alpha.close()
+            rl.unload_render_texture(rect_target)
+            rl.unload_texture(rect_tex)
+    finally:
+        occlusion.close()
+
+
+def test_beam_shadow_stays_bounded_near_illumination_cutoff(lit_sprite):
+    from crimson.render.rtx.continuous_beam import prepare_beam_lights
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    # 256-unit Ion Rifle beam along +x from x=0 to x=256 (center x=128, head halo to ~272).
+    # Place the creature so one quad corner sits right at the reach boundary (b ~ 185.7 vs R=195) where float32
+    # cancellation in beamFalloffIntegrals can otherwise throw the centroid hundreds of units past the head.
+    beam = MaterialLight(
+        Vec2(128, 100), 195, (.55, .82, 1.45), height=24, direction=Vec2(1, 0), length=256,
+        source_width=3, illumination_gain=6, reflection_gain=1, reflection_radius=195,
+        reflection_tail=0., beam_profile=(35.2, 6.82, 1.05), beam_ion=True,
+    )
+    owner = Vec2(328, 270)
+    cam = Vec2(64, 64) - owner
+    # Blocker far past the beam head (~x=550), which only an out-of-span cancelled centroid could ever cross.
+    bogus_blocker = BodyVolume(Vec2(550, 210), Vec2(40, 40), 40, 0., owner=Vec2(550, 210))
+    occlusion = ReflectionOcclusion()
+    try:
+        clear = render([beam], center=owner, camera=cam)
+        _, grid_lights = prepare_beam_lights([beam])
+        wide = msgspec.structs.replace(grid_lights[0], radius=500, reflection_radius=500)
+        occlusion.upload(build_occlusion_grid([bogus_blocker], [wide], width=1024, height=1024))
+        actual = render([beam], occlusion=occlusion, center=owner, camera=cam)
+        assert actual == clear
+
+        # Smooth transition across low irradiance: moving a creature by 0.001 units near the reach cutoff
+        # must not snap diffuse or specular visibility across an intervening blocker.
+        blocker = BodyVolume(Vec2(276, 196), Vec2(8, 8), 36, 0., owner=Vec2(276, 196))
+        ref_beam = msgspec.structs.replace(beam, reflection_radius=240)
+        _, ref_grid = prepare_beam_lights([ref_beam])
+        occlusion.upload(build_occlusion_grid([blocker], ref_grid, width=1024, height=1024))
+        step_a = render([ref_beam], occlusion=occlusion, center=Vec2(328, 270.000), camera=Vec2(64 - 328, 64 - 270))
+        step_b = render([ref_beam], occlusion=occlusion, center=Vec2(328, 270.001), camera=Vec2(64 - 328, 64 - 270))
+        assert max(abs(a[2] - b[2]) for a, b in zip(step_a, step_b, strict=True)) < .005
+    finally:
+        occlusion.close()

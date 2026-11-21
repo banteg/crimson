@@ -46,13 +46,48 @@ enum { MATERIAL_BONUS = HOST_PASS_GLINT + 1 };
 // Each device vertex's quad center (x, y), the mean of its quad's vertices: Grim
 // batches quads as four consecutive vertices. The RTX creature lighting spares
 // that creature's own body (creature_lit.vert).
-inline void quad_centers(const float *vertices, unsigned count, float *centers) {
+inline void quad_centers(const float *vertices, unsigned count, float *centers, bool strip = false) {
   for (unsigned first = 0; first < count; first += 4) {
     unsigned corners = count - first < 4 ? count - first : 4;
     float x = 0, y = 0;
     for (unsigned v = first; v < first + corners; ++v)
       x += vertices[v * 7], y += vertices[v * 7 + 1];
-    for (unsigned v = first; v < first + corners; ++v)
-      centers[v * 2] = x / corners, centers[v * 2 + 1] = y / corners;
+    float cx = x / corners, cy = y / corners;
+    // Align d00 with the shared diagonal (v0-v2 for quad lists, v1-v2 for 4-vertex strips)
+    // and d01 with triangle 0's off-diagonal corner (v1 for quad lists, v0 for strips), so
+    // triangle 0 is always (c00, c01, c11) and triangle 1 is always (c00, c11, c10).
+    unsigned i0 = strip && corners >= 4 ? first + 1 : first;
+    unsigned i1 = strip && corners >= 4 ? first : first + 1;
+    float d0x = vertices[i0 * 7] - cx, d0y = vertices[i0 * 7 + 1] - cy;
+    float d1x = corners >= 4 ? vertices[i1 * 7] - cx : d0y;
+    float d1y = corners >= 4 ? vertices[i1 * 7 + 1] - cy : -d0x;
+    for (unsigned v = first; v < first + corners; ++v) {
+      centers[v * 6] = cx, centers[v * 6 + 1] = cy;
+      centers[v * 6 + 2] = d0x, centers[v * 6 + 3] = d0y;
+      centers[v * 6 + 4] = d1x, centers[v * 6 + 5] = d1y;
+    }
   }
+}
+// Provoking-vertex topology for creature_lit.vert's flat specular visibility:
+// 0 = Grim canonical indexed quad list (0,1,2),(2,3,0), 1 = 4-vertex triangle strip (0,1,2),(1,2,3),
+// 2 = 4-vertex triangle fan (0,1,2),(0,2,3), 3 = arbitrary (every vertex traces all four corners).
+inline int quad_spec_topology(unsigned primitive, const unsigned short *indices, int count, unsigned vertex_count) {
+  if (primitive == 4 && indices && count > 0 && count % 6 == 0) {
+    bool canonical = true;
+    for (int i = 0; i < count; i += 6) {
+      unsigned base = (unsigned)(i / 6 * 4);
+      if (indices[i] != base || indices[i + 1] != base + 1 || indices[i + 2] != base + 2 ||
+          indices[i + 3] != base + 2 || indices[i + 4] != base + 3 || indices[i + 5] != base) {
+        canonical = false;
+        break;
+      }
+    }
+    if (canonical)
+      return 0;
+  }
+  if (primitive == 5 && !indices && vertex_count == 4)
+    return 1;
+  if (primitive == 6 && !indices && vertex_count == 4)
+    return 2;
+  return 3;
 }

@@ -495,11 +495,15 @@ class MaterialGroundRenderer(GroundRenderer):
             light.beam_profile is not None and light.illumination_gain > 0 for light in lights
         )
         put_int("u_has_beam_lights", int(has_beam_lights))
-        grid_lights, shapes = lights, [0.0] * (4 * len(lights))
+        shapes = [0.0] * (4 * len(lights))
         if has_beam_lights:
-            shapes, grid_lights = prepare_beam_lights(lights)
+            shapes, _ = prepare_beam_lights(lights)
             put("u_beam_gain", [ION_DIRECT_GAIN, FIRE_DIRECT_GAIN])
             put("u_beam_shape[0]", shapes, 4)
+        # Keep halo support in the shared body grid for reflection-only beams too so corner rays straddling
+        # a beam's reflection cutoff keep their blockers when illumination drops (rtx_lights.cpp's rtx_build_occlusion),
+        # without expanding the ground visibility pass (`shapes` stays gated on illumination).
+        _, grid_lights = prepare_beam_lights(lights, require_illumination=False)
         grid = build_occlusion_grid(
             bodies, grid_lights, width=self.width, height=self.height, illumination=shadows,
         )

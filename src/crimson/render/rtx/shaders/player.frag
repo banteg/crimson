@@ -76,7 +76,7 @@ void main() {
         if (u_response[i].x <= 0.) continue;
         vec2 delta;
         float attenuation;
-        if (u_beam_shape[i].w > 0.) {
+        if (!ring && u_beam_shape[i].w > 0.) {
             if (!beamAtReceiver(i, u_dir[i], wp, u_pos[i], delta, attenuation)) continue;
             attenuation *= u_response[i].x;
         } else {

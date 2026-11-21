@@ -80,14 +80,20 @@ def draw_centered_quad(
     half_w, half_h = width * 0.5, height * 0.5
     u0, v0 = src.x / texture.width, src.y / texture.height
     u1, v1 = (src.x + src.width) / texture.width, (src.y + src.height) / texture.height
+    d00_x = -half_w * c + half_h * s
+    d00_y = -half_w * s - half_h * c
     rl.rl_set_texture(texture.id)
     rl.rl_begin(rd.RL_QUADS)
     rl.rl_color4ub(tint.r, tint.g, tint.b, tint.a)
-    rl.rl_normal3f(center.x, center.y, 0.0)
-    for dx, dy, u, v in ((-half_w, -half_h, u0, v0), (-half_w, half_h, u0, v1), (half_w, half_h, u1, v1),
-                         (half_w, -half_h, u1, v0)):
+    rl.rl_normal3f(center.x, center.y, d00_y)
+    for dx, dy, u, v in (
+        (-half_w, -half_h, u0, v0),
+        (-half_w, half_h, u0, v1),
+        (half_w, half_h, u1, v1),
+        (half_w, -half_h, u1, v0),
+    ):
         rl.rl_tex_coord2f(u, v)
-        rl.rl_vertex2f(center.x + dx * c - dy * s, center.y + dx * s + dy * c)
+        rl.rl_vertex3f(center.x + dx * c - dy * s, center.y + dx * s + dy * c, d00_x)
     rl.rl_end()
     rl.rl_set_texture(0)
 

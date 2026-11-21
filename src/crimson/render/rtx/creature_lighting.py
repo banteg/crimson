@@ -41,7 +41,7 @@ class CreatureLighting(msgspec.Struct):
                 name: int(rl.get_shader_location(shader, name))
                 for name in (*LIGHT_UNIFORMS, "u_thickness",
                              "u_occlusion_tex", "u_occlusion_grid", "u_occlusion_cell_size", "u_dynamic_shadows", "u_ambient",
-                             "u_ice", "u_ice_frozen", "u_creature_type")
+                             "u_ice", "u_ice_frozen", "u_creature_type", "u_quad_aspect")
             }
         shader = self.shader
         # Flush preceding draws before changing values on a possibly reused shader.
@@ -90,6 +90,16 @@ class CreatureLighting(msgspec.Struct):
             ):
                 rl.set_shader_value(self.shader, self.locations[name], rl.ffi.new("int *", value),
                                     rl.ShaderUniformDataType.SHADER_UNIFORM_INT)
+            if (aspect_loc := self.locations.get("u_quad_aspect", -1)) >= 0:
+                aspect = (
+                    1.0
+                    if ice or texture.width <= 0 or texture.height <= 0
+                    else float(texture.height) / float(texture.width)
+                )
+                rl.set_shader_value(
+                    self.shader, aspect_loc, rl.ffi.new("float *", aspect),
+                    rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
+                )
             if thickness is not None:
                 rl.set_shader_value_texture(self.shader, self.locations["u_thickness"], thickness)
             if self.occlusion is not None and self.occlusion.grid is not None and self.occlusion.grid.occludes and self.occlusion.texture is not None:

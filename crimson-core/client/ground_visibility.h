@@ -11,7 +11,7 @@ inline std::array<float, 4> ground_light_bounds(int i, const float *positions, c
   const float *p = positions + i * 4, *d = directions + i * 4, *r = responses + i * 4;
   float radius = std::max(std::max(1.f, p[2]), r[2]);
   float half = std::max(0.f, d[3] * .5f);
-  if (beams) half = std::max(half, shapes[i * 4 + 3]);
+  if (beams && r[0] > 0) half = std::max(half, shapes[i * 4 + 3]);
   float square = d[0] * d[0] + d[1] * d[1];
   float ax = square > .0001f ? d[0] / std::sqrt(square) : 1.f;
   float ay = square > .0001f ? d[1] / std::sqrt(square) : 0.f;

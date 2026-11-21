@@ -17,6 +17,13 @@ in vec4 lightVisibility4;
 in vec4 lightVisibility5;
 in vec4 lightVisibility6;
 in vec4 lightVisibility7;
+// Direct-indexed corner specular visibility for reflective continuous beams (two lights per uint, 4 bits/corner:
+// c00, c01, c11, c10) triangle-interpolated via quadCoord, so precision never shifts across slot changes or fades.
+in vec2 quadCoord;
+flat in uvec4 specVis0;
+flat in uvec4 specVis1;
+flat in uvec4 specVis2;
+flat in uvec4 specVis3;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -45,6 +52,18 @@ float lightVisibility(int i) {
                         : (i < 24 ? (i < 20 ? lightVisibility4 : lightVisibility5) : (i < 28 ? lightVisibility6 : lightVisibility7));
     int lane = i - i / 4 * 4;
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
+}
+float specVisibility(int i) {
+    int word = i >> 1;
+    uvec4 group = word < 8 ? (word < 4 ? specVis0 : specVis1) : (word < 12 ? specVis2 : specVis3);
+    int lane = word & 3;
+    uint spec_word = lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
+    uint bits = (spec_word >> ((i & 1) == 0 ? 0u : 16u)) & 0xFFFFu;
+    vec4 v = vec4(bits & 15u, (bits >> 4u) & 15u, (bits >> 8u) & 15u, (bits >> 12u) & 15u) * (1. / 15.);
+    vec2 u = clamp(quadCoord, 0., 1.);
+    return u.y >= u.x
+        ? v.x * (1. - u.y) + v.y * (u.y - u.x) + v.z * u.x
+        : v.x * (1. - u.x) + v.w * (u.x - u.y) + v.z * u.y;
 }
 float cellGrid() { return u_ice != 0 ? float(u_ice) : 8.0; }
 vec4 spriteSample(vec2 uv) {
@@ -194,7 +213,7 @@ void main() {
         float along = clamp(dot(dp, axis), -u_dir[i].w * .5, u_dir[i].w * .5);
         vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) : u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
-        bool continuous = u_beam_shape[i].w > 0.;
+        bool continuous = !ring && u_beam_shape[i].w > 0.;
         if (!continuous && spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
@@ -206,7 +225,8 @@ void main() {
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            added += u_rgb[i].rgb * spec_amount * spec_gain * breakup * lightVisibility(i);
+            float spec_vis = continuous ? specVisibility(i) : lightVisibility(i);
+            added += u_rgb[i].rgb * (spec_amount * spec_gain * breakup * spec_vis);
         }
         if (u_response[i].x <= 0.) continue;
         vec2 delta;

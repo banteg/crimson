@@ -391,7 +391,7 @@ WGPURenderPipeline pipeline(Program &p, const Output &o) {
   if (it != p.pipelines.end())
     return it->second;
   WGPUVertexAttribute attributes[3] = {WGPU_VERTEX_ATTRIBUTE_INIT, WGPU_VERTEX_ATTRIBUTE_INIT, WGPU_VERTEX_ATTRIBUTE_INIT};
-  WGPUVertexAttribute center = WGPU_VERTEX_ATTRIBUTE_INIT;
+  WGPUVertexAttribute center[2] = {WGPU_VERTEX_ATTRIBUTE_INIT, WGPU_VERTEX_ATTRIBUTE_INIT};
   WGPUVertexBufferLayout buffers[2] = {WGPU_VERTEX_BUFFER_LAYOUT_INIT, WGPU_VERTEX_BUFFER_LAYOUT_INIT};
   WGPUVertexBufferLayout &buffer = buffers[0];
   buffer.stepMode = WGPUVertexStepMode_Vertex;
@@ -410,12 +410,16 @@ WGPURenderPipeline pipeline(Program &p, const Output &o) {
     buffer.arrayStride = 28;
     buffer.attributeCount = 3;
     if (p.input == CENTERED_VERTICES) {
-      center.format = WGPUVertexFormat_Float32x2;
-      center.shaderLocation = 3;
+      center[0].format = WGPUVertexFormat_Float32x4;
+      center[0].offset = 0;
+      center[0].shaderLocation = 3;
+      center[1].format = WGPUVertexFormat_Float32x2;
+      center[1].offset = 16;
+      center[1].shaderLocation = 4;
       buffers[1].stepMode = WGPUVertexStepMode_Vertex;
-      buffers[1].arrayStride = 8;
-      buffers[1].attributeCount = 1;
-      buffers[1].attributes = &center;
+      buffers[1].arrayStride = 24;
+      buffers[1].attributeCount = 2;
+      buffers[1].attributes = center;
     }
   } else if (p.input == BEAM_CORNERS) {
     attributes[0].format = WGPUVertexFormat_Float32x4;
@@ -1420,7 +1424,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   // A late scene or body grid rebuilds the atlas in the ground's draw, after its geometry is in the streams.
   if (rtx && world && material == HOST_PASS_GROUND && visibility_dirty)
     uniforms += visibility_uniforms(MAX_LIGHTS / 4);
-  if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 8) || !fits(index_stream, geometry.index_bytes + 3) ||
+  if (!fits(vertex_stream, geometry.vertex_bytes + (uint64_t)vertex_count * 24) || !fits(index_stream, geometry.index_bytes + 3) ||
       !fits(uniform_stream, uniforms))
     submit();
 
@@ -1444,9 +1448,15 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
                      : material == HOST_PASS_GLOW    ? contact_glow
                                                      : creature_lit;
   WGPUBindGroup vertex_textures = nullptr;
+  int spec_topology = 3;
   if (lit && &program == &creature_lit) {
-    std::vector<float> centers((size_t)vertex_count * 2);
-    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data());
+    const unsigned short *orig_indices = indices ? (const unsigned short *)(client_memory() + indices) : nullptr;
+    int orig_count = primitive == 4 ? (int)primitive_count * 3
+                   : primitive == 5 || primitive == 6 ? (int)primitive_count + 2
+                   : (int)primitive_count;
+    spec_topology = quad_spec_topology(primitive, orig_indices, orig_count, vertex_count);
+    std::vector<float> centers((size_t)vertex_count * 6);
+    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data(), spec_topology == 1);
     geometry.center_bytes = centers.size() * sizeof(float);
     geometry.center_at = put(vertex_stream, centers.data(), geometry.center_bytes);
     vertex_textures =
@@ -1457,9 +1467,9 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
     // creature_lit.vert's visibility at the corners (creature_visibility.glsl).
     vertex.i("u_count", light_count).set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
-    vertex.i("u_dynamic_shadows", dynamic_shadows).set("u_pos", light_pos, light_count * 16);
+    vertex.i("u_dynamic_shadows", dynamic_shadows).i("u_spec_topology", spec_topology).set("u_pos", light_pos, light_count * 16);
     vertex.set("u_rgb", light_rgb, light_count * 16).set("u_dir", light_dir, light_count * 16);
-    vertex.set("u_response", light_response, light_count * 16);
+    vertex.set("u_response", light_response, light_count * 16).set("u_beam_shape", beam_shape, light_count * 16);
     fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_count", light_count).f("u_ambient", 0.6f);
     fragment.set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
     fragment.i("u_dynamic_shadows", dynamic_shadows);
@@ -1602,7 +1612,7 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
     ground_dir[i * 4 + 2] = l[17];
     light_tail[i] = l[16];
     memcpy(beam_shape + i * 4, l + 20, 16);
-    beam_lights |= l[23] > 0;
+    beam_lights |= l[12] > 0 && l[23] > 0;
   }
 }
 void wgpu_w2c_host_pressure(struct w2c_host *, u32 fronts, u32 count) {

@@ -439,6 +439,57 @@ void check_rtx() {
   };
   float open = occluded(0), shaded = occluded(1);
   assert(shaded < open - 0.02f);
+  // A 4-vertex triangle strip must preserve all four distinct quad corners along its shared 1-2 diagonal.
+  float strip_centers[24] = {};
+  quad_centers((const float *)memory, 4, strip_centers, true);
+  assert(fabsf(strip_centers[2] * strip_centers[5] - strip_centers[3] * strip_centers[4]) > 1.f);
+  // Both triangles of a Grim indexed quad list (0,1,2),(2,3,0) and a 4-vertex strip must receive blocked
+  // continuous-beam specular shadows from their actual provoking vertices.
+  auto beam_occluded = [&](bool indexed, float shadows, int sx, int sy) {
+    const float grid[6] = {0, 0, 1, 1, 2048, shadows};
+    const float values[20] = {4, 1, 0, 0,
+                              600, 306, 16, 48,
+                              1 / 44.f, 1 / 24.f, 1 / 24.f, 1e20f,
+                              1, 0, 1, 1e20f,
+                              1, 0, 0, 0};
+    memcpy(memory + 33024, grid, sizeof grid);
+    memcpy(memory + 33152, values, sizeof values);
+    w2c_host_occlusion(nullptr, 33024, 33152, 20);
+    // Reflection-only continuous beam along +y, head at (600, 260), so H aligns near +z and both triangles catch specular.
+    scene({600, 132, 400, 24, 3, 3, 3, 0, 0, 1, 0, 256, 0, 8, 400, 3, 0, 0, 0, 0, 0.25f, 16, 1, 144}, 1);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, HOST_PASS_CREATURES);
+    if (indexed) {
+      Vertex quad[4] = {{568, 352, 0, 1, 0xffffffff, 0, 0},
+                        {632, 352, 0, 1, 0xffffffff, 0.125f, 0},
+                        {632, 416, 0, 1, 0xffffffff, 0.125f, 0.125f},
+                        {568, 416, 0, 1, 0xffffffff, 0, 0.125f}};
+      const unsigned short idx[6] = {0, 1, 2, 2, 3, 0};
+      memcpy(memory, quad, sizeof quad);
+      memcpy(memory + 512, idx, sizeof idx);
+      w2c_host_draw(nullptr, 4, 0, 4, 512, 2);
+    } else {
+      Vertex strip[4] = {{568, 352, 0, 1, 0xffffffff, 0, 0},
+                         {632, 352, 0, 1, 0xffffffff, 0.125f, 0},
+                         {568, 416, 0, 1, 0xffffffff, 0, 0.125f},
+                         {632, 416, 0, 1, 0xffffffff, 0.125f, 0.125f}};
+      memcpy(memory, strip, sizeof strip);
+      w2c_host_draw(nullptr, 5, 0, 4, 0, 2);
+    }
+    w2c_host_render_pass(nullptr, HOST_PASS_SPRITES);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    return back_red(sx, sy);
+  };
+  struct { bool indexed; int ax, ay, bx, by; } beam_cases[] = {
+      {true, 608, 376, 588, 376},
+      {false, 592, 376, 612, 376},
+  };
+  for (auto c : beam_cases) {
+    float open_a = beam_occluded(c.indexed, 0, c.ax, c.ay), shaded_a = beam_occluded(c.indexed, 1, c.ax, c.ay);
+    float open_b = beam_occluded(c.indexed, 0, c.bx, c.by), shaded_b = beam_occluded(c.indexed, 1, c.bx, c.by);
+    assert(open_a > ambient + 0.02f && shaded_a < open_a - 0.02f);
+    assert(open_b > ambient + 0.02f && shaded_b < open_b - 0.02f);
+  }
   const float none[6] = {0, 0, 0, 0, 64, 1};
   memcpy(memory + 33024, none, sizeof none);
   w2c_host_occlusion(nullptr, 33024, 0, 0);
@@ -946,8 +997,10 @@ void check_ground_visibility() {
   d[3] = 400;
   assert(bounds()[2] > 0); // segment reaches the view though its center does not
   d[3] = 0; shape[3] = 200;
-  assert(bounds()[2] > 0); // extended analytic beam support
-  shape[3] = 0; c[3] = 180;
+  assert(bounds()[2] == 0); // reflection-only beam does not extend ground bounds by halo support
+  r[0] = 1;
+  assert(bounds()[2] > 0); // extended analytic beam support when illuminating
+  r[0] = 0; shape[3] = 0; c[3] = 180;
   assert(bounds()[2] > 0); // ring's near edge
   r[1] = 0;
   assert(bounds()[2] == 0); // no eligible response
