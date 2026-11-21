@@ -565,10 +565,11 @@ class MaterialGroundRenderer(GroundRenderer):
             tile_w, tile_h, tile_masks = 0, 0, b""
         tile_texture = self.light_tiles.upload(tile_w, tile_h, tile_masks) if tile_w > 0 and tile_h > 0 else None
         _apply_uniforms(sh, self.material_locations, uniforms)
+        tile_size_buf = rl.ffi.new("int[2]", [tile_w, tile_h])
         rl.set_shader_value(
             sh,
             self._material_location("u_light_tile_size"),
-            rl.ffi.cast("void *", rl.ffi.new("int[2]", [tile_w, tile_h])),
+            rl.ffi.cast("void *", tile_size_buf),
             rl.ShaderUniformDataType.SHADER_UNIFORM_IVEC2,
         )
         # GroundRenderer uses opaque blending. Bind auxiliary samplers after that switch,
