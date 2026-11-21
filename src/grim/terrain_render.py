@@ -10,7 +10,7 @@ from grim import canvas
 from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 
 from .blend import blend_custom, opaque_blend
-from .edr import reclaim_optional_targets
+from .edr import load_render_texture_with_reclaim
 from .geom import Vec2
 from .shaders import AlphaTestShader
 from .terrain_stamps import TerrainLayers, TerrainStampLayer
@@ -312,21 +312,7 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
             self._render_target_ready = False
 
-        def try_load() -> rl.RenderTexture | None:
-            cand = rl.load_render_texture(render_w, render_h)
-            if cand.id <= 0 or cand.texture.width <= 0 or cand.texture.height <= 0:
-                rl.unload_render_texture(cand)
-                return None
-            # raylib's IsRenderTextureValid() only checks ids and dimensions; use the
-            # rlgl completeness check so incomplete FBO attachments fail immediately.
-            if not rl.rl_framebuffer_complete(cand.id):
-                rl.unload_render_texture(cand)
-                return None
-            return cand
-
-        candidate = try_load()
-        if candidate is None and reclaim_optional_targets():
-            candidate = try_load()
+        candidate = load_render_texture_with_reclaim(render_w, render_h)
         if candidate is None:
             return False
 

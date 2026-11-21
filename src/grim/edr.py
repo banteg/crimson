@@ -143,6 +143,27 @@ def load_optional_float_render_texture(
     return _allocate_float_render_texture(width, height, pixel_format)
 
 
+def load_render_texture_with_reclaim(width: int, height: int) -> rl.RenderTexture | None:
+    """Allocate a checked RGBA8 render texture, retrying once after reclaiming optional caches."""
+
+    def try_load() -> rl.RenderTexture | None:
+        cand = rl.load_render_texture(width, height)
+        if cand.id <= 0 or cand.texture.width <= 0 or cand.texture.height <= 0:
+            rl.unload_render_texture(cand)
+            return None
+        # raylib's IsRenderTextureValid() only checks ids and dimensions; use the
+        # rlgl completeness check so incomplete FBO attachments fail immediately.
+        if not rl.rl_framebuffer_complete(cand.id):
+            rl.unload_render_texture(cand)
+            return None
+        return cand
+
+    candidate = try_load()
+    if candidate is None and reclaim_optional_targets():
+        candidate = try_load()
+    return candidate
+
+
 def _texture_has_storage(texture: rl.Texture, width: int, height: int) -> bool:
     if int(texture.id) <= 0:
         return False

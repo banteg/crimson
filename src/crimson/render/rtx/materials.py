@@ -266,6 +266,7 @@ class MaterialGroundRenderer(GroundRenderer):
                 int(self.render_target.texture.width),
                 int(self.render_target.texture.height),
             )
+        restore_current_target()
         return True
 
     def _initialize_materials(self) -> None:

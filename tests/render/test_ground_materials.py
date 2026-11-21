@@ -1794,5 +1794,82 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
                 assert fallback_ground.normals is None
             finally:
                 run_ground.close()
+
+            # Evicting relief during GroundLightTiles.upload() inside texture_mode() must preserve
+            # the enclosing framebuffer binding so the lit ground still renders into the active target.
+            fallback_ground.normals_failed_size = None
+            fallback_ground.normals_dirty = True
+            fallback_ground.normals_full = True
+            assert fallback_ground._ensure_normals() is not None
+            fallback_ground.light_tiles.close()
+            real_has_storage = edr_mod._texture_has_storage
+            real_unload_rt = rl.unload_render_texture
+            tile_evict_calls = 0
+
+            def fail_tile_storage_once(tex: rl.Texture, w: int, h: int) -> bool:
+                nonlocal tile_evict_calls
+                if fallback_ground.normals is not None:
+                    tile_evict_calls += 1
+                    return False
+                return real_has_storage(tex, w, h)
+
+            def unload_and_unbind(rt: rl.RenderTexture) -> None:
+                real_unload_rt(rt)
+                if fallback_ground.normals is not None and int(rt.id) == int(fallback_ground.normals.id):
+                    rl.rl_disable_framebuffer()
+
+            with (
+                patch.object(ground_materials, "collect_material_lights", return_value=[light]),
+                patch.object(edr_mod, "_texture_has_storage", side_effect=fail_tile_storage_once),
+                patch.object(rl, "unload_render_texture", side_effect=unload_and_unbind),
+            ):
+                shaded_after_tile_evict = debug_pixels(fallback_ground, fallback_texture, mode=0, shadows=False)
+            assert tile_evict_calls == 1
+            assert fallback_ground.normals is None
+            assert any(p[0] > 0.01 for p in shaded_after_tile_evict)
+
+            # Replay terrain history snapshots reclaim optional relief before failing and skip
+            # recording an invalid snapshot if allocation still fails after reclaim.
+            from pathlib import Path
+
+            from crimson.render.terrain_fx import FxQueueTextures
+            from crimson.world.render_resources import RenderResources
+            from crimson.world.terrain_history import TerrainHistory
+
+            fallback_ground.normals_failed_size = None
+            fallback_ground.normals_dirty = True
+            fallback_ground.normals_full = True
+            assert fallback_ground._ensure_normals() is not None
+            history_resources = RenderResources(
+                assets_dir=Path(),
+                ground=fallback_ground,
+                fx_textures=FxQueueTextures(particles=fallback_texture, bodyset=fallback_texture),
+            )
+            history = TerrainHistory(history_resources, None)
+            shot_retry_calls = 0
+
+            def fail_shot_until_relief_evicted(w: int, h: int):
+                nonlocal shot_retry_calls
+                if fallback_ground.normals is not None:
+                    shot_retry_calls += 1
+                    return rl.RenderTexture(0, rl.Texture(0, 0, 0, 0, 0), rl.Texture(0, 0, 0, 0, 0))
+                return real_load_rt(w, h)
+
+            try:
+                with patch.object(rl, "load_render_texture", side_effect=fail_shot_until_relief_evicted):
+                    history._shoot(fallback_ground, bakes=1, tick=10)
+                assert shot_retry_calls == 1
+                assert fallback_ground.normals is None
+                assert len(history.shots) == 1
+
+                with patch.object(
+                    rl,
+                    "load_render_texture",
+                    return_value=rl.RenderTexture(0, rl.Texture(0, 0, 0, 0, 0), rl.Texture(0, 0, 0, 0, 0)),
+                ):
+                    history._shoot(fallback_ground, bakes=2, tick=20)
+                assert len(history.shots) == 1
+            finally:
+                history.close()
         finally:
             smoke.close()

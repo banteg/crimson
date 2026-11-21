@@ -11,9 +11,10 @@ from __future__ import annotations
 import msgspec
 
 from grim.blend import opaque_blend
+from grim.edr import load_render_texture_with_reclaim
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.terrain_render import GroundRenderer
-from grim.texture_mode import texture_mode
+from grim.texture_mode import restore_current_target, texture_mode
 
 from ..render.rtx.materials import MaterialGroundRenderer
 from ..replay.driver.prepare import ReplayPreparation
@@ -109,7 +110,10 @@ class TerrainHistory:
                 rl.unload_render_texture(shot.target)
             self.shots = self.shots[::2]
             self._spacing *= 2
-        target = rl.load_render_texture(texture.width, texture.height)
+        target = load_render_texture_with_reclaim(texture.width, texture.height)
+        if target is None:
+            restore_current_target()
+            return
         _copy(target, builder.render_target)
         self.shots.append(TerrainShot(bakes, tick, target))
 
