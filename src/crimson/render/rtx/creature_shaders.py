@@ -25,10 +25,6 @@ out vec4 lightVisibility4;
 out vec4 lightVisibility5;
 out vec4 lightVisibility6;
 out vec4 lightVisibility7;
-out vec4 specVisibility0;
-out vec4 specVisibility1;
-out vec4 specVisibility2;
-out vec4 specVisibility3;
 out vec2 quadOwner;
 """ + glsl("creature_visibility.glsl") + r"""
 void main() {
@@ -45,7 +41,6 @@ void main() {
     lightVisibility5 = cornerVisibilities(5, world, owner);
     lightVisibility6 = cornerVisibilities(6, world, owner);
     lightVisibility7 = cornerVisibilities(7, world, owner);
-    fillSpecVisibilities(world, owner, specVisibility0, specVisibility1, specVisibility2, specVisibility3);
     gl_Position = mvp * vec4(vertexPosition, 1.0);
 }
 """

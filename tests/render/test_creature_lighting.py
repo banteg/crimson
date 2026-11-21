@@ -658,9 +658,9 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         assert sum(p[2] for p in head_ref) < sum(p[2] for p in clear_ref) - .05
 
         # Partial specular occlusion: a narrow blocker covering one side of the sprite's rays to the beam head
-        # while missing the center ray must still partially shadow the highlight (corner-interpolated, not flat),
-        # identically through both the separate specVisibility slots (illumination > 0) and lightVisibility (reflection-only).
-        side_blocker = BodyVolume(Vec2(325, 102), Vec2(6, 6), 32, 0., owner=Vec2(325, 102))
+        # while missing the center ray must still partially shadow the highlight, identically across both
+        # illuminating (illumination > 0) and reflection-only beams.
+        side_blocker = BodyVolume(Vec2(330, 102), Vec2(6, 6), 32, 0., owner=Vec2(330, 102))
         occlusion.upload(build_occlusion_grid([side_blocker], [reflection_only], width=1024, height=1024))
         partial_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
         assert sum(p[2] for p in head_ref) < sum(p[2] for p in partial_ref) < sum(p[2] for p in clear_ref) - .005
@@ -709,18 +709,24 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
             for a, b in zip(fading_img, dropped_img, strict=True):
                 assert a == pytest.approx(b, abs=.002)
 
-        # Overflow past 16 qualifying beams: the 17th beam must still trace specular visibility toward
-        # the nearest segment point (not the diffuse centroid), even when 16 distant beams occupy the fast slots.
+        # Overflow past 16 beams: specular visibility must stay identical regardless of beam slot position
+        # or illumination gain, including under a partial blocker.
         distant = [
             msgspec.structs.replace(beam, pos=Vec2(900, 900 - i * 4), radius=20, reflection_radius=20)
             for i in range(16)
         ]
         occlusion.upload(build_occlusion_grid([shaft_blocker], [*distant, beam], width=1024, height=1024))
         overflow_shaft = render([*distant, beam], occlusion=occlusion, center=owner, camera=cam)
-        assert sum(p[2] for p in overflow_shaft) == pytest.approx(sum(p[2] for p in shaft_full), abs=.02)
+        assert overflow_shaft == shaft_full
         occlusion.upload(build_occlusion_grid([head_blocker], [*distant, fading], width=1024, height=1024))
         overflow_head = render([*distant, fading], occlusion=occlusion, center=owner, camera=cam)
         assert sum(p[2] for p in overflow_head) < sum(p[2] for p in clear_ref) - .05
+        occlusion.upload(build_occlusion_grid([side_blocker], [*distant, fading], width=1024, height=1024))
+        overflow_partial = render([*distant, fading], occlusion=occlusion, center=owner, camera=cam)
+        for a, b in zip(overflow_partial, partial_fading, strict=True):
+            assert a == pytest.approx(b, abs=.0005)
+        for a, b in zip(overflow_partial, partial_ref, strict=True):
+            assert a == pytest.approx(b, abs=.002)
     finally:
         occlusion.close()
 
