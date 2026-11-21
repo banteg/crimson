@@ -22,9 +22,9 @@ in vec4 specVisibility0;
 in vec4 specVisibility1;
 in vec4 specVisibility2;
 in vec4 specVisibility3;
-// Creature center (xy) and quad-local coordinates in [0, 1]^2 (zw), independent of atlas UVs,
-// used to replay identical triangle-corner interpolation if more than 16 beams qualify.
-in vec4 quadGeom;
+// Creature center (xy) and exact top-left corner offset c00 - owner (zw), identical across all four vertices,
+// so overflow (>16 beams) replays the exact vertex corner rays without fragment derivative jitter or UV assumptions.
+flat in vec4 quadFlat;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -69,24 +69,25 @@ float cornerSpecVis(int i, vec2 p, vec2 owner, vec2 axis, float half_length, flo
     vec2 near_p = u_pos[i].xy + axis * along_p;
     return illuminationVisibility(vec3(p, 8.), vec3(near_p, u_pos[i].w), source_width, owner);
 }
-float overflowSpecVisibility(int i, vec2 wp, vec4 geom, vec2 dxu, vec2 dyu, vec2 dxw, vec2 dyw,
-                             vec2 axis, float half_length, float source_width) {
-    vec2 owner = geom.xy;
-    float det = dxu.x * dyu.y - dxu.y * dyu.x;
-    if (abs(det) <= 1e-12)
+float overflowSpecVisibility(int i, vec2 wp, vec4 qf, vec2 axis, float half_length, float source_width) {
+    vec2 owner = qf.xy;
+    vec2 d00 = qf.zw;
+    if (dot(d00, d00) <= 1e-12)
         return cornerSpecVis(i, wp, owner, axis, half_length, source_width);
-    mat2 dwdu = mat2(dxw * dyu.y - dyw * dxu.y, dyw * dxu.x - dxw * dyu.x) / det;
-    vec2 u = geom.zw;
-    vec2 c00 = wp - dwdu[0] * u.x - dwdu[1] * u.y;
-    vec2 c11 = c00 + dwdu[0] + dwdu[1];
+    vec2 c00 = owner + d00;
+    vec2 c11 = owner - d00;
+    vec2 c10 = owner + vec2(-d00.y, d00.x);
+    vec2 c01 = owner + vec2(d00.y, -d00.x);
+    vec2 ex = c10 - c00;
+    vec2 ey = c01 - c00;
+    vec2 rel = wp - c00;
+    vec2 u = clamp(vec2(dot(rel, ex), dot(rel, ey)) / dot(ex, ex), 0., 1.);
     float v00 = cornerSpecVis(i, c00, owner, axis, half_length, source_width);
     float v11 = cornerSpecVis(i, c11, owner, axis, half_length, source_width);
     if (u.y >= u.x) {
-        vec2 c01 = c00 + dwdu[1];
         float v01 = cornerSpecVis(i, c01, owner, axis, half_length, source_width);
         return v00 * (1. - u.y) + v01 * (u.y - u.x) + v11 * u.x;
     }
-    vec2 c10 = c00 + dwdu[0];
     float v10 = cornerSpecVis(i, c10, owner, axis, half_length, source_width);
     return v00 * (1. - u.x) + v10 * (u.x - u.y) + v11 * u.y;
 }
@@ -112,7 +113,6 @@ void main() {
     // Save derivatives before alpha discard makes neighboring lanes diverge.
     vec2 dxq = dFdx(fragTexCoord) * 16., dyq = dFdy(fragTexCoord) * 16.;
     vec2 dxw = dFdx(world), dyw = dFdy(world);
-    vec2 dxu = dFdx(quadGeom.zw), dyu = dFdy(quadGeom.zw);
     // Ice a little more solid than the original's overlay: its draws already carry its 0.7, or the shatter's fade.
     if (u_ice != 0)
         base.a = min(.95, base.a * 1.15);
@@ -258,7 +258,7 @@ void main() {
             float spec_vis = my_spec_slot < 0 ? lightVisibility(i)
                 : my_spec_slot < 16 ? specVisibility(my_spec_slot)
                 : max(spec.r, max(spec.g, spec.b)) > 1e-5
-                    ? overflowSpecVisibility(i, wp, quadGeom, dxu, dyu, dxw, dyw, axis, u_dir[i].w * .5, source_width)
+                    ? overflowSpecVisibility(i, wp, quadFlat, axis, u_dir[i].w * .5, source_width)
                     : 1.;
             added += spec * spec_vis;
         }

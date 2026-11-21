@@ -29,16 +29,17 @@ out vec4 specVisibility0;
 out vec4 specVisibility1;
 out vec4 specVisibility2;
 out vec4 specVisibility3;
-out vec4 quadGeom;
+flat out vec4 quadFlat;
 """ + glsl("creature_visibility.glsl") + r"""
 void main() {
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
     world = vertexPosition.xy / u_view_scale - u_camera;
     vec2 owner = vertexNormal.xy / u_view_scale - u_camera;
+    vec2 d = world - owner;
     int cid = int(vertexNormal.z + .5);
-    vec2 quad_u = vec2(float(cid == 2 || cid == 3), float(cid == 1 || cid == 2));
-    quadGeom = vec4(owner, quad_u);
+    vec2 d00 = cid == 0 ? d : cid == 1 ? vec2(-d.y, d.x) : cid == 2 ? -d : vec2(d.y, -d.x);
+    quadFlat = vec4(owner, d00);
     lightVisibility0 = cornerVisibilities(0, world, owner);
     lightVisibility1 = cornerVisibilities(1, world, owner);
     lightVisibility2 = cornerVisibilities(2, world, owner);

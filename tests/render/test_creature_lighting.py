@@ -767,6 +767,17 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         inset_overflow = render([*distant, fading], occlusion=occlusion, center=owner, camera=cam, inset=2.0, ice=8)
         for a, b in zip(inset_cached, inset_overflow, strict=True):
             assert a == pytest.approx(b, abs=.0005)
+
+        # Scaled sprite whose corner sits directly on a crowd-cell boundary (x=128): overflow must use the exact
+        # vertex corner coordinates rather than derivative reconstruction so adjacent pixels never flip cells.
+        edge_owner = Vec2(144, 96)  # 32-unit quad has left corners at exact x=128
+        edge_cam = Vec2(64 / 1.5, 64 / 1.5) - edge_owner
+        occlusion.upload(build_occlusion_grid(seam_crowd, [seam_fading], width=1024, height=1024))
+        edge_cached = render([seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5)
+        occlusion.upload(build_occlusion_grid(seam_crowd, [*distant, seam_fading], width=1024, height=1024))
+        edge_overflow = render([*distant, seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5)
+        for a, b in zip(edge_cached, edge_overflow, strict=True):
+            assert a == pytest.approx(b, abs=.0005)
     finally:
         occlusion.close()
 
