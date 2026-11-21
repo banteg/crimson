@@ -112,9 +112,20 @@ def build_ground_tiles(
             ring_idx.append(i)
             ring_data.append((cx, cy, ring, max(diff_rad, spec_rad)))
             continue
-        dx = light.direction.x
-        dy = light.direction.y
-        square = dx * dx + dy * dy
+        dx = float(np.float32(light.direction.x))
+        dy = float(np.float32(light.direction.y))
+        square = float(np.float32(dx * dx + dy * dy))
+        beam_half = shapes[4 * i + 3] if has_shapes else 0.0
+        continuous = has_shapes and beam_half > 0.0 and has_diff
+        # Near ground.frag's `dot(sp_dir.xy, sp_dir.xy) > 0.0001` cutoff, FMA or precision
+        # differences could flip between `normalize(dir)` and the fallback axis; stay conservative.
+        if 0.00009 <= square <= 0.00011:
+            spec_half = max(0.0, light.length * 0.5)
+            diff_half = max(beam_half, spec_half) if continuous else spec_half
+            rad = max(diff_rad + diff_half if has_diff else 0.0, spec_rad + spec_half if has_spec else 0.0)
+            cap_idx.append(i)
+            cap_data.append((cx, cy, 1.0, 0.0, 0.0, rad))
+            continue
         has_dir = square > 0.0001
         if has_dir:
             inv_len = 1.0 / math.sqrt(square)
@@ -123,8 +134,6 @@ def build_ground_tiles(
         else:
             ux = 1.0
             uy = 0.0
-        beam_half = shapes[4 * i + 3] if has_shapes else 0.0
-        continuous = has_shapes and beam_half > 0.0 and has_diff
         spec_half = max(0.0, light.length * 0.5) if has_dir else 0.0
         diff_half = beam_half if continuous else spec_half
         if has_diff and has_spec and diff_half == spec_half:

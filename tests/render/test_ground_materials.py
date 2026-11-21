@@ -1331,6 +1331,18 @@ def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> No
         unculled_pixels = render(tiled=False)
         assert ground.light_tiles.texture is not None
         assert tiled_pixels == unculled_pixels
+        # Prove ground.frag actually reads u_light_tiles: an all-zero mask removes dynamic lighting.
+        with (
+            patch.object(ground_materials, "build_ground_tiles", return_value=(8, 8, bytes(8 * 8 * 4))),
+            texture_mode(target),
+            ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, lights=lights),
+        ):
+            ground.draw_view(Vec2(), screen_w=256, screen_h=256, out_w=256, out_h=256)
+        zero_masked_pixels = pixels(target)
+        # Render-texture readback is bottom-up, so world (48, 48) sits at row 255 - 48.
+        lit_idx = (255 - 48) * 256 + 48
+        assert max(tiled_pixels[lit_idx][:3]) > max(zero_masked_pixels[lit_idx][:3]) + 0.05
+        assert max(p[0] for p in tiled_pixels) > max(p[0] for p in zero_masked_pixels) + 0.1
         # Early-exit debug views (e.g. substrate normals) skip tile mask generation.
         with (
             patch.object(
