@@ -1268,7 +1268,7 @@ def test_build_ground_tiles_culls_disc_corners_diagonal_capsules_rings_and_inact
     # Without optional NumPy, fall back cleanly to unculled shading.
     from crimson.render.rtx import ground_tiles as gt
 
-    with patch.object(gt, "np", None):
+    with patch.object(gt, "_NP", None):
         assert build_ground_tiles(512, 512, lights) == (0, 0, b"")
     # Oversized grids fall back cleanly instead of allocating gigabytes of temporaries.
     assert build_ground_tiles(65536, 65536, lights) == (0, 0, b"")

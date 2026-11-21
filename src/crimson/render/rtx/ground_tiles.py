@@ -8,11 +8,6 @@ from typing import Any
 
 import msgspec
 
-try:
-    import numpy as np
-except ImportError:  # pragma: no cover - optional acceleration outside dev installs
-    np = None  # type: ignore[assignment]
-
 from grim.raylib_api import rl
 
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
@@ -23,11 +18,23 @@ _HALF_TILE = TILE_SIZE * 0.5
 _TILE_DIAG_RADIUS = _HALF_TILE * math.sqrt(2.0)
 _MARGIN = 0.01
 
+_NP: Any = ...  # sentinel: lazy-loaded on first RTX ground tile build
 _TILE_CENTERS_CACHE: dict[tuple[int, int], tuple[Any, Any]] = {}
 
 
-def _tile_centers(width: int, height: int) -> tuple[Any, Any]:
-    assert np is not None
+def _numpy() -> Any:
+    global _NP
+    if _NP is ...:
+        try:
+            import numpy as np
+        except ImportError:  # pragma: no cover - optional acceleration outside dev installs
+            _NP = None
+        else:
+            _NP = np
+    return _NP
+
+
+def _tile_centers(np: Any, width: int, height: int) -> tuple[Any, Any]:
     cached = _TILE_CENTERS_CACHE.get((width, height))
     if cached is not None:
         return cached
@@ -40,6 +47,7 @@ def _tile_centers(width: int, height: int) -> tuple[Any, Any]:
 
 
 def _capsule_hits(
+    np: Any,
     mx: Any,
     my: Any,
     cx: Any,
@@ -50,7 +58,6 @@ def _capsule_hits(
     rad: Any,
 ) -> Any:
     """Exact disc hits (`half == 0`) and tight conservative capsule hits (`half > 0`)."""
-    assert np is not None
     dx = mx - cx
     dy = my - cy
     abs_dx = np.abs(dx)
@@ -84,11 +91,14 @@ def build_ground_tiles(
 ) -> tuple[int, int, bytes]:
     """Return `(width, height, rgba8_masks)` with bit `i` set on tiles light `i` can reach."""
     count = min(len(lights), MAX_MATERIAL_LIGHTS)
-    if np is None or not count or not (0.0 < world_width <= 65536.0 and 0.0 < world_height <= 65536.0):
+    if not count or not (0.0 < world_width <= 65536.0 and 0.0 < world_height <= 65536.0):
         return 0, 0, b""
     width = math.ceil(world_width / TILE_SIZE)
     height = math.ceil(world_height / TILE_SIZE)
     if width * height > MAX_TILES:
+        return 0, 0, b""
+    np = _numpy()
+    if np is None:
         return 0, 0, b""
     has_shapes = beams and len(shapes) >= count * 4
 
@@ -153,12 +163,13 @@ def build_ground_tiles(
     if not indices:
         return width, height, bytes(width * height * 4)
 
-    mx, my = _tile_centers(width, height)
+    mx, my = _tile_centers(np, width, height)
     bits = np.zeros((MAX_MATERIAL_LIGHTS, height, width), dtype=np.bool_)
 
     if cap_data:
         arr = np.asarray(cap_data, dtype=np.float32)
         hits = _capsule_hits(
+            np,
             mx, my,
             arr[:, 0:1, None], arr[:, 1:2, None],
             arr[:, 2:3, None], arr[:, 3:4, None],
