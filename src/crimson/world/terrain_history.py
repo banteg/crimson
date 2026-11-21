@@ -55,6 +55,7 @@ class TerrainHistory:
         self._builder: GroundRenderer | None = None
         self._baked = 0
         self._last_key = -1
+        self._last_shot_tick: int | None = None
         self._spacing = SHOT_TICKS
         self.shots: list[TerrainShot] = []
 
@@ -62,6 +63,7 @@ class TerrainHistory:
         for shot in self.shots:
             rl.unload_render_texture(shot.target)
         self.shots.clear()
+        self._last_shot_tick = None
         if self._builder is not None:
             self._builder.close()
             self._builder = None
@@ -94,7 +96,7 @@ class TerrainHistory:
             self._bake(builder, preparation, self._baked, key.bakes)
             self._baked = key.bakes
             self._last_key = key.tick
-            if not self.shots or key.tick - self.shots[-1].tick >= self._spacing:
+            if self._last_shot_tick is None or key.tick - self._last_shot_tick >= self._spacing:
                 self._shoot(builder, key.bakes, key.tick)
 
     def _bake(self, ground: GroundRenderer, preparation: ReplayPreparation, start: int, stop: int) -> None:
@@ -103,6 +105,7 @@ class TerrainHistory:
 
     def _shoot(self, builder: GroundRenderer, bakes: int, tick: int) -> None:
         assert builder.render_target is not None
+        self._last_shot_tick = tick
         texture = builder.render_target.texture
         # Compact before allocating so even the transient peak respects the cap.
         if len(self.shots) >= SHOTS:

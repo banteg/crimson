@@ -649,7 +649,7 @@ GLuint shape_map(int id, bool heat = false) {
   auto &maps = heat ? heat_density_maps : thickness_maps;
   auto made = maps.find(id);
   if (made != maps.end())
-    return made->second;
+    return made->second ? made->second : blank_texture;
   auto t = textures.find(id);
   auto texels = texel_addresses.find(id);
   if ((!light_count && !heat && !creature_has_ambient_material(creature_type)) || t == textures.end() || texels == texel_addresses.end())
@@ -676,6 +676,7 @@ GLuint shape_map(int id, bool heat = false) {
   if (err != GL_NO_ERROR) {
     glBindTexture(GL_TEXTURE_2D, 0);
     glDeleteTextures(1, &texture);
+    maps[id] = 0;
     return blank_texture;
   }
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1970,10 +1971,16 @@ void GL_ENTRY(w2c_host_texture_release)(struct w2c_host *, u32 id) {
   textures.erase(it);
   texel_addresses.erase((int)id);
   for (auto *maps : {&thickness_maps, &heat_density_maps}) {
-    auto map = maps->find((int)id);
-    if (map != maps->end()) {
-      glDeleteTextures(1, &map->second);
-      maps->erase(map);
+    for (auto entry = maps->begin(); entry != maps->end();) {
+      if (entry->first == (int)id) {
+        if (entry->second)
+          glDeleteTextures(1, &entry->second);
+        entry = maps->erase(entry);
+      } else if (!entry->second) {
+        entry = maps->erase(entry);
+      } else {
+        ++entry;
+      }
     }
   }
   bind_target();

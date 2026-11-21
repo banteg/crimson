@@ -126,10 +126,15 @@ def test_rebuild_regenerates_from_setup_when_initial_snapshot_is_missing(
     history = TerrainHistory(resources, setup)
     history.open()
 
-    # Simulate snapshot allocation failing on the initial keyframe (leaving no shot at bake 0).
-    mocker.patch.object(terrain_history, "load_render_texture_with_reclaim", return_value=None)
+    # Simulate snapshot allocation failing on every attempt: retries stay throttled to
+    # SHOT_TICKS spacing rather than firing on every keyframe, and no broken shot is stored.
+    attempt = mocker.patch.object(terrain_history, "load_render_texture_with_reclaim", return_value=None)
     history.feed(prep)
     assert history.shots == []
+    assert attempt.call_count < len(prep.keys)
+    assert attempt.call_count == sum(
+        1 for i, key in enumerate(prep.keys) if i == 0 or key.tick % 60 == 0
+    )
 
     ground = resources.ground
     assert isinstance(ground, MaterialGroundRenderer)
