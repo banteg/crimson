@@ -52,7 +52,11 @@ inline void quad_centers(const float *vertices, unsigned count, float *centers) 
     float x = 0, y = 0;
     for (unsigned v = first; v < first + corners; ++v)
       x += vertices[v * 7], y += vertices[v * 7 + 1];
-    for (unsigned v = first; v < first + corners; ++v)
-      centers[v * 2] = x / corners, centers[v * 2 + 1] = y / corners;
+    float cx = x / corners, cy = y / corners;
+    float d0x = vertices[first * 7] - cx, d0y = vertices[first * 7 + 1] - cy;
+    for (unsigned v = first; v < first + corners; ++v) {
+      centers[v * 4] = cx, centers[v * 4 + 1] = cy;
+      centers[v * 4 + 2] = d0x, centers[v * 4 + 3] = d0y;
+    }
   }
 }

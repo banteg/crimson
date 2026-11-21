@@ -7,7 +7,7 @@
 layout(location = 0) in vec4 position; // x, y, z, rhw in pixels
 layout(location = 1) in vec4 diffuse;  // D3DCOLOR bytes: b, g, r, a
 layout(location = 2) in vec2 uv;
-layout(location = 3) in vec2 center;   // in pixels
+layout(location = 3) in vec4 center;   // xy quad center, zw first-corner offset in pixels
 uniform vec2 target_size;
 uniform vec2 camera;
 LOC(0) out vec2 fragTexCoord;
@@ -31,18 +31,20 @@ void main() {
     fragTexCoord = uv;
     fragColor = diffuse.zyxw;
     world = position.xy - camera;
-    vec2 owner = center - camera;
-    vec2 d = world - owner;
-    int vid = gl_VertexID & 3;
-    vec2 d00 = vid == 0 ? d : vid == 1 ? vec2(d.y, -d.x) : vid == 2 ? -d : vec2(-d.y, d.x);
+    vec2 owner = center.xy - camera;
+    vec2 d00 = center.zw;
     quadFlat = vec4(owner, d00);
-    lightVisibility0 = cornerVisibilities(0, world, owner);
-    lightVisibility1 = cornerVisibilities(1, world, owner);
-    lightVisibility2 = cornerVisibilities(2, world, owner);
-    lightVisibility3 = cornerVisibilities(3, world, owner);
-    lightVisibility4 = cornerVisibilities(4, world, owner);
-    lightVisibility5 = cornerVisibilities(5, world, owner);
-    lightVisibility6 = cornerVisibilities(6, world, owner);
-    lightVisibility7 = cornerVisibilities(7, world, owner);
-    fillSpecVisibilities(world, owner, specVisibility0, specVisibility1, specVisibility2, specVisibility3);
+    int vid = gl_VertexID & 3;
+    vec2 corner_wp = dot(d00, d00) > 1e-12
+        ? owner + (vid == 0 ? d00 : vid == 1 ? vec2(-d00.y, d00.x) : vid == 2 ? -d00 : vec2(d00.y, -d00.x))
+        : world;
+    lightVisibility0 = cornerVisibilities(0, corner_wp, owner);
+    lightVisibility1 = cornerVisibilities(1, corner_wp, owner);
+    lightVisibility2 = cornerVisibilities(2, corner_wp, owner);
+    lightVisibility3 = cornerVisibilities(3, corner_wp, owner);
+    lightVisibility4 = cornerVisibilities(4, corner_wp, owner);
+    lightVisibility5 = cornerVisibilities(5, corner_wp, owner);
+    lightVisibility6 = cornerVisibilities(6, corner_wp, owner);
+    lightVisibility7 = cornerVisibilities(7, corner_wp, owner);
+    fillSpecVisibilities(corner_wp, owner, specVisibility0, specVisibility1, specVisibility2, specVisibility3);
 }

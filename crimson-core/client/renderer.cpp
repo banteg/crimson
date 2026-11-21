@@ -766,7 +766,7 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   glDisable(GL_CULL_FACE);
   bool creatures = &p == &creature_lit;
   if (creatures) {
-    centers.resize((size_t)vertex_count * 2);
+    centers.resize((size_t)vertex_count * 4);
     quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data());
     glBindVertexArray(vertex_array);
     glBindBuffer(GL_ARRAY_BUFFER, center_buffer);
@@ -1117,7 +1117,7 @@ void GL_ENTRY(renderer_init)() {
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 28, (void *)20);
   glGenBuffers(1, &center_buffer);
   glBindBuffer(GL_ARRAY_BUFFER, center_buffer);
-  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 8, (void *)0);
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 16, (void *)0);
   glGenSamplers(STAGES, samplers);
 
   // An identity ramp until the device sets one.

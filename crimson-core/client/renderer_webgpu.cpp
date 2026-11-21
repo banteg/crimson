@@ -410,10 +410,10 @@ WGPURenderPipeline pipeline(Program &p, const Output &o) {
     buffer.arrayStride = 28;
     buffer.attributeCount = 3;
     if (p.input == CENTERED_VERTICES) {
-      center.format = WGPUVertexFormat_Float32x2;
+      center.format = WGPUVertexFormat_Float32x4;
       center.shaderLocation = 3;
       buffers[1].stepMode = WGPUVertexStepMode_Vertex;
-      buffers[1].arrayStride = 8;
+      buffers[1].arrayStride = 16;
       buffers[1].attributeCount = 1;
       buffers[1].attributes = &center;
     }
@@ -1445,7 +1445,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
                                                      : creature_lit;
   WGPUBindGroup vertex_textures = nullptr;
   if (lit && &program == &creature_lit) {
-    std::vector<float> centers((size_t)vertex_count * 2);
+    std::vector<float> centers((size_t)vertex_count * 4);
     quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data());
     geometry.center_bytes = centers.size() * sizeof(float);
     geometry.center_at = put(vertex_stream, centers.data(), geometry.center_bytes);

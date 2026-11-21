@@ -768,16 +768,19 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         for a, b in zip(inset_cached, inset_overflow, strict=True):
             assert a == pytest.approx(b, abs=.0005)
 
-        # Scaled sprite whose corner sits directly on a crowd-cell boundary (x=128): overflow must use the exact
-        # vertex corner coordinates rather than derivative reconstruction so adjacent pixels never flip cells.
-        edge_owner = Vec2(144, 96)  # 32-unit quad has left corners at exact x=128
-        edge_cam = Vec2(64 / 1.5, 64 / 1.5) - edge_owner
-        occlusion.upload(build_occlusion_grid(seam_crowd, [seam_fading], width=1024, height=1024))
-        edge_cached = render([seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5)
-        occlusion.upload(build_occlusion_grid(seam_crowd, [*distant, seam_fading], width=1024, height=1024))
-        edge_overflow = render([*distant, seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5)
-        for a, b in zip(edge_cached, edge_overflow, strict=True):
-            assert a == pytest.approx(b, abs=.0005)
+        # Scaled and rotated sprites whose corner sits directly on a crowd-cell boundary (x=128): cached and
+        # overflow paths must trace from the exact same corner coordinates so light reordering cannot pop.
+        for rot_deg in (0.0, 35.0, 45.0):
+            rad = math.radians(rot_deg)
+            extent = 16.0 * (abs(math.cos(rad)) + abs(math.sin(rad)))
+            edge_owner = Vec2(128.0 + extent, 96.0)
+            edge_cam = Vec2(64 / 1.5, 64 / 1.5) - edge_owner
+            occlusion.upload(build_occlusion_grid(seam_crowd, [seam_fading], width=1024, height=1024))
+            edge_cached = render([seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
+            occlusion.upload(build_occlusion_grid(seam_crowd, [*distant, seam_fading], width=1024, height=1024))
+            edge_overflow = render([*distant, seam_fading], occlusion=occlusion, center=edge_owner, camera=edge_cam, scale=1.5, rotation=rot_deg)
+            for a, b in zip(edge_cached, edge_overflow, strict=True):
+                assert a == pytest.approx(b, abs=.0005)
     finally:
         occlusion.close()
 
