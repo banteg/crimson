@@ -21,7 +21,7 @@ uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a se
 uniform sampler2D u_light_tiles;
 uniform ivec2 u_light_tile_size; // tile grid dimensions, zero when no host supplied a mask
 uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass, ice
-uniform sampler2D u_normal_tex;   // Compact per-texel (substrate height, exposed blood amount)
+uniform sampler2D u_normal_tex;   // Compact per-texel (height, blood volume, blood coverage, ice coverage)
 #endif
 
 uniform vec2 u_ground_size;
@@ -50,6 +50,11 @@ float blood_below_ice(vec4 surface, vec4 coverage) {
     // Both stored volume and blood coverage have been attenuated by the ice opacity.
     float exposed = max(1.0 - coverage.a, 0.001);
     return clamp(surface.b * coverage.r / (exposed * exposed), 0.0, 0.999);
+}
+
+float packed_blood_below_ice(vec4 packed) {
+    float exposed = max(1.0 - packed.a, 0.001);
+    return clamp(packed.g * packed.b / (exposed * exposed), 0.0, 0.999);
 }
 
 vec3 debug_radiance(vec3 value) {
@@ -104,27 +109,27 @@ void main() {
     float wet_film  = smoothstep(0.04, 0.36, clamp(blood_amount * 1.65, 0.0, 1.0));
     float deep_pool = smoothstep(0.12, 0.95, blood_amount);
 
-    // DUAL-NORMAL LAYERED FLUID MODEL (8-tap stencil on compact RG16F height+blood map):
+    // DUAL-NORMAL LAYERED FLUID MODEL (8-tap stencil on compact RGBA16F relief inputs):
     vec2 step_fine = vec2(1.2, 1.2 * V_UP) / u_ground_size;
     vec2 step_med  = vec2(3.2, 3.2 * V_UP) / u_ground_size;
-    vec2 rL1 = texture(u_normal_tex, ground_uv + vec2(-step_fine.x, 0.0)).rg;
-    vec2 rR1 = texture(u_normal_tex, ground_uv + vec2( step_fine.x, 0.0)).rg;
-    vec2 rD1 = texture(u_normal_tex, ground_uv + vec2(0.0, -step_fine.y)).rg;
-    vec2 rU1 = texture(u_normal_tex, ground_uv + vec2(0.0,  step_fine.y)).rg;
-    vec2 rL2 = texture(u_normal_tex, ground_uv + vec2(-step_med.x, 0.0)).rg;
-    vec2 rR2 = texture(u_normal_tex, ground_uv + vec2( step_med.x, 0.0)).rg;
-    vec2 rD2 = texture(u_normal_tex, ground_uv + vec2(0.0, -step_med.y)).rg;
-    vec2 rU2 = texture(u_normal_tex, ground_uv + vec2(0.0,  step_med.y)).rg;
+    vec4 rL1 = texture(u_normal_tex, ground_uv + vec2(-step_fine.x, 0.0));
+    vec4 rR1 = texture(u_normal_tex, ground_uv + vec2( step_fine.x, 0.0));
+    vec4 rD1 = texture(u_normal_tex, ground_uv + vec2(0.0, -step_fine.y));
+    vec4 rU1 = texture(u_normal_tex, ground_uv + vec2(0.0,  step_fine.y));
+    vec4 rL2 = texture(u_normal_tex, ground_uv + vec2(-step_med.x, 0.0));
+    vec4 rR2 = texture(u_normal_tex, ground_uv + vec2( step_med.x, 0.0));
+    vec4 rD2 = texture(u_normal_tex, ground_uv + vec2(0.0, -step_med.y));
+    vec4 rU2 = texture(u_normal_tex, ground_uv + vec2(0.0,  step_med.y));
 
-    vec2 dH_fine  = vec2(rL1.x - rR1.x, rU1.x - rD1.x) * 1.35;
-    vec2 dH_macro = vec2(rL2.x - rR2.x, rU2.x - rD2.x) * 1.15;
+    vec2 dH_fine  = vec2(rL1.r - rR1.r, rU1.r - rD1.r) * 1.35;
+    vec2 dH_macro = vec2(rL2.r - rR2.r, rU2.r - rD2.r) * 1.15;
     vec2 slope_sub = dH_fine + dH_macro * 0.85;
     vec3 N_sub = normalize(vec3(slope_sub.x, slope_sub.y, 1.0));
 
-    float poolL = smoothstep(0.12, 0.95, 0.45 * rL1.y + 0.55 * rL2.y);
-    float poolR = smoothstep(0.12, 0.95, 0.45 * rR1.y + 0.55 * rR2.y);
-    float poolD = smoothstep(0.12, 0.95, 0.45 * rD1.y + 0.55 * rD2.y);
-    float poolU = smoothstep(0.12, 0.95, 0.45 * rU1.y + 0.55 * rU2.y);
+    float poolL = smoothstep(0.12, 0.95, 0.45 * packed_blood_below_ice(rL1) + 0.55 * packed_blood_below_ice(rL2));
+    float poolR = smoothstep(0.12, 0.95, 0.45 * packed_blood_below_ice(rR1) + 0.55 * packed_blood_below_ice(rR2));
+    float poolD = smoothstep(0.12, 0.95, 0.45 * packed_blood_below_ice(rD1) + 0.55 * packed_blood_below_ice(rD2));
+    float poolU = smoothstep(0.12, 0.95, 0.45 * packed_blood_below_ice(rU1) + 0.55 * packed_blood_below_ice(rU2));
     vec2 dPool_smooth = vec2(poolL - poolR, poolU - poolD) * (1.0 - 0.65 * deep_pool);
 
     vec2 slope_fluid = dH_macro * mix(1.35, 0.24, deep_pool) + dH_fine * mix(0.45, 0.04, deep_pool) + dPool_smooth * 0.18;

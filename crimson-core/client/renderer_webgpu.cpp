@@ -73,12 +73,11 @@ WGPUTextureFormat float_format() {
                            wgpuDeviceHasFeature(device, WGPUFeatureName_Float32Blendable);
   return full ? WGPUTextureFormat_RGBA32Float : WGPUTextureFormat_RGBA16Float;
 }
-enum { TARGET_RG_HALF_FLOAT = 64, GROUND_DIRTY_GRID = 32 };
+enum { GROUND_DIRTY_GRID = 32 };
 WGPUTextureFormat format_of(const Target &t) {
-  return t.flags & TARGET_FLOAT          ? float_format()
-         : t.flags & TARGET_RG_HALF_FLOAT ? WGPUTextureFormat_RG16Float
-         : t.flags & TARGET_HALF_FLOAT   ? WGPUTextureFormat_RGBA16Float
-                                         : WGPUTextureFormat_RGBA8Unorm;
+  return t.flags & TARGET_FLOAT        ? float_format()
+         : t.flags & TARGET_HALF_FLOAT ? WGPUTextureFormat_RGBA16Float
+                                       : WGPUTextureFormat_RGBA8Unorm;
 }
 
 // --- Per-frame streams: vertices, indices and uniforms written once each --------
@@ -983,7 +982,7 @@ void update_ground_normals(Ground &g) {
     g.normals.height = g.surface.height;
     g.normals.logical_width = g.surface.logical_width;
     g.normals.logical_height = g.surface.logical_height;
-    g.normals.flags = TARGET_RENDER | TARGET_RG_HALF_FLOAT;
+    g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
     allocate(g.normals);
     mark_normals_full(g);
   }

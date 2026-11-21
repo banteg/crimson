@@ -347,7 +347,7 @@ Target pressured;
 // ice); the float surface holds specularity, wetness, blood volume and height.
 // Wetness is stored against an epoch, rebased as the clock runs on. Decal draws
 // marked with a material (host_ground) reach them as they reach the terrain.
-enum { TARGET_RG_HALF_FLOAT = 64, GROUND_DIRTY_GRID = 32 };
+enum { GROUND_DIRTY_GRID = 32 };
 struct Ground {
   Target substrate, coverage, surface, normals;
   float epoch = 0;
@@ -461,8 +461,6 @@ void allocate(Target &t) {
   glBindTexture(GL_TEXTURE_2D, t.texture);
   if (t.flags & TARGET_FLOAT)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, t.width, t.height, 0, GL_RGBA, GL_FLOAT, nullptr);
-  else if (t.flags & TARGET_RG_HALF_FLOAT)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, t.width, t.height, 0, GL_RG, GL_HALF_FLOAT, nullptr);
   else if (t.flags & TARGET_HALF_FLOAT)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, t.width, t.height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
   else
@@ -860,7 +858,7 @@ void update_ground_normals(Ground &g) {
     g.normals.height = g.surface.height;
     g.normals.logical_width = g.surface.logical_width;
     g.normals.logical_height = g.surface.logical_height;
-    g.normals.flags = TARGET_RENDER | TARGET_RG_HALF_FLOAT;
+    g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
     allocate(g.normals);
     mark_normals_full(g);
   }

@@ -1437,13 +1437,28 @@ def test_cached_relief_matches_live_normals_at_fractional_uvs(raylib_context, te
         ground.bake_materials(texture, texture)
         assert ground.surface is not None and ground.coverage is not None and ground.normals is not None
         surf_w = int(ground.surface.texture.width)
-        # Write a sharp one-texel ridge with height delta ~0.3 directly into surface.a.
-        ridge_img = rl.gen_image_color(surf_w, surf_w, rl.Color(10, 0, 0, 115))
+        # Write a sharp one-texel height ridge and a sharp blood-pool step (with ice strip)
+        # directly into surface + coverage to verify both substrate (mode=1) and fluid (mode=2) normals.
+        surf_img = rl.gen_image_color(surf_w, surf_w, rl.Color(10, 0, 0, 115))
+        cov_img = rl.gen_image_color(surf_w, surf_w, rl.Color(0, 0, 0, 0))
+        half_w = surf_w // 2
         for y in range(surf_w):
-            rl.image_draw_pixel(ridge_img, surf_w // 2, y, rl.Color(10, 0, 0, 191))
-        rl.image_format(ridge_img, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
-        rl.update_texture(ground.surface.texture, ridge_img.data)
-        rl.unload_image(ridge_img)
+            for x in range(surf_w):
+                h_byte = 191 if x == half_w else 115
+                if x >= half_w:
+                    ice_byte = 64 if x == half_w + 1 else 0
+                    atten = 1.0 - ice_byte / 255.0
+                    b_byte = round(230 * atten)
+                    r_byte = round(255 * atten)
+                    rl.image_draw_pixel(surf_img, x, y, rl.Color(10, b_byte, b_byte, h_byte))
+                    rl.image_draw_pixel(cov_img, x, y, rl.Color(r_byte, 0, 0, ice_byte))
+                elif h_byte != 115:
+                    rl.image_draw_pixel(surf_img, x, y, rl.Color(10, 0, 0, h_byte))
+        rl.image_format(surf_img, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
+        rl.update_texture(ground.surface.texture, surf_img.data)
+        rl.unload_image(surf_img)
+        rl.update_texture(ground.coverage.texture, cov_img.data)
+        rl.unload_image(cov_img)
         ground.normals_dirty = True
         ground.normals_full = True
 
@@ -1451,31 +1466,72 @@ def test_cached_relief_matches_live_normals_at_fractional_uvs(raylib_context, te
             def texture(self, _texture_id):
                 return texture
 
-        with (
-            texture_mode(target),
-            ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, debug=1),
-        ):
-            ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=131, out_h=131)
-        rendered = pixels(target)
-        # Compare substrate normals (encoded as N * 0.5 + 0.5) against the exact analytic live stencil.
-        delta = (191 - 115) / 255.0
-        max_deg = 0.0
+        def render_mode(mode: int) -> list[tuple[float, float, float, float]]:
+            with (
+                texture_mode(target),
+                ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, debug=mode),
+            ):
+                ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=131, out_h=131)
+            return pixels(target)
+
+        sub_pixels = render_mode(1)
+        fluid_pixels = render_mode(2)
+
+        def sample_1d(vals: list[float], wx: float) -> float:
+            t = max(0.0, min(surf_w - 1.0, wx * surf_w / 64.0 - 0.5))
+            i0 = int(math.floor(t))
+            i1 = min(surf_w - 1, i0 + 1)
+            f = t - i0
+            return vals[i0] * (1.0 - f) + vals[i1] * f
+
+        def smoothstep(e0: float, e1: float, x: float) -> float:
+            t = max(0.0, min(1.0, (x - e0) / (e1 - e0)))
+            return t * t * (3.0 - 2.0 * t)
+
+        h_vals = [(191 if x == half_w else 115) / 255.0 for x in range(surf_w)]
+        b_vals = [
+            round(230 * (1.0 - (64 if x == half_w + 1 else 0) / 255.0)) / 255.0 if x >= half_w else 0.0
+            for x in range(surf_w)
+        ]
+        r_vals = [
+            round(255 * (1.0 - (64 if x == half_w + 1 else 0) / 255.0)) / 255.0 if x >= half_w else 0.0
+            for x in range(surf_w)
+        ]
+        i_vals = [(64 / 255.0 if x == half_w + 1 else 0.0) for x in range(surf_w)]
+
+        def blood_at(wx: float) -> float:
+            exposed = max(1.0 - sample_1d(i_vals, wx), 0.001)
+            return max(0.0, min(0.999, sample_1d(b_vals, wx) * sample_1d(r_vals, wx) / (exposed * exposed)))
+
+        max_sub_deg = 0.0
+        max_fluid_deg = 0.0
         for x_i in range(131):
             wx = (x_i + 0.5) * 64.0 / 131.0
-
-            def height(x: float) -> float:
-                t = max(0.0, min(surf_w - 1.0, x * surf_w / 64.0 - 0.5))
-                return max(0.0, 1.0 - abs(t - surf_w // 2)) * delta
-
-            slope = 1.35 * (height(wx - 1.2) - height(wx + 1.2)) + 0.85 * 1.15 * (height(wx - 3.2) - height(wx + 3.2))
-            norm_a = math.sqrt(slope * slope + 1.0)
-            ax, az = slope / norm_a, 1.0 / norm_a
-            p = rendered[65 * 131 + x_i]
-            bx, by, bz = p[0] * 2.0 - 1.0, p[1] * 2.0 - 1.0, p[2] * 2.0 - 1.0
-            norm_b = math.sqrt(bx * bx + by * by + bz * bz)
-            cos_angle = max(-1.0, min(1.0, (ax * bx + az * bz) / norm_b))
-            max_deg = max(max_deg, math.degrees(math.acos(cos_angle)))
-        assert max_deg < 0.25
+            dh_fine = (sample_1d(h_vals, wx - 1.2) - sample_1d(h_vals, wx + 1.2)) * 1.35
+            dh_macro = (sample_1d(h_vals, wx - 3.2) - sample_1d(h_vals, wx + 3.2)) * 1.15
+            slope_sub = dh_fine + dh_macro * 0.85
+            deep_pool = smoothstep(0.12, 0.95, blood_at(wx))
+            pool_l = smoothstep(0.12, 0.95, 0.45 * blood_at(wx - 1.2) + 0.55 * blood_at(wx - 3.2))
+            pool_r = smoothstep(0.12, 0.95, 0.45 * blood_at(wx + 1.2) + 0.55 * blood_at(wx + 3.2))
+            dpool = (pool_l - pool_r) * (1.0 - 0.65 * deep_pool)
+            slope_fluid = (
+                dh_macro * (1.35 + (0.24 - 1.35) * deep_pool)
+                + dh_fine * (0.45 + (0.04 - 0.45) * deep_pool)
+                + dpool * 0.18
+            )
+            for slope, buf, kind in ((slope_sub, sub_pixels, "sub"), (slope_fluid, fluid_pixels, "fluid")):
+                norm_a = math.sqrt(slope * slope + 1.0)
+                ax, az = slope / norm_a, 1.0 / norm_a
+                p = buf[65 * 131 + x_i]
+                bx, by, bz = p[0] * 2.0 - 1.0, p[1] * 2.0 - 1.0, p[2] * 2.0 - 1.0
+                norm_b = math.sqrt(bx * bx + by * by + bz * bz)
+                cos_angle = max(-1.0, min(1.0, (ax * bx + az * bz) / norm_b))
+                deg = math.degrees(math.acos(cos_angle))
+                if kind == "sub":
+                    max_sub_deg = max(max_sub_deg, deg)
+                else:
+                    max_fluid_deg = max(max_fluid_deg, deg)
+        assert max_sub_deg < 0.25 and max_fluid_deg < 0.25
     finally:
         rl.unload_render_texture(target)
         ground.close()
