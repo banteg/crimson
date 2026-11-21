@@ -1450,7 +1450,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   WGPUBindGroup vertex_textures = nullptr;
   if (lit && &program == &creature_lit) {
     std::vector<float> centers((size_t)vertex_count * 6);
-    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data());
+    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data(), primitive == 5);
     geometry.center_bytes = centers.size() * sizeof(float);
     geometry.center_at = put(vertex_stream, centers.data(), geometry.center_bytes);
     vertex_textures =

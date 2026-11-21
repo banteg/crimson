@@ -439,6 +439,10 @@ void check_rtx() {
   };
   float open = occluded(0), shaded = occluded(1);
   assert(shaded < open - 0.02f);
+  // A 4-vertex triangle strip must preserve all four distinct quad corners along its shared 1-2 diagonal.
+  float strip_centers[24] = {};
+  quad_centers((const float *)memory, 4, strip_centers, true);
+  assert(fabsf(strip_centers[2] * strip_centers[5] - strip_centers[3] * strip_centers[4]) > 1.f);
   const float none[6] = {0, 0, 0, 0, 64, 1};
   memcpy(memory + 33024, none, sizeof none);
   w2c_host_occlusion(nullptr, 33024, 0, 0);

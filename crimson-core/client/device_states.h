@@ -46,16 +46,20 @@ enum { MATERIAL_BONUS = HOST_PASS_GLINT + 1 };
 // Each device vertex's quad center (x, y), the mean of its quad's vertices: Grim
 // batches quads as four consecutive vertices. The RTX creature lighting spares
 // that creature's own body (creature_lit.vert).
-inline void quad_centers(const float *vertices, unsigned count, float *centers) {
+inline void quad_centers(const float *vertices, unsigned count, float *centers, bool strip = false) {
   for (unsigned first = 0; first < count; first += 4) {
     unsigned corners = count - first < 4 ? count - first : 4;
     float x = 0, y = 0;
     for (unsigned v = first; v < first + corners; ++v)
       x += vertices[v * 7], y += vertices[v * 7 + 1];
     float cx = x / corners, cy = y / corners;
-    float d0x = vertices[first * 7] - cx, d0y = vertices[first * 7 + 1] - cy;
-    float d1x = corners >= 4 ? vertices[(first + 3) * 7] - cx : d0y;
-    float d1y = corners >= 4 ? vertices[(first + 3) * 7 + 1] - cy : -d0x;
+    // Align d00 with the shared diagonal (v0-v2 for quad lists, v1-v2 for 4-vertex strips)
+    // and d01 with an off-diagonal corner (v3 for quad lists, v0 for strips).
+    unsigned i0 = strip && corners >= 4 ? first + 1 : first;
+    unsigned i1 = strip && corners >= 4 ? first : first + 3;
+    float d0x = vertices[i0 * 7] - cx, d0y = vertices[i0 * 7 + 1] - cy;
+    float d1x = corners >= 4 ? vertices[i1 * 7] - cx : d0y;
+    float d1y = corners >= 4 ? vertices[i1 * 7 + 1] - cy : -d0x;
     for (unsigned v = first; v < first + corners; ++v) {
       centers[v * 6] = cx, centers[v * 6 + 1] = cy;
       centers[v * 6 + 2] = d0x, centers[v * 6 + 3] = d0y;

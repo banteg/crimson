@@ -37,10 +37,18 @@ void main() {
     vec2 d01 = corner1;
     quadCenterD00 = vec4(owner, d00);
     quadD01 = d01;
-    int vid = gl_VertexID & 3;
-    vec2 corner_wp = (dot(d00, d00) > 1e-12 && dot(d01, d01) > 1e-12)
-        ? owner + (vid == 0 ? d00 : vid == 1 ? -d01 : vid == 2 ? -d00 : d01)
-        : world;
+    vec2 corner_wp = world;
+    if (dot(d00, d00) > 1e-12 && dot(d01, d01) > 1e-12) {
+        vec2 c00 = owner + d00, c01 = owner + d01, c11 = owner - d00, c10 = owner - d01;
+        corner_wp = c00;
+        float best = dot(world - c00, world - c00);
+        float dist = dot(world - c01, world - c01);
+        if (dist < best) { best = dist; corner_wp = c01; }
+        dist = dot(world - c11, world - c11);
+        if (dist < best) { best = dist; corner_wp = c11; }
+        dist = dot(world - c10, world - c10);
+        if (dist < best) { corner_wp = c10; }
+    }
     lightVisibility0 = cornerVisibilities(0, corner_wp, owner);
     lightVisibility1 = cornerVisibilities(1, corner_wp, owner);
     lightVisibility2 = cornerVisibilities(2, corner_wp, owner);

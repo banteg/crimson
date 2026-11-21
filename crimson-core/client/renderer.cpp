@@ -767,7 +767,7 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   bool creatures = &p == &creature_lit;
   if (creatures) {
     centers.resize((size_t)vertex_count * 6);
-    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data());
+    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data(), primitive == 5);
     glBindVertexArray(vertex_array);
     glBindBuffer(GL_ARRAY_BUFFER, center_buffer);
     glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(centers.size() * sizeof(float)), centers.data(), GL_STREAM_DRAW);
