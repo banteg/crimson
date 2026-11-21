@@ -78,9 +78,7 @@ def beam_uniform(light: MaterialLight, *, require_illumination: bool = True) -> 
     return (head_share, head_half_width, float(light.beam_ion), support)
 
 
-def prepare_beam_lights(
-    lights: Sequence[MaterialLight], *, require_illumination: bool = True,
-) -> tuple[list[float], list[MaterialLight]]:
+def prepare_beam_lights(lights: Sequence[MaterialLight]) -> tuple[list[float], list[MaterialLight]]:
     """Pack one uniform array and conservative grid-only copies of the sources.
 
     The copies lengthen and orient a beam's support to include its head halo.
@@ -91,7 +89,7 @@ def prepare_beam_lights(
     values: list[float] = []
     grid_sources: list[MaterialLight] = []
     for light in lights:
-        shape = beam_uniform(light, require_illumination=require_illumination)
+        shape = beam_uniform(light)
         values.extend(shape)
         if not shape[3]:
             grid_sources.append(light)

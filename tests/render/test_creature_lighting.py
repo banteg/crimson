@@ -614,45 +614,57 @@ def test_continuous_beam_shadows_follow_beam_centroid_and_head_halo(lit_sprite):
         occlusion.close()
 
 
-def test_beam_specular_shadow_stays_stable_when_illumination_budget_drops(lit_sprite):
-    from crimson.render.rtx.continuous_beam import prepare_beam_lights
+def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illumination_drops(lit_sprite):
     from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
 
     render, _ = lit_sprite
-    # Long beam along +x; creature beside the tail so beamAtReceiver centroid (~x=145) differs from static (~x=235).
+    # Long Ion beam along +x from tail x=64 to head x=320 (center x=192).
+    # Creature at (350, 128) sits beyond the head: nearest segment point is the head (320, 64),
+    # while diffuse beamAtReceiver centroid lies back along the shaft near x~288.
     beam = MaterialLight(
-        Vec2(192, 20), 155, (1.4, .68, .2), height=24, direction=Vec2(1, 0), length=256,
-        source_width=3, illumination_gain=1e-4, reflection_gain=1, reflection_radius=155,
-        reflection_tail=0., beam_profile=(16., 3.1, 1.35),
+        Vec2(192, 64), 195, (.55, .82, 1.45), height=24, direction=Vec2(1, 0), length=256,
+        source_width=3, illumination_gain=4, reflection_gain=2, reflection_radius=195,
+        reflection_tail=0., beam_profile=(35.2, 6.82, 1.05), beam_ion=True,
     )
     reflection_only = msgspec.structs.replace(beam, illumination_gain=0.)
-    # Fixed blocker on the static-centroid ray only; losing illumination must not pop specular highlights.
-    far_blocker = BodyVolume(Vec2(190, 31), Vec2(10, 10), 32, 0., owner=Vec2(190, 31))
-    # Fixed blocker on the beamAtReceiver-centroid ray only; specular shadow must hold across illumination=0.
-    near_blocker = BodyVolume(Vec2(105, 42), Vec2(10, 10), 32, 0., owner=Vec2(105, 42))
+    fading = msgspec.structs.replace(beam, illumination_gain=1e-4)
+    owner = Vec2(350, 128)
+    cam = Vec2(64, 64) - owner
+    # Blocker beside the shaft blocks the ray to the diffuse centroid (~288, 64) but leaves the head (320, 64) clear.
+    shaft_blocker = BodyVolume(Vec2(297, 73), Vec2(13, 7), 32, 0., owner=Vec2(297, 73))
+    # Blocker directly between the creature and the beam head blocks specular highlights.
+    head_blocker = BodyVolume(Vec2(335, 96), Vec2(10, 10), 32, 0., owner=Vec2(335, 96))
     occlusion = ReflectionOcclusion()
     try:
-        for blocker in (far_blocker, near_blocker):
-            _, fading_grid = prepare_beam_lights([beam], require_illumination=False)
-            occlusion.upload(build_occlusion_grid([blocker], fading_grid, width=1024, height=1024))
-            fading = render([beam], occlusion=occlusion, center=Vec2(64, 64))
-            _, dropped_grid = prepare_beam_lights([reflection_only], require_illumination=False)
-            occlusion.upload(build_occlusion_grid([blocker], dropped_grid, width=1024, height=1024))
-            dropped = render([reflection_only], occlusion=occlusion, center=Vec2(64, 64))
-            for a, b in zip(fading, dropped, strict=True):
-                assert a == pytest.approx(b, abs=.002)
+        base = render([], center=owner, camera=cam)
+        clear_ref = render([reflection_only], center=owner, camera=cam)
+        assert max(a[2] - b[2] for a, b in zip(clear_ref, base, strict=True)) > .02
 
-        # Halo-only cell blocker: rebuilding the shared grid when illumination drops must retain it.
-        halo_beam = MaterialLight(
-            Vec2(192, 64), 100, (1.4, .68, .2), height=24, direction=Vec2(1, 0), length=256,
-            source_width=3, illumination_gain=1e-4, reflection_gain=1, reflection_radius=100,
-            reflection_tail=0., beam_profile=(64., 6., 1.35),
-        )
-        halo_ref_only = msgspec.structs.replace(halo_beam, illumination_gain=0.)
-        # Bare segment reaches x=320+100=420 (cell 6: 384..448); extended halo reaches x=394+100=494 (cell 7: 448..512).
-        _, grid_lit = prepare_beam_lights([halo_beam], require_illumination=False)
-        _, grid_ref = prepare_beam_lights([halo_ref_only], require_illumination=False)
-        assert grid_lit[0].length == grid_ref[0].length and grid_ref[0].length > halo_beam.length
+        # Shaft blocker must not suppress the reflection-only highlight from the unblocked beam head.
+        occlusion.upload(build_occlusion_grid([shaft_blocker], [reflection_only], width=1024, height=1024))
+        shaft_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
+        assert shaft_ref == clear_ref
+
+        # With diffuse active too, the shaft blocker shadows diffuse while keeping the full specular highlight.
+        clear_full = render([beam], center=owner, camera=cam)
+        occlusion.upload(build_occlusion_grid([shaft_blocker], [beam], width=1024, height=1024))
+        shaft_full = render([beam], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[2] for p in shaft_full) < sum(p[2] for p in clear_full) * .7
+        assert sum(p[2] for p in shaft_full) >= sum(p[2] for p in clear_ref) - .005
+
+        # Blocker on the creature-to-head ray shadows the specular highlight.
+        occlusion.upload(build_occlusion_grid([head_blocker], [reflection_only], width=1024, height=1024))
+        head_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[2] for p in head_ref) < sum(p[2] for p in clear_ref) - .05
+
+        # Dropping illumination budget from 1e-4 to 0 must not pop specular shadows for either blocker.
+        for blocker in (shaft_blocker, head_blocker):
+            occlusion.upload(build_occlusion_grid([blocker], [fading], width=1024, height=1024))
+            fading_img = render([fading], occlusion=occlusion, center=owner, camera=cam)
+            occlusion.upload(build_occlusion_grid([blocker], [reflection_only], width=1024, height=1024))
+            dropped_img = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
+            for a, b in zip(fading_img, dropped_img, strict=True):
+                assert a == pytest.approx(b, abs=.002)
     finally:
         occlusion.close()
 
@@ -677,17 +689,17 @@ def test_beam_shadow_stays_bounded_near_illumination_cutoff(lit_sprite):
     occlusion = ReflectionOcclusion()
     try:
         clear = render([beam], center=owner, camera=cam)
-        _, grid_lights = prepare_beam_lights([beam], require_illumination=False)
+        _, grid_lights = prepare_beam_lights([beam])
         wide = msgspec.structs.replace(grid_lights[0], radius=500, reflection_radius=500)
         occlusion.upload(build_occlusion_grid([bogus_blocker], [wide], width=1024, height=1024))
         actual = render([beam], occlusion=occlusion, center=owner, camera=cam)
         assert actual == clear
 
-        # Smooth transition across low irradiance: moving a reflection-only beam corner by 0.001 units near the
-        # cutoff must not snap specular visibility across an intervening blocker.
-        ref_beam = msgspec.structs.replace(beam, illumination_gain=0., reflection_radius=240)
+        # Smooth transition across low irradiance: moving a creature by 0.001 units near the reach cutoff
+        # must not snap diffuse or specular visibility across an intervening blocker.
         blocker = BodyVolume(Vec2(276, 196), Vec2(8, 8), 36, 0., owner=Vec2(276, 196))
-        _, ref_grid = prepare_beam_lights([ref_beam], require_illumination=False)
+        ref_beam = msgspec.structs.replace(beam, reflection_radius=240)
+        _, ref_grid = prepare_beam_lights([ref_beam])
         occlusion.upload(build_occlusion_grid([blocker], ref_grid, width=1024, height=1024))
         step_a = render([ref_beam], occlusion=occlusion, center=Vec2(328, 270.000), camera=Vec2(64 - 328, 64 - 270))
         step_b = render([ref_beam], occlusion=occlusion, center=Vec2(328, 270.001), camera=Vec2(64 - 328, 64 - 270))

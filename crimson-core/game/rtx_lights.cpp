@@ -934,7 +934,7 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
     float l[16];
     memcpy(l, lights + i * RTX_LIGHT_FLOATS, sizeof l);
     const float *cells = lights + i * RTX_LIGHT_FLOATS + 20;
-    if (cells[3] > 0) {
+    if (l[12] > 0 && cells[3] > 0) {
       if (l[8] * l[8] + l[9] * l[9] <= 0.0001f)
         l[8] = 1, l[9] = 0;
       l[11] += 2 * lights[i * RTX_LIGHT_FLOATS + 18];

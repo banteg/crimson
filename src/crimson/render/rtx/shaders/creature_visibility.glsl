@@ -25,13 +25,15 @@ float cornerVisibility(int i, vec2 wp, vec2 owner) {
     vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
     bool ring = u_rgb[i].w > 0.;
     bool continuous = !ring && u_beam_shape[i].w > 0.;
+    // Continuous beams trace specular visibility separately toward the nearest segment point; diffuse alone uses this.
+    if (continuous && u_response[i].x <= 0.) return 1.;
     float half_length = u_dir[i].w * .5;
     float lo_emit = continuous ? min(-half_length, half_length - u_beam_shape[i].y) : -half_length;
     float hi_emit = continuous ? half_length + u_beam_shape[i].y : half_length;
-    // Past both of the light's reaches across the whole quad, every corner as far from its center as this one:
-    // creature.frag shades none of it from the light. A corner past them alone still traces, since the pixels
+    // Past the light's active reach across the whole quad, every corner as far from its center as this one:
+    // creature.frag shades none of it from the light. A corner past it alone still traces, since the pixels
     // inside its reach interpolate it.
-    float reach = max(u_pos[i].z, u_response[i].z);
+    float reach = continuous ? u_pos[i].z : max(u_pos[i].z, u_response[i].z);
     if (length(nearestOn(i, axis, ring, lo_emit, hi_emit, owner) - owner) - length(wp - owner) >= reach) return 1.;
     vec2 nearest = nearestOn(i, axis, ring, lo_emit, hi_emit, wp);
     vec2 source = ring ? nearest : illuminationSource(u_pos[i].xy, axis, u_dir[i].w, u_dir[i].z);
@@ -39,12 +41,39 @@ float cornerVisibility(int i, vec2 wp, vec2 owner) {
         vec2 delta;
         float irradiance;
         // Blend smoothly from the nearest emitting point to the integrated energy centroid across low
-        // irradiance so float32 noise near the reach boundary cannot snap specular shadow rays.
+        // irradiance so float32 noise near the reach boundary cannot snap diffuse shadow rays.
         source = nearest;
         if (beamAtReceiver(i, u_dir[i], wp, u_pos[i], delta, irradiance))
             source = mix(nearest, wp + delta, smoothstep(1e-6, 1e-3, irradiance));
     }
     return illuminationVisibility(vec3(wp, 8.), vec3(source, u_pos[i].w), max(.1, u_response[i].w), owner);
+}
+
+// Continuous-beam specular visibility from the creature's center toward the nearest point on the bare beam segment
+// (matching creature.frag's spec_L). Evaluated strictly from `owner` so all four vertices of a quad pack identical
+// flat bytes regardless of provoking-vertex convention.
+float beamSpecVisibility(int i, vec2 owner) {
+    if (i >= u_count || u_dynamic_shadows == 0 || u_response[i].y <= 0. || u_response[i].z <= 0.) return 1.;
+    if (u_rgb[i].w > 0. || u_beam_shape[i].w <= 0.) return 1.;
+    vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
+    float half_length = u_dir[i].w * .5;
+    vec2 nearest = nearestOn(i, axis, false, -half_length, half_length, owner);
+    if (length(nearest - owner) >= u_response[i].z + 128.) return 1.;
+    return illuminationVisibility(vec3(owner, 8.), vec3(nearest, u_pos[i].w), max(.1, u_response[i].w), owner);
+}
+
+uint packSpecVis4(int first, vec2 owner) {
+    uint v0 = uint(clamp(floor(beamSpecVisibility(first, owner) * 255. + .5), 0., 255.));
+    uint v1 = uint(clamp(floor(beamSpecVisibility(first + 1, owner) * 255. + .5), 0., 255.));
+    uint v2 = uint(clamp(floor(beamSpecVisibility(first + 2, owner) * 255. + .5), 0., 255.));
+    uint v3 = uint(clamp(floor(beamSpecVisibility(first + 3, owner) * 255. + .5), 0., 255.));
+    return v0 | (v1 << 8u) | (v2 << 16u) | (v3 << 24u);
+}
+
+uvec4 specVisibilities(int half_index, vec2 owner) {
+    int base = half_index * 16;
+    return uvec4(packSpecVis4(base, owner), packSpecVis4(base + 4, owner),
+                 packSpecVis4(base + 8, owner), packSpecVis4(base + 12, owner));
 }
 
 vec4 cornerVisibilities(int group, vec2 wp, vec2 owner) {

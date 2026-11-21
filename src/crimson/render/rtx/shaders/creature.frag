@@ -17,6 +17,9 @@ in vec4 lightVisibility4;
 in vec4 lightVisibility5;
 in vec4 lightVisibility6;
 in vec4 lightVisibility7;
+// Continuous-beam specular visibility toward the nearest segment point, sixteen lights per uvec4 (one byte each).
+flat in uvec4 specVisibility0;
+flat in uvec4 specVisibility1;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -45,6 +48,14 @@ float lightVisibility(int i) {
                         : (i < 24 ? (i < 20 ? lightVisibility4 : lightVisibility5) : (i < 28 ? lightVisibility6 : lightVisibility7));
     int lane = i - i / 4 * 4;
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
+}
+float specVisibility(int i) {
+    uvec4 half_group = i < 16 ? specVisibility0 : specVisibility1;
+    int local = i - (i / 16) * 16;
+    int word = local / 4;
+    uint packed = word == 0 ? half_group.x : word == 1 ? half_group.y : word == 2 ? half_group.z : half_group.w;
+    uint shift = uint((local - word * 4) * 8);
+    return float((packed >> shift) & 255u) / 255.0;
 }
 float cellGrid() { return u_ice != 0 ? float(u_ice) : 8.0; }
 vec4 spriteSample(vec2 uv) {
@@ -206,7 +217,7 @@ void main() {
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            added += u_rgb[i].rgb * spec_amount * spec_gain * breakup * lightVisibility(i);
+            added += u_rgb[i].rgb * spec_amount * spec_gain * breakup * (continuous ? specVisibility(i) : lightVisibility(i));
         }
         if (u_response[i].x <= 0.) continue;
         vec2 delta;
