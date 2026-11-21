@@ -75,11 +75,13 @@ float spriteLuminance(vec2 uv) {
     return dot(spriteSample(uv).rgb, vec3(.299, .587, .114));
 }
 float spriteAlpha(vec2 uv) {
-    vec2 cell = floor(fragTexCoord * cellGrid()) / cellGrid();
-    if (any(lessThan(uv, cell)) || any(greaterThanEqual(uv, cell + vec2(1. / cellGrid()))))
+    float grid = cellGrid();
+    vec2 cell = floor(fragTexCoord * grid) / grid;
+    if (any(lessThan(uv, cell)) || any(greaterThanEqual(uv, cell + vec2(1. / grid))))
         return 0.0;
-    // Explicit LOD keeps alpha taps defined inside per-pixel light branches.
-    return spriteSample(uv).a;
+    // Alpha is linear and cannot bleed from transparent RGB: a single fetch replaces alphaBilinear's four.
+    vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
+    return textureLod(texture0, clamp(uv, cell + half_texel, cell + vec2(1. / grid) - half_texel), 0.).a;
 }
 void main() {
     vec4 texel = alphaBilinear(texture0, fragTexCoord, true);

@@ -81,18 +81,22 @@ vec3 sight_scattering(vec2 xy,vec4 sight) {
 }
 
 void main() {
-    vec2 xy=u_origin+fragTexCoord*u_size;
-    vec4 state=state_at(xy);
+    vec2 uv=fragTexCoord;
+    vec2 xy=u_origin+uv*u_size;
+    vec4 raw_state=(any(lessThan(uv,vec2(0)))||any(greaterThan(uv,vec2(1))))
+        ? vec4(0) : textureLod(texture0,vec2(uv.x,u_state_flip!=0 ? 1.-uv.y : uv.y),0.);
+    vec2 edge=smoothstep(vec2(0),vec2(12),uv*u_size)*(1.-smoothstep(u_size-12.,u_size,uv*u_size));
+    vec4 state=vec4(raw_state.x*edge.x*edge.y,raw_state.yzw);
     // Raw fields cover the whole domain: air moves and stays warm where smoke has thinned out. Heat fades with the
     // field's lifetime, as the columns see it, so a refresh folding the fade in leaves the map as it was.
     if(u_debug==16) { finalColor=vec4(heat(state.y*u_fade),1.); return; }
     if(u_debug==17) { finalColor=vec4(flow(state.zw),1.); return; }
-    vec3 local=column(xy);
+    float faded_heat=state.y*u_fade;
+    vec3 local=vec3(state.x*u_fade,16.+min(faded_heat,2.)*8.,11.+min(faded_heat,2.)*3.);
     if(local.x<=.00001) { finalColor=u_debug!=0 ? vec4(0,0,0,1) : vec4(0); return; }
     // Heat per unit of smoke, from the raw fields: the edge fade thins the smoke, not its heat's share. The lifetime
     // fade thins both, as the columns see them, so the share's floor holds when a refresh folds the fade in.
-    vec2 raw_uv=(xy-u_origin)/u_size;
-    vec2 raw=textureLod(texture0,vec2(raw_uv.x,u_state_flip!=0 ? 1.-raw_uv.y : raw_uv.y),0.).xy*u_fade;
+    vec2 raw=raw_state.xy*u_fade;
     // The light map shows what emitters add: no glow, as no sky.
     vec3 glow=u_debug==18 ? vec3(0) : ember(raw.y/max(raw.x,.0001));
     vec3 sky1=column(xy-vec2(12,9)),sky2=column(xy-vec2(24,18));
@@ -103,11 +107,14 @@ void main() {
     float weights[14];
     float transmission=1.;
     vec3 scattered=vec3(0);
+    int first_slice=14, last_slice=-1;
     for(int i=0;i<14;i++) {
         float z=70.-float(i)*5.;
         float opacity=1.-exp(-vertical(local,z)*.024*SMOKE_THICKNESS*5.);
         weights[i]=0.;
         if(opacity<=.00001) continue;
+        if(first_slice==14) first_slice=i;
+        last_slice=i;
         weights[i]=transmission*opacity;
         float sky_depth=vertical(sky1,z+16.)+vertical(sky2,z+32.);
         // The smoke's sky fill is a look-dev color; the sights' and the embers' glows add as light.
@@ -116,43 +123,47 @@ void main() {
         scattered+=weights[i]*color;
         transmission*=1.-opacity;
     }
-    for(int light=0;light<16;light++) {
-        if(light>=u_light_count) break;
-        vec4 source=u_light_pos[light],shape=u_light_shape[light],radiance=u_light_rgb[light];
-        float along=clamp(dot(xy-source.xy,shape.xy),-shape.z,shape.z);
-        vec2 nearest=source.xy+shape.xy*along;
-        // A segment scatters along its length as it shines, brighter toward its head: the smoke sees its radiance
-        // ramp averaged over as much of its length as the smoke is far from it. The nearest point's radiance alone
-        // lit everything behind a dark tail with that tail, a hard line across the smoke at the muzzle.
-        float profile=1.;
-        if(shape.z>0.) {
-            float f=along/(2.*shape.z)+.5, reach=length(xy-nearest)/(2.*shape.z);
-            profile=segmentRadiance(.5*(clamp(f-reach,0.,1.)+clamp(f+reach,0.,1.)),u_light_tail[light/4][light%4]);
-        }
-        if(shape.w>0.) {
-            vec2 radial=xy-source.xy;
-            nearest=source.xy+radial/max(length(radial),.0001)*shape.w;
-            profile=1.;
-        }
-        vec2 lateral=nearest-xy;
-        float dist2=dot(lateral,lateral);
-        if(dist2>=source.w*source.w) continue;
-        // The six shadow rays share their XY samples at every viewing height.
-        // Keep full height-dependent attenuation, phase and optical depth.
-        vec3 columns[6];
-        for(int j=0;j<6;j++) columns[j]=column(xy+lateral*((float(j)+.5)/6.));
-        for(int i=0;i<14;i++) {
-            if(weights[i]<=0.) continue;
-            float z=70.-float(i)*5.;
-            float dz=source.z-z;
-            float distance=sqrt(dist2+dz*dz);
-            float attenuation=pow(max(0.,1.-distance/max(source.w,.001)),2.);
-            if(attenuation<=0.) continue;
-            float optical_depth=0.;
-            for(int j=0;j<6;j++) optical_depth+=vertical(columns[j],z+dz*((float(j)+.5)/6.));
-            float shadow=exp(-optical_depth*distance/6.*.020*SMOKE_THICKNESS);
-            float phase=.7-.35*dz/max(distance,.001);
-            scattered+=weights[i]*radiance.rgb*attenuation*shadow*phase*radiance.w*profile;
+    if(first_slice<=last_slice) {
+        float z_top=70.-float(first_slice)*5., z_bot=70.-float(last_slice)*5.;
+        for(int light=0;light<16;light++) {
+            if(light>=u_light_count) break;
+            vec4 source=u_light_pos[light],shape=u_light_shape[light],radiance=u_light_rgb[light];
+            float along=clamp(dot(xy-source.xy,shape.xy),-shape.z,shape.z);
+            vec2 nearest=source.xy+shape.xy*along;
+            // A segment scatters along its length as it shines, brighter toward its head: the smoke sees its radiance
+            // ramp averaged over as much of its length as the smoke is far from it. The nearest point's radiance alone
+            // lit everything behind a dark tail with that tail, a hard line across the smoke at the muzzle.
+            float profile=1.;
+            if(shape.z>0.) {
+                float f=along/(2.*shape.z)+.5, reach=length(xy-nearest)/(2.*shape.z);
+                profile=segmentRadiance(.5*(clamp(f-reach,0.,1.)+clamp(f+reach,0.,1.)),u_light_tail[light/4][light%4]);
+            }
+            if(shape.w>0.) {
+                vec2 radial=xy-source.xy;
+                nearest=source.xy+radial/max(length(radial),.0001)*shape.w;
+                profile=1.;
+            }
+            vec2 lateral=nearest-xy;
+            float dist2=dot(lateral,lateral);
+            float dz_min=source.z<z_bot ? z_bot-source.z : (source.z>z_top ? source.z-z_top : 0.);
+            if(dist2+dz_min*dz_min>=source.w*source.w) continue;
+            // The six shadow rays share their XY samples at every viewing height.
+            // Keep full height-dependent attenuation, phase and optical depth.
+            vec3 columns[6];
+            for(int j=0;j<6;j++) columns[j]=column(xy+lateral*((float(j)+.5)/6.));
+            for(int i=first_slice;i<=last_slice;i++) {
+                if(weights[i]<=0.) continue;
+                float z=70.-float(i)*5.;
+                float dz=source.z-z;
+                float distance=sqrt(dist2+dz*dz);
+                float attenuation=pow(max(0.,1.-distance/max(source.w,.001)),2.);
+                if(attenuation<=0.) continue;
+                float optical_depth=0.;
+                for(int j=0;j<6;j++) optical_depth+=vertical(columns[j],z+dz*((float(j)+.5)/6.));
+                float shadow=exp(-optical_depth*distance/6.*.020*SMOKE_THICKNESS);
+                float phase=.7-.35*dz/max(distance,.001);
+                scattered+=weights[i]*radiance.rgb*attenuation*shadow*phase*radiance.w*profile;
+            }
         }
     }
     float opacity=1.-transmission;
