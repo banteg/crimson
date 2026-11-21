@@ -220,3 +220,14 @@ def test_creature_surface_map_packs_exact_relief_and_interior_mask() -> None:
     ramped = build_creature_surface_map(rgba)
     assert px(ramped, (20, 4))[1] > 128
     assert px(ramped, (20, 4))[2] == 128
+    # Transparent background next to an opaque silhouette edge must not create a false black cliff.
+    edge_rgba = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    for y in range(2, 6):
+        for x in range(2, 5):
+            v = 120 + (x - 2) * 4
+            edge_rgba.putpixel((x, y), (v, v, v, 255))
+    edge_surface = build_creature_surface_map(edge_rgba)
+    # Right edge (x=4) has rising ramp on left and transparent x=5 on right -> stays positive, not negative.
+    assert px(edge_surface, (4, 3))[1] > 128
+    # Adjacent transparent texel (x=5) inherits the in-cell opaque gradient so bilinear edge taps stay consistent.
+    assert px(edge_surface, (5, 3))[1] > 128

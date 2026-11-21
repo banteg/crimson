@@ -1338,6 +1338,8 @@ void wgpu_w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
   if (it == textures.end())
     return;
   Target &t = it->second;
+  // What the frame drew so far sampled the texture and any derived maps as they were.
+  submit();
   if (!(t.flags & TARGET_RENDER)) {
     texel_addresses[(int)id] = texels;
     for (auto *maps : {&thickness_maps, &heat_density_maps}) {
@@ -1346,11 +1348,10 @@ void wgpu_w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
         wgpuTextureViewRelease(map->second.view);
         wgpuTextureRelease(map->second.texture);
         maps->erase(map);
+        forget_groups();
       }
     }
   }
-  // What the frame drew so far sampled the texture as it was.
-  submit();
   // A8R8G8B8 texels are BGRA bytes, at logical size even for a denser target.
   std::vector<unsigned char> rgba((size_t)t.width * t.height * 4);
   const u8 *bgra = client_memory() + texels;
