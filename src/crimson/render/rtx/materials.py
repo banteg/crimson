@@ -17,7 +17,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 from grim.terrain_render import GroundRenderer
 from grim.terrain_stamps import TerrainLayers
-from grim.texture_mode import texture_mode
+from grim.texture_mode import restore_current_target, texture_mode
 
 from ...creatures.anim import creature_corpse_frame_for_type
 from ...effects_atlas import EffectId
@@ -427,6 +427,7 @@ class MaterialGroundRenderer(GroundRenderer):
                     pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
                 )
             except RuntimeError:
+                restore_current_target()
                 self.normals_failed_size = (norm_w, norm_h)
                 return None
             self.normals_failed_size = None

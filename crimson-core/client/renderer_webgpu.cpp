@@ -189,6 +189,7 @@ Program creature_lit{&WGSL_CREATURE_LIT_VERT, &WGSL_CREATURE_FRAG, CENTERED_VERT
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
 Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
 Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_FRAG, DEVICE_VERTICES};
+Program ground_lit_direct{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_DIRECT_FRAG, DEVICE_VERTICES};
 Program ground_normals{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_NORMALS_FRAG, NO_VERTICES};
 Program ground_beam_vis{&WGSL_GROUND_VISIBILITY_VERT, &WGSL_GROUND_BEAM_VIS_FRAG, NO_VERTICES};
 Program ground_stamp{&WGSL_CREATURE_VERT, &WGSL_GROUND_STAMP_FRAG, DEVICE_VERTICES};
@@ -550,7 +551,7 @@ void bind(Program &p, WGPUBindGroup group, const Uniforms *vertex, const Uniform
 // Everything bound to a texture view goes when the texture does.
 void forget_groups() {
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_normals, &ground_beam_vis, &ground_stamp, &ground_fill,
+                     &ground_lit, &ground_lit_direct, &ground_normals, &ground_beam_vis, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program}) {
     for (auto *cache : {&p->groups, &p->vertex_groups}) {
@@ -563,20 +564,34 @@ void forget_groups() {
 
 // --- Targets ----------------------------------------------------------------------
 
-void allocate(Target &t) {
+bool try_allocate(Target &t) {
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
   descriptor.size = {(uint32_t)t.width, (uint32_t)t.height, 1};
   descriptor.format = format_of(t);
   descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst | WGPUTextureUsage_CopySrc |
                      WGPUTextureUsage_RenderAttachment;
   t.texture = wgpuDeviceCreateTexture(device, &descriptor);
+  if (!t.texture) {
+    t = Target{};
+    return false;
+  }
   t.view = wgpuTextureCreateView(t.texture, nullptr);
+  if (!t.view) {
+    wgpuTextureRelease(t.texture);
+    t = Target{};
+    return false;
+  }
   if (t.flags & TARGET_RENDER) {
     // Direct3D's surfaces start black and opaque.
     WGPUColor black = {0, 0, 0, 1};
     begin_pass(t, &black);
     end_pass();
   }
+  return true;
+}
+
+void allocate(Target &t) {
+  try_allocate(t);
 }
 
 void release(Target &t) {
@@ -755,7 +770,7 @@ void wgpu_renderer_init() {
   stream_buffer(index_stream, WGPUBufferUsage_Index);
   stream_buffer(uniform_stream, WGPUBufferUsage_Uniform);
   for (Program *p : {&classic, &present_program, &blit, &tonemap, &beam, &effect, &creature_lit, &player_lit, &bonus_lit,
-                     &ground_lit, &ground_normals, &ground_beam_vis, &ground_stamp, &ground_fill,
+                     &ground_lit, &ground_lit_direct, &ground_normals, &ground_beam_vis, &ground_stamp, &ground_fill,
                      &smoke_solver, &smoke_splat, &smoke_impulse, &smoke_display,
                      &heat_body, &heat_stamp, &heat_trail_program, &contact_glow, &pressure_fronts_program})
     create(*p);
@@ -932,6 +947,7 @@ struct Ground {
   float epoch = 0;
   bool normals_dirty = true;
   bool normals_full = true;
+  int normals_failed_w = 0, normals_failed_h = 0;
   uint32_t dirty_tiles[GROUND_DIRTY_GRID] = {};
 };
 std::unordered_map<int, Ground> grounds;
@@ -1069,26 +1085,33 @@ void mark_normals_geometry(Ground &g, u32 primitive, const unsigned char *vb, u3
     mark_normals_rect(g, min_x, min_y, max_x, max_y);
 }
 
-void update_ground_normals(Ground &g) {
+bool update_ground_normals(Ground &g) {
   if (!g.normals.texture || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
     release(g.normals);
+    if (g.normals_failed_w == g.surface.width && g.normals_failed_h == g.surface.height)
+      return false;
     g.normals.width = g.surface.width;
     g.normals.height = g.surface.height;
     g.normals.logical_width = g.surface.logical_width;
     g.normals.logical_height = g.surface.logical_height;
     g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
-    allocate(g.normals);
+    if (!try_allocate(g.normals)) {
+      g.normals_failed_w = g.surface.width;
+      g.normals_failed_h = g.surface.height;
+      return false;
+    }
+    g.normals_failed_w = g.normals_failed_h = 0;
     mark_normals_full(g);
   }
   if (!g.normals_dirty)
-    return;
+    return true;
   int dirty_count = 0;
   for (uint32_t row : g.dirty_tiles)
     dirty_count += __builtin_popcount(row);
   bool full = g.normals_full || dirty_count * 2 >= GROUND_DIRTY_GRID * GROUND_DIRTY_GRID;
   if (!full && dirty_count == 0) {
     g.normals_dirty = false;
-    return;
+    return true;
   }
   pass_into(g.normals);
   Output o;
@@ -1127,6 +1150,7 @@ void update_ground_normals(Ground &g) {
   end_pass();
   g.normals_dirty = g.normals_full = false;
   memset(g.dirty_tiles, 0, sizeof g.dirty_tiles);
+  return true;
 }
 
 // A ground pass over a whole companion: the stamp shader's `kind` and `pass`
@@ -1309,10 +1333,11 @@ bool ground_draw(const Geometry &geometry) {
   Target &t = drawing_target(current_target);
   if (visibility_dirty)
     prepare_ground_visibility(t.logical_width, t.logical_height);
-  update_ground_normals(g);
+  bool has_normals = update_ground_normals(g);
   upload_ground_tiles();
   pass_into(t);
-  Uniforms vertex(*ground_lit.vert), fragment(*ground_lit.frag);
+  Program &prog = has_normals ? ground_lit : ground_lit_direct;
+  Uniforms vertex(*prog.vert), fragment(*prog.frag);
   vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
   fragment.set("u_ground_size", ground_size, 8).f("u_time_s", scene_seconds - g.epoch).i("u_debug", scene_debug < DEBUG_SMOKE ? scene_debug : 0);
   fragment.i("u_debug_display", 1);
@@ -1324,19 +1349,28 @@ bool ground_draw(const Geometry &geometry) {
   fragment.set("u_spec_pos", light_pos, light_count * 16).set("u_spec_color", light_rgb, light_count * 16);
   fragment.set("u_spec_dir", ground_dir, light_count * 16).set("u_spec_response", light_response, light_count * 16);
   fragment.set("u_spec_tail", light_tail, (light_count + 3) / 4 * 16).set("u_beam_shape", beam_shape, light_count * 16);
-  WGPUBindGroup group = fragment_group(ground_lit, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
-                                                    {"u_surface_tex", g.surface.view, linear_clamp()},
-                                                    {"u_material_tex", g.coverage.view, linear_clamp()},
-                                                    {"u_normal_tex", g.normals.view, linear_clamp()},
-                                                    {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
-                                                     linear_clamp()},
-                                                    {"u_light_tiles", ground_tiles.width ? ground_tile_texture.view : blank_view,
-                                                     nearest_clamp()}});
+  WGPUBindGroup group =
+      has_normals
+          ? fragment_group(prog, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
+                                  {"u_surface_tex", g.surface.view, linear_clamp()},
+                                  {"u_material_tex", g.coverage.view, linear_clamp()},
+                                  {"u_normal_tex", g.normals.view, linear_clamp()},
+                                  {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
+                                   linear_clamp()},
+                                  {"u_light_tiles", ground_tiles.width ? ground_tile_texture.view : blank_view,
+                                   nearest_clamp()}})
+          : fragment_group(prog, {{"u_substrate_tex", g.substrate.view, linear_clamp()},
+                                  {"u_surface_tex", g.surface.view, linear_clamp()},
+                                  {"u_material_tex", g.coverage.view, linear_clamp()},
+                                  {"u_visibility_tex", ground_visibility.count ? beam_vis.view : blank_view,
+                                   linear_clamp()},
+                                  {"u_light_tiles", ground_tiles.width ? ground_tile_texture.view : blank_view,
+                                   nearest_clamp()}});
   ground_tiles_sampled |= ground_tiles.width > 0;
   Output o = device_output(t, geometry.topology);
   o.blend = false; // the ground is opaque
-  wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_lit, o));
-  bind(ground_lit, group, &vertex, &fragment);
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(prog, o));
+  bind(prog, group, &vertex, &fragment);
   draw_geometry(geometry);
   return true;
 }

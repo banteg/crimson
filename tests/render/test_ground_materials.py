@@ -1602,13 +1602,16 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
             pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
         ):
             if pixel_format == rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16:
+                # Simulate load_float_render_texture failing at rl_framebuffer_complete()
+                # after changing the active framebuffer binding.
+                rl.rl_disable_framebuffer()
                 raise RuntimeError("simulated VRAM exhaustion")
             return real_loader(width, height, pixel_format=pixel_format)
 
         loader.side_effect = fail_half_float
         uniform_deep_film(fallback_ground, fallback_texture)
-        fallback_sub = debug_pixels(fallback_ground, fallback_texture, mode=1)
-        fallback_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2)
+        fallback_sub = debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False)
+        fallback_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2, shadows=False)
         assert fallback_ground.normals is None
         assert fallback_ground.normals_failed_size is not None
     assert fallback_sub == pytest.approx(cached_sub, abs=0.005)

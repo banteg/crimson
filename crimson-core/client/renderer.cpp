@@ -269,6 +269,7 @@ const char *creature_fragment_source = SHADER_HEADER RTX_SHADER_CREATURE_FRAG;
 const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
 const char *bonus_fragment_source = SHADER_HEADER RTX_SHADER_BONUS_FRAG;
 const char *ground_fragment_source = SHADER_HEADER SHADER_GROUND_LIT_FRAG;
+const char *ground_direct_fragment_source = SHADER_HEADER SHADER_GROUND_LIT_DIRECT_FRAG;
 const char *ground_normals_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_NORMALS_FRAG;
 const char *ground_beam_vis_source = SHADER_HEADER SHADER_GROUND_BEAM_VIS_FRAG;
 const char *stamp_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_STAMP_FRAG;
@@ -353,13 +354,14 @@ struct Ground {
   float epoch = 0;
   bool normals_dirty = true;
   bool normals_full = true;
+  int normals_failed_w = 0, normals_failed_h = 0;
   uint32_t dirty_tiles[GROUND_DIRTY_GRID] = {};
 };
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
 bool ground_batch;
 float ground_seconds;
-GLuint ground_program, ground_normals_program, stamp_program, fill_program;
+GLuint ground_program, ground_direct_program, ground_normals_program, stamp_program, fill_program;
 // World-space, color-independent source visibility: four source masks per
 // RGBA group, four groups a row. Final shading never walks the body grid.
 enum { BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
@@ -456,7 +458,11 @@ Target &target_or_back(int id) {
   return it != textures.end() ? it->second : textures[0];
 }
 
-void allocate(Target &t) {
+void release(Target &t);
+void bind_target();
+
+bool try_allocate(Target &t) {
+  while (glGetError() != GL_NO_ERROR) {}
   glGenTextures(1, &t.texture);
   glBindTexture(GL_TEXTURE_2D, t.texture);
   if (t.flags & TARGET_FLOAT)
@@ -465,6 +471,11 @@ void allocate(Target &t) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, t.width, t.height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
   else
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t.width, t.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  if (glGetError() != GL_NO_ERROR) {
+    release(t);
+    bind_target();
+    return false;
+  }
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -473,13 +484,22 @@ void allocate(Target &t) {
     glGenFramebuffers(1, &t.framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, t.framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t.texture, 0);
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-      client_fatal("Could not allocate render target");
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE || glGetError() != GL_NO_ERROR) {
+      release(t);
+      bind_target();
+      return false;
+    }
     // Direct3D's surfaces start black and opaque, whatever the last draw masked.
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
   }
+  return true;
+}
+
+void allocate(Target &t) {
+  if (!try_allocate(t))
+    client_fatal("Could not allocate render target");
 }
 
 void release(Target &t) {
@@ -946,26 +966,33 @@ void mark_normals_geometry(Ground &g, u32 primitive, const unsigned char *vb, u3
     mark_normals_rect(g, min_x, min_y, max_x, max_y);
 }
 
-void update_ground_normals(Ground &g) {
+bool update_ground_normals(Ground &g) {
   if (!g.normals.framebuffer || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
     release(g.normals);
+    if (g.normals_failed_w == g.surface.width && g.normals_failed_h == g.surface.height)
+      return false;
     g.normals.width = g.surface.width;
     g.normals.height = g.surface.height;
     g.normals.logical_width = g.surface.logical_width;
     g.normals.logical_height = g.surface.logical_height;
     g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
-    allocate(g.normals);
+    if (!try_allocate(g.normals)) {
+      g.normals_failed_w = g.surface.width;
+      g.normals_failed_h = g.surface.height;
+      return false;
+    }
+    g.normals_failed_w = g.normals_failed_h = 0;
     mark_normals_full(g);
   }
   if (!g.normals_dirty)
-    return;
+    return true;
   int dirty_count = 0;
   for (uint32_t row : g.dirty_tiles)
     dirty_count += __builtin_popcount(row);
   bool full = g.normals_full || dirty_count * 2 >= GROUND_DIRTY_GRID * GROUND_DIRTY_GRID;
   if (!full && dirty_count == 0) {
     g.normals_dirty = false;
-    return;
+    return true;
   }
   gpu_aside("ground-normals");
   bind_framebuffer(g.normals);
@@ -1012,6 +1039,7 @@ void update_ground_normals(Ground &g) {
   memset(g.dirty_tiles, 0, sizeof g.dirty_tiles);
   bind_target();
   gpu_resume();
+  return true;
 }
 
 // The companions of the terrain target `id`, made from it as it stands: the
@@ -1204,9 +1232,11 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   Target &t = drawing_target(current_target);
   if (visibility_dirty)
     prepare_ground_visibility(t.logical_width, t.logical_height);
-  update_ground_normals(g);
+  bool has_normals = update_ground_normals(g);
   gpu_mark("ground-shade");
-  GLuint p = ground_program;
+  if (!has_normals && !ground_direct_program)
+    ground_direct_program = link(lit_vertex_source, ground_direct_fragment_source);
+  GLuint p = has_normals ? ground_program : ground_direct_program;
   use_program(p);
   auto at = [p](const char *name) { return uniform_location(p, name); };
   glUniform2f(at("target_size"), (float)t.logical_width, (float)t.logical_height);
@@ -1247,10 +1277,11 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,
                            ground_visibility.count ? beam_vis_texture : blank_texture,
                            ground_tiles.width ? ground_tile_texture : blank_texture,
-                           g.normals.texture};
+                           has_normals ? g.normals.texture : blank_texture};
   const char *names[] = {"u_substrate_tex", "u_surface_tex", "u_material_tex", "u_visibility_tex", "u_light_tiles",
                          "u_normal_tex"};
-  for (int i = 0; i < 6; ++i) {
+  int input_count = has_normals ? 6 : 5;
+  for (int i = 0; i < input_count; ++i) {
     glUniform1i(at(names[i]), i);
     glActiveTexture(GL_TEXTURE0 + i);
     glBindTexture(GL_TEXTURE_2D, inputs[i]);

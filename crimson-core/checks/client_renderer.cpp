@@ -1087,6 +1087,36 @@ void check_terrain_snapshots() {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, g2.normals.framebuffer);
     glReadPixels(0, 0, g2.normals.width, g2.normals.height, GL_RGBA, GL_FLOAT, full.data());
     assert(scissored == full);
+    // Optional relief allocation failure falls back cleanly to direct sampling without exiting.
+    release(g2.normals);
+    g2.normals_failed_w = g2.surface.width;
+    g2.normals_failed_h = g2.surface.height;
+    assert(!update_ground_normals(g2) && !g2.normals.framebuffer);
+    w2c_host_set_render_target(nullptr, 0);
+    renderer_resize(128, 64);
+    w2c_host_back_buffer(nullptr, 64, 32);
+    w2c_host_set_texture(nullptr, 0, 600);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, HOST_PASS_GROUND);
+    scene_debug = 2; // fluid normals debug view
+    rectangle(0, 0, 64, 32, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    int cap_w = 0, cap_h = 0;
+    auto direct_img = renderer_capture(cap_w, cap_h);
+    assert(ground_direct_program != 0);
+    g2.normals_failed_w = g2.normals_failed_h = 0;
+    assert(update_ground_normals(g2) && g2.normals.framebuffer);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_BEGIN);
+    w2c_host_render_pass(nullptr, HOST_PASS_GROUND);
+    rectangle(0, 0, 64, 32, 0xffffffff);
+    w2c_host_render_pass(nullptr, HOST_PASS_WORLD_END);
+    auto cached_img = renderer_capture(cap_w, cap_h);
+    scene_debug = 0;
+    assert(direct_img.size() == cached_img.size() && !direct_img.empty());
+    int max_diff = 0;
+    for (size_t i = 0; i < direct_img.size(); ++i)
+      max_diff = std::max(max_diff, abs((int)direct_img[i] - (int)cached_img[i]));
+    assert(max_diff <= 2);
   }
   w2c_host_set_render_target(nullptr, 0);
   for (int id : {600, 601, 602, 603})
