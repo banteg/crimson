@@ -1,4 +1,4 @@
-"""Exact world-space 32x32 tile light bitmask matching crimson-core/client/ground_tiles.h."""
+"""Conservative world-space 32x32 tile light bitmask for ground.frag."""
 
 from __future__ import annotations
 
@@ -6,100 +6,64 @@ import math
 from collections.abc import Sequence
 
 import msgspec
+import numpy as np
 
 from grim.raylib_api import rl
 
 from .material_lights import MAX_MATERIAL_LIGHTS, MaterialLight
 
 TILE_SIZE = 32
+_HALF_TILE = TILE_SIZE * 0.5
+_TILE_DIAG_RADIUS = _HALF_TILE * math.sqrt(2.0)
 _MARGIN = 0.01
 
-
-def _point_box_dist_sq(px: float, py: float, x0: float, y0: float, x1: float, y1: float) -> float:
-    dx = x0 - px if px < x0 else (px - x1 if px > x1 else 0.0)
-    dy = y0 - py if py < y0 else (py - y1 if py > y1 else 0.0)
-    return dx * dx + dy * dy
+_TILE_CENTERS_CACHE: dict[tuple[int, int], tuple[np.ndarray, np.ndarray]] = {}
 
 
-def _point_seg_dist_sq(
-    px: float, py: float, cx: float, cy: float, ux: float, uy: float, half: float,
-) -> float:
-    dx = px - cx
-    dy = py - cy
-    along = dx * ux + dy * uy
-    if along < -half:
-        along = -half
-    elif along > half:
-        along = half
+def _tile_centers(width: int, height: int) -> tuple[np.ndarray, np.ndarray]:
+    cached = _TILE_CENTERS_CACHE.get((width, height))
+    if cached is not None:
+        return cached
+    mx = (np.arange(width, dtype=np.float32) * TILE_SIZE + _HALF_TILE)[None, None, :]
+    my = (np.arange(height, dtype=np.float32) * TILE_SIZE + _HALF_TILE)[None, :, None]
+    if len(_TILE_CENTERS_CACHE) >= 8:
+        _TILE_CENTERS_CACHE.clear()
+    _TILE_CENTERS_CACHE[(width, height)] = (mx, my)
+    return mx, my
+
+
+def _capsule_hits(
+    mx: np.ndarray,
+    my: np.ndarray,
+    cx: np.ndarray,
+    cy: np.ndarray,
+    ux: np.ndarray,
+    uy: np.ndarray,
+    half: np.ndarray,
+    rad: np.ndarray,
+) -> np.ndarray:
+    """Exact disc hits (`half == 0`) and tight conservative capsule hits (`half > 0`)."""
+    dx = mx - cx
+    dy = my - cy
+    abs_dx = np.abs(dx)
+    abs_dy = np.abs(dy)
+    # Exact disc test (also exact for the axis-aligned box vs point distance).
+    bx = np.maximum(0.0, abs_dx - _HALF_TILE)
+    by = np.maximum(0.0, abs_dy - _HALF_TILE)
+    disc_hit = (bx * bx + by * by) < (rad * rad)
+    if not np.any(half > 0.0):
+        return disc_hit
+    # Tight conservative capsule test: AABB + exact normal-strip SAT + rounded-cap center distance.
+    ex = rad + np.abs(ux) * half + _HALF_TILE
+    ey = rad + np.abs(uy) * half + _HALF_TILE
+    perp_limit = rad + _HALF_TILE * (np.abs(ux) + np.abs(uy))
+    perp = np.abs(-dx * uy + dy * ux)
+    along = np.clip(dx * ux + dy * uy, -half, half)
     rx = dx - ux * along
     ry = dy - uy * along
-    return rx * rx + ry * ry
-
-
-def _segment_intersects_box(
-    ax: float, ay: float, ex: float, ey: float, x0: float, y0: float, x1: float, y1: float,
-) -> bool:
-    dx = ex - ax
-    dy = ey - ay
-    t0 = 0.0
-    t1 = 1.0
-    for p, q in ((-dx, ax - x0), (dx, x1 - ax), (-dy, ay - y0), (dy, y1 - ay)):
-        if p == 0.0:
-            if q < 0.0:
-                return False
-            continue
-        r = q / p
-        if p < 0.0:
-            if r > t1:
-                return False
-            if r > t0:
-                t0 = r
-        else:
-            if r < t0:
-                return False
-            if r < t1:
-                t1 = r
-    return True
-
-
-def _capsule_hits_box(
-    cx: float, cy: float, ux: float, uy: float, half: float, radius: float,
-    x0: float, y0: float, x1: float, y1: float,
-) -> bool:
-    r2 = radius * radius
-    if half <= 0.0:
-        return _point_box_dist_sq(cx, cy, x0, y0, x1, y1) < r2
-    ax = cx - ux * half
-    ay = cy - uy * half
-    ex = cx + ux * half
-    ey = cy + uy * half
-    if _segment_intersects_box(ax, ay, ex, ey, x0, y0, x1, y1):
-        return True
-    if (
-        _point_box_dist_sq(ax, ay, x0, y0, x1, y1) < r2
-        or _point_box_dist_sq(ex, ey, x0, y0, x1, y1) < r2
-    ):
-        return True
-    return (
-        _point_seg_dist_sq(x0, y0, cx, cy, ux, uy, half) < r2
-        or _point_seg_dist_sq(x1, y0, cx, cy, ux, uy, half) < r2
-        or _point_seg_dist_sq(x0, y1, cx, cy, ux, uy, half) < r2
-        or _point_seg_dist_sq(x1, y1, cx, cy, ux, uy, half) < r2
-    )
-
-
-def _ring_hits_box(
-    cx: float, cy: float, ring: float, radius: float, x0: float, y0: float, x1: float, y1: float,
-) -> bool:
-    outer = ring + radius
-    if _point_box_dist_sq(cx, cy, x0, y0, x1, y1) >= outer * outer:
-        return False
-    inner = ring - radius
-    if inner <= 0.0:
-        return True
-    fx = max(abs(cx - x0), abs(cx - x1))
-    fy = max(abs(cy - y0), abs(cy - y1))
-    return fx * fx + fy * fy > inner * inner
+    cap_r = rad + _TILE_DIAG_RADIUS
+    cap_hit = (abs_dx < ex) & (abs_dy < ey) & (perp < perp_limit) & ((rx * rx + ry * ry) < (cap_r * cap_r))
+    return np.where(half > 0.0, cap_hit, disc_hit)
 
 
 def build_ground_tiles(
@@ -109,25 +73,38 @@ def build_ground_tiles(
     shapes: Sequence[float] = (),
     *,
     beams: bool = False,
-) -> tuple[int, int, bytearray]:
+) -> tuple[int, int, bytes]:
     """Return `(width, height, rgba8_masks)` with bit `i` set on tiles light `i` can reach."""
     count = min(len(lights), MAX_MATERIAL_LIGHTS)
     if not count or not (0.0 < world_width <= 65536.0 and 0.0 < world_height <= 65536.0):
-        return 0, 0, bytearray()
+        return 0, 0, b""
     width = math.ceil(world_width / TILE_SIZE)
     height = math.ceil(world_height / TILE_SIZE)
-    masks = bytearray(width * height * 4)
     has_shapes = beams and len(shapes) >= count * 4
+
+    # Collect active lights into small contiguous float32 arrays (N <= 32).
+    indices: list[int] = []
+    ring_idx: list[int] = []
+    ring_data: list[tuple[float, float, float, float]] = []
+    cap_idx: list[int] = []
+    cap_data: list[tuple[float, float, float, float, float, float]] = []
+
     for i in range(count):
         light = lights[i]
         has_diff = light.illumination_gain > 0.0
         has_spec = light.reflection_gain > 0.0 and light.reflection_reach > 0.0
         if not has_diff and not has_spec:
             continue
+        indices.append(i)
         cx = light.pos.x
         cy = light.pos.y
         ring = light.ring_radius
-        is_ring = ring > 0.0
+        diff_rad = max(1.0, light.radius) + _MARGIN if has_diff else 0.0
+        spec_rad = max(0.01, light.reflection_reach) + _MARGIN if has_spec else 0.0
+        if ring > 0.0:
+            ring_idx.append(i)
+            ring_data.append((cx, cy, ring, max(diff_rad, spec_rad)))
+            continue
         dx = light.direction.x
         dy = light.direction.y
         square = dx * dx + dy * dy
@@ -140,49 +117,61 @@ def build_ground_tiles(
             ux = 1.0
             uy = 0.0
         beam_half = shapes[4 * i + 3] if has_shapes else 0.0
-        continuous = not is_ring and has_shapes and beam_half > 0.0 and has_diff
+        continuous = has_shapes and beam_half > 0.0 and has_diff
         spec_half = max(0.0, light.length * 0.5) if has_dir else 0.0
         diff_half = beam_half if continuous else spec_half
-        diff_rad = max(1.0, light.radius) + _MARGIN if has_diff else 0.0
-        spec_rad = max(0.01, light.reflection_reach) + _MARGIN if has_spec else 0.0
-        max_rad = max(diff_rad, spec_rad)
-        if is_ring:
-            ex = ey = max_rad + ring
+        if has_diff and has_spec and diff_half == spec_half:
+            cap_idx.append(i)
+            cap_data.append((cx, cy, ux, uy, diff_half, max(diff_rad, spec_rad)))
         else:
-            ex = max(
-                diff_rad + abs(ux) * diff_half if has_diff else 0.0,
-                spec_rad + abs(ux) * spec_half if has_spec else 0.0,
-            )
-            ey = max(
-                diff_rad + abs(uy) * diff_half if has_diff else 0.0,
-                spec_rad + abs(uy) * spec_half if has_spec else 0.0,
-            )
-        x0 = max(0, math.floor((cx - ex) / TILE_SIZE))
-        y0 = max(0, math.floor((cy - ey) / TILE_SIZE))
-        x1 = min(width - 1, math.floor((cx + ex) / TILE_SIZE))
-        y1 = min(height - 1, math.floor((cy + ey) / TILE_SIZE))
-        bit = 1 << (i % 8)
-        byte = i // 8
-        shared_capsule = has_diff and has_spec and diff_half == spec_half
-        for ty in range(y0, y1 + 1):
-            by0 = float(ty * TILE_SIZE)
-            by1 = by0 + TILE_SIZE
-            row = ty * width
-            for tx in range(x0, x1 + 1):
-                bx0 = float(tx * TILE_SIZE)
-                bx1 = bx0 + TILE_SIZE
-                if is_ring:
-                    hit = _ring_hits_box(cx, cy, ring, max_rad, bx0, by0, bx1, by1)
-                elif shared_capsule:
-                    hit = _capsule_hits_box(cx, cy, ux, uy, diff_half, max_rad, bx0, by0, bx1, by1)
-                else:
-                    hit = (
-                        (has_diff and _capsule_hits_box(cx, cy, ux, uy, diff_half, diff_rad, bx0, by0, bx1, by1))
-                        or (has_spec and _capsule_hits_box(cx, cy, ux, uy, spec_half, spec_rad, bx0, by0, bx1, by1))
-                    )
-                if hit:
-                    masks[(row + tx) * 4 + byte] |= bit
-    return width, height, masks
+            if has_diff:
+                cap_idx.append(i)
+                cap_data.append((cx, cy, ux, uy, diff_half, diff_rad))
+            if has_spec:
+                cap_idx.append(i)
+                cap_data.append((cx, cy, ux, uy, spec_half, spec_rad))
+
+    if not indices:
+        return width, height, bytes(width * height * 4)
+
+    mx, my = _tile_centers(width, height)
+    bits = np.zeros((MAX_MATERIAL_LIGHTS, height, width), dtype=np.bool_)
+
+    if cap_data:
+        arr = np.asarray(cap_data, dtype=np.float32)
+        hits = _capsule_hits(
+            mx, my,
+            arr[:, 0:1, None], arr[:, 1:2, None],
+            arr[:, 2:3, None], arr[:, 3:4, None],
+            arr[:, 4:5, None], arr[:, 5:6, None],
+        )
+        # Multiple entries can target the same light index when diffuse & specular halves differ.
+        if len(cap_idx) == len(set(cap_idx)):
+            bits[cap_idx] = hits
+        else:
+            for j, light_i in enumerate(cap_idx):
+                bits[light_i] |= hits[j]
+
+    if ring_data:
+        arr = np.asarray(ring_data, dtype=np.float32)
+        cx = arr[:, 0:1, None]
+        cy = arr[:, 1:2, None]
+        ring = arr[:, 2:3, None]
+        rad = arr[:, 3:4, None]
+        abs_dx = np.abs(mx - cx)
+        abs_dy = np.abs(my - cy)
+        bx = np.maximum(0.0, abs_dx - _HALF_TILE)
+        by = np.maximum(0.0, abs_dy - _HALF_TILE)
+        outer = ring + rad
+        inner = ring - rad
+        fx = abs_dx + _HALF_TILE
+        fy = abs_dy + _HALF_TILE
+        hits = ((bx * bx + by * by) < (outer * outer)) & ((inner <= 0.0) | ((fx * fx + fy * fy) > (inner * inner)))
+        bits[ring_idx] = hits
+
+    packed = np.packbits(bits, axis=0, bitorder="little")  # (4, H, W) uint8
+    rgba = np.ascontiguousarray(packed.transpose(1, 2, 0))
+    return width, height, rgba.tobytes()
 
 
 class GroundLightTiles(msgspec.Struct):
@@ -193,7 +182,7 @@ class GroundLightTiles(msgspec.Struct):
             rl.unload_texture(self.texture)
             self.texture = None
 
-    def upload(self, width: int, height: int, masks: bytearray) -> rl.Texture:
+    def upload(self, width: int, height: int, masks: bytes) -> rl.Texture:
         if self.texture is not None and (int(self.texture.width) != width or int(self.texture.height) != height):
             self.close()
         buf = rl.ffi.from_buffer("unsigned char[]", masks)

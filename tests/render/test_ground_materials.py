@@ -1315,7 +1315,7 @@ def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> No
                     ground.draw_view(Vec2(), screen_w=256, screen_h=256, out_w=256, out_h=256)
                 return pixels(target)
             with (
-                patch.object(ground_materials, "build_ground_tiles", return_value=(0, 0, bytearray())),
+                patch.object(ground_materials, "build_ground_tiles", return_value=(0, 0, b"")),
                 texture_mode(target),
                 ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, lights=lights),
             ):
@@ -1326,6 +1326,15 @@ def test_ground_light_tiles_match_unculled_shading(raylib_context, mocker) -> No
         unculled_pixels = render(tiled=False)
         assert ground.light_tiles.texture is not None
         assert tiled_pixels == unculled_pixels
+        # Early-exit debug views (e.g. substrate normals) skip tile mask generation.
+        with (
+            patch.object(
+                ground_materials, "build_ground_tiles", side_effect=AssertionError("should skip tile build"),
+            ),
+            texture_mode(target),
+            ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, lights=lights, debug=1),
+        ):
+            ground.draw_view(Vec2(), screen_w=256, screen_h=256, out_w=256, out_h=256)
     finally:
         rl.unload_render_texture(target)
         ground.close()

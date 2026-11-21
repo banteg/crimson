@@ -51,6 +51,8 @@ VISIBILITY_TEXEL = 4.0
 BEAM_VISIBILITY_ROWS = MAX_MATERIAL_LIGHTS // 16
 BEAM_VISIBILITY_UNIT = 5
 LIGHT_TILES_UNIT = 6
+# Debug views where ground.frag returns before reading u_light_tiles.
+_UNLIT_DEBUG_VIEWS = frozenset((1, 2, 3, 4, 9, 10, 11, 12))
 
 _FLOAT_UNIFORM_KINDS = {
     1: rl.ShaderUniformDataType.SHADER_UNIFORM_FLOAT,
@@ -555,9 +557,12 @@ class MaterialGroundRenderer(GroundRenderer):
         else:
             put("u_visibility_world", [0.0, 0.0, 0.0, 0.0])
             put("u_visibility_size", [0.0, 0.0])
-        tile_w, tile_h, tile_masks = build_ground_tiles(
-            float(self.width), float(self.height), lights, shapes, beams=has_beam_lights,
-        )
+        if lights and debug not in _UNLIT_DEBUG_VIEWS:
+            tile_w, tile_h, tile_masks = build_ground_tiles(
+                float(self.width), float(self.height), lights, shapes, beams=has_beam_lights,
+            )
+        else:
+            tile_w, tile_h, tile_masks = 0, 0, b""
         tile_texture = self.light_tiles.upload(tile_w, tile_h, tile_masks) if tile_w > 0 and tile_h > 0 else None
         _apply_uniforms(sh, self.material_locations, uniforms)
         rl.set_shader_value(
