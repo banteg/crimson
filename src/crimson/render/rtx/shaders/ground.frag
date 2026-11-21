@@ -209,8 +209,7 @@ void main() {
         if (group * 4 >= u_spec_light_count) break;
         uint group_mask = (light_mask >> uint(group * 4)) & 15u;
         if (group_mask == 0u) continue;
-        bool vis_loaded = false;
-        vec4 visibility = vec4(1.);
+        vec4 visibility = groundVisibility(group, world);
         for (int lane = 0; lane < 4; ++lane) {
             int i = group * 4 + lane;
             if (i >= u_spec_light_count) break;
@@ -251,10 +250,6 @@ void main() {
                 ? 1.0 - smoothstep(response.z * .8, max(.01, response.z), reflection_distance)
                 : 0.0;
             if (!do_diffuse && spec_support <= 0.0) continue;
-            if (!vis_loaded) {
-                visibility = groundVisibility(group, world);
-                vis_loaded = true;
-            }
             if (do_diffuse) {
                 if (continuous) {
                     vec3 unshadowed;
