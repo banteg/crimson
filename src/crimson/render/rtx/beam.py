@@ -4,6 +4,7 @@ from contextlib import ExitStack
 
 import msgspec
 
+from grim.assets import register_unload_hook
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
@@ -278,6 +279,9 @@ def close_beam_shader() -> None:
         rl.unload_shader(_BEAM_FAST_STAMPED_SHADER.shader)
     _BEAM_FAST_STAMPED_SHADER = None
     _BEAM_FAST_STAMPED_SHADER_TRIED = False
+
+
+register_unload_hook(close_beam_shader)
 
 
 __all__ = ["BeamBatch", "close_beam_shader", "draw_beam_fast_stamped_body", "draw_beam_fast_stamped_head"]

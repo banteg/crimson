@@ -196,9 +196,10 @@ def test_non_drawing_projectiles_do_not_interrupt_beam_batch(mocker):
     assert [c[0] for c in calls.mock_calls] == ["beam", "beam", "end", "pulse", "end"]
 
 
-def test_close_beam_shader_unloads_and_resets_cache(mocker, tmp_path):
+def test_close_beam_shader_tracks_window_lifetime(mocker, tmp_path, headless_resources):
     from crimson.render.rtx import effects
     from crimson.world.render_resources import RenderResources
+    from grim.assets import unload_runtime_resources
 
     shader = rl.ffi.new("Shader *")[0]
     shader.id = 77
@@ -206,9 +207,13 @@ def test_close_beam_shader_unloads_and_resets_cache(mocker, tmp_path):
     mocker.patch.object(beam, "_BEAM_FAST_STAMPED_SHADER", beam._BeamFastStampedShader(shader, 1, 2))
     mocker.patch.object(effects, "_shader", None)
     unload = mocker.patch.object(rl, "unload_shader")
-    resources = RenderResources(tmp_path)
-    resources.close()
-    resources.close()
+    world = RenderResources(tmp_path)
+    world.close()
+    unload.assert_not_called()
+    assert beam._BEAM_FAST_STAMPED_SHADER is not None
+
+    unload_runtime_resources(headless_resources)
+    unload_runtime_resources(headless_resources)
     unload.assert_called_once_with(shader)
     assert beam._BEAM_FAST_STAMPED_SHADER is None
     assert beam._BEAM_FAST_STAMPED_SHADER_TRIED is False
